@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"ingester/common"
 	"ingester/constants"
+	"reflect"
 	"regexp"
 	"slices"
 	"sort"
@@ -107,6 +108,42 @@ type ResourceGroupContentItem struct {
 	Image          *Image
 }
 
+// purgeERN38x parses the given XML data and marks a release to be taken down from Audius.
+// NOTE: This expects the ERN 3 format. See https://kb.ddex.net/implementing-each-standard/electronic-release-notification-message-suite-(ern)/ern-3-explained/
+func purgeERN38x(doc *xmlquery.Node, release *common.Release, releasesColl *mongo.Collection) error {
+	// Parse <Release>s from <ReleaseList>
+	releaseNodes := xmlquery.Find(doc, "//ReleaseList/Release")
+	if len(releaseNodes) == 0 {
+		return fmt.Errorf("no <Release> found")
+	}
+	for _, rNode := range releaseNodes {
+		releaseIDNode := rNode.SelectElement("ReleaseId")
+		if releaseIDNode == nil {
+			return fmt.Errorf("no <ReleaseId> found")
+		}
+		releaseIDs := getReleaseIDs(releaseIDNode)
+		releaseIDsVal := reflect.ValueOf(releaseIDs)
+		for i := 0; i < releaseIDsVal.NumField(); i++ {
+			releaseID := releaseIDsVal.Field(i).String()
+			if releaseID == "" {
+				continue
+			}
+
+			// Take down the release with this ID, if any
+			existingRelease, err := getExistingRelease(releaseID, releasesColl)
+			if err == mongo.ErrNoDocuments {
+				continue
+			} else if err != nil {
+				return err
+			} else {
+				takedownRelease(existingRelease, release)
+				break
+			}
+		}
+	}
+	return nil
+}
+
 // parseERN38x parses the given XML data and returns a release ready to be uploaded to Audius.
 // NOTE: This expects the ERN 3 format. See https://kb.ddex.net/implementing-each-standard/electronic-release-notification-message-suite-(ern)/ern-3-explained/
 func parseERN38x(doc *xmlquery.Node, crawledBucket string, release *common.Release, releasesColl *mongo.Collection) (errs []error) {
@@ -178,28 +215,17 @@ func parseERN38x(doc *xmlquery.Node, crawledBucket string, release *common.Relea
 	dealNodes := xmlquery.Find(doc, "//DealList/ReleaseDeal")
 	if len(dealNodes) == 0 {
 		// Check for an existing release to determine whether this is a takedown request or an invalid NewReleaseMessage
-		var existingRelease common.Release
-		filter := bson.M{"_id": release.ReleaseID}
-		err = releasesColl.FindOne(context.Background(), filter).Decode(&existingRelease)
-		if err == nil {
-			// This is a takedown request. Mark the existing release for deletion
-			switch existingRelease.ReleaseStatus {
-			case constants.ReleaseStatusPublished, constants.ReleaseStatusFailedAfterUpload, constants.ReleaseStatusFailedDuringDelete:
-				// Has been published to Audius. Mark for deletion by the publisher
-				release.ReleaseStatus = constants.ReleaseStatusAwaitingDelete
-				release.EntityID = existingRelease.EntityID
-				release.SDKUploadMetadata = existingRelease.SDKUploadMetadata
-			default:
-				// Has not yet been published to Audius. Mark as deleted
-				release.ReleaseStatus = constants.ReleaseStatusDeleted
-			}
-		} else if err != nil && err != mongo.ErrNoDocuments {
-			errs = append(errs, err)
-			return
-		} else {
+		existingRelease, err := getExistingRelease(release.ReleaseID, releasesColl)
+		if err == mongo.ErrNoDocuments {
 			// This is a NewReleaseMessage that should have a deal
 			errs = append(errs, fmt.Errorf("no <ReleaseDeal> found"))
 			return
+		} else if err != nil {
+			errs = append(errs, err)
+			return
+		} else {
+			// This is a takedown request. Mark the release for deletion
+			takedownRelease(existingRelease, release)
 		}
 	}
 	for _, dNode := range dealNodes {
@@ -639,28 +665,12 @@ func processReleaseNode(rNode *xmlquery.Node, soundRecordings *[]SoundRecording,
 	}
 
 	r = &common.ParsedReleaseElement{
-		IsMainRelease: rNode.SelectAttr("IsMainRelease") == "true",
-		ReleaseRef:    releaseRef,
-		ReleaseDate:   releaseDate,
-		Resources:     resources,
-		ReleaseType:   releaseType,
-		ReleaseIDs: common.ReleaseIDs{
-			PartyID:       safeInnerText(rNode.SelectElement("ReleaseId/PartyId")),
-			CatalogNumber: safeInnerText(rNode.SelectElement("ReleaseId/CatalogNumber")),
-			ICPN:          safeInnerText(rNode.SelectElement("ReleaseId/ICPN")),
-			GRid:          safeInnerText(rNode.SelectElement("ReleaseId/GRid")),
-			ISAN:          safeInnerText(rNode.SelectElement("ReleaseId/ISAN")),
-			ISBN:          safeInnerText(rNode.SelectElement("ReleaseId/ISBN")),
-			ISMN:          safeInnerText(rNode.SelectElement("ReleaseId/ISMN")),
-			ISRC:          isrc,
-			ISSN:          safeInnerText(rNode.SelectElement("ReleaseId/ISSN")),
-			ISTC:          safeInnerText(rNode.SelectElement("ReleaseId/ISTC")),
-			ISWC:          safeInnerText(rNode.SelectElement("ReleaseId/ISWC")),
-			MWLI:          safeInnerText(rNode.SelectElement("ReleaseId/MWLI")),
-			SICI:          safeInnerText(rNode.SelectElement("ReleaseId/SICI")),
-			ProprietaryID: safeInnerText(rNode.SelectElement("ReleaseId/ProprietaryId")),
-		},
-
+		IsMainRelease:       rNode.SelectAttr("IsMainRelease") == "true",
+		ReleaseRef:          releaseRef,
+		ReleaseDate:         releaseDate,
+		Resources:           resources,
+		ReleaseType:         releaseType,
+		ReleaseIDs:          getReleaseIDs(rNode.SelectElement("ReleaseId")),
 		DisplayTitle:        safeInnerText(releaseDetails.SelectElement("Title[@TitleType='DisplayTitle']/TitleText")), // TODO: This assumes there aren't multiple titles in different languages (ie, different `LanguageAndScriptCode` attributes)
 		DisplaySubtitle:     stringPtr(safeInnerText(releaseDetails.SelectElement("Title[@TitleType='DisplayTitle']/SubTitle"))),
 		FormalTitle:         stringPtr(safeInnerText(releaseDetails.SelectElement("Title[@TitleType='FormalTitle']/TitleText"))),
@@ -1263,6 +1273,26 @@ func processResourceGroup(node *xmlquery.Node, parentSequence int, contentItems 
 	// Recursively process nested ResourceGroups
 	for _, rg := range xmlquery.Find(node, "ResourceGroup") {
 		processResourceGroup(rg, currentSequence, contentItems)
+	}
+}
+
+func getExistingRelease(releaseID string, releasesColl *mongo.Collection) (common.Release, error) {
+	var existingRelease common.Release
+	filter := bson.M{"_id": releaseID}
+	err := releasesColl.FindOne(context.Background(), filter).Decode(&existingRelease)
+	return existingRelease, err
+}
+
+func takedownRelease(existingRelease common.Release, releaseToUpsert *common.Release) {
+	switch existingRelease.ReleaseStatus {
+	case constants.ReleaseStatusPublished, constants.ReleaseStatusFailedAfterUpload, constants.ReleaseStatusFailedDuringDelete:
+		// Has been published to Audius. Mark for deletion by the publisher
+		releaseToUpsert.ReleaseStatus = constants.ReleaseStatusAwaitingDelete
+		releaseToUpsert.EntityID = existingRelease.EntityID
+		releaseToUpsert.SDKUploadMetadata = existingRelease.SDKUploadMetadata
+	default:
+		// Has not yet been published to Audius. Mark as deleted
+		releaseToUpsert.ReleaseStatus = constants.ReleaseStatusDeleted
 	}
 }
 
