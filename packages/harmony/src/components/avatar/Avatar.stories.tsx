@@ -5,10 +5,8 @@ import { Flex } from 'components/layout/Flex'
 import { Paper } from 'components/layout/Paper'
 import { IconCamera } from 'icons'
 import shadowBackground from 'storybook/assets/shadowBackground.jpeg'
-// TODO: Get final image assets from Sammie
 
 import { Avatar } from './Avatar'
-import { Avatar2 } from './Avatar2'
 
 const meta: Meta<typeof Avatar> = {
   title: 'Components/Avatar',
@@ -23,10 +21,7 @@ const meta: Meta<typeof Avatar> = {
   render: (props) => {
     return (
       <Flex gap='l'>
-        <Box w={80} h={80}>
-          <Avatar {...props} />
-        </Box>
-        <Avatar2 size={props.size} src={props.src} />
+        <Avatar {...props} />
       </Flex>
     )
   }
@@ -48,14 +43,10 @@ export const NoImage: Story = {
   },
   render: (props) => (
     <Flex gap='m'>
-      <Box w={80} h={80}>
-        <Avatar {...props} />
-      </Box>
-      <Box w={80} h={80}>
-        <Avatar {...props}>
-          <IconCamera color='staticWhite' />
-        </Avatar>
-      </Box>
+      <Avatar {...props} />
+      <Avatar {...props}>
+        <IconCamera color='staticWhite' />
+      </Avatar>
     </Flex>
   )
 }
@@ -66,13 +57,10 @@ export const Strong: Story = {
   },
   render: (props) => (
     <Paper w={350} h={160}>
-      <Box
-        w={80}
-        h={80}
+      <Avatar
         css={{ position: 'absolute', top: '40px', left: '32px' }}
-      >
-        <Avatar {...props} />
-      </Box>
+        {...props}
+      />
       <Flex direction='column' h='100%' w='100%'>
         <Box
           h='100%'

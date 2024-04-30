@@ -55,17 +55,15 @@ const ProfileImageAvatar = ({
   const { isMobile } = useMedia()
   const isSmallSize = isEditing || isMobile || size === 'small'
 
-  const avatarSize = isSmallSize ? 72 : 120
   return (
     <Avatar
       variant='strong'
       src={imageUrl}
+      size={isSmallSize ? 'large' : 'xxl'}
       css={{
-        height: avatarSize,
-        width: avatarSize,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
+        // display: 'flex',
+        // alignItems: 'center',
+        // justifyContent: 'center',
         ...(isEditing && { cursor: 'pointer' }),
         ...(isSmallSize ? { transform: 'translateY(20px)' } : null)
       }}

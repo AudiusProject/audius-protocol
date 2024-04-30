@@ -3,7 +3,7 @@ import { SquareSizes, ID } from '@audius/common/models'
 import { accountSelectors, cacheUsersSelectors } from '@audius/common/store'
 import { Maybe } from '@audius/common/utils'
 import {
-  Avatar2 as HarmonyAvatar,
+  Avatar as HarmonyAvatar,
   type AvatarProps as HarmonyAvatarProps
 } from '@audius/harmony'
 import { Link } from 'react-router-dom'
@@ -55,6 +55,7 @@ export const Avatar = (props: AvatarProps) => {
   if (ariaHidden) {
     return <HarmonyAvatar src={image} {...other} />
   }
+
   if (onClick) {
     return (
       <HarmonyAvatar
@@ -62,6 +63,7 @@ export const Avatar = (props: AvatarProps) => {
         tabIndex={0}
         aria-label={label}
         onClick={onClick}
+        css={{ cursor: 'pointer' }}
         src={image}
         {...other}
       />
