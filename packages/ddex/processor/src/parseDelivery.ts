@@ -5,6 +5,7 @@ import { mkdtemp, readFile, readdir } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { releaseRepo, userRepo, xmlRepo } from './db'
+import { omitEmpty } from './util'
 
 type CH = cheerio.Cheerio<cheerio.Element>
 
@@ -18,6 +19,22 @@ export type DDEXRelease = {
   subGenre: string
   releaseDate: string
   releaseType: string
+  releaseIds: {
+    party_id?: string
+    catalog_number?: string
+    icpn?: string
+    grid?: string
+    isan?: string
+    isbn?: string
+    ismn?: string
+    isrc?: string
+    issn?: string
+    istc?: string
+    iswc?: string
+    mwli?: string
+    sici?: string
+    proprietary_id?: string
+  }
 
   isMainRelease: boolean
   audiusGenre?: Genre
@@ -399,6 +416,22 @@ export function parseDdexXml(xmlUrl: string, xmlText: string) {
         ),
         genre: $el.find('GenreText').text(),
         subGenre: $el.find('SubGenre').text(),
+        releaseIds: omitEmpty({
+          party_id: toText($el.find('ReleaseId > PartyId')),
+          catalog_number: toText($el.find('ReleaseId > CatalogNumber')),
+          icpn: toText($el.find('ReleaseId > ICPN')),
+          grid: toText($el.find('ReleaseId > GRid')),
+          isan: toText($el.find('ReleaseId > ISAN')),
+          isbn: toText($el.find('ReleaseId > ISBN')),
+          ismn: toText($el.find('ReleaseId > ISMN')),
+          isrc: toText($el.find('ReleaseId > ISRC')),
+          issn: toText($el.find('ReleaseId > ISSN')),
+          istc: toText($el.find('ReleaseId > ISTC')),
+          iswc: toText($el.find('ReleaseId > ISWC')),
+          mwli: toText($el.find('ReleaseId > MWLI')),
+          sici: toText($el.find('ReleaseId > SICI')),
+          proprietary_id: toText($el.find('ReleaseId > ProprietaryId')),
+        }),
         releaseDate,
         releaseType: $el.find('ReleaseType').text(),
 

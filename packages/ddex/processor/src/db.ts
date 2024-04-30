@@ -70,6 +70,7 @@ export enum ReleaseProcessingStatus {
   Blocked = 'Blocked',
   Published = 'Published',
   Failed = 'Failed',
+  Deleted = 'Deleted',
 }
 
 export type ReleaseRow = {
@@ -78,7 +79,7 @@ export type ReleaseRow = {
   json: string
   status: ReleaseProcessingStatus
 
-  entityType?: string
+  entityType?: 'track' | 'album'
   entityId?: string
   blockHash?: string
   blockNumber?: number

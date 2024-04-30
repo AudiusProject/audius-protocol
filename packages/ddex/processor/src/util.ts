@@ -7,3 +7,8 @@ export function parseBool(b: string | undefined): boolean {
   b = b.toLowerCase().trim()
   return b != '' && b != '0' && b != 'false'
 }
+
+export function omitEmpty(obj: any) {
+  const entries = Object.entries(obj).filter(([_, v]) => Boolean(v))
+  return Object.fromEntries(entries)
+}

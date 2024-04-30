@@ -4,9 +4,6 @@ import {
   UploadAlbumRequest,
   UploadTrackRequest,
 } from '@audius/sdk'
-import { GetObjectCommand } from '@aws-sdk/client-s3'
-import { mkdir, readFile, stat, writeFile } from 'fs/promises'
-import { basename, dirname, join, resolve } from 'path'
 import {
   ReleaseProcessingStatus,
   ReleaseRow,
@@ -14,12 +11,14 @@ import {
   releaseRepo,
 } from './db'
 import { DDEXContributor, DDEXRelease, DDEXResource } from './parseDelivery'
-import { dialS3 } from './s3poller'
+import { readAssetWithCaching } from './s3poller'
 import { createSdkService } from './sdk'
 
-const sdkService = createSdkService()
+export const sdkService = createSdkService()
 
-export async function publishValidPendingReleases() {
+export async function publishValidPendingReleases(opts?: {
+  republish: boolean
+}) {
   const rows = releaseRepo.all({ pendingPublish: true })
   if (!rows.length) return
 
@@ -33,25 +32,29 @@ export async function publishValidPendingReleases() {
     parsed.audiusUser = 'KKa311z'
 
     if (row.entityId) {
-      // this release has already been published, and has an entity ID.
-      // for now just move on:
-      console.log('already published, skipping', row.key)
-      releaseRepo.update({
-        key: row.key,
-        status: ReleaseProcessingStatus.Published,
-      })
-
-      // todo: updates
+      // todo: need better state tracking for updates
       // simplest way... if parsedJson != publishedJson issue update
       //    the risk being that this might incite a ton of needless updates if not careful
       // could do... if xmlUrl != publishedXmlUrl
       //    but that wouldn't handle code change type of thing
 
-      // if (row.entityType == 'track') {
-      //   await updateTrack(sdk, row, parsed)
-      // } else {
-      //   console.log('already published, skipping', row.key)
-      // }
+      // for now, update all published releases when `republish` flag is set vai:
+      //   npx tsx cli publish --republish
+
+      if (opts?.republish) {
+        if (row.entityType == 'track') {
+          await updateTrack(sdk, row, parsed)
+        } else if (row.entityType == 'album') {
+          await updateAlbum(sdk, row, parsed)
+        } else {
+          console.log('unknown entity type', row.entityType)
+        }
+      }
+
+      releaseRepo.update({
+        key: row.key,
+        status: ReleaseProcessingStatus.Published,
+      })
     } else {
       // publish new release
       try {
@@ -99,11 +102,7 @@ export async function publishRelease(
   if (release.soundRecordings.length > 1) {
     const uploadAlbumRequest: UploadAlbumRequest = {
       coverArtFile: imageFile,
-      metadata: {
-        genre: release.audiusGenre || Genre.ALL,
-        albumName: release.title,
-        // todo: more album fields
-      },
+      metadata: prepareAlbumMetadata(release),
       trackFiles,
       trackMetadatas,
       userId: release.audiusUser!,
@@ -114,7 +113,6 @@ export async function publishRelease(
       return
     }
 
-    console.log(`Uploading ALBUM ${release.title} to Audius...`)
     const result = await sdk.albums.uploadAlbum(uploadAlbumRequest)
     console.log(result)
 
@@ -136,6 +134,8 @@ export async function publishRelease(
     const metadata = trackMetadatas[0]
     const trackFile = trackFiles[0]
 
+    metadata.ddexReleaseIds = release.releaseIds
+
     const uploadTrackRequest: UploadTrackRequest = {
       userId: release.audiusUser!,
       metadata,
@@ -148,7 +148,6 @@ export async function publishRelease(
       return
     }
 
-    console.log(`Uploading track ${metadata.title} Audius...`)
     const result = await sdk.tracks.uploadTrack(uploadTrackRequest)
     console.log(result)
 
@@ -178,10 +177,11 @@ async function updateTrack(
     metadata: metas[0],
   })
 
-  console.log('UPDATE', result)
+  console.log('update track', result)
+  // todo: record update to db
 }
 
-function prepareTrackMetadatas(release: DDEXRelease) {
+export function prepareTrackMetadatas(release: DDEXRelease) {
   const trackMetas: UploadTrackRequest['metadata'][] =
     release.soundRecordings.map((sound) => {
       const audiusGenre = sound.audiusGenre || release.audiusGenre || Genre.ALL
@@ -198,11 +198,6 @@ function prepareTrackMetadatas(release: DDEXRelease) {
       const parentalWarningType =
         sound.parentalWarningType || release.parentalWarningType
 
-      const mapContributor = (c: DDEXContributor) => ({
-        name: c.name,
-        roles: [c.role!], // todo: does ddex xml have multiple roles for a contributor?
-      })
-
       const meta: UploadTrackRequest['metadata'] = {
         genre: audiusGenre,
         title: sound.title,
@@ -212,6 +207,7 @@ function prepareTrackMetadatas(release: DDEXRelease) {
         producerCopyrightLine,
         parentalWarningType,
         rightsController: sound.rightsController,
+        artists: sound.artists.map(mapContributor),
         resourceContributors: sound.contributors.map(mapContributor),
         indirectResourceContributors:
           sound.indirectContributors.map(mapContributor),
@@ -223,51 +219,84 @@ function prepareTrackMetadatas(release: DDEXRelease) {
   return trackMetas
 }
 
-// sdk helpers
-async function readFileToBuffer(filePath: string) {
-  const buffer = await readFile(filePath)
-  const name = basename(filePath)
-  return { buffer, name }
+//
+// Album
+//
+
+async function updateAlbum(
+  sdk: AudiusSdk,
+  row: ReleaseRow,
+  release: DDEXRelease
+) {
+  const meta = prepareAlbumMetadata(release)
+
+  const result = await sdk.albums.updateAlbum({
+    userId: release.audiusUser!,
+    albumId: row.entityId!,
+    metadata: meta,
+  })
+
+  console.log('UPDATE ALBUM', result)
+  // todo: record update to db blocknumber / blockhash
 }
 
-//
-// s3 file helper
-//
-export async function readAssetWithCaching(
-  xmlUrl: string,
-  filePath: string,
-  fileName: string
-) {
-  // read from s3 + cache to local disk
-  if (xmlUrl.startsWith('s3:')) {
-    const cacheBaseDir = `/tmp/ddex_cache`
-    const s3url = new URL(`${filePath}${fileName}`, xmlUrl)
-    const Bucket = s3url.host
-    const Key = s3url.pathname.substring(1)
-    const destinationPath = join(cacheBaseDir, Bucket, Key)
+export async function deleteRelease(sdk: AudiusSdk, r: ReleaseRow) {
+  const userId = r._parsed!.audiusUser!
+  // const userId = 'KKa311z'
+  const entityId = r.entityId
 
-    // fetch if needed
-    const exists = await fileExists(destinationPath)
-    if (!exists) {
-      const s3 = dialS3()
-      await mkdir(dirname(destinationPath), { recursive: true })
-      const { Body } = await s3.send(new GetObjectCommand({ Bucket, Key }))
-      await writeFile(destinationPath, Body as any)
-    }
-
-    return readFileToBuffer(destinationPath)
+  if (!userId || !entityId) {
+    console.log('no entityType for release ${r.key}')
+    return
   }
 
-  // read from local disk
-  const fileUrl = resolve(xmlUrl, '..', filePath, fileName)
-  return readFileToBuffer(fileUrl)
+  if (r.entityType == 'track') {
+    const result = await sdk.tracks.deleteTrack({
+      trackId: entityId,
+      userId,
+    })
+
+    releaseRepo.update({
+      key: r.key,
+      status: ReleaseProcessingStatus.Deleted,
+      // update blockhash / blockno?
+    })
+    console.log('deleted track', result)
+    return result
+  } else if (r.entityType == 'album') {
+    const result = await sdk.albums.deleteAlbum({
+      albumId: entityId,
+      userId,
+    })
+
+    releaseRepo.update({
+      key: r.key,
+      status: ReleaseProcessingStatus.Deleted,
+      // update blockhash / blockno?
+    })
+    console.log('deleted album', result)
+    return result
+  }
 }
 
-async function fileExists(path: string) {
-  try {
-    await stat(path)
-    return true
-  } catch {
-    return false
+export function prepareAlbumMetadata(release: DDEXRelease) {
+  let releaseDate: Date | undefined
+  if (release.releaseDate) {
+    releaseDate = new Date(release.releaseDate)
+  }
+  const meta: UploadAlbumRequest['metadata'] = {
+    genre: release.audiusGenre || Genre.ALL,
+    albumName: release.title,
+    releaseDate,
+    ddexReleaseIds: release.releaseIds,
+    artists: release.artists.map(mapContributor),
+  }
+  return meta
+}
+
+function mapContributor(c: DDEXContributor) {
+  return {
+    name: c.name,
+    roles: [c.role!], // todo: does ddex xml have multiple roles for a contributor?
   }
 }

@@ -16,8 +16,9 @@ import {
   xmlRepo,
 } from './db'
 import { DDEXContributor, parseDdexXml, reParsePastXml } from './parseDelivery'
-import { readAssetWithCaching } from './publishRelease'
+import { prepareAlbumMetadata, prepareTrackMetadatas } from './publishRelease'
 import { parseBool } from './util'
+import { readAssetWithCaching } from './s3poller'
 
 const { NODE_ENV, DDEX_KEY, COOKIE_SECRET } = process.env
 const COOKIE_NAME = 'audiusUser'
@@ -247,11 +248,16 @@ app.get('/releases', (c) => {
                   </td>
                   <td>
                     <a href="/xmls/${encodeURIComponent(row.xmlUrl)}">xml</a>
+
                     <a
                       href="/releases/${encodeURIComponent(
                         row.key
                       )}/json?pretty"
-                      >json</a
+                      >parsed</a
+                    >
+
+                    <a href="/xmls/${encodeURIComponent(row.xmlUrl)}?parse=sdk"
+                      >sdk</a
                     >
                   </td>
                 </tr>`
@@ -394,8 +400,31 @@ app.get('/xmls/:xmlUrl', (c) => {
   const xmlUrl = c.req.param('xmlUrl')
   const row = xmlRepo.get(xmlUrl)
   if (!row) return c.json({ error: 'not found' }, 404)
+
+  // parse=true will parse the xml to internal representation
   if (parseBool(c.req.query('parse'))) {
     const parsed = parseDdexXml(xmlUrl, row.xmlText)
+
+    // parse=sdk will convert internal representation to SDK friendly format
+    if (c.req.query('parse') == 'sdk') {
+      const sdkReleases = parsed.map((release) => {
+        const tracks = prepareTrackMetadatas(release)
+        if (tracks.length > 1) {
+          const album = prepareAlbumMetadata(release)
+          return {
+            ref: release.ref,
+            album,
+            tracks,
+          }
+        } else {
+          return {
+            ref: release.ref,
+            track: tracks[0],
+          }
+        }
+      })
+      return c.json(sdkReleases)
+    }
     return c.json(parsed)
   }
   c.header('Content-Type', 'text/xml')
