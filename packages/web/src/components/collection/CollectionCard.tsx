@@ -86,7 +86,7 @@ export const CollectionCard = forwardRef(
           <CollectionImage
             collectionId={id}
             size={cardSizeToCoverArtSizeMap[size]}
-            data-testid={`${id}-cover-art`}
+            data-testid={`cover-art-${id}`}
           />
           <Flex direction='column' gap='xs'>
             <Text variant='title' color='default' ellipses asChild>

@@ -15,7 +15,7 @@ import { profilePage } from 'utils/route'
 const { getUser } = cacheUsersSelectors
 
 const messages = {
-  followers: 'Followers'
+  followers: (count: number) => (count === 1 ? 'Follower' : 'Followers')
 }
 
 type UserCardProps = Omit<CardProps, 'id'> & {
@@ -58,7 +58,7 @@ export const UserCard = (props: UserCardProps) => {
       </Flex>
       <CardFooter>
         <Text variant='body' size='s' strength='strong'>
-          {formatCount(follower_count)} {messages.followers}
+          {formatCount(follower_count)} {messages.followers(follower_count)}
         </Text>
       </CardFooter>
     </Card>

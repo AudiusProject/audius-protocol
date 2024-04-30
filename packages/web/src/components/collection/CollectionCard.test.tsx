@@ -74,13 +74,10 @@ describe('CollectionCard', () => {
 
   it('renders the cover image', () => {
     renderCollectionCard()
-    expect(screen.getByTestId(`${1}-cover-art`)).toBeInTheDocument()
-  })
-
-  it('renders the title', () => {
-    renderCollectionCard()
-    const titleElement = screen.getByText('Test Collection')
-    expect(titleElement).toBeInTheDocument()
+    expect(screen.getByTestId('cover-art-1')).toHaveAttribute(
+      'src',
+      'image-small.jpg'
+    )
   })
 
   it('renders the collection owner link which navigates to user page', async () => {

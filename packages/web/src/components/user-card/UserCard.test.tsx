@@ -7,15 +7,12 @@ import { describe, expect, it } from 'vitest'
 import { RenderOptions, render, screen } from 'test/test-utils'
 
 import { UserCard } from './UserCard'
+import { s } from 'vitest/dist/reporters-5f784f42.js'
 
 function renderUserCard(options?: RenderOptions) {
   return render(
     <Routes>
       <Route path='/' element={<UserCard id={1} size='s' />} />
-      <Route
-        path='/test-user/test-collection'
-        element={<Text variant='heading'>Test Collection Page</Text>}
-      />
       <Route
         path='/test-user'
         element={<Text variant='heading'>Test User Page</Text>}
@@ -26,14 +23,16 @@ function renderUserCard(options?: RenderOptions) {
         reduxState: {
           users: {
             entries: {
-              2: {
+              1: {
                 metadata: {
+                  user_id: 1,
                   handle: 'test-user',
                   name: 'Test User',
                   _profile_picture_sizes: {
                     [SquareSizes.SIZE_150_BY_150]: 'image-small.jpg',
                     [SquareSizes.SIZE_480_BY_480]: 'image-medium.jpg'
-                  }
+                  },
+                  follower_count: 1
                 }
               }
             }
@@ -50,8 +49,35 @@ describe('UserCard', () => {
     renderUserCard()
     expect(
       screen.getByRole('button', {
-        name: /test collection test user reposts 10 favorites 5/i
+        name: /test user @test-user 1 follower/i
       })
     ).toBeInTheDocument()
+  })
+
+  it('navigates to the user page when clicked', async () => {
+    renderUserCard()
+    screen.getByRole('button').click()
+    expect(
+      await screen.findByRole('heading', { name: /test user page/i })
+    ).toBeInTheDocument()
+  })
+
+  it('renders the profile picture', () => {
+    renderUserCard()
+
+    expect(screen.getByRole('img', { hidden: true })).toHaveAttribute(
+      'src',
+      'image-small.jpg'
+    )
+  })
+
+  it('handles users with large follow counts correctly', () => {
+    renderUserCard({
+      reduxState: {
+        users: { entries: { 1: { metadata: { follower_count: 1000 } } } }
+      }
+    })
+
+    expect(screen.getByText('1K Followers')).toBeInTheDocument()
   })
 })
