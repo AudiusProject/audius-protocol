@@ -56,7 +56,7 @@ def test_reaction_notification(app):
         notifications: List[Notification] = (
             session.query(Notification)
             .filter(Notification.type == "reaction")
-            .order_by(asc(Notification.slot))
+            .order_by(asc(Notification.timestamp))
             .all()
         )
 
@@ -72,7 +72,6 @@ def test_reaction_notification(app):
             == "reaction:reaction_to:sig_2:reaction_type:tip:reaction_value:2"
         )
         assert notifications[0].type == "reaction"
-        assert notifications[0].slot == 1
         assert notifications[0].blocknumber == None
         assert notifications[0].data == {
             "reacted_to": "sig_1",
@@ -86,7 +85,6 @@ def test_reaction_notification(app):
         assert notifications[0].user_ids == [2]
 
         assert notifications[1].type == "reaction"
-        assert notifications[1].slot == 2
         assert notifications[1].blocknumber == None
         assert notifications[1].data == {
             "reacted_to": "sig_2",
@@ -102,7 +100,7 @@ def test_reaction_notification(app):
         notifications: List[Notification] = (
             session.query(Notification)
             .filter(Notification.type == "tip_receive")
-            .order_by(asc(Notification.slot))
+            .order_by(asc(Notification.timestamp))
             .all()
         )
         assert len(notifications) == 3
