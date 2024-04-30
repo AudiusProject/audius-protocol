@@ -314,7 +314,7 @@ func (p *Parser) validateReleaseIsInBatch(release *common.Release, batch *common
 		}
 
 		includedReleaseIdNode := messageInBatch.SelectElement("IncludedReleaseId")
-		if IncludedReleaseId == nil {
+		if includedReleaseIdNode == nil {
 			p.Logger.Warn(fmt.Sprintf("no valid IncludedReleaseId found for message %d in batch '%s'", i, batch.BatchID))
 			continue
 		}

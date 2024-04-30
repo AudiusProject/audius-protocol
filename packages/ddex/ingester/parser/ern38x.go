@@ -496,7 +496,6 @@ func processReleaseNode(rNode *xmlquery.Node, soundRecordings *[]SoundRecording,
 	releaseRef := safeInnerText(rNode.SelectElement("ReleaseReference"))
 	globalOriginalReleaseDateStr := safeInnerText(rNode.SelectElement("GlobalOriginalReleaseDate")) // Some suppliers (not Fuga) use this
 	durationISOStr := safeInnerText(rNode.SelectElement("Duration"))                                // Only the Sony example uses this. Other suppliers use it in the SoundRecording
-	isrc := safeInnerText(rNode.SelectElement("ReleaseId/ISRC"))
 	copyrightYear := safeInnerText(rNode.SelectElement("CLine/Year"))
 	copyrightText := safeInnerText(rNode.SelectElement("CLine/CLineText"))
 	producerCopyrightYear := safeInnerText(rNode.SelectElement("PLine/Year"))
