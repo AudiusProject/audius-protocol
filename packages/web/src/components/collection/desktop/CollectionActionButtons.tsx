@@ -51,6 +51,7 @@ export const CollectionActionButtons = (props: CollectionActionButtonProps) => {
     currentUserId
   })
   const { hasStreamAccess } = useGatedContentAccess(collection)
+  const shouldShowPreview = isPremium && hasStreamAccess
 
   let actionButtons: Nullable<JSX.Element> = null
 
@@ -71,14 +72,14 @@ export const CollectionActionButtons = (props: CollectionActionButtonProps) => {
 
   const playButton = (
     <Button
-      variant={isPremium ? 'secondary' : 'primary'}
+      variant={shouldShowPreview ? 'secondary' : 'primary'}
       iconLeft={isPlaying ? IconPause : IconPlay}
       onClick={onPlay}
       widthToHideText={BUTTON_COLLAPSE_WIDTHS.first}
     >
       {isPlaying
         ? messages.pause
-        : isPremium && !hasStreamAccess
+        : shouldShowPreview
         ? messages.preview
         : messages.play}
     </Button>
