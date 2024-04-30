@@ -118,8 +118,7 @@ const LockedGatedContentSection = ({
   renderArtist,
   className,
   buttonClassName,
-  source: premiumModalSource,
-  ...other
+  source: premiumModalSource
 }: GatedContentAccessSectionProps) => {
   const messages = getMessages(contentType)
   const dispatch = useDispatch()

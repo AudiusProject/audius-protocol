@@ -16,7 +16,6 @@ import {
   IconPlaylists
 } from '@audius/harmony'
 import { push as pushRoute } from 'connected-react-router'
-import { isEqual, omitBy } from 'lodash'
 import { useDispatch } from 'react-redux'
 
 import PlaylistForm, {
@@ -70,19 +69,8 @@ const EditPlaylistModal = () => {
   const handleSubmit = useCallback(
     (formFields: PlaylistFormValues, initialValues: PlaylistFormValues) => {
       if (playlistId) {
-        // Make what things changed
-        const metadataChanges = omitBy(formFields, (value, key) =>
-          isEqual(value, initialValues[key])
-        ) as Partial<PlaylistFormValues>
-        track({
-          eventName: Name.COLLECTION_EDIT,
-          properties: {
-            id: playlistId,
-            edits: metadataChanges
-          }
-        })
         // We want to pay special attention to access condition changes
-        if (metadataChanges.stream_conditions) {
+        if (formFields.stream_conditions !== initialValues.stream_conditions) {
           track({
             eventName: Name.COLLECTION_EDIT_ACCESS_CHANGED,
             properties: {
@@ -99,9 +87,8 @@ const EditPlaylistModal = () => {
     [playlistId, dispatch, onClose]
   )
 
-  const editPlaylistModalTitle = `${messages.edit} ${
-    isAlbum ? messages.title.album : messages.title.playlist
-  }`
+  const editPlaylistModalTitle = `${messages.edit} ${isAlbum ? messages.title.album : messages.title.playlist
+    }`
 
   const handleDelete = useCallback(() => {
     setShowDeleteConfirmation(false)
