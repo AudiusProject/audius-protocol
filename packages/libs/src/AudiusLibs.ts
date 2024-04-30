@@ -361,7 +361,7 @@ export class AudiusLibs {
     preferHigherPatchForPrimary = true,
     preferHigherPatchForSecondaries = true,
     localStorage,
-    useDiscoveryRelay = false
+    useDiscoveryRelay = true
   }: AudiusLibsConfig) {
     // set version
 
