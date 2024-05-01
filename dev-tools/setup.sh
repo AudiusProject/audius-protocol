@@ -41,7 +41,7 @@ debian | ubuntu)
         docker-buildx-plugin \
         docker-compose-plugin='2.21.0-1~ubuntu.22.04~jammy'
 
-    curl -fsSL https://raw.githubusercontent.com/tj/n/master/bin/n | bash -s lts
+    curl -fsSL https://raw.githubusercontent.com/tj/n/master/bin/n | sudo bash -s lts
 
     # Add user to docker group
     sudo usermod -aG docker "$USER"
