@@ -484,6 +484,9 @@ def update_track_record(
 ):
     populate_track_record_metadata(track, metadata, handle, params.action)
 
+    if is_ddex_signer(params.signer):
+        track.ddex_app = params.signer
+
     # if cover_art CID is of a dir, store under _sizes field instead
     if track.cover_art:
         track.cover_art_sizes = track.cover_art
