@@ -70,12 +70,6 @@ export const useStyles = makeStyles(({ palette, spacing, typography }) => ({
   statusCellComplete: {
     backgroundColor: palette.staticAccentGreenLight1
   },
-  statusTextInProgress: {
-    color: palette.secondaryLight1
-  },
-  statusTextComplete: {
-    color: palette.staticWhite
-  },
   audioAmount: {
     textAlign: 'center',
     fontSize: typography.fontSize.xxxxxl

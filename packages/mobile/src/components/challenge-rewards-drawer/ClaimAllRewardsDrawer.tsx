@@ -16,6 +16,7 @@ import { useDispatch, useSelector } from 'react-redux'
 
 import { Flex, Text, Button, IconArrowRight } from '@audius/harmony-native'
 import { makeStyles } from 'app/styles'
+import { formatLabel } from 'app/utils/challenges'
 
 import { AppDrawer, useDrawerState } from '../drawer/AppDrawer'
 import { SummaryTable } from '../summary-table'
@@ -75,44 +76,26 @@ export const ClaimAllRewardsDrawer = () => {
 
   const challenge = userChallenges ? userChallenges[modalType] : null
 
-  // Claim rewards button config
-  const formatLabel = useCallback((item: any) => {
-    const { label, claimableDate, isClose } = item
-    const formattedLabel = isClose ? (
-      label
-    ) : (
-      <Text>
-        {label}&nbsp;
-        <Text color='subdued'>{claimableDate.format('(M/D)')}</Text>
-      </Text>
-    )
-    return {
-      ...item,
-      label: formattedLabel
-    }
-  }, [])
-
   const onClaim = useCallback(() => {
-    if (challenge) {
-      dispatch(
-        claimChallengeReward({
-          claim: {
-            challengeId: modalType,
-            specifiers:
-              challenge.challenge_type === 'aggregate'
-                ? getClaimableChallengeSpecifiers(
-                    challenge.undisbursedSpecifiers,
-                    undisbursedUserChallenges
-                  )
-                : [
-                    { specifier: challenge.specifier, amount: challenge.amount }
-                  ],
-            amount: challenge?.claimableAmount ?? 0
-          },
-          retryOnFailure: true
-        })
-      )
+    if (!challenge) {
+      return
     }
+    dispatch(
+      claimChallengeReward({
+        claim: {
+          challengeId: modalType,
+          specifiers:
+            challenge.challenge_type === 'aggregate'
+              ? getClaimableChallengeSpecifiers(
+                  challenge.undisbursedSpecifiers,
+                  undisbursedUserChallenges
+                )
+              : [{ specifier: challenge.specifier, amount: challenge.amount }],
+          amount: challenge?.claimableAmount ?? 0
+        },
+        retryOnFailure: true
+      })
+    )
   }, [dispatch, modalType, challenge, undisbursedUserChallenges])
 
   return (

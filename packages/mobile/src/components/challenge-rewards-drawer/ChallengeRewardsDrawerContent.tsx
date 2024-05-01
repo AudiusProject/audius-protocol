@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react'
+import React from 'react'
 
 import {
   formatCooldownChallenges,
@@ -11,6 +11,7 @@ import type {
 } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import { ClaimStatus } from '@audius/common/store'
+import type { Dayjs } from '@audius/common/utils'
 import { fillString, formatNumberCommas } from '@audius/common/utils'
 import { View } from 'react-native'
 import { ScrollView } from 'react-native-gesture-handler'
@@ -22,11 +23,12 @@ import {
   IconCheck,
   IconVerified
 } from '@audius/harmony-native'
-import LoadingSpinner from 'app/components/loading-spinner'
 import { ProgressBar } from 'app/components/progress-bar'
+import { formatLabel } from 'app/utils/challenges'
 import { useThemePalette } from 'app/utils/theme'
 
 import { SummaryTable } from '../summary-table'
+import type { SummaryTableItem } from '../summary-table/SummaryTable'
 
 import { ChallengeDescription } from './ChallengeDescription'
 import { ChallengeReward } from './ChallengeReward'
@@ -103,6 +105,7 @@ export const ChallengeRewardsDrawerContent = ({
   const styles = useStyles()
   const palette = useThemePalette()
   const isInProgress = challengeState === 'in_progress'
+  const isClaimable = claimableAmount > 0
   const {
     cooldownChallenges,
     summary,
@@ -135,21 +138,6 @@ export const ChallengeRewardsDrawerContent = ({
   const claimableAmountText = `${formatNumberCommas(claimableAmount)} ${
     messages.claimableLabel
   }`
-  const formatLabel = useCallback((item: any) => {
-    const { label, claimableDate, isClose } = item
-    const formattedLabel = isClose ? (
-      label
-    ) : (
-      <Text>
-        {label}&nbsp;
-        <Text color='subdued'>{claimableDate.format('(M/D)')}</Text>
-      </Text>
-    )
-    return {
-      ...item,
-      label: formattedLabel
-    }
-  }, [])
 
   const renderCooldownSummaryTable = () => {
     if (isCooldownChallenge && !isCooldownChallengesEmpty) {
@@ -211,14 +199,17 @@ export const ChallengeRewardsDrawerContent = ({
             ]}
           >
             <Text
-              style={[
-                styles.subheader,
-                hasCompleted ? styles.statusTextComplete : null,
-                isInProgress ? styles.statusTextInProgress : null
-              ]}
+              style={[styles.subheader]}
               strength='strong'
               textTransform='uppercase'
               variant='label'
+              color={
+                hasCompleted
+                  ? 'staticWhite'
+                  : isInProgress
+                  ? 'accent'
+                  : 'default'
+              }
             >
               {statusText}
             </Text>
@@ -226,46 +217,46 @@ export const ChallengeRewardsDrawerContent = ({
         </View>
         {children}
         <View style={styles.claimRewardsContainer}>
-          {claimableAmount > 0 && onClaim
-            ? isCooldownChallenge && isRewardsCooldownEnabled
-              ? [renderCooldownSummaryTable()]
-              : [
-                  <Text
-                    key='claimableAmount'
-                    style={styles.claimableAmount}
-                    variant='label'
-                    strength='strong'
-                    textTransform='uppercase'
-                  >
-                    {claimableAmountText}
-                  </Text>,
-                  <Button
-                    key='claimButton'
-                    style={styles.claimButton}
-                    variant={claimInProgress ? 'secondary' : 'primary'}
-                    disabled={claimInProgress}
-                    onPress={onClaim}
-                    iconLeft={() =>
-                      claimInProgress ? (
-                        <LoadingSpinner />
-                      ) : (
-                        <IconCheck fill={'white'} />
-                      )
-                    }
-                  >
-                    {messages.claim}
-                  </Button>
-                ]
-            : null}
+          {isClaimable && onClaim ? (
+            isCooldownChallenge && isRewardsCooldownEnabled ? (
+              renderCooldownSummaryTable()
+            ) : (
+              <>
+                <Text
+                  key='claimableAmount'
+                  style={styles.claimableAmount}
+                  variant='label'
+                  strength='strong'
+                  textTransform='uppercase'
+                >
+                  {claimableAmountText}
+                </Text>
+                <Button
+                  style={styles.claimButton}
+                  variant={claimInProgress ? 'secondary' : 'primary'}
+                  isLoading={claimInProgress}
+                  onPress={onClaim}
+                  iconLeft={IconCheck}
+                >
+                  {messages.claim}
+                </Button>
+              </>
+            )
+          ) : null}
           {claimedAmount > 0 && challengeState !== 'disbursed' ? (
-            <Text style={styles.claimedAmount} strength='strong'>
+            <Text
+              variant='label'
+              color='subdued'
+              textAlign='center'
+              strength='strong'
+            >
               {claimedAmountText}
             </Text>
           ) : null}
           {claimError ? <ClaimError aaoErrorCode={aaoErrorCode} /> : null}
         </View>
       </ScrollView>
-      {claimableAmount > 0 &&
+      {isClaimable &&
       onClaim &&
       isCooldownChallenge &&
       isRewardsCooldownEnabled ? (
@@ -274,15 +265,9 @@ export const ChallengeRewardsDrawerContent = ({
             key='claimButton'
             style={styles.claimButton}
             variant={claimInProgress ? 'secondary' : 'primary'}
-            disabled={claimInProgress}
+            isLoading={claimInProgress}
             onPress={onClaim}
-            iconRight={() =>
-              claimInProgress ? (
-                <LoadingSpinner />
-              ) : (
-                <IconArrowRight fill={'white'} />
-              )
-            }
+            iconRight={IconArrowRight}
           >
             {messages.claimableAmountLabel(claimableAmount)}
           </Button>
