@@ -1,6 +1,5 @@
 import { useCallback } from 'react'
 
-import { capitalize } from '@audius/common/audius-query/utils'
 import {
   isPurchaseableAlbum,
   type PurchaseableContentMetadata
@@ -9,6 +8,7 @@ import {
   collectionsSocialActions,
   tracksSocialActions
 } from '@audius/common/store'
+import { capitalize } from 'lodash'
 import { useDispatch } from 'react-redux'
 
 import {
