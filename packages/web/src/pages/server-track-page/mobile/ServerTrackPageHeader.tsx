@@ -1,6 +1,5 @@
 import { useCallback } from 'react'
 
-import { imageBlank as placeholderArt } from '@audius/common/assets'
 import {
   isContentCollectibleGated,
   isContentUSDCPurchaseGated,
@@ -29,7 +28,6 @@ import { SearchTag } from 'components/search/SearchTag'
 import { ServerUserGeneratedText } from 'components/user-generated-text/ServerUserGeneratedText'
 import { moodMap } from 'utils/Moods'
 import { formatDate, formatSeconds } from 'utils/dateUtils'
-import { isDarkMode } from 'utils/theme/theme'
 
 import styles from '../../track-page/components/mobile/TrackHeader.module.css'
 
@@ -120,28 +118,26 @@ export const ServerTrackPageHeader = ({
   trackId,
   userId,
   trackArtworkSrc,
-  description,
-  isOwner,
+  description = '',
+  isOwner = false,
   released,
   duration,
   isPlaying,
   isPreviewing,
-  isSaved,
-  isReposted,
   isUnlisted,
   isStreamGated,
   streamConditions,
   hasStreamAccess,
   isRemix,
   fieldVisibility,
-  saveCount,
+  saveCount = 0,
   repostCount,
   listenCount,
   mood,
   credits,
   genre,
   tags,
-  onPlay,
+  onPlay = () => {},
   goToFavoritesPage,
   goToRepostsPage
 }: ServerTrackPageHeaderProps) => {
@@ -153,7 +149,6 @@ export const ServerTrackPageHeader = ({
     // @ts-ignore
     track?.is_downloadable || (track?._stems?.length ?? 0) > 0
 
-  const showSocials = !isUnlisted && hasStreamAccess
   const showListenCount =
     isOwner || (!isStreamGated && (isUnlisted || fieldVisibility.play_count))
 
@@ -288,21 +283,7 @@ export const ServerTrackPageHeader = ({
         playing={isPlaying && !isPreviewing}
         onPlay={onPlay}
       />
-      <ServerActionButtonRow
-        showRepost={showSocials}
-        showFavorite={showSocials}
-        showShare={!isUnlisted || fieldVisibility.share || isOwner}
-        showOverflow
-        shareToastDisabled
-        isOwner={isOwner}
-        isReposted={isReposted}
-        isSaved={isSaved}
-        onClickOverflow={() => {}}
-        onRepost={() => {}}
-        onFavorite={() => {}}
-        onShare={() => {}}
-        darkMode={isDarkMode()}
-      />
+      <ServerActionButtonRow />
       <ServerStatsButtonRow
         className={styles.withSectionDivider}
         showListenCount={showListenCount}
@@ -331,23 +312,4 @@ export const ServerTrackPageHeader = ({
       {hasDownloadableAssets ? <Box pt='l' w='100%' /> : null}
     </div>
   )
-}
-
-ServerTrackPageHeader.defaultProps = {
-  loading: false,
-  playing: false,
-  active: true,
-  coverArtUrl: placeholderArt,
-  artistVerified: false,
-  description: '',
-
-  isOwner: false,
-  isAlbum: false,
-  hasTracks: false,
-  isPublished: false,
-  isSaved: false,
-
-  saveCount: 0,
-  tags: [],
-  onPlay: () => {}
 }

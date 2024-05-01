@@ -68,7 +68,6 @@ export const ServerTrackPage = ({
   description,
   canonicalUrl,
   structuredData,
-  hasValidRemixParent,
   // Hero Track Props
   heroTrack,
   user,
@@ -94,11 +93,6 @@ export const ServerTrackPage = ({
   const isReposted = heroTrack ? heroTrack.has_current_user_reposted : false
   const isFollowing = user ? user.does_current_user_follow : false
 
-  // const { isFetchingNFTAccess, hasStreamAccess, hasDownloadAccess } =
-  //   useGatedContentAccess(heroTrack)
-  // const loading = !heroTrack || isFetchingNFTAccess
-  const loading = false
-
   const defaults = getTrackDefaults(heroTrack)
 
   return (
@@ -112,7 +106,7 @@ export const ServerTrackPage = ({
     >
       <div className={styles.trackContent}>
         <ServerTrackPageHeader
-          isLoading={loading}
+          isLoading={false}
           isPlaying={heroPlaying}
           isPreviewing={previewing}
           isReposted={isReposted}
@@ -121,8 +115,8 @@ export const ServerTrackPage = ({
           trackId={defaults.trackId}
           // @ts-ignore
           trackArtworkSrc={heroTrack?.artwork[SquareSizes.SIZE_480_BY_480]}
+          // @ts-ignore
           userId={decodeHashId(heroTrack?.user.id) ?? 0}
-          artistVerified={user?.is_verified ?? false}
           coverArtSizes={defaults.coverArtSizes}
           tags={defaults.tags}
           description={defaults.description}
@@ -147,7 +141,6 @@ export const ServerTrackPage = ({
           isUnlisted={defaults.isUnlisted}
           isStreamGated={defaults.isStreamGated}
           streamConditions={defaults.streamConditions}
-          // TODO: Check these two
           hasStreamAccess={true}
           hasDownloadAccess={true}
           // -------------------
