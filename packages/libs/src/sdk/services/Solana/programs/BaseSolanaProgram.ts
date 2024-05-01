@@ -23,7 +23,7 @@ const isPublicKeyArray = (arr: any[]): arr is PublicKey[] =>
  */
 export class BaseSolanaProgram {
   /** The endpoint for the Solana RPC. */
-  protected readonly connection: Connection
+  public readonly connection: Connection
   constructor(
     config: BaseSolanaProgramConfigInternal,
     protected wallet: SolanaWalletAdapter

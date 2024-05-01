@@ -1,3 +1,4 @@
+import { BaseSignerWalletAdapter } from '@solana/wallet-adapter-base'
 import { z } from 'zod'
 
 import {
@@ -268,13 +269,15 @@ export const UnrepostTrackSchema = z
 
 export type UnrepostTrackRequest = z.input<typeof UnrepostTrackSchema>
 
-export const PurchaseStreamAccessSchema = z
+export const PurchaseTrackSchema = z
   .object({
     userId: HashId,
-    trackId: HashId
+    trackId: HashId,
+    extraAmount: z
+      .union([z.number().min(0), z.bigint().min(BigInt(0))])
+      .optional(),
+    walletAdapter: z.instanceof(BaseSignerWalletAdapter)
   })
   .strict()
 
-export type PurchaseStreamAccessRequest = z.input<
-  typeof PurchaseStreamAccessSchema
->
+export type PurchaseTrackRequest = z.input<typeof PurchaseTrackSchema>
