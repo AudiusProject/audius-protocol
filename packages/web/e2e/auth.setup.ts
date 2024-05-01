@@ -11,6 +11,7 @@ setup('authenticate', async ({ page }) => {
   await expect(usernameLocator).toBeVisible({ timeout: 15000 })
   await page.evaluate(() => {
     localStorage.setItem('HAS_REQUESTED_BROWSER_PUSH_PERMISSION', 'true')
+    localStorage.setItem('FORCE_DEV', 'true')
   })
   await page.context().storageState({ path: authFile })
 })

@@ -38,19 +38,19 @@ integration-test:
     - run:
         name: setup
         command: AUDIUS_DEV=false bash ./dev-tools/setup.sh
-    # - run:
-    #     name: audius-compose up
-    #     command: . ~/.profile; audius-compose up --prod
-    # - run:
-    #     name: audius-cmd test
-    #     no_output_timeout: 15m
-    #     command: |
-    #       audius-cmd test
-    # - run:
-    #     name: verify sdk types
-    #     command: |
-    #       cd ./packages/libs
-    #       sh ./scripts/check-generated-types.sh
+    - run:
+        name: audius-compose up
+        command: . ~/.profile; audius-compose up --prod
+    - run:
+        name: audius-cmd test
+        no_output_timeout: 15m
+        command: |
+          audius-cmd test
+    - run:
+        name: verify sdk types
+        command: |
+          cd ./packages/libs
+          sh ./scripts/check-generated-types.sh
     - run: sudo NEEDRESTART_MODE=l PLAYWRIGHT_BROWSERS_PATH=/home/circleci/.cache/ms-playwright npx playwright install --with-deps
     - run: cd packages/web && npx playwright test
     - store_test_results:
