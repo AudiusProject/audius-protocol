@@ -27,6 +27,7 @@ import {
   dayjs
 } from '@audius/common/utils'
 import {
+  Box,
   Button,
   Divider,
   Flex,
@@ -45,6 +46,7 @@ import { useModalState, useSetVisibility } from 'common/hooks/useModalState'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { SummaryTableItem } from 'components/summary-table'
 import { useIsAudioMatchingChallengesEnabled } from 'hooks/useIsAudioMatchingChallengesEnabled'
+import { useIsMobile } from 'hooks/useIsMobile'
 import { useRemoteVar } from 'hooks/useRemoteConfig'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
 import { make, track } from 'services/analytics'
@@ -250,6 +252,7 @@ const RewardPanel = ({
 }
 
 const ClaimAllPanel = () => {
+  const isMobile = useIsMobile()
   const wm = useWithMobileStyle(styles.mobile)
   const { cooldownChallenges, cooldownAmount, claimableAmount, isEmpty } =
     useChallengeCooldownSchedule({ multiple: true })
@@ -261,6 +264,77 @@ const ClaimAllPanel = () => {
   const onClickMoreInfo = useCallback(() => {
     setClaimAllRewardsVisibility(true)
   }, [setClaimAllRewardsVisibility])
+
+  if (isMobile) {
+    return (
+      <Paper
+        shadow='flat'
+        border='strong'
+        p='xl'
+        alignItems='center'
+        alignSelf='stretch'
+        justifyContent='space-between'
+        m='s'
+      >
+        <Flex direction='column' alignItems='start' w='100%'>
+          <Flex gap='s' alignItems='center'>
+            <IconTokenGold
+              height={24}
+              width={24}
+              aria-label={messages.goldAudioToken}
+            />
+            {isEmpty ? null : (
+              <Text color='accent' variant='title' size='l'>
+                {claimableAmount > 0
+                  ? messages.totalReadyToClaim
+                  : messages.totalUpcomingRewards}
+              </Text>
+            )}
+          </Flex>
+          {cooldownAmount > 0 ? (
+            <Box
+              mt='m'
+              backgroundColor='default'
+              pv='2xs'
+              ph='s'
+              borderRadius='l'
+            >
+              <Text color='accent' variant='body' size='s' strength='strong'>
+                {cooldownAmount} {messages.pending}
+              </Text>
+            </Box>
+          ) : null}
+          <Box mt='l' mb='xl'>
+            <Text variant='body' textAlign='left' size='s'>
+              {claimableAmount > 0
+                ? `${claimableAmount} ${messages.available} ${messages.now}`
+                : messages.availableMessage(
+                    formatCooldownChallenges(cooldownChallenges)
+                  )}
+            </Text>
+          </Box>
+          {claimableAmount > 0 ? (
+            <Button
+              onClick={onClickClaimAllRewards}
+              iconRight={IconArrow}
+              fullWidth
+            >
+              {messages.claimAllRewards}
+            </Button>
+          ) : cooldownAmount > 0 ? (
+            <PlainButton
+              size='large'
+              onClick={onClickMoreInfo}
+              iconRight={IconArrow}
+              fullWidth
+            >
+              {messages.moreInfo}
+            </PlainButton>
+          ) : null}
+        </Flex>
+      </Paper>
+    )
+  }
 
   return (
     <Paper
