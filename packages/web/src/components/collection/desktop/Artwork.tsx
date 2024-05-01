@@ -6,6 +6,7 @@ import {
   cacheCollectionsSelectors,
   useEditPlaylistModal
 } from '@audius/common/store'
+import { Nullable } from '@audius/common/utils'
 import { Button, IconPencil } from '@audius/harmony'
 
 import { useSelector } from 'common/hooks/useSelector'
@@ -27,7 +28,7 @@ const messages = {
 
 type ArtworkProps = {
   collectionId: number
-  coverArtSizes: CoverArtSizes
+  coverArtSizes: Nullable<CoverArtSizes>
   callback: () => void
   gradient?: string
   icon: ComponentType<SVGProps<SVGSVGElement>>
@@ -63,7 +64,9 @@ export const Artwork = (props: ArtworkProps) => {
 
   useEffect(() => {
     // If there's a gradient, this is a smart collection. Just immediately call back
-    if (image || gradient || imageOverride || image === '') callback()
+    if (image || gradient || imageOverride || image === '') {
+      callback()
+    }
   }, [image, callback, gradient, imageOverride])
 
   const { onOpen } = useEditPlaylistModal()
@@ -81,7 +84,7 @@ export const Artwork = (props: ArtworkProps) => {
   return (
     <ImageElement
       cid={collection?.cover_art_sizes}
-      fallbackImageUrl={imageBlank}
+      fallbackImageUrl={gradient ? '' : imageBlank}
       wrapperClassName={styles.coverArtWrapper}
       alt={messages.coverArtAltText}
       className={styles.coverArt}
@@ -92,7 +95,10 @@ export const Artwork = (props: ArtworkProps) => {
           color='staticWhite'
           width='100%'
           height='100%'
-          css={{ background: gradient, opacity: 0.3, mixBlendMode: 'overlay' }}
+          css={{
+            background: gradient,
+            path: { mixBlendMode: 'overlay', opacity: 0.3 }
+          }}
         />
       ) : null}
       {isOwner ? (

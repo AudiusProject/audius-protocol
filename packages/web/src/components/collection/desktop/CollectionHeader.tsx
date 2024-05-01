@@ -181,7 +181,7 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
 
   const topSection = (
     <Flex gap='xl' p='l' backgroundColor='white'>
-      {coverArtSizes ? (
+      {coverArtSizes || gradient || icon ? (
         <Artwork
           collectionId={collectionId}
           coverArtSizes={coverArtSizes}

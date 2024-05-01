@@ -10,7 +10,8 @@ import {
   accountSelectors,
   collectionPageSelectors,
   collectionsSocialActions,
-  CommonState
+  CommonState,
+  playlistLibraryHelpers
 } from '@audius/common/store'
 import { IconHeart, IconButtonProps, IconButton } from '@audius/harmony'
 import { useDispatch, useSelector } from 'react-redux'
@@ -18,13 +19,14 @@ import { useDispatch, useSelector } from 'react-redux'
 import { Tooltip } from 'components/tooltip'
 
 const { getCollection } = collectionPageSelectors
-const { getAccountCollections } = accountSelectors
+const { getPlaylistLibrary } = accountSelectors
 const {
   saveCollection,
   unsaveCollection,
   saveSmartCollection,
   unsaveSmartCollection
 } = collectionsSocialActions
+const { findInPlaylistLibrary } = playlistLibraryHelpers
 
 const messages = {
   favorite: 'Favorite',
@@ -40,7 +42,7 @@ type FavoriteButtonProps = Partial<IconButtonProps> & {
 export const FavoriteButton = (props: FavoriteButtonProps) => {
   const { collectionId, isOwner, color, ...other } = props
 
-  const userPlaylists = useSelector(getAccountCollections)
+  const userPlaylistLibrary = useSelector(getPlaylistLibrary)
 
   const collection =
     (useSelector((state: CommonState) =>
@@ -49,9 +51,12 @@ export const FavoriteButton = (props: FavoriteButtonProps) => {
 
   const { has_current_user_saved, playlist_name } = collection
   const saveCount = (collection as Collection).save_count ?? 0
+  const isInLibrary = !!findInPlaylistLibrary(
+    userPlaylistLibrary,
+    playlist_name
+  )
 
-  const isSaved =
-    has_current_user_saved || (collectionId && collectionId in userPlaylists)
+  const isSaved = has_current_user_saved || isInLibrary
 
   const dispatch = useDispatch()
 
