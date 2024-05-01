@@ -41,7 +41,10 @@ import {
   Divider
 } from 'app/components/core'
 import { CollectionImage } from 'app/components/image/CollectionImage'
-import { SuggestedCollectionTracks } from 'app/components/suggested-tracks'
+import {
+  SuggestedCollectionTracks,
+  SuggestedTracks
+} from 'app/components/suggested-tracks'
 import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useRoute } from 'app/hooks/useRoute'
@@ -327,7 +330,7 @@ const CollectionScreenComponent = (props: CollectionScreenComponentProps) => {
             {isOwner && (!is_album || isEditAlbumsEnabled) && !ddex_app ? (
               <>
                 <Divider style={styles.divider} color={neutralLight5} />
-                <SuggestedCollectionTracks collectionId={playlist_id} />
+                <SuggestedTracks collectionId={playlist_id} />
               </>
             ) : null}
           </>

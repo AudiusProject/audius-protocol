@@ -1,6 +1,9 @@
 import { Fragment, useCallback, useEffect, useRef } from 'react'
 
-import type { SuggestedTrack } from '@audius/common/api'
+import {
+  useGetSuggestedPlaylistTracks,
+  type SuggestedTrack
+} from '@audius/common/api'
 import { SquareSizes } from '@audius/common/models'
 import type { ID, Track } from '@audius/common/models'
 import { cacheUsersSelectors } from '@audius/common/store'
@@ -13,9 +16,9 @@ import { IconCaretDown, IconRefresh } from '@audius/harmony-native'
 import { Button, Divider, Text, TextButton, Tile } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 
-import { TrackImage } from '../../image/TrackImage'
-import { Skeleton } from '../../skeleton'
-import { UserBadges } from '../../user-badges'
+import { TrackImage } from '../image/TrackImage'
+import { Skeleton } from '../skeleton'
+import { UserBadges } from '../user-badges'
 
 const { getUser } = cacheUsersSelectors
 
@@ -135,15 +138,12 @@ const SuggestedTrackSkeleton = () => {
 
 type SuggestedTracksProps = {
   collectionId: ID
-  suggestedTracks: SuggestedTrack[]
-  onRefresh: () => void
-  onAddTrack: (trackId: ID) => void
-  isRefreshing: boolean
 }
 
 export const SuggestedTracks = (props: SuggestedTracksProps) => {
-  const { collectionId, suggestedTracks, onRefresh, onAddTrack, isRefreshing } =
-    props
+  const { collectionId } = props
+  const { suggestedTracks, onRefresh, onAddTrack, isRefreshing } =
+    useGetSuggestedPlaylistTracks(collectionId)
   const styles = useStyles()
 
   const [isExpanded, toggleIsExpanded] = useToggle(false)
