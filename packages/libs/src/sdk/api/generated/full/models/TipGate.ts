@@ -22,10 +22,10 @@ import { exists, mapValues } from '../runtime';
 export interface TipGate {
     /**
      * 
-     * @type {string}
+     * @type {number}
      * @memberof TipGate
      */
-    tipUserId: string;
+    tipUserId: number;
 }
 
 /**

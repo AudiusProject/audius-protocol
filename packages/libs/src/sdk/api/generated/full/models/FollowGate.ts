@@ -22,10 +22,10 @@ import { exists, mapValues } from '../runtime';
 export interface FollowGate {
     /**
      * 
-     * @type {string}
+     * @type {number}
      * @memberof FollowGate
      */
-    followUserId: string;
+    followUserId: number;
 }
 
 /**
