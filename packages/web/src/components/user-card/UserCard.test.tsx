@@ -7,7 +7,6 @@ import { describe, expect, it } from 'vitest'
 import { RenderOptions, render, screen } from 'test/test-utils'
 
 import { UserCard } from './UserCard'
-import { s } from 'vitest/dist/reporters-5f784f42.js'
 
 function renderUserCard(options?: RenderOptions) {
   return render(

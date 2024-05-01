@@ -22,7 +22,6 @@ import { Dispatch } from 'redux'
 
 import { useHistoryContext } from 'app/HistoryProvider'
 import { make, useRecord } from 'common/store/analytics/actions'
-import Card from 'components/card-legacy/mobile/Card'
 import Header from 'components/header/mobile/Header'
 import { HeaderContext } from 'components/header/mobile/HeaderContextProvider'
 import CardLineup from 'components/lineup/CardLineup'
@@ -38,14 +37,12 @@ import useTabs from 'hooks/useTabs/useTabs'
 import { getCategory } from 'pages/search-page/helpers'
 import { getLocationPathname } from 'store/routing/selectors'
 import { useSelector } from 'utils/reducer'
-import {
-  collectionPage,
-  profilePage,
-  fullSearchResultsPage,
-  SEARCH_PAGE
-} from 'utils/route'
+import { fullSearchResultsPage, SEARCH_PAGE } from 'utils/route'
 
 import styles from './SearchPageContent.module.css'
+import { UserCard } from 'components/user-card'
+import { CollectionCard } from 'components/collection'
+import { constructPlaylistFolder } from '@audius/common/store/playlist-library/helpers'
 
 export type SearchPageContentProps = {
   tracks: LineupState<{}>
@@ -74,7 +71,6 @@ export type SearchPageContentProps = {
     tracks: any
   }
   isTagSearch: boolean
-  goToRoute: (route: string) => void
 }
 
 const TrackSearchPageMessages = {
@@ -201,10 +197,6 @@ enum CardType {
 
 type CardSearchPageProps = { cardType: CardType } & SearchPageContentProps
 
-const cardSearchPageMessages = {
-  followers: 'Followers'
-}
-
 /*
  * Component capable of rendering albums/playlists/people
  */
@@ -212,78 +204,28 @@ const CardSearchPage = ({
   albums,
   playlists,
   artists,
-  goToRoute,
   cardType,
   search,
   isTagSearch,
   searchText
 }: CardSearchPageProps) => {
-  const entities: Array<UserCollection | User> = (() => {
-    switch (cardType) {
-      case CardType.ALBUM:
-        return albums
-      case CardType.PLAYLIST:
-        return playlists
-      case CardType.USER:
-        return artists
-    }
-  })()
+  const entityIds =
+    cardType === CardType.ALBUM
+      ? albums.map((album) => album.playlist_id)
+      : cardType === CardType.PLAYLIST
+      ? playlists.map((playlist) => playlist.playlist_id)
+      : artists.map((artist) => artist.user_id)
 
-  const cards = entities.map((e) => {
-    const { id, userId, route, primaryText, secondaryText, imageSize } =
-      (() => {
-        switch (cardType) {
-          case CardType.USER: {
-            const user = e as User
-            const followers = `${user.follower_count} ${cardSearchPageMessages.followers}`
-            return {
-              id: user.user_id,
-              userId: user.user_id,
-              route: profilePage(user.handle),
-              primaryText: user.name,
-              secondaryText: followers,
-              imageSize: user._profile_picture_sizes
-            }
-          }
-          case CardType.ALBUM:
-          case CardType.PLAYLIST: {
-            const collection = e as UserCollection
-            return {
-              userId: collection.playlist_owner_id,
-              id: collection.playlist_id,
-              route: collectionPage(
-                collection.user.handle,
-                collection.playlist_name,
-                collection.playlist_id,
-                collection.permalink,
-                cardType === CardType.ALBUM
-              ),
-              primaryText: collection.playlist_name,
-              secondaryText: collection.user.handle,
-              imageSize: collection._cover_art_sizes
-            }
-          }
-        }
-      })()
-
-    return (
-      <Card
-        key={id}
-        id={id}
-        userId={userId}
-        isUser={cardType === CardType.USER}
-        imageSize={imageSize}
-        primaryText={primaryText}
-        secondaryText={secondaryText}
-        onClick={() => goToRoute(route)}
-        className=''
-      />
-    )
-  })
+  const cards =
+    cardType === CardType.USER
+      ? entityIds.map((userId) => (
+          <UserCard key={userId} id={userId} size='xs' />
+        ))
+      : entityIds.map((id) => <CollectionCard key={id} id={id} size='xs' />)
 
   return (
     <SearchStatusWrapper status={search.status}>
-      {entities.length ? (
+      {entityIds.length ? (
         <div className={styles.lineupContainer}>
           <CardLineup categoryName={ALBUM_CATEGORY_NAME} cards={cards} />
         </div>

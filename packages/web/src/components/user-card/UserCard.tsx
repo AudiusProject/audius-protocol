@@ -7,7 +7,7 @@ import { Flex, Text } from '@audius/harmony'
 import { useLinkClickHandler } from 'react-router-dom-v5-compat'
 
 import { Avatar } from 'components/avatar'
-import { Card, CardProps, CardFooter } from 'components/card'
+import { Card, CardProps, CardFooter, CardContent } from 'components/card'
 import { UserLink } from 'components/link'
 import { useSelector } from 'utils/reducer'
 import { profilePage } from 'utils/route'
@@ -46,7 +46,7 @@ export const UserCard = (props: UserCardProps) => {
   return (
     <Card size={size} onClick={handleClick} {...other}>
       <Avatar userId={id} aria-hidden p='l' pb='s' />
-      <Flex direction='column' p='s' pt={0} gap='xs'>
+      <CardContent p='s' pt={0} gap='xs'>
         <UserLink
           userId={id}
           textVariant='title'
@@ -55,7 +55,7 @@ export const UserCard = (props: UserCardProps) => {
         <Text variant='body' ellipses>
           @{handle}
         </Text>
-      </Flex>
+      </CardContent>
       <CardFooter>
         <Text variant='body' size='s' strength='strong'>
           {formatCount(follower_count)} {messages.followers(follower_count)}

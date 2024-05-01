@@ -24,7 +24,7 @@
 
 .tabBar {
   position: fixed;
-  top: 52px;
+  top: 92px;
   margin-top: 0px;
   margin-top: env(safe-area-inset-top, 0px);
   left: 0;
