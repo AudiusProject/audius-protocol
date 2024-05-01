@@ -55,12 +55,17 @@ export default defineConfig({
   /* Configure projects for major browsers */
   projects: [
     {
+      name: 'env-setup',
+      testMatch: /env.setup.ts/
+    },
+    {
       name: 'setup',
-      testMatch: /.*\.setup.ts/
+      testMatch: /.*\.setup.ts/,
+      dependencies: ['env-setup']
     },
     {
       name: 'chromium',
-      dependencies: authFileExists ? undefined : ['setup'],
+      dependencies: ['env-setup', ...(authFileExists ? [] : ['setup'])],
       testIgnore: /.*\.setup.ts/,
       use: {
         ...devices['Desktop Chrome'],

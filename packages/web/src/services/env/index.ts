@@ -22,11 +22,11 @@ switch (environment) {
     throw new Error(`Unknown environment: ${environment}`)
 }
 
-if (
-  typeof window !== 'undefined' &&
-  window.localStorage.getItem('FORCE_DEV') === 'true'
-) {
-  env = envDev
+if (typeof window !== 'undefined') {
+  console.log('forceDev', window.localStorage.getItem('FORCE_DEV') === 'true')
+  if (window.localStorage.getItem('FORCE_DEV') === 'true') {
+    env = envDev
+  }
 }
 
 export { env }
