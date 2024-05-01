@@ -79,7 +79,8 @@ const accountApi = createApi({
       },
       options: {
         type: 'query',
-        idArgKey: 'manager.user_id'
+        idArgKey: 'manager.user_id',
+        schemaKey: 'managedUsers'
       }
     },
     getManagers: {
