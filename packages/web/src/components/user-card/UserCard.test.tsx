@@ -53,13 +53,17 @@ describe('UserCard', () => {
     ).toBeInTheDocument()
   })
 
-  it('navigates to the user page when clicked', async () => {
-    renderUserCard()
-    screen.getByRole('button').click()
-    expect(
-      await screen.findByRole('heading', { name: /test user page/i })
-    ).toBeInTheDocument()
-  }, { timeout: 10_000 })
+  it(
+    'navigates to the user page when clicked',
+    async () => {
+      renderUserCard()
+      screen.getByRole('button').click()
+      expect(
+        await screen.findByRole('heading', { name: /test user page/i })
+      ).toBeInTheDocument()
+    },
+    { timeout: 10_000 }
+  )
 
   it('renders the profile picture', () => {
     renderUserCard()
