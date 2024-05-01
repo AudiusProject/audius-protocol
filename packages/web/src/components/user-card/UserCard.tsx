@@ -1,6 +1,6 @@
 import { useCallback, MouseEvent } from 'react'
 
-import { ID } from '@audius/common/models'
+import { ID, SquareSizes } from '@audius/common/models'
 import { cacheUsersSelectors } from '@audius/common/store'
 import { formatCount } from '@audius/common/utils'
 import { Flex, Text } from '@audius/harmony'
@@ -16,6 +16,13 @@ const { getUser } = cacheUsersSelectors
 
 const messages = {
   followers: (count: number) => (count === 1 ? 'Follower' : 'Followers')
+}
+
+const avatarSizeMap = {
+  xs: SquareSizes.SIZE_150_BY_150,
+  s: SquareSizes.SIZE_150_BY_150,
+  m: SquareSizes.SIZE_480_BY_480,
+  l: SquareSizes.SIZE_480_BY_480
 }
 
 type UserCardProps = Omit<CardProps, 'id'> & {
@@ -45,7 +52,13 @@ export const UserCard = (props: UserCardProps) => {
 
   return (
     <Card size={size} onClick={handleClick} {...other}>
-      <Avatar userId={id} aria-hidden p='l' pb='s' />
+      <Avatar
+        userId={id}
+        aria-hidden
+        p='l'
+        pb='s'
+        imageSize={avatarSizeMap[size]}
+      />
       <CardContent p='s' pt={0} gap='xs'>
         <UserLink
           userId={id}
