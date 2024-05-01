@@ -1,9 +1,6 @@
 import { Fragment, useCallback, useEffect, useRef } from 'react'
 
-import {
-  useGetSuggestedPlaylistTracks,
-  type SuggestedTrack
-} from '@audius/common/api'
+import { useGetSuggestedPlaylistTracks } from '@audius/common/api'
 import { SquareSizes } from '@audius/common/models'
 import type { ID, Track } from '@audius/common/models'
 import { cacheUsersSelectors } from '@audius/common/store'

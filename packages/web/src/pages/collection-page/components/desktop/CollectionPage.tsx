@@ -358,7 +358,7 @@ const CollectionPage = ({
         )}
       </Tile>
       <ClientOnly>
-        {isOwner && (!isAlbum || isEditAlbumsEnabled) && !isNftPlaylist ? (
+        {isOwner && !isAlbum && !isNftPlaylist ? (
           <>
             <Divider variant='default' className={styles.tileDivider} />
             <SuggestedTracks collectionId={playlistId} />
