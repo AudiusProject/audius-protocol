@@ -29,6 +29,7 @@ from src.tasks.entity_manager.utils import (
     copy_record,
     is_ddex_signer,
     validate_signer,
+    parse_release_date,
 )
 from src.tasks.metadata import immutable_track_fields
 from src.tasks.task_helpers import generate_slug_and_collision_id
@@ -227,33 +228,6 @@ def is_valid_json_field(metadata, field):
     if field in metadata and isinstance(metadata[field], dict) and metadata[field]:
         return True
     return False
-
-
-def parse_release_date(release_date_str):
-    # try various time formats
-    if not release_date_str:
-        return None
-
-    try:
-        return datetime.strptime(
-            release_date_str, "%a %b %d %Y %H:%M:%S GMT%z"
-        ).astimezone(timezone.utc)
-    except ValueError:
-        pass
-
-    try:
-        return datetime.strptime(release_date_str, "%Y-%m-%dT%H:%M:%S.%fZ").astimezone(
-            timezone.utc
-        )
-    except ValueError:
-        pass
-
-    try:
-        return datetime.fromtimestamp(int(release_date_str)).astimezone(timezone.utc)
-    except (ValueError, TypeError):
-        pass
-
-    return None
 
 
 def populate_track_record_metadata(track_record: Track, track_metadata, handle, action):
