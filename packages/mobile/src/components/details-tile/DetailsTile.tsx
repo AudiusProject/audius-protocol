@@ -242,7 +242,6 @@ export const DetailsTile = ({
     isAiGeneratedTracksEnabled && aiAttributionUserId ? (
       <DetailsTileAiAttribution userId={aiAttributionUserId} />
     ) : null
-    // TODO: trending badge
   ].filter((badge) => badge !== null)
 
   const handlePressTag = useCallback(
@@ -291,7 +290,7 @@ export const DetailsTile = ({
 
         {badges.length > 0 ? (
           <Flex direction='row' gap='s'>
-            <>{badges.map((badge) => badge)}</>
+            {badges.map((badge) => badge)}
           </Flex>
         ) : null}
         {imageElement}

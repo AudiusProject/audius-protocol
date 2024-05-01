@@ -20,6 +20,8 @@ import { DownloadStatusRowDisplay } from './DownloadStatusRowDisplay'
 const { getIsReachable } = reachabilitySelectors
 const { getUserId } = accountSelectors
 
+const TOGGLE_COOLDOWN_MS = 800
+
 type CollectionDownloadStatusRowProps = {
   collectionId: ID
 }
@@ -89,7 +91,7 @@ export const CollectionDownloadStatusRow = (
       }
     },
     [dispatch, collectionId],
-    800
+    TOGGLE_COOLDOWN_MS
   )
 
   return (
