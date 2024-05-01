@@ -23,7 +23,6 @@ switch (environment) {
 }
 
 if (typeof window !== 'undefined') {
-  console.log('forceDev', window.localStorage.getItem('FORCE_DEV') === 'true')
   if (window.localStorage.getItem('FORCE_DEV') === 'true') {
     env = envDev
   }

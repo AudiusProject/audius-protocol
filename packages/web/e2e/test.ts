@@ -8,7 +8,18 @@ const SSR_HYDRATE_TIMEOUT = 60 * 1000
  * client-only element is mounted before considering the navigation complete.
  */
 export const test = base.extend<{}>({
-  page: async ({ page }, use) => {
+  page: async ({ page, context }, use) => {
+    // On CI, force app to use dev mode so we test against
+    // the local audius-compose stack
+    if (process.env.CI) {
+      await context.addInitScript(() => {
+        if (!localStorage.getItem('FORCE_DEV')) {
+          localStorage.clear()
+          localStorage.setItem('FORCE_DEV', 'true')
+        }
+      })
+    }
+
     const baseGoTo = page.goto.bind(page)
     page.goto = async (
       url: Parameters<Page['goto']>[0],
