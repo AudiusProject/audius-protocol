@@ -7,7 +7,7 @@ export const defaultEntityManagerConfig: EntityManagerConfigInternal = {
   contractAddress: productionConfig.entityManagerContractAddress,
   web3ProviderUrl: productionConfig.web3ProviderUrl,
   identityServiceUrl: productionConfig.identityServiceUrl,
-  useDiscoveryRelay: false,
+  useDiscoveryRelay: true,
   logger: new Logger()
 }
 

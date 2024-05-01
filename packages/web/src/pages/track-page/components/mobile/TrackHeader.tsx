@@ -263,7 +263,7 @@ const TrackHeader = ({
         ? OverflowAction.UNFAVORITE
         : OverflowAction.FAVORITE,
       isEditAlbumsEnabled && isOwner ? OverflowAction.ADD_TO_ALBUM : null,
-      !isStreamGated ? OverflowAction.ADD_TO_PLAYLIST : null,
+      OverflowAction.ADD_TO_PLAYLIST,
       isEditAlbumsEnabled && albumInfo ? OverflowAction.VIEW_ALBUM_PAGE : null,
       isFollowing
         ? OverflowAction.UNFOLLOW_ARTIST

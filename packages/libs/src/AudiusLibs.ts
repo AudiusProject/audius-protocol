@@ -361,7 +361,7 @@ export class AudiusLibs {
     preferHigherPatchForPrimary = true,
     preferHigherPatchForSecondaries = true,
     localStorage,
-    useDiscoveryRelay = false
+    useDiscoveryRelay = true
   }: AudiusLibsConfig) {
     // set version
 
@@ -545,16 +545,8 @@ export class AudiusLibs {
       })
       await this.discoveryProvider.init()
 
-      // set discovery provider in web3 for relay
-      if (this.web3Config && this.useDiscoveryRelay) {
-        const web3Manager = this.web3Manager
-        if (web3Manager === undefined || web3Manager === null) {
-          console.info(
-            'useDiscoveryRelay is set to true but web3Manager is not configured'
-          )
-        } else {
-          this.web3Manager?.setDiscoveryProvider(this.discoveryProvider)
-        }
+      if (this.web3Manager != null) {
+        this.web3Manager.discoveryProvider = this.discoveryProvider
       }
     }
 

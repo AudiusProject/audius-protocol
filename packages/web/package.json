@@ -3,7 +3,7 @@
   "productName": "Audius",
   "description": "The Audius web client reference implementation",
   "author": "Audius",
-  "version": "1.5.77",
+  "version": "1.5.78",
   "private": true,
   "scripts": {
     "DEV & BUILD========================================": "",
@@ -122,6 +122,7 @@
     "client-zip": "2.4.4",
     "connected-react-router": "6.9.3",
     "cross-fetch": "^4.0.0",
+    "dayjs": "1.10.7",
     "electron-log": "5.0.3",
     "electron-updater": "6.1.7",
     "exif-parser": "0.1.12",

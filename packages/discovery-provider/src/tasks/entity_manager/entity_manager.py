@@ -73,7 +73,6 @@ from src.tasks.entity_manager.entities.track import (
     update_track,
 )
 from src.tasks.entity_manager.entities.user import create_user, update_user, verify_user
-from src.tasks.entity_manager.entities.user_replica_set import update_user_replica_set
 from src.tasks.entity_manager.utils import (
     MANAGE_ENTITY_EVENT_TYPE,
     Action,
@@ -266,12 +265,6 @@ def entity_manager_update(
                         and ENABLE_DEVELOPMENT_FEATURES
                     ):
                         verify_user(params)
-                    elif (
-                        params.action == Action.UPDATE
-                        and params.entity_type == EntityType.USER_REPLICA_SET
-                        and ENABLE_DEVELOPMENT_FEATURES
-                    ):
-                        update_user_replica_set(params)
                     elif (
                         params.action == Action.VIEW
                         and params.entity_type == EntityType.NOTIFICATION

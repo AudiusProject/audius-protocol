@@ -1,148 +1,137 @@
 import {
   ThemeProvider as HarmonyThemeProvider,
-  IconAudiusLogoHorizontal,
   IconAudiusLogoHorizontalColor,
   Paper,
+  TextLink,
   Text,
-  TextLink
+  Button
 } from '@audius/harmony'
+import {
+  QueryClient,
+  QueryClientProvider,
+} from '@tanstack/react-query'
 import { Flex } from '@audius/harmony'
-import { DistributorList } from './components/DistributorsList'
+import { Footer } from './components/Footer'
+import { ConnectDistributor } from './components/ConnectDistributor'
+import { AuthProvider, useAuth } from './contexts/AuthProvider'
+import { Success } from './components/Success'
+import { Status } from './contexts/types'
+
+const queryClient = new QueryClient()
+
+const supportLink = 'mailto:ddex-support@audius.co'
 
 const messages = {
-  connect: 'Connect Distributor',
-  access: 'Grant your provider access to publish songs to Audius on your behalf.',
-  choose: 'Choose your distributor to login with Audius.',
-  questions: 'Got questions',
-  learnMore: 'Learn more',
-  privacy: 'Privacy',
-  terms: 'Terms',
-  developers: 'Developers',
-  audius: 'Audius'
+  loggedIn: 'Logged in as',
+  signOut: 'Sign Out',
+  support: `If you're supposed to be an admin with access to manage deliveries, please contact us at`
 }
 
-const links = {
-  privacy: 'https://audius.co/legal/privacy-policy',
-  terms: 'https://audius.co/legal/terms-of-use',
-  developers: 'https://docs.audius.org',
-  audius: 'https://audius.co'
-}
+const Support = () => {
+  const { user } = useAuth()
+  if (!user) {
+    return null
+  }
 
-const env = import.meta.env.VITE_ENVIRONMENT as 'dev' | 'stage' | 'prod'
-
-const Footer = () => {
   return (
-    <footer>
-      <Flex
-        justifyContent='space-between'
-        alignItems='center'
-        backgroundColor='surface1'
-        ph='2xl'
-        pv='m'
-        wrap='wrap'
-        columnGap='2xl'
-      >
-        <Flex alignItems='center' columnGap='2xl' wrap='wrap'>
-          <Flex alignItems='center' gap='s'>
-            <IconAudiusLogoHorizontal width={'80px'} height={'20px'} color='subdued' />
-            <Text
-              variant='body'
-              size='s'
-              color='subdued'
-            >
-              &copy; {new Date().getFullYear()}
-            </Text>
-          </Flex>
-          <TextLink
-            variant='subdued'
-            textVariant='body'
-            size='s'
-            color='subdued'
-            href={links.privacy}
-          >{messages.privacy}</TextLink>
-          <TextLink
-            variant='subdued'
-            textVariant='body'
-            size='s'
-            color='subdued'
-            href={links.terms}
-          >{messages.terms}</TextLink>
-        </Flex>
-        <Flex alignItems='center' gap='2xl'>
-          <TextLink
-            variant='subdued'
-            textVariant='body'
-            size='s'
-            color='subdued'
-            href={links.developers}
-          >{messages.developers}</TextLink>
-          <TextLink
-            variant='subdued'
-            textVariant='body'
-            size='s'
-            color='subdued'
-            href={links.audius}
-          >{messages.audius}</TextLink>
-        </Flex>
-      </Flex>
-    </footer>
+    <Text
+      variant='body'
+      size='m'
+      textAlign='center'
+      color='default'
+    >
+      {messages.support}
+      {' '}
+      <TextLink variant='visible' href={supportLink}>
+        ddex-support@audius.co
+      </TextLink>
+      {'.'}
+    </Text>
   )
 }
 
+const Nav = () => {
+  const { user, logout } = useAuth()
+  if (!user) {
+    return null
+  }
 
-export default function App() {
+  return (
+    <Flex
+      ph='2xl'
+      pv='l'
+      justifyContent='space-between'
+      alignItems='cener'
+      backgroundColor='white'
+    >
+      <Text variant='body' size='l' color='default'>
+        {`${messages.loggedIn} @${user.handle}`}
+      </Text>
+      <Button variant='secondary' size='small' onClick={logout}>
+        {messages.signOut}
+      </Button>
+    </Flex>
+  )
+}
+
+const Page = () => {
+  const { user, status } = useAuth()
+  return (
+    <Flex
+      direction='column'
+      backgroundColor='default'
+      h={'100vh'}
+      css={{ userSelect: 'none' }}
+    >
+      {status === Status.LOADING || status === Status.IDLE
+          ? <></>
+          : <>
+              <Nav />
+              <Flex
+                flex={1}
+                direction='column'
+                justifyContent='center'
+                alignItems='center'
+              >
+                <Flex
+                  w='640px'
+                  gap='xl'
+                  direction='column'
+                  justifyContent='center'
+                  alignItems='center'
+                >
+                  <Paper
+                    direction='column'
+                    p='2xl'
+                    gap='2xl'
+                  >
+                    <Flex justifyContent='center'>
+                      <IconAudiusLogoHorizontalColor />
+                    </Flex>
+                      {
+                        user
+                          ? <Success />
+                          : <ConnectDistributor />
+                      }
+                  </Paper>
+                  <Support />
+                </Flex>
+              </Flex>
+              <Footer />
+            </>
+      }
+    </Flex>
+  )
+}
+
+export const App = () => {
   return (
     <HarmonyThemeProvider theme='day'>
-      <Flex
-        direction='column'
-        backgroundColor='default'
-        h={'100vh'}
-      >
-        <Flex
-          flex={1}
-          gap='m'
-          justifyContent='center'
-          alignItems='center'
-        >
-          <Paper
-            h='620px'
-            w='640px'
-            direction='column'
-            p='2xl'
-            gap='2xl'
-          >
-            <Flex justifyContent='center'>
-              <IconAudiusLogoHorizontalColor />
-            </Flex>
-            <Text
-              variant='heading'
-              size='l'
-              color='accent'
-              textAlign='center'
-            >
-              {messages.connect}
-            </Text>
-            <Text
-              variant='body'
-              size='m'
-              textAlign='center'
-              color='default'
-            >
-              {messages.access}
-            </Text>
-            <Text
-              variant='body'
-              size='m'
-              color='default'
-              textAlign='center'
-            >
-              {messages.choose}
-            </Text>
-            <DistributorList environment={env} />
-          </Paper>
-        </Flex>
-        <Footer />
-      </Flex>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <Page />
+        </AuthProvider>
+      </QueryClientProvider>
     </HarmonyThemeProvider>
   )
 }
