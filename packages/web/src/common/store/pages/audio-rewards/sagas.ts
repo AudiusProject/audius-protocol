@@ -329,11 +329,9 @@ function* claimSingleChallengeRewardAsync(
       }
       throw new Error('Some specifiers failed to claim')
     }
-
-    return { res: results, error: null }
   } catch (e) {
     console.error(e)
-    return { res: null, error: e }
+    throw new Error('Failed to claim for challenge')
   }
 }
 
@@ -538,12 +536,8 @@ function* claimChallengeRewardAsync(
   action: ReturnType<typeof claimChallengeReward>
 ) {
   try {
-    const { error } = yield* call(claimSingleChallengeRewardAsync, action)
-    if (error) {
-      yield* put(claimChallengeRewardFailed())
-    } else {
-      yield* put(claimChallengeRewardSucceeded())
-    }
+    yield* call(claimSingleChallengeRewardAsync, action)
+    yield* put(claimChallengeRewardSucceeded())
   } catch (e) {
     yield* put(claimChallengeRewardFailed())
   }
@@ -554,7 +548,7 @@ function* claimAllChallengeRewardsAsync(
 ) {
   const { claims } = action.payload
   try {
-    const results = yield* all(
+    yield* all(
       claims.map((claim) =>
         call(claimSingleChallengeRewardAsync, {
           type: claimChallengeReward.type,
@@ -562,12 +556,7 @@ function* claimAllChallengeRewardsAsync(
         })
       )
     )
-    const resultsWithError = results.filter((r) => r.error)
-    if (resultsWithError.length > 0) {
-      yield* put(claimChallengeRewardFailed())
-    } else {
-      yield* put(claimAllChallengeRewardsSucceeded())
-    }
+    yield* put(claimAllChallengeRewardsSucceeded())
   } catch (e) {
     console.error(e)
     yield* put(claimChallengeRewardFailed())
