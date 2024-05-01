@@ -409,13 +409,13 @@ function watchAudio(audio: HTMLAudioElement) {
       }
     }
 
-    if (audio && audio.addEventListener) {
+    if (audio) {
       audio.addEventListener(AudioEvents.PLAY, emitPlay)
       audio.addEventListener(AudioEvents.PAUSE, emitPause)
     }
 
     return () => {
-      if (audio && audio.removeEventListener) {
+      if (audio) {
         audio.removeEventListener(AudioEvents.PLAY, emitPlay)
         audio.removeEventListener(AudioEvents.PAUSE, emitPause)
       }
