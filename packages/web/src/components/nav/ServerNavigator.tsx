@@ -6,6 +6,7 @@ import { useIsMobile } from 'hooks/useIsMobile'
 import { getClient } from 'utils/clientUtil'
 
 import styles from './Navigator.module.css'
+import { ServerNavBar } from './mobile/ServerNavBar'
 
 interface OwnProps {
   className?: string
@@ -27,7 +28,9 @@ const ServerNavigator = ({ className }: NavigatorProps) => {
         [styles.leftNavWrapper]: !isMobile,
         [styles.isElectron]: isElectron
       })}
-    />
+    >
+      {isMobile ? <ServerNavBar /> : null}
+    </div>
   )
 }
 

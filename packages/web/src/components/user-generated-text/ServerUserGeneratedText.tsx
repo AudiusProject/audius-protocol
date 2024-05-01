@@ -11,7 +11,7 @@ import { Text, TextProps } from '@audius/harmony'
 import Linkify from 'linkify-react'
 import { IntermediateRepresentation, Opts } from 'linkifyjs'
 
-import { ExternalTextLink } from 'components/link/ExternalTextLink'
+import { ServerExternalTextLink } from 'components/link/ServerExternalTextLink'
 import { TextLink } from 'components/link/TextLink'
 import { squashNewLines } from 'utils/stringUtils'
 import { getPathFromAudiusUrl, isAudiusUrl } from 'utils/urlUtils'
@@ -25,7 +25,7 @@ const LinkifyText = forwardRef((props: LinkifyTextProps, ref) => {
   return <Text ref={innerRef ?? ref} {...other} />
 })
 
-type UserGeneratedTextProps<T extends ElementType> = TextProps<T> & {
+type ServerUserGeneratedTextProps<T extends ElementType> = TextProps<T> & {
   linkSource?: 'profile page' | 'track page' | 'collection page'
   onClickLink?: (event: MouseEvent<HTMLAnchorElement>) => void
 }
@@ -45,7 +45,7 @@ const renderLink = ({ attributes, content }: IntermediateRepresentation) => {
   const isExternalLink = !isAudiusUrl(href)
   const to = isExternalLink ? formatExternalLink(href) : formatAudiusUrl(href)
 
-  const LinkComponent = isExternalLink ? ExternalTextLink : TextLink
+  const LinkComponent = isExternalLink ? ServerExternalTextLink : TextLink
 
   return (
     <LinkComponent to={to} variant='visible' {...props}>
@@ -54,10 +54,9 @@ const renderLink = ({ attributes, content }: IntermediateRepresentation) => {
   )
 }
 
-export const UserGeneratedText = forwardRef(function <T extends ElementType>(
-  props: UserGeneratedTextProps<T>,
-  ref: ForwardedRef<HTMLElement>
-) {
+export const ServerUserGeneratedText = forwardRef(function <
+  T extends ElementType
+>(props: ServerUserGeneratedTextProps<T>, ref: ForwardedRef<HTMLElement>) {
   const {
     children: childrenProp,
     variant = 'body',
