@@ -441,6 +441,11 @@ export function* pollGatedContent({
   const initiallyHadNoStreamAccess = !cachedEntity?.access.stream
   const initiallyHadNoDownloadAccess = !cachedEntity?.access.download
 
+  // If already had acccess, no need to poll
+  if (!initiallyHadNoStreamAccess && !initiallyHadNoDownloadAccess) {
+    return
+  }
+
   // poll for access until it is granted
   while (true) {
     const apiEntity = isAlbum
