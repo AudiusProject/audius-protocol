@@ -23,7 +23,7 @@ export { default as IconShare } from '@audius/harmony/src/assets/icons/Share.svg
 export { default as IconArrowRight } from '@audius/harmony/src/assets/icons/ArrowRight.svg'
 export { default as IconImage } from '@audius/harmony/src/assets/icons/Image.svg'
 export { default as IconShieldCheck } from '@audius/harmony/src/assets/icons/ShieldCheck.svg'
-export { default as IconShieldUser } from '@audius/harmony/src/assets/icons/Shield.svg'
+export { default as IconShieldUser } from '@audius/harmony/src/assets/icons/ShieldUser.svg'
 export { default as IconBoxHeart } from '@audius/harmony/src/assets/icons/BoxHeart.svg'
 export { default as IconIndent } from '@audius/harmony/src/assets/icons/Indent.svg'
 export { default as IconShuffle } from '@audius/harmony/src/assets/icons/Shuffle.svg'
