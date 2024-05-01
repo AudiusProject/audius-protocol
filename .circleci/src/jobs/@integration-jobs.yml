@@ -45,7 +45,7 @@ integration-test:
         name: audius-cmd test
         no_output_timeout: 15m
         command: |
-          audius-cmd test
+          . ~/.profile; audius-cmd test
     - run:
         name: verify sdk types
         command: |
