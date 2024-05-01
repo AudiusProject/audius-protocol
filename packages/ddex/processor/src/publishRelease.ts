@@ -8,7 +8,7 @@ import { GetObjectCommand } from '@aws-sdk/client-s3'
 import { mkdir, readFile, stat, writeFile } from 'fs/promises'
 import { basename, dirname, join, resolve } from 'path'
 import { ReleaseRow, dbUpdate, releaseRepo } from './db'
-import { DDEXResource, DDEXRelease, DDEXSoundRecording } from './parseDelivery'
+import { DDEXResource, DDEXRelease } from './parseDelivery'
 import { dialS3 } from './s3poller'
 import { createSdkService } from './sdk'
 
@@ -160,6 +160,8 @@ export async function publishRelease(
   }
 }
 
+// TODO: remove or make use of this
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function updateTrack(
   sdk: AudiusSdk,
   row: ReleaseRow,
