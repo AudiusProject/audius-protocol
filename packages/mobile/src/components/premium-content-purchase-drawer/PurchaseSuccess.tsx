@@ -52,7 +52,6 @@ export const PurchaseSuccess = ({
   const link = isAlbum
     ? getCollectionRoute(metadata)
     : getTrackRoute(metadata, true)
-  console.log('REED', { link })
 
   const dispatch = useDispatch()
 
