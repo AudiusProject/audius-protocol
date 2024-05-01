@@ -3,8 +3,8 @@ import type { ComponentType, ReactNode } from 'react'
 import type { ViewStyle } from 'react-native'
 import { View } from 'react-native'
 
-import { IconQuestionCircle } from '@audius/harmony-native'
-import { Text } from 'app/components/core'
+import { Flex, IconQuestionCircle } from '@audius/harmony-native'
+import { Text, Link } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 import type { SvgProps } from 'app/types/svg'
 import { useColor } from 'app/utils/theme'
@@ -51,9 +51,13 @@ export const HelpCallout = (props: HelpCalloutProps) => {
   return (
     <View style={[styles.root, style]}>
       <Icon fill={neutral} />
-      <Text numberOfLines={numberOfLines} style={styles.text}>
-        {content}
-      </Text>
+      {typeof content === 'string' ? (
+        <Text numberOfLines={numberOfLines} style={styles.text}>
+          {content}
+        </Text>
+      ) : (
+        content
+      )}
     </View>
   )
 }

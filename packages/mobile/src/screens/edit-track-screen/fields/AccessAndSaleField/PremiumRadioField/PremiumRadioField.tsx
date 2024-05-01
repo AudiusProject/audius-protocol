@@ -3,10 +3,11 @@ import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { useFeatureFlag } from '@audius/common/hooks'
 import { Name, isContentUSDCPurchaseGated } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
+import { css } from '@emotion/native'
 import { useField } from 'formik'
 import { Dimensions, View } from 'react-native'
 
-import { IconCart, IconStars } from '@audius/harmony-native'
+import { Flex, IconCart, IconStars } from '@audius/harmony-native'
 import { Link, Tag, Text } from 'app/components/core'
 import { HelpCallout } from 'app/components/help-callout/HelpCallout'
 import { useSetTrackAvailabilityFields } from 'app/hooks/useSetTrackAvailabilityFields'
@@ -64,10 +65,6 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
   subtitle: {
     color: palette.neutral
   },
-  waitlist: {
-    gap: spacing(3),
-    alignItems: 'flex-start'
-  },
   link: {
     color: palette.secondary
   },
@@ -105,8 +102,8 @@ export const PremiumRadioField = (props: PremiumRadioFieldProps) => {
   const titleIconColor = selected
     ? secondary
     : disabled
-    ? neutralLight4
-    : neutral
+      ? neutralLight4
+      : neutral
 
   const selectedUsdcPurchaseValue = useMemo(() => {
     if (isContentUSDCPurchaseGated(previousStreamConditions)) {
@@ -136,14 +133,14 @@ export const PremiumRadioField = (props: PremiumRadioFieldProps) => {
 
   const renderHelpCalloutContent = useCallback(() => {
     return (
-      <View style={styles.waitlist}>
-        <Text>{messages.waitlist}</Text>
+      <Flex gap='l' alignItems='flex-start'>
+        <Text style={{ flex: 1 }}>{messages.waitlist}</Text>
         <Link url={WAITLIST_TYPEFORM} onPress={handlePressWaitListLink}>
           <Text style={styles.link}>{messages.join}</Text>
         </Link>
-      </View>
+      </Flex>
     )
-  }, [styles.link, styles.waitlist, handlePressWaitListLink])
+  }, [handlePressWaitListLink, styles.link])
 
   return (
     <View style={styles.root}>
@@ -163,11 +160,8 @@ export const PremiumRadioField = (props: PremiumRadioFieldProps) => {
       {!isUsdcUploadEnabled ? (
         <>
           <Tag style={styles.comingSoon}>{messages.comingSoon}</Tag>
-          <HelpCallout
-            icon={IconStars}
-            style={styles.waitlist}
-            content={renderHelpCalloutContent()}
-          />
+          {renderHelpCalloutContent()}
+          <HelpCallout content={renderHelpCalloutContent()} />
         </>
       ) : null}
       {selected ? (
