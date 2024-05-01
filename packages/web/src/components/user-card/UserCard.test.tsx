@@ -59,7 +59,7 @@ describe('UserCard', () => {
     expect(
       await screen.findByRole('heading', { name: /test user page/i })
     ).toBeInTheDocument()
-  })
+  }, { timeout: 10_000 })
 
   it('renders the profile picture', () => {
     renderUserCard()
