@@ -1,7 +1,13 @@
 import { MouseEventHandler, memo, useCallback } from 'react'
 
 import { imageBlank } from '@audius/common/assets'
-import { Variant, SquareSizes, Collection, ID } from '@audius/common/models'
+import {
+  Variant,
+  SquareSizes,
+  Collection,
+  ID,
+  ModalSource
+} from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import {
   CommonState,
@@ -261,6 +267,7 @@ const CollectionHeader = ({
               className={styles.gatedContentSection}
               buttonClassName={styles.gatedContentSectionButton}
               ownerId={userId}
+              source={ModalSource.CollectionDetails}
             />
           </Box>
         ) : null}

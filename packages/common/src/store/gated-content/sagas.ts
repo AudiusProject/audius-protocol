@@ -492,16 +492,21 @@ export function* pollGatedContent({
         return
       }
 
-      // TODO: Add separate analytics names for gated albums
-      const eventName =
-        !isAlbum &&
-        (isContentUSDCPurchaseGated(apiEntity.stream_conditions)
-          ? Name.USDC_PURCHASE_GATED_TRACK_UNLOCKED
-          : isContentFollowGated(apiEntity.stream_conditions)
-          ? Name.FOLLOW_GATED_TRACK_UNLOCKED
-          : isContentTipGated(apiEntity.stream_conditions)
-          ? Name.TIP_GATED_TRACK_UNLOCKED
-          : null)
+      const getEventName = () => {
+        if (isContentUSDCPurchaseGated(apiEntity.stream_conditions)) {
+          return isAlbum
+            ? Name.USDC_PURCHASE_GATED_COLLECTION_UNLOCKED
+            : Name.USDC_PURCHASE_GATED_TRACK_UNLOCKED
+        }
+        if (isContentFollowGated(apiEntity.stream_conditions)) {
+          return Name.FOLLOW_GATED_TRACK_UNLOCKED
+        }
+        if (isContentTipGated(apiEntity.stream_conditions)) {
+          return Name.TIP_GATED_TRACK_UNLOCKED
+        }
+        return null
+      }
+      const eventName = getEventName()
       if (eventName) {
         analytics.track({
           eventName,
