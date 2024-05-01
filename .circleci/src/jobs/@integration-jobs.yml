@@ -52,7 +52,7 @@ integration-test:
     #       cd ./packages/libs
     #       sh ./scripts/check-generated-types.sh
     - run: sudo NEEDRESTART_MODE=l PLAYWRIGHT_BROWSERS_PATH=/home/circleci/.cache/ms-playwright npx playwright install --with-deps
-    - run: npx playwright test -w @audius/web
+    - run: cd packages/web && npx playwright test
     - store_test_results:
         path: packages/web/report.xml
         when: always
