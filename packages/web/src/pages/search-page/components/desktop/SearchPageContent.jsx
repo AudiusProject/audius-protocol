@@ -1,5 +1,4 @@
 import { Component } from 'react'
-import { css } from '@emotion/react'
 
 import { Status, Name } from '@audius/common/models'
 import {
@@ -17,10 +16,10 @@ import CardLineup from 'components/lineup/CardLineup'
 import Lineup from 'components/lineup/Lineup'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Page from 'components/page/Page'
+import { UserCard } from 'components/user-card'
 import { fullSearchResultsPage, NOT_FOUND_PAGE } from 'utils/route'
 
 import styles from './SearchPageContent.module.css'
-import { UserCard } from 'components/user-card'
 
 const SEARCH_HEADER_MAX_WIDTH_PX = 720
 

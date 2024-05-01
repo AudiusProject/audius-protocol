@@ -22,6 +22,7 @@ import { Dispatch } from 'redux'
 
 import { useHistoryContext } from 'app/HistoryProvider'
 import { make, useRecord } from 'common/store/analytics/actions'
+import { CollectionCard } from 'components/collection'
 import Header from 'components/header/mobile/Header'
 import { HeaderContext } from 'components/header/mobile/HeaderContextProvider'
 import CardLineup from 'components/lineup/CardLineup'
@@ -33,6 +34,7 @@ import NavContext, {
   CenterPreset,
   RightPreset
 } from 'components/nav/store/context'
+import { UserCard } from 'components/user-card'
 import useTabs from 'hooks/useTabs/useTabs'
 import { getCategory } from 'pages/search-page/helpers'
 import { getLocationPathname } from 'store/routing/selectors'
@@ -40,9 +42,6 @@ import { useSelector } from 'utils/reducer'
 import { fullSearchResultsPage, SEARCH_PAGE } from 'utils/route'
 
 import styles from './SearchPageContent.module.css'
-import { UserCard } from 'components/user-card'
-import { CollectionCard } from 'components/collection'
-import { constructPlaylistFolder } from '@audius/common/store/playlist-library/helpers'
 
 export type SearchPageContentProps = {
   tracks: LineupState<{}>

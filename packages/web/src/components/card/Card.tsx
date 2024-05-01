@@ -1,13 +1,6 @@
 import { ReactNode, Ref, createContext, forwardRef, useContext } from 'react'
 
-import {
-  Box,
-  Divider,
-  Flex,
-  FlexProps,
-  Paper,
-  PaperProps
-} from '@audius/harmony'
+import { Divider, Flex, FlexProps, Paper, PaperProps } from '@audius/harmony'
 
 type CardSize = 'xs' | 's' | 'm' | 'l'
 
@@ -60,7 +53,7 @@ export const CardContent = (props: CardContentProps) => {
   return (
     <Flex
       direction='column'
-      css={size == 'xs' && { maxWidth: xsSize.minWidth, margin: '0 auto' }}
+      css={size === 'xs' && { maxWidth: xsSize.minWidth, margin: '0 auto' }}
       {...props}
     />
   )

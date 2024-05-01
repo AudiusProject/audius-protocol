@@ -3,7 +3,7 @@ import { useCallback, MouseEvent } from 'react'
 import { ID, SquareSizes } from '@audius/common/models'
 import { cacheUsersSelectors } from '@audius/common/store'
 import { formatCount } from '@audius/common/utils'
-import { Flex, Text } from '@audius/harmony'
+import { Text } from '@audius/harmony'
 import { useLinkClickHandler } from 'react-router-dom-v5-compat'
 
 import { Avatar } from 'components/avatar'
@@ -25,7 +25,7 @@ const avatarSizeMap = {
   l: SquareSizes.SIZE_480_BY_480
 }
 
-type UserCardProps = Omit<CardProps, 'id'> & {
+export type UserCardProps = Omit<CardProps, 'id'> & {
   id: ID
 }
 
