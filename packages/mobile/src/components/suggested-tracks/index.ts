@@ -1,1 +1,1 @@
-export * from './SuggestedCollectionTracks'
+export * from './SuggestedTracks'

@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { SuggestedTrack } from '@audius/common/api'
+import { useGetSuggestedPlaylistTracks } from '@audius/common/api'
 import { SquareSizes, ID, Track } from '@audius/common/models'
 import { cacheUsersSelectors } from '@audius/common/store'
 import { Button, IconCaretDown, IconRefresh, useTheme } from '@audius/harmony'
@@ -82,15 +82,12 @@ const SuggestedTrackSkeleton = () => {
 
 type SuggestedTracksProps = {
   collectionId: ID
-  suggestedTracks: SuggestedTrack[]
-  onRefresh: () => void
-  onAddTrack: (trackId: ID) => void
-  isRefreshing: boolean
 }
 
 export const SuggestedTracks = (props: SuggestedTracksProps) => {
-  const { collectionId, suggestedTracks, onRefresh, onAddTrack, isRefreshing } =
-    props
+  const { collectionId } = props
+  const { suggestedTracks, onRefresh, onAddTrack, isRefreshing } =
+    useGetSuggestedPlaylistTracks(collectionId)
   const [isExpanded, toggleIsExpanded] = useToggle(false)
   const { motion } = useTheme()
 

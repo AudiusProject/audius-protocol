@@ -17,7 +17,6 @@ import { CommonState } from '~/store/index'
 import { useGetFavoritedTrackList } from './favorites'
 import { useGetTracksByIds } from './track'
 import { useGetTrending } from './trending'
-import { useGetTracksByUser } from './user'
 
 const suggestedTrackCount = 5
 
@@ -95,79 +94,6 @@ const selectCollectionTrackIds = (state: CommonState, collectionId: ID) => {
   const collection = getCollection(state, { id: collectionId })
   if (!collection) return []
   return collection?.playlist_contents.track_ids.map((trackId) => trackId.track)
-}
-
-export const useGetSuggestedAlbumTracks = (collectionId: ID) => {
-  const currentUserId = useSelector(getUserId)
-  const dispatch = useDispatch()
-  const [suggestedTrackIds, setSuggestedTrackIds] = useState<ID[]>([])
-  const [isRefreshing, setIsRefreshing] = useState(false)
-
-  const collectionTrackIds = useSelector((state: CommonState) =>
-    selectCollectionTrackIds(state, collectionId)
-  )
-
-  const { data: ownTracks, status } = useGetTracksByUser(
-    { userId: currentUserId!, currentUserId },
-    { disabled: !currentUserId }
-  )
-
-  const reset = useCallback(() => {
-    if (status === Status.SUCCESS && ownTracks) {
-      const suggestedTrackIds = difference(
-        shuffle(ownTracks).map((track) => track.track_id),
-        collectionTrackIds
-      )
-      setSuggestedTrackIds(suggestedTrackIds)
-    }
-  }, [collectionTrackIds, ownTracks, status])
-
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(reset, [status, ownTracks?.length])
-
-  const suggestedTracks = useSelector(
-    (state: CommonState) =>
-      selectSuggestedTracks(
-        state,
-        suggestedTrackIds,
-        setSuggestedTrackIds,
-        suggestedTrackIds.length
-      ),
-    isEqual
-  )
-
-  const handleRefresh = useCallback(() => {
-    // Reset and shuffle owned tracks if we get too close to the end
-    if (suggestedTrackIds.length <= 2 * suggestedTrackCount - 1) {
-      reset()
-      return
-    }
-    setSuggestedTrackIds(suggestedTrackIds.slice(suggestedTrackCount))
-    setIsRefreshing(true)
-  }, [reset, suggestedTrackIds])
-
-  useEffect(() => {
-    if (suggestedTracks.every((suggestedTrack) => !suggestedTrack.isLoading)) {
-      setIsRefreshing(false)
-    }
-  }, [suggestedTracks])
-
-  const handleAddTrack = useCallback(
-    (trackId: ID) => {
-      dispatch(addTrackToPlaylist(trackId, collectionId))
-      const trackIndexToRemove = suggestedTrackIds.indexOf(trackId)
-      suggestedTrackIds.splice(trackIndexToRemove, 1)
-      setSuggestedTrackIds(suggestedTrackIds)
-    },
-    [collectionId, dispatch, suggestedTrackIds]
-  )
-
-  return {
-    suggestedTracks,
-    isRefreshing,
-    onRefresh: handleRefresh,
-    onAddTrack: handleAddTrack
-  }
 }
 
 export const useGetSuggestedPlaylistTracks = (collectionId: ID) => {
