@@ -1,6 +1,12 @@
 import { useCallback, useContext, useEffect } from 'react'
 
 import {
+  useApproveManagedAccount,
+  useGetManagedAccounts,
+  useRejectManagedAccount
+} from '@audius/common/api'
+import { Status, UserMetadata } from '@audius/common/models'
+import {
   Box,
   Divider,
   Flex,
@@ -14,14 +20,9 @@ import {
   TextLink
 } from '@audius/harmony'
 
-import {
-  useApproveManagedAccount,
-  useGetManagedAccounts,
-  useRejectManagedAccount
-} from '@audius/common/api'
-import { Status, UserMetadata } from '@audius/common/models'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { ToastContext } from 'components/toast/ToastContext'
+
 import { AccountListItem } from './AccountListItem'
 import { sharedMessages } from './sharedMessages'
 
@@ -53,7 +54,7 @@ export const AccountsYouManageSettingsModal = (
     }) => {
       approveManagedAccount({ userId: currentUserId, grantorUser })
     },
-    []
+    [approveManagedAccount]
   )
 
   const handleReject = useCallback(
@@ -66,7 +67,7 @@ export const AccountsYouManageSettingsModal = (
     }) => {
       rejectManagedAccount({ userId: currentUserId, grantorUser })
     },
-    []
+    [rejectManagedAccount]
   )
 
   useEffect(() => {
@@ -76,7 +77,7 @@ export const AccountsYouManageSettingsModal = (
     ) {
       toast(messages.somethingWentWrong)
     }
-  }, [approveResult.status, rejectResult.status])
+  }, [toast, approveResult.status, rejectResult.status])
 
   return (
     <>
@@ -119,6 +120,7 @@ export const AccountsYouManageSettingsModal = (
             {managedAccounts?.map((m) => {
               return (
                 <AccountListItem
+                  key={m.user.user_id}
                   user={m.user}
                   onApprove={handleApprove}
                   onReject={handleReject}

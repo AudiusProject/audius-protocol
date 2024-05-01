@@ -1,5 +1,6 @@
-import { useCallback, useState } from 'react'
+import { useCallback } from 'react'
 
+import { User, UserMetadata } from '@audius/common/models'
 import { accountSelectors, chatSelectors } from '@audius/common/store'
 import { encodeHashId } from '@audius/common/utils'
 import {
@@ -17,7 +18,6 @@ import {
   Text
 } from '@audius/harmony'
 
-import { User, UserMetadata } from '@audius/common/models'
 import ArtistChip from 'components/artist/ArtistChip'
 import { useGoToRoute } from 'hooks/useGoToRoute'
 import { useComposeChat } from 'pages/chat-page/components/useComposeChat'
@@ -135,12 +135,12 @@ export const AccountListItem = ({
   const handleApprove = useCallback(() => {
     if (!currentUserId) return
     onApprove?.({ currentUserId, grantorUser: user })
-  }, [onApprove, currentUserId])
+  }, [user, onApprove, currentUserId])
 
   const handleReject = useCallback(() => {
     if (!currentUserId) return
     onReject?.({ currentUserId, grantorUser: user })
-  }, [onReject, currentUserId])
+  }, [user, onReject, currentUserId])
 
   const renderTrigger = (
     anchorRef: React.MutableRefObject<any>,

@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 
+import { useRequestAddManager } from '@audius/common/api'
+import { Status } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
 import {
   Box,
@@ -15,8 +17,6 @@ import {
 import ArtistChip from 'components/artist/ArtistChip'
 import { useSelector } from 'utils/reducer'
 
-import { useRequestAddManager } from '@audius/common/api'
-import { Status } from '@audius/common/models'
 import { sharedMessages } from './sharedMessages'
 import {
   AccountsManagingYouPages,
@@ -42,11 +42,11 @@ export const ConfirmAccountManagerPage = (
   const [submitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [requestAddManager, result] = useRequestAddManager()
-  const { status, data } = result
+  const { status } = result
 
   const manager = params?.user
   useEffect(() => {
-    if (status === Status.SUCCESS && data) {
+    if (status === Status.SUCCESS) {
       setPage(AccountsManagingYouPages.HOME)
     }
   }, [setPage, status])
@@ -55,7 +55,6 @@ export const ConfirmAccountManagerPage = (
     if (status === Status.ERROR) {
       setError(messages.errorGeneral)
       setIsSubmitting(false)
-      return
     }
   }, [status])
 
@@ -68,7 +67,7 @@ export const ConfirmAccountManagerPage = (
       return
     }
     requestAddManager({ userId, managerUser: manager! })
-  }, [manager, userId, setPage])
+  }, [manager, userId, requestAddManager])
 
   if (!manager) {
     return null

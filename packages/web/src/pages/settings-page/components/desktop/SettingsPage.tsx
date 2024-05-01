@@ -60,11 +60,11 @@ import packageInfo from '../../../../../package.json'
 import { AuthorizedAppsSettingsCard } from './AuthorizedApps'
 import { DeveloperAppsSettingsCard } from './DeveloperApps'
 import { AccountsManagingYouSettingsCard } from './ManagerMode/AccountsManagingYouSettingsCard'
+import { AccountsYouManageSettingsCard } from './ManagerMode/AccountsYouManageSettingsCard'
 import NotificationSettings from './NotificationSettings'
 import SettingsCard from './SettingsCard'
 import styles from './SettingsPage.module.css'
 import VerificationModal from './VerificationModal'
-import { AccountsYouManageSettingsCard } from './ManagerMode/AccountsYouManageSettingsCard'
 
 const { getAllowAiAttribution } = settingsPageSelectors
 const { version } = packageInfo

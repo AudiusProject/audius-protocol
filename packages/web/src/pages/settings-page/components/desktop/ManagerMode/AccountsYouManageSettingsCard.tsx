@@ -1,10 +1,9 @@
-import { useState, useCallback } from 'react'
+import { useCallback, useState } from 'react'
 
 import { Button, IconUserArrowRotate } from '@audius/harmony'
 
 import SettingsCard from '../SettingsCard'
 
-import { AccountsManagingYouSettingsModal } from './AccountsManagingYouSettingsModal'
 import { AccountsYouManageSettingsModal } from './AccountsYouManageSettingsModal'
 
 const messages = {

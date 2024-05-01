@@ -1,4 +1,5 @@
 import { useGetManagers } from '@audius/common/api'
+import { Status } from '@audius/common/models'
 import {
   Box,
   Button,
@@ -9,8 +10,8 @@ import {
   TextLink
 } from '@audius/harmony'
 
-import { Status } from '@audius/common/models'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
+
 import { AccountListItem } from './AccountListItem'
 import { sharedMessages } from './sharedMessages'
 import { AccountsManagingYouPageProps, AccountsManagingYouPages } from './types'
