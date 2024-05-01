@@ -34,6 +34,7 @@ type UsdcPurchaseGatedRadioFieldProps = {
   isAlbum?: boolean
   initialStreamConditions?: AccessConditions
   isInitiallyUnlisted?: boolean
+  isPublishDisabled?: boolean
 }
 
 export const UsdcPurchaseGatedRadioField = (
@@ -44,7 +45,8 @@ export const UsdcPurchaseGatedRadioField = (
     isUpload,
     isAlbum,
     initialStreamConditions,
-    isInitiallyUnlisted
+    isInitiallyUnlisted,
+    isPublishDisabled
   } = props
 
   const handleClickWaitListLink = useCallback(() => {
@@ -60,7 +62,8 @@ export const UsdcPurchaseGatedRadioField = (
     isRemix,
     isAlbum,
     initialStreamConditions: initialStreamConditions ?? null,
-    isInitiallyUnlisted: !!isInitiallyUnlisted
+    isInitiallyUnlisted: !!isInitiallyUnlisted,
+    isPublishDisabled
   })
   const disabled = disableUsdcGate || !isUsdcUploadEnabled
 

@@ -236,10 +236,17 @@ type AccessAndSaleFieldProps = {
   trackLength?: number
   forceOpen?: boolean
   setForceOpen?: (value: boolean) => void
+  isPublishDisabled?: boolean
 }
 
 export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
-  const { isUpload = false, isAlbum = false, forceOpen, setForceOpen } = props
+  const {
+    isUpload = false,
+    isAlbum = false,
+    forceOpen,
+    setForceOpen,
+    isPublishDisabled = false
+  } = props
 
   const isHiddenFieldName = isAlbum ? IS_PRIVATE : IS_UNLISTED
 
@@ -576,7 +583,7 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
       selectedValues = [specialAccessValue, messages.followersOnly]
     } else if (isContentTipGated(savedStreamConditions)) {
       selectedValues = [specialAccessValue, messages.supportersOnly]
-    } else if (isUnlisted && !isScheduledRelease && !isAlbum) {
+    } else if (isUnlisted && !isScheduledRelease) {
       const fieldVisibilityKeys = Object.keys(
         messages.fieldVisibility
       ) as Array<keyof FieldVisibility>
@@ -616,9 +623,9 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
     savedStreamConditions,
     isUnlisted,
     isScheduledRelease,
-    fieldVisibility,
     preview,
-    isUpload
+    isUpload,
+    fieldVisibility
   ])
 
   return (
@@ -648,6 +655,7 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
           }
           isScheduledRelease={isScheduledRelease}
           isInitiallyUnlisted={isUnlisted}
+          isPublishDisabled={isPublishDisabled}
         />
       }
       forceOpen={forceOpen}

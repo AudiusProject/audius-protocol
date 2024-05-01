@@ -17,6 +17,7 @@ type UseAccessAndRemixSettingsProps = {
   initialStreamConditions: Nullable<AccessConditions>
   isInitiallyUnlisted: boolean
   isScheduledRelease?: boolean
+  isPublishDisabled?: boolean
 }
 
 export const useHasNoCollectibles = () => {
@@ -47,7 +48,8 @@ export const useAccessAndRemixSettings = ({
   isAlbum = false,
   initialStreamConditions,
   isInitiallyUnlisted,
-  isScheduledRelease = false
+  isScheduledRelease = false,
+  isPublishDisabled = false
 }: UseAccessAndRemixSettingsProps) => {
   const isInitiallyPublic =
     !isInitiallyUnlisted && !isUpload && !initialStreamConditions
@@ -71,20 +73,23 @@ export const useAccessAndRemixSettings = ({
     isContentCollectibleGated(initialStreamConditions)
 
   const isInitiallyHidden = !isUpload && isInitiallyUnlisted
+  const shouldDisablePublish = isPublishDisabled && isInitiallyHidden
 
   const disableUsdcGate =
-    !isInitiallyUsdcGated &&
-    (isRemix ||
-      isInitiallyPublic ||
-      isInitiallySpecialAccess ||
-      isInitiallyCollectibleGated)
+    (!isInitiallyUsdcGated &&
+      (isRemix ||
+        isInitiallyPublic ||
+        isInitiallySpecialAccess ||
+        isInitiallyCollectibleGated)) ||
+    shouldDisablePublish
 
   const disableSpecialAccessGate =
     isAlbum ||
     isRemix ||
     isInitiallyPublic ||
     isInitiallyUsdcGated ||
-    isInitiallyCollectibleGated
+    isInitiallyCollectibleGated ||
+    shouldDisablePublish
 
   // This applies when the parent field is active but we still want to disable sub-options
   // used for edit flow to not allow increasing permission strictness
@@ -99,7 +104,8 @@ export const useAccessAndRemixSettings = ({
     isInitiallyPublic ||
     isInitiallyUsdcGated ||
     isInitiallySpecialAccess ||
-    hasNoCollectibles
+    hasNoCollectibles ||
+    shouldDisablePublish
 
   // This applies when the parent field is active but we still want to disable sub-options
   // used for edit flow to not allow increasing permission strictness

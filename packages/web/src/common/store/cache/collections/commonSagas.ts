@@ -56,10 +56,7 @@ import {
   addPlaylistsNotInLibrary,
   removePlaylistFromLibrary
 } from 'common/store/playlist-library/sagas'
-import {
-  addPremiumMetadata,
-  getUSDCMetadata
-} from 'common/store/upload/sagaHelpers'
+import { getUSDCMetadata } from 'common/store/upload/sagaHelpers'
 import { ensureLoggedIn } from 'common/utils/ensureLoggedIn'
 import { waitForWrite } from 'utils/sagaHelpers'
 
