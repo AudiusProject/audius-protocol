@@ -4,18 +4,13 @@ import {
   formatCooldownChallenges,
   useChallengeCooldownSchedule
 } from '@audius/common/hooks'
-import { ChallengeRewardID, SpecifierWithAmount } from '@audius/common/models'
 import {
   ClaimStatus,
-  UndisbursedUserChallenge,
   audioRewardsPageActions,
   audioRewardsPageSelectors,
   musicConfettiActions
 } from '@audius/common/store'
-import {
-  formatNumberCommas,
-  getClaimableChallengeSpecifiers
-} from '@audius/common/utils'
+import { formatNumberCommas } from '@audius/common/utils'
 import {
   Button,
   Flex,
@@ -48,8 +43,7 @@ const messages = {
 
 const { show: showConfetti } = musicConfettiActions
 const { claimAllChallengeRewards } = audioRewardsPageActions
-const { getClaimStatus, getUndisbursedUserChallenges } =
-  audioRewardsPageSelectors
+const { getClaimStatus } = audioRewardsPageSelectors
 
 export const ClaimAllRewardsModal = () => {
   const dispatch = useDispatch()
@@ -58,13 +52,6 @@ export const ClaimAllRewardsModal = () => {
   const [isOpen, setOpen] = useModalState('ClaimAllRewards')
   const [isHCaptchaModalOpen] = useModalState('HCaptcha')
   const claimStatus = useSelector(getClaimStatus)
-  const undisbursedUserChallenges = useSelector(getUndisbursedUserChallenges)
-  const undisbursedUserChallengesMap = undisbursedUserChallenges.reduce<
-    Partial<Record<ChallengeRewardID, UndisbursedUserChallenge[]>>
-  >((acc, val) => {
-    acc[val.challenge_id] = [...(acc[val.challenge_id] || []), val]
-    return acc
-  }, {})
   const { claimableAmount, claimableChallenges, cooldownChallenges, summary } =
     useChallengeCooldownSchedule({
       multiple: true
@@ -79,29 +66,15 @@ export const ClaimAllRewardsModal = () => {
   }, [claimStatus, toast, dispatch])
 
   const onClaimRewardClicked = useCallback(() => {
-    const claims = claimableChallenges.map((challenge) => {
-      const undisbursed =
-        undisbursedUserChallengesMap[challenge.challenge_id] || []
-      const undisbursedSpecifiers = undisbursed.reduce(
-        (acc, c) => [...acc, { specifier: c.specifier, amount: c.amount }],
-        [] as SpecifierWithAmount[]
-      )
-      return {
-        challengeId: challenge.challenge_id,
-        specifiers: getClaimableChallengeSpecifiers(
-          undisbursedSpecifiers,
-          undisbursedUserChallenges
-        ),
-        amount: challenge.amount
-      }
-    })
+    const claims = claimableChallenges.map((challenge) => ({
+      challengeId: challenge.challenge_id,
+      specifiers: [
+        { specifier: challenge.specifier, amount: challenge.amount }
+      ],
+      amount: challenge.amount
+    }))
     dispatch(claimAllChallengeRewards({ claims }))
-  }, [
-    dispatch,
-    claimableChallenges,
-    undisbursedUserChallengesMap,
-    undisbursedUserChallenges
-  ])
+  }, [dispatch, claimableChallenges])
 
   const formatLabel = useCallback((item: any) => {
     const { label, claimableDate, isClose } = item
