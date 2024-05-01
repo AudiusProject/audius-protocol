@@ -4,15 +4,9 @@ import {
   formatCooldownChallenges,
   useChallengeCooldownSchedule
 } from '@audius/common/hooks'
-import type { CommonState } from '@audius/common/store'
-import {
-  challengesSelectors,
-  audioRewardsPageSelectors,
-  audioRewardsPageActions
-} from '@audius/common/store'
-import { getClaimableChallengeSpecifiers } from '@audius/common/utils'
+import { audioRewardsPageActions } from '@audius/common/store'
 import { ScrollView, View } from 'react-native'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 
 import { Flex, Text, Button, IconArrowRight } from '@audius/harmony-native'
 import { makeStyles } from 'app/styles'
@@ -21,11 +15,8 @@ import { formatLabel } from 'app/utils/challenges'
 import { AppDrawer, useDrawerState } from '../drawer/AppDrawer'
 import { SummaryTable } from '../summary-table'
 
-const { getChallengeRewardsModalType, getUndisbursedUserChallenges } =
-  audioRewardsPageSelectors
-const { claimChallengeReward, resetAndCancelClaimReward } =
+const { claimAllChallengeRewards, resetAndCancelClaimReward } =
   audioRewardsPageActions
-const { getOptimisticUserChallenges } = challengesSelectors
 
 const messages = {
   // Claim success toast
@@ -61,42 +52,25 @@ export const ClaimAllRewardsDrawer = () => {
 
   const dispatch = useDispatch()
   const { onClose } = useDrawerState(MODAL_NAME)
-  const modalType = useSelector(getChallengeRewardsModalType)
-  const userChallenges = useSelector((state: CommonState) =>
-    getOptimisticUserChallenges(state, true)
-  )
-  const undisbursedUserChallenges = useSelector(getUndisbursedUserChallenges)
-  const { cooldownChallenges, summary } = useChallengeCooldownSchedule({
-    multiple: true
-  })
+  const { claimableChallenges, cooldownChallenges, summary } =
+    useChallengeCooldownSchedule({
+      multiple: true
+    })
   const handleClose = useCallback(() => {
     dispatch(resetAndCancelClaimReward())
     onClose()
   }, [dispatch, onClose])
 
-  const challenge = userChallenges ? userChallenges[modalType] : null
-
   const onClaim = useCallback(() => {
-    if (!challenge) {
-      return
-    }
-    dispatch(
-      claimChallengeReward({
-        claim: {
-          challengeId: modalType,
-          specifiers:
-            challenge.challenge_type === 'aggregate'
-              ? getClaimableChallengeSpecifiers(
-                  challenge.undisbursedSpecifiers,
-                  undisbursedUserChallenges
-                )
-              : [{ specifier: challenge.specifier, amount: challenge.amount }],
-          amount: challenge?.claimableAmount ?? 0
-        },
-        retryOnFailure: true
-      })
-    )
-  }, [dispatch, modalType, challenge, undisbursedUserChallenges])
+    const claims = claimableChallenges.map((challenge) => ({
+      challengeId: challenge.challenge_id,
+      specifiers: [
+        { specifier: challenge.specifier, amount: challenge.amount }
+      ],
+      amount: challenge.amount
+    }))
+    dispatch(claimAllChallengeRewards({ claims }))
+  }, [dispatch, claimableChallenges])
 
   return (
     <AppDrawer
