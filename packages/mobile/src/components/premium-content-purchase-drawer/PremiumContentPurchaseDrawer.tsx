@@ -6,11 +6,7 @@ import {
   useGetTrackById,
   useGetUserById
 } from '@audius/common/api'
-import type {
-  PurchaseableTrackStreamMetadata,
-  PurchaseableTrackDownloadMetadata,
-  PurchaseableContentMetadata
-} from '@audius/common/hooks'
+import type { PurchaseableContentMetadata } from '@audius/common/hooks'
 import {
   useRemoteVar,
   useUSDCBalance,
