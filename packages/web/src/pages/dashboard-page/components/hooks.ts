@@ -28,7 +28,7 @@ import {
   TrackFilters
 } from './types'
 
-const { getAccountsOwnAlbums } = accountSelectors
+const { getAccountOwnAlbums } = accountSelectors
 
 const messages = {
   public: 'Public',
@@ -268,7 +268,7 @@ const formatAlbumMetadata = (album: Collection): DataSourceAlbum => {
 
 /** Returns the logged-in user's albums, formatted for Artist Dashboard albums table */
 export const useFormattedAlbumData = () => {
-  const albums = useSelector(getAccountsOwnAlbums)
+  const albums = useSelector(getAccountOwnAlbums)
   const albumsFormatted = useMemo(() => {
     return albums?.map((album) => formatAlbumMetadata(album))
   }, [albums])
