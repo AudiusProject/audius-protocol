@@ -208,7 +208,7 @@ export const releaseRepo = {
   },
 
   upsert(xmlUrl: string, release: DDEXRelease) {
-    const key = release.isrc || release.icpn
+    const key = release.isrc || release.icpn || release.releaseIds.grid
     if (!key) {
       console.log(`No ID for release`, release)
       throw new Error('No ID for release')

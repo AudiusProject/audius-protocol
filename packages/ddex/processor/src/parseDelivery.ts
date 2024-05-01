@@ -416,22 +416,7 @@ export function parseDdexXml(xmlUrl: string, xmlText: string) {
         ),
         genre: $el.find('GenreText').text(),
         subGenre: $el.find('SubGenre').text(),
-        releaseIds: omitEmpty({
-          party_id: toText($el.find('ReleaseId > PartyId')),
-          catalog_number: toText($el.find('ReleaseId > CatalogNumber')),
-          icpn: toText($el.find('ReleaseId > ICPN')),
-          grid: toText($el.find('ReleaseId > GRid')),
-          isan: toText($el.find('ReleaseId > ISAN')),
-          isbn: toText($el.find('ReleaseId > ISBN')),
-          ismn: toText($el.find('ReleaseId > ISMN')),
-          isrc: toText($el.find('ReleaseId > ISRC')),
-          issn: toText($el.find('ReleaseId > ISSN')),
-          istc: toText($el.find('ReleaseId > ISTC')),
-          iswc: toText($el.find('ReleaseId > ISWC')),
-          mwli: toText($el.find('ReleaseId > MWLI')),
-          sici: toText($el.find('ReleaseId > SICI')),
-          proprietary_id: toText($el.find('ReleaseId > ProprietaryId')),
-        }),
+        releaseIds: parseReleaseIds($el),
         releaseDate,
         releaseType: $el.find('ReleaseType').text(),
 
@@ -504,10 +489,37 @@ export function parseDdexXml(xmlUrl: string, xmlText: string) {
 // helpers
 //
 
+function toText($el: CH) {
+  return $el.first().text().trim()
+}
+
+export function parseReleaseIds($el: CH): DDEXRelease['releaseIds'] {
+  return omitEmpty({
+    party_id: toText($el.find('ReleaseId > PartyId')),
+    catalog_number: toText($el.find('ReleaseId > CatalogNumber')),
+    icpn: toText($el.find('ReleaseId > ICPN')),
+    grid: toText($el.find('ReleaseId > GRid')),
+    isan: toText($el.find('ReleaseId > ISAN')),
+    isbn: toText($el.find('ReleaseId > ISBN')),
+    ismn: toText($el.find('ReleaseId > ISMN')),
+    isrc: toText($el.find('ReleaseId > ISRC')),
+    issn: toText($el.find('ReleaseId > ISSN')),
+    istc: toText($el.find('ReleaseId > ISTC')),
+    iswc: toText($el.find('ReleaseId > ISWC')),
+    mwli: toText($el.find('ReleaseId > MWLI')),
+    sici: toText($el.find('ReleaseId > SICI')),
+    proprietary_id: toText($el.find('ReleaseId > ProprietaryId')),
+  })
+}
+
 function resolveAudiusGenre(
   genre: string,
   subgenre: string
 ): Genre | undefined {
+  if (!genre && !subgenre) {
+    return
+  }
+
   // first try subgenre, then genre
   for (let searchTerm of [subgenre, genre]) {
     searchTerm = searchTerm.toLowerCase()
