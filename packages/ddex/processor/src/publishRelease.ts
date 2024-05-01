@@ -8,7 +8,7 @@ import { GetObjectCommand } from '@aws-sdk/client-s3'
 import { mkdir, readFile, stat, writeFile } from 'fs/promises'
 import { basename, dirname, join, resolve } from 'path'
 import { ReleaseRow, dbUpdate, releaseRepo } from './db'
-import { DDEXResource, DDEXRelease, DDEXSoundRecording } from './parseDelivery'
+import { DDEXResource, DDEXRelease } from './parseDelivery'
 import { dialS3 } from './s3poller'
 import { createSdkService } from './sdk'
 
@@ -160,21 +160,21 @@ export async function publishRelease(
   }
 }
 
-async function updateTrack(
-  sdk: AudiusSdk,
-  row: ReleaseRow,
-  release: DDEXRelease
-) {
-  const metas = prepareTrackMetadatas(release)
+// async function updateTrack(
+//   sdk: AudiusSdk,
+//   row: ReleaseRow,
+//   release: DDEXRelease
+// ) {
+//   const metas = prepareTrackMetadatas(release)
 
-  const result = await sdk.tracks.updateTrack({
-    userId: release.audiusUser!,
-    trackId: row.entityId!,
-    metadata: metas[0],
-  })
+//   const result = await sdk.tracks.updateTrack({
+//     userId: release.audiusUser!,
+//     trackId: row.entityId!,
+//     metadata: metas[0],
+//   })
 
-  console.log('UPDATE', result)
-}
+//   console.log('UPDATE', result)
+// }
 
 function prepareTrackMetadatas(release: DDEXRelease) {
   const trackMetas: UploadTrackRequest['metadata'][] =

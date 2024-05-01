@@ -27,8 +27,8 @@ const messages = {
 const useStyles = makeStyles(({ palette, spacing, typography }) => ({
   progressInfoSection: {
     gap: spacing(2),
-    marginBottom: spacing(4),
-    paddingHorizontal: spacing(4)
+    paddingHorizontal: spacing(4),
+    width: '100%'
   },
 
   progressInfoContainer: {

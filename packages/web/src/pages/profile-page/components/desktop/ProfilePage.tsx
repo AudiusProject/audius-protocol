@@ -27,7 +27,7 @@ import {
   IconRepost as IconReposts
 } from '@audius/harmony'
 
-import Card from 'components/card/desktop/Card'
+import Card from 'components/card-legacy/desktop/Card'
 import { ClientOnly } from 'components/client-only/ClientOnly'
 import CollectiblesPage from 'components/collectibles/components/CollectiblesPage'
 import CoverPhoto from 'components/cover-photo/CoverPhoto'

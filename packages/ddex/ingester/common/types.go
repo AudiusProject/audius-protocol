@@ -27,7 +27,8 @@ type Release struct {
 	PublishErrors []string         `bson:"publish_errors"`
 	FailureCount  int              `bson:"failure_count"`
 	ReleaseStatus string           `bson:"release_status"`
-	CreatedAt     time.Time        `bson:"created_at"`
+	IsUpdate      bool             `bson:"is_update"`
+	LastParsed    time.Time        `bson:"last_parsed"`
 
 	// Parsed from the release's XML
 	ReleaseProfile     ReleaseProfile         `bson:"release_profile"`      // "ReleaseProfileVersionId" from the DDEX XML

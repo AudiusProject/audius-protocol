@@ -18,7 +18,7 @@ switch (process.env.NETWORK) {
 }
 
 import { dialDb } from './services/dbService'
-import { publishReleases } from './services/publisherService'
+import { processReleases } from './services/publisherService'
 import createS3 from './services/s3Service'
 ;(async () => {
   try {
@@ -29,7 +29,7 @@ import createS3 from './services/s3Service'
     const sdkService = await createSdkService()
     const s3 = createS3()
 
-    publishReleases(sdkService.getSdk(), s3)
+    processReleases(sdkService.getSdk(), s3)
   } catch (error) {
     console.error('Failed to initialize:', error)
     process.exit(1)

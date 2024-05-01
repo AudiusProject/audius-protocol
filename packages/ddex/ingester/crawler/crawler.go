@@ -230,7 +230,7 @@ func (c *Crawler) upsertXML(key string, lastModified time.Time) (err error) {
 			ReleaseID:     strings.TrimSuffix(filepath.Base(key), ".xml"),
 			XMLRemotePath: remotePath,
 			RawXML:        primitive.Binary{Data: xmlBytes, Subtype: 0x00},
-			CreatedAt:     lastModified,
+			LastParsed:    lastModified,
 			ParseErrors:   []string{},
 			PublishErrors: []string{},
 			FailureCount:  0,

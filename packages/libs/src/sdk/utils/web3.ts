@@ -3,6 +3,7 @@ import type Web3Type from 'web3'
 
 declare global {
   interface Window {
+    // @ts-ignore
     Web3: Web3
   }
 }

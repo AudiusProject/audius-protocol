@@ -19,8 +19,8 @@ import {
   REMIXABLES,
   FEELING_LUCKY
 } from 'common/store/smart-collection/smartCollections'
-import CollectionArtCard from 'components/card/desktop/CollectionArtCard'
-import UserArtCard from 'components/card/desktop/UserArtCard'
+import CollectionArtCard from 'components/card-legacy/desktop/CollectionArtCard'
+import UserArtCard from 'components/card-legacy/desktop/UserArtCard'
 import Header from 'components/header/desktop/Header'
 import Page from 'components/page/Page'
 import PerspectiveCard, {

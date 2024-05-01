@@ -147,7 +147,8 @@ const CollectionScreenComponent = (props: CollectionScreenComponentProps) => {
     save_count,
     updated_at,
     stream_conditions,
-    ddex_app
+    ddex_app,
+    created_at
   } = collection
   const isOfflineModeEnabled = useIsOfflineModeEnabled()
   const { isEnabled: isEditAlbumsEnabled } = useFeatureFlag(
@@ -156,6 +157,8 @@ const CollectionScreenComponent = (props: CollectionScreenComponentProps) => {
 
   const { neutralLight5 } = useThemePalette()
 
+  const releaseDate =
+    'release_date' in collection ? collection.release_date : created_at
   const url = useMemo(() => {
     return `/${encodeUrlName(user.handle)}/${
       is_album ? 'album' : 'playlist'
@@ -323,6 +326,8 @@ const CollectionScreenComponent = (props: CollectionScreenComponentProps) => {
               hasStreamAccess={hasStreamAccess}
               streamConditions={stream_conditions}
               ddexApp={ddex_app}
+              releaseDate={releaseDate}
+              updatedAt={updated_at}
             />
             {isOwner && (!is_album || isEditAlbumsEnabled) && !ddex_app ? (
               <>

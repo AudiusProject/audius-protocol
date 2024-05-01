@@ -1,8 +1,9 @@
 import { useCallback, MouseEvent } from 'react'
 
-import { formatCount, pluralize } from '@audius/common/utils'
 import { IconHeart as IconFavorite, IconRepost } from '@audius/harmony'
 import cn from 'classnames'
+
+import { formatCount, pluralize } from 'utils/stringUtils'
 
 import styles from './RepostFavoritesStats.module.css'
 

@@ -12,7 +12,7 @@ import { capitalize } from 'lodash'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
-import Card from 'components/card/mobile/Card'
+import Card from 'components/card-legacy/mobile/Card'
 import CardLineup from 'components/lineup/CardLineup'
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
 import TextElement, { Type } from 'components/nav/mobile/TextElement'
