@@ -1,7 +1,8 @@
 from flask_restx import fields
 
+from .access_gate import access_gate
 from .common import favorite, ns, repost
-from .oneOf import OneOfModel
+from .extensions.fields import NestedOneOf
 from .users import user_model, user_model_full
 
 track_artwork = ns.model(
@@ -128,46 +129,6 @@ download = ns.model(
 )
 
 
-tip_gate = ns.model("tip_gate", {"tip_user_id": fields.String(required=True)})
-follow_gate = ns.model("follow_gate", {"follow_user_id": fields.String(required=True)})
-nft_collection = ns.model(
-    "nft_collection",
-    {
-        "chain": fields.String(enum=["eth", "sol"], required=True),
-        "address": fields.String(required=True),
-        "name": fields.String(required=True),
-        "imageUrl": fields.String(),
-        "externalLink": fields.String(),
-    },
-)
-nft_gate = ns.model(
-    "nft_gate", {"nft_collection": fields.Nested(nft_collection, required=True)}
-)
-usdc_gate = ns.model(
-    "usdc_gate",
-    {
-        "splits": fields.Wildcard(fields.Integer, required=True),
-        "price": fields.Integer(required=True),
-    },
-)
-purchase_gate = ns.model(
-    "purchase_gate", {"usdc_purchase": fields.Nested(usdc_gate, required=True)}
-)
-
-access_gate = ns.add_model(
-    "access_gate",
-    OneOfModel(
-        "access_gate",
-        {
-            "tip_gate": fields.Nested(tip_gate),
-            "follow_gate": fields.Nested(follow_gate),
-            "purchase_gate": fields.Nested(purchase_gate),
-            "nft_gate": fields.Nested(nft_gate),
-        },
-    ),
-)
-
-
 track_full = ns.clone(
     "track_full",
     track,
@@ -201,9 +162,9 @@ track_full = ns.clone(
         "remix_of": fields.Nested(full_remix_parent),
         "is_available": fields.Boolean,
         "is_stream_gated": fields.Boolean,
-        "stream_conditions": fields.Nested(access_gate, allow_null=True),
+        "stream_conditions": NestedOneOf(access_gate, allow_null=True),
         "is_download_gated": fields.Boolean,
-        "download_conditions": fields.Nested(access_gate, allow_null=True),
+        "download_conditions": NestedOneOf(access_gate, allow_null=True),
         "access": fields.Nested(access),
         "ai_attribution_user_id": fields.Integer(allow_null=True),
         "audio_upload_id": fields.String,
