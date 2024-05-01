@@ -7,7 +7,7 @@ case "$ID" in
 debian | ubuntu)
     # Uninstall old versions of docker
     set +e
-    for pkg in docker.io docker-doc docker-compose docker-compose-v2 podman-docker containerd runc nodejs; do sudo apt-get remove -y $pkg; done
+    for pkg in docker.io docker-doc docker-compose docker-compose-v2 podman-docker containerd runc; do sudo apt-get remove $pkg; done
     set -e
 
     # Install packages to allow apt to use a repository over HTTPS
@@ -39,9 +39,9 @@ debian | ubuntu)
         docker-ce-cli='5:24.0.5-1~ubuntu.22.04~jammy' \
         containerd.io \
         docker-buildx-plugin \
-        docker-compose-plugin='2.21.0-1~ubuntu.22.04~jammy' \
-        nodejs
+        docker-compose-plugin='2.21.0-1~ubuntu.22.04~jammy'
 
+    curl -fsSL https://raw.githubusercontent.com/tj/n/master/bin/n | bash -s lts
 
     # Add user to docker group
     sudo usermod -aG docker "$USER"
