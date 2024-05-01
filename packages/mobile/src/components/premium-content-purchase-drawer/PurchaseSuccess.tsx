@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
 
+import { capitalize } from '@audius/common/audius-query/utils'
 import {
   isPurchaseableAlbum,
   type PurchaseableContentMetadata
@@ -29,7 +30,7 @@ const messages = {
   success: 'Your Purchase Was Successful!',
   shareTwitterText: (contentType: string, trackTitle: string, handle: string) =>
     `I bought the ${contentType} ${trackTitle} by ${handle} on @Audius! #AudiusPremium`,
-  viewTrack: 'View Track',
+  view: (contentType: string) => `View ${capitalize(contentType)}`,
   repost: 'Repost',
   reposted: 'Reposted'
 }
@@ -46,10 +47,12 @@ export const PurchaseSuccess = ({
   const isAlbum = isPurchaseableAlbum(metadata)
   const title = isAlbum ? metadata.playlist_name : metadata.title
   const contentId = isAlbum ? metadata.playlist_id : metadata.track_id
+  const contentType = isAlbum ? 'album' : 'track'
 
   const link = isAlbum
     ? getCollectionRoute(metadata)
     : getTrackRoute(metadata, true)
+  console.log('REED', { link })
 
   const dispatch = useDispatch()
 
@@ -122,7 +125,7 @@ export const PurchaseSuccess = ({
         onPress={onPressViewTrack}
         iconRight={IconCaretRight}
       >
-        {messages.viewTrack}
+        {messages.view(contentType)}
       </PlainButton>
     </Flex>
   )
