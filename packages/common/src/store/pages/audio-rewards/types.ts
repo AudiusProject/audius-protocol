@@ -10,6 +10,7 @@ export type ChallengeRewardsModalType = ChallengeRewardID
 export type ClaimState =
   | { status: ClaimStatus.NONE }
   | { status: ClaimStatus.CLAIMING }
+  | { status: ClaimStatus.CUMULATIVE_CLAIMING }
   | { status: ClaimStatus.WAITING_FOR_RETRY }
   | { status: ClaimStatus.ALREADY_CLAIMED }
   | { status: ClaimStatus.SUCCESS }
@@ -43,6 +44,7 @@ export enum HCaptchaStatus {
 export enum ClaimStatus {
   NONE = 'none',
   CLAIMING = 'claiming',
+  CUMULATIVE_CLAIMING = 'cumulative claiming',
   WAITING_FOR_RETRY = 'waiting for retry',
   ALREADY_CLAIMED = 'already claimed',
   SUCCESS = 'success',

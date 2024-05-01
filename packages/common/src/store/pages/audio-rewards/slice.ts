@@ -204,7 +204,7 @@ const slice = createSlice({
       state,
       _action: PayloadAction<{ claims: AudioRewardsClaim[] }>
     ) => {
-      state.claimState = { status: ClaimStatus.CLAIMING }
+      state.claimState = { status: ClaimStatus.CUMULATIVE_CLAIMING }
     },
     claimChallengeReward: (
       state,
