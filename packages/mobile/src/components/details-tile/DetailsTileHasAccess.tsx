@@ -13,6 +13,7 @@ import type { ViewStyle } from 'react-native'
 import { View } from 'react-native'
 
 import {
+  Flex,
   IconCart,
   IconCollectible,
   IconSpecialAccess
@@ -48,14 +49,6 @@ const messages = {
 }
 
 const useStyles = makeStyles(({ palette, spacing, typography }) => ({
-  root: {
-    padding: spacing(4),
-    backgroundColor: palette.neutralLight10,
-    borderWidth: 1,
-    borderColor: palette.neutralLight7,
-    borderRadius: spacing(2),
-    gap: spacing(2)
-  },
   titleContainer: {
     ...flexRowCentered(),
     justifyContent: 'space-between',
@@ -94,6 +87,7 @@ type HasAccessProps = {
 
 const DetailsTileOwnerSection = ({
   streamConditions,
+  style,
   handlePressCollection
 }: HasAccessProps) => {
   const styles = useStyles()
@@ -101,7 +95,14 @@ const DetailsTileOwnerSection = ({
 
   if (isContentCollectibleGated(streamConditions)) {
     return (
-      <View style={styles.root}>
+      <Flex
+        p='l'
+        gap='s'
+        backgroundColor='white'
+        border='strong'
+        borderRadius='m'
+        style={style}
+      >
         <View style={[styles.titleContainer, styles.ownerTitleContainer]}>
           <IconCollectible fill={neutral} width={16} height={16} />
           <Text style={styles.title}>{messages.collectibleGated}</Text>
@@ -119,7 +120,7 @@ const DetailsTileOwnerSection = ({
             </Text>
           </Text>
         </View>
-      </View>
+      </Flex>
     )
   }
   if (
@@ -127,7 +128,14 @@ const DetailsTileOwnerSection = ({
     isContentTipGated(streamConditions)
   ) {
     return (
-      <View style={styles.root}>
+      <Flex
+        p='l'
+        gap='s'
+        backgroundColor='white'
+        border='strong'
+        borderRadius='m'
+        style={style}
+      >
         <View style={[styles.titleContainer, styles.ownerTitleContainer]}>
           <IconSpecialAccess fill={neutral} width={16} height={16} />
           <Text style={styles.title}>{messages.specialAccess}</Text>
@@ -141,12 +149,19 @@ const DetailsTileOwnerSection = ({
             </Text>
           </Text>
         </View>
-      </View>
+      </Flex>
     )
   }
   if (isContentUSDCPurchaseGated(streamConditions)) {
     return (
-      <View style={styles.root}>
+      <Flex
+        p='l'
+        gap='s'
+        backgroundColor='white'
+        border='strong'
+        borderRadius='m'
+        style={style}
+      >
         <View style={[styles.titleContainer, styles.ownerTitleContainer]}>
           <IconCart fill={neutral} width={16} height={16} />
           <Text style={styles.title}>{messages.payToUnlock}</Text>
@@ -160,7 +175,7 @@ const DetailsTileOwnerSection = ({
             </Text>
           </Text>
         </View>
-      </View>
+      </Flex>
     )
   }
   return null
@@ -295,7 +310,14 @@ export const DetailsTileHasAccess = ({
   }
 
   return (
-    <View style={[styles.root, style]}>
+    <Flex
+      p='l'
+      gap='s'
+      backgroundColor='white'
+      border='strong'
+      borderRadius='m'
+      style={style}
+    >
       <View style={styles.titleContainer}>
         <Text style={styles.title}>{messages.unlocked}</Text>
         <LockedStatusBadge
@@ -306,6 +328,6 @@ export const DetailsTileHasAccess = ({
         />
       </View>
       {renderUnlockedDescription()}
-    </View>
+    </Flex>
   )
 }
