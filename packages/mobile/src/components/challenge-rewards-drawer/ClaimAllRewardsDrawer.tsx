@@ -100,7 +100,7 @@ export const ClaimAllRewardsDrawer = () => {
 
   return (
     <AppDrawer
-      modalName='ClaimAllRewards'
+      modalName={MODAL_NAME}
       onClose={handleClose}
       isFullscreen
       isGestureSupported={false}

@@ -11,7 +11,6 @@ import type {
 } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import { ClaimStatus } from '@audius/common/store'
-import type { Dayjs } from '@audius/common/utils'
 import { fillString, formatNumberCommas } from '@audius/common/utils'
 import { View } from 'react-native'
 import { ScrollView } from 'react-native-gesture-handler'
@@ -28,7 +27,6 @@ import { formatLabel } from 'app/utils/challenges'
 import { useThemePalette } from 'app/utils/theme'
 
 import { SummaryTable } from '../summary-table'
-import type { SummaryTableItem } from '../summary-table/SummaryTable'
 
 import { ChallengeDescription } from './ChallengeDescription'
 import { ChallengeReward } from './ChallengeReward'
