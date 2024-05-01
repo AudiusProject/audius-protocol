@@ -5,7 +5,6 @@ import { call, put, race, select, take } from 'typed-redux-saga'
 
 import { PurchaseableContentMetadata, isPurchaseableAlbum } from '~/hooks'
 import { FavoriteSource, Name } from '~/models/Analytics'
-import type { Collection } from '~/models/Collection'
 import { ErrorLevel } from '~/models/ErrorReporting'
 import { ID } from '~/models/Identifiers'
 import {
