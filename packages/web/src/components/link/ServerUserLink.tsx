@@ -18,10 +18,10 @@ export const ServerUserLink = (props: ServerUserLinkProps) => {
   const { spacing } = useTheme()
 
   const user = useSelector((state: AppState) => {
-    return state.users.entries[userId].metadata
+    return state.users.entries[userId]?.metadata
   })
 
-  const url = user.handle ? profilePage(user.handle) : ''
+  const url = user?.handle ? profilePage(user.handle) : ''
 
   return (
     <TextLink
@@ -30,7 +30,7 @@ export const ServerUserLink = (props: ServerUserLinkProps) => {
       ellipses={popover}
       {...other}
     >
-      <Text ellipses>{user.name}</Text>
+      <Text ellipses>{user?.name}</Text>
       {children}
     </TextLink>
   )

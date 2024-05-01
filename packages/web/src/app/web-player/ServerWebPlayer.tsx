@@ -8,16 +8,15 @@ import { AppErrorBoundary } from 'app/AppErrorBoundary'
 import { HistoryContextProvider, useHistoryContext } from 'app/HistoryProvider'
 import { ServerReduxProvider } from 'app/ServerReduxProvider'
 import { ThemeProvider } from 'app/ThemeProvider'
-// import { HeaderContextConsumer } from 'components/header/mobile/HeaderContextProvider'
-// import TopLevelPage from 'components/nav/mobile/TopLevelPage'
+import {
+  HeaderContextProvider,
+  HeaderContextConsumer
+} from 'components/header/mobile/HeaderContextProvider'
 import ServerNavigator from 'components/nav/ServerNavigator'
 import { ServerPlayBar } from 'components/play-bar/desktop/ServerPlayBar'
+import { useIsMobile } from 'hooks/useIsMobile'
 import { MAIN_CONTENT_ID } from 'pages/MainContentContext'
-import {
-  SsrContextProvider,
-  SsrContextType,
-  useSsrContext
-} from 'ssr/SsrContext'
+import { SsrContextProvider, SsrContextType } from 'ssr/SsrContext'
 import { getSystemAppearance, getTheme } from 'utils/theme/theme'
 
 import styles from './WebPlayer.module.css'
@@ -42,7 +41,12 @@ const InnerProviderContainer = ({ children }: { children: ReactNode }) => {
     <>
       <ServerReduxProvider initialStoreState={initialStoreState}>
         <ConnectedRouter history={history}>
-          <ThemeProvider>{children}</ThemeProvider>
+          <ThemeProvider>
+            <HeaderContextProvider>
+              {/* @ts-ignore */}
+              {children}
+            </HeaderContextProvider>
+          </ThemeProvider>
         </ConnectedRouter>
       </ServerReduxProvider>
     </>
@@ -64,34 +68,40 @@ const ProviderContainer = ({
   </>
 )
 
-export const ServerWebPlayer = ({
-  ssrContextValue,
-  children
-}: ServerWebPlayerProps) => {
-  const { isMobile } = useSsrContext()
+const WebPlayerContent = ({ children }: Partial<ServerWebPlayerProps>) => {
+  const isMobile = useIsMobile()
   const mainContentRef = useRef(null)
 
   return (
-    <ProviderContainer ssrContextValue={ssrContextValue}>
-      <div className={styles.root}>
-        <div className={cn(styles.app, { [styles.mobileApp]: isMobile })}>
-          <ServerNavigator />
-          <div
-            ref={mainContentRef}
-            id={MAIN_CONTENT_ID}
-            role='main'
-            className={cn(styles.mainContentWrapper, {
-              [styles.mainContentWrapperMobile]: isMobile
-            })}
-          >
-            {/* {isMobile && <TopLevelPage />} */}
-            {/* {isMobile && <HeaderContextConsumer />} */}
-            {children}
-          </div>
-
-          <ServerPlayBar isMobile={isMobile} />
+    <div className={styles.root}>
+      <div className={cn(styles.app, { [styles.mobileApp]: isMobile })}>
+        <ServerNavigator />
+        <div
+          ref={mainContentRef}
+          id={MAIN_CONTENT_ID}
+          role='main'
+          className={cn(styles.mainContentWrapper, {
+            [styles.mainContentWrapperMobile]: isMobile
+          })}
+        >
+          {/* @ts-ignore */}
+          {isMobile && <HeaderContextConsumer />}
+          {children}
         </div>
+
+        <ServerPlayBar isMobile={isMobile} />
       </div>
+    </div>
+  )
+}
+
+export const ServerWebPlayer = ({
+  ssrContextValue,
+  ...other
+}: ServerWebPlayerProps) => {
+  return (
+    <ProviderContainer ssrContextValue={ssrContextValue}>
+      <WebPlayerContent {...other} />
     </ProviderContainer>
   )
 }

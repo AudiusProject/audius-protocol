@@ -1,3 +1,5 @@
+import cn from 'classnames'
+
 import providerStyles from '../PlayBarProvider.module.css'
 
 import styles from './PlayBar.module.css'
@@ -7,12 +9,14 @@ type ServerPlayBarProps = {
 }
 
 export const ServerPlayBar = ({ isMobile }: ServerPlayBarProps) => {
-  if (isMobile) return null
-
   return (
-    <div className={providerStyles.playBarWrapper}>
+    <div
+      className={cn(providerStyles.playBarWrapper, {
+        [providerStyles.isMobile]: isMobile
+      })}
+    >
       <div className={providerStyles.customHr} />
-      <div className={styles.playBar}>
+      <div className={cn(styles.playBar, { [styles.isMobile]: isMobile })}>
         <div className={styles.playBarContentWrapper}></div>
       </div>
     </div>
