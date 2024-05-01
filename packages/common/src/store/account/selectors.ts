@@ -177,14 +177,6 @@ export const getAccountWithAlbums = createSelector(
   }
 )
 
-export const getAccountAlbums = createSelector(
-  [getAccountWithCollections],
-  (account) => {
-    if (!account) return undefined
-    return account.collections.filter((c) => c.is_album)
-  }
-)
-
 export const getAccountOwnAlbums = createSelector(
   [getAccountWithCollections],
   (account) => {
