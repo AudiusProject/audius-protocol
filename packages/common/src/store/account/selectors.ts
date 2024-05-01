@@ -177,11 +177,13 @@ export const getAccountWithAlbums = createSelector(
   }
 )
 
-export const getAccountAlbums = createSelector(
+export const getAccountsOwnAlbums = createSelector(
   [getAccountWithCollections],
   (account) => {
     if (!account) return undefined
-    return account.collections.filter((c) => c.is_album)
+    return account.collections.filter(
+      (c) => c.is_album && account.user_id === c.playlist_owner_id
+    )
   }
 )
 
