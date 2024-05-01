@@ -347,58 +347,15 @@ func (ss *MediorumServer) logTrackListen(c echo.Context) {
 		userId = strconv.Itoa(sig.Data.UserID)
 	}
 
+	// default to identity
+	solanaRelayService := os.Getenv("identityService")
 	doDiscoveryListens := true
 	if doDiscoveryListens {
 		// pick random discovery node
-		node := ss.listenableDiscoveryNodes[rand.Intn(len(ss.listenableDiscoveryNodes))]
-
-		// do ip check for listener
-		ipCheckRoute := fmt.Sprintf("%s/ip_check/location", node)
-		req, err := signature.SignedGet(ipCheckRoute, ss.Config.privateKey, ss.Config.Self.Host)
-		if err != nil {
-			ss.logger.Error("unable to build ip check request", "err", err)
-			return
-		}
-
-		// pass real ip of listener to ip check on discovery
-		// otherwise discovery will get ip of content node
-		ip := c.RealIP()
-		req.Header.Set("X-Forwarded-For", ip)
-
-		// parse ip check res
-		client := &http.Client{}
-		resp, err := client.Do(req)
-		if err != nil {
-			ss.logger.Error("unable to GET ip_check to discovery node", "err", err)
-			return
-		}
-
-		if resp.StatusCode != http.StatusOK {
-			ss.logger.Error("received non-200 status code for ip check", "status", resp.StatusCode)
-			return
-		}
-
-		body, err := io.ReadAll(resp.Body)
-		if err != nil {
-			ss.logger.Error("failed to read ip_check response body", "err", err)
-			return
-		}
-
-		var ipCheck IPCheck
-		if err := json.Unmarshal(body, &ipCheck); err != nil {
-			ss.logger.Error("failed to unmarshal JSON for ip_check", "err", err)
-			return
-		}
-
-		ss.logger.Info("IP Check: ", ipCheck)
-
-		// TODO: craft listen
-
-		// TODO: send to discovery solana relay
-		return
+		solanaRelayService = ss.listenableDiscoveryNodes[rand.Intn(len(ss.listenableDiscoveryNodes))]
 	}
 
-	endpoint := fmt.Sprintf("%s/tracks/%d/listen", os.Getenv("identityService"), sig.Data.TrackId)
+	endpoint := fmt.Sprintf("%s/tracks/%d/listen", solanaRelayService, sig.Data.TrackId)
 	signatureData, err := signature.GenerateListenTimestampAndSignature(ss.Config.privateKey)
 	if err != nil {
 		ss.logger.Error("unable to build request", "err", err)
