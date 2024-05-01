@@ -12,7 +12,8 @@ import {
   SquareSizes,
   Kind,
   Status,
-  ID
+  ID,
+  ModalSource
 } from '@audius/common/models'
 import {
   accountSelectors,
@@ -108,6 +109,7 @@ export const ChatMessageTrack = ({
       showArtistPick={false}
       isActive={isTrackPlaying}
       variant='readonly'
+      source={ModalSource.DirectMessageTrackTile}
     />
   ) : null
 }

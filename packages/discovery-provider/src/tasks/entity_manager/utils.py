@@ -78,7 +78,6 @@ class EntityType(str, Enum):
     TRACK = "Track"
     USER = "User"
     DASHBOARD_WALLET_USER = "DashboardWalletUser"
-    USER_REPLICA_SET = "UserReplicaSet"
     USER_WALLET = "UserWallet"
     FOLLOW = "Follow"
     SAVE = "Save"
@@ -280,7 +279,6 @@ def expect_cid_metadata_json(metadata, action, entity_type):
         EntityType.GRANT,
         EntityType.DEVELOPER_APP,
         EntityType.DASHBOARD_WALLET_USER,
-        EntityType.USER_REPLICA_SET,
     ]:
         return False
     if action in [

@@ -7,9 +7,9 @@ import {
   useContext
 } from 'react'
 
-import { useInstanceVar } from '@audius/common/hooks'
 import { useHistory } from 'react-router-dom'
 
+import { useInstanceVar } from 'hooks/useInstanceVar'
 import { useIsMobile } from 'hooks/useIsMobile'
 
 type HeaderContextProps = {

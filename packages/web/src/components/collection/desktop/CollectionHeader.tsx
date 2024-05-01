@@ -6,6 +6,7 @@ import {
   AccessPermissions,
   CoverArtSizes,
   ID,
+  ModalSource,
   Variant,
   isContentUSDCPurchaseGated
 } from '@audius/common/models'
@@ -315,6 +316,7 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
           hasStreamAccess={hasStreamAccess}
           isOwner={ownerId === currentUserId}
           ownerId={ownerId}
+          source={ModalSource.CollectionDetails}
         />
       ) : null}
 

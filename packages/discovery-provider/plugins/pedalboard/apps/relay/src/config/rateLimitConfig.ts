@@ -120,11 +120,6 @@ const RELAY_RATE_LIMITS = {
     app: 5,
     allowlist: 1000,
   },
-  UpdateUserReplicaSet: {
-    owner: 100,
-    app: 5,
-    allowlist: 1000,
-  },
   CreateTrack: {
     owner: 100,
     app: 20,

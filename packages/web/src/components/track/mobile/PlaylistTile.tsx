@@ -239,7 +239,8 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
     ownerId,
     isStreamGated,
     hasStreamAccess,
-    streamConditions
+    streamConditions,
+    source
   } = props
   const [artworkLoaded, setArtworkLoaded] = useState(false)
   useEffect(() => {
@@ -274,7 +275,7 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
     if (isPurchase && id) {
       openPremiumContentPurchaseModal(
         { contentId: id, contentType: PurchaseableContentType.ALBUM },
-        { source: ModalSource.TrackTile }
+        { source: source ?? ModalSource.TrackTile }
       )
     } else if (id && !hasStreamAccess) {
       openLockedContentModal()

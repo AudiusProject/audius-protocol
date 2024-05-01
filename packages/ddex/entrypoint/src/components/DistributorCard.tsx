@@ -3,7 +3,7 @@ import {
 } from '@tanstack/react-query'
 import { sdk } from '@audius/sdk'
 import { Flex, IconEmbed, Text } from "@audius/harmony"
-import { useSdk } from '../contexts/AudiusSdkProvider'
+import { useSdk } from '../hooks/useSdk'
 import { useCallback } from 'react'
 import { Status } from '../contexts/types'
 
@@ -18,7 +18,7 @@ export const DistributorCard = ({
   appKey,
   url
 }: DistributorCardProps) => {
-  const {sdk: audiusSdk, status} = useSdk()
+  const {sdk: audiusSdk } = useSdk()
 
   const { data } = useQuery({
     queryKey: ['todos'],
@@ -60,7 +60,10 @@ export const DistributorCard = ({
       w='136px'
       h='136px'
       css={{
-        cursor: 'pointer'
+        transition: 'all var(--harmony-quick)',
+        cursor: 'pointer',
+        '&:hover': { 'box-shadow': 'var(--harmony-shadow-mid)' },
+        '&:active': { 'background': 'var(--harmony-bg-surface-1)' }
       }}
     >
       {
@@ -68,9 +71,11 @@ export const DistributorCard = ({
           <>
             <Flex
               borderRadius='xs'
-              css={{ overflow: 'hidden '}}
-              h={'56px'}
-              w={'56px'}
+              css={{
+                overflow: 'hidden'
+              }}
+              h='56px'
+              w='56px'
             >
               {data.imageUrl
                 ? <img src={data?.imageUrl} />
@@ -92,6 +97,7 @@ export const DistributorCard = ({
               variant='body'
               size='s'
               color='default'
+              textAlign='center'
             >
               {data?.name ?? ''}
             </Text>

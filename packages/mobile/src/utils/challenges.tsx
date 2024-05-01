@@ -3,11 +3,13 @@ import type {
   OptimisticUserChallenge
 } from '@audius/common/models'
 import { ChallengeName } from '@audius/common/models'
+import type { Dayjs } from '@audius/common/utils'
 import { challengeRewardsConfig } from '@audius/common/utils'
 import type { ImageSourcePropType } from 'react-native'
 import { Platform } from 'react-native'
 
 import {
+  Text,
   IconArrowRight,
   IconCheck,
   IconCloudUpload
@@ -26,6 +28,7 @@ import MoneyWings from 'app/assets/images/emojis/money-with-wings.png'
 import MultipleMusicalNotes from 'app/assets/images/emojis/multiple-musical-notes.png'
 import ArrowUp from 'app/assets/images/emojis/right-arrow-curving-up.png'
 import TrebleClef from 'app/assets/images/emojis/treble-clef.png'
+import type { SummaryTableItem } from 'app/components/summary-table/SummaryTable'
 
 export const messages = {
   sendFirstTipTitle: 'Send Your First Tip',
@@ -208,3 +211,28 @@ export const getChallengeConfig = (id: ChallengeRewardID) => ({
   ...challengeRewardsConfig[id],
   ...mobileChallengeConfig[id]
 })
+
+export const formatLabel = (item: {
+  claimableDate: Dayjs
+  id: string
+  isClose: boolean
+  label: string
+  value: number
+}): SummaryTableItem => {
+  const { label, claimableDate, isClose, id, value } = item
+  const formattedLabel = isClose ? (
+    label
+  ) : (
+    <Text>
+      {label}&nbsp;
+      <Text variant='body' color='subdued'>
+        {claimableDate.format('(M/D)')}
+      </Text>
+    </Text>
+  )
+  return {
+    id,
+    label: formattedLabel,
+    value
+  }
+}

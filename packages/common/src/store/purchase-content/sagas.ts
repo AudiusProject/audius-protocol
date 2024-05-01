@@ -587,7 +587,19 @@ function* doStartPurchaseContentFlow({
       yield* put(saveTrack(contentId, FavoriteSource.IMPLICIT))
     }
     if (contentType === PurchaseableContentType.ALBUM) {
+      const { metadata } = yield* call(getContentInfo, {
+        contentId,
+        contentType
+      })
       yield* put(saveCollection(contentId, FavoriteSource.IMPLICIT))
+      if (
+        'playlist_contents' in metadata &&
+        metadata.playlist_contents.track_ids
+      ) {
+        for (const track of metadata.playlist_contents.track_ids) {
+          yield* put(saveTrack(track.track, FavoriteSource.IMPLICIT))
+        }
+      }
     }
 
     // Check if playing the purchased track's preview and if so, stop it

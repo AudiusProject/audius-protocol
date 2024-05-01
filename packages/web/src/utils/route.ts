@@ -1,14 +1,14 @@
 import { ID } from '@audius/common/models'
-import { Env } from '@audius/common/services'
-import { encodeUrlName, getHash } from '@audius/common/utils'
 import { push as pushRoute } from 'connected-react-router'
 import { Location } from 'history'
 import { matchPath } from 'react-router'
 
+import { encodeUrlName } from './urlUtils'
+
 // TODO: Move routing to @audius/common with an injected env
 // so that it can properly handle routing to the correct environment.
 // These values are defaulted to the production context.
-const env: Partial<Env> = {
+const env = {
   BASENAME: '',
   USE_HASH_ROUTING: false,
   PUBLIC_PROTOCOL: 'https:',
@@ -331,6 +331,18 @@ export const staticRoutes = new Set([
   SALES_PAGE,
   WITHDRAWALS_PAGE
 ])
+
+/**
+ * Generate a short base36 hash for a given string.
+ * Used to generate short hashes for for queries and urls.
+ */
+const getHash = (str: string) =>
+  Math.abs(
+    str.split('').reduce((a, b) => {
+      a = (a << 5) - a + b.charCodeAt(0)
+      return a & a
+    }, 0)
+  ).toString(36)
 
 /** Given a pathname, finds a matching route */
 export const findRoute = (pathname: string) => {

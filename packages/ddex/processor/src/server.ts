@@ -1,24 +1,32 @@
 import 'dotenv/config'
 
 import { serve } from '@hono/node-server'
+import { fileTypeFromBuffer } from 'file-type'
 import { Context, Hono } from 'hono'
 import { deleteCookie, getSignedCookie, setSignedCookie } from 'hono/cookie'
 import { html } from 'hono/html'
 import { decode } from 'hono/jwt'
 import { prettyJSON } from 'hono/pretty-json'
 import { HtmlEscapedString } from 'hono/utils/html'
-import { dbUpsert, releaseRepo, userRepo, xmlRepo } from './db'
-import { reParsePastXml } from './parseDelivery'
-import { readAssetWithCaching } from './publishRelease'
-import { fileTypeFromBuffer } from 'file-type'
+import {
+  ReleaseProcessingStatus,
+  dbUpsert,
+  releaseRepo,
+  userRepo,
+  xmlRepo,
+} from './db'
+import { DDEXContributor, parseDdexXml, reParsePastXml } from './parseDelivery'
+import { prepareAlbumMetadata, prepareTrackMetadatas } from './publishRelease'
+import { parseBool } from './util'
+import { readAssetWithCaching } from './s3poller'
 
-const { NODE_ENV, DDEX_KEY, COOKIE_SECRET } = process.env
+const { NODE_ENV, DDEX_KEY, DDEX_URL, COOKIE_SECRET } = process.env
 const COOKIE_NAME = 'audiusUser'
 
-const API_HOST =
-  NODE_ENV == 'production'
-    ? 'https://discoveryprovider2.audius.co'
-    : 'https://discoveryprovider2.staging.audius.co'
+const IS_PROD = NODE_ENV == 'production'
+const API_HOST = IS_PROD
+  ? 'https://discoveryprovider2.audius.co'
+  : 'https://discoveryprovider2.staging.audius.co'
 
 const app = new Hono()
 app.use(prettyJSON({ space: 4 }))
@@ -49,12 +57,15 @@ app.get('/auth', (c) => {
   if (!DDEX_KEY) {
     return c.text('DDEX_KEY is required', 500)
   }
-  const base = 'https://staging.audius.co/oauth/auth?'
+  const myUrl = DDEX_URL || 'http://localhost:8989'
+  const base = IS_PROD
+    ? 'https://audius.co/oauth/auth?'
+    : 'https://staging.audius.co/oauth/auth?'
   const params = new URLSearchParams({
     scope: 'write',
-    redirect_uri: 'http://localhost:8989/auth/success',
+    redirect_uri: `${myUrl}/auth/success`,
     api_key: DDEX_KEY!,
-    rseponse_mode: 'query',
+    response_mode: 'query',
   })
   const u = base + params.toString()
   return c.redirect(u)
@@ -135,7 +146,11 @@ app.get('/auth/logout', async (c) => {
 })
 
 app.get('/releases', (c) => {
-  const rows = releaseRepo.all()
+  const queryStatus = c.req.query('status')
+  const rows = releaseRepo.all({
+    status: queryStatus,
+    pendingPublish: parseBool(c.req.query('pendingPublish')),
+  })
 
   let lastXmlUrl = ''
   const xmlSpacer = (xmlUrl: string) => {
@@ -153,9 +168,31 @@ app.get('/releases', (c) => {
     Layout(html`
       <h1>Releases</h1>
 
-      <form method="POST" action="/releases/reparse">
-        <button>rematch</button>
-      </form>
+      <div style="display: flex; gap: 10px;">
+        <!-- filters -->
+        <form>
+          <select
+            name="status"
+            aria-label="Select"
+            onchange="this.form.submit()"
+          >
+            <option selected value="">All</option>
+            ${Object.values(ReleaseProcessingStatus).map(
+              (s) =>
+                html`<option ${queryStatus == s ? 'selected' : ''}>
+                  ${s}
+                </option>`
+            )}
+          </select>
+        </form>
+
+        <div style="flex-grow: 1"></div>
+
+        <!-- actions -->
+        <form method="POST" action="/releases/reparse">
+          <button class="outline">re-parse</button>
+        </form>
+      </div>
 
       <table class="striped">
         <thead>
@@ -166,7 +203,7 @@ app.get('/releases', (c) => {
             <th>Is Main</th>
             <th>Audius User</th>
             <th>Audius Genre</th>
-            <th>Problems</th>
+            <th>Status</th>
             <th>Publish Errors</th>
             <th>Published?</th>
             <th>debug</th>
@@ -214,11 +251,16 @@ app.get('/releases', (c) => {
                   </td>
                   <td>
                     <a href="/xmls/${encodeURIComponent(row.xmlUrl)}">xml</a>
+
                     <a
                       href="/releases/${encodeURIComponent(
                         row.key
                       )}/json?pretty"
-                      >json</a
+                      >parsed</a
+                    >
+
+                    <a href="/xmls/${encodeURIComponent(row.xmlUrl)}?parse=sdk"
+                      >sdk</a
                     >
                   </td>
                 </tr>`
@@ -242,32 +284,64 @@ app.get('/releases/:key', (c) => {
   }
 
   const parsedRelease = row._parsed!
+
+  const mapArtist = (c: DDEXContributor) =>
+    html`<li><span>${c.name}</span>: <em>${c.role}</em></li>`
+
   return c.html(
     Layout(html`
       <div style="display: flex; gap: 20px">
-        <img
-          src="/release/${row.key}/images/${parsedRelease.images[0].ref}"
-          style="width: 200px; height: 200px"
-        />
+        <div style="text-align: center">
+          <img
+            src="/release/${row.key}/images/${parsedRelease.images[0].ref}"
+            style="width: 200px; height: 200px; display: block; margin-bottom: 10px"
+          />
+          <mark>${parsedRelease.parentalWarningType}</mark>
+        </div>
 
         <div style="flex-grow: 1">
           <h3>${parsedRelease.title}</h3>
-          <h4>${parsedRelease.artists.join(', ')}</h4>
-
+          <h5>
+            ${parsedRelease.artists.map(
+              (a) =>
+                html`<em style="margin-right: 5px" data-tooltip="${a.role}"
+                  >${a.name}</em
+                >`
+            )}
+          </h5>
           ${parsedRelease.soundRecordings.map(
             (sr) => html`
-              <article>
-                <button
-                  class="outline contrast"
-                  style="margin-right: 8px"
-                  onClick="play('/release/${row.key}/soundRecordings/${sr.ref}')"
-                >
-                  play
-                </button>
-                <a href="/release/${row.key}/soundRecordings/${sr.ref}">
-                  <b>${sr.title}</b>
-                </a>
-                by ${sr.artists.join(', ')}
+              <article style="display: flex; gap: 20px">
+                <div>
+                  <button
+                    class="outline contrast"
+                    onClick="play('/release/${row.key}/soundRecordings/${sr.ref}')"
+                  >
+                    play
+                  </button>
+                </div>
+                <div style="flex-grow: 1">
+                  <div>
+                    <a href="/release/${row.key}/soundRecordings/${sr.ref}">
+                      <h4 style="margin-top: 10px">${sr.title}</h4>
+                    </a>
+                  </div>
+
+                  <div style="margin-left: 10px">
+                    <h6>Artists</h6>
+                    <ul>
+                      ${sr.artists.map(mapArtist)}
+                    </ul>
+                    <h6>Contributors</h6>
+                    <ul>
+                      ${sr.contributors.map(mapArtist)}
+                    </ul>
+                    <h6>Indirect Contributors</h6>
+                    <ul>
+                      ${sr.indirectContributors.map(mapArtist)}
+                    </ul>
+                  </div>
+                </div>
               </article>
             `
           )}
@@ -326,8 +400,36 @@ app.get('/release/:key/:type/:ref/:name?', async (c) => {
 })
 
 app.get('/xmls/:xmlUrl', (c) => {
-  const row = xmlRepo.get(c.req.param('xmlUrl'))
+  const xmlUrl = c.req.param('xmlUrl')
+  const row = xmlRepo.get(xmlUrl)
   if (!row) return c.json({ error: 'not found' }, 404)
+
+  // parse=true will parse the xml to internal representation
+  if (parseBool(c.req.query('parse'))) {
+    const parsed = parseDdexXml(xmlUrl, row.xmlText)
+
+    // parse=sdk will convert internal representation to SDK friendly format
+    if (c.req.query('parse') == 'sdk') {
+      const sdkReleases = parsed.map((release) => {
+        const tracks = prepareTrackMetadatas(release)
+        if (tracks.length > 1) {
+          const album = prepareAlbumMetadata(release)
+          return {
+            ref: release.ref,
+            album,
+            tracks,
+          }
+        } else {
+          return {
+            ref: release.ref,
+            track: tracks[0],
+          }
+        }
+      })
+      return c.json(sdkReleases)
+    }
+    return c.json(parsed)
+  }
   c.header('Content-Type', 'text/xml')
   return c.body(row.xmlText)
 })
@@ -420,7 +522,7 @@ function Layout(inner: HtmlEscapedString | Promise<HtmlEscapedString>) {
             --pico-font-weight: 700;
           }
           mark {
-            margin-right: 1rem;
+            margin-right: 5px;
           }
         </style>
       </head>

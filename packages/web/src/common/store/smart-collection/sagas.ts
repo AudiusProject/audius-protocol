@@ -4,7 +4,7 @@ import {
   UserTrackMetadata,
   UserTrack
 } from '@audius/common/models'
-import { responseAdapter } from '@audius/common/services'
+import { makeActivity } from '@audius/common/services'
 import {
   accountSelectors,
   smartCollectionPageActions,
@@ -58,7 +58,7 @@ function* fetchHeavyRotation() {
   if (!activityData) return { ...HEAVY_ROTATION }
 
   const mostListenedTracks = activityData
-    .map(responseAdapter.makeActivity)
+    .map(makeActivity)
     .filter(removeNullable) as UserTrackMetadata[]
 
   const users = yield* call(

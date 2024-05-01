@@ -545,6 +545,7 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
               {renderProgressStatusLabel()}
             </div>
             {modalType === 'profile-completion' ? <ProfileChecks /> : null}
+            {renderCooldownSummaryTable()}
           </>
         ) : (
           <>

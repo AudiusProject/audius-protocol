@@ -12,10 +12,10 @@ import {
 } from '@tanstack/react-query'
 import { Flex } from '@audius/harmony'
 import { Footer } from './components/Footer'
-import { AudiusSdkProvider } from './contexts/AudiusSdkProvider'
 import { ConnectDistributor } from './components/ConnectDistributor'
-import { AuthProvider, Status, useAuth } from './contexts/AuthProvider'
+import { AuthProvider, useAuth } from './contexts/AuthProvider'
 import { Success } from './components/Success'
+import { Status } from './contexts/types'
 
 const queryClient = new QueryClient()
 
@@ -62,11 +62,24 @@ const Nav = () => {
       pv='l'
       justifyContent='space-between'
       alignItems='cener'
-      backgroundColor='white'
+      backgroundColor='surface1'
     >
-      <Text variant='body' size='l' color='default'>
-        {`${messages.loggedIn} @${user.handle}`}
-      </Text>
+      <Flex alignItems='center' gap='s'>
+        <Flex
+          h='32px'
+          w='32px'
+          border='strong'
+          css={{
+            overflow: 'hidden',
+            borderRadius: '50%'
+          }}
+        >
+          <img src={user.profilePicture?._150x150} />
+        </Flex>
+        <Text variant='body' size='l' color='default'>
+          {`${messages.loggedIn} @${user.handle}`}
+        </Text>
+      </Flex>
       <Button variant='secondary' size='small' onClick={logout}>
         {messages.signOut}
       </Button>
@@ -75,45 +88,51 @@ const Nav = () => {
 }
 
 const Page = () => {
-  const { user } = useAuth()
+  const { user, status } = useAuth()
   return (
     <Flex
       direction='column'
       backgroundColor='default'
       h={'100vh'}
+      css={{ userSelect: 'none' }}
     >
-      <Nav />
-      <Flex
-        flex={1}
-        direction='column'
-        justifyContent='center'
-        alignItems='center'
-      >
-        <Flex
-          w='640px'
-          gap='xl'
-          direction='column'
-          justifyContent='center'
-          alignItems='center'
-        >
-          <Paper
-            direction='column'
-            p='2xl'
-            gap='2xl'
-          >
-            <Flex justifyContent='center'>
-              <IconAudiusLogoHorizontalColor />
-            </Flex>
-              {
-                user
-                  ? <Success />
-                  : <ConnectDistributor />
-              }
-          </Paper>
-          <Support />
-        </Flex>
-      </Flex>
-      <Footer />
+      {status === Status.LOADING || status === Status.IDLE
+          ? <></>
+          : <>
+              <Nav />
+              <Flex
+                flex={1}
+                direction='column'
+                alignItems='center'
+                p='unit14'
+              >
+                <Flex
+                  w='640px'
+                  gap='xl'
+                  direction='column'
+                  justifyContent='center'
+                  alignItems='center'
+                >
+                  <Paper
+                    direction='column'
+                    p='2xl'
+                    gap='2xl'
+                  >
+                    <Flex justifyContent='center'>
+                      <IconAudiusLogoHorizontalColor />
+                    </Flex>
+                      {
+                        user
+                          ? <Success />
+                          : <ConnectDistributor />
+                      }
+                  </Paper>
+                  <Support />
+                </Flex>
+              </Flex>
+              <Footer />
+            </>
+      }
     </Flex>
   )
 }
@@ -122,11 +141,9 @@ export const App = () => {
   return (
     <HarmonyThemeProvider theme='day'>
       <QueryClientProvider client={queryClient}>
-        <AudiusSdkProvider>
-          <AuthProvider>
-            <Page />
-          </AuthProvider>
-        </AudiusSdkProvider>
+        <AuthProvider>
+          <Page />
+        </AuthProvider>
       </QueryClientProvider>
     </HarmonyThemeProvider>
   )

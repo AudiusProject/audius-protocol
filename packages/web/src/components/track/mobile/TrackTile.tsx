@@ -208,7 +208,8 @@ const TrackTile = (props: CombinedProps) => {
     variant,
     containerClassName,
     hasPreview = false,
-    title
+    title,
+    source
   } = props
 
   const hideShare: boolean = props.fieldVisibility
@@ -256,7 +257,7 @@ const TrackTile = (props: CombinedProps) => {
     if (isPurchase && trackId) {
       openPremiumContentPurchaseModal(
         { contentId: trackId, contentType: PurchaseableContentType.TRACK },
-        { source: ModalSource.TrackTile }
+        { source: source ?? ModalSource.TrackTile }
       )
     } else if (trackId && !hasStreamAccess) {
       openLockedContentModal()

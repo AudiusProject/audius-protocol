@@ -24,7 +24,7 @@ export const TextLink = forwardRef((props: TextLinkProps, ref: Ref<'a'>) => {
     ...other
   } = props
 
-  const { color, spacing } = useTheme()
+  const { color, spacing, motion } = useTheme()
 
   const variantColors = {
     default: color.link.default,
@@ -65,7 +65,7 @@ export const TextLink = forwardRef((props: TextLinkProps, ref: Ref<'a'>) => {
         gap: spacing.s,
         color: variantColors[variant],
         textDecoration: 'none',
-        transition: 'none',
+        transition: `color ${motion.hover}`,
         ':hover': hoverStyles,
         ...(isActive && { ...hoverStyles, textDecoration: 'none' }),
         ...(showUnderline && hoverStyles)

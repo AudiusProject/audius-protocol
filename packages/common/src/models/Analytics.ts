@@ -10,12 +10,12 @@ import {
   WalletAddress
 } from '~/models/Wallet'
 import { MintName } from '~/services/index'
-import { Prettify } from '~/utils/typeUtils'
+import { Nullable, Prettify } from '~/utils/typeUtils'
 
 import { Chain } from './Chain'
 import { PlaylistLibraryKind } from './PlaylistLibrary'
 import { PurchaseMethod } from './PurchaseContent'
-import { TrackAccessType } from './Track'
+import { AccessConditions, TrackAccessType } from './Track'
 
 const ANALYTICS_TRACK_EVENT = 'ANALYTICS/TRACK_EVENT'
 
@@ -219,11 +219,16 @@ export enum Name {
   // Track Edits
   TRACK_EDIT_ACCESS_CHANGED = 'Track Edit: Access Changed',
 
+  // Collection Edits
+  COLLECTION_EDIT_ACCESS_CHANGED = 'Collection Edit: Access Changed',
+  COLLECTION_EDIT = 'Collection Edit: General Edits',
+
   // Gated Track Listen
   LISTEN_GATED = 'Listen: Gated',
 
   // Unlocked Gated Tracks
   USDC_PURCHASE_GATED_TRACK_UNLOCKED = 'USDC Gated: Track Unlocked',
+  USDC_PURCHASE_GATED_COLLECTION_UNLOCKED = 'USDC Gated: Collection Unlocked',
   COLLECTIBLE_GATED_TRACK_UNLOCKED = 'Collectible Gated: Track Unlocked',
   FOLLOW_GATED_TRACK_UNLOCKED = 'Follow Gated: Track Unlocked',
   TIP_GATED_TRACK_UNLOCKED = 'Tip Gated: Track Unlocked',
@@ -1146,6 +1151,21 @@ type TrackEditAccessChanged = {
   to: TrackAccessType
 }
 
+// Collection Edits
+type CollectionEditAccessChanged = {
+  eventName: Name.COLLECTION_EDIT_ACCESS_CHANGED
+  id: number
+  from: Nullable<AccessConditions>
+  to: Nullable<AccessConditions>
+}
+
+type CollectionEdit = {
+  eventName: Name.COLLECTION_EDIT
+  id: number
+  from: TrackAccessType
+  to: TrackAccessType
+}
+
 // Unlocked Gated Tracks
 type USDCGatedTrackUnlocked = {
   eventName: Name.USDC_PURCHASE_GATED_TRACK_UNLOCKED
@@ -1334,8 +1354,10 @@ export enum PlaybackSource {
   PLAYLIST_PAGE = 'playlist page',
   TRACK_PAGE = 'track page',
   TRACK_TILE = 'track tile',
+  TRACK_TILE_LINEUP = 'track tile lineup',
   PLAYLIST_TRACK = 'playlist page track list',
   PLAYLIST_TILE_TRACK = 'playlist track tile',
+  PLAYLIST_TILE_TRACK_LINEUP = 'playlist track tile lineup',
   HISTORY_PAGE = 'history page',
   LIBRARY_PAGE = 'library page',
   PASSIVE = 'passive',
@@ -1370,9 +1392,16 @@ type TagClicking = {
 
 export enum ModalSource {
   TrackTile = 'track tile',
+  CollectionTile = 'collection tile',
   TrackDetails = 'track details',
+  CollectionDetails = 'collection details',
   NowPlaying = 'now playing',
   PlayBar = 'play bar',
+  DirectMessageTrackTile = 'track tile - direct message',
+  DirectMessageCollectionTile = 'collection tile - direct message',
+  LineUpTrackTile = 'track tile - lineup',
+  LineUpCollectionTile = 'collection tile - lineup',
+  TrackListItem = 'track list item',
   // Should never be used, but helps with type-checking
   Unknown = 'unknown'
 }
@@ -2424,6 +2453,8 @@ export type AllTrackingEvents =
   | TrackDownloadSuccessfulDownloadSingle
   | TrackDownloadFailedDownloadSingle
   | TrackEditAccessChanged
+  | CollectionEditAccessChanged
+  | CollectionEdit
   | TrackUploadSuccess
   | TrackUploadFailure
   | TrackUploadRejected

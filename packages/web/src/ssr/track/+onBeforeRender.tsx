@@ -1,26 +1,43 @@
-import { Maybe } from '@audius/common/utils'
-import { full as FullSdk } from '@audius/sdk'
+import {
+  developmentConfig,
+  productionConfig,
+  stagingConfig
+} from '@audius/sdk/src/sdk/config'
 import type { PageContextServer } from 'vike/types'
 
-import { audiusSdk } from '../sdk'
-
-export type TrackPageProps = {
-  track: Maybe<FullSdk.TrackFull>
+const sdkConfigs = {
+  production: productionConfig,
+  staging: stagingConfig,
+  development: developmentConfig
 }
 
 export async function onBeforeRender(pageContext: PageContextServer) {
   const { handle, slug } = pageContext.routeParams
 
   try {
-    const { data: tracks } = await audiusSdk.full.tracks.getBulkTracks({
-      permalink: [`${handle}/${slug}`]
-    })
+    // Fetching directly from discovery node rather than using the sdk because
+    // including the sdk increases bundle size and creates substantial cold start times
+    const discoveryNodes = (
+      sdkConfigs[process.env.VITE_ENVIRONMENT as keyof typeof sdkConfigs] ??
+      productionConfig
+    ).discoveryNodes
 
-    const pageProps = { track: tracks?.[0] }
+    const discoveryNode =
+      discoveryNodes[Math.floor(Math.random() * discoveryNodes.length)]
+
+    const discoveryRequestPath = `v1/full/tracks?permalink=${handle}/${slug}`
+    const discoveryRequestUrl = `${discoveryNode.endpoint}/${discoveryRequestPath}`
+
+    const res = await fetch(discoveryRequestUrl)
+    if (res.status !== 200) {
+      throw new Error(discoveryRequestUrl)
+    }
+
+    const json = await res.json()
 
     return {
       pageContext: {
-        pageProps
+        pageProps: { track: json.data[0] }
       }
     }
   } catch (e) {

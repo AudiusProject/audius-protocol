@@ -159,6 +159,20 @@ export const AudioMatchingRewardsModalContent = ({
     }
   }, [])
 
+  const renderCooldownSummaryTable = () => {
+    if (isCooldownChallengesEmpty) return null
+    return (
+      <SummaryTable
+        title={messages.upcomingRewards}
+        items={formatCooldownChallenges(cooldownChallenges).map(formatLabel)}
+        summaryItem={summary}
+        secondaryTitle={messages.audio}
+        summaryLabelColor='accent'
+        summaryValueColor='default'
+      />
+    )
+  }
+
   return (
     <div className={wm(cn(styles.container, styles.audioMatchingContainer))}>
       {isMobile ? (
@@ -168,6 +182,7 @@ export const AudioMatchingRewardsModalContent = ({
             <div className={wm(styles.progressInfo)}>{progressReward}</div>
             {progressStatusLabel}
           </div>
+          {renderCooldownSummaryTable()}
         </>
       ) : (
         <>
@@ -178,18 +193,7 @@ export const AudioMatchingRewardsModalContent = ({
             </div>
             {progressStatusLabel}
           </div>
-          {!isCooldownChallengesEmpty ? (
-            <SummaryTable
-              title={messages.upcomingRewards}
-              items={formatCooldownChallenges(cooldownChallenges).map(
-                formatLabel
-              )}
-              summaryItem={summary}
-              secondaryTitle={messages.audio}
-              summaryLabelColor='accent'
-              summaryValueColor='default'
-            />
-          ) : null}
+          {renderCooldownSummaryTable()}
         </>
       )}
       {challenge?.claimableAmount && challenge.claimableAmount > 0 ? (
