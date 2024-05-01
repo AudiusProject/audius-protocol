@@ -97,6 +97,9 @@ class PushNotifications {
     const isAndroid = Platform.OS === MobileOS.ANDROID
     isRegistering = true
 
+    const alreadyHasPerms = await this.hasPermission()
+
+    console.log({ alreadyHasPerms })
     if (isAndroid) {
       console.log('is android')
       // await request(PERMISSIONS.ANDROID.POST_NOTIFICATIONS)

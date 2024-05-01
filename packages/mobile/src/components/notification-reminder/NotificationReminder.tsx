@@ -28,38 +28,33 @@ const NotificationReminderInternal = () => {
     console.log('Reminding user')
     try {
       const { status } = await checkNotifications()
-      console.log('STATUS', { status })
-      dispatch(
-        setVisibility({ drawer: 'EnablePushNotifications', visible: true })
-      )
-      // switch (status) {
-      //   case RESULTS.UNAVAILABLE:
-      //     // Notifications are not available (on this device / in this context).
-      //     // Do nothing.
-      //     return
-      //   case RESULTS.LIMITED:
-      //     // Some subset of notification features are enabled, let the user be.
-      //     // Do nothing.
-      //     return
-      //   case RESULTS.GRANTED:
-      //     // The user already has given notifications permissions!
-      //     // Do nothing.
-      //     return
-      //   case RESULTS.BLOCKED:
-      //     // The user has explicitly blocked notifications.
-      //     // Don't be a jerk.
-      //     // Do nothing.
-      //     return
-      //   case RESULTS.DENIED:
-      //     // The permission has not been requested or has been denied but it still requestable
-      //     // Appeal to the user to enable notifications
-      //     dispatch(
-      //       setVisibility({ drawer: 'EnablePushNotifications', visible: true })
-      //     )
-      //     return
-      // }
+      switch (status) {
+        case RESULTS.UNAVAILABLE:
+          // Notifications are not available (on this device / in this context).
+          // Do nothing.
+          return
+        case RESULTS.LIMITED:
+          // Some subset of notification features are enabled, let the user be.
+          // Do nothing.
+          return
+        case RESULTS.GRANTED:
+          // The user already has given notifications permissions!
+          // Do nothing.
+          return
+        case RESULTS.BLOCKED:
+          // The user has explicitly blocked notifications.
+          // Don't be a jerk.
+          // Do nothing.
+          return
+        case RESULTS.DENIED:
+          // The permission has not been requested or has been denied but it still requestable
+          // Appeal to the user to enable notifications
+          dispatch(
+            setVisibility({ drawer: 'EnablePushNotifications', visible: true })
+          )
+          return
+      }
     } catch (error) {
-      console.log('EROOOROR')
       // Not sure what happened, but swallow the error. Not worth blocking on.
       console.error(error)
     }
@@ -73,9 +68,11 @@ const NotificationReminderInternal = () => {
     } else {
       // if (hasRetriggeredNotifs === 'true') {
       if (hasRetriggeredNotifs !== 'true') {
-        console.log('Needs retriggering')
+        console.log('Needs retriggering', { hasRetriggeredNotifs })
         remindUserToTurnOnNotifications()
         await AsyncStorage.setItem('RETRIGGER_NOTIFS', 'true')
+      } else {
+        console.log('Doesnt need retriggering', { hasRetriggeredNotifs })
       }
     }
   })
