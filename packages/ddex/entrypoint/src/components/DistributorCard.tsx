@@ -60,7 +60,10 @@ export const DistributorCard = ({
       w='136px'
       h='136px'
       css={{
-        cursor: 'pointer'
+        transition: 'all var(--harmony-quick)',
+        cursor: 'pointer',
+        '&:hover': { 'box-shadow': 'var(--harmony-shadow-mid)' },
+        '&:active': { 'background': 'var(--harmony-bg-surface-1)' }
       }}
     >
       {
@@ -68,9 +71,11 @@ export const DistributorCard = ({
           <>
             <Flex
               borderRadius='xs'
-              css={{ overflow: 'hidden '}}
-              h={'56px'}
-              w={'56px'}
+              css={{
+                overflow: 'hidden'
+              }}
+              h='56px'
+              w='56px'
             >
               {data.imageUrl
                 ? <img src={data?.imageUrl} />

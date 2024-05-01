@@ -6,6 +6,10 @@ const MINUTES_PER_HOUR = 60
 const SECONDS_PER_HOUR = SECONDS_PER_MINUTE * MINUTES_PER_HOUR
 dayjs.extend(advancedFormat)
 
+export const formatDateWithTimezoneOffset = (date: string): string => {
+  return dayjs.utc(date).local().format('M/D/YY')
+}
+
 export const formatSeconds = (seconds: number): string => {
   const time = dayjs.duration(seconds, 'seconds')
   if (seconds >= SECONDS_PER_HOUR) {
@@ -51,10 +55,6 @@ export const formatLineupTileDuration = (
 export const formatDate = (date: string, format?: string): string => {
   const dayjsFormat = format || 'M/D/YY'
   return dayjs(date).format(dayjsFormat)
-}
-
-export const formatDateWithTimezoneOffset = (date: string): string => {
-  return dayjs.utc(date).local().format('M/D/YY')
 }
 
 export const utcToLocalTime = (date: string) => {

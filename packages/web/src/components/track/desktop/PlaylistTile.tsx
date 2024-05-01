@@ -54,7 +54,8 @@ const PlaylistTile = ({
   href,
   hasStreamAccess,
   streamConditions,
-  TileTrackContainer = DefaultTileContainer
+  TileTrackContainer = DefaultTileContainer,
+  source
 }: PlaylistTileProps) => {
   const renderTracks = useCallback(
     () => (
@@ -124,6 +125,7 @@ const PlaylistTile = ({
           isStreamGated={!!streamConditions}
           streamConditions={streamConditions}
           hasStreamAccess={hasStreamAccess}
+          source={source}
         />
       </TileTrackContainer>
       <Box backgroundColor='surface1' borderTop='strong' borderBottom='strong'>

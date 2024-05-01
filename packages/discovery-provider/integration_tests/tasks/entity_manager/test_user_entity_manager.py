@@ -25,12 +25,6 @@ from src.utils.redis_connection import get_redis
 
 def set_patches(mocker):
     mocker.patch(
-        "src.tasks.entity_manager.entities.user.get_endpoint_string_from_sp_ids",
-        return_value="https://cn.io,https://cn2.io,https://cn3.io",
-        autospec=True,
-    )
-
-    mocker.patch(
         "src.tasks.entity_manager.entities.user.get_verifier_address",
         return_value="0x",
         autospec=True,

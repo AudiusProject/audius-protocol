@@ -2,7 +2,7 @@ import snakecaseKeys from 'snakecase-keys'
 
 import { makePlaylist } from '~/services/audius-api-client/ResponseAdapter'
 import { initialCacheState } from '~/store/cache/reducer'
-import { makeUid } from '~/utils'
+import { makeUid } from '~/utils/uid'
 
 import {
   Collection,

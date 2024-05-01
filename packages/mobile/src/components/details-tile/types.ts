@@ -37,9 +37,6 @@ export type DetailsTileProps = {
   /** Source for the analytics call when an external link in the description is pressed */
   descriptionLinkPressSource: 'track page' | 'collection page'
 
-  /** Information about the item such as genre, duration, etc */
-  details: DetailsTileDetail[]
-
   /** Description of the item */
   description?: string
 
@@ -97,9 +94,6 @@ export type DetailsTileProps = {
   /** Is the item unlisted (hidden) */
   isUnlisted?: boolean
 
-  /** Is the item a scheduled release */
-  isScheduledRelease?: boolean
-
   /** Function to call when the edit button is pressed */
   onPressEdit?: GestureResponderHandler
 
@@ -133,11 +127,11 @@ export type DetailsTileProps = {
   /** Amount of plays on this item */
   playCount?: number
 
+  /** Duration of the item in seconds */
+  duration?: number
+
   /** Render function for content below primary details */
   renderBottomContent?: () => ReactNode
-
-  /** Render function for the header */
-  renderHeader?: () => ReactNode
 
   /** Render function for the image */
   renderImage: (props: ImageProps) => ReactNode
@@ -162,4 +156,10 @@ export type DetailsTileProps = {
 
   /** The key of the DDEX app that owns this track/collection */
   ddexApp?: string | null
+
+  /** The release date of the item */
+  releaseDate?: string
+
+  /** The last updated time for the item */
+  updatedAt?: string
 }

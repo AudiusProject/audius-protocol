@@ -3,7 +3,7 @@ import { useCallback, MouseEvent } from 'react'
 import { Status, UserCollection, ID } from '@audius/common/models'
 
 import { ArtistPopover } from 'components/artist/ArtistPopover'
-import Card from 'components/card/desktop/Card'
+import Card from 'components/card-legacy/desktop/Card'
 import Header from 'components/header/desktop/Header'
 import CardLineup from 'components/lineup/CardLineup'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'

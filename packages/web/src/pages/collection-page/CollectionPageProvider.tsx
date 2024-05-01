@@ -15,7 +15,8 @@ import {
   SmartCollection,
   ID,
   UID,
-  isContentUSDCPurchaseGated
+  isContentUSDCPurchaseGated,
+  ModalSource
 } from '@audius/common/models'
 import {
   accountSelectors,
@@ -29,6 +30,7 @@ import {
   tracksSocialActions as socialTracksActions,
   usersSocialActions as socialUsersActions,
   mobileOverflowMenuUIActions,
+  modalsActions,
   shareModalUIActions,
   OverflowAction,
   OverflowSource,
@@ -81,6 +83,7 @@ import { getCollectionPageSEOFields } from 'utils/seo'
 import { CollectionPageProps as DesktopCollectionPageProps } from './components/desktop/CollectionPage'
 import { CollectionPageProps as MobileCollectionPageProps } from './components/mobile/CollectionPage'
 
+const { trackModalOpened } = modalsActions
 const { selectAllPlaylistUpdateIds } = playlistUpdatesSelectors
 const { makeGetCurrent } = queueSelectors
 const { getPlaying, getBuffering } = playerSelectors
@@ -498,7 +501,8 @@ class CollectionPage extends Component<
   onClickPurchaseTrack = (record: CollectionPageTrackRecord) => {
     this.props.openPremiumContentPurchaseModal({
       contentId: record.track_id,
-      contentType: PurchaseableContentType.TRACK
+      contentType: PurchaseableContentType.TRACK,
+      source: ModalSource.TrackListItem
     })
   }
 
@@ -1012,8 +1016,19 @@ function mapDispatchToProps(dispatch: Dispatch) {
       ),
     updatePlaylistLastViewedAt: (playlistId: ID) =>
       dispatch(updatedPlaylistViewed({ playlistId })),
-    openPremiumContentPurchaseModal: (args: PremiumContentPurchaseModalState) =>
+    openPremiumContentPurchaseModal: (
+      args: PremiumContentPurchaseModalState & { source: ModalSource }
+    ) => {
+      // Since we cant use the premium modal hook we have to manually trigger the modal action & the analytics tracking call
       dispatch(usePremiumContentPurchaseModalActions.open(args))
+      dispatch(
+        trackModalOpened({
+          name: 'PremiumContentPurchaseModal',
+          trackingData: args,
+          source: args.source
+        })
+      )
+    }
   }
 }
 

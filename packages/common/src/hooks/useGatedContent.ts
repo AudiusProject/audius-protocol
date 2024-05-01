@@ -19,12 +19,8 @@ import { getAccountUser } from '~/store/account/selectors'
 import { cacheTracksSelectors, cacheUsersSelectors } from '~/store/cache'
 import { gatedContentSelectors } from '~/store/gated-content'
 import { CommonState } from '~/store/reducers'
-import {
-  Nullable,
-  isContentCollection,
-  isContentTrack,
-  removeNullable
-} from '~/utils'
+import { isContentCollection, isContentTrack } from '~/utils/contentTypeUtils'
+import { Nullable, removeNullable } from '~/utils/typeUtils'
 
 const { getTrack } = cacheTracksSelectors
 const { getUser, getUsers } = cacheUsersSelectors

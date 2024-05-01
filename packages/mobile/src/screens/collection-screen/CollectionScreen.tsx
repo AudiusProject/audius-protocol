@@ -41,7 +41,7 @@ import {
   Divider
 } from 'app/components/core'
 import { CollectionImage } from 'app/components/image/CollectionImage'
-import { SuggestedCollectionTracks } from 'app/components/suggested-tracks'
+import { SuggestedTracks } from 'app/components/suggested-tracks'
 import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useRoute } from 'app/hooks/useRoute'
@@ -147,7 +147,8 @@ const CollectionScreenComponent = (props: CollectionScreenComponentProps) => {
     save_count,
     updated_at,
     stream_conditions,
-    ddex_app
+    ddex_app,
+    created_at
   } = collection
   const isOfflineModeEnabled = useIsOfflineModeEnabled()
   const { isEnabled: isEditAlbumsEnabled } = useFeatureFlag(
@@ -156,6 +157,8 @@ const CollectionScreenComponent = (props: CollectionScreenComponentProps) => {
 
   const { neutralLight5 } = useThemePalette()
 
+  const releaseDate =
+    'release_date' in collection ? collection.release_date : created_at
   const url = useMemo(() => {
     return `/${encodeUrlName(user.handle)}/${
       is_album ? 'album' : 'playlist'
@@ -323,11 +326,13 @@ const CollectionScreenComponent = (props: CollectionScreenComponentProps) => {
               hasStreamAccess={hasStreamAccess}
               streamConditions={stream_conditions}
               ddexApp={ddex_app}
+              releaseDate={releaseDate}
+              updatedAt={updated_at}
             />
-            {isOwner && (!is_album || isEditAlbumsEnabled) && !ddex_app ? (
+            {isOwner && !is_album && !ddex_app ? (
               <>
                 <Divider style={styles.divider} color={neutralLight5} />
-                <SuggestedCollectionTracks collectionId={playlist_id} />
+                <SuggestedTracks collectionId={playlist_id} />
               </>
             ) : null}
           </>

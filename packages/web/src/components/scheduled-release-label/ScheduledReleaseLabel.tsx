@@ -1,7 +1,8 @@
-import { getLocalTimezone } from '@audius/common/utils'
 import { Text, IconCalendarMonth } from '@audius/harmony'
 import cn from 'classnames'
 import moment from 'moment'
+
+import { getLocalTimezone } from 'utils/dateUtils'
 
 import gatedContentLabelStyles from '../track/GatedContentLabel.module.css'
 

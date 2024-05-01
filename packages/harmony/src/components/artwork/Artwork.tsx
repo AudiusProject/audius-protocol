@@ -1,15 +1,17 @@
-import { ComponentProps, useState } from 'react'
+import { ComponentProps, useEffect, useState } from 'react'
 
 import { useTheme } from '@emotion/react'
 
-import { Box, BoxProps } from 'components/layout'
+import { Box, BoxProps, Flex } from 'components/layout'
 import { Skeleton } from 'components/skeleton'
 
-export type ArtworkProps = { isLoading?: boolean } & Pick<
-  ComponentProps<'img'>,
-  'src'
-> &
+export type ArtworkProps = {
+  isLoading?: boolean
+  borderWidth?: number
+  'data-testid'?: string
+} & Pick<ComponentProps<'img'>, 'src'> &
   BoxProps
+
 /**
  * The artwork component displays the track cover art and appears in several
  * locations such as track tiles, track and playlist, pages,
@@ -18,44 +20,91 @@ export type ArtworkProps = { isLoading?: boolean } & Pick<
  * identify their favorite tracks.
  */
 export const Artwork = (props: ArtworkProps) => {
-  const { isLoading: isLoadingProp, src, ...other } = props
-  const [isLoadingState, setIsLoading] = useState(isLoadingProp ?? true)
+  const {
+    isLoading: isLoadingProp,
+    src,
+    borderRadius = 's',
+    borderWidth,
+    shadow,
+    children,
+    'data-testid': testId,
+    ...other
+  } = props
+  const [isLoadingState, setIsLoadingState] = useState(!!src)
   const isLoading = isLoadingProp ?? isLoadingState
-  const { motion } = useTheme()
+  const { color, motion } = useTheme()
+
+  useEffect(() => {
+    setIsLoadingState(!!src)
+  }, [src])
 
   return (
-    <Box borderRadius='s' border='default' {...other}>
-      {isLoading ? (
-        <Skeleton
-          borderRadius='s'
-          h='100%'
-          w='100%'
-          css={{ zIndex: 1, position: 'absolute' }}
-        />
-      ) : null}
-      <Box w='100%' pt='100%' backgroundColor='surface2' />
+    <Box {...other}>
       <Box
-        as='img'
-        borderRadius='s'
-        h='100%'
-        w='100%'
-        onLoad={() => {
-          setIsLoading(false)
-        }}
-        // @ts-ignore
-        src={src}
-        css={[
-          {
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            objectFit: 'cover',
-            opacity: 0,
-            transition: `opacity ${motion.calm}`
-          },
-          !isLoading && { opacity: 1 }
-        ]}
-      />
+        borderRadius={borderRadius}
+        border='default'
+        shadow={shadow}
+        css={{ borderWidth }}
+      >
+        {isLoading ? (
+          <Skeleton
+            borderRadius={borderRadius}
+            h='100%'
+            w='100%'
+            css={{ zIndex: 1, position: 'absolute' }}
+          />
+        ) : null}
+        <Box
+          w='100%'
+          pt='100%'
+          borderRadius={borderRadius}
+          css={{
+            backgroundColor: src
+              ? color.background.surface2
+              : color.neutral.n400
+          }}
+        />
+        {src ? (
+          <Box
+            as='img'
+            borderRadius={borderRadius}
+            h='100%'
+            w='100%'
+            onLoad={() => {
+              setIsLoadingState(false)
+            }}
+            // @ts-ignore
+            src={src}
+            data-testid={testId}
+            css={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              objectFit: 'cover',
+              opacity: isLoading ? 0 : 1,
+              transition: `opacity ${motion.calm}`
+            }}
+          />
+        ) : null}
+        {children ? (
+          <Flex
+            alignItems='center'
+            justifyContent='center'
+            h='100%'
+            w='100%'
+            borderRadius={borderRadius}
+            css={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              backgroundColor: src ? color.static.black : undefined,
+              opacity: src ? 0.4 : undefined
+            }}
+          >
+            {children}
+          </Flex>
+        ) : null}
+      </Box>
     </Box>
   )
 }
