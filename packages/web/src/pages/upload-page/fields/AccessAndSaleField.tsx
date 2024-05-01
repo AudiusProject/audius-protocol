@@ -171,7 +171,9 @@ export const AccessAndSaleFormSchema = (
     // Check for albumTrackPrice price >= min price (if applicable)
     .refine(
       (values) =>
-        isAlbum && isUpload
+        isAlbum &&
+        isUpload &&
+        values[STREAM_CONDITIONS]?.usdc_purchase?.albumTrackPrice !== undefined
           ? refineMinPrice('albumTrackPrice', minContentPriceCents)(values)
           : true,
       {
@@ -186,7 +188,9 @@ export const AccessAndSaleFormSchema = (
     })
     .refine(
       (values) =>
-        isAlbum && isUpload
+        isAlbum &&
+        isUpload &&
+        values[STREAM_CONDITIONS]?.usdc_purchase?.albumTrackPrice !== undefined
           ? refineMaxPrice('albumTrackPrice', maxContentPriceCents)(values)
           : true,
       {
