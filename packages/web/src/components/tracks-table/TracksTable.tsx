@@ -162,7 +162,6 @@ export const TracksTable = ({
   wrapperClassName
 }: TracksTableProps) => {
   const trackAccessMap = useGatedContentAccessMap(data)
-  const is
 
   // Cell Render Functions
   const renderPlayButtonCell = useCallback(
