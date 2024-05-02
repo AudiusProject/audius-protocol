@@ -10,8 +10,7 @@ import { parseParams } from '../../utils/parseParams'
 import {
   Configuration,
   TracksApi as GeneratedTracksApi,
-  PurchaseGateFromJSON,
-  instanceOfPurchaseGate
+  UsdcGate
 } from '../generated/full'
 
 import { PurchaseTrackRequest, PurchaseTrackSchema } from './types'
@@ -35,58 +34,76 @@ export class FullTracksApi extends GeneratedTracksApi {
     const {
       userId,
       trackId,
-      extraAmount = 0,
+      extraAmount: extraAmountNumber = 0,
       walletAdapter
     } = await parseParams('purchase', PurchaseTrackSchema)(params)
 
     const contentType = 'track'
     const mint = 'USDC'
 
+    // Fetch track
     const { data: track } = await this.getTrack({
-      trackId: params.trackId // use hashed trackId
+      trackId: params.trackId, // use hashed trackId
+      userId: params.userId // use hashed userId
     })
 
+    // Validate purchase attempt
     if (!track) {
-      throw new Error('Could not purchase track: track not found.')
+      throw new Error('Track not found.')
     }
-    if (!track.streamConditions && !track.downloadConditions) {
-      this.logger.warn('Attempted to purchase free track.')
-      return
+
+    if (!track.isStreamGated && !track.isDownloadGated) {
+      throw new Error('Attempted to purchase free track.')
     }
-    const isPurchaseGatedStreamAccess =
-      track.streamConditions && instanceOfPurchaseGate(track.streamConditions)
-    const isPurchaseGatedDownloadAccess =
+
+    if (track.user.id === params.userId) {
+      throw new Error('Attempted to purchase own track.')
+    }
+
+    let numberSplits: UsdcGate['splits'] = {}
+    let centPrice: number
+    let accessType: 'stream' | 'download' = 'stream'
+
+    // Get conditions
+    if (track.streamConditions && 'usdcPurchase' in track.streamConditions) {
+      centPrice = track.streamConditions.usdcPurchase.price
+      numberSplits = track.streamConditions.usdcPurchase.splits
+    } else if (
       track.downloadConditions &&
-      instanceOfPurchaseGate(track.downloadConditions)
-    if (!isPurchaseGatedStreamAccess && !isPurchaseGatedDownloadAccess) {
-      throw new Error(
-        'Could not purchase track: Track is not available for purchase.'
-      )
+      'usdcPurchase' in track.downloadConditions
+    ) {
+      centPrice = track.downloadConditions.usdcPurchase.price
+      numberSplits = track.downloadConditions.usdcPurchase.splits
+      accessType = 'download'
+    } else {
+      throw new Error('Track is not available for purchase.')
     }
 
-    this.logger.warn('Got track', track)
+    // Check if already purchased
+    if (
+      (accessType === 'download' && track.access?.download) ||
+      (accessType === 'stream' && track.access?.stream)
+    ) {
+      throw new Error('Track already purchased')
+    }
 
-    const accessType = isPurchaseGatedStreamAccess ? 'stream' : 'download'
+    let extraAmount = USDC(extraAmountNumber).value
+    const total = USDC(centPrice / 100.0).value + extraAmount
+    this.logger.debug('Purchase total:', total)
 
-    const accessGate = PurchaseGateFromJSON(
-      isPurchaseGatedStreamAccess
-        ? track.streamConditions
-        : track.downloadConditions
-    )
-
-    console.log('accessGate', accessGate)
-
-    const { splits: centSplits, price } = accessGate.usdcPurchase
-    const total = USDC(price).value + USDC(extraAmount).value
-
-    // Splits are given in cents. Divide by 100 and convert to USDC
-    const splits = Object.entries(centSplits).reduce(
-      (prev, [key, value]) => ({
-        ...prev,
-        [key]: USDC(value / 100.0).value
-      }),
+    // Convert splits to big int and spread extra amount to every split
+    const splits = Object.entries(numberSplits).reduce(
+      (prev, [key, value], index, arr) => {
+        const amountToAdd = extraAmount / BigInt(arr.length - index)
+        extraAmount = USDC(extraAmount - amountToAdd).value
+        return {
+          ...prev,
+          [key]: BigInt(value) + amountToAdd
+        }
+      },
       {}
     )
+    this.logger.debug('Calculated splits after extra amount:', splits)
 
     const routeInstruction =
       await this.paymentRouterClient.createRouteInstruction({
@@ -104,6 +121,9 @@ export class FullTracksApi extends GeneratedTracksApi {
       })
 
     if (walletAdapter) {
+      this.logger.debug(
+        `Using walletAdapter ${walletAdapter.name} to purchase...`
+      )
       // Use the specified Solana wallet
       const transferInstruction =
         await this.paymentRouterClient.createTransferInstruction({
@@ -120,6 +140,12 @@ export class FullTracksApi extends GeneratedTracksApi {
     } else {
       // Use the authed wallet's userbank and relay
       const ethWallet = await this.auth.getAddress()
+      this.logger.debug(
+        `Using userBank ${await this.claimableTokensClient.deriveUserBank({
+          ethWallet,
+          mint: 'USDC'
+        })} to purchase...`
+      )
       const paymentRouterTokenAccount =
         await this.paymentRouterClient.getOrCreateProgramTokenAccount({
           mint
