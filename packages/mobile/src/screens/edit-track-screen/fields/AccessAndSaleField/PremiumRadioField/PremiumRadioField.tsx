@@ -3,11 +3,10 @@ import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { useFeatureFlag } from '@audius/common/hooks'
 import { Name, isContentUSDCPurchaseGated } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
-import { css } from '@emotion/native'
 import { useField } from 'formik'
 import { Dimensions, View } from 'react-native'
 
-import { Flex, IconCart, IconStars } from '@audius/harmony-native'
+import { Flex, IconCart } from '@audius/harmony-native'
 import { Link, Tag, Text } from 'app/components/core'
 import { HelpCallout } from 'app/components/help-callout/HelpCallout'
 import { useSetTrackAvailabilityFields } from 'app/hooks/useSetTrackAvailabilityFields'
@@ -102,8 +101,8 @@ export const PremiumRadioField = (props: PremiumRadioFieldProps) => {
   const titleIconColor = selected
     ? secondary
     : disabled
-      ? neutralLight4
-      : neutral
+    ? neutralLight4
+    : neutral
 
   const selectedUsdcPurchaseValue = useMemo(() => {
     if (isContentUSDCPurchaseGated(previousStreamConditions)) {
@@ -160,7 +159,6 @@ export const PremiumRadioField = (props: PremiumRadioFieldProps) => {
       {!isUsdcUploadEnabled ? (
         <>
           <Tag style={styles.comingSoon}>{messages.comingSoon}</Tag>
-          {renderHelpCalloutContent()}
           <HelpCallout content={renderHelpCalloutContent()} />
         </>
       ) : null}
