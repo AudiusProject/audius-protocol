@@ -146,15 +146,15 @@ def get_delete_developer_app_metadata_from_raw(
     return metadata
 
 
-def validate_developer_app_tx(params: ManageEntityParameters, metadata):
-    user_id = params.user_id
-    address = metadata.get("address", None)
-    session = params.session
-
+def validate_entity_type(params: ManageEntityParameters):
     if params.entity_type != EntityType.DEVELOPER_APP:
         raise IndexingValidationError(
-            f"Invalid Developer App Transaction, wrong entity type {params.entity_type}"
+            f"Invalid {params.action} Developer App Transaction, wrong entity type {params.entity_type}"
         )
+
+
+def validate_user(params: ManageEntityParameters):
+    user_id = params.user_id
     if not user_id:
         raise IndexingValidationError(
             f"Invalid {params.action} Developer App Transaction, user id is required and was not provided"
@@ -167,149 +167,174 @@ def validate_developer_app_tx(params: ManageEntityParameters, metadata):
         raise IndexingValidationError(
             f"Programming error while indexing {params.action} Developer App Transaction, user wallet missing"
         )
+
+
+def validate_address_exists(params: ManageEntityParameters, metadata: dict):
+    address = metadata.get("address", None)
+    if not address:
+        raise IndexingValidationError(
+            f"Invalid {params.action} Developer App Transaction, address is required and was not provided"
+        )
+
+    if address not in params.existing_records["DeveloperApp"]:
+        raise IndexingValidationError(
+            f"Invalid {params.action} Developer App Transaction, developer app with address {metadata['address']} does not exist"
+        )
+
+
+def validate_owner(params: ManageEntityParameters, metadata: dict):
+    user_id = params.user_id
+    address = metadata.get("address", None)
+
+    existing_developer_app = params.existing_records["DeveloperApp"][address]
+    if user_id != existing_developer_app.user_id:
+        raise IndexingValidationError(
+            f"Invalid {params.action} Developer App Transaction, user id {user_id} does not match given developer app address"
+        )
+
+
+def validate_app_signature(params: ManageEntityParameters, metadata: dict):
+    address = metadata.get("address", None)
+
+    if not metadata["app_signature"]:
+        raise IndexingValidationError(
+            "Invalid {params.action} Developer App Transaction, app signature is required and was not provided"
+        )
+    if (
+        not isinstance(metadata["app_signature"], dict)
+        or not metadata["app_signature"]
+        .get("message", "")
+        .startswith("Creating Audius developer app at ")
+        or not is_within_6_hours(
+            (metadata["app_signature"].get("message", "").split())[-1]
+        )
+    ):
+        raise IndexingValidationError(
+            f"Invalid {params.action} Developer App Transaction, app signature provided does not have correct message"
+        )
+    try:
+        address = get_address_from_signature(metadata["app_signature"])
+    except:
+        raise IndexingValidationError(
+            f"Invalid {params.action} Developer App Transaction, app signature provided is invalid"
+        )
+    if not address:
+        raise IndexingValidationError(
+            f"Invalid {params.action} Developer App Transaction, app signature provided is invalid"
+        )
+
+
+def validate_name(params: ManageEntityParameters, metadata: dict):
+    if not metadata["name"]:
+        raise IndexingValidationError(
+            f"Invalid {params.action} Developer App Transaction, name is required and was not provided"
+        )
+    if not isinstance(metadata["name"], str) or len((metadata["name"])) > 50:
+        raise IndexingValidationError(
+            f"Invalid {params.action} Developer App Transaction, name must be under 51 characters"
+        )
+
+
+def validate_unique_address(params: ManageEntityParameters, metadata: dict):
+    address = metadata.get("address", None)
+    if address in params.existing_records["DeveloperApp"]:
+        raise IndexingValidationError(
+            f"Invalid {params.action} Developer App Transaction, address {address} already exists"
+        )
+    if address in params.existing_records["UserWallet"]:
+        raise IndexingValidationError(
+            f"Invalid {params.action} Developer App Transaction, address cannot be a user's wallet"
+        )
+
+
+def validate_personal_access(params: ManageEntityParameters, metadata: dict):
+    if metadata["is_personal_access"] != None and not isinstance(
+        metadata["is_personal_access"], bool
+    ):
+        raise IndexingValidationError(
+            f"Invalid {params.action} Developer App Transaction, is_personal_access must be a boolean (or empty)"
+        )
+
+
+def validate_description(params: ManageEntityParameters, metadata: dict):
+    if metadata["description"] != None and (
+        not isinstance(metadata["description"], str)
+        or len((metadata["description"])) > MAX_DESCRIPTION_LENGTH
+    ):
+        raise IndexingValidationError(
+            f"Invalid {params.action} Developer App Transaction, description must be under 161 characters"
+        )
+
+
+def validate_image_url(params: ManageEntityParameters, metadata: dict):
+    if metadata["image_url"] != None and (
+        not isinstance(metadata["image_url"], str)
+        or len((metadata["image_url"])) > MAX_IMAGE_URL_LENGTH
+    ):
+        raise IndexingValidationError(
+            f"Invalid {params.action} Developer App Transaction, image_url must be under 2001 characters"
+        )
+
+
+def validate_user_app_count(params: ManageEntityParameters, metadata: dict):
+    user_id = params.user_id
+    address = metadata.get("address", None)
+    session = params.session
+
+    num_existing_apps_from_user = (
+        session.query(DeveloperApp)
+        .filter(
+            DeveloperApp.user_id == user_id,
+            DeveloperApp.is_delete == False,
+            DeveloperApp.is_current == True,
+        )
+        .count()
+    )
+
+    num_new_apps_from_user = 0
+    for addressKey, apps in params.new_records["DeveloperApp"].items():
+        if addressKey.lower() != address.lower() and apps[-1].user_id == user_id:
+            num_new_apps_from_user += 1
+
+    user_has_too_many_apps = num_existing_apps_from_user + num_new_apps_from_user >= 3
+    if user_has_too_many_apps:
+        raise IndexingValidationError(
+            "Invalid Create Developer App Transaction, user has too many developer apps"
+        )
+
+
+def validate_developer_app_tx(params: ManageEntityParameters, metadata):
+    validate_entity_type(params)
+    validate_user(params)
     validate_signer(params)
+
     if params.action == Action.DELETE:
-        if not address:
-            raise IndexingValidationError(
-                f"Invalid {params.action} Developer App Transaction, address is required and was not provided"
-            )
+        validate_address_exists(params, metadata)
+        validate_owner(params, metadata)
 
-        if address not in params.existing_records["DeveloperApp"]:
-            raise IndexingValidationError(
-                f"Invalid Delete Developer App Transaction, developer app with address {metadata['address']} does not exist"
-            )
-        existing_developer_app = params.existing_records["DeveloperApp"][address]
-        if user_id != existing_developer_app.user_id:
-            raise IndexingValidationError(
-                f"Invalid Delete Developer App Transaction, user id {user_id} does not match given developer app address"
-            )
     elif params.action == Action.CREATE:
-        if not metadata["app_signature"]:
-            raise IndexingValidationError(
-                "Invalid Create Developer App Transaction, app signature is required and was not provided"
-            )
-        if (
-            not isinstance(metadata["app_signature"], dict)
-            or not metadata["app_signature"]
-            .get("message", "")
-            .startswith("Creating Audius developer app at ")
-            or not is_within_6_hours(
-                (metadata["app_signature"].get("message", "").split())[-1]
-            )
-        ):
-            raise IndexingValidationError(
-                "Invalid Create Developer App Transaction, app signature provided does not have correct message"
-            )
-        try:
-            address = get_address_from_signature(metadata["app_signature"])
-        except:
-            raise IndexingValidationError(
-                "Invalid Create Developer App Transaction, app signature provided is invalid"
-            )
-        if not address:
-            raise IndexingValidationError(
-                "Invalid Create Developer App Transaction, app signature provided is invalid"
-            )
-        if not metadata["name"]:
-            raise IndexingValidationError(
-                "Invalid Create Developer App Transaction, name is required and was not provided"
-            )
-        if not isinstance(metadata["name"], str) or len((metadata["name"])) > 50:
-            raise IndexingValidationError(
-                "Invalid Create Developer App Transaction, name must be under 51 characters"
-            )
-        if address in params.existing_records["DeveloperApp"]:
-            raise IndexingValidationError(
-                f"Invalid Create Developer App Transaction, address {address} already exists"
-            )
-        if address in params.existing_records["UserWallet"]:
-            raise IndexingValidationError(
-                "Invalid Create Developer App Transaction, address cannot be a user's wallet"
-            )
-        if metadata["is_personal_access"] != None and not isinstance(
-            metadata["is_personal_access"], bool
-        ):
-            raise IndexingValidationError(
-                "Invalid Create Developer App Transaction, is_personal_access must be a boolean (or empty)"
-            )
-        if metadata["description"] != None and (
-            not isinstance(metadata["description"], str)
-            or len((metadata["description"])) > MAX_DESCRIPTION_LENGTH
-        ):
-            raise IndexingValidationError(
-                "Invalid Create Developer App Transaction, description must be under 161 characters"
-            )
-        if metadata["image_url"] != None and (
-            not isinstance(metadata["image_url"], str)
-            or len((metadata["image_url"])) > MAX_IMAGE_URL_LENGTH
-        ):
-            raise IndexingValidationError(
-                "Invalid Create Developer App Transaction, image_url must be under 2001 characters"
-            )
+        validate_app_signature(params, metadata)
+        metadata["address"] = get_address_from_signature(metadata["app_signature"])
+        validate_unique_address(params, metadata)
+        validate_name(params, metadata)
+        validate_personal_access(params, metadata)
+        validate_description(params, metadata)
+        validate_image_url(params, metadata)
+        validate_user_app_count(params, metadata)
 
-        num_existing_apps_from_user = (
-            session.query(DeveloperApp)
-            .filter(
-                DeveloperApp.user_id == user_id,
-                DeveloperApp.is_delete == False,
-                DeveloperApp.is_current == True,
-            )
-            .count()
-        )
-
-        num_new_apps_from_user = 0
-        for addressKey, apps in params.new_records["DeveloperApp"].items():
-            if addressKey.lower() != address.lower() and apps[-1].user_id == user_id:
-                num_new_apps_from_user += 1
-
-        user_has_too_many_apps = (
-            num_existing_apps_from_user + num_new_apps_from_user >= 3
-        )
-        if user_has_too_many_apps:
-            raise IndexingValidationError(
-                "Invalid Create Developer App Transaction, user has too many developer apps"
-            )
     elif params.action == Action.UPDATE:
-        if not address:
-            raise IndexingValidationError(
-                f"Invalid {params.action} Developer App Transaction, address is required and was not provided"
-            )
+        validate_address_exists(params, metadata)
+        validate_owner(params, metadata)
+        validate_name(params, metadata)
+        validate_description(params, metadata)
+        validate_image_url(params, metadata)
 
-        if address not in params.existing_records["DeveloperApp"]:
-            raise IndexingValidationError(
-                f"Invalid Update Developer App Transaction, developer app with address {metadata['address']} does not exist"
-            )
-        existing_developer_app = params.existing_records["DeveloperApp"][address]
-        if user_id != existing_developer_app.user_id:
-            raise IndexingValidationError(
-                f"Invalid Update Developer App Transaction, user id {user_id} does not match given developer app address"
-            )
-        if not metadata["name"]:
-            raise IndexingValidationError(
-                "Invalid Update Developer App Transaction, name is required and was not provided"
-            )
-        if not isinstance(metadata["name"], str) or len((metadata["name"])) > 50:
-            raise IndexingValidationError(
-                "Invalid Update Developer App Transaction, name must be under 51 characters"
-            )
-        if metadata["description"] != None and (
-            not isinstance(metadata["description"], str)
-            or len((metadata["description"])) > MAX_DESCRIPTION_LENGTH
-        ):
-            raise IndexingValidationError(
-                "Invalid Update Developer App Transaction, description must be under 161 characters"
-            )
-        if metadata["image_url"] != None and (
-            not isinstance(metadata["image_url"], str)
-            or len((metadata["image_url"])) > MAX_IMAGE_URL_LENGTH
-        ):
-            raise IndexingValidationError(
-                "Invalid Update Developer App Transaction, image_url must be under 2001 characters"
-            )
     else:
         raise IndexingValidationError(
             f"Invalid Developer App Transaction, action {params.action} is not valid"
         )
+
+    address = metadata.get("address", None)
     return address
 
 
