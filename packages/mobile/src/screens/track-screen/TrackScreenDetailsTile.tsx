@@ -47,6 +47,7 @@ import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { make, track as record } from 'app/services/analytics'
 
 import { DownloadSection } from './DownloadSection'
+import { TrackScreenDeletedTile } from './TrackScreenDeletedTile'
 const { getPlaying, getTrackId, getPreviewing } = playerSelectors
 const { setFavorite } = favoritesUserListActions
 const { setRepost } = repostsUserListActions
@@ -281,6 +282,10 @@ export const TrackScreenDetailsTile = ({
 
   const renderBottomContent = () => {
     return hasDownloadableAssets ? <DownloadSection trackId={trackId} /> : null
+  }
+
+  if (track.is_delete) {
+    return <TrackScreenDeletedTile track={track} user={user} />
   }
 
   return (
