@@ -1,8 +1,12 @@
 # Pretty much the same as the Dockerfile.prod but assumes the whole
 # discovery-provider package is a mounted volume instead of copying everything.
+FROM audius/contracts:1.0.0 AS contracts
 FROM alpine:3.18
 
 WORKDIR /app/packages/discovery-provider
+
+ENV PROMETHEUS_MULTIPROC_DIR /prometheus_data
+RUN mkdir -p ${PROMETHEUS_MULTIPROC_DIR}
 
 # Add the wait script to the image
 # Script originally from https://github.com/ufoscout/docker-compose-wait/releases/download/2.4.0/wait
@@ -63,6 +67,8 @@ RUN python3 -m pip install --upgrade pip
 COPY scripts/init-db.sh scripts/init-db.sh
 RUN bash scripts/init-db.sh
 
+COPY --from=contracts /usr/src/app/build/contracts/ build/contracts/
+
 COPY requirements.txt requirements.txt
 RUN --mount=type=cache,target=/root/.cache \
   python3 -m pip install -r requirements.txt --no-cache-dir
@@ -71,7 +77,14 @@ COPY nginx_conf /usr/local/openresty/conf/
 
 # ARGs can be optionally defined with --build-arg while doing docker build eg in CI and then set to env vars
 ARG git_sha
+ARG audius_loggly_disable
+ARG audius_loggly_token
+ARG audius_loggly_tags
+
 ENV GIT_SHA=$git_sha
+ENV audius_loggly_disable=$audius_loggly_disable
+ENV audius_loggly_token=$audius_loggly_token
+ENV audius_loggly_tags=$audius_loggly_tags
 
 EXPOSE 5000
 

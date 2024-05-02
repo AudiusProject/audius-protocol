@@ -65,6 +65,9 @@ default_padded_start_hash = (
 )
 default_config_start_hash = "0x0"
 
+# Used to update user_replica_set_manager address and skip txs conditionally
+zero_address = "0x0000000000000000000000000000000000000000"
+
 model_mapping = {
     Save.__tablename__: Save,
     Repost.__tablename__: Repost,
@@ -351,9 +354,7 @@ def index_next_block(
                 )
                 if should_update:
                     celery.send_task(
-                        "calculate_trending_challenges",
-                        queue="index_nethermind",
-                        kwargs={"date": date},
+                        "calculate_trending_challenges", queue="index_nethermind", kwargs={"date": date}
                     )
         except Exception as e:
             # Do not throw error, as this should not stop indexing

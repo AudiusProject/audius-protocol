@@ -92,6 +92,20 @@ connected_wallets = ns.model(
     },
 )
 
+user_replica_set = ns.model(
+    "user_replica_set",
+    {
+        "user_id": fields.Integer(required=True),
+        "wallet": fields.String(required=True),
+        "primary": fields.String(required=False),
+        "secondary1": fields.String(required=False),
+        "secondary2": fields.String(required=False),
+        "primarySpID": fields.Integer(required=False),
+        "secondary1SpID": fields.Integer(required=False),
+        "secondary2SpID": fields.Integer(required=False),
+    },
+)
+
 challenge_response = ns.model(
     "challenge_response",
     {
