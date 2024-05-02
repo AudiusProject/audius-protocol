@@ -1,7 +1,7 @@
 import BN from 'bn.js'
 import { sumBy } from 'lodash'
 import { takeLatest } from 'redux-saga/effects'
-import { all, call, put, race, select, take } from 'typed-redux-saga'
+import { call, put, race, select, take } from 'typed-redux-saga'
 
 import { PurchaseableContentMetadata, isPurchaseableAlbum } from '~/hooks'
 import { FavoriteSource, Name } from '~/models/Analytics'
