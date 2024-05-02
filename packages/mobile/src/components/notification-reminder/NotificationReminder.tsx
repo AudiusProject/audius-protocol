@@ -1,7 +1,9 @@
 import { useCallback } from 'react'
 
+import { MobileOS } from '@audius/common/models'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { getHasCompletedAccount } from 'common/store/pages/signon/selectors'
+import { Platform } from 'react-native'
 import { checkNotifications, RESULTS } from 'react-native-permissions'
 import { useDispatch, useSelector } from 'react-redux'
 import { useAsync } from 'react-use'
@@ -68,8 +70,9 @@ const NotificationReminderInternal = () => {
      * This value should be one-time-use (created & set to true in the same session)
      */
     const hasRetriggeredNotifs = await AsyncStorage.getItem('RETRIGGER_NOTIFS')
+    const isAndroid = Platform.OS === MobileOS.ANDROID
 
-    if (hasRetriggeredNotifs === null) {
+    if (hasRetriggeredNotifs === null && isAndroid) {
       // Not set at all yet - this was introduced in 1.5.78 for a
       await AsyncStorage.setItem('RETRIGGER_NOTIFS', 'false')
     } else {
