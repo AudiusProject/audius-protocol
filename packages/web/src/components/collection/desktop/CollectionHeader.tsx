@@ -1,4 +1,4 @@
-import { ChangeEvent, MouseEventHandler, useCallback, useState } from 'react'
+import { ChangeEvent, useCallback, useState } from 'react'
 
 import { useGetCurrentUserId } from '@audius/common/api'
 import {

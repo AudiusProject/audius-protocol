@@ -1,4 +1,4 @@
-import { ChangeEvent, MouseEventHandler, useMemo } from 'react'
+import { ChangeEvent, useMemo } from 'react'
 
 import {
   Variant,
