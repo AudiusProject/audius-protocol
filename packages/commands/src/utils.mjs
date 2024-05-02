@@ -4,7 +4,8 @@ import {
   libs as AudiusLibs,
   developmentConfig,
   DiscoveryNodeSelector,
-  EntityManager
+  EntityManager,
+  Logger
 } from "@audius/sdk";
 import { PublicKey } from "@solana/web3.js";
 
@@ -97,7 +98,8 @@ export const initializeAudiusSdk = async ({ apiKey = undefined, apiSecret = unde
       apiSecret,
       services: {
         discoveryNodeSelector,
-        entityManager
+        entityManager,
+        logger: new Logger({ logLevel: 'debug' })
       },
     });
   }
