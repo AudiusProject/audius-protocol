@@ -15,9 +15,9 @@ import { AppDetailsPage } from './AppDetailsPage'
 import { CreateNewAppPage } from './CreateNewAppPage'
 import { DeleteAppConfirmationPage } from './DeleteAppConfirmationPage'
 import styles from './DeveloperAppsSettingsModal.module.css'
+import { EditAppPage } from './EditAppPage'
 import { YourAppsPage } from './YourAppsPage'
 import { CreateAppsPages } from './types'
-import { EditAppPage } from './EditAppPage'
 
 const messages = {
   title: 'Create Apps',

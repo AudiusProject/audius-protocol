@@ -3,18 +3,18 @@ import { z } from 'zod'
 import { HashId } from '../../types/HashId'
 import { isApiKeyValid } from '../../utils/apiKey'
 
-const MAX_DESCRIPTION_LENGTH = 128
-const MAX_IMAGE_URL_LENGTH = 2000
-const IMAGE_URL_REGEX = /^(https?):\/\//i
+const DEVELOPER_APP_MAX_DESCRIPTION_LENGTH = 128
+const DEVELOPER_APP_MAX_IMAGE_URL_LENGTH = 2000
+const DEVELOPER_APP_IMAGE_URL_REGEX = /^(https?):\/\//i
 
 export const CreateDeveloperAppSchema = z.object({
   name: z.string(),
-  description: z.optional(z.string().max(MAX_DESCRIPTION_LENGTH)),
+  description: z.optional(z.string().max(DEVELOPER_APP_MAX_DESCRIPTION_LENGTH)),
   imageUrl: z.optional(
     z
       .string()
-      .max(MAX_IMAGE_URL_LENGTH)
-      .refine((value) => IMAGE_URL_REGEX.test(value), {
+      .max(DEVELOPER_APP_MAX_IMAGE_URL_LENGTH)
+      .refine((value) => DEVELOPER_APP_IMAGE_URL_REGEX.test(value), {
         message: 'Invalid URL'
       })
   ),
@@ -28,12 +28,12 @@ export const UpdateDeveloperAppSchema = z.object({
     return isApiKeyValid(data as string)
   }),
   name: z.string(),
-  description: z.optional(z.string().max(MAX_DESCRIPTION_LENGTH)),
+  description: z.optional(z.string().max(DEVELOPER_APP_MAX_DESCRIPTION_LENGTH)),
   imageUrl: z.optional(
     z
       .string()
-      .max(MAX_IMAGE_URL_LENGTH)
-      .refine((value) => IMAGE_URL_REGEX.test(value), {
+      .max(DEVELOPER_APP_MAX_IMAGE_URL_LENGTH)
+      .refine((value) => DEVELOPER_APP_IMAGE_URL_REGEX.test(value), {
         message: 'Invalid URL'
       })
   ),
