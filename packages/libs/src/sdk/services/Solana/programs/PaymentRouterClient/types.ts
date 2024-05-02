@@ -16,9 +16,10 @@ export type PaymentRouterClientConfigInternal = {
   mints: Prettify<Partial<Record<Mint, PublicKey>>>
 } & BaseSolanaProgramConfigInternal
 
-export type PaymentRouterClientConfig = {
-  solanaWalletAdapter: SolanaWalletAdapter
-}
+export type PaymentRouterClientConfig =
+  Partial<PaymentRouterClientConfigInternal> & {
+    solanaWalletAdapter: SolanaWalletAdapter
+  }
 
 export const CreateTransferInstructionSchema = z.object({
   mint: MintSchema,
