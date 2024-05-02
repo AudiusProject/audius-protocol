@@ -1,14 +1,23 @@
-import { ReactNode, Ref, forwardRef } from 'react'
+import { ReactNode, Ref, createContext, forwardRef, useContext } from 'react'
 
-import { Divider, Flex, Paper, PaperProps } from '@audius/harmony'
+import { Divider, Flex, FlexProps, Paper, PaperProps } from '@audius/harmony'
 
-type CardSize = 's' | 'm' | 'l'
+type CardSize = 'xs' | 's' | 'm' | 'l'
+
+type CardContextType = {
+  size: CardSize
+}
+
+const CardContext = createContext<CardContextType>({ size: 'm' })
 
 const cardSizes = {
+  xs: undefined,
   s: 200,
   m: 224,
   l: 320
 }
+
+const xsSize = { minWidth: 140, maxWidth: 190 }
 
 export type CardProps = PaperProps & {
   size: CardSize
@@ -24,13 +33,31 @@ export const Card = forwardRef((props: CardProps, ref: Ref<HTMLDivElement>) => {
       direction='column'
       border='default'
       w={cardSizes[size]}
-      css={{ cursor: 'pointer', overflow: 'unset' }}
+      css={{
+        cursor: 'pointer',
+        overflow: 'unset',
+        ...(size === 'xs' ? xsSize : undefined)
+      }}
       {...other}
     >
-      {children}
+      <CardContext.Provider value={{ size }}>{children}</CardContext.Provider>
     </Paper>
   )
 })
+
+export type CardContentProps = FlexProps
+
+export const CardContent = (props: CardContentProps) => {
+  const { size } = useContext(CardContext)
+
+  return (
+    <Flex
+      direction='column'
+      css={size === 'xs' && { maxWidth: xsSize.minWidth, margin: '0 auto' }}
+      {...props}
+    />
+  )
+}
 
 export type CardFooterProps = {
   children: ReactNode
