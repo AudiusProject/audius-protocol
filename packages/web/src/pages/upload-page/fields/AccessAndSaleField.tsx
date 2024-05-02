@@ -172,7 +172,9 @@ export const AccessAndSaleFormSchema = (
     // Check for albumTrackPrice price >= min price (if applicable)
     .refine(
       (values) =>
-        isAlbum && isUpload
+        isAlbum &&
+        isUpload &&
+        values[STREAM_CONDITIONS]?.usdc_purchase?.albumTrackPrice
           ? refineMinPrice('albumTrackPrice', minContentPriceCents)(values)
           : true,
       {
@@ -187,7 +189,9 @@ export const AccessAndSaleFormSchema = (
     })
     .refine(
       (values) =>
-        isAlbum && isUpload
+        isAlbum &&
+        isUpload &&
+        values[STREAM_CONDITIONS]?.usdc_purchase?.albumTrackPrice
           ? refineMaxPrice('albumTrackPrice', maxContentPriceCents)(values)
           : true,
       {
@@ -413,15 +417,17 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
       switch (availabilityType) {
         case StreamTrackAvailabilityType.USDC_PURCHASE: {
           // type cast because the object is fully formed in saga (validated + added splits)
+          const albumTrackPriceValue = (
+            streamConditions as USDCPurchaseConditions
+          ).usdc_purchase.albumTrackPrice
           const conditions = {
             usdc_purchase: {
               price: Math.round(
                 (streamConditions as USDCPurchaseConditions).usdc_purchase.price
               ),
-              albumTrackPrice: Math.round(
-                (streamConditions as USDCPurchaseConditions).usdc_purchase
-                  .albumTrackPrice || 0
-              )
+              albumTrackPrice: albumTrackPriceValue
+                ? Math.round(albumTrackPriceValue)
+                : null
             }
           } as USDCPurchaseConditions
           setIsStreamGated(true)
