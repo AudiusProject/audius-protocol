@@ -41,6 +41,7 @@ class UpdateDeveloperAppMetadata(TypedDict):
     name: Union[str, None]
     description: Union[str, None]
     image_url: Union[str, None]
+    address: Union[str, None]
 
 
 class DeleteDeveloperAppMetadata(TypedDict):
@@ -94,6 +95,7 @@ def get_update_developer_app_metadata_from_raw(
         "name": None,
         "description": None,
         "image_url": None,
+        "address": None,
     }
 
     if raw_metadata:
