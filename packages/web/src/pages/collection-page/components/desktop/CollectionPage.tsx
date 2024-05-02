@@ -70,6 +70,7 @@ export type CollectionPageProps = {
   structuredData?: Object
   playlistId: ID
   playing: boolean
+  previewing: boolean
   getPlayingUid: () => string | null
   type: CollectionsPageType
   collection: {
@@ -84,7 +85,7 @@ export type CollectionPageProps = {
   userId?: ID | null
   userPlaylists?: any
   isQueued: () => boolean
-  onPlay: MouseEventHandler<HTMLButtonElement>
+  onPlay: () => void
   onClickRow: (record: CollectionPageTrackRecord, index: number) => void
   onClickSave?: (record: CollectionPageTrackRecord) => void
   allowReordering: boolean

@@ -58,8 +58,9 @@ export const CollectionActionButtons = (props: CollectionActionButtonProps) => {
   // If user doesn't have access, show preview only. If user has access, show play only.
   // If user is owner, show both.
   const shouldShowPlay = isPlayable && hasStreamAccess
-  const shouldShowPreview =
-    (isPlayable && isOwner && isPremium) || (isPremium && !hasStreamAccess)
+  const shouldShowPreview = isOwner
+    ? isPlayable && isPremium
+    : isPremium && !hasStreamAccess
 
   let actionButtons: Nullable<JSX.Element> = null
 
@@ -82,7 +83,7 @@ export const CollectionActionButtons = (props: CollectionActionButtonProps) => {
     <Button
       variant='primary'
       iconLeft={isPlaying && !isPreviewing ? IconPause : IconPlay}
-      onClick={() => onPlay}
+      onClick={onPlay}
       widthToHideText={BUTTON_COLLAPSE_WIDTHS.first}
     >
       {isPlaying && !isPreviewing ? messages.pause : messages.play}

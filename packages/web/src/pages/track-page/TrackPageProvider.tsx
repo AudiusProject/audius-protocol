@@ -262,6 +262,11 @@ class TrackPageProvider extends Component<
     const track = entries[0]
 
     if (isPlaying && previewing === isPreview) {
+      console.log('REED pausing case', {
+        play,
+        previewing,
+        isPreview
+      })
       pause()
       record(
         make(Name.PLAYBACK_PAUSE, {
@@ -274,6 +279,11 @@ class TrackPageProvider extends Component<
       currentQueueItem.track &&
       currentQueueItem.track.track_id === track.id
     ) {
+      console.log('REED playing case', {
+        play,
+        previewing,
+        isPreview
+      })
       play()
       record(
         make(Name.PLAYBACK_PLAY, {
@@ -283,6 +293,11 @@ class TrackPageProvider extends Component<
         })
       )
     } else if (track) {
+      console.log('REED playing other track case', {
+        play,
+        previewing,
+        isPreview
+      })
       play(track.uid, { isPreview })
       record(
         make(Name.PLAYBACK_PLAY, {

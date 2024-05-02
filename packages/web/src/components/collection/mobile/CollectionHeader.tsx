@@ -63,7 +63,7 @@ const PlayButton = ({
   ...rest
 }: {
   playing: boolean
-  onPlay: MouseEventHandler<HTMLButtonElement>
+  onPlay: () => void
 } & ButtonProps) => {
   return playing ? (
     <Button variant='primary' iconLeft={IconPause} onClick={onPlay} {...rest}>
