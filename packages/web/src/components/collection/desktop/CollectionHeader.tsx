@@ -323,7 +323,7 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
       <Flex className={cn(fadeIn)} gap='l' direction='column'>
         {description ? (
           <UserGeneratedText
-            size='xs'
+            size='s'
             className={cn(fadeIn)}
             linkSource='collection page'
             css={{ textAlign: 'left' }}
