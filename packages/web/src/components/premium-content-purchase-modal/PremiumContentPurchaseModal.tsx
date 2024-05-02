@@ -220,10 +220,10 @@ export const PremiumContentPurchaseModal = () => {
 
   const { data: user } = useGetUserById(
     {
-      id: track?.owner_id ?? album?.playlist_owner_id ?? null,
+      id: track?.owner_id ?? album?.playlist_owner_id ?? 0,
       currentUserId
     },
-    { disabled: !(track?.owner_id ?? album?.playlist_owner_id) }
+    { disabled: !(track?.owner_id && album?.playlist_owner_id) }
   )
   const metadata = {
     ...(isAlbum ? album : track),
