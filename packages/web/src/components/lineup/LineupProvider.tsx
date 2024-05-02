@@ -7,7 +7,8 @@ import {
   Status,
   ID,
   UID,
-  Lineup
+  Lineup,
+  ModalSource
 } from '@audius/common/models'
 import {
   LineupBaseActions,
@@ -527,7 +528,7 @@ class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
           // Render a track tile if the kind tracks or there's a track id present
 
           if (entry._marked_deleted) return null
-          let trackProps = {
+          let trackProps: TrackTileProps = {
             ...entry,
             key: index,
             index,
@@ -542,7 +543,8 @@ class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
             isTrending,
             showRankIcon: index < rankIconCount,
             showFeedTipTile,
-            onClick: onClickTile
+            onClick: onClickTile,
+            source: ModalSource.LineUpTrackTile
           }
           if (entry.id === leadingElementId) {
             trackProps = { ...trackProps, ...leadingElementTileProps }
@@ -551,7 +553,7 @@ class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
         } else if (entry.kind === Kind.COLLECTIONS || entry.playlist_id) {
           // Render a track tile if the kind tracks or there's a track id present
 
-          const playlistProps = {
+          const playlistProps: PlaylistTileProps = {
             ...entry,
             key: index,
             index,
@@ -567,7 +569,8 @@ class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
             numLoadingSkeletonRows: numPlaylistSkeletonRows,
             isTrending,
             showRankIcon: index < rankIconCount,
-            showFeedTipTile
+            showFeedTipTile,
+            source: ModalSource.LineUpCollectionTile
           }
 
           return <this.props.playlistTile key={index} {...playlistProps} />

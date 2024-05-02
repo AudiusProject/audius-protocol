@@ -8,7 +8,7 @@ import {
 } from '@audius/common/store'
 import { useSelector } from 'react-redux'
 
-import Card, { CardProps } from 'components/card/desktop/Card'
+import Card, { CardProps } from 'components/card-legacy/desktop/Card'
 import { useGoToRoute } from 'hooks/useGoToRoute'
 import { collectionPage } from 'utils/route'
 

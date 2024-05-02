@@ -11,7 +11,8 @@ import {
   FieldVisibility,
   Remix,
   AccessConditions,
-  LineupTrack
+  LineupTrack,
+  ModalSource
 } from '@audius/common/models'
 import { Genre, Nullable } from '@audius/common/utils'
 
@@ -75,6 +76,8 @@ export type TrackTileProps = TileProps & {
   coSign?: Remix | null
   releaseDate?: string | null
   onClickOverflow?: (trackId: ID) => void
+  /** Provides more context to analytics about where the tile is being used */
+  source?: ModalSource
 }
 
 export type PlaylistTileProps = TileProps & {
@@ -107,6 +110,8 @@ export type PlaylistTileProps = TileProps & {
   record?: (event: any) => void
   /** Number of rows to show when in loading state, if any */
   numLoadingSkeletonRows?: number
+  /** Provides more context to analytics about where the tile is being used */
+  source?: ModalSource
 }
 
 export type DesktopTrackTileProps = {
@@ -241,6 +246,9 @@ export type DesktopTrackTileProps = {
 
   /** Track id if track tile */
   trackId?: ID
+
+  /** Additional context for analytics to know which area of the app the track tile is being used */
+  source?: ModalSource
 }
 
 export type DesktopPlaylistTileProps = {
@@ -363,6 +371,9 @@ export type DesktopPlaylistTileProps = {
 
   /** Stream gated conditions for the collection */
   streamConditions?: Nullable<AccessConditions>
+
+  /** Additional context for analytics to know which area of the app the track tile is being used */
+  source?: ModalSource
 }
 
 export type SkeletonTileProps = {

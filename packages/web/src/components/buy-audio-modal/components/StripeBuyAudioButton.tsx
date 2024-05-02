@@ -47,9 +47,9 @@ export const StripeBuyAudioButton = () => {
       dispatch(
         initializeStripeModal({
           amount,
-          onrampSucceeded,
-          onrampCanceled,
-          onrampFailed: onrampCanceled,
+          onrampSucceeded: onrampSucceeded(),
+          onrampCanceled: onrampCanceled(),
+          onrampFailed: onrampCanceled(),
           destinationCurrency: 'sol',
           destinationWallet
         })

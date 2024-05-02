@@ -45,8 +45,7 @@ import {
   purchaseStarted,
   onrampSucceeded,
   startRecoveryIfNecessary,
-  recoveryStatusChanged,
-  transferStarted
+  recoveryStatusChanged
 } from './slice'
 import { BuyUSDCError, BuyUSDCErrorCode } from './types'
 import { getBuyUSDCRemoteConfig, getUSDCUserBank } from './utils'
@@ -178,8 +177,6 @@ function* transferStep({
   const feePayerOverride = new PublicKey(feePayer)
   const recentBlockhash = yield* call(getRecentBlockhash, audiusBackendInstance)
 
-  yield* put(transferStarted())
-
   yield* call(
     retry,
     async () => {
@@ -264,9 +261,9 @@ function* doBuyUSDC({
             amount: (desiredAmount / 100).toString(),
             destinationCurrency: 'usdc',
             destinationWallet: rootAccount.publicKey.toString(),
-            onrampCanceled,
-            onrampFailed,
-            onrampSucceeded
+            onrampCanceled: onrampCanceled(),
+            onrampFailed: onrampFailed({}),
+            onrampSucceeded: onrampSucceeded()
           })
         )
 

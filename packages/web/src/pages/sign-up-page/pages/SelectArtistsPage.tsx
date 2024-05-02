@@ -191,18 +191,21 @@ export const SelectArtistsPage = () => {
                   aria-label={selectArtistsPageMessages.genresLabel}
                   disableScroll={!isMobile}
                 >
-                  {artistGenres.map((genre) => (
-                    // TODO: max of 6, kebab overflow
-                    <SelectablePill
-                      key={genre}
-                      type='radio'
-                      name='genre'
-                      label={convertGenreLabelToValue(genre as Genre)}
-                      size={isMobile ? 'small' : 'large'}
-                      value={convertGenreLabelToValue(genre as Genre)}
-                      isSelected={currentGenre === genre}
-                    />
-                  ))}
+                  {artistGenres.map((genre) => {
+                    const genreValue = convertGenreLabelToValue(genre as Genre)
+                    return (
+                      // TODO: max of 6, kebab overflow
+                      <SelectablePill
+                        key={genre}
+                        type='radio'
+                        name='genre'
+                        label={genreValue}
+                        size={isMobile ? 'small' : 'large'}
+                        value={genreValue}
+                        isSelected={currentGenre === genreValue}
+                      />
+                    )
+                  })}
                 </ScrollView>
               </Flex>
               <SelectArtistsPreviewContextProvider>

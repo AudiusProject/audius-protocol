@@ -221,7 +221,7 @@ export const DownloadSection = ({ trackId }: { trackId: ID }) => {
   ]
 
   return (
-    <Flex border='default' borderRadius='m' mb='m'>
+    <Flex>
       <Expandable
         renderHeader={renderHeader}
         expanded={isExpanded}

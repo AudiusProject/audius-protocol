@@ -221,6 +221,8 @@ export const ChallengeRewardsDrawerProvider = () => {
           description={config.description(challenge)}
           progressLabel={config.progressLabel ?? 'Completed'}
           amount={challenge.totalAmount}
+          challengeId={challenge.challenge_id}
+          isCooldownChallenge={challenge && challenge.cooldown_days > 0}
           challengeState={challenge.state}
           currentStep={challenge.current_step_count}
           stepCount={challenge.max_steps}

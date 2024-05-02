@@ -5,26 +5,19 @@ import {
   searchResultsPageTracksLineupActions as tracksActions,
   SearchKind
 } from '@audius/common/store'
-import { formatCount } from '@audius/common/utils'
 import { IconSearch as IconBigSearch } from '@audius/harmony'
 import { Redirect } from 'react-router'
 
 import { make } from 'common/store/analytics/actions'
-import Card from 'components/card/desktop/Card'
+import { CollectionCard } from 'components/collection'
 import CategoryHeader from 'components/header/desktop/CategoryHeader'
 import Header from 'components/header/desktop/Header'
 import CardLineup from 'components/lineup/CardLineup'
 import Lineup from 'components/lineup/Lineup'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Page from 'components/page/Page'
-import Toast from 'components/toast/Toast'
-import {
-  collectionPage,
-  fullCollectionPage,
-  profilePage,
-  fullSearchResultsPage,
-  NOT_FOUND_PAGE
-} from 'utils/route'
+import { UserCard } from 'components/user-card'
+import { fullSearchResultsPage, NOT_FOUND_PAGE } from 'utils/route'
 
 import styles from './SearchPageContent.module.css'
 
@@ -47,67 +40,8 @@ const SearchHeader = (props) => {
 }
 
 class SearchPageContent extends Component {
-  constructor(props) {
-    super(props)
-    this.state = {
-      cardToast: {}
-    }
-  }
-
-  componentWillUnmount() {
-    Object.keys(this.state.cardToast).forEach((toastId) =>
-      this.clearCardToast(toastId)
-    )
-  }
-
-  onShare = (category, id) => () => {
-    const toastId = `${category}-${id}`
-    this.setState({
-      cardToast: {
-        ...this.state.cardToast,
-        [toastId]: {
-          open: true,
-          message: 'Copied to Clipboard!',
-          timeout: setTimeout(this.clearCardToast(toastId), 2000)
-        }
-      }
-    })
-  }
-
-  onRepost = (category, id, metadata) => () => {
-    const toastId = `${category}-${id}`
-    if (this.state.cardToast[toastId]) {
-      clearTimeout(this.state.cardToast[toastId].timeout)
-    }
-    this.setState({
-      cardToast: {
-        ...this.state.cardToast,
-        [toastId]: {
-          open: true,
-          message: 'Reposted!',
-          timeout: setTimeout(this.clearCardToast(toastId), 2000)
-        }
-      }
-    })
-  }
-
-  clearCardToast = (toastId) => () => {
-    const cardToast = this.state.cardToast[toastId]
-    clearTimeout(cardToast.timeout)
-    this.setState({
-      cardToast: {
-        ...this.state.cardToast,
-        [toastId]: {
-          ...cardToast,
-          open: false
-        }
-      }
-    })
-  }
-
   render() {
     const {
-      userId,
       tracks,
       currentQueueItem,
       playing,
@@ -115,7 +49,6 @@ class SearchPageContent extends Component {
       artists,
       playlists,
       albums,
-      goToRoute,
       handleViewMoreResults,
       searchResultsCategory,
       isTagSearch,
@@ -123,12 +56,10 @@ class SearchPageContent extends Component {
       search: { status },
       recordSearchResultClick
     } = this.props
-    const { cardToast } = this.state
     const searchTitle = isTagSearch ? `Tag Search` : `Search`
-    const artistCards = artists.map((artist, ind) => {
-      const toastId = `user-${artist.user_id}`
+
+    const artistCards = artists.map((artist) => {
       const onClick = () => {
-        goToRoute(profilePage(artist.handle))
         recordSearchResultClick({
           term: searchText,
           kind: 'profile',
@@ -139,48 +70,19 @@ class SearchPageContent extends Component {
               : 'more results page'
         })
       }
+
       return (
-        <Toast
+        <UserCard
           key={artist.user_id}
-          text={cardToast[toastId] && cardToast[toastId].message}
-          open={cardToast[toastId] && cardToast[toastId].open}
-          placement='bottom'
-          fillParent={false}
-          firesOnClick={false}
-        >
-          <Card
-            id={artist.user_id}
-            userId={artist.user_id}
-            imageSize={artist._profile_picture_sizes}
-            isUser
-            size={'small'}
-            primaryText={artist.name}
-            secondaryText={`${formatCount(artist.follower_count)} Followers`}
-            onClick={onClick}
-            menu={{
-              type: 'user',
-              handle: artist.handle,
-              userId: artist.user_id,
-              currentUserFollows: artist.does_current_user_follow,
-              onShare: this.onShare('user', artist.user_id)
-            }}
-          />
-        </Toast>
+          id={artist.user_id}
+          onClick={onClick}
+          size='m'
+        />
       )
     })
 
-    const playlistCards = playlists.map((playlist, ind) => {
-      const toastId = `playlist-${playlist.playlist_id}`
-      const onClick = () => {
-        goToRoute(
-          collectionPage(
-            playlist.user.handle,
-            playlist.playlist_name,
-            playlist.playlist_id,
-            playlist.permalink,
-            playlist.is_album
-          )
-        )
+    const playlistCards = playlists.map((playlist) => {
+      const handleClick = () => {
         recordSearchResultClick({
           term: searchText,
           kind: 'playlist',
@@ -192,66 +94,17 @@ class SearchPageContent extends Component {
         })
       }
       return (
-        // TODO: Refactor cards and the way draggable wraps them.
-        <Toast
+        <CollectionCard
           key={playlist.playlist_id}
-          text={cardToast[toastId] && cardToast[toastId].message}
-          open={cardToast[toastId] && cardToast[toastId].open}
-          placement='bottom'
-          fillParent={false}
-          playlistId={playlist.playlist_id}
-          isAlbum={playlist.is_album}
-          link={fullCollectionPage(
-            playlist.user.handle,
-            playlist.playlist_name,
-            playlist.playlist_id,
-            playlist.permalink,
-            playlist.is_album
-          )}
-          primaryText={playlist.playlist_name}
-          firesOnClick={false}
-        >
-          <Card
-            size={'small'}
-            id={playlist.playlist_id}
-            imageSize={playlist._cover_art_sizes}
-            primaryText={playlist.playlist_name}
-            secondaryText={`${playlist.user.name} • ${
-              playlist.trackCount
-            } Track${playlist.trackCount > 1 ? 's' : ''}`}
-            onClick={onClick}
-            menu={{
-              type: 'playlist',
-              handle: playlist.user.handle,
-              name: playlist.playlist_name,
-              isOwner: playlist.user.user_id === userId,
-              playlistId: playlist.playlist_id,
-              currentUserSaved: playlist.has_current_user_saved,
-              currentUserReposted: playlist.has_current_user_reposted,
-              metadata: playlist,
-              includeShare: true,
-              includeRepost: true,
-              isPublic: !playlist.is_private,
-              onShare: this.onShare('playlist', playlist.playlist_id),
-              onRepost: this.onRepost('playlist', playlist.playlist_id)
-            }}
-          />
-        </Toast>
+          id={playlist.playlist_id}
+          onClick={handleClick}
+          size='m'
+        />
       )
     })
 
-    const albumCards = albums.map((album, ind) => {
-      const toastId = `album-${album.playlist_id}`
-      const onClick = () => {
-        goToRoute(
-          collectionPage(
-            album.user.handle,
-            album.playlist_name,
-            album.playlist_id,
-            album.permalink,
-            true
-          )
-        )
+    const albumCards = albums.map((album) => {
+      const handleClick = () => {
         recordSearchResultClick({
           term: searchText,
           kind: 'album',
@@ -263,52 +116,15 @@ class SearchPageContent extends Component {
         })
       }
       return (
-        // TODO: Refactor cards and the way draggable wraps them.
-        <Toast
+        <CollectionCard
           key={album.playlist_id}
-          text={cardToast[toastId] && cardToast[toastId].message}
-          open={cardToast[toastId] && cardToast[toastId].open}
-          placement='bottom'
-          fillParent={false}
-          playlistId={album.playlist_id}
-          isAlbum={album.is_album}
-          link={fullCollectionPage(
-            album.user.handle,
-            album.playlist_name,
-            album.playlist_id,
-            album.permalink,
-            album.is_album
-          )}
-          primaryText={album.playlist_name}
-          firesOnClick={false}
-        >
-          <Card
-            size={'small'}
-            id={album.playlist_id}
-            userId={userId}
-            imageSize={album._cover_art_sizes}
-            primaryText={album.playlist_name}
-            secondaryText={album.user.name}
-            onClick={onClick}
-            menu={{
-              type: 'album',
-              handle: album.user.handle,
-              name: album.playlist_name,
-              playlistId: album.playlist_id,
-              isOwner: album.user.user_id === userId,
-              metadata: album,
-              isPublic: !album.is_private,
-              currentUserSaved: album.has_current_user_saved,
-              currentUserReposted: album.has_current_user_reposted,
-              includeShare: true,
-              includeRepost: true,
-              onShare: this.onShare('album', album.playlist_id),
-              onRepost: this.onRepost('album', album.playlist_id)
-            }}
-          />
-        </Toast>
+          id={album.playlist_id}
+          onClick={handleClick}
+          size='m'
+        />
       )
     })
+
     const onClickTile = (trackId, source) => {
       this.props.dispatch(
         make(Name.SEARCH_RESULT_SELECT, {
@@ -519,7 +335,6 @@ class SearchPageContent extends Component {
         title={`${searchTitle} ${searchText}`}
         description={`Search results for ${searchText}`}
         canonicalUrl={fullSearchResultsPage(searchText)}
-        contentClassName={styles.searchResults}
         header={header}
       >
         {status === Status.ERROR ? (

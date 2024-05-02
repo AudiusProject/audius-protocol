@@ -4,6 +4,11 @@
   width: 100%;
 }
 
+.serverWrapper {
+  background: var(--harmony-n-25);
+  border-right: 1px solid var(--harmony-n-100);
+}
+
 .leftNavWrapper {
   position: absolute;
   left: 0;

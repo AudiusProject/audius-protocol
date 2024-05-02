@@ -328,7 +328,7 @@ describe('useAccessAndRemixSettings', () => {
         disableSpecialAccessGateFields: true,
         disableCollectibleGate: true,
         disableCollectibleGateFields: true,
-        disableHidden: true
+        disableHidden: false
       }
       expect(actual).toEqual(expected)
     })
@@ -393,7 +393,7 @@ describe('useAccessAndRemixSettings', () => {
         disableSpecialAccessGateFields: true,
         disableCollectibleGate: true,
         disableCollectibleGateFields: true,
-        disableHidden: true
+        disableHidden: false
       }
       expect(actual).toEqual(expected)
     })
