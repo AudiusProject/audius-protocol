@@ -1,6 +1,6 @@
 import { ID } from '@audius/common/models'
 import { cacheUsersSelectors } from '@audius/common/store'
-import { IconSize, Text, useTheme } from '@audius/harmony'
+import { IconSize, Text, TextVariant, useTheme } from '@audius/harmony'
 
 import { ArtistPopover } from 'components/artist/ArtistPopover'
 import UserBadges from 'components/user-badges/UserBadges'
@@ -16,11 +16,19 @@ type UserLinkProps = Omit<TextLinkProps, 'to'> & {
   userId: ID
   badgeSize?: IconSize
   popover?: boolean
+  textVariant?: TextVariant
 }
 
 export const UserLink = (props: UserLinkProps) => {
   const { isServerSide } = useSsrContext()
-  const { userId, badgeSize = 's', popover, children, ...other } = props
+  const {
+    userId,
+    badgeSize = 's',
+    popover,
+    children,
+    textVariant = 'body',
+    ...other
+  } = props
   const { iconSizes, spacing } = useTheme()
 
   const url = useSelector((state) => {
@@ -42,7 +50,9 @@ export const UserLink = (props: UserLinkProps) => {
       ellipses={popover}
       {...other}
     >
-      <Text ellipses>{userName}</Text>
+      <Text ellipses variant={textVariant}>
+        {userName}
+      </Text>
       <UserBadges
         badgeSize={iconSizes[badgeSize]}
         userId={userId}
