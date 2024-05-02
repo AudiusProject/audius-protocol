@@ -539,19 +539,7 @@ class CollectionPage extends Component<
     } = this.props
     const isQueued = this.isQueued()
     const playingId = this.getPlayingId()
-    console.log('REED onplay', {
-      playing,
-      previewing,
-      isPreview,
-      isQueued
-    })
     if (playing && isQueued && previewing === isPreview) {
-      console.log('REED pausing case', {
-        playing,
-        previewing,
-        isPreview,
-        isQueued
-      })
       pause()
       record(
         make(Name.PLAYBACK_PAUSE, {
@@ -560,12 +548,6 @@ class CollectionPage extends Component<
         })
       )
     } else if (!playing && previewing === isPreview && isQueued) {
-      console.log('REED playing case', {
-        playing,
-        previewing,
-        isPreview,
-        isQueued
-      })
       play()
       record(
         make(Name.PLAYBACK_PLAY, {
@@ -575,12 +557,6 @@ class CollectionPage extends Component<
         })
       )
     } else if (entries.length > 0) {
-      console.log('REED playing other track case', {
-        playing,
-        previewing,
-        isPreview,
-        isQueued
-      })
       play(entries[0].uid, { isPreview })
       record(
         make(Name.PLAYBACK_PLAY, {
@@ -591,6 +567,8 @@ class CollectionPage extends Component<
       )
     }
   }
+
+  onPreview = () => this.onPlay({ isPreview: true })
 
   onSortTracks = (sorters: any) => {
     const { column, order } = sorters
@@ -796,6 +774,7 @@ class CollectionPage extends Component<
       isQueued: this.isQueued,
       onFilterChange: this.onFilterChange,
       onPlay: this.onPlay,
+      onPreview: this.onPreview,
       onHeroTrackEdit: this.onHeroTrackEdit,
       onPublish: this.onPublish,
       onHeroTrackShare: this.onHeroTrackShare,

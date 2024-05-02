@@ -76,6 +76,7 @@ export type CollectionPageProps = {
   userPlaylists?: any
   isQueued: () => boolean
   onPlay: (record: any) => void
+  onPreview: (record: any) => void
   onHeroTrackShare: () => void
   onHeroTrackSave?: () => void
   onHeroTrackRepost?: () => void
@@ -96,6 +97,7 @@ const CollectionPage = ({
   playlistId,
   getPlayingUid,
   playing,
+  previewing,
   type,
   collection: { status, metadata, user },
   tracks,
@@ -103,6 +105,7 @@ const CollectionPage = ({
   userPlaylists,
   isQueued,
   onPlay,
+  onPreview,
   onHeroTrackShare,
   onHeroTrackSave,
   onClickRow,
@@ -135,6 +138,7 @@ const CollectionPage = ({
   // TODO: Consider dynamic lineups, esp. for caching improvement.
   const collectionLoading = status === Status.LOADING
   const queuedAndPlaying = playing && isQueued()
+  const queuedAndPreviewing = previewing && isQueued()
   const tracksLoading = tracks.status === Status.LOADING
 
   const coverArtSizes =
@@ -276,6 +280,7 @@ const CollectionPage = ({
             isSaved={isSaved}
             saves={playlistSaveCount}
             playing={queuedAndPlaying}
+            previewing={queuedAndPreviewing}
             reposts={playlistRepostCount}
             isReposted={isReposted}
             isStreamGated={
@@ -291,6 +296,7 @@ const CollectionPage = ({
             ownerId={playlistOwnerId}
             // Actions
             onPlay={onPlay}
+            onPreview={onPreview}
             onShare={onHeroTrackShare}
             onSave={onHeroTrackSave}
             onRepost={onHeroTrackRepost}

@@ -28,7 +28,8 @@ type CollectionActionButtonProps = {
   isPlayable: boolean
   isPremium?: Nullable<boolean>
   userId: Nullable<ID>
-  onPlay: ({ isPreview }: { isPreview?: boolean }) => void
+  onPlay: () => void
+  onPreview: () => void
 }
 
 export const CollectionActionButtons = (props: CollectionActionButtonProps) => {
@@ -37,6 +38,7 @@ export const CollectionActionButtons = (props: CollectionActionButtonProps) => {
     isOwner,
     collectionId,
     onPlay,
+    onPreview,
     isPlaying,
     isPlayable,
     isPreviewing,
@@ -94,7 +96,7 @@ export const CollectionActionButtons = (props: CollectionActionButtonProps) => {
     <Button
       variant='secondary'
       iconLeft={isPlaying && isPreviewing ? IconPause : IconPlay}
-      onClick={() => onPlay({ isPreview: true })}
+      onClick={onPreview}
       widthToHideText={BUTTON_COLLAPSE_WIDTHS.first}
     >
       {isPlaying && isPreviewing ? messages.pause : messages.preview}

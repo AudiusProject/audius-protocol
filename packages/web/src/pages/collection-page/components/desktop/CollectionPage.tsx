@@ -86,6 +86,7 @@ export type CollectionPageProps = {
   userPlaylists?: any
   isQueued: () => boolean
   onPlay: () => void
+  onPreview: () => void
   onClickRow: (record: CollectionPageTrackRecord, index: number) => void
   onClickSave?: (record: CollectionPageTrackRecord) => void
   allowReordering: boolean
@@ -124,6 +125,7 @@ const CollectionPage = ({
   isQueued,
   onFilterChange,
   onPlay,
+  onPreview,
   onClickRow,
   onClickSave,
   onClickRepostTrack,
@@ -243,6 +245,7 @@ const CollectionPage = ({
       // Actions
       onFilterChange={onFilterChange}
       onPlay={onPlay}
+      onPreview={onPreview}
       onClickReposts={onClickReposts}
       onClickFavorites={onClickFavorites}
       // Smart collection

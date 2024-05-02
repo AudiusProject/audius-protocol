@@ -88,6 +88,7 @@ type CollectionHeaderProps = {
   onClickReposts?: () => void
   onClickFavorites?: () => void
   onPlay: () => void
+  onPreview: () => void
   onFilterChange?: (e: ChangeEvent<HTMLInputElement>) => void
 }
 
@@ -113,6 +114,7 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
     playing,
     previewing,
     onPlay,
+    onPreview,
     variant,
     gradient,
     icon,
@@ -271,6 +273,7 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
             isOwner={isOwner}
             tracksLoading={tracksLoading}
             onPlay={onPlay}
+            onPreview={onPreview}
           />
         </ClientOnly>
       </Flex>
