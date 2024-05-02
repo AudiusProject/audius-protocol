@@ -313,15 +313,11 @@ function* pollForPurchaseConfirmation({
       metadata.playlist_contents.track_ids
     ) {
       const apiClient = yield* getContext('apiClient')
-      const tracks = yield* all(
-        Array.from(metadata.playlist_contents.track_ids).map((trackId) => {
-          return call([apiClient, 'getTrack'], {
-            id: trackId.track,
-            currentUserId
-          })
+      for (const trackId of metadata.playlist_contents.track_ids) {
+        const track = yield* call([apiClient, 'getTrack'], {
+          id: trackId.track,
+          currentUserId
         })
-      )
-      for (const track of tracks) {
         if (track) {
           yield* put(
             cacheActions.update(Kind.TRACKS, [
