@@ -352,6 +352,11 @@ const CollectionPage = ({
                   isAlbum ? messages.type.album : messages.type.playlist
                 }`}
                 isAlbumPage={isAlbum}
+                isAlbumPremium={
+                  !!metadata && 'is_stream_gated' in metadata
+                    ? metadata?.is_stream_gated
+                    : false
+                }
               />
             </ClientOnly>
           </div>

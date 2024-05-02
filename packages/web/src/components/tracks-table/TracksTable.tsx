@@ -82,6 +82,7 @@ type TracksTableProps = {
   isPaginated?: boolean
   isReorderable?: boolean
   isAlbumPage?: boolean
+  isAlbumPremium?: boolean
   isPremiumEnabled?: boolean
   loading?: boolean
   onClickFavorite?: (track: any) => void
@@ -131,6 +132,7 @@ export const TracksTable = ({
   isPaginated = false,
   isReorderable = false,
   isAlbumPage = false,
+  isAlbumPremium = false,
   fetchBatchSize,
   fetchMoreTracks,
   fetchPage,
@@ -160,6 +162,7 @@ export const TracksTable = ({
   wrapperClassName
 }: TracksTableProps) => {
   const trackAccessMap = useGatedContentAccessMap(data)
+  const is
 
   // Cell Render Functions
   const renderPlayButtonCell = useCallback(
@@ -467,13 +470,12 @@ export const TracksTable = ({
       if (!isLocked || deleted || isOwner || !isPremiumEnabled) {
         return null
       }
-      // note: wrapping an if with this method does type casting for track.stream_conditions
       if (isContentUSDCPurchaseGated(track.stream_conditions)) {
         return (
           <Button
             size='small'
             color='lightGreen'
-            className={styles.purchaseButton}
+            className={isAlbumPremium ? styles.purchaseButton : undefined}
             onClick={(e) => {
               e.stopPropagation()
               onClickPurchase?.(track)
@@ -484,7 +486,7 @@ export const TracksTable = ({
         )
       }
     },
-    [isPremiumEnabled, onClickPurchase, trackAccessMap, userId]
+    [isAlbumPremium, isPremiumEnabled, onClickPurchase, trackAccessMap, userId]
   )
 
   const renderTrackActions = useCallback(
