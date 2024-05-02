@@ -464,7 +464,7 @@ export const PremiumContentPurchaseDrawer = () => {
   )
   const { data: user } = useGetUserById(
     {
-      id: track?.owner_id ?? album?.playlist_owner_id,
+      id: track?.owner_id ?? album?.playlist_owner_id ?? null,
       currentUserId
     },
     { disabled: !(track?.owner_id ?? album?.playlist_owner_id) }

@@ -16,7 +16,6 @@ import {
   cacheTracksSelectors,
   PurchaseableContentType
 } from '@audius/common/store'
-import { getPreviewing } from '@audius/common/store/player/selectors'
 import { removeNullable } from '@audius/common/utils'
 import type { Maybe, Nullable } from '@audius/common/utils'
 import { useDispatch, useSelector } from 'react-redux'
@@ -35,7 +34,7 @@ import { make, track } from 'app/services/analytics'
 import type { AppState } from 'app/store'
 import { makeStyles } from 'app/styles'
 
-const { getPlaying, getUid, getCurrentTrack } = playerSelectors
+const { getPlaying, getPreviewing, getUid, getCurrentTrack } = playerSelectors
 const { getIsReachable } = reachabilitySelectors
 const { getCollectionTracksLineup } = collectionPageSelectors
 const { getCollection } = cacheCollectionsSelectors
