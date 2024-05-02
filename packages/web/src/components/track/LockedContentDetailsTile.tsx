@@ -9,6 +9,8 @@ import {
 } from '@audius/common/models'
 import { getDogEarType, Nullable } from '@audius/common/utils'
 import {
+  Flex,
+  Text,
   IconCart,
   IconCollectible,
   IconComponent,
@@ -26,6 +28,7 @@ import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 import styles from './LockedContentDetailsTile.module.css'
 
 const messages = {
+  by: 'By',
   collectibleGated: 'COLLECTIBLE GATED',
   specialAccess: 'SPECIAL ACCESS',
   premiumTrack: (contentType: 'track' | 'album') =>
@@ -89,7 +92,17 @@ export const LockedContentDetailsTile = ({
   }
 
   return (
-    <div className={styles.details}>
+    <Flex
+      alignItems='center'
+      gap='l'
+      p='l'
+      border='strong'
+      borderRadius='m'
+      backgroundColor='surface1'
+      css={{
+        position: 'relative'
+      }}
+    >
       <DynamicImage
         wrapperClassName={styles.imageWrapper}
         className={styles.image}
@@ -97,13 +110,19 @@ export const LockedContentDetailsTile = ({
         aria-label={label}
       />
       {dogEarType ? (
-        <div className={styles.dogEar}>
+        <Flex
+          css={{
+            position: 'absolute',
+            top: -1,
+            left: -1
+          }}
+        >
           <DogEar type={dogEarType} />
-        </div>
+        </Flex>
       ) : null}
-      <div className={styles.textWrapper}>
+      <Flex>
         {showLabel && IconComponent && message ? (
-          <div
+          <Flex
             className={cn(styles.gatedContentLabel, {
               [styles.usdcContentLabel]: isUSDCPurchaseGated
             })}
@@ -116,15 +135,17 @@ export const LockedContentDetailsTile = ({
                   : color.special.blue
               }
             />
-            <span>{message}</span>
-          </div>
+            <Text>{message}</Text>
+          </Flex>
         ) : null}
-        <p className={styles.title}>{title}</p>
-        <div className={styles.owner}>
-          <span className={styles.by}>By</span>
-          <UserLink userId={owner.user_id} className={styles.ownerName} />
-        </div>
-      </div>
-    </div>
+        <Flex direction='column' gap='s'>
+          <Text variant='heading'>{title}</Text>
+          <Flex gap='xs'>
+            <Text variant='title'>{messages.by}</Text>
+            <UserLink userId={owner.user_id} />
+          </Flex>
+        </Flex>
+      </Flex>
+    </Flex>
   )
 }
