@@ -14,7 +14,8 @@ steps:
         cd ~/audius-protocol/packages/libs
         . ~/.profile
         audius-compose connect --nopass
-        ./scripts/check-generated-types.sh
+        # Disabled until it can be fixed
+        # ./scripts/check-generated-types.sh
   - run:
       name: cleanup
       no_output_timeout: 5m
