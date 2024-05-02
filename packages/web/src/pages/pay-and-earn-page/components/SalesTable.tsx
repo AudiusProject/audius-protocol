@@ -6,13 +6,13 @@ import { BN } from 'bn.js'
 import moment from 'moment'
 
 import { Table } from 'components/table'
-import { UserNameAndBadges } from 'components/user-name-and-badges/UserNameAndBadges'
 
 import styles from '../PayAndEarnPage.module.css'
 import { PurchaseCell, PurchaseRow } from '../types'
 import { isEmptyPurchaseRow } from '../utils'
 
 import { TrackNameWithArtwork } from './TrackNameWithArtwork'
+import { UserLink } from 'components/link'
 
 export type SalesTableColumn =
   | 'contentName'
@@ -58,7 +58,7 @@ const renderContentNameCell = (cellInfo: PurchaseCell) => {
 
 const renderBuyerCell = (cellInfo: PurchaseCell) => {
   const { buyerUserId } = cellInfo.row.original
-  return <UserNameAndBadges userId={buyerUserId} />
+  return <UserLink popover userId={buyerUserId} />
 }
 
 const renderDateCell = (cellInfo: PurchaseCell) => {

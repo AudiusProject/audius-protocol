@@ -6,12 +6,12 @@ import BN from 'bn.js'
 import moment from 'moment'
 
 import { Table } from 'components/table'
-import { UserNameAndBadges } from 'components/user-name-and-badges/UserNameAndBadges'
 
 import { PurchaseCell, PurchaseRow } from '../types'
 import { isEmptyPurchaseRow } from '../utils'
 
 import { TrackNameWithArtwork } from './TrackNameWithArtwork'
+import { UserLink } from 'components/link'
 
 export type PurchasesTableColumn =
   | 'contentName'
@@ -60,7 +60,7 @@ const renderContentNameCell = (cellInfo: PurchaseCell) => {
 
 const renderArtistCell = (cellInfo: PurchaseCell) => {
   const { sellerUserId } = cellInfo.row.original
-  return <UserNameAndBadges userId={sellerUserId} />
+  return <UserLink popover userId={sellerUserId} />
 }
 
 const renderDateCell = (cellInfo: PurchaseCell) => {
