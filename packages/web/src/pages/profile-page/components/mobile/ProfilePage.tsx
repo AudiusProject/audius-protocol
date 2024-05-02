@@ -26,7 +26,7 @@ import {
 } from '@audius/harmony'
 import cn from 'classnames'
 
-import Card from 'components/card/mobile/Card'
+import Card from 'components/card-legacy/mobile/Card'
 import { ClientOnly } from 'components/client-only/ClientOnly'
 import CollectiblesPage from 'components/collectibles/components/CollectiblesPage'
 import { HeaderContext } from 'components/header/mobile/HeaderContextProvider'

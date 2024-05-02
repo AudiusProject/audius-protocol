@@ -46,7 +46,9 @@ const messages = {
     "Hidden tracks won't be visible to your followers. Only you will see them on your profile. Anyone who has the link will be able to listen.",
   hiddenSubtitleAlbums:
     'Hidden albums remain invisible to your followers, visible only to you on your profile. They can be shared and listened to via direct link.',
-  hiddenHint: 'Scheduled tracks are hidden by default until release.'
+  hiddenHint: 'Scheduled tracks are hidden by default until release.',
+  publishDisabled:
+    'Publishing is disabled for empty albums and albums containing hidden tracks.'
 }
 
 export type AccesAndSaleMenuFieldsProps = {
@@ -57,6 +59,7 @@ export type AccesAndSaleMenuFieldsProps = {
   isInitiallyUnlisted?: boolean
   isScheduledRelease?: boolean
   initialStreamConditions?: AccessConditions | undefined
+  isPublishDisabled?: boolean
 }
 
 export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
@@ -66,7 +69,8 @@ export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
     isAlbum,
     isInitiallyUnlisted,
     initialStreamConditions,
-    isScheduledRelease
+    isScheduledRelease,
+    isPublishDisabled = false
   } = props
 
   const { isEnabled: isUsdcFlagUploadEnabled } = useFeatureFlag(
@@ -102,19 +106,24 @@ export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
     isAlbum,
     initialStreamConditions: initialStreamConditions ?? null,
     isInitiallyUnlisted: !!isInitiallyUnlisted,
-    isScheduledRelease: !!isScheduledRelease
+    isScheduledRelease: !!isScheduledRelease,
+    isPublishDisabled
   })
 
   return (
     <div className={cn(layoutStyles.col, layoutStyles.gap4)}>
       {isRemix ? <HelpCallout content={messages.isRemix} /> : null}
       <Text variant='body'>{messages.modalDescription}</Text>
+      {isPublishDisabled ? (
+        <HelpCallout content={messages.publishDisabled} />
+      ) : null}
       <RadioGroup {...availabilityField} aria-label={messages.title}>
         <ModalRadioItem
           icon={<IconVisibilityPublic className={styles.icon} />}
           label={messages.public}
           description={messages.publicSubtitle}
           value={StreamTrackAvailabilityType.PUBLIC}
+          disabled={isPublishDisabled}
         />
         {isUsdcUploadEnabled ? (
           <UsdcPurchaseGatedRadioField
@@ -123,6 +132,7 @@ export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
             isAlbum={isAlbum}
             initialStreamConditions={initialStreamConditions}
             isInitiallyUnlisted={isInitiallyUnlisted}
+            isPublishDisabled={isPublishDisabled}
           />
         ) : null}
 

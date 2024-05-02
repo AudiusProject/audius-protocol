@@ -6,6 +6,7 @@ import {
   AccessPermissions,
   CoverArtSizes,
   ID,
+  ModalSource,
   Variant,
   isContentUSDCPurchaseGated
 } from '@audius/common/models'
@@ -182,7 +183,7 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
 
   const topSection = (
     <Flex gap='xl' p='l' backgroundColor='white'>
-      {coverArtSizes ? (
+      {coverArtSizes || gradient || icon ? (
         <Artwork
           collectionId={collectionId}
           coverArtSizes={coverArtSizes}
@@ -318,13 +319,14 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
           hasStreamAccess={hasStreamAccess}
           isOwner={ownerId === currentUserId}
           ownerId={ownerId}
+          source={ModalSource.CollectionDetails}
         />
       ) : null}
 
       <Flex className={cn(fadeIn)} gap='l' direction='column'>
         {description ? (
           <UserGeneratedText
-            size='xs'
+            size='s'
             className={cn(fadeIn)}
             linkSource='collection page'
             css={{ textAlign: 'left' }}

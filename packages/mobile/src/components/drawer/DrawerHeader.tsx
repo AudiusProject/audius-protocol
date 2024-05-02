@@ -22,13 +22,14 @@ export const useStyles = makeStyles(({ spacing }) => ({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: spacing(8)
+    paddingVertical: spacing(2),
+    paddingHorizontal: spacing(8)
   },
 
   dismissContainer: {
     position: 'absolute',
-    top: spacing(6),
-    left: spacing(6)
+    top: spacing(3),
+    left: spacing(3)
   },
 
   titleImage: {

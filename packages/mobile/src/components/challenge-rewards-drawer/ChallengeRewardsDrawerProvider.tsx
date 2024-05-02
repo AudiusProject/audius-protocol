@@ -118,15 +118,10 @@ export const ChallengeRewardsDrawerProvider = () => {
         claimChallengeReward({
           claim: {
             challengeId: modalType,
-            specifiers:
-              challenge.challenge_type === 'aggregate'
-                ? getClaimableChallengeSpecifiers(
-                    challenge.undisbursedSpecifiers,
-                    undisbursedUserChallenges
-                  )
-                : [
-                    { specifier: challenge.specifier, amount: challenge.amount }
-                  ],
+            specifiers: getClaimableChallengeSpecifiers(
+              challenge.undisbursedSpecifiers,
+              undisbursedUserChallenges
+            ),
             amount: challenge?.claimableAmount ?? 0
           },
           retryOnFailure: true
@@ -221,6 +216,8 @@ export const ChallengeRewardsDrawerProvider = () => {
           description={config.description(challenge)}
           progressLabel={config.progressLabel ?? 'Completed'}
           amount={challenge.totalAmount}
+          challengeId={challenge.challenge_id}
+          isCooldownChallenge={challenge && challenge.cooldown_days > 0}
           challengeState={challenge.state}
           currentStep={challenge.current_step_count}
           stepCount={challenge.max_steps}

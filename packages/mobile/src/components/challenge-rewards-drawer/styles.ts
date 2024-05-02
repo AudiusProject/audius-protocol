@@ -3,16 +3,15 @@ import { flexRowCentered, makeStyles } from 'app/styles'
 export const useStyles = makeStyles(({ palette, spacing, typography }) => ({
   content: {
     padding: spacing(4),
-    paddingTop: 0,
-    gap: spacing(6),
-    alignItems: 'center'
+    paddingTop: spacing(6),
+    gap: spacing(6)
   },
   scrollViewContainer: {
     flex: 1
   },
   scrollViewContent: {
     padding: spacing(4),
-    paddingTop: 0,
+    paddingTop: spacing(6),
     gap: spacing(6)
   },
   subheader: {
@@ -70,12 +69,6 @@ export const useStyles = makeStyles(({ palette, spacing, typography }) => ({
   },
   statusCellComplete: {
     backgroundColor: palette.staticAccentGreenLight1
-  },
-  statusTextInProgress: {
-    color: palette.secondaryLight1
-  },
-  statusTextComplete: {
-    color: palette.staticWhite
   },
   audioAmount: {
     textAlign: 'center',

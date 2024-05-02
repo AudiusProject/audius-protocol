@@ -5,7 +5,14 @@ import {
   useGetPlaylistByPermalink
 } from '@audius/common/api'
 import { usePlayTrack, usePauseTrack } from '@audius/common/hooks'
-import { Name, SquareSizes, Kind, Status, ID } from '@audius/common/models'
+import {
+  Name,
+  SquareSizes,
+  Kind,
+  Status,
+  ID,
+  ModalSource
+} from '@audius/common/models'
 import {
   accountSelectors,
   cacheCollectionsActions,
@@ -143,6 +150,7 @@ export const ChatMessagePlaylist = ({
       togglePlay={() => {}}
       playingTrackId={playingTrackId}
       variant='readonly'
+      source={ModalSource.DirectMessageCollectionTile}
     />
   ) : null
 }

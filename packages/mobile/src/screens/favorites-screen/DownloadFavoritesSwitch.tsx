@@ -13,6 +13,8 @@ import { requestDownloadAllFavorites } from 'app/store/offline-downloads/slice'
 
 const { getIsReachable } = reachabilitySelectors
 
+const TOGGLE_COOLDOWN_MS = 800
+
 type DownloadFavoritesSwitchProps = SwitchProps
 
 export const DownloadFavoritesSwitch = (
@@ -52,7 +54,7 @@ export const DownloadFavoritesSwitch = (
       }
     },
     [dispatch, onValueChange],
-    800
+    TOGGLE_COOLDOWN_MS
   )
 
   // When user confirms removal, turn switch off

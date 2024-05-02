@@ -26,7 +26,7 @@ import {
 import { CollectionHeader } from 'components/collection/desktop/CollectionHeader'
 import { Divider } from 'components/divider'
 import Page from 'components/page/Page'
-import { SuggestedCollectionTracks } from 'components/suggested-tracks'
+import { SuggestedTracks } from 'components/suggested-tracks'
 import { Tile } from 'components/tile'
 import { TracksTable, TracksTableColumn } from 'components/tracks-table'
 import { useFlag } from 'hooks/useRemoteConfig'
@@ -277,18 +277,18 @@ const CollectionPage = ({
       return [
         'playButton',
         'trackName',
-        'artistName',
         isAlbum ? 'date' : 'addedDate',
         'length',
+        'reposts',
         'overflowActions'
       ]
     return [
       'playButton',
       'trackName',
-      'artistName',
       isAlbum ? 'date' : 'addedDate',
       'length',
       'plays',
+      'reposts',
       'overflowActions'
     ]
   }, [areAllTracksPremium, isAlbum, isNftPlaylist])
@@ -361,10 +361,10 @@ const CollectionPage = ({
         )}
       </Tile>
       <ClientOnly>
-        {isOwner && (!isAlbum || isEditAlbumsEnabled) && !isNftPlaylist ? (
+        {isOwner && !isAlbum && !isNftPlaylist ? (
           <>
             <Divider variant='default' className={styles.tileDivider} />
-            <SuggestedCollectionTracks collectionId={playlistId} />
+            <SuggestedTracks collectionId={playlistId} />
           </>
         ) : null}
       </ClientOnly>

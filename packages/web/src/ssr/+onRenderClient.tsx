@@ -1,7 +1,7 @@
 import { Buffer } from 'buffer'
 
 import 'setimmediate'
-import { full as FullSdk } from '@audius/sdk'
+import { SsrPageProps } from '@audius/common/models'
 import processBrowser from 'process/browser'
 import { hydrateRoot } from 'react-dom/client'
 import type { PageContextClient } from 'vike/types'
@@ -23,7 +23,7 @@ const HYDRATE_CLIENT = true
 
 export default async function render(
   pageContext: PageContextClient & {
-    pageProps: { track: FullSdk.TrackFull }
+    pageProps: Pick<SsrPageProps, 'track'>
     userAgent: string
   }
 ) {

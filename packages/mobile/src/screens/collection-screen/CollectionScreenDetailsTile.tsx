@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo } from 'react'
+import { useCallback, useEffect } from 'react'
 
 import { Name, PlaybackSource, Status } from '@audius/common/models'
 import type {
@@ -16,12 +16,13 @@ import {
   cacheTracksSelectors,
   PurchaseableContentType
 } from '@audius/common/store'
-import { formatSecondsAsText, removeNullable } from '@audius/common/utils'
+import { removeNullable } from '@audius/common/utils'
 import type { Maybe, Nullable } from '@audius/common/utils'
 import { useDispatch, useSelector } from 'react-redux'
 import { usePrevious } from 'react-use'
 import { createSelector } from 'reselect'
 
+import { Box } from '@audius/harmony-native'
 import { Text } from 'app/components/core'
 import { DetailsTile } from 'app/components/details-tile'
 import type {
@@ -32,9 +33,7 @@ import { TrackList } from 'app/components/track-list'
 import { make, track } from 'app/services/analytics'
 import type { AppState } from 'app/store'
 import { makeStyles } from 'app/styles'
-import { formatCount } from 'app/utils/format'
 
-import { CollectionHeader } from './CollectionHeader'
 const { getPlaying, getUid, getCurrentTrack } = playerSelectors
 const { getIsReachable } = reachabilitySelectors
 const { getCollectionTracksLineup } = collectionPageSelectors
@@ -101,7 +100,9 @@ const useRefetchLineupOnTrackAdd = (
 const getMessages = (collectionType: 'album' | 'playlist') => ({
   empty: `This ${collectionType} is empty. Start adding tracks to share it or make it public.`,
   emptyPublic: `This ${collectionType} is empty`,
-  detailsPlaceholder: '---'
+  detailsPlaceholder: '---',
+  collectionType,
+  hiddenType: `Hidden ${collectionType}`
 })
 
 const useStyles = makeStyles(({ palette, spacing }) => ({
@@ -184,30 +185,6 @@ export const CollectionScreenDetailsTile = ({
   const firstTrack = useSelector(selectFirstTrack)
   const messages = getMessages(isAlbum ? 'album' : 'playlist')
   useRefetchLineupOnTrackAdd(collectionId)
-  const details = useMemo(() => {
-    if (!isLineupLoading && trackCount === 0) return []
-    return [
-      {
-        label: 'Tracks',
-        value: isLineupLoading
-          ? messages.detailsPlaceholder
-          : formatCount(trackCount)
-      },
-      {
-        label: 'Duration',
-        value: isLineupLoading
-          ? messages.detailsPlaceholder
-          : formatSecondsAsText(collectionDuration)
-      },
-      ...extraDetails
-    ].filter(({ isHidden, value }) => !isHidden && !!value)
-  }, [
-    isLineupLoading,
-    trackCount,
-    messages.detailsPlaceholder,
-    collectionDuration,
-    extraDetails
-  ])
 
   const handlePressPlay = useCallback(() => {
     if (isPlaying && isQueued) {
@@ -238,11 +215,6 @@ export const CollectionScreenDetailsTile = ({
     [dispatch, isPlaying, playingUid]
   )
 
-  const renderHeader = useCallback(
-    () => <CollectionHeader collectionId={collectionId} />,
-    [collectionId]
-  )
-
   const numericCollectionId =
     typeof collectionId === 'number' ? collectionId : undefined
 
@@ -266,9 +238,11 @@ export const CollectionScreenDetailsTile = ({
         uids={uids}
         ListEmptyComponent={
           isLineupLoading ? null : (
-            <Text fontSize='medium' weight='medium' style={styles.empty}>
-              {isOwner ? messages.empty : messages.emptyPublic}
-            </Text>
+            <Box mt='m'>
+              <Text fontSize='medium' weight='medium' style={styles.empty}>
+                {isOwner ? messages.empty : messages.emptyPublic}
+              </Text>
+            </Box>
           )
         }
       />
@@ -292,7 +266,7 @@ export const CollectionScreenDetailsTile = ({
       ddexApp={ddexApp}
       description={description}
       descriptionLinkPressSource='collection page'
-      details={details}
+      duration={collectionDuration}
       hideOverflow={hideOverflow || !isReachable}
       hideListenCount={true}
       hasStreamAccess={hasStreamAccess}
@@ -302,10 +276,11 @@ export const CollectionScreenDetailsTile = ({
       isPublished={!isPrivate || isPublishing}
       isCollection={true}
       renderBottomContent={renderTrackList}
-      renderHeader={renderHeader}
+      headerText={isPrivate ? messages.hiddenType : messages.collectionType}
       renderImage={renderImage}
       onPressPlay={handlePressPlay}
       isPlayable={isPlayable}
+      trackCount={trackCount}
     />
   )
 }

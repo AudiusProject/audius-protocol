@@ -6,11 +6,7 @@ import {
   useGetTrackById,
   useGetUserById
 } from '@audius/common/api'
-import type {
-  PurchaseableTrackStreamMetadata,
-  PurchaseableTrackDownloadMetadata,
-  PurchaseableContentMetadata
-} from '@audius/common/hooks'
+import type { PurchaseableContentMetadata } from '@audius/common/hooks'
 import {
   useRemoteVar,
   useUSDCBalance,
@@ -21,9 +17,10 @@ import {
   PURCHASE_VENDOR,
   usePurchaseMethod,
   isStreamPurchaseable,
-  isTrackDownloadPurchaseable
+  isTrackDownloadPurchaseable,
+  isContentDownloadGated
 } from '@audius/common/hooks'
-import type { USDCPurchaseConditions } from '@audius/common/models'
+import type { ID, USDCPurchaseConditions } from '@audius/common/models'
 import {
   Name,
   PurchaseVendor,
@@ -239,12 +236,14 @@ const getButtonText = (isUnlocking: boolean, amountDue: number) =>
 // of the `<Formik />` component
 const RenderForm = ({
   onClose,
-  track,
+  content,
+  contentId,
   contentType,
   purchaseConditions
 }: {
   onClose: () => void
-  track: PurchaseableTrackStreamMetadata | PurchaseableTrackDownloadMetadata
+  content: PurchaseableContentMetadata
+  contentId: ID
   contentType: PurchaseableContentType
   purchaseConditions: USDCPurchaseConditions
 }) => {
@@ -260,8 +259,8 @@ const RenderForm = ({
 
   const { submitForm, resetForm } = useFormikContext()
 
-  // Reset form on track change
-  useEffect(() => resetForm, [track.track_id, resetForm])
+  // Reset form on content change
+  useEffect(() => resetForm, [content, resetForm])
 
   const {
     usdc_purchase: { price }
@@ -298,12 +297,15 @@ const RenderForm = ({
 
   const isPurchaseSuccessful = stage === PurchaseContentStage.FINISH
 
-  // Navigate to track screen in the background if purchase is successful
+  // Navigate to track or album screen in the background if purchase is successful
   useEffect(() => {
     if (isPurchaseSuccessful) {
-      navigation.navigate('Track', { id: track.track_id })
+      navigation.navigate(
+        contentType === PurchaseableContentType.TRACK ? 'Track' : 'Collection',
+        { id: contentId }
+      )
     }
-  }, [isPurchaseSuccessful, navigation, track.track_id])
+  }, [contentType, isPurchaseSuccessful, navigation, contentId])
 
   const handleTermsPress = useCallback(() => {
     Linking.openURL('https://audius.co/legal/terms-of-use')
@@ -327,12 +329,12 @@ const RenderForm = ({
     }
   }, [setPurchaseVendor, showCoinflow, purchaseVendor])
 
-  const stemsPurchaseCount = track.is_download_gated
-    ? track._stems?.length ?? 0
+  const stemsPurchaseCount = isContentDownloadGated(content)
+    ? content._stems?.length ?? 0
     : 0
   const downloadPurchaseCount =
-    track.is_download_gated && track.is_downloadable ? 1 : 0
-  const streamPurchaseCount = track.is_stream_gated ? 1 : 0
+    isContentDownloadGated(content) && content.is_downloadable ? 1 : 0
+  const streamPurchaseCount = content.is_stream_gated ? 1 : 0
 
   return (
     <View style={styles.root}>
@@ -343,7 +345,7 @@ const RenderForm = ({
               <AudioMatchSection amount={Math.round(price / 100)} />
             ) : null}
             <View style={styles.formContentSection}>
-              <TrackDetailsTile trackId={track.track_id} showLabel={false} />
+              <TrackDetailsTile trackId={contentId} showLabel={false} />
               {isPurchaseSuccessful ? null : (
                 <PayExtraFormSection
                   amountPresets={presetValues}
@@ -374,7 +376,10 @@ const RenderForm = ({
               {isIOSDisabled ? (
                 <PurchaseUnavailable />
               ) : isPurchaseSuccessful ? (
-                <PurchaseSuccess onPressViewTrack={onClose} metadata={track} />
+                <PurchaseSuccess
+                  onPressViewTrack={onClose}
+                  metadata={content}
+                />
               ) : isUnlocking ? null : (
                 <View>
                   <View style={styles.payToUnlockTitleContainer}>
@@ -532,11 +537,8 @@ export const PremiumContentPurchaseDrawer = () => {
           >
             <RenderForm
               onClose={onClose}
-              track={
-                metadata as
-                  | PurchaseableTrackStreamMetadata
-                  | PurchaseableTrackDownloadMetadata
-              }
+              content={metadata}
+              contentId={contentId}
               contentType={contentType}
               purchaseConditions={purchaseConditions}
             />

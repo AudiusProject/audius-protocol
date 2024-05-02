@@ -1,13 +1,18 @@
 import 'dotenv/config'
 
 import { program } from 'commander'
-import { parseDelivery } from './src/parseDelivery'
+import { parseDelivery, reParsePastXml } from './src/parseDelivery'
 import { cleanupFiles } from './src/cleanupFiles'
 import { pollS3 } from './src/s3poller'
-import { publishValidPendingReleases } from './src/publishRelease'
+import {
+  deleteRelease,
+  publishValidPendingReleases,
+  sdkService,
+} from './src/publishRelease'
 import { sync } from './src/s3sync'
 import { startServer } from './src/server'
 import { sleep } from './src/util'
+import { releaseRepo } from './src/db'
 
 program
   .name('ddexer')
@@ -27,8 +32,21 @@ program
 program
   .command('publish')
   .description('Publish any valid deliveries')
-  .action(async () => {
-    await publishValidPendingReleases()
+  .option('--republish', 'update already published releases')
+  .action(async (opts) => {
+    await reParsePastXml()
+    await publishValidPendingReleases(opts)
+  })
+
+program
+  .command('delete')
+  .description('Take down a published release')
+  .argument('<id>', 'release id')
+  .action(async (id) => {
+    // find release and delete it
+    const release = releaseRepo.get(id)
+    const sdk = (await sdkService).getSdk()
+    await deleteRelease(sdk, release!)
   })
 
 program

@@ -38,7 +38,6 @@ import type {
   TrackLibraryResponseFull,
   TransactionHistoryCountResponse,
   TransactionHistoryResponse,
-  UsersByContentNode,
 } from '../models';
 import {
     CollectionLibraryResponseFullFromJSON,
@@ -85,8 +84,6 @@ import {
     TransactionHistoryCountResponseToJSON,
     TransactionHistoryResponseFromJSON,
     TransactionHistoryResponseToJSON,
-    UsersByContentNodeFromJSON,
-    UsersByContentNodeToJSON,
 } from '../models';
 
 export interface BulkGetSubscribersRequest {
@@ -358,11 +355,6 @@ export interface GetUserLibraryTracksRequest {
     type?: GetUserLibraryTracksTypeEnum;
     encodedDataMessage?: string;
     encodedDataSignature?: string;
-}
-
-export interface GetUserReplicaSetRequest {
-    id: string;
-    userId?: string;
 }
 
 export interface GetUsersTrackHistoryRequest {
@@ -1972,41 +1964,6 @@ export class UsersApi extends runtime.BaseAPI {
      */
     async getUserLibraryTracks(params: GetUserLibraryTracksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TrackLibraryResponseFull> {
         const response = await this.getUserLibraryTracksRaw(params, initOverrides);
-        return await response.value();
-    }
-
-    /**
-     * @hidden
-     * Gets the user\'s replica set
-     */
-    async getUserReplicaSetRaw(params: GetUserReplicaSetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<UsersByContentNode>> {
-        if (params.id === null || params.id === undefined) {
-            throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getUserReplicaSet.');
-        }
-
-        const queryParameters: any = {};
-
-        if (params.userId !== undefined) {
-            queryParameters['user_id'] = params.userId;
-        }
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        const response = await this.request({
-            path: `/users/{id}/replica_set`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => UsersByContentNodeFromJSON(jsonValue));
-    }
-
-    /**
-     * Gets the user\'s replica set
-     */
-    async getUserReplicaSet(params: GetUserReplicaSetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<UsersByContentNode> {
-        const response = await this.getUserReplicaSetRaw(params, initOverrides);
         return await response.value();
     }
 

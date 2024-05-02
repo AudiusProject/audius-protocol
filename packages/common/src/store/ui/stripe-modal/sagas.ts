@@ -127,7 +127,7 @@ function* handleStripeSessionChanged({
     }
 
     if (onrampSucceeded) {
-      yield* put(onrampSucceeded)
+      yield* put({ ...onrampSucceeded })
     }
     yield* put(setVisibility({ modal: 'StripeOnRamp', visible: 'closing' }))
   }
@@ -139,7 +139,7 @@ function* handleCancelStripeOnramp() {
   yield* put(setVisibility({ modal: 'StripeOnRamp', visible: 'closing' }))
 
   if (onrampCanceled) {
-    yield* put(onrampCanceled)
+    yield* put({ ...onrampCanceled })
   }
 }
 
