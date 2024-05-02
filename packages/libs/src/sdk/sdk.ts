@@ -13,13 +13,13 @@ import {
   PlaylistsApi as PlaylistsApiFull,
   ReactionsApi as ReactionsApiFull,
   SearchApi as SearchApiFull,
-  TracksApi as TracksApiFull,
   UsersApi as UsersApiFull,
   TipsApi as TipsApiFull,
   TransactionsApi as TransactionsApiFull
 } from './api/generated/full'
 import { GrantsApi } from './api/grants/GrantsApi'
 import { PlaylistsApi } from './api/playlists/PlaylistsApi'
+import { FullTracksApi } from './api/tracks/FullTracksApi'
 import { TracksApi } from './api/tracks/TracksApi'
 import { UsersApi } from './api/users/UsersApi'
 import {
@@ -33,7 +33,8 @@ import {
   Storage,
   EntityManager,
   AppAuth,
-  RewardManagerClient
+  RewardManagerClient,
+  PaymentRouterClient
 } from './services'
 import { AntiAbuseOracle } from './services/AntiAbuseOracle/AntiAbuseOracle'
 import { AntiAbuseOracleSelector } from './services/AntiAbuseOracleSelector/AntiAbuseOracleSelector'
@@ -43,6 +44,7 @@ import { SolanaRelay } from './services/Solana/SolanaRelay'
 import { SolanaRelayWalletAdapter } from './services/Solana/SolanaRelayWalletAdapter'
 import { ClaimableTokensClient } from './services/Solana/programs/ClaimableTokensClient/ClaimableTokensClient'
 import { defaultClaimableTokensConfig } from './services/Solana/programs/ClaimableTokensClient/constants'
+import { defaultPaymentRouterConfig } from './services/Solana/programs/PaymentRouterClient/constants'
 import { defaultRewardManagerClentConfig } from './services/Solana/programs/RewardManagerClient/constants'
 import { StorageNodeSelector } from './services/StorageNodeSelector'
 import { SdkConfig, SdkConfigSchema, ServicesContainer } from './types'
@@ -129,20 +131,28 @@ const initializeServices = (config: SdkConfig) => {
     solanaRelay: config.services?.solanaRelay ?? defaultSolanaRelay
   })
 
+  const solanaWalletAdapter =
+    config.services?.solanaWalletAdapter ?? defaultSolanaWalletAdapter
+
   const claimableTokensClient =
     config.services?.claimableTokensClient ??
     new ClaimableTokensClient({
       ...defaultClaimableTokensConfig,
-      solanaWalletAdapter:
-        config.services?.solanaWalletAdapter ?? defaultSolanaWalletAdapter
+      solanaWalletAdapter
     })
 
   const rewardManagerClient =
     config.services?.rewardManagerClient ??
     new RewardManagerClient({
       ...defaultRewardManagerClentConfig,
-      solanaWalletAdapter:
-        config.services?.solanaWalletAdapter ?? defaultSolanaWalletAdapter
+      solanaWalletAdapter
+    })
+
+  const paymentRouterClient =
+    config.services?.paymentRouterClient ??
+    new PaymentRouterClient({
+      ...defaultPaymentRouterConfig,
+      solanaWalletAdapter
     })
 
   const defaultAntiAbuseOracle = new AntiAbuseOracle({
@@ -158,6 +168,7 @@ const initializeServices = (config: SdkConfig) => {
     auth,
     claimableTokensClient,
     rewardManagerClient,
+    paymentRouterClient,
     solanaWalletAdapter: defaultSolanaWalletAdapter,
     solanaRelay: defaultSolanaRelay,
     antiAbuseOracle: defaultAntiAbuseOracle,
@@ -261,7 +272,13 @@ const initializeApis = ({
   })
 
   const full = {
-    tracks: new TracksApiFull(generatedApiClientConfigFull),
+    tracks: new FullTracksApi(
+      generatedApiClientConfigFull,
+      services.claimableTokensClient,
+      services.paymentRouterClient,
+      services.auth,
+      services.logger
+    ),
     users: new UsersApiFull(generatedApiClientConfigFull),
     search: new SearchApiFull(generatedApiClientConfigFull),
     playlists: new PlaylistsApiFull(generatedApiClientConfigFull),

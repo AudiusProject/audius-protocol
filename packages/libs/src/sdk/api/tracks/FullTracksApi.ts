@@ -64,13 +64,19 @@ export class FullTracksApi extends GeneratedTracksApi {
       )
     }
 
+    this.logger.warn('Got track', track)
+
     const accessType = isPurchaseGatedStreamAccess ? 'stream' : 'download'
 
-    const { splits: centSplits, price } = PurchaseGateFromJSON(
+    const accessGate = PurchaseGateFromJSON(
       isPurchaseGatedStreamAccess
         ? track.streamConditions
         : track.downloadConditions
-    ).usdcPurchase
+    )
+
+    console.log('accessGate', accessGate)
+
+    const { splits: centSplits, price } = accessGate.usdcPurchase
     const total = USDC(price).value + USDC(extraAmount).value
 
     // Splits are given in cents. Divide by 100 and convert to USDC

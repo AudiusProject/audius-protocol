@@ -276,7 +276,7 @@ export const PurchaseTrackSchema = z
     extraAmount: z
       .union([z.number().min(0), z.bigint().min(BigInt(0))])
       .optional(),
-    walletAdapter: z.instanceof(BaseSignerWalletAdapter)
+    walletAdapter: z.instanceof(BaseSignerWalletAdapter).optional()
   })
   .strict()
 

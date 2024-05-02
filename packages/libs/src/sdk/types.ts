@@ -10,7 +10,8 @@ import type {
   RewardManagerClient,
   ClaimableTokensClient,
   SolanaRelayService,
-  SolanaWalletAdapter
+  SolanaWalletAdapter,
+  PaymentRouterClient
 } from './services/Solana'
 import type { StorageService } from './services/Storage'
 import type { StorageNodeSelectorService } from './services/StorageNodeSelector'
@@ -60,6 +61,11 @@ export type ServicesContainer = {
    * Claimable Tokens Program client for Solana
    */
   claimableTokensClient: ClaimableTokensClient
+
+  /**
+   * Payment Router Program client for Solana
+   */
+  paymentRouterClient: PaymentRouterClient
 
   /**
    * Reward Manager Program client for Solana
