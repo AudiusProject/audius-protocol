@@ -14,9 +14,7 @@ MESSAGE_HEADER = "Encoded-Data-Message"
 SIGNATURE_HEADER = "Encoded-Data-Signature"
 
 
-def auth_middleware(
-    parser: reqparse.RequestParser = None, include_wallet: bool = False
-):
+def auth_middleware(parser: reqparse.RequestParser = None):
     """
     Auth middleware decorator.
 
@@ -62,7 +60,6 @@ def auth_middleware(
         def wrapper(*args, **kwargs):
             message = request.headers.get(MESSAGE_HEADER)
             signature = request.headers.get(SIGNATURE_HEADER)
-            wallet_lower = None
 
             authed_user_id = None
             if message and signature:
@@ -71,14 +68,13 @@ def auth_middleware(
                 wallet = web3.eth.account.recover_message(
                     encoded_to_recover, signature=signature
                 )
-                wallet_lower = wallet.lower()
                 db = db_session.get_db_read_replica()
                 with db.scoped_session() as session:
                     user = (
                         session.query(User.user_id)
                         .filter(
                             # Convert checksum wallet to lowercase
-                            User.wallet == wallet_lower,
+                            User.wallet == wallet.lower(),
                             User.is_current == True,
                         )
                         # In the case that multiple wallets match (not enforced on the data layer),
@@ -91,10 +87,7 @@ def auth_middleware(
                         logger.info(
                             f"auth_middleware.py | authed_user_id: {authed_user_id}"
                         )
-            kwargs["authed_user_id"] = authed_user_id
-            if include_wallet:
-                kwargs["authed_user_wallet"] = wallet_lower
-            return func(*args, **kwargs)
+            return func(*args, **kwargs, authed_user_id=authed_user_id)
 
         return wrapper
 

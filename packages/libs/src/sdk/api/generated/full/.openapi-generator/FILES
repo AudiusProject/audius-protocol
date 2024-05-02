@@ -45,11 +45,7 @@ models/FullTracksResponse.ts
 models/FullTrendingPlaylistsResponse.ts
 models/FullUserResponse.ts
 models/GetTipsResponse.ts
-models/Grant.ts
 models/HistoryResponseFull.ts
-models/ManagedUser.ts
-models/ManagedUsersResponse.ts
-models/ManagersResponse.ts
 models/NftCollection.ts
 models/NftGate.ts
 models/PlaylistAddedTimestamp.ts
@@ -92,7 +88,6 @@ models/TrendingIdsResponse.ts
 models/TrendingTimesIds.ts
 models/UsdcGate.ts
 models/UserFull.ts
-models/UserManager.ts
 models/UserSubscribers.ts
 models/VersionMetadata.ts
 models/index.ts
