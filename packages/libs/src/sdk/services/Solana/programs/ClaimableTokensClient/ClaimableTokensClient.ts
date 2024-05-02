@@ -54,7 +54,7 @@ export class ClaimableTokensClient extends BaseSolanaProgram {
       }),
       USDC: ClaimableTokensProgram.deriveAuthority({
         programId: configWithDefaults.programId,
-        mint: configWithDefaults.mints.wAUDIO
+        mint: configWithDefaults.mints.USDC
       })
     }
   }
@@ -189,7 +189,7 @@ export class ClaimableTokensClient extends BaseSolanaProgram {
       'deriveUserBank',
       GetOrCreateUserBankSchema
     )(params)
-    return ClaimableTokensProgram.deriveUserBank({
+    return await ClaimableTokensProgram.deriveUserBank({
       ethAddress: ethWallet,
       claimableTokensPDA: this.authorities[mint]
     })
