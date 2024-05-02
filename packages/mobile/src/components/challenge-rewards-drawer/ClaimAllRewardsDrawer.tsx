@@ -1,14 +1,19 @@
-import { useCallback } from 'react'
+import { useCallback, useEffect } from 'react'
 
 import {
   formatCooldownChallenges,
   useChallengeCooldownSchedule
 } from '@audius/common/hooks'
-import { audioRewardsPageActions } from '@audius/common/store'
+import {
+  ClaimStatus,
+  audioRewardsPageActions,
+  audioRewardsPageSelectors
+} from '@audius/common/store'
 import { ScrollView, View } from 'react-native'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 
 import { Flex, Text, Button, IconArrowRight } from '@audius/harmony-native'
+import { useToast } from 'app/hooks/useToast'
 import { makeStyles } from 'app/styles'
 import { formatLabel } from 'app/utils/challenges'
 
@@ -17,10 +22,11 @@ import { SummaryTable } from '../summary-table'
 
 const { claimAllChallengeRewards, resetAndCancelClaimReward } =
   audioRewardsPageActions
+const { getClaimStatus } = audioRewardsPageSelectors
 
 const messages = {
   // Claim success toast
-  claimSuccessMessage: 'Reward successfully claimed!',
+  claimSuccessMessage: 'All rewards successfully claimed!',
   pending: (amount) => `${amount} Pending`,
   claimAudio: (amount) => `Claim ${amount} $AUDIO`,
   done: 'Done'
@@ -51,11 +57,21 @@ export const ClaimAllRewardsDrawer = () => {
   const styles = useStyles()
 
   const dispatch = useDispatch()
+  const { toast } = useToast()
+  const claimStatus = useSelector(getClaimStatus)
   const { onClose } = useDrawerState(MODAL_NAME)
   const { claimableChallenges, cooldownChallenges, summary } =
     useChallengeCooldownSchedule({
       multiple: true
     })
+  const claimInProgress = claimStatus === ClaimStatus.CUMULATIVE_CLAIMING
+
+  useEffect(() => {
+    if (claimStatus === ClaimStatus.CUMULATIVE_SUCCESS) {
+      toast({ content: messages.claimSuccessMessage, type: 'info' })
+    }
+  }, [claimStatus, toast])
+
   const handleClose = useCallback(() => {
     dispatch(resetAndCancelClaimReward())
     onClose()
@@ -100,6 +116,7 @@ export const ClaimAllRewardsDrawer = () => {
       <View style={styles.stickyClaimRewardsContainer}>
         {summary && summary?.value > 0 ? (
           <Button
+            isLoading={claimInProgress}
             variant='primary'
             onPress={onClaim}
             iconRight={IconArrowRight}
