@@ -57,7 +57,7 @@ export class PaymentRouterClient extends BaseSolanaProgram {
     super(configWithDefaults, config.solanaWalletAdapter)
     this.programId = configWithDefaults.programId
     const [pda, bump] = PublicKey.findProgramAddressSync(
-      [Buffer.from('payment_router')],
+      [new TextEncoder().encode('payment_router')],
       this.programId
     )
     this.programAccount = pda
@@ -234,11 +234,14 @@ export class PaymentRouterClient extends BaseSolanaProgram {
           // Ignore all errors; for now there is no API-compatible way to selectively ignore the expected
           // instruction error if the associated account exists already.
         }
+
+        // Now this should always succeed
+        account = await getAccount(this.connection, associatedTokenAdddress)
       } else {
         throw error
       }
     }
-    if (!account) throw new Error('Failed to create token account') // should never throw, but ts is confused
+
     if (!account.mint.equals(mint)) throw new TokenInvalidMintError()
     if (!account.owner.equals(this.programAccount))
       throw new TokenInvalidOwnerError()
