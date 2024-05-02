@@ -1,4 +1,5 @@
 import { randomBytes } from 'crypto'
+import fs from 'fs'
 
 import chalk from 'chalk'
 import { program } from 'commander'
@@ -22,7 +23,11 @@ program
     'The email for the new user (chosen randomly if not specified)'
   )
   .option('-v, --verified', 'Include this flag to create a verified user')
-  .action(async (handle, { password, email, verified }) => {
+  .option(
+    '-o, --output <path>',
+    'A path to which to write a json file containing the user data'
+  )
+  .action(async (handle, { password, email, verified, output }) => {
     const audiusLibs = await initializeAudiusLibs()
 
     const rand = randomBytes(2).toString('hex').padStart(4, '0').toUpperCase()
@@ -67,6 +72,24 @@ program
       console.log(chalk.yellow.bold('Entropy:  '), entropy)
 
       audiusLibs.localStorage.setItem(`handle-${metadata.handle}`, entropy)
+
+      if (output) {
+        fs.writeFileSync(
+          output,
+          JSON.stringify(
+            {
+              handle: metadata.handle,
+              name: metadata.name,
+              userId: response.userId,
+              email,
+              password,
+              entropy
+            },
+            null,
+            2
+          )
+        )
+      }
     } catch (err) {
       program.error(err.message)
     }

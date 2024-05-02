@@ -64,3 +64,4 @@ yalc.lock
 /playwright-report/
 /blob-report/
 /playwright/
+/e2e/user.json
