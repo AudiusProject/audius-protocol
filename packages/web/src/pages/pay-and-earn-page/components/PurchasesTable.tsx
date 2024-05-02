@@ -5,13 +5,13 @@ import { formatUSDCWeiToUSDString } from '@audius/common/utils'
 import BN from 'bn.js'
 import moment from 'moment'
 
+import { UserLink } from 'components/link'
 import { Table } from 'components/table'
 
 import { PurchaseCell, PurchaseRow } from '../types'
 import { isEmptyPurchaseRow } from '../utils'
 
 import { TrackNameWithArtwork } from './TrackNameWithArtwork'
-import { UserLink } from 'components/link'
 
 export type PurchasesTableColumn =
   | 'contentName'
