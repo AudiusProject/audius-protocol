@@ -61,6 +61,7 @@ export type CollectionPageProps = {
   structuredData?: Object
   playlistId: ID
   playing: boolean
+  previewing: boolean
   getPlayingUid: () => string | null
   type: CollectionsPageType
   collection: {
