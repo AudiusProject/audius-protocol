@@ -68,7 +68,6 @@ function* reregisterDeviceTokenOnStartup() {
 }
 
 function* enablePushNotifications() {
-  console.log('ENABLING PUSH NOTIS')
   yield* call(registerDeviceToken)
 
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
@@ -153,12 +152,10 @@ function* watchUpdatePushNotificationSettings() {
     settingsPageActions.TOGGLE_PUSH_NOTIFICATION_SETTING,
     function* (action: settingsPageActions.TogglePushNotificationSetting) {
       let isOn = action.isOn
-      console.log({ isOn })
 
       try {
         if (action.notificationType === PushNotificationSetting.MobilePush) {
           if (isOn) {
-            console.log('calling enable push')
             yield* call(enablePushNotifications)
           } else {
             yield* call(disablePushNotifications)

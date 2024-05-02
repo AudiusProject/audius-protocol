@@ -25,7 +25,6 @@ const NotificationReminderInternal = () => {
   const dispatch = useDispatch()
 
   const remindUserToTurnOnNotifications = useCallback(async () => {
-    console.log('Reminding user')
     try {
       const { status } = await checkNotifications()
       switch (status) {
@@ -61,24 +60,28 @@ const NotificationReminderInternal = () => {
   }, [dispatch])
 
   useAsync(async () => {
+    /**
+     * In 1.5.78, we fixed a bug where Android notifs weren't working due to incorrect manifest perms.
+     * However once the correct perms were added it still didn't automatically "re-enable" notifs for users.
+     * So, we needed a way to one-time retrigger the notifs reminder modal
+     * We landed on this approach using AsyncStorage to track if we've retriggered the notifs drawer or not
+     * This value should be one-time-use (created & set to true in the same session)
+     */
     const hasRetriggeredNotifs = await AsyncStorage.getItem('RETRIGGER_NOTIFS')
+
     if (hasRetriggeredNotifs === null) {
-      // Not set at all yet - new patch
+      // Not set at all yet - this was introduced in 1.5.78 for a
       await AsyncStorage.setItem('RETRIGGER_NOTIFS', 'false')
     } else {
-      // if (hasRetriggeredNotifs === 'true') {
+      // Only retrigger the notifs drawer if this is our first time seeing this new async key
       if (hasRetriggeredNotifs !== 'true') {
-        console.log('Needs retriggering', { hasRetriggeredNotifs })
         remindUserToTurnOnNotifications()
         await AsyncStorage.setItem('RETRIGGER_NOTIFS', 'true')
-      } else {
-        console.log('Doesnt need retriggering', { hasRetriggeredNotifs })
       }
     }
   })
 
-  // Sets up reminders to turn on push notifications
-
+  // Sets up reminders to turn on push notifications every time the reminder frequency is met
   useSessionCount(
     remindUserToTurnOnNotifications,
     REMINDER_FREQUENCY,

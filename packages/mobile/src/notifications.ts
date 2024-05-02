@@ -97,13 +97,9 @@ class PushNotifications {
     const isAndroid = Platform.OS === MobileOS.ANDROID
     isRegistering = true
 
-    const alreadyHasPerms = await this.hasPermission()
-
-    console.log({ alreadyHasPerms })
     if (isAndroid) {
-      console.log('is android')
-      // await request(PERMISSIONS.ANDROID.POST_NOTIFICATIONS)
-      Notifications.registerRemoteNotifications()
+      // For android, Notifications.registerRemoteNotifications is supposed to prompt user for permission but its currently not
+      await request(PERMISSIONS.ANDROID.POST_NOTIFICATIONS)
     } else {
       // iOS
       Notifications.registerRemoteNotifications()
