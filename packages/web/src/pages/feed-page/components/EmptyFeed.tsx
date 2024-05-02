@@ -1,20 +1,20 @@
-import { memo } from 'react'
-
+import { accountSelectors } from '@audius/common/store'
 import { Button } from '@audius/harmony'
 import cn from 'classnames'
-import PropTypes from 'prop-types'
+import { Link } from 'react-router-dom'
+
+import { useSelector } from 'utils/reducer'
+import { SIGN_UP_PAGE } from 'utils/route'
 
 import styles from './EmptyFeed.module.css'
 import FollowArtists from './FollowUsers'
 
-const messages = {
-  noFollowers: `Oops! There's nothing here.`
-}
+const EmptyFeed = () => {
+  const hasAccount = useSelector(accountSelectors.getHasAccount)
 
-const EmptyFeed = (props) => {
   return (
     <div className={cn(styles.emptyFeed)}>
-      {props.hasAccount ? null : (
+      {hasAccount ? null : (
         <div className={styles.banner}>
           <div className={styles.bannerText}>
             {`You'll Need An Account Before You Can Use Your Feed!`}
@@ -23,18 +23,8 @@ const EmptyFeed = (props) => {
       )}
       <div className={styles.contentWrapper}>
         <div className={styles.body}>
-          {props.hasAccount ? (
-            <FollowArtists
-              header={
-                <>
-                  {messages.noFollowers}{' '}
-                  <i className='emoji face-screaming-in-fear' />
-                </>
-              }
-              fetchFollowUsers={props.fetchFollowUsers}
-              followUsers={props.followUsers}
-              users={props.suggestedFollows}
-            />
+          {hasAccount ? (
+            <FollowArtists />
           ) : (
             <>
               <div className={styles.title}>
@@ -53,8 +43,8 @@ const EmptyFeed = (props) => {
                 <i className='emoji small headphone' />
               </div>
               <div className={styles.item}>and much more!</div>
-              <Button variant='primary' size='small' onClick={props.onClick}>
-                Sign Up
+              <Button variant='primary' size='small' asChild>
+                <Link to={SIGN_UP_PAGE}>Sign Up</Link>
               </Button>
             </>
           )}
@@ -64,20 +54,4 @@ const EmptyFeed = (props) => {
   )
 }
 
-EmptyFeed.propTypes = {
-  hasAccount: PropTypes.bool,
-  onClick: PropTypes.func,
-  fetchFollowUsers: PropTypes.func,
-  followUsers: PropTypes.func,
-  suggestedFollows: PropTypes.arrayOf(
-    PropTypes.shape({
-      user_id: PropTypes.number,
-      name: PropTypes.string,
-      handle: PropTypes.string,
-      is_verified: PropTypes.bool,
-      follower_count: PropTypes.number
-    })
-  )
-}
-
-export default memo(EmptyFeed)
+export default EmptyFeed
