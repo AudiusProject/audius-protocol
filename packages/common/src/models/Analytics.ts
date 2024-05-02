@@ -125,6 +125,9 @@ export enum Name {
   DEVELOPER_APP_CREATE_SUBMIT = 'Developer Apps: Create app submit',
   DEVELOPER_APP_CREATE_SUCCESS = 'Developer Apps: Create app success',
   DEVELOPER_APP_CREATE_ERROR = 'Developer Apps: Create app error',
+  DEVELOPER_APP_EDIT_SUBMIT = 'Developer Apps: Edit app submit',
+  DEVELOPER_APP_EDIT_SUCCESS = 'Developer Apps: Edit app success',
+  DEVELOPER_APP_EDIT_ERROR = 'Developer Apps: Edit app error',
   DEVELOPER_APP_DELETE_SUCCESS = 'Developer Apps: Delete app success',
   DEVELOPER_APP_DELETE_ERROR = 'Developer Apps: Delete app error',
 
@@ -1851,6 +1854,23 @@ type DeveloperAppCreateError = {
   error?: string
 }
 
+type DeveloperAppEditSubmit = {
+  eventName: Name.DEVELOPER_APP_EDIT_SUBMIT
+  name?: string
+  description?: string
+}
+
+type DeveloperAppEditSuccess = {
+  eventName: Name.DEVELOPER_APP_EDIT_SUCCESS
+  name: string
+  apiKey: string
+}
+
+type DeveloperAppEditError = {
+  eventName: Name.DEVELOPER_APP_EDIT_ERROR
+  error?: string
+}
+
 type DeveloperAppDeleteSuccess = {
   eventName: Name.DEVELOPER_APP_DELETE_SUCCESS
   name?: string
@@ -2659,6 +2679,9 @@ export type AllTrackingEvents =
   | DeveloperAppCreateSubmit
   | DeveloperAppCreateSuccess
   | DeveloperAppCreateError
+  | DeveloperAppEditSubmit
+  | DeveloperAppEditSuccess
+  | DeveloperAppEditError
   | DeveloperAppDeleteSuccess
   | DeveloperAppDeleteError
   | AuthorizedAppRemoveSuccess
