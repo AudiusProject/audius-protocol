@@ -68,7 +68,6 @@ def _get_collection_library(args: GetCollectionLibraryArgs, session):
     sort_method = args.get("sort_method", CollectionLibrarySortMethod.added_date)
     sort_direction = args.get("sort_direction", SortDirection.desc)
 
-    # Doesn't yet support album/playlist purchases
     if not filter_type:
         raise ValueError("Invalid filter type")
 
