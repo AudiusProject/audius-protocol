@@ -61,6 +61,15 @@ class NestedOneOf(fields.Nested):
     The throwing behavior is different from other fields, and the "marshalling"
     behaves more like "validating". Care should be taken to ensure only the
     exact matching data is represented in this field.
+
+    example:
+    ```
+    ns.add_model("my_one_of", OneOfModel("my_one_of", [fields.Nested(model_a), fields.Nested(model_b)]))
+    my_model = ns.model("my_model", { "my_field": NestedOneOf(my_one_of, allow_null=True) })
+    ```
+
+    See also: access_gate usage in tracks.py
+
     """
 
     def __init__(self, model: OneOfModel, **kwargs):
@@ -74,11 +83,7 @@ class NestedOneOf(fields.Nested):
             elif self.default is not None:
                 return self.default
         for field in self.model.fields:
-            try:
-                marshalled = marshal(value, field.nested)
-                print(f"MARCUS | value={value} marshalled={marshalled}")
-                if value == marshalled:
-                    return value
-            except fields.MarshallingError as e:
-                raise e
+            marshalled = marshal(value, field.nested)
+            if value == marshalled:
+                return value
         raise fields.MarshallingError("No matching oneOf models")

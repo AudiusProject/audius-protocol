@@ -18,6 +18,36 @@ class OneOfModel(SchemaModel):
     the invalid swagger.json. In the conversion, OneOfModels become simple
     objects, so they are re-added from the swagger.json before generating
     the Typescript types.
+
+    When marshalling, the dat must match **exactly** one of the formats.
+    Unlike normal marshallers, this model is more of a validator. Without
+    a discriminator, it doesn't know what to marshal to, so it just checks
+    that the data matches one of the models.
+
+    ** ONLY USE WITH `NestedOneOf`, it does NOT work with fields.Nested **
+
+    example:
+    ```
+    ns.add_model("my_one_of", OneOfModel("my_one_of", [fields.Nested(model_a), fields.Nested(model_b)]))
+    my_model = ns.model("my_model", { "my_field": NestedOneOf(my_one_of, allow_null=True) })
+    ```
+
+    schema output:
+    ```
+    {
+        // ...
+        "definitions": {
+            "my_one_of": {
+                "oneOf" [
+                    { "ref": "#/definitions/model_a" },
+                    { "ref": "#/definitinos/model_b" }
+                ]
+            }
+        }
+    }
+    ```
+
+    See also: access_gate usage in tracks.py
     """
 
     def __init__(self, name, fields: List[fields.Nested], *args, **kwargs):
@@ -36,7 +66,7 @@ class OneOfModel(SchemaModel):
 
 
 class WildcardModel(Model):
-    """Hack of the Model that allows the schema to be properly formatted for wildcard."""
+    """Hack of the Model that allows the schema to be properly formatted for a wildcard field."""
 
     @property
     def _schema(self):
