@@ -65,7 +65,7 @@ export default defineConfig({
     },
     {
       name: 'chromium',
-      dependencies: ['seed', ...(authFileExists ? [] : ['setup'])],
+      dependencies: authFileExists ? [] : ['seed', 'setup'],
       testIgnore: /.*\.setup.ts/,
       use: {
         ...devices['Desktop Chrome'],

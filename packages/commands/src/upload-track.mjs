@@ -1,6 +1,7 @@
 import { randomBytes, randomInt } from 'crypto'
 import { createReadStream } from 'fs'
 import { spawn } from 'child_process'
+import fs from 'fs'
 
 import chalk from 'chalk'
 import { program } from 'commander'
@@ -149,6 +150,10 @@ program
     'Manually set a download conditions object. Cannot be used with -dp',
     ''
   )
+  .option(
+    '--output <path>',
+    'A path to which to write a json file containing the track data'
+  )
   .action(
     async (
       track,
@@ -165,7 +170,8 @@ program
         streamConditions,
         isDownloadable,
         downloadPrice,
-        downloadConditions
+        downloadConditions,
+        output
       }
     ) => {
       const audiusLibs = await initializeAudiusLibs(from)
@@ -253,7 +259,15 @@ program
         console.log(chalk.green('Successfully uploaded track!'))
         console.log(chalk.yellow.bold('Track ID:   '), response.trackId)
         console.log(chalk.yellow.bold('Track Title:'), trackTitle)
+
+        if (output) {
+          fs.writeFileSync(
+            output,
+            JSON.stringify(response.updatedMetadata, null, 2)
+          )
+        }
       } catch (err) {
+        console.log(err)
         program.error(err.message)
       }
 
