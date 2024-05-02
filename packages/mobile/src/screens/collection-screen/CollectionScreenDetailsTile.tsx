@@ -16,6 +16,7 @@ import {
   cacheTracksSelectors,
   PurchaseableContentType
 } from '@audius/common/store'
+import { getPreviewing } from '@audius/common/store/player/selectors'
 import { removeNullable } from '@audius/common/utils'
 import type { Maybe, Nullable } from '@audius/common/utils'
 import { useDispatch, useSelector } from 'react-redux'
@@ -180,24 +181,42 @@ export const CollectionScreenDetailsTile = ({
   const playingUid = useSelector(getUid)
   const isQueued = useSelector(selectIsQueued)
   const isPlaying = useSelector(getPlaying)
+  const isPreviewing = useSelector(getPreviewing)
   const playingTrack = useSelector(getCurrentTrack)
   const playingTrackId = playingTrack?.track_id
   const firstTrack = useSelector(selectFirstTrack)
   const messages = getMessages(isAlbum ? 'album' : 'playlist')
   useRefetchLineupOnTrackAdd(collectionId)
 
-  const handlePressPlay = useCallback(() => {
-    if (isPlaying && isQueued) {
-      dispatch(tracksActions.pause())
-      recordPlay(playingTrackId, false)
-    } else if (!isPlaying && isQueued) {
-      dispatch(tracksActions.play())
-      recordPlay(playingTrackId)
-    } else if (trackCount > 0 && firstTrack) {
-      dispatch(tracksActions.play(firstTrack.uid))
-      recordPlay(firstTrack.id)
-    }
-  }, [dispatch, isPlaying, playingTrackId, isQueued, trackCount, firstTrack])
+  const play = useCallback(
+    ({ isPreview = false }: { isPreview?: boolean } = {}) => {
+      if (isPlaying && isQueued && isPreviewing === isPreview) {
+        dispatch(tracksActions.pause())
+        recordPlay(playingTrackId, false)
+      } else if (!isPlaying && isQueued) {
+        dispatch(tracksActions.play())
+        recordPlay(playingTrackId)
+      } else if (trackCount > 0 && firstTrack) {
+        dispatch(tracksActions.play(firstTrack.uid, { isPreview }))
+        recordPlay(firstTrack.id)
+      }
+    },
+    [
+      isPlaying,
+      isQueued,
+      isPreviewing,
+      trackCount,
+      firstTrack,
+      dispatch,
+      playingTrackId
+    ]
+  )
+
+  const handlePressPlay = useCallback(() => play(), [play])
+  const handlePressPreview = useCallback(
+    () => play({ isPreview: true }),
+    [play]
+  )
 
   const handlePressTrackListItemPlay = useCallback(
     (uid: UID, id: ID) => {
@@ -273,12 +292,14 @@ export const CollectionScreenDetailsTile = ({
       streamConditions={streamConditions}
       hideRepost={hideRepost || !isReachable}
       isPlaying={isPlaying && isQueued}
+      isPreviewing={isPreviewing && isQueued}
       isPublished={!isPrivate || isPublishing}
       isCollection={true}
       renderBottomContent={renderTrackList}
       headerText={isPrivate ? messages.hiddenType : messages.collectionType}
       renderImage={renderImage}
       onPressPlay={handlePressPlay}
+      onPressPreview={handlePressPreview}
       isPlayable={isPlayable}
       trackCount={trackCount}
     />
