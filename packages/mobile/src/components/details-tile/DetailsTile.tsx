@@ -56,11 +56,11 @@ const { getTrackId } = playerSelectors
 const { getTrackPosition } = playbackPositionSelectors
 
 const messages = {
-  play: 'play',
-  pause: 'pause',
-  resume: 'resume',
-  replay: 'replay',
-  preview: 'preview',
+  play: 'Play',
+  pause: 'Pause',
+  resume: 'Resume',
+  replay: 'Replay',
+  preview: 'Preview',
   trackCount: 'track',
   playCount: 'play',
   released: 'Released',
@@ -189,6 +189,7 @@ export const DetailsTile = ({
     light()
     onPressPreview?.()
   }, [onPressPreview])
+
   const renderDogEar = () => {
     const dogEarType = getDogEarType({
       isOwner,

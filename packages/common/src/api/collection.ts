@@ -10,9 +10,10 @@ const collectionApi = createApi({
         {
           playlistId,
           currentUserId
-        }: { playlistId: ID; currentUserId: Nullable<ID> },
+        }: { playlistId: Nullable<ID>; currentUserId: Nullable<ID> },
         { apiClient }
       ) => {
+        if (!playlistId) return null
         return (
           await apiClient.getPlaylist({
             playlistId,

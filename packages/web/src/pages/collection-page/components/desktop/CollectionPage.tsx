@@ -1,4 +1,4 @@
-import { ChangeEvent, MouseEventHandler, useMemo } from 'react'
+import { ChangeEvent, useMemo } from 'react'
 
 import {
   Variant,
@@ -70,6 +70,7 @@ export type CollectionPageProps = {
   structuredData?: Object
   playlistId: ID
   playing: boolean
+  previewing: boolean
   getPlayingUid: () => string | null
   type: CollectionsPageType
   collection: {
@@ -84,7 +85,8 @@ export type CollectionPageProps = {
   userId?: ID | null
   userPlaylists?: any
   isQueued: () => boolean
-  onPlay: MouseEventHandler<HTMLButtonElement>
+  onPlay: () => void
+  onPreview: () => void
   onClickRow: (record: CollectionPageTrackRecord, index: number) => void
   onClickSave?: (record: CollectionPageTrackRecord) => void
   allowReordering: boolean
@@ -114,6 +116,7 @@ const CollectionPage = ({
   playlistId,
   allowReordering,
   playing,
+  previewing,
   type,
   collection,
   tracks,
@@ -122,6 +125,7 @@ const CollectionPage = ({
   isQueued,
   onFilterChange,
   onPlay,
+  onPreview,
   onClickRow,
   onClickSave,
   onClickRepostTrack,
@@ -145,6 +149,7 @@ const CollectionPage = ({
       : [[], -1]
   const collectionLoading = status === Status.LOADING
   const queuedAndPlaying = playing && isQueued()
+  const queuedAndPreviewing = previewing && isQueued()
   const tracksLoading = tracks.status === Status.LOADING
 
   const coverArtSizes =
@@ -236,9 +241,11 @@ const CollectionPage = ({
       reposts={playlistRepostCount}
       saves={playlistSaveCount}
       playing={queuedAndPlaying}
+      previewing={queuedAndPreviewing}
       // Actions
       onFilterChange={onFilterChange}
       onPlay={onPlay}
+      onPreview={onPreview}
       onClickReposts={onClickReposts}
       onClickFavorites={onClickFavorites}
       // Smart collection
