@@ -40,6 +40,11 @@ export type PurchaseableContentMetadata =
   | PurchaseableTrackDownloadMetadata
   | PurchaseableAlbumStreamMetadata
 
+export const isContentDownloadGated = (
+  metadata?: PurchaseableContentMetadata
+): metadata is PurchaseableTrackDownloadMetadata =>
+  !!metadata && 'is_download_gated' in metadata
+
 export type USDCPurchaseConfig = {
   minContentPriceCents: number
   maxContentPriceCents: number

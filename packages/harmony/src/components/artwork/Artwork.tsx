@@ -59,9 +59,8 @@ export const Artwork = (props: ArtworkProps) => {
           pt='100%'
           borderRadius={borderRadius}
           css={{
-            backgroundColor: src
-              ? color.background.surface2
-              : color.neutral.n400
+            backgroundColor:
+              !src && children ? color.neutral.n400 : color.background.surface2
           }}
         />
         {src ? (

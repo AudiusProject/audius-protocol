@@ -100,7 +100,11 @@ const renderLockedContentOrPlayCount = ({
   lockedContentType
 }: LockedOrPlaysContentProps) => {
   if (isStreamGated && streamConditions && !isOwner) {
-    if (lockedContentType === 'premium' && variant === 'readonly') {
+    if (
+      !hasStreamAccess &&
+      lockedContentType === 'premium' &&
+      variant === 'readonly'
+    ) {
       return (
         <GatedConditionsPill
           streamConditions={streamConditions}

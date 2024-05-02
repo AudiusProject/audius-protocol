@@ -15,7 +15,7 @@ import RepostFavoritesStats from 'components/repost-favorites-stats/RepostFavori
 import { ScheduledReleaseGiantLabel } from 'components/scheduled-release-label/ScheduledReleaseLabel'
 import Skeleton from 'components/skeleton/Skeleton'
 import { Tile } from 'components/tile'
-import { UserGeneratedText } from 'components/user-generated-text'
+import { ServerUserGeneratedText } from 'components/user-generated-text/ServerUserGeneratedText'
 import { moodMap } from 'utils/Moods'
 import { formatDate, formatSeconds } from 'utils/dateUtils'
 
@@ -39,17 +39,12 @@ const messages = {
 }
 
 export type ServerGiantTrackTileProps = {
-  // aiAttributionUserId: Nullable<number>
   aiAttributionUserId: number | null
   artistHandle: string
-  // badge: Nullable<string>
   badge: string | null
-  // coSign: Nullable<Remix>
   coSign: Remix | null
-  // coverArtSizes: Nullable<CoverArtSizes>
   coverArtSizes: CoverArtSizes | null
   credits: string
-  // currentUserId: Nullable<ID>
   currentUserId: ID | null
   description: string
   hasStreamAccess: boolean
@@ -82,9 +77,7 @@ export type ServerGiantTrackTileProps = {
   onUnfollow: () => void
   playing: boolean
   previewing: boolean
-  // streamConditions: Nullable<AccessConditions>
   streamConditions: AccessConditions | null
-  // downloadConditions: Nullable<AccessConditions>
   downloadConditions: AccessConditions | null
   released: string
   repostCount: number
@@ -101,7 +94,6 @@ export const ServerGiantTrackTile = ({
   aiAttributionUserId,
   badge,
   coSign,
-  coverArtSizes,
   credits,
   description,
   duration,
@@ -170,8 +162,6 @@ export const ServerGiantTrackTile = ({
         <InfoLabel
           className={styles.infoLabelPlacement}
           labelName='genre'
-          // TODO: Fix this
-          // labelValue={getCanonicalName(genre)}
           labelValue={genre}
         />
       )
@@ -297,9 +287,13 @@ export const ServerGiantTrackTile = ({
           ) : null}
         </div>
         {description ? (
-          <UserGeneratedText tag='h3' size='s' className={styles.description}>
+          <ServerUserGeneratedText
+            tag='h3'
+            size='s'
+            className={styles.description}
+          >
             {description}
-          </UserGeneratedText>
+          </ServerUserGeneratedText>
         ) : null}
       </div>
     </Tile>

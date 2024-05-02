@@ -1,5 +1,5 @@
 import { ServerTrackPage as DesktopPage } from './desktop/ServerTrackPage'
-// import { ServerTrackPage as MobilePage } from './mobile/ServerTrackPage'
+import { ServerTrackPage as MobilePage } from './mobile/ServerTrackPage'
 
 export type ServerTrackPageProps = {
   track: any
@@ -10,7 +10,6 @@ export const ServerTrackPage = ({
   isMobile,
   ...other
 }: ServerTrackPageProps) => {
-  // return isMobile ? <MobilePage {...other} /> : <DesktopPage {...other} />
   // @ts-ignore
-  return <DesktopPage {...other} />
+  return isMobile ? <MobilePage {...other} /> : <DesktopPage {...other} />
 }

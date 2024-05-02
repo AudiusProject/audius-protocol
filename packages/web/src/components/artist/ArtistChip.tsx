@@ -75,7 +75,7 @@ const ArtistIdentifier = ({
 
 type ArtistChipProps = {
   user: User
-  onClickArtistName: () => void
+  onClickArtistName?: () => void
   showPopover?: boolean
   showSupportFor?: ID
   showSupportFrom?: ID
@@ -126,7 +126,9 @@ const ArtistChip = ({
           <DynamicImage
             wrapperClassName={styles.profilePictureWrapper}
             skeletonClassName={styles.profilePictureSkeleton}
-            className={styles.profilePicture}
+            className={cn(styles.profilePicture, {
+              [styles.clickable]: onClickArtistName != null
+            })}
             image={profilePicture}
           />
         </ArtistPopover>
@@ -134,12 +136,18 @@ const ArtistChip = ({
         <DynamicImage
           wrapperClassName={styles.profilePictureWrapper}
           skeletonClassName={styles.profilePictureSkeleton}
-          className={styles.profilePicture}
+          className={cn(styles.profilePicture, {
+            [styles.clickable]: onClickArtistName != null
+          })}
           image={profilePicture}
         />
       )}
       <div className={styles.text}>
-        <div className={cn(styles.identity, 'name')}>
+        <div
+          className={cn(styles.identity, 'name', {
+            [styles.clickable]: onClickArtistName != null
+          })}
+        >
           <ArtistIdentifier
             userId={userId}
             name={name}

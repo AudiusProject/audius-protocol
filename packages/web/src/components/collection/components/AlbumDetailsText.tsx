@@ -17,6 +17,7 @@ export const AlbumDetailsText = ({
 }: AlbumDetailsTextProps) => {
   const isMobile = useIsMobile()
   const renderAlbumDetailsText = () => {
+    const hasDate = lastModifiedDate || releaseDate
     const releaseAndUpdatedText = lastModifiedDate
       ? `Released ${formatDate(`${releaseDate}`)}, Updated ${formatDate(
           `${lastModifiedDate}`
@@ -27,14 +28,16 @@ export const AlbumDetailsText = ({
     const durationText = duration ? `, ${formatSecondsAsText(duration)}` : ''
     return isMobile ? (
       <Flex direction='column' gap='xs'>
-        <Box>{releaseAndUpdatedText}</Box>
+        {hasDate ? <Box>{releaseAndUpdatedText}</Box> : null}
         <Box>
           {trackCountText}
           {durationText}
         </Box>
       </Flex>
+    ) : hasDate ? (
+      `${releaseAndUpdatedText} • ${trackCountText}${durationText}`
     ) : (
-      <>{`${releaseAndUpdatedText} • ${trackCountText}${durationText}`}</>
+      `${trackCountText}${durationText}`
     )
   }
   return (

@@ -12,7 +12,7 @@ import IconHeart from '@audius/harmony/src/assets/icons/Heart.svg'
 import IconRepost from '@audius/harmony/src/assets/icons/Repost.svg'
 import { Link, useLinkClickHandler } from 'react-router-dom-v5-compat'
 
-import { Card, CardProps, CardFooter } from 'components/card'
+import { Card, CardProps, CardFooter, CardContent } from 'components/card'
 import { DogEar } from 'components/dog-ear'
 import { UserLink } from 'components/link'
 import { LockedStatusPill } from 'components/locked-status-pill'
@@ -88,7 +88,7 @@ export const CollectionCard = forwardRef(
             size={cardSizeToCoverArtSizeMap[size]}
             data-testid={`cover-art-${id}`}
           />
-          <Flex direction='column' gap='xs'>
+          <CardContent gap='xs'>
             <Text variant='title' color='default' ellipses asChild>
               <Link to={permalink} css={{ pointerEvents: 'none' }}>
                 {playlist_name}
@@ -99,7 +99,7 @@ export const CollectionCard = forwardRef(
               textVariant='body'
               css={{ justifyContent: 'center' }}
             />
-          </Flex>
+          </CardContent>
         </Flex>
         <CardFooter>
           {is_private ? (

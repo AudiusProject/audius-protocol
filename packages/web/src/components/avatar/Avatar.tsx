@@ -26,14 +26,18 @@ type AvatarProps = Omit<HarmonyAvatarProps, 'src'> & {
   'aria-hidden'?: true
   userId: Maybe<ID>
   onClick?: () => void
+  imageSize?: SquareSizes
 }
 
 export const Avatar = (props: AvatarProps) => {
-  const { userId, onClick, 'aria-hidden': ariaHidden, ...other } = props
-  const profileImage = useProfilePicture(
-    userId ?? null,
-    SquareSizes.SIZE_150_BY_150
-  )
+  const {
+    userId,
+    onClick,
+    'aria-hidden': ariaHidden,
+    imageSize = SquareSizes.SIZE_150_BY_150,
+    ...other
+  } = props
+  const profileImage = useProfilePicture(userId ?? null, imageSize)
 
   const image = userId ? profileImage : imageProfilePicEmpty
 

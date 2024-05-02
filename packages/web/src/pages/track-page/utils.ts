@@ -25,7 +25,8 @@ export const getTrackDefaults = (heroTrack: Track | null) => ({
   genre: emptyStringGuard(heroTrack?.genre),
   mood: emptyStringGuard(heroTrack?.mood),
   repostCount: heroTrack?.repost_count ?? 0,
-  saveCount: heroTrack?.save_count ?? 0,
+  // @ts-expect-error
+  saveCount: heroTrack?.save_count ?? heroTrack?.favorite_count ?? 0,
   isUnlisted: heroTrack?.is_unlisted ?? false,
   isScheduledRelease: heroTrack?.is_scheduled_release ?? false,
   isStreamGated: heroTrack?.is_stream_gated ?? false,

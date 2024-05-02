@@ -181,7 +181,7 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
 
   const topSection = (
     <Flex gap='xl' p='l' backgroundColor='white'>
-      {coverArtSizes ? (
+      {coverArtSizes || gradient || icon ? (
         <Artwork
           collectionId={collectionId}
           coverArtSizes={coverArtSizes}
@@ -323,7 +323,7 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
       <Flex className={cn(fadeIn)} gap='l' direction='column'>
         {description ? (
           <UserGeneratedText
-            size='xs'
+            size='s'
             className={cn(fadeIn)}
             linkSource='collection page'
             css={{ textAlign: 'left' }}

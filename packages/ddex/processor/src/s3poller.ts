@@ -5,9 +5,10 @@ import {
   S3ClientConfig,
 } from '@aws-sdk/client-s3'
 import { fromIni } from '@aws-sdk/credential-provider-ini'
-import { join } from 'path'
+import { basename, dirname, join, resolve } from 'path'
 import { s3markerRepo } from './db'
 import { parseDdexXml } from './parseDelivery'
+import { mkdir, readFile, stat, writeFile } from 'fs/promises'
 
 export function dialS3() {
   const { AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY } = process.env
@@ -77,6 +78,7 @@ export async function pollS3(reset?: boolean) {
   }
 }
 
+// recursively scan a prefix for xml files
 async function scanS3Prefix(client: S3Client, bucket: string, prefix: string) {
   const result = await client.send(
     new ListObjectsCommand({
@@ -108,4 +110,53 @@ async function scanS3Prefix(client: S3Client, bucket: string, prefix: string) {
       }
     })
   )
+}
+
+//
+// s3 file helper
+//
+export async function readAssetWithCaching(
+  xmlUrl: string,
+  filePath: string,
+  fileName: string
+) {
+  // read from s3 + cache to local disk
+  if (xmlUrl.startsWith('s3:')) {
+    const cacheBaseDir = `/tmp/ddex_cache`
+    const s3url = new URL(`${filePath}${fileName}`, xmlUrl)
+    const Bucket = s3url.host
+    const Key = s3url.pathname.substring(1)
+    const destinationPath = join(cacheBaseDir, Bucket, Key)
+
+    // fetch if needed
+    const exists = await fileExists(destinationPath)
+    if (!exists) {
+      const s3 = dialS3()
+      await mkdir(dirname(destinationPath), { recursive: true })
+      const { Body } = await s3.send(new GetObjectCommand({ Bucket, Key }))
+      await writeFile(destinationPath, Body as any)
+    }
+
+    return readFileToBuffer(destinationPath)
+  }
+
+  // read from local disk
+  const fileUrl = resolve(xmlUrl, '..', filePath, fileName)
+  return readFileToBuffer(fileUrl)
+}
+
+// sdk helpers
+async function readFileToBuffer(filePath: string) {
+  const buffer = await readFile(filePath)
+  const name = basename(filePath)
+  return { buffer, name }
+}
+
+async function fileExists(path: string) {
+  try {
+    await stat(path)
+    return true
+  } catch {
+    return false
+  }
 }

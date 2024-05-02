@@ -397,6 +397,10 @@ def validate_update_access_conditions(params: ManageEntityParameters):
     existing_conditions = existing_playlist.get("stream_conditions")
     updated_conditions = updated_playlist.get("stream_conditions")
 
+    if existing_playlist.get("is_private"):
+        # private playlist can be changed to gated or public
+        return
+
     if not existing_conditions:
         # non gated playlist cannot be updated to be gated
         if updated_conditions:

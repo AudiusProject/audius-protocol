@@ -9,6 +9,7 @@ import {
 } from '@audius/common/store'
 import { useSelector } from 'react-redux'
 
+import { CollectionCard } from 'components/collection'
 import { InfiniteCardLineup } from 'components/lineup/InfiniteCardLineup'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import EmptyTable from 'components/tracks-table/EmptyTable'
@@ -17,7 +18,6 @@ import { useCollectionsData } from 'pages/saved-page/hooks/useCollectionsData'
 
 import { emptyStateMessages } from '../emptyStateMessages'
 
-import { CollectionCard } from './CollectionCard'
 import styles from './SavedPage.module.css'
 
 const { getCategory } = savedPageSelectors
@@ -55,10 +55,8 @@ export const AlbumsTabPage = () => {
   const isLoadingInitial = statusIsNotFinalized(status) && albums?.length === 0
 
   const cards = useMemo(() => {
-    return albums?.map(({ playlist_id }, i) => {
-      return (
-        <CollectionCard index={i} key={playlist_id} albumId={playlist_id} />
-      )
+    return albums?.map(({ playlist_id }) => {
+      return <CollectionCard key={playlist_id} id={playlist_id} size='m' />
     })
   }, [albums])
 

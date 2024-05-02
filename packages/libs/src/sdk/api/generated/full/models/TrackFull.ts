@@ -20,6 +20,12 @@ import {
     AccessFromJSONTyped,
     AccessToJSON,
 } from './Access';
+import type { AccessGate } from './AccessGate';
+import {
+    AccessGateFromJSON,
+    AccessGateFromJSONTyped,
+    AccessGateToJSON,
+} from './AccessGate';
 import type { CoverArt } from './CoverArt';
 import {
     CoverArtFromJSON,
@@ -389,10 +395,10 @@ export interface TrackFull {
     isStreamGated?: boolean;
     /**
      * 
-     * @type {object}
+     * @type {AccessGate}
      * @memberof TrackFull
      */
-    streamConditions?: object;
+    streamConditions?: AccessGate;
     /**
      * 
      * @type {boolean}
@@ -401,10 +407,10 @@ export interface TrackFull {
     isDownloadGated?: boolean;
     /**
      * 
-     * @type {object}
+     * @type {AccessGate}
      * @memberof TrackFull
      */
-    downloadConditions?: object;
+    downloadConditions?: AccessGate;
     /**
      * 
      * @type {Access}
@@ -557,9 +563,9 @@ export function TrackFullFromJSONTyped(json: any, ignoreDiscriminator: boolean):
         'coverArt': !exists(json, 'cover_art') ? undefined : json['cover_art'],
         'isAvailable': !exists(json, 'is_available') ? undefined : json['is_available'],
         'isStreamGated': !exists(json, 'is_stream_gated') ? undefined : json['is_stream_gated'],
-        'streamConditions': !exists(json, 'stream_conditions') ? undefined : json['stream_conditions'],
+        'streamConditions': !exists(json, 'stream_conditions') ? undefined : AccessGateFromJSON(json['stream_conditions']),
         'isDownloadGated': !exists(json, 'is_download_gated') ? undefined : json['is_download_gated'],
-        'downloadConditions': !exists(json, 'download_conditions') ? undefined : json['download_conditions'],
+        'downloadConditions': !exists(json, 'download_conditions') ? undefined : AccessGateFromJSON(json['download_conditions']),
         'access': !exists(json, 'access') ? undefined : AccessFromJSON(json['access']),
         'aiAttributionUserId': !exists(json, 'ai_attribution_user_id') ? undefined : json['ai_attribution_user_id'],
         'audioUploadId': !exists(json, 'audio_upload_id') ? undefined : json['audio_upload_id'],
@@ -633,9 +639,9 @@ export function TrackFullToJSON(value?: TrackFull | null): any {
         'cover_art': value.coverArt,
         'is_available': value.isAvailable,
         'is_stream_gated': value.isStreamGated,
-        'stream_conditions': value.streamConditions,
+        'stream_conditions': AccessGateToJSON(value.streamConditions),
         'is_download_gated': value.isDownloadGated,
-        'download_conditions': value.downloadConditions,
+        'download_conditions': AccessGateToJSON(value.downloadConditions),
         'access': AccessToJSON(value.access),
         'ai_attribution_user_id': value.aiAttributionUserId,
         'audio_upload_id': value.audioUploadId,
