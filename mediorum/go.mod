@@ -4,7 +4,7 @@ go 1.21.0
 
 require (
 	github.com/disintegration/imaging v1.6.2
-	github.com/erni27/imcache v1.1.0
+	github.com/erni27/imcache v1.2.0
 	github.com/ethereum/go-ethereum v1.11.4
 	github.com/georgysavva/scany/v2 v2.0.0
 	github.com/gowebpki/jcs v1.0.0

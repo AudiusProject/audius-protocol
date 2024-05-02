@@ -103,6 +103,7 @@ type MediorumServer struct {
 	unreachablePeers      []string
 	redirectCache         *imcache.Cache[string, string]
 	uploadOrigCidCache    *imcache.Cache[string, string]
+	imageCache            *imcache.Cache[string, []byte]
 	failsPeerReachability bool
 
 	StartedAt time.Time
@@ -266,8 +267,9 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 		isAudiusdManaged: isAudiusdManaged,
 
 		peerHealths:        map[string]*PeerHealth{},
-		redirectCache:      imcache.New(imcache.WithMaxEntriesOption[string, string](50_000)),
-		uploadOrigCidCache: imcache.New(imcache.WithMaxEntriesOption[string, string](50_000)),
+		redirectCache:      imcache.New(imcache.WithMaxEntriesLimitOption[string, string](50_000, imcache.EvictionPolicyLRU)),
+		uploadOrigCidCache: imcache.New(imcache.WithMaxEntriesLimitOption[string, string](50_000, imcache.EvictionPolicyLRU)),
+		imageCache:         imcache.New(imcache.WithMaxEntriesLimitOption[string, []byte](1_000, imcache.EvictionPolicyLRU)),
 
 		StartedAt: time.Now().UTC(),
 		Config:    config,
