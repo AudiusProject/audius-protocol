@@ -153,6 +153,7 @@ export default class App<AppData = Map<string, string>> {
     const func = async () => {
       const conn = await db.client.acquireConnection().catch(console.error)
       conn.on('notification', async (msg: any) => {
+        console.log(JSON.stringify(msg, null, 2))
         const { channel, payload } = msg
         const handlers = this.listeners.get(channel)
         if (handlers !== undefined) {
