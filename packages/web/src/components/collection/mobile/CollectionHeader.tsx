@@ -105,7 +105,7 @@ const CollectionHeader = ({
   const { data: currentUserId } = useGetCurrentUserId({})
   const { data: collection } = useGetPlaylistById(
     {
-      playlistId: typeof collectionId === 'number' ? collectionId : -1,
+      playlistId: typeof collectionId === 'number' ? collectionId : null,
       currentUserId
     },
     { disabled: typeof collectionId !== 'number' }
