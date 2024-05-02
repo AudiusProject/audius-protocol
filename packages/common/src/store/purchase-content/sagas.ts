@@ -78,6 +78,8 @@ import {
   PurchaseErrorCode
 } from './types'
 import { getBalanceNeeded } from './utils'
+import { cacheActions } from '../cache'
+import { Kind } from '~/models'
 
 const { getUserId, getAccountUser } = accountSelectors
 
@@ -310,16 +312,29 @@ function* pollForPurchaseConfirmation({
       'playlist_contents' in metadata &&
       metadata.playlist_contents.track_ids
     ) {
-      yield* all(
+      const apiClient = yield* getContext('apiClient')
+      const tracks = yield* all(
         Array.from(metadata.playlist_contents.track_ids).map((trackId) => {
-          return call(pollGatedContent, {
-            contentId: trackId.track,
-            contentType: PurchaseableContentType.TRACK,
-            currentUserId,
-            isSourceTrack: false
+          return call([apiClient, 'getTrack'], {
+            id: trackId.track,
+            currentUserId
           })
         })
       )
+      for (const track of tracks) {
+        if (track) {
+          yield* put(
+            cacheActions.update(Kind.TRACKS, [
+              {
+                id: track.track_id,
+                metadata: {
+                  access: track.access
+                }
+              }
+            ])
+          )
+        }
+      }
     }
   }
 }
