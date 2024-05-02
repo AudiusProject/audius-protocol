@@ -4,6 +4,7 @@ import { takeLatest } from 'redux-saga/effects'
 import { call, put, race, select, take } from 'typed-redux-saga'
 
 import { PurchaseableContentMetadata, isPurchaseableAlbum } from '~/hooks'
+import { Kind } from '~/models'
 import { FavoriteSource, Name } from '~/models/Analytics'
 import { ErrorLevel } from '~/models/ErrorReporting'
 import { ID } from '~/models/Identifiers'
@@ -59,6 +60,7 @@ import {
 } from '~/store/ui/modals/coinflow-onramp-modal'
 import { BN_USDC_CENT_WEI } from '~/utils/wallet'
 
+import { cacheActions } from '../cache'
 import { pollGatedContent } from '../gated-content/sagas'
 import { updateGatedContentStatus } from '../gated-content/slice'
 import { saveCollection } from '../social/collections/actions'
@@ -78,8 +80,6 @@ import {
   PurchaseErrorCode
 } from './types'
 import { getBalanceNeeded } from './utils'
-import { cacheActions } from '../cache'
-import { Kind } from '~/models'
 
 const { getUserId, getAccountUser } = accountSelectors
 
