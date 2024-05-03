@@ -16,7 +16,7 @@ const ExploreCollectionsPage = ({
   const content = isMobile ? MobileCollectionsPage : DesktopCollectionsPage
 
   return (
-    <ExploreCollectionsPageProvider isMobile={isMobile} variant={variant}>
+    <ExploreCollectionsPageProvider variant={variant}>
       {content}
     </ExploreCollectionsPageProvider>
   )

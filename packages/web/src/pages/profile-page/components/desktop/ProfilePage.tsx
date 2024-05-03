@@ -587,7 +587,7 @@ const ProfilePage = ({
   }
 
   const { headers, elements } = profile
-    ? isArtist
+    ? !isArtist
       ? getArtistProfileContent()
       : getUserProfileContent()
     : { headers: [], elements: [] }

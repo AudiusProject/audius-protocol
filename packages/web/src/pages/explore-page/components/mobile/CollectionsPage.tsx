@@ -2,67 +2,30 @@ import { useContext, useEffect } from 'react'
 
 import { Status, UserCollection, ID } from '@audius/common/models'
 
-import Card from 'components/card-legacy/mobile/Card'
 import Header from 'components/header/mobile/Header'
 import { HeaderContext } from 'components/header/mobile/HeaderContextProvider'
 import CardLineup from 'components/lineup/CardLineup'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
 import { useSubPageHeader } from 'components/nav/store/context'
-import { collectionPage, BASE_URL, EXPLORE_PAGE } from 'utils/route'
+import { BASE_URL, EXPLORE_PAGE } from 'utils/route'
 
 import styles from './CollectionsPage.module.css'
+import { CollectionCard } from 'components/collection'
 
 export type CollectionsPageProps = {
   title: string
   description: string
-  collections: UserCollection[]
+  collectionIds: ID[]
   status: Status
-  onClickReposts: (id: ID) => void
-  onClickFavorites: (id: ID) => void
-  goToRoute: (route: string) => void
 }
 
-const ExplorePage = ({
-  title,
-  description,
-  collections,
-  status,
-  onClickReposts,
-  onClickFavorites,
-  goToRoute
-}: CollectionsPageProps) => {
+const ExplorePage = (props: CollectionsPageProps) => {
+  const { title, description, collectionIds, status } = props
   useSubPageHeader()
 
-  const playlistCards = collections.map((playlist: UserCollection) => {
-    return (
-      <Card
-        key={playlist.playlist_id}
-        id={playlist.playlist_id}
-        userId={playlist.playlist_owner_id}
-        imageSize={playlist._cover_art_sizes}
-        primaryText={playlist.playlist_name}
-        secondaryText={playlist.user.name}
-        trackCount={playlist.playlist_contents.track_ids.length}
-        reposts={playlist.repost_count}
-        favorites={playlist.save_count}
-        isPlaylist={!playlist.is_album}
-        onClickReposts={() => onClickReposts(playlist.playlist_id)}
-        onClickFavorites={() => onClickFavorites(playlist.playlist_id)}
-        onClick={(e) => {
-          e.preventDefault()
-          goToRoute(
-            collectionPage(
-              playlist.user.handle,
-              playlist.playlist_name,
-              playlist.playlist_id,
-              playlist.permalink,
-              playlist.is_album
-            )
-          )
-        }}
-      />
-    )
+  const playlistCards = collectionIds.map((id) => {
+    return <CollectionCard key={id} id={id} size='xs' />
   })
 
   const cards = (

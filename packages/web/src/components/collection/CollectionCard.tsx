@@ -17,7 +17,7 @@ import { Link, useLinkClickHandler } from 'react-router-dom-v5-compat'
 
 import { Card, CardProps, CardFooter, CardContent } from 'components/card'
 import { DogEar } from 'components/dog-ear'
-import { UserLink } from 'components/link'
+import { TextLink, UserLink } from 'components/link'
 import { LockedStatusPill } from 'components/locked-status-pill'
 import { useSelector } from 'utils/reducer'
 
@@ -37,6 +37,7 @@ type CollectionCardProps = Omit<CardProps, 'id'> & {
 }
 
 const cardSizeToCoverArtSizeMap = {
+  xs: SquareSizes.SIZE_150_BY_150,
   s: SquareSizes.SIZE_150_BY_150,
   m: SquareSizes.SIZE_480_BY_480,
   l: SquareSizes.SIZE_480_BY_480
@@ -95,10 +96,14 @@ export const CollectionCard = forwardRef(
             data-testid={`cover-art-${id}`}
           />
           <CardContent gap='xs'>
-            <Text variant='title' color='default' ellipses asChild>
-              <Link to={permalink} css={{ pointerEvents: 'none' }}>
-                {playlist_name}
-              </Link>
+            <Text
+              variant='title'
+              color='default'
+              css={{ pointerEvents: 'none', textAlign: 'center' }}
+              ellipses
+              asChild
+            >
+              <Link to={permalink}>{playlist_name}</Link>
             </Text>
             <UserLink
               userId={playlist_owner_id}
