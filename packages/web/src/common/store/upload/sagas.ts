@@ -123,7 +123,7 @@ function* combineMetadata(
   const albumTrackPrice =
     collectionMetadata.stream_conditions?.usdc_purchase?.albumTrackPrice
   if (albumTrackPrice !== undefined && albumTrackPrice > 0) {
-    metadata.is_download_gated = !!collectionMetadata.is_downloadable
+    metadata.is_download_gated = true
     metadata.download_conditions = {
       usdc_purchase: {
         price: albumTrackPrice,
@@ -760,7 +760,6 @@ export function* uploadCollection(
 
   // Propagate the collection metadata to the tracks
   for (const track of tracks) {
-    combineMetadata(track.metadata, collectionMetadata)
     track.metadata = yield* call(
       combineMetadata,
       track.metadata,
