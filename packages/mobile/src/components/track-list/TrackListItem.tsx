@@ -238,7 +238,6 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
     title,
     track_id,
     owner_id,
-    is_stream_gated: isStreamGated,
     ddex_app: ddexApp
   } = track
   const { isEnabled: isEditAlbumsEnabled } = useFeatureFlag(
