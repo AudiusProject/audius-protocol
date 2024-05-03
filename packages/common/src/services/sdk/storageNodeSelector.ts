@@ -26,9 +26,9 @@ const makeStorageNodeSelector = async (config: StorageNodeSelectorConfig) => {
   const discoveryNodeSelector = await discoveryNodeSelectorService.getInstance()
   return new StorageNodeSelector({
     ...getDefaultStorageNodeSelectorConfig(
-      config.env.ENVIRONMENT === 'development'
+      env.ENVIRONMENT === 'development'
         ? developmentConfig
-        : config.env.ENVIRONMENT === 'staging'
+        : env.ENVIRONMENT === 'staging'
         ? stagingConfig
         : productionConfig
     ),
