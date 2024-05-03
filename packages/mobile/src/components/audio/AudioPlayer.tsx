@@ -40,7 +40,8 @@ import TrackPlayer, {
   usePlaybackState,
   useTrackPlayerEvents,
   RepeatMode as TrackPlayerRepeatMode,
-  TrackType
+  TrackType,
+  PitchAlgorithm
 } from 'react-native-track-player'
 import { useDispatch, useSelector } from 'react-redux'
 import { useAsync, usePrevious } from 'react-use'
@@ -609,6 +610,8 @@ export const AudioPlayer = () => {
       return {
         url,
         type: TrackType.Default,
+        contentType: 'audio/mpeg',
+        pitchAlgorithm: PitchAlgorithm.Music,
         title: track.title,
         artist: trackOwner.name,
         genre: track.genre,
@@ -652,13 +655,12 @@ export const AudioPlayer = () => {
     } else {
       await TrackPlayer.reset()
 
+      await TrackPlayer.play()
+
       const firstTrack = newQueueTracks[queueIndex]
       if (!firstTrack) return
-      await TrackPlayer.add(await makeTrackData(firstTrack))
 
-      if (playing) {
-        await TrackPlayer.play()
-      }
+      await TrackPlayer.add(await makeTrackData(firstTrack))
 
       enqueueTracksJobRef.current = enqueueTracks(newQueueTracks, queueIndex)
       await enqueueTracksJobRef.current
@@ -675,8 +677,7 @@ export const AudioPlayer = () => {
     isCollectionMarkedForDownload,
     isNotReachable,
     storageNodeSelector,
-    nftAccessSignatureMap,
-    playing
+    nftAccessSignatureMap
   ])
 
   const handleQueueIdxChange = useCallback(async () => {
@@ -694,17 +695,12 @@ export const AudioPlayer = () => {
   }, [queueIndex])
 
   const handleTogglePlay = useCallback(async () => {
-    if (playbackState.state === State.Playing && !playing) {
-      await TrackPlayer.pause()
-    } else if (
-      (playbackState.state === State.Paused ||
-        playbackState.state === State.Ready ||
-        playbackState.state === State.Stopped) &&
-      playing
-    ) {
+    if (playing) {
       await TrackPlayer.play()
+    } else {
+      await TrackPlayer.pause()
     }
-  }, [playbackState, playing])
+  }, [playing])
 
   const handleStop = useCallback(async () => {
     TrackPlayer.reset()

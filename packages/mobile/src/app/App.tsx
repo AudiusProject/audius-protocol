@@ -6,7 +6,7 @@ import {
   SafeAreaProvider,
   initialWindowMetrics
 } from 'react-native-safe-area-context'
-import TrackPlayer from 'react-native-track-player'
+import TrackPlayer, { IOSCategory } from 'react-native-track-player'
 import { Provider } from 'react-redux'
 import { useEffectOnce } from 'react-use'
 import { PersistGate } from 'redux-persist/integration/react'
@@ -64,7 +64,13 @@ const App = () => {
   useEffectOnce(() => {
     setLibs(null)
     subscribeToNetworkStatusUpdates()
-    TrackPlayer.setupPlayer({ autoHandleInterruptions: true })
+    TrackPlayer.setupPlayer({
+      minBuffer: 0.1,
+      playBuffer: 0.1,
+      waitForBuffer: false,
+      autoHandleInterruptions: true,
+      iosCategory: IOSCategory.Playback
+    })
   })
 
   useEnterForeground(() => {
