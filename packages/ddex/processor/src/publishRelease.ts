@@ -242,8 +242,12 @@ export async function deleteRelease(sdk: AudiusSdk, r: ReleaseRow) {
   const userId = r._parsed!.audiusUser!
   const entityId = r.entityId
 
+  // if not published to audius, mark internal releases row as deleted
   if (!userId || !entityId) {
-    console.log('no entityType for release ${r.key}')
+    releaseRepo.update({
+      key: r.key,
+      status: ReleaseProcessingStatus.Deleted,
+    })
     return
   }
 
