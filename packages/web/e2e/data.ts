@@ -6,6 +6,8 @@ const user = () => JSON.parse(readFileSync('./e2e/user.json', 'utf8'))
 const track = () => JSON.parse(readFileSync('./e2e/track.json', 'utf8'))
 const remix = () => JSON.parse(readFileSync('./e2e/remix.json', 'utf8'))
 const album = () => JSON.parse(readFileSync('./e2e/album.json', 'utf8'))
+const user2 = () => JSON.parse(readFileSync('./e2e/user2.json', 'utf8'))
+const track2 = () => JSON.parse(readFileSync('./e2e/track2.json', 'utf8'))
 
 const sanitizeName = (title: string) => title.replace(/ /g, '-').toLowerCase()
 
@@ -13,6 +15,23 @@ export const getTrack = () => {
   if (runAgainstLocalStack) {
     const { handle } = user()
     const { title } = track()
+
+    return {
+      url: `${handle}/${sanitizeName(title)}`,
+      name: title
+    }
+  }
+
+  return {
+    url: 'sebastian12/bachgavotte-1',
+    name: 'probers_track_do_not_delete'
+  }
+}
+
+export const getTrack2 = () => {
+  if (runAgainstLocalStack) {
+    const { handle } = user2()
+    const { title } = track2()
 
     return {
       url: `${handle}/${sanitizeName(title)}`,

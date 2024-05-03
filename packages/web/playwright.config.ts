@@ -15,10 +15,13 @@ const runAgainstLocalStack = process.env.RUN_AGAINST_LOCAL_STACK === 'true'
 
 const getTestDependencies = () => {
   if (runAgainstLocalStack && RESEED_EACH_RUN) {
-    return ['seed', 'setup']
+    if (RESEED_EACH_RUN) {
+      return ['seed', 'setup']
+    }
+    return authFileExists ? [] : ['seed', 'setup']
   }
 
-  return authFileExists ? [] : ['seed', 'setup']
+  return authFileExists ? [] : ['setup']
 }
 
 /**
@@ -72,12 +75,12 @@ export default defineConfig({
     {
       name: 'setup',
       testMatch: /.*\.setup.ts/,
-      dependencies: ['seed']
+      dependencies: runAgainstLocalStack ? ['seed'] : []
     },
     {
       name: 'chromium',
       dependencies: getTestDependencies(),
-      testIgnore: /.*\.setup.ts/,
+      testIgnore: /.*\.(setup|seed).ts/,
       use: {
         ...devices['Desktop Chrome'],
         storageState: 'playwright/.auth/user.json'

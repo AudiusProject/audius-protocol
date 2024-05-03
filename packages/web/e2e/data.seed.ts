@@ -35,4 +35,12 @@ setup('seed data', async () => {
   audiusCmd(
     `upload-track --remix ${track.track_id} --output ../web/e2e/remix.json`
   )
+
+  // Create another user
+  console.log('Creating user2')
+  audiusCmd('create-user --output ../web/e2e/user2.json')
+
+  // Upload another track
+  console.log('Uploading track2')
+  audiusCmd('upload-track --output ../web/e2e/track2.json')
 })

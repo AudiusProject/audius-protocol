@@ -28,12 +28,15 @@ export class SocialActions {
 
   async waitForConfirmation() {
     return this.page
-      .waitForResponse(async (response) => {
-        if (response.url().includes('block_confirmation')) {
-          const json = await response.json()
-          return json.data.block_passed
-        }
-      })
+      .waitForResponse(
+        async (response) => {
+          if (response.url().includes('block_confirmation')) {
+            const json = await response.json()
+            return json.data.block_passed
+          }
+        },
+        { timeout: 30 * 1000 }
+      )
       .catch((e) => {
         // Swallow error - prevents flakes
         console.warn('Confirmation timed out', e)
