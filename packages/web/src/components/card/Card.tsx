@@ -53,6 +53,7 @@ export const CardContent = (props: CardContentProps) => {
   return (
     <Flex
       direction='column'
+      w='100%'
       css={size === 'xs' && { maxWidth: xsSize.minWidth, margin: '0 auto' }}
       {...props}
     />
