@@ -263,7 +263,14 @@ program
         if (output) {
           fs.writeFileSync(
             output,
-            JSON.stringify(response.updatedMetadata, null, 2)
+            JSON.stringify(
+              {
+                ...response.updatedMetadata,
+                track_id: response.trackId
+              },
+              null,
+              2
+            )
           )
         }
       } catch (err) {

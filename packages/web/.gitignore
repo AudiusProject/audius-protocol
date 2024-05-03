@@ -66,4 +66,5 @@ yalc.lock
 /playwright/
 /e2e/user.json
 /e2e/track.json
+/e2e/album.json
 /report.xml

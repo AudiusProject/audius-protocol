@@ -1,11 +1,12 @@
 import { expect } from '@playwright/test'
 import { test } from './test'
-import { readFileSync } from 'fs'
+import { getAlbum, getTrack } from './data'
 
 test('should load an album page', async ({ page }) => {
-  await page.goto('df/album/probers_album_do_not_delete-512')
+  const { url, name } = getAlbum()
+  await page.goto(url)
   const heading = page.getByRole('heading', {
-    name: 'probers_album_do_not_delete',
+    name,
     level: 1
   })
   await expect(heading).toBeVisible()
@@ -40,13 +41,11 @@ test('should load a remixes page', async ({ page }) => {
 })
 
 test('should load a track page', async ({ page }) => {
-  const user = JSON.parse(readFileSync('./e2e/user.json', 'utf8'))
-  const track = JSON.parse(readFileSync('./e2e/track.json', 'utf8'))
-
-  await page.goto(`${user.handle}/${track.title.replace(/ /g, '-')}`)
+  const { url } = getTrack()
+  await page.goto(url)
   const heading = page.getByRole('heading', {
-    name: 'title',
-    level: 1
+    name: 'track',
+    level: 5
   })
   await expect(heading).toBeVisible()
 })

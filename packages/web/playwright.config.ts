@@ -9,6 +9,16 @@ import { defineConfig, devices } from '@playwright/test'
 // require('dotenv').config();
 
 const authFileExists = fs.existsSync('playwright/.auth/user.json')
+const runAgainstLocalStack = process.env.RUN_AGAINST_LOCAL_STACK === 'true'
+
+const getTestDependencies = () => {
+  if (runAgainstLocalStack) {
+    // TODO: Maybe don't run seed everytime? Makes it difficult to dev
+    return authFileExists ? ['seed'] : ['seed', 'setup']
+  }
+
+  return authFileExists ? [] : ['setup']
+}
 
 /**
  * See https://playwright.dev/docs/test-configuration.
@@ -65,7 +75,7 @@ export default defineConfig({
     },
     {
       name: 'chromium',
-      dependencies: authFileExists ? [] : ['seed', 'setup'],
+      dependencies: getTestDependencies(),
       testIgnore: /.*\.setup.ts/,
       use: {
         ...devices['Desktop Chrome'],
