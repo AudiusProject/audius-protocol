@@ -1,4 +1,4 @@
-import { SdkServicesConfig } from '../../config'
+import type { SdkServicesConfig } from '../../config/types'
 import { Logger } from '../Logger'
 
 import type { StorageServiceConfigInternal } from './types'
