@@ -28,6 +28,7 @@ create table if not exists releases (
   key text primary key,
   ref text,
   xmlUrl text,
+  messageTimestamp text,
   json jsonb,
   status text not null,
 
@@ -79,6 +80,7 @@ export enum ReleaseProcessingStatus {
 export type ReleaseRow = {
   key: string
   xmlUrl: string
+  messageTimestamp: string
   json: string
   status: ReleaseProcessingStatus
 
@@ -221,7 +223,7 @@ export const releaseRepo = {
     dbUpdate('releases', 'key', r)
   },
 
-  upsert(xmlUrl: string, release: DDEXRelease) {
+  upsert(xmlUrl: string, messageTimestamp: string, release: DDEXRelease) {
     const key = this.chooseReleaseId(release.releaseIds)
 
     db.transaction(() => {
@@ -229,9 +231,7 @@ export const releaseRepo = {
       const json = JSON.stringify(release)
 
       // if prior exists and is newer, skip
-      // this uses xmlUrl assuming the date is in the xmlUrl
-      // but would probably be better to use messageTimestamp
-      if (prior && prior.xmlUrl > xmlUrl) {
+      if (prior && prior.messageTimestamp > messageTimestamp) {
         console.log(`skipping ${xmlUrl} because ${key} is newer`)
         return
       }
@@ -252,6 +252,7 @@ export const releaseRepo = {
         status,
         ref: release.ref,
         xmlUrl,
+        messageTimestamp,
         json,
         updatedAt: new Date().toISOString(),
       } as Partial<ReleaseRow>)
