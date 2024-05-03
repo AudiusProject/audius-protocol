@@ -6,13 +6,16 @@ import {
   SquareSizes,
   isContentUSDCPurchaseGated
 } from '@audius/common/models'
-import { cacheCollectionsSelectors } from '@audius/common/store'
+import {
+  accountSelectors,
+  cacheCollectionsSelectors
+} from '@audius/common/store'
 import { Flex, Text } from '@audius/harmony'
 import IconHeart from '@audius/harmony/src/assets/icons/Heart.svg'
 import IconRepost from '@audius/harmony/src/assets/icons/Repost.svg'
 import { Link, useLinkClickHandler } from 'react-router-dom-v5-compat'
 
-import { Card, CardProps, CardFooter } from 'components/card'
+import { Card, CardProps, CardFooter, CardContent } from 'components/card'
 import { DogEar } from 'components/dog-ear'
 import { UserLink } from 'components/link'
 import { LockedStatusPill } from 'components/locked-status-pill'
@@ -21,6 +24,7 @@ import { useSelector } from 'utils/reducer'
 import { CollectionImage } from './CollectionImage'
 
 const { getCollection } = cacheCollectionsSelectors
+const { getUserId } = accountSelectors
 
 const messages = {
   repost: 'Reposts',
@@ -43,6 +47,7 @@ export const CollectionCard = forwardRef(
     const { id, size, onClick, ...other } = props
 
     const collection = useSelector((state) => getCollection(state, { id }))
+    const accountId = useSelector(getUserId)
 
     const handleNavigate = useLinkClickHandler<HTMLDivElement>(
       collection?.permalink ?? ''
@@ -69,11 +74,12 @@ export const CollectionCard = forwardRef(
       stream_conditions
     } = collection
 
+    const isOwner = accountId === playlist_owner_id
     const isPurchase = isContentUSDCPurchaseGated(stream_conditions)
 
     const dogEarType = is_private
       ? DogEarType.HIDDEN
-      : isPurchase && !access.stream
+      : isPurchase && (!access.stream || isOwner)
       ? DogEarType.USDC_PURCHASE
       : null
 
@@ -88,7 +94,7 @@ export const CollectionCard = forwardRef(
             size={cardSizeToCoverArtSizeMap[size]}
             data-testid={`cover-art-${id}`}
           />
-          <Flex direction='column' gap='xs'>
+          <CardContent gap='xs'>
             <Text variant='title' color='default' ellipses asChild>
               <Link to={permalink} css={{ pointerEvents: 'none' }}>
                 {playlist_name}
@@ -99,7 +105,7 @@ export const CollectionCard = forwardRef(
               textVariant='body'
               css={{ justifyContent: 'center' }}
             />
-          </Flex>
+          </CardContent>
         </Flex>
         <CardFooter>
           {is_private ? (
@@ -124,7 +130,7 @@ export const CollectionCard = forwardRef(
                   {save_count}
                 </Text>
               </Flex>
-              {isPurchase ? (
+              {isPurchase && !isOwner ? (
                 <LockedStatusPill variant='premium' locked={!access.stream} />
               ) : null}
             </>

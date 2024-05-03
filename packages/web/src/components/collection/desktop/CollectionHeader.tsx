@@ -1,4 +1,4 @@
-import { ChangeEvent, MouseEventHandler, useCallback, useState } from 'react'
+import { ChangeEvent, useCallback, useState } from 'react'
 
 import { useGetCurrentUserId } from '@audius/common/api'
 import {
@@ -61,6 +61,7 @@ type CollectionHeaderProps = {
   tracksLoading: boolean
   loading: boolean
   playing: boolean
+  previewing: boolean
   isOwner: boolean
   isAlbum: boolean
   access: Nullable<AccessPermissions>
@@ -86,7 +87,8 @@ type CollectionHeaderProps = {
   streamConditions: Nullable<AccessConditions>
   onClickReposts?: () => void
   onClickFavorites?: () => void
-  onPlay: MouseEventHandler<HTMLButtonElement>
+  onPlay: () => void
+  onPreview: () => void
   onFilterChange?: (e: ChangeEvent<HTMLInputElement>) => void
 }
 
@@ -110,7 +112,9 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
     tracksLoading,
     loading,
     playing,
+    previewing,
     onPlay,
+    onPreview,
     variant,
     gradient,
     icon,
@@ -181,7 +185,7 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
 
   const topSection = (
     <Flex gap='xl' p='l' backgroundColor='white'>
-      {coverArtSizes ? (
+      {coverArtSizes || gradient || icon ? (
         <Artwork
           collectionId={collectionId}
           coverArtSizes={coverArtSizes}
@@ -264,10 +268,12 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
             collectionId={collectionId}
             isPlayable={isPlayable}
             isPlaying={playing}
+            isPreviewing={previewing}
             isPremium={isPremium}
             isOwner={isOwner}
             tracksLoading={tracksLoading}
             onPlay={onPlay}
+            onPreview={onPreview}
           />
         </ClientOnly>
       </Flex>
@@ -323,7 +329,7 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
       <Flex className={cn(fadeIn)} gap='l' direction='column'>
         {description ? (
           <UserGeneratedText
-            size='xs'
+            size='s'
             className={cn(fadeIn)}
             linkSource='collection page'
             css={{ textAlign: 'left' }}

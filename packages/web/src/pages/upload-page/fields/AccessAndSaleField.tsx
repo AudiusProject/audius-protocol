@@ -55,6 +55,7 @@ import {
   GateKeeper,
   IS_DOWNLOADABLE,
   IS_DOWNLOAD_GATED,
+  IS_PRIVATE,
   IS_SCHEDULED_RELEASE,
   IS_STREAM_GATED,
   IS_UNLISTED,
@@ -171,7 +172,9 @@ export const AccessAndSaleFormSchema = (
     // Check for albumTrackPrice price >= min price (if applicable)
     .refine(
       (values) =>
-        isAlbum && isUpload
+        isAlbum &&
+        isUpload &&
+        values[STREAM_CONDITIONS]?.usdc_purchase?.albumTrackPrice
           ? refineMinPrice('albumTrackPrice', minContentPriceCents)(values)
           : true,
       {
@@ -186,7 +189,9 @@ export const AccessAndSaleFormSchema = (
     })
     .refine(
       (values) =>
-        isAlbum && isUpload
+        isAlbum &&
+        isUpload &&
+        values[STREAM_CONDITIONS]?.usdc_purchase?.albumTrackPrice
           ? refineMaxPrice('albumTrackPrice', maxContentPriceCents)(values)
           : true,
       {
@@ -235,10 +240,19 @@ type AccessAndSaleFieldProps = {
   trackLength?: number
   forceOpen?: boolean
   setForceOpen?: (value: boolean) => void
+  isPublishDisabled?: boolean
 }
 
 export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
-  const { isUpload = false, isAlbum = false, forceOpen, setForceOpen } = props
+  const {
+    isUpload = false,
+    isAlbum = false,
+    forceOpen,
+    setForceOpen,
+    isPublishDisabled = false
+  } = props
+
+  const isHiddenFieldName = isAlbum ? IS_PRIVATE : IS_UNLISTED
 
   const [{ value: index }] = useField('trackMetadatasIndex')
   const [{ value: trackLength }] = useIndexedField<number>(
@@ -261,7 +275,7 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
 
   // Fields from the outer form
   const [{ value: isUnlisted }, , { setValue: setIsUnlistedValue }] =
-    useTrackField<SingleTrackEditValues[typeof IS_UNLISTED]>(IS_UNLISTED)
+    useTrackField<boolean>(isHiddenFieldName)
   const [{ value: isScheduledRelease }, ,] =
     useTrackField<SingleTrackEditValues[typeof IS_SCHEDULED_RELEASE]>(
       IS_SCHEDULED_RELEASE
@@ -388,6 +402,7 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
       const fieldVisibility = get(values, FIELD_VISIBILITY)
       const streamConditions = get(values, STREAM_CONDITIONS)
       const lastGateKeeper = get(values, LAST_GATE_KEEPER)
+      const isUnlisted = get(values, IS_UNLISTED)
 
       setFieldVisibilityValue({
         ...defaultFieldVisibility,
@@ -402,15 +417,17 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
       switch (availabilityType) {
         case StreamTrackAvailabilityType.USDC_PURCHASE: {
           // type cast because the object is fully formed in saga (validated + added splits)
+          const albumTrackPriceValue = (
+            streamConditions as USDCPurchaseConditions
+          ).usdc_purchase.albumTrackPrice
           const conditions = {
             usdc_purchase: {
               price: Math.round(
                 (streamConditions as USDCPurchaseConditions).usdc_purchase.price
               ),
-              albumTrackPrice: Math.round(
-                (streamConditions as USDCPurchaseConditions).usdc_purchase
-                  .albumTrackPrice || 0
-              )
+              albumTrackPrice: albumTrackPriceValue
+                ? Math.round(albumTrackPriceValue)
+                : null
             }
           } as USDCPurchaseConditions
           setIsStreamGated(true)
@@ -493,7 +510,6 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
     [
       setFieldVisibilityValue,
       setIsUnlistedValue,
-      isUnlisted,
       setIsStreamGated,
       setStreamConditionsValue,
       setPreviewValue,
@@ -573,14 +589,16 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
       selectedValues = [specialAccessValue, messages.followersOnly]
     } else if (isContentTipGated(savedStreamConditions)) {
       selectedValues = [specialAccessValue, messages.supportersOnly]
-    } else if (isUnlisted && !isScheduledRelease && fieldVisibility) {
+    } else if (isUnlisted && !isScheduledRelease) {
       const fieldVisibilityKeys = Object.keys(
         messages.fieldVisibility
       ) as Array<keyof FieldVisibility>
 
-      const fieldVisibilityLabels = fieldVisibilityKeys
-        .filter((visibilityKey) => fieldVisibility[visibilityKey])
-        .map((visibilityKey) => messages.fieldVisibility[visibilityKey])
+      const fieldVisibilityLabels = fieldVisibility
+        ? fieldVisibilityKeys
+            .filter((visibilityKey) => fieldVisibility[visibilityKey])
+            .map((visibilityKey) => messages.fieldVisibility[visibilityKey])
+        : []
       selectedValues = [
         { label: messages.hidden, icon: IconHidden },
         ...fieldVisibilityLabels
@@ -611,9 +629,9 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
     savedStreamConditions,
     isUnlisted,
     isScheduledRelease,
-    fieldVisibility,
     preview,
-    isUpload
+    isUpload,
+    fieldVisibility
   ])
 
   return (
@@ -642,6 +660,8 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
             parentFormInitialStreamConditions ?? undefined
           }
           isScheduledRelease={isScheduledRelease}
+          isInitiallyUnlisted={isUnlisted}
+          isPublishDisabled={isPublishDisabled}
         />
       }
       forceOpen={forceOpen}

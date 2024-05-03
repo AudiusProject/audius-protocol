@@ -1,13 +1,13 @@
 import { useCallback, MouseEvent } from 'react'
 
-import { ID } from '@audius/common/models'
+import { ID, SquareSizes } from '@audius/common/models'
 import { cacheUsersSelectors } from '@audius/common/store'
 import { formatCount } from '@audius/common/utils'
-import { Flex, Text } from '@audius/harmony'
+import { Text } from '@audius/harmony'
 import { useLinkClickHandler } from 'react-router-dom-v5-compat'
 
 import { Avatar } from 'components/avatar'
-import { Card, CardProps, CardFooter } from 'components/card'
+import { Card, CardProps, CardFooter, CardContent } from 'components/card'
 import { UserLink } from 'components/link'
 import { useSelector } from 'utils/reducer'
 import { profilePage } from 'utils/route'
@@ -18,7 +18,14 @@ const messages = {
   followers: (count: number) => (count === 1 ? 'Follower' : 'Followers')
 }
 
-type UserCardProps = Omit<CardProps, 'id'> & {
+const avatarSizeMap = {
+  xs: SquareSizes.SIZE_150_BY_150,
+  s: SquareSizes.SIZE_150_BY_150,
+  m: SquareSizes.SIZE_480_BY_480,
+  l: SquareSizes.SIZE_480_BY_480
+}
+
+export type UserCardProps = Omit<CardProps, 'id'> & {
   id: ID
 }
 
@@ -45,8 +52,14 @@ export const UserCard = (props: UserCardProps) => {
 
   return (
     <Card size={size} onClick={handleClick} {...other}>
-      <Avatar userId={id} aria-hidden p='l' pb='s' />
-      <Flex direction='column' p='s' pt={0} gap='xs'>
+      <Avatar
+        userId={id}
+        aria-hidden
+        p='l'
+        pb='s'
+        imageSize={avatarSizeMap[size]}
+      />
+      <CardContent p='s' pt={0} gap='xs'>
         <UserLink
           userId={id}
           textVariant='title'
@@ -55,7 +68,7 @@ export const UserCard = (props: UserCardProps) => {
         <Text variant='body' ellipses>
           @{handle}
         </Text>
-      </Flex>
+      </CardContent>
       <CardFooter>
         <Text variant='body' size='s' strength='strong'>
           {formatCount(follower_count)} {messages.followers(follower_count)}

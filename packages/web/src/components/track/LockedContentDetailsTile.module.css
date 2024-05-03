@@ -1,14 +1,3 @@
-.details {
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: var(--harmony-unit-4);
-  padding: var(--harmony-unit-4);
-  background: var(--harmony-n-25);
-  border: 1px solid var(--harmony-n-150);
-  border-radius: var(--harmony-unit-2);
-}
-
 .gatedContentLabel {
   margin-bottom: var(--harmony-unit-5);
   display: flex;
@@ -25,19 +14,6 @@
   color: var(--harmony-light-green);
 }
 
-.dogEar {
-  position: absolute;
-  top: -1px;
-  left: -1px;
-}
-
-.title {
-  margin-bottom: var(--harmony-unit-2);
-  font-weight: var(--harmony-font-bold);
-  font-size: var(--harmony-font-2xl);
-  text-transform: capitalize;
-}
-
 .imageWrapper {
   width: 124px;
   height: 124px;
@@ -45,27 +21,4 @@
 
 .image {
   border-radius: 4px;
-}
-
-.textWrapper {
-  flex: 1;
-}
-
-.by {
-  font-weight: var(--harmony-font-bold);
-  color: var(--harmony-n-400);
-}
-
-.owner {
-  display: flex;
-  align-items: center;
-}
-
-.ownerName {
-  margin: 0 var(--harmony-unit-1);
-  color: var(--harmony-secondary);
-}
-
-.badgeIcon {
-  display: flex;
 }

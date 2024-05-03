@@ -18,10 +18,10 @@ import { AccountCollection } from '../account/types'
  * @returns the identifier or false
  */
 export const findInPlaylistLibrary = (
-  library: PlaylistLibrary | PlaylistLibraryFolder,
+  library: Nullable<PlaylistLibrary | PlaylistLibraryFolder>,
   playlistId: ID | SmartCollectionVariant | string
 ): PlaylistLibraryIdentifier | false => {
-  if (!library.contents) return false
+  if (!library || !library.contents) return false
 
   // Simple DFS (this likely is very small, so this is fine)
   for (const item of library.contents) {

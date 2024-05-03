@@ -27,12 +27,6 @@ const FeedPageContent = ({
   feedDescription,
   feedIsMain,
   feed,
-  fetchSuggestedFollowUsers,
-  followUsers,
-  suggestedFollows,
-  hasAccount,
-  goToTrending,
-  goToSignUp,
   setFeedInView,
   loadMoreFeed,
   playFeedTrack,
@@ -97,15 +91,7 @@ const FeedPageContent = ({
       header={header}
     >
       <Lineup
-        emptyElement={
-          <EmptyFeed
-            hasAccount={hasAccount}
-            fetchFollowUsers={fetchSuggestedFollowUsers}
-            followUsers={followUsers}
-            suggestedFollows={suggestedFollows}
-            onClick={hasAccount ? goToTrending : goToSignUp}
-          />
-        }
+        emptyElement={<EmptyFeed />}
         endOfLineup={<EndOfLineup key='endOfLineup' />}
         key='feed'
         showFeedTipTile={!isUSDCEnabled}
