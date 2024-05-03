@@ -6,92 +6,158 @@ sidebar_label: Advanced Setup
 description: Audius Protocol Documentation
 ---
 
-## Launching a new node from scratch
+import useBaseUrl from '@docusaurus/useBaseUrl'
 
-### Setting environment variables
+## Controllers and Nodes
 
-```bash
-# to set individual environment variables
-# valid service-names are "creator-node" or "discovery-provider"
-audius-cli set-config creator-node
-audius-cli set-config discovery-provider
+A key feature of `audius-ctl` is the ability to interact with and control multiple Nodes from a
+single "Controller". Any computer or virtual machine can be a Controller, a laptop, a shared Virtual
+Private Server for your team, or even the VM running a Node itself. Only one Controller is needed,
+but Node Operators can configure as many Controllers as they would like.
 
-# to set all the required environment variables for a service, use the --required flag
-audius-cli set-config --required creator-node
-audius-cli set-config --required discovery-provider
+Node Operators manage all of their Nodes, or a subset of their Nodes, from a single command line
+utility. Rather than needing to access each Node directly to issue commands, a single "controller"
+machine, using configuration profiles, is able to issue commands to several Nodes over ssh.
+
+### Audius Control Utility
+
+Installing and configuring `audius-ctl` on the Controller includes the command line utility
+`audius-ctl`
+
+### Suggested Configuration
+
+```mermaid
+flowchart LR
+  subgraph Controller
+  Z{{audius-ctl}}
+  end
+
+  subgraph VM 3
+  C(Discovery Node 1)
+  end
+
+  subgraph VM 2
+  B(Content Node 2)
+  end
+
+  subgraph VM 1
+  A(Content Node 1)
+  end
+
+  Z-->A
+  Z--->B
+  Z---->C
+```
+
+:::tip Flexible Options
+
+While it is recommended to use an additional machine as a controller, _any_ machine can operate as a
+controller.
+
+:::
+
+### Controller on Node
+
+In this example, this Service Provider has elected to use the machine marked `VM 1` to both run a
+node _and_ serve as the controller for all of their other nodes.
+
+```mermaid
+  flowchart LR
+    subgraph VM 3
+    C(Discovery Node 1);
+    end
+
+    subgraph VM 2
+    B(Content Node 2);
+    end
+
+    subgraph VM 1
+    Z{{Controller}}-->A(Content Node 1);
+    end
+
+    Z--->B
+    Z---->C
+```
+
+### Multiple Controllers
+
+description text goes here
+
+```mermaid
+flowchart LR
+  subgraph Controller 2
+  Z2{{audius-ctl}};
+  end
+
+  subgraph Controller 1
+  Z1{{audius-ctl}};
+  end
+
+  subgraph VM 2
+  B(Content Node 2);
+  end
+
+  subgraph VM 1
+  A(Content Node 1);
+  end
+
+  Z1-->A;
+  Z1-->B;
+  Z2-->A;
+  Z2-->B;
+```
+
+### Using a Virtual Private Server
+
+Keep private keys secure by requiring users interacting with Audius Nodes to log in to a Virtual
+Private Server and issue commands from `audius-ctl` there.
+
+```mermaid
+flowchart LR
+
+    u1([user 1])
+    u2([user 2])
+    u3([user 3])
+
+    u1-->T
+    u2-->T
+    u3-->T
+
+    subgraph Virtual Private Server
+    T{{audius-ctl}}
+    end
+
+    subgraph Virtual Machine 2
+    B(Discovery Node 2);
+    end
+
+    subgraph Virtual Machine 1
+    A(Content Node 1);
+    end
+
+    T-->A;
+    T-->B;
 ```
 
 ---
 
-## Creator Node
+### Downing a Node
 
-There are four required creator node environment variables, available in the creator node section
-[here](/node-operator/setup/installation#creator-node).
-
-The full list of variables and explanations can be found
-[here](https://github.com/AudiusProject/audius-protocol/blob/main/creator-node/src/config.js).
-Generally node operators will not need to modify any other environment variables.
-
-### External Creator Node Postgres
-
-If you set an external Postgres url during setup you can skip this section.
-
-If you did not set an external Postgres url during setup and you want to add one now, replace the db
-url by running:
+If for some reason you want to `down` an Audius Node, use the following command:
 
 ```bash
-audius-cli set-config creator-node
-key   : dbUrl
-value : <db url>
+audius-ctl down
 ```
 
----
+:::warning All together now
 
-## Discovery Node
-
-There are two required Discovery Node environment variables, available in the Discovery Node section
-[here](/node-operator/setup/installation#discovery-node).
-
-The full list of variables and explanations can be found
-[here](https://github.com/AudiusProject/audius-protocol/blob/main/packages/discovery-provider/default_config.ini).
-Generally node operators will not need to modify any other environment variables.
-
-### External Discovery Node Postgres Instance
-
-If you set an external Postgres url during setup you can skip this section.
-
-The below is only if using a externally managed Postgres (version 11.1+) database:
+This command will down **ALL** of the Audius Nodes specified in the configuration. To down a single
+node, pass the URL as an additional argument, like this:
 
 ```bash
-audius-cli set-config discovery-provider
-key   : audius_db_url
-value : <audius_db_url>
-
-# If there's no read replica, enter the primary db url for both env vars.
-audius-cli set-config discovery-provider
-key   : audius_db_url_read_replica
-value : <audius_db_url_read_replica>
+audius-ctl down creator-1.example.com
 ```
 
-In the managed postgres database and set the `temp_file_limit` flag to `2147483647` and run the
-following SQL command on the destination db.
+The same can be done with the `up` command when you are ready to start the Audius Node again.
 
-```
-CREATE EXTENSION pg_trgm;
-```
-
----
-
-## Launch
-
-```bash
-audius-cli launch creator-node
-
-# or
-
-audius-cli launch discovery-provider (--seed)
-
-# Options:
-# --seed
-#     Seeds the database from a snapshot. Required for first-time discovery setup.
-```
+:::
