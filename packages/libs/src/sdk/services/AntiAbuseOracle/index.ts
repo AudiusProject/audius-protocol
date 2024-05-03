@@ -1,2 +1,2 @@
 export { AntiAbuseOracle } from './AntiAbuseOracle'
-export { AntiAbuseOracleService } from './types'
+export type { AntiAbuseOracleService } from './types'
