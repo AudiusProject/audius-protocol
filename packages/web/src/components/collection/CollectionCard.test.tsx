@@ -74,13 +74,10 @@ describe('CollectionCard', () => {
 
   it('renders the cover image', () => {
     renderCollectionCard()
-    expect(screen.getByTestId(`${1}-cover-art`)).toBeInTheDocument()
-  })
-
-  it('renders the title', () => {
-    renderCollectionCard()
-    const titleElement = screen.getByText('Test Collection')
-    expect(titleElement).toBeInTheDocument()
+    expect(screen.getByTestId('cover-art-1')).toHaveAttribute(
+      'src',
+      'image-small.jpg'
+    )
   })
 
   it('renders the collection owner link which navigates to user page', async () => {
@@ -151,5 +148,16 @@ describe('CollectionCard', () => {
         name: /test collection test user reposts 10 favorites 5 purchased/i
       })
     )
+  })
+
+  it('premium collections owned by user are rendered correctly', () => {
+    renderCollectionCard({ reduxState: { account: { userId: 2 } } })
+
+    // Expect the locked icon to not exist
+    expect(
+      screen.getByRole('button', {
+        name: 'Test Collection Test User Reposts 10 Favorites 5'
+      })
+    ).toBeInTheDocument()
   })
 })

@@ -24,6 +24,8 @@ const { getCurrentTrack, getPlaying, getSeek, getCounter } = playerSelectors
 
 const { getUser } = cacheUsersSelectors
 
+export { CastState } from 'react-native-google-cast'
+
 export const useChromecast = () => {
   const dispatch = useDispatch()
 
@@ -135,7 +137,18 @@ export const useChromecast = () => {
     }
   }, [client, seek])
 
+  useEffect(() => {
+    if (
+      castState === CastState.CONNECTED ||
+      castState === CastState.CONNECTING
+    ) {
+      TrackPlayer.setVolume(0)
+    } else {
+      TrackPlayer.setVolume(1)
+    }
+  }, [castState])
+
   return {
-    isCasting: castState === CastState.CONNECTED
+    castState
   }
 }

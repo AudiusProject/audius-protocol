@@ -11,12 +11,11 @@ import type { CommonState } from '@audius/common/store'
 import {
   dayjs,
   squashNewLines,
-  Genre,
-  getDogEarType
+  getDogEarType,
+  Genre
 } from '@audius/common/utils'
-import { css } from '@emotion/native'
 import moment from 'moment'
-import { TouchableOpacity } from 'react-native'
+import { TouchableOpacity, Image } from 'react-native'
 import { useSelector } from 'react-redux'
 
 import {
@@ -28,16 +27,21 @@ import {
   IconRepeatOff,
   Paper,
   spacing,
-  Button
+  Button,
+  Divider,
+  Box
 } from '@audius/harmony-native'
 import CoSign from 'app/components/co-sign/CoSign'
 import { Size } from 'app/components/co-sign/types'
-import { Hyperlink, DogEar } from 'app/components/core'
+import { Hyperlink, DogEar, Tag } from 'app/components/core'
 import UserBadges from 'app/components/user-badges'
 import { light } from 'app/haptics'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { makeStyles } from 'app/styles'
+import { moodMap } from 'app/utils/moods'
+
+import { OfflineStatusRow } from '../offline-downloads'
 
 import { DetailsProgressInfo } from './DetailsProgressInfo'
 import { DetailsTileActionButtons } from './DetailsTileActionButtons'
@@ -45,17 +49,24 @@ import { DetailsTileAiAttribution } from './DetailsTileAiAttribution'
 import { DetailsTileHasAccess } from './DetailsTileHasAccess'
 import { DetailsTileNoAccess } from './DetailsTileNoAccess'
 import { DetailsTileStats } from './DetailsTileStats'
+import { SecondaryStats } from './SecondaryStats'
 import type { DetailsTileProps } from './types'
 
 const { getTrackId } = playerSelectors
 const { getTrackPosition } = playbackPositionSelectors
 
 const messages = {
-  play: 'play',
-  pause: 'pause',
-  resume: 'resume',
-  replay: 'replay',
-  preview: 'preview'
+  play: 'Play',
+  pause: 'Pause',
+  resume: 'Resume',
+  replay: 'Replay',
+  preview: 'Preview',
+  trackCount: 'track',
+  playCount: 'play',
+  released: 'Released',
+  updated: 'Updated',
+  genre: 'Genre',
+  mood: 'Mood'
 }
 
 const useStyles = makeStyles(({ palette, spacing, typography }) => ({
@@ -63,19 +74,22 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
     borderWidth: 1,
     borderColor: palette.neutralLight8,
     borderRadius: spacing(2),
-    height: 195,
-    width: 195,
+    height: 224,
+    width: 224,
     alignSelf: 'center'
   },
   description: {
     ...typography.body,
     color: palette.neutralLight2,
     textAlign: 'left',
-    width: '100%',
-    marginBottom: spacing(4)
+    width: '100%'
   },
   link: {
     color: palette.primary
+  },
+  emoji: {
+    height: spacing(4),
+    width: spacing(4)
   }
 }))
 
@@ -88,7 +102,6 @@ export const DetailsTile = ({
   coSign,
   description,
   descriptionLinkPressSource,
-  details,
   hasReposted,
   hasSaved,
   hasStreamAccess,
@@ -117,8 +130,9 @@ export const DetailsTile = ({
   onPressSave,
   onPressShare,
   playCount,
+  duration,
+  trackCount,
   renderBottomContent,
-  renderHeader,
   renderImage,
   repostCount,
   saveCount,
@@ -126,7 +140,9 @@ export const DetailsTile = ({
   title,
   user,
   track,
-  ddexApp
+  ddexApp,
+  releaseDate,
+  updatedAt
 }: DetailsTileProps) => {
   const { isEnabled: isNewPodcastControlsEnabled } = useFeatureFlag(
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
@@ -164,10 +180,6 @@ export const DetailsTile = ({
     navigation.push('Profile', { handle: user.handle })
   }, [navigation, user])
 
-  const detailLabels = details.filter(
-    ({ isHidden, value }) => !isHidden && !!value
-  )
-
   const handlePressPlay = useCallback(() => {
     light()
     onPressPlay()
@@ -177,6 +189,7 @@ export const DetailsTile = ({
     light()
     onPressPreview?.()
   }, [onPressPreview])
+
   const renderDogEar = () => {
     const dogEarType = getDogEarType({
       isOwner,
@@ -184,29 +197,6 @@ export const DetailsTile = ({
       isUnlisted: isUnlisted && !isUnpublishedScheduledRelease
     })
     return dogEarType ? <DogEar type={dogEarType} borderOffset={1} /> : null
-  }
-
-  const renderDetailLabels = () => {
-    return detailLabels.map((infoFact) => {
-      return (
-        <Flex
-          direction='row'
-          key={infoFact.label}
-          style={css({ width: '50%' })}
-          mb='l'
-        >
-          <Flex direction='row' gap='s' alignItems='center'>
-            <Text variant='label' color='subdued' textTransform='uppercase'>
-              {infoFact.label}
-            </Text>
-            <Text variant='body' strength='strong'>
-              {infoFact.value}
-            </Text>
-            <Flex>{infoFact.icon}</Flex>
-          </Flex>
-        </Flex>
-      )
-    })
   }
 
   const innerImageElement = renderImage({
@@ -243,146 +233,206 @@ export const DetailsTile = ({
       iconLeft={isPlayingPreview ? IconPause : PlayIcon}
       onPress={handlePressPreview}
       disabled={!isPlayable}
+      fullWidth
     >
       {isPlayingPreview ? messages.pause : messages.preview}
     </Button>
   )
 
+  const badges = [
+    isAiGeneratedTracksEnabled && aiAttributionUserId ? (
+      <DetailsTileAiAttribution userId={aiAttributionUserId} />
+    ) : null
+  ].filter((badge) => badge !== null)
+
+  const handlePressTag = useCallback(
+    (tag: string) => {
+      navigation.push('TagSearch', { query: tag })
+    },
+    [navigation]
+  )
+
+  const renderTags = () => {
+    if (!track || (isUnlisted && !track.field_visibility?.tags)) {
+      return null
+    }
+
+    const filteredTags = (track.tags || '').split(',').filter(Boolean)
+    return filteredTags.length > 0 ? (
+      <Flex
+        direction='row'
+        wrap='wrap'
+        justifyContent='flex-start'
+        // Accounts for the margin on the Tag component
+        m='negativeUnit'
+      >
+        {filteredTags.map((tag) => (
+          <Tag key={tag} onPress={() => handlePressTag(tag)}>
+            {tag}
+          </Tag>
+        ))}
+      </Flex>
+    ) : null
+  }
+
   return (
     <Paper mb='xl'>
-      <Flex ph='s' pt='s'>
-        {renderDogEar()}
-        {renderHeader ? (
-          renderHeader()
-        ) : (
-          <Text variant='body' textTransform='uppercase'>
-            {headerText}
+      {renderDogEar()}
+      <Flex p='l' gap='l' alignItems='center' w='100%'>
+        <Text
+          variant='label'
+          size='m'
+          strength='default'
+          textTransform='uppercase'
+          color='subdued'
+        >
+          {headerText}
+        </Text>
+
+        {badges.length > 0 ? (
+          <Flex direction='row' gap='s'>
+            {badges.map((badge) => badge)}
+          </Flex>
+        ) : null}
+        {imageElement}
+        <Flex gap='xs' alignItems='center'>
+          <Text variant='heading' size='s'>
+            {title}
           </Text>
-        )}
-        <Flex gap='l' ph='s'>
-          {imageElement}
-          <Flex gap='s' alignItems='center'>
-            <Text variant='heading' size='s'>
-              {title}
+          {user ? (
+            <TouchableOpacity onPress={handlePressArtistName}>
+              <Flex direction='row' gap='xs'>
+                <Text variant='body' color='accent' size='l'>
+                  {user.name}
+                </Text>
+                <UserBadges badgeSize={spacing.l} user={user} hideName />
+              </Flex>
+            </TouchableOpacity>
+          ) : null}
+        </Flex>
+        {isLongFormContent && isNewPodcastControlsEnabled && track ? (
+          <DetailsProgressInfo track={track} />
+        ) : null}
+        {hasStreamAccess || isOwner ? (
+          <Button
+            iconLeft={isPlayingFullAccess ? IconPause : PlayIcon}
+            onPress={handlePressPlay}
+            disabled={!isPlayable}
+            fullWidth
+          >
+            {isPlayingFullAccess ? messages.pause : playText}
+          </Button>
+        ) : null}
+        {showPreviewButton ? <PreviewButton /> : null}
+        <DetailsTileActionButtons
+          ddexApp={ddexApp}
+          hasReposted={!!hasReposted}
+          hasSaved={!!hasSaved}
+          hideFavorite={hideFavorite}
+          hideOverflow={hideOverflow}
+          hideRepost={hideRepost}
+          hideShare={hideShare}
+          isOwner={isOwner}
+          isCollection={isCollection}
+          collectionId={contentId}
+          isPublished={isPublished}
+          onPressEdit={onPressEdit}
+          onPressOverflow={onPressOverflow}
+          onPressRepost={onPressRepost}
+          onPressSave={onPressSave}
+          onPressShare={onPressShare}
+          onPressPublish={onPressPublish}
+        />
+        {isUnpublishedScheduledRelease && track?.release_date ? (
+          <Flex gap='xs' direction='row' alignItems='center'>
+            <IconCalendarMonth color='accent' size='m' />
+            <Text variant='body' color='accent' strength='strong' size='m'>
+              Releases
+              {' ' +
+                moment(track.release_date).format('M/D/YY @ h:mm A ') +
+                dayjs().format('z')}
             </Text>
-            {user ? (
-              <TouchableOpacity onPress={handlePressArtistName}>
-                <Flex direction='row'>
-                  <Text variant='body' color='accent' size='l'>
-                    {user.name}
-                  </Text>
-                  <UserBadges badgeSize={spacing.l} user={user} hideName />
-                </Flex>
-              </TouchableOpacity>
+          </Flex>
+        ) : null}
+      </Flex>
+      <Flex
+        p='l'
+        gap='l'
+        alignItems='center'
+        borderTop='default'
+        backgroundColor='surface1'
+      >
+        {!isPublished ? null : (
+          <DetailsTileStats
+            favoriteCount={saveCount}
+            hideFavoriteCount={hideFavoriteCount}
+            hideListenCount={hideListenCount}
+            hideRepostCount={hideRepostCount}
+            onPressFavorites={onPressFavorites}
+            onPressReposts={onPressReposts}
+            repostCount={repostCount}
+          />
+        )}
+        {description ? (
+          <Box w='100%'>
+            <Hyperlink
+              source={descriptionLinkPressSource}
+              style={styles.description}
+              linkStyle={styles.link}
+              text={squashNewLines(description) ?? ''}
+            />
+          </Box>
+        ) : null}
+        {!hasStreamAccess && !isOwner && streamConditions && contentId ? (
+          <DetailsTileNoAccess
+            trackId={contentId}
+            contentType={contentType}
+            streamConditions={streamConditions}
+          />
+        ) : null}
+        {(hasStreamAccess || isOwner) && streamConditions ? (
+          <DetailsTileHasAccess
+            streamConditions={streamConditions}
+            isOwner={isOwner}
+            trackArtist={user}
+          />
+        ) : null}
+        {track?.genre || track?.mood ? (
+          <Flex w='100%' direction='row' gap='l'>
+            {track?.genre ? (
+              <Flex direction='row' gap='xs' alignItems='center'>
+                <Text variant='label' textTransform='uppercase' color='subdued'>
+                  {messages.genre}
+                </Text>
+                <Text variant='body' size='s' strength='strong'>
+                  {track.genre}
+                </Text>
+              </Flex>
+            ) : null}
+            {track?.mood ? (
+              <Flex direction='row' gap='xs' alignItems='center'>
+                <Text variant='label' textTransform='uppercase' color='subdued'>
+                  {messages.mood}
+                </Text>
+                <Text variant='body' size='s' strength='strong'>
+                  {track.mood}
+                </Text>
+                <Image source={moodMap[track.mood]} style={styles.emoji} />
+              </Flex>
             ) : null}
           </Flex>
-          {track?.is_delete ? (
-            // This is to introduce a gap
-            <Flex />
-          ) : (
-            <>
-              {isLongFormContent && isNewPodcastControlsEnabled ? (
-                <DetailsProgressInfo track={track} />
-              ) : null}
-              <Flex gap='l'>
-                {!hasStreamAccess &&
-                !isOwner &&
-                streamConditions &&
-                contentId ? (
-                  <DetailsTileNoAccess
-                    trackId={contentId}
-                    contentType={contentType}
-                    streamConditions={streamConditions}
-                  />
-                ) : null}
-                {hasStreamAccess || isOwner ? (
-                  <Button
-                    iconLeft={isPlayingFullAccess ? IconPause : PlayIcon}
-                    onPress={handlePressPlay}
-                    disabled={!isPlayable}
-                  >
-                    {isPlayingFullAccess ? messages.pause : playText}
-                  </Button>
-                ) : null}
-                {(hasStreamAccess || isOwner) && streamConditions ? (
-                  <DetailsTileHasAccess
-                    streamConditions={streamConditions}
-                    isOwner={isOwner}
-                    trackArtist={user}
-                  />
-                ) : null}
-                {showPreviewButton ? <PreviewButton /> : null}
-                {isUnpublishedScheduledRelease && track?.release_date ? (
-                  <Flex gap='xs' direction='row' alignItems='center'>
-                    <IconCalendarMonth color='accent' size='m' />
-                    <Text color='accent' strength='strong' size='m'>
-                      Releases
-                      {' ' +
-                        moment(track.release_date).format('M/D/YY @ h:mm A ') +
-                        dayjs().format('z')}
-                    </Text>
-                  </Flex>
-                ) : null}
-                <DetailsTileActionButtons
-                  ddexApp={ddexApp}
-                  hasReposted={!!hasReposted}
-                  hasSaved={!!hasSaved}
-                  hideFavorite={hideFavorite}
-                  hideOverflow={hideOverflow}
-                  hideRepost={hideRepost}
-                  hideShare={hideShare}
-                  isOwner={isOwner}
-                  isCollection={isCollection}
-                  collectionId={contentId}
-                  isPublished={isPublished}
-                  onPressEdit={onPressEdit}
-                  onPressOverflow={onPressOverflow}
-                  onPressRepost={onPressRepost}
-                  onPressSave={onPressSave}
-                  onPressShare={onPressShare}
-                  onPressPublish={onPressPublish}
-                />
-              </Flex>
-              {isAiGeneratedTracksEnabled && aiAttributionUserId ? (
-                <DetailsTileAiAttribution userId={aiAttributionUserId} />
-              ) : null}
-              {!isPublished ? null : (
-                <DetailsTileStats
-                  favoriteCount={saveCount}
-                  hideFavoriteCount={hideFavoriteCount}
-                  hideListenCount={hideListenCount}
-                  hideRepostCount={hideRepostCount}
-                  onPressFavorites={onPressFavorites}
-                  onPressReposts={onPressReposts}
-                  playCount={playCount}
-                  repostCount={repostCount}
-                />
-              )}
-              <Flex borderBottom='strong'>
-                {description ? (
-                  <Hyperlink
-                    source={descriptionLinkPressSource}
-                    style={styles.description}
-                    linkStyle={styles.link}
-                    text={squashNewLines(description) ?? ''}
-                  />
-                ) : null}
-              </Flex>
-              <Flex
-                wrap='wrap'
-                direction='row'
-                borderBottom={
-                  hideFavoriteCount && hideListenCount && hideRepostCount
-                    ? 'strong'
-                    : undefined
-                }
-              >
-                {renderDetailLabels()}
-              </Flex>
-            </>
-          )}
-        </Flex>
+        ) : null}
+        <SecondaryStats
+          playCount={playCount}
+          duration={duration}
+          trackCount={trackCount}
+          releaseDate={releaseDate}
+          updatedAt={updatedAt}
+        />
+        {renderTags()}
+        <OfflineStatusRow contentId={contentId} isCollection={isCollection} />
       </Flex>
+      <Divider />
       {renderBottomContent?.()}
     </Paper>
   )

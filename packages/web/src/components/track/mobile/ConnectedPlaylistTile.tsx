@@ -124,7 +124,8 @@ const ConnectedPlaylistTile = ({
   isTrending,
   variant,
   containerClassName,
-  isFeed = false
+  isFeed = false,
+  source
 }: ConnectedPlaylistTileProps) => {
   const collection = getCollectionWithFallback(nullableCollection)
   const user = getUserWithFallback(nullableUser)
@@ -331,6 +332,7 @@ const ConnectedPlaylistTile = ({
       isStreamGated={collection.is_stream_gated}
       hasStreamAccess={!!collection.access?.stream}
       streamConditions={collection.stream_conditions}
+      source={source}
     />
   )
 }

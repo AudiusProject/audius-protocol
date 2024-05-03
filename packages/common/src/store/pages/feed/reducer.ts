@@ -1,8 +1,6 @@
 import { LineupActions, asLineup } from '~/store/lineup/reducer'
 import {
-  SET_SUGGESTED_FOLLOWS,
   SET_FEED_FILTER,
-  SetSuggestedFollowsAction,
   SetFeedFilterAction,
   FeedPageAction
 } from '~/store/pages/feed/actions'
@@ -22,15 +20,6 @@ const initialState = {
 }
 
 const actionsMap = {
-  [SET_SUGGESTED_FOLLOWS](
-    state: FeedPageState,
-    action: SetSuggestedFollowsAction
-  ) {
-    return {
-      ...state,
-      suggestedFollows: action.userIds
-    }
-  },
   [SET_FEED_FILTER](state: FeedPageState, action: SetFeedFilterAction) {
     return {
       ...state,

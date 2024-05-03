@@ -1,12 +1,16 @@
 import type { ReactNode } from 'react'
 
+import { useFeatureFlag } from '@audius/common/hooks'
+import { FeatureFlags } from '@audius/common/services'
 import { View } from 'react-native'
 
-import { Text } from 'app/components/core'
+import { Flex, Text } from '@audius/harmony-native'
 
 import { useStyles } from './styles'
 const messages = {
-  task: 'Task Details'
+  task: 'Task Details',
+  cooldownDescription:
+    'Note: There is a 7 day waiting period from completion until you can claim your reward.'
 }
 
 type DescriptionContent =
@@ -33,6 +37,10 @@ export const ChallengeDescription = ({
   description,
   renderDescription
 }: ChallengeDescriptionProps) => {
+  const { isEnabled: isRewardsCooldownEnabled } = useFeatureFlag(
+    FeatureFlags.REWARDS_COOLDOWN
+  )
+
   const styles = useStyles()
   return (
     <View style={styles.task}>
@@ -40,9 +48,8 @@ export const ChallengeDescription = ({
         {taskIcon}
         <Text
           variant='label'
-          fontSize='medium'
           style={styles.subheader}
-          weight='heavy'
+          strength='strong'
           textTransform='uppercase'
         >
           {task}
@@ -51,7 +58,14 @@ export const ChallengeDescription = ({
       {renderDescription ? (
         renderDescription()
       ) : (
-        <Text variant='body'>{description}</Text>
+        <Flex gap='m' mb='l'>
+          <Text variant='body'>{description}</Text>
+          {isRewardsCooldownEnabled ? (
+            <Text variant='body' color='subdued'>
+              {messages.cooldownDescription}
+            </Text>
+          ) : null}
+        </Flex>
       )}
     </View>
   )

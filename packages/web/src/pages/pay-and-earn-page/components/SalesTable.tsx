@@ -5,8 +5,8 @@ import { formatUSDCWeiToUSDString } from '@audius/common/utils'
 import { BN } from 'bn.js'
 import moment from 'moment'
 
+import { UserLink } from 'components/link'
 import { Table } from 'components/table'
-import { UserNameAndBadges } from 'components/user-name-and-badges/UserNameAndBadges'
 
 import styles from '../PayAndEarnPage.module.css'
 import { PurchaseCell, PurchaseRow } from '../types'
@@ -58,7 +58,7 @@ const renderContentNameCell = (cellInfo: PurchaseCell) => {
 
 const renderBuyerCell = (cellInfo: PurchaseCell) => {
   const { buyerUserId } = cellInfo.row.original
-  return <UserNameAndBadges userId={buyerUserId} />
+  return <UserLink popover userId={buyerUserId} />
 }
 
 const renderDateCell = (cellInfo: PurchaseCell) => {

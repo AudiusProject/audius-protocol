@@ -15,7 +15,8 @@ import {
   SmartCollection,
   ID,
   UID,
-  isContentUSDCPurchaseGated
+  isContentUSDCPurchaseGated,
+  ModalSource
 } from '@audius/common/models'
 import {
   accountSelectors,
@@ -29,6 +30,7 @@ import {
   tracksSocialActions as socialTracksActions,
   usersSocialActions as socialUsersActions,
   mobileOverflowMenuUIActions,
+  modalsActions,
   shareModalUIActions,
   OverflowAction,
   OverflowSource,
@@ -81,9 +83,10 @@ import { getCollectionPageSEOFields } from 'utils/seo'
 import { CollectionPageProps as DesktopCollectionPageProps } from './components/desktop/CollectionPage'
 import { CollectionPageProps as MobileCollectionPageProps } from './components/mobile/CollectionPage'
 
+const { trackModalOpened } = modalsActions
 const { selectAllPlaylistUpdateIds } = playlistUpdatesSelectors
 const { makeGetCurrent } = queueSelectors
-const { getPlaying, getBuffering } = playerSelectors
+const { getPlaying, getPreviewing, getBuffering } = playerSelectors
 const { setFavorite } = favoritesUserListActions
 const { setRepost } = repostsUserListActions
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
@@ -498,7 +501,8 @@ class CollectionPage extends Component<
   onClickPurchaseTrack = (record: CollectionPageTrackRecord) => {
     this.props.openPremiumContentPurchaseModal({
       contentId: record.track_id,
-      contentType: PurchaseableContentType.TRACK
+      contentType: PurchaseableContentType.TRACK,
+      source: ModalSource.TrackListItem
     })
   }
 
@@ -524,17 +528,18 @@ class CollectionPage extends Component<
     }
   }
 
-  onPlay = () => {
+  onPlay = ({ isPreview = false }: { isPreview?: boolean } = {}) => {
     const {
       playing,
       play,
       pause,
+      previewing,
       tracks: { entries },
       record
     } = this.props
     const isQueued = this.isQueued()
     const playingId = this.getPlayingId()
-    if (playing && isQueued) {
+    if (playing && isQueued && previewing === isPreview) {
       pause()
       record(
         make(Name.PLAYBACK_PAUSE, {
@@ -542,24 +547,28 @@ class CollectionPage extends Component<
           source: PlaybackSource.PLAYLIST_PAGE
         })
       )
-    } else if (!playing && isQueued) {
+    } else if (!playing && previewing === isPreview && isQueued) {
       play()
       record(
         make(Name.PLAYBACK_PLAY, {
           id: `${playingId}`,
+          isPreview,
           source: PlaybackSource.PLAYLIST_PAGE
         })
       )
     } else if (entries.length > 0) {
-      play(entries[0].uid)
+      play(entries[0].uid, { isPreview })
       record(
         make(Name.PLAYBACK_PLAY, {
           id: `${entries[0].track_id}`,
+          isPreview,
           source: PlaybackSource.PLAYLIST_PAGE
         })
       )
     }
   }
+
+  onPreview = () => this.onPlay({ isPreview: true })
 
   onSortTracks = (sorters: any) => {
     const { column, order } = sorters
@@ -717,6 +726,7 @@ class CollectionPage extends Component<
   render() {
     const {
       playing,
+      previewing,
       type,
       status,
       collection: metadata,
@@ -751,6 +761,7 @@ class CollectionPage extends Component<
       playlistId: playlistId!,
       allowReordering,
       playing,
+      previewing,
       type,
       collection: smartCollection
         ? { status: Status.SUCCESS, metadata: smartCollection, user: null }
@@ -763,6 +774,7 @@ class CollectionPage extends Component<
       isQueued: this.isQueued,
       onFilterChange: this.onFilterChange,
       onPlay: this.onPlay,
+      onPreview: this.onPreview,
       onHeroTrackEdit: this.onHeroTrackEdit,
       onPublish: this.onPublish,
       onHeroTrackShare: this.onHeroTrackShare,
@@ -834,6 +846,7 @@ function makeMapStateToProps() {
       userPlaylists: getAccountCollections(state),
       currentQueueItem: getCurrentQueueItem(state),
       playing: getPlaying(state),
+      previewing: getPreviewing(state),
       buffering: getBuffering(state),
       pathname: getLocationPathname(state),
       playlistUpdates: selectAllPlaylistUpdateIds(state)
@@ -856,7 +869,8 @@ function mapDispatchToProps(dispatch: Dispatch) {
       dispatch(collectionActions.resetCollection(collectionUid, userUid)),
     goToRoute: (route: string) => dispatch(pushRoute(route)),
     replaceRoute: (route: string) => dispatch(replace(route)),
-    play: (uid?: string) => dispatch(tracksActions.play(uid)),
+    play: (uid?: string, options: { isPreview?: boolean } = {}) =>
+      dispatch(tracksActions.play(uid, options)),
     pause: () => dispatch(tracksActions.pause()),
     updateLineupOrder: (updatedOrderIndices: any) =>
       dispatch(tracksActions.updateLineupOrder(updatedOrderIndices)),
@@ -1012,8 +1026,19 @@ function mapDispatchToProps(dispatch: Dispatch) {
       ),
     updatePlaylistLastViewedAt: (playlistId: ID) =>
       dispatch(updatedPlaylistViewed({ playlistId })),
-    openPremiumContentPurchaseModal: (args: PremiumContentPurchaseModalState) =>
+    openPremiumContentPurchaseModal: (
+      args: PremiumContentPurchaseModalState & { source: ModalSource }
+    ) => {
+      // Since we cant use the premium modal hook we have to manually trigger the modal action & the analytics tracking call
       dispatch(usePremiumContentPurchaseModalActions.open(args))
+      dispatch(
+        trackModalOpened({
+          name: 'PremiumContentPurchaseModal',
+          trackingData: args,
+          source: args.source
+        })
+      )
+    }
   }
 }
 

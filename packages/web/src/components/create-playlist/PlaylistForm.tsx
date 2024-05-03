@@ -1,8 +1,4 @@
-import {
-  SquareSizes,
-  CollectionMetadata,
-  Collection
-} from '@audius/common/models'
+import { SquareSizes, Collection } from '@audius/common/models'
 import { createCollectionSchema } from '@audius/common/schemas'
 import { Nullable } from '@audius/common/utils'
 import { Flex } from '@audius/harmony'
@@ -47,7 +43,10 @@ type PlaylistFormProps = {
   onDelete?: () => void
   /** Only applies to edit mode */
   onCancel?: () => void
-  onSave: (formFields: CollectionMetadata) => void
+  onSave: (
+    formFields: EditPlaylistValues,
+    initialValues: EditPlaylistValues
+  ) => void
 }
 
 const createCollectionFormSchema = (collectionType: 'album' | 'playlist') => {
@@ -72,14 +71,19 @@ const PlaylistForm = ({
     SquareSizes.SIZE_1000_BY_1000
   )
 
+  const initialValues = {
+    ...metadata,
+    artwork: coverArtUrl ? { url: coverArtUrl } : null,
+    description: metadata.description ?? ''
+  }
+
+  const hasNoHiddenTracks =
+    metadata.tracks?.every((track) => track.is_unlisted === false) ?? false
+
   return (
     <Formik<EditPlaylistValues>
-      initialValues={{
-        ...metadata,
-        artwork: coverArtUrl ? { url: coverArtUrl } : null,
-        description: metadata.description ?? ''
-      }}
-      onSubmit={onSave}
+      initialValues={initialValues}
+      onSubmit={(values) => onSave(values, initialValues)}
       validationSchema={toFormikValidationSchema(
         createCollectionFormSchema(isAlbum ? 'album' : 'playlist')
       )}
@@ -107,7 +111,10 @@ const PlaylistForm = ({
           </Flex>
           {isAlbum ? (
             <Flex>
-              <AccessAndSaleField isAlbum />
+              <AccessAndSaleField
+                isAlbum
+                isPublishDisabled={metadata.is_private && !hasNoHiddenTracks}
+              />
             </Flex>
           ) : null}
           <EditActions

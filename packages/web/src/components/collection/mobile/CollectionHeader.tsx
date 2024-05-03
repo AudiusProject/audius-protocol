@@ -1,26 +1,17 @@
-import { MouseEventHandler, memo, useCallback } from 'react'
+import { memo, useCallback } from 'react'
 
+import { useGetCurrentUserId, useGetPlaylistById } from '@audius/common/api'
 import { imageBlank } from '@audius/common/assets'
-import { Variant, SquareSizes, Collection, ID } from '@audius/common/models'
+import { useGatedContentAccess } from '@audius/common/hooks'
+import { Variant, SquareSizes, ID, ModalSource } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import {
-  CommonState,
   OverflowAction,
   PurchaseableContentType,
-  cacheCollectionsSelectors,
   useEditPlaylistModal
 } from '@audius/common/store'
-import {
-  Box,
-  Button,
-  ButtonProps,
-  Flex,
-  IconPause,
-  IconPlay,
-  Text
-} from '@audius/harmony'
+import { Box, Button, Flex, IconPause, IconPlay, Text } from '@audius/harmony'
 import cn from 'classnames'
-import { useSelector } from 'react-redux'
 
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { UserLink } from 'components/link'
@@ -41,33 +32,13 @@ import { CollectionHeaderProps } from '../types'
 
 import styles from './CollectionHeader.module.css'
 
-const { getCollection } = cacheCollectionsSelectors
-
 const messages = {
   hiddenPlaylist: 'Hidden Playlist',
   publishing: 'Publishing...',
   play: 'PLAY',
   pause: 'PAUSE',
+  preview: 'PREVIEW',
   coverArtAltText: 'Collection Cover Art'
-}
-
-const PlayButton = ({
-  playing,
-  onPlay,
-  ...rest
-}: {
-  playing: boolean
-  onPlay: MouseEventHandler<HTMLButtonElement>
-} & ButtonProps) => {
-  return playing ? (
-    <Button variant='primary' iconLeft={IconPause} onClick={onPlay} {...rest}>
-      {messages.pause}
-    </Button>
-  ) : (
-    <Button variant='primary' iconLeft={IconPlay} onClick={onPlay} {...rest}>
-      {messages.play}
-    </Button>
-  )
 }
 
 type MobileCollectionHeaderProps = CollectionHeaderProps & {
@@ -109,9 +80,11 @@ const CollectionHeader = ({
   isAlbum = false,
   loading = false,
   playing = false,
+  previewing = false,
   saves = 0,
   reposts,
   onPlay = () => {},
+  onPreview = () => {},
   onShare,
   onSave,
   onRepost,
@@ -128,9 +101,24 @@ const CollectionHeader = ({
   const { isEnabled: isPremiumAlbumsEnabled } = useFlag(
     FeatureFlags.PREMIUM_ALBUMS_ENABLED
   )
-  const collection = useSelector((state: CommonState) =>
-    getCollection(state, { id: collectionId })
-  ) as Collection
+
+  const { data: currentUserId } = useGetCurrentUserId({})
+  const { data: collection } = useGetPlaylistById(
+    {
+      playlistId: typeof collectionId === 'number' ? collectionId : null,
+      currentUserId
+    },
+    { disabled: typeof collectionId !== 'number' }
+  )
+  const { hasStreamAccess } = useGatedContentAccess(collection)
+  const isPremium = collection?.is_stream_gated
+
+  // If user doesn't have access, show preview only. If user has access, show play only.
+  // If user is owner, show both.
+  const shouldShowPlay = isPlayable && hasStreamAccess
+  const shouldShowPreview = isOwner
+    ? isPlayable && isPremium
+    : isPremium && !hasStreamAccess
 
   const onSaveCollection = () => {
     if (!isOwner) onSave?.()
@@ -242,8 +230,25 @@ const CollectionHeader = ({
             />
           ) : null}
         </Flex>
-        {isPlayable ? (
-          <PlayButton playing={playing} onPlay={onPlay} fullWidth />
+        {shouldShowPlay ? (
+          <Button
+            variant='primary'
+            iconLeft={playing && !previewing ? IconPause : IconPlay}
+            onClick={onPlay}
+            fullWidth
+          >
+            {playing && !previewing ? messages.pause : messages.play}
+          </Button>
+        ) : null}
+        {shouldShowPreview ? (
+          <Button
+            variant='secondary'
+            iconLeft={playing && previewing ? IconPause : IconPlay}
+            onClick={onPreview}
+            fullWidth
+          >
+            {playing && previewing ? messages.pause : messages.preview}
+          </Button>
         ) : null}
         {isPremiumAlbumsEnabled &&
         isAlbum &&
@@ -261,6 +266,7 @@ const CollectionHeader = ({
               className={styles.gatedContentSection}
               buttonClassName={styles.gatedContentSectionButton}
               ownerId={userId}
+              source={ModalSource.CollectionDetails}
             />
           </Box>
         ) : null}

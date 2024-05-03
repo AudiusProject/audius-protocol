@@ -5,6 +5,7 @@ import { mkdtemp, readFile, readdir } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { releaseRepo, userRepo, xmlRepo } from './db'
+import { omitEmpty } from './util'
 
 type CH = cheerio.Cheerio<cheerio.Element>
 
@@ -14,11 +15,26 @@ export type DDEXRelease = {
   icpn?: string
   title: string
   subTitle?: string
-  artists: string[]
   genre: string
   subGenre: string
   releaseDate: string
   releaseType: string
+  releaseIds: {
+    party_id?: string
+    catalog_number?: string
+    icpn?: string
+    grid?: string
+    isan?: string
+    isbn?: string
+    ismn?: string
+    isrc?: string
+    issn?: string
+    istc?: string
+    iswc?: string
+    mwli?: string
+    sici?: string
+    proprietary_id?: string
+  }
 
   isMainRelease: boolean
   audiusGenre?: Genre
@@ -34,11 +50,19 @@ type ReleaseAndSoundRecordingSharedFields = {
   copyrightLine?: CopyrightPair
   producerCopyrightLine?: CopyrightPair
   parentalWarningType?: string
+  artists: DDEXContributor[]
+  contributors: DDEXContributor[]
+  indirectContributors: DDEXContributor[]
 }
 
 type CopyrightPair = {
   text: string
   year: string
+}
+
+export type DDEXContributor = {
+  name: string
+  role: string
 }
 
 export type DDEXResource = {
@@ -50,7 +74,6 @@ export type DDEXResource = {
 export type DDEXSoundRecording = {
   isrc?: string
   title: string
-  artists: string[]
   releaseDate: string
   genre: string
   subGenre: string
@@ -131,7 +154,7 @@ export async function reParsePastXml() {
   // loop over db xml and reprocess
   const rows = xmlRepo.all()
   for (const row of rows) {
-    await parseDdexXml(row.xmlUrl, row.xmlText)
+    parseDdexXml(row.xmlUrl, row.xmlText)
   }
 }
 
@@ -154,7 +177,7 @@ export async function parseDdexXmlFile(xmlUrl: string) {
 }
 
 // actually parse ddex xml
-export async function parseDdexXml(xmlUrl: string, xmlText: string) {
+export function parseDdexXml(xmlUrl: string, xmlText: string) {
   // todo: would be nice to skip this on reParse
   xmlRepo.upsert(xmlUrl, xmlText)
 
@@ -180,7 +203,27 @@ export async function parseDdexXml(xmlUrl: string, xmlText: string) {
     if (year && text) return { year, text }
   }
 
-  // function
+  function parseContributor(
+    tagName:
+      | 'DisplayArtist'
+      | 'ResourceContributor'
+      | 'IndirectResourceContributor',
+    $el: CH
+  ): DDEXContributor[] {
+    const roleTagName =
+      tagName == 'DisplayArtist' ? 'ArtistRole' : `${tagName}Role`
+
+    return $el
+      .find(tagName)
+      .toArray()
+      .map((el) => {
+        const roleTag = $(el).find(roleTagName).first()
+        return {
+          name: toText($(el).find('FullName')),
+          role: roleTag.attr('UserDefinedValue') || roleTag.text(),
+        }
+      })
+  }
 
   //
   // parse deals
@@ -291,7 +334,12 @@ export async function parseDdexXml(xmlUrl: string, xmlText: string) {
       filePath: $el.find('FilePath').text(),
       fileName: $el.find('FileName').text(),
       title: $el.find('TitleText:first').text(),
-      artists: toTexts($el.find('DisplayArtist PartyName FullName')),
+      artists: parseContributor('DisplayArtist', $el),
+      contributors: parseContributor('ResourceContributor', $el),
+      indirectContributors: parseContributor(
+        'IndirectResourceContributor',
+        $el
+      ),
       genre: $el.find('GenreText').text(),
       subGenre: $el.find('SubGenre').text(),
       releaseDate: $el
@@ -360,9 +408,15 @@ export async function parseDdexXml(xmlUrl: string, xmlText: string) {
         icpn: $el.find('ICPN').text(),
         title: $el.find('ReferenceTitle TitleText').text(),
         subTitle: $el.find('ReferenceTitle SubTitle').text(),
-        artists: toTexts($el.find('DisplayArtist PartyName FullName')),
+        artists: parseContributor('DisplayArtist', $el),
+        contributors: parseContributor('ResourceContributor', $el),
+        indirectContributors: parseContributor(
+          'IndirectResourceContributor',
+          $el
+        ),
         genre: $el.find('GenreText').text(),
         subGenre: $el.find('SubGenre').text(),
+        releaseIds: parseReleaseIds($el),
         releaseDate,
         releaseType: $el.find('ReleaseType').text(),
 
@@ -385,7 +439,8 @@ export async function parseDdexXml(xmlUrl: string, xmlText: string) {
       }
 
       // resolve audius user
-      release.audiusUser = userRepo.match(release.artists)
+      const artistNames = release.artists.map((a) => a.name)
+      release.audiusUser = userRepo.match(artistNames)
       if (!release.audiusUser) {
         release.problems.push(`NoUser`)
       }
@@ -434,10 +489,37 @@ export async function parseDdexXml(xmlUrl: string, xmlText: string) {
 // helpers
 //
 
+function toText($el: CH) {
+  return $el.first().text().trim()
+}
+
+export function parseReleaseIds($el: CH): DDEXRelease['releaseIds'] {
+  return omitEmpty({
+    party_id: toText($el.find('ReleaseId > PartyId')),
+    catalog_number: toText($el.find('ReleaseId > CatalogNumber')),
+    icpn: toText($el.find('ReleaseId > ICPN')),
+    grid: toText($el.find('ReleaseId > GRid')),
+    isan: toText($el.find('ReleaseId > ISAN')),
+    isbn: toText($el.find('ReleaseId > ISBN')),
+    ismn: toText($el.find('ReleaseId > ISMN')),
+    isrc: toText($el.find('ReleaseId > ISRC')),
+    issn: toText($el.find('ReleaseId > ISSN')),
+    istc: toText($el.find('ReleaseId > ISTC')),
+    iswc: toText($el.find('ReleaseId > ISWC')),
+    mwli: toText($el.find('ReleaseId > MWLI')),
+    sici: toText($el.find('ReleaseId > SICI')),
+    proprietary_id: toText($el.find('ReleaseId > ProprietaryId')),
+  })
+}
+
 function resolveAudiusGenre(
   genre: string,
   subgenre: string
 ): Genre | undefined {
+  if (!genre && !subgenre) {
+    return
+  }
+
   // first try subgenre, then genre
   for (let searchTerm of [subgenre, genre]) {
     searchTerm = searchTerm.toLowerCase()

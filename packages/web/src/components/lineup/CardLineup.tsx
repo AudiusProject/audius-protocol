@@ -2,7 +2,7 @@ import React from 'react'
 
 import cn from 'classnames'
 
-import { EmptyCard } from 'components/card/mobile/Card'
+import { EmptyCard } from 'components/card-legacy/mobile/Card'
 import { Draggable } from 'components/dragndrop'
 import CategoryHeader from 'components/header/desktop/CategoryHeader'
 import { useIsMobile } from 'hooks/useIsMobile'

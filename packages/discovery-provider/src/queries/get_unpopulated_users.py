@@ -14,8 +14,7 @@ for column in User.__table__.c:
 
 def get_unpopulated_users(session, user_ids):
     """
-    Fetches users by checking the redis cache first then
-    going to DB and writes to cache if not present
+    Fetches a list of users based on an input array of ids
 
     Args:
         session: DB session
@@ -38,5 +37,35 @@ def get_unpopulated_users(session, user_ids):
     for user_id in user_ids:
         if user_id in queried_users:
             users_response.append(queried_users[user_id])
+
+    return users_response
+
+
+def get_unpopulated_users_by_wallet(session, wallet_addresses):
+    """
+    Fetch users based on an input array of wallet addresses
+
+    Args:
+        session: DB session
+        wallet_addresses: array A list of wallet addresses
+
+    Returns:
+        Array of users
+    """
+
+    wallets_lower = [wallet.lower() for wallet in wallet_addresses]
+    users = (
+        session.query(User)
+        .filter(User.is_current == True, User.handle != None)
+        .filter(User.wallet.in_(wallets_lower))
+        .all()
+    )
+    users = helpers.query_result_to_list(users)
+    queried_users = {user["wallet"]: user for user in users}
+
+    users_response = []
+    for wallet in wallets_lower:
+        if wallet in queried_users:
+            users_response.append(queried_users[wallet])
 
     return users_response

@@ -193,6 +193,7 @@ export class USDCPurchaseBuyer extends BaseNotification<USDCPurchaseBuyerRow> {
       html: email({
         purchaserName: purchaserUsername,
         artistName: sellerUsername,
+        contentType: this.contentType,
         contentTitle: purchasedContentName,
         contentLink: `${getHostname()}/${sellerHandle}/${slug}`,
         contentImage: `${getContentNode()}/content/${cover_art_sizes}/480x480.jpg`,

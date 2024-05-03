@@ -20,7 +20,7 @@ const { getBuyUSDCFlowStage } = buyUSDCSelectors
 
 const messages = {
   usdcBalance: 'USDC Balance',
-  transferring: 'Transferring funds to your wallet...',
+  purchasing: 'Purchasing',
   continue: 'Continue'
 }
 
@@ -48,7 +48,10 @@ export const AddFunds = ({
   const balance = USDC(balanceBN ?? new BN(0)).value
 
   const buyUSDCStage = useSelector(getBuyUSDCFlowStage)
-  const isTransferring = buyUSDCStage === BuyUSDCStage.TRANSFERRING
+  const inProgress = [
+    BuyUSDCStage.PURCHASING,
+    BuyUSDCStage.CONFIRMING_PURCHASE
+  ].includes(buyUSDCStage)
 
   return (
     <div className={styles.root}>
@@ -90,10 +93,10 @@ export const AddFunds = ({
             onClick={() =>
               onContinue(selectedPurchaseMethod, selectedPurchaseVendor)
             }
-            isLoading={isTransferring}
-            disabled={isTransferring}
+            isLoading={inProgress}
+            disabled={inProgress}
           >
-            {isTransferring ? messages.transferring : messages.continue}
+            {inProgress ? messages.purchasing : messages.continue}
           </Button>
         </Flex>
       </div>

@@ -112,7 +112,6 @@ usdc_stream_gated_track_previously_purchased_album = {
     "stream_conditions": usdc_gate_1,
     "is_download_gated": True,
     "download_conditions": usdc_gate_1,
-    "playlists_containing_track": [1],
     "playlists_previously_containing_track": {"2": {"time": 1711485199}},
 }
 tracks: List[Dict[str, Any]] = [

@@ -27,9 +27,10 @@ import {
   IconRepost as IconReposts
 } from '@audius/harmony'
 
-import Card from 'components/card/desktop/Card'
+import Card from 'components/card-legacy/desktop/Card'
 import { ClientOnly } from 'components/client-only/ClientOnly'
 import CollectiblesPage from 'components/collectibles/components/CollectiblesPage'
+import { CollectionCard } from 'components/collection'
 import CoverPhoto from 'components/cover-photo/CoverPhoto'
 import CardLineup from 'components/lineup/CardLineup'
 import Lineup from 'components/lineup/Lineup'
@@ -267,47 +268,8 @@ const ProfilePage = ({
 
   const getArtistProfileContent = () => {
     if (!profile || !albums || !playlists) return { headers: [], elements: [] }
-    const albumCards = albums.map((album, index) => (
-      <Card
-        key={index}
-        size='medium'
-        handle={profile.handle}
-        ddexApp={album.ddex_app}
-        playlistName={album.playlist_name}
-        playlistId={album.playlist_id}
-        id={album.playlist_id}
-        isPublic={!album.is_private}
-        imageSize={album._cover_art_sizes}
-        isPlaylist={!album.is_album}
-        primaryText={album.playlist_name}
-        // link={fullAlbumPage(profile.handle, album.playlist_name, album.playlist_id)}
-        secondaryText={formatCardSecondaryText(
-          album.save_count,
-          album.playlist_contents.track_ids.length
-        )}
-        cardCoverImageSizes={album._cover_art_sizes}
-        isReposted={album.has_current_user_reposted}
-        isSaved={album.has_current_user_saved}
-        href={collectionPage(
-          profile.handle,
-          album.playlist_name,
-          album.playlist_id,
-          album.permalink,
-          true
-        )}
-        onClick={(e: MouseEvent) => {
-          e.preventDefault()
-          goToRoute(
-            collectionPage(
-              profile.handle,
-              album.playlist_name,
-              album.playlist_id,
-              album.permalink,
-              true
-            )
-          )
-        }}
-      />
+    const albumCards = albums.map((album) => (
+      <CollectionCard key={album.playlist_id} id={album.playlist_id} size='m' />
     ))
     if (isOwner) {
       albumCards.unshift(
@@ -321,47 +283,11 @@ const ProfilePage = ({
       )
     }
 
-    const playlistCards = playlists.map((playlist, index) => (
-      <Card
-        key={index}
-        size='medium'
-        handle={profile.handle}
-        ddexApp={playlist.ddex_app}
-        playlistName={playlist.playlist_name}
-        playlistId={playlist.playlist_id}
+    const playlistCards = playlists.map((playlist) => (
+      <CollectionCard
+        key={playlist.playlist_id}
         id={playlist.playlist_id}
-        imageSize={playlist._cover_art_sizes}
-        isPublic={!playlist.is_private}
-        // isAlbum={playlist.is_album}
-        primaryText={playlist.playlist_name}
-        // link={fullPlaylistPage(profile.handle, playlist.playlist_name, playlist.playlist_id)}
-        secondaryText={formatCardSecondaryText(
-          playlist.save_count,
-          playlist.playlist_contents.track_ids.length,
-          playlist.is_private
-        )}
-        cardCoverImageSizes={playlist._cover_art_sizes}
-        isReposted={playlist.has_current_user_reposted}
-        isSaved={playlist.has_current_user_saved}
-        href={collectionPage(
-          profile.handle,
-          playlist.playlist_name,
-          playlist.playlist_id,
-          playlist.permalink,
-          playlist.is_album
-        )}
-        onClick={(e: MouseEvent) => {
-          e.preventDefault()
-          goToRoute(
-            collectionPage(
-              profile.handle,
-              playlist.playlist_name,
-              playlist.playlist_id,
-              playlist.permalink,
-              playlist.is_album
-            )
-          )
-        }}
+        size='m'
       />
     ))
     if (isOwner) {

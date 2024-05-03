@@ -1,8 +1,3 @@
-.searchResults {
-  max-width: 720px !important;
-  user-select: none;
-}
-
 .searchResultsHeader {
   justify-content: left;
 }
@@ -30,20 +25,16 @@
 }
 
 .cardsContainer {
+  display: inline-flex;
   width: 100%;
+  justify-content: space-between;
+  gap: var(--harmony-spacing-xl);
 }
 
-.cardsContainer > * {
-  margin: 8px;
-}
-.cardsContainer > *:nth-child(-n + 4) {
-  margin-top: 0;
-}
-.cardsContainer > *:nth-child(4n + 1) {
-  margin-left: 0px;
-}
-.cardsContainer > *:nth-child(4n + 4) {
-  margin-right: 0px;
+@media (max-width: 1320px) {
+  .cardsContainer {
+    justify-content: flex-start;
+  }
 }
 
 /* For mock data */

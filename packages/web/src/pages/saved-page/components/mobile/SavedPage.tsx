@@ -39,7 +39,7 @@ import cn from 'classnames'
 import { useSelector } from 'react-redux'
 
 import { make, useRecord } from 'common/store/analytics/actions'
-import Card from 'components/card/mobile/Card'
+import Card from 'components/card-legacy/mobile/Card'
 import Header from 'components/header/mobile/Header'
 import { HeaderContext } from 'components/header/mobile/HeaderContextProvider'
 import { InfiniteCardLineup } from 'components/lineup/InfiniteCardLineup'

@@ -161,7 +161,8 @@ const TrackTile = ({
   permalink,
   isTrack,
   trackId,
-  releaseDate
+  releaseDate,
+  source
 }: TrackTileProps) => {
   const { isEnabled: isNewPodcastControlsEnabled } = useFlag(
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
@@ -188,7 +189,7 @@ const TrackTile = ({
     if (isPurchase && trackId) {
       openPremiumContentPurchaseModal(
         { contentId: trackId, contentType: PurchaseableContentType.TRACK },
-        { source: ModalSource.TrackTile }
+        { source: source ?? ModalSource.TrackTile }
       )
     } else if (trackId && !hasStreamAccess && onClickLocked) {
       onClickLocked()

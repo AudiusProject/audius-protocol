@@ -4,41 +4,21 @@ import type { ID } from '@audius/common/models'
 import { aiPageActions, aiPageSelectors } from '@audius/common/store'
 import { useDispatch, useSelector } from 'react-redux'
 
-import {
-  IconArrowRight,
-  IconRobot,
-  PlainButton,
-  Text,
-  Flex,
-  TextLink
-} from '@audius/harmony-native'
-import UserBadges from 'app/components/user-badges'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { makeStyles } from 'app/styles'
+import { useColor } from 'app/utils/theme'
+
+import { DetailsTileBadge } from './DetailsTileBadge'
 
 const { fetchAiUser, reset } = aiPageActions
 const { getAiUser } = aiPageSelectors
 
 const messages = {
-  title: 'Generated with AI',
-  description: 'This song was made by an AI that has been trained to imitate ',
-  viewMore: 'View More'
+  aiGenerated: 'AI Generated'
 }
 
-const useStyles = makeStyles(({ spacing, palette }) => ({
-  root: {
-    borderBottomWidth: 1,
-    borderBottomColor: palette.neutralLight7
-  },
-  badges: {
-    paddingTop: spacing(4)
-  }
-}))
-
 export const DetailsTileAiAttribution = ({ userId }: { userId: ID }) => {
-  const styles = useStyles()
+  const aiColor = useColor('aiPrimary')
   const navigation = useNavigation()
-
   const dispatch = useDispatch()
   const user = useSelector(getAiUser)
 
@@ -49,37 +29,13 @@ export const DetailsTileAiAttribution = ({ userId }: { userId: ID }) => {
     }
   }, [dispatch, userId])
 
-  const handleViewMorePress = () => {
+  const handlePress = () => {
     navigation.navigate('AiGeneratedTracks', { userId })
   }
 
   return user ? (
-    <Flex gap='s' pb='l' mb='l' style={styles.root}>
-      <Flex inline direction='row' alignItems='center' gap='s'>
-        <IconRobot color='default' />
-        {/* IconRobot is bottom-heavy, adding marginTop makes text look more aligned */}
-        <Text variant='label' style={{ marginTop: 2 }}>
-          {messages.title}
-        </Text>
-      </Flex>
-      <Text variant='body' size='s'>
-        {messages.description}
-        <TextLink
-          variant='visible'
-          to={{ screen: 'Profile', params: { id: user.user_id } }}
-        >
-          {user.name}
-        </TextLink>
-        <UserBadges user={user} hideName style={styles.badges} badgeSize={12} />
-      </Text>
-      <PlainButton
-        style={{ alignSelf: 'flex-start' }}
-        variant='subdued'
-        iconRight={IconArrowRight}
-        onPress={handleViewMorePress}
-      >
-        {messages.viewMore}
-      </PlainButton>
-    </Flex>
+    <DetailsTileBadge color={aiColor} onPress={handlePress}>
+      {messages.aiGenerated}
+    </DetailsTileBadge>
   ) : null
 }

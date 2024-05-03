@@ -16,7 +16,7 @@ WORKDIR /app
 RUN npm install turbo --global
 
 COPY . .
-RUN turbo prune --scope=@audius/ddex-publisher --scope=@audius/ddex-publisher --docker
+RUN turbo prune --scope=@audius/ddex-processor --scope=@audius/ddex-processor --docker
 
 # Second stage: Install and build client and server dists
 FROM base AS app-builder
@@ -37,7 +37,7 @@ RUN CI=true npm i --maxsockets 1
 COPY --from=turbo-builder /app/out/full/ .
 COPY svgr-template.js svgr-template.js
 COPY turbo.json turbo.json
-RUN npx turbo run build --filter=@audius/ddex-publisher
+RUN npx turbo run build --filter=@audius/ddex-processor
 
 # Make a smaller image by removing all src directories (except for in node_modules)
 RUN find packages -path '*/node_modules/*' -prune -o -name 'src' -type d -exec rm -rf {} +

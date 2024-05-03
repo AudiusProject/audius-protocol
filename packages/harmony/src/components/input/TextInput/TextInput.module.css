@@ -10,7 +10,7 @@
   width: 100%;
   align-items: center;
   /* Dont need Y padding since the flex centering takes care of it */
-  padding: 0 var(--harmony-spacing-l) 0 0;
+  padding: 0 var(--harmony-spacing-l);
   border: 1px solid var(--harmony-border-default);
   border-radius: var(--harmony-border-radius-s);
   background-color: var(--harmony-bg-surface-1);
@@ -32,6 +32,7 @@
 
 /* small input size */
 .contentContainer.small {
+  padding: 0 var(--harmony-spacing-m);
   /* gap between icons & content */
   gap: var(--harmony-spacing-s);
   font-size: var(--harmony-font-s);

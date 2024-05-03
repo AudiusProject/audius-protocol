@@ -165,7 +165,9 @@ const PreviewField = (props: TrackAvailabilityFieldsProps) => {
 
 const PriceField = (props: PriceFieldProps) => {
   const { disabled, messaging, fieldName } = props
-  const [{ value }, , { setValue: setPrice }] = useField<number>(fieldName)
+  const [{ value }, , { setValue: setPrice }] = useField<number | null>(
+    fieldName
+  )
   const [humanizedValue, setHumanizedValue] = useState(
     value ? decimalIntegerToHumanReadable(value) : null
   )
@@ -173,8 +175,13 @@ const PriceField = (props: PriceFieldProps) => {
   const handlePriceChange: ChangeEventHandler<HTMLInputElement> = useCallback(
     (e) => {
       const { human, value } = filterDecimalString(e.target.value)
-      setHumanizedValue(human)
-      setPrice(value)
+      if (value === 0) {
+        setHumanizedValue(null)
+        setPrice(null)
+      } else {
+        setHumanizedValue(human)
+        setPrice(value)
+      }
     },
     [setPrice, setHumanizedValue]
   )

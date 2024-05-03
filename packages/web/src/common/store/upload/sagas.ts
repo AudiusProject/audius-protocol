@@ -703,7 +703,7 @@ export function* handleUploads({
 
   const publishedTrackIds = published
     .filter((t) => t.stemIndex === null)
-    .sort((a, b) => b.trackIndex - a.trackIndex)
+    .sort((a, b) => a.trackIndex - b.trackIndex)
     .map((p) => p.trackId)
 
   // If no tracks uploaded, we failed!

@@ -1,35 +1,35 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
-import { OS, Theme, ID, ProfilePictureSizes, Name } from '@audius/common/models'
+import { ID, Name, OS, ProfilePictureSizes, Theme } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import {
-  settingsPageSelectors,
   BrowserNotificationSetting,
   EmailFrequency,
   InstagramProfile,
-  TwitterProfile,
+  Notifications,
   TikTokProfile,
-  Notifications
+  TwitterProfile,
+  settingsPageSelectors
 } from '@audius/common/store'
 import {
   Button,
-  Modal,
   IconAppearance,
-  SegmentedControl,
   IconDesktop,
-  IconRobot,
-  IconRecoveryEmail as IconMail,
-  IconNotificationOn as IconNotification,
-  IconSignOut,
-  IconVerified,
   IconEmailAddress,
   IconKey,
+  IconRecoveryEmail as IconMail,
   IconMessage,
-  ModalHeader,
-  ModalTitle,
+  IconNotificationOn as IconNotification,
+  IconRobot,
+  IconSignOut,
+  IconVerified,
+  Modal,
   ModalContent,
   ModalContentText,
-  ModalFooter
+  ModalFooter,
+  ModalHeader,
+  ModalTitle,
+  SegmentedControl
 } from '@audius/harmony'
 import cn from 'classnames'
 import { Link } from 'react-router-dom'
@@ -46,7 +46,7 @@ import { useIsMobile } from 'hooks/useIsMobile'
 import { useFlag } from 'hooks/useRemoteConfig'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import DownloadApp from 'services/download-app/DownloadApp'
-import { isElectron, getOS } from 'utils/clientUtil'
+import { getOS, isElectron } from 'utils/clientUtil'
 import { COPYRIGHT_TEXT } from 'utils/copyright'
 import { useSelector } from 'utils/reducer'
 import {
@@ -59,7 +59,7 @@ import packageInfo from '../../../../../package.json'
 
 import { AuthorizedAppsSettingsCard } from './AuthorizedApps'
 import { DeveloperAppsSettingsCard } from './DeveloperApps'
-import { ManagerModeSettingsCard } from './ManagerMode/ManagerModeSettingsCard'
+import { AccountsManagingYouSettingsCard } from './ManagerMode/AccountsManagingYouSettingsCard'
 import NotificationSettings from './NotificationSettings'
 import SettingsCard from './SettingsCard'
 import styles from './SettingsPage.module.css'
@@ -91,11 +91,15 @@ const messages = {
   accountRecoveryCardTitle: 'Resend Recovery Email',
   changeEmailCardTitle: 'Change Email',
   changePasswordCardTitle: 'Change Password',
+  accountsYouManageTitle: 'Accounts You Manage',
   verificationCardTitle: 'Verification',
   desktopAppCardTitle: 'Download the Desktop App',
 
   aiGeneratedCardDescription:
     'Opt in to allow AI models to be trained on your likeness, and to let users credit you in their AI generated works.',
+
+  accountsYouManageDescription:
+    'Review the accounts you’re authorized to manage.',
   appearanceCardDescription:
     'Enable dark mode or choose ‘Auto’ to change with your system settings.',
   inboxSettingsCardDescription:
@@ -118,6 +122,7 @@ const messages = {
   accountRecoveryButtonText: 'Resend Email',
   changeEmailButtonText: 'Change Email',
   changePasswordButtonText: 'Change Password',
+  reviewAccountsButtonText: 'Review Accounts',
   desktopAppButtonText: 'Get The App',
   showPrivateKey: 'Show Private Key (Advanced)',
   signOutModalText: `
@@ -403,6 +408,7 @@ export const SettingsPage = (props: SettingsPageProps) => {
             {messages.changePasswordButtonText}
           </Button>
         </SettingsCard>
+        {isManagerModeEnabled ? <AccountsManagingYouSettingsCard /> : null}
         {isAiAttributionEnabled ? (
           <SettingsCard
             icon={<IconRobot />}
@@ -455,9 +461,9 @@ export const SettingsPage = (props: SettingsPageProps) => {
             </Button>
           </SettingsCard>
         ) : null}
+
         <AuthorizedAppsSettingsCard />
         <DeveloperAppsSettingsCard />
-        {isManagerModeEnabled ? <ManagerModeSettingsCard /> : null}
       </div>
       <div className={styles.version}>
         <Button
