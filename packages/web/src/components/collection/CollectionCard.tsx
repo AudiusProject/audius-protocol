@@ -17,7 +17,7 @@ import { Link, useLinkClickHandler } from 'react-router-dom-v5-compat'
 
 import { Card, CardProps, CardFooter, CardContent } from 'components/card'
 import { DogEar } from 'components/dog-ear'
-import { TextLink, UserLink } from 'components/link'
+import { UserLink } from 'components/link'
 import { LockedStatusPill } from 'components/locked-status-pill'
 import { useSelector } from 'utils/reducer'
 

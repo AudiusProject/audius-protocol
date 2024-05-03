@@ -1,5 +1,6 @@
 import { ID, Status } from '@audius/common/models'
 
+import { CollectionCard } from 'components/collection'
 import Header from 'components/header/desktop/Header'
 import CardLineup from 'components/lineup/CardLineup'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
@@ -7,7 +8,6 @@ import Page from 'components/page/Page'
 import { BASE_URL, EXPLORE_PAGE } from 'utils/route'
 
 import styles from './CollectionsPage.module.css'
-import { CollectionCard } from 'components/collection'
 
 export type CollectionsPageProps = {
   title: string

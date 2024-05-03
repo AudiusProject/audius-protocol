@@ -1,7 +1,8 @@
 import { useContext, useEffect } from 'react'
 
-import { Status, UserCollection, ID } from '@audius/common/models'
+import { Status, ID } from '@audius/common/models'
 
+import { CollectionCard } from 'components/collection'
 import Header from 'components/header/mobile/Header'
 import { HeaderContext } from 'components/header/mobile/HeaderContextProvider'
 import CardLineup from 'components/lineup/CardLineup'
@@ -11,7 +12,6 @@ import { useSubPageHeader } from 'components/nav/store/context'
 import { BASE_URL, EXPLORE_PAGE } from 'utils/route'
 
 import styles from './CollectionsPage.module.css'
-import { CollectionCard } from 'components/collection'
 
 export type CollectionsPageProps = {
   title: string
