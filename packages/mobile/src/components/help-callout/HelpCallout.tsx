@@ -51,9 +51,13 @@ export const HelpCallout = (props: HelpCalloutProps) => {
   return (
     <View style={[styles.root, style]}>
       <Icon fill={neutral} />
-      <Text numberOfLines={numberOfLines} style={styles.text}>
-        {content}
-      </Text>
+      {typeof content === 'string' ? (
+        <Text numberOfLines={numberOfLines} style={styles.text}>
+          {content}
+        </Text>
+      ) : (
+        content
+      )}
     </View>
   )
 }

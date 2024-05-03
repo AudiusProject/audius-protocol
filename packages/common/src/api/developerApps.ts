@@ -137,13 +137,13 @@ const developerAppsApi = createApi({
 
         await sdk.developerApps.updateDeveloperApp({
           appApiKey: apiKey,
-          name: name,
-          description: description,
-          imageUrl: imageUrl,
+          name,
+          description,
+          imageUrl,
           userId: encodedUserId
         })
 
-        return {}
+        return { name, description, imageUrl, apiKey }
       },
       options: {
         idArgKey: 'name',

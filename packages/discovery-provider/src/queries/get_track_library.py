@@ -9,7 +9,7 @@ from src.models.social.repost import Repost, RepostType
 from src.models.social.save import Save, SaveType
 from src.models.tracks.aggregate_track import AggregateTrack
 from src.models.tracks.track_with_aggregates import TrackWithAggregates
-from src.models.users.usdc_purchase import USDCPurchase
+from src.models.users.usdc_purchase import PurchaseType, USDCPurchase
 from src.models.users.user import User
 from src.queries import response_name_constants
 from src.queries.query_helpers import (
@@ -108,7 +108,7 @@ def _get_track_library(args: GetTrackLibraryArgs, session):
         USDCPurchase.content_id.label("item_id"),
         USDCPurchase.created_at.label("item_created_at"),
     ).filter(
-        USDCPurchase.content_type == "track",
+        USDCPurchase.content_type == PurchaseType.track,
         USDCPurchase.buyer_user_id == user_id,
     )
 

@@ -1,3 +1,5 @@
+#!/bin/bash
+set -e
 npm run gen:dev
 cd ./src/sdk/api/generated
 

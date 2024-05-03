@@ -81,11 +81,6 @@ type UserBadgesProps = {
   // badges off of the store. The override allows for it to be used
   // in a controlled context where the desired store state is not available.
   isVerifiedOverride?: boolean
-  /**
-   * When `true` provide styles for container when it has no content.
-   * Useful for cases where margins are inconsistent.
-   */
-  noContentClassName?: string
   overrideTier?: BadgeTier
 }
 
@@ -93,7 +88,6 @@ const UserBadges = ({
   userId,
   badgeSize,
   className,
-  noContentClassName = '',
   useSVGTiers = false,
   inline = false,
   isVerifiedOverride,
@@ -103,15 +97,13 @@ const UserBadges = ({
   const tier = overrideTier || currentTier
   const tierMap = useSVGTiers ? audioTierMapSVG : audioTierMapPng
   const audioBadge = tierMap[tier as BadgeTier]
-  const hasContent = isVerifiedOverride ?? (isVerified || audioBadge)
+  const hasContent = (isVerifiedOverride ?? isVerified) || audioBadge
+
+  if (!hasContent) return null
 
   if (inline) {
     return (
-      <span
-        className={cn(styles.inlineContainer, className, {
-          [noContentClassName]: !hasContent
-        })}
-      >
+      <span className={cn(styles.inlineContainer, className)}>
         {(isVerifiedOverride ?? isVerified) && (
           <IconVerified height={badgeSize} width={badgeSize} />
         )}
@@ -121,11 +113,7 @@ const UserBadges = ({
     )
   }
   return (
-    <span
-      className={cn(styles.container, className, {
-        [noContentClassName]: !hasContent
-      })}
-    >
+    <span className={cn(styles.container, className)}>
       {(isVerifiedOverride ?? isVerified) && (
         <IconVerified height={badgeSize} width={badgeSize} />
       )}

@@ -1,35 +1,32 @@
-import { useCallback } from 'react'
+import { useCallback, useEffect } from 'react'
 
 import {
   formatCooldownChallenges,
   useChallengeCooldownSchedule
 } from '@audius/common/hooks'
-import type { CommonState } from '@audius/common/store'
 import {
-  challengesSelectors,
-  audioRewardsPageSelectors,
-  audioRewardsPageActions
+  ClaimStatus,
+  audioRewardsPageActions,
+  audioRewardsPageSelectors
 } from '@audius/common/store'
-import { getClaimableChallengeSpecifiers } from '@audius/common/utils'
 import { ScrollView, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { Flex, Text, Button, IconArrowRight } from '@audius/harmony-native'
+import { useToast } from 'app/hooks/useToast'
 import { makeStyles } from 'app/styles'
 import { formatLabel } from 'app/utils/challenges'
 
 import { AppDrawer, useDrawerState } from '../drawer/AppDrawer'
 import { SummaryTable } from '../summary-table'
 
-const { getChallengeRewardsModalType, getUndisbursedUserChallenges } =
-  audioRewardsPageSelectors
-const { claimChallengeReward, resetAndCancelClaimReward } =
+const { claimAllChallengeRewards, resetAndCancelClaimReward } =
   audioRewardsPageActions
-const { getOptimisticUserChallenges } = challengesSelectors
+const { getClaimStatus } = audioRewardsPageSelectors
 
 const messages = {
   // Claim success toast
-  claimSuccessMessage: 'Reward successfully claimed!',
+  claimSuccessMessage: 'All rewards successfully claimed!',
   pending: (amount) => `${amount} Pending`,
   claimAudio: (amount) => `Claim ${amount} $AUDIO`,
   done: 'Done'
@@ -60,43 +57,36 @@ export const ClaimAllRewardsDrawer = () => {
   const styles = useStyles()
 
   const dispatch = useDispatch()
+  const { toast } = useToast()
+  const claimStatus = useSelector(getClaimStatus)
   const { onClose } = useDrawerState(MODAL_NAME)
-  const modalType = useSelector(getChallengeRewardsModalType)
-  const userChallenges = useSelector((state: CommonState) =>
-    getOptimisticUserChallenges(state, true)
-  )
-  const undisbursedUserChallenges = useSelector(getUndisbursedUserChallenges)
-  const { cooldownChallenges, summary } = useChallengeCooldownSchedule({
-    multiple: true
-  })
+  const { claimableChallenges, cooldownChallenges, summary } =
+    useChallengeCooldownSchedule({
+      multiple: true
+    })
+  const claimInProgress = claimStatus === ClaimStatus.CUMULATIVE_CLAIMING
+
+  useEffect(() => {
+    if (claimStatus === ClaimStatus.CUMULATIVE_SUCCESS) {
+      toast({ content: messages.claimSuccessMessage, type: 'info' })
+    }
+  }, [claimStatus, toast])
+
   const handleClose = useCallback(() => {
     dispatch(resetAndCancelClaimReward())
     onClose()
   }, [dispatch, onClose])
 
-  const challenge = userChallenges ? userChallenges[modalType] : null
-
   const onClaim = useCallback(() => {
-    if (!challenge) {
-      return
-    }
-    dispatch(
-      claimChallengeReward({
-        claim: {
-          challengeId: modalType,
-          specifiers:
-            challenge.challenge_type === 'aggregate'
-              ? getClaimableChallengeSpecifiers(
-                  challenge.undisbursedSpecifiers,
-                  undisbursedUserChallenges
-                )
-              : [{ specifier: challenge.specifier, amount: challenge.amount }],
-          amount: challenge?.claimableAmount ?? 0
-        },
-        retryOnFailure: true
-      })
-    )
-  }, [dispatch, modalType, challenge, undisbursedUserChallenges])
+    const claims = claimableChallenges.map((challenge) => ({
+      challengeId: challenge.challenge_id,
+      specifiers: [
+        { specifier: challenge.specifier, amount: challenge.amount }
+      ],
+      amount: challenge.amount
+    }))
+    dispatch(claimAllChallengeRewards({ claims }))
+  }, [dispatch, claimableChallenges])
 
   return (
     <AppDrawer
@@ -126,6 +116,7 @@ export const ClaimAllRewardsDrawer = () => {
       <View style={styles.stickyClaimRewardsContainer}>
         {summary && summary?.value > 0 ? (
           <Button
+            isLoading={claimInProgress}
             variant='primary'
             onPress={onClaim}
             iconRight={IconArrowRight}

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"mime"
+	"net/http"
 	"strings"
 	"time"
 
@@ -24,13 +25,9 @@ func (ss *MediorumServer) serveImage(c echo.Context) error {
 
 	// helper function... only sets cache-control header on success
 	serveSuccessWithReader := func(blob *blob.Reader) error {
-		blobData, err := io.ReadAll(blob)
-		if err != nil {
-			return err
-		}
-		blob.Close()
 		c.Response().Header().Set(echo.HeaderCacheControl, "public, max-age=2592000, immutable")
-		return c.Blob(200, blob.ContentType(), blobData)
+		http.ServeContent(c.Response(), c.Request(), jobID+variant, blob.ModTime(), blob)
+		return nil
 	}
 
 	serveSuccess := func(blobPath string) error {
