@@ -39,7 +39,6 @@ import {
 } from '@audius/harmony-native'
 import { useAirplay } from 'app/components/audio/Airplay'
 import { Button } from 'app/components/core'
-import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { useToast } from 'app/hooks/useToast'
 import { makeStyles } from 'app/styles'
@@ -113,7 +112,6 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
   const accountUser = useSelector(getAccountUser)
   const { neutral, neutralLight6, primary } = useThemeColors()
   const dispatch = useDispatch()
-  const isOfflineModeEnabled = useIsOfflineModeEnabled()
   const isReachable = useSelector(getIsReachable)
   const { isEnabled: isNewPodcastControlsEnabled } = useFeatureFlag(
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
@@ -269,7 +267,15 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
         />
       )
     }
-    return isOfflineModeEnabled && !isReachable ? (
+    return isReachable ? (
+      <CastButton
+        style={{
+          ...styles.button,
+          ...styles.icon,
+          tintColor: isCasting ? primary : neutral
+        }}
+      />
+    ) : (
       <View style={{ ...styles.button, width: 24 }}>
         <IconCastChromecast
           fill={neutralLight6}
@@ -278,14 +284,6 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
           style={{ transform: [{ scaleX: -1 }] }}
         />
       </View>
-    ) : (
-      <CastButton
-        style={{
-          ...styles.button,
-          ...styles.icon,
-          tintColor: isCasting ? primary : neutral
-        }}
-      />
     )
   }
 

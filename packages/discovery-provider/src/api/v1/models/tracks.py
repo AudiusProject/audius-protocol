@@ -1,8 +1,6 @@
 from flask_restx import fields
 
-from .access_gate import access_gate
 from .common import favorite, ns, repost
-from .extensions.fields import NestedOneOf
 from .users import user_model, user_model_full
 
 track_artwork = ns.model(
@@ -128,7 +126,6 @@ download = ns.model(
     },
 )
 
-
 track_full = ns.clone(
     "track_full",
     track,
@@ -162,9 +159,9 @@ track_full = ns.clone(
         "remix_of": fields.Nested(full_remix_parent),
         "is_available": fields.Boolean,
         "is_stream_gated": fields.Boolean,
-        "stream_conditions": NestedOneOf(access_gate, allow_null=True),
+        "stream_conditions": fields.Raw(allow_null=True),
         "is_download_gated": fields.Boolean,
-        "download_conditions": NestedOneOf(access_gate, allow_null=True),
+        "download_conditions": fields.Raw(allow_null=True),
         "access": fields.Nested(access),
         "ai_attribution_user_id": fields.Integer(allow_null=True),
         "audio_upload_id": fields.String,

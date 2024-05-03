@@ -28,7 +28,7 @@ import Skeleton from 'components/skeleton/Skeleton'
 import { useCoverPhoto } from 'hooks/useCoverPhoto'
 import { useMedia } from 'hooks/useMedia'
 
-import { SelectArtistsPreviewContext } from '../utils/selectArtistsPreviewContext'
+import { SelectArtistsPreviewContext } from './selectArtistsPreviewContext'
 
 type FollowArtistTileProps = {
   user: UserMetadata

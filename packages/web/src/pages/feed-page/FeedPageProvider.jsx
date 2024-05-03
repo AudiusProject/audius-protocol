@@ -24,8 +24,7 @@ import { useIsMobile } from 'hooks/useIsMobile'
 import { getPathname, TRENDING_PAGE } from 'utils/route'
 const { makeGetCurrent } = queueSelectors
 const { getPlaying, getBuffering } = playerSelectors
-const { getDiscoverFeedLineup, makeGetSuggestedFollows, getFeedFilter } =
-  feedPageSelectors
+const { getDiscoverFeedLineup, getFeedFilter } = feedPageSelectors
 const { makeGetLineupMetadatas } = lineupSelectors
 const getHasAccount = accountSelectors.getHasAccount
 
@@ -89,9 +88,6 @@ class FeedPageProvider extends PureComponent {
       feedIsMain: this.props.feedIsMain,
       feed: this.props.feed,
 
-      fetchSuggestedFollowUsers: this.props.fetchSuggestedFollowUsers,
-      followUsers: this.props.followUsers,
-      suggestedFollows: this.props.suggestedFollows,
       refreshFeedInView: this.props.refreshFeedInView,
       hasAccount: this.props.hasAccount,
       goToSignUp: this.goToSignUp,
@@ -118,13 +114,11 @@ class FeedPageProvider extends PureComponent {
 
 const makeMapStateToProps = () => {
   const getCurrentQueueItem = makeGetCurrent()
-  const getSuggestedFollows = makeGetSuggestedFollows()
   const getFeedLineup = makeGetLineupMetadatas(getDiscoverFeedLineup)
 
   const mapStateToProps = (state) => ({
     hasAccount: getHasAccount(state),
     feed: getFeedLineup(state),
-    suggestedFollows: getSuggestedFollows(state),
     currentQueueItem: getCurrentQueueItem(state),
     playing: getPlaying(state),
     buffering: getBuffering(state),
@@ -137,11 +131,8 @@ const mapDispatchToProps = (dispatch) => ({
   dispatch,
   openSignOn: (signIn) => dispatch(openSignOn(signIn)),
   resetFeedLineup: () => dispatch(feedActions.reset()),
-  fetchSuggestedFollowUsers: () =>
-    dispatch(discoverPageAction.fetchSuggestedFollowUsers()),
   goToRoute: (route) => dispatch(pushRoute(route)),
   replaceRoute: (route) => dispatch(replaceRoute(route)),
-  followUsers: (userIds) => dispatch(discoverPageAction.followUsers(userIds)),
   setFeedFilter: (filter) => dispatch(discoverPageAction.setFeedFilter(filter)),
 
   // Feed Lineup Actions
