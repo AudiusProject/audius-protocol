@@ -1,4 +1,3 @@
-.openapi-generator-ignore
 apis/ChallengesApi.ts
 apis/PlaylistsApi.ts
 apis/ReactionsApi.ts
@@ -10,7 +9,6 @@ apis/UsersApi.ts
 apis/index.ts
 index.ts
 models/Access.ts
-models/AccessGate.ts
 models/ActivityFull.ts
 models/Attestation.ts
 models/AttestationReponse.ts
@@ -21,7 +19,6 @@ models/CoverPhoto.ts
 models/DownloadMetadata.ts
 models/Favorite.ts
 models/FieldVisibility.ts
-models/FollowGate.ts
 models/FollowingResponse.ts
 models/FollowingResponseFull.ts
 models/FullBulkSubscribersResponse.ts
@@ -50,8 +47,6 @@ models/HistoryResponseFull.ts
 models/ManagedUser.ts
 models/ManagedUsersResponse.ts
 models/ManagersResponse.ts
-models/NftCollection.ts
-models/NftGate.ts
 models/PlaylistAddedTimestamp.ts
 models/PlaylistArtwork.ts
 models/PlaylistFull.ts
@@ -59,7 +54,6 @@ models/PlaylistFullWithoutTracks.ts
 models/PlaylistLibrary.ts
 models/ProfilePicture.ts
 models/Purchase.ts
-models/PurchaseGate.ts
 models/PurchasesCountResponse.ts
 models/PurchasesResponse.ts
 models/RelatedArtistResponseFull.ts
@@ -74,7 +68,6 @@ models/StemFull.ts
 models/StemParent.ts
 models/StemsResponse.ts
 models/SupporterReference.ts
-models/TipGate.ts
 models/TopGenreUsersResponseFull.ts
 models/TopUsersResponseFull.ts
 models/TrackActivityFull.ts
@@ -90,7 +83,6 @@ models/TransactionHistoryCountResponse.ts
 models/TransactionHistoryResponse.ts
 models/TrendingIdsResponse.ts
 models/TrendingTimesIds.ts
-models/UsdcGate.ts
 models/UserFull.ts
 models/UserManager.ts
 models/UserSubscribers.ts
