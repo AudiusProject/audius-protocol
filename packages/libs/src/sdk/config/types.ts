@@ -1,8 +1,26 @@
 import type { DiscoveryNode, StorageNode } from '../services'
 
-export type ContractBootstrapConfig = {
-  minVersion: string
-  discoveryNodes: DiscoveryNode[]
-  storageNodes: StorageNode[]
-  antiAbuseOracleNodeWallets: string[]
+export type SdkServicesConfig = {
+  network: {
+    minVersion: string
+    discoveryNodes: DiscoveryNode[]
+    storageNodes: StorageNode[]
+    antiAbuseOracleNodes: {
+      registeredAddresses: string[]
+      endpoints: string[]
+    }
+    identityService: string
+  }
+  acdc: {
+    entityManagerContractAddress: string
+    web3ProviderUrl: string
+  }
+  solana: {
+    claimableTokensProgramAddress: string
+    rewardManagerProgramAddress: string
+    rewardManagerStateAddress: string
+    rpcEndpoint: string
+    usdcTokenMint: string
+    wAudioTokenMint: string
+  }
 }

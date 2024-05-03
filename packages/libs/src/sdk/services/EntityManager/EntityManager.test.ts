@@ -2,12 +2,13 @@ import type { EIP712TypedData } from 'eth-sig-util'
 import { rest } from 'msw'
 import { setupServer } from 'msw/node'
 
+import { developmentConfig } from '../../config'
 import Web3 from '../../utils/web3'
 import type { AuthService } from '../Auth/types'
 import { DiscoveryNodeSelector } from '../DiscoveryNodeSelector'
 
 import { EntityManager } from './EntityManager'
-import { defaultEntityManagerConfig } from './constants'
+import { getDefaultEntityManagerConfig } from './getDefaultConfig'
 import { Action, EntityType } from './types'
 
 const userWallet = '0xc0ffee254729296a45a3885639AC7E10F9d54979'
@@ -97,7 +98,7 @@ const mswHandlers = [
 const server = setupServer(...mswHandlers)
 
 const entityManager = new EntityManager({
-  ...defaultEntityManagerConfig.development,
+  ...getDefaultEntityManagerConfig(developmentConfig),
   discoveryNodeSelector
 })
 
@@ -158,7 +159,8 @@ describe('EntityManager', () => {
 
   describe('manageEntityConfig', () => {
     it('relays to the correct service', async () => {
-      const sharedDefaultConfig = defaultEntityManagerConfig.development
+      const sharedDefaultConfig =
+        getDefaultEntityManagerConfig(developmentConfig)
       const discoveryEntityManager = new EntityManager({
         ...sharedDefaultConfig,
         discoveryNodeSelector,

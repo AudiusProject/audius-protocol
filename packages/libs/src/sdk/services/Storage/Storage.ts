@@ -2,6 +2,7 @@ import axios, { AxiosRequestConfig, AxiosResponse } from 'axios'
 import fetch from 'cross-fetch'
 import FormData from 'form-data'
 
+import { productionConfig } from '../../config'
 import { isNodeFile } from '../../types/File'
 import type { CrossPlatformFile as File } from '../../types/File'
 import { mergeConfigWithDefaults } from '../../utils/mergeConfigs'
@@ -11,12 +12,7 @@ import { sortObjectKeys } from '../Auth/utils'
 import type { LoggerService } from '../Logger'
 import type { StorageNodeSelectorService } from '../StorageNodeSelector'
 
-import {
-  defaultStorageServiceConfig,
-  MAX_IMAGE_RESIZE_TIMEOUT_MS,
-  MAX_TRACK_TRANSCODE_TIMEOUT,
-  POLL_STATUS_INTERVAL
-} from './constants'
+import { getDefaultStorageServiceConfig } from './getDefaultConfig'
 import type {
   FileTemplate,
   ProgressCB,
@@ -25,6 +21,10 @@ import type {
   StorageServiceConfigInternal,
   UploadResponse
 } from './types'
+
+const MAX_TRACK_TRANSCODE_TIMEOUT = 3600000 // 1 hour
+const MAX_IMAGE_RESIZE_TIMEOUT_MS = 5 * 60_000 // 5 minutes
+const POLL_STATUS_INTERVAL = 3000 // 3s
 
 export class Storage implements StorageService {
   /**
@@ -37,7 +37,7 @@ export class Storage implements StorageService {
   constructor(config: StorageServiceConfig) {
     this.config = mergeConfigWithDefaults(
       config,
-      defaultStorageServiceConfig.production
+      getDefaultStorageServiceConfig(productionConfig)
     )
     this.storageNodeSelector = config.storageNodeSelector
     this.logger = this.config.logger.createPrefixedLogger('[storage]')

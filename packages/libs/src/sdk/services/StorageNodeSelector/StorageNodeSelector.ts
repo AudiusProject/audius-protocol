@@ -3,13 +3,14 @@ import fetch from 'cross-fetch'
 import { isNodeHealthy } from '../../../utils/getNStorageNodes'
 import RendezvousHash from '../../../utils/rendezvous'
 import type { Maybe } from '../../../utils/types'
+import { productionConfig } from '../../config'
 import { mergeConfigWithDefaults } from '../../utils/mergeConfigs'
 import type { AuthService } from '../Auth'
 import type { DiscoveryNodeSelectorService } from '../DiscoveryNodeSelector'
 import type { HealthCheckResponseData } from '../DiscoveryNodeSelector/healthCheckTypes'
 import type { LoggerService } from '../Logger'
 
-import { defaultStorageNodeSelectorConfig } from './constants'
+import { getDefaultStorageNodeSelectorConfig } from './getDefaultConfig'
 import type {
   StorageNode,
   StorageNodeSelectorConfig,
@@ -35,7 +36,7 @@ export class StorageNodeSelector implements StorageNodeSelectorService {
   constructor(config: StorageNodeSelectorConfig) {
     this.config = mergeConfigWithDefaults(
       config,
-      defaultStorageNodeSelectorConfig.production
+      getDefaultStorageNodeSelectorConfig(productionConfig)
     )
     this.discoveryNodeSelector = config.discoveryNodeSelector
     this.auth = config.auth

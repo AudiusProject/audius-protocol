@@ -1,3 +1,3 @@
 export * from './types'
 export * from './DiscoveryNodeSelector'
-export { defaultDiscoveryNodeSelectorConfig } from './constants'
+export { getDefaultDiscoveryNodeSelectorConfig } from './getDefaultConfig'

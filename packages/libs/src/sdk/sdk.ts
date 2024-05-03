@@ -22,39 +22,40 @@ import { GrantsApi } from './api/grants/GrantsApi'
 import { PlaylistsApi } from './api/playlists/PlaylistsApi'
 import { TracksApi } from './api/tracks/TracksApi'
 import { UsersApi } from './api/users/UsersApi'
+import { developmentConfig, productionConfig, stagingConfig } from './config'
 import {
   addAppNameMiddleware,
   addRequestSignatureMiddleware
 } from './middleware'
 import { OAuth } from './oauth'
 import { AntiAbuseOracle } from './services/AntiAbuseOracle/AntiAbuseOracle'
-import { defaultAntiAbuseOracleSelectorConfig } from './services/AntiAbuseOracleSelector'
+import { getDefaultAntiAbuseOracleSelectorConfig } from './services/AntiAbuseOracleSelector'
 import { AntiAbuseOracleSelector } from './services/AntiAbuseOracleSelector/AntiAbuseOracleSelector'
 import { AppAuth } from './services/Auth/AppAuth'
 import { DefaultAuth } from './services/Auth/DefaultAuth'
 import {
   DiscoveryNodeSelector,
-  defaultDiscoveryNodeSelectorConfig
+  getDefaultDiscoveryNodeSelectorConfig
 } from './services/DiscoveryNodeSelector'
 import {
   EntityManager,
-  defaultEntityManagerConfig
+  getDefaultEntityManagerConfig
 } from './services/EntityManager'
 import { Logger } from './services/Logger'
 import { SolanaRelay } from './services/Solana/SolanaRelay'
 import { SolanaRelayWalletAdapter } from './services/Solana/SolanaRelayWalletAdapter'
 import {
-  defaultClaimableTokensConfig,
+  getDefaultClaimableTokensConfig,
   ClaimableTokensClient
 } from './services/Solana/programs/ClaimableTokensClient'
 import {
   RewardManagerClient,
-  defaultRewardManagerClentConfig
+  getDefaultRewardManagerClentConfig
 } from './services/Solana/programs/RewardManagerClient'
-import { Storage, defaultStorageServiceConfig } from './services/Storage'
+import { Storage, getDefaultStorageServiceConfig } from './services/Storage'
 import {
   StorageNodeSelector,
-  defaultStorageNodeSelectorConfig
+  getDefaultStorageNodeSelectorConfig
 } from './services/StorageNodeSelector'
 import { SdkConfig, SdkConfigSchema, ServicesContainer } from './types'
 
@@ -92,7 +93,13 @@ export const sdk = (config: SdkConfig) => {
 }
 
 const initializeServices = (config: SdkConfig) => {
-  const env = config.environment ?? 'production'
+  const servicesConfig =
+    config.environment === 'development'
+      ? developmentConfig
+      : config.environment === 'staging'
+      ? stagingConfig
+      : productionConfig
+
   const defaultLogger = new Logger({
     logLevel: config.environment !== 'production' ? 'debug' : undefined
   })
@@ -113,14 +120,14 @@ const initializeServices = (config: SdkConfig) => {
   const discoveryNodeSelector =
     config.services?.discoveryNodeSelector ??
     new DiscoveryNodeSelector({
-      ...defaultDiscoveryNodeSelectorConfig[env],
+      ...getDefaultDiscoveryNodeSelectorConfig(servicesConfig),
       logger
     })
 
   const storageNodeSelector =
     config.services?.storageNodeSelector ??
     new StorageNodeSelector({
-      ...defaultStorageNodeSelectorConfig[env],
+      ...getDefaultStorageNodeSelectorConfig(servicesConfig),
       auth,
       discoveryNodeSelector,
       logger
@@ -129,14 +136,14 @@ const initializeServices = (config: SdkConfig) => {
   const entityManager =
     config.services?.entityManager ??
     new EntityManager({
-      ...defaultEntityManagerConfig[env],
+      ...getDefaultEntityManagerConfig(servicesConfig),
       discoveryNodeSelector
     })
 
   const storage =
     config.services?.storage ??
     new Storage({
-      ...defaultStorageServiceConfig[env],
+      ...getDefaultStorageServiceConfig(servicesConfig),
       storageNodeSelector,
       logger
     })
@@ -144,7 +151,7 @@ const initializeServices = (config: SdkConfig) => {
   const antiAbuseOracleSelector =
     config.services?.antiAbuseOracleSelector ??
     new AntiAbuseOracleSelector({
-      ...defaultAntiAbuseOracleSelectorConfig[env],
+      ...getDefaultAntiAbuseOracleSelectorConfig(servicesConfig),
       logger
     })
 
@@ -171,14 +178,14 @@ const initializeServices = (config: SdkConfig) => {
   const claimableTokensClient =
     config.services?.claimableTokensClient ??
     new ClaimableTokensClient({
-      ...defaultClaimableTokensConfig[env],
+      ...getDefaultClaimableTokensConfig(servicesConfig),
       solanaWalletAdapter
     })
 
   const rewardManagerClient =
     config.services?.rewardManagerClient ??
     new RewardManagerClient({
-      ...defaultRewardManagerClentConfig[env],
+      ...getDefaultRewardManagerClentConfig(servicesConfig),
       solanaWalletAdapter
     })
 

@@ -3,7 +3,7 @@ import semver from 'semver'
 
 import type { CommsResponse } from '../../../sdk/api/chats/serverTypes'
 
-import { DISCOVERY_SERVICE_NAME } from './constants'
+import { DISCOVERY_SERVICE_NAME } from './getDefaultConfig'
 import {
   ApiHealthResponseData,
   FlaskFullResponse,

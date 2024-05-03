@@ -5,13 +5,14 @@ import {
   Middleware,
   RequestContext
 } from '../../api/generated/default'
+import { productionConfig } from '../../config'
 import { getPathFromUrl } from '../../utils/getPathFromUrl'
 import { mergeConfigWithDefaults } from '../../utils/mergeConfigs'
 import { promiseAny } from '../../utils/promiseAny'
 import { AntiAbuseOracleHealthCheckResponse } from '../AntiAbuseOracle/types'
 import type { LoggerService } from '../Logger'
 
-import { defaultAntiAbuseOracleSelectorConfig } from './constants'
+import { getDefaultAntiAbuseOracleSelectorConfig } from './getDefaultConfig'
 import type {
   AntiAbuseOracleSelectorService,
   AntiAbuseOracleNode,
@@ -27,7 +28,7 @@ export class AntiAbuseOracleSelector implements AntiAbuseOracleSelectorService {
   constructor(config?: AntiAbuseOracleSelectorConfig) {
     const configWithDefaults = mergeConfigWithDefaults(
       config,
-      defaultAntiAbuseOracleSelectorConfig.production
+      getDefaultAntiAbuseOracleSelectorConfig(productionConfig)
     )
     this.endpoints = configWithDefaults.endpoints
     this.registeredAddresses = configWithDefaults.registeredAddresses

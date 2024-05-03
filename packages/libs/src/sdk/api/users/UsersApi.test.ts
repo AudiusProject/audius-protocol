@@ -12,12 +12,13 @@ import {
   VersionedTransaction
 } from '@solana/web3.js'
 
+import { developmentConfig } from '../../config'
 import {
   AppAuth,
   ClaimableTokensClient,
   SolanaRelay,
   SolanaRelayWalletAdapter,
-  defaultClaimableTokensConfig
+  getDefaultClaimableTokensConfig
 } from '../../services'
 import { DiscoveryNodeSelector } from '../../services/DiscoveryNodeSelector'
 import { EntityManager } from '../../services/EntityManager'
@@ -71,7 +72,7 @@ const storageNodeSelector = new StorageNodeSelector({
 })
 const solanaRelay = new SolanaRelay()
 const claimableTokens = new ClaimableTokensClient({
-  ...defaultClaimableTokensConfig.development,
+  ...getDefaultClaimableTokensConfig(developmentConfig),
   solanaWalletAdapter: new SolanaRelayWalletAdapter({ solanaRelay })
 })
 

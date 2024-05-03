@@ -1,2 +1,2 @@
 export { RewardManagerClient } from './RewardManagerClient'
-export { defaultRewardManagerClentConfig } from './constants'
+export { getDefaultRewardManagerClentConfig } from './getDefaultConfig'

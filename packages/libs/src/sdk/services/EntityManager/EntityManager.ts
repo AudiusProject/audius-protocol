@@ -6,17 +6,13 @@ import type { AbiItem } from 'web3-utils'
 
 import { abi as EntityManagerABI } from '../../../data-contracts/ABIs/EntityManager.json'
 import * as signatureSchemas from '../../../data-contracts/signatureSchemas'
+import { productionConfig } from '../../config'
 import { mergeConfigWithDefaults } from '../../utils/mergeConfigs'
 import Web3 from '../../utils/web3'
 import type { DiscoveryNodeSelectorService } from '../DiscoveryNodeSelector'
 import type { LoggerService } from '../Logger'
 
-import {
-  CONFIRMATION_POLLING_INTERVAL,
-  CONFIRMATION_TIMEOUT,
-  defaultEntityManagerConfig,
-  DEFAULT_GAS_LIMIT
-} from './constants'
+import { getDefaultEntityManagerConfig } from './getDefaultConfig'
 import {
   BlockConfirmation,
   EntityManagerConfig,
@@ -24,6 +20,10 @@ import {
   EntityManagerService,
   ManageEntityOptions
 } from './types'
+
+const DEFAULT_GAS_LIMIT = 2000000
+const CONFIRMATION_POLLING_INTERVAL = 2000
+const CONFIRMATION_TIMEOUT = 45000
 
 export class EntityManager implements EntityManagerService {
   /**
@@ -40,7 +40,7 @@ export class EntityManager implements EntityManagerService {
   constructor(config: EntityManagerConfig) {
     this.config = mergeConfigWithDefaults(
       config,
-      defaultEntityManagerConfig.production
+      getDefaultEntityManagerConfig(productionConfig)
     )
     this.discoveryNodeSelector = config.discoveryNodeSelector
     this.web3 = new Web3(
