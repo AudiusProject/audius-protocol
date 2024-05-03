@@ -168,6 +168,7 @@ async function updateTrack(
   releaseRepo.update({
     key: row.key,
     status: ReleaseProcessingStatus.Published,
+    publishedAt: new Date().toISOString(),
     ...result,
   })
 
@@ -232,6 +233,7 @@ async function updateAlbum(
   releaseRepo.update({
     key: row.key,
     status: ReleaseProcessingStatus.Published,
+    publishedAt: new Date().toISOString(),
     ...result,
   })
 
@@ -242,7 +244,7 @@ export async function deleteRelease(sdk: AudiusSdk, r: ReleaseRow) {
   const userId = r._parsed!.audiusUser!
   const entityId = r.entityId
 
-  // if not published to audius, mark internal releases row as deleted
+  // if not yet published to audius, mark internal releases row as deleted
   if (!userId || !entityId) {
     releaseRepo.update({
       key: r.key,
@@ -269,6 +271,7 @@ export async function deleteRelease(sdk: AudiusSdk, r: ReleaseRow) {
     releaseRepo.update({
       key: r.key,
       status: ReleaseProcessingStatus.Deleted,
+      publishedAt: new Date().toISOString(),
       ...result,
     })
     return result
