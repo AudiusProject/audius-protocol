@@ -49,7 +49,7 @@ export class DiscoveryNodeSelectorService {
         ? stagingConfig
         : productionConfig
 
-    const { minVersion, discoveryNodes } = bootstrapConfig.network
+    const { minVersion } = bootstrapConfig.network
 
     const maxBlockDiff =
       getRemoteVar(IntKeys.DISCOVERY_NODE_MAX_BLOCK_DIFF) ?? undefined
@@ -71,7 +71,6 @@ export class DiscoveryNodeSelectorService {
       healthCheckThresholds,
       blocklist,
       requestTimeout,
-      bootstrapServices: discoveryNodes,
       initialSelectedNode: this.initialSelectedNode
     })
     if (this.onChange) {
