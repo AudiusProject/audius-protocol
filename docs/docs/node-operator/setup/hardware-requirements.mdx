@@ -1,13 +1,15 @@
 ---
 id: hardware-requirements
-title: Hardware Requirements
-pagination_label: Hardware Requirements
-sidebar_label: Hardware Requirements
+title: System Requirements
+pagination_label: System Requirements
+sidebar_label: System Requirements
 description: Audius Protocol Documentation
 ---
 
 In order to maintain quality service across the Audius protocol, service hardware requirements are
 enforced by the on-chain governance protocol.
+
+## Hardware Requirements
 
 The minimum resource requirements per registered node are as follows.
 
@@ -15,32 +17,71 @@ The minimum resource requirements per registered node are as follows.
 - operations support to enable high uptime and availability
 - datacenter-quality internet connection (eg. AWS, GCP, or similar)
 
+:::tip choosing an operating system
+
+While any linux based OS will work, **Ubuntu 22.04 LTS** is recommended.
+
+:::
+
 ---
 
-## Content Node
+### Content Node
 
 - 8 vCPU
 - 16 GiB of RAM
 - 2000 GiB (2 TiB) SSD
-
-:::warning Port Configuration
-
-Firewalls should be configured to only allow `0.0.0.0/0` ingress on ports `80` + `443` for Content
-Nodes.
-
-:::
+- Firewalls configured to only allow `0.0.0.0/0` ingress on ports `80` + `443`
 
 ---
 
-## Discovery Node
+### Discovery Node
 
 - 8 vCPU
 - 16 GiB of RAM
 - 256 GiB SSD
+- Firewalls configured to only allow `0.0.0.0/0` ingress on ports `80` + `443` + `30300`
 
-:::warning Port Configuration
+---
 
-Firewalls should be configured to only allow `0.0.0.0/0` ingress on ports `80` + `443` + `30300` for
-Discovery Nodes.
+## System Configuration
 
-:::
+Once the Virtual Machine has been created, there are just a few other settings to confirm.
+
+### Docker
+
+Both Content Nodes and Discovery Nodes must have docker installed.
+
+Read more about [installing Docker on Ubuntu](https://docs.docker.com/engine/install/ubuntu/) on the
+official Docker documentation site.
+
+### Open Ports
+
+When configuring Virtual Machines be sure to create firewall rules for the following ports.
+
+- **Content Node** Firewalls should be configured to only allow `0.0.0.0/0` ingress on ports `80` +
+  `443`
+- **Discovery Node** Firewalls should be configured to only allow `0.0.0.0/0` ingress on ports
+  `80` + `443` + `30300`
+
+<!-- TODO: admonition for why port 30300? with links to nethermind and architecture docs -->
+
+### SSH Access
+
+Managing and configuring Audius Nodes requires a user to have ssh access to each Virtual Machine
+from a machine you have ready access to, a laptop for example.
+
+Store ssh credentials in the `~/.ssh/config` file on your machine. While specifics may change, the
+general format is as follows:
+
+```bash
+Host content1.myurl.com                       # <--- NODE URL
+  HostName 41.586.753.09                      # <--- STATIC IP OF THE NODE
+  User user                                   # <--- USERNAME
+  Port 22                                     # <--- COMMON SSH ACCESS PORT
+  IdentityFile ~/.ssh/google_compute_engine   # <--- EXAMPLE GOOGLE CLOUD IDENTITY FILE
+```
+
+Additional configurations can be added to a single `.ssh/config` file, one after the other. Check
+out
+[this guide from Digital Ocean](https://www.digitalocean.com/community/tutorials/how-to-configure-custom-connection-options-for-your-ssh-client)
+for more information on creating and using `config` files.

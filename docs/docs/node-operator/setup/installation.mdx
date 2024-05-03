@@ -6,6 +6,16 @@ sidebar_label: Installation
 description: Audius Protocol Documentation
 ---
 
+import useBaseUrl from '@docusaurus/useBaseUrl'
+
+:::caution Looking for Old Docs?
+
+Please be aware that `audius-docker-compose` will soon no longer be supported.
+
+<details>
+<summary>Click here for legacy documentation.</summary>
+<div>
+
 This guide describes how to run Audius services on a single machine via Docker Compose. The
 repository of Docker Compose files can be found on
 [GitHub](https://github.com/AudiusProject/audius-docker-compose).
@@ -20,7 +30,7 @@ During installation there will be prompts for required environment variables. Th
 
 ---
 
-## Creator Node
+**Creator Node**
 
 - `creatorNodeEndpoint` - The DNS of your content node. If you haven't registered the service yet,
   please enter the url you plan to register.
@@ -34,7 +44,7 @@ If you're using an externally managed Postgres DB please see
 
 ---
 
-## Discovery Node
+**Discovery Node**
 
 - `audius_delegate_owner_wallet` - Address of wallet that contains no tokens but that is registered
   on chain, used to sign JSON responses from server
@@ -45,7 +55,122 @@ If you're using an externally managed Postgres DB please see
 
 ---
 
-## More options
+**More options**
 
 For more advanced configuration options or migrating from Kubernetes check out the
 [Advanced Setup Guide](/node-operator/setup/advanced)
+
+</div>
+</details>
+
+:::
+
+## Quick Start
+
+Installing and managing Audius Nodes is straightforward.
+
+1. Install `audius-ctl` to your laptop.
+2. Edit the configuration.
+3. Run your Audius Nodes!
+
+---
+
+## Install `audius-ctl`
+
+Get started by opening a terminal on your "Controller" machine, this can be any computer, such as a
+laptop or desktop.
+
+Run the following command to install the controller utility, `audius-ctl`
+
+```bash
+curl -sSL https://install.audius.org | sh
+```
+
+> checkout the [code on GitHub](https://github.com/AudiusProject/audius-d)
+
+---
+
+## Edit the Configuration File
+
+Next you will need to edit the configuration file. Run the following command to get started:
+
+```bash
+audius-ctl config edit
+```
+
+### Config Template
+
+The configuration file will be pre-populated with the required fields. Edit them to match your
+configuration for each Audius Node you will be running.
+
+```bash showLineNumbers
+network:
+  deployOn: mainnet
+nodes:
+  creator-1.example.com:        # <--- THE URL OF YOUR CONTENT NODE
+    type: creator
+    privateKey: abc123          # <--- UNIQUE PRIV KEY USED BY THIS NODE TO SIGN RESPONSES
+    wallet: 0xABC123            # <--- UNIQUE WALLET ADDRESS OF ABOVE PRIV KEY
+    rewardsWallet: 0xABC123     # <--- ADDRESS OF WALLET HOLDING STAKED TOKENS
+  discovery-1.example.com:      # <--- THE URL OF YOUR DISCOVERY NODE
+    type: discovery
+    privateKey: abc123          # <--- UNIQUE PRIV KEY USED BY THIS NODE TO SIGN RESPONSES
+    wallet: 0xABC123            # <--- UNIQUE WALLET ADDRESS OF ABOVE PRIV KEY
+    rewardsWallet: 0xABC123     # <--- ADDRESS OF WALLET HOLDING STAKED TOKENS
+```
+
+---
+
+## Run the Nodes
+
+With the configuration file setup correctly, the final command to run is:
+
+```bash
+audius-ctl up
+```
+
+This command does a few things:
+
+1. loops over every node specified
+2. connects to each Virtual Machine via ssh
+   1. checks that the required Audius Node software is installed
+   2. if not found, runs the installer
+   3. starts the Audius Node
+
+### Additional Commands
+
+Get help, and view all of the available commands by running the following command:
+
+```bash
+audius-ctl --help
+```
+
+```bash
+> audius-ctl --help
+CLI for provisioning and interacting with audius nodes
+
+Usage:
+  audius-ctl [command] [flags]
+  audius-ctl [command]
+
+Available Commands:
+  completion  Generate the autocompletion script for the specified shell
+  config      view/modify audius-d configuration
+  devnet      Spin up local ethereum, solana, and acdc chains for development
+  down        Spin down nodes and network in the current context.
+  help        Help about any command
+  infra       Manage audius-d instances
+  jump        Open a shell into the audius-d container running on a host.
+  register    Register nodes on ethereum (only works for local devnet)
+  restart     Fully turn down and then turn up audius-d.
+  status      test audius-d connectivity
+  statusbar   Run status bar [n/a]
+  up          Spin up the audius nodes specified in your config, optionally specifying which hosts.
+
+Flags:
+      --debug     Print debug logs in console
+  -h, --help      help for audius-ctl
+  -v, --version   Display version info
+
+Use "audius-ctl [command] --help" for more information about a command.
+```
