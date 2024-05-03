@@ -1,4 +1,8 @@
-import { isContentUSDCPurchaseGated } from '~/models/Track'
+import { Collection, Track } from '~/models'
+import { UserTrackMetadata, isContentUSDCPurchaseGated } from '~/models/Track'
+import { Nullable } from '~/utils'
+
+import { useGatedContentAccess } from '../useGatedContent'
 
 import {
   PayExtraAmountPresetValues,
@@ -55,3 +59,17 @@ export const isTrackDownloadPurchaseable = (
 ): metadata is PurchaseableTrackDownloadMetadata =>
   'download_conditions' in metadata &&
   isContentUSDCPurchaseGated(metadata.download_conditions)
+
+export const useIsGatedContentPlaylistAddable = (
+  content: Nullable<Partial<Track | UserTrackMetadata | Collection>>
+) => {
+  const {
+    stream_conditions: streamConditions,
+    is_stream_gated: isStreamGated
+  } = content ?? {}
+  const { hasStreamAccess } = useGatedContentAccess(content)
+  return (
+    !isStreamGated ||
+    (isContentUSDCPurchaseGated(streamConditions) && hasStreamAccess)
+  )
+}

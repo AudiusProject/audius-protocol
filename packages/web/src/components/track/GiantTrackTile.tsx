@@ -1,5 +1,6 @@
 import { Suspense, lazy, useCallback, useState } from 'react'
 
+import { useIsGatedContentPlaylistAddable } from '@audius/common/hooks'
 import {
   isContentUSDCPurchaseGated,
   ID,
@@ -223,6 +224,7 @@ export const GiantTrackTile = ({
   const showPreview = isUSDCPurchaseGated && (isOwner || !hasStreamAccess)
   // Play button is conditionally hidden for USDC-gated tracks when the user does not have access
   const showPlay = isUSDCPurchaseGated ? hasStreamAccess : true
+  const isPlaylistAddable = useIsGatedContentPlaylistAddable(track)
   const { data: albumInfo } = trpc.tracks.getAlbumBacklink.useQuery(
     { trackId },
     { enabled: !!trackId }
@@ -520,7 +522,8 @@ export const GiantTrackTile = ({
       isArtistPick,
       includeEmbed: !(isUnlisted || isStreamGated),
       includeArtistPick: !isUnlisted,
-      includeAddToAlbum: isOwner,
+      includeAddToPlaylist: isPlaylistAddable,
+      includeAddToAlbum: isPlaylistAddable,
       extraMenuItems: overflowMenuExtraItems
     }
   }

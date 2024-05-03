@@ -7,7 +7,10 @@ import {
   useRef
 } from 'react'
 
-import { useGatedContentAccess } from '@audius/common/hooks'
+import {
+  useGatedContentAccess,
+  useIsGatedContentPlaylistAddable
+} from '@audius/common/hooks'
 import {
   ShareSource,
   RepostSource,
@@ -158,6 +161,7 @@ const ConnectedTrackTile = ({
   const { isFetchingNFTAccess, hasStreamAccess } =
     useGatedContentAccess(trackWithFallback)
   const loading = isLoading || isFetchingNFTAccess
+  const isPlaylistAddable = useIsGatedContentPlaylistAddable(trackWithFallback)
 
   const dispatch = useDispatch()
   const [, setLockedContentVisibility] = useModalState('LockedContent')
@@ -202,8 +206,8 @@ const ConnectedTrackTile = ({
     const menu: Omit<TrackMenuProps, 'children'> = {
       extraMenuItems: [],
       handle,
-      includeAddToPlaylist: true,
-      includeAddToAlbum: true,
+      includeAddToPlaylist: isPlaylistAddable,
+      includeAddToAlbum: isPlaylistAddable,
       includeArtistPick: handle === userHandle && !isUnlisted,
       includeEdit: handle === userHandle,
       ddexApp: track?.ddex_app,
