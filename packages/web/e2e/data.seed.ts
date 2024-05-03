@@ -23,4 +23,16 @@ setup('seed data', async () => {
   audiusCmd(
     `create-playlist ${track.track_id} -a --output ../web/e2e/album.json`
   )
+
+  // Create a playlist
+  console.log('Creating playlist')
+  audiusCmd(
+    `create-playlist ${track.track_id} -a --output ../web/e2e/playlist.json`
+  )
+
+  // Upload a remix
+  console.log('Uploading remix')
+  audiusCmd(
+    `upload-track --remix ${track.track_id} --output ../web/e2e/remix.json`
+  )
 })

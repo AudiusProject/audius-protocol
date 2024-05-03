@@ -67,4 +67,6 @@ yalc.lock
 /e2e/user.json
 /e2e/track.json
 /e2e/album.json
+/e2e/remix.json
+/e2e/playlist.json
 /report.xml

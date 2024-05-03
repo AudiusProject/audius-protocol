@@ -4,7 +4,10 @@ const runAgainstLocalStack = process.env.RUN_AGAINST_LOCAL_STACK === 'true'
 
 const user = () => JSON.parse(readFileSync('./e2e/user.json', 'utf8'))
 const track = () => JSON.parse(readFileSync('./e2e/track.json', 'utf8'))
+const remix = () => JSON.parse(readFileSync('./e2e/remix.json', 'utf8'))
 const album = () => JSON.parse(readFileSync('./e2e/album.json', 'utf8'))
+
+const sanitizeName = (title: string) => title.replace(/ /g, '-').toLowerCase()
 
 export const getTrack = () => {
   if (runAgainstLocalStack) {
@@ -12,12 +15,47 @@ export const getTrack = () => {
     const { title } = track()
 
     return {
-      url: `${handle}/${title.replace(/ /g, '-')}`
+      url: `${handle}/${sanitizeName(title)}`,
+      name: title
     }
   }
 
   return {
-    url: 'sebastian12/bachgavotte-1'
+    url: 'sebastian12/bachgavotte-1',
+    name: 'probers_track_do_not_delete'
+  }
+}
+
+export const getRemix = () => {
+  if (runAgainstLocalStack) {
+    const { handle } = user()
+    const { title } = remix()
+
+    return {
+      url: `${handle}/${sanitizeName(title)}`,
+      name: title
+    }
+  }
+
+  return {
+    // TODO: this track has been deleted and should be replaced
+    url: 'df/probers_remix_do_not_delete-2859',
+    name: 'probers_remix_do_not_delete'
+  }
+}
+
+export const getRemixes = () => {
+  if (runAgainstLocalStack) {
+    const { handle } = user()
+    const { title } = track()
+
+    return {
+      url: `${handle}/${sanitizeName(title)}/remixes`
+    }
+  }
+
+  return {
+    url: 'mb430/traektoria-source-2217/remixes'
   }
 }
 
@@ -27,7 +65,7 @@ export const getAlbum = () => {
     const { playlist_name } = album()
 
     return {
-      url: `${handle}/album/${playlist_name.replace(/ /g, '-').toLowerCase()}`,
+      url: `${handle}/album/${sanitizeName(playlist_name)}`,
       name: playlist_name
     }
   }
@@ -35,5 +73,22 @@ export const getAlbum = () => {
   return {
     url: 'df/album/probers_album_do_not_delete-512',
     name: 'probers_album_do_not_delete'
+  }
+}
+
+export const getPlaylist = () => {
+  if (runAgainstLocalStack) {
+    const { handle } = user()
+    const { playlist_name } = album()
+
+    return {
+      url: `${handle}/album/${sanitizeName(playlist_name)}`,
+      name: playlist_name
+    }
+  }
+
+  return {
+    url: 'df/playlist/probers_playlist_do_not_delete-511',
+    name: 'PROBERS_PLAYLIST_DO_NOT_DELETE'
   }
 }

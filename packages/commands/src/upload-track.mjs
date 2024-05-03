@@ -151,6 +151,10 @@ program
     ''
   )
   .option(
+    '--remix <remix-of>',
+    'Specify the track ID of the original track if this is a remix'
+  )
+  .option(
     '--output <path>',
     'A path to which to write a json file containing the track data'
   )
@@ -171,6 +175,7 @@ program
         isDownloadable,
         downloadPrice,
         downloadConditions,
+        remixOf,
         output
       }
     ) => {
@@ -247,7 +252,8 @@ program
             ai_attribution_user_id: null,
             preview_start_seconds: previewStartSeconds
               ? parseInt(previewStartSeconds)
-              : null
+              : null,
+            remixOf
           },
           () => null
         )

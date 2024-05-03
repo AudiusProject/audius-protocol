@@ -8,16 +8,17 @@ import { defineConfig, devices } from '@playwright/test'
  */
 // require('dotenv').config();
 
+// Set this to true if testing data seeding changes
+const RESEED_EACH_RUN = true
 const authFileExists = fs.existsSync('playwright/.auth/user.json')
 const runAgainstLocalStack = process.env.RUN_AGAINST_LOCAL_STACK === 'true'
 
 const getTestDependencies = () => {
-  if (runAgainstLocalStack) {
-    // TODO: Maybe don't run seed everytime? Makes it difficult to dev
-    return authFileExists ? ['seed'] : ['seed', 'setup']
+  if (runAgainstLocalStack && RESEED_EACH_RUN) {
+    return ['seed', 'setup']
   }
 
-  return authFileExists ? [] : ['setup']
+  return authFileExists ? [] : ['seed', 'setup']
 }
 
 /**

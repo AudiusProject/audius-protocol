@@ -26,6 +26,7 @@ export const test = base.extend<{}>({
       url: Parameters<Page['goto']>[0],
       options: Parameters<Page['goto']>[1] = {}
     ) => {
+      console.log('Go to', url)
       const response = await baseGoTo(url, { waitUntil: 'load', ...options })
       await expect(page.getByTestId('app-hydrated')).toBeAttached({
         timeout: options.timeout ?? SSR_HYDRATE_TIMEOUT
