@@ -125,6 +125,7 @@ type CollectionScreenDetailsTileProps = {
   isPrivate?: boolean
   isOwner?: boolean
   isPublishing?: boolean
+  isDeleted?: boolean
   extraDetails?: DetailsTileDetail[]
   collectionId: number | SmartCollectionVariant
   hasStreamAccess?: boolean
@@ -165,6 +166,7 @@ export const CollectionScreenDetailsTile = ({
   hasStreamAccess,
   streamConditions,
   ddexApp,
+  isDeleted,
   ...detailsTileProps
 }: CollectionScreenDetailsTileProps) => {
   const styles = useStyles()
@@ -293,6 +295,7 @@ export const CollectionScreenDetailsTile = ({
       isPlaying={isPlaying && isQueued}
       isPreviewing={isPreviewing && isQueued}
       isPublished={!isPrivate || isPublishing}
+      isDeleted={isDeleted}
       isCollection={true}
       renderBottomContent={renderTrackList}
       headerText={isPrivate ? messages.hiddenType : messages.collectionType}

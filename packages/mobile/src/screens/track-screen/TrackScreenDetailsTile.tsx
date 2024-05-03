@@ -132,7 +132,8 @@ export const TrackScreenDetailsTile = ({
     title,
     track_id: trackId,
     stream_conditions: streamConditions,
-    ddex_app: ddexApp
+    ddex_app: ddexApp,
+    is_delete
   } = track
 
   const isOwner = owner_id === currentUserId
@@ -308,6 +309,7 @@ export const TrackScreenDetailsTile = ({
       isPlaying={isPlaying && isPlayingId}
       isPreviewing={isPreviewing}
       isUnlisted={is_unlisted}
+      isDeleted={is_delete}
       onPressFavorites={handlePressFavorites}
       onPressOverflow={handlePressOverflow}
       onPressPlay={handlePressPlay}
