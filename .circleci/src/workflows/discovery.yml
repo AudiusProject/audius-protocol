@@ -204,7 +204,7 @@ jobs:
         branches:
           only: main
       requires:
-        - push-pedalboard-crm-auditor
+        - push-pedalboard-crm
 
   - push-arm-image:
       name: push-comms-arm
