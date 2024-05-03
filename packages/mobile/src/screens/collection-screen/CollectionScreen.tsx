@@ -148,7 +148,8 @@ const CollectionScreenComponent = (props: CollectionScreenComponentProps) => {
     updated_at,
     stream_conditions,
     ddex_app,
-    created_at
+    created_at,
+    is_delete
   } = collection
   const isOfflineModeEnabled = useIsOfflineModeEnabled()
   const { isEnabled: isEditAlbumsEnabled } = useFeatureFlag(
@@ -308,6 +309,7 @@ const CollectionScreenComponent = (props: CollectionScreenComponentProps) => {
               collectionId={playlist_id}
               isPrivate={is_private}
               isPublishing={_is_publishing ?? false}
+              isDeleted={is_delete}
               onPressEdit={handlePressEdit}
               onPressFavorites={handlePressFavorites}
               onPressOverflow={handlePressOverflow}

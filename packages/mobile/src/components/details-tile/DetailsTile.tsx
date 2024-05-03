@@ -43,6 +43,7 @@ import { moodMap } from 'app/utils/moods'
 
 import { OfflineStatusRow } from '../offline-downloads'
 
+import { DeletedTile } from './DeletedTile'
 import { DetailsProgressInfo } from './DetailsProgressInfo'
 import { DetailsTileActionButtons } from './DetailsTileActionButtons'
 import { DetailsTileAiAttribution } from './DetailsTileAiAttribution'
@@ -115,6 +116,7 @@ export const DetailsTile = ({
   hideShare,
   isPlaying,
   isPreviewing,
+  isDeleted = false,
   isPlayable = true,
   isCollection = false,
   isPublished = true,
@@ -272,6 +274,18 @@ export const DetailsTile = ({
         ))}
       </Flex>
     ) : null
+  }
+
+  if (isDeleted) {
+    return (
+      <DeletedTile
+        imageElement={imageElement}
+        title={title}
+        user={user}
+        headerText={headerText}
+        handlePressArtistName={handlePressArtistName}
+      />
+    )
   }
 
   return (
