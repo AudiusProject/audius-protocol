@@ -114,7 +114,7 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
   constructor(config?: DiscoveryNodeSelectorServiceConfig) {
     this.config = mergeConfigWithDefaults(
       config,
-      defaultDiscoveryNodeSelectorConfig
+      defaultDiscoveryNodeSelectorConfig.production
     )
     this.services = this.config.bootstrapServices
     this._isBehind = false

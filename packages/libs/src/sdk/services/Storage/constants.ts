@@ -1,9 +1,21 @@
+import { Env } from '../../types/Env'
 import { Logger } from '../Logger'
 
 import type { StorageServiceConfigInternal } from './types'
 
-export const defaultStorageServiceConfig: StorageServiceConfigInternal = {
-  logger: new Logger()
+export const defaultStorageServiceConfig: Record<
+  Env,
+  StorageServiceConfigInternal
+> = {
+  production: {
+    logger: new Logger()
+  },
+  staging: {
+    logger: new Logger({ logLevel: 'debug' })
+  },
+  development: {
+    logger: new Logger({ logLevel: 'debug' })
+  }
 }
 
 export const MAX_TRACK_TRANSCODE_TIMEOUT = 3600000 // 1 hour

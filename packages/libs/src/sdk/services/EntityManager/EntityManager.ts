@@ -38,7 +38,10 @@ export class EntityManager implements EntityManagerService {
   private readonly logger: LoggerService
 
   constructor(config: EntityManagerConfig) {
-    this.config = mergeConfigWithDefaults(config, defaultEntityManagerConfig)
+    this.config = mergeConfigWithDefaults(
+      config,
+      defaultEntityManagerConfig.production
+    )
     this.discoveryNodeSelector = config.discoveryNodeSelector
     this.web3 = new Web3(
       new Web3.providers.HttpProvider(this.config.web3ProviderUrl, {

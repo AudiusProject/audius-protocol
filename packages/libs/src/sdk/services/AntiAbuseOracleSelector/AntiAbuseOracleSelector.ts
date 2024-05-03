@@ -27,7 +27,7 @@ export class AntiAbuseOracleSelector implements AntiAbuseOracleSelectorService {
   constructor(config?: AntiAbuseOracleSelectorConfig) {
     const configWithDefaults = mergeConfigWithDefaults(
       config,
-      defaultAntiAbuseOracleSelectorConfig
+      defaultAntiAbuseOracleSelectorConfig.production
     )
     this.endpoints = configWithDefaults.endpoints
     this.registeredAddresses = configWithDefaults.registeredAddresses

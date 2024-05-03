@@ -1,14 +1,38 @@
-import { productionConfig } from '../../config'
+import {
+  developmentConfig,
+  productionConfig,
+  stagingConfig
+} from '../../config'
+import { Env } from '../../types/Env'
 import { Logger } from '../Logger'
 
 import type { EntityManagerConfigInternal } from './types'
 
-export const defaultEntityManagerConfig: EntityManagerConfigInternal = {
-  contractAddress: productionConfig.entityManagerContractAddress,
-  web3ProviderUrl: productionConfig.web3ProviderUrl,
-  identityServiceUrl: productionConfig.identityServiceUrl,
-  useDiscoveryRelay: true,
-  logger: new Logger()
+export const defaultEntityManagerConfig: Record<
+  Env,
+  EntityManagerConfigInternal
+> = {
+  production: {
+    contractAddress: productionConfig.entityManagerContractAddress,
+    web3ProviderUrl: productionConfig.web3ProviderUrl,
+    identityServiceUrl: productionConfig.identityServiceUrl,
+    useDiscoveryRelay: true,
+    logger: new Logger()
+  },
+  staging: {
+    contractAddress: stagingConfig.entityManagerContractAddress,
+    web3ProviderUrl: stagingConfig.web3ProviderUrl,
+    identityServiceUrl: stagingConfig.identityServiceUrl,
+    useDiscoveryRelay: true,
+    logger: new Logger({ logLevel: 'debug' })
+  },
+  development: {
+    contractAddress: developmentConfig.entityManagerContractAddress,
+    web3ProviderUrl: developmentConfig.web3ProviderUrl,
+    identityServiceUrl: developmentConfig.identityServiceUrl,
+    useDiscoveryRelay: true,
+    logger: new Logger({ logLevel: 'debug' })
+  }
 }
 
 export const DEFAULT_GAS_LIMIT = 2000000

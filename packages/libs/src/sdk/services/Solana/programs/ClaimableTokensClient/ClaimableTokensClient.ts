@@ -42,7 +42,7 @@ export class ClaimableTokensClient extends BaseSolanaProgram {
   constructor(config: ClaimableTokensConfig) {
     const configWithDefaults = mergeConfigWithDefaults(
       config,
-      defaultClaimableTokensConfig
+      defaultClaimableTokensConfig.production
     )
     super(configWithDefaults, config.solanaWalletAdapter)
     this.programId = configWithDefaults.programId

@@ -35,7 +35,10 @@ export class Storage implements StorageService {
   private readonly logger: LoggerService
 
   constructor(config: StorageServiceConfig) {
-    this.config = mergeConfigWithDefaults(config, defaultStorageServiceConfig)
+    this.config = mergeConfigWithDefaults(
+      config,
+      defaultStorageServiceConfig.production
+    )
     this.storageNodeSelector = config.storageNodeSelector
     this.logger = this.config.logger.createPrefixedLogger('[storage]')
   }

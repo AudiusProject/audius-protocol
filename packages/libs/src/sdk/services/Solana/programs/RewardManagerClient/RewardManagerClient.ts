@@ -37,7 +37,7 @@ export class RewardManagerClient extends BaseSolanaProgram {
   constructor(config: RewardManagerClientConfig) {
     const configWithDefaults = mergeConfigWithDefaults(
       config,
-      defaultRewardManagerClentConfig
+      defaultRewardManagerClentConfig.production
     )
     super(configWithDefaults, config.solanaWalletAdapter)
     this.programId = configWithDefaults.programId

@@ -35,7 +35,7 @@ export class StorageNodeSelector implements StorageNodeSelectorService {
   constructor(config: StorageNodeSelectorConfig) {
     this.config = mergeConfigWithDefaults(
       config,
-      defaultStorageNodeSelectorConfig
+      defaultStorageNodeSelectorConfig.production
     )
     this.discoveryNodeSelector = config.discoveryNodeSelector
     this.auth = config.auth
