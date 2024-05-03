@@ -65,7 +65,7 @@ import {
   OfflineDownloadStatus
 } from 'app/store/offline-downloads/slice'
 
-import { CastState, useChromecast } from './GoogleCast'
+import { useChromecast } from './GoogleCast'
 import { useSavePodcastProgress } from './useSavePodcastProgress'
 
 const { getUserId } = accountSelectors
@@ -186,6 +186,8 @@ export const AudioPlayer = () => {
   const nftAccessSignatureMap = useSelector(getNftAccessSignatureMap)
   const { storageNodeSelector } = useAppContext()
 
+  useChromecast()
+
   // Queue Things
   const queueIndex = useSelector(getIndex)
   const queueShuffle = useSelector(getShuffle)
@@ -237,19 +239,6 @@ export const AudioPlayer = () => {
       return result
     }, {})
   }, isEqual)
-
-  // Cast
-  const { castState } = useChromecast()
-  useEffect(() => {
-    if (
-      castState === CastState.CONNECTED ||
-      castState === CastState.CONNECTING
-    ) {
-      TrackPlayer.setVolume(0)
-    } else {
-      TrackPlayer.setVolume(1)
-    }
-  }, [castState])
 
   const dispatch = useDispatch()
 

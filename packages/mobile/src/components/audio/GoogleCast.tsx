@@ -137,6 +137,17 @@ export const useChromecast = () => {
     }
   }, [client, seek])
 
+  useEffect(() => {
+    if (
+      castState === CastState.CONNECTED ||
+      castState === CastState.CONNECTING
+    ) {
+      TrackPlayer.setVolume(0)
+    } else {
+      TrackPlayer.setVolume(1)
+    }
+  }, [castState])
+
   return {
     castState
   }
