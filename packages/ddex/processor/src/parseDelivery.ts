@@ -203,7 +203,7 @@ export function parseDdexXml(xmlUrl: string, xmlText: string) {
   if (tagName == 'ManifestMessage') {
     console.log('todo: batch')
   } else if (tagName == 'PurgeReleaseMessage') {
-    const purge = parsePurge($)
+    const purge = parsePurgeXml($)
     const key = releaseRepo.chooseReleaseId(purge.releaseIds)
     const prior = releaseRepo.get(key)
     if (!prior) {
@@ -231,7 +231,7 @@ export function parseDdexXml(xmlUrl: string, xmlText: string) {
 //
 // parseRelease
 //
-export function parseReleaseXml($: cheerio.CheerioAPI) {
+function parseReleaseXml($: cheerio.CheerioAPI) {
   function toTexts($doc: CH) {
     return $doc.map((_, el) => $(el).text()).get()
   }
@@ -527,7 +527,8 @@ export function parseReleaseXml($: cheerio.CheerioAPI) {
 // parse purge
 //
 
-function parsePurge($: cheerio.CheerioAPI): DDEXPurgeRelease {
+function parsePurgeXml($: cheerio.CheerioAPI): DDEXPurgeRelease {
+  // todo: is it possible multiple releases purged in one message?
   const releaseIds = parseReleaseIds($('PurgedRelease').first())
   return { releaseIds }
 }

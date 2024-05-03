@@ -24,7 +24,7 @@ test('crud', async () => {
     await parseDdexXmlFile('fixtures/01_delivery.xml')
     const rr = releaseRepo.get(grid)!
     expect(rr._parsed?.soundRecordings[0].title).toBe('Example Song')
-    expect(rr.status).toBe(ReleaseProcessingStatus.Parsed)
+    expect(rr.status).toBe(ReleaseProcessingStatus.PublishPending)
   }
 
   // simulate publish
@@ -35,7 +35,7 @@ test('crud', async () => {
     await parseDdexXmlFile('fixtures/02_update.xml')
     const rr = releaseRepo.get(grid)!
     expect(rr._parsed?.soundRecordings[0].title).toBe('Updated Example Song')
-    expect(rr.status).toBe(ReleaseProcessingStatus.Parsed)
+    expect(rr.status).toBe(ReleaseProcessingStatus.PublishPending)
   }
 
   // simulate publish

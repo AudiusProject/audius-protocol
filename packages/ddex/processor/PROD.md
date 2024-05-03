@@ -15,10 +15,13 @@ npm run sdk
 
 cd packages/ddex/procesor
 
-npx tsx cli server &
+npx tsx cli server
 
 # or
 # npx pm2 start 'npm start'
+
+# also setup pm2 to run on boot:
+# https://pm2.keymetrics.io/docs/usage/startup/
 
 ```
 
@@ -26,6 +29,12 @@ npx tsx cli server &
 setup `/etc/caddy/Caddyfile` like:
 
 ```
+{
+    servers :443 {
+        protocols h1
+    }
+}
+
 ddex2.staging.audius.co
 
 reverse_proxy "localhost:8989"

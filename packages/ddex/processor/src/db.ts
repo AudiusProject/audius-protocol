@@ -69,8 +69,8 @@ export type UserRow = {
 }
 
 export enum ReleaseProcessingStatus {
-  Parsed = 'Parsed',
   Blocked = 'Blocked',
+  PublishPending = 'PublishPending',
   Published = 'Published',
   Failed = 'Failed',
   DeletePending = 'DeletePending',
@@ -176,6 +176,10 @@ type FindReleaseParams = {
 }
 
 export const releaseRepo = {
+  // todo: this is incomplete, and I'm not sure how to order which ID to use first.
+  //   go version used xml file name
+  //   but a single file can contain multiple releases
+  //   so still need a way to pick an identifier, right?
   chooseReleaseId(releaseIds: DDEXReleaseIds) {
     const key = releaseIds.isrc || releaseIds.icpn || releaseIds.grid
     if (!key) {
@@ -193,13 +197,18 @@ export const releaseRepo = {
       where 1=1
 
       -- pending publish
-      $${
-        params.pendingPublish
-          ? sql` and status in ('Parsed', 'Failed') and publishErrorCount < 5 `
-          : sql``
-      }
+      $${ifdef(
+        params.pendingPublish,
+        sql`
+          and status in (
+            ${ReleaseProcessingStatus.PublishPending},
+            ${ReleaseProcessingStatus.Failed},
+            ${ReleaseProcessingStatus.DeletePending}
+          )
+          and publishErrorCount < 5 `
+      )}
 
-      $${params.status ? sql` and status = ${params.status} ` : sql``}
+      $${ifdef(params.status, sql` and status = ${params.status} `)}
 
       order by xmlUrl, ref
     `)
@@ -245,7 +254,7 @@ export const releaseRepo = {
 
       const status: ReleaseRow['status'] = release.problems.length
         ? ReleaseProcessingStatus.Blocked
-        : ReleaseProcessingStatus.Parsed
+        : ReleaseProcessingStatus.PublishPending
 
       dbUpsert('releases', {
         key,
@@ -316,4 +325,8 @@ function dbUpsert(table: string, data: Record<string, any>) {
     insert into ${table} (${fields}) values (${qs})
     on conflict do update set ${excludes}`
   return toStmt(rawSql).run(...Object.values(data))
+}
+
+function ifdef(obj: any, snippet: any) {
+  return Boolean(obj) ? snippet : sql``
 }
