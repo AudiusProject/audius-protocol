@@ -3,11 +3,6 @@ import { Logger } from '../Logger'
 
 import type { DiscoveryNodeSelectorServiceConfigInternal } from './types'
 
-/**
- * The name of the service for Discovery Node
- */
-export const DISCOVERY_SERVICE_NAME = 'discovery-node'
-
 export const getDefaultDiscoveryNodeSelectorConfig = (
   config: SdkServicesConfig
 ): DiscoveryNodeSelectorServiceConfigInternal => ({
