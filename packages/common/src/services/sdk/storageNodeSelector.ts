@@ -1,11 +1,16 @@
 import type { AuthService, StorageNodeSelectorService } from '@audius/sdk'
-import { StorageNodeSelector } from '@audius/sdk'
+import {
+  StorageNodeSelector,
+  developmentConfig,
+  getDefaultStorageNodeSelectorConfig,
+  productionConfig,
+  stagingConfig
+} from '@audius/sdk'
 
 import { Maybe } from '~/utils/typeUtils'
 
 import { Env } from '../env'
 
-import { getBootstrapNodes } from './bootstrapNodes'
 import { DiscoveryNodeSelectorService } from './discovery-node-selector'
 
 let storageNodeSelectorPromise: Maybe<Promise<StorageNodeSelectorService>>
@@ -20,9 +25,15 @@ const makeStorageNodeSelector = async (config: StorageNodeSelectorConfig) => {
   const { discoveryNodeSelectorService, auth, env } = config
   const discoveryNodeSelector = await discoveryNodeSelectorService.getInstance()
   return new StorageNodeSelector({
+    ...getDefaultStorageNodeSelectorConfig(
+      config.env.ENVIRONMENT === 'development'
+        ? developmentConfig
+        : config.env.ENVIRONMENT === 'staging'
+        ? stagingConfig
+        : productionConfig
+    ),
     auth,
-    discoveryNodeSelector,
-    bootstrapNodes: getBootstrapNodes(env)
+    discoveryNodeSelector
   })
 }
 

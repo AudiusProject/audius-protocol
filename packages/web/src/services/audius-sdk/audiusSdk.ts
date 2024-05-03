@@ -1,18 +1,16 @@
 import {
-  sdk,
-  AudiusSdk,
   AudiusLibs,
-  AntiAbuseOracleSelector
+  AudiusSdk,
+  sdk,
+  Configuration,
+  SolanaRelay
 } from '@audius/sdk'
 
 import { waitForLibsInit } from 'services/audius-backend/eagerLoadUtils'
 import { discoveryNodeSelectorService } from 'services/audius-sdk/discoveryNodeSelector'
-import { getStorageNodeSelector } from 'services/audius-sdk/storageNodeSelector'
-import { makeEntityManagerInstance } from 'services/entity-manager'
 import { env } from 'services/env'
 
 import { auth } from './auth'
-import { claimableTokensService, rewardManagerService } from './solana'
 
 declare global {
   interface Window {
@@ -33,20 +31,37 @@ const initSdk = async () => {
   console.debug('[audiusSdk] Waiting for libs init...')
   await waitForLibsInit()
   console.debug('[audiusSdk] Libs initted, initializing SDK...')
+
+  // For now, the only solana relay we want to use is on DN 1, so hardcode
+  // the selection there.
+  const solanaRelay = new SolanaRelay(
+    new Configuration({
+      basePath: '/solana',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      middleware: [
+        {
+          pre: async (context) => {
+            const endpoint = env.SOLANA_RELAY_ENDPOINT
+            const url = `${endpoint}${context.url}`
+            return { url, init: context.init }
+          }
+        }
+      ]
+    })
+  )
+
+  // Overrides some DN configuration from optimizely
   const discoveryNodeSelector = await discoveryNodeSelectorService.getInstance()
+
   const audiusSdk = sdk({
     appName: 'audius-client',
+    environment: env.ENVIRONMENT,
     services: {
       discoveryNodeSelector,
-      entityManager: makeEntityManagerInstance(discoveryNodeSelector),
-      auth,
-      storageNodeSelector: await getStorageNodeSelector(),
-      claimableTokensClient: claimableTokensService,
-      rewardManagerClient: rewardManagerService,
-      antiAbuseOracleSelector: new AntiAbuseOracleSelector({
-        endpoints: [env.AAO_ENDPOINT!],
-        registeredAddresses: env.ORACLE_ETH_ADDRESSES?.split(',') ?? []
-      })
+      solanaRelay,
+      auth
     }
   })
   console.debug('[audiusSdk] SDK initted.')

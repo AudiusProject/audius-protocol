@@ -1,6 +1,7 @@
 import {
   developmentConfig,
   DiscoveryNodeSelector,
+  getDefaultDiscoveryNodeSelectorConfig,
   productionConfig,
   stagingConfig
 } from '@audius/sdk'
@@ -48,7 +49,7 @@ export class DiscoveryNodeSelectorService {
         ? stagingConfig
         : productionConfig
 
-    const { minVersion, discoveryNodes } = bootstrapConfig
+    const { minVersion, discoveryNodes } = bootstrapConfig.network
 
     const maxBlockDiff =
       getRemoteVar(IntKeys.DISCOVERY_NODE_MAX_BLOCK_DIFF) ?? undefined
@@ -66,6 +67,7 @@ export class DiscoveryNodeSelectorService {
       getRemoteVar(IntKeys.DISCOVERY_PROVIDER_SELECTION_TIMEOUT_MS) ?? undefined
 
     const dnSelector = new DiscoveryNodeSelector({
+      ...getDefaultDiscoveryNodeSelectorConfig(bootstrapConfig),
       healthCheckThresholds,
       blocklist,
       requestTimeout,
