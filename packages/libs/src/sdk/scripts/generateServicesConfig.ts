@@ -4,7 +4,7 @@ import path from 'path'
 import { EthContracts } from '../../services/ethContracts'
 import { EthWeb3Manager } from '../../services/ethWeb3Manager'
 import { IdentityService } from '../../services/identity'
-import type { ServicesConfig } from '../config/types'
+import type { ContractBootstrapConfig } from '../config/types'
 
 const { writeFile } = promises
 
@@ -56,7 +56,7 @@ const envConfigs: Record<'staging' | 'production', EnvironmentConfig> = {
   }
 }
 
-const devConfig: ServicesConfig = {
+const devConfig: ContractBootstrapConfig = {
   minVersion: '0.0.0',
   discoveryNodes: [
     {
@@ -73,18 +73,12 @@ const devConfig: ServicesConfig = {
       endpoint: 'http://audius-protocol-creator-node-1'
     }
   ],
-  entityManagerContractAddress: '0x254dffcd3277C0b1660F6d42EFbB754edaBAbC2B',
-  web3ProviderUrl: 'http://audius-protocol-poa-ganache-1',
-  identityServiceUrl: 'http://audius-protocol-identity-service-1',
-  antiAbuseOracleNodes: {
-    endpoints: ['http://audius-protocol-anti-abuse-oracle-1:8000'],
-    registeredAddresses: ['0xF0D5BC18421fa04D0a2A2ef540ba5A9f04014BE3']
-  }
+  antiAbuseOracleNodeWallets: ['0xF0D5BC18421fa04D0a2A2ef540ba5A9f04014BE3']
 }
 
 const generateServicesConfig = async (
   config: EnvironmentConfig
-): Promise<ServicesConfig> => {
+): Promise<ContractBootstrapConfig> => {
   const contracts = new EthContracts({
     ethWeb3Manager: new EthWeb3Manager({
       identityService: new IdentityService({
@@ -128,10 +122,7 @@ const generateServicesConfig = async (
   if (!antiAbuseAddresses || antiAbuseAddresses.length === 0) {
     throw Error('Anti Abuse node services not found')
   }
-  const antiAbuseOracleNodes = {
-    endpoints: config.AAO_ENDPOINTS,
-    registeredAddresses: antiAbuseAddresses
-  }
+  const antiAbuseOracleNodeWallets = antiAbuseAddresses
 
   const minVersion = await contracts.getCurrentVersion('discovery-node')
   return {
@@ -147,10 +138,7 @@ const generateServicesConfig = async (
       endpoint,
       delegateOwnerWallet
     })),
-    antiAbuseOracleNodes,
-    web3ProviderUrl: config.WEB3_PROVIDER_URL,
-    entityManagerContractAddress: config.ENTITY_MANAGER_CONTRACT_ADDRESS,
-    identityServiceUrl: config.IDENTITY_SERVICE_URL
+    antiAbuseOracleNodeWallets
   }
 }
 
@@ -158,7 +146,7 @@ const writeServicesConfig = async () => {
   const production = await generateServicesConfig(envConfigs.production)
   const staging = await generateServicesConfig(envConfigs.staging)
   const development = devConfig
-  const config: Record<string, ServicesConfig> = {
+  const config: Record<string, ContractBootstrapConfig> = {
     development,
     staging,
     production
@@ -171,8 +159,8 @@ const writeServicesConfig = async () => {
  * DO NOT EDIT MANUALLY!
  */
 /* eslint-disable prettier/prettier */
-import type { ServicesConfig } from './types'
-export const servicesConfig: ServicesConfig = ${JSON.stringify(
+import type { ContractBootstrapConfig } from './types'
+export const servicesConfig: ContractBootstrapConfig = ${JSON.stringify(
         config[env],
         undefined,
         2

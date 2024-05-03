@@ -13,15 +13,22 @@ export const defaultAntiAbuseOracleSelectorConfig: Record<
   AntiAbuseOracleSelectorConfigInternal
 > = {
   production: {
-    ...productionConfig.antiAbuseOracleNodes,
+    registeredAddresses: productionConfig.antiAbuseOracleNodeWallets,
+    endpoints: [
+      'https://antiabuseoracle.audius.co',
+      'https://audius-oracle.creatorseed.com',
+      'https://oracle.audius.endl.net'
+    ],
     logger: new Logger()
   },
   staging: {
-    ...stagingConfig.antiAbuseOracleNodes,
+    registeredAddresses: stagingConfig.antiAbuseOracleNodeWallets,
+    endpoints: ['https://antiabuseoracle.staging.audius.co'],
     logger: new Logger({ logLevel: 'debug' })
   },
   development: {
-    ...developmentConfig.antiAbuseOracleNodes,
+    registeredAddresses: developmentConfig.antiAbuseOracleNodeWallets,
+    endpoints: ['http://audius-protocol-anti-abuse-oracle-1:8000'],
     logger: new Logger({ logLevel: 'debug' })
   }
 }

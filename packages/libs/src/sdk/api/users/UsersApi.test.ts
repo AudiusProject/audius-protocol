@@ -16,7 +16,8 @@ import {
   AppAuth,
   ClaimableTokensClient,
   SolanaRelay,
-  SolanaRelayWalletAdapter
+  SolanaRelayWalletAdapter,
+  defaultClaimableTokensConfig
 } from '../../services'
 import { DiscoveryNodeSelector } from '../../services/DiscoveryNodeSelector'
 import { EntityManager } from '../../services/EntityManager'
@@ -58,22 +59,23 @@ jest
     } as any
   })
 
+let users: UsersApi
+
+const auth = new AppAuth('key', 'secret')
+const logger = new Logger()
+const discoveryNodeSelector = new DiscoveryNodeSelector()
+const storageNodeSelector = new StorageNodeSelector({
+  auth,
+  discoveryNodeSelector,
+  logger
+})
+const solanaRelay = new SolanaRelay()
+const claimableTokens = new ClaimableTokensClient({
+  ...defaultClaimableTokensConfig.development,
+  solanaWalletAdapter: new SolanaRelayWalletAdapter({ solanaRelay })
+})
+
 describe('UsersApi', () => {
-  let users: UsersApi
-
-  const auth = new AppAuth('key', 'secret')
-  const logger = new Logger()
-  const discoveryNodeSelector = new DiscoveryNodeSelector()
-  const storageNodeSelector = new StorageNodeSelector({
-    auth,
-    discoveryNodeSelector,
-    logger
-  })
-  const solanaRelay = new SolanaRelay()
-  const claimableTokens = new ClaimableTokensClient({
-    solanaWalletAdapter: new SolanaRelayWalletAdapter({ solanaRelay })
-  })
-
   beforeAll(() => {
     users = new UsersApi(
       new Configuration(),
@@ -261,10 +263,10 @@ describe('UsersApi', () => {
       // Derived from fake eth wallets
       const userBanks: Record<string, PublicKey> = {
         [senderUserId]: new PublicKey(
-          '8sMVcgngd3ZBSAuQA6weYZn9WeXtU5TqZA8sAb9q1CS'
+          '3rbiBEM3Qf9jyx64kZ8TDBwMSFPn4yv52eTNHLXMn5gs'
         ),
         [receiverUserId]: new PublicKey(
-          'C75DLcu2XTbBVjjCZwKDxPyCnEvaRAkcTMKJ3woNgNWg'
+          'BTEiebv6WfDi4rxFhNNnbaRn8wKJ7a9eQArHmnAeUU7g'
         )
       }
 

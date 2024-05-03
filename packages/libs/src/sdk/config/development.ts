@@ -3,8 +3,8 @@
  * DO NOT EDIT MANUALLY!
  */
 /* eslint-disable prettier/prettier */
-import type { ServicesConfig } from './types'
-export const servicesConfig: ServicesConfig = {
+import type { ContractBootstrapConfig } from './types'
+export const servicesConfig: ContractBootstrapConfig = {
   "minVersion": "0.0.0",
   "discoveryNodes": [
     {
@@ -19,15 +19,7 @@ export const servicesConfig: ServicesConfig = {
       "endpoint": "http://audius-protocol-creator-node-1"
     }
   ],
-  "entityManagerContractAddress": "0x254dffcd3277C0b1660F6d42EFbB754edaBAbC2B",
-  "web3ProviderUrl": "http://audius-protocol-poa-ganache-1",
-  "identityServiceUrl": "http://audius-protocol-identity-service-1",
-  "antiAbuseOracleNodes": {
-    "endpoints": [
-      "http://audius-protocol-anti-abuse-oracle-1:8000"
-    ],
-    "registeredAddresses": [
-      "0xF0D5BC18421fa04D0a2A2ef540ba5A9f04014BE3"
-    ]
-  }
+  "antiAbuseOracleNodeWallets": [
+    "0xF0D5BC18421fa04D0a2A2ef540ba5A9f04014BE3"
+  ]
 }

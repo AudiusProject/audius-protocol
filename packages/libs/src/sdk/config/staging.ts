@@ -3,8 +3,8 @@
  * DO NOT EDIT MANUALLY!
  */
 /* eslint-disable prettier/prettier */
-import type { ServicesConfig } from './types'
-export const servicesConfig: ServicesConfig = {
+import type { ContractBootstrapConfig } from './types'
+export const servicesConfig: ContractBootstrapConfig = {
   "minVersion": "0.6.0",
   "discoveryNodes": [
     {
@@ -62,17 +62,9 @@ export const servicesConfig: ServicesConfig = {
       "delegateOwnerWallet": "0x4c88d2c0f4c4586b41621aD6e98882ae904B98f6"
     }
   ],
-  "antiAbuseOracleNodes": {
-    "endpoints": [
-      "https://antiabuseoracle.staging.audius.co"
-    ],
-    "registeredAddresses": [
-      "0x00b6462e955dA5841b6D9e1E2529B830F00f31Bf",
-      "0x57B57efFA54ba37DBF8A06B9c42E7611e84BDe6F",
-      "0xF617bbc0913bAE0a13f6D4A19eCDE5Aa07B0fF0A"
-    ]
-  },
-  "web3ProviderUrl": "https://poa-gateway.staging.audius.co",
-  "entityManagerContractAddress": "0x1Cd8a543596D499B9b6E7a6eC15ECd2B7857Fd64",
-  "identityServiceUrl": "https://identityservice.staging.audius.co"
+  "antiAbuseOracleNodeWallets": [
+    "0x00b6462e955dA5841b6D9e1E2529B830F00f31Bf",
+    "0x57B57efFA54ba37DBF8A06B9c42E7611e84BDe6F",
+    "0xF617bbc0913bAE0a13f6D4A19eCDE5Aa07B0fF0A"
+  ]
 }
