@@ -1,6 +1,11 @@
 import { createApi } from '~/audius-query'
 import { Id } from './utils'
-import { managedUserListFromSDK, userManagerListFromSDK } from '~/models'
+import {
+  ID,
+  UserMetadata,
+  managedUserListFromSDK,
+  userManagerListFromSDK
+} from '~/models'
 
 type ResetPasswordArgs = {
   email: string
@@ -20,6 +25,19 @@ const accountApi = createApi({
         type: 'query'
       }
     },
+    getCurrentWeb3User: {
+      async fetch(_, { audiusBackend }) {
+        const libs = await audiusBackend.getAudiusLibsTyped()
+        // TODO: What happens in the cache if something here is null?
+        // Note: This cast is mostly safe, but is missing info populated in AudiusBackend.getAccount()
+        // Okay for now as that info isn't generally available on
+        return libs.Account?.getWeb3User() as UserMetadata | null
+      },
+      options: {
+        type: 'query',
+        schemaKey: 'currentWeb3User'
+      }
+    },
     resetPassword: {
       async fetch(args: ResetPasswordArgs, context) {
         const { email, password } = args
@@ -33,13 +51,10 @@ const accountApi = createApi({
       }
     },
     getManagedAccounts: {
-      async fetch(_, { audiusSdk, audiusBackend }) {
+      async fetch({ userId }: { userId: ID }, { audiusSdk }) {
         const sdk = await audiusSdk()
-        // TODO: Look this up in a better way
-        // https://linear.app/audius/issue/PAY-2816/look-up-parentchild-ids-from-a-better-place
-        const currentUserId = (await audiusBackend.getAccount())?.user_id
         const managedUsers = await sdk.full.users.getManagedUsers({
-          id: Id.parse(currentUserId)
+          id: Id.parse(userId)
         })
 
         const { data = [] } = managedUsers
@@ -51,13 +66,10 @@ const accountApi = createApi({
       }
     },
     getManagers: {
-      async fetch(_, { audiusSdk, audiusBackend }) {
+      async fetch({ userId }: { userId: ID }, { audiusSdk }) {
         const sdk = await audiusSdk()
-        // TODO: Look this up in a better way
-        // https://linear.app/audius/issue/PAY-2816/look-up-parentchild-ids-from-a-better-place
-        const currentUserId = (await audiusBackend.getAccount())?.user_id
         const managedUsers = await sdk.full.users.getManagers({
-          id: Id.parse(currentUserId)
+          id: Id.parse(userId)
         })
 
         const { data = [] } = managedUsers
@@ -71,7 +83,11 @@ const accountApi = createApi({
   }
 })
 
-export const { useGetCurrentUserId, useResetPassword, useGetManagedAccounts } =
-  accountApi.hooks
+export const {
+  useGetCurrentUserId,
+  useGetCurrentWeb3User,
+  useResetPassword,
+  useGetManagedAccounts
+} = accountApi.hooks
 
 export const accountApiReducer = accountApi.reducer

@@ -1,7 +1,13 @@
-import { ManagedUserMetadata, User } from '@audius/common/models'
-import { Box, Flex, IconUserGroup, Text, useTheme } from '@audius/harmony'
+import {
+  ID,
+  ManagedUserMetadata,
+  User,
+  UserMetadata
+} from '@audius/common/models'
+import { Box, Flex, IconUserArrowRotate, Text, useTheme } from '@audius/harmony'
 import styled from '@emotion/styled'
 import { AccountSwitcherRow } from './AccountSwitcherRow'
+import { useCallback } from 'react'
 
 const messages = {
   switchAccount: 'Switch Account',
@@ -10,7 +16,9 @@ const messages = {
 
 export type AccountListContentProps = {
   accounts: ManagedUserMetadata[]
-  managerAccount: User
+  managerAccount: UserMetadata
+  currentUserId: ID
+  onAccountSelected: (user: UserMetadata) => void
 }
 
 const StyledList = styled.ul`
@@ -20,9 +28,20 @@ const StyledList = styled.ul`
 
 export const AccountListContent = ({
   accounts,
-  managerAccount
+  managerAccount,
+  currentUserId,
+  onAccountSelected
 }: AccountListContentProps) => {
   const theme = useTheme()
+
+  const onUserSelected = useCallback(
+    (user: UserMetadata) => {
+      if (user.user_id !== currentUserId) {
+        onAccountSelected(user)
+      }
+    },
+    [currentUserId, onAccountSelected]
+  )
   // TODO: aria-labels
   return (
     <Flex
@@ -41,14 +60,21 @@ export const AccountListContent = ({
         pv='s'
         gap='s'
       >
-        <IconUserGroup size='s' color='default' />
+        <IconUserArrowRotate size='s' color='default' />
         <Text variant='title' size='m' color='default'>
           {messages.switchAccount}
         </Text>
       </Flex>
       <StyledList role='menu' tabIndex={-1}>
-        <li role='menuitem' tabIndex={0}>
-          <AccountSwitcherRow user={managerAccount} isSelected />
+        <li
+          role='menuitem'
+          tabIndex={0}
+          onClick={() => onAccountSelected(managerAccount)}
+        >
+          <AccountSwitcherRow
+            user={managerAccount}
+            isSelected={currentUserId === managerAccount.user_id}
+          />
         </li>
         <Box
           ph='l'
@@ -66,11 +92,14 @@ export const AccountListContent = ({
           <li
             key={user.user_id}
             role='menuitem'
-            onClick={() => console.log(`clicked ${user.user_id}`)}
+            onClick={() => onAccountSelected(user)}
             tabIndex={-1}
           >
             <Box borderBottom={i < accounts.length - 1 ? 'default' : undefined}>
-              <AccountSwitcherRow user={user} />
+              <AccountSwitcherRow
+                user={user}
+                isSelected={currentUserId === user.user_id}
+              />
             </Box>
           </li>
         ))}

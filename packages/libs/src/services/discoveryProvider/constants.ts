@@ -1,5 +1,7 @@
 export const DISCOVERY_PROVIDER_TIMESTAMP =
   '@audius/libs:discovery-node-timestamp'
+export const DISCOVERY_PROVIDER_USER_WALLET_OVERRIDE =
+  '@audius/user-wallet-override'
 export const DISCOVERY_SERVICE_NAME = 'discovery-node'
 export const DEFAULT_UNHEALTHY_BLOCK_DIFF = 15
 export const REGRESSED_MODE_TIMEOUT = 2 * 60 * 1000 // two minutes

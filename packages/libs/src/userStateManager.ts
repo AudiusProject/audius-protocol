@@ -19,11 +19,13 @@ type UserStateManagerConfig = {
  */
 export class UserStateManager {
   currentUser: CurrentUser | null
+  web3User: CurrentUser | null
   localStorage?: LocalStorage
 
   constructor({ localStorage }: UserStateManagerConfig) {
     // Should reflect the same fields as discovery node's /users?handle=<handle>
     this.currentUser = null
+    this.web3User = null
     this.localStorage = localStorage
   }
 
@@ -41,12 +43,24 @@ export class UserStateManager {
     }
   }
 
+  setWeb3User(user: CurrentUser) {
+    this.web3User = user
+  }
+
   getCurrentUser() {
     return this.currentUser
   }
 
+  getWeb3User() {
+    return this.web3User
+  }
+
   getCurrentUserId() {
     return this.currentUser ? this.currentUser.user_id : null
+  }
+
+  getWeb3UserId() {
+    return this.web3User ? this.web3User.user_id : null
   }
 
   async clearUser() {
