@@ -10,6 +10,7 @@ import {
   accountSelectors,
   cacheCollectionsSelectors
 } from '@audius/common/store'
+import { formatCount } from '@audius/common/utils'
 import { Flex, Text } from '@audius/harmony'
 import IconHeart from '@audius/harmony/src/assets/icons/Heart.svg'
 import IconRepost from '@audius/harmony/src/assets/icons/Repost.svg'
@@ -34,6 +35,7 @@ const messages = {
 
 type CollectionCardProps = Omit<CardProps, 'id'> & {
   id: ID
+  noNavigation?: boolean
 }
 
 const cardSizeToCoverArtSizeMap = {
@@ -45,7 +47,7 @@ const cardSizeToCoverArtSizeMap = {
 
 export const CollectionCard = forwardRef(
   (props: CollectionCardProps, ref: Ref<HTMLDivElement>) => {
-    const { id, size, onClick, ...other } = props
+    const { id, size, onClick, noNavigation, ...other } = props
 
     const collection = useSelector((state) => getCollection(state, { id }))
     const accountId = useSelector(getUserId)
@@ -57,9 +59,10 @@ export const CollectionCard = forwardRef(
     const handleClick = useCallback(
       (e: MouseEvent<HTMLDivElement>) => {
         onClick?.(e)
+        if (noNavigation) return
         handleNavigate(e)
       },
-      [handleNavigate, onClick]
+      [noNavigation, handleNavigate, onClick]
     )
 
     if (!collection) return null
@@ -122,7 +125,7 @@ export const CollectionCard = forwardRef(
               <Flex gap='xs' alignItems='center'>
                 <IconRepost size='s' color='subdued' title={messages.repost} />
                 <Text variant='label' color='subdued'>
-                  {repost_count}
+                  {formatCount(repost_count)}
                 </Text>
               </Flex>
               <Flex gap='xs' alignItems='center'>
@@ -132,7 +135,7 @@ export const CollectionCard = forwardRef(
                   title={messages.favorites}
                 />
                 <Text variant='label' color='subdued'>
-                  {save_count}
+                  {formatCount(save_count)}
                 </Text>
               </Flex>
               {isPurchase && !isOwner ? (

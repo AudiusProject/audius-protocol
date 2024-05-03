@@ -24,12 +24,14 @@ import {
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 
+import { CollectionCard } from 'components/collection'
 import Header from 'components/header/mobile/Header'
 import { HeaderContext } from 'components/header/mobile/HeaderContextProvider'
 import CardLineup from 'components/lineup/CardLineup'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
 import { useMainPageHeader } from 'components/nav/store/context'
+import { UserCard } from 'components/user-card'
 import { useIsUSDCEnabled } from 'hooks/useIsUSDCEnabled'
 import useTabs from 'hooks/useTabs/useTabs'
 import { smartCollectionIcons } from 'pages/collection-page/smartCollectionIcons'
@@ -49,8 +51,6 @@ import { justForYou } from '../desktop/ExplorePage'
 
 import ColorTile from './ColorTile'
 import styles from './ExplorePage.module.css'
-import { CollectionCard } from 'components/collection'
-import { UserCard } from 'components/user-card'
 const { getTab } = explorePageSelectors
 const { setTab } = explorePageActions
 
