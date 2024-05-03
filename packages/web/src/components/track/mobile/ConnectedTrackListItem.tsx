@@ -7,8 +7,7 @@ import {
   FavoriteSource,
   ID,
   isContentUSDCPurchaseGated,
-  ModalSource,
-  Track
+  ModalSource
 } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import {
