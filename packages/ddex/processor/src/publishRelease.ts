@@ -31,32 +31,20 @@ export async function publishValidPendingReleases(opts?: {
     // todo: remove
     parsed.audiusUser = 'KKa311z'
 
-    if (row.entityId) {
-      // todo: need better state tracking for updates
-      // simplest way... if parsedJson != publishedJson issue update
-      //    the risk being that this might incite a ton of needless updates if not careful
-      // could do... if xmlUrl != publishedXmlUrl
-      //    but that wouldn't handle code change type of thing
-
-      // for now, update all published releases when `republish` flag is set vai:
-      //   npx tsx cli publish --republish
-
-      if (opts?.republish) {
-        if (row.entityType == 'track') {
-          await updateTrack(sdk, row, parsed)
-        } else if (row.entityType == 'album') {
-          await updateAlbum(sdk, row, parsed)
-        } else {
-          console.log('unknown entity type', row.entityType)
-        }
+    if (row.status == ReleaseProcessingStatus.DeletePending) {
+      // delete
+      deleteRelease(sdk, row)
+    } else if (row.entityId) {
+      // update
+      if (row.entityType == 'track') {
+        await updateTrack(sdk, row, parsed)
+      } else if (row.entityType == 'album') {
+        await updateAlbum(sdk, row, parsed)
+      } else {
+        console.log('unknown entity type', row.entityType)
       }
-
-      releaseRepo.update({
-        key: row.key,
-        status: ReleaseProcessingStatus.Published,
-      })
     } else {
-      // publish new release
+      // create
       try {
         await publishRelease(sdk, row, parsed)
       } catch (e: any) {
@@ -117,11 +105,11 @@ export async function publishRelease(
     console.log(result)
 
     // on success set publishedAt, entityId, blockhash
-    dbUpdate('releases', 'key', {
+    releaseRepo.update({
       key: releaseRow.key,
-      status: 'Published',
+      status: ReleaseProcessingStatus.Published,
       entityType: 'album',
-      entityId: result.albumId,
+      entityId: result.albumId!,
       blockNumber: result.blockNumber,
       blockHash: result.blockHash,
       publishedAt: new Date().toISOString(),
@@ -177,8 +165,13 @@ async function updateTrack(
     metadata: metas[0],
   })
 
-  console.log('update track', result)
-  // todo: record update to db
+  releaseRepo.update({
+    key: row.key,
+    status: ReleaseProcessingStatus.Published,
+    ...result,
+  })
+
+  return result
 }
 
 export function prepareTrackMetadatas(release: DDEXRelease) {
@@ -201,7 +194,7 @@ export function prepareTrackMetadatas(release: DDEXRelease) {
       const meta: UploadTrackRequest['metadata'] = {
         genre: audiusGenre,
         title: sound.title,
-        isrc: release.isrc,
+        isrc: release.releaseIds.isrc,
         releaseDate,
         copyrightLine,
         producerCopyrightLine,
@@ -236,13 +229,17 @@ async function updateAlbum(
     metadata: meta,
   })
 
-  console.log('UPDATE ALBUM', result)
-  // todo: record update to db blocknumber / blockhash
+  releaseRepo.update({
+    key: row.key,
+    status: ReleaseProcessingStatus.Published,
+    ...result,
+  })
+
+  return result
 }
 
 export async function deleteRelease(sdk: AudiusSdk, r: ReleaseRow) {
   const userId = r._parsed!.audiusUser!
-  // const userId = 'KKa311z'
   const entityId = r.entityId
 
   if (!userId || !entityId) {
@@ -255,26 +252,21 @@ export async function deleteRelease(sdk: AudiusSdk, r: ReleaseRow) {
       trackId: entityId,
       userId,
     })
-
-    releaseRepo.update({
-      key: r.key,
-      status: ReleaseProcessingStatus.Deleted,
-      // update blockhash / blockno?
-    })
-    console.log('deleted track', result)
-    return result
+    return onDeleted(result)
   } else if (r.entityType == 'album') {
     const result = await sdk.albums.deleteAlbum({
       albumId: entityId,
       userId,
     })
+    return onDeleted(result)
+  }
 
+  function onDeleted(result: any) {
     releaseRepo.update({
       key: r.key,
       status: ReleaseProcessingStatus.Deleted,
-      // update blockhash / blockno?
+      ...result,
     })
-    console.log('deleted album', result)
     return result
   }
 }

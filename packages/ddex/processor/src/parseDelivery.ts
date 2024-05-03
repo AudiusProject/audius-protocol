@@ -4,37 +4,41 @@ import decompress from 'decompress'
 import { mkdtemp, readFile, readdir } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { releaseRepo, userRepo, xmlRepo } from './db'
+import { ReleaseProcessingStatus, releaseRepo, userRepo, xmlRepo } from './db'
 import { omitEmpty } from './util'
 
 type CH = cheerio.Cheerio<cheerio.Element>
 
+export type DDEXReleaseIds = {
+  party_id?: string
+  catalog_number?: string
+  icpn?: string
+  grid?: string
+  isan?: string
+  isbn?: string
+  ismn?: string
+  isrc?: string
+  issn?: string
+  istc?: string
+  iswc?: string
+  mwli?: string
+  sici?: string
+  proprietary_id?: string
+}
+
+export type DDEXPurgeRelease = {
+  releaseIds: DDEXReleaseIds
+}
+
 export type DDEXRelease = {
   ref: string
-  isrc?: string
-  icpn?: string
   title: string
   subTitle?: string
   genre: string
   subGenre: string
   releaseDate: string
   releaseType: string
-  releaseIds: {
-    party_id?: string
-    catalog_number?: string
-    icpn?: string
-    grid?: string
-    isan?: string
-    isbn?: string
-    ismn?: string
-    isrc?: string
-    issn?: string
-    istc?: string
-    iswc?: string
-    mwli?: string
-    sici?: string
-    proprietary_id?: string
-  }
+  releaseIds: DDEXReleaseIds
 
   isMainRelease: boolean
   audiusGenre?: Genre
@@ -178,17 +182,58 @@ export async function parseDdexXmlFile(xmlUrl: string) {
 
 // actually parse ddex xml
 export function parseDdexXml(xmlUrl: string, xmlText: string) {
-  // todo: would be nice to skip this on reParse
-  xmlRepo.upsert(xmlUrl, xmlText)
-
   const $ = cheerio.load(xmlText, { xmlMode: true })
 
+  const messageTimestamp = $('MessageCreatedDateTime').first().text()
+  const rawTagName = $.root().children().first().prop('name')
+  const tagName = [
+    'NewReleaseMessage',
+    'PurgeReleaseMessage',
+    'ManifestMessage',
+  ].find((n) => rawTagName.includes(n))
+  console.log(xmlUrl, tagName)
+
+  // todo: would be nice to skip this on reParse
+  xmlRepo.upsert({
+    xmlUrl,
+    xmlText,
+    messageTimestamp,
+  })
+
+  if (tagName == 'ManifestMessage') {
+    console.log('todo: batch')
+  } else if (tagName == 'PurgeReleaseMessage') {
+    const purge = parsePurge($)
+    const key = releaseRepo.chooseReleaseId(purge.releaseIds)
+    const prior = releaseRepo.get(key)
+    if (!prior) {
+      console.log(`got purge release but no prior ${key}`)
+    } else {
+      releaseRepo.update({
+        key,
+        status: ReleaseProcessingStatus.DeletePending,
+        xmlUrl,
+      })
+    }
+    return purge
+  } else if (tagName == 'NewReleaseMessage') {
+    // create or replace this release in db
+    const releases = parseReleaseXml($)
+    for (const release of releases) {
+      releaseRepo.upsert(xmlUrl, release)
+    }
+    return releases
+  } else {
+    console.log('unknown tagname', tagName)
+  }
+}
+
+//
+// parseRelease
+//
+export function parseReleaseXml($: cheerio.CheerioAPI) {
   function toTexts($doc: CH) {
     return $doc.map((_, el) => $(el).text()).get()
-  }
-
-  function toText($el: CH) {
-    return $el.first().text().trim()
   }
 
   function cline($el: CH) {
@@ -404,8 +449,6 @@ export function parseDdexXml(xmlUrl: string, xmlText: string) {
 
       const release: DDEXRelease = {
         ref,
-        isrc: $el.find('ISRC').text(),
-        icpn: $el.find('ICPN').text(),
         title: $el.find('ReferenceTitle TitleText').text(),
         subTitle: $el.find('ReferenceTitle SubTitle').text(),
         artists: parseContributor('DisplayArtist', $el),
@@ -477,12 +520,16 @@ export function parseDdexXml(xmlUrl: string, xmlText: string) {
     }
   }
 
-  // create or replace this release in db
-  for (const release of releases) {
-    releaseRepo.upsert(xmlUrl, release)
-  }
-
   return releases
+}
+
+//
+// parse purge
+//
+
+function parsePurge($: cheerio.CheerioAPI): DDEXPurgeRelease {
+  const releaseIds = parseReleaseIds($('PurgedRelease').first())
+  return { releaseIds }
 }
 
 //
@@ -493,7 +540,7 @@ function toText($el: CH) {
   return $el.first().text().trim()
 }
 
-export function parseReleaseIds($el: CH): DDEXRelease['releaseIds'] {
+export function parseReleaseIds($el: CH): DDEXReleaseIds {
   return omitEmpty({
     party_id: toText($el.find('ReleaseId > PartyId')),
     catalog_number: toText($el.find('ReleaseId > CatalogNumber')),

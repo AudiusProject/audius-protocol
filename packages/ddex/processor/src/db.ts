@@ -1,5 +1,5 @@
 import sql, { Database } from '@radically-straightforward/sqlite'
-import { DDEXRelease } from './parseDelivery'
+import { DDEXRelease, DDEXReleaseIds } from './parseDelivery'
 import { Statement } from 'better-sqlite3'
 
 const dbLocation = process.env.SQLITE_URL || 'data/dev.db'
@@ -13,6 +13,7 @@ db.migrate(
 create table if not exists xmls (
   xmlUrl text primary key,
   xmlText text not null,
+  messageTimestamp text not null,
   createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -55,6 +56,7 @@ create table if not exists s3markers (
 export type XmlRow = {
   xmlText: string
   xmlUrl: string
+  messageTimestamp: string
   createdAt: string
 }
 
@@ -70,6 +72,7 @@ export enum ReleaseProcessingStatus {
   Blocked = 'Blocked',
   Published = 'Published',
   Failed = 'Failed',
+  DeletePending = 'DeletePending',
   Deleted = 'Deleted',
 }
 
@@ -121,6 +124,10 @@ export const userRepo = {
     return db.all<UserRow>(sql`select * from users`)
   },
 
+  upsert(user: Partial<UserRow>) {
+    dbUpsert('users', user)
+  },
+
   match(artistNames: string[]) {
     const artistSet = new Set(artistNames.map(lowerAscii))
     const users = db.all<UserRow>(sql`select * from users`)
@@ -152,11 +159,8 @@ export const xmlRepo = {
     return db.get<XmlRow>(sql`select * from xmls where xmlUrl = ${xmlUrl}`)
   },
 
-  upsert(xmlUrl: string, xmlText: string) {
-    dbUpsert('xmls', {
-      xmlUrl,
-      xmlText,
-    })
+  upsert(row: Partial<XmlRow>) {
+    dbUpsert('xmls', row)
   },
 }
 
@@ -170,6 +174,16 @@ type FindReleaseParams = {
 }
 
 export const releaseRepo = {
+  chooseReleaseId(releaseIds: DDEXReleaseIds) {
+    const key = releaseIds.isrc || releaseIds.icpn || releaseIds.grid
+    if (!key) {
+      const msg = `failed to chooseReleaseId: ${JSON.stringify(releaseIds)}`
+      console.log(msg)
+      throw new Error(msg)
+    }
+    return key
+  },
+
   all(params?: FindReleaseParams) {
     params ||= {}
     const rows = db.all<ReleaseRow>(sql`
@@ -208,24 +222,40 @@ export const releaseRepo = {
   },
 
   upsert(xmlUrl: string, release: DDEXRelease) {
-    const key = release.isrc || release.icpn || release.releaseIds.grid
-    if (!key) {
-      console.log(`No ID for release`, release)
-      throw new Error('No ID for release')
-    }
+    const key = this.chooseReleaseId(release.releaseIds)
 
-    const status: ReleaseRow['status'] = release.problems.length
-      ? ReleaseProcessingStatus.Blocked
-      : ReleaseProcessingStatus.Parsed
+    db.transaction(() => {
+      const prior = releaseRepo.get(key)
+      const json = JSON.stringify(release)
 
-    dbUpsert('releases', {
-      key,
-      status,
-      ref: release.ref,
-      xmlUrl,
-      json: JSON.stringify(release),
-      updatedAt: new Date().toISOString(),
-    } as Partial<ReleaseRow>)
+      // if prior exists and is newer, skip
+      // this uses xmlUrl assuming the date is in the xmlUrl
+      // but would probably be better to use messageTimestamp
+      if (prior && prior.xmlUrl > xmlUrl) {
+        console.log(`skipping ${xmlUrl} because ${key} is newer`)
+        return
+      }
+
+      // noop
+      // may want some smarter json compare here too
+      // if this is causing spurious sdk updates to be issued
+      if (prior && prior.xmlUrl == xmlUrl && prior.json == json) {
+        return
+      }
+
+      const status: ReleaseRow['status'] = release.problems.length
+        ? ReleaseProcessingStatus.Blocked
+        : ReleaseProcessingStatus.Parsed
+
+      dbUpsert('releases', {
+        key,
+        status,
+        ref: release.ref,
+        xmlUrl,
+        json,
+        updatedAt: new Date().toISOString(),
+      } as Partial<ReleaseRow>)
+    })()
   },
 
   addPublishError(key: string, err: Error) {
@@ -273,7 +303,7 @@ export function dbUpdate(
   return toStmt(rawSql).run(...Object.values(data), data[pkField])
 }
 
-export function dbUpsert(table: string, data: Record<string, any>) {
+function dbUpsert(table: string, data: Record<string, any>) {
   const fields = Object.keys(data).join(',')
   const qs = Object.keys(data)
     .map(() => '?')
