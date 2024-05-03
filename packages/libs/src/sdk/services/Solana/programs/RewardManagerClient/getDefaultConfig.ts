@@ -1,6 +1,6 @@
 import { PublicKey } from '@solana/web3.js'
 
-import { SdkServicesConfig } from '../../../../config'
+import type { SdkServicesConfig } from '../../../../config/types'
 
 import type { RewardManagerClientConfigInternal } from './types'
 

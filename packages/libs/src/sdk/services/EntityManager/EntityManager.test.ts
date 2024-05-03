@@ -2,7 +2,7 @@ import type { EIP712TypedData } from 'eth-sig-util'
 import { rest } from 'msw'
 import { setupServer } from 'msw/node'
 
-import { developmentConfig } from '../../config'
+import { developmentConfig } from '../../config/development'
 import Web3 from '../../utils/web3'
 import type { AuthService } from '../Auth/types'
 import { DiscoveryNodeSelector } from '../DiscoveryNodeSelector'

@@ -6,7 +6,7 @@ import type { AbiItem } from 'web3-utils'
 
 import { abi as EntityManagerABI } from '../../../data-contracts/ABIs/EntityManager.json'
 import * as signatureSchemas from '../../../data-contracts/signatureSchemas'
-import { productionConfig } from '../../config'
+import { productionConfig } from '../../config/production'
 import { mergeConfigWithDefaults } from '../../utils/mergeConfigs'
 import Web3 from '../../utils/web3'
 import type { DiscoveryNodeSelectorService } from '../DiscoveryNodeSelector'

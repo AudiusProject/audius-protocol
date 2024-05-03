@@ -22,7 +22,9 @@ import { GrantsApi } from './api/grants/GrantsApi'
 import { PlaylistsApi } from './api/playlists/PlaylistsApi'
 import { TracksApi } from './api/tracks/TracksApi'
 import { UsersApi } from './api/users/UsersApi'
-import { developmentConfig, productionConfig, stagingConfig } from './config'
+import { developmentConfig } from './config/development'
+import { productionConfig } from './config/production'
+import { stagingConfig } from './config/staging'
 import {
   addAppNameMiddleware,
   addRequestSignatureMiddleware

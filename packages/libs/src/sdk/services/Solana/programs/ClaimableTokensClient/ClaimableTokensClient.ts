@@ -7,7 +7,7 @@ import {
   PublicKey
 } from '@solana/web3.js'
 
-import { productionConfig } from '../../../../config'
+import { productionConfig } from '../../../../config/production'
 import { mergeConfigWithDefaults } from '../../../../utils/mergeConfigs'
 import { parseParams } from '../../../../utils/parseParams'
 import type { Mint } from '../../types'

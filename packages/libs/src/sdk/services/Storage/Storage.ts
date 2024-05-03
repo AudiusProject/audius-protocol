@@ -2,7 +2,7 @@ import axios, { AxiosRequestConfig, AxiosResponse } from 'axios'
 import fetch from 'cross-fetch'
 import FormData from 'form-data'
 
-import { productionConfig } from '../../config'
+import { productionConfig } from '../../config/production'
 import { isNodeFile } from '../../types/File'
 import type { CrossPlatformFile as File } from '../../types/File'
 import { mergeConfigWithDefaults } from '../../utils/mergeConfigs'

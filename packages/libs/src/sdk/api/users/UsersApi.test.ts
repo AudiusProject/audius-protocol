@@ -12,7 +12,7 @@ import {
   VersionedTransaction
 } from '@solana/web3.js'
 
-import { developmentConfig } from '../../config'
+import { developmentConfig } from '../../config/development'
 import {
   AppAuth,
   ClaimableTokensClient,

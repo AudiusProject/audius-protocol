@@ -1,4 +1,4 @@
-import type { SdkServicesConfig } from '../../config'
+import type { SdkServicesConfig } from '../../config/types'
 import { Logger } from '../Logger'
 
 import type { AntiAbuseOracleSelectorConfigInternal } from './types'

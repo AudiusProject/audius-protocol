@@ -239,7 +239,7 @@ const writeServicesConfig = async () => {
  */
 /* eslint-disable prettier/prettier */
 import type { SdkServicesConfig } from './types'
-export const servicesConfig: SdkServicesConfig = ${JSON.stringify(
+export const ${env}Config: SdkServicesConfig = ${JSON.stringify(
         config[env],
         undefined,
         2

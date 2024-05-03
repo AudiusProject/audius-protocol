@@ -4,7 +4,7 @@
  */
 /* eslint-disable prettier/prettier */
 import type { SdkServicesConfig } from './types'
-export const servicesConfig: SdkServicesConfig = {
+export const productionConfig: SdkServicesConfig = {
   "network": {
     "minVersion": "0.6.0",
     "discoveryNodes": [

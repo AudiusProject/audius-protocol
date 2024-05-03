@@ -2,7 +2,7 @@ import { RewardManagerProgram } from '@audius/spl'
 import type { RewardManagerStateData } from '@audius/spl/dist/types/reward-manager/types'
 import { Secp256k1Program, type PublicKey } from '@solana/web3.js'
 
-import { productionConfig } from '../../../../config'
+import { productionConfig } from '../../../../config/production'
 import { mergeConfigWithDefaults } from '../../../../utils/mergeConfigs'
 import { parseParams } from '../../../../utils/parseParams'
 import { BaseSolanaProgram } from '../BaseSolanaProgram'

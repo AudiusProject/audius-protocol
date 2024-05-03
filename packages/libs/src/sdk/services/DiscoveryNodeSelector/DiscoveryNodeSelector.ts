@@ -12,7 +12,7 @@ import type {
   RequestContext,
   ResponseContext
 } from '../../api/generated/default'
-import { productionConfig } from '../../config'
+import { productionConfig } from '../../config/production'
 import { getPathFromUrl } from '../../utils/getPathFromUrl'
 import { mergeConfigWithDefaults } from '../../utils/mergeConfigs'
 import { promiseAny } from '../../utils/promiseAny'
