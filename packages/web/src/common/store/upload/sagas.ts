@@ -123,6 +123,7 @@ function* combineMetadata(
   const albumTrackPrice =
     collectionMetadata.stream_conditions?.usdc_purchase?.albumTrackPrice
   if (albumTrackPrice !== undefined && albumTrackPrice > 0) {
+    // is_download_gated must always be set to true for all premium tracks
     metadata.is_download_gated = true
     metadata.download_conditions = {
       usdc_purchase: {
