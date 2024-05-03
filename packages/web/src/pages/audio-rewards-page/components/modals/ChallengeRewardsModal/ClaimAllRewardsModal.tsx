@@ -130,7 +130,7 @@ export const ClaimAllRewardsModal = () => {
               {messages.claimAudio(formatNumberCommas(claimableAmount))}
             </Button>
           ) : (
-            <Button variant='primary' fullWidth>
+            <Button variant='primary' fullWidth onClick={() => setOpen(false)}>
               {messages.done}
             </Button>
           )}
