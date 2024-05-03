@@ -1,6 +1,13 @@
 import { ReactNode, Ref, createContext, forwardRef, useContext } from 'react'
 
-import { Divider, Flex, FlexProps, Paper, PaperProps } from '@audius/harmony'
+import {
+  Divider,
+  Flex,
+  FlexProps,
+  Paper,
+  PaperProps,
+  useTheme
+} from '@audius/harmony'
 
 type CardSize = 'xs' | 's' | 'm' | 'l'
 
@@ -49,10 +56,13 @@ export type CardContentProps = FlexProps
 
 export const CardContent = (props: CardContentProps) => {
   const { size } = useContext(CardContext)
+  const { spacing } = useTheme()
+  const cardWidth = cardSizes[size]
 
   return (
     <Flex
       direction='column'
+      w={cardWidth ? cardWidth - spacing.s * 2 : undefined}
       css={size === 'xs' && { maxWidth: xsSize.minWidth, margin: '0 auto' }}
       {...props}
     />

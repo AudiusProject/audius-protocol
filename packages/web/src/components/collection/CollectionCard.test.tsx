@@ -149,4 +149,14 @@ describe('CollectionCard', () => {
       })
     )
   })
+
+  it('premium collections owned by user are rendered correctly', () => {
+    renderCollectionCard({ reduxState: { account: { userId: 2 } } })
+
+    expect(
+      screen.getByRole('button', {
+        name: 'Test Collection Test User Reposts 10 Favorites 5'
+      })
+    ).toBeInTheDocument()
+  })
 })

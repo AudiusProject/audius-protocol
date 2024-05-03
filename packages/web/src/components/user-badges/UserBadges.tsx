@@ -105,6 +105,10 @@ const UserBadges = ({
   const audioBadge = tierMap[tier as BadgeTier]
   const hasContent = isVerifiedOverride ?? (isVerified || audioBadge)
 
+  const hasElements = isVerifiedOverride ?? (isVerified || audioBadge)
+
+  if (!hasElements) return null
+
   if (inline) {
     return (
       <span
