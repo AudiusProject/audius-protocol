@@ -6,12 +6,12 @@ sidebar_label: System Requirements
 description: Audius Protocol Documentation
 ---
 
-In order to maintain quality service across the Audius protocol, service hardware requirements are
-enforced by the on-chain governance protocol.
-
 ## Hardware Requirements
 
-The minimum resource requirements per registered node are as follows.
+In order to maintain quality service across the Audius protocol, Audius Node hardware requirements
+are enforced by the on-chain governance protocol.
+
+The minimum resource requirements per registered Node are as follows.
 
 - a public DNS endpoint with SSL support
 - operations support to enable high uptime and availability
@@ -19,35 +19,31 @@ The minimum resource requirements per registered node are as follows.
 
 :::tip choosing an operating system
 
-While any linux based OS will work, **Ubuntu 22.04 LTS** is recommended.
+While any linux based operating system will work, **Ubuntu 22.04 LTS** is currently recommended.
 
 :::
-
----
 
 ### Content Node
 
 - 8 vCPU
 - 16 GiB of RAM
 - 2000 GiB (2 TiB) SSD
-- Firewalls configured to only allow `0.0.0.0/0` ingress on ports `80` + `443`
-
----
+- Firewalls configured to allow `0.0.0.0/0` ingress on ports `80` + `443`
 
 ### Discovery Node
 
 - 8 vCPU
 - 16 GiB of RAM
 - 256 GiB SSD
-- Firewalls configured to only allow `0.0.0.0/0` ingress on ports `80` + `443` + `30300`
+- Firewalls configured to allow `0.0.0.0/0` ingress on ports `80` + `443` + `30300`
 
 ---
 
 ## System Configuration
 
-Once the Virtual Machine has been created, there are just a few other settings to confirm.
+With a Virtual Machine configured, confirm the following software configurations.
 
-### Docker
+### Docker is Installed
 
 Both Content Nodes and Discovery Nodes must have docker installed.
 
@@ -67,8 +63,8 @@ When configuring Virtual Machines be sure to create firewall rules for the follo
 
 ### SSH Access
 
-Managing and configuring Audius Nodes requires a user to have ssh access to each Virtual Machine
-from a machine you have ready access to, a laptop for example.
+Managing and configuring Audius Nodes requires ssh access to each Virtual Machine from a machine you
+have ready access to, a laptop for example.
 
 Store ssh credentials in the `~/.ssh/config` file on your machine. While specifics may change, the
 general format is as follows:

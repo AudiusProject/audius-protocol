@@ -131,14 +131,14 @@ nodes:
 | `type`          | either `creator` or `discovery`                                                                                    |
 | `privateKey`    | private key associated with the `wallet`                                                                           |
 | `wallet`        | Address of wallet that contains no tokens but that is registered on chain, used to sign JSON responses from server |
-| `rewardsWallet` | Wallet that registered (or will register) the content node on chain                                                |
+| `rewardsWallet` | Wallet that registered (or will register) the Audius Node on chain                                                 |
 
 </div>
 </details>
 
 ---
 
-## Run the Nodes
+## Run Your Audius Nodes
 
 With the configuration file setup correctly, the final command to run is:
 
@@ -148,11 +148,11 @@ audius-ctl up
 
 This command does a few things:
 
-1. loops over every node specified
-2. connects to each Virtual Machine via ssh
-   1. checks that the required Audius Node software is installed
-   2. if not found, runs the installer
-   3. starts the Audius Node
+1. Loops over every Audius Node specified
+2. Connects to each Virtual Machine via ssh
+   1. Checks that the required Audius Node software is installed
+   2. If not found, runs the installer
+   3. Starts the Audius Node
 
 ### Additional Commands
 
@@ -231,7 +231,7 @@ audius-cli down
 ### Configure Nodes
 
 From here, the guide is the same as though you were creating new Nodes from scratch. Head back up to
-the [`audius-cli` installatino step](/node-operator/setup/installation#install-audius-ctl) to get
+the [`audius-cli` installation step](/node-operator/setup/installation#install-audius-ctl) to get
 started.
 
 #### Migration Variable Mapping
@@ -240,7 +240,7 @@ Node Operators migrating existing Nodes will be familiar with the legacy variabl
 type. See the mappings below to correctly use existing keys from a `override.env` file in a new
 configuration file.
 
-- Creator Node Variables
+- Content Node Variables
 
   - `delegateOwnerWallet` --> `wallet`
   - `delegatePrivateKey` --> `privateKey`
