@@ -55,4 +55,14 @@ test('crud', async () => {
     const rr = releaseRepo.get(grid)!
     expect(rr.status).toBe(ReleaseProcessingStatus.DeletePending)
   }
+
+  // simulate delete
+  releaseRepo.update({ key: grid, status: ReleaseProcessingStatus.Deleted })
+
+  // re-load 03 delete... should be noop
+  {
+    await parseDdexXmlFile('fixtures/03_delete.xml')
+    const rr = releaseRepo.get(grid)!
+    expect(rr.status).toBe(ReleaseProcessingStatus.Deleted)
+  }
 })

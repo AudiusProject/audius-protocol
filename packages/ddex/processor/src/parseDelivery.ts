@@ -203,19 +203,9 @@ export function parseDdexXml(xmlUrl: string, xmlText: string) {
   if (tagName == 'ManifestMessage') {
     console.log('todo: batch')
   } else if (tagName == 'PurgeReleaseMessage') {
-    const purge = parsePurgeXml($)
-    const key = releaseRepo.chooseReleaseId(purge.releaseIds)
-    const prior = releaseRepo.get(key)
-    if (!prior) {
-      console.log(`got purge release but no prior ${key}`)
-    } else {
-      releaseRepo.update({
-        key,
-        status: ReleaseProcessingStatus.DeletePending,
-        xmlUrl,
-      })
-    }
-    return purge
+    // mark release rows as DeletePending
+    const { releaseIds } = parsePurgeXml($)
+    releaseRepo.markForDelete(xmlUrl, messageTimestamp, releaseIds)
   } else if (tagName == 'NewReleaseMessage') {
     // create or replace this release in db
     const releases = parseReleaseXml($)

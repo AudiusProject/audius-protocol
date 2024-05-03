@@ -232,10 +232,9 @@ export const releaseRepo = {
     dbUpdate('releases', 'key', r)
   },
 
-  upsert(xmlUrl: string, messageTimestamp: string, release: DDEXRelease) {
-    const key = this.chooseReleaseId(release.releaseIds)
-
-    db.transaction(() => {
+  upsert: db.transaction(
+    (xmlUrl: string, messageTimestamp: string, release: DDEXRelease) => {
+      const key = releaseRepo.chooseReleaseId(release.releaseIds)
       const prior = releaseRepo.get(key)
       const json = JSON.stringify(release)
 
@@ -245,8 +244,8 @@ export const releaseRepo = {
         return
       }
 
-      // noop
-      // may want some smarter json compare here too
+      // if same xmlUrl + json, skip
+      // may want some smarter json compare here
       // if this is causing spurious sdk updates to be issued
       if (prior && prior.xmlUrl == xmlUrl && prior.json == json) {
         return
@@ -265,8 +264,35 @@ export const releaseRepo = {
         json,
         updatedAt: new Date().toISOString(),
       } as Partial<ReleaseRow>)
-    })()
-  },
+    }
+  ),
+
+  markForDelete: db.transaction(
+    (xmlUrl: string, messageTimestamp: string, releaseIds: DDEXReleaseIds) => {
+      // here we do PK lookup using the "best" id
+      // but we may need to try to find by all the different releaseIds
+      // if it's not consistent
+      const key = releaseRepo.chooseReleaseId(releaseIds)
+      const prior = releaseRepo.get(key)
+
+      if (!prior) {
+        console.log(`got purge release but no prior ${key}`)
+        return
+      }
+
+      if (prior.messageTimestamp >= messageTimestamp) {
+        console.log(`skipping delete ${key}`)
+        return
+      }
+
+      releaseRepo.update({
+        key,
+        status: ReleaseProcessingStatus.DeletePending,
+        xmlUrl,
+        messageTimestamp,
+      })
+    }
+  ),
 
   addPublishError(key: string, err: Error) {
     const status = ReleaseProcessingStatus.Failed
