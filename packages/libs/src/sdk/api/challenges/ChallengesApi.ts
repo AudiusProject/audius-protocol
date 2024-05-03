@@ -26,7 +26,6 @@ import {
 } from './types'
 
 export class ChallengesApi extends BaseAPI {
-  private readonly logger: LoggerService
   constructor(
     config: Configuration,
     private readonly usersApi: UsersApi,
@@ -34,7 +33,7 @@ export class ChallengesApi extends BaseAPI {
     private readonly rewardManager: RewardManagerClient,
     private readonly claimableTokens: ClaimableTokensClient,
     private readonly antiAbuseOracle: AntiAbuseOracleService,
-    logger: LoggerService
+    private readonly logger: LoggerService
   ) {
     super(config)
     this.logger = logger.createPrefixedLogger('[challenges-api]')
