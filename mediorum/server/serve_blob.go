@@ -351,11 +351,14 @@ func (ss *MediorumServer) logTrackListen(c echo.Context) {
 	solanaRelayService := os.Getenv("identityService")
 	doDiscoveryListens := true
 	if doDiscoveryListens {
-		// pick random discovery node
-		solanaRelayService = ss.listenableDiscoveryNodes[rand.Intn(len(ss.listenableDiscoveryNodes))]
+		// pick random discovery node and append '/solana' for the relay plugin
+		endpoint := ss.listenableDiscoveryNodes[rand.Intn(len(ss.listenableDiscoveryNodes))]
+		solanaRelayService = fmt.Sprintf("%s/solana", endpoint)
 	}
 
 	endpoint := fmt.Sprintf("%s/tracks/%d/listen", solanaRelayService, sig.Data.TrackId)
+
+	ss.logger.Info("logging listen", "endpoint", endpoint)
 	signatureData, err := signature.GenerateListenTimestampAndSignature(ss.Config.privateKey)
 	if err != nil {
 		ss.logger.Error("unable to build request", "err", err)

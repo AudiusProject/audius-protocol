@@ -16,8 +16,13 @@ import {
 import { cache } from './routes/cache'
 import { feePayer } from './routes/feePayer'
 import { health } from './routes/health/health'
+import { listenHandler } from './routes/listens/listens'
+import { getLibs, getSdk } from './sdk'
 
 const main = async () => {
+  // init sdk and libs before web server
+  await Promise.all([getSdk, getLibs])
+
   const { serverHost, serverPort } = config
   const app = express()
   app.use(json())
@@ -29,6 +34,7 @@ const main = async () => {
   app.post('/solana/relay', relay)
   app.post('/solana/cache', cache)
   app.get('/solana/feePayer', feePayer)
+  app.post('/tracks/:trackId/listen', listenHandler)
   app.use(outgoingRequestLogger)
   app.use(errorHandlerMiddleware)
 

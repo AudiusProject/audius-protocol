@@ -19,7 +19,8 @@ export const relayTransaction = async (
 ) => {
   // pull info from validated request
   const { validatedRelayRequest, logger } = res.locals.ctx;
-  const { encodedABI, gasLimit, contractAddress } = validatedRelayRequest;
+  const { encodedABI, gasLimit } = validatedRelayRequest;
+  const contractAddress = config.entityManagerContractAddress
 
   const senderWallet = wallets.selectNextWallet();
   const address = await senderWallet.getAddress();

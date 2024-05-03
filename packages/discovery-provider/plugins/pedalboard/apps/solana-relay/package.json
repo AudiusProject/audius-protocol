@@ -6,7 +6,8 @@
     "start": "ts-node ./src/index.ts",
     "dev": "ts-node-dev ./src/index.ts",
     "test": "vitest",
-    "lint": "tsc --noEmit && eslint \"src/**/*.ts*\""
+    "lint": "tsc --noEmit && eslint \"src/**/*.ts*\"",
+    "format": "prettier --write \"**/*.{ts,tsx,md}\""
   },
   "jest": {
     "preset": "jest-presets/jest/node"
@@ -16,8 +17,10 @@
     "@pedalboard/basekit": "*",
     "@pedalboard/logger": "*",
     "@pedalboard/storage": "*",
-    "@solana/web3.js": "1.78.4",
+    "@solana/web3.js": "^1.78.4",
+    "axios": "^1.6.8",
     "body-parser": "1.19.0",
+    "borsh": "^2.0.0",
     "bs58": "4.0.1",
     "cors": "2.8.5",
     "cross-fetch": "3.1.8",
@@ -25,9 +28,11 @@
     "envalid": "8.0.0",
     "eth-sig-util": "3.0.1",
     "express": "4.17.1",
+    "keccak256": "^1.0.6",
     "morgan": "1.10.0",
     "pino": "8.16.1",
-    "redis": "4.6.11"
+    "redis": "4.6.11",
+    "secp256k1": "^5.0.0"
   },
   "devDependencies": {
     "@audius/sdk": "*",
