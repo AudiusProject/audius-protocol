@@ -24,6 +24,8 @@ const { getCurrentTrack, getPlaying, getSeek, getCounter } = playerSelectors
 
 const { getUser } = cacheUsersSelectors
 
+export { CastState } from 'react-native-google-cast'
+
 export const useChromecast = () => {
   const dispatch = useDispatch()
 
@@ -136,6 +138,6 @@ export const useChromecast = () => {
   }, [client, seek])
 
   return {
-    isCasting: castState === CastState.CONNECTED
+    castState
   }
 }
