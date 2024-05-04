@@ -61,7 +61,7 @@ export const isTrackDownloadPurchaseable = (
   isContentUSDCPurchaseGated(metadata.download_conditions)
 
 export const useIsGatedContentPlaylistAddable = (
-  contentArg: Nullable<Partial<Track | UserTrackMetadata | Collection>>
+  contentArg?: Nullable<Partial<Track | UserTrackMetadata | Collection>>
 ) => {
   const content = contentArg ?? {}
   const {
