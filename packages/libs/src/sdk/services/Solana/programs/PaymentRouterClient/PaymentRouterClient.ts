@@ -24,7 +24,7 @@ import { Prettify } from '../../../../utils/prettify'
 import { Mint } from '../../types'
 import { BaseSolanaProgram } from '../BaseSolanaProgram'
 
-import { getDefaultPaymentRouterConfig } from './getDefaultConfig'
+import { getDefaultPaymentRouterClientConfig } from './getDefaultConfig'
 import {
   CreateMemoInstructionRequest,
   CreateMemoInstructionSchema,
@@ -53,7 +53,7 @@ export class PaymentRouterClient extends BaseSolanaProgram {
   constructor(config: PaymentRouterClientConfig) {
     const configWithDefaults = mergeConfigWithDefaults(
       config,
-      getDefaultPaymentRouterConfig(productionConfig)
+      getDefaultPaymentRouterClientConfig(productionConfig)
     )
     super(configWithDefaults, config.solanaWalletAdapter)
     this.programId = configWithDefaults.programId
