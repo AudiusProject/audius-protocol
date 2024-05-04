@@ -1,6 +1,10 @@
+import logging
+
 from flask_restx import fields, marshal
 
 from .models import OneOfModel
+
+logger = logging.getLogger(__name__)
 
 
 # region: Copied from flask_restx
@@ -83,7 +87,15 @@ class NestedOneOf(fields.Nested):
             elif self.default is not None:
                 return self.default
         for field in self.model.fields:
-            marshalled = marshal(value, field.nested)
-            if value == marshalled:
-                return value
-        raise fields.MarshallingError("No matching oneOf models")
+            try:
+                marshalled = marshal(value, field.nested)
+                if value == marshalled:
+                    return value
+            except fields.MarshallingError as e:
+                logger.error(
+                    f"fields.py | NestedOneOf | Failed to marshal key={key} value={value} error={e.msg}"
+                )
+        logger.error(
+            f"fields.py | NestedOneOf | Failed to marshal key={key} value={data}: No matching models."
+        )
+        return value
