@@ -105,6 +105,19 @@ export class FullTracksApi extends GeneratedTracksApi {
     )
     this.logger.debug('Calculated splits after extra amount:', splits)
 
+    // Create user bank for recipient if not exists
+    this.logger.debug('Checking for recipient user bank...')
+    const { userBank: recipientUserBank, didExist } =
+      await this.claimableTokensClient.getOrCreateUserBank({
+        ethWallet: track.user.wallet,
+        mint: 'USDC'
+      })
+    if (!didExist) {
+      this.logger.debug('Created user bank', { recipientUserBank })
+    } else {
+      this.logger.debug('User bank exists', { recipientUserBank })
+    }
+
     const routeInstruction =
       await this.paymentRouterClient.createRouteInstruction({
         splits,
