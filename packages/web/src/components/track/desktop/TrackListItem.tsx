@@ -1,7 +1,8 @@
 import { memo, MouseEvent, useRef } from 'react'
 
 import { useGetCurrentUserId } from '@audius/common/api'
-import { ID, UID } from '@audius/common/models'
+import { useIsGatedContentPlaylistAddable } from '@audius/common/hooks'
+import { ID, Track, UID } from '@audius/common/models'
 import { EnhancedCollectionTrack } from '@audius/common/store'
 import { Genre, formatSeconds } from '@audius/common/utils'
 import { IconKebabHorizontal } from '@audius/harmony'
@@ -57,6 +58,7 @@ const TrackListItem = ({
   const menuRef = useRef<HTMLDivElement>(null)
   const { data: currentUserId } = useGetCurrentUserId({})
   const isOwner = track?.owner_id === currentUserId
+  const isPlaylistAddable = useIsGatedContentPlaylistAddable(track as Track)
 
   if (forceSkeleton) {
     return (
@@ -114,7 +116,7 @@ const TrackListItem = ({
 
   const menu: Omit<TrackMenuProps, 'children'> = {
     handle: track.user.handle,
-    includeAddToPlaylist: true,
+    includeAddToPlaylist: isPlaylistAddable,
     includeAddToAlbum: isOwner,
     includeArtistPick: false,
     includeEdit: false,

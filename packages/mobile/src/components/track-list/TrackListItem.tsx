@@ -1,7 +1,10 @@
 import type { ComponentType } from 'react'
 import { memo, useCallback, useMemo, useState } from 'react'
 
-import { useGatedContentAccess } from '@audius/common/hooks'
+import {
+  useGatedContentAccess,
+  useIsGatedContentPlaylistAddable
+} from '@audius/common/hooks'
 import type { Collection, ID, UID, Track, User } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import {
@@ -262,6 +265,7 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
   const isPlaying = useSelector((state) => {
     return isActive && getPlaying(state)
   })
+  const isPlaylistAddable = useIsGatedContentPlaylistAddable(track)
 
   const messages = getMessages({ isDeleted })
   const styles = useStyles()
@@ -323,7 +327,7 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
       isEditAlbumsEnabled && isTrackOwner && !ddexApp
         ? OverflowAction.ADD_TO_ALBUM
         : null,
-      OverflowAction.ADD_TO_PLAYLIST,
+      isPlaylistAddable ? OverflowAction.ADD_TO_PLAYLIST : null,
       isNewPodcastControlsEnabled && isLongFormContent
         ? OverflowAction.VIEW_EPISODE_PAGE
         : OverflowAction.VIEW_TRACK_PAGE,
@@ -354,6 +358,7 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
     has_current_user_reposted,
     isEditAlbumsEnabled,
     ddexApp,
+    isPlaylistAddable,
     isNewPodcastControlsEnabled,
     isLongFormContent,
     showViewAlbum,
