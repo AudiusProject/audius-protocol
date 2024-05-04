@@ -4,7 +4,7 @@ import { SdkServicesConfig } from '../../../../config/types'
 
 import { PaymentRouterClientConfigInternal } from './types'
 
-export const getDefaultPaymentRouterConfig = (
+export const getDefaultPaymentRouterClientConfig = (
   config: SdkServicesConfig
 ): PaymentRouterClientConfigInternal => ({
   programId: new PublicKey(config.solana.paymentRouterProgramAddress),

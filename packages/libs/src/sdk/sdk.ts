@@ -30,7 +30,10 @@ import {
   addRequestSignatureMiddleware
 } from './middleware'
 import { OAuth } from './oauth'
-import { PaymentRouterClient } from './services'
+import {
+  PaymentRouterClient,
+  getDefaultPaymentRouterClientConfig
+} from './services'
 import { AntiAbuseOracle } from './services/AntiAbuseOracle/AntiAbuseOracle'
 import { getDefaultAntiAbuseOracleSelectorConfig } from './services/AntiAbuseOracleSelector'
 import { AntiAbuseOracleSelector } from './services/AntiAbuseOracleSelector/AntiAbuseOracleSelector'
