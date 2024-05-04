@@ -212,7 +212,6 @@ export const TracksTable = ({
       return (
         <div className={styles.textContainer} css={{ overflow: 'hidden' }}>
           <TextLink
-            tag={isLocked || deleted ? 'span' : undefined}
             to={isLocked || deleted ? '' : track.permalink}
             isActive={active}
             textVariant='title'
