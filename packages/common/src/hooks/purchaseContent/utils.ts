@@ -61,16 +61,18 @@ export const isTrackDownloadPurchaseable = (
   isContentUSDCPurchaseGated(metadata.download_conditions)
 
 export const useIsGatedContentPlaylistAddable = (
-  contentArg?: Nullable<Partial<Track | UserTrackMetadata | Collection>>
+  contentArg: Nullable<Partial<Track | UserTrackMetadata | Collection>>
 ) => {
   const content = contentArg ?? {}
   const {
     stream_conditions: streamConditions,
-    is_stream_gated: isStreamGated
+    is_stream_gated: isStreamGated,
+    ddex_app: ddexApp
   } = content
   const { hasStreamAccess } = useGatedContentAccess(content)
   return (
-    !isStreamGated ||
-    (isContentUSDCPurchaseGated(streamConditions) && hasStreamAccess)
+    !ddexApp &&
+    (!isStreamGated ||
+      (isContentUSDCPurchaseGated(streamConditions) && hasStreamAccess))
   )
 }

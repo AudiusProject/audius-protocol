@@ -252,9 +252,8 @@ export const TrackScreenDetailsTile = ({
       isEditAlbumsEnabled && isOwner && !ddexApp
         ? OverflowAction.ADD_TO_ALBUM
         : null
-    const addToPlaylistAction = isPlaylistAddable
-      ? OverflowAction.ADD_TO_PLAYLIST
-      : null
+    const addToPlaylistAction =
+      isPlaylistAddable && !ddexApp ? OverflowAction.ADD_TO_PLAYLIST : null
     const overflowActions = [
       addToAlbumAction,
       addToPlaylistAction,

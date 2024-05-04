@@ -8,6 +8,7 @@ import {
 } from 'react'
 
 import {
+  useFeatureFlag,
   useGatedContentAccess,
   useIsGatedContentPlaylistAddable
 } from '@audius/common/hooks'
@@ -18,6 +19,7 @@ import {
   ID,
   UID
 } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import {
   accountSelectors,
   cacheTracksSelectors,
@@ -157,11 +159,15 @@ const ConnectedTrackTile = ({
   const isOwner = handle === userHandle
   const isArtistPick = showArtistPick && artist_pick_track_id === trackId
   const hasPreview = !!track?.preview_cid
+  const { isEnabled: isEditAlbumsEnabled } = useFeatureFlag(
+    FeatureFlags.EDIT_ALBUMS
+  )
 
   const { isFetchingNFTAccess, hasStreamAccess } =
     useGatedContentAccess(trackWithFallback)
   const loading = isLoading || isFetchingNFTAccess
   const isPlaylistAddable = useIsGatedContentPlaylistAddable(trackWithFallback)
+  const isAlbumAddable = isEditAlbumsEnabled && isOwner
 
   const dispatch = useDispatch()
   const [, setLockedContentVisibility] = useModalState('LockedContent')
@@ -207,7 +213,7 @@ const ConnectedTrackTile = ({
       extraMenuItems: [],
       handle,
       includeAddToPlaylist: isPlaylistAddable,
-      includeAddToAlbum: isPlaylistAddable,
+      includeAddToAlbum: isAlbumAddable,
       includeArtistPick: handle === userHandle && !isUnlisted,
       includeEdit: handle === userHandle,
       ddexApp: track?.ddex_app,
