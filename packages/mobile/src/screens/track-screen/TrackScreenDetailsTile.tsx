@@ -134,8 +134,7 @@ export const TrackScreenDetailsTile = ({
     save_count,
     title,
     track_id: trackId,
-    stream_conditions: streamConditions,
-    ddex_app: ddexApp
+    stream_conditions: streamConditions
   } = track
 
   const isOwner = owner_id === currentUserId
@@ -252,8 +251,9 @@ export const TrackScreenDetailsTile = ({
       isEditAlbumsEnabled && isOwner && !ddexApp
         ? OverflowAction.ADD_TO_ALBUM
         : null
-    const addToPlaylistAction =
-      isPlaylistAddable && !ddexApp ? OverflowAction.ADD_TO_PLAYLIST : null
+    const addToPlaylistAction = isPlaylistAddable
+      ? OverflowAction.ADD_TO_PLAYLIST
+      : null
     const overflowActions = [
       addToAlbumAction,
       addToPlaylistAction,
