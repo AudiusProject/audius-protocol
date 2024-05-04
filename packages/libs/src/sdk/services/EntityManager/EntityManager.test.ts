@@ -2,13 +2,13 @@ import type { EIP712TypedData } from 'eth-sig-util'
 import { rest } from 'msw'
 import { setupServer } from 'msw/node'
 
-import { developmentConfig } from '../../config'
+import { developmentConfig } from '../../config/development'
 import Web3 from '../../utils/web3'
 import type { AuthService } from '../Auth/types'
 import { DiscoveryNodeSelector } from '../DiscoveryNodeSelector'
-import { Logger } from '../Logger'
 
 import { EntityManager } from './EntityManager'
+import { getDefaultEntityManagerConfig } from './getDefaultConfig'
 import { Action, EntityType } from './types'
 
 const userWallet = '0xc0ffee254729296a45a3885639AC7E10F9d54979'
@@ -62,20 +62,17 @@ const discoveryNodeSelector = new DiscoveryNodeSelector({
 })
 
 const mswHandlers = [
-  rest.post(
-    `${discoveryNode}/relay`,
-    (_req, res, ctx) => {
-      return res(
-        ctx.status(200),
-        ctx.json({
-          receipt: {
-            blockHash: '',
-            blockNumber: 1
-          }
-        })
-      )
-    }
-  ),
+  rest.post(`${discoveryNode}/relay`, (_req, res, ctx) => {
+    return res(
+      ctx.status(200),
+      ctx.json({
+        receipt: {
+          blockHash: '',
+          blockNumber: 1
+        }
+      })
+    )
+  }),
 
   rest.get(`${discoveryNode}/block_confirmation`, (req, res, ctx) => {
     const blockNumber = req.url.searchParams.get('blocknumber')
@@ -100,14 +97,9 @@ const mswHandlers = [
 
 const server = setupServer(...mswHandlers)
 
-const logger = new Logger()
-
 const entityManager = new EntityManager({
-  discoveryNodeSelector,
-  web3ProviderUrl: '',
-  contractAddress: developmentConfig.entityManagerContractAddress,
-  identityServiceUrl: developmentConfig.identityServiceUrl,
-  logger
+  ...getDefaultEntityManagerConfig(developmentConfig),
+  discoveryNodeSelector
 })
 
 describe('EntityManager', () => {
@@ -167,38 +159,33 @@ describe('EntityManager', () => {
 
   describe('manageEntityConfig', () => {
     it('relays to the correct service', async () => {
-      const sharedDefaultConfig = {
-        discoveryNodeSelector,
-        web3ProviderUrl: '',
-        contractAddress: developmentConfig.entityManagerContractAddress,
-        identityServiceUrl: developmentConfig.identityServiceUrl,
-        logger
-      }
-
+      const sharedDefaultConfig =
+        getDefaultEntityManagerConfig(developmentConfig)
       const discoveryEntityManager = new EntityManager({
         ...sharedDefaultConfig,
+        discoveryNodeSelector,
         useDiscoveryRelay: true
       })
 
       const relayEntityManagerUndefined = new EntityManager({
-        ...sharedDefaultConfig
+        ...sharedDefaultConfig,
+        discoveryNodeSelector
       })
 
       const relayEntityManagerFalse = new EntityManager({
         ...sharedDefaultConfig,
+        discoveryNodeSelector,
         useDiscoveryRelay: false
       })
 
       const discoveryRelayUrl = await discoveryEntityManager.getRelayEndpoint()
       const identityRelayUrlUndefined =
         await relayEntityManagerUndefined.getRelayEndpoint()
-        const identityRelayUrlFalse =
+      const identityRelayUrlFalse =
         await relayEntityManagerFalse.getRelayEndpoint()
 
       expect(discoveryRelayUrl).toEqual(discoveryNode)
-      expect(identityRelayUrlUndefined).toEqual(
-        discoveryRelayUrl
-      )
+      expect(identityRelayUrlUndefined).toEqual(discoveryRelayUrl)
       expect(discoveryRelayUrl).toEqual(identityRelayUrlFalse)
     })
   })

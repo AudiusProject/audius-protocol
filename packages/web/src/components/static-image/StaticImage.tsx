@@ -8,7 +8,9 @@ import {
   stagingConfig,
   developmentConfig,
   StorageNodeSelector,
-  AppAuth
+  AppAuth,
+  getDefaultStorageNodeSelectorConfig,
+  getDefaultDiscoveryNodeSelectorConfig
 } from '@audius/sdk'
 
 import { env } from 'services/env'
@@ -34,22 +36,21 @@ const sdkConfigs = {
   production: productionConfig,
   staging: stagingConfig,
   development: developmentConfig
-}
+} as const
+
+const sdkConfig =
+  sdkConfigs[env.ENVIRONMENT as keyof typeof sdkConfigs] ?? productionConfig
 
 const discoveryNodeSelector = new DiscoveryNodeSelector({
-  bootstrapServices: (
-    sdkConfigs[env.ENVIRONMENT as keyof typeof sdkConfigs] ?? productionConfig
-  ).discoveryNodes
+  ...getDefaultDiscoveryNodeSelectorConfig(sdkConfig)
 })
 
 const auth = new AppAuth('', '')
 
 const storageNodeSelector = new StorageNodeSelector({
+  ...getDefaultStorageNodeSelectorConfig(sdkConfig),
   auth,
-  discoveryNodeSelector,
-  bootstrapNodes: (
-    sdkConfigs[env.ENVIRONMENT as keyof typeof sdkConfigs] ?? productionConfig
-  ).storageNodes
+  discoveryNodeSelector
 })
 
 export const StaticImage = (props: StaticImageProps) => {
