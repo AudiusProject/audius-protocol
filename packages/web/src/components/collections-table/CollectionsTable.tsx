@@ -94,7 +94,6 @@ export const CollectionsTable = ({
         }}
       >
         <TextLink
-          tag={deleted ? 'span' : undefined}
           to={deleted ? '' : collection.permalink ?? ''}
           textVariant='title'
           size='s'

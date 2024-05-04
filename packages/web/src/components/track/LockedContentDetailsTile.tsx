@@ -140,10 +140,14 @@ export const LockedContentDetailsTile = ({
         ) : null}
         <Flex direction='column' gap='s'>
           <Text variant='heading'>{title}</Text>
-          <Flex gap='xs'>
-            <Text variant='title'>{messages.by}</Text>
-            <UserLink userId={owner.user_id} />
-          </Flex>
+          <Text variant='title'>
+            <Text color='subdued'>{messages.by}</Text>{' '}
+            <UserLink
+              textVariant='title'
+              strength='weak'
+              userId={owner.user_id}
+            />
+          </Text>
         </Flex>
       </Flex>
     </Flex>
