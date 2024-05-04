@@ -86,7 +86,7 @@ track = ns.model(
         "orig_filename": fields.String(
             allow_null=True
         ),  # remove nullability after backfill
-        "is_original_available": fields.Boolean,
+        "is_original_available": fields.Boolean(),
         "mood": fields.String,
         "release_date": fields.String,
         "remix_of": fields.Nested(remix_parent),
@@ -103,6 +103,20 @@ track = ns.model(
         "is_streamable": fields.Boolean,
         "ddex_app": fields.String(allow_null=True),
         "playlists_containing_track": fields.List(fields.Integer),
+        "is_stream_gated": fields.Boolean(
+            description="Whether or not the owner has restricted streaming behind an access gate"
+        ),
+        "stream_conditions": NestedOneOf(
+            access_gate,
+            allow_null=True,
+            description="How to unlock stream access to the track",
+        ),
+        "is_download_gated": fields.Boolean(
+            description="Whether or not the owner has restricted downloading behind an access gate"
+        ),
+        "download_conditions": NestedOneOf(
+            access_gate, allow_null=True, description="How to unlock the track download"
+        ),
     },
 )
 
@@ -161,10 +175,6 @@ track_full = ns.clone(
         "cover_art": fields.String,
         "remix_of": fields.Nested(full_remix_parent),
         "is_available": fields.Boolean,
-        "is_stream_gated": fields.Boolean,
-        "stream_conditions": NestedOneOf(access_gate, allow_null=True),
-        "is_download_gated": fields.Boolean,
-        "download_conditions": NestedOneOf(access_gate, allow_null=True),
         "access": fields.Nested(access),
         "ai_attribution_user_id": fields.Integer(allow_null=True),
         "audio_upload_id": fields.String,
