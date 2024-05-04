@@ -2,9 +2,7 @@ import type { HTMLProps } from 'react'
 
 import type { TextProps } from 'components/text/Text'
 
-type TextLinkTextProps = Omit<TextProps<any>, 'variant' | 'color' | 'onClick'>
-
-export type TextLinkProps = TextLinkTextProps &
+export type TextLinkProps = Omit<TextProps, 'variant' | 'onClick' | 'color'> &
   Omit<
     HTMLProps<HTMLAnchorElement>,
     // Props from Text that don't match anchor props

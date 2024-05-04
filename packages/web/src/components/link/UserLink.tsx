@@ -21,14 +21,7 @@ type UserLinkProps = Omit<TextLinkProps, 'to'> & {
 
 export const UserLink = (props: UserLinkProps) => {
   const { isServerSide } = useSsrContext()
-  const {
-    userId,
-    badgeSize = 's',
-    popover,
-    children,
-    textVariant = 'body',
-    ...other
-  } = props
+  const { userId, badgeSize = 's', popover, children, ...other } = props
   const { iconSizes, spacing } = useTheme()
 
   const url = useSelector((state) => {
@@ -50,9 +43,7 @@ export const UserLink = (props: UserLinkProps) => {
       ellipses={popover}
       {...other}
     >
-      <Text ellipses variant={textVariant}>
-        {userName}
-      </Text>
+      <Text ellipses>{userName}</Text>
       <UserBadges
         badgeSize={iconSizes[badgeSize]}
         userId={userId}
