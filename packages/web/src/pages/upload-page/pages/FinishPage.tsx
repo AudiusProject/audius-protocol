@@ -252,11 +252,7 @@ export const FinishPage = (props: FinishPageProps) => {
             <PlainButton onClick={handleUploadMoreClick} iconLeft={IconUpload}>
               {messages.uploadMore}
             </PlainButton>
-            <PlainButton
-              asChild
-              iconRight={IconArrow}
-              onClick={dispatchVisitEvent}
-            >
+            <PlainButton iconRight={IconArrow} onClick={dispatchVisitEvent}>
               <Link to={visitButtonPath}>{visitButtonText}</Link>
             </PlainButton>
           </div>
