@@ -2,15 +2,9 @@ import {
   Utils as AudiusUtils,
   sdk as AudiusSdk,
   libs as AudiusLibs,
-  developmentConfig,
   DiscoveryNodeSelector,
-  EntityManager,
-  PaymentRouterClient,
-  Logger,
-  SolanaRelayWalletAdapter,
   SolanaRelay,
   Configuration,
-  ClaimableTokensClient
 } from "@audius/sdk";
 import { PublicKey } from "@solana/web3.js";
 
