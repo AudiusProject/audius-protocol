@@ -72,7 +72,13 @@ access = ns.model(
 track = ns.model(
     "Track",
     {
+        "access": fields.Nested(
+            access, description="Describes what access the given user has"
+        ),
         "artwork": fields.Nested(track_artwork, allow_null=True),
+        "blocknumber": fields.Integer(
+            required=True, description="The blocknumber this track was last updated"
+        ),
         "description": fields.String,
         "genre": fields.String,
         "id": fields.String(required=True),
@@ -147,7 +153,6 @@ track_full = ns.clone(
     "track_full",
     track,
     {
-        "blocknumber": fields.Integer(required=True),
         "create_date": fields.String,
         "cover_art_sizes": fields.String,
         "cover_art_cids": fields.Nested(cover_art, allow_null=True),
@@ -175,7 +180,6 @@ track_full = ns.clone(
         "cover_art": fields.String,
         "remix_of": fields.Nested(full_remix_parent),
         "is_available": fields.Boolean,
-        "access": fields.Nested(access),
         "ai_attribution_user_id": fields.Integer(allow_null=True),
         "audio_upload_id": fields.String,
         "preview_start_seconds": fields.Float,

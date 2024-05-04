@@ -14,6 +14,12 @@
  */
 
 import { exists, mapValues } from '../runtime';
+import type { Access } from './Access';
+import {
+    AccessFromJSON,
+    AccessFromJSONTyped,
+    AccessToJSON,
+} from './Access';
 import type { AccessGate } from './AccessGate';
 import {
     AccessGateFromJSON,
@@ -46,11 +52,23 @@ import {
  */
 export interface Track {
     /**
+     * Describes what access the given user has
+     * @type {Access}
+     * @memberof Track
+     */
+    access?: Access;
+    /**
      * 
      * @type {TrackArtwork}
      * @memberof Track
      */
     artwork?: TrackArtwork;
+    /**
+     * The blocknumber this track was last updated
+     * @type {number}
+     * @memberof Track
+     */
+    blocknumber: number;
     /**
      * 
      * @type {string}
@@ -220,6 +238,7 @@ export interface Track {
  */
 export function instanceOfTrack(value: object): boolean {
     let isInstance = true;
+    isInstance = isInstance && "blocknumber" in value;
     isInstance = isInstance && "id" in value;
     isInstance = isInstance && "repostCount" in value;
     isInstance = isInstance && "favoriteCount" in value;
@@ -241,7 +260,9 @@ export function TrackFromJSONTyped(json: any, ignoreDiscriminator: boolean): Tra
     }
     return {
         
+        'access': !exists(json, 'access') ? undefined : AccessFromJSON(json['access']),
         'artwork': !exists(json, 'artwork') ? undefined : TrackArtworkFromJSON(json['artwork']),
+        'blocknumber': json['blocknumber'],
         'description': !exists(json, 'description') ? undefined : json['description'],
         'genre': !exists(json, 'genre') ? undefined : json['genre'],
         'id': json['id'],
@@ -281,7 +302,9 @@ export function TrackToJSON(value?: Track | null): any {
     }
     return {
         
+        'access': AccessToJSON(value.access),
         'artwork': TrackArtworkToJSON(value.artwork),
+        'blocknumber': value.blocknumber,
         'description': value.description,
         'genre': value.genre,
         'id': value.id,
