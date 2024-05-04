@@ -81,21 +81,6 @@ export const initializeAudiusLibs = async (handle) => {
 
 let audiusSdk;
 export const initializeAudiusSdk = async ({ apiKey = undefined, apiSecret = undefined } = {}) => {
-  const discoveryNodeSelector = new DiscoveryNodeSelector({
-    healthCheckThresholds: {
-      minVersion: developmentConfig.minVersion,
-      maxBlockDiff: developmentConfig.maxBlockDiff,
-      maxSlotDiffPlays: developmentConfig.maxSlotDiffPlays,
-    },
-    bootstrapServices: developmentConfig.discoveryNodes,
-  })
-  const entityManager = new EntityManager({
-    discoveryNodeSelector,
-    web3ProviderUrl: developmentConfig.web3ProviderUrl,
-    contractAddress: developmentConfig.entityManagerContractAddress,
-    identityServiceUrl: developmentConfig.identityServiceUrl,
-    useDiscoveryRelay: true,
-  })
 
   const solanaRelay = new SolanaRelay(
     new Configuration({
@@ -115,35 +100,15 @@ export const initializeAudiusSdk = async ({ apiKey = undefined, apiSecret = unde
     })
   )
 
-  const solanaWalletAdapter = new SolanaRelayWalletAdapter({ solanaRelay })
-
   if (!audiusSdk) {
     audiusSdk = AudiusSdk({
       appName: "audius-cmd",
       apiKey,
       apiSecret,
+      environment: 'development',
       services: {
-        discoveryNodeSelector,
-        claimableTokensClient: new ClaimableTokensClient({
-          programId: new PublicKey(process.env.SOLANA_CLAIMABLE_TOKENS_PUBLIC_KEY),
-          rpcEndpoint: 'http://audius-protocol-solana-test-validator-1',
-          mints: {
-            wAUDIO: new PublicKey(process.env.SOLANA_TOKEN_MINT_PUBLIC_KEY),
-            USDC: new PublicKey(process.env.SOLANA_USDC_TOKEN_MINT_PUBLIC_KEY)
-          },
-          solanaWalletAdapter
-        }),
-        paymentRouterClient: new PaymentRouterClient({
-          programId: new PublicKey('apaySbqV1XAmuiGszeN4NyWrXkkMrnuJVoNhzmS1AMa'),
-          rpcEndpoint: 'http://audius-protocol-solana-test-validator-1',
-          mints: {
-            USDC: new PublicKey(process.env.SOLANA_USDC_TOKEN_MINT_PUBLIC_KEY)
-          },
-          solanaWalletAdapter
-        }),
-        entityManager,
-        logger: new Logger({ logLevel: 'debug' })
-      },
+        solanaRelay
+      }
     });
   }
 
