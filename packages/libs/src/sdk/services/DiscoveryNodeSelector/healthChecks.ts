@@ -3,7 +3,6 @@ import semver from 'semver'
 
 import type { CommsResponse } from '../../../sdk/api/chats/serverTypes'
 
-import { DISCOVERY_SERVICE_NAME } from './constants'
 import {
   ApiHealthResponseData,
   FlaskFullResponse,
@@ -13,6 +12,11 @@ import {
   HealthCheckStatusReason,
   HealthCheckThresholds
 } from './healthCheckTypes'
+
+/**
+ * The name of the service for Discovery Node
+ */
+const DISCOVERY_SERVICE_NAME = 'discovery-node'
 
 export const isFullFlaskResponse = (
   data: ApiHealthResponseData

@@ -1,6 +1,9 @@
 import { memo, MouseEvent } from 'react'
 
-import { useGatedContentAccess } from '@audius/common/hooks'
+import {
+  useGatedContentAccess,
+  useIsGatedContentPlaylistAddable
+} from '@audius/common/hooks'
 import {
   ShareSource,
   RepostSource,
@@ -152,6 +155,7 @@ const ConnectedTrackTile = ({
   )
   const { isFetchingNFTAccess, hasStreamAccess } =
     useGatedContentAccess(trackWithFallback)
+  const isPlaylistAddable = useIsGatedContentPlaylistAddable(track)
   const loading = isLoading || isFetchingNFTAccess
 
   const toggleSave = (trackId: ID) => {
@@ -205,11 +209,14 @@ const ConnectedTrackTile = ({
         : null
     const addToAlbumAction =
       isEditAlbumsEnabled && isOwner ? OverflowAction.ADD_TO_ALBUM : null
+    const addToPlaylistAction = isPlaylistAddable
+      ? OverflowAction.ADD_TO_PLAYLIST
+      : null
     const overflowActions = [
       repostAction,
       favoriteAction,
       addToAlbumAction,
-      OverflowAction.ADD_TO_PLAYLIST,
+      addToPlaylistAction,
       isNewPodcastControlsEnabled && isLongFormContent
         ? OverflowAction.VIEW_EPISODE_PAGE
         : OverflowAction.VIEW_TRACK_PAGE,

@@ -7,6 +7,7 @@ import { encodeHashId } from '~/utils/hashIds'
 export const DEVELOPER_APP_DESCRIPTION_MAX_LENGTH = 128
 export const DEVELOPER_APP_NAME_MAX_LENGTH = 50
 export const DEVELOPER_APP_IMAGE_URL_MAX_LENGTH = 2000
+const DEVELOPER_APP_IMAGE_URL_REGEX = /^(https?):\/\//i
 
 const messages = {
   invalidUrl: 'Invalid URL'
@@ -19,7 +20,22 @@ export const developerAppSchema = z.object({
     z
       .string()
       .max(DEVELOPER_APP_IMAGE_URL_MAX_LENGTH)
-      .refine((value) => /^(https?):\/\//i.test(value), {
+      .refine((value) => DEVELOPER_APP_IMAGE_URL_REGEX.test(value), {
+        message: messages.invalidUrl
+      })
+  ),
+  description: z.string().max(DEVELOPER_APP_DESCRIPTION_MAX_LENGTH).optional()
+})
+
+export const developerAppEditSchema = z.object({
+  userId: z.number(),
+  apiKey: z.string(),
+  name: z.string().max(DEVELOPER_APP_NAME_MAX_LENGTH),
+  imageUrl: z.optional(
+    z
+      .string()
+      .max(DEVELOPER_APP_IMAGE_URL_MAX_LENGTH)
+      .refine((value) => DEVELOPER_APP_IMAGE_URL_REGEX.test(value), {
         message: messages.invalidUrl
       })
   ),
@@ -37,6 +53,8 @@ export type DeveloperApp = {
 type NewAppPayload = Omit<DeveloperApp, 'apiKey'> & {
   userId: number
 }
+
+type EditAppPayload = Omit<DeveloperApp, 'apiSecret'> & { userId: number }
 
 type DeleteDeveloperAppArgs = {
   apiKey: string
@@ -111,6 +129,46 @@ const developerAppsApi = createApi({
         )
       }
     },
+    editDeveloperApp: {
+      async fetch(editApp: EditAppPayload, { audiusSdk }) {
+        const { name, description, imageUrl, userId, apiKey } = editApp
+        const encodedUserId = encodeHashId(userId) as string
+        const sdk = await audiusSdk()
+
+        await sdk.developerApps.updateDeveloperApp({
+          appApiKey: apiKey,
+          name,
+          description,
+          imageUrl,
+          userId: encodedUserId
+        })
+
+        return { name, description, imageUrl, apiKey }
+      },
+      options: {
+        idArgKey: 'name',
+        type: 'mutation'
+      },
+      async onQuerySuccess(
+        editApp: DeveloperApp,
+        editAppArgs: NewAppPayload,
+        { dispatch }
+      ) {
+        const { userId } = editAppArgs
+        dispatch(
+          developerAppsApi.util.updateQueryData(
+            'getDeveloperApps',
+            { id: userId },
+            (state) => {
+              const appIndex = state.apps.findIndex(
+                (app) => app.apiKey === editApp.apiKey
+              )
+              state.apps[appIndex] = editApp
+            }
+          )
+        )
+      }
+    },
     deleteDeveloperApp: {
       async fetch(args: DeleteDeveloperAppArgs, { audiusSdk }) {
         const { userId, apiKey } = args
@@ -148,6 +206,7 @@ const developerAppsApi = createApi({
 export const {
   useGetDeveloperApps,
   useAddDeveloperApp,
+  useEditDeveloperApp,
   useDeleteDeveloperApp
 } = developerAppsApi.hooks
 

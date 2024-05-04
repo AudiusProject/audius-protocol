@@ -35,7 +35,8 @@ export default class App<AppData = Map<string, string>> {
 
   private appData: AppData
 
-  constructor({ discoveryDb, identityDb, appData }: AppParams<AppData>) {
+  constructor(params?: AppParams<AppData>) {
+    const { discoveryDb, identityDb, appData } = params || {}
     this.discoveryDb = discoveryDb || initializeDiscoveryDb()
     this.identityDb = identityDb
     this.listeners = new Map()
@@ -111,7 +112,7 @@ export default class App<AppData = Map<string, string>> {
 
     // run all processes concurrently
     const processes = [...listeners, ...repeaters, ...spawned]
-    console.log(`processes ${processes.length}`)
+    console.log(`Running app with ${processes.length} processes`)
 
     // drive all processes to completion
     await Promise.allSettled(processes.map((fn) => fn()))
@@ -152,7 +153,7 @@ export default class App<AppData = Map<string, string>> {
     const func = async () => {
       const conn = await db.client.acquireConnection().catch(console.error)
       conn.on('notification', async (msg: any) => {
-        console.log(JSON.stringify(msg))
+        console.log(JSON.stringify(msg, null, 2))
         const { channel, payload } = msg
         const handlers = this.listeners.get(channel)
         if (handlers !== undefined) {

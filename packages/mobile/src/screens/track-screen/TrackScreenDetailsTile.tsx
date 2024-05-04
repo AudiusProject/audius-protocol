@@ -1,6 +1,9 @@
 import { useCallback } from 'react'
 
-import { useGatedContentAccess } from '@audius/common/hooks'
+import {
+  useGatedContentAccess,
+  useIsGatedContentPlaylistAddable
+} from '@audius/common/hooks'
 import {
   Name,
   ShareSource,
@@ -132,7 +135,8 @@ export const TrackScreenDetailsTile = ({
     title,
     track_id: trackId,
     stream_conditions: streamConditions,
-    ddex_app: ddexApp
+    ddex_app: ddexApp,
+    is_delete
   } = track
 
   const isOwner = owner_id === currentUserId
@@ -144,6 +148,7 @@ export const TrackScreenDetailsTile = ({
   const hasDownloadableAssets =
     (track as Track)?.is_downloadable ||
     ((track as Track)?._stems?.length ?? 0) > 0
+  const isPlaylistAddable = useIsGatedContentPlaylistAddable(track as Track)
 
   const { data: albumInfo } = trpc.tracks.getAlbumBacklink.useQuery(
     { trackId },
@@ -248,9 +253,12 @@ export const TrackScreenDetailsTile = ({
       isEditAlbumsEnabled && isOwner && !ddexApp
         ? OverflowAction.ADD_TO_ALBUM
         : null
+    const addToPlaylistAction = isPlaylistAddable
+      ? OverflowAction.ADD_TO_PLAYLIST
+      : null
     const overflowActions = [
       addToAlbumAction,
-      OverflowAction.ADD_TO_PLAYLIST,
+      addToPlaylistAction,
       isOwner
         ? null
         : user.does_current_user_follow
@@ -308,6 +316,7 @@ export const TrackScreenDetailsTile = ({
       isPlaying={isPlaying && isPlayingId}
       isPreviewing={isPreviewing}
       isUnlisted={is_unlisted}
+      isDeleted={is_delete}
       onPressFavorites={handlePressFavorites}
       onPressOverflow={handlePressOverflow}
       onPressPlay={handlePressPlay}

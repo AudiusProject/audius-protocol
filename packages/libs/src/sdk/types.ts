@@ -7,12 +7,12 @@ import type { DiscoveryNodeSelectorService } from './services/DiscoveryNodeSelec
 import type { EntityManagerService } from './services/EntityManager'
 import type { LoggerService } from './services/Logger'
 import type {
-  RewardManagerClient,
-  ClaimableTokensClient,
+  PaymentRouterClient,
   SolanaRelayService,
-  SolanaWalletAdapter,
-  PaymentRouterClient
+  SolanaWalletAdapter
 } from './services/Solana'
+import { ClaimableTokensClient } from './services/Solana/programs/ClaimableTokensClient'
+import { RewardManagerClient } from './services/Solana/programs/RewardManagerClient'
 import type { StorageService } from './services/Storage'
 import type { StorageNodeSelectorService } from './services/StorageNodeSelector'
 
@@ -102,7 +102,12 @@ const DevAppSchema = z.object({
   /**
    * API secret, required for writes
    */
-  apiSecret: z.optional(z.string().min(1))
+  apiSecret: z.optional(z.string().min(1)),
+  /**
+   * Target environment
+   * @internal
+   */
+  environment: z.enum(['development', 'staging', 'production']).optional()
 })
 
 const CustomAppSchema = z.object({
@@ -121,7 +126,12 @@ const CustomAppSchema = z.object({
   /**
    * API secret, required for writes
    */
-  apiSecret: z.optional(z.string().min(1))
+  apiSecret: z.optional(z.string().min(1)),
+  /**
+   * Target environment
+   * @internal
+   */
+  environment: z.enum(['development', 'staging', 'production']).optional()
 })
 
 export const SdkConfigSchema = z.union([DevAppSchema, CustomAppSchema])

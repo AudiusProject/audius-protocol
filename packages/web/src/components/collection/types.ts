@@ -17,6 +17,7 @@ export type CollectionHeaderProps = {
   tracksLoading: boolean
   loading: boolean
   playing: boolean
+  previewing: boolean
   isOwner: boolean
   isAlbum: boolean
   access: AccessPermissions | null
@@ -43,5 +44,6 @@ export type CollectionHeaderProps = {
   onClickReposts?: () => void
   onClickFavorites?: () => void
   onPlay: MouseEventHandler<HTMLButtonElement>
+  onPreview: MouseEventHandler<HTMLButtonElement>
   onFilterChange?: (e: ChangeEvent<HTMLInputElement>) => void
 }

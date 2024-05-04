@@ -65,6 +65,7 @@ import {
   OfflineDownloadStatus
 } from 'app/store/offline-downloads/slice'
 
+import { useChromecast } from './GoogleCast'
 import { useSavePodcastProgress } from './useSavePodcastProgress'
 
 const { getUserId } = accountSelectors
@@ -184,6 +185,8 @@ export const AudioPlayer = () => {
   const isOfflineModeEnabled = useIsOfflineModeEnabled()
   const nftAccessSignatureMap = useSelector(getNftAccessSignatureMap)
   const { storageNodeSelector } = useAppContext()
+
+  useChromecast()
 
   // Queue Things
   const queueIndex = useSelector(getIndex)

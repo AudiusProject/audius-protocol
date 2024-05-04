@@ -12,13 +12,17 @@ const PreloadImage = ({
   alt = '',
   asBackground = false,
   preloaded = false,
-  className
+  className,
+  height,
+  width
 }: {
   src: string
   alt?: string
   asBackground?: boolean
   preloaded?: boolean
   className?: string
+  height?: string
+  width?: string
 }) => {
   const [isLoaded, setIsLoaded] = useState(preloaded)
   useEffect(() => {
@@ -33,13 +37,15 @@ const PreloadImage = ({
   return asBackground ? (
     <div
       className={cn(styles.img, className, { [styles.isLoaded]: isLoaded })}
-      style={{ backgroundImage: `url(${src})` }}
+      style={{ backgroundImage: `url(${src})`, height, width }}
     />
   ) : (
     <img
       src={src}
       className={cn(styles.img, className, { [styles.isLoaded]: isLoaded })}
       alt={alt}
+      height={height}
+      width={width}
     />
   )
 }

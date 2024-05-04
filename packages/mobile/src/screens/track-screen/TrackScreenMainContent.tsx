@@ -51,7 +51,6 @@ export const TrackScreenMainContent = ({
   const handlePressGoToRemixes = () => {
     navigation.push('TrackRemixes', { id: track.track_id })
   }
-
   return (
     <View style={styles.root}>
       <View style={styles.headerContainer}>

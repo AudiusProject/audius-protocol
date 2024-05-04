@@ -1,4 +1,4 @@
-import { useCallback, memo, MouseEvent } from 'react'
+import { useCallback, memo } from 'react'
 
 import {
   CreatePlaylistSource,
@@ -27,9 +27,9 @@ import {
   IconRepost as IconReposts
 } from '@audius/harmony'
 
-import Card from 'components/card-legacy/desktop/Card'
 import { ClientOnly } from 'components/client-only/ClientOnly'
 import CollectiblesPage from 'components/collectibles/components/CollectiblesPage'
+import { CollectionCard } from 'components/collection'
 import CoverPhoto from 'components/cover-photo/CoverPhoto'
 import CardLineup from 'components/lineup/CardLineup'
 import Lineup from 'components/lineup/Lineup'
@@ -44,7 +44,7 @@ import useTabs, { TabHeader, useTabRecalculator } from 'hooks/useTabs/useTabs'
 import { BlockUserConfirmationModal } from 'pages/chat-page/components/BlockUserConfirmationModal'
 import { UnblockUserConfirmationModal } from 'pages/chat-page/components/UnblockUserConfirmationModal'
 import EmptyTab from 'pages/profile-page/components/EmptyTab'
-import { collectionPage, profilePage } from 'utils/route'
+import { profilePage } from 'utils/route'
 import { getUserPageSEOFields } from 'utils/seo'
 
 import { DeactivatedProfileTombstone } from '../DeactivatedProfileTombstone'
@@ -267,47 +267,8 @@ const ProfilePage = ({
 
   const getArtistProfileContent = () => {
     if (!profile || !albums || !playlists) return { headers: [], elements: [] }
-    const albumCards = albums.map((album, index) => (
-      <Card
-        key={index}
-        size='medium'
-        handle={profile.handle}
-        ddexApp={album.ddex_app}
-        playlistName={album.playlist_name}
-        playlistId={album.playlist_id}
-        id={album.playlist_id}
-        isPublic={!album.is_private}
-        imageSize={album._cover_art_sizes}
-        isPlaylist={!album.is_album}
-        primaryText={album.playlist_name}
-        // link={fullAlbumPage(profile.handle, album.playlist_name, album.playlist_id)}
-        secondaryText={formatCardSecondaryText(
-          album.save_count,
-          album.playlist_contents.track_ids.length
-        )}
-        cardCoverImageSizes={album._cover_art_sizes}
-        isReposted={album.has_current_user_reposted}
-        isSaved={album.has_current_user_saved}
-        href={collectionPage(
-          profile.handle,
-          album.playlist_name,
-          album.playlist_id,
-          album.permalink,
-          true
-        )}
-        onClick={(e: MouseEvent) => {
-          e.preventDefault()
-          goToRoute(
-            collectionPage(
-              profile.handle,
-              album.playlist_name,
-              album.playlist_id,
-              album.permalink,
-              true
-            )
-          )
-        }}
-      />
+    const albumCards = albums.map((album) => (
+      <CollectionCard key={album.playlist_id} id={album.playlist_id} size='m' />
     ))
     if (isOwner) {
       albumCards.unshift(
@@ -321,47 +282,11 @@ const ProfilePage = ({
       )
     }
 
-    const playlistCards = playlists.map((playlist, index) => (
-      <Card
-        key={index}
-        size='medium'
-        handle={profile.handle}
-        ddexApp={playlist.ddex_app}
-        playlistName={playlist.playlist_name}
-        playlistId={playlist.playlist_id}
+    const playlistCards = playlists.map((playlist) => (
+      <CollectionCard
+        key={playlist.playlist_id}
         id={playlist.playlist_id}
-        imageSize={playlist._cover_art_sizes}
-        isPublic={!playlist.is_private}
-        // isAlbum={playlist.is_album}
-        primaryText={playlist.playlist_name}
-        // link={fullPlaylistPage(profile.handle, playlist.playlist_name, playlist.playlist_id)}
-        secondaryText={formatCardSecondaryText(
-          playlist.save_count,
-          playlist.playlist_contents.track_ids.length,
-          playlist.is_private
-        )}
-        cardCoverImageSizes={playlist._cover_art_sizes}
-        isReposted={playlist.has_current_user_reposted}
-        isSaved={playlist.has_current_user_saved}
-        href={collectionPage(
-          profile.handle,
-          playlist.playlist_name,
-          playlist.playlist_id,
-          playlist.permalink,
-          playlist.is_album
-        )}
-        onClick={(e: MouseEvent) => {
-          e.preventDefault()
-          goToRoute(
-            collectionPage(
-              profile.handle,
-              playlist.playlist_name,
-              playlist.playlist_id,
-              playlist.permalink,
-              playlist.is_album
-            )
-          )
-        }}
+        size='m'
       />
     ))
     if (isOwner) {
@@ -524,47 +449,11 @@ const ProfilePage = ({
 
   const getUserProfileContent = () => {
     if (!profile || !playlists) return { headers: [], elements: [] }
-    const playlistCards = playlists.map((playlist, index) => (
-      <Card
-        key={index}
-        size='medium'
+    const playlistCards = playlists.map((playlist) => (
+      <CollectionCard
+        key={playlist.playlist_id}
         id={playlist.playlist_id}
-        userId={playlist.playlist_owner_id}
-        imageSize={playlist._cover_art_sizes}
-        handle={profile.handle}
-        playlistId={playlist.playlist_id}
-        isPublic={!playlist.is_private}
-        playlistName={playlist.playlist_name}
-        // isAlbum={playlist.is_album}
-        primaryText={playlist.playlist_name}
-        secondaryText={formatCardSecondaryText(
-          playlist.save_count,
-          playlist.playlist_contents.track_ids.length,
-          playlist.is_private
-        )}
-        // link={fullPlaylistPage(profile.handle, playlist.playlist_name, playlist.playlist_id)}
-        isReposted={playlist.has_current_user_reposted}
-        isSaved={playlist.has_current_user_saved}
-        cardCoverImageSizes={playlist._cover_art_sizes}
-        href={collectionPage(
-          profile.handle,
-          playlist.playlist_name,
-          playlist.playlist_id,
-          playlist.permalink,
-          playlist.is_album
-        )}
-        onClick={(e: MouseEvent) => {
-          e.preventDefault()
-          goToRoute(
-            collectionPage(
-              profile.handle,
-              playlist.playlist_name,
-              playlist.playlist_id,
-              playlist.permalink,
-              playlist.is_album
-            )
-          )
-        }}
+        size='m'
       />
     ))
     playlistCards.unshift(
@@ -661,7 +550,7 @@ const ProfilePage = ({
   }
 
   const { headers, elements } = profile
-    ? isArtist
+    ? !isArtist
       ? getArtistProfileContent()
       : getUserProfileContent()
     : { headers: [], elements: [] }

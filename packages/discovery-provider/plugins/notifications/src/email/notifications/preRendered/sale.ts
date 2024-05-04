@@ -1,6 +1,9 @@
+import { capitalize } from 'lodash'
+
 export const email = ({
   purchaserName,
   purchaserLink,
+  contentType,
   contentTitle,
   contentLink,
   contentImage,
@@ -11,6 +14,7 @@ export const email = ({
 }: {
   purchaserName: string
   purchaserLink: string
+  contentType: string
   contentTitle: string
   contentLink: string
   contentImage: string
@@ -116,7 +120,9 @@ export const email = ({
 											</div> 
 											<div style="height: 8px; line-height: 8px; font-size: 6px;">&nbsp;</div>
 											<div style="line-height: 24px;">
-												<span style="font-family: Inter, sans-serif; font-weight: bold; font-size: 18px; color: #ffffff;">Your Track Has Been Purchased</span>
+												<span style="font-family: Inter, sans-serif; font-weight: bold; font-size: 18px; color: #ffffff;">Your ${capitalize(
+                          contentType
+                        )} Has Been Purchased</span>
 											</div>
 										</div>
 										<!--[if (gte mso 9)|(IE)]>
@@ -156,7 +162,7 @@ export const email = ({
 															</div> 
 															<div style="height: 16px; line-height: 16px; font-size: 14px;">&nbsp;</div>
 															<div style="line-height: 24px;">
-																<span style="font-family: 'Avenir Next LT Pro', sans-serif; font-size: 18px; color: #858199;"><span style="text-decoration: none;">Congratulations! </span><a href="${purchaserLink}" style="color: #7e1bcc; text-decoration: none;" target="_blank"><span style="color: #7e1bcc; text-decoration: none;">${purchaserName} </span></a><span style="text-decoration: none;">just bought your track on Audius!</span></span>
+																<span style="font-family: 'Avenir Next LT Pro', sans-serif; font-size: 18px; color: #858199;"><span style="text-decoration: none;">Congratulations! </span><a href="${purchaserLink}" style="color: #7e1bcc; text-decoration: none;" target="_blank"><span style="color: #7e1bcc; text-decoration: none;">${purchaserName} </span></a><span style="text-decoration: none;">just bought your ${contentType} on Audius!</span></span>
 															</div>
 														</div>
 													</td></tr>
@@ -214,7 +220,8 @@ export const email = ({
 																<tr><td align="left" valign="middle" style="padding: 8px 0px;">
 																	<div>
 																		<div style="line-height: 24px;">
-																			<span style="font-family: 'Avenir Next LT Pro', sans-serif; font-size: 18px; color: #7e1bcc;">${contentTitle}<br>${artistName}</span>
+																			<span style="font-family: 'Avenir Next LT Pro', sans-serif; font-size: 18px; color: #7e1bcc; font-weight: bold">${contentTitle}</span><br>
+																			<span style="font-family: 'Avenir Next LT Pro', sans-serif; font-size: 18px; color: #7e1bcc;">${artistName}</span>
 																		</div>
 																	</div>
 																</td></tr>
@@ -272,7 +279,9 @@ export const email = ({
 														<tr><td align="left" valign="middle" style="padding: 0px 8px 0px 0px;">
 															<div>
 																<div style="line-height: 20px;">
-																	<span style="font-family: 'Avenir Next LT Pro', sans-serif; font-size: 16px; color: #858199;">Premium Track</span>
+																	<span style="font-family: 'Avenir Next LT Pro', sans-serif; font-size: 16px; color: #858199;">Premium ${capitalize(
+                                    contentType
+                                  )}</span>
 																</div>
 															</div>
 														</td></tr>

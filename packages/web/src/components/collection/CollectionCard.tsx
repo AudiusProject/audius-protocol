@@ -6,13 +6,17 @@ import {
   SquareSizes,
   isContentUSDCPurchaseGated
 } from '@audius/common/models'
-import { cacheCollectionsSelectors } from '@audius/common/store'
+import {
+  accountSelectors,
+  cacheCollectionsSelectors
+} from '@audius/common/store'
+import { formatCount } from '@audius/common/utils'
 import { Flex, Text } from '@audius/harmony'
 import IconHeart from '@audius/harmony/src/assets/icons/Heart.svg'
 import IconRepost from '@audius/harmony/src/assets/icons/Repost.svg'
 import { Link, useLinkClickHandler } from 'react-router-dom-v5-compat'
 
-import { Card, CardProps, CardFooter } from 'components/card'
+import { Card, CardProps, CardFooter, CardContent } from 'components/card'
 import { DogEar } from 'components/dog-ear'
 import { UserLink } from 'components/link'
 import { LockedStatusPill } from 'components/locked-status-pill'
@@ -21,6 +25,7 @@ import { useSelector } from 'utils/reducer'
 import { CollectionImage } from './CollectionImage'
 
 const { getCollection } = cacheCollectionsSelectors
+const { getUserId } = accountSelectors
 
 const messages = {
   repost: 'Reposts',
@@ -30,9 +35,11 @@ const messages = {
 
 type CollectionCardProps = Omit<CardProps, 'id'> & {
   id: ID
+  noNavigation?: boolean
 }
 
 const cardSizeToCoverArtSizeMap = {
+  xs: SquareSizes.SIZE_150_BY_150,
   s: SquareSizes.SIZE_150_BY_150,
   m: SquareSizes.SIZE_480_BY_480,
   l: SquareSizes.SIZE_480_BY_480
@@ -40,9 +47,10 @@ const cardSizeToCoverArtSizeMap = {
 
 export const CollectionCard = forwardRef(
   (props: CollectionCardProps, ref: Ref<HTMLDivElement>) => {
-    const { id, size, onClick, ...other } = props
+    const { id, size, onClick, noNavigation, ...other } = props
 
     const collection = useSelector((state) => getCollection(state, { id }))
+    const accountId = useSelector(getUserId)
 
     const handleNavigate = useLinkClickHandler<HTMLDivElement>(
       collection?.permalink ?? ''
@@ -51,9 +59,10 @@ export const CollectionCard = forwardRef(
     const handleClick = useCallback(
       (e: MouseEvent<HTMLDivElement>) => {
         onClick?.(e)
+        if (noNavigation) return
         handleNavigate(e)
       },
-      [handleNavigate, onClick]
+      [noNavigation, handleNavigate, onClick]
     )
 
     if (!collection) return null
@@ -69,11 +78,12 @@ export const CollectionCard = forwardRef(
       stream_conditions
     } = collection
 
+    const isOwner = accountId === playlist_owner_id
     const isPurchase = isContentUSDCPurchaseGated(stream_conditions)
 
     const dogEarType = is_private
       ? DogEarType.HIDDEN
-      : isPurchase && !access.stream
+      : isPurchase && (!access.stream || isOwner)
       ? DogEarType.USDC_PURCHASE
       : null
 
@@ -88,18 +98,22 @@ export const CollectionCard = forwardRef(
             size={cardSizeToCoverArtSizeMap[size]}
             data-testid={`cover-art-${id}`}
           />
-          <Flex direction='column' gap='xs'>
-            <Text variant='title' color='default' ellipses asChild>
-              <Link to={permalink} css={{ pointerEvents: 'none' }}>
-                {playlist_name}
-              </Link>
+          <CardContent gap='xs'>
+            <Text
+              variant='title'
+              color='default'
+              css={{ pointerEvents: 'none', textAlign: 'center' }}
+              ellipses
+              asChild
+            >
+              <Link to={permalink}>{playlist_name}</Link>
             </Text>
             <UserLink
               userId={playlist_owner_id}
               textVariant='body'
               css={{ justifyContent: 'center' }}
             />
-          </Flex>
+          </CardContent>
         </Flex>
         <CardFooter>
           {is_private ? (
@@ -111,7 +125,7 @@ export const CollectionCard = forwardRef(
               <Flex gap='xs' alignItems='center'>
                 <IconRepost size='s' color='subdued' title={messages.repost} />
                 <Text variant='label' color='subdued'>
-                  {repost_count}
+                  {formatCount(repost_count)}
                 </Text>
               </Flex>
               <Flex gap='xs' alignItems='center'>
@@ -121,10 +135,10 @@ export const CollectionCard = forwardRef(
                   title={messages.favorites}
                 />
                 <Text variant='label' color='subdued'>
-                  {save_count}
+                  {formatCount(save_count)}
                 </Text>
               </Flex>
-              {isPurchase ? (
+              {isPurchase && !isOwner ? (
                 <LockedStatusPill variant='premium' locked={!access.stream} />
               ) : null}
             </>

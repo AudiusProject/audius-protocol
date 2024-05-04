@@ -58,7 +58,6 @@ from src.api.v1.models.activities import (
 )
 from src.api.v1.models.common import favorite
 from src.api.v1.models.developer_apps import authorized_app, developer_app
-from src.api.v1.models.extensions.models import WildcardModel
 from src.api.v1.models.grants import managed_user, user_manager
 from src.api.v1.models.support import (
     supporter_response,
@@ -78,6 +77,7 @@ from src.api.v1.models.users import (
     user_model_full,
     user_subscribers,
 )
+from src.api.v1.models.wildcard_model import WildcardModel
 from src.api.v1.playlists import get_tracks_for_playlist
 from src.challenges.challenge_event_bus import setup_challenge_bus
 from src.queries.download_csv import (
@@ -1046,8 +1046,8 @@ class TrackHistoryFull(Resource):
     @full_ns.expect(track_history_parser)
     @auth_middleware(track_history_parser)
     @full_ns.marshal_with(history_response_full)
-    def get(self, id):
-        return self._get(id)
+    def get(self, id, authed_user_id=None):
+        return self._get(id, authed_user_id)
 
 
 @ns.route(USER_HISTORY_TRACKS_ROUTE, doc=False)

@@ -34,7 +34,7 @@ import { make, track } from 'app/services/analytics'
 import type { AppState } from 'app/store'
 import { makeStyles } from 'app/styles'
 
-const { getPlaying, getUid, getCurrentTrack } = playerSelectors
+const { getPlaying, getPreviewing, getUid, getCurrentTrack } = playerSelectors
 const { getIsReachable } = reachabilitySelectors
 const { getCollectionTracksLineup } = collectionPageSelectors
 const { getCollection } = cacheCollectionsSelectors
@@ -125,6 +125,7 @@ type CollectionScreenDetailsTileProps = {
   isPrivate?: boolean
   isOwner?: boolean
   isPublishing?: boolean
+  isDeleted?: boolean
   extraDetails?: DetailsTileDetail[]
   collectionId: number | SmartCollectionVariant
   hasStreamAccess?: boolean
@@ -165,6 +166,7 @@ export const CollectionScreenDetailsTile = ({
   hasStreamAccess,
   streamConditions,
   ddexApp,
+  isDeleted,
   ...detailsTileProps
 }: CollectionScreenDetailsTileProps) => {
   const styles = useStyles()
@@ -180,24 +182,42 @@ export const CollectionScreenDetailsTile = ({
   const playingUid = useSelector(getUid)
   const isQueued = useSelector(selectIsQueued)
   const isPlaying = useSelector(getPlaying)
+  const isPreviewing = useSelector(getPreviewing)
   const playingTrack = useSelector(getCurrentTrack)
   const playingTrackId = playingTrack?.track_id
   const firstTrack = useSelector(selectFirstTrack)
   const messages = getMessages(isAlbum ? 'album' : 'playlist')
   useRefetchLineupOnTrackAdd(collectionId)
 
-  const handlePressPlay = useCallback(() => {
-    if (isPlaying && isQueued) {
-      dispatch(tracksActions.pause())
-      recordPlay(playingTrackId, false)
-    } else if (!isPlaying && isQueued) {
-      dispatch(tracksActions.play())
-      recordPlay(playingTrackId)
-    } else if (trackCount > 0 && firstTrack) {
-      dispatch(tracksActions.play(firstTrack.uid))
-      recordPlay(firstTrack.id)
-    }
-  }, [dispatch, isPlaying, playingTrackId, isQueued, trackCount, firstTrack])
+  const play = useCallback(
+    ({ isPreview = false }: { isPreview?: boolean } = {}) => {
+      if (isPlaying && isQueued && isPreviewing === isPreview) {
+        dispatch(tracksActions.pause())
+        recordPlay(playingTrackId, false)
+      } else if (!isPlaying && isQueued) {
+        dispatch(tracksActions.play())
+        recordPlay(playingTrackId)
+      } else if (trackCount > 0 && firstTrack) {
+        dispatch(tracksActions.play(firstTrack.uid, { isPreview }))
+        recordPlay(firstTrack.id)
+      }
+    },
+    [
+      isPlaying,
+      isQueued,
+      isPreviewing,
+      trackCount,
+      firstTrack,
+      dispatch,
+      playingTrackId
+    ]
+  )
+
+  const handlePressPlay = useCallback(() => play(), [play])
+  const handlePressPreview = useCallback(
+    () => play({ isPreview: true }),
+    [play]
+  )
 
   const handlePressTrackListItemPlay = useCallback(
     (uid: UID, id: ID) => {
@@ -273,12 +293,15 @@ export const CollectionScreenDetailsTile = ({
       streamConditions={streamConditions}
       hideRepost={hideRepost || !isReachable}
       isPlaying={isPlaying && isQueued}
+      isPreviewing={isPreviewing && isQueued}
       isPublished={!isPrivate || isPublishing}
+      isDeleted={isDeleted}
       isCollection={true}
       renderBottomContent={renderTrackList}
       headerText={isPrivate ? messages.hiddenType : messages.collectionType}
       renderImage={renderImage}
       onPressPlay={handlePressPlay}
+      onPressPreview={handlePressPreview}
       isPlayable={isPlayable}
       trackCount={trackCount}
     />

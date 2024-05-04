@@ -16,6 +16,7 @@ import {
   VersionedTransaction
 } from '@solana/web3.js'
 
+import { productionConfig } from '../../../../config/production'
 import { mergeConfigWithDefaults } from '../../../../utils/mergeConfigs'
 import { mintFixedDecimalMap } from '../../../../utils/mintFixedDecimalMap'
 import { parseParams } from '../../../../utils/parseParams'
@@ -23,7 +24,7 @@ import { Prettify } from '../../../../utils/prettify'
 import { Mint } from '../../types'
 import { BaseSolanaProgram } from '../BaseSolanaProgram'
 
-import { defaultPaymentRouterConfig } from './constants'
+import { getDefaultPaymentRouterConfig } from './getDefaultConfig'
 import {
   CreateMemoInstructionRequest,
   CreateMemoInstructionSchema,
@@ -52,7 +53,7 @@ export class PaymentRouterClient extends BaseSolanaProgram {
   constructor(config: PaymentRouterClientConfig) {
     const configWithDefaults = mergeConfigWithDefaults(
       config,
-      defaultPaymentRouterConfig
+      getDefaultPaymentRouterConfig(productionConfig)
     )
     super(configWithDefaults, config.solanaWalletAdapter)
     this.programId = configWithDefaults.programId
