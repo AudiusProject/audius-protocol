@@ -148,10 +148,6 @@ export const LockedContentDetailsTile = ({
               userId={owner.user_id}
             />
           </Text>
-          <Flex gap='xs'>
-            <Text variant='title'>{messages.by}</Text>
-            <UserLink userId={owner.user_id} />
-          </Flex>
         </Flex>
       </Flex>
     </Flex>
