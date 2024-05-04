@@ -38,7 +38,7 @@ import {
   followersUserListActions,
   playerSelectors
 } from '@audius/common/store'
-import { getErrorMessage, formatCount, Nullable } from '@audius/common/utils'
+import { getErrorMessage, Nullable } from '@audius/common/utils'
 import { push as pushRoute, replace } from 'connected-react-router'
 import { UnregisterCallback } from 'history'
 import { uniq } from 'lodash'
@@ -670,17 +670,6 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
     this.props.loadMoreUserFeed(offset, limit, profile.user_id)
   }
 
-  formatCardSecondaryText = (
-    saves: number,
-    tracks: number,
-    isPrivate = false
-  ) => {
-    const savesText = saves === 1 ? 'Favorite' : 'Favorites'
-    const tracksText = tracks === 1 ? 'Track' : 'Tracks'
-    if (isPrivate) return `Private • ${tracks} ${tracksText}`
-    return `${formatCount(saves)} ${savesText} • ${tracks} ${tracksText}`
-  }
-
   fetchFollowers = () => {
     const {
       fetchFollowUsers,
@@ -922,7 +911,6 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
       onSortByPopular: this.onSortByPopular,
       loadMoreArtistTracks: this.loadMoreArtistTracks,
       loadMoreUserFeed: this.loadMoreUserFeed,
-      formatCardSecondaryText: this.formatCardSecondaryText,
       refreshProfile: this.refreshProfile,
       fetchFollowers: this.fetchFollowers,
       fetchFollowees: this.fetchFollowees,
