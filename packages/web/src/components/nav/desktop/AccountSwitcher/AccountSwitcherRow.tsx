@@ -1,10 +1,11 @@
 import { SquareSizes, UserMetadata } from '@audius/common/models'
 import { Flex, Text, useTheme } from '@audius/harmony'
+import styled from '@emotion/styled'
+
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import UserBadges from 'components/user-badges/UserBadges'
 import { useProfilePicture } from 'hooks/useUserProfilePicture'
 
-import styled from '@emotion/styled'
 import styles from './AccountSwitcherRow.module.css'
 
 export type AccountSwitcherRowProps = {

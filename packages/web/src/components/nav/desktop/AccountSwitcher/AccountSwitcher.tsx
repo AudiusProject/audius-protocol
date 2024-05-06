@@ -5,11 +5,11 @@ import {
   useGetCurrentWeb3User,
   useGetManagedAccounts
 } from '@audius/common/api'
+import { useAccountSwitcher } from '@audius/common/hooks'
+import { UserMetadata } from '@audius/common/models'
 import { Flex, IconButton, IconCaretDown, Popup } from '@audius/harmony'
 
 import { AccountListContent } from './AccountListContent'
-import { UserMetadata } from '@audius/common/models'
-import { useAccountSwitcher } from '@audius/common/hooks'
 
 export const AccountSwitcher = () => {
   const [isExpanded, setIsExpanded] = useState(false)
@@ -19,13 +19,18 @@ export const AccountSwitcher = () => {
 
   const { switchAccount } = useAccountSwitcher()
 
-  const onAccountSelected = useCallback((user: UserMetadata) => {
-    switchAccount(user)
-  }, [])
+  const onAccountSelected = useCallback(
+    (user: UserMetadata) => {
+      switchAccount(user)
+    },
+    [switchAccount]
+  )
+
+  const web3UserId = currentWeb3User?.user_id ?? null
 
   const { data: managedAccounts = [] } = useGetManagedAccounts(
-    { userId: currentWeb3User?.user_id! },
-    { disabled: !currentWeb3User }
+    { userId: web3UserId! },
+    { disabled: !web3UserId }
   )
 
   const parentElementRef = useRef<HTMLDivElement>(null)

@@ -1,13 +1,10 @@
-import {
-  ID,
-  ManagedUserMetadata,
-  User,
-  UserMetadata
-} from '@audius/common/models'
-import { Box, Flex, IconUserArrowRotate, Text, useTheme } from '@audius/harmony'
-import styled from '@emotion/styled'
-import { AccountSwitcherRow } from './AccountSwitcherRow'
 import { useCallback } from 'react'
+
+import { ID, ManagedUserMetadata, UserMetadata } from '@audius/common/models'
+import { Box, Flex, IconUserArrowRotate, Text } from '@audius/harmony'
+import styled from '@emotion/styled'
+
+import { AccountSwitcherRow } from './AccountSwitcherRow'
 
 const messages = {
   switchAccount: 'Switch Account',
@@ -32,8 +29,6 @@ export const AccountListContent = ({
   currentUserId,
   onAccountSelected
 }: AccountListContentProps) => {
-  const theme = useTheme()
-
   const onUserSelected = useCallback(
     (user: UserMetadata) => {
       if (user.user_id !== currentUserId) {
@@ -42,7 +37,6 @@ export const AccountListContent = ({
     },
     [currentUserId, onAccountSelected]
   )
-  // TODO: aria-labels
   return (
     <Flex
       direction='column'
@@ -69,7 +63,7 @@ export const AccountListContent = ({
         <li
           role='menuitem'
           tabIndex={0}
-          onClick={() => onAccountSelected(managerAccount)}
+          onClick={() => onUserSelected(managerAccount)}
         >
           <AccountSwitcherRow
             user={managerAccount}
@@ -92,7 +86,7 @@ export const AccountListContent = ({
           <li
             key={user.user_id}
             role='menuitem'
-            onClick={() => onAccountSelected(user)}
+            onClick={() => onUserSelected(user)}
             tabIndex={-1}
           >
             <Box borderBottom={i < accounts.length - 1 ? 'default' : undefined}>
