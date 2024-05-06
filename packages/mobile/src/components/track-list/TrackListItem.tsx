@@ -273,6 +273,8 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
     return isActive && getPlaying(state)
   })
   const isPlaylistAddable = useIsGatedContentPlaylistAddable(track)
+  // Unlike other types of gated tracks, USDC-gated tracks have previews so we
+  // should show the play button for them.
   const isPlayable = !isLocked || isContentUSDCPurchaseGated(streamConditions)
 
   const messages = getMessages({ isDeleted })
@@ -292,12 +294,7 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
   )
 
   const onPressTrack = () => {
-    if (
-      uid &&
-      (!isLocked || isContentUSDCPurchaseGated(streamConditions)) &&
-      !isDeleted &&
-      togglePlay
-    ) {
+    if (uid && isPlayable && !isDeleted && togglePlay) {
       togglePlay(uid, track_id)
     }
   }
