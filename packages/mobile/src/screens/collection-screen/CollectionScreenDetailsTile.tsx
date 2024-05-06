@@ -106,11 +106,6 @@ const getMessages = (collectionType: 'album' | 'playlist') => ({
 })
 
 const useStyles = makeStyles(({ palette, spacing }) => ({
-  trackListDivider: {
-    marginHorizontal: spacing(6),
-    borderTopWidth: 1,
-    borderTopColor: palette.neutralLight7
-  },
   empty: {
     color: palette.neutral,
     paddingHorizontal: spacing(8),
@@ -252,7 +247,6 @@ export const CollectionScreenDetailsTile = ({
       <TrackList
         contextPlaylistId={!isAlbum ? numericCollectionId : undefined}
         trackItemAction='overflow'
-        showDivider
         showSkeleton={isLineupLoading}
         togglePlay={handlePressTrackListItemPlay}
         isAlbumPage={isAlbum}
