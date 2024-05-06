@@ -269,6 +269,7 @@ export const createCollectionSchema = (collectionType: 'playlist' | 'album') =>
       }),
       is_unlisted: z.optional(z.boolean()),
       is_album: z.literal(collectionType === 'album'),
+      is_private: z.optional(z.boolean()),
       tracks: z.array(z.object({ metadata: CollectionTrackMetadataSchema })),
       ddex_release_ids: z.optional(z.record(z.string()).nullable()),
       artists: z.optional(z.array(DDEXResourceContributor).nullable()),
