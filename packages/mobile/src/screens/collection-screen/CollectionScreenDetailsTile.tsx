@@ -163,6 +163,7 @@ export const CollectionScreenDetailsTile = ({
   isOwner,
   hideOverflow,
   hideRepost,
+  hideFavorite,
   hasStreamAccess,
   streamConditions,
   ddexApp,
@@ -291,7 +292,8 @@ export const CollectionScreenDetailsTile = ({
       hideListenCount={true}
       hasStreamAccess={hasStreamAccess}
       streamConditions={streamConditions}
-      hideRepost={hideRepost || !isReachable}
+      hideFavorite={hideFavorite || !hasStreamAccess}
+      hideRepost={hideRepost || !isReachable || !hasStreamAccess}
       isPlaying={isPlaying && isQueued}
       isPreviewing={isPreviewing && isQueued}
       isPublished={!isPrivate || isPublishing}

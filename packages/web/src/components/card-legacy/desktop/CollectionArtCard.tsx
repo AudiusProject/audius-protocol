@@ -85,9 +85,11 @@ const CollectionArtCard = g(
       has_current_user_saved,
       repost_count,
       save_count,
-      permalink
+      permalink,
+      access
     } = collection
     const { user_id, name, handle } = user
+    const hasStreamAccess = access?.stream
 
     const [isPerspectiveDisabled, setIsPerspectiveDisabled] = useState(false)
 
@@ -144,8 +146,8 @@ const CollectionArtCard = g(
       playlistName: playlist_name,
       isOwner: currentUserId === user_id,
       includeShare: true,
-      includeRepost: true,
-      includeSave: true,
+      includeRepost: hasStreamAccess,
+      includeFavorite: hasStreamAccess,
       includeVisitPage: true,
       isFavorited: has_current_user_saved,
       isReposted: has_current_user_reposted,
