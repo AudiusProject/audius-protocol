@@ -99,18 +99,6 @@ const messages = {
   }
 }
 
-const formatProgressLabel = (
-  label?: string,
-  current?: number,
-  max?: number
-) => {
-  return fillString(
-    label ?? '',
-    formatNumberCommas(current?.toString() ?? ''),
-    formatNumberCommas(max?.toString() ?? '')
-  )
-}
-
 type RewardPanelProps = {
   title: string
   icon: ReactNode
@@ -161,27 +149,45 @@ const RewardPanel = ({
   let progressLabelFilled: string
   if (shouldShowCompleted) {
     progressLabelFilled = messages.completeLabel
-  } else if (needsDisbursement) {
-    progressLabelFilled = messages.readyToClaim
-  } else if (pending) {
-    progressLabelFilled = messages.pendingRewards
+  } else if (challenge && challenge?.cooldown_days > 0) {
+    if (needsDisbursement) {
+      progressLabelFilled = messages.readyToClaim
+    } else if (pending) {
+      progressLabelFilled = messages.pendingRewards
+    } else if (challenge?.challenge_type === 'aggregate') {
+      // Count down
+      progressLabelFilled = fillString(
+        remainingLabel ?? '',
+        formatNumberCommas(
+          (challenge?.max_steps - challenge?.current_step_count)?.toString() ??
+            ''
+        ),
+        formatNumberCommas(challenge?.max_steps?.toString() ?? '')
+      )
+    } else {
+      progressLabelFilled = fillString(
+        progressLabel ?? '',
+        formatNumberCommas(challenge?.current_step_count?.toString() ?? ''),
+        formatNumberCommas(challenge?.max_steps?.toString() ?? '')
+      )
+    }
   } else if (challenge?.challenge_type === 'aggregate') {
     // Count down
-    progressLabelFilled = formatProgressLabel(
+    progressLabelFilled = fillString(
       remainingLabel ?? '',
-      challenge?.max_steps - challenge?.current_step_count,
-      challenge.max_steps
-    )
-  } else if (progressLabel?.includes('%')) {
-    progressLabelFilled = formatProgressLabel(
-      progressLabel,
-      challenge?.current_step_count,
-      challenge?.max_steps
+      formatNumberCommas(
+        (challenge?.max_steps - challenge?.current_step_count)?.toString() ?? ''
+      ),
+      formatNumberCommas(challenge?.max_steps?.toString() ?? '')
     )
   } else {
-    progressLabelFilled = progressLabel ?? ''
+    // Count up
+    progressLabelFilled = fillString(
+      progressLabel ?? '',
+      formatNumberCommas(challenge?.current_step_count?.toString() ?? ''),
+      formatNumberCommas(challenge?.max_steps?.toString() ?? '')
+    )
   }
-
   const buttonMessage = needsDisbursement
     ? messages.claimReward
     : hasDisbursed
