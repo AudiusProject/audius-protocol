@@ -159,9 +159,6 @@ const RewardPanel = ({
     isAudioMatchingChallenge(id) && !needsDisbursement
 
   let progressLabelFilled: string
-  if (challenge?.challenge_id === 'track-upload') {
-    console.log('asdf challenge: ', challenge)
-  }
   if (shouldShowCompleted) {
     progressLabelFilled = messages.completeLabel
   } else if (needsDisbursement) {
