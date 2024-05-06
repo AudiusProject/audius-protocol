@@ -25,13 +25,3 @@ export const getSdk = async (): Promise<AudiusSdk> => {
     // call self again once set
     return getSdk()
 }
-
-export const getLibs = async (): Promise<AudiusLibs> => {
-    if (audiusLibs !== null) return audiusLibs
-    // init libs
-    // @ts-ignore
-    audiusLibs = new AudiusLibs({})
-    await audiusLibs.init()
-    // call self once set
-    return getLibs()
-}

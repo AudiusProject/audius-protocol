@@ -1,11 +1,13 @@
 import { Response } from 'express'
 import { z } from 'zod'
 import { getIP } from '../../utils'
-import { LocationData, RecordListenParams, RecordListenRequest, recordListenBodySchema, recordListenParamsSchema } from './types'
+import { LocationData, RecordListenParams, RecordListenRequest, RecordListenResponse, recordListenBodySchema, recordListenParamsSchema } from './types'
 import { config } from '../../config'
 import axios from 'axios'
-import { getLibs } from '../../sdk'
 import { createTrackListenInstructions, getFeePayerKeypair } from '../../legacy/solana-client'
+import { Logger } from 'pino'
+import { getConnection } from '../../connections'
+import { sendTransactionWithRetries } from '../relay/relay'
 
 // handler for recording a listen that catches all errors and returns correct response
 export const listenHandler = async (req: RecordListenRequest, res: Response) => {
@@ -17,7 +19,8 @@ export const listenHandler = async (req: RecordListenRequest, res: Response) => 
         const ip = getIP(req)
 
         // record listen after validation
-        await recordListen({ userId, trackId, logger, ip })
+        const record = await recordListen({ userId, trackId, logger, ip })
+        return res.status(200).json(record)
     } catch (e: unknown) {
         if (e instanceof z.ZodError) {
             return res.status(400).json({ message: 'Validation Error', errors: e.errors });
@@ -28,46 +31,66 @@ export const listenHandler = async (req: RecordListenRequest, res: Response) => 
 
 // validates and records a track listen, throws in the event of an error
 // any throws in here should be considered 500s as we've passed validation
-export const recordListen = async (params: RecordListenParams) => {
+export const recordListen = async (params: RecordListenParams): Promise<RecordListenResponse> => {
     const { logger, userId, trackId, ip } = params
 
-    logger.info({ ip }, "TrackListen tx submission")
+    logger.info({ ip }, "record listen")
 
-    const url = `https://api.ipdata.co/${ip}?api-key=${config.ipdataApiKey}`
-    const location: LocationData = await axios.get(url)
-        .then(({ data: { city, region, country_name} }: { data: { city: string, region: string, country_name: string}}) => {
-            return { city, region, country: country_name }
-        })
-        .catch((e) => {
-            logger.error({ error: e }, "TrackListen fetch failed")
-            return {}
-        })
+    const connection = getConnection()
 
-    const libs = await getLibs()
-    const connection = libs.solanaWeb3Manager?.getConnection()
-    if (!connection) throw new Error("solana connection not available")
+    const location = await getIpData(logger, ip)
 
-    const instructions = await createTrackListenInstructions({})
+    logger.info({ location }, "location")
+
+    const [secpInstruction, listenInstruction] = await createTrackListenInstructions({
+        privateKey: config.ethValidSigner,
+        userId,
+        trackId,
+        source: "relay",
+        location,
+        connection
+    })
+
+    logger.info({ secpInstruction, listenInstruction }, "instructions")
 
     const feePayer = await getFeePayerKeypair(false)
 
-    const transactionHandler = libs.solanaWeb3Manager?.transactionHandler
-    const txResponse = await transactionHandler?.handleTransaction({
-        instructions,
-        skipPreflight: false,
-        feePayerOverride: feePayer,
-        retry: true,
-    })
+    logger.info({ feePayer }, "feePayer")
 
-    if (!txResponse) throw new Error("txResponse undefined")
+    // await sendTransactionWithRetries({
+    //     transaction: secpInstruction,
 
-    const { res: solTxSignature, error } = txResponse
+    // })
 
-    if (error) {
-        logger.error({ error }, "TrackListen confirmation error")
-        throw new Error(error)
+
+    // logger.info({ txResponse }, "txResponse")
+
+    // if (!txResponse) throw new Error("txResponse undefined")
+
+    // const { res: solTxSignature, error } = txResponse
+
+    // if (error) {
+    //     logger.error({ error }, "TrackListen confirmation error")
+    //     throw new Error(error)
+    // }
+
+    // // send response with signature
+    // logger.info({ solTxSignature }, "TrackListen recorded")
+    return { solTxSignature: null }
+}
+
+const getIpData = async (logger: Logger, ip: string): Promise<LocationData> => {
+    const ipdataApiKey = config.ipdataApiKey
+    if (ipdataApiKey === null) return {}
+    const url = `https://api.ipdata.co/${ip}?api-key=${config.ipdataApiKey}`
+    try {
+        const response = await axios.get(url)
+        .then(({ data: { city, region, country_name} }: { data: { city: string, region: string, country_name: string}}) => {
+            return { city, region, country: country_name }
+        })
+        return response
+    } catch (e: unknown) {
+        logger.error({ error: e }, "TrackListen fetch failed")
+        return {}
     }
-
-    // send response with signature
-    logger.info({ solTxSignature }, "TrackListen recorded")
 }

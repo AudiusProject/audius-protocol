@@ -17,13 +17,10 @@ import { Logger } from 'pino'
 import base58 from 'bs58'
 import { personalSign } from 'eth-sig-util'
 import type { RelayRequestBody } from '@audius/sdk'
+import { connections } from '../../connections'
 
 const RETRY_DELAY_MS = 2 * 1000
 const RETRY_TIMEOUT_MS = 60 * 1000
-
-const connections = config.solanaEndpoints.map(
-  (endpoint) => new Connection(endpoint)
-)
 
 const delay = async (ms: number, options?: { signal: AbortSignal }) => {
   const signal = options?.signal
@@ -104,7 +101,7 @@ const forwardTransaction = async (logger: Logger, transaction: string) => {
  * it's been confirmed with the given commitment level, expires,
  * or times out.
  */
-const sendTransactionWithRetries = async ({
+export const sendTransactionWithRetries = async ({
   transaction,
   commitment,
   confirmationStrategy,

@@ -33,8 +33,9 @@ type Config = {
   waudioMintAddress: string
   solanaFeePayerWallets: Keypair[]
   validSigner: string
+  ethValidSigner: string
   delegatePrivateKey: Buffer,
-  ipdataApiKey: string
+  ipdataApiKey: string | null
 }
 
 let cachedConfig: Config | null = null
@@ -86,6 +87,9 @@ const readConfig = (): Config => {
     audius_solana_valid_signer: str({
       default: 'yM9adjwKaRbYxQzLPF6zvZMSAfKUNte5xvK4B3iGbkL'
     }),
+    audius_solana_eth_valid_signer: str({
+      default: 'd242765e718801781440d77572b9dafcdc9baadf0269eff24cf61510ddbf1003'
+    }),
     audius_solana_fee_payer_wallets: json<FeePayerWallet[]>({
       default: [
         {
@@ -102,7 +106,7 @@ const readConfig = (): Config => {
     solana_relay_server_host: str({ default: '0.0.0.0' }),
     solana_relay_server_port: num({ default: 6002 }),
     audius_delegate_private_key: str({ default: '' }),
-    audius_ipdata_api_key: str({ default: "" })
+    audius_ipdata_api_key: str({ default: '' })
   })
   const solanaFeePayerWalletsParsed = env.audius_solana_fee_payer_wallets
   let solanaFeePayerWallets: Keypair[] = []
@@ -131,9 +135,10 @@ const readConfig = (): Config => {
       usdcMintAddress: env.audius_solana_usdc_mint,
       waudioMintAddress: env.audius_solana_waudio_mint,
       validSigner: env.audius_solana_valid_signer,
+      ethValidSigner: env.audius_solana_eth_valid_signer,
       solanaFeePayerWallets,
       delegatePrivateKey,
-      ipdataApiKey: env.audius_ipdata_api_key
+      ipdataApiKey: env.audius_ipdata_api_key === ""  ? null : env.audius_ipdata_api_key
     }
   // call self once set
   return readConfig()

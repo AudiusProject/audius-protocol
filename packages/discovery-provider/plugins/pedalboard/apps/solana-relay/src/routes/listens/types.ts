@@ -26,3 +26,7 @@ export type RecordListenParams = {
     userId: string
     ip: string
 }
+
+export type RecordListenResponse = {
+    solTxSignature: string | null
+}
