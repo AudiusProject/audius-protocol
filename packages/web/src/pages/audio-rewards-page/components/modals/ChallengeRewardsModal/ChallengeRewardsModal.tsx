@@ -485,19 +485,14 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
   const renderClaimButton = () => {
     if (audioToClaim > 0) {
       return (
-        <>
-          <div className={styles.claimRewardAmountLabel}>
-            {`${audioToClaim} ${messages.claimAmountLabel}`}
-          </div>
-          <Button
-            variant='primary'
-            isLoading={claimInProgress}
-            iconRight={IconCheck}
-            onClick={onClaimRewardClicked}
-          >
-            {messages.claimYourReward}
-          </Button>
-        </>
+        <Button
+          variant='primary'
+          isLoading={claimInProgress}
+          iconRight={IconCheck}
+          onClick={onClaimRewardClicked}
+        >
+          {messages.claimYourReward}
+        </Button>
       )
     }
     return null
@@ -582,6 +577,11 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
         {audioToClaim > 0 ||
         (audioClaimedSoFar > 0 && challenge?.state !== 'disbursed') ? (
           <div className={wm(styles.claimRewardWrapper)}>
+            {!isRewardsCooldownEnabled ? (
+              <div className={styles.claimRewardAmountLabel}>
+                {`${audioToClaim} ${messages.claimAmountLabel}`}
+              </div>
+            ) : null}
             {renderClaimButton()}
             {renderClaimedSoFarContent()}
           </div>
