@@ -160,11 +160,7 @@ function* downloadTrackAsync(
 }
 
 function* downloadTrackAudio(track: UserTrackMetadata) {
-  const { track_id, title, user } = track
-
-  const { creator_node_endpoint } = user
-  const creatorNodeEndpoints = creator_node_endpoint?.split(',')
-  if (!creatorNodeEndpoints) throw new Error('No creator node endpoints')
+  const { track_id, title } = track
 
   const trackFilePath = getLocalAudioPath(track_id)
   const encodedTrackId = encodeHashId(track_id)
