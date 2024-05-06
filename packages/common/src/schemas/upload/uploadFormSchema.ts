@@ -267,7 +267,7 @@ export const createCollectionSchema = (collectionType: 'playlist' | 'album') =>
         mood: MoodSchema,
         tags: z.optional(z.string())
       }),
-      is_unlisted: z.optional(z.boolean()),
+      is_private: z.optional(z.boolean()),
       is_album: z.literal(collectionType === 'album'),
       tracks: z.array(z.object({ metadata: CollectionTrackMetadataSchema })),
       ddex_release_ids: z.optional(z.record(z.string()).nullable()),

@@ -343,7 +343,7 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
     const isCollectibleGated = isContentCollectibleGated(savedStreamConditions)
 
     const initialValues = {}
-    set(initialValues, IS_UNLISTED, isUnlisted)
+    set(initialValues, isHiddenFieldName, isUnlisted)
     set(initialValues, IS_STREAM_GATED, isStreamGated)
     set(initialValues, STREAM_CONDITIONS, tempStreamConditions)
     set(initialValues, IS_DOWNLOAD_GATED, isDownloadGated)
@@ -382,16 +382,17 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
     return initialValues as AccessAndSaleFormValues
   }, [
     savedStreamConditions,
+    isHiddenFieldName,
     isUnlisted,
     isStreamGated,
     tempStreamConditions,
     isDownloadGated,
     downloadConditions,
     isDownloadable,
-    fieldVisibility,
-    preview,
+    lastGateKeeper,
     isScheduledRelease,
-    lastGateKeeper
+    fieldVisibility,
+    preview
   ])
 
   const handleSubmit = useCallback(
@@ -407,10 +408,15 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
         ...defaultFieldVisibility,
         remixes: fieldVisibility?.remixes ?? defaultFieldVisibility.remixes
       })
-      setIsUnlistedValue(false)
       setIsStreamGated(false)
       setStreamConditionsValue(null)
       setPreviewValue(undefined)
+
+      if (availabilityType === StreamTrackAvailabilityType.HIDDEN) {
+        setIsUnlistedValue(true)
+      } else {
+        setIsUnlistedValue(false)
+      }
 
       // For gated options, extract the correct stream conditions based on the selected availability type
       switch (availabilityType) {
@@ -593,11 +599,12 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
         messages.fieldVisibility
       ) as Array<keyof FieldVisibility>
 
-      const fieldVisibilityLabels = fieldVisibility
-        ? fieldVisibilityKeys
-            .filter((visibilityKey) => fieldVisibility[visibilityKey])
-            .map((visibilityKey) => messages.fieldVisibility[visibilityKey])
-        : []
+      const fieldVisibilityLabels =
+        fieldVisibility && !isAlbum
+          ? fieldVisibilityKeys
+              .filter((visibilityKey) => fieldVisibility[visibilityKey])
+              .map((visibilityKey) => messages.fieldVisibility[visibilityKey])
+          : []
       selectedValues = [
         { label: messages.hidden, icon: IconHidden },
         ...fieldVisibilityLabels
@@ -630,7 +637,8 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
     isScheduledRelease,
     preview,
     isUpload,
-    fieldVisibility
+    fieldVisibility,
+    isAlbum
   ])
 
   return (
