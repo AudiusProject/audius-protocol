@@ -16,7 +16,7 @@ import {
 import { cache } from './routes/cache'
 import { feePayer } from './routes/feePayer'
 import { health } from './routes/health/health'
-import { listenHandler } from './routes/listens/listens'
+import { listenHandler } from './routes/listens/record'
 import { getLibs, getSdk } from './sdk'
 
 const main = async () => {

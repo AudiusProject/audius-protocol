@@ -1,31 +1,25 @@
-import solanaWeb3, { Connection } from '@solana/web3.js'
+import { get } from './config'
+import { PublicKey, Keypair, Secp256k1Program, TransactionInstruction } from '@solana/web3.js'
 import keccak256 from 'keccak256'
-import secp256k1 from 'secp256k1'
-import borsh from "borsh"
-import { LocationData } from './types'
-import { config } from '../../config'
+import { publicKeyCreate, ecdsaSign } from 'secp256k1'
+import { serialize } from 'borsh'
 
-const VALID_SIGNER = config.get('solanaValidSigner')
-const AUDIUS_ETH_REGISTRY_PROGRAM = config.get('solanaAudiusEthRegistryAddress')
-  ? new solanaWeb3.PublicKey(config.get('solanaAudiusEthRegistryAddress'))
+const VALID_SIGNER = get('solanaValidSigner')
+const AUDIUS_ETH_REGISTRY_PROGRAM = get('solanaAudiusEthRegistryAddress')
+  ? new PublicKey(get('solanaAudiusEthRegistryAddress'))
   : null
-const TRACK_LISTEN_PROGRAM = config.get('solanaTrackListenCountAddress')
-  ? new solanaWeb3.PublicKey(config.get('solanaTrackListenCountAddress'))
+const TRACK_LISTEN_PROGRAM = get('solanaTrackListenCountAddress')
+  ? new PublicKey(get('solanaTrackListenCountAddress'))
   : null
-const INSTRUCTIONS_PROGRAM = new solanaWeb3.PublicKey(
+const INSTRUCTIONS_PROGRAM = new PublicKey(
   'Sysvar1nstructions1111111111111111111111111'
 )
-const CLOCK_PROGRAM = new solanaWeb3.PublicKey(
+const CLOCK_PROGRAM = new PublicKey(
   'SysvarC1ock11111111111111111111111111111111'
 )
 
 class TrackData {
-    userId: string
-    trackId: string
-    source: string
-    timestamp: number
-
-  constructor({ userId, trackId, source, timestamp }: { userId: string, trackId: string, source: string, timestamp: number}) {
+  constructor({ userId, trackId, source, timestamp }) {
     this.userId = userId
     this.trackId = trackId
     this.source = source
@@ -34,11 +28,7 @@ class TrackData {
 }
 
 class InstructionArgs {
-  trackData: TrackData
-  signature: string
-  recoveryId: number
-
-  constructor({ trackData, signature, recoveryId }: { trackData: TrackData, signature: string, recoveryId: number}) {
+  constructor({ trackData, signature, recoveryId }) {
     this.trackData = trackData
     this.signature = signature
     this.recoveryId = recoveryId
@@ -46,9 +36,7 @@ class InstructionArgs {
 }
 
 class InstructionEnum {
-  instruction: InstructionArgs
-  choose: string
-  constructor({ instruction, choose }: { instruction: InstructionArgs, choose: string}) {
+  constructor({ instruction, choose }) {
     this.instruction = instruction
     this.choose = choose
   }
@@ -69,7 +57,7 @@ const trackDataSchema = new Map([
   ]
 ])
 
-const instructionSchema = new Map<any, any>([
+const instructionSchema = new Map([
   [
     InstructionEnum,
     {
@@ -108,13 +96,12 @@ let feePayerKeypairs = null
 
 // Optionally returns the existing singleFeePayer
 // Ensures other usages of this function do not break as we upgrade to multiple
-export const getFeePayerKeypair = (singleFeePayer = true) => {
+export const getFeePayerKeypair = async (singleFeePayer = true) => {
   if (!feePayerKeypairs) {
-    feePayerKeypairs = config.get('solanaFeePayerWallets')
-      ? config
-          .get('solanaFeePayerWallets')
+    feePayerKeypairs = get('solanaFeePayerWallets')
+      ? get('solanaFeePayerWallets')
           .map((item) => item.privateKey)
-          .map((key) => solanaWeb3.Keypair.fromSecretKey(Uint8Array.from(key)))
+          .map((key) => Keypair.fromSecretKey(Uint8Array.from(key)))
       : null
   }
   if (!feePayerKeypair) {
@@ -136,8 +123,8 @@ export const getFeePayerKeypair = (singleFeePayer = true) => {
   return feePayerKeypairs[randomFeePayerIndex]
 }
 
-let cachedListenBlocktime: number | null = null // in seconds, tracks recent blocktime
-let lastRetrievedListenBlocktime: number | null = null // in seconds, tracks time when cachedListenBlocktime was fetched
+let cachedListenBlocktime = null // in seconds, tracks recent blocktime
+let lastRetrievedListenBlocktime = null // in seconds, tracks time when cachedListenBlocktime was fetched
 
 /**
  * Get the blocktime for a recently finalized block, this relative time will be passed into listen transaction.
@@ -145,10 +132,10 @@ let lastRetrievedListenBlocktime: number | null = null // in seconds, tracks tim
  * @param {Object} connection initialized solana connection object
  * @returns Number epoch in seconds
  */
-const getListenTimestamp = async (connection: Connection) => {
+export const getListenTimestamp = async (connection) => {
   const currentEpochInSec = Math.round(Date.now() / 1000)
   if (
-    cachedListenBlocktime && lastRetrievedListenBlocktime && 
+    cachedListenBlocktime &&
     Math.abs(lastRetrievedListenBlocktime - currentEpochInSec) < 30
   ) {
     return cachedListenBlocktime
@@ -171,38 +158,39 @@ export const createTrackListenInstructions = async ({
   source,
   location,
   connection
-}: { privateKey: string, userId: string, trackId: string, source: string, location: LocationData, connection: Connection}) {
+}) => {
   const validSigner = VALID_SIGNER
 
   const privKey = Buffer.from(privateKey, 'hex')
-  const pubKey = secp256k1.publicKeyCreate(privKey, false).slice(1)
+  const pubKey = publicKeyCreate(privKey, false).slice(1)
 
-  const validSignerPubK = new solanaWeb3.PublicKey(validSigner)
+  const validSignerPubK = new PublicKey(validSigner)
   const accInfo = await connection.getAccountInfo(validSignerPubK)
-  if (accInfo === null) throw new Error("accInfo null")
-  const signerGroup = new solanaWeb3.PublicKey(
+  const signerGroup = new PublicKey(
     accInfo.data.toJSON().data.slice(1, 33)
   ) // cut off version and eth address from valid signer data
 
-  // if api key present add location data to source
-  const sourceData = config.ipdataApiKey !== "" ? JSON.stringify({ source: source, location: location }) : source
+  let sourceData
+  if (get('ipdataAPIKey')) {
+    sourceData = JSON.stringify({ source: source, location: location })
+  } else {
+    sourceData = source
+  }
 
   // max sol tx size is 1232 bytes
   const trackData = new TrackData({
     userId: userId,
     trackId: trackId,
-    source: sourceData,
+    source: sourceData, // use api key as feature flag
     timestamp:
       (await getListenTimestamp(connection)) ||
       Math.round(new Date().getTime() / 1000)
   })
 
-  const serializedTrackData = borsh.serialize(trackDataSchema, trackData)
-  // @ts-ignore
-  const msgHashData = JSON.stringify(Array.from(serializedTrackData))
-  const msgHash = keccak256(msgHashData)
+  const serializedTrackData = serialize(trackDataSchema, trackData)
+  const msgHash = keccak256(serializedTrackData.toJSON().data)
 
-  const sigObj = secp256k1.ecdsaSign(Uint8Array.from(msgHash), privKey)
+  const sigObj = ecdsaSign(Uint8Array.from(msgHash), privKey)
 
   const instructionArgs = new InstructionArgs({
     trackData: trackData,
@@ -215,20 +203,19 @@ export const createTrackListenInstructions = async ({
     choose: 'instruction'
   })
 
-  const serializedInstructionArgs = borsh.serialize(
+  const serializedInstructionArgs = serialize(
     instructionSchema,
     instructionData
   )
 
-  const message = JSON.stringify(Array.from(serializedTrackData))
   const secpInstruction =
-    solanaWeb3.Secp256k1Program.createInstructionWithPublicKey({
+    Secp256k1Program.createInstructionWithPublicKey({
       publicKey: pubKey,
-      message,
+      message: serializedTrackData.toJSON().data,
       signature: sigObj.signature,
       recoveryId: sigObj.recid
     })
-  const listenInstruction = new solanaWeb3.TransactionInstruction({
+  const listenInstruction = new TransactionInstruction({
     keys: [
       { pubkey: validSignerPubK, isSigner: false, isWritable: false },
       { pubkey: signerGroup, isSigner: false, isWritable: false },
