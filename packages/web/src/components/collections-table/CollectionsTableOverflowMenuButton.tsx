@@ -34,7 +34,7 @@ export const CollectionsTableOverflowMenuButton = (
     includeVisitArtistPage: false,
     includeShare: true,
     includeEdit: true,
-    includeSave: false,
+    includeFavorite: false,
     isPublic: !isPrivate,
     isOwner: currentUserId === playlistOwnerId,
     permalink
