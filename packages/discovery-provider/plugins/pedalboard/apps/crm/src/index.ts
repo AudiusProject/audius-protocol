@@ -1,5 +1,5 @@
 import { log } from '@pedalboard/logger'
-import App from '@pedalboard/basekit/src/app'
+import { App } from '@pedalboard/basekit'
 import fetch from 'cross-fetch'
 import { initializeDiscoveryDb } from '@pedalboard/basekit'
 import { Table, UsdcPurchases, Users } from '@pedalboard/storage'

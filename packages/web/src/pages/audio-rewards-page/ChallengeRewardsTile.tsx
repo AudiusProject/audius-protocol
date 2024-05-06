@@ -165,7 +165,11 @@ const RewardPanel = ({
         formatNumberCommas(challenge?.max_steps?.toString() ?? '')
       )
     } else {
-      progressLabelFilled = progressLabel ?? ''
+      progressLabelFilled = fillString(
+        progressLabel ?? '',
+        formatNumberCommas(challenge?.current_step_count?.toString() ?? ''),
+        formatNumberCommas(challenge?.max_steps?.toString() ?? '')
+      )
     }
   } else if (challenge?.challenge_type === 'aggregate') {
     // Count down
@@ -178,13 +182,11 @@ const RewardPanel = ({
     )
   } else {
     // Count up
-    progressLabelFilled = progressLabel
-      ? fillString(
-          progressLabel,
-          formatNumberCommas(challenge?.current_step_count?.toString() ?? ''),
-          formatNumberCommas(challenge?.max_steps?.toString() ?? '')
-        )
-      : ''
+    progressLabelFilled = fillString(
+      progressLabel ?? '',
+      formatNumberCommas(challenge?.current_step_count?.toString() ?? ''),
+      formatNumberCommas(challenge?.max_steps?.toString() ?? '')
+    )
   }
   const buttonMessage = needsDisbursement
     ? messages.claimReward
