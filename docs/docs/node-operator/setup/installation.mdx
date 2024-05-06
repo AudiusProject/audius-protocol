@@ -97,8 +97,8 @@ each field for each Audius Node you will be running.
 network:
   deployOn: mainnet
 nodes:
-  creator-1.example.com:        # <--- THE URL OF YOUR CONTENT NODE
-    type: creator
+  content-1.example.com:        # <--- THE URL OF YOUR CONTENT NODE
+    type: content
     privateKey: abc123          # <--- UNIQUE PRIV KEY USED BY THIS NODE TO SIGN RESPONSES
     wallet: 0xABC123            # <--- UNIQUE WALLET ADDRESS OF ABOVE PRIV KEY
     rewardsWallet: 0xABC123     # <--- ADDRESS OF WALLET HOLDING STAKED TOKENS
@@ -115,7 +115,7 @@ nodes:
 
 | field           | description                                                                                                        |
 | --------------- | ------------------------------------------------------------------------------------------------------------------ |
-| `type`          | either `creator` or `discovery`                                                                                    |
+| `type`          | either `content` or `discovery`                                                                                    |
 | `privateKey`    | private key associated with the `wallet`                                                                           |
 | `wallet`        | Address of wallet that contains no tokens but that is registered on chain, used to sign JSON responses from server |
 | `rewardsWallet` | Wallet that registered (or will register) the Audius Node on chain                                                 |
@@ -222,7 +222,7 @@ audius-cli down
 ### Configure Nodes
 
 From here, the guide is the same as though you were creating new Nodes from scratch. Head back up to
-the [`audius-cli` installation step](/node-operator/setup/installation#install-audius-ctl) to get
+the [`audius-ctl` installation step](/node-operator/setup/installation#install-audius-ctl) to get
 started.
 
 #### Migration Variable Mapping
