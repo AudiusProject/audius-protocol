@@ -20,6 +20,7 @@ const messages = {
   completeLabel: 'COMPLETE',
   claimReward: 'Claim This Reward',
   readyToClaim: 'Ready to Claim',
+  pendingRewards: 'Pending Reward',
   viewDetails: 'View Details',
   new: 'New!'
 }
@@ -138,15 +139,31 @@ export const Panel = ({
   const needsDisbursement = challenge && challenge.claimableAmount > 0
   const showNewChallengePill =
     !needsDisbursement && isAudioMatchingChallenge(id)
+  const pending =
+    challenge?.undisbursedSpecifiers &&
+    challenge?.undisbursedSpecifiers.length > 0
 
-  const shouldShowProgress = !!progressLabel
+  const shouldShowProgressLabel = !!progressLabel
   let progressLabelFilled: string | null = null
-  if (shouldShowProgress) {
+  if (shouldShowProgressLabel) {
     if (shouldShowCompleted) {
       progressLabelFilled = messages.completeLabel
-    } else if (isAudioMatchingChallenge(id)) {
+    } else if (challenge && challenge?.cooldown_days > 0) {
       if (needsDisbursement) {
         progressLabelFilled = messages.readyToClaim
+      } else if (pending) {
+        progressLabelFilled = messages.pendingRewards
+      } else if (challenge?.challenge_type === 'aggregate') {
+        // Count down
+        progressLabelFilled = fillString(
+          remainingLabel ?? '',
+          formatNumberCommas(
+            (
+              challenge?.max_steps - challenge?.current_step_count
+            )?.toString() ?? ''
+          ),
+          formatNumberCommas(challenge?.max_steps?.toString() ?? '')
+        )
       } else {
         progressLabelFilled = progressLabel ?? ''
       }
@@ -212,7 +229,7 @@ export const Panel = ({
         <Text style={styles.description}>
           {shortDescription || description(challenge)}
         </Text>
-        {shouldShowProgress ? (
+        {shouldShowProgressLabel ? (
           <View style={styles.progressLabel}>
             <IconCheck
               style={styles.iconCheck}
