@@ -5,7 +5,7 @@ import { LocationData, RecordListenParams, RecordListenRequest, recordListenBody
 import { config } from '../../config'
 import axios from 'axios'
 import { getLibs } from '../../sdk'
-import { createTrackListenInstructions, getFeePayerKeypair } from './solana'
+import { createTrackListenInstructions, getFeePayerKeypair } from '../../legacy/solana-client'
 
 // handler for recording a listen that catches all errors and returns correct response
 export const listenHandler = async (req: RecordListenRequest, res: Response) => {
@@ -47,16 +47,9 @@ export const recordListen = async (params: RecordListenParams) => {
     const connection = libs.solanaWeb3Manager?.getConnection()
     if (!connection) throw new Error("solana connection not available")
 
-    const instructions = await createTrackListenInstructions({
-        userId,
-        trackId,
-        source: "",
-        privateKey: "",
-        location,
-        connection
-    })
+    const instructions = await createTrackListenInstructions({})
 
-    const feePayer = getFeePayerKeypair(false)
+    const feePayer = await getFeePayerKeypair(false)
 
     const transactionHandler = libs.solanaWeb3Manager?.transactionHandler
     const txResponse = await transactionHandler?.handleTransaction({

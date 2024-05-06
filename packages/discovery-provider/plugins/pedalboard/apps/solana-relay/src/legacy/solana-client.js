@@ -1,22 +1,19 @@
-import { get } from './config'
 import { PublicKey, Keypair, Secp256k1Program, TransactionInstruction } from '@solana/web3.js'
 import keccak256 from 'keccak256'
 import { publicKeyCreate, ecdsaSign } from 'secp256k1'
 import { serialize } from 'borsh'
 
-const VALID_SIGNER = get('solanaValidSigner')
-const AUDIUS_ETH_REGISTRY_PROGRAM = get('solanaAudiusEthRegistryAddress')
-  ? new PublicKey(get('solanaAudiusEthRegistryAddress'))
-  : null
-const TRACK_LISTEN_PROGRAM = get('solanaTrackListenCountAddress')
-  ? new PublicKey(get('solanaTrackListenCountAddress'))
-  : null
-const INSTRUCTIONS_PROGRAM = new PublicKey(
-  'Sysvar1nstructions1111111111111111111111111'
-)
-const CLOCK_PROGRAM = new PublicKey(
-  'SysvarC1ock11111111111111111111111111111111'
-)
+import { INSTRUCTIONS_PROGRAM, CLOCK_PROGRAM } from '../constants'
+import { config } from '../config'
+
+const VALID_SIGNER = config.validSigner
+const AUDIUS_ETH_REGISTRY_PROGRAM = config.ethRegistryAddress
+const TRACK_LISTEN_PROGRAM = config.trackListenCountProgramId
+
+const ipdataAPIKey = config.ipdataApiKey
+
+let feePayerKeypair = null
+let feePayerKeypairs = config.solanaFeePayerWallets
 
 class TrackData {
   constructor({ userId, trackId, source, timestamp }) {
@@ -91,19 +88,9 @@ const instructionSchema = new Map([
   ]
 ])
 
-let feePayerKeypair = null
-let feePayerKeypairs = null
-
 // Optionally returns the existing singleFeePayer
 // Ensures other usages of this function do not break as we upgrade to multiple
 export const getFeePayerKeypair = async (singleFeePayer = true) => {
-  if (!feePayerKeypairs) {
-    feePayerKeypairs = get('solanaFeePayerWallets')
-      ? get('solanaFeePayerWallets')
-          .map((item) => item.privateKey)
-          .map((key) => Keypair.fromSecretKey(Uint8Array.from(key)))
-      : null
-  }
   if (!feePayerKeypair) {
     feePayerKeypair = (feePayerKeypairs && feePayerKeypairs[0]) || null
   }
@@ -171,7 +158,7 @@ export const createTrackListenInstructions = async ({
   ) // cut off version and eth address from valid signer data
 
   let sourceData
-  if (get('ipdataAPIKey')) {
+  if (ipdataAPIKey) {
     sourceData = JSON.stringify({ source: source, location: location })
   } else {
     sourceData = source

@@ -28,9 +28,11 @@ type Config = {
   claimableTokenProgramId: string
   paymentRouterProgramId: string
   trackListenCountProgramId: string
+  ethRegistryAddress: string
   usdcMintAddress: string
   waudioMintAddress: string
   solanaFeePayerWallets: Keypair[]
+  validSigner: string
   delegatePrivateKey: Buffer,
   ipdataApiKey: string
 }
@@ -78,6 +80,12 @@ const readConfig = (): Config => {
     audius_solana_rewards_manager_account: str({
       default: 'DJPzVothq58SmkpRb1ATn5ddN2Rpv1j2TcGvM3XsHf1c'
     }),
+    audius_solana_eth_registry_address: str({
+      default: 'testBgRfFcage1hN7zmTsktdQCJZkHEhM1eguYPaeKg'
+    }),
+    audius_solana_valid_signer: str({
+      default: 'yM9adjwKaRbYxQzLPF6zvZMSAfKUNte5xvK4B3iGbkL'
+    }),
     audius_solana_fee_payer_wallets: json<FeePayerWallet[]>({
       default: [
         {
@@ -119,8 +127,10 @@ const readConfig = (): Config => {
       claimableTokenProgramId: env.audius_solana_user_bank_program_address,
       paymentRouterProgramId: env.audius_solana_payment_router_program_address,
       trackListenCountProgramId: env.audius_solana_track_listen_count_address,
+      ethRegistryAddress: env.audius_solana_eth_registry_address,
       usdcMintAddress: env.audius_solana_usdc_mint,
       waudioMintAddress: env.audius_solana_waudio_mint,
+      validSigner: env.audius_solana_valid_signer,
       solanaFeePayerWallets,
       delegatePrivateKey,
       ipdataApiKey: env.audius_ipdata_api_key
@@ -129,4 +139,4 @@ const readConfig = (): Config => {
   return readConfig()
 }
 
-export const config = readConfig()
+export const config: Config = readConfig()
