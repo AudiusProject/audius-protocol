@@ -39,12 +39,18 @@ const main = async () => {
 
 # Starting a new package
 
-Packages you can start a new project with a standard NPM init or copy one of the existing packages as well. You can follow the same process as app. Lastly, after initializing your project you have to install it to the workspace so other apps and packages can access it.
-
-In the case of the storage project this is how you'd do it from the workspace root:
+1. Copy the app template
 
 ```
-npm i ./packages/storage
+cp ./apps/app-template ./apps/my-app
+```
+
+2. Modify `package.json` to have your app name
+
+3. Install dependencies from the monorepo root
+4. 
+```
+npm i
 ```
 
 # Building and running apps in isolation
@@ -54,20 +60,20 @@ Inside `/dev-tools/compose` is a [docker compose for pedalboard](../../../../dev
 1. Add your new service by copying what the `app-template` does.
 
 ```
-  my-cool-plugin:
-    container_name: my-cool-plugin
-    build:
-      context: .
-      dockerfile: ./docker/Dockerfile
-      args:
-        app_name: my-cool-plugin
-    restart: always
+app-template:
+  extends:
+    file: docker-compose.pedalboard.prod.yml
+    service: app-template
+  build:
+    dockerfile: ${PROJECT_ROOT}/packages/discovery-provider/plugins/pedalboard/docker/Dockerfile.dev
+  volumes:
+    - ${PROJECT_ROOT}:/app
 ```
 
 2. Run the docker file with the build flag
 
 ```
-docker compose up --build -d
+docker compose -f dev-tools/compose/docker-compose.pedalboard.dev.yml up app-template --build -d
 ```
 
 3. In docker dashboard or `docker ps` you should find your running container

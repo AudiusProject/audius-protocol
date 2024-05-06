@@ -200,6 +200,12 @@ const slice = createSlice({
     resetAndCancelClaimReward: (state) => {
       state.claimState = { status: ClaimStatus.NONE }
     },
+    claimAllChallengeRewards: (
+      state,
+      _action: PayloadAction<{ claims: AudioRewardsClaim[] }>
+    ) => {
+      state.claimState = { status: ClaimStatus.CUMULATIVE_CLAIMING }
+    },
     claimChallengeReward: (
       state,
       _action: PayloadAction<{
@@ -235,6 +241,9 @@ const slice = createSlice({
     claimChallengeRewardSucceeded: (state) => {
       state.claimState = { status: ClaimStatus.SUCCESS }
     },
+    claimAllChallengeRewardsSucceeded: (state) => {
+      state.claimState = { status: ClaimStatus.CUMULATIVE_SUCCESS }
+    },
     showRewardClaimedToast: (state) => {
       state.showRewardClaimedToast = true
     },
@@ -257,10 +266,12 @@ export const {
   resetHCaptchaStatus,
   updateHCaptchaScore,
   claimChallengeReward,
+  claimAllChallengeRewards,
   claimChallengeRewardWaitForRetry,
   claimChallengeRewardAlreadyClaimed,
   claimChallengeRewardFailed,
   claimChallengeRewardSucceeded,
+  claimAllChallengeRewardsSucceeded,
   showRewardClaimedToast,
   resetRewardClaimedToast,
   updateOptimisticListenStreak,

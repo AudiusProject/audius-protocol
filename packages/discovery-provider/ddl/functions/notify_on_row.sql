@@ -30,7 +30,8 @@ declare
     'reposts',
     'saves',
     'tracks',
-    'users'
+    'users',
+    'usdc_purchases'
   ];
 begin
   FOREACH tbl IN ARRAY tbls

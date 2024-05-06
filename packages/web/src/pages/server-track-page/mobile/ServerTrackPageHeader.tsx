@@ -272,10 +272,9 @@ export const ServerTrackPageHeader = ({
         <h1 className={styles.title}>{title}</h1>
         <ServerUserLink
           userId={userId}
-          color='accent'
+          variant='visible'
           textVariant='body'
           size='l'
-          tag='h2'
         />
       </div>
       <PlayButton

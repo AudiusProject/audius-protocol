@@ -76,7 +76,6 @@ export const UserNameLink = (props: UserNameLinkProps) => {
         userId={user_id}
         badgeSize={12}
         className={styles.badges}
-        noContentClassName={styles.badgesNoContent}
       />
     </span>
   )

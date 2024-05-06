@@ -66,7 +66,7 @@ export const CollectionDownloadStatusRow = (
     [collectionId, downloadSwitchValue]
   )
   const isAvailableForDownload =
-    collection &&
+    !!collection &&
     (collection.has_current_user_saved ||
       collection.playlist_owner_id === currentUserId)
 

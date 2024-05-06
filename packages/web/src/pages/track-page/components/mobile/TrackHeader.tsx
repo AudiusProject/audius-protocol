@@ -1,6 +1,7 @@
 import { Suspense, useCallback } from 'react'
 
 import { imageBlank as placeholderArt } from '@audius/common/assets'
+import { useIsGatedContentPlaylistAddable } from '@audius/common/hooks'
 import {
   SquareSizes,
   isContentCollectibleGated,
@@ -218,6 +219,7 @@ const TrackHeader = ({
     { trackId },
     { enabled: !!trackId }
   )
+  const isPlaylistAddable = useIsGatedContentPlaylistAddable(track)
 
   const image = useTrackCoverArt(
     trackId,
@@ -263,7 +265,7 @@ const TrackHeader = ({
         ? OverflowAction.UNFAVORITE
         : OverflowAction.FAVORITE,
       isEditAlbumsEnabled && isOwner ? OverflowAction.ADD_TO_ALBUM : null,
-      OverflowAction.ADD_TO_PLAYLIST,
+      isPlaylistAddable ? OverflowAction.ADD_TO_PLAYLIST : null,
       isEditAlbumsEnabled && albumInfo ? OverflowAction.VIEW_ALBUM_PAGE : null,
       isFollowing
         ? OverflowAction.UNFOLLOW_ARTIST
@@ -406,10 +408,9 @@ const TrackHeader = ({
         <h1 className={styles.title}>{title}</h1>
         <UserLink
           userId={userId}
-          color='accent'
+          variant='visible'
           textVariant='body'
           size='l'
-          tag='h2'
         />
       </div>
       {showPlay ? (

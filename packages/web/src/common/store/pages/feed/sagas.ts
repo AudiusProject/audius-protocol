@@ -7,21 +7,8 @@ import {
 import { getErrorMessage } from '@audius/common/utils'
 import { call, put, take, fork, takeEvery } from 'redux-saga/effects'
 
-import { fetchUsers } from 'common/store/cache/users/sagas'
 import feedSagas from 'common/store/pages/feed/lineup/sagas'
-import { fetchSuggestedFollowUserIds } from 'common/store/pages/signon/sagas'
-import { waitForRead, waitForWrite } from 'utils/sagaHelpers'
-
-function* fetchSuggestedFollowUsers() {
-  yield call(waitForRead)
-  try {
-    const userIds: ID[] = yield call(fetchSuggestedFollowUserIds)
-    yield put(discoverActions.setSuggestedFollows(userIds))
-    yield call(fetchUsers, userIds)
-  } catch (error) {
-    console.error(getErrorMessage(error))
-  }
-}
+import { waitForWrite } from 'utils/sagaHelpers'
 
 function* waitForFollow(userIds: ID[]) {
   const usersConfirmed = Array.from(Array(userIds.length)).map(() => false)
@@ -55,17 +42,10 @@ function* followUsers(action: ReturnType<typeof discoverActions.followUsers>) {
   }
 }
 
-function* watchFetchSuggestedFollowUsers() {
-  yield takeEvery(
-    discoverActions.FETCH_SUGGESTED_FOLLOW_USERS,
-    fetchSuggestedFollowUsers
-  )
-}
-
 function* watchFollowUsers() {
   yield takeEvery(discoverActions.FOLLOW_USERS, followUsers)
 }
 
 export default function sagas() {
-  return [...feedSagas(), watchFetchSuggestedFollowUsers, watchFollowUsers]
+  return [...feedSagas(), watchFollowUsers]
 }

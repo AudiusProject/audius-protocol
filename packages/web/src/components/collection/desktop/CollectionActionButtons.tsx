@@ -1,5 +1,5 @@
-import { MouseEventHandler } from 'react'
-
+import { useGetCurrentUserId, useGetPlaylistById } from '@audius/common/api'
+import { useGatedContentAccess } from '@audius/common/hooks'
 import { Variant, SmartCollectionVariant, ID } from '@audius/common/models'
 import { Nullable } from '@audius/common/utils'
 import { Button, Flex, IconPause, IconPlay } from '@audius/harmony'
@@ -23,11 +23,13 @@ type CollectionActionButtonProps = {
   variant?: Nullable<Variant>
   isOwner?: boolean
   isPlaying: boolean
+  isPreviewing: boolean
   tracksLoading: boolean
   isPlayable: boolean
   isPremium?: Nullable<boolean>
   userId: Nullable<ID>
-  onPlay: MouseEventHandler<HTMLButtonElement>
+  onPlay: () => void
+  onPreview: () => void
 }
 
 export const CollectionActionButtons = (props: CollectionActionButtonProps) => {
@@ -36,12 +38,31 @@ export const CollectionActionButtons = (props: CollectionActionButtonProps) => {
     isOwner,
     collectionId,
     onPlay,
+    onPreview,
     isPlaying,
     isPlayable,
+    isPreviewing,
     userId,
     tracksLoading,
     isPremium
   } = props
+
+  const { data: currentUserId } = useGetCurrentUserId({})
+  const { data: collection } = useGetPlaylistById(
+    {
+      playlistId: typeof collectionId === 'number' ? collectionId : null,
+      currentUserId
+    },
+    { disabled: typeof collectionId !== 'number' }
+  )
+  const { hasStreamAccess } = useGatedContentAccess(collection)
+
+  // If user doesn't have access, show preview only. If user has access, show play only.
+  // If user is owner, show both.
+  const shouldShowPlay = isPlayable && hasStreamAccess
+  const shouldShowPreview = isOwner
+    ? isPlayable && isPremium
+    : isPremium && !hasStreamAccess
 
   let actionButtons: Nullable<JSX.Element> = null
 
@@ -62,16 +83,23 @@ export const CollectionActionButtons = (props: CollectionActionButtonProps) => {
 
   const playButton = (
     <Button
-      variant={isPremium ? 'secondary' : 'primary'}
-      iconLeft={isPlaying ? IconPause : IconPlay}
+      variant='primary'
+      iconLeft={isPlaying && !isPreviewing ? IconPause : IconPlay}
       onClick={onPlay}
       widthToHideText={BUTTON_COLLAPSE_WIDTHS.first}
     >
-      {isPlaying
-        ? messages.pause
-        : isPremium
-        ? messages.preview
-        : messages.play}
+      {isPlaying && !isPreviewing ? messages.pause : messages.play}
+    </Button>
+  )
+
+  const previewButton = (
+    <Button
+      variant='secondary'
+      iconLeft={isPlaying && isPreviewing ? IconPause : IconPlay}
+      onClick={onPreview}
+      widthToHideText={BUTTON_COLLAPSE_WIDTHS.first}
+    >
+      {isPlaying && isPreviewing ? messages.pause : messages.preview}
     </Button>
   )
 
@@ -86,7 +114,8 @@ export const CollectionActionButtons = (props: CollectionActionButtonProps) => {
       gap='2xl'
       alignItems='center'
     >
-      {!isPlayable ? null : playButton}
+      {shouldShowPlay ? playButton : null}
+      {shouldShowPreview ? previewButton : null}
       {actionButtons}
     </Flex>
   )

@@ -17,6 +17,7 @@ import { toFormikValidationSchema } from 'zod-formik-adapter'
 import { make, useRecord } from 'common/store/analytics/actions'
 import { Divider } from 'components/divider'
 import { TextAreaField, TextField } from 'components/form-fields'
+import PreloadImage from 'components/preload-image/PreloadImage'
 import Toast from 'components/toast/Toast'
 import { MountPlacement } from 'components/types'
 import { copyToClipboard } from 'utils/clipboardUtil'
@@ -47,7 +48,7 @@ const messages = {
 const ImageField = ({ name }: { name: string }) => {
   const [{ value }] = useField(name)
   return value ? (
-    <img src={value} height='136' width='136' />
+    <PreloadImage src={value} width='100%' />
   ) : (
     <Flex
       w='100%'
@@ -137,8 +138,14 @@ export const EditAppPage = (props: EditAppPageProps) => {
         <Flex gap='m' direction='column'>
           <Flex gap='m' alignItems='center'>
             <Flex
-              borderRadius='xs'
-              css={{ overflow: 'hidden', alignSelf: 'stretch' }}
+              borderRadius='l'
+              css={{
+                overflow: 'hidden',
+                alignSelf: 'stretch',
+                width: 138,
+                maxWidth: 138,
+                height: 138
+              }}
               flex={'1 1 auto'}
             >
               <ImageField name='imageUrl' />

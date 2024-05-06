@@ -43,6 +43,7 @@ import { moodMap } from 'app/utils/moods'
 
 import { OfflineStatusRow } from '../offline-downloads'
 
+import { DeletedTile } from './DeletedTile'
 import { DetailsProgressInfo } from './DetailsProgressInfo'
 import { DetailsTileActionButtons } from './DetailsTileActionButtons'
 import { DetailsTileAiAttribution } from './DetailsTileAiAttribution'
@@ -56,11 +57,11 @@ const { getTrackId } = playerSelectors
 const { getTrackPosition } = playbackPositionSelectors
 
 const messages = {
-  play: 'play',
-  pause: 'pause',
-  resume: 'resume',
-  replay: 'replay',
-  preview: 'preview',
+  play: 'Play',
+  pause: 'Pause',
+  resume: 'Resume',
+  replay: 'Replay',
+  preview: 'Preview',
   trackCount: 'track',
   playCount: 'play',
   released: 'Released',
@@ -115,6 +116,7 @@ export const DetailsTile = ({
   hideShare,
   isPlaying,
   isPreviewing,
+  isDeleted = false,
   isPlayable = true,
   isCollection = false,
   isPublished = true,
@@ -189,6 +191,7 @@ export const DetailsTile = ({
     light()
     onPressPreview?.()
   }, [onPressPreview])
+
   const renderDogEar = () => {
     const dogEarType = getDogEarType({
       isOwner,
@@ -272,6 +275,18 @@ export const DetailsTile = ({
         ))}
       </Flex>
     ) : null
+  }
+
+  if (isDeleted) {
+    return (
+      <DeletedTile
+        imageElement={imageElement}
+        title={title}
+        user={user}
+        headerText={headerText}
+        handlePressArtistName={handlePressArtistName}
+      />
+    )
   }
 
   return (

@@ -35,6 +35,7 @@ export const AlbumsTabPage = () => {
     fetchMore,
     collections: albums
   } = useCollectionsData({ collectionType: 'album' })
+
   const emptyAlbumsHeader = useSelector((state: CommonState) => {
     const selectedCategory = getCategory(state, {
       currentTab: SavedPageTabs.ALBUMS

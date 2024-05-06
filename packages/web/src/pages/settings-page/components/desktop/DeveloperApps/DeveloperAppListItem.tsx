@@ -11,6 +11,8 @@ import {
   PopupMenuItem
 } from '@audius/harmony'
 
+import PreloadImage from 'components/preload-image/PreloadImage'
+
 import styles from './DeveloperAppListItem.module.css'
 import { CreateAppPageProps, CreateAppsPages } from './types'
 
@@ -59,7 +61,7 @@ export const DeveloperAppListItem = (props: DeveloperAppListItemProps) => {
     <li className={styles.listItem}>
       <span className={styles.listItemImage}>
         {imageUrl ? (
-          <img src={imageUrl} />
+          <PreloadImage src={imageUrl} />
         ) : (
           <IconEmbed color='subdued' size='2xl' />
         )}

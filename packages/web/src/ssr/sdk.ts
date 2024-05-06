@@ -16,7 +16,7 @@ const discoveryNodeSelector = new DiscoveryNodeSelector({
   bootstrapServices: (
     sdkConfigs[process.env.VITE_ENVIRONMENT as keyof typeof sdkConfigs] ??
     productionConfig
-  ).discoveryNodes
+  ).network.discoveryNodes
 })
 
 export const audiusSdk = sdk({

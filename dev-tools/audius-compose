@@ -593,14 +593,14 @@ def down(protocol_dir):
 
 
 @cli.command()
-def connect():
+@click.option("-n", "--nopass", is_flag=True, help="Use sudo without password (for CI)")
+def connect(nopass):
     hosts_file = pathlib.Path("/etc/hosts")
     if LOCALHOSTS in hosts_file.read_text():
         print("/etc/hosts already up to date")
     else:
-        password = getpass.getpass(
-            "Adding development hosts to /etc/hosts. Enter your sudo password: "
-        )
+        print("Adding development hosts to /etc/hosts.")
+        password = "" if nopass else getpass.getpass("Enter your sudo password: ")
         subprocess.run(
             f"echo '{password}' | sudo -S sh -c 'echo \"{LOCALHOSTS}\" >> /etc/hosts'",
             shell=True,

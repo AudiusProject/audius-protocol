@@ -1046,8 +1046,8 @@ class TrackHistoryFull(Resource):
     @full_ns.expect(track_history_parser)
     @auth_middleware(track_history_parser)
     @full_ns.marshal_with(history_response_full)
-    def get(self, id):
-        return self._get(id)
+    def get(self, id, authed_user_id=None):
+        return self._get(id, authed_user_id)
 
 
 @ns.route(USER_HISTORY_TRACKS_ROUTE, doc=False)
