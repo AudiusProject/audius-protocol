@@ -108,7 +108,7 @@ program.command('purchase-track')
 
     try {
       console.log('Purchasing track...', { trackId, userId, extraAmount })
-      const response = await audiusSdk.full.tracks.purchase({ trackId, userId, extraAmount })
+      const response = await audiusSdk.tracks.purchase({ trackId, userId, extraAmount })
       console.log(chalk.green('Successfully purchased track'))
       console.log(chalk.yellow('Transaction Signature:'), response)
     } catch (err) {
