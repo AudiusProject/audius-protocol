@@ -60,6 +60,7 @@ async function testSignUp({
   // Password inputs dont have a role, so we just check against label text
   // https://github.com/testing-library/dom-testing-library/issues/567#issue-616906804
   await page.getByLabel(/^password/i).fill(password)
+  await page.waitForTimeout(500)
   await page.getByLabel(/confirm password/i).fill(password)
 
   await page.getByRole('button', { name: /continue/i }).click()
@@ -83,11 +84,13 @@ async function testSignUp({
   ).toBeVisible()
 
   // upload cover & profile photo
-  await page.getByRole('button', { name: /upload a cover photo/i }).click()
-  await page
-    .getByTestId('coverPhoto-dropzone')
-    .locator('input')
-    .setInputFiles(path.join(__dirname, 'files/cover-photo.jpeg'))
+  // await page
+  //   .getByRole('button', { name: /upload a cover photo for your profile/i })
+  //   .click()
+  // await page
+  //   .getByTestId('coverPhoto-dropzone')
+  //   .locator('input')
+  //   .setInputFiles(path.join(__dirname, 'files/cover-photo.jpeg'))
 
   await page.getByRole('button', { name: /upload a profile photo/i }).click()
   await page

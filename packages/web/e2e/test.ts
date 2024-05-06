@@ -1,4 +1,5 @@
 import { Page, expect, test as base } from '@playwright/test'
+import { getUser } from './data'
 
 const SSR_HYDRATE_TIMEOUT = 60 * 1000
 const runAgainstLocalStack = process.env.RUN_AGAINST_LOCAL_STACK === 'true'
@@ -49,7 +50,8 @@ export const test = base.extend<{}>({
 
 // TODO: Remove this and fix bug in upload that doesn't wait for user
 export const waitForUser = async (page: Page) => {
-  await expect(page.getByRole('link', { name: /probertest/i })).toBeVisible({
+  const { name } = getUser()
+  await expect(page.getByRole('link', { name })).toBeVisible({
     timeout: 15 * 1000
   })
 }

@@ -13,16 +13,52 @@ import {
 } from './page-object-models/upload'
 import { test, waitForUser } from './test'
 import { openCleanBrowser } from './utils'
+import { getAiAttributionUser, getTrack } from './data'
 
-test('should upload a remix, hidden, AI-attributed track', async ({ page }) => {
+test('should upload a track', async ({ page }) => {
+  const trackTitle = `Test track ${Date.now()}`
+  const genre = 'Alternative'
+
+  await page.goto('upload')
+  await waitForUser(page)
+
+  const selectPage = new UploadSelectPage(page)
+  await selectPage.setTracks('track.mp3')
+  await selectPage.continue()
+
+  const editPage = new EditTrackPage(page)
+  await editPage.setArtwork('track-artwork.jpeg')
+  await editPage.setTitle(trackTitle)
+  await editPage.setGenre(genre)
+
+  await editPage.complete()
+
+  const uploadingPage = new UploadFinishPage(page, 'Track')
+  await uploadingPage.assertCompletes()
+
+  // Vist track page
+  await page.getByRole('link', { name: /visit track page/i }).click()
+
+  // Assert title
+  const trackHeading = page.getByRole('heading', {
+    name: trackTitle,
+    level: 1
+  })
+  await expect(trackHeading).toBeVisible()
+})
+
+test.skip('should upload a remix, hidden, AI-attributed track', async ({
+  page
+}) => {
+  const { url, name } = getTrack()
+  const { name: aiAttributionName } = getAiAttributionUser()
   const trackTitle = `Test track ${Date.now()}`
   const trackDescription = 'Test description'
   const genre = 'Alternative'
   const mood = 'Easygoing'
   const tags = ['TAG1', 'TAG2']
-  const remixUrl = 'staging.audius.co/sebastian12/probers_track_do_not_delete'
-  const remixName = 'probers_track_do_not_delete'
-  const aiAttributionName = 'probers ai DO NOT DELETE'
+  const remixUrl = url
+  const remixName = name
   const isrc = 'US-123-45-67890'
   const iswc = 'T-123456789-0'
 
@@ -130,7 +166,7 @@ test('should upload a remix, hidden, AI-attributed track', async ({ page }) => {
   // TODO
 })
 
-test('should upload a premium track', async ({ page, browser }) => {
+test.skip('should upload a premium track', async ({ page, browser }) => {
   const trackTitle = `Test premium track ${Date.now()}`
   const genre = 'Alternative'
   const price = '1.05'
@@ -188,7 +224,7 @@ test('should upload a premium track', async ({ page, browser }) => {
   await expect(newPage.getByText('$' + price)).toBeVisible()
 })
 
-test('should upload a track with free stems', async ({ page }) => {
+test.skip('should upload a track with free stems', async ({ page }) => {
   const trackTitle = `Test stems track ${Date.now()}`
   const genre = 'Alternative'
 

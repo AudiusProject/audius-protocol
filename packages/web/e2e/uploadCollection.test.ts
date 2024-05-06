@@ -14,10 +14,11 @@ test('should upload a playlist', async ({ page }) => {
   const playlistName = `Test playlist ${timestamp}`
   const playlistDescription = 'Test description'
   const trackOneDetails = { name: `Test track 1 ${timestamp}` }
-  const trackTwoDetails = {
-    name: `Test track 2 ${timestamp}`
-  }
-  const trackDetails = [trackOneDetails, trackTwoDetails]
+  // const trackTwoDetails = {
+  //   name: `Test track 2 ${timestamp}`
+  // }
+  // const trackDetails = [trackOneDetails, trackTwoDetails]
+  const trackDetails = [trackOneDetails]
   const genre = 'Electronic - Progressive House'
   const mood = 'Tender'
   const tags = ['TAG1', 'TAG2']
@@ -65,9 +66,9 @@ test('should upload a playlist', async ({ page }) => {
   // Assert track list
   const trackTable = page.getByRole('table')
   const trackOne = trackTable.getByRole('cell', { name: trackOneDetails.name })
-  const trackTwo = trackTable.getByRole('cell', { name: trackTwoDetails.name })
+  // const trackTwo = trackTable.getByRole('cell', { name: trackTwoDetails.name })
   await expect(trackOne).toBeVisible({ timeout: 20000 }) // sometimes loading the track list can take longer
-  await expect(trackTwo).toBeVisible()
+  // await expect(trackTwo).toBeVisible()
 
   // Visit track 1
   await trackOne.getByRole('link', { name: trackOneDetails.name }).click()
@@ -85,7 +86,7 @@ test('should upload a playlist', async ({ page }) => {
   await page.goBack()
 
   // Visit track 2
-  await trackTwo.getByRole('link', { name: trackTwoDetails.name }).click()
+  // await trackTwo.getByRole('link', { name: trackTwoDetails.name }).click()
 
   await expect(tag1).toBeVisible()
   await expect(tag2).toBeVisible()

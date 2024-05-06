@@ -11,6 +11,20 @@ const track2 = () => JSON.parse(readFileSync('./e2e/track2.json', 'utf8'))
 
 const sanitizeName = (title: string) => title.replace(/ /g, '-').toLowerCase()
 
+export const getUser = () => {
+  if (runAgainstLocalStack) {
+    const { name } = user()
+
+    return {
+      name
+    }
+  }
+
+  return {
+    name: 'probertest'
+  }
+}
+
 export const getTrack = () => {
   if (runAgainstLocalStack) {
     const { handle } = user()
@@ -109,5 +123,20 @@ export const getPlaylist = () => {
   return {
     url: 'df/playlist/probers_playlist_do_not_delete-511',
     name: 'PROBERS_PLAYLIST_DO_NOT_DELETE'
+  }
+}
+
+export const getAiAttributionUser = () => {
+  if (runAgainstLocalStack) {
+    const { handle, name } = user2()
+
+    return {
+      handle,
+      name
+    }
+  }
+
+  return {
+    name: 'probers ai DO NOT DELETE'
   }
 }

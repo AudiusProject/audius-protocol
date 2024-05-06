@@ -654,7 +654,7 @@ export function* handleUploads({
     }
   }
 
-  console.debug('Spinnning down workers')
+  console.debug('Spinning down workers')
   for (const worker of uploadWorkers) {
     worker.cancel()
   }
