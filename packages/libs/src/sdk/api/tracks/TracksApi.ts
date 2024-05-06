@@ -395,6 +395,7 @@ export class TracksApi extends GeneratedTracksApi {
     const mint = 'USDC'
 
     // Fetch track
+    this.logger.debug('Fetching track...', { trackId })
     const { data: track } = await this.getTrack({
       trackId: params.trackId // use hashed trackId
     })
@@ -465,9 +466,13 @@ export class TracksApi extends GeneratedTracksApi {
         mint: 'USDC'
       })
     if (!didExist) {
-      this.logger.debug('Created user bank', { recipientUserBank })
+      this.logger.debug('Created user bank', {
+        recipientUserBank: recipientUserBank.toBase58()
+      })
     } else {
-      this.logger.debug('User bank exists', { recipientUserBank })
+      this.logger.debug('User bank exists', {
+        recipientUserBank: recipientUserBank.toBase58()
+      })
     }
 
     const routeInstruction =
