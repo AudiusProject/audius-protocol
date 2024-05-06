@@ -43,7 +43,9 @@ export const LeavingAudiusModal = () => {
       </ModalHeader>
       <ModalContent className={styles.content}>
         <Text>{messages.body}</Text>
-        <Hint icon={IconExternalLink}>{link}</Hint>
+        <Hint icon={IconExternalLink} w='100%'>
+          {link}
+        </Hint>
       </ModalContent>
       <ModalFooter className={styles.footer}>
         <Button className={styles.button} variant='secondary' onClick={onClose}>

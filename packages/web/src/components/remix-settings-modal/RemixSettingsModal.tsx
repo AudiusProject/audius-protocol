@@ -182,7 +182,7 @@ const RemixSettingsModal = ({
       </ModalHeader>
       <ModalContent>
         {isStreamGated ? (
-          <Hint icon={IconQuestionCircle} mb='l'>{`${
+          <Hint icon={IconQuestionCircle} mb='xl'>{`${
             messages.changeAvailabilityPrefix
           } ${
             isUSDCPurchaseGated

@@ -9,12 +9,12 @@ import { View, Image, Dimensions } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'
 
 import {
+  Hint,
   IconCaretRight,
   IconCollectible,
   IconExternalLink
 } from '@audius/harmony-native'
 import { Text, useLink } from 'app/components/core'
-import { HelpCallout } from 'app/components/help-callout/HelpCallout'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useSetTrackAvailabilityFields } from 'app/hooks/useSetTrackAvailabilityFields'
 import { flexRowCentered, makeStyles } from 'app/styles'
@@ -115,9 +115,6 @@ const useStyles = makeStyles(({ typography, spacing, palette }) => ({
     width: spacing(5),
     height: spacing(5)
   },
-  noCollectibles: {
-    marginTop: spacing(4)
-  },
   noCollectiblesText: {
     flex: 1,
     flexWrap: 'wrap'
@@ -194,10 +191,6 @@ export const CollectibleGatedAvailability = ({
     navigation.navigate('NFTCollections')
   }, [navigation])
 
-  const renderHelpCalloutContent = useCallback(() => {
-    return hasNoCollectibles ? messages.noCollectibles : null
-  }, [hasNoCollectibles])
-
   return (
     <View style={styles.root}>
       <View style={styles.titleContainer}>
@@ -213,12 +206,7 @@ export const CollectibleGatedAvailability = ({
           </Text>
         </View>
       ) : null}
-      {hasNoCollectibles ? (
-        <HelpCallout
-          style={styles.noCollectibles}
-          content={renderHelpCalloutContent()}
-        />
-      ) : null}
+      {hasNoCollectibles ? <Hint mt='l'>{messages.noCollectibles}</Hint> : null}
       <TouchableOpacity style={styles.learnMore} onPress={onLearnMorePress}>
         <Text weight='bold' color='neutralLight4' fontSize='large'>
           {messages.learnMore}

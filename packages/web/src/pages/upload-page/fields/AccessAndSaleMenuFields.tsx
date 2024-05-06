@@ -117,9 +117,7 @@ export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
         <Hint icon={IconQuestionCircle}>{messages.isRemix}</Hint>
       ) : null}
       <Text variant='body'>{messages.modalDescription}</Text>
-      {isPublishDisabled ? (
-        <HelpCallout content={messages.publishDisabled} />
-      ) : null}
+      {isPublishDisabled ? <Hint>{messages.publishDisabled}</Hint> : null}
       <RadioGroup {...availabilityField} aria-label={messages.title}>
         <ModalRadioItem
           icon={<IconVisibilityPublic className={styles.icon} />}
