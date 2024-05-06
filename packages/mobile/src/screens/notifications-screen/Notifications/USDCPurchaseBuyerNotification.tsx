@@ -10,6 +10,7 @@ import type {
 import { notificationsSelectors } from '@audius/common/store'
 import { getEntityTitle, type Nullable } from '@audius/common/utils'
 import { make } from '@audius/web/src/common/store/analytics/actions'
+import { lowerCase } from 'lodash'
 import { useSelector } from 'react-redux'
 
 import { IconCart } from '@audius/harmony-native'
@@ -38,7 +39,9 @@ const messages = {
     sellerUsername: string,
     type: Entity.Track | Entity.Album
   ) =>
-    `I bought the ${type} ${title} by ${sellerUsername} on @Audius! #AudiusPremium`
+    `I bought the ${lowerCase(
+      type
+    )} ${title} by ${sellerUsername} on @Audius! #AudiusPremium`
 }
 type USDCPurchaseBuyerNotificationProps = {
   notification: USDCPurchaseBuyerNotificationType
