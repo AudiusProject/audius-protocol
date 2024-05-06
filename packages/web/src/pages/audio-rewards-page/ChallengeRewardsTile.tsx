@@ -99,6 +99,18 @@ const messages = {
   }
 }
 
+const formatProgressLabel = (
+  label?: string,
+  current?: number,
+  max?: number
+) => {
+  return fillString(
+    label ?? '',
+    formatNumberCommas(current?.toString() ?? ''),
+    formatNumberCommas(max?.toString() ?? '')
+  )
+}
+
 type RewardPanelProps = {
   title: string
   icon: ReactNode
@@ -147,45 +159,32 @@ const RewardPanel = ({
     isAudioMatchingChallenge(id) && !needsDisbursement
 
   let progressLabelFilled: string
+  if (challenge?.challenge_id === 'track-upload') {
+    console.log('asdf challenge: ', challenge)
+  }
   if (shouldShowCompleted) {
     progressLabelFilled = messages.completeLabel
-  } else if (challenge && challenge?.cooldown_days > 0) {
-    if (needsDisbursement) {
-      progressLabelFilled = messages.readyToClaim
-    } else if (pending) {
-      progressLabelFilled = messages.pendingRewards
-    } else if (challenge?.challenge_type === 'aggregate') {
-      // Count down
-      progressLabelFilled = fillString(
-        remainingLabel ?? '',
-        formatNumberCommas(
-          (challenge?.max_steps - challenge?.current_step_count)?.toString() ??
-            ''
-        ),
-        formatNumberCommas(challenge?.max_steps?.toString() ?? '')
-      )
-    } else {
-      progressLabelFilled = progressLabel ?? ''
-    }
+  } else if (needsDisbursement) {
+    progressLabelFilled = messages.readyToClaim
+  } else if (pending) {
+    progressLabelFilled = messages.pendingRewards
   } else if (challenge?.challenge_type === 'aggregate') {
     // Count down
-    progressLabelFilled = fillString(
+    progressLabelFilled = formatProgressLabel(
       remainingLabel ?? '',
-      formatNumberCommas(
-        (challenge?.max_steps - challenge?.current_step_count)?.toString() ?? ''
-      ),
-      formatNumberCommas(challenge?.max_steps?.toString() ?? '')
+      challenge?.max_steps - challenge?.current_step_count,
+      challenge.max_steps
+    )
+  } else if (progressLabel?.includes('%')) {
+    progressLabelFilled = formatProgressLabel(
+      progressLabel,
+      challenge?.current_step_count,
+      challenge?.max_steps
     )
   } else {
-    // Count up
-    progressLabelFilled = progressLabel
-      ? fillString(
-          progressLabel,
-          formatNumberCommas(challenge?.current_step_count?.toString() ?? ''),
-          formatNumberCommas(challenge?.max_steps?.toString() ?? '')
-        )
-      : ''
+    progressLabelFilled = progressLabel ?? ''
   }
+
   const buttonMessage = needsDisbursement
     ? messages.claimReward
     : hasDisbursed
