@@ -6,13 +6,10 @@ import {
   useGetManagedAccounts
 } from '@audius/common/api'
 import { Flex, IconButton, IconCaretDown, Popup } from '@audius/harmony'
-import { localStorage } from 'services/local-storage'
 
 import { AccountListContent } from './AccountListContent'
 import { UserMetadata } from '@audius/common/models'
-
-// Matches corresponding key in libs (DISCOVERY_PROVIDER_USER_WALLET_OVERRIDE)
-const USER_WALLET_OVERRIDE_KEY = '@audius/user-wallet-override'
+import { useAccountSwitcher } from '@audius/common/hooks'
 
 export const AccountSwitcher = () => {
   const [isExpanded, setIsExpanded] = useState(false)
@@ -20,16 +17,10 @@ export const AccountSwitcher = () => {
   const { data: currentWeb3User } = useGetCurrentWeb3User({})
   const { data: currentUserId } = useGetCurrentUserId({})
 
+  const { switchAccount } = useAccountSwitcher()
+
   const onAccountSelected = useCallback((user: UserMetadata) => {
-    if (!user.wallet) {
-      console.error('User has no wallet address')
-      return
-    }
-    localStorage.setItem(USER_WALLET_OVERRIDE_KEY, user.wallet).then(() => {
-      // TODO: Don't use window directly?
-      // TODO: Need to clear the user from localStorage before switching or we get a flash of previous user.
-      window.location.reload()
-    })
+    switchAccount(user)
   }, [])
 
   const { data: managedAccounts = [] } = useGetManagedAccounts(
