@@ -436,7 +436,7 @@ export const purchaseContentWithPaymentRouter = async (
     skipSendAndReturnTransaction: true,
     purchaseAccess
   })
-  return tx
+  return tx as Transaction
 }
 
 export const findAssociatedTokenAddress = async (
