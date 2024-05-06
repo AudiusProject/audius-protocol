@@ -126,12 +126,12 @@ const CollectionHeader = ({
 
   const onClickOverflow = () => {
     const overflowActions = [
-      isOwner || !isPublished
+      isOwner || !isPublished || !hasStreamAccess
         ? null
         : isReposted
         ? OverflowAction.UNREPOST
         : OverflowAction.REPOST,
-      isOwner || !isPublished
+      isOwner || !isPublished || !hasStreamAccess
         ? null
         : isSaved
         ? OverflowAction.UNFAVORITE
@@ -277,8 +277,8 @@ const CollectionHeader = ({
           onRepost={onRepost}
           onClickOverflow={onClickOverflow}
           onClickEdit={handleClickEdit}
-          showFavorite={!!onSave && !isOwner}
-          showRepost={variant !== Variant.SMART && !isOwner}
+          showFavorite={!!onSave && !isOwner && hasStreamAccess}
+          showRepost={variant !== Variant.SMART && !isOwner && hasStreamAccess}
           showShare={variant !== Variant.SMART || type === 'Audio NFT Playlist'}
           showOverflow={variant !== Variant.SMART}
           darkMode={isDarkMode()}
