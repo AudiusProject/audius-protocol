@@ -402,13 +402,12 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
       const fieldVisibility = get(values, FIELD_VISIBILITY)
       const streamConditions = get(values, STREAM_CONDITIONS)
       const lastGateKeeper = get(values, LAST_GATE_KEEPER)
-      const isUnlisted = get(values, IS_UNLISTED)
 
       setFieldVisibilityValue({
         ...defaultFieldVisibility,
         remixes: fieldVisibility?.remixes ?? defaultFieldVisibility.remixes
       })
-      setIsUnlistedValue(isUnlisted)
+      setIsUnlistedValue(false)
       setIsStreamGated(false)
       setStreamConditionsValue(null)
       setPreviewValue(undefined)
