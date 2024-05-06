@@ -9,6 +9,7 @@ import { DashboardWalletUsersApi } from './api/dashboard-wallet-users/DashboardW
 import { DeveloperAppsApi } from './api/developer-apps/DeveloperAppsApi'
 import { Configuration, TipsApi } from './api/generated/default'
 import {
+  TracksApi as TracksApiFull,
   Configuration as ConfigurationFull,
   PlaylistsApi as PlaylistsApiFull,
   ReactionsApi as ReactionsApiFull,
@@ -19,7 +20,6 @@ import {
 } from './api/generated/full'
 import { GrantsApi } from './api/grants/GrantsApi'
 import { PlaylistsApi } from './api/playlists/PlaylistsApi'
-import { FullTracksApi } from './api/tracks/FullTracksApi'
 import { TracksApi } from './api/tracks/TracksApi'
 import { UsersApi } from './api/users/UsersApi'
 import { developmentConfig } from './config/development'
@@ -243,7 +243,9 @@ const initializeApis = ({
     services.storage,
     services.entityManager,
     services.auth,
-    services.logger
+    services.logger,
+    services.claimableTokensClient,
+    services.paymentRouterClient
   )
   const users = new UsersApi(
     generatedApiClientConfig,
@@ -315,13 +317,7 @@ const initializeApis = ({
   })
 
   const full = {
-    tracks: new FullTracksApi(
-      generatedApiClientConfigFull,
-      services.claimableTokensClient,
-      services.paymentRouterClient,
-      services.auth,
-      services.logger
-    ),
+    tracks: new TracksApiFull(generatedApiClientConfigFull),
     users: new UsersApiFull(generatedApiClientConfigFull),
     search: new SearchApiFull(generatedApiClientConfigFull),
     playlists: new PlaylistsApiFull(generatedApiClientConfigFull),
