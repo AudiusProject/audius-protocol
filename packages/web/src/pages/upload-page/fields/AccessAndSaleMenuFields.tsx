@@ -9,12 +9,13 @@ import {
   RadioGroup,
   IconSpecialAccess,
   IconVisibilityPublic,
-  Text
+  Text,
+  IconQuestionCircle,
+  Hint
 } from '@audius/harmony'
 import cn from 'classnames'
 import { useField } from 'formik'
 
-import { HelpCallout } from 'components/help-callout/HelpCallout'
 import layoutStyles from 'components/layout/layout.module.css'
 import { ModalRadioItem } from 'components/modal-radio/ModalRadioItem'
 import { useFlag } from 'hooks/useRemoteConfig'
@@ -112,11 +113,11 @@ export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
 
   return (
     <div className={cn(layoutStyles.col, layoutStyles.gap4)}>
-      {isRemix ? <HelpCallout content={messages.isRemix} /> : null}
-      <Text variant='body'>{messages.modalDescription}</Text>
-      {isPublishDisabled ? (
-        <HelpCallout content={messages.publishDisabled} />
+      {isRemix ? (
+        <Hint icon={IconQuestionCircle}>{messages.isRemix}</Hint>
       ) : null}
+      <Text variant='body'>{messages.modalDescription}</Text>
+      {isPublishDisabled ? <Hint>{messages.publishDisabled}</Hint> : null}
       <RadioGroup {...availabilityField} aria-label={messages.title}>
         <ModalRadioItem
           icon={<IconVisibilityPublic className={styles.icon} />}

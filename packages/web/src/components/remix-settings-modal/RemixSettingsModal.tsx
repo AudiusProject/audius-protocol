@@ -18,14 +18,15 @@ import {
   Switch,
   IconRemix,
   ModalFooter,
-  Button
+  Button,
+  Hint,
+  IconQuestionCircle
 } from '@audius/harmony'
 import cn from 'classnames'
 import { debounce } from 'lodash'
 
 import Input from 'components/data-entry/Input'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
-import { HelpCallout } from 'components/help-callout/HelpCallout'
 import UserBadges from 'components/user-badges/UserBadges'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 import { fullTrackPage } from 'utils/route'
@@ -181,16 +182,15 @@ const RemixSettingsModal = ({
       </ModalHeader>
       <ModalContent>
         {isStreamGated ? (
-          <HelpCallout
-            className={styles.disableInfo}
-            content={`${messages.changeAvailabilityPrefix} ${
-              isUSDCPurchaseGated
-                ? messages.premium
-                : isContentCollectibleGated(streamConditions)
-                ? messages.collectibleGated
-                : messages.specialAccess
-            }${messages.changeAvailabilitySuffix}`}
-          />
+          <Hint icon={IconQuestionCircle} mb='xl'>{`${
+            messages.changeAvailabilityPrefix
+          } ${
+            isUSDCPurchaseGated
+              ? messages.premium
+              : isContentCollectibleGated(streamConditions)
+              ? messages.collectibleGated
+              : messages.specialAccess
+          }${messages.changeAvailabilitySuffix}`}</Hint>
         ) : null}
         <div className={styles.toggleRow}>
           <span className={cn({ [styles.remixDisabled]: isStreamGated })}>
