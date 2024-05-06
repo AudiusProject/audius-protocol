@@ -101,6 +101,3 @@ export const AccountListContent = ({
     </Flex>
   )
 }
-
-// Make ticket for migrating follows you thing
-// Talk about in meeting about how to hide high level pages

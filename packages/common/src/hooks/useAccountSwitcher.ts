@@ -17,7 +17,6 @@ export const useAccountSwitcher = () => {
     await localStorage.clearAudiusAccount()
     await localStorage.clearAudiusAccountUser()
 
-    // TODO: Need to clear the user from localStorage before switching or we get a flash of previous user.
     window.location.reload()
   }, [])
 

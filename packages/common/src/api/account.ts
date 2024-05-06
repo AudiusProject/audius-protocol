@@ -28,9 +28,11 @@ const accountApi = createApi({
     getCurrentWeb3User: {
       async fetch(_, { audiusBackend }) {
         const libs = await audiusBackend.getAudiusLibsTyped()
-        // TODO: What happens in the cache if something here is null?
+        // TODO: https://linear.app/audius/issue/PAY-2838/separate-walletentropy-user-and-current-user-in-state
+        // What happens in the cache if something here is null?
+
         // Note: This cast is mostly safe, but is missing info populated in AudiusBackend.getAccount()
-        // Okay for now as that info isn't generally available on
+        // Okay for now as that info isn't generally available on non-account users and isn't used in manager mode.
         return libs.Account?.getWeb3User() as UserMetadata | null
       },
       options: {
