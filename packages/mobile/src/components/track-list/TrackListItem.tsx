@@ -273,9 +273,9 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
     return isActive && getPlaying(state)
   })
   const isPlaylistAddable = useIsGatedContentPlaylistAddable(track)
-  // Unlike other types of gated tracks, USDC-gated tracks have previews so we
-  // should show the play button for them.
-  const isPlayable = !isLocked || isContentUSDCPurchaseGated(streamConditions)
+  // Unlike other gated tracks, USDC purchase gated tracks are playable because they have previews
+  const isPlayable =
+    !isDeleted && (!isLocked || isContentUSDCPurchaseGated(streamConditions))
 
   const messages = getMessages({ isDeleted })
   const styles = useStyles()
@@ -294,7 +294,7 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
   )
 
   const onPressTrack = () => {
-    if (uid && isPlayable && !isDeleted && togglePlay) {
+    if (uid && isPlayable && togglePlay) {
       togglePlay(uid, track_id)
     }
   }
@@ -416,7 +416,7 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
         <ListItemView
           style={styles.trackInnerContainer}
           onPress={isReorderable ? undefined : onPressTrack}
-          disabled={isDeleted || !isPlayable}
+          disabled={!isPlayable}
         >
           {!hideArt ? (
             <TrackArtwork
@@ -425,7 +425,7 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
               isPlaying={isPlaying}
               isUnlisted={isUnlisted}
             />
-          ) : isActive && !isDeleted && isPlayable ? (
+          ) : isActive && isPlayable ? (
             <IconButton
               icon={isPlaying ? IconPlaybackPause : IconPlaybackPlay}
               onPress={onPressTrack}
@@ -447,7 +447,7 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
           <View
             style={[
               styles.nameArtistContainer,
-              !isDeleted && !isPlayable ? styles.halfTransparent : null
+              isPlayable ? null : styles.halfTransparent
             ]}
           >
             <View
