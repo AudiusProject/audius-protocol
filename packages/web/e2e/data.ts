@@ -1,13 +1,19 @@
 import { readFileSync } from 'fs'
+import path from 'path'
 
 const runAgainstLocalStack = process.env.RUN_AGAINST_LOCAL_STACK === 'true'
 
-const user = () => JSON.parse(readFileSync('./e2e/user.json', 'utf8'))
-const track = () => JSON.parse(readFileSync('./e2e/track.json', 'utf8'))
-const remix = () => JSON.parse(readFileSync('./e2e/remix.json', 'utf8'))
-const album = () => JSON.parse(readFileSync('./e2e/album.json', 'utf8'))
-const user2 = () => JSON.parse(readFileSync('./e2e/user2.json', 'utf8'))
-const track2 = () => JSON.parse(readFileSync('./e2e/track2.json', 'utf8'))
+const dataFilesPath = (filename: string) =>
+  path.resolve('../web/e2e/data/', filename)
+
+const getData = (filename: string) =>
+  JSON.parse(readFileSync(dataFilesPath(filename), 'utf8'))
+const user = () => getData('user.json')
+const track = () => getData('track.json')
+const remix = () => getData('remix.json')
+const album = () => getData('album.json')
+const user2 = () => getData('user2.json')
+const track2 = () => getData('track2.json')
 
 const sanitizeName = (title: string) => title.replace(/ /g, '-').toLowerCase()
 

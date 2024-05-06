@@ -2,13 +2,11 @@ import { expect, Page } from '@playwright/test'
 
 import { test } from './test'
 import { resetAuthState } from './utils'
-import { readFileSync } from 'fs'
+import { getUser } from './data'
 
 test.describe('Sign In', () => {
   // Resets auth state for this suite so we aren't already signed in
   test.use(resetAuthState)
-
-  const user = JSON.parse(readFileSync('./e2e/user.json', 'utf8'))
 
   test('can navigate to sign-in from trending screen', async ({ page }) => {
     await page.goto('trending')
@@ -32,16 +30,16 @@ test.describe('Sign In', () => {
 
   // TODO: For some reason the user created with audius-cmd doesn't have a handle in identity
   // so the email check returns false
-  test.skip('can navigate to sign-in after entering email in sign-up', async ({
-    page
-  }) => {
-    await page.goto('signup')
-    await page.getByRole('textbox', { name: /email/i }).fill(user.email)
-    await page.getByRole('button', { name: /sign up free/i }).click()
-    const signUpModal = page.getByRole('alert')
-    await signUpModal.getByRole('link', { name: /Sign In/ }).click()
-    await assertOnSignInPage(page)
-  })
+  // test.skip('can navigate to sign-in after entering email in sign-up', async ({
+  //   page
+  // }) => {
+  //   await page.goto('signup')
+  //   await page.getByRole('textbox', { name: /email/i }).fill(user.email)
+  //   await page.getByRole('button', { name: /sign up free/i }).click()
+  //   const signUpModal = page.getByRole('alert')
+  //   await signUpModal.getByRole('link', { name: /Sign In/ }).click()
+  //   await assertOnSignInPage(page)
+  // })
 
   // TODO: need to integrate a hard-coded otp for this user before we can turn this test on
   // test.skip('can sign in', async ({ page }) => {
