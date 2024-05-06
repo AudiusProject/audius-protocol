@@ -1,11 +1,12 @@
 import { createApi } from '~/audius-query'
-import { Id } from './utils'
 import {
   ID,
   UserMetadata,
   managedUserListFromSDK,
   userManagerListFromSDK
 } from '~/models'
+
+import { Id } from './utils'
 
 type ResetPasswordArgs = {
   email: string

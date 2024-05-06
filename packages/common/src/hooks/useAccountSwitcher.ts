@@ -1,4 +1,5 @@
 import { useCallback } from 'react'
+
 import { useAppContext } from '~/context'
 import { UserMetadata } from '~/models/User'
 
@@ -7,18 +8,21 @@ const USER_WALLET_OVERRIDE_KEY = '@audius/user-wallet-override'
 
 export const useAccountSwitcher = () => {
   const { localStorage } = useAppContext()
-  const switchAccount = useCallback(async (user: UserMetadata) => {
-    if (!user.wallet) {
-      console.error('User has no wallet address')
-      return
-    }
+  const switchAccount = useCallback(
+    async (user: UserMetadata) => {
+      if (!user.wallet) {
+        console.error('User has no wallet address')
+        return
+      }
 
-    await localStorage.setItem(USER_WALLET_OVERRIDE_KEY, user.wallet)
-    await localStorage.clearAudiusAccount()
-    await localStorage.clearAudiusAccountUser()
+      await localStorage.setItem(USER_WALLET_OVERRIDE_KEY, user.wallet)
+      await localStorage.clearAudiusAccount()
+      await localStorage.clearAudiusAccountUser()
 
-    window.location.reload()
-  }, [])
+      window.location.reload()
+    },
+    [localStorage]
+  )
 
   return { switchAccount }
 }

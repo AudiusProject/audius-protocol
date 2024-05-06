@@ -21,9 +21,9 @@ import { SolanaWalletAddress, StringWei, WalletAddress } from '~/models/Wallet'
 import { decodeHashId } from '~/utils/hashIds'
 import { Nullable, removeNullable } from '~/utils/typeUtils'
 
+import { Grant, grantFromSDK } from './Grant'
 import { Timestamped } from './Timestamped'
 import { UserEvent } from './UserEvent'
-import { Grant, grantFromSDK } from './Grant'
 
 export type UserMetadata = {
   album_count: number
