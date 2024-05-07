@@ -87,6 +87,7 @@ export const CollectionActionButtons = (props: CollectionActionButtonProps) => {
       iconLeft={isPlaying && !isPreviewing ? IconPause : IconPlay}
       onClick={onPlay}
       widthToHideText={BUTTON_COLLAPSE_WIDTHS.first}
+      size='large'
     >
       {isPlaying && !isPreviewing ? messages.pause : messages.play}
     </Button>
@@ -98,6 +99,7 @@ export const CollectionActionButtons = (props: CollectionActionButtonProps) => {
       iconLeft={isPlaying && isPreviewing ? IconPause : IconPlay}
       onClick={onPreview}
       widthToHideText={BUTTON_COLLAPSE_WIDTHS.first}
+      size='large'
     >
       {isPlaying && isPreviewing ? messages.pause : messages.preview}
     </Button>
