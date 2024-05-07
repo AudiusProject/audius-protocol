@@ -13,6 +13,12 @@ setup('seed data', async () => {
     mkdirSync(path.resolve(process.cwd(), filepath))
   }
 
+  console.log(
+    'directory exists',
+    path.resolve(process.cwd(), filepath),
+    existsSync(path.resolve(process.cwd(), filepath))
+  )
+
   const audiusCmd = (cmd: string) => {
     console.log('working directory:', process.cwd())
     const result = execSync(`$HOME/.local/bin/audius-cmd ${cmd}`)
