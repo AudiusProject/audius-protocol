@@ -1,8 +1,8 @@
 import { userRepo } from './db'
-import { sdkService } from './publishRelease' // todo move this
+import { createSdkService } from './sdk'
 
 export async function startUsersPoller() {
-  const sdk = (await sdkService).getSdk()
+  const sdk = (await createSdkService()).getSdk()
 
   // Periodic task to fetch user data and update handles
   setInterval(async () => {
