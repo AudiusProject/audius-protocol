@@ -548,3 +548,13 @@ export function startServer() {
     port,
   })
 }
+
+// for:
+// https://github.com/honojs/node-server/issues/167
+process
+  .on('unhandledRejection', (reason, p) => {
+    console.error('unhandledRejection', reason, 'promise', p)
+  })
+  .on('uncaughtException', (err) => {
+    console.error('unhandledRejection', err)
+  })
