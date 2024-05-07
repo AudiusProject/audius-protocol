@@ -21,13 +21,7 @@ export const UserLink = (props: UserLinkProps) => {
   const userName = useSelector((state) => getUser(state, { id: userId })?.name)
 
   return (
-    <Flex
-      direction='row'
-      gap='xs'
-      w='100%'
-      justifyContent='center'
-      alignItems='center'
-    >
+    <Flex direction='row' gap='xs' justifyContent='center' alignItems='center'>
       <TextLink<ParamList>
         to={{ screen: 'Profile', params: { id: userId } }}
         numberOfLines={1}
