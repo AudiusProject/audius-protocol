@@ -124,7 +124,7 @@ const slice = createSlice({
           0
         )
         const previouslyDisbursedAmount =
-          { ...state.userChallengesOverrides[challengeId] }.disbursed_amount ??
+          state.userChallengesOverrides[challengeId]?.disbursed_amount ??
           userChallenge.disbursed_amount
         state.userChallengesOverrides[challengeId] = {
           ...state.userChallengesOverrides[challengeId],
