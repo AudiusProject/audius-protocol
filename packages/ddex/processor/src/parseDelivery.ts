@@ -5,6 +5,7 @@ import { mkdtemp, readFile, readdir } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { releaseRepo, userRepo, xmlRepo } from './db'
+import { sources } from './sources'
 import { omitEmpty } from './util'
 
 type CH = cheerio.Cheerio<cheerio.Element>
@@ -205,12 +206,12 @@ export function parseDdexXml(source: string, xmlUrl: string, xmlText: string) {
   } else if (tagName == 'PurgeReleaseMessage') {
     // mark release rows as DeletePending
     const { releaseIds } = parsePurgeXml($)
-    releaseRepo.markForDelete(xmlUrl, messageTimestamp, releaseIds)
+    releaseRepo.markForDelete(source, xmlUrl, messageTimestamp, releaseIds)
   } else if (tagName == 'NewReleaseMessage') {
     // create or replace this release in db
-    const releases = parseReleaseXml($)
+    const releases = parseReleaseXml(source, $)
     for (const release of releases) {
-      releaseRepo.upsert(xmlUrl, messageTimestamp, release)
+      releaseRepo.upsert(source, xmlUrl, messageTimestamp, release)
     }
     return releases
   } else {
@@ -221,7 +222,7 @@ export function parseDdexXml(source: string, xmlUrl: string, xmlText: string) {
 //
 // parseRelease
 //
-function parseReleaseXml($: cheerio.CheerioAPI) {
+function parseReleaseXml(source: string, $: cheerio.CheerioAPI) {
   function toTexts($doc: CH) {
     return $doc.map((_, el) => $(el).text()).get()
   }
@@ -471,16 +472,16 @@ function parseReleaseXml($: cheerio.CheerioAPI) {
         release.problems.push(`NoGenre`)
       }
 
-      // resolve audius user
+      // resolve audius user (that has authorized this source)
       const artistNames = release.artists.map((a) => a.name)
-
-      // todo: should match only users that have authorized this source
-      release.audiusUser = userRepo.match(artistNames)
+      const sourceConfig = sources.findByName(source)
+      release.audiusUser = userRepo.match(sourceConfig.ddexKey, artistNames)
       if (!release.audiusUser) {
         release.problems.push(`NoUser`)
       }
 
       // resolve resources
+      // todo: if this is an update (prior exists) we should ignore MissingRef errors
       $el
         .find('ReleaseResourceReferenceList > ReleaseResourceReference')
         .each((_, el) => {

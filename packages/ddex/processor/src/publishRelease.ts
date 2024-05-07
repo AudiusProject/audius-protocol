@@ -15,9 +15,7 @@ export async function publishValidPendingReleases() {
   if (!rows.length) return
 
   for (const row of rows) {
-    const source = sources.findByXmlUrl(row.xmlUrl)
-
-    // todo: need to ensure this sdk is authorized for audiusUser
+    const source = sources.findByName(row.source)
     const sdk = getSdk(
       source.ddexKey,
       source.ddexSecret,

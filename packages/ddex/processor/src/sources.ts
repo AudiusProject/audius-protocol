@@ -14,9 +14,9 @@ export type SourceConfig = {
 let sourceList: SourceConfig[] = []
 
 export const sources = {
-  load() {
+  load(configPath?: string) {
     try {
-      const j = readFileSync('./sources.json', 'utf8')
+      const j = readFileSync(configPath || './sources.json', 'utf8')
       const sourceConfig = JSON.parse(j) as {
         sources: SourceConfig[]
       }

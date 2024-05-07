@@ -28,6 +28,7 @@ create table if not exists users (
 );
 
 create table if not exists releases (
+  source text not null,
   key text primary key,
   ref text,
   xmlUrl text,
@@ -83,6 +84,7 @@ export enum ReleaseProcessingStatus {
 }
 
 export type ReleaseRow = {
+  source: string
   key: string
   xmlUrl: string
   messageTimestamp: string
@@ -135,9 +137,11 @@ export const userRepo = {
     dbUpsert('users', user)
   },
 
-  match(artistNames: string[]) {
+  match(apiKey: string, artistNames: string[]) {
     const artistSet = new Set(artistNames.map(lowerAscii))
-    const users = db.all<UserRow>(sql`select * from users`)
+    const users = db.all<UserRow>(
+      sql`select * from users where apiKey = ${apiKey}`
+    )
     for (const u of users) {
       if (
         artistSet.has(lowerAscii(u.name)) ||
@@ -238,7 +242,12 @@ export const releaseRepo = {
   },
 
   upsert: db.transaction(
-    (xmlUrl: string, messageTimestamp: string, release: DDEXRelease) => {
+    (
+      source: string,
+      xmlUrl: string,
+      messageTimestamp: string,
+      release: DDEXRelease
+    ) => {
       const key = releaseRepo.chooseReleaseId(release.releaseIds)
       const prior = releaseRepo.get(key)
       const json = JSON.stringify(release)
@@ -261,6 +270,7 @@ export const releaseRepo = {
         : ReleaseProcessingStatus.PublishPending
 
       dbUpsert('releases', {
+        source,
         key,
         status,
         ref: release.ref,
@@ -273,7 +283,12 @@ export const releaseRepo = {
   ),
 
   markForDelete: db.transaction(
-    (xmlUrl: string, messageTimestamp: string, releaseIds: DDEXReleaseIds) => {
+    (
+      source: string,
+      xmlUrl: string,
+      messageTimestamp: string,
+      releaseIds: DDEXReleaseIds
+    ) => {
       // here we do PK lookup using the "best" id
       // but we may need to try to find by all the different releaseIds
       // if it's not consistent
@@ -293,6 +308,7 @@ export const releaseRepo = {
       releaseRepo.update({
         key,
         status: ReleaseProcessingStatus.DeletePending,
+        source,
         xmlUrl,
         messageTimestamp,
       })

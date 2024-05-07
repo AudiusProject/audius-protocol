@@ -1,7 +1,12 @@
-import { expect, test } from 'vitest'
+import { beforeAll, expect, test } from 'vitest'
 
 import { ReleaseProcessingStatus, releaseRepo, userRepo } from './db'
 import { parseDdexXmlFile } from './parseDelivery'
+import { sources } from './sources'
+
+beforeAll(async () => {
+  sources.load('./sources.test.json')
+})
 
 test('crud', async () => {
   const grid = 'A1B2C3D4E5F6G7H8I9J0K1L2M3N4O5P6Q7R8S9T0'
@@ -9,7 +14,7 @@ test('crud', async () => {
 
   // create user for artist matching
   userRepo.upsert({
-    apiKey: 'someApp',
+    apiKey: 'crudTestKey',
     id: 'djtheo',
     handle: 'djtheo',
     name: 'DJ Theo',
@@ -21,6 +26,7 @@ test('crud', async () => {
     const rr = releaseRepo.get(grid)!
     expect(rr._parsed?.soundRecordings[0].title).toBe('Example Song')
     expect(rr.status).toBe(ReleaseProcessingStatus.PublishPending)
+    expect(rr.source).toBe('crudTest')
   }
 
   // simulate publish
