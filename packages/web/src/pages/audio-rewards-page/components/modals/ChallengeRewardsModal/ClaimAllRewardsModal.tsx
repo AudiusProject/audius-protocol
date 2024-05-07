@@ -78,6 +78,11 @@ export const ClaimAllRewardsModal = () => {
     dispatch(claimAllChallengeRewards({ claims }))
   }, [dispatch, claimableChallenges])
 
+  const handleClose = useCallback(() => {
+    dispatch(resetAndCancelClaimReward())
+    setOpen(false)
+  }, [dispatch])
+
   const formatLabel = useCallback((item: any) => {
     const { label, claimableDate, isClose } = item
     const formattedLabel = isClose ? (
@@ -99,7 +104,7 @@ export const ClaimAllRewardsModal = () => {
       title={messages.rewards}
       showTitleHeader
       isOpen={isOpen}
-      onClose={() => setOpen(false)}
+      onClose={handleClose}
       isFullscreen={true}
       useGradientTitle={false}
       titleClassName={wm(styles.title)}
