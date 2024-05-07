@@ -16,7 +16,7 @@ import {
 import chalk from 'chalk'
 import { Option, program } from 'commander'
 
-import { PaymentRouterProgram, route } from '@audius/spl'
+import { PaymentRouterProgram } from '@audius/spl'
 
 import { initializeAudiusLibs } from './utils.mjs'
 
