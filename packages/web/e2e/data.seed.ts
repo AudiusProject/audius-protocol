@@ -12,6 +12,7 @@ setup('seed data', async () => {
   }
 
   const audiusCmd = (cmd: string) => {
+    console.log('working directory:', process.cwd())
     const result = execSync(`$HOME/.local/bin/audius-cmd ${cmd}`)
     console.log(result.toString())
   }
