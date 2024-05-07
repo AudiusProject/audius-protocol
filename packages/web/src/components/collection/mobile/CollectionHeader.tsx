@@ -31,6 +31,8 @@ import { RepostsFavoritesStats } from '../components/RepostsFavoritesStats'
 import { CollectionHeaderProps } from '../types'
 
 import styles from './CollectionHeader.module.css'
+import { getDogEarType } from '@audius/common/utils'
+import { DogEar } from 'components/dog-ear'
 
 const messages = {
   hiddenPlaylist: 'Hidden Playlist',
@@ -112,6 +114,7 @@ const CollectionHeader = ({
   )
   const { hasStreamAccess } = useGatedContentAccess(collection)
   const isPremium = collection?.is_stream_gated
+  const isUnlisted = collection?.is_private
 
   // If user doesn't have access, show preview only. If user has access, show play only.
   // If user is owner, show both.
@@ -185,8 +188,25 @@ const CollectionHeader = ({
     )
   }
 
+  const renderDogEar = () => {
+    // Omitting isOwner and hasStreamAccess to ensure we always show gated DogEars
+    const DogEarType = getDogEarType({
+      isUnlisted,
+      streamConditions
+    })
+    if (!isLoading && DogEarType) {
+      return (
+        <div className={styles.borderOffset}>
+          <DogEar type={DogEarType} />
+        </div>
+      )
+    }
+    return null
+  }
+
   return (
     <Flex direction='column'>
+      {renderDogEar()}
       <Flex direction='column' alignItems='center' p='l' gap='l'>
         <Text variant='label' css={{ letterSpacing: '2px' }} color='subdued'>
           {type === 'playlist' && !isPublished
