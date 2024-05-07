@@ -1,5 +1,6 @@
 ---
 '@audius/sdk': minor
+'@audius/spl': major
 ---
 
-Add support to purchase tracks via SDK
+Update to use PaymentRouterProgram in @audius/spl and enable track purchase in SDK
