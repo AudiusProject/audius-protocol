@@ -1,5 +1,6 @@
 import { useGetManagers } from '@audius/common/api'
 import { Status } from '@audius/common/models'
+import { accountSelectors } from '@audius/common/store'
 import {
   Box,
   Button,
@@ -11,10 +12,12 @@ import {
 } from '@audius/harmony'
 
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
+import { useSelector } from 'utils/reducer'
 
 import { AccountListItem } from './AccountListItem'
 import { sharedMessages } from './sharedMessages'
 import { AccountsManagingYouPageProps, AccountsManagingYouPages } from './types'
+const { getUserId } = accountSelectors
 
 export const messages = {
   accountManagers: 'Account Managers',
@@ -28,7 +31,9 @@ export const AccountsManagingYouHomePage = (
   props: AccountsManagingYouHomePageProps
 ) => {
   const { setPage } = props
-  const { data, status } = useGetManagers({})
+  const userId = useSelector(getUserId) as number
+
+  const { data, status } = useGetManagers({ userId })
   const managers = data
   return (
     <Flex direction='column' gap='xl' ph='xl'>

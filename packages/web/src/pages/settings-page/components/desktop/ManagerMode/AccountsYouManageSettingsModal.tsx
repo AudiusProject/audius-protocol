@@ -6,6 +6,7 @@ import {
   useRejectManagedAccount
 } from '@audius/common/api'
 import { Status, UserMetadata } from '@audius/common/models'
+import { accountSelectors } from '@audius/common/store'
 import {
   Box,
   Divider,
@@ -22,9 +23,11 @@ import {
 
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { ToastContext } from 'components/toast/ToastContext'
+import { useSelector } from 'utils/reducer'
 
 import { AccountListItem } from './AccountListItem'
 import { sharedMessages } from './sharedMessages'
+const { getUserId } = accountSelectors
 
 const messages = {
   accountsYouManage: 'Accounts You Manage',
@@ -39,7 +42,8 @@ type AccountsManagingYouSettingsModalProps = Omit<ModalProps, 'children'>
 export const AccountsYouManageSettingsModal = (
   props: AccountsManagingYouSettingsModalProps
 ) => {
-  const { data: managedAccounts, status } = useGetManagedAccounts({})
+  const userId = useSelector(getUserId) as number
+  const { data: managedAccounts, status } = useGetManagedAccounts({ userId })
   const [approveManagedAccount, approveResult] = useApproveManagedAccount()
   const [rejectManagedAccount, rejectResult] = useRejectManagedAccount()
   const { toast } = useContext(ToastContext)
