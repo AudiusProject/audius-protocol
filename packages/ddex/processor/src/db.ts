@@ -130,6 +130,14 @@ export const userRepo = {
     dbUpsert('users', user)
   },
 
+  updateField(id: string, field: keyof UserRow, value: string | Date) {
+    return db.run(sql`
+      update users
+      set ${field} = ${value}
+      where id = ${id}
+    `)
+  },
+
   match(artistNames: string[]) {
     const artistSet = new Set(artistNames.map(lowerAscii))
     const users = db.all<UserRow>(sql`select * from users`)

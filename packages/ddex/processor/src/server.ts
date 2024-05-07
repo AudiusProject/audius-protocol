@@ -18,9 +18,10 @@ import {
 import { prepareAlbumMetadata, prepareTrackMetadatas } from './publishRelease'
 import { readAssetWithCaching } from './s3poller'
 import { parseBool } from './util'
+import { startUsersPoller } from './usersPoller'
 
 const { NODE_ENV, DDEX_KEY, DDEX_URL, COOKIE_SECRET } = process.env
-const COOKIE_NAME = 'audiusUser'
+export const COOKIE_NAME = 'audiusUser'
 
 const IS_PROD = NODE_ENV == 'production'
 const API_HOST = IS_PROD
@@ -475,7 +476,7 @@ app.get('/users', (c) => {
   )
 })
 
-type JwtUser = {
+export type JwtUser = {
   userId: string
   email: string
   name: string
@@ -488,7 +489,7 @@ type JwtUser = {
   }
 }
 
-async function getAudiusUser(c: Context) {
+export async function getAudiusUser(c: Context) {
   const j = await getSignedCookie(c, COOKIE_SECRET!, COOKIE_NAME)
   if (!j) return
   return JSON.parse(j) as JwtUser
@@ -547,4 +548,6 @@ export function startServer() {
     fetch: app.fetch,
     port,
   })
+
+  startUsersPoller().catch(console.error)
 }
