@@ -123,10 +123,12 @@ const slice = createSlice({
           (acc, val) => acc + val.amount,
           0
         )
+        const previouslyDisbursedAmount =
+          { ...state.userChallengesOverrides[challengeId] }.disbursed_amount ??
+          userChallenge.disbursed_amount
         state.userChallengesOverrides[challengeId] = {
           ...state.userChallengesOverrides[challengeId],
-          disbursed_amount:
-            userChallenge.disbursed_amount + newlyDisbursedAmount
+          disbursed_amount: previouslyDisbursedAmount + newlyDisbursedAmount
         }
       } else {
         state.userChallengesOverrides[challengeId] = {
