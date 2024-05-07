@@ -63,7 +63,6 @@ export const ClaimAllRewardsModal = () => {
     if (hasClaimed) {
       toast(messages.rewardsClaimed, CLAIM_REWARD_TOAST_TIMEOUT_MILLIS)
       dispatch(showConfetti())
-      dispatch(resetAndCancelClaimReward())
     }
   }, [toast, dispatch, hasClaimed])
 
