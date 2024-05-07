@@ -11,6 +11,7 @@ import {
   cacheCollectionsSelectors
 } from '@audius/common/store'
 import { formatCount } from '@audius/common/utils'
+import type { GestureResponderEvent } from 'react-native'
 import { useSelector } from 'react-redux'
 
 import {
@@ -26,7 +27,6 @@ import { useNavigation } from 'app/hooks/useNavigation'
 
 import { DogEar, LockedStatusBadge } from '../core'
 import { CollectionImage } from '../image/CollectionImage2'
-import { GestureResponderEvent } from 'react-native'
 
 const { getCollection } = cacheCollectionsSelectors
 const { getUserId } = accountSelectors

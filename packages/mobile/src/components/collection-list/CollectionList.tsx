@@ -28,8 +28,6 @@ type CreateCollectionTileProps = {
 
 type FullCollectionListProps = {
   collection?: Collection[]
-  /** Optional mapping of collection ids to the number that should be shown as the # of tracks in the collection's info card. Added this because im offline mode, the number of tracks downloaded may not yet match the actual number of tracks in the collection. */
-  collectionIdsToNumTracks?: Record<number, number>
   renderItem?: ListRenderItem<Collection | CreateCard> | null
   onCollectionPress?: (id: ID) => void
 } & FullListProps &
@@ -45,7 +43,6 @@ type CollectionListProps = FullCollectionListProps | CollectionIdListProps
 const FullCollectionList = (props: FullCollectionListProps) => {
   const {
     collection,
-    collectionIdsToNumTracks,
     showCreatePlaylistTile = false,
     createPlaylistSource = CreatePlaylistSource.LIBRARY_PAGE,
     createPlaylistTrackId,
@@ -76,7 +73,6 @@ const FullCollectionList = (props: FullCollectionListProps) => {
         />
       ),
     [
-      collectionIdsToNumTracks,
       createPlaylistCallback,
       createPlaylistSource,
       createPlaylistTrackId,
