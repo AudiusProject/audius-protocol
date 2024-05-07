@@ -161,7 +161,6 @@ export type TrackListItemProps = {
   isReorderable?: boolean
   showViewAlbum?: boolean
   onRemove?: (index: number) => void
-  prevUid?: UID
   togglePlay?: (uid: string, trackId: ID) => void
   trackItemAction?: TrackItemAction
   uid?: UID
@@ -209,7 +208,6 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
     isReorderable = false,
     showViewAlbum = false,
     onRemove,
-    prevUid,
     togglePlay,
     track,
     trackItemAction,
