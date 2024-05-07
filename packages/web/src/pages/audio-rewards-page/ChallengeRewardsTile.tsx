@@ -254,7 +254,8 @@ const RewardPanel = ({
 }
 
 const ClaimAllPanel = () => {
-  const isMobile = useIsMobile()
+  const isMobileWidth = window.innerWidth < 1080
+  const isMobile = useIsMobile() || isMobileWidth
   const wm = useWithMobileStyle(styles.mobile)
   const { cooldownChallenges, cooldownAmount, claimableAmount, isEmpty } =
     useChallengeCooldownSchedule({ multiple: true })
@@ -284,6 +285,7 @@ const ClaimAllPanel = () => {
         alignSelf='stretch'
         justifyContent='space-between'
         m='s'
+        css={{ cursor: isMobileWidth ? 'pointer' : 'auto' }}
         onClick={handleClick}
       >
         <Flex direction='column' alignItems='start' w='100%'>
