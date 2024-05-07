@@ -42,7 +42,8 @@ const messages = {
 }
 
 const { show: showConfetti } = musicConfettiActions
-const { claimAllChallengeRewards } = audioRewardsPageActions
+const { claimAllChallengeRewards, resetAndCancelClaimReward } =
+  audioRewardsPageActions
 const { getClaimStatus } = audioRewardsPageSelectors
 
 export const ClaimAllRewardsModal = () => {
@@ -62,6 +63,7 @@ export const ClaimAllRewardsModal = () => {
     if (hasClaimed) {
       toast(messages.rewardsClaimed, CLAIM_REWARD_TOAST_TIMEOUT_MILLIS)
       dispatch(showConfetti())
+      dispatch(resetAndCancelClaimReward())
     }
   }, [toast, dispatch, hasClaimed])
 
