@@ -58,6 +58,7 @@ export const Hyperlink = (props: HyperlinkProps) => {
     source,
     styles: stylesProp,
     style,
+    onPress,
     ...other
   } = props
   const styles = useStyles()
@@ -104,7 +105,8 @@ export const Hyperlink = (props: HyperlinkProps) => {
   const { onOpen: openLeavingAudiusModal } = useLeavingAudiusModal()
 
   const handlePress = useCallback(
-    (url: string) => {
+    (url: string, _match: Match) => {
+      onPress?.(url, _match)
       if (isInteralAudiusUrl(url)) {
         const path = getPathFromAudiusUrl(url)
         if (path) {
@@ -116,7 +118,7 @@ export const Hyperlink = (props: HyperlinkProps) => {
         openLeavingAudiusModal({ link: url })
       }
     },
-    [linkTo, openLink, openLeavingAudiusModal]
+    [onPress, linkTo, openLink, openLeavingAudiusModal]
   )
 
   const renderLink = useCallback(
