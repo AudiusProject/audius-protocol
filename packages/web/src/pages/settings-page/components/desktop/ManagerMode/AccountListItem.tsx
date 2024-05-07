@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useMemo } from 'react'
 
 import { User, UserMetadata } from '@audius/common/models'
 import { accountSelectors, chatSelectors } from '@audius/common/store'
@@ -96,41 +96,51 @@ export const AccountListItem = ({
     }
   }, [currentUserId, user])
 
-  const popupMenuItems = [
-    {
-      icon: <IconTrash />,
-      text: isManagedAccount
-        ? messages.stopManaging
-        : isPending
-        ? messages.cancelInvite
-        : messages.removeManager,
-      onClick: removeManager
-    },
-    {
-      icon: <IconUser />,
-      text: messages.visitProfile,
-      onClick: goToProfile
-    },
-    ...(canCreateChat
-      ? [
-          {
-            icon: <IconMessage />,
-            text: messages.sendMessage,
-            onClick: composeChat
-          }
-        ]
-      : []),
-    ...(isManagedAccount
-      ? [
-          {
-            icon: <IconUserArrowRotate />,
-            text: messages.switchToUser,
-            // TODO(nkang - PAY-2831) - Implement this
-            onClick: () => {}
-          }
-        ]
-      : [])
-  ]
+  const popupMenuItems = useMemo(
+    () => [
+      {
+        icon: <IconTrash />,
+        text: isManagedAccount
+          ? messages.stopManaging
+          : isPending
+          ? messages.cancelInvite
+          : messages.removeManager,
+        onClick: removeManager
+      },
+      {
+        icon: <IconUser />,
+        text: messages.visitProfile,
+        onClick: goToProfile
+      },
+      ...(canCreateChat
+        ? [
+            {
+              icon: <IconMessage />,
+              text: messages.sendMessage,
+              onClick: composeChat
+            }
+          ]
+        : []),
+      ...(isManagedAccount
+        ? [
+            {
+              icon: <IconUserArrowRotate />,
+              text: messages.switchToUser,
+              // TODO(nkang - PAY-2831) - Implement this
+              onClick: () => {}
+            }
+          ]
+        : [])
+    ],
+    [
+      isManagedAccount,
+      isPending,
+      removeManager,
+      goToProfile,
+      composeChat,
+      canCreateChat
+    ]
+  )
 
   const handleApprove = useCallback(() => {
     if (!currentUserId) return
