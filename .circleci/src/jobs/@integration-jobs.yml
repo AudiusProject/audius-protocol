@@ -58,6 +58,9 @@ integration-test:
         when: always
     - store_artifacts:
         path: packages/web/blob-report
+    - run: npx playwright merge-reports --reporter html ./blob-report
+    - store_artifacts:
+        path: playwright-report
     - run:
         name: cleanup
         no_output_timeout: 5m
