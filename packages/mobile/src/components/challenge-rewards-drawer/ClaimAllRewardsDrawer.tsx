@@ -117,6 +117,7 @@ export const ClaimAllRewardsDrawer = () => {
       <View style={styles.stickyClaimRewardsContainer}>
         {claimableAmount > 0 && !hasClaimed ? (
           <Button
+            disabled={claimInProgress}
             isLoading={claimInProgress}
             variant='primary'
             onPress={onClaim}
