@@ -57,13 +57,14 @@ export const ClaimAllRewardsModal = () => {
       multiple: true
     })
   const claimInProgress = claimStatus === ClaimStatus.CUMULATIVE_CLAIMING
+  const hasClaimed = claimStatus === ClaimStatus.CUMULATIVE_SUCCESS
 
   useEffect(() => {
-    if (claimStatus === ClaimStatus.CUMULATIVE_SUCCESS) {
+    if (hasClaimed) {
       toast(messages.rewardsClaimed, CLAIM_REWARD_TOAST_TIMEOUT_MILLIS)
       dispatch(showConfetti())
     }
-  }, [claimStatus, toast, dispatch])
+  }, [toast, dispatch, hasClaimed])
 
   const onClaimRewardClicked = useCallback(() => {
     const claims = claimableChallenges.map((challenge) => ({
@@ -120,7 +121,7 @@ export const ClaimAllRewardsModal = () => {
             summaryLabelColor='accent'
             summaryValueColor='default'
           />
-          {claimableAmount > 0 ? (
+          {claimableAmount > 0 && !hasClaimed ? (
             <Button
               isLoading={claimInProgress}
               onClick={onClaimRewardClicked}

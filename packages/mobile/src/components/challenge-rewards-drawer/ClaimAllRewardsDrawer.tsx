@@ -27,8 +27,8 @@ const { getClaimStatus } = audioRewardsPageSelectors
 const messages = {
   // Claim success toast
   claimSuccessMessage: 'All rewards successfully claimed!',
-  pending: (amount) => `${amount} Pending`,
-  claimAudio: (amount) => `Claim ${amount} $AUDIO`,
+  pending: (amount: number) => `${amount} Pending`,
+  claimAudio: (amount: number) => `Claim ${amount} $AUDIO`,
   done: 'Done'
 }
 
@@ -60,17 +60,18 @@ export const ClaimAllRewardsDrawer = () => {
   const { toast } = useToast()
   const claimStatus = useSelector(getClaimStatus)
   const { onClose } = useDrawerState(MODAL_NAME)
-  const { claimableChallenges, cooldownChallenges, summary } =
+  const { claimableAmount, claimableChallenges, cooldownChallenges, summary } =
     useChallengeCooldownSchedule({
       multiple: true
     })
   const claimInProgress = claimStatus === ClaimStatus.CUMULATIVE_CLAIMING
+  const hasClaimed = claimStatus === ClaimStatus.CUMULATIVE_SUCCESS
 
   useEffect(() => {
-    if (claimStatus === ClaimStatus.CUMULATIVE_SUCCESS) {
+    if (hasClaimed) {
       toast({ content: messages.claimSuccessMessage, type: 'info' })
     }
-  }, [claimStatus, toast])
+  }, [hasClaimed, toast])
 
   const handleClose = useCallback(() => {
     dispatch(resetAndCancelClaimReward())
@@ -114,7 +115,7 @@ export const ClaimAllRewardsDrawer = () => {
         </Flex>
       </ScrollView>
       <View style={styles.stickyClaimRewardsContainer}>
-        {summary && summary?.value > 0 ? (
+        {claimableAmount > 0 && !hasClaimed ? (
           <Button
             isLoading={claimInProgress}
             variant='primary'
@@ -122,7 +123,7 @@ export const ClaimAllRewardsDrawer = () => {
             iconRight={IconArrowRight}
             fullWidth
           >
-            {messages.claimAudio(summary?.value)}
+            {messages.claimAudio(claimableAmount)}
           </Button>
         ) : (
           <Button variant='primary' onPress={handleClose} fullWidth>
