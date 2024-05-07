@@ -16,8 +16,8 @@ export async function startUsersPoller() {
         }
         if (userResponse.name !== user.name) {
           userRepo.upsert({
-            id: user.id,
-            name: userResponse.name,
+            ...user,
+            name: userResponse.name
           })
           console.log(`Updated user ${user.id}'s name`)
         }
