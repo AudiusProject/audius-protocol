@@ -16,16 +16,8 @@ export async function publishValidPendingReleases() {
 
   for (const row of rows) {
     const source = sources.findByName(row.source)
-    const sdk = getSdk(
-      source.ddexKey,
-      source.ddexSecret,
-      source.env || 'staging'
-    )
+    const sdk = getSdk(source)
     const parsed = row._parsed!
-
-    // todo: hardcoding to my staging user ID to make e2e publish easier
-    // todo: remove
-    parsed.audiusUser = 'KKa311z'
 
     if (row.status == ReleaseProcessingStatus.DeletePending) {
       // delete

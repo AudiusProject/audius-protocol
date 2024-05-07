@@ -481,7 +481,6 @@ function parseReleaseXml(source: string, $: cheerio.CheerioAPI) {
       }
 
       // resolve resources
-      // todo: if this is an update (prior exists) we should ignore MissingRef errors
       $el
         .find('ReleaseResourceReferenceList > ReleaseResourceReference')
         .each((_, el) => {
@@ -494,7 +493,11 @@ function parseReleaseXml(source: string, $: cheerio.CheerioAPI) {
           } else if (textResources[ref]) {
             console.log('ignoring text ref', ref)
           } else {
-            release.problems.push(`MissingRef: ${ref}`)
+            // don't actually block on MissingRef...
+            // if it's an update, refs might not be included...
+            // if it's a create, this will simply become a publisher error when it tries to resolve a file...
+            //     release.problems.push(`MissingRef: ${ref}`)
+            console.log(`MissingRef: ${ref}`)
           }
         })
 

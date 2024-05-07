@@ -142,12 +142,15 @@ app.get('/releases', (c) => {
   })
 
   let lastXmlUrl = ''
-  const xmlSpacer = (xmlUrl: string) => {
+  const xmlSpacer = (source: string, xmlUrl: string) => {
     if (xmlUrl != lastXmlUrl) {
       lastXmlUrl = xmlUrl
       return html`<tr>
-        <td colspan="10" style="background: black">
-          <kbd>${xmlUrl}</kbd>
+        <td colspan="10">
+          <div style="margin-top: 20px">
+            <kbd>${source}</kbd>
+            <kbd>${xmlUrl}</kbd>
+          </div>
         </td>
       </tr>`
     }
@@ -183,7 +186,7 @@ app.get('/releases', (c) => {
         </form>
       </div>
 
-      <table class="striped">
+      <table>
         <thead>
           <tr>
             <th></th>
@@ -201,7 +204,7 @@ app.get('/releases', (c) => {
         <tbody>
           ${rows.map(
             (row) =>
-              html` ${xmlSpacer(row.xmlUrl!)}
+              html` ${xmlSpacer(row.source, row.xmlUrl)}
                 <tr>
                   <td>${row._parsed?.ref}</td>
                   <td>
