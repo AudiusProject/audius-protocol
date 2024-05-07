@@ -10,7 +10,7 @@ const dataFilesPath = (filename: string) =>
 
 setup('seed data', async () => {
   if (!existsSync(filepath)) {
-    mkdirSync(filepath)
+    mkdirSync(path.resolve(process.cwd(), filepath))
   }
 
   const audiusCmd = (cmd: string) => {
