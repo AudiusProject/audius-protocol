@@ -53,7 +53,7 @@ const selectTrackCount = (state: AppState) => {
 }
 
 const selectIsLineupLoading = (state: AppState) => {
-  return getCollectionTracksLineup(state).status === Status.LOADING
+  return getCollectionTracksLineup(state).status !== Status.SUCCESS
 }
 
 const selectCollectionDuration = createSelector(
