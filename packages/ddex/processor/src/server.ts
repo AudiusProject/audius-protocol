@@ -21,7 +21,7 @@ import { parseBool } from './util'
 import { startUsersPoller } from './usersPoller'
 
 const { NODE_ENV, DDEX_KEY, DDEX_URL, COOKIE_SECRET } = process.env
-export const COOKIE_NAME = 'audiusUser'
+const COOKIE_NAME = 'audiusUser'
 
 const IS_PROD = NODE_ENV == 'production'
 const API_HOST = IS_PROD
@@ -476,7 +476,7 @@ app.get('/users', (c) => {
   )
 })
 
-export type JwtUser = {
+type JwtUser = {
   userId: string
   email: string
   name: string
@@ -489,7 +489,7 @@ export type JwtUser = {
   }
 }
 
-export async function getAudiusUser(c: Context) {
+async function getAudiusUser(c: Context) {
   const j = await getSignedCookie(c, COOKIE_SECRET!, COOKIE_NAME)
   if (!j) return
   return JSON.parse(j) as JwtUser
