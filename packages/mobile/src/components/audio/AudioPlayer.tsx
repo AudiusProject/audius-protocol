@@ -621,7 +621,7 @@ export const AudioPlayer = () => {
     // Enqueue tracks using 'middle-out' to ensure user can ready skip forward or backwards
     const enqueueTracks = async (
       queuableTracks: QueueableTrack[],
-      queueIndex = 0
+      queueIndex = -1
     ) => {
       let currentPivot = 1
       while (
