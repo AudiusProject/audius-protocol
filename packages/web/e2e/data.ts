@@ -19,15 +19,17 @@ const sanitizeName = (title: string) => title.replace(/ /g, '-').toLowerCase()
 
 export const getUser = () => {
   if (runAgainstLocalStack) {
-    const { name } = user()
+    const { name, entropy } = user()
 
     return {
-      name
+      name,
+      entropy
     }
   }
 
   return {
-    name: 'probertest'
+    name: 'probertest',
+    entropy: 'bdaba824b6e02ab7868c5a2dfdfc7e9f'
   }
 }
 

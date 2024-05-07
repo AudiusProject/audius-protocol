@@ -13,8 +13,7 @@ setup('seed data', async () => {
   }
 
   const audiusCmd = (cmd: string) => {
-    const result = execSync(`$HOME/.local/bin/audius-cmd ${cmd}`)
-    console.log(result.toString())
+    execSync(`$HOME/.local/bin/audius-cmd ${cmd}`)
   }
 
   // Create a user
