@@ -538,7 +538,6 @@ function* claimChallengeRewardAsync(
   try {
     yield* call(claimSingleChallengeRewardAsync, action)
     yield* put(claimChallengeRewardSucceeded())
-    yield* put(getBalance())
   } catch (e) {
     yield* put(claimChallengeRewardFailed())
   }
@@ -558,11 +557,9 @@ function* claimAllChallengeRewardsAsync(
       )
     )
     yield* put(claimAllChallengeRewardsSucceeded())
-    yield* put(getBalance())
   } catch (e) {
     console.error(e)
     yield* put(claimChallengeRewardFailed())
-    yield* put(getBalance()) // fetching balance here too because some rewards may have been claimed
   }
 }
 
