@@ -11,6 +11,7 @@ db.migrate(
   sql`
 
 create table if not exists xmls (
+  source text not null,
   xmlUrl text primary key,
   xmlText text not null,
   messageTimestamp text not null,
@@ -18,10 +19,12 @@ create table if not exists xmls (
 );
 
 create table if not exists users (
-  id text primary key,
+  apiKey text, -- app that user authorized
+  id text,
   handle text not null,
   name text not null,
-  createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
+  createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+  primary key (apiKey, id)
 );
 
 create table if not exists releases (
@@ -55,6 +58,7 @@ create table if not exists s3markers (
 )
 
 export type XmlRow = {
+  source: string
   xmlText: string
   xmlUrl: string
   messageTimestamp: string
@@ -62,6 +66,7 @@ export type XmlRow = {
 }
 
 export type UserRow = {
+  apiKey: string
   id: string
   handle: string
   name: string

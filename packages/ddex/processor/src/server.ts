@@ -17,9 +17,10 @@ import {
 } from './parseDelivery'
 import { prepareAlbumMetadata, prepareTrackMetadatas } from './publishRelease'
 import { readAssetWithCaching } from './s3poller'
+import { sources } from './sources'
 import { parseBool } from './util'
 
-const { NODE_ENV, DDEX_KEY, DDEX_URL, COOKIE_SECRET } = process.env
+const { NODE_ENV, DDEX_URL, COOKIE_SECRET } = process.env
 const COOKIE_NAME = 'audiusUser'
 
 const IS_PROD = NODE_ENV == 'production'
@@ -46,24 +47,35 @@ app.get('/', async (c) => {
               <h4>Welcome back ${me.name}</h4>
               <a href="/auth/logout" role="button">log out</a>
             `
-          : html` <a role="button" href="/auth">login</a> `}
+          : html`
+              <div>
+                ${sources
+                  .all()
+                  .map(
+                    (s) => html`
+                      <a role="button" href="/auth/source/${s.name}"
+                        >${s.name}</a
+                      >
+                    `
+                  )}
+              </div>
+            `}
       </div>
     `)
   )
 })
 
-app.get('/auth', (c) => {
-  if (!DDEX_KEY) {
-    return c.text('DDEX_KEY is required', 500)
-  }
+app.get('/auth/source/:sourceName', (c) => {
+  const sourceName = c.req.param('sourceName')
+  const source = sources.findByName(sourceName)
   const myUrl = DDEX_URL || 'http://localhost:8989'
   const base = IS_PROD
     ? 'https://audius.co/oauth/auth?'
     : 'https://staging.audius.co/oauth/auth?'
   const params = new URLSearchParams({
     scope: 'write',
-    redirect_uri: `${myUrl}/auth/success`,
-    api_key: DDEX_KEY!,
+    redirect_uri: `${myUrl}/auth/redirect`,
+    api_key: source.ddexKey,
     response_mode: 'query',
   })
   const u = base + params.toString()
@@ -72,54 +84,32 @@ app.get('/auth', (c) => {
 
 app.get('/auth/redirect', async (c) => {
   try {
-    const uri = c.req.query('redirect_uri')
+    const uri = c.req.query('redirect_uri') || ''
     const token = c.req.query('token')
     if (!token) {
       throw new Error('no token')
     }
 
-    const { payload } = decode(token!)
+    const jwt = decode(token!)
+    const payload = jwt.payload as JwtUser
     if (!payload.userId) {
       throw new Error('invalid payload')
     }
 
     // upsert user record
     userRepo.upsert({
+      apiKey: payload.apiKey,
       id: payload.userId,
       handle: payload.handle,
       name: payload.name,
     })
+
+    // set cookie
+    const j = JSON.stringify(payload)
+    await setSignedCookie(c, COOKIE_NAME, j, COOKIE_SECRET!)
 
     const params = new URLSearchParams({ token })
     return c.redirect(`${uri}/?` + params.toString())
-  } catch (e) {
-    console.log(e)
-    return c.body('invalid jwt', 400)
-  }
-})
-
-app.get('/auth/success', async (c) => {
-  try {
-    const token = c.req.query('token')
-    if (!token) {
-      throw new Error('no token')
-    }
-
-    const { payload } = decode(token!)
-    if (!payload.userId) {
-      throw new Error('invalid payload')
-    }
-
-    // upsert user record
-    userRepo.upsert({
-      id: payload.userId,
-      handle: payload.handle,
-      name: payload.name,
-    })
-
-    const j = JSON.stringify(payload)
-    await setSignedCookie(c, COOKIE_NAME, j, COOKIE_SECRET!)
-    return c.redirect('/')
   } catch (e) {
     console.log(e)
     return c.body('invalid jwt', 400)
@@ -405,7 +395,11 @@ app.get('/xmls/:xmlUrl', (c) => {
 
   // parse=true will parse the xml to internal representation
   if (parseBool(c.req.query('parse'))) {
-    const parsed = parseDdexXml(xmlUrl, row.xmlText) as DDEXRelease[]
+    const parsed = parseDdexXml(
+      row.source,
+      row.xmlUrl,
+      row.xmlText
+    ) as DDEXRelease[]
 
     // parse=sdk will convert internal representation to SDK friendly format
     if (c.req.query('parse') == 'sdk') {
@@ -458,6 +452,8 @@ app.get('/users', (c) => {
               <th>id</th>
               <th>handle</th>
               <th>name</th>
+              <th>api key</th>
+              <th>created</th>
             </tr>
           </thead>
           <tbody>
@@ -467,6 +463,8 @@ app.get('/users', (c) => {
                   <td>${user.id}</td>
                   <td>${user.handle}</td>
                   <td>${user.name}</td>
+                  <td>${user.apiKey}</td>
+                  <td>${user.createdAt}</td>
                 </tr>`
             )}
           </tbody>
@@ -486,6 +484,7 @@ type JwtUser = {
     '480x480': string
     '1000x1000': string
   }
+  apiKey: string
 }
 
 async function getAudiusUser(c: Context) {

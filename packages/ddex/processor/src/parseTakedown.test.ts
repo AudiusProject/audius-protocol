@@ -5,9 +5,11 @@ import { parseDdexXmlFile } from './parseDelivery'
 
 test('crud', async () => {
   const grid = 'A1B2C3D4E5F6G7H8I9J0K1L2M3N4O5P6Q7R8S9T0'
+  const source = 'crudTest'
 
   // create user for artist matching
   userRepo.upsert({
+    apiKey: 'someApp',
     id: 'djtheo',
     handle: 'djtheo',
     name: 'DJ Theo',
@@ -15,7 +17,7 @@ test('crud', async () => {
 
   // load 01
   {
-    await parseDdexXmlFile('fixtures/01_delivery.xml')
+    await parseDdexXmlFile(source, 'fixtures/01_delivery.xml')
     const rr = releaseRepo.get(grid)!
     expect(rr._parsed?.soundRecordings[0].title).toBe('Example Song')
     expect(rr.status).toBe(ReleaseProcessingStatus.PublishPending)
@@ -26,7 +28,7 @@ test('crud', async () => {
 
   // load 02 update
   {
-    await parseDdexXmlFile('fixtures/02_update.xml')
+    await parseDdexXmlFile(source, 'fixtures/02_update.xml')
     const rr = releaseRepo.get(grid)!
     expect(rr._parsed?.soundRecordings[0].title).toBe('Updated Example Song')
     expect(rr.status).toBe(ReleaseProcessingStatus.PublishPending)
@@ -37,7 +39,7 @@ test('crud', async () => {
 
   // reprocess older 01 .. should be a noop
   {
-    await parseDdexXmlFile('fixtures/01_delivery.xml')
+    await parseDdexXmlFile(source, 'fixtures/01_delivery.xml')
     const rr = releaseRepo.get(grid)!
     expect(rr._parsed?.soundRecordings[0].title).toBe('Updated Example Song')
     expect(rr.status).toBe(ReleaseProcessingStatus.Published)
@@ -45,7 +47,7 @@ test('crud', async () => {
 
   // load 03 delete
   {
-    await parseDdexXmlFile('fixtures/03_delete.xml')
+    await parseDdexXmlFile(source, 'fixtures/03_delete.xml')
     const rr = releaseRepo.get(grid)!
     expect(rr.status).toBe(ReleaseProcessingStatus.DeletePending)
   }
@@ -55,7 +57,7 @@ test('crud', async () => {
 
   // re-load 03 delete... should be noop
   {
-    await parseDdexXmlFile('fixtures/03_delete.xml')
+    await parseDdexXmlFile(source, 'fixtures/03_delete.xml')
     const rr = releaseRepo.get(grid)!
     expect(rr.status).toBe(ReleaseProcessingStatus.Deleted)
   }

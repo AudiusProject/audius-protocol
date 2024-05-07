@@ -7,17 +7,22 @@ import {
 import { ReleaseProcessingStatus, ReleaseRow, releaseRepo } from './db'
 import { DDEXContributor, DDEXRelease, DDEXResource } from './parseDelivery'
 import { readAssetWithCaching } from './s3poller'
-import { createSdkService } from './sdk'
-
-export const sdkService = createSdkService()
+import { getSdk } from './sdk'
+import { sources } from './sources'
 
 export async function publishValidPendingReleases() {
   const rows = releaseRepo.all({ pendingPublish: true })
   if (!rows.length) return
 
-  const sdk = (await sdkService).getSdk()
-
   for (const row of rows) {
+    const source = sources.findByXmlUrl(row.xmlUrl)
+
+    // todo: need to ensure this sdk is authorized for audiusUser
+    const sdk = getSdk(
+      source.ddexKey,
+      source.ddexSecret,
+      source.env || 'staging'
+    )
     const parsed = row._parsed!
 
     // todo: hardcoding to my staging user ID to make e2e publish easier

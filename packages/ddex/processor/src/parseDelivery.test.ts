@@ -10,6 +10,7 @@ import {
 
 test('deal types', async () => {
   const releases = (await parseDdexXmlFile(
+    'dealTest',
     'fixtures/dealTypes.xml'
   )) as DDEXRelease[]
 

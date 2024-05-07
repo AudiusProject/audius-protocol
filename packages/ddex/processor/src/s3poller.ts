@@ -4,82 +4,81 @@ import {
   S3Client,
   S3ClientConfig,
 } from '@aws-sdk/client-s3'
-import { fromIni } from '@aws-sdk/credential-provider-ini'
+import { mkdir, readFile, stat, writeFile } from 'fs/promises'
 import { basename, dirname, join, resolve } from 'path'
 import { s3markerRepo } from './db'
 import { parseDdexXml } from './parseDelivery'
-import { mkdir, readFile, stat, writeFile } from 'fs/promises'
+import { SourceConfig, sources } from './sources'
 
-export function dialS3() {
-  const { AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY } = process.env
-  if (!AWS_ACCESS_KEY_ID || !AWS_SECRET_ACCESS_KEY) {
-    throw new Error(`AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY required`)
-  }
+// key by bucket?
+const s3clients: Record<string, S3Client> = {}
 
-  const config: S3ClientConfig = {
-    credentials: {
-      accessKeyId: AWS_ACCESS_KEY_ID,
-      secretAccessKey: AWS_SECRET_ACCESS_KEY,
-    },
-    // region: process.env.AWS_REGION
+export function dialS3(sourceConfig: SourceConfig) {
+  const { awsKey, awsSecret, awsRegion } = sourceConfig
+  if (!s3clients[awsKey]) {
+    const config: S3ClientConfig = {
+      credentials: {
+        accessKeyId: awsKey,
+        secretAccessKey: awsSecret,
+      },
+      region: awsRegion,
+    }
+    s3clients[awsKey] = new S3Client(config)
   }
-  if (process.env.AWS_ENDPOINT) {
-    config.endpoint = process.env.AWS_ENDPOINT
-    config.forcePathStyle = true
-  }
-  return new S3Client(config)
-}
-
-export function dialS3FromCredentials() {
-  const s3Client = new S3Client({
-    region: 'us-east-1',
-    credentials: fromIni({ profile: 'local' }),
-  })
-  return s3Client
+  return s3clients[awsKey]
 }
 
 export async function pollS3(reset?: boolean) {
-  const client = dialS3()
+  for (const sourceConfig of sources.all()) {
+    if (!sourceConfig.awsBucket) {
+      console.log(`skipping non-s3 source: ${sourceConfig.name}`)
+      continue
+    }
 
-  const bucket = process.env.AWS_BUCKET_RAW
-  if (!bucket) {
-    throw new Error(`process.env.AWS_BUCKET_RAW is required`)
-  }
+    const client = dialS3(sourceConfig)
+    const bucket = sourceConfig.awsBucket
+    const sourceName = sourceConfig.name
 
-  let Marker = ''
+    let Marker = ''
 
-  // load prior marker
-  if (!reset) {
-    Marker = s3markerRepo.get(bucket)
-  }
+    // load prior marker
+    if (!reset) {
+      Marker = s3markerRepo.get(bucket)
+    }
 
-  // list top level prefixes after marker
-  const result = await client.send(
-    new ListObjectsCommand({
-      Bucket: bucket,
-      Delimiter: '/',
-      Marker,
-    })
-  )
-  const prefixes = result.CommonPrefixes?.map((p) => p.Prefix) as string[]
-  if (!prefixes) {
-    return
-  }
+    // list top level prefixes after marker
+    const result = await client.send(
+      new ListObjectsCommand({
+        Bucket: bucket,
+        Delimiter: '/',
+        Marker,
+      })
+    )
+    const prefixes = result.CommonPrefixes?.map((p) => p.Prefix) as string[]
+    if (!prefixes) {
+      return
+    }
 
-  for (const prefix of prefixes) {
-    await scanS3Prefix(client, bucket, prefix)
-    Marker = prefix
-  }
+    for (const prefix of prefixes) {
+      await scanS3Prefix(sourceName, client, bucket, prefix)
+      Marker = prefix
+    }
 
-  // save marker
-  if (Marker) {
-    console.log('update marker', { bucket, Marker })
-    s3markerRepo.upsert(bucket, Marker)
+    // save marker
+    if (Marker) {
+      console.log('update marker', { bucket, Marker })
+      s3markerRepo.upsert(bucket, Marker)
+    }
   }
 }
 
 // recursively scan a prefix for xml files
-async function scanS3Prefix(client: S3Client, bucket: string, prefix: string) {
+async function scanS3Prefix(
+  source: string,
+  client: S3Client,
+  bucket: string,
+  prefix: string
+) {
   const result = await client.send(
     new ListObjectsCommand({
       Bucket: bucket,
@@ -90,26 +89,24 @@ async function scanS3Prefix(client: S3Client, bucket: string, prefix: string) {
     return
   }
 
-  await Promise.all(
-    result.Contents.map(async (c) => {
-      if (!c.Key) return
+  for (const c of result.Contents) {
+    if (!c.Key) continue
 
-      if (c.Key.toLowerCase().endsWith('.xml')) {
-        const xmlUrl = `s3://` + join(bucket, c.Key)
-        const { Body } = await client.send(
-          new GetObjectCommand({
-            Bucket: process.env.AWS_BUCKET_RAW,
-            Key: c.Key,
-          })
-        )
-        const xml = await Body?.transformToString()
-        if (xml) {
-          console.log('parsing', xmlUrl)
-          await parseDdexXml(xmlUrl, xml)
-        }
+    if (c.Key.toLowerCase().endsWith('.xml')) {
+      const xmlUrl = `s3://` + join(bucket, c.Key)
+      const { Body } = await client.send(
+        new GetObjectCommand({
+          Bucket: bucket,
+          Key: c.Key,
+        })
+      )
+      const xml = await Body?.transformToString()
+      if (xml) {
+        console.log('parsing', xmlUrl)
+        parseDdexXml(source, xmlUrl, xml)
       }
-    })
-  )
+    }
+  }
 }
 
 //
@@ -131,7 +128,8 @@ export async function readAssetWithCaching(
     // fetch if needed
     const exists = await fileExists(destinationPath)
     if (!exists) {
-      const s3 = dialS3()
+      const source = sources.findByXmlUrl(xmlUrl)
+      const s3 = dialS3(source)
       await mkdir(dirname(destinationPath), { recursive: true })
       const { Body } = await s3.send(new GetObjectCommand({ Bucket, Key }))
       await writeFile(destinationPath, Body as any)

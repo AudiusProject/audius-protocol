@@ -141,16 +141,16 @@ export type AudiusSupportedDeal =
   | DealEthGated
   | DealSolGated
 
-export async function parseDelivery(maybeZip: string) {
+export async function parseDelivery(source: string, maybeZip: string) {
   if (maybeZip.endsWith('.zip')) {
     const tempDir = await mkdtemp(join(tmpdir(), 'ddex-'))
     await decompress(maybeZip, tempDir)
-    return await processDeliveryDir(tempDir)
+    return await processDeliveryDir(source, tempDir)
     // await rm(tempDir, { recursive: true })
   } else if (maybeZip.endsWith('.xml')) {
-    return await parseDdexXmlFile(maybeZip)
+    return await parseDdexXmlFile(source, maybeZip)
   } else {
-    return await processDeliveryDir(maybeZip)
+    return await processDeliveryDir(source, maybeZip)
   }
 }
 
@@ -158,30 +158,30 @@ export async function reParsePastXml() {
   // loop over db xml and reprocess
   const rows = xmlRepo.all()
   for (const row of rows) {
-    parseDdexXml(row.xmlUrl, row.xmlText)
+    parseDdexXml(row.source, row.xmlUrl, row.xmlText)
   }
 }
 
 // recursively find + parse xml files in a dir
-async function processDeliveryDir(dir: string) {
+async function processDeliveryDir(source: string, dir: string) {
   const files = await readdir(dir, { recursive: true })
 
   const work = files
     .filter((f) => f.toLowerCase().endsWith('.xml'))
     .map((f) => join(dir, f))
-    .map((f) => parseDdexXmlFile(f))
+    .map((f) => parseDdexXmlFile(source, f))
 
   return Promise.all(work)
 }
 
 // read xml from disk + parse
-export async function parseDdexXmlFile(xmlUrl: string) {
+export async function parseDdexXmlFile(source: string, xmlUrl: string) {
   const xmlText = await readFile(xmlUrl, 'utf8')
-  return parseDdexXml(xmlUrl, xmlText)
+  return parseDdexXml(source, xmlUrl, xmlText)
 }
 
 // actually parse ddex xml
-export function parseDdexXml(xmlUrl: string, xmlText: string) {
+export function parseDdexXml(source: string, xmlUrl: string, xmlText: string) {
   const $ = cheerio.load(xmlText, { xmlMode: true })
 
   const messageTimestamp = $('MessageCreatedDateTime').first().text()
@@ -191,10 +191,10 @@ export function parseDdexXml(xmlUrl: string, xmlText: string) {
     'PurgeReleaseMessage',
     'ManifestMessage',
   ].find((n) => rawTagName.includes(n))
-  console.log(xmlUrl, tagName)
 
   // todo: would be nice to skip this on reParse
   xmlRepo.upsert({
+    source,
     xmlUrl,
     xmlText,
     messageTimestamp,
@@ -473,6 +473,8 @@ function parseReleaseXml($: cheerio.CheerioAPI) {
 
       // resolve audius user
       const artistNames = release.artists.map((a) => a.name)
+
+      // todo: should match only users that have authorized this source
       release.audiusUser = userRepo.match(artistNames)
       if (!release.audiusUser) {
         release.problems.push(`NoUser`)
