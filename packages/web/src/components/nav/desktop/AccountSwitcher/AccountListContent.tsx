@@ -8,7 +8,7 @@ import { AccountSwitcherRow } from './AccountSwitcherRow'
 
 const messages = {
   switchAccount: 'Switch Account',
-  maangedAccounts: 'Managed Accounts'
+  managedAccounts: 'Managed Accounts'
 }
 
 export type AccountListContentProps = {
@@ -78,7 +78,7 @@ export const AccountListContent = ({
           borderBottom='default'
         >
           <Text variant='title' size='xs' color='default'>
-            {messages.maangedAccounts}
+            {messages.managedAccounts}
           </Text>
         </Box>
 
