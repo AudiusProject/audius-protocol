@@ -16,7 +16,7 @@ import {
 import chalk from 'chalk'
 import { Option, program } from 'commander'
 
-import { route } from '@audius/spl'
+import { PaymentRouterProgram, route } from '@audius/spl'
 
 import { initializeAudiusLibs } from './utils.mjs'
 
@@ -189,16 +189,16 @@ program
         TOKEN_DECIMALS[mint]
       )
 
-      const paymentRouterInstruction = await route(
-        paymentRouterTokenAccount,
-        paymentRouterPda,
+      const paymentRouterInstruction = await PaymentRouterProgram.route({
+        sender: paymentRouterTokenAccount,
+        senderOwner: paymentRouterPda,
         paymentRouterPdaBump,
-        [userbankPublicKey], // recipients
-        [amount],
-        amount,
-        TOKEN_PROGRAM_ID,
-        paymentRouterPublicKey
-      )
+        recipients: [userbankPublicKey], // recipients
+        amounts: [amount],
+        totalAmount: amount,
+        tokenProgramId: TOKEN_PROGRAM_ID,
+        programId: paymentRouterPublicKey
+      })
 
       transferTx.add(transferInstruction, paymentRouterInstruction)
 
