@@ -2,9 +2,11 @@ import { execSync } from 'child_process'
 
 import { test as setup } from './test'
 import { existsSync, mkdirSync, readFileSync } from 'fs'
+import path from 'path'
 
 const filepath = '../web/e2e/data'
-const dataFilesPath = (filename: string) => `${filepath}/${filename}`
+const dataFilesPath = (filename: string) =>
+  path.resolve(process.cwd(), filepath, filename)
 
 setup('seed data', async () => {
   if (!existsSync(filepath)) {
