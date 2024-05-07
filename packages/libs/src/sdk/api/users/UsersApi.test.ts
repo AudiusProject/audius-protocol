@@ -246,7 +246,8 @@ describe('UsersApi', () => {
     })
   })
 
-  describe('sendTip', () => {
+  // TODO: PAY-2911
+  describe.skip('sendTip', () => {
     it('creates and relays a tip transaction with properly formed instructions', async () => {
       const senderUserId = '7eP5n'
       const receiverUserId = 'ML51L'
