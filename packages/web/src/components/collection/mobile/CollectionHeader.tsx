@@ -10,9 +10,11 @@ import {
   PurchaseableContentType,
   useEditPlaylistModal
 } from '@audius/common/store'
+import { getDogEarType } from '@audius/common/utils'
 import { Box, Button, Flex, IconPause, IconPlay, Text } from '@audius/harmony'
 import cn from 'classnames'
 
+import { DogEar } from 'components/dog-ear'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { UserLink } from 'components/link'
 import Skeleton from 'components/skeleton/Skeleton'
@@ -31,8 +33,6 @@ import { RepostsFavoritesStats } from '../components/RepostsFavoritesStats'
 import { CollectionHeaderProps } from '../types'
 
 import styles from './CollectionHeader.module.css'
-import { getDogEarType } from '@audius/common/utils'
-import { DogEar } from 'components/dog-ear'
 
 const messages = {
   hiddenPlaylist: 'Hidden Playlist',
