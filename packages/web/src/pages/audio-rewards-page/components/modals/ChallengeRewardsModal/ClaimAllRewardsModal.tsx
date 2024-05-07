@@ -81,7 +81,7 @@ export const ClaimAllRewardsModal = () => {
   const handleClose = useCallback(() => {
     dispatch(resetAndCancelClaimReward())
     setOpen(false)
-  }, [dispatch])
+  }, [dispatch, setOpen])
 
   const formatLabel = useCallback((item: any) => {
     const { label, claimableDate, isClose } = item
