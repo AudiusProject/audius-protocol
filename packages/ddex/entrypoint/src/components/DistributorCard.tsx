@@ -21,7 +21,7 @@ export const DistributorCard = ({
   const {sdk: audiusSdk } = useSdk()
 
   const { data } = useQuery({
-    queryKey: ['todos'],
+    queryKey: ['apps', appKey],
     queryFn: () =>
       audiusSdk
         ?.developerApps.getDeveloperApp({ address: appKey })
@@ -70,7 +70,7 @@ export const DistributorCard = ({
         data ?
           <>
             <Flex
-              borderRadius='xs'
+              borderRadius='s'
               css={{
                 overflow: 'hidden'
               }}

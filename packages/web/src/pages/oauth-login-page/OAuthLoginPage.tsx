@@ -273,7 +273,7 @@ export const OAuthLoginPage = () => {
             <img src={AppIcon} alt={'Audius Logo'} />
           </Flex>
           <IconTransaction color='default' />
-          <Flex h='88px' w='88px'>
+          <Flex h='88px' w='88px' borderRadius='l' css={{overflow: 'hidden'}}>
             {appImage ? (
               <img src={appImage} alt={`${appName} Image`} />
             ) : (
