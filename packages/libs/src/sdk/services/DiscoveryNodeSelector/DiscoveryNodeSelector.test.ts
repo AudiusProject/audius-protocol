@@ -318,7 +318,7 @@ describe('discoveryNodeSelector', () => {
     const selector = new DiscoveryNodeSelector({
       initialSelectedNode: BEHIND_BLOCKDIFF_NODE,
       blocklist: new Set([BEHIND_BLOCKDIFF_NODE]),
-      requestTimeout: 50,
+      requestTimeout: 1000,
       bootstrapServices: [
         HEALTHY_NODE,
         UNHEALTHY_NODE,
@@ -383,9 +383,10 @@ describe('discoveryNodeSelector', () => {
   })
 
   test('removes backups when TTL is complete', async () => {
+    jest.useFakeTimers()
     const TEMP_BEHIND_BLOCKDIFF_NODE = 'https://temp-behind.audius.co'
     const selector = new DiscoveryNodeSelector({
-      backupsTTL: 0,
+      backupsTTL: 10,
       unhealthyTTL: 0,
       bootstrapServices: [TEMP_BEHIND_BLOCKDIFF_NODE, HEALTHY_NODE].map(
         addDelegateOwnerWallets
@@ -424,6 +425,9 @@ describe('discoveryNodeSelector', () => {
       }
     }
     const middleware = selector.createMiddleware()
+
+    // Move time
+    jest.advanceTimersByTime(11)
 
     // Trigger cleanup by retriggering selection
     await middleware.post!({
@@ -722,6 +726,17 @@ describe('discoveryNodeSelector', () => {
                 ctx.status(200),
                 ctx.json({ data, comms: healthyComms })
               )
+        })
+      )
+
+      server.use(
+        rest.get(`${HEALTHY_NODE}/v1/full/tracks`, (_req, res, ctx) => {
+          return res(
+            ctx.status(200),
+            ctx.json({
+              data: {}
+            })
+          )
         })
       )
 
