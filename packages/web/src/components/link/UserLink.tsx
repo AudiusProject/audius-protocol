@@ -21,7 +21,14 @@ type UserLinkProps = Omit<TextLinkProps, 'to'> & {
 
 export const UserLink = (props: UserLinkProps) => {
   const { isServerSide } = useSsrContext()
-  const { userId, badgeSize = 's', popover, children, ...other } = props
+  const {
+    userId,
+    badgeSize = 's',
+    popover,
+    children,
+    disabled,
+    ...other
+  } = props
   const { iconSizes, spacing } = useTheme()
 
   const url = useSelector((state) => {
@@ -41,6 +48,7 @@ export const UserLink = (props: UserLinkProps) => {
         lineHeight: 'normal'
       }}
       ellipses={popover}
+      disabled={disabled}
       {...other}
     >
       <Text ellipses>{userName}</Text>

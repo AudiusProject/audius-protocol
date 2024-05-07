@@ -21,6 +21,7 @@ export const TextLink = forwardRef((props: TextLinkProps, ref: Ref<'a'>) => {
     textVariant,
     showUnderline,
     applyHoverStylesToInnerSvg,
+    disabled,
     ...other
   } = props
 
@@ -58,7 +59,7 @@ export const TextLink = forwardRef((props: TextLinkProps, ref: Ref<'a'>) => {
     <Text
       ref={ref}
       asChild
-      onClick={onClick}
+      onClick={disabled ? undefined : onClick}
       tag='a'
       css={{
         display: 'inline-flex',
@@ -66,15 +67,18 @@ export const TextLink = forwardRef((props: TextLinkProps, ref: Ref<'a'>) => {
         color: variantColors[variant],
         textDecoration: 'none',
         transition: `color ${motion.hover}`,
-        ':hover': hoverStyles,
-        ...(isActive && { ...hoverStyles, textDecoration: 'none' }),
-        ...(showUnderline && hoverStyles)
+        ':hover': disabled ? undefined : hoverStyles,
+        ...(isActive &&
+          !disabled && { ...hoverStyles, textDecoration: 'none' }),
+        ...(showUnderline && !disabled && hoverStyles)
       }}
       variant={textVariant}
       {...other}
     >
       {asChild ? (
         <Slot>{children}</Slot>
+      ) : disabled ? (
+        <Text>{children}</Text>
       ) : (
         <a
           target={isExternal ? '_blank' : undefined}
