@@ -145,6 +145,7 @@ export const LineupTileActionButtons = ({
             contentId={contentId}
             contentType={contentType}
             streamConditions={streamConditions}
+            hasStreamAccess={hasStreamAccess}
           />
         </View>
       )
@@ -158,6 +159,7 @@ export const LineupTileActionButtons = ({
               contentId={contentId}
               contentType={contentType}
               streamConditions={streamConditions}
+              hasStreamAccess={hasStreamAccess}
             />
           ) : null}
           {showLeftButtons && (

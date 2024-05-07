@@ -174,6 +174,7 @@ export const LineupTileStats = ({
                 : PurchaseableContentType.TRACK
             }
             streamConditions={streamConditions}
+            hasStreamAccess={hasStreamAccess}
           />
         )
       }

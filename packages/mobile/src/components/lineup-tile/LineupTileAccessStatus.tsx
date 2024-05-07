@@ -9,10 +9,11 @@ import {
   gatedContentSelectors
 } from '@audius/common/store'
 import { formatPrice } from '@audius/common/utils'
+import { Access } from '@audius/sdk'
 import { TouchableOpacity, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { IconLock } from '@audius/harmony-native'
+import { IconLock, IconLockUnlocked } from '@audius/harmony-native'
 import { Text } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { useIsUSDCEnabled } from 'app/hooks/useIsUSDCEnabled'
@@ -50,17 +51,24 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
   },
   usdcPurchase: {
     backgroundColor: palette.specialLightGreen
+  },
+  unlocked: {
+    borderRadius: spacing(3),
+    paddingVertical: spacing(0.5),
+    paddingHorizontal: spacing(2.5)
   }
 }))
 
 export const LineupTileAccessStatus = ({
   contentId,
   contentType,
-  streamConditions
+  streamConditions,
+  hasStreamAccess
 }: {
   contentId: ID
   contentType: PurchaseableContentType
   streamConditions: AccessConditions
+  hasStreamAccess: boolean | undefined
 }) => {
   const styles = useStyles()
   const dispatch = useDispatch()
@@ -72,44 +80,59 @@ export const LineupTileAccessStatus = ({
   const staticWhite = useColor('staticWhite')
   const isUSDCPurchase =
     isUSDCEnabled && isContentUSDCPurchaseGated(streamConditions)
+  const isUnlocking = gatedTrackStatus === 'UNLOCKING'
 
   const handlePress = useCallback(() => {
-    if (isUSDCPurchase) {
+    if (isUSDCPurchase && !hasStreamAccess) {
       openPremiumContentPurchaseModal(
         { contentId, contentType },
         { source: ModalSource.TrackTile }
       )
-    } else if (contentId) {
+      return
+    }
+    if (contentId) {
       dispatch(setLockedContentId({ id: contentId }))
       dispatch(setVisibility({ drawer: 'LockedContent', visible: true }))
     }
   }, [
     isUSDCPurchase,
+    hasStreamAccess,
     contentId,
     openPremiumContentPurchaseModal,
     contentType,
     dispatch
   ])
 
+  const buttonText = isUSDCPurchase
+    ? messages.price(formatPrice(streamConditions.usdc_purchase.price))
+    : isUnlocking
+    ? messages.unlocking
+    : messages.locked
+
+  const showButtonText =
+    (isUSDCPurchase && !hasStreamAccess && !isUnlocking) || !isUSDCPurchase
+
   return (
     <TouchableOpacity onPress={handlePress}>
-      <View style={[styles.root, isUSDCPurchase ? styles.usdcPurchase : null]}>
-        {gatedTrackStatus === 'UNLOCKING' ? (
+      <View
+        style={[
+          styles.root,
+          isUSDCPurchase ? styles.usdcPurchase : null,
+          hasStreamAccess ? styles.unlocked : null
+        ]}
+      >
+        {hasStreamAccess ? (
+          <IconLockUnlocked
+            fill={staticWhite}
+            width={spacing(4)}
+            height={spacing(4)}
+          />
+        ) : isUnlocking ? (
           <LoadingSpinner style={styles.loadingSpinner} fill={staticWhite} />
         ) : (
           <IconLock fill={staticWhite} width={spacing(4)} height={spacing(4)} />
         )}
-        <Text style={styles.text}>
-          {isUSDCPurchase
-            ? gatedTrackStatus === 'UNLOCKING'
-              ? null
-              : messages.price(
-                  formatPrice(streamConditions.usdc_purchase.price)
-                )
-            : gatedTrackStatus === 'UNLOCKING'
-            ? messages.unlocking
-            : messages.locked}
-        </Text>
+        {showButtonText ? <Text style={styles.text}>{buttonText}</Text> : null}
       </View>
     </TouchableOpacity>
   )
