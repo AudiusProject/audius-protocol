@@ -2,7 +2,6 @@ import { BN, Program, Provider } from '@coral-xyz/anchor'
 import { TOKEN_PROGRAM_ID } from '@solana/spl-token'
 import { PublicKey, SystemProgram } from '@solana/web3.js'
 
-import { PAYMENT_ROUTER_PROGRAM_ID } from './constants'
 import { IDL } from './paymentRouter'
 import { CreateRouteInstructionParams } from './types'
 
@@ -14,7 +13,7 @@ export class PaymentRouterProgram {
   public static async createPaymentRouterBalancePdaInstruction(
     paymentRouterPda: PublicKey,
     payer: PublicKey,
-    programId: PublicKey = PAYMENT_ROUTER_PROGRAM_ID
+    programId: PublicKey = PaymentRouterProgram.programId
   ) {
     const program = new Program(IDL, programId)
     return await program.methods
