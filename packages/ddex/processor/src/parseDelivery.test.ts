@@ -7,7 +7,6 @@ import {
   DealSolGated,
   parseDdexXmlFile,
 } from './parseDelivery'
-import { readFileSync } from 'node:fs'
 
 test('deal types', async () => {
   const releases = (await parseDdexXmlFile(

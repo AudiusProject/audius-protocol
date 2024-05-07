@@ -1,6 +1,6 @@
 import sql, { Database } from '@radically-straightforward/sqlite'
-import { DDEXRelease, DDEXReleaseIds } from './parseDelivery'
 import { Statement } from 'better-sqlite3'
+import { DDEXRelease, DDEXReleaseIds } from './parseDelivery'
 
 const dbLocation = process.env.SQLITE_URL || 'data/dev.db'
 const db = new Database(dbLocation)
@@ -354,5 +354,5 @@ function dbUpsert(table: string, data: Record<string, any>) {
 }
 
 function ifdef(obj: any, snippet: any) {
-  return Boolean(obj) ? snippet : sql``
+  return obj ? snippet : sql``
 }

@@ -4,7 +4,7 @@ import decompress from 'decompress'
 import { mkdtemp, readFile, readdir } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { ReleaseProcessingStatus, releaseRepo, userRepo, xmlRepo } from './db'
+import { releaseRepo, userRepo, xmlRepo } from './db'
 import { omitEmpty } from './util'
 
 type CH = cheerio.Cheerio<cheerio.Element>

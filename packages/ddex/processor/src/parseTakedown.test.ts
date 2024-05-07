@@ -1,13 +1,7 @@
-import { readFileSync } from 'fs'
 import { expect, test } from 'vitest'
 
-import * as cheerio from 'cheerio'
-import {
-  DDEXPurgeRelease,
-  parseDdexXmlFile,
-  parseReleaseIds,
-} from './parseDelivery'
 import { ReleaseProcessingStatus, releaseRepo, userRepo } from './db'
+import { parseDdexXmlFile } from './parseDelivery'
 
 test('crud', async () => {
   const grid = 'A1B2C3D4E5F6G7H8I9J0K1L2M3N4O5P6Q7R8S9T0'

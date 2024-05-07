@@ -4,21 +4,14 @@ import {
   UploadAlbumRequest,
   UploadTrackRequest,
 } from '@audius/sdk'
-import {
-  ReleaseProcessingStatus,
-  ReleaseRow,
-  dbUpdate,
-  releaseRepo,
-} from './db'
+import { ReleaseProcessingStatus, ReleaseRow, releaseRepo } from './db'
 import { DDEXContributor, DDEXRelease, DDEXResource } from './parseDelivery'
 import { readAssetWithCaching } from './s3poller'
 import { createSdkService } from './sdk'
 
 export const sdkService = createSdkService()
 
-export async function publishValidPendingReleases(opts?: {
-  republish: boolean
-}) {
+export async function publishValidPendingReleases() {
   const rows = releaseRepo.all({ pendingPublish: true })
   if (!rows.length) return
 
