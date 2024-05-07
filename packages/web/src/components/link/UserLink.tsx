@@ -16,7 +16,6 @@ type UserLinkProps = Omit<TextLinkProps, 'to'> & {
   userId: ID
   badgeSize?: IconSize
   popover?: boolean
-  textVariant?: TextVariant
 }
 
 export const UserLink = (props: UserLinkProps) => {

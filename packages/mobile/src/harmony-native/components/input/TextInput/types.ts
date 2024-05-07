@@ -31,6 +31,7 @@ type InternalProps = {
 }
 
 export type TextInputProps = RNTextInputProps & {
+  id?: string
   /**
    * Input sizes. NOTE: small inputs will not show the label
    * @default default

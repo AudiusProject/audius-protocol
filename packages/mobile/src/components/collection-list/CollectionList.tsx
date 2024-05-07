@@ -67,9 +67,12 @@ const FullCollectionList = (props: FullCollectionListProps) => {
         />
       ) : (
         <CollectionCard
-          collection={item}
-          numTracks={collectionIdsToNumTracks?.[item.playlist_id] ?? undefined}
-          onPress={onCollectionPress}
+          id={item.playlist_id}
+          onPress={
+            onCollectionPress
+              ? () => onCollectionPress(item.playlist_id)
+              : undefined
+          }
         />
       ),
     [
@@ -122,7 +125,7 @@ const CollectionIDList = (props: CollectionIdListProps) => {
           collectionType='playlist'
         />
       ) : (
-        <CollectionCard collectionId={item.id} />
+        <CollectionCard id={item.id} />
       ),
     [createPlaylistCallback, createPlaylistSource, createPlaylistTrackId]
   )
