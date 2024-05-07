@@ -28,7 +28,6 @@ program
     'A path to which to write a json file containing the user data'
   )
   .action(async (handle, { password, email, verified, output }) => {
-    console.log('working directory audius-cmd', process.cwd())
     const audiusLibs = await initializeAudiusLibs()
 
     const rand = randomBytes(2).toString('hex').padStart(4, '0').toUpperCase()

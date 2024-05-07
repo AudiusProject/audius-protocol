@@ -5,22 +5,14 @@ import { existsSync, mkdirSync, readFileSync } from 'fs'
 import path from 'path'
 
 const filepath = '../web/e2e/data'
-const dataFilesPath = (filename: string) =>
-  path.resolve(process.cwd(), filepath, filename)
+const dataFilesPath = (filename: string) => `${filepath}/${filename}`
 
 setup('seed data', async () => {
   if (!existsSync(filepath)) {
-    mkdirSync(path.resolve(process.cwd(), filepath))
+    mkdirSync(filepath)
   }
 
-  console.log(
-    'directory exists',
-    path.resolve(process.cwd(), filepath),
-    existsSync(path.resolve(process.cwd(), filepath))
-  )
-
   const audiusCmd = (cmd: string) => {
-    console.log('working directory:', process.cwd())
     const result = execSync(`$HOME/.local/bin/audius-cmd ${cmd}`)
     console.log(result.toString())
   }
