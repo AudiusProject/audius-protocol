@@ -122,6 +122,7 @@ export const ClaimAllRewardsModal = () => {
           />
           {claimableAmount > 0 && !hasClaimed ? (
             <Button
+              disabled={claimInProgress}
               isLoading={claimInProgress}
               onClick={onClaimRewardClicked}
               iconRight={IconArrowRight}
