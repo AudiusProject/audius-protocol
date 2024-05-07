@@ -266,6 +266,13 @@ const ClaimAllPanel = () => {
   const onClickMoreInfo = useCallback(() => {
     setClaimAllRewardsVisibility(true)
   }, [setClaimAllRewardsVisibility])
+  const handleClick = useCallback(() => {
+    if (claimableAmount > 0) {
+      onClickClaimAllRewards()
+    } else if (cooldownAmount > 0) {
+      onClickMoreInfo()
+    }
+  }, [claimableAmount, cooldownAmount, onClickClaimAllRewards, onClickMoreInfo])
 
   if (isMobile) {
     return (
@@ -277,6 +284,7 @@ const ClaimAllPanel = () => {
         alignSelf='stretch'
         justifyContent='space-between'
         m='s'
+        onClick={handleClick}
       >
         <Flex direction='column' alignItems='start' w='100%'>
           <Flex gap='s' alignItems='center'>
@@ -347,6 +355,8 @@ const ClaimAllPanel = () => {
       alignSelf='stretch'
       justifyContent='space-between'
       m='s'
+      css={{ cursor: 'pointer' }}
+      onClick={handleClick}
     >
       <Flex gap='l' alignItems='center'>
         <IconTokenGold
