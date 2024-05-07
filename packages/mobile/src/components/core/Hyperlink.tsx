@@ -184,7 +184,7 @@ export const Hyperlink = (props: HyperlinkProps) => {
                   left: linkLayout.x - linkContainerLayout.x
                 }
               ]}
-              onPress={() => handlePress(match.getAnchorHref())}
+              onPress={() => handlePress(match.getAnchorHref(), match)}
             >
               {text}
             </Text>
