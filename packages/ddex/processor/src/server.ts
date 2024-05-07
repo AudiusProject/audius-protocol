@@ -44,7 +44,7 @@ app.get('/', async (c) => {
           : ''}
         ${me
           ? html`
-              <h4>Welcome back ${me.name}</h4>
+              <h4>Welcome back @${me.handle}</h4>
               <a href="/auth/logout" role="button">log out</a>
             `
           : html` <a role="button" href="/auth">login</a> `}

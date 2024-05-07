@@ -4,7 +4,7 @@ import { createSdkService } from './sdk'
 export async function startUsersPoller() {
   const sdk = (await createSdkService()).getSdk()
 
-  // Periodic task to fetch user data and update handles
+  // Periodic task to fetch user data and update names
   setInterval(async () => {
     try {
       const users = userRepo.all()
@@ -14,13 +14,16 @@ export async function startUsersPoller() {
         if (!userResponse) {
           throw new Error(`Error fetching user ${user.id} from sdk`)
         }
-        if (userResponse.handle !== user.handle) {
-          userRepo.updateField(user.id, 'handle', userResponse.handle)
-          console.log(`Updated user ${user.id}'s handle'`)
+        if (userResponse.name !== user.name) {
+          userRepo.upsert({
+            id: user.id,
+            name: userResponse.name,
+          })
+          console.log(`Updated user ${user.id}'s name`)
         }
       }
     } catch (error) {
-      console.error('Failed to update user handles:', error)
+      console.error('Failed to update user names:', error)
     }
   }, 300000) // Runs every 5 min
 }
