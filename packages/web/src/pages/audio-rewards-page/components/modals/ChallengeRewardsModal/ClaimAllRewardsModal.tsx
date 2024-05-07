@@ -50,7 +50,6 @@ export const ClaimAllRewardsModal = () => {
   const { toast } = useContext(ToastContext)
   const wm = useWithMobileStyle(styles.mobile)
   const [isOpen, setOpen] = useModalState('ClaimAllRewards')
-  const [isHCaptchaModalOpen] = useModalState('HCaptcha')
   const claimStatus = useSelector(getClaimStatus)
   const { claimableAmount, claimableChallenges, cooldownChallenges, summary } =
     useChallengeCooldownSchedule({
@@ -103,8 +102,6 @@ export const ClaimAllRewardsModal = () => {
       useGradientTitle={false}
       titleClassName={wm(styles.title)}
       headerContainerClassName={styles.header}
-      showDismissButton={!isHCaptchaModalOpen}
-      dismissOnClickOutside={!isHCaptchaModalOpen}
     >
       <ModalContent>
         <Flex direction='column' gap='2xl' mt='s'>
