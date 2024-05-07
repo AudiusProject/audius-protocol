@@ -68,6 +68,7 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
     playlist_name: '',
     description: '',
     release_date: moment().toString(),
+    is_private: false,
     trackDetails: {
       genre: null,
       mood: null,
