@@ -21,6 +21,7 @@ import { SolanaWalletAddress, StringWei, WalletAddress } from '~/models/Wallet'
 import { decodeHashId } from '~/utils/hashIds'
 import { Nullable, removeNullable } from '~/utils/typeUtils'
 
+import { Grant, grantFromSDK } from './Grant'
 import { Timestamped } from './Timestamped'
 import { UserEvent } from './UserEvent'
 
@@ -84,6 +85,16 @@ export type UserMetadata = {
   local?: boolean
   events?: UserEvent
 } & Timestamped
+
+export type ManagedUserMetadata = {
+  grant: Grant
+  user: UserMetadata
+}
+
+export type UserManagerMetadata = {
+  grant: Grant
+  manager: UserMetadata
+}
 
 export type ComputedUserProperties = {
   _profile_picture_sizes: ProfilePictureSizes
@@ -164,3 +175,35 @@ export const userMetadataFromSDK = (
 
 export const userMetadataListFromSDK = (input?: full.UserFull[]) =>
   input ? input.map((d) => userMetadataFromSDK(d)).filter(removeNullable) : []
+
+export const managedUserFromSDK = (
+  input: full.ManagedUser
+): ManagedUserMetadata | undefined => {
+  const user = userMetadataFromSDK(input.user)
+  if (!user) {
+    return undefined
+  }
+  return {
+    user,
+    grant: grantFromSDK(input.grant)
+  }
+}
+
+export const managedUserListFromSDK = (input?: full.ManagedUser[]) =>
+  input ? input.map((d) => managedUserFromSDK(d)).filter(removeNullable) : []
+
+export const userManagerFromSDK = (
+  input: full.UserManager
+): UserManagerMetadata | undefined => {
+  const manager = userMetadataFromSDK(input.manager)
+  if (!manager) {
+    return undefined
+  }
+  return {
+    manager,
+    grant: grantFromSDK(input.grant)
+  }
+}
+
+export const userManagerListFromSDK = (input?: full.UserManager[]) =>
+  input ? input.map((d) => userManagerFromSDK(d)).filter(removeNullable) : []
