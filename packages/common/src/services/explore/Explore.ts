@@ -14,7 +14,8 @@ import {
   APIPlaylist,
   APITrack,
   AudiusAPIClient,
-  responseAdapter
+  responseAdapter,
+  makeActivity
 } from '../audius-api-client'
 import { AudiusBackend, AuthHeaders } from '../audius-backend'
 
@@ -110,7 +111,7 @@ export class Explore {
       })
       const activityData = history.data as APIActivityV2[]
       const listenedToTracks = activityData
-        .map(responseAdapter.makeActivity)
+        .map(makeActivity)
         .filter(removeNullable) as UserTrackMetadata[]
 
       // Imperfect solution. Ideally we use an endpoint that gives us true/false

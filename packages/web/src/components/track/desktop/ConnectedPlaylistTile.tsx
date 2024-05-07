@@ -95,6 +95,7 @@ type OwnProps = {
   isTrending: boolean
   showRankIcon: boolean
   isFeed: boolean
+  source?: ModalSource
 }
 
 type ConnectedPlaylistTileProps = OwnProps &
@@ -133,7 +134,8 @@ const ConnectedPlaylistTile = ({
   unsaveCollection,
   isTrending,
   showRankIcon,
-  isFeed = false
+  isFeed = false,
+  source
 }: ConnectedPlaylistTileProps) => {
   const {
     is_album: isAlbum,
@@ -395,7 +397,7 @@ const ConnectedPlaylistTile = ({
     if (isPurchase && id) {
       openPremiumContentPurchaseModal(
         { contentId: id, contentType: PurchaseableContentType.ALBUM },
-        { source: ModalSource.TrackTile }
+        { source: source ?? ModalSource.TrackTile }
       )
     }
   }, [id, openPremiumContentPurchaseModal, hasStreamAccess])
@@ -546,6 +548,7 @@ const ConnectedPlaylistTile = ({
       href={href}
       hasStreamAccess={hasStreamAccess}
       streamConditions={isStreamGated ? streamConditions : null}
+      source={source}
     />
   )
 }

@@ -1,16 +1,12 @@
-import { useCallback, useEffect, useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 
-import { useFeatureFlag } from '@audius/common/hooks'
-import { Name, isContentUSDCPurchaseGated } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
+import { isContentUSDCPurchaseGated } from '@audius/common/models'
 import { useField } from 'formik'
 import { Dimensions, View } from 'react-native'
 
-import { IconCart, IconStars } from '@audius/harmony-native'
-import { Link, Tag, Text } from 'app/components/core'
-import { HelpCallout } from 'app/components/help-callout/HelpCallout'
+import { IconCart } from '@audius/harmony-native'
+import { Text } from 'app/components/core'
 import { useSetTrackAvailabilityFields } from 'app/hooks/useSetTrackAvailabilityFields'
-import { make, track } from 'app/services/analytics'
 import { makeStyles } from 'app/styles'
 import { useColor } from 'app/utils/theme'
 
@@ -18,8 +14,6 @@ import type { TrackAvailabilitySelectionProps } from '../../../components/types'
 
 import { TRACK_PREVIEW, TrackPreviewField } from './TrackPreviewField'
 import { TrackPriceField } from './TrackPriceField'
-
-const WAITLIST_TYPEFORM = 'https://link.audius.co/waitlist'
 
 type PremiumRadioFieldProps = TrackAvailabilitySelectionProps
 
@@ -64,10 +58,6 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
   subtitle: {
     color: palette.neutral
   },
-  waitlist: {
-    gap: spacing(3),
-    alignItems: 'flex-start'
-  },
   link: {
     color: palette.secondary
   },
@@ -80,16 +70,9 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
 }))
 
 export const PremiumRadioField = (props: PremiumRadioFieldProps) => {
-  const { isEnabled: isUsdcUploadEnabled } = useFeatureFlag(
-    FeatureFlags.USDC_PURCHASES_UPLOAD
-  )
   const { selected, disabled, previousStreamConditions } = props
   const { set: setTrackAvailabilityFields } = useSetTrackAvailabilityFields()
   const styles = useStyles()
-
-  const handlePressWaitListLink = useCallback(() => {
-    track(make({ eventName: Name.TRACK_UPLOAD_CLICK_USDC_WAITLIST_LINK }))
-  }, [])
 
   const secondary = useColor('secondary')
   const neutral = useColor('neutral')
@@ -134,17 +117,6 @@ export const PremiumRadioField = (props: PremiumRadioFieldProps) => {
     setTrackAvailabilityFields
   ])
 
-  const renderHelpCalloutContent = useCallback(() => {
-    return (
-      <View style={styles.waitlist}>
-        <Text>{messages.waitlist}</Text>
-        <Link url={WAITLIST_TYPEFORM} onPress={handlePressWaitListLink}>
-          <Text style={styles.link}>{messages.join}</Text>
-        </Link>
-      </View>
-    )
-  }, [styles.link, styles.waitlist, handlePressWaitListLink])
-
   return (
     <View style={styles.root}>
       <View style={styles.titleContainer}>
@@ -159,16 +131,6 @@ export const PremiumRadioField = (props: PremiumRadioFieldProps) => {
             {messages.description}
           </Text>
         </View>
-      ) : null}
-      {!isUsdcUploadEnabled ? (
-        <>
-          <Tag style={styles.comingSoon}>{messages.comingSoon}</Tag>
-          <HelpCallout
-            icon={IconStars}
-            style={styles.waitlist}
-            content={renderHelpCalloutContent()}
-          />
-        </>
       ) : null}
       {selected ? (
         <View style={styles.fields}>

@@ -234,7 +234,6 @@ export const TracksTab = () => {
                     hideArt
                     onEndReached={handleMoreFetchSaves}
                     onEndReachedThreshold={1.5}
-                    showDivider
                     togglePlay={togglePlay}
                     trackItemAction='overflow'
                     uids={filteredTrackUids}

@@ -17,10 +17,6 @@ from src.models.users.associated_wallet import AssociatedWallet
 from src.models.users.user import User
 from src.models.users.user_events import UserEvent
 from src.queries.get_balances import enqueue_immediate_balance_refresh
-from src.tasks.entity_manager.entities.user_replica_set import (
-    get_endpoint_string_from_sp_ids,
-    parse_sp_ids,
-)
 from src.tasks.entity_manager.utils import (
     CHARACTER_LIMIT_USER_BIO,
     USER_ID_OFFSET,
@@ -210,20 +206,7 @@ def create_user(
         cid_metadata[metadata_cid] = user_metadata
         user_record.metadata_multihash = metadata_cid
 
-    if params.metadata == "v2":
-        user_record.is_storage_v2 = True
-    elif not user_metadata:  # update replica set case
-        sp_ids = parse_sp_ids(params.metadata)
-
-        # Update the user's new replica set in the model and save!
-        user_record.primary_id = sp_ids[0]
-        user_record.secondary_ids = sp_ids[1:]
-
-        # Update cnode endpoint string reconstructed from sp ID
-        creator_node_endpoint_str = get_endpoint_string_from_sp_ids(
-            params.redis, sp_ids[0], sp_ids[1:]
-        )
-        user_record.creator_node_endpoint = creator_node_endpoint_str
+    user_record.is_storage_v2 = True
 
     user_record = validate_user_record(user_record)
     params.add_record(user_id, user_record)

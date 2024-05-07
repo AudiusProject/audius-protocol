@@ -12,6 +12,8 @@ export type TextProps = NativeTextProps &
   Omit<BaseTextProps, 'textAlign'> & {
     textAlign?: TextStyle['textAlign']
     textTransform?: TextStyle['textTransform']
+    // Needed for proper text wrapping
+    shrink?: boolean
   }
 
 export const Text = forwardRef<TextBase, TextProps>((props, ref) => {
@@ -24,6 +26,7 @@ export const Text = forwardRef<TextBase, TextProps>((props, ref) => {
     textAlign,
     textTransform,
     shadow,
+    shrink,
     ...other
   } = props
   const theme = useTheme()
@@ -52,7 +55,8 @@ export const Text = forwardRef<TextBase, TextProps>((props, ref) => {
     // Fixes demiBold text misalignment on iOS
     ...(fontWeight === 'demiBold' && Platform.OS === 'ios'
       ? { marginTop: 2 }
-      : {})
+      : {}),
+    ...(shrink ? { flexShrink: 1 } : {})
   })
 
   const isHeading = variant === 'display' || variant === 'heading'

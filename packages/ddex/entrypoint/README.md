@@ -1,15 +1,18 @@
 # DDEX entrypoint
 
-Found at distro.audius.co.
-
-Simple redirects to relevant DDEX apps.
+Artist-facing entrypoint to distributor apps.
 
 ## Development
 ```
-npm run dev
+npm run start:<dev|stage|prod>
 ```
 
-## Deployment
+## Build
 ```
-npm run deploy
+npm run build:<dev|stage|prod>
+```
+
+## Deploy
+```
+npm run deploy:<dev|stage|prod>
 ```

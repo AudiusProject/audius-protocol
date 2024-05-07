@@ -110,3 +110,14 @@ audius-cmd get-audio-balance @freddie_mercury
 ```
 audius-cmd tip-audio @brian_may 10 --from freddie_mercury
 ```
+
+**purchase-track**
+
+```
+audius-cmd upload-track --from freddie_mercury --title "Bohemian Rhapsody" --price 100
+
+audius-cmd create-user-bank --mint usdc freddie_mercury
+audius-cmd mint-tokens --from freddie_mercury --mint usdc 10000000
+
+audius-cmd purchase-content <track-id> --type track --from freddie_mercury
+```

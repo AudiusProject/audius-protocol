@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo } from 'react'
+import { useCallback, useEffect } from 'react'
 
 import { Name, PlaybackSource, Status } from '@audius/common/models'
 import type {
@@ -16,12 +16,13 @@ import {
   cacheTracksSelectors,
   PurchaseableContentType
 } from '@audius/common/store'
-import { formatSecondsAsText, removeNullable } from '@audius/common/utils'
+import { removeNullable } from '@audius/common/utils'
 import type { Maybe, Nullable } from '@audius/common/utils'
 import { useDispatch, useSelector } from 'react-redux'
 import { usePrevious } from 'react-use'
 import { createSelector } from 'reselect'
 
+import { Box } from '@audius/harmony-native'
 import { Text } from 'app/components/core'
 import { DetailsTile } from 'app/components/details-tile'
 import type {
@@ -32,10 +33,8 @@ import { TrackList } from 'app/components/track-list'
 import { make, track } from 'app/services/analytics'
 import type { AppState } from 'app/store'
 import { makeStyles } from 'app/styles'
-import { formatCount } from 'app/utils/format'
 
-import { CollectionHeader } from './CollectionHeader'
-const { getPlaying, getUid, getCurrentTrack } = playerSelectors
+const { getPlaying, getPreviewing, getUid, getCurrentTrack } = playerSelectors
 const { getIsReachable } = reachabilitySelectors
 const { getCollectionTracksLineup } = collectionPageSelectors
 const { getCollection } = cacheCollectionsSelectors
@@ -101,15 +100,12 @@ const useRefetchLineupOnTrackAdd = (
 const getMessages = (collectionType: 'album' | 'playlist') => ({
   empty: `This ${collectionType} is empty. Start adding tracks to share it or make it public.`,
   emptyPublic: `This ${collectionType} is empty`,
-  detailsPlaceholder: '---'
+  detailsPlaceholder: '---',
+  collectionType,
+  hiddenType: `Hidden ${collectionType}`
 })
 
 const useStyles = makeStyles(({ palette, spacing }) => ({
-  trackListDivider: {
-    marginHorizontal: spacing(6),
-    borderTopWidth: 1,
-    borderTopColor: palette.neutralLight7
-  },
   empty: {
     color: palette.neutral,
     paddingHorizontal: spacing(8),
@@ -124,6 +120,7 @@ type CollectionScreenDetailsTileProps = {
   isPrivate?: boolean
   isOwner?: boolean
   isPublishing?: boolean
+  isDeleted?: boolean
   extraDetails?: DetailsTileDetail[]
   collectionId: number | SmartCollectionVariant
   hasStreamAccess?: boolean
@@ -161,9 +158,11 @@ export const CollectionScreenDetailsTile = ({
   isOwner,
   hideOverflow,
   hideRepost,
+  hideFavorite,
   hasStreamAccess,
   streamConditions,
   ddexApp,
+  isDeleted,
   ...detailsTileProps
 }: CollectionScreenDetailsTileProps) => {
   const styles = useStyles()
@@ -179,48 +178,42 @@ export const CollectionScreenDetailsTile = ({
   const playingUid = useSelector(getUid)
   const isQueued = useSelector(selectIsQueued)
   const isPlaying = useSelector(getPlaying)
+  const isPreviewing = useSelector(getPreviewing)
   const playingTrack = useSelector(getCurrentTrack)
   const playingTrackId = playingTrack?.track_id
   const firstTrack = useSelector(selectFirstTrack)
   const messages = getMessages(isAlbum ? 'album' : 'playlist')
   useRefetchLineupOnTrackAdd(collectionId)
-  const details = useMemo(() => {
-    if (!isLineupLoading && trackCount === 0) return []
-    return [
-      {
-        label: 'Tracks',
-        value: isLineupLoading
-          ? messages.detailsPlaceholder
-          : formatCount(trackCount)
-      },
-      {
-        label: 'Duration',
-        value: isLineupLoading
-          ? messages.detailsPlaceholder
-          : formatSecondsAsText(collectionDuration)
-      },
-      ...extraDetails
-    ].filter(({ isHidden, value }) => !isHidden && !!value)
-  }, [
-    isLineupLoading,
-    trackCount,
-    messages.detailsPlaceholder,
-    collectionDuration,
-    extraDetails
-  ])
 
-  const handlePressPlay = useCallback(() => {
-    if (isPlaying && isQueued) {
-      dispatch(tracksActions.pause())
-      recordPlay(playingTrackId, false)
-    } else if (!isPlaying && isQueued) {
-      dispatch(tracksActions.play())
-      recordPlay(playingTrackId)
-    } else if (trackCount > 0 && firstTrack) {
-      dispatch(tracksActions.play(firstTrack.uid))
-      recordPlay(firstTrack.id)
-    }
-  }, [dispatch, isPlaying, playingTrackId, isQueued, trackCount, firstTrack])
+  const play = useCallback(
+    ({ isPreview = false }: { isPreview?: boolean } = {}) => {
+      if (isPlaying && isQueued && isPreviewing === isPreview) {
+        dispatch(tracksActions.pause())
+        recordPlay(playingTrackId, false)
+      } else if (!isPlaying && isQueued) {
+        dispatch(tracksActions.play())
+        recordPlay(playingTrackId)
+      } else if (trackCount > 0 && firstTrack) {
+        dispatch(tracksActions.play(firstTrack.uid, { isPreview }))
+        recordPlay(firstTrack.id)
+      }
+    },
+    [
+      isPlaying,
+      isQueued,
+      isPreviewing,
+      trackCount,
+      firstTrack,
+      dispatch,
+      playingTrackId
+    ]
+  )
+
+  const handlePressPlay = useCallback(() => play(), [play])
+  const handlePressPreview = useCallback(
+    () => play({ isPreview: true }),
+    [play]
+  )
 
   const handlePressTrackListItemPlay = useCallback(
     (uid: UID, id: ID) => {
@@ -236,11 +229,6 @@ export const CollectionScreenDetailsTile = ({
       }
     },
     [dispatch, isPlaying, playingUid]
-  )
-
-  const renderHeader = useCallback(
-    () => <CollectionHeader collectionId={collectionId} />,
-    [collectionId]
   )
 
   const numericCollectionId =
@@ -259,16 +247,17 @@ export const CollectionScreenDetailsTile = ({
       <TrackList
         contextPlaylistId={!isAlbum ? numericCollectionId : undefined}
         trackItemAction='overflow'
-        showDivider
         showSkeleton={isLineupLoading}
         togglePlay={handlePressTrackListItemPlay}
         isAlbumPage={isAlbum}
         uids={uids}
         ListEmptyComponent={
           isLineupLoading ? null : (
-            <Text fontSize='medium' weight='medium' style={styles.empty}>
-              {isOwner ? messages.empty : messages.emptyPublic}
-            </Text>
+            <Box mt='m'>
+              <Text fontSize='medium' weight='medium' style={styles.empty}>
+                {isOwner ? messages.empty : messages.emptyPublic}
+              </Text>
+            </Box>
           )
         }
       />
@@ -292,20 +281,25 @@ export const CollectionScreenDetailsTile = ({
       ddexApp={ddexApp}
       description={description}
       descriptionLinkPressSource='collection page'
-      details={details}
+      duration={collectionDuration}
       hideOverflow={hideOverflow || !isReachable}
       hideListenCount={true}
       hasStreamAccess={hasStreamAccess}
       streamConditions={streamConditions}
-      hideRepost={hideRepost || !isReachable}
+      hideFavorite={hideFavorite || !hasStreamAccess}
+      hideRepost={hideRepost || !isReachable || !hasStreamAccess}
       isPlaying={isPlaying && isQueued}
+      isPreviewing={isPreviewing && isQueued}
       isPublished={!isPrivate || isPublishing}
+      isDeleted={isDeleted}
       isCollection={true}
       renderBottomContent={renderTrackList}
-      renderHeader={renderHeader}
+      headerText={isPrivate ? messages.hiddenType : messages.collectionType}
       renderImage={renderImage}
       onPressPlay={handlePressPlay}
+      onPressPreview={handlePressPreview}
       isPlayable={isPlayable}
+      trackCount={trackCount}
     />
   )
 }

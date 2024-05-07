@@ -12,4 +12,5 @@
 .name {
   overflow: hidden;
   text-overflow: ellipsis;
+  line-height: 125%;
 }

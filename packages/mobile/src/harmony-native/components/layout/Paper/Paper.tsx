@@ -1,6 +1,6 @@
 import { forwardRef } from 'react'
 
-import type { View } from 'react-native'
+import type { StyleProp, View, ViewStyle } from 'react-native'
 import { Animated, Pressable } from 'react-native'
 import { Gesture, GestureDetector } from 'react-native-gesture-handler'
 import {
@@ -83,8 +83,17 @@ export const Paper = forwardRef<View, PaperProps>((props, ref) => {
 
   const flexProps = { backgroundColor, borderRadius, shadow }
 
+  const universalStyles: StyleProp<ViewStyle> = { overflow: 'hidden' }
+
   if (!onPress) {
-    return <Flex ref={ref} style={style} {...flexProps} {...other} />
+    return (
+      <Flex
+        ref={ref}
+        style={[universalStyles, style]}
+        {...flexProps}
+        {...other}
+      />
+    )
   }
 
   return (
@@ -92,7 +101,7 @@ export const Paper = forwardRef<View, PaperProps>((props, ref) => {
       <Pressable onPress={onPress}>
         <AnimatedFlex
           ref={ref}
-          style={[interactiveStyles, style]}
+          style={[universalStyles, interactiveStyles, style]}
           {...flexProps}
           {...other}
         />

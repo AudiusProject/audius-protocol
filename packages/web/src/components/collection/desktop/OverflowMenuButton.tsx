@@ -35,7 +35,8 @@ export const OverflowMenuButton = (props: OverflowMenuButtonProps) => {
     is_private,
     playlist_owner_id,
     has_current_user_saved,
-    permalink
+    permalink,
+    access
   } =
     (useSelector((state: CommonState) =>
       getCollection(state, { id: collectionId })
@@ -43,6 +44,7 @@ export const OverflowMenuButton = (props: OverflowMenuButtonProps) => {
 
   const owner = useSelector(getUser) as User
   const isFollowing = owner?.does_current_user_follow
+  const hasStreamAccess = access?.stream
 
   const handleFollow = useCallback(() => {
     if (isFollowing) {
@@ -70,7 +72,7 @@ export const OverflowMenuButton = (props: OverflowMenuButtonProps) => {
     mount: 'page',
     isOwner,
     includeEmbed: true,
-    includeSave: false,
+    includeFavorite: hasStreamAccess,
     includeVisitPage: false,
     isPublic: !is_private,
     extraMenuItems,

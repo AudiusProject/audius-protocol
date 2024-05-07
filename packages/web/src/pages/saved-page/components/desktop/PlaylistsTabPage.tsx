@@ -14,6 +14,7 @@ import {
 import { IconPlus } from '@audius/harmony'
 import { useDispatch, useSelector } from 'react-redux'
 
+import { CollectionCard } from 'components/collection'
 import { InfiniteCardLineup } from 'components/lineup/InfiniteCardLineup'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import EmptyTable from 'components/tracks-table/EmptyTable'
@@ -22,7 +23,6 @@ import { useCollectionsData } from 'pages/saved-page/hooks/useCollectionsData'
 
 import { emptyStateMessages } from '../emptyStateMessages'
 
-import { CollectionCard } from './CollectionCard'
 import styles from './SavedPage.module.css'
 
 const { createPlaylist } = cacheCollectionsActions
@@ -75,8 +75,8 @@ export const PlaylistsTabPage = () => {
     )
     return [
       createPlaylistCard,
-      ...collections?.map(({ playlist_id: id }, i) => {
-        return <CollectionCard index={i} key={id} albumId={id} />
+      ...collections?.map(({ playlist_id: id }) => {
+        return <CollectionCard key={id} id={id} size='m' />
       })
     ]
   }, [collections])

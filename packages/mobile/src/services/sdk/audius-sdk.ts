@@ -1,14 +1,12 @@
 import { EventEmitter } from 'events'
 
 import type { AudiusSdk } from '@audius/sdk'
-import { AntiAbuseOracleSelector, sdk } from '@audius/sdk'
+import { Configuration, SolanaRelay, sdk } from '@audius/sdk'
 
 import { env } from 'app/env'
 
 import { auth } from './auth'
 import { discoveryNodeSelectorService } from './discoveryNodeSelector'
-import { claimableTokensService, rewardManagerService } from './solana'
-import { getStorageNodeSelector } from './storageNodeSelector'
 
 let inProgress = false
 const SDK_LOADED_EVENT_NAME = 'AUDIUS_SDK_LOADED'
@@ -18,18 +16,36 @@ let sdkInstance: AudiusSdk
 const initSdk = async () => {
   inProgress = true
 
+  // For now, the only solana relay we want to use is on DN 1, so hardcode
+  // the selection there.
+  const solanaRelay = new SolanaRelay(
+    new Configuration({
+      basePath: '/solana',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      middleware: [
+        {
+          pre: async (context) => {
+            const endpoint = env.SOLANA_RELAY_ENDPOINT
+            const url = `${endpoint}${context.url}`
+            return { url, init: context.init }
+          }
+        }
+      ]
+    })
+  )
+
+  // Overrides some DN configuration from optimizely
+  const discoveryNodeSelector = await discoveryNodeSelectorService.getInstance()
+
   const audiusSdk = sdk({
     appName: 'audius-mobile-client',
+    environment: env.ENVIRONMENT,
     services: {
-      discoveryNodeSelector: await discoveryNodeSelectorService.getInstance(),
-      auth,
-      storageNodeSelector: await getStorageNodeSelector(),
-      claimableTokensClient: claimableTokensService,
-      rewardManagerClient: rewardManagerService,
-      antiAbuseOracleSelector: new AntiAbuseOracleSelector({
-        endpoints: [env.AAO_ENDPOINT],
-        registeredAddresses: env.ORACLE_ETH_ADDRESSES.split(',') ?? []
-      })
+      discoveryNodeSelector,
+      solanaRelay,
+      auth
     }
   })
   sdkInstance = audiusSdk

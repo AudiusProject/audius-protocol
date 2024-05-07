@@ -7,12 +7,13 @@ import {
   PublicKey
 } from '@solana/web3.js'
 
+import { productionConfig } from '../../../../config/production'
 import { mergeConfigWithDefaults } from '../../../../utils/mergeConfigs'
 import { parseParams } from '../../../../utils/parseParams'
 import type { Mint } from '../../types'
 import { BaseSolanaProgram } from '../BaseSolanaProgram'
 
-import { defaultClaimableTokensConfig } from './constants'
+import { getDefaultClaimableTokensConfig } from './getDefaultConfig'
 import {
   type GetOrCreateUserBankRequest,
   GetOrCreateUserBankSchema,
@@ -42,7 +43,7 @@ export class ClaimableTokensClient extends BaseSolanaProgram {
   constructor(config: ClaimableTokensConfig) {
     const configWithDefaults = mergeConfigWithDefaults(
       config,
-      defaultClaimableTokensConfig
+      getDefaultClaimableTokensConfig(productionConfig)
     )
     super(configWithDefaults, config.solanaWalletAdapter)
     this.programId = configWithDefaults.programId

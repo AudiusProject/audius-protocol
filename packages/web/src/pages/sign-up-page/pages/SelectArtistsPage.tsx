@@ -21,6 +21,11 @@ import {
   completeFollowArtists
 } from 'common/store/pages/signon/actions'
 import { getGenres } from 'common/store/pages/signon/selectors'
+import {
+  FollowArtistCard,
+  FollowArtistTileSkeleton
+} from 'components/follow-artist-card/FollowArtistCard'
+import { SelectArtistsPreviewContextProvider } from 'components/follow-artist-card/selectArtistsPreviewContext'
 import { useMedia } from 'hooks/useMedia'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { env } from 'services/env'
@@ -28,10 +33,6 @@ import { useSelector } from 'utils/reducer'
 import { SIGN_UP_APP_CTA_PAGE, SIGN_UP_COMPLETED_REDIRECT } from 'utils/route'
 
 import { AccountHeader } from '../components/AccountHeader'
-import {
-  FollowArtistCard,
-  FollowArtistTileSkeleton
-} from '../components/FollowArtistCard'
 import { PreviewArtistHint } from '../components/PreviewArtistHint'
 import {
   Heading,
@@ -39,7 +40,6 @@ import {
   PageFooter,
   ScrollView
 } from '../components/layout'
-import { SelectArtistsPreviewContextProvider } from '../utils/selectArtistsPreviewContext'
 
 const AnimatedFlex = animated(Flex)
 
@@ -191,18 +191,21 @@ export const SelectArtistsPage = () => {
                   aria-label={selectArtistsPageMessages.genresLabel}
                   disableScroll={!isMobile}
                 >
-                  {artistGenres.map((genre) => (
-                    // TODO: max of 6, kebab overflow
-                    <SelectablePill
-                      key={genre}
-                      type='radio'
-                      name='genre'
-                      label={convertGenreLabelToValue(genre as Genre)}
-                      size={isMobile ? 'small' : 'large'}
-                      value={convertGenreLabelToValue(genre as Genre)}
-                      isSelected={currentGenre === genre}
-                    />
-                  ))}
+                  {artistGenres.map((genre) => {
+                    const genreValue = convertGenreLabelToValue(genre as Genre)
+                    return (
+                      // TODO: max of 6, kebab overflow
+                      <SelectablePill
+                        key={genre}
+                        type='radio'
+                        name='genre'
+                        label={genreValue}
+                        size={isMobile ? 'small' : 'large'}
+                        value={genreValue}
+                        isSelected={currentGenre === genreValue}
+                      />
+                    )
+                  })}
                 </ScrollView>
               </Flex>
               <SelectArtistsPreviewContextProvider>

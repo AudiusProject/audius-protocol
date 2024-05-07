@@ -27,7 +27,7 @@
   background-repeat: no-repeat;
   background-color: var(--default-profile-picture-background);
 }
-.profilePicture:hover {
+.clickable:hover {
   cursor: pointer;
 }
 .profilePictureSkeleton {
@@ -47,7 +47,6 @@
 .text > .identity {
   margin-bottom: 8px;
   display: flex;
-  cursor: pointer;
   line-height: normal;
 }
 .text > .identity :global(.artistPopover) {

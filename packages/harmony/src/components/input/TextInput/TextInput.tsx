@@ -172,15 +172,13 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
             inputRootStyle
           )}
         >
-          <Flex pl={size === TextInputSize.SMALL ? 's' : 'l'}>
-            {StartIcon ? (
-              <StartIcon
-                size={size === TextInputSize.SMALL ? 's' : 'm'}
-                color='subdued'
-                {...IconProps}
-              />
-            ) : null}
-          </Flex>
+          {StartIcon ? (
+            <StartIcon
+              size={size === TextInputSize.SMALL ? 's' : 'm'}
+              color='subdued'
+              {...IconProps}
+            />
+          ) : null}
           <Flex direction='column' gap='xs' justifyContent='center' w='100%'>
             {shouldShowLabel ? (
               <Flex

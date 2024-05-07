@@ -2,6 +2,7 @@ export const primitiveTheme = {
   day: {
     static: {
       white: '#FFFFFF',
+      black: '#000000',
       primary: '#CC0FE0'
     },
     primary: {
@@ -52,6 +53,7 @@ export const primitiveTheme = {
   dark: {
     static: {
       white: '#FFFFFF',
+      black: '#000000',
       primary: '#CC0FE0'
     },
     primary: {
@@ -101,6 +103,7 @@ export const primitiveTheme = {
   matrix: {
     static: {
       white: '#FFFFFF',
+      black: '#000000',
       primary: '#CC0FE0'
     },
     primary: {

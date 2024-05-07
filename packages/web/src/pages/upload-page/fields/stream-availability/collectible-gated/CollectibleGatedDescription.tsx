@@ -1,6 +1,11 @@
-import { Flex, IconExternalLink, Text } from '@audius/harmony'
+import {
+  Flex,
+  Hint,
+  IconExternalLink,
+  IconQuestionCircle,
+  Text
+} from '@audius/harmony'
 
-import { HelpCallout } from 'components/help-callout/HelpCallout'
 import { ExternalTextLink } from 'components/link'
 import { AUDIUS_GATED_CONTENT_BLOG_LINK } from 'utils/route'
 
@@ -28,7 +33,7 @@ export const CollectibleGatedDescription = (
     <Flex gap='xl' direction='column'>
       <Text variant='body'>{messages.collectibleGatedSubtitle}</Text>
       {!hasCollectibles && isUpload ? (
-        <HelpCallout content={helpContent} />
+        <Hint icon={IconQuestionCircle}>{helpContent}</Hint>
       ) : null}
       <ExternalTextLink to={AUDIUS_GATED_CONTENT_BLOG_LINK} textVariant='body'>
         {messages.learnMore} <IconExternalLink size='s' color='default' />

@@ -1,2 +1,3 @@
 export { Storage } from './Storage'
-export { StorageService } from './types'
+export type { StorageService } from './types'
+export { getDefaultStorageServiceConfig } from './getDefaultConfig'

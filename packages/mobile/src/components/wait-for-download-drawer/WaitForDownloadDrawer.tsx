@@ -102,11 +102,9 @@ export const WaitForDownloadDrawer = () => {
         </Flex>
         <Flex ph='l'>
           {downloadError ? (
-            <Hint icon={IconError}>
-              <Flex direction='column' gap='m'>
-                <Text variant='body' color='default'>
-                  {messages.somethingWrong}
-                </Text>
+            <Hint
+              icon={IconError}
+              actions={
                 <TextLink
                   variant='visible'
                   textVariant='body'
@@ -114,7 +112,9 @@ export const WaitForDownloadDrawer = () => {
                 >
                   {messages.tryAgain}
                 </TextLink>
-              </Flex>
+              }
+            >
+              {messages.somethingWrong}
             </Hint>
           ) : (
             <LoadingSpinner

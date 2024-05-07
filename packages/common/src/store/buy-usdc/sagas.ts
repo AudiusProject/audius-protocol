@@ -9,7 +9,7 @@ import { Name } from '~/models/Analytics'
 import { ErrorLevel } from '~/models/ErrorReporting'
 import { PurchaseVendor } from '~/models/PurchaseContent'
 import { Status } from '~/models/Status'
-import { StringUSDC } from '~/models/Wallet'
+import { BNUSDC, StringUSDC } from '~/models/Wallet'
 import {
   createPaymentRouterRouteTransaction,
   createRootWalletRecoveryTransaction,
@@ -18,6 +18,7 @@ import {
   getRecentBlockhash,
   getRootSolanaAccount,
   getTokenAccountInfo,
+  getUserbankAccountInfo,
   pollForTokenBalanceChange,
   relayTransaction
 } from '~/services/audius-backend/solana'
@@ -260,9 +261,9 @@ function* doBuyUSDC({
             amount: (desiredAmount / 100).toString(),
             destinationCurrency: 'usdc',
             destinationWallet: rootAccount.publicKey.toString(),
-            onrampCanceled,
-            onrampFailed,
-            onrampSucceeded
+            onrampCanceled: onrampCanceled(),
+            onrampFailed: onrampFailed({}),
+            onrampSucceeded: onrampSucceeded()
           })
         )
 
@@ -361,6 +362,13 @@ function* doBuyUSDC({
     }
 
     yield* put(buyUSDCFlowSucceeded())
+
+    // Update USDC balance in store
+    const account = yield* call(getUserbankAccountInfo, audiusBackendInstance, {
+      mint: 'usdc'
+    })
+    const balance = (account?.amount ?? new BN(0)) as BNUSDC
+    yield* put(setUSDCBalance({ amount: balance.toString() as StringUSDC }))
 
     // Record success
     yield* call(

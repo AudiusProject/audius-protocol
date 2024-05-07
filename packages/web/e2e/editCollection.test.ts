@@ -17,7 +17,7 @@ test('Change premium album price', async ({ page }) => {
   const newPrice = startingPrice === '1' ? '2' : '1'
 
   // Open Edit modal
-  await page.getByRole('button', { name: 'Edit collection' }).click()
+  await page.getByRole('button', { name: 'Edit Collection' }).click()
   // Open access & sale modal
   await page.getByRole('button', { name: /access & sale/i }).click()
 
@@ -51,7 +51,7 @@ test('Change premium album price', async ({ page }) => {
 test('Cannot edit public album access to premium/hidden', async ({ page }) => {
   await page.goto(PUBLIC_ALBUM)
   // Open Edit modal
-  await page.getByRole('button', { name: 'Edit collection' }).click()
+  await page.getByRole('button', { name: 'Edit Collection' }).click()
   // Open access & sale modal
   await page.getByRole('button', { name: /access & sale/i }).click()
   // Should have no options other than public

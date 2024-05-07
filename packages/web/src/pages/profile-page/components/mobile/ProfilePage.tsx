@@ -1,4 +1,4 @@
-import { useEffect, useContext, MouseEvent, ReactNode } from 'react'
+import { useEffect, useContext, ReactNode } from 'react'
 
 import {
   Status,
@@ -26,9 +26,9 @@ import {
 } from '@audius/harmony'
 import cn from 'classnames'
 
-import Card from 'components/card/mobile/Card'
 import { ClientOnly } from 'components/client-only/ClientOnly'
 import CollectiblesPage from 'components/collectibles/components/CollectiblesPage'
+import { CollectionCard } from 'components/collection'
 import { HeaderContext } from 'components/header/mobile/HeaderContextProvider'
 import CardLineup from 'components/lineup/CardLineup'
 import Lineup from 'components/lineup/Lineup'
@@ -41,7 +41,7 @@ import NavContext, {
 import TierExplainerDrawer from 'components/user-badges/TierExplainerDrawer'
 import useTabs, { TabHeader } from 'hooks/useTabs/useTabs'
 import { useSsrContext } from 'ssr/SsrContext'
-import { collectionPage, profilePage } from 'utils/route'
+import { profilePage } from 'utils/route'
 import { getUserPageSEOFields } from 'utils/seo'
 import { withNullGuard } from 'utils/withNullGuard'
 
@@ -113,11 +113,6 @@ export type ProfilePageProps = {
   getLineupProps: (lineup: any) => any
   loadMoreArtistTracks: (offset: number, limit: number) => void
   loadMoreUserFeed: (offset: number, limit: number) => void
-  formatCardSecondaryText: (
-    saves: number,
-    tracks: number,
-    isPrivate?: boolean
-  ) => string
   fetchFollowers: () => void
   onFollow: (id: ID) => void
   onConfirmUnfollow: (id: ID) => void
@@ -267,7 +262,6 @@ const ProfilePage = g(
     pauseArtistTrack,
     playUserFeedTrack,
     pauseUserFeedTrack,
-    formatCardSecondaryText,
     setFollowingUserId,
     setFollowersUserId,
     goToRoute,
@@ -390,69 +384,18 @@ const ProfilePage = g(
       )
     } else {
       const playlistCards = (playlists || []).map((playlist) => (
-        <Card
+        <CollectionCard
           key={playlist.playlist_id}
           id={playlist.playlist_id}
-          userId={playlist.playlist_owner_id}
-          imageSize={playlist._cover_art_sizes}
-          primaryText={playlist.playlist_name}
-          secondaryText={formatCardSecondaryText(
-            playlist.save_count,
-            playlist.playlist_contents.track_ids.length,
-            playlist.is_private
-          )}
-          href={collectionPage(
-            profile.handle,
-            playlist.playlist_name,
-            playlist.playlist_id,
-            playlist.permalink,
-            playlist.is_album
-          )}
-          onClick={(e: MouseEvent) => {
-            e.preventDefault()
-            goToRoute(
-              collectionPage(
-                profile.handle,
-                playlist.playlist_name,
-                playlist.playlist_id,
-                playlist.permalink,
-                playlist.is_album
-              )
-            )
-          }}
+          size='xs'
         />
       ))
       if (isArtist) {
         const albumCards = (albums || []).map((album) => (
-          <Card
+          <CollectionCard
             key={album.playlist_id}
             id={album.playlist_id}
-            userId={album.playlist_owner_id}
-            imageSize={album._cover_art_sizes}
-            primaryText={album.playlist_name}
-            secondaryText={formatCardSecondaryText(
-              album.save_count,
-              album.playlist_contents.track_ids.length
-            )}
-            href={collectionPage(
-              profile.handle,
-              album.playlist_name,
-              album.playlist_id,
-              album.permalink,
-              true
-            )}
-            onClick={(e: MouseEvent) => {
-              e.preventDefault()
-              goToRoute(
-                collectionPage(
-                  profile.handle,
-                  album.playlist_name,
-                  album.playlist_id,
-                  album.permalink,
-                  true
-                )
-              )
-            }}
+            size='xs'
           />
         ))
 

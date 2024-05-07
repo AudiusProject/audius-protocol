@@ -18,6 +18,7 @@ const assetPaths = new Set(['src', 'assets', 'scripts', 'fonts', 'favicons'])
 const invalidPaths = new Set(['undefined'])
 
 const nonSsrPaths = [
+  // TODO: Need to update the check to route the profile subroutes to the profile page
   PROFILE_PAGE_TRACKS,
   PROFILE_PAGE_ALBUMS,
   PROFILE_PAGE_PLAYLISTS,
@@ -76,6 +77,6 @@ export const checkIsCrawler = (userAgent: string) => {
     return false
   }
   const crawlerTest =
-    /forcessr|ahrefs(bot|siteaudit)|altavista|baiduspider|bingbot|duckduckbot|googlebot|msnbot|nextgensearchbot|yahoo|yandex/i
+    /forcessr|ahrefs(bot|siteaudit)|altavista|baiduspider|bingbot|duckduckbot|googlebot|google-inspectiontool|msnbot|nextgensearchbot|yahoo|yandex/i
   return crawlerTest.test(userAgent)
 }

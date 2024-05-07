@@ -34,7 +34,7 @@ export const CollectionsTableOverflowMenuButton = (
     includeVisitArtistPage: false,
     includeShare: true,
     includeEdit: true,
-    includeSave: false,
+    includeFavorite: false,
     isPublic: !isPrivate,
     isOwner: currentUserId === playlistOwnerId,
     permalink
@@ -54,7 +54,7 @@ export const CollectionsTableOverflowMenuButton = (
             }}
           >
             <Flex ref={ref}>
-              <IconKebabHorizontal color='subdued' size='xs' />
+              <IconKebabHorizontal color='subdued' size='m' />
             </Flex>
           </Flex>
         )}

@@ -1,6 +1,9 @@
 import { memo, MouseEvent } from 'react'
 
-import { useGatedContentAccess } from '@audius/common/hooks'
+import {
+  useGatedContentAccess,
+  useIsGatedContentPlaylistAddable
+} from '@audius/common/hooks'
 import {
   ShareSource,
   RepostSource,
@@ -108,7 +111,8 @@ const ConnectedTrackTile = ({
   variant,
   containerClassName,
   releaseDate,
-  isFeed = false
+  isFeed = false,
+  source
 }: ConnectedTrackTileProps) => {
   const trackWithFallback = getTrackWithFallback(track)
   const {
@@ -151,6 +155,7 @@ const ConnectedTrackTile = ({
   )
   const { isFetchingNFTAccess, hasStreamAccess } =
     useGatedContentAccess(trackWithFallback)
+  const isPlaylistAddable = useIsGatedContentPlaylistAddable(track)
   const loading = isLoading || isFetchingNFTAccess
 
   const toggleSave = (trackId: ID) => {
@@ -204,7 +209,7 @@ const ConnectedTrackTile = ({
         : null
     const addToAlbumAction =
       isEditAlbumsEnabled && isOwner ? OverflowAction.ADD_TO_ALBUM : null
-    const addToPlaylistAction = !isStreamGated
+    const addToPlaylistAction = isPlaylistAddable
       ? OverflowAction.ADD_TO_PLAYLIST
       : null
     const overflowActions = [
@@ -283,6 +288,7 @@ const ConnectedTrackTile = ({
       showRankIcon={showRankIcon}
       variant={variant}
       releaseDate={releaseDate}
+      source={source}
     />
   )
 }

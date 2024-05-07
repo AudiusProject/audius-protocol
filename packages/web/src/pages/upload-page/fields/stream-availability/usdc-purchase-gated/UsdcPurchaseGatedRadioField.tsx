@@ -34,6 +34,7 @@ type UsdcPurchaseGatedRadioFieldProps = {
   isAlbum?: boolean
   initialStreamConditions?: AccessConditions
   isInitiallyUnlisted?: boolean
+  isPublishDisabled?: boolean
 }
 
 export const UsdcPurchaseGatedRadioField = (
@@ -44,7 +45,8 @@ export const UsdcPurchaseGatedRadioField = (
     isUpload,
     isAlbum,
     initialStreamConditions,
-    isInitiallyUnlisted
+    isInitiallyUnlisted,
+    isPublishDisabled
   } = props
 
   const handleClickWaitListLink = useCallback(() => {
@@ -60,7 +62,8 @@ export const UsdcPurchaseGatedRadioField = (
     isRemix,
     isAlbum,
     initialStreamConditions: initialStreamConditions ?? null,
-    isInitiallyUnlisted: !!isInitiallyUnlisted
+    isInitiallyUnlisted: !!isInitiallyUnlisted,
+    isPublishDisabled
   })
   const disabled = disableUsdcGate || !isUsdcUploadEnabled
 
@@ -86,7 +89,7 @@ export const UsdcPurchaseGatedRadioField = (
       description={messages.usdcPurchaseSubtitle}
       value={StreamTrackAvailabilityType.USDC_PURCHASE}
       disabled={disabled}
-      hintIcon={<IconStars />}
+      hintIcon={IconStars}
       hintContent={!isUsdcUploadEnabled ? helpContent : undefined}
       tag={!isUsdcUploadEnabled ? messages.comingSoon : undefined}
       checkedContent={

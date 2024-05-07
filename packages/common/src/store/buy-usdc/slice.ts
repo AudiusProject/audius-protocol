@@ -61,7 +61,7 @@ const slice = createSlice({
     },
     onrampFailed: (
       _state,
-      _action: PayloadAction<{ error: StripeSessionCreationError }>
+      _action: PayloadAction<{ error?: StripeSessionCreationError }>
     ) => {
       // handled by saga
     },

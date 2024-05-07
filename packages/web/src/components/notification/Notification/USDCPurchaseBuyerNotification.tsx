@@ -10,6 +10,7 @@ import {
 } from '@audius/common/store'
 import { Nullable, getEntityTitle } from '@audius/common/utils'
 import { push } from 'connected-react-router'
+import { lowerCase } from 'lodash'
 import { useDispatch } from 'react-redux'
 
 import { make } from 'common/store/analytics/actions'
@@ -38,7 +39,9 @@ const messages = {
     sellerUsername: string,
     type: Entity.Track | Entity.Album
   ) =>
-    `I bought the ${type} ${title} by ${sellerUsername} on @Audius! #AudiusPremium`
+    `I bought the ${lowerCase(
+      type
+    )} ${title} by ${sellerUsername} on @Audius! #AudiusPremium`
 }
 
 type USDCPurchaseBuyerNotificationProps = {

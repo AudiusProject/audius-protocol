@@ -36,3 +36,19 @@
 .tableRow.lockedRow {
   background-color: var(--harmony-white);
 }
+
+.typeIcon {
+  position: absolute;
+}
+
+.tableRow:hover .typeIcon {
+  opacity: 0;
+}
+
+.tableRow:hover .overflowMenu {
+  opacity: 1;
+}
+
+.tableRow .overflowMenu {
+  opacity: 0;
+}

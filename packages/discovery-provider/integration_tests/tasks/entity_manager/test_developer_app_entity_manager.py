@@ -670,3 +670,126 @@ def test_index_app(app, mocker):
                 "is_personal_access", False
             )
             assert res.blocknumber == 4
+
+
+@freeze_time("2023-06-08 19:20:00")
+def test_developer_app_update(app, mocker):
+    with app.app_context():
+        db = get_db()
+        web3 = Web3()
+        update_task = UpdateTask(web3, None)
+
+    # Create one app first
+    tx_receipts = {
+        "CreateAppTx1": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 0,
+                        "_entityType": EntityType.DEVELOPER_APP,
+                        "_userId": first_set_new_apps_data[1]["user_id"],
+                        "_action": Action.CREATE,
+                        "_metadata": f"""{{
+                            "name": "{first_set_new_apps_data[1]["name"]}",
+                            "description": "{first_set_new_apps_data[1]["description"]}",
+                            "image_url": "{first_set_new_apps_data[1]["image_url"]}",
+                            "app_signature": {{"signature": "{first_set_new_apps_data[1]["app_signature"]["signature"]}",
+                            "message": "{first_set_new_apps_data[1]["app_signature"]["message"]}"}},
+                            "is_personal_access": {'true' if first_set_new_apps_data[1]["is_personal_access"] else 'false' }
+                        }}""",
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
+    }
+
+    entity_manager_txs = [
+        AttributeDict({"transactionHash": update_task.web3.to_bytes(text=tx_receipt)})
+        for tx_receipt in tx_receipts
+    ]
+
+    def get_events_side_effect(_, tx_receipt: TxReceipt):
+        return tx_receipts[tx_receipt["transactionHash"].decode("utf-8")]
+
+    mocker.patch(
+        "src.tasks.entity_manager.entity_manager.get_entity_manager_events_tx",
+        side_effect=get_events_side_effect,
+        autospec=True,
+    )
+
+    entities = {
+        "users": [
+            {"user_id": 1, "wallet": f"user{1}wallet"},
+            # Unused second user to trigger more blocks to exist
+            {"user_id": 2, "wallet": f"user{2}wallet"},
+        ]
+    }
+    populate_mock_db(db, entities)
+
+    with db.scoped_session() as session:
+        # index transactions
+        entity_manager_update(
+            update_task,
+            session,
+            entity_manager_txs,
+            block_number=0,
+            block_timestamp=1000000000,
+            block_hash=hex(0),
+        )
+
+        # validate db records
+        all_apps: List[DeveloperApp] = session.query(DeveloperApp).all()
+        assert len(all_apps) == 1
+        app = all_apps[0]
+        assert app.address == first_set_new_apps_data[1]["address"]
+        assert app.name == first_set_new_apps_data[1]["name"]
+        assert not app.description
+        assert app.image_url == first_set_new_apps_data[1]["image_url"]
+
+    # Update the created app
+    tx_receipts = {
+        "UpdateAppTx1": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 0,
+                        "_entityType": EntityType.DEVELOPER_APP,
+                        "_userId": first_set_new_apps_data[1]["user_id"],
+                        "_metadata": f"""{{
+                            "address": "{first_set_new_apps_data[1]["address"]}",
+                            "name": "Updated Name",
+                            "description": "Updated Desc",
+                            "image_url": "https://example.com"
+                        }}""",
+                        "_action": Action.UPDATE,
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ]
+    }
+
+    entity_manager_txs = [
+        AttributeDict({"transactionHash": update_task.web3.to_bytes(text=tx_receipt)})
+        for tx_receipt in tx_receipts
+    ]
+
+    with db.scoped_session() as session:
+        # index transactions
+        timestamp = 1000000001
+        entity_manager_update(
+            update_task,
+            session,
+            entity_manager_txs,
+            block_number=1,
+            block_timestamp=timestamp,
+            block_hash=hex(0),
+        )
+        # validate db records
+        all_apps: List[DeveloperApp] = session.query(DeveloperApp).all()
+        app = all_apps[0]
+        assert len(all_apps) == 1
+        assert app.name == "Updated Name"
+        assert app.description == "Updated Desc"
+        assert app.image_url == "https://example.com"

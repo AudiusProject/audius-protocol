@@ -5,18 +5,20 @@ import {
   IconButton,
   IconEmbed,
   IconKebabHorizontal,
+  IconPencil,
   IconTrash,
-  IconVisibilityPublic,
   PopupMenu,
   PopupMenuItem
 } from '@audius/harmony'
+
+import PreloadImage from 'components/preload-image/PreloadImage'
 
 import styles from './DeveloperAppListItem.module.css'
 import { CreateAppPageProps, CreateAppsPages } from './types'
 
 const messages = {
   appActionsLabel: 'developer app actions',
-  viewDetails: 'View Details',
+  editDetails: 'Edit Details',
   deleteApp: 'Delete App'
 }
 
@@ -29,8 +31,8 @@ export const DeveloperAppListItem = (props: DeveloperAppListItemProps) => {
   const { app, setPage } = props
   const { name, imageUrl } = app
 
-  const handleViewDetails = useCallback(() => {
-    setPage(CreateAppsPages.APP_DETAILS, app)
+  const handleEditDetails = useCallback(() => {
+    setPage(CreateAppsPages.EDIT_APP, app)
   }, [setPage, app])
 
   const handleDeleteApp = useCallback(() => {
@@ -42,9 +44,9 @@ export const DeveloperAppListItem = (props: DeveloperAppListItemProps) => {
   const menuItems: PopupMenuItem[] = useMemo(
     () => [
       {
-        icon: <IconVisibilityPublic />,
-        text: messages.viewDetails,
-        onClick: handleViewDetails
+        icon: <IconPencil />,
+        text: messages.editDetails,
+        onClick: handleEditDetails
       },
       {
         icon: <IconTrash />,
@@ -52,14 +54,14 @@ export const DeveloperAppListItem = (props: DeveloperAppListItemProps) => {
         onClick: handleDeleteApp
       }
     ],
-    [handleViewDetails, handleDeleteApp]
+    [handleEditDetails, handleDeleteApp]
   )
 
   return (
     <li className={styles.listItem}>
       <span className={styles.listItemImage}>
         {imageUrl ? (
-          <img src={imageUrl} />
+          <PreloadImage src={imageUrl} />
         ) : (
           <IconEmbed color='subdued' size='2xl' />
         )}

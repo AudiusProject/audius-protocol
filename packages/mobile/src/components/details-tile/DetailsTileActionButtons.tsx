@@ -176,13 +176,8 @@ export const DetailsTileActionButtons = ({
   const isCollectionOwner = isCollection && isOwner
 
   return (
-    <Flex
-      direction='row'
-      justifyContent='center'
-      gap='xl'
-      borderBottom='strong'
-      pb='l'
-    >
+    <Flex direction='row' justifyContent='center' gap='xl'>
+      {hideShare ? null : shareButton}
       {isCollectionOwner && !ddexApp
         ? !isAlbum || isEditAlbumsEnabled
           ? editButton
@@ -191,7 +186,6 @@ export const DetailsTileActionButtons = ({
         ? null
         : repostButton}
       {isCollectionOwner || hideFavorite ? null : favoriteButton}
-      {hideShare ? null : shareButton}
       {isCollectionOwner && !isPublished && (!isAlbum || isEditAlbumsEnabled)
         ? publishButton
         : null}

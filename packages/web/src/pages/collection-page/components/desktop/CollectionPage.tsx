@@ -1,4 +1,4 @@
-import { ChangeEvent, MouseEventHandler, useMemo } from 'react'
+import { ChangeEvent, useMemo } from 'react'
 
 import {
   Variant,
@@ -26,7 +26,7 @@ import {
 import { CollectionHeader } from 'components/collection/desktop/CollectionHeader'
 import { Divider } from 'components/divider'
 import Page from 'components/page/Page'
-import { SuggestedCollectionTracks } from 'components/suggested-tracks'
+import { SuggestedTracks } from 'components/suggested-tracks'
 import { Tile } from 'components/tile'
 import { TracksTable, TracksTableColumn } from 'components/tracks-table'
 import { useFlag } from 'hooks/useRemoteConfig'
@@ -70,6 +70,7 @@ export type CollectionPageProps = {
   structuredData?: Object
   playlistId: ID
   playing: boolean
+  previewing: boolean
   getPlayingUid: () => string | null
   type: CollectionsPageType
   collection: {
@@ -84,7 +85,8 @@ export type CollectionPageProps = {
   userId?: ID | null
   userPlaylists?: any
   isQueued: () => boolean
-  onPlay: MouseEventHandler<HTMLButtonElement>
+  onPlay: () => void
+  onPreview: () => void
   onClickRow: (record: CollectionPageTrackRecord, index: number) => void
   onClickSave?: (record: CollectionPageTrackRecord) => void
   allowReordering: boolean
@@ -114,6 +116,7 @@ const CollectionPage = ({
   playlistId,
   allowReordering,
   playing,
+  previewing,
   type,
   collection,
   tracks,
@@ -122,6 +125,7 @@ const CollectionPage = ({
   isQueued,
   onFilterChange,
   onPlay,
+  onPreview,
   onClickRow,
   onClickSave,
   onClickRepostTrack,
@@ -145,6 +149,7 @@ const CollectionPage = ({
       : [[], -1]
   const collectionLoading = status === Status.LOADING
   const queuedAndPlaying = playing && isQueued()
+  const queuedAndPreviewing = previewing && isQueued()
   const tracksLoading = tracks.status === Status.LOADING
 
   const coverArtSizes =
@@ -236,9 +241,11 @@ const CollectionPage = ({
       reposts={playlistRepostCount}
       saves={playlistSaveCount}
       playing={queuedAndPlaying}
+      previewing={queuedAndPreviewing}
       // Actions
       onFilterChange={onFilterChange}
       onPlay={onPlay}
+      onPreview={onPreview}
       onClickReposts={onClickReposts}
       onClickFavorites={onClickFavorites}
       // Smart collection
@@ -274,18 +281,18 @@ const CollectionPage = ({
       return [
         'playButton',
         'trackName',
-        'artistName',
         isAlbum ? 'date' : 'addedDate',
         'length',
+        'reposts',
         'overflowActions'
       ]
     return [
       'playButton',
       'trackName',
-      'artistName',
       isAlbum ? 'date' : 'addedDate',
       'length',
       'plays',
+      'reposts',
       'overflowActions'
     ]
   }, [areAllTracksPremium, isAlbum, isNftPlaylist])
@@ -352,16 +359,21 @@ const CollectionPage = ({
                   isAlbum ? messages.type.album : messages.type.playlist
                 }`}
                 isAlbumPage={isAlbum}
+                isAlbumPremium={
+                  !!metadata && 'is_stream_gated' in metadata
+                    ? metadata?.is_stream_gated
+                    : false
+                }
               />
             </ClientOnly>
           </div>
         )}
       </Tile>
       <ClientOnly>
-        {isOwner && (!isAlbum || isEditAlbumsEnabled) && !isNftPlaylist ? (
+        {isOwner && !isAlbum && !isNftPlaylist ? (
           <>
             <Divider variant='default' className={styles.tileDivider} />
-            <SuggestedCollectionTracks collectionId={playlistId} />
+            <SuggestedTracks collectionId={playlistId} />
           </>
         ) : null}
       </ClientOnly>

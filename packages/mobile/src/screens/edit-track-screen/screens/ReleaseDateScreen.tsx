@@ -10,10 +10,9 @@ import { Dimensions, View } from 'react-native'
 import DateTimePickerModal from 'react-native-modal-datetime-picker'
 import { useDispatch } from 'react-redux'
 
-import { IconCalendarMonth, Text } from '@audius/harmony-native'
+import { Hint, IconCalendarMonth, Text } from '@audius/harmony-native'
 import { Button } from 'app/components/core'
 import { TextField } from 'app/components/fields'
-import { HelpCallout } from 'app/components/help-callout/HelpCallout'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles } from 'app/styles'
 import { useThemeColors, useThemeVariant } from 'app/utils/theme'
@@ -210,14 +209,11 @@ export const ScheduledReleaseRadioField = (props) => {
             isDarkModeEnabled={theme !== Theme.DEFAULT}
           />
           {selected && releaseDateValue ? (
-            <HelpCallout
-              style={styles.releaseDateInput}
-              content={
-                moment(releaseDateValue).isAfter(moment())
-                  ? messages.futureReleaseHint(dayjs().format('z'))
-                  : messages.pastReleaseHint
-              }
-            />
+            <Hint mt='l'>
+              {moment(releaseDateValue).isAfter(moment())
+                ? messages.futureReleaseHint(dayjs().format('z'))
+                : messages.pastReleaseHint}
+            </Hint>
           ) : null}
         </View>
       </View>
@@ -323,7 +319,9 @@ export const ReleaseDateScreen = (props) => {
       icon={IconCalendarMonth}
       header={
         <View style={styles.description}>
-          <Text size='l'>{messages.description}</Text>
+          <Text variant='body' size='l'>
+            {messages.description}
+          </Text>
         </View>
       }
       value={releaseDateType}

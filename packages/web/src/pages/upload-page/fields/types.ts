@@ -43,6 +43,7 @@ export const DOWNLOAD_PRICE_HUMANIZED = 'download_price_humanized'
 export const STEMS = 'stems'
 export const SPECIAL_ACCESS_TYPE = 'special_access_type'
 export const IS_UNLISTED = 'is_unlisted'
+export const IS_PRIVATE = 'is_private'
 export const FIELD_VISIBILITY = 'field_visibility'
 export const IS_SCHEDULED_RELEASE = 'is_scheduled_release'
 // whether Access & Sale or Stems & Downloads last set the stream / download conditions

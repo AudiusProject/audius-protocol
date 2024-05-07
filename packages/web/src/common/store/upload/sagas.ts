@@ -123,7 +123,8 @@ function* combineMetadata(
   const albumTrackPrice =
     collectionMetadata.stream_conditions?.usdc_purchase?.albumTrackPrice
   if (albumTrackPrice !== undefined && albumTrackPrice > 0) {
-    metadata.is_download_gated = !!collectionMetadata.is_downloadable
+    // is_download_gated must always be set to true for all premium tracks
+    metadata.is_download_gated = true
     metadata.download_conditions = {
       usdc_purchase: {
         price: albumTrackPrice,
@@ -703,7 +704,7 @@ export function* handleUploads({
 
   const publishedTrackIds = published
     .filter((t) => t.stemIndex === null)
-    .sort((a, b) => b.trackIndex - a.trackIndex)
+    .sort((a, b) => a.trackIndex - b.trackIndex)
     .map((p) => p.trackId)
 
   // If no tracks uploaded, we failed!
@@ -760,7 +761,6 @@ export function* uploadCollection(
 
   // Propagate the collection metadata to the tracks
   for (const track of tracks) {
-    combineMetadata(track.metadata, collectionMetadata)
     track.metadata = yield* call(
       combineMetadata,
       track.metadata,
