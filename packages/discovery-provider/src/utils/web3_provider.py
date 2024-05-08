@@ -7,7 +7,6 @@ import math
 import os
 from typing import Optional
 
-
 import requests
 from web3 import HTTPProvider, Web3
 from web3.middleware import geth_poa_middleware
@@ -18,6 +17,8 @@ from src.utils.multi_provider import MultiProvider
 logger = logging.getLogger(__name__)
 
 web3: Optional[Web3] = None
+
+GATEWAY_FALLBACK_BLOCKDIFF = 10000
 
 
 def get_web3(web3endpoint=None):
@@ -35,9 +36,11 @@ def get_web3(web3endpoint=None):
         gateway_web3 = Web3(HTTPProvider(os.getenv("audius_web3_host")))
         # attempt local rpc, check if healthy
         try:
-            block_diff = math.abs(local_web3.eth.get_block_number() - gateway_web3.eth.get_block_number())
+            block_diff = math.abs(
+                local_web3.eth.get_block_number() - gateway_web3.eth.get_block_number()
+            )
             resp = requests.get(local_rpc + "/health")
-            if resp.status_code == 200 && block_diff < 10000
+            if resp.status_code == 200 and block_diff < GATEWAY_FALLBACK_BLOCKDIFF:
                 web3 = local_web3
                 logger.info("web3_provider.py | using local RPC")
             else:
