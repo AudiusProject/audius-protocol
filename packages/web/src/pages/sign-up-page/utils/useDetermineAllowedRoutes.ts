@@ -7,8 +7,8 @@ import {
   getSignOn
 } from 'common/store/pages/signon/selectors'
 import { EditingStatus } from 'common/store/pages/signon/types'
-import { FEED_PAGE, SignUpPath } from 'utils/route'
 import { env } from 'services/env'
+import { FEED_PAGE, SignUpPath } from 'utils/route'
 
 const { getAccountUser } = accountSelectors
 
