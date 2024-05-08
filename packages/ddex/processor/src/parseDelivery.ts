@@ -516,6 +516,20 @@ function parseReleaseXml(source: string, $: cheerio.CheerioAPI) {
     }
   }
 
+  // surpress any track releases that are part of main release
+  const mainReleaseRefs = new Set(
+    mainRelease?.soundRecordings.map((s) => s.ref)
+  )
+  for (const release of releases) {
+    if (release.isMainRelease) continue
+    const isSubset = release.soundRecordings.every((s) =>
+      mainReleaseRefs.has(s.ref)
+    )
+    if (isSubset) {
+      release.problems.push('DuplicateRelease')
+    }
+  }
+
   return releases
 }
 
