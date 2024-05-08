@@ -8,8 +8,8 @@ import { defineConfig, devices } from '@playwright/test'
  */
 // require('dotenv').config();
 
-// Set this to false to avoid seeding data every time locally, which
-// will make tests run faster
+// Set this to false to avoid seeding data every time locally if
+// running against local stack
 const RESEED_EACH_RUN = true
 const authFileExists = fs.existsSync('playwright/.auth/user.json')
 const runAgainstLocalStack = process.env.RUN_AGAINST_LOCAL_STACK === 'true'
@@ -119,7 +119,9 @@ export default defineConfig({
 
   /* Run your local dev server before starting the tests */
   webServer: {
-    command: 'npm run preview:stage',
+    command: runAgainstLocalStack
+      ? 'npm run preview:dev'
+      : 'npm run preview:stage',
     url: 'http://localhost:4173',
     reuseExistingServer: !process.env.CI,
     stdout: 'pipe',

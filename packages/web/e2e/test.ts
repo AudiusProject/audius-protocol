@@ -2,7 +2,6 @@ import { Page, expect, test as base } from '@playwright/test'
 import { getUser } from './data'
 
 const SSR_HYDRATE_TIMEOUT = 60 * 1000
-const runAgainstLocalStack = process.env.RUN_AGAINST_LOCAL_STACK === 'true'
 
 /**
  * The initial page load is slow because we need to wait for the
@@ -11,17 +10,6 @@ const runAgainstLocalStack = process.env.RUN_AGAINST_LOCAL_STACK === 'true'
  */
 export const test = base.extend<{}>({
   page: async ({ page, context }, use) => {
-    // Force app to use dev mode so we test against
-    // the local audius-compose stack
-    if (runAgainstLocalStack) {
-      await context.addInitScript(() => {
-        if (!localStorage.getItem('FORCE_DEV')) {
-          localStorage.clear()
-          localStorage.setItem('FORCE_DEV', 'true')
-        }
-      })
-    }
-
     const baseGoTo = page.goto.bind(page)
     page.goto = async (
       url: Parameters<Page['goto']>[0],
