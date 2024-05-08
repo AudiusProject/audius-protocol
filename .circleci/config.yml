@@ -468,7 +468,60 @@ workflows:
           base-revision: main
           config-path: ../workspace/.circleci/continue_config.yml
           mapping: |
+            comms/.* run-discovery-workflow true
+            mediorum/.* run-creator-workflow true
+            packages/identity-service/.* run-identity-workflow true
+            packages/identity-service/.* run-integration-workflow true
+            packages/ddex/webapp/.* run-ddex-webapp-workflow true
+            packages/ddex/webapp/.* run-ddex-e2e-workflow true
+            packages/ddex/ingester/.* run-ddex-e2e-workflow true
+            packages/ddex/publisher/.* run-ddex-publisher-workflow true
+            eth-contracts/.* run-eth-contracts-workflow true
+            monitoring/healthz/.* run-healthz-workflow true
+            protocol-dashboard/.* run-protocol-dashboard-workflow true
+            contracts/.* run-contracts-workflow true
+            .circleci/.* run-discovery-workflow true
+            .circleci/.* run-creator-workflow true
+            .circleci/.* run-identity-workflow true
+            .circleci/.* run-eth-contracts-workflow true
+            .circleci/.* run-protocol-dashboard-workflow true
+            .circleci/.* run-ddex-webapp-workflow true
+            .circleci/.* run-ddex-e2e-workflow true
+            .circleci/.* run-ddex-publisher-workflow true
+            .circleci/.* run-healthz-workflow true
+            .circleci/.* run-contracts-workflow true
+            .circleci/.* run-sdk-workflow true
+            .circleci/.* run-web-workflow true
+            .circleci/.* run-mobile-workflow true
+            .circleci/.* run-harmony-workflow true
+            .circleci/.* run-embed-workflow true
+            package-lock.json run-sdk-workflow true
+            package-lock.json run-harmony-workflow true
+            .* run-release-workflow false
             .* run-integration-workflow true
+            packages/discovery-provider/.* run-discovery-workflow true
+            packages/web/.* run-web-workflow true
+            packages/mobile/.* run-mobile-workflow true
+            packages/embed/.* run-embed-workflow true
+            packages/common/.* run-common-workflow true
+            packages/common/.* run-web-workflow true
+            packages/common/.* run-mobile-workflow true
+            packages/harmony/.* run-harmony-workflow true
+            packages/harmony/.* run-web-workflow true
+            packages/eslint-config-audius/.* run-web-workflow true
+            packages/eslint-config-audius/.* run-mobile-workflow true
+            packages/eslint-config-audius/.* run-harmony-workflow true
+            packages/libs/.* run-creator-workflow true
+            packages/libs/.* run-identity-workflow true
+            packages/libs/.* run-protocol-dashboard-workflow true
+            packages/libs/.* run-ddex-webapp-workflow true
+            packages/libs/.* run-ddex-publisher-workflow true
+            packages/libs/.* run-sdk-workflow true
+            packages/libs/.* run-web-workflow true
+            packages/libs/.* run-mobile-workflow true
+            packages/libs/.* run-embed-workflow true
+            packages/libs/.* run-create-audius-app-workflow true
+            packages/create-audius-app/.* run-create-audius-app-workflow true
           requires:
             - generate-config
             - init

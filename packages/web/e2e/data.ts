@@ -3,11 +3,8 @@ import path from 'path'
 
 const runAgainstLocalStack = process.env.RUN_AGAINST_LOCAL_STACK === 'true'
 
-const dataFilesPath = (filename: string) =>
-  path.resolve('../web/e2e/data/', filename)
-
 const getData = (filename: string) =>
-  JSON.parse(readFileSync(dataFilesPath(filename), 'utf8'))
+  JSON.parse(readFileSync(path.resolve('../web/e2e/data/', filename), 'utf8'))
 const user = () => getData('user.json')
 const track = () => getData('track.json')
 const remix = () => getData('remix.json')
