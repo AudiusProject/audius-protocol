@@ -144,7 +144,7 @@ export const ChallengeRewards = () => {
   const { isEnabled: isAudioMatchingChallengesEnabled } = useFeatureFlag(
     FeatureFlags.AUDIO_MATCHING_CHALLENGES
   )
-  const { cooldownChallenges, cooldownAmount, claimableAmount } =
+  const { cooldownChallenges, cooldownAmount, claimableAmount, isEmpty } =
     useChallengeCooldownSchedule({ multiple: true })
   const { isEnabled: isRewardsCooldownEnabled } = useFeatureFlag(
     FeatureFlags.REWARDS_COOLDOWN
@@ -220,7 +220,7 @@ export const ChallengeRewards = () => {
         <LoadingSpinner style={styles.loading} />
       ) : (
         <Flex gap='2xl'>
-          {isRewardsCooldownEnabled ? (
+          {isRewardsCooldownEnabled && !isEmpty ? (
             <Paper shadow='flat' border='strong' p='l' gap='m'>
               <Flex direction='row' justifyContent='flex-start' gap='s'>
                 {claimableAmount > 0 ? (
@@ -230,11 +230,13 @@ export const ChallengeRewards = () => {
                   {messages.totalReadyToClaim}
                 </Text>
               </Flex>
-              <View style={styles.pillContainer}>
-                <Text style={[styles.pillMessage, styles.readyToClaimPill]}>
-                  {cooldownAmount} {messages.pending}
-                </Text>
-              </View>
+              {cooldownAmount > 0 ? (
+                <View style={styles.pillContainer}>
+                  <Text style={[styles.pillMessage, styles.readyToClaimPill]}>
+                    {cooldownAmount} {messages.pending}
+                  </Text>
+                </View>
+              ) : null}
               <Text size='s' variant='body'>
                 {claimableAmount > 0
                   ? `${claimableAmount} ${messages.available} ${messages.now}`
