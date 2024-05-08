@@ -18,6 +18,7 @@ import {
 import { prepareAlbumMetadata, prepareTrackMetadatas } from './publishRelease'
 import { readAssetWithCaching } from './s3poller'
 import { parseBool } from './util'
+import { startUsersPoller } from './usersPoller'
 
 const { NODE_ENV, DDEX_KEY, DDEX_URL, COOKIE_SECRET } = process.env
 const COOKIE_NAME = 'audiusUser'
@@ -43,7 +44,7 @@ app.get('/', async (c) => {
           : ''}
         ${me
           ? html`
-              <h4>Welcome back ${me.name}</h4>
+              <h4>Welcome back @${me.handle}</h4>
               <a href="/auth/logout" role="button">log out</a>
             `
           : html` <a role="button" href="/auth">login</a> `}
@@ -547,4 +548,6 @@ export function startServer() {
     fetch: app.fetch,
     port,
   })
+
+  startUsersPoller().catch(console.error)
 }
