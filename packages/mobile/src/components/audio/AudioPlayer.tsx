@@ -37,7 +37,6 @@ import TrackPlayer, {
   Capability,
   Event,
   State,
-  usePlaybackState,
   useTrackPlayerEvents,
   RepeatMode as TrackPlayerRepeatMode,
   TrackType,
@@ -167,7 +166,6 @@ export const AudioPlayer = () => {
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
   )
-  const playbackState = usePlaybackState()
   const track = useSelector(getCurrentTrack)
   const playing = useSelector(getPlaying)
   const seek = useSelector(getSeek)
