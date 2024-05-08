@@ -95,6 +95,7 @@
     "@react-spring/web": "9.7.2",
     "@reduxjs/toolkit": "1.6.1",
     "@sentry/browser": "7.65.0",
+    "@sentry/cli": "2.31.2",
     "@sentry/integrations": "7.65.0",
     "@solana/spl-token": "0.3.8",
     "@solana/web3.js": "1.78.4",
