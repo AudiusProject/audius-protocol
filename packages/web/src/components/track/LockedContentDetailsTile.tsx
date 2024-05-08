@@ -39,12 +39,14 @@ export type LockedContentDetailsTileProps = {
   metadata: PurchaseableContentMetadata | Track | Collection
   owner: UserMetadata
   showLabel?: boolean
+  disabled?: boolean
 }
 
 export const LockedContentDetailsTile = ({
   metadata,
   owner,
-  showLabel = true
+  showLabel = true,
+  disabled = false
 }: LockedContentDetailsTileProps) => {
   const { stream_conditions: streamConditions } = metadata
   const isAlbum = 'playlist_id' in metadata
@@ -140,10 +142,15 @@ export const LockedContentDetailsTile = ({
         ) : null}
         <Flex direction='column' gap='s'>
           <Text variant='heading'>{title}</Text>
-          <Flex gap='xs'>
-            <Text variant='title'>{messages.by}</Text>
-            <UserLink userId={owner.user_id} />
-          </Flex>
+          <Text variant='title'>
+            <Text color='subdued'>{messages.by}</Text>{' '}
+            <UserLink
+              textVariant='title'
+              strength='weak'
+              userId={owner.user_id}
+              disabled={disabled}
+            />
+          </Text>
         </Flex>
       </Flex>
     </Flex>

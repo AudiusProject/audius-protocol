@@ -9,11 +9,11 @@ import { DashboardWalletUsersApi } from './api/dashboard-wallet-users/DashboardW
 import { DeveloperAppsApi } from './api/developer-apps/DeveloperAppsApi'
 import { Configuration, TipsApi } from './api/generated/default'
 import {
+  TracksApi as TracksApiFull,
   Configuration as ConfigurationFull,
   PlaylistsApi as PlaylistsApiFull,
   ReactionsApi as ReactionsApiFull,
   SearchApi as SearchApiFull,
-  TracksApi as TracksApiFull,
   UsersApi as UsersApiFull,
   TipsApi as TipsApiFull,
   TransactionsApi as TransactionsApiFull
@@ -22,29 +22,47 @@ import { GrantsApi } from './api/grants/GrantsApi'
 import { PlaylistsApi } from './api/playlists/PlaylistsApi'
 import { TracksApi } from './api/tracks/TracksApi'
 import { UsersApi } from './api/users/UsersApi'
+import { developmentConfig } from './config/development'
+import { productionConfig } from './config/production'
+import { stagingConfig } from './config/staging'
 import {
   addAppNameMiddleware,
   addRequestSignatureMiddleware
 } from './middleware'
 import { OAuth } from './oauth'
 import {
-  DiscoveryNodeSelector,
-  DefaultAuth,
-  Storage,
-  EntityManager,
-  AppAuth,
-  RewardManagerClient
+  PaymentRouterClient,
+  getDefaultPaymentRouterClientConfig
 } from './services'
 import { AntiAbuseOracle } from './services/AntiAbuseOracle/AntiAbuseOracle'
+import { getDefaultAntiAbuseOracleSelectorConfig } from './services/AntiAbuseOracleSelector'
 import { AntiAbuseOracleSelector } from './services/AntiAbuseOracleSelector/AntiAbuseOracleSelector'
-import { defaultEntityManagerConfig } from './services/EntityManager/constants'
+import { AppAuth } from './services/Auth/AppAuth'
+import { DefaultAuth } from './services/Auth/DefaultAuth'
+import {
+  DiscoveryNodeSelector,
+  getDefaultDiscoveryNodeSelectorConfig
+} from './services/DiscoveryNodeSelector'
+import {
+  EntityManager,
+  getDefaultEntityManagerConfig
+} from './services/EntityManager'
 import { Logger } from './services/Logger'
 import { SolanaRelay } from './services/Solana/SolanaRelay'
 import { SolanaRelayWalletAdapter } from './services/Solana/SolanaRelayWalletAdapter'
-import { ClaimableTokensClient } from './services/Solana/programs/ClaimableTokensClient/ClaimableTokensClient'
-import { defaultClaimableTokensConfig } from './services/Solana/programs/ClaimableTokensClient/constants'
-import { defaultRewardManagerClentConfig } from './services/Solana/programs/RewardManagerClient/constants'
-import { StorageNodeSelector } from './services/StorageNodeSelector'
+import {
+  getDefaultClaimableTokensConfig,
+  ClaimableTokensClient
+} from './services/Solana/programs/ClaimableTokensClient'
+import {
+  RewardManagerClient,
+  getDefaultRewardManagerClentConfig
+} from './services/Solana/programs/RewardManagerClient'
+import { Storage, getDefaultStorageServiceConfig } from './services/Storage'
+import {
+  StorageNodeSelector,
+  getDefaultStorageNodeSelectorConfig
+} from './services/StorageNodeSelector'
 import { SdkConfig, SdkConfigSchema, ServicesContainer } from './types'
 
 /**
@@ -81,7 +99,16 @@ export const sdk = (config: SdkConfig) => {
 }
 
 const initializeServices = (config: SdkConfig) => {
-  const defaultLogger = new Logger()
+  const servicesConfig =
+    config.environment === 'development'
+      ? developmentConfig
+      : config.environment === 'staging'
+      ? stagingConfig
+      : productionConfig
+
+  const defaultLogger = new Logger({
+    logLevel: config.environment !== 'production' ? 'debug' : undefined
+  })
   const logger = config.services?.logger ?? defaultLogger
 
   if (config.apiSecret && isBrowser) {
@@ -98,72 +125,99 @@ const initializeServices = (config: SdkConfig) => {
 
   const discoveryNodeSelector =
     config.services?.discoveryNodeSelector ??
-    new DiscoveryNodeSelector({ logger })
+    new DiscoveryNodeSelector({
+      ...getDefaultDiscoveryNodeSelectorConfig(servicesConfig),
+      logger
+    })
 
   const storageNodeSelector =
     config.services?.storageNodeSelector ??
     new StorageNodeSelector({
+      ...getDefaultStorageNodeSelectorConfig(servicesConfig),
       auth,
       discoveryNodeSelector,
       logger
     })
 
-  const defaultEntityManager = new EntityManager({
-    ...defaultEntityManagerConfig,
-    discoveryNodeSelector
-  })
+  const entityManager =
+    config.services?.entityManager ??
+    new EntityManager({
+      ...getDefaultEntityManagerConfig(servicesConfig),
+      discoveryNodeSelector
+    })
 
-  const defaultStorage = new Storage({ storageNodeSelector, logger })
+  const storage =
+    config.services?.storage ??
+    new Storage({
+      ...getDefaultStorageServiceConfig(servicesConfig),
+      storageNodeSelector,
+      logger
+    })
 
   const antiAbuseOracleSelector =
     config.services?.antiAbuseOracleSelector ??
-    new AntiAbuseOracleSelector({ logger })
-
-  const defaultSolanaRelay = new SolanaRelay(
-    new Configuration({
-      middleware: [discoveryNodeSelector.createMiddleware()]
+    new AntiAbuseOracleSelector({
+      ...getDefaultAntiAbuseOracleSelectorConfig(servicesConfig),
+      logger
     })
-  )
 
-  const defaultSolanaWalletAdapter = new SolanaRelayWalletAdapter({
-    solanaRelay: config.services?.solanaRelay ?? defaultSolanaRelay
-  })
+  const antiAbuseOracle =
+    config.services?.antiAbuseOracle ??
+    new AntiAbuseOracle({
+      antiAbuseOracleSelector
+    })
+
+  const solanaRelay =
+    config.services?.solanaRelay ??
+    new SolanaRelay(
+      new Configuration({
+        middleware: [discoveryNodeSelector.createMiddleware()]
+      })
+    )
+
+  const solanaWalletAdapter =
+    config.services?.solanaWalletAdapter ??
+    new SolanaRelayWalletAdapter({
+      solanaRelay
+    })
 
   const claimableTokensClient =
     config.services?.claimableTokensClient ??
     new ClaimableTokensClient({
-      ...defaultClaimableTokensConfig,
-      solanaWalletAdapter:
-        config.services?.solanaWalletAdapter ?? defaultSolanaWalletAdapter
+      ...getDefaultClaimableTokensConfig(servicesConfig),
+      solanaWalletAdapter
     })
 
   const rewardManagerClient =
     config.services?.rewardManagerClient ??
     new RewardManagerClient({
-      ...defaultRewardManagerClentConfig,
-      solanaWalletAdapter:
-        config.services?.solanaWalletAdapter ?? defaultSolanaWalletAdapter
+      ...getDefaultRewardManagerClentConfig(servicesConfig),
+      solanaWalletAdapter
     })
 
-  const defaultAntiAbuseOracle = new AntiAbuseOracle({
-    antiAbuseOracleSelector
-  })
+  const paymentRouterClient =
+    config.services?.paymentRouterClient ??
+    new PaymentRouterClient({
+      ...getDefaultPaymentRouterClientConfig(servicesConfig),
+      solanaWalletAdapter
+    })
 
-  const defaultServices: ServicesContainer = {
+  const services: ServicesContainer = {
     storageNodeSelector,
     discoveryNodeSelector,
     antiAbuseOracleSelector,
-    entityManager: defaultEntityManager,
-    storage: defaultStorage,
+    entityManager,
+    storage,
     auth,
     claimableTokensClient,
     rewardManagerClient,
-    solanaWalletAdapter: defaultSolanaWalletAdapter,
-    solanaRelay: defaultSolanaRelay,
-    antiAbuseOracle: defaultAntiAbuseOracle,
+    paymentRouterClient,
+    solanaWalletAdapter,
+    solanaRelay,
+    antiAbuseOracle,
     logger
   }
-  return { ...defaultServices, ...config.services }
+  return services
 }
 
 const initializeApis = ({
@@ -189,7 +243,9 @@ const initializeApis = ({
     services.storage,
     services.entityManager,
     services.auth,
-    services.logger
+    services.logger,
+    services.claimableTokensClient,
+    services.paymentRouterClient
   )
   const users = new UsersApi(
     generatedApiClientConfig,

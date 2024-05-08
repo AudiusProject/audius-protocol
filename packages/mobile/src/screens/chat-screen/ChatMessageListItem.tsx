@@ -12,7 +12,7 @@ import {
 import type { ChatMessageReaction } from '@audius/sdk'
 import { find } from 'linkifyjs'
 import type { ViewStyle, StyleProp } from 'react-native'
-import { Dimensions, View } from 'react-native'
+import { Dimensions, Keyboard, View } from 'react-native'
 import { useSelector } from 'react-redux'
 
 import ChatTail from 'app/assets/images/ChatTail.svg'
@@ -322,6 +322,7 @@ export const ChatMessageListItem = memo(function ChatMessageListItem(
                       ]}
                     >
                       <Hyperlink
+                        onPress={Keyboard.dismiss}
                         text={message.message}
                         styles={{
                           root: [

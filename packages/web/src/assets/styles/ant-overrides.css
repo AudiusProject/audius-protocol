@@ -8,11 +8,26 @@
   background-size: 400% 100%;
   animation: test 1.4s ease infinite;
 }
+
 @keyframes test {
   0% {
     background-position: 100% 50%;
   }
+
   100% {
     background-position: 0 50%;
   }
+}
+
+a {
+  color: inherit;
+  transition: none;
+}
+
+a:hover {
+  color: inherit;
+}
+
+a[disabled] {
+  color: inherit;
 }

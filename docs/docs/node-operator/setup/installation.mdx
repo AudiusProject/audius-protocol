@@ -42,9 +42,6 @@ During installation there will be prompts for required environment variables. Th
 - `delegatePrivateKey` - Private key associated with `delegateOwnerWallet`
 - `spOwnerWallet` - Wallet that registered (or will register) the content node on chain
 
-If you're using an externally managed Postgres DB please see
-[this section](/node-operator/setup/advanced#discovery-node)
-
 ---
 
 **Discovery Node**
@@ -52,9 +49,6 @@ If you're using an externally managed Postgres DB please see
 - `audius_delegate_owner_wallet` - Address of wallet that contains no tokens but that is registered
   on chain, used to sign JSON responses from server
 - `audius_delegate_private_key` - Private key associated with `audius_delegate_owner_wallet`
-
-If you're using an externally managed Postgres DB please see
-[this section](/node-operator/setup/advanced#discovery-node)
 
 </div>
 </details>
@@ -66,8 +60,10 @@ If you're using an externally managed Postgres DB please see
 Installing and managing Audius Nodes is (in most cases) a 3 step process.
 
 1. Install `audius-ctl`
-2. Edit the configuration file
-3. Run your Audius Nodes
+2. Confirm your
+   [ssh access and port configuration](/node-operator/setup/hardware-requirements#system-configuration)
+3. Edit the configuration file
+4. Run your Audius Nodes
 
 ---
 
@@ -82,7 +78,13 @@ Run the following command to install the controller utility, `audius-ctl`
 curl -sSL https://install.audius.org | sh
 ```
 
-> checkout the [code on GitHub](https://github.com/AudiusProject/audius-d)
+:::tip Where to install audius-ctl
+
+While it is recommended to install the controller utility on a separate computer, such as your
+laptop, any machine can operate as a Controller. Check the
+[Advanced Usage page](/node-operator/setup/advanced#audius-control-utility) for more information.
+
+:::
 
 ---
 
@@ -103,8 +105,8 @@ each field for each Audius Node you will be running.
 network:
   deployOn: mainnet
 nodes:
-  creator-1.example.com:        # <--- THE URL OF YOUR CONTENT NODE
-    type: creator
+  content-1.example.com:        # <--- THE URL OF YOUR CONTENT NODE
+    type: content
     privateKey: abc123          # <--- UNIQUE PRIV KEY USED BY THIS NODE TO SIGN RESPONSES
     wallet: 0xABC123            # <--- UNIQUE WALLET ADDRESS OF ABOVE PRIV KEY
     rewardsWallet: 0xABC123     # <--- ADDRESS OF WALLET HOLDING STAKED TOKENS
@@ -121,7 +123,7 @@ nodes:
 
 | field           | description                                                                                                        |
 | --------------- | ------------------------------------------------------------------------------------------------------------------ |
-| `type`          | either `creator` or `discovery`                                                                                    |
+| `type`          | either `content` or `discovery`                                                                                    |
 | `privateKey`    | private key associated with the `wallet`                                                                           |
 | `wallet`        | Address of wallet that contains no tokens but that is registered on chain, used to sign JSON responses from server |
 | `rewardsWallet` | Wallet that registered (or will register) the Audius Node on chain                                                 |
@@ -185,6 +187,8 @@ Flags:
 Use "audius-ctl [command] --help" for more information about a command.
 ```
 
+> checkout the [code on GitHub](https://github.com/AudiusProject/audius-d)
+
 ---
 
 ## Migration Guide
@@ -196,7 +200,11 @@ This portion of the guide is only for Node Operators that setup Audius Nodes usi
 
 :::
 
-Migrating an existing Audius Node to the new `audius-d` architecture
+Migrating Audius Nodes in just a few steps:
+
+1. Disable auto-upgrade on existing Nodes
+2. Stop the Audius daemon on existing Nodes
+3. Follow the [steps outlined above](/node-operator/setup/installation#overview)
 
 ### Stop Existing Nodes
 
@@ -224,7 +232,7 @@ audius-cli down
 ### Configure Nodes
 
 From here, the guide is the same as though you were creating new Nodes from scratch. Head back up to
-the [`audius-cli` installation step](/node-operator/setup/installation#install-audius-ctl) to get
+the [`audius-ctl` installation step](/node-operator/setup/installation#install-audius-ctl) to get
 started.
 
 #### Migration Variable Mapping

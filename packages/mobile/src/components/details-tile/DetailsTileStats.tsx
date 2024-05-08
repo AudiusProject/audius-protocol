@@ -12,7 +12,6 @@ const messages = {
 type DetailsTileStatsProps = {
   favoriteCount?: number
   hideFavoriteCount?: boolean
-  hideListenCount?: boolean
   hideRepostCount?: boolean
   onPressFavorites?: GestureResponderHandler
   onPressReposts?: GestureResponderHandler
@@ -24,14 +23,16 @@ type DetailsTileStatsProps = {
  */
 export const DetailsTileStats = ({
   favoriteCount,
+  repostCount,
   hideFavoriteCount,
-  hideListenCount,
   hideRepostCount,
   onPressFavorites,
-  onPressReposts,
-  repostCount
+  onPressReposts
 }: DetailsTileStatsProps) => {
-  if (hideListenCount && hideFavoriteCount && hideRepostCount) {
+  if (
+    (hideFavoriteCount && hideRepostCount) ||
+    (!favoriteCount && !repostCount)
+  ) {
     return null
   }
   return (

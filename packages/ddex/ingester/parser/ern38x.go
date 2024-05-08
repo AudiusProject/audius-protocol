@@ -1144,7 +1144,6 @@ func processSoundRecordingNode(sNode *xmlquery.Node) (recording *SoundRecording,
 		name := safeInnerText(contributorNode.SelectElement("PartyName/FullName"))
 		seqNo, seqNoErr := strconv.Atoi(contributorNode.SelectAttr("SequenceNumber"))
 		if seqNoErr != nil {
-			fmt.Printf("error parsing ResourceContributor %s's SequenceNumber: %v\n", name, seqNoErr)
 			seqNo = -1
 		}
 		contributor := common.ResourceContributor{
@@ -1168,7 +1167,6 @@ func processSoundRecordingNode(sNode *xmlquery.Node) (recording *SoundRecording,
 		name := safeInnerText(indirectContributorNode.SelectElement("PartyName/FullName"))
 		seqNo, seqNoErr := strconv.Atoi(indirectContributorNode.SelectAttr("SequenceNumber"))
 		if seqNoErr != nil {
-			fmt.Printf("error parsing IndirectResourceContributor %s's SequenceNumber: %v\n", name, seqNoErr)
 			seqNo = -1
 		}
 		contributor := common.ResourceContributor{

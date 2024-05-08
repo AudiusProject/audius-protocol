@@ -10,9 +10,11 @@ import {
   PurchaseableContentType,
   useEditPlaylistModal
 } from '@audius/common/store'
+import { getDogEarType } from '@audius/common/utils'
 import { Box, Button, Flex, IconPause, IconPlay, Text } from '@audius/harmony'
 import cn from 'classnames'
 
+import { DogEar } from 'components/dog-ear'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { UserLink } from 'components/link'
 import Skeleton from 'components/skeleton/Skeleton'
@@ -112,6 +114,7 @@ const CollectionHeader = ({
   )
   const { hasStreamAccess } = useGatedContentAccess(collection)
   const isPremium = collection?.is_stream_gated
+  const isUnlisted = collection?.is_private
 
   // If user doesn't have access, show preview only. If user has access, show play only.
   // If user is owner, show both.
@@ -126,12 +129,12 @@ const CollectionHeader = ({
 
   const onClickOverflow = () => {
     const overflowActions = [
-      isOwner || !isPublished
+      isOwner || !isPublished || !hasStreamAccess
         ? null
         : isReposted
         ? OverflowAction.UNREPOST
         : OverflowAction.REPOST,
-      isOwner || !isPublished
+      isOwner || !isPublished || !hasStreamAccess
         ? null
         : isSaved
         ? OverflowAction.UNFAVORITE
@@ -185,8 +188,26 @@ const CollectionHeader = ({
     )
   }
 
+  const renderDogEar = () => {
+    const DogEarType = getDogEarType({
+      isUnlisted,
+      streamConditions,
+      isOwner,
+      hasStreamAccess
+    })
+    if (!isLoading && DogEarType) {
+      return (
+        <div className={styles.borderOffset}>
+          <DogEar type={DogEarType} />
+        </div>
+      )
+    }
+    return null
+  }
+
   return (
     <Flex direction='column'>
+      {renderDogEar()}
       <Flex direction='column' alignItems='center' p='l' gap='l'>
         <Text variant='label' css={{ letterSpacing: '2px' }} color='subdued'>
           {type === 'playlist' && !isPublished
@@ -221,13 +242,7 @@ const CollectionHeader = ({
             {title}
           </Text>
           {userId ? (
-            <UserLink
-              userId={userId}
-              color='accent'
-              size='l'
-              textAs='h2'
-              variant='visible'
-            />
+            <UserLink userId={userId} size='l' variant='visible' />
           ) : null}
         </Flex>
         {shouldShowPlay ? (
@@ -283,8 +298,8 @@ const CollectionHeader = ({
           onRepost={onRepost}
           onClickOverflow={onClickOverflow}
           onClickEdit={handleClickEdit}
-          showFavorite={!!onSave && !isOwner}
-          showRepost={variant !== Variant.SMART && !isOwner}
+          showFavorite={!!onSave && !isOwner && hasStreamAccess}
+          showRepost={variant !== Variant.SMART && !isOwner && hasStreamAccess}
           showShare={variant !== Variant.SMART || type === 'Audio NFT Playlist'}
           showOverflow={variant !== Variant.SMART}
           darkMode={isDarkMode()}

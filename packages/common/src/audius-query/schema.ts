@@ -22,8 +22,19 @@ export const collectionSchema = new schema.Entity(
   { idAttribute: 'playlist_id' }
 )
 
+export const managedUserSchema = new schema.Object({
+  user: userSchema
+})
+
+export const userManagerSchema = new schema.Object({
+  manager: userSchema
+})
+
 export const apiResponseSchema = new schema.Object({
+  currentWeb3User: userSchema,
+  managedUsers: new schema.Array(managedUserSchema),
   user: userSchema,
+  userManagers: new schema.Array(userManagerSchema),
   track: trackSchema,
   collection: collectionSchema,
   users: new schema.Array(userSchema),

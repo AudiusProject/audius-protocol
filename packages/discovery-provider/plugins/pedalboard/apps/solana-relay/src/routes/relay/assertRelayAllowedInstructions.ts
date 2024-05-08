@@ -5,13 +5,15 @@ import {
   decodeInstruction,
   isCloseAccountInstruction,
   isTransferCheckedInstruction,
-  isSyncNativeInstruction
+  isSyncNativeInstruction,
+  getAssociatedTokenAddressSync
 } from '@solana/spl-token'
 import {
   PublicKey,
   TransactionInstruction,
   SystemProgram,
-  SystemInstruction
+  SystemInstruction,
+  ComputeBudgetProgram
 } from '@solana/web3.js'
 import { InvalidRelayInstructionError } from './InvalidRelayInstructionError'
 
@@ -31,6 +33,7 @@ const MEMO_V2_PROGRAM_ID = 'MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr'
 const CLAIMABLE_TOKEN_PROGRAM_ID = config.claimableTokenProgramId
 const REWARDS_MANAGER_PROGRAM_ID = config.rewardsManagerProgramId
 const TRACK_LISTEN_COUNT_PROGRAM_ID = config.trackListenCountProgramId
+const PAYMENT_ROUTER_PROGRAM_ID = config.paymentRouterProgramId
 const JUPITER_AGGREGATOR_V6_PROGRAM_ID =
   'JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4'
 
@@ -64,6 +67,17 @@ const deriveUserBank = async (
   )
 }
 
+const PAYMENT_ROUTER_WALLET = PublicKey.findProgramAddressSync(
+  [Buffer.from('payment_router')],
+  new PublicKey(PAYMENT_ROUTER_PROGRAM_ID)
+)[0]
+
+const PAYMENT_ROUTER_USDC_TOKEN_ACCOUNT = getAssociatedTokenAddressSync(
+  new PublicKey(usdcMintAddress),
+  PAYMENT_ROUTER_WALLET,
+  true
+)
+
 /**
  * Only allow the createTokenAccount instruction of the Associated Token
  * Account program, provided it has matching close instructions.
@@ -87,6 +101,14 @@ const assertAllowedAssociatedTokenAccountProgramInstruction = (
         instructionIndex,
         `Mint not allowed for Associated Token Account program: ${mintAddress}`
       )
+    }
+
+    // Allow creating associated tokens for the Payment Router
+    if (
+      decodedInstruction.keys.owner.pubkey.toBase58() ===
+      PAYMENT_ROUTER_WALLET.toBase58()
+    ) {
+      return
     }
 
     // Protect against feePayer drain by ensuring that there's always as
@@ -154,7 +176,12 @@ const assertAllowedTokenProgramInstruction = async (
       wallet,
       claimableTokenAuthorities['usdc']
     )
-    if (!destination.equals(userbank)) {
+
+    // Check that destination is either a userbank or a payment router token account
+    if (
+      !destination.equals(userbank) &&
+      !destination.equals(PAYMENT_ROUTER_USDC_TOKEN_ACCOUNT)
+    ) {
       throw new InvalidRelayInstructionError(
         instructionIndex,
         `Invalid destination account: ${destination.toBase58()}`
@@ -405,9 +432,11 @@ export const assertRelayAllowedInstructions = async (
       case Secp256k1Program.programId.toBase58():
         assertValidSecp256k1ProgramInstruction(i, instruction)
         break
+      case PAYMENT_ROUTER_PROGRAM_ID:
       case MEMO_PROGRAM_ID:
       case MEMO_V2_PROGRAM_ID:
       case TRACK_LISTEN_COUNT_PROGRAM_ID:
+      case ComputeBudgetProgram.programId.toBase58():
         // All instructions of these programs are allowed
         break
       default:

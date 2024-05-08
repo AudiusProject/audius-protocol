@@ -3,9 +3,8 @@ import { useEffect } from 'react'
 import { useField } from 'formik'
 import { Dimensions, View } from 'react-native'
 
-import { IconVisibilityHidden } from '@audius/harmony-native'
+import { Hint, IconVisibilityHidden } from '@audius/harmony-native'
 import { Text } from 'app/components/core'
-import { HelpCallout } from 'app/components/help-callout/HelpCallout'
 import { useSetTrackAvailabilityFields } from 'app/hooks/useSetTrackAvailabilityFields'
 import { makeStyles } from 'app/styles'
 import { useColor } from 'app/utils/theme'
@@ -72,9 +71,6 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
   },
   switch: {
     marginTop: spacing(2)
-  },
-  noHidden: {
-    marginTop: spacing(4)
   }
 }))
 
@@ -128,7 +124,7 @@ export const HiddenAvailability = ({
         </Text>
       </View>
       {isUnlisted && isScheduledRelease ? (
-        <HelpCallout style={styles.noHidden} content={messages.noHiddenHint} />
+        <Hint mt='l'>{messages.noHiddenHint}</Hint>
       ) : null}
       {selected ? (
         <>

@@ -1,10 +1,4 @@
-import React, {
-  useContext,
-  useEffect,
-  useMemo,
-  ReactNode,
-  useCallback
-} from 'react'
+import { useContext, useEffect, useMemo, ReactNode, useCallback } from 'react'
 
 import {
   Variant as CollectionVariant,
@@ -30,13 +24,14 @@ import {
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 
-import Card from 'components/card-legacy/mobile/Card'
+import { CollectionCard } from 'components/collection'
 import Header from 'components/header/mobile/Header'
 import { HeaderContext } from 'components/header/mobile/HeaderContextProvider'
 import CardLineup from 'components/lineup/CardLineup'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
 import { useMainPageHeader } from 'components/nav/store/context'
+import { UserCard } from 'components/user-card'
 import { useIsUSDCEnabled } from 'hooks/useIsUSDCEnabled'
 import useTabs from 'hooks/useTabs/useTabs'
 import { smartCollectionIcons } from 'pages/collection-page/smartCollectionIcons'
@@ -50,12 +45,7 @@ import {
   ExploreMoodCollection,
   PREMIUM_TRACKS
 } from 'pages/explore-page/collections'
-import {
-  collectionPage,
-  profilePage,
-  BASE_URL,
-  EXPLORE_PAGE
-} from 'utils/route'
+import { BASE_URL, EXPLORE_PAGE } from 'utils/route'
 
 import { justForYou } from '../desktop/ExplorePage'
 
@@ -127,8 +117,6 @@ export type ExplorePageProps = {
   playlists: UserCollection[]
   profiles: User[]
   status: Status
-  formatPlaylistCardSecondaryText: (saves: number, tracks: number) => string
-  formatProfileCardSecondaryText: (followerCount: number) => string
   goToRoute: (route: string) => void
 }
 
@@ -138,8 +126,6 @@ const ExplorePage = ({
   playlists,
   profiles,
   status,
-  formatPlaylistCardSecondaryText,
-  formatProfileCardSecondaryText,
   goToRoute
 }: ExplorePageProps) => {
   useMainPageHeader()
@@ -212,51 +198,16 @@ const ExplorePage = ({
     profileCards = []
   } else {
     playlistCards = playlists.map((playlist: UserCollection) => {
-      const href = collectionPage(
-        playlist.user.handle,
-        playlist.playlist_name,
-        playlist.playlist_id,
-        playlist.permalink,
-        playlist.is_album
-      )
-
       return (
-        <Card
+        <CollectionCard
           key={playlist.playlist_id}
           id={playlist.playlist_id}
-          userId={playlist.playlist_owner_id}
-          imageSize={playlist._cover_art_sizes}
-          primaryText={playlist.playlist_name}
-          secondaryText={formatPlaylistCardSecondaryText(
-            playlist.save_count,
-            playlist.playlist_contents.track_ids.length
-          )}
-          href={href}
-          onClick={(e: React.MouseEvent) => {
-            e.preventDefault()
-            goToRoute(href)
-          }}
+          size='xs'
         />
       )
     })
     profileCards = profiles.map((profile: User) => {
-      const href = profilePage(profile.handle)
-      return (
-        <Card
-          key={profile.user_id}
-          id={profile.user_id}
-          userId={profile.user_id}
-          imageSize={profile._profile_picture_sizes}
-          isUser
-          primaryText={profile.name}
-          secondaryText={formatProfileCardSecondaryText(profile.follower_count)}
-          href={href}
-          onClick={(e: React.MouseEvent) => {
-            e.preventDefault()
-            goToRoute(href)
-          }}
-        />
-      )
+      return <UserCard key={profile.user_id} id={profile.user_id} size='xs' />
     })
   }
 

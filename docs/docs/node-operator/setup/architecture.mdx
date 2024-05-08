@@ -48,9 +48,6 @@ During installation there will be prompts for required environment variables. Th
 - `delegatePrivateKey` - Private key associated with `delegateOwnerWallet`
 - `spOwnerWallet` - Wallet that registered (or will register) the content node on chain
 
-If you're using an externally managed Postgres DB please see
-[this section](/node-operator/setup/advanced#discovery-node)
-
 ---
 
 ## Discovery Node
@@ -58,9 +55,6 @@ If you're using an externally managed Postgres DB please see
 - `audius_delegate_owner_wallet` - Address of wallet that contains no tokens but that is registered
   on chain, used to sign JSON responses from server
 - `audius_delegate_private_key` - Private key associated with `audius_delegate_owner_wallet`
-
-If you're using an externally managed Postgres DB please see
-[this section](/node-operator/setup/advanced#discovery-node)
 
 ---
 
@@ -247,7 +241,7 @@ example below to identify the information needed for each node.
 
 | field           | description                                                                                                        |
 | --------------- | ------------------------------------------------------------------------------------------------------------------ |
-| `type`          | either `creator` or `discovery`                                                                                    |
+| `type`          | either `content` or `discovery`                                                                                    |
 | `privateKey`    | private key associated with                                                                                        |
 | `wallet`        | Address of wallet that contains no tokens but that is registered on chain, used to sign JSON responses from server |
 | `rewardsWallet` | Wallet that registered (or will register) the content node on chain                                                |
@@ -258,7 +252,7 @@ Node Operators migrating existing Nodes will be familiar with the legacy variabl
 type. See the mappings below to correctly use existing keys from a `override.env` file in a new
 config file.
 
-- Creator Node Variables
+- Content Node Variables
 
   - `delegateOwnerWallet` --> `wallet`
   - `delegatePrivateKey` --> `privateKey`
@@ -273,8 +267,8 @@ config file.
 network:
   deployOn: mainnet
 nodes:
-  creator-1.example.com:        # the url of the node
-    type: creator               # creator or discovery, depending on the node type
+  content-1.example.com:        # the url of the node
+    type: content               # content or discovery, depending on the node type
     privateKey: abc123          # <--- UNIQUE PRIV KEY USED BY THIS NODE TO SIGN RESPONSES
     wallet: 0xABC123            # <--- UNIQUE WALLET ADDRESS OF ABOVE PRIV KEY
     rewardsWallet: 0xABC123     # <--- ADDRESS OF WALLET HOLDING STAKED TOKENS
@@ -325,7 +319,7 @@ This command will down **ALL** of the Audius Nodes specified in the configuratio
 node, pass the URL as an additional argument, like this:
 
 ```bash
-audius-ctl down creator-1.example.com
+audius-ctl down content-1.example.com
 ```
 
 The same can be done with the `up` command when you are ready to start the Audius Node again.

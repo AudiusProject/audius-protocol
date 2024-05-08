@@ -21,16 +21,15 @@ import {
   Text,
   TextLink,
   IconError,
-  useTheme,
   SegmentedControl,
   Option,
-  IconStars
+  IconStars,
+  Hint
 } from '@audius/harmony'
 import { useFormikContext } from 'formik'
 
 import { MenuFormCallbackStatus } from 'components/data-entry/ContextualMenu'
 import { Divider } from 'components/divider'
-import { HelpCallout } from 'components/help-callout/HelpCallout'
 import { useTrackField } from 'pages/upload-page/hooks'
 import { make, track } from 'services/analytics'
 
@@ -76,12 +75,6 @@ export const DownloadAvailability = ({
   const { isEnabled: isUsdcUploadEnabled } = useFeatureFlag(
     FeatureFlags.USDC_PURCHASES_UPLOAD
   )
-  const {
-    color: {
-      primary,
-      neutral: { neutral, n400: subdued }
-    }
-  } = useTheme()
   const { submitForm, setStatus } = useFormikContext()
   const [{ value: streamConditions }] =
     useTrackField<Nullable<AccessConditions>>(STREAM_CONDITIONS)
@@ -119,7 +112,7 @@ export const DownloadAvailability = ({
     {
       key: DownloadTrackAvailabilityType.PUBLIC,
       text: messages.public,
-      icon: <IconVisibilityPublic size='s' fill={neutral} />
+      icon: <IconVisibilityPublic size='s' color='default' />
     },
     {
       key: DownloadTrackAvailabilityType.FOLLOWERS,
@@ -127,7 +120,7 @@ export const DownloadAvailability = ({
       icon: (
         <IconUserFollowing
           size='s'
-          fill={isFollowersOptionDisabled ? subdued : neutral}
+          color={isFollowersOptionDisabled ? 'subdued' : 'default'}
         />
       ),
       disabled: isFollowersOptionDisabled
@@ -138,8 +131,10 @@ export const DownloadAvailability = ({
       icon: (
         <IconCart
           size='s'
-          fill={
-            isPremiumOptionDisabled || !isUsdcUploadEnabled ? subdued : neutral
+          color={
+            isPremiumOptionDisabled || !isUsdcUploadEnabled
+              ? 'subdued'
+              : 'default'
           }
         />
       ),
@@ -172,23 +167,21 @@ export const DownloadAvailability = ({
     return isUsdcUploadEnabled ? (
       <DownloadPriceField disabled={false} />
     ) : (
-      <HelpCallout
-        icon={<IconStars />}
-        content={
-          <Flex direction='column' gap='m'>
-            <Text variant='body'>{messages.waitlist}</Text>
-            <TextLink
-              onClick={handleClickWaitListLink}
-              href={WAITLIST_TYPEFORM}
-              css={{ color: primary.p500, width: 'fit-content' }}
-              showUnderline
-              isExternal
-            >
-              {messages.join}
-            </TextLink>
-          </Flex>
+      <Hint
+        icon={IconStars}
+        actions={
+          <TextLink
+            onClick={handleClickWaitListLink}
+            href={WAITLIST_TYPEFORM}
+            variant='visible'
+            isExternal
+          >
+            {messages.join}
+          </TextLink>
         }
-      />
+      >
+        {messages.waitlist}
+      </Hint>
     )
   }
 
@@ -205,22 +198,16 @@ export const DownloadAvailability = ({
         </Box>
       </Flex>
       {shouldRenderCallout ? (
-        <HelpCallout
-          icon={<IconError css={{ alignSelf: 'center' }} />}
-          content={
-            <Text variant='body'>
-              {getCalloutMessage()}
-              &nbsp;
-              <TextLink
-                onClick={handleCalloutClick}
-                css={{ color: primary.p500 }}
-              >
-                {messages.callout.accessAndSale}
-              </TextLink>
-              .
-            </Text>
+        <Hint
+          icon={IconError}
+          actions={
+            <TextLink onClick={handleCalloutClick} variant='visible'>
+              {messages.callout.accessAndSale}
+            </TextLink>
           }
-        />
+        >
+          {getCalloutMessage()}
+        </Hint>
       ) : (
         <>
           <SegmentedControl

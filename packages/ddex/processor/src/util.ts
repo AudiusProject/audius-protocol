@@ -9,6 +9,6 @@ export function parseBool(b: string | undefined): boolean {
 }
 
 export function omitEmpty(obj: any) {
-  const entries = Object.entries(obj).filter(([_, v]) => Boolean(v))
+  const entries = Object.entries(obj).filter(([, v]) => Boolean(v))
   return Object.fromEntries(entries)
 }

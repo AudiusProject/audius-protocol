@@ -8,7 +8,7 @@ import {
 } from '@audius/common/schemas'
 import { FeatureFlags } from '@audius/common/services'
 import { UploadType } from '@audius/common/store'
-import { Text } from '@audius/harmony'
+import { Flex, Text } from '@audius/harmony'
 import { Form, Formik } from 'formik'
 import moment from 'moment'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
@@ -68,6 +68,7 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
     playlist_name: '',
     description: '',
     release_date: moment().toString(),
+    is_private: false,
     trackDetails: {
       genre: null,
       mood: null,
@@ -127,7 +128,9 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
           </div>
           <ReleaseDateFieldLegacy />
           {isAlbum && showPremiumAlbums ? (
-            <AccessAndSaleField isAlbum isUpload />
+            <Flex w='100%' css={{ flexGrow: 1 }}>
+              <AccessAndSaleField isAlbum isUpload />
+            </Flex>
           ) : null}
           <div className={styles.trackDetails}>
             <Text variant='label'>{messages.trackDetails.title}</Text>

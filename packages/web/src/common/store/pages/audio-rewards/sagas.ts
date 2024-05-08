@@ -298,7 +298,7 @@ function* claimSingleChallengeRewardAsync(
       specifiers
     })
     const claimed = results.filter((r) => !('error' in r))
-    const claimedAmount = results.reduce((sum, { amount }) => {
+    const claimedAmount = claimed.reduce((sum, { amount }) => {
       return sum + amount
     }, 0)
     yield* put(

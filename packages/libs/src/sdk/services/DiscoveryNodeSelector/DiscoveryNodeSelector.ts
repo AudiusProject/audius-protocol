@@ -12,12 +12,13 @@ import type {
   RequestContext,
   ResponseContext
 } from '../../api/generated/default'
+import { productionConfig } from '../../config/production'
 import { getPathFromUrl } from '../../utils/getPathFromUrl'
 import { mergeConfigWithDefaults } from '../../utils/mergeConfigs'
 import { promiseAny } from '../../utils/promiseAny'
 import type { LoggerService } from '../Logger'
 
-import { defaultDiscoveryNodeSelectorConfig } from './constants'
+import { getDefaultDiscoveryNodeSelectorConfig } from './getDefaultConfig'
 import { ApiHealthResponseData, HealthCheckStatus } from './healthCheckTypes'
 import {
   parseApiHealthStatusReason,
@@ -114,7 +115,7 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
   constructor(config?: DiscoveryNodeSelectorServiceConfig) {
     this.config = mergeConfigWithDefaults(
       config,
-      defaultDiscoveryNodeSelectorConfig
+      getDefaultDiscoveryNodeSelectorConfig(productionConfig)
     )
     this.services = this.config.bootstrapServices
     this._isBehind = false

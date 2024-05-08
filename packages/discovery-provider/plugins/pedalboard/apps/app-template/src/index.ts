@@ -1,5 +1,5 @@
 import { log } from '@pedalboard/logger'
-import App from '@pedalboard/basekit/src/app'
+import { App } from '@pedalboard/basekit'
 import moment from 'moment'
 
 type SharedData = object

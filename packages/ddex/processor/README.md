@@ -39,11 +39,8 @@ npx tsx watch cli.ts server
 
 ## simulate rematch
 
-```sql
-sqlite3 data/dev.db
-
-insert into users (id, handle, name) values ('2fuga', '2FUGA', '2FUGA') on conflict do nothing;
-insert into users (id, handle, name) values ('FUGARIAN', 'FUGARIAN', 'FUGARIAN') on conflict do nothing;
+```bash
+sqlite3 data/dev.db "insert into users (id, handle, name) values ('2fuga', '2FUGA', '2FUGA') on conflict do nothing; insert into users (id, handle, name) values ('FUGARIAN', 'FUGARIAN', 'FUGARIAN') on conflict do nothing;"
 ```
 
 * visit http://localhost:8989/releases
