@@ -58,7 +58,6 @@ export async function simulateDeliveryForUserName(
         '<ISRC>CASE00000002</ISRC>',
         `<ISRC>T2_${Date.now()}</ISRC>`
       )
-      console.log(contents)
       await writeFile(filePath, contents, 'utf8')
     })
 
@@ -66,6 +65,7 @@ export async function simulateDeliveryForUserName(
 
   await processDeliveryDir(source.name, tempDir)
 
-  // cleanup tempDir
-  console.log('todo rm', tempDir)
+  // we do want to cleanup tempDir
+  // put publisher needs to get assets (images, sounds)
+  // so we'll have to add a background job to do cleanup
 }

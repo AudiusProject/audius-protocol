@@ -20,6 +20,21 @@ test('crud', async () => {
     name: 'DJ Theo',
   })
 
+  expect(userRepo.findOne({ id: 'djtheo' })).toMatchObject({
+    id: 'djtheo',
+    name: 'DJ Theo',
+  })
+
+  expect(
+    userRepo.findOne({
+      id: 'djtheo',
+      apiKey: 'crudTestKey',
+    })
+  ).toMatchObject({
+    id: 'djtheo',
+    name: 'DJ Theo',
+  })
+
   // load 01
   {
     await parseDdexXmlFile(source, 'fixtures/01_delivery.xml')

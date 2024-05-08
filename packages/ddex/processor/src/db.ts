@@ -134,6 +134,14 @@ export const userRepo = {
     return db.all<UserRow>(sql`select * from users`)
   },
 
+  find(example: Partial<UserRow>) {
+    return dbSelect('users', example) as UserRow[]
+  },
+
+  findOne(example: Partial<UserRow>) {
+    return dbSelectOne('users', example) as UserRow | undefined
+  },
+
   upsert(user: Partial<UserRow>) {
     dbUpsert('users', user)
   },
@@ -340,6 +348,22 @@ function toStmt(rawSql: string) {
     stmtCache[rawSql] = db.prepare(rawSql)
   }
   return stmtCache[rawSql]
+}
+
+export function dbSelect(table: string, data: Record<string, any>) {
+  const wheres = Object.keys(data)
+    .map((k) => ` ${k} = ? `)
+    .join(' AND ')
+  const rawSql = `select * from ${table} where ${wheres}`
+  return toStmt(rawSql).all(...Object.values(data))
+}
+
+export function dbSelectOne(table: string, data: Record<string, any>) {
+  const wheres = Object.keys(data)
+    .map((k) => ` ${k} = ? `)
+    .join(' AND ')
+  const rawSql = `select * from ${table} where ${wheres}`
+  return toStmt(rawSql).get(...Object.values(data))
 }
 
 export function dbUpdate(

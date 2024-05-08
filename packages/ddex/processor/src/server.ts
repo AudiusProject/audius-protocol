@@ -482,12 +482,15 @@ app.get('/users', (c) => {
                   </td>
                   <td>${user.createdAt}</td>
                   <td>
-                    <form
-                      method="POST"
-                      action="/users/simulate/${user.apiKey}/${user.id}"
-                    >
-                      <button>simulate</button>
-                    </form>
+                    ${!IS_PROD &&
+                    html`
+                      <form
+                        method="POST"
+                        action="/users/simulate/${user.apiKey}/${user.id}"
+                      >
+                        <button>simulate</button>
+                      </form>
+                    `}
                   </td>
                 </tr>`
             )}
@@ -499,23 +502,23 @@ app.get('/users', (c) => {
 
 app.post('/users/simulate/:apiKey/:id', async (c) => {
   if (IS_PROD) {
-    return c.text(`no can simulate in prod`, 400)
+    return c.text(`simulate delivery is disabled in prod`, 400)
   }
 
   // find source
   const source = sources.all().find((s) => s.ddexKey == c.req.param('apiKey'))
-  const user = userRepo
-    .all()
-    .find((u) => u.id == c.req.param('id') && u.apiKey == c.req.param('apiKey'))
+  const user = userRepo.findOne({
+    id: c.req.param('id'),
+    apiKey: c.req.param('apiKey'),
+  })
 
   if (!source || !user) {
-    return c.text(`invalid req`, 400)
+    return c.text(`invalid source / user pair`, 400)
   }
 
-  // unzip sample
+  // simulate delivery
   await simulateDeliveryForUserName(source, user.name)
 
-  // replace name
   return c.redirect('/releases')
 })
 

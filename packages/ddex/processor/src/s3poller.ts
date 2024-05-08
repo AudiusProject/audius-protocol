@@ -10,8 +10,9 @@ import { s3markerRepo } from './db'
 import { parseDdexXml } from './parseDelivery'
 import { SourceConfig, sources } from './sources'
 
-// key by bucket?
-const s3clients: Record<string, S3Client> = {}
+type AccessKey = string
+
+const s3clients: Record<AccessKey, S3Client> = {}
 
 export function dialS3(sourceConfig: SourceConfig) {
   const { awsKey, awsSecret, awsRegion } = sourceConfig
