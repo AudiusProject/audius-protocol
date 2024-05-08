@@ -482,7 +482,7 @@ export class TracksApi extends GeneratedTracksApi {
         mint
       })
     const memoInstruction =
-      await this.paymentRouterClient.createMemoInstruction({
+      await this.paymentRouterClient.createPurchaseMemoInstruction({
         contentId: trackId,
         contentType,
         blockNumber: track.blocknumber,
@@ -494,9 +494,16 @@ export class TracksApi extends GeneratedTracksApi {
       this.logger.debug(
         `Using walletAdapter ${walletAdapter.name} to purchase...`
       )
+      if (!walletAdapter.connected) {
+        await walletAdapter.connect()
+      }
+      if (!walletAdapter.publicKey) {
+        throw new Error('Could not get connected wallet address')
+      }
       // Use the specified Solana wallet
       const transferInstruction =
         await this.paymentRouterClient.createTransferInstruction({
+          sourceWallet: walletAdapter.publicKey,
           amount: total,
           mint
         })

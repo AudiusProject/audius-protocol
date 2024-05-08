@@ -21,8 +21,9 @@ import { mergeConfigWithDefaults } from '../../../../utils/mergeConfigs'
 import { mintFixedDecimalMap } from '../../../../utils/mintFixedDecimalMap'
 import { parseParams } from '../../../../utils/parseParams'
 import { Prettify } from '../../../../utils/prettify'
+import { MEMO_V2_PROGRAM_ID } from '../../constants'
 import { Mint } from '../../types'
-import { BaseSolanaProgram } from '../BaseSolanaProgram'
+import { BaseSolanaProgramClient } from '../BaseSolanaProgramClient'
 
 import { getDefaultPaymentRouterClientConfig } from './getDefaultConfig'
 import {
@@ -39,7 +40,7 @@ import {
   PaymentRouterClientConfig
 } from './types'
 
-export class PaymentRouterClient extends BaseSolanaProgram {
+export class PaymentRouterClient extends BaseSolanaProgramClient {
   private readonly programId: PublicKey
 
   /** The intermediate account where funds are sent to and routed from. */
@@ -81,17 +82,18 @@ export class PaymentRouterClient extends BaseSolanaProgram {
     const programTokenAccount = await this.getOrCreateProgramTokenAccount({
       mint: args.mint
     })
-    const owner = this.wallet.publicKey
-    if (!owner) {
-      throw Error('Connected wallet not found.')
-    }
-    const sourceTokenAccount = getAssociatedTokenAddressSync(mint, owner, false)
+    const sourceWallet = args.sourceWallet
+    const sourceTokenAccount = getAssociatedTokenAddressSync(
+      mint,
+      sourceWallet,
+      false
+    )
     const amount = mintFixedDecimalMap[args.mint](args.amount)
     return createTransferCheckedInstruction(
       sourceTokenAccount,
       mint,
       programTokenAccount.address,
-      owner,
+      sourceWallet,
       amount.value,
       amount.decimalPlaces
     )
@@ -123,7 +125,9 @@ export class PaymentRouterClient extends BaseSolanaProgram {
     })
   }
 
-  public async createMemoInstruction(params: CreateMemoInstructionRequest) {
+  public async createPurchaseMemoInstruction(
+    params: CreateMemoInstructionRequest
+  ) {
     const {
       contentType,
       contentId,
@@ -140,7 +144,7 @@ export class PaymentRouterClient extends BaseSolanaProgram {
       keys: signer
         ? [{ pubkey: signer, isSigner: true, isWritable: true }]
         : [],
-      programId: new PublicKey('Memo1UhkJRfHyvLMcVucJwxXeuD728EqVDDwQDxFMNo'),
+      programId: MEMO_V2_PROGRAM_ID,
       data: Buffer.from(memoString)
     })
   }
@@ -157,15 +161,20 @@ export class PaymentRouterClient extends BaseSolanaProgram {
       contentType,
       blockNumber,
       buyerUserId,
-      accessType
+      accessType,
+      sourceWallet
     } = await parseParams(
       'createPurchaseContentInstructions',
       CreatePurchaseContentInstructionsSchema
     )(params)
     return [
-      this.createTransferInstruction({ amount, mint }),
+      this.createTransferInstruction({
+        amount,
+        mint,
+        sourceWallet
+      }),
       this.createRouteInstruction({ splits, total, mint }),
-      this.createMemoInstruction({
+      this.createPurchaseMemoInstruction({
         contentId,
         contentType,
         blockNumber,

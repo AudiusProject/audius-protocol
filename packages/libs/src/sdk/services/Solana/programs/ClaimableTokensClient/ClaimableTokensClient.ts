@@ -11,7 +11,7 @@ import { mergeConfigWithDefaults } from '../../../../utils/mergeConfigs'
 import { mintFixedDecimalMap } from '../../../../utils/mintFixedDecimalMap'
 import { parseParams } from '../../../../utils/parseParams'
 import type { Mint } from '../../types'
-import { BaseSolanaProgram } from '../BaseSolanaProgram'
+import { BaseSolanaProgramClient } from '../BaseSolanaProgramClient'
 
 import { getDefaultClaimableTokensConfig } from './getDefaultConfig'
 import {
@@ -32,7 +32,7 @@ import {
  * associated token accounts that are permissioned to users by their Ethereum
  * hedgehog wallet private keys.
  */
-export class ClaimableTokensClient extends BaseSolanaProgram {
+export class ClaimableTokensClient extends BaseSolanaProgramClient {
   /** The program ID of the ClaimableTokensProgram instance. */
   private readonly programId: PublicKey
   /** Map from token mint name to public key address. */

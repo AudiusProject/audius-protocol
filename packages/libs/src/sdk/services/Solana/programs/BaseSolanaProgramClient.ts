@@ -21,8 +21,8 @@ const isPublicKeyArray = (arr: any[]): arr is PublicKey[] =>
 /**
  * Abstract class for initializing individual program clients.
  */
-export class BaseSolanaProgram {
-  /** The endpoint for the Solana RPC. */
+export class BaseSolanaProgramClient {
+  /** The Solana RPC client. */
   public readonly connection: Connection
   constructor(
     config: BaseSolanaProgramConfigInternal,
