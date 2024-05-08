@@ -9,11 +9,11 @@ import { DashboardWalletUsersApi } from './api/dashboard-wallet-users/DashboardW
 import { DeveloperAppsApi } from './api/developer-apps/DeveloperAppsApi'
 import { Configuration, TipsApi } from './api/generated/default'
 import {
+  TracksApi as TracksApiFull,
   Configuration as ConfigurationFull,
   PlaylistsApi as PlaylistsApiFull,
   ReactionsApi as ReactionsApiFull,
   SearchApi as SearchApiFull,
-  TracksApi as TracksApiFull,
   UsersApi as UsersApiFull,
   TipsApi as TipsApiFull,
   TransactionsApi as TransactionsApiFull
@@ -30,6 +30,10 @@ import {
   addRequestSignatureMiddleware
 } from './middleware'
 import { OAuth } from './oauth'
+import {
+  PaymentRouterClient,
+  getDefaultPaymentRouterClientConfig
+} from './services'
 import { AntiAbuseOracle } from './services/AntiAbuseOracle/AntiAbuseOracle'
 import { getDefaultAntiAbuseOracleSelectorConfig } from './services/AntiAbuseOracleSelector'
 import { AntiAbuseOracleSelector } from './services/AntiAbuseOracleSelector/AntiAbuseOracleSelector'
@@ -191,6 +195,13 @@ const initializeServices = (config: SdkConfig) => {
       solanaWalletAdapter
     })
 
+  const paymentRouterClient =
+    config.services?.paymentRouterClient ??
+    new PaymentRouterClient({
+      ...getDefaultPaymentRouterClientConfig(servicesConfig),
+      solanaWalletAdapter
+    })
+
   const services: ServicesContainer = {
     storageNodeSelector,
     discoveryNodeSelector,
@@ -200,6 +211,7 @@ const initializeServices = (config: SdkConfig) => {
     auth,
     claimableTokensClient,
     rewardManagerClient,
+    paymentRouterClient,
     solanaWalletAdapter,
     solanaRelay,
     antiAbuseOracle,
@@ -231,7 +243,9 @@ const initializeApis = ({
     services.storage,
     services.entityManager,
     services.auth,
-    services.logger
+    services.logger,
+    services.claimableTokensClient,
+    services.paymentRouterClient
   )
   const users = new UsersApi(
     generatedApiClientConfig,

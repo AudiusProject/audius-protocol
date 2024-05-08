@@ -259,7 +259,7 @@ def parse_route_transaction_memo(
 
             # TODO: Wait for blocknumber to be indexed by ACDC
             logger.debug(
-                f"index_payment_router.py | Found content_metadata in memo: type={type}, id={id}, blocknumber={blocknumber} user_id={purchaser_user_id}"
+                f"index_payment_router.py | Found content_metadata in memo: type={type}, id={id}, blocknumber={blocknumber} user_id={purchaser_user_id} access={access}"
             )
             price = None
             splits = None

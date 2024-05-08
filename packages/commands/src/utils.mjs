@@ -2,9 +2,9 @@ import {
   Utils as AudiusUtils,
   sdk as AudiusSdk,
   libs as AudiusLibs,
-  developmentConfig,
   DiscoveryNodeSelector,
-  EntityManager
+  SolanaRelay,
+  Configuration,
 } from "@audius/sdk";
 import { PublicKey } from "@solana/web3.js";
 
@@ -75,30 +75,34 @@ export const initializeAudiusLibs = async (handle) => {
 
 let audiusSdk;
 export const initializeAudiusSdk = async ({ apiKey = undefined, apiSecret = undefined } = {}) => {
-  const discoveryNodeSelector = new DiscoveryNodeSelector({
-    healthCheckThresholds: {
-      minVersion: developmentConfig.minVersion,
-      maxBlockDiff: developmentConfig.maxBlockDiff,
-      maxSlotDiffPlays: developmentConfig.maxSlotDiffPlays,
-    },
-    bootstrapServices: developmentConfig.discoveryNodes,
-  })
-  const entityManager = new EntityManager({
-    discoveryNodeSelector,
-    web3ProviderUrl: developmentConfig.web3ProviderUrl,
-    contractAddress: developmentConfig.entityManagerContractAddress,
-    identityServiceUrl: developmentConfig.identityServiceUrl,
-    useDiscoveryRelay: true,
-  })
+
+  const solanaRelay = new SolanaRelay(
+    new Configuration({
+      basePath: '/solana',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      middleware: [
+        {
+          pre: async (context) => {
+            const endpoint = 'http://audius-protocol-discovery-provider-1'
+            const url = `${endpoint}${context.url}`
+            return { url, init: context.init }
+          }
+        }
+      ]
+    })
+  )
+
   if (!audiusSdk) {
     audiusSdk = AudiusSdk({
       appName: "audius-cmd",
       apiKey,
       apiSecret,
+      environment: 'development',
       services: {
-        discoveryNodeSelector,
-        entityManager
-      },
+        solanaRelay
+      }
     });
   }
 

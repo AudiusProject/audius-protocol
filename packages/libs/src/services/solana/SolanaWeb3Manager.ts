@@ -1,4 +1,4 @@
-import { route } from '@audius/spl'
+import { PaymentRouterProgram } from '@audius/spl'
 import * as splToken from '@solana/spl-token'
 import {
   TOKEN_PROGRAM_ID,
@@ -707,16 +707,19 @@ export class SolanaWeb3Manager {
       USDC_DECIMALS
     )
 
-    const paymentRouterInstruction = await route(
-      paymentRouterTokenAccount,
-      paymentRouterPda,
-      paymentRouterPdaBump,
-      Object.keys(recipientAmounts).map((key) => new PublicKey(key)), // recipients
-      amounts,
-      totalAmount,
-      TOKEN_PROGRAM_ID,
-      this.paymentRouterProgramId
-    )
+    const paymentRouterInstruction =
+      await PaymentRouterProgram.createRouteInstruction({
+        sender: paymentRouterTokenAccount,
+        senderOwner: paymentRouterPda,
+        paymentRouterPdaBump,
+        recipients: Object.keys(recipientAmounts).map(
+          (key) => new PublicKey(key)
+        ),
+        amounts,
+        totalAmount,
+        tokenProgramId: TOKEN_PROGRAM_ID,
+        programId: this.paymentRouterProgramId
+      })
 
     const data = `${type}:${id}:${blocknumber}:${purchaserUserId}:${purchaseAccess}`
 
@@ -755,7 +758,7 @@ export class SolanaWeb3Manager {
     purchaseAccess
   }: {
     id: number
-    type: 'track'
+    type: PurchaseContentType
     splits: Record<string, number | BN>
     extraAmount?: number | BN
     blocknumber: number

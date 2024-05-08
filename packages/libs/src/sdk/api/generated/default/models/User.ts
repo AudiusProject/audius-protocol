@@ -165,6 +165,12 @@ export interface User {
      * @memberof User
      */
     totalAudioBalance: number;
+    /**
+     * The user's Ethereum wallet address for their account
+     * @type {string}
+     * @memberof User
+     */
+    wallet: string;
 }
 
 /**
@@ -189,6 +195,7 @@ export function instanceOfUser(value: object): boolean {
     isInstance = isInstance && "supporterCount" in value;
     isInstance = isInstance && "supportingCount" in value;
     isInstance = isInstance && "totalAudioBalance" in value;
+    isInstance = isInstance && "wallet" in value;
 
     return isInstance;
 }
@@ -225,6 +232,7 @@ export function UserFromJSONTyped(json: any, ignoreDiscriminator: boolean): User
         'supporterCount': json['supporter_count'],
         'supportingCount': json['supporting_count'],
         'totalAudioBalance': json['total_audio_balance'],
+        'wallet': json['wallet'],
     };
 }
 
@@ -259,6 +267,7 @@ export function UserToJSON(value?: User | null): any {
         'supporter_count': value.supporterCount,
         'supporting_count': value.supportingCount,
         'total_audio_balance': value.totalAudioBalance,
+        'wallet': value.wallet,
     };
 }
 
