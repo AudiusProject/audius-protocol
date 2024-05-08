@@ -56,10 +56,8 @@ integration-test:
     - store_test_results:
         path: packages/web/report.xml
         when: always
-    - store_artifacts:
-        path: packages/web/blob-report
     - run:
-        command: npx playwright merge-reports --reporter html ./blob-report
+        command: cd packages/web && npx playwright merge-reports --reporter html ./blob-report
         when: always
     - store_artifacts:
         path: playwright-report
