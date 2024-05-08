@@ -37,6 +37,7 @@ type SecondaryStatsProps = {
   trackCount?: number
   releaseDate?: string
   updatedAt?: string
+  hidePlayCount?: boolean
 }
 
 /**
@@ -47,7 +48,8 @@ export const SecondaryStats = ({
   duration,
   trackCount,
   releaseDate,
-  updatedAt
+  updatedAt,
+  hidePlayCount
 }: SecondaryStatsProps) => {
   return (
     <Flex gap='xs' w='100%'>
@@ -65,7 +67,7 @@ export const SecondaryStats = ({
             ? `${trackCount} ${pluralize(messages.trackCount, trackCount)}`
             : null,
           formatSecondsAsText(duration ?? 0),
-          playCount
+          playCount && !hidePlayCount
             ? `${playCount} ${pluralize(messages.playCount, playCount)}`
             : null
         ]}
