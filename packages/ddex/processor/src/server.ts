@@ -8,7 +8,13 @@ import { html } from 'hono/html'
 import { decode } from 'hono/jwt'
 import { prettyJSON } from 'hono/pretty-json'
 import { HtmlEscapedString } from 'hono/utils/html'
-import { ReleaseProcessingStatus, releaseRepo, userRepo, xmlRepo } from './db'
+import {
+  ReleaseProcessingStatus,
+  ReleaseRow,
+  releaseRepo,
+  userRepo,
+  xmlRepo,
+} from './db'
 import {
   DDEXContributor,
   DDEXRelease,
@@ -142,14 +148,15 @@ app.get('/releases', (c) => {
   })
 
   let lastXmlUrl = ''
-  const xmlSpacer = (source: string, xmlUrl: string) => {
-    if (xmlUrl != lastXmlUrl) {
-      lastXmlUrl = xmlUrl
+  const xmlSpacer = (row: ReleaseRow) => {
+    if (row.xmlUrl != lastXmlUrl) {
+      lastXmlUrl = row.xmlUrl
       return html`<tr>
         <td colspan="10">
-          <div style="margin-top: 20px">
-            <kbd>${source}</kbd>
-            <kbd>${xmlUrl}</kbd>
+          <div style="margin-top: 20px;">
+            <kbd>${row.source}</kbd>
+            <kbd>${row.createdAt}</kbd>
+            <kbd>${row.xmlUrl}</kbd>
           </div>
         </td>
       </tr>`
@@ -204,7 +211,7 @@ app.get('/releases', (c) => {
         <tbody>
           ${rows.map(
             (row) =>
-              html` ${xmlSpacer(row.source, row.xmlUrl)}
+              html` ${xmlSpacer(row)}
                 <tr>
                   <td>${row._parsed?.ref}</td>
                   <td>

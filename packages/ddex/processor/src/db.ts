@@ -90,6 +90,7 @@ export type ReleaseRow = {
   messageTimestamp: string
   json: string
   status: ReleaseProcessingStatus
+  createdAt: string
 
   entityType?: 'track' | 'album'
   entityId?: string
@@ -219,7 +220,7 @@ export const releaseRepo = {
 
       $${ifdef(params.status, sql` and status = ${params.status} `)}
 
-      order by xmlUrl, ref
+      order by createdAt
     `)
 
     for (const row of rows) {
