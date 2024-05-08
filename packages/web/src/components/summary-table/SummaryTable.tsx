@@ -55,7 +55,10 @@ export const SummaryTable = ({
         justifyContent='space-between'
         pv='m'
         ph='xl'
-        css={{ backgroundColor: color.background.surface1, cursor: 'pointer' }}
+        css={{
+          backgroundColor: color.background.surface1,
+          cursor: collapsible ? 'pointer' : 'auto'
+        }}
         onClick={onToggleExpand}
       >
         <Flex gap='s'>
