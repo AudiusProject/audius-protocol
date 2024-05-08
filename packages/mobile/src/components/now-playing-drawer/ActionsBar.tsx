@@ -1,6 +1,9 @@
 import { useCallback, useLayoutEffect } from 'react'
 
-import { useGatedContentAccess } from '@audius/common/hooks'
+import {
+  useGatedContentAccess,
+  useIsGatedContentPlaylistAddable
+} from '@audius/common/hooks'
 import {
   ShareSource,
   RepostSource,
@@ -120,6 +123,7 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
   const { isEnabled: isEditAlbumsEnabled } = useFeatureFlag(
     FeatureFlags.EDIT_ALBUMS
   )
+  const isPlaylistAddable = useIsGatedContentPlaylistAddable(track)
 
   const isOwner = track?.owner_id === accountUser?.user_id
   const { onOpen: openPremiumContentPurchaseModal } =
@@ -201,7 +205,7 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
         track.genre === Genre.PODCASTS || track.genre === Genre.AUDIOBOOKS
       const overflowActions = [
         isEditAlbumsEnabled && isOwner ? OverflowAction.ADD_TO_ALBUM : null,
-        OverflowAction.ADD_TO_PLAYLIST,
+        isPlaylistAddable ? OverflowAction.ADD_TO_PLAYLIST : null,
         isNewPodcastControlsEnabled && isLongFormContent
           ? OverflowAction.VIEW_EPISODE_PAGE
           : OverflowAction.VIEW_TRACK_PAGE,
@@ -228,6 +232,7 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
     track,
     isEditAlbumsEnabled,
     isOwner,
+    isPlaylistAddable,
     isNewPodcastControlsEnabled,
     albumInfo,
     playbackPositionInfo?.status,

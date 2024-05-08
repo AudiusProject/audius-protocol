@@ -49,6 +49,10 @@ user_model = ns.model(
         "supporter_count": fields.Integer(required=True),
         "supporting_count": fields.Integer(required=True),
         "total_audio_balance": fields.Integer(required=True),
+        "wallet": fields.String(
+            required=True,
+            description="The user's Ethereum wallet address for their account",
+        ),
     },
 )
 
@@ -62,7 +66,6 @@ user_model_full = ns.clone(
         "waudio_balance": fields.String(required=True),
         "associated_sol_wallets_balance": fields.String(required=True),
         "blocknumber": fields.Integer(required=True),
-        "wallet": fields.String(required=True),
         "created_at": fields.String(required=True),
         "is_storage_v2": fields.Boolean(required=True),
         "creator_node_endpoint": fields.String,

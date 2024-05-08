@@ -45,6 +45,7 @@ docker-tag-images:
             sla-auditor
             solana-relay
             trending-challenge-rewards
+            crm
             trpc
             uptime
           )

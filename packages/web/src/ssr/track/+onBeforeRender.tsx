@@ -1,8 +1,6 @@
-import {
-  developmentConfig,
-  productionConfig,
-  stagingConfig
-} from '@audius/sdk/src/sdk/config'
+import { developmentConfig } from '@audius/sdk/src/sdk/config/development'
+import { productionConfig } from '@audius/sdk/src/sdk/config/production'
+import { stagingConfig } from '@audius/sdk/src/sdk/config/staging'
 import type { PageContextServer } from 'vike/types'
 
 const sdkConfigs = {
@@ -20,7 +18,7 @@ export async function onBeforeRender(pageContext: PageContextServer) {
     const discoveryNodes = (
       sdkConfigs[process.env.VITE_ENVIRONMENT as keyof typeof sdkConfigs] ??
       productionConfig
-    ).discoveryNodes
+    ).network.discoveryNodes
 
     const discoveryNode =
       discoveryNodes[Math.floor(Math.random() * discoveryNodes.length)]

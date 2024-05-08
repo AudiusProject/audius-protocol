@@ -220,7 +220,7 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
               css={{ background: 0, border: 0, padding: 0, margin: 0 }}
               gap='s'
               alignItems='center'
-              className={cn(styles.title, {
+              className={cn({
                 [styles.editableTitle]: isOwner
               })}
               onClick={isOwner ? handleClickEditTitle : undefined}
@@ -229,6 +229,7 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
                 variant='heading'
                 size='xl'
                 className={cn(styles.titleHeader, fadeIn)}
+                textAlign='left'
               >
                 {title}
               </Text>

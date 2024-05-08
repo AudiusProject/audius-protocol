@@ -109,8 +109,8 @@ function* combineMetadata(
   // Set download & hidden status
   metadata.is_downloadable = !!collectionMetadata.is_downloadable
 
-  metadata.is_unlisted = !!collectionMetadata.is_unlisted
-  if (collectionMetadata.is_unlisted && collectionMetadata.field_visibility) {
+  metadata.is_unlisted = !!collectionMetadata.is_private
+  if (collectionMetadata.is_private && collectionMetadata.field_visibility) {
     // Convert any undefined values to booleans
     const booleanFieldVisibility = mapValues(
       collectionMetadata.field_visibility,
@@ -123,7 +123,8 @@ function* combineMetadata(
   const albumTrackPrice =
     collectionMetadata.stream_conditions?.usdc_purchase?.albumTrackPrice
   if (albumTrackPrice !== undefined && albumTrackPrice > 0) {
-    metadata.is_download_gated = !!collectionMetadata.is_downloadable
+    // is_download_gated must always be set to true for all premium tracks
+    metadata.is_download_gated = true
     metadata.download_conditions = {
       usdc_purchase: {
         price: albumTrackPrice,
@@ -760,7 +761,6 @@ export function* uploadCollection(
 
   // Propagate the collection metadata to the tracks
   for (const track of tracks) {
-    combineMetadata(track.metadata, collectionMetadata)
     track.metadata = yield* call(
       combineMetadata,
       track.metadata,
@@ -796,7 +796,7 @@ export function* uploadCollection(
           collectionMetadata as unknown as CollectionMetadata,
           isAlbum,
           trackIds,
-          !!collectionMetadata.is_unlisted
+          !!collectionMetadata.is_private
         )
 
         if (error) {

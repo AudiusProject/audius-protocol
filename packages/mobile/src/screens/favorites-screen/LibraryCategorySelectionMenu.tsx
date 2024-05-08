@@ -103,7 +103,8 @@ export const LibraryCategorySelectionMenu = () => {
 
   const isUSDCPurchasesEnabled = useIsUSDCEnabled()
   const categories =
-    currentTab === SavedPageTabs.TRACKS && isUSDCPurchasesEnabled
+    isUSDCPurchasesEnabled &&
+    (currentTab === SavedPageTabs.TRACKS || currentTab === SavedPageTabs.ALBUMS)
       ? ALL_CATEGORIES
       : CATEGORIES_WITHOUT_PURCHASED
 

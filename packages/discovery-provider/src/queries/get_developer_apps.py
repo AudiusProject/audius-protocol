@@ -101,6 +101,7 @@ def get_developer_apps_with_grant_for_user(user_id: int) -> List[Dict]:
                 DeveloperApp.address,
                 DeveloperApp.name,
                 DeveloperApp.description,
+                DeveloperApp.image_url,
                 Grant.user_id.label("grantor_user_id"),
                 Grant.created_at.label("grant_created_at"),
                 Grant.updated_at.label("grant_updated_at"),
@@ -121,9 +122,10 @@ def get_developer_apps_with_grant_for_user(user_id: int) -> List[Dict]:
                 "address": row[0],
                 "name": row[1],
                 "description": row[2],
-                "grantor_user_id": row[3],
-                "grant_created_at": row[4],
-                "grant_updated_at": row[5],
+                "image_url": row[3],
+                "grantor_user_id": row[4],
+                "grant_created_at": row[5],
+                "grant_updated_at": row[6],
             }
             for row in rows
         ]

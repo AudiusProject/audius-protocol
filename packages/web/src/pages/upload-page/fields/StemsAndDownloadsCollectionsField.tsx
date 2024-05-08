@@ -17,7 +17,11 @@ export const StemsAndDownloadsCollectionField = () => {
       onClick={() => {
         setValue(!field.value)
       }}
-      css={{ padding: `${spacing.l}px ${spacing.unit6}px`, cursor: 'pointer' }}
+      css={{
+        width: '100%',
+        padding: `${spacing.l}px ${spacing.unit6}px`,
+        cursor: 'pointer'
+      }}
     >
       <Flex justifyContent='space-between' w='100%'>
         <Flex gap='s' direction='column' alignItems='flex-start'>

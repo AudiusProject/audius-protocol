@@ -53,7 +53,7 @@ const selectTrackCount = (state: AppState) => {
 }
 
 const selectIsLineupLoading = (state: AppState) => {
-  return getCollectionTracksLineup(state).status === Status.LOADING
+  return getCollectionTracksLineup(state).status !== Status.SUCCESS
 }
 
 const selectCollectionDuration = createSelector(
@@ -106,11 +106,6 @@ const getMessages = (collectionType: 'album' | 'playlist') => ({
 })
 
 const useStyles = makeStyles(({ palette, spacing }) => ({
-  trackListDivider: {
-    marginHorizontal: spacing(6),
-    borderTopWidth: 1,
-    borderTopColor: palette.neutralLight7
-  },
   empty: {
     color: palette.neutral,
     paddingHorizontal: spacing(8),
@@ -125,6 +120,7 @@ type CollectionScreenDetailsTileProps = {
   isPrivate?: boolean
   isOwner?: boolean
   isPublishing?: boolean
+  isDeleted?: boolean
   extraDetails?: DetailsTileDetail[]
   collectionId: number | SmartCollectionVariant
   hasStreamAccess?: boolean
@@ -162,9 +158,11 @@ export const CollectionScreenDetailsTile = ({
   isOwner,
   hideOverflow,
   hideRepost,
+  hideFavorite,
   hasStreamAccess,
   streamConditions,
   ddexApp,
+  isDeleted,
   ...detailsTileProps
 }: CollectionScreenDetailsTileProps) => {
   const styles = useStyles()
@@ -249,7 +247,6 @@ export const CollectionScreenDetailsTile = ({
       <TrackList
         contextPlaylistId={!isAlbum ? numericCollectionId : undefined}
         trackItemAction='overflow'
-        showDivider
         showSkeleton={isLineupLoading}
         togglePlay={handlePressTrackListItemPlay}
         isAlbumPage={isAlbum}
@@ -286,13 +283,15 @@ export const CollectionScreenDetailsTile = ({
       descriptionLinkPressSource='collection page'
       duration={collectionDuration}
       hideOverflow={hideOverflow || !isReachable}
-      hideListenCount={true}
+      hidePlayCount={true}
       hasStreamAccess={hasStreamAccess}
       streamConditions={streamConditions}
-      hideRepost={hideRepost || !isReachable}
+      hideFavorite={hideFavorite || !hasStreamAccess}
+      hideRepost={hideRepost || !isReachable || !hasStreamAccess}
       isPlaying={isPlaying && isQueued}
       isPreviewing={isPreviewing && isQueued}
       isPublished={!isPrivate || isPublishing}
+      isDeleted={isDeleted}
       isCollection={true}
       renderBottomContent={renderTrackList}
       headerText={isPrivate ? messages.hiddenType : messages.collectionType}

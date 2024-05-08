@@ -19,11 +19,10 @@ import { debounce } from 'lodash'
 import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { IconCaretLeft, IconRemix } from '@audius/harmony-native'
+import { Hint, IconCaretLeft, IconRemix } from '@audius/harmony-native'
 import type { TextProps } from 'app/components/core'
 import { TextInput, Divider, Button, Switch, Text } from 'app/components/core'
 import { InputErrorMessage } from 'app/components/core/InputErrorMessage'
-import { HelpCallout } from 'app/components/help-callout/HelpCallout'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { TopBarIconButton } from 'app/screens/app-screen'
 import { makeStyles } from 'app/styles'
@@ -78,9 +77,6 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
   },
   input: {
     fontSize: typography.fontSize.large
-  },
-  changeAvailability: {
-    marginBottom: spacing(16)
   },
   changeAvailabilityText: {
     flexDirection: 'row',
@@ -236,16 +232,13 @@ export const RemixSettingsScreen = () => {
       <View>
         <View style={styles.setting}>
           {isStreamGated ? (
-            <HelpCallout
-              style={styles.changeAvailability}
-              content={`${messages.changeAvailbilityPrefix} ${
-                isUsdcGated
-                  ? messages.premium
-                  : isCollectibleGated
-                  ? messages.collectibleGated
-                  : messages.specialAccess
-              } ${messages.changeAvailbilitySuffix}`}
-            />
+            <Hint mb='xl'>{`${messages.changeAvailbilityPrefix} ${
+              isUsdcGated
+                ? messages.premium
+                : isCollectibleGated
+                ? messages.collectibleGated
+                : messages.specialAccess
+            } ${messages.changeAvailbilitySuffix}`}</Hint>
           ) : null}
           <View style={styles.option}>
             <Text {...labelProps}>{messages.markRemix}</Text>

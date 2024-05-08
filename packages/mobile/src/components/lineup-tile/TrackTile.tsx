@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
 
+import { useIsGatedContentPlaylistAddable } from '@audius/common/hooks'
 import {
   ShareSource,
   RepostSource,
@@ -126,6 +127,7 @@ export const TrackTileComponent = ({
     isUSDCEnabled &&
     isContentUSDCPurchaseGated(streamConditions) &&
     !!preview_cid
+  const isPlaylistAddable = useIsGatedContentPlaylistAddable(track)
 
   const renderImage = useCallback(
     (props: ImageProps) => (
@@ -167,7 +169,7 @@ export const TrackTileComponent = ({
       isEditAlbumsEnabled && isOwner && !ddexApp
         ? OverflowAction.ADD_TO_ALBUM
         : null,
-      OverflowAction.ADD_TO_PLAYLIST,
+      isPlaylistAddable ? OverflowAction.ADD_TO_PLAYLIST : null,
       isNewPodcastControlsEnabled && isLongFormContent
         ? OverflowAction.VIEW_EPISODE_PAGE
         : OverflowAction.VIEW_TRACK_PAGE,
@@ -198,6 +200,7 @@ export const TrackTileComponent = ({
     isEditAlbumsEnabled,
     isOwner,
     ddexApp,
+    isPlaylistAddable,
     isNewPodcastControlsEnabled,
     albumInfo,
     playbackPositionInfo?.status,

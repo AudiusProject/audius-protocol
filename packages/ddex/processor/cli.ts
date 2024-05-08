@@ -7,12 +7,12 @@ import { pollS3 } from './src/s3poller'
 import {
   deleteRelease,
   publishValidPendingReleases,
-  sdkService,
 } from './src/publishRelease'
 import { sync } from './src/s3sync'
 import { startServer } from './src/server'
 import { sleep } from './src/util'
 import { releaseRepo } from './src/db'
+import { createSdkService } from './src/sdk'
 
 program
   .name('ddexer')
@@ -45,7 +45,7 @@ program
   .action(async (id) => {
     // find release and delete it
     const release = releaseRepo.get(id)
-    const sdk = (await sdkService).getSdk()
+    const sdk = (await createSdkService()).getSdk()
     await deleteRelease(sdk, release!)
   })
 

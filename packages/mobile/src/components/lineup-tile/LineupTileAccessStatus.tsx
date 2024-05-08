@@ -9,17 +9,21 @@ import {
   gatedContentSelectors
 } from '@audius/common/store'
 import { formatPrice } from '@audius/common/utils'
-import { TouchableOpacity, View } from 'react-native'
+import { TouchableOpacity } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { IconLock } from '@audius/harmony-native'
-import { Text } from 'app/components/core'
+import type { FlexProps } from '@audius/harmony-native'
+import {
+  Flex,
+  IconLock,
+  IconLockUnlocked,
+  useTheme,
+  Text
+} from '@audius/harmony-native'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { useIsUSDCEnabled } from 'app/hooks/useIsUSDCEnabled'
 import { setVisibility } from 'app/store/drawers/slice'
-import { flexRowCentered, makeStyles } from 'app/styles'
-import { spacing } from 'app/styles/spacing'
-import { useColor } from 'app/utils/theme'
+import { makeStyles } from 'app/styles'
 
 const { getGatedContentStatusMap } = gatedContentSelectors
 const { setLockedContentId } = gatedContentActions
@@ -31,49 +35,39 @@ const messages = {
 }
 
 const useStyles = makeStyles(({ palette, spacing, typography }) => ({
-  root: {
-    ...flexRowCentered(),
-    paddingVertical: spacing(1),
-    paddingHorizontal: spacing(3),
-    backgroundColor: palette.accentBlue,
-    borderRadius: spacing(1),
-    gap: spacing(1)
-  },
-  text: {
-    fontFamily: typography.fontByWeight.bold,
-    fontSize: typography.fontSize.small,
-    color: palette.staticWhite
-  },
   loadingSpinner: {
     width: spacing(4),
     height: spacing(4)
-  },
-  usdcPurchase: {
-    backgroundColor: palette.specialLightGreen
   }
 }))
 
 export const LineupTileAccessStatus = ({
   contentId,
   contentType,
-  streamConditions
+  streamConditions,
+  hasStreamAccess
 }: {
   contentId: ID
   contentType: PurchaseableContentType
   streamConditions: AccessConditions
+  hasStreamAccess: boolean | undefined
 }) => {
   const styles = useStyles()
+  const { color } = useTheme()
   const dispatch = useDispatch()
   const isUSDCEnabled = useIsUSDCEnabled()
   const { onOpen: openPremiumContentPurchaseModal } =
     usePremiumContentPurchaseModal()
   const gatedTrackStatusMap = useSelector(getGatedContentStatusMap)
   const gatedTrackStatus = gatedTrackStatusMap[contentId]
-  const staticWhite = useColor('staticWhite')
   const isUSDCPurchase =
     isUSDCEnabled && isContentUSDCPurchaseGated(streamConditions)
+  const isUnlocking = gatedTrackStatus === 'UNLOCKING'
 
   const handlePress = useCallback(() => {
+    if (hasStreamAccess) {
+      return
+    }
     if (isUSDCPurchase) {
       openPremiumContentPurchaseModal(
         { contentId, contentType },
@@ -85,32 +79,63 @@ export const LineupTileAccessStatus = ({
     }
   }, [
     isUSDCPurchase,
+    hasStreamAccess,
     contentId,
     openPremiumContentPurchaseModal,
     contentType,
     dispatch
   ])
 
+  const buttonText = isUSDCPurchase
+    ? messages.price(formatPrice(streamConditions.usdc_purchase.price))
+    : isUnlocking
+    ? messages.unlocking
+    : messages.locked
+
+  const showButtonText = !isUSDCPurchase || (!hasStreamAccess && !isUnlocking)
+
+  const backgroundColor = isUSDCPurchase
+    ? color.special.lightGreen
+    : color.special.blue
+
+  const lockedStyles: FlexProps = {
+    borderRadius: 's',
+    ph: 'm',
+    pv: 'xs',
+    style: { backgroundColor }
+  }
+
+  const unlockedStyles: FlexProps = {
+    borderRadius: 'l',
+    ph: 's',
+    pv: '2xs',
+    style: { backgroundColor }
+  }
+
   return (
     <TouchableOpacity onPress={handlePress}>
-      <View style={[styles.root, isUSDCPurchase ? styles.usdcPurchase : null]}>
-        {gatedTrackStatus === 'UNLOCKING' ? (
-          <LoadingSpinner style={styles.loadingSpinner} fill={staticWhite} />
+      <Flex
+        {...(hasStreamAccess || isUnlocking ? unlockedStyles : lockedStyles)}
+        direction='row'
+        alignItems='center'
+        gap='xs'
+      >
+        {hasStreamAccess ? (
+          <IconLockUnlocked color='staticWhite' size='xs' />
+        ) : isUnlocking ? (
+          <LoadingSpinner
+            style={styles.loadingSpinner}
+            fill={color.icon.staticWhite}
+          />
         ) : (
-          <IconLock fill={staticWhite} width={spacing(4)} height={spacing(4)} />
+          <IconLock color='staticWhite' size='s' />
         )}
-        <Text style={styles.text}>
-          {isUSDCPurchase
-            ? gatedTrackStatus === 'UNLOCKING'
-              ? null
-              : messages.price(
-                  formatPrice(streamConditions.usdc_purchase.price)
-                )
-            : gatedTrackStatus === 'UNLOCKING'
-            ? messages.unlocking
-            : messages.locked}
-        </Text>
-      </View>
+        {showButtonText ? (
+          <Text color='staticWhite' variant='label' size='m'>
+            {buttonText}
+          </Text>
+        ) : null}
+      </Flex>
     </TouchableOpacity>
   )
 }

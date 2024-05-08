@@ -44,10 +44,6 @@
   align-items: center;
 }
 
-.disableInfo {
-  margin-bottom: var(--harmony-unit-6);
-}
-
 .toggleRow {
   display: flex;
   align-items: center;

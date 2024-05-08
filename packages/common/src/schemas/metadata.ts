@@ -87,7 +87,7 @@ export const newTrackMetadata = (fields, validate = false): TrackMetadata => {
 const collectionMetadataSchema = {
   is_album: false,
   is_current: true,
-  is_private: true,
+  is_private: false,
   tags: null,
   genre: null,
   mood: null,

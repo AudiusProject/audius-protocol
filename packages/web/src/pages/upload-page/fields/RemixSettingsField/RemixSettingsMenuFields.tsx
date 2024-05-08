@@ -8,13 +8,13 @@ import {
 } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
 import { getPathFromTrackUrl } from '@audius/common/utils'
+import { Hint, IconQuestionCircle } from '@audius/harmony'
 import { useField } from 'formik'
 import { useSelector } from 'react-redux'
 import { useThrottle } from 'react-use'
 
 import { Divider } from 'components/divider'
 import { TextField } from 'components/form-fields'
-import { HelpCallout } from 'components/help-callout/HelpCallout'
 
 import { SwitchRowField } from '../SwitchRowField'
 import { IS_STREAM_GATED, STREAM_CONDITIONS } from '../types'
@@ -74,13 +74,13 @@ export const RemixSettingsMenuFields = () => {
   const renderGatedContentCallout = () => {
     if (isStreamGated && !isUSDCPurchaseGated) {
       return (
-        <HelpCallout
-          content={`${messages.changeAvailabilityPrefix} ${
-            isContentCollectibleGated(streamConditions)
-              ? messages.collectibleGated
-              : messages.specialAccess
-          }${messages.changeAvailabilitySuffix}`}
-        />
+        <Hint icon={IconQuestionCircle}>{`${
+          messages.changeAvailabilityPrefix
+        } ${
+          isContentCollectibleGated(streamConditions)
+            ? messages.collectibleGated
+            : messages.specialAccess
+        }${messages.changeAvailabilitySuffix}`}</Hint>
       )
     }
     return null
@@ -89,9 +89,9 @@ export const RemixSettingsMenuFields = () => {
   const renderUsdcPurchaseGatedContentCallout = () => {
     if (isUSDCPurchaseGated) {
       return (
-        <HelpCallout
-          content={`${messages.changeAvailabilityPrefix} ${messages.premium}${messages.changeAvailabilitySuffix}`}
-        />
+        <Hint icon={IconQuestionCircle}>
+          {`${messages.changeAvailabilityPrefix} ${messages.premium}${messages.changeAvailabilitySuffix}`}
+        </Hint>
       )
     }
     return null

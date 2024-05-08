@@ -3,12 +3,11 @@ import { ChangeEvent, useCallback } from 'react'
 import { AccessConditions } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
 import { Nullable } from '@audius/common/utils'
-import { IconInfo, Radio, RadioGroup, Text } from '@audius/harmony'
+import { Hint, IconInfo, Radio, RadioGroup, Text } from '@audius/harmony'
 import cn from 'classnames'
 import { useField } from 'formik'
 import { useSelector } from 'react-redux'
 
-import { HelpCallout } from 'components/help-callout/HelpCallout'
 import Tooltip from 'components/tooltip/Tooltip'
 
 import {
@@ -104,7 +103,7 @@ export const SpecialAccessFields = (props: TrackAvailabilityFieldsProps) => {
         </label>
       </RadioGroup>
       {downloadConditions ? (
-        <HelpCallout icon={<IconInfo />} content={messages.premiumDownloads} />
+        <Hint icon={IconInfo}>{messages.premiumDownloads}</Hint>
       ) : null}
     </>
   )

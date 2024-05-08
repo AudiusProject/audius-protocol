@@ -22,7 +22,10 @@ export class UserAuth implements AuthService {
   private readonly hedgehog: Hedgehog
 
   constructor(config?: UserAuthConfig) {
-    this.config = mergeConfigWithDefaults(config, defaultUserAuthConfig)
+    this.config = mergeConfigWithDefaults(
+      config,
+      defaultUserAuthConfig.production
+    )
 
     const get: GetFn = async ({ lookupKey, email, otp }) => {
       const params = new URLSearchParams({

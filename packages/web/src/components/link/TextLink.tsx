@@ -7,7 +7,7 @@ import {
 import { Link, LinkProps } from 'react-router-dom'
 
 export type TextLinkProps = HarmonyTextLinkProps &
-  LinkProps & {
+  Omit<LinkProps, 'color'> & {
     stopPropagation?: boolean
   }
 

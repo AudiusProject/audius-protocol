@@ -61,8 +61,8 @@ export type DetailsTileProps = {
   /** Hide the favorite count */
   hideFavoriteCount?: boolean
 
-  /** Hide the listen count */
-  hideListenCount?: boolean
+  /** Hide the play count */
+  hidePlayCount?: boolean
 
   /** Hide the overflow menu button */
   hideOverflow?: boolean
@@ -93,6 +93,9 @@ export type DetailsTileProps = {
 
   /** Is the item unlisted (hidden) */
   isUnlisted?: boolean
+
+  /** Has the item been deleted */
+  isDeleted?: boolean
 
   /** Function to call when the edit button is pressed */
   onPressEdit?: GestureResponderHandler

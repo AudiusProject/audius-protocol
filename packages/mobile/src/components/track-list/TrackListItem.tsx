@@ -1,8 +1,18 @@
 import type { ComponentType } from 'react'
 import { memo, useCallback, useMemo, useState } from 'react'
 
-import { useGatedContentAccess } from '@audius/common/hooks'
-import type { Collection, ID, UID, Track, User } from '@audius/common/models'
+import {
+  useGatedContentAccess,
+  useIsGatedContentPlaylistAddable
+} from '@audius/common/hooks'
+import {
+  type Collection,
+  type ID,
+  type UID,
+  type Track,
+  type User,
+  isContentUSDCPurchaseGated
+} from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import {
   accountSelectors,
@@ -38,7 +48,6 @@ import {
 import UserBadges from 'app/components/user-badges'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { flexRowCentered, font, makeStyles } from 'app/styles'
-import { useColor } from 'app/utils/theme'
 
 import { TrackDownloadStatusIndicator } from '../offline-downloads/TrackDownloadStatusIndicator'
 
@@ -114,19 +123,6 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
   dragIcon: {
     marginRight: spacing(4)
   },
-  divider: {
-    borderBottomColor: palette.neutralLight7,
-    borderBottomWidth: 1,
-    marginVertical: 0,
-    marginHorizontal: spacing(6)
-  },
-  noMarginDivider: {
-    borderBottomColor: palette.neutralLight8,
-    marginHorizontal: 0
-  },
-  hideDivider: {
-    opacity: 0
-  },
   locked: {
     ...flexRowCentered(),
     paddingVertical: spacing(0.5),
@@ -164,11 +160,7 @@ export type TrackListItemProps = {
   index: number
   isReorderable?: boolean
   showViewAlbum?: boolean
-  noDividerMargin?: boolean
   onRemove?: (index: number) => void
-  prevUid?: UID
-  showDivider?: boolean
-  showTopDivider?: boolean
   togglePlay?: (uid: string, trackId: ID) => void
   trackItemAction?: TrackItemAction
   uid?: UID
@@ -215,11 +207,7 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
     index,
     isReorderable = false,
     showViewAlbum = false,
-    noDividerMargin,
     onRemove,
-    prevUid,
-    showDivider,
-    showTopDivider,
     togglePlay,
     track,
     trackItemAction,
@@ -235,7 +223,8 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
     title,
     track_id,
     owner_id,
-    ddex_app: ddexApp
+    ddex_app: ddexApp,
+    stream_conditions: streamConditions
   } = track
   const { isEnabled: isEditAlbumsEnabled } = useFeatureFlag(
     FeatureFlags.EDIT_ALBUMS
@@ -254,19 +243,17 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
     return uid !== undefined && uid === playingUid
   })
 
-  const isPrevItemActive = useSelector((state) => {
-    const playingUid = getUid(state)
-    return prevUid !== undefined && prevUid === playingUid
-  })
-
   const isPlaying = useSelector((state) => {
     return isActive && getPlaying(state)
   })
+  const isPlaylistAddable = useIsGatedContentPlaylistAddable(track)
+  // Unlike other gated tracks, USDC purchase gated tracks are playable because they have previews
+  const isPlayable =
+    !isDeleted && (!isLocked || isContentUSDCPurchaseGated(streamConditions))
 
   const messages = getMessages({ isDeleted })
   const styles = useStyles()
   const dispatch = useDispatch()
-  const white = useColor('white')
   const { spacing } = useTheme()
   const [titleWidth, setTitleWidth] = useState(0)
 
@@ -281,7 +268,7 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
   )
 
   const onPressTrack = () => {
-    if (uid && !isLocked && !isDeleted && togglePlay) {
+    if (uid && isPlayable && togglePlay) {
       togglePlay(uid, track_id)
     }
   }
@@ -323,7 +310,7 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
       isEditAlbumsEnabled && isTrackOwner && !ddexApp
         ? OverflowAction.ADD_TO_ALBUM
         : null,
-      OverflowAction.ADD_TO_PLAYLIST,
+      isPlaylistAddable ? OverflowAction.ADD_TO_PLAYLIST : null,
       isNewPodcastControlsEnabled && isLongFormContent
         ? OverflowAction.VIEW_EPISODE_PAGE
         : OverflowAction.VIEW_TRACK_PAGE,
@@ -354,6 +341,7 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
     has_current_user_reposted,
     isEditAlbumsEnabled,
     ddexApp,
+    isPlaylistAddable,
     isNewPodcastControlsEnabled,
     isLongFormContent,
     showViewAlbum,
@@ -374,24 +362,12 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
     onRemove?.(index)
   }
 
-  // The dividers above and belove the active track should be hidden
-  const hideDivider = isActive || isPrevItemActive
-
   const ListItemView = (
     isReorderable ? View : TouchableOpacity
   ) as ComponentType<TouchableOpacityProps>
 
   return (
     <View>
-      {showDivider && (showTopDivider || index > 0) ? (
-        <View
-          style={[
-            styles.divider,
-            hideDivider && styles.hideDivider,
-            noDividerMargin && styles.noMarginDivider
-          ]}
-        />
-      ) : null}
       <View
         style={[
           styles.trackContainer,
@@ -402,7 +378,7 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
         <ListItemView
           style={styles.trackInnerContainer}
           onPress={isReorderable ? undefined : onPressTrack}
-          disabled={isDeleted || isLocked}
+          disabled={!isPlayable}
         >
           {!hideArt ? (
             <TrackArtwork
@@ -411,7 +387,7 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
               isPlaying={isPlaying}
               isUnlisted={isUnlisted}
             />
-          ) : isActive && !isDeleted && !isLocked ? (
+          ) : isActive && isPlayable ? (
             <IconButton
               icon={isPlaying ? IconPlaybackPause : IconPlaybackPlay}
               onPress={onPressTrack}
@@ -433,7 +409,7 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
           <View
             style={[
               styles.nameArtistContainer,
-              !isDeleted && isLocked ? styles.halfTransparent : null
+              isPlayable ? null : styles.halfTransparent
             ]}
           >
             <View
@@ -464,10 +440,7 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
             </Text>
           </View>
           {!isDeleted && isLocked ? (
-            <View style={styles.locked}>
-              <IconLock fill={white} width={10} height={10} />
-              <Text style={styles.lockedText}>{messages.locked}</Text>
-            </View>
+            <IconLock color='subdued' width={spacing.l} height={spacing.l} />
           ) : null}
           {trackItemAction === 'overflow' ? (
             <IconButton

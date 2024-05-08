@@ -43,6 +43,7 @@ import { moodMap } from 'app/utils/moods'
 
 import { OfflineStatusRow } from '../offline-downloads'
 
+import { DeletedTile } from './DeletedTile'
 import { DetailsProgressInfo } from './DetailsProgressInfo'
 import { DetailsTileActionButtons } from './DetailsTileActionButtons'
 import { DetailsTileAiAttribution } from './DetailsTileAiAttribution'
@@ -108,13 +109,14 @@ export const DetailsTile = ({
   streamConditions,
   hideFavorite,
   hideFavoriteCount,
-  hideListenCount,
+  hidePlayCount,
   hideOverflow,
   hideRepost,
   hideRepostCount,
   hideShare,
   isPlaying,
   isPreviewing,
+  isDeleted = false,
   isPlayable = true,
   isCollection = false,
   isPublished = true,
@@ -275,6 +277,18 @@ export const DetailsTile = ({
     ) : null
   }
 
+  if (isDeleted) {
+    return (
+      <DeletedTile
+        imageElement={imageElement}
+        title={title}
+        user={user}
+        headerText={headerText}
+        handlePressArtistName={handlePressArtistName}
+      />
+    )
+  }
+
   return (
     <Paper mb='xl'>
       {renderDogEar()}
@@ -366,7 +380,6 @@ export const DetailsTile = ({
           <DetailsTileStats
             favoriteCount={saveCount}
             hideFavoriteCount={hideFavoriteCount}
-            hideListenCount={hideListenCount}
             hideRepostCount={hideRepostCount}
             onPressFavorites={onPressFavorites}
             onPressReposts={onPressReposts}
@@ -428,6 +441,7 @@ export const DetailsTile = ({
           trackCount={trackCount}
           releaseDate={releaseDate}
           updatedAt={updatedAt}
+          hidePlayCount={hidePlayCount}
         />
         {renderTags()}
         <OfflineStatusRow contentId={contentId} isCollection={isCollection} />

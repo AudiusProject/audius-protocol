@@ -5,25 +5,6 @@
   gap: var(--harmony-unit-6);
 }
 
-.hint {
-  align-self: stretch;
-}
-
-.hintContent {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  word-break: break-all;
-
-  /*
-    Clamp vertically
-    Ignore the webkit prefix, it's actually supported across browsers: 
-    https://developer.mozilla.org/en-US/docs/Web/CSS/-webkit-line-clamp
-  */
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 20;
-}
-
 .footer {
   display: flex;
   gap: var(--harmony-unit-2);

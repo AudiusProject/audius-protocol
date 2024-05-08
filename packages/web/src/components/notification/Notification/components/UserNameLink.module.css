@@ -20,10 +20,6 @@
   margin-left: var(--harmony-unit-1);
 }
 
-.badgesNoContent {
-  margin-left: 0;
-}
-
 .link:hover {
   color: var(--harmony-secondary);
   text-decoration: underline !important;

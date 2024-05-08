@@ -15,6 +15,11 @@ export const getStatus = (
   return baseState ? baseState.status : Status.LOADING
 }
 
+export const getCollectionIds = (
+  state: CommonState,
+  { variant }: { variant: ExploreCollectionsVariant }
+) => getBaseState(state)[variant]?.collectionIds ?? []
+
 export const getCollections = (
   state: CommonState,
   { variant }: { variant: ExploreCollectionsVariant }

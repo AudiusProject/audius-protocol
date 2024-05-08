@@ -20,13 +20,18 @@ export const ViewerActionButtons = (props: ViewerActionButtonsProps) => {
     getCollection(state, { id: collectionId })
   ) as Collection | null
 
-  const { track_count, is_private } = collection ?? {}
+  const { track_count, is_private, access } = collection ?? {}
   const isDisabled = !collection || track_count === 0 || is_private
+  const hasStreamAccess = access?.stream
 
   return (
     <>
-      <RepostButton disabled={isDisabled} collectionId={collectionId} />
-      <FavoriteButton disabled={isDisabled} collectionId={collectionId} />
+      {hasStreamAccess ? (
+        <>
+          <RepostButton disabled={isDisabled} collectionId={collectionId} />
+          <FavoriteButton disabled={isDisabled} collectionId={collectionId} />
+        </>
+      ) : null}
 
       <ShareButton disabled={isDisabled} collectionId={collectionId} />
       <ClientOnly>

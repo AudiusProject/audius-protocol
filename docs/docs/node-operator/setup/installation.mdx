@@ -6,6 +6,19 @@ sidebar_label: Installation
 description: Audius Protocol Documentation
 ---
 
+import useBaseUrl from '@docusaurus/useBaseUrl'
+
+:::caution Looking for Old Docs?
+
+Please be aware that `audius-docker-compose` will soon no longer be supported.
+
+Read the [Migration Guide](/node-operator/setup/installation#migration-guide) at the bottom of this
+page to upgrade.
+
+<details>
+<summary>Click here for legacy documentation.</summary>
+<div>
+
 This guide describes how to run Audius services on a single machine via Docker Compose. The
 repository of Docker Compose files can be found on
 [GitHub](https://github.com/AudiusProject/audius-docker-compose).
@@ -20,7 +33,7 @@ During installation there will be prompts for required environment variables. Th
 
 ---
 
-## Creator Node
+**Creator Node**
 
 - `creatorNodeEndpoint` - The DNS of your content node. If you haven't registered the service yet,
   please enter the url you plan to register.
@@ -29,23 +42,210 @@ During installation there will be prompts for required environment variables. Th
 - `delegatePrivateKey` - Private key associated with `delegateOwnerWallet`
 - `spOwnerWallet` - Wallet that registered (or will register) the content node on chain
 
-If you're using an externally managed Postgres DB please see
-[this section](/node-operator/setup/advanced#discovery-node)
-
 ---
 
-## Discovery Node
+**Discovery Node**
 
 - `audius_delegate_owner_wallet` - Address of wallet that contains no tokens but that is registered
   on chain, used to sign JSON responses from server
 - `audius_delegate_private_key` - Private key associated with `audius_delegate_owner_wallet`
 
-If you're using an externally managed Postgres DB please see
-[this section](/node-operator/setup/advanced#discovery-node)
+</div>
+</details>
+
+:::
+
+## Overview
+
+Installing and managing Audius Nodes is (in most cases) a 3 step process.
+
+1. Install `audius-ctl`
+2. Confirm your
+   [ssh access and port configuration](/node-operator/setup/hardware-requirements#system-configuration)
+3. Edit the configuration file
+4. Run your Audius Nodes
 
 ---
 
-## More options
+## Install `audius-ctl`
 
-For more advanced configuration options or migrating from Kubernetes check out the
-[Advanced Setup Guide](/node-operator/setup/advanced)
+Get started by opening a terminal on a local machine, this can be any computer, such as a laptop or
+desktop.
+
+Run the following command to install the controller utility, `audius-ctl`
+
+```bash
+curl -sSL https://install.audius.org | sh
+```
+
+:::tip Where to install audius-ctl
+
+While it is recommended to install the controller utility on a separate computer, such as your
+laptop, any machine can operate as a Controller. Check the
+[Advanced Usage page](/node-operator/setup/advanced#audius-control-utility) for more information.
+
+:::
+
+---
+
+## Edit the Configuration File
+
+Next you will need to edit the configuration file. Run the following command to get started:
+
+```bash
+audius-ctl config edit
+```
+
+### Configuration Details
+
+The configuration file will be pre-populated with the required fields. Enter your information into
+each field for each Audius Node you will be running.
+
+```bash showLineNumbers title="audius-ctl configuration file"
+network:
+  deployOn: mainnet
+nodes:
+  content-1.example.com:        # <--- THE URL OF YOUR CONTENT NODE
+    type: content
+    privateKey: abc123          # <--- UNIQUE PRIV KEY USED BY THIS NODE TO SIGN RESPONSES
+    wallet: 0xABC123            # <--- UNIQUE WALLET ADDRESS OF ABOVE PRIV KEY
+    rewardsWallet: 0xABC123     # <--- ADDRESS OF WALLET HOLDING STAKED TOKENS
+  discovery-1.example.com:      # <--- THE URL OF YOUR DISCOVERY NODE
+    type: discovery
+    privateKey: abc123          # <--- UNIQUE PRIV KEY USED BY THIS NODE TO SIGN RESPONSES
+    wallet: 0xABC123            # <--- UNIQUE WALLET ADDRESS OF ABOVE PRIV KEY
+    rewardsWallet: 0xABC123     # <--- ADDRESS OF WALLET HOLDING STAKED TOKENS
+```
+
+<details>
+<summary>More Info</summary>
+<div>
+
+| field           | description                                                                                                        |
+| --------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `type`          | either `content` or `discovery`                                                                                    |
+| `privateKey`    | private key associated with the `wallet`                                                                           |
+| `wallet`        | Address of wallet that contains no tokens but that is registered on chain, used to sign JSON responses from server |
+| `rewardsWallet` | Wallet that registered (or will register) the Audius Node on chain                                                 |
+
+</div>
+</details>
+
+---
+
+## Run Your Audius Nodes
+
+With the configuration file setup correctly, the final command to run is:
+
+```bash
+audius-ctl up
+```
+
+This command does a few things:
+
+1. Loops over every Audius Node specified
+2. Connects to each Virtual Machine via ssh
+   1. Checks that the required Audius Node software is installed
+   2. If not found, runs the installer
+   3. Starts the Audius Node
+
+### Additional Commands
+
+Get help, and view all of the available commands by running the following command:
+
+```bash
+audius-ctl --help
+```
+
+```bash
+> audius-ctl --help
+CLI for provisioning and interacting with audius nodes
+
+Usage:
+  audius-ctl [command] [flags]
+  audius-ctl [command]
+
+Available Commands:
+  completion  Generate the autocompletion script for the specified shell
+  config      view/modify audius-d configuration
+  devnet      Spin up local ethereum, solana, and acdc chains for development
+  down        Spin down nodes and network in the current context.
+  help        Help about any command
+  infra       Manage audius-d instances
+  jump        Open a shell into the audius-d container running on a host.
+  register    Register nodes on ethereum (only works for local devnet)
+  restart     Fully turn down and then turn up audius-d.
+  status      test audius-d connectivity
+  statusbar   Run status bar [n/a]
+  up          Spin up the audius nodes specified in your config, optionally specifying which hosts.
+
+Flags:
+      --debug     Print debug logs in console
+  -h, --help      help for audius-ctl
+  -v, --version   Display version info
+
+Use "audius-ctl [command] --help" for more information about a command.
+```
+
+> checkout the [code on GitHub](https://github.com/AudiusProject/audius-d)
+
+---
+
+## Migration Guide
+
+:::warning Read this first
+
+This portion of the guide is only for Node Operators that setup Audius Nodes using
+`audius-docker-compose`.
+
+:::
+
+Migrating Audius Nodes in just a few steps:
+
+1. Disable auto-upgrade on existing Nodes
+2. Stop the Audius daemon on existing Nodes
+3. Follow the [steps outlined above](/node-operator/setup/installation#overview)
+
+### Stop Existing Nodes
+
+For each Node to be migrated, you will need to ssh into the Virtual Machine, disable auto upgrade,
+and down the Node. The workflow and required commands are as follows:
+
+1. ssh into Virtual Machine
+
+2. disable auto upgrade
+
+```bash
+audius-cli auto-upgrade --remove
+```
+
+3. Down the Audius Node
+
+```bash
+audius-cli down
+```
+
+4. log out
+
+5. Repeat with each Node.
+
+### Configure Nodes
+
+From here, the guide is the same as though you were creating new Nodes from scratch. Head back up to
+the [`audius-ctl` installation step](/node-operator/setup/installation#install-audius-ctl) to get
+started.
+
+#### Migration Variable Mapping
+
+Node Operators migrating existing Nodes will be familiar with the legacy variables for each Node
+type. See the mappings below to correctly use existing keys from a `override.env` file in a new
+configuration file.
+
+- Content Node Variables
+
+  - `delegateOwnerWallet` --> `wallet`
+  - `delegatePrivateKey` --> `privateKey`
+
+- Discovery Node Variables
+  - `audius_delegate_owner_wallet` --> `wallet`
+  - `audius_delegate_private_key` --> `privateKey`

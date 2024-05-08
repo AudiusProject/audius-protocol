@@ -8,17 +8,17 @@ import { html } from 'hono/html'
 import { decode } from 'hono/jwt'
 import { prettyJSON } from 'hono/pretty-json'
 import { HtmlEscapedString } from 'hono/utils/html'
+import { ReleaseProcessingStatus, releaseRepo, userRepo, xmlRepo } from './db'
 import {
-  ReleaseProcessingStatus,
-  dbUpsert,
-  releaseRepo,
-  userRepo,
-  xmlRepo,
-} from './db'
-import { DDEXContributor, parseDdexXml, reParsePastXml } from './parseDelivery'
+  DDEXContributor,
+  DDEXRelease,
+  parseDdexXml,
+  reParsePastXml,
+} from './parseDelivery'
 import { prepareAlbumMetadata, prepareTrackMetadatas } from './publishRelease'
-import { parseBool } from './util'
 import { readAssetWithCaching } from './s3poller'
+import { parseBool } from './util'
+import { startUsersPoller } from './usersPoller'
 
 const { NODE_ENV, DDEX_KEY, DDEX_URL, COOKIE_SECRET } = process.env
 const COOKIE_NAME = 'audiusUser'
@@ -44,7 +44,7 @@ app.get('/', async (c) => {
           : ''}
         ${me
           ? html`
-              <h4>Welcome back ${me.name}</h4>
+              <h4>Welcome back @${me.handle}</h4>
               <a href="/auth/logout" role="button">log out</a>
             `
           : html` <a role="button" href="/auth">login</a> `}
@@ -85,7 +85,7 @@ app.get('/auth/redirect', async (c) => {
     }
 
     // upsert user record
-    dbUpsert('users', {
+    userRepo.upsert({
       id: payload.userId,
       handle: payload.handle,
       name: payload.name,
@@ -112,7 +112,7 @@ app.get('/auth/success', async (c) => {
     }
 
     // upsert user record
-    dbUpsert('users', {
+    userRepo.upsert({
       id: payload.userId,
       handle: payload.handle,
       name: payload.name,
@@ -406,7 +406,7 @@ app.get('/xmls/:xmlUrl', (c) => {
 
   // parse=true will parse the xml to internal representation
   if (parseBool(c.req.query('parse'))) {
-    const parsed = parseDdexXml(xmlUrl, row.xmlText)
+    const parsed = parseDdexXml(xmlUrl, row.xmlText) as DDEXRelease[]
 
     // parse=sdk will convert internal representation to SDK friendly format
     if (c.req.query('parse') == 'sdk') {
@@ -548,4 +548,6 @@ export function startServer() {
     fetch: app.fetch,
     port,
   })
+
+  startUsersPoller().catch(console.error)
 }

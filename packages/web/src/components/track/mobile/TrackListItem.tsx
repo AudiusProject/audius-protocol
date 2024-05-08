@@ -173,7 +173,8 @@ const TrackListItem = ({
   const isUsdcPurchaseGated = isContentUSDCPurchaseGated(streamConditions)
 
   const onClickTrack = () => {
-    if (uid && !isLocked && !isDeleted && togglePlay) togglePlay(uid, trackId)
+    if (uid && !isDeleted && (!isLocked || isUsdcPurchaseGated) && togglePlay)
+      togglePlay(uid, trackId)
   }
 
   const onRemoveTrack = (e: MouseEvent<Element>) => {

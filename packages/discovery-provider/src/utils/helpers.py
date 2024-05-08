@@ -25,7 +25,7 @@ from sqlalchemy import inspect
 from web3 import Web3
 
 from src import exceptions
-from src.solana.solana_helpers import MEMO_PROGRAM_ID
+from src.solana.solana_helpers import MEMO_PROGRAM_ID, MEMO_V2_PROGRAM_ID
 
 from . import multihash
 
@@ -500,20 +500,32 @@ def get_solana_tx_token_balance_changes(
     return balance_changes
 
 
+def get_memo_program_index(tx_message: Message):
+    try:
+        return tx_message.account_keys.index(Pubkey.from_string(MEMO_PROGRAM_ID))
+    except ValueError:
+        # Do nothing, there's no memos
+        return None
+
+
+def get_memo_v2_program_index(tx_message: Message):
+    try:
+        return tx_message.account_keys.index(Pubkey.from_string(MEMO_V2_PROGRAM_ID))
+    except ValueError:
+        # Do nothing, there's no memos
+        return None
+
+
 def decode_all_solana_memos(tx_message: Message):
     """Finds all memo instructions in a transaction and base58 decodes their instruction data as a string"""
-    try:
-        memo_program_index = tx_message.account_keys.index(
-            Pubkey.from_string(MEMO_PROGRAM_ID)
-        )
-        return [
-            base58.b58decode(instruction.data).decode("utf8")
-            for instruction in tx_message.instructions
-            if instruction.program_id_index == memo_program_index
-        ]
-    except:
-        # Do nothing, there's no memos
-        return []
+    memo_program_index = get_memo_program_index(tx_message)
+    memo_v2_program_index = get_memo_v2_program_index(tx_message)
+    return [
+        base58.b58decode(instruction.data).decode("utf8")
+        for instruction in tx_message.instructions
+        if instruction.program_id_index == memo_program_index
+        or instruction.program_id_index == memo_v2_program_index
+    ]
 
 
 def get_account_owner_from_balance_change(

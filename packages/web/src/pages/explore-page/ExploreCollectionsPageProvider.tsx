@@ -1,35 +1,17 @@
-import { useEffect, useState, useCallback, ComponentType } from 'react'
+import { useEffect, useState, ComponentType } from 'react'
 
-import { FavoriteType, ID } from '@audius/common/models'
 import {
   explorePageCollectionsSelectors,
   explorePageCollectionsActions,
-  ExploreCollectionsVariant,
-  repostsUserListActions,
-  favoritesUserListActions,
-  RepostType
+  ExploreCollectionsVariant
 } from '@audius/common/store'
-import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { matchPath } from 'react-router'
 import { useHistory } from 'react-router-dom'
 import { Dispatch } from 'redux'
 
-import {
-  setUsers,
-  setVisibility
-} from 'store/application/ui/userListModal/slice'
-import {
-  UserListType,
-  UserListEntityType
-} from 'store/application/ui/userListModal/types'
 import { AppState } from 'store/types'
-import {
-  EXPLORE_MOOD_PLAYLISTS_PAGE,
-  REPOSTING_USERS_ROUTE,
-  FAVORITING_USERS_ROUTE,
-  getPathname
-} from 'utils/route'
+import { EXPLORE_MOOD_PLAYLISTS_PAGE, getPathname } from 'utils/route'
 
 import {
   EXPLORE_COLLECTIONS_MAP,
@@ -39,13 +21,11 @@ import {
 } from './collections'
 import { CollectionsPageProps as DesktopCollectionsPageProps } from './components/desktop/CollectionsPage'
 import { CollectionsPageProps as MobileCollectionsPageProps } from './components/mobile/CollectionsPage'
-const { setFavorite } = favoritesUserListActions
-const { setRepost } = repostsUserListActions
+
 const { fetch } = explorePageCollectionsActions
-const { getCollections, getStatus } = explorePageCollectionsSelectors
+const { getCollectionIds, getStatus } = explorePageCollectionsSelectors
 
 type OwnProps = {
-  isMobile: boolean
   variant: ExploreCollectionsVariant
   children:
     | ComponentType<MobileCollectionsPageProps>
@@ -57,60 +37,16 @@ type ExploreCollectionsPageProviderProps = OwnProps &
   ReturnType<typeof mapDispatchToProps>
 
 const ExploreCollectionsPageProvider = ({
-  isMobile,
   variant,
-  collections,
+  collectionIds,
   status,
-  goToRoute,
   fetch,
-  setRepostPlaylistId,
-  setFavoritePlaylistId,
-  setRepostUsers,
-  setFavoriteUsers,
-  setModalVisibility,
   children: Children
 }: ExploreCollectionsPageProviderProps) => {
   const { location } = useHistory()
   const [info, setInfo] = useState<
     ExploreCollection | ExploreMoodCollection | null
   >(null)
-
-  const onClickReposts = useCallback(
-    (id: ID) => {
-      if (isMobile) {
-        setRepostPlaylistId(id)
-        goToRoute(REPOSTING_USERS_ROUTE)
-      } else {
-        setRepostUsers(id)
-        setModalVisibility()
-      }
-    },
-    [
-      isMobile,
-      setRepostPlaylistId,
-      goToRoute,
-      setRepostUsers,
-      setModalVisibility
-    ]
-  )
-  const onClickFavorites = useCallback(
-    (id: ID) => {
-      if (isMobile) {
-        setFavoritePlaylistId(id)
-        goToRoute(FAVORITING_USERS_ROUTE)
-      } else {
-        setFavoriteUsers(id)
-        setModalVisibility()
-      }
-    },
-    [
-      isMobile,
-      setFavoritePlaylistId,
-      goToRoute,
-      setFavoriteUsers,
-      setModalVisibility
-    ]
-  )
 
   useEffect(() => {
     if (variant === ExploreCollectionsVariant.MOOD) {
@@ -144,23 +80,16 @@ const ExploreCollectionsPageProvider = ({
   const childProps = {
     title,
     description,
-    collections,
-    status,
-    onClickReposts,
-    onClickFavorites,
-    goToRoute
+    collectionIds,
+    status
   }
 
-  const mobileProps = {}
-
-  const desktopProps = {}
-
-  return <Children {...childProps} {...mobileProps} {...desktopProps} />
+  return <Children {...childProps} />
 }
 
 function mapStateToProps(state: AppState, props: OwnProps) {
   return {
-    collections: getCollections(state, { variant: props.variant }),
+    collectionIds: getCollectionIds(state, { variant: props.variant }),
     status: getStatus(state, { variant: props.variant })
   }
 }
@@ -168,29 +97,7 @@ function mapStateToProps(state: AppState, props: OwnProps) {
 function mapDispatchToProps(dispatch: Dispatch) {
   return {
     fetch: (variant: ExploreCollectionsVariant, moods?: string[]) =>
-      dispatch(fetch({ variant, moods })),
-    setRepostPlaylistId: (collectionId: ID) =>
-      dispatch(setRepost(collectionId, RepostType.COLLECTION)),
-    setFavoritePlaylistId: (collectionId: ID) =>
-      dispatch(setFavorite(collectionId, FavoriteType.PLAYLIST)),
-    setRepostUsers: (trackID: ID) =>
-      dispatch(
-        setUsers({
-          userListType: UserListType.REPOST,
-          entityType: UserListEntityType.COLLECTION,
-          id: trackID
-        })
-      ),
-    setFavoriteUsers: (trackID: ID) =>
-      dispatch(
-        setUsers({
-          userListType: UserListType.FAVORITE,
-          entityType: UserListEntityType.COLLECTION,
-          id: trackID
-        })
-      ),
-    setModalVisibility: () => dispatch(setVisibility(true)),
-    goToRoute: (route: string) => dispatch(pushRoute(route))
+      dispatch(fetch({ variant, moods }))
   }
 }
 
