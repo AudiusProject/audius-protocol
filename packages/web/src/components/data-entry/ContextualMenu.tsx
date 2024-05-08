@@ -190,7 +190,12 @@ export const ContextualMenu = <FormValues extends FormikValues = FormikValues>(
   const preview = previewOverride ? (
     previewOverride(toggleMenu)
   ) : (
-    <Tile onClick={toggleMenu} className={styles.root} elevation='flat'>
+    <Tile
+      onClick={toggleMenu}
+      className={styles.root}
+      elevation='flat'
+      css={{ width: '100%' }}
+    >
       <div className={styles.header}>
         <div className={styles.title}>
           <Text variant='title' size='l'>

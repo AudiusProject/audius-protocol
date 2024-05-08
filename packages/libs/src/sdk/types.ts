@@ -6,7 +6,11 @@ import type { AuthService } from './services/Auth'
 import type { DiscoveryNodeSelectorService } from './services/DiscoveryNodeSelector'
 import type { EntityManagerService } from './services/EntityManager'
 import type { LoggerService } from './services/Logger'
-import type { SolanaRelayService, SolanaWalletAdapter } from './services/Solana'
+import type {
+  PaymentRouterClient,
+  SolanaRelayService,
+  SolanaWalletAdapter
+} from './services/Solana'
 import { ClaimableTokensClient } from './services/Solana/programs/ClaimableTokensClient'
 import { RewardManagerClient } from './services/Solana/programs/RewardManagerClient'
 import type { StorageService } from './services/Storage'
@@ -57,6 +61,11 @@ export type ServicesContainer = {
    * Claimable Tokens Program client for Solana
    */
   claimableTokensClient: ClaimableTokensClient
+
+  /**
+   * Payment Router Program client for Solana
+   */
+  paymentRouterClient: PaymentRouterClient
 
   /**
    * Reward Manager Program client for Solana

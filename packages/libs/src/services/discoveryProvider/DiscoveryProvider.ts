@@ -21,7 +21,11 @@ import {
   DiscoveryProviderSelection,
   DiscoveryProviderSelectionConfig
 } from './DiscoveryProviderSelection'
-import { DEFAULT_UNHEALTHY_BLOCK_DIFF, REQUEST_TIMEOUT_MS } from './constants'
+import {
+  DEFAULT_UNHEALTHY_BLOCK_DIFF,
+  DISCOVERY_PROVIDER_USER_WALLET_OVERRIDE,
+  REQUEST_TIMEOUT_MS
+} from './constants'
 import * as Requests from './requests'
 
 const MAX_MAKE_REQUEST_RETRY_COUNT = 5
@@ -65,7 +69,7 @@ export type DiscoveryProviderConfig = {
   unhealthySlotDiffPlays?: number
   unhealthyBlockDiff?: number
   discoveryNodeSelector?: DiscoveryNodeSelector
-  enableUserIdOverride?: boolean
+  enableUserWalletOverride?: boolean
 } & Pick<
   DiscoveryProviderSelectionConfig,
   'selectionCallback' | 'monitoringCallbacks' | 'localStorage'
@@ -97,10 +101,10 @@ type DiscoveryNodeChallenge = {
   disbursed_amount: number
 }
 
-const getUserIdOverride = async (localStorage?: LocalStorage) => {
+const getUserWalletOverride = async (localStorage?: LocalStorage) => {
   try {
     const userIdOverride = await localStorage?.getItem(
-      '@audius/user-id-override'
+      DISCOVERY_PROVIDER_USER_WALLET_OVERRIDE
     )
     return userIdOverride == null ? undefined : userIdOverride
   } catch {
@@ -152,7 +156,7 @@ export class DiscoveryProvider {
     | DiscoveryProviderSelection['monitoringCallbacks']
     | undefined
 
-  enableUserIdOverride = false
+  enableUserWalletOverride = false
 
   discoveryProviderEndpoint: string | undefined
   isInitialized = false
@@ -176,7 +180,7 @@ export class DiscoveryProvider {
     unhealthySlotDiffPlays,
     unhealthyBlockDiff,
     discoveryNodeSelector,
-    enableUserIdOverride = false
+    enableUserWalletOverride = false
   }: DiscoveryProviderConfig) {
     this.whitelist = whitelist
     this.blacklist = blacklist
@@ -185,7 +189,7 @@ export class DiscoveryProvider {
     this.web3Manager = web3Manager
     this.selectionCallback = selectionCallback
     this.localStorage = localStorage
-    this.enableUserIdOverride = enableUserIdOverride
+    this.enableUserWalletOverride = enableUserWalletOverride
 
     this.unhealthyBlockDiff = unhealthyBlockDiff ?? DEFAULT_UNHEALTHY_BLOCK_DIFF
     this.serviceSelector = new DiscoveryProviderSelection(
@@ -243,12 +247,33 @@ export class DiscoveryProvider {
       this.web3Manager &&
       this.web3Manager.web3
     ) {
-      // Set current user if it exists
-      const userAccount = await this.getUserAccount(
+      const walletOverride = this.enableUserWalletOverride
+        ? await getUserWalletOverride(this.localStorage)
+        : undefined
+
+      const web3AccountPromise = this.getUserAccount(
         this.web3Manager.getWalletAddress()
       )
-      if (userAccount) {
-        await this.userStateManager.setCurrentUser(userAccount)
+
+      if (walletOverride) {
+        const overrideAccountPromise = this.getUserAccount(walletOverride)
+        const [web3User, currentUser] = await Promise.all([
+          web3AccountPromise,
+          overrideAccountPromise
+        ])
+
+        if (web3User) {
+          this.userStateManager.setWeb3User(web3User)
+        }
+        if (currentUser) {
+          await this.userStateManager.setCurrentUser(currentUser)
+        }
+      } else {
+        const currentUser = await web3AccountPromise
+        if (currentUser) {
+          this.userStateManager.setWeb3User(currentUser)
+          await this.userStateManager.setCurrentUser(currentUser)
+        }
       }
     }
   }
@@ -839,21 +864,8 @@ export class DiscoveryProvider {
    * Return user collections (saved & uploaded) along w/ users for those collections
    */
   async getUserAccount(wallet: string) {
-    const userIdOverride = this.enableUserIdOverride
-      ? await getUserIdOverride(this.localStorage)
-      : undefined
-    // If override is used, fetch that account instead
-    if (userIdOverride) {
-      const req = Requests.getUsers(1, 0, [parseInt(userIdOverride)])
-      const res = await this._makeRequest<CurrentUser[]>(req)
-      if (res && res.length > 0 && res[0]) {
-        return { ...res[0], playlists: [] } as CurrentUser
-      }
-      return null
-    } else {
-      const req = Requests.getUserAccount(wallet)
-      return await this._makeRequest<CurrentUser>(req)
-    }
+    const req = Requests.getUserAccount(wallet)
+    return await this._makeRequest<CurrentUser>(req)
   }
 
   /**

@@ -24,6 +24,7 @@ import {
 import { prepareAlbumMetadata, prepareTrackMetadatas } from './publishRelease'
 import { readAssetWithCaching } from './s3poller'
 import { sources } from './sources'
+import { startUsersPoller } from './usersPoller'
 import { parseBool, simulateDeliveryForUserName } from './util'
 
 const { NODE_ENV, DDEX_URL, COOKIE_SECRET } = process.env
@@ -50,7 +51,7 @@ app.get('/', async (c) => {
           : ''}
         ${me
           ? html`
-              <h4>Welcome back ${me.name}</h4>
+              <h4>Welcome back @${me.handle}</h4>
               <a href="/auth/logout" role="button">log out</a>
             `
           : html`
@@ -591,6 +592,8 @@ export function startServer() {
     fetch: app.fetch,
     port,
   })
+
+  startUsersPoller().catch(console.error)
 }
 
 // for:

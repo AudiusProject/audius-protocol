@@ -38,6 +38,7 @@ export const developmentConfig: SdkServicesConfig = {
     "claimableTokensProgramAddress": "testHKV1B56fbvop4w6f2cTGEub9dRQ2Euta5VmqdX9",
     "rewardManagerProgramAddress": "testLsJKtyABc9UXJF8JWFKf1YH4LmqCWBC42c6akPb",
     "rewardManagerStateAddress": "DJPzVothq58SmkpRb1ATn5ddN2Rpv1j2TcGvM3XsHf1c",
+    "paymentRouterProgramAddress": "apaySbqV1XAmuiGszeN4NyWrXkkMrnuJVoNhzmS1AMa",
     "rpcEndpoint": "http://audius-protocol-solana-test-validator-1",
     "usdcTokenMint": "26Q7gP8UfkDzi7GMFEQxTJaNJ8D2ybCUjex58M5MLu8y",
     "wAudioTokenMint": "37RCjhgV1qGV2Q54EHFScdxZ22ydRMdKMtVgod47fDP3"

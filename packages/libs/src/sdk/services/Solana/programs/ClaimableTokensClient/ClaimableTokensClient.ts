@@ -1,4 +1,3 @@
-import { wAUDIO } from '@audius/fixed-decimal'
 import { ClaimableTokensProgram } from '@audius/spl'
 import {
   TransactionMessage,
@@ -9,9 +8,10 @@ import {
 
 import { productionConfig } from '../../../../config/production'
 import { mergeConfigWithDefaults } from '../../../../utils/mergeConfigs'
+import { mintFixedDecimalMap } from '../../../../utils/mintFixedDecimalMap'
 import { parseParams } from '../../../../utils/parseParams'
 import type { Mint } from '../../types'
-import { BaseSolanaProgram } from '../BaseSolanaProgram'
+import { BaseSolanaProgramClient } from '../BaseSolanaProgramClient'
 
 import { getDefaultClaimableTokensConfig } from './getDefaultConfig'
 import {
@@ -32,7 +32,7 @@ import {
  * associated token accounts that are permissioned to users by their Ethereum
  * hedgehog wallet private keys.
  */
-export class ClaimableTokensClient extends BaseSolanaProgram {
+export class ClaimableTokensClient extends BaseSolanaProgramClient {
   /** The program ID of the ClaimableTokensProgram instance. */
   private readonly programId: PublicKey
   /** Map from token mint name to public key address. */
@@ -55,7 +55,7 @@ export class ClaimableTokensClient extends BaseSolanaProgram {
       }),
       USDC: ClaimableTokensProgram.deriveAuthority({
         programId: configWithDefaults.programId,
-        mint: configWithDefaults.mints.wAUDIO
+        mint: configWithDefaults.mints.USDC
       })
     }
   }
@@ -167,7 +167,7 @@ export class ClaimableTokensClient extends BaseSolanaProgram {
     }
     const data = ClaimableTokensProgram.createSignedTransferInstructionData({
       destination,
-      amount: wAUDIO(amount).value,
+      amount: mintFixedDecimalMap[mint](amount).value,
       nonce
     })
     const [signature, recoveryId] = await auth.sign(data)
@@ -190,7 +190,7 @@ export class ClaimableTokensClient extends BaseSolanaProgram {
       'deriveUserBank',
       GetOrCreateUserBankSchema
     )(params)
-    return ClaimableTokensProgram.deriveUserBank({
+    return await ClaimableTokensProgram.deriveUserBank({
       ethAddress: ethWallet,
       claimableTokensPDA: this.authorities[mint]
     })

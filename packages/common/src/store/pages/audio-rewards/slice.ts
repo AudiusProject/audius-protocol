@@ -119,6 +119,17 @@ const slice = createSlice({
             is_disbursed: true
           }
         }
+        const newlyDisbursedAmount = specifiers.reduce(
+          (acc, val) => acc + val.amount,
+          0
+        )
+        const previouslyDisbursedAmount =
+          state.userChallengesOverrides[challengeId]?.disbursed_amount ??
+          userChallenge.disbursed_amount
+        state.userChallengesOverrides[challengeId] = {
+          ...state.userChallengesOverrides[challengeId],
+          disbursed_amount: previouslyDisbursedAmount + newlyDisbursedAmount
+        }
       } else {
         state.userChallengesOverrides[challengeId] = {
           ...state.userChallengesOverrides[challengeId],
