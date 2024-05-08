@@ -10,6 +10,7 @@ import { test, waitForUser } from './test'
 import { openCleanBrowser } from './utils'
 
 // TODO: Enable track2 again, it was causing failures
+// https://linear.app/audius/issue/INF-699/fix-uploadcollectiontestts-to-support-multiple-files
 test('should upload a playlist', async ({ page }) => {
   const timestamp = Date.now()
   const playlistName = `Test playlist ${timestamp}`

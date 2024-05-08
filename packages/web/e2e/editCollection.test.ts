@@ -8,6 +8,7 @@ const PUBLIC_ALBUM =
   'proberTest/album/__do_not_delete__-probers-public-album-edit'
 
 // Skipping for now, can turn back on if we feel like it's critical path enough
+// https://linear.app/audius/issue/INF-700/re-enable-editcollectiontestts-if-we-decide-its-critical-path
 test.skip('Change premium album price', async ({ page }) => {
   await page.goto(PREMIUM_ALBUM)
   const unlockText = await page.getByText(/Users can unlock/i).textContent()

@@ -47,6 +47,8 @@ test('should upload a track', async ({ page }) => {
   await expect(trackHeading).toBeVisible()
 })
 
+// TODO: re-enable if we decide it's critical path
+// https://linear.app/audius/issue/INF-703/re-enable-uploadtracktestts-advanced-test-cases
 test.skip('should upload a remix, hidden, AI-attributed track', async ({
   page
 }) => {
