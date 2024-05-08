@@ -59,6 +59,7 @@ from src.utils.helpers import (
     has_log,
 )
 from src.utils.prometheus_metric import save_duration_metric
+from src.utils.redis_cache import get_solana_transaction_key
 from src.utils.redis_constants import (
     latest_sol_payment_router_db_tx_key,
     latest_sol_payment_router_program_tx_key,
@@ -156,10 +157,15 @@ def check_config():
 
 
 def get_sol_tx_info(
-    solana_client_manager: SolanaClientManager,
-    tx_sig: str,
+    solana_client_manager: SolanaClientManager, tx_sig: str, redis: Redis
 ):
     try:
+        existing_tx = redis.get(get_solana_transaction_key(tx_sig))
+        if existing_tx is not None and existing_tx != "":
+            logger.info(f"index_payment_router.py | Cache hit: {tx_sig}")
+            tx_info = GetTransactionResp.from_json(existing_tx.decode("utf-8"))
+            return (tx_info, tx_sig)
+        logger.info(f"index_payment_router.py | Cache miss: {tx_sig}")
         tx_info = solana_client_manager.get_sol_tx_info(tx_sig)
         return (tx_info, tx_sig)
     except SolanaTransactionFetchError:
@@ -679,6 +685,7 @@ def process_route_instruction(
             f"index_payment_router.py | tx: {tx_sig} | $AUDIO payment router transactions are not yet indexed. Skipping instruction indexing."
         )
     elif is_usdc:
+        logger.debug(f"index_payment_router.py | Parsing memos: {memos}")
         memo = parse_route_transaction_memo(
             session=session, memos=memos, timestamp=timestamp
         )
@@ -874,6 +881,7 @@ def process_payment_router_txs() -> None:
                         get_sol_tx_info,
                         solana_client_manager,
                         str(tx_sig),
+                        redis
                     ): tx_sig
                     for tx_sig in tx_sig_batch
                 }
