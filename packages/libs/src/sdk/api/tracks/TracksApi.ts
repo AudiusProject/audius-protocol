@@ -387,6 +387,7 @@ export class TracksApi extends GeneratedTracksApi {
     const {
       userId,
       trackId,
+      price: priceNumber,
       extraAmount: extraAmountNumber = 0,
       walletAdapter
     } = await parseParams('purchase', PurchaseTrackSchema)(params)
@@ -438,6 +439,11 @@ export class TracksApi extends GeneratedTracksApi {
       (accessType === 'stream' && track.access?.stream)
     ) {
       throw new Error('Track already purchased')
+    }
+
+    // Check if price changed
+    if (USDC(priceNumber).value < USDC(centPrice / 100).value) {
+      throw new Error('Track price increased.')
     }
 
     let extraAmount = USDC(extraAmountNumber).value
@@ -504,7 +510,7 @@ export class TracksApi extends GeneratedTracksApi {
       const transferInstruction =
         await this.paymentRouterClient.createTransferInstruction({
           sourceWallet: walletAdapter.publicKey,
-          amount: total,
+          total,
           mint
         })
       const transaction = await this.paymentRouterClient.buildTransaction({
