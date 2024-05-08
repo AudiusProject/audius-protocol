@@ -1,7 +1,8 @@
 import chalk from 'chalk'
 import { program } from 'commander'
 
-import { initializeAudiusLibs } from './utils.mjs'
+import { initializeAudiusLibs, initializeAudiusSdk } from './utils.mjs'
+import { Utils } from '@audius/sdk'
 
 program
   .command('purchase-content')
@@ -77,5 +78,41 @@ program
       program.error(err.message)
     }
 
+    process.exit(0)
+  })
+
+
+program.command('purchase-track')
+  .description('Buys a track using USDC')
+  .argument('<id>', 'The track ID')
+  .option('-f, --from [from]', 'The account purchasing the content (handle)')
+  .option(
+    '-e, --extra-amount [amount]',
+    'Extra amount to pay in addition to the price (in dollars)'
+    , parseFloat)
+  .action(async (id, { from, extraAmount }) => {
+    const audiusLibs = await initializeAudiusLibs(from)
+    const userIdNumber = audiusLibs.userStateManager.getCurrentUserId()
+    const userId = Utils.encodeHashId(userIdNumber)
+    const trackId = Utils.encodeHashId(id)
+
+    // extract privkey and pubkey from hedgehog
+    // only works with accounts created via audius-cmd
+    const wallet = audiusLibs?.hedgehog?.getWallet()
+    const privKey = wallet?.getPrivateKeyString()
+    const pubKey = wallet?.getAddressString()
+
+    // init sdk with priv and pub keys as api keys and secret
+    // this enables writes via sdk
+    const audiusSdk = await initializeAudiusSdk({ apiKey: pubKey, apiSecret: privKey })
+
+    try {
+      console.log('Purchasing track...', { trackId, userId, extraAmount })
+      const response = await audiusSdk.tracks.purchase({ trackId, userId, extraAmount })
+      console.log(chalk.green('Successfully purchased track'))
+      console.log(chalk.yellow('Transaction Signature:'), response)
+    } catch (err) {
+      program.error(err)
+    }
     process.exit(0)
   })

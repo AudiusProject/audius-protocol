@@ -110,12 +110,10 @@ const PlaylistForm = ({
             </Flex>
           </Flex>
           {isAlbum ? (
-            <Flex>
-              <AccessAndSaleField
-                isAlbum
-                isPublishDisabled={metadata.is_private && !hasNoHiddenTracks}
-              />
-            </Flex>
+            <AccessAndSaleField
+              isAlbum
+              isPublishDisabled={metadata.is_private && !hasNoHiddenTracks}
+            />
           ) : null}
           <EditActions
             deleteText={

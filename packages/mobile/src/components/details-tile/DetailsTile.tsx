@@ -109,7 +109,7 @@ export const DetailsTile = ({
   streamConditions,
   hideFavorite,
   hideFavoriteCount,
-  hideListenCount,
+  hidePlayCount,
   hideOverflow,
   hideRepost,
   hideRepostCount,
@@ -380,7 +380,6 @@ export const DetailsTile = ({
           <DetailsTileStats
             favoriteCount={saveCount}
             hideFavoriteCount={hideFavoriteCount}
-            hideListenCount={hideListenCount}
             hideRepostCount={hideRepostCount}
             onPressFavorites={onPressFavorites}
             onPressReposts={onPressReposts}
@@ -442,6 +441,7 @@ export const DetailsTile = ({
           trackCount={trackCount}
           releaseDate={releaseDate}
           updatedAt={updatedAt}
+          hidePlayCount={hidePlayCount}
         />
         {renderTags()}
         <OfflineStatusRow contentId={contentId} isCollection={isCollection} />

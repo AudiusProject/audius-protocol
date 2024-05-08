@@ -94,11 +94,23 @@ import {
  */
 export interface TrackFull {
     /**
+     * Describes what access the given user has
+     * @type {Access}
+     * @memberof TrackFull
+     */
+    access?: Access;
+    /**
      * 
      * @type {TrackArtwork}
      * @memberof TrackFull
      */
     artwork?: TrackArtwork;
+    /**
+     * The blocknumber this track was last updated
+     * @type {number}
+     * @memberof TrackFull
+     */
+    blocknumber: number;
     /**
      * 
      * @type {string}
@@ -238,11 +250,29 @@ export interface TrackFull {
      */
     playlistsContainingTrack?: Array<number>;
     /**
-     * 
-     * @type {number}
+     * Whether or not the owner has restricted streaming behind an access gate
+     * @type {boolean}
      * @memberof TrackFull
      */
-    blocknumber: number;
+    isStreamGated?: boolean;
+    /**
+     * How to unlock stream access to the track
+     * @type {AccessGate}
+     * @memberof TrackFull
+     */
+    streamConditions?: AccessGate;
+    /**
+     * Whether or not the owner has restricted downloading behind an access gate
+     * @type {boolean}
+     * @memberof TrackFull
+     */
+    isDownloadGated?: boolean;
+    /**
+     * How to unlock the track download
+     * @type {AccessGate}
+     * @memberof TrackFull
+     */
+    downloadConditions?: AccessGate;
     /**
      * 
      * @type {string}
@@ -389,36 +419,6 @@ export interface TrackFull {
     isAvailable?: boolean;
     /**
      * 
-     * @type {boolean}
-     * @memberof TrackFull
-     */
-    isStreamGated?: boolean;
-    /**
-     * 
-     * @type {AccessGate}
-     * @memberof TrackFull
-     */
-    streamConditions?: AccessGate;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof TrackFull
-     */
-    isDownloadGated?: boolean;
-    /**
-     * 
-     * @type {AccessGate}
-     * @memberof TrackFull
-     */
-    downloadConditions?: AccessGate;
-    /**
-     * 
-     * @type {Access}
-     * @memberof TrackFull
-     */
-    access?: Access;
-    /**
-     * 
      * @type {number}
      * @memberof TrackFull
      */
@@ -484,6 +484,7 @@ export interface TrackFull {
  */
 export function instanceOfTrackFull(value: object): boolean {
     let isInstance = true;
+    isInstance = isInstance && "blocknumber" in value;
     isInstance = isInstance && "id" in value;
     isInstance = isInstance && "repostCount" in value;
     isInstance = isInstance && "favoriteCount" in value;
@@ -491,7 +492,6 @@ export function instanceOfTrackFull(value: object): boolean {
     isInstance = isInstance && "user" in value;
     isInstance = isInstance && "duration" in value;
     isInstance = isInstance && "playCount" in value;
-    isInstance = isInstance && "blocknumber" in value;
     isInstance = isInstance && "followeeReposts" in value;
     isInstance = isInstance && "hasCurrentUserReposted" in value;
     isInstance = isInstance && "isUnlisted" in value;
@@ -513,7 +513,9 @@ export function TrackFullFromJSONTyped(json: any, ignoreDiscriminator: boolean):
     }
     return {
         
+        'access': !exists(json, 'access') ? undefined : AccessFromJSON(json['access']),
         'artwork': !exists(json, 'artwork') ? undefined : TrackArtworkFromJSON(json['artwork']),
+        'blocknumber': json['blocknumber'],
         'description': !exists(json, 'description') ? undefined : json['description'],
         'genre': !exists(json, 'genre') ? undefined : json['genre'],
         'id': json['id'],
@@ -537,7 +539,10 @@ export function TrackFullFromJSONTyped(json: any, ignoreDiscriminator: boolean):
         'isStreamable': !exists(json, 'is_streamable') ? undefined : json['is_streamable'],
         'ddexApp': !exists(json, 'ddex_app') ? undefined : json['ddex_app'],
         'playlistsContainingTrack': !exists(json, 'playlists_containing_track') ? undefined : json['playlists_containing_track'],
-        'blocknumber': json['blocknumber'],
+        'isStreamGated': !exists(json, 'is_stream_gated') ? undefined : json['is_stream_gated'],
+        'streamConditions': !exists(json, 'stream_conditions') ? undefined : AccessGateFromJSON(json['stream_conditions']),
+        'isDownloadGated': !exists(json, 'is_download_gated') ? undefined : json['is_download_gated'],
+        'downloadConditions': !exists(json, 'download_conditions') ? undefined : AccessGateFromJSON(json['download_conditions']),
         'createDate': !exists(json, 'create_date') ? undefined : json['create_date'],
         'coverArtSizes': !exists(json, 'cover_art_sizes') ? undefined : json['cover_art_sizes'],
         'coverArtCids': !exists(json, 'cover_art_cids') ? undefined : CoverArtFromJSON(json['cover_art_cids']),
@@ -562,11 +567,6 @@ export function TrackFullFromJSONTyped(json: any, ignoreDiscriminator: boolean):
         'isDelete': !exists(json, 'is_delete') ? undefined : json['is_delete'],
         'coverArt': !exists(json, 'cover_art') ? undefined : json['cover_art'],
         'isAvailable': !exists(json, 'is_available') ? undefined : json['is_available'],
-        'isStreamGated': !exists(json, 'is_stream_gated') ? undefined : json['is_stream_gated'],
-        'streamConditions': !exists(json, 'stream_conditions') ? undefined : AccessGateFromJSON(json['stream_conditions']),
-        'isDownloadGated': !exists(json, 'is_download_gated') ? undefined : json['is_download_gated'],
-        'downloadConditions': !exists(json, 'download_conditions') ? undefined : AccessGateFromJSON(json['download_conditions']),
-        'access': !exists(json, 'access') ? undefined : AccessFromJSON(json['access']),
         'aiAttributionUserId': !exists(json, 'ai_attribution_user_id') ? undefined : json['ai_attribution_user_id'],
         'audioUploadId': !exists(json, 'audio_upload_id') ? undefined : json['audio_upload_id'],
         'previewStartSeconds': !exists(json, 'preview_start_seconds') ? undefined : json['preview_start_seconds'],
@@ -589,7 +589,9 @@ export function TrackFullToJSON(value?: TrackFull | null): any {
     }
     return {
         
+        'access': AccessToJSON(value.access),
         'artwork': TrackArtworkToJSON(value.artwork),
+        'blocknumber': value.blocknumber,
         'description': value.description,
         'genre': value.genre,
         'id': value.id,
@@ -613,7 +615,10 @@ export function TrackFullToJSON(value?: TrackFull | null): any {
         'is_streamable': value.isStreamable,
         'ddex_app': value.ddexApp,
         'playlists_containing_track': value.playlistsContainingTrack,
-        'blocknumber': value.blocknumber,
+        'is_stream_gated': value.isStreamGated,
+        'stream_conditions': AccessGateToJSON(value.streamConditions),
+        'is_download_gated': value.isDownloadGated,
+        'download_conditions': AccessGateToJSON(value.downloadConditions),
         'create_date': value.createDate,
         'cover_art_sizes': value.coverArtSizes,
         'cover_art_cids': CoverArtToJSON(value.coverArtCids),
@@ -638,11 +643,6 @@ export function TrackFullToJSON(value?: TrackFull | null): any {
         'is_delete': value.isDelete,
         'cover_art': value.coverArt,
         'is_available': value.isAvailable,
-        'is_stream_gated': value.isStreamGated,
-        'stream_conditions': AccessGateToJSON(value.streamConditions),
-        'is_download_gated': value.isDownloadGated,
-        'download_conditions': AccessGateToJSON(value.downloadConditions),
-        'access': AccessToJSON(value.access),
         'ai_attribution_user_id': value.aiAttributionUserId,
         'audio_upload_id': value.audioUploadId,
         'preview_start_seconds': value.previewStartSeconds,

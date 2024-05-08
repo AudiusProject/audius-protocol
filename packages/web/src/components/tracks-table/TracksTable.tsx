@@ -200,10 +200,6 @@ export const TracksTable = ({
   const renderTrackNameCell = useCallback(
     (cellInfo: TrackCell) => {
       const track = cellInfo.row.original
-      const { isFetchingNFTAccess, hasStreamAccess } = trackAccessMap[
-        track.track_id
-      ] ?? { isFetchingNFTAccess: false, hasStreamAccess: true }
-      const isLocked = !isFetchingNFTAccess && !hasStreamAccess
       const index = cellInfo.row.index
       const active = index === playingIndex
       const deleted =
@@ -212,7 +208,7 @@ export const TracksTable = ({
       return (
         <div className={styles.textContainer} css={{ overflow: 'hidden' }}>
           <TextLink
-            to={isLocked || deleted ? '' : track.permalink}
+            to={deleted ? '' : track.permalink}
             isActive={active}
             textVariant='title'
             size='s'
@@ -226,7 +222,7 @@ export const TracksTable = ({
         </div>
       )
     },
-    [trackAccessMap, playingIndex]
+    [playingIndex]
   )
 
   const renderArtistNameCell = useCallback(

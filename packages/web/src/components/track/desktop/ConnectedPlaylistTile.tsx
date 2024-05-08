@@ -293,7 +293,7 @@ const ConnectedPlaylistTile = ({
       playlistName: title,
       isPublic: !isUnlisted,
       isOwner,
-      includeEmbed: true,
+      includeEmbed: !isUnlisted && !isStreamGated,
       includeShare: false,
       includeRepost: false,
       includeFavorite: false,

@@ -21,7 +21,7 @@ import { exists, mapValues } from '../runtime';
  */
 export interface TipGate {
     /**
-     * 
+     * Must tip the given user ID to unlock
      * @type {number}
      * @memberof TipGate
      */

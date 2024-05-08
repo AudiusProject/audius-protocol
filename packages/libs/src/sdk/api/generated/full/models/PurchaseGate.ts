@@ -28,7 +28,7 @@ import {
  */
 export interface PurchaseGate {
     /**
-     * 
+     * Must pay the total price and split to the given addresses to unlock
      * @type {UsdcGate}
      * @memberof PurchaseGate
      */
