@@ -102,7 +102,7 @@ export const CollectionCard = forwardRef(
             <Text
               variant='title'
               color='default'
-              css={{ pointerEvents: 'none', textAlign: 'center' }}
+              css={{ textAlign: 'center' }}
               ellipses
               asChild
             >

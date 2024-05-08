@@ -59,7 +59,7 @@ export const TextLink = forwardRef((props: TextLinkProps, ref: Ref<'a'>) => {
     <Text
       ref={ref}
       asChild
-      onClick={disabled ? undefined : onClick}
+      onClick={onClick}
       tag='a'
       css={{
         display: 'inline-flex',
@@ -67,18 +67,16 @@ export const TextLink = forwardRef((props: TextLinkProps, ref: Ref<'a'>) => {
         color: variantColors[variant],
         textDecoration: 'none',
         transition: `color ${motion.hover}`,
-        ':hover': disabled ? undefined : hoverStyles,
-        ...(isActive &&
-          !disabled && { ...hoverStyles, textDecoration: 'none' }),
-        ...(showUnderline && !disabled && hoverStyles)
+        pointerEvents: disabled ? 'none' : undefined,
+        ':hover': hoverStyles,
+        ...(isActive && { ...hoverStyles, textDecoration: 'none' }),
+        ...(showUnderline && hoverStyles)
       }}
       variant={textVariant}
       {...other}
     >
       {asChild ? (
         <Slot>{children}</Slot>
-      ) : disabled ? (
-        <Text>{children}</Text>
       ) : (
         <a
           target={isExternal ? '_blank' : undefined}

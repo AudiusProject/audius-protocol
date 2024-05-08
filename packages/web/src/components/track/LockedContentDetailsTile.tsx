@@ -149,6 +149,9 @@ export const LockedContentDetailsTile = ({
               strength='weak'
               userId={owner.user_id}
               disabled={disabled}
+              // css={{
+              //   pointerEvents: disabled ? 'none' : undefined
+              // }}
             />
           </Text>
         </Flex>

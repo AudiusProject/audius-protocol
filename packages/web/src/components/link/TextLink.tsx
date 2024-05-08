@@ -13,14 +13,7 @@ export type TextLinkProps = HarmonyTextLinkProps &
   }
 
 export const TextLink = forwardRef((props: TextLinkProps, ref: Ref<'a'>) => {
-  const {
-    to,
-    children,
-    stopPropagation = true,
-    onClick,
-    disabled,
-    ...other
-  } = props
+  const { to, children, stopPropagation = true, onClick, ...other } = props
 
   const handleClick = useCallback(
     (e: MouseEvent<HTMLAnchorElement>) => {
@@ -33,14 +26,8 @@ export const TextLink = forwardRef((props: TextLinkProps, ref: Ref<'a'>) => {
   )
 
   return (
-    <HarmonyTextLink
-      ref={ref}
-      asChild
-      onClick={handleClick}
-      disabled={disabled}
-      {...other}
-    >
-      {disabled ? <Text>{children}</Text> : <Link to={to}>{children}</Link>}
+    <HarmonyTextLink ref={ref} asChild onClick={handleClick} {...other}>
+      {<Link to={to}>{children}</Link>}
     </HarmonyTextLink>
   )
 })
