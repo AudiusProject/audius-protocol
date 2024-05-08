@@ -6,7 +6,7 @@ import type { TextLinkProps } from '@audius/harmony-native'
 import { TextLink, Flex } from '@audius/harmony-native'
 import type { AppTabScreenParamList } from 'app/screens/app-screen'
 
-import { UserBadges } from '../user-badges/UserBadges2'
+import { UserBadgesV2 } from '../user-badges/UserBadgesV2'
 
 const { getUser } = cacheUsersSelectors
 
@@ -25,12 +25,12 @@ export const UserLink = (props: UserLinkProps) => {
       <TextLink<ParamList>
         to={{ screen: 'Profile', params: { id: userId } }}
         numberOfLines={1}
-        shrink
+        flexShrink={1}
         {...other}
       >
         {userName}
       </TextLink>
-      <UserBadges userId={userId} />
+      <UserBadgesV2 userId={userId} />
     </Flex>
   )
 }

@@ -77,7 +77,7 @@ type CollectionImageProps = {
   style?: FastImageProps['style']
 }
 
-export const CollectionImage = (props: CollectionImageProps) => {
+export const CollectionImageV2 = (props: CollectionImageProps) => {
   const { collectionId, size, style, ...other } = props
 
   const collectionImageSource = useCollectionImage(collectionId, size)

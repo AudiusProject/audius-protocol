@@ -14,7 +14,7 @@ type UserBadgesProps = {
   badgeSize?: IconSize
 }
 
-export const UserBadges = (props: UserBadgesProps) => {
+export const UserBadgesV2 = (props: UserBadgesProps) => {
   const { userId, badgeSize = 's' } = props
 
   const isVerified = useSelector(

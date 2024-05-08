@@ -26,7 +26,7 @@ import { UserLink } from 'app/components/user-link'
 import { useNavigation } from 'app/hooks/useNavigation'
 
 import { DogEar, LockedStatusBadge } from '../core'
-import { CollectionImage } from '../image/CollectionImage2'
+import { CollectionImageV2 } from '../image/CollectionImageV2'
 
 const { getCollection } = cacheCollectionsSelectors
 const { getUserId } = accountSelectors
@@ -86,7 +86,7 @@ export const CollectionCard = (props: CollectionCardProps) => {
     <Paper border='default' onPress={handlePress}>
       {dogEarType ? <DogEar type={dogEarType} /> : null}
       <Flex p='s' gap='s'>
-        <CollectionImage
+        <CollectionImageV2
           collectionId={playlist_id}
           size={SquareSizes.SIZE_480_BY_480}
         />
@@ -115,7 +115,7 @@ export const CollectionCard = (props: CollectionCardProps) => {
             size='s'
             strength='strong'
             color='subdued'
-            // TODO: See if this is required
+            // Ensures footer height is not affected
             style={{ lineHeight: 0 }}
           >
             {messages.hidden}
