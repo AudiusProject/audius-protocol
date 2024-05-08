@@ -189,10 +189,11 @@ const CollectionHeader = ({
   }
 
   const renderDogEar = () => {
-    // Omitting isOwner and hasStreamAccess to ensure we always show gated DogEars
     const DogEarType = getDogEarType({
       isUnlisted,
-      streamConditions
+      streamConditions,
+      isOwner,
+      hasStreamAccess
     })
     if (!isLoading && DogEarType) {
       return (
