@@ -14,7 +14,7 @@ import { formatCount } from '@audius/common/utils'
 import { Flex, Text } from '@audius/harmony'
 import IconHeart from '@audius/harmony/src/assets/icons/Heart.svg'
 import IconRepost from '@audius/harmony/src/assets/icons/Repost.svg'
-import { Link, useLinkClickHandler } from 'react-router-dom-v5-compat'
+import { useLinkClickHandler } from 'react-router-dom-v5-compat'
 
 import { Card, CardProps, CardFooter, CardContent } from 'components/card'
 import { DogEar } from 'components/dog-ear'
