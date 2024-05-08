@@ -18,7 +18,7 @@ import {
 import { prepareAlbumMetadata, prepareTrackMetadatas } from './publishRelease'
 import { readAssetWithCaching } from './s3poller'
 import { sources } from './sources'
-import { parseBool } from './util'
+import { parseBool, simulateDeliveryForUserName } from './util'
 
 const { NODE_ENV, DDEX_URL, COOKIE_SECRET } = process.env
 const COOKIE_NAME = 'audiusUser'
@@ -457,6 +457,7 @@ app.get('/users', (c) => {
               <th>name</th>
               <th>api key</th>
               <th>created</th>
+              <th></th>
             </tr>
           </thead>
           <tbody>
@@ -468,12 +469,42 @@ app.get('/users', (c) => {
                   <td>${user.name}</td>
                   <td>${user.apiKey}</td>
                   <td>${user.createdAt}</td>
+                  <td>
+                    <form
+                      method="POST"
+                      action="/users/simulate/${user.apiKey}/${user.id}"
+                    >
+                      <button>simulate</button>
+                    </form>
+                  </td>
                 </tr>`
             )}
           </tbody>
         </table> `
     )
   )
+})
+
+app.post('/users/simulate/:apiKey/:id', async (c) => {
+  if (IS_PROD) {
+    return c.text(`no can simulate in prod`, 400)
+  }
+
+  // find source
+  const source = sources.all().find((s) => s.ddexKey == c.req.param('apiKey'))
+  const user = userRepo
+    .all()
+    .find((u) => u.id == c.req.param('id') && u.apiKey == c.req.param('apiKey'))
+
+  if (!source || !user) {
+    return c.text(`invalid req`, 400)
+  }
+
+  // unzip sample
+  await simulateDeliveryForUserName(source, user.name)
+
+  // replace name
+  return c.redirect('/releases')
 })
 
 type JwtUser = {

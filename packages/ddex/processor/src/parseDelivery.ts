@@ -164,7 +164,7 @@ export async function reParsePastXml() {
 }
 
 // recursively find + parse xml files in a dir
-async function processDeliveryDir(source: string, dir: string) {
+export async function processDeliveryDir(source: string, dir: string) {
   const files = await readdir(dir, { recursive: true })
 
   const work = files
