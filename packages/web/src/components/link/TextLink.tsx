@@ -1,7 +1,6 @@
 import { Ref, forwardRef, useCallback, MouseEvent } from 'react'
 
 import {
-  Text,
   TextLink as HarmonyTextLink,
   TextLinkProps as HarmonyTextLinkProps
 } from '@audius/harmony'
@@ -27,7 +26,7 @@ export const TextLink = forwardRef((props: TextLinkProps, ref: Ref<'a'>) => {
 
   return (
     <HarmonyTextLink ref={ref} asChild onClick={handleClick} {...other}>
-      {<Link to={to}>{children}</Link>}
+      <Link to={to}>{children}</Link>
     </HarmonyTextLink>
   )
 })
