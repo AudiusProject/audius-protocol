@@ -1,9 +1,9 @@
 import { forwardRef } from 'react'
 
-import type { StyleProp, View, ViewStyle } from 'react-native'
-import { Animated, Pressable } from 'react-native'
+import type { View } from 'react-native'
+import { Pressable } from 'react-native'
 import { Gesture, GestureDetector } from 'react-native-gesture-handler'
-import {
+import Animated, {
   interpolate,
   interpolateColor,
   useAnimatedStyle,
@@ -28,10 +28,10 @@ export const Paper = forwardRef<View, PaperProps>((props, ref) => {
     borderRadius = 'm',
     shadow = 'mid',
     style,
+    onPress,
     ...other
   } = props
 
-  const { onPress } = other
   const { shadows, motion } = useTheme()
 
   const pressed = useSharedValue(0)
@@ -83,17 +83,8 @@ export const Paper = forwardRef<View, PaperProps>((props, ref) => {
 
   const flexProps = { backgroundColor, borderRadius, shadow }
 
-  const universalStyles: StyleProp<ViewStyle> = { overflow: 'hidden' }
-
   if (!onPress) {
-    return (
-      <Flex
-        ref={ref}
-        style={[universalStyles, style]}
-        {...flexProps}
-        {...other}
-      />
-    )
+    return <Flex ref={ref} style={style} {...flexProps} {...other} />
   }
 
   return (
@@ -101,7 +92,7 @@ export const Paper = forwardRef<View, PaperProps>((props, ref) => {
       <Pressable onPress={onPress}>
         <AnimatedFlex
           ref={ref}
-          style={[universalStyles, interactiveStyles, style]}
+          style={[interactiveStyles, style]}
           {...flexProps}
           {...other}
         />
