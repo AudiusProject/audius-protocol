@@ -44,27 +44,23 @@ export const Tile = forwardRef(
     } = props
 
     return (
-      <Box>
-        <RootComponent
-          className={cn(
-            styles.root,
-            size && styles[size],
-            styles[elevation],
-            className
-          )}
-          type={onClick ? 'button' : undefined}
-          onClick={onClick}
-          ref={ref}
-          {...other}
-        >
-          {dogEar ? (
-            <DogEar type={dogEar} className={styles.borderOffset} />
-          ) : null}
-          <Box css={{ overflow: 'hidden', borderRadius: 'inherit' }}>
-            {children}
-          </Box>
-        </RootComponent>
-      </Box>
+      <RootComponent
+        className={cn(
+          styles.root,
+          size && styles[size],
+          styles[elevation],
+          className
+        )}
+        type={onClick ? 'button' : undefined}
+        onClick={onClick}
+        ref={ref}
+        {...other}
+      >
+        {dogEar ? (
+          <DogEar type={dogEar} className={styles.borderOffset} />
+        ) : null}
+        {children}
+      </RootComponent>
     )
   }
 )
