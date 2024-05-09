@@ -17,6 +17,7 @@
     "@pedalboard/logger": "*",
     "@pedalboard/storage": "*",
     "@solana/web3.js": "1.78.4",
+    "axios": "^1.6.8",
     "body-parser": "1.19.0",
     "bs58": "4.0.1",
     "cors": "2.8.5",
