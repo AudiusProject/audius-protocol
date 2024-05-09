@@ -423,7 +423,7 @@ export const purchaseContentWithPaymentRouter = async (
     purchaseAccess
   }: PurchaseContentWithPaymentRouterArgs
 ) => {
-  const solanaWeb3Manager = (await audiusBackendInstance.getAudiusLibs())
+  const solanaWeb3Manager = (await audiusBackendInstance.getAudiusLibsTyped())
     .solanaWeb3Manager!
   const tx = await solanaWeb3Manager.purchaseContentWithPaymentRouter({
     id,
@@ -436,7 +436,7 @@ export const purchaseContentWithPaymentRouter = async (
     skipSendAndReturnTransaction: true,
     purchaseAccess
   })
-  return tx
+  return tx as Transaction
 }
 
 export const findAssociatedTokenAddress = async (

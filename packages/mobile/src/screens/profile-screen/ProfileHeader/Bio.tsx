@@ -1,35 +1,31 @@
 import { View } from 'react-native'
 
-import type { TextProps } from 'app/components/core'
-import { Text, Hyperlink } from 'app/components/core'
+import { Text, useTheme } from '@audius/harmony-native'
+import { UserGeneratedText } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 
 import { useSelectProfile } from '../selectors'
-import { squashNewLines } from '../utils'
 
 const MAX_BIO_LINES = 2
 
-const useStyles = makeStyles(({ typography, palette, spacing }) => ({
+const useStyles = makeStyles(({ spacing }) => ({
   root: {
-    marginBottom: spacing(2),
-    lineHeight: typography.fontSize.small * 1.5
-  },
-  bioText: {
-    ...typography.body,
-    color: palette.neutral
+    marginBottom: spacing(2)
   }
 }))
 
-type BioProps = TextProps & {
+type BioProps = {
   isExpansible?: boolean
   setIsExpansible?: (isExpansible: boolean) => void
+  numberOfLines?: number
 }
 
 export const Bio = (props: BioProps) => {
-  const { numberOfLines, isExpansible, setIsExpansible, ...other } = props
+  const { isExpansible, setIsExpansible, numberOfLines } = props
   const profile = useSelectProfile(['bio'])
   const { bio } = profile
   const styles = useStyles()
+  const { spacing } = useTheme()
 
   if (!bio) return null
 
@@ -43,11 +39,11 @@ export const Bio = (props: BioProps) => {
             }
           }}
           variant='body'
-          style={styles.root}
+          size='s'
+          style={{ marginBottom: spacing.s }}
           // only set number of lines after we determine that the text should be truncated
           // this allows us to let the parent component know whether we have met one of
           // the conditions to make the bio section expansible.
-          {...other}
           numberOfLines={
             isExpansible && numberOfLines ? numberOfLines : undefined
           }
@@ -58,11 +54,14 @@ export const Bio = (props: BioProps) => {
     )
 
   return (
-    <Hyperlink
+    <UserGeneratedText
+      variant='body'
+      size='s'
       source='profile page'
-      text={squashNewLines(bio)}
-      style={[styles.root, styles.bioText]}
+      style={styles.root}
       allowPointerEventsToPassThrough
-    />
+    >
+      {bio}
+    </UserGeneratedText>
   )
 }

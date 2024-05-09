@@ -21,8 +21,6 @@ import { fullSearchResultsPage, NOT_FOUND_PAGE } from 'utils/route'
 
 import styles from './SearchPageContent.module.css'
 
-const SEARCH_HEADER_MAX_WIDTH_PX = 720
-
 const SearchHeader = (props) => {
   const secondary = (
     <span className={styles.searchText}>&#8220;{props.searchText}&#8221;</span>
@@ -32,7 +30,6 @@ const SearchHeader = (props) => {
       {...props}
       primary={props.title}
       secondary={secondary}
-      overrideWidth={SEARCH_HEADER_MAX_WIDTH_PX}
       variant='main'
       containerStyles={styles.searchResultsHeader}
     />

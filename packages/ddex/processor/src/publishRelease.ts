@@ -4,32 +4,20 @@ import {
   UploadAlbumRequest,
   UploadTrackRequest,
 } from '@audius/sdk'
-import {
-  ReleaseProcessingStatus,
-  ReleaseRow,
-  dbUpdate,
-  releaseRepo,
-} from './db'
+import { ReleaseProcessingStatus, ReleaseRow, releaseRepo } from './db'
 import { DDEXContributor, DDEXRelease, DDEXResource } from './parseDelivery'
 import { readAssetWithCaching } from './s3poller'
-import { createSdkService } from './sdk'
+import { getSdk } from './sdk'
+import { sources } from './sources'
 
-export const sdkService = createSdkService()
-
-export async function publishValidPendingReleases(opts?: {
-  republish: boolean
-}) {
+export async function publishValidPendingReleases() {
   const rows = releaseRepo.all({ pendingPublish: true })
   if (!rows.length) return
 
-  const sdk = (await sdkService).getSdk()
-
   for (const row of rows) {
+    const source = sources.findByName(row.source)
+    const sdk = getSdk(source)
     const parsed = row._parsed!
-
-    // todo: hardcoding to my staging user ID to make e2e publish easier
-    // todo: remove
-    parsed.audiusUser = 'KKa311z'
 
     if (row.status == ReleaseProcessingStatus.DeletePending) {
       // delete

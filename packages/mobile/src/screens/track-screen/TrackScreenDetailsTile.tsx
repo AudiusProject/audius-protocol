@@ -309,7 +309,7 @@ export const TrackScreenDetailsTile = ({
       hideShare={(is_unlisted && !isOwner) || !field_visibility?.share}
       hideOverflow={!isReachable}
       hideFavoriteCount={is_unlisted}
-      hideListenCount={
+      hidePlayCount={
         (!isOwner && is_unlisted && !field_visibility?.play_count) ||
         isStreamGated
       }

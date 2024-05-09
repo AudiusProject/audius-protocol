@@ -220,26 +220,6 @@ export class UsersApi extends GeneratedUsersApi {
       )
     }
 
-    if (
-      params.encodedDataMessage === null ||
-      params.encodedDataMessage === undefined
-    ) {
-      throw new runtime.RequiredError(
-        'encodedDataMessage',
-        'Required parameter params.encodedDataMessage was null or undefined when calling downloadSalesAsCSV.'
-      )
-    }
-
-    if (
-      params.encodedDataSignature === null ||
-      params.encodedDataSignature === undefined
-    ) {
-      throw new runtime.RequiredError(
-        'encodedDataSignature',
-        'Required parameter params.encodedDataSignature was null or undefined when calling downloadSalesAsCSV.'
-      )
-    }
-
     const queryParameters: any = {}
 
     if (params.userId !== undefined) {
@@ -292,26 +272,6 @@ export class UsersApi extends GeneratedUsersApi {
       )
     }
 
-    if (
-      params.encodedDataMessage === null ||
-      params.encodedDataMessage === undefined
-    ) {
-      throw new runtime.RequiredError(
-        'encodedDataMessage',
-        'Required parameter params.encodedDataMessage was null or undefined when calling downloadPurchasesAsCSV.'
-      )
-    }
-
-    if (
-      params.encodedDataSignature === null ||
-      params.encodedDataSignature === undefined
-    ) {
-      throw new runtime.RequiredError(
-        'encodedDataSignature',
-        'Required parameter params.encodedDataSignature was null or undefined when calling downloadPurchasesAsCSV.'
-      )
-    }
-
     const queryParameters: any = {}
 
     if (params.userId !== undefined) {
@@ -361,26 +321,6 @@ export class UsersApi extends GeneratedUsersApi {
       throw new runtime.RequiredError(
         'id',
         'Required parameter params.id was null or undefined when calling downloadUSDCWithdrawalsAsCSV.'
-      )
-    }
-
-    if (
-      params.encodedDataMessage === null ||
-      params.encodedDataMessage === undefined
-    ) {
-      throw new runtime.RequiredError(
-        'encodedDataMessage',
-        'Required parameter params.encodedDataMessage was null or undefined when calling downloadUSDCWithdrawalsAsCSV.'
-      )
-    }
-
-    if (
-      params.encodedDataSignature === null ||
-      params.encodedDataSignature === undefined
-    ) {
-      throw new runtime.RequiredError(
-        'encodedDataSignature',
-        'Required parameter params.encodedDataSignature was null or undefined when calling downloadUSDCWithdrawalsAsCSV.'
       )
     }
 

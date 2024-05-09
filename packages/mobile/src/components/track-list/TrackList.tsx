@@ -78,7 +78,6 @@ export const TrackList = ({
               isReorderable={isReorderable}
               showViewAlbum={isAlbumPage}
               uid={uids && (item as UID)}
-              prevUid={uids && uids[index - 1]}
               key={item}
               togglePlay={togglePlay}
               trackItemAction={trackItemAction}

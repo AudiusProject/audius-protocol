@@ -26,7 +26,7 @@ export const Hint = (props: HintProps) => {
     >
       <Flex gap='l' alignItems='center' direction='row'>
         <Icon size='l' color='default' />
-        <Text variant='body' shrink>
+        <Text variant='body' flexShrink={1}>
           {children}
         </Text>
       </Flex>
