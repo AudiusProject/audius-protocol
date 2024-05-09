@@ -5,6 +5,7 @@ import {
   UID,
   UserTrack,
   isContentCollectibleGated,
+  isContentFollowGated,
   isContentUSDCPurchaseGated
 } from '@audius/common/models'
 import { formatCount, formatSeconds } from '@audius/common/utils'
@@ -405,7 +406,6 @@ export const TracksTable = ({
         track.is_delete || track._marked_deleted || !!track.user?.is_deactivated
       // For owners, we want to show the type of gating on the track. For fans,
       // we want to show whether or not they have access.
-      const shouldShowIcon = track.is_stream_gated || track.is_unlisted
       let Icon
       if (shouldShowGatedType) {
         Icon = track.is_unlisted
@@ -414,7 +414,9 @@ export const TracksTable = ({
           ? IconCart
           : isContentCollectibleGated(track.stream_conditions)
           ? IconCollectible
-          : IconSpecialAccess
+          : isContentFollowGated(track.stream_conditions)
+          ? IconSpecialAccess
+          : null
       } else {
         Icon = !hasStreamAccess
           ? IconLock
@@ -425,7 +427,7 @@ export const TracksTable = ({
 
       return (
         <>
-          {shouldShowIcon && Icon ? (
+          {Icon ? (
             <Flex className={styles.typeIcon}>
               <Icon color='subdued' size='m' />
             </Flex>
