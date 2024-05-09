@@ -45,7 +45,6 @@ export const Tile = forwardRef(
 
     return (
       <Box>
-        {dogEar ? <DogEar type={dogEar} /> : null}
         <RootComponent
           className={cn(
             styles.root,
@@ -58,7 +57,12 @@ export const Tile = forwardRef(
           ref={ref}
           {...other}
         >
-          {children}
+          {dogEar ? (
+            <DogEar type={dogEar} className={styles.borderOffset} />
+          ) : null}
+          <Box css={{ overflow: 'hidden', borderRadius: 'inherit' }}>
+            {children}
+          </Box>
         </RootComponent>
       </Box>
     )

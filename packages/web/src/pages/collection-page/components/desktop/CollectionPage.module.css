@@ -10,7 +10,6 @@
 .bodyWrapper {
   min-width: 774px;
   margin-bottom: var(--harmony-unit-10);
-  overflow: hidden;
 }
 
 /* Empty Page Section Wrapper */
