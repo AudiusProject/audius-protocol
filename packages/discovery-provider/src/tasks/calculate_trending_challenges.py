@@ -1,6 +1,6 @@
 import logging
 import time
-from datetime import date
+from datetime import date, datetime
 from typing import Optional
 
 from redis import Redis
@@ -24,10 +24,12 @@ from src.trending_strategies.trending_type_and_version import TrendingType
 from src.utils.prometheus_metric import save_duration_metric
 from src.utils.redis_constants import most_recent_indexed_block_redis_key
 from src.utils.session_manager import SessionManager
+from src.utils import helpers, web3_provider
 
 logger = logging.getLogger(__name__)
 
 trending_strategy_factory = TrendingStrategyFactory()
+web3 = web3_provider.get_web3()
 
 
 def date_to_week(date: date) -> str:
@@ -51,6 +53,7 @@ def dispatch_trending_challenges(
     challenge_bus: ChallengeEventBus,
     challenge_event: ChallengeEvent,
     latest_blocknumber: int,
+    latest_block_datetime: datetime,
     tracks,
     version: str,
     date: date,
@@ -60,6 +63,7 @@ def dispatch_trending_challenges(
         challenge_bus.dispatch(
             challenge_event,
             latest_blocknumber,
+            latest_block_datetime,
             track["owner_id"],
             {
                 "id": track["track_id"],
@@ -81,6 +85,9 @@ def enqueue_trending_challenges(
     update_start = time.time()
     with db.scoped_session() as session, challenge_bus.use_scoped_dispatch_queue():
         latest_blocknumber = get_latest_blocknumber_via_redis(session, redis)
+        latest_block_datetime = datetime.fromtimestamp(
+            web3.eth.get_block(latest_blocknumber).timestamp()
+        )
         if latest_blocknumber is None:
             logger.error(
                 "calculate_trending_challenges.py | Unable to get latest block number"
@@ -104,6 +111,7 @@ def enqueue_trending_challenges(
                 challenge_bus,
                 ChallengeEvent.trending_track,
                 latest_blocknumber,
+                latest_block_datetime,
                 top_tracks,
                 version,
                 date,
@@ -155,6 +163,7 @@ def enqueue_trending_challenges(
                 challenge_bus.dispatch(
                     ChallengeEvent.trending_playlist,
                     latest_blocknumber,
+                    latest_block_datetime,
                     playlist["playlist_owner_id"],
                     {
                         "id": playlist["playlist_id"],

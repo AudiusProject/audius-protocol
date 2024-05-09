@@ -218,9 +218,11 @@ def update_track_routes_table(
 
 
 def dispatch_challenge_track_upload(
-    bus: ChallengeEventBus, block_number: int, track_record
+    bus: ChallengeEventBus, block_number: int, block_datetime: datetime, track_record
 ):
-    bus.dispatch(ChallengeEvent.track_upload, block_number, track_record.owner_id)
+    bus.dispatch(
+        ChallengeEvent.track_upload, block_number, block_datetime, track_record.owner_id
+    )
 
 
 def is_valid_json_field(metadata, field):
@@ -556,7 +558,7 @@ def create_track(params: ManageEntityParameters):
         params.block_datetime,
     )
     dispatch_challenge_track_upload(
-        params.challenge_bus, params.block_number, track_record
+        params.challenge_bus, params.block_number, params.block_datetime, track_record
     )
     params.add_record(track_id, track_record)
 

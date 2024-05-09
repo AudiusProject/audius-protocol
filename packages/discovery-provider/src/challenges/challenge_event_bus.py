@@ -30,6 +30,7 @@ from src.challenges.trending_challenge import (
     trending_underground_track_challenge_manager,
 )
 from src.utils.redis_connection import get_redis
+from datetime import datetime
 
 logger = logging.getLogger(__name__)
 REDIS_QUEUE_PREFIX = "challenges-event-queue"
@@ -89,6 +90,7 @@ class ChallengeEventBus:
         self,
         event: ChallengeEvent,
         block_number: int,
+        block_datetime: datetime,
         user_id: int,
         extra: Optional[Dict] = None,
     ):
@@ -101,11 +103,20 @@ class ChallengeEventBus:
         # Sanitize input, drop the event if it's malformed
         valid_event = event is not None and isinstance(event, str)
         valid_block = block_number is not None and isinstance(block_number, int)
+        valid_block_datetime = block_datetime is not None and isinstance(
+            block_datetime, datetime
+        )
         valid_user = user_id is not None and isinstance(user_id, int)
         valid_extra = extra is not None and isinstance(extra, dict)
-        if not (valid_event and valid_block and valid_user and valid_extra):
+        if not (
+            valid_event
+            and valid_block
+            and valid_block_datetime
+            and valid_user
+            and valid_extra
+        ):
             logger.warning(
-                f"ChallengeEventBus: ignoring invalid event: {(event, block_number, user_id, extra)}"
+                f"ChallengeEventBus: ignoring invalid event: {(event, block_number, block_datetime, user_id, extra)}"
             )
             return
 
@@ -113,6 +124,7 @@ class ChallengeEventBus:
             {
                 "event": event,
                 "block_number": block_number,
+                "block_datetime": block_datetime,
                 "user_id": user_id,
                 "extra": extra,
             }
@@ -129,6 +141,7 @@ class ChallengeEventBus:
                 event_json = self._event_to_json(
                     event["event"],
                     event["block_number"],
+                    event["block_datetime"],
                     event["user_id"],
                     event.get("extra", {}),
                 )
@@ -163,6 +176,9 @@ class ChallengeEventBus:
                     {
                         "user_id": event_dict["user_id"],
                         "block_number": event_dict["block_number"],
+                        "block_datetime": datetime.fromtimestamp(
+                            event_dict["block_datetime"]
+                        ),
                         "extra": event_dict.get(  # use .get to be safe since prior versions didn't have `extra`
                             "extra", {}
                         ),
@@ -190,11 +206,19 @@ class ChallengeEventBus:
 
     # Helpers
 
-    def _event_to_json(self, event: str, block_number: int, user_id: int, extra: Dict):
+    def _event_to_json(
+        self,
+        event: str,
+        block_number: int,
+        block_datetime: datetime,
+        user_id: int,
+        extra: Dict,
+    ):
         event_dict = {
             "event": event,
             "user_id": user_id,
             "block_number": block_number,
+            "block_datetime": block_datetime.timestamp(),
             "extra": extra,
         }
         return json.dumps(event_dict)

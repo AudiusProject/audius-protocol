@@ -256,6 +256,7 @@ def update_user(
     params.challenge_bus.dispatch(
         ChallengeEvent.profile_update,
         params.block_number,
+        params.block_datetime,
         user_id,
     )
 
@@ -393,12 +394,14 @@ def update_user_events(
                 bus.dispatch(
                     ChallengeEvent.referral_signup,
                     user_record.blocknumber,
+                    params.block_datetime,
                     value,
                     {"referred_user_id": user_record.user_id},
                 )
                 bus.dispatch(
                     ChallengeEvent.referred_signup,
                     user_record.blocknumber,
+                    params.block_datetime,
                     user_record.user_id,
                 )
             elif (
@@ -411,6 +414,7 @@ def update_user_events(
                     bus.dispatch(
                         ChallengeEvent.mobile_install,
                         user_record.blocknumber,
+                        params.block_datetime,
                         user_record.user_id,
                     )
         # Only add a row if there's an update
@@ -549,6 +553,7 @@ def verify_user(params: ManageEntityParameters):
     params.challenge_bus.dispatch(
         ChallengeEvent.connect_verified,
         params.block_number,
+        params.block_datetime,
         user_id,
     )
 

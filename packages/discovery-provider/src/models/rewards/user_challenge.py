@@ -17,7 +17,11 @@ class UserChallenge(Base, RepresentableMixin):
     specifier = Column(String, primary_key=True, nullable=False)
     is_complete = Column(Boolean, nullable=False)
     current_step_count = Column(Integer)
-    completed_blocknumber = Column(Integer)
+    completed_blocknumber = Column(
+        DateTime,
+        server_default=text("CURRENT_TIMESTAMP"),
+    )
+    completed_at = Column(Integer)
     amount = Column(Integer, nullable=False)
     created_at = Column(
         DateTime,

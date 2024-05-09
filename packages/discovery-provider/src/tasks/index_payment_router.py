@@ -537,12 +537,14 @@ def validate_and_index_usdc_transfers(
         challenge_event_bus.dispatch(
             ChallengeEvent.audio_matching_buyer,
             slot,
+            timestamp,
             sender_user_id,
             {"track_id": purchase_metadata["id"], "amount": amount},
         )
         challenge_event_bus.dispatch(
             ChallengeEvent.audio_matching_seller,
             slot,
+            timestamp,
             purchase_metadata["content_owner_id"],
             {
                 "track_id": purchase_metadata["id"],

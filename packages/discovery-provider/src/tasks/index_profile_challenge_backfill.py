@@ -1,3 +1,4 @@
+from datetime import datetime
 import logging
 import os
 from typing import Optional
@@ -27,16 +28,22 @@ index_profile_challenge_backfill_tablename = "index_profile_challenge_backfill"
 BLOCK_INTERVAL = 1000
 
 
-def dispatch_challenge_repost(bus: ChallengeEventBus, repost, block_number):
-    bus.dispatch(ChallengeEvent.repost, block_number, repost.user_id)
+def dispatch_challenge_repost(
+    bus: ChallengeEventBus, repost, block_number, block_datetime
+):
+    bus.dispatch(ChallengeEvent.repost, block_number, block_datetime, repost.user_id)
 
 
-def dispatch_challenge_follow(bus: ChallengeEventBus, follow, block_number):
-    bus.dispatch(ChallengeEvent.follow, block_number, follow.follower_user_id)
+def dispatch_challenge_follow(
+    bus: ChallengeEventBus, follow, block_number, block_datetime
+):
+    bus.dispatch(
+        ChallengeEvent.follow, block_number, block_datetime, follow.follower_user_id
+    )
 
 
-def dispatch_favorite(bus: ChallengeEventBus, save, block_number):
-    bus.dispatch(ChallengeEvent.favorite, block_number, save.user_id)
+def dispatch_favorite(bus: ChallengeEventBus, save, block_number, block_datetime):
+    bus.dispatch(ChallengeEvent.favorite, block_number, block_datetime, save.user_id)
 
 
 def enqueue_social_rewards_check(db: SessionManager, challenge_bus: ChallengeEventBus):
@@ -69,7 +76,10 @@ def enqueue_social_rewards_check(db: SessionManager, challenge_bus: ChallengeEve
         )
         for repost in reposts:
             repost_blocknumber: int = repost.blocknumber
-            dispatch_challenge_repost(challenge_bus, repost, repost_blocknumber)
+            repost_block_datetime: datetime = repost.created_at
+            dispatch_challenge_repost(
+                challenge_bus, repost, repost_blocknumber, repost_block_datetime
+            )
 
         saves = (
             session.query(Save)
@@ -84,7 +94,10 @@ def enqueue_social_rewards_check(db: SessionManager, challenge_bus: ChallengeEve
         )
         for save in saves:
             save_blocknumber: int = save.blocknumber
-            dispatch_favorite(challenge_bus, save, save_blocknumber)
+            save_block_datetime: datetime = save.created_at
+            dispatch_favorite(
+                challenge_bus, save, save_blocknumber, save_block_datetime
+            )
 
         follows = (
             session.query(Follow)
@@ -99,7 +112,10 @@ def enqueue_social_rewards_check(db: SessionManager, challenge_bus: ChallengeEve
         )
         for follow in follows:
             follow_blocknumber: int = follow.blocknumber
-            dispatch_challenge_follow(challenge_bus, follow, follow_blocknumber)
+            follow_block_datetime: datetime = follow.created_at
+            dispatch_challenge_follow(
+                challenge_bus, follow, follow_blocknumber, follow_block_datetime
+            )
 
         save_indexed_checkpoint(
             session, index_profile_challenge_backfill_tablename, min_blocknumber

@@ -161,6 +161,7 @@ class ChallengeManager:
             {
                 "user_id": event["user_id"],
                 "block_number": event["block_number"],
+                "block_number": event["block_number"],
                 "extra": event["extra"],
                 "specifier": self._updater.generate_specifier(
                     event["user_id"], event["extra"]
@@ -289,12 +290,18 @@ class ChallengeManager:
             )
 
             # Add block # to newly completed challenges
+            logger.info(f"asdf to_update: ", to_update, events_with_specifiers_map)
             for challenge in to_update:
                 if challenge.is_complete:
                     block_number = events_with_specifiers_map[challenge.specifier][
                         "block_number"
                     ]
+                    block_datetime = events_with_specifiers_map[challenge.specifier][
+                        "block_datetime"
+                    ]
+
                     challenge.completed_blocknumber = block_number
+                    challenge.completed_at = block_datetime
 
             logger.debug(
                 f"ChallengeManager: Updated challenges from event [{event_type}]: [{to_update}]"

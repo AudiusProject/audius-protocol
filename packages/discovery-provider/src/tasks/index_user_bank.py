@@ -745,7 +745,9 @@ def process_transfer_instruction(
                 timestamp=timestamp,
                 tx_sig=tx_sig,
             )
-            challenge_event_bus.dispatch(ChallengeEvent.send_tip, slot, sender_user_id)
+            challenge_event_bus.dispatch(
+                ChallengeEvent.send_tip, slot, timestamp, sender_user_id
+            )
         elif is_usdc:
             # Index as a purchase of some content
             purchase_metadata = get_purchase_metadata_from_memo(
@@ -773,12 +775,14 @@ def process_transfer_instruction(
             challenge_event_bus.dispatch(
                 ChallengeEvent.audio_matching_buyer,
                 slot,
+                timestamp,
                 sender_user_id,
                 {"track_id": purchase_metadata["id"], "amount": amount},
             )
             challenge_event_bus.dispatch(
                 ChallengeEvent.audio_matching_seller,
                 slot,
+                timestamp,
                 receiver_user_id,
                 {
                     "track_id": purchase_metadata["id"],

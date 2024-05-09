@@ -500,16 +500,25 @@ def create_playlist(params: ManageEntityParameters):
 
     if tracks:
         dispatch_challenge_playlist_upload(
-            params.challenge_bus, params.block_number, playlist_record
+            params.challenge_bus,
+            params.block_number,
+            params.block_datetime,
+            playlist_record,
         )
 
 
 def dispatch_challenge_playlist_upload(
-    bus: ChallengeEventBus, block_number: int, playlist_record: Playlist
+    bus: ChallengeEventBus,
+    block_number: int,
+    block_datetime: datetime,
+    playlist_record: Playlist,
 ):
     # Adds challenge for creating your first playlist and adding a track to it.
     bus.dispatch(
-        ChallengeEvent.first_playlist, block_number, playlist_record.playlist_owner_id
+        ChallengeEvent.first_playlist,
+        block_number,
+        block_datetime,
+        playlist_record.playlist_owner_id,
     )
 
 
@@ -561,7 +570,10 @@ def update_playlist(params: ManageEntityParameters):
 
     if playlist_record.playlist_contents["track_ids"]:
         dispatch_challenge_playlist_upload(
-            params.challenge_bus, params.block_number, playlist_record
+            params.challenge_bus,
+            params.block_number,
+            params.block_datetime,
+            playlist_record,
         )
 
 
