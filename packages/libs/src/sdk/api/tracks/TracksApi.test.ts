@@ -3,10 +3,21 @@ import path from 'path'
 
 import { beforeAll, expect, jest } from '@jest/globals'
 
+import { developmentConfig } from '../../config/development'
+import {
+  PaymentRouterClient,
+  SolanaRelay,
+  SolanaRelayWalletAdapter,
+  getDefaultPaymentRouterClientConfig
+} from '../../services'
 import { DefaultAuth } from '../../services/Auth/DefaultAuth'
 import { DiscoveryNodeSelector } from '../../services/DiscoveryNodeSelector'
 import { EntityManager } from '../../services/EntityManager'
 import { Logger } from '../../services/Logger'
+import {
+  ClaimableTokensClient,
+  getDefaultClaimableTokensConfig
+} from '../../services/Solana/programs/ClaimableTokensClient'
 import { Storage } from '../../services/Storage'
 import { StorageNodeSelector } from '../../services/StorageNodeSelector'
 import { Genre } from '../../types/Genre'
@@ -83,13 +94,28 @@ describe('TracksApi', () => {
   })
 
   beforeAll(() => {
+    const solanaWalletAdapter = new SolanaRelayWalletAdapter({
+      solanaRelay: new SolanaRelay(
+        new Configuration({
+          middleware: [discoveryNodeSelector.createMiddleware()]
+        })
+      )
+    })
     tracks = new TracksApi(
       new Configuration(),
       new DiscoveryNodeSelector(),
       new Storage({ storageNodeSelector, logger: new Logger() }),
       new EntityManager({ discoveryNodeSelector: new DiscoveryNodeSelector() }),
       auth,
-      new Logger()
+      new Logger(),
+      new ClaimableTokensClient({
+        ...getDefaultClaimableTokensConfig(developmentConfig),
+        solanaWalletAdapter
+      }),
+      new PaymentRouterClient({
+        ...getDefaultPaymentRouterClientConfig(developmentConfig),
+        solanaWalletAdapter
+      })
     )
     jest.spyOn(console, 'warn').mockImplementation(() => {})
     jest.spyOn(console, 'info').mockImplementation(() => {})

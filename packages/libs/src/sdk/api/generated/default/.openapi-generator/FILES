@@ -1,3 +1,4 @@
+.openapi-generator-ignore
 apis/DashboardWalletUsersApi.ts
 apis/DeveloperAppsApi.ts
 apis/PlaylistsApi.ts
@@ -8,6 +9,7 @@ apis/UsersApi.ts
 apis/index.ts
 index.ts
 models/Access.ts
+models/AccessGate.ts
 models/Activity.ts
 models/AuthorizedApp.ts
 models/AuthorizedApps.ts
@@ -24,11 +26,14 @@ models/DeveloperApps.ts
 models/EncodedUserId.ts
 models/Favorite.ts
 models/FavoritesResponse.ts
+models/FollowGate.ts
 models/FollowersResponse.ts
 models/FollowingResponse.ts
 models/GetSupporters.ts
 models/GetSupporting.ts
 models/GetTipsResponse.ts
+models/NftCollection.ts
+models/NftGate.ts
 models/Playlist.ts
 models/PlaylistAddedTimestamp.ts
 models/PlaylistArtwork.ts
@@ -36,6 +41,7 @@ models/PlaylistResponse.ts
 models/PlaylistSearchResult.ts
 models/PlaylistTracksResponse.ts
 models/ProfilePicture.ts
+models/PurchaseGate.ts
 models/RelatedArtistResponse.ts
 models/RemixParent.ts
 models/Reposts.ts
@@ -44,6 +50,7 @@ models/Supporter.ts
 models/Supporting.ts
 models/TagsResponse.ts
 models/Tip.ts
+models/TipGate.ts
 models/TopListener.ts
 models/Track.ts
 models/TrackArtwork.ts
@@ -53,6 +60,7 @@ models/TrackResponse.ts
 models/TrackSearch.ts
 models/TracksResponse.ts
 models/TrendingPlaylistsResponse.ts
+models/UsdcGate.ts
 models/User.ts
 models/UserAssociatedWalletResponse.ts
 models/UserResponse.ts

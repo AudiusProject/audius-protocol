@@ -14,15 +14,13 @@ import { DDEXContributor, DDEXRelease, DDEXResource } from './parseDelivery'
 import { readAssetWithCaching } from './s3poller'
 import { createSdkService } from './sdk'
 
-export const sdkService = createSdkService()
-
 export async function publishValidPendingReleases(opts?: {
   republish: boolean
 }) {
   const rows = releaseRepo.all({ pendingPublish: true })
   if (!rows.length) return
 
-  const sdk = (await sdkService).getSdk()
+  const sdk = (await createSdkService()).getSdk()
 
   for (const row of rows) {
     const parsed = row._parsed!

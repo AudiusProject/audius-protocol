@@ -609,6 +609,7 @@ export const productionConfig: SdkServicesConfig = {
     "claimableTokensProgramAddress": "Ewkv3JahEFRKkcJmpoKB7pXbnUHwjAyXiwEo4ZY2rezQ",
     "rewardManagerProgramAddress": "DDZDcYdQFEMwcu2Mwo75yGFjJ1mUQyyXLWzhZLEVFcei",
     "rewardManagerStateAddress": "71hWFVYokLaN1PNYzTAWi13EfJ7Xt9VbSWUKsXUT8mxE",
+    "paymentRouterProgramAddress": "paytYpX3LPN98TAeen6bFFeraGSuWnomZmCXjAsoqPa",
     "rpcEndpoint": "https://audius-fe.rpcpool.com",
     "usdcTokenMint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
     "wAudioTokenMint": "9LzCMqDgTKYz9Drzqnpgee3SGa89up3a247ypMj2xrqM"

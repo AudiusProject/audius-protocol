@@ -92,7 +92,7 @@ export const ArtistContentSection = () => {
   if (!tracks.length && !albums.length) return null
 
   return (
-    <Paper w='100%' direction='column' mt='xl'>
+    <Paper w='100%' direction='column' mt='xl' borderRadius='l'>
       <Flex ph='2xl' pv='l' justifyContent='space-between'>
         <Flex gap='2xl'>
           <Flex gap='s'>

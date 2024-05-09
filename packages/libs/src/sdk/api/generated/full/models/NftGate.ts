@@ -28,7 +28,7 @@ import {
  */
 export interface NftGate {
     /**
-     * 
+     * Must hold an NFT of the given collection to unlock
      * @type {NftCollection}
      * @memberof NftGate
      */

@@ -150,7 +150,7 @@ class Track(Resource):
     @cache(ttl_sec=5)
     def get(self, track_id):
         decoded_id = decode_with_abort(track_id, ns)
-        return get_single_track(decoded_id, None, ns)
+        return get_single_track(decoded_id, None, ns, exclude_gated=False)
 
 
 @full_ns.route(TRACK_ROUTE)

@@ -22,6 +22,7 @@ export const CollectionsTableOverflowMenuButton = (
     is_album: isAlbum,
     playlist_owner_id: playlistOwnerId,
     is_private: isPrivate,
+    is_stream_gated: isStreamGated,
     permalink
   } = (useSelector((state: CommonState) =>
     getCollection(state, { id: collectionId })
@@ -30,7 +31,7 @@ export const CollectionsTableOverflowMenuButton = (
   const overflowMenu = {
     type: isAlbum ? 'album' : 'playlist',
     playlistId: collectionId,
-    includeEmbed: true,
+    includeEmbed: !isPrivate && !isStreamGated,
     includeVisitArtistPage: false,
     includeShare: true,
     includeEdit: true,
