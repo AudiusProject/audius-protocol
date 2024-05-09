@@ -30,29 +30,29 @@ test.describe('Sign In', () => {
   // TODO: For some reason the user created with audius-cmd doesn't have a handle in identity
   // so the email check returns false
   // https://linear.app/audius/issue/INF-701/re-enable-fix-sign-in-after-entering-email-in-sign-up-test-if-we
-  // test.skip('can navigate to sign-in after entering email in sign-up', async ({
-  //   page
-  // }) => {
-  //   await page.goto('signup')
-  //   await page.getByRole('textbox', { name: /email/i }).fill(user.email)
-  //   await page.getByRole('button', { name: /sign up free/i }).click()
-  //   const signUpModal = page.getByRole('alert')
-  //   await signUpModal.getByRole('link', { name: /Sign In/ }).click()
-  //   await assertOnSignInPage(page)
-  // })
+  test.skip('can navigate to sign-in after entering email in sign-up', async ({
+    page
+  }) => {
+    await page.goto('signup')
+    await page.getByRole('textbox', { name: /email/i }).fill(user.email)
+    await page.getByRole('button', { name: /sign up free/i }).click()
+    const signUpModal = page.getByRole('alert')
+    await signUpModal.getByRole('link', { name: /Sign In/ }).click()
+    await assertOnSignInPage(page)
+  })
 
   // TODO: need to integrate a hard-coded otp for this user before we can turn this test on
   // https://linear.app/audius/issue/INF-702/fix-signintestts-otp-code
-  // test.skip('can sign in', async ({ page }) => {
-  //   await page.goto('signin')
-  //   await assertOnSignInPage(page)
-  //   await page.fill('input[name="email"]', email)
-  //   await page.fill('input[name="password"]', password)
-  //   await page.click('button:has-text("Sign In")')
-  //   await page.waitForSelector('text="Your Feed"', { timeout: 20000 })
-  //   await expect(page).toHaveText(name)
-  //   await expect(page).toHaveText(`@${handle}`)
-  // })
+  test.skip('can sign in', async ({ page }) => {
+    await page.goto('signin')
+    await assertOnSignInPage(page)
+    await page.fill('input[name="email"]', email)
+    await page.fill('input[name="password"]', password)
+    await page.click('button:has-text("Sign In")')
+    await page.waitForSelector('text="Your Feed"', { timeout: 20000 })
+    await expect(page).toHaveText(name)
+    await expect(page).toHaveText(`@${handle}`)
+  })
 })
 
 async function assertOnSignInPage(page: Page) {
