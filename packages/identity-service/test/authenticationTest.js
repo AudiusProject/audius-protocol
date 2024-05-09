@@ -160,7 +160,7 @@ describe('test authentication routes', function () {
     assert.deepStrictEqual(response.statusCode, 200)
   })
 
-  it.only('sends otp code to authenticating users', async function () {
+  it('sends otp code to authenticating users', async function () {
     await signUpUser()
 
     await request(app)
@@ -178,7 +178,7 @@ describe('test authentication routes', function () {
     assert.ok(otp)
   })
 
-  it.only('sends 2 otp codes every 10 minutes', async function () {
+  it('sends 2 otp codes every 10 minutes', async function () {
     const redis = app.get('redis')
     await signUpUser()
 
