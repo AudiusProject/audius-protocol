@@ -1,9 +1,10 @@
+import { View } from 'react-native'
+
 import { Text, useTheme } from '@audius/harmony-native'
 import { UserGeneratedText } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 
 import { useSelectProfile } from '../selectors'
-import { View } from 'react-native'
 
 const MAX_BIO_LINES = 2
 
@@ -43,7 +44,6 @@ export const Bio = (props: BioProps) => {
           // only set number of lines after we determine that the text should be truncated
           // this allows us to let the parent component know whether we have met one of
           // the conditions to make the bio section expansible.
-          // {...other}
           numberOfLines={
             isExpansible && numberOfLines ? numberOfLines : undefined
           }
