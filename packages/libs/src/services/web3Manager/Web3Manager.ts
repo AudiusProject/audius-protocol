@@ -85,11 +85,10 @@ export class Web3Manager {
       web3Config.internalWeb3Config?.web3ProviderEndpoints
     ) {
       // either user has external web3 but it's not configured, or doesn't have web3
-      this.web3 = new Web3(
-        this.provider(
-          web3Config.internalWeb3Config.web3ProviderEndpoints[0] as string,
-          10000
-        )
+      const gatewayweb3endpoint = web3Config.internalWeb3Config.web3ProviderEndpoints[0]!
+      const discoveryweb3endpoint = `${this.discoveryProvider?.discoveryProviderEndpoint}/chain`
+      const web3endpoint = this.discoveryProvider !== null ? discoveryweb3endpoint : gatewayweb3endpoint
+      this.web3 = new Web3(this.provider(web3endpoint, 10000)
       )
       this.useExternalWeb3 = false
 
@@ -127,6 +126,18 @@ export class Web3Manager {
 
   setDiscoveryProvider(discoveryProvider: DiscoveryProvider) {
     this.discoveryProvider = discoveryProvider
+    // if internal web3, use discprov
+    if (
+      this.web3Config &&
+      !this.web3Config.useExternalWeb3 &&
+     this.web3Config.internalWeb3Config?.web3ProviderEndpoints
+    ) {
+      // either user has external web3 but it's not configured, or doesn't have web3
+      const gatewayweb3endpoint = this.web3Config.internalWeb3Config.web3ProviderEndpoints[0]!
+      const discoveryweb3endpoint = `${this.discoveryProvider?.discoveryProviderEndpoint}/chain`
+      const web3endpoint = this.discoveryProvider !== null ? discoveryweb3endpoint : gatewayweb3endpoint
+      this.web3 = new Web3(this.provider(web3endpoint, 10000))
+    }
   }
 
   useDiscoveryRelay() {
