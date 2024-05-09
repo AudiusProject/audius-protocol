@@ -7,7 +7,7 @@ import { logger } from "../logger"
 export type LocationData = { city: string, region: string, country: string } | {}
 
 // gets ip data from api.ipdata.co, returns an empty object {} if api key not configured or an error occurs
-const getIpData = async (logger: Logger, ip: string): Promise<LocationData> => {
+export const getIpData = async (logger: Logger, ip: string): Promise<LocationData> => {
     const ipdataApiKey = config.ipdataApiKey
     if (ipdataApiKey === null) {
         logger.warn({}, "ip data requested but api key not configured")
@@ -22,6 +22,17 @@ const getIpData = async (logger: Logger, ip: string): Promise<LocationData> => {
         return response
     } catch (e: unknown) {
         logger.error({ error: e }, "error requesting ip data")
+        return {}
+    }
+}
+
+// gets ip data from api.ipdata.co, returns an empty object {} if api key not configured or an error occurs
+export const getRequestIpData = async (logger: Logger, req: Request): Promise<LocationData> => {
+    try {
+        const ip = getIP(req)
+        return getIpData(logger, ip)
+    } catch (e) {
+        logger.error({ e }, "error requesting ip data")
         return {}
     }
 }
