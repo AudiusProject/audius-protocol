@@ -8,12 +8,7 @@ import {
   playbackPositionSelectors
 } from '@audius/common/store'
 import type { CommonState } from '@audius/common/store'
-import {
-  dayjs,
-  squashNewLines,
-  getDogEarType,
-  Genre
-} from '@audius/common/utils'
+import { dayjs, getDogEarType, Genre } from '@audius/common/utils'
 import moment from 'moment'
 import { TouchableOpacity, Image } from 'react-native'
 import { useSelector } from 'react-redux'
@@ -33,7 +28,7 @@ import {
 } from '@audius/harmony-native'
 import CoSign from 'app/components/co-sign/CoSign'
 import { Size } from 'app/components/co-sign/types'
-import { Hyperlink, DogEar, Tag } from 'app/components/core'
+import { UserGeneratedText, DogEar, Tag } from 'app/components/core'
 import UserBadges from 'app/components/user-badges'
 import { light } from 'app/haptics'
 import { useNavigation } from 'app/hooks/useNavigation'
@@ -78,15 +73,6 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
     height: 224,
     width: 224,
     alignSelf: 'center'
-  },
-  description: {
-    ...typography.body,
-    color: palette.neutralLight2,
-    textAlign: 'left',
-    width: '100%'
-  },
-  link: {
-    color: palette.primary
   },
   emoji: {
     height: spacing(4),
@@ -389,12 +375,13 @@ export const DetailsTile = ({
         )}
         {description ? (
           <Box w='100%'>
-            <Hyperlink
+            <UserGeneratedText
               source={descriptionLinkPressSource}
-              style={styles.description}
-              linkStyle={styles.link}
-              text={squashNewLines(description) ?? ''}
-            />
+              variant='body'
+              size='s'
+            >
+              {description}
+            </UserGeneratedText>
           </Box>
         ) : null}
         {!hasStreamAccess && !isOwner && streamConditions && contentId ? (
