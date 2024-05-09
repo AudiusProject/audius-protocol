@@ -16,7 +16,6 @@ import {
 } from '@audius/common/store'
 import { BN_USDC_CENT_WEI } from '@audius/common/utils'
 import BN from 'bn.js'
-import { omit } from 'lodash'
 import { all, call, put, select } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
@@ -107,7 +106,6 @@ export function* getUSDCMetadata(stream_conditions: USDCPurchaseConditions) {
   const priceWei = new BN(priceCents).mul(BN_USDC_CENT_WEI).toNumber()
   const conditionsWithMetadata: USDCPurchaseConditions = {
     usdc_purchase: {
-      ...omit(stream_conditions.usdc_purchase, 'albumTrackPrice'),
       price: priceCents,
       splits: {
         [ownerUserbank?.toString() ?? '']: priceWei
