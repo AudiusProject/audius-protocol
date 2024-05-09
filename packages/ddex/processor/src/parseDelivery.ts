@@ -501,6 +501,11 @@ function parseReleaseXml(source: string, $: cheerio.CheerioAPI) {
           }
         })
 
+      // deal or no deal?
+      if (!release.deal) {
+        release.problems.push('NoDeal')
+      }
+
       return release
     })
 
@@ -517,16 +522,18 @@ function parseReleaseXml(source: string, $: cheerio.CheerioAPI) {
   }
 
   // surpress any track releases that are part of main release
-  const mainReleaseRefs = new Set(
-    mainRelease?.soundRecordings.map((s) => s.ref)
-  )
-  for (const release of releases) {
-    if (release.isMainRelease) continue
-    const isSubset = release.soundRecordings.every((s) =>
-      mainReleaseRefs.has(s.ref)
+  if (mainRelease && mainRelease.problems.length == 0) {
+    const mainReleaseRefs = new Set(
+      mainRelease.soundRecordings.map((s) => s.ref)
     )
-    if (isSubset) {
-      release.problems.push('DuplicateRelease')
+    for (const release of releases) {
+      if (release.isMainRelease) continue
+      const isSubset = release.soundRecordings.every((s) =>
+        mainReleaseRefs.has(s.ref)
+      )
+      if (isSubset) {
+        release.problems.push('DuplicateRelease')
+      }
     }
   }
 

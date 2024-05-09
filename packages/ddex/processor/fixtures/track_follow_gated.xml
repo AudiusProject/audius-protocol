@@ -20,7 +20,7 @@
         <FullName>Tiki Labs, Inc.</FullName>
       </PartyName>
     </MessageRecipient>
-    <MessageCreatedDateTime>2024-04-01T06:00:00Z</MessageCreatedDateTime>
+    <MessageCreatedDateTime>2024-04-01T05:00:00Z</MessageCreatedDateTime>
   </MessageHeader>
   <ResourceList>
     <SoundRecording>
@@ -30,16 +30,16 @@
       </SoundRecordingId>
       <ResourceReference>A1</ResourceReference>
       <ReferenceTitle>
-        <TitleText>Updated Example Song</TitleText>
+        <TitleText>Example Song</TitleText>
       </ReferenceTitle>
       <Duration>PT3M45S</Duration>
       <SoundRecordingDetailsByTerritory>
         <TerritoryCode>Worldwide</TerritoryCode>
         <Title TitleType="FormalTitle">
-          <TitleText>Updated Example Song</TitleText>
+          <TitleText>Example Song</TitleText>
         </Title>
         <Title TitleType="DisplayTitle">
-          <TitleText>Updated Example Song</TitleText>
+          <TitleText>Example Song</TitleText>
         </Title>
         <DisplayArtistName>DJ Theo</DisplayArtistName>
         <LabelName>Label Name, Inc.</LabelName>
@@ -105,9 +105,10 @@
       </ReleaseId>
       <ReleaseReference>RL1</ReleaseReference>
       <ReferenceTitle>
-        <TitleText>Example Album</TitleText>
+        <TitleText>Example Album 123</TitleText>
       </ReferenceTitle>
       <ReleaseResourceReferenceList>
+        <ReleaseResourceReference>A1</ReleaseResourceReference>
         <ReleaseResourceReference>A1</ReleaseResourceReference>
         <ReleaseResourceReference>A2</ReleaseResourceReference>
       </ReleaseResourceReferenceList>
@@ -141,10 +142,9 @@
       <DealReleaseReference>RL1</DealReleaseReference>
       <Deal>
         <DealTerms>
-          <CommercialModelType>FreeOfChargeModel</CommercialModelType>
+          <CommercialModelType UserDefinedValue="FollowGated">UserDefined</CommercialModelType>
           <Usage>
             <UseType>OnDemandStream</UseType>
-            <UseType>PermanentDownload</UseType>
           </Usage>
           <TerritoryCode>Worldwide</TerritoryCode>
           <ValidityPeriod>
