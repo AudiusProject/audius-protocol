@@ -240,7 +240,9 @@ export const CollectionScreenDetailsTile = ({
     (track) => track.is_delete
   )
   const isPlayable =
-    !areAllTracksDeleted && (isQueued || (trackCount > 0 && !!firstTrack))
+    Object.values(tracks).length === 0
+      ? true
+      : !areAllTracksDeleted && (isQueued || (trackCount > 0 && !!firstTrack))
 
   const renderTrackList = useCallback(() => {
     return (
