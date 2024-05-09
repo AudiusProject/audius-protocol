@@ -460,6 +460,7 @@ export const TracksTable = ({
     },
     [
       trackAccessMap,
+      shouldShowGatedType,
       disabledTrackEdit,
       isAlbumPage,
       onClickRemove,

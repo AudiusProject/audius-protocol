@@ -100,7 +100,6 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
     type,
     title,
     coverArtSizes,
-    artistName,
     description,
     isOwner,
     releaseDate,
@@ -161,7 +160,7 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
   }, [onOpen, collectionId])
 
   const renderStatsRow = (isLoading: boolean) => {
-    if (isLoading) return null
+    if (isLoading) return <Skeleton height='20px' width='120px' />
     return (
       <RepostsFavoritesStats
         isUnlisted={false}
@@ -174,6 +173,8 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
   }
 
   const isLoading = !isSsrEnabled && (loading || artworkLoading)
+  // const isLoading = true
+  // const title = null
 
   const fadeIn = {
     [styles.show]: !isLoading,
@@ -185,35 +186,41 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
 
   const topSection = (
     <Flex gap='xl' p='l' backgroundColor='white'>
-      {coverArtSizes || gradient || icon ? (
-        <Artwork
-          collectionId={collectionId}
-          coverArtSizes={coverArtSizes}
-          callback={handleLoadArtwork}
-          gradient={gradient}
-          icon={icon}
-          imageOverride={imageOverride}
-          isOwner={isOwner}
-        />
-      ) : null}
-      <Flex direction='column' justifyContent='space-between'>
+      <Artwork
+        collectionId={collectionId}
+        coverArtSizes={coverArtSizes}
+        callback={handleLoadArtwork}
+        gradient={gradient}
+        icon={icon}
+        imageOverride={imageOverride}
+        isOwner={isOwner}
+      />
+      <Flex
+        direction='column'
+        justifyContent='space-between'
+        css={{ minWidth: 400 }}
+      >
         <Flex direction='column' gap='xl'>
-          <Flex className={cn(fadeIn)} gap='s' mt='s' alignItems='center'>
-            {!isPublished ? (
-              <IconVisibilityHidden color='subdued' aria-label='hidden' />
-            ) : null}
-            {isPremium ? <IconCart size='s' color='subdued' /> : null}
-            <Text
-              variant='label'
-              color='subdued'
-              css={{ letterSpacing: '2px' }}
-            >
-              {isPremium ? `${messages.premiumLabel} ` : ''}
-              {type === 'playlist' && !isPublished
-                ? messages.hiddenPlaylistLabel
-                : type}
-            </Text>
-          </Flex>
+          {isLoading ? (
+            <Skeleton height='24px' width='200px' />
+          ) : (
+            <Flex className={cn(fadeIn)} gap='s' mt='s' alignItems='center'>
+              {!isPublished ? (
+                <IconVisibilityHidden color='subdued' aria-label='hidden' />
+              ) : null}
+              {isPremium ? <IconCart size='s' color='subdued' /> : null}
+              <Text
+                variant='label'
+                color='subdued'
+                css={{ letterSpacing: '2px' }}
+              >
+                {isPremium ? `${messages.premiumLabel} ` : ''}
+                {type === 'playlist' && !isPublished
+                  ? messages.hiddenPlaylistLabel
+                  : type}
+              </Text>
+            </Flex>
+          )}
           <Flex direction='column' gap='s'>
             <Flex
               as={isOwner ? 'button' : 'span'}
@@ -225,24 +232,29 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
               })}
               onClick={isOwner ? handleClickEditTitle : undefined}
             >
-              <Text
-                variant='heading'
-                size='xl'
-                className={cn(styles.titleHeader, fadeIn)}
-                textAlign='left'
-              >
-                {title}
-              </Text>
-              <ClientOnly>
-                {isOwner ? (
-                  <IconPencil className={styles.editIcon} color='subdued' />
-                ) : null}
-              </ClientOnly>
               {isLoading ? (
-                <Skeleton css={{ position: 'absolute', top: 0 }} />
-              ) : null}
+                <Skeleton height='48px' width='300px' />
+              ) : (
+                <>
+                  <Text
+                    variant='heading'
+                    size='xl'
+                    className={cn(styles.titleHeader, fadeIn)}
+                    textAlign='left'
+                  >
+                    {title}
+                  </Text>
+                  <ClientOnly>
+                    {!isLoading && isOwner ? (
+                      <IconPencil className={styles.editIcon} color='subdued' />
+                    ) : null}
+                  </ClientOnly>
+                </>
+              )}
             </Flex>
-            {artistName ? (
+            {isLoading ? (
+              <Skeleton height='24px' width='150px' />
+            ) : (
               <Text
                 variant='title'
                 strength='weak'
@@ -255,27 +267,28 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
                   <UserLink userId={userId} popover variant='visible' />
                 ) : null}
               </Text>
-            ) : null}
+            )}
           </Flex>
-          {isLoading ? (
-            <Skeleton css={{ position: 'absolute', top: 0 }} width='60%' />
-          ) : null}
           <div>{renderStatsRow(isLoading)}</div>
         </Flex>
         <ClientOnly>
-          <CollectionActionButtons
-            variant={variant}
-            userId={userId}
-            collectionId={collectionId}
-            isPlayable={isPlayable}
-            isPlaying={playing}
-            isPreviewing={previewing}
-            isPremium={isPremium}
-            isOwner={isOwner}
-            tracksLoading={tracksLoading}
-            onPlay={onPlay}
-            onPreview={onPreview}
-          />
+          {isLoading ? (
+            <Skeleton height='64px' width='100%' />
+          ) : (
+            <CollectionActionButtons
+              variant={variant}
+              userId={userId}
+              collectionId={collectionId}
+              isPlayable={isPlayable}
+              isPlaying={playing}
+              isPreviewing={previewing}
+              isPremium={isPremium}
+              isOwner={isOwner}
+              tracksLoading={tracksLoading}
+              onPlay={onPlay}
+              onPreview={onPreview}
+            />
+          )}
         </ClientOnly>
       </Flex>
       {onFilterChange ? (
@@ -327,28 +340,32 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
         />
       ) : null}
 
-      <Flex className={cn(fadeIn)} gap='l' direction='column'>
-        {description ? (
-          <UserGeneratedText
-            size='s'
-            className={cn(fadeIn)}
-            linkSource='collection page'
-            css={{ textAlign: 'left' }}
-          >
-            {description}
-          </UserGeneratedText>
-        ) : null}
-        <AlbumDetailsText
-          duration={duration}
-          lastModifiedDate={lastModifiedDate}
-          numTracks={numTracks}
-          releaseDate={releaseDate}
-        />
-      </Flex>
+      {isLoading ? (
+        <Skeleton height='40px' width='100%' />
+      ) : (
+        <Flex className={cn(fadeIn)} gap='l' direction='column'>
+          {description ? (
+            <UserGeneratedText
+              size='s'
+              className={cn(fadeIn)}
+              linkSource='collection page'
+              css={{ textAlign: 'left' }}
+            >
+              {description}
+            </UserGeneratedText>
+          ) : null}
+          <AlbumDetailsText
+            duration={duration}
+            lastModifiedDate={lastModifiedDate}
+            numTracks={numTracks}
+            releaseDate={releaseDate}
+          />
+        </Flex>
+      )}
     </Flex>
   )
   return (
-    <Flex direction='column'>
+    <Flex direction='column' h='100%'>
       {topSection}
       {descriptionSection}
     </Flex>

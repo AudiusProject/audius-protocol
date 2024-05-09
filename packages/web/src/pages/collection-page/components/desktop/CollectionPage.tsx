@@ -136,6 +136,22 @@ const CollectionPage = ({
   onClickReposts,
   onClickFavorites
 }: CollectionPageProps) => {
+  // DEBUG:
+  // const title = null
+  // const pageDescription = null
+  // const canonicalUrl = null
+  // const structuredData = null
+  // const playlistId = null
+  // const allowReordering = null
+  // const playing = null
+  // const previewing = null
+  // const type = null
+  // const tracks = { status: Status.LOADING, entries: [] }
+  // const userId = null
+  // const status = Status.LOADING
+  // const metadata = null
+  // const user = null
+
   const { status, metadata, user } = collection
   const { isEnabled: isEditAlbumsEnabled } = useFlag(FeatureFlags.EDIT_ALBUMS)
   const { isEnabled: isPremiumAlbumsEnabled } = useFlag(
@@ -150,7 +166,8 @@ const CollectionPage = ({
   const collectionLoading = status === Status.LOADING
   const queuedAndPlaying = playing && isQueued()
   const queuedAndPreviewing = previewing && isQueued()
-  const tracksLoading = tracks.status === Status.LOADING
+  const tracksLoading =
+    tracks.status === Status.LOADING || tracks.status === Status.IDLE
 
   const coverArtSizes =
     metadata && metadata?.variant !== Variant.SMART
@@ -370,7 +387,7 @@ const CollectionPage = ({
         )}
       </Tile>
       <ClientOnly>
-        {isOwner && !isAlbum && !isNftPlaylist ? (
+        {!collectionLoading && isOwner && !isAlbum && !isNftPlaylist ? (
           <>
             <Divider variant='default' className={styles.tileDivider} />
             <SuggestedTracks collectionId={playlistId} />
