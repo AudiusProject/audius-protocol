@@ -8,7 +8,7 @@ import {
 } from 'react'
 
 import { DogEarType } from '@audius/common/models'
-import { Flex } from '@audius/harmony'
+import { Box } from '@audius/harmony'
 import cn from 'classnames'
 
 import { DogEar } from 'components/dog-ear'
@@ -44,24 +44,23 @@ export const Tile = forwardRef(
     } = props
 
     return (
-      <RootComponent
-        className={cn(styles.root, className)}
-        {...other}
-        type={onClick ? 'button' : undefined}
-        onClick={onClick}
-        ref={ref}
-      >
-        {/* Dog ear needs to live outside the box to avoid overflow:hidden */}
+      <Box>
         {dogEar ? <DogEar type={dogEar} /> : null}
-        {/* This flex has all the internal tyle styles (border, bg, etc) */}
-        <Flex
-          className={cn([styles.tile, size && styles[size], styles[elevation]])}
-          css={{ overflow: 'hidden' }}
-          direction='column'
+        <RootComponent
+          className={cn(
+            styles.root,
+            size && styles[size],
+            styles[elevation],
+            className
+          )}
+          type={onClick ? 'button' : undefined}
+          onClick={onClick}
+          ref={ref}
+          {...other}
         >
           {children}
-        </Flex>
-      </RootComponent>
+        </RootComponent>
+      </Box>
     )
   }
 )

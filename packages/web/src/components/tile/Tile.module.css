@@ -1,15 +1,11 @@
 .root {
+  --border-width: 1px;
   display: flex;
   flex-direction: column;
   position: relative;
-}
-
-.tile {
-  --border-width: 1px;
   border: var(--border-width) solid var(--harmony-border-default);
   border-radius: var(--harmony-unit-2);
   background-color: var(--harmony-white);
-  position: relative;
   transition: all var(--harmony-expressive);
 }
 
