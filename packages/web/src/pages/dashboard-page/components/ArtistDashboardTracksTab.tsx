@@ -85,6 +85,7 @@ export const ArtistDashboardTracksTab = ({
         loading={tracksStatus === Status.LOADING}
         isPaginated
         tableHeaderClassName={styles.tableHeader}
+        shouldShowGatedType
       />
     </Flex>
   )
