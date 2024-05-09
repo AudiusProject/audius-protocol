@@ -254,8 +254,7 @@ const accountApi = createApi({
               // TODO(C-4330) - The state type is incorrect - fix.
               // @ts-expect-error
               const foundIndex = state.managedUsers.findIndex(
-                (m: ManagedUserMetadata) =>
-                  m.user.user_id === grantorUser.user_id
+                (m: { user: number }) => m.user === grantorUser.user_id
               )
               // @ts-expect-error
               state.managedUsers.splice(foundIndex, 1, {
