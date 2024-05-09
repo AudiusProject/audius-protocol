@@ -1,71 +1,40 @@
-import type { ComponentProps } from 'react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-import { useLeavingAudiusModal } from '@audius/common/store'
-import {
-  isInteralAudiusUrl,
-  getPathFromAudiusUrl,
-  isAllowedExternalLink
-} from '@audius/common/utils'
-import { useLinkTo } from '@react-navigation/native'
+import { squashNewLines } from '@audius/common/utils'
+import { css } from '@emotion/native'
 import type { Match } from 'autolinker/dist/es2015'
-import type { LayoutRectangle, TextStyle } from 'react-native'
-import { Text, View } from 'react-native'
+import { View } from 'react-native'
+import type { LayoutRectangle, Text as TextRef } from 'react-native'
 import Autolink from 'react-native-autolink'
 
-import type { StylesProp } from 'app/styles'
-import { makeStyles } from 'app/styles'
-
-import { useOnOpenLink } from './Link'
-
-const useStyles = makeStyles(({ palette, typography }) => ({
-  root: {
-    marginBottom: 3
-  },
-  link: {
-    color: palette.primary
-  },
-  linkText: {
-    ...typography.body
-  },
-  linksContainer: {
-    position: 'absolute'
-  },
-  hiddenLink: {
-    opacity: 0
-  },
-  hiddenLinkText: {
-    marginTop: -3
-  }
-}))
+import type { TextLinkProps, TextProps } from '@audius/harmony-native'
+import { Text, TextLink } from '@audius/harmony-native'
 
 type PositionedLink = {
   text: string
   match: Match
 }
 
-export type HyperlinkProps = ComponentProps<typeof Autolink> & {
+export type UserGeneratedTextProps = Omit<TextProps, 'children'> & {
+  children: string
   source?: 'profile page' | 'track page' | 'collection page'
   // Pass touches through text elements
   allowPointerEventsToPassThrough?: boolean
-  styles?: StylesProp<{ root: TextStyle; link: TextStyle }>
-  warnExternal?: boolean
+  linkProps?: Partial<TextLinkProps>
 }
 
-export const Hyperlink = (props: HyperlinkProps) => {
+export const UserGeneratedText = (props: UserGeneratedTextProps) => {
   const {
     allowPointerEventsToPassThrough,
     source,
-    styles: stylesProp,
     style,
-    onPress,
+    children,
+    linkProps,
     ...other
   } = props
-  const styles = useStyles()
-  const linkTo = useLinkTo()
 
   const linkContainerRef = useRef<View>(null)
-  const [linkRefs, setLinkRefs] = useState<Record<number, Text>>({})
+  const [linkRefs, setLinkRefs] = useState<Record<number, TextRef>>({})
   const [links, setLinks] = useState<Record<number, PositionedLink>>({})
   const [linkLayouts, setLinkLayouts] = useState<
     Record<number, LayoutRectangle>
@@ -101,30 +70,11 @@ export const Hyperlink = (props: HyperlinkProps) => {
     }
   }, [links, linkRefs, linkContainerRef])
 
-  const openLink = useOnOpenLink(source)
-  const { onOpen: openLeavingAudiusModal } = useLeavingAudiusModal()
-
-  const handlePress = useCallback(
-    (url: string, _match: Match) => {
-      onPress?.(url, _match)
-      if (isInteralAudiusUrl(url)) {
-        const path = getPathFromAudiusUrl(url)
-        if (path) {
-          linkTo(path)
-        }
-      } else if (isAllowedExternalLink(url)) {
-        openLink(url)
-      } else {
-        openLeavingAudiusModal({ link: url })
-      }
-    },
-    [onPress, linkTo, openLink, openLeavingAudiusModal]
-  )
-
-  const renderLink = useCallback(
-    (text, match, index) => (
+  // We let Autolink lay out each link invisibly, and capture their position and data
+  const renderHiddenLink = useCallback(
+    (text: string, match: Match, index: number) => (
       <View
-        onLayout={(e) => {
+        onLayout={() => {
           setLinks((links) => ({
             ...links,
             [index]: {
@@ -143,12 +93,36 @@ export const Hyperlink = (props: HyperlinkProps) => {
             })
           }
         }}
-        style={styles.hiddenLink}
+        // Negative margin needed to handle View overflow
+        style={css({ opacity: 0, marginTop: -3 })}
       >
-        <Text style={[styles.linkText, styles.hiddenLinkText]}>{text}</Text>
+        <Text {...other}>{text}</Text>
       </View>
     ),
-    [styles]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    []
+  )
+
+  const renderLink = useCallback(
+    (text: string, match: Match) => (
+      <TextLink
+        {...other}
+        variant='visible'
+        textVariant={other.variant}
+        url={match.getAnchorHref()}
+        {...linkProps}
+      >
+        {text}
+      </TextLink>
+    ),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    []
+  )
+
+  const renderText = useCallback(
+    (text: string) => <Text {...other}>{text}</Text>,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    []
   )
 
   return (
@@ -158,36 +132,37 @@ export const Hyperlink = (props: HyperlinkProps) => {
         ref={linkContainerRef}
       >
         <Autolink
-          onPress={handlePress}
-          linkStyle={[styles.linkText, styles.link, stylesProp?.link]}
-          renderLink={allowPointerEventsToPassThrough ? renderLink : undefined}
+          renderLink={
+            allowPointerEventsToPassThrough ? renderHiddenLink : renderLink
+          }
+          renderText={renderText}
           email
           url
-          style={[styles.root, style, stylesProp?.root]}
-          {...other}
+          style={[{ marginBottom: 3 }, style]}
+          text={squashNewLines(children) as string}
         />
       </View>
-
-      <View style={styles.linksContainer}>
+      {/* We overlay copies of each link on top of the invisible links */}
+      <View style={{ position: 'absolute' }}>
         {Object.entries(links).map(([index, { text, match }]) => {
           const linkLayout = linkLayouts[index]
 
           return linkLayout && linkContainerLayout ? (
-            <Text
+            <TextLink
+              {...other}
+              variant='visible'
+              textVariant={other.variant}
               key={`${linkLayout.x} ${linkLayout.y} ${index}`}
-              style={[
-                styles.linkText,
-                styles.link,
-                {
-                  position: 'absolute',
-                  top: linkLayout.y - linkContainerLayout.y,
-                  left: linkLayout.x - linkContainerLayout.x
-                }
-              ]}
-              onPress={() => handlePress(match.getAnchorHref(), match)}
+              style={{
+                position: 'absolute',
+                top: linkLayout.y - linkContainerLayout.y,
+                left: linkLayout.x - linkContainerLayout.x
+              }}
+              url={match.getAnchorHref()}
+              source={source}
             >
               {text}
-            </Text>
+            </TextLink>
           ) : null
         })}
       </View>

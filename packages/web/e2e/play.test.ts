@@ -1,5 +1,6 @@
 import { expect } from '@playwright/test'
 import { test } from './test'
+import { getTrack } from './data'
 
 declare global {
   interface Window {
@@ -9,26 +10,24 @@ declare global {
   }
 }
 
-// TODO: fix this test https://linear.app/audius/issue/C-4269/fix-e2e-play-test
-test.skip('should play a trending track', async ({ page }) => {
-  await page.goto('trending')
+test('should play a track', async ({ page }) => {
+  const { url, name } = getTrack()
+  await page.goto(url)
 
-  const trendingList = page.getByRole('list', {
-    name: /weekly trending tracks/i
+  const heading = page.getByRole('heading', {
+    name,
+    level: 1
   })
-  const skeletons = trendingList.locator('[aria-busy]')
-  const items = trendingList.getByRole('listitem')
-  const playButton = page.getByRole('button', { name: /play track/i })
-  const pauseButton = page.getByRole('button', { name: /pause track/i })
-  const playHoverIcon = items.first().getByRole('img', { name: 'Play' })
+
+  await expect(heading).toBeVisible()
+
+  const playButton = page.getByText('play', { exact: true })
+  const pauseButton = page.getByText('pause', { exact: true })
 
   const isPlayingWatcher = page.waitForFunction(() => !window.audio.paused)
   const isPausedWatcher = page.waitForFunction(() => window.audio.paused)
 
-  await expect(skeletons).toHaveCount(0)
-  await playHoverIcon.hover()
-  await expect(playHoverIcon).toBeVisible()
-  await playHoverIcon.click()
+  await playButton.click()
   await expect(pauseButton).toBeVisible()
   await isPlayingWatcher
   await pauseButton.click()

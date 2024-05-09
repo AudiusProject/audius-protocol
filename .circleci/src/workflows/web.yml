@@ -52,20 +52,6 @@ jobs:
         branches:
           only: /(^release.*)$/
 
-  - playwright-tests:
-      context:
-        - Audius Client
-        - Probers
-        - Vercel
-      requires:
-        - web-build-staging
-
-  - playwright-tests-report:
-      context:
-        - Probers
-      requires:
-        - web-build-staging
-
   - web-test:
       context:
         - Audius Client

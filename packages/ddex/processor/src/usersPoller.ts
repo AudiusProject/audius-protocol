@@ -1,8 +1,10 @@
 import { userRepo } from './db'
-import { createSdkService } from './sdk'
+import { getSdk } from './sdk'
+import { sources } from './sources'
 
 export async function startUsersPoller() {
-  const sdk = (await createSdkService()).getSdk()
+  const source = sources.all()[0]
+  const sdk = getSdk(source)
 
   // Periodic task to fetch user data and update names
   setInterval(async () => {
@@ -17,7 +19,7 @@ export async function startUsersPoller() {
         if (userResponse.name !== user.name) {
           userRepo.upsert({
             ...user,
-            name: userResponse.name
+            name: userResponse.name,
           })
           console.log(`Updated user ${user.id}'s name`)
         }

@@ -1,4 +1,4 @@
-import { expect, test } from 'vitest'
+import { beforeAll, expect, test } from 'vitest'
 import {
   DDEXRelease,
   DealEthGated,
@@ -7,10 +7,15 @@ import {
   DealSolGated,
   parseDdexXmlFile,
 } from './parseDelivery'
-import { readFileSync } from 'node:fs'
+import { sources } from './sources'
+
+beforeAll(async () => {
+  sources.load('./sources.test.json')
+})
 
 test('deal types', async () => {
   const releases = (await parseDdexXmlFile(
+    'dealTest',
     'fixtures/dealTypes.xml'
   )) as DDEXRelease[]
 

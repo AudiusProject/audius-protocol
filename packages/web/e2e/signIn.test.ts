@@ -3,14 +3,6 @@ import { expect, Page } from '@playwright/test'
 import { test } from './test'
 import { resetAuthState } from './utils'
 
-const sampleUser = {
-  email: 'prober+test@audius.co',
-  password: 'Pa$$w0rdTest',
-  name: 'Prober Test',
-  handle: 'proberTest',
-  entropy: 'bdaba824b6e02ab7868c5a2dfdfc7e9f'
-}
-
 test.describe('Sign In', () => {
   // Resets auth state for this suite so we aren't already signed in
   test.use(resetAuthState)
@@ -35,11 +27,14 @@ test.describe('Sign In', () => {
     await assertOnSignInPage(page)
   })
 
-  test('can navigate to sign-in after entering email in sign-up', async ({
+  // TODO: For some reason the user created with audius-cmd doesn't have a handle in identity
+  // so the email check returns false
+  // https://linear.app/audius/issue/INF-701/re-enable-fix-sign-in-after-entering-email-in-sign-up-test-if-we
+  test.skip('can navigate to sign-in after entering email in sign-up', async ({
     page
   }) => {
     await page.goto('signup')
-    await page.getByRole('textbox', { name: /email/i }).fill(sampleUser.email)
+    await page.getByRole('textbox', { name: /email/i }).fill(user.email)
     await page.getByRole('button', { name: /sign up free/i }).click()
     const signUpModal = page.getByRole('alert')
     await signUpModal.getByRole('link', { name: /Sign In/ }).click()
@@ -47,16 +42,17 @@ test.describe('Sign In', () => {
   })
 
   // TODO: need to integrate a hard-coded otp for this user before we can turn this test on
-  // test.skip('can sign in', async ({ page }) => {
-  //   await page.goto('signin')
-  //   await assertOnSignInPage(page)
-  //   await page.fill('input[name="email"]', email)
-  //   await page.fill('input[name="password"]', password)
-  //   await page.click('button:has-text("Sign In")')
-  //   await page.waitForSelector('text="Your Feed"', { timeout: 20000 })
-  //   await expect(page).toHaveText(name)
-  //   await expect(page).toHaveText(`@${handle}`)
-  // })
+  // https://linear.app/audius/issue/INF-702/fix-signintestts-otp-code
+  test.skip('can sign in', async ({ page }) => {
+    await page.goto('signin')
+    await assertOnSignInPage(page)
+    await page.fill('input[name="email"]', email)
+    await page.fill('input[name="password"]', password)
+    await page.click('button:has-text("Sign In")')
+    await page.waitForSelector('text="Your Feed"', { timeout: 20000 })
+    await expect(page).toHaveText(name)
+    await expect(page).toHaveText(`@${handle}`)
+  })
 })
 
 async function assertOnSignInPage(page: Page) {

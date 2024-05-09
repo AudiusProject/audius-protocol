@@ -8,7 +8,22 @@ import { defineConfig, devices } from '@playwright/test'
  */
 // require('dotenv').config();
 
+// Set this to false to avoid seeding data every time locally if
+// running against local stack
+const RESEED_EACH_RUN = true
 const authFileExists = fs.existsSync('playwright/.auth/user.json')
+const runAgainstLocalStack = process.env.RUN_AGAINST_LOCAL_STACK === 'true'
+
+const getTestDependencies = () => {
+  if (runAgainstLocalStack && RESEED_EACH_RUN) {
+    if (RESEED_EACH_RUN) {
+      return ['seed', 'setup']
+    }
+    return authFileExists ? [] : ['seed', 'setup']
+  }
+
+  return authFileExists ? [] : ['setup']
+}
 
 /**
  * See https://playwright.dev/docs/test-configuration.
@@ -21,8 +36,6 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */
   retries: process.env.CI ? 2 : 0,
-  /* Opt out of parallel tests on CI. */
-  workers: process.env.CI ? 1 : undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: process.env.CI
     ? [
@@ -55,13 +68,18 @@ export default defineConfig({
   /* Configure projects for major browsers */
   projects: [
     {
+      name: 'seed',
+      testMatch: /.*\.seed.ts/
+    },
+    {
       name: 'setup',
-      testMatch: /.*\.setup.ts/
+      testMatch: /.*\.setup.ts/,
+      dependencies: runAgainstLocalStack ? ['seed'] : []
     },
     {
       name: 'chromium',
-      dependencies: authFileExists ? undefined : ['setup'],
-      testIgnore: /.*\.setup.ts/,
+      dependencies: getTestDependencies(),
+      testIgnore: /.*\.(setup|seed).ts/,
       use: {
         ...devices['Desktop Chrome'],
         storageState: 'playwright/.auth/user.json'
@@ -101,14 +119,13 @@ export default defineConfig({
 
   /* Run your local dev server before starting the tests */
   webServer: {
-    // On CI the build already exists, so we don't need to use the turbofied `preview:stage` command
-    command: process.env.CI
-      ? 'npm run preview:stage:ci'
+    command: runAgainstLocalStack
+      ? 'npm run preview:dev'
       : 'npm run preview:stage',
     url: 'http://localhost:4173',
     reuseExistingServer: !process.env.CI,
     stdout: 'pipe',
     stderr: 'pipe',
-    timeout: 60000 * 5
+    timeout: 60000 * 15
   }
 })

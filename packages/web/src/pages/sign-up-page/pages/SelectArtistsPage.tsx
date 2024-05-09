@@ -111,7 +111,9 @@ export const SelectArtistsPage = () => {
     Status.LOADING
 
   // Note: this doesn't catch when running `web:prod`
-  const isDevEnvironment = env.ENVIRONMENT === 'development'
+  const isDevEnvironment =
+    env.ENVIRONMENT === 'development' ||
+    window.localStorage.getItem('FORCE_DEV') === 'true'
   // This a workaround flag for local envs that don't have any artists and get stuck at this screen
   const noArtistsSkipValidation = artists?.length === 0 && isDevEnvironment
 
