@@ -1,4 +1,6 @@
-import { useGetManagers } from '@audius/common/api'
+import { useCallback } from 'react'
+
+import { useGetManagers, useRemoveManager } from '@audius/common/api'
 import { Status } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
 import {
@@ -17,6 +19,7 @@ import { useSelector } from 'utils/reducer'
 import { AccountListItem } from './AccountListItem'
 import { sharedMessages } from './sharedMessages'
 import { AccountsManagingYouPageProps, AccountsManagingYouPages } from './types'
+
 const { getUserId } = accountSelectors
 
 export const messages = {
@@ -33,8 +36,23 @@ export const AccountsManagingYouHomePage = (
   const { setPage } = props
   const userId = useSelector(getUserId) as number
 
-  const { data, status } = useGetManagers({ userId })
-  const managers = data
+  const [removeManager] = useRemoveManager()
+  const { data: managers, status: managersStatus } = useGetManagers({ userId })
+
+  const handleRemoveManager = useCallback(
+    (params: { userId: number; managerUserId: number }) => {
+      setPage(AccountsManagingYouPages.CONFIRM_REMOVE_MANAGER, params)
+    },
+    [setPage]
+  )
+
+  const handleCancelInvite = useCallback(
+    (params: { userId: number; managerUserId: number }) => {
+      removeManager(params)
+    },
+    [removeManager]
+  )
+
   return (
     <Flex direction='column' gap='xl' ph='xl'>
       <Text variant='body' size='l'>
@@ -57,7 +75,7 @@ export const AccountsManagingYouHomePage = (
         </Button>
       </Flex>
       <Flex direction='column' gap='s'>
-        {status !== Status.SUCCESS ? (
+        {managersStatus !== Status.SUCCESS ? (
           <Box pv='2xl'>
             <LoadingSpinner
               css={({ spacing }) => ({
@@ -67,7 +85,8 @@ export const AccountsManagingYouHomePage = (
             />
           </Box>
         ) : null}
-        {status === Status.SUCCESS && (!managers || managers.length === 0) ? (
+        {managersStatus === Status.SUCCESS &&
+        (!managers || managers.length === 0) ? (
           <Text variant='body' size='l'>
             {messages.noManagers}
           </Text>
@@ -75,6 +94,8 @@ export const AccountsManagingYouHomePage = (
         {managers?.map(({ grant, manager }) => {
           return (
             <AccountListItem
+              onRemoveManager={handleRemoveManager}
+              onCancelInvite={handleCancelInvite}
               key={manager.user_id}
               user={manager}
               isPending={!grant.is_approved}

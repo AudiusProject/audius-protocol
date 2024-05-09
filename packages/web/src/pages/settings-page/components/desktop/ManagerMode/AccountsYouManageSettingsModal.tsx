@@ -1,140 +1,83 @@
-import { useCallback, useContext, useEffect } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import {
-  useApproveManagedAccount,
-  useGetManagedAccounts,
-  useRejectManagedAccount
-} from '@audius/common/api'
-import { Status, UserMetadata } from '@audius/common/models'
-import { accountSelectors } from '@audius/common/store'
-import {
-  Box,
-  Divider,
-  Flex,
   IconUserArrowRotate,
   Modal,
-  ModalContent,
+  ModalContentPages,
   ModalHeader,
   ModalProps,
-  ModalTitle,
-  Text,
-  TextLink
+  ModalTitle
 } from '@audius/harmony'
 
-import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
-import { ToastContext } from 'components/toast/ToastContext'
-import { useSelector } from 'utils/reducer'
-
-import { AccountListItem } from './AccountListItem'
-import { sharedMessages } from './sharedMessages'
-const { getUserId } = accountSelectors
+import { AccountsYouManageHomePage } from './AccountsYouManageHomePage'
+import { StopManagingConfirmationPage } from './StopManagingConfirmationPage'
+import { AccountsYouManagePages, AccountsYouManagePagesParams } from './types'
 
 const messages = {
   accountsYouManage: 'Accounts You Manage',
-  takeControl:
-    'Take control of your managed accounts by making changes to their profiles, preferences, and content.',
-  noAccounts: 'You don’t manage any accounts.',
-  somethingWentWrong: 'Something went wrong. Please try again later.'
+  stopManaging: 'Stop Managing?'
 }
 
-type AccountsManagingYouSettingsModalProps = Omit<ModalProps, 'children'>
+const PAGE_TO_TITLE = {
+  [AccountsYouManagePages.HOME]: messages.accountsYouManage,
+  [AccountsYouManagePages.STOP_MANAGING]: messages.stopManaging
+}
+
+type AccountsYouManageSettingsModalProps = Omit<ModalProps, 'children'>
+
+const getCurrentPage = (currentPage: AccountsYouManagePages) => {
+  switch (currentPage) {
+    case AccountsYouManagePages.HOME:
+      return 0
+    case AccountsYouManagePages.STOP_MANAGING:
+      return 1
+  }
+}
 
 export const AccountsYouManageSettingsModal = (
-  props: AccountsManagingYouSettingsModalProps
+  props: AccountsYouManageSettingsModalProps
 ) => {
-  const userId = useSelector(getUserId) as number
-  const { data: managedAccounts, status } = useGetManagedAccounts({ userId })
-  const [approveManagedAccount, approveResult] = useApproveManagedAccount()
-  const [rejectManagedAccount, rejectResult] = useRejectManagedAccount()
-  const { toast } = useContext(ToastContext)
+  const { isOpen } = props
+  const [currentPage, setCurrentPage] = useState(AccountsYouManagePages.HOME)
 
-  const handleApprove = useCallback(
-    ({
-      currentUserId,
-      grantorUser
-    }: {
-      currentUserId: number
-      grantorUser: UserMetadata
-    }) => {
-      approveManagedAccount({ userId: currentUserId, grantorUser })
-    },
-    [approveManagedAccount]
-  )
+  const [currentPageParams, setCurrentPageParams] = useState<
+    AccountsYouManagePagesParams | undefined
+  >()
 
-  const handleReject = useCallback(
-    ({
-      currentUserId,
-      grantorUser
-    }: {
-      currentUserId: number
-      grantorUser: UserMetadata
-    }) => {
-      rejectManagedAccount({ userId: currentUserId, grantorUser })
+  const handleSetPage = useCallback(
+    (page: AccountsYouManagePages, params?: AccountsYouManagePagesParams) => {
+      setCurrentPage(page)
+      if (params) {
+        setCurrentPageParams(params)
+      }
     },
-    [rejectManagedAccount]
+    []
   )
 
   useEffect(() => {
-    if (
-      approveResult.status === Status.ERROR ||
-      rejectResult.status === Status.ERROR
-    ) {
-      toast(messages.somethingWentWrong)
+    if (!isOpen) {
+      setCurrentPage(AccountsYouManagePages.HOME)
+      setCurrentPageParams(undefined)
     }
-  }, [toast, approveResult.status, rejectResult.status])
+  }, [isOpen])
 
   return (
     <>
       <Modal {...props} size='small'>
         <ModalHeader>
           <ModalTitle
-            title={messages.accountsYouManage}
+            title={PAGE_TO_TITLE[currentPage]}
             icon={<IconUserArrowRotate />}
           />
         </ModalHeader>
-        <ModalContent>
-          <Flex direction='column' gap='xl'>
-            <Text variant='body' size='l'>
-              {messages.takeControl}{' '}
-              <TextLink href='#' variant='visible'>
-                {sharedMessages.learnMore}
-              </TextLink>
-            </Text>
-            {status !== Status.SUCCESS ? (
-              <Box pv='2xl'>
-                <LoadingSpinner
-                  css={({ spacing }) => ({
-                    width: spacing['3xl'],
-                    margin: '0 auto'
-                  })}
-                />
-              </Box>
-            ) : null}
-            {status === Status.SUCCESS &&
-            (!managedAccounts || managedAccounts.length === 0) ? (
-              <>
-                <Divider />
-                <Box>
-                  <Text variant='body' size='l'>
-                    {messages.noAccounts}
-                  </Text>
-                </Box>
-              </>
-            ) : null}
-            {managedAccounts?.map((m) => {
-              return (
-                <AccountListItem
-                  key={m.user.user_id}
-                  user={m.user}
-                  onApprove={handleApprove}
-                  onReject={handleReject}
-                  isManagedAccount
-                  isPending={m.grant.is_approved == null}
-                />
-              )
-            })}
-          </Flex>
-        </ModalContent>
+        <ModalContentPages currentPage={getCurrentPage(currentPage)}>
+          <AccountsYouManageHomePage setPage={handleSetPage} />
+
+          <StopManagingConfirmationPage
+            setPage={handleSetPage}
+            params={currentPageParams}
+          />
+        </ModalContentPages>
       </Modal>
     </>
   )
