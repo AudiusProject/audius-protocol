@@ -167,7 +167,7 @@ def get_attestation(
         raise AttestationError(ALREADY_DISBURSED)
     now_utc = datetime.now(pytz.UTC)
     if challenge.cooldown_days:
-        time_passed = now_utc - user_challenge.created_at
+        time_passed = now_utc - pytz.utc.localize(user_challenge.completed_at)
         if time_passed.days < challenge.cooldown_days:
             raise AttestationError(WAIT_FOR_COOLDOWN)
     if challenge.weekly_pool:

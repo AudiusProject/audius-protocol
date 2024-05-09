@@ -21,7 +21,7 @@ class UserChallenge(Base, RepresentableMixin):
         DateTime,
         server_default=text("CURRENT_TIMESTAMP"),
     )
-    completed_at = Column(Integer)
+    completed_at = Column(DateTime)
     amount = Column(Integer, nullable=False)
     created_at = Column(
         DateTime,
