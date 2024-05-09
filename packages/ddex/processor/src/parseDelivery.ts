@@ -4,7 +4,8 @@ import decompress from 'decompress'
 import { mkdtemp, readFile, readdir } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { ReleaseProcessingStatus, releaseRepo, userRepo, xmlRepo } from './db'
+import { releaseRepo, userRepo, xmlRepo } from './db'
+import { sources } from './sources'
 import { omitEmpty } from './util'
 
 type CH = cheerio.Cheerio<cheerio.Element>
@@ -141,16 +142,16 @@ export type AudiusSupportedDeal =
   | DealEthGated
   | DealSolGated
 
-export async function parseDelivery(maybeZip: string) {
+export async function parseDelivery(source: string, maybeZip: string) {
   if (maybeZip.endsWith('.zip')) {
     const tempDir = await mkdtemp(join(tmpdir(), 'ddex-'))
     await decompress(maybeZip, tempDir)
-    return await processDeliveryDir(tempDir)
+    return await processDeliveryDir(source, tempDir)
     // await rm(tempDir, { recursive: true })
   } else if (maybeZip.endsWith('.xml')) {
-    return await parseDdexXmlFile(maybeZip)
+    return await parseDdexXmlFile(source, maybeZip)
   } else {
-    return await processDeliveryDir(maybeZip)
+    return await processDeliveryDir(source, maybeZip)
   }
 }
 
@@ -158,30 +159,30 @@ export async function reParsePastXml() {
   // loop over db xml and reprocess
   const rows = xmlRepo.all()
   for (const row of rows) {
-    parseDdexXml(row.xmlUrl, row.xmlText)
+    parseDdexXml(row.source, row.xmlUrl, row.xmlText)
   }
 }
 
 // recursively find + parse xml files in a dir
-async function processDeliveryDir(dir: string) {
+export async function processDeliveryDir(source: string, dir: string) {
   const files = await readdir(dir, { recursive: true })
 
   const work = files
     .filter((f) => f.toLowerCase().endsWith('.xml'))
     .map((f) => join(dir, f))
-    .map((f) => parseDdexXmlFile(f))
+    .map((f) => parseDdexXmlFile(source, f))
 
   return Promise.all(work)
 }
 
 // read xml from disk + parse
-export async function parseDdexXmlFile(xmlUrl: string) {
+export async function parseDdexXmlFile(source: string, xmlUrl: string) {
   const xmlText = await readFile(xmlUrl, 'utf8')
-  return parseDdexXml(xmlUrl, xmlText)
+  return parseDdexXml(source, xmlUrl, xmlText)
 }
 
 // actually parse ddex xml
-export function parseDdexXml(xmlUrl: string, xmlText: string) {
+export function parseDdexXml(source: string, xmlUrl: string, xmlText: string) {
   const $ = cheerio.load(xmlText, { xmlMode: true })
 
   const messageTimestamp = $('MessageCreatedDateTime').first().text()
@@ -191,10 +192,10 @@ export function parseDdexXml(xmlUrl: string, xmlText: string) {
     'PurgeReleaseMessage',
     'ManifestMessage',
   ].find((n) => rawTagName.includes(n))
-  console.log(xmlUrl, tagName)
 
   // todo: would be nice to skip this on reParse
   xmlRepo.upsert({
+    source,
     xmlUrl,
     xmlText,
     messageTimestamp,
@@ -205,12 +206,12 @@ export function parseDdexXml(xmlUrl: string, xmlText: string) {
   } else if (tagName == 'PurgeReleaseMessage') {
     // mark release rows as DeletePending
     const { releaseIds } = parsePurgeXml($)
-    releaseRepo.markForDelete(xmlUrl, messageTimestamp, releaseIds)
+    releaseRepo.markForDelete(source, xmlUrl, messageTimestamp, releaseIds)
   } else if (tagName == 'NewReleaseMessage') {
     // create or replace this release in db
-    const releases = parseReleaseXml($)
+    const releases = parseReleaseXml(source, $)
     for (const release of releases) {
-      releaseRepo.upsert(xmlUrl, messageTimestamp, release)
+      releaseRepo.upsert(source, xmlUrl, messageTimestamp, release)
     }
     return releases
   } else {
@@ -221,7 +222,7 @@ export function parseDdexXml(xmlUrl: string, xmlText: string) {
 //
 // parseRelease
 //
-function parseReleaseXml($: cheerio.CheerioAPI) {
+function parseReleaseXml(source: string, $: cheerio.CheerioAPI) {
   function toTexts($doc: CH) {
     return $doc.map((_, el) => $(el).text()).get()
   }
@@ -471,9 +472,10 @@ function parseReleaseXml($: cheerio.CheerioAPI) {
         release.problems.push(`NoGenre`)
       }
 
-      // resolve audius user
+      // resolve audius user (that has authorized this source)
       const artistNames = release.artists.map((a) => a.name)
-      release.audiusUser = userRepo.match(artistNames)
+      const sourceConfig = sources.findByName(source)
+      release.audiusUser = userRepo.match(sourceConfig.ddexKey, artistNames)
       if (!release.audiusUser) {
         release.problems.push(`NoUser`)
       }
@@ -491,7 +493,11 @@ function parseReleaseXml($: cheerio.CheerioAPI) {
           } else if (textResources[ref]) {
             console.log('ignoring text ref', ref)
           } else {
-            release.problems.push(`MissingRef: ${ref}`)
+            // don't actually block on MissingRef...
+            // if it's an update, refs might not be included...
+            // if it's a create, this will simply become a publisher error when it tries to resolve a file...
+            //     release.problems.push(`MissingRef: ${ref}`)
+            console.log(`MissingRef: ${ref}`)
           }
         })
 
@@ -507,6 +513,20 @@ function parseReleaseXml($: cheerio.CheerioAPI) {
       } else {
         release.problems.push('NoImage')
       }
+    }
+  }
+
+  // surpress any track releases that are part of main release
+  const mainReleaseRefs = new Set(
+    mainRelease?.soundRecordings.map((s) => s.ref)
+  )
+  for (const release of releases) {
+    if (release.isMainRelease) continue
+    const isSubset = release.soundRecordings.every((s) =>
+      mainReleaseRefs.has(s.ref)
+    )
+    if (isSubset) {
+      release.problems.push('DuplicateRelease')
     }
   }
 
