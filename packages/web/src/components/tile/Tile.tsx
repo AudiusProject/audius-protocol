@@ -8,7 +8,7 @@ import {
 } from 'react'
 
 import { DogEarType } from '@audius/common/models'
-import { Box, Flex } from '@audius/harmony'
+import { Flex } from '@audius/harmony'
 import cn from 'classnames'
 
 import { DogEar } from 'components/dog-ear'
