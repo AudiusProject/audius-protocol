@@ -824,10 +824,6 @@ export const audiusBackend = ({
     return audiusLibs.creatorNode.setEndpoint(endpoint)
   }
 
-  async function listCreatorNodes() {
-    return audiusLibs.ServiceProvider.listCreatorNodes()
-  }
-
   async function getAccount() {
     await waitForLibsInit()
     try {
@@ -1004,87 +1000,10 @@ export const audiusBackend = ({
     }
   }
 
-  // Uploads a single track
-  // Returns { trackId, error, phase }
-  async function uploadTrack(
-    trackFile: File,
-    coverArtFile: File,
-    metadata: TrackMetadata,
-    onProgress: (loaded: number, total: number) => void,
-    trackId?: number
-  ) {
-    try {
-      const {
-        trackId: updatedTrackId,
-        updatedMetadata,
-        txReceipt
-      } = await audiusLibs.Track.uploadTrackV2AndWriteToChain(
-        trackFile,
-        coverArtFile,
-        metadata,
-        onProgress,
-        trackId
-      )
-      // Return with properties that confirmer expects
-      return {
-        blockHash: txReceipt.blockHash,
-        blockNumber: txReceipt.blockNumber,
-        trackId: updatedTrackId,
-        transcodedTrackCID: updatedMetadata.track_cid,
-        error: false
-      }
-    } catch (e: any) {
-      return { error: e }
-    }
-  }
-
-  // Used to upload multiple tracks as part of an album/playlist.
-  // V2: Returns { metadataMultihash, updatedMetadata }
-  // LEGACY: Returns { metadataMultihash, metadataFileUUID, transcodedTrackCID, transcodedTrackUUID, metadata }
-  async function uploadTrackToCreatorNode(
-    trackFile: File,
-    coverArtFile: File,
-    metadata: TrackMetadata,
-    onProgress: (loaded: number, total: number) => void
-  ) {
-    const updatedMetadata = await audiusLibs.Track.uploadTrackV2(
-      trackFile,
-      coverArtFile,
-      metadata,
-      onProgress
-    )
-    return {
-      metadata: updatedMetadata,
-
-      // We don't need these properties, but the confirmer expects them.
-      // TODO (theo): Remove after v2 is fully rolled out and v1 is removed
-      transcodedTrackCID: updatedMetadata.track_cid,
-      metadataMultihash: '',
-      metadataFileUUID: '',
-      transcodedTrackUUID: ''
-    }
-  }
-
   async function getUserEmail(): Promise<string> {
     await waitForLibsInit()
     const { email } = await audiusLibs.Account.getUserEmail()
     return email
-  }
-
-  /**
-   * Adds tracks to chain for this user.
-   * Associates tracks with user on creatorNode if in legacy flow (non storage v2).
-   */
-  async function registerUploadedTracks(
-    uploadedTracks: {
-      metadataMultihash: string
-      metadataFileUUID: string
-      metadata: TrackMetadata
-    }[]
-  ) {
-    return await audiusLibs.Track.addTracksToChainV2(
-      uploadedTracks.map((t) => t.metadata)
-    )
   }
 
   async function uploadImage(file: File) {
@@ -1259,16 +1178,6 @@ export const audiusBackend = ({
     } catch (err) {
       console.error(getErrorMessage(err))
       throw err
-    }
-  }
-
-  async function updateIsVerified(userId: ID, verified: boolean) {
-    try {
-      await audiusLibs.User.updateIsVerified(userId, verified)
-      return true
-    } catch (err) {
-      console.error(getErrorMessage(err))
-      return false
     }
   }
 
@@ -1474,23 +1383,6 @@ export const audiusBackend = ({
     }
   }
 
-  // TODO(C-2719)
-  async function getSavedTracks(limit = 100, offset = 0) {
-    try {
-      return withEagerOption(
-        {
-          normal: (libs) => libs.Track.getSavedTracks,
-          eager: DiscoveryAPI.getSavedTracks
-        },
-        limit,
-        offset
-      )
-    } catch (err) {
-      console.error(getErrorMessage(err))
-      return []
-    }
-  }
-
   // Favoriting a track
   async function saveTrack(
     trackId: ID,
@@ -1660,16 +1552,6 @@ export const audiusBackend = ({
     } catch (error) {
       console.error(getErrorMessage(error))
       throw error
-    }
-  }
-
-  async function handleInUse(handle: string) {
-    await waitForLibsInit()
-    try {
-      const handleIsValid = await audiusLibs.Account.handleIsValid(handle)
-      return !handleIsValid
-    } catch (error) {
-      return true
     }
   }
 
@@ -2876,24 +2758,6 @@ export const audiusBackend = ({
   }
 
   /**
-   * Retrieves the claim distribution amount
-   * @returns {BN} amount The claim amount
-   */
-  async function getClaimDistributionAmount() {
-    await waitForLibsInit()
-    const wallet = audiusLibs.web3Manager.getWalletAddress()
-    if (!wallet) return
-
-    try {
-      const amount = await audiusLibs.Account.getClaimDistributionAmount()
-      return amount
-    } catch (e) {
-      console.error(e)
-      return null
-    }
-  }
-
-  /**
    * Make a request to fetch the eth AUDIO balance of the the user
    * @params {bool} bustCache
    * @returns {Promise<BN | null>} balance or null if failed to fetch balance
@@ -3068,17 +2932,6 @@ export const audiusBackend = ({
   }
 
   /**
-   * Get latest transaction receipt based on block number
-   * Used by confirmer
-   */
-  function getLatestTxReceipt(receipts: TransactionReceipt[]) {
-    if (!receipts.length) return {} as TransactionReceipt
-    return receipts.sort((receipt1, receipt2) =>
-      receipt1.blockNumber < receipt2.blockNumber ? 1 : -1
-    )[0]
-  }
-
-  /**
    * Transfers the user's ERC20 AUDIO into SPL WAUDIO to their solana user bank account
    * @param {BN} balance The amount of AUDIO to be transferred
    * @returns {
@@ -3116,26 +2969,6 @@ export const audiusBackend = ({
       return null
     }
     return new BN(waudioBalance.toString())
-  }
-
-  async function getAudioTransactionsCount() {
-    try {
-      const { data, signature } = await signDiscoveryNodeRequest()
-      const res = await fetch(
-        `${currentDiscoveryProvider}/v1/full/transactions`,
-        {
-          headers: {
-            encodedDataMessage: data,
-            encodedDataSignature: signature
-          }
-        }
-      )
-      const json = await res.json()
-      return json
-    } catch (e) {
-      console.error(e)
-      return 0
-    }
   }
 
   /**
@@ -3274,7 +3107,6 @@ export const audiusBackend = ({
     getAccount,
     getAddressTotalStakedBalance,
     getAddressWAudioBalance,
-    getAudioTransactionsCount,
     getAddressSolBalance,
     getAssociatedTokenAccountInfo,
     getAudiusLibs,
@@ -3282,21 +3114,18 @@ export const audiusBackend = ({
     getBalance,
     getBrowserPushNotificationSettings,
     getBrowserPushSubscription,
-    getClaimDistributionAmount,
     getCollectionImages,
     getCreators,
     getSocialHandles,
     getEmailNotificationSettings,
     getFolloweeFollows,
     getImageUrl,
-    getLatestTxReceipt,
     getNotifications,
     getDiscoveryNotifications,
     getPlaylists,
     getPushNotificationSettings,
     getRandomFeePayer,
     getSafariBrowserPushEnabled,
-    getSavedTracks,
     getSignature,
     getTrackImages,
     getUserEmail,
@@ -3305,15 +3134,12 @@ export const audiusBackend = ({
     getUserSubscribed,
     getWAudioBalance,
     getWeb3,
-    handleInUse,
     identityServiceUrl,
-    listCreatorNodes,
     markAllNotificationAsViewed,
     orderPlaylist,
     publishPlaylist,
     recordTrackListen,
     registerDeviceToken,
-    registerUploadedTracks,
     repostCollection,
     repostTrack,
     resetPassword,
@@ -3347,7 +3173,6 @@ export const audiusBackend = ({
     updateCreator,
     updateEmailNotificationSettings,
     updateHCaptchaScore,
-    updateIsVerified,
     updateNotificationSettings,
     updatePlaylist,
     updatePlaylistLastViewedAt,
@@ -3358,8 +3183,6 @@ export const audiusBackend = ({
     subscribeToUser,
     unsubscribeFromUser,
     uploadImage,
-    uploadTrack,
-    uploadTrackToCreatorNode,
     userNodeUrl,
     validateTracksInPlaylist,
     waitForLibsInit,
