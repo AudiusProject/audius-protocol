@@ -3,7 +3,6 @@ import dayjs from 'dayjs'
 import { createApi } from '~/audius-query'
 import {
   ID,
-  ManagedUserMetadata,
   User,
   UserMetadata,
   managedUserListFromSDK,
