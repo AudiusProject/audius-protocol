@@ -64,3 +64,5 @@ yalc.lock
 /playwright-report/
 /blob-report/
 /playwright/
+/e2e/data/
+/report.xml

@@ -1,6 +1,7 @@
 import { randomBytes, randomInt } from 'crypto'
 import chalk from 'chalk'
 import { program } from 'commander'
+import fs from 'fs'
 
 import { initializeAudiusLibs } from './utils.mjs'
 
@@ -23,10 +24,14 @@ program
     'The price for the album. Cannot be used without --album option'
   )
   .option('-f, --from <from>', 'The account to create playlist from')
+  .option(
+    '-o --output <path>',
+    'A path to which to write a json file containing the playlist data'
+  )
   .action(
     async (
       trackIds,
-      { name, album, description, price, private: isPrivate, from }
+      { name, album, description, price, private: isPrivate, from, output }
     ) => {
       const audiusLibs = await initializeAudiusLibs(from)
       const rand = randomBytes(2).toString('hex').padStart(4, '0').toUpperCase()
@@ -67,6 +72,10 @@ program
         console.log(chalk.green('Successfully created playlist'))
         console.log(chalk.yellow('Playlist Name: '), playlistName)
         console.log(chalk.yellow('Playlist ID:   '), playlistId)
+
+        if (output) {
+          fs.writeFileSync(output, JSON.stringify(metadata, null, 2))
+        }
       } catch (err) {
         program.error(err.message)
       }

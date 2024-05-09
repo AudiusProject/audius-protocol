@@ -360,11 +360,13 @@ const ClaimAllPanel = () => {
       onClick={handleClick}
     >
       <Flex gap='l' alignItems='center'>
-        <IconTokenGold
-          height={48}
-          width={48}
-          aria-label={messages.goldAudioToken}
-        />
+        {claimableAmount > 0 ? (
+          <IconTokenGold
+            height={48}
+            width={48}
+            aria-label={messages.goldAudioToken}
+          />
+        ) : null}
         <Flex direction='column'>
           <Flex>
             {isEmpty ? null : (

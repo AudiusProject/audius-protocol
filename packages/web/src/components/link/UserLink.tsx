@@ -1,6 +1,6 @@
 import { ID } from '@audius/common/models'
 import { cacheUsersSelectors } from '@audius/common/store'
-import { IconSize, Text, TextVariant, useTheme } from '@audius/harmony'
+import { IconSize, Text, useTheme } from '@audius/harmony'
 
 import { ArtistPopover } from 'components/artist/ArtistPopover'
 import UserBadges from 'components/user-badges/UserBadges'
@@ -16,7 +16,6 @@ type UserLinkProps = Omit<TextLinkProps, 'to'> & {
   userId: ID
   badgeSize?: IconSize
   popover?: boolean
-  textVariant?: TextVariant
 }
 
 export const UserLink = (props: UserLinkProps) => {
