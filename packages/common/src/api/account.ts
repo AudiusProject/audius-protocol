@@ -1,4 +1,5 @@
 import dayjs from 'dayjs'
+
 import { createApi } from '~/audius-query'
 import {
   ID,
@@ -8,7 +9,6 @@ import {
   managedUserListFromSDK,
   userManagerListFromSDK
 } from '~/models'
-import { encodeHashId } from '~/utils/hashIds'
 
 import { Id } from './utils'
 
@@ -104,8 +104,8 @@ const accountApi = createApi({
       async fetch(payload: RequestAddManagerPayload, { audiusSdk }) {
         const { managerUser, userId } = payload
         const managerUserId = managerUser.user_id
-        const encodedUserId = encodeHashId(userId) as string
-        const encodedManagerUserId = encodeHashId(managerUserId)
+        const encodedUserId = Id.parse(userId) as string
+        const encodedManagerUserId = Id.parse(managerUserId)
         const sdk = await audiusSdk()
 
         await sdk.grants.addManager({
@@ -155,8 +155,8 @@ const accountApi = createApi({
       async fetch(payload: ApproveManagedAccountPayload, { audiusSdk }) {
         const { grantorUser, userId } = payload
         const grantorUserId = grantorUser.user_id
-        const encodedUserId = encodeHashId(userId) as string
-        const encodedGrantorUserId = encodeHashId(grantorUserId)
+        const encodedUserId = Id.parse(userId) as string
+        const encodedGrantorUserId = Id.parse(grantorUserId)
         const sdk = await audiusSdk()
 
         await sdk.grants.approveGrant({
@@ -212,8 +212,8 @@ const accountApi = createApi({
       async fetch(payload: ApproveManagedAccountPayload, { audiusSdk }) {
         const { grantorUser, userId } = payload
         const grantorUserId = grantorUser.user_id
-        const encodedUserId = encodeHashId(userId) as string
-        const encodedGrantorUserId = encodeHashId(grantorUserId)
+        const encodedUserId = Id.parse(userId) as string
+        const encodedGrantorUserId = Id.parse(grantorUserId)
         const sdk = await audiusSdk()
 
         // TODO(nkang - PAY-2827 PAY-2839) - Change to revoke manager
