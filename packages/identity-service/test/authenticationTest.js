@@ -178,7 +178,7 @@ describe('test authentication routes', function () {
     assert.ok(otp)
   })
 
-  it('sends 2 otp codes every 10 minutes', async function () {
+  it('sends up to 2 otp codes every 10 minutes', async function () {
     const redis = app.get('redis')
     await signUpUser()
 
