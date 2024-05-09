@@ -4,6 +4,7 @@ import {
   PublicKey,
   SendOptions,
   TransactionConfirmationStrategy,
+  TransactionInstruction,
   TransactionMessage,
   VersionedTransaction
 } from '@solana/web3.js'
@@ -14,12 +15,16 @@ import { assertRelayAllowedInstructions } from './assertRelayAllowedInstructions
 import { cacheTransaction, getCachedDiscoveryNodes } from '../../redis'
 import fetch from 'cross-fetch'
 import { Logger } from 'pino'
-import base58 from 'bs58'
+import bs58 from 'bs58'
 import { personalSign } from 'eth-sig-util'
 import type { RelayRequestBody } from '@audius/sdk'
+import { getRequestIpData } from '../../utils/ipData'
 
 const RETRY_DELAY_MS = 2 * 1000
 const RETRY_TIMEOUT_MS = 60 * 1000
+const MEMO_V2_PROGRAM_ID = new PublicKey(
+  'MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr'
+)
 
 const connections = config.solanaEndpoints.map(
   (endpoint) => new Connection(endpoint)
@@ -205,7 +210,8 @@ export const relay = async (
     const strategy =
       confirmationOptions?.strategy ?? (await connection.getLatestBlockhash())
     const decoded = Buffer.from(encodedTransaction, 'base64')
-    const transaction = VersionedTransaction.deserialize(decoded)
+    let transaction = VersionedTransaction.deserialize(decoded)
+
     const decompiled = TransactionMessage.decompile(transaction.message)
     const feePayerKey = transaction.message.getAccountKeys().get(0)
     const feePayerKeyPair = getFeePayerKeyPair(feePayerKey)
@@ -219,8 +225,27 @@ export const relay = async (
       feePayer: feePayerKey.toBase58()
     })
 
+    const isGeoDataTransaction = true
+    if (isGeoDataTransaction) {
+      const geo = await getRequestIpData(res.locals.logger, req)
+      if (geo) {
+        const memoInstruction = new TransactionInstruction({
+          keys: [{ pubkey: feePayerKey, isSigner: true, isWritable: true }],
+          data: Buffer.from(`geo:${JSON.stringify(geo)}`, 'utf-8'),
+          programId: MEMO_V2_PROGRAM_ID
+        })
+        const updatedInstructions = [...decompiled.instructions, memoInstruction]
+        const msg = new TransactionMessage({
+          payerKey: decompiled.payerKey,
+          recentBlockhash: decompiled.recentBlockhash,
+          instructions: updatedInstructions
+        })
+        transaction = new VersionedTransaction(msg.compileToV0Message())
+      }
+    }
+
     transaction.sign([feePayerKeyPair])
-    const signature = base58.encode(transaction.signatures[0])
+    const signature = bs58.encode(transaction.signatures[0])
 
     const logger = res.locals.logger.child({ signature })
     logger.info(
