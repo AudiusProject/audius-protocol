@@ -38,18 +38,22 @@ const validateOtp = async ({ email, otp, redis }) => {
 
 const shouldSendOtp = async ({ email, redis }) => {
   const storedOtp = await redis.get(`${OTP_REDIS_PREFIX}:${email}`)
-  const resendCount = await redis.get(
+  const otpCount = await redis.get(
     `${OTP_REDIS_PREFIX}:${email}:${OTP_COUNT_REDIS_POSTFIX}`
   )
-  return !storedOtp || resendCount < OTP_COUNT_LIMIT
+  return !storedOtp || Number(otpCount) < OTP_COUNT_LIMIT
 }
 
 const updateOtpCount = async ({ email, redis }) => {
   const otpCountKey = `${OTP_REDIS_PREFIX}:${email}:${OTP_COUNT_REDIS_POSTFIX}`
-  const otpCountValue = await redis.get(otpCountKey)
-  const otpCountNumber = otpCountValue ? parseInt(otpCountValue) : 0
+  const otpCount = await redis.get(otpCountKey)
 
-  await redis.set(otpCountKey, otpCountNumber + 1, 'EX', OTP_EXPIRATION_SECONDS)
+  await redis.set(
+    otpCountKey,
+    Number(otpCount) + 1,
+    'EX',
+    OTP_EXPIRATION_SECONDS
+  )
 }
 
 const sendOtp = async ({ email, redis, sendgrid }) => {
