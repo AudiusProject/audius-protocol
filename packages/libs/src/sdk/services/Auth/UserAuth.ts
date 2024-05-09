@@ -4,17 +4,22 @@ import * as secp from '@noble/secp256k1'
 import fetch from 'cross-fetch'
 import { EIP712TypedData, MessageData, signTypedData } from 'eth-sig-util'
 
+import { productionConfig } from '../../config/production'
 import { MissingOtpUserAuthError } from '../../utils/errors'
 import { mergeConfigWithDefaults } from '../../utils/mergeConfigs'
 
-import { defaultUserAuthConfig } from './constants'
-import type { UserAuthConfig, AuthService } from './types'
+import { getDefaultUserAuthConfig } from './getDefaultConfig'
+import type {
+  UserAuthConfig,
+  AuthService,
+  UserAuthConfigInternal
+} from './types'
 
 export class UserAuth implements AuthService {
   /**
    * Configuration passed in by the consumer (with defaults)
    */
-  private config: UserAuthConfig
+  private config: UserAuthConfigInternal
 
   /**
    * Hedgehog instance to handle auth
@@ -24,7 +29,7 @@ export class UserAuth implements AuthService {
   constructor(config?: UserAuthConfig) {
     this.config = mergeConfigWithDefaults(
       config,
-      defaultUserAuthConfig.production
+      getDefaultUserAuthConfig(productionConfig)
     )
 
     const get: GetFn = async ({ lookupKey, email, otp }) => {
