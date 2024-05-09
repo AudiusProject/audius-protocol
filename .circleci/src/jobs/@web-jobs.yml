@@ -90,53 +90,6 @@ web-build-ssr-staging:
         paths:
           - node_modules/@brillout/vite-plugin-import-build/dist
 
-playwright-tests:
-  working_directory: ~/audius-protocol
-  resource_class: medium
-  parallelism: 4
-  docker:
-    - image: cimg/node:18.17
-  steps:
-    - checkout
-    - attach_workspace:
-        at: ./
-    - run: npx playwright install --with-deps
-    - run: SHARD="$((${CIRCLE_NODE_INDEX}+1))"; cd packages/web; npx playwright test --shard=${SHARD}/${CIRCLE_NODE_TOTAL}
-    - store_test_results:
-        path: packages/web/report.xml
-        when: always
-    - store_artifacts:
-        path: packages/web/blob-report
-
-playwright-tests-report:
-  working_directory: ~/audius-protocol
-  docker:
-    - image: cimg/node:18.17
-  steps:
-    - swissknife/wait_for_job:
-        job-name: playwright-tests
-    - swissknife/get-job-number:
-        job-name: playwright-tests
-    - swissknife/get_job_artifacts:
-        job-number: SK_JOB_NUM
-        file-name-pattern: packages/web/blob-report/report-1.zip
-        save-to-directory: ./blob-report
-    - swissknife/get_job_artifacts:
-        job-number: SK_JOB_NUM
-        file-name-pattern: packages/web/blob-report/report-2.zip
-        save-to-directory: ./blob-report
-    - swissknife/get_job_artifacts:
-        job-number: SK_JOB_NUM
-        file-name-pattern: packages/web/blob-report/report-3.zip
-        save-to-directory: ./blob-report
-    - swissknife/get_job_artifacts:
-        job-number: SK_JOB_NUM
-        file-name-pattern: packages/web/blob-report/report-4.zip
-        save-to-directory: ./blob-report
-    - run: npx playwright merge-reports --reporter html ./blob-report
-    - store_artifacts:
-        path: playwright-report
-
 web-test:
   working_directory: ~/audius-protocol
   docker:

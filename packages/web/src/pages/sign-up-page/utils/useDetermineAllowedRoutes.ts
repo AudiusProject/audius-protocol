@@ -7,9 +7,14 @@ import {
   getSignOn
 } from 'common/store/pages/signon/selectors'
 import { EditingStatus } from 'common/store/pages/signon/types'
+import { env } from 'services/env'
 import { FEED_PAGE, SignUpPath } from 'utils/route'
 
 const { getAccountUser } = accountSelectors
+
+const isDevEnvironment =
+  env.ENVIRONMENT === 'development' ||
+  window.localStorage.getItem('FORCE_DEV') === 'true'
 
 /**
  * Checks against existing sign up redux state,
@@ -58,7 +63,10 @@ export const useDetermineAllowedRoute = () => {
         // Already have genres selected
         allowedRoutes.push(SignUpPath.selectArtists)
 
-        if (signUpState.followArtists?.selectedUserIds?.length >= 3) {
+        if (
+          signUpState.followArtists?.selectedUserIds?.length >= 3 ||
+          isDevEnvironment
+        ) {
           // Already have 3 artists followed, ready to finish sign up
           allowedRoutes.push(SignUpPath.appCta)
 

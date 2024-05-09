@@ -1,6 +1,7 @@
 import { randomBytes, randomInt } from 'crypto'
 import { createReadStream } from 'fs'
 import { spawn } from 'child_process'
+import fs from 'fs'
 
 import chalk from 'chalk'
 import { program } from 'commander'
@@ -149,6 +150,14 @@ program
     'Manually set a download conditions object. Cannot be used with -dp',
     ''
   )
+  .option(
+    '--remix <remix-of>',
+    'Specify the track ID of the original track if this is a remix'
+  )
+  .option(
+    '--output <path>',
+    'A path to which to write a json file containing the track data'
+  )
   .action(
     async (
       track,
@@ -165,7 +174,9 @@ program
         streamConditions,
         isDownloadable,
         downloadPrice,
-        downloadConditions
+        downloadConditions,
+        remixOf,
+        output
       }
     ) => {
       const audiusLibs = await initializeAudiusLibs(from)
@@ -241,7 +252,8 @@ program
             ai_attribution_user_id: null,
             preview_start_seconds: previewStartSeconds
               ? parseInt(previewStartSeconds)
-              : null
+              : null,
+            remixOf
           },
           () => null
         )
@@ -253,7 +265,22 @@ program
         console.log(chalk.green('Successfully uploaded track!'))
         console.log(chalk.yellow.bold('Track ID:   '), response.trackId)
         console.log(chalk.yellow.bold('Track Title:'), trackTitle)
+
+        if (output) {
+          fs.writeFileSync(
+            output,
+            JSON.stringify(
+              {
+                ...response.updatedMetadata,
+                track_id: response.trackId
+              },
+              null,
+              2
+            )
+          )
+        }
       } catch (err) {
+        console.log(err)
         program.error(err.message)
       }
 
