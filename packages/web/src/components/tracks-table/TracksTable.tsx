@@ -14,7 +14,8 @@ import {
   Button,
   Flex,
   IconSpecialAccess,
-  IconCollectible
+  IconCollectible,
+  IconCart
 } from '@audius/harmony'
 import cn from 'classnames'
 import moment from 'moment'
@@ -84,6 +85,7 @@ type TracksTableProps = {
   isAlbumPage?: boolean
   isAlbumPremium?: boolean
   isPremiumEnabled?: boolean
+  shouldShowGatedType?: boolean
   loading?: boolean
   onClickFavorite?: (track: any) => void
   onClickPurchase?: (track: any) => void
@@ -139,6 +141,7 @@ export const TracksTable = ({
   fetchThreshold,
   isVirtualized = false,
   isPremiumEnabled = false,
+  shouldShowGatedType = false,
   loading = false,
   onClickFavorite,
   onClickRemove,
@@ -400,17 +403,29 @@ export const TracksTable = ({
       const isLocked = !isFetchingNFTAccess && !hasStreamAccess
       const deleted =
         track.is_delete || track._marked_deleted || !!track.user?.is_deactivated
+      // For owners, we want to show the type of gating on the track. For fans,
+      // we want to show whether or not they have access.
       const shouldShowIcon = track.is_stream_gated || track.is_unlisted
-      const Icon = track.is_unlisted
-        ? IconVisibilityHidden
-        : isContentUSDCPurchaseGated(track.stream_conditions)
-        ? IconLock
-        : isContentCollectibleGated(track.stream_conditions)
-        ? IconCollectible
-        : IconSpecialAccess
+      let Icon
+      if (shouldShowGatedType) {
+        Icon = track.is_unlisted
+          ? IconVisibilityHidden
+          : isContentUSDCPurchaseGated(track.stream_conditions)
+          ? IconCart
+          : isContentCollectibleGated(track.stream_conditions)
+          ? IconCollectible
+          : IconSpecialAccess
+      } else {
+        Icon = !hasStreamAccess
+          ? IconLock
+          : track.is_unlisted
+          ? IconVisibilityHidden
+          : null
+      }
+
       return (
         <>
-          {shouldShowIcon ? (
+          {shouldShowIcon && Icon ? (
             <Flex className={styles.typeIcon}>
               <Icon color='subdued' size='m' />
             </Flex>
