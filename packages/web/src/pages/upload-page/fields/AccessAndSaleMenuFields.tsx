@@ -1,3 +1,5 @@
+import { useEffect } from 'react'
+
 import { useFeatureFlag, useAccessAndRemixSettings } from '@audius/common/hooks'
 import {
   AccessConditions,
@@ -27,7 +29,11 @@ import { HiddenAvailabilityFields } from './stream-availability/HiddenAvailabili
 import { SpecialAccessFields } from './stream-availability/SpecialAccessFields'
 import { CollectibleGatedRadioField } from './stream-availability/collectible-gated/CollectibleGatedRadioField'
 import { UsdcPurchaseGatedRadioField } from './stream-availability/usdc-purchase-gated/UsdcPurchaseGatedRadioField'
-import { STREAM_AVAILABILITY_TYPE, STREAM_CONDITIONS } from './types'
+import {
+  ALBUM_TRACK_PRICE,
+  STREAM_AVAILABILITY_TYPE,
+  STREAM_CONDITIONS
+} from './types'
 
 const messages = {
   title: 'Access & Sale',

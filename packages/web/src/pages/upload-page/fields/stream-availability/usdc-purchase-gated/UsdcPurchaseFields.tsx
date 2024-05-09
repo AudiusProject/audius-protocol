@@ -2,6 +2,7 @@ import {
   ChangeEventHandler,
   FocusEventHandler,
   useCallback,
+  useEffect,
   useState
 } from 'react'
 
@@ -87,6 +88,18 @@ export const UsdcPurchaseFields = (props: TrackAvailabilityFieldsProps) => {
   const { disabled, isAlbum, isUpload } = props
   const [{ value: downloadConditions }] =
     useField<Nullable<AccessConditions>>(DOWNLOAD_CONDITIONS)
+
+  const [, , { setValue: setAlbumTrackPrice }] =
+    useField<Nullable<number>>(ALBUM_TRACK_PRICE)
+
+  useEffect(() => {
+    if (isAlbum) {
+      // Prefill the initial value of the album track price to $1 (for albums)
+      // Note: this can't go into any formik initialValues because the parent form may not have started with USDC purchase
+      // (aka might have null stream_conditions)
+      setAlbumTrackPrice(100)
+    }
+  }, [isAlbum, setAlbumTrackPrice])
 
   return (
     <div className={cn(layoutStyles.col, layoutStyles.gap4)}>
