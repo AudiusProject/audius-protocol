@@ -161,7 +161,7 @@ class ChallengeManager:
             {
                 "user_id": event["user_id"],
                 "block_number": event["block_number"],
-                "block_number": event["block_number"],
+                "block_datetime": event["block_datetime"],
                 "extra": event["extra"],
                 "specifier": self._updater.generate_specifier(
                     event["user_id"], event["extra"]
@@ -242,7 +242,10 @@ class ChallengeManager:
 
             new_user_challenges = [
                 self._create_new_user_challenge(
-                    metadata["user_id"], metadata["specifier"], metadata["extra"]
+                    metadata["user_id"],
+                    metadata["specifier"],
+                    metadata["extra"],
+                    metadata["block_datetime"],
                 )
                 for metadata in to_create_metadata
             ]
@@ -358,7 +361,9 @@ class ChallengeManager:
         self._is_active = challenge.active
         self._amount = int(challenge.amount)
 
-    def _create_new_user_challenge(self, user_id: int, specifier: str, extra: Dict):
+    def _create_new_user_challenge(
+        self, user_id: int, specifier: str, extra: Dict, block_datetime: datetime
+    ):
         return UserChallenge(
             challenge_id=self.challenge_id,
             user_id=user_id,
@@ -368,5 +373,5 @@ class ChallengeManager:
             ),  # Aggregates are made in completed state
             current_step_count=0,
             amount=extra.get("amount", self._amount),
-            created_at=datetime.now(pytz.UTC),
+            created_at=block_datetime,
         )
