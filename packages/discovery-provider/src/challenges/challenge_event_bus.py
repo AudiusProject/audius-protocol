@@ -2,6 +2,7 @@ import json
 import logging
 from collections import defaultdict
 from contextlib import contextmanager
+from datetime import datetime
 from typing import Any, DefaultDict, Dict, List, Optional, Tuple, TypedDict
 
 from sqlalchemy.orm.session import Session
@@ -30,7 +31,6 @@ from src.challenges.trending_challenge import (
     trending_underground_track_challenge_manager,
 )
 from src.utils.redis_connection import get_redis
-from datetime import datetime
 
 logger = logging.getLogger(__name__)
 REDIS_QUEUE_PREFIX = "challenges-event-queue"

@@ -4,7 +4,6 @@ from collections import defaultdict
 from datetime import datetime
 from typing import Dict, List, Optional, Set, Tuple, TypedDict, cast
 
-import pytz
 from sqlalchemy import func
 from sqlalchemy.orm.session import Session
 
@@ -293,7 +292,6 @@ class ChallengeManager:
             )
 
             # Add block # to newly completed challenges
-            logger.info(f"asdf to_update: ", to_update, events_with_specifiers_map)
             for challenge in to_update:
                 if challenge.is_complete:
                     block_number = events_with_specifiers_map[challenge.specifier][
