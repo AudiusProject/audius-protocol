@@ -136,22 +136,6 @@ const CollectionPage = ({
   onClickReposts,
   onClickFavorites
 }: CollectionPageProps) => {
-  // DEBUG:
-  // const title = null
-  // const pageDescription = null
-  // const canonicalUrl = null
-  // const structuredData = null
-  // const playlistId = null
-  // const allowReordering = null
-  // const playing = null
-  // const previewing = null
-  // const type = null
-  // const tracks = { status: Status.LOADING, entries: [] }
-  // const userId = null
-  // const status = Status.LOADING
-  // const metadata = null
-  // const user = null
-
   const { status, metadata, user } = collection
   const { isEnabled: isEditAlbumsEnabled } = useFlag(FeatureFlags.EDIT_ALBUMS)
   const { isEnabled: isPremiumAlbumsEnabled } = useFlag(
