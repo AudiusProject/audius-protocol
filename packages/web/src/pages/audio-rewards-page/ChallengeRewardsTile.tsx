@@ -258,7 +258,7 @@ const ClaimAllPanel = () => {
   const wm = useWithMobileStyle(styles.mobile)
   const { cooldownChallenges, cooldownAmount, claimableAmount, isEmpty } =
     useChallengeCooldownSchedule({ multiple: true })
-
+  const claimable = claimableAmount > 0
   const [, setClaimAllRewardsVisibility] = useModalState('ClaimAllRewards')
   const onClickClaimAllRewards = useCallback(() => {
     setClaimAllRewardsVisibility(true)
@@ -267,7 +267,7 @@ const ClaimAllPanel = () => {
     setClaimAllRewardsVisibility(true)
   }, [setClaimAllRewardsVisibility])
   const handleClick = useCallback(() => {
-    if (claimableAmount > 0) {
+    if (claimable) {
       onClickClaimAllRewards()
     } else if (cooldownAmount > 0) {
       onClickMoreInfo()
@@ -288,7 +288,7 @@ const ClaimAllPanel = () => {
       >
         <Flex direction='column' alignItems='start' w='100%'>
           <Flex gap='s' alignItems='center'>
-            {claimableAmount > 0 ? (
+            {claimable ? (
               <IconTokenGold
                 height={24}
                 width={24}
@@ -297,7 +297,7 @@ const ClaimAllPanel = () => {
             ) : null}
             {isEmpty ? null : (
               <Text color='accent' variant='title' size='l'>
-                {claimableAmount > 0
+                {claimable
                   ? messages.totalReadyToClaim
                   : messages.totalUpcomingRewards}
               </Text>
@@ -318,14 +318,14 @@ const ClaimAllPanel = () => {
           ) : null}
           <Box mt='l' mb='xl'>
             <Text variant='body' textAlign='left' size='s'>
-              {claimableAmount > 0
+              {claimable
                 ? `${claimableAmount} ${messages.available} ${messages.now}`
                 : messages.availableMessage(
                     formatCooldownChallenges(cooldownChallenges)
                   )}
             </Text>
           </Box>
-          {claimableAmount > 0 ? (
+          {claimable ? (
             <Button
               onClick={onClickClaimAllRewards}
               iconRight={IconArrow}
