@@ -441,6 +441,7 @@ export const TracksTable = ({
                 includeEdit={false}
                 includeAlbumPage={!isAlbumPage}
                 includeAddToPlaylist={false}
+                includeAddToAlbum={false}
                 includeFavorite={!isLocked}
                 handle={track.handle}
                 trackId={track.track_id}
