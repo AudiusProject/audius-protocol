@@ -15,6 +15,7 @@
 }
 
 .imageWrapper {
+  min-width: 124px;
   width: 124px;
   height: 124px;
 }

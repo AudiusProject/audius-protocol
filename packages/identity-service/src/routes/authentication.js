@@ -6,7 +6,12 @@ const {
   errorResponseForbidden,
   errorResponseUnauthorized
 } = require('../apiHelpers')
-const { validateOtp, sendOtp, bypassOtp } = require('../utils/otp')
+const {
+  validateOtp,
+  shouldSendOtp,
+  sendOtp,
+  bypassOtp
+} = require('../utils/otp')
 const authMiddleware = require('../authMiddleware')
 
 module.exports = function (app) {
@@ -129,7 +134,9 @@ module.exports = function (app) {
       }
 
       if (!otp) {
-        await sendOtp({ email, redis, sendgrid })
+        if (await shouldSendOtp({ email, redis })) {
+          await sendOtp({ email, redis, sendgrid })
+        }
         return errorResponseForbidden('Missing otp')
       }
 

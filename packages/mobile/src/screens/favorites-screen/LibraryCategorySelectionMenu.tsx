@@ -43,7 +43,7 @@ const ALL_CATEGORIES = [
     value: LibraryCategory.Repost
   },
   {
-    label: 'Purchased',
+    label: 'Premium',
     value: LibraryCategory.Purchase
   }
 ]

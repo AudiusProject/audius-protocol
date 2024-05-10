@@ -39,9 +39,9 @@ debian | ubuntu)
         docker-ce-cli='5:24.0.5-1~ubuntu.22.04~jammy' \
         containerd.io \
         docker-buildx-plugin \
-        docker-compose-plugin='2.21.0-1~ubuntu.22.04~jammy' \
-        nodejs
+        docker-compose-plugin='2.21.0-1~ubuntu.22.04~jammy'
 
+    curl -fsSL https://raw.githubusercontent.com/tj/n/master/bin/n | sudo bash -s lts
 
     # Add user to docker group
     sudo usermod -aG docker "$USER"

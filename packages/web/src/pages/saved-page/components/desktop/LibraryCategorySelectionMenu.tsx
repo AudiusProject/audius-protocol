@@ -37,7 +37,7 @@ const ALL_CATEGORIES = [
     icon: IconRepost
   },
   {
-    label: 'Purchased',
+    label: 'Premium',
     value: LibraryCategory.Purchase,
     icon: IconCart
   }

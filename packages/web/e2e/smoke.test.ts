@@ -1,10 +1,12 @@
 import { expect } from '@playwright/test'
 import { test } from './test'
+import { getAlbum, getPlaylist, getRemix, getRemixes, getTrack } from './data'
 
 test('should load an album page', async ({ page }) => {
-  await page.goto('df/album/probers_album_do_not_delete-512')
+  const { url, name } = getAlbum()
+  await page.goto(url)
   const heading = page.getByRole('heading', {
-    name: 'probers_album_do_not_delete',
+    name,
     level: 1
   })
   await expect(heading).toBeVisible()
@@ -17,31 +19,37 @@ test('should load the feed page', async ({ page }) => {
 })
 
 test('should load a playlist page', async ({ page }) => {
-  await page.goto('df/playlist/probers_playlist_do_not_delete-511')
+  const { url, name } = getPlaylist()
+  await page.goto(url)
   const heading = page.getByRole('heading', {
-    name: 'PROBERS_PLAYLIST_DO_NOT_DELETE'
+    name
   })
   await expect(heading).toBeVisible()
 })
 
 test('should load a remix page', async ({ page }) => {
-  await page.goto('df/probers_remix_do_not_delete-2859')
+  const { url, name } = getRemix()
+  await page.goto(url)
   const heading = page.getByRole('heading', {
-    name: 'probers_remix_do_not_delete'
+    name,
+    level: 1
   })
   await expect(heading).toBeVisible()
 })
 
 test('should load a remixes page', async ({ page }) => {
-  await page.goto('mb430/traektoria-source-2217/remixes')
+  const { url } = getRemixes()
+  await page.goto(url)
+
   const heading = page.getByRole('heading', { name: 'Remixes', level: 1 })
   await expect(heading).toBeVisible()
 })
 
 test('should load a track page', async ({ page }) => {
-  await page.goto('sebastian12/bachgavotte-1')
+  const { url, name } = getTrack()
+  await page.goto(url)
   const heading = page.getByRole('heading', {
-    name: 'probers_track_do_not_delete',
+    name,
     level: 1
   })
   await expect(heading).toBeVisible()
