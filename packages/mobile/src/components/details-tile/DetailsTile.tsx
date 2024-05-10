@@ -351,6 +351,8 @@ export const DetailsTile = ({
         alignItems='center'
         borderTop='default'
         backgroundColor='surface1'
+        borderBottomLeftRadius='m'
+        borderBottomRightRadius='m'
       >
         {!isPublished ? null : (
           <DetailsTileStats
