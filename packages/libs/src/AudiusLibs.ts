@@ -546,7 +546,7 @@ export class AudiusLibs {
       await this.discoveryProvider.init()
 
       if (this.web3Manager != null) {
-        this.web3Manager.discoveryProvider = this.discoveryProvider
+        this.web3Manager?.setDiscoveryProvider(this.discoveryProvider)
       }
     }
 

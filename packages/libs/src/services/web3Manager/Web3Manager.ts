@@ -124,15 +124,14 @@ export class Web3Manager {
     this.web3 = web3
   }
 
+  usingInternalWeb3(): boolean {
+    return (this.web3Config && !this.web3Config.useExternalWeb3 && this.web3Config.internalWeb3Config?.web3ProviderEndpoints.length > 0)
+  }
+
   setDiscoveryProvider(discoveryProvider: DiscoveryProvider) {
     this.discoveryProvider = discoveryProvider
     // if internal web3, use discprov
-    if (
-      this.web3Config &&
-      !this.web3Config.useExternalWeb3 &&
-     this.web3Config.internalWeb3Config?.web3ProviderEndpoints
-    ) {
-      // either user has external web3 but it's not configured, or doesn't have web3
+    if (this.usingInternalWeb3()) {
       const gatewayweb3endpoint = this.web3Config.internalWeb3Config.web3ProviderEndpoints[0]!
       const discoveryweb3endpoint = `${this.discoveryProvider?.discoveryProviderEndpoint}/chain`
       const web3endpoint = this.discoveryProvider !== null ? discoveryweb3endpoint : gatewayweb3endpoint
@@ -420,7 +419,7 @@ const ethSignTypedData = async (
       // fix per https://github.com/ethereum/web3.js/issues/1119
     }
 
-    ;(web3.currentProvider as HttpProvider).send(
+    ; (web3.currentProvider as HttpProvider).send(
       {
         method,
         params: [wallet, processedSignatureData],
