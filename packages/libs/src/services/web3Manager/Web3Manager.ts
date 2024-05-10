@@ -418,7 +418,7 @@ const ethSignTypedData = async (
       // fix per https://github.com/ethereum/web3.js/issues/1119
     }
 
-    ; (web3.currentProvider as HttpProvider).send(
+    ;(web3.currentProvider as HttpProvider).send(
       {
         method,
         params: [wallet, processedSignatureData],
