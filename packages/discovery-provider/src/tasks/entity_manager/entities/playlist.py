@@ -22,8 +22,8 @@ from src.tasks.entity_manager.utils import (
     ManageEntityParameters,
     copy_record,
     is_ddex_signer,
-    validate_signer,
     parse_release_date,
+    validate_signer,
 )
 from src.tasks.metadata import immutable_playlist_fields
 from src.tasks.task_helpers import generate_slug_and_collision_id
