@@ -93,7 +93,7 @@ const TrackOverflowMenuDrawer = ({ render }: Props) => {
           contentId: track?.track_id,
           contentType: PurchaseableContentType.TRACK
         },
-        { source: ModalSource.LineUpCollectionTile }
+        { source: ModalSource.TrackListItem }
       )
     }
   }, [track, openPremiumContentPurchaseModal])
