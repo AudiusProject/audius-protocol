@@ -173,13 +173,6 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
   }
 
   const isLoading = !isSsrEnabled && (loading || artworkLoading)
-  // const isLoading = true
-  // const title = null
-
-  const fadeIn = {
-    [styles.show]: !isLoading,
-    [styles.hide]: isLoading
-  }
 
   const isPremium =
     isStreamGated && isContentUSDCPurchaseGated(streamConditions)
@@ -204,7 +197,7 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
           {isLoading ? (
             <Skeleton height='24px' width='200px' />
           ) : (
-            <Flex className={cn(fadeIn)} gap='s' mt='s' alignItems='center'>
+            <Flex gap='s' mt='s' alignItems='center'>
               {!isPublished ? (
                 <IconVisibilityHidden color='subdued' aria-label='hidden' />
               ) : null}
@@ -239,7 +232,7 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
                   <Text
                     variant='heading'
                     size='xl'
-                    className={cn(styles.titleHeader, fadeIn)}
+                    className={cn(styles.titleHeader)}
                     textAlign='left'
                   >
                     {title}
@@ -255,13 +248,7 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
             {isLoading ? (
               <Skeleton height='24px' width='150px' />
             ) : (
-              <Text
-                variant='title'
-                strength='weak'
-                tag='h2'
-                className={cn(fadeIn)}
-                textAlign='left'
-              >
+              <Text variant='title' strength='weak' tag='h2' textAlign='left'>
                 <Text color='subdued'>{messages.by}</Text>
                 {userId !== null ? (
                   <UserLink userId={userId} popover variant='visible' />
@@ -343,11 +330,10 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
       {isLoading ? (
         <Skeleton height='40px' width='100%' />
       ) : (
-        <Flex className={cn(fadeIn)} gap='l' direction='column'>
+        <Flex gap='l' direction='column'>
           {description ? (
             <UserGeneratedText
               size='s'
-              className={cn(fadeIn)}
               linkSource='collection page'
               css={{ textAlign: 'left' }}
             >
