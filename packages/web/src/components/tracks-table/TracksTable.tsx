@@ -425,6 +425,35 @@ export const TracksTable = ({
           ? IconVisibilityHidden
           : null
       }
+      const overflowProps = {
+        className: styles.tableActionButton,
+        isDeleted: deleted,
+        includeAlbumPage: !isAlbumPage,
+        includeFavorite: !isLocked,
+        handle: track.handle,
+        trackId: track.track_id,
+        uid: track.uid,
+        date: track.date,
+        isFavorited: track.has_current_user_saved,
+        isOwner: track.owner_id === userId,
+        isOwnerDeactivated: !!track.user?.is_deactivated,
+        isArtistPick: track.user?.artist_pick_track_id === track.track_id,
+        index: cellInfo.row.index,
+        trackTitle: track.name,
+        trackPermalink: track.permalink
+      }
+      const conditionalOverflowProps = isDdex
+        ? {
+            includeEdit: false,
+            includeAddToPlaylist: false,
+            includeAddToAlbum: false
+          }
+        : {
+            includeEdit: !disabledTrackEdit,
+            includeAddToPlaylist: !isLocked && !track.is_stream_gated,
+            onRemove: onClickRemove,
+            removeText
+          }
 
       return (
         <>
@@ -433,54 +462,12 @@ export const TracksTable = ({
               <Icon color='subdued' size='m' />
             </Flex>
           ) : null}
-          {isDdex ? (
-            <div ref={overflowMenuRef} className={styles.overflowMenu}>
-              <OverflowMenuButton
-                className={styles.tableActionButton}
-                isDeleted={deleted}
-                includeEdit={false}
-                includeAlbumPage={!isAlbumPage}
-                includeAddToPlaylist={false}
-                includeAddToAlbum={false}
-                includeFavorite={!isLocked}
-                handle={track.handle}
-                trackId={track.track_id}
-                uid={track.uid}
-                date={track.date}
-                isFavorited={track.has_current_user_saved}
-                isOwner={track.owner_id === userId}
-                isOwnerDeactivated={!!track.user?.is_deactivated}
-                isArtistPick={track.user?.artist_pick_track_id === track.track_id}
-                index={cellInfo.row.index}
-                trackTitle={track.name}
-                trackPermalink={track.permalink}
-              />
-            </div>
-          ) : (
-            <div ref={overflowMenuRef} className={styles.overflowMenu}>
-              <OverflowMenuButton
-                className={styles.tableActionButton}
-                isDeleted={deleted}
-                includeEdit={!disabledTrackEdit}
-                includeAlbumPage={!isAlbumPage}
-                includeAddToPlaylist={!isLocked && !track.is_stream_gated}
-                includeFavorite={!isLocked}
-                onRemove={onClickRemove}
-                removeText={removeText}
-                handle={track.handle}
-                trackId={track.track_id}
-                uid={track.uid}
-                date={track.date}
-                isFavorited={track.has_current_user_saved}
-                isOwner={track.owner_id === userId}
-                isOwnerDeactivated={!!track.user?.is_deactivated}
-                isArtistPick={track.user?.artist_pick_track_id === track.track_id}
-                index={cellInfo.row.index}
-                trackTitle={track.name}
-                trackPermalink={track.permalink}
-              />
-            </div>
-          )}
+          <div ref={overflowMenuRef} className={styles.overflowMenu}>
+            <OverflowMenuButton
+              {...overflowProps}
+              {...conditionalOverflowProps}
+            />
+          </div>
         </>
       )
     },
