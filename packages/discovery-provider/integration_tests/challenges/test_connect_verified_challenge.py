@@ -12,6 +12,7 @@ from src.utils.redis_connection import get_redis
 
 REDIS_URL = shared_config["redis"]["url"]
 BLOCK_NUMBER = 10
+BLOCK_DATETIME = datetime.now()
 logger = logging.getLogger(__name__)
 
 
@@ -56,6 +57,7 @@ def test_connect_verified_challenge(app):
         bus.dispatch(
             ChallengeEvent.connect_verified,
             BLOCK_NUMBER,
+            BLOCK_DATETIME,
             1,  # user_id
             {},
         )

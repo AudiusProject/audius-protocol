@@ -18,6 +18,7 @@ class UserChallenge(Base, RepresentableMixin):
     is_complete = Column(Boolean, nullable=False)
     current_step_count = Column(Integer)
     completed_blocknumber = Column(Integer)
+    completed_at = Column(DateTime)
     amount = Column(Integer, nullable=False)
     created_at = Column(
         DateTime,

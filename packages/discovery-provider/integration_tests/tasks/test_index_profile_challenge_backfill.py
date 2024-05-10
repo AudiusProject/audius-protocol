@@ -1,3 +1,4 @@
+from datetime import datetime
 import logging
 from unittest import mock
 
@@ -13,6 +14,7 @@ from src.utils.db_session import get_db
 from src.utils.update_indexing_checkpoints import save_indexed_checkpoint
 
 logger = logging.getLogger(__name__)
+BLOCK_DATETIME = datetime.now()
 
 
 @mock.patch(
@@ -28,30 +30,40 @@ def test_index_profile_challenge_backfill(
 
         entities = {
             "users": [{}] * 100,
-            "reposts": [{"user_id": i, "blocknumber": i + 2} for i in range(1, 50)],
-            "saves": [{"user_id": i + 1, "blocknumber": i + 3} for i in range(1, 20)],
+            "reposts": [
+                {"user_id": i, "blocknumber": i + 2, "created_at": BLOCK_DATETIME}
+                for i in range(1, 50)
+            ],
+            "saves": [
+                {"user_id": i + 1, "blocknumber": i + 3, "created_at": BLOCK_DATETIME}
+                for i in range(1, 20)
+            ],
             "follows": [
                 {
                     "follower_user_id": i + 4,
                     "followee_user_id": i + 4,
                     "blocknumber": i + 7,
+                    "created_at": BLOCK_DATETIME,
                 }
                 for i in range(1, 60)
             ],
-            "tracks": [{"owner_id": i} for i in range(1, 7)],
+            "tracks": [
+                {"owner_id": i, "created_at": BLOCK_DATETIME} for i in range(1, 7)
+            ],
         }
         populate_mock_db(db, entities)
 
         enqueue_social_rewards_check(db, bus_mock)
         repost_calls = [
-            mock.call.dispatch(ChallengeEvent.repost, i + 2, i) for i in range(1, 50)
+            mock.call.dispatch(ChallengeEvent.repost, i + 2, BLOCK_DATETIME, i)
+            for i in range(1, 50)
         ]
         save_calls = [
-            mock.call.dispatch(ChallengeEvent.favorite, i + 3, i + 1)
+            mock.call.dispatch(ChallengeEvent.favorite, i + 3, BLOCK_DATETIME, i + 1)
             for i in range(1, 20)
         ]
         follow_calls = [
-            mock.call.dispatch(ChallengeEvent.follow, i + 7, i + 4)
+            mock.call.dispatch(ChallengeEvent.follow, i + 7, BLOCK_DATETIME, i + 4)
             for i in range(1, 60)
         ]
         calls = repost_calls + save_calls + follow_calls

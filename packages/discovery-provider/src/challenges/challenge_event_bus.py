@@ -2,6 +2,7 @@ import json
 import logging
 from collections import defaultdict
 from contextlib import contextmanager
+from datetime import datetime
 from typing import Any, DefaultDict, Dict, List, Optional, Tuple, TypedDict
 
 from sqlalchemy.orm.session import Session
@@ -38,6 +39,7 @@ REDIS_QUEUE_PREFIX = "challenges-event-queue"
 class InternalEvent(TypedDict):
     event: ChallengeEvent
     block_number: int
+    block_datetime: datetime
     user_id: int
     extra: Dict
 
@@ -89,6 +91,7 @@ class ChallengeEventBus:
         self,
         event: ChallengeEvent,
         block_number: int,
+        block_datetime: datetime,
         user_id: int,
         extra: Optional[Dict] = None,
     ):
@@ -101,11 +104,20 @@ class ChallengeEventBus:
         # Sanitize input, drop the event if it's malformed
         valid_event = event is not None and isinstance(event, str)
         valid_block = block_number is not None and isinstance(block_number, int)
+        valid_block_datetime = block_datetime is not None and isinstance(
+            block_datetime, datetime
+        )
         valid_user = user_id is not None and isinstance(user_id, int)
         valid_extra = extra is not None and isinstance(extra, dict)
-        if not (valid_event and valid_block and valid_user and valid_extra):
+        if not (
+            valid_event
+            and valid_block
+            and valid_block_datetime
+            and valid_user
+            and valid_extra
+        ):
             logger.warning(
-                f"ChallengeEventBus: ignoring invalid event: {(event, block_number, user_id, extra)}"
+                f"ChallengeEventBus: ignoring invalid event: {(event, block_number, block_datetime, user_id, extra)}"
             )
             return
 
@@ -113,6 +125,7 @@ class ChallengeEventBus:
             {
                 "event": event,
                 "block_number": block_number,
+                "block_datetime": block_datetime,
                 "user_id": user_id,
                 "extra": extra,
             }
@@ -129,6 +142,7 @@ class ChallengeEventBus:
                 event_json = self._event_to_json(
                     event["event"],
                     event["block_number"],
+                    event["block_datetime"],
                     event["user_id"],
                     event.get("extra", {}),
                 )
@@ -151,7 +165,6 @@ class ChallengeEventBus:
             # trim the first from the front of the list
             self._redis.ltrim(REDIS_QUEUE_PREFIX, len(events_json), -1)
             events_dicts = list(map(self._json_to_event, events_json))
-
             # Consolidate event types for processing
             # map of {"event_type": [{ user_id: number, block_number: number, extra: {} }]}}
             event_user_dict: DefaultDict[ChallengeEvent, List[EventMetadata]] = (
@@ -163,6 +176,7 @@ class ChallengeEventBus:
                     {
                         "user_id": event_dict["user_id"],
                         "block_number": event_dict["block_number"],
+                        "block_datetime": event_dict["block_datetime"],
                         "extra": event_dict.get(  # use .get to be safe since prior versions didn't have `extra`
                             "extra", {}
                         ),
@@ -190,17 +204,27 @@ class ChallengeEventBus:
 
     # Helpers
 
-    def _event_to_json(self, event: str, block_number: int, user_id: int, extra: Dict):
+    def _event_to_json(
+        self,
+        event: str,
+        block_number: int,
+        block_datetime: datetime,
+        user_id: int,
+        extra: Dict,
+    ):
         event_dict = {
             "event": event,
             "user_id": user_id,
             "block_number": block_number,
+            "block_datetime": block_datetime.timestamp(),
             "extra": extra,
         }
         return json.dumps(event_dict)
 
     def _json_to_event(self, event_json) -> InternalEvent:
-        return json.loads(event_json)
+        event = json.loads(event_json)
+        event["block_datetime"] = datetime.fromtimestamp(event["block_datetime"])
+        return event
 
 
 def setup_challenge_bus():

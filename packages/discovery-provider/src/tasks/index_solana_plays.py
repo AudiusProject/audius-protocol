@@ -513,6 +513,7 @@ def parse_sol_tx_batch(
             challenge_bus.dispatch(
                 ChallengeEvent.track_listen,
                 event.get("slot"),
+                datetime.fromtimestamp(event.get("created_at")),
                 event.get("user_id"),
                 {"created_at": event.get("created_at")},
             )

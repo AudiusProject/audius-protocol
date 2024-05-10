@@ -543,12 +543,14 @@ def validate_and_index_usdc_transfers(
         challenge_event_bus.dispatch(
             ChallengeEvent.audio_matching_buyer,
             slot,
+            timestamp,
             sender_user_id,
             {"track_id": purchase_metadata["id"], "amount": amount},
         )
         challenge_event_bus.dispatch(
             ChallengeEvent.audio_matching_seller,
             slot,
+            timestamp,
             purchase_metadata["content_owner_id"],
             {
                 "track_id": purchase_metadata["id"],
@@ -708,7 +710,7 @@ def process_payment_router_tx_details(
     session: Session,
     tx_info: GetTransactionResp,
     tx_sig: str,
-    timestamp,
+    timestamp: datetime,
     challenge_event_bus: ChallengeEventBus,
 ):
     logger.debug(f"index_payment_router.py | Processing tx={tx_info.to_json()}")
