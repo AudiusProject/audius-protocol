@@ -25,6 +25,7 @@ logger = logging.getLogger(__name__)
 
 AGGREGATE_CHALLENGE_REWARD_AMOUNT = 5
 AGGREGATE_CHALLENGE_STEP_COUNT = 5
+TEST_BLOCK_DATETIME = datetime.now()
 
 
 def get_created_at():
@@ -159,7 +160,12 @@ def test_handle_event(app):
             session,
             "test_event",
             [
-                {"user_id": 1, "block_number": 99, "extra": {}},
+                {
+                    "user_id": 1,
+                    "block_number": 99,
+                    "block_datetime": TEST_BLOCK_DATETIME,
+                    "extra": {},
+                },
             ],
         )
         session.flush()
@@ -176,6 +182,7 @@ def test_handle_event(app):
             "user_id": 1,
             "specifier": "1",
             "is_complete": False,
+            "completed_at": None,
             "current_step_count": 1,
             "completed_blocknumber": None,
             "amount": 5,
@@ -188,13 +195,38 @@ def test_handle_event(app):
             session,
             "test_event",
             [
-                {"user_id": 1, "block_number": 100, "extra": {}},
-                {"user_id": 2, "block_number": 100, "extra": {}},
-                {"user_id": 3, "block_number": 100, "extra": {}},
+                {
+                    "user_id": 1,
+                    "block_number": 100,
+                    "block_datetime": TEST_BLOCK_DATETIME,
+                    "extra": {},
+                },
+                {
+                    "user_id": 2,
+                    "block_number": 100,
+                    "block_datetime": TEST_BLOCK_DATETIME,
+                    "extra": {},
+                },
+                {
+                    "user_id": 3,
+                    "block_number": 100,
+                    "block_datetime": TEST_BLOCK_DATETIME,
+                    "extra": {},
+                },
                 # Attempt to add id 6 twice to
                 # ensure that it doesn't cause a collision
-                {"user_id": 6, "block_number": 100, "extra": {}},
-                {"user_id": 6, "block_number": 100, "extra": {}},
+                {
+                    "user_id": 6,
+                    "block_number": 100,
+                    "block_datetime": TEST_BLOCK_DATETIME,
+                    "extra": {},
+                },
+                {
+                    "user_id": 6,
+                    "block_number": 100,
+                    "block_datetime": TEST_BLOCK_DATETIME,
+                    "extra": {},
+                },
             ],
         )
         session.flush()
@@ -212,6 +244,7 @@ def test_handle_event(app):
                 "user_id": 1,
                 "specifier": "1",
                 "is_complete": False,
+                "completed_at": None,
                 "current_step_count": 2,
                 "completed_blocknumber": None,
                 "amount": 5,
@@ -223,6 +256,7 @@ def test_handle_event(app):
                 "user_id": 2,
                 "specifier": "2",
                 "is_complete": True,
+                "completed_at": TEST_BLOCK_DATETIME,
                 "current_step_count": 3,
                 "completed_blocknumber": 100,
                 "amount": 5,
@@ -234,6 +268,7 @@ def test_handle_event(app):
                 "user_id": 3,
                 "specifier": "3",
                 "is_complete": True,
+                "completed_at": TEST_BLOCK_DATETIME,
                 "current_step_count": 3,
                 "completed_blocknumber": 100,
                 "amount": 5,
@@ -245,6 +280,7 @@ def test_handle_event(app):
                 "user_id": 5,
                 "specifier": "5",
                 "is_complete": False,
+                "completed_at": None,
                 "current_step_count": 2,
                 "completed_blocknumber": None,
                 "amount": 5,
@@ -256,6 +292,7 @@ def test_handle_event(app):
                 "user_id": 6,
                 "specifier": "6",
                 "is_complete": False,
+                "completed_at": None,
                 "current_step_count": 1,
                 "completed_blocknumber": None,
                 "amount": 5,
@@ -263,6 +300,8 @@ def test_handle_event(app):
         ]
         # the last challenge was just created so we don't know the created_at time
         del res_dicts[-1]["created_at"]
+        logger.info(f"asdf expected {expected}")
+        logger.info(f"asdf res_dicts {res_dicts}")
         assert expected == res_dicts
 
 
@@ -307,8 +346,12 @@ def test_aggregates(app):
         )
         # - Multiple events with the same user_id but diff specifiers get created
         bus.register_listener(TEST_EVENT, agg_challenge)
-        bus.dispatch(TEST_EVENT, 100, 1, {"referred_id": 2, "amount": 4})
-        bus.dispatch(TEST_EVENT, 100, 1, {"referred_id": 3, "amount": 6})
+        bus.dispatch(
+            TEST_EVENT, 100, TEST_BLOCK_DATETIME, 1, {"referred_id": 2, "amount": 4}
+        )
+        bus.dispatch(
+            TEST_EVENT, 100, TEST_BLOCK_DATETIME, 1, {"referred_id": 3, "amount": 6}
+        )
         bus.flush()
         bus.process_events(session)
         state = agg_challenge.get_user_challenge_state(session, ["1-2", "1-3"])
@@ -323,8 +366,8 @@ def test_aggregates(app):
         assert agg_chal["is_complete"] == False
 
         # - Multiple events with the same specifier get deduped
-        bus.dispatch(TEST_EVENT, 100, 1, {"referred_id": 4})
-        bus.dispatch(TEST_EVENT, 100, 1, {"referred_id": 4})
+        bus.dispatch(TEST_EVENT, 100, TEST_BLOCK_DATETIME, 1, {"referred_id": 4})
+        bus.dispatch(TEST_EVENT, 100, TEST_BLOCK_DATETIME, 1, {"referred_id": 4})
         bus.flush()
         bus.process_events(session)
         state = agg_challenge.get_user_challenge_state(session, ["1-4"])
@@ -343,12 +386,12 @@ def test_aggregates(app):
 
         # - If we've maxed the # of challenges, don't create any more
         # (AGGREGATE_CHALLENGE_STEP_COUNT = 5)
-        bus.dispatch(TEST_EVENT, 100, 1, {"referred_id": 5})
-        bus.dispatch(TEST_EVENT, 100, 1, {"referred_id": 6})
+        bus.dispatch(TEST_EVENT, 100, TEST_BLOCK_DATETIME, 1, {"referred_id": 5})
+        bus.dispatch(TEST_EVENT, 100, TEST_BLOCK_DATETIME, 1, {"referred_id": 6})
         bus.flush()
         bus.process_events(session)
         assert len(get_user_challenges()) == AGGREGATE_CHALLENGE_STEP_COUNT
-        bus.dispatch(TEST_EVENT, 100, 1, {"referred_id": 7})
+        bus.dispatch(TEST_EVENT, 100, TEST_BLOCK_DATETIME, 1, {"referred_id": 7})
         bus.flush()
         bus.process_events(session)
         assert len(get_user_challenges()) == AGGREGATE_CHALLENGE_STEP_COUNT
@@ -385,8 +428,8 @@ def test_in_memory_queue(app):
         )
         # - Multiple events with the same user_id but diff specifiers get created
         bus.register_listener(TEST_EVENT, agg_challenge)
-        bus.dispatch(TEST_EVENT, 100, 1, {"referred_id": 2})
-        bus.dispatch(TEST_EVENT, 100, 1, {"referred_id": 3})
+        bus.dispatch(TEST_EVENT, 100, TEST_BLOCK_DATETIME, 1, {"referred_id": 2})
+        bus.dispatch(TEST_EVENT, 100, TEST_BLOCK_DATETIME, 1, {"referred_id": 3})
         bus.process_events(session)
 
         # no events should be processed because we haven't dispatched yet
@@ -417,7 +460,7 @@ def test_inactive_challenge(app):
         TEST_EVENT = "TEST_EVENT"
         bus.register_listener(TEST_EVENT, mgr)
         with bus.use_scoped_dispatch_queue():
-            bus.dispatch(TEST_EVENT, 100, 1, {})
+            bus.dispatch(TEST_EVENT, 100, TEST_BLOCK_DATETIME, 1, {})
         bus.process_events(session)
         state = mgr.get_user_challenge_state(session, ["1"])
         # We should not have any UserChallenges created for the
@@ -438,9 +481,9 @@ def test_rejects_invalid_events(app):
         TEST_EVENT = "TEST_EVENT"
         bus.register_listener(TEST_EVENT, mgr)
         with bus.use_scoped_dispatch_queue():
-            bus.dispatch(TEST_EVENT, None, 1)
-            bus.dispatch(TEST_EVENT, 1, None)
-            bus.dispatch(TEST_EVENT, 1, 1, 1)
+            bus.dispatch(TEST_EVENT, None, TEST_BLOCK_DATETIME, 1)
+            bus.dispatch(TEST_EVENT, 1, TEST_BLOCK_DATETIME, None)
+            bus.dispatch(TEST_EVENT, 1, TEST_BLOCK_DATETIME, 1, 1)
         (count, did_error) = bus.process_events(session)
         assert count == 0
         assert did_error == False
@@ -493,8 +536,8 @@ def test_catches_exceptions_in_single_processor(app):
 
         with bus.use_scoped_dispatch_queue():
             # dispatch the broken one first
-            bus.dispatch(TEST_EVENT_2, 101, 1)
-            bus.dispatch(TEST_EVENT, 101, 1)
+            bus.dispatch(TEST_EVENT_2, 101, TEST_BLOCK_DATETIME, 1)
+            bus.dispatch(TEST_EVENT, 101, TEST_BLOCK_DATETIME, 1)
         try:
             bus.process_events(session)
         except:
@@ -511,8 +554,8 @@ def test_catches_exceptions_in_single_processor(app):
         # Try the other order
         with bus.use_scoped_dispatch_queue():
             # dispatch the correct one first
-            bus.dispatch(TEST_EVENT, 101, 1)
-            bus.dispatch(TEST_EVENT_2, 101, 1)
+            bus.dispatch(TEST_EVENT, 101, TEST_BLOCK_DATETIME, 1)
+            bus.dispatch(TEST_EVENT_2, 101, TEST_BLOCK_DATETIME, 1)
         try:
             bus.process_events(session)
         except:

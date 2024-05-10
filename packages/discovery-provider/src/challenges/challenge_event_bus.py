@@ -165,12 +165,12 @@ class ChallengeEventBus:
             # trim the first from the front of the list
             self._redis.ltrim(REDIS_QUEUE_PREFIX, len(events_json), -1)
             events_dicts = list(map(self._json_to_event, events_json))
-
+            logger.info(f"asdf events_dicts {events_dicts}")
             # Consolidate event types for processing
             # map of {"event_type": [{ user_id: number, block_number: number, extra: {} }]}}
-            event_user_dict: DefaultDict[
-                ChallengeEvent, List[EventMetadata]
-            ] = defaultdict(lambda: [])
+            event_user_dict: DefaultDict[ChallengeEvent, List[EventMetadata]] = (
+                defaultdict(lambda: [])
+            )
             for event_dict in events_dicts:
                 event_type = event_dict["event"]
                 event_user_dict[event_type].append(
@@ -223,7 +223,9 @@ class ChallengeEventBus:
         return json.dumps(event_dict)
 
     def _json_to_event(self, event_json) -> InternalEvent:
-        return json.loads(event_json)
+        event = json.loads(event_json)
+        event["block_datetime"] = datetime.fromtimestamp(event["block_datetime"])
+        return event
 
 
 def setup_challenge_bus():

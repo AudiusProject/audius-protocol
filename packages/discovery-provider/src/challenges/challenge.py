@@ -134,6 +134,7 @@ class ChallengeManager:
         logger.info(
             f"ChallengeManager: processing event type [{event_type}] for challenge [{self.challenge_id}]"
         )
+        logger.info(f"asdf event_metadatas {event_metadatas}")
         if not self._did_init:  # lazy init
             self._init_challenge(session)
 
@@ -290,8 +291,12 @@ class ChallengeManager:
             )
 
             # Add block # to newly completed challenges
+            logger.info(f"asdf to_update: {to_update}")
             for challenge in to_update:
                 if challenge.is_complete:
+                    logger.info(
+                        f"asdf complete: {challenge.specifier} {events_with_specifiers_map[challenge.specifier]}"
+                    )
                     block_number = events_with_specifiers_map[challenge.specifier][
                         "block_number"
                     ]
@@ -301,11 +306,13 @@ class ChallengeManager:
 
                     challenge.completed_blocknumber = block_number
                     challenge.completed_at = block_datetime
+                    logger.info(f"asdf completed challenge: {challenge}")
 
             logger.debug(
                 f"ChallengeManager: Updated challenges from event [{event_type}]: [{to_update}]"
             )
             # Only add the new ones
+            logger.info(f"asdf new_user_challenges {new_user_challenges}")
             session.add_all(new_user_challenges)
 
             # Commit, so if there are DB errors
