@@ -20,7 +20,7 @@
         <FullName>Tiki Labs, Inc.</FullName>
       </PartyName>
     </MessageRecipient>
-    <MessageCreatedDateTime>2024-04-01T12:00:00Z</MessageCreatedDateTime>
+    <MessageCreatedDateTime>2024-04-01T06:00:00Z</MessageCreatedDateTime>
   </MessageHeader>
   <ResourceList>
     <SoundRecording>
@@ -110,6 +110,7 @@
 
       <ReleaseResourceReferenceList>
         <ReleaseResourceReference>A1</ReleaseResourceReference>
+        <ReleaseResourceReference>A2</ReleaseResourceReference>
       </ReleaseResourceReferenceList>
 
       <ReleaseDetailsByTerritory>
@@ -121,6 +122,18 @@
           <Year>2024</Year>
           <CLineText>© 2024 Label Name</CLineText>
         </CLine>
+
+        <Genre>
+          <GenreText>Folk</GenreText>
+          <SubGenre>Indie Folk</SubGenre>
+        </Genre>
+        <DisplayArtist SequenceNumber="1">
+          <PartyName>
+            <FullName>DJ Theo</FullName>
+          </PartyName>
+          <ArtistRole>MainArtist</ArtistRole>
+        </DisplayArtist>
+
       </ReleaseDetailsByTerritory>
     </Release>
   </ReleaseList>

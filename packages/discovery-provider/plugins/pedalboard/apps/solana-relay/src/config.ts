@@ -16,7 +16,29 @@ type FeePayerWallet = {
   privateKey: number[]
 }
 
-const readConfig = () => {
+type Config = {
+  endpoint: string
+  discoveryDbConnectionString: string
+  redisUrl: string
+  serverHost: string
+  serverPort: number
+  solanaEndpoints: string[]
+  rewardsManagerProgramId: string
+  rewardsManagerAccountAddress: string
+  claimableTokenProgramId: string
+  paymentRouterProgramId: string
+  trackListenCountProgramId: string
+  usdcMintAddress: string
+  waudioMintAddress: string
+  solanaFeePayerWallets: Keypair[]
+  delegatePrivateKey: Buffer,
+  ipdataApiKey: string | null
+}
+
+let cachedConfig: Config | null = null
+
+const readConfig = (): Config => {
+  if (cachedConfig !== null) return cachedConfig
   readDotEnv()
 
   // validate env
@@ -70,7 +92,8 @@ const readConfig = () => {
     }),
     solana_relay_server_host: str({ default: '0.0.0.0' }),
     solana_relay_server_port: num({ default: 6002 }),
-    audius_delegate_private_key: str({ default: '' })
+    audius_delegate_private_key: str({ default: '' }),
+    audius_ipdata_api_key: str({ default: '' })
   })
   const solanaFeePayerWalletsParsed = env.audius_solana_fee_payer_wallets
   let solanaFeePayerWallets: Keypair[] = []
@@ -82,23 +105,26 @@ const readConfig = () => {
   const delegatePrivateKey: Buffer = env.audius_delegate_private_key
     ? Buffer.from(env.audius_delegate_private_key, 'hex')
     : Buffer.from([])
-  return {
-    endpoint: env.audius_discprov_url,
-    discoveryDbConnectionString: env.audius_db_url,
-    redisUrl: env.audius_redis_url,
-    serverHost: env.solana_relay_server_host,
-    serverPort: env.solana_relay_server_port,
-    solanaEndpoints: env.audius_solana_endpoint.split(','),
-    rewardsManagerProgramId: env.audius_solana_rewards_manager_program_address,
-    rewardsManagerAccountAddress: env.audius_solana_rewards_manager_account,
-    claimableTokenProgramId: env.audius_solana_user_bank_program_address,
-    paymentRouterProgramId: env.audius_solana_payment_router_program_address,
-    trackListenCountProgramId: env.audius_solana_track_listen_count_address,
-    usdcMintAddress: env.audius_solana_usdc_mint,
-    waudioMintAddress: env.audius_solana_waudio_mint,
-    solanaFeePayerWallets,
-    delegatePrivateKey
-  }
+
+  cachedConfig = {
+      endpoint: env.audius_discprov_url,
+      discoveryDbConnectionString: env.audius_db_url,
+      redisUrl: env.audius_redis_url,
+      serverHost: env.solana_relay_server_host,
+      serverPort: env.solana_relay_server_port,
+      solanaEndpoints: env.audius_solana_endpoint.split(','),
+      rewardsManagerProgramId: env.audius_solana_rewards_manager_program_address,
+      rewardsManagerAccountAddress: env.audius_solana_rewards_manager_account,
+      claimableTokenProgramId: env.audius_solana_user_bank_program_address,
+      paymentRouterProgramId: env.audius_solana_payment_router_program_address,
+      trackListenCountProgramId: env.audius_solana_track_listen_count_address,
+      usdcMintAddress: env.audius_solana_usdc_mint,
+      waudioMintAddress: env.audius_solana_waudio_mint,
+      solanaFeePayerWallets,
+      delegatePrivateKey,
+      ipdataApiKey: env.audius_ipdata_api_key === ""  ? null : env.audius_ipdata_api_key
+    }
+  return readConfig()
 }
 
 export const config = readConfig()

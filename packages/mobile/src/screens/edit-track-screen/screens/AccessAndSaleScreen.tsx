@@ -14,9 +14,8 @@ import { removeNullable } from '@audius/common/utils'
 import type { Nullable } from '@audius/common/utils'
 import { useField, useFormikContext } from 'formik'
 
-import { IconCaretLeft, IconCart } from '@audius/harmony-native'
+import { Hint, IconCaretLeft, IconCart } from '@audius/harmony-native'
 import { Button } from 'app/components/core'
-import { HelpCallout } from 'app/components/help-callout/HelpCallout'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { TopBarIconButton } from 'app/screens/app-screen'
 import { makeStyles } from 'app/styles'
@@ -59,26 +58,15 @@ const useStyles = makeStyles(({ spacing }) => ({
   backButton: {
     marginLeft: -6
   },
-  isRemix: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: spacing(4),
-    marginHorizontal: spacing(4),
-    paddingVertical: spacing(2),
-    paddingHorizontal: spacing(4)
-  },
   listItem: {
     paddingVertical: spacing(6)
   }
 }))
 
 const MarkedAsRemix = () => {
-  const styles = useStyles()
   const [{ value: remixOf }] = useField<RemixOfField>('remix_of')
 
-  return remixOf ? (
-    <HelpCallout style={styles.isRemix} content={messages.markedAsRemix} />
-  ) : null
+  return remixOf ? <Hint m='l'>{messages.markedAsRemix}</Hint> : null
 }
 
 export const AccessAndSaleScreen = () => {

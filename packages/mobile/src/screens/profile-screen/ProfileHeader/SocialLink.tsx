@@ -4,48 +4,36 @@ import type { StyleProp, ViewStyle } from 'react-native'
 import { View } from 'react-native'
 
 import type { IconButtonProps } from '@audius/harmony-native'
-import { IconInstagram, IconTikTok, IconTwitter } from '@audius/harmony-native'
+import {
+  IconInstagram,
+  IconTikTok,
+  IconTwitter,
+  Text
+} from '@audius/harmony-native'
 import type { LinkProps } from 'app/components/core'
-import { Text, Link, Hyperlink } from 'app/components/core'
+import { Link, UserGeneratedText } from 'app/components/core'
 import Skeleton from 'app/components/skeleton'
 import { make } from 'app/services/analytics'
 import { makeStyles } from 'app/styles'
 import { EventNames } from 'app/types/analytics'
-import { useThemeColors } from 'app/utils/theme'
 
 import { useSelectProfile } from '../selectors'
-import { squashNewLines } from '../utils'
 
-const useStyles = makeStyles(({ palette, spacing, typography }) => ({
-  icon: {
-    height: 28,
-    width: 28,
-    fill: palette.neutral
-  },
+const useStyles = makeStyles(({ spacing }) => ({
   iconSkeleton: {
-    height: 28,
-    width: 28
+    height: 24,
+    width: 24
   },
   linkSkeleton: {
-    height: 28,
+    height: 24,
     width: 150,
     marginLeft: spacing(3)
   },
   withText: {
     flexDirection: 'row',
     alignItems: 'center',
-    alignSelf: 'flex-start'
-  },
-  text: { marginLeft: spacing(2), marginBottom: 0 },
-  hyperlinkText: {
-    fontSize: typography.fontSize.medium,
-    color: palette.neutral
-  },
-  hyperlinkLink: {
-    fontSize: typography.fontSize.medium
-  },
-  active: {
-    color: palette.primary
+    alignSelf: 'flex-start',
+    gap: spacing(2)
   }
 }))
 
@@ -60,7 +48,6 @@ export type SocialLinkProps = LinkProps &
 export const SocialLink = (props: SocialLinkProps) => {
   const { text, showText, url, icon: Icon, hyperlink, style, ...other } = props
   const styles = useStyles()
-  const { primary, neutral } = useThemeColors()
   const [isActive, setIsActive] = useState(false)
 
   const handlePressIn = useCallback(() => {
@@ -90,9 +77,7 @@ export const SocialLink = (props: SocialLinkProps) => {
 
   if (text === null || text === '') return null
 
-  const iconButtonElement = (
-    <Icon height={28} width={28} fill={isActive ? primary : neutral} />
-  )
+  const iconButtonElement = <Icon color={isActive ? 'active' : 'default'} />
 
   if (showText)
     return (
@@ -105,22 +90,14 @@ export const SocialLink = (props: SocialLinkProps) => {
       >
         {iconButtonElement}
         {hyperlink ? (
-          <Hyperlink
-            source='profile page'
-            text={squashNewLines(text)}
-            styles={{
-              root: [
-                styles.text,
-                styles.hyperlinkText,
-                isActive && styles.active
-              ],
-              link: styles.hyperlinkLink
-            }}
-          />
+          <UserGeneratedText variant='body' source='profile page'>
+            {text}
+          </UserGeneratedText>
         ) : (
           <Text
+            variant='body'
             numberOfLines={1}
-            style={[styles.text, isActive && styles.active]}
+            color={isActive ? 'active' : 'default'}
           >
             {text}
           </Text>

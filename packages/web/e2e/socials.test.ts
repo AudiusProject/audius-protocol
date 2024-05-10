@@ -1,9 +1,11 @@
 import { expect } from '@playwright/test'
 import { SocialActions } from './page-object-models/socialActions'
 import { test } from './test'
+import { getTrack2 } from './data'
 
 test('should favorite/unfavorite a track', async ({ page }) => {
-  await page.goto('sebastian12/bachgavotte-1')
+  const { url } = getTrack2()
+  await page.goto(url)
 
   const socialActions = new SocialActions(page)
   // On initial load, the favorite button will be showing. Make sure to wait for
@@ -25,7 +27,8 @@ test('should favorite/unfavorite a track', async ({ page }) => {
 })
 
 test('should repost/unrepost a track', async ({ page }) => {
-  await page.goto('sebastian12/bachgavotte-1')
+  const { url } = getTrack2()
+  await page.goto(url)
 
   const socialActions = new SocialActions(page)
   // On initial load, the repost button will be showing. Make sure to wait for

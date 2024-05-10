@@ -189,6 +189,7 @@ class PlaylistMetadata(TypedDict):
     copyright_line: Optional[Copyright]
     producer_copyright_line: Optional[Copyright]
     parental_warning_type: Optional[str]
+    release_date: None
 
 
 playlist_metadata_format: PlaylistMetadata = {
@@ -209,6 +210,7 @@ playlist_metadata_format: PlaylistMetadata = {
     "copyright_line": None,
     "producer_copyright_line": None,
     "parental_warning_type": None,
+    "release_date": None,
 }
 
 # Updates cannot directly modify these fields via metadata

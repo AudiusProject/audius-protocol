@@ -1,5 +1,8 @@
+import { capitalize } from 'lodash'
+
 export const email = ({
   purchaserName,
+  contentType,
   contentTitle,
   contentLink,
   contentImage,
@@ -9,6 +12,7 @@ export const email = ({
   total
 }: {
   purchaserName: string
+  contentType: string
   contentTitle: string
   contentLink: string
   contentImage: string
@@ -154,7 +158,7 @@ export const email = ({
 															</div> 
 															<div style="height: 16px; line-height: 16px; font-size: 14px;">&nbsp;</div>
 															<div style="line-height: 24px;">
-																<span style="font-family: 'Avenir Next LT Pro', sans-serif; font-size: 18px; color: #858199;">Congratulations! You're now the proud owner of a new track on Audius.<br><br>This isn't just a purchase. It's a show of support to an artist you love, and it goes a long way. You can now enjoy your newly purchased track anytime from your Audius Library!</span>
+																<span style="font-family: 'Avenir Next LT Pro', sans-serif; font-size: 18px; color: #858199;">Congratulations! You're now the proud owner of a new ${contentType} on Audius.<br><br>This isn't just a purchase. It's a show of support to an artist you love, and it goes a long way. You can now enjoy your newly purchased ${contentType} anytime from your Audius Library!</span>
 															</div>
 														</div>
 													</td></tr>
@@ -212,7 +216,8 @@ export const email = ({
 																<tr><td align="left" valign="middle" style="padding: 8px 0px;">
 																	<div>
 																		<div style="line-height: 24px;">
-																			<span style="font-family: 'Avenir Next LT Pro', sans-serif; font-size: 18px; color: #7e1bcc;">${contentTitle}<br>${artistName}</span>
+																			<span style="font-family: 'Avenir Next LT Pro', sans-serif; font-size: 18px; color: #7e1bcc; font-weight: bold">${contentTitle}</span><br>
+																			<span style="font-family: 'Avenir Next LT Pro', sans-serif; font-size: 18px; color: #7e1bcc;">${artistName}</span>
 																		</div>
 																	</div>
 																</td></tr>
@@ -270,7 +275,9 @@ export const email = ({
 														<tr><td align="left" valign="middle" style="padding: 0px 8px 0px 0px;">
 															<div>
 																<div style="line-height: 20px;">
-																	<span style="font-family: 'Avenir Next LT Pro', sans-serif; font-size: 16px; color: #858199;">Premium Track</span>
+																	<span style="font-family: 'Avenir Next LT Pro', sans-serif; font-size: 16px; color: #858199;">Premium ${capitalize(
+                                    contentType
+                                  )}</span>
 																</div>
 															</div>
 														</td></tr>

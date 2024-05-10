@@ -4,7 +4,7 @@ import path from 'path'
 import { EthContracts } from '../../services/ethContracts'
 import { EthWeb3Manager } from '../../services/ethWeb3Manager'
 import { IdentityService } from '../../services/identity'
-import type { ServicesConfig } from '../config/types'
+import type { SdkServicesConfig } from '../config/types'
 
 const { writeFile } = promises
 
@@ -56,55 +56,127 @@ const envConfigs: Record<'staging' | 'production', EnvironmentConfig> = {
   }
 }
 
-const devConfig: ServicesConfig = {
-  minVersion: '0.0.0',
-  discoveryNodes: [
-    {
-      delegateOwnerWallet:
-        '0xd09ba371c359f10f22ccda12fd26c598c7921bda3220c9942174562bc6a36fe8',
-      endpoint: 'http://audius-protocol-discovery-provider-1',
-      ownerWallet:
-        '0xd09ba371c359f10f22ccda12fd26c598c7921bda3220c9942174562bc6a36fe8'
-    }
-  ],
-  storageNodes: [
-    {
-      delegateOwnerWallet: '0x0D38e653eC28bdea5A2296fD5940aaB2D0B8875c',
-      endpoint: 'http://audius-protocol-creator-node-1'
-    }
-  ],
-  entityManagerContractAddress: '0x254dffcd3277C0b1660F6d42EFbB754edaBAbC2B',
-  web3ProviderUrl: 'http://audius-protocol-poa-ganache-1',
-  identityServiceUrl: 'http://audius-protocol-identity-service-1',
-  antiAbuseOracleNodes: {
-    endpoints: ['http://audius-protocol-anti-abuse-oracle-1:8000'],
-    registeredAddresses: ['0xF0D5BC18421fa04D0a2A2ef540ba5A9f04014BE3']
+const productionConfig: SdkServicesConfig = {
+  network: {
+    minVersion: '',
+    discoveryNodes: [],
+    storageNodes: [],
+    antiAbuseOracleNodes: {
+      endpoints: [
+        'https://antiabuseoracle.audius.co',
+        'https://audius-oracle.creatorseed.com',
+        'https://oracle.audius.endl.net'
+      ],
+      registeredAddresses: []
+    },
+    identityService: 'https://identityservice.audius.co'
+  },
+  acdc: {
+    entityManagerContractAddress: '0x1Cd8a543596D499B9b6E7a6eC15ECd2B7857Fd64',
+    web3ProviderUrl: 'https://poa-gateway.audius.co'
+  },
+  solana: {
+    claimableTokensProgramAddress:
+      'Ewkv3JahEFRKkcJmpoKB7pXbnUHwjAyXiwEo4ZY2rezQ',
+    rewardManagerProgramAddress: 'DDZDcYdQFEMwcu2Mwo75yGFjJ1mUQyyXLWzhZLEVFcei',
+    rewardManagerStateAddress: '71hWFVYokLaN1PNYzTAWi13EfJ7Xt9VbSWUKsXUT8mxE',
+    paymentRouterProgramAddress: 'paytYpX3LPN98TAeen6bFFeraGSuWnomZmCXjAsoqPa',
+    rpcEndpoint: 'https://audius-fe.rpcpool.com',
+    usdcTokenMint: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
+    wAudioTokenMint: '9LzCMqDgTKYz9Drzqnpgee3SGa89up3a247ypMj2xrqM'
+  }
+}
+
+const stagingConfig: SdkServicesConfig = {
+  network: {
+    minVersion: '',
+    discoveryNodes: [],
+    storageNodes: [],
+    antiAbuseOracleNodes: {
+      endpoints: ['https://antiabuseoracle.staging.audius.co'],
+      registeredAddresses: []
+    },
+    identityService: 'https://identityservice.staging.audius.co'
+  },
+  acdc: {
+    entityManagerContractAddress: '0x1Cd8a543596D499B9b6E7a6eC15ECd2B7857Fd64',
+    web3ProviderUrl: 'https://poa-gateway.staging.audius.co'
+  },
+  solana: {
+    claimableTokensProgramAddress:
+      '2sjQNmUfkV6yKKi4dPR8gWRgtyma5aiymE3aXL2RAZww',
+    rewardManagerProgramAddress: 'CDpzvz7DfgbF95jSSCHLX3ERkugyfgn9Fw8ypNZ1hfXp',
+    rewardManagerStateAddress: 'GaiG9LDYHfZGqeNaoGRzFEnLiwUT7WiC6sA6FDJX9ZPq',
+    paymentRouterProgramAddress: 'sp38CXGL9FoWPp9Avo4fevewEX4UqNkTSTFUPpQFRry',
+    rpcEndpoint: 'https://audius-fe.rpcpool.com',
+    usdcTokenMint: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
+    wAudioTokenMint: 'BELGiMZQ34SDE6x2FUaML2UHDAgBLS64xvhXjX5tBBZo'
+  }
+}
+
+const developmentConfig: SdkServicesConfig = {
+  network: {
+    minVersion: '0.0.0',
+    discoveryNodes: [
+      {
+        delegateOwnerWallet:
+          '0xd09ba371c359f10f22ccda12fd26c598c7921bda3220c9942174562bc6a36fe8',
+        endpoint: 'http://audius-protocol-discovery-provider-1',
+        ownerWallet:
+          '0xd09ba371c359f10f22ccda12fd26c598c7921bda3220c9942174562bc6a36fe8'
+      }
+    ],
+    storageNodes: [
+      {
+        delegateOwnerWallet: '0x0D38e653eC28bdea5A2296fD5940aaB2D0B8875c',
+        endpoint: 'http://audius-protocol-creator-node-1'
+      }
+    ],
+    antiAbuseOracleNodes: {
+      endpoints: ['http://audius-protocol-anti-abuse-oracle-1:8000'],
+      registeredAddresses: ['0xF0D5BC18421fa04D0a2A2ef540ba5A9f04014BE3']
+    },
+    identityService: 'https://audius-protocol-identity-service-1'
+  },
+  acdc: {
+    entityManagerContractAddress: '0x254dffcd3277C0b1660F6d42EFbB754edaBAbC2B',
+    web3ProviderUrl: 'http://audius-protocol-poa-ganache-1'
+  },
+  solana: {
+    claimableTokensProgramAddress:
+      'testHKV1B56fbvop4w6f2cTGEub9dRQ2Euta5VmqdX9',
+    rewardManagerProgramAddress: 'testLsJKtyABc9UXJF8JWFKf1YH4LmqCWBC42c6akPb',
+    rewardManagerStateAddress: 'DJPzVothq58SmkpRb1ATn5ddN2Rpv1j2TcGvM3XsHf1c',
+    paymentRouterProgramAddress: 'apaySbqV1XAmuiGszeN4NyWrXkkMrnuJVoNhzmS1AMa',
+    rpcEndpoint: 'http://audius-protocol-solana-test-validator-1',
+    usdcTokenMint: '26Q7gP8UfkDzi7GMFEQxTJaNJ8D2ybCUjex58M5MLu8y',
+    wAudioTokenMint: '37RCjhgV1qGV2Q54EHFScdxZ22ydRMdKMtVgod47fDP3'
   }
 }
 
 const generateServicesConfig = async (
-  config: EnvironmentConfig
-): Promise<ServicesConfig> => {
+  env: EnvironmentConfig,
+  config: SdkServicesConfig
+): Promise<SdkServicesConfig> => {
   const contracts = new EthContracts({
     ethWeb3Manager: new EthWeb3Manager({
       identityService: new IdentityService({
-        identityServiceEndpoint: config.IDENTITY_SERVICE_URL
+        identityServiceEndpoint: env.IDENTITY_SERVICE_URL
       }),
       web3Config: {
-        ownerWallet: config.ETH_OWNER_WALLET,
-        providers: [config.ETH_PROVIDER_URL],
-        tokenAddress: config.ETH_TOKEN_ADDRESS,
-        registryAddress: config.ETH_REGISTRY_ADDRESS,
+        ownerWallet: env.ETH_OWNER_WALLET,
+        providers: [env.ETH_PROVIDER_URL],
+        tokenAddress: env.ETH_TOKEN_ADDRESS,
+        registryAddress: env.ETH_REGISTRY_ADDRESS,
         claimDistributionContractAddress:
-          config.CLAIM_DISTRIBUTION_CONTRACT_ADDRESS,
-        wormholeContractAddress: config.WORMHOLE_ADDRESS
+          env.CLAIM_DISTRIBUTION_CONTRACT_ADDRESS,
+        wormholeContractAddress: env.WORMHOLE_ADDRESS
       }
     }),
-    tokenContractAddress: config.ETH_TOKEN_ADDRESS,
-    registryAddress: config.ETH_REGISTRY_ADDRESS,
-    claimDistributionContractAddress:
-      config.CLAIM_DISTRIBUTION_CONTRACT_ADDRESS,
-    wormholeContractAddress: config.WORMHOLE_ADDRESS
+    tokenContractAddress: env.ETH_TOKEN_ADDRESS,
+    registryAddress: env.ETH_REGISTRY_ADDRESS,
+    claimDistributionContractAddress: env.CLAIM_DISTRIBUTION_CONTRACT_ADDRESS,
+    wormholeContractAddress: env.WORMHOLE_ADDRESS
   })
 
   const discoveryNodes =
@@ -128,37 +200,35 @@ const generateServicesConfig = async (
   if (!antiAbuseAddresses || antiAbuseAddresses.length === 0) {
     throw Error('Anti Abuse node services not found')
   }
-  const antiAbuseOracleNodes = {
-    endpoints: config.AAO_ENDPOINTS,
-    registeredAddresses: antiAbuseAddresses
-  }
 
   const minVersion = await contracts.getCurrentVersion('discovery-node')
-  return {
-    minVersion,
-    discoveryNodes: discoveryNodes.map(
-      ({ endpoint, delegateOwnerWallet, owner }) => ({
-        endpoint,
-        delegateOwnerWallet,
-        ownerWallet: owner
-      })
-    ),
-    storageNodes: storageNodes.map(({ endpoint, delegateOwnerWallet }) => ({
-      endpoint,
-      delegateOwnerWallet
-    })),
-    antiAbuseOracleNodes,
-    web3ProviderUrl: config.WEB3_PROVIDER_URL,
-    entityManagerContractAddress: config.ENTITY_MANAGER_CONTRACT_ADDRESS,
-    identityServiceUrl: config.IDENTITY_SERVICE_URL
-  }
+
+  config.network.minVersion = minVersion
+  config.network.discoveryNodes = discoveryNodes.map((n) => ({
+    endpoint: n.endpoint,
+    ownerWallet: n.owner,
+    delegateOwnerWallet: n.delegateOwnerWallet
+  }))
+  config.network.storageNodes = storageNodes.map((n) => ({
+    endpoint: n.endpoint,
+    delegateOwnerWallet: n.delegateOwnerWallet
+  }))
+  config.network.antiAbuseOracleNodes.registeredAddresses = antiAbuseAddresses
+
+  return config
 }
 
 const writeServicesConfig = async () => {
-  const production = await generateServicesConfig(envConfigs.production)
-  const staging = await generateServicesConfig(envConfigs.staging)
-  const development = devConfig
-  const config: Record<string, ServicesConfig> = {
+  const production = await generateServicesConfig(
+    envConfigs.production,
+    productionConfig
+  )
+  const staging = await generateServicesConfig(
+    envConfigs.staging,
+    stagingConfig
+  )
+  const development = developmentConfig
+  const config: Record<string, SdkServicesConfig> = {
     development,
     staging,
     production
@@ -171,8 +241,8 @@ const writeServicesConfig = async () => {
  * DO NOT EDIT MANUALLY!
  */
 /* eslint-disable prettier/prettier */
-import type { ServicesConfig } from './types'
-export const servicesConfig: ServicesConfig = ${JSON.stringify(
+import type { SdkServicesConfig } from './types'
+export const ${env}Config: SdkServicesConfig = ${JSON.stringify(
         config[env],
         undefined,
         2

@@ -7,12 +7,11 @@ import {
   addToCollectionUISelectors,
   addToCollectionUIActions
 } from '@audius/common/store'
-import { push as pushRoute } from 'connected-react-router'
 import { capitalize } from 'lodash'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
-import Card from 'components/card-legacy/mobile/Card'
+import { CollectionCard } from 'components/collection'
 import CardLineup from 'components/lineup/CardLineup'
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
 import TextElement, { Type } from 'components/nav/mobile/TextElement'
@@ -57,7 +56,6 @@ const AddToCollection = g(
     trackId,
     trackTitle,
     collectionType,
-    goToRoute,
     close,
     addTrackToPlaylist,
     createAlbum,
@@ -80,15 +78,13 @@ const AddToCollection = g(
 
     const { toast } = useContext(ToastContext)
 
-    const cards = account.playlists.map((playlist: any) => {
+    const cards = account.playlists.map((playlist) => {
       return (
-        <Card
+        <CollectionCard
           key={playlist.playlist_id}
           id={playlist.playlist_id}
-          userId={playlist.owner_id}
-          imageSize={playlist._cover_art_sizes}
-          primaryText={playlist.playlist_name}
-          secondaryText={playlist.ownerName}
+          size='xs'
+          noNavigation
           onClick={() => {
             toast(messages.addedToast)
             addTrackToPlaylist(trackId!, playlist.playlist_id)
@@ -141,7 +137,6 @@ function mapStateToProps(state: AppState) {
 
 function mapDispatchToProps(dispatch: Dispatch) {
   return {
-    goToRoute: (route: string) => dispatch(pushRoute(route)),
     addTrackToPlaylist: (trackId: ID, playlistId: ID) =>
       dispatch(addTrackToPlaylist(trackId, playlistId)),
     createPlaylist: (metadata: Partial<Collection>, trackId: ID) =>

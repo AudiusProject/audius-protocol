@@ -1,14 +1,23 @@
-import { expect, test } from 'vitest'
+import { beforeAll, expect, test } from 'vitest'
 import {
+  DDEXRelease,
   DealEthGated,
   DealFollowGated,
   DealPayGated,
   DealSolGated,
   parseDdexXmlFile,
 } from './parseDelivery'
+import { sources } from './sources'
+
+beforeAll(async () => {
+  sources.load('./sources.test.json')
+})
 
 test('deal types', async () => {
-  const releases = await parseDdexXmlFile('fixtures/dealTypes.xml')
+  const releases = (await parseDdexXmlFile(
+    'dealTest',
+    'fixtures/dealTypes.xml'
+  )) as DDEXRelease[]
 
   expect(releases[1].deal).toMatchObject<Partial<DealPayGated>>({
     audiusDealType: 'PayGated',

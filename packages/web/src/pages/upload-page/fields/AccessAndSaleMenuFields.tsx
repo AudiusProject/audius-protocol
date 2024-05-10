@@ -9,15 +9,17 @@ import {
   RadioGroup,
   IconSpecialAccess,
   IconVisibilityPublic,
-  Text
+  Text,
+  IconQuestionCircle,
+  Hint
 } from '@audius/harmony'
 import cn from 'classnames'
 import { useField } from 'formik'
 
-import { HelpCallout } from 'components/help-callout/HelpCallout'
 import layoutStyles from 'components/layout/layout.module.css'
 import { ModalRadioItem } from 'components/modal-radio/ModalRadioItem'
 import { useFlag } from 'hooks/useRemoteConfig'
+import { pluralize } from 'utils/stringUtils'
 
 import { SingleTrackEditValues } from '../types'
 
@@ -36,8 +38,11 @@ const messages = {
     'This track is marked as a remix. To enable additional availability options, unmark within Remix Settings.',
   done: 'Done',
   public: 'Public (Free to Stream)',
-  publicSubtitle:
-    'Public tracks are visible to all users and appear throughout Audius.',
+  publicSubtitle: (contentType: 'album' | 'track') =>
+    `Public ${pluralize(
+      contentType,
+      2
+    )} are visible to all users and appear throughout Audius.`,
   specialAccess: 'Special Access',
   specialAccessSubtitle:
     'Special Access tracks are only available to users who meet certain criteria, such as following the artist.',
@@ -46,7 +51,9 @@ const messages = {
     "Hidden tracks won't be visible to your followers. Only you will see them on your profile. Anyone who has the link will be able to listen.",
   hiddenSubtitleAlbums:
     'Hidden albums remain invisible to your followers, visible only to you on your profile. They can be shared and listened to via direct link.',
-  hiddenHint: 'Scheduled tracks are hidden by default until release.'
+  hiddenHint: 'Scheduled tracks are hidden by default until release.',
+  publishDisabled:
+    'Publishing is disabled for empty albums and albums containing hidden tracks.'
 }
 
 export type AccesAndSaleMenuFieldsProps = {
@@ -57,6 +64,7 @@ export type AccesAndSaleMenuFieldsProps = {
   isInitiallyUnlisted?: boolean
   isScheduledRelease?: boolean
   initialStreamConditions?: AccessConditions | undefined
+  isPublishDisabled?: boolean
 }
 
 export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
@@ -66,7 +74,8 @@ export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
     isAlbum,
     isInitiallyUnlisted,
     initialStreamConditions,
-    isScheduledRelease
+    isScheduledRelease,
+    isPublishDisabled = false
   } = props
 
   const { isEnabled: isUsdcFlagUploadEnabled } = useFeatureFlag(
@@ -102,19 +111,24 @@ export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
     isAlbum,
     initialStreamConditions: initialStreamConditions ?? null,
     isInitiallyUnlisted: !!isInitiallyUnlisted,
-    isScheduledRelease: !!isScheduledRelease
+    isScheduledRelease: !!isScheduledRelease,
+    isPublishDisabled
   })
 
   return (
     <div className={cn(layoutStyles.col, layoutStyles.gap4)}>
-      {isRemix ? <HelpCallout content={messages.isRemix} /> : null}
+      {isRemix ? (
+        <Hint icon={IconQuestionCircle}>{messages.isRemix}</Hint>
+      ) : null}
       <Text variant='body'>{messages.modalDescription}</Text>
+      {isPublishDisabled ? <Hint>{messages.publishDisabled}</Hint> : null}
       <RadioGroup {...availabilityField} aria-label={messages.title}>
         <ModalRadioItem
           icon={<IconVisibilityPublic className={styles.icon} />}
           label={messages.public}
-          description={messages.publicSubtitle}
+          description={messages.publicSubtitle(isAlbum ? 'album' : 'track')}
           value={StreamTrackAvailabilityType.PUBLIC}
+          disabled={isPublishDisabled}
         />
         {isUsdcUploadEnabled ? (
           <UsdcPurchaseGatedRadioField
@@ -123,6 +137,7 @@ export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
             isAlbum={isAlbum}
             initialStreamConditions={initialStreamConditions}
             isInitiallyUnlisted={isInitiallyUnlisted}
+            isPublishDisabled={isPublishDisabled}
           />
         ) : null}
 
@@ -146,25 +161,27 @@ export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
             isInitiallyUnlisted={isInitiallyUnlisted}
           />
         ) : null}
-        <ModalRadioItem
-          icon={<IconVisibilityHidden />}
-          label={messages.hidden}
-          value={StreamTrackAvailabilityType.HIDDEN}
-          description={
-            isAlbum
-              ? messages.hiddenSubtitleAlbums
-              : messages.hiddenSubtitleTracks
-          }
-          disabled={disableHidden}
-          // isInitiallyUnlisted is undefined on create
-          // show hint on scheduled releases that are in create or already unlisted
-          hintContent={
-            isScheduledRelease && isInitiallyUnlisted !== false
-              ? messages.hiddenHint
-              : ''
-          }
-          checkedContent={isAlbum ? null : <HiddenAvailabilityFields />}
-        />
+        {!isAlbum ? (
+          <ModalRadioItem
+            icon={<IconVisibilityHidden />}
+            label={messages.hidden}
+            value={StreamTrackAvailabilityType.HIDDEN}
+            description={
+              isAlbum
+                ? messages.hiddenSubtitleAlbums
+                : messages.hiddenSubtitleTracks
+            }
+            disabled={disableHidden}
+            // isInitiallyUnlisted is undefined on create
+            // show hint on scheduled releases that are in create or already unlisted
+            hintContent={
+              isScheduledRelease && isInitiallyUnlisted !== false
+                ? messages.hiddenHint
+                : ''
+            }
+            checkedContent={isAlbum ? null : <HiddenAvailabilityFields />}
+          />
+        ) : null}
       </RadioGroup>
     </div>
   )

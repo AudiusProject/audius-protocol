@@ -9,6 +9,7 @@ from src.models.playlists.aggregate_playlist import AggregatePlaylist
 from src.models.playlists.playlist import Playlist
 from src.models.social.repost import Repost, RepostType
 from src.models.social.save import Save, SaveType
+from src.models.users.usdc_purchase import PurchaseType, USDCPurchase
 from src.models.users.user import User
 from src.queries import response_name_constants
 from src.queries.get_playlists import add_users_to_playlists
@@ -67,8 +68,7 @@ def _get_collection_library(args: GetCollectionLibraryArgs, session):
     sort_method = args.get("sort_method", CollectionLibrarySortMethod.added_date)
     sort_direction = args.get("sort_direction", SortDirection.desc)
 
-    # Doesn't yet support album/playlist purchases
-    if not filter_type or filter_type == LibraryFilterType.purchase:
+    if not filter_type:
         raise ValueError("Invalid filter type")
 
     sort_fn = desc if sort_direction == SortDirection.desc else asc
@@ -108,9 +108,17 @@ def _get_collection_library(args: GetCollectionLibraryArgs, session):
         ),
     )
 
+    purchase_base = session.query(
+        USDCPurchase.content_id.label("item_id"),
+        USDCPurchase.created_at.label("item_created_at"),
+    ).filter(
+        USDCPurchase.content_type == PurchaseType.album,
+        USDCPurchase.buyer_user_id == user_id,
+    )
+
     # Union everything for the "all" query
     union_subquery = favorites_base.union_all(
-        reposts_base, own_playlists_base
+        reposts_base, own_playlists_base, purchase_base
     ).subquery(name="union_subquery")
     # Remove dupes
     all_base = (
@@ -129,6 +137,7 @@ def _get_collection_library(args: GetCollectionLibraryArgs, session):
         LibraryFilterType.all: all_base.subquery("library"),
         LibraryFilterType.favorite: favorites_base.subquery(name="favorites_and_own"),
         LibraryFilterType.repost: reposts_base.subquery(name="reposts"),
+        LibraryFilterType.purchase: purchase_base.subquery(name="purchases"),
     }[filter_type]
 
     base_query = (

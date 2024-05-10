@@ -1,6 +1,6 @@
 import sql, { Database } from '@radically-straightforward/sqlite'
-import { DDEXRelease } from './parseDelivery'
 import { Statement } from 'better-sqlite3'
+import { DDEXRelease, DDEXReleaseIds } from './parseDelivery'
 
 const dbLocation = process.env.SQLITE_URL || 'data/dev.db'
 const db = new Database(dbLocation)
@@ -11,22 +11,28 @@ db.migrate(
   sql`
 
 create table if not exists xmls (
+  source text not null,
   xmlUrl text primary key,
   xmlText text not null,
+  messageTimestamp text not null,
   createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
 create table if not exists users (
-  id text primary key,
+  apiKey text, -- app that user authorized
+  id text,
   handle text not null,
   name text not null,
-  createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
+  createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+  primary key (apiKey, id)
 );
 
 create table if not exists releases (
+  source text not null,
   key text primary key,
   ref text,
   xmlUrl text,
+  messageTimestamp text,
   json jsonb,
   status text not null,
 
@@ -53,12 +59,15 @@ create table if not exists s3markers (
 )
 
 export type XmlRow = {
+  source: string
   xmlText: string
   xmlUrl: string
+  messageTimestamp: string
   createdAt: string
 }
 
 export type UserRow = {
+  apiKey: string
   id: string
   handle: string
   name: string
@@ -66,18 +75,22 @@ export type UserRow = {
 }
 
 export enum ReleaseProcessingStatus {
-  Parsed = 'Parsed',
   Blocked = 'Blocked',
+  PublishPending = 'PublishPending',
   Published = 'Published',
   Failed = 'Failed',
+  DeletePending = 'DeletePending',
   Deleted = 'Deleted',
 }
 
 export type ReleaseRow = {
+  source: string
   key: string
   xmlUrl: string
+  messageTimestamp: string
   json: string
   status: ReleaseProcessingStatus
+  createdAt: string
 
   entityType?: 'track' | 'album'
   entityId?: string
@@ -121,9 +134,23 @@ export const userRepo = {
     return db.all<UserRow>(sql`select * from users`)
   },
 
-  match(artistNames: string[]) {
+  find(example: Partial<UserRow>) {
+    return dbSelect('users', example) as UserRow[]
+  },
+
+  findOne(example: Partial<UserRow>) {
+    return dbSelectOne('users', example) as UserRow | undefined
+  },
+
+  upsert(user: Partial<UserRow>) {
+    dbUpsert('users', user)
+  },
+
+  match(apiKey: string, artistNames: string[]) {
     const artistSet = new Set(artistNames.map(lowerAscii))
-    const users = db.all<UserRow>(sql`select * from users`)
+    const users = db.all<UserRow>(
+      sql`select * from users where apiKey = ${apiKey}`
+    )
     for (const u of users) {
       if (
         artistSet.has(lowerAscii(u.name)) ||
@@ -152,11 +179,8 @@ export const xmlRepo = {
     return db.get<XmlRow>(sql`select * from xmls where xmlUrl = ${xmlUrl}`)
   },
 
-  upsert(xmlUrl: string, xmlText: string) {
-    dbUpsert('xmls', {
-      xmlUrl,
-      xmlText,
-    })
+  upsert(row: Partial<XmlRow>) {
+    dbUpsert('xmls', row)
   },
 }
 
@@ -170,6 +194,20 @@ type FindReleaseParams = {
 }
 
 export const releaseRepo = {
+  // todo: this is incomplete, and I'm not sure how to order which ID to use first.
+  //   go version used xml file name
+  //   but a single file can contain multiple releases
+  //   so still need a way to pick an identifier, right?
+  chooseReleaseId(releaseIds: DDEXReleaseIds) {
+    const key = releaseIds.isrc || releaseIds.icpn || releaseIds.grid
+    if (!key) {
+      const msg = `failed to chooseReleaseId: ${JSON.stringify(releaseIds)}`
+      console.log(msg)
+      throw new Error(msg)
+    }
+    return key
+  },
+
   all(params?: FindReleaseParams) {
     params ||= {}
     const rows = db.all<ReleaseRow>(sql`
@@ -177,15 +215,20 @@ export const releaseRepo = {
       where 1=1
 
       -- pending publish
-      $${
-        params.pendingPublish
-          ? sql` and status in ('Parsed', 'Failed') and publishErrorCount < 5 `
-          : sql``
-      }
+      $${ifdef(
+        params.pendingPublish,
+        sql`
+          and status in (
+            ${ReleaseProcessingStatus.PublishPending},
+            ${ReleaseProcessingStatus.Failed},
+            ${ReleaseProcessingStatus.DeletePending}
+          )
+          and publishErrorCount < 5 `
+      )}
 
-      $${params.status ? sql` and status = ${params.status} ` : sql``}
+      $${ifdef(params.status, sql` and status = ${params.status} `)}
 
-      order by xmlUrl, ref
+      order by createdAt
     `)
 
     for (const row of rows) {
@@ -207,26 +250,79 @@ export const releaseRepo = {
     dbUpdate('releases', 'key', r)
   },
 
-  upsert(xmlUrl: string, release: DDEXRelease) {
-    const key = release.isrc || release.icpn || release.releaseIds.grid
-    if (!key) {
-      console.log(`No ID for release`, release)
-      throw new Error('No ID for release')
+  upsert: db.transaction(
+    (
+      source: string,
+      xmlUrl: string,
+      messageTimestamp: string,
+      release: DDEXRelease
+    ) => {
+      const key = releaseRepo.chooseReleaseId(release.releaseIds)
+      const prior = releaseRepo.get(key)
+      const json = JSON.stringify(release)
+
+      // if prior exists and is newer, skip
+      if (prior && prior.messageTimestamp > messageTimestamp) {
+        console.log(`skipping ${xmlUrl} because ${key} is newer`)
+        return
+      }
+
+      // if same xmlUrl + json, skip
+      // may want some smarter json compare here
+      // if this is causing spurious sdk updates to be issued
+      if (prior && prior.xmlUrl == xmlUrl && prior.json == json) {
+        return
+      }
+
+      const status: ReleaseRow['status'] = release.problems.length
+        ? ReleaseProcessingStatus.Blocked
+        : ReleaseProcessingStatus.PublishPending
+
+      dbUpsert('releases', {
+        source,
+        key,
+        status,
+        ref: release.ref,
+        xmlUrl,
+        messageTimestamp,
+        json,
+        updatedAt: new Date().toISOString(),
+      } as Partial<ReleaseRow>)
     }
+  ),
 
-    const status: ReleaseRow['status'] = release.problems.length
-      ? ReleaseProcessingStatus.Blocked
-      : ReleaseProcessingStatus.Parsed
+  markForDelete: db.transaction(
+    (
+      source: string,
+      xmlUrl: string,
+      messageTimestamp: string,
+      releaseIds: DDEXReleaseIds
+    ) => {
+      // here we do PK lookup using the "best" id
+      // but we may need to try to find by all the different releaseIds
+      // if it's not consistent
+      const key = releaseRepo.chooseReleaseId(releaseIds)
+      const prior = releaseRepo.get(key)
 
-    dbUpsert('releases', {
-      key,
-      status,
-      ref: release.ref,
-      xmlUrl,
-      json: JSON.stringify(release),
-      updatedAt: new Date().toISOString(),
-    } as Partial<ReleaseRow>)
-  },
+      if (!prior) {
+        console.log(`got purge release but no prior ${key}`)
+        return
+      }
+
+      if (prior.messageTimestamp >= messageTimestamp) {
+        console.log(`skipping delete ${key}`)
+        return
+      }
+
+      releaseRepo.update({
+        key,
+        status: ReleaseProcessingStatus.DeletePending,
+        source,
+        xmlUrl,
+        messageTimestamp,
+      })
+    }
+  ),
 
   addPublishError(key: string, err: Error) {
     const status = ReleaseProcessingStatus.Failed
@@ -254,6 +350,22 @@ function toStmt(rawSql: string) {
   return stmtCache[rawSql]
 }
 
+export function dbSelect(table: string, data: Record<string, any>) {
+  const wheres = Object.keys(data)
+    .map((k) => ` ${k} = ? `)
+    .join(' AND ')
+  const rawSql = `select * from ${table} where ${wheres}`
+  return toStmt(rawSql).all(...Object.values(data))
+}
+
+export function dbSelectOne(table: string, data: Record<string, any>) {
+  const wheres = Object.keys(data)
+    .map((k) => ` ${k} = ? `)
+    .join(' AND ')
+  const rawSql = `select * from ${table} where ${wheres}`
+  return toStmt(rawSql).get(...Object.values(data))
+}
+
 export function dbUpdate(
   table: string,
   pkField: string,
@@ -273,7 +385,7 @@ export function dbUpdate(
   return toStmt(rawSql).run(...Object.values(data), data[pkField])
 }
 
-export function dbUpsert(table: string, data: Record<string, any>) {
+function dbUpsert(table: string, data: Record<string, any>) {
   const fields = Object.keys(data).join(',')
   const qs = Object.keys(data)
     .map(() => '?')
@@ -285,4 +397,8 @@ export function dbUpsert(table: string, data: Record<string, any>) {
     insert into ${table} (${fields}) values (${qs})
     on conflict do update set ${excludes}`
   return toStmt(rawSql).run(...Object.values(data))
+}
+
+function ifdef(obj: any, snippet: any) {
+  return obj ? snippet : sql``
 }

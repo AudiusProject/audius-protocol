@@ -293,7 +293,7 @@ const ConnectedPlaylistTile = ({
       playlistName: title,
       isPublic: !isUnlisted,
       isOwner,
-      includeEmbed: true,
+      includeEmbed: !isUnlisted && !isStreamGated,
       includeShare: false,
       includeRepost: false,
       includeFavorite: false,
@@ -345,7 +345,7 @@ const ConnectedPlaylistTile = ({
   }, [setRepostUsers, id, setModalVisibility])
 
   const renderStats = () => {
-    const contentTitle = 'track' // undefined,  playlist or album -  undefined is track
+    const contentTitle = isAlbum ? 'album' : 'playlist'
     const sz = 'large'
     return (
       <div className={cn(styles.socialInfo)}>

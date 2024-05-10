@@ -4,6 +4,7 @@ import { takeLatest } from 'redux-saga/effects'
 import { call, put, race, select, take } from 'typed-redux-saga'
 
 import { PurchaseableContentMetadata, isPurchaseableAlbum } from '~/hooks'
+import { Kind } from '~/models'
 import { FavoriteSource, Name } from '~/models/Analytics'
 import { ErrorLevel } from '~/models/ErrorReporting'
 import { ID } from '~/models/Identifiers'
@@ -59,6 +60,7 @@ import {
 } from '~/store/ui/modals/coinflow-onramp-modal'
 import { BN_USDC_CENT_WEI } from '~/utils/wallet'
 
+import { cacheActions } from '../cache'
 import { pollGatedContent } from '../gated-content/sagas'
 import { updateGatedContentStatus } from '../gated-content/slice'
 import { saveCollection } from '../social/collections/actions'
@@ -300,6 +302,37 @@ function* pollForPurchaseConfirmation({
     currentUserId,
     isSourceTrack: true
   })
+
+  if (contentType === PurchaseableContentType.ALBUM) {
+    const { metadata } = yield* call(getContentInfo, {
+      contentId,
+      contentType
+    })
+    if (
+      'playlist_contents' in metadata &&
+      metadata.playlist_contents.track_ids
+    ) {
+      const apiClient = yield* getContext('apiClient')
+      for (const trackId of metadata.playlist_contents.track_ids) {
+        const track = yield* call([apiClient, 'getTrack'], {
+          id: trackId.track,
+          currentUserId
+        })
+        if (track) {
+          yield* put(
+            cacheActions.update(Kind.TRACKS, [
+              {
+                id: track.track_id,
+                metadata: {
+                  access: track.access
+                }
+              }
+            ])
+          )
+        }
+      }
+    }
+  }
 }
 
 type PurchaseWithCoinflowArgs = {
@@ -646,6 +679,7 @@ function* doStartPurchaseContentFlow({
       additionalInfo: { contentId, contentType }
     })
     yield* put(purchaseContentFlowFailed({ error }))
+    yield* put(updateGatedContentStatus({ contentId, status: 'LOCKED' }))
     yield* call(
       track,
       make({

@@ -10,11 +10,11 @@ import {
   ModalFooter,
   IconMessageBlock,
   IconInfo,
-  Button
+  Button,
+  Hint
 } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 
-import { HelpCallout } from 'components/help-callout/HelpCallout'
 import { UserNameAndBadges } from 'components/user-name-and-badges/UserNameAndBadges'
 import { track, make } from 'services/analytics'
 
@@ -74,7 +74,7 @@ export const BlockUserConfirmationModal = ({
       </ModalHeader>
       <ModalContent className={styles.content}>
         <div>{messages.content(user, isReportAbuse)}</div>
-        <HelpCallout icon={<IconInfo />} content={messages.callout} />
+        <Hint icon={IconInfo}>{messages.callout}</Hint>
       </ModalContent>
       <ModalFooter className={styles.footer}>
         <Button variant='secondary' onClick={onClose} fullWidth>

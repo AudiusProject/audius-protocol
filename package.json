@@ -1,6 +1,6 @@
 {
   "name": "root",
-  "version": "1.5.78",
+  "version": "1.5.79",
   "workspaces": [
     "packages/*",
     "packages/discovery-provider/plugins/pedalboard/apps/*",
@@ -106,6 +106,7 @@
     "@escape.tech/mookme": "2.4.1",
     "@redux-devtools/remote": "0.8.0",
     "@web3modal/ethers": "4.1.0",
+    "react-native-google-cast": "4.6.2",
     "pg": "8.8.0"
   },
   "overrides": {

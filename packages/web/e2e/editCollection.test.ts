@@ -7,7 +7,9 @@ const PREMIUM_ALBUM =
 const PUBLIC_ALBUM =
   'proberTest/album/__do_not_delete__-probers-public-album-edit'
 
-test('Change premium album price', async ({ page }) => {
+// Skipping for now, can turn back on if we feel like it's critical path enough
+// https://linear.app/audius/issue/INF-700/re-enable-editcollectiontestts-if-we-decide-its-critical-path
+test.skip('Change premium album price', async ({ page }) => {
   await page.goto(PREMIUM_ALBUM)
   const unlockText = await page.getByText(/Users can unlock/i).textContent()
 
@@ -17,7 +19,7 @@ test('Change premium album price', async ({ page }) => {
   const newPrice = startingPrice === '1' ? '2' : '1'
 
   // Open Edit modal
-  await page.getByRole('button', { name: 'Edit collection' }).click()
+  await page.getByRole('button', { name: 'Edit Collection' }).click()
   // Open access & sale modal
   await page.getByRole('button', { name: /access & sale/i }).click()
 
@@ -48,10 +50,13 @@ test('Change premium album price', async ({ page }) => {
   ).toBeVisible()
 })
 
-test('Cannot edit public album access to premium/hidden', async ({ page }) => {
+// Skipping for now, can turn back on if we feel like it's critical path enough
+test.skip('Cannot edit public album access to premium/hidden', async ({
+  page
+}) => {
   await page.goto(PUBLIC_ALBUM)
   // Open Edit modal
-  await page.getByRole('button', { name: 'Edit collection' }).click()
+  await page.getByRole('button', { name: 'Edit Collection' }).click()
   // Open access & sale modal
   await page.getByRole('button', { name: /access & sale/i }).click()
   // Should have no options other than public

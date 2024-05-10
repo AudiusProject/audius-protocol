@@ -56,9 +56,7 @@ export const Tile = forwardRef(
         {...other}
       >
         {dogEar ? (
-          <div className={styles.borderOffset}>
-            <DogEar type={dogEar} />
-          </div>
+          <DogEar type={dogEar} className={styles.borderOffset} />
         ) : null}
         {children}
       </RootComponent>

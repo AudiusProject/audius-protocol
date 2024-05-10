@@ -105,5 +105,8 @@ export const DownloadStatusIndicator = (
         return null
     }
   }
-  return <View style={style}>{renderIndicator()}</View>
+
+  const indicator = renderIndicator()
+  if (!indicator) return null
+  return <View style={style}>{indicator}</View>
 }

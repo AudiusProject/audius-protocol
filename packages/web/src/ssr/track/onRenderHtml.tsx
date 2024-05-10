@@ -64,7 +64,6 @@ export default function render(
         heroTrack={track}
         user={track.user}
         userId={track.user.id}
-        // TODO: Check these
         hasValidRemixParent={false}
         heroPlaying={false}
         previewing={false}

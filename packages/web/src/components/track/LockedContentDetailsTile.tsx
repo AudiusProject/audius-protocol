@@ -9,6 +9,8 @@ import {
 } from '@audius/common/models'
 import { getDogEarType, Nullable } from '@audius/common/utils'
 import {
+  Flex,
+  Text,
   IconCart,
   IconCollectible,
   IconComponent,
@@ -26,6 +28,7 @@ import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 import styles from './LockedContentDetailsTile.module.css'
 
 const messages = {
+  by: 'By',
   collectibleGated: 'COLLECTIBLE GATED',
   specialAccess: 'SPECIAL ACCESS',
   premiumTrack: (contentType: 'track' | 'album') =>
@@ -36,12 +39,14 @@ export type LockedContentDetailsTileProps = {
   metadata: PurchaseableContentMetadata | Track | Collection
   owner: UserMetadata
   showLabel?: boolean
+  disabled?: boolean
 }
 
 export const LockedContentDetailsTile = ({
   metadata,
   owner,
-  showLabel = true
+  showLabel = true,
+  disabled = false
 }: LockedContentDetailsTileProps) => {
   const { stream_conditions: streamConditions } = metadata
   const isAlbum = 'playlist_id' in metadata
@@ -89,7 +94,17 @@ export const LockedContentDetailsTile = ({
   }
 
   return (
-    <div className={styles.details}>
+    <Flex
+      alignItems='center'
+      gap='l'
+      p='l'
+      border='strong'
+      borderRadius='m'
+      backgroundColor='surface1'
+      css={{
+        position: 'relative'
+      }}
+    >
       <DynamicImage
         wrapperClassName={styles.imageWrapper}
         className={styles.image}
@@ -97,13 +112,19 @@ export const LockedContentDetailsTile = ({
         aria-label={label}
       />
       {dogEarType ? (
-        <div className={styles.dogEar}>
+        <Flex
+          css={{
+            position: 'absolute',
+            top: -1,
+            left: -1
+          }}
+        >
           <DogEar type={dogEarType} />
-        </div>
+        </Flex>
       ) : null}
-      <div className={styles.textWrapper}>
+      <Flex css={{ overflow: 'hidden' }}>
         {showLabel && IconComponent && message ? (
-          <div
+          <Flex
             className={cn(styles.gatedContentLabel, {
               [styles.usdcContentLabel]: isUSDCPurchaseGated
             })}
@@ -116,15 +137,24 @@ export const LockedContentDetailsTile = ({
                   : color.special.blue
               }
             />
-            <span>{message}</span>
-          </div>
+            <Text>{message}</Text>
+          </Flex>
         ) : null}
-        <p className={styles.title}>{title}</p>
-        <div className={styles.owner}>
-          <span className={styles.by}>By</span>
-          <UserLink userId={owner.user_id} className={styles.ownerName} />
-        </div>
-      </div>
-    </div>
+        <Flex w='100%' direction='column' gap='s'>
+          <Text ellipses variant='heading'>
+            {title}
+          </Text>
+          <Text variant='title'>
+            <Text color='subdued'>{messages.by}</Text>{' '}
+            <UserLink
+              textVariant='title'
+              strength='weak'
+              userId={owner.user_id}
+              disabled={disabled}
+            />
+          </Text>
+        </Flex>
+      </Flex>
+    </Flex>
   )
 }

@@ -21,6 +21,11 @@ import {
   completeFollowArtists
 } from 'common/store/pages/signon/actions'
 import { getGenres } from 'common/store/pages/signon/selectors'
+import {
+  FollowArtistCard,
+  FollowArtistTileSkeleton
+} from 'components/follow-artist-card/FollowArtistCard'
+import { SelectArtistsPreviewContextProvider } from 'components/follow-artist-card/selectArtistsPreviewContext'
 import { useMedia } from 'hooks/useMedia'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { env } from 'services/env'
@@ -28,10 +33,6 @@ import { useSelector } from 'utils/reducer'
 import { SIGN_UP_APP_CTA_PAGE, SIGN_UP_COMPLETED_REDIRECT } from 'utils/route'
 
 import { AccountHeader } from '../components/AccountHeader'
-import {
-  FollowArtistCard,
-  FollowArtistTileSkeleton
-} from '../components/FollowArtistCard'
 import { PreviewArtistHint } from '../components/PreviewArtistHint'
 import {
   Heading,
@@ -39,7 +40,6 @@ import {
   PageFooter,
   ScrollView
 } from '../components/layout'
-import { SelectArtistsPreviewContextProvider } from '../utils/selectArtistsPreviewContext'
 
 const AnimatedFlex = animated(Flex)
 
@@ -111,7 +111,9 @@ export const SelectArtistsPage = () => {
     Status.LOADING
 
   // Note: this doesn't catch when running `web:prod`
-  const isDevEnvironment = env.ENVIRONMENT === 'development'
+  const isDevEnvironment =
+    env.ENVIRONMENT === 'development' ||
+    window.localStorage.getItem('FORCE_DEV') === 'true'
   // This a workaround flag for local envs that don't have any artists and get stuck at this screen
   const noArtistsSkipValidation = artists?.length === 0 && isDevEnvironment
 

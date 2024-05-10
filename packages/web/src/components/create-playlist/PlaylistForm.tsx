@@ -77,6 +77,9 @@ const PlaylistForm = ({
     description: metadata.description ?? ''
   }
 
+  const hasNoHiddenTracks =
+    metadata.tracks?.every((track) => track.is_unlisted === false) ?? false
+
   return (
     <Formik<EditPlaylistValues>
       initialValues={initialValues}
@@ -107,9 +110,10 @@ const PlaylistForm = ({
             </Flex>
           </Flex>
           {isAlbum ? (
-            <Flex>
-              <AccessAndSaleField isAlbum />
-            </Flex>
+            <AccessAndSaleField
+              isAlbum
+              isPublishDisabled={metadata.is_private && !hasNoHiddenTracks}
+            />
           ) : null}
           <EditActions
             deleteText={

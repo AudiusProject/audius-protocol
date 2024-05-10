@@ -706,7 +706,7 @@ export const audiusBackend = ({
             getRemoteVar(IntKeys.DISCOVERY_NODE_MAX_BLOCK_DIFF) ?? undefined,
 
           discoveryNodeSelector,
-          enableUserIdOverride: isManagerModeEnabled
+          enableUserWalletOverride: isManagerModeEnabled
         },
         identityServiceConfig:
           AudiusLibs.configIdentityService(identityServiceUrl),

@@ -1,18 +1,20 @@
-import type { IconComponent } from 'app/harmony-native/icons'
+import type { ReactNode } from 'react'
 
+import { IconQuestionCircle, type IconComponent } from '../../icons'
+import { Text } from '../Text/Text'
 import type { PaperProps } from '../layout'
-import { Paper } from '../layout'
+import { Flex, Paper } from '../layout'
 
 export type HintProps = {
-  icon: IconComponent
+  icon?: IconComponent
+  actions?: ReactNode
 } & PaperProps
 
 export const Hint = (props: HintProps) => {
-  const { icon: Icon, children, ...other } = props
+  const { icon: Icon = IconQuestionCircle, children, actions, ...other } = props
   return (
     <Paper
       role='alert'
-      direction='row'
       gap='l'
       ph='l'
       pv='m'
@@ -20,13 +22,19 @@ export const Hint = (props: HintProps) => {
       backgroundColor='surface2'
       shadow='flat'
       border='strong'
-      // Width 100% is necessary to allow for text wrapping inside
-      // the flex container that wraps children
-      style={{ width: '100%' }}
       {...other}
     >
-      <Icon size='l' color='default' />
-      {children}
+      <Flex gap='l' alignItems='center' direction='row'>
+        <Icon size='l' color='default' />
+        <Text variant='body' flexShrink={1}>
+          {children}
+        </Text>
+      </Flex>
+      {actions ? (
+        <Flex pl='unit10' gap='l'>
+          {actions}
+        </Flex>
+      ) : null}
     </Paper>
   )
 }

@@ -1,5 +1,7 @@
 import { ChallengeId } from './api/challenges/types'
-import { developmentConfig, productionConfig, stagingConfig } from './config'
+import { developmentConfig } from './config/development'
+import { productionConfig } from './config/production'
+import { stagingConfig } from './config/staging'
 import { sdk } from './sdk'
 import { DiscoveryNodeSelector } from './services'
 import { Genre } from './types/Genre'

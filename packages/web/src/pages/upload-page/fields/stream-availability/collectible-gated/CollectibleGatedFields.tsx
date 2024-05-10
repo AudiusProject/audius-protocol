@@ -9,12 +9,11 @@ import {
 } from '@audius/common/models'
 import { collectiblesSelectors } from '@audius/common/store'
 import { Nullable } from '@audius/common/utils'
-import { Box, IconInfo } from '@audius/harmony'
+import { Box, Hint, IconInfo } from '@audius/harmony'
 import { useField } from 'formik'
 import { useSelector } from 'react-redux'
 
 import DropdownInput from 'components/ai-attribution-modal/DropdownInput'
-import { HelpCallout } from 'components/help-callout/HelpCallout'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 
 import {
@@ -175,10 +174,7 @@ export const CollectibleGatedFields = (props: CollectibleGatedFieldsProps) => {
       />
       {downloadConditions ? (
         <Box mt='l'>
-          <HelpCallout
-            icon={<IconInfo />}
-            content={messages.premiumDownloads}
-          />
+          <Hint icon={IconInfo}>{messages.premiumDownloads}</Hint>
         </Box>
       ) : null}
     </div>

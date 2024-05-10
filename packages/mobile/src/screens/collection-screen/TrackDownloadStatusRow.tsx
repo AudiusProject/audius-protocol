@@ -35,7 +35,7 @@ export const TrackDownloadStatusRow = (props: TrackDownloadStatusRowProps) => {
     [trackId]
   )
   const isAvailableForDownload =
-    track &&
+    !!track &&
     (track.has_current_user_saved || track.playlist_owner_id === currentUserId)
 
   return (

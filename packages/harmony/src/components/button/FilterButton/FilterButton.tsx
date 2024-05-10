@@ -84,7 +84,7 @@ export const FilterButton = forwardRef<HTMLButtonElement, FilterButtonProps>(
       borderRadius: cornerRadius.s,
       color:
         variant === 'fillContainer' && selection !== null
-          ? color.special.white
+          ? color.static.white
           : color.text.default,
       gap: spacing.xs,
       fontSize: typography.size.s,

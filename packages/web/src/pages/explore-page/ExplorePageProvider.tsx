@@ -5,7 +5,6 @@ import {
   explorePageSelectors,
   explorePageActions
 } from '@audius/common/store'
-import { formatCount } from '@audius/common/utils'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { withRouter, RouteComponentProps } from 'react-router-dom'
@@ -48,17 +47,6 @@ const ExplorePage = ({
     fetchExplore()
   }, [fetchExplore])
 
-  const formatPlaylistCardSecondaryText = (saves: number, tracks: number) => {
-    const savesText = saves === 1 ? 'Favorite' : 'Favorites'
-    const tracksText = tracks === 1 ? 'Track' : 'Tracks'
-    return `${formatCount(saves)} ${savesText} • ${tracks} ${tracksText}`
-  }
-
-  const formatProfileCardSecondaryText = (followers: number) => {
-    const followersText = followers === 1 ? 'Follower' : 'Followers'
-    return `${formatCount(followers)} ${followersText}`
-  }
-
   const childProps = {
     title: messages.title,
     pageTitle: messages.pageTitle,
@@ -68,8 +56,6 @@ const ExplorePage = ({
     playlists: explore.playlists,
     profiles: explore.profiles,
     status: explore.status,
-    formatPlaylistCardSecondaryText,
-    formatProfileCardSecondaryText,
 
     // Props from dispatch
     goToRoute

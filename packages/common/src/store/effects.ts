@@ -7,7 +7,7 @@ import {
 } from 'typed-redux-saga'
 
 import { ErrorLevel } from '~/models/ErrorReporting'
-import { FeatureFlags } from '~/services'
+import { FeatureFlags } from '~/services/remote-config/feature-flags'
 import {
   compareSDKResponse,
   SDKMigrationFailedError

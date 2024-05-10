@@ -3,7 +3,7 @@ import { DogEarType } from '@audius/common/models'
 import { cacheCollectionsSelectors } from '@audius/common/store'
 import { useSelector } from 'react-redux'
 
-import { DogEar } from '../core'
+import { DogEar } from 'app/components/core'
 
 const { getCollection } = cacheCollectionsSelectors
 

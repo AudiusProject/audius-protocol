@@ -36,7 +36,7 @@ const useGetTrackUrl = (artistId: ID) => {
 
   const { data: artistTracks } = useGetUserTracksByHandle(
     {
-      handle: artist?.handle,
+      handle: artist?.handle ?? '',
       currentUserId: null
     },
     { disabled: !artist?.handle }

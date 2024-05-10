@@ -105,6 +105,10 @@ const RenderForm = ({
     usePurchaseContentFormState({ price })
   const [, , { setValue: setPurchaseMethod }] = useField(PURCHASE_METHOD)
   const currentPageIndex = pageToPageIndex(page)
+  const isLinkDisabled =
+    stage === PurchaseContentStage.START ||
+    stage === PurchaseContentStage.PURCHASING ||
+    stage === PurchaseContentStage.CONFIRMING_PURCHASE
 
   const { submitForm, resetForm } = useFormikContext()
   const { history } = useHistoryContext()
@@ -156,6 +160,7 @@ const RenderForm = ({
                 showLabel={false}
                 metadata={metadata}
                 owner={metadata.user}
+                disabled={isLinkDisabled}
               />
               <PurchaseContentFormFields
                 stage={stage}
@@ -220,10 +225,10 @@ export const PremiumContentPurchaseModal = () => {
 
   const { data: user } = useGetUserById(
     {
-      id: track?.owner_id ?? album?.playlist_owner_id,
+      id: track?.owner_id ?? album?.playlist_owner_id ?? 0,
       currentUserId
     },
-    { disabled: !(track?.owner_id ?? album?.playlist_owner_id) }
+    { disabled: !(track?.owner_id && album?.playlist_owner_id) }
   )
   const metadata = {
     ...(isAlbum ? album : track),

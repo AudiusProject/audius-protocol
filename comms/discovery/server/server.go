@@ -741,10 +741,12 @@ func (ss *ChatServer) doWebsocketTest() error {
 	}
 
 	wsUrl = wsUrl.JoinPath("/comms/debug/ws")
+	slog.Info("testing ws connection", wsUrl)
 
 	ctx := context.Background()
 	con, _, _, err := ws.Dial(ctx, wsUrl.String())
 	if err != nil {
+		slog.Info("ws connection error "+err.Error(), wsUrl)
 		return err
 	}
 	return con.Close()

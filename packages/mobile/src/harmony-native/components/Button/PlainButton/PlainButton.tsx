@@ -40,7 +40,6 @@ export const PlainButton = (props: PlainButtonProps) => {
   const defaultTextStyles: TextStyle = {
     fontFamily: typography.fontByWeight.bold,
     fontSize: typography.size.s,
-    fontWeight: `${typography.weight.bold}` as TextStyle['fontWeight'],
     lineHeight: typography.lineHeight.s,
     textTransform: 'capitalize'
   }
@@ -52,7 +51,6 @@ export const PlainButton = (props: PlainButtonProps) => {
   const largeTextStyles: TextStyle = {
     fontFamily: typography.fontByWeight.bold,
     fontSize: typography.size.l,
-    fontWeight: `${typography.weight.bold}` as TextStyle['fontWeight'],
     lineHeight: typography.lineHeight.m,
     textTransform: 'capitalize'
   }

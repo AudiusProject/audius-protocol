@@ -165,7 +165,11 @@ const RewardPanel = ({
         formatNumberCommas(challenge?.max_steps?.toString() ?? '')
       )
     } else {
-      progressLabelFilled = progressLabel ?? ''
+      progressLabelFilled = fillString(
+        progressLabel ?? '',
+        formatNumberCommas(challenge?.current_step_count?.toString() ?? ''),
+        formatNumberCommas(challenge?.max_steps?.toString() ?? '')
+      )
     }
   } else if (challenge?.challenge_type === 'aggregate') {
     // Count down
@@ -178,13 +182,11 @@ const RewardPanel = ({
     )
   } else {
     // Count up
-    progressLabelFilled = progressLabel
-      ? fillString(
-          progressLabel,
-          formatNumberCommas(challenge?.current_step_count?.toString() ?? ''),
-          formatNumberCommas(challenge?.max_steps?.toString() ?? '')
-        )
-      : ''
+    progressLabelFilled = fillString(
+      progressLabel ?? '',
+      formatNumberCommas(challenge?.current_step_count?.toString() ?? ''),
+      formatNumberCommas(challenge?.max_steps?.toString() ?? '')
+    )
   }
   const buttonMessage = needsDisbursement
     ? messages.claimReward
@@ -252,11 +254,11 @@ const RewardPanel = ({
 }
 
 const ClaimAllPanel = () => {
-  const isMobile = useIsMobile()
+  const isMobile = useIsMobile() || window.innerWidth < 1080
   const wm = useWithMobileStyle(styles.mobile)
   const { cooldownChallenges, cooldownAmount, claimableAmount, isEmpty } =
     useChallengeCooldownSchedule({ multiple: true })
-
+  const claimable = claimableAmount > 0
   const [, setClaimAllRewardsVisibility] = useModalState('ClaimAllRewards')
   const onClickClaimAllRewards = useCallback(() => {
     setClaimAllRewardsVisibility(true)
@@ -264,6 +266,13 @@ const ClaimAllPanel = () => {
   const onClickMoreInfo = useCallback(() => {
     setClaimAllRewardsVisibility(true)
   }, [setClaimAllRewardsVisibility])
+  const handleClick = useCallback(() => {
+    if (claimable) {
+      onClickClaimAllRewards()
+    } else if (cooldownAmount > 0) {
+      onClickMoreInfo()
+    }
+  }, [claimableAmount, cooldownAmount, onClickClaimAllRewards, onClickMoreInfo])
 
   if (isMobile) {
     return (
@@ -274,18 +283,21 @@ const ClaimAllPanel = () => {
         alignItems='center'
         alignSelf='stretch'
         justifyContent='space-between'
-        m='s'
+        css={{ cursor: 'pointer' }}
+        onClick={handleClick}
       >
         <Flex direction='column' alignItems='start' w='100%'>
           <Flex gap='s' alignItems='center'>
-            <IconTokenGold
-              height={24}
-              width={24}
-              aria-label={messages.goldAudioToken}
-            />
+            {claimable ? (
+              <IconTokenGold
+                height={24}
+                width={24}
+                aria-label={messages.goldAudioToken}
+              />
+            ) : null}
             {isEmpty ? null : (
               <Text color='accent' variant='title' size='l'>
-                {claimableAmount > 0
+                {claimable
                   ? messages.totalReadyToClaim
                   : messages.totalUpcomingRewards}
               </Text>
@@ -306,14 +318,14 @@ const ClaimAllPanel = () => {
           ) : null}
           <Box mt='l' mb='xl'>
             <Text variant='body' textAlign='left' size='s'>
-              {claimableAmount > 0
+              {claimable
                 ? `${claimableAmount} ${messages.available} ${messages.now}`
                 : messages.availableMessage(
                     formatCooldownChallenges(cooldownChallenges)
                   )}
             </Text>
           </Box>
-          {claimableAmount > 0 ? (
+          {claimable ? (
             <Button
               onClick={onClickClaimAllRewards}
               iconRight={IconArrow}
@@ -345,13 +357,17 @@ const ClaimAllPanel = () => {
       alignSelf='stretch'
       justifyContent='space-between'
       m='s'
+      css={{ cursor: 'pointer' }}
+      onClick={handleClick}
     >
       <Flex gap='l' alignItems='center'>
-        <IconTokenGold
-          height={48}
-          width={48}
-          aria-label={messages.goldAudioToken}
-        />
+        {claimableAmount > 0 ? (
+          <IconTokenGold
+            height={48}
+            width={48}
+            aria-label={messages.goldAudioToken}
+          />
+        ) : null}
         <Flex direction='column'>
           <Flex>
             {isEmpty ? null : (

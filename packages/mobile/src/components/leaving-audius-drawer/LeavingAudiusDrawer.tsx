@@ -3,12 +3,10 @@ import React from 'react'
 import { useLeavingAudiusModal } from '@audius/common/store'
 import { View } from 'react-native'
 
-import { IconExternalLink, IconInfo } from '@audius/harmony-native'
+import { Hint, IconExternalLink, IconInfo } from '@audius/harmony-native'
 import { Button, Text, useLink } from 'app/components/core'
 import Drawer from 'app/components/drawer/Drawer'
 import { makeStyles } from 'app/styles'
-
-import { HelpCallout } from '../help-callout/HelpCallout'
 
 const messages = {
   title: 'Are You Sure?',
@@ -40,11 +38,7 @@ export const LeavingAudiusDrawer = () => {
     >
       <View style={styles.root}>
         <Text>{messages.content}</Text>
-        <HelpCallout
-          numberOfLines={10}
-          content={link}
-          icon={IconExternalLink}
-        />
+        <Hint icon={IconExternalLink}>{link}</Hint>
         <Button title={messages.visit} onPress={onLinkPress} fullWidth />
         <Button
           variant='common'

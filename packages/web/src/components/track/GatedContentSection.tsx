@@ -401,17 +401,24 @@ const UnlockingGatedContentSection = ({
 
   return (
     <div className={className}>
-      <div className={styles.gatedContentDescriptionContainer}>
+      <Flex
+        direction='row'
+        className={styles.gatedContentDescriptionContainer}
+        alignItems='flex-start'
+        gap='s'
+      >
         <Text variant='label' size='l' strength='strong'>
-          <LoadingSpinner className={styles.spinner} />
-          {isContentUSDCPurchaseGated(streamConditions)
-            ? messages.purchasing
-            : messages.unlocking}
+          <Flex alignItems='center' gap='s'>
+            <LoadingSpinner className={styles.spinner} />
+            {isContentUSDCPurchaseGated(streamConditions)
+              ? messages.purchasing
+              : messages.unlocking}
+          </Flex>
         </Text>
         <Text variant='body' strength='strong'>
           {renderUnlockingDescription()}
         </Text>
-      </div>
+      </Flex>
     </div>
   )
 }
@@ -642,7 +649,6 @@ export const GatedContentSection = ({
           <UserBadges
             userId={entity.user_id}
             className={styles.badgeIcon}
-            noContentClassName={styles.noContentBadgeIcon}
             badgeSize={14}
             useSVGTiers
           />

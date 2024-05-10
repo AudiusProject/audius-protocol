@@ -34,7 +34,7 @@ import { make, track } from 'app/services/analytics'
 import type { AppState } from 'app/store'
 import { makeStyles } from 'app/styles'
 
-const { getPlaying, getUid, getCurrentTrack } = playerSelectors
+const { getPlaying, getPreviewing, getUid, getCurrentTrack } = playerSelectors
 const { getIsReachable } = reachabilitySelectors
 const { getCollectionTracksLineup } = collectionPageSelectors
 const { getCollection } = cacheCollectionsSelectors
@@ -53,7 +53,7 @@ const selectTrackCount = (state: AppState) => {
 }
 
 const selectIsLineupLoading = (state: AppState) => {
-  return getCollectionTracksLineup(state).status === Status.LOADING
+  return getCollectionTracksLineup(state).status !== Status.SUCCESS
 }
 
 const selectCollectionDuration = createSelector(
@@ -106,11 +106,6 @@ const getMessages = (collectionType: 'album' | 'playlist') => ({
 })
 
 const useStyles = makeStyles(({ palette, spacing }) => ({
-  trackListDivider: {
-    marginHorizontal: spacing(6),
-    borderTopWidth: 1,
-    borderTopColor: palette.neutralLight7
-  },
   empty: {
     color: palette.neutral,
     paddingHorizontal: spacing(8),
@@ -125,6 +120,7 @@ type CollectionScreenDetailsTileProps = {
   isPrivate?: boolean
   isOwner?: boolean
   isPublishing?: boolean
+  isDeleted?: boolean
   extraDetails?: DetailsTileDetail[]
   collectionId: number | SmartCollectionVariant
   hasStreamAccess?: boolean
@@ -162,9 +158,11 @@ export const CollectionScreenDetailsTile = ({
   isOwner,
   hideOverflow,
   hideRepost,
+  hideFavorite,
   hasStreamAccess,
   streamConditions,
   ddexApp,
+  isDeleted,
   ...detailsTileProps
 }: CollectionScreenDetailsTileProps) => {
   const styles = useStyles()
@@ -180,24 +178,42 @@ export const CollectionScreenDetailsTile = ({
   const playingUid = useSelector(getUid)
   const isQueued = useSelector(selectIsQueued)
   const isPlaying = useSelector(getPlaying)
+  const isPreviewing = useSelector(getPreviewing)
   const playingTrack = useSelector(getCurrentTrack)
   const playingTrackId = playingTrack?.track_id
   const firstTrack = useSelector(selectFirstTrack)
   const messages = getMessages(isAlbum ? 'album' : 'playlist')
   useRefetchLineupOnTrackAdd(collectionId)
 
-  const handlePressPlay = useCallback(() => {
-    if (isPlaying && isQueued) {
-      dispatch(tracksActions.pause())
-      recordPlay(playingTrackId, false)
-    } else if (!isPlaying && isQueued) {
-      dispatch(tracksActions.play())
-      recordPlay(playingTrackId)
-    } else if (trackCount > 0 && firstTrack) {
-      dispatch(tracksActions.play(firstTrack.uid))
-      recordPlay(firstTrack.id)
-    }
-  }, [dispatch, isPlaying, playingTrackId, isQueued, trackCount, firstTrack])
+  const play = useCallback(
+    ({ isPreview = false }: { isPreview?: boolean } = {}) => {
+      if (isPlaying && isQueued && isPreviewing === isPreview) {
+        dispatch(tracksActions.pause())
+        recordPlay(playingTrackId, false)
+      } else if (!isPlaying && isQueued) {
+        dispatch(tracksActions.play())
+        recordPlay(playingTrackId)
+      } else if (trackCount > 0 && firstTrack) {
+        dispatch(tracksActions.play(firstTrack.uid, { isPreview }))
+        recordPlay(firstTrack.id)
+      }
+    },
+    [
+      isPlaying,
+      isQueued,
+      isPreviewing,
+      trackCount,
+      firstTrack,
+      dispatch,
+      playingTrackId
+    ]
+  )
+
+  const handlePressPlay = useCallback(() => play(), [play])
+  const handlePressPreview = useCallback(
+    () => play({ isPreview: true }),
+    [play]
+  )
 
   const handlePressTrackListItemPlay = useCallback(
     (uid: UID, id: ID) => {
@@ -224,14 +240,15 @@ export const CollectionScreenDetailsTile = ({
     (track) => track.is_delete
   )
   const isPlayable =
-    !areAllTracksDeleted && (isQueued || (trackCount > 0 && !!firstTrack))
+    Object.values(tracks).length === 0
+      ? true
+      : !areAllTracksDeleted && (isQueued || (trackCount > 0 && !!firstTrack))
 
   const renderTrackList = useCallback(() => {
     return (
       <TrackList
         contextPlaylistId={!isAlbum ? numericCollectionId : undefined}
         trackItemAction='overflow'
-        showDivider
         showSkeleton={isLineupLoading}
         togglePlay={handlePressTrackListItemPlay}
         isAlbumPage={isAlbum}
@@ -268,17 +285,21 @@ export const CollectionScreenDetailsTile = ({
       descriptionLinkPressSource='collection page'
       duration={collectionDuration}
       hideOverflow={hideOverflow || !isReachable}
-      hideListenCount={true}
+      hidePlayCount={true}
       hasStreamAccess={hasStreamAccess}
       streamConditions={streamConditions}
-      hideRepost={hideRepost || !isReachable}
+      hideFavorite={hideFavorite || !hasStreamAccess}
+      hideRepost={hideRepost || !isReachable || !hasStreamAccess}
       isPlaying={isPlaying && isQueued}
+      isPreviewing={isPreviewing && isQueued}
       isPublished={!isPrivate || isPublishing}
+      isDeleted={isDeleted}
       isCollection={true}
       renderBottomContent={renderTrackList}
       headerText={isPrivate ? messages.hiddenType : messages.collectionType}
       renderImage={renderImage}
       onPressPlay={handlePressPlay}
+      onPressPreview={handlePressPreview}
       isPlayable={isPlayable}
       trackCount={trackCount}
     />

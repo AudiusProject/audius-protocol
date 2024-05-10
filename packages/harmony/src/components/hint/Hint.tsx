@@ -4,9 +4,10 @@ import type { IconComponent } from 'components/icon'
 import { Flex } from 'components/layout'
 import { Paper, PaperProps } from 'components/layout/Paper'
 import { Text } from 'components/text'
+import { IconQuestionCircle } from 'icons'
 
 type HintProps = {
-  icon: IconComponent
+  icon?: IconComponent
   actions?: ReactNode
 } & PaperProps
 
@@ -14,7 +15,7 @@ type HintProps = {
  * A way of informing the user of important details in line in a prominent way.
  */
 export const Hint = (props: HintProps) => {
-  const { icon: Icon, children, actions, ...other } = props
+  const { icon: Icon = IconQuestionCircle, children, actions, ...other } = props
   return (
     <Paper
       role='alert'

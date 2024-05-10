@@ -2,11 +2,12 @@ import { RewardManagerProgram } from '@audius/spl'
 import type { RewardManagerStateData } from '@audius/spl/dist/types/reward-manager/types'
 import { Secp256k1Program, type PublicKey } from '@solana/web3.js'
 
+import { productionConfig } from '../../../../config/production'
 import { mergeConfigWithDefaults } from '../../../../utils/mergeConfigs'
 import { parseParams } from '../../../../utils/parseParams'
-import { BaseSolanaProgram } from '../BaseSolanaProgram'
+import { BaseSolanaProgramClient } from '../BaseSolanaProgramClient'
 
-import { defaultRewardManagerClentConfig } from './constants'
+import { getDefaultRewardManagerClentConfig } from './getDefaultConfig'
 import {
   CreateEvaluateAttestationsInstructionRequest,
   CreateEvaluateAttestationsInstructionSchema,
@@ -28,7 +29,7 @@ import {
  * based on attestations from N uniquely owned discovery nodes and an anti abuse
  * oracle node.
  */
-export class RewardManagerClient extends BaseSolanaProgram {
+export class RewardManagerClient extends BaseSolanaProgramClient {
   private readonly programId: PublicKey
   private readonly rewardManagerStateAccount: PublicKey
   private readonly authority: PublicKey
@@ -37,7 +38,7 @@ export class RewardManagerClient extends BaseSolanaProgram {
   constructor(config: RewardManagerClientConfig) {
     const configWithDefaults = mergeConfigWithDefaults(
       config,
-      defaultRewardManagerClentConfig
+      getDefaultRewardManagerClentConfig(productionConfig)
     )
     super(configWithDefaults, config.solanaWalletAdapter)
     this.programId = configWithDefaults.programId

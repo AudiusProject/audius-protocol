@@ -49,3 +49,7 @@ services:
       FALLBACK_CREATOR_NODE_URL: 'http://creator-node:4000' # this should choose a random cn everytime this is run
     deploy:
       mode: global
+    volumes:
+      # Mount the directory for e2e tests so audius-cmd can output results of data seeding
+      # to files that can be read by the e2e tests
+      - ${PROJECT_ROOT}/packages/web/e2e:/app/packages/web/e2e

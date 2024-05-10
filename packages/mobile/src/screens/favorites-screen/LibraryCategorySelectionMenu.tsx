@@ -43,7 +43,7 @@ const ALL_CATEGORIES = [
     value: LibraryCategory.Repost
   },
   {
-    label: 'Purchased',
+    label: 'Premium',
     value: LibraryCategory.Purchase
   }
 ]
@@ -103,7 +103,8 @@ export const LibraryCategorySelectionMenu = () => {
 
   const isUSDCPurchasesEnabled = useIsUSDCEnabled()
   const categories =
-    currentTab === SavedPageTabs.TRACKS && isUSDCPurchasesEnabled
+    isUSDCPurchasesEnabled &&
+    (currentTab === SavedPageTabs.TRACKS || currentTab === SavedPageTabs.ALBUMS)
       ? ALL_CATEGORIES
       : CATEGORIES_WITHOUT_PURCHASED
 

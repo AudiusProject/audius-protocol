@@ -2,22 +2,22 @@ import { useCallback, useEffect } from 'react'
 
 import { User } from '@audius/common/models'
 import {
+  ChatPermissionAction,
   accountSelectors,
   chatActions,
   chatSelectors,
-  ChatPermissionAction,
-  tippingSelectors,
-  tippingActions
+  tippingActions,
+  tippingSelectors
 } from '@audius/common/store'
 import { removeNullable } from '@audius/common/utils'
 import {
-  IconMessageBlock,
+  IconButton,
   IconKebabHorizontal,
   IconMessage,
+  IconMessageBlock,
   IconMessageUnblock as IconUnblockMessages,
   IconUser,
-  PopupMenu,
-  IconButton
+  PopupMenu
 } from '@audius/harmony'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
@@ -28,6 +28,7 @@ import { profilePage } from 'utils/route'
 import zIndex from 'utils/zIndex'
 
 import styles from './CreateChatUserResult.module.css'
+import { useComposeChat } from './useComposeChat'
 
 const messages = {
   moreOptions: 'More options',
@@ -51,7 +52,7 @@ const { getUserId } = accountSelectors
 const { getOptimisticSupporters, getOptimisticSupporting } = tippingSelectors
 
 const { fetchSupportersForUser } = tippingActions
-const { createChat, blockUser, unblockUser, fetchPermissions } = chatActions
+const { blockUser, unblockUser, fetchPermissions } = chatActions
 const { getBlockees, getCanCreateChat } = chatSelectors
 
 const renderTrigger = (
@@ -107,21 +108,12 @@ export const CreateChatUserResult = (props: UserResultComposeProps) => {
     getCanCreateChat(state, { userId: user.user_id })
   )
 
-  const handleComposeClicked = useCallback(() => {
-    if (canCreateChat) {
-      closeParentModal()
-      dispatch(createChat({ userIds: [user.user_id], presetMessage }))
-    } else {
-      openInboxUnavailableModal(user)
-    }
-  }, [
-    dispatch,
+  const handleComposeClicked = useComposeChat({
     user,
-    canCreateChat,
-    openInboxUnavailableModal,
-    closeParentModal,
+    onOpenChat: closeParentModal,
+    onInboxUnavailable: openInboxUnavailableModal,
     presetMessage
-  ])
+  })
 
   const handleVisitClicked = useCallback(() => {
     dispatch(pushRoute(profilePage(user.handle)))

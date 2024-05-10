@@ -30,7 +30,7 @@ PODS:
   - FingerprintPro (2.3.2)
   - fmt (6.2.1)
   - glog (0.3.5)
-  - google-cast-sdk-dynamic-xcframework-no-bluetooth (4.8.0)
+  - google-cast-sdk-dynamic-xcframework-no-bluetooth (4.7.1)
   - hermes-engine (0.73.1):
     - hermes-engine/Pre-built (= 0.73.1)
   - hermes-engine/Pre-built (0.73.1)
@@ -54,7 +54,7 @@ PODS:
     - lottie-ios (~> 4.3.3)
     - React-Core
   - nSure (1.3.1)
-  - PromisesObjC (2.3.1)
+  - PromisesObjC (2.4.0)
   - RCT-Folly (2022.05.16.00):
     - boost
     - DoubleConversion
@@ -948,7 +948,7 @@ PODS:
     - React
     - react-native-google-cast/NoBluetoothArm (= 4.6.2)
   - react-native-google-cast/NoBluetoothArm (4.6.2):
-    - google-cast-sdk-dynamic-xcframework-no-bluetooth
+    - google-cast-sdk-dynamic-xcframework-no-bluetooth (= 4.7.1)
     - React
     - react-native-google-cast/RNGoogleCast
   - react-native-google-cast/RNGoogleCast (4.6.2):
@@ -1301,7 +1301,7 @@ DEPENDENCIES:
   - react-native-document-picker (from `../node_modules/react-native-document-picker`)
   - react-native-fast-crypto (from `../../../node_modules/react-native-fast-crypto`)
   - react-native-get-random-values (from `../../../node_modules/react-native-get-random-values`)
-  - react-native-google-cast (from `../node_modules/react-native-google-cast`)
+  - react-native-google-cast (from `../../../node_modules/react-native-google-cast`)
   - react-native-image-picker (from `../node_modules/react-native-image-picker`)
   - react-native-in-app-review (from `../node_modules/react-native-in-app-review`)
   - "react-native-keep-awake (from `../node_modules/@sayem314/react-native-keep-awake`)"
@@ -1471,7 +1471,7 @@ EXTERNAL SOURCES:
   react-native-get-random-values:
     :path: "../../../node_modules/react-native-get-random-values"
   react-native-google-cast:
-    :path: "../node_modules/react-native-google-cast"
+    :path: "../../../node_modules/react-native-google-cast"
   react-native-image-picker:
     :path: "../node_modules/react-native-image-picker"
   react-native-in-app-review:
@@ -1605,7 +1605,7 @@ SPEC CHECKSUMS:
   FingerprintPro: c6444f5a00d1126446da664124529e754475f198
   fmt: ff9d55029c625d3757ed641535fd4a75fedc7ce9
   glog: c5d68082e772fa1c511173d6b30a9de2c05a69a2
-  google-cast-sdk-dynamic-xcframework-no-bluetooth: 09d47191ef8821d82e813e754bcf98bc61a3dbc9
+  google-cast-sdk-dynamic-xcframework-no-bluetooth: 1fa9e267df3fd6f8a1c6e3345142ca5286297968
   hermes-engine: 34df9d5034e90bd9bf1505e1ca198760373935af
   JWT: ef71dfb03e1f842081e64dc42eef0e164f35d251
   libevent: 4049cae6c81cdb3654a443be001fb9bdceff7913
@@ -1613,7 +1613,7 @@ SPEC CHECKSUMS:
   lottie-ios: 3d98679b41fa6fd6aff2352b3953dbd3df8a397e
   lottie-react-native: a2ae9c27c273b060b2affff2957bc0ff7fdca353
   nSure: b2d7022f54c180c5afd88f9f79073841e1cfa844
-  PromisesObjC: c50d2056b5253dadbd6c2bea79b0674bd5a52fa4
+  PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47
   RCT-Folly: 7169b2b1c44399c76a47b5deaaba715eeeb476c0
   RCTRequired: 6dda55e483f75d2b43781d8ad5bd7df276a50981
   RCTTypeSafety: df0f2632f4e89938b9b9f6152b5e6c66fc6e969e
@@ -1643,7 +1643,7 @@ SPEC CHECKSUMS:
   react-native-document-picker: b4f4a23b73f864ce17965b284c0757648993805b
   react-native-fast-crypto: 5943c42466b86ad70be60d3a5f64bd22251e5d9e
   react-native-get-random-values: 384787fd76976f5aec9465aff6fa9e9129af1e74
-  react-native-google-cast: 18b9b2fc518caabfa65d309409e160b3fc6d1733
+  react-native-google-cast: 0a82cf63114470403e41e04ffa2b13d6448b6112
   react-native-image-picker: 6c51359eca7a7df9f07e297218c25696eb9da976
   react-native-in-app-review: db8bb167a5f238e7ceca5c242d6b36ce8c4404a4
   react-native-keep-awake: ad1d67f617756b139536977a0bf06b27cec0714a

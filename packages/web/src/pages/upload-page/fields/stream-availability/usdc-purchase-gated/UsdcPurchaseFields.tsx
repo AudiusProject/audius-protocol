@@ -12,11 +12,10 @@ import {
   decimalIntegerToHumanReadable,
   Nullable
 } from '@audius/common/utils'
-import { IconInfo } from '@audius/harmony'
+import { Hint, IconInfo } from '@audius/harmony'
 import cn from 'classnames'
 import { useField } from 'formik'
 
-import { HelpCallout } from 'components/help-callout/HelpCallout'
 import layoutStyles from 'components/layout/layout.module.css'
 
 import { BoxedTextField } from '../../BoxedTextField'
@@ -107,10 +106,7 @@ export const UsdcPurchaseFields = (props: TrackAvailabilityFieldsProps) => {
           )}
           <input type='hidden' name={PREVIEW} value='0' />
           {downloadConditions && !isAlbum ? (
-            <HelpCallout
-              icon={<IconInfo />}
-              content={messages.premiumDownloads}
-            />
+            <Hint icon={IconInfo}>{messages.premiumDownloads}</Hint>
           ) : null}
         </>
       ) : (
@@ -122,10 +118,7 @@ export const UsdcPurchaseFields = (props: TrackAvailabilityFieldsProps) => {
           />
           <PreviewField disabled={disabled} />
           {downloadConditions ? (
-            <HelpCallout
-              icon={<IconInfo />}
-              content={messages.premiumDownloads}
-            />
+            <Hint icon={IconInfo}>{messages.premiumDownloads}</Hint>
           ) : null}
         </>
       )}
@@ -165,7 +158,9 @@ const PreviewField = (props: TrackAvailabilityFieldsProps) => {
 
 const PriceField = (props: PriceFieldProps) => {
   const { disabled, messaging, fieldName } = props
-  const [{ value }, , { setValue: setPrice }] = useField<number>(fieldName)
+  const [{ value }, , { setValue: setPrice }] = useField<number | null>(
+    fieldName
+  )
   const [humanizedValue, setHumanizedValue] = useState(
     value ? decimalIntegerToHumanReadable(value) : null
   )
@@ -173,8 +168,13 @@ const PriceField = (props: PriceFieldProps) => {
   const handlePriceChange: ChangeEventHandler<HTMLInputElement> = useCallback(
     (e) => {
       const { human, value } = filterDecimalString(e.target.value)
-      setHumanizedValue(human)
-      setPrice(value)
+      if (value === 0) {
+        setHumanizedValue(null)
+        setPrice(null)
+      } else {
+        setHumanizedValue(human)
+        setPrice(value)
+      }
     },
     [setPrice, setHumanizedValue]
   )

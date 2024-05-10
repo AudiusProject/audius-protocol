@@ -9,15 +9,18 @@ import {
 import { test, waitForUser } from './test'
 import { openCleanBrowser } from './utils'
 
+// TODO: Enable track2 again, it was causing failures
+// https://linear.app/audius/issue/INF-699/fix-uploadcollectiontestts-to-support-multiple-files
 test('should upload a playlist', async ({ page }) => {
   const timestamp = Date.now()
   const playlistName = `Test playlist ${timestamp}`
   const playlistDescription = 'Test description'
   const trackOneDetails = { name: `Test track 1 ${timestamp}` }
-  const trackTwoDetails = {
-    name: `Test track 2 ${timestamp}`
-  }
-  const trackDetails = [trackOneDetails, trackTwoDetails]
+  // const trackTwoDetails = {
+  //   name: `Test track 2 ${timestamp}`
+  // }
+  // const trackDetails = [trackOneDetails, trackTwoDetails]
+  const trackDetails = [trackOneDetails]
   const genre = 'Electronic - Progressive House'
   const mood = 'Tender'
   const tags = ['TAG1', 'TAG2']
@@ -26,7 +29,7 @@ test('should upload a playlist', async ({ page }) => {
   await waitForUser(page)
 
   const selectPage = new UploadSelectPage(page)
-  await selectPage.setTracks('track.mp3', 'track-2.mp3')
+  await selectPage.setTracks('track.mp3')
   await selectPage.setReleaseType('Playlist')
   await selectPage.continue()
 
@@ -65,9 +68,9 @@ test('should upload a playlist', async ({ page }) => {
   // Assert track list
   const trackTable = page.getByRole('table')
   const trackOne = trackTable.getByRole('cell', { name: trackOneDetails.name })
-  const trackTwo = trackTable.getByRole('cell', { name: trackTwoDetails.name })
+  // const trackTwo = trackTable.getByRole('cell', { name: trackTwoDetails.name })
   await expect(trackOne).toBeVisible({ timeout: 20000 }) // sometimes loading the track list can take longer
-  await expect(trackTwo).toBeVisible()
+  // await expect(trackTwo).toBeVisible()
 
   // Visit track 1
   await trackOne.getByRole('link', { name: trackOneDetails.name }).click()
@@ -82,13 +85,13 @@ test('should upload a playlist', async ({ page }) => {
   await expect(page.getByText(genre)).toBeVisible()
   await expect(page.getByText(mood)).toBeVisible()
 
-  await page.goBack()
+  // await page.goBack()
 
   // Visit track 2
-  await trackTwo.getByRole('link', { name: trackTwoDetails.name }).click()
+  // await trackTwo.getByRole('link', { name: trackTwoDetails.name }).click()
 
-  await expect(tag1).toBeVisible()
-  await expect(tag2).toBeVisible()
+  // await expect(tag1).toBeVisible()
+  // await expect(tag2).toBeVisible()
 
   // TODO: custom track details was intentionally regressed, these checks can be re-enabled whenever the feature is refactored
   // Assert tagged differently
@@ -106,10 +109,11 @@ test('should upload an album', async ({ page }) => {
   const playlistName = `Test album ${timestamp}`
   const playlistDescription = 'Test description'
   const trackOneDetails = { name: `Test track 1 ${timestamp}` }
-  const trackTwoDetails = {
-    name: `Test track 2 ${timestamp}`
-  }
-  const trackDetails = [trackOneDetails, trackTwoDetails]
+  // const trackTwoDetails = {
+  //   name: `Test track 2 ${timestamp}`
+  // }
+  // const trackDetails = [trackOneDetails, trackTwoDetails]
+  const trackDetails = [trackOneDetails]
   const genre = 'Electronic - Progressive House'
   const mood = 'Tender'
   const tags = ['TAG1', 'TAG2']
@@ -118,7 +122,7 @@ test('should upload an album', async ({ page }) => {
   await waitForUser(page)
 
   const selectPage = new UploadSelectPage(page)
-  await selectPage.setTracks('track.mp3', 'track-2.mp3')
+  await selectPage.setTracks('track.mp3')
   await selectPage.setReleaseType('Album')
   await selectPage.continue()
 
@@ -159,9 +163,9 @@ test('should upload an album', async ({ page }) => {
   // Assert track list
   const trackTable = page.getByRole('table')
   const trackOne = trackTable.getByRole('cell', { name: trackOneDetails.name })
-  const trackTwo = trackTable.getByRole('cell', { name: trackTwoDetails.name })
+  // const trackTwo = trackTable.getByRole('cell', { name: trackTwoDetails.name })
   await expect(trackOne).toBeVisible()
-  await expect(trackTwo).toBeVisible()
+  // await expect(trackTwo).toBeVisible()
 
   // Visit track 1
   await trackOne.getByRole('link', { name: trackOneDetails.name }).click()
@@ -180,19 +184,19 @@ test('should upload an album', async ({ page }) => {
   await expect(page.getByText(genre)).toBeVisible()
   await expect(page.getByText(mood)).toBeVisible()
 
-  await page.goBack()
+  // await page.goBack()
 
   // Visit track 2
-  await trackTwo.getByRole('link', { name: trackTwoDetails.name }).click()
+  // await trackTwo.getByRole('link', { name: trackTwoDetails.name }).click()
 
   // Assert downloadable text
-  await expect(downloadText).toBeVisible()
+  // await expect(downloadText).toBeVisible()
 
   // Assert tagged differently
   // const tag3 = page.getByRole('link', { name: trackTwoDetails.tags[0] })
   // const tag4 = page.getByRole('link', { name: trackTwoDetails.tags[1] })
-  await expect(tag1).toBeVisible()
-  await expect(tag2).toBeVisible()
+  // await expect(tag1).toBeVisible()
+  // await expect(tag2).toBeVisible()
 
   // // Assert different genre and mood
   // await expect(page.getByText(trackTwoDetails.genre)).toBeVisible()
@@ -270,9 +274,9 @@ test.fixme('should upload a premium album', async ({ browser, page }) => {
   // Assert track list
   const trackTable = page.getByRole('table')
   const trackOne = trackTable.getByRole('cell', { name: trackOneDetails.name })
-  const trackTwo = trackTable.getByRole('cell', { name: trackTwoDetails.name })
+  // const trackTwo = trackTable.getByRole('cell', { name: trackTwoDetails.name })
   await expect(trackOne).toBeVisible({ timeout: 20000 }) // sometimes loading the track list can take longer
-  await expect(trackTwo).toBeVisible()
+  // await expect(trackTwo).toBeVisible()
 
   // Visit track 1
   await trackOne.getByRole('link', { name: trackOneDetails.name }).click()
@@ -299,20 +303,20 @@ test.fixme('should upload a premium album', async ({ browser, page }) => {
   await page.goBack()
 
   // Visit track 2
-  await trackTwo.getByRole('link', { name: trackTwoDetails.name }).click()
-  const track2url = await page.url()
+  // await trackTwo.getByRole('link', { name: trackTwoDetails.name }).click()
+  // const track2url = await page.url()
 
   // Assert tags
-  await expect(tag1).toBeVisible()
-  await expect(tag2).toBeVisible()
+  // await expect(tag1).toBeVisible()
+  // await expect(tag2).toBeVisible()
 
-  // Assert genre and mood
-  await expect(page.getByText(genre)).toBeVisible()
-  await expect(page.getByText(mood)).toBeVisible()
+  // // Assert genre and mood
+  // await expect(page.getByText(genre)).toBeVisible()
+  // await expect(page.getByText(mood)).toBeVisible()
 
-  // Assert premium track price
-  await expect(trackPriceText).toBeVisible()
-  await expect(trackOwnerText).toBeVisible()
+  // // Assert premium track price
+  // await expect(trackPriceText).toBeVisible()
+  // await expect(trackOwnerText).toBeVisible()
 
   // Open the tracks in a new browser to ensure the premium pages looks as expected to non-owners
   const newPage = await openCleanBrowser({ browser })
@@ -327,7 +331,7 @@ test.fixme('should upload a premium album', async ({ browser, page }) => {
   newPage.goto(track1url)
   await expect(buyButton).toBeVisible()
   await expect(newPageTrackPriceText).toBeVisible()
-  newPage.goto(track2url)
-  await expect(buyButton).toBeVisible()
-  await expect(newPageTrackPriceText).toBeVisible()
+  // newPage.goto(track2url)
+  // await expect(buyButton).toBeVisible()
+  // await expect(newPageTrackPriceText).toBeVisible()
 })

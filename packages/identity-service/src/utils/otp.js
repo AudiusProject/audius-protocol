@@ -3,6 +3,8 @@ const { getOtpEmail } = require('../notifications/emails/otp')
 const OTP_CHARS = '0123456789'
 const OTP_REDIS_PREFIX = 'otp'
 const OTP_EXPIRATION_SECONDS = 600
+const OTP_COUNT_REDIS_POSTFIX = 'count'
+const OTP_COUNT_LIMIT = 2
 const OTP_BYPASS_EMAILS = new Set([
   'testflight@audius.co',
   'playstore@audius.co',
@@ -34,6 +36,26 @@ const validateOtp = async ({ email, otp, redis }) => {
   return otp === storedOtp
 }
 
+const shouldSendOtp = async ({ email, redis }) => {
+  const storedOtp = await redis.get(`${OTP_REDIS_PREFIX}:${email}`)
+  const otpCount = await redis.get(
+    `${OTP_REDIS_PREFIX}:${email}:${OTP_COUNT_REDIS_POSTFIX}`
+  )
+  return !storedOtp || Number(otpCount) < OTP_COUNT_LIMIT
+}
+
+const updateOtpCount = async ({ email, redis }) => {
+  const otpCountKey = `${OTP_REDIS_PREFIX}:${email}:${OTP_COUNT_REDIS_POSTFIX}`
+  const otpCount = await redis.get(otpCountKey)
+
+  await redis.set(
+    otpCountKey,
+    Number(otpCount) + 1,
+    'EX',
+    OTP_EXPIRATION_SECONDS
+  )
+}
+
 const sendOtp = async ({ email, redis, sendgrid }) => {
   const otp = generateOtp()
   const html = getEmail({
@@ -49,12 +71,16 @@ const sendOtp = async ({ email, redis, sendgrid }) => {
       groupId: 26666 // id of unsubscribe group at https://mc.sendgrid.com/unsubscribe-groups
     }
   }
+
   await redis.set(
     `${OTP_REDIS_PREFIX}:${email}`,
     otp,
     'EX',
     OTP_EXPIRATION_SECONDS
   )
+
+  await updateOtpCount({ email, redis })
+
   if (sendgrid) {
     await sendgrid.send(emailParams)
   }
@@ -63,5 +89,6 @@ const sendOtp = async ({ email, redis, sendgrid }) => {
 module.exports = {
   bypassOtp,
   validateOtp,
+  shouldSendOtp,
   sendOtp
 }

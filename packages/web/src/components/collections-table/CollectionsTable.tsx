@@ -5,7 +5,7 @@ import {
   UserCollectionMetadata
 } from '@audius/common/models'
 import { formatCount } from '@audius/common/utils'
-import { Flex, IconLock, IconVisibilityHidden } from '@audius/harmony'
+import { Flex, IconCart, IconVisibilityHidden } from '@audius/harmony'
 import cn from 'classnames'
 import moment from 'moment'
 import { Cell, Row } from 'react-table'
@@ -94,7 +94,6 @@ export const CollectionsTable = ({
         }}
       >
         <TextLink
-          tag={deleted ? 'span' : undefined}
           to={deleted ? '' : collection.permalink ?? ''}
           textVariant='title'
           size='s'
@@ -138,11 +137,14 @@ export const CollectionsTable = ({
   const overflowMenuRef = useRef<HTMLDivElement>(null)
   const renderOverflowMenuCell = useCallback((cellInfo: CollectionCell) => {
     const collection = cellInfo.row.original
-    const Icon = collection.is_private ? IconVisibilityHidden : IconLock
-    const shouldShowIcon = collection.is_stream_gated || collection.is_private
+    const Icon = collection.is_private
+      ? IconVisibilityHidden
+      : collection.is_stream_gated
+      ? IconCart
+      : null
     return (
       <>
-        {shouldShowIcon ? (
+        {Icon ? (
           <Flex className={styles.typeIcon}>
             <Icon color='subdued' size='m' />
           </Flex>

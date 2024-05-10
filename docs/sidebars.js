@@ -32,6 +32,7 @@ module.exports = {
       label: 'Introduction',
       items: [
         'developers/introduction/overview',
+        'developers/guides/create-audius-app',
         // 'developers/introduction/resources'
       ],
       collapsed: false,
@@ -124,17 +125,17 @@ module.exports = {
         'node-operator/setup/wallet-management',
         'node-operator/setup/hardware-requirements',
         'node-operator/setup/installation',
-        {
-          type: 'category',
-          label: 'Register a Node',
-          items: [
-            'node-operator/setup/registration/registration',
-            'node-operator/setup/registration/multi-sig-wallet',
-          ],
-          collapsed: true,
-        },
         'node-operator/setup/advanced',
         'node-operator/sla',
+      ],
+      collapsed: false,
+    },
+    {
+      type: 'category',
+      label: 'Register a Node',
+      items: [
+        'node-operator/setup/registration/registration',
+        'node-operator/setup/registration/multi-sig-wallet',
       ],
       collapsed: false,
     },

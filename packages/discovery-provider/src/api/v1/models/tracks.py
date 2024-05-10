@@ -1,6 +1,8 @@
 from flask_restx import fields
 
+from .access_gate import access_gate
 from .common import favorite, ns, repost
+from .extensions.fields import NestedOneOf
 from .users import user_model, user_model_full
 
 track_artwork = ns.model(
@@ -70,7 +72,13 @@ access = ns.model(
 track = ns.model(
     "Track",
     {
+        "access": fields.Nested(
+            access, description="Describes what access the given user has"
+        ),
         "artwork": fields.Nested(track_artwork, allow_null=True),
+        "blocknumber": fields.Integer(
+            required=True, description="The blocknumber this track was last updated"
+        ),
         "description": fields.String,
         "genre": fields.String,
         "id": fields.String(required=True),
@@ -84,7 +92,7 @@ track = ns.model(
         "orig_filename": fields.String(
             allow_null=True
         ),  # remove nullability after backfill
-        "is_original_available": fields.Boolean,
+        "is_original_available": fields.Boolean(),
         "mood": fields.String,
         "release_date": fields.String,
         "remix_of": fields.Nested(remix_parent),
@@ -101,6 +109,20 @@ track = ns.model(
         "is_streamable": fields.Boolean,
         "ddex_app": fields.String(allow_null=True),
         "playlists_containing_track": fields.List(fields.Integer),
+        "is_stream_gated": fields.Boolean(
+            description="Whether or not the owner has restricted streaming behind an access gate"
+        ),
+        "stream_conditions": NestedOneOf(
+            access_gate,
+            allow_null=True,
+            description="How to unlock stream access to the track",
+        ),
+        "is_download_gated": fields.Boolean(
+            description="Whether or not the owner has restricted downloading behind an access gate"
+        ),
+        "download_conditions": NestedOneOf(
+            access_gate, allow_null=True, description="How to unlock the track download"
+        ),
     },
 )
 
@@ -126,11 +148,11 @@ download = ns.model(
     },
 )
 
+
 track_full = ns.clone(
     "track_full",
     track,
     {
-        "blocknumber": fields.Integer(required=True),
         "create_date": fields.String,
         "cover_art_sizes": fields.String,
         "cover_art_cids": fields.Nested(cover_art, allow_null=True),
@@ -158,11 +180,6 @@ track_full = ns.clone(
         "cover_art": fields.String,
         "remix_of": fields.Nested(full_remix_parent),
         "is_available": fields.Boolean,
-        "is_stream_gated": fields.Boolean,
-        "stream_conditions": fields.Raw(allow_null=True),
-        "is_download_gated": fields.Boolean,
-        "download_conditions": fields.Raw(allow_null=True),
-        "access": fields.Nested(access),
         "ai_attribution_user_id": fields.Integer(allow_null=True),
         "audio_upload_id": fields.String,
         "preview_start_seconds": fields.Float,

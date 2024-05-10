@@ -98,6 +98,7 @@ import IconSendSVG from '../assets/icons/Send.svg'
 import IconSettingsSVG from '../assets/icons/Settings.svg'
 import IconShareSVG from '../assets/icons/Share.svg'
 import IconShieldCheckSVG from '../assets/icons/ShieldCheck.svg'
+import IconShieldUserSVG from '../assets/icons/ShieldUser.svg'
 import IconShuffleSVG from '../assets/icons/Shuffle.svg'
 import IconSignOutSVG from '../assets/icons/SignOut.svg'
 import IconSkipNextSVG from '../assets/icons/SkipNext.svg'
@@ -123,6 +124,7 @@ import IconTriangleExclamationSVG from '../assets/icons/TriangleExclamation.svg'
 import IconTrophySVG from '../assets/icons/Trophy.svg'
 import IconTurntableSVG from '../assets/icons/Turntable.svg'
 import IconUserSVG from '../assets/icons/User.svg'
+import IconUserArrowRotateSVG from '../assets/icons/UserArrowRotate.svg'
 import IconUserFollowSVG from '../assets/icons/UserFollow.svg'
 import IconUserFollowersSVG from '../assets/icons/UserFollowers.svg'
 import IconUserFollowingSVG from '../assets/icons/UserFollowing.svg'
@@ -159,6 +161,7 @@ export const IconShare = IconShareSVG as IconComponent
 export const IconArrowRight = IconArrowRightSVG as IconComponent
 export const IconImage = IconImageSVG as IconComponent
 export const IconShieldCheck = IconShieldCheckSVG as IconComponent
+export const IconShieldUser = IconShieldUserSVG as IconComponent
 export const IconBoxHeart = IconBoxHeartSVG as IconComponent
 export const IconIndent = IconIndentSVG as IconComponent
 export const IconShuffle = IconShuffleSVG as IconComponent
@@ -231,6 +234,7 @@ export const IconTurntable = IconTurntableSVG as IconComponent
 export const IconCloudUpload = IconCloudUploadSVG as IconComponent
 export const IconPencil = IconPencilSVG as IconComponent
 export const IconUser = IconUserSVG as IconComponent
+export const IconUserArrowRotate = IconUserArrowRotateSVG as IconComponent
 export const IconCollectible = IconCollectibleSVG as IconComponent
 export const IconPlay = IconPlaySVG as IconComponent
 export const IconUserFollow = IconUserFollowSVG as IconComponent

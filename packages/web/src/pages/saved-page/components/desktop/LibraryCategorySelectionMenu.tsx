@@ -16,8 +16,6 @@ import {
 } from '@audius/harmony'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { useIsUSDCEnabled } from 'hooks/useIsUSDCEnabled'
-
 import styles from './LibraryCategorySelectionMenu.module.css'
 
 const { getCategory } = savedPageSelectors
@@ -39,7 +37,7 @@ const ALL_CATEGORIES = [
     icon: IconRepost
   },
   {
-    label: 'Purchased',
+    label: 'Premium',
     value: LibraryCategory.Purchase,
     icon: IconCart
   }
@@ -72,9 +70,8 @@ export const LibraryCategorySelectionMenu = (
     [currentTab, dispatch]
   )
 
-  const isUSDCPurchasesEnabled = useIsUSDCEnabled()
   const categories =
-    currentTab === SavedPageTabs.TRACKS && isUSDCPurchasesEnabled
+    currentTab !== SavedPageTabs.PLAYLISTS
       ? ALL_CATEGORIES
       : CATEGORIES_WITHOUT_PURCHASED
 

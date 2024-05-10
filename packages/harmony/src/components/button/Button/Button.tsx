@@ -27,8 +27,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       disabled,
       ...baseProps
     } = props
-    const { _isHovered, _isPressed, isLoading } = baseProps
-    const isDisabled = disabled || isLoading
+    const { _isHovered, _isPressed } = baseProps
     const {
       type,
       color: themeColors,
@@ -90,7 +89,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       '&:hover': { color: themeColors.static.white },
 
       ...((_isHovered || _isPressed) && { color: themeColors.static.white }),
-      ...(isDisabled && {
+      ...(disabled && {
         backgroundColor: themeColors.neutral.n150,
         boxShadow: 'none'
       })
@@ -204,7 +203,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         ...(_isPressed && activeStyles)
       }),
 
-      ...(isDisabled && {
+      ...(disabled && {
         opacity: 0.45
       })
     }
@@ -217,7 +216,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         : defaultIconStyles
 
     const style: CSSCustomProperties =
-      variant === 'primary' && !isDisabled
+      variant === 'primary' && !disabled
         ? {
             backgroundColor:
               hexColor ||
@@ -228,7 +227,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     return (
       <BaseButton
         ref={ref}
-        disabled={isDisabled}
+        disabled={disabled}
         styles={{
           button: buttonCss,
           icon: iconCss

@@ -11,16 +11,8 @@ import {
   useGatedContentAccessMap,
   useDebouncedCallback
 } from '@audius/common/hooks'
+import { statusIsNotFinalized, ID, UID, Lineup } from '@audius/common/models'
 import {
-  Name,
-  statusIsNotFinalized,
-  ID,
-  UID,
-  Lineup
-} from '@audius/common/models'
-import {
-  cacheCollectionsSelectors,
-  cacheUsersSelectors,
   savedPageSelectors,
   LibraryCategory,
   SavedPageTabs,
@@ -38,8 +30,7 @@ import {
 import cn from 'classnames'
 import { useSelector } from 'react-redux'
 
-import { make, useRecord } from 'common/store/analytics/actions'
-import Card from 'components/card-legacy/mobile/Card'
+import { CollectionCard } from 'components/collection'
 import Header from 'components/header/mobile/Header'
 import { HeaderContext } from 'components/header/mobile/HeaderContextProvider'
 import { InfiniteCardLineup } from 'components/lineup/InfiniteCardLineup'
@@ -51,17 +42,14 @@ import { TrackItemAction } from 'components/track/mobile/TrackListItem'
 import { useGoToRoute } from 'hooks/useGoToRoute'
 import useTabs from 'hooks/useTabs/useTabs'
 import { useCollectionsData } from 'pages/saved-page/hooks/useCollectionsData'
-import { TRENDING_PAGE, collectionPage } from 'utils/route'
+import { TRENDING_PAGE } from 'utils/route'
 
 import { LibraryCategorySelectionMenu } from '../desktop/LibraryCategorySelectionMenu'
 import { emptyStateMessages } from '../emptyStateMessages'
-import { formatCardSecondaryText } from '../utils'
 
 import NewPlaylistButton from './NewPlaylistButton'
 import styles from './SavedPage.module.css'
 
-const { getCollection } = cacheCollectionsSelectors
-const { getUser } = cacheUsersSelectors
 const { getCategory } = savedPageSelectors
 
 const emptyTabMessages = {
@@ -298,68 +286,6 @@ const TracksLineup = ({
   )
 }
 
-type CollectionCardProps = {
-  collectionId: ID
-  hasUpdate?: boolean
-  onBeforeNavigate?: (id: number) => void
-}
-
-const CollectionCard = ({
-  collectionId,
-  hasUpdate,
-  onBeforeNavigate
-}: CollectionCardProps) => {
-  const record = useRecord()
-  const goToRoute = useGoToRoute()
-  const collection = useSelector((state: CommonState) =>
-    getCollection(state, { id: collectionId })
-  )
-  const ownerHandle = useSelector((state: CommonState) => {
-    if (collection == null) {
-      return ''
-    }
-    const user = getUser(state, { id: collection.playlist_owner_id })
-    return user?.handle ?? ''
-  })
-
-  const handleClick = useCallback(() => {
-    if (collection && ownerHandle) {
-      onBeforeNavigate && onBeforeNavigate(collection.playlist_id)
-      record(
-        make(Name.PLAYLIST_LIBRARY_CLICKED, {
-          playlistId: collection.playlist_id,
-          hasUpdate: hasUpdate ?? false
-        })
-      )
-      goToRoute(
-        collectionPage(
-          ownerHandle,
-          collection.playlist_name,
-          collection.playlist_id,
-          collection.permalink,
-          true
-        )
-      )
-    }
-  }, [collection, ownerHandle, onBeforeNavigate, record, hasUpdate, goToRoute])
-
-  return collection ? (
-    <Card
-      key={collection.playlist_id}
-      id={collection.playlist_id}
-      userId={collection.playlist_owner_id}
-      imageSize={collection._cover_art_sizes}
-      primaryText={collection.playlist_name}
-      secondaryText={formatCardSecondaryText(
-        collection.save_count,
-        collection.playlist_contents.track_ids.length
-      )}
-      onClick={handleClick}
-      updateDot={hasUpdate}
-    />
-  ) : null
-}
-
 const AlbumCardLineup = () => {
   const goToRoute = useGoToRoute()
 
@@ -408,7 +334,7 @@ const AlbumCardLineup = () => {
   }
 
   const albumCards = albumIds?.map((id) => {
-    return <CollectionCard key={id} collectionId={id} />
+    return <CollectionCard key={id} id={id} size='xs' />
   })
 
   const noSavedAlbums =
@@ -534,9 +460,9 @@ const PlaylistCardLineup = ({
     return (
       <CollectionCard
         key={id}
-        collectionId={id}
-        hasUpdate={playlistUpdates.includes(id)}
-        onBeforeNavigate={updatePlaylistLastViewedAt}
+        id={id}
+        onClick={() => updatePlaylistLastViewedAt(id)}
+        size='xs'
       />
     )
   })

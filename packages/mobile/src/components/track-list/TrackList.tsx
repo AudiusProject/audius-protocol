@@ -14,7 +14,7 @@ import DraggableFlatList, {
 
 import * as haptics from 'app/haptics'
 
-import type { TrackItemAction, TrackListItemProps } from './TrackListItem'
+import type { TrackItemAction } from './TrackListItem'
 import { TrackListItem } from './TrackListItem'
 import { TrackListItemSkeleton } from './TrackListItemSkeleton'
 
@@ -32,8 +32,7 @@ type TrackListProps = {
   togglePlay?: (uid: string, trackId: ID) => void
   trackItemAction?: TrackItemAction
   uids?: UID[]
-} & Partial<FlatListProps<UID | ID>> &
-  Pick<TrackListItemProps, 'noDividerMargin' | 'showDivider' | 'showTopDivider'>
+} & Partial<FlatListProps<UID | ID>>
 
 const noOp = () => {}
 const keyExtractor = (item: string | number) => String(item)
@@ -50,12 +49,9 @@ export const TrackList = ({
   ids,
   isReorderable,
   isAlbumPage = false,
-  noDividerMargin,
   onRemove,
   onReorder,
-  showDivider,
   showSkeleton,
-  showTopDivider,
   togglePlay,
   trackItemAction,
   uids,
@@ -64,17 +60,7 @@ export const TrackList = ({
   const data = useMemo(() => uids ?? ids ?? [], [uids, ids])
   const [scrollEnable, setScrollEnable] = useState(true)
 
-  const renderSkeletonTrack = useCallback(
-    ({ index }) => (
-      <TrackListItemSkeleton
-        index={index}
-        showDivider={showDivider}
-        showTopDivider={showTopDivider}
-        noDividerMargin={noDividerMargin}
-      />
-    ),
-    [showDivider, noDividerMargin, showTopDivider]
-  )
+  const renderSkeletonTrack = useCallback(() => <TrackListItemSkeleton />, [])
 
   const renderDraggableTrack: DraggableFlatListProps<UID | ID>['renderItem'] =
     useCallback(
@@ -92,14 +78,10 @@ export const TrackList = ({
               isReorderable={isReorderable}
               showViewAlbum={isAlbumPage}
               uid={uids && (item as UID)}
-              prevUid={uids && uids[index - 1]}
               key={item}
               togglePlay={togglePlay}
               trackItemAction={trackItemAction}
               onRemove={onRemove}
-              showDivider={showDivider}
-              showTopDivider={showTopDivider}
-              noDividerMargin={noDividerMargin}
             />
           </RootView>
         )
@@ -110,10 +92,7 @@ export const TrackList = ({
         ids,
         isAlbumPage,
         isReorderable,
-        noDividerMargin,
         onRemove,
-        showDivider,
-        showTopDivider,
         togglePlay,
         trackItemAction,
         uids
