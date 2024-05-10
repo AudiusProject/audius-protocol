@@ -142,9 +142,21 @@
       <DealReleaseReference>RL1</DealReleaseReference>
       <Deal>
         <DealTerms>
-          <CommercialModelType UserDefinedValue="FollowGated">UserDefined</CommercialModelType>
+          <CommercialModelType>FreeOfChargeModel</CommercialModelType>
           <Usage>
             <UseType>OnDemandStream</UseType>
+          </Usage>
+          <TerritoryCode>Worldwide</TerritoryCode>
+          <ValidityPeriod>
+            <StartDate>2023-09-02</StartDate>
+          </ValidityPeriod>
+        </DealTerms>
+      </Deal>
+      <Deal>
+        <DealTerms>
+          <CommercialModelType UserDefinedValue="FollowGated">UserDefined</CommercialModelType>
+          <Usage>
+            <UseType>PermanentDownload</UseType>
           </Usage>
           <TerritoryCode>Worldwide</TerritoryCode>
           <ValidityPeriod>

@@ -195,31 +195,39 @@ export function prepareTrackMetadatas(release: DDEXRelease) {
           sound.indirectContributors.map(mapContributor),
       }
 
-      if (release.deal?.audiusDealType == 'FollowGated') {
-        const cond = { followUserId: release.audiusUser! }
-        meta.streamConditions = cond
-        if (release.deal.isDownloadable) {
-          meta.downloadConditions = cond
+      for (const deal of release.deals) {
+        if (deal.audiusDealType == 'FollowGated') {
+          const cond = { followUserId: release.audiusUser! }
+          if (deal.forStream) {
+            meta.streamConditions = cond
+          }
+          if (deal.forDownload) {
+            meta.downloadConditions = cond
+          }
         }
-      }
 
-      if (release.deal?.audiusDealType == 'TipGated') {
-        const cond = { tipUserId: release.audiusUser! }
-        meta.streamConditions = cond
-        if (release.deal.isDownloadable) {
-          meta.downloadConditions = cond
+        if (deal.audiusDealType == 'TipGated') {
+          const cond = { tipUserId: release.audiusUser! }
+          if (deal.forStream) {
+            meta.streamConditions = cond
+          }
+          if (deal.forDownload) {
+            meta.downloadConditions = cond
+          }
         }
-      }
 
-      if (release.deal?.audiusDealType == 'PayGated') {
-        const cond = {
-          usdcPurchase: {
-            price: release.deal.priceUsd,
-          },
-        }
-        meta.streamConditions = cond
-        if (release.deal.isDownloadable) {
-          meta.downloadConditions = cond
+        if (deal.audiusDealType == 'PayGated') {
+          const cond = {
+            usdcPurchase: {
+              price: deal.priceUsd,
+            },
+          }
+          if (deal.forStream) {
+            meta.streamConditions = cond
+          }
+          if (deal.forDownload) {
+            meta.downloadConditions = cond
+          }
         }
       }
 

@@ -48,7 +48,7 @@ export type DDEXRelease = {
   problems: string[]
   soundRecordings: DDEXSoundRecording[]
   images: DDEXResource[]
-  deal?: AudiusSupportedDeal
+  deals: AudiusSupportedDeal[]
 } & ReleaseAndSoundRecordingSharedFields
 
 type ReleaseAndSoundRecordingSharedFields = {
@@ -94,7 +94,8 @@ export type DDEXSoundRecording = {
 
 type DealFields = {
   validityStartDate: string
-  isDownloadable: boolean
+  forStream: boolean
+  forDownload: boolean
 }
 
 export type DealFree = DealFields & {
@@ -264,7 +265,7 @@ function parseReleaseXml(source: string, $: cheerio.CheerioAPI) {
   //
   // parse deals
   //
-  const releaseDeals: Record<string, AudiusSupportedDeal> = {}
+  const releaseDeals: Record<string, AudiusSupportedDeal[]> = {}
   $('ReleaseDeal').each((_, el) => {
     const $el = $(el)
     const ref = $el.find('DealReleaseReference').text()
@@ -282,35 +283,42 @@ function parseReleaseXml(source: string, $: cheerio.CheerioAPI) {
         return
       }
 
+      // add deal
+      function addDeal(deal: AudiusSupportedDeal) {
+        releaseDeals[ref] ||= []
+        releaseDeals[ref].push(deal)
+      }
+
       const common: DealFields = {
-        isDownloadable: usageTypes.includes('PermanentDownload'),
+        forStream: usageTypes.includes('OnDemandStream'),
+        forDownload: usageTypes.includes('PermanentDownload'),
         validityStartDate: $el.find('ValidityPeriod > StartDate').text(),
       }
 
       if (commercialModelType == 'FreeOfChargeModel') {
-        releaseDeals[ref] = {
+        addDeal({
           ...common,
           audiusDealType: 'Free',
-        }
+        })
       } else if (commercialModelType == 'PayAsYouGoModel') {
         const priceUsd = parseFloat(
           $el.find('WholesalePricePerUnit[CurrencyCode="USD"]').text()
         )
         if (priceUsd) {
-          releaseDeals[ref] = {
+          addDeal({
             ...common,
             audiusDealType: 'PayGated',
             priceUsd,
-          }
+          })
         }
       } else if (
         commercialModelType == 'FollowGated' ||
         commercialModelType == 'TipGated'
       ) {
-        releaseDeals[ref] = {
+        addDeal({
           ...common,
           audiusDealType: commercialModelType,
-        }
+        })
       } else if (commercialModelType == 'NFTGated') {
         const chain = $el.find('Chain').text()
         const address = $el.find('Address').text()
@@ -324,7 +332,7 @@ function parseReleaseXml(source: string, $: cheerio.CheerioAPI) {
 
         switch (chain) {
           case 'eth':
-            releaseDeals[ref] = {
+            addDeal({
               ...common,
               audiusDealType: 'NFTGated',
               chain,
@@ -334,10 +342,10 @@ function parseReleaseXml(source: string, $: cheerio.CheerioAPI) {
               externalLink,
               standard,
               slug,
-            }
+            })
             break
           case 'sol':
-            releaseDeals[ref] = {
+            addDeal({
               ...common,
               audiusDealType: 'NFTGated',
               chain,
@@ -345,7 +353,7 @@ function parseReleaseXml(source: string, $: cheerio.CheerioAPI) {
               name,
               imageUrl,
               externalLink,
-            }
+            })
             break
         }
       }
@@ -431,10 +439,13 @@ function parseReleaseXml(source: string, $: cheerio.CheerioAPI) {
       const $el = $(el)
 
       const ref = $el.find('ReleaseReference').text()
-      const deal = releaseDeals[ref]
+      const deals = releaseDeals[ref] || []
+      const validityStartDate = deals.length
+        ? deals[0].validityStartDate
+        : undefined
 
       const releaseDate =
-        deal?.validityStartDate ||
+        validityStartDate ||
         $el.find('ReleaseDate').text() ||
         $el.find('GlobalOriginalReleaseDate').text()
 
@@ -463,7 +474,7 @@ function parseReleaseXml(source: string, $: cheerio.CheerioAPI) {
         problems: [],
         soundRecordings: [],
         images: [],
-        deal,
+        deals,
       }
 
       // resolve audius genre
@@ -502,7 +513,7 @@ function parseReleaseXml(source: string, $: cheerio.CheerioAPI) {
         })
 
       // deal or no deal?
-      if (!release.deal) {
+      if (!release.deals.length) {
         release.problems.push('NoDeal')
       }
 
