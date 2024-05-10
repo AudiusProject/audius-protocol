@@ -10,7 +10,6 @@ import { Text } from './Text'
 
 const useStyles = makeStyles(({ spacing, palette }) => ({
   root: {
-    margin: spacing(1),
     borderRadius: 2,
     backgroundColor: palette.neutralLight4,
     paddingVertical: spacing(1),

@@ -2,7 +2,8 @@ import {
   formatSecondsAsText,
   formatDate,
   removeNullable,
-  pluralize
+  pluralize,
+  formatCount
 } from '@audius/common/utils'
 
 import { Flex, Text } from '@audius/harmony-native'
@@ -17,17 +18,17 @@ const messages = {
 const SecondaryStatRow = (props: { stats: (string | null)[] }) => {
   const { stats } = props
   const nonNullStats = stats.filter(removeNullable)
+  if (nonNullStats.length === 0) return null
+
   return (
-    <Flex direction='row' gap='xs'>
-      {nonNullStats.map((stat, i) => {
-        return (
-          <Text variant='body' size='s' strength='strong' key={i}>
-            {stat}
-            {i < nonNullStats.length - 1 ? ', ' : ''}
-          </Text>
-        )
-      })}
-    </Flex>
+    <Text variant='body' size='s' strength='strong'>
+      {nonNullStats.map((stat, i) => (
+        <>
+          {stat}
+          {i < nonNullStats.length - 1 ? ', ' : ''}
+        </>
+      ))}
+    </Text>
   )
 }
 
@@ -68,7 +69,10 @@ export const SecondaryStats = ({
             : null,
           formatSecondsAsText(duration ?? 0),
           playCount && !hidePlayCount
-            ? `${playCount} ${pluralize(messages.playCount, playCount)}`
+            ? `${formatCount(playCount)} ${pluralize(
+                messages.playCount,
+                playCount
+              )}`
             : null
         ]}
       />

@@ -10,7 +10,7 @@ import {
 import type { CommonState } from '@audius/common/store'
 import { dayjs, getDogEarType, Genre } from '@audius/common/utils'
 import moment from 'moment'
-import { TouchableOpacity, Image } from 'react-native'
+import { TouchableOpacity } from 'react-native'
 import { useSelector } from 'react-redux'
 
 import {
@@ -34,7 +34,6 @@ import { light } from 'app/haptics'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { makeStyles } from 'app/styles'
-import { moodMap } from 'app/utils/moods'
 
 import { OfflineStatusRow } from '../offline-downloads'
 
@@ -43,6 +42,7 @@ import { DetailsProgressInfo } from './DetailsProgressInfo'
 import { DetailsTileActionButtons } from './DetailsTileActionButtons'
 import { DetailsTileAiAttribution } from './DetailsTileAiAttribution'
 import { DetailsTileHasAccess } from './DetailsTileHasAccess'
+import { DetailsTileMetadata } from './DetailsTileMetadata'
 import { DetailsTileNoAccess } from './DetailsTileNoAccess'
 import { DetailsTileStats } from './DetailsTileStats'
 import { SecondaryStats } from './SecondaryStats'
@@ -56,16 +56,10 @@ const messages = {
   pause: 'Pause',
   resume: 'Resume',
   replay: 'Replay',
-  preview: 'Preview',
-  trackCount: 'track',
-  playCount: 'play',
-  released: 'Released',
-  updated: 'Updated',
-  genre: 'Genre',
-  mood: 'Mood'
+  preview: 'Preview'
 }
 
-const useStyles = makeStyles(({ palette, spacing, typography }) => ({
+const useStyles = makeStyles(({ palette, spacing }) => ({
   coverArt: {
     borderWidth: 1,
     borderColor: palette.neutralLight8,
@@ -73,10 +67,6 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
     height: 224,
     width: 224,
     alignSelf: 'center'
-  },
-  emoji: {
-    height: spacing(4),
-    width: spacing(4)
   }
 }))
 
@@ -250,9 +240,9 @@ export const DetailsTile = ({
       <Flex
         direction='row'
         wrap='wrap'
+        w='100%'
         justifyContent='flex-start'
-        // Accounts for the margin on the Tag component
-        m='negativeUnit'
+        gap='s'
       >
         {filteredTags.map((tag) => (
           <Tag key={tag} onPress={() => handlePressTag(tag)}>
@@ -276,7 +266,7 @@ export const DetailsTile = ({
   }
 
   return (
-    <Paper mb='xl'>
+    <Paper>
       {renderDogEar()}
       <Flex p='l' gap='l' alignItems='center' w='100%'>
         <Text
@@ -361,6 +351,8 @@ export const DetailsTile = ({
         alignItems='center'
         borderTop='default'
         backgroundColor='surface1'
+        borderBottomLeftRadius='m'
+        borderBottomRightRadius='m'
       >
         {!isPublished ? null : (
           <DetailsTileStats
@@ -397,31 +389,7 @@ export const DetailsTile = ({
             trackArtist={user}
           />
         ) : null}
-        {track?.genre || track?.mood ? (
-          <Flex w='100%' direction='row' gap='l'>
-            {track?.genre ? (
-              <Flex direction='row' gap='xs' alignItems='center'>
-                <Text variant='label' textTransform='uppercase' color='subdued'>
-                  {messages.genre}
-                </Text>
-                <Text variant='body' size='s' strength='strong'>
-                  {track.genre}
-                </Text>
-              </Flex>
-            ) : null}
-            {track?.mood ? (
-              <Flex direction='row' gap='xs' alignItems='center'>
-                <Text variant='label' textTransform='uppercase' color='subdued'>
-                  {messages.mood}
-                </Text>
-                <Text variant='body' size='s' strength='strong'>
-                  {track.mood}
-                </Text>
-                <Image source={moodMap[track.mood]} style={styles.emoji} />
-              </Flex>
-            ) : null}
-          </Flex>
-        ) : null}
+        <DetailsTileMetadata genre={track?.genre} mood={track?.mood} />
         <SecondaryStats
           playCount={playCount}
           duration={duration}
