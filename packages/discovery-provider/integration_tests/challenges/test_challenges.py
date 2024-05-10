@@ -86,6 +86,7 @@ def setup_challenges(app):
                 user_id=2,
                 specifier="2",
                 is_complete=True,
+                completed_at=TEST_BLOCK_DATETIME,
                 current_step_count=3,
                 completed_blocknumber=100,
                 amount=5,
@@ -105,6 +106,7 @@ def setup_challenges(app):
                 user_id=4,
                 specifier="4",
                 is_complete=True,
+                completed_at=TEST_BLOCK_DATETIME,
                 amount=5,
                 created_at=get_created_at(),
             ),
@@ -300,8 +302,6 @@ def test_handle_event(app):
         ]
         # the last challenge was just created so we don't know the created_at time
         del res_dicts[-1]["created_at"]
-        logger.info(f"asdf expected {expected}")
-        logger.info(f"asdf res_dicts {res_dicts}")
         assert expected == res_dicts
 
 

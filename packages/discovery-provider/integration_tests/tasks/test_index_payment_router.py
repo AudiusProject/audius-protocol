@@ -851,12 +851,14 @@ def test_process_payment_router_txs_details_create_challenge_events_for_purchase
         call(
             ChallengeEvent.audio_matching_buyer,
             tx_response.value.slot,
+            tx_response.value.block_time,
             trackBuyerId,
             {"track_id": 1, "amount": 1},
         ),
         call(
             ChallengeEvent.audio_matching_seller,
             tx_response.value.slot,
+            tx_response.value.block_time,
             trackOwnerId,
             {"track_id": 1, "sender_user_id": trackBuyerId, "amount": 1},
         ),

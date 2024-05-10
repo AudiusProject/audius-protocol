@@ -5,6 +5,7 @@ from typing import Optional
 
 from redis import Redis
 from sqlalchemy.orm.session import Session
+from web3 import Web3
 
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
@@ -29,7 +30,6 @@ from src.utils.session_manager import SessionManager
 logger = logging.getLogger(__name__)
 
 trending_strategy_factory = TrendingStrategyFactory()
-web3 = web3_provider.get_web3()
 
 
 def date_to_week(date: date) -> str:
@@ -77,7 +77,11 @@ def dispatch_trending_challenges(
 
 
 def enqueue_trending_challenges(
-    db: SessionManager, redis: Redis, challenge_bus: ChallengeEventBus, date: date
+    db: SessionManager,
+    web3: Web3,
+    redis: Redis,
+    challenge_bus: ChallengeEventBus,
+    date: date,
 ):
     logger.info(
         "calculate_trending_challenges.py | Start calculating trending challenges"
@@ -85,14 +89,14 @@ def enqueue_trending_challenges(
     update_start = time.time()
     with db.scoped_session() as session, challenge_bus.use_scoped_dispatch_queue():
         latest_blocknumber = get_latest_blocknumber_via_redis(session, redis)
-        latest_block_datetime = datetime.fromtimestamp(
-            web3.eth.get_block(latest_blocknumber).timestamp()
-        )
         if latest_blocknumber is None:
             logger.error(
                 "calculate_trending_challenges.py | Unable to get latest block number"
             )
             return
+        latest_block_datetime = datetime.fromtimestamp(
+            web3.eth.get_block(latest_blocknumber)["timestamp"]
+        )
 
         trending_track_versions = trending_strategy_factory.get_versions_for_type(
             TrendingType.TRACKS
@@ -194,12 +198,14 @@ def calculate_trending_challenges_task(self, date: Optional[date] = None):
     db = calculate_trending_challenges_task.db
     redis = calculate_trending_challenges_task.redis
     challenge_bus = calculate_trending_challenges_task.challenge_event_bus
+    web3 = web3_provider.get_web3()
     have_lock = False
     update_lock = redis.lock("calculate_trending_challenges_lock", timeout=7200)
     try:
         have_lock = update_lock.acquire(blocking=False)
         if have_lock:
-            enqueue_trending_challenges(db, redis, challenge_bus, date)
+
+            enqueue_trending_challenges(db, web3, redis, challenge_bus, date)
         else:
             logger.info(
                 "calculate_trending_challenges.py | Failed to acquire index trending lock"

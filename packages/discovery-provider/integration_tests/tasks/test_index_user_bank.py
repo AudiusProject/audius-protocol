@@ -578,7 +578,7 @@ def test_process_user_bank_txs_details_create_challenge_events_for_purchase(app)
             session=session,
             tx_info=tx_response,
             tx_sig=tx_sig_str,
-            timestamp=datetime.now(),
+            timestamp=datetime.fromtimestamp(tx_response.value.block_time),
             challenge_event_bus=challenge_event_bus,
         )
     # Note: Challenge amounts are 1 per dollar of USDC
@@ -586,12 +586,14 @@ def test_process_user_bank_txs_details_create_challenge_events_for_purchase(app)
         call(
             ChallengeEvent.audio_matching_buyer,
             tx_response.value.slot,
+            datetime.fromtimestamp(tx_response.value.block_time),
             track_buyer_id,
             {"track_id": 1, "amount": 1},
         ),
         call(
             ChallengeEvent.audio_matching_seller,
             tx_response.value.slot,
+            datetime.fromtimestamp(tx_response.value.block_time),
             track_owner_id,
             {"track_id": 1, "sender_user_id": track_buyer_id, "amount": 1},
         ),
@@ -1081,11 +1083,18 @@ def test_process_user_bank_txs_details_transfer_audio_tip_challenge_event(app):
             redis=redis,
             tx_info=tx_response,
             tx_sig=tx_sig_str,
-            timestamp=datetime.now(),
+            timestamp=datetime.fromtimestamp(tx_response.value.block_time),
             challenge_event_bus=challenge_event_bus,
         )
 
-        calls = [call(ChallengeEvent.send_tip, tx_response.value.slot, sender_user_id)]
+        calls = [
+            call(
+                ChallengeEvent.send_tip,
+                tx_response.value.slot,
+                datetime.fromtimestamp(tx_response.value.block_time),
+                sender_user_id,
+            )
+        ]
         challenge_event_bus.dispatch.assert_has_calls(calls)
 
 

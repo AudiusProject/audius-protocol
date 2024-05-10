@@ -854,7 +854,6 @@ def process_user_bank_tx_details(
     if instruction is None:
         logger.error(f"index_user_bank.py | {tx_sig} No Valid instruction found")
         return
-
     if has_create_token_instruction:
         process_create_userbank_instruction(
             session=session,

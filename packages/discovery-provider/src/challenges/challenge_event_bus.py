@@ -165,7 +165,6 @@ class ChallengeEventBus:
             # trim the first from the front of the list
             self._redis.ltrim(REDIS_QUEUE_PREFIX, len(events_json), -1)
             events_dicts = list(map(self._json_to_event, events_json))
-            logger.info(f"asdf events_dicts {events_dicts}")
             # Consolidate event types for processing
             # map of {"event_type": [{ user_id: number, block_number: number, extra: {} }]}}
             event_user_dict: DefaultDict[ChallengeEvent, List[EventMetadata]] = (

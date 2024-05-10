@@ -20,6 +20,7 @@ from src.utils.redis_connection import get_redis
 
 REDIS_URL = shared_config["redis"]["url"]
 BLOCK_NUMBER = 1
+BLOCK_DATETIME = datetime.now()
 
 
 def create_user(offset: int) -> User:
@@ -59,12 +60,12 @@ def dispatch_new_user_signup(
     bus.dispatch(
         ChallengeEvent.referral_signup,
         BLOCK_NUMBER,
-        datetime.now(),
+        BLOCK_DATETIME,
         referrer,
         {"referred_user_id": referred_user_id},
     )
     bus.dispatch(
-        ChallengeEvent.referred_signup, BLOCK_NUMBER, datetime.now(), referred_user_id
+        ChallengeEvent.referred_signup, BLOCK_NUMBER, BLOCK_DATETIME, referred_user_id
     )
 
 
@@ -123,10 +124,13 @@ def test_referral_challenge(app):
             bus.dispatch(
                 ChallengeEvent.referral_signup,
                 BLOCK_NUMBER,
+                BLOCK_DATETIME,
                 referrer.user_id,
                 {"referred_user_id": 2},
             )
-            bus.dispatch(ChallengeEvent.referred_signup, BLOCK_NUMBER, 2)
+            bus.dispatch(
+                ChallengeEvent.referred_signup, BLOCK_NUMBER, BLOCK_DATETIME, 2
+            )
         bus.flush()
         bus.process_events(session)
 
