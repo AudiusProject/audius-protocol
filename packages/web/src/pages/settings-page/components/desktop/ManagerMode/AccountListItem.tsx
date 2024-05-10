@@ -2,7 +2,6 @@ import { useCallback, useMemo } from 'react'
 
 import { User, UserMetadata } from '@audius/common/models'
 import { accountSelectors, chatSelectors } from '@audius/common/store'
-import { encodeHashId } from '@audius/common/utils'
 import {
   Button,
   Flex,
@@ -21,7 +20,6 @@ import {
 import ArtistChip from 'components/artist/ArtistChip'
 import { useGoToRoute } from 'hooks/useGoToRoute'
 import { useComposeChat } from 'pages/chat-page/components/useComposeChat'
-import { audiusSdk } from 'services/audius-sdk'
 import { useSelector } from 'utils/reducer'
 import { profilePage } from 'utils/route'
 import zIndex from 'utils/zIndex'
@@ -44,6 +42,8 @@ type AccountListItemProps = {
   isPending: boolean
   user: User | UserMetadata
   isManagedAccount?: boolean
+  onRemoveManager: (params: { userId: number; managerUserId: number }) => void
+  onCancelInvite?: (params: { userId: number; managerUserId: number }) => void
   onApprove?: (params: {
     currentUserId: number
     grantorUser: User | UserMetadata
@@ -58,6 +58,8 @@ export const AccountListItem = ({
   isPending,
   user,
   isManagedAccount,
+  onRemoveManager,
+  onCancelInvite,
   onApprove,
   onReject
 }: AccountListItemProps) => {
@@ -78,69 +80,72 @@ export const AccountListItem = ({
     user
   })
 
-  const removeManager = useCallback(async () => {
-    const sdk = await audiusSdk()
-    if (!currentUserId) {
-      return
-    }
-    try {
-      // TODO(nkang - PAY-2827) - Turn into audius-query mutation
-      await sdk.grants.removeManager({
-        userId: encodeHashId(currentUserId),
-        managerUserId: encodeHashId(user!.user_id)
-      })
-      // eslint-disable-next-line no-console
-      console.log('Successfully removed manager')
-    } catch (e) {
-      console.error(e)
-    }
-  }, [currentUserId, user])
+  const handleRemoveManager = useCallback(() => {
+    if (!currentUserId) return
+    onRemoveManager({
+      userId: isManagedAccount ? user.user_id : currentUserId,
+      managerUserId: isManagedAccount ? currentUserId : user.user_id
+    })
+  }, [currentUserId, isManagedAccount, user.user_id, onRemoveManager])
 
-  const popupMenuItems = useMemo(
-    () => [
-      {
+  const handleCancelInvite = useCallback(() => {
+    if (!currentUserId) return
+    onCancelInvite?.({
+      userId: currentUserId,
+      managerUserId: user.user_id
+    })
+  }, [currentUserId, user.user_id, onCancelInvite])
+
+  const popupMenuItems = useMemo(() => {
+    const items = []
+    if (isManagedAccount) {
+      if (!isPending) {
+        items.push({
+          icon: <IconTrash />,
+          text: messages.stopManaging,
+          onClick: handleRemoveManager
+        })
+      }
+    } else {
+      items.push({
         icon: <IconTrash />,
-        text: isManagedAccount
-          ? messages.stopManaging
-          : isPending
-          ? messages.cancelInvite
-          : messages.removeManager,
-        onClick: removeManager
-      },
-      {
-        icon: <IconUser />,
-        text: messages.visitProfile,
-        onClick: goToProfile
-      },
-      ...(canCreateChat
-        ? [
-            {
-              icon: <IconMessage />,
-              text: messages.sendMessage,
-              onClick: composeChat
-            }
-          ]
-        : []),
-      ...(isManagedAccount
-        ? [
-            {
-              icon: <IconUserArrowRotate />,
-              text: messages.switchToUser,
-              // TODO(nkang - PAY-2831) - Implement this
-              onClick: () => {}
-            }
-          ]
-        : [])
-    ],
-    [
-      isManagedAccount,
-      isPending,
-      removeManager,
-      goToProfile,
-      composeChat,
-      canCreateChat
-    ]
-  )
+        text: isPending ? messages.cancelInvite : messages.removeManager,
+        onClick: isPending ? handleCancelInvite : handleRemoveManager
+      })
+    }
+    items.push({
+      icon: <IconUser />,
+      text: messages.visitProfile,
+      onClick: goToProfile
+    })
+
+    if (canCreateChat) {
+      items.push({
+        icon: <IconMessage />,
+        text: messages.sendMessage,
+        onClick: composeChat
+      })
+    }
+
+    if (isManagedAccount) {
+      items.push({
+        icon: <IconUserArrowRotate />,
+        text: messages.switchToUser,
+        // TODO(nkang - PAY-2831) - Implement this
+        onClick: () => {}
+      })
+    }
+
+    return items
+  }, [
+    isManagedAccount,
+    isPending,
+    handleCancelInvite,
+    handleRemoveManager,
+    goToProfile,
+    composeChat,
+    canCreateChat
+  ])
 
   const handleApprove = useCallback(() => {
     if (!currentUserId) return

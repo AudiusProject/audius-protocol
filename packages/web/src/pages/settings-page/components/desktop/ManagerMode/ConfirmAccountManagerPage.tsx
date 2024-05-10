@@ -97,6 +97,7 @@ export const ConfirmAccountManagerPage = (
             fullWidth
             variant='secondary'
             iconLeft={IconCaretLeft}
+            disabled={submitting}
             onClick={() =>
               setPage(AccountsManagingYouPages.FIND_ACCOUNT_MANAGER, {
                 query: params?.query
