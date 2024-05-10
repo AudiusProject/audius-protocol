@@ -283,17 +283,18 @@ const ClaimAllPanel = () => {
         alignItems='center'
         alignSelf='stretch'
         justifyContent='space-between'
-        m='s'
         css={{ cursor: 'pointer' }}
         onClick={handleClick}
       >
         <Flex direction='column' alignItems='start' w='100%'>
           <Flex gap='s' alignItems='center'>
-            <IconTokenGold
-              height={24}
-              width={24}
-              aria-label={messages.goldAudioToken}
-            />
+            {claimableAmount > 0 ? (
+              <IconTokenGold
+                height={24}
+                width={24}
+                aria-label={messages.goldAudioToken}
+              />
+            ) : null}
             {isEmpty ? null : (
               <Text color='accent' variant='title' size='l'>
                 {claimableAmount > 0
