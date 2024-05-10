@@ -1,10 +1,11 @@
-import { useContext } from 'react'
+import { useCallback, useContext } from 'react'
 
 import {
   ShareSource,
   RepostSource,
   FavoriteSource,
-  FollowSource
+  FollowSource,
+  ModalSource
 } from '@audius/common/models'
 import type { ID } from '@audius/common/models'
 import {
@@ -20,7 +21,9 @@ import {
   mobileOverflowMenuUISelectors,
   shareModalUIActions,
   OverflowAction,
-  playbackPositionActions
+  playbackPositionActions,
+  PurchaseableContentType,
+  usePremiumContentPurchaseModal
 } from '@audius/common/store'
 import type { CommonState, OverflowActionCallbacks } from '@audius/common/store'
 import { useDispatch, useSelector } from 'react-redux'
@@ -63,6 +66,8 @@ const TrackOverflowMenuDrawer = ({ render }: Props) => {
   const { toast } = useToast()
   const { id: modalId, contextPlaylistId } = useSelector(getMobileOverflowModal)
   const id = modalId as ID
+  const { onOpen: openPremiumContentPurchaseModal } =
+    usePremiumContentPurchaseModal()
 
   const track = useSelector((state: CommonState) => getTrack(state, { id }))
   const playlist = useSelector((state: CommonState) =>
@@ -80,6 +85,18 @@ const TrackOverflowMenuDrawer = ({ render }: Props) => {
   const user = useSelector((state: CommonState) =>
     getUser(state, { id: track?.owner_id })
   )
+
+  const handlePurchasePress = useCallback(() => {
+    if (track?.track_id) {
+      openPremiumContentPurchaseModal(
+        {
+          contentId: track?.track_id,
+          contentType: PurchaseableContentType.TRACK
+        },
+        { source: ModalSource.LineUpCollectionTile }
+      )
+    }
+  }, [track, openPremiumContentPurchaseModal])
 
   if (!track || !user) {
     return null
@@ -179,7 +196,8 @@ const TrackOverflowMenuDrawer = ({ render }: Props) => {
     [OverflowAction.MARK_AS_UNPLAYED]: () => {
       dispatch(clearTrackPosition({ trackId: id, userId: currentUserId }))
       toast({ content: messages.markedAsUnplayed })
-    }
+    },
+    [OverflowAction.PURCHASE_TRACK]: handlePurchasePress
   }
 
   return render(callbacks)
