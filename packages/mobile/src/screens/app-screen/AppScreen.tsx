@@ -10,6 +10,8 @@ import { UploadModalScreen } from '../upload-screen'
 import { WalletConnectModalScreen } from '../wallet-connect'
 
 import { AppTabsScreen } from './AppTabsScreen'
+import { Platform } from 'react-native'
+import { MobileOS } from '@audius/common/models'
 
 const Stack = createNativeStackNavigator()
 
@@ -18,7 +20,14 @@ export const AppScreen = () => {
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name='AppTabs' component={AppTabsScreen} />
       <Stack.Group screenOptions={{ presentation: 'fullScreenModal' }}>
-        <Stack.Screen name='TipArtist' component={TipArtistModalScreen} />
+        <Stack.Screen
+          name='TipArtist'
+          component={TipArtistModalScreen}
+          // Drop animation on android to fix blank tip screen
+          options={
+            Platform.OS === MobileOS.ANDROID ? { animation: 'none' } : undefined
+          }
+        />
         <Stack.Screen name='Upload' component={UploadModalScreen} />
         <Stack.Screen name='EditTrack' component={EditTrackModalScreen} />
         <Stack.Screen name='EditPlaylist' component={EditPlaylistModalScreen} />
