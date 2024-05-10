@@ -231,7 +231,7 @@ def get_tx_in_db(session: Session, tx_sig: str) -> bool:
     return exists
 
 
-def parse_route_transaction_memo(
+def parse_route_transaction_memos(
     session: Session, memos: List[str], timestamp: datetime
 ) -> Tuple[RouteTransactionMemo | None, GeoMetadataDict | None]:
     """Checks the list of memos for one matching a format of a purchase's content_metadata, and then uses that content_metadata to find the stream_conditions associated with that content to get the price"""
@@ -247,6 +247,7 @@ def parse_route_transaction_memo(
                 route_transaction_memo = RouteTransactionMemo(
                     type=RouteTransactionMemoType.recovery, metadata=None
                 )
+                continue
             if memo.startswith(GEO_MEMO_STRING):
                 geo_data = json.loads(memo.replace(GEO_MEMO_STRING, ""))
                 geo_memo = GeoMetadataDict(
@@ -256,6 +257,7 @@ def parse_route_transaction_memo(
                         "country": geo_data.get("country"),
                     }
                 )
+                continue
 
             content_metadata = memo.split(":")
             if len(content_metadata) == 4:
@@ -359,6 +361,7 @@ def parse_route_transaction_memo(
                         "access": access,
                     },
                 )
+                continue
             else:
                 logger.error(
                     f"index_payment_router.py | Couldn't find relevant price for {content_metadata}"
@@ -721,7 +724,7 @@ def process_route_instruction(
         )
     elif is_usdc:
         logger.debug(f"index_payment_router.py | Parsing memos: {memos}")
-        memo, geo_metadata = parse_route_transaction_memo(
+        memo, geo_metadata = parse_route_transaction_memos(
             session=session, memos=memos, timestamp=timestamp
         )
         validate_and_index_usdc_transfers(
