@@ -40,9 +40,8 @@ export const AccountsYouManageSettingsModal = (
   const { isOpen } = props
   const [currentPage, setCurrentPage] = useState(AccountsYouManagePages.HOME)
 
-  const [currentPageParams, setCurrentPageParams] = useState<
-    AccountsYouManagePagesParams | undefined
-  >()
+  const [currentPageParams, setCurrentPageParams] =
+    useState<AccountsYouManagePagesParams>()
 
   const handleSetPage = useCallback(
     (page: AccountsYouManagePages, params?: AccountsYouManagePagesParams) => {

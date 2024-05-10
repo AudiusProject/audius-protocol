@@ -5,7 +5,7 @@ import {
   useGetManagedAccounts,
   useRemoveManager
 } from '@audius/common/api'
-import { Status, UserMetadata } from '@audius/common/models'
+import { ID, Status, UserMetadata } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
 import { Box, Divider, Flex, Text, TextLink } from '@audius/harmony'
 
@@ -28,8 +28,11 @@ const messages = {
 export const AccountsYouManageHomePage = ({
   setPage
 }: AccountsYouManagePageProps) => {
-  const userId = useSelector(getUserId) as number
-  const { data: managedAccounts, status } = useGetManagedAccounts({ userId })
+  const userId = useSelector(getUserId)
+  const { data: managedAccounts, status } = useGetManagedAccounts(
+    { userId: userId as ID },
+    { disabled: userId == null }
+  )
   const [approveManagedAccount, approveResult] = useApproveManagedAccount()
   const [rejectManagedAccount, rejectResult] = useRemoveManager()
   const { toast } = useContext(ToastContext)
@@ -83,7 +86,7 @@ export const AccountsYouManageHomePage = ({
     <Flex direction='column' gap='xl'>
       <Text variant='body' size='l'>
         {messages.takeControl}{' '}
-        <TextLink href='#' variant='visible'>
+        <TextLink isExternal href='#' variant='visible'>
           {sharedMessages.learnMore}
         </TextLink>
       </Text>
@@ -101,11 +104,9 @@ export const AccountsYouManageHomePage = ({
       (!managedAccounts || managedAccounts.length === 0) ? (
         <>
           <Divider />
-          <Box>
-            <Text variant='body' size='l'>
-              {messages.noAccounts}
-            </Text>
-          </Box>
+          <Text variant='body' size='l'>
+            {messages.noAccounts}
+          </Text>
         </>
       ) : null}
       {managedAccounts?.map((m) => {

@@ -11,6 +11,11 @@ const { getUserId } = accountSelectors
 
 type StopManagingConfirmationPageProps = AccountsYouManagePageProps
 
+const messages = {
+  stopManagingConfirmation:
+    'Are you sure you want to stop managing this account?'
+}
+
 export const StopManagingConfirmationPage = (
   props: StopManagingConfirmationPageProps
 ) => {
@@ -30,6 +35,7 @@ export const StopManagingConfirmationPage = (
       onSuccess={navigateToHome}
       userId={userId}
       managerUserId={managerUserId}
+      confirmationMessage={messages.stopManagingConfirmation}
     />
   )
 }

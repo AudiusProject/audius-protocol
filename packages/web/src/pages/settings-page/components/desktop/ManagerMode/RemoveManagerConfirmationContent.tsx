@@ -5,17 +5,13 @@ import { Status } from '@audius/common/models'
 import { Button, Flex, Text } from '@audius/harmony'
 
 const messages = {
-  removeManagerConfirmation:
-    'Are you sure you want to remove this manager from your account?',
-  stopManagingConfirmation:
-    'Are you sure you want to stop managing this account?',
   cancel: 'Cancel',
   remove: 'Remove',
   errorGeneral: 'Something went wrong.'
 }
 
 type RemoveManagerConfirmationContentProps = {
-  isStopManaging?: boolean
+  confirmationMessage: string
   onSuccess: () => void
   onCancel: () => void
   userId: number
@@ -23,14 +19,13 @@ type RemoveManagerConfirmationContentProps = {
 }
 
 export const RemoveManagerConfirmationContent = ({
-  isStopManaging,
+  confirmationMessage,
   userId,
   managerUserId,
   onSuccess,
   onCancel
 }: RemoveManagerConfirmationContentProps) => {
   const [removeManager, result] = useRemoveManager()
-  const [error, setError] = useState<string | null>(null)
   const { status } = result
 
   const handleDelete = useCallback(() => {
@@ -44,22 +39,14 @@ export const RemoveManagerConfirmationContent = ({
     }
   }, [status, onSuccess])
 
-  useEffect(() => {
-    if (status === Status.ERROR) {
-      setError(messages.errorGeneral)
-    }
-  }, [status])
-
   if (!managerUserId) return null
 
-  const isSubmitting = status !== Status.IDLE
+  const isSubmitting = status !== Status.IDLE && status !== Status.ERROR
 
   return (
     <Flex direction='column' gap='xl'>
       <Text variant='body' size='l'>
-        {isStopManaging
-          ? messages.stopManagingConfirmation
-          : messages.removeManagerConfirmation}
+        {confirmationMessage}
       </Text>
 
       <Flex gap='s'>
@@ -80,9 +67,9 @@ export const RemoveManagerConfirmationContent = ({
           {messages.remove}
         </Button>
       </Flex>
-      {error == null ? null : (
+      {status === Status.ERROR ? null : (
         <Text textAlign='center' color='danger' variant='body'>
-          {error}
+          {messages.errorGeneral}
         </Text>
       )}
     </Flex>

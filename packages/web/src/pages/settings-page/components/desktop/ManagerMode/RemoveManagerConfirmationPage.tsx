@@ -15,6 +15,11 @@ const { getUserId } = accountSelectors
 
 type RemoveManagerConfirmationPageProps = ConfirmRemoveManagerPageProps
 
+const messages = {
+  removeManagerConfirmation:
+    'Are you sure you want to remove this manager from your account?'
+}
+
 export const RemoveManagerConfirmationPage = (
   props: RemoveManagerConfirmationPageProps
 ) => {
@@ -31,6 +36,7 @@ export const RemoveManagerConfirmationPage = (
   return (
     <Box ph='xl'>
       <RemoveManagerConfirmationContent
+        confirmationMessage={messages.removeManagerConfirmation}
         onCancel={navigateToHome}
         onSuccess={navigateToHome}
         userId={userId}
