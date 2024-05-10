@@ -1,21 +1,20 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
+import { useRequestAddManager } from '@audius/common/api'
+import { Status } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
-import { encodeHashId } from '@audius/common/utils'
 import {
+  Box,
   Button,
   Flex,
   Hint,
   IconCaretLeft,
   IconError,
   Text,
-  TextLink,
-  Box
+  TextLink
 } from '@audius/harmony'
 
 import ArtistChip from 'components/artist/ArtistChip'
-import { audiusSdk } from 'services/audius-sdk'
-import { reportToSentry } from 'store/errors/reportToSentry'
 import { useSelector } from 'utils/reducer'
 
 import { sharedMessages } from './sharedMessages'
@@ -42,30 +41,33 @@ export const ConfirmAccountManagerPage = (
   const userId = useSelector(getUserId)
   const [submitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [requestAddManager, result] = useRequestAddManager()
+  const { status } = result
+
   const manager = params?.user
-  const handleConfirm = useCallback(async () => {
+  useEffect(() => {
+    if (status === Status.SUCCESS) {
+      setPage(AccountsManagingYouPages.HOME)
+    }
+  }, [setPage, status])
+
+  useEffect(() => {
+    if (status === Status.ERROR) {
+      setError(messages.errorGeneral)
+      setIsSubmitting(false)
+    }
+  }, [status])
+
+  const handleConfirm = useCallback(() => {
     setIsSubmitting(true)
-    const sdk = await audiusSdk()
+    setError(null)
     if (!userId) {
       setError(messages.errorNoUserId)
       setIsSubmitting(false)
       return
     }
-    try {
-      // TODO(nkang - C-4315) - Turn into audius-query mutation
-      await sdk.grants.addManager({
-        userId: encodeHashId(userId),
-        managerUserId: encodeHashId(manager!.user_id)
-      })
-    } catch (e) {
-      setError(messages.errorGeneral)
-      reportToSentry({ error: e instanceof Error ? e : new Error(String(e)) })
-      setIsSubmitting(false)
-      return
-    }
-    setIsSubmitting(false)
-    setPage(AccountsManagingYouPages.HOME)
-  }, [manager, userId, setPage])
+    requestAddManager({ userId, managerUser: manager! })
+  }, [manager, userId, requestAddManager])
 
   if (!manager) {
     return null
@@ -104,8 +106,7 @@ export const ConfirmAccountManagerPage = (
             {messages.back}
           </Button>
           <Button
-            onSubmit={handleConfirm}
-            disabled={submitting}
+            onClick={handleConfirm}
             isLoading={submitting}
             fullWidth
             variant='secondary'

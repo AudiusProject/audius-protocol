@@ -38,6 +38,7 @@ export const FindAccountManagerPage = (props: FindAccountManagerPageProps) => {
     (user: User) => {
       return (
         <Box
+          key={user.user_id}
           pv='l'
           borderTop='default'
           ph='xl'
