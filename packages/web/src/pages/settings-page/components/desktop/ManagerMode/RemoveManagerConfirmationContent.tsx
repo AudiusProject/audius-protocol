@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect } from 'react'
 
 import { useRemoveManager } from '@audius/common/api'
 import { Status } from '@audius/common/models'
