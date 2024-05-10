@@ -33,15 +33,13 @@ def fetch_user_challenges(
 
 class EventMetadata(TypedDict):
     block_number: int
+    block_datetime: datetime
     user_id: int
     extra: Dict
 
 
-class FullEventMetadata(TypedDict):
-    block_number: int
-    user_id: int
+class FullEventMetadata(EventMetadata):
     specifier: str
-    extra: Dict
 
 
 class ChallengeUpdater(ABC):

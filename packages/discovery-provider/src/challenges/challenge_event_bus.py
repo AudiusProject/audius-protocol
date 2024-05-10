@@ -39,6 +39,7 @@ REDIS_QUEUE_PREFIX = "challenges-event-queue"
 class InternalEvent(TypedDict):
     event: ChallengeEvent
     block_number: int
+    block_datetime: datetime
     user_id: int
     extra: Dict
 
@@ -167,18 +168,16 @@ class ChallengeEventBus:
 
             # Consolidate event types for processing
             # map of {"event_type": [{ user_id: number, block_number: number, extra: {} }]}}
-            event_user_dict: DefaultDict[ChallengeEvent, List[EventMetadata]] = (
-                defaultdict(lambda: [])
-            )
+            event_user_dict: DefaultDict[
+                ChallengeEvent, List[EventMetadata]
+            ] = defaultdict(lambda: [])
             for event_dict in events_dicts:
                 event_type = event_dict["event"]
                 event_user_dict[event_type].append(
                     {
                         "user_id": event_dict["user_id"],
                         "block_number": event_dict["block_number"],
-                        "block_datetime": datetime.fromtimestamp(
-                            event_dict["block_datetime"]
-                        ),
+                        "block_datetime": event_dict["block_datetime"],
                         "extra": event_dict.get(  # use .get to be safe since prior versions didn't have `extra`
                             "extra", {}
                         ),

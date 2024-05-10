@@ -138,6 +138,7 @@ def enqueue_trending_challenges(
                 challenge_bus,
                 ChallengeEvent.trending_underground,
                 latest_blocknumber,
+                latest_block_datetime,
                 top_tracks,
                 version,
                 date,

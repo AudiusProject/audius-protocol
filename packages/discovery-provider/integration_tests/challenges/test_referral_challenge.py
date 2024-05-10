@@ -59,10 +59,13 @@ def dispatch_new_user_signup(
     bus.dispatch(
         ChallengeEvent.referral_signup,
         BLOCK_NUMBER,
+        datetime.now(),
         referrer,
         {"referred_user_id": referred_user_id},
     )
-    bus.dispatch(ChallengeEvent.referred_signup, BLOCK_NUMBER, referred_user_id)
+    bus.dispatch(
+        ChallengeEvent.referred_signup, BLOCK_NUMBER, datetime.now(), referred_user_id
+    )
 
 
 def test_referral_challenge(app):
