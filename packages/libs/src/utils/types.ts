@@ -178,6 +178,7 @@ export type TrackMetadata = {
   permalink: string
   audio_upload_id: Nullable<string>
   preview_start_seconds: Nullable<number>
+  placement_hosts?: Nullable<string>
   ddex_app?: Nullable<string>
   ddex_release_ids?: Nullable<DDEXReleaseIDs>
   artists?: Nullable<[ResourceContributor]>
