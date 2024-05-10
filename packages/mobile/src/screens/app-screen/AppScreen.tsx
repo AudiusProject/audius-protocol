@@ -1,4 +1,6 @@
+import { MobileOS } from '@audius/common/models'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
+import { Platform } from 'react-native'
 
 import { ChangeEmailModalScreen } from '../change-email-screen/ChangeEmailScreen'
 import { ChangePasswordModalScreen } from '../change-password-screen'
@@ -10,8 +12,6 @@ import { UploadModalScreen } from '../upload-screen'
 import { WalletConnectModalScreen } from '../wallet-connect'
 
 import { AppTabsScreen } from './AppTabsScreen'
-import { Platform } from 'react-native'
-import { MobileOS } from '@audius/common/models'
 
 const Stack = createNativeStackNavigator()
 
