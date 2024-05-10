@@ -174,7 +174,7 @@ const PriceField = (props: PriceFieldProps) => {
       : null
   )
 
-  // This logic is a bit of a hack to update the Formik field whenever the prefilled value was set
+  // This logic is a bit of a hack to set an initial value once in the Formik field (when a prefilled value is desired)
   // This could have lived elsewhere (i.e. initialValues or onChange higher up),
   // but it made sense to colocate here since we also had to set up workaround logic to work with the "setHumanizedValue" state
   const [hasSetInitialValue, setHasSetInitialValue] = useState(false)
