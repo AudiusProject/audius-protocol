@@ -50,8 +50,6 @@ test('deal types', async () => {
     year: '2010',
   })
   expect(releases[1].soundRecordings[0].copyrightLine).toBeUndefined()
-
-  // separate stream / download deal conditions
 })
 
 test('separate stream / download deal conditions', async () => {
@@ -61,11 +59,13 @@ test('separate stream / download deal conditions', async () => {
   )) as DDEXRelease[]
 
   expect(releases[0].deals[0]).toMatchObject<Partial<DealFree>>({
+    audiusDealType: 'Free',
     forStream: true,
     forDownload: false,
   })
 
   expect(releases[0].deals[1]).toMatchObject<Partial<DealFollowGated>>({
+    audiusDealType: 'FollowGated',
     forStream: false,
     forDownload: true,
   })
