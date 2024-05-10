@@ -82,24 +82,13 @@ type PriceMessages = typeof messages.price
 export type PriceFieldProps = TrackAvailabilityFieldsProps & {
   messaging: PriceMessages[keyof PriceMessages]
   fieldName: typeof PRICE | typeof ALBUM_TRACK_PRICE
+  prefillValue?: number
 }
 
 export const UsdcPurchaseFields = (props: TrackAvailabilityFieldsProps) => {
   const { disabled, isAlbum, isUpload } = props
   const [{ value: downloadConditions }] =
     useField<Nullable<AccessConditions>>(DOWNLOAD_CONDITIONS)
-
-  const [, , { setValue: setAlbumTrackPrice }] =
-    useField<Nullable<number>>(ALBUM_TRACK_PRICE)
-
-  useEffect(() => {
-    if (isAlbum) {
-      // Prefill the initial value of the album track price to $1 (for albums)
-      // Note: this can't go into any formik initialValues because the parent form may not have started with USDC purchase
-      // (aka might have null stream_conditions)
-      setAlbumTrackPrice(100)
-    }
-  }, [isAlbum, setAlbumTrackPrice])
 
   return (
     <div className={cn(layoutStyles.col, layoutStyles.gap4)}>
@@ -115,6 +104,7 @@ export const UsdcPurchaseFields = (props: TrackAvailabilityFieldsProps) => {
               disabled={disabled}
               messaging={messages.price.albumTrackPrice}
               fieldName={ALBUM_TRACK_PRICE}
+              prefillValue={100}
             />
           )}
           <input type='hidden' name={PREVIEW} value='0' />
@@ -170,13 +160,34 @@ const PreviewField = (props: TrackAvailabilityFieldsProps) => {
 }
 
 const PriceField = (props: PriceFieldProps) => {
-  const { disabled, messaging, fieldName } = props
+  const { disabled, messaging, fieldName, prefillValue } = props
   const [{ value }, , { setValue: setPrice }] = useField<number | null>(
     fieldName
   )
-  const [humanizedValue, setHumanizedValue] = useState(
-    value ? decimalIntegerToHumanReadable(value) : null
+
+  const [humanizedValue, setHumanizedValue] = useState<string | null>(
+    value
+      ? decimalIntegerToHumanReadable(value)
+      : // Use prefilled value if set
+      prefillValue !== undefined
+      ? decimalIntegerToHumanReadable(prefillValue)
+      : null
   )
+
+  // This logic is a bit of a hack to update the Formik field whenever the prefilled value was set
+  // This could have lived elsewhere (i.e. initialValues or onChange higher up),
+  // but it made sense to colocate here since we also had to set up workaround logic to work with the "setHumanizedValue" state
+  const [hasSetInitialValue, setHasSetInitialValue] = useState(false)
+  useEffect(() => {
+    if (
+      prefillValue != null &&
+      !hasSetInitialValue &&
+      (value === null || value === undefined)
+    ) {
+      setPrice(prefillValue)
+      setHasSetInitialValue(true)
+    }
+  }, [hasSetInitialValue, prefillValue, setPrice, value])
 
   const handlePriceChange: ChangeEventHandler<HTMLInputElement> = useCallback(
     (e) => {
@@ -189,7 +200,7 @@ const PriceField = (props: PriceFieldProps) => {
         setPrice(value)
       }
     },
-    [setPrice, setHumanizedValue]
+    [setPrice]
   )
 
   const handlePriceBlur: FocusEventHandler<HTMLInputElement> = useCallback(
