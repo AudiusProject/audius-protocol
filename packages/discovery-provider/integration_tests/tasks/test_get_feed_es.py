@@ -208,9 +208,6 @@ def test_access_controls(app):
     search_res = esclient.search(index="*", query={"match_all": {}})["hits"]["hits"]
     assert len(search_res) == 7
 
-    # test feed
     with app.app_context():
-        assert 1 == 1
         feed_results = get_feed_es({"user_id": "2"})
-
         assert len(feed_results) == 0
