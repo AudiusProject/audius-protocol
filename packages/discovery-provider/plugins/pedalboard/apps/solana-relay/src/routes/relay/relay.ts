@@ -19,6 +19,7 @@ import bs58 from 'bs58'
 import { personalSign } from 'eth-sig-util'
 import type { RelayRequestBody } from '@audius/sdk'
 import { getRequestIpData } from '../../utils/ipData'
+import { shouldAttachGeoData } from './shouldAttachGeoData'
 
 const RETRY_DELAY_MS = 2 * 1000
 const RETRY_TIMEOUT_MS = 60 * 1000
@@ -225,7 +226,7 @@ export const relay = async (
       feePayer: feePayerKey.toBase58()
     })
 
-    const isGeoDataTransaction = true
+    const isGeoDataTransaction = shouldAttachGeoData(decompiled.instructions)
     if (isGeoDataTransaction) {
       const geo = await getRequestIpData(res.locals.logger, req)
       if (geo) {

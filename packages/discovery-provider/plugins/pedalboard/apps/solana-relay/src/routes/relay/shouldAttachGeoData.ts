@@ -14,7 +14,7 @@ const RECOVERY_MEMO_STRING = "Recover Withdrawal"
  * @param instructions the instructions to check
  * @returns boolean
  */
-const isPaymentTransaction = async (
+const isPaymentTransaction = (
   instructions: TransactionInstruction[]
 ) => {
   let usesPaymentRouter = false
@@ -46,7 +46,7 @@ const isPaymentTransaction = async (
  * @param instructions the instructions to check
  * @returns boolean
  */
-export const shouldAttachGeoData = async (
+export const shouldAttachGeoData = (
   instructions: TransactionInstruction[]
 ) => {
   return isPaymentTransaction(instructions)
