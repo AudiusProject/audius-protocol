@@ -1,10 +1,10 @@
 import { full } from '@audius/sdk'
+import { pickBy } from 'lodash'
 
 import { UserTrackMetadata, UserCollectionMetadata } from '~/models'
 
 import { makePlaylist, makeTrack } from './ResponseAdapter'
 import { APIActivity, APIActivityV2, isApiActivityV2 } from './types'
-import { pickBy } from 'lodash'
 
 export const makeActivity = (
   activity: APIActivity | APIActivityV2
