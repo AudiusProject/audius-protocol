@@ -59,7 +59,7 @@ export const CollectionActionButtons = (props: CollectionActionButtonProps) => {
     { disabled: typeof collectionId !== 'number' }
   )
   const { hasStreamAccess } = useGatedContentAccess(collection)
-  const accessMap = useGatedContentAccessMap(collection?.tracks || [])
+  const accessMap = useGatedContentAccessMap(collection?.tracks ?? [])
   const hasAccessToSomeTracks = Object.values(accessMap).some(
     (hasStreamAccess) => hasStreamAccess
   )

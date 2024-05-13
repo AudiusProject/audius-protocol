@@ -475,8 +475,7 @@ function* play<T extends Track | Collection>(
           // value
           if (
             queueable &&
-            'uid' in queueable &&
-            queueable?.uid === action.uid
+            'uid' in queueable
           ) {
             queueable.isPreview = isPreview
           }

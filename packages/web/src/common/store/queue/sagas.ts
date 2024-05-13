@@ -46,7 +46,8 @@ const {
   getSource,
   getUid,
   getUndershot,
-  getCurrentArtist
+  getCurrentArtist,
+  getIsPreview
 } = queueSelectors
 
 const {
@@ -208,11 +209,14 @@ export function* watchPlay() {
       const trackIsSameButDifferentUid =
         playerTrackId === playActionTrack.track_id &&
         (uid !== playerUid || !!isPreview !== playerIsPreviewing)
+      const hasAccess =
+        !playActionTrack?.is_stream_gated || !!playActionTrack?.access?.stream
       if (noTrackPlaying || trackIsDifferent || trackIsSameButDifferentUid) {
         yield* put(
           playerActions.play({
             uid,
-            isPreview: isPreview && !!playActionTrack.preview_cid,
+            isPreview:
+              !!playActionTrack.preview_cid && (!hasAccess || isPreview),
             trackId: playActionTrack.track_id,
             onEnd: next
           })
@@ -349,9 +353,9 @@ export function* watchNext() {
     const id = (yield* select(getQueueTrackId)) as ID
     const track = yield* select(getTrack, { id })
     const user = yield* select(getUser, { id: track?.owner_id })
-    const currentUserId = yield* select(getUserId)
     const doesUserHaveStreamAccess =
       !track?.is_stream_gated || !!track?.access?.stream
+    const isPreview = yield* select(getIsPreview)
 
     // Skip deleted, owner deactivated, or locked gated track
     if (
@@ -374,8 +378,6 @@ export function* watchNext() {
       if (track) {
         const repeatMode = yield* select(getRepeat)
         const trackIsSameAndRepeatSingle = repeatMode === RepeatMode.SINGLE
-        const isTrackPreview =
-          isPreviewFn(track, currentUserId) && !doesUserHaveStreamAccess
 
         if (trackIsSameAndRepeatSingle) {
           yield* put(
@@ -383,7 +385,7 @@ export function* watchNext() {
               uid,
               trackId: track.track_id,
               onEnd: next,
-              isPreview: isTrackPreview
+              isPreview
             })
           )
         } else {
@@ -392,7 +394,7 @@ export function* watchNext() {
               uid,
               trackId: id,
               source,
-              isPreview: isTrackPreview
+              isPreview
             })
           )
           const event = make(Name.PLAYBACK_PLAY, {
@@ -461,7 +463,7 @@ export function* watchPrevious() {
       const track = yield* select(getTrack, { id })
       const source = yield* select(getSource)
       const user = yield* select(getUser, { id: track?.owner_id })
-      const currentUserId = yield* select(getUserId)
+      const isPreview = yield* select(getIsPreview)
       const doesUserHaveStreamAccess =
         !track?.is_stream_gated || !!track?.access?.stream
 
@@ -482,8 +484,7 @@ export function* watchPrevious() {
               uid,
               trackId: id,
               source,
-              isPreview:
-                isPreviewFn(track, currentUserId) && !doesUserHaveStreamAccess
+              isPreview
             })
           )
           const event = make(Name.PLAYBACK_PLAY, {

@@ -43,6 +43,10 @@ export const getCollectionId = (state: CommonState) => {
   if (!uid) return null
   return Uid.getCollectionId(uid)
 }
+export const getIsPreview = (state: CommonState) =>
+  isQueueIndexValid(state)
+    ? state.queue.order[state.queue.index].isPreview
+    : false
 
 const getCurrentTrack = (state: CommonState) =>
   getTrack(state, { id: getPlayerTrackId(state) })
