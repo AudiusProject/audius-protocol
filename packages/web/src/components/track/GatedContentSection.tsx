@@ -32,7 +32,8 @@ import {
   IconLogoCircleSOL,
   useTheme,
   Button,
-  IconUserFollow
+  IconUserFollow,
+  IconTipping
 } from '@audius/harmony'
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
@@ -42,7 +43,6 @@ import { useModalState } from 'common/hooks/useModalState'
 import { ArtistPopover } from 'components/artist/ArtistPopover'
 import { UserLink } from 'components/link'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
-import { IconTip } from 'components/notification/Notification/components/icons'
 import UserBadges from 'components/user-badges/UserBadges'
 import { useAuthenticatedCallback } from 'hooks/useAuthenticatedCallback'
 import { emptyStringGuard } from 'pages/track-page/utils'
@@ -292,7 +292,7 @@ const LockedGatedContentSection = ({
           variant='primary'
           color='blue'
           onClick={handleSendTip}
-          iconRight={IconTip}
+          iconRight={IconTipping}
           fullWidth
         >
           {messages.sendTip}
