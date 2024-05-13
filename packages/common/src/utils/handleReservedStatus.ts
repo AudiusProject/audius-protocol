@@ -1,4 +1,5 @@
 import { InstagramUser, TikTokUser, TwitterUser } from '~/models/User'
+
 import { Nullable } from './typeUtils'
 
 export type HandleCheckStatus =
