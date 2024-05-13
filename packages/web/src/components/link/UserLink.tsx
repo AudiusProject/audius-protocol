@@ -42,9 +42,7 @@ export const UserLink = (props: UserLinkProps) => {
       ellipses={popover}
       {...other}
     >
-      <Text ellipses variant='body'>
-        {userName}
-      </Text>
+      <Text ellipses>{userName}</Text>
       <UserBadges
         badgeSize={iconSizes[badgeSize]}
         userId={userId}
