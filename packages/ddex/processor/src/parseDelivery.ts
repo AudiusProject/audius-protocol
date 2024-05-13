@@ -94,6 +94,7 @@ export type DDEXSoundRecording = {
 
 type DealFields = {
   validityStartDate: string
+  validityEndDate?: string
   forStream: boolean
   forDownload: boolean
 }
@@ -276,11 +277,26 @@ function parseReleaseXml(source: string, $: cheerio.CheerioAPI) {
       const commercialModelType = cmt.attr('UserDefinedValue') || cmt.text()
       const usageTypes = toTexts($el.find('UseType'))
       const territoryCode = toTexts($el.find('TerritoryCode'))
+      const validityStartDate = $el.find('ValidityPeriod > StartDate').text()
+      const validityEndDate = $el.find('ValidityPeriod > EndDate').text()
 
       // only consider Worldwide
       const isWorldwide = territoryCode.includes('Worldwide')
       if (!isWorldwide) {
         return
+      }
+
+      // check date range
+      {
+        const startDate = new Date(validityStartDate)
+        const endDate = new Date(validityEndDate)
+        const now = new Date()
+        if (startDate && now < startDate) {
+          return
+        }
+        if (endDate && now > endDate) {
+          return
+        }
       }
 
       // add deal
@@ -294,7 +310,8 @@ function parseReleaseXml(source: string, $: cheerio.CheerioAPI) {
           usageTypes.includes('OnDemandStream') ||
           usageTypes.includes('Stream'),
         forDownload: usageTypes.includes('PermanentDownload'),
-        validityStartDate: $el.find('ValidityPeriod > StartDate').text(),
+        validityStartDate,
+        validityEndDate,
       }
 
       if (commercialModelType == 'FreeOfChargeModel') {

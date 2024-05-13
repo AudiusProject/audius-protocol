@@ -274,9 +274,15 @@ export const releaseRepo = {
         return
       }
 
-      const status: ReleaseRow['status'] = release.problems.length
+      let status: ReleaseRow['status'] = release.problems.length
         ? ReleaseProcessingStatus.Blocked
         : ReleaseProcessingStatus.PublishPending
+
+      // if prior is published and latest version has no deal,
+      // treat as takedown
+      if (prior?.entityId && release.deals.length == 0) {
+        status = ReleaseProcessingStatus.DeletePending
+      }
 
       dbUpsert('releases', {
         source,

@@ -82,4 +82,22 @@ test('crud', async () => {
     const rr = releaseRepo.get(grid)!
     expect(rr.status).toBe(ReleaseProcessingStatus.Deleted)
   }
+
+  // ----------------
+  // no deal as takedown:
+  // track is in a published state
+  releaseRepo.update({
+    key: grid,
+    status: ReleaseProcessingStatus.Published,
+    entityType: 'track',
+    entityId: 't1',
+  })
+
+  // update arrives without a deal
+  {
+    await parseDdexXmlFile(source, 'fixtures/04_no_deal.xml')
+    const rr = releaseRepo.get(grid)!
+    expect(rr._parsed?.soundRecordings[0].title).toBe('Updated Example Song')
+    expect(rr.status).toBe(ReleaseProcessingStatus.DeletePending)
+  }
 })
