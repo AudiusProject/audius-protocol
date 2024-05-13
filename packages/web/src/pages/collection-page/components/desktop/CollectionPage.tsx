@@ -16,7 +16,7 @@ import {
   CollectionsPageType,
   CollectionPageTrackRecord
 } from '@audius/common/store'
-import { getDogEarType } from '@audius/common/utils'
+import { getDogEarType, removeNullable } from '@audius/common/utils'
 
 import { ClientOnly } from 'components/client-only/ClientOnly'
 import {
@@ -272,30 +272,28 @@ const CollectionPage = ({
     return isNftPlaylist ? CollectiblesPlaylistTable : TracksTable
   }, [isNftPlaylist])
 
-  const tracksTableColumns = useMemo<
-    (TracksTableColumn | CollectiblesPlaylistTableColumn)[]
-  >(() => {
-    if (isNftPlaylist)
-      return ['playButton', 'collectibleName', 'chain', 'length', 'spacer']
-    // Hide play count if all tracks are premium
-    if (areAllTracksPremium)
-      return [
+  const tracksTableColumns = useMemo(() => {
+    let columns: (
+      | TracksTableColumn
+      | CollectiblesPlaylistTableColumn
+      | undefined
+    )[]
+
+    if (isNftPlaylist) {
+      columns = ['playButton', 'collectibleName', 'chain', 'length', 'spacer']
+    } else {
+      columns = [
         'playButton',
         'trackName',
+        isAlbum ? undefined : 'artistName',
         isAlbum ? 'date' : 'addedDate',
         'length',
+        areAllTracksPremium ? undefined : 'plays',
         'reposts',
         'overflowActions'
       ]
-    return [
-      'playButton',
-      'trackName',
-      isAlbum ? 'date' : 'addedDate',
-      'length',
-      'plays',
-      'reposts',
-      'overflowActions'
-    ]
+    }
+    return columns.filter(removeNullable)
   }, [areAllTracksPremium, isAlbum, isNftPlaylist])
 
   const messages = getMessages(isAlbum ? 'album' : 'playlist')
