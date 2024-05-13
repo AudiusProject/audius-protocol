@@ -378,6 +378,7 @@ export function* watchNext() {
       if (track) {
         const repeatMode = yield* select(getRepeat)
         const trackIsSameAndRepeatSingle = repeatMode === RepeatMode.SINGLE
+        console.log('REED', { trackIsSameAndRepeatSingle, repeatMode })
 
         if (trackIsSameAndRepeatSingle) {
           yield* put(
