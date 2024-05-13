@@ -55,6 +55,7 @@ type UsersSearchProps = {
   }
   renderEmpty?: () => ReactNode
   renderUser: (user: User, closeParentModal: () => void) => ReactNode
+  excludedUserIds?: number[]
   disableAutofocus?: boolean
   onClose?: () => void
   query: string
@@ -81,6 +82,7 @@ export const UsersSearch = (props: UsersSearchProps) => {
     renderEmpty = () => null,
     onClose,
     query,
+    excludedUserIds,
     onChange
   } = props
   const dispatch = useDispatch()
@@ -89,13 +91,16 @@ export const UsersSearch = (props: UsersSearchProps) => {
 
   const { userIds, hasMore, status } = useSelector(getUserList)
   const lastSearchQuery = useSelector(getLastSearchQuery)
+
   const users = useProxySelector(
     (state) => {
-      const ids = hasQuery ? userIds : defaultUserList.userIds
+      const unfilteredIds = hasQuery ? userIds : defaultUserList.userIds
+      const excludedUserIdsSet = new Set(excludedUserIds ?? [])
+      const ids = unfilteredIds.filter((id) => !excludedUserIdsSet.has(id))
       const users = getUsers(state, { ids })
       return ids.map((id) => users[id])
     },
-    [hasQuery, userIds]
+    [excludedUserIds, hasQuery, userIds]
   )
 
   useDebounce(
