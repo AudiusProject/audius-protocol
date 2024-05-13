@@ -426,9 +426,9 @@ def index_purchase(
         content_type=purchase_metadata["type"],
         content_id=purchase_metadata["id"],
         access=purchase_metadata["access"],
-        city=geo_metadata.get("country"),
-        region=geo_metadata.get("region"),
-        country=geo_metadata.get("country"),
+        city=geo_metadata.get("city") if geo_metadata else None,
+        region=geo_metadata.get("region") if geo_metadata else None,
+        country=geo_metadata.get("country") if geo_metadata else None,
     )
     logger.debug(
         f"index_payment_router.py | tx: {tx_sig} | Creating usdc_purchase for purchase {usdc_purchase}"
