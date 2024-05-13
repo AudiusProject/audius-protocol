@@ -1,3 +1,6 @@
+import { Fragment } from 'react'
+
+import type { Nullable } from '@audius/common/utils'
 import {
   formatSecondsAsText,
   formatDate,
@@ -23,20 +26,21 @@ const SecondaryStatRow = (props: { stats: (string | null)[] }) => {
   return (
     <Text variant='body' size='s' strength='strong'>
       {nonNullStats.map((stat, i) => (
-        <>
+        <Fragment key={stat}>
           {stat}
           {i < nonNullStats.length - 1 ? ', ' : ''}
-        </>
+        </Fragment>
       ))}
     </Text>
   )
 }
 
 type SecondaryStatsProps = {
+  isCollection?: boolean
   playCount?: number
   duration?: number
   trackCount?: number
-  releaseDate?: string
+  releaseDate?: Nullable<string>
   updatedAt?: string
   hidePlayCount?: boolean
 }
@@ -44,38 +48,50 @@ type SecondaryStatsProps = {
 /**
  * The details shown at the bottom of the Track Screen and Collection Screen Headers
  */
-export const SecondaryStats = ({
-  playCount,
-  duration,
-  trackCount,
-  releaseDate,
-  updatedAt,
-  hidePlayCount
-}: SecondaryStatsProps) => {
+export const SecondaryStats = (props: SecondaryStatsProps) => {
+  const {
+    isCollection,
+    playCount,
+    duration,
+    trackCount,
+    releaseDate,
+    updatedAt,
+    hidePlayCount
+  } = props
+
+  const releaseDateStat = releaseDate
+    ? `${messages.released} ${formatDate(releaseDate)}`
+    : null
+
+  const updatedAtStat = updatedAt
+    ? `${messages.updated} ${formatDate(updatedAt)}`
+    : null
+
+  const trackCountStat = trackCount
+    ? `${trackCount} ${pluralize(messages.trackCount, trackCount)}`
+    : null
+
+  const durationStat = formatSecondsAsText(duration ?? 0)
+
+  const playCountStat =
+    playCount && !hidePlayCount
+      ? `${formatCount(playCount)} ${pluralize(messages.playCount, playCount)}`
+      : null
+
   return (
     <Flex gap='xs' w='100%'>
-      <SecondaryStatRow
-        stats={[
-          releaseDate
-            ? `${messages.released} ${formatDate(releaseDate)}`
-            : null,
-          updatedAt ? `${messages.updated} ${formatDate(updatedAt)}` : null
-        ]}
-      />
-      <SecondaryStatRow
-        stats={[
-          trackCount
-            ? `${trackCount} ${pluralize(messages.trackCount, trackCount)}`
-            : null,
-          formatSecondsAsText(duration ?? 0),
-          playCount && !hidePlayCount
-            ? `${formatCount(playCount)} ${pluralize(
-                messages.playCount,
-                playCount
-              )}`
-            : null
-        ]}
-      />
+      {isCollection ? (
+        <>
+          <SecondaryStatRow stats={[releaseDateStat, updatedAtStat]} />
+          <SecondaryStatRow
+            stats={[trackCountStat, durationStat, playCountStat]}
+          />
+        </>
+      ) : (
+        <SecondaryStatRow
+          stats={[releaseDateStat, durationStat, playCountStat]}
+        />
+      )}
     </Flex>
   )
 }

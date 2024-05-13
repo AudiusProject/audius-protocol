@@ -391,6 +391,7 @@ export const DetailsTile = ({
         ) : null}
         <DetailsTileMetadata genre={track?.genre} mood={track?.mood} />
         <SecondaryStats
+          isCollection={isCollection}
           playCount={playCount}
           duration={duration}
           trackCount={trackCount}
