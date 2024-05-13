@@ -111,6 +111,18 @@ export type UserMultihash = Pick<
   'metadata_multihash' | 'creator_node_endpoint'
 >
 
+export type TwitterUser = {
+  verified: boolean
+}
+
+export type InstagramUser = {
+  is_verified: boolean
+}
+
+export type TikTokUser = {
+  verified: boolean
+}
+
 /** Converts a SDK `full.UserFull` response to a UserMetadata. Note: Will _not_ include the "current user" fields as those aren't returned by the Users API */
 export const userMetadataFromSDK = (
   input: full.UserFull
