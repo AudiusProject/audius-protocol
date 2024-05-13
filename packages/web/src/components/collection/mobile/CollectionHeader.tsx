@@ -308,7 +308,6 @@ const CollectionHeader = ({
               hasStreamAccess={!!access?.stream}
               isOwner={isOwner}
               wrapperClassName={styles.gatedContentSectionWrapper}
-              className={styles.gatedContentSection}
               buttonClassName={styles.gatedContentSectionButton}
               ownerId={userId}
               source={ModalSource.CollectionDetails}

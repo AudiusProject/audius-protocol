@@ -245,7 +245,7 @@ const LockedGatedContentSection = ({
 
     if (isContentUSDCPurchaseGated(streamConditions)) {
       return (
-        <Text variant='body' strength='strong'>
+        <Text variant='body' strength='strong' textAlign='left'>
           {messages.unlockWithPurchase}
         </Text>
       )
@@ -320,8 +320,8 @@ const LockedGatedContentSection = ({
   }
 
   return (
-    <div className={className}>
-      <div className={styles.gatedContentDescriptionContainer}>
+    <Flex className={className} justifyContent='space-between'>
+      <Flex gap='s' direction='column'>
         <Flex alignItems='center' gap='s'>
           <LockedStatusPill
             locked
@@ -332,11 +332,11 @@ const LockedGatedContentSection = ({
           </Text>
         </Flex>
         {renderLockedDescription()}
-      </div>
+      </Flex>
       <div className={cn(styles.gatedContentSectionButton, buttonClassName)}>
         {renderButton()}
       </div>
-    </div>
+    </Flex>
   )
 }
 
