@@ -138,7 +138,7 @@ export const ClaimAllRewardsModal = () => {
           />
           {claimableAmount > 0 && !hasClaimed ? (
             <>
-              {claimInProgress ? (
+              {claimInProgress && claimableAmount > 1 ? (
                 <Flex
                   direction='column'
                   backgroundColor='surface1'
