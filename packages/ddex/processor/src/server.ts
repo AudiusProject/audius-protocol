@@ -495,8 +495,8 @@ app.get('/users', (c) => {
                           </option>
                           <optgroup label="Track">
                             <option value="track_basic.xml">Basic</option>
-                            <option value="track_follow_gated_download.xml">
-                              Follow Gated Download
+                            <option value="track_follow_gated.xml">
+                              Follow Gated Stream / Tip Gated Download
                             </option>
                             <option value="track_pay_gated.xml">
                               Pay Gated

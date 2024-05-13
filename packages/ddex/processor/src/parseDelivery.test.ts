@@ -55,7 +55,7 @@ test('deal types', async () => {
 test('separate stream / download deal conditions', async () => {
   const releases = (await parseDdexXmlFile(
     'dealTest',
-    'fixtures/track_follow_gated_download.xml'
+    'fixtures/track_follow_gated.xml'
   )) as DDEXRelease[]
 
   expect(releases[0].deals[0]).toMatchObject<Partial<DealFollowGated>>({
