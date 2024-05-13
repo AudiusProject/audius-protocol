@@ -20,6 +20,7 @@ services:
       - web3EthProviderUrl=http://eth-ganache:8545 # Used only in register script
       - ethProviderUrl=http://eth-ganache:8545
       - ethRegistryAddress=${ETH_REGISTRY_ADDRESS}
+      - discoveryListensEndpoints=http://audius-protocol-discover-provider-1
     env_file: .env # Used in register script to get wallets
     ports:
       - 1991:1991

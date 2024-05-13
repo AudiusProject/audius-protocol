@@ -109,6 +109,8 @@ func startStagingOrProd(isProd bool) {
 		}()
 	}
 
+	discoveryListensEndpoints := strings.Split(os.Getenv("discoveryListensEndpoints"), ",")
+
 	config := server.MediorumConfig{
 		Self: server.Peer{
 			Host:   httputil.RemoveTrailingSlash(strings.ToLower(creatorNodeEndpoint)),
@@ -131,6 +133,7 @@ func startStagingOrProd(isProd bool) {
 		AutoUpgradeEnabled:   os.Getenv("autoUpgradeEnabled") == "true",
 		StoreAll:             os.Getenv("STORE_ALL") == "true",
 		VersionJson:          GetVersionJson(),
+		DiscoveryListensEndpoints: discoveryListensEndpoints,
 	}
 
 	ss, err := server.New(config)
@@ -192,6 +195,8 @@ func startSandbox() {
 	}
 	logger.Info("fetched registered nodes", "peers", len(peers), "signers", len(signers))
 
+	discoveryListensEndpoints := strings.Split(os.Getenv("discoveryListensEndpoints"), ",")
+
 	config := server.MediorumConfig{
 		Self: server.Peer{
 			Host:   httputil.RemoveTrailingSlash(strings.ToLower(creatorNodeEndpoint)),
@@ -214,6 +219,7 @@ func startSandbox() {
 		AutoUpgradeEnabled:   os.Getenv("autoUpgradeEnabled") == "true",
 		StoreAll:             os.Getenv("STORE_ALL") == "true",
 		VersionJson:          GetVersionJson(),
+		DiscoveryListensEndpoints: discoveryListensEndpoints,
 	}
 
 	ss, err := server.New(config)
@@ -245,6 +251,8 @@ func startDevInstance() {
 	hostNameTemplate := getenvWithDefault("hostNameTemplate", "http://localhost:199%s")
 	network := devNetwork(hostNameTemplate, 7)
 
+	discoveryListensEndpoints := strings.Split(os.Getenv("discoveryListensEndpoints"), ",")
+
 	config := server.MediorumConfig{
 		Self: server.Peer{
 			Host:   fmt.Sprintf(hostNameTemplate, idx),
@@ -261,6 +269,7 @@ func startDevInstance() {
 		AudiusDockerCompose: os.Getenv("AUDIUS_DOCKER_COMPOSE_GIT_SHA"),
 		AutoUpgradeEnabled:  os.Getenv("autoUpgradeEnabled") == "true",
 		VersionJson:         GetVersionJson(),
+		DiscoveryListensEndpoints: discoveryListensEndpoints,
 	}
 
 	ss, err := server.New(config)
@@ -303,6 +312,7 @@ func startDevCluster() {
 			slog.Error(fmt.Sprintf("failed to recover spID for %s, %s (this is expected if running locally without eth-ganache)", peer.Host, peer.Wallet), "err", err)
 			spID = idx + 1
 		}
+		discoveryListensEndpoints := strings.Split(os.Getenv("discoveryListensEndpoints"), ",")
 		config := server.MediorumConfig{
 			Self:                peer,
 			Peers:               network,
@@ -317,6 +327,7 @@ func startDevCluster() {
 			AudiusDockerCompose: os.Getenv("AUDIUS_DOCKER_COMPOSE_GIT_SHA"),
 			AutoUpgradeEnabled:  os.Getenv("autoUpgradeEnabled") == "true",
 			VersionJson:         GetVersionJson(),
+			DiscoveryListensEndpoints: discoveryListensEndpoints,
 		}
 		privKeyEnvVar := fmt.Sprintf("CN%d_SP_OWNER_PRIVATE_KEY", idx+1)
 		if privateKey, found := os.LookupEnv(privKeyEnvVar); found {

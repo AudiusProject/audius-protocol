@@ -65,6 +65,7 @@ type MediorumConfig struct {
 	WalletIsRegistered   bool
 	StoreAll             bool
 	VersionJson          VersionJson
+	DiscoveryListensEndpoints []string
 
 	// should have a basedir type of thing
 	// by default will put db + blobs there
@@ -169,6 +170,11 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	}
 
 	logger := slog.With("self", config.Self.Host)
+
+	// debug
+	if config.discoveryListensEnabled() {
+		logger.Info("discovery listens enabled")	
+	}
 
 	// ensure dir
 	if err := os.MkdirAll(config.Dir, os.ModePerm); err != nil {
@@ -499,4 +505,9 @@ func (ss *MediorumServer) pollForSeedingCompletion() {
 			return
 		}
 	}
+}
+
+// discovery listens are enabled if endpoints are provided
+func (mc *MediorumConfig) discoveryListensEnabled() bool {
+	return len(mc.DiscoveryListensEndpoints) > 0
 }

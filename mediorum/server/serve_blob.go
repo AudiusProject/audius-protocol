@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"math/rand"
 	"mime"
 	"net/http"
 	"os"
@@ -347,7 +348,18 @@ func (ss *MediorumServer) logTrackListen(c echo.Context) {
 		userId = strconv.Itoa(sig.Data.UserID)
 	}
 
-	endpoint := fmt.Sprintf("%s/tracks/%d/listen", os.Getenv("identityService"), sig.Data.TrackId)
+	// default to identity
+	solanaRelayService := os.Getenv("identityService")
+	if ss.Config.discoveryListensEnabled() {
+		// pick random discovery node and append '/solana' for the relay plugin
+		endpoint := ss.Config.DiscoveryListensEndpoints[rand.Intn(len(ss.Config.DiscoveryListensEndpoints))]
+		solanaRelayService = fmt.Sprintf("%s/solana", endpoint)
+	}
+
+	endpoint := fmt.Sprintf("%s/tracks/%d/listen", solanaRelayService, sig.Data.TrackId)
+
+	ss.logger.Info("logging listen", "endpoint", endpoint)
+
 	signatureData, err := signature.GenerateListenTimestampAndSignature(ss.Config.privateKey)
 	if err != nil {
 		ss.logger.Error("unable to build request", "err", err)

@@ -51,9 +51,9 @@ services:
           'CMD-SHELL',
           'curl -f http://localhost:6001/relay/health || exit 1'
         ]
-      interval: 3s
+      interval: 5s
       timeout: 30s
-      retries: 3
+      retries: 5
       start_period: 5s
 
   solana-relay:
@@ -83,9 +83,9 @@ services:
           'CMD-SHELL',
           'curl -f http://localhost:6002/solana/health_check || exit 1'
         ]
-      interval: 3s
+      interval: 5s
       timeout: 30s
-      retries: 3
+      retries: 5
       start_period: 5s
 
   sla-auditor:
