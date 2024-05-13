@@ -19,7 +19,7 @@ import bs58 from 'bs58'
 import { personalSign } from 'eth-sig-util'
 import type { RelayRequestBody } from '@audius/sdk'
 import { getRequestIpData } from '../../utils/ipData'
-import { shouldAttachGeoData } from './shouldAttachGeoData'
+import { attachLocationData, isPaymentTransaction, shouldAttachLocationData } from './attachLocationData'
 
 const RETRY_DELAY_MS = 2 * 1000
 const RETRY_TIMEOUT_MS = 60 * 1000
@@ -226,22 +226,15 @@ export const relay = async (
       feePayer: feePayerKey.toBase58()
     })
 
-    const isGeoDataTransaction = shouldAttachGeoData(decompiled.instructions)
-    if (isGeoDataTransaction) {
-      const geo = await getRequestIpData(res.locals.logger, req)
-      if (geo) {
-        const memoInstruction = new TransactionInstruction({
-          keys: [{ pubkey: feePayerKey, isSigner: true, isWritable: true }],
-          data: Buffer.from(`geo:${JSON.stringify(geo)}`, 'utf-8'),
-          programId: MEMO_V2_PROGRAM_ID
-        })
-        const updatedInstructions = [...decompiled.instructions, memoInstruction]
-        const msg = new TransactionMessage({
-          payerKey: decompiled.payerKey,
-          recentBlockhash: decompiled.recentBlockhash,
-          instructions: updatedInstructions
-        })
-        transaction = new VersionedTransaction(msg.compileToV0Message())
+    if (isPaymentTransaction(decompiled.instructions)) {
+      const location = await getRequestIpData(res.locals.logger, req)
+      if (location) {
+        transaction = new VersionedTransaction(
+          attachLocationData({
+            transactionMessage: decompiled,
+            location
+          }).compileToV0Message()
+        )
       }
     }
 
