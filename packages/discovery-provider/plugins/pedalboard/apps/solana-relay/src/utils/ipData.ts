@@ -14,7 +14,7 @@ export const getIpData = async (logger: Logger, ip: string): Promise<LocationDat
         logger.warn({}, "ip data requested but api key not configured")
         return null
     }
-    const url = `https://api.ipdata.co/${ip}?api-key=${config.ipdataApiKey}`
+    const url = `https://api.ipdata.co/${ip}?api-key=${ipdataApiKey}`
     try {
         const response = await axios.get(url)
             .then(({ data: { city, region, country_name } }: { data: { city: string, region: string, country_name: string } }) => {
