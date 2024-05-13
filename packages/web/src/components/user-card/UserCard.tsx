@@ -63,7 +63,8 @@ export const UserCard = (props: UserCardProps) => {
         <UserLink
           userId={id}
           textVariant='title'
-          css={{ justifyContent: 'center', pointerEvents: 'none' }}
+          size='l'
+          css={{ justifyContent: 'center' }}
         />
         <Text variant='body' ellipses>
           @{handle}
