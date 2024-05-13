@@ -12,15 +12,15 @@ import {
 import { ScrollView, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { Flex, Text, Button, IconArrowRight, Box } from '@audius/harmony-native'
+import { Flex, Text, Button, IconArrowRight } from '@audius/harmony-native'
 import { useToast } from 'app/hooks/useToast'
 import { makeStyles } from 'app/styles'
 import { formatLabel } from 'app/utils/challenges'
 
 import { AppDrawer, useDrawerState } from '../drawer/AppDrawer'
-import { SummaryTable } from '../summary-table'
-import { ProgressBar } from '../progress-bar'
 import LoadingSpinner from '../loading-spinner'
+import { ProgressBar } from '../progress-bar'
+import { SummaryTable } from '../summary-table'
 
 const { claimAllChallengeRewards, resetAndCancelClaimReward } =
   audioRewardsPageActions
