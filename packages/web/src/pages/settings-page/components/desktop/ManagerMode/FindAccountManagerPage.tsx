@@ -26,7 +26,7 @@ export const FindAccountManagerPage = (props: FindAccountManagerPageProps) => {
   const [query, setQuery] = useState(params?.query ?? '')
   const userId = useSelector(getUserId)
   const { data: managers } = useGetManagers(
-    { userId: userId as ID },
+    { userId: userId! },
     { disabled: userId == null }
   )
   const excludedUserIds = useMemo(() => {

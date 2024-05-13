@@ -92,12 +92,11 @@ export const UsersSearch = (props: UsersSearchProps) => {
 
   const { userIds, hasMore, status } = useSelector(getUserList)
   const lastSearchQuery = useSelector(getLastSearchQuery)
-  const excludedUserIdsSet = useMemo(() => {
-    return new Set(excludedUserIds ?? [])
-  }, [excludedUserIds])
+
   const users = useProxySelector(
     (state) => {
       const unfilteredIds = hasQuery ? userIds : defaultUserList.userIds
+      const excludedUserIdsSet = new Set(excludedUserIds ?? [])
       const ids = unfilteredIds.filter((id) => !excludedUserIdsSet.has(id))
       const users = getUsers(state, { ids })
       return ids.map((id) => users[id])
