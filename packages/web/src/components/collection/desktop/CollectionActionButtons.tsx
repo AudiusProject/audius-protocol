@@ -1,5 +1,8 @@
 import { useGetCurrentUserId, useGetPlaylistById } from '@audius/common/api'
-import { useGatedContentAccess } from '@audius/common/hooks'
+import {
+  useGatedContentAccess,
+  useGatedContentAccessMap
+} from '@audius/common/hooks'
 import { Variant, SmartCollectionVariant, ID } from '@audius/common/models'
 import { Nullable } from '@audius/common/utils'
 import { Button, Flex, IconPause, IconPlay } from '@audius/harmony'
@@ -56,13 +59,18 @@ export const CollectionActionButtons = (props: CollectionActionButtonProps) => {
     { disabled: typeof collectionId !== 'number' }
   )
   const { hasStreamAccess } = useGatedContentAccess(collection)
+  const accessMap = useGatedContentAccessMap(collection?.tracks || [])
+  const hasAccessToSomeTracks = Object.values(accessMap).some(
+    (hasStreamAccess) => hasStreamAccess
+  )
 
   // If user doesn't have access, show preview only. If user has access, show play only.
   // If user is owner, show both.
-  const shouldShowPlay = isPlayable && hasStreamAccess
+  const shouldShowPlay =
+    (isPlayable && hasStreamAccess) || hasAccessToSomeTracks
   const shouldShowPreview = isOwner
     ? isPlayable && isPremium
-    : isPremium && !hasStreamAccess
+    : isPremium && !hasStreamAccess && !hasAccessToSomeTracks
 
   let actionButtons: Nullable<JSX.Element> = null
 

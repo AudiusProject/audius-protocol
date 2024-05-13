@@ -212,7 +212,7 @@ export function* watchPlay() {
         yield* put(
           playerActions.play({
             uid,
-            isPreview,
+            isPreview: isPreview && !!playActionTrack.preview_cid,
             trackId: playActionTrack.track_id,
             onEnd: next
           })
