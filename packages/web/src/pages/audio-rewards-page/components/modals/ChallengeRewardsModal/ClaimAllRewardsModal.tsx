@@ -1,4 +1,4 @@
-import { useCallback, useContext, useEffect } from 'react'
+import { useCallback, useContext, useEffect, useState } from 'react'
 
 import {
   formatCooldownChallenges,
@@ -16,11 +16,13 @@ import {
   Flex,
   IconArrowRight,
   ModalContent,
+  ProgressBar,
   Text
 } from '@audius/harmony'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'
+import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { SummaryTable } from 'components/summary-table'
 import { ToastContext } from 'components/toast/ToastContext'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
@@ -33,6 +35,7 @@ import styles from './styles.module.css'
 const messages = {
   upcomingRewards: 'Upcoming Rewards',
   claimAudio: (amount: string) => `Claim ${amount} $AUDIO`,
+  claiming: 'Claiming $AUDIO',
   readyToClaim: 'Ready to claim!',
   rewardsClaimed: 'All rewards claimed successfully!',
   rewards: 'Rewards',
@@ -58,6 +61,15 @@ export const ClaimAllRewardsModal = () => {
     })
   const claimInProgress = claimStatus === ClaimStatus.CUMULATIVE_CLAIMING
   const hasClaimed = claimStatus === ClaimStatus.CUMULATIVE_SUCCESS
+
+  const [totalClaimable, setTotalClaimable] = useState(claimableAmount)
+  useEffect(
+    () =>
+      setTotalClaimable((totalClaimable) =>
+        Math.max(totalClaimable, claimableAmount)
+      ),
+    [claimableAmount, setTotalClaimable]
+  )
 
   useEffect(() => {
     if (hasClaimed) {
@@ -125,15 +137,50 @@ export const ClaimAllRewardsModal = () => {
             summaryValueColor='default'
           />
           {claimableAmount > 0 && !hasClaimed ? (
-            <Button
-              disabled={claimInProgress}
-              isLoading={claimInProgress}
-              onClick={onClaimRewardClicked}
-              iconRight={IconArrowRight}
-              fullWidth
-            >
-              {messages.claimAudio(formatNumberCommas(claimableAmount))}
-            </Button>
+            <>
+              {claimInProgress ? (
+                <Flex
+                  direction='column'
+                  backgroundColor='surface1'
+                  gap='l'
+                  borderRadius='s'
+                  border='strong'
+                  p='l'
+                >
+                  <Flex justifyContent='space-between'>
+                    <Text variant='label' size='s' color='default'>
+                      {messages.claiming}
+                    </Text>
+                    <Flex gap='l'>
+                      <Text variant='label' size='s' color='default'>
+                        {`${
+                          totalClaimable - claimableAmount
+                        }/${totalClaimable}`}
+                      </Text>
+                      <Flex h='unit4' w='unit4'>
+                        <LoadingSpinner />
+                      </Flex>
+                    </Flex>
+                  </Flex>
+                  <ProgressBar
+                    min={0}
+                    max={totalClaimable}
+                    value={totalClaimable - claimableAmount}
+                  />
+                </Flex>
+              ) : null}
+              <Button
+                disabled={claimInProgress}
+                isLoading={claimInProgress}
+                onClick={onClaimRewardClicked}
+                iconRight={IconArrowRight}
+                fullWidth
+              >
+                {claimInProgress
+                  ? messages.claiming
+                  : messages.claimAudio(formatNumberCommas(claimableAmount))}
+              </Button>
+            </>
           ) : (
             <Button variant='primary' fullWidth onClick={() => setOpen(false)}>
               {messages.done}
