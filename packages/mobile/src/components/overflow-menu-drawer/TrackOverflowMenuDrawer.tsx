@@ -20,7 +20,8 @@ import {
   mobileOverflowMenuUISelectors,
   shareModalUIActions,
   OverflowAction,
-  playbackPositionActions
+  playbackPositionActions,
+  usePremiumContentPurchaseModal
 } from '@audius/common/store'
 import type { CommonState, OverflowActionCallbacks } from '@audius/common/store'
 import { useDispatch, useSelector } from 'react-redux'
@@ -63,6 +64,8 @@ const TrackOverflowMenuDrawer = ({ render }: Props) => {
   const { toast } = useToast()
   const { id: modalId, contextPlaylistId } = useSelector(getMobileOverflowModal)
   const id = modalId as ID
+  const { onOpen: openPremiumContentPurchaseModal } =
+    usePremiumContentPurchaseModal()
 
   const track = useSelector((state: CommonState) => getTrack(state, { id }))
   const playlist = useSelector((state: CommonState) =>
@@ -179,6 +182,13 @@ const TrackOverflowMenuDrawer = ({ render }: Props) => {
     [OverflowAction.MARK_AS_UNPLAYED]: () => {
       dispatch(clearTrackPosition({ trackId: id, userId: currentUserId }))
       toast({ content: messages.markedAsUnplayed })
+    },
+    [OverflowAction.MARK_AS_UNPLAYED]: () => {
+      dispatch(clearTrackPosition({ trackId: id, userId: currentUserId }))
+      toast({ content: messages.markedAsUnplayed })
+    },
+    [OverflowAction.PURCHASE_TRACK]: () => {
+      openPremiumContentPurchaseModal()
     }
   }
 

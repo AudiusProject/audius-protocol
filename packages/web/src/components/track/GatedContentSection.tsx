@@ -322,7 +322,7 @@ const LockedGatedContentSection = ({
   return (
     <div className={className}>
       <div className={styles.gatedContentDescriptionContainer}>
-        <Flex alignItems='center' gap='s' mb='s'>
+        <Flex alignItems='center' gap='s'>
           <LockedStatusPill
             locked
             variant={isUSDCPurchaseGated ? 'premium' : 'gated'}

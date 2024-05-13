@@ -118,16 +118,13 @@ export type TrackListItemProps = {
   isReposted?: boolean
   isActive?: boolean
   isPlaying?: boolean
-  isRemoveActive?: boolean
   isDeleted: boolean
   isLocked: boolean
+  isPremium?: boolean
   coverArtSizes?: CoverArtSizes
-  artistName: string
-  artistHandle: string
   trackTitle: string
   trackId: ID
   ddexApp?: string | null
-  userId: ID
   permalink: string
   uid?: string
   isReorderable?: boolean
@@ -148,24 +145,20 @@ const TrackListItem = ({
   index,
   isActive = false,
   isPlaying = false,
-  isRemoveActive = false,
-  artistName,
-  artistHandle,
   trackTitle,
   permalink,
   trackId,
-  userId,
   uid,
   coverArtSizes,
   isDeleted,
   isLocked,
+  isPremium,
   onRemove,
   togglePlay,
   trackItemAction,
   onClickOverflow,
   onClickGatedUnlockPill,
   streamConditions,
-  gatedUnlockStatus,
   isReorderable = false,
   isDragging = false
 }: TrackListItemProps) => {
@@ -208,6 +201,8 @@ const TrackListItem = ({
             playing={true}
             paused={!isPlaying}
             hideDefault={false}
+            isTrackPremium={isPremium}
+            isLocked={isLocked}
           />
         </div>
       ) : null}
@@ -217,44 +212,21 @@ const TrackListItem = ({
         <SeoLink
           to={permalink}
           className={cn(styles.trackTitle, {
-            [styles.lockedTrackTitle]: !isDeleted && isLocked
+            [styles.lockedTrackTitle]: !isDeleted && isLocked && !isPremium
           })}
         >
           {trackTitle}
           {messages.deleted}
         </SeoLink>
-        <SeoLink to={profilePage(artistHandle)} className={styles.artistName}>
-          {artistName}
-          <UserBadges
-            userId={userId}
-            badgeSize={12}
-            className={cn(styles.badges, {
-              [styles.lockedBadges]: !isDeleted && isLocked
-            })}
-          />
-        </SeoLink>
       </div>
-      {!isDeleted && isLocked ? (
-        isUsdcPurchaseGated ? (
-          <GatedConditionsPill
-            streamConditions={streamConditions}
-            unlocking={gatedUnlockStatus === 'UNLOCKING'}
-            onClick={onClickGatedUnlockPill}
-            buttonSize='small'
-          />
-        ) : (
-          <div className={styles.locked}>
-            <IconLock />
-            <span>{messages.locked}</span>
-          </div>
-        )
-      ) : null}
+      {!isDeleted && isLocked ? <IconLock color='subdued' size='s' /> : null}
       {onClickOverflow && trackItemAction === TrackItemAction.Overflow && (
         <div className={styles.iconContainer}>
           <IconButton
             aria-label='more actions'
             icon={IconKebabHorizontal}
             color='subdued'
+            size='m'
             onClick={(e: MouseEvent) => {
               e.stopPropagation()
               onClickOverflow()
