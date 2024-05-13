@@ -17,8 +17,8 @@ import { useThemeColors } from 'app/utils/theme'
 const useStyles = makeStyles(({ spacing }) => ({
   container: {
     position: 'absolute',
-    top: 0,
-    left: 0,
+    top: -1,
+    left: -1,
     zIndex: 10,
     width: spacing(12),
     height: spacing(12),
