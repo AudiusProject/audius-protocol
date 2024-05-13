@@ -2,6 +2,9 @@ import { z } from 'zod'
 
 import { decodeHashId, encodeHashId } from '~/utils/hashIds'
 
+// TODO: Move usage of these utils
+// to the version in packages/common/src/models/Identifiers.ts
+// https://linear.app/audius/issue/PAY-2997/migrate-idhashid-usage-to-models-version
 export const HashId = z.string().transform<number>((data: string, context) => {
   const id = decodeHashId(data)
   if (id === null) {

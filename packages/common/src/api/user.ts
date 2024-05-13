@@ -1,7 +1,7 @@
 import { full } from '@audius/sdk'
 
 import { createApi } from '~/audius-query'
-import { ID, Kind, StringUSDC } from '~/models'
+import { ID, Kind, StringUSDC, userMetadataListFromSDK } from '~/models'
 import {
   USDCTransactionDetails,
   USDCTransactionMethod,
@@ -46,10 +46,25 @@ const userApi = createApi({
     getUserById: {
       fetch: async (
         { id, currentUserId }: { id: ID; currentUserId: Nullable<ID> },
-        { apiClient }
+        { apiClient, audiusSdk, checkSDKMigration }
       ) => {
-        const apiUser = await apiClient.getUser({ userId: id, currentUserId })
-        return apiUser?.[0]
+        const sdk = await audiusSdk()
+        const apiUser = await checkSDKMigration({
+          endpointName: 'getUserById',
+          legacy: async () =>
+            apiClient.getUser({
+              userId: id,
+              currentUserId
+            }),
+          migrated: async () => {
+            const { data: users = [] } = await sdk.full.users.getUser({
+              id: Id.parse(id),
+              userId: Id.parse(currentUserId)
+            })
+            return userMetadataListFromSDK(users)
+          }
+        })
+        return apiUser[0]
       },
       options: {
         idArgKey: 'id',

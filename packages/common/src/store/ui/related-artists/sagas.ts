@@ -7,11 +7,12 @@ import { ID, UserMetadata, userMetadataListFromSDK } from '~/models'
 import { DoubleKeys } from '~/services/remote-config'
 import { accountSelectors } from '~/store/account'
 import { processAndCacheUsers } from '~/store/cache'
-import { checkSDKMigration, getContext, getSDK } from '~/store/effects'
+import { checkSDKMigration, getSDK } from '~/store/sdkUtils'
 import { waitForRead } from '~/utils/sagaHelpers'
 import { removeNullable } from '~/utils/typeUtils'
 
 import { actions as relatedArtistsActions } from './slice'
+import { getContext } from '~/store/effects'
 
 const getUserId = accountSelectors.getUserId
 
