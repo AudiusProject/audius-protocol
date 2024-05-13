@@ -25,10 +25,9 @@ begin
 
       if new.reaction_value != 0 then
         INSERT INTO notification
-          (slot, user_ids, timestamp, type, specifier, group_id, data)
+          (user_ids, timestamp, type, specifier, group_id, data)
         VALUES
           (
-          new.slot,
           ARRAY [tip_sender_user_id],
           new.timestamp,
           'reaction',

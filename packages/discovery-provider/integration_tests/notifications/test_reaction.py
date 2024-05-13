@@ -4,7 +4,7 @@ from typing import List
 
 from sqlalchemy import asc
 
-from integration_tests.utils import populate_mock_db
+from integration_tests.utils import populate_mock_db, populate_mock_db_blocks
 from src.models.notifications.notification import Notification
 from src.utils.db_session import get_db
 
@@ -21,6 +21,7 @@ def test_reaction_notification(app):
     entities = {
         "users": [{"user_id": i + 1, "wallet": "0x" + str(i)} for i in range(4)],
     }
+    populate_mock_db_blocks(db, 0, 1)
     populate_mock_db(db, entities)
 
     entities = {
