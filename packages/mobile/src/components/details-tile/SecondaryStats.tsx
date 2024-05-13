@@ -40,7 +40,7 @@ type SecondaryStatsProps = {
   playCount?: number
   duration?: number
   trackCount?: number
-  releaseDate: Nullable<string>
+  releaseDate?: Nullable<string>
   updatedAt?: string
   hidePlayCount?: boolean
 }
