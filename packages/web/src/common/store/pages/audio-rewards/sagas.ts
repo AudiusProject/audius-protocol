@@ -547,19 +547,26 @@ function* claimAllChallengeRewardsAsync(
   action: ReturnType<typeof claimAllChallengeRewards>
 ) {
   const { claims } = action.payload
-  try {
-    yield* all(
-      claims.map((claim) =>
-        call(claimSingleChallengeRewardAsync, {
-          type: claimChallengeReward.type,
-          payload: { claim, retryOnFailure: false }
-        })
-      )
+  let hasError = false
+  yield* all(
+    claims.map((claim) =>
+      call(function* () {
+        try {
+          yield* call(claimSingleChallengeRewardAsync, {
+            type: claimChallengeReward.type,
+            payload: { claim, retryOnFailure: false }
+          })
+        } catch (e) {
+          console.error(e)
+          hasError = true
+        }
+      })
     )
-    yield* put(claimAllChallengeRewardsSucceeded())
-  } catch (e) {
-    console.error(e)
+  )
+  if (hasError) {
     yield* put(claimChallengeRewardFailed())
+  } else {
+    yield* put(claimAllChallengeRewardsSucceeded())
   }
 }
 
