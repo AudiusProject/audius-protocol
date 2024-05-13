@@ -4,7 +4,6 @@ import { useAudiusQueryContext } from '@audius/common/audius-query'
 import { pickHandlePageMessages } from '@audius/common/messages'
 import { pickHandleSchema } from '@audius/common/schemas'
 import { getIsSocialConnected } from '@audius/web/src/common/store/pages/signon/selectors'
-import { css } from '@emotion/native'
 import {
   setValueField,
   unsetSocialProfile
@@ -168,7 +167,7 @@ export const PickHandleScreen = () => {
                 variant='body'
                 color='subdued'
                 size='s'
-                style={css({ textTransform: 'uppercase' })}
+                textTransform='uppercase'
               >
                 {pickHandlePageMessages.or}
               </Text>
