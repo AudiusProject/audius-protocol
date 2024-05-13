@@ -4,7 +4,6 @@ import {
   PublicKey,
   SendOptions,
   TransactionConfirmationStrategy,
-  TransactionInstruction,
   TransactionMessage,
   VersionedTransaction
 } from '@solana/web3.js'
@@ -19,13 +18,10 @@ import bs58 from 'bs58'
 import { personalSign } from 'eth-sig-util'
 import type { RelayRequestBody } from '@audius/sdk'
 import { getRequestIpData } from '../../utils/ipData'
-import { attachLocationData, isPaymentTransaction, shouldAttachLocationData } from './attachLocationData'
+import { attachLocationData, isPaymentTransaction } from './attachLocationData'
 
 const RETRY_DELAY_MS = 2 * 1000
 const RETRY_TIMEOUT_MS = 60 * 1000
-const MEMO_V2_PROGRAM_ID = new PublicKey(
-  'MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr'
-)
 
 const connections = config.solanaEndpoints.map(
   (endpoint) => new Connection(endpoint)
