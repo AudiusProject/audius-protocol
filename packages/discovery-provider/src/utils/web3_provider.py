@@ -3,7 +3,6 @@ Interface for using a web3 provider
 """
 
 import logging
-import math
 import os
 from typing import Optional
 
@@ -36,7 +35,7 @@ def get_web3(web3endpoint=None):
         gateway_web3 = Web3(HTTPProvider(os.getenv("audius_web3_host")))
         # attempt local rpc, check if healthy
         try:
-            block_diff = math.abs(
+            block_diff = abs(
                 local_web3.eth.get_block_number() - gateway_web3.eth.get_block_number()
             )
             resp = requests.get(local_rpc + "/health")
