@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Union
 
 from sqlalchemy import desc
@@ -23,6 +23,7 @@ from src.tasks.entity_manager.utils import (
     copy_record,
     is_ddex_signer,
     validate_signer,
+    parse_release_date,
 )
 from src.tasks.metadata import immutable_playlist_fields
 from src.tasks.task_helpers import generate_slug_and_collision_id
@@ -312,6 +313,12 @@ def validate_playlist_tx(params: ManageEntityParameters):
             raise IndexingValidationError(
                 f"Cannot create playlist {playlist_id} below the offset"
             )
+        if is_ddex_signer(params.signer):
+            parsed_release_date = parse_release_date(params.metadata.get("release_date"))
+            if parsed_release_date and parsed_release_date > datetime.now().astimezone(timezone.utc):
+                raise IndexingValidationError(
+                    f"Cannot create playlist {playlist_id} with a future relaese date"
+                )
     else:
         if playlist_id not in params.existing_records["Playlist"]:
             raise IndexingValidationError(
@@ -437,8 +444,13 @@ def create_playlist(params: ManageEntityParameters):
     last_added_to = None
 
     ddex_app = None
+    created_at = params.block_datetime
     if is_ddex_signer(params.signer):
         ddex_app = params.signer
+        if params.action == Action.CREATE:
+            parsed_release_date = parse_release_date(params.metadata.get("release_date"))
+            if parsed_release_date:
+                created_at = str(parsed_release_date)  # type: ignore
 
     for track in tracks:
         if "track" not in track or "time" not in track:
@@ -471,7 +483,7 @@ def create_playlist(params: ManageEntityParameters):
         is_stream_gated=params.metadata.get("is_stream_gated", False),
         stream_conditions=params.metadata.get("stream_conditions", None),
         playlist_contents={"track_ids": tracks_with_index_time},
-        created_at=params.block_datetime,
+        created_at=created_at,
         updated_at=params.block_datetime,
         blocknumber=params.block_number,
         blockhash=params.event_blockhash,
@@ -504,16 +516,25 @@ def create_playlist(params: ManageEntityParameters):
 
     if tracks:
         dispatch_challenge_playlist_upload(
-            params.challenge_bus, params.block_number, playlist_record
+            params.challenge_bus,
+            params.block_number,
+            params.block_datetime,
+            playlist_record,
         )
 
 
 def dispatch_challenge_playlist_upload(
-    bus: ChallengeEventBus, block_number: int, playlist_record: Playlist
+    bus: ChallengeEventBus,
+    block_number: int,
+    block_datetime: datetime,
+    playlist_record: Playlist,
 ):
     # Adds challenge for creating your first playlist and adding a track to it.
     bus.dispatch(
-        ChallengeEvent.first_playlist, block_number, playlist_record.playlist_owner_id
+        ChallengeEvent.first_playlist,
+        block_number,
+        block_datetime,
+        playlist_record.playlist_owner_id,
     )
 
 
@@ -565,7 +586,10 @@ def update_playlist(params: ManageEntityParameters):
 
     if playlist_record.playlist_contents["track_ids"]:
         dispatch_challenge_playlist_upload(
-            params.challenge_bus, params.block_number, playlist_record
+            params.challenge_bus,
+            params.block_number,
+            params.block_datetime,
+            playlist_record,
         )
 
 
@@ -666,6 +690,9 @@ def process_playlist_data_event(
 
     playlist_record.updated_at = block_datetime
     playlist_record.metadata_multihash = metadata_cid
+
+    if is_ddex_signer(params.signer):
+        playlist_record.ddex_app = params.signer
 
     params.logger.info(
         f"playlist.py | EntityManager | Updated playlist record {playlist_record}"

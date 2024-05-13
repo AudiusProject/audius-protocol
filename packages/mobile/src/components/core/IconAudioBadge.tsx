@@ -1,7 +1,7 @@
 import type { BadgeTier } from '@audius/common/models'
 import type { ImageStyle } from 'react-native'
 
-import type { IconProps } from '@audius/harmony-native'
+import type { IconProps, IconSize } from '@audius/harmony-native'
 import {
   IconTokenBronze,
   IconTokenGold,
@@ -19,11 +19,17 @@ const audioTierMap = {
 }
 
 type IconBadgeProps = IconProps & {
-  height: number
-  width: number
   tier: BadgeTier
   showNoTier?: boolean
-}
+} & (
+    | {
+        height: number
+        width: number
+      }
+    | {
+        size: IconSize
+      }
+  )
 
 export const IconAudioBadge = (props: IconBadgeProps) => {
   const { tier, showNoTier, height, width, style: styleProp, ...other } = props

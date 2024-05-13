@@ -133,6 +133,7 @@ const ConnectedPlaylistTile = ({
   const isActive = useMemo(() => {
     return tracks.some((track) => track.uid === playingUid)
   }, [tracks, playingUid])
+  const hasStreamAccess = !!collection.access?.stream
 
   const { isEnabled: isEditAlbumsEnabled } = useFlag(FeatureFlags.EDIT_ALBUMS)
 
@@ -179,12 +180,16 @@ const ConnectedPlaylistTile = ({
 
   const onClickOverflow = useCallback(() => {
     const overflowActions = [
-      collection.has_current_user_reposted
-        ? OverflowAction.UNREPOST
-        : OverflowAction.REPOST,
-      collection.has_current_user_saved
-        ? OverflowAction.UNFAVORITE
-        : OverflowAction.FAVORITE,
+      hasStreamAccess
+        ? collection.has_current_user_reposted
+          ? OverflowAction.UNREPOST
+          : OverflowAction.REPOST
+        : null,
+      hasStreamAccess
+        ? collection.has_current_user_saved && hasStreamAccess
+          ? OverflowAction.UNFAVORITE
+          : OverflowAction.FAVORITE
+        : null,
       collection.is_album
         ? OverflowAction.VIEW_ALBUM_PAGE
         : OverflowAction.VIEW_PLAYLIST_PAGE,

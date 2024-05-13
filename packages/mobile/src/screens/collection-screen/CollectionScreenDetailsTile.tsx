@@ -53,7 +53,7 @@ const selectTrackCount = (state: AppState) => {
 }
 
 const selectIsLineupLoading = (state: AppState) => {
-  return getCollectionTracksLineup(state).status === Status.LOADING
+  return getCollectionTracksLineup(state).status !== Status.SUCCESS
 }
 
 const selectCollectionDuration = createSelector(
@@ -240,7 +240,9 @@ export const CollectionScreenDetailsTile = ({
     (track) => track.is_delete
   )
   const isPlayable =
-    !areAllTracksDeleted && (isQueued || (trackCount > 0 && !!firstTrack))
+    Object.values(tracks).length === 0
+      ? true
+      : !areAllTracksDeleted && (isQueued || (trackCount > 0 && !!firstTrack))
 
   const renderTrackList = useCallback(() => {
     return (
@@ -283,7 +285,7 @@ export const CollectionScreenDetailsTile = ({
       descriptionLinkPressSource='collection page'
       duration={collectionDuration}
       hideOverflow={hideOverflow || !isReachable}
-      hideListenCount={true}
+      hidePlayCount={true}
       hasStreamAccess={hasStreamAccess}
       streamConditions={streamConditions}
       hideFavorite={hideFavorite || !hasStreamAccess}

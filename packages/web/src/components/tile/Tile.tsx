@@ -8,7 +8,6 @@ import {
 } from 'react'
 
 import { DogEarType } from '@audius/common/models'
-import { Box } from '@audius/harmony'
 import cn from 'classnames'
 
 import { DogEar } from 'components/dog-ear'
@@ -44,23 +43,23 @@ export const Tile = forwardRef(
     } = props
 
     return (
-      <Box>
-        {dogEar ? <DogEar type={dogEar} /> : null}
-        <RootComponent
-          className={cn(
-            styles.root,
-            size && styles[size],
-            styles[elevation],
-            className
-          )}
-          type={onClick ? 'button' : undefined}
-          onClick={onClick}
-          ref={ref}
-          {...other}
-        >
-          {children}
-        </RootComponent>
-      </Box>
+      <RootComponent
+        className={cn(
+          styles.root,
+          size && styles[size],
+          styles[elevation],
+          className
+        )}
+        type={onClick ? 'button' : undefined}
+        onClick={onClick}
+        ref={ref}
+        {...other}
+      >
+        {dogEar ? (
+          <DogEar type={dogEar} className={styles.borderOffset} />
+        ) : null}
+        {children}
+      </RootComponent>
     )
   }
 )

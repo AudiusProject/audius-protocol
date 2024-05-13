@@ -25,6 +25,7 @@ export class Account extends Base {
     this.ServiceProvider = serviceProvider
 
     this.getCurrentUser = this.getCurrentUser.bind(this)
+    this.getWeb3User = this.getWeb3User.bind(this)
     this.login = this.login.bind(this)
     this.logout = this.logout.bind(this)
     this.generateRecoveryLink = this.generateRecoveryLink.bind(this)
@@ -52,6 +53,15 @@ export class Account extends Base {
    */
   getCurrentUser() {
     return this.userStateManager.getCurrentUser()
+  }
+
+  /**
+   * Fetches the user metadata for user belonging to the current web3 wallet.
+   * May be different if acting as a managed account.
+   * @return {Object} user metadata
+   */
+  getWeb3User() {
+    return this.userStateManager.getWeb3User()
   }
 
   /**

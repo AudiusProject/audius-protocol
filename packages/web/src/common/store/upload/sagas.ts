@@ -109,8 +109,8 @@ function* combineMetadata(
   // Set download & hidden status
   metadata.is_downloadable = !!collectionMetadata.is_downloadable
 
-  metadata.is_unlisted = !!collectionMetadata.is_unlisted
-  if (collectionMetadata.is_unlisted && collectionMetadata.field_visibility) {
+  metadata.is_unlisted = !!collectionMetadata.is_private
+  if (collectionMetadata.is_private && collectionMetadata.field_visibility) {
     // Convert any undefined values to booleans
     const booleanFieldVisibility = mapValues(
       collectionMetadata.field_visibility,
@@ -655,7 +655,7 @@ export function* handleUploads({
     }
   }
 
-  console.debug('Spinnning down workers')
+  console.debug('Spinning down workers')
   for (const worker of uploadWorkers) {
     worker.cancel()
   }
@@ -796,7 +796,7 @@ export function* uploadCollection(
           collectionMetadata as unknown as CollectionMetadata,
           isAlbum,
           trackIds,
-          !!collectionMetadata.is_unlisted
+          !!collectionMetadata.is_private
         )
 
         if (error) {

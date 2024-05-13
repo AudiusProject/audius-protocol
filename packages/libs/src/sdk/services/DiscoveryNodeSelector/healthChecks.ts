@@ -207,6 +207,31 @@ export const parseHealthStatusReason = ({
   return { health: HealthCheckStatus.HEALTHY }
 }
 
+const delay = async (ms: number, options?: { signal: AbortSignal }) => {
+  const signal = options?.signal
+  return new Promise<void>((resolve, reject) => {
+    if (signal?.aborted) {
+      reject(new Error('aborted'))
+    }
+    const listener = () => {
+      clearTimeout(timer)
+      reject(new Error('aborted'))
+    }
+    const timer = setTimeout(() => {
+      signal?.removeEventListener('abort', listener)
+      resolve()
+    }, ms)
+    signal?.addEventListener('abort', listener)
+  })
+}
+
+const createTimeoutPromise = async (ms: number, signal: AbortSignal) => {
+  await delay(ms, { signal })
+  if (!signal.aborted) {
+    throw new Error('timeout')
+  }
+}
+
 export const getDiscoveryNodeHealthCheck = async ({
   endpoint,
   healthCheckThresholds,
@@ -218,18 +243,20 @@ export const getDiscoveryNodeHealthCheck = async ({
   fetchOptions?: RequestInit
   timeoutMs?: number
 }) => {
+  const ac = new AbortController()
   const timeoutPromises = []
   if (timeoutMs !== undefined) {
-    const timeoutPromise = new Promise<never>((_resolve, reject) =>
-      setTimeout(() => reject(new Error('timeout')), timeoutMs)
-    )
-    timeoutPromises.push(timeoutPromise)
+    timeoutPromises.push(createTimeoutPromise(timeoutMs, ac.signal))
   }
   try {
-    const { data, comms } = await Promise.race([
-      getHealthCheckData(endpoint, fetchOptions),
+    const res = await Promise.race([
+      getHealthCheckData(endpoint, { ...fetchOptions, signal: ac.signal }),
       ...timeoutPromises
     ])
+    if (!res) {
+      throw new Error('timeout')
+    }
+    const { data, comms } = res
     const reason = parseHealthStatusReason({
       data,
       comms,
@@ -242,5 +269,7 @@ export const getDiscoveryNodeHealthCheck = async ({
       reason: (e as Error)?.message,
       data: null
     }
+  } finally {
+    ac.abort()
   }
 }

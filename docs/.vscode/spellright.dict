@@ -38,6 +38,7 @@ nft
 nodejs
 nonpayable
 npm
+npx
 oauth
 oauthed
 off-chain
@@ -60,6 +61,7 @@ spl
 staker
 stakers
 testnet
+toc
 ts
 typehash
 undelegate

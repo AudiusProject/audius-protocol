@@ -12,6 +12,7 @@ from src.utils.redis_connection import get_redis
 
 REDIS_URL = shared_config["redis"]["url"]
 BLOCK_NUMBER = 10
+BLOCK_DATETIME = datetime.now()
 logger = logging.getLogger(__name__)
 
 
@@ -54,6 +55,7 @@ def test_first_tip_challenge(app):
         bus.dispatch(
             ChallengeEvent.send_tip,
             BLOCK_NUMBER,
+            BLOCK_DATETIME,
             1,  # user_id
             {},
         )

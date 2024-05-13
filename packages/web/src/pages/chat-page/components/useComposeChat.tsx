@@ -11,12 +11,12 @@ const { getCanCreateChat } = chatSelectors
 
 export const useComposeChat = ({
   user,
-  onSuccess,
+  onOpenChat,
   onInboxUnavailable,
   presetMessage
 }: {
   user?: User | null
-  onSuccess?: (user: User) => void
+  onOpenChat?: (user: User) => void
   onInboxUnavailable?: (user: User) => void
   presetMessage?: string
 }) => {
@@ -31,7 +31,7 @@ export const useComposeChat = ({
       return
     }
     if (canCreateChat) {
-      onSuccess?.(user)
+      onOpenChat?.(user)
       dispatch(createChat({ userIds: [user.user_id], presetMessage }))
     } else {
       onInboxUnavailable?.(user)
@@ -41,7 +41,7 @@ export const useComposeChat = ({
     user,
     canCreateChat,
     onInboxUnavailable,
-    onSuccess,
+    onOpenChat,
     presetMessage
   ])
 

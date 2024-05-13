@@ -10,12 +10,15 @@ import { Linking, TouchableWithoutFeedback } from 'react-native'
 
 import { useToast } from 'app/hooks/useToast'
 
+import type { Source } from './types'
+
 const messages = {
   error: 'Unable to open this URL'
 }
 
 export type ExternalLinkProps = TouchableWithoutFeedbackProps & {
   url: string
+  source?: Source
 }
 
 export const ExternalLink = (props: ExternalLinkProps) => {

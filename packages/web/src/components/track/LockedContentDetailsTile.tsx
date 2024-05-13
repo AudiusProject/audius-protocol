@@ -39,12 +39,14 @@ export type LockedContentDetailsTileProps = {
   metadata: PurchaseableContentMetadata | Track | Collection
   owner: UserMetadata
   showLabel?: boolean
+  disabled?: boolean
 }
 
 export const LockedContentDetailsTile = ({
   metadata,
   owner,
-  showLabel = true
+  showLabel = true,
+  disabled = false
 }: LockedContentDetailsTileProps) => {
   const { stream_conditions: streamConditions } = metadata
   const isAlbum = 'playlist_id' in metadata
@@ -120,7 +122,7 @@ export const LockedContentDetailsTile = ({
           <DogEar type={dogEarType} />
         </Flex>
       ) : null}
-      <Flex>
+      <Flex css={{ overflow: 'hidden' }}>
         {showLabel && IconComponent && message ? (
           <Flex
             className={cn(styles.gatedContentLabel, {
@@ -138,14 +140,17 @@ export const LockedContentDetailsTile = ({
             <Text>{message}</Text>
           </Flex>
         ) : null}
-        <Flex direction='column' gap='s'>
-          <Text variant='heading'>{title}</Text>
+        <Flex w='100%' direction='column' gap='s'>
+          <Text ellipses variant='heading'>
+            {title}
+          </Text>
           <Text variant='title'>
             <Text color='subdued'>{messages.by}</Text>{' '}
             <UserLink
               textVariant='title'
               strength='weak'
               userId={owner.user_id}
+              disabled={disabled}
             />
           </Text>
         </Flex>

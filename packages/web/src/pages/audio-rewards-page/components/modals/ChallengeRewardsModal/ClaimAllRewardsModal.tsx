@@ -42,7 +42,8 @@ const messages = {
 }
 
 const { show: showConfetti } = musicConfettiActions
-const { claimAllChallengeRewards } = audioRewardsPageActions
+const { claimAllChallengeRewards, resetAndCancelClaimReward } =
+  audioRewardsPageActions
 const { getClaimStatus } = audioRewardsPageSelectors
 
 export const ClaimAllRewardsModal = () => {
@@ -50,20 +51,20 @@ export const ClaimAllRewardsModal = () => {
   const { toast } = useContext(ToastContext)
   const wm = useWithMobileStyle(styles.mobile)
   const [isOpen, setOpen] = useModalState('ClaimAllRewards')
-  const [isHCaptchaModalOpen] = useModalState('HCaptcha')
   const claimStatus = useSelector(getClaimStatus)
   const { claimableAmount, claimableChallenges, cooldownChallenges, summary } =
     useChallengeCooldownSchedule({
       multiple: true
     })
   const claimInProgress = claimStatus === ClaimStatus.CUMULATIVE_CLAIMING
+  const hasClaimed = claimStatus === ClaimStatus.CUMULATIVE_SUCCESS
 
   useEffect(() => {
-    if (claimStatus === ClaimStatus.CUMULATIVE_SUCCESS) {
+    if (hasClaimed) {
       toast(messages.rewardsClaimed, CLAIM_REWARD_TOAST_TIMEOUT_MILLIS)
       dispatch(showConfetti())
     }
-  }, [claimStatus, toast, dispatch])
+  }, [toast, dispatch, hasClaimed])
 
   const onClaimRewardClicked = useCallback(() => {
     const claims = claimableChallenges.map((challenge) => ({
@@ -75,6 +76,11 @@ export const ClaimAllRewardsModal = () => {
     }))
     dispatch(claimAllChallengeRewards({ claims }))
   }, [dispatch, claimableChallenges])
+
+  const handleClose = useCallback(() => {
+    dispatch(resetAndCancelClaimReward())
+    setOpen(false)
+  }, [dispatch, setOpen])
 
   const formatLabel = useCallback((item: any) => {
     const { label, claimableDate, isClose } = item
@@ -97,13 +103,11 @@ export const ClaimAllRewardsModal = () => {
       title={messages.rewards}
       showTitleHeader
       isOpen={isOpen}
-      onClose={() => setOpen(false)}
+      onClose={handleClose}
       isFullscreen={true}
       useGradientTitle={false}
       titleClassName={wm(styles.title)}
       headerContainerClassName={styles.header}
-      showDismissButton={!isHCaptchaModalOpen}
-      dismissOnClickOutside={!isHCaptchaModalOpen}
     >
       <ModalContent>
         <Flex direction='column' gap='2xl' mt='s'>
@@ -120,8 +124,9 @@ export const ClaimAllRewardsModal = () => {
             summaryLabelColor='accent'
             summaryValueColor='default'
           />
-          {claimableAmount > 0 ? (
+          {claimableAmount > 0 && !hasClaimed ? (
             <Button
+              disabled={claimInProgress}
               isLoading={claimInProgress}
               onClick={onClaimRewardClicked}
               iconRight={IconArrowRight}

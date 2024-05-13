@@ -14,6 +14,7 @@ from src.utils.redis_connection import get_redis
 
 REDIS_URL = shared_config["redis"]["url"]
 BLOCK_NUMBER = 10
+BLOCK_DATETIME = datetime.now()
 
 
 def test_profile_completion_challenge_with_tracks(app):
@@ -58,7 +59,7 @@ def test_profile_completion_challenge_with_tracks(app):
         session.add(user)
 
         # Process dummy event just to get this thing initted
-        bus.dispatch(ChallengeEvent.profile_update, BLOCK_NUMBER, 1)
+        bus.dispatch(ChallengeEvent.profile_update, BLOCK_NUMBER, BLOCK_DATETIME, 1)
         bus.flush()
         bus.process_events(session)
         state = profile_challenge_manager.get_user_challenge_state(session, ["1"])[0]
@@ -79,7 +80,7 @@ def test_profile_completion_challenge_with_tracks(app):
         )
         session.add(repost)
         session.flush()
-        bus.dispatch(ChallengeEvent.repost, BLOCK_NUMBER, 1)
+        bus.dispatch(ChallengeEvent.repost, BLOCK_NUMBER, BLOCK_DATETIME, 1)
         bus.flush()
         bus.process_events(session)
         state = profile_challenge_manager.get_user_challenge_state(session, ["1"])[0]
@@ -98,7 +99,7 @@ def test_profile_completion_challenge_with_tracks(app):
         )
         session.add(save)
         session.flush()
-        bus.dispatch(ChallengeEvent.favorite, BLOCK_NUMBER, 1)
+        bus.dispatch(ChallengeEvent.favorite, BLOCK_NUMBER, BLOCK_DATETIME, 1)
         bus.flush()
         bus.process_events(session)
         session.flush()
@@ -117,7 +118,7 @@ def test_profile_completion_challenge_with_tracks(app):
         )
         session.add(follow)
         session.flush()
-        bus.dispatch(ChallengeEvent.follow, BLOCK_NUMBER, 1)
+        bus.dispatch(ChallengeEvent.follow, BLOCK_NUMBER, BLOCK_DATETIME, 1)
         bus.flush()
         bus.process_events(session)
         session.flush()
@@ -164,7 +165,7 @@ def test_profile_completion_challenge_with_tracks(app):
         ]
         session.add_all(follows)
         session.flush()
-        bus.dispatch(ChallengeEvent.follow, BLOCK_NUMBER, 1)
+        bus.dispatch(ChallengeEvent.follow, BLOCK_NUMBER, BLOCK_DATETIME, 1)
         bus.flush()
         bus.process_events(session)
         state = profile_challenge_manager.get_user_challenge_state(session, ["1"])[0]
@@ -175,7 +176,7 @@ def test_profile_completion_challenge_with_tracks(app):
             {"profile_picture": "profilepictureurl"}
         )
         session.flush()
-        bus.dispatch(ChallengeEvent.profile_update, BLOCK_NUMBER, 1)
+        bus.dispatch(ChallengeEvent.profile_update, BLOCK_NUMBER, BLOCK_DATETIME, 1)
         bus.flush()
         bus.process_events(session)
         state = profile_challenge_manager.get_user_challenge_state(session, ["1"])[0]
@@ -186,7 +187,7 @@ def test_profile_completion_challenge_with_tracks(app):
             {"bio": "profiledescription"}
         )
         session.flush()
-        bus.dispatch(ChallengeEvent.profile_update, BLOCK_NUMBER, 1)
+        bus.dispatch(ChallengeEvent.profile_update, BLOCK_NUMBER, BLOCK_DATETIME, 1)
         bus.flush()
         bus.process_events(session)
         state = profile_challenge_manager.get_user_challenge_state(session, ["1"])[0]
@@ -195,7 +196,7 @@ def test_profile_completion_challenge_with_tracks(app):
         # Undo it, ensure that our count goes down
         session.query(User).filter(User.user_id == 1).update({"bio": None})
         session.flush()
-        bus.dispatch(ChallengeEvent.profile_update, BLOCK_NUMBER, 1)
+        bus.dispatch(ChallengeEvent.profile_update, BLOCK_NUMBER, BLOCK_DATETIME, 1)
         bus.flush()
         bus.process_events(session)
         state = profile_challenge_manager.get_user_challenge_state(session, ["1"])[0]
@@ -206,7 +207,7 @@ def test_profile_completion_challenge_with_tracks(app):
             {"bio": "profiledescription", "cover_photo": "test_cover_photo"}
         )
         session.flush()
-        bus.dispatch(ChallengeEvent.profile_update, BLOCK_NUMBER, 1)
+        bus.dispatch(ChallengeEvent.profile_update, BLOCK_NUMBER, BLOCK_DATETIME, 1)
         bus.flush()
         bus.process_events(session)
         state = profile_challenge_manager.get_user_challenge_state(session, ["1"])[0]
@@ -215,7 +216,7 @@ def test_profile_completion_challenge_with_tracks(app):
         # ensure that if we lose some data now that the thing is complete, we don't change the status of the challenge
         session.query(User).filter(User.user_id == 1).update({"cover_photo": None})
         session.flush()
-        bus.dispatch(ChallengeEvent.profile_update, BLOCK_NUMBER, 1)
+        bus.dispatch(ChallengeEvent.profile_update, BLOCK_NUMBER, BLOCK_DATETIME, 1)
         bus.flush()
         bus.process_events(session)
         state = profile_challenge_manager.get_user_challenge_state(session, ["1"])[0]
@@ -264,7 +265,7 @@ def test_profile_completion_challenge_with_playlists(app):
         session.add(user)
 
         # Process dummy event just to get this thing initted
-        bus.dispatch(ChallengeEvent.profile_update, BLOCK_NUMBER, 1)
+        bus.dispatch(ChallengeEvent.profile_update, BLOCK_NUMBER, BLOCK_DATETIME, 1)
         bus.flush()
         bus.process_events(session)
         state = profile_challenge_manager.get_user_challenge_state(session, ["1"])[0]
@@ -285,7 +286,7 @@ def test_profile_completion_challenge_with_playlists(app):
         )
         session.add(repost)
         session.flush()
-        bus.dispatch(ChallengeEvent.repost, BLOCK_NUMBER, 1)
+        bus.dispatch(ChallengeEvent.repost, BLOCK_NUMBER, BLOCK_DATETIME, 1)
         bus.flush()
         bus.process_events(session)
         state = profile_challenge_manager.get_user_challenge_state(session, ["1"])[0]
@@ -304,7 +305,7 @@ def test_profile_completion_challenge_with_playlists(app):
         )
         session.add(save)
         session.flush()
-        bus.dispatch(ChallengeEvent.favorite, BLOCK_NUMBER, 1)
+        bus.dispatch(ChallengeEvent.favorite, BLOCK_NUMBER, BLOCK_DATETIME, 1)
         bus.flush()
         bus.process_events(session)
         session.flush()
@@ -323,7 +324,7 @@ def test_profile_completion_challenge_with_playlists(app):
         )
         session.add(follow)
         session.flush()
-        bus.dispatch(ChallengeEvent.follow, BLOCK_NUMBER, 1)
+        bus.dispatch(ChallengeEvent.follow, BLOCK_NUMBER, BLOCK_DATETIME, 1)
         bus.flush()
         bus.process_events(session)
         session.flush()
@@ -370,7 +371,7 @@ def test_profile_completion_challenge_with_playlists(app):
         ]
         session.add_all(follows)
         session.flush()
-        bus.dispatch(ChallengeEvent.follow, BLOCK_NUMBER, 1)
+        bus.dispatch(ChallengeEvent.follow, BLOCK_NUMBER, BLOCK_DATETIME, 1)
         bus.flush()
         bus.process_events(session)
         state = profile_challenge_manager.get_user_challenge_state(session, ["1"])[0]
@@ -381,7 +382,7 @@ def test_profile_completion_challenge_with_playlists(app):
             {"profile_picture": "profilepictureurl"}
         )
         session.flush()
-        bus.dispatch(ChallengeEvent.profile_update, BLOCK_NUMBER, 1)
+        bus.dispatch(ChallengeEvent.profile_update, BLOCK_NUMBER, BLOCK_DATETIME, 1)
         bus.flush()
         bus.process_events(session)
         state = profile_challenge_manager.get_user_challenge_state(session, ["1"])[0]
@@ -392,7 +393,7 @@ def test_profile_completion_challenge_with_playlists(app):
             {"bio": "profiledescription"}
         )
         session.flush()
-        bus.dispatch(ChallengeEvent.profile_update, BLOCK_NUMBER, 1)
+        bus.dispatch(ChallengeEvent.profile_update, BLOCK_NUMBER, BLOCK_DATETIME, 1)
         bus.flush()
         bus.process_events(session)
         state = profile_challenge_manager.get_user_challenge_state(session, ["1"])[0]
@@ -401,7 +402,7 @@ def test_profile_completion_challenge_with_playlists(app):
         # Undo it, ensure that our count goes down
         session.query(User).filter(User.user_id == 1).update({"bio": None})
         session.flush()
-        bus.dispatch(ChallengeEvent.profile_update, BLOCK_NUMBER, 1)
+        bus.dispatch(ChallengeEvent.profile_update, BLOCK_NUMBER, BLOCK_DATETIME, 1)
         bus.flush()
         bus.process_events(session)
         state = profile_challenge_manager.get_user_challenge_state(session, ["1"])[0]
@@ -412,7 +413,7 @@ def test_profile_completion_challenge_with_playlists(app):
             {"bio": "profiledescription", "cover_photo": "test_cover_photo"}
         )
         session.flush()
-        bus.dispatch(ChallengeEvent.profile_update, BLOCK_NUMBER, 1)
+        bus.dispatch(ChallengeEvent.profile_update, BLOCK_NUMBER, BLOCK_DATETIME, 1)
         bus.flush()
         bus.process_events(session)
         state = profile_challenge_manager.get_user_challenge_state(session, ["1"])[0]
@@ -421,7 +422,7 @@ def test_profile_completion_challenge_with_playlists(app):
         # ensure that if we lose some data now that the thing is complete, we don't change the status of the challenge
         session.query(User).filter(User.user_id == 1).update({"cover_photo": None})
         session.flush()
-        bus.dispatch(ChallengeEvent.profile_update, BLOCK_NUMBER, 1)
+        bus.dispatch(ChallengeEvent.profile_update, BLOCK_NUMBER, BLOCK_DATETIME, 1)
         bus.flush()
         bus.process_events(session)
         state = profile_challenge_manager.get_user_challenge_state(session, ["1"])[0]

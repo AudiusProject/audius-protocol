@@ -29,6 +29,7 @@ from src.tasks.entity_manager.utils import (
     copy_record,
     is_ddex_signer,
     validate_signer,
+    parse_release_date,
 )
 from src.tasks.metadata import immutable_track_fields
 from src.tasks.task_helpers import generate_slug_and_collision_id
@@ -218,42 +219,17 @@ def update_track_routes_table(
 
 
 def dispatch_challenge_track_upload(
-    bus: ChallengeEventBus, block_number: int, track_record
+    bus: ChallengeEventBus, block_number: int, block_datetime: datetime, track_record
 ):
-    bus.dispatch(ChallengeEvent.track_upload, block_number, track_record.owner_id)
+    bus.dispatch(
+        ChallengeEvent.track_upload, block_number, block_datetime, track_record.owner_id
+    )
 
 
 def is_valid_json_field(metadata, field):
     if field in metadata and isinstance(metadata[field], dict) and metadata[field]:
         return True
     return False
-
-
-def parse_release_date(release_date_str):
-    # try various time formats
-    if not release_date_str:
-        return None
-
-    try:
-        return datetime.strptime(
-            release_date_str, "%a %b %d %Y %H:%M:%S GMT%z"
-        ).astimezone(timezone.utc)
-    except ValueError:
-        pass
-
-    try:
-        return datetime.strptime(release_date_str, "%Y-%m-%dT%H:%M:%S.%fZ").astimezone(
-            timezone.utc
-        )
-    except ValueError:
-        pass
-
-    try:
-        return datetime.fromtimestamp(int(release_date_str)).astimezone(timezone.utc)
-    except (ValueError, TypeError):
-        pass
-
-    return None
 
 
 def populate_track_record_metadata(track_record: Track, track_metadata, handle, action):
@@ -510,6 +486,9 @@ def update_track_record(
 ):
     populate_track_record_metadata(track, metadata, handle, params.action)
 
+    if is_ddex_signer(params.signer):
+        track.ddex_app = params.signer
+
     # if cover_art CID is of a dir, store under _sizes field instead
     if track.cover_art:
         track.cover_art_sizes = track.cover_art
@@ -556,7 +535,7 @@ def create_track(params: ManageEntityParameters):
         params.block_datetime,
     )
     dispatch_challenge_track_upload(
-        params.challenge_bus, params.block_number, track_record
+        params.challenge_bus, params.block_number, params.block_datetime, track_record
     )
     params.add_record(track_id, track_record)
 

@@ -21,7 +21,7 @@ import { exists, mapValues } from '../runtime';
  */
 export interface FollowGate {
     /**
-     * 
+     * Must follow the given user ID to unlock
      * @type {number}
      * @memberof FollowGate
      */

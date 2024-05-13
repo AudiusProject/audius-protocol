@@ -172,6 +172,12 @@ export interface UserFull {
      */
     totalAudioBalance: number;
     /**
+     * The user's Ethereum wallet address for their account
+     * @type {string}
+     * @memberof UserFull
+     */
+    wallet: string;
+    /**
      * 
      * @type {string}
      * @memberof UserFull
@@ -207,12 +213,6 @@ export interface UserFull {
      * @memberof UserFull
      */
     blocknumber: number;
-    /**
-     * 
-     * @type {string}
-     * @memberof UserFull
-     */
-    wallet: string;
     /**
      * 
      * @type {string}
@@ -345,13 +345,13 @@ export function instanceOfUserFull(value: object): boolean {
     isInstance = isInstance && "supporterCount" in value;
     isInstance = isInstance && "supportingCount" in value;
     isInstance = isInstance && "totalAudioBalance" in value;
+    isInstance = isInstance && "wallet" in value;
     isInstance = isInstance && "balance" in value;
     isInstance = isInstance && "associatedWalletsBalance" in value;
     isInstance = isInstance && "totalBalance" in value;
     isInstance = isInstance && "waudioBalance" in value;
     isInstance = isInstance && "associatedSolWalletsBalance" in value;
     isInstance = isInstance && "blocknumber" in value;
-    isInstance = isInstance && "wallet" in value;
     isInstance = isInstance && "createdAt" in value;
     isInstance = isInstance && "isStorageV2" in value;
     isInstance = isInstance && "currentUserFolloweeFollowCount" in value;
@@ -397,13 +397,13 @@ export function UserFullFromJSONTyped(json: any, ignoreDiscriminator: boolean): 
         'supporterCount': json['supporter_count'],
         'supportingCount': json['supporting_count'],
         'totalAudioBalance': json['total_audio_balance'],
+        'wallet': json['wallet'],
         'balance': json['balance'],
         'associatedWalletsBalance': json['associated_wallets_balance'],
         'totalBalance': json['total_balance'],
         'waudioBalance': json['waudio_balance'],
         'associatedSolWalletsBalance': json['associated_sol_wallets_balance'],
         'blocknumber': json['blocknumber'],
-        'wallet': json['wallet'],
         'createdAt': json['created_at'],
         'isStorageV2': json['is_storage_v2'],
         'creatorNodeEndpoint': !exists(json, 'creator_node_endpoint') ? undefined : json['creator_node_endpoint'],
@@ -456,13 +456,13 @@ export function UserFullToJSON(value?: UserFull | null): any {
         'supporter_count': value.supporterCount,
         'supporting_count': value.supportingCount,
         'total_audio_balance': value.totalAudioBalance,
+        'wallet': value.wallet,
         'balance': value.balance,
         'associated_wallets_balance': value.associatedWalletsBalance,
         'total_balance': value.totalBalance,
         'waudio_balance': value.waudioBalance,
         'associated_sol_wallets_balance': value.associatedSolWalletsBalance,
         'blocknumber': value.blocknumber,
-        'wallet': value.wallet,
         'created_at': value.createdAt,
         'is_storage_v2': value.isStorageV2,
         'creator_node_endpoint': value.creatorNodeEndpoint,
