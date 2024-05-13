@@ -1,16 +1,6 @@
+import { InstagramUser, TikTokUser, TwitterUser } from '~/models/User'
+
 import { Nullable } from './typeUtils'
-
-type TwitterUser = {
-  verified: boolean
-}
-
-type InstagramUser = {
-  is_verified: boolean
-}
-
-type TikTokUser = {
-  verified: boolean
-}
 
 export type HandleCheckStatus =
   | 'twitterReserved'

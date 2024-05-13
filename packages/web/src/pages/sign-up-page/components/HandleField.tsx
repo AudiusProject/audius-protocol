@@ -91,15 +91,13 @@ export const HandleField = forwardRef(
           onStartSocialMediaLogin &&
           onErrorSocialMediaLogin &&
           AuthComponent ? (
-            <TextLink variant='visible' asChild>
-              <AuthComponent
-                onStart={onStartSocialMediaLogin}
-                onFailure={handleVerifyHandleError}
-                onSuccess={handleLoginSuccess}
-              >
-                <span>{messages.linkToClaim}</span>
-              </AuthComponent>
-            </TextLink>
+            <AuthComponent
+              onStart={onStartSocialMediaLogin}
+              onFailure={handleVerifyHandleError}
+              onSuccess={handleLoginSuccess}
+            >
+              <TextLink variant='visible'>{messages.linkToClaim}</TextLink>
+            </AuthComponent>
           ) : null}
         </>
       ) : !isWaitingForValidation && handle ? (
