@@ -60,7 +60,6 @@ export const TextLink = forwardRef((props: TextLinkProps, ref: Ref<'a'>) => {
       ref={ref}
       asChild
       onClick={onClick}
-      tag='a'
       css={{
         display: 'inline-flex',
         gap: spacing.s,
