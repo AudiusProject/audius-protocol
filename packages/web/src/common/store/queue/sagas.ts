@@ -68,7 +68,8 @@ const QUEUE_SUBSCRIBER_NAME = 'QUEUE'
 
 export function* getToQueue(
   prefix: string,
-  entry: LineupEntry<Track | Collection>
+  entry: LineupEntry<Track | Collection>,
+  isPreview: boolean = false
 ) {
   if (entry.kind === Kind.COLLECTIONS) {
     const collection = yield* select(getCollection, { uid: entry.uid })
@@ -81,18 +82,29 @@ export function* getToQueue(
     // Replace the track count w/ it's index in the array
     const collectionUid = Uid.fromString(entry.uid)
     const collectionSource = collectionUid.source
+    const currentUserId = yield* select(getUserId)
 
-    return trackIds.map(({ track, uid }, idx: number) => {
+    const queueables = []
+    for (let idx = 0; idx < trackIds.length; idx++) {
+      const { track, uid } = trackIds[idx]
+      const storeTrack = yield* select(getTrack, { uid })
+      if (!storeTrack) continue
       const trackUid = Uid.fromString(uid ?? '')
       trackUid.source = `${collectionSource}:${trackUid.source}`
       trackUid.count = idx
+      const doesUserHaveStreamAccess =
+        !storeTrack.is_stream_gated || !!storeTrack.access.stream
 
-      return {
+      queueables.push({
         id: track,
         uid: trackUid.toString(),
-        source: prefix
-      }
-    })
+        source: prefix,
+        isPreview:
+          isPreview ||
+          (isPreviewFn(storeTrack, currentUserId) && !doesUserHaveStreamAccess)
+      })
+    }
+    return queueables
   } else if (entry.kind === Kind.TRACKS) {
     const track = yield* select(getTrack, { uid: entry.uid })
     const currentUserId = yield* select(getUserId)
@@ -103,7 +115,9 @@ export function* getToQueue(
       id: track.track_id,
       uid: entry.uid,
       source: prefix,
-      isPreview: isPreviewFn(track, currentUserId) && !doesUserHaveStreamAccess
+      isPreview:
+        isPreview || // maybe also check preview_cid
+        (isPreviewFn(track, currentUserId) && !doesUserHaveStreamAccess)
     }
   }
 }
@@ -378,7 +392,6 @@ export function* watchNext() {
       if (track) {
         const repeatMode = yield* select(getRepeat)
         const trackIsSameAndRepeatSingle = repeatMode === RepeatMode.SINGLE
-        console.log('REED', { trackIsSameAndRepeatSingle, repeatMode })
 
         if (trackIsSameAndRepeatSingle) {
           yield* put(

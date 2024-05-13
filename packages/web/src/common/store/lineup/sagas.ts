@@ -451,15 +451,6 @@ function* play<T extends Track | Collection>(
   const requestedPlayTrack = yield* select(getTrack, { uid: action.uid })
   let isPreview = !!action.isPreview
 
-  // If preview isn't forced, check for track acccess and switch to preview
-  // if the user doesn't have access but the track is previewable
-  if (!isPreview && requestedPlayTrack?.is_stream_gated) {
-    const hasAccess =
-      !requestedPlayTrack?.is_stream_gated ||
-      !!requestedPlayTrack?.access?.stream
-    isPreview = !hasAccess && !!requestedPlayTrack.preview_cid
-  }
-
   if (action.uid) {
     const source = yield* select(getSource)
     const currentPlayerTrackUid = yield* select(getCurrentPlayerTrackUid)
@@ -470,16 +461,7 @@ function* play<T extends Track | Collection>(
     ) {
       const toQueue = yield* all(
         lineup.entries.map(function* (e: LineupEntry<T>) {
-          const queueable = yield* call(getToQueue, lineup.prefix, e)
-          // If the entry is the one we're playing, set isPreview to incoming
-          // value
-          if (
-            queueable &&
-            'uid' in queueable
-          ) {
-            queueable.isPreview = isPreview
-          }
-          return queueable
+          return yield* call(getToQueue, lineup.prefix, e, isPreview)
         })
       )
       const flattenedQueue = flatten(toQueue).filter((e) => Boolean(e))

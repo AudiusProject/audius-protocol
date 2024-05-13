@@ -207,7 +207,12 @@ export function* watchPlay() {
     const track = yield* select(getTrack, { id: trackId })
     const doesUserHaveStreamAccess =
       !track?.is_stream_gated || !!track?.access?.stream
-    if (!trackId || doesUserHaveStreamAccess || isPreview) {
+    if (
+      !trackId ||
+      doesUserHaveStreamAccess ||
+      !!track?.preview_cid ||
+      isPreview
+    ) {
       if (startTime) {
         audioPlayer.seek(startTime)
       }
