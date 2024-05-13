@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState } from 'react'
 
 import { useGetManagers } from '@audius/common/api'
-import { ID, User } from '@audius/common/models'
+import { User } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
 import { Box, Flex, IconShieldUser, Text, TextLink } from '@audius/harmony'
 
