@@ -110,7 +110,7 @@ export const CreateChatUserResult = (props: UserResultComposeProps) => {
 
   const handleComposeClicked = useComposeChat({
     user,
-    onSuccess: closeParentModal,
+    onOpenChat: closeParentModal,
     onInboxUnavailable: openInboxUnavailableModal,
     presetMessage
   })

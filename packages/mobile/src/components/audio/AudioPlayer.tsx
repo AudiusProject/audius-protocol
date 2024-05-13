@@ -331,7 +331,7 @@ export const AudioPlayer = () => {
       if (playerIndex === undefined) return
 
       // Update queue and player state if the track player auto plays next track
-      if (playerIndex !== queueIndex) {
+      if (playerIndex > queueIndex) {
         if (queueShuffle) {
           // TODO: There will be a very short period where the next track in the queue is played instead of the next shuffle track.
           // Figure out how to call next earlier

@@ -13,6 +13,7 @@ import { AccountsManagingYouHomePage } from './AccountsManagingYouHomePage'
 import styles from './AccountsManagingYouSettingsModal.module.css'
 import { ConfirmAccountManagerPage } from './ConfirmAccountManagerPage'
 import { FindAccountManagerPage } from './FindAccountManagerPage'
+import { RemoveManagerConfirmationPage } from './RemoveManagerConfirmationPage'
 import {
   AccountsManagingYouPages,
   AccountsManagingYouPagesParams
@@ -21,13 +22,15 @@ import {
 const messages = {
   accountsManagingYou: 'Accounts Managing You',
   findAccountManager: 'Find Account Manager',
-  confirmNewManager: 'Confirm New Manager'
+  confirmNewManager: 'Confirm New Manager',
+  removeManager: 'Remove Manager?'
 }
 
 const PAGE_TO_TITLE = {
   [AccountsManagingYouPages.HOME]: messages.accountsManagingYou,
   [AccountsManagingYouPages.FIND_ACCOUNT_MANAGER]: messages.findAccountManager,
-  [AccountsManagingYouPages.CONFIRM_NEW_MANAGER]: messages.confirmNewManager
+  [AccountsManagingYouPages.CONFIRM_NEW_MANAGER]: messages.confirmNewManager,
+  [AccountsManagingYouPages.CONFIRM_REMOVE_MANAGER]: messages.removeManager
 }
 
 type AccountsManagingYouSettingsModalProps = Omit<ModalProps, 'children'>
@@ -40,6 +43,8 @@ const getCurrentPage = (currentPage: AccountsManagingYouPages) => {
       return 1
     case AccountsManagingYouPages.CONFIRM_NEW_MANAGER:
       return 2
+    case AccountsManagingYouPages.CONFIRM_REMOVE_MANAGER:
+      return 3
   }
 }
 
@@ -79,7 +84,12 @@ export const AccountsManagingYouSettingsModal = (
         <ModalHeader>
           <ModalTitle
             title={PAGE_TO_TITLE[currentPage]}
-            icon={<IconShieldUser />}
+            icon={
+              currentPage ===
+              AccountsManagingYouPages.CONFIRM_REMOVE_MANAGER ? null : (
+                <IconShieldUser />
+              )
+            }
           />
         </ModalHeader>
         <ModalContentPages
@@ -92,6 +102,10 @@ export const AccountsManagingYouSettingsModal = (
             params={currentPageParams}
           />
           <ConfirmAccountManagerPage
+            setPage={handleSetPage}
+            params={currentPageParams}
+          />
+          <RemoveManagerConfirmationPage
             setPage={handleSetPage}
             params={currentPageParams}
           />

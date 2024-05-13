@@ -1,10 +1,11 @@
 import logging
 import time
-from datetime import date
+from datetime import date, datetime
 from typing import Optional
 
 from redis import Redis
 from sqlalchemy.orm.session import Session
+from web3 import Web3
 
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
@@ -21,6 +22,7 @@ from src.tasks.aggregates import get_latest_blocknumber
 from src.tasks.celery_app import celery
 from src.trending_strategies.trending_strategy_factory import TrendingStrategyFactory
 from src.trending_strategies.trending_type_and_version import TrendingType
+from src.utils import web3_provider
 from src.utils.prometheus_metric import save_duration_metric
 from src.utils.redis_constants import most_recent_indexed_block_redis_key
 from src.utils.session_manager import SessionManager
@@ -51,6 +53,7 @@ def dispatch_trending_challenges(
     challenge_bus: ChallengeEventBus,
     challenge_event: ChallengeEvent,
     latest_blocknumber: int,
+    latest_block_datetime: datetime,
     tracks,
     version: str,
     date: date,
@@ -60,6 +63,7 @@ def dispatch_trending_challenges(
         challenge_bus.dispatch(
             challenge_event,
             latest_blocknumber,
+            latest_block_datetime,
             track["owner_id"],
             {
                 "id": track["track_id"],
@@ -73,7 +77,11 @@ def dispatch_trending_challenges(
 
 
 def enqueue_trending_challenges(
-    db: SessionManager, redis: Redis, challenge_bus: ChallengeEventBus, date: date
+    db: SessionManager,
+    web3: Web3,
+    redis: Redis,
+    challenge_bus: ChallengeEventBus,
+    date: date,
 ):
     logger.info(
         "calculate_trending_challenges.py | Start calculating trending challenges"
@@ -86,6 +94,9 @@ def enqueue_trending_challenges(
                 "calculate_trending_challenges.py | Unable to get latest block number"
             )
             return
+        latest_block_datetime = datetime.fromtimestamp(
+            web3.eth.get_block(latest_blocknumber)["timestamp"]
+        )
 
         trending_track_versions = trending_strategy_factory.get_versions_for_type(
             TrendingType.TRACKS
@@ -104,6 +115,7 @@ def enqueue_trending_challenges(
                 challenge_bus,
                 ChallengeEvent.trending_track,
                 latest_blocknumber,
+                latest_block_datetime,
                 top_tracks,
                 version,
                 date,
@@ -130,6 +142,7 @@ def enqueue_trending_challenges(
                 challenge_bus,
                 ChallengeEvent.trending_underground,
                 latest_blocknumber,
+                latest_block_datetime,
                 top_tracks,
                 version,
                 date,
@@ -155,6 +168,7 @@ def enqueue_trending_challenges(
                 challenge_bus.dispatch(
                     ChallengeEvent.trending_playlist,
                     latest_blocknumber,
+                    latest_block_datetime,
                     playlist["playlist_owner_id"],
                     {
                         "id": playlist["playlist_id"],
@@ -184,12 +198,14 @@ def calculate_trending_challenges_task(self, date: Optional[date] = None):
     db = calculate_trending_challenges_task.db
     redis = calculate_trending_challenges_task.redis
     challenge_bus = calculate_trending_challenges_task.challenge_event_bus
+    web3 = web3_provider.get_web3()
     have_lock = False
     update_lock = redis.lock("calculate_trending_challenges_lock", timeout=7200)
     try:
         have_lock = update_lock.acquire(blocking=False)
         if have_lock:
-            enqueue_trending_challenges(db, redis, challenge_bus, date)
+
+            enqueue_trending_challenges(db, web3, redis, challenge_bus, date)
         else:
             logger.info(
                 "calculate_trending_challenges.py | Failed to acquire index trending lock"

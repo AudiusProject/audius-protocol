@@ -8,7 +8,13 @@ import { html } from 'hono/html'
 import { decode } from 'hono/jwt'
 import { prettyJSON } from 'hono/pretty-json'
 import { HtmlEscapedString } from 'hono/utils/html'
-import { ReleaseProcessingStatus, releaseRepo, userRepo, xmlRepo } from './db'
+import {
+  ReleaseProcessingStatus,
+  ReleaseRow,
+  releaseRepo,
+  userRepo,
+  xmlRepo,
+} from './db'
 import {
   DDEXContributor,
   DDEXRelease,
@@ -17,10 +23,11 @@ import {
 } from './parseDelivery'
 import { prepareAlbumMetadata, prepareTrackMetadatas } from './publishRelease'
 import { readAssetWithCaching } from './s3poller'
-import { parseBool } from './util'
+import { sources } from './sources'
 import { startUsersPoller } from './usersPoller'
+import { parseBool, simulateDeliveryForUserName } from './util'
 
-const { NODE_ENV, DDEX_KEY, DDEX_URL, COOKIE_SECRET } = process.env
+const { NODE_ENV, DDEX_URL, COOKIE_SECRET } = process.env
 const COOKIE_NAME = 'audiusUser'
 
 const IS_PROD = NODE_ENV == 'production'
@@ -47,24 +54,35 @@ app.get('/', async (c) => {
               <h4>Welcome back @${me.handle}</h4>
               <a href="/auth/logout" role="button">log out</a>
             `
-          : html` <a role="button" href="/auth">login</a> `}
+          : html`
+              <div>
+                ${sources
+                  .all()
+                  .map(
+                    (s) => html`
+                      <a role="button" href="/auth/source/${s.name}"
+                        >${s.name}</a
+                      >
+                    `
+                  )}
+              </div>
+            `}
       </div>
     `)
   )
 })
 
-app.get('/auth', (c) => {
-  if (!DDEX_KEY) {
-    return c.text('DDEX_KEY is required', 500)
-  }
+app.get('/auth/source/:sourceName', (c) => {
+  const sourceName = c.req.param('sourceName')
+  const source = sources.findByName(sourceName)
   const myUrl = DDEX_URL || 'http://localhost:8989'
   const base = IS_PROD
     ? 'https://audius.co/oauth/auth?'
     : 'https://staging.audius.co/oauth/auth?'
   const params = new URLSearchParams({
     scope: 'write',
-    redirect_uri: `${myUrl}/auth/success`,
-    api_key: DDEX_KEY!,
+    redirect_uri: `${myUrl}/auth/redirect`,
+    api_key: source.ddexKey,
     response_mode: 'query',
   })
   const u = base + params.toString()
@@ -73,54 +91,32 @@ app.get('/auth', (c) => {
 
 app.get('/auth/redirect', async (c) => {
   try {
-    const uri = c.req.query('redirect_uri')
+    const uri = c.req.query('redirect_uri') || ''
     const token = c.req.query('token')
     if (!token) {
       throw new Error('no token')
     }
 
-    const { payload } = decode(token!)
+    const jwt = decode(token!)
+    const payload = jwt.payload as JwtUser
     if (!payload.userId) {
       throw new Error('invalid payload')
     }
 
     // upsert user record
     userRepo.upsert({
+      apiKey: payload.apiKey,
       id: payload.userId,
       handle: payload.handle,
       name: payload.name,
     })
+
+    // set cookie
+    const j = JSON.stringify(payload)
+    await setSignedCookie(c, COOKIE_NAME, j, COOKIE_SECRET!)
 
     const params = new URLSearchParams({ token })
     return c.redirect(`${uri}/?` + params.toString())
-  } catch (e) {
-    console.log(e)
-    return c.body('invalid jwt', 400)
-  }
-})
-
-app.get('/auth/success', async (c) => {
-  try {
-    const token = c.req.query('token')
-    if (!token) {
-      throw new Error('no token')
-    }
-
-    const { payload } = decode(token!)
-    if (!payload.userId) {
-      throw new Error('invalid payload')
-    }
-
-    // upsert user record
-    userRepo.upsert({
-      id: payload.userId,
-      handle: payload.handle,
-      name: payload.name,
-    })
-
-    const j = JSON.stringify(payload)
-    await setSignedCookie(c, COOKIE_NAME, j, COOKIE_SECRET!)
-    return c.redirect('/')
   } catch (e) {
     console.log(e)
     return c.body('invalid jwt', 400)
@@ -153,12 +149,16 @@ app.get('/releases', (c) => {
   })
 
   let lastXmlUrl = ''
-  const xmlSpacer = (xmlUrl: string) => {
-    if (xmlUrl != lastXmlUrl) {
-      lastXmlUrl = xmlUrl
+  const xmlSpacer = (row: ReleaseRow) => {
+    if (row.xmlUrl != lastXmlUrl) {
+      lastXmlUrl = row.xmlUrl
       return html`<tr>
-        <td colspan="10" style="background: black">
-          <kbd>${xmlUrl}</kbd>
+        <td colspan="10">
+          <div style="margin-top: 20px;">
+            <kbd>${row.source}</kbd>
+            <kbd>${row.createdAt}</kbd>
+            <kbd>${row.xmlUrl}</kbd>
+          </div>
         </td>
       </tr>`
     }
@@ -194,7 +194,7 @@ app.get('/releases', (c) => {
         </form>
       </div>
 
-      <table class="striped">
+      <table>
         <thead>
           <tr>
             <th></th>
@@ -212,7 +212,7 @@ app.get('/releases', (c) => {
         <tbody>
           ${rows.map(
             (row) =>
-              html` ${xmlSpacer(row.xmlUrl!)}
+              html` ${xmlSpacer(row)}
                 <tr>
                   <td>${row._parsed?.ref}</td>
                   <td>
@@ -406,7 +406,11 @@ app.get('/xmls/:xmlUrl', (c) => {
 
   // parse=true will parse the xml to internal representation
   if (parseBool(c.req.query('parse'))) {
-    const parsed = parseDdexXml(xmlUrl, row.xmlText) as DDEXRelease[]
+    const parsed = parseDdexXml(
+      row.source,
+      row.xmlUrl,
+      row.xmlText
+    ) as DDEXRelease[]
 
     // parse=sdk will convert internal representation to SDK friendly format
     if (c.req.query('parse') == 'sdk') {
@@ -459,6 +463,9 @@ app.get('/users', (c) => {
               <th>id</th>
               <th>handle</th>
               <th>name</th>
+              <th>api key</th>
+              <th>created</th>
+              <th></th>
             </tr>
           </thead>
           <tbody>
@@ -468,12 +475,51 @@ app.get('/users', (c) => {
                   <td>${user.id}</td>
                   <td>${user.handle}</td>
                   <td>${user.name}</td>
+                  <td>
+                    <b title="${user.apiKey}"
+                      >${sources.findByApiKey(user.apiKey).name}</b
+                    >
+                  </td>
+                  <td>${user.createdAt}</td>
+                  <td>
+                    ${!IS_PROD &&
+                    html`
+                      <form
+                        method="POST"
+                        action="/users/simulate/${user.apiKey}/${user.id}"
+                      >
+                        <button>simulate</button>
+                      </form>
+                    `}
+                  </td>
                 </tr>`
             )}
           </tbody>
         </table> `
     )
   )
+})
+
+app.post('/users/simulate/:apiKey/:id', async (c) => {
+  if (IS_PROD) {
+    return c.text(`simulate delivery is disabled in prod`, 400)
+  }
+
+  // find source
+  const source = sources.all().find((s) => s.ddexKey == c.req.param('apiKey'))
+  const user = userRepo.findOne({
+    id: c.req.param('id'),
+    apiKey: c.req.param('apiKey'),
+  })
+
+  if (!source || !user) {
+    return c.text(`invalid source / user pair`, 400)
+  }
+
+  // simulate delivery
+  await simulateDeliveryForUserName(source, user.name)
+
+  return c.redirect('/releases')
 })
 
 type JwtUser = {
@@ -487,6 +533,7 @@ type JwtUser = {
     '480x480': string
     '1000x1000': string
   }
+  apiKey: string
 }
 
 async function getAudiusUser(c: Context) {
@@ -551,3 +598,13 @@ export function startServer() {
 
   startUsersPoller().catch(console.error)
 }
+
+// for:
+// https://github.com/honojs/node-server/issues/167
+process
+  .on('unhandledRejection', (reason, p) => {
+    console.error('unhandledRejection', reason, 'promise', p)
+  })
+  .on('uncaughtException', (err) => {
+    console.error('unhandledRejection', err)
+  })

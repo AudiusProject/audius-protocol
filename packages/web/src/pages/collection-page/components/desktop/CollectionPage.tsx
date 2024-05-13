@@ -150,7 +150,8 @@ const CollectionPage = ({
   const collectionLoading = status === Status.LOADING
   const queuedAndPlaying = playing && isQueued()
   const queuedAndPreviewing = previewing && isQueued()
-  const tracksLoading = tracks.status === Status.LOADING
+  const tracksLoading =
+    tracks.status === Status.LOADING || tracks.status === Status.IDLE
 
   const coverArtSizes =
     metadata && metadata?.variant !== Variant.SMART
@@ -370,7 +371,7 @@ const CollectionPage = ({
         )}
       </Tile>
       <ClientOnly>
-        {isOwner && !isAlbum && !isNftPlaylist ? (
+        {!collectionLoading && isOwner && !isAlbum && !isNftPlaylist ? (
           <>
             <Divider variant='default' className={styles.tileDivider} />
             <SuggestedTracks collectionId={playlistId} />

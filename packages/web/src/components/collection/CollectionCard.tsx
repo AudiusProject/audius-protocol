@@ -14,11 +14,11 @@ import { formatCount } from '@audius/common/utils'
 import { Flex, Text } from '@audius/harmony'
 import IconHeart from '@audius/harmony/src/assets/icons/Heart.svg'
 import IconRepost from '@audius/harmony/src/assets/icons/Repost.svg'
-import { Link, useLinkClickHandler } from 'react-router-dom-v5-compat'
+import { useLinkClickHandler } from 'react-router-dom-v5-compat'
 
 import { Card, CardProps, CardFooter, CardContent } from 'components/card'
 import { DogEar } from 'components/dog-ear'
-import { UserLink } from 'components/link'
+import { TextLink, UserLink } from 'components/link'
 import { LockedStatusPill } from 'components/locked-status-pill'
 import { useSelector } from 'utils/reducer'
 
@@ -99,15 +99,13 @@ export const CollectionCard = forwardRef(
             data-testid={`cover-art-${id}`}
           />
           <CardContent gap='xs'>
-            <Text
-              variant='title'
-              color='default'
-              css={{ pointerEvents: 'none', textAlign: 'center' }}
-              ellipses
-              asChild
+            <TextLink
+              to={permalink}
+              textVariant='title'
+              css={{ justifyContent: 'center' }}
             >
-              <Link to={permalink}>{playlist_name}</Link>
-            </Text>
+              <Text ellipses>{playlist_name}</Text>
+            </TextLink>
             <UserLink
               userId={playlist_owner_id}
               textVariant='body'

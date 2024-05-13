@@ -35,7 +35,8 @@ import { useDebounce } from 'react-use'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 
 const messages = {
-  searchUsers: 'Search Users'
+  searchUsers: 'Search Users',
+  clearSearch: 'Clear search'
 }
 
 const DEBOUNCE_MS = 100
@@ -43,12 +44,6 @@ const DEBOUNCE_MS = 100
 const { searchUsers } = searchUsersModalActions
 const { getUserList, getLastSearchQuery } = searchUsersModalSelectors
 const { getUsers } = cacheUsersSelectors
-
-type SearchUsersModalProps = {
-  titleProps: ModalTitleProps
-  onCancel?: () => void
-} & Omit<UsersSearchProps, 'query' | 'onChange'> &
-  Omit<ModalProps, 'children'>
 
 type UsersSearchProps = {
   debounceMs?: number
@@ -65,6 +60,12 @@ type UsersSearchProps = {
   query: string
   onChange: (query: string) => void
 }
+
+type SearchUsersModalProps = {
+  titleProps: ModalTitleProps
+  onCancel?: () => void
+} & Omit<UsersSearchProps, 'query' | 'onChange'> &
+  Omit<ModalProps, 'children'>
 
 export const UsersSearch = (props: UsersSearchProps) => {
   const {
@@ -128,6 +129,10 @@ export const UsersSearch = (props: UsersSearchProps) => {
     }
   }, [hasQuery, query, status, defaultUserList, dispatch])
 
+  const getScrollParent = useCallback(() => {
+    return scrollParentRef.current
+  }, [])
+
   // Clear the query if something else resets our search state
   useEffect(() => {
     if (!lastSearchQuery) {
@@ -148,7 +153,7 @@ export const UsersSearch = (props: UsersSearchProps) => {
               css={{ pointerEvents: query ? 'auto' : 'none' }}
               color='subdued'
               size='m'
-              aria-label='Clear Search'
+              aria-label={messages.clearSearch}
               onClick={() => {
                 onChange('')
               }}
@@ -167,7 +172,7 @@ export const UsersSearch = (props: UsersSearchProps) => {
           useWindow={false}
           initialLoad
           hasMore={hasQuery ? hasMore : defaultUserList.hasMore}
-          getScrollParent={() => scrollParentRef.current}
+          getScrollParent={getScrollParent}
           loader={
             <LoadingSpinner
               css={(theme) => ({

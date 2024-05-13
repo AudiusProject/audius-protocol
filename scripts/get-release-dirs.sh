@@ -19,6 +19,7 @@ PROTOCOL_DIRS="mediorum \
     comms \
     monitoring/healthz \
     monitoring/uptime \
+    libs \
     protocol-dashboard"
 
 # `client` or `protocol`

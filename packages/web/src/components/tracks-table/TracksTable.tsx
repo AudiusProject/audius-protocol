@@ -5,6 +5,7 @@ import {
   UID,
   UserTrack,
   isContentCollectibleGated,
+  isContentFollowGated,
   isContentUSDCPurchaseGated
 } from '@audius/common/models'
 import { formatCount, formatSeconds } from '@audius/common/utils'
@@ -14,7 +15,8 @@ import {
   Button,
   Flex,
   IconSpecialAccess,
-  IconCollectible
+  IconCollectible,
+  IconCart
 } from '@audius/harmony'
 import cn from 'classnames'
 import moment from 'moment'
@@ -84,6 +86,7 @@ type TracksTableProps = {
   isAlbumPage?: boolean
   isAlbumPremium?: boolean
   isPremiumEnabled?: boolean
+  shouldShowGatedType?: boolean
   loading?: boolean
   onClickFavorite?: (track: any) => void
   onClickPurchase?: (track: any) => void
@@ -139,6 +142,7 @@ export const TracksTable = ({
   fetchThreshold,
   isVirtualized = false,
   isPremiumEnabled = false,
+  shouldShowGatedType = false,
   loading = false,
   onClickFavorite,
   onClickRemove,
@@ -398,44 +402,70 @@ export const TracksTable = ({
         track.track_id
       ] ?? { isFetchingNFTAccess: false, hasStreamAccess: true }
       const isLocked = !isFetchingNFTAccess && !hasStreamAccess
+      const isDdex = !!track.ddex_app
       const deleted =
         track.is_delete || track._marked_deleted || !!track.user?.is_deactivated
-      const shouldShowIcon = track.is_stream_gated || track.is_unlisted
-      const Icon = track.is_unlisted
-        ? IconVisibilityHidden
-        : isContentUSDCPurchaseGated(track.stream_conditions)
-        ? IconLock
-        : isContentCollectibleGated(track.stream_conditions)
-        ? IconCollectible
-        : IconSpecialAccess
+      // For owners, we want to show the type of gating on the track. For fans,
+      // we want to show whether or not they have access.
+      let Icon
+      if (shouldShowGatedType) {
+        Icon = track.is_unlisted
+          ? IconVisibilityHidden
+          : isContentUSDCPurchaseGated(track.stream_conditions)
+          ? IconCart
+          : isContentCollectibleGated(track.stream_conditions)
+          ? IconCollectible
+          : isContentFollowGated(track.stream_conditions)
+          ? IconSpecialAccess
+          : null
+      } else {
+        Icon = !hasStreamAccess
+          ? IconLock
+          : track.is_unlisted
+          ? IconVisibilityHidden
+          : null
+      }
+      const overflowProps = {
+        className: styles.tableActionButton,
+        isDeleted: deleted,
+        includeAlbumPage: !isAlbumPage,
+        includeFavorite: !isLocked,
+        handle: track.handle,
+        trackId: track.track_id,
+        uid: track.uid,
+        date: track.date,
+        isFavorited: track.has_current_user_saved,
+        isOwner: track.owner_id === userId,
+        isOwnerDeactivated: !!track.user?.is_deactivated,
+        isArtistPick: track.user?.artist_pick_track_id === track.track_id,
+        index: cellInfo.row.index,
+        trackTitle: track.name,
+        trackPermalink: track.permalink
+      }
+      const conditionalOverflowProps = isDdex
+        ? {
+            includeEdit: false,
+            includeAddToPlaylist: false,
+            includeAddToAlbum: false
+          }
+        : {
+            includeEdit: !disabledTrackEdit,
+            includeAddToPlaylist: !isLocked && !track.is_stream_gated,
+            onRemove: onClickRemove,
+            removeText
+          }
+
       return (
         <>
-          {shouldShowIcon ? (
+          {Icon ? (
             <Flex className={styles.typeIcon}>
               <Icon color='subdued' size='m' />
             </Flex>
           ) : null}
           <div ref={overflowMenuRef} className={styles.overflowMenu}>
             <OverflowMenuButton
-              className={styles.tableActionButton}
-              isDeleted={deleted}
-              includeEdit={!disabledTrackEdit}
-              includeAlbumPage={!isAlbumPage}
-              includeAddToPlaylist={!isLocked && !track.is_stream_gated}
-              includeFavorite={!isLocked}
-              onRemove={onClickRemove}
-              removeText={removeText}
-              handle={track.handle}
-              trackId={track.track_id}
-              uid={track.uid}
-              date={track.date}
-              isFavorited={track.has_current_user_saved}
-              isOwner={track.owner_id === userId}
-              isOwnerDeactivated={!!track.user?.is_deactivated}
-              isArtistPick={track.user?.artist_pick_track_id === track.track_id}
-              index={cellInfo.row.index}
-              trackTitle={track.name}
-              trackPermalink={track.permalink}
+              {...overflowProps}
+              {...conditionalOverflowProps}
             />
           </div>
         </>
@@ -443,6 +473,7 @@ export const TracksTable = ({
     },
     [
       trackAccessMap,
+      shouldShowGatedType,
       disabledTrackEdit,
       isAlbumPage,
       onClickRemove,

@@ -1,0 +1,12 @@
+{
+  "sources": [
+    {
+      "name": "crudTest",
+      "ddexKey": "crudTestKey"
+    },
+    {
+      "name": "dealTest",
+      "ddexKey": "dealTestKey"
+    }
+  ]
+}

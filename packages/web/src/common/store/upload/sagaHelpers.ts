@@ -106,7 +106,6 @@ export function* getUSDCMetadata(stream_conditions: USDCPurchaseConditions) {
   const priceWei = new BN(priceCents).mul(BN_USDC_CENT_WEI).toNumber()
   const conditionsWithMetadata: USDCPurchaseConditions = {
     usdc_purchase: {
-      ...stream_conditions.usdc_purchase,
       price: priceCents,
       splits: {
         [ownerUserbank?.toString() ?? '']: priceWei
