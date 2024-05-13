@@ -142,7 +142,7 @@
       <DealReleaseReference>RL1</DealReleaseReference>
       <Deal>
         <DealTerms>
-          <CommercialModelType>FreeOfChargeModel</CommercialModelType>
+          <CommercialModelType UserDefinedValue="FollowGated">UserDefined</CommercialModelType>
           <Usage>
             <UseType>OnDemandStream</UseType>
           </Usage>
@@ -154,7 +154,7 @@
       </Deal>
       <Deal>
         <DealTerms>
-          <CommercialModelType UserDefinedValue="FollowGated">UserDefined</CommercialModelType>
+          <CommercialModelType UserDefinedValue="TipGated">UserDefined</CommercialModelType>
           <Usage>
             <UseType>PermanentDownload</UseType>
           </Usage>

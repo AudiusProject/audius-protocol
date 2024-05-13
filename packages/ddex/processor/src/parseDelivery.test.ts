@@ -3,9 +3,9 @@ import {
   DDEXRelease,
   DealEthGated,
   DealFollowGated,
-  DealFree,
   DealPayGated,
   DealSolGated,
+  DealTipGated,
   parseDdexXmlFile,
 } from './parseDelivery'
 import { sources } from './sources'
@@ -58,14 +58,14 @@ test('separate stream / download deal conditions', async () => {
     'fixtures/track_follow_gated_download.xml'
   )) as DDEXRelease[]
 
-  expect(releases[0].deals[0]).toMatchObject<Partial<DealFree>>({
-    audiusDealType: 'Free',
+  expect(releases[0].deals[0]).toMatchObject<Partial<DealFollowGated>>({
+    audiusDealType: 'FollowGated',
     forStream: true,
     forDownload: false,
   })
 
-  expect(releases[0].deals[1]).toMatchObject<Partial<DealFollowGated>>({
-    audiusDealType: 'FollowGated',
+  expect(releases[0].deals[1]).toMatchObject<Partial<DealTipGated>>({
+    audiusDealType: 'TipGated',
     forStream: false,
     forDownload: true,
   })

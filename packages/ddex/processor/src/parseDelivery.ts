@@ -290,7 +290,9 @@ function parseReleaseXml(source: string, $: cheerio.CheerioAPI) {
       }
 
       const common: DealFields = {
-        forStream: usageTypes.includes('OnDemandStream'),
+        forStream:
+          usageTypes.includes('OnDemandStream') ||
+          usageTypes.includes('Stream'),
         forDownload: usageTypes.includes('PermanentDownload'),
         validityStartDate: $el.find('ValidityPeriod > StartDate').text(),
       }
