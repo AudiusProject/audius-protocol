@@ -10,7 +10,7 @@ import { Nullable } from '@audius/common/utils'
 export const getCombinedDefaultGatedConditionValues = (
   userId: Nullable<ID>
 ) => ({
-  usdc_purchase: { price: null },
+  usdc_purchase: { price: null, albumTrackPrice: null },
   follow_user_id: userId,
   tip_user_id: userId,
   nft_collection: undefined
