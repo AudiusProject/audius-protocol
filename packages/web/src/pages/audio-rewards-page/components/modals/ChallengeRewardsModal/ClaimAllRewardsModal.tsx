@@ -33,7 +33,6 @@ import styles from './styles.module.css'
 const messages = {
   upcomingRewards: 'Upcoming Rewards',
   claimAudio: (amount: string) => `Claim ${amount} $AUDIO`,
-  readyToClaim: 'Ready to claim!',
   rewardsClaimed: 'All rewards claimed successfully!',
   rewards: 'Rewards',
   audio: '$AUDIO',
