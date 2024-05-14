@@ -1,7 +1,13 @@
-import { full, sdk } from '@audius/sdk'
+import { full } from '@audius/sdk'
 
 import { createApi } from '~/audius-query'
-import { ID, Kind, StringUSDC, userMetadataListFromSDK } from '~/models'
+import {
+  ID,
+  Kind,
+  OptionalId,
+  StringUSDC,
+  userMetadataListFromSDK
+} from '~/models'
 import {
   USDCTransactionDetails,
   USDCTransactionMethod,
@@ -60,7 +66,7 @@ const userApi = createApi({
             const sdk = await audiusSdk()
             const { data: users = [] } = await sdk.full.users.getUser({
               id: Id.parse(id),
-              userId: Id.parse(currentUserId)
+              userId: OptionalId.parse(currentUserId)
             })
             return userMetadataListFromSDK(users)
           }
@@ -95,7 +101,7 @@ const userApi = createApi({
             const sdk = await audiusSdk()
             const { data: users = [] } = await sdk.full.users.getUserByHandle({
               handle,
-              userId: Id.parse(currentUserId)
+              userId: OptionalId.parse(currentUserId)
             })
             return userMetadataListFromSDK(users)
           }

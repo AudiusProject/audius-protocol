@@ -1,5 +1,4 @@
 import { ID, User } from '@audius/common/models'
-import { AudiusBackend } from '@audius/common/services'
 import {
   cacheUsersSelectors,
   UserListSagaFactory,
@@ -23,7 +22,7 @@ type FetchMutualsConfig = {
   currentUserId: ID | null
 }
 
-const fetchAllUsersForEntity = function* ({
+const fetchMutualFollowers = function* ({
   limit,
   offset,
   entityId: userId
@@ -42,7 +41,7 @@ const fetchAllUsersForEntity = function* ({
 const provider = createUserListProvider<User>({
   getExistingEntity: getUser,
   extractUserIDSubsetFromEntity: () => [],
-  fetchAllUsersForEntity,
+  fetchAllUsersForEntity: fetchMutualFollowers,
   selectCurrentUserIDsInList: getUserIds,
   canFetchMoreUsers: (user: User, combinedUserIDs: ID[]) =>
     combinedUserIDs.length < user.current_user_followee_follow_count,

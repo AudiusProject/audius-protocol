@@ -1,4 +1,11 @@
-import { ID, UserMetadata, User } from '@audius/common/models'
+import {
+  ID,
+  UserMetadata,
+  User,
+  Id,
+  OptionalId,
+  userMetadataListFromSDK
+} from '@audius/common/models'
 import {
   responseAdapter as adapter,
   SupportingResponse
@@ -11,7 +18,9 @@ import {
   supportingUserListSelectors,
   SUPPORTING_USER_LIST_TAG,
   SupportingMapForUser,
-  getContext
+  getContext,
+  checkSDKMigration,
+  getSDK
 } from '@audius/common/store'
 import { decodeHashId, stringWeiToBN } from '@audius/common/utils'
 import { call, put, select } from 'typed-redux-saga'
@@ -33,13 +42,29 @@ const provider = createUserListProvider<User, SupportingProcessExtraType>({
   extractUserIDSubsetFromEntity: () => [],
   fetchAllUsersForEntity: function* ({ limit, offset, entityId }) {
     const apiClient = yield* getContext('apiClient')
-    // const audiusSdk = yield* getContext('audiusSdk')
+
     const supporting =
-      (yield* call([apiClient, apiClient.getSupporting], {
-        userId: entityId,
-        limit,
-        offset
+      (yield* checkSDKMigration({
+        endpointName: 'getSupporting',
+        legacy: call([apiClient, apiClient.getSupporting], {
+          userId: entityId,
+          limit,
+          offset
+        }),
+        migrated: call(function* () {
+          const sdk = yield* getSDK()
+          const { data } = yield* call(
+            [sdk.full.users, sdk.full.users.getSupportings],
+            {
+              id: Id.parse(entityId),
+              limit,
+              offset
+            }
+          )
+          return data ? userMetadataListFromSDK(data) : null
+        })
       })) ?? []
+
     const users = supporting
       .sort((s1, s2) => {
         const amount1BN = stringWeiToBN(s1.amount)

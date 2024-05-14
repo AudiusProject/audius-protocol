@@ -25,6 +25,16 @@ export const HashId = z.string().transform<number>((data: string, context) => {
   return id
 })
 
+/** Parses a `Nullable<ID>` safely for use with SDK functions which acccept an optional
+   id parameter.
+*/
+export const OptionalId = z
+  .number()
+  .nullable()
+  .transform<string | undefined>(
+    (data: number | null) => encodeHashId(data) ?? undefined
+  )
+
 export const Id = z.number().transform<string>((data: number, context) => {
   const id = encodeHashId(data)
   if (id === null) {

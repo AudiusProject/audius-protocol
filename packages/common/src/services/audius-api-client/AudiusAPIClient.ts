@@ -778,6 +778,7 @@ export class AudiusAPIClient {
     return adapted
   }
 
+  // TODO: PAY-2925
   async getTrackFavoriteUsers({
     currentUserId,
     trackId,
@@ -835,6 +836,7 @@ export class AudiusAPIClient {
     return adapted
   }
 
+  // TODO: PAY-2925
   async getPlaylistFavoriteUsers({
     currentUserId,
     playlistId,

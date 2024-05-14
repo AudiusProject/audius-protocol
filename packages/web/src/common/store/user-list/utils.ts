@@ -1,15 +1,9 @@
 import { ID, UserMetadata, User } from '@audius/common/models'
-import { AudiusAPIClient, AudiusBackend } from '@audius/common/services'
-import {
-  accountSelectors,
-  processAndCacheUsers,
-  getContext
-} from '@audius/common/store'
+import { accountSelectors, processAndCacheUsers } from '@audius/common/store'
 import { SagaGenerator, call, select } from 'typed-redux-saga'
 
 import { AppState } from 'store/types'
 import { waitForRead } from 'utils/sagaHelpers'
-import { AudiusSdk } from '@audius/sdk'
 
 const { getAccountUser, getUserId } = accountSelectors
 
