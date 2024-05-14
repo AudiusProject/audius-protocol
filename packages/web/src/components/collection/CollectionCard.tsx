@@ -115,7 +115,13 @@ export const CollectionCard = forwardRef(
         </Flex>
         <CardFooter>
           {is_private ? (
-            <Text variant='body' size='s' strength='strong' color='subdued'>
+            <Text
+              variant='body'
+              size='s'
+              strength='strong'
+              color='subdued'
+              css={{ lineHeight: '16px' }}
+            >
               {messages.hidden}
             </Text>
           ) : (

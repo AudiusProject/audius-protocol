@@ -7,6 +7,7 @@ import CategoryHeader from 'components/header/desktop/CategoryHeader'
 import { useIsMobile } from 'hooks/useIsMobile'
 
 import styles from './CardLineup.module.css'
+import { Card } from 'components/card'
 
 export type CardLineupProps = {
   categoryName?: string
@@ -49,6 +50,30 @@ const DesktopCardContainer = ({
   )
 }
 
+const EmptyMobileCard = () => (
+  <div className={styles.mobileCardContainer}>
+    <Card size='xs' css={{ display: 'none' }} />
+  </div>
+)
+
+const renderEmptyCards = (cardsLength: number) => {
+  if (cardsLength === 1) {
+    return (
+      <>
+        <EmptyMobileCard />
+        <EmptyMobileCard />
+      </>
+    )
+  }
+  if (cardsLength === 2) {
+    return <EmptyMobileCard />
+  }
+  if (cardsLength % 2 === 1) {
+    return <EmptyMobileCard />
+  }
+  return null
+}
+
 const MobileCardContainer = ({
   cards,
   containerClassName
@@ -60,6 +85,7 @@ const MobileCardContainer = ({
           {card}
         </div>
       ))}
+      {renderEmptyCards(cards.length)}
     </div>
   )
 }

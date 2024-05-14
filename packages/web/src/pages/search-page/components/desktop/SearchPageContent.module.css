@@ -25,16 +25,10 @@
 }
 
 .cardsContainer {
-  display: inline-flex;
+  display: flex;
   width: 100%;
-  justify-content: space-between;
+  justify-content: flex-start;
   gap: var(--harmony-spacing-xl);
-}
-
-@media (max-width: 1320px) {
-  .cardsContainer {
-    justify-content: flex-start;
-  }
 }
 
 /* For mock data */
