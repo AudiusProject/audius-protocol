@@ -20,6 +20,13 @@ export const webServer = (db: Knex): Application => {
                 return res.status(400).send('date query param required')
             }
 
+            const exampleDate = "2024-05-14"
+            const exampleDateLength = exampleDate.length
+            if (dateParam.length !== exampleDateLength) {
+                return res.status(400).send(`invalid date, must be formatted like '${exampleDate}'\n`)
+            }
+
+            // run all records as if they're from 10am that day
             const dateTimeString = `${dateParam}T10:00:00Z`
 
             const parsedDate = new Date(dateTimeString)
