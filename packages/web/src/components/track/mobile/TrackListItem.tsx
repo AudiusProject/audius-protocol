@@ -24,11 +24,7 @@ import Lottie from 'react-lottie'
 import loadingSpinner from 'assets/animations/loadingSpinner.json'
 import { SeoLink } from 'components/link'
 import { TablePlayButton } from 'components/table/components/TablePlayButton'
-import UserBadges from 'components/user-badges/UserBadges'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
-import { profilePage } from 'utils/route'
-
-import { GatedConditionsPill } from '../GatedConditionsPill'
 
 import styles from './TrackListItem.module.css'
 
