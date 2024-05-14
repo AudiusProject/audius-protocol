@@ -1,5 +1,6 @@
 export * from './Text/Text'
 export * from './TextLink/TextLink'
+export type { TextLinkProps } from './TextLink/types'
 export * from './layout'
 export * from './Avatar/Avatar'
 export * from './Hint/Hint'
