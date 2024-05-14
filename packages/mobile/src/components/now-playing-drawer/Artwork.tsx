@@ -58,9 +58,10 @@ export const Artwork = ({ track }: ArtworkProps) => {
   const { hasStreamAccess } = useGatedContentAccess(track)
   const isPreviewing = useSelector(getPreviewing)
   const shouldShowDogEar =
-    track?.stream_conditions &&
-    'usdc_purchase' in track.stream_conditions &&
-    (!hasStreamAccess || isPreviewing)
+    isPreviewing ||
+    (track?.stream_conditions &&
+      'usdc_purchase' in track.stream_conditions &&
+      !hasStreamAccess)
 
   return (
     <Shadow opacity={0.2} radius={8} color={shadowColor} style={styles.root}>

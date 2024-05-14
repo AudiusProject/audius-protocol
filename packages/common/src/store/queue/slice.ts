@@ -2,6 +2,7 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
 import { ID, UID, Collectible } from '../../models'
 import { Maybe, Nullable } from '../../utils'
+import { PlayerBehavior } from '../player'
 import { RepeatMode, Queueable, QueueState } from '../queue/types'
 
 export const initialState: QueueState = {
@@ -18,10 +19,11 @@ export const initialState: QueueState = {
 
 type PlayPayload = {
   uid?: Nullable<UID>
-  isPreview?: boolean
   trackId?: Nullable<ID>
   collectible?: Collectible
   source?: Nullable<string>
+  // TODO: should this really be nullable?
+  playerBehavior?: PlayerBehavior
 }
 
 type QueueAutoplayPayload = {

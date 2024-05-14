@@ -27,7 +27,8 @@ import {
   Entry,
   LineupBaseActions,
   QueueSource,
-  UnsubscribeInfo
+  UnsubscribeInfo,
+  PlayerBehavior
 } from '@audius/common/store'
 import { Uid, makeUids, makeUid, removeNullable } from '@audius/common/utils'
 import {
@@ -449,16 +450,7 @@ function* play<T extends Track | Collection>(
 ) {
   const lineup = yield* select(lineupSelector)
   const requestedPlayTrack = yield* select(getTrack, { uid: action.uid })
-  let isPreview = !!action.isPreview
-
-  // If preview isn't forced, check for track acccess and switch to preview
-  // if the user doesn't have access but the track is previewable
-  if (!isPreview && requestedPlayTrack?.is_stream_gated) {
-    const hasAccess =
-      !requestedPlayTrack?.is_stream_gated ||
-      !!requestedPlayTrack?.access?.stream
-    isPreview = !hasAccess && !!requestedPlayTrack.preview_cid
-  }
+  const isPreview = !!action.isPreview
 
   if (action.uid) {
     const source = yield* select(getSource)
@@ -473,12 +465,8 @@ function* play<T extends Track | Collection>(
           const queueable = yield* call(getToQueue, lineup.prefix, e)
           // If the entry is the one we're playing, set isPreview to incoming
           // value
-          if (
-            queueable &&
-            'uid' in queueable &&
-            queueable?.uid === action.uid
-          ) {
-            queueable.isPreview = isPreview
+          if (isPreview && queueable && 'uid' in queueable) {
+            queueable.playerBehavior = PlayerBehavior.PREVIEW_OR_FULL
           }
           return queueable
         })
@@ -491,9 +479,9 @@ function* play<T extends Track | Collection>(
   yield* put(
     queueActions.play({
       uid: action.uid,
-      isPreview,
       trackId: requestedPlayTrack && requestedPlayTrack.track_id,
-      source: prefix
+      source: prefix,
+      playerBehavior: isPreview ? PlayerBehavior.PREVIEW_OR_FULL : undefined
     })
   )
 }

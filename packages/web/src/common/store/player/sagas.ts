@@ -1,4 +1,4 @@
-import { Kind } from '@audius/common/models'
+import { Kind, Track, isContentUSDCPurchaseGated } from '@audius/common/models'
 import { FeatureFlags, QueryParams } from '@audius/common/services'
 import {
   accountSelectors,
@@ -12,7 +12,8 @@ import {
   playerSelectors,
   playbackPositionActions,
   playbackPositionSelectors,
-  gatedContentSelectors
+  gatedContentSelectors,
+  PlayerBehavior
 } from '@audius/common/store'
 import {
   Genre,
@@ -56,14 +57,8 @@ const {
   error: errorAction
 } = playerActions
 
-const {
-  getTrackId,
-  getUid,
-  getCounter,
-  getPlaying,
-  getPlaybackRate,
-  getPreviewing
-} = playerSelectors
+const { getTrackId, getUid, getCounter, getPlaying, getPlaybackRate } =
+  playerSelectors
 
 const { recordListen } = tracksSocialActions
 const { getTrack } = cacheTracksSelectors
@@ -77,7 +72,8 @@ const RECORD_LISTEN_INTERVAL = 1000
 export function* watchPlay() {
   const getFeatureEnabled = yield* getContext('getFeatureEnabled')
   yield* takeLatest(play.type, function* (action: ReturnType<typeof play>) {
-    const { uid, trackId, isPreview, startTime, onEnd } = action.payload ?? {}
+    const { uid, trackId, playerBehavior, startTime, onEnd } =
+      action.payload ?? {}
 
     const audioPlayer = yield* getContext('audioPlayer')
     const isNativeMobile = yield getContext('isNativeMobile')
@@ -117,7 +113,17 @@ export function* watchPlay() {
 
       let trackDuration = track.duration
 
-      if (isPreview) {
+      const { shouldSkip, shouldPreview } = calculatePlayerBehavior(
+        track,
+        playerBehavior
+      )
+
+      if (shouldSkip) {
+        yield* put(queueActions.next({}))
+        return
+      }
+
+      if (shouldPreview) {
         // Add preview query string and calculate preview duration for use later
         queryParams.preview = true
         trackDuration = getTrackPreviewDuration(track)
@@ -192,7 +198,9 @@ export function* watchPlay() {
             )
           } else {
             audioPlayer.play()
-            yield* put(playSucceeded({ uid, trackId, isPreview }))
+            yield* put(
+              playSucceeded({ uid, trackId, isPreview: shouldPreview })
+            )
             yield* put(seek({ seconds: trackPlaybackInfo.playbackPosition }))
             return
           }
@@ -205,18 +213,57 @@ export function* watchPlay() {
 
     // Play if user has access to track.
     const track = yield* select(getTrack, { id: trackId })
-    const doesUserHaveStreamAccess =
-      !track?.is_stream_gated || !!track?.access?.stream
-    if (!trackId || doesUserHaveStreamAccess || isPreview) {
+    const { shouldSkip, shouldPreview } = calculatePlayerBehavior(
+      track,
+      playerBehavior
+    )
+    if (shouldSkip) {
+      yield* put(queueActions.next({}))
+    } else {
       if (startTime) {
         audioPlayer.seek(startTime)
       }
       audioPlayer.play()
-      yield* put(playSucceeded({ uid, trackId, isPreview }))
-    } else {
-      yield* put(queueActions.next({}))
+      yield* put(playSucceeded({ uid, trackId, isPreview: shouldPreview }))
     }
   })
+}
+
+function calculatePlayerBehavior(
+  track?: Track | null,
+  playerBehavior?: PlayerBehavior
+) {
+  if (!track) {
+    return { shouldSkip: true, shouldPreview: false }
+  }
+
+  const isPreviewAvailable =
+    !!track.preview_cid && isContentUSDCPurchaseGated(track.stream_conditions)
+  const hasStreamAccess = !track.is_stream_gated || !!track.access?.stream
+
+  let shouldPreview = false
+  let shouldSkip = false
+  switch (playerBehavior) {
+    case 'PREVIEW_OR_FULL':
+      if (isPreviewAvailable) {
+        shouldPreview = true
+      }
+      if (!hasStreamAccess) {
+        shouldSkip = true
+      }
+      break
+    case 'FULL_OR_PREVIEW':
+    default:
+      if (!hasStreamAccess) {
+        if (isPreviewAvailable) {
+          shouldPreview = true
+        } else {
+          shouldSkip = true
+        }
+      }
+      break
+  }
+  return { shouldSkip, shouldPreview }
 }
 
 export function* watchCollectiblePlay() {
@@ -267,15 +314,13 @@ export function* watchReset() {
     } else {
       const playerUid = yield* select(getUid)
       const playerTrackId = yield* select(getTrackId)
-      const isPreviewing = yield* select(getPreviewing)
       if (playerUid && playerTrackId) {
         yield* put(
           play({
             uid: playerUid,
             trackId: playerTrackId,
-            // NOTE: isPreviewing can be passed as isPreview here bc we are restarting the track
-            isPreview: isPreviewing,
             onEnd: queueActions.next
+            // TODO: Add playerBehavior to reset action
           })
         )
       }

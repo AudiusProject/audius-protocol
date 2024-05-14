@@ -48,7 +48,8 @@ import {
   usePremiumContentPurchaseModalActions,
   PremiumContentPurchaseModalState,
   albumTrackRemoveConfirmationModalActions,
-  AlbumTrackRemoveConfirmationModalState
+  AlbumTrackRemoveConfirmationModalState,
+  PlayerBehavior
 } from '@audius/common/store'
 import { formatUrlName, Uid, Nullable } from '@audius/common/utils'
 import { push as pushRoute, replace } from 'connected-react-router'
@@ -85,8 +86,8 @@ import { CollectionPageProps as MobileCollectionPageProps } from './components/m
 
 const { trackModalOpened } = modalsActions
 const { selectAllPlaylistUpdateIds } = playlistUpdatesSelectors
-const { makeGetCurrent } = queueSelectors
-const { getPlaying, getPreviewing, getBuffering } = playerSelectors
+const { makeGetCurrent, getPlayerBehavior } = queueSelectors
+const { getPlaying, getBuffering } = playerSelectors
 const { setFavorite } = favoritesUserListActions
 const { setRepost } = repostsUserListActions
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
@@ -846,7 +847,7 @@ function makeMapStateToProps() {
       userPlaylists: getAccountCollections(state),
       currentQueueItem: getCurrentQueueItem(state),
       playing: getPlaying(state),
-      previewing: getPreviewing(state),
+      previewing: getPlayerBehavior(state) === PlayerBehavior.PREVIEW_OR_FULL,
       buffering: getBuffering(state),
       pathname: getLocationPathname(state),
       playlistUpdates: selectAllPlaylistUpdateIds(state)
