@@ -141,8 +141,7 @@ const accountApi = createApi({
               state.userManagers.push({
                 grant: {
                   created_at: currentTime,
-                  // TODO(nkang - C-4332) - Fill this in
-                  grantee_address: '',
+                  grantee_address: managerUser.erc_wallet,
                   is_approved: null,
                   is_revoked: false,
                   updated_at: currentTime,
@@ -177,8 +176,6 @@ const accountApi = createApi({
       async onQueryStarted(payload: RemoveManagerPayload, { dispatch }) {
         const { managerUserId, userId } = payload
         dispatch(
-          // TODO(C-4330) - The return typing here for `updateQueryData` is erroneous - fix.
-          // @ts-expect-error
           accountApi.util.updateQueryData(
             'getManagedAccounts',
             { userId: managerUserId },
@@ -196,7 +193,6 @@ const accountApi = createApi({
           )
         )
         dispatch(
-          // @ts-expect-error
           accountApi.util.updateQueryData(
             'getManagers',
             { userId },
@@ -243,8 +239,6 @@ const accountApi = createApi({
       ) {
         const { userId, grantorUser } = payload
         dispatch(
-          // TODO(C-4330) - The return typing here for `updateQueryData` is erroneous - fix.
-          // @ts-expect-error
           accountApi.util.updateQueryData(
             'getManagedAccounts',
             { userId },
