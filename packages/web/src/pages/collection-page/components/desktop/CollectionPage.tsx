@@ -8,13 +8,17 @@ import {
   SmartCollection,
   ID,
   User,
-  isContentUSDCPurchaseGated
+  isContentUSDCPurchaseGated,
+  ModalSource,
+  Track
 } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import {
   CollectionTrack,
   CollectionsPageType,
-  CollectionPageTrackRecord
+  CollectionPageTrackRecord,
+  usePremiumContentPurchaseModal,
+  PurchaseableContentType
 } from '@audius/common/store'
 import { getDogEarType, removeNullable } from '@audius/common/utils'
 
@@ -29,6 +33,7 @@ import Page from 'components/page/Page'
 import { SuggestedTracks } from 'components/suggested-tracks'
 import { Tile } from 'components/tile'
 import { TracksTable, TracksTableColumn } from 'components/tracks-table'
+import { useAuthenticatedCallback } from 'hooks/useAuthenticatedCallback'
 import { useFlag } from 'hooks/useRemoteConfig'
 import { smartCollectionIcons } from 'pages/collection-page/smartCollectionIcons'
 import { computeCollectionMetadataProps } from 'pages/collection-page/store/utils'
@@ -209,6 +214,19 @@ const CollectionPage = ({
       track.is_stream_gated &&
       isContentUSDCPurchaseGated(track.stream_conditions)
   )
+
+  // Note: This would normally belong in the CollectionPageProvider,
+  // but it benefits us more to reuse existing hooks and that component cannot use hooks
+  const { onOpen: openPremiumContentModal } = usePremiumContentPurchaseModal()
+  const openPurchaseModal = useAuthenticatedCallback(
+    ({ track_id }: Track) => {
+      openPremiumContentModal(
+        { contentId: track_id, contentType: PurchaseableContentType.TRACK },
+        { source: ModalSource.TrackListItem }
+      )
+    },
+    [openPremiumContentModal]
+  )
   const isPlayable = !areAllTracksDeleted && numTracks > 0
   const dogEarType =
     (!collectionLoading &&
@@ -344,7 +362,7 @@ const CollectionPage = ({
                 onClickFavorite={onClickSave}
                 onClickRemove={isOwner ? onClickRemove : undefined}
                 onClickRepost={onClickRepostTrack}
-                onClickPurchase={onClickPurchaseTrack}
+                onClickPurchase={openPurchaseModal}
                 isPremiumEnabled={isPremiumAlbumsEnabled}
                 onReorderTracks={onReorderTracks}
                 onSortTracks={onSortTracks}
