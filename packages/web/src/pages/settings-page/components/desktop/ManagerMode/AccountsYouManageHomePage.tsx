@@ -5,11 +5,7 @@ import {
   useGetManagedAccounts,
   useRemoveManager
 } from '@audius/common/api'
-import {
-  ManagedUserMetadata,
-  Status,
-  UserMetadata
-} from '@audius/common/models'
+import { Status, UserMetadata } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
 import { Box, Divider, Flex, Text, TextLink } from '@audius/harmony'
 
@@ -20,7 +16,7 @@ import { useSelector } from 'utils/reducer'
 import { AccountListItem } from './AccountListItem'
 import { sharedMessages } from './sharedMessages'
 import { AccountsYouManagePageProps, AccountsYouManagePages } from './types'
-const { getUserId } = accountSelectors
+const { getAccountUser } = accountSelectors
 
 const messages = {
   takeControl:
@@ -31,7 +27,8 @@ const messages = {
 export const AccountsYouManageHomePage = ({
   setPage
 }: AccountsYouManagePageProps) => {
-  const userId = useSelector(getUserId)
+  const currentUser = useSelector(getAccountUser)
+  const userId = currentUser?.user_id
   const { data: managedAccounts, status } = useGetManagedAccounts(
     { userId: userId! },
     { disabled: userId == null }
@@ -48,16 +45,16 @@ export const AccountsYouManageHomePage = ({
   )
 
   const handleApprove = useCallback(
-    ({
-      currentUserId,
-      grantorUser
-    }: {
-      currentUserId: number
-      grantorUser: UserMetadata
-    }) => {
-      approveManagedAccount({ userId: currentUserId, grantorUser })
+    ({ grantorUser }: { grantorUser: UserMetadata }) => {
+      if (currentUser) {
+        approveManagedAccount({
+          userId: currentUser.user_id,
+          grantorUser,
+          userWalletAddress: currentUser.erc_wallet
+        })
+      }
     },
-    [approveManagedAccount]
+    [approveManagedAccount, currentUser]
   )
 
   const handleReject = useCallback(
