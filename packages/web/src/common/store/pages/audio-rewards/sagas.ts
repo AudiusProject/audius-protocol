@@ -581,6 +581,7 @@ function* claimAllChallengeRewardsAsync(
 ) {
   const { claims } = action.payload
   let hasError = false
+  let aaoErrorCode: undefined | number
   yield* all(
     claims.map((claim) =>
       call(function* () {
@@ -590,9 +591,7 @@ function* claimAllChallengeRewardsAsync(
             payload: { claim, retryOnFailure: false }
           })
           if (result?.aaoErrorCode) {
-            yield* put(
-              claimChallengeRewardFailed({ aaoErrorCode: result.aaoErrorCode })
-            )
+            aaoErrorCode = result.aaoErrorCode
           }
         } catch (e) {
           console.error(e)
@@ -601,7 +600,9 @@ function* claimAllChallengeRewardsAsync(
       })
     )
   )
-  if (hasError) {
+  if (aaoErrorCode) {
+    yield* put(claimChallengeRewardFailed({ aaoErrorCode }))
+  } else if (hasError) {
     yield* put(claimChallengeRewardFailed())
   } else {
     yield* put(claimAllChallengeRewardsSucceeded())
