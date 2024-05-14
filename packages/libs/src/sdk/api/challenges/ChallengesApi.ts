@@ -85,7 +85,7 @@ export class ChallengesApi extends BaseAPI {
    */
   public async claimReward(
     request: ClaimRewardsRequest
-  ): Promise<{ txSignature: string } | { aaoErrorCode: number }> {
+  ): Promise<{ transactionSignature: string } | { aaoErrorCode: number }> {
     const args = await parseParams('claimRewards', ClaimRewardsSchema)(request)
     const { challengeId, specifier, amount: inputAmount } = args
     const logger = this.logger.createPrefixedLogger(
@@ -168,7 +168,7 @@ export class ChallengesApi extends BaseAPI {
     )
 
     logger.debug('Disbursing claim...')
-    const txSignature = await this.evaluateAttestations({
+    const transactionSignature = await this.evaluateAttestations({
       challengeId,
       specifier,
       recipientEthAddress,
@@ -177,7 +177,7 @@ export class ChallengesApi extends BaseAPI {
       amount
     })
 
-    return { txSignature }
+    return { transactionSignature }
   }
 
   private async submitAntiAbuseOracleAttestation({
