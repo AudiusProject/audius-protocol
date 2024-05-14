@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import {
   formatCooldownChallenges,
@@ -18,6 +18,8 @@ import { makeStyles } from 'app/styles'
 import { formatLabel } from 'app/utils/challenges'
 
 import { AppDrawer, useDrawerState } from '../drawer/AppDrawer'
+import LoadingSpinner from '../loading-spinner'
+import { ProgressBar } from '../progress-bar'
 import { SummaryTable } from '../summary-table'
 
 const { claimAllChallengeRewards, resetAndCancelClaimReward } =
@@ -29,6 +31,7 @@ const messages = {
   claimSuccessMessage: 'All rewards successfully claimed!',
   pending: (amount: number) => `${amount} Pending`,
   claimAudio: (amount: number) => `Claim ${amount} $AUDIO`,
+  claiming: 'Claiming $AUDIO',
   done: 'Done'
 }
 
@@ -45,6 +48,15 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     paddingHorizontal: spacing(4),
     paddingTop: spacing(4),
     width: '100%'
+  },
+  progressBar: {
+    height: spacing(1),
+    marginVertical: 0,
+    paddingVertical: 0
+  },
+  spinner: {
+    width: spacing(4),
+    height: spacing(4)
   }
 }))
 const config = {
@@ -66,6 +78,15 @@ export const ClaimAllRewardsDrawer = () => {
     })
   const claimInProgress = claimStatus === ClaimStatus.CUMULATIVE_CLAIMING
   const hasClaimed = claimStatus === ClaimStatus.CUMULATIVE_SUCCESS
+
+  const [totalClaimable, setTotalClaimable] = useState(claimableAmount)
+  useEffect(
+    () =>
+      setTotalClaimable((totalClaimable) =>
+        Math.max(totalClaimable, claimableAmount)
+      ),
+    [claimableAmount, setTotalClaimable]
+  )
 
   useEffect(() => {
     if (hasClaimed) {
@@ -112,6 +133,34 @@ export const ClaimAllRewardsDrawer = () => {
             )}
             summaryItem={summary}
           />
+          {claimInProgress && claimableAmount > 1 ? (
+            <Flex
+              backgroundColor='surface1'
+              gap='l'
+              borderRadius='s'
+              border='strong'
+              p='l'
+            >
+              <Flex direction='row' justifyContent='space-between'>
+                <Text variant='label' size='s' color='default'>
+                  {messages.claiming}
+                </Text>
+                <Flex direction='row' gap='l'>
+                  <Text variant='label' size='s' color='default'>
+                    {`${totalClaimable - claimableAmount}/${totalClaimable}`}
+                  </Text>
+                  <LoadingSpinner style={styles.spinner} />
+                </Flex>
+              </Flex>
+              <ProgressBar
+                style={{
+                  root: styles.progressBar
+                }}
+                max={totalClaimable}
+                progress={totalClaimable - claimableAmount}
+              />
+            </Flex>
+          ) : null}
         </Flex>
       </ScrollView>
       <View style={styles.stickyClaimRewardsContainer}>
