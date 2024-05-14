@@ -90,6 +90,11 @@ export type EndpointConfig<Args, Data> = {
     fetchArgs: Args,
     context: { dispatch: ThunkDispatch<any, any, any> }
   ) => void
+  onQueryError?: (
+    error: unknown,
+    fetchArgs: Args,
+    context: AudiusQueryContextType & { dispatch: ThunkDispatch<any, any, any> }
+  ) => void
 }
 
 export type EntityMap = {

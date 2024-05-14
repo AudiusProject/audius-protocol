@@ -388,6 +388,7 @@ const fetchData = async <Args, Data>(
         errorMessage: getErrorMessage(e)
       }) as FetchErrorAction
     )
+    endpoint.onQueryError?.(e, fetchArgs, context)
     return undefined
   }
 }

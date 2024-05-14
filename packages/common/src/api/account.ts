@@ -3,12 +3,15 @@ import dayjs from 'dayjs'
 import { createApi } from '~/audius-query'
 import {
   ID,
+  ManagedUserMetadata,
   User,
   UserMetadata,
   managedUserListFromSDK,
   userManagerListFromSDK
 } from '~/models'
+import { reformatUser } from '~/store/cache/users/utils'
 
+import { AudiusSdk } from '@audius/sdk'
 import { Id } from './utils'
 
 type ResetPasswordArgs = {
@@ -28,7 +31,38 @@ type RemoveManagerPayload = {
 
 type ApproveManagedAccountPayload = {
   userId: number
-  grantorUser: UserMetadata | User
+  managedAccount: ManagedUserMetadata
+}
+
+const fetchManagers = async ({
+  userId,
+  audiusSdkInstance
+}: {
+  userId: number
+  audiusSdkInstance: AudiusSdk
+}) => {
+  const managedUsers = await audiusSdkInstance.full.users.getManagers({
+    id: Id.parse(userId)
+  })
+
+  const { data: rawData = [] } = managedUsers
+  const data = rawData.filter((g) => g.grant.isApproved !== false)
+  return userManagerListFromSDK(data)
+}
+
+const fetchManagedAccounts = async ({
+  userId,
+  audiusSdkInstance
+}: {
+  userId: number
+  audiusSdkInstance: AudiusSdk
+}) => {
+  const managedUsers = await audiusSdkInstance.full.users.getManagedUsers({
+    id: Id.parse(userId)
+  })
+
+  const { data = [] } = managedUsers
+  return managedUserListFromSDK(data)
 }
 
 const accountApi = createApi({
@@ -74,12 +108,7 @@ const accountApi = createApi({
     getManagedAccounts: {
       async fetch({ userId }: { userId: ID }, { audiusSdk }) {
         const sdk = await audiusSdk()
-        const managedUsers = await sdk.full.users.getManagedUsers({
-          id: Id.parse(userId)
-        })
-
-        const { data = [] } = managedUsers
-        return managedUserListFromSDK(data)
+        return await fetchManagedAccounts({ userId, audiusSdkInstance: sdk })
       },
       options: {
         type: 'query',
@@ -90,13 +119,7 @@ const accountApi = createApi({
     getManagers: {
       async fetch({ userId }: { userId: ID }, { audiusSdk }) {
         const sdk = await audiusSdk()
-        const managedUsers = await sdk.full.users.getManagers({
-          id: Id.parse(userId)
-        })
-
-        const { data: rawData = [] } = managedUsers
-        const data = rawData.filter((g) => g.grant.isApproved !== false)
-        return userManagerListFromSDK(data)
+        return await fetchManagers({ userId, audiusSdkInstance: sdk })
       },
       options: {
         type: 'query',
@@ -172,13 +195,11 @@ const accountApi = createApi({
       options: {
         idArgKey: 'managerUserId',
         type: 'mutation',
-        schemaKey: 'userManagers'
+        schemaKey: 'managedUsers'
       },
       async onQueryStarted(payload: RemoveManagerPayload, { dispatch }) {
         const { managerUserId, userId } = payload
         dispatch(
-          // TODO(C-4330) - The return typing here for `updateQueryData` is erroneous - fix.
-          // @ts-expect-error
           accountApi.util.updateQueryData(
             'getManagedAccounts',
             { userId: managerUserId },
@@ -186,7 +207,10 @@ const accountApi = createApi({
               // TODO(C-4330) - The state type is incorrect - fix.
               // @ts-expect-error
               const foundIndex = state.managedUsers?.findIndex(
-                (m: { user: number }) => m.user === userId
+                (m: { user: number } | { user: UserMetadata }) =>
+                  typeof m.user === 'number'
+                    ? m.user === userId
+                    : m.user.user_id === userId
               )
               if (foundIndex != null && foundIndex > -1) {
                 // @ts-expect-error (C-4330)
@@ -196,7 +220,6 @@ const accountApi = createApi({
           )
         )
         dispatch(
-          // @ts-expect-error
           accountApi.util.updateQueryData(
             'getManagers',
             { userId },
@@ -204,8 +227,10 @@ const accountApi = createApi({
               // TODO(C-4330) - The state type is incorrect - fix.
               // @ts-expect-error
               const foundIndex = state.userManagers?.findIndex(
-                (m: { manager: number }) => {
-                  return m.manager === managerUserId
+                (m: { manager: number } | { manager: UserMetadata }) => {
+                  return typeof m.manager === 'number'
+                    ? m.manager === userId
+                    : m.manager.user_id === userId
                 }
               )
               if (foundIndex != null && foundIndex > -1) {
@@ -215,13 +240,83 @@ const accountApi = createApi({
             }
           )
         )
+      },
+      async onQueryError(
+        _error: unknown,
+        { userId, managerUserId }: RemoveManagerPayload,
+        { dispatch, audiusSdk, audiusBackend }
+      ) {
+        const sdk = await audiusSdk()
+        const undoOptimisticManagersUpdate = async () => {
+          // Refetch the optimistically removed manager and add it back to userManagers state
+          try {
+            const userManagers = await fetchManagers({
+              userId,
+              audiusSdkInstance: sdk
+            })
+            dispatch(
+              accountApi.util.updateQueryData(
+                'getManagers',
+                { userId },
+                (state) => {
+                  const removedUserManager = userManagers.find(
+                    (m) => m.manager.user_id === managerUserId
+                  )
+                  if (removedUserManager) {
+                    // @ts-expect-error (C-4330)
+                    state.userManagers.push({
+                      grant: removedUserManager.grant,
+                      manager: reformatUser(
+                        removedUserManager.manager,
+                        audiusBackend
+                      )
+                    })
+                  }
+                  return state
+                }
+              )
+            )
+          } catch {
+            // Ignore errors
+          }
+        }
+        const undoOptimisticManagedAccountsUpdate = async () => {
+          // Refetch the optimistically removed managed account and add it back to managerUsers state
+          try {
+            const managedAccounts = await fetchManagedAccounts({
+              userId: managerUserId,
+              audiusSdkInstance: sdk
+            })
+            dispatch(
+              accountApi.util.updateQueryData(
+                'getManagedAccounts',
+                { userId: managerUserId },
+                (state) => {
+                  const removedManagedUser = managedAccounts.find(
+                    (m) => m.user.user_id === userId
+                  )
+                  if (removedManagedUser) {
+                    // @ts-expect-error (C-4330)
+                    state.managedUsers.push({
+                      grant: removedManagedUser.grant,
+                      user: reformatUser(removedManagedUser.user, audiusBackend)
+                    })
+                  }
+                }
+              )
+            )
+          } catch {
+            // Ignore errors
+          }
+        }
+        undoOptimisticManagersUpdate()
+        undoOptimisticManagedAccountsUpdate()
       }
-      // TODO(C-4331) - Add onQueryErrored for cleaning up optimistic update if the call fails.
     },
     approveManagedAccount: {
       async fetch(payload: ApproveManagedAccountPayload, { audiusSdk }) {
-        const { grantorUser, userId } = payload
-        const grantorUserId = grantorUser.user_id
+        const { managedAccount, userId } = payload
+        const grantorUserId = managedAccount.user.user_id
         const encodedUserId = Id.parse(userId) as string
         const encodedGrantorUserId = Id.parse(grantorUserId)
         const sdk = await audiusSdk()
@@ -230,8 +325,6 @@ const accountApi = createApi({
           userId: encodedUserId,
           grantorUserId: encodedGrantorUserId
         })
-
-        return payload
       },
       options: {
         idArgKey: 'grantorUser.user_id',
@@ -241,10 +334,8 @@ const accountApi = createApi({
         payload: ApproveManagedAccountPayload,
         { dispatch }
       ) {
-        const { userId, grantorUser } = payload
+        const { userId, managedAccount } = payload
         dispatch(
-          // TODO(C-4330) - The return typing here for `updateQueryData` is erroneous - fix.
-          // @ts-expect-error
           accountApi.util.updateQueryData(
             'getManagedAccounts',
             { userId },
@@ -252,27 +343,55 @@ const accountApi = createApi({
               const currentTime = dayjs().format('YYYY-MM-DD HH:mm:ss')
               // TODO(C-4330) - The state type is incorrect - fix.
               // @ts-expect-error
-              const foundIndex = state.managedUsers.findIndex(
-                (m: { user: number }) => m.user === grantorUser.user_id
+              const foundIndex = state.managedUsers?.findIndex(
+                (m: { user: number } | { user: UserMetadata }) =>
+                  typeof m.user === 'number'
+                    ? m.user === managedAccount.user.user_id
+                    : m.user.user_id === managedAccount.user.user_id
               )
-              // @ts-expect-error
-              state.managedUsers.splice(foundIndex, 1, {
-                grant: {
-                  created_at: currentTime,
-                  // TODO(nkang - C-4332) - Fill this in
-                  grantee_address: '',
-                  is_approved: true,
-                  is_revoked: false,
-                  updated_at: currentTime,
-                  user_id: userId
-                },
-                user: grantorUser
-              })
+              if (foundIndex != null && foundIndex > -1) {
+                // @ts-expect-error
+                state.managedUsers.splice(foundIndex, 1, {
+                  grant: {
+                    ...managedAccount.grant,
+                    is_approved: true,
+                    updated_at: currentTime
+                  },
+                  user: managedAccount.user
+                })
+              }
+              return state
+            }
+          )
+        )
+      },
+      async onQueryError(
+        _error: unknown,
+        payload: ApproveManagedAccountPayload,
+        { dispatch }
+      ) {
+        const { userId, managedAccount } = payload
+        dispatch(
+          accountApi.util.updateQueryData(
+            'getManagedAccounts',
+            { userId },
+            (state) => {
+              // @ts-expect-error (C-4330)
+              const foundIndex = state.managedUsers?.findIndex(
+                (m: { user: number } | { user: UserMetadata }) =>
+                  typeof m.user === 'number'
+                    ? m.user === managedAccount.user.user_id
+                    : m.user.user_id === managedAccount.user.user_id
+              )
+              if (foundIndex != null && foundIndex > -1) {
+                // @ts-expect-error (C-4330)
+                state.managedUsers.splice(foundIndex, 1, managedAccount)
+              }
+              return state
             }
           )
         )
       }
-      // TODO(C-4331) - Add onQueryErrored for cleaning up optimistic update if the call fails.
     }
   }
 })

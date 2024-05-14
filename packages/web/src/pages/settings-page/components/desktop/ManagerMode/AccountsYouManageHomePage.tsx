@@ -48,16 +48,13 @@ export const AccountsYouManageHomePage = ({
   )
 
   const handleApprove = useCallback(
-    ({
-      currentUserId,
-      grantorUser
-    }: {
-      currentUserId: number
-      grantorUser: UserMetadata
-    }) => {
-      approveManagedAccount({ userId: currentUserId, grantorUser })
+    (managedAccount: ManagedUserMetadata) => {
+      approveManagedAccount(
+        { userId: userId!, managedAccount },
+        { disabled: userId == null }
+      )
     },
-    [approveManagedAccount]
+    [approveManagedAccount, userId]
   )
 
   const handleReject = useCallback(
@@ -121,7 +118,7 @@ export const AccountsYouManageHomePage = ({
             key={m.user.user_id}
             user={m.user}
             onRemoveManager={handleStopManaging}
-            onApprove={handleApprove}
+            onApprove={() => handleApprove(m)}
             onReject={handleReject}
             isManagedAccount
             isPending={m.grant.is_approved == null}
