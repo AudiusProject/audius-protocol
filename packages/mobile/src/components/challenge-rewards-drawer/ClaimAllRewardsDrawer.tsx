@@ -79,14 +79,24 @@ export const ClaimAllRewardsDrawer = () => {
   const claimInProgress = claimStatus === ClaimStatus.CUMULATIVE_CLAIMING
   const hasClaimed = claimStatus === ClaimStatus.CUMULATIVE_SUCCESS
 
-  const [totalClaimable, setTotalClaimable] = useState(claimableAmount)
-  useEffect(
-    () =>
-      setTotalClaimable((totalClaimable) =>
-        Math.max(totalClaimable, claimableAmount)
-      ),
-    [claimableAmount, setTotalClaimable]
+  const [totalClaimableAmount, setTotalClaimableAmount] =
+    useState(claimableAmount)
+  const [totalClaimableCount, setTotalClaimableCount] = useState(
+    claimableChallenges.length
   )
+  useEffect(() => {
+    setTotalClaimableAmount((totalClaimableAmount) =>
+      Math.max(totalClaimableAmount, claimableAmount)
+    )
+    setTotalClaimableCount((totalClaimableCount) =>
+      Math.max(totalClaimableCount, claimableChallenges.length)
+    )
+  }, [
+    claimableAmount,
+    claimableChallenges.length,
+    setTotalClaimableAmount,
+    setTotalClaimableCount
+  ])
 
   useEffect(() => {
     if (hasClaimed) {
@@ -133,7 +143,7 @@ export const ClaimAllRewardsDrawer = () => {
             )}
             summaryItem={summary}
           />
-          {claimInProgress && claimableAmount > 1 ? (
+          {claimInProgress && totalClaimableCount > 1 ? (
             <Flex
               backgroundColor='surface1'
               gap='l'
@@ -147,7 +157,9 @@ export const ClaimAllRewardsDrawer = () => {
                 </Text>
                 <Flex direction='row' gap='l'>
                   <Text variant='label' size='s' color='default'>
-                    {`${totalClaimable - claimableAmount}/${totalClaimable}`}
+                    {`${
+                      totalClaimableAmount - claimableAmount
+                    }/${totalClaimableAmount}`}
                   </Text>
                   <LoadingSpinner style={styles.spinner} />
                 </Flex>
@@ -156,8 +168,8 @@ export const ClaimAllRewardsDrawer = () => {
                 style={{
                   root: styles.progressBar
                 }}
-                max={totalClaimable}
-                progress={totalClaimable - claimableAmount}
+                max={totalClaimableAmount}
+                progress={totalClaimableAmount - claimableAmount}
               />
             </Flex>
           ) : null}
