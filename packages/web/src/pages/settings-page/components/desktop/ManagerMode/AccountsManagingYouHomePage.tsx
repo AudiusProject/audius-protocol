@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useContext, useEffect } from 'react'
 
 import { useGetManagers, useRemoveManager } from '@audius/common/api'
 import { Status } from '@audius/common/models'
@@ -19,6 +19,7 @@ import { useSelector } from 'utils/reducer'
 import { AccountListItem } from './AccountListItem'
 import { sharedMessages } from './sharedMessages'
 import { AccountsManagingYouPageProps, AccountsManagingYouPages } from './types'
+import { ToastContext } from 'components/toast/ToastContext'
 
 const { getUserId } = accountSelectors
 
@@ -35,8 +36,9 @@ export const AccountsManagingYouHomePage = (
 ) => {
   const { setPage } = props
   const userId = useSelector(getUserId) as number
+  const { toast } = useContext(ToastContext)
 
-  const [removeManager] = useRemoveManager()
+  const [removeManager, removeResult] = useRemoveManager()
   const { data: managers, status: managersStatus } = useGetManagers({ userId })
 
   const handleRemoveManager = useCallback(
@@ -52,6 +54,12 @@ export const AccountsManagingYouHomePage = (
     },
     [removeManager]
   )
+
+  useEffect(() => {
+    if (removeResult.status === Status.ERROR) {
+      toast(sharedMessages.somethingWentWrong)
+    }
+  }, [toast, removeResult.status])
 
   return (
     <Flex direction='column' gap='xl' ph='xl'>

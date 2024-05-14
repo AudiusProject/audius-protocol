@@ -5,7 +5,11 @@ import {
   useGetManagedAccounts,
   useRemoveManager
 } from '@audius/common/api'
-import { ID, Status, UserMetadata } from '@audius/common/models'
+import {
+  ManagedUserMetadata,
+  Status,
+  UserMetadata
+} from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
 import { Box, Divider, Flex, Text, TextLink } from '@audius/harmony'
 
@@ -21,8 +25,7 @@ const { getUserId } = accountSelectors
 const messages = {
   takeControl:
     'Take control of your managed accounts by making changes to their profiles, preferences, and content.',
-  noAccounts: 'You don’t manage any accounts.',
-  somethingWentWrong: 'Something went wrong. Please try again later.'
+  noAccounts: 'You don’t manage any accounts.'
 }
 
 export const AccountsYouManageHomePage = ({
@@ -30,7 +33,7 @@ export const AccountsYouManageHomePage = ({
 }: AccountsYouManagePageProps) => {
   const userId = useSelector(getUserId)
   const { data: managedAccounts, status } = useGetManagedAccounts(
-    { userId: userId as ID },
+    { userId: userId! },
     { disabled: userId == null }
   )
   const [approveManagedAccount, approveResult] = useApproveManagedAccount()
@@ -74,13 +77,16 @@ export const AccountsYouManageHomePage = ({
   )
 
   useEffect(() => {
-    if (
-      approveResult.status === Status.ERROR ||
-      rejectResult.status === Status.ERROR
-    ) {
-      toast(messages.somethingWentWrong)
+    if (approveResult.status === Status.ERROR) {
+      toast(sharedMessages.somethingWentWrong)
     }
-  }, [toast, approveResult.status, rejectResult.status])
+  }, [toast, approveResult.status])
+
+  useEffect(() => {
+    if (rejectResult.status === Status.ERROR) {
+      toast(sharedMessages.somethingWentWrong)
+    }
+  }, [toast, rejectResult.status])
 
   return (
     <Flex direction='column' gap='xl'>

@@ -23,6 +23,7 @@ import { useComposeChat } from 'pages/chat-page/components/useComposeChat'
 import { useSelector } from 'utils/reducer'
 import { profilePage } from 'utils/route'
 import zIndex from 'utils/zIndex'
+import { useAccountSwitcher } from '@audius/common/hooks'
 
 const { getUserId } = accountSelectors
 const { getCanCreateChat } = chatSelectors
@@ -70,6 +71,8 @@ export const AccountListItem = ({
     if (!user) return
     goToRoute(profilePage(user.handle))
   }, [goToRoute, user])
+
+  const { switchAccount } = useAccountSwitcher()
 
   const { canCreateChat } = useSelector((state) =>
     getCanCreateChat(state, { userId: user?.user_id })
@@ -131,13 +134,14 @@ export const AccountListItem = ({
       items.push({
         icon: <IconUserArrowRotate />,
         text: messages.switchToUser,
-        // TODO(nkang - PAY-2831) - Implement this
-        onClick: () => {}
+        onClick: () => switchAccount(user)
       })
     }
 
     return items
   }, [
+    user,
+    switchAccount,
     isManagedAccount,
     isPending,
     handleCancelInvite,
