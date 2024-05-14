@@ -17,6 +17,7 @@ import { AppContextProvider } from './AppContextProvider'
 import { AudiusQueryProvider } from './AudiusQueryProvider'
 import { useHistoryContext } from './HistoryProvider'
 import { ReduxProvider } from './ReduxProvider'
+import { SvgGradientProvider } from './SvgGradientProvider'
 import { ThemeProvider } from './ThemeProvider'
 import { TrpcProvider } from './TrpcProvider'
 
@@ -49,11 +50,13 @@ export const AppProviders = ({ children }: AppContextProps) => {
                       <ScrollProvider>
                         <RouterContextProvider>
                           <MainContentContextProvider>
-                            <HeaderContextProvider>
-                              <ToastContextProvider>
-                                {children}
-                              </ToastContextProvider>
-                            </HeaderContextProvider>
+                            <SvgGradientProvider>
+                              <HeaderContextProvider>
+                                <ToastContextProvider>
+                                  {children}
+                                </ToastContextProvider>
+                              </HeaderContextProvider>
+                            </SvgGradientProvider>
                           </MainContentContextProvider>
                         </RouterContextProvider>
                       </ScrollProvider>
