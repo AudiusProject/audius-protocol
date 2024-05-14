@@ -62,7 +62,8 @@ export enum FeatureFlags {
   USE_SDK_REWARDS = 'use_sdk_rewards',
   DISCOVERY_TIP_REACTIONS = 'discovery_tip_reactions',
   USE_ADDRESS_LOOKUPS = 'use_address_lookups',
-  MANAGER_MODE = 'manager_mode'
+  MANAGER_MODE = 'manager_mode',
+  SEARCH_V2 = 'search_v2'
 }
 
 type FlagDefaults = Record<FeatureFlags, boolean>
@@ -140,5 +141,6 @@ export const flagDefaults: FlagDefaults = {
   [FeatureFlags.USE_SDK_REWARDS]: false,
   [FeatureFlags.DISCOVERY_TIP_REACTIONS]: false,
   [FeatureFlags.USE_ADDRESS_LOOKUPS]: false,
-  [FeatureFlags.MANAGER_MODE]: false
+  [FeatureFlags.MANAGER_MODE]: false,
+  [FeatureFlags.SEARCH_V2]: false
 }

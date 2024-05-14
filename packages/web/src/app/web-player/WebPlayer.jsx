@@ -81,6 +81,7 @@ import RepostsPage from 'pages/reposts-page/RepostsPage'
 import { RequiresUpdate } from 'pages/requires-update/RequiresUpdate'
 import SavedPage from 'pages/saved-page/SavedPage'
 import SearchPage from 'pages/search-page/SearchPage'
+import { SearchPageV2 } from 'pages/search-page-v2/SearchPageV2'
 import SettingsPage from 'pages/settings-page/SettingsPage'
 import { SubPage } from 'pages/settings-page/components/mobile/SettingsPage'
 import SmartCollectionPage from 'pages/smart-collection/SmartCollectionPage'
@@ -398,7 +399,8 @@ class WebPlayer extends Component {
   }
 
   render() {
-    const { incrementScroll, decrementScroll, userHandle } = this.props
+    const { incrementScroll, decrementScroll, userHandle, isSearchV2Enabled } =
+      this.props
 
     const {
       showWebUpdateBanner,
@@ -647,23 +649,31 @@ class WebPlayer extends Component {
 
                 <Route
                   path={SEARCH_CATEGORY_PAGE}
-                  render={(props) => (
-                    <SearchPage
-                      {...props}
-                      scrollToTop={this.scrollToTop}
-                      containerRef={this.props.mainContentRef.current}
-                    />
-                  )}
+                  render={(props) =>
+                    isSearchV2Enabled ? (
+                      <SearchPageV2 />
+                    ) : (
+                      <SearchPage
+                        {...props}
+                        scrollToTop={this.scrollToTop}
+                        containerRef={this.props.mainContentRef.current}
+                      />
+                    )
+                  }
                 />
                 <Route
                   path={SEARCH_PAGE}
-                  render={(props) => (
-                    <SearchPage
-                      {...props}
-                      scrollToTop={this.scrollToTop}
-                      containerRef={this.props.mainContentRef.current}
-                    />
-                  )}
+                  render={(props) =>
+                    isSearchV2Enabled ? (
+                      <SearchPageV2 />
+                    ) : (
+                      <SearchPage
+                        {...props}
+                        scrollToTop={this.scrollToTop}
+                        containerRef={this.props.mainContentRef.current}
+                      />
+                    )
+                  }
                 />
 
                 <DesktopRoute
@@ -990,7 +1000,8 @@ const mapStateToProps = (state) => ({
   accountStatus: getAccountStatus(state),
   signOnStatus: getSignOnStatus(state),
   showCookieBanner: getShowCookieBanner(state),
-  isChatEnabled: getFeatureEnabled(FeatureFlags.CHAT_ENABLED)
+  isChatEnabled: getFeatureEnabled(FeatureFlags.CHAT_ENABLED),
+  isSearchV2Enabled: getFeatureEnabled(FeatureFlags.SEARCH_V2)
 })
 
 const mapDispatchToProps = (dispatch) => ({
