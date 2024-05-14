@@ -57,8 +57,7 @@ const rowMessageMap = {
   [OverflowAction.DELETE_TRACK]: 'Delete Track',
   [OverflowAction.MARK_AS_PLAYED]: 'Mark as Played',
   [OverflowAction.MARK_AS_UNPLAYED]: 'Mark as Unplayed',
-  [OverflowAction.PURCHASE_TRACK]: 'Purchase Track',
-  [OverflowAction.PURCHASE_ALBUM]: 'Purchase Album'
+  [OverflowAction.PURCHASE_TRACK]: 'Purchase Track'
 }
 
 // A modal for displaying overflow options on mobile.
@@ -110,7 +109,6 @@ const MobileOverflowModal = ({
     [OverflowAction.UNFOLLOW_ARTIST]: onUnfollow,
     [OverflowAction.FOLLOW]: onFollow,
     [OverflowAction.UNFOLLOW]: onUnfollow,
-    [OverflowAction.PURCHASE_ALBUM]: onPurchase,
     [OverflowAction.PURCHASE_TRACK]: onPurchase,
     // These are implement in native mobile,
     // but not mobile web

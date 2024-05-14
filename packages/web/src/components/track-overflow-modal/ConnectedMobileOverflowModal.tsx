@@ -212,15 +212,7 @@ const ConnectedMobileOverflowModal = ({
           onDeletePlaylist: isAlbum ? () => {} : () => deletePlaylist(id as ID),
           onPublishPlaylist: isAlbum
             ? () => {}
-            : () => publishPlaylist(id as ID),
-          onPurchase: () =>
-            openPurchaseModal(
-              {
-                contentId: id as ID,
-                contentType: PurchaseableContentType.ALBUM
-              },
-              { source: ModalSource.OverflowMenu }
-            )
+            : () => publishPlaylist(id as ID)
         }
       }
 
