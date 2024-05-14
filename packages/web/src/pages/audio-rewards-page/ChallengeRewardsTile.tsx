@@ -272,7 +272,7 @@ const ClaimAllPanel = () => {
     } else if (cooldownAmount > 0) {
       onClickMoreInfo()
     }
-  }, [claimableAmount, cooldownAmount, onClickClaimAllRewards, onClickMoreInfo])
+  }, [claimable, cooldownAmount, onClickClaimAllRewards, onClickMoreInfo])
 
   if (isMobile) {
     return (

@@ -37,7 +37,6 @@ const messages = {
   upcomingRewards: 'Upcoming Rewards',
   claimAudio: (amount: string) => `Claim ${amount} $AUDIO`,
   claiming: 'Claiming $AUDIO',
-  readyToClaim: 'Ready to claim!',
   rewardsClaimed: 'All rewards claimed successfully!',
   rewards: 'Rewards',
   audio: '$AUDIO',
