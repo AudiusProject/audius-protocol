@@ -68,7 +68,8 @@ export const CollectionDownloadStatusRow = (
   const isAvailableForDownload =
     !!collection &&
     (collection.has_current_user_saved ||
-      collection.playlist_owner_id === currentUserId)
+      collection.playlist_owner_id === currentUserId) &&
+    collection.access.stream
 
   // Ensure removing or favoriting also triggers switch
   useLayoutEffect(() => {

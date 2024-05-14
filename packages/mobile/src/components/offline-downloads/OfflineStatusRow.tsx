@@ -3,8 +3,7 @@ import React from 'react'
 import type { ID } from '@audius/common/models'
 
 import { CollectionDownloadStatusRow } from 'app/screens/collection-screen/CollectionDownloadStatusRow'
-
-import { TrackDownloadStatusIndicator } from './TrackDownloadStatusIndicator'
+import { TrackDownloadStatusRow } from 'app/screens/collection-screen/TrackDownloadStatusRow'
 
 interface OfflineStatusRowProps {
   contentId?: ID
@@ -17,6 +16,6 @@ export const OfflineStatusRow = (props: OfflineStatusRowProps) => {
   return isCollection ? (
     <CollectionDownloadStatusRow collectionId={contentId} />
   ) : (
-    <TrackDownloadStatusIndicator trackId={contentId} />
+    <TrackDownloadStatusRow trackId={contentId} />
   )
 }
