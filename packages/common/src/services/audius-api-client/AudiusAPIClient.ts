@@ -1004,6 +1004,7 @@ export class AudiusAPIClient {
     return tracks
   }
 
+  // TODO: PAY-2925
   async getUser({ userId, currentUserId, abortOnUnreachable }: GetUserArgs) {
     const encodedUserId = this._encodeOrThrow(userId)
     const encodedCurrentUserId = encodeHashId(currentUserId)
@@ -1027,6 +1028,7 @@ export class AudiusAPIClient {
     return adapted
   }
 
+  // TODO: PAY-2925
   async getUserByHandle({
     handle,
     currentUserId,

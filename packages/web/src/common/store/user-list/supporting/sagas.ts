@@ -10,10 +10,11 @@ import {
   supportingUserListActions,
   supportingUserListSelectors,
   SUPPORTING_USER_LIST_TAG,
-  SupportingMapForUser
+  SupportingMapForUser,
+  getContext
 } from '@audius/common/store'
 import { decodeHashId, stringWeiToBN } from '@audius/common/utils'
-import { put, select } from 'typed-redux-saga'
+import { call, put, select } from 'typed-redux-saga'
 
 import { watchSupportingError } from 'common/store/user-list/supporting/errorSagas'
 import { createUserListProvider } from 'common/store/user-list/utils'
@@ -30,13 +31,15 @@ type SupportingProcessExtraType = {
 const provider = createUserListProvider<User, SupportingProcessExtraType>({
   getExistingEntity: getUser,
   extractUserIDSubsetFromEntity: () => [],
-  fetchAllUsersForEntity: async ({ limit, offset, entityId, apiClient }) => {
+  fetchAllUsersForEntity: function* ({ limit, offset, entityId }) {
+    const apiClient = yield* getContext('apiClient')
+    // const audiusSdk = yield* getContext('audiusSdk')
     const supporting =
-      (await apiClient.getSupporting({
+      (yield* call([apiClient, apiClient.getSupporting], {
         userId: entityId,
         limit,
         offset
-      })) || []
+      })) ?? []
     const users = supporting
       .sort((s1, s2) => {
         const amount1BN = stringWeiToBN(s1.amount)

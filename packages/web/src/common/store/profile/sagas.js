@@ -581,6 +581,7 @@ function* confirmUpdateProfile(userId, metadata) {
         yield waitForAccount()
         const currentUserId = yield select(getUserId)
 
+        // TODO: PAY-2925
         const users = yield call(checkSDKMigration, {
           endpointName: 'getUser',
           legacy: call([apiClient, apiClient.getUser], {

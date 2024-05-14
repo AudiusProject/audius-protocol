@@ -4,9 +4,10 @@ import {
   UserListSagaFactory,
   followersUserListActions,
   followersUserListSelectors,
-  FOLLOWERS_USER_LIST_TAG as USER_LIST_TAG
+  FOLLOWERS_USER_LIST_TAG as USER_LIST_TAG,
+  getContext
 } from '@audius/common/store'
-import { put, select } from 'typed-redux-saga'
+import { call, put, select } from 'typed-redux-saga'
 
 import { watchFollowersError } from 'common/store/user-list/followers/errorSagas'
 import { createUserListProvider } from 'common/store/user-list/utils'
@@ -17,14 +18,15 @@ const { getUser } = cacheUsersSelectors
 const provider = createUserListProvider<User>({
   getExistingEntity: getUser,
   extractUserIDSubsetFromEntity: () => [],
-  fetchAllUsersForEntity: async ({
+  fetchAllUsersForEntity: function* ({
     limit,
     offset,
     entityId,
-    currentUserId,
-    apiClient
-  }) => {
-    const users = await apiClient.getFollowers({
+    currentUserId
+  }) {
+    const apiClient = yield* getContext('apiClient')
+    // const audiusSdk = yield* getContext('audiusSdk')
+    const users = yield* call([apiClient, apiClient.getFollowers], {
       currentUserId,
       profileUserId: entityId,
       limit,

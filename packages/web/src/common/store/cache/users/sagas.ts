@@ -1,4 +1,11 @@
-import { DefaultSizes, Kind, User, UserMetadata } from '@audius/common/models'
+import {
+  DefaultSizes,
+  Id,
+  Kind,
+  User,
+  UserMetadata,
+  userMetadataListFromSDK
+} from '@audius/common/models'
 import {
   Metadata,
   accountSelectors,
@@ -7,7 +14,9 @@ import {
   cacheReducer,
   cacheUsersSelectors,
   getContext,
-  reformatUser
+  reformatUser,
+  getSDK,
+  checkSDKMigration
 } from '@audius/common/store'
 import { waitForAccount, waitForValue } from '@audius/common/utils'
 import { mergeWith } from 'lodash'
@@ -58,10 +67,26 @@ function* retrieveUserByHandle(handle: string, retry: boolean) {
   if (Array.isArray(handle)) {
     handle = handle[0]
   }
-  const user = yield* call([apiClient, apiClient.getUserByHandle], {
-    handle,
-    currentUserId: userId,
-    retry
+
+  // TODO: PAY-2925
+  const user = yield* checkSDKMigration({
+    endpointName: 'getUserByHandle',
+    legacy: call([apiClient, apiClient.getUserByHandle], {
+      handle,
+      currentUserId: userId,
+      retry
+    }),
+    migrated: call(function* () {
+      const sdk = yield* getSDK()
+      const { data: users = [] } = yield* call(
+        [sdk.full.users, sdk.full.users.getUserByHandle],
+        {
+          handle,
+          userId: Id.parse(userId)
+        }
+      )
+      return userMetadataListFromSDK(users)
+    })
   })
   return user
 }

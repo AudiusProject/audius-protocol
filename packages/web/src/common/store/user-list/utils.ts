@@ -5,10 +5,11 @@ import {
   processAndCacheUsers,
   getContext
 } from '@audius/common/store'
-import { call, select } from 'typed-redux-saga'
+import { SagaGenerator, call, select } from 'typed-redux-saga'
 
 import { AppState } from 'store/types'
 import { waitForRead } from 'utils/sagaHelpers'
+import { AudiusSdk } from '@audius/sdk'
 
 const { getAccountUser, getUserId } = accountSelectors
 
@@ -28,9 +29,7 @@ export type UserListProviderArgs<T, U = void> = {
     offset: number
     entityId: ID
     currentUserId: ID | null
-    audiusBackendInstance: AudiusBackend
-    apiClient: AudiusAPIClient
-  }) => Promise<{ users: UserMetadata[]; extra?: U }>
+  }) => SagaGenerator<{ users: UserMetadata[]; extra?: U }>
 
   includeCurrentUser: (entity: T) => boolean
 
@@ -71,8 +70,6 @@ export function createUserListProvider<T, U = void>({
     pageSize: number
   }) {
     yield* waitForRead()
-    const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-    const apiClient = yield* getContext('apiClient')
     const existingEntity: T | null = yield* select(getExistingEntity, { id })
     if (!existingEntity) return { userIds: [], hasMore: false }
 
@@ -82,14 +79,13 @@ export function createUserListProvider<T, U = void>({
     const userId = yield* select(getUserId)
     // Get the next page of users
     const offset = currentPage * pageSize
-    const { users: allUsers, extra } = yield* call(fetchAllUsersForEntity, {
+    const { users: allUsers, extra } = yield* fetchAllUsersForEntity({
       limit: pageSize,
       offset,
       entityId: id,
-      currentUserId: userId,
-      audiusBackendInstance,
-      apiClient
+      currentUserId: userId
     })
+
     if (includeCurrentUser(existingEntity)) {
       const currentUser = yield* select(getAccountUser)
       if (currentUser) {

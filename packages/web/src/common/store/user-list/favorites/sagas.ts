@@ -5,9 +5,10 @@ import {
   UserListSagaFactory,
   favoritesUserListActions,
   favoritesUserListSelectors,
-  FAVORITES_USER_LIST_TAG
+  FAVORITES_USER_LIST_TAG,
+  getContext
 } from '@audius/common/store'
-import { select, put } from 'typed-redux-saga'
+import { select, put, call } from 'typed-redux-saga'
 
 import { watchFavoriteError } from 'common/store/user-list/favorites/errorSagas'
 import { createUserListProvider } from 'common/store/user-list/utils'
@@ -22,14 +23,15 @@ const getPlaylistFavorites = createUserListProvider<Collection>({
   getExistingEntity: getCollection,
   extractUserIDSubsetFromEntity: (collection: Collection) =>
     collection.followee_saves.map((r) => r.user_id),
-  fetchAllUsersForEntity: async ({
+  fetchAllUsersForEntity: function* ({
     limit,
     offset,
     entityId,
-    currentUserId,
-    apiClient
-  }) => {
-    const users = await apiClient.getPlaylistFavoriteUsers({
+    currentUserId
+  }) {
+    const apiClient = yield* getContext('apiClient')
+    // const audiusSdk = yield* getContext('audiusSdk')
+    const users = yield* call([apiClient, apiClient.getPlaylistFavoriteUsers], {
       limit,
       offset,
       playlistId: entityId,
@@ -47,14 +49,15 @@ const getTrackFavorites = createUserListProvider<Track>({
   getExistingEntity: getTrack,
   extractUserIDSubsetFromEntity: (track: Track) =>
     track.followee_saves.map((r) => r.user_id),
-  fetchAllUsersForEntity: async ({
+  fetchAllUsersForEntity: function* ({
     limit,
     offset,
     entityId,
-    currentUserId,
-    apiClient
-  }) => {
-    const users = await apiClient.getTrackFavoriteUsers({
+    currentUserId
+  }) {
+    const apiClient = yield* getContext('apiClient')
+    // const audiusSdk = yield* getContext('audiusSdk')
+    const users = yield* call([apiClient, apiClient.getTrackFavoriteUsers], {
       limit,
       offset,
       trackId: entityId,

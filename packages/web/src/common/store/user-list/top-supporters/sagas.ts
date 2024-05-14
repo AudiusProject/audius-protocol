@@ -10,10 +10,11 @@ import {
   topSupportersUserListActions,
   topSupportersUserListSelectors,
   TOP_SUPPORTERS_USER_LIST_TAG,
-  SupportersMapForUser
+  SupportersMapForUser,
+  getContext
 } from '@audius/common/store'
 import { decodeHashId, removeNullable } from '@audius/common/utils'
-import { put, select } from 'typed-redux-saga'
+import { call, put, select } from 'typed-redux-saga'
 
 import { watchTopSupportersError } from 'common/store/user-list/top-supporters/errorSagas'
 import { createUserListProvider } from 'common/store/user-list/utils'
@@ -30,9 +31,11 @@ type SupportersProcessExtraType = {
 const provider = createUserListProvider<User, SupportersProcessExtraType>({
   getExistingEntity: getUser,
   extractUserIDSubsetFromEntity: () => [],
-  fetchAllUsersForEntity: async ({ limit, offset, entityId, apiClient }) => {
+  fetchAllUsersForEntity: function* ({ limit, offset, entityId }) {
+    const apiClient = yield* getContext('apiClient')
+    // const audiusSdk = yield* getContext('audiusSdk')
     const supporters =
-      (await apiClient.getSupporters({
+      (yield* call([apiClient, apiClient.getSupporters], {
         userId: entityId,
         limit,
         offset

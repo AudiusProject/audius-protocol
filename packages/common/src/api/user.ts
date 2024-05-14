@@ -1,4 +1,4 @@
-import { full } from '@audius/sdk'
+import { full, sdk } from '@audius/sdk'
 
 import { createApi } from '~/audius-query'
 import { ID, Kind, StringUSDC, userMetadataListFromSDK } from '~/models'
@@ -48,7 +48,7 @@ const userApi = createApi({
         { id, currentUserId }: { id: ID; currentUserId: Nullable<ID> },
         { apiClient, audiusSdk, checkSDKMigration }
       ) => {
-        const sdk = await audiusSdk()
+        // TODO: PAY-2925
         const apiUser = await checkSDKMigration({
           endpointName: 'getUserById',
           legacy: async () =>
@@ -57,6 +57,7 @@ const userApi = createApi({
               currentUserId
             }),
           migrated: async () => {
+            const sdk = await audiusSdk()
             const { data: users = [] } = await sdk.full.users.getUser({
               id: Id.parse(id),
               userId: Id.parse(currentUserId)
@@ -79,12 +80,25 @@ const userApi = createApi({
           currentUserId,
           retry = true
         }: { handle: string; currentUserId: Nullable<ID>; retry?: boolean },
-        { apiClient }
+        { apiClient, audiusSdk, checkSDKMigration }
       ) => {
-        const apiUser = await apiClient.getUserByHandle({
-          handle,
-          currentUserId,
-          retry
+        // TODO: PAY-2925
+        const apiUser = await checkSDKMigration({
+          endpointName: 'getUserByHandle',
+          legacy: async () =>
+            apiClient.getUserByHandle({
+              handle,
+              currentUserId,
+              retry
+            }),
+          migrated: async () => {
+            const sdk = await audiusSdk()
+            const { data: users = [] } = await sdk.full.users.getUserByHandle({
+              handle,
+              userId: Id.parse(currentUserId)
+            })
+            return userMetadataListFromSDK(users)
+          }
         })
         return apiUser?.[0]
       },
