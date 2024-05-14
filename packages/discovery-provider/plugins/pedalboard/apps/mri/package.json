@@ -1,0 +1,27 @@
+{
+  "name": "@pedalboard/mri",
+  "version": "0.1.0",
+  "description": "plugin for publishing statistics to mri",
+  "main": "src/index.ts",
+  "private": true,
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "watch": "tsc --watch",
+    "serve": "nodemon",
+    "dev": "concurrently \"npm run watch\" \"npm run serve\"",
+    "test": "vitest",
+    "lint": "tsc --noEmit && eslint \"src/**/*.ts*\""
+  },
+  "author": "alec@audius.co",
+  "license": "ISC",
+  "devDependencies": {
+    "@audius/sdk": "*",
+    "@pedalboard/basekit": "*",
+    "@pedalboard/logger": "*",
+    "@pedalboard/storage": "*",
+    "concurrently": "^8.2.2",
+    "ts-node": "^10.9.2",
+    "ts-node-dev": "^2.0.0"
+  }
+}
