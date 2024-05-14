@@ -227,7 +227,7 @@ export const createReaction = async (db: Knex, reactions: CreateReaction[]) => {
   await db
     .insert(
       reactions.map((reaction) => ({
-        slot: 1,
+        blocknumber: 1,
         timestamp: new Date(Date.now()),
         ...reaction
       }))
