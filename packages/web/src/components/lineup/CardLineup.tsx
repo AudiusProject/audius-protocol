@@ -2,12 +2,12 @@ import React from 'react'
 
 import cn from 'classnames'
 
+import { Card } from 'components/card'
 import { Draggable } from 'components/dragndrop'
 import CategoryHeader from 'components/header/desktop/CategoryHeader'
 import { useIsMobile } from 'hooks/useIsMobile'
 
 import styles from './CardLineup.module.css'
-import { Card } from 'components/card'
 
 export type CardLineupProps = {
   categoryName?: string

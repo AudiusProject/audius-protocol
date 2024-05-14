@@ -120,7 +120,7 @@ export const CollectionCard = forwardRef(
               size='s'
               strength='strong'
               color='subdued'
-              css={{ lineHeight: '16px' }}
+              css={(theme) => ({ lineHeight: theme.typography.lineHeight.s })}
             >
               {messages.hidden}
             </Text>
