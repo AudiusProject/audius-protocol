@@ -20,7 +20,7 @@
         <FullName>Tiki Labs, Inc.</FullName>
       </PartyName>
     </MessageRecipient>
-    <MessageCreatedDateTime>2024-04-01T06:00:00Z</MessageCreatedDateTime>
+    <MessageCreatedDateTime>2024-04-05T09:00:00Z</MessageCreatedDateTime>
   </MessageHeader>
   <ResourceList>
     <SoundRecording>
@@ -149,6 +149,7 @@
           <TerritoryCode>Worldwide</TerritoryCode>
           <ValidityPeriod>
             <StartDate>2023-09-02</StartDate>
+            <EndDate>2023-10-02</EndDate>
           </ValidityPeriod>
         </DealTerms>
       </Deal>

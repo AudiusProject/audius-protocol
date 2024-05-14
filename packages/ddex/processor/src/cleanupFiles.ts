@@ -5,5 +5,7 @@ import { rm } from 'fs/promises'
 // in future should make it delete items older than 7 days or something
 // to make retries cheaper
 export async function cleanupFiles() {
-  return rm('/tmp/ddex_cache', { recursive: true })
+  const opts = { recursive: true, force: true }
+  await rm('/tmp/ddex_cache', opts)
+  await rm('/tmp/ddex_simulate', opts)
 }

@@ -48,7 +48,7 @@ export type DDEXRelease = {
   problems: string[]
   soundRecordings: DDEXSoundRecording[]
   images: DDEXResource[]
-  deal?: AudiusSupportedDeal
+  deals: AudiusSupportedDeal[]
 } & ReleaseAndSoundRecordingSharedFields
 
 type ReleaseAndSoundRecordingSharedFields = {
@@ -94,7 +94,9 @@ export type DDEXSoundRecording = {
 
 type DealFields = {
   validityStartDate: string
-  isDownloadable: boolean
+  validityEndDate?: string
+  forStream: boolean
+  forDownload: boolean
 }
 
 export type DealFree = DealFields & {
@@ -264,7 +266,7 @@ function parseReleaseXml(source: string, $: cheerio.CheerioAPI) {
   //
   // parse deals
   //
-  const releaseDeals: Record<string, AudiusSupportedDeal> = {}
+  const releaseDeals: Record<string, AudiusSupportedDeal[]> = {}
   $('ReleaseDeal').each((_, el) => {
     const $el = $(el)
     const ref = $el.find('DealReleaseReference').text()
@@ -275,6 +277,8 @@ function parseReleaseXml(source: string, $: cheerio.CheerioAPI) {
       const commercialModelType = cmt.attr('UserDefinedValue') || cmt.text()
       const usageTypes = toTexts($el.find('UseType'))
       const territoryCode = toTexts($el.find('TerritoryCode'))
+      const validityStartDate = $el.find('ValidityPeriod > StartDate').text()
+      const validityEndDate = $el.find('ValidityPeriod > EndDate').text()
 
       // only consider Worldwide
       const isWorldwide = territoryCode.includes('Worldwide')
@@ -282,35 +286,58 @@ function parseReleaseXml(source: string, $: cheerio.CheerioAPI) {
         return
       }
 
+      // check date range
+      {
+        const startDate = new Date(validityStartDate)
+        const endDate = new Date(validityEndDate)
+        const now = new Date()
+        if (startDate && now < startDate) {
+          return
+        }
+        if (endDate && now > endDate) {
+          return
+        }
+      }
+
+      // add deal
+      function addDeal(deal: AudiusSupportedDeal) {
+        releaseDeals[ref] ||= []
+        releaseDeals[ref].push(deal)
+      }
+
       const common: DealFields = {
-        isDownloadable: usageTypes.includes('PermanentDownload'),
-        validityStartDate: $el.find('ValidityPeriod > StartDate').text(),
+        forStream:
+          usageTypes.includes('OnDemandStream') ||
+          usageTypes.includes('Stream'),
+        forDownload: usageTypes.includes('PermanentDownload'),
+        validityStartDate,
+        validityEndDate,
       }
 
       if (commercialModelType == 'FreeOfChargeModel') {
-        releaseDeals[ref] = {
+        addDeal({
           ...common,
           audiusDealType: 'Free',
-        }
+        })
       } else if (commercialModelType == 'PayAsYouGoModel') {
         const priceUsd = parseFloat(
           $el.find('WholesalePricePerUnit[CurrencyCode="USD"]').text()
         )
         if (priceUsd) {
-          releaseDeals[ref] = {
+          addDeal({
             ...common,
             audiusDealType: 'PayGated',
             priceUsd,
-          }
+          })
         }
       } else if (
         commercialModelType == 'FollowGated' ||
         commercialModelType == 'TipGated'
       ) {
-        releaseDeals[ref] = {
+        addDeal({
           ...common,
           audiusDealType: commercialModelType,
-        }
+        })
       } else if (commercialModelType == 'NFTGated') {
         const chain = $el.find('Chain').text()
         const address = $el.find('Address').text()
@@ -324,7 +351,7 @@ function parseReleaseXml(source: string, $: cheerio.CheerioAPI) {
 
         switch (chain) {
           case 'eth':
-            releaseDeals[ref] = {
+            addDeal({
               ...common,
               audiusDealType: 'NFTGated',
               chain,
@@ -334,10 +361,10 @@ function parseReleaseXml(source: string, $: cheerio.CheerioAPI) {
               externalLink,
               standard,
               slug,
-            }
+            })
             break
           case 'sol':
-            releaseDeals[ref] = {
+            addDeal({
               ...common,
               audiusDealType: 'NFTGated',
               chain,
@@ -345,7 +372,7 @@ function parseReleaseXml(source: string, $: cheerio.CheerioAPI) {
               name,
               imageUrl,
               externalLink,
-            }
+            })
             break
         }
       }
@@ -431,10 +458,13 @@ function parseReleaseXml(source: string, $: cheerio.CheerioAPI) {
       const $el = $(el)
 
       const ref = $el.find('ReleaseReference').text()
-      const deal = releaseDeals[ref]
+      const deals = releaseDeals[ref] || []
+      const validityStartDate = deals.length
+        ? deals[0].validityStartDate
+        : undefined
 
       const releaseDate =
-        deal?.validityStartDate ||
+        validityStartDate ||
         $el.find('ReleaseDate').text() ||
         $el.find('GlobalOriginalReleaseDate').text()
 
@@ -463,7 +493,7 @@ function parseReleaseXml(source: string, $: cheerio.CheerioAPI) {
         problems: [],
         soundRecordings: [],
         images: [],
-        deal,
+        deals,
       }
 
       // resolve audius genre
@@ -501,6 +531,11 @@ function parseReleaseXml(source: string, $: cheerio.CheerioAPI) {
           }
         })
 
+      // deal or no deal?
+      if (!release.deals.length) {
+        release.problems.push('NoDeal')
+      }
+
       return release
     })
 
@@ -517,16 +552,18 @@ function parseReleaseXml(source: string, $: cheerio.CheerioAPI) {
   }
 
   // surpress any track releases that are part of main release
-  const mainReleaseRefs = new Set(
-    mainRelease?.soundRecordings.map((s) => s.ref)
-  )
-  for (const release of releases) {
-    if (release.isMainRelease) continue
-    const isSubset = release.soundRecordings.every((s) =>
-      mainReleaseRefs.has(s.ref)
+  if (mainRelease && mainRelease.problems.length == 0) {
+    const mainReleaseRefs = new Set(
+      mainRelease.soundRecordings.map((s) => s.ref)
     )
-    if (isSubset) {
-      release.problems.push('DuplicateRelease')
+    for (const release of releases) {
+      if (release.isMainRelease) continue
+      const isSubset = release.soundRecordings.every((s) =>
+        mainReleaseRefs.has(s.ref)
+      )
+      if (isSubset) {
+        release.problems.push('DuplicateRelease')
+      }
     }
   }
 

@@ -34,6 +34,7 @@ program
   .action(async () => {
     await reParsePastXml()
     await publishValidPendingReleases()
+    process.exit(0) // sdk client doesn't know when to quit
   })
 
 program
