@@ -22,6 +22,7 @@ type PlayPayload = {
   trackId?: Nullable<ID>
   collectible?: Collectible
   source?: Nullable<string>
+  isPreviewingAll?: boolean
 }
 
 type QueueAutoplayPayload = {

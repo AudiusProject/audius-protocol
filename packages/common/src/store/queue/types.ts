@@ -28,6 +28,7 @@ export type Queueable = {
   artistId?: ID
   collectible?: Collectible
   isPreview?: boolean
+  isPreviewingAll?: boolean
   source: QueueSource
 }
 

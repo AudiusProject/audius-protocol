@@ -85,8 +85,8 @@ import { CollectionPageProps as MobileCollectionPageProps } from './components/m
 
 const { trackModalOpened } = modalsActions
 const { selectAllPlaylistUpdateIds } = playlistUpdatesSelectors
-const { makeGetCurrent } = queueSelectors
-const { getPlaying, getPreviewing, getBuffering } = playerSelectors
+const { makeGetCurrent, getIsPreviewingAll } = queueSelectors
+const { getPlaying, getBuffering } = playerSelectors
 const { setFavorite } = favoritesUserListActions
 const { setRepost } = repostsUserListActions
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
@@ -528,7 +528,9 @@ class CollectionPage extends Component<
     }
   }
 
-  onPlay = ({ isPreview = false }: { isPreview?: boolean } = {}) => {
+  onPlay = ({
+    isPreview: isPreviewingAll = false
+  }: { isPreview?: boolean } = {}) => {
     const {
       playing,
       play,
@@ -539,7 +541,7 @@ class CollectionPage extends Component<
     } = this.props
     const isQueued = this.isQueued()
     const playingId = this.getPlayingId()
-    if (playing && isQueued && previewing === isPreview) {
+    if (playing && isQueued && previewing === isPreviewingAll) {
       pause()
       record(
         make(Name.PLAYBACK_PAUSE, {
@@ -547,21 +549,24 @@ class CollectionPage extends Component<
           source: PlaybackSource.PLAYLIST_PAGE
         })
       )
-    } else if (!playing && previewing === isPreview && isQueued) {
+    } else if (!playing && previewing === isPreviewingAll && isQueued) {
       play()
       record(
         make(Name.PLAYBACK_PLAY, {
           id: `${playingId}`,
-          isPreview,
+          isPreview: isPreviewingAll,
           source: PlaybackSource.PLAYLIST_PAGE
         })
       )
     } else if (entries.length > 0) {
-      play(entries[0].uid, { isPreview })
+      play(entries[0].uid, {
+        isPreview: isPreviewingAll,
+        isPreviewingAll: isPreviewingAll
+      })
       record(
         make(Name.PLAYBACK_PLAY, {
           id: `${entries[0].track_id}`,
-          isPreview,
+          isPreview: isPreviewingAll,
           source: PlaybackSource.PLAYLIST_PAGE
         })
       )
@@ -846,7 +851,7 @@ function makeMapStateToProps() {
       userPlaylists: getAccountCollections(state),
       currentQueueItem: getCurrentQueueItem(state),
       playing: getPlaying(state),
-      previewing: getPreviewing(state),
+      previewing: !!getIsPreviewingAll(state),
       buffering: getBuffering(state),
       pathname: getLocationPathname(state),
       playlistUpdates: selectAllPlaylistUpdateIds(state)
@@ -869,8 +874,10 @@ function mapDispatchToProps(dispatch: Dispatch) {
       dispatch(collectionActions.resetCollection(collectionUid, userUid)),
     goToRoute: (route: string) => dispatch(pushRoute(route)),
     replaceRoute: (route: string) => dispatch(replace(route)),
-    play: (uid?: string, options: { isPreview?: boolean } = {}) =>
-      dispatch(tracksActions.play(uid, options)),
+    play: (
+      uid?: string,
+      options: { isPreview?: boolean; isPreviewingAll?: boolean } = {}
+    ) => dispatch(tracksActions.play(uid, options)),
     pause: () => dispatch(tracksActions.pause()),
     updateLineupOrder: (updatedOrderIndices: any) =>
       dispatch(tracksActions.updateLineupOrder(updatedOrderIndices)),

@@ -47,6 +47,10 @@ export const getIsPreview = (state: CommonState) =>
   isQueueIndexValid(state)
     ? state.queue.order[state.queue.index].isPreview
     : false
+export const getIsPreviewingAll = (state: CommonState) =>
+  isQueueIndexValid(state)
+    ? state.queue.order[state.queue.index].isPreviewingAll
+    : false
 
 const getCurrentTrack = (state: CommonState) =>
   getTrack(state, { id: getPlayerTrackId(state) })

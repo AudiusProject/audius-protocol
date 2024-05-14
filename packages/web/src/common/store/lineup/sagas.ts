@@ -461,7 +461,13 @@ function* play<T extends Track | Collection>(
     ) {
       const toQueue = yield* all(
         lineup.entries.map(function* (e: LineupEntry<T>) {
-          return yield* call(getToQueue, lineup.prefix, e, isPreview)
+          return yield* call(
+            getToQueue,
+            lineup.prefix,
+            e,
+            isPreview,
+            action.isPreviewingAll
+          )
         })
       )
       const flattenedQueue = flatten(toQueue).filter((e) => Boolean(e))

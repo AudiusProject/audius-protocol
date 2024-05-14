@@ -166,11 +166,18 @@ export class LineupActions {
     }
   }
 
-  play(uid?: UID, { isPreview = false }: { isPreview?: boolean } = {}) {
+  play(
+    uid?: UID,
+    {
+      isPreview = false,
+      isPreviewingAll = false
+    }: { isPreview?: boolean; isPreviewingAll?: boolean } = {}
+  ) {
     return {
       type: addPrefix(this.prefix, PLAY),
       uid,
-      isPreview
+      isPreview,
+      isPreviewingAll
     }
   }
 

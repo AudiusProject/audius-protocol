@@ -69,7 +69,8 @@ const QUEUE_SUBSCRIBER_NAME = 'QUEUE'
 export function* getToQueue(
   prefix: string,
   entry: LineupEntry<Track | Collection>,
-  isPreview: boolean = false
+  isPreview: boolean = false,
+  isPreviewingAll: boolean = false
 ) {
   if (entry.kind === Kind.COLLECTIONS) {
     const collection = yield* select(getCollection, { uid: entry.uid })
@@ -101,7 +102,8 @@ export function* getToQueue(
         source: prefix,
         isPreview:
           isPreview ||
-          (isPreviewFn(storeTrack, currentUserId) && !doesUserHaveStreamAccess)
+          (isPreviewFn(storeTrack, currentUserId) && !doesUserHaveStreamAccess),
+        isPreviewingAll
       })
     }
     return queueables
@@ -117,7 +119,8 @@ export function* getToQueue(
       source: prefix,
       isPreview:
         isPreview || // maybe also check preview_cid
-        (isPreviewFn(track, currentUserId) && !doesUserHaveStreamAccess)
+        (isPreviewFn(track, currentUserId) && !doesUserHaveStreamAccess),
+      isPreviewingAll
     }
   }
 }
@@ -174,7 +177,8 @@ function* handleQueueAutoplay({
  */
 export function* watchPlay() {
   yield* takeLatest(play.type, function* (action: ReturnType<typeof play>) {
-    const { uid, trackId, isPreview, collectible } = action.payload
+    const { uid, trackId, isPreview, collectible, isPreviewingAll } =
+      action.payload
 
     // Play a specific uid
     const playerUid = yield* select(getPlayerUid)
