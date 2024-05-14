@@ -170,7 +170,7 @@ const TrackListItem = ({
               paused={!playing}
               hideDefault={false}
               isTrackPremium={isPremium}
-              isLocked={!isOwner}
+              isOwned={isOwner}
             />
           </div>
         ) : null}
