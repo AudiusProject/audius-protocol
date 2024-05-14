@@ -12,6 +12,7 @@ import {
 } from '@audius/common/store'
 import { formatNumberCommas } from '@audius/common/utils'
 import {
+  Box,
   Button,
   Flex,
   IconArrowRight,
@@ -136,51 +137,47 @@ export const ClaimAllRewardsModal = () => {
             summaryLabelColor='accent'
             summaryValueColor='default'
           />
-          {claimableAmount > 0 && !hasClaimed ? (
-            <>
-              {claimInProgress && claimableAmount > 1 ? (
-                <Flex
-                  direction='column'
-                  backgroundColor='surface1'
-                  gap='l'
-                  borderRadius='s'
-                  border='strong'
-                  p='l'
-                >
-                  <Flex justifyContent='space-between'>
-                    <Text variant='label' size='s' color='default'>
-                      {messages.claiming}
-                    </Text>
-                    <Flex gap='l'>
-                      <Text variant='label' size='s' color='default'>
-                        {`${
-                          totalClaimable - claimableAmount
-                        }/${totalClaimable}`}
-                      </Text>
-                      <Flex h='unit4' w='unit4'>
-                        <LoadingSpinner />
-                      </Flex>
-                    </Flex>
-                  </Flex>
-                  <ProgressBar
-                    min={0}
-                    max={totalClaimable}
-                    value={totalClaimable - claimableAmount}
-                  />
+          {claimInProgress && claimableAmount > 1 ? (
+            <Flex
+              direction='column'
+              backgroundColor='surface1'
+              gap='l'
+              borderRadius='s'
+              border='strong'
+              p='l'
+            >
+              <Flex justifyContent='space-between'>
+                <Text variant='label' size='s' color='default'>
+                  {messages.claiming}
+                </Text>
+                <Flex gap='l'>
+                  <Text variant='label' size='s' color='default'>
+                    {`${totalClaimable - claimableAmount}/${totalClaimable}`}
+                  </Text>
+                  <Box h='unit4' w='unit4'>
+                    <LoadingSpinner />
+                  </Box>
                 </Flex>
-              ) : null}
-              <Button
-                disabled={claimInProgress}
-                isLoading={claimInProgress}
-                onClick={onClaimRewardClicked}
-                iconRight={IconArrowRight}
-                fullWidth
-              >
-                {claimInProgress
-                  ? messages.claiming
-                  : messages.claimAudio(formatNumberCommas(claimableAmount))}
-              </Button>
-            </>
+              </Flex>
+              <ProgressBar
+                min={0}
+                max={totalClaimable}
+                value={totalClaimable - claimableAmount}
+              />
+            </Flex>
+          ) : null}
+          {claimableAmount > 0 && !hasClaimed ? (
+            <Button
+              disabled={claimInProgress}
+              isLoading={claimInProgress}
+              onClick={onClaimRewardClicked}
+              iconRight={IconArrowRight}
+              fullWidth
+            >
+              {claimInProgress
+                ? messages.claiming
+                : messages.claimAudio(formatNumberCommas(claimableAmount))}
+            </Button>
           ) : (
             <Button variant='primary' fullWidth onClick={() => setOpen(false)}>
               {messages.done}
