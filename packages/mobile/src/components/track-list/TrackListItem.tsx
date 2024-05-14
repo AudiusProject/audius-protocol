@@ -297,16 +297,17 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
   const handleOpenOverflowMenu = useCallback(() => {
     const overflowActions = [
       OverflowAction.SHARE,
-      !isTrackOwner
+      !isTrackOwner && !isLocked
         ? has_current_user_saved
           ? OverflowAction.UNFAVORITE
           : OverflowAction.FAVORITE
         : null,
-      !isTrackOwner
+      !isTrackOwner && !isLocked
         ? has_current_user_reposted
           ? OverflowAction.UNREPOST
           : OverflowAction.REPOST
         : null,
+      !isTrackOwner && isLocked ? OverflowAction.PURCHASE_TRACK : null,
       isEditAlbumsEnabled && isTrackOwner && !ddexApp
         ? OverflowAction.ADD_TO_ALBUM
         : null,
@@ -350,7 +351,8 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
     isContextPlaylistOwner,
     dispatch,
     track_id,
-    contextPlaylistId
+    contextPlaylistId,
+    isLocked
   ])
 
   const handlePressOverflow = (e: NativeSyntheticEvent<NativeTouchEvent>) => {

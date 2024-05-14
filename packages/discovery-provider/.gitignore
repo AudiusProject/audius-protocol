@@ -52,3 +52,4 @@ plugins/verified-uploads/.env
 plugins/verified-uploads/node_modules
 plugins/network-monitoring/node_modules
 plugins/notifications/node_modules
+plugins/notifications/build

@@ -259,8 +259,7 @@ const RenderForm = ({
 
   const { submitForm, resetForm } = useFormikContext()
 
-  // Reset form on content change
-  useEffect(() => resetForm, [content, resetForm])
+  useEffect(() => resetForm, [contentId, resetForm])
 
   const {
     usdc_purchase: { price }

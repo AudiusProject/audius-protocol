@@ -87,8 +87,6 @@ const FULL_ENDPOINT_MAP = {
   userTracksByHandle: (handle: OpaqueID) => `/users/handle/${handle}/tracks`,
   userAiTracksByHandle: (handle: OpaqueID) =>
     `/users/handle/${handle}/tracks/ai_attributed`,
-  userFavoritedTracks: (userId: OpaqueID) =>
-    `/users/${userId}/favorites/tracks`,
   userRepostsByHandle: (handle: OpaqueID) => `/users/handle/${handle}/reposts`,
   getRelatedArtists: (userId: OpaqueID) => `/users/${userId}/related`,
   getPlaylist: (playlistId: OpaqueID) => `/playlists/${playlistId}`,
@@ -277,16 +275,6 @@ type GetRelatedArtistsArgs = PaginationArgs & {
 type GetFavoritesArgs = {
   currentUserId: ID
   limit?: number
-}
-
-type GetProfileListArgs = {
-  profileUserId: ID
-  currentUserId: Nullable<ID>
-  limit?: number
-  offset?: number
-  query?: string
-  sortMethod?: string
-  sortDirection?: string
 }
 
 type GetTopArtistGenresArgs = {
@@ -1182,41 +1170,6 @@ export class AudiusAPIClient {
     if (!response) return null
     const { data } = response
     return data.map(adapter.makeFavorite).filter(removeNullable)
-  }
-
-  async getFavoritedTracks({
-    profileUserId,
-    currentUserId,
-    limit,
-    offset,
-    query,
-    sortMethod,
-    sortDirection
-  }: GetProfileListArgs) {
-    this._assertInitialized()
-    const encodedUserId = encodeHashId(currentUserId)
-    const encodedProfileUserId = this._encodeOrThrow(profileUserId)
-    const params = {
-      user_id: encodedUserId || undefined,
-      limit,
-      offset,
-      ...(query && { query }),
-      ...(sortMethod && { sort_method: sortMethod }),
-      ...(sortDirection && { sort_direction: sortDirection })
-    }
-
-    const response = await this._getResponse<APIResponse<APIActivity[]>>(
-      FULL_ENDPOINT_MAP.userFavoritedTracks(encodedProfileUserId),
-      params
-    )
-
-    if (!response) return null
-
-    const adapted = response.data.map(({ item, ...props }) => ({
-      timestamp: props.timestamp,
-      track: adapter.makeTrack(item as APITrack)
-    }))
-    return adapted
   }
 
   async getUserRepostsByHandle({

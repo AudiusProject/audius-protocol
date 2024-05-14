@@ -154,5 +154,11 @@ module.exports = {
       items: ['reference/protocol-dashboard/link-profile'],
       collapsed: false,
     },
+    {
+      type: 'category',
+      label: 'Contracts and Programs',
+      items: ['reference/eth-contracts', 'reference/solana-programs'],
+      collapsed: false,
+    },
   ],
 }

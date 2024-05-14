@@ -22,6 +22,8 @@ from src.tasks.entity_manager.utils import (
 from src.utils.db_session import get_db
 from src.utils.redis_connection import get_redis
 
+BLOCK_DATETIME = datetime.now()
+
 
 def set_patches(mocker):
     mocker.patch(
@@ -413,7 +415,7 @@ def test_index_valid_user(app, mocker):
             session,
             entity_manager_txs,
             block_number=1,
-            block_timestamp=1585336422,
+            block_timestamp=BLOCK_DATETIME.timestamp(),
             block_hash=hex(0),
         )
 
@@ -458,9 +460,15 @@ def test_index_valid_user(app, mocker):
         assert len(all_cid) == 6
 
         calls = [
-            mock.call.dispatch(ChallengeEvent.profile_update, 1, USER_ID_OFFSET),
-            mock.call.dispatch(ChallengeEvent.profile_update, 1, USER_ID_OFFSET + 1),
-            mock.call.dispatch(ChallengeEvent.mobile_install, 1, USER_ID_OFFSET),
+            mock.call.dispatch(
+                ChallengeEvent.profile_update, 1, BLOCK_DATETIME, USER_ID_OFFSET
+            ),
+            mock.call.dispatch(
+                ChallengeEvent.profile_update, 1, BLOCK_DATETIME, USER_ID_OFFSET + 1
+            ),
+            mock.call.dispatch(
+                ChallengeEvent.mobile_install, 1, BLOCK_DATETIME, USER_ID_OFFSET
+            ),
         ]
         bus_mock.assert_has_calls(calls, any_order=True)
 
@@ -848,7 +856,7 @@ def test_index_invalid_users(app, mocker):
             session,
             entity_manager_txs,
             block_number=0,
-            block_timestamp=1585336422,
+            block_timestamp=BLOCK_DATETIME.timestamp(),
             block_hash=hex(0),
         )
 
@@ -942,7 +950,7 @@ def test_index_verify_users(app, mocker):
                 session,
                 entity_manager_txs,
                 block_number=0,
-                block_timestamp=1585336422,
+                block_timestamp=BLOCK_DATETIME.timestamp(),
                 block_hash=hex(0),
             )
             # validate db records
@@ -955,7 +963,11 @@ def test_index_verify_users(app, mocker):
             assert len(all_users) == 2  # no new users indexed
             assert all_users[0].is_verified  # user 1 is verified
             assert not all_users[1].is_verified  # user 2 is not verified
-            calls = [mock.call.dispatch(ChallengeEvent.connect_verified, 0, 1)]
+            calls = [
+                mock.call.dispatch(
+                    ChallengeEvent.connect_verified, 0, BLOCK_DATETIME, 1
+                )
+            ]
             bus_mock.assert_has_calls(calls, any_order=True)
 
 
@@ -1012,7 +1024,7 @@ def test_invalid_user_bio(app, mocker):
                 session,
                 entity_manager_txs,
                 block_number=0,
-                block_timestamp=1585336422,
+                block_timestamp=BLOCK_DATETIME.timestamp(),
                 block_hash=hex(0),
             )
 
@@ -1034,7 +1046,11 @@ def test_self_referrals(bus_mock: mock.MagicMock, app, mocker):
         params.existing_records = {}
         update_user_events(user, events, bus_mock, params)
         mock_call = mock.call.dispatch(
-            ChallengeEvent.referral_signup, 1, 1, {"referred_user_id": 1}
+            ChallengeEvent.referral_signup,
+            1,
+            BLOCK_DATETIME,
+            1,
+            {"referred_user_id": 1},
         )
         assert mock_call not in bus_mock.method_calls
 
@@ -1223,7 +1239,7 @@ def test_index_empty_bio(app, mocker):
             session,
             entity_manager_txs,
             block_number=0,
-            block_timestamp=1585336422,
+            block_timestamp=BLOCK_DATETIME.timestamp(),
             block_hash=hex(0),
         )
 

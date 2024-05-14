@@ -14,10 +14,9 @@ class Reaction(Base, RepresentableMixin):
         Integer,
         primary_key=True,
     )
-    slot = Column(Integer, nullable=False, index=True)
     reaction_value = Column(Integer, nullable=False)
     sender_wallet = Column(String, nullable=False)
     reaction_type = Column(String, nullable=False)
     reacted_to = Column(String, nullable=False)
     timestamp = Column(DateTime, nullable=False)
-    tx_signature = Column(String)
+    blocknumber = Column(Integer, nullable=False)

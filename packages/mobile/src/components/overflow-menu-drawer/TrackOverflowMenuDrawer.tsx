@@ -1,10 +1,11 @@
-import { useContext } from 'react'
+import { useCallback, useContext } from 'react'
 
 import {
   ShareSource,
   RepostSource,
   FavoriteSource,
-  FollowSource
+  FollowSource,
+  ModalSource
 } from '@audius/common/models'
 import type { ID } from '@audius/common/models'
 import {
@@ -21,6 +22,7 @@ import {
   shareModalUIActions,
   OverflowAction,
   playbackPositionActions,
+  PurchaseableContentType,
   usePremiumContentPurchaseModal
 } from '@audius/common/store'
 import type { CommonState, OverflowActionCallbacks } from '@audius/common/store'
@@ -83,6 +85,18 @@ const TrackOverflowMenuDrawer = ({ render }: Props) => {
   const user = useSelector((state: CommonState) =>
     getUser(state, { id: track?.owner_id })
   )
+
+  const handlePurchasePress = useCallback(() => {
+    if (track?.track_id) {
+      openPremiumContentPurchaseModal(
+        {
+          contentId: track?.track_id,
+          contentType: PurchaseableContentType.TRACK
+        },
+        { source: ModalSource.TrackListItem }
+      )
+    }
+  }, [track, openPremiumContentPurchaseModal])
 
   if (!track || !user) {
     return null
@@ -183,13 +197,7 @@ const TrackOverflowMenuDrawer = ({ render }: Props) => {
       dispatch(clearTrackPosition({ trackId: id, userId: currentUserId }))
       toast({ content: messages.markedAsUnplayed })
     },
-    [OverflowAction.MARK_AS_UNPLAYED]: () => {
-      dispatch(clearTrackPosition({ trackId: id, userId: currentUserId }))
-      toast({ content: messages.markedAsUnplayed })
-    },
-    [OverflowAction.PURCHASE_TRACK]: () => {
-      openPremiumContentPurchaseModal()
-    }
+    [OverflowAction.PURCHASE_TRACK]: handlePurchasePress
   }
 
   return render(callbacks)

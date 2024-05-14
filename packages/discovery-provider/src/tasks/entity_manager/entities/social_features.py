@@ -96,7 +96,7 @@ def create_social_record(params: ManageEntityParameters):
     if create_record and params.action in action_to_challenge_event:
         challenge_event = action_to_challenge_event[params.action]
         params.challenge_bus.dispatch(
-            challenge_event, params.block_number, params.user_id
+            challenge_event, params.block_number, params.block_datetime, params.user_id
         )
 
 
@@ -218,7 +218,7 @@ def delete_social_record(params):
     if deleted_record and params.action in action_to_challenge_event:
         challenge_event = action_to_challenge_event[params.action]
         params.challenge_bus.dispatch(
-            challenge_event, params.block_number, params.user_id
+            challenge_event, params.block_number, params.block_datetime, params.user_id
         )
 
 

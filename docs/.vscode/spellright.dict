@@ -32,6 +32,7 @@ mainnet
 markdownlint
 metadatas
 metamask
+mintable
 multisig
 nethermind
 nft
@@ -44,6 +45,7 @@ oauthed
 off-chain
 on-chain
 onclick
+pausable
 pauser
 permissionless
 polyfill
@@ -53,9 +55,11 @@ py
 redis
 screensnippet
 sdk
+sepolia
 sequelize
 skrillex
 sla
+solana
 sp
 spl
 staker
@@ -71,3 +75,4 @@ upc
 userbase
 wei
 whitepaper
+wormholeclient

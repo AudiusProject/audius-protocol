@@ -89,7 +89,8 @@ const toUploadTrackMetadata = (
  */
 function* combineMetadata(
   trackMetadata: TrackMetadataForUpload,
-  collectionMetadata: CollectionValues
+  collectionMetadata: CollectionValues,
+  albumTrackPrice?: number
 ) {
   const metadata = trackMetadata
 
@@ -120,8 +121,6 @@ function* combineMetadata(
   }
 
   // If the tracks were added as part of a premium album, add all the necessary premium track metadata
-  const albumTrackPrice =
-    collectionMetadata.stream_conditions?.usdc_purchase?.albumTrackPrice
   if (albumTrackPrice !== undefined && albumTrackPrice > 0) {
     // is_download_gated must always be set to true for all premium tracks
     metadata.is_download_gated = true
@@ -741,12 +740,17 @@ export function* uploadCollection(
   yield waitForAccount()
   const account = yield* select(accountSelectors.getAccountUser)
   const userId = account!.user_id
+  // This field will get replaced
+  let albumTrackPrice: number | undefined
 
   // If the collection is a premium album, this will populate the premium metadata (price/splits/etc)
   if (
     isAlbum &&
     isContentUSDCPurchaseGated(collectionMetadata.stream_conditions)
   ) {
+    // albumTrackPrice will be parsed out of the collection metadata, so we keep a copy here
+    albumTrackPrice =
+      collectionMetadata.stream_conditions?.usdc_purchase.albumTrackPrice
     collectionMetadata.stream_conditions = yield* call(
       getUSDCMetadata,
       collectionMetadata.stream_conditions
@@ -764,7 +768,8 @@ export function* uploadCollection(
     track.metadata = yield* call(
       combineMetadata,
       track.metadata,
-      collectionMetadata
+      collectionMetadata,
+      albumTrackPrice
     )
   }
 

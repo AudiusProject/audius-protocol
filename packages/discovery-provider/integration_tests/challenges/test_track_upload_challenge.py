@@ -1,4 +1,4 @@
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 
 from src.challenges.challenge_event_bus import ChallengeEvent, ChallengeEventBus
 from src.challenges.track_upload_challenge import track_upload_challenge_manager
@@ -11,6 +11,7 @@ from src.utils.db_session import get_db
 from src.utils.redis_connection import get_redis
 
 REDIS_URL = shared_config["redis"]["url"]
+BLOCK_DATETIME = datetime.now()
 
 
 def test_track_upload_challenge(app):
@@ -144,7 +145,7 @@ def test_track_upload_challenge(app):
         session.add(track1)
 
         # Process dummy event at block number before this challenge is added
-        bus.dispatch(ChallengeEvent.track_upload, 1, 1)
+        bus.dispatch(ChallengeEvent.track_upload, 1, BLOCK_DATETIME, 1)
         bus.flush()
         bus.process_events(session)
         user_challenges = track_upload_challenge_manager.get_user_challenge_state(
@@ -156,7 +157,7 @@ def test_track_upload_challenge(app):
 
         # Process dummy event at block number when challenge is added
         session.add(track2)
-        bus.dispatch(ChallengeEvent.track_upload, 30000000, 1)
+        bus.dispatch(ChallengeEvent.track_upload, 30000000, BLOCK_DATETIME, 1)
         bus.flush()
         bus.process_events(session)
         user_challenge = track_upload_challenge_manager.get_user_challenge_state(
@@ -169,9 +170,9 @@ def test_track_upload_challenge(app):
 
         # Ensure unlisted tracks and stems are not counted
         session.add(unlisted_track)
-        bus.dispatch(ChallengeEvent.track_upload, 30000001, 1)
+        bus.dispatch(ChallengeEvent.track_upload, 30000001, BLOCK_DATETIME, 1)
         session.add(stem)
-        bus.dispatch(ChallengeEvent.track_upload, 30000001, 1)
+        bus.dispatch(ChallengeEvent.track_upload, 30000001, BLOCK_DATETIME, 1)
         bus.flush()
         bus.process_events(session)
         user_challenge = track_upload_challenge_manager.get_user_challenge_state(
@@ -184,9 +185,9 @@ def test_track_upload_challenge(app):
 
         # Process two more dummy events to reach the step count (i.e. 3) for completion
         session.add(track3)
-        bus.dispatch(ChallengeEvent.track_upload, 30000001, 1)
+        bus.dispatch(ChallengeEvent.track_upload, 30000001, BLOCK_DATETIME, 1)
         session.add(track4)
-        bus.dispatch(ChallengeEvent.track_upload, 30000001, 1)
+        bus.dispatch(ChallengeEvent.track_upload, 30000001, BLOCK_DATETIME, 1)
         bus.flush()
         bus.process_events(session)
         user_challenge = track_upload_challenge_manager.get_user_challenge_state(
@@ -202,7 +203,7 @@ def test_track_upload_challenge(app):
             {"is_delete": True}
         )
         session.flush()
-        bus.dispatch(ChallengeEvent.track_upload, 3, 1)
+        bus.dispatch(ChallengeEvent.track_upload, 3, BLOCK_DATETIME, 1)
         bus.flush()
         bus.process_events(session)
         user_challenge = track_upload_challenge_manager.get_user_challenge_state(

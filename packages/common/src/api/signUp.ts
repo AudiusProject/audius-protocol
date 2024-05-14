@@ -69,26 +69,18 @@ const signUpApi = createApi({
                 handleCheckTimeout
               )
             : null
-          const [twitterResult, instagramResult, tiktokResult] =
-            await Promise.all([
-              twitterCheckPromise,
-              instagramCheckPromise,
-              tiktokCheckPromise
-            ])
-          const lookedUpTwitterUser =
-            twitterResult == null
-              ? null
-              : twitterResult?.data?.user?.profile?.[0]
-          const lookedUpInstagramUser =
-            instagramResult == null ? null : instagramResult?.data
-          const lookedUpTikTokUser =
-            tiktokResult == null ? null : tiktokResult?.data
+
+          const [twitterUser, instagramUser, tiktokUser] = await Promise.all([
+            twitterCheckPromise,
+            instagramCheckPromise,
+            tiktokCheckPromise
+          ])
 
           const reservedStatus = parseHandleReservedStatusFromSocial({
             isOauthVerified: false,
-            lookedUpTwitterUser,
-            lookedUpInstagramUser,
-            lookedUpTikTokUser
+            lookedUpTwitterUser: twitterUser?.user ?? null,
+            lookedUpInstagramUser: instagramUser,
+            lookedUpTikTokUser: tiktokUser
           })
           return reservedStatus
         } else {

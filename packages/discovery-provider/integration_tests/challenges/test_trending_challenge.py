@@ -28,6 +28,16 @@ logger = logging.getLogger(__name__)
 trending_strategy_factory = TrendingStrategyFactory()
 
 
+class MockEth:
+    def get_block(self, *args):
+        return {"timestamp": int(datetime.now().timestamp())}
+
+
+class MockWeb3:
+    def __init__(self):
+        self.eth = MockEth()
+
+
 def test_trending_challenge_should_update(app):
     with app.app_context():
         db = get_db()
@@ -285,8 +295,8 @@ def test_trending_challenge_job(app):
                 strategy.update_track_score_query(session)
 
         session.commit()
-
-    enqueue_trending_challenges(db, redis_conn, bus, trending_date)
+    web3 = MockWeb3()
+    enqueue_trending_challenges(db, web3, redis_conn, bus, trending_date)
 
     with db.scoped_session() as session:
         session.query(Challenge).filter(
