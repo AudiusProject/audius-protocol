@@ -84,6 +84,8 @@ export class ChallengesApi extends BaseAPI {
    * @see {@link generateSpecifier} to create the specifier argument.
    */
   public async claimReward(request: ClaimRewardsRequest) {
+    console.log('asdf claimReward', new Date())
+
     const args = await parseParams('claimRewards', ClaimRewardsSchema)(request)
     const { challengeId, specifier, amount: inputAmount } = args
     const logger = this.logger.createPrefixedLogger(
@@ -91,6 +93,8 @@ export class ChallengesApi extends BaseAPI {
     )
     const { userId } = request
     const amount = wAUDIO(inputAmount).value
+    console.log('asdf getUser', new Date())
+
     const { data } = await this.usersApi.getUser({
       id: userId
     })
@@ -101,24 +105,28 @@ export class ChallengesApi extends BaseAPI {
     const attestationTransactionSignatures: string[] = []
 
     logger.debug('Creating user bank if necessary...')
-    const { userBank: destinationUserBank } =
-      await this.claimableTokens.getOrCreateUserBank({
-        ethWallet: recipientEthAddress,
-        mint: 'wAUDIO'
-      })
+    console.log('asdf getOrCreateUserBank', new Date())
+    const userBankPromise = await this.claimableTokens.getOrCreateUserBank({
+      ethWallet: recipientEthAddress,
+      mint: 'wAUDIO'
+    })
 
     logger.debug('Getting attestation submission state...')
+    console.log('asdf getSubmittedAttestations', new Date())
+
     const submissions = await this.rewardManager.getSubmittedAttestations({
       challengeId,
       specifier
     })
     logger.debug('Submission state:', submissions)
-
+    console.log('asdf submissions: ', submissions)
     let antiAbuseOracleEthAddress = submissions?.messages.find(
       (m) => m.attestation.antiAbuseOracleEthAddress === null
     )?.senderEthAddress
     if (!antiAbuseOracleEthAddress) {
       logger.debug('Submitting anti abuse oracle attestation...')
+      console.log('asdf submitAntiAbuseOracleAttestation', new Date())
+
       const response = await this.submitAntiAbuseOracleAttestation({
         challengeId,
         specifier,
@@ -138,10 +146,13 @@ export class ChallengesApi extends BaseAPI {
         .filter((m) => !!m.attestation.antiAbuseOracleEthAddress)
         .map((m) => m.operator) ?? []
     logger.debug('Existing sender owners:', existingSenderOwners)
+    console.log('asdf getRewardManagerState', new Date())
 
     const state = await this.rewardManager.getRewardManagerState()
     if (existingSenderOwners.length < state.minVotes) {
       logger.debug('Submitting discovery node attestations...')
+      console.log('asdf submitDiscoveryAttestations', new Date())
+
       const signatures = await this.submitDiscoveryAttestations({
         userId,
         antiAbuseOracleEthAddress,
@@ -157,12 +168,16 @@ export class ChallengesApi extends BaseAPI {
     }
 
     logger.debug('Confirming all attestation submissions...')
+    console.log('asdf confirmAllTransactions finalized', new Date())
+
     await this.rewardManager.confirmAllTransactions(
       attestationTransactionSignatures,
-      'finalized' // for some reason, only works when finalized...
+      'finalized' // confirmed...
     )
 
     logger.debug('Disbursing claim...')
+    console.log('asdf awaiting userBankPromise')
+    const { userBank: destinationUserBank } = await userBankPromise
     const disbursement = await this.evaluateAttestations({
       challengeId,
       specifier,
@@ -188,6 +203,7 @@ export class ChallengesApi extends BaseAPI {
     recipientEthAddress: string
     handle: string
   }) {
+    console.log('asdf getChallengeAttestation', new Date())
     const antiAbuseOracleAttestation =
       await this.antiAbuseOracle.getChallengeAttestation({
         handle,
@@ -195,11 +211,15 @@ export class ChallengesApi extends BaseAPI {
         specifier,
         amount: Number(wAUDIO(amount).toString())
       })
+    console.log('asdf getWalletAddress', new Date())
+
     const antiAbuseOracleEthAddress =
       await this.antiAbuseOracle.getWalletAddress()
     if (!antiAbuseOracleAttestation.result) {
       throw new Error('Failed to get AAO attestation')
     }
+    console.log('asdf createSubmitAttestationSecpInstruction', new Date())
+
     const aaoSubmitSecpInstruction =
       await this.rewardManager.createSubmitAttestationSecpInstruction({
         challengeId,
@@ -209,15 +229,21 @@ export class ChallengesApi extends BaseAPI {
         senderEthAddress: antiAbuseOracleEthAddress,
         senderSignature: antiAbuseOracleAttestation.result
       })
+    console.log('asdf createSubmitAttestationInstruction', new Date())
+
     const aaoSubmitInstruction =
       await this.rewardManager.createSubmitAttestationInstruction({
         challengeId,
         specifier,
         senderEthAddress: antiAbuseOracleEthAddress
       })
+    console.log('asdf buildTransaction', new Date())
+
     const submitAAOTransaction = await this.rewardManager.buildTransaction({
       instructions: [aaoSubmitSecpInstruction, aaoSubmitInstruction]
     })
+    console.log('asdf sendTransaction', new Date())
+
     return {
       transactionSignature: await this.rewardManager.sendTransaction(
         submitAAOTransaction
@@ -252,6 +278,7 @@ export class ChallengesApi extends BaseAPI {
         numberOfNodes,
         excludeOwners
       )
+    console.log('asdf got discoveryNodes', new Date())
     logger.debug('Got unique Discovery Nodes', {
       discoveryNodes,
       excludeOwners
@@ -268,6 +295,8 @@ export class ChallengesApi extends BaseAPI {
         })
       )
     )
+    console.log('asdf got discoveryAttestations', new Date())
+
     logger.debug('Got Discovery Node attestations', discoveryAttestations)
     const transactions = []
     for (const attestation of discoveryAttestations) {
@@ -292,8 +321,12 @@ export class ChallengesApi extends BaseAPI {
       const submitTransaction = await this.rewardManager.buildTransaction({
         instructions: [secpInstruction, submitInstruction]
       })
+      console.log('asdf push transaction', new Date())
+
       transactions.push(submitTransaction)
     }
+    console.log('asdf sending transaction', new Date())
+
     return await Promise.all(
       transactions.map((t) => this.rewardManager.sendTransaction(t))
     )
@@ -326,6 +359,7 @@ export class ChallengesApi extends BaseAPI {
     const transaction = await this.rewardManager.buildTransaction({
       instructions: [instruction]
     })
+    console.log('asdf evalue transaction', transaction)
     return await this.rewardManager.sendTransaction(transaction)
   }
 }

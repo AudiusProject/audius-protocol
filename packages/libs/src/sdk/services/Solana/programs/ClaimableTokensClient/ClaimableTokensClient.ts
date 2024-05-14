@@ -69,6 +69,8 @@ export class ClaimableTokensClient extends BaseSolanaProgramClient {
       GetOrCreateUserBankSchema
     )(params)
     const { ethWallet, mint, feePayer: feePayerOverride } = args
+    console.log('asdf getFeePayer: ', new Date())
+
     const feePayer = feePayerOverride ?? (await this.getFeePayer())
     const userBank = await this.deriveUserBank(args)
     const userBankAccount = await this.connection.getAccountInfo(userBank)

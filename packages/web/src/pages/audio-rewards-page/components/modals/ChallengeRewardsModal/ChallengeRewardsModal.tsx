@@ -371,6 +371,12 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
 
   const onClaimRewardClicked = useCallback(() => {
     if (challenge) {
+      console.log(
+        'asdf challenge.undisbursedSpecifiers: ',
+        challenge.undisbursedSpecifiers
+      )
+      console.log('asdf undisbursedUserChallenges: ', undisbursedUserChallenges)
+
       dispatch(
         claimChallengeReward({
           claim: {
@@ -490,7 +496,6 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
         </Button>
       )
     }
-    return null
   }
 
   const renderClaimedSoFarContent = () => {
@@ -558,6 +563,7 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
         )}
         {renderReferralContent()}
         {renderMobileInstallContent()}
+
         {buttonLink && challenge?.state !== 'completed' ? (
           <Button
             variant='primary'
