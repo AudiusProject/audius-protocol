@@ -212,7 +212,6 @@
 
 .gatedContentSectionCollection {
   display: flex;
-  align-items: center;
   margin-top: var(--harmony-unit-2);
   width: fit-content;
 }

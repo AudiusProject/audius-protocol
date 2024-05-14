@@ -140,13 +140,7 @@ const ActionButtonRow = ({
   )
 
   return (
-    <Flex
-      direction='row'
-      alignItems='center'
-      justifyContent='center'
-      gap='xl'
-      mt='m'
-    >
+    <Flex direction='row' alignItems='center' justifyContent='center' gap='xl'>
       <ClientOnly>
         {showRepost && renderRepostButton()}
         {showFavorite && renderFavoriteButton()}

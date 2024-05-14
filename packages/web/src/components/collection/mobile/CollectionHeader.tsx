@@ -123,6 +123,9 @@ const CollectionHeader = ({
     ? isPlayable && isPremium
     : isPremium && !hasStreamAccess
 
+  const showPremiumSection =
+    isPremiumAlbumsEnabled && isAlbum && streamConditions && collectionId
+
   const onSaveCollection = () => {
     if (!isOwner) onSave?.()
   }
@@ -270,26 +273,6 @@ const CollectionHeader = ({
             {playing && previewing ? messages.pause : messages.preview}
           </Button>
         ) : null}
-        {isPremiumAlbumsEnabled &&
-        isAlbum &&
-        streamConditions &&
-        collectionId ? (
-          <Box mb='xl' w='100%'>
-            <GatedContentSection
-              isLoading={isLoading}
-              contentId={collectionId}
-              contentType={PurchaseableContentType.ALBUM}
-              streamConditions={streamConditions}
-              hasStreamAccess={!!access?.stream}
-              isOwner={isOwner}
-              wrapperClassName={styles.gatedContentSectionWrapper}
-              className={styles.gatedContentSection}
-              buttonClassName={styles.gatedContentSectionButton}
-              ownerId={userId}
-              source={ModalSource.CollectionDetails}
-            />
-          </Box>
-        ) : null}
 
         <ActionButtonRow
           isOwner={isOwner}
@@ -320,6 +303,22 @@ const CollectionHeader = ({
         borderBottom='strong'
         justifyContent='flex-start'
       >
+        {showPremiumSection ? (
+          <Box w='100%'>
+            <GatedContentSection
+              isLoading={isLoading}
+              contentId={collectionId}
+              contentType={PurchaseableContentType.ALBUM}
+              streamConditions={streamConditions}
+              hasStreamAccess={!!access?.stream}
+              isOwner={isOwner}
+              wrapperClassName={styles.gatedContentSectionWrapper}
+              buttonClassName={styles.gatedContentSectionButton}
+              ownerId={userId}
+              source={ModalSource.CollectionDetails}
+            />
+          </Box>
+        ) : null}
         {isPublished && variant !== Variant.SMART ? (
           <RepostsFavoritesStats
             isUnlisted={false}

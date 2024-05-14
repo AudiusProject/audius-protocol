@@ -32,7 +32,10 @@ import { useFlag } from 'hooks/useRemoteConfig'
 import { AppState } from 'store/types'
 import { trpc } from 'utils/trpcClientWeb'
 
-import TrackListItem, { TrackListItemProps } from './TrackListItem'
+import TrackListItem, {
+  TrackItemAction,
+  TrackListItemProps
+} from './TrackListItem'
 const { setLockedContentId } = gatedContentActions
 
 const { getGatedContentStatusMap } = gatedContentSelectors
@@ -43,7 +46,7 @@ const { saveTrack, unsaveTrack, repostTrack, undoRepostTrack } =
   tracksSocialActions
 const getUserId = accountSelectors.getUserId
 
-type OwnProps = Omit<TrackListItemProps, 'userId'>
+type OwnProps = TrackListItemProps
 type StateProps = ReturnType<typeof mapStateToProps>
 type DispatchProps = ReturnType<typeof mapDispatchToProps>
 
@@ -80,6 +83,7 @@ const ConnectedTrackListItem = (props: ConnectedTrackListItemProps) => {
 
   const onClickOverflow = () => {
     const overflowActions = [
+      isPurchase ? OverflowAction.PURCHASE_TRACK : null,
       isLocked
         ? null
         : isReposted
@@ -125,9 +129,10 @@ const ConnectedTrackListItem = (props: ConnectedTrackListItemProps) => {
   return (
     <TrackListItem
       {...props}
-      userId={user?.user_id ?? 0}
+      isPremium={isPurchase}
       onClickOverflow={onClickOverflow}
       onClickGatedUnlockPill={onClickGatedUnlockPill}
+      trackItemAction={TrackItemAction.Overflow}
     />
   )
 }
