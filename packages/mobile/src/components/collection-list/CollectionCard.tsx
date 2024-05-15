@@ -116,7 +116,7 @@ export const CollectionCard = (props: CollectionCardProps) => {
             strength='strong'
             color='subdued'
             // Ensures footer height is not affected
-            style={{ lineHeight: 0 }}
+            style={{ lineHeight: 16 }}
           >
             {messages.hidden}
           </Text>
@@ -130,7 +130,7 @@ export const CollectionCard = (props: CollectionCardProps) => {
             </Flex>
             <Flex direction='row' gap='xs' alignItems='center'>
               <IconHeart size='s' color='subdued' />
-              <Text variant='label' color='subdued' style={{ lineHeight: 0 }}>
+              <Text variant='label' color='subdued'>
                 {formatCount(save_count)}
               </Text>
             </Flex>

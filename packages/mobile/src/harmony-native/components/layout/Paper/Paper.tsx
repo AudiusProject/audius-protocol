@@ -1,7 +1,8 @@
 import { forwardRef } from 'react'
 
+import { MobileOS } from '@audius/common/models'
 import type { View } from 'react-native'
-import { Pressable } from 'react-native'
+import { Platform, Pressable } from 'react-native'
 import { Gesture, GestureDetector } from 'react-native-gesture-handler'
 import Animated, {
   interpolate,
@@ -47,28 +48,6 @@ export const Paper = forwardRef<View, PaperProps>((props, ref) => {
     })
 
   const interactiveStyles = useAnimatedStyle(() => ({
-    shadowOpacity: interpolate(
-      pressed.value,
-      [0, 1],
-      [shadowStyle.shadowOpacity, shadows.near.shadowOpacity]
-    ),
-    shadowRadius: interpolate(
-      pressed.value,
-      [0, 1],
-      [shadowStyle.shadowRadius, shadows.near.shadowRadius]
-    ),
-    shadowOffset: {
-      width: interpolate(
-        pressed.value,
-        [0, 1],
-        [shadowStyle.shadowOffset.width, shadows.near.shadowOffset.width]
-      ),
-      height: interpolate(
-        pressed.value,
-        [0, 1],
-        [shadowStyle.shadowOffset.height, shadows.near.shadowOffset.height]
-      )
-    },
     shadowColor: interpolateColor(
       pressed.value,
       [0, 1],
@@ -78,7 +57,31 @@ export const Paper = forwardRef<View, PaperProps>((props, ref) => {
       {
         scale: interpolate(pressed.value, [0, 1], [1, 0.995])
       }
-    ]
+    ],
+    ...(Platform.OS === MobileOS.IOS && {
+      shadowOpacity: interpolate(
+        pressed.value,
+        [0, 1],
+        [shadowStyle.shadowOpacity, shadows.near.shadowOpacity]
+      ),
+      shadowRadius: interpolate(
+        pressed.value,
+        [0, 1],
+        [shadowStyle.shadowRadius, shadows.near.shadowRadius]
+      ),
+      shadowOffset: {
+        width: interpolate(
+          pressed.value,
+          [0, 1],
+          [shadowStyle.shadowOffset.width, shadows.near.shadowOffset.width]
+        ),
+        height: interpolate(
+          pressed.value,
+          [0, 1],
+          [shadowStyle.shadowOffset.height, shadows.near.shadowOffset.height]
+        )
+      }
+    })
   }))
 
   const flexProps = { backgroundColor, borderRadius, shadow }

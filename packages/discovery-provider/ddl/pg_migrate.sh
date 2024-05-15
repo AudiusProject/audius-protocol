@@ -60,12 +60,6 @@ migrate_dir() {
         else
             echo "Applying $file"
             psql < "$file"
-
-            # if test mode, run migration again to ensure idempotent
-            if [[ $is_test == "test" ]]; then
-              echo "RE-Applying $file"
-              psql < "$file"
-            fi
         fi
 
         psql -c "INSERT INTO $MIGRATIONS_TABLE (file_name, md5) VALUES ('$file', '$md5') on conflict(file_name) do update set md5='$md5', applied_at=now();"

@@ -14,9 +14,11 @@ import { assertRelayAllowedInstructions } from './assertRelayAllowedInstructions
 import { cacheTransaction, getCachedDiscoveryNodes } from '../../redis'
 import fetch from 'cross-fetch'
 import { Logger } from 'pino'
-import base58 from 'bs58'
+import bs58 from 'bs58'
 import { personalSign } from 'eth-sig-util'
 import type { RelayRequestBody } from '@audius/sdk'
+import { getRequestIpData } from '../../utils/ipData'
+import { attachLocationData, isPaymentTransaction } from './attachLocationData'
 
 const RETRY_DELAY_MS = 2 * 1000
 const RETRY_TIMEOUT_MS = 60 * 1000
@@ -205,7 +207,8 @@ export const relay = async (
     const strategy =
       confirmationOptions?.strategy ?? (await connection.getLatestBlockhash())
     const decoded = Buffer.from(encodedTransaction, 'base64')
-    const transaction = VersionedTransaction.deserialize(decoded)
+    let transaction = VersionedTransaction.deserialize(decoded)
+
     const decompiled = TransactionMessage.decompile(transaction.message)
     const feePayerKey = transaction.message.getAccountKeys().get(0)
     const feePayerKeyPair = getFeePayerKeyPair(feePayerKey)
@@ -219,8 +222,20 @@ export const relay = async (
       feePayer: feePayerKey.toBase58()
     })
 
+    if (isPaymentTransaction(decompiled.instructions)) {
+      const location = await getRequestIpData(res.locals.logger, req)
+      if (location) {
+        transaction = new VersionedTransaction(
+          attachLocationData({
+            transactionMessage: decompiled,
+            location
+          }).compileToV0Message()
+        )
+      }
+    }
+
     transaction.sign([feePayerKeyPair])
-    const signature = base58.encode(transaction.signatures[0])
+    const signature = bs58.encode(transaction.signatures[0])
 
     const logger = res.locals.logger.child({ signature })
     logger.info(

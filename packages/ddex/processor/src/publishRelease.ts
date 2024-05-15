@@ -195,6 +195,44 @@ export function prepareTrackMetadatas(release: DDEXRelease) {
           sound.indirectContributors.map(mapContributor),
       }
 
+      for (const deal of release.deals) {
+        if (deal.audiusDealType == 'FollowGated') {
+          const cond = { followUserId: release.audiusUser! }
+          if (deal.forStream) {
+            meta.streamConditions = cond
+          }
+          if (deal.forDownload) {
+            meta.downloadConditions = cond
+          }
+        }
+
+        if (deal.audiusDealType == 'TipGated') {
+          const cond = { tipUserId: release.audiusUser! }
+          if (deal.forStream) {
+            meta.streamConditions = cond
+          }
+          if (deal.forDownload) {
+            meta.downloadConditions = cond
+          }
+        }
+
+        if (deal.audiusDealType == 'PayGated') {
+          const cond = {
+            usdcPurchase: {
+              price: deal.priceUsd,
+            },
+          }
+          if (deal.forStream) {
+            meta.streamConditions = cond
+          }
+          if (deal.forDownload) {
+            meta.downloadConditions = cond
+          }
+        }
+      }
+
+      // todo: nft gated types
+
       return meta
     })
 
@@ -278,6 +316,9 @@ export function prepareAlbumMetadata(release: DDEXRelease) {
     ddexReleaseIds: release.releaseIds,
     artists: release.artists.map(mapContributor),
   }
+
+  // todo: album stream + download conditions
+
   return meta
 }
 

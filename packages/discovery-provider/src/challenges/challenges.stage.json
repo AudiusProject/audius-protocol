@@ -1,5 +1,15 @@
 [
   {
+    "id": "profile-completion",
+    "type": "numeric",
+    "amount": 1,
+    "active": true,
+    "step_count": 7,
+    "starting_block": 0,
+    "weekly_pool": 25000,
+    "cooldown_days": 7
+  },
+  {
     "id": "listen-streak",
     "active": true,
     "starting_block": 0,

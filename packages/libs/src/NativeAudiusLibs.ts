@@ -508,6 +508,7 @@ export class AudiusLibs {
         ...this.discoveryProviderConfig
       })
       await this.discoveryProvider.init()
+      this.web3Manager?.setDiscoveryProvider(this.discoveryProvider)
     }
 
     /** Creator Node */

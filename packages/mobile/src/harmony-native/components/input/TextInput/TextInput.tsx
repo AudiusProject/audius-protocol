@@ -363,7 +363,6 @@ export const TextInput = forwardRef(
             exiting={FadeOut}
             variant='body'
             size={helperTextSize}
-            strength='default'
             color={statusColor ?? 'default'}
           >
             {helperText}
