@@ -209,7 +209,7 @@ const ConnectedPlaylistTile = ({
       // @ts-ignore
       overflowActions
     )
-  }, [collection, isOwner, clickOverflow, isEditAlbumsEnabled])
+  }, [collection, isOwner, clickOverflow, isEditAlbumsEnabled, hasStreamAccess])
 
   const togglePlay = useCallback(() => {
     if (uploading) return

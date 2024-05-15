@@ -401,6 +401,10 @@ export const TracksTable = ({
   const renderOverflowMenuCell = useCallback(
     (cellInfo: TrackCell) => {
       const track = cellInfo.row.original
+      const {
+        stream_conditions: streamConditions,
+        is_stream_gated: isStreamGated
+      } = track
       const { isFetchingNFTAccess, hasStreamAccess } = trackAccessMap[
         track.track_id
       ] ?? { isFetchingNFTAccess: false, hasStreamAccess: true }
@@ -408,18 +412,17 @@ export const TracksTable = ({
       const isDdex = !!track.ddex_app
       const deleted =
         track.is_delete || track._marked_deleted || !!track.user?.is_deactivated
-      const isPlaylistAddable = useIsGatedContentPlaylistAddable(track)
       // For owners, we want to show the type of gating on the track. For fans,
       // we want to show whether or not they have access.
       let Icon
       if (shouldShowGatedType) {
         Icon = track.is_unlisted
           ? IconVisibilityHidden
-          : isContentUSDCPurchaseGated(track.stream_conditions)
+          : isContentUSDCPurchaseGated(streamConditions)
           ? IconCart
-          : isContentCollectibleGated(track.stream_conditions)
+          : isContentCollectibleGated(streamConditions)
           ? IconCollectible
-          : isContentFollowGated(track.stream_conditions)
+          : isContentFollowGated(streamConditions)
           ? IconSpecialAccess
           : null
       } else {
@@ -454,7 +457,9 @@ export const TracksTable = ({
           }
         : {
             includeEdit: !disabledTrackEdit,
-            includeAddToPlaylist: isPlaylistAddable,
+            includeAddToPlaylist:
+              !isStreamGated ||
+              (isContentUSDCPurchaseGated(streamConditions) && hasStreamAccess),
             onRemove: onClickRemove,
             removeText
           }
