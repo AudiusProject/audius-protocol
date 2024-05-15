@@ -1,6 +1,9 @@
 import { MouseEvent, useCallback, useMemo, useRef } from 'react'
 
-import { useGatedContentAccessMap } from '@audius/common/hooks'
+import {
+  useGatedContentAccessMap,
+  useIsGatedContentPlaylistAddable
+} from '@audius/common/hooks'
 import {
   UID,
   UserTrack,
@@ -405,6 +408,7 @@ export const TracksTable = ({
       const isDdex = !!track.ddex_app
       const deleted =
         track.is_delete || track._marked_deleted || !!track.user?.is_deactivated
+      const isPlaylistAddable = useIsGatedContentPlaylistAddable(track)
       // For owners, we want to show the type of gating on the track. For fans,
       // we want to show whether or not they have access.
       let Icon
@@ -450,7 +454,7 @@ export const TracksTable = ({
           }
         : {
             includeEdit: !disabledTrackEdit,
-            includeAddToPlaylist: !isLocked || !track.is_stream_gated,
+            includeAddToPlaylist: isPlaylistAddable,
             onRemove: onClickRemove,
             removeText
           }
