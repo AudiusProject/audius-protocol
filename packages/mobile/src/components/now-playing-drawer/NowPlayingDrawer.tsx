@@ -46,6 +46,7 @@ import { TitleBar } from './TitleBar'
 import { TrackInfo } from './TrackInfo'
 import { PLAY_BAR_HEIGHT } from './constants'
 import { useCurrentTrackDuration } from './useCurrentTrackDuration'
+import { zIndex } from 'app/utils/zIndex'
 const { seek, reset } = playerActions
 
 const { getPlaying, getCurrentTrack, getCounter, getUid } = playerSelectors
@@ -285,7 +286,7 @@ export const NowPlayingDrawer = memo(function NowPlayingDrawer(
   return (
     <Drawer
       // Appears below bottom bar whereas normally drawers appear above
-      zIndex={3}
+      zIndex={zIndex.NOW_PLAYING_DRAWER}
       isOpen={isOpen}
       onClose={onClose}
       onOpen={onDrawerOpen}
