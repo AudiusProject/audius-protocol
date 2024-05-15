@@ -17,7 +17,14 @@ import {
 import { capitalize } from 'lodash'
 import { useParams } from 'react-router-dom'
 import { useHistoryContext } from 'app/HistoryProvider'
-import { ChangeEvent, useCallback } from 'react'
+import { ChangeEvent, useCallback, useContext, useEffect } from 'react'
+import { useMedia } from 'hooks/useMedia'
+import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
+import NavContext, {
+  CenterPreset,
+  LeftPreset,
+  RightPreset
+} from 'components/nav/mobile/NavContext'
 
 type Filter =
   | 'genre'
@@ -56,6 +63,8 @@ type SearchHeaderProps = {
 const SearchHeader = (props: SearchHeaderProps) => {
   const { category: categoryKey = 'all', setCategory, query, title } = props
 
+  const { isMobile } = useMedia()
+
   const handleChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
       const value = e.target.value
@@ -64,7 +73,37 @@ const SearchHeader = (props: SearchHeaderProps) => {
     [setCategory]
   )
 
-  return (
+  const CategoryRadioGroup = (
+    <RadioGroup
+      direction='row'
+      gap='s'
+      aria-label={'Select search category'}
+      name='searchcategory'
+      value={categoryKey}
+      onChange={handleChange}
+    >
+      {Object.entries(categories)
+        .filter(([key]) => !isMobile || key !== 'all')
+        .map(([key, category]) => (
+          <SelectablePill
+            aria-label={`${key} search category`}
+            icon={(category as Category).icon}
+            key={key}
+            label={capitalize(key)}
+            size='large'
+            type='radio'
+            value={key}
+            checked={key === categoryKey}
+          />
+        ))}
+    </RadioGroup>
+  )
+
+  return isMobile ? (
+    <Flex p='s' css={{ overflow: 'scroll' }}>
+      {CategoryRadioGroup}
+    </Flex>
+  ) : (
     <Header
       {...props}
       primary={title}
@@ -77,40 +116,28 @@ const SearchHeader = (props: SearchHeaderProps) => {
           </Flex>
         ) : null
       }
-      rightDecorator={
-        <RadioGroup
-          direction='row'
-          gap='s'
-          aria-label={'Select search category'}
-          name='searchcategory'
-          value={categoryKey}
-          onChange={handleChange}
-        >
-          {Object.entries(categories).map(([key, category]) => (
-            <SelectablePill
-              aria-label={`${key} search category`}
-              icon={(category as Category).icon}
-              key={key}
-              label={capitalize(key)}
-              size='large'
-              type='radio'
-              value={key}
-              checked={key === categoryKey}
-            />
-          ))}
-        </RadioGroup>
-      }
+      rightDecorator={CategoryRadioGroup}
       variant='main'
     />
   )
 }
 
 export const SearchPageV2 = () => {
+  const { isMobile } = useMedia()
+
   const { category, query } = useParams<{
     category: CategoryKey
     query: string
   }>()
   const { history } = useHistoryContext()
+
+  // Set nav header
+  const { setLeft, setCenter, setRight } = useContext(NavContext)!
+  useEffect(() => {
+    setLeft(LeftPreset.BACK)
+    setCenter(CenterPreset.LOGO)
+    setRight(RightPreset.SEARCH)
+  }, [setLeft, setCenter, setRight])
 
   const setCategory = useCallback(
     (category: CategoryKey) => {
@@ -128,14 +155,17 @@ export const SearchPageV2 = () => {
     />
   )
 
+  const PageComponent = isMobile ? MobilePageContainer : Page
+
   return (
-    <Page
+    <PageComponent
       title={`${query}`}
       description={`Search results for ${query}`}
       // canonicalUrl={fullSearchResultsPage(query)}
       header={header}
     >
+      {isMobile ? header : null}
       {status === Status.LOADING ? <LoadingSpinner /> : <div>hi</div>}
-    </Page>
+    </PageComponent>
   )
 }

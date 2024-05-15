@@ -10,7 +10,7 @@ import { withRouter, RouteComponentProps } from 'react-router-dom'
 import { Dispatch } from 'redux'
 
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
-import NavContext, { LeftPreset } from 'components/nav/store/context'
+import NavContext, { LeftPreset } from 'components/nav/mobile/NavContext'
 import UserList from 'components/user-list/UserList'
 import { AppState } from 'store/types'
 const { getPageTitle, getUserList } = notificationsUserListSelectors

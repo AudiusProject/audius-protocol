@@ -33,7 +33,7 @@ import NavContext, {
   LeftPreset,
   CenterPreset,
   RightPreset
-} from 'components/nav/store/context'
+} from 'components/nav/mobile/NavContext'
 import { UserCard } from 'components/user-card'
 import useTabs from 'hooks/useTabs/useTabs'
 import { getCategory } from 'pages/search-page/helpers'

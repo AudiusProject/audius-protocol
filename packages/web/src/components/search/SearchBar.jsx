@@ -191,7 +191,7 @@ class SearchBar extends Component {
           this.setState({ shouldDismissTagPopup: true })
         if (
           (this.props.isTagSearch && this.state.value.length > 1) ||
-          (!this.props.isTagSearch && this.state.value.length > 0)
+          !this.props.isTagSearch
         ) {
           this.props.onSubmit(this.state.value)
           this.setState({ debounce: null })
@@ -408,7 +408,12 @@ class SearchBar extends Component {
             name='search'
             autoComplete='off'
             type='search'
-            prefix={<IconSearch color='subdued' />}
+            prefix={
+              <IconSearch
+                color='subdued'
+                onClick={() => this.props.onSubmit('')}
+              />
+            }
             onKeyDown={this.onKeyDown}
             spellCheck={false}
           />

@@ -3,6 +3,7 @@ import PropTypes from 'prop-types'
 
 import { BackButton } from 'components/back-button/BackButton'
 import { HeaderGutter } from 'components/header/desktop/HeaderGutter'
+import { useMedia } from 'hooks/useMedia'
 
 import styles from './Header.module.css'
 
@@ -32,6 +33,8 @@ const Header = (props) => {
     [styles.page]: variant === 'page'
   }
 
+  const { isMobile } = useMedia()
+
   return (
     <>
       <HeaderGutter
@@ -40,12 +43,16 @@ const Header = (props) => {
         scrollBarWidth={scrollBarWidth}
       />
       <div
-        className={cn(
-          styles.container,
-          variantStyle,
-          { [containerStyles]: !!containerStyles },
-          { [styles.containerWithBar]: !!bottomBar }
-        )}
+        className={
+          !isMobile
+            ? cn(
+                styles.container,
+                variantStyle,
+                { [containerStyles]: !!containerStyles },
+                { [styles.containerWithBar]: !!bottomBar }
+              )
+            : undefined
+        }
       >
         <div
           className={cn(styles.maxWidthWrapper, {

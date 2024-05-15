@@ -26,12 +26,14 @@ import NavContext, {
   LeftPreset,
   CenterPreset,
   RightPreset
-} from 'components/nav/store/context'
+} from 'components/nav/mobile/NavContext'
 import SearchBar from 'components/search-bar/SearchBar'
 import { useFlag } from 'hooks/useRemoteConfig'
 import { getIsIOS } from 'utils/browser'
 import { SIGN_UP_PAGE, TRENDING_PAGE } from 'utils/route'
 import { isMatrix } from 'utils/theme/theme'
+
+import { useHistoryContext } from 'app/HistoryProvider'
 
 import styles from './NavBar.module.css'
 
@@ -51,7 +53,7 @@ interface NavBarProps {
 
 const messages = {
   signUp: 'Sign Up',
-  searchPlaceholder: 'Search Audius',
+  searchPlaceholder: 'What do you want to listen to?',
   earlyAccess: 'Early Access'
 }
 
@@ -70,6 +72,7 @@ const NavBar = ({
     location: { pathname }
   }
 }: NavBarProps) => {
+  const { history } = useHistoryContext()
   const { leftElement, centerElement, rightElement } = useContext(NavContext)!
 
   const [isSearching, setIsSearching] = useState(false)
@@ -84,10 +87,12 @@ const NavBar = ({
   useEffect(() => {
     const splitPath = pathname.split('/')
     const isSearch = splitPath.length > 1 && splitPath[1] === 'search'
-    if (!isSearch) {
-      setIsSearching(false)
-    }
+    setIsSearching(isSearch)
   }, [pathname])
+
+  const handleOpenSearch = useCallback(() => {
+    history.push(`/search`)
+  }, [history])
 
   const onCloseSearch = () => {
     setIsSearching(false)
@@ -243,9 +248,7 @@ const NavBar = ({
         {rightElement === RightPreset.SEARCH ? (
           <SearchBar
             open={isSearching}
-            onOpen={() => {
-              setIsSearching(true)
-            }}
+            onOpen={handleOpenSearch}
             onClose={onCloseSearch}
             value={searchValue}
             onSearch={setSearchValue}

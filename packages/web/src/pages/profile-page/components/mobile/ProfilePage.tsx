@@ -37,7 +37,7 @@ import TextElement, { Type } from 'components/nav/mobile/TextElement'
 import NavContext, {
   LeftPreset,
   CenterPreset
-} from 'components/nav/store/context'
+} from 'components/nav/mobile/NavContext'
 import TierExplainerDrawer from 'components/user-badges/TierExplainerDrawer'
 import useTabs, { TabHeader } from 'hooks/useTabs/useTabs'
 import { useSsrContext } from 'ssr/SsrContext'
