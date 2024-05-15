@@ -398,6 +398,10 @@ export const TracksTable = ({
   const renderOverflowMenuCell = useCallback(
     (cellInfo: TrackCell) => {
       const track = cellInfo.row.original
+      const {
+        stream_conditions: streamConditions,
+        is_stream_gated: isStreamGated
+      } = track
       const { isFetchingNFTAccess, hasStreamAccess } = trackAccessMap[
         track.track_id
       ] ?? { isFetchingNFTAccess: false, hasStreamAccess: true }
@@ -411,11 +415,11 @@ export const TracksTable = ({
       if (shouldShowGatedType) {
         Icon = track.is_unlisted
           ? IconVisibilityHidden
-          : isContentUSDCPurchaseGated(track.stream_conditions)
+          : isContentUSDCPurchaseGated(streamConditions)
           ? IconCart
-          : isContentCollectibleGated(track.stream_conditions)
+          : isContentCollectibleGated(streamConditions)
           ? IconCollectible
-          : isContentFollowGated(track.stream_conditions)
+          : isContentFollowGated(streamConditions)
           ? IconSpecialAccess
           : null
       } else {
@@ -450,7 +454,9 @@ export const TracksTable = ({
           }
         : {
             includeEdit: !disabledTrackEdit,
-            includeAddToPlaylist: !isLocked && !track.is_stream_gated,
+            includeAddToPlaylist:
+              !isStreamGated ||
+              (isContentUSDCPurchaseGated(streamConditions) && hasStreamAccess),
             onRemove: onClickRemove,
             removeText
           }
