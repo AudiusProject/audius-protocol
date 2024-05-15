@@ -413,13 +413,17 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
 
     health_results["relay"] = relay_health
 
-    if verbose:
-        # Elasticsearch health
-        if esclient:
-            health_results["elasticsearch"] = get_elasticsearch_health_info(
-                esclient, latest_indexed_block_num
-            )
+    # Elasticsearch health
+    if esclient:
+        health_results["elasticsearch"] = get_elasticsearch_health_info(
+            esclient,
+            latest_indexed_block_num,
+            verbose,
+        )
+        if health_results["elasticsearch"]["status"] != "green":
+            errors.append("unhealthy elasticsearch")
 
+    if verbose:
         # DB connections check
         db_connections_json, db_connections_error = _get_db_conn_state()
         health_results["db_connections"] = db_connections_json
@@ -483,6 +487,10 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         or reactions_health_info["is_unhealthy"]
         or user_bank_health_info["is_unhealthy"]
         or not delist_statuses_ok
+        or (
+            health_results.get("elasticsearch")
+            and health_results["elasticsearch"]["status"] != "green"
+        )
     )
 
     health_results["errors"] = errors
@@ -506,23 +514,27 @@ def get_location() -> LocationResponse:
 
 
 def get_elasticsearch_health_info(
-    esclient: Elasticsearch, latest_indexed_block_num: int
+    esclient: Elasticsearch,
+    latest_indexed_block_num: int,
+    verbose: bool,
 ) -> Dict[str, Dict[str, int]]:
     elasticsearch_health = {}
-    for index_name in ES_INDEXES:
-        try:
-            resp = esclient.search(
-                index=index_name,
-                aggs={"max_blocknumber": {"max": {"field": "blocknumber"}}},
-                size=0,
-            )
-            blocknumber = int(resp["aggregations"]["max_blocknumber"]["value"])
-            elasticsearch_health[index_name] = {
-                "blocknumber": blocknumber,
-                "db_block_difference": latest_indexed_block_num - blocknumber,
-            }
-        except Exception:
-            pass
+    elasticsearch_health["status"] = esclient.cluster.health().get("status", null)
+    if verbose:
+        for index_name in ES_INDEXES:
+            try:
+                resp = esclient.search(
+                    index=index_name,
+                    aggs={"max_blocknumber": {"max": {"field": "blocknumber"}}},
+                    size=0,
+                )
+                blocknumber = int(resp["aggregations"]["max_blocknumber"]["value"])
+                elasticsearch_health[index_name] = {
+                    "blocknumber": blocknumber,
+                    "db_block_difference": latest_indexed_block_num - blocknumber,
+                }
+            except Exception:
+                pass
     return elasticsearch_health
 
 
