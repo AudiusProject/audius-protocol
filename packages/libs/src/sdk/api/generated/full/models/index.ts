@@ -9,7 +9,6 @@ export * from './CollectionActivityFull';
 export * from './CollectionLibraryResponseFull';
 export * from './CoverArt';
 export * from './CoverPhoto';
-export * from './DownloadMetadata';
 export * from './Favorite';
 export * from './FieldVisibility';
 export * from './FollowGate';
