@@ -10,6 +10,7 @@
     "watch": "tsc --watch",
     "serve": "nodemon",
     "dev": "concurrently \"npm run watch\" \"npm run serve\"",
+    "test:db": "chmod +x ./scripts/prod-db.sh && ./scripts/prod-db.sh",
     "test": "vitest",
     "lint": "tsc --noEmit && eslint \"src/**/*.ts*\""
   },
