@@ -54,10 +54,10 @@ RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.10/main' >> /etc/apk/repositor
   apk update && \
   apk add \
   libpq=15.6-r0 \
-  postgresql15-client=15.6-r0 \
-  postgresql15-contrib=15.6-r0 \
-  postgresql15-dev=15.6-r0 \
-  postgresql15=15.6-r0
+  postgresql15-client=15.7-r0 \
+  postgresql15-contrib=15.7-r0 \
+  postgresql15-dev=15.7-r0 \
+  postgresql15=15.7-r0
 
 RUN python3 -m pip install --upgrade pip
 
