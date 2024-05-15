@@ -25,6 +25,7 @@ import NavContext, {
   LeftPreset,
   RightPreset
 } from 'components/nav/mobile/NavContext'
+import { SearchCatalogTile } from './SearchCatalogTile'
 
 type Filter =
   | 'genre'
@@ -164,8 +165,11 @@ export const SearchPageV2 = () => {
       // canonicalUrl={fullSearchResultsPage(query)}
       header={header}
     >
-      {isMobile ? header : null}
-      {status === Status.LOADING ? <LoadingSpinner /> : <div>hi</div>}
+      <Flex direction='column' css={{ width: '100%' }}>
+        {isMobile ? header : null}
+        {!query ? <SearchCatalogTile /> : null}
+        {status === Status.LOADING ? <LoadingSpinner /> : <div></div>}
+      </Flex>
     </PageComponent>
   )
 }
