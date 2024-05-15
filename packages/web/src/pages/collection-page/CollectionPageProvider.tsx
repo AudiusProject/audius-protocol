@@ -49,7 +49,9 @@ import {
   PremiumContentPurchaseModalState,
   albumTrackRemoveConfirmationModalActions,
   AlbumTrackRemoveConfirmationModalState,
-  PlayerBehavior
+  PlayerBehavior,
+  queueActions,
+  playerActions
 } from '@audius/common/store'
 import { formatUrlName, Uid, Nullable } from '@audius/common/utils'
 import { push as pushRoute, replace } from 'connected-react-router'
@@ -536,7 +538,8 @@ class CollectionPage extends Component<
       pause,
       previewing,
       tracks: { entries },
-      record
+      record,
+      stop
     } = this.props
     const isQueued = this.isQueued()
     const playingId = this.getPlayingId()
@@ -558,6 +561,7 @@ class CollectionPage extends Component<
         })
       )
     } else if (entries.length > 0) {
+      stop()
       play(entries[0].uid, { isPreview })
       record(
         make(Name.PLAYBACK_PLAY, {
@@ -873,6 +877,9 @@ function mapDispatchToProps(dispatch: Dispatch) {
     play: (uid?: string, options: { isPreview?: boolean } = {}) =>
       dispatch(tracksActions.play(uid, options)),
     pause: () => dispatch(tracksActions.pause()),
+    stop: () => {
+      dispatch(playerActions.stop({}))
+    },
     updateLineupOrder: (updatedOrderIndices: any) =>
       dispatch(tracksActions.updateLineupOrder(updatedOrderIndices)),
     editPlaylist: (playlistId: number, formFields: any) =>
