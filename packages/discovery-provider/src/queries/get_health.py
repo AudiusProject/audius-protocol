@@ -519,7 +519,7 @@ def get_elasticsearch_health_info(
     verbose: bool,
 ) -> Dict[str, Dict[str, int]]:
     elasticsearch_health = {}
-    elasticsearch_health["status"] = esclient.cluster.health().get("status", null)
+    elasticsearch_health["status"] = esclient.cluster.health().get("status", None)
     if verbose:
         for index_name in ES_INDEXES:
             try:
