@@ -38,7 +38,9 @@ import type {
   AddTrackToPlaylistNotification,
   AddTrackToPlaylistPushNotification,
   MessagePushNotification,
-  MessageReactionPushNotification
+  MessageReactionPushNotification,
+  USDCPurchaseBuyerNotification,
+  USDCPurchaseSellerNotification
 } from '@audius/common/store'
 import {
   NotificationType,
@@ -103,7 +105,11 @@ export const useNotificationNavigation = () => {
 
   const entityHandler = useCallback(
     (
-      notification: RepostOfRepostNotification | FavoriteOfRepostNotification
+      notification:
+        | RepostOfRepostNotification
+        | FavoriteOfRepostNotification
+        | USDCPurchaseBuyerNotification
+        | USDCPurchaseSellerNotification
     ) => {
       const { entityType, entityId } = notification
       if (entityType === Entity.Track) {
@@ -294,6 +300,8 @@ export const useNotificationNavigation = () => {
         }
       },
       [NotificationType.Tastemaker]: entityHandler,
+      [NotificationType.USDCPurchaseBuyer]: entityHandler,
+      [NotificationType.USDCPurchaseSeller]: entityHandler,
       [PushNotificationType.Message]: messagesHandler,
       [PushNotificationType.MessageReaction]: messagesHandler
     }),

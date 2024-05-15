@@ -57,10 +57,8 @@ export const USDCPurchaseSellerNotification = (
   const { amount, extraAmount } = notification
 
   const handlePress = useCallback(() => {
-    if (content) {
-      navigation.navigate(notification)
-    }
-  }, [content, navigation, notification])
+    navigation.navigate(notification)
+  }, [navigation, notification])
 
   if (!content || !buyerUser) return null
   return (
