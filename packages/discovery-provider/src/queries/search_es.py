@@ -261,7 +261,7 @@ def finalize_response(
             hydrate_saves_reposts(playlists, follow_saves, follow_reposts)
         hydrate_user(playlists, users_by_id)
         response[k] = [map_playlist(playlist, current_user) for playlist in playlists]
-        
+
         # batch populate gated playlist metadata
         db = get_db_read_replica()
         with db.scoped_session() as session:

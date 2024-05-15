@@ -556,9 +556,7 @@ def populate_track_metadata(
     return tracks
 
 
-def _populate_gated_content_metadata(
-    session, entities, current_user_id
-):
+def _populate_gated_content_metadata(session, entities, current_user_id):
     if not entities:
         return
     if not current_user_id:
@@ -595,7 +593,7 @@ def _populate_gated_content_metadata(
             f"query_helpers.py | _populate_gated_content_metadata | no wallet for current_user_id {current_user_id}"
         )
         return
-    
+
     def getContentId(metadata):
         return (
             metadata.get("track_id")
@@ -926,9 +924,7 @@ def populate_playlist_metadata(
     # has current user unlocked gated tracks?
     # if so, also populate corresponding signatures.
     # if no current user (guest), populate access based on track stream/download conditions
-    _populate_gated_content_metadata(
-        session, playlists, current_user_id
-    )
+    _populate_gated_content_metadata(session, playlists, current_user_id)
 
     track_ids = []
     for playlist in playlists:
