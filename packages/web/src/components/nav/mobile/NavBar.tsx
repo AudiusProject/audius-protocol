@@ -1,5 +1,6 @@
 import { useState, useContext, useCallback, useEffect } from 'react'
 
+import { useFeatureFlag } from '@audius/common/hooks'
 import { Status } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import { formatCount } from '@audius/common/utils'
@@ -18,6 +19,7 @@ import { Link } from 'react-router-dom'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { useTransition, animated } from 'react-spring'
 
+import { useHistoryContext } from 'app/HistoryProvider'
 import {
   RouterContext,
   SlideDirection
@@ -33,10 +35,7 @@ import { getIsIOS } from 'utils/browser'
 import { SIGN_UP_PAGE, TRENDING_PAGE } from 'utils/route'
 import { isMatrix } from 'utils/theme/theme'
 
-import { useHistoryContext } from 'app/HistoryProvider'
-
 import styles from './NavBar.module.css'
-import { useFeatureFlag } from '@audius/common/hooks'
 
 interface NavBarProps {
   isLoading: boolean

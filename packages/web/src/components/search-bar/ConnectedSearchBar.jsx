@@ -4,8 +4,8 @@ import {
   imageBlank as placeholderArt,
   imageProfilePicEmpty as profilePicEmpty
 } from '@audius/common/assets'
-import { FeatureFlags } from '@audius/common/services'
 import { Name, SquareSizes } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import { getTierForUser } from '@audius/common/store'
 import { push as pushRoute } from 'connected-react-router'
 import { has } from 'lodash'
@@ -23,8 +23,8 @@ import {
 import { getSearch } from 'common/store/search-bar/selectors'
 import SearchBar from 'components/search/SearchBar'
 import SearchBarV2 from 'components/search/SearchBarV2'
-import { collectionPage, profilePage, getPathname } from 'utils/route'
 import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
+import { collectionPage, profilePage, getPathname } from 'utils/route'
 
 import styles from './ConnectedSearchBar.module.css'
 

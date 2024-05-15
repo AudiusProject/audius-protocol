@@ -1,7 +1,7 @@
+import { ChangeEvent, useCallback, useContext, useEffect } from 'react'
+
 import { Status } from '@audius/common/models'
 import { Maybe } from '@audius/common/utils'
-import Header from 'components/header/desktop/Header'
-import Page from 'components/page/Page'
 import {
   Flex,
   IconAlbum,
@@ -16,15 +16,18 @@ import {
 } from '@audius/harmony'
 import { capitalize } from 'lodash'
 import { useParams } from 'react-router-dom'
+
 import { useHistoryContext } from 'app/HistoryProvider'
-import { ChangeEvent, useCallback, useContext, useEffect } from 'react'
-import { useMedia } from 'hooks/useMedia'
+import Header from 'components/header/desktop/Header'
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
 import NavContext, {
   CenterPreset,
   LeftPreset,
   RightPreset
 } from 'components/nav/mobile/NavContext'
+import Page from 'components/page/Page'
+import { useMedia } from 'hooks/useMedia'
+
 import { SearchCatalogTile } from './SearchCatalogTile'
 
 type Filter =

@@ -33,11 +33,11 @@ import { HeaderContext } from 'components/header/mobile/HeaderContextProvider'
 import CardLineup from 'components/lineup/CardLineup'
 import Lineup from 'components/lineup/Lineup'
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
-import TextElement, { Type } from 'components/nav/mobile/TextElement'
 import NavContext, {
   LeftPreset,
   CenterPreset
 } from 'components/nav/mobile/NavContext'
+import TextElement, { Type } from 'components/nav/mobile/TextElement'
 import TierExplainerDrawer from 'components/user-badges/TierExplainerDrawer'
 import useTabs, { TabHeader } from 'hooks/useTabs/useTabs'
 import { useSsrContext } from 'ssr/SsrContext'

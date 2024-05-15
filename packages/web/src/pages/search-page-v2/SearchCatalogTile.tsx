@@ -1,4 +1,5 @@
 import { IconSearch, Paper, Text, useTheme } from '@audius/harmony'
+
 import { useMedia } from 'hooks/useMedia'
 const messages = {
   cta: 'Search the Catalog',
