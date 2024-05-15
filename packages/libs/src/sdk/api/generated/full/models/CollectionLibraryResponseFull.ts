@@ -86,7 +86,7 @@ export interface CollectionLibraryResponseFull {
 /**
  * Check if a given object implements the CollectionLibraryResponseFull interface.
  */
-export function instanceOfCollectionLibraryResponseFull(value: object): boolean {
+export function instanceOfCollectionLibraryResponseFull(value: object): value is CollectionLibraryResponseFull {
     let isInstance = true;
     isInstance = isInstance && "latestChainBlock" in value && value["latestChainBlock"] !== undefined;
     isInstance = isInstance && "latestIndexedBlock" in value && value["latestIndexedBlock"] !== undefined;

@@ -55,7 +55,7 @@ export interface DeveloperApp {
 /**
  * Check if a given object implements the DeveloperApp interface.
  */
-export function instanceOfDeveloperApp(value: object): boolean {
+export function instanceOfDeveloperApp(value: object): value is DeveloperApp {
     let isInstance = true;
     isInstance = isInstance && "address" in value && value["address"] !== undefined;
     isInstance = isInstance && "userId" in value && value["userId"] !== undefined;

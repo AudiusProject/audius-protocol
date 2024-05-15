@@ -86,7 +86,7 @@ export interface StemsResponse {
 /**
  * Check if a given object implements the StemsResponse interface.
  */
-export function instanceOfStemsResponse(value: object): boolean {
+export function instanceOfStemsResponse(value: object): value is StemsResponse {
     let isInstance = true;
     isInstance = isInstance && "latestChainBlock" in value && value["latestChainBlock"] !== undefined;
     isInstance = isInstance && "latestIndexedBlock" in value && value["latestIndexedBlock"] !== undefined;

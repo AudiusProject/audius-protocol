@@ -326,7 +326,7 @@ export interface UserFull {
 /**
  * Check if a given object implements the UserFull interface.
  */
-export function instanceOfUserFull(value: object): boolean {
+export function instanceOfUserFull(value: object): value is UserFull {
     let isInstance = true;
     isInstance = isInstance && "albumCount" in value && value["albumCount"] !== undefined;
     isInstance = isInstance && "followeeCount" in value && value["followeeCount"] !== undefined;

@@ -80,7 +80,7 @@ export interface TransactionHistoryCountResponse {
 /**
  * Check if a given object implements the TransactionHistoryCountResponse interface.
  */
-export function instanceOfTransactionHistoryCountResponse(value: object): boolean {
+export function instanceOfTransactionHistoryCountResponse(value: object): value is TransactionHistoryCountResponse {
     let isInstance = true;
     isInstance = isInstance && "latestChainBlock" in value && value["latestChainBlock"] !== undefined;
     isInstance = isInstance && "latestIndexedBlock" in value && value["latestIndexedBlock"] !== undefined;

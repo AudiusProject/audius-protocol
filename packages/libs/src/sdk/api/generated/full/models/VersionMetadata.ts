@@ -37,7 +37,7 @@ export interface VersionMetadata {
 /**
  * Check if a given object implements the VersionMetadata interface.
  */
-export function instanceOfVersionMetadata(value: object): boolean {
+export function instanceOfVersionMetadata(value: object): value is VersionMetadata {
     let isInstance = true;
     isInstance = isInstance && "service" in value && value["service"] !== undefined;
     isInstance = isInstance && "version" in value && value["version"] !== undefined;

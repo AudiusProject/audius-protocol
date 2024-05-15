@@ -176,7 +176,7 @@ export interface User {
 /**
  * Check if a given object implements the User interface.
  */
-export function instanceOfUser(value: object): boolean {
+export function instanceOfUser(value: object): value is User {
     let isInstance = true;
     isInstance = isInstance && "albumCount" in value && value["albumCount"] !== undefined;
     isInstance = isInstance && "followeeCount" in value && value["followeeCount"] !== undefined;

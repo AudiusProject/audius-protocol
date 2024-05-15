@@ -86,7 +86,7 @@ export interface PurchasesResponse {
 /**
  * Check if a given object implements the PurchasesResponse interface.
  */
-export function instanceOfPurchasesResponse(value: object): boolean {
+export function instanceOfPurchasesResponse(value: object): value is PurchasesResponse {
     let isInstance = true;
     isInstance = isInstance && "latestChainBlock" in value && value["latestChainBlock"] !== undefined;
     isInstance = isInstance && "latestIndexedBlock" in value && value["latestIndexedBlock"] !== undefined;

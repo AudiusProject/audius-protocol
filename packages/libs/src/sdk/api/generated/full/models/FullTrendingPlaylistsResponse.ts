@@ -86,7 +86,7 @@ export interface FullTrendingPlaylistsResponse {
 /**
  * Check if a given object implements the FullTrendingPlaylistsResponse interface.
  */
-export function instanceOfFullTrendingPlaylistsResponse(value: object): boolean {
+export function instanceOfFullTrendingPlaylistsResponse(value: object): value is FullTrendingPlaylistsResponse {
     let isInstance = true;
     isInstance = isInstance && "latestChainBlock" in value && value["latestChainBlock"] !== undefined;
     isInstance = isInstance && "latestIndexedBlock" in value && value["latestIndexedBlock"] !== undefined;

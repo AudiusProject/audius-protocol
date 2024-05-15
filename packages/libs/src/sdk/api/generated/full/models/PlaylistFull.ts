@@ -266,7 +266,7 @@ export interface PlaylistFull {
 /**
  * Check if a given object implements the PlaylistFull interface.
  */
-export function instanceOfPlaylistFull(value: object): boolean {
+export function instanceOfPlaylistFull(value: object): value is PlaylistFull {
     let isInstance = true;
     isInstance = isInstance && "id" in value && value["id"] !== undefined;
     isInstance = isInstance && "isAlbum" in value && value["isAlbum"] !== undefined;

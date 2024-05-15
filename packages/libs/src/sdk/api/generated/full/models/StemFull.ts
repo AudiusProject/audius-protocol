@@ -67,7 +67,7 @@ export interface StemFull {
 /**
  * Check if a given object implements the StemFull interface.
  */
-export function instanceOfStemFull(value: object): boolean {
+export function instanceOfStemFull(value: object): value is StemFull {
     let isInstance = true;
     isInstance = isInstance && "id" in value && value["id"] !== undefined;
     isInstance = isInstance && "parentId" in value && value["parentId"] !== undefined;

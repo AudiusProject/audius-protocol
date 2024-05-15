@@ -43,7 +43,7 @@ export interface Repost {
 /**
  * Check if a given object implements the Repost interface.
  */
-export function instanceOfRepost(value: object): boolean {
+export function instanceOfRepost(value: object): value is Repost {
     let isInstance = true;
     isInstance = isInstance && "repostItemId" in value && value["repostItemId"] !== undefined;
     isInstance = isInstance && "repostType" in value && value["repostType"] !== undefined;

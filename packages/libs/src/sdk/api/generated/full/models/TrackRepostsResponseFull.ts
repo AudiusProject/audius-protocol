@@ -86,7 +86,7 @@ export interface TrackRepostsResponseFull {
 /**
  * Check if a given object implements the TrackRepostsResponseFull interface.
  */
-export function instanceOfTrackRepostsResponseFull(value: object): boolean {
+export function instanceOfTrackRepostsResponseFull(value: object): value is TrackRepostsResponseFull {
     let isInstance = true;
     isInstance = isInstance && "latestChainBlock" in value && value["latestChainBlock"] !== undefined;
     isInstance = isInstance && "latestIndexedBlock" in value && value["latestIndexedBlock"] !== undefined;

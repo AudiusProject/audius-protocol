@@ -66,7 +66,7 @@ export type NftCollectionChainEnum = typeof NftCollectionChainEnum[keyof typeof 
 /**
  * Check if a given object implements the NftCollection interface.
  */
-export function instanceOfNftCollection(value: object): boolean {
+export function instanceOfNftCollection(value: object): value is NftCollection {
     let isInstance = true;
     isInstance = isInstance && "chain" in value && value["chain"] !== undefined;
     isInstance = isInstance && "address" in value && value["address"] !== undefined;

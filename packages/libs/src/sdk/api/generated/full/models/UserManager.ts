@@ -50,7 +50,7 @@ export interface UserManager {
 /**
  * Check if a given object implements the UserManager interface.
  */
-export function instanceOfUserManager(value: object): boolean {
+export function instanceOfUserManager(value: object): value is UserManager {
     let isInstance = true;
     isInstance = isInstance && "manager" in value && value["manager"] !== undefined;
     isInstance = isInstance && "grant" in value && value["grant"] !== undefined;

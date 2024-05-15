@@ -86,7 +86,7 @@ export interface FullGetSupporter {
 /**
  * Check if a given object implements the FullGetSupporter interface.
  */
-export function instanceOfFullGetSupporter(value: object): boolean {
+export function instanceOfFullGetSupporter(value: object): value is FullGetSupporter {
     let isInstance = true;
     isInstance = isInstance && "latestChainBlock" in value && value["latestChainBlock"] !== undefined;
     isInstance = isInstance && "latestIndexedBlock" in value && value["latestIndexedBlock"] !== undefined;

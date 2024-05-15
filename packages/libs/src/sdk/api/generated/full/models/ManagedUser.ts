@@ -50,7 +50,7 @@ export interface ManagedUser {
 /**
  * Check if a given object implements the ManagedUser interface.
  */
-export function instanceOfManagedUser(value: object): boolean {
+export function instanceOfManagedUser(value: object): value is ManagedUser {
     let isInstance = true;
     isInstance = isInstance && "user" in value && value["user"] !== undefined;
     isInstance = isInstance && "grant" in value && value["grant"] !== undefined;

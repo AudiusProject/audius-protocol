@@ -86,7 +86,7 @@ export interface SearchAutocompleteResponse {
 /**
  * Check if a given object implements the SearchAutocompleteResponse interface.
  */
-export function instanceOfSearchAutocompleteResponse(value: object): boolean {
+export function instanceOfSearchAutocompleteResponse(value: object): value is SearchAutocompleteResponse {
     let isInstance = true;
     isInstance = isInstance && "latestChainBlock" in value && value["latestChainBlock"] !== undefined;
     isInstance = isInstance && "latestIndexedBlock" in value && value["latestIndexedBlock"] !== undefined;

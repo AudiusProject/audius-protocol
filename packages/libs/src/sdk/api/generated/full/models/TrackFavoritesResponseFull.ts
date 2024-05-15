@@ -86,7 +86,7 @@ export interface TrackFavoritesResponseFull {
 /**
  * Check if a given object implements the TrackFavoritesResponseFull interface.
  */
-export function instanceOfTrackFavoritesResponseFull(value: object): boolean {
+export function instanceOfTrackFavoritesResponseFull(value: object): value is TrackFavoritesResponseFull {
     let isInstance = true;
     isInstance = isInstance && "latestChainBlock" in value && value["latestChainBlock"] !== undefined;
     isInstance = isInstance && "latestIndexedBlock" in value && value["latestIndexedBlock"] !== undefined;

@@ -56,7 +56,7 @@ export interface Tip {
 /**
  * Check if a given object implements the Tip interface.
  */
-export function instanceOfTip(value: object): boolean {
+export function instanceOfTip(value: object): value is Tip {
     let isInstance = true;
     isInstance = isInstance && "amount" in value && value["amount"] !== undefined;
     isInstance = isInstance && "createdAt" in value && value["createdAt"] !== undefined;

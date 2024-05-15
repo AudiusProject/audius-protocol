@@ -140,7 +140,7 @@ export interface Playlist {
 /**
  * Check if a given object implements the Playlist interface.
  */
-export function instanceOfPlaylist(value: object): boolean {
+export function instanceOfPlaylist(value: object): value is Playlist {
     let isInstance = true;
     isInstance = isInstance && "id" in value && value["id"] !== undefined;
     isInstance = isInstance && "isAlbum" in value && value["isAlbum"] !== undefined;

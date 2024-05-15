@@ -31,7 +31,7 @@ export interface FollowGate {
 /**
  * Check if a given object implements the FollowGate interface.
  */
-export function instanceOfFollowGate(value: object): boolean {
+export function instanceOfFollowGate(value: object): value is FollowGate {
     let isInstance = true;
     isInstance = isInstance && "followUserId" in value && value["followUserId"] !== undefined;
 

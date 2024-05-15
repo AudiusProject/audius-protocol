@@ -44,7 +44,7 @@ export interface DashboardWalletUser {
 /**
  * Check if a given object implements the DashboardWalletUser interface.
  */
-export function instanceOfDashboardWalletUser(value: object): boolean {
+export function instanceOfDashboardWalletUser(value: object): value is DashboardWalletUser {
     let isInstance = true;
     isInstance = isInstance && "wallet" in value && value["wallet"] !== undefined;
     isInstance = isInstance && "user" in value && value["user"] !== undefined;

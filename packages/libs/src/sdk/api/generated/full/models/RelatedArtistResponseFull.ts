@@ -86,7 +86,7 @@ export interface RelatedArtistResponseFull {
 /**
  * Check if a given object implements the RelatedArtistResponseFull interface.
  */
-export function instanceOfRelatedArtistResponseFull(value: object): boolean {
+export function instanceOfRelatedArtistResponseFull(value: object): value is RelatedArtistResponseFull {
     let isInstance = true;
     isInstance = isInstance && "latestChainBlock" in value && value["latestChainBlock"] !== undefined;
     isInstance = isInstance && "latestIndexedBlock" in value && value["latestIndexedBlock"] !== undefined;

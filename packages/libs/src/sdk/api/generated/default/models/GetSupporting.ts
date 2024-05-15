@@ -38,7 +38,7 @@ export interface GetSupporting {
 /**
  * Check if a given object implements the GetSupporting interface.
  */
-export function instanceOfGetSupporting(value: object): boolean {
+export function instanceOfGetSupporting(value: object): value is GetSupporting {
     let isInstance = true;
 
     return isInstance;

@@ -86,7 +86,7 @@ export interface RemixingResponse {
 /**
  * Check if a given object implements the RemixingResponse interface.
  */
-export function instanceOfRemixingResponse(value: object): boolean {
+export function instanceOfRemixingResponse(value: object): value is RemixingResponse {
     let isInstance = true;
     isInstance = isInstance && "latestChainBlock" in value && value["latestChainBlock"] !== undefined;
     isInstance = isInstance && "latestIndexedBlock" in value && value["latestIndexedBlock"] !== undefined;

@@ -37,7 +37,7 @@ export interface ConnectedWallets {
 /**
  * Check if a given object implements the ConnectedWallets interface.
  */
-export function instanceOfConnectedWallets(value: object): boolean {
+export function instanceOfConnectedWallets(value: object): value is ConnectedWallets {
     let isInstance = true;
     isInstance = isInstance && "ercWallets" in value && value["ercWallets"] !== undefined;
     isInstance = isInstance && "splWallets" in value && value["splWallets"] !== undefined;

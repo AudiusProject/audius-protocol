@@ -86,7 +86,7 @@ export interface FullBulkSubscribersResponse {
 /**
  * Check if a given object implements the FullBulkSubscribersResponse interface.
  */
-export function instanceOfFullBulkSubscribersResponse(value: object): boolean {
+export function instanceOfFullBulkSubscribersResponse(value: object): value is FullBulkSubscribersResponse {
     let isInstance = true;
     isInstance = isInstance && "latestChainBlock" in value && value["latestChainBlock"] !== undefined;
     isInstance = isInstance && "latestIndexedBlock" in value && value["latestIndexedBlock"] !== undefined;

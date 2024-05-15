@@ -31,7 +31,7 @@ export interface TrackId {
 /**
  * Check if a given object implements the TrackId interface.
  */
-export function instanceOfTrackId(value: object): boolean {
+export function instanceOfTrackId(value: object): value is TrackId {
     let isInstance = true;
     isInstance = isInstance && "id" in value && value["id"] !== undefined;
 

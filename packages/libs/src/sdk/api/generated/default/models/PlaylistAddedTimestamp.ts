@@ -43,7 +43,7 @@ export interface PlaylistAddedTimestamp {
 /**
  * Check if a given object implements the PlaylistAddedTimestamp interface.
  */
-export function instanceOfPlaylistAddedTimestamp(value: object): boolean {
+export function instanceOfPlaylistAddedTimestamp(value: object): value is PlaylistAddedTimestamp {
     let isInstance = true;
     isInstance = isInstance && "metadataTimestamp" in value && value["metadataTimestamp"] !== undefined;
     isInstance = isInstance && "timestamp" in value && value["timestamp"] !== undefined;

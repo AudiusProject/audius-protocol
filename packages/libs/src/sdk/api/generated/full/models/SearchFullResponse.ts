@@ -86,7 +86,7 @@ export interface SearchFullResponse {
 /**
  * Check if a given object implements the SearchFullResponse interface.
  */
-export function instanceOfSearchFullResponse(value: object): boolean {
+export function instanceOfSearchFullResponse(value: object): value is SearchFullResponse {
     let isInstance = true;
     isInstance = isInstance && "latestChainBlock" in value && value["latestChainBlock"] !== undefined;
     isInstance = isInstance && "latestIndexedBlock" in value && value["latestIndexedBlock"] !== undefined;

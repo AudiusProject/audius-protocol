@@ -31,7 +31,7 @@ export interface TopListener {
 /**
  * Check if a given object implements the TopListener interface.
  */
-export function instanceOfTopListener(value: object): boolean {
+export function instanceOfTopListener(value: object): value is TopListener {
     let isInstance = true;
 
     return isInstance;

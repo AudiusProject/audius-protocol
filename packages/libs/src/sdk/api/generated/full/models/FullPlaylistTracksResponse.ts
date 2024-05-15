@@ -86,7 +86,7 @@ export interface FullPlaylistTracksResponse {
 /**
  * Check if a given object implements the FullPlaylistTracksResponse interface.
  */
-export function instanceOfFullPlaylistTracksResponse(value: object): boolean {
+export function instanceOfFullPlaylistTracksResponse(value: object): value is FullPlaylistTracksResponse {
     let isInstance = true;
     isInstance = isInstance && "latestChainBlock" in value && value["latestChainBlock"] !== undefined;
     isInstance = isInstance && "latestIndexedBlock" in value && value["latestIndexedBlock"] !== undefined;

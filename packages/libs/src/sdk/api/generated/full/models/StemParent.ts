@@ -37,7 +37,7 @@ export interface StemParent {
 /**
  * Check if a given object implements the StemParent interface.
  */
-export function instanceOfStemParent(value: object): boolean {
+export function instanceOfStemParent(value: object): value is StemParent {
     let isInstance = true;
     isInstance = isInstance && "category" in value && value["category"] !== undefined;
     isInstance = isInstance && "parentTrackId" in value && value["parentTrackId"] !== undefined;

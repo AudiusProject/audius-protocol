@@ -38,7 +38,7 @@ export interface PurchaseGate {
 /**
  * Check if a given object implements the PurchaseGate interface.
  */
-export function instanceOfPurchaseGate(value: object): boolean {
+export function instanceOfPurchaseGate(value: object): value is PurchaseGate {
     let isInstance = true;
     isInstance = isInstance && "usdcPurchase" in value && value["usdcPurchase"] !== undefined;
 

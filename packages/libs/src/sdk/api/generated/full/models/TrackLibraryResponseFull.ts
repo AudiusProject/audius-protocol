@@ -86,7 +86,7 @@ export interface TrackLibraryResponseFull {
 /**
  * Check if a given object implements the TrackLibraryResponseFull interface.
  */
-export function instanceOfTrackLibraryResponseFull(value: object): boolean {
+export function instanceOfTrackLibraryResponseFull(value: object): value is TrackLibraryResponseFull {
     let isInstance = true;
     isInstance = isInstance && "latestChainBlock" in value && value["latestChainBlock"] !== undefined;
     isInstance = isInstance && "latestIndexedBlock" in value && value["latestIndexedBlock"] !== undefined;

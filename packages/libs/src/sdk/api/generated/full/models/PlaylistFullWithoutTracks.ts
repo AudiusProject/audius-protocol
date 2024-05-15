@@ -266,7 +266,7 @@ export interface PlaylistFullWithoutTracks {
 /**
  * Check if a given object implements the PlaylistFullWithoutTracks interface.
  */
-export function instanceOfPlaylistFullWithoutTracks(value: object): boolean {
+export function instanceOfPlaylistFullWithoutTracks(value: object): value is PlaylistFullWithoutTracks {
     let isInstance = true;
     isInstance = isInstance && "id" in value && value["id"] !== undefined;
     isInstance = isInstance && "isAlbum" in value && value["isAlbum"] !== undefined;

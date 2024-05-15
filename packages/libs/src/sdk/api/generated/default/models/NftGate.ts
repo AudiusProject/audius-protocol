@@ -38,7 +38,7 @@ export interface NftGate {
 /**
  * Check if a given object implements the NftGate interface.
  */
-export function instanceOfNftGate(value: object): boolean {
+export function instanceOfNftGate(value: object): value is NftGate {
     let isInstance = true;
     isInstance = isInstance && "nftCollection" in value && value["nftCollection"] !== undefined;
 

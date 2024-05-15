@@ -76,7 +76,7 @@ export interface TransactionDetails {
 /**
  * Check if a given object implements the TransactionDetails interface.
  */
-export function instanceOfTransactionDetails(value: object): boolean {
+export function instanceOfTransactionDetails(value: object): value is TransactionDetails {
     let isInstance = true;
     isInstance = isInstance && "transactionDate" in value && value["transactionDate"] !== undefined;
     isInstance = isInstance && "transactionType" in value && value["transactionType"] !== undefined;

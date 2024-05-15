@@ -86,7 +86,7 @@ export interface FullTrackResponse {
 /**
  * Check if a given object implements the FullTrackResponse interface.
  */
-export function instanceOfFullTrackResponse(value: object): boolean {
+export function instanceOfFullTrackResponse(value: object): value is FullTrackResponse {
     let isInstance = true;
     isInstance = isInstance && "latestChainBlock" in value && value["latestChainBlock"] !== undefined;
     isInstance = isInstance && "latestIndexedBlock" in value && value["latestIndexedBlock"] !== undefined;

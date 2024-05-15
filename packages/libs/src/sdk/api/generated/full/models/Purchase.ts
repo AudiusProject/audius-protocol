@@ -94,7 +94,7 @@ export interface Purchase {
 /**
  * Check if a given object implements the Purchase interface.
  */
-export function instanceOfPurchase(value: object): boolean {
+export function instanceOfPurchase(value: object): value is Purchase {
     let isInstance = true;
     isInstance = isInstance && "slot" in value && value["slot"] !== undefined;
     isInstance = isInstance && "signature" in value && value["signature"] !== undefined;

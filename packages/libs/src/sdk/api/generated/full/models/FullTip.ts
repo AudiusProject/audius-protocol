@@ -80,7 +80,7 @@ export interface FullTip {
 /**
  * Check if a given object implements the FullTip interface.
  */
-export function instanceOfFullTip(value: object): boolean {
+export function instanceOfFullTip(value: object): value is FullTip {
     let isInstance = true;
     isInstance = isInstance && "amount" in value && value["amount"] !== undefined;
     isInstance = isInstance && "sender" in value && value["sender"] !== undefined;

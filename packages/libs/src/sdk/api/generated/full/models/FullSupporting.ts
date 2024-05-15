@@ -50,7 +50,7 @@ export interface FullSupporting {
 /**
  * Check if a given object implements the FullSupporting interface.
  */
-export function instanceOfFullSupporting(value: object): boolean {
+export function instanceOfFullSupporting(value: object): value is FullSupporting {
     let isInstance = true;
     isInstance = isInstance && "rank" in value && value["rank"] !== undefined;
     isInstance = isInstance && "amount" in value && value["amount"] !== undefined;

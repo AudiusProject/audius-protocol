@@ -49,7 +49,7 @@ export interface Favorite {
 /**
  * Check if a given object implements the Favorite interface.
  */
-export function instanceOfFavorite(value: object): boolean {
+export function instanceOfFavorite(value: object): value is Favorite {
     let isInstance = true;
     isInstance = isInstance && "favoriteItemId" in value && value["favoriteItemId"] !== undefined;
     isInstance = isInstance && "favoriteType" in value && value["favoriteType"] !== undefined;

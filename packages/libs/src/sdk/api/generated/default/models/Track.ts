@@ -236,7 +236,7 @@ export interface Track {
 /**
  * Check if a given object implements the Track interface.
  */
-export function instanceOfTrack(value: object): boolean {
+export function instanceOfTrack(value: object): value is Track {
     let isInstance = true;
     isInstance = isInstance && "blocknumber" in value && value["blocknumber"] !== undefined;
     isInstance = isInstance && "id" in value && value["id"] !== undefined;

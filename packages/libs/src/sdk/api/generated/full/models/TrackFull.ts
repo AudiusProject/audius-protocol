@@ -470,7 +470,7 @@ export interface TrackFull {
 /**
  * Check if a given object implements the TrackFull interface.
  */
-export function instanceOfTrackFull(value: object): boolean {
+export function instanceOfTrackFull(value: object): value is TrackFull {
     let isInstance = true;
     isInstance = isInstance && "blocknumber" in value && value["blocknumber"] !== undefined;
     isInstance = isInstance && "id" in value && value["id"] !== undefined;

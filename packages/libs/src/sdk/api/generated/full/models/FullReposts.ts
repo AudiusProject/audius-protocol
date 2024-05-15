@@ -86,7 +86,7 @@ export interface FullReposts {
 /**
  * Check if a given object implements the FullReposts interface.
  */
-export function instanceOfFullReposts(value: object): boolean {
+export function instanceOfFullReposts(value: object): value is FullReposts {
     let isInstance = true;
     isInstance = isInstance && "latestChainBlock" in value && value["latestChainBlock"] !== undefined;
     isInstance = isInstance && "latestIndexedBlock" in value && value["latestIndexedBlock"] !== undefined;

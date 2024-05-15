@@ -92,7 +92,7 @@ export interface SearchModel {
 /**
  * Check if a given object implements the SearchModel interface.
  */
-export function instanceOfSearchModel(value: object): boolean {
+export function instanceOfSearchModel(value: object): value is SearchModel {
     let isInstance = true;
     isInstance = isInstance && "users" in value && value["users"] !== undefined;
     isInstance = isInstance && "tracks" in value && value["tracks"] !== undefined;

@@ -86,7 +86,7 @@ export interface TopUsersResponseFull {
 /**
  * Check if a given object implements the TopUsersResponseFull interface.
  */
-export function instanceOfTopUsersResponseFull(value: object): boolean {
+export function instanceOfTopUsersResponseFull(value: object): value is TopUsersResponseFull {
     let isInstance = true;
     isInstance = isInstance && "latestChainBlock" in value && value["latestChainBlock"] !== undefined;
     isInstance = isInstance && "latestIndexedBlock" in value && value["latestIndexedBlock"] !== undefined;

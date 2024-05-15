@@ -37,7 +37,7 @@ export interface TrackSegment {
 /**
  * Check if a given object implements the TrackSegment interface.
  */
-export function instanceOfTrackSegment(value: object): boolean {
+export function instanceOfTrackSegment(value: object): value is TrackSegment {
     let isInstance = true;
     isInstance = isInstance && "duration" in value && value["duration"] !== undefined;
     isInstance = isInstance && "multihash" in value && value["multihash"] !== undefined;

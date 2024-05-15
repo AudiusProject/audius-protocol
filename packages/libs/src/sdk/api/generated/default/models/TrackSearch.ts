@@ -38,7 +38,7 @@ export interface TrackSearch {
 /**
  * Check if a given object implements the TrackSearch interface.
  */
-export function instanceOfTrackSearch(value: object): boolean {
+export function instanceOfTrackSearch(value: object): value is TrackSearch {
     let isInstance = true;
 
     return isInstance;

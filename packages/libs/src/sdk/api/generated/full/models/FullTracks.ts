@@ -86,7 +86,7 @@ export interface FullTracks {
 /**
  * Check if a given object implements the FullTracks interface.
  */
-export function instanceOfFullTracks(value: object): boolean {
+export function instanceOfFullTracks(value: object): value is FullTracks {
     let isInstance = true;
     isInstance = isInstance && "latestChainBlock" in value && value["latestChainBlock"] !== undefined;
     isInstance = isInstance && "latestIndexedBlock" in value && value["latestIndexedBlock"] !== undefined;

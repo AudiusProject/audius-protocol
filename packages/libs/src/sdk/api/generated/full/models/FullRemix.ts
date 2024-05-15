@@ -56,7 +56,7 @@ export interface FullRemix {
 /**
  * Check if a given object implements the FullRemix interface.
  */
-export function instanceOfFullRemix(value: object): boolean {
+export function instanceOfFullRemix(value: object): value is FullRemix {
     let isInstance = true;
     isInstance = isInstance && "parentTrackId" in value && value["parentTrackId"] !== undefined;
     isInstance = isInstance && "user" in value && value["user"] !== undefined;

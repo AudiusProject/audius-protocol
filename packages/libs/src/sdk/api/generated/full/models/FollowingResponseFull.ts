@@ -86,7 +86,7 @@ export interface FollowingResponseFull {
 /**
  * Check if a given object implements the FollowingResponseFull interface.
  */
-export function instanceOfFollowingResponseFull(value: object): boolean {
+export function instanceOfFollowingResponseFull(value: object): value is FollowingResponseFull {
     let isInstance = true;
     isInstance = isInstance && "latestChainBlock" in value && value["latestChainBlock"] !== undefined;
     isInstance = isInstance && "latestIndexedBlock" in value && value["latestIndexedBlock"] !== undefined;
