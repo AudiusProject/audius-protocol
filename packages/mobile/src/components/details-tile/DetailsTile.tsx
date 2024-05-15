@@ -387,6 +387,7 @@ export const DetailsTile = ({
             streamConditions={streamConditions}
             isOwner={isOwner}
             trackArtist={user}
+            contentType={contentType}
           />
         ) : null}
         <DetailsTileMetadata genre={track?.genre} mood={track?.mood} />

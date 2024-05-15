@@ -8,6 +8,7 @@ import {
   isContentUSDCPurchaseGated
 } from '@audius/common/models'
 import type { AccessConditions, User } from '@audius/common/models'
+import type { PurchaseableContentType } from '@audius/common/store'
 import { formatPrice } from '@audius/common/utils'
 import type { ViewStyle } from 'react-native'
 import { View } from 'react-native'
@@ -30,22 +31,33 @@ const messages = {
   specialAccess: 'SPECIAL ACCESS',
   payToUnlock: 'Pay to Unlock',
   unlockedCollectibleGatedPrefix: 'A Collectible from ',
-  unlockedCollectibleGatedSuffix:
-    ' was found in a linked wallet. This track is now available.',
+  unlockedCollectibleGatedSuffix: (
+    contentType: PurchaseableContentType | 'item' = 'item'
+  ) => ` was found in a linked wallet. This ${contentType} is now available.`,
   ownerCollectibleGatedPrefix:
     'Users can unlock access by linking a wallet containing a collectible from ',
   unlockedFollowGatedPrefix: 'Thank you for following ',
-  unlockedFollowGatedSuffix: '! This track is now available.',
+  unlockedFollowGatedSuffix: (
+    contentType: PurchaseableContentType | 'item' = 'item'
+  ) => `! This ${contentType} is now available.`,
   ownerFollowGated: 'Users can unlock access by following your account!',
   unlockedTipGatedPrefix: 'Thank you for supporting ',
-  unlockedTipGatedSuffix:
-    ' by sending them a tip! This track is now available.',
+  unlockedTipGatedSuffix: (
+    contentType: PurchaseableContentType | 'item' = 'item'
+  ) => ` by sending them a tip! This ${contentType} is now available.`,
   ownerTipGated: 'Users can unlock access by sending you a tip!',
-  unlockedUSDCPurchasePrefix:
-    'You’ve purchased this track. Thank you for supporting ',
+  unlockedUSDCPurchasePrefix: (
+    contentType: PurchaseableContentType | 'item' = 'item'
+  ) => `You’ve purchased this ${contentType}. Thank you for supporting `,
   unlockedUSDCPurchaseSuffix: '.',
-  ownerUSDCPurchase: (price: string) =>
-    `Users can unlock access to this track for a one time purchase of $${price}`
+  ownerUSDCPurchase: ({
+    price,
+    contentType = 'item'
+  }: {
+    price: string
+    contentType: PurchaseableContentType | 'item'
+  }) =>
+    `Users can unlock access to this ${contentType} for a one time purchase of $${price}`
 }
 
 const useStyles = makeStyles(({ palette, spacing, typography }) => ({
@@ -83,12 +95,14 @@ type HasAccessProps = {
   streamConditions: AccessConditions
   handlePressCollection: () => void
   style?: ViewStyle
+  contentType: PurchaseableContentType
 }
 
 const DetailsTileOwnerSection = ({
   streamConditions,
   style,
-  handlePressCollection
+  handlePressCollection,
+  contentType
 }: HasAccessProps) => {
   const styles = useStyles()
   const neutral = useColor('neutral')
@@ -169,9 +183,10 @@ const DetailsTileOwnerSection = ({
         <View style={styles.descriptionContainer}>
           <Text>
             <Text style={styles.description}>
-              {messages.ownerUSDCPurchase(
-                formatPrice(streamConditions.usdc_purchase.price)
-              )}
+              {messages.ownerUSDCPurchase({
+                price: formatPrice(streamConditions.usdc_purchase.price),
+                contentType
+              })}
             </Text>
           </Text>
         </View>
@@ -186,13 +201,15 @@ type DetailsTileHasAccessProps = {
   isOwner: boolean
   style?: ViewStyle
   trackArtist?: Pick<User, 'user_id' | 'name' | 'is_verified' | 'handle'>
+  contentType: PurchaseableContentType
 }
 
 export const DetailsTileHasAccess = ({
   streamConditions,
   isOwner,
   style,
-  trackArtist
+  trackArtist,
+  contentType
 }: DetailsTileHasAccessProps) => {
   const styles = useStyles()
   const navigation = useNavigation()
@@ -256,7 +273,7 @@ export const DetailsTileHasAccess = ({
               {nftCollection.name}
             </Text>
             <Text style={styles.description}>
-              {messages.unlockedCollectibleGatedSuffix}
+              {messages.unlockedCollectibleGatedSuffix(contentType)}
             </Text>
           </Text>
         </View>
@@ -267,7 +284,7 @@ export const DetailsTileHasAccess = ({
       return renderUnlockedSpecialAccessDescription({
         entity: followee,
         prefix: messages.unlockedFollowGatedPrefix,
-        suffix: messages.unlockedFollowGatedSuffix
+        suffix: messages.unlockedFollowGatedSuffix(contentType)
       })
     }
     if (isContentTipGated(streamConditions)) {
@@ -275,14 +292,14 @@ export const DetailsTileHasAccess = ({
       return renderUnlockedSpecialAccessDescription({
         entity: tippedUser,
         prefix: messages.unlockedTipGatedPrefix,
-        suffix: messages.unlockedTipGatedSuffix
+        suffix: messages.unlockedTipGatedSuffix(contentType)
       })
     }
     if (isContentUSDCPurchaseGated(streamConditions)) {
       if (!trackArtist) return null
       return renderUnlockedSpecialAccessDescription({
         entity: trackArtist,
-        prefix: messages.unlockedUSDCPurchasePrefix,
+        prefix: messages.unlockedUSDCPurchasePrefix(contentType),
         suffix: messages.unlockedUSDCPurchaseSuffix
       })
     }
@@ -297,7 +314,8 @@ export const DetailsTileHasAccess = ({
     followee,
     renderUnlockedSpecialAccessDescription,
     tippedUser,
-    trackArtist
+    trackArtist,
+    contentType
   ])
 
   if (isOwner) {
@@ -305,6 +323,7 @@ export const DetailsTileHasAccess = ({
       <DetailsTileOwnerSection
         streamConditions={streamConditions}
         handlePressCollection={handlePressCollection}
+        contentType={contentType}
       />
     )
   }
