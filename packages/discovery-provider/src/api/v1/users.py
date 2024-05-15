@@ -1752,22 +1752,34 @@ class GetSupporter(FullGetSupporter):
 
 
 get_supporting_response = make_response(
-    "get_supporting", ns, fields.List(fields.Nested(supporting_response))
+    "get_supporting", ns, fields.Nested(supporting_response)
+)
+full_get_supporting_response = make_full_response(
+    "full_get_supporting", full_ns, fields.Nested(supporting_response_full)
 )
 
-USER_SUPPORTINGS_ROUTE = "/<string:id>/supporting"
+get_supported_users_response = make_response(
+    "get_supported_users", full_ns, fields.List(fields.Nested(supporting_response))
+)
+full_get_supported_users_response = make_full_response(
+    "full_get_supported_users",
+    full_ns,
+    fields.List(fields.Nested(supporting_response_full)),
+)
+
+GET_SUPPORTED_USERS_ROUTE = "/<string:id>/supporting"
 
 
-@ns.route(USER_SUPPORTINGS_ROUTE)
-class GetSupportings(Resource):
+@ns.route(GET_SUPPORTED_USERS_ROUTE)
+class GetSupportedUsers(Resource):
     @record_metrics
     @ns.doc(
-        id="""Get Supportings""",
+        id="""Get Supported Users""",
         description="""Gets the users that the given user supports""",
         params={"id": "A User ID"},
     )
     @ns.expect(pagination_parser)
-    @ns.marshal_with(get_supporting_response)
+    @ns.marshal_with(get_supported_users_response)
     @cache(ttl_sec=5)
     def get(self, id: str):
         args = pagination_parser.parse_args()
@@ -1778,31 +1790,22 @@ class GetSupportings(Resource):
         return success_response(support)
 
 
-full_get_supporting_response = make_full_response(
-    "full_get_supporting", full_ns, fields.List(fields.Nested(supporting_response_full))
-)
-
-full_get_supporting_response = make_full_response(
-    "full_get_supporting", full_ns, fields.List(fields.Nested(supporting_response_full))
-)
-
-
-@full_ns.route(USER_SUPPORTINGS_ROUTE)
-class FullGetSupportings(Resource):
+@full_ns.route(GET_SUPPORTED_USERS_ROUTE)
+class FullGetSupportedUsers(Resource):
     @record_metrics
     @full_ns.doc(
-        id="""Get Supportings""",
+        id="""Get SupportedUsers""",
         description="""Gets the users that the given user supports""",
         params={"id": "A User ID"},
     )
     @full_ns.expect(pagination_with_current_user_parser)
-    @full_ns.marshal_with(full_get_supporting_response)
+    @full_ns.marshal_with(full_get_supported_users_response)
     @cache(ttl_sec=5)
     def get(self, id: str):
-        return self._get_supportings(id)
+        return self._get_supported_users(id)
 
     @log_duration(logger)
-    def _get_supportings(self, id: str):
+    def _get_supported_users(self, id: str):
         args = pagination_with_current_user_parser.parse_args()
         decoded_id = decode_with_abort(id, full_ns)
         current_user_id = get_current_user_id(args)
@@ -1812,10 +1815,6 @@ class FullGetSupportings(Resource):
         support = list(map(extend_supporting, support))
         return success_response(support)
 
-
-full_get_supporting_response = make_full_response(
-    "full_get_supporting", full_ns, fields.Nested(supporting_response_full)
-)
 
 GET_SUPPORTING_ROUTE = "/<string:id>/supporting/<string:supported_user_id>"
 
@@ -1833,10 +1832,11 @@ class FullGetSupporting(Resource):
         args["current_user_id"] = current_user_id
         args["supported_user_id"] = decoded_supported_user_id
         support = get_support_sent_by_user(args)
-        support = list(map(extend_supporting, support))
         if not support:
             abort_not_found(decoded_id, full_ns)
-        return success_response(support[0])
+        support = extend_supporting(support[0])
+
+        return success_response(support)
 
     @full_ns.doc(
         id="""Get Supporting""",
