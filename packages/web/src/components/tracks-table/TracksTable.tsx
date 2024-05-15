@@ -1,9 +1,6 @@
 import { MouseEvent, useCallback, useMemo, useRef } from 'react'
 
-import {
-  useGatedContentAccessMap,
-  useIsGatedContentPlaylistAddable
-} from '@audius/common/hooks'
+import { useGatedContentAccessMap } from '@audius/common/hooks'
 import {
   UID,
   UserTrack,
