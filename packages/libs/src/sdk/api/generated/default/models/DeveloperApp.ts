@@ -57,9 +57,9 @@ export interface DeveloperApp {
  */
 export function instanceOfDeveloperApp(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "address" in value;
-    isInstance = isInstance && "userId" in value;
-    isInstance = isInstance && "name" in value;
+    isInstance = isInstance && "address" in value && value["address"] !== undefined;
+    isInstance = isInstance && "userId" in value && value["userId"] !== undefined;
+    isInstance = isInstance && "name" in value && value["name"] !== undefined;
 
     return isInstance;
 }

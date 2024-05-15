@@ -39,8 +39,8 @@ export interface VersionMetadata {
  */
 export function instanceOfVersionMetadata(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "service" in value;
-    isInstance = isInstance && "version" in value;
+    isInstance = isInstance && "service" in value && value["service"] !== undefined;
+    isInstance = isInstance && "version" in value && value["version"] !== undefined;
 
     return isInstance;
 }

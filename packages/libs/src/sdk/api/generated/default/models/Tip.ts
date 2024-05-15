@@ -58,8 +58,8 @@ export interface Tip {
  */
 export function instanceOfTip(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "amount" in value;
-    isInstance = isInstance && "createdAt" in value;
+    isInstance = isInstance && "amount" in value && value["amount"] !== undefined;
+    isInstance = isInstance && "createdAt" in value && value["createdAt"] !== undefined;
 
     return isInstance;
 }

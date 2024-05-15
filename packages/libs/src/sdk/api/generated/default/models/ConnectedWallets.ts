@@ -39,8 +39,8 @@ export interface ConnectedWallets {
  */
 export function instanceOfConnectedWallets(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "ercWallets" in value;
-    isInstance = isInstance && "splWallets" in value;
+    isInstance = isInstance && "ercWallets" in value && value["ercWallets"] !== undefined;
+    isInstance = isInstance && "splWallets" in value && value["splWallets"] !== undefined;
 
     return isInstance;
 }

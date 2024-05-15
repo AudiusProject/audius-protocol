@@ -33,7 +33,7 @@ export interface SupporterReference {
  */
 export function instanceOfSupporterReference(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "userId" in value;
+    isInstance = isInstance && "userId" in value && value["userId"] !== undefined;
 
     return isInstance;
 }

@@ -46,7 +46,7 @@ export interface RemixesResponse {
  */
 export function instanceOfRemixesResponse(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "count" in value;
+    isInstance = isInstance && "count" in value && value["count"] !== undefined;
 
     return isInstance;
 }

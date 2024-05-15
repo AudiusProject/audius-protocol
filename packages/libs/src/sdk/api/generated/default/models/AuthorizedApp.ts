@@ -69,11 +69,11 @@ export interface AuthorizedApp {
  */
 export function instanceOfAuthorizedApp(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "address" in value;
-    isInstance = isInstance && "name" in value;
-    isInstance = isInstance && "grantorUserId" in value;
-    isInstance = isInstance && "grantCreatedAt" in value;
-    isInstance = isInstance && "grantUpdatedAt" in value;
+    isInstance = isInstance && "address" in value && value["address"] !== undefined;
+    isInstance = isInstance && "name" in value && value["name"] !== undefined;
+    isInstance = isInstance && "grantorUserId" in value && value["grantorUserId"] !== undefined;
+    isInstance = isInstance && "grantCreatedAt" in value && value["grantCreatedAt"] !== undefined;
+    isInstance = isInstance && "grantUpdatedAt" in value && value["grantUpdatedAt"] !== undefined;
 
     return isInstance;
 }

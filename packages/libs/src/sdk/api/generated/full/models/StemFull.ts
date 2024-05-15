@@ -69,13 +69,13 @@ export interface StemFull {
  */
 export function instanceOfStemFull(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "id" in value;
-    isInstance = isInstance && "parentId" in value;
-    isInstance = isInstance && "category" in value;
-    isInstance = isInstance && "cid" in value;
-    isInstance = isInstance && "userId" in value;
-    isInstance = isInstance && "blocknumber" in value;
-    isInstance = isInstance && "origFilename" in value;
+    isInstance = isInstance && "id" in value && value["id"] !== undefined;
+    isInstance = isInstance && "parentId" in value && value["parentId"] !== undefined;
+    isInstance = isInstance && "category" in value && value["category"] !== undefined;
+    isInstance = isInstance && "cid" in value && value["cid"] !== undefined;
+    isInstance = isInstance && "userId" in value && value["userId"] !== undefined;
+    isInstance = isInstance && "blocknumber" in value && value["blocknumber"] !== undefined;
+    isInstance = isInstance && "origFilename" in value && value["origFilename"] !== undefined;
 
     return isInstance;
 }

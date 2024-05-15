@@ -52,9 +52,9 @@ export interface FullSupporter {
  */
 export function instanceOfFullSupporter(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "rank" in value;
-    isInstance = isInstance && "amount" in value;
-    isInstance = isInstance && "sender" in value;
+    isInstance = isInstance && "rank" in value && value["rank"] !== undefined;
+    isInstance = isInstance && "amount" in value && value["amount"] !== undefined;
+    isInstance = isInstance && "sender" in value && value["sender"] !== undefined;
 
     return isInstance;
 }

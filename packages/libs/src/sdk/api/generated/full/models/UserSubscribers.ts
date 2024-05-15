@@ -39,7 +39,7 @@ export interface UserSubscribers {
  */
 export function instanceOfUserSubscribers(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "userId" in value;
+    isInstance = isInstance && "userId" in value && value["userId"] !== undefined;
 
     return isInstance;
 }

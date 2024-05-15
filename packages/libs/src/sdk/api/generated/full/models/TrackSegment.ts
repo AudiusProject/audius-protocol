@@ -39,8 +39,8 @@ export interface TrackSegment {
  */
 export function instanceOfTrackSegment(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "duration" in value;
-    isInstance = isInstance && "multihash" in value;
+    isInstance = isInstance && "duration" in value && value["duration"] !== undefined;
+    isInstance = isInstance && "multihash" in value && value["multihash"] !== undefined;
 
     return isInstance;
 }

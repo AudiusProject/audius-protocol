@@ -45,9 +45,9 @@ export interface PlaylistAddedTimestamp {
  */
 export function instanceOfPlaylistAddedTimestamp(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "metadataTimestamp" in value;
-    isInstance = isInstance && "timestamp" in value;
-    isInstance = isInstance && "trackId" in value;
+    isInstance = isInstance && "metadataTimestamp" in value && value["metadataTimestamp"] !== undefined;
+    isInstance = isInstance && "timestamp" in value && value["timestamp"] !== undefined;
+    isInstance = isInstance && "trackId" in value && value["trackId"] !== undefined;
 
     return isInstance;
 }

@@ -39,8 +39,8 @@ export interface StemParent {
  */
 export function instanceOfStemParent(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "category" in value;
-    isInstance = isInstance && "parentTrackId" in value;
+    isInstance = isInstance && "category" in value && value["category"] !== undefined;
+    isInstance = isInstance && "parentTrackId" in value && value["parentTrackId"] !== undefined;
 
     return isInstance;
 }

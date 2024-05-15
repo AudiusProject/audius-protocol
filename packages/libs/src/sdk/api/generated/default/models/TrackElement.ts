@@ -33,7 +33,7 @@ export interface TrackElement {
  */
 export function instanceOfTrackElement(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "parentTrackId" in value;
+    isInstance = isInstance && "parentTrackId" in value && value["parentTrackId"] !== undefined;
 
     return isInstance;
 }

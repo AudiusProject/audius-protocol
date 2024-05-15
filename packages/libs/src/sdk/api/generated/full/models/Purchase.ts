@@ -96,17 +96,17 @@ export interface Purchase {
  */
 export function instanceOfPurchase(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "slot" in value;
-    isInstance = isInstance && "signature" in value;
-    isInstance = isInstance && "sellerUserId" in value;
-    isInstance = isInstance && "buyerUserId" in value;
-    isInstance = isInstance && "amount" in value;
-    isInstance = isInstance && "extraAmount" in value;
-    isInstance = isInstance && "contentType" in value;
-    isInstance = isInstance && "contentId" in value;
-    isInstance = isInstance && "createdAt" in value;
-    isInstance = isInstance && "updatedAt" in value;
-    isInstance = isInstance && "access" in value;
+    isInstance = isInstance && "slot" in value && value["slot"] !== undefined;
+    isInstance = isInstance && "signature" in value && value["signature"] !== undefined;
+    isInstance = isInstance && "sellerUserId" in value && value["sellerUserId"] !== undefined;
+    isInstance = isInstance && "buyerUserId" in value && value["buyerUserId"] !== undefined;
+    isInstance = isInstance && "amount" in value && value["amount"] !== undefined;
+    isInstance = isInstance && "extraAmount" in value && value["extraAmount"] !== undefined;
+    isInstance = isInstance && "contentType" in value && value["contentType"] !== undefined;
+    isInstance = isInstance && "contentId" in value && value["contentId"] !== undefined;
+    isInstance = isInstance && "createdAt" in value && value["createdAt"] !== undefined;
+    isInstance = isInstance && "updatedAt" in value && value["updatedAt"] !== undefined;
+    isInstance = isInstance && "access" in value && value["access"] !== undefined;
 
     return isInstance;
 }

@@ -27,7 +27,7 @@ export function instanceOf{{classname}}(value: object): boolean {
     let isInstance = true;
     {{#vars}}
     {{#required}}
-    isInstance = isInstance && "{{name}}" in value;
+    isInstance = isInstance && "{{name}}" in value && value["{{name}}"] !== undefined;
     {{/required}}
     {{/vars}}
 

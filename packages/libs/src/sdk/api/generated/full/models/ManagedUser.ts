@@ -52,8 +52,8 @@ export interface ManagedUser {
  */
 export function instanceOfManagedUser(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "user" in value;
-    isInstance = isInstance && "grant" in value;
+    isInstance = isInstance && "user" in value && value["user"] !== undefined;
+    isInstance = isInstance && "grant" in value && value["grant"] !== undefined;
 
     return isInstance;
 }

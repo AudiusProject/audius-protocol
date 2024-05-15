@@ -94,10 +94,10 @@ export interface SearchModel {
  */
 export function instanceOfSearchModel(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "users" in value;
-    isInstance = isInstance && "tracks" in value;
-    isInstance = isInstance && "playlists" in value;
-    isInstance = isInstance && "albums" in value;
+    isInstance = isInstance && "users" in value && value["users"] !== undefined;
+    isInstance = isInstance && "tracks" in value && value["tracks"] !== undefined;
+    isInstance = isInstance && "playlists" in value && value["playlists"] !== undefined;
+    isInstance = isInstance && "albums" in value && value["albums"] !== undefined;
 
     return isInstance;
 }

@@ -39,8 +39,8 @@ export interface BlobInfo {
  */
 export function instanceOfBlobInfo(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "size" in value;
-    isInstance = isInstance && "contentType" in value;
+    isInstance = isInstance && "size" in value && value["size"] !== undefined;
+    isInstance = isInstance && "contentType" in value && value["contentType"] !== undefined;
 
     return isInstance;
 }

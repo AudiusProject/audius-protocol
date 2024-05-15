@@ -52,8 +52,8 @@ export interface UserManager {
  */
 export function instanceOfUserManager(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "manager" in value;
-    isInstance = isInstance && "grant" in value;
+    isInstance = isInstance && "manager" in value && value["manager"] !== undefined;
+    isInstance = isInstance && "grant" in value && value["grant"] !== undefined;
 
     return isInstance;
 }

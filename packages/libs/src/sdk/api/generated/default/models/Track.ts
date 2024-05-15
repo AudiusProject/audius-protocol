@@ -238,14 +238,14 @@ export interface Track {
  */
 export function instanceOfTrack(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "blocknumber" in value;
-    isInstance = isInstance && "id" in value;
-    isInstance = isInstance && "repostCount" in value;
-    isInstance = isInstance && "favoriteCount" in value;
-    isInstance = isInstance && "title" in value;
-    isInstance = isInstance && "user" in value;
-    isInstance = isInstance && "duration" in value;
-    isInstance = isInstance && "playCount" in value;
+    isInstance = isInstance && "blocknumber" in value && value["blocknumber"] !== undefined;
+    isInstance = isInstance && "id" in value && value["id"] !== undefined;
+    isInstance = isInstance && "repostCount" in value && value["repostCount"] !== undefined;
+    isInstance = isInstance && "favoriteCount" in value && value["favoriteCount"] !== undefined;
+    isInstance = isInstance && "title" in value && value["title"] !== undefined;
+    isInstance = isInstance && "user" in value && value["user"] !== undefined;
+    isInstance = isInstance && "duration" in value && value["duration"] !== undefined;
+    isInstance = isInstance && "playCount" in value && value["playCount"] !== undefined;
 
     return isInstance;
 }

@@ -33,7 +33,7 @@ export interface TipGate {
  */
 export function instanceOfTipGate(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "tipUserId" in value;
+    isInstance = isInstance && "tipUserId" in value && value["tipUserId"] !== undefined;
 
     return isInstance;
 }

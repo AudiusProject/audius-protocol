@@ -40,7 +40,7 @@ export interface NftGate {
  */
 export function instanceOfNftGate(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "nftCollection" in value;
+    isInstance = isInstance && "nftCollection" in value && value["nftCollection"] !== undefined;
 
     return isInstance;
 }

@@ -68,9 +68,9 @@ export type NftCollectionChainEnum = typeof NftCollectionChainEnum[keyof typeof 
  */
 export function instanceOfNftCollection(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "chain" in value;
-    isInstance = isInstance && "address" in value;
-    isInstance = isInstance && "name" in value;
+    isInstance = isInstance && "chain" in value && value["chain"] !== undefined;
+    isInstance = isInstance && "address" in value && value["address"] !== undefined;
+    isInstance = isInstance && "name" in value && value["name"] !== undefined;
 
     return isInstance;
 }

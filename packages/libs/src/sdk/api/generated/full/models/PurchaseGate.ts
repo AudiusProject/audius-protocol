@@ -40,7 +40,7 @@ export interface PurchaseGate {
  */
 export function instanceOfPurchaseGate(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "usdcPurchase" in value;
+    isInstance = isInstance && "usdcPurchase" in value && value["usdcPurchase"] !== undefined;
 
     return isInstance;
 }

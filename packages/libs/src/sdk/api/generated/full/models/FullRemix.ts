@@ -58,10 +58,10 @@ export interface FullRemix {
  */
 export function instanceOfFullRemix(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "parentTrackId" in value;
-    isInstance = isInstance && "user" in value;
-    isInstance = isInstance && "hasRemixAuthorReposted" in value;
-    isInstance = isInstance && "hasRemixAuthorSaved" in value;
+    isInstance = isInstance && "parentTrackId" in value && value["parentTrackId"] !== undefined;
+    isInstance = isInstance && "user" in value && value["user"] !== undefined;
+    isInstance = isInstance && "hasRemixAuthorReposted" in value && value["hasRemixAuthorReposted"] !== undefined;
+    isInstance = isInstance && "hasRemixAuthorSaved" in value && value["hasRemixAuthorSaved"] !== undefined;
 
     return isInstance;
 }

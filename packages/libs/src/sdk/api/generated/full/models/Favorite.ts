@@ -51,10 +51,10 @@ export interface Favorite {
  */
 export function instanceOfFavorite(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "favoriteItemId" in value;
-    isInstance = isInstance && "favoriteType" in value;
-    isInstance = isInstance && "userId" in value;
-    isInstance = isInstance && "createdAt" in value;
+    isInstance = isInstance && "favoriteItemId" in value && value["favoriteItemId"] !== undefined;
+    isInstance = isInstance && "favoriteType" in value && value["favoriteType"] !== undefined;
+    isInstance = isInstance && "userId" in value && value["userId"] !== undefined;
+    isInstance = isInstance && "createdAt" in value && value["createdAt"] !== undefined;
 
     return isInstance;
 }

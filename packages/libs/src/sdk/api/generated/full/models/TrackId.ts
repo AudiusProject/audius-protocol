@@ -33,7 +33,7 @@ export interface TrackId {
  */
 export function instanceOfTrackId(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "id" in value;
+    isInstance = isInstance && "id" in value && value["id"] !== undefined;
 
     return isInstance;
 }

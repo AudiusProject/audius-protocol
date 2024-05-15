@@ -33,7 +33,7 @@ export interface FollowGate {
  */
 export function instanceOfFollowGate(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "followUserId" in value;
+    isInstance = isInstance && "followUserId" in value && value["followUserId"] !== undefined;
 
     return isInstance;
 }

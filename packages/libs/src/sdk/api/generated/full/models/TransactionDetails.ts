@@ -78,14 +78,14 @@ export interface TransactionDetails {
  */
 export function instanceOfTransactionDetails(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "transactionDate" in value;
-    isInstance = isInstance && "transactionType" in value;
-    isInstance = isInstance && "method" in value;
-    isInstance = isInstance && "signature" in value;
-    isInstance = isInstance && "userBank" in value;
-    isInstance = isInstance && "change" in value;
-    isInstance = isInstance && "balance" in value;
-    isInstance = isInstance && "metadata" in value;
+    isInstance = isInstance && "transactionDate" in value && value["transactionDate"] !== undefined;
+    isInstance = isInstance && "transactionType" in value && value["transactionType"] !== undefined;
+    isInstance = isInstance && "method" in value && value["method"] !== undefined;
+    isInstance = isInstance && "signature" in value && value["signature"] !== undefined;
+    isInstance = isInstance && "userBank" in value && value["userBank"] !== undefined;
+    isInstance = isInstance && "change" in value && value["change"] !== undefined;
+    isInstance = isInstance && "balance" in value && value["balance"] !== undefined;
+    isInstance = isInstance && "metadata" in value && value["metadata"] !== undefined;
 
     return isInstance;
 }

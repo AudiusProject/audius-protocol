@@ -39,8 +39,8 @@ export interface UsdcGate {
  */
 export function instanceOfUsdcGate(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "splits" in value;
-    isInstance = isInstance && "price" in value;
+    isInstance = isInstance && "splits" in value && value["splits"] !== undefined;
+    isInstance = isInstance && "price" in value && value["price"] !== undefined;
 
     return isInstance;
 }
