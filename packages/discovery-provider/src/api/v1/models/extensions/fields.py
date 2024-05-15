@@ -96,6 +96,6 @@ class NestedOneOf(fields.Nested):
                     f"fields.py | NestedOneOf | Failed to marshal key={key} value={value} error={e.msg}"
                 )
         logger.error(
-            f"fields.py | NestedOneOf | Failed to marshal key={key} value={data}: No matching models."
+            f"fields.py | NestedOneOf | Failed to marshal key={key} value={value}: No matching models."
         )
         return value

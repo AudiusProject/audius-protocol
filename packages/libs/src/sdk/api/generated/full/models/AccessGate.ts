@@ -13,41 +13,60 @@
  * Do not edit the class manually.
  */
 
+import { exists, mapValues } from '../runtime';
+import type { NftCollection } from './NftCollection';
 import {
-    FollowGate,
-    instanceOfFollowGate,
-    FollowGateFromJSON,
-    FollowGateFromJSONTyped,
-    FollowGateToJSON,
-} from './FollowGate';
+    NftCollectionFromJSON,
+    NftCollectionFromJSONTyped,
+    NftCollectionToJSON,
+} from './NftCollection';
+import type { UsdcGate } from './UsdcGate';
 import {
-    NftGate,
-    instanceOfNftGate,
-    NftGateFromJSON,
-    NftGateFromJSONTyped,
-    NftGateToJSON,
-} from './NftGate';
-import {
-    PurchaseGate,
-    instanceOfPurchaseGate,
-    PurchaseGateFromJSON,
-    PurchaseGateFromJSONTyped,
-    PurchaseGateToJSON,
-} from './PurchaseGate';
-import {
-    TipGate,
-    instanceOfTipGate,
-    TipGateFromJSON,
-    TipGateFromJSONTyped,
-    TipGateToJSON,
-} from './TipGate';
+    UsdcGateFromJSON,
+    UsdcGateFromJSONTyped,
+    UsdcGateToJSON,
+} from './UsdcGate';
 
 /**
- * @type AccessGate
  * 
  * @export
+ * @interface AccessGate
  */
-export type AccessGate = FollowGate | NftGate | PurchaseGate | TipGate;
+export interface AccessGate {
+    /**
+     * Must pay the total price and split to the given addresses to unlock
+     * @type {UsdcGate}
+     * @memberof AccessGate
+     */
+    usdcPurchase?: UsdcGate;
+    /**
+     * Must follow the given user ID to unlock
+     * @type {number}
+     * @memberof AccessGate
+     */
+    followUserId?: number;
+    /**
+     * Must tip the given user ID to unlock
+     * @type {number}
+     * @memberof AccessGate
+     */
+    tipUserId?: number;
+    /**
+     * Must hold an NFT of the given collection to unlock
+     * @type {NftCollection}
+     * @memberof AccessGate
+     */
+    nftCollection?: NftCollection;
+}
+
+/**
+ * Check if a given object implements the AccessGate interface.
+ */
+export function instanceOfAccessGate(value: object): boolean {
+    let isInstance = true;
+
+    return isInstance;
+}
 
 export function AccessGateFromJSON(json: any): AccessGate {
     return AccessGateFromJSONTyped(json, false);
@@ -57,7 +76,13 @@ export function AccessGateFromJSONTyped(json: any, ignoreDiscriminator: boolean)
     if ((json === undefined) || (json === null)) {
         return json;
     }
-    return { ...FollowGateFromJSONTyped(json, true), ...NftGateFromJSONTyped(json, true), ...PurchaseGateFromJSONTyped(json, true), ...TipGateFromJSONTyped(json, true) };
+    return {
+        
+        'usdcPurchase': !exists(json, 'usdc_purchase') ? undefined : UsdcGateFromJSON(json['usdc_purchase']),
+        'followUserId': !exists(json, 'follow_user_id') ? undefined : json['follow_user_id'],
+        'tipUserId': !exists(json, 'tip_user_id') ? undefined : json['tip_user_id'],
+        'nftCollection': !exists(json, 'nft_collection') ? undefined : NftCollectionFromJSON(json['nft_collection']),
+    };
 }
 
 export function AccessGateToJSON(value?: AccessGate | null): any {
@@ -67,20 +92,12 @@ export function AccessGateToJSON(value?: AccessGate | null): any {
     if (value === null) {
         return null;
     }
-
-    if (instanceOfFollowGate(value)) {
-        return FollowGateToJSON(value as FollowGate);
-    }
-    if (instanceOfNftGate(value)) {
-        return NftGateToJSON(value as NftGate);
-    }
-    if (instanceOfPurchaseGate(value)) {
-        return PurchaseGateToJSON(value as PurchaseGate);
-    }
-    if (instanceOfTipGate(value)) {
-        return TipGateToJSON(value as TipGate);
-    }
-
-    return {};
+    return {
+        
+        'usdc_purchase': UsdcGateToJSON(value.usdcPurchase),
+        'follow_user_id': value.followUserId,
+        'tip_user_id': value.tipUserId,
+        'nft_collection': NftCollectionToJSON(value.nftCollection),
+    };
 }
 

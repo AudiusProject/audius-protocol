@@ -1,7 +1,7 @@
 from flask_restx import fields
 
 from .common import ns
-from .extensions.models import OneOfModel, WildcardModel
+from .extensions.models import WildcardModel
 
 tip_gate = ns.model(
     "tip_gate",
@@ -65,15 +65,26 @@ purchase_gate = ns.model(
     },
 )
 
-access_gate = ns.add_model(
+access_gate = ns.model(
     "access_gate",
-    OneOfModel(
-        "access_gate",
-        [
-            fields.Nested(tip_gate),
-            fields.Nested(follow_gate),
-            fields.Nested(purchase_gate),
-            fields.Nested(nft_gate),
-        ],
-    ),
+    {
+        "usdc_purchase": fields.Nested(
+            usdc_gate,
+            required=False,
+            description="Must pay the total price and split to the given addresses to unlock",
+        ),
+        "follow_user_id": fields.Integer(
+            required=False,
+            description="Must follow the given user ID to unlock",
+        ),
+        "tip_user_id": fields.Integer(
+            required=False,
+            description="Must tip the given user ID to unlock",
+        ),
+        "nft_collection": fields.Nested(
+            nft_collection,
+            required=False,
+            description="Must hold an NFT of the given collection to unlock",
+        ),
+    },
 )

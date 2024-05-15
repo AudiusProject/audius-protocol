@@ -26,14 +26,12 @@ models/DeveloperApps.ts
 models/EncodedUserId.ts
 models/Favorite.ts
 models/FavoritesResponse.ts
-models/FollowGate.ts
 models/FollowersResponse.ts
 models/FollowingResponse.ts
 models/GetSupporters.ts
 models/GetSupporting.ts
 models/GetTipsResponse.ts
 models/NftCollection.ts
-models/NftGate.ts
 models/Playlist.ts
 models/PlaylistAddedTimestamp.ts
 models/PlaylistArtwork.ts
@@ -41,7 +39,6 @@ models/PlaylistResponse.ts
 models/PlaylistSearchResult.ts
 models/PlaylistTracksResponse.ts
 models/ProfilePicture.ts
-models/PurchaseGate.ts
 models/RelatedArtistResponse.ts
 models/RemixParent.ts
 models/Reposts.ts
@@ -50,7 +47,6 @@ models/Supporter.ts
 models/Supporting.ts
 models/TagsResponse.ts
 models/Tip.ts
-models/TipGate.ts
 models/TopListener.ts
 models/Track.ts
 models/TrackArtwork.ts
