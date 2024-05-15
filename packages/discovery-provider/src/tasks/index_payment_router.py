@@ -250,11 +250,16 @@ def parse_route_transaction_memos(
                 continue
             if memo.startswith(GEO_MEMO_STRING):
                 geo_data = json.loads(memo.replace(GEO_MEMO_STRING, ""))
+                city = geo_data.get("city")
+                region = geo_data.get("region")
+                country = geo_data.get("country")
+                if not country:
+                    raise Exception("No country found in geo data")
                 geo_memo = GeoMetadataDict(
                     {
-                        "city": geo_data.get("city"),
-                        "region": geo_data.get("region"),
-                        "country": geo_data.get("country"),
+                        "city": city,
+                        "region": region,
+                        "country": country,
                     }
                 )
                 continue
