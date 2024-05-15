@@ -450,7 +450,7 @@ export const TracksTable = ({
           }
         : {
             includeEdit: !disabledTrackEdit,
-            includeAddToPlaylist: !isLocked && !track.is_stream_gated,
+            includeAddToPlaylist: !isLocked || !track.is_stream_gated,
             onRemove: onClickRemove,
             removeText
           }
