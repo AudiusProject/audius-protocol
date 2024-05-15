@@ -20,8 +20,7 @@ export function calculatePlayerBehavior(
     case 'PREVIEW_OR_FULL':
       if (isPreviewAvailable) {
         shouldPreview = true
-      }
-      if (!hasStreamAccess) {
+      } else if (!hasStreamAccess) {
         shouldSkip = true
       }
       break
