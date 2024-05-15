@@ -4,6 +4,7 @@ import {
   imageBlank as placeholderArt,
   imageProfilePicEmpty as profilePicEmpty
 } from '@audius/common/assets'
+import { FeatureFlags } from '@audius/common/services'
 import { Name, SquareSizes } from '@audius/common/models'
 import { getTierForUser } from '@audius/common/store'
 import { push as pushRoute } from 'connected-react-router'
@@ -20,8 +21,10 @@ import {
   clearSearch
 } from 'common/store/search-bar/actions'
 import { getSearch } from 'common/store/search-bar/selectors'
-import Bar from 'components/search/SearchBar'
+import SearchBar from 'components/search/SearchBar'
+import SearchBarV2 from 'components/search/SearchBarV2'
 import { collectionPage, profilePage, getPathname } from 'utils/route'
+import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 
 import styles from './ConnectedSearchBar.module.css'
 
@@ -256,9 +259,12 @@ class ConnectedSearchBar extends Component {
       0
     )
     const { status, searchText } = this.props.search
+    const SearchBarComponent = this.props.isSearchV2Enabled
+      ? SearchBarV2
+      : SearchBar
     return (
       <div className={styles.search}>
-        <Bar
+        <SearchBarComponent
           value={this.state.value}
           isTagSearch={this.isTagSearch()}
           status={status}
@@ -277,7 +283,8 @@ class ConnectedSearchBar extends Component {
 }
 
 const mapStateToProps = (state, props) => ({
-  search: getSearch(state, props)
+  search: getSearch(state, props),
+  isSearchV2Enabled: getFeatureEnabled(FeatureFlags.SEARCH_V2)
 })
 const mapDispatchToProps = (dispatch) => ({
   fetchSearch: (value) => dispatch(fetchSearch(value)),

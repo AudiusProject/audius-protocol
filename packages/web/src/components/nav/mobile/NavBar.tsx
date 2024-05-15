@@ -36,6 +36,7 @@ import { isMatrix } from 'utils/theme/theme'
 import { useHistoryContext } from 'app/HistoryProvider'
 
 import styles from './NavBar.module.css'
+import { useFeatureFlag } from '@audius/common/hooks'
 
 interface NavBarProps {
   isLoading: boolean
@@ -53,7 +54,8 @@ interface NavBarProps {
 
 const messages = {
   signUp: 'Sign Up',
-  searchPlaceholder: 'What do you want to listen to?',
+  searchPlaceholder: 'Search Audius',
+  searchPlaceholderV2: 'What do you want to listen to?',
   earlyAccess: 'Early Access'
 }
 
@@ -74,6 +76,9 @@ const NavBar = ({
 }: NavBarProps) => {
   const { history } = useHistoryContext()
   const { leftElement, centerElement, rightElement } = useContext(NavContext)!
+  const { isEnabled: isSearchV2Enabled } = useFeatureFlag(
+    FeatureFlags.SEARCH_V2
+  )
 
   const [isSearching, setIsSearching] = useState(false)
   const [searchValue, setSearchValue] = useState('')
@@ -91,8 +96,12 @@ const NavBar = ({
   }, [pathname])
 
   const handleOpenSearch = useCallback(() => {
-    history.push(`/search`)
-  }, [history])
+    if (isSearchV2Enabled) {
+      history.push(`/search`)
+    } else {
+      setIsSearching(true)
+    }
+  }, [history, isSearchV2Enabled])
 
   const onCloseSearch = () => {
     setIsSearching(false)
@@ -252,7 +261,11 @@ const NavBar = ({
             onClose={onCloseSearch}
             value={searchValue}
             onSearch={setSearchValue}
-            placeholder={messages.searchPlaceholder}
+            placeholder={
+              isSearchV2Enabled
+                ? messages.searchPlaceholderV2
+                : messages.searchPlaceholder
+            }
             showHeader={false}
             className={cn(
               styles.searchBar,
