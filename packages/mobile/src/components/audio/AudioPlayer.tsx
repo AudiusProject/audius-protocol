@@ -19,7 +19,8 @@ import {
   playbackRateValueMap,
   playbackPositionActions,
   playbackPositionSelectors,
-  gatedContentSelectors
+  gatedContentSelectors,
+  calculatePlayerBehavior
 } from '@audius/common/store'
 import type { Queueable, CommonState } from '@audius/common/store'
 import {
@@ -159,7 +160,7 @@ const unlistedTrackFallbackTrackData = {
 
 type QueueableTrack = {
   track: Nullable<Track>
-} & Pick<Queueable, 'isPreview'>
+} & Pick<Queueable, 'playerBehavior'>
 
 export const AudioPlayer = () => {
   const { isEnabled: isNewPodcastControlsEnabled } = useFeatureFlag(
@@ -199,10 +200,12 @@ export const AudioPlayer = () => {
     (state) => getTracks(state, { uids: queueTrackUids }),
     shallowCompare
   )
-  const queueTracks: QueueableTrack[] = queueOrder.map(({ id, isPreview }) => ({
-    track: queueTrackMap[id] as Nullable<Track>,
-    isPreview
-  }))
+  const queueTracks: QueueableTrack[] = queueOrder.map(
+    ({ id, playerBehavior }) => ({
+      track: queueTrackMap[id] as Nullable<Track>,
+      playerBehavior
+    })
+  )
   const queueTrackOwnerIds = queueTracks
     .map(({ track }) => track?.owner_id)
     .filter(removeNullable)
@@ -337,17 +340,22 @@ export const AudioPlayer = () => {
           // Figure out how to call next earlier
           next()
         } else {
-          const { track, isPreview } = queueTracks[playerIndex] ?? {}
+          const { track, playerBehavior } = queueTracks[playerIndex] ?? {}
+
+          const { shouldSkip, shouldPreview } = calculatePlayerBehavior(
+            track,
+            playerBehavior
+          )
 
           // Skip track if user does not have access i.e. for an unlocked gated track
-          if (!track?.access?.stream) {
+          if (!track || shouldSkip) {
             next()
           } else {
             // Track Player natively went to the next track
             // Update queue info and handle playback position updates
             updateQueueIndex(playerIndex)
             updatePlayerInfo({
-              previewing: !!isPreview,
+              previewing: shouldPreview,
               trackId: track.track_id,
               uid: queueTrackUids[playerIndex]
             })
@@ -554,14 +562,17 @@ export const AudioPlayer = () => {
       ? queueTracks.slice(refUids.length)
       : queueTracks
 
-    const makeTrackData = async ({ track, isPreview }: QueueableTrack) => {
+    const makeTrackData = async ({ track, playerBehavior }: QueueableTrack) => {
       if (!track) {
         return unlistedTrackFallbackTrackData
       }
+
       const trackOwner = queueTrackOwnersMap[track.owner_id]
       const trackId = track.track_id
       const offlineTrackAvailable =
         trackId && isOfflineModeEnabled && offlineAvailabilityByTrackId[trackId]
+
+      const { shouldPreview } = calculatePlayerBehavior(track, playerBehavior)
 
       // Get Track url
       let url: string
@@ -580,7 +591,7 @@ export const AudioPlayer = () => {
           trackQueryParams.current[trackId] = queryParams
         }
 
-        queryParams = { ...queryParams, preview: isPreview }
+        queryParams = { ...queryParams, preview: shouldPreview }
 
         url = apiClient.makeUrl(
           `/tracks/${encodeHashId(track.track_id)}/stream`,
@@ -615,7 +626,9 @@ export const AudioPlayer = () => {
         genre: track.genre,
         date: track.created_at,
         artwork: imageUrl,
-        duration: isPreview ? getTrackPreviewDuration(track) : track.duration
+        duration: shouldPreview
+          ? getTrackPreviewDuration(track)
+          : track.duration
       }
     }
 

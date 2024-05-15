@@ -1,4 +1,4 @@
-import { Kind, Track, isContentUSDCPurchaseGated } from '@audius/common/models'
+import { Kind } from '@audius/common/models'
 import { FeatureFlags, QueryParams } from '@audius/common/services'
 import {
   accountSelectors,
@@ -13,7 +13,7 @@ import {
   playbackPositionActions,
   playbackPositionSelectors,
   gatedContentSelectors,
-  PlayerBehavior
+  calculatePlayerBehavior
 } from '@audius/common/store'
 import {
   Genre,
@@ -227,43 +227,6 @@ export function* watchPlay() {
       yield* put(playSucceeded({ uid, trackId, isPreview: shouldPreview }))
     }
   })
-}
-
-function calculatePlayerBehavior(
-  track?: Track | null,
-  playerBehavior?: PlayerBehavior
-) {
-  if (!track) {
-    return { shouldSkip: false, shouldPreview: false }
-  }
-
-  const isPreviewAvailable =
-    !!track.preview_cid && isContentUSDCPurchaseGated(track.stream_conditions)
-  const hasStreamAccess = !track.is_stream_gated || !!track.access?.stream
-
-  let shouldPreview = false
-  let shouldSkip = false
-  switch (playerBehavior) {
-    case 'PREVIEW_OR_FULL':
-      if (isPreviewAvailable) {
-        shouldPreview = true
-      }
-      if (!hasStreamAccess) {
-        shouldSkip = true
-      }
-      break
-    case 'FULL_OR_PREVIEW':
-    default:
-      if (!hasStreamAccess) {
-        if (isPreviewAvailable) {
-          shouldPreview = true
-        } else {
-          shouldSkip = true
-        }
-      }
-      break
-  }
-  return { shouldSkip, shouldPreview }
 }
 
 export function* watchCollectiblePlay() {

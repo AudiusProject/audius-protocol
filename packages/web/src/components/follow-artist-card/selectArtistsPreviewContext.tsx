@@ -2,7 +2,7 @@ import { createContext, useCallback, useEffect, useState } from 'react'
 
 import { useGetUserTracksByHandle, useGetUserById } from '@audius/common/api'
 import { ID, UserTrackMetadata } from '@audius/common/models'
-import { playerActions } from '@audius/common/store'
+import { PlayerBehavior, playerActions } from '@audius/common/store'
 import { useDispatch } from 'react-redux'
 import { useUnmount } from 'react-use'
 
@@ -120,12 +120,18 @@ export const SelectArtistsPreviewContextProvider = (props: {
       ? undefined
       : Math.min(30, Math.max(0, duration - 30))
 
-    dispatch(playerActions.play({ trackId: track_id, startTime, isPreview }))
     dispatch(
       playerActions.play({
         trackId: track_id,
         startTime,
-        isPreview,
+        playerBehavior: PlayerBehavior.PREVIEW_OR_FULL
+      })
+    )
+    dispatch(
+      playerActions.play({
+        trackId: track_id,
+        startTime,
+        playerBehavior: PlayerBehavior.PREVIEW_OR_FULL,
         onEnd: () => {
           stopPreview()
         }

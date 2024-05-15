@@ -50,7 +50,6 @@ import {
   albumTrackRemoveConfirmationModalActions,
   AlbumTrackRemoveConfirmationModalState,
   PlayerBehavior,
-  queueActions,
   playerActions
 } from '@audius/common/store'
 import { formatUrlName, Uid, Nullable } from '@audius/common/utils'
