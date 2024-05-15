@@ -484,11 +484,28 @@ app.get('/users', (c) => {
                   <td>
                     ${!IS_PROD &&
                     html`
-                      <form
-                        method="POST"
-                        action="/users/simulate/${user.apiKey}/${user.id}"
-                      >
-                        <button>simulate</button>
+                      <form action="/users/simulate/${user.apiKey}/${user.id}">
+                        <select
+                          name="exampleFileName"
+                          required
+                          onchange="this.form.submit()"
+                        >
+                          <option selected disabled value="">
+                            Simulate Delivery
+                          </option>
+                          <optgroup label="Track">
+                            <option value="track_basic.xml">Basic</option>
+                            <option value="track_follow_gated.xml">
+                              Follow Gated Stream / Tip Gated Download
+                            </option>
+                            <option value="track_pay_gated.xml">
+                              Pay Gated
+                            </option>
+                          </optgroup>
+                          <optgroup label="Album">
+                            <option value="album_basic.xml">Basic</option>
+                          </optgroup>
+                        </select>
                       </form>
                     `}
                   </td>
@@ -500,7 +517,7 @@ app.get('/users', (c) => {
   )
 })
 
-app.post('/users/simulate/:apiKey/:id', async (c) => {
+app.get('/users/simulate/:apiKey/:id', async (c) => {
   if (IS_PROD) {
     return c.text(`simulate delivery is disabled in prod`, 400)
   }
@@ -511,13 +528,14 @@ app.post('/users/simulate/:apiKey/:id', async (c) => {
     id: c.req.param('id'),
     apiKey: c.req.param('apiKey'),
   })
+  const exampleFileName = c.req.query('exampleFileName')
 
-  if (!source || !user) {
-    return c.text(`invalid source / user pair`, 400)
+  if (!source || !user || !exampleFileName) {
+    return c.text(`invalid simulate request`, 400)
   }
 
   // simulate delivery
-  await simulateDeliveryForUserName(source, user.name)
+  await simulateDeliveryForUserName(source, exampleFileName, user.name)
 
   return c.redirect('/releases')
 })

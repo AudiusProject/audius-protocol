@@ -787,28 +787,23 @@ def exec(protocol_dir, service, command, args):
 @cli.command()
 @click.pass_obj
 def ps(protocol_dir):
-    AAO_DIR = pathlib.Path(os.getenv("AAO_DIR", protocol_dir / "../anti-abuse-oracle"))
-
     proc = subprocess.run(
         [
             "docker",
-            "compose",
-            f"--project-directory={protocol_dir / 'dev-tools/compose'}",
-            f"--file={protocol_dir / 'dev-tools/compose/docker-compose.yml'}",
-            f"--project-name={protocol_dir.name}",
-            *([f"--file={AAO_DIR / 'audius-compose.yml'}"] if AAO_DIR.exists() else []),
-            "--profile=*",
             "ps",
-            "--format=json",
+            "--format",
+            "{{json .}}",
         ],
         capture_output=True,
+        text=True
     )
 
     if proc.returncode != 0:
         raise click.ClickException(proc.stderr.decode())
 
-    services = json.loads(proc.stdout.decode())
-    services.sort(key=lambda x: x["Name"])
+    output = proc.stdout.strip()
+    services = [json.loads(line) for line in output.splitlines()]
+    services.sort(key=lambda x: x["Names"])
 
     print(
         "CONTAINER ID".ljust(13),
@@ -818,31 +813,23 @@ def ps(protocol_dir):
     )
 
     for service in services:
-        if service["Service"] == "port-forwarder":
-            continue
+        name = service["Names"]
+        status = service["Status"] or service["State"]
 
-        name = service["Service"]
-        status = service["Health"] or service["State"]
+        ports = service["Ports"]
 
-        ports = {}
-        if service["Publishers"]:
-            for publisher in service["Publishers"]:
-                if publisher["PublishedPort"]:
-                    ports[publisher["PublishedPort"]] = publisher["TargetPort"]
-
-        if service["Service"] in [
+        if service["Names"] in [
             "discovery-provider",
             "discovery-provider-elasticsearch",
         ]:
             replica = int(service["Name"].split("-")[-1])
-        if service["Service"] == "discovery-provider":
-            name = f"{service['Service']}-{replica}"
+        if service["Names"] == "discovery-provider":
+            name = f"{service['Names']}-{replica}"
             ports[5000 + replica - 1] = 5000
-        if service["Service"] == "discovery-provider-elasticsearch":
-            name = f"{service['Service']}-{replica}"
+        if service["Names"] == "discovery-provider-elasticsearch":
+            name = f"{service['Names']}-{replica}"
 
-        ports = sorted(ports.items())
-        ports = ", ".join(f"{target}->{published}" for target, published in ports)
+        name = name.removeprefix("audius-protocol-")
 
         print(
             service["ID"][:12].ljust(13),
@@ -850,6 +837,8 @@ def ps(protocol_dir):
             status.ljust(10),
             ports,
         )
+
+    print("** most containers prefixed with 'audius-protocol-' **")
 
 
 @cli.command()

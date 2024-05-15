@@ -18,8 +18,6 @@ import { zIndex } from 'app/utils/zIndex'
 const useStyles = makeStyles(({ spacing }) => ({
   container: {
     position: 'absolute',
-    top: 0,
-    left: 0,
     zIndex: zIndex.DOG_EAR,
     width: spacing(12),
     height: spacing(12),

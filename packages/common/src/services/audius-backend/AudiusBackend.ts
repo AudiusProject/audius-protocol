@@ -35,13 +35,16 @@ import {
   DefaultSizes,
   FailureReason,
   ID,
+  InstagramUser,
   Name,
   ProfilePictureSizes,
   SquareSizes,
   StringUSDC,
   StringWei,
+  TikTokUser,
   Track,
   TrackMetadata,
+  TwitterUser,
   User,
   UserMetadata,
   WidthSizes
@@ -1558,7 +1561,9 @@ export const audiusBackend = ({
   async function twitterHandle(handle: string) {
     await waitForLibsInit()
     try {
-      const user = await audiusLibs.Account.lookupTwitterHandle(handle)
+      const user: TwitterUser = await audiusLibs.Account.lookupTwitterHandle(
+        handle
+      )
       return { success: true, user }
     } catch (error) {
       return { success: false, error }
@@ -1570,7 +1575,7 @@ export const audiusBackend = ({
       const res = await fetch(
         `${generalAdmissionUrl}/social/instagram/${handle}`
       )
-      const json = await res.json()
+      const json: InstagramUser = await res.json()
       return json
     } catch (error) {
       console.error(error)
@@ -1581,7 +1586,7 @@ export const audiusBackend = ({
   async function tiktokHandle(handle: string) {
     try {
       const res = await fetch(`${generalAdmissionUrl}/social/tiktok/${handle}`)
-      const json = await res.json()
+      const json: TikTokUser = await res.json()
       return json
     } catch (error) {
       console.error(error)

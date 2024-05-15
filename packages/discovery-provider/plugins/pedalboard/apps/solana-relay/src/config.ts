@@ -93,7 +93,10 @@ const readConfig = (): Config => {
     solana_relay_server_host: str({ default: '0.0.0.0' }),
     solana_relay_server_port: num({ default: 6002 }),
     audius_delegate_private_key: str({ default: '' }),
-    audius_ipdata_api_key: str({ default: '' })
+    audius_ipdata_api_key: str({
+      // Throwaway test key
+      default: '01b633611c0b57babd56a6fdf7400b21340956e1840da6dd788f9c37'
+    })
   })
   const solanaFeePayerWalletsParsed = env.audius_solana_fee_payer_wallets
   let solanaFeePayerWallets: Keypair[] = []

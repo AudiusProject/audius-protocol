@@ -137,7 +137,8 @@ export const TrackScreenDetailsTile = ({
     stream_conditions: streamConditions,
     ddex_app: ddexApp,
     is_delete,
-    duration
+    duration,
+    release_date
   } = track
 
   const isOwner = owner_id === currentUserId
@@ -336,6 +337,7 @@ export const TrackScreenDetailsTile = ({
       contentType={PurchaseableContentType.TRACK}
       ddexApp={ddexApp}
       duration={duration}
+      releaseDate={release_date}
     />
   )
 }

@@ -161,7 +161,7 @@ export type DetailsTileProps = {
   ddexApp?: string | null
 
   /** The release date of the item */
-  releaseDate?: string
+  releaseDate?: Nullable<string>
 
   /** The last updated time for the item */
   updatedAt?: string
