@@ -1,9 +1,11 @@
 import copy
 
 from integration_tests.utils import populate_mock_db
-from src.queries.get_managed_users import get_managed_users_with_grants, get_user_managers_with_grants
+from src.queries.get_managed_users import (
+    get_managed_users_with_grants,
+    get_user_managers_with_grants,
+)
 from src.utils.db_session import get_db
-
 
 test_users = [
     {"user_id": 10, "name": "a", "wallet": "0x10"},

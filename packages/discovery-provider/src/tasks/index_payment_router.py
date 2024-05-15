@@ -1,5 +1,6 @@
 import concurrent.futures
 import enum
+import json
 import time
 from datetime import datetime
 from decimal import Decimal
@@ -102,6 +103,7 @@ PAYMENT_ROUTER_WAUDIO_ATA_ADDRESS = (
 USDC_PER_USD_CENT = 10000
 
 RECOVERY_MEMO_STRING = "Recover Withdrawal"
+GEO_MEMO_STRING = "geo:"
 
 # Used to limit tx history if needed
 MIN_SLOT = int(shared_config["solana"]["payment_router_min_slot"])
@@ -133,6 +135,12 @@ class PurchaseMetadataDict(TypedDict):
     purchaser_user_id: int
     content_owner_id: int
     access: PurchaseAccessType
+
+
+class GeoMetadataDict(TypedDict):
+    city: str
+    region: str
+    country: str
 
 
 class RouteTransactionMemoType(str, enum.Enum):
@@ -223,18 +231,39 @@ def get_tx_in_db(session: Session, tx_sig: str) -> bool:
     return exists
 
 
-def parse_route_transaction_memo(
+def parse_route_transaction_memos(
     session: Session, memos: List[str], timestamp: datetime
-) -> RouteTransactionMemo | None:
+) -> Tuple[RouteTransactionMemo | None, GeoMetadataDict | None]:
     """Checks the list of memos for one matching a format of a purchase's content_metadata, and then uses that content_metadata to find the stream_conditions associated with that content to get the price"""
     if len(memos) == 0:
-        return None
+        return None, None
+
+    route_transaction_memo = None
+    geo_memo = None
+
     for memo in memos:
-        if memo == RECOVERY_MEMO_STRING:
-            return RouteTransactionMemo(
-                type=RouteTransactionMemoType.recovery, metadata=None
-            )
         try:
+            if memo == RECOVERY_MEMO_STRING:
+                route_transaction_memo = RouteTransactionMemo(
+                    type=RouteTransactionMemoType.recovery, metadata=None
+                )
+                continue
+            if memo.startswith(GEO_MEMO_STRING):
+                geo_data = json.loads(memo.replace(GEO_MEMO_STRING, ""))
+                city = geo_data.get("city")
+                region = geo_data.get("region")
+                country = geo_data.get("country")
+                if not country:
+                    raise Exception("No country found in geo data")
+                geo_memo = GeoMetadataDict(
+                    {
+                        "city": city,
+                        "region": region,
+                        "country": country,
+                    }
+                )
+                continue
+
             content_metadata = memo.split(":")
             if len(content_metadata) == 4:
                 (
@@ -325,7 +354,7 @@ def parse_route_transaction_memo(
                 and isinstance(splits, dict)
                 and content_owner_id is not None
             ):
-                return RouteTransactionMemo(
+                route_transaction_memo = RouteTransactionMemo(
                     type=RouteTransactionMemoType.purchase,
                     metadata={
                         "type": type,
@@ -337,6 +366,7 @@ def parse_route_transaction_memo(
                         "access": access,
                     },
                 )
+                continue
             else:
                 logger.error(
                     f"index_payment_router.py | Couldn't find relevant price for {content_metadata}"
@@ -346,7 +376,12 @@ def parse_route_transaction_memo(
                 f"index_payment_router.py | Ignoring memo, failed to parse content metadata: {memo}, Error: {e}"
             )
     logger.info("index_payment_router.py | Failed to find known memo format")
-    return RouteTransactionMemo(type=RouteTransactionMemoType.unknown, metadata=None)
+    if not route_transaction_memo:
+        route_transaction_memo = RouteTransactionMemo(
+            type=RouteTransactionMemoType.unknown, metadata=None
+        )
+
+    return route_transaction_memo, geo_memo
 
 
 def validate_purchase(
@@ -375,6 +410,7 @@ def index_purchase(
     receiver_accounts: List[str],
     balance_changes: dict[str, BalanceChange],
     purchase_metadata: PurchaseMetadataDict,
+    geo_metadata: GeoMetadataDict | None,
     slot: int,
     timestamp: datetime,
     tx_sig: str,
@@ -395,6 +431,9 @@ def index_purchase(
         content_type=purchase_metadata["type"],
         content_id=purchase_metadata["id"],
         access=purchase_metadata["access"],
+        city=geo_metadata.get("city") if geo_metadata else None,
+        region=geo_metadata.get("region") if geo_metadata else None,
+        country=geo_metadata.get("country") if geo_metadata else None,
     )
     logger.debug(
         f"index_payment_router.py | tx: {tx_sig} | Creating usdc_purchase for purchase {usdc_purchase}"
@@ -507,6 +546,7 @@ def validate_and_index_usdc_transfers(
     receiver_accounts: List[str],
     balance_changes: dict[str, BalanceChange],
     memo: RouteTransactionMemo | None,
+    geo_metadata: GeoMetadataDict | None,
     slot: int,
     timestamp: datetime,
     tx_sig: str,
@@ -528,6 +568,7 @@ def validate_and_index_usdc_transfers(
             receiver_accounts=receiver_accounts,
             balance_changes=balance_changes,
             purchase_metadata=memo["metadata"],
+            geo_metadata=geo_metadata,
             slot=slot,
             timestamp=timestamp,
             tx_sig=tx_sig,
@@ -688,7 +729,7 @@ def process_route_instruction(
         )
     elif is_usdc:
         logger.debug(f"index_payment_router.py | Parsing memos: {memos}")
-        memo = parse_route_transaction_memo(
+        memo, geo_metadata = parse_route_transaction_memos(
             session=session, memos=memos, timestamp=timestamp
         )
         validate_and_index_usdc_transfers(
@@ -699,6 +740,7 @@ def process_route_instruction(
             receiver_accounts=receiver_accounts,
             balance_changes=balance_changes,
             memo=memo,
+            geo_metadata=geo_metadata,
             slot=slot,
             timestamp=timestamp,
             tx_sig=tx_sig,
@@ -880,10 +922,7 @@ def process_payment_router_txs() -> None:
             with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
                 parse_sol_tx_futures = {
                     executor.submit(
-                        get_sol_tx_info,
-                        solana_client_manager,
-                        str(tx_sig),
-                        redis
+                        get_sol_tx_info, solana_client_manager, str(tx_sig), redis
                     ): tx_sig
                     for tx_sig in tx_sig_batch
                 }

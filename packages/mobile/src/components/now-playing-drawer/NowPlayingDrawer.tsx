@@ -36,6 +36,7 @@ import { useNavigation } from 'app/hooks/useNavigation'
 import { AppDrawerContext } from 'app/screens/app-drawer-screen'
 import { AppTabNavigationContext } from 'app/screens/app-screen'
 import { makeStyles } from 'app/styles'
+import { zIndex } from 'app/utils/zIndex'
 
 import { ActionsBar } from './ActionsBar'
 import { Artwork } from './Artwork'
@@ -285,7 +286,7 @@ export const NowPlayingDrawer = memo(function NowPlayingDrawer(
   return (
     <Drawer
       // Appears below bottom bar whereas normally drawers appear above
-      zIndex={3}
+      zIndex={zIndex.NOW_PLAYING_DRAWER}
       isOpen={isOpen}
       onClose={onClose}
       onOpen={onDrawerOpen}

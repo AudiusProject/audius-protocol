@@ -32,12 +32,6 @@ import {
     CoverArtFromJSONTyped,
     CoverArtToJSON,
 } from './CoverArt';
-import type { DownloadMetadata } from './DownloadMetadata';
-import {
-    DownloadMetadataFromJSON,
-    DownloadMetadataFromJSONTyped,
-    DownloadMetadataToJSON,
-} from './DownloadMetadata';
 import type { Favorite } from './Favorite';
 import {
     FavoriteFromJSON,
@@ -305,12 +299,6 @@ export interface TrackFull {
     creditsSplits?: string;
     /**
      * 
-     * @type {DownloadMetadata}
-     * @memberof TrackFull
-     */
-    download?: DownloadMetadata;
-    /**
-     * 
      * @type {string}
      * @memberof TrackFull
      */
@@ -548,7 +536,6 @@ export function TrackFullFromJSONTyped(json: any, ignoreDiscriminator: boolean):
         'coverArtCids': !exists(json, 'cover_art_cids') ? undefined : CoverArtFromJSON(json['cover_art_cids']),
         'createdAt': !exists(json, 'created_at') ? undefined : json['created_at'],
         'creditsSplits': !exists(json, 'credits_splits') ? undefined : json['credits_splits'],
-        'download': !exists(json, 'download') ? undefined : DownloadMetadataFromJSON(json['download']),
         'isrc': !exists(json, 'isrc') ? undefined : json['isrc'],
         'license': !exists(json, 'license') ? undefined : json['license'],
         'iswc': !exists(json, 'iswc') ? undefined : json['iswc'],
@@ -624,7 +611,6 @@ export function TrackFullToJSON(value?: TrackFull | null): any {
         'cover_art_cids': CoverArtToJSON(value.coverArtCids),
         'created_at': value.createdAt,
         'credits_splits': value.creditsSplits,
-        'download': DownloadMetadataToJSON(value.download),
         'isrc': value.isrc,
         'license': value.license,
         'iswc': value.iswc,
