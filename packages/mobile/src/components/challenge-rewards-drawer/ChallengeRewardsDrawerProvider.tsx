@@ -118,10 +118,15 @@ export const ChallengeRewardsDrawerProvider = () => {
         claimChallengeReward({
           claim: {
             challengeId: modalType,
-            specifiers: getClaimableChallengeSpecifiers(
-              challenge.undisbursedSpecifiers,
-              undisbursedUserChallenges
-            ),
+            specifiers:
+              challenge.challenge_type === 'aggregate'
+                ? getClaimableChallengeSpecifiers(
+                    challenge.undisbursedSpecifiers,
+                    undisbursedUserChallenges
+                  )
+                : [
+                    { specifier: challenge.specifier, amount: challenge.amount }
+                  ], // necessary to keep for optimistic non-cooldown challenges
             amount: challenge?.claimableAmount ?? 0
           },
           retryOnFailure: true

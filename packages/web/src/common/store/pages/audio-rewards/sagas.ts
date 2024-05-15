@@ -205,7 +205,7 @@ function* waitForOptimisticChallengeToComplete({
   })
   if (challenge.challenge_type !== 'aggregate' && !challenge.is_complete) {
     console.info('Waiting for challenge completion...')
-    const raceResult: { isComplete?: boolean } = yield* race({
+    const raceResult: { isComplete?: UserChallenge } = yield* race({
       isComplete: call(
         waitForValue,
         getUserChallenge,
