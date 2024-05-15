@@ -65,14 +65,14 @@ export const Artwork = ({ track }: ArtworkProps) => {
 
   return (
     <Shadow opacity={0.2} radius={8} color={shadowColor} style={styles.root}>
-      {shouldShowDogEar ? (
-        <DogEar type={DogEarType.USDC_PURCHASE} borderOffset={2} />
-      ) : null}
       <TrackImage
         style={styles.image}
         track={track}
         size={SquareSizes.SIZE_1000_BY_1000}
       />
+      {shouldShowDogEar ? (
+        <DogEar type={DogEarType.USDC_PURCHASE} borderOffset={2} />
+      ) : null}
     </Shadow>
   )
 }

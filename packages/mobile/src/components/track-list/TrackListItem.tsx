@@ -352,8 +352,7 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
     isContextPlaylistOwner,
     dispatch,
     track_id,
-    contextPlaylistId,
-    isLocked
+    contextPlaylistId
   ])
 
   const handlePressOverflow = (e: NativeSyntheticEvent<NativeTouchEvent>) => {

@@ -83,7 +83,7 @@ const ConnectedTrackListItem = (props: ConnectedTrackListItemProps) => {
 
   const onClickOverflow = () => {
     const overflowActions = [
-      isPurchase ? OverflowAction.PURCHASE_TRACK : null,
+      isPurchase && !hasStreamAccess ? OverflowAction.PURCHASE_TRACK : null,
       isLocked
         ? null
         : isReposted
