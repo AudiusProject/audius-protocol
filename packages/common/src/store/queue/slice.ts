@@ -22,7 +22,6 @@ type PlayPayload = {
   trackId?: Nullable<ID>
   collectible?: Collectible
   source?: Nullable<string>
-  // TODO: should this really be nullable?
   playerBehavior?: PlayerBehavior
 }
 

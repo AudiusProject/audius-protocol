@@ -30,7 +30,8 @@ import {
   repostsUserListActions,
   favoritesUserListActions,
   RepostType,
-  playerSelectors
+  playerSelectors,
+  playerActions
 } from '@audius/common/store'
 import { formatDate, Uid } from '@audius/common/utils'
 import { push as pushRoute, replace } from 'connected-react-router'
@@ -253,10 +254,12 @@ class TrackPageProvider extends Component<
     const {
       play,
       pause,
+      stop,
       previewing,
       currentQueueItem,
       moreByArtist: { entries },
-      record
+      record,
+      userId
     } = this.props
     if (!entries || !entries[0]) return
     const track = entries[0]
@@ -283,11 +286,13 @@ class TrackPageProvider extends Component<
         })
       )
     } else if (track) {
-      play(track.uid, { isPreview })
+      const isOwner = track?.owner_id === userId
+      stop()
+      play(track.uid, { isPreview: isPreview && isOwner })
       record(
         make(Name.PLAYBACK_PLAY, {
           id: `${track.id}`,
-          isPreview,
+          isPreview: isPreview && isOwner,
           source: PlaybackSource.TRACK_PAGE
         })
       )
@@ -555,6 +560,9 @@ function mapDispatchToProps(dispatch: Dispatch) {
     reset: (source?: string) => dispatch(tracksActions.reset(source)),
     play: (uid?: string, options: { isPreview?: boolean } = {}) =>
       dispatch(tracksActions.play(uid, options)),
+    stop: () => {
+      dispatch(playerActions.stop({}))
+    },
     recordPlayMoreByArtist: (trackId: ID) => {
       const trackEvent: TrackEvent = make(Name.TRACK_PAGE_PLAY_MORE, {
         id: trackId

@@ -14,10 +14,12 @@ import {
   reachabilitySelectors,
   playerSelectors,
   cacheTracksSelectors,
-  PurchaseableContentType
+  PurchaseableContentType,
+  queueActions
 } from '@audius/common/store'
 import { removeNullable } from '@audius/common/utils'
 import type { Maybe, Nullable } from '@audius/common/utils'
+import TrackPlayer from 'react-native-track-player'
 import { useDispatch, useSelector } from 'react-redux'
 import { usePrevious } from 'react-use'
 import { createSelector } from 'reselect'
@@ -194,6 +196,10 @@ export const CollectionScreenDetailsTile = ({
         dispatch(tracksActions.play())
         recordPlay(playingTrackId)
       } else if (trackCount > 0 && firstTrack) {
+        // TODO: This doesn't work.
+        // Need to clear the redux queue and also the react-native-track-player queue
+        dispatch(queueActions.clear({}))
+        TrackPlayer.reset()
         dispatch(tracksActions.play(firstTrack.uid, { isPreview }))
         recordPlay(firstTrack.id)
       }
