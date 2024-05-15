@@ -31,31 +31,27 @@ const messages = {
   specialAccess: 'SPECIAL ACCESS',
   payToUnlock: 'Pay to Unlock',
   unlockedCollectibleGatedPrefix: 'A Collectible from ',
-  unlockedCollectibleGatedSuffix: (
-    contentType: PurchaseableContentType | 'item' = 'item'
-  ) => ` was found in a linked wallet. This ${contentType} is now available.`,
+  unlockedCollectibleGatedSuffix: (contentType: PurchaseableContentType) =>
+    ` was found in a linked wallet. This ${contentType} is now available.`,
   ownerCollectibleGatedPrefix:
     'Users can unlock access by linking a wallet containing a collectible from ',
   unlockedFollowGatedPrefix: 'Thank you for following ',
-  unlockedFollowGatedSuffix: (
-    contentType: PurchaseableContentType | 'item' = 'item'
-  ) => `! This ${contentType} is now available.`,
+  unlockedFollowGatedSuffix: (contentType: PurchaseableContentType) =>
+    `! This ${contentType} is now available.`,
   ownerFollowGated: 'Users can unlock access by following your account!',
   unlockedTipGatedPrefix: 'Thank you for supporting ',
-  unlockedTipGatedSuffix: (
-    contentType: PurchaseableContentType | 'item' = 'item'
-  ) => ` by sending them a tip! This ${contentType} is now available.`,
+  unlockedTipGatedSuffix: (contentType: PurchaseableContentType) =>
+    ` by sending them a tip! This ${contentType} is now available.`,
   ownerTipGated: 'Users can unlock access by sending you a tip!',
-  unlockedUSDCPurchasePrefix: (
-    contentType: PurchaseableContentType | 'item' = 'item'
-  ) => `You’ve purchased this ${contentType}. Thank you for supporting `,
+  unlockedUSDCPurchasePrefix: (contentType: PurchaseableContentType) =>
+    `You’ve purchased this ${contentType}. Thank you for supporting `,
   unlockedUSDCPurchaseSuffix: '.',
   ownerUSDCPurchase: ({
     price,
-    contentType = 'item'
+    contentType
   }: {
     price: string
-    contentType: PurchaseableContentType | 'item'
+    contentType: PurchaseableContentType
   }) =>
     `Users can unlock access to this ${contentType} for a one time purchase of $${price}`
 }
