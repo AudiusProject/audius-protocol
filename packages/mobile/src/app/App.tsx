@@ -66,8 +66,6 @@ const App = () => {
     subscribeToNetworkStatusUpdates()
     TrackPlayer.setupPlayer({
       minBuffer: 0.1,
-      // Default value (50), but required to be set on android (crashes otherwise)
-      maxBuffer: 50,
       playBuffer: 0.1,
       waitForBuffer: false,
       autoHandleInterruptions: true,
