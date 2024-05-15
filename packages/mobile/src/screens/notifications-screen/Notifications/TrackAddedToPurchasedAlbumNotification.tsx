@@ -6,7 +6,7 @@ import { notificationsSelectors } from '@audius/common/store'
 import { View } from 'react-native'
 
 import { IconStars } from '@audius/harmony-native'
-import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
+import { useNavigation } from 'app/hooks/useNavigation'
 
 import {
   NotificationHeader,
@@ -32,7 +32,7 @@ export const TrackAddedToPurchasedAlbumNotification = (
   props: TrackAddedToPurchasedAlbumNotificationProps
 ) => {
   const { notification } = props
-  const navigation = useNotificationNavigation()
+  const navigation = useNavigation()
   const entities = useProxySelector(
     (state) => getNotificationEntities(state, notification),
     [notification]
@@ -41,10 +41,11 @@ export const TrackAddedToPurchasedAlbumNotification = (
   const playlistOwner = playlist.user
 
   const handlePress = useCallback(() => {
-    if (playlist) {
-      navigation.navigate(notification)
-    }
-  }, [playlist, navigation, notification])
+    navigation.navigate('Collection', {
+      id: playlist.playlist_id,
+      canBeUnlisted: false
+    })
+  }, [navigation, playlist.playlist_id])
 
   if (!playlistOwner || !track || !playlist) return null
 
