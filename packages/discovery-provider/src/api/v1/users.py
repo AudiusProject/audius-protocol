@@ -1794,7 +1794,7 @@ class GetSupportedUsers(Resource):
 class FullGetSupportedUsers(Resource):
     @record_metrics
     @full_ns.doc(
-        id="""Get SupportedUsers""",
+        id="""Get Supported Users""",
         description="""Gets the users that the given user supports""",
         params={"id": "A User ID"},
     )
