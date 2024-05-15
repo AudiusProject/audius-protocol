@@ -39,8 +39,7 @@ import TrackPlayer, {
   State,
   useTrackPlayerEvents,
   RepeatMode as TrackPlayerRepeatMode,
-  TrackType,
-  PitchAlgorithm
+  TrackType
 } from 'react-native-track-player'
 import { useDispatch, useSelector } from 'react-redux'
 import { useAsync, usePrevious } from 'react-use'
@@ -608,8 +607,6 @@ export const AudioPlayer = () => {
       return {
         url,
         type: TrackType.Default,
-        contentType: 'audio/mpeg',
-        pitchAlgorithm: PitchAlgorithm.Music,
         title: track.title,
         artist: trackOwner.name,
         genre: track.genre,
