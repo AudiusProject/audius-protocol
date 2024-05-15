@@ -5,7 +5,7 @@ import {
   searchResultsPageTracksLineupActions as tracksActions,
   SearchKind
 } from '@audius/common/store'
-import { IconSearch as IconBigSearch } from '@audius/harmony'
+import { IconSearch as IconBigSearch, Box } from '@audius/harmony'
 import { Redirect } from 'react-router'
 
 import { make } from 'common/store/analytics/actions'
@@ -242,44 +242,49 @@ class SearchPageContent extends Component {
                 categoryName='Tracks'
                 onMore={handleViewMoreResults('tracks')}
               />
-              <Lineup
-                search
-                variant='section'
-                count={4}
-                selfLoad={false}
-                lineup={tracks}
-                playingSource={currentQueueItem.source}
-                playingUid={currentQueueItem.uid}
-                playingTrackId={
-                  currentQueueItem.track && currentQueueItem.track.track_id
-                }
-                playing={playing}
-                buffering={buffering}
-                scrollParent={this.props.containerRef}
-                onMore={
-                  tracks.entries.length >= 4
-                    ? handleViewMoreResults('tracks')
-                    : null
-                }
-                loadMore={(offset, limit) =>
-                  this.props.dispatch(
-                    tracksActions.fetchLineupMetadatas(offset, limit, false, {
-                      category: SearchKind.ALL,
-                      query: searchText,
-                      isTagSearch
-                    })
-                  )
-                }
-                playTrack={(uid, trackId) => {
-                  onClickTile(trackId, 'search results page')
-                  this.props.dispatch(tracksActions.play(uid))
-                }}
-                pauseTrack={(uid) => this.props.dispatch(tracksActions.pause())}
-                actions={tracksActions}
-                onClickTile={(trackId) => {
-                  onClickTile(trackId, 'search results page')
-                }}
-              />
+              {/* Temp spacing improvement until search page redesign */}
+              <Box pr={115}>
+                <Lineup
+                  search
+                  variant='section'
+                  count={4}
+                  selfLoad={false}
+                  lineup={tracks}
+                  playingSource={currentQueueItem.source}
+                  playingUid={currentQueueItem.uid}
+                  playingTrackId={
+                    currentQueueItem.track && currentQueueItem.track.track_id
+                  }
+                  playing={playing}
+                  buffering={buffering}
+                  scrollParent={this.props.containerRef}
+                  onMore={
+                    tracks.entries.length >= 4
+                      ? handleViewMoreResults('tracks')
+                      : null
+                  }
+                  loadMore={(offset, limit) =>
+                    this.props.dispatch(
+                      tracksActions.fetchLineupMetadatas(offset, limit, false, {
+                        category: SearchKind.ALL,
+                        query: searchText,
+                        isTagSearch
+                      })
+                    )
+                  }
+                  playTrack={(uid, trackId) => {
+                    onClickTile(trackId, 'search results page')
+                    this.props.dispatch(tracksActions.play(uid))
+                  }}
+                  pauseTrack={(uid) =>
+                    this.props.dispatch(tracksActions.pause())
+                  }
+                  actions={tracksActions}
+                  onClickTile={(trackId) => {
+                    onClickTile(trackId, 'search results page')
+                  }}
+                />
+              </Box>
             </div>
           ) : null}
           {!isTagSearch && playlistCards.length > 0 ? (

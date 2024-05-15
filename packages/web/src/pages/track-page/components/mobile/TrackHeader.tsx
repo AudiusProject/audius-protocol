@@ -421,8 +421,11 @@ const TrackHeader = ({
           onPlay={onPlay}
         />
       ) : null}
+      {showPreview ? (
+        <PreviewButton playing={isPlaying && isPreviewing} onPlay={onPreview} />
+      ) : null}
       {streamConditions && trackId ? (
-        <Box mb='xl' w='100%'>
+        <Box w='100%'>
           <GatedContentSection
             isLoading={isLoading}
             contentId={trackId}
@@ -437,9 +440,7 @@ const TrackHeader = ({
           />
         </Box>
       ) : null}
-      {showPreview ? (
-        <PreviewButton playing={isPlaying && isPreviewing} onPlay={onPreview} />
-      ) : null}
+
       <ActionButtonRow
         showRepost={showSocials}
         showFavorite={showSocials}

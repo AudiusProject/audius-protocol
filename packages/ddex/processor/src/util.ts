@@ -1,7 +1,6 @@
-import decompress from 'decompress'
-import { mkdir, readFile, readdir, rm, writeFile } from 'fs/promises'
+import * as fs from 'fs/promises'
 import { join } from 'path'
-import { processDeliveryDir } from './parseDelivery'
+import { parseDdexXml } from './parseDelivery'
 import { SourceConfig } from './sources'
 
 export async function sleep(ms: number) {
@@ -21,51 +20,36 @@ export function omitEmpty(obj: any) {
 
 export async function simulateDeliveryForUserName(
   source: SourceConfig,
+  exampleFileName: string,
   userName: string
 ) {
-  // unzip to tempDir
   const tempDir = `/tmp/ddex_simulate/${new Date().toISOString()}`
-  await rm(tempDir, { recursive: true, force: true })
-  await mkdir(tempDir, { recursive: true })
+  await fs.rm(tempDir, { recursive: true, force: true })
+  await fs.mkdir(tempDir, { recursive: true })
+  await fs.cp('./fixtures', tempDir, { recursive: true })
 
-  await decompress(
-    '../ingester/e2e_test/fixtures/batch/ern382/1_CPD1.zip',
-    tempDir
+  const xmlPath = join(tempDir, exampleFileName)
+  let contents = await fs.readFile(xmlPath, 'utf8')
+
+  contents = contents.replaceAll(
+    '<FullName>DJ Theo</FullName>',
+    `<FullName>${userName}</FullName>`
   )
 
-  // change name
-  const files = await readdir(tempDir, { recursive: true })
+  contents = contents.replaceAll(
+    '<GRid>A1B2C3D4E5F6G7H8I9J0K1L2M3N4O5P6Q7R8S9T0</GRid>',
+    `<GRid>A_${Date.now()}</GRid>`
+  )
 
-  const work = files
-    .filter((f) => f.toLowerCase().endsWith('.xml'))
-    .map((f) => join(tempDir, f))
-    .map(async (filePath: string) => {
-      let contents = await readFile(filePath, 'utf8')
-      contents = contents.replaceAll(
-        '<FullName>Monkey Claw</FullName>',
-        `<FullName>${userName}</FullName>`
-      )
+  const releases = parseDdexXml(source.name, xmlPath, contents)
+  console.log('simulated releases', releases)
 
-      contents = contents.replaceAll(
-        '<ICPN>721620118165</ICPN>',
-        `<ICPN>A_${Date.now()}</ICPN>`
-      )
-      contents = contents.replaceAll(
-        '<ISRC>CASE00000001</ISRC>',
-        `<ISRC>T1_${Date.now()}</ISRC>`
-      )
-      contents = contents.replaceAll(
-        '<ISRC>CASE00000002</ISRC>',
-        `<ISRC>T2_${Date.now()}</ISRC>`
-      )
-      await writeFile(filePath, contents, 'utf8')
-    })
-
-  await Promise.all(work)
-
-  await processDeliveryDir(source.name, tempDir)
-
-  // we do want to cleanup tempDir
-  // put publisher needs to get assets (images, sounds)
-  // so we'll have to add a background job to do cleanup
+  setTimeout(
+    () => {
+      console.log('cleaning up', tempDir)
+      fs.rm(tempDir, { recursive: true, force: true })
+    },
+    // should wait at least as long as polling interval
+    1000 * 60 * 30
+  )
 }

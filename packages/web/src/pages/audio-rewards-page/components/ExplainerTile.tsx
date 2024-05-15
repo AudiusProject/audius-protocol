@@ -16,7 +16,6 @@ const TOKEN_ANIMATION_URL =
 const messages = {
   whatIsAudio: 'WHAT IS $AUDIO',
   audioDescription: `Audius is owned by people like you, not major corporations. Holding $AUDIO grants you partial ownership of the Audius platform and gives you access to special features as they are released.`,
-  confused: 'Still confused? Don’t worry, more details coming soon!',
   learnMore: 'Learn More'
 }
 
@@ -89,7 +88,6 @@ export const ExplainerTile = ({ className }: { className?: string }) => {
           <div className={styles.learnMore} onClick={onClickLearnMore}>
             {messages.learnMore}
           </div>
-          <div className={styles.description}>{messages.confused}</div>
         </div>
       </>
     </Tile>

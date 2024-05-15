@@ -25,6 +25,7 @@ type MobileOverflowModalProps = {
   onVisitCollectionPage?: () => void
   onFollow?: () => void
   onUnfollow?: () => void
+  onPurchase?: () => void
 }
 
 const rowMessageMap = {
@@ -55,7 +56,8 @@ const rowMessageMap = {
   [OverflowAction.RELEASE_NOW]: 'Release Now',
   [OverflowAction.DELETE_TRACK]: 'Delete Track',
   [OverflowAction.MARK_AS_PLAYED]: 'Mark as Played',
-  [OverflowAction.MARK_AS_UNPLAYED]: 'Mark as Unplayed'
+  [OverflowAction.MARK_AS_UNPLAYED]: 'Mark as Unplayed',
+  [OverflowAction.PURCHASE_TRACK]: 'Purchase Track'
 }
 
 // A modal for displaying overflow options on mobile.
@@ -80,7 +82,8 @@ const MobileOverflowModal = ({
   onVisitCollectionPage,
   onVisitCollectiblePage,
   onFollow,
-  onUnfollow
+  onUnfollow,
+  onPurchase
 }: MobileOverflowModalProps) => {
   // Mapping from rows to prop callbacks.
   const rowCallbacks = {
@@ -106,6 +109,7 @@ const MobileOverflowModal = ({
     [OverflowAction.UNFOLLOW_ARTIST]: onUnfollow,
     [OverflowAction.FOLLOW]: onFollow,
     [OverflowAction.UNFOLLOW]: onUnfollow,
+    [OverflowAction.PURCHASE_TRACK]: onPurchase,
     // These are implement in native mobile,
     // but not mobile web
     [OverflowAction.REMOVE_FROM_PLAYLIST]: () => {},
