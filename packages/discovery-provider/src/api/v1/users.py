@@ -1759,7 +1759,7 @@ full_get_supporting_response = make_full_response(
 )
 
 get_supported_users_response = make_response(
-    "get_supported_users", full_ns, fields.List(fields.Nested(supporting_response))
+    "get_supported_users", ns, fields.List(fields.Nested(supporting_response))
 )
 full_get_supported_users_response = make_full_response(
     "full_get_supported_users",
