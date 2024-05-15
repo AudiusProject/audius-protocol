@@ -394,7 +394,7 @@ const ClaimAllPanel = () => {
           </Text>
         </Flex>
       </Flex>
-      {true ? (
+      {claimableAmount > 0 ? (
         <Button onClick={onClickClaimAllRewards} iconRight={IconArrow}>
           {messages.claimAllRewards}
         </Button>

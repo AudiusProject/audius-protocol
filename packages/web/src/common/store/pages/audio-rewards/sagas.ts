@@ -203,9 +203,8 @@ function* waitForOptimisticChallengeToComplete({
   const challenge = yield* select(getUserChallenge, {
     challengeId
   })
-  console.log('asdf challnege: ', challenge)
   if (challenge.challenge_type !== 'aggregate' && !challenge.is_complete) {
-    console.log('Waiting for challenge completion...')
+    console.info('Waiting for challenge completion...')
     const raceResult: { isComplete?: boolean } = yield* race({
       isComplete: call(
         waitForValue,
@@ -217,14 +216,10 @@ function* waitForOptimisticChallengeToComplete({
       timeout: delay(completionPollTimeout ?? 10000)
     })
     if (!raceResult.isComplete) {
-      console.log(
+      console.warn(
         'Challenge still not marked as completed on DN. Attempting attestations anyway, but may fail...'
       )
-    } else{
-      console.log('asdf completed')
     }
-  } else {
-    console.log('asdf no polling')
   }
 }
 
@@ -243,7 +238,6 @@ async function claimRewardsForChallenge({
   challengeId: ChallengeId
   specifiers: SpecifierWithAmount[]
 }): Promise<(SpecifierWithAmount | ErrorResult)[]> {
-  console.log('asdf specifiers: ', specifiers)
   return await Promise.all(
     specifiers.map(async (specifierWithAmount) =>
       sdk.challenges
@@ -271,7 +265,6 @@ async function claimRewardsForChallenge({
 function* claimSingleChallengeRewardAsync(
   action: ReturnType<typeof claimChallengeReward>
 ) {
-  console.log('asdf start claimSingleChallengeRewardAsync')
   const remoteConfigInstance = yield* getContext('remoteConfigInstance')
   const env = yield* getContext('env')
   const audiusSdk = yield* getContext('audiusSdk')
@@ -285,7 +278,6 @@ function* claimSingleChallengeRewardAsync(
     env
   )
 
-  console.log('asdf start waitForOptimisticChallengeToComplete')
   yield* call(waitForOptimisticChallengeToComplete, {
     challengeId,
     completionPollFrequency,
@@ -603,7 +595,6 @@ function* watchClaimChallengeReward() {
       // Race the claim against the user clicking "close" on the modal,
       // so that the claim saga gets canceled if the modal is closed
       if (isUseSDKRewardsEnabled) {
-        console.log('asdf sdk rewards claim async')
         yield* race({
           task: call(claimChallengeRewardAsync, args),
           cancel: take(resetAndCancelClaimReward.type)
