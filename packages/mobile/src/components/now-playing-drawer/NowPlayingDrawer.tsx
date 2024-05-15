@@ -36,6 +36,7 @@ import { useNavigation } from 'app/hooks/useNavigation'
 import { AppDrawerContext } from 'app/screens/app-drawer-screen'
 import { AppTabNavigationContext } from 'app/screens/app-screen'
 import { makeStyles } from 'app/styles'
+import { zIndex } from 'app/utils/zIndex'
 
 import { ActionsBar } from './ActionsBar'
 import { Artwork } from './Artwork'
@@ -46,7 +47,6 @@ import { TitleBar } from './TitleBar'
 import { TrackInfo } from './TrackInfo'
 import { PLAY_BAR_HEIGHT } from './constants'
 import { useCurrentTrackDuration } from './useCurrentTrackDuration'
-import { zIndex } from 'app/utils/zIndex'
 const { seek, reset } = playerActions
 
 const { getPlaying, getCurrentTrack, getCounter, getUid } = playerSelectors
