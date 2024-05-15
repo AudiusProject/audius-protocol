@@ -538,7 +538,9 @@ class CollectionPage extends Component<
       previewing,
       tracks: { entries },
       record,
-      stop
+      stop,
+      collection,
+      userId
     } = this.props
     const isQueued = this.isQueued()
     const playingId = this.getPlayingId()
@@ -560,8 +562,9 @@ class CollectionPage extends Component<
         })
       )
     } else if (entries.length > 0) {
+      const isOwner = collection?.playlist_owner_id !== userId
       stop()
-      play(entries[0].uid, { isPreview })
+      play(entries[0].uid, { isPreview: isPreview && isOwner })
       record(
         make(Name.PLAYBACK_PLAY, {
           id: `${entries[0].track_id}`,
