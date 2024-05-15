@@ -234,7 +234,7 @@ function calculatePlayerBehavior(
   playerBehavior?: PlayerBehavior
 ) {
   if (!track) {
-    return { shouldSkip: true, shouldPreview: false }
+    return { shouldSkip: false, shouldPreview: false }
   }
 
   const isPreviewAvailable =
