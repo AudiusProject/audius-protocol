@@ -63,8 +63,7 @@
     "active": true,
     "starting_block": 0,
     "amount": 5,
-    "weekly_pool": 25000,
-    "cooldown_days": 7
+    "weekly_pool": 25000
   },
   {
     "id": "mobile-install",
