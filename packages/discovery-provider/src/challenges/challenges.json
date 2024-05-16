@@ -5,7 +5,9 @@
     "amount": 1,
     "active": true,
     "step_count": 7,
-    "starting_block": 0
+    "starting_block": 0,
+    "weekly_pool": 25000,
+    "cooldown_days": 7
   },
   {
     "id": "listen-streak",
@@ -13,7 +15,8 @@
     "amount": 1,
     "active": true,
     "step_count": 7,
-    "starting_block": 116023891
+    "starting_block": 116023891,
+    "weekly_pool": 25000
   },
   {
     "id": "track-upload",
@@ -21,7 +24,9 @@
     "amount": 1,
     "active": true,
     "step_count": 3,
-    "starting_block": 25346436
+    "starting_block": 25346436,
+    "weekly_pool": 25000,
+    "cooldown_days": 7
   },
   {
     "id": "referrals",
@@ -29,7 +34,9 @@
     "amount": 1,
     "active": true,
     "step_count": 5,
-    "starting_block": 25346436
+    "starting_block": 25346436,
+    "weekly_pool": 25000,
+    "cooldown_days": 7
   },
   {
     "id": "ref-v",
@@ -37,63 +44,78 @@
     "amount": 1,
     "active": true,
     "step_count": 5000,
-    "starting_block": 25346436
+    "starting_block": 25346436,
+    "weekly_pool": 25000,
+    "cooldown_days": 7
   },
   {
     "id": "referred",
     "type": "boolean",
     "amount": 1,
     "active": true,
-    "starting_block": 25346436
+    "starting_block": 25346436,
+    "weekly_pool": 25000,
+    "cooldown_days": 7
   },
   {
     "id": "connect-verified",
     "type": "boolean",
     "amount": 5,
     "active": true,
-    "starting_block": 0
+    "starting_block": 0,
+    "weekly_pool": 25000,
+    "cooldown_days": 7
   },
   {
     "id": "mobile-install",
     "type": "boolean",
     "amount": 1,
     "active": true,
-    "starting_block": 25346436
+    "starting_block": 25346436,
+    "weekly_pool": 25000,
+    "cooldown_days": 7
   },
   {
     "id": "tt",
     "type": "trending",
     "amount": 100,
     "active": true,
-    "starting_block": 25346436
+    "starting_block": 25346436,
+    "weekly_pool": 500
   },
   {
     "id": "tut",
     "type": "trending",
     "amount": 100,
     "active": true,
-    "starting_block": 25346436
+    "starting_block": 25346436,
+    "weekly_pool": 500
   },
   {
     "id": "tp",
     "type": "trending",
     "amount": 100,
     "active": true,
-    "starting_block": 25346436
+    "starting_block": 25346436,
+    "weekly_pool": 500
   },
   {
     "id": "send-first-tip",
     "type": "boolean",
     "amount": 2,
     "active": true,
-    "starting_block": 0
+    "starting_block": 0,
+    "weekly_pool": 500,
+    "cooldown_days": 7
   },
   {
     "id": "first-playlist",
     "type": "boolean",
     "amount": 2,
     "active": true,
-    "starting_block": 28350000
+    "starting_block": 28350000,
+    "weekly_pool": 25000,
+    "cooldown_days": 7
   },
   {
     "id": "b",
