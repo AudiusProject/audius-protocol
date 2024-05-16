@@ -13,7 +13,8 @@ import {
   playbackPositionActions,
   playbackPositionSelectors,
   gatedContentSelectors,
-  calculatePlayerBehavior
+  calculatePlayerBehavior,
+  queueSelectors
 } from '@audius/common/store'
 import {
   Genre,
@@ -59,6 +60,7 @@ const {
 
 const { getTrackId, getUid, getCounter, getPlaying, getPlaybackRate } =
   playerSelectors
+const { getPlayerBehavior } = queueSelectors
 
 const { recordListen } = tracksSocialActions
 const { getTrack } = cacheTracksSelectors
@@ -277,13 +279,14 @@ export function* watchReset() {
     } else {
       const playerUid = yield* select(getUid)
       const playerTrackId = yield* select(getTrackId)
+      const playerBehavior = yield* select(getPlayerBehavior)
       if (playerUid && playerTrackId) {
         yield* put(
           play({
             uid: playerUid,
             trackId: playerTrackId,
-            onEnd: queueActions.next
-            // TODO: Add playerBehavior to reset action
+            onEnd: queueActions.next,
+            playerBehavior: playerBehavior ?? undefined
           })
         )
       }

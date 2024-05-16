@@ -200,8 +200,6 @@ export function* watchPlay() {
       const trackIsDifferent = playerTrackId !== playActionTrack.track_id
       const trackIsSameButDifferentUid =
         playerTrackId === playActionTrack.track_id && uid !== playerUid
-      // TODO: this might matter
-      // uid !== playerUid || !!isPreview !== playerIsPreviewing
       if (noTrackPlaying || trackIsDifferent || trackIsSameButDifferentUid) {
         yield* put(
           playerActions.play({
