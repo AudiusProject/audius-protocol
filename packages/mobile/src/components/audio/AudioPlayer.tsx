@@ -20,11 +20,9 @@ import {
   playbackPositionActions,
   playbackPositionSelectors,
   gatedContentSelectors,
-  calculatePlayerBehavior,
-  PlayerBehavior
+  calculatePlayerBehavior
 } from '@audius/common/store'
 import type { Queueable, CommonState } from '@audius/common/store'
-import { update } from '@audius/common/store/cache/actions'
 import {
   Genre,
   encodeHashId,
@@ -797,33 +795,7 @@ export const AudioPlayer = () => {
     }
   }, [handleStop, playing, uid, previousUid])
 
-  useEffect(() => {
-    if (previousPlayerBehavior !== playerBehavior) {
-      console.log('playerBehavior changed', playerBehavior)
-    }
-  }, [playerBehavior, previousPlayerBehavior])
-
-  useEffect(() => {
-    TrackPlayer.getQueue().then((queue) => {
-      console.log(
-        'redux length:',
-        queueOrder.length,
-        'player length:',
-        queue.length,
-        'redux isPreview:',
-        queueOrder.length > 0 &&
-          queueOrder[0].playerBehavior === PlayerBehavior.PREVIEW_OR_FULL,
-        'isPreview:',
-        queue.length > 0 && queue[0].duration === 30,
-        'didPlayerBehaviorChange:',
-        didPlayerBehaviorChange
-      )
-    })
-  }, [didPlayerBehaviorChange, queueOrder, queueOrder.length, queueTracks])
-
   useSavePodcastProgress()
 
   return null
 }
-
-trackPlayer = TrackPlayer

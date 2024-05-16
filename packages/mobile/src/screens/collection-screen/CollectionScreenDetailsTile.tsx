@@ -15,7 +15,6 @@ import {
   playerSelectors,
   cacheTracksSelectors,
   PurchaseableContentType,
-  playerActions,
   queueActions
 } from '@audius/common/store'
 import { removeNullable } from '@audius/common/utils'
