@@ -12,9 +12,9 @@ const { getCollection } = cacheCollectionsSelectors
 
 const messages = {
   header: 'Are You Sure?',
-  description: (contentType: string) =>
+  description: (contentType: 'album' | 'playlist') =>
     `Are you sure you want to remove this ${contentType} from your device?`,
-  confirm: (contentType: string) =>
+  confirm: (contentType: 'album' | 'playlist') =>
     `Remove Downloaded ${capitalize(contentType)}`
 }
 
