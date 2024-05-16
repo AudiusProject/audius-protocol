@@ -130,6 +130,8 @@ export const SummaryTable = ({
   }
 
   const renderContent = () => {
+    const isLastRow = (index: number) =>
+      summaryItem === undefined && index === nonNullItems.length - 1
     return (
       <>
         {renderBodyProp
@@ -140,12 +142,8 @@ export const SummaryTable = ({
                 justifyContent='space-between'
                 pv='m'
                 ph='xl'
-                backgroundColor={
-                  summaryItem === undefined && index === nonNullItems.length - 1
-                    ? 'surface1'
-                    : undefined
-                }
-                borderBottom='default'
+                backgroundColor={isLastRow(index) ? 'surface1' : undefined}
+                borderBottom={isLastRow(index) ? undefined : 'default'}
                 key={id}
               >
                 <Text variant='body'>{label}</Text>
