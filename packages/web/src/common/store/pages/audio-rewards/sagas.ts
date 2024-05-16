@@ -224,9 +224,6 @@ function* waitForOptimisticChallengeToComplete({
   }
 }
 
-type AAOErrorResult = SpecifierWithAmount & {
-  aaoErrorCode: number
-}
 type ErrorResult = SpecifierWithAmount & {
   error: unknown
 }
@@ -311,21 +308,6 @@ function* claimSingleChallengeRewardAsync(
       })
     )
     yield* put(setUserChallengesDisbursed({ challengeId, specifiers: claimed }))
-
-    // Ignore other errors and return early if there are AAO errors.
-    const aaoErrors = results.filter(
-      (r): r is AAOErrorResult => 'aaoErrorCode' in r
-    )
-    if (aaoErrors.length > 0) {
-      for (const error of aaoErrors) {
-        console.error(
-          `AAO attestation failed for specifier: ${error.specifier} for amount: ${error.amount}`
-        )
-      }
-      // Only consider the first AAO error code; others are likely to be the same anyway for the same user.
-      const aaoErrorCode = aaoErrors.map((r) => r.aaoErrorCode)[0]
-      return { aaoErrorCode }
-    }
 
     const errors = results.filter((r): r is ErrorResult => 'error' in r)
     let aaoError: Errors.AntiAbuseOracleError | undefined
