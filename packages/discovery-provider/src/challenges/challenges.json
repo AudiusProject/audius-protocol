@@ -104,7 +104,7 @@
     "amount": 2,
     "active": true,
     "starting_block": 0,
-    "weekly_pool": 500,
+    "weekly_pool": 25000,
     "cooldown_days": 7
   },
   {
