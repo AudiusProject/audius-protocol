@@ -488,7 +488,7 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         or user_bank_health_info["is_unhealthy"]
         or not delist_statuses_ok
         or (
-            health_results.get("elasticsearch")
+            health_results.get("elasticsearch") != None
             and health_results["elasticsearch"]["status"] != "green"
         )
     )
@@ -516,7 +516,7 @@ def get_location() -> LocationResponse:
 def get_elasticsearch_health_info(
     esclient: Elasticsearch,
     latest_indexed_block_num: int,
-    verbose: bool,
+    verbose: Optional[bool],
 ) -> Dict[str, Dict[str, int]]:
     elasticsearch_health = {}
     elasticsearch_health["status"] = esclient.cluster.health().get("status", None)
