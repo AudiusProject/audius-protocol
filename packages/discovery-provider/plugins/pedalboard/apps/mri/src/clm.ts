@@ -1,7 +1,8 @@
 import { Knex } from "knex";
-import { logger } from "../logger";
-import { convertToCSV, writeCSVToFile } from "../utils/csv";
-import { formatDate } from "../utils/date";
+import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3"
+import { logger } from "./logger";
+import { toCsvString } from "./csv";
+import { formatDate } from "./date";
 
 export type ClientLabelMetadata = {
     UniqueTrackIdentifier: number;
@@ -15,33 +16,27 @@ export type ClientLabelMetadata = {
     Composer: string;
     Duration: number;
     ResourceType: string;
-  }
-  
-  export const reportMRIData = async (db: Knex, date: Date) => {
-      logger.info("beginning report processing")
-  
-      const trackRows = await queryClientLabelMetadataForDay(db, date)
-  
-      logger.info({ len: trackRows.length })
-  
-      const csvData = convertToCSV(trackRows)
-      writeCSVToFile(csvData, `./output/Audius_CLM_${formatDate(date)}.csv`)
-  }
+}
 
-// queries for client label metadata within 24 hours of the given date
-export const queryClientLabelMetadataForDay = async (db: Knex, date: Date): Promise<ClientLabelMetadata[]> => {
+export type ClmS3Config = {
+    s3: S3Client
+    bucket: string
+    keyPrefix: string
+}
+
+// gathers data from a 24 hour period between "YYYY-MM-DDT00:00:00.000Z" to "YYYY-MM-DDT23:59:59.999Z"
+// formats it into csv format compatible with the mri spec
+// publishes it to all the provided s3 configs
+export const clm = async (db: Knex, s3: S3Client, date: Date): Promise<void> => {
+    logger.info("beginning report processing")
+
+    // Gather data from "YYYY-MM-DDT00:00:00.000Z" to "YYYY-MM-DDT23:59:59.999Z"
     const start = new Date(date);
     start.setHours(0, 0, 0, 0)
-
     const end = new Date(date);
     end.setHours(23, 59, 59, 999)
 
-    return queryClientLabelMetadataRange(db, start, end)
-}
-
-export const queryClientLabelMetadataRange = async (db: Knex, start: Date, end: Date): Promise<ClientLabelMetadata[]> => {
-    logger.info({ start: start.toISOString(), end: end.toISOString() }, "gather records in range")
-    const trackRows: ClientLabelMetadata[] = await db('tracks')
+    const clmRows: ClientLabelMetadata[] = await db('tracks')
         .join(
             'users',
             'tracks.owner_id', '=', 'users.user_id'
@@ -49,7 +44,7 @@ export const queryClientLabelMetadataRange = async (db: Knex, start: Date, end: 
         .leftJoin('playlist_tracks', 'tracks.track_id', '=', 'playlist_tracks.track_id')
         .leftJoin('playlists', function () {
             this.on('playlist_tracks.playlist_id', '=', 'playlists.playlist_id')
-            .andOn('playlists.is_album', '=', db.raw('true'))
+                .andOn('playlists.is_album', '=', db.raw('true'))
         })
         .distinctOn('tracks.track_id')
         .select(
@@ -71,5 +66,19 @@ export const queryClientLabelMetadataRange = async (db: Knex, start: Date, end: 
         .where('tracks.created_at', '>=', start)
         .where('tracks.created_at', '<', end)
 
-        return trackRows
+    const csv = toCsvString(clmRows)
+
+    const bucket = "audius-clm-data"
+    const key = `Audius_CLM_${formatDate(date)}.csv`
+    const uploadParams = {
+        Bucket: bucket,
+        Key: key,
+        Body: csv,
+        ContentType: "text/csv"
+    }
+
+    await s3.send(new PutObjectCommand(uploadParams))
+    const objectUrl = `http://localhost:4566/${bucket}/${key}`
+
+    logger.info({ objectUrl }, "upload success")
 }

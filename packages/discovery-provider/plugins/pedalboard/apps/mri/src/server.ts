@@ -1,9 +1,10 @@
 import express, { Application } from "express"
 import { Knex } from "knex"
+import { S3Client } from "@aws-sdk/client-s3"
 import { logger } from "./logger"
-import { reportMRIData } from "./report"
+import { clm } from "./clm"
 
-export const webServer = (db: Knex): Application => {
+export const webServer = (db: Knex, s3: S3Client): Application => {
     const app = express()
     
     app.get("/health_check", (_, res) => {
@@ -34,7 +35,7 @@ export const webServer = (db: Knex): Application => {
                 return res.status(400).send('invalid date format');
             }
 
-            await reportMRIData(db, parsedDate)
+            await clm(db, s3, parsedDate)
 
         } catch (e) {
             logger.error({ e }, "error in record request")
