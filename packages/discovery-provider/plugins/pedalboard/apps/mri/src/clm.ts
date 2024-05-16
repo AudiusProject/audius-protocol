@@ -1,8 +1,6 @@
 import { Knex } from "knex";
-import { PutObjectCommand } from "@aws-sdk/client-s3"
-import { logger } from "./logger";
+import { logger as plogger } from "./logger";
 import { toCsvString } from "./csv";
-import { formatDate } from "./date";
 import { ClmS3Config, publishToS3 } from "./s3";
 
 export type ClientLabelMetadata = {
@@ -23,6 +21,7 @@ export type ClientLabelMetadata = {
 // formats it into csv format compatible with the mri spec
 // publishes it to all the provided s3 configs
 export const clm = async (db: Knex, s3s: ClmS3Config[], date: Date): Promise<void> => {
+    const logger = plogger.child({ date: date.toISOString() })
     logger.info("beginning report processing")
 
     // Gather data from "YYYY-MM-DDT00:00:00.000Z" to "YYYY-MM-DDT23:59:59.999Z"
@@ -30,6 +29,8 @@ export const clm = async (db: Knex, s3s: ClmS3Config[], date: Date): Promise<voi
     start.setHours(0, 0, 0, 0)
     const end = new Date(date);
     end.setHours(23, 59, 59, 999)
+
+    logger.info({ start: start.toISOString(), end: end.toISOString() }, "time range")
 
     const clmRows: ClientLabelMetadata[] = await db('tracks')
         .join(
@@ -63,7 +64,7 @@ export const clm = async (db: Knex, s3s: ClmS3Config[], date: Date): Promise<voi
 
     const csv = toCsvString(clmRows)
 
-    const uploads = s3s.map((s3config) => publishToS3(s3config, date, csv))
+    const uploads = s3s.map((s3config) => publishToS3(logger, s3config, date, csv))
     const results = await Promise.allSettled(uploads)
-    results.forEach((objUrl) => logger.info({ objUrl }, "upload successful"))
+    results.forEach((objUrl) => logger.info({ objUrl, records: clmRows.length }, "upload result"))
 }
