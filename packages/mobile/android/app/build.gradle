@@ -111,7 +111,7 @@ android {
         multiDexEnabled true
         vectorDrawables.useSupportLibrary = true
         // versionCode is automatically incremented in CI
-        versionCode 1
+        versionCode 666
         // Make sure this is above the currently released Android version in the play store if your changes touch native code:
         versionName "1.1.425"
         resValue "string", "build_config_package", "co.audius.app"
