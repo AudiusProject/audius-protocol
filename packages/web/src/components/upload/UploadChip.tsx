@@ -1,7 +1,6 @@
 import { Ref, useCallback, useMemo } from 'react'
 
 import { Name, CreatePlaylistSource } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import { cacheCollectionsActions } from '@audius/common/store'
 import {
   PopupMenu,
@@ -20,7 +19,6 @@ import { capitalize } from 'lodash'
 import { useDispatch } from 'react-redux'
 
 import { Tile } from 'components/tile'
-import { useFlag } from 'hooks/useRemoteConfig'
 import { track, make } from 'services/analytics'
 import { UPLOAD_PAGE } from 'utils/route'
 
@@ -59,7 +57,6 @@ const UploadChip = ({
   isFirst = false,
   source
 }: UploadChipProps) => {
-  const { isEnabled: isEditAlbumsEnabled } = useFlag(FeatureFlags.EDIT_ALBUMS)
   const messages = getMessages(type)
   const icon =
     type === 'track' ? (
@@ -143,7 +140,7 @@ const UploadChip = ({
     </Tile>
   )
 
-  return !isEditAlbumsEnabled || type === 'track' ? (
+  return type === 'track' ? (
     renderTile({
       onClick: type === 'track' ? handleClickUpload : handleCreateCollection
     })

@@ -6,7 +6,6 @@ import {
   ID,
   ModalSource
 } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import {
   cacheCollectionsActions,
   cacheCollectionsSelectors,
@@ -33,7 +32,6 @@ import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
 import { useAuthenticatedCallback } from 'hooks/useAuthenticatedCallback'
-import { useFlag } from 'hooks/useRemoteConfig'
 import { AppState } from 'store/types'
 import {
   collectibleDetailsPage,
@@ -109,7 +107,6 @@ const ConnectedMobileOverflowModal = ({
   unfollow,
   shareUser
 }: ConnectedMobileOverflowModalProps) => {
-  const { isEnabled: isEditAlbumsEnabled } = useFlag(FeatureFlags.EDIT_ALBUMS)
   const { onOpen: openPremiumContentModal } = usePremiumContentPurchaseModal()
   const openPurchaseModal = useAuthenticatedCallback(
     (...args: Parameters<typeof openPremiumContentModal>) =>
@@ -205,10 +202,7 @@ const ConnectedMobileOverflowModal = ({
             ),
           onVisitCollectiblePage: () =>
             visitCollectiblePage(handle, id as string),
-          onEditPlaylist:
-            !isAlbum || isEditAlbumsEnabled
-              ? () => onOpenEditPlaylist({ collectionId: id as ID })
-              : () => {},
+          onEditPlaylist: () => onOpenEditPlaylist({ collectionId: id as ID }),
           onDeletePlaylist: isAlbum ? () => {} : () => deletePlaylist(id as ID),
           onPublishPlaylist: isAlbum
             ? () => {}
