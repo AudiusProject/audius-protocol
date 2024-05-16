@@ -1,37 +1,19 @@
 import type { ReactNode } from 'react'
-import React, { useCallback, useState } from 'react'
+import { useCallback, useState } from 'react'
 
 import { removeNullable } from '@audius/common/utils'
-import { LayoutAnimation, View } from 'react-native'
+import { LayoutAnimation } from 'react-native'
 
 import type { TextColors } from '@audius/harmony-native'
-import { Text } from '@audius/harmony-native'
+import { Flex, Text } from '@audius/harmony-native'
 import { Expandable, ExpandableArrowIcon } from 'app/components/expandable'
-import { flexRowCentered, makeStyles } from 'app/styles'
+import { makeStyles } from 'app/styles'
 
 const useStyles = makeStyles(({ spacing, palette }) => ({
   container: {
     borderColor: palette.neutralLight8,
     borderWidth: 1,
     borderRadius: spacing(1)
-  },
-  row: {
-    ...flexRowCentered(),
-    justifyContent: 'space-between',
-    paddingVertical: spacing(3),
-    paddingHorizontal: spacing(6),
-    borderBottomColor: palette.neutralLight8,
-    borderBottomWidth: 1
-  },
-  lastRow: {
-    borderBottomWidth: 0
-  },
-  grayRow: {
-    backgroundColor: palette.neutralLight10
-  },
-  collapsibleTitle: {
-    ...flexRowCentered(),
-    gap: spacing(2)
   }
 }))
 
@@ -80,33 +62,53 @@ export const SummaryTable = ({
 
   const renderHeader = () => {
     return collapsible ? (
-      <View style={[styles.row, styles.grayRow]}>
-        <View style={styles.collapsibleTitle}>
+      <Flex
+        direction='row'
+        justifyContent='space-between'
+        pv='m'
+        ph='xl'
+        backgroundColor='surface1'
+        borderBottom={isExpanded ? 'default' : undefined}
+      >
+        <Flex direction='row' alignItems='center' gap='s'>
           <ExpandableArrowIcon expanded={isExpanded} iconSize='s' />
           <Text variant='title' strength='default'>
             {title}
           </Text>
-        </View>
+        </Flex>
         <Text variant='title' strength='default'>
           {secondaryTitle}
         </Text>
-      </View>
+      </Flex>
     ) : (
-      <View style={[styles.row, styles.grayRow]}>
+      <Flex
+        direction='row'
+        justifyContent='space-between'
+        pv='m'
+        ph='xl'
+        backgroundColor='surface1'
+        borderBottom='default'
+      >
         <Text variant='title' strength='default'>
           {title}
         </Text>
         <Text variant='title' strength='default'>
           {secondaryTitle}
         </Text>
-      </View>
+      </Flex>
     )
   }
 
   const renderSummaryItem = () => {
     if (summaryItem === undefined) return null
     return (
-      <View style={[styles.row, styles.lastRow, styles.grayRow]}>
+      <Flex
+        direction='row'
+        justifyContent='space-between'
+        pv='m'
+        ph='xl'
+        backgroundColor='surface1'
+      >
         <Text
           variant='body'
           size='m'
@@ -123,7 +125,7 @@ export const SummaryTable = ({
         >
           {summaryItem.value}
         </Text>
-      </View>
+      </Flex>
     )
   }
 
@@ -133,20 +135,24 @@ export const SummaryTable = ({
         {renderBodyProp
           ? renderBodyProp(items)
           : nonNullItems.map(({ id, label, value, color }, index) => (
-              <View
-                key={id}
-                style={[
-                  styles.row,
+              <Flex
+                direction='row'
+                justifyContent='space-between'
+                pv='m'
+                ph='xl'
+                backgroundColor={
                   summaryItem === undefined && index === nonNullItems.length - 1
-                    ? styles.lastRow
-                    : null
-                ]}
+                    ? 'surface1'
+                    : undefined
+                }
+                borderBottom='default'
+                key={id}
               >
                 <Text variant='body'>{label}</Text>
                 <Text variant='body' color={color}>
                   {value}
                 </Text>
-              </View>
+              </Flex>
             ))}
         {renderSummaryItem()}
       </>
@@ -163,9 +169,9 @@ export const SummaryTable = ({
       {renderContent()}
     </Expandable>
   ) : (
-    <View style={styles.container}>
+    <Flex border='default' borderRadius='s'>
       {renderHeader()}
       {renderContent()}
-    </View>
+    </Flex>
   )
 }
