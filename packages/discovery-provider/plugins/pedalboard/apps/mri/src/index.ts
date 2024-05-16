@@ -1,16 +1,20 @@
 import knex from "knex"
 import { logger } from "./logger"
 import { CronJob } from "cron"
-import { reportMRIData } from "./report"
+import { reportMRIData } from "./reports/clientLabelMetadata"
 import { webServer } from "./server"
+import { createBucket, listBuckets } from "./s3"
 
 const main = async () => {
     logger.info({}, "good morning")
 
     const db = knex({
         client: 'pg',
-        connection: process.env.audius_db_url || "postgresql://postgres:postgres@0.0.0.0:5432/discovery_provider_1"
+        connection: process.env.audius_db_url || "postgresql://postgres:pass@0.0.0.0:5433/default_db"
     })
+
+    await createBucket("test-bucket")
+    const buckets = await listBuckets()
 
     const job = CronJob.from({
         // run at 10 AM PST every day

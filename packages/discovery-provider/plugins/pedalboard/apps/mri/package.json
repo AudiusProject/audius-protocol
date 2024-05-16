@@ -10,7 +10,7 @@
     "watch": "tsc --watch",
     "serve": "nodemon",
     "dev": "concurrently \"npm run watch\" \"npm run serve\"",
-    "test:db": "chmod +x ./scripts/prod-db.sh && ./scripts/prod-db.sh",
+    "test:local": "docker compose up -d && chmod +x ./scripts/seed-prod-db.sh && ./scripts/seed-prod-db.sh",
     "test": "vitest",
     "lint": "tsc --noEmit && eslint \"src/**/*.ts*\""
   },
@@ -24,6 +24,7 @@
     "ts-node-dev": "^2.0.0"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.577.0",
     "@types/cron": "2.4.0",
     "cron": "3.1.7",
     "envalid": "8.0.0",
