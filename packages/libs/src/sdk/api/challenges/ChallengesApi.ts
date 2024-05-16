@@ -103,11 +103,10 @@ export class ChallengesApi extends BaseAPI {
     const attestationTransactionSignatures: string[] = []
 
     logger.debug('Creating user bank if necessary...')
-    const { userBank: destinationUserBank } =
-      await this.claimableTokens.getOrCreateUserBank({
-        ethWallet: recipientEthAddress,
-        mint: 'wAUDIO'
-      })
+    const userBankPromise = this.claimableTokens.getOrCreateUserBank({
+      ethWallet: recipientEthAddress,
+      mint: 'wAUDIO'
+    })
 
     logger.debug('Getting attestation submission state...')
     const submissions = await this.rewardManager.getSubmittedAttestations({
@@ -168,6 +167,7 @@ export class ChallengesApi extends BaseAPI {
     )
 
     logger.debug('Disbursing claim...')
+    const { userBank: destinationUserBank } = await userBankPromise
     const transactionSignature = await this.evaluateAttestations({
       challengeId,
       specifier,
