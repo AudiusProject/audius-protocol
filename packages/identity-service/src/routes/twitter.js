@@ -117,19 +117,34 @@ module.exports = function (app) {
     '/twitter/handle_lookup',
     handleResponse(async (req, res, next) => {
       const handle = req.query.handle
+
+      // Alternate between two different methods to double our rate-limit
+      const userLookupApi =
+        Math.random() > 0.5 ? `username/${handle}?` : `?usernames=${handle}`
+
       if (handle) {
         const userRequest = {
           method: 'get',
-          url: `https://api.twitter.com/1.1/users/lookup.json?screen_name=${handle}`,
-          oauth: {
-            consumer_key: config.get('twitterAPIKey'),
-            consumer_secret: config.get('twitterAPISecret')
+          url: `https://api.twitter.com/2/users/by/${userLookupApi}&user.fields=verified`,
+          headers: {
+            Authorization: `Bearer ${config.get('twitterBearerToken')}`
           },
           json: true
         }
-        const userProfile = await doRequest(userRequest)
 
-        return successResponse({ profile: userProfile })
+        try {
+          const userProfile = await doRequest(userRequest)
+
+          // Update usernames api response to look like username api
+          if (Array.isArray(userProfile.data)) {
+            userProfile.data = userProfile.data[0]
+          }
+
+          return successResponse({ profile: userProfile })
+        } catch (err) {
+          console.log('Twitter Rate limit exceeded')
+          return errorResponseBadRequest('Twitter rate limit exceeded')
+        }
       } else
         return errorResponseBadRequest(
           'Please enter a valid handle as a query param'
