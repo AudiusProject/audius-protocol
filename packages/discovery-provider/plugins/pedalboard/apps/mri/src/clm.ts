@@ -1,8 +1,9 @@
 import { Knex } from "knex";
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3"
+import { PutObjectCommand } from "@aws-sdk/client-s3"
 import { logger } from "./logger";
 import { toCsvString } from "./csv";
 import { formatDate } from "./date";
+import { ClmS3Config, publishToS3 } from "./s3";
 
 export type ClientLabelMetadata = {
     UniqueTrackIdentifier: number;
@@ -18,16 +19,10 @@ export type ClientLabelMetadata = {
     ResourceType: string;
 }
 
-export type ClmS3Config = {
-    s3: S3Client
-    bucket: string
-    keyPrefix: string
-}
-
 // gathers data from a 24 hour period between "YYYY-MM-DDT00:00:00.000Z" to "YYYY-MM-DDT23:59:59.999Z"
 // formats it into csv format compatible with the mri spec
 // publishes it to all the provided s3 configs
-export const clm = async (db: Knex, s3: S3Client, date: Date): Promise<void> => {
+export const clm = async (db: Knex, s3s: ClmS3Config[], date: Date): Promise<void> => {
     logger.info("beginning report processing")
 
     // Gather data from "YYYY-MM-DDT00:00:00.000Z" to "YYYY-MM-DDT23:59:59.999Z"
@@ -68,17 +63,7 @@ export const clm = async (db: Knex, s3: S3Client, date: Date): Promise<void> => 
 
     const csv = toCsvString(clmRows)
 
-    const bucket = "audius-clm-data"
-    const key = `Audius_CLM_${formatDate(date)}.csv`
-    const uploadParams = {
-        Bucket: bucket,
-        Key: key,
-        Body: csv,
-        ContentType: "text/csv"
-    }
-
-    await s3.send(new PutObjectCommand(uploadParams))
-    const objectUrl = `http://localhost:4566/${bucket}/${key}`
-
-    logger.info({ objectUrl }, "upload success")
+    const uploads = s3s.map((s3config) => publishToS3(s3config, date, csv))
+    const results = await Promise.allSettled(uploads)
+    results.forEach((objUrl) => logger.info({ objUrl }, "upload successful"))
 }
