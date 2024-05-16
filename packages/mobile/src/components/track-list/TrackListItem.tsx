@@ -307,7 +307,9 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
           ? OverflowAction.UNREPOST
           : OverflowAction.REPOST
         : null,
-      !isTrackOwner && isLocked ? OverflowAction.PURCHASE_TRACK : null,
+      !isTrackOwner && isLocked && !isDeleted
+        ? OverflowAction.PURCHASE_TRACK
+        : null,
       isEditAlbumsEnabled && isTrackOwner && !ddexApp
         ? OverflowAction.ADD_TO_ALBUM
         : null,

@@ -63,6 +63,7 @@ const ConnectedTrackListItem = (props: ConnectedTrackListItemProps) => {
     isSaved,
     streamConditions,
     trackId,
+    isDeleted,
     user
   } = props
   const { isEnabled: isEditAlbumsEnabled } = useFlag(FeatureFlags.EDIT_ALBUMS)
@@ -83,7 +84,9 @@ const ConnectedTrackListItem = (props: ConnectedTrackListItemProps) => {
 
   const onClickOverflow = () => {
     const overflowActions = [
-      isPurchase && !hasStreamAccess ? OverflowAction.PURCHASE_TRACK : null,
+      isPurchase && !hasStreamAccess && !isDeleted
+        ? OverflowAction.PURCHASE_TRACK
+        : null,
       isLocked
         ? null
         : isReposted
