@@ -168,20 +168,19 @@ export const DetailsTileActionButtons = ({
   )
 
   const isAlbum = isCollection && collection?.is_album
-  const isCollectionOwner = isCollection && isOwner
 
   return (
     <Flex direction='row' justifyContent='center' gap='xl'>
       {hideShare ? null : shareButton}
-      {isCollectionOwner && !ddexApp
+      {isOwner && !ddexApp
         ? !isAlbum
           ? editButton
           : null
         : hideRepost
         ? null
         : repostButton}
-      {isCollectionOwner || hideFavorite ? null : favoriteButton}
-      {isCollectionOwner && !isPublished && !isAlbum ? publishButton : null}
+      {isOwner || hideFavorite ? null : favoriteButton}
+      {isOwner && !isPublished && !isAlbum ? publishButton : null}
       {hideOverflow ? null : overflowMenu}
     </Flex>
   )

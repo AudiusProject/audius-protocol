@@ -315,7 +315,7 @@ export const email = ({
 										</table>
 									</div> 
 									${
-                    payExtra
+                    payExtra !== '0.00'
                       ? `<div>
 										<table border="0" cellspacing="0" cellpadding="0" width="100%">
 										<tr><td align="left" valign="middle" bgcolor="#ffffff" style="padding: 12px 24px; border-top: 1px solid #f2f2f4;">

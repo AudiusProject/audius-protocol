@@ -303,7 +303,9 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
           ? OverflowAction.UNREPOST
           : OverflowAction.REPOST
         : null,
-      !isTrackOwner && isLocked ? OverflowAction.PURCHASE_TRACK : null,
+      !isTrackOwner && isLocked && !isDeleted
+        ? OverflowAction.PURCHASE_TRACK
+        : null,
       isTrackOwner && !ddexApp ? OverflowAction.ADD_TO_ALBUM : null,
       isPlaylistAddable ? OverflowAction.ADD_TO_PLAYLIST : null,
       isNewPodcastControlsEnabled && isLongFormContent
@@ -333,6 +335,7 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
     isLocked,
     has_current_user_saved,
     has_current_user_reposted,
+    isDeleted,
     ddexApp,
     isPlaylistAddable,
     isNewPodcastControlsEnabled,
