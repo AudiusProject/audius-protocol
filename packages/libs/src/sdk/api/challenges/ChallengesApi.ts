@@ -101,7 +101,8 @@ export class ChallengesApi extends BaseAPI {
     }
     const { ercWallet: recipientEthAddress, handle } = data
     const attestationTransactionSignatures: string[] = []
-
+    const antiAbuseOracleEthAddress =
+      '0x9811BA3eAB1F2Cd9A2dFeDB19e8c2a69729DC8b6'
     logger.debug('Creating user bank if necessary...')
     const userBankPromise = this.claimableTokens.getOrCreateUserBank({
       ethWallet: recipientEthAddress,
@@ -115,69 +116,70 @@ export class ChallengesApi extends BaseAPI {
     })
     logger.debug('Submission state:', submissions)
 
+    const attestationPromises = []
     let antiAbuseOracleEthAddress = submissions?.messages.find(
       (m) => m.attestation.antiAbuseOracleEthAddress === null
     )?.senderEthAddress
     if (!antiAbuseOracleEthAddress) {
       logger.debug('Submitting anti abuse oracle attestation...')
-      const response = await this.submitAntiAbuseOracleAttestation({
-        challengeId,
-        specifier,
-        amount,
-        recipientEthAddress,
-        handle
-      })
-      if ('aaoErrorCode' in response) {
-        return { aaoErrorCode: response.aaoErrorCode }
-      }
-      antiAbuseOracleEthAddress = response.antiAbuseOracleEthAddress
-      attestationTransactionSignatures.push(response.transactionSignature)
-    } else {
-      // Need to convert to checksum address as the attestation is lowercased
-      antiAbuseOracleEthAddress = toChecksumAddress(antiAbuseOracleEthAddress)
+      attestationPromises.push(
+        this.submitAntiAbuseOracleAttestation({
+          challengeId,
+          specifier,
+          amount,
+          recipientEthAddress,
+          handle
+        })
+      )
     }
 
     const existingSenderOwners =
       submissions?.messages
         .filter((m) => !!m.attestation.antiAbuseOracleEthAddress)
         .map((m) => m.operator) ?? []
-    logger.debug('Existing sender owners:', existingSenderOwners)
+    console.log('Existing sender owners:', existingSenderOwners)
 
     const state = await this.rewardManager.getRewardManagerState()
-    if (existingSenderOwners.length < state.minVotes) {
-      logger.debug('Submitting discovery node attestations...')
-      const signatures = await this.submitDiscoveryAttestations({
-        userId,
-        antiAbuseOracleEthAddress,
-        challengeId,
-        specifier,
-        amount,
-        recipientEthAddress,
-        numberOfNodes: state.minVotes - existingSenderOwners.length,
-        excludeOwners: existingSenderOwners,
-        logger
-      })
-      attestationTransactionSignatures.push(...signatures)
-    }
-
-    logger.debug('Confirming all attestation submissions...')
-    await this.rewardManager.confirmAllTransactions(
-      attestationTransactionSignatures,
-      'finalized' // for some reason, only works when finalized...
-    )
-
-    logger.debug('Disbursing claim...')
-    const { userBank: destinationUserBank } = await userBankPromise
-    const transactionSignature = await this.evaluateAttestations({
-      challengeId,
-      specifier,
-      recipientEthAddress,
-      destinationUserBank,
-      antiAbuseOracleEthAddress,
-      amount
+    console.log('asdf state: ', state)
+    await Promise.all(attestationPromises).then((results) => {
+      console.log('asdf results: ', results)
     })
+    // if (existingSenderOwners.length < state.minVotes) {
+    //   logger.debug('Submitting discovery node attestations...')
+    //   attestationPromises.push(
+    //     this.submitDiscoveryAttestations({
+    //       userId,
+    //       antiAbuseOracleEthAddress,
+    //       challengeId,
+    //       specifier,
+    //       amount,
+    //       recipientEthAddress,
+    //       numberOfNodes: state.minVotes - existingSenderOwners.length,
+    //       excludeOwners: existingSenderOwners,
+    //       logger
+    //     })
+    //   )
+    // }
+    // attestationTransactionSignatures.push(...signatures)
 
-    return { transactionSignature }
+    // logger.debug('Confirming all attestation submissions...')
+    // await this.rewardManager.confirmAllTransactions(
+    //   attestationTransactionSignatures,
+    //   'finalized' // for some reason, only works when finalized...
+    // )
+
+    // logger.debug('Disbursing claim...')
+    // const { userBank: destinationUserBank } = await userBankPromise
+    // const transactionSignature = await this.evaluateAttestations({
+    //   challengeId,
+    //   specifier,
+    //   recipientEthAddress,
+    //   destinationUserBank,
+    //   antiAbuseOracleEthAddress,
+    //   amount
+    // })
+
+    // return { transactionSignature }
   }
 
   private async submitAntiAbuseOracleAttestation({
