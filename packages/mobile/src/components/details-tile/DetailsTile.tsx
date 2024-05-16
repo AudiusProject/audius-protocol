@@ -266,7 +266,7 @@ export const DetailsTile = ({
   }
 
   return (
-    <Paper>
+    <Paper mb='2xl' style={{ overflow: 'hidden' }}>
       {renderDogEar()}
       <Flex p='l' gap='l' alignItems='center' w='100%'>
         <Text
