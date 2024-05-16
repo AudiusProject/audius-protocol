@@ -202,9 +202,7 @@ const ConnectedMobileOverflowModal = ({
             ),
           onVisitCollectiblePage: () =>
             visitCollectiblePage(handle, id as string),
-          onEditPlaylist: !isAlbum
-            ? () => onOpenEditPlaylist({ collectionId: id as ID })
-            : () => {},
+          onEditPlaylist: () => onOpenEditPlaylist({ collectionId: id as ID }),
           onDeletePlaylist: isAlbum ? () => {} : () => deletePlaylist(id as ID),
           onPublishPlaylist: isAlbum
             ? () => {}

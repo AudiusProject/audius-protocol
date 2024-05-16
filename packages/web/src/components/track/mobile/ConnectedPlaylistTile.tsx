@@ -189,8 +189,8 @@ const ConnectedPlaylistTile = ({
       collection.is_album
         ? OverflowAction.VIEW_ALBUM_PAGE
         : OverflowAction.VIEW_PLAYLIST_PAGE,
-      isOwner && !collection.is_album ? OverflowAction.PUBLISH_PLAYLIST : null,
-      isOwner && !collection.is_album
+      isOwner ? OverflowAction.PUBLISH_PLAYLIST : null,
+      isOwner
         ? collection.is_album
           ? OverflowAction.DELETE_ALBUM
           : OverflowAction.DELETE_PLAYLIST

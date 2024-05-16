@@ -172,8 +172,8 @@ const CollectionTileComponent = ({
       is_album
         ? OverflowAction.VIEW_ALBUM_PAGE
         : OverflowAction.VIEW_PLAYLIST_PAGE,
-      isOwner && !is_album ? OverflowAction.PUBLISH_PLAYLIST : null,
-      isOwner && !is_album
+      isOwner ? OverflowAction.PUBLISH_PLAYLIST : null,
+      isOwner
         ? is_album
           ? OverflowAction.DELETE_ALBUM
           : OverflowAction.DELETE_PLAYLIST
