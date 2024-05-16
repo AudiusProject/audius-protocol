@@ -49,7 +49,7 @@ import { isMobileWeb } from 'common/utils/isMobileWeb'
 import { isPreview } from 'common/utils/isPreview'
 import { AppState } from 'store/types'
 
-const { getSource, getUid, getPositions } = queueSelectors
+const { getSource, getUid, getPositions, getPlayerBehavior } = queueSelectors
 const { getUid: getCurrentPlayerTrackUid, getPlaying } = playerSelectors
 const { getUsers } = cacheUsersSelectors
 const { getTrack, getTracks } = cacheTracksSelectors
@@ -455,10 +455,15 @@ function* play<T extends Track | Collection>(
   if (action.uid) {
     const source = yield* select(getSource)
     const currentPlayerTrackUid = yield* select(getCurrentPlayerTrackUid)
+    const currentPlayerBehavior = yield* select(getPlayerBehavior)
+    const newPlayerBehavior = isPreview
+      ? PlayerBehavior.PREVIEW_OR_FULL
+      : undefined
     if (
       !currentPlayerTrackUid ||
       action.uid !== currentPlayerTrackUid ||
-      source !== lineup.prefix
+      source !== lineup.prefix ||
+      currentPlayerBehavior !== newPlayerBehavior
     ) {
       const toQueue = yield* all(
         lineup.entries.map(function* (e: LineupEntry<T>) {
