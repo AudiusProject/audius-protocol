@@ -14,7 +14,7 @@ type TablePlayButtonProps = {
   paused?: boolean
   playing?: boolean
   isTrackPremium?: boolean
-  isOwned?: boolean
+  isLocked?: boolean
 }
 
 export const TablePlayButton = ({
@@ -23,29 +23,27 @@ export const TablePlayButton = ({
   onClick,
   paused,
   playing = false,
-  isTrackPremium = false,
-  isOwned = false
+  isLocked = false
 }: TablePlayButtonProps) => {
   const {
     color: {
-      special,
+      special: { lightGreen },
       primary: { p300 }
     }
   } = useTheme()
-  const showPremiumColor = isOwned && isTrackPremium
   return (
     <div onClick={onClick} className={cn(styles.tablePlayButton, className)}>
       {playing && !paused ? (
         <IconPause
           className={styles.icon}
-          fill={showPremiumColor ? special.lightGreen : p300}
+          fill={isLocked ? lightGreen : p300}
         />
       ) : (
         <IconPlay
           className={cn(styles.icon, {
             [styles.hideDefault]: hideDefault && !playing
           })}
-          fill={showPremiumColor ? special.lightGreen : p300}
+          fill={isLocked ? lightGreen : p300}
         />
       )}
     </div>
