@@ -118,37 +118,43 @@ module.exports = function (app) {
     handleResponse(async (req, res, next) => {
       const handle = req.query.handle
 
-      // Alternate between two different methods to double our rate-limit
-      const userLookupApi =
-        Math.random() > 0.5 ? `username/${handle}?` : `?usernames=${handle}`
-
-      if (handle) {
-        const userRequest = {
-          method: 'get',
-          url: `https://api.twitter.com/2/users/by/${userLookupApi}&user.fields=verified`,
-          headers: {
-            Authorization: `Bearer ${config.get('twitterBearerToken')}`
-          },
-          json: true
-        }
-
-        try {
-          const userProfile = await doRequest(userRequest)
-
-          // Update usernames api response to look like username api
-          if (Array.isArray(userProfile.data)) {
-            userProfile.data = userProfile.data[0]
-          }
-
-          return successResponse({ profile: userProfile })
-        } catch (err) {
-          console.log('Twitter Rate limit exceeded')
-          return errorResponseBadRequest('Twitter rate limit exceeded')
-        }
-      } else
+      if (!handle) {
         return errorResponseBadRequest(
           'Please enter a valid handle as a query param'
         )
+      }
+
+      // Alternate between two similar routes to double our rate-limit
+      const userLookupRoute =
+        Math.random() > 0.5 ? `username/${handle}?` : `?usernames=${handle}`
+
+      const userRequest = {
+        method: 'get',
+        url: `https://api.twitter.com/2/users/by/${userLookupRoute}&user.fields=verified`,
+        headers: {
+          Authorization: `Bearer ${config.get('twitterBearerToken')}`
+        },
+        json: true
+      }
+
+      try {
+        const [response, profile] = await makeRequest(userRequest)
+
+        if (response.statusCode === 429) {
+          const rateLimitMessage = 'Twitter user lookup rate-limit exceeded'
+          console.warn(rateLimitMessage)
+          return errorResponseBadRequest(rateLimitMessage)
+        }
+
+        // Coerce /usernames api response to /username response
+        if (Array.isArray(profile.data)) {
+          profile.data = profile.data[0]
+        }
+
+        return successResponse({ profile })
+      } catch (err) {
+        return errorResponseBadRequest(err)
+      }
     })
   )
 
@@ -260,6 +266,15 @@ function doRequest(reqObj) {
     request(reqObj, function (err, r, body) {
       if (err) reject(err)
       else resolve(body)
+    })
+  })
+}
+
+function makeRequest(reqObj) {
+  return new Promise(function (resolve, reject) {
+    request(reqObj, function (err, response, body) {
+      if (err) reject(err)
+      else resolve([response, body])
     })
   })
 }
