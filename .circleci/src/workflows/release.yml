@@ -91,6 +91,11 @@ jobs:
       service: ddex-ingester
       notify_slack_on_failure: true
   - push-docker-image:
+      name: push-ddex-processor
+      context: [GCP, dockerhub, slack-secrets]
+      service: ddex-processor
+      notify_slack_on_failure: true
+  - push-docker-image:
       name: push-ddex-publisher
       context: [GCP, dockerhub, slack-secrets]
       service: ddex-publisher
@@ -227,6 +232,7 @@ jobs:
         - push-uptime
         - push-ddex-web
         - push-ddex-ingester
+        - push-ddex-processor
         - push-ddex-publisher
         # uncomment these when arm builds are stable
         # - push-identity-service-arm

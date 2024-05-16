@@ -564,6 +564,7 @@ workflows:
             packages/ddex/webapp/.* run-ddex-webapp-workflow true
             packages/ddex/webapp/.* run-ddex-e2e-workflow true
             packages/ddex/ingester/.* run-ddex-e2e-workflow true
+            packages/ddex/processor/.* run-ddex-processor-workflow true
             packages/ddex/publisher/.* run-ddex-publisher-workflow true
             packages/create-audius-app/.* run-create-audius-app-workflow true
             protocol-dashboard/.* run-protocol-dashboard-workflow true

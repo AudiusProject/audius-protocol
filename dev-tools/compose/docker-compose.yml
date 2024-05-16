@@ -225,6 +225,15 @@ services:
     profiles:
       - ddex
 
+  ddex-processor:
+    extends:
+      file: docker-compose.ddex.yml
+      service: ddex-processor
+    container_name: ddex-processor
+    <<: *common
+    profiles:
+      - ddex
+
   ddex-publisher:
     extends:
       file: docker-compose.ddex.yml

@@ -19,7 +19,14 @@ docker-tag-images:
       enum: ['prerelease', 'edge', 'current', '__version__']
     service:
       type: enum
-      enum: ['discovery-provider', 'creator-node', 'identity-service', 'ddex', 'all']
+      enum:
+        [
+          'discovery-provider',
+          'creator-node',
+          'identity-service',
+          'ddex',
+          'all'
+        ]
   steps:
     - run:
         name: Get crane
@@ -58,6 +65,7 @@ docker-tag-images:
           ddex=(
             ddex-ingester
             ddex-publisher
+            ddex-processor
             ddex-web
           )
 
