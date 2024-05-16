@@ -354,6 +354,21 @@ export const DetailsTile = ({
         borderBottomLeftRadius='m'
         borderBottomRightRadius='m'
       >
+        {!hasStreamAccess && !isOwner && streamConditions && contentId ? (
+          <DetailsTileNoAccess
+            trackId={contentId}
+            contentType={contentType}
+            streamConditions={streamConditions}
+          />
+        ) : null}
+        {(hasStreamAccess || isOwner) && streamConditions ? (
+          <DetailsTileHasAccess
+            streamConditions={streamConditions}
+            isOwner={isOwner}
+            trackArtist={user}
+            contentType={contentType}
+          />
+        ) : null}
         {!isPublished ? null : (
           <DetailsTileStats
             favoriteCount={saveCount}
@@ -374,21 +389,6 @@ export const DetailsTile = ({
               {description}
             </UserGeneratedText>
           </Box>
-        ) : null}
-        {!hasStreamAccess && !isOwner && streamConditions && contentId ? (
-          <DetailsTileNoAccess
-            trackId={contentId}
-            contentType={contentType}
-            streamConditions={streamConditions}
-          />
-        ) : null}
-        {(hasStreamAccess || isOwner) && streamConditions ? (
-          <DetailsTileHasAccess
-            streamConditions={streamConditions}
-            isOwner={isOwner}
-            trackArtist={user}
-            contentType={contentType}
-          />
         ) : null}
         <DetailsTileMetadata genre={track?.genre} mood={track?.mood} />
         <SecondaryStats
