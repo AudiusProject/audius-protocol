@@ -10,8 +10,7 @@
     "watch": "tsc --watch",
     "serve": "nodemon",
     "dev": "concurrently \"npm run watch\" \"npm run serve\"",
-    "test:local": "docker compose up -d && chmod +x ./scripts/seed-prod-db.sh && ./scripts/seed-prod-db.sh",
-    "test": "vitest",
+    "deps": "docker compose up -d && chmod +x ./scripts/seed-prod-db.sh && ./scripts/seed-prod-db.sh",
     "lint": "tsc --noEmit && eslint \"src/**/*.ts*\""
   },
   "author": "alec@audius.co",
