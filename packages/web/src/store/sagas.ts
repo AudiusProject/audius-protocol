@@ -91,7 +91,6 @@ import chatWebSagas from 'store/application/ui/chat/sagas'
 import cookieBannerSagas from 'store/application/ui/cookieBanner/sagas'
 import scrollLockSagas from 'store/application/ui/scrollLock/sagas'
 import stemUploadSagas from 'store/application/ui/stemsUpload/sagas'
-import themeSagas from 'store/application/ui/theme/sagas'
 import userListModalSagas from 'store/application/ui/userListModal/sagas'
 import withdrawUSDCSagas from 'store/application/ui/withdraw-usdc/sagas'
 import errorSagas from 'store/errors/sagas'
@@ -203,7 +202,6 @@ export default function* rootSaga() {
     smartCollectionPageSagas(),
     searchUsersModalSagas(),
     stemUploadSagas(),
-    themeSagas(),
     tokenDashboardSagas(),
     uploadConfirmationModalSagas(),
     publishTrackConfirmationModalSagas(),

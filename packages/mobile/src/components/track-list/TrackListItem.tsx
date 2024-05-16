@@ -307,7 +307,9 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
           ? OverflowAction.UNREPOST
           : OverflowAction.REPOST
         : null,
-      !isTrackOwner && isLocked ? OverflowAction.PURCHASE_TRACK : null,
+      !isTrackOwner && isLocked && !isDeleted
+        ? OverflowAction.PURCHASE_TRACK
+        : null,
       isEditAlbumsEnabled && isTrackOwner && !ddexApp
         ? OverflowAction.ADD_TO_ALBUM
         : null,
@@ -352,8 +354,7 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
     isContextPlaylistOwner,
     dispatch,
     track_id,
-    contextPlaylistId,
-    isLocked
+    contextPlaylistId
   ])
 
   const handlePressOverflow = (e: NativeSyntheticEvent<NativeTouchEvent>) => {

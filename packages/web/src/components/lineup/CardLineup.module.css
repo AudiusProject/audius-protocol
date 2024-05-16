@@ -1,10 +1,10 @@
 .cardsContainer {
-  display: inline-flex;
+  display: flex;
   flex-wrap: wrap;
 }
 
 .mobileContainer {
-  display: inline-flex;
+  display: flex;
   justify-content: space-around;
   align-content: flex-start;
   flex-wrap: wrap;

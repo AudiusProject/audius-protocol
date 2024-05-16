@@ -266,7 +266,7 @@ export const DetailsTile = ({
   }
 
   return (
-    <Paper>
+    <Paper mb='2xl' style={{ overflow: 'hidden' }}>
       {renderDogEar()}
       <Flex p='l' gap='l' alignItems='center' w='100%'>
         <Text
@@ -387,6 +387,7 @@ export const DetailsTile = ({
             streamConditions={streamConditions}
             isOwner={isOwner}
             trackArtist={user}
+            contentType={contentType}
           />
         ) : null}
         <DetailsTileMetadata genre={track?.genre} mood={track?.mood} />
