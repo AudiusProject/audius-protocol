@@ -51,6 +51,11 @@ jobs:
       service: crm
       notify_slack_on_failure: true
   - push-docker-image:
+      name: push-pedalboard-mri
+      context: [Vercel, dockerhub, slack-secrets]
+      service: mri
+      notify_slack_on_failure: true
+  - push-docker-image:
       name: push-comms
       context: [Vercel, dockerhub, slack-secrets]
       service: comms
@@ -140,6 +145,12 @@ jobs:
       requires:
         - push-pedalboard-crm
   - push-arm-image:
+      name: push-pedalboard-mri-arm
+      context: [Vercel, dockerhub]
+      service: mri
+      requires:
+        - push-pedalboard-mri
+  - push-arm-image:
       name: push-comms-arm
       context: [Vercel, dockerhub]
       service: comms
@@ -220,6 +231,7 @@ jobs:
         - push-pedalboard-solana-relay
         - push-pedalboard-sla-auditor
         - push-pedalboard-crm
+        - push-pedalboard-mri
         - push-comms
         - push-trpc
         - push-healthz
@@ -237,6 +249,7 @@ jobs:
         # - push-pedalboard-relay-arm
         # - push-pedalboard-sla-auditor-arm
         # - push-pedalboard-crm
+        # - push-pedalboard-mri
         # - push-comms-arm
         # - push-trpc-arm
         # - push-healthz-arm

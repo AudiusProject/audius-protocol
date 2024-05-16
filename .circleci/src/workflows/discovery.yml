@@ -57,6 +57,13 @@ jobs:
         branches:
           only: main
   - push-docker-image:
+      name: push-pedalboard-mri
+      context: [Vercel, dockerhub]
+      service: mri
+      filters:
+        branches:
+          only: main
+  - push-docker-image:
       name: push-comms
       context: [Vercel, dockerhub]
       service: comms
@@ -207,6 +214,16 @@ jobs:
         - push-pedalboard-crm
 
   - push-arm-image:
+      name: push-pedalboard-mri-arm
+      context: [Vercel, dockerhub]
+      service: mri
+      filters:
+        branches:
+          only: main
+      requires:
+        - push-pedalboard-mri
+
+  - push-arm-image:
       name: push-comms-arm
       context: [Vercel, dockerhub]
       service: comms
@@ -299,6 +316,7 @@ jobs:
         - push-pedalboard-solana-relay
         - push-pedalboard-sla-auditor
         - push-pedalboard-crm
+        - push-pedalboard-mri
         - push-comms
         - push-trpc
         - push-protocol-dashboard
@@ -315,6 +333,7 @@ jobs:
         # - push-pedalboard-solana-relay-arm
         # - push-pedalboard-sla-auditor-arm
         # - push-pedalboard-crm-arm
+        # - push-pedalboard-mri-arm
         # - push-comms-arm
         # - push-trpc-arm
         # - push-protocol-dashboard-arm
