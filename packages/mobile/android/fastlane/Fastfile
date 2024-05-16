@@ -105,7 +105,7 @@ platform :android do
         UI.message "Doing a full build and release (not over-the-air/Codepush)"
         # Build app and release via play store
 
-        incrementVersionCode(package_name: packageName, track: options[:track])
+        # incrementVersionCode(package_name: packageName, track: options[:track])
 
         # generating the release apk & bundle
         sh("cd ../../../../ && echo \"yes\" | sdkmanager \"platforms;android-30\" && cd packages/mobile/android && ./gradlew #{buildType}")
@@ -133,22 +133,22 @@ platform :android do
         UI.message "Did not do a deployment in order to avoid pushing to Release Candidate Codepush deployment twice."
       end
   end
-  lane :incrementVersionCode do |options|
-      # Get the max existing version code
-      previousVersion = google_play_track_version_codes(
-        package_name: options[:package_name] ? options[:package_name] : 'co.audius.app',
-        track: options[:track] ? options[:track] : 'alpha'
-      ).max
+  # lane :incrementVersionCode do |options|
+  #     # Get the max existing version code
+  #     previousVersion = google_play_track_version_codes(
+  #       package_name: options[:package_name] ? options[:package_name] : 'co.audius.app',
+  #       track: options[:track] ? options[:track] : 'alpha'
+  #     ).max
 
-      # Increment the version code in build.gradle by 1
-      re = /versionCode\s+(\d+)/
-      path = GRADLE_FILE_PATH
-      s = File.read(path)
-      s[re, 1] = (previousVersion + 1).to_s
-      f = File.new(path, 'w')
-      f.write(s)
-      f.close
-  end
+  #     # Increment the version code in build.gradle by 1
+  #     re = /versionCode\s+(\d+)/
+  #     path = GRADLE_FILE_PATH
+  #     s = File.read(path)
+  #     s[re, 1] = (previousVersion + 1).to_s
+  #     f = File.new(path, 'w')
+  #     f.write(s)
+  #     f.close
+  # end
 
   lane :incrementVersionName do |options|
       # Get the max existing version name
