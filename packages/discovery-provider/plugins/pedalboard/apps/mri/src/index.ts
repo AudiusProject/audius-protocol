@@ -23,8 +23,9 @@ const main = async () => {
         // run at 10 AM PST every day
         cronTime: '00 00 10 * * *',
         onTick: async function () {
-            const date = new Date()
-            await clm(db, s3s, date)
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1)
+            await clm(db, s3s, yesterday)
         },
         timeZone: "America/Los_Angeles"
     })
