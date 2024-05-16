@@ -71,7 +71,7 @@ const messages = {
   hiddenTrack: 'hidden track',
   collectibleGated: 'collectible gated',
   specialAccess: 'special access',
-  usdcPurchase: 'premium track',
+  premiumTrack: 'premium track',
   generatedWithAi: 'generated with ai',
   trackDeleted: 'track [deleted by artist]'
 }
@@ -304,7 +304,13 @@ export const TrackScreenDetailsTile = ({
       streamConditions={streamConditions}
       user={user}
       renderBottomContent={renderBottomContent}
-      headerText={isRemix ? messages.remix : messages.track}
+      headerText={
+        isRemix
+          ? messages.remix
+          : isStreamGated
+          ? messages.premiumTrack
+          : messages.track
+      }
       hideFavorite={hideFavorite}
       hideRepost={hideRepost}
       hideShare={(is_unlisted && !isOwner) || !field_visibility?.share}
