@@ -28,9 +28,7 @@ export const PlaylistsTab = () => {
   const isOwner = useSelector((state) => getIsOwner(state, handle ?? ''))
   const isFocused = useIsFocused()
   const dispatch = useDispatch()
-  const isLoading = useSelector(
-    (state) => getCollectionsStatus(state, handle) === Status.LOADING
-  )
+  const isLoading = collectionsStatus === Status.LOADING
 
   const shouldFetchPlaylists =
     isFocused &&
