@@ -28,6 +28,7 @@ import NavContext, {
 import Page from 'components/page/Page'
 import { useMedia } from 'hooks/useMedia'
 
+import { RecentSearches } from './RecentSearches'
 import { SearchCatalogTile } from './SearchCatalogTile'
 
 type Filter =
@@ -170,7 +171,12 @@ export const SearchPageV2 = () => {
     >
       <Flex direction='column' css={{ width: '100%' }}>
         {isMobile ? header : null}
-        {!query ? <SearchCatalogTile /> : null}
+        {!query ? (
+          <Flex direction='column' alignItems='center'>
+            <SearchCatalogTile />
+            <RecentSearches />
+          </Flex>
+        ) : null}
         {status === Status.LOADING ? <LoadingSpinner /> : <div></div>}
       </Flex>
     </PageComponent>

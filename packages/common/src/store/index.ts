@@ -37,3 +37,6 @@ export * from './playlist-updates'
 export * from './saved-collections'
 export * from './confirmer'
 export * from './downloads'
+
+export { actions as searchActions } from './search/slice'
+export * as searchSelectors from './search/selectors'
