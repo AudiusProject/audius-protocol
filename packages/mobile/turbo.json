@@ -8,7 +8,7 @@
       "outputMode": "new-only"
     },
     "ios": {
-      "dependsOn": ["^build"],
+      "dependsOn": ["^build", "install-pods"],
       "cache": false,
       "persistent": true,
       "outputMode": "new-only"
@@ -17,6 +17,10 @@
       "outputs": ["./ios/main.jsbundle"],
       "dependsOn": ["^build"],
       "outputMode": "new-only"
+    },
+    "install-pods": {
+      "outputs": [],
+      "inputs": ["../../package-lock.json"]
     }
   }
 }

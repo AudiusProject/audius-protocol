@@ -21,6 +21,7 @@
     "codepush-ios-history:rc": "appcenter codepush deployment history -a Audius-Music/Audius ReleaseCandidate",
     "codepush-ios-history:staging": "appcenter codepush deployment history -a Audius-Music/Audius Staging",
     "export:ios": "xcodebuild -exportArchive -archivePath $PWD/build/AudiusReactNative.xcarchive -exportOptionsPlist ios/exportOptions.plist -exportPath $PWD/build -allowProvisioningUpdates",
+    "install-pods": "bash ./scripts/install-pods.sh",
     "ios:bump-build-number": "fastlane run increment_build_number xcodeproj:\"ios/AudiusReactNative.xcodeproj\"",
     "ios:dev": "ENVFILE=.env.dev turbo run ios -- --scheme 'Dev' --simulator \"iPhone 15 Pro\"",
     "ios:device:dev": "ENVFILE=.env.dev turbo run ios -- --scheme 'Dev' --device",
