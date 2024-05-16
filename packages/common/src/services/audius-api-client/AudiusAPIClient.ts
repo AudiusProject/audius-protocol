@@ -5,7 +5,9 @@ import {
   TimeRange,
   StemTrackMetadata,
   CollectionMetadata,
-  UserChallenge
+  UserChallenge,
+  SupporterMetadata,
+  SupportedUserMetadata
 } from '../../models'
 import { UndisbursedUserChallenge } from '../../store'
 import { SearchKind } from '../../store/pages/search-results/types'
@@ -778,7 +780,6 @@ export class AudiusAPIClient {
     return adapted
   }
 
-  // TODO: PAY-2925
   async getTrackFavoriteUsers({
     currentUserId,
     trackId,
@@ -1634,7 +1635,14 @@ export class AudiusAPIClient {
       FULL_ENDPOINT_MAP.getSupporting(encodedUserId),
       params
     )
-    return response ? response.data : null
+
+    if (!response) return []
+
+    const adapted = response.data.reduce<SupportedUserMetadata[]>((out, s) => {
+      const user = adapter.makeUser(s.receiver)
+      return user ? [...out, { ...s, receiver: user }] : out
+    }, [])
+    return adapted
   }
 
   async getSupporters({ userId, limit = 25, offset = 0 }: GetSupportersArgs) {
@@ -1649,7 +1657,13 @@ export class AudiusAPIClient {
       FULL_ENDPOINT_MAP.getSupporters(encodedUserId),
       params
     )
-    return response ? response.data : null
+    if (!response) return []
+
+    const adapted = response.data.reduce<SupporterMetadata[]>((out, s) => {
+      const user = adapter.makeUser(s.sender)
+      return user ? [...out, { ...s, sender: user }] : out
+    }, [])
+    return adapted
   }
 
   async getTips({

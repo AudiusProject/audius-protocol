@@ -1,15 +1,11 @@
 import {
   ID,
-  UserMetadata,
   User,
   Id,
+  supportedUserMetadataListFromSDK,
   OptionalId,
-  userMetadataListFromSDK
+  SupportedUserMetadata
 } from '@audius/common/models'
-import {
-  responseAdapter as adapter,
-  SupportingResponse
-} from '@audius/common/services'
 import {
   cacheUsersSelectors,
   tippingActions,
@@ -22,7 +18,7 @@ import {
   checkSDKMigration,
   getSDK
 } from '@audius/common/store'
-import { decodeHashId, stringWeiToBN } from '@audius/common/utils'
+import { stringWeiToBN } from '@audius/common/utils'
 import { call, put, select } from 'typed-redux-saga'
 
 import { watchSupportingError } from 'common/store/user-list/supporting/errorSagas'
@@ -34,36 +30,41 @@ const { getUser } = cacheUsersSelectors
 
 type SupportingProcessExtraType = {
   userId: ID
-  supportingList: SupportingResponse[]
+  supportingList: SupportedUserMetadata[]
 }
 
 const provider = createUserListProvider<User, SupportingProcessExtraType>({
   getExistingEntity: getUser,
   extractUserIDSubsetFromEntity: () => [],
-  fetchAllUsersForEntity: function* ({ limit, offset, entityId }) {
+  fetchAllUsersForEntity: function* ({
+    limit,
+    offset,
+    entityId,
+    currentUserId
+  }) {
     const apiClient = yield* getContext('apiClient')
 
-    const supporting =
-      (yield* checkSDKMigration({
-        endpointName: 'getSupporting',
-        legacy: call([apiClient, apiClient.getSupporting], {
-          userId: entityId,
-          limit,
-          offset
-        }),
-        migrated: call(function* () {
-          const sdk = yield* getSDK()
-          const { data } = yield* call(
-            [sdk.full.users, sdk.full.users.getSupportings],
-            {
-              id: Id.parse(entityId),
-              limit,
-              offset
-            }
-          )
-          return data ? userMetadataListFromSDK(data) : null
-        })
-      })) ?? []
+    const supporting = yield* checkSDKMigration({
+      endpointName: 'getSupporting',
+      legacy: call([apiClient, apiClient.getSupporting], {
+        userId: entityId,
+        limit,
+        offset
+      }),
+      migrated: call(function* () {
+        const sdk = yield* getSDK()
+        const { data = [] } = yield* call(
+          [sdk.full.users, sdk.full.users.getSupportedUsers],
+          {
+            id: Id.parse(entityId),
+            limit,
+            offset,
+            userId: OptionalId.parse(currentUserId)
+          }
+        )
+        return supportedUserMetadataListFromSDK(data)
+      })
+    })
 
     const users = supporting
       .sort((s1, s2) => {
@@ -71,8 +72,7 @@ const provider = createUserListProvider<User, SupportingProcessExtraType>({
         const amount2BN = stringWeiToBN(s2.amount)
         return amount1BN.gte(amount2BN) ? -1 : 1
       })
-      .map((s) => adapter.makeUser(s.receiver))
-      .filter((user): user is UserMetadata => !!user)
+      .map((s) => s.receiver)
     return { users, extra: { userId: entityId, supportingList: supporting } }
   },
   selectCurrentUserIDsInList: getUserIds,
@@ -87,17 +87,18 @@ const provider = createUserListProvider<User, SupportingProcessExtraType>({
    * in the interface, to update the store.
    */
   processExtra: function* ({ userId, supportingList }) {
-    const supportingMap: SupportingMapForUser = {}
-    supportingList.forEach((supporting: SupportingResponse) => {
-      const supportingUserId = decodeHashId(supporting.receiver.id)
-      if (supportingUserId) {
-        supportingMap[supportingUserId] = {
-          receiver_id: supportingUserId,
-          rank: supporting.rank,
-          amount: supporting.amount
+    const supportingMap: SupportingMapForUser = supportingList.reduce(
+      (out, { receiver, amount, rank }) => {
+        const receiver_id = receiver.user_id
+        out[receiver_id] = {
+          receiver_id,
+          rank,
+          amount
         }
-      }
-    })
+        return out
+      },
+      {}
+    )
     yield put(
       setSupportingForUser({
         id: userId,
