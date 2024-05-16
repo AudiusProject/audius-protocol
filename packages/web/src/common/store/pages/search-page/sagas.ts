@@ -7,9 +7,8 @@ import {
   SearchKind,
   getContext
 } from '@audius/common/store'
-import { trimToAlphaNumeric, removeNullable } from '@audius/common/utils'
-import { flatMap, zip } from 'lodash'
-import { select, call, takeLatest, put, all } from 'typed-redux-saga'
+import { trimToAlphaNumeric } from '@audius/common/utils'
+import { select, call, takeLatest, put } from 'typed-redux-saga'
 
 import { processAndCacheCollections } from 'common/store/cache/collections/utils'
 import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
@@ -99,10 +98,6 @@ export function* fetchSearchPageTags(
   }
 }
 
-const searchMultiMap = {
-  grimes: ['grimez', 'grimes']
-}
-
 export function* getSearchResults(
   searchText: string,
   kind: SearchKind,
@@ -118,41 +113,14 @@ export function* getSearchResults(
 
   const apiClient = yield* getContext('apiClient')
   const userId = yield* select(getUserId)
-  let results
-  if (searchText in searchMultiMap) {
-    const searches = searchMultiMap[searchText].map((query: string) =>
-      call([apiClient, 'getSearchFull'], {
-        currentUserId: userId,
-        query,
-        kind,
-        limit,
-        offset,
-        includePurchaseable: isUSDCEnabled
-      })
-    )
-    const allSearchResults = yield* all(searches)
-    results = allSearchResults.reduce(
-      (acc: SearchResults, cur: SearchResults) => {
-        acc.tracks = flatMap(zip(acc.tracks, cur.tracks)).filter(removeNullable)
-        acc.users = flatMap(zip(acc.users, cur.users)).filter(removeNullable)
-        acc.albums = flatMap(zip(acc.albums, cur.albums)).filter(removeNullable)
-        acc.playlists = flatMap(zip(acc.playlists, cur.playlists)).filter(
-          removeNullable
-        )
-        return acc
-      },
-      { tracks: [], albums: [], playlists: [], users: [] }
-    )
-  } else {
-    results = yield* call([apiClient, 'getSearchFull'], {
-      currentUserId: userId,
-      query: searchText,
-      kind,
-      limit,
-      offset,
-      includePurchaseable: isUSDCEnabled
-    })
-  }
+  const results = yield* call([apiClient, 'getSearchFull'], {
+    currentUserId: userId,
+    query: searchText,
+    kind,
+    limit,
+    offset,
+    includePurchaseable: isUSDCEnabled
+  })
   const { tracks, albums, playlists, users } = results
 
   yield* call(processAndCacheUsers, users)
