@@ -40,7 +40,7 @@ integration-test:
         command: AUDIUS_DEV=false bash ./dev-tools/setup.sh
     - run:
         name: audius-compose up
-        command: . ~/.profile; audius-compose up --prod
+        command: . ~/.profile; audius-compose up
     - run:
         name: audius-cmd test
         no_output_timeout: 15m
