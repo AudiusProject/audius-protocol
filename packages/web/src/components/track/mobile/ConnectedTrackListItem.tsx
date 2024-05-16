@@ -9,7 +9,6 @@ import {
   isContentUSDCPurchaseGated,
   ModalSource
 } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import {
   accountSelectors,
   cacheUsersSelectors,
@@ -28,7 +27,6 @@ import { Dispatch } from 'redux'
 
 import { useModalState } from 'common/hooks/useModalState'
 import { useAuthenticatedClickCallback } from 'hooks/useAuthenticatedCallback'
-import { useFlag } from 'hooks/useRemoteConfig'
 import { AppState } from 'store/types'
 import { trpc } from 'utils/trpcClientWeb'
 
@@ -65,7 +63,6 @@ const ConnectedTrackListItem = (props: ConnectedTrackListItemProps) => {
     trackId,
     user
   } = props
-  const { isEnabled: isEditAlbumsEnabled } = useFlag(FeatureFlags.EDIT_ALBUMS)
   const { data: albumInfo } = trpc.tracks.getAlbumBacklink.useQuery(
     { trackId },
     { enabled: !!trackId }
@@ -94,12 +91,12 @@ const ConnectedTrackListItem = (props: ConnectedTrackListItemProps) => {
         : isSaved
         ? OverflowAction.UNFAVORITE
         : OverflowAction.FAVORITE,
-      isEditAlbumsEnabled && user?.user_id === currentUserId && !ddexApp
+      user?.user_id === currentUserId && !ddexApp
         ? OverflowAction.ADD_TO_ALBUM
         : null,
       isPlaylistAddable ? OverflowAction.ADD_TO_PLAYLIST : null,
       OverflowAction.VIEW_TRACK_PAGE,
-      isEditAlbumsEnabled && albumInfo ? OverflowAction.VIEW_ALBUM_PAGE : null,
+      albumInfo ? OverflowAction.VIEW_ALBUM_PAGE : null,
       OverflowAction.VIEW_ARTIST_PAGE
     ].filter(Boolean) as OverflowAction[]
     clickOverflow(trackId, overflowActions)

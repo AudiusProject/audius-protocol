@@ -99,7 +99,6 @@ const CollectionHeader = ({
   icon: Icon
 }: MobileCollectionHeaderProps) => {
   const { isSsrEnabled } = useSsrContext()
-  const { isEnabled: isEditAlbumsEnabled } = useFlag(FeatureFlags.EDIT_ALBUMS)
   const { isEnabled: isPremiumAlbumsEnabled } = useFlag(
     FeatureFlags.PREMIUM_ALBUMS_ENABLED
   )
@@ -142,10 +141,10 @@ const CollectionHeader = ({
         : isSaved
         ? OverflowAction.UNFAVORITE
         : OverflowAction.FAVORITE,
-      isOwner && (!isAlbum || isEditAlbumsEnabled) && !isPublished
+      isOwner && !isAlbum && !isPublished
         ? OverflowAction.PUBLISH_PLAYLIST
         : null,
-      isOwner && (!isAlbum || isEditAlbumsEnabled) && !ddexApp
+      isOwner && !isAlbum && !ddexApp
         ? isAlbum
           ? OverflowAction.DELETE_ALBUM
           : OverflowAction.DELETE_PLAYLIST

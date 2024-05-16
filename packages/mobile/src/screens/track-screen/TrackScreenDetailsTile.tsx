@@ -105,9 +105,6 @@ export const TrackScreenDetailsTile = ({
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
   )
-  const { isEnabled: isEditAlbumsEnabled } = useFeatureFlag(
-    FeatureFlags.EDIT_ALBUMS
-  )
   const navigation = useNavigation()
 
   const isReachable = useSelector(getIsReachable)
@@ -252,9 +249,7 @@ export const TrackScreenDetailsTile = ({
     const isLongFormContent =
       genre === Genre.PODCASTS || genre === Genre.AUDIOBOOKS
     const addToAlbumAction =
-      isEditAlbumsEnabled && isOwner && !ddexApp
-        ? OverflowAction.ADD_TO_ALBUM
-        : null
+      isOwner && !ddexApp ? OverflowAction.ADD_TO_ALBUM : null
     const addToPlaylistAction = isPlaylistAddable
       ? OverflowAction.ADD_TO_PLAYLIST
       : null
@@ -271,7 +266,7 @@ export const TrackScreenDetailsTile = ({
           ? OverflowAction.MARK_AS_UNPLAYED
           : OverflowAction.MARK_AS_PLAYED
         : null,
-      isEditAlbumsEnabled && albumInfo ? OverflowAction.VIEW_ALBUM_PAGE : null,
+      albumInfo ? OverflowAction.VIEW_ALBUM_PAGE : null,
       OverflowAction.VIEW_ARTIST_PAGE,
       isOwner && !ddexApp ? OverflowAction.EDIT_TRACK : null,
       isOwner && track?.is_scheduled_release && track?.is_unlisted

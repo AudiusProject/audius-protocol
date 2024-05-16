@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react'
 
-import { useFeatureFlag, useGatedContentAccess } from '@audius/common/hooks'
+import { useGatedContentAccess } from '@audius/common/hooks'
 import {
   ShareSource,
   RepostSource,
@@ -14,7 +14,6 @@ import type {
   SearchPlaylist,
   User
 } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import {
   accountSelectors,
   collectionPageSelectors,
@@ -42,7 +41,6 @@ import {
 } from 'app/components/core'
 import { CollectionImage } from 'app/components/image/CollectionImage'
 import { SuggestedTracks } from 'app/components/suggested-tracks'
-import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useRoute } from 'app/hooks/useRoute'
 import { setVisibility } from 'app/store/drawers/slice'
@@ -151,10 +149,6 @@ const CollectionScreenComponent = (props: CollectionScreenComponentProps) => {
     created_at,
     is_delete
   } = collection
-  const isOfflineModeEnabled = useIsOfflineModeEnabled()
-  const { isEnabled: isEditAlbumsEnabled } = useFeatureFlag(
-    FeatureFlags.EDIT_ALBUMS
-  )
 
   const { neutralLight5 } = useThemePalette()
 
@@ -197,15 +191,15 @@ const CollectionScreenComponent = (props: CollectionScreenComponentProps) => {
 
   const handlePressOverflow = useCallback(() => {
     const overflowActions = [
-      (!is_album || isEditAlbumsEnabled) && isOwner && !ddex_app
+      !is_album && isOwner && !ddex_app
         ? is_album
           ? OverflowAction.EDIT_ALBUM
           : OverflowAction.EDIT_PLAYLIST
         : null,
-      isOwner && (!is_album || isEditAlbumsEnabled) && is_private
+      isOwner && !is_album && is_private
         ? OverflowAction.PUBLISH_PLAYLIST
         : null,
-      isOwner && (!is_album || isEditAlbumsEnabled) && !ddex_app
+      isOwner && !is_album && !ddex_app
         ? is_album
           ? OverflowAction.DELETE_ALBUM
           : OverflowAction.DELETE_PLAYLIST
@@ -220,15 +214,7 @@ const CollectionScreenComponent = (props: CollectionScreenComponentProps) => {
         overflowActions
       })
     )
-  }, [
-    is_album,
-    isEditAlbumsEnabled,
-    isOwner,
-    ddex_app,
-    is_private,
-    dispatch,
-    playlist_id
-  ])
+  }, [is_album, isOwner, ddex_app, is_private, dispatch, playlist_id])
 
   const handlePressEdit = useCallback(() => {
     navigation?.push('EditPlaylist', { id: playlist_id })
@@ -297,7 +283,7 @@ const CollectionScreenComponent = (props: CollectionScreenComponentProps) => {
 
   return (
     <Screen url={url}>
-      <ScreenContent isOfflineCapable={isOfflineModeEnabled}>
+      <ScreenContent isOfflineCapable>
         <VirtualizedScrollView style={styles.root}>
           <>
             <CollectionScreenDetailsTile
