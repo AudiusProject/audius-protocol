@@ -137,7 +137,6 @@ access_control_entities = {
         {"user_id": 1, "handle": "user1"},
         {"user_id": 2, "handle": "user2"},
     ],
-
     "tracks": [
         {"track_id": 1, "owner_id": 1, "is_unlisted": True},
         {"track_id": 2, "owner_id": 1, "is_delete": True},
@@ -147,9 +146,7 @@ access_control_entities = {
             "playlist_id": 1,
             "playlist_name": "Empty",
             "playlist_owner_id": 1,
-            "playlist_contents": {
-                "track_ids": []
-            },
+            "playlist_contents": {"track_ids": []},
         },
         {
             "playlist_id": 2,
@@ -178,7 +175,7 @@ access_control_entities = {
             "follower_user_id": 2,
             "followee_user_id": 1,
         },
-    ]
+    ],
 }
 
 

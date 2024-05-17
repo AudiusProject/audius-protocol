@@ -83,13 +83,8 @@ def get_feed_es(args, limit=10, offset=0):
                                     current_user_id, "playlist_owner_id", explicit_ids
                                 ),
                                 {"term": {"is_private": False}},
-                                {"term": {"track_ids": False}},
-                                {"script": {
-                                    "script": {
-                                        "source": "doc[''].size() > 0"
-                                    }
-                                }
-                                }
+                                {"term": {"is_delete": False}},
+                                {"exists": {"field": "tracks.genre"}},
                             ]
                         }
                     },
