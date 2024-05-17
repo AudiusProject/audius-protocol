@@ -55,6 +55,7 @@ function* addTrackToPlaylistAsync(action: AddTrackToPlaylistAction) {
   const { playlistId, trackId } = action
   yield* waitForWrite()
   const userId = yield* call(ensureLoggedIn)
+  const isNative = yield* getContext('isNativeMobile')
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const web3 = yield* call(audiusBackendInstance.getWeb3)
   const { generatePlaylistArtwork } = yield* getContext('imageUtils')
@@ -94,15 +95,15 @@ function* addTrackToPlaylistAsync(action: AddTrackToPlaylistAction) {
   playlist.track_count = count
 
   // Optimistic update #1 to show track in playlist quickly
-  yield* call(optimisticUpdateCollection, playlist)
+  if (isNative) {
+    yield* call(optimisticUpdateCollection, playlist)
+  }
 
   playlist = yield* call(
     updatePlaylistArtwork,
     playlist,
     playlistTracks,
-    {
-      added: track
-    },
+    { added: track },
     {
       audiusBackend: audiusBackendInstance,
       generateImage: generatePlaylistArtwork

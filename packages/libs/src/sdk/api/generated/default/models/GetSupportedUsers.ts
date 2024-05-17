@@ -24,31 +24,31 @@ import {
 /**
  * 
  * @export
- * @interface GetSupporting
+ * @interface GetSupportedUsers
  */
-export interface GetSupporting {
+export interface GetSupportedUsers {
     /**
      * 
      * @type {Array<Supporting>}
-     * @memberof GetSupporting
+     * @memberof GetSupportedUsers
      */
     data?: Array<Supporting>;
 }
 
 /**
- * Check if a given object implements the GetSupporting interface.
+ * Check if a given object implements the GetSupportedUsers interface.
  */
-export function instanceOfGetSupporting(value: object): boolean {
+export function instanceOfGetSupportedUsers(value: object): boolean {
     let isInstance = true;
 
     return isInstance;
 }
 
-export function GetSupportingFromJSON(json: any): GetSupporting {
-    return GetSupportingFromJSONTyped(json, false);
+export function GetSupportedUsersFromJSON(json: any): GetSupportedUsers {
+    return GetSupportedUsersFromJSONTyped(json, false);
 }
 
-export function GetSupportingFromJSONTyped(json: any, ignoreDiscriminator: boolean): GetSupporting {
+export function GetSupportedUsersFromJSONTyped(json: any, ignoreDiscriminator: boolean): GetSupportedUsers {
     if ((json === undefined) || (json === null)) {
         return json;
     }
@@ -58,7 +58,7 @@ export function GetSupportingFromJSONTyped(json: any, ignoreDiscriminator: boole
     };
 }
 
-export function GetSupportingToJSON(value?: GetSupporting | null): any {
+export function GetSupportedUsersToJSON(value?: GetSupportedUsers | null): any {
     if (value === undefined) {
         return undefined;
     }
