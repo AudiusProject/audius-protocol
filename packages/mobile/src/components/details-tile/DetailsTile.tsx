@@ -392,7 +392,11 @@ export const DetailsTile = ({
             contentType={contentType}
           />
         ) : null}
-        <DetailsTileMetadata genre={track?.genre} mood={track?.mood} />
+        <DetailsTileMetadata
+          id={contentId}
+          genre={track?.genre}
+          mood={track?.mood}
+        />
         <SecondaryStats
           isCollection={isCollection}
           playCount={playCount}
