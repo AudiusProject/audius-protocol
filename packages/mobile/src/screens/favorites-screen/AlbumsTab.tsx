@@ -34,15 +34,11 @@ const messages = {
 
 export const AlbumsTab = () => {
   const [filterValue, setFilterValue] = useState('')
-  const {
-    collectionIds: userAlbums,
-    hasMore,
-    fetchMore,
-    status
-  } = useCollectionsScreenData({
-    filterValue,
-    collectionType: 'albums'
-  })
+  const { collectionIds, hasMore, fetchMore, status } =
+    useCollectionsScreenData({
+      filterValue,
+      collectionType: 'albums'
+    })
   const isReachable = useSelector(getIsReachable)
 
   const handleEndReached = useCallback(() => {
@@ -70,7 +66,9 @@ export const AlbumsTab = () => {
 
   return (
     <VirtualizedScrollView>
-      {!statusIsNotFinalized(status) && !userAlbums?.length && !filterValue ? (
+      {!statusIsNotFinalized(status) &&
+      !collectionIds?.length &&
+      !filterValue ? (
         !isReachable ? (
           <NoTracksPlaceholder />
         ) : (
@@ -88,7 +86,7 @@ export const AlbumsTab = () => {
             onEndReached={handleEndReached}
             onEndReachedThreshold={0.5}
             scrollEnabled={false}
-            collectionIds={userAlbums}
+            collectionIds={collectionIds}
             ListFooterComponent={
               statusIsNotFinalized(status) && isReachable
                 ? loadingSpinner

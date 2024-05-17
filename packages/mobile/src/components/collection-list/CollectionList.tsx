@@ -1,4 +1,4 @@
-import { createElement, useCallback, useMemo } from 'react'
+import { createElement, memo, useCallback, useMemo } from 'react'
 
 import type { Collection, UserCollection, ID } from '@audius/common/models'
 import { CreatePlaylistSource } from '@audius/common/models'
@@ -10,6 +10,8 @@ import { CardList } from 'app/components/core'
 import { AddCollectionCard } from './AddCollectionCard'
 import { CollectionCard } from './CollectionCard'
 import { CollectionCardSkeleton } from './CollectionCardSkeleton'
+
+const MemoizedCollectionCard = memo(CollectionCard)
 
 type FullListProps = Omit<CardListProps<UserCollection>, 'data' | 'renderItem'>
 type IDCardListItem = {
@@ -121,23 +123,21 @@ const CollectionIDList = (props: CollectionIdListProps) => {
           collectionType='playlist'
         />
       ) : (
-        <CollectionCard id={item.id} />
+        <MemoizedCollectionCard id={item.id} />
       ),
     [createPlaylistCallback, createPlaylistSource, createPlaylistTrackId]
   )
 
-  const idList: IDCardListItem[] = useMemo(
-    () => collectionIds.map((id) => ({ id })),
-    [collectionIds]
-  )
-
-  const updatedList = showCreatePlaylistTile
-    ? [{ _create: true }, ...idList]
-    : idList
+  const idList: (IDCardListItem | CreateCard)[] = useMemo(() => {
+    const collectionIdData = collectionIds.map((id) => ({ id }))
+    return showCreatePlaylistTile
+      ? [{ _create: true }, ...collectionIdData]
+      : collectionIdData
+  }, [collectionIds, showCreatePlaylistTile])
 
   return (
     <CardList
-      data={updatedList}
+      data={idList}
       renderItem={renderCard}
       LoadingCardComponent={CollectionCardSkeleton}
       {...other}
