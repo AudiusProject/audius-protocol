@@ -77,7 +77,7 @@ const SearchHeader = (props: SearchHeaderProps) => {
     [setCategory]
   )
 
-  const CategoryRadioGroup = (
+  const categoryRadioGroup = (
     <RadioGroup
       direction='row'
       gap='s'
@@ -105,7 +105,7 @@ const SearchHeader = (props: SearchHeaderProps) => {
 
   return isMobile ? (
     <Flex p='s' css={{ overflow: 'scroll' }}>
-      {CategoryRadioGroup}
+      {categoryRadioGroup}
     </Flex>
   ) : (
     <Header
@@ -120,7 +120,7 @@ const SearchHeader = (props: SearchHeaderProps) => {
           </Flex>
         ) : null
       }
-      rightDecorator={CategoryRadioGroup}
+      rightDecorator={categoryRadioGroup}
       variant='main'
     />
   )
@@ -168,7 +168,7 @@ export const SearchPageV2 = () => {
       // canonicalUrl={fullSearchResultsPage(query)}
       header={header}
     >
-      <Flex direction='column' css={{ width: '100%' }}>
+      <Flex direction='column' w='100%'>
         {isMobile ? header : null}
         {!query ? <SearchCatalogTile /> : null}
         {status === Status.LOADING ? <LoadingSpinner /> : <div></div>}
