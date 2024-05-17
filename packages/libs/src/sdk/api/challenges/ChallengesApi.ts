@@ -1,6 +1,5 @@
 import { wAUDIO } from '@audius/fixed-decimal'
 import type { PublicKey } from '@solana/web3.js'
-import { toChecksumAddress } from 'ethereumjs-util'
 
 import type {
   ClaimableTokensClient,
@@ -18,6 +17,8 @@ import {
 import type { UsersApi } from '../users/UsersApi'
 
 import {
+  AAOErrorResponse,
+  AttestationTransactionSignature,
   ChallengeId,
   ClaimRewardsRequest,
   ClaimRewardsSchema,
@@ -100,9 +101,8 @@ export class ChallengesApi extends BaseAPI {
       throw new Error(`Failed to find user ${args.userId}`)
     }
     const { ercWallet: recipientEthAddress, handle } = data
-    const attestationTransactionSignatures: string[] = []
     const antiAbuseOracleEthAddress =
-      '0x9811BA3eAB1F2Cd9A2dFeDB19e8c2a69729DC8b6'
+      await this.antiAbuseOracle.getWalletAddress()
     logger.debug('Creating user bank if necessary...')
     const userBankPromise = this.claimableTokens.getOrCreateUserBank({
       ethWallet: recipientEthAddress,
@@ -114,13 +114,12 @@ export class ChallengesApi extends BaseAPI {
       challengeId,
       specifier
     })
-    logger.debug('Submission state:', submissions)
 
     const attestationPromises = []
-    let antiAbuseOracleEthAddress = submissions?.messages.find(
+    const hasSubmittedAntiAbuseOracle = submissions?.messages.find(
       (m) => m.attestation.antiAbuseOracleEthAddress === null
     )?.senderEthAddress
-    if (!antiAbuseOracleEthAddress) {
+    if (!hasSubmittedAntiAbuseOracle) {
       logger.debug('Submitting anti abuse oracle attestation...')
       attestationPromises.push(
         this.submitAntiAbuseOracleAttestation({
@@ -137,49 +136,61 @@ export class ChallengesApi extends BaseAPI {
       submissions?.messages
         .filter((m) => !!m.attestation.antiAbuseOracleEthAddress)
         .map((m) => m.operator) ?? []
-    console.log('Existing sender owners:', existingSenderOwners)
 
     const state = await this.rewardManager.getRewardManagerState()
-    console.log('asdf state: ', state)
-    await Promise.all(attestationPromises).then((results) => {
-      console.log('asdf results: ', results)
+    if (existingSenderOwners.length < state.minVotes) {
+      logger.debug('Submitting discovery node attestations...')
+      attestationPromises.push(
+        this.submitDiscoveryAttestations({
+          userId,
+          antiAbuseOracleEthAddress,
+          challengeId,
+          specifier,
+          amount,
+          recipientEthAddress,
+          numberOfNodes: state.minVotes - existingSenderOwners.length,
+          excludeOwners: existingSenderOwners,
+          logger
+        })
+      )
+    }
+
+    const attestationResults = await Promise.all(attestationPromises)
+
+    const aaoError = attestationResults.find(
+      (result): result is AAOErrorResponse => 'aaoErrorCode' in result
+    )
+    if (aaoError) {
+      return aaoError
+    }
+
+    const attestationTransactionSignatures = attestationResults
+      .filter(
+        (result): result is AttestationTransactionSignature =>
+          'transactionSignature' in result
+      )
+      .map((attestationResult) => {
+        return attestationResult.transactionSignature
+      })
+
+    logger.debug('Confirming all attestation submissions...')
+    await this.rewardManager.confirmAllTransactions(
+      attestationTransactionSignatures,
+      'finalized' // for some reason, only works when finalized...
+    )
+
+    logger.debug('Disbursing claim...')
+    const { userBank: destinationUserBank } = await userBankPromise
+    const transactionSignature = await this.evaluateAttestations({
+      challengeId,
+      specifier,
+      recipientEthAddress,
+      destinationUserBank,
+      antiAbuseOracleEthAddress,
+      amount
     })
-    // if (existingSenderOwners.length < state.minVotes) {
-    //   logger.debug('Submitting discovery node attestations...')
-    //   attestationPromises.push(
-    //     this.submitDiscoveryAttestations({
-    //       userId,
-    //       antiAbuseOracleEthAddress,
-    //       challengeId,
-    //       specifier,
-    //       amount,
-    //       recipientEthAddress,
-    //       numberOfNodes: state.minVotes - existingSenderOwners.length,
-    //       excludeOwners: existingSenderOwners,
-    //       logger
-    //     })
-    //   )
-    // }
-    // attestationTransactionSignatures.push(...signatures)
 
-    // logger.debug('Confirming all attestation submissions...')
-    // await this.rewardManager.confirmAllTransactions(
-    //   attestationTransactionSignatures,
-    //   'finalized' // for some reason, only works when finalized...
-    // )
-
-    // logger.debug('Disbursing claim...')
-    // const { userBank: destinationUserBank } = await userBankPromise
-    // const transactionSignature = await this.evaluateAttestations({
-    //   challengeId,
-    //   specifier,
-    //   recipientEthAddress,
-    //   destinationUserBank,
-    //   antiAbuseOracleEthAddress,
-    //   amount
-    // })
-
-    // return { transactionSignature }
+    return { transactionSignature }
   }
 
   private async submitAntiAbuseOracleAttestation({
@@ -194,13 +205,7 @@ export class ChallengesApi extends BaseAPI {
     amount: bigint
     recipientEthAddress: string
     handle: string
-  }): Promise<
-    | {
-        transactionSignature: string
-        antiAbuseOracleEthAddress: string
-      }
-    | { aaoErrorCode: number }
-  > {
+  }): Promise<AttestationTransactionSignature | AAOErrorResponse> {
     const antiAbuseOracleAttestation =
       await this.antiAbuseOracle.getChallengeAttestation({
         handle,
