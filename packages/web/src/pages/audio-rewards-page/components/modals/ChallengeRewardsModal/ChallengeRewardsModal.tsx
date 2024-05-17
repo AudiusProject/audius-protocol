@@ -275,12 +275,13 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
     audioToClaim = challenge.claimableAmount
     audioClaimedSoFar = challenge.disbursed_amount
   } else if (challenge?.state === 'completed') {
-    audioToClaim = challenge.totalAmount
+    audioToClaim = challenge.claimableAmount
     audioClaimedSoFar = 0
   } else if (challenge?.state === 'disbursed') {
     audioToClaim = 0
     audioClaimedSoFar = challenge.totalAmount
   }
+  console.log('asdf challenge:', challenge, audioToClaim, audioClaimedSoFar)
 
   let linkType: 'complete' | 'inProgress' | 'incomplete'
   if (challenge?.state === 'completed') {
@@ -563,7 +564,7 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
         )}
         {renderReferralContent()}
         {renderMobileInstallContent()}
-        {buttonLink && challenge?.state !== 'completed' ? (
+        {buttonLink && !audioToClaim ? (
           <Button
             variant='primary'
             fullWidth={isMobile}

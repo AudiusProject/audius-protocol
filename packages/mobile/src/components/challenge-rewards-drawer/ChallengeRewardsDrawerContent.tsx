@@ -215,32 +215,30 @@ export const ChallengeRewardsDrawerContent = ({
         </View>
         {children}
         <View style={styles.claimRewardsContainer}>
-          {isClaimable && onClaim ? (
-            isCooldownChallenge && isRewardsCooldownEnabled ? (
-              renderCooldownSummaryTable()
-            ) : (
-              <>
-                <Text
-                  key='claimableAmount'
-                  style={styles.claimableAmount}
-                  variant='label'
-                  strength='strong'
-                  textTransform='uppercase'
-                >
-                  {claimableAmountText}
-                </Text>
-                <Button
-                  style={styles.claimButton}
-                  variant={claimInProgress ? 'secondary' : 'primary'}
-                  isLoading={claimInProgress}
-                  onPress={onClaim}
-                  iconLeft={IconCheck}
-                >
-                  {messages.claim}
-                </Button>
-              </>
-            )
-          ) : null}
+          {isCooldownChallenge && isRewardsCooldownEnabled ? (
+            renderCooldownSummaryTable()
+          ) : (
+            <>
+              <Text
+                key='claimableAmount'
+                style={styles.claimableAmount}
+                variant='label'
+                strength='strong'
+                textTransform='uppercase'
+              >
+                {claimableAmountText}
+              </Text>
+              <Button
+                style={styles.claimButton}
+                variant={claimInProgress ? 'secondary' : 'primary'}
+                isLoading={claimInProgress}
+                onPress={onClaim}
+                iconLeft={IconCheck}
+              >
+                {messages.claim}
+              </Button>
+            </>
+          )}
           {claimedAmount > 0 && challengeState !== 'disbursed' ? (
             <Text
               variant='label'

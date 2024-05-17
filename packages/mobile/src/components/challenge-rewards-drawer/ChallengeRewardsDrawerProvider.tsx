@@ -84,7 +84,7 @@ export const ChallengeRewardsDrawerProvider = () => {
     audioToClaim = challenge.claimableAmount
     audioClaimedSoFar = challenge.disbursed_amount
   } else if (challenge?.state === 'completed') {
-    audioToClaim = challenge.totalAmount
+    audioToClaim = challenge.claimableAmount
     audioClaimedSoFar = 0
   } else if (challenge?.state === 'disbursed') {
     audioToClaim = 0
@@ -143,7 +143,7 @@ export const ChallengeRewardsDrawerProvider = () => {
 
   // Challenge drawer contents
   let contents: Maybe<React.ReactElement>
-  if (challenge?.state && challenge?.state !== 'completed') {
+  if (!audioToClaim) {
     switch (modalType) {
       case 'referrals':
       case 'ref-v':
