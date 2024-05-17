@@ -15,7 +15,8 @@ import {
   reachabilitySelectors,
   playerSelectors,
   cacheTracksSelectors,
-  PurchaseableContentType
+  PurchaseableContentType,
+  queueActions
 } from '@audius/common/store'
 import { removeNullable } from '@audius/common/utils'
 import type { Maybe, Nullable } from '@audius/common/utils'
@@ -211,6 +212,7 @@ export const CollectionScreenDetailsTile = ({
         dispatch(tracksActions.play())
         recordPlay(playingTrackId)
       } else if (trackCount > 0 && firstTrack) {
+        dispatch(queueActions.clear({}))
         dispatch(tracksActions.play(firstTrack.uid, { isPreview }))
         recordPlay(firstTrack.id)
       }

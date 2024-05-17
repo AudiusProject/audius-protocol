@@ -212,7 +212,7 @@ export const AddToCollectionDrawer = () => {
           }
           contentContainerStyle={styles.cardList}
           collection={filteredCollectionsToAddTo}
-          showCreatePlaylistTile
+          showCreateCollectionTile
           renderItem={renderCard}
         />
       </View>
