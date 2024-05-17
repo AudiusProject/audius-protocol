@@ -307,11 +307,6 @@ mobile-release-saga-dapp-store:
           cd packages/mobile/dapp-store
           echo $SOLANA_DAPP_STORE_PRIVATE_KEY > app-keypair.json
     - run:
-        name: Increment version code
-        command: |
-          cd packages/mobile/android
-          bundle exec fastlane incrementVersionCode package_name:<<parameters.bundle-id>> track:<<parameters.track>>
-    - run:
         name: Symlink react-native
         command: |
           ln -s $PWD/node_modules/.bin/react-native $PWD/packages/mobile/node_modules/.bin/react-native || true
