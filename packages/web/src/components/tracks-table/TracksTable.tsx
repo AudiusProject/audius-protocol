@@ -188,7 +188,7 @@ export const TracksTable = ({
             playing={active}
             hideDefault={false}
             isTrackPremium={isTrackPremium && isPremiumEnabled}
-            isOwned={!isLocked}
+            isLocked={isLocked}
           />
           {isTrackUnlisted ? (
             <IconVisibilityHidden

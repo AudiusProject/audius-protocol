@@ -100,8 +100,7 @@ const styles = StyleSheet.create({
     flex: 1
   },
   item: {
-    padding: 12,
-    paddingBottom: 0
+    padding: 12
   }
 })
 

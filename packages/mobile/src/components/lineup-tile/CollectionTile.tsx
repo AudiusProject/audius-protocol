@@ -7,10 +7,10 @@ import {
   FavoriteSource,
   PlaybackSource,
   FavoriteType,
-  SquareSizes
+  SquareSizes,
+  isContentUSDCPurchaseGated
 } from '@audius/common/models'
 import type { Collection, Track, User } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import {
   accountSelectors,
   cacheCollectionsSelectors,
@@ -29,8 +29,8 @@ import { useDispatch, useSelector } from 'react-redux'
 
 import type { ImageProps } from '@audius/harmony-native'
 import { CollectionImage } from 'app/components/image/CollectionImage'
+import { useIsUSDCEnabled } from 'app/hooks/useIsUSDCEnabled'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { setVisibility } from 'app/store/drawers/slice'
 import { getIsCollectionMarkedForDownload } from 'app/store/offline-downloads/selectors'
 
@@ -107,6 +107,7 @@ const CollectionTileComponent = ({
   variant,
   ...lineupTileProps
 }: CollectionTileProps) => {
+  const isUSDCEnabled = useIsUSDCEnabled()
   const dispatch = useDispatch()
   const navigation = useNavigation()
   const currentUserId = useSelector(getUserId)
@@ -119,18 +120,18 @@ const CollectionTileComponent = ({
     return tracks.some((track) => track.uid === uid)
   })
 
-  const { isEnabled: isEditAlbumsEnabled } = useFeatureFlag(
-    FeatureFlags.EDIT_ALBUMS
-  )
-
   const {
     has_current_user_reposted,
     has_current_user_saved,
     is_album,
     playlist_id,
     playlist_name,
-    playlist_owner_id
+    playlist_owner_id,
+    stream_conditions
   } = collection
+
+  const hasPreview =
+    isUSDCEnabled && isContentUSDCPurchaseGated(stream_conditions)
 
   const isOwner = playlist_owner_id === currentUserId
 
@@ -178,10 +179,8 @@ const CollectionTileComponent = ({
       is_album
         ? OverflowAction.VIEW_ALBUM_PAGE
         : OverflowAction.VIEW_PLAYLIST_PAGE,
-      isOwner && (!is_album || isEditAlbumsEnabled)
-        ? OverflowAction.PUBLISH_PLAYLIST
-        : null,
-      isOwner && (!is_album || isEditAlbumsEnabled)
+      isOwner ? OverflowAction.PUBLISH_PLAYLIST : null,
+      isOwner
         ? is_album
           ? OverflowAction.DELETE_ALBUM
           : OverflowAction.DELETE_PLAYLIST
@@ -196,7 +195,7 @@ const CollectionTileComponent = ({
         overflowActions
       })
     )
-  }, [playlist_id, is_album, isOwner, isEditAlbumsEnabled, dispatch])
+  }, [playlist_id, is_album, isOwner, dispatch])
 
   const handlePressShare = useCallback(() => {
     if (playlist_id === undefined) {
@@ -263,6 +262,7 @@ const CollectionTileComponent = ({
       onPressSave={handlePressSave}
       onPressShare={handlePressShare}
       onPressTitle={handlePressTitle}
+      hasPreview={hasPreview}
       title={playlist_name}
       item={collection}
       user={user}

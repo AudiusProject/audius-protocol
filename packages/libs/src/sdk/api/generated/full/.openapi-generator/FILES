@@ -25,6 +25,7 @@ models/FollowingResponse.ts
 models/FollowingResponseFull.ts
 models/FullBulkSubscribersResponse.ts
 models/FullFollowersResponse.ts
+models/FullGetSupportedUsers.ts
 models/FullGetSupporter.ts
 models/FullGetSupporters.ts
 models/FullGetSupporting.ts
