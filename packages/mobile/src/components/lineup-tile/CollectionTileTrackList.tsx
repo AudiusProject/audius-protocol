@@ -79,7 +79,7 @@ type TrackItemProps = {
   track?: LineupTrack
   uid?: UID
   isAlbum?: boolean
-  deleted: boolean
+  deleted?: boolean
 }
 
 const TrackItem = (props: TrackItemProps) => {
@@ -150,13 +150,7 @@ export const CollectionTileTrackList = (props: LineupTileTrackListProps) => {
     return (
       <>
         {range(DISPLAY_TRACK_COUNT).map((i) => (
-          <TrackItem
-            key={i}
-            index={i}
-            showSkeleton
-            isAlbum={isAlbum}
-            deleted={false}
-          />
+          <TrackItem key={i} index={i} showSkeleton isAlbum={isAlbum} />
         ))}
       </>
     )

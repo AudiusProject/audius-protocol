@@ -56,7 +56,7 @@ type TrackItemProps = {
   track?: LineupTrack
   isAlbum: boolean
   active: boolean
-  deleted: boolean
+  deleted?: boolean
   forceSkeleton?: boolean
 }
 
@@ -130,7 +130,6 @@ const TrackList = ({
             index={i}
             isAlbum={isAlbum}
             forceSkeleton
-            deleted={false}
           />
         ))}
       </Box>
