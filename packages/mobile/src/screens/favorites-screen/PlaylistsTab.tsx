@@ -37,15 +37,11 @@ const messages = {
 
 export const PlaylistsTab = () => {
   const [filterValue, setFilterValue] = useState('')
-  const {
-    collectionIds: userPlaylists,
-    hasMore,
-    fetchMore,
-    status
-  } = useCollectionsScreenData({
-    filterValue,
-    collectionType: 'playlists'
-  })
+  const { collectionIds, hasMore, fetchMore, status } =
+    useCollectionsScreenData({
+      filterValue,
+      collectionType: 'playlists'
+    })
   const isReachable = useSelector(getIsReachable)
 
   const handleEndReached = useCallback(() => {
@@ -56,7 +52,7 @@ export const PlaylistsTab = () => {
 
   const loadingSpinner = <LoadingMoreSpinner />
   const noItemsLoaded =
-    !statusIsNotFinalized(status) && !userPlaylists?.length && !filterValue
+    !statusIsNotFinalized(status) && !collectionIds?.length && !filterValue
 
   const emptyTabText = useSelector((state: CommonState) => {
     const selectedCategory = getCategory(state, {
@@ -89,16 +85,17 @@ export const PlaylistsTab = () => {
           />
           <Animated.View layout={Layout}>
             <CollectionList
+              collectionType='playlist'
               onEndReached={handleEndReached}
               onEndReachedThreshold={0.5}
               scrollEnabled={false}
-              collectionIds={userPlaylists}
+              collectionIds={collectionIds}
               ListFooterComponent={
                 statusIsNotFinalized(status) && isReachable
                   ? loadingSpinner
                   : null
               }
-              showCreatePlaylistTile={!!isReachable}
+              showCreateCollectionTile={!!isReachable}
               createPlaylistSource={CreatePlaylistSource.LIBRARY_PAGE}
             />
           </Animated.View>

@@ -57,8 +57,5 @@ export const reformatUser = (
 
   const withNames = setDisplayNameToHandleIfUnset(withImages)
 
-  if (typeof withNames.follower_count === 'string') {
-    withNames.follower_count = parseInt(withNames.follower_count, 10)
-  }
   return withNames
 }

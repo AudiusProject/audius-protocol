@@ -1,6 +1,7 @@
 package server
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"mime"
@@ -9,6 +10,7 @@ import (
 	"time"
 
 	"github.com/AudiusProject/audius-protocol/mediorum/cidutil"
+	"github.com/erni27/imcache"
 
 	"github.com/labstack/echo/v4"
 	"gocloud.dev/blob"
@@ -22,12 +24,29 @@ func (ss *MediorumServer) serveImage(c echo.Context) error {
 	jobID := c.Param("jobID")
 	variant := c.Param("variant")
 	isOriginalJpg := variant == "original.jpg"
+	cacheKey := jobID + variant
+
+	serveSuccessWithBytes := func(blobData []byte, modTime time.Time) error {
+		c.Response().Header().Set(echo.HeaderCacheControl, "public, max-age=2592000, immutable")
+		http.ServeContent(c.Response(), c.Request(), cacheKey, modTime, bytes.NewReader(blobData))
+		return nil
+	}
 
 	// helper function... only sets cache-control header on success
 	serveSuccessWithReader := func(blob *blob.Reader) error {
-		c.Response().Header().Set(echo.HeaderCacheControl, "public, max-age=2592000, immutable")
-		http.ServeContent(c.Response(), c.Request(), jobID+variant, blob.ModTime(), blob)
-		return nil
+		blobData, err := io.ReadAll(blob)
+		if err != nil {
+			return err
+		}
+		blob.Close()
+		ss.imageCache.Set(cacheKey, blobData, imcache.WithNoExpiration())
+		return serveSuccessWithBytes(blobData, blob.ModTime())
+	}
+
+	// use cache if possible
+	if blobData, ok := ss.imageCache.Get(cacheKey); ok {
+		c.Response().Header().Set("x-image-cache-hit", "true")
+		return serveSuccessWithBytes(blobData, ss.StartedAt)
 	}
 
 	serveSuccess := func(blobPath string) error {

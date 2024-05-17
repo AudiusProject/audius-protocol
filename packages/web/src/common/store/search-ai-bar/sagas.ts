@@ -1,17 +1,6 @@
 import { Name } from '@audius/common/models'
 import { accountSelectors, SearchKind, getContext } from '@audius/common/store'
-import { removeNullable } from '@audius/common/utils'
-import { flatMap, zip } from 'lodash'
-import {
-  call,
-  all,
-  cancel,
-  fork,
-  put,
-  race,
-  select,
-  take
-} from 'typed-redux-saga'
+import { call, cancel, fork, put, race, select, take } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
 import { waitForRead } from 'utils/sagaHelpers'
@@ -21,51 +10,19 @@ import { getSearch } from './selectors'
 
 const getUserId = accountSelectors.getUserId
 
-const searchMultiMap: {
-  [key: string]: string[]
-} = {
-  grimes: ['grimez', 'grimes']
-}
-
 export function* getSearchResults(searchText: string) {
   yield* waitForRead()
 
   const apiClient = yield* getContext('apiClient')
   const userId = yield* select(getUserId)
 
-  let results
-  if (searchText in searchMultiMap) {
-    const searches = searchMultiMap[searchText].map((query) =>
-      call([apiClient, 'getSearchAutocomplete'], {
-        currentUserId: userId,
-        query,
-        limit: 10,
-        offset: 0,
-        kind: SearchKind.USERS
-      })
-    )
-    const allSearchResults = yield* all(searches)
-    results = allSearchResults.reduce(
-      (acc, cur) => {
-        acc.tracks = flatMap(zip(acc.tracks, cur.tracks)).filter(removeNullable)
-        acc.users = flatMap(zip(acc.users, cur.users)).filter(removeNullable)
-        acc.albums = flatMap(zip(acc.albums, cur.albums)).filter(removeNullable)
-        acc.playlists = flatMap(zip(acc.playlists, cur.playlists)).filter(
-          removeNullable
-        )
-        return acc
-      },
-      { tracks: [], albums: [], playlists: [], users: [] }
-    )
-  } else {
-    results = yield* call([apiClient, 'getSearchAutocomplete'], {
-      currentUserId: userId,
-      query: searchText,
-      limit: 10,
-      offset: 0,
-      kind: SearchKind.USERS
-    })
-  }
+  const results = yield* call([apiClient, 'getSearchAutocomplete'], {
+    currentUserId: userId,
+    query: searchText,
+    limit: 10,
+    offset: 0,
+    kind: SearchKind.USERS
+  })
   const { users } = results
   const checkedUsers = users.filter((u) => !u.is_deactivated)
   return {

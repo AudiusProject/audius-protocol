@@ -104,7 +104,7 @@ const UserArtCard = g(
           />
         </div>
         <div className={styles.followerCount} onClick={onClickFollowers}>
-          {messages.followers(follower_count as number)}
+          {messages.followers(follower_count)}
         </div>
       </div>
     )
