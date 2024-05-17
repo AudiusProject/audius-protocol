@@ -103,7 +103,7 @@ const forwardTransaction = async (logger: Logger, transaction: string) => {
  * it's been confirmed with the given commitment level, expires,
  * or times out.
  */
-const sendTransactionWithRetries = async ({
+export const sendTransactionWithRetries = async ({
   transaction,
   commitment,
   confirmationStrategy,
