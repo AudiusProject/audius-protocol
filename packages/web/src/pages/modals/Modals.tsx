@@ -129,16 +129,20 @@ const Modals = () => {
 
   return (
     <>
-      {commonModals.map(([modalName, Modal]) => {
-        return <AppModal key={modalName} name={modalName} modal={Modal} />
-      })}
       <PasswordResetModal />
       <FirstUploadModal />
       <UnloadDialog />
       <CollectibleDetailsModal />
-
-      {!isMobile && (
+      {isMobile ? (
         <>
+          <ConnectedMobileOverflowModal />
+          <UnfollowConfirmationModal />
+        </>
+      ) : (
+        <>
+          {commonModals.map(([modalName, Modal]) => {
+            return <AppModal key={modalName} name={modalName} modal={Modal} />
+          })}
           <EmbedModal />
           <ConnectedUserListModal />
           <AppCTAModal />
@@ -148,14 +152,6 @@ const Modals = () => {
           <FeatureFlagOverrideModal />
         </>
       )}
-
-      {isMobile && (
-        <>
-          <ConnectedMobileOverflowModal />
-          <UnfollowConfirmationModal />
-        </>
-      )}
-
       <TipAudioModal />
     </>
   )

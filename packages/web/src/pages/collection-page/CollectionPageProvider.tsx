@@ -48,7 +48,9 @@ import {
   usePremiumContentPurchaseModalActions,
   PremiumContentPurchaseModalState,
   albumTrackRemoveConfirmationModalActions,
-  AlbumTrackRemoveConfirmationModalState
+  AlbumTrackRemoveConfirmationModalState,
+  PlayerBehavior,
+  playerActions
 } from '@audius/common/store'
 import { formatUrlName, Uid, Nullable } from '@audius/common/utils'
 import { push as pushRoute, replace } from 'connected-react-router'
@@ -85,8 +87,8 @@ import { CollectionPageProps as MobileCollectionPageProps } from './components/m
 
 const { trackModalOpened } = modalsActions
 const { selectAllPlaylistUpdateIds } = playlistUpdatesSelectors
-const { makeGetCurrent } = queueSelectors
-const { getPlaying, getPreviewing, getBuffering } = playerSelectors
+const { makeGetCurrent, getPlayerBehavior } = queueSelectors
+const { getPlaying, getBuffering } = playerSelectors
 const { setFavorite } = favoritesUserListActions
 const { setRepost } = repostsUserListActions
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
@@ -535,7 +537,10 @@ class CollectionPage extends Component<
       pause,
       previewing,
       tracks: { entries },
-      record
+      record,
+      stop,
+      collection,
+      userId
     } = this.props
     const isQueued = this.isQueued()
     const playingId = this.getPlayingId()
@@ -557,11 +562,13 @@ class CollectionPage extends Component<
         })
       )
     } else if (entries.length > 0) {
-      play(entries[0].uid, { isPreview })
+      const isOwner = collection?.playlist_owner_id === userId
+      stop()
+      play(entries[0].uid, { isPreview: isPreview && isOwner })
       record(
         make(Name.PLAYBACK_PLAY, {
           id: `${entries[0].track_id}`,
-          isPreview,
+          isPreview: isPreview && isOwner,
           source: PlaybackSource.PLAYLIST_PAGE
         })
       )
@@ -846,7 +853,7 @@ function makeMapStateToProps() {
       userPlaylists: getAccountCollections(state),
       currentQueueItem: getCurrentQueueItem(state),
       playing: getPlaying(state),
-      previewing: getPreviewing(state),
+      previewing: getPlayerBehavior(state) === PlayerBehavior.PREVIEW_OR_FULL,
       buffering: getBuffering(state),
       pathname: getLocationPathname(state),
       playlistUpdates: selectAllPlaylistUpdateIds(state)
@@ -872,6 +879,9 @@ function mapDispatchToProps(dispatch: Dispatch) {
     play: (uid?: string, options: { isPreview?: boolean } = {}) =>
       dispatch(tracksActions.play(uid, options)),
     pause: () => dispatch(tracksActions.pause()),
+    stop: () => {
+      dispatch(playerActions.stop({}))
+    },
     updateLineupOrder: (updatedOrderIndices: any) =>
       dispatch(tracksActions.updateLineupOrder(updatedOrderIndices)),
     editPlaylist: (playlistId: number, formFields: any) =>

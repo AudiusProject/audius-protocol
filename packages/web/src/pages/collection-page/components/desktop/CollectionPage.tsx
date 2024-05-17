@@ -142,7 +142,6 @@ const CollectionPage = ({
   onClickFavorites
 }: CollectionPageProps) => {
   const { status, metadata, user } = collection
-  const { isEnabled: isEditAlbumsEnabled } = useFlag(FeatureFlags.EDIT_ALBUMS)
   const { isEnabled: isPremiumAlbumsEnabled } = useFlag(
     FeatureFlags.PREMIUM_ALBUMS_ENABLED
   )
@@ -369,8 +368,7 @@ const CollectionPage = ({
                 isReorderable={
                   userId !== null &&
                   userId === playlistOwnerId &&
-                  allowReordering &&
-                  (!isAlbum || isEditAlbumsEnabled)
+                  allowReordering
                 }
                 removeText={`${messages.remove} ${
                   isAlbum ? messages.type.album : messages.type.playlist
