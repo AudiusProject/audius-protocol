@@ -2,7 +2,7 @@ import { useCallback } from 'react'
 
 import type { ID, AccessConditions } from '@audius/common/models'
 import { ModalSource, isContentUSDCPurchaseGated } from '@audius/common/models'
-import type { PurchaseableContentType } from '@audius/common/store'
+import { PurchaseableContentType } from '@audius/common/store'
 import {
   usePremiumContentPurchaseModal,
   gatedContentActions,
@@ -64,6 +64,8 @@ export const LineupTileAccessStatus = ({
     isUSDCEnabled && isContentUSDCPurchaseGated(streamConditions)
   const isUnlocking = gatedTrackStatus === 'UNLOCKING'
 
+  console.log({ contentType })
+
   const handlePress = useCallback(() => {
     if (hasStreamAccess) {
       return
@@ -71,7 +73,12 @@ export const LineupTileAccessStatus = ({
     if (isUSDCPurchase) {
       openPremiumContentPurchaseModal(
         { contentId, contentType },
-        { source: ModalSource.TrackTile }
+        {
+          source:
+            contentType === PurchaseableContentType.ALBUM
+              ? ModalSource.LineUpCollectionTile
+              : ModalSource.LineUpTrackTile
+        }
       )
     } else if (contentId) {
       dispatch(setLockedContentId({ id: contentId }))
