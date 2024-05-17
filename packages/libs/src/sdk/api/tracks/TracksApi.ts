@@ -418,12 +418,12 @@ export class TracksApi extends GeneratedTracksApi {
     let accessType: 'stream' | 'download' = 'stream'
 
     // Get conditions
-    if (track.streamConditions && 'usdcPurchase' in track.streamConditions) {
+    if (track.streamConditions && track.streamConditions.usdcPurchase) {
       centPrice = track.streamConditions.usdcPurchase.price
       numberSplits = track.streamConditions.usdcPurchase.splits
     } else if (
       track.downloadConditions &&
-      'usdcPurchase' in track.downloadConditions
+      track.downloadConditions.usdcPurchase
     ) {
       centPrice = track.downloadConditions.usdcPurchase.price
       numberSplits = track.downloadConditions.usdcPurchase.splits
