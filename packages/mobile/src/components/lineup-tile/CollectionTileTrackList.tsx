@@ -1,10 +1,12 @@
 import type { UID, LineupTrack } from '@audius/common/models'
 import type { CommonState } from '@audius/common/store'
 import { playerSelectors } from '@audius/common/store'
+import { pluralize } from '@audius/common/utils'
 import { range } from 'lodash'
 import { Pressable, Text, View } from 'react-native'
 import { useSelector } from 'react-redux'
 
+import { Box } from '@audius/harmony-native'
 import Skeleton from 'app/components/skeleton'
 import { flexRowCentered, makeStyles } from 'app/styles'
 import type { GestureResponderHandler } from 'app/types/gesture'
@@ -21,7 +23,7 @@ const messages = {
 type LineupTileTrackListProps = {
   isLoading?: boolean
   onPress: GestureResponderHandler
-  trackCount?: number
+  trackCount: number
   tracks: LineupTrack[]
   isAlbum: boolean
 }
@@ -160,6 +162,8 @@ export const CollectionTileTrackList = (props: LineupTileTrackListProps) => {
     )
   }
 
+  const overflowTrackCount = trackCount - DISPLAY_TRACK_COUNT
+
   return (
     <Pressable onPress={onPress}>
       {tracks.slice(0, DISPLAY_TRACK_COUNT).map((track, index) => (
@@ -172,12 +176,17 @@ export const CollectionTileTrackList = (props: LineupTileTrackListProps) => {
           deleted={track.is_delete}
         />
       ))}
-      {trackCount && trackCount > 5 ? (
+      {trackCount && trackCount > DISPLAY_TRACK_COUNT ? (
         <>
           <View style={styles.divider} />
-          <Text style={[styles.item, styles.more]}>
-            {`+${trackCount - tracks.length} more tracks`}
-          </Text>
+          <Box mt='xs'>
+            <Text style={[styles.item, styles.more]}>
+              {`+${overflowTrackCount} ${pluralize(
+                'Track',
+                overflowTrackCount
+              )}`}
+            </Text>
+          </Box>
         </>
       ) : null}
     </Pressable>
