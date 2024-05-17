@@ -61,7 +61,6 @@ const FullCollectionList = (props: FullCollectionListProps) => {
           source={createPlaylistSource!}
           sourceTrackId={createPlaylistTrackId}
           onCreate={createPlaylistCallback}
-          // TODO: support album type (we don't have use case currently)
           collectionType={collectionType}
         />
       ) : (
@@ -121,7 +120,6 @@ const CollectionIDList = (props: CollectionIdListProps) => {
           source={createPlaylistSource!}
           sourceTrackId={createPlaylistTrackId}
           onCreate={createPlaylistCallback}
-          // TODO: support album type (we don't have use case currently)
           collectionType={collectionType}
         />
       ) : (
