@@ -130,12 +130,14 @@ export const Panel = ({
   const styles = useStyles()
   const { neutralLight4 } = useThemeColors()
 
-  const stepCount = challenge?.max_steps ?? 0
+  const maxStepCount = challenge?.max_steps ?? 0
   const shouldShowCompleted =
     challenge?.state === 'completed' || challenge?.state === 'disbursed'
   const hasDisbursed = challenge?.state === 'disbursed'
   const shouldShowProgressBar =
-    stepCount > 1 && challenge?.challenge_type !== 'aggregate' && !hasDisbursed
+    maxStepCount > 1 &&
+    challenge?.challenge_type !== 'aggregate' &&
+    !hasDisbursed
   const needsDisbursement = challenge && challenge.claimableAmount > 0
   const showNewChallengePill =
     !needsDisbursement && isAudioMatchingChallenge(id)
@@ -165,22 +167,28 @@ export const Panel = ({
           formatNumberCommas(challenge?.max_steps?.toString() ?? '')
         )
       } else {
-        progressLabelFilled = progressLabel ?? ''
+        progressLabelFilled = fillString(
+          progressLabel ?? '',
+          formatNumberCommas(challenge?.current_step_count?.toString() ?? ''),
+          formatNumberCommas(challenge?.max_steps?.toString() ?? '')
+        )
       }
     } else if (challenge?.challenge_type === 'aggregate') {
       // Count down
       progressLabelFilled = fillString(
         remainingLabel ?? '',
-        (challenge?.max_steps - challenge?.current_step_count)?.toString() ??
-          '',
-        formatNumberCommas(stepCount.toString())
+        formatNumberCommas(
+          (challenge?.max_steps - challenge?.current_step_count)?.toString() ??
+            ''
+        ),
+        formatNumberCommas(challenge?.max_steps?.toString() ?? '')
       )
     } else {
       // Count up
       progressLabelFilled = fillString(
         progressLabel,
-        challenge?.current_step_count?.toString() ?? '',
-        formatNumberCommas(stepCount.toString())
+        formatNumberCommas(challenge?.current_step_count?.toString() ?? ''),
+        formatNumberCommas(challenge?.max_steps?.toString() ?? '')
       )
     }
   }
@@ -244,7 +252,7 @@ export const Panel = ({
           <View>
             <ProgressBar
               progress={challenge?.current_step_count ?? 0}
-              max={stepCount}
+              max={maxStepCount}
             />
           </View>
         ) : null}
