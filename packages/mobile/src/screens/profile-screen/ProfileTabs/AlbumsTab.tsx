@@ -25,6 +25,7 @@ export const AlbumsTab = () => {
   const isOwner = useSelector((state) => getIsOwner(state, handle ?? ''))
   const isFocused = useIsFocused()
   const dispatch = useDispatch()
+  const isLoading = collectionsStatus === Status.LOADING
 
   const shouldFetchAlbums =
     isFocused &&
@@ -47,6 +48,7 @@ export const AlbumsTab = () => {
       disableTopTabScroll
       showsVerticalScrollIndicator={false}
       totalCount={album_count}
+      isLoading={isLoading}
     />
   )
 }
