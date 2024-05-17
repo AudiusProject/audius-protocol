@@ -281,7 +281,6 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
     audioToClaim = 0
     audioClaimedSoFar = challenge.totalAmount
   }
-  console.log('asdf challenge:', challenge, audioToClaim, audioClaimedSoFar)
 
   let linkType: 'complete' | 'inProgress' | 'incomplete'
   if (challenge?.state === 'completed') {

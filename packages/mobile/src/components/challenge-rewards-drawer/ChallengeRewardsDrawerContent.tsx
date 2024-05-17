@@ -104,6 +104,7 @@ export const ChallengeRewardsDrawerContent = ({
   const palette = useThemePalette()
   const isInProgress = challengeState === 'in_progress'
   const isClaimable = claimableAmount > 0
+  console.log('asdf isClaimable: ', isClaimable)
   const {
     cooldownChallenges,
     summary,
@@ -213,7 +214,6 @@ export const ChallengeRewardsDrawerContent = ({
             </Text>
           </View>
         </View>
-        {children}
         <View style={styles.claimRewardsContainer}>
           {isCooldownChallenge && isRewardsCooldownEnabled ? (
             renderCooldownSummaryTable()
@@ -251,6 +251,7 @@ export const ChallengeRewardsDrawerContent = ({
           ) : null}
           {claimError ? <ClaimError aaoErrorCode={aaoErrorCode} /> : null}
         </View>
+        {children}
       </ScrollView>
       {isClaimable &&
       onClaim &&

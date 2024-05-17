@@ -87,7 +87,7 @@ export const useStyles = makeStyles(({ palette, spacing, typography }) => ({
     width: '100%'
   },
   claimRewardsContainer: {
-    marginTop: spacing(4),
+    marginVertical: spacing(4),
     width: '100%'
   },
   claimRewardsError: {
