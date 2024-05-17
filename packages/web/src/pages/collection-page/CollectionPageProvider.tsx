@@ -564,7 +564,7 @@ class CollectionPage extends Component<
     } else if (entries.length > 0) {
       const isOwner = collection?.playlist_owner_id === userId
       stop()
-      play(entries[0].uid, { isPreview: isPreview && isOwner })
+      play(entries[0].uid, { isPreview })
       record(
         make(Name.PLAYBACK_PLAY, {
           id: `${entries[0].track_id}`,

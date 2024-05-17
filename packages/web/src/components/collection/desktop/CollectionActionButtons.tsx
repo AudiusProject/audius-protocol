@@ -58,11 +58,8 @@ export const CollectionActionButtons = (props: CollectionActionButtonProps) => {
   const { hasStreamAccess } = useGatedContentAccess(collection)
 
   // If user doesn't have access, show preview only. If user has access, show play only.
-  // If user is owner, show both.
   const shouldShowPlay = isPlayable && hasStreamAccess
-  const shouldShowPreview = isOwner
-    ? isPlayable && isPremium
-    : isPremium && !hasStreamAccess
+  const shouldShowPreview = isPremium && !hasStreamAccess
 
   let actionButtons: Nullable<JSX.Element> = null
 

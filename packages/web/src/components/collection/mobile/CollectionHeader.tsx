@@ -116,11 +116,8 @@ const CollectionHeader = ({
   const isUnlisted = collection?.is_private
 
   // If user doesn't have access, show preview only. If user has access, show play only.
-  // If user is owner, show both.
   const shouldShowPlay = isPlayable && hasStreamAccess
-  const shouldShowPreview = isOwner
-    ? isPlayable && isPremium
-    : isPremium && !hasStreamAccess
+  const shouldShowPreview = isPremium && !hasStreamAccess
 
   const showPremiumSection =
     isPremiumAlbumsEnabled && isAlbum && streamConditions && collectionId
