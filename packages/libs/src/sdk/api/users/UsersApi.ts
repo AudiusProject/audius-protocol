@@ -208,7 +208,8 @@ export class UsersApi extends GeneratedUsersApi {
   }
 
   /**
-   * Downloads the sales the user has made as a CSV file
+   * Downloads the sales the user has made as a CSV file.
+   * Similar to generated raw method, but forced response type as blob
    */
   async downloadSalesAsCSVBlob(
     params: DownloadSalesAsCSVRequest
@@ -228,39 +229,22 @@ export class UsersApi extends GeneratedUsersApi {
 
     const headerParameters: runtime.HTTPHeaders = {}
 
-    if (
-      params.encodedDataMessage !== undefined &&
-      params.encodedDataMessage !== null
-    ) {
-      headerParameters['Encoded-Data-Message'] = String(
-        params.encodedDataMessage
-      )
-    }
-
-    if (
-      params.encodedDataSignature !== undefined &&
-      params.encodedDataSignature !== null
-    ) {
-      headerParameters['Encoded-Data-Signature'] = String(
-        params.encodedDataSignature
-      )
-    }
-
-    const host = await this.discoveryNodeSelectorService.getSelectedEndpoint()
-    const path = `/users/{id}/sales/download`.replace(
-      `{${'id'}}`,
-      encodeURIComponent(String(params.id))
-    )
-    const url = `${host}${BASE_PATH}${path}`
-    const response = await fetch(url, {
+    const response = await this.request({
+      path: `/users/{id}/sales/download`.replace(
+        `{${'id'}}`,
+        encodeURIComponent(String(params.id))
+      ),
       method: 'GET',
-      headers: headerParameters
+      headers: headerParameters,
+      query: queryParameters
     })
-    return response.blob()
+
+    return await new runtime.BlobApiResponse(response).value()
   }
 
   /**
-   * Downloads the purchases the user has made as a CSV file
+   * Downloads the purchases the user has made as a CSV file.
+   * Similar to generated raw method, but forced response type as blob
    */
   async downloadPurchasesAsCSVBlob(
     params: DownloadPurchasesAsCSVRequest
@@ -280,39 +264,22 @@ export class UsersApi extends GeneratedUsersApi {
 
     const headerParameters: runtime.HTTPHeaders = {}
 
-    if (
-      params.encodedDataMessage !== undefined &&
-      params.encodedDataMessage !== null
-    ) {
-      headerParameters['Encoded-Data-Message'] = String(
-        params.encodedDataMessage
-      )
-    }
-
-    if (
-      params.encodedDataSignature !== undefined &&
-      params.encodedDataSignature !== null
-    ) {
-      headerParameters['Encoded-Data-Signature'] = String(
-        params.encodedDataSignature
-      )
-    }
-
-    const host = await this.discoveryNodeSelectorService.getSelectedEndpoint()
-    const path = `/users/{id}/purchases/download`.replace(
-      `{${'id'}}`,
-      encodeURIComponent(String(params.id))
-    )
-    const url = `${host}${BASE_PATH}${path}`
-    const response = await fetch(url, {
+    const response = await this.request({
+      path: `/users/{id}/purchases/download`.replace(
+        `{${'id'}}`,
+        encodeURIComponent(String(params.id))
+      ),
       method: 'GET',
-      headers: headerParameters
+      headers: headerParameters,
+      query: queryParameters
     })
-    return response.blob()
+
+    return await new runtime.BlobApiResponse(response).value()
   }
 
   /**
    * Downloads the USDC withdrawals the user has made as a CSV file
+   * Similar to generated raw method, but forced response type as blob
    */
   async downloadUSDCWithdrawalsAsCSVBlob(
     params: DownloadUSDCWithdrawalsAsCSVRequest
@@ -325,42 +292,23 @@ export class UsersApi extends GeneratedUsersApi {
     }
 
     const queryParameters: any = {}
-
     if (params.userId !== undefined) {
       queryParameters.user_id = params.userId
     }
 
     const headerParameters: runtime.HTTPHeaders = {}
 
-    if (
-      params.encodedDataMessage !== undefined &&
-      params.encodedDataMessage !== null
-    ) {
-      headerParameters['Encoded-Data-Message'] = String(
-        params.encodedDataMessage
-      )
-    }
-
-    if (
-      params.encodedDataSignature !== undefined &&
-      params.encodedDataSignature !== null
-    ) {
-      headerParameters['Encoded-Data-Signature'] = String(
-        params.encodedDataSignature
-      )
-    }
-
-    const host = await this.discoveryNodeSelectorService.getSelectedEndpoint()
-    const path = `/users/{id}/withdrawals/download`.replace(
-      `{${'id'}}`,
-      encodeURIComponent(String(params.id))
-    )
-    const url = `${host}${BASE_PATH}${path}`
-    const response = await fetch(url, {
+    const response = await this.request({
+      path: `/users/{id}/withdrawals/download`.replace(
+        `{${'id'}}`,
+        encodeURIComponent(String(params.id))
+      ),
       method: 'GET',
-      headers: headerParameters
+      headers: headerParameters,
+      query: queryParameters
     })
-    return response.blob()
+
+    return await new runtime.BlobApiResponse(response).value()
   }
 
   /**
