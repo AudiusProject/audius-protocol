@@ -83,7 +83,7 @@ module.exports = {
       disableConfirmationListener: true
     },
     predeploy: {
-      host: 'localhost',
+      host: '0.0.0.0',
       port: 8545,
       network_id: '*',
       verify: {

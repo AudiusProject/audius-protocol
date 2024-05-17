@@ -511,6 +511,8 @@ services:
       DDEX_CHOREOGRAPHY: "ERNReleaseByRelease"
     networks:
       - ddex-network
+    profiles:
+      - ddex
     depends_on:
       ddex-ingester:
         condition: service_healthy
@@ -531,6 +533,8 @@ services:
       DDEX_CHOREOGRAPHY: "ERNBatched"
     networks:
       - ddex-network
+    profiles:
+      - ddex
     depends_on:
       ddex-ingester:
         condition: service_healthy
