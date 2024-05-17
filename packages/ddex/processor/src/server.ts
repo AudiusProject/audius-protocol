@@ -1,6 +1,7 @@
 import 'dotenv/config'
 
 import { serve } from '@hono/node-server'
+import { fileTypeFromBuffer } from 'file-type'
 import { Context, Hono } from 'hono'
 import { deleteCookie, getSignedCookie, setSignedCookie } from 'hono/cookie'
 import { html } from 'hono/html'
@@ -389,14 +390,12 @@ app.get('/release/:key/:type/:ref/:name?', async (c) => {
   // some mime stuff
   if (asset.fileName.endsWith('flac')) {
     c.header('Content-Type', 'audio/flac')
+  } else {
+    const ft = await fileTypeFromBuffer(ok.buffer)
+    if (ft) {
+      c.header('Content-Type', ft.mime)
+    }
   }
-  // skip because of some file-type lint weirdness
-  // else {
-  //   const ft = await fileTypeFromBuffer(ok.buffer)
-  //   if (ft) {
-  //     c.header('Content-Type', ft.mime)
-  //   }
-  // }
   return c.body(ok.buffer)
 })
 
