@@ -41,7 +41,6 @@ export const CollectionActionButtons = (props: CollectionActionButtonProps) => {
     onPreview,
     isPlaying,
     isPlayable,
-    isPreviewing,
     userId,
     tracksLoading,
     isPremium
@@ -81,24 +80,24 @@ export const CollectionActionButtons = (props: CollectionActionButtonProps) => {
   const playButton = (
     <Button
       variant='primary'
-      iconLeft={isPlaying && !isPreviewing ? IconPause : IconPlay}
+      iconLeft={isPlaying && hasStreamAccess ? IconPause : IconPlay}
       onClick={onPlay}
       widthToHideText={BUTTON_COLLAPSE_WIDTHS.first}
       size='large'
     >
-      {isPlaying && !isPreviewing ? messages.pause : messages.play}
+      {isPlaying && hasStreamAccess ? messages.pause : messages.play}
     </Button>
   )
 
   const previewButton = (
     <Button
       variant='secondary'
-      iconLeft={isPlaying && isPreviewing ? IconPause : IconPlay}
+      iconLeft={isPlaying && !hasStreamAccess ? IconPause : IconPlay}
       onClick={onPreview}
       widthToHideText={BUTTON_COLLAPSE_WIDTHS.first}
       size='large'
     >
-      {isPlaying && isPreviewing ? messages.pause : messages.preview}
+      {isPlaying && !hasStreamAccess ? messages.pause : messages.preview}
     </Button>
   )
 
