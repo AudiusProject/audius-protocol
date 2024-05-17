@@ -269,7 +269,7 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 		peerHealths:        map[string]*PeerHealth{},
 		redirectCache:      imcache.New(imcache.WithMaxEntriesLimitOption[string, string](50_000, imcache.EvictionPolicyLRU)),
 		uploadOrigCidCache: imcache.New(imcache.WithMaxEntriesLimitOption[string, string](50_000, imcache.EvictionPolicyLRU)),
-		imageCache:         imcache.New(imcache.WithMaxEntriesLimitOption[string, []byte](1_000, imcache.EvictionPolicyLRU)),
+		imageCache:         imcache.New(imcache.WithMaxEntriesLimitOption[string, []byte](10_000, imcache.EvictionPolicyLRU)),
 
 		StartedAt: time.Now().UTC(),
 		Config:    config,
