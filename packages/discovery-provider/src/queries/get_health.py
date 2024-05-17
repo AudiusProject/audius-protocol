@@ -3,7 +3,7 @@ import logging
 import os
 import time
 from datetime import datetime
-from typing import Dict, Optional, Tuple, TypedDict, cast
+from typing import Any, Dict, Optional, Tuple, TypedDict, cast
 
 import requests
 from elasticsearch import Elasticsearch
@@ -518,9 +518,13 @@ def get_elasticsearch_health_info(
     esclient: Elasticsearch,
     latest_indexed_block_num: int,
     verbose: Optional[bool],
-) -> Dict[str, Dict[str, int]]:
-    elasticsearch_health = {}
-    elasticsearch_health["status"] = esclient.cluster.health().get("status", None)
+) -> Dict[str, Any]:
+    elasticsearch_health: Dict[str, Any] = {"status": None}
+    try:
+        elasticsearch_health["status"] = esclient.cluster.health().get("status")
+    except Exception as e:
+        logger.error(f"Could not obtain elasticsearch cluster health status: {e}")
+
     if verbose:
         for index_name in ES_INDEXES:
             try:
@@ -534,8 +538,8 @@ def get_elasticsearch_health_info(
                     "blocknumber": blocknumber,
                     "db_block_difference": latest_indexed_block_num - blocknumber,
                 }
-            except Exception:
-                pass
+            except Exception as e:
+                logger.error(f"Failed to query elasticsearch index {index_name}: {e}")
     return elasticsearch_health
 
 
