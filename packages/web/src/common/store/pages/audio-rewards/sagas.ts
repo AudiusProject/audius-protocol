@@ -33,7 +33,7 @@ import {
   waitForValue
 } from '@audius/common/utils'
 import { AUDIO } from '@audius/fixed-decimal'
-import { AudiusSdk, ChallengeId } from '@audius/sdk'
+import { AudiusSdk, ChallengeId, Errors } from '@audius/sdk'
 import {
   call,
   fork,
@@ -55,6 +55,7 @@ import {
   foregroundPollingDaemon,
   visibilityPollingDaemon
 } from 'utils/sagaPollingDaemons'
+
 const { show: showMusicConfetti } = musicConfettiActions
 const { setVisibility } = modalsActions
 const { getBalance, increaseBalance } = walletActions
@@ -223,9 +224,6 @@ function* waitForOptimisticChallengeToComplete({
   }
 }
 
-type AAOErrorResult = SpecifierWithAmount & {
-  aaoErrorCode: number
-}
 type ErrorResult = SpecifierWithAmount & {
   error: unknown
 }
@@ -240,7 +238,7 @@ async function claimRewardsForChallenge({
   userId: string
   challengeId: ChallengeId
   specifiers: SpecifierWithAmount[]
-}): Promise<(SpecifierWithAmount | AAOErrorResult | ErrorResult)[]> {
+}): Promise<(SpecifierWithAmount | ErrorResult)[]> {
   return await Promise.all(
     specifiers.map(async (specifierWithAmount) =>
       sdk.challenges
@@ -250,15 +248,8 @@ async function claimRewardsForChallenge({
           amount: specifierWithAmount.amount,
           userId
         })
-        .then((res) => {
-          if ('aaoErrorCode' in res) {
-            return {
-              ...specifierWithAmount,
-              aaoErrorCode: res.aaoErrorCode
-            }
-          } else {
-            return specifierWithAmount
-          }
+        .then(() => {
+          return specifierWithAmount
         })
         // Handle the individual specifier failures here to let the other
         // ones continue to claim and not reject the all() call.
@@ -307,9 +298,7 @@ function* claimSingleChallengeRewardAsync(
       challengeId: challengeId as ChallengeId,
       specifiers
     })
-    const claimed = results.filter(
-      (r) => !('error' in r || 'aaoErrorCode' in r)
-    )
+    const claimed = results.filter((r) => !('error' in r))
     const claimedAmount = claimed.reduce((sum, { amount }) => {
       return sum + amount
     }, 0)
@@ -320,25 +309,14 @@ function* claimSingleChallengeRewardAsync(
     )
     yield* put(setUserChallengesDisbursed({ challengeId, specifiers: claimed }))
 
-    // Ignore other errors and return early if there are AAO errors.
-    const aaoErrors = results.filter(
-      (r): r is AAOErrorResult => 'aaoErrorCode' in r
-    )
-    if (aaoErrors.length > 0) {
-      for (const error of aaoErrors) {
-        console.error(
-          `AAO attestation failed for specifier: ${error.specifier} for amount: ${error.amount}`
-        )
-      }
-      // Only consider the first AAO error code; others are likely to be the same anyway for the same user.
-      const aaoErrorCode = aaoErrors.map((r) => r.aaoErrorCode)[0]
-      return { aaoErrorCode }
-    }
-
     const errors = results.filter((r): r is ErrorResult => 'error' in r)
+    let aaoError: Errors.AntiAbuseAttestionError | undefined
     if (errors.length > 0) {
       // Log and report errors for each specifier that failed to claim
       for (const res of errors) {
+        if (!aaoError && res.error instanceof Errors.AntiAbuseAttestionError) {
+          aaoError = res.error
+        }
         const error =
           res.error instanceof Error ? res.error : new Error(String(res.error))
         console.error(
@@ -355,7 +333,11 @@ function* claimSingleChallengeRewardAsync(
           }
         })
       }
-      throw new Error('Some specifiers failed to claim')
+      const errorMessage = 'Some specifiers failed to claim'
+      if (aaoError) {
+        throw new Errors.AntiAbuseAttestionError(aaoError.code, errorMessage)
+      }
+      throw new Error(errorMessage)
     }
   } catch (e) {
     console.error(e)
@@ -564,15 +546,14 @@ function* claimChallengeRewardAsync(
   action: ReturnType<typeof claimChallengeReward>
 ) {
   try {
-    const result = yield* call(claimSingleChallengeRewardAsync, action)
-    if (result?.aaoErrorCode) {
-      yield* put(
-        claimChallengeRewardFailed({ aaoErrorCode: result.aaoErrorCode })
-      )
-    }
+    yield* call(claimSingleChallengeRewardAsync, action)
     yield* put(claimChallengeRewardSucceeded())
   } catch (e) {
-    yield* put(claimChallengeRewardFailed())
+    if (e instanceof Errors.AntiAbuseAttestionError) {
+      yield* put(claimChallengeRewardFailed({ aaoErrorCode: e.code }))
+    } else {
+      yield* put(claimChallengeRewardFailed())
+    }
   }
 }
 
@@ -586,16 +567,16 @@ function* claimAllChallengeRewardsAsync(
     claims.map((claim) =>
       call(function* () {
         try {
-          const result = yield* call(claimSingleChallengeRewardAsync, {
+          yield* call(claimSingleChallengeRewardAsync, {
             type: claimChallengeReward.type,
             payload: { claim, retryOnFailure: false }
           })
-          if (result?.aaoErrorCode) {
-            aaoErrorCode = result.aaoErrorCode
-          }
         } catch (e) {
           console.error(e)
           hasError = true
+          if (e instanceof Errors.AntiAbuseAttestionError) {
+            aaoErrorCode = e.code
+          }
         }
       })
     )
