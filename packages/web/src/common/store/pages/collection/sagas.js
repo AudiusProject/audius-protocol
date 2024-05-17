@@ -31,13 +31,15 @@ function* watchFetchCollection() {
         permalink,
         {
           requiresAllTracks: true,
-          deleteExistingEntry: true
+          deleteExistingEntry: true,
+          forceRetrieveFromSource: fetchLineup
         }
       )
     } else {
       retrievedCollections = yield call(retrieveCollections, [collectionId], {
         requiresAllTracks: true,
-        deleteExistingEntry: true
+        deleteExistingEntry: true,
+        forceRetrieveFromSource: fetchLineup
       })
     }
 
