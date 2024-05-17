@@ -20,7 +20,8 @@ type CreateCard = { _create: boolean }
 
 // Props to show and setup tile for creating new playlists
 type CreateCollectionTileProps = {
-  showCreatePlaylistTile?: boolean
+  collectionType?: 'playlist' | 'album'
+  showCreateCollectionTile?: boolean
   createPlaylistSource?: CreatePlaylistSource | null
   createPlaylistTrackId?: ID | null
   createPlaylistCallback?: () => void
@@ -43,7 +44,8 @@ type CollectionListProps = FullCollectionListProps | CollectionIdListProps
 const FullCollectionList = (props: FullCollectionListProps) => {
   const {
     collection,
-    showCreatePlaylistTile = false,
+    collectionType = 'playlist',
+    showCreateCollectionTile = false,
     createPlaylistSource = CreatePlaylistSource.LIBRARY_PAGE,
     createPlaylistTrackId,
     createPlaylistCallback,
@@ -60,7 +62,7 @@ const FullCollectionList = (props: FullCollectionListProps) => {
           sourceTrackId={createPlaylistTrackId}
           onCreate={createPlaylistCallback}
           // TODO: support album type (we don't have use case currently)
-          collectionType='playlist'
+          collectionType={collectionType}
         />
       ) : (
         <CollectionCard
@@ -73,6 +75,7 @@ const FullCollectionList = (props: FullCollectionListProps) => {
         />
       ),
     [
+      collectionType,
       createPlaylistCallback,
       createPlaylistSource,
       createPlaylistTrackId,
@@ -80,7 +83,7 @@ const FullCollectionList = (props: FullCollectionListProps) => {
     ]
   )
 
-  const updatedCollection = showCreatePlaylistTile
+  const updatedCollection = showCreateCollectionTile
     ? [{ _create: true }, ...(collection ?? [])]
     : collection
 
@@ -103,7 +106,8 @@ function isIdListProps(
 const CollectionIDList = (props: CollectionIdListProps) => {
   const {
     collectionIds,
-    showCreatePlaylistTile = false,
+    collectionType = 'playlist',
+    showCreateCollectionTile = false,
     createPlaylistSource = CreatePlaylistSource.LIBRARY_PAGE,
     createPlaylistTrackId,
     createPlaylistCallback,
@@ -118,26 +122,29 @@ const CollectionIDList = (props: CollectionIdListProps) => {
           sourceTrackId={createPlaylistTrackId}
           onCreate={createPlaylistCallback}
           // TODO: support album type (we don't have use case currently)
-          collectionType='playlist'
+          collectionType={collectionType}
         />
       ) : (
         <CollectionCard id={item.id} />
       ),
-    [createPlaylistCallback, createPlaylistSource, createPlaylistTrackId]
+    [
+      collectionType,
+      createPlaylistCallback,
+      createPlaylistSource,
+      createPlaylistTrackId
+    ]
   )
 
-  const idList: IDCardListItem[] = useMemo(
-    () => collectionIds.map((id) => ({ id })),
-    [collectionIds]
-  )
-
-  const updatedList = showCreatePlaylistTile
-    ? [{ _create: true }, ...idList]
-    : idList
+  const idList: (IDCardListItem | CreateCard)[] = useMemo(() => {
+    const collectionIdData = collectionIds.map((id) => ({ id }))
+    return showCreateCollectionTile
+      ? [{ _create: true }, ...collectionIdData]
+      : collectionIdData
+  }, [collectionIds, showCreateCollectionTile])
 
   return (
     <CardList
-      data={updatedList}
+      data={idList}
       renderItem={renderCard}
       LoadingCardComponent={CollectionCardSkeleton}
       {...other}

@@ -50,7 +50,7 @@ export const PlaylistsTab = () => {
       disableTopTabScroll
       showsVerticalScrollIndicator={false}
       totalCount={playlist_count}
-      showCreatePlaylistTile={isOwner}
+      showCreateCollectionTile={isOwner}
       createPlaylistSource={CreatePlaylistSource.PROFILE_PAGE}
     />
   )
