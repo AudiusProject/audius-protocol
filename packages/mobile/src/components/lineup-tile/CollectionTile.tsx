@@ -36,7 +36,7 @@ import { getIsCollectionMarkedForDownload } from 'app/store/offline-downloads/se
 
 import { CollectionTileTrackList } from './CollectionTileTrackList'
 import { LineupTile } from './LineupTile'
-import type { LineupItemProps } from './types'
+import { LineupTileSource, type LineupItemProps } from './types'
 const { getUid } = playerSelectors
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const { open: openOverflowMenu } = mobileOverflowMenuUIActions
@@ -51,7 +51,12 @@ const { getCollection, getTracksFromCollection } = cacheCollectionsSelectors
 const getUserId = accountSelectors.getUserId
 
 export const CollectionTile = (props: LineupItemProps) => {
-  const { uid, collection: collectionOverride, tracks: tracksOverride } = props
+  const {
+    uid,
+    collection: collectionOverride,
+    tracks: tracksOverride,
+    source = LineupTileSource.LINEUP_COLLECTION
+  } = props
 
   const collection = useProxySelector(
     (state) => {
@@ -89,6 +94,7 @@ export const CollectionTile = (props: LineupItemProps) => {
       collection={collection}
       tracks={tracks}
       user={user}
+      source={source}
     />
   )
 }
