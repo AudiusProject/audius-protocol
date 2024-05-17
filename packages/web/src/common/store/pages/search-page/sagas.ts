@@ -14,7 +14,6 @@ import { processAndCacheCollections } from 'common/store/cache/collections/utils
 import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
 import { fetchUsers } from 'common/store/cache/users/sagas'
 import tracksSagas from 'common/store/pages/search-page/lineups/tracks/sagas'
-import { SearchResults } from 'common/store/search-bar/types'
 import { waitForRead } from 'utils/sagaHelpers'
 
 const getUserId = accountSelectors.getUserId
@@ -141,7 +140,7 @@ function* fetchSearchPageResults(
 ) {
   yield* call(waitForRead)
 
-  const rawResults: SearchResults = yield* call(
+  const rawResults = yield* call(
     getSearchResults,
     action.searchText,
     action.searchKind,
