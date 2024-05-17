@@ -149,7 +149,9 @@ export const DetailsTile = ({
   const isUnpublishedScheduledRelease =
     track?.is_scheduled_release && track?.is_unlisted
   const showPreviewButton =
-    isUSDCPurchaseGated && (isOwner || !hasStreamAccess) && onPressPreview
+    isUSDCPurchaseGated &&
+    ((isOwner && !isCollection) || !hasStreamAccess) &&
+    onPressPreview
 
   const handlePressArtistName = useCallback(() => {
     if (!user) {
@@ -390,7 +392,11 @@ export const DetailsTile = ({
             contentType={contentType}
           />
         ) : null}
-        <DetailsTileMetadata genre={track?.genre} mood={track?.mood} />
+        <DetailsTileMetadata
+          id={contentId}
+          genre={track?.genre}
+          mood={track?.mood}
+        />
         <SecondaryStats
           isCollection={isCollection}
           playCount={playCount}

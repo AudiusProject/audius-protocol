@@ -212,7 +212,6 @@ export const GiantTrackTile = ({
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
   )
   const isUSDCPurchaseGated = isContentUSDCPurchaseGated(streamConditions)
-  const isEditAlbumsEnabled = getFeatureEnabled(FeatureFlags.EDIT_ALBUMS)
   const track = useSelector(
     (state: CommonState) => getTrack(state, { id: trackId }),
     shallowEqual
@@ -430,7 +429,7 @@ export const GiantTrackTile = ({
   }
 
   const renderAlbum = () => {
-    if (!isEditAlbumsEnabled || !albumInfo) return null
+    if (!albumInfo) return null
     return (
       <InfoLabel
         className={styles.infoLabelPlacement}

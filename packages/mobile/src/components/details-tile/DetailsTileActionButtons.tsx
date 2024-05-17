@@ -1,7 +1,5 @@
 import { useGetPlaylistById, useGetCurrentUserId } from '@audius/common/api'
-import { useFeatureFlag } from '@audius/common/hooks'
 import type { ID } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import { cacheCollectionsSelectors } from '@audius/common/store'
 import type { CommonState } from '@audius/common/store'
 import { useSelector } from 'react-redux'
@@ -97,9 +95,6 @@ export const DetailsTileActionButtons = ({
     getCollectionHasHiddenTracks(state, { id: collectionId })
   )
   const messages = getMessages(collection?.is_album ? 'album' : 'playlist')
-  const { isEnabled: isEditAlbumsEnabled } = useFeatureFlag(
-    FeatureFlags.EDIT_ALBUMS
-  )
 
   const repostButton = (
     <RepostButton
@@ -172,22 +167,12 @@ export const DetailsTileActionButtons = ({
     />
   )
 
-  const isAlbum = isCollection && collection?.is_album
-
   return (
     <Flex direction='row' justifyContent='center' gap='xl'>
       {hideShare ? null : shareButton}
-      {isOwner && !ddexApp
-        ? !isAlbum || isEditAlbumsEnabled
-          ? editButton
-          : null
-        : hideRepost
-        ? null
-        : repostButton}
+      {isOwner && !ddexApp ? editButton : hideRepost ? null : repostButton}
       {isOwner || hideFavorite ? null : favoriteButton}
-      {isOwner && !isPublished && (!isAlbum || isEditAlbumsEnabled)
-        ? publishButton
-        : null}
+      {isOwner && !isPublished ? publishButton : null}
       {hideOverflow ? null : overflowMenu}
     </Flex>
   )
