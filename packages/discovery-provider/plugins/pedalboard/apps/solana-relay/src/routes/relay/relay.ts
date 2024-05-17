@@ -19,13 +19,10 @@ import { personalSign } from 'eth-sig-util'
 import type { RelayRequestBody } from '@audius/sdk'
 import { getRequestIpData } from '../../utils/ipData'
 import { attachLocationData, isPaymentTransaction } from './attachLocationData'
+import { connections } from '../../utils/connections'
 
 const RETRY_DELAY_MS = 2 * 1000
 const RETRY_TIMEOUT_MS = 60 * 1000
-
-const connections = config.solanaEndpoints.map(
-  (endpoint) => new Connection(endpoint)
-)
 
 const delay = async (ms: number, options?: { signal: AbortSignal }) => {
   const signal = options?.signal

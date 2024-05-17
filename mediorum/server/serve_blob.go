@@ -281,7 +281,7 @@ func (ss *MediorumServer) recordMetric(action string) {
 	}
 }
 
-func (ss *MediorumServer) findNodeToServeBlob(ctx context.Context, key string) string {
+func (ss *MediorumServer) findNodeToServeBlob(_ context.Context, key string) string {
 
 	// use cache if possible
 	if host, ok := ss.redirectCache.Get(key); ok {
@@ -305,7 +305,7 @@ func (ss *MediorumServer) findNodeToServeBlob(ctx context.Context, key string) s
 	return ""
 }
 
-func (ss *MediorumServer) findAndPullBlob(ctx context.Context, key string) (string, error) {
+func (ss *MediorumServer) findAndPullBlob(_ context.Context, key string) (string, error) {
 	// start := time.Now()
 
 	hosts, _ := ss.rendezvousAllHosts(key)
@@ -390,7 +390,7 @@ func (ss *MediorumServer) logTrackListen(c echo.Context) {
 
 	res, err := httpClient.Do(req)
 	if err != nil {
-		ss.logger.Error("unable to POST to identity service", "err", err)
+		ss.logger.Error("unable to POST to listen service", "err", err)
 		return
 	}
 	defer res.Body.Close()
