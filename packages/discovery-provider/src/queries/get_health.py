@@ -25,13 +25,14 @@ from src.queries.get_spl_audio import get_spl_audio_health_info
 from src.queries.get_trusted_notifier_discrepancies import get_delist_statuses_ok
 from src.utils import (
     db_session,
+    elasticdsl,
     get_all_nodes,
     helpers,
     redis_connection,
     web3_provider,
 )
 from src.utils.config import shared_config
-from src.utils.elasticdsl import ES_INDEXES, esclient
+from src.utils.elasticdsl import ES_INDEXES
 from src.utils.prometheus_metric import PrometheusMetric, PrometheusMetricNames
 from src.utils.redis_constants import (
     LAST_REACTIONS_INDEX_TIME_KEY,
@@ -415,6 +416,7 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
     health_results["relay"] = relay_health
 
     # Elasticsearch health
+    esclient = elasticdsl.get_esclient()
     if esclient:
         health_results["elasticsearch"] = get_elasticsearch_health_info(
             esclient,
