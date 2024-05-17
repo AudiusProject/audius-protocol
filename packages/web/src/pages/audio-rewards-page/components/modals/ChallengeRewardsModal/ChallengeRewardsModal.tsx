@@ -375,10 +375,15 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
         claimChallengeReward({
           claim: {
             challengeId: challenge.challenge_id,
-            specifiers: getClaimableChallengeSpecifiers(
-              challenge.undisbursedSpecifiers,
-              undisbursedUserChallenges
-            ),
+            specifiers:
+              challenge.challenge_type === 'aggregate'
+                ? getClaimableChallengeSpecifiers(
+                    challenge.undisbursedSpecifiers,
+                    undisbursedUserChallenges
+                  )
+                : [
+                    { specifier: challenge.specifier, amount: challenge.amount }
+                  ], // necessary to keep for optimistic non-cooldown challenges
             amount: challenge.claimableAmount
           },
           retryOnFailure: true

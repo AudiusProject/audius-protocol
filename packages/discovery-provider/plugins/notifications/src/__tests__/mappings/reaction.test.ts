@@ -14,7 +14,8 @@ import {
   createUserTip,
   createReaction,
   setupTest,
-  resetTests
+  resetTests,
+  createBlocks
 } from '../../utils/populateDB'
 
 describe('Reaction Notification', () => {
@@ -39,6 +40,7 @@ describe('Reaction Notification', () => {
     await createUserTip(processor.discoveryDB, [
       { sender_user_id: 2, receiver_user_id: 1, amount: '500000000' }
     ])
+    await createBlocks(processor.discoveryDB, [{ number: 1 }])
     await createReaction(processor.discoveryDB, [
       {
         reacted_to: 'sig_2_1',
@@ -84,6 +86,7 @@ describe('Reaction Notification', () => {
     await createUserTip(processor.discoveryDB, [
       { sender_user_id: 2, receiver_user_id: 1, amount: '500000000' }
     ])
+    await createBlocks(processor.discoveryDB, [{ number: 1 }])
     await createReaction(processor.discoveryDB, [
       {
         reacted_to: 'sig_2_1',

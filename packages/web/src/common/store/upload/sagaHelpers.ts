@@ -127,17 +127,23 @@ export function* addPremiumMetadata<T extends TrackMetadata>(track: T) {
   )
   if (!isUsdcPurchaseEnabled) return track
 
+  // download_conditions could be set separately from stream_conditions, so we check for them first
+  if (isContentUSDCPurchaseGated(track.download_conditions)) {
+    track.download_conditions = yield* call(
+      getUSDCMetadata,
+      track.download_conditions
+    )
+  }
+
   if (isContentUSDCPurchaseGated(track.stream_conditions)) {
     track.stream_conditions = yield* call(
       getUSDCMetadata,
       track.stream_conditions
     )
-  }
-
-  if (isContentUSDCPurchaseGated(track.download_conditions)) {
+    // If stream_conditions are set, download_conditions should always match
     track.download_conditions = yield* call(
       getUSDCMetadata,
-      track.download_conditions
+      track.stream_conditions
     )
   }
 

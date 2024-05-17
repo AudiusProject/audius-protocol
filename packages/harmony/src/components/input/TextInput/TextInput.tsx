@@ -226,7 +226,6 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
           <Text
             variant='body'
             size={helperTextSize}
-            strength='default'
             color={error ? 'danger' : _incorrectError ? 'warning' : 'default'}
           >
             {helperText}

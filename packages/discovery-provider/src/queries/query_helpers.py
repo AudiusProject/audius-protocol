@@ -556,9 +556,7 @@ def populate_track_metadata(
     return tracks
 
 
-def _populate_gated_content_metadata(
-    session, entities, current_user_id, content_type="track"
-):
+def _populate_gated_content_metadata(session, entities, current_user_id):
     if not entities:
         return
     if not current_user_id:
@@ -599,7 +597,7 @@ def _populate_gated_content_metadata(
     def getContentId(metadata):
         return (
             metadata.get("track_id")
-            if content_type == "track"
+            if "track_id" in metadata
             else metadata.get("playlist_id")
         )
 
@@ -616,6 +614,7 @@ def _populate_gated_content_metadata(
     gated_content_ids = set([getContentId(metadata) for metadata in gated_entities])
     gated_content_access_args = []
     for entity in gated_entities:
+        content_type = "track" if entity.get("track_id") else "album"
         gated_content_access_args.append(
             {
                 "user_id": current_user_id,
@@ -925,9 +924,7 @@ def populate_playlist_metadata(
     # has current user unlocked gated tracks?
     # if so, also populate corresponding signatures.
     # if no current user (guest), populate access based on track stream/download conditions
-    _populate_gated_content_metadata(
-        session, playlists, current_user_id, content_type="album"
-    )
+    _populate_gated_content_metadata(session, playlists, current_user_id)
 
     track_ids = []
     for playlist in playlists:

@@ -66,9 +66,6 @@ export const HarmonyTextField = (props: HarmonyTextFieldProps) => {
         field.onChange(name)(e.nativeEvent.text)
       }}
       onBlur={(e) => {
-        if (clearErrorOnChange) {
-          setError(undefined)
-        }
         if (transformValueOnBlur) {
           e.nativeEvent.text = transformValueOnBlur(e.nativeEvent.text)
         }

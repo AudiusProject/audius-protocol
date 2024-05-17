@@ -55,6 +55,13 @@ services:
       timeout: 30s
       retries: 5
       start_period: 5s
+    depends_on:
+      db:
+        condition: service_healthy
+      discovery-provider-redis:
+        condition: service_healthy
+      poa-ganache:
+        condition: service_healthy
 
   solana-relay:
     build:
@@ -87,6 +94,13 @@ services:
       timeout: 30s
       retries: 5
       start_period: 5s
+    depends_on:
+      db:
+        condition: service_healthy
+      discovery-provider-redis:
+        condition: service_healthy
+      solana-test-validator:
+        condition: service_healthy
 
   sla-auditor:
     container_name: sla-auditor

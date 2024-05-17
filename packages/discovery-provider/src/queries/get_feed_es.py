@@ -250,11 +250,10 @@ def get_feed_es(args, limit=10, offset=0):
         )
     )
 
-    # batch populate gated track metadata
+    # batch populate gated track and collection metadata
     db = get_db_read_replica()
     with db.scoped_session() as session:
-        track_items = list(filter(lambda item: "track_id" in item, sorted_feed))
-        _populate_gated_content_metadata(session, track_items, current_user["user_id"])
+        _populate_gated_content_metadata(session, sorted_feed, current_user["user_id"])
 
     # populate metadata + remove extra fields from items
     sorted_feed = [

@@ -609,13 +609,11 @@ def populate_mock_db(db, entities, block_offset=None):
         for i, reaction in enumerate(reactions):
             reaction = Reaction(
                 id=reaction.get("id", i),
-                slot=reaction.get("slot", i),
                 reaction_value=reaction.get("reaction_value", 1),
                 sender_wallet=reaction.get("sender_wallet", "0x"),
                 reaction_type=reaction.get("reaction_type", "type"),
                 reacted_to=reaction.get("reacted_to", "reaction_to"),
                 timestamp=reaction.get("timestamp", datetime.now()),
-                tx_signature=reaction.get("tx_signature", str(i)),
             )
             session.add(reaction)
         for i, user_bank_tx in enumerate(user_bank_txs):

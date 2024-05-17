@@ -158,8 +158,6 @@ track_full = ns.clone(
         "cover_art_cids": fields.Nested(cover_art, allow_null=True),
         "created_at": fields.String,
         "credits_splits": fields.String,
-        # todo: remove once clients catch up i.e. no longer use this field
-        "download": fields.Nested(download),
         "isrc": fields.String,
         "license": fields.String,
         "iswc": fields.String,

@@ -1,7 +1,10 @@
 import { useCallback } from 'react'
 
 import { useGatedContentAccess, useLockedContent } from '@audius/common/hooks'
-import { gatedContentActions } from '@audius/common/store'
+import {
+  gatedContentActions,
+  PurchaseableContentType
+} from '@audius/common/store'
 import { View } from 'react-native'
 import { useDispatch } from 'react-redux'
 
@@ -81,6 +84,8 @@ export const LockedContentDrawer = () => {
           streamConditions={track.stream_conditions}
           isOwner={false}
           hasStreamAccess={hasStreamAccess}
+          // Note: this should ideally come from metadata but at the moment this drawer is only available for tracks
+          contentType={PurchaseableContentType.TRACK}
         />
       </View>
     </NativeDrawer>

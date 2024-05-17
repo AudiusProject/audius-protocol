@@ -83,7 +83,9 @@ export class ChallengesApi extends BaseAPI {
    *
    * @see {@link generateSpecifier} to create the specifier argument.
    */
-  public async claimReward(request: ClaimRewardsRequest) {
+  public async claimReward(
+    request: ClaimRewardsRequest
+  ): Promise<{ transactionSignature: string } | { aaoErrorCode: number }> {
     const args = await parseParams('claimRewards', ClaimRewardsSchema)(request)
     const { challengeId, specifier, amount: inputAmount } = args
     const logger = this.logger.createPrefixedLogger(
@@ -101,11 +103,10 @@ export class ChallengesApi extends BaseAPI {
     const attestationTransactionSignatures: string[] = []
 
     logger.debug('Creating user bank if necessary...')
-    const { userBank: destinationUserBank } =
-      await this.claimableTokens.getOrCreateUserBank({
-        ethWallet: recipientEthAddress,
-        mint: 'wAUDIO'
-      })
+    const userBankPromise = this.claimableTokens.getOrCreateUserBank({
+      ethWallet: recipientEthAddress,
+      mint: 'wAUDIO'
+    })
 
     logger.debug('Getting attestation submission state...')
     const submissions = await this.rewardManager.getSubmittedAttestations({
@@ -126,6 +127,9 @@ export class ChallengesApi extends BaseAPI {
         recipientEthAddress,
         handle
       })
+      if ('aaoErrorCode' in response) {
+        return { aaoErrorCode: response.aaoErrorCode }
+      }
       antiAbuseOracleEthAddress = response.antiAbuseOracleEthAddress
       attestationTransactionSignatures.push(response.transactionSignature)
     } else {
@@ -163,7 +167,8 @@ export class ChallengesApi extends BaseAPI {
     )
 
     logger.debug('Disbursing claim...')
-    const disbursement = await this.evaluateAttestations({
+    const { userBank: destinationUserBank } = await userBankPromise
+    const transactionSignature = await this.evaluateAttestations({
       challengeId,
       specifier,
       recipientEthAddress,
@@ -172,7 +177,7 @@ export class ChallengesApi extends BaseAPI {
       amount
     })
 
-    return disbursement
+    return { transactionSignature }
   }
 
   private async submitAntiAbuseOracleAttestation({
@@ -187,7 +192,13 @@ export class ChallengesApi extends BaseAPI {
     amount: bigint
     recipientEthAddress: string
     handle: string
-  }) {
+  }): Promise<
+    | {
+        transactionSignature: string
+        antiAbuseOracleEthAddress: string
+      }
+    | { aaoErrorCode: number }
+  > {
     const antiAbuseOracleAttestation =
       await this.antiAbuseOracle.getChallengeAttestation({
         handle,
@@ -198,6 +209,9 @@ export class ChallengesApi extends BaseAPI {
     const antiAbuseOracleEthAddress =
       await this.antiAbuseOracle.getWalletAddress()
     if (!antiAbuseOracleAttestation.result) {
+      if (antiAbuseOracleAttestation.errorCode) {
+        return { aaoErrorCode: antiAbuseOracleAttestation.errorCode }
+      }
       throw new Error('Failed to get AAO attestation')
     }
     const aaoSubmitSecpInstruction =
