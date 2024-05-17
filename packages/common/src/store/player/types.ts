@@ -22,3 +22,8 @@ export const playbackRateValueMap: Record<PlaybackRate, number> = {
   '2.5x': 2.5,
   '3x': 3.0
 }
+
+export enum PlayerBehavior {
+  FULL_OR_PREVIEW = 'FULL_OR_PREVIEW',
+  PREVIEW_OR_FULL = 'PREVIEW_OR_FULL'
+}

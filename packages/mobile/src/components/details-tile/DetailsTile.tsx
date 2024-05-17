@@ -149,7 +149,9 @@ export const DetailsTile = ({
   const isUnpublishedScheduledRelease =
     track?.is_scheduled_release && track?.is_unlisted
   const showPreviewButton =
-    isUSDCPurchaseGated && (isOwner || !hasStreamAccess) && onPressPreview
+    isUSDCPurchaseGated &&
+    ((isOwner && !isCollection) || !hasStreamAccess) &&
+    onPressPreview
 
   const handlePressArtistName = useCallback(() => {
     if (!user) {
