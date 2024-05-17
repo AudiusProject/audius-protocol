@@ -43,7 +43,7 @@ func (ss *MediorumServer) startTranscoder() {
 	}
 
 	// on boot... reset any of my wip jobs
-	for _, statuses := range [][]string{{JobStatusBusy, JobStatusNew}, {JobStatusBusyRetranscode, JobStatusRetranscode}} {
+	for _, statuses := range [][]string{{JobStatusBusy, JobStatusNew}, {JobStatusBusyRetranscode, JobStatusRetranscode}, {JobStatusBusyAudioAnalysis, JobStatusAudioAnalysis}} {
 		busyStatus := statuses[0]
 		resetStatus := statuses[1]
 		tx := ss.crud.DB.Model(Upload{}).
@@ -235,6 +235,9 @@ const (
 	JobStatusRetranscode      = "retranscode_preview"
 	JobStatusBusyRetranscode  = "busy_retranscode_preview"
 	JobStatusErrorRetranscode = "error_retranscode_preview"
+
+	JobStatusAudioAnalysis     = "audio_analysis"
+	JobStatusBusyAudioAnalysis = "busy_audio_analysis"
 
 	JobStatusDone = "done"
 )
@@ -602,7 +605,8 @@ func (ss *MediorumServer) transcode(upload *Upload) error {
 
 	upload.TranscodeProgress = 1
 	upload.TranscodedAt = time.Now().UTC()
-	upload.Status = "done"
+	// mark upload as ready for audio analysis
+	upload.Status = JobStatusAudioAnalysis
 	upload.Error = ""
 	ss.crud.Update(upload)
 
