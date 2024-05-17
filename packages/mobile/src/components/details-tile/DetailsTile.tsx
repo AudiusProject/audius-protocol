@@ -392,14 +392,6 @@ export const DetailsTile = ({
             </UserGeneratedText>
           </Box>
         ) : null}
-        {(hasStreamAccess || isOwner) && streamConditions ? (
-          <DetailsTileHasAccess
-            streamConditions={streamConditions}
-            isOwner={isOwner}
-            trackArtist={user}
-            contentType={contentType}
-          />
-        ) : null}
         <DetailsTileMetadata
           id={contentId}
           genre={track?.genre}
