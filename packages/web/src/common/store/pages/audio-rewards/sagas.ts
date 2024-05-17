@@ -310,11 +310,11 @@ function* claimSingleChallengeRewardAsync(
     yield* put(setUserChallengesDisbursed({ challengeId, specifiers: claimed }))
 
     const errors = results.filter((r): r is ErrorResult => 'error' in r)
-    let aaoError: Errors.AntiAbuseOracleError | undefined
+    let aaoError: Errors.AntiAbuseAttestionError | undefined
     if (errors.length > 0) {
       // Log and report errors for each specifier that failed to claim
       for (const res of errors) {
-        if (!aaoError && res.error instanceof Errors.AntiAbuseOracleError) {
+        if (!aaoError && res.error instanceof Errors.AntiAbuseAttestionError) {
           aaoError = res.error
         }
         const error =
@@ -335,7 +335,7 @@ function* claimSingleChallengeRewardAsync(
       }
       const errorMessage = 'Some specifiers failed to claim'
       if (aaoError) {
-        throw new Errors.AntiAbuseOracleError(aaoError.code, errorMessage)
+        throw new Errors.AntiAbuseAttestionError(aaoError.code, errorMessage)
       }
       throw new Error(errorMessage)
     }
@@ -549,7 +549,7 @@ function* claimChallengeRewardAsync(
     yield* call(claimSingleChallengeRewardAsync, action)
     yield* put(claimChallengeRewardSucceeded())
   } catch (e) {
-    if (e instanceof Errors.AntiAbuseOracleError) {
+    if (e instanceof Errors.AntiAbuseAttestionError) {
       yield* put(claimChallengeRewardFailed({ aaoErrorCode: e.code }))
     } else {
       yield* put(claimChallengeRewardFailed())
@@ -574,7 +574,7 @@ function* claimAllChallengeRewardsAsync(
         } catch (e) {
           console.error(e)
           hasError = true
-          if (e instanceof Errors.AntiAbuseOracleError) {
+          if (e instanceof Errors.AntiAbuseAttestionError) {
             aaoErrorCode = e.code
           }
         }

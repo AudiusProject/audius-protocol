@@ -9,7 +9,7 @@ import type {
 } from '../../services'
 import { AntiAbuseOracleService } from '../../services/AntiAbuseOracle/types'
 import type { RewardManagerClient } from '../../services/Solana/programs/RewardManagerClient/RewardManagerClient'
-import { AntiAbuseOracleError } from '../../utils/errors'
+import { AntiAbuseAttestionError } from '../../utils/errors'
 import { parseParams } from '../../utils/parseParams'
 import { BaseAPI, Configuration } from '../generated/default'
 import {
@@ -201,7 +201,7 @@ export class ChallengesApi extends BaseAPI {
     if (!antiAbuseOracleAttestation.result) {
       const errorMessage = 'Failed to get AAO attestation'
       if (antiAbuseOracleAttestation.errorCode) {
-        throw new AntiAbuseOracleError(
+        throw new AntiAbuseAttestionError(
           antiAbuseOracleAttestation.errorCode,
           errorMessage
         )
