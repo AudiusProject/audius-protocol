@@ -1,9 +1,9 @@
 .giantTrackTile {
   width: 100%;
   max-width: 1080px;
-  margin: 0 auto;
   text-align: left;
   user-select: none;
+  margin: 0 auto;
 }
 
 .topSection {
