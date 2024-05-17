@@ -104,7 +104,6 @@ export const ChallengeRewardsDrawerContent = ({
   const palette = useThemePalette()
   const isInProgress = challengeState === 'in_progress'
   const isClaimable = claimableAmount > 0
-  console.log('asdf isClaimable: ', isClaimable)
   const {
     cooldownChallenges,
     summary,
