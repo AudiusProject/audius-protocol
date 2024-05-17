@@ -14,7 +14,8 @@ const { getUid } = playerSelectors
 const DISPLAY_TRACK_COUNT = 5
 
 const messages = {
-  by: 'by'
+  by: 'by',
+  deleted: '[Deleted by Artist]'
 }
 
 type LineupTileTrackListProps = {
@@ -55,6 +56,10 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
     color: palette.primary
   },
 
+  deleted: {
+    color: palette.textIconSubdued
+  },
+
   divider: {
     marginHorizontal: spacing(3),
     borderTopWidth: 1,
@@ -72,10 +77,11 @@ type TrackItemProps = {
   track?: LineupTrack
   uid?: UID
   isAlbum?: boolean
+  deleted: boolean
 }
 
 const TrackItem = (props: TrackItemProps) => {
-  const { showSkeleton, index, track, uid, isAlbum } = props
+  const { showSkeleton, index, track, uid, isAlbum, deleted } = props
   const styles = useStyles()
   const isPlayingUid = useSelector(
     (state: CommonState) => getUid(state) === uid
@@ -92,7 +98,12 @@ const TrackItem = (props: TrackItemProps) => {
               {index + 1}
             </Text>
             <Text
-              style={[styles.text, styles.title, isPlayingUid && styles.active]}
+              style={[
+                styles.text,
+                styles.title,
+                isPlayingUid && styles.active,
+                deleted && styles.deleted
+              ]}
               numberOfLines={1}
             >
               {track.title}
@@ -102,11 +113,24 @@ const TrackItem = (props: TrackItemProps) => {
                 style={[
                   styles.text,
                   styles.artist,
-                  isPlayingUid && styles.active
+                  isPlayingUid && styles.active,
+                  deleted && styles.deleted
                 ]}
                 numberOfLines={1}
               >
                 {`${messages.by} ${track.user.name}`}
+              </Text>
+            ) : null}
+            {deleted ? (
+              <Text
+                style={[
+                  styles.text,
+                  styles.artist,
+                  isPlayingUid && styles.active,
+                  styles.deleted
+                ]}
+              >
+                {messages.deleted}
               </Text>
             ) : null}
           </>
@@ -124,7 +148,13 @@ export const CollectionTileTrackList = (props: LineupTileTrackListProps) => {
     return (
       <>
         {range(DISPLAY_TRACK_COUNT).map((i) => (
-          <TrackItem key={i} index={i} showSkeleton isAlbum={isAlbum} />
+          <TrackItem
+            key={i}
+            index={i}
+            showSkeleton
+            isAlbum={isAlbum}
+            deleted={false}
+          />
         ))}
       </>
     )
@@ -139,6 +169,7 @@ export const CollectionTileTrackList = (props: LineupTileTrackListProps) => {
           index={index}
           track={track}
           isAlbum={isAlbum}
+          deleted={track.is_delete}
         />
       ))}
       {trackCount && trackCount > 5 ? (
