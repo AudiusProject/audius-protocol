@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useEffect } from 'react'
 
 import type { SmartCollectionVariant } from '@audius/common/models'
 import { Kind } from '@audius/common/models'
@@ -16,6 +16,8 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'
 import { useReachabilityEffect } from 'app/hooks/useReachabilityEffect'
 import { getOfflineTrackIds } from 'app/store/offline-downloads/selectors'
+
+import { useHasCollectionChanged } from './useHasCollectionChanged'
 
 const { getCollection } = cacheCollectionsSelectors
 const { getCollectionTracksLineup } = collectionPageSelectors
@@ -129,4 +131,5 @@ export const useFetchCollectionLineup = (
 
   // Fetch the lineup based on reachability
   useReachabilityEffect(fetchLineup, fetchLineupOffline)
+  useHasCollectionChanged(collectionId as number, fetchLineup)
 }
