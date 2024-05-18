@@ -272,6 +272,7 @@ const CollectionTileComponent = ({
         tracks={tracks}
         onPress={handlePressTitle}
         isAlbum={is_album}
+        trackCount={tracks.length}
       />
     </LineupTile>
   )
