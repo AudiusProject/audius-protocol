@@ -264,7 +264,9 @@ class TrackPageProvider extends Component<
     if (!entries || !entries[0]) return
     const track = entries[0]
 
-    if (isPlaying && previewing === isPreview) {
+    const isOwner = track?.owner_id === userId
+    const shouldPreview = isPreview && isOwner
+    if (isPlaying && previewing === shouldPreview) {
       pause()
       record(
         make(Name.PLAYBACK_PAUSE, {
@@ -273,26 +275,25 @@ class TrackPageProvider extends Component<
         })
       )
     } else if (
-      currentQueueItem.uid !== track.uid &&
       currentQueueItem.track &&
-      currentQueueItem.track.track_id === track.id
+      currentQueueItem.track.track_id === track.id &&
+      previewing === shouldPreview
     ) {
       play()
       record(
         make(Name.PLAYBACK_PLAY, {
           id: `${track.id}`,
-          isPreview,
+          isPreview: shouldPreview,
           source: PlaybackSource.TRACK_PAGE
         })
       )
     } else if (track) {
-      const isOwner = track?.owner_id === userId
       stop()
-      play(track.uid, { isPreview: isPreview && isOwner })
+      play(track.uid, { isPreview: shouldPreview && isOwner })
       record(
         make(Name.PLAYBACK_PLAY, {
           id: `${track.id}`,
-          isPreview: isPreview && isOwner,
+          isPreview: shouldPreview,
           source: PlaybackSource.TRACK_PAGE
         })
       )
