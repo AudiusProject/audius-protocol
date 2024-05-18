@@ -544,7 +544,9 @@ class CollectionPage extends Component<
     } = this.props
     const isQueued = this.isQueued()
     const playingId = this.getPlayingId()
-    if (playing && isQueued && previewing === isPreview) {
+    const isOwner = collection?.playlist_owner_id === userId
+    const shouldPreview = isPreview && isOwner
+    if (playing && isQueued && previewing === shouldPreview) {
       pause()
       record(
         make(Name.PLAYBACK_PAUSE, {
@@ -552,23 +554,22 @@ class CollectionPage extends Component<
           source: PlaybackSource.PLAYLIST_PAGE
         })
       )
-    } else if (!playing && previewing === isPreview && isQueued) {
+    } else if (!playing && previewing === shouldPreview && isQueued) {
       play()
       record(
         make(Name.PLAYBACK_PLAY, {
           id: `${playingId}`,
-          isPreview,
+          isPreview: shouldPreview,
           source: PlaybackSource.PLAYLIST_PAGE
         })
       )
     } else if (entries.length > 0) {
-      const isOwner = collection?.playlist_owner_id === userId
       stop()
-      play(entries[0].uid, { isPreview: isPreview && isOwner })
+      play(entries[0].uid, { isPreview: shouldPreview && isOwner })
       record(
         make(Name.PLAYBACK_PLAY, {
           id: `${entries[0].track_id}`,
-          isPreview: isPreview && isOwner,
+          isPreview: shouldPreview,
           source: PlaybackSource.PLAYLIST_PAGE
         })
       )
