@@ -79,7 +79,6 @@ export const PurchaseSummaryTable = ({
 
   return (
     <SummaryTable
-      collapsible
       items={items}
       title={messages.total}
       secondaryTitle={
