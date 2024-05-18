@@ -83,10 +83,12 @@ export const AlbumsTab = () => {
             onChangeText={setFilterValue}
           />
           <CollectionList
+            collectionType='album'
             onEndReached={handleEndReached}
             onEndReachedThreshold={0.5}
             scrollEnabled={false}
             collectionIds={collectionIds}
+            showCreateCollectionTile={!!isReachable}
             ListFooterComponent={
               statusIsNotFinalized(status) && isReachable
                 ? loadingSpinner

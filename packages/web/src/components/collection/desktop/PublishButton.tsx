@@ -19,6 +19,7 @@ const messages = {
   publish: 'Make Public',
   publishing: 'Making Public',
   emptyPlaylistTooltipText: 'You must add at least 1 song.',
+  missingArtworkTooltipText: 'You must add artwork',
   hiddenTracksTooltipText: (collectionType: 'playlist' | 'album') =>
     `You cannot make a ${collectionType} with hidden tracks public.`
 }
@@ -29,16 +30,18 @@ type PublishButtonProps = Partial<ButtonProps> & {
 
 export const PublishButton = (props: PublishButtonProps) => {
   const { collectionId, ...other } = props
-  const { _is_publishing, track_count, is_album } = useSelector(
-    (state: CommonState) => getCollection(state, { id: collectionId })
-  ) as Collection
+  const { _is_publishing, track_count, is_album, cover_art_sizes } =
+    useSelector((state: CommonState) =>
+      getCollection(state, { id: collectionId })
+    ) as Collection
   const hasHiddenTracks = useSelector((state: CommonState) =>
     getCollectionHasHiddenTracks(state, { id: collectionId })
   )
 
   const [isConfirming, toggleIsConfirming] = useToggle(false)
 
-  const isDisabled = !track_count || track_count === 0 || hasHiddenTracks
+  const isDisabled =
+    !track_count || track_count === 0 || hasHiddenTracks || !cover_art_sizes
 
   const publishButtonElement = (
     <Button
@@ -59,14 +62,18 @@ export const PublishButton = (props: PublishButtonProps) => {
 
   return (
     <>
-      {track_count === 0 || hasHiddenTracks ? (
+      {isDisabled ? (
         <Tooltip
           text={
             hasHiddenTracks
               ? messages.hiddenTracksTooltipText(
                   is_album ? 'album' : 'playlist'
                 )
-              : messages.emptyPlaylistTooltipText
+              : !track_count || track_count === 0
+              ? messages.emptyPlaylistTooltipText
+              : !cover_art_sizes
+              ? messages.missingArtworkTooltipText
+              : null
           }
         >
           <span>{publishButtonElement}</span>

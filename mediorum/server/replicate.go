@@ -233,5 +233,5 @@ func (ss *MediorumServer) diskHasSpace() bool {
 		return true
 	}
 
-	return !strings.HasPrefix(ss.Config.BlobStoreDSN, "file://") || ss.mediorumPathFree/uint64(1e9) > 200
+	return !strings.HasPrefix(ss.Config.BlobStoreDSN, "file://") || ss.mediorumPathFree/uint64(1e9) > 100
 }

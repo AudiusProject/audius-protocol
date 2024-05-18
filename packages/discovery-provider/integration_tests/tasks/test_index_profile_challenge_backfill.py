@@ -1,5 +1,5 @@
-from datetime import datetime
 import logging
+from datetime import datetime
 from unittest import mock
 
 from integration_tests.utils import populate_mock_db

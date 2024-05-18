@@ -1,5 +1,6 @@
 import logging
 import os
+import subprocess
 import time
 
 from elasticsearch import Elasticsearch
@@ -71,7 +72,6 @@ basic_entities = {
 
 
 def test_get_feed_es(app):
-    return
     """
     Tests es-indexer catchup + get_feed_es
     """
@@ -83,15 +83,15 @@ def test_get_feed_es(app):
 
     # run indexer catchup
     time.sleep(1)
-    # logs = subprocess.run(
-    #     ["npm", "run", "catchup:ci"],
-    #     env=os.environ,
-    #     capture_output=True,
-    #     text=True,
-    #     cwd="es-indexer",
-    #     timeout=30,
-    # )
-    # logging.info(logs)
+    logs = subprocess.run(
+        ["npm", "run", "catchup:ci"],
+        env=os.environ,
+        capture_output=True,
+        text=True,
+        cwd="es-indexer",
+        timeout=30,
+    )
+    logging.info(logs)
     esclient.indices.refresh(index="*")
     search_res = esclient.search(index="*", query={"match_all": {}})["hits"]["hits"]
     # actually would be more than 10, but 10 is the default `size`...
@@ -130,3 +130,81 @@ def test_get_feed_es(app):
         # user 3 with explicit IDs
         feed_results = get_feed_es({"user_id": "3", "followee_user_ids": [2]})
         assert len(feed_results) == 2
+
+
+access_control_entities = {
+    "users": [
+        {"user_id": 1, "handle": "user1"},
+        {"user_id": 2, "handle": "user2"},
+    ],
+    "tracks": [
+        {"track_id": 1, "owner_id": 1, "is_unlisted": True},
+        {"track_id": 2, "owner_id": 1, "is_delete": True},
+    ],
+    "playlists": [
+        {
+            "playlist_id": 1,
+            "playlist_name": "Empty",
+            "playlist_owner_id": 1,
+            "playlist_contents": {"track_ids": []},
+        },
+        {
+            "playlist_id": 2,
+            "playlist_name": "Hidden Tracks",
+            "playlist_owner_id": 1,
+            "playlist_contents": {
+                "track_ids": [
+                    {"track": 1, "time": 1},
+                ]
+            },
+        },
+        {
+            "playlist_id": 3,
+            "playlist_name": "Deleted Tracks",
+            "playlist_owner_id": 1,
+            "playlist_contents": {
+                "track_ids": [
+                    {"track": 2, "time": 2},
+                ]
+            },
+        },
+    ],
+    "follows": [
+        # user 2 follows user 1
+        {
+            "follower_user_id": 2,
+            "followee_user_id": 1,
+        },
+    ],
+}
+
+
+def test_access_controls(app):
+    """
+    Ensurses empty albums, albums with only deleted tracks, and hidden albums
+    are not returned
+    """
+
+    with app.app_context():
+        db = get_db()
+
+    populate_mock_db(db, access_control_entities)
+
+    # run indexer catchup
+    time.sleep(1)
+    logs = subprocess.run(
+        ["npm", "run", "catchup:ci"],
+        env=os.environ,
+        capture_output=True,
+        text=True,
+        cwd="es-indexer",
+        timeout=30,
+    )
+    logging.info(logs)
+    esclient.indices.refresh(index="*")
+    search_res = esclient.search(index="*", query={"match_all": {}})["hits"]["hits"]
+    assert len(search_res) == 7
+
+    with app.app_context():
+        feed_results = get_feed_es({"user_id": "2"})
+        assert len(feed_results) == 0

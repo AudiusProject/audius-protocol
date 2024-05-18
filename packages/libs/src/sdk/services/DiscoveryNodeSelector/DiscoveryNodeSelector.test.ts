@@ -434,7 +434,9 @@ describe('discoveryNodeSelector', () => {
       fetch,
       url: `${HEALTHY_NODE}/v1/full/tracks`,
       init: {},
-      response: new Response(JSON.stringify(data))
+      response: new Response(JSON.stringify(data), {
+        headers: { 'Content-Type': 'application/json' }
+      })
     })
 
     // Force reselection
@@ -442,7 +444,9 @@ describe('discoveryNodeSelector', () => {
       fetch,
       url: `${HEALTHY_NODE}/v1/full/tracks`,
       init: {},
-      response: new Response(JSON.stringify(data))
+      response: new Response(JSON.stringify(data), {
+        headers: { 'Content-Type': 'application/json' }
+      })
     })
 
     // Is up to date now
@@ -496,7 +500,9 @@ describe('discoveryNodeSelector', () => {
         fetch,
         url: `${BEHIND_BLOCKDIFF_NODE}/v1/full/tracks`,
         init: {},
-        response: new Response(JSON.stringify(data))
+        response: new Response(JSON.stringify(data), {
+          headers: { 'Content-Type': 'application/json' }
+        })
       })
       expect(changeHandler).toHaveBeenCalledWith(HEALTHY_NODE)
     })
@@ -531,7 +537,9 @@ describe('discoveryNodeSelector', () => {
         fetch,
         url: `${BEHIND_BLOCKDIFF_NODE}/v1/full/tracks`,
         init: {},
-        response: new Response(JSON.stringify(data))
+        response: new Response(JSON.stringify(data), {
+          headers: { 'Content-Type': 'application/json' }
+        })
       })
       expect(changeHandler).not.toHaveBeenCalled()
     })
@@ -688,7 +696,9 @@ describe('discoveryNodeSelector', () => {
         fetch,
         url: `${BEHIND_BLOCKDIFF_NODE}/v1/full/tracks`,
         init: {},
-        response: new Response(JSON.stringify(data))
+        response: new Response(JSON.stringify(data), {
+          headers: { 'Content-Type': 'application/json' }
+        })
       })
       expect(selector.isBehind).toBe(false)
     })
