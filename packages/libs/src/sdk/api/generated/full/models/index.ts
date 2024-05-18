@@ -15,6 +15,7 @@ export * from './FollowingResponse';
 export * from './FollowingResponseFull';
 export * from './FullBulkSubscribersResponse';
 export * from './FullFollowersResponse';
+export * from './FullGetSupportedUsers';
 export * from './FullGetSupporter';
 export * from './FullGetSupporters';
 export * from './FullGetSupporting';

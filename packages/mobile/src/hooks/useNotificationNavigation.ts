@@ -302,6 +302,15 @@ export const useNotificationNavigation = () => {
       [NotificationType.Tastemaker]: entityHandler,
       [NotificationType.USDCPurchaseBuyer]: entityHandler,
       [NotificationType.USDCPurchaseSeller]: entityHandler,
+      [NotificationType.TrackAddedToPurchasedAlbum]: (
+        notification: AddTrackToPlaylistNotification
+      ) => {
+        navigation.navigate('Collection', {
+          id: notification.playlistId,
+          canBeUnlisted: false
+        })
+      },
+
       [PushNotificationType.Message]: messagesHandler,
       [PushNotificationType.MessageReaction]: messagesHandler
     }),

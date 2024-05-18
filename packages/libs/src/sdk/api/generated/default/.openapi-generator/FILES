@@ -28,8 +28,8 @@ models/Favorite.ts
 models/FavoritesResponse.ts
 models/FollowersResponse.ts
 models/FollowingResponse.ts
+models/GetSupportedUsers.ts
 models/GetSupporters.ts
-models/GetSupporting.ts
 models/GetTipsResponse.ts
 models/NftCollection.ts
 models/Playlist.ts
