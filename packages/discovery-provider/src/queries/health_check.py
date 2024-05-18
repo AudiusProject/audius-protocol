@@ -24,7 +24,7 @@ from src.tasks.index_profile_challenge_backfill import (
 )
 from src.utils import helpers, redis_connection
 from src.utils.db_session import get_db_read_replica
-from src.utils.elasticdsl import esclient
+from src.utils.elasticdsl import get_esclient
 from src.utils.update_indexing_checkpoints import get_last_indexed_checkpoint
 
 logger = logging.getLogger(__name__)
@@ -223,7 +223,7 @@ def ip_check():
 
 @bp.route("/es_health", methods=["GET"])
 def es_health():
-    ok = esclient.cat.indices(v=True)
+    ok = get_esclient().cat.indices(v=True)
     return str(ok)
 
 

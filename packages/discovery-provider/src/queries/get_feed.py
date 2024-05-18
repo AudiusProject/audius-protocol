@@ -22,7 +22,7 @@ from src.queries.query_helpers import (
 )
 from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
-from src.utils.elasticdsl import es_url
+from src.utils.elasticdsl import get_esclient
 
 trackDedupeMaxMinutes = 10
 
@@ -31,7 +31,7 @@ logger = logging.getLogger(__name__)
 
 def get_feed(args):
     skip_es = request.args.get("es") == "0"
-    use_es = es_url and not skip_es
+    use_es = get_esclient() and not skip_es
     if use_es:
         try:
             (limit, offset) = get_pagination_vars()

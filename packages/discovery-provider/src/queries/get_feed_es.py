@@ -6,7 +6,7 @@ from src.utils.elasticdsl import (
     ES_SAVES,
     ES_TRACKS,
     ES_USERS,
-    esclient,
+    get_esclient,
     pluck_hits,
     populate_track_or_playlist_metadata_es,
     populate_user_metadata_es,
@@ -14,6 +14,7 @@ from src.utils.elasticdsl import (
 
 
 def get_feed_es(args, limit=10, offset=0):
+    esclient = get_esclient()
     current_user_id = str(args.get("user_id"))
     feed_filter = args.get("filter", "all")
     load_reposts = feed_filter in ["repost", "all"]
@@ -291,6 +292,7 @@ def following_ids_terms_lookup(current_user_id, field, explicit_ids=None):
 
 
 def fetch_followed_saves_and_reposts(current_user, items):
+    esclient = get_esclient()
     item_keys = [item_key(i) for i in items]
     follow_reposts = {k: [] for k in item_keys}
     follow_saves = {k: [] for k in item_keys}

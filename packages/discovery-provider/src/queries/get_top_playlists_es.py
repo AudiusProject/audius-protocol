@@ -5,12 +5,13 @@ from src.queries.query_helpers import get_current_user_id
 from src.utils.elasticdsl import (
     ES_PLAYLISTS,
     ES_USERS,
-    esclient,
+    get_esclient,
     populate_user_metadata_es,
 )
 
 
 def get_top_playlists_es(kind, args):
+    esclient = get_esclient()
     current_user_id = get_current_user_id(required=False)
     limit = args.get("limit", 16)
     is_album = kind == "album"
