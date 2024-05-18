@@ -1,4 +1,4 @@
-import { createElement, useCallback, useMemo } from 'react'
+import { createElement, memo, useCallback, useMemo } from 'react'
 
 import type { Collection, UserCollection, ID } from '@audius/common/models'
 import { CreatePlaylistSource } from '@audius/common/models'
@@ -10,6 +10,8 @@ import { CardList } from 'app/components/core'
 import { AddCollectionCard } from './AddCollectionCard'
 import { CollectionCard } from './CollectionCard'
 import { CollectionCardSkeleton } from './CollectionCardSkeleton'
+
+const MemoizedCollectionCard = memo(CollectionCard)
 
 type FullListProps = Omit<CardListProps<UserCollection>, 'data' | 'renderItem'>
 type IDCardListItem = {
@@ -123,7 +125,7 @@ const CollectionIDList = (props: CollectionIdListProps) => {
           collectionType={collectionType}
         />
       ) : (
-        <CollectionCard id={item.id} />
+        <MemoizedCollectionCard id={item.id} />
       ),
     [
       collectionType,
