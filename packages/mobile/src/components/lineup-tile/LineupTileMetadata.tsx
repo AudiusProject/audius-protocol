@@ -1,5 +1,3 @@
-import { useCallback } from 'react'
-
 import type { Remix, User } from '@audius/common/models'
 import { playerSelectors } from '@audius/common/store'
 import { TouchableOpacity, View } from 'react-native'
@@ -7,8 +5,7 @@ import { useSelector } from 'react-redux'
 
 import { IconVolumeLevel2 } from '@audius/harmony-native'
 import { Text, FadeInView } from 'app/components/core'
-import UserBadges from 'app/components/user-badges'
-import { useNavigation } from 'app/hooks/useNavigation'
+import { UserLink } from 'app/components/user-link'
 import { makeStyles } from 'app/styles'
 import type { GestureResponderHandler } from 'app/types/gesture'
 import { useThemeColors } from 'app/utils/theme'
@@ -25,9 +22,6 @@ const useStyles = makeStyles(({ palette }) => ({
   },
   playingIndicator: {
     marginLeft: 8
-  },
-  badge: {
-    marginLeft: 4
   },
   coSignLabel: {
     position: 'absolute',
@@ -46,7 +40,6 @@ const messages = {
 }
 
 type Props = {
-  artistName: string
   coSign?: Remix | null
   onPressTitle?: GestureResponderHandler
   renderImage: LineupTileProps['renderImage']
@@ -57,7 +50,6 @@ type Props = {
 }
 
 export const LineupTileMetadata = ({
-  artistName,
   coSign,
   onPressTitle,
   renderImage,
@@ -66,7 +58,6 @@ export const LineupTileMetadata = ({
   isPlayingUid,
   type
 }: Props) => {
-  const navigation = useNavigation()
   const styles = useStyles()
   const trackTileStyles = useTrackTileStyles()
   const { primary } = useThemeColors()
@@ -77,9 +68,6 @@ export const LineupTileMetadata = ({
     return getPlaying(state) && isActive
   })
 
-  const handleArtistPress = useCallback(() => {
-    navigation.push('Profile', { handle: user.handle })
-  }, [navigation, user])
   return (
     <View style={styles.metadata}>
       <LineupTileArt
@@ -102,7 +90,8 @@ export const LineupTileMetadata = ({
             {type}
           </Text>
         ) : null}
-        <TouchableOpacity style={trackTileStyles.title} onPress={onPressTitle}>
+
+        <TouchableOpacity onPress={onPressTitle}>
           <Text
             color={isActive ? 'primary' : 'neutral'}
             weight='bold'
@@ -118,24 +107,11 @@ export const LineupTileMetadata = ({
             />
           ) : null}
         </TouchableOpacity>
-        <TouchableOpacity
-          style={trackTileStyles.artist}
-          onPress={handleArtistPress}
-        >
-          <Text
-            color={isActive ? 'primary' : 'neutral'}
-            weight='medium'
-            numberOfLines={1}
-          >
-            {artistName}
-          </Text>
-          <UserBadges
-            user={user}
-            badgeSize={12}
-            style={styles.badge}
-            hideName
-          />
-        </TouchableOpacity>
+        <UserLink
+          variant={isActive ? 'active' : 'default'}
+          textVariant='body'
+          userId={user.user_id}
+        />
       </FadeInView>
       {coSign && (
         <Text style={styles.coSignLabel} weight='heavy'>

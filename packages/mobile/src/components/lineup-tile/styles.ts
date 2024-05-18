@@ -38,21 +38,17 @@ export const useStyles = makeStyles(({ palette }) => ({
   titles: {
     justifyContent: 'center',
     alignItems: 'flex-start',
-    textAlign: 'left',
-
-    flexGrow: 0,
-    flexShrink: 1,
     flexBasis: '65%',
     marginRight: spacing(3),
-    marginTop: spacing(2.5)
+    marginTop: spacing(2.5),
+    gap: 2
   },
   title: {
     ...flexRowCentered(),
     width: '100%',
     minHeight: 20,
     marginTop: 'auto',
-    marginBottom: 2,
-    paddingRight: spacing(5)
+    marginBottom: 2
   },
   artist: {
     ...flexRowCentered(),
