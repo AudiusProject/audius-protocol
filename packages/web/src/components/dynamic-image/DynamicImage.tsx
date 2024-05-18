@@ -113,9 +113,9 @@ const DynamicImage = (props: DynamicImageProps) => {
   const first = useRef<HTMLDivElement>(null)
   const second = useRef<HTMLDivElement>(null)
   const [getIsFirstActive, setIsFirstActive] = useInstanceVar(true)
-  
+
   const [getPrevImage, setPrevImage] = useInstanceVar('') // no previous image
-  
+
   // The actual image to display (maybe placeholder)
   let displayImage: string
   if (usePlaceholder) {
@@ -183,7 +183,7 @@ const DynamicImage = (props: DynamicImageProps) => {
         overflow: 'hidden'
       }}
     >
-      {useSkeleton && (displayImage === placeholder) ? (
+      {useSkeleton && displayImage === placeholder ? (
         <Skeleton className={cn(styles.skeleton, skeletonClassName)} />
       ) : null}
       <div

@@ -267,17 +267,10 @@ const ConnectedPlaylistTile = ({
       isPlaying: isPlaylistPlaying,
       artworkIconClassName: styles.artworkIcon,
       showArtworkIcon: !isLoading,
-      showSkeleton: isLoading,
+      showSkeleton: isLoading
     }
     return <CollectionArtwork {...artworkProps} />
-  }, [
-    id,
-    coverArtSizes,
-    isActive,
-    isBuffering,
-    isPlaylistPlaying,
-    isLoading,
-  ])
+  }, [id, coverArtSizes, isActive, isBuffering, isPlaylistPlaying, isLoading])
 
   const renderOverflowMenu = () => {
     const menu: Omit<CollectionkMenuProps, 'children'> = {

@@ -14,9 +14,9 @@ import { remoteConfigInstance } from 'services/remote-config/remote-config-insta
 import { monitoringCallbacks } from 'services/serviceMonitoring'
 import { reportToSentry } from 'store/errors/reportToSentry'
 import { isElectron } from 'utils/clientUtil'
+import { preload } from 'utils/image'
 
 import { env } from '../env'
-import { preload } from 'utils/image'
 
 declare global {
   interface Window {

@@ -1,4 +1,4 @@
-import { memo, useEffect, useMemo, useState } from 'react'
+import { memo, useMemo, useState } from 'react'
 
 import { imageCoverPhotoBlank } from '@audius/common/assets'
 import { WidthSizes } from '@audius/common/models'
@@ -54,34 +54,35 @@ const CoverPhoto = ({
 
   const imageSettings = useMemo(() => {
     if (image) {
-      const noUserCoverPhoto = image === imageCoverPhotoBlank && !updatedCoverPhoto
+      const noUserCoverPhoto =
+        image === imageCoverPhotoBlank && !updatedCoverPhoto
       if (noUserCoverPhoto) {
-        return ({
+        return {
           backgroundImage: `${gradient}, url(${imageCoverPhotoBlank})`,
           backgroundStyle: {
             backgroundRepeat: 'repeat',
             backgroundSize: 'auto'
           },
           immediate: false
-        })
+        }
       } else {
-          return ({
-            backgroundImage: `${gradient}, url(${updatedCoverPhoto || image})`,
-            backgroundStyle:  {
-                backgroundRepeat: 'no-repeat',
-                backgroundSize: 'cover'
-              },
-              immediate: false
-          })
+        return {
+          backgroundImage: `${gradient}, url(${updatedCoverPhoto || image})`,
+          backgroundStyle: {
+            backgroundRepeat: 'no-repeat',
+            backgroundSize: 'cover'
+          },
+          immediate: false
+        }
       }
     } else {
-      return ({
+      return {
         backgroundImage: gradient,
         backgroundStyle: {},
         immediate: true
-      })
+      }
     }
-  }, [image, updatedCoverPhoto])
+  }, [image, updatedCoverPhoto, gradient])
 
   const handleDrop = async (
     file: Promise<FileWithPreview[]>,

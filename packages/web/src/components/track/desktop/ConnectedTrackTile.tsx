@@ -1,11 +1,4 @@
-import {
-  memo,
-  useState,
-  useCallback,
-  useEffect,
-  MouseEvent,
-  useRef
-} from 'react'
+import { memo, useCallback, useEffect, MouseEvent, useRef } from 'react'
 
 import {
   useGatedContentAccess,
