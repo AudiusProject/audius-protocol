@@ -25,7 +25,6 @@ export const useHasCollectionChanged = (
 
   useEffect(() => {
     if (hasCollectionChanged) {
-      console.log('refetching')
       callback()
     }
   }, [hasCollectionChanged, callback])
