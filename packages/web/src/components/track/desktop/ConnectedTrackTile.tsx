@@ -177,12 +177,11 @@ const ConnectedTrackTile = ({
     setModalVisibility()
   }
 
-  const [artworkLoaded, setArtworkLoaded] = useState(false)
   useEffect(() => {
-    if (artworkLoaded && !loading && hasLoaded) {
+    if (!loading && hasLoaded) {
       hasLoaded(index)
     }
-  }, [artworkLoaded, hasLoaded, index, loading])
+  }, [hasLoaded, index, loading])
 
   const renderImage = () => {
     const artworkProps = {
@@ -195,7 +194,6 @@ const ConnectedTrackTile = ({
       artworkIconClassName: styles.artworkIcon,
       showArtworkIcon: !loading,
       showSkeleton: loading,
-      callback: () => setArtworkLoaded(true),
       label: `${title} by ${name}`,
       hasStreamAccess: hasStreamAccess || hasPreview
     }

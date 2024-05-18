@@ -1,6 +1,5 @@
 import { memo } from 'react'
 
-import { useLoadImageWithTimeout } from '@audius/common/hooks'
 import { SquareSizes, ID, CoverArtSizes } from '@audius/common/models'
 import {
   IconLock,
@@ -32,7 +31,6 @@ type TileArtworkProps = {
     has_remix_author_reposted: boolean
     user: { name: string; is_verified: boolean; user_id: ID }
   }
-  callback: () => void
   hasStreamAccess?: boolean
 }
 
@@ -133,7 +131,6 @@ const Artwork = memo(
 )
 
 export const TrackArtwork = memo((props: TileArtworkProps) => {
-  const { callback } = props
   const image = useTrackCoverArt(
     props.id,
     props.coverArtSizes,
@@ -141,20 +138,15 @@ export const TrackArtwork = memo((props: TileArtworkProps) => {
     ''
   )
 
-  useLoadImageWithTimeout(image, callback)
-
   return <Artwork {...props} image={image} isTrack />
 })
 
 export const CollectionArtwork = memo((props: TileArtworkProps) => {
-  const { callback } = props
   const image = useCollectionCoverArt(
     props.id,
     props.coverArtSizes,
     SquareSizes.SIZE_150_BY_150
   )
-
-  useLoadImageWithTimeout(image, callback)
 
   return <Artwork {...props} image={image} />
 })

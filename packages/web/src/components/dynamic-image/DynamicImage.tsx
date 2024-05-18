@@ -3,8 +3,7 @@ import {
   useEffect,
   useRef,
   RefObject,
-  ComponentPropsWithoutRef,
-  useState
+  ComponentPropsWithoutRef
 } from 'react'
 
 import { useInstanceVar } from '@audius/common/hooks'
@@ -15,7 +14,6 @@ import transparentPlaceholderImg from 'assets/img/1x1-transparent.png'
 import Skeleton from 'components/skeleton/Skeleton'
 
 import styles from './DynamicImage.module.css'
-import { preload } from 'utils/image'
 
 const placeholder =
   'linear-gradient(315deg, var(--harmony-n-100) 0%, var(--harmony-n-50) 100%)'
@@ -87,7 +85,7 @@ const fadeIn = (
       ? `url(${image})`
       : image
     ref.current.style.transition = `opacity ${
-      immediate ? '0.1s' : '0.5s'
+      immediate ? '0.1s' : '0.6s'
     } ease-in-out`
     ref.current.style.opacity = '1'
   }
@@ -117,21 +115,6 @@ const DynamicImage = (props: DynamicImageProps) => {
   const [getIsFirstActive, setIsFirstActive] = useInstanceVar(true)
   
   const [getPrevImage, setPrevImage] = useInstanceVar('') // no previous image
-  const [hasLoaded, setHasLoaded] = useState(false)
-  useEffect(() => {
-    if (!hasLoaded && image) {
-      console.log({image})
-      if (image.startsWith('http')) {
-        const load = async () => {
-          await preload(image)
-          setHasLoaded(true)
-        }
-        load()
-      } else {
-        setHasLoaded(true)
-      }
-    }
-  }, [hasLoaded, setHasLoaded, image])
   
   // The actual image to display (maybe placeholder)
   let displayImage: string
@@ -200,7 +183,7 @@ const DynamicImage = (props: DynamicImageProps) => {
         overflow: 'hidden'
       }}
     >
-      {useSkeleton && (!hasLoaded || displayImage === placeholder) ? (
+      {useSkeleton && (displayImage === placeholder) ? (
         <Skeleton className={cn(styles.skeleton, skeletonClassName)} />
       ) : null}
       <div

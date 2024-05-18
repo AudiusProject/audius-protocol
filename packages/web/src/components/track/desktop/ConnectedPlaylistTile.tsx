@@ -2,7 +2,6 @@ import {
   MouseEvent,
   memo,
   useMemo,
-  useState,
   useEffect,
   useCallback,
   ReactChildren,
@@ -251,12 +250,11 @@ const ConnectedPlaylistTile = ({
     [goToRoute, href]
   )
 
-  const [artworkLoaded, setArtworkLoaded] = useState(false)
   useEffect(() => {
-    if (artworkLoaded && !isLoading && hasLoaded) {
+    if (!isLoading && hasLoaded) {
       hasLoaded(index)
     }
-  }, [artworkLoaded, hasLoaded, index, isLoading])
+  }, [hasLoaded, index, isLoading])
 
   const isPlaylistPlaying = isActive && isPlaying
 
@@ -270,7 +268,6 @@ const ConnectedPlaylistTile = ({
       artworkIconClassName: styles.artworkIcon,
       showArtworkIcon: !isLoading,
       showSkeleton: isLoading,
-      callback: () => setArtworkLoaded(true)
     }
     return <CollectionArtwork {...artworkProps} />
   }, [
@@ -280,7 +277,6 @@ const ConnectedPlaylistTile = ({
     isBuffering,
     isPlaylistPlaying,
     isLoading,
-    setArtworkLoaded
   ])
 
   const renderOverflowMenu = () => {

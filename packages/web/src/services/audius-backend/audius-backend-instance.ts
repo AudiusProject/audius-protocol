@@ -16,6 +16,7 @@ import { reportToSentry } from 'store/errors/reportToSentry'
 import { isElectron } from 'utils/clientUtil'
 
 import { env } from '../env'
+import { preload } from 'utils/image'
 
 declare global {
   interface Window {
@@ -140,5 +141,6 @@ export const audiusBackendInstance = audiusBackend({
     solBridgeAddress: env.SOL_BRIDGE_ADDRESS ?? undefined,
     solTokenBridgeAddress: env.SOL_TOKEN_BRIDGE_ADDRESS ?? undefined,
     wormholeRpcHosts: env.WORMHOLE_RPC_HOSTS ?? undefined
-  }
+  },
+  imagePreloader: preload
 })
