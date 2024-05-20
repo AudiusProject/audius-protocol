@@ -10,7 +10,8 @@ import {
   Id,
   OptionalId,
   supportedUserMetadataListFromSDK,
-  supporterMetadataListFromSDK
+  supporterMetadataListFromSDK,
+  supporterMetadataFromSDK
 } from '@audius/common/models'
 import {
   createUserBankIfNeeded,
@@ -230,7 +231,7 @@ function* overrideSupportersForUser({
 }
 
 /**
- * Polls the getUserSupporter endpoint to check if the sender is listed as a supporter of the recipient
+ * Polls the /supporter endpoint to check if the sender is listed as a supporter of the recipient
  */
 function* confirmTipIndexed({
   sender,
@@ -250,13 +251,20 @@ function* confirmTipIndexed({
       }/${maxAttempts}] (delay: ${delayMs}ms)`
     )
     try {
-      const apiClient = yield* getContext('apiClient')
-      const response = yield* call([apiClient, apiClient.getUserSupporter], {
-        currentUserId: sender.user_id,
-        userId: recipient.user_id,
-        supporterUserId: sender.user_id
-      })
-      if (response) {
+      const sdk = yield* getSDK()
+
+      const senderUserId = Id.parse(sender.user_id)
+
+      const { data } = yield* call(
+        [sdk.full.users, sdk.full.users.getSupporter],
+        {
+          id: Id.parse(recipient.user_id),
+          supporterUserId: senderUserId,
+          userId: senderUserId
+        }
+      )
+
+      if (data) {
         console.debug('Tip indexed')
         return true
       }
@@ -881,14 +889,24 @@ function* fetchUserSupporterAsync(
   action: ReturnType<typeof fetchUserSupporter>
 ) {
   const { currentUserId, userId, supporterUserId } = action.payload
-  const apiClient = yield* getContext('apiClient')
+  const sdk = yield* getSDK()
   try {
-    const response = yield* call([apiClient, apiClient.getUserSupporter], {
-      currentUserId,
-      userId,
-      supporterUserId
-    })
-    if (response) {
+    const { data } = yield* call(
+      [sdk.full.users, sdk.full.users.getSupporter],
+      {
+        id: Id.parse(userId),
+        supporterUserId: Id.parse(supporterUserId),
+        userId: OptionalId.parse(currentUserId)
+      }
+    )
+
+    if (!data) {
+      return
+    }
+
+    const supporter = supporterMetadataFromSDK(data)
+
+    if (supporter) {
       const supportingMap = yield* select(getSupporting)
       yield put(
         setSupportingForUser({
@@ -897,8 +915,8 @@ function* fetchUserSupporterAsync(
             ...supportingMap[supporterUserId],
             [userId]: {
               receiver_id: userId,
-              amount: response.amount,
-              rank: response.rank
+              amount: supporter.amount,
+              rank: supporter.rank
             }
           }
         })
@@ -912,8 +930,8 @@ function* fetchUserSupporterAsync(
             ...supportersMap[userId],
             [supporterUserId]: {
               sender_id: supporterUserId,
-              amount: response.amount,
-              rank: response.rank
+              amount: supporter.amount,
+              rank: supporter.rank
             }
           }
         })

@@ -34,8 +34,7 @@ import {
   APIUser,
   GetNFTGatedTrackSignaturesResponse,
   GetTipsResponse,
-  OpaqueID,
-  SupporterResponse
+  OpaqueID
 } from './types'
 
 // TODO: declare this at the root and use actual audiusLibs type
@@ -91,8 +90,6 @@ const FULL_ENDPOINT_MAP = {
   getRemixing: (trackId: OpaqueID) => `/tracks/${trackId}/remixing`,
   searchFull: `/search/full`,
   searchAutocomplete: `/search/autocomplete`,
-  getUserSupporter: (userId: OpaqueID, supporterUserId: OpaqueID) =>
-    `/users/${userId}/supporters/${supporterUserId}`,
   getReaction: '/reactions',
   getTips: '/tips',
   getNFTGatedTrackSignatures: (userId: OpaqueID) =>
@@ -412,12 +409,6 @@ const emptySearchResponse: APIResponse<APISearch> = {
     saved_albums: [],
     albums: []
   }
-}
-
-type GetUserSupporterArgs = {
-  userId: ID
-  supporterUserId: ID
-  currentUserId: Nullable<ID>
 }
 
 type AudiusAPIClientConfig = {
@@ -1276,26 +1267,6 @@ export class AudiusAPIClient {
     )
     if (!response) return null
     return response.data
-  }
-
-  async getUserSupporter({
-    currentUserId,
-    userId,
-    supporterUserId
-  }: GetUserSupporterArgs) {
-    const encodedUserId = this._encodeOrThrow(userId)
-    const encodedSupporterUserId = this._encodeOrThrow(supporterUserId)
-    const encodedCurrentUserId = encodeHashId(currentUserId)
-    this._assertInitialized()
-    const params = {
-      user_id: encodedCurrentUserId || undefined
-    }
-
-    const response = await this._getResponse<APIResponse<SupporterResponse>>(
-      FULL_ENDPOINT_MAP.getUserSupporter(encodedUserId, encodedSupporterUserId),
-      params
-    )
-    return response ? response.data : null
   }
 
   async getReaction({ reactedToIds }: GetReactionArgs) {
