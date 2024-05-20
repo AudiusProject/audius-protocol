@@ -7,6 +7,7 @@ export type Env = {
   AMPLITUDE_API_KEY: Nullable<string>
   AMPLITUDE_PROXY: Nullable<string>
   AMPLITUDE_WRITE_KEY: Nullable<string>
+  APP_NAME: string
   AUDIUS_URL: string
   BITSKI_CALLBACK_URL: string
   BITSKI_CLIENT_ID: string

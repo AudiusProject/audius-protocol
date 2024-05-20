@@ -6,6 +6,7 @@ export const env: Env = {
   AMPLITUDE_API_KEY: null,
   AMPLITUDE_PROXY: null,
   AMPLITUDE_WRITE_KEY: null,
+  APP_NAME: 'audius-mobile-client',
   AUDIUS_URL: 'https://staging.audius.co',
   BITSKI_CALLBACK_URL: 'https://staging.audius.co/bitski-callback.html',
   BITSKI_CLIENT_ID: '7a543ec2-b55f-45d6-a5d4-0448c5a23485',
