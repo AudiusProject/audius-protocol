@@ -15,8 +15,6 @@ import {
 import {
   createUserBankIfNeeded,
   LocalStorage,
-  GetSupportingArgs,
-  GetSupportersArgs,
   GetTipsArgs,
   FeatureFlags
 } from '@audius/common/services'
@@ -637,7 +635,12 @@ function* sendTipAsyncOld() {
 }
 
 function* refreshSupportAsync({
-  payload: { senderUserId, receiverUserId, supportingLimit, supportersLimit }
+  payload: {
+    senderUserId,
+    receiverUserId,
+    supportingLimit: supportingLimitArg,
+    supportersLimit
+  }
 }: {
   payload: RefreshSupportPayloadAction
   type: string
@@ -646,32 +649,22 @@ function* refreshSupportAsync({
   const sdk = yield* getSDK()
   const currentUserId = yield* select(getUserId)
 
-  const supportingParams: GetSupportingArgs = {
-    userId: senderUserId
-  }
-  if (supportingLimit) {
-    supportingParams.limit = supportingLimit
-  } else {
+  let supportingLimit = supportingLimitArg
+
+  if (!supportingLimit) {
     const account = yield* select(getAccountUser)
-    supportingParams.limit =
+    supportingLimit =
       account?.user_id === senderUserId
         ? account?.supporting_count
         : SUPPORTING_PAGINATION_SIZE
   }
 
-  const supportersParams: GetSupportersArgs = {
-    userId: receiverUserId
-  }
-  if (supportersLimit) {
-    supportersParams.limit = supportersLimit
-  }
-
   const { data: supportingData = [] } = yield* call(
     [sdk.full.users, sdk.full.users.getSupportedUsers],
     {
-      id: Id.parse(supportingParams.userId),
-      limit: supportingParams.limit,
-      userId: OptionalId.parse(currentUserId)
+      id: Id.parse(senderUserId),
+      userId: OptionalId.parse(currentUserId),
+      limit: supportingLimit
     }
   )
   const supportingForSenderList =
@@ -680,8 +673,8 @@ function* refreshSupportAsync({
   const { data: supporterData = [] } = yield* call(
     [sdk.full.users, sdk.full.users.getSupporters],
     {
-      id: Id.parse(supportersParams.userId),
-      limit: supportersParams.limit,
+      id: Id.parse(receiverUserId),
+      limit: supportersLimit,
       userId: OptionalId.parse(currentUserId)
     }
   )
@@ -725,16 +718,11 @@ function* fetchSupportersForUserAsync(action: FetchSupportingAction) {
   const sdk = yield* getSDK()
   const currentUserId = yield* select(getUserId)
 
-  const supportersParams: GetSupportersArgs = {
-    userId,
-    limit: MAX_PROFILE_TOP_SUPPORTERS + 1
-  }
-
   const { data = [] } = yield* call(
     [sdk.full.users, sdk.full.users.getSupporters],
     {
-      id: Id.parse(supportersParams.userId),
-      limit: supportersParams.limit,
+      id: Id.parse(userId),
+      limit: MAX_PROFILE_TOP_SUPPORTERS + 1,
       userId: OptionalId.parse(currentUserId)
     }
   )

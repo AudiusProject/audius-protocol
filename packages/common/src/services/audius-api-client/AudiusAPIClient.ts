@@ -5,9 +5,7 @@ import {
   TimeRange,
   StemTrackMetadata,
   CollectionMetadata,
-  UserChallenge,
-  SupporterMetadata,
-  SupportedUserMetadata
+  UserChallenge
 } from '../../models'
 import { UndisbursedUserChallenge } from '../../store'
 import { SearchKind } from '../../store/pages/search-results/types'
@@ -37,8 +35,7 @@ import {
   GetNFTGatedTrackSignaturesResponse,
   GetTipsResponse,
   OpaqueID,
-  SupporterResponse,
-  SupportingResponse
+  SupporterResponse
 } from './types'
 
 // TODO: declare this at the root and use actual audiusLibs type
@@ -74,18 +71,8 @@ const FULL_ENDPOINT_MAP = {
     experiment ? `/playlists/trending/${experiment}` : '/playlists/trending',
   recommended: '/tracks/recommended',
   remixables: '/tracks/remixables',
-  following: (userId: OpaqueID) => `/users/${userId}/following`,
-  followers: (userId: OpaqueID) => `/users/${userId}/followers`,
-  trackRepostUsers: (trackId: OpaqueID) => `/tracks/${trackId}/reposts`,
-  trackFavoriteUsers: (trackId: OpaqueID) => `/tracks/${trackId}/favorites`,
-  playlistRepostUsers: (playlistId: OpaqueID) =>
-    `/playlists/${playlistId}/reposts`,
-  playlistFavoriteUsers: (playlistId: OpaqueID) =>
-    `/playlists/${playlistId}/favorites`,
   playlistUpdates: (userId: OpaqueID) =>
     `/notifications/${userId}/playlist_updates`,
-  getUser: (userId: OpaqueID) => `/users/${userId}`,
-  userByHandle: (handle: OpaqueID) => `/users/handle/${handle}`,
   userTracksByHandle: (handle: OpaqueID) => `/users/handle/${handle}/tracks`,
   userAiTracksByHandle: (handle: OpaqueID) =>
     `/users/handle/${handle}/tracks/ai_attributed`,
@@ -106,11 +93,7 @@ const FULL_ENDPOINT_MAP = {
   searchAutocomplete: `/search/autocomplete`,
   getUserSupporter: (userId: OpaqueID, supporterUserId: OpaqueID) =>
     `/users/${userId}/supporters/${supporterUserId}`,
-  getUserSupporting: (userId: OpaqueID, supporterUserId: OpaqueID) =>
-    `/users/${userId}/supporting/${supporterUserId}`,
   getReaction: '/reactions',
-  getSupporting: (userId: OpaqueID) => `/users/${userId}/supporting`,
-  getSupporters: (userId: OpaqueID) => `/users/${userId}/supporters`,
   getTips: '/tips',
   getNFTGatedTrackSignatures: (userId: OpaqueID) =>
     `/tracks/${userId}/nft-gated-signatures`,
@@ -190,60 +173,6 @@ type GetRecommendedArgs = {
 type GetRemixablesArgs = {
   limit?: number
   currentUserId: Nullable<ID>
-}
-
-type GetFollowingArgs = {
-  profileUserId: ID
-  currentUserId: Nullable<ID>
-  offset?: number
-  limit?: number
-}
-
-type GetFollowersArgs = {
-  profileUserId: ID
-  currentUserId: Nullable<ID>
-  offset?: number
-  limit?: number
-}
-
-type GetTrackRepostUsersArgs = {
-  trackId: ID
-  currentUserId: Nullable<ID>
-  limit?: number
-  offset?: number
-}
-
-type GetTrackFavoriteUsersArgs = {
-  trackId: ID
-  currentUserId: Nullable<ID>
-  limit?: number
-  offset?: number
-}
-
-type GetPlaylistRepostUsersArgs = {
-  playlistId: ID
-  currentUserId: Nullable<ID>
-  limit?: number
-  offset?: number
-}
-
-type GetPlaylistFavoriteUsersArgs = {
-  playlistId: ID
-  currentUserId: Nullable<ID>
-  limit?: number
-  offset?: number
-}
-
-type GetUserArgs = {
-  userId: ID
-  currentUserId: Nullable<ID>
-  abortOnUnreachable?: boolean
-}
-
-type GetUserByHandleArgs = {
-  handle: string
-  currentUserId: Nullable<ID>
-  retry?: boolean
 }
 
 type GetUserTracksByHandleArgs = {
@@ -436,18 +365,6 @@ type GetReactionResponse = [
     reacted_to: string
   }
 ]
-
-export type GetSupportingArgs = {
-  userId: ID
-  limit?: number
-  offset?: number
-}
-
-export type GetSupportersArgs = {
-  userId: ID
-  limit?: number
-  offset?: number
-}
 
 export type GetTipsArgs = {
   userId: ID
@@ -697,175 +614,6 @@ export class AudiusAPIClient {
     return adapted
   }
 
-  async getFollowing({
-    currentUserId,
-    profileUserId,
-    limit,
-    offset
-  }: GetFollowingArgs) {
-    this._assertInitialized()
-    const encodedCurrentUserId = encodeHashId(currentUserId)
-    const encodedProfileUserId = this._encodeOrThrow(profileUserId)
-    const params = {
-      user_id: encodedCurrentUserId || undefined,
-      limit,
-      offset
-    }
-
-    const followingResponse = await this._getResponse<APIResponse<APIUser[]>>(
-      FULL_ENDPOINT_MAP.following(encodedProfileUserId),
-      params
-    )
-    if (!followingResponse) return []
-    const adapted = followingResponse.data
-      .map(adapter.makeUser)
-      .filter(removeNullable)
-    return adapted
-  }
-
-  async getFollowers({
-    currentUserId,
-    profileUserId,
-    limit,
-    offset
-  }: GetFollowersArgs) {
-    this._assertInitialized()
-    const encodedCurrentUserId = encodeHashId(currentUserId)
-    const encodedProfileUserId = this._encodeOrThrow(profileUserId)
-    const params = {
-      user_id: encodedCurrentUserId || undefined,
-      limit,
-      offset
-    }
-
-    const followersResponse = await this._getResponse<APIResponse<APIUser[]>>(
-      FULL_ENDPOINT_MAP.followers(encodedProfileUserId),
-      params
-    )
-
-    if (!followersResponse) return []
-
-    const adapted = followersResponse.data
-      .map(adapter.makeUser)
-      .filter(removeNullable)
-    return adapted
-  }
-
-  async getTrackRepostUsers({
-    currentUserId,
-    trackId,
-    limit,
-    offset
-  }: GetTrackRepostUsersArgs) {
-    this._assertInitialized()
-    const encodedCurrentUserId = encodeHashId(currentUserId)
-    const encodedTrackId = this._encodeOrThrow(trackId)
-    const params = {
-      user_id: encodedCurrentUserId || undefined,
-      limit,
-      offset
-    }
-
-    const repostUsers: Nullable<APIResponse<APIUser[]>> =
-      await this._getResponse(
-        FULL_ENDPOINT_MAP.trackRepostUsers(encodedTrackId),
-        params
-      )
-
-    if (!repostUsers) return []
-
-    const adapted = repostUsers.data
-      .map(adapter.makeUser)
-      .filter(removeNullable)
-    return adapted
-  }
-
-  async getTrackFavoriteUsers({
-    currentUserId,
-    trackId,
-    limit,
-    offset
-  }: GetTrackFavoriteUsersArgs) {
-    this._assertInitialized()
-    const encodedCurrentUserId = encodeHashId(currentUserId)
-    const encodedTrackId = this._encodeOrThrow(trackId)
-    const params = {
-      user_id: encodedCurrentUserId || undefined,
-      limit,
-      offset
-    }
-
-    const followingResponse = await this._getResponse<APIResponse<APIUser[]>>(
-      FULL_ENDPOINT_MAP.trackFavoriteUsers(encodedTrackId),
-      params
-    )
-
-    if (!followingResponse) return []
-
-    const adapted = followingResponse.data
-      .map(adapter.makeUser)
-      .filter(removeNullable)
-    return adapted
-  }
-
-  async getPlaylistRepostUsers({
-    currentUserId,
-    playlistId,
-    limit,
-    offset
-  }: GetPlaylistRepostUsersArgs) {
-    this._assertInitialized()
-    const encodedCurrentUserId = encodeHashId(currentUserId)
-    const encodedPlaylistId = this._encodeOrThrow(playlistId)
-    const params = {
-      user_id: encodedCurrentUserId || undefined,
-      limit,
-      offset
-    }
-
-    const repostUsers: Nullable<APIResponse<APIUser[]>> =
-      await this._getResponse(
-        FULL_ENDPOINT_MAP.playlistRepostUsers(encodedPlaylistId),
-        params
-      )
-
-    if (!repostUsers) return []
-
-    const adapted = repostUsers.data
-      .map(adapter.makeUser)
-      .filter(removeNullable)
-    return adapted
-  }
-
-  // TODO: PAY-2925
-  async getPlaylistFavoriteUsers({
-    currentUserId,
-    playlistId,
-    limit,
-    offset
-  }: GetPlaylistFavoriteUsersArgs) {
-    this._assertInitialized()
-    const encodedCurrentUserId = encodeHashId(currentUserId)
-    const encodedPlaylistId = this._encodeOrThrow(playlistId)
-    const params = {
-      user_id: encodedCurrentUserId || undefined,
-      limit,
-      offset
-    }
-
-    const followingResponse = await this._getResponse<APIResponse<APIUser[]>>(
-      FULL_ENDPOINT_MAP.playlistFavoriteUsers(encodedPlaylistId),
-      params
-    )
-
-    if (!followingResponse) return []
-
-    const adapted = followingResponse.data
-      .map(adapter.makeUser)
-      .filter(removeNullable)
-    return adapted
-  }
-
   async getTrack(
     { id, currentUserId, unlistedArgs, abortOnUnreachable }: GetTrackArgs,
     retry = true
@@ -1005,54 +753,6 @@ export class AudiusAPIClient {
 
     const tracks = remixingResponse.data.map(adapter.makeTrack)
     return tracks
-  }
-
-  // TODO: PAY-2925
-  async getUser({ userId, currentUserId, abortOnUnreachable }: GetUserArgs) {
-    const encodedUserId = this._encodeOrThrow(userId)
-    const encodedCurrentUserId = encodeHashId(currentUserId)
-    this._assertInitialized()
-    const params = {
-      user_id: encodedCurrentUserId || undefined
-    }
-
-    const response = await this._getResponse<APIResponse<APIUser[]>>(
-      FULL_ENDPOINT_MAP.getUser(encodedUserId),
-      params,
-      undefined,
-      undefined,
-      undefined,
-      abortOnUnreachable
-    )
-
-    if (!response) return []
-
-    const adapted = response.data.map(adapter.makeUser).filter(removeNullable)
-    return adapted
-  }
-
-  // TODO: PAY-2925
-  async getUserByHandle({
-    handle,
-    currentUserId,
-    retry = true
-  }: GetUserByHandleArgs) {
-    const encodedCurrentUserId = encodeHashId(currentUserId)
-    this._assertInitialized()
-    const params = {
-      user_id: encodedCurrentUserId || undefined
-    }
-
-    const response = await this._getResponse<APIResponse<APIUser[]>>(
-      FULL_ENDPOINT_MAP.userByHandle(handle),
-      params,
-      retry
-    )
-
-    if (!response) return []
-
-    const adapted = response.data.map(adapter.makeUser).filter(removeNullable)
-    return adapted
   }
 
   async getUserTracksByHandle({
@@ -1620,49 +1320,6 @@ export class AudiusAPIClient {
       reactedTo: item.reacted_to
     }))[0]
 
-    return adapted
-  }
-
-  async getSupporting({ userId, limit = 25, offset = 0 }: GetSupportingArgs) {
-    const encodedUserId = this._encodeOrThrow(userId)
-    this._assertInitialized()
-    const params = {
-      limit,
-      offset
-    }
-
-    const response = await this._getResponse<APIResponse<SupportingResponse[]>>(
-      FULL_ENDPOINT_MAP.getSupporting(encodedUserId),
-      params
-    )
-
-    if (!response) return []
-
-    const adapted = response.data.reduce<SupportedUserMetadata[]>((out, s) => {
-      const user = adapter.makeUser(s.receiver)
-      return user ? [...out, { ...s, receiver: user }] : out
-    }, [])
-    return adapted
-  }
-
-  async getSupporters({ userId, limit = 25, offset = 0 }: GetSupportersArgs) {
-    const encodedUserId = this._encodeOrThrow(userId)
-    this._assertInitialized()
-    const params = {
-      limit,
-      offset
-    }
-
-    const response = await this._getResponse<APIResponse<SupporterResponse[]>>(
-      FULL_ENDPOINT_MAP.getSupporters(encodedUserId),
-      params
-    )
-    if (!response) return []
-
-    const adapted = response.data.reduce<SupporterMetadata[]>((out, s) => {
-      const user = adapter.makeUser(s.sender)
-      return user ? [...out, { ...s, sender: user }] : out
-    }, [])
     return adapted
   }
 
