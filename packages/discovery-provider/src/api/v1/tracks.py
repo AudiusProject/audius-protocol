@@ -488,6 +488,13 @@ stream_parser.add_argument(
     required=False,
     default=False,
 )
+stream_parser.add_argument(
+    "api_key",
+    description="""Optional - API key for third party apps. This is required for tracks that only allow specific API keys.""",
+    type=str,
+    required=False,
+    default=None,
+)
 
 
 @ns.route("/<string:track_id>/stream")
@@ -519,6 +526,8 @@ class TrackStream(Resource):
         user_data = request_args.get("user_data")
         user_signature = request_args.get("user_signature")
         nft_access_signature = request_args.get("nft_access_signature")
+        api_key = request_args.get("api_key")
+
         decoded_id = decode_with_abort(track_id, ns)
 
         info = get_track_access_info(decoded_id)
@@ -529,7 +538,13 @@ class TrackStream(Resource):
                 f"tracks.py | stream | Track with id {track_id} may not exist. Please investigate."
             )
             abort_not_found(track_id, ns)
-
+        elif (track["allowed_api_keys"] and not api_key) or (
+            api_key.lower() not in track["allowed_api_keys"]
+        ):
+            logger.error(
+                f"tracks.py | stream | Streaming track {track_id} does not allow streaming from api key {api_key}."
+            )
+            abort_not_found(track_id, ns)
         redis = redis_connection.get_redis()
 
         # signature for the track to be included as a query param in the redirect to CN
