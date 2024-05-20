@@ -274,11 +274,11 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
   if (challenge?.challenge_type === 'aggregate') {
     audioToClaim = challenge.claimableAmount
     audioClaimedSoFar = challenge.disbursed_amount
-  } else if (challenge?.state === 'completed') {
+  } else if (challenge?.state === 'completed' && challenge?.cooldown_days) {
+    audioToClaim = challenge.claimableAmount
+  } else if (challenge?.state === 'completed' && !challenge?.cooldown_days) {
     audioToClaim = challenge.totalAmount
-    audioClaimedSoFar = 0
   } else if (challenge?.state === 'disbursed') {
-    audioToClaim = 0
     audioClaimedSoFar = challenge.totalAmount
   }
 
@@ -563,7 +563,7 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
         )}
         {renderReferralContent()}
         {renderMobileInstallContent()}
-        {buttonLink && challenge?.state !== 'completed' ? (
+        {buttonLink && !audioToClaim ? (
           <Button
             variant='primary'
             fullWidth={isMobile}
