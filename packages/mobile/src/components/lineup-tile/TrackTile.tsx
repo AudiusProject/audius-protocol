@@ -89,10 +89,6 @@ export const TrackTileComponent = ({
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
   )
-  const { isEnabled: isEditAlbumsEnabled } = useFeatureFlag(
-    FeatureFlags.EDIT_ALBUMS
-  )
-
   const isUSDCEnabled = useIsUSDCEnabled()
   const dispatch = useDispatch()
   const navigation = useNavigation()
@@ -166,14 +162,12 @@ export const TrackTileComponent = ({
       genre === Genre.PODCASTS || genre === Genre.AUDIOBOOKS
 
     const overflowActions = [
-      isEditAlbumsEnabled && isOwner && !ddexApp
-        ? OverflowAction.ADD_TO_ALBUM
-        : null,
+      isOwner && !ddexApp ? OverflowAction.ADD_TO_ALBUM : null,
       isPlaylistAddable ? OverflowAction.ADD_TO_PLAYLIST : null,
       isNewPodcastControlsEnabled && isLongFormContent
         ? OverflowAction.VIEW_EPISODE_PAGE
         : OverflowAction.VIEW_TRACK_PAGE,
-      isEditAlbumsEnabled && albumInfo ? OverflowAction.VIEW_ALBUM_PAGE : null,
+      albumInfo ? OverflowAction.VIEW_ALBUM_PAGE : null,
       isNewPodcastControlsEnabled && isLongFormContent
         ? playbackPositionInfo?.status === 'COMPLETED'
           ? OverflowAction.MARK_AS_UNPLAYED
@@ -197,7 +191,6 @@ export const TrackTileComponent = ({
   }, [
     track_id,
     genre,
-    isEditAlbumsEnabled,
     isOwner,
     ddexApp,
     isPlaylistAddable,

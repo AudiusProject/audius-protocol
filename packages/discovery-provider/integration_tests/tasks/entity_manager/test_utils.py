@@ -192,7 +192,7 @@ def test_valid_parse_metadata(app):
                 "rights_controller": None,
                 "copyright_line": None,
                 "producer_copyright_line": None,
-                "parental_warning_type": None
+                "parental_warning_type": None,
             },
             "QmUpdatePlaylist1": {
                 "playlist_id": 1,

@@ -1,7 +1,10 @@
 import { memo, MouseEvent, useRef } from 'react'
 
 import { useGetCurrentUserId } from '@audius/common/api'
-import { useIsGatedContentPlaylistAddable } from '@audius/common/hooks'
+import {
+  useGatedContentAccess,
+  useIsGatedContentPlaylistAddable
+} from '@audius/common/hooks'
 import {
   ID,
   isContentUSDCPurchaseGated,
@@ -65,6 +68,7 @@ const TrackListItem = ({
   const isOwner = track?.owner_id === currentUserId
   const isPlaylistAddable = useIsGatedContentPlaylistAddable(track as Track)
   const isPremium = isContentUSDCPurchaseGated(track?.stream_conditions)
+  const { hasStreamAccess } = useGatedContentAccess(track as Track)
 
   if (forceSkeleton) {
     return (
@@ -170,7 +174,7 @@ const TrackListItem = ({
               paused={!playing}
               hideDefault={false}
               isTrackPremium={isPremium}
-              isOwned={isOwner}
+              isLocked={!hasStreamAccess}
             />
           </div>
         ) : null}

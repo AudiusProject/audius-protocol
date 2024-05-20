@@ -84,6 +84,7 @@ def get_feed_es(args, limit=10, offset=0):
                                 ),
                                 {"term": {"is_private": False}},
                                 {"term": {"is_delete": False}},
+                                {"exists": {"field": "tracks.genre"}},
                             ]
                         }
                     },
