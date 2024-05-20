@@ -35,9 +35,9 @@ lint-discovery-provider:
         name: Lint
         command: |
           cd packages/discovery-provider
-          isort .
+          isort --check --diff .
           flake8 .
-          black .
+          black --check --diff .
 
     - run:
         name: Typecheck
