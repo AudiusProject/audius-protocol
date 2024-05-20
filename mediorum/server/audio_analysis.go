@@ -185,7 +185,7 @@ func (ss *MediorumServer) analyzeAudio(upload *Upload) error {
 	_, err := ss.bucket.Attributes(ctx, key)
 	if err != nil {
 		if gcerrors.Code(err) == gcerrors.NotFound {
-			err := errors.New("could not find audio file on node")
+			err := errors.New("failed to find audio file on node")
 			logger.Warn(err.Error())
 			return err
 		} else {
@@ -213,8 +213,8 @@ func (ss *MediorumServer) analyzeAudio(upload *Upload) error {
 	defer temp.Close()
 	defer os.Remove(temp.Name())
 
-	// run through python script
-	cmd := exec.Command("python3", "analyze_audio.py", temp.Name())
+	// invoke analyze_audio.py script
+	cmd := exec.Command("python3", "/bin/analyze_audio.py", temp.Name())
 	output, err := cmd.Output()
 	if err != nil {
 		logger.Error("failed to execute analyze_audio.py script", "err", err)
@@ -222,23 +222,20 @@ func (ss *MediorumServer) analyzeAudio(upload *Upload) error {
 	}
 	result := string(output)
 	parts := strings.Split(result, ",")
-	if len(parts) != 3 {
+	if len(parts) != 2 {
 		err := fmt.Errorf("unexpected output: %v", result)
 		logger.Error("failed to process analyze_audio.py output", "err", err)
 		return onError(err)
 	}
 
-	musicalKey := strings.TrimSpace(parts[0])
-	scale := strings.TrimSpace(parts[1])
-	bpm := strings.TrimSpace(parts[2])
-
-	upload.AudioAnalysisResults = map[string]string{
-		"key":   musicalKey,
-		"scale": scale,
-		"bpm":   bpm,
-	}
+	keyScale := strings.TrimSpace(parts[0][5:]) // remove "Key: " prefix
+	bpm := strings.TrimSpace(parts[1][5:])      // remove "BPM: " prefix
 
 	// success
+	upload.AudioAnalysisResults = map[string]string{
+		"key": keyScale,
+		"bpm": bpm,
+	}
 	upload.AudioAnalyzedAt = time.Now().UTC()
 	upload.AudioAnalysisStatus = AudioAnalysisStatusDone
 	upload.Status = JobStatusDone

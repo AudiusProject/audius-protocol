@@ -1,6 +1,11 @@
 FROM golang:alpine AS builder
 
-RUN apk add build-base make ffmpeg
+RUN apk add build-base make ffmpeg python3 python3-dev py3-pip
+
+# Install Essentia dependencies
+RUN apk add --no-cache --virtual .build-deps git fftw-dev eigen-dev && \
+    pip3 install essentia && \
+    apk del .build-deps
 
 WORKDIR /app
 ENV CGO_ENABLED=0
@@ -14,11 +19,17 @@ RUN go build -o mediorum-cmd cmd/main.go
 
 FROM alpine:3.17 AS final
 
-RUN apk add curl ffmpeg
+RUN apk add curl ffmpeg python3 py3-pip
 
 COPY --from=builder /go/bin/* /bin
 COPY --from=builder /app/mediorum /bin/mediorum
 COPY --from=builder /app/mediorum-cmd /bin/mediorum-cmd
+COPY --from=builder /app/mediorum/server/analyze_audio.py /bin/analyze_audio.py
+
+# Install Essentia
+RUN apk add --no-cache --virtual .build-deps fftw-dev eigen-dev && \
+    pip3 install essentia && \
+    apk del .build-deps
 
 # ARGs can be optionally defined with --build-arg while doing docker build eg in CI and then set to env vars
 ARG git_sha

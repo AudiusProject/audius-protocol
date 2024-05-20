@@ -15,7 +15,7 @@ def analyze_audio(file_path):
     key_extractor = es.KeyExtractor()
     key, scale, strength = key_extractor(audio)
 
-    return key, scale, bpm
+    return f"{key} {scale}", bpm
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
@@ -23,6 +23,6 @@ if __name__ == "__main__":
         sys.exit(1)
 
     file_path = sys.argv[1]
-    key, scale, bpm = analyze_audio(file_path)
-    print(f"Key: {key}, Scale: {scale}, BPM: {bpm}")
+    key_scale, bpm = analyze_audio(file_path)
+    print(f"Key: {key_scale}, BPM: {bpm}")
 
