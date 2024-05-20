@@ -37,7 +37,7 @@ type Upload struct {
 	TranscodedAt      time.Time         `json:"transcoded_at"`
 	TranscodeResults  map[string]string `json:"results" gorm:"serializer:json"`
 
-	AudioAnalysisStatus  string            `json:"audio_analysis_status" gorm:"serializer:json"`
+	AudioAnalysisStatus  string            `json:"audio_analysis_status"`
 	AudioAnalysisError   string            `json:"audio_analysis_error,omitempty"`
 	AudioAnalyzedBy      string            `json:"audio_analyzed_by"`
 	AudioAnalyzedAt      time.Time         `json:"audio_analyzed_at"`
@@ -55,11 +55,12 @@ const (
 	JobTemplateImgBackdrop JobTemplate = "img_backdrop"
 )
 
-// Upload job statuses
+// Job statuses
 const (
-	JobStatusNew   = "new"
-	JobStatusError = "error"
-	JobStatusBusy  = "busy"
+	JobStatusNew     = "new"
+	JobStatusError   = "error"
+	JobStatusBusy    = "busy"
+	JobStatusTimeout = "timeout"
 
 	JobStatusRetranscode      = "retranscode_preview"
 	JobStatusBusyRetranscode  = "busy_retranscode_preview"

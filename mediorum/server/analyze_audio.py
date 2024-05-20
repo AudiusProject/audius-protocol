@@ -10,12 +10,13 @@ def analyze_audio(file_path):
     # Compute the BPM
     rhythm_extractor = es.RhythmExtractor2013(method="multifeature")
     bpm, _, _, _, _ = rhythm_extractor(audio)
+    bpm = round(bpm)
 
     # Compute the key
     key_extractor = es.KeyExtractor()
     key, scale, strength = key_extractor(audio)
 
-    return f"{key} {scale}", bpm
+    return key, scale, bpm
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
@@ -23,6 +24,5 @@ if __name__ == "__main__":
         sys.exit(1)
 
     file_path = sys.argv[1]
-    key_scale, bpm = analyze_audio(file_path)
-    print(f"Key: {key_scale}, BPM: {bpm}")
-
+    key, scale, bpm = analyze_audio(file_path)
+    print(f"Key: {key}, Scale: {scale}, BPM: {bpm}")

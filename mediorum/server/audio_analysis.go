@@ -18,12 +18,6 @@ import (
 	"golang.org/x/exp/slices"
 )
 
-const (
-	AudioAnalysisStatusDone    = "audio_analysis_done"
-	AudioAnalysisStatusTimeout = "audio_analysis_timeout"
-	AudioAnalysisStatusError   = "audio_analysis_error"
-)
-
 func (ss *MediorumServer) startAudioAnalyzer() {
 	myHost := ss.Config.Self.Host
 	work := make(chan *Upload)
@@ -105,7 +99,7 @@ func (ss *MediorumServer) findMissedAnalysisJobs(work chan *Upload, myHost strin
 		if time.Since(upload.TranscodedAt) > time.Minute {
 			// mark analysis as timed out and the upload as done.
 			// failed or timed out analyses do not block uploads.
-			upload.AudioAnalysisStatus = AudioAnalysisStatusTimeout
+			upload.AudioAnalysisStatus = JobStatusTimeout
 			upload.Status = JobStatusDone
 			ss.crud.Update(upload)
 		}
@@ -172,7 +166,7 @@ func (ss *MediorumServer) analyzeAudio(upload *Upload) error {
 
 	onError := func(err error) error {
 		upload.AudioAnalysisError = err.Error()
-		upload.AudioAnalysisStatus = AudioAnalysisStatusError
+		upload.AudioAnalysisStatus = JobStatusError
 		// failed analyses do not block uploads
 		upload.Status = JobStatusDone
 		ss.crud.Update(upload)
@@ -221,30 +215,37 @@ func (ss *MediorumServer) analyzeAudio(upload *Upload) error {
 	defer os.Remove(temp.Name())
 
 	// invoke analyze_audio.py script
-	cmd := exec.Command("python3", "/bin/analyze_audio.py", temp.Name())
-	output, err := cmd.Output()
+	cmd := exec.Command("python3", "server/analyze_audio.py", temp.Name())
+	var out, stderr strings.Builder
+	cmd.Stdout = &out
+	cmd.Stderr = &stderr
+
+	err = cmd.Run()
 	if err != nil {
-		logger.Error("failed to execute analyze_audio.py", "err", err)
+		logger.Error("failed to execute analyze_audio.py", "err", err, "stderr", stderr.String())
 		return onError(err)
 	}
-	result := string(output)
+	result := out.String()
 	parts := strings.Split(result, ",")
-	if len(parts) != 2 {
+	if len(parts) != 3 {
 		err := fmt.Errorf("unexpected output: %v", result)
 		logger.Error("failed to parse analyze_audio.py output", "err", err)
 		return onError(err)
 	}
 
-	keyScale := strings.TrimSpace(parts[0][5:]) // remove "Key: " prefix
-	bpm := strings.TrimSpace(parts[1][5:])      // remove "BPM: " prefix
+	musicalKey := strings.TrimSpace(parts[0][5:]) // remove "Key: " prefix
+	scale := strings.TrimSpace(parts[1][7:])      // Remove "Scale: " prefix
+	bpm := strings.TrimSpace(parts[2][5:])        // remove "BPM: " prefix
 
 	// success
 	upload.AudioAnalysisResults = map[string]string{
-		"key": keyScale,
-		"bpm": bpm,
+		"key":   musicalKey,
+		"scale": scale,
+		"bpm":   bpm,
 	}
+	upload.AudioAnalysisError = ""
 	upload.AudioAnalyzedAt = time.Now().UTC()
-	upload.AudioAnalysisStatus = AudioAnalysisStatusDone
+	upload.AudioAnalysisStatus = JobStatusDone
 	upload.Status = JobStatusDone
 	ss.crud.Update(upload)
 	return nil

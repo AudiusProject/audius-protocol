@@ -24,7 +24,6 @@ RUN apk add curl ffmpeg python3 py3-pip
 COPY --from=builder /go/bin/* /bin
 COPY --from=builder /app/mediorum /bin/mediorum
 COPY --from=builder /app/mediorum-cmd /bin/mediorum-cmd
-COPY --from=builder /app/mediorum/server/analyze_audio.py /bin/analyze_audio.py
 
 # Install Essentia
 RUN apk add --no-cache --virtual .build-deps fftw-dev eigen-dev && \
