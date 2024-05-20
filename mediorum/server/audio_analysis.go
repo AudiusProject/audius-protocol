@@ -1,11 +1,20 @@
 package server
 
 import (
+	"context"
+	"errors"
+	"fmt"
+	"io"
 	"log"
+	"os"
+	"os/exec"
 	"runtime"
+	"strings"
 	"time"
 
+	"github.com/AudiusProject/audius-protocol/mediorum/cidutil"
 	"github.com/AudiusProject/audius-protocol/mediorum/crudr"
+	"gocloud.dev/gcerrors"
 	"golang.org/x/exp/slices"
 )
 
@@ -37,7 +46,7 @@ func (ss *MediorumServer) startAudioAnalyzer() {
 			return
 		}
 		for _, upload := range *uploads {
-			if upload.Status == JobStatusAudioAnalysis {
+			if upload.Status == JobStatusAudioAnalysis && upload.Template == "audio" {
 				if upload.TranscodedMirrors == nil {
 					ss.logger.Warn("missing full transcoded mp3 data in audio analysis job. skipping", "id", upload.ID)
 					continue
@@ -59,12 +68,12 @@ func (ss *MediorumServer) startAudioAnalyzer() {
 	// poll periodically for uploads that slipped thru the cracks.
 	// mark uploads with timed out analyses as done
 	for {
-		time.Sleep(time.Second * 30)
-		ss.findMissedJobs(work, myHost)
+		time.Sleep(time.Second * 10)
+		ss.findMissedAnalyzeJobs(work, myHost)
 	}
 }
 
-func (ss *MediorumServer) findMissedJobs(work chan *Upload, myHost string) {
+func (ss *MediorumServer) findMissedAnalyzeJobs(work chan *Upload, myHost string) {
 	uploads := []*Upload{}
 	ss.crud.DB.Where("status in ?", []string{JobStatusAudioAnalysis, JobStatusBusyAudioAnalysis}).Find(&uploads)
 
@@ -148,9 +157,10 @@ func (ss *MediorumServer) analyzeAudio(upload *Upload) error {
 	upload.AudioAnalyzedAt = time.Now().UTC()
 	upload.Status = JobStatusBusyAudioAnalysis
 	ss.crud.Update(upload)
+	ctx := context.Background()
 
 	onError := func(err error) error {
-		upload.AudioAnalysisError = err
+		upload.AudioAnalysisError = err.Error()
 		upload.AudioAnalysisStatus = AudioAnalysisStatusError
 		// failed analyses do not block uploads
 		upload.Status = JobStatusDone
@@ -158,10 +168,75 @@ func (ss *MediorumServer) analyzeAudio(upload *Upload) error {
 		return err
 	}
 
-	// TODO audio analysis
-	// 1. pull transcoded file from bucket
-	// 2. run through python script
-	// 3. save results in upload.AudioAnalysisResults
+	logger := ss.logger.With("upload", upload.ID)
+
+	// pull transcoded file from bucket
+	cid, exists := upload.TranscodeResults["320"]
+	if !exists {
+		err := errors.New("audio upload missing 320kbps cid")
+		logger.Warn(err.Error())
+		return onError(err)
+	}
+
+	// do not mark the audio analysis job as failed if this node cannot pull the file from its bucket
+	// so that the next mirror may pick the job up
+	logger = logger.With("cid", cid)
+	key := cidutil.ShardCID(cid)
+	_, err := ss.bucket.Attributes(ctx, key)
+	if err != nil {
+		if gcerrors.Code(err) == gcerrors.NotFound {
+			err := errors.New("could not find audio file on node")
+			logger.Warn(err.Error())
+			return err
+		} else {
+			logger.Warn(err.Error())
+			return err
+		}
+	}
+	temp, err := os.CreateTemp("", "audioAnalysisTemp")
+	if err != nil {
+		logger.Error("failed to create temp file", "err", err)
+		return err
+	}
+	r, err := ss.bucket.NewReader(ctx, key, nil)
+	if err != nil {
+		logger.Error("failed to read blob", "err", err)
+		return err
+	}
+	defer r.Close()
+	_, err = io.Copy(temp, r)
+	if err != nil {
+		logger.Error("failed to read blob content", "err", err)
+		return err
+	}
+	temp.Sync()
+	defer temp.Close()
+	defer os.Remove(temp.Name())
+
+	// run through python script
+	cmd := exec.Command("python3", "analyze_audio.py", temp.Name())
+	output, err := cmd.Output()
+	if err != nil {
+		logger.Error("failed to execute analyze_audio.py script", "err", err)
+		return onError(err)
+	}
+	result := string(output)
+	parts := strings.Split(result, ",")
+	if len(parts) != 3 {
+		err := fmt.Errorf("unexpected output: %v", result)
+		logger.Error("failed to process analyze_audio.py output", "err", err)
+		return onError(err)
+	}
+
+	musicalKey := strings.TrimSpace(parts[0])
+	scale := strings.TrimSpace(parts[1])
+	bpm := strings.TrimSpace(parts[2])
+
+	upload.AudioAnalysisResults = map[string]string{
+		"key":   musicalKey,
+		"scale": scale,
+		"bpm":   bpm,
+	}
 
 	// success
 	upload.AudioAnalyzedAt = time.Now().UTC()

@@ -232,6 +232,25 @@ func (ss *MediorumServer) postUpload(c echo.Context) error {
 	return c.JSON(status, uploads)
 }
 
+func (ss *MediorumServer) analyzeUpload(c echo.Context) error {
+	var upload *Upload
+	err := ss.crud.DB.First(&upload, "id = ?", c.Param("id")).Error
+	if err != nil {
+		return err
+	}
+
+	if upload.Status == JobStatusDone && upload.AudioAnalysisResults == nil {
+		upload.UpdatedAt = time.Now().UTC()
+		upload.Status = JobStatusAudioAnalysis
+		err = ss.crud.Update(upload)
+		if err != nil {
+			ss.logger.Warn("update upload failed", "err", err)
+		}
+	}
+
+	return c.JSON(200, upload)
+}
+
 func copyUploadToTempFile(file *multipart.FileHeader) (*os.File, error) {
 	temp, err := os.CreateTemp("", "mediorumUpload")
 	if err != nil {

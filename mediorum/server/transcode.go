@@ -542,6 +542,8 @@ func (ss *MediorumServer) transcode(upload *Upload) error {
 	defer temp.Close()
 	defer os.Remove(temp.Name())
 
+	nextJobStatus := JobStatusDone
+
 	switch JobTemplate(upload.Template) {
 	case JobTemplateImgSquare:
 		// 150x150, 480x480, 1000x1000
@@ -600,13 +602,14 @@ func (ss *MediorumServer) transcode(upload *Upload) error {
 			if err != nil {
 				return err
 			}
+			// analyze audio for new full audio uploads
+			nextJobStatus = JobStatusAudioAnalysis
 		}
 	}
 
 	upload.TranscodeProgress = 1
 	upload.TranscodedAt = time.Now().UTC()
-	// mark upload as ready for audio analysis
-	upload.Status = JobStatusAudioAnalysis
+	upload.Status = nextJobStatus
 	upload.Error = ""
 	ss.crud.Update(upload)
 
