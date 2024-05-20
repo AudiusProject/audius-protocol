@@ -13,13 +13,14 @@ import DogEarRectangle from 'app/assets/images/dogEarRectangle.svg'
 import { makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
 import { useThemeColors } from 'app/utils/theme'
+import { zIndex } from 'app/utils/zIndex'
 
 const useStyles = makeStyles(({ spacing }) => ({
   container: {
     position: 'absolute',
     top: -1,
     left: -1,
-    zIndex: 10,
+    zIndex: zIndex.DOG_EAR,
     width: spacing(12),
     height: spacing(12),
     overflow: 'hidden',
@@ -38,7 +39,8 @@ const useStyles = makeStyles(({ spacing }) => ({
       height: 0
     },
     shadowOpacity: 0.25,
-    shadowRadius: spacing(2)
+    shadowRadius: spacing(2),
+    zIndex: zIndex.DOG_EAR
   },
 
   icon: {
@@ -46,7 +48,8 @@ const useStyles = makeStyles(({ spacing }) => ({
     width: spacing(4),
     height: spacing(4),
     top: spacing(1),
-    left: spacing(1)
+    left: spacing(1),
+    zIndex: zIndex.DOG_EAR
   }
 }))
 

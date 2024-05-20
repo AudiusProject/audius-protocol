@@ -6,3 +6,4 @@ export {
 export * as playerSelectors from './selectors'
 export * from './types'
 export { sagas as playerSagas } from './sagas'
+export * from './utils'

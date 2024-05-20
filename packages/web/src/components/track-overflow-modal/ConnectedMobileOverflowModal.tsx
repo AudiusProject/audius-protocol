@@ -3,9 +3,9 @@ import {
   RepostSource,
   FavoriteSource,
   FollowSource,
-  ID
+  ID,
+  ModalSource
 } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import {
   cacheCollectionsActions,
   cacheCollectionsSelectors,
@@ -23,13 +23,15 @@ import {
   modalsSelectors,
   modalsActions,
   useEditPlaylistModal,
-  Notification
+  Notification,
+  PurchaseableContentType,
+  usePremiumContentPurchaseModal
 } from '@audius/common/store'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
-import { useFlag } from 'hooks/useRemoteConfig'
+import { useAuthenticatedCallback } from 'hooks/useAuthenticatedCallback'
 import { AppState } from 'store/types'
 import {
   collectibleDetailsPage,
@@ -105,7 +107,12 @@ const ConnectedMobileOverflowModal = ({
   unfollow,
   shareUser
 }: ConnectedMobileOverflowModalProps) => {
-  const { isEnabled: isEditAlbumsEnabled } = useFlag(FeatureFlags.EDIT_ALBUMS)
+  const { onOpen: openPremiumContentModal } = usePremiumContentPurchaseModal()
+  const openPurchaseModal = useAuthenticatedCallback(
+    (...args: Parameters<typeof openPremiumContentModal>) =>
+      openPremiumContentModal(...args),
+    [openPremiumContentModal]
+  )
   // Create callbacks
   const { onOpen: onOpenEditPlaylist } = useEditPlaylistModal()
   const {
@@ -124,7 +131,8 @@ const ConnectedMobileOverflowModal = ({
     onVisitCollectionPage,
     onVisitCollectiblePage,
     onFollow,
-    onUnfollow
+    onUnfollow,
+    onPurchase
   } = ((): {
     onRepost?: () => void
     onUnrepost?: () => void
@@ -142,6 +150,7 @@ const ConnectedMobileOverflowModal = ({
     onVisitCollectionPage?: () => void
     onFollow?: () => void
     onUnfollow?: () => void
+    onPurchase?: () => void
   } => {
     switch (source) {
       case OverflowSource.TRACKS: {
@@ -163,7 +172,15 @@ const ConnectedMobileOverflowModal = ({
               : visitTrackPage(permalink),
           onVisitArtistPage: () => visitArtistPage(handle),
           onFollow: () => follow(ownerId),
-          onUnfollow: () => unfollow(ownerId)
+          onUnfollow: () => unfollow(ownerId),
+          onPurchase: () =>
+            openPurchaseModal(
+              {
+                contentId: id as ID,
+                contentType: PurchaseableContentType.TRACK
+              },
+              { source: ModalSource.OverflowMenu }
+            )
         }
       }
       case OverflowSource.COLLECTIONS: {
@@ -185,10 +202,7 @@ const ConnectedMobileOverflowModal = ({
             ),
           onVisitCollectiblePage: () =>
             visitCollectiblePage(handle, id as string),
-          onEditPlaylist:
-            !isAlbum || isEditAlbumsEnabled
-              ? () => onOpenEditPlaylist({ collectionId: id as ID })
-              : () => {},
+          onEditPlaylist: () => onOpenEditPlaylist({ collectionId: id as ID }),
           onDeletePlaylist: isAlbum ? () => {} : () => deletePlaylist(id as ID),
           onPublishPlaylist: isAlbum
             ? () => {}
@@ -229,6 +243,7 @@ const ConnectedMobileOverflowModal = ({
       onVisitCollectiblePage={onVisitCollectiblePage}
       onFollow={onFollow}
       onUnfollow={onUnfollow}
+      onPurchase={onPurchase}
     />
   )
 }

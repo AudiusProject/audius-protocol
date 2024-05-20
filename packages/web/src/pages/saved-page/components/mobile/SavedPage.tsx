@@ -47,7 +47,7 @@ import { TRENDING_PAGE } from 'utils/route'
 import { LibraryCategorySelectionMenu } from '../desktop/LibraryCategorySelectionMenu'
 import { emptyStateMessages } from '../emptyStateMessages'
 
-import NewPlaylistButton from './NewPlaylistButton'
+import NewCollectionButton from './NewCollectionButton'
 import styles from './SavedPage.module.css'
 
 const { getCategory } = savedPageSelectors
@@ -487,7 +487,7 @@ const PlaylistCardLineup = ({
             }
             onClick={goToTrending}
           />
-          <NewPlaylistButton />
+          <NewCollectionButton collectionType='playlist' />
         </>
       ) : (
         <div ref={containerRef} className={styles.tabContainer}>
@@ -502,7 +502,7 @@ const PlaylistCardLineup = ({
               </div>
             </div>
           )}
-          <NewPlaylistButton />
+          <NewCollectionButton collectionType='playlist' />
           {isLoadingInitial ? (
             <LoadingSpinner className={styles.spinner} />
           ) : null}

@@ -1,0 +1,20 @@
+{
+  "steps": [
+    {
+      "name": "Sort imports",
+      "command": "isort --diff --check ."
+    },
+    {
+      "name": "Flake8",
+      "command": "flake8 ."
+    },
+    {
+      "name": "Format",
+      "command": "black --diff --check ."
+    },
+    {
+      "name": "Typecheck",
+      "command": "mypy ."
+    }
+  ]
+}

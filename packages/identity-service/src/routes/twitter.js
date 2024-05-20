@@ -117,23 +117,44 @@ module.exports = function (app) {
     '/twitter/handle_lookup',
     handleResponse(async (req, res, next) => {
       const handle = req.query.handle
-      if (handle) {
-        const userRequest = {
-          method: 'get',
-          url: `https://api.twitter.com/1.1/users/lookup.json?screen_name=${handle}`,
-          oauth: {
-            consumer_key: config.get('twitterAPIKey'),
-            consumer_secret: config.get('twitterAPISecret')
-          },
-          json: true
-        }
-        const userProfile = await doRequest(userRequest)
 
-        return successResponse({ profile: userProfile })
-      } else
+      if (!handle) {
         return errorResponseBadRequest(
           'Please enter a valid handle as a query param'
         )
+      }
+
+      // Alternate between two similar routes to double our rate-limit
+      const userLookupRoute =
+        Math.random() > 0.5 ? `username/${handle}?` : `?usernames=${handle}`
+
+      const userRequest = {
+        method: 'get',
+        url: `https://api.twitter.com/2/users/by/${userLookupRoute}&user.fields=verified`,
+        headers: {
+          Authorization: `Bearer ${config.get('twitterBearerToken')}`
+        },
+        json: true
+      }
+
+      try {
+        const [response, profile] = await makeRequest(userRequest)
+
+        if (response.statusCode === 429) {
+          const rateLimitMessage = 'Twitter user lookup rate-limit exceeded'
+          console.warn(rateLimitMessage)
+          return errorResponseBadRequest(rateLimitMessage)
+        }
+
+        // Coerce /usernames api response to /username response
+        if (Array.isArray(profile.data)) {
+          profile.data = profile.data[0]
+        }
+
+        return successResponse({ profile })
+      } catch (err) {
+        return errorResponseBadRequest(err)
+      }
     })
   )
 
@@ -245,6 +266,15 @@ function doRequest(reqObj) {
     request(reqObj, function (err, r, body) {
       if (err) reject(err)
       else resolve(body)
+    })
+  })
+}
+
+function makeRequest(reqObj) {
+  return new Promise(function (resolve, reject) {
+    request(reqObj, function (err, response, body) {
+      if (err) reject(err)
+      else resolve([response, body])
     })
   })
 }

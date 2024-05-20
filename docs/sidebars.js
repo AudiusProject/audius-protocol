@@ -127,6 +127,7 @@ module.exports = {
         'node-operator/setup/installation',
         'node-operator/setup/advanced',
         'node-operator/sla',
+        'node-operator/migration-guide',
       ],
       collapsed: false,
     },

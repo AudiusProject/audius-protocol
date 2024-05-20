@@ -2,6 +2,7 @@
 set -e
 
 GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
 NC='\033[0m'
 
 
@@ -18,6 +19,11 @@ fi
 printf "${GREEN}Applying patches...\n${NC}"
 npm run patch-package > /dev/null
 
+# xcodebuild may exist (e.g. if xcode-select is installed via homebrew) but won't work alone
+if ! xcodebuild --help &>/dev/null; then
+    printf "${YELLOW}WARNING: Xcode not installed. Skipping mobile dependency installation.${NC}\n"
+    SKIP_POD_INSTALL=true
+fi
 
 if [[ -z "${SKIP_POD_INSTALL}" ]]; then
 
@@ -58,6 +64,11 @@ fi
 if [[ -z "${CI}" ]]; then
   printf "${GREEN}Setting up audius-compose...\n${NC}"
   ./dev-tools/setup.sh > /dev/null
+fi
+
+if [[ -z "${CI}" ]]; then
+  printf "${GREEN}Installing discovery provider dependencies...\n${NC}"
+  pip install -r packages/discovery-provider/requirements.txt > /dev/null
 fi
 
 printf "\n${GREEN}Audius monorepo ready!\n${NC}"

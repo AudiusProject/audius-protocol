@@ -9,6 +9,7 @@ export type SourceConfig = {
   awsSecret: string
   awsRegion: string
   awsBucket: string
+  placementHosts?: string
 }
 
 let sourceList: SourceConfig[] = []

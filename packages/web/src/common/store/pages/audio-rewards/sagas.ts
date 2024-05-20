@@ -33,7 +33,7 @@ import {
   waitForValue
 } from '@audius/common/utils'
 import { AUDIO } from '@audius/fixed-decimal'
-import { AudiusSdk, ChallengeId } from '@audius/sdk'
+import { AudiusSdk, ChallengeId, Errors } from '@audius/sdk'
 import {
   call,
   fork,
@@ -55,6 +55,7 @@ import {
   foregroundPollingDaemon,
   visibilityPollingDaemon
 } from 'utils/sagaPollingDaemons'
+
 const { show: showMusicConfetti } = musicConfettiActions
 const { setVisibility } = modalsActions
 const { getBalance, increaseBalance } = walletActions
@@ -205,7 +206,7 @@ function* waitForOptimisticChallengeToComplete({
   })
   if (challenge.challenge_type !== 'aggregate' && !challenge.is_complete) {
     console.info('Waiting for challenge completion...')
-    const raceResult: { isComplete?: boolean } = yield* race({
+    const raceResult: { isComplete?: UserChallenge } = yield* race({
       isComplete: call(
         waitForValue,
         getUserChallenge,
@@ -309,8 +310,13 @@ function* claimSingleChallengeRewardAsync(
     yield* put(setUserChallengesDisbursed({ challengeId, specifiers: claimed }))
 
     const errors = results.filter((r): r is ErrorResult => 'error' in r)
+    let aaoError: Errors.AntiAbuseAttestionError | undefined
     if (errors.length > 0) {
+      // Log and report errors for each specifier that failed to claim
       for (const res of errors) {
+        if (!aaoError && res.error instanceof Errors.AntiAbuseAttestionError) {
+          aaoError = res.error
+        }
         const error =
           res.error instanceof Error ? res.error : new Error(String(res.error))
         console.error(
@@ -327,7 +333,11 @@ function* claimSingleChallengeRewardAsync(
           }
         })
       }
-      throw new Error('Some specifiers failed to claim')
+      const errorMessage = 'Some specifiers failed to claim'
+      if (aaoError) {
+        throw new Errors.AntiAbuseAttestionError(aaoError.code, errorMessage)
+      }
+      throw new Error(errorMessage)
     }
   } catch (e) {
     console.error(e)
@@ -539,7 +549,11 @@ function* claimChallengeRewardAsync(
     yield* call(claimSingleChallengeRewardAsync, action)
     yield* put(claimChallengeRewardSucceeded())
   } catch (e) {
-    yield* put(claimChallengeRewardFailed())
+    if (e instanceof Errors.AntiAbuseAttestionError) {
+      yield* put(claimChallengeRewardFailed({ aaoErrorCode: e.code }))
+    } else {
+      yield* put(claimChallengeRewardFailed())
+    }
   }
 }
 
@@ -548,6 +562,7 @@ function* claimAllChallengeRewardsAsync(
 ) {
   const { claims } = action.payload
   let hasError = false
+  let aaoErrorCode: undefined | number
   yield* all(
     claims.map((claim) =>
       call(function* () {
@@ -559,11 +574,16 @@ function* claimAllChallengeRewardsAsync(
         } catch (e) {
           console.error(e)
           hasError = true
+          if (e instanceof Errors.AntiAbuseAttestionError) {
+            aaoErrorCode = e.code
+          }
         }
       })
     )
   )
-  if (hasError) {
+  if (aaoErrorCode) {
+    yield* put(claimChallengeRewardFailed({ aaoErrorCode }))
+  } else if (hasError) {
     yield* put(claimChallengeRewardFailed())
   } else {
     yield* put(claimAllChallengeRewardsSucceeded())

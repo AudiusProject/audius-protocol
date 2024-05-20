@@ -39,9 +39,6 @@ COPY svgr-template.js svgr-template.js
 COPY turbo.json turbo.json
 RUN npx turbo run build --filter=@audius/ddex-processor
 
-# Make a smaller image by removing all src directories (except for in node_modules)
-RUN find packages -path '*/node_modules/*' -prune -o -name 'src' -type d -exec rm -rf {} +
-
 # Final stage: Create a runnable image
 FROM node:18-alpine AS runner
 
@@ -54,7 +51,7 @@ USER nodejs
 
 WORKDIR /app
 COPY --from=app-builder --chown=nodejs:nodejs /app .
-WORKDIR /app/packages/ddex/publisher
+WORKDIR /app/packages/ddex/processor
 
 EXPOSE 9001
 CMD ["npm", "run", "start:prod"]

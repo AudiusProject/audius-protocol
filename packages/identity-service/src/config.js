@@ -105,6 +105,12 @@ const config = convict({
     env: 'twitterAPISecret',
     default: null
   },
+  twitterBearerToken: {
+    doc: 'Twitter Bearer Token',
+    format: String,
+    env: 'twitterBearerToken',
+    default: null
+  },
   instagramAPIKey: {
     doc: 'Instagram API Key',
     format: String,

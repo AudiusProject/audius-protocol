@@ -1405,6 +1405,7 @@ export enum ModalSource {
   LineUpTrackTile = 'track tile - lineup',
   LineUpCollectionTile = 'collection tile - lineup',
   TrackListItem = 'track list item',
+  OverflowMenu = 'overflow menu',
   // Should never be used, but helps with type-checking
   Unknown = 'unknown'
 }

@@ -99,7 +99,6 @@ const CollectionHeader = ({
   icon: Icon
 }: MobileCollectionHeaderProps) => {
   const { isSsrEnabled } = useSsrContext()
-  const { isEnabled: isEditAlbumsEnabled } = useFlag(FeatureFlags.EDIT_ALBUMS)
   const { isEnabled: isPremiumAlbumsEnabled } = useFlag(
     FeatureFlags.PREMIUM_ALBUMS_ENABLED
   )
@@ -117,11 +116,11 @@ const CollectionHeader = ({
   const isUnlisted = collection?.is_private
 
   // If user doesn't have access, show preview only. If user has access, show play only.
-  // If user is owner, show both.
   const shouldShowPlay = isPlayable && hasStreamAccess
-  const shouldShowPreview = isOwner
-    ? isPlayable && isPremium
-    : isPremium && !hasStreamAccess
+  const shouldShowPreview = isPremium && !hasStreamAccess
+
+  const showPremiumSection =
+    isPremiumAlbumsEnabled && isAlbum && streamConditions && collectionId
 
   const onSaveCollection = () => {
     if (!isOwner) onSave?.()
@@ -139,10 +138,8 @@ const CollectionHeader = ({
         : isSaved
         ? OverflowAction.UNFAVORITE
         : OverflowAction.FAVORITE,
-      isOwner && (!isAlbum || isEditAlbumsEnabled) && !isPublished
-        ? OverflowAction.PUBLISH_PLAYLIST
-        : null,
-      isOwner && (!isAlbum || isEditAlbumsEnabled) && !ddexApp
+      isOwner && !isPublished ? OverflowAction.PUBLISH_PLAYLIST : null,
+      isOwner && !ddexApp
         ? isAlbum
           ? OverflowAction.DELETE_ALBUM
           : OverflowAction.DELETE_PLAYLIST
@@ -270,26 +267,6 @@ const CollectionHeader = ({
             {playing && previewing ? messages.pause : messages.preview}
           </Button>
         ) : null}
-        {isPremiumAlbumsEnabled &&
-        isAlbum &&
-        streamConditions &&
-        collectionId ? (
-          <Box mb='xl' w='100%'>
-            <GatedContentSection
-              isLoading={isLoading}
-              contentId={collectionId}
-              contentType={PurchaseableContentType.ALBUM}
-              streamConditions={streamConditions}
-              hasStreamAccess={!!access?.stream}
-              isOwner={isOwner}
-              wrapperClassName={styles.gatedContentSectionWrapper}
-              className={styles.gatedContentSection}
-              buttonClassName={styles.gatedContentSectionButton}
-              ownerId={userId}
-              source={ModalSource.CollectionDetails}
-            />
-          </Box>
-        ) : null}
 
         <ActionButtonRow
           isOwner={isOwner}
@@ -320,6 +297,22 @@ const CollectionHeader = ({
         borderBottom='strong'
         justifyContent='flex-start'
       >
+        {showPremiumSection ? (
+          <Box w='100%'>
+            <GatedContentSection
+              isLoading={isLoading}
+              contentId={collectionId}
+              contentType={PurchaseableContentType.ALBUM}
+              streamConditions={streamConditions}
+              hasStreamAccess={!!access?.stream}
+              isOwner={isOwner}
+              wrapperClassName={styles.gatedContentSectionWrapper}
+              buttonClassName={styles.gatedContentSectionButton}
+              ownerId={userId}
+              source={ModalSource.CollectionDetails}
+            />
+          </Box>
+        ) : null}
         {isPublished && variant !== Variant.SMART ? (
           <RepostsFavoritesStats
             isUnlisted={false}

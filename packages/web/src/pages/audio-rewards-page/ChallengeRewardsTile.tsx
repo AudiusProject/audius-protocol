@@ -3,6 +3,7 @@ import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
 import {
   formatCooldownChallenges,
   useChallengeCooldownSchedule,
+  useFormattedProgressLabel,
   useFeatureFlag
 } from '@audius/common/hooks'
 import {
@@ -19,8 +20,6 @@ import {
   ChallengeRewardsModalType
 } from '@audius/common/store'
 import {
-  fillString,
-  formatNumberCommas,
   removeNullable,
   makeOptimisticChallengeSortComparator,
   isAudioMatchingChallenge,
@@ -131,13 +130,8 @@ const RewardPanel = ({
   }
 
   const challenge = userChallenges[id]
-  const shouldShowCompleted =
-    challenge?.state === 'completed' || challenge?.state === 'disbursed'
   const hasDisbursed = challenge?.state === 'disbursed'
   const needsDisbursement = challenge && challenge.claimableAmount > 0
-  const pending =
-    challenge?.undisbursedSpecifiers &&
-    challenge?.undisbursedSpecifiers.length > 0
   const shouldShowProgressBar =
     challenge &&
     challenge.max_steps > 1 &&
@@ -146,48 +140,12 @@ const RewardPanel = ({
   const showNewChallengePill =
     isAudioMatchingChallenge(id) && !needsDisbursement
 
-  let progressLabelFilled: string
-  if (shouldShowCompleted) {
-    progressLabelFilled = messages.completeLabel
-  } else if (challenge && challenge?.cooldown_days > 0) {
-    if (needsDisbursement) {
-      progressLabelFilled = messages.readyToClaim
-    } else if (pending) {
-      progressLabelFilled = messages.pendingRewards
-    } else if (challenge?.challenge_type === 'aggregate') {
-      // Count down
-      progressLabelFilled = fillString(
-        remainingLabel ?? '',
-        formatNumberCommas(
-          (challenge?.max_steps - challenge?.current_step_count)?.toString() ??
-            ''
-        ),
-        formatNumberCommas(challenge?.max_steps?.toString() ?? '')
-      )
-    } else {
-      progressLabelFilled = fillString(
-        progressLabel ?? '',
-        formatNumberCommas(challenge?.current_step_count?.toString() ?? ''),
-        formatNumberCommas(challenge?.max_steps?.toString() ?? '')
-      )
-    }
-  } else if (challenge?.challenge_type === 'aggregate') {
-    // Count down
-    progressLabelFilled = fillString(
-      remainingLabel ?? '',
-      formatNumberCommas(
-        (challenge?.max_steps - challenge?.current_step_count)?.toString() ?? ''
-      ),
-      formatNumberCommas(challenge?.max_steps?.toString() ?? '')
-    )
-  } else {
-    // Count up
-    progressLabelFilled = fillString(
-      progressLabel ?? '',
-      formatNumberCommas(challenge?.current_step_count?.toString() ?? ''),
-      formatNumberCommas(challenge?.max_steps?.toString() ?? '')
-    )
-  }
+  const formattedProgressLabel: string = useFormattedProgressLabel({
+    challenge,
+    progressLabel,
+    remainingLabel
+  })
+
   const buttonMessage = needsDisbursement
     ? messages.claimReward
     : hasDisbursed
@@ -230,7 +188,7 @@ const RewardPanel = ({
       <div className={wm(styles.rewardPanelBottom)}>
         <div className={wm(styles.rewardProgress)}>
           {needsDisbursement && <IconCheck className={wm(styles.iconCheck)} />}
-          <p className={styles.rewardProgressLabel}>{progressLabelFilled}</p>
+          <p className={styles.rewardProgressLabel}>{formattedProgressLabel}</p>
           {shouldShowProgressBar && (
             <ProgressBar
               className={styles.rewardProgressBar}

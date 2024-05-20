@@ -633,3 +633,68 @@ def test_get_health_challenge_events_max_drift(
 
     assert error == True
     assert health_results["challenge_last_event_age_sec"] < int(time() - 49)
+
+
+def test_get_elasticsearch_health(
+    web3_mock, redis_mock, db_mock, esclient_mock, mock_requests
+):
+    # Set up web3 eth
+    def get_block(_u1, _u2):  # unused
+        block = MagicMock()
+        block.number = 2
+        block.hash = HexBytes(b"\x02")
+        return block
+
+    cache_play_health_vars(redis_mock)
+    cache_trusted_notifier_discrepancies_vars(redis_mock)
+    web3_mock.eth.get_block = get_block
+
+    # Set up db state
+    with db_mock.scoped_session() as session:
+        Block.__table__.create(db_mock._engine)
+        session.add(
+            Block(
+                blockhash="0x01",
+                number=1,
+                parenthash="0x01",
+                is_current=True,
+            )
+        )
+
+    def assert_typical_health_results(hrs):
+        assert hrs["web"]["blocknumber"] == 2
+        assert hrs["web"]["blockhash"] == "0x02"
+        assert hrs["db"]["number"] == 1
+        assert hrs["db"]["blockhash"] == "0x01"
+        assert hrs["block_difference"] == 1
+        assert hrs["plays"]["tx_info"]["slot_diff"] == 3
+        assert "maximum_healthy_block_difference" in hrs
+        assert "version" in hrs
+        assert "service" in hrs
+
+    def get_es_cluster_healthy():
+        return {"status": "green"}
+
+    def get_es_cluster_unhealthy():
+        return {"status": "red"}
+
+    def get_es_cluster_error():
+        raise Exception("Fake exception from mocked esclient")
+
+    esclient_mock.cluster.health = get_es_cluster_healthy
+    health_results, error = get_health({})
+    assert_typical_health_results(health_results)
+    assert health_results["elasticsearch"]["status"] == "green"
+    assert error == False
+
+    esclient_mock.cluster.health = get_es_cluster_unhealthy
+    health_results, error = get_health({})
+    assert_typical_health_results(health_results)
+    assert health_results["elasticsearch"]["status"] == "red"
+    assert error == True
+
+    esclient_mock.cluster.health = get_es_cluster_error
+    health_results, error = get_health({})
+    assert_typical_health_results(health_results)
+    assert health_results["elasticsearch"]["status"] != "green"
+    assert error == True
