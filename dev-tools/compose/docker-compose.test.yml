@@ -241,6 +241,9 @@ services:
       audius_elasticsearch_url: 'http://discovery-provider-elasticsearch:9200'
     volumes:
       - ${PROJECT_ROOT}/packages/discovery-provider:/audius-discovery-provider
+      - ${PROJECT_ROOT}/packages/es-indexer:/app/packages/discovery-provider/es-indexer
+      - ${PROJECT_ROOT}/node_modules:/app/node_modules
+
     depends_on:
       discovery-provider-elasticsearch:
         condition: service_healthy
@@ -472,7 +475,7 @@ services:
         condition: service_completed_successfully
       ddex-s3:
         condition: service_healthy
-  
+
   ddex-s3:
     container_name: ddex-s3
     image: localstack/localstack:s3-latest
@@ -511,6 +514,8 @@ services:
       DDEX_CHOREOGRAPHY: "ERNReleaseByRelease"
     networks:
       - ddex-network
+    profiles:
+      - ddex
     depends_on:
       ddex-ingester:
         condition: service_healthy
@@ -531,6 +536,8 @@ services:
       DDEX_CHOREOGRAPHY: "ERNBatched"
     networks:
       - ddex-network
+    profiles:
+      - ddex
     depends_on:
       ddex-ingester:
         condition: service_healthy

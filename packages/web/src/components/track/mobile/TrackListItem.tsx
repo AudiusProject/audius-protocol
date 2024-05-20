@@ -198,7 +198,7 @@ const TrackListItem = ({
             paused={!isPlaying}
             hideDefault={false}
             isTrackPremium={isPremium}
-            isOwned={!isLocked}
+            isLocked={isLocked}
           />
         </div>
       ) : null}

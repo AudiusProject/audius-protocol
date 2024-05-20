@@ -1,7 +1,7 @@
 import 'dotenv/config'
 
 import { serve } from '@hono/node-server'
-import { fileTypeFromBuffer } from 'file-type'
+import { fromBuffer as fileTypeFromBuffer } from 'file-type'
 import { Context, Hono } from 'hono'
 import { deleteCookie, getSignedCookie, setSignedCookie } from 'hono/cookie'
 import { html } from 'hono/html'

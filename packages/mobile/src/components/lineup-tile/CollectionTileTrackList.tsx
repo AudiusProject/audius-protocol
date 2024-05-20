@@ -1,10 +1,12 @@
 import type { UID, LineupTrack } from '@audius/common/models'
 import type { CommonState } from '@audius/common/store'
 import { playerSelectors } from '@audius/common/store'
+import { pluralize } from '@audius/common/utils'
 import { range } from 'lodash'
 import { Pressable, Text, View } from 'react-native'
 import { useSelector } from 'react-redux'
 
+import { Box } from '@audius/harmony-native'
 import Skeleton from 'app/components/skeleton'
 import { flexRowCentered, makeStyles } from 'app/styles'
 import type { GestureResponderHandler } from 'app/types/gesture'
@@ -14,13 +16,14 @@ const { getUid } = playerSelectors
 const DISPLAY_TRACK_COUNT = 5
 
 const messages = {
-  by: 'by'
+  by: 'by',
+  deleted: '[Deleted by Artist]'
 }
 
 type LineupTileTrackListProps = {
   isLoading?: boolean
   onPress: GestureResponderHandler
-  trackCount?: number
+  trackCount: number
   tracks: LineupTrack[]
   isAlbum: boolean
 }
@@ -55,6 +58,10 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
     color: palette.primary
   },
 
+  deleted: {
+    color: palette.textIconSubdued
+  },
+
   divider: {
     marginHorizontal: spacing(3),
     borderTopWidth: 1,
@@ -72,10 +79,11 @@ type TrackItemProps = {
   track?: LineupTrack
   uid?: UID
   isAlbum?: boolean
+  deleted?: boolean
 }
 
 const TrackItem = (props: TrackItemProps) => {
-  const { showSkeleton, index, track, uid, isAlbum } = props
+  const { showSkeleton, index, track, uid, isAlbum, deleted } = props
   const styles = useStyles()
   const isPlayingUid = useSelector(
     (state: CommonState) => getUid(state) === uid
@@ -92,7 +100,12 @@ const TrackItem = (props: TrackItemProps) => {
               {index + 1}
             </Text>
             <Text
-              style={[styles.text, styles.title, isPlayingUid && styles.active]}
+              style={[
+                styles.text,
+                styles.title,
+                isPlayingUid && styles.active,
+                deleted && styles.deleted
+              ]}
               numberOfLines={1}
             >
               {track.title}
@@ -102,11 +115,24 @@ const TrackItem = (props: TrackItemProps) => {
                 style={[
                   styles.text,
                   styles.artist,
-                  isPlayingUid && styles.active
+                  isPlayingUid && styles.active,
+                  deleted && styles.deleted
                 ]}
                 numberOfLines={1}
               >
                 {`${messages.by} ${track.user.name}`}
+              </Text>
+            ) : null}
+            {deleted ? (
+              <Text
+                style={[
+                  styles.text,
+                  styles.artist,
+                  isPlayingUid && styles.active,
+                  styles.deleted
+                ]}
+              >
+                {messages.deleted}
               </Text>
             ) : null}
           </>
@@ -130,6 +156,8 @@ export const CollectionTileTrackList = (props: LineupTileTrackListProps) => {
     )
   }
 
+  const overflowTrackCount = trackCount - DISPLAY_TRACK_COUNT
+
   return (
     <Pressable onPress={onPress}>
       {tracks.slice(0, DISPLAY_TRACK_COUNT).map((track, index) => (
@@ -139,14 +167,20 @@ export const CollectionTileTrackList = (props: LineupTileTrackListProps) => {
           index={index}
           track={track}
           isAlbum={isAlbum}
+          deleted={track.is_delete}
         />
       ))}
-      {trackCount && trackCount > 5 ? (
+      {trackCount && trackCount > DISPLAY_TRACK_COUNT ? (
         <>
           <View style={styles.divider} />
-          <Text style={[styles.item, styles.more]}>
-            {`+${trackCount - tracks.length} more tracks`}
-          </Text>
+          <Box mt='xs'>
+            <Text style={[styles.item, styles.more]}>
+              {`+${overflowTrackCount} ${pluralize(
+                'Track',
+                overflowTrackCount
+              )}`}
+            </Text>
+          </Box>
         </>
       ) : null}
     </Pressable>

@@ -8,6 +8,7 @@ import type {
 } from '../../services'
 import { AntiAbuseOracleService } from '../../services/AntiAbuseOracle/types'
 import type { RewardManagerClient } from '../../services/Solana/programs/RewardManagerClient/RewardManagerClient'
+import { AntiAbuseAttestionError } from '../../utils/errors'
 import { parseParams } from '../../utils/parseParams'
 import { BaseAPI, Configuration } from '../generated/default'
 import {
@@ -84,9 +85,7 @@ export class ChallengesApi extends BaseAPI {
    *
    * @see {@link generateSpecifier} to create the specifier argument.
    */
-  public async claimReward(
-    request: ClaimRewardsRequest
-  ): Promise<{ transactionSignature: string } | { aaoErrorCode: number }> {
+  public async claimReward(request: ClaimRewardsRequest) {
     const args = await parseParams('claimRewards', ClaimRewardsSchema)(request)
     const { challengeId, specifier, amount: inputAmount } = args
     const logger = this.logger.createPrefixedLogger(
@@ -190,7 +189,7 @@ export class ChallengesApi extends BaseAPI {
       amount
     })
 
-    return { transactionSignature }
+    return transactionSignature
   }
 
   private async submitAntiAbuseOracleAttestation({
@@ -216,10 +215,14 @@ export class ChallengesApi extends BaseAPI {
     const antiAbuseOracleEthAddress =
       await this.antiAbuseOracle.getWalletAddress()
     if (!antiAbuseOracleAttestation.result) {
+      const errorMessage = 'Failed to get AAO attestation'
       if (antiAbuseOracleAttestation.errorCode) {
-        return { aaoErrorCode: antiAbuseOracleAttestation.errorCode }
+        throw new AntiAbuseAttestionError(
+          antiAbuseOracleAttestation.errorCode,
+          errorMessage
+        )
       }
-      throw new Error('Failed to get AAO attestation')
+      throw new Error(errorMessage)
     }
     const aaoSubmitSecpInstruction =
       await this.rewardManager.createSubmitAttestationSecpInstruction({

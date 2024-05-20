@@ -56,6 +56,7 @@ type TrackItemProps = {
   track?: LineupTrack
   isAlbum: boolean
   active: boolean
+  deleted?: boolean
   forceSkeleton?: boolean
 }
 
@@ -63,16 +64,18 @@ type TrackItemProps = {
 const DISPLAY_TRACK_COUNT = 5
 
 const messages = {
-  by: 'by'
+  by: 'by',
+  deleted: '[Deleted by Artist]'
 }
 
 const TrackItem = (props: TrackItemProps) => {
-  const { active, index, isAlbum, track, forceSkeleton } = props
+  const { active, deleted, index, isAlbum, track, forceSkeleton } = props
   return (
     <>
       <div className={styles.trackItemDivider}></div>
       <div
         className={cn(styles.trackItem, {
+          [styles.deletedTrackItem]: deleted,
           [styles.activeTrackItem]: active
         })}
       >
@@ -87,6 +90,9 @@ const TrackItem = (props: TrackItemProps) => {
                 {' '}
                 {`${messages.by} ${track.user.name}`}{' '}
               </div>
+            ) : null}
+            {deleted ? (
+              <div className={styles.deletedTrack}>{messages.deleted}</div>
             ) : null}
           </>
         ) : null}
@@ -136,6 +142,7 @@ const TrackList = ({
         <TrackItem
           key={track.uid}
           active={activeTrackUid === track.uid}
+          deleted={track.is_delete}
           index={index}
           isAlbum={isAlbum}
           track={track}
