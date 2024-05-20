@@ -1,4 +1,4 @@
-import { useCallback, useState, useEffect, MouseEvent } from 'react'
+import { useCallback, useEffect, MouseEvent } from 'react'
 
 import {
   ModalSource,
@@ -391,12 +391,12 @@ const TrackTile = (props: CombinedProps) => {
             >
               <Text ellipses>{title}</Text>
               {isPlaying ? <IconVolume size='m' /> : null}
-              {(showSkeleton) && (
+              {showSkeleton && (
                 <Skeleton className={styles.skeleton} height='20px' />
               )}
             </TextLink>
             <UserLink userId={userId} textVariant='body' badgeSize='xs'>
-              {(showSkeleton) && (
+              {showSkeleton && (
                 <Skeleton className={styles.skeleton} height='20px' />
               )}
             </UserLink>
