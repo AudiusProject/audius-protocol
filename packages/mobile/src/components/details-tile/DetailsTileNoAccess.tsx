@@ -209,6 +209,9 @@ export const DetailsTileNoAccess = ({
   const { isEnabled: isIosGatedContentEnabled } = useFeatureFlag(
     FeatureFlags.IOS_GATED_CONTENT_ENABLED
   )
+  const { isEnabled: isUsdcPurchasesEnabled } = useFeatureFlag(
+    FeatureFlags.USDC_PURCHASES
+  )
 
   const { onPress: handlePressCollection } = useLink(collectionLink)
 
@@ -479,6 +482,10 @@ export const DetailsTileNoAccess = ({
   ])
 
   const isUnlocking = gatedTrackStatus === 'UNLOCKING'
+
+  if (!isUsdcPurchasesEnabled && isContentUSDCPurchaseGated(streamConditions)) {
+    return null
+  }
 
   return (
     <DetailsTileNoAccessSection
