@@ -1818,10 +1818,7 @@ export class AudiusAPIClient {
     pathType: PathType = PathType.VersionPath
   ) => {
     const formattedPath = this._formatPath(pathType, path)
-    return this._constructUrl(formattedPath, {
-      ...queryParams,
-      app_name: this.appName
-    })
+    return this._constructUrl(formattedPath, queryParams)
   }
 
   // Helpers
@@ -1919,7 +1916,10 @@ export class AudiusAPIClient {
   ) {
     if (this.initializationState.state !== 'initialized')
       throw new Error('_constructURL called uninitialized')
-    const params = Object.entries(queryParams)
+    const params = Object.entries({
+      ...queryParams,
+      app_name: this.appName
+    })
       .filter((p) => p[1] !== undefined && p[1] !== null)
       .map((p) => {
         if (Array.isArray(p[1])) {
