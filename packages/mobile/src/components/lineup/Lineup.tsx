@@ -99,9 +99,6 @@ const styles = StyleSheet.create({
   root: {
     flex: 1
   },
-  list: {
-    paddingBottom: 12
-  },
   item: {
     padding: 12,
     paddingBottom: 0
@@ -534,7 +531,6 @@ export const Lineup = ({
       <SectionList
         {...listProps}
         {...pullToRefreshProps}
-        style={styles.list}
         ref={ref}
         onScroll={handleScroll}
         ListHeaderComponent={
