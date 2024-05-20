@@ -239,7 +239,7 @@ func (ss *MediorumServer) analyzeUpload(c echo.Context) error {
 		return err
 	}
 
-	if upload.Status == JobStatusDone && upload.AudioAnalysisResults == nil {
+	if upload.Template == "audio" && upload.Status == JobStatusDone && upload.AudioAnalysisResults == nil {
 		upload.UpdatedAt = time.Now().UTC()
 		upload.Status = JobStatusAudioAnalysis
 		err = ss.crud.Update(upload)

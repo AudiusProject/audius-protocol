@@ -43,7 +43,7 @@ func (ss *MediorumServer) startTranscoder() {
 	}
 
 	// on boot... reset any of my wip jobs
-	for _, statuses := range [][]string{{JobStatusBusy, JobStatusNew}, {JobStatusBusyRetranscode, JobStatusRetranscode}, {JobStatusBusyAudioAnalysis, JobStatusAudioAnalysis}} {
+	for _, statuses := range [][]string{{JobStatusBusy, JobStatusNew}, {JobStatusBusyRetranscode, JobStatusRetranscode}} {
 		busyStatus := statuses[0]
 		resetStatus := statuses[1]
 		tx := ss.crud.DB.Model(Upload{}).
@@ -218,29 +218,6 @@ func (ss *MediorumServer) startTranscodeWorker(n int, work chan *Upload) {
 		}
 	}
 }
-
-type JobTemplate string
-
-const (
-	JobTemplateAudio       JobTemplate = "audio"
-	JobTemplateImgSquare   JobTemplate = "img_square"
-	JobTemplateImgBackdrop JobTemplate = "img_backdrop"
-)
-
-const (
-	JobStatusNew   = "new"
-	JobStatusError = "error"
-	JobStatusBusy  = "busy"
-
-	JobStatusRetranscode      = "retranscode_preview"
-	JobStatusBusyRetranscode  = "busy_retranscode_preview"
-	JobStatusErrorRetranscode = "error_retranscode_preview"
-
-	JobStatusAudioAnalysis     = "audio_analysis"
-	JobStatusBusyAudioAnalysis = "busy_audio_analysis"
-
-	JobStatusDone = "done"
-)
 
 func (ss *MediorumServer) getKeyToTempFile(fileHash string) (*os.File, error) {
 	temp, err := os.CreateTemp("", "mediorumTemp")

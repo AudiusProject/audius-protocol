@@ -34,6 +34,19 @@ func (ss *MediorumServer) startAudioAnalyzer() {
 		numWorkers = 2
 	}
 
+	// on boot... reset any of my wip jobs
+	tx := ss.crud.DB.Model(Upload{}).
+		Where(Upload{
+			AudioAnalyzedBy: myHost,
+			Status:          JobStatusBusyAudioAnalysis,
+		}).
+		Updates(Upload{Status: JobStatusAudioAnalysis})
+	if tx.Error != nil {
+		ss.logger.Warn("reset stuck audio analyses error" + tx.Error.Error())
+	} else if tx.RowsAffected > 0 {
+		ss.logger.Info("reset stuck audio analyses", "count", tx.RowsAffected)
+	}
+
 	// add a callback to crudr that so we can consider audio analyses
 	ss.crud.AddOpCallback(func(op *crudr.Op, records interface{}) {
 		if op.Table != "uploads" || op.Action != crudr.ActionUpdate {
@@ -92,11 +105,9 @@ func (ss *MediorumServer) findMissedAnalyzeJobs(work chan *Upload, myHost string
 		if time.Since(upload.TranscodedAt) > time.Minute {
 			// mark analysis as timed out and the upload as done.
 			// failed or timed out analyses do not block uploads.
-			if upload.Status == JobStatusAudioAnalysis || upload.Status == JobStatusBusyAudioAnalysis {
-				upload.AudioAnalysisStatus = AudioAnalysisStatusTimeout
-				upload.Status = JobStatusDone
-				ss.crud.Update(upload)
-			}
+			upload.AudioAnalysisStatus = AudioAnalysisStatusTimeout
+			upload.Status = JobStatusDone
+			ss.crud.Update(upload)
 		}
 
 		// this is already handled by a callback and there's a chance this job gets enqueued twice
@@ -217,14 +228,14 @@ func (ss *MediorumServer) analyzeAudio(upload *Upload) error {
 	cmd := exec.Command("python3", "/bin/analyze_audio.py", temp.Name())
 	output, err := cmd.Output()
 	if err != nil {
-		logger.Error("failed to execute analyze_audio.py script", "err", err)
+		logger.Error("failed to execute analyze_audio.py", "err", err)
 		return onError(err)
 	}
 	result := string(output)
 	parts := strings.Split(result, ",")
 	if len(parts) != 2 {
 		err := fmt.Errorf("unexpected output: %v", result)
-		logger.Error("failed to process analyze_audio.py output", "err", err)
+		logger.Error("failed to parse analyze_audio.py output", "err", err)
 		return onError(err)
 	}
 

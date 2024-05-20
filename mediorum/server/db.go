@@ -46,6 +46,31 @@ type Upload struct {
 	// UpldateULID - this is the last ULID that change this thing
 }
 
+// Upload templates
+type JobTemplate string
+
+const (
+	JobTemplateAudio       JobTemplate = "audio"
+	JobTemplateImgSquare   JobTemplate = "img_square"
+	JobTemplateImgBackdrop JobTemplate = "img_backdrop"
+)
+
+// Upload job statuses
+const (
+	JobStatusNew   = "new"
+	JobStatusError = "error"
+	JobStatusBusy  = "busy"
+
+	JobStatusRetranscode      = "retranscode_preview"
+	JobStatusBusyRetranscode  = "busy_retranscode_preview"
+	JobStatusErrorRetranscode = "error_retranscode_preview"
+
+	JobStatusAudioAnalysis     = "audio_analysis"
+	JobStatusBusyAudioAnalysis = "busy_audio_analysis"
+
+	JobStatusDone = "done"
+)
+
 // Metric actions
 const (
 	StreamTrack string = "stream_track"
