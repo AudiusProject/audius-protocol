@@ -54,7 +54,7 @@ USER nodejs
 
 WORKDIR /app
 COPY --from=app-builder --chown=nodejs:nodejs /app .
-WORKDIR /app/packages/ddex/publisher
+WORKDIR /app/packages/ddex/processor
 
 EXPOSE 9001
 CMD ["npm", "run", "start:prod"]
