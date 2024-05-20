@@ -188,6 +188,12 @@ services:
       service: crm
     <<: *common
 
+  mri:
+    extends:
+      file: docker-compose.pedalboard.${DOCKERCOMPOSE_ENV_TYPE:-dev}.yml
+      service: mri
+    <<: *common
+
   # DDEX
 
   ddex-mongo:
