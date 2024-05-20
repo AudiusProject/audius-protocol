@@ -279,7 +279,6 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
   } else if (challenge?.state === 'completed' && !challenge?.cooldown_days) {
     audioToClaim = challenge.totalAmount
   } else if (challenge?.state === 'disbursed') {
-    audioToClaim = 0
     audioClaimedSoFar = challenge.totalAmount
   }
 
