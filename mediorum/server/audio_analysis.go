@@ -61,7 +61,7 @@ func (ss *MediorumServer) startAudioAnalyzer() {
 		for _, upload := range *uploads {
 			if upload.Status == JobStatusAudioAnalysis && upload.Template == "audio" {
 				if upload.TranscodedMirrors == nil {
-					ss.logger.Warn("missing full transcoded mp3 data in audio analysis job. skipping", "id", upload.ID)
+					ss.logger.Warn("missing full transcoded mp3 data in audio analysis job. skipping", "upload", upload.ID)
 					continue
 				}
 				// only the first mirror transcodes
@@ -82,11 +82,11 @@ func (ss *MediorumServer) startAudioAnalyzer() {
 	// mark uploads with timed out analyses as done
 	for {
 		time.Sleep(time.Second * 10)
-		ss.findMissedAnalyzeJobs(work, myHost)
+		ss.findMissedAnalysisJobs(work, myHost)
 	}
 }
 
-func (ss *MediorumServer) findMissedAnalyzeJobs(work chan *Upload, myHost string) {
+func (ss *MediorumServer) findMissedAnalysisJobs(work chan *Upload, myHost string) {
 	uploads := []*Upload{}
 	ss.crud.DB.Where("status in ?", []string{JobStatusAudioAnalysis, JobStatusBusyAudioAnalysis}).Find(&uploads)
 
@@ -185,7 +185,6 @@ func (ss *MediorumServer) analyzeAudio(upload *Upload) error {
 	cid, exists := upload.TranscodeResults["320"]
 	if !exists {
 		err := errors.New("audio upload missing 320kbps cid")
-		logger.Warn(err.Error())
 		return onError(err)
 	}
 
@@ -196,11 +195,8 @@ func (ss *MediorumServer) analyzeAudio(upload *Upload) error {
 	_, err := ss.bucket.Attributes(ctx, key)
 	if err != nil {
 		if gcerrors.Code(err) == gcerrors.NotFound {
-			err := errors.New("failed to find audio file on node")
-			logger.Warn(err.Error())
-			return err
+			return errors.New("failed to find audio file on node")
 		} else {
-			logger.Warn(err.Error())
 			return err
 		}
 	}
