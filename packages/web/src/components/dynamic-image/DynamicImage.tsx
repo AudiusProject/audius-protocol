@@ -85,7 +85,7 @@ const fadeIn = (
       ? `url(${image})`
       : image
     ref.current.style.transition = `opacity ${
-      immediate ? '0.1s' : '0.6s'
+      immediate ? '0.1s' : '0.3s'
     } ease-in-out`
     ref.current.style.opacity = '1'
   }

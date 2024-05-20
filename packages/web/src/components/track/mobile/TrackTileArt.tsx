@@ -25,7 +25,7 @@ type TrackTileArtProps = {
   isBuffering?: boolean
   artworkIconClassName?: string
   // Called when the image is done loading
-  callback: () => void
+  callback?: () => void
 }
 
 const TrackTileArt = ({
