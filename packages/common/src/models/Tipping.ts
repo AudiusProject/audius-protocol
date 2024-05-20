@@ -1,9 +1,10 @@
-import { ID } from '~/models/Identifiers'
-
-import { StringWei } from './Wallet'
-import { UserMetadata, userMetadataFromSDK } from './User'
 import { full } from '@audius/sdk'
+
+import { ID } from '~/models/Identifiers'
 import { removeNullable } from '~/utils/typeUtils'
+
+import { UserMetadata, userMetadataFromSDK } from './User'
+import { StringWei } from './Wallet'
 
 export type Supporter = {
   sender_id: ID

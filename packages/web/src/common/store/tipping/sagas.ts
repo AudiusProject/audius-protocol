@@ -2,13 +2,15 @@ import {
   Name,
   Kind,
   ID,
-  Supporter,
-  Supporting,
   LastDismissedTip,
   User,
   StringWei,
   BNWei,
-  SolanaWalletAddress
+  SolanaWalletAddress,
+  Id,
+  OptionalId,
+  supportedUserMetadataListFromSDK,
+  supporterMetadataListFromSDK
 } from '@audius/common/models'
 import {
   createUserBankIfNeeded,
@@ -29,10 +31,12 @@ import {
   walletSelectors,
   walletActions,
   getContext,
-  RefreshSupportPayloadAction
+  RefreshSupportPayloadAction,
+  checkSDKMigration,
+  getSDK,
+  tippingUtils
 } from '@audius/common/store'
 import {
-  decodeHashId,
   isNullOrUndefined,
   weiToAudioString,
   stringWeiToBN,
@@ -91,8 +95,9 @@ const {
   getSupporters,
   getSupporting
 } = tippingSelectors
+
 const { update } = cacheActions
-const { getAccountUser } = accountSelectors
+const { getAccountUser, getUserId } = accountSelectors
 const { fetchPermissions } = chatActions
 
 export const FEED_TIP_DISMISSAL_TIME_LIMIT_SEC = 30 * 24 * 60 * 60 // 30 days
@@ -640,6 +645,7 @@ function* refreshSupportAsync({
 }) {
   yield* waitForRead()
   const apiClient = yield* getContext('apiClient')
+  const currentUserId = yield* select(getUserId)
 
   const supportingParams: GetSupportingArgs = {
     userId: senderUserId
@@ -661,48 +667,53 @@ function* refreshSupportAsync({
     supportersParams.limit = supportersLimit
   }
 
-  const supportingForSenderList = yield* call(
-    [apiClient, apiClient.getSupporting],
-    supportingParams
-  )
-  const supportersForReceiverList = yield* call(
-    [apiClient, apiClient.getSupporters],
-    supportersParams
-  )
+  const supportingForSenderList = yield* checkSDKMigration({
+    endpointName: 'getSupporting',
+    legacy: call([apiClient, apiClient.getSupporting], supportingParams),
+    migrated: call(function* () {
+      const sdk = yield* getSDK()
+      const { data = [] } = yield* call(
+        [sdk.full.users, sdk.full.users.getSupportedUsers],
+        {
+          id: Id.parse(supportingParams.userId),
+          limit: supportingParams.limit,
+          userId: OptionalId.parse(currentUserId)
+        }
+      )
+      return supportedUserMetadataListFromSDK(data)
+    })
+  })
+
+  const supportersForReceiverList = yield* checkSDKMigration({
+    endpointName: 'getSupporters',
+    legacy: call([apiClient, apiClient.getSupporters], supportersParams),
+    migrated: call(function* () {
+      const sdk = yield* getSDK()
+      const { data = [] } = yield* call(
+        [sdk.full.users, sdk.full.users.getSupporters],
+        {
+          id: Id.parse(supportersParams.userId),
+          limit: supportersParams.limit,
+          userId: OptionalId.parse(currentUserId)
+        }
+      )
+      return supporterMetadataListFromSDK(data)
+    })
+  })
 
   const userIds = [
-    ...(supportingForSenderList || []).map((supporting) =>
-      decodeHashId(supporting.receiver.id)
-    ),
-    ...(supportersForReceiverList || []).map((supporter) =>
-      decodeHashId(supporter.sender.id)
-    )
+    ...supportingForSenderList.map((supporting) => supporting.receiver.user_id),
+    ...supportersForReceiverList.map((supporter) => supporter.sender.user_id)
   ].filter(removeNullable)
 
   yield call(fetchUsers, userIds)
 
-  const supportingForSenderMap: Record<string, Supporting> = {}
-  ;(supportingForSenderList || []).forEach((supporting) => {
-    const supportingUserId = decodeHashId(supporting.receiver.id)
-    if (supportingUserId) {
-      supportingForSenderMap[supportingUserId] = {
-        receiver_id: supportingUserId,
-        rank: supporting.rank,
-        amount: supporting.amount
-      }
-    }
-  })
-  const supportersForReceiverMap: Record<string, Supporter> = {}
-  ;(supportersForReceiverList || []).forEach((supporter) => {
-    const supporterUserId = decodeHashId(supporter.sender.id)
-    if (supporterUserId) {
-      supportersForReceiverMap[supporterUserId] = {
-        sender_id: supporterUserId,
-        rank: supporter.rank,
-        amount: supporter.amount
-      }
-    }
-  })
+  const supportingForSenderMap = tippingUtils.makeSupportingMapForUser(
+    supportingForSenderList
+  )
+  const supportersForReceiverMap = tippingUtils.makeSupportersMapForUser(
+    supportersForReceiverList
+  )
 
   yield put(
     setSupportingForUser({
@@ -726,35 +737,39 @@ function* fetchSupportersForUserAsync(action: FetchSupportingAction) {
   } = action
   yield* waitForRead()
   const apiClient = yield* getContext('apiClient')
+  const currentUserId = yield* select(getUserId)
 
   const supportersParams: GetSupportersArgs = {
     userId,
     limit: MAX_PROFILE_TOP_SUPPORTERS + 1
   }
 
-  const supportersForReceiverList = yield* call(
-    [apiClient, apiClient.getSupporters],
-    supportersParams
-  )
+  const supportersForReceiverList = yield* checkSDKMigration({
+    endpointName: 'getSupporters',
+    legacy: call([apiClient, apiClient.getSupporters], supportersParams),
+    migrated: call(function* () {
+      const sdk = yield* getSDK()
+      const { data = [] } = yield* call(
+        [sdk.full.users, sdk.full.users.getSupporters],
+        {
+          id: Id.parse(supportersParams.userId),
+          limit: supportersParams.limit,
+          userId: OptionalId.parse(currentUserId)
+        }
+      )
+      return supporterMetadataListFromSDK(data)
+    })
+  })
 
-  const userIds = supportersForReceiverList
-    ?.map((supporter) => decodeHashId(supporter.sender.id))
-    .filter(removeNullable)
+  const userIds = supportersForReceiverList.map(
+    (supporter) => supporter.sender.user_id
+  )
   if (!userIds) return
   yield call(fetchUsers, userIds)
 
-  const supportersForReceiverMap: Record<string, Supporter> = {}
-
-  supportersForReceiverList?.forEach((supporter) => {
-    const supporterUserId = decodeHashId(supporter.sender.id)
-    if (supporterUserId) {
-      supportersForReceiverMap[supporterUserId] = {
-        sender_id: supporterUserId,
-        rank: supporter.rank,
-        amount: supporter.amount
-      }
-    }
-  })
+  const supportersForReceiverMap = tippingUtils.makeSupportersMapForUser(
+    supportersForReceiverList
+  )
 
   yield put(
     setSupportersForUser({
@@ -772,6 +787,7 @@ function* fetchSupportingForUserAsync({
 }) {
   yield* waitForRead()
   const apiClient = yield* getContext('apiClient')
+  const currentUserId = yield* select(getUserId)
 
   /**
    * If the user id is that of the logged in user, then
@@ -786,28 +802,34 @@ function* fetchSupportingForUserAsync({
     account?.user_id === userId
       ? account.supporting_count
       : SUPPORTING_PAGINATION_SIZE
-  const supportingList = yield* call([apiClient, apiClient.getSupporting], {
-    userId,
-    limit
+
+  const supportingList = yield* checkSDKMigration({
+    endpointName: 'getSupporting',
+    legacy: call([apiClient, apiClient.getSupporting], {
+      userId,
+      limit
+    }),
+    migrated: call(function* () {
+      const sdk = yield* getSDK()
+      const { data = [] } = yield* call(
+        [sdk.full.users, sdk.full.users.getSupportedUsers],
+        {
+          id: Id.parse(userId),
+          limit,
+          userId: OptionalId.parse(currentUserId)
+        }
+      )
+      return supportedUserMetadataListFromSDK(data)
+    })
   })
-  const userIds =
-    supportingList
-      ?.map((supporting) => decodeHashId(supporting.receiver.id))
-      .filter(removeNullable) ?? []
+
+  const userIds = supportingList.map(
+    (supporting) => supporting.receiver.user_id
+  )
 
   yield call(fetchUsers, userIds)
 
-  const map: Record<string, Supporting> = {}
-  supportingList?.forEach((supporting) => {
-    const supportingUserId = decodeHashId(supporting.receiver.id)
-    if (supportingUserId) {
-      map[supportingUserId] = {
-        receiver_id: supportingUserId,
-        rank: supporting.rank,
-        amount: supporting.amount
-      }
-    }
-  })
+  const map = tippingUtils.makeSupportingMapForUser(supportingList)
 
   yield put(
     setSupportingForUser({

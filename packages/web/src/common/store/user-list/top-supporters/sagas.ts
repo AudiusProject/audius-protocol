@@ -13,10 +13,10 @@ import {
   topSupportersUserListActions,
   topSupportersUserListSelectors,
   TOP_SUPPORTERS_USER_LIST_TAG,
-  SupportersMapForUser,
   getContext,
   checkSDKMigration,
-  getSDK
+  getSDK,
+  tippingUtils
 } from '@audius/common/store'
 import { call, put, select } from 'typed-redux-saga'
 
@@ -81,18 +81,7 @@ const provider = createUserListProvider<User, SupportersProcessExtraType>({
    * in the interface, to update the store.
    */
   processExtra: function* ({ userId, supporters }) {
-    const supportersMap = supporters.reduce<SupportersMapForUser>(
-      (out, { sender, amount, rank }) => {
-        const sender_id = sender.user_id
-        out[sender_id] = {
-          sender_id,
-          rank,
-          amount
-        }
-        return out
-      },
-      {}
-    )
+    const supportersMap = tippingUtils.makeSupportersMapForUser(supporters)
 
     yield* put(
       setSupportersForUser({

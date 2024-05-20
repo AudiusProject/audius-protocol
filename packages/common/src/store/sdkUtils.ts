@@ -1,13 +1,13 @@
 import { AudiusSdk } from '@audius/sdk'
-import { AllEffect, CallEffect } from 'redux-saga/effects'
-import { all, call, getContext, SagaGenerator } from 'typed-redux-saga'
 import { iterator as isIterator } from '@redux-saga/is'
+import { AllEffect, CallEffect } from 'redux-saga/effects'
+import { SagaGenerator, all, call, getContext } from 'typed-redux-saga'
 
 import { ErrorLevel, ReportToSentryArgs } from '~/models/ErrorReporting'
 import { FeatureFlags } from '~/services/remote-config/feature-flags'
 import {
-  compareSDKResponse,
-  SDKMigrationFailedError
+  SDKMigrationFailedError,
+  compareSDKResponse
 } from '~/utils/sdkMigrationUtils'
 
 // These are defined explicitly here to avoid including the entire `storeContext` module

@@ -13,10 +13,10 @@ import {
   supportingUserListActions,
   supportingUserListSelectors,
   SUPPORTING_USER_LIST_TAG,
-  SupportingMapForUser,
   getContext,
   checkSDKMigration,
-  getSDK
+  getSDK,
+  tippingUtils
 } from '@audius/common/store'
 import { stringWeiToBN } from '@audius/common/utils'
 import { call, put, select } from 'typed-redux-saga'
@@ -87,18 +87,7 @@ const provider = createUserListProvider<User, SupportingProcessExtraType>({
    * in the interface, to update the store.
    */
   processExtra: function* ({ userId, supportingList }) {
-    const supportingMap: SupportingMapForUser = supportingList.reduce(
-      (out, { receiver, amount, rank }) => {
-        const receiver_id = receiver.user_id
-        out[receiver_id] = {
-          receiver_id,
-          rank,
-          amount
-        }
-        return out
-      },
-      {}
-    )
+    const supportingMap = tippingUtils.makeSupportingMapForUser(supportingList)
     yield put(
       setSupportingForUser({
         id: userId,
