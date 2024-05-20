@@ -27,8 +27,7 @@ export const clm = async (db: Knex, s3s: ClmS3Config[], date: Date): Promise<voi
     // Gather data from "YYYY-MM-DDT00:00:00.000Z" to "YYYY-MM-DDT23:59:59.999Z"
     const start = new Date(date);
     start.setHours(0, 0, 0, 0)
-    const end = new Date(date);
-    end.setHours(23, 59, 59, 999)
+    const end = new Date(start.getDate() + 1);
 
     logger.info({ start: start.toISOString(), end: end.toISOString() }, "time range")
 
