@@ -40,3 +40,4 @@ export * from './downloads'
 
 export { actions as searchActions } from './search/slice'
 export * as searchSelectors from './search/selectors'
+export type { SearchItem } from './search/types'

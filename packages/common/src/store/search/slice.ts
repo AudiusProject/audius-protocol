@@ -3,13 +3,8 @@ import { createSlice } from '@reduxjs/toolkit'
 import type { Storage } from 'redux-persist'
 import { persistReducer } from 'redux-persist'
 
-import { ID, Kind } from '~/models'
 import { Nullable } from '~/utils/typeUtils'
-
-type SearchItemV2 = {
-  kind: Kind
-  id: ID
-}
+import { SearchItem as SearchItemV2 } from './types'
 
 type SearchItem = string | SearchItemV2
 

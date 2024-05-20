@@ -1,4 +1,4 @@
-import { MouseEventHandler, useCallback } from 'react'
+import { MouseEventHandler, ReactNode, useCallback } from 'react'
 
 import { useGetUserById } from '@audius/common/api'
 import { UserMetadata } from '@audius/common/models'
@@ -12,11 +12,13 @@ import { useGoToRoute } from 'hooks/useGoToRoute'
 import { profilePage } from 'utils/route'
 
 import styles from './UserNameAndBadges.module.css'
+import { CSSObject } from '@emotion/react'
 
 const { getUserId } = accountSelectors
 
 type BaseUserNameAndBadgesProps = {
   onNavigateAway?: () => void
+  renderName?: (name: string) => ReactNode
   classes?: {
     name?: string
   }
@@ -32,7 +34,7 @@ type UserNameAndBadgesProps =
   | UserNameAndBadgesWithIdProps
 
 const UserNameAndBadgesImpl = (props: UserNameAndBadgesImplProps) => {
-  const { user, onNavigateAway, classes } = props
+  const { user, onNavigateAway, classes, renderName } = props
   const goToRoute = useGoToRoute()
   const handleClick: MouseEventHandler = useCallback(
     (event) => {
@@ -53,7 +55,11 @@ const UserNameAndBadgesImpl = (props: UserNameAndBadgesImplProps) => {
       containerClassName={styles.container}
     >
       <div className={styles.nameAndBadge} onClick={handleClick}>
-        <span className={cn(styles.name, classes?.name)}>{user.name}</span>
+        {renderName ? (
+          renderName(user.name)
+        ) : (
+          <span className={cn(styles.name, classes?.name)}>{user.name}</span>
+        )}
         <UserBadges
           userId={user.user_id}
           className={styles.badges}

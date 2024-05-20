@@ -1,6 +1,7 @@
 import { ChangeEvent, useCallback, useContext, useEffect } from 'react'
 
 import { Status } from '@audius/common/models'
+import { searchSelectors } from '@audius/common/store'
 import { Maybe } from '@audius/common/utils'
 import {
   Flex,
@@ -14,7 +15,7 @@ import {
   SelectablePill,
   Text
 } from '@audius/harmony'
-import { capitalize } from 'lodash'
+import { capitalize, get } from 'lodash'
 import { useParams } from 'react-router-dom'
 
 import { useHistoryContext } from 'app/HistoryProvider'
@@ -172,7 +173,7 @@ export const SearchPageV2 = () => {
       <Flex direction='column' css={{ width: '100%' }}>
         {isMobile ? header : null}
         {!query ? (
-          <Flex direction='column' alignItems='center'>
+          <Flex direction='column' alignItems='center' gap='2xl'>
             <SearchCatalogTile />
             <RecentSearches />
           </Flex>
