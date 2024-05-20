@@ -539,7 +539,9 @@ class TrackStream(Resource):
             )
             abort_not_found(track_id, ns)
         elif (track["allowed_api_keys"] and not api_key) or (
-            api_key.lower() not in track["allowed_api_keys"]
+            api_key
+            and track["allowed_api_keys"]
+            and api_key.lower() not in track["allowed_api_keys"]
         ):
             logger.error(
                 f"tracks.py | stream | Streaming track {track_id} does not allow streaming from api key {api_key}."
