@@ -72,10 +72,12 @@ function* filterDeletes<T extends Track | Collection>(
   const getFeatureEnabled = yield* getContext('getFeatureEnabled')
   yield* call(remoteConfig.waitForRemoteConfig)
 
-  const isUSDCGatedContentEnabled = getFeatureEnabled(
+  const isUSDCGatedContentEnabled = yield* call(
+    getFeatureEnabled,
     FeatureFlags.USDC_PURCHASES
   )
-  const isPremiumAlbumsEnabled = getFeatureEnabled(
+  const isPremiumAlbumsEnabled = yield* call(
+    getFeatureEnabled,
     FeatureFlags.PREMIUM_ALBUMS_ENABLED
   )
 
