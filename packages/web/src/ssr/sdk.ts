@@ -5,6 +5,7 @@ import {
   stagingConfig,
   developmentConfig
 } from '@audius/sdk'
+
 import { env } from 'services/env'
 
 const sdkConfigs = {
