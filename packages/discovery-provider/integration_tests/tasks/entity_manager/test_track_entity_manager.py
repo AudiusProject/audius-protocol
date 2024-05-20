@@ -468,7 +468,7 @@ def test_index_valid_track(app, mocker):
         assert track_1.is_unlisted
         assert track_1.is_delete == True
         assert track_1.duration == 100
-        assert track_1.allowed_api_keys == ["0xApiKey"]
+        assert track_1.allowed_api_keys == ["0xapikey"]
 
         track_2: Track = (
             session.query(Track)
