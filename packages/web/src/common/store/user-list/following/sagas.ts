@@ -11,8 +11,6 @@ import {
   followingUserListActions,
   followingUserListSelectors,
   FOLLOWING_USER_LIST_TAG,
-  getContext,
-  checkSDKMigration,
   getSDK
 } from '@audius/common/store'
 import { call, put, select } from 'typed-redux-saga'
@@ -32,31 +30,18 @@ const provider = createUserListProvider<User>({
     entityId,
     currentUserId
   }) {
-    const apiClient = yield* getContext('apiClient')
-
-    // TODO: PAY-2925
-    const users = yield* checkSDKMigration({
-      endpointName: 'getFollowing',
-      legacy: call([apiClient, apiClient.getFollowing], {
-        currentUserId,
-        profileUserId: entityId,
+    const sdk = yield* getSDK()
+    const { data } = yield* call(
+      [sdk.full.users, sdk.full.users.getFollowing],
+      {
+        id: Id.parse(entityId),
         limit,
-        offset
-      }),
-      migrated: call(function* () {
-        const sdk = yield* getSDK()
-        const { data } = yield* call(
-          [sdk.full.users, sdk.full.users.getFollowing],
-          {
-            id: Id.parse(entityId),
-            limit,
-            offset,
-            userId: OptionalId.parse(currentUserId)
-          }
-        )
-        return userMetadataListFromSDK(data)
-      })
-    })
+        offset,
+        userId: OptionalId.parse(currentUserId)
+      }
+    )
+    const users = userMetadataListFromSDK(data)
+
     return { users }
   },
   selectCurrentUserIDsInList: getUserIds,

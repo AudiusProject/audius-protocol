@@ -14,8 +14,6 @@ import {
   repostsUserListSelectors,
   RepostType,
   REPOSTS_USER_LIST_TAG,
-  getContext,
-  checkSDKMigration,
   getSDK
 } from '@audius/common/store'
 import { call, put, select } from 'typed-redux-saga'
@@ -38,31 +36,19 @@ const getPlaylistReposts = createUserListProvider<Collection>({
     entityId,
     currentUserId
   }) {
-    const apiClient = yield* getContext('apiClient')
+    const sdk = yield* getSDK()
 
-    // TODO: PAY-2925
-    const users = yield* checkSDKMigration({
-      endpointName: 'getPlaylistRepostUsers',
-      legacy: call([apiClient, apiClient.getPlaylistRepostUsers], {
+    const { data } = yield* call(
+      [sdk.full.playlists, sdk.full.playlists.getUsersFromPlaylistReposts],
+      {
         limit,
         offset,
-        playlistId: entityId,
-        currentUserId
-      }),
-      migrated: call(function* () {
-        const sdk = yield* getSDK()
-        const { data } = yield* call(
-          [sdk.full.playlists, sdk.full.playlists.getUsersFromPlaylistReposts],
-          {
-            limit,
-            offset,
-            playlistId: Id.parse(entityId),
-            userId: OptionalId.parse(currentUserId)
-          }
-        )
-        return userMetadataListFromSDK(data)
-      })
-    })
+        playlistId: Id.parse(entityId),
+        userId: OptionalId.parse(currentUserId)
+      }
+    )
+    const users = userMetadataListFromSDK(data)
+
     return { users }
   },
   selectCurrentUserIDsInList: getUserIds,
@@ -81,31 +67,17 @@ const getTrackReposts = createUserListProvider<Track>({
     entityId,
     currentUserId
   }) {
-    const apiClient = yield* getContext('apiClient')
-
-    // TODO: PAY-2925
-    const users = yield* checkSDKMigration({
-      endpointName: 'getTrackRepostUsers',
-      legacy: call([apiClient, apiClient.getTrackRepostUsers], {
+    const sdk = yield* getSDK()
+    const { data } = yield* call(
+      [sdk.full.tracks, sdk.full.tracks.getUsersFromReposts],
+      {
         limit,
         offset,
-        trackId: entityId,
-        currentUserId
-      }),
-      migrated: call(function* () {
-        const sdk = yield* getSDK()
-        const { data } = yield* call(
-          [sdk.full.tracks, sdk.full.tracks.getUsersFromReposts],
-          {
-            limit,
-            offset,
-            trackId: Id.parse(entityId),
-            userId: OptionalId.parse(currentUserId)
-          }
-        )
-        return userMetadataListFromSDK(data)
-      })
-    })
+        trackId: Id.parse(entityId),
+        userId: OptionalId.parse(currentUserId)
+      }
+    )
+    const users = userMetadataListFromSDK(data)
 
     return { users }
   },

@@ -13,8 +13,6 @@ import {
   supportingUserListActions,
   supportingUserListSelectors,
   SUPPORTING_USER_LIST_TAG,
-  getContext,
-  checkSDKMigration,
   getSDK,
   tippingUtils
 } from '@audius/common/store'
@@ -42,29 +40,17 @@ const provider = createUserListProvider<User, SupportingProcessExtraType>({
     entityId,
     currentUserId
   }) {
-    const apiClient = yield* getContext('apiClient')
-
-    const supporting = yield* checkSDKMigration({
-      endpointName: 'getSupporting',
-      legacy: call([apiClient, apiClient.getSupporting], {
-        userId: entityId,
+    const sdk = yield* getSDK()
+    const { data = [] } = yield* call(
+      [sdk.full.users, sdk.full.users.getSupportedUsers],
+      {
+        id: Id.parse(entityId),
         limit,
-        offset
-      }),
-      migrated: call(function* () {
-        const sdk = yield* getSDK()
-        const { data = [] } = yield* call(
-          [sdk.full.users, sdk.full.users.getSupportedUsers],
-          {
-            id: Id.parse(entityId),
-            limit,
-            offset,
-            userId: OptionalId.parse(currentUserId)
-          }
-        )
-        return supportedUserMetadataListFromSDK(data)
-      })
-    })
+        offset,
+        userId: OptionalId.parse(currentUserId)
+      }
+    )
+    const supporting = supportedUserMetadataListFromSDK(data)
 
     const users = supporting
       .sort((s1, s2) => {

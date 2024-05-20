@@ -13,8 +13,6 @@ import {
   topSupportersUserListActions,
   topSupportersUserListSelectors,
   TOP_SUPPORTERS_USER_LIST_TAG,
-  getContext,
-  checkSDKMigration,
   getSDK,
   tippingUtils
 } from '@audius/common/store'
@@ -41,29 +39,19 @@ const provider = createUserListProvider<User, SupportersProcessExtraType>({
     entityId,
     currentUserId
   }) {
-    const apiClient = yield* getContext('apiClient')
+    const sdk = yield* getSDK()
 
-    const supporters = yield* checkSDKMigration({
-      endpointName: 'getSupporters',
-      legacy: call([apiClient, apiClient.getSupporters], {
-        userId: entityId,
+    const { data = [] } = yield* call(
+      [sdk.full.users, sdk.full.users.getSupporters],
+      {
+        id: Id.parse(entityId),
         limit,
-        offset
-      }),
-      migrated: call(function* () {
-        const sdk = yield* getSDK()
-        const { data = [] } = yield* call(
-          [sdk.full.users, sdk.full.users.getSupporters],
-          {
-            id: Id.parse(entityId),
-            limit,
-            offset,
-            userId: OptionalId.parse(currentUserId)
-          }
-        )
-        return supporterMetadataListFromSDK(data)
-      })
-    })
+        offset,
+        userId: OptionalId.parse(currentUserId)
+      }
+    )
+    const supporters = supporterMetadataListFromSDK(data)
+
     const users = supporters
       .sort((s1, s2) => s1.rank - s2.rank)
       .map((s) => s.sender)

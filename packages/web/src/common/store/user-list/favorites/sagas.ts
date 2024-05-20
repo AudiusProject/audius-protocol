@@ -14,8 +14,6 @@ import {
   favoritesUserListActions,
   favoritesUserListSelectors,
   FAVORITES_USER_LIST_TAG,
-  getContext,
-  checkSDKMigration,
   getSDK
 } from '@audius/common/store'
 import { select, put, call } from 'typed-redux-saga'
@@ -39,34 +37,18 @@ const getPlaylistFavorites = createUserListProvider<Collection>({
     entityId,
     currentUserId
   }) {
-    const apiClient = yield* getContext('apiClient')
+    const sdk = yield* getSDK()
 
-    // TODO: PAY-2925
-    const users = yield* checkSDKMigration({
-      endpointName: 'getPlaylistFavoriteUsers',
-      legacy: call([apiClient, apiClient.getPlaylistFavoriteUsers], {
+    const { data } = yield* call(
+      [sdk.full.playlists, sdk.full.playlists.getUsersFromPlaylistFavorites],
+      {
         limit,
         offset,
-        playlistId: entityId,
-        currentUserId
-      }),
-      migrated: call(function* () {
-        const sdk = yield* getSDK()
-        const { data } = yield* call(
-          [
-            sdk.full.playlists,
-            sdk.full.playlists.getUsersFromPlaylistFavorites
-          ],
-          {
-            limit,
-            offset,
-            playlistId: Id.parse(entityId),
-            userId: OptionalId.parse(currentUserId)
-          }
-        )
-        return userMetadataListFromSDK(data)
-      })
-    })
+        playlistId: Id.parse(entityId),
+        userId: OptionalId.parse(currentUserId)
+      }
+    )
+    const users = userMetadataListFromSDK(data)
     return { users }
   },
   selectCurrentUserIDsInList: getUserIds,
@@ -85,31 +67,18 @@ const getTrackFavorites = createUserListProvider<Track>({
     entityId,
     currentUserId
   }) {
-    const apiClient = yield* getContext('apiClient')
+    const sdk = yield* getSDK()
 
-    // TODO: PAY-2925
-    const users = yield* checkSDKMigration({
-      endpointName: 'getTrackFavoriteUsers',
-      legacy: call([apiClient, apiClient.getTrackFavoriteUsers], {
+    const { data } = yield* call(
+      [sdk.full.tracks, sdk.full.tracks.getUsersFromFavorites],
+      {
         limit,
         offset,
-        trackId: entityId,
-        currentUserId
-      }),
-      migrated: call(function* () {
-        const sdk = yield* getSDK()
-        const { data } = yield* call(
-          [sdk.full.tracks, sdk.full.tracks.getUsersFromFavorites],
-          {
-            limit,
-            offset,
-            trackId: Id.parse(entityId),
-            userId: OptionalId.parse(currentUserId)
-          }
-        )
-        return userMetadataListFromSDK(data)
-      })
-    })
+        trackId: Id.parse(entityId),
+        userId: OptionalId.parse(currentUserId)
+      }
+    )
+    const users = userMetadataListFromSDK(data)
 
     return { users }
   },

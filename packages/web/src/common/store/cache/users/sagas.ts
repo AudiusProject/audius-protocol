@@ -15,8 +15,7 @@ import {
   cacheUsersSelectors,
   getContext,
   reformatUser,
-  getSDK,
-  checkSDKMigration
+  getSDK
 } from '@audius/common/store'
 import { waitForAccount, waitForValue } from '@audius/common/utils'
 import { mergeWith } from 'lodash'
@@ -62,33 +61,20 @@ export function* fetchUsers(
 
 function* retrieveUserByHandle(handle: string, retry: boolean) {
   yield* waitForRead()
-  const apiClient = yield* getContext('apiClient')
+  const sdk = yield* getSDK()
   const userId = yield* select(getUserId)
   if (Array.isArray(handle)) {
     handle = handle[0]
   }
 
-  // TODO: PAY-2925
-  const user = yield* checkSDKMigration({
-    endpointName: 'getUserByHandle',
-    legacy: call([apiClient, apiClient.getUserByHandle], {
+  const { data: users = [] } = yield* call(
+    [sdk.full.users, sdk.full.users.getUserByHandle],
+    {
       handle,
-      currentUserId: userId,
-      retry
-    }),
-    migrated: call(function* () {
-      const sdk = yield* getSDK()
-      const { data: users = [] } = yield* call(
-        [sdk.full.users, sdk.full.users.getUserByHandle],
-        {
-          handle,
-          userId: Id.parse(userId)
-        }
-      )
-      return userMetadataListFromSDK(users)
-    })
-  })
-  return user
+      userId: Id.parse(userId)
+    }
+  )
+  return userMetadataListFromSDK(users)
 }
 
 export function* fetchUserByHandle(

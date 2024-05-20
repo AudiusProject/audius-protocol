@@ -52,26 +52,14 @@ const userApi = createApi({
     getUserById: {
       fetch: async (
         { id, currentUserId }: { id: ID; currentUserId: Nullable<ID> },
-        { apiClient, audiusSdk, checkSDKMigration }
+        { audiusSdk }
       ) => {
-        // TODO: PAY-2925
-        const apiUser = await checkSDKMigration({
-          endpointName: 'getUserById',
-          legacy: async () =>
-            apiClient.getUser({
-              userId: id,
-              currentUserId
-            }),
-          migrated: async () => {
-            const sdk = await audiusSdk()
-            const { data: users = [] } = await sdk.full.users.getUser({
-              id: Id.parse(id),
-              userId: OptionalId.parse(currentUserId)
-            })
-            return userMetadataListFromSDK(users)
-          }
+        const sdk = await audiusSdk()
+        const { data: users = [] } = await sdk.full.users.getUser({
+          id: Id.parse(id),
+          userId: OptionalId.parse(currentUserId)
         })
-        return apiUser[0]
+        return userMetadataListFromSDK(users)[0]
       },
       options: {
         idArgKey: 'id',
@@ -83,30 +71,16 @@ const userApi = createApi({
       fetch: async (
         {
           handle,
-          currentUserId,
-          retry = true
-        }: { handle: string; currentUserId: Nullable<ID>; retry?: boolean },
-        { apiClient, audiusSdk, checkSDKMigration }
+          currentUserId
+        }: { handle: string; currentUserId: Nullable<ID> },
+        { audiusSdk }
       ) => {
-        // TODO: PAY-2925
-        const apiUser = await checkSDKMigration({
-          endpointName: 'getUserByHandle',
-          legacy: async () =>
-            apiClient.getUserByHandle({
-              handle,
-              currentUserId,
-              retry
-            }),
-          migrated: async () => {
-            const sdk = await audiusSdk()
-            const { data: users = [] } = await sdk.full.users.getUserByHandle({
-              handle,
-              userId: OptionalId.parse(currentUserId)
-            })
-            return userMetadataListFromSDK(users)
-          }
+        const sdk = await audiusSdk()
+        const { data: users = [] } = await sdk.full.users.getUserByHandle({
+          handle,
+          userId: OptionalId.parse(currentUserId)
         })
-        return apiUser?.[0]
+        return userMetadataListFromSDK(users)[0]
       },
       options: {
         kind: Kind.USERS,

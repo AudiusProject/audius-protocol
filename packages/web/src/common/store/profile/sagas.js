@@ -18,8 +18,7 @@ import {
   relatedArtistsUIActions as relatedArtistsActions,
   collectiblesActions,
   confirmerActions,
-  confirmTransaction,
-  checkSDKMigration
+  confirmTransaction
 } from '@audius/common/store'
 import {
   squashNewLines,
@@ -558,8 +557,8 @@ export function* updateProfileAsync(action) {
 
 function* confirmUpdateProfile(userId, metadata) {
   yield waitForWrite()
-  const apiClient = yield getContext('apiClient')
   const getSDK = yield getContext('audiusSdk')
+  const sdk = yield getSDK()
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
   yield put(
     confirmerActions.requestConfirmation(
@@ -580,28 +579,14 @@ function* confirmUpdateProfile(userId, metadata) {
         }
         yield waitForAccount()
         const currentUserId = yield select(getUserId)
-
-        // TODO: PAY-2925
-        const users = yield call(checkSDKMigration, {
-          endpointName: 'getUser',
-          legacy: call([apiClient, apiClient.getUser], {
-            userId,
-            currentUserId
-          }),
-          migrated: call(function* () {
-            const sdk = yield getSDK()
-            const { data = [] } = yield call(
-              [sdk.full.users, sdk.full.users.getUser],
-              {
-                id: Id.parse(userId),
-                userId: Id.parse(currentUserId)
-              }
-            )
-            return userMetadataListFromSDK(data)
-          })
-        })
-
-        return users[0]
+        const { data = [] } = yield call(
+          [sdk.full.users, sdk.full.users.getUser],
+          {
+            id: Id.parse(userId),
+            userId: Id.parse(currentUserId)
+          }
+        )
+        return userMetadataListFromSDK(data)[0]
       },
       function* (confirmedUser) {
         // Update the cached user so it no longer contains image upload artifacts
