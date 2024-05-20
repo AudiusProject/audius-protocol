@@ -13,8 +13,8 @@ import {
 } from '@audius/common/models'
 import type { ID, AccessConditions, User } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
-import { PurchaseableContentType } from '@audius/common/store'
 import {
+  PurchaseableContentType,
   usersSocialActions,
   tippingActions,
   usePremiumContentPurchaseModal,

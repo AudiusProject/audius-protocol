@@ -7,8 +7,7 @@ import type {
   ID,
   UID,
   Track,
-  User,
-  ModalSource
+  User
 } from '@audius/common/models'
 import type { RepostType, EnhancedCollectionTrack } from '@audius/common/store'
 import type { StyleProp, ViewStyle } from 'react-native'

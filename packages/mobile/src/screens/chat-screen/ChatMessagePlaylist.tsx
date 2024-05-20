@@ -6,7 +6,7 @@ import {
 } from '@audius/common/api'
 import { usePlayTrack, usePauseTrack } from '@audius/common/hooks'
 import type { TrackPlayback } from '@audius/common/hooks'
-import { Name, PlaybackSource, Kind, ModalSource } from '@audius/common/models'
+import { Name, PlaybackSource, Kind } from '@audius/common/models'
 import type { ID } from '@audius/common/models'
 import {
   accountSelectors,
