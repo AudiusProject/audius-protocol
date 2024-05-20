@@ -97,7 +97,6 @@ function* filterDeletes<T extends Track | Collection>(
       // Remove this when removing the feature flags
       if (
         !isUSDCGatedContentEnabled &&
-        'track_id' in metadata &&
         metadata.is_stream_gated &&
         isContentUSDCPurchaseGated(metadata.stream_conditions)
       ) {
