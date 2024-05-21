@@ -41,8 +41,7 @@ export type CompletionChecklistType =
 
 export const createPasswordPageMessages = {
   createYourPassword: 'Create Your Password',
-  description:
-    'Create a password that’s secure and easy to remember! We can’t reset your password, so write it down or use a password manager.',
+  description: "Create a password that's secure and easy to remember.",
   yourEmail: 'Your Email',
   passwordLabel: 'Password',
   confirmPasswordLabel: 'Confirm Password',
@@ -72,7 +71,7 @@ export const pickHandlePageMessages = {
 export const finishProfilePageMessages = {
   header: 'Finish Your Profile',
   description:
-    'Your photos & display name is how others see you. Customize with special character, spaces, emojis, whatever!',
+    'Your photos & Display name is how others see you. Customize with special character, spaces, emojis, whatever!',
   displayName: 'Display Name',
   inputPlaceholder: 'express yourself 💫',
   uploadProfilePhoto: 'Upload a profile photo to continue',
@@ -98,7 +97,7 @@ export const reviewHandlePageMessages = {
 
 export const createLoginDetailsPageMessages = {
   title: 'Create Login Details',
-  description: `Enter your email and create a password. Keep in mind that we can't reset your password.`,
+  description: 'Enter your email and create a password.',
   emailLabel: 'Email',
   handleLabel: 'Handle',
   passwordLabel: 'Password',
