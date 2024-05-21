@@ -38,7 +38,7 @@ export interface PlaylistTracksResponse {
 /**
  * Check if a given object implements the PlaylistTracksResponse interface.
  */
-export function instanceOfPlaylistTracksResponse(value: object): boolean {
+export function instanceOfPlaylistTracksResponse(value: object): value is PlaylistTracksResponse {
     let isInstance = true;
 
     return isInstance;

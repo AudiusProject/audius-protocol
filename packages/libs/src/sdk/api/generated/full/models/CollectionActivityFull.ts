@@ -50,7 +50,7 @@ export interface CollectionActivityFull {
 /**
  * Check if a given object implements the CollectionActivityFull interface.
  */
-export function instanceOfCollectionActivityFull(value: object): boolean {
+export function instanceOfCollectionActivityFull(value: object): value is CollectionActivityFull {
     let isInstance = true;
 
     return isInstance;

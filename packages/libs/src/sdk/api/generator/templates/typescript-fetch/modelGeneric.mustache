@@ -23,11 +23,11 @@ import {
 /**
  * Check if a given object implements the {{classname}} interface.
  */
-export function instanceOf{{classname}}(value: object): boolean {
+export function instanceOf{{classname}}(value: object): value is {{classname}} {
     let isInstance = true;
     {{#vars}}
     {{#required}}
-    isInstance = isInstance && "{{name}}" in value;
+    isInstance = isInstance && "{{name}}" in value && value["{{name}}"] !== undefined;
     {{/required}}
     {{/vars}}
 

@@ -32,17 +32,6 @@
   border-bottom: 1px solid var(--harmony-white);
 }
 
-.pill {
-  pointer-events: none;
-  background-color: rgba(255, 255, 255, 0.4);
-}
-
-.pill .pillText {
-  padding-top: 1px;
-  text-transform: uppercase;
-  color: var(--harmony-static-white);
-}
-
 .text {
   color: var(--harmony-static-white);
   font-size: var(--harmony-font-l);

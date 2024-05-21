@@ -43,7 +43,7 @@ export interface PlaylistArtwork {
 /**
  * Check if a given object implements the PlaylistArtwork interface.
  */
-export function instanceOfPlaylistArtwork(value: object): boolean {
+export function instanceOfPlaylistArtwork(value: object): value is PlaylistArtwork {
     let isInstance = true;
 
     return isInstance;

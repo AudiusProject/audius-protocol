@@ -9,7 +9,6 @@ import {
   ThunkDispatch
 } from '@reduxjs/toolkit'
 import AsyncRetry from 'async-retry'
-import { Dispatch } from 'redux'
 
 import { Kind, Status } from '~/models'
 
@@ -82,7 +81,10 @@ type EndpointOptions = {
 export type EndpointConfig<Args, Data> = {
   fetch: (fetchArgs: Args, context: AudiusQueryContextType) => Promise<Data>
   options: EndpointOptions
-  onQueryStarted?: (fetchArgs: Args, context: { dispatch: Dispatch }) => void
+  onQueryStarted?: (
+    fetchArgs: Args,
+    context: { dispatch: ThunkDispatch<any, any, any> }
+  ) => void
   onQuerySuccess?: (
     data: Data,
     fetchArgs: Args,

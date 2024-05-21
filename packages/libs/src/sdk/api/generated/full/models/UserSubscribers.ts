@@ -37,9 +37,9 @@ export interface UserSubscribers {
 /**
  * Check if a given object implements the UserSubscribers interface.
  */
-export function instanceOfUserSubscribers(value: object): boolean {
+export function instanceOfUserSubscribers(value: object): value is UserSubscribers {
     let isInstance = true;
-    isInstance = isInstance && "userId" in value;
+    isInstance = isInstance && "userId" in value && value["userId"] !== undefined;
 
     return isInstance;
 }

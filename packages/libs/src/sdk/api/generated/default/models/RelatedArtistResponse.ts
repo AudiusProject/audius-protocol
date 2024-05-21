@@ -38,7 +38,7 @@ export interface RelatedArtistResponse {
 /**
  * Check if a given object implements the RelatedArtistResponse interface.
  */
-export function instanceOfRelatedArtistResponse(value: object): boolean {
+export function instanceOfRelatedArtistResponse(value: object): value is RelatedArtistResponse {
     let isInstance = true;
 
     return isInstance;

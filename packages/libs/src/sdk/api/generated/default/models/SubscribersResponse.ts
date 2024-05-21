@@ -38,7 +38,7 @@ export interface SubscribersResponse {
 /**
  * Check if a given object implements the SubscribersResponse interface.
  */
-export function instanceOfSubscribersResponse(value: object): boolean {
+export function instanceOfSubscribersResponse(value: object): value is SubscribersResponse {
     let isInstance = true;
 
     return isInstance;
