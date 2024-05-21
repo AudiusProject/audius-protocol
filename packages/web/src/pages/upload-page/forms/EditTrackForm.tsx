@@ -60,6 +60,7 @@ const EditFormValidationSchema = z.object({
 })
 
 export const EditTrackForm = (props: EditTrackFormProps) => {
+  console.log('asdf edit track form props: ', props)
   const { formState, onContinue } = props
   const { tracks } = formState
 
@@ -88,9 +89,10 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
     }),
     [tracks]
   )
-
+  console.log('asdf initial values: ', initialValues, tracks)
   const onSubmit = useCallback(
     (values: TrackEditFormValues) => {
+      console.log('asdf tracks: ', tracks, values)
       const tracksForUpload = tracks.map((track, i) => {
         const metadata = values.trackMetadatas[i]
         const { licenseType: ignoredLicenseType, ...restMetadata } = metadata
@@ -119,6 +121,7 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
 
 const TrackEditForm = (props: FormikProps<TrackEditFormValues>) => {
   const { values, dirty } = props
+  console.log('asdf track edit form values: ', values)
   const isMultiTrack = values.trackMetadatas.length > 1
   const trackIdx = values.trackMetadatasIndex
   const [, , { setValue: setIndex }] = useField('trackMetadatasIndex')

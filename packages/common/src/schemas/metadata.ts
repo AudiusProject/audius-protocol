@@ -61,7 +61,8 @@ const trackMetadataSchema = {
   rights_controller: null,
   copyright_line: null,
   producer_copyright_line: null,
-  parental_warning_type: null
+  parental_warning_type: null,
+  allowed_api_keys: null
 }
 
 export const newTrackMetadata = (fields, validate = false): TrackMetadata => {

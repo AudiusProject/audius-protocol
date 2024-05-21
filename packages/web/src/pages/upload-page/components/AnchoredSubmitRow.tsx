@@ -8,7 +8,7 @@ import { UploadFormScrollContext } from '../UploadPage'
 import styles from './AnchoredSubmitRow.module.css'
 
 const messages = {
-  complete: 'Complete Upload',
+  complete: 'Complete Uploadfdsa',
   fixErrors: 'Fix errors to continue your upload.'
 }
 

@@ -7,7 +7,7 @@ import {
   Text
 } from '@audius/harmony'
 import cn from 'classnames'
-import { useField } from 'formik'
+import { useField, useFormikContext } from 'formik'
 import { get, set } from 'lodash'
 import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
@@ -125,8 +125,7 @@ const AttributionFormSchema = z
   .object({
     [IS_AI_ATTRIBUTED]: z.optional(z.boolean()),
     [BLOCK_THIRD_PARTY_STREAMING]: z.optional(z.boolean()),
-    [ALLOWED_API_KEYS]: z.optional(z.array(z.string())),
-
+    [ALLOWED_API_KEYS]: z.optional(z.array(z.string()).nullable()),
     [AI_USER_ID]: z.optional(z.number().nullable()),
     [ISRC]: z.optional(z.string().nullable()),
     [ISWC]: z.optional(z.string().nullable()),
@@ -172,7 +171,6 @@ export const AttributionField = () => {
     useTrackField<SingleTrackEditValues[typeof ALLOWED_API_KEYS]>(
       ALLOWED_API_KEYS
     )
-
   const initialValues = useMemo(() => {
     const initialValues = {}
     set(initialValues, AI_USER_ID, aiUserId)
