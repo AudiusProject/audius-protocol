@@ -22,7 +22,9 @@ import {
   Configuration,
   StreamTrackRequest,
   TracksApi as GeneratedTracksApi,
-  UsdcGate
+  UsdcGate,
+  instanceOfUsdcGate,
+  instanceOfPurchaseGate
 } from '../generated/default'
 import { BASE_PATH, RequiredError } from '../generated/default/runtime'
 
@@ -112,6 +114,10 @@ export class TracksApi extends GeneratedTracksApi {
     if (metadata.previewStartSeconds) {
       uploadOptions.previewStartSeconds =
         metadata.previewStartSeconds.toString()
+    }
+
+    if (metadata.placementHosts) {
+      uploadOptions.placement_hosts = metadata.placementHosts
     }
 
     // Upload track audio and cover art to storage node
@@ -419,7 +425,10 @@ export class TracksApi extends GeneratedTracksApi {
     let accessType: 'stream' | 'download' = 'stream'
 
     // Get conditions
-    if (track.streamConditions && 'usdcPurchase' in track.streamConditions) {
+    if (
+      track.streamConditions &&
+      instanceOfPurchaseGate(track.streamConditions)
+    ) {
       centPrice = track.streamConditions.usdcPurchase.price
       numberSplits = track.streamConditions.usdcPurchase.splits
     } else if (

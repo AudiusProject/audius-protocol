@@ -51,10 +51,17 @@ services:
           'CMD-SHELL',
           'curl -f http://localhost:6001/relay/health || exit 1'
         ]
-      interval: 3s
+      interval: 5s
       timeout: 30s
-      retries: 3
+      retries: 5
       start_period: 5s
+    depends_on:
+      db:
+        condition: service_healthy
+      discovery-provider-redis:
+        condition: service_healthy
+      poa-ganache:
+        condition: service_healthy
 
   solana-relay:
     build:
@@ -83,10 +90,17 @@ services:
           'CMD-SHELL',
           'curl -f http://localhost:6002/solana/health_check || exit 1'
         ]
-      interval: 3s
+      interval: 5s
       timeout: 30s
-      retries: 3
+      retries: 5
       start_period: 5s
+    depends_on:
+      db:
+        condition: service_healthy
+      discovery-provider-redis:
+        condition: service_healthy
+      solana-test-validator:
+        condition: service_healthy
 
   sla-auditor:
     container_name: sla-auditor
@@ -108,6 +122,19 @@ services:
       dockerfile: ${PROJECT_ROOT}/packages/discovery-provider/plugins/pedalboard/docker/Dockerfile.prod
       args:
         app_name: crm
+        TURBO_TEAM: '${TURBO_TEAM}'
+        TURBO_TOKEN: '${TURBO_TOKEN}'
+    restart: always
+    profiles:
+      - pedalboard
+
+  mri:
+    container_name: mri
+    build:
+      context: ${PROJECT_ROOT}
+      dockerfile: ${PROJECT_ROOT}/packages/discovery-provider/plugins/pedalboard/docker/Dockerfile.prod
+      args:
+        app_name: mri
         TURBO_TEAM: '${TURBO_TEAM}'
         TURBO_TOKEN: '${TURBO_TOKEN}'
     restart: always

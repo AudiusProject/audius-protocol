@@ -1,5 +1,6 @@
 import json
 import logging
+from datetime import datetime
 from typing import List
 from unittest import mock
 
@@ -22,6 +23,8 @@ from src.tasks.entity_manager.utils import EntityType
 from src.utils.db_session import get_db
 
 logger = logging.getLogger(__name__)
+
+BLOCK_DATETIME = datetime.now()
 
 
 def test_index_valid_social_features(app, mocker):
@@ -241,9 +244,20 @@ def test_index_valid_social_features(app, mocker):
     }
 
     test_social_feature_entities = {
-        "reposts": [{"repost_item_id": 1, "repost_type": "playlist", "user_id": 1}],
-        "subscriptions": [{"subscriber_id": 3, "user_id": 2}],
-        "follows": [{"follower_user_id": 1, "followee_user_id": 3}],
+        "reposts": [
+            {
+                "repost_item_id": 1,
+                "repost_type": "playlist",
+                "user_id": 1,
+                "created_at": BLOCK_DATETIME,
+            }
+        ],
+        "subscriptions": [
+            {"subscriber_id": 3, "user_id": 2, "created_at": BLOCK_DATETIME}
+        ],
+        "follows": [
+            {"follower_user_id": 1, "followee_user_id": 3, "created_at": BLOCK_DATETIME}
+        ],
     }
 
     populate_mock_db(db, entities)
@@ -256,7 +270,7 @@ def test_index_valid_social_features(app, mocker):
             session,
             entity_manager_txs,
             block_number=1,
-            block_timestamp=1585336422,
+            block_timestamp=BLOCK_DATETIME.timestamp(),
             block_hash=hex(0),
         )
 
@@ -383,12 +397,12 @@ def test_index_valid_social_features(app, mocker):
         aggregate_playlist = aggregate_playlists[0]
         assert aggregate_playlist.repost_count == 2
     calls = [
-        mock.call.dispatch(ChallengeEvent.follow, 1, 1),
-        mock.call.dispatch(ChallengeEvent.follow, 1, 1),
-        mock.call.dispatch(ChallengeEvent.favorite, 1, 1),
-        mock.call.dispatch(ChallengeEvent.favorite, 1, 1),
-        mock.call.dispatch(ChallengeEvent.repost, 1, 1),
-        mock.call.dispatch(ChallengeEvent.repost, 1, 1),
+        mock.call.dispatch(ChallengeEvent.follow, 1, BLOCK_DATETIME, 1),
+        mock.call.dispatch(ChallengeEvent.follow, 1, BLOCK_DATETIME, 1),
+        mock.call.dispatch(ChallengeEvent.favorite, 1, BLOCK_DATETIME, 1),
+        mock.call.dispatch(ChallengeEvent.favorite, 1, BLOCK_DATETIME, 1),
+        mock.call.dispatch(ChallengeEvent.repost, 1, BLOCK_DATETIME, 1),
+        mock.call.dispatch(ChallengeEvent.repost, 1, BLOCK_DATETIME, 1),
     ]
     bus_mock.assert_has_calls(calls, any_order=True)
 
@@ -537,7 +551,7 @@ def test_index_invalid_social_features(app, mocker):
             session,
             entity_manager_txs,
             block_number=1,
-            block_timestamp=1585336422,
+            block_timestamp=BLOCK_DATETIME.timestamp(),
             block_hash=hex(0),
         )
 
@@ -672,7 +686,7 @@ def test_index_entity_update_and_social_feature(app, mocker):
             session,
             entity_manager_txs,
             block_number=2,
-            block_timestamp=1585336422,
+            block_timestamp=BLOCK_DATETIME.timestamp(),
             block_hash=hex(0),
         )
 
@@ -758,7 +772,7 @@ def test_index_social_feature_hits_exceptions_on_repost(app, mocker):
             session,
             entity_manager_txs,
             block_number=2,
-            block_timestamp=1585336422,
+            block_timestamp=BLOCK_DATETIME.timestamp(),
             block_hash=hex(0),
         )
         all_reposts: List[Repost] = session.query(Repost).all()
@@ -864,7 +878,7 @@ def test_index_social_feature_for_save_of_repost(app, mocker):
             session,
             entity_manager_txs,
             block_number=2,
-            block_timestamp=1585336422,
+            block_timestamp=BLOCK_DATETIME.timestamp(),
             block_hash=hex(0),
         )
         all_saves: List[Save] = session.query(Save).all()
@@ -978,7 +992,7 @@ def test_index_social_feature_playlist_type(app, mocker):
             session,
             entity_manager_txs,
             block_number=1,
-            block_timestamp=1585336422,
+            block_timestamp=BLOCK_DATETIME.timestamp(),
             block_hash=hex(0),
         )
 
@@ -1100,7 +1114,7 @@ def test_index_social_feature_hidden_item(app, mocker):
             session,
             entity_manager_txs,
             block_number=2,
-            block_timestamp=1585336422,
+            block_timestamp=BLOCK_DATETIME.timestamp(),
             block_hash=hex(0),
         )
         all_reposts: List[Repost] = session.query(Repost).all()

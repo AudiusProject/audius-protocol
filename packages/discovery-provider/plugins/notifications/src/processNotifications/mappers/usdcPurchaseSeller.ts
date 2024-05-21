@@ -216,7 +216,7 @@ export class USDCPurchaseSeller extends BaseNotification<USDCPurchaseSellerRow> 
         payExtra: this.extraAmount,
         total: this.totalAmount
       }),
-      subject: 'Your Track Has Been Purchased'
+      subject: `Your ${capitalize(this.contentType)} Has Been Purchased`
     })
   }
 

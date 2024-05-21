@@ -58,21 +58,14 @@ def tip_reaction(params: ManageEntityParameters):
         reactor_user_id = params.user_id
 
         session = params.session
-        tip = (
-            session.query(UserTip.slot, UserTip.sender_user_id)
+        sender_user_id = (
+            session.query(UserTip.sender_user_id)
             .filter(
                 UserTip.signature == reacted_to,
                 UserTip.receiver_user_id == reactor_user_id,
             )
             .one_or_none()
         )
-
-        if not tip:
-            raise IndexingValidationError(
-                f"tip_reactions.py | reactor {reactor_user_id} reacted to a tip {reacted_to} that doesn't exist"
-            )
-
-        slot, sender_user_id = tip
 
         sender = (
             session.query(User).filter(User.user_id == sender_user_id).one_or_none()
@@ -93,10 +86,10 @@ def tip_reaction(params: ManageEntityParameters):
         reaction = Reaction(
             reacted_to=reacted_to,
             reaction_value=reaction_value,
-            slot=slot,
             sender_wallet=sender_wallet,
             reaction_type=reaction_type,
             timestamp=datetime.now(),
+            blocknumber=params.block_number,
         )
 
         params.add_record(reacted_to, reaction)

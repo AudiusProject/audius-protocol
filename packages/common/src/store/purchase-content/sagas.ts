@@ -898,6 +898,7 @@ function* doStartPurchaseContentFlow({
       additionalInfo: { contentId, contentType }
     })
     yield* put(purchaseContentFlowFailed({ error }))
+    yield* put(updateGatedContentStatus({ contentId, status: 'LOCKED' }))
     yield* call(
       track,
       make({

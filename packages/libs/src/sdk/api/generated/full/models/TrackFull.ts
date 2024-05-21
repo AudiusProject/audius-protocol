@@ -32,12 +32,6 @@ import {
     CoverArtFromJSONTyped,
     CoverArtToJSON,
 } from './CoverArt';
-import type { DownloadMetadata } from './DownloadMetadata';
-import {
-    DownloadMetadataFromJSON,
-    DownloadMetadataFromJSONTyped,
-    DownloadMetadataToJSON,
-} from './DownloadMetadata';
 import type { Favorite } from './Favorite';
 import {
     FavoriteFromJSON,
@@ -305,12 +299,6 @@ export interface TrackFull {
     creditsSplits?: string;
     /**
      * 
-     * @type {DownloadMetadata}
-     * @memberof TrackFull
-     */
-    download?: DownloadMetadata;
-    /**
-     * 
      * @type {string}
      * @memberof TrackFull
      */
@@ -482,23 +470,23 @@ export interface TrackFull {
 /**
  * Check if a given object implements the TrackFull interface.
  */
-export function instanceOfTrackFull(value: object): boolean {
+export function instanceOfTrackFull(value: object): value is TrackFull {
     let isInstance = true;
-    isInstance = isInstance && "blocknumber" in value;
-    isInstance = isInstance && "id" in value;
-    isInstance = isInstance && "repostCount" in value;
-    isInstance = isInstance && "favoriteCount" in value;
-    isInstance = isInstance && "title" in value;
-    isInstance = isInstance && "user" in value;
-    isInstance = isInstance && "duration" in value;
-    isInstance = isInstance && "playCount" in value;
-    isInstance = isInstance && "followeeReposts" in value;
-    isInstance = isInstance && "hasCurrentUserReposted" in value;
-    isInstance = isInstance && "isUnlisted" in value;
-    isInstance = isInstance && "hasCurrentUserSaved" in value;
-    isInstance = isInstance && "followeeFavorites" in value;
-    isInstance = isInstance && "routeId" in value;
-    isInstance = isInstance && "userId" in value;
+    isInstance = isInstance && "blocknumber" in value && value["blocknumber"] !== undefined;
+    isInstance = isInstance && "id" in value && value["id"] !== undefined;
+    isInstance = isInstance && "repostCount" in value && value["repostCount"] !== undefined;
+    isInstance = isInstance && "favoriteCount" in value && value["favoriteCount"] !== undefined;
+    isInstance = isInstance && "title" in value && value["title"] !== undefined;
+    isInstance = isInstance && "user" in value && value["user"] !== undefined;
+    isInstance = isInstance && "duration" in value && value["duration"] !== undefined;
+    isInstance = isInstance && "playCount" in value && value["playCount"] !== undefined;
+    isInstance = isInstance && "followeeReposts" in value && value["followeeReposts"] !== undefined;
+    isInstance = isInstance && "hasCurrentUserReposted" in value && value["hasCurrentUserReposted"] !== undefined;
+    isInstance = isInstance && "isUnlisted" in value && value["isUnlisted"] !== undefined;
+    isInstance = isInstance && "hasCurrentUserSaved" in value && value["hasCurrentUserSaved"] !== undefined;
+    isInstance = isInstance && "followeeFavorites" in value && value["followeeFavorites"] !== undefined;
+    isInstance = isInstance && "routeId" in value && value["routeId"] !== undefined;
+    isInstance = isInstance && "userId" in value && value["userId"] !== undefined;
 
     return isInstance;
 }
@@ -548,7 +536,6 @@ export function TrackFullFromJSONTyped(json: any, ignoreDiscriminator: boolean):
         'coverArtCids': !exists(json, 'cover_art_cids') ? undefined : CoverArtFromJSON(json['cover_art_cids']),
         'createdAt': !exists(json, 'created_at') ? undefined : json['created_at'],
         'creditsSplits': !exists(json, 'credits_splits') ? undefined : json['credits_splits'],
-        'download': !exists(json, 'download') ? undefined : DownloadMetadataFromJSON(json['download']),
         'isrc': !exists(json, 'isrc') ? undefined : json['isrc'],
         'license': !exists(json, 'license') ? undefined : json['license'],
         'iswc': !exists(json, 'iswc') ? undefined : json['iswc'],
@@ -624,7 +611,6 @@ export function TrackFullToJSON(value?: TrackFull | null): any {
         'cover_art_cids': CoverArtToJSON(value.coverArtCids),
         'created_at': value.createdAt,
         'credits_splits': value.creditsSplits,
-        'download': DownloadMetadataToJSON(value.download),
         'isrc': value.isrc,
         'license': value.license,
         'iswc': value.iswc,

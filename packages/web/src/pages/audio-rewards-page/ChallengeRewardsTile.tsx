@@ -3,6 +3,7 @@ import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
 import {
   formatCooldownChallenges,
   useChallengeCooldownSchedule,
+  useFormattedProgressLabel,
   useFeatureFlag
 } from '@audius/common/hooks'
 import {
@@ -19,8 +20,6 @@ import {
   ChallengeRewardsModalType
 } from '@audius/common/store'
 import {
-  fillString,
-  formatNumberCommas,
   removeNullable,
   makeOptimisticChallengeSortComparator,
   isAudioMatchingChallenge,
@@ -131,13 +130,8 @@ const RewardPanel = ({
   }
 
   const challenge = userChallenges[id]
-  const shouldShowCompleted =
-    challenge?.state === 'completed' || challenge?.state === 'disbursed'
   const hasDisbursed = challenge?.state === 'disbursed'
   const needsDisbursement = challenge && challenge.claimableAmount > 0
-  const pending =
-    challenge?.undisbursedSpecifiers &&
-    challenge?.undisbursedSpecifiers.length > 0
   const shouldShowProgressBar =
     challenge &&
     challenge.max_steps > 1 &&
@@ -146,48 +140,12 @@ const RewardPanel = ({
   const showNewChallengePill =
     isAudioMatchingChallenge(id) && !needsDisbursement
 
-  let progressLabelFilled: string
-  if (shouldShowCompleted) {
-    progressLabelFilled = messages.completeLabel
-  } else if (challenge && challenge?.cooldown_days > 0) {
-    if (needsDisbursement) {
-      progressLabelFilled = messages.readyToClaim
-    } else if (pending) {
-      progressLabelFilled = messages.pendingRewards
-    } else if (challenge?.challenge_type === 'aggregate') {
-      // Count down
-      progressLabelFilled = fillString(
-        remainingLabel ?? '',
-        formatNumberCommas(
-          (challenge?.max_steps - challenge?.current_step_count)?.toString() ??
-            ''
-        ),
-        formatNumberCommas(challenge?.max_steps?.toString() ?? '')
-      )
-    } else {
-      progressLabelFilled = fillString(
-        progressLabel ?? '',
-        formatNumberCommas(challenge?.current_step_count?.toString() ?? ''),
-        formatNumberCommas(challenge?.max_steps?.toString() ?? '')
-      )
-    }
-  } else if (challenge?.challenge_type === 'aggregate') {
-    // Count down
-    progressLabelFilled = fillString(
-      remainingLabel ?? '',
-      formatNumberCommas(
-        (challenge?.max_steps - challenge?.current_step_count)?.toString() ?? ''
-      ),
-      formatNumberCommas(challenge?.max_steps?.toString() ?? '')
-    )
-  } else {
-    // Count up
-    progressLabelFilled = fillString(
-      progressLabel ?? '',
-      formatNumberCommas(challenge?.current_step_count?.toString() ?? ''),
-      formatNumberCommas(challenge?.max_steps?.toString() ?? '')
-    )
-  }
+  const formattedProgressLabel: string = useFormattedProgressLabel({
+    challenge,
+    progressLabel,
+    remainingLabel
+  })
+
   const buttonMessage = needsDisbursement
     ? messages.claimReward
     : hasDisbursed
@@ -230,7 +188,7 @@ const RewardPanel = ({
       <div className={wm(styles.rewardPanelBottom)}>
         <div className={wm(styles.rewardProgress)}>
           {needsDisbursement && <IconCheck className={wm(styles.iconCheck)} />}
-          <p className={styles.rewardProgressLabel}>{progressLabelFilled}</p>
+          <p className={styles.rewardProgressLabel}>{formattedProgressLabel}</p>
           {shouldShowProgressBar && (
             <ProgressBar
               className={styles.rewardProgressBar}
@@ -258,7 +216,7 @@ const ClaimAllPanel = () => {
   const wm = useWithMobileStyle(styles.mobile)
   const { cooldownChallenges, cooldownAmount, claimableAmount, isEmpty } =
     useChallengeCooldownSchedule({ multiple: true })
-
+  const claimable = claimableAmount > 0
   const [, setClaimAllRewardsVisibility] = useModalState('ClaimAllRewards')
   const onClickClaimAllRewards = useCallback(() => {
     setClaimAllRewardsVisibility(true)
@@ -267,12 +225,12 @@ const ClaimAllPanel = () => {
     setClaimAllRewardsVisibility(true)
   }, [setClaimAllRewardsVisibility])
   const handleClick = useCallback(() => {
-    if (claimableAmount > 0) {
+    if (claimable) {
       onClickClaimAllRewards()
     } else if (cooldownAmount > 0) {
       onClickMoreInfo()
     }
-  }, [claimableAmount, cooldownAmount, onClickClaimAllRewards, onClickMoreInfo])
+  }, [claimable, cooldownAmount, onClickClaimAllRewards, onClickMoreInfo])
 
   if (isMobile) {
     return (
@@ -283,20 +241,21 @@ const ClaimAllPanel = () => {
         alignItems='center'
         alignSelf='stretch'
         justifyContent='space-between'
-        m='s'
         css={{ cursor: 'pointer' }}
         onClick={handleClick}
       >
         <Flex direction='column' alignItems='start' w='100%'>
           <Flex gap='s' alignItems='center'>
-            <IconTokenGold
-              height={24}
-              width={24}
-              aria-label={messages.goldAudioToken}
-            />
+            {claimable ? (
+              <IconTokenGold
+                height={24}
+                width={24}
+                aria-label={messages.goldAudioToken}
+              />
+            ) : null}
             {isEmpty ? null : (
               <Text color='accent' variant='title' size='l'>
-                {claimableAmount > 0
+                {claimable
                   ? messages.totalReadyToClaim
                   : messages.totalUpcomingRewards}
               </Text>
@@ -317,14 +276,14 @@ const ClaimAllPanel = () => {
           ) : null}
           <Box mt='l' mb='xl'>
             <Text variant='body' textAlign='left' size='s'>
-              {claimableAmount > 0
+              {claimable
                 ? `${claimableAmount} ${messages.available} ${messages.now}`
                 : messages.availableMessage(
                     formatCooldownChallenges(cooldownChallenges)
                   )}
             </Text>
           </Box>
-          {claimableAmount > 0 ? (
+          {claimable ? (
             <Button
               onClick={onClickClaimAllRewards}
               iconRight={IconArrow}

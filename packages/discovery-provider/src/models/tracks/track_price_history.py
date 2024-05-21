@@ -1,3 +1,5 @@
+from typing import Self
+
 from sqlalchemy import BigInteger, Column, DateTime, Enum, Integer, text
 from sqlalchemy.dialects.postgresql import JSONB
 
@@ -18,3 +20,10 @@ class TrackPriceHistory(Base, RepresentableMixin):
     created_at = Column(
         DateTime, nullable=False, server_default=text("CURRENT_TIMESTAMP")
     )
+
+    def equals(self, rec: Self):
+        return (
+            self.total_price_cents == rec.total_price_cents
+            and self.splits == rec.splits
+            and self.access == rec.access
+        )

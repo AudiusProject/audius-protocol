@@ -78,8 +78,7 @@ const messages = {
   what: 'What is $AUDIO',
   whatBody1:
     'Audius is owned by people like you, not major corporations. Holding $AUDIO grants you partial ownership of the Audius platform and gives you access to special features as they are released.',
-  learnMore: 'Learn More',
-  whatBody2: `Still confused? Don't worry, more details coming soon!`
+  learnMore: 'Learn More'
 }
 
 const useStyles = makeStyles(({ spacing, palette, typography }) => ({
@@ -479,7 +478,6 @@ export const AudioScreen = () => {
         >
           <Text style={styles.tileLink}>{messages.learnMore}</Text>
         </TouchableOpacity>
-        <Text style={styles.tileSubheader}>{messages.whatBody2}</Text>
       </Tile>
     )
   }

@@ -61,7 +61,7 @@ export interface FieldVisibility {
 /**
  * Check if a given object implements the FieldVisibility interface.
  */
-export function instanceOfFieldVisibility(value: object): boolean {
+export function instanceOfFieldVisibility(value: object): value is FieldVisibility {
     let isInstance = true;
 
     return isInstance;

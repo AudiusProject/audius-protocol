@@ -128,7 +128,7 @@ const handler = async (
     console.log(`Found Deal ${dealId}`)
     await updateDealRevenue(dealId, revenue)
   } else {
-    console.error(`No deal found for katoproducer`)
+    console.error(`No deal found for ${handle}`)
   } 
 }
 

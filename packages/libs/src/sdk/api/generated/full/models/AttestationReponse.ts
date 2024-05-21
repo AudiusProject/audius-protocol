@@ -38,7 +38,7 @@ export interface AttestationReponse {
 /**
  * Check if a given object implements the AttestationReponse interface.
  */
-export function instanceOfAttestationReponse(value: object): boolean {
+export function instanceOfAttestationReponse(value: object): value is AttestationReponse {
     let isInstance = true;
 
     return isInstance;

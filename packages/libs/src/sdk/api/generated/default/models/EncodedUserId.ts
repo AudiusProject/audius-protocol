@@ -31,7 +31,7 @@ export interface EncodedUserId {
 /**
  * Check if a given object implements the EncodedUserId interface.
  */
-export function instanceOfEncodedUserId(value: object): boolean {
+export function instanceOfEncodedUserId(value: object): value is EncodedUserId {
     let isInstance = true;
 
     return isInstance;

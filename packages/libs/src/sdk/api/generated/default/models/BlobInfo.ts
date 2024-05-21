@@ -37,10 +37,10 @@ export interface BlobInfo {
 /**
  * Check if a given object implements the BlobInfo interface.
  */
-export function instanceOfBlobInfo(value: object): boolean {
+export function instanceOfBlobInfo(value: object): value is BlobInfo {
     let isInstance = true;
-    isInstance = isInstance && "size" in value;
-    isInstance = isInstance && "contentType" in value;
+    isInstance = isInstance && "size" in value && value["size"] !== undefined;
+    isInstance = isInstance && "contentType" in value && value["contentType"] !== undefined;
 
     return isInstance;
 }

@@ -8,7 +8,6 @@ import {
 } from 'react'
 
 import { DogEarType } from '@audius/common/models'
-import { Box } from '@audius/harmony'
 import cn from 'classnames'
 
 import { DogEar } from 'components/dog-ear'
@@ -44,8 +43,10 @@ export const Tile = forwardRef(
     } = props
 
     return (
-      <Box>
-        {dogEar ? <DogEar type={dogEar} /> : null}
+      <>
+        {dogEar ? (
+          <DogEar type={dogEar} className={styles.borderOffset} />
+        ) : null}
         <RootComponent
           className={cn(
             styles.root,
@@ -60,7 +61,7 @@ export const Tile = forwardRef(
         >
           {children}
         </RootComponent>
-      </Box>
+      </>
     )
   }
 )

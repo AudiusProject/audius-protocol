@@ -32,7 +32,7 @@ function* getSearchPageResultsTracks({
   const isNativeMobile = yield* getContext('isNativeMobile')
   if (category === SearchKind.TRACKS || isNativeMobile || isMobileWeb()) {
     // If we are on the tracks sub-page of search or mobile, which we should paginate on
-    let results
+    let results: Track[]
     if (isTagSearch) {
       const { tracks } = yield* call(
         getTagSearchResults,
@@ -50,10 +50,10 @@ function* getSearchPageResultsTracks({
         limit,
         offset
       )
-      results = tracks
+      results = tracks as unknown as Track[]
     }
     if (results) return results
-    return []
+    return [] as Track[]
   } else {
     // If we are part of the all results search page
     try {
@@ -66,7 +66,7 @@ function* getSearchPageResultsTracks({
         select(getSearchResultsPageTracks)
       ])
       const sortedTracks = (sortedIds as number[]).map((id) => tracks[id])
-      return sortedTracks
+      return sortedTracks as Track[]
     } catch (e) {
       console.error(e)
       return []

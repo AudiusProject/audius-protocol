@@ -7,6 +7,7 @@ import {
   AccessConditions
 } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
+import { pluralize } from '@audius/common/utils'
 import { IconCart, IconStars } from '@audius/harmony'
 
 import { ExternalTextLink } from 'components/link'
@@ -20,8 +21,11 @@ const WAITLIST_TYPEFORM = 'https://link.audius.co/waitlist'
 
 const messages = {
   usdcPurchase: 'Premium (Pay-to-Unlock)',
-  usdcPurchaseSubtitle:
-    'Unlockable by purchase, these tracks are visible to everyone but only playable by users who have paid for access.',
+  usdcPurchaseSubtitle: (contentType: 'album' | 'track') =>
+    `Unlockable by purchase, these ${pluralize(
+      contentType,
+      2
+    )} are visible to everyone but only playable by users who have paid for access.`,
   waitlist:
     'Start selling your music on Audius today! Limited access beta now available.',
   join: 'Join the Waitlist',
@@ -86,7 +90,7 @@ export const UsdcPurchaseGatedRadioField = (
     <ModalRadioItem
       icon={<IconCart />}
       label={messages.usdcPurchase}
-      description={messages.usdcPurchaseSubtitle}
+      description={messages.usdcPurchaseSubtitle(isAlbum ? 'album' : 'track')}
       value={StreamTrackAvailabilityType.USDC_PURCHASE}
       disabled={disabled}
       hintIcon={IconStars}

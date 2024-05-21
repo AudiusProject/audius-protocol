@@ -60,6 +60,7 @@ import packageInfo from '../../../../../package.json'
 import { AuthorizedAppsSettingsCard } from './AuthorizedApps'
 import { DeveloperAppsSettingsCard } from './DeveloperApps'
 import { AccountsManagingYouSettingsCard } from './ManagerMode/AccountsManagingYouSettingsCard'
+import { AccountsYouManageSettingsCard } from './ManagerMode/AccountsYouManageSettingsCard'
 import NotificationSettings from './NotificationSettings'
 import SettingsCard from './SettingsCard'
 import styles from './SettingsPage.module.css'
@@ -97,9 +98,6 @@ const messages = {
 
   aiGeneratedCardDescription:
     'Opt in to allow AI models to be trained on your likeness, and to let users credit you in their AI generated works.',
-
-  accountsYouManageDescription:
-    'Review the accounts you’re authorized to manage.',
   appearanceCardDescription:
     'Enable dark mode or choose ‘Auto’ to change with your system settings.',
   inboxSettingsCardDescription:
@@ -122,7 +120,6 @@ const messages = {
   accountRecoveryButtonText: 'Resend Email',
   changeEmailButtonText: 'Change Email',
   changePasswordButtonText: 'Change Password',
-  reviewAccountsButtonText: 'Review Accounts',
   desktopAppButtonText: 'Get The App',
   showPrivateKey: 'Show Private Key (Advanced)',
   signOutModalText: `
@@ -408,7 +405,12 @@ export const SettingsPage = (props: SettingsPageProps) => {
             {messages.changePasswordButtonText}
           </Button>
         </SettingsCard>
-        {isManagerModeEnabled ? <AccountsManagingYouSettingsCard /> : null}
+        {isManagerModeEnabled ? (
+          <>
+            <AccountsManagingYouSettingsCard />
+            <AccountsYouManageSettingsCard />
+          </>
+        ) : null}
         {isAiAttributionEnabled ? (
           <SettingsCard
             icon={<IconRobot />}

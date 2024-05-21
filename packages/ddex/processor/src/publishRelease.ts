@@ -4,30 +4,20 @@ import {
   UploadAlbumRequest,
   UploadTrackRequest,
 } from '@audius/sdk'
-import {
-  ReleaseProcessingStatus,
-  ReleaseRow,
-  dbUpdate,
-  releaseRepo,
-} from './db'
+import { ReleaseProcessingStatus, ReleaseRow, releaseRepo } from './db'
 import { DDEXContributor, DDEXRelease, DDEXResource } from './parseDelivery'
 import { readAssetWithCaching } from './s3poller'
-import { createSdkService } from './sdk'
+import { getSdk } from './sdk'
+import { SourceConfig, sources } from './sources'
 
-export async function publishValidPendingReleases(opts?: {
-  republish: boolean
-}) {
+export async function publishValidPendingReleases() {
   const rows = releaseRepo.all({ pendingPublish: true })
   if (!rows.length) return
 
-  const sdk = (await createSdkService()).getSdk()
-
   for (const row of rows) {
+    const source = sources.findByName(row.source)
+    const sdk = getSdk(source)
     const parsed = row._parsed!
-
-    // todo: hardcoding to my staging user ID to make e2e publish easier
-    // todo: remove
-    parsed.audiusUser = 'KKa311z'
 
     if (row.status == ReleaseProcessingStatus.DeletePending) {
       // delete
@@ -44,7 +34,7 @@ export async function publishValidPendingReleases(opts?: {
     } else {
       // create
       try {
-        await publishRelease(sdk, row, parsed)
+        await publishRelease(source, sdk, row, parsed)
       } catch (e: any) {
         console.log('failed to publish', row.key, e)
         releaseRepo.addPublishError(row.key, e)
@@ -54,6 +44,7 @@ export async function publishValidPendingReleases(opts?: {
 }
 
 export async function publishRelease(
+  source: SourceConfig,
   sdk: AudiusSdk,
   releaseRow: ReleaseRow,
   release: DDEXRelease
@@ -83,6 +74,12 @@ export async function publishRelease(
   )
 
   const trackMetadatas = prepareTrackMetadatas(release)
+
+  if (source.placementHosts) {
+    for (const t of trackMetadatas) {
+      t.placementHosts = source.placementHosts
+    }
+  }
 
   // publish album
   if (release.soundRecordings.length > 1) {
@@ -205,6 +202,44 @@ export function prepareTrackMetadatas(release: DDEXRelease) {
           sound.indirectContributors.map(mapContributor),
       }
 
+      for (const deal of release.deals) {
+        if (deal.audiusDealType == 'FollowGated') {
+          const cond = { followUserId: release.audiusUser! }
+          if (deal.forStream) {
+            meta.streamConditions = cond
+          }
+          if (deal.forDownload) {
+            meta.downloadConditions = cond
+          }
+        }
+
+        if (deal.audiusDealType == 'TipGated') {
+          const cond = { tipUserId: release.audiusUser! }
+          if (deal.forStream) {
+            meta.streamConditions = cond
+          }
+          if (deal.forDownload) {
+            meta.downloadConditions = cond
+          }
+        }
+
+        if (deal.audiusDealType == 'PayGated') {
+          const cond = {
+            usdcPurchase: {
+              price: deal.priceUsd,
+            },
+          }
+          if (deal.forStream) {
+            meta.streamConditions = cond
+          }
+          if (deal.forDownload) {
+            meta.downloadConditions = cond
+          }
+        }
+      }
+
+      // todo: nft gated types
+
       return meta
     })
 
@@ -288,6 +323,9 @@ export function prepareAlbumMetadata(release: DDEXRelease) {
     ddexReleaseIds: release.releaseIds,
     artists: release.artists.map(mapContributor),
   }
+
+  // todo: album stream + download conditions
+
   return meta
 }
 

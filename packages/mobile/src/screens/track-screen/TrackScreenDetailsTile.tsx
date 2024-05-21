@@ -71,7 +71,7 @@ const messages = {
   hiddenTrack: 'hidden track',
   collectibleGated: 'collectible gated',
   specialAccess: 'special access',
-  usdcPurchase: 'premium track',
+  premiumTrack: 'premium track',
   generatedWithAi: 'generated with ai',
   trackDeleted: 'track [deleted by artist]'
 }
@@ -105,9 +105,6 @@ export const TrackScreenDetailsTile = ({
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
   )
-  const { isEnabled: isEditAlbumsEnabled } = useFeatureFlag(
-    FeatureFlags.EDIT_ALBUMS
-  )
   const navigation = useNavigation()
 
   const isReachable = useSelector(getIsReachable)
@@ -137,7 +134,8 @@ export const TrackScreenDetailsTile = ({
     stream_conditions: streamConditions,
     ddex_app: ddexApp,
     is_delete,
-    duration
+    duration,
+    release_date
   } = track
 
   const isOwner = owner_id === currentUserId
@@ -251,9 +249,7 @@ export const TrackScreenDetailsTile = ({
     const isLongFormContent =
       genre === Genre.PODCASTS || genre === Genre.AUDIOBOOKS
     const addToAlbumAction =
-      isEditAlbumsEnabled && isOwner && !ddexApp
-        ? OverflowAction.ADD_TO_ALBUM
-        : null
+      isOwner && !ddexApp ? OverflowAction.ADD_TO_ALBUM : null
     const addToPlaylistAction = isPlaylistAddable
       ? OverflowAction.ADD_TO_PLAYLIST
       : null
@@ -270,7 +266,7 @@ export const TrackScreenDetailsTile = ({
           ? OverflowAction.MARK_AS_UNPLAYED
           : OverflowAction.MARK_AS_PLAYED
         : null,
-      isEditAlbumsEnabled && albumInfo ? OverflowAction.VIEW_ALBUM_PAGE : null,
+      albumInfo ? OverflowAction.VIEW_ALBUM_PAGE : null,
       OverflowAction.VIEW_ARTIST_PAGE,
       isOwner && !ddexApp ? OverflowAction.EDIT_TRACK : null,
       isOwner && track?.is_scheduled_release && track?.is_unlisted
@@ -303,7 +299,13 @@ export const TrackScreenDetailsTile = ({
       streamConditions={streamConditions}
       user={user}
       renderBottomContent={renderBottomContent}
-      headerText={isRemix ? messages.remix : messages.track}
+      headerText={
+        isRemix
+          ? messages.remix
+          : isStreamGated
+          ? messages.premiumTrack
+          : messages.track
+      }
       hideFavorite={hideFavorite}
       hideRepost={hideRepost}
       hideShare={(is_unlisted && !isOwner) || !field_visibility?.share}
@@ -336,6 +338,7 @@ export const TrackScreenDetailsTile = ({
       contentType={PurchaseableContentType.TRACK}
       ddexApp={ddexApp}
       duration={duration}
+      releaseDate={release_date}
     />
   )
 }

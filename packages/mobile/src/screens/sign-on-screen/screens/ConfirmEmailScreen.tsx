@@ -116,7 +116,11 @@ const ResendCodeLink = () => {
   }, [dispatch, email, password, toast])
 
   return (
-    <TextLink variant='visible' onPress={handleClick} disabled={hasResentCode}>
+    <TextLink
+      variant={hasResentCode ? 'subdued' : 'visible'}
+      onPress={handleClick}
+      disabled={hasResentCode}
+    >
       {confirmEmailMessages.resendCode}
     </TextLink>
   )

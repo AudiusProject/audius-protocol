@@ -1,9 +1,10 @@
 import { forwardRef } from 'react'
 
-import type { StyleProp, View, ViewStyle } from 'react-native'
-import { Animated, Pressable } from 'react-native'
+import { MobileOS } from '@audius/common/models'
+import type { View } from 'react-native'
+import { Platform, Pressable } from 'react-native'
 import { Gesture, GestureDetector } from 'react-native-gesture-handler'
-import {
+import Animated, {
   interpolate,
   interpolateColor,
   useAnimatedStyle,
@@ -28,10 +29,10 @@ export const Paper = forwardRef<View, PaperProps>((props, ref) => {
     borderRadius = 'm',
     shadow = 'mid',
     style,
+    onPress,
     ...other
   } = props
 
-  const { onPress } = other
   const { shadows, motion } = useTheme()
 
   const pressed = useSharedValue(0)
@@ -47,28 +48,6 @@ export const Paper = forwardRef<View, PaperProps>((props, ref) => {
     })
 
   const interactiveStyles = useAnimatedStyle(() => ({
-    shadowOpacity: interpolate(
-      pressed.value,
-      [0, 1],
-      [shadowStyle.shadowOpacity, shadows.near.shadowOpacity]
-    ),
-    shadowRadius: interpolate(
-      pressed.value,
-      [0, 1],
-      [shadowStyle.shadowRadius, shadows.near.shadowRadius]
-    ),
-    shadowOffset: {
-      width: interpolate(
-        pressed.value,
-        [0, 1],
-        [shadowStyle.shadowOffset.width, shadows.near.shadowOffset.width]
-      ),
-      height: interpolate(
-        pressed.value,
-        [0, 1],
-        [shadowStyle.shadowOffset.height, shadows.near.shadowOffset.height]
-      )
-    },
     shadowColor: interpolateColor(
       pressed.value,
       [0, 1],
@@ -78,22 +57,37 @@ export const Paper = forwardRef<View, PaperProps>((props, ref) => {
       {
         scale: interpolate(pressed.value, [0, 1], [1, 0.995])
       }
-    ]
+    ],
+    ...(Platform.OS === MobileOS.IOS && {
+      shadowOpacity: interpolate(
+        pressed.value,
+        [0, 1],
+        [shadowStyle.shadowOpacity, shadows.near.shadowOpacity]
+      ),
+      shadowRadius: interpolate(
+        pressed.value,
+        [0, 1],
+        [shadowStyle.shadowRadius, shadows.near.shadowRadius]
+      ),
+      shadowOffset: {
+        width: interpolate(
+          pressed.value,
+          [0, 1],
+          [shadowStyle.shadowOffset.width, shadows.near.shadowOffset.width]
+        ),
+        height: interpolate(
+          pressed.value,
+          [0, 1],
+          [shadowStyle.shadowOffset.height, shadows.near.shadowOffset.height]
+        )
+      }
+    })
   }))
 
   const flexProps = { backgroundColor, borderRadius, shadow }
 
-  const universalStyles: StyleProp<ViewStyle> = { overflow: 'hidden' }
-
   if (!onPress) {
-    return (
-      <Flex
-        ref={ref}
-        style={[universalStyles, style]}
-        {...flexProps}
-        {...other}
-      />
-    )
+    return <Flex ref={ref} style={style} {...flexProps} {...other} />
   }
 
   return (
@@ -101,7 +95,7 @@ export const Paper = forwardRef<View, PaperProps>((props, ref) => {
       <Pressable onPress={onPress}>
         <AnimatedFlex
           ref={ref}
-          style={[universalStyles, interactiveStyles, style]}
+          style={[interactiveStyles, style]}
           {...flexProps}
           {...other}
         />

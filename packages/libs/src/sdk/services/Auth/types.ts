@@ -27,7 +27,7 @@ export type AuthService = {
   getAddress: () => Promise<string>
 }
 
-export type UserAuthConfig = {
+export type UserAuthConfigInternal = {
   /**
    * The identity service that backs hedgehog authentication
    */
@@ -43,3 +43,5 @@ export type UserAuthConfig = {
    */
   localStorage: Promise<LocalStorage>
 }
+
+export type UserAuthConfig = Partial<UserAuthConfigInternal>

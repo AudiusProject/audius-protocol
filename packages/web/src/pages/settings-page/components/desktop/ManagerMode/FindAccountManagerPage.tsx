@@ -1,13 +1,18 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 
+import { useGetManagers } from '@audius/common/api'
 import { User } from '@audius/common/models'
+import { accountSelectors } from '@audius/common/store'
 import { Box, Flex, IconShieldUser, Text, TextLink } from '@audius/harmony'
 
 import ArtistChip from 'components/artist/ArtistChip'
 import { UsersSearch } from 'components/search-users-modal/SearchUsersModal'
+import { useSelector } from 'utils/reducer'
 
 import { sharedMessages } from './sharedMessages'
 import { AccountsManagingYouPages, FindAccountManagerPageProps } from './types'
+
+const { getUserId } = accountSelectors
 
 const messages = {
   description: 'Invite a manager to join your account.',
@@ -19,6 +24,18 @@ const messages = {
 export const FindAccountManagerPage = (props: FindAccountManagerPageProps) => {
   const { setPage, params } = props
   const [query, setQuery] = useState(params?.query ?? '')
+  const userId = useSelector(getUserId)
+  const { data: managers } = useGetManagers(
+    { userId: userId! },
+    { disabled: userId == null }
+  )
+  const excludedUserIds = useMemo(() => {
+    const res: number[] = managers.map((m) => m.manager.user_id)
+    if (userId) {
+      res.push(userId)
+    }
+    return res
+  }, [managers, userId])
 
   const renderEmpty = useCallback(() => {
     return (
@@ -38,6 +55,7 @@ export const FindAccountManagerPage = (props: FindAccountManagerPageProps) => {
     (user: User) => {
       return (
         <Box
+          key={user.user_id}
           pv='l'
           borderTop='default'
           ph='xl'
@@ -75,6 +93,7 @@ export const FindAccountManagerPage = (props: FindAccountManagerPageProps) => {
         </Text>
       </Box>
       <UsersSearch
+        excludedUserIds={excludedUserIds}
         query={query}
         onChange={setQuery}
         disableAutofocus

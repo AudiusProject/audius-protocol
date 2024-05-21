@@ -35,21 +35,11 @@ export const usePlayTrack = (recordAnalytics?: RecordAnalytics) => {
   const playingUid = useSelector(getUid)
 
   const playTrack = useCallback(
-    ({
-      id,
-      uid,
-      isPreview,
-      entries
-    }: {
-      id?: ID
-      uid: string
-      isPreview?: boolean
-      entries: Queueable[]
-    }) => {
+    ({ id, uid, entries }: { id?: ID; uid: string; entries: Queueable[] }) => {
       if (playingUid !== uid) {
         dispatch(clear({}))
         dispatch(add({ entries }))
-        dispatch(play({ uid, isPreview }))
+        dispatch(play({ uid }))
       } else {
         dispatch(play({}))
       }
@@ -119,7 +109,6 @@ export const usePauseTrack = (recordAnalytics?: RecordAnalytics) => {
 export const useToggleTrack = ({
   uid,
   source,
-  isPreview,
   recordAnalytics,
   id
 }: UseToggleTrack) => {
@@ -142,11 +131,10 @@ export const useToggleTrack = ({
       playTrack({
         id,
         uid,
-        isPreview,
-        entries: [{ id, uid, source, isPreview }]
+        entries: [{ id, uid, source }]
       })
     }
-  }, [playTrack, pauseTrack, isTrackPlaying, id, uid, isPreview, source])
+  }, [playTrack, pauseTrack, isTrackPlaying, id, uid, source])
 
   return { togglePlay, isTrackPlaying }
 }

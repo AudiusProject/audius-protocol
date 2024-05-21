@@ -15,10 +15,15 @@ export type TextLinkProps = Omit<TextProps, 'variant' | 'onClick' | 'color'> &
     asChild?: boolean
 
     /**
-     * Which variant to display.
-     * @default default
+     * Which variant to display. 'active' is temporary until this pattern is removed
      */
-    variant?: 'default' | 'subdued' | 'visible' | 'inverted' | 'secondary'
+    variant?:
+      | 'default'
+      | 'subdued'
+      | 'visible'
+      | 'inverted'
+      | 'secondary'
+      | 'active'
 
     /**
      * Which text variant to display.

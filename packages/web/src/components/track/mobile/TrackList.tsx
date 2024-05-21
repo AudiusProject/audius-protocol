@@ -20,8 +20,6 @@ type TrackListProps = {
     isActive?: boolean
     isPlaying?: boolean
     isRemoveActive?: boolean
-    artistHandle: string
-    artistName: string
     trackTitle: string
     permalink: string
     trackId: ID
@@ -101,15 +99,12 @@ const TrackList = ({
           isStreamGated={track.isStreamGated}
           hasStreamAccess={track.hasStreamAccess}
           streamConditions={track.streamConditions}
-          artistHandle={track.artistHandle}
-          artistName={track.artistName}
           permalink={track.permalink}
           trackTitle={track.trackTitle}
           coverArtSizes={track.coverArtSizes}
           uid={track.uid}
           isDeleted={track.isDeleted}
           isLocked={track.isLocked}
-          isRemoveActive={track.isRemoveActive}
           onRemove={onRemove}
           togglePlay={togglePlay}
           trackItemAction={trackItemAction}

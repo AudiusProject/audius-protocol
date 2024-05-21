@@ -36,6 +36,7 @@ def dispatch_play(offset: int, session: Session, bus: ChallengeEventBus):
     bus.dispatch(
         ChallengeEvent.track_listen,
         BLOCK_NUMBER,
+        datetime.now(),
         1,
         {"created_at": play.created_at.timestamp()},
     )

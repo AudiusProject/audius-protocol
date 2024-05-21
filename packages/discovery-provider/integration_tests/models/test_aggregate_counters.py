@@ -1,7 +1,7 @@
 import logging
+from datetime import datetime, timedelta
 from typing import List
 
-from datetime import datetime, timedelta
 from integration_tests.utils import populate_mock_db
 from src.models.playlists.aggregate_playlist import AggregatePlaylist
 from src.models.tracks.aggregate_track import AggregateTrack

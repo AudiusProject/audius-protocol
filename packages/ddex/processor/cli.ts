@@ -1,18 +1,16 @@
 import 'dotenv/config'
 
 import { program } from 'commander'
-import { parseDelivery, reParsePastXml } from './src/parseDelivery'
 import { cleanupFiles } from './src/cleanupFiles'
+import { parseDelivery, reParsePastXml } from './src/parseDelivery'
+import { publishValidPendingReleases } from './src/publishRelease'
 import { pollS3 } from './src/s3poller'
-import {
-  deleteRelease,
-  publishValidPendingReleases,
-} from './src/publishRelease'
 import { sync } from './src/s3sync'
 import { startServer } from './src/server'
+import { sources } from './src/sources'
 import { sleep } from './src/util'
-import { releaseRepo } from './src/db'
-import { createSdkService } from './src/sdk'
+
+sources.load()
 
 program
   .name('ddexer')
@@ -23,30 +21,20 @@ program
 program
   .command('parse')
   .description('Parse DDEX xml and print results')
+  .argument('<source>', 'source name to use')
   .argument('<path>', 'path to ddex xml file')
-  .action(async (p) => {
-    const releases = await parseDelivery(p)
+  .action(async (source, p) => {
+    const releases = await parseDelivery(source, p)
     console.log(JSON.stringify(releases, undefined, 2))
   })
 
 program
   .command('publish')
   .description('Publish any valid deliveries')
-  .option('--republish', 'update already published releases')
-  .action(async (opts) => {
-    await reParsePastXml()
-    await publishValidPendingReleases(opts)
-  })
-
-program
-  .command('delete')
-  .description('Take down a published release')
-  .argument('<id>', 'release id')
-  .action(async (id) => {
-    // find release and delete it
-    const release = releaseRepo.get(id)
-    const sdk = (await createSdkService()).getSdk()
-    await deleteRelease(sdk, release!)
+  .action(async () => {
+    reParsePastXml()
+    await publishValidPendingReleases()
+    process.exit(0) // sdk client doesn't know when to quit
   })
 
 program
@@ -68,21 +56,21 @@ program
 program
   .command('server')
   .description('start server without background processes, useful for dev')
-  .action(async (opts) => {
+  .action(async () => {
     startServer()
   })
 
 program
   .command('worker')
   .description('start background processes, useful for dev')
-  .action(async (opts) => {
+  .action(async () => {
     startWorker()
   })
 
 program
   .command('start')
   .description('Start both server + background processes')
-  .action(async (opts) => {
+  .action(async () => {
     startServer()
     startWorker()
   })
@@ -90,9 +78,9 @@ program
 program.command('cleanup').description('remove temp files').action(cleanupFiles)
 
 program.parse()
-const globalOptions = program.opts()
 
 async function startWorker() {
+  // eslint-disable-next-line no-constant-condition
   while (true) {
     await sleep(3_000)
     console.log('polling...')

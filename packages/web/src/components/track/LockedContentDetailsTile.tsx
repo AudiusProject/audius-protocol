@@ -122,7 +122,7 @@ export const LockedContentDetailsTile = ({
           <DogEar type={dogEarType} />
         </Flex>
       ) : null}
-      <Flex>
+      <Flex css={{ overflow: 'hidden' }}>
         {showLabel && IconComponent && message ? (
           <Flex
             className={cn(styles.gatedContentLabel, {
@@ -140,8 +140,10 @@ export const LockedContentDetailsTile = ({
             <Text>{message}</Text>
           </Flex>
         ) : null}
-        <Flex direction='column' gap='s'>
-          <Text variant='heading'>{title}</Text>
+        <Flex w='100%' direction='column' gap='s'>
+          <Text ellipses variant='heading'>
+            {title}
+          </Text>
           <Text variant='title'>
             <Text color='subdued'>{messages.by}</Text>{' '}
             <UserLink

@@ -16,7 +16,7 @@ import { Dimensions, Keyboard, View } from 'react-native'
 import { useSelector } from 'react-redux'
 
 import ChatTail from 'app/assets/images/ChatTail.svg'
-import { Pressable, Hyperlink, Text } from 'app/components/core'
+import { Pressable, UserGeneratedText, Text } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 import { zIndex } from 'app/utils/zIndex'
@@ -64,15 +64,6 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
   messageContainerAuthor: {
     backgroundColor: palette.secondaryLight2
   },
-  messageText: {
-    fontSize: typography.fontSize.medium,
-    fontFamily: typography.fontByWeight.medium,
-    lineHeight: spacing(6),
-    color: palette.neutral
-  },
-  messageTextIsAuthor: {
-    color: palette.staticWhite
-  },
   dateContainer: {
     zIndex: -1,
     marginTop: spacing(2),
@@ -81,9 +72,6 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
   date: {
     fontSize: typography.fontSize.xs,
     color: palette.neutralLight2
-  },
-  link: {
-    textDecorationLine: 'underline'
   },
   shadow: {
     shadowColor: 'black',
@@ -321,21 +309,17 @@ export const ChatMessageListItem = memo(function ChatMessageListItem(
                         isAuthor && styles.messageContainerAuthor
                       ]}
                     >
-                      <Hyperlink
-                        onPress={Keyboard.dismiss}
-                        text={message.message}
-                        styles={{
-                          root: [
-                            styles.messageText,
-                            isAuthor && styles.messageTextIsAuthor
-                          ],
-                          link: [
-                            styles.messageText,
-                            styles.link,
-                            isAuthor && styles.messageTextIsAuthor
-                          ]
+                      <UserGeneratedText
+                        variant='body'
+                        color={isAuthor ? 'staticWhite' : 'default'}
+                        linkProps={{
+                          variant: isAuthor ? 'inverted' : 'visible',
+                          showUnderline: true
                         }}
-                      />
+                        onPress={Keyboard.dismiss}
+                      >
+                        {message.message}
+                      </UserGeneratedText>
                     </View>
                   ) : null}
                 </View>

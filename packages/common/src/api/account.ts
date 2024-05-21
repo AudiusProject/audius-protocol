@@ -1,6 +1,9 @@
+import dayjs from 'dayjs'
+
 import { createApi } from '~/audius-query'
 import {
   ID,
+  User,
   UserMetadata,
   managedUserListFromSDK,
   userManagerListFromSDK
@@ -11,6 +14,22 @@ import { Id } from './utils'
 type ResetPasswordArgs = {
   email: string
   password: string
+}
+
+type RequestAddManagerPayload = {
+  userId: number
+  managerUser: UserMetadata | User
+}
+
+type RemoveManagerPayload = {
+  userId: number
+  managerUserId: number
+}
+
+type ApproveManagedAccountPayload = {
+  userId: number
+  userWalletAddress: string
+  grantorUser: UserMetadata | User
 }
 
 const accountApi = createApi({
@@ -65,6 +84,7 @@ const accountApi = createApi({
       },
       options: {
         type: 'query',
+        idArgKey: 'manager.user_id',
         schemaKey: 'managedUsers'
       }
     },
@@ -75,12 +95,176 @@ const accountApi = createApi({
           id: Id.parse(userId)
         })
 
-        const { data = [] } = managedUsers
+        const { data: rawData = [] } = managedUsers
+        const data = rawData.filter((g) => g.grant.isApproved !== false)
         return userManagerListFromSDK(data)
       },
       options: {
         type: 'query',
+        idArgKey: 'user.user_id',
         schemaKey: 'userManagers'
+      }
+    },
+    requestAddManager: {
+      async fetch(payload: RequestAddManagerPayload, { audiusSdk }) {
+        const { managerUser, userId } = payload
+        const managerUserId = managerUser.user_id
+        const encodedUserId = Id.parse(userId) as string
+        const encodedManagerUserId = Id.parse(managerUserId)
+        const sdk = await audiusSdk()
+
+        await sdk.grants.addManager({
+          userId: encodedUserId,
+          managerUserId: encodedManagerUserId
+        })
+
+        return payload
+      },
+      options: {
+        idArgKey: 'managerUser.user_id',
+        type: 'mutation',
+        schemaKey: 'userManagers'
+      },
+      async onQuerySuccess(
+        _res,
+        payload: RequestAddManagerPayload,
+        { dispatch }
+      ) {
+        const { userId, managerUser } = payload
+        dispatch(
+          accountApi.util.updateQueryData(
+            'getManagers',
+            { userId },
+            (state) => {
+              const currentTime = dayjs().format('YYYY-MM-DD HH:mm:ss')
+              // TODO(C-4330) - The state type is incorrect - fix.
+              // @ts-expect-error
+              state.userManagers.push({
+                grant: {
+                  created_at: currentTime,
+                  grantee_address: managerUser.erc_wallet ?? managerUser.wallet,
+                  is_approved: null,
+                  is_revoked: false,
+                  updated_at: currentTime,
+                  user_id: userId
+                },
+                manager: managerUser
+              })
+            }
+          )
+        )
+      }
+    },
+    removeManager: {
+      async fetch(payload: RemoveManagerPayload, { audiusSdk }) {
+        const { managerUserId, userId } = payload
+        const encodedUserId = Id.parse(userId) as string
+        const encodedManagerUserId = Id.parse(managerUserId)
+        const sdk = await audiusSdk()
+
+        await sdk.grants.removeManager({
+          userId: encodedUserId,
+          managerUserId: encodedManagerUserId
+        })
+
+        return payload
+      },
+      options: {
+        idArgKey: 'managerUserId',
+        type: 'mutation',
+        schemaKey: 'userManagers'
+      },
+      async onQueryStarted(payload: RemoveManagerPayload, { dispatch }) {
+        const { managerUserId, userId } = payload
+        dispatch(
+          accountApi.util.updateQueryData(
+            'getManagedAccounts',
+            { userId: managerUserId },
+            (state) => {
+              // TODO(C-4330) - The state type is incorrect - fix.
+              // @ts-expect-error
+              const foundIndex = state.managedUsers?.findIndex(
+                (m: { user: number }) => m.user === userId
+              )
+              if (foundIndex != null && foundIndex > -1) {
+                // @ts-expect-error (C-4330)
+                state.managedUsers.splice(foundIndex, 1)
+              }
+            }
+          )
+        )
+        dispatch(
+          accountApi.util.updateQueryData(
+            'getManagers',
+            { userId },
+            (state) => {
+              // TODO(C-4330) - The state type is incorrect - fix.
+              // @ts-expect-error
+              const foundIndex = state.userManagers?.findIndex(
+                (m: { manager: number }) => {
+                  return m.manager === managerUserId
+                }
+              )
+              if (foundIndex != null && foundIndex > -1) {
+                // @ts-expect-error (C-4330)
+                state.userManagers.splice(foundIndex, 1)
+              }
+            }
+          )
+        )
+      }
+    },
+    approveManagedAccount: {
+      async fetch(payload: ApproveManagedAccountPayload, { audiusSdk }) {
+        const { grantorUser, userId } = payload
+        const grantorUserId = grantorUser.user_id
+        const encodedUserId = Id.parse(userId) as string
+        const encodedGrantorUserId = Id.parse(grantorUserId)
+        const sdk = await audiusSdk()
+
+        await sdk.grants.approveGrant({
+          userId: encodedUserId,
+          grantorUserId: encodedGrantorUserId
+        })
+
+        return payload
+      },
+      options: {
+        idArgKey: 'grantorUser.user_id',
+        type: 'mutation'
+      },
+      async onQueryStarted(
+        payload: ApproveManagedAccountPayload,
+        { dispatch }
+      ) {
+        const { userId, grantorUser, userWalletAddress } = payload
+        dispatch(
+          accountApi.util.updateQueryData(
+            'getManagedAccounts',
+            { userId },
+            (state) => {
+              const currentTime = dayjs().format('YYYY-MM-DD HH:mm:ss')
+              // TODO(C-4330) - The state type is incorrect - fix.
+              // @ts-expect-error
+              const foundIndex = state.managedUsers.findIndex(
+                (m: { user: number }) => m.user === grantorUser.user_id
+              )
+              // @ts-expect-error
+              state.managedUsers.splice(foundIndex, 1, {
+                grant: {
+                  created_at: currentTime,
+                  // TODO(nkang - C-4332) - Fill this in
+                  grantee_address: userWalletAddress,
+                  is_approved: true,
+                  is_revoked: false,
+                  updated_at: currentTime,
+                  user_id: userId
+                },
+                user: grantorUser
+              })
+            }
+          )
+        )
       }
     }
   }
@@ -90,7 +274,11 @@ export const {
   useGetCurrentUserId,
   useGetCurrentWeb3User,
   useResetPassword,
-  useGetManagedAccounts
+  useGetManagedAccounts,
+  useGetManagers,
+  useRequestAddManager,
+  useApproveManagedAccount,
+  useRemoveManager
 } = accountApi.hooks
 
 export const accountApiReducer = accountApi.reducer

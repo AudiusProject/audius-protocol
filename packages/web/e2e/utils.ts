@@ -5,10 +5,10 @@ import dayjs from 'dayjs'
 
 export function generateTestUser() {
   const ts = dayjs().format('YYMMDD_HHmmss')
-  const email = `prober+${ts}@audius.co`
+  const email = `e2etest+${ts}@audius.co`
   const password = 'Pa$$w0rdTest'
-  const name = `Prober ${ts}`
-  const handle = `p_${ts}`
+  const name = `e2e test ${ts}`
+  const handle = `e2e_test_${ts}`
   return {
     email,
     password,

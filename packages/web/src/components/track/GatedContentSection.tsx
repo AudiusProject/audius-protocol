@@ -32,7 +32,8 @@ import {
   IconLogoCircleSOL,
   useTheme,
   Button,
-  IconUserFollow
+  IconUserFollow,
+  IconTipping
 } from '@audius/harmony'
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
@@ -42,7 +43,6 @@ import { useModalState } from 'common/hooks/useModalState'
 import { ArtistPopover } from 'components/artist/ArtistPopover'
 import { UserLink } from 'components/link'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
-import { IconTip } from 'components/notification/Notification/components/icons'
 import UserBadges from 'components/user-badges/UserBadges'
 import { useAuthenticatedCallback } from 'hooks/useAuthenticatedCallback'
 import { emptyStringGuard } from 'pages/track-page/utils'
@@ -245,7 +245,7 @@ const LockedGatedContentSection = ({
 
     if (isContentUSDCPurchaseGated(streamConditions)) {
       return (
-        <Text variant='body' strength='strong'>
+        <Text variant='body' strength='strong' textAlign='left'>
           {messages.unlockWithPurchase}
         </Text>
       )
@@ -292,7 +292,7 @@ const LockedGatedContentSection = ({
           variant='primary'
           color='blue'
           onClick={handleSendTip}
-          iconRight={IconTip}
+          iconRight={IconTipping}
           fullWidth
         >
           {messages.sendTip}
@@ -320,9 +320,9 @@ const LockedGatedContentSection = ({
   }
 
   return (
-    <div className={className}>
-      <div className={styles.gatedContentDescriptionContainer}>
-        <Flex alignItems='center' gap='s' mb='s'>
+    <Flex className={className} justifyContent='space-between'>
+      <Flex gap='s' direction='column'>
+        <Flex alignItems='center' gap='s'>
           <LockedStatusPill
             locked
             variant={isUSDCPurchaseGated ? 'premium' : 'gated'}
@@ -332,11 +332,11 @@ const LockedGatedContentSection = ({
           </Text>
         </Flex>
         {renderLockedDescription()}
-      </div>
+      </Flex>
       <div className={cn(styles.gatedContentSectionButton, buttonClassName)}>
         {renderButton()}
       </div>
-    </div>
+    </Flex>
   )
 }
 
@@ -401,17 +401,24 @@ const UnlockingGatedContentSection = ({
 
   return (
     <div className={className}>
-      <div className={styles.gatedContentDescriptionContainer}>
+      <Flex
+        direction='row'
+        className={styles.gatedContentDescriptionContainer}
+        alignItems='flex-start'
+        gap='s'
+      >
         <Text variant='label' size='l' strength='strong'>
-          <LoadingSpinner className={styles.spinner} />
-          {isContentUSDCPurchaseGated(streamConditions)
-            ? messages.purchasing
-            : messages.unlocking}
+          <Flex alignItems='center' gap='s'>
+            <LoadingSpinner className={styles.spinner} />
+            {isContentUSDCPurchaseGated(streamConditions)
+              ? messages.purchasing
+              : messages.unlocking}
+          </Flex>
         </Text>
         <Text variant='body' strength='strong'>
           {renderUnlockingDescription()}
         </Text>
-      </div>
+      </Flex>
     </div>
   )
 }

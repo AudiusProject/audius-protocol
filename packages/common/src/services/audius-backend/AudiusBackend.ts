@@ -35,13 +35,16 @@ import {
   DefaultSizes,
   FailureReason,
   ID,
+  InstagramUser,
   Name,
   ProfilePictureSizes,
   SquareSizes,
   StringUSDC,
   StringWei,
+  TikTokUser,
   Track,
   TrackMetadata,
+  TwitterUser,
   User,
   UserMetadata,
   WidthSizes
@@ -69,14 +72,12 @@ import {
   PushNotifications,
   TrackMetadataForUpload
 } from '../../store'
-import { CIDCache } from '../../store/cache/CIDCache'
 import {
   getErrorMessage,
   uuid,
   Maybe,
   encodeHashId,
   decodeHashId,
-  Timer,
   Nullable,
   removeNullable,
   isNullOrUndefined
@@ -124,7 +125,6 @@ declare global {
 
 const SEARCH_MAX_SAVED_RESULTS = 10
 const SEARCH_MAX_TOTAL_RESULTS = 50
-const IMAGE_CACHE_MAX_SIZE = 200
 
 export const AuthHeaders = Object.freeze({
   Message: 'Encoded-Data-Message',
@@ -179,9 +179,6 @@ const notDeleted = (e: { is_delete: boolean }) => !e.is_delete
 
 export type TransactionReceipt = { blockHash: string; blockNumber: number }
 
-let preloadImageTimer: Timer
-const avoidGC: HTMLImageElement[] = []
-
 type DiscoveryProviderListener = (endpoint: Nullable<string>) => void
 
 type AudiusBackendSolanaConfig = Partial<{
@@ -221,7 +218,7 @@ type WaitForLibsInit = () => Promise<unknown>
 
 type AudiusBackendParams = {
   claimDistributionContractAddress: Maybe<string>
-  imagePreloader?: (url: string) => Promise<boolean>
+  imagePreloader: (url: string) => Promise<boolean>
   env: Env
   ethOwnerWallet: Maybe<string>
   ethProviderUrls: Maybe<string[]>
@@ -362,77 +359,7 @@ export const audiusBackend = ({
     }
   }
 
-  async function preloadImage(url: string): Promise<boolean> {
-    if (!preloadImageTimer) {
-      const batchSize =
-        getRemoteVar(IntKeys.IMAGE_QUICK_FETCH_PERFORMANCE_BATCH_SIZE) ??
-        undefined
-
-      preloadImageTimer = new Timer(
-        {
-          name: 'image_preload',
-          batch: true,
-          batchSize
-        },
-        ({ name, duration }) => {
-          console.info(`Recorded event ${name} with duration ${duration}`)
-          recordAnalytics({
-            eventName: Name.PERFORMANCE,
-            properties: {
-              metric: name,
-              value: duration
-            }
-          })
-        }
-      )
-    }
-    const start = preloadImageTimer.start()
-    const timeoutMs =
-      getRemoteVar(IntKeys.IMAGE_QUICK_FETCH_TIMEOUT_MS) ?? undefined
-    let timeoutId: any = null
-
-    try {
-      const response = await Promise.race([
-        fetch(url),
-        new Promise<Response>((_resolve, reject) => {
-          timeoutId = setTimeout(() => reject(new Error('Timeout')), timeoutMs)
-        })
-      ])
-
-      if (timeoutId) {
-        clearTimeout(timeoutId)
-      }
-
-      if (!response.ok) {
-        return false
-      }
-
-      const blob = await response.blob()
-      const objectUrl = URL.createObjectURL(blob)
-      const image = new Image()
-      avoidGC.push(image)
-      if (avoidGC.length > IMAGE_CACHE_MAX_SIZE) avoidGC.shift()
-
-      await new Promise<void>((resolve, reject) => {
-        image.onload = () => {
-          preloadImageTimer.end(start)
-          resolve()
-        }
-        image.onerror = () => {
-          preloadImageTimer.end(start)
-          reject(new Error('Image loading error'))
-        }
-        image.src = objectUrl
-      })
-
-      return true
-    } catch (error) {
-      preloadImageTimer.end(start)
-      return false
-    }
-  }
-
-  async function fetchCID(cid: CID, cache = true, asUrl = true) {
+  async function fetchCID(cid: CID, asUrl = true) {
     await waitForLibsInit()
 
     // If requesting a url (we mean a blob url for the file),
@@ -445,7 +372,6 @@ export const audiusBackend = ({
         const url = nativeMobile
           ? res.config.url
           : URL.createObjectURL(res.data)
-        if (cache) CIDCache.add(cid, url)
         return url
       }
       return res?.data ?? null
@@ -472,9 +398,6 @@ export const audiusBackend = ({
     if (size && cidMap && cidMap[size]) {
       cidFileName = cidMap[size]
     }
-    if (CIDCache.has(cidFileName)) {
-      return CIDCache.get(cidFileName) as string
-    }
 
     const storageNodeSelector = await getStorageNodeSelector()
     // Only rendezvous hash the cid for extremely old legacy
@@ -484,21 +407,9 @@ export const audiusBackend = ({
     for (const storageNode of storageNodes) {
       const imageUrl = `${storageNode}/content/${cidFileName}`
 
-      if (imagePreloader) {
-        try {
-          const preloaded = await imagePreloader(imageUrl)
-          if (preloaded) {
-            return imageUrl
-          }
-        } catch (e) {
-          // swallow error and continue
-        }
-      } else {
-        const isSuccessful = await preloadImage(imageUrl)
-        if (isSuccessful) {
-          CIDCache.add(cidFileName, imageUrl)
-          return imageUrl
-        }
+      const preloaded = await imagePreloader(imageUrl)
+      if (preloaded) {
+        return imageUrl
       }
     }
     return ''
@@ -824,10 +735,6 @@ export const audiusBackend = ({
     return audiusLibs.creatorNode.setEndpoint(endpoint)
   }
 
-  async function listCreatorNodes() {
-    return audiusLibs.ServiceProvider.listCreatorNodes()
-  }
-
   async function getAccount() {
     await waitForLibsInit()
     try {
@@ -1004,87 +911,10 @@ export const audiusBackend = ({
     }
   }
 
-  // Uploads a single track
-  // Returns { trackId, error, phase }
-  async function uploadTrack(
-    trackFile: File,
-    coverArtFile: File,
-    metadata: TrackMetadata,
-    onProgress: (loaded: number, total: number) => void,
-    trackId?: number
-  ) {
-    try {
-      const {
-        trackId: updatedTrackId,
-        updatedMetadata,
-        txReceipt
-      } = await audiusLibs.Track.uploadTrackV2AndWriteToChain(
-        trackFile,
-        coverArtFile,
-        metadata,
-        onProgress,
-        trackId
-      )
-      // Return with properties that confirmer expects
-      return {
-        blockHash: txReceipt.blockHash,
-        blockNumber: txReceipt.blockNumber,
-        trackId: updatedTrackId,
-        transcodedTrackCID: updatedMetadata.track_cid,
-        error: false
-      }
-    } catch (e: any) {
-      return { error: e }
-    }
-  }
-
-  // Used to upload multiple tracks as part of an album/playlist.
-  // V2: Returns { metadataMultihash, updatedMetadata }
-  // LEGACY: Returns { metadataMultihash, metadataFileUUID, transcodedTrackCID, transcodedTrackUUID, metadata }
-  async function uploadTrackToCreatorNode(
-    trackFile: File,
-    coverArtFile: File,
-    metadata: TrackMetadata,
-    onProgress: (loaded: number, total: number) => void
-  ) {
-    const updatedMetadata = await audiusLibs.Track.uploadTrackV2(
-      trackFile,
-      coverArtFile,
-      metadata,
-      onProgress
-    )
-    return {
-      metadata: updatedMetadata,
-
-      // We don't need these properties, but the confirmer expects them.
-      // TODO (theo): Remove after v2 is fully rolled out and v1 is removed
-      transcodedTrackCID: updatedMetadata.track_cid,
-      metadataMultihash: '',
-      metadataFileUUID: '',
-      transcodedTrackUUID: ''
-    }
-  }
-
   async function getUserEmail(): Promise<string> {
     await waitForLibsInit()
     const { email } = await audiusLibs.Account.getUserEmail()
     return email
-  }
-
-  /**
-   * Adds tracks to chain for this user.
-   * Associates tracks with user on creatorNode if in legacy flow (non storage v2).
-   */
-  async function registerUploadedTracks(
-    uploadedTracks: {
-      metadataMultihash: string
-      metadataFileUUID: string
-      metadata: TrackMetadata
-    }[]
-  ) {
-    return await audiusLibs.Track.addTracksToChainV2(
-      uploadedTracks.map((t) => t.metadata)
-    )
   }
 
   async function uploadImage(file: File) {
@@ -1158,7 +988,7 @@ export const audiusBackend = ({
   async function fetchUserAssociatedEthWallets(user: User) {
     const cid = user?.metadata_multihash ?? null
     if (cid) {
-      const metadata = await fetchCID(cid, /* cache */ false, /* asUrl */ false)
+      const metadata = await fetchCID(cid, /* asUrl */ false)
       if (metadata?.associated_wallets) {
         return metadata.associated_wallets
       }
@@ -1175,7 +1005,7 @@ export const audiusBackend = ({
   async function fetchUserAssociatedSolWallets(user: User) {
     const cid = user?.metadata_multihash ?? null
     if (cid) {
-      const metadata = await fetchCID(cid, /* cache */ false, /* asUrl */ false)
+      const metadata = await fetchCID(cid, /* asUrl */ false)
       if (metadata?.associated_sol_wallets) {
         return metadata.associated_sol_wallets
       }
@@ -1192,7 +1022,7 @@ export const audiusBackend = ({
   async function fetchUserAssociatedWallets(user: User) {
     const cid = user?.metadata_multihash ?? null
     if (cid) {
-      const metadata = await fetchCID(cid, /* cache */ false, /* asUrl */ false)
+      const metadata = await fetchCID(cid, /* asUrl */ false)
       return {
         associated_sol_wallets: metadata?.associated_sol_wallets ?? null,
         associated_wallets: metadata?.associated_wallets ?? null
@@ -1259,16 +1089,6 @@ export const audiusBackend = ({
     } catch (err) {
       console.error(getErrorMessage(err))
       throw err
-    }
-  }
-
-  async function updateIsVerified(userId: ID, verified: boolean) {
-    try {
-      await audiusLibs.User.updateIsVerified(userId, verified)
-      return true
-    } catch (err) {
-      console.error(getErrorMessage(err))
-      return false
     }
   }
 
@@ -1474,23 +1294,6 @@ export const audiusBackend = ({
     }
   }
 
-  // TODO(C-2719)
-  async function getSavedTracks(limit = 100, offset = 0) {
-    try {
-      return withEagerOption(
-        {
-          normal: (libs) => libs.Track.getSavedTracks,
-          eager: DiscoveryAPI.getSavedTracks
-        },
-        limit,
-        offset
-      )
-    } catch (err) {
-      console.error(getErrorMessage(err))
-      return []
-    }
-  }
-
   // Favoriting a track
   async function saveTrack(
     trackId: ID,
@@ -1663,20 +1466,12 @@ export const audiusBackend = ({
     }
   }
 
-  async function handleInUse(handle: string) {
-    await waitForLibsInit()
-    try {
-      const handleIsValid = await audiusLibs.Account.handleIsValid(handle)
-      return !handleIsValid
-    } catch (error) {
-      return true
-    }
-  }
-
   async function twitterHandle(handle: string) {
     await waitForLibsInit()
     try {
-      const user = await audiusLibs.Account.lookupTwitterHandle(handle)
+      const user: TwitterUser = await audiusLibs.Account.lookupTwitterHandle(
+        handle
+      )
       return { success: true, user }
     } catch (error) {
       return { success: false, error }
@@ -1688,7 +1483,7 @@ export const audiusBackend = ({
       const res = await fetch(
         `${generalAdmissionUrl}/social/instagram/${handle}`
       )
-      const json = await res.json()
+      const json: InstagramUser = await res.json()
       return json
     } catch (error) {
       console.error(error)
@@ -1699,7 +1494,7 @@ export const audiusBackend = ({
   async function tiktokHandle(handle: string) {
     try {
       const res = await fetch(`${generalAdmissionUrl}/social/tiktok/${handle}`)
-      const json = await res.json()
+      const json: TikTokUser = await res.json()
       return json
     } catch (error) {
       console.error(error)
@@ -2876,24 +2671,6 @@ export const audiusBackend = ({
   }
 
   /**
-   * Retrieves the claim distribution amount
-   * @returns {BN} amount The claim amount
-   */
-  async function getClaimDistributionAmount() {
-    await waitForLibsInit()
-    const wallet = audiusLibs.web3Manager.getWalletAddress()
-    if (!wallet) return
-
-    try {
-      const amount = await audiusLibs.Account.getClaimDistributionAmount()
-      return amount
-    } catch (e) {
-      console.error(e)
-      return null
-    }
-  }
-
-  /**
    * Make a request to fetch the eth AUDIO balance of the the user
    * @params {bool} bustCache
    * @returns {Promise<BN | null>} balance or null if failed to fetch balance
@@ -3068,17 +2845,6 @@ export const audiusBackend = ({
   }
 
   /**
-   * Get latest transaction receipt based on block number
-   * Used by confirmer
-   */
-  function getLatestTxReceipt(receipts: TransactionReceipt[]) {
-    if (!receipts.length) return {} as TransactionReceipt
-    return receipts.sort((receipt1, receipt2) =>
-      receipt1.blockNumber < receipt2.blockNumber ? 1 : -1
-    )[0]
-  }
-
-  /**
    * Transfers the user's ERC20 AUDIO into SPL WAUDIO to their solana user bank account
    * @param {BN} balance The amount of AUDIO to be transferred
    * @returns {
@@ -3116,26 +2882,6 @@ export const audiusBackend = ({
       return null
     }
     return new BN(waudioBalance.toString())
-  }
-
-  async function getAudioTransactionsCount() {
-    try {
-      const { data, signature } = await signDiscoveryNodeRequest()
-      const res = await fetch(
-        `${currentDiscoveryProvider}/v1/full/transactions`,
-        {
-          headers: {
-            encodedDataMessage: data,
-            encodedDataSignature: signature
-          }
-        }
-      )
-      const json = await res.json()
-      return json
-    } catch (e) {
-      console.error(e)
-      return 0
-    }
   }
 
   /**
@@ -3274,7 +3020,6 @@ export const audiusBackend = ({
     getAccount,
     getAddressTotalStakedBalance,
     getAddressWAudioBalance,
-    getAudioTransactionsCount,
     getAddressSolBalance,
     getAssociatedTokenAccountInfo,
     getAudiusLibs,
@@ -3282,21 +3027,18 @@ export const audiusBackend = ({
     getBalance,
     getBrowserPushNotificationSettings,
     getBrowserPushSubscription,
-    getClaimDistributionAmount,
     getCollectionImages,
     getCreators,
     getSocialHandles,
     getEmailNotificationSettings,
     getFolloweeFollows,
     getImageUrl,
-    getLatestTxReceipt,
     getNotifications,
     getDiscoveryNotifications,
     getPlaylists,
     getPushNotificationSettings,
     getRandomFeePayer,
     getSafariBrowserPushEnabled,
-    getSavedTracks,
     getSignature,
     getTrackImages,
     getUserEmail,
@@ -3305,15 +3047,12 @@ export const audiusBackend = ({
     getUserSubscribed,
     getWAudioBalance,
     getWeb3,
-    handleInUse,
     identityServiceUrl,
-    listCreatorNodes,
     markAllNotificationAsViewed,
     orderPlaylist,
     publishPlaylist,
     recordTrackListen,
     registerDeviceToken,
-    registerUploadedTracks,
     repostCollection,
     repostTrack,
     resetPassword,
@@ -3347,7 +3086,6 @@ export const audiusBackend = ({
     updateCreator,
     updateEmailNotificationSettings,
     updateHCaptchaScore,
-    updateIsVerified,
     updateNotificationSettings,
     updatePlaylist,
     updatePlaylistLastViewedAt,
@@ -3358,8 +3096,6 @@ export const audiusBackend = ({
     subscribeToUser,
     unsubscribeFromUser,
     uploadImage,
-    uploadTrack,
-    uploadTrackToCreatorNode,
     userNodeUrl,
     validateTracksInPlaylist,
     waitForLibsInit,

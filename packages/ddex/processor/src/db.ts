@@ -1,6 +1,6 @@
 import sql, { Database } from '@radically-straightforward/sqlite'
-import { DDEXRelease, DDEXReleaseIds } from './parseDelivery'
 import { Statement } from 'better-sqlite3'
+import { DDEXRelease, DDEXReleaseIds } from './parseDelivery'
 
 const dbLocation = process.env.SQLITE_URL || 'data/dev.db'
 const db = new Database(dbLocation)
@@ -11,6 +11,7 @@ db.migrate(
   sql`
 
 create table if not exists xmls (
+  source text not null,
   xmlUrl text primary key,
   xmlText text not null,
   messageTimestamp text not null,
@@ -18,13 +19,16 @@ create table if not exists xmls (
 );
 
 create table if not exists users (
-  id text primary key,
+  apiKey text, -- app that user authorized
+  id text,
   handle text not null,
   name text not null,
-  createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
+  createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+  primary key (apiKey, id)
 );
 
 create table if not exists releases (
+  source text not null,
   key text primary key,
   ref text,
   xmlUrl text,
@@ -55,6 +59,7 @@ create table if not exists s3markers (
 )
 
 export type XmlRow = {
+  source: string
   xmlText: string
   xmlUrl: string
   messageTimestamp: string
@@ -62,6 +67,7 @@ export type XmlRow = {
 }
 
 export type UserRow = {
+  apiKey: string
   id: string
   handle: string
   name: string
@@ -78,11 +84,13 @@ export enum ReleaseProcessingStatus {
 }
 
 export type ReleaseRow = {
+  source: string
   key: string
   xmlUrl: string
   messageTimestamp: string
   json: string
   status: ReleaseProcessingStatus
+  createdAt: string
 
   entityType?: 'track' | 'album'
   entityId?: string
@@ -126,13 +134,23 @@ export const userRepo = {
     return db.all<UserRow>(sql`select * from users`)
   },
 
+  find(example: Partial<UserRow>) {
+    return dbSelect('users', example) as UserRow[]
+  },
+
+  findOne(example: Partial<UserRow>) {
+    return dbSelectOne('users', example) as UserRow | undefined
+  },
+
   upsert(user: Partial<UserRow>) {
     dbUpsert('users', user)
   },
 
-  match(artistNames: string[]) {
+  match(apiKey: string, artistNames: string[]) {
     const artistSet = new Set(artistNames.map(lowerAscii))
-    const users = db.all<UserRow>(sql`select * from users`)
+    const users = db.all<UserRow>(
+      sql`select * from users where apiKey = ${apiKey}`
+    )
     for (const u of users) {
       if (
         artistSet.has(lowerAscii(u.name)) ||
@@ -210,7 +228,7 @@ export const releaseRepo = {
 
       $${ifdef(params.status, sql` and status = ${params.status} `)}
 
-      order by xmlUrl, ref
+      order by createdAt
     `)
 
     for (const row of rows) {
@@ -233,7 +251,12 @@ export const releaseRepo = {
   },
 
   upsert: db.transaction(
-    (xmlUrl: string, messageTimestamp: string, release: DDEXRelease) => {
+    (
+      source: string,
+      xmlUrl: string,
+      messageTimestamp: string,
+      release: DDEXRelease
+    ) => {
       const key = releaseRepo.chooseReleaseId(release.releaseIds)
       const prior = releaseRepo.get(key)
       const json = JSON.stringify(release)
@@ -251,11 +274,18 @@ export const releaseRepo = {
         return
       }
 
-      const status: ReleaseRow['status'] = release.problems.length
+      let status: ReleaseRow['status'] = release.problems.length
         ? ReleaseProcessingStatus.Blocked
         : ReleaseProcessingStatus.PublishPending
 
+      // if prior is published and latest version has no deal,
+      // treat as takedown
+      if (prior?.entityId && release.deals.length == 0) {
+        status = ReleaseProcessingStatus.DeletePending
+      }
+
       dbUpsert('releases', {
+        source,
         key,
         status,
         ref: release.ref,
@@ -268,7 +298,12 @@ export const releaseRepo = {
   ),
 
   markForDelete: db.transaction(
-    (xmlUrl: string, messageTimestamp: string, releaseIds: DDEXReleaseIds) => {
+    (
+      source: string,
+      xmlUrl: string,
+      messageTimestamp: string,
+      releaseIds: DDEXReleaseIds
+    ) => {
       // here we do PK lookup using the "best" id
       // but we may need to try to find by all the different releaseIds
       // if it's not consistent
@@ -288,6 +323,7 @@ export const releaseRepo = {
       releaseRepo.update({
         key,
         status: ReleaseProcessingStatus.DeletePending,
+        source,
         xmlUrl,
         messageTimestamp,
       })
@@ -318,6 +354,22 @@ function toStmt(rawSql: string) {
     stmtCache[rawSql] = db.prepare(rawSql)
   }
   return stmtCache[rawSql]
+}
+
+export function dbSelect(table: string, data: Record<string, any>) {
+  const wheres = Object.keys(data)
+    .map((k) => ` ${k} = ? `)
+    .join(' AND ')
+  const rawSql = `select * from ${table} where ${wheres}`
+  return toStmt(rawSql).all(...Object.values(data))
+}
+
+export function dbSelectOne(table: string, data: Record<string, any>) {
+  const wheres = Object.keys(data)
+    .map((k) => ` ${k} = ? `)
+    .join(' AND ')
+  const rawSql = `select * from ${table} where ${wheres}`
+  return toStmt(rawSql).get(...Object.values(data))
 }
 
 export function dbUpdate(
@@ -354,5 +406,5 @@ function dbUpsert(table: string, data: Record<string, any>) {
 }
 
 function ifdef(obj: any, snippet: any) {
-  return Boolean(obj) ? snippet : sql``
+  return obj ? snippet : sql``
 }

@@ -43,7 +43,7 @@ export interface Activity {
 /**
  * Check if a given object implements the Activity interface.
  */
-export function instanceOfActivity(value: object): boolean {
+export function instanceOfActivity(value: object): value is Activity {
     let isInstance = true;
 
     return isInstance;

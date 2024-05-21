@@ -1,7 +1,6 @@
 #!/usr/bin/env sh
 
 set -e
-set -x
 
 cd $(dirname "$(readlink -f "$0")")/..
 
@@ -18,7 +17,15 @@ if [ -z "networkId" ]; then
 fi
 
 mkdir -p $dbPath
-npx ganache --wallet.deterministic --wallet.totalAccounts 50 --database.dbPath "$dbPath" --miner.blockTime 1 --chain.networkId "$networkId" &
+npx ganache \
+    --server.host "0.0.0.0" \
+    --wallet.deterministic \
+    --wallet.totalAccounts 50 \
+    --database.dbPath "$dbPath" \
+    --miner.blockTime 1 \
+    --chain.networkId "$networkId" \
+    &
+
 ganache_pid=$!
 
 npx truffle migrate --network predeploy

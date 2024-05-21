@@ -8,15 +8,19 @@ import {
   SmartCollection,
   ID,
   User,
-  isContentUSDCPurchaseGated
+  isContentUSDCPurchaseGated,
+  ModalSource,
+  Track
 } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import {
   CollectionTrack,
   CollectionsPageType,
-  CollectionPageTrackRecord
+  CollectionPageTrackRecord,
+  usePremiumContentPurchaseModal,
+  PurchaseableContentType
 } from '@audius/common/store'
-import { getDogEarType } from '@audius/common/utils'
+import { getDogEarType, removeNullable } from '@audius/common/utils'
 
 import { ClientOnly } from 'components/client-only/ClientOnly'
 import {
@@ -29,6 +33,7 @@ import Page from 'components/page/Page'
 import { SuggestedTracks } from 'components/suggested-tracks'
 import { Tile } from 'components/tile'
 import { TracksTable, TracksTableColumn } from 'components/tracks-table'
+import { useAuthenticatedCallback } from 'hooks/useAuthenticatedCallback'
 import { useFlag } from 'hooks/useRemoteConfig'
 import { smartCollectionIcons } from 'pages/collection-page/smartCollectionIcons'
 import { computeCollectionMetadataProps } from 'pages/collection-page/store/utils'
@@ -137,7 +142,6 @@ const CollectionPage = ({
   onClickFavorites
 }: CollectionPageProps) => {
   const { status, metadata, user } = collection
-  const { isEnabled: isEditAlbumsEnabled } = useFlag(FeatureFlags.EDIT_ALBUMS)
   const { isEnabled: isPremiumAlbumsEnabled } = useFlag(
     FeatureFlags.PREMIUM_ALBUMS_ENABLED
   )
@@ -150,7 +154,8 @@ const CollectionPage = ({
   const collectionLoading = status === Status.LOADING
   const queuedAndPlaying = playing && isQueued()
   const queuedAndPreviewing = previewing && isQueued()
-  const tracksLoading = tracks.status === Status.LOADING
+  const tracksLoading =
+    tracks.status === Status.LOADING || tracks.status === Status.IDLE
 
   const coverArtSizes =
     metadata && metadata?.variant !== Variant.SMART
@@ -207,6 +212,19 @@ const CollectionPage = ({
     (track) =>
       track.is_stream_gated &&
       isContentUSDCPurchaseGated(track.stream_conditions)
+  )
+
+  // Note: This would normally belong in the CollectionPageProvider,
+  // but it benefits us more to reuse existing hooks and that component cannot use hooks
+  const { onOpen: openPremiumContentModal } = usePremiumContentPurchaseModal()
+  const openPurchaseModal = useAuthenticatedCallback(
+    ({ track_id }: Track) => {
+      openPremiumContentModal(
+        { contentId: track_id, contentType: PurchaseableContentType.TRACK },
+        { source: ModalSource.TrackListItem }
+      )
+    },
+    [openPremiumContentModal]
   )
   const isPlayable = !areAllTracksDeleted && numTracks > 0
   const dogEarType =
@@ -271,30 +289,28 @@ const CollectionPage = ({
     return isNftPlaylist ? CollectiblesPlaylistTable : TracksTable
   }, [isNftPlaylist])
 
-  const tracksTableColumns = useMemo<
-    (TracksTableColumn | CollectiblesPlaylistTableColumn)[]
-  >(() => {
-    if (isNftPlaylist)
-      return ['playButton', 'collectibleName', 'chain', 'length', 'spacer']
-    // Hide play count if all tracks are premium
-    if (areAllTracksPremium)
-      return [
+  const tracksTableColumns = useMemo(() => {
+    let columns: (
+      | TracksTableColumn
+      | CollectiblesPlaylistTableColumn
+      | undefined
+    )[]
+
+    if (isNftPlaylist) {
+      columns = ['playButton', 'collectibleName', 'chain', 'length', 'spacer']
+    } else {
+      columns = [
         'playButton',
         'trackName',
+        isAlbum ? undefined : 'artistName',
         isAlbum ? 'date' : 'addedDate',
         'length',
+        areAllTracksPremium ? undefined : 'plays',
         'reposts',
         'overflowActions'
       ]
-    return [
-      'playButton',
-      'trackName',
-      isAlbum ? 'date' : 'addedDate',
-      'length',
-      'plays',
-      'reposts',
-      'overflowActions'
-    ]
+    }
+    return columns.filter(removeNullable)
   }, [areAllTracksPremium, isAlbum, isNftPlaylist])
 
   const messages = getMessages(isAlbum ? 'album' : 'playlist')
@@ -345,15 +361,14 @@ const CollectionPage = ({
                 onClickFavorite={onClickSave}
                 onClickRemove={isOwner ? onClickRemove : undefined}
                 onClickRepost={onClickRepostTrack}
-                onClickPurchase={onClickPurchaseTrack}
+                onClickPurchase={openPurchaseModal}
                 isPremiumEnabled={isPremiumAlbumsEnabled}
                 onReorderTracks={onReorderTracks}
                 onSortTracks={onSortTracks}
                 isReorderable={
                   userId !== null &&
                   userId === playlistOwnerId &&
-                  allowReordering &&
-                  (!isAlbum || isEditAlbumsEnabled)
+                  allowReordering
                 }
                 removeText={`${messages.remove} ${
                   isAlbum ? messages.type.album : messages.type.playlist
@@ -370,7 +385,7 @@ const CollectionPage = ({
         )}
       </Tile>
       <ClientOnly>
-        {isOwner && !isAlbum && !isNftPlaylist ? (
+        {!collectionLoading && isOwner && !isAlbum && !isNftPlaylist ? (
           <>
             <Divider variant='default' className={styles.tileDivider} />
             <SuggestedTracks collectionId={playlistId} />

@@ -13,6 +13,7 @@ from src.utils.redis_connection import get_redis
 
 REDIS_URL = shared_config["redis"]["url"]
 BLOCK_NUMBER = 10
+BLOCK_DATETIME = datetime.now()
 
 
 def test_mobile_install_challenge(app):
@@ -51,8 +52,12 @@ def test_mobile_install_challenge(app):
         session.flush()
         session.add(user)
         session.flush()
-        bus.dispatch(ChallengeEvent.mobile_install, BLOCK_NUMBER, user.user_id)
-        bus.dispatch(ChallengeEvent.mobile_install, BLOCK_NUMBER, user.user_id)
+        bus.dispatch(
+            ChallengeEvent.mobile_install, BLOCK_NUMBER, BLOCK_DATETIME, user.user_id
+        )
+        bus.dispatch(
+            ChallengeEvent.mobile_install, BLOCK_NUMBER, BLOCK_DATETIME, user.user_id
+        )
         bus.flush()
         bus.process_events(session)
 

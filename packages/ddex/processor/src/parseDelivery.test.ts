@@ -1,40 +1,46 @@
-import { expect, test } from 'vitest'
+import { beforeAll, expect, test } from 'vitest'
 import {
   DDEXRelease,
   DealEthGated,
   DealFollowGated,
   DealPayGated,
   DealSolGated,
+  DealTipGated,
   parseDdexXmlFile,
 } from './parseDelivery'
-import { readFileSync } from 'node:fs'
+import { sources } from './sources'
+
+beforeAll(async () => {
+  sources.load('./sources.test.json')
+})
 
 test('deal types', async () => {
   const releases = (await parseDdexXmlFile(
+    'dealTest',
     'fixtures/dealTypes.xml'
   )) as DDEXRelease[]
 
-  expect(releases[1].deal).toMatchObject<Partial<DealPayGated>>({
+  expect(releases[1].deals[0]).toMatchObject<Partial<DealPayGated>>({
     audiusDealType: 'PayGated',
     priceUsd: 4.0,
-    isDownloadable: true,
+    forDownload: true,
   })
 
-  expect(releases[2].deal).toMatchObject<Partial<DealFollowGated>>({
+  expect(releases[2].deals[0]).toMatchObject<Partial<DealFollowGated>>({
     audiusDealType: 'FollowGated',
-    isDownloadable: false,
+    forDownload: false,
   })
 
-  expect(releases[3].deal).toMatchObject<Partial<DealEthGated>>({
+  expect(releases[3].deals[0]).toMatchObject<Partial<DealEthGated>>({
     audiusDealType: 'NFTGated',
-    isDownloadable: false,
+    forDownload: false,
     chain: 'eth',
     standard: 'ERC-721',
   })
 
-  expect(releases[4].deal).toMatchObject<Partial<DealSolGated>>({
+  expect(releases[4].deals[0]).toMatchObject<Partial<DealSolGated>>({
     audiusDealType: 'NFTGated',
-    isDownloadable: false,
+    forDownload: false,
     chain: 'sol',
   })
 
@@ -44,4 +50,23 @@ test('deal types', async () => {
     year: '2010',
   })
   expect(releases[1].soundRecordings[0].copyrightLine).toBeUndefined()
+})
+
+test('separate stream / download deal conditions', async () => {
+  const releases = (await parseDdexXmlFile(
+    'dealTest',
+    'fixtures/track_follow_gated.xml'
+  )) as DDEXRelease[]
+
+  expect(releases[0].deals[0]).toMatchObject<Partial<DealFollowGated>>({
+    audiusDealType: 'FollowGated',
+    forStream: true,
+    forDownload: false,
+  })
+
+  expect(releases[0].deals[1]).toMatchObject<Partial<DealTipGated>>({
+    audiusDealType: 'TipGated',
+    forStream: false,
+    forDownload: true,
+  })
 })

@@ -139,6 +139,7 @@ export const createUploadTrackMetadataSchema = () =>
       required_error: messages.titleRequiredError
     }),
     previewStartSeconds: z.optional(z.number()),
+    placementHosts: z.optional(z.string()),
     audioUploadId: z.optional(z.string()),
     previewCid: z.optional(z.string()),
     origFileCid: z.optional(z.string()),

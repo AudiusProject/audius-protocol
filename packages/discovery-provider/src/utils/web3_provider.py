@@ -17,6 +17,8 @@ logger = logging.getLogger(__name__)
 
 web3: Optional[Web3] = None
 
+GATEWAY_FALLBACK_BLOCKDIFF = 10000
+
 
 def get_web3(web3endpoint=None):
     # pylint: disable=W0603
@@ -25,21 +27,28 @@ def get_web3(web3endpoint=None):
     if web3:
         return web3
 
-    if not web3endpoint:
+    if web3endpoint:
+        web3 = Web3(HTTPProvider(web3endpoint))
+    else:
+        local_rpc = os.getenv("audius_web3_localhost")
+        local_web3 = Web3(HTTPProvider(local_rpc))
+        gateway_web3 = Web3(HTTPProvider(os.getenv("audius_web3_host")))
         # attempt local rpc, check if healthy
         try:
-            local_rpc = os.getenv("audius_web3_localhost")
-            if requests.get(local_rpc + "/health").status_code == 200:
-                web3endpoint = local_rpc
+            block_diff = abs(
+                local_web3.eth.get_block_number() - gateway_web3.eth.get_block_number()
+            )
+            resp = requests.get(local_rpc + "/health")
+            if resp.status_code == 200 and block_diff < GATEWAY_FALLBACK_BLOCKDIFF:
+                web3 = local_web3
                 logger.info("web3_provider.py | using local RPC")
             else:
                 raise Exception("local RPC unhealthy or unreachable")
         except Exception as e:
-            web3endpoint = os.getenv("audius_web3_host")
             logger.warn(e)
-    web3 = Web3(HTTPProvider(web3endpoint))
-    web3.strict_bytes_type_checking = False
+            web3 = gateway_web3
 
+    web3.strict_bytes_type_checking = False
     # required middleware for POA
     # https://web3py.readthedocs.io/en/latest/middleware.html#proof-of-authority
     web3.middleware_onion.inject(geth_poa_middleware, layer=0)

@@ -1,11 +1,10 @@
 import { ReactNode } from 'react'
 
 import { Client } from '@audius/common/models'
-import { IconArrowRight } from '@audius/harmony'
+import { IconArrowRight, Pill } from '@audius/harmony'
 import cn from 'classnames'
 
 import { Banner, BannerProps } from 'components/banner/Banner'
-import Pill from 'components/pill/Pill'
 import { getClient } from 'utils/clientUtil'
 
 import styles from './CallToActionBanner.module.css'
@@ -35,6 +34,15 @@ export const CallToActionBanner = (props: CallToActionBannerProps) => {
 
   const client = getClient()
 
+  const pillElement = (
+    <Pill
+      variant='custom'
+      css={{ backgroundColor: 'rgba(255, 255, 255, 0.4)' }}
+    >
+      {pill}
+    </Pill>
+  )
+
   return (
     <Banner
       isElectron={client === Client.ELECTRON}
@@ -48,15 +56,7 @@ export const CallToActionBanner = (props: CallToActionBannerProps) => {
         onClick={onAccept}
       >
         <div className={styles.content}>
-          {pill && pillPosition === 'left' ? (
-            <Pill
-              className={styles.pill}
-              textClassName={styles.pillText}
-              showIcon={false}
-              clickable={false}
-              text={pill}
-            />
-          ) : null}
+          {pill && pillPosition === 'left' ? pillElement : null}
           <div className={styles.contentSelection}>
             {emoji ? <i className={cn('emoji', emoji)} /> : null}
             <div
@@ -70,15 +70,7 @@ export const CallToActionBanner = (props: CallToActionBannerProps) => {
               className={cn(styles.arrow, { [styles.small]: size === 'small' })}
             />
           </div>
-          {pill && pillPosition === 'right' ? (
-            <Pill
-              className={styles.pill}
-              textClassName={styles.pillText}
-              showIcon={false}
-              clickable={false}
-              text={pill}
-            />
-          ) : null}
+          {pill && pillPosition === 'right' ? pillElement : null}
         </div>
       </div>
     </Banner>

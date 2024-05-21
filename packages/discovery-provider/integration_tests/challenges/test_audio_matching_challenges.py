@@ -17,6 +17,7 @@ from src.utils.redis_connection import get_redis
 
 REDIS_URL = shared_config["redis"]["url"]
 BLOCK_NUMBER = 1
+BLOCK_DATETIME = datetime.now()
 AMOUNT_FIVE = 5
 TRACK_ID = 1234
 
@@ -98,12 +99,14 @@ def test_audio_matching_challenge(app):
         bus.dispatch(
             ChallengeEvent.audio_matching_buyer,
             BLOCK_NUMBER,
+            BLOCK_DATETIME,
             buyer.user_id,
             {"track_id": TRACK_ID, "amount": AMOUNT_FIVE},
         )
         bus.dispatch(
             ChallengeEvent.audio_matching_seller,
             BLOCK_NUMBER,
+            BLOCK_DATETIME,
             seller_verified.user_id,
             {
                 "track_id": TRACK_ID,
@@ -133,6 +136,7 @@ def test_audio_matching_challenge(app):
         bus.dispatch(
             ChallengeEvent.audio_matching_seller,
             BLOCK_NUMBER,
+            BLOCK_DATETIME,
             seller_unverified.user_id,
             {
                 "track_id": TRACK_ID,

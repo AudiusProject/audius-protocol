@@ -14,6 +14,7 @@ from integration_tests.tasks.payment_router_mock_transactions import (
     mock_valid_track_purchase_multi_recipient_tx,
     mock_valid_track_purchase_single_recipient_pay_extra_tx,
     mock_valid_track_purchase_single_recipient_tx,
+    mock_valid_track_purchase_single_recipient_tx_with_location,
     mock_valid_track_purchase_stream_access,
     mock_valid_transfer_from_user_bank_without_purchase_single_recipient_tx,
     mock_valid_transfer_single_recipient_recovery_tx,
@@ -169,6 +170,43 @@ def test_process_payment_router_tx_details_valid_purchase(app):
         assert transaction_record.method == USDCTransactionMethod.receive
         assert transaction_record.change == 1000000
         assert transaction_record.tx_metadata == str(trackBuyerId)
+
+
+def test_process_payment_router_tx_details_valid_purchase_with_location_data(app):
+    tx_response = mock_valid_track_purchase_single_recipient_tx_with_location
+    with app.app_context():
+        db = get_db()
+
+    transaction = tx_response.value.transaction.transaction
+    tx_sig_str = str(transaction.signatures[0])
+
+    challenge_event_bus = create_autospec(ChallengeEventBus)
+    populate_mock_db(db, test_entries)
+
+    with db.scoped_session() as session:
+        process_payment_router_tx_details(
+            session=session,
+            tx_info=tx_response,
+            tx_sig=tx_sig_str,
+            timestamp=datetime.now(),
+            challenge_event_bus=challenge_event_bus,
+        )
+
+        purchase = (
+            session.query(USDCPurchase)
+            .filter(USDCPurchase.signature == tx_sig_str)
+            .first()
+        )
+        assert purchase is not None
+        assert purchase.seller_user_id == trackOwnerId
+        assert purchase.buyer_user_id == trackBuyerId
+        assert purchase.amount == 1000000
+        assert purchase.extra_amount == 0
+        assert purchase.content_type == PurchaseType.track
+        assert purchase.content_id == 1
+        assert purchase.city == "Nashville"
+        assert purchase.region == "TN"
+        assert purchase.country == "United States"
 
 
 def test_process_payment_router_tx_details_valid_purchase_album(app):
@@ -843,7 +881,7 @@ def test_process_payment_router_txs_details_create_challenge_events_for_purchase
             session=session,
             tx_info=tx_response,
             tx_sig=tx_sig_str,
-            timestamp=datetime.now(),
+            timestamp=datetime.fromtimestamp(tx_response.value.block_time),
             challenge_event_bus=challenge_event_bus,
         )
     # Note: Challenge amounts are 1 per dollar of USDC
@@ -851,12 +889,14 @@ def test_process_payment_router_txs_details_create_challenge_events_for_purchase
         call(
             ChallengeEvent.audio_matching_buyer,
             tx_response.value.slot,
+            datetime.fromtimestamp(tx_response.value.block_time),
             trackBuyerId,
             {"track_id": 1, "amount": 1},
         ),
         call(
             ChallengeEvent.audio_matching_seller,
             tx_response.value.slot,
+            datetime.fromtimestamp(tx_response.value.block_time),
             trackOwnerId,
             {"track_id": 1, "sender_user_id": trackBuyerId, "amount": 1},
         ),

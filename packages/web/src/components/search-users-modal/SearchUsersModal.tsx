@@ -35,7 +35,8 @@ import { useDebounce } from 'react-use'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 
 const messages = {
-  searchUsers: 'Search Users'
+  searchUsers: 'Search Users',
+  clearSearch: 'Clear search'
 }
 
 const DEBOUNCE_MS = 100
@@ -43,12 +44,6 @@ const DEBOUNCE_MS = 100
 const { searchUsers } = searchUsersModalActions
 const { getUserList, getLastSearchQuery } = searchUsersModalSelectors
 const { getUsers } = cacheUsersSelectors
-
-type SearchUsersModalProps = {
-  titleProps: ModalTitleProps
-  onCancel?: () => void
-} & Omit<UsersSearchProps, 'query' | 'onChange'> &
-  Omit<ModalProps, 'children'>
 
 type UsersSearchProps = {
   debounceMs?: number
@@ -60,11 +55,18 @@ type UsersSearchProps = {
   }
   renderEmpty?: () => ReactNode
   renderUser: (user: User, closeParentModal: () => void) => ReactNode
+  excludedUserIds?: number[]
   disableAutofocus?: boolean
   onClose?: () => void
   query: string
   onChange: (query: string) => void
 }
+
+type SearchUsersModalProps = {
+  titleProps: ModalTitleProps
+  onCancel?: () => void
+} & Omit<UsersSearchProps, 'query' | 'onChange'> &
+  Omit<ModalProps, 'children'>
 
 export const UsersSearch = (props: UsersSearchProps) => {
   const {
@@ -80,6 +82,7 @@ export const UsersSearch = (props: UsersSearchProps) => {
     renderEmpty = () => null,
     onClose,
     query,
+    excludedUserIds,
     onChange
   } = props
   const dispatch = useDispatch()
@@ -88,13 +91,16 @@ export const UsersSearch = (props: UsersSearchProps) => {
 
   const { userIds, hasMore, status } = useSelector(getUserList)
   const lastSearchQuery = useSelector(getLastSearchQuery)
+
   const users = useProxySelector(
     (state) => {
-      const ids = hasQuery ? userIds : defaultUserList.userIds
+      const unfilteredIds = hasQuery ? userIds : defaultUserList.userIds
+      const excludedUserIdsSet = new Set(excludedUserIds ?? [])
+      const ids = unfilteredIds.filter((id) => !excludedUserIdsSet.has(id))
       const users = getUsers(state, { ids })
       return ids.map((id) => users[id])
     },
-    [hasQuery, userIds]
+    [excludedUserIds, hasQuery, userIds]
   )
 
   useDebounce(
@@ -128,6 +134,10 @@ export const UsersSearch = (props: UsersSearchProps) => {
     }
   }, [hasQuery, query, status, defaultUserList, dispatch])
 
+  const getScrollParent = useCallback(() => {
+    return scrollParentRef.current
+  }, [])
+
   // Clear the query if something else resets our search state
   useEffect(() => {
     if (!lastSearchQuery) {
@@ -148,7 +158,7 @@ export const UsersSearch = (props: UsersSearchProps) => {
               css={{ pointerEvents: query ? 'auto' : 'none' }}
               color='subdued'
               size='m'
-              aria-label='Clear Search'
+              aria-label={messages.clearSearch}
               onClick={() => {
                 onChange('')
               }}
@@ -167,7 +177,7 @@ export const UsersSearch = (props: UsersSearchProps) => {
           useWindow={false}
           initialLoad
           hasMore={hasQuery ? hasMore : defaultUserList.hasMore}
-          getScrollParent={() => scrollParentRef.current}
+          getScrollParent={getScrollParent}
           loader={
             <LoadingSpinner
               css={(theme) => ({

@@ -1,57 +1,70 @@
-import { useCallback, useEffect } from 'react'
+import { useCallback, useMemo } from 'react'
 
+import { useAccountSwitcher } from '@audius/common/hooks'
+import { User, UserMetadata } from '@audius/common/models'
+import { accountSelectors, chatSelectors } from '@audius/common/store'
 import {
-  accountSelectors,
-  cacheUsersActions,
-  cacheUsersSelectors,
-  chatSelectors
-} from '@audius/common/store'
-import { encodeHashId } from '@audius/common/utils'
-import {
+  Button,
   Flex,
   IconButton,
+  IconCheck,
+  IconCloseAlt,
   IconKebabHorizontal,
   IconMessage,
   IconTrash,
   IconUser,
+  IconUserArrowRotate,
   PopupMenu,
   Text
 } from '@audius/harmony'
-import { useDispatch } from 'react-redux'
 
 import ArtistChip from 'components/artist/ArtistChip'
 import { useGoToRoute } from 'hooks/useGoToRoute'
 import { useComposeChat } from 'pages/chat-page/components/useComposeChat'
-import { audiusSdk } from 'services/audius-sdk'
 import { useSelector } from 'utils/reducer'
 import { profilePage } from 'utils/route'
 import zIndex from 'utils/zIndex'
 
 const { getUserId } = accountSelectors
-const { getUser } = cacheUsersSelectors
-const { fetchUsers } = cacheUsersActions
 const { getCanCreateChat } = chatSelectors
 
 const messages = {
   moreOptions: 'more options',
   removeManager: 'Remove Manager',
+  stopManaging: 'Stop Managing',
   visitProfile: 'Visit Profile',
   sendMessage: 'Send Message',
-  invitePending: 'Invite Pending'
+  invitePending: 'Invite Pending',
+  cancelInvite: 'Cancel Invite',
+  switchToUser: 'Switch to User'
 }
 
-// (TODO (nkang - C-4315) - Hook up to real data)
-export const AccountListItem = () => {
-  const user = useSelector((state) => getUser(state, { id: 5 }))
+type AccountListItemProps = {
+  isPending: boolean
+  user: User | UserMetadata
+  isManagedAccount?: boolean
+  onRemoveManager: (params: { userId: number; managerUserId: number }) => void
+  onCancelInvite?: (params: { userId: number; managerUserId: number }) => void
+  onApprove?: (params: {
+    currentUserId: number
+    grantorUser: User | UserMetadata
+  }) => void
+  onReject?: (params: {
+    currentUserId: number
+    grantorUser: User | UserMetadata
+  }) => void
+}
+
+export const AccountListItem = ({
+  isPending,
+  user,
+  isManagedAccount,
+  onRemoveManager,
+  onCancelInvite,
+  onApprove,
+  onReject
+}: AccountListItemProps) => {
   const currentUserId = useSelector(getUserId)
-
-  const dispatch = useDispatch()
-
-  useEffect(() => {
-    if (!user) {
-      dispatch(fetchUsers({ userIds: [5] }))
-    }
-  }, [dispatch, user])
 
   const goToRoute = useGoToRoute()
   const goToProfile = useCallback(() => {
@@ -59,54 +72,94 @@ export const AccountListItem = () => {
     goToRoute(profilePage(user.handle))
   }, [goToRoute, user])
 
+  const { switchAccount } = useAccountSwitcher()
+
   const { canCreateChat } = useSelector((state) =>
     getCanCreateChat(state, { userId: user?.user_id })
   )
 
   const composeChat = useComposeChat({
-    user: user!
+    // @ts-expect-error - This wants a User, but works with UserMetadata
+    user
   })
 
-  // Note: UI has not been designed, so this is the bare bones callback for now (see ).
-  const removeManager = useCallback(async () => {
-    const sdk = await audiusSdk()
-    if (!currentUserId) {
-      return
-    }
-    try {
-      // TODO(nkang - C-4315) - Turn into audius-query mutation
-      await sdk.grants.removeManager({
-        userId: encodeHashId(currentUserId),
-        managerUserId: encodeHashId(user!.user_id)
-      })
-      // eslint-disable-next-line no-console
-      console.log('Successfully removed manager')
-    } catch (e) {
-      console.error(e)
-    }
-  }, [currentUserId, user])
+  const handleRemoveManager = useCallback(() => {
+    if (!currentUserId) return
+    onRemoveManager({
+      userId: isManagedAccount ? user.user_id : currentUserId,
+      managerUserId: isManagedAccount ? currentUserId : user.user_id
+    })
+  }, [currentUserId, isManagedAccount, user.user_id, onRemoveManager])
 
-  const popupMenuItems = [
-    {
-      icon: <IconTrash />,
-      text: messages.removeManager,
-      onClick: removeManager
-    },
-    {
+  const handleCancelInvite = useCallback(() => {
+    if (!currentUserId) return
+    onCancelInvite?.({
+      userId: currentUserId,
+      managerUserId: user.user_id
+    })
+  }, [currentUserId, user.user_id, onCancelInvite])
+
+  const popupMenuItems = useMemo(() => {
+    const items = []
+    if (isManagedAccount) {
+      if (!isPending) {
+        items.push({
+          icon: <IconTrash />,
+          text: messages.stopManaging,
+          onClick: handleRemoveManager
+        })
+      }
+    } else {
+      items.push({
+        icon: <IconTrash />,
+        text: isPending ? messages.cancelInvite : messages.removeManager,
+        onClick: isPending ? handleCancelInvite : handleRemoveManager
+      })
+    }
+    items.push({
       icon: <IconUser />,
       text: messages.visitProfile,
       onClick: goToProfile
-    },
-    ...(canCreateChat
-      ? [
-          {
-            icon: <IconMessage />,
-            text: messages.sendMessage,
-            onClick: composeChat
-          }
-        ]
-      : [])
-  ]
+    })
+
+    if (canCreateChat) {
+      items.push({
+        icon: <IconMessage />,
+        text: messages.sendMessage,
+        onClick: composeChat
+      })
+    }
+
+    if (isManagedAccount) {
+      items.push({
+        icon: <IconUserArrowRotate />,
+        text: messages.switchToUser,
+        onClick: () => switchAccount(user)
+      })
+    }
+
+    return items
+  }, [
+    user,
+    switchAccount,
+    isManagedAccount,
+    isPending,
+    handleCancelInvite,
+    handleRemoveManager,
+    goToProfile,
+    composeChat,
+    canCreateChat
+  ])
+
+  const handleApprove = useCallback(() => {
+    if (!currentUserId) return
+    onApprove?.({ currentUserId, grantorUser: user })
+  }, [user, onApprove, currentUserId])
+
+  const handleReject = useCallback(() => {
+    if (!currentUserId) return
+    onReject?.({ currentUserId, grantorUser: user })
+  }, [user, onReject, currentUserId])
 
   const renderTrigger = (
     anchorRef: React.MutableRefObject<any>,
@@ -121,7 +174,8 @@ export const AccountListItem = () => {
     />
   )
 
-  if (!user) return null
+  if (!user || !currentUserId) return null
+
   return (
     <Flex
       alignItems='stretch'
@@ -132,17 +186,44 @@ export const AccountListItem = () => {
     >
       <ArtistChip user={user as any} showPopover={false} />
       <Flex direction='column' justifyContent='space-between' alignItems='end'>
-        <PopupMenu
-          renderTrigger={renderTrigger}
-          items={popupMenuItems}
-          zIndex={zIndex.MODAL_OVERFLOW_MENU_POPUP}
-          anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
-          transformOrigin={{ horizontal: 'right', vertical: 'top' }}
-        />
-        <Text variant='label' size='s' color='subdued'>
-          {messages.invitePending}
-        </Text>
+        {!isPending || !isManagedAccount ? (
+          <PopupMenu
+            renderTrigger={renderTrigger}
+            items={popupMenuItems}
+            zIndex={zIndex.MODAL_OVERFLOW_MENU_POPUP}
+            anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+            transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+          />
+        ) : null}
+        {isPending && !isManagedAccount ? (
+          <Text variant='label' size='s' color='subdued'>
+            {messages.invitePending}
+          </Text>
+        ) : null}
       </Flex>
+      {isManagedAccount && isPending ? (
+        <Flex direction='column' gap='s'>
+          <Text variant='label' size='s' color='subdued'>
+            {messages.invitePending}
+          </Text>
+          <Flex gap='s' alignSelf='end'>
+            <Button
+              size='small'
+              variant='secondary'
+              aria-label='approve'
+              iconLeft={IconCheck}
+              onClick={handleApprove}
+            />
+            <Button
+              size='small'
+              variant='destructive'
+              aria-label='reject'
+              iconRight={IconCloseAlt}
+              onClick={handleReject}
+            />
+          </Flex>
+        </Flex>
+      ) : null}
     </Flex>
   )
 }

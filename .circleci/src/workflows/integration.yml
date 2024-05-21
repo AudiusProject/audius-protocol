@@ -1,4 +1,8 @@
 when: << pipeline.parameters.run-integration-workflow >>
 jobs:
-  - test-audius-cmd:
+  - integration-init:
       context: Vercel
+  - integration-test:
+      context: Vercel
+      requires:
+        - integration-init

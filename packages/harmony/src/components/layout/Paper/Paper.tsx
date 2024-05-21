@@ -24,7 +24,8 @@ export const Paper = forwardRef<HTMLDivElement, PaperProps>((props, ref) => {
 
   const css = {
     overflow: 'hidden',
-    transition: motion.hover
+    transition: motion.hover,
+    cursor: onClick ? 'pointer' : undefined
   }
 
   const interactiveCss = {

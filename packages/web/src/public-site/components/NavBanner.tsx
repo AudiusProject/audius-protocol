@@ -10,12 +10,12 @@ import {
   IconBlog,
   IconFoundation,
   IconMerch,
-  IconSupport
+  IconSupport,
+  UnstyledButton
 } from '@audius/harmony'
 import cn from 'classnames'
 import { Link } from 'react-router-dom'
 
-import { UnstyledButton } from 'components/unstyled-button/UnstyledButton'
 import {
   AUDIUS_BLOG_LINK,
   AUDIUS_HELP_LINK,

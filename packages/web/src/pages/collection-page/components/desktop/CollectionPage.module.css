@@ -36,6 +36,7 @@
   background-color: var(--harmony-n-25);
   border-top-left-radius: 8px;
   border-top-right-radius: 8px;
+  overflow: hidden;
 }
 
 /* Track Table */
