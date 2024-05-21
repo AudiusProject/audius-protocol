@@ -188,6 +188,12 @@ services:
       service: crm
     <<: *common
 
+  mri:
+    extends:
+      file: docker-compose.pedalboard.${DOCKERCOMPOSE_ENV_TYPE:-dev}.yml
+      service: mri
+    <<: *common
+
   # DDEX
 
   ddex-mongo:
@@ -222,6 +228,15 @@ services:
     depends_on:
       ddex-mongo-init:
         condition: service_completed_successfully
+    profiles:
+      - ddex
+
+  ddex-processor:
+    extends:
+      file: docker-compose.ddex.yml
+      service: ddex-processor
+    container_name: ddex-processor
+    <<: *common
     profiles:
       - ddex
 

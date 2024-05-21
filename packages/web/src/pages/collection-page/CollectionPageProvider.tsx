@@ -48,7 +48,9 @@ import {
   usePremiumContentPurchaseModalActions,
   PremiumContentPurchaseModalState,
   albumTrackRemoveConfirmationModalActions,
-  AlbumTrackRemoveConfirmationModalState
+  AlbumTrackRemoveConfirmationModalState,
+  PlayerBehavior,
+  playerActions
 } from '@audius/common/store'
 import { formatUrlName, Uid, Nullable } from '@audius/common/utils'
 import { push as pushRoute, replace } from 'connected-react-router'
@@ -85,8 +87,8 @@ import { CollectionPageProps as MobileCollectionPageProps } from './components/m
 
 const { trackModalOpened } = modalsActions
 const { selectAllPlaylistUpdateIds } = playlistUpdatesSelectors
-const { makeGetCurrent } = queueSelectors
-const { getPlaying, getPreviewing, getBuffering } = playerSelectors
+const { makeGetCurrent, getPlayerBehavior } = queueSelectors
+const { getPlaying, getBuffering } = playerSelectors
 const { setFavorite } = favoritesUserListActions
 const { setRepost } = repostsUserListActions
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
@@ -369,16 +371,25 @@ class CollectionPage extends Component<
     return s
   }
 
-  fetchCollection = (pathname: string, forceFetch = false) => {
+  fetchCollection = (pathname: string, fetchLineup = false) => {
     const { fetchCollection } = this.props
     const params = parseCollectionRoute(pathname)
     if (!params) return
 
     const { permalink, collectionId } = params
 
+    // Need typecast as can't set type via connected-react-router, see https://github.com/reach/router/issues/414
+    const locationState = this.props.location.state as { forceFetch?: boolean }
+    const forceFetch = locationState?.forceFetch
+
     if (forceFetch || permalink || collectionId !== this.state.playlistId) {
       this.setState({ playlistId: collectionId as number })
-      fetchCollection(collectionId, permalink, forceFetch)
+      fetchCollection({
+        id: collectionId,
+        permalink,
+        fetchLineup,
+        forceFetch
+      })
     }
   }
 
@@ -535,11 +546,16 @@ class CollectionPage extends Component<
       pause,
       previewing,
       tracks: { entries },
-      record
+      record,
+      stop,
+      collection,
+      userId
     } = this.props
     const isQueued = this.isQueued()
     const playingId = this.getPlayingId()
-    if (playing && isQueued && previewing === isPreview) {
+    const isOwner = collection?.playlist_owner_id === userId
+    const shouldPreview = isPreview && isOwner
+    if (playing && isQueued && previewing === shouldPreview) {
       pause()
       record(
         make(Name.PLAYBACK_PAUSE, {
@@ -547,21 +563,22 @@ class CollectionPage extends Component<
           source: PlaybackSource.PLAYLIST_PAGE
         })
       )
-    } else if (!playing && previewing === isPreview && isQueued) {
+    } else if (!playing && previewing === shouldPreview && isQueued) {
       play()
       record(
         make(Name.PLAYBACK_PLAY, {
           id: `${playingId}`,
-          isPreview,
+          isPreview: shouldPreview,
           source: PlaybackSource.PLAYLIST_PAGE
         })
       )
     } else if (entries.length > 0) {
-      play(entries[0].uid, { isPreview })
+      stop()
+      play(entries[0].uid, { isPreview: shouldPreview && isOwner })
       record(
         make(Name.PLAYBACK_PLAY, {
           id: `${entries[0].track_id}`,
-          isPreview,
+          isPreview: shouldPreview,
           source: PlaybackSource.PLAYLIST_PAGE
         })
       )
@@ -846,7 +863,7 @@ function makeMapStateToProps() {
       userPlaylists: getAccountCollections(state),
       currentQueueItem: getCurrentQueueItem(state),
       playing: getPlaying(state),
-      previewing: getPreviewing(state),
+      previewing: getPlayerBehavior(state) === PlayerBehavior.PREVIEW_OR_FULL,
       buffering: getBuffering(state),
       pathname: getLocationPathname(state),
       playlistUpdates: selectAllPlaylistUpdateIds(state)
@@ -857,12 +874,25 @@ function makeMapStateToProps() {
 
 function mapDispatchToProps(dispatch: Dispatch) {
   return {
-    fetchCollection: (
-      id: Nullable<number>,
-      permalink?: string,
+    fetchCollection: ({
+      id,
+      permalink,
+      fetchLineup,
+      forceFetch
+    }: {
+      id: Nullable<number>
+      permalink?: string
       fetchLineup?: boolean
-    ) =>
-      dispatch(collectionActions.fetchCollection(id, permalink, fetchLineup)),
+      forceFetch?: boolean
+    }) =>
+      dispatch(
+        collectionActions.fetchCollection(
+          id,
+          permalink,
+          fetchLineup,
+          forceFetch
+        )
+      ),
     fetchTracks: () =>
       dispatch(tracksActions.fetchLineupMetadatas(0, 200, false, undefined)),
     resetCollection: (collectionUid: string, userUid: string) =>
@@ -872,6 +902,9 @@ function mapDispatchToProps(dispatch: Dispatch) {
     play: (uid?: string, options: { isPreview?: boolean } = {}) =>
       dispatch(tracksActions.play(uid, options)),
     pause: () => dispatch(tracksActions.pause()),
+    stop: () => {
+      dispatch(playerActions.stop({}))
+    },
     updateLineupOrder: (updatedOrderIndices: any) =>
       dispatch(tracksActions.updateLineupOrder(updatedOrderIndices)),
     editPlaylist: (playlistId: number, formFields: any) =>

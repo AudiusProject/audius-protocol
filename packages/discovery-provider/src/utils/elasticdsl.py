@@ -6,10 +6,7 @@ from elasticsearch import Elasticsearch, logger, logging
 from src.utils.spl_audio import to_wei
 
 logger.setLevel(logging.WARNING)
-es_url = os.getenv("audius_elasticsearch_url")
-esclient = None
-if es_url and not esclient:
-    esclient = Elasticsearch(es_url, request_timeout=60)
+_esclient = None
 
 # uses aliases
 ES_PLAYLISTS = "playlists"
@@ -21,6 +18,14 @@ ES_USERS = "users"
 ES_INDEXES = [ES_PLAYLISTS, ES_REPOSTS, ES_SAVES, ES_TRACKS, ES_USERS]
 
 STALE_THRESHOLD_SECONDS = 4 * 60 * 60  # 4 hours
+
+
+def get_esclient():
+    global _esclient
+    es_url = os.getenv("audius_elasticsearch_url")
+    if es_url and not _esclient:
+        _esclient = Elasticsearch(es_url, request_timeout=60)
+    return _esclient
 
 
 def listify(things):

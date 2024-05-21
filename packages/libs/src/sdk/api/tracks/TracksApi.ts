@@ -116,6 +116,10 @@ export class TracksApi extends GeneratedTracksApi {
         metadata.previewStartSeconds.toString()
     }
 
+    if (metadata.placementHosts) {
+      uploadOptions.placement_hosts = metadata.placementHosts
+    }
+
     // Upload track audio and cover art to storage node
     this.logger.info('Uploading track audio and cover art')
     const [coverArtResponse, audioResponse] = await Promise.all([

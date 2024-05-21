@@ -9,6 +9,7 @@ import pytest
 import requests
 
 import src.utils.db_session
+import src.utils.elasticdsl
 import src.utils.redis_connection
 import src.utils.web3_provider
 from src.utils.session_manager import SessionManager
@@ -51,6 +52,18 @@ def redis_mock(monkeypatch):
 
     monkeypatch.setattr(src.utils.redis_connection, "get_redis", get_redis)
     return redis
+
+
+# Test fixture to mock an elasticsearch client
+@pytest.fixture()
+def esclient_mock(monkeypatch):
+    esclient = MagicMock()
+
+    def get_esclient():
+        return esclient
+
+    monkeypatch.setattr(src.utils.elasticdsl, "get_esclient", get_esclient)
+    return esclient
 
 
 # Test fixture that mocks getting monitor values

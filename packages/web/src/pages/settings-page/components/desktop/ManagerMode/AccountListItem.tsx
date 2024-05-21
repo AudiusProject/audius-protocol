@@ -1,5 +1,6 @@
 import { useCallback, useMemo } from 'react'
 
+import { useAccountSwitcher } from '@audius/common/hooks'
 import { User, UserMetadata } from '@audius/common/models'
 import { accountSelectors, chatSelectors } from '@audius/common/store'
 import {
@@ -71,6 +72,8 @@ export const AccountListItem = ({
     goToRoute(profilePage(user.handle))
   }, [goToRoute, user])
 
+  const { switchAccount } = useAccountSwitcher()
+
   const { canCreateChat } = useSelector((state) =>
     getCanCreateChat(state, { userId: user?.user_id })
   )
@@ -131,13 +134,14 @@ export const AccountListItem = ({
       items.push({
         icon: <IconUserArrowRotate />,
         text: messages.switchToUser,
-        // TODO(nkang - PAY-2831) - Implement this
-        onClick: () => {}
+        onClick: () => switchAccount(user)
       })
     }
 
     return items
   }, [
+    user,
+    switchAccount,
     isManagedAccount,
     isPending,
     handleCancelInvite,

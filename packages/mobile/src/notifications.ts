@@ -94,16 +94,14 @@ class PushNotifications {
   }
 
   async requestPermission() {
-    const isAndroid = Platform.OS === MobileOS.ANDROID
     isRegistering = true
 
-    if (isAndroid) {
+    if (Platform.OS === MobileOS.ANDROID) {
       // For android, Notifications.registerRemoteNotifications is supposed to prompt user for permission but its currently not
       await request(PERMISSIONS.ANDROID.POST_NOTIFICATIONS)
-    } else {
-      // iOS
-      Notifications.registerRemoteNotifications()
     }
+
+    Notifications.registerRemoteNotifications()
   }
 
   cancelNotif() {

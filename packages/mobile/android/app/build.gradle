@@ -113,7 +113,7 @@ android {
         // versionCode is automatically incremented in CI
         versionCode 1
         // Make sure this is above the currently released Android version in the play store if your changes touch native code:
-        versionName "1.1.425"
+        versionName "1.1.426"
         resValue "string", "build_config_package", "co.audius.app"
         resValue 'string', "CODE_PUSH_APK_BUILD_TIME", String.format("\"%d\"", System.currentTimeMillis())
         resConfigs "en"
@@ -192,7 +192,10 @@ dependencies {
     implementation "androidx.appcompat:appcompat:1.0.0"
 
     implementation project(':react-native-notifications')
-    implementation 'com.google.firebase:firebase-core:16.0.0'
+    implementation platform('com.google.firebase:firebase-bom:31.1.1')
+    implementation 'com.google.firebase:firebase-messaging'
+    implementation 'com.google.firebase:firebase-analytics'
+
     implementation 'com.github.nsure-ai:android-sdk:1.3.2'
 
     if (hermesEnabled.toBoolean()) {

@@ -212,7 +212,6 @@ export const GiantTrackTile = ({
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
   )
   const isUSDCPurchaseGated = isContentUSDCPurchaseGated(streamConditions)
-  const isEditAlbumsEnabled = getFeatureEnabled(FeatureFlags.EDIT_ALBUMS)
   const track = useSelector(
     (state: CommonState) => getTrack(state, { id: trackId }),
     shallowEqual
@@ -430,7 +429,7 @@ export const GiantTrackTile = ({
   }
 
   const renderAlbum = () => {
-    if (!isEditAlbumsEnabled || !albumInfo) return null
+    if (!albumInfo) return null
     return (
       <InfoLabel
         className={styles.infoLabelPlacement}
@@ -535,179 +534,181 @@ export const GiantTrackTile = ({
   }
 
   return (
-    <Tile
-      className={styles.giantTrackTile}
-      dogEar={dogEarType}
-      size='large'
-      elevation='mid'
-    >
-      <div className={styles.topSection}>
-        <GiantArtwork
-          trackId={trackId}
-          coverArtSizes={coverArtSizes}
-          coSign={coSign}
-          cid={track?.cover_art_sizes ?? null}
-          callback={onArtworkLoad}
-        />
-        <div className={styles.infoSection}>
-          <div className={styles.infoSectionHeader}>
-            {renderCardTitle(cn(fadeIn))}
-            <div className={styles.title}>
-              <Text variant='heading' size='xl' className={cn(fadeIn)}>
-                {trackTitle}
-              </Text>
-              {isLoading && <Skeleton className={styles.skeleton} />}
-            </div>
-            <Flex>
-              <Text
-                variant='title'
-                strength='weak'
-                tag='h2'
-                className={cn(fadeIn)}
-              >
-                <Text color='subdued'>By </Text>
-                <UserLink userId={userId} popover />
-              </Text>
-              {isLoading && (
-                <Skeleton className={styles.skeleton} width='60%' />
-              )}
-            </Flex>
-          </div>
-
-          <ClientOnly>
-            <div className={cn(styles.playSection, fadeIn)}>
-              {showPlay ? (
-                <PlayPauseButton
-                  disabled={!hasStreamAccess}
-                  playing={playing && !previewing}
-                  onPlay={onPlay}
-                  trackId={trackId}
-                />
-              ) : null}
-              {showPreview ? (
-                <PlayPauseButton
-                  playing={playing && previewing}
-                  onPlay={onPreview}
-                  trackId={trackId}
-                  isPreview
-                />
-              ) : null}
-              {isLongFormContent && isNewPodcastControlsEnabled ? (
-                <GiantTrackTileProgressInfo
-                  duration={duration}
-                  trackId={trackId}
-                />
-              ) : (
-                renderListenCount()
-              )}
-            </div>
-          </ClientOnly>
-
-          <div className={cn(styles.statsSection, fadeIn)}>
-            {renderStatsRow()}
-            {renderScheduledReleaseRow()}
-          </div>
-
-          <ClientOnly>
-            <div
-              className={cn(styles.actionButtons, fadeIn)}
-              role='group'
-              aria-label={messages.actionGroupLabel}
-            >
-              {renderShareButton()}
-              {renderMakePublicButton()}
-              {hasStreamAccess && renderRepostButton()}
-              {hasStreamAccess && renderFavoriteButton()}
-              <span>
-                {/* prop types for overflow menu don't work correctly
-              so we need to cast here */}
-                <Menu {...(overflowMenu as any)}>
-                  {(ref, triggerPopup) => (
-                    <div className={cn(styles.menuKebabContainer)} ref={ref}>
-                      <Button
-                        variant='secondary'
-                        aria-label='More options'
-                        iconLeft={IconKebabHorizontal}
-                        onClick={() => triggerPopup()}
-                      />
-                    </div>
-                  )}
-                </Menu>
-              </span>
-            </div>
-          </ClientOnly>
-        </div>
-        <div className={styles.badges}>
-          {aiAttributionUserId ? (
-            <Badge
-              icon={<IconRobot />}
-              className={styles.badgeAi}
-              textLabel={messages.generatedWithAi}
-            />
-          ) : null}
-          {badge ? (
-            <Badge className={styles.badgePlacement} textLabel={badge} />
-          ) : null}
-        </div>
-      </div>
-
-      <ClientOnly>
-        {isStreamGated && streamConditions ? (
-          <Box mb='xl' ph='xl' w='100%'>
-            <GatedContentSection
-              isLoading={isLoading}
-              contentId={trackId}
-              contentType={PurchaseableContentType.TRACK}
-              streamConditions={streamConditions}
-              hasStreamAccess={hasStreamAccess}
-              isOwner={isOwner}
-              ownerId={userId}
-            />
-          </Box>
-        ) : null}
-      </ClientOnly>
-
-      <ClientOnly>
-        {aiAttributionUserId ? (
-          <AiTrackSection attributedUserId={aiAttributionUserId} />
-        ) : null}
-      </ClientOnly>
-
-      <div className={cn(styles.bottomSection, fadeIn)}>
-        <div className={styles.infoLabelsSection}>
-          <InfoLabel
-            className={styles.infoLabelPlacement}
-            labelName='duration'
-            labelValue={`${formatSeconds(duration)}`}
+    <Flex className={styles.giantTrackTile}>
+      <Tile
+        dogEar={dogEarType}
+        size='large'
+        elevation='mid'
+        css={{ width: '100%' }}
+      >
+        <div className={styles.topSection}>
+          <GiantArtwork
+            trackId={trackId}
+            coverArtSizes={coverArtSizes}
+            coSign={coSign}
+            cid={track?.cover_art_sizes ?? null}
+            callback={onArtworkLoad}
           />
-          {renderReleased()}
-          {renderGenre()}
-          {renderMood()}
-          {credits ? (
-            <InfoLabel
-              className={styles.infoLabelPlacement}
-              labelName='credit'
-              labelValue={credits}
-            />
-          ) : null}
-          {renderAlbum()}
+          <div className={styles.infoSection}>
+            <div className={styles.infoSectionHeader}>
+              {renderCardTitle(cn(fadeIn))}
+              <div className={styles.title}>
+                <Text variant='heading' size='xl' className={cn(fadeIn)}>
+                  {trackTitle}
+                </Text>
+                {isLoading && <Skeleton className={styles.skeleton} />}
+              </div>
+              <Flex>
+                <Text
+                  variant='title'
+                  strength='weak'
+                  tag='h2'
+                  className={cn(fadeIn)}
+                >
+                  <Text color='subdued'>By </Text>
+                  <UserLink userId={userId} popover />
+                </Text>
+                {isLoading && (
+                  <Skeleton className={styles.skeleton} width='60%' />
+                )}
+              </Flex>
+            </div>
+
+            <ClientOnly>
+              <div className={cn(styles.playSection, fadeIn)}>
+                {showPlay ? (
+                  <PlayPauseButton
+                    disabled={!hasStreamAccess}
+                    playing={playing && !previewing}
+                    onPlay={onPlay}
+                    trackId={trackId}
+                  />
+                ) : null}
+                {showPreview ? (
+                  <PlayPauseButton
+                    playing={playing && previewing}
+                    onPlay={onPreview}
+                    trackId={trackId}
+                    isPreview
+                  />
+                ) : null}
+                {isLongFormContent && isNewPodcastControlsEnabled ? (
+                  <GiantTrackTileProgressInfo
+                    duration={duration}
+                    trackId={trackId}
+                  />
+                ) : (
+                  renderListenCount()
+                )}
+              </div>
+            </ClientOnly>
+
+            <div className={cn(styles.statsSection, fadeIn)}>
+              {renderStatsRow()}
+              {renderScheduledReleaseRow()}
+            </div>
+
+            <ClientOnly>
+              <div
+                className={cn(styles.actionButtons, fadeIn)}
+                role='group'
+                aria-label={messages.actionGroupLabel}
+              >
+                {renderShareButton()}
+                {renderMakePublicButton()}
+                {hasStreamAccess && renderRepostButton()}
+                {hasStreamAccess && renderFavoriteButton()}
+                <span>
+                  {/* prop types for overflow menu don't work correctly
+              so we need to cast here */}
+                  <Menu {...(overflowMenu as any)}>
+                    {(ref, triggerPopup) => (
+                      <div className={cn(styles.menuKebabContainer)} ref={ref}>
+                        <Button
+                          variant='secondary'
+                          aria-label='More options'
+                          iconLeft={IconKebabHorizontal}
+                          onClick={() => triggerPopup()}
+                        />
+                      </div>
+                    )}
+                  </Menu>
+                </span>
+              </div>
+            </ClientOnly>
+          </div>
+          <div className={styles.badges}>
+            {aiAttributionUserId ? (
+              <Badge
+                icon={<IconRobot />}
+                className={styles.badgeAi}
+                textLabel={messages.generatedWithAi}
+              />
+            ) : null}
+            {badge ? (
+              <Badge className={styles.badgePlacement} textLabel={badge} />
+            ) : null}
+          </div>
         </div>
-        {description ? (
-          <UserGeneratedText tag='h3' size='s' className={styles.description}>
-            {description}
-          </UserGeneratedText>
-        ) : null}
+
         <ClientOnly>
-          {renderTags()}
-          {hasDownloadableAssets ? (
-            <Box pt='l' w='100%'>
-              <Suspense>
-                <DownloadSection trackId={trackId} />
-              </Suspense>
+          {isStreamGated && streamConditions ? (
+            <Box mb='xl' ph='xl' w='100%'>
+              <GatedContentSection
+                isLoading={isLoading}
+                contentId={trackId}
+                contentType={PurchaseableContentType.TRACK}
+                streamConditions={streamConditions}
+                hasStreamAccess={hasStreamAccess}
+                isOwner={isOwner}
+                ownerId={userId}
+              />
             </Box>
           ) : null}
         </ClientOnly>
-      </div>
-    </Tile>
+
+        <ClientOnly>
+          {aiAttributionUserId ? (
+            <AiTrackSection attributedUserId={aiAttributionUserId} />
+          ) : null}
+        </ClientOnly>
+
+        <div className={cn(styles.bottomSection, fadeIn)}>
+          <div className={styles.infoLabelsSection}>
+            <InfoLabel
+              className={styles.infoLabelPlacement}
+              labelName='duration'
+              labelValue={`${formatSeconds(duration)}`}
+            />
+            {renderReleased()}
+            {renderGenre()}
+            {renderMood()}
+            {credits ? (
+              <InfoLabel
+                className={styles.infoLabelPlacement}
+                labelName='credit'
+                labelValue={credits}
+              />
+            ) : null}
+            {renderAlbum()}
+          </div>
+          {description ? (
+            <UserGeneratedText tag='h3' size='s' className={styles.description}>
+              {description}
+            </UserGeneratedText>
+          ) : null}
+          <ClientOnly>
+            {renderTags()}
+            {hasDownloadableAssets ? (
+              <Box pt='l' w='100%'>
+                <Suspense>
+                  <DownloadSection trackId={trackId} />
+                </Suspense>
+              </Box>
+            ) : null}
+          </ClientOnly>
+        </div>
+      </Tile>
+    </Flex>
   )
 }

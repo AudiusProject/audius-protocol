@@ -75,9 +75,10 @@ export const NowPlayingArtworkTile = () => {
   const { hasStreamAccess } = useGatedContentAccess(track)
   const isPreviewing = useSelector(getPreviewing)
   const shouldShowPurchaseDogEar =
-    track?.stream_conditions &&
-    'usdc_purchase' in track.stream_conditions &&
-    (!hasStreamAccess || isPreviewing)
+    isPreviewing ||
+    (track?.stream_conditions &&
+      'usdc_purchase' in track.stream_conditions &&
+      !hasStreamAccess)
 
   const isOwner = useSelector((state: CommonState) => {
     const ownerId = getTrack(state, { id: trackId })?.owner_id

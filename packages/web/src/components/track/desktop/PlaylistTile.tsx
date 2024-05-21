@@ -1,6 +1,11 @@
 import { memo, ReactNode, useCallback } from 'react'
 
-import { Scrollbar, IconArrowRight as IconArrow, Box } from '@audius/harmony'
+import {
+  Scrollbar,
+  IconArrowRight as IconArrow,
+  Box,
+  Paper
+} from '@audius/harmony'
 import cn from 'classnames'
 
 import {
@@ -15,6 +20,10 @@ import TrackTile from './TrackTile'
 const DefaultTileContainer = ({ children }: { children: ReactNode }) => (
   <>{children}</>
 )
+
+// mocked on-click to have paper respond to hover and press events.
+// When we separate track tile from playlist tile, this will be removed.
+const onClick = () => {}
 
 const PlaylistTile = ({
   size,
@@ -84,13 +93,15 @@ const PlaylistTile = ({
   }, [trackCount, trackList, onClickTitle, isLoading])
 
   return (
-    <div
-      className={cn(styles.container, {
+    <Paper
+      direction='column'
+      className={cn({
         [containerClassName!]: !!containerClassName,
         [styles.small]: size === TrackTileSize.SMALL,
         [styles.large]: size === TrackTileSize.LARGE,
         [styles.disabled]: !!isDisabled
       })}
+      onClick={onClick}
     >
       <TileTrackContainer>
         <TrackTile
@@ -162,7 +173,7 @@ const PlaylistTile = ({
           streamConditions={streamConditions}
         />
       </Box>
-    </div>
+    </Paper>
   )
 }
 
