@@ -210,7 +210,7 @@ export const makeUserlessTrack = (
 export const makeTrack = (
   track: APITrack | APISearchTrack
 ): UserTrackMetadata | undefined => {
-  const decodedTrackId = decodeHashId(track.id)
+    const decodedTrackId = decodeHashId(track.id)
   const decodedOwnerId = decodeHashId(track.user_id)
   const user = makeUser(track.user)
   if (!decodedTrackId || !decodedOwnerId || !user) {

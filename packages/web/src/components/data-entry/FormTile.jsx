@@ -334,7 +334,7 @@ const AdvancedForm = (props) => {
     isRemix,
     setIsRemix
   } = props
-
+    console.log('asdf advanced form props: ', props)
   let availabilityState = {
     is_stream_gated: props.defaultFields.is_stream_gated,
     stream_conditions: props.defaultFields.stream_conditions,
@@ -657,7 +657,8 @@ class FormTile extends Component {
     aiAttributionModalVisible: false,
     isRemix: !!this.props.defaultFields.remix_of,
         forceOpenAccessAndSale: false,
-    lastGateKeeper: {}
+    lastGateKeeper: {},
+    allowedApiKeys: this.props.defaultFields.allowed_api_keys
   }
   componentDidMount() {
     this.props.onChangeField('license', this.state.license.licenseType)
@@ -683,17 +684,17 @@ class FormTile extends Component {
   }
 
   onSelectAllowThirdPartyStream = (value) => {
-    // console.log('asdf value: ', value)
+    console.log('asdf value: ', value)
 
-    // let allowedApiKeys = null
-    // if (value === "Don't Allow") {
-    //   allowedApiKeys = ['asdf']
-    // } 
-    // this.setState({
-    //   allowedApiKeys: allowedApiKeys
-    // })
-    // console.log('asdf this.state: ', this.state)
-    // this.props.onChangeField('allowed_api_keys', allowedApiKeys)
+    let allowedApiKeys = []
+    if (value === "Don't Allow") {
+      allowedApiKeys = ['asdf']
+    } 
+    this.setState({
+      allowedApiKeys: allowedApiKeys
+    })
+    console.log('asdf this.state: ', allowedApiKeys)
+    this.props.onChangeField('allowed_api_keys', allowedApiKeys)
   }
 
   onSelectCommercialUse = (value) => {
@@ -809,9 +810,10 @@ class FormTile extends Component {
       derivativeWorks,
       remixSettingsModalVisible,
       aiAttributionModalVisible,
+      allowedApiKeys,
             isRemix
     } = this.state
-    
+        
     const { licenseType, licenseDescription } = license
     return (
       <div className={styles.formTile}>
@@ -840,9 +842,12 @@ class FormTile extends Component {
           licenseType={licenseType}
           licenseDescription={licenseDescription}
           allowAttribution={allowAttribution}
-                    commercialUse={commercialUse}
+          allowThirdPartyStream={allowedApiKeys ? false : true}
+                              commercialUse={commercialUse}
           derivativeWorks={derivativeWorks}
           onSelectAllowAttribution={this.onSelectAllowAttribution}
+          onSelectAllowThirdPartyStream={this.onSelectAllowThirdPartyStream}
+
                     onSelectCommercialUse={this.onSelectCommercialUse}
           onSelectDerivativeWorks={this.onSelectDerivativeWorks}
           remixSettingsModalVisible={remixSettingsModalVisible}
