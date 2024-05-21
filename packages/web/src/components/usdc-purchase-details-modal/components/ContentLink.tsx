@@ -9,7 +9,7 @@ export const ContentLink = (props: {
 }) => {
   const { link, title, ...other } = props
   return (
-    <TextLink to={link} textVariant='body' size='l' {...other}>
+    <TextLink to={link} size='l' {...other}>
       <Text ellipses>{title}</Text>
     </TextLink>
   )

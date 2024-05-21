@@ -239,12 +239,7 @@ const CollectionHeader = ({
             {title}
           </Text>
           {userId ? (
-            <UserLink
-              userId={userId}
-              textVariant='body'
-              size='l'
-              variant='visible'
-            />
+            <UserLink userId={userId} size='l' variant='visible' />
           ) : null}
         </Flex>
         {shouldShowPlay ? (

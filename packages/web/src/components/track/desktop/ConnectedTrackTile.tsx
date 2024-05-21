@@ -244,13 +244,7 @@ const ConnectedTrackTile = ({
   }
 
   const userName = (
-    <UserLink
-      userId={user_id}
-      badgeSize='xs'
-      textVariant='body'
-      isActive={isActive}
-      popover
-    />
+    <UserLink userId={user_id} badgeSize='xs' isActive={isActive} popover />
   )
 
   const renderStats = () => {

@@ -395,7 +395,7 @@ const TrackTile = (props: CombinedProps) => {
                 <Skeleton className={styles.skeleton} height='20px' />
               )}
             </TextLink>
-            <UserLink userId={userId} textVariant='body' badgeSize='xs'>
+            <UserLink userId={userId} badgeSize='xs'>
               {showSkeleton && (
                 <Skeleton className={styles.skeleton} height='20px' />
               )}
