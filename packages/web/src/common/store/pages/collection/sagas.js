@@ -32,14 +32,14 @@ function* watchFetchCollection() {
         {
           requiresAllTracks: true,
           deleteExistingEntry: true,
-          forceRetrieveFromSource: forceFetch ?? false
+          forceRetrieveFromSource: forceFetch
         }
       )
     } else {
       retrievedCollections = yield call(retrieveCollections, [collectionId], {
         requiresAllTracks: true,
         deleteExistingEntry: true,
-        forceRetrieveFromSource: forceFetch ?? false
+        forceRetrieveFromSource: forceFetch
       })
     }
 
