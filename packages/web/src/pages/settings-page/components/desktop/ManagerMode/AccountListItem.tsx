@@ -1,5 +1,6 @@
 import { useCallback, useMemo } from 'react'
 
+import { useAccountSwitcher } from '@audius/common/hooks'
 import { User, UserMetadata } from '@audius/common/models'
 import { accountSelectors, chatSelectors } from '@audius/common/store'
 import {
@@ -23,7 +24,6 @@ import { useComposeChat } from 'pages/chat-page/components/useComposeChat'
 import { useSelector } from 'utils/reducer'
 import { profilePage } from 'utils/route'
 import zIndex from 'utils/zIndex'
-import { useAccountSwitcher } from '@audius/common/hooks'
 
 const { getUserId } = accountSelectors
 const { getCanCreateChat } = chatSelectors

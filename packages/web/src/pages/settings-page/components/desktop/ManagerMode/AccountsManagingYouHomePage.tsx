@@ -14,12 +14,12 @@ import {
 } from '@audius/harmony'
 
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
+import { ToastContext } from 'components/toast/ToastContext'
 import { useSelector } from 'utils/reducer'
 
 import { AccountListItem } from './AccountListItem'
 import { sharedMessages } from './sharedMessages'
 import { AccountsManagingYouPageProps, AccountsManagingYouPages } from './types'
-import { ToastContext } from 'components/toast/ToastContext'
 
 const { getUserId } = accountSelectors
 

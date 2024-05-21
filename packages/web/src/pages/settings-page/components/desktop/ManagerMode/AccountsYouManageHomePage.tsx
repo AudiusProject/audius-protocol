@@ -5,11 +5,7 @@ import {
   useGetManagedAccounts,
   useRemoveManager
 } from '@audius/common/api'
-import {
-  ManagedUserMetadata,
-  Status,
-  UserMetadata
-} from '@audius/common/models'
+import { Status, UserMetadata } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
 import { Box, Divider, Flex, Text, TextLink } from '@audius/harmony'
 

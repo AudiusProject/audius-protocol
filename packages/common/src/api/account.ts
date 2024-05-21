@@ -141,7 +141,7 @@ const accountApi = createApi({
               state.userManagers.push({
                 grant: {
                   created_at: currentTime,
-                  grantee_address: managerUser.erc_wallet,
+                  grantee_address: managerUser.erc_wallet ?? managerUser.wallet,
                   is_approved: null,
                   is_revoked: false,
                   updated_at: currentTime,
