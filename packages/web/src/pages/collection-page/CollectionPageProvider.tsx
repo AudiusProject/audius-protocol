@@ -371,11 +371,7 @@ class CollectionPage extends Component<
     return s
   }
 
-  fetchCollection = (
-    pathname: string,
-    fetchLineup = false,
-    forceFetchArg = false
-  ) => {
+  fetchCollection = (pathname: string, fetchLineup = false) => {
     const { fetchCollection } = this.props
     const params = parseCollectionRoute(pathname)
     if (!params) return
@@ -384,7 +380,7 @@ class CollectionPage extends Component<
 
     // Need typecast as can't set type via connected-react-router, see https://github.com/reach/router/issues/414
     const locationState = this.props.location.state as { forceFetch?: boolean }
-    const forceFetch = locationState?.forceFetch ?? forceFetchArg
+    const forceFetch = locationState?.forceFetch
 
     if (forceFetch || permalink || collectionId !== this.state.playlistId) {
       this.setState({ playlistId: collectionId as number })
