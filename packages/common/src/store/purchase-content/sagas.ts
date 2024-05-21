@@ -82,7 +82,11 @@ import {
 import { getBalanceNeeded } from './utils'
 import { encodeHashId } from '~/utils/hashIds'
 import { USDC } from '@audius/fixed-decimal'
-import type { AudiusSdk, UsdcGate } from '@audius/sdk'
+import {
+  type AudiusSdk,
+  type UsdcGate,
+  instanceOfPurchaseGate
+} from '@audius/sdk'
 
 const { getUserId, getAccountUser } = accountSelectors
 
@@ -350,7 +354,10 @@ type PurchaseWithCoinflowArgs = {
   purchaseAccess: PurchaseAccess
 }
 
-function* purchaseWithCoinflow(args: PurchaseWithCoinflowArgs) {
+/**
+ * @deprecated Use purchaseTrackWithCoinflow if applicable
+ */
+function* purchaseWithCoinflowOld(args: PurchaseWithCoinflowArgs) {
   const {
     blocknumber,
     extraAmount,
@@ -417,7 +424,9 @@ function* purchaseWithCoinflow(args: PurchaseWithCoinflowArgs) {
 }
 
 /**
- * Creates the purchase transaction but doesn't send it and instead pops the coinflow modal
+ * Intended to replace the old purchaseWithCoinflow Saga to use new SDK.
+ * purchaseAlbumWithCoinflow to follow
+ * Creates the purchase transaction but doesn't send it and instead pops the coinflow modal.
  * @see {@link https://github.com/AudiusProject/audius-protocol/blob/75169cfb00894f5462a612b423129895f58a53fe/packages/libs/src/sdk/api/tracks/TracksApi.ts#L386 purchase}
  */
 async function* purchaseTrackWithCoinflow(args: {
@@ -469,7 +478,10 @@ async function* purchaseTrackWithCoinflow(args: {
   let accessType: 'stream' | 'download' = 'stream'
 
   // Get conditions
-  if (track.streamConditions && 'usdcPurchase' in track.streamConditions) {
+  if (
+    track.streamConditions &&
+    instanceOfPurchaseGate(track.streamConditions)
+  ) {
     centPrice = track.streamConditions.usdcPurchase.price
     numberSplits = track.streamConditions.usdcPurchase.splits
   } else if (
@@ -789,7 +801,7 @@ function* doStartPurchaseContentFlow({
                 extraAmount: extraAmount ? extraAmount / 100.0 : undefined
               })
             } else {
-              yield* call(purchaseWithCoinflow, {
+              yield* call(purchaseWithCoinflowOld, {
                 blocknumber,
                 extraAmount,
                 splits,

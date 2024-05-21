@@ -433,7 +433,7 @@ export class TracksApi extends GeneratedTracksApi {
       numberSplits = track.streamConditions.usdcPurchase.splits
     } else if (
       track.downloadConditions &&
-      'usdcPurchase' in track.downloadConditions
+      instanceOfPurchaseGate(track.downloadConditions)
     ) {
       centPrice = track.downloadConditions.usdcPurchase.price
       numberSplits = track.downloadConditions.usdcPurchase.splits
