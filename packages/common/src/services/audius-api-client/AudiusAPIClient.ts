@@ -510,6 +510,7 @@ type AudiusAPIClientConfig = {
   env: Env
   waitForLibsInit: () => Promise<unknown>
   appName: string
+  apiKey: string
 }
 
 export class AudiusAPIClient {
@@ -526,6 +527,7 @@ export class AudiusAPIClient {
   isReachable?: boolean = true
   waitForLibsInit: () => Promise<unknown>
   appName: string
+  apiKey: string
 
   constructor({
     audiusBackendInstance,
@@ -535,7 +537,8 @@ export class AudiusAPIClient {
     localStorage,
     env,
     waitForLibsInit,
-    appName
+    appName,
+    apiKey
   }: AudiusAPIClientConfig) {
     this.audiusBackendInstance = audiusBackendInstance
     this.getAudiusLibs = getAudiusLibs
@@ -545,6 +548,7 @@ export class AudiusAPIClient {
     this.env = env
     this.waitForLibsInit = waitForLibsInit
     this.appName = appName
+    this.apiKey = apiKey
   }
 
   setIsReachable(isReachable: boolean) {
@@ -1918,7 +1922,8 @@ export class AudiusAPIClient {
       throw new Error('_constructURL called uninitialized')
     const params = Object.entries({
       ...queryParams,
-      app_name: this.appName
+      app_name: this.appName,
+      api_key: this.apiKey
     })
       .filter((p) => p[1] !== undefined && p[1] !== null)
       .map((p) => {

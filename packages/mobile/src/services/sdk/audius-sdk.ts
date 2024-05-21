@@ -41,6 +41,7 @@ const initSdk = async () => {
 
   const audiusSdk = sdk({
     appName: env.APP_NAME,
+    apiKey: env.API_KEY,
     environment: env.ENVIRONMENT,
     services: {
       discoveryNodeSelector,
