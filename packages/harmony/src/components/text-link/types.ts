@@ -1,6 +1,6 @@
 import type { HTMLProps } from 'react'
 
-import type { TextProps } from 'components/text/Text'
+import type { TextProps } from 'components/text'
 
 export type TextLinkProps = Omit<TextProps, 'variant' | 'onClick' | 'color'> &
   Omit<

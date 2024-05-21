@@ -43,6 +43,12 @@ export const UserLink = (props: UserLinkProps) => {
       {...other}
     >
       <Text ellipses>{userName}</Text>
+      <Text strength='strong' ellipses>
+        {userName}
+      </Text>
+      <Text strength='weak' ellipses>
+        {userName}
+      </Text>
       <UserBadges
         badgeSize={iconSizes[badgeSize]}
         userId={userId}
