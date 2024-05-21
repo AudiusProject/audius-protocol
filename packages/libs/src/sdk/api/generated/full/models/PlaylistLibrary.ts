@@ -31,7 +31,7 @@ export interface PlaylistLibrary {
 /**
  * Check if a given object implements the PlaylistLibrary interface.
  */
-export function instanceOfPlaylistLibrary(value: object): boolean {
+export function instanceOfPlaylistLibrary(value: object): value is PlaylistLibrary {
     let isInstance = true;
 
     return isInstance;

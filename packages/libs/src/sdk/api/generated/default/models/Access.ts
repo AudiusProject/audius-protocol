@@ -37,7 +37,7 @@ export interface Access {
 /**
  * Check if a given object implements the Access interface.
  */
-export function instanceOfAccess(value: object): boolean {
+export function instanceOfAccess(value: object): value is Access {
     let isInstance = true;
 
     return isInstance;

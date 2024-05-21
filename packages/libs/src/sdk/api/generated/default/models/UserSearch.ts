@@ -38,7 +38,7 @@ export interface UserSearch {
 /**
  * Check if a given object implements the UserSearch interface.
  */
-export function instanceOfUserSearch(value: object): boolean {
+export function instanceOfUserSearch(value: object): value is UserSearch {
     let isInstance = true;
 
     return isInstance;
