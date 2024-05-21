@@ -56,7 +56,6 @@ const messages = {
     "Upload your track's source files and customize how fans download your files.",
   values: {
     allowDownload: 'Full Track Available',
-    allowOriginal: 'Lossless Files Available',
     followerGated: 'Followers Only'
   },
   price: (price: number) =>
@@ -241,9 +240,6 @@ export const StemsAndDownloadsField = ({
     }
     if (isDownloadable) {
       values.push(messages.values.allowDownload)
-    }
-    if (isOriginalAvailable) {
-      values.push(messages.values.allowOriginal)
     }
     const stemsCategories =
       stemsValue?.map((stem) =>

@@ -255,7 +255,7 @@ export const isCooldownChallengeClaimable = (
 ) => {
   return (
     challenge.cooldown_days === undefined ||
-    dayjs.utc().diff(dayjs.utc(challenge.created_at), 'day') >=
+    dayjs.utc().diff(dayjs.utc(challenge.completed_at), 'day') >=
       challenge.cooldown_days
   )
 }

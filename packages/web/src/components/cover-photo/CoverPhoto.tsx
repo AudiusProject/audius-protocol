@@ -1,4 +1,4 @@
-import { memo, useState } from 'react'
+import { memo, useMemo, useState } from 'react'
 
 import { imageCoverPhotoBlank } from '@audius/common/assets'
 import { WidthSizes } from '@audius/common/models'
@@ -51,27 +51,38 @@ const CoverPhoto = ({
     userId,
     WidthSizes.SIZE_2000
   )
-  let backgroundImage = ''
-  let backgroundStyle = {}
-  let immediate = false
-  if (image) {
-    if (image === imageCoverPhotoBlank && !updatedCoverPhoto) {
-      backgroundImage = `${gradient}, url(${imageCoverPhotoBlank})`
-      backgroundStyle = {
-        backgroundRepeat: 'repeat',
-        backgroundSize: 'auto'
+
+  const imageSettings = useMemo(() => {
+    if (image) {
+      const noUserCoverPhoto =
+        image === imageCoverPhotoBlank && !updatedCoverPhoto
+      if (noUserCoverPhoto) {
+        return {
+          backgroundImage: `${gradient}, url(${imageCoverPhotoBlank})`,
+          backgroundStyle: {
+            backgroundRepeat: 'repeat',
+            backgroundSize: 'auto'
+          },
+          immediate: false
+        }
+      } else {
+        return {
+          backgroundImage: `${gradient}, url(${updatedCoverPhoto || image})`,
+          backgroundStyle: {
+            backgroundRepeat: 'no-repeat',
+            backgroundSize: 'cover'
+          },
+          immediate: false
+        }
       }
     } else {
-      backgroundImage = `${gradient}, url(${updatedCoverPhoto || image})`
-      backgroundStyle = {
-        backgroundRepeat: 'no-repeat',
-        backgroundSize: 'cover'
+      return {
+        backgroundImage: gradient,
+        backgroundStyle: {},
+        immediate: true
       }
     }
-  } else {
-    backgroundImage = gradient
-    immediate = true
-  }
+  }, [image, updatedCoverPhoto, gradient])
 
   const handleDrop = async (
     file: Promise<FileWithPreview[]>,
@@ -100,13 +111,13 @@ const CoverPhoto = ({
   return (
     <div className={cn(styles.coverPhoto, className)}>
       <DynamicImage
-        image={backgroundImage}
+        image={imageSettings.backgroundImage}
         isUrl={false}
         wrapperClassName={styles.photo}
-        imageStyle={backgroundStyle}
+        imageStyle={imageSettings.backgroundStyle}
         useBlur={shouldBlur}
         usePlaceholder={false}
-        immediate={immediate}
+        immediate={imageSettings.immediate}
       >
         <div className={styles.spinner}>
           {processing ? loadingElement : null}
