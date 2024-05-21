@@ -13,5 +13,6 @@ export const apiClient = new AudiusAPIClient({
   localStorage,
   env,
   waitForLibsInit,
-  appName: env.APP_NAME
+  appName: env.APP_NAME,
+  apiKey: env.API_KEY
 })
