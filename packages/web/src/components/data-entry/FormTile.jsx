@@ -469,7 +469,7 @@ const AdvancedForm = (props) => {
       />
     )
   }
-
+  
   return (
     <>
       <div
@@ -551,6 +551,19 @@ const AdvancedForm = (props) => {
               defaultValue={props.defaultFields.iswc || ''}
               onChange={(value) => props.onChangeField('iswc', value)}
               size='small'
+            />
+            <Dropdown
+              label='Streaming via the API'
+              size='medium'
+              variant='border'
+              menu={{
+                items: [
+                  { text: 'Allow' },
+                  { text: 'Don\'t Allow' }
+                ]
+              }}
+              defaultIndex={props.allowThirdPartyStream ? 0 : 1}
+              onSelect={props.onSelectAllowThirdPartyStream}
             />
           </div>
         ) : null}
@@ -643,10 +656,9 @@ class FormTile extends Component {
     remixSettingsModalVisible: false,
     aiAttributionModalVisible: false,
     isRemix: !!this.props.defaultFields.remix_of,
-    forceOpenAccessAndSale: false,
+        forceOpenAccessAndSale: false,
     lastGateKeeper: {}
   }
-
   componentDidMount() {
     this.props.onChangeField('license', this.state.license.licenseType)
   }
@@ -656,7 +668,7 @@ class FormTile extends Component {
   }
 
   onSelectAllowAttribution = (value) => {
-    let allowAttribution = true
+        let allowAttribution = true
     if (value === 'No Attribution') allowAttribution = false
     const license = computeLicense(
       allowAttribution,
@@ -668,6 +680,20 @@ class FormTile extends Component {
       license
     })
     this.props.onChangeField('license', license.licenseType)
+  }
+
+  onSelectAllowThirdPartyStream = (value) => {
+    // console.log('asdf value: ', value)
+
+    // let allowedApiKeys = null
+    // if (value === "Don't Allow") {
+    //   allowedApiKeys = ['asdf']
+    // } 
+    // this.setState({
+    //   allowedApiKeys: allowedApiKeys
+    // })
+    // console.log('asdf this.state: ', this.state)
+    // this.props.onChangeField('allowed_api_keys', allowedApiKeys)
   }
 
   onSelectCommercialUse = (value) => {
@@ -773,7 +799,7 @@ class FormTile extends Component {
   }
 
   render() {
-    const {
+        const {
       advancedShow,
       advancedVisible,
       license,
@@ -783,9 +809,9 @@ class FormTile extends Component {
       derivativeWorks,
       remixSettingsModalVisible,
       aiAttributionModalVisible,
-      isRemix
+            isRemix
     } = this.state
-
+    
     const { licenseType, licenseDescription } = license
     return (
       <div className={styles.formTile}>
@@ -814,10 +840,10 @@ class FormTile extends Component {
           licenseType={licenseType}
           licenseDescription={licenseDescription}
           allowAttribution={allowAttribution}
-          commercialUse={commercialUse}
+                    commercialUse={commercialUse}
           derivativeWorks={derivativeWorks}
           onSelectAllowAttribution={this.onSelectAllowAttribution}
-          onSelectCommercialUse={this.onSelectCommercialUse}
+                    onSelectCommercialUse={this.onSelectCommercialUse}
           onSelectDerivativeWorks={this.onSelectDerivativeWorks}
           remixSettingsModalVisible={remixSettingsModalVisible}
           setRemixSettingsModalVisible={this.setRemixSettingsModalVisible}

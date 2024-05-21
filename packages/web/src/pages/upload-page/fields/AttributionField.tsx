@@ -87,7 +87,7 @@ const messages = {
 
 const IS_AI_ATTRIBUTED = 'isAiAttribution'
 const BLOCK_THIRD_PARTY_STREAMING = 'blockThirdPartyStreaming'
-const API_ALLOWED_KEYS = 'api_allowed_keys'
+const ALLOWED_API_KEYS = 'allowed_api_keys'
 const AI_USER_ID = 'ai_attribution_user_id'
 const ISRC = 'isrc'
 const ISWC = 'iswc'
@@ -125,6 +125,8 @@ const AttributionFormSchema = z
   .object({
     [IS_AI_ATTRIBUTED]: z.optional(z.boolean()),
     [BLOCK_THIRD_PARTY_STREAMING]: z.optional(z.boolean()),
+    [ALLOWED_API_KEYS]: z.optional(z.array(z.string())),
+
     [AI_USER_ID]: z.optional(z.number().nullable()),
     [ISRC]: z.optional(z.string().nullable()),
     [ISWC]: z.optional(z.string().nullable()),
@@ -166,9 +168,9 @@ export const AttributionField = () => {
     useTrackField<
       SingleTrackEditValues[typeof LICENSE_TYPE][typeof DERIVATIVE_WORKS_BASE]
     >(DERIVATIVE_WORKS)
-  const [{ value: apiAllowedKeys }, , { setValue: setApiAllowedKeys }] =
-    useTrackField<SingleTrackEditValues[typeof API_ALLOWED_KEYS]>(
-      API_ALLOWED_KEYS
+  const [{ value: allowedApiKeys }, , { setValue: setAllowedApiKeys }] =
+    useTrackField<SingleTrackEditValues[typeof ALLOWED_API_KEYS]>(
+      ALLOWED_API_KEYS
     )
 
   const initialValues = useMemo(() => {
@@ -180,7 +182,7 @@ export const AttributionField = () => {
     set(initialValues, ISRC, isrcValue)
     set(initialValues, ISWC, iswcValue)
     set(initialValues, ALLOW_ATTRIBUTION, allowAttribution)
-    set(initialValues, API_ALLOWED_KEYS, apiAllowedKeys)
+    set(initialValues, ALLOWED_API_KEYS, allowedApiKeys)
     set(initialValues, COMMERCIAL_USE, commercialUse)
     set(initialValues, DERIVATIVE_WORKS, derivativeWorks)
     return initialValues as AttributionFormValues
@@ -192,17 +194,19 @@ export const AttributionField = () => {
     isrcValue,
     iswcValue
   ])
-  console.log('asdf initialValues: ', initialValues)
+
   const onSubmit = useCallback(
     (values: AttributionFormValues) => {
+      console.log('asdf onSubmit values: ', values)
       if (get(values, IS_AI_ATTRIBUTED)) {
         setAiUserId(get(values, AI_USER_ID) ?? aiUserId)
       } else {
         setAiUserId(null)
       }
       if (get(values, BLOCK_THIRD_PARTY_STREAMING)) {
-        console.log('asdf setting api allowed keys')
-        setApiAllowedKeys(['asdf'])
+        setAllowedApiKeys(['asdf'])
+      } else {
+        setAllowedApiKeys(null)
       }
       setIsrc(get(values, ISRC) ?? isrcValue)
       setIswc(get(values, ISWC) ?? iswcValue)

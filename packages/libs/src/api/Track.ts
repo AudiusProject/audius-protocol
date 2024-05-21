@@ -25,7 +25,7 @@ const TRACK_PROPS = [
   'is_original_available',
   'is_downloadable',
   'ai_attribution_user_id',
-  'api_allowed_keys'
+  'allowed_api_keys'
 ]
 const TRACK_REQUIRED_PROPS = ['owner_id', 'title']
 
@@ -596,6 +596,7 @@ export class Track extends Base {
 
   // Throws an error upon validation failure
   _validateTrackMetadata(metadata: Partial<TrackMetadata>) {
+    console.log('asdf validate metadata: ', metadata)
     this.OBJECT_HAS_PROPS(metadata, TRACK_PROPS, TRACK_REQUIRED_PROPS)
     this.creatorNode.validateTrackSchema(metadata)
   }
@@ -652,7 +653,7 @@ export class Track extends Base {
       dateListened,
       remix_of,
       ai_attribution_user_id,
-      api_allowed_keys,
+      allowed_api_keys,
       ...other
     } = trackMetadata
     if (typeof other !== 'undefined') {
@@ -706,7 +707,7 @@ export class Track extends Base {
       dateListened,
       remix_of,
       ai_attribution_user_id,
-      api_allowed_keys
+      allowed_api_keys
     }
   }
 }
