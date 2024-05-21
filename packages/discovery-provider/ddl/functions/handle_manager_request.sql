@@ -3,12 +3,14 @@ declare
     matched_user_id integer;
 begin
     -- fetch the user_id where wallet matches grantee_address
-    select user_id into matched_user_id from users where lower(wallet) = lower(new.grantee_address);
+    select user_id into matched_user_id from users where lower(wallet) = lower(NEW.grantee_address);
     
     if matched_user_id is not null then
-        if (tg_op = 'insert' and new.is_revoked = false and new.is_approved is null and new.created_at = new.updated_at or
-            (tg_op = 'update' and new.is_revoked = false and old.is_revoked = true and new.is_approved is null))
+        -- if the grant is newly created (i.e. the grant is not deleted, is not approved yet, and was just created indicated by created timestamp = last updated timestamp) OR grant went from deleted (revoked) to not deleted and is not approved yet...
+        if (TG_OP = 'INSERT' and NEW.is_revoked = FALSE and NEW.is_approved is null and NEW.created_at = NEW.updated_at or
+            (TG_OP = 'UPDATE' and NEW.is_revoked = FALSE and OLD.is_revoked = TRUE and NEW.is_approved is null))
         then
+            -- ... create a "request_manager" notification
             insert into notification
                     (blocknumber, user_ids, timestamp, type, specifier, group_id, data)
                   values
@@ -27,9 +29,11 @@ begin
                         )
                     )
                   on conflict do nothing;
-        elsif (tg_op = 'insert' and new.is_approved = true and new.is_revoked = false) or
-            (tg_op = 'update' and new.is_approved = true and (old.is_approved != true) and new.is_revoked = false)
+        -- otherwise, if the grant is approved and not deleted (revoked)...
+        elsif (TG_OP = 'INSERT' and NEW.is_approved = TRUE and NEW.is_revoked = FALSE) or
+            (TG_OP = 'UPDATE' and NEW.is_approved = TRUE and (OLD.is_approved != TRUE) and NEW.is_revoked = FALSE)
         then
+            -- ... create a "approve_manager_request" notification
             insert into notification
                     (blocknumber, user_ids, timestamp, type, specifier, group_id, data)
                   values
@@ -39,8 +43,7 @@ begin
                       new.updated_at,
                       'approve_manager_request',
                       matched_user_id,
-                      'approve_manager_request:' || 'grantee_user_id:' || matched_user_id || ':grantee_address:' || new.grantee_address || ':user_id:' || new.user_id || ':updated_at:' || new.updated_at ||
-                      ':created_at:' || new.created_at,
+                      'approve_manager_request:' || 'grantee_user_id:' || matched_user_id || ':grantee_address:' || new.grantee_address || ':user_id:' || new.user_id || ':created_at:' || new.created_at,
                       json_build_object(
                           'grantee_user_id', matched_user_id,
                           'grantee_address', new.grantee_address,
@@ -53,7 +56,7 @@ begin
     return null;
 exception
   when others then
-      raise warning 'an error occurred in %: %', tg_name, sqlerrm;
+      raise warning 'An error occurred in %: %', tg_name, sqlerrm;
       return null;
 end; 
 $$ language plpgsql;

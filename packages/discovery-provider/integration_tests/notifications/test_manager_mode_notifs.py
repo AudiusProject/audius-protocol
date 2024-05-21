@@ -87,15 +87,70 @@ def test_manager_mode_notifications(app):
     populate_mock_db(db, entities)
 
     with db.scoped_session() as session:
-        manager_notification: List[Notification] = (
+        manager_notifications: List[Notification] = (
             session.query(Notification)
             .filter(Notification.type == "request_manager")
             .all()
         )
-        assert len(manager_notification) == 2
-        managed_account_notification: List[Notification] = (
+        assert len(manager_notifications) == 2
+        first_manager_notif = manager_notifications[0]
+        assert first_manager_notif.user_ids == [1]
+        assert first_manager_notif.timestamp == now
+        assert first_manager_notif.specifier == "2"
+        assert (
+            first_manager_notif.group_id
+            == f"request_manager:grantee_user_id:1:grantee_address:user1wallet:user_id:2:updated_at:{now}:created_at:{now}"
+        )
+        assert first_manager_notif.data == {
+            "grantee_user_id": 1,
+            "grantee_address": "user1wallet",
+            "user_id": 2,
+        }
+        second_manager_notif = manager_notifications[1]
+        assert second_manager_notif.user_ids == [1]
+        assert second_manager_notif.timestamp == now + timedelta(days=3)
+        assert second_manager_notif.specifier == "2"
+        assert (
+            second_manager_notif.group_id
+            == f"request_manager:grantee_user_id:1:grantee_address:user1wallet:user_id:2:updated_at:{now + timedelta(days=3)}:created_at:{now + timedelta(days=3)}"
+        )
+        assert second_manager_notif.data == {
+            "grantee_user_id": 1,
+            "grantee_address": "user1wallet",
+            "user_id": 2,
+        }
+        managed_account_notifications: List[Notification] = (
             session.query(Notification)
             .filter(Notification.type == "approve_manager_request")
             .all()
         )
-        assert len(managed_account_notification) == 2
+        assert len(managed_account_notifications) == 2
+
+        first_managed_account_notif = managed_account_notifications[0]
+        assert first_managed_account_notif.user_ids == [2]
+        assert first_managed_account_notif.timestamp == now + timedelta(days=1)
+        assert first_managed_account_notif.specifier == "1"
+        assert (
+            first_managed_account_notif.group_id
+            == f"approve_manager_request:grantee_user_id:1:grantee_address:user1wallet:user_id:2:created_at:{now}"
+        )
+        assert first_managed_account_notif.data == {
+            "grantee_user_id": 1,
+            "grantee_address": "user1wallet",
+            "user_id": 2,
+        }
+
+        second_managed_account_notif = managed_account_notifications[1]
+
+        assert second_managed_account_notif.user_ids == [2]
+        assert second_managed_account_notif.timestamp == now + timedelta(days=4)
+        assert second_managed_account_notif.specifier == "1"
+        assert (
+            second_managed_account_notif.group_id
+            == f"approve_manager_request:grantee_user_id:1:grantee_address:user1wallet:user_id:2:created_at:{now + timedelta(days=3)}"
+        )
+        assert second_managed_account_notif.data == {
+            "grantee_user_id": 1,
+            "grantee_address": "user1wallet",
+            "user_id": 2,
+        }
