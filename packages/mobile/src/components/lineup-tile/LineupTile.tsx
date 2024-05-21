@@ -64,7 +64,7 @@ export const LineupTile = ({
     save_count
   } = item
   const dispatch = useDispatch()
-  const { artist_pick_track_id, name, user_id } = user
+  const { artist_pick_track_id, user_id } = user
   const currentUserId = useSelector(getUserId)
   const isOwner = user_id === currentUserId
   const isCollection = 'playlist_id' in item
@@ -118,7 +118,6 @@ export const LineupTile = ({
           isCollection={isCollection}
         />
         <LineupTileMetadata
-          artistName={name}
           coSign={coSign}
           renderImage={renderImage}
           onPressTitle={onPressTitle}
