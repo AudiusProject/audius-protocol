@@ -249,10 +249,14 @@ def populate_track_record_metadata(track_record: Track, track_metadata, handle, 
             ):
                 track_record.download_conditions = track_metadata["download_conditions"]
         elif key == "allowed_api_keys":
-            if key in track_metadata and track_metadata[key]:
-                track_record.allowed_api_keys = [
-                    api_key.lower() for api_key in track_metadata["allowed_api_keys"]
-                ]
+            if key in track_metadata:
+                if track_metadata[key]:
+                    track_record.allowed_api_keys = [
+                        api_key.lower()
+                        for api_key in track_metadata["allowed_api_keys"]
+                    ]
+                else:
+                    track_record.allowed_api_keys = None
         elif key == "stem_of":
             if "stem_of" in track_metadata and is_valid_json_field(
                 track_metadata, "stem_of"
