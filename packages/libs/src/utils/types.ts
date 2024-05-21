@@ -206,6 +206,7 @@ export type TrackMetadata = {
 
   is_playlist_upload?: boolean
   ai_attribution_user_id?: Nullable<ID>
+  api_allowed_keys?: Nullable<string[]>
 }
 
 export type CollectionMetadata = {
