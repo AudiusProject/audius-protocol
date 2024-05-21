@@ -1,12 +1,13 @@
 import { groupBy } from 'lodash'
 
 import { createApi } from '~/audius-query'
-import { Kind } from '~/models'
+import { ID, Kind } from '~/models'
 import { SearchItem } from '~/store'
 import { encodeHashId } from '~/utils'
-import { useGetTrackById, useGetTracksByIds } from './track'
+import { useGetTracksByIds } from './track'
 import { useSelector } from 'react-redux'
 import { getUserId } from '~/store/account/selectors'
+import { useGetUsersByIds } from './user'
 
 type GetRecentSearchesArgs = {
   searchItems: SearchItem[]
@@ -22,11 +23,28 @@ export const useGetRecentSearches = (args: GetRecentSearchesArgs) => {
     currentUserId
   })
 
+  const { data: users } = useGetUsersByIds({
+    ids: (groups[Kind.USERS] ?? []).map(({ id }) => id)
+  })
+
+  //   const { data: users } = useGetPlaylists({
+  //     ids: (groups[Kind.USERS] ?? []).map(({ id }) => id)
+  //   })
+
   //   const { data: tracks } = groups[Kind.TRACKS]
   //     ? await sdk.full.tracks.getBulkTracks({
   //         id: groups[Kind.TRACKS].map(({ id }) => encodeHashId(id))
   //       })
   //     : { data: [] }
+
+  const getSearchItemData = (id: ID, kind: Kind) => {
+    if (kind === Kind.TRACKS) {
+      return tracks?.find(({ track_id }) => track_id === id)
+    }
+    if (kind === Kind.USERS) {
+      return users?.find(({ user_id }) => user_id === id)
+    }
+  }
 
   // Map the results back to the original search item order
   console.log('tracks', tracks)
@@ -34,7 +52,7 @@ export const useGetRecentSearches = (args: GetRecentSearchesArgs) => {
     .map((searchItem) => {
       return {
         ...searchItem,
-        item: tracks?.find(({ track_id }) => track_id === searchItem.id)
+        item: getSearchItemData(searchItem.id, searchItem.kind)
       }
     })
     .filter(({ item }) => item)
@@ -45,6 +63,8 @@ const searchApi = createApi({
   endpoints: {
     getRecentSearches: {
       async fetch(args: GetRecentSearchesArgs, { audiusSdk }) {
+        // TODO: can use .fetch here instead of hooks above
+
         // Make requests for tracks, users, albums, playlists
         const sdk = await audiusSdk()
 

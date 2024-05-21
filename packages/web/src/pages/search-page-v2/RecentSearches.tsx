@@ -1,7 +1,13 @@
-import { ID, Kind, SquareSizes, UserTrackMetadata } from '@audius/common/models'
-import { SearchItem, searchSelectors } from '@audius/common/store'
+import {
+  Kind,
+  SquareSizes,
+  UserMetadata,
+  UserTrackMetadata
+} from '@audius/common/models'
+import { searchSelectors } from '@audius/common/store'
 import {
   Artwork,
+  Avatar,
   Button,
   Flex,
   IconButton,
@@ -10,15 +16,14 @@ import {
   Text,
   useTheme
 } from '@audius/harmony'
-import { full as FullSdk } from '@audius/sdk'
 import { useSelector } from 'react-redux'
 
 import { UserNameAndBadges } from 'components/user-name-and-badges/UserNameAndBadges'
 import { useGetRecentSearches } from '@audius/common/api'
 import { useTrackCoverArt2 } from 'hooks/useTrackCoverArt'
-import { decodeHashId } from 'utils/hashIds'
 import { useCallback } from 'react'
 import { useHistoryContext } from 'app/HistoryProvider'
+import { useProfilePicture } from 'hooks/useUserProfilePicture'
 const { getSearchHistory } = searchSelectors
 
 const messages = {
@@ -26,24 +31,15 @@ const messages = {
   clear: 'Clear Recent Searches'
 }
 
-// type RecentSearchProps = {
-//   searchItem: SearchItem
-//   onClick: () => void
-// }
-
-type RecentSearchTrackProps = {
-  track: UserTrackMetadata
+type RecentSearchProps = {
+  children: React.ReactNode
+  title: string
 }
 
-const RecentSearchTrack = (props: RecentSearchTrackProps) => {
-  const { track, onClick } = props
-  const { track_id, user, title } = track
+const RecentSearch = (props: RecentSearchProps) => {
+  const { children, title } = props
   const { history } = useHistoryContext()
-  console.log('track', track)
-  // Maybe useTrackCoverArt because these images aren't in the cache (pulled via audius query search api)
-  const image = useTrackCoverArt2(track_id, SquareSizes.SIZE_150_BY_150)
 
-  //   console.log('image', image, id, decodeHashId(id)!)
   const handleClick = useCallback(() => {
     history.push(`/search/${title}`)
   }, [])
@@ -51,37 +47,80 @@ const RecentSearchTrack = (props: RecentSearchTrackProps) => {
   return (
     <Flex
       w='100%'
+      pv='xs'
       css={{ justifyContent: 'space-between', cursor: 'pointer' }}
       onClick={handleClick}
       role='button'
       aria-label={`Go to search result for ${title}`}
     >
-      <Flex gap='m'>
-        <Artwork src={image} w='40px' borderRadius='xs' />
-        <Flex direction='column' css={{ alignItems: 'flex-start' }}>
-          <Text variant='body' size='s'>
-            {title}
-          </Text>
-          {user ? (
-            <UserNameAndBadges
-              renderName={(name) => (
-                <Text variant='body' size='xs' color='subdued'>
-                  {name}
-                </Text>
-              )}
-              userId={user.user_id}
-            />
-          ) : null}
-        </Flex>
-      </Flex>
+      <Flex gap='m'>{children}</Flex>
       <IconButton
         aria-label='Remove recent search'
         icon={IconClose}
         color='subdued'
         size='s'
-        // onClick={}
       />
     </Flex>
+  )
+}
+
+type RecentSearchTrackProps = {
+  track: UserTrackMetadata
+}
+
+const RecentSearchTrack = (props: RecentSearchTrackProps) => {
+  const { track } = props
+  const { track_id, user, title } = track
+  const image = useTrackCoverArt2(track_id, SquareSizes.SIZE_150_BY_150)
+
+  return (
+    <RecentSearch title={title}>
+      <Artwork src={image} w='40px' borderRadius='xs' />
+      <Flex direction='column' css={{ alignItems: 'flex-start' }}>
+        <Text variant='body' size='s'>
+          {title}
+        </Text>
+        {user ? (
+          <UserNameAndBadges
+            renderName={(name) => (
+              <Text variant='body' size='xs' color='subdued'>
+                {name}
+              </Text>
+            )}
+            userId={user.user_id}
+          />
+        ) : null}
+      </Flex>
+    </RecentSearch>
+  )
+}
+
+type RecentSearchUserProps = {
+  user: UserMetadata
+}
+
+const RecentSearchUser = (props: RecentSearchUserProps) => {
+  const { user } = props
+  const { user_id, name } = user
+  const image = useProfilePicture(user_id, SquareSizes.SIZE_150_BY_150)
+
+  return (
+    <RecentSearch title={name}>
+      <Avatar src={image} w='40px' borderWidth='thin' />
+      <Flex direction='column' css={{ alignItems: 'flex-start' }}>
+        <UserNameAndBadges
+          renderName={(name) => (
+            <Text variant='body' size='s'>
+              {name}
+            </Text>
+          )}
+          userId={user.user_id}
+        />
+        <Text variant='body' size='xs' color='subdued'>
+          Profile
+        </Text>
+      </Flex>
+    </RecentSearch>
   )
 }
 
@@ -102,12 +141,20 @@ export const RecentSearches = () => {
       <Text variant='heading' size='s' css={{ alignSelf: 'flex-start' }}>
         {messages.title}
       </Text>
-      <Flex>
+      <Flex direction='column' gap='s'>
         {(recentSearches || []).map((recentSearch) => {
           if (recentSearch.kind === Kind.TRACKS) {
             return (
               <RecentSearchTrack
                 track={recentSearch.item as UserTrackMetadata}
+                key={recentSearch.id}
+              />
+            )
+          }
+          if (recentSearch.kind === Kind.USERS) {
+            return (
+              <RecentSearchUser
+                user={recentSearch.item}
                 key={recentSearch.id}
               />
             )
