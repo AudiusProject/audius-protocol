@@ -27,7 +27,8 @@ import {
   Entry,
   LineupBaseActions,
   QueueSource,
-  UnsubscribeInfo
+  UnsubscribeInfo,
+  PlayerBehavior
 } from '@audius/common/store'
 import { Uid, makeUids, makeUid, removeNullable } from '@audius/common/utils'
 import {
@@ -48,7 +49,7 @@ import { isMobileWeb } from 'common/utils/isMobileWeb'
 import { isPreview } from 'common/utils/isPreview'
 import { AppState } from 'store/types'
 
-const { getSource, getUid, getPositions } = queueSelectors
+const { getSource, getUid, getPositions, getPlayerBehavior } = queueSelectors
 const { getUid: getCurrentPlayerTrackUid, getPlaying } = playerSelectors
 const { getUsers } = cacheUsersSelectors
 const { getTrack, getTracks } = cacheTracksSelectors
@@ -71,10 +72,12 @@ function* filterDeletes<T extends Track | Collection>(
   const getFeatureEnabled = yield* getContext('getFeatureEnabled')
   yield* call(remoteConfig.waitForRemoteConfig)
 
-  const isUSDCGatedContentEnabled = getFeatureEnabled(
+  const isUSDCGatedContentEnabled = yield* call(
+    getFeatureEnabled,
     FeatureFlags.USDC_PURCHASES
   )
-  const isPremiumAlbumsEnabled = getFeatureEnabled(
+  const isPremiumAlbumsEnabled = yield* call(
+    getFeatureEnabled,
     FeatureFlags.PREMIUM_ALBUMS_ENABLED
   )
 
@@ -96,7 +99,6 @@ function* filterDeletes<T extends Track | Collection>(
       // Remove this when removing the feature flags
       if (
         !isUSDCGatedContentEnabled &&
-        'track_id' in metadata &&
         metadata.is_stream_gated &&
         isContentUSDCPurchaseGated(metadata.stream_conditions)
       ) {
@@ -449,36 +451,28 @@ function* play<T extends Track | Collection>(
 ) {
   const lineup = yield* select(lineupSelector)
   const requestedPlayTrack = yield* select(getTrack, { uid: action.uid })
-  let isPreview = !!action.isPreview
-
-  // If preview isn't forced, check for track acccess and switch to preview
-  // if the user doesn't have access but the track is previewable
-  if (!isPreview && requestedPlayTrack?.is_stream_gated) {
-    const hasAccess =
-      !requestedPlayTrack?.is_stream_gated ||
-      !!requestedPlayTrack?.access?.stream
-    isPreview = !hasAccess && !!requestedPlayTrack.preview_cid
-  }
+  const isPreview = !!action.isPreview
 
   if (action.uid) {
     const source = yield* select(getSource)
     const currentPlayerTrackUid = yield* select(getCurrentPlayerTrackUid)
+    const currentPlayerBehavior = yield* select(getPlayerBehavior)
+    const newPlayerBehavior = isPreview
+      ? PlayerBehavior.PREVIEW_OR_FULL
+      : undefined
     if (
       !currentPlayerTrackUid ||
       action.uid !== currentPlayerTrackUid ||
-      source !== lineup.prefix
+      source !== lineup.prefix ||
+      currentPlayerBehavior !== newPlayerBehavior
     ) {
       const toQueue = yield* all(
         lineup.entries.map(function* (e: LineupEntry<T>) {
           const queueable = yield* call(getToQueue, lineup.prefix, e)
           // If the entry is the one we're playing, set isPreview to incoming
           // value
-          if (
-            queueable &&
-            'uid' in queueable &&
-            queueable?.uid === action.uid
-          ) {
-            queueable.isPreview = isPreview
+          if (isPreview && queueable && 'uid' in queueable) {
+            queueable.playerBehavior = PlayerBehavior.PREVIEW_OR_FULL
           }
           return queueable
         })
@@ -491,9 +485,9 @@ function* play<T extends Track | Collection>(
   yield* put(
     queueActions.play({
       uid: action.uid,
-      isPreview,
       trackId: requestedPlayTrack && requestedPlayTrack.track_id,
-      source: prefix
+      source: prefix,
+      playerBehavior: isPreview ? PlayerBehavior.PREVIEW_OR_FULL : undefined
     })
   )
 }

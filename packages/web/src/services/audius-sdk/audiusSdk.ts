@@ -56,7 +56,8 @@ const initSdk = async () => {
   const discoveryNodeSelector = await discoveryNodeSelectorService.getInstance()
 
   const audiusSdk = sdk({
-    appName: 'audius-client',
+    appName: env.APP_NAME,
+    apiKey: env.API_KEY,
     environment: env.ENVIRONMENT,
     services: {
       discoveryNodeSelector,

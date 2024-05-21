@@ -67,9 +67,6 @@ export const HarmonyTextField = forwardRef(
           field.onChange(e)
         }}
         onBlur={(e) => {
-          if (clearErrorOnChange) {
-            setError(undefined)
-          }
           if (transformValueOnBlur) {
             e.target.value = transformValueOnBlur(e.target.value)
           }

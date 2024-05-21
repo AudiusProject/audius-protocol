@@ -4,7 +4,9 @@ import {
   ID,
   FollowSource,
   UserMetadata,
-  ErrorLevel
+  ErrorLevel,
+  InstagramUser,
+  TikTokUser
 } from '@audius/common/models'
 import {
   IntKeys,
@@ -298,7 +300,7 @@ function* validateHandle(
         FeatureFlags.VERIFY_HANDLE_WITH_TIKTOK
       )
 
-      const results = yield* all([
+      const [twitterResult, instagramResult, tiktokResult] = yield* all([
         race({
           data: verifyTwitter
             ? call(audiusBackendInstance.twitterHandle, handle)
@@ -319,8 +321,6 @@ function* validateHandle(
         })
       ])
 
-      const [twitterResult, instagramResult, tiktokResult] = results
-
       const twitterUserQuery = twitterResult?.timeout
         ? null
         : twitterResult?.data
@@ -331,9 +331,10 @@ function* validateHandle(
 
       const handleCheckStatus = parseHandleReservedStatusFromSocial({
         isOauthVerified,
+        // @ts-ignore
         lookedUpTwitterUser: twitterUserQuery?.user?.profile?.[0] ?? null,
-        lookedUpInstagramUser: instagramUser || null,
-        lookedUpTikTokUser: tikTokUser || null
+        lookedUpInstagramUser: (instagramUser as InstagramUser) || null,
+        lookedUpTikTokUser: (tikTokUser as TikTokUser) || null
       })
 
       if (handleCheckStatus !== 'notReserved') {

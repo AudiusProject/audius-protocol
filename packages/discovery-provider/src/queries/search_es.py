@@ -10,7 +10,7 @@ from src.utils.elasticdsl import (
     ES_PLAYLISTS,
     ES_TRACKS,
     ES_USERS,
-    esclient,
+    get_esclient,
     pluck_hits,
     populate_track_or_playlist_metadata_es,
     populate_user_metadata_es,
@@ -20,6 +20,7 @@ logger = logging.getLogger(__name__)
 
 
 def search_es_full(args: dict):
+    esclient = get_esclient()
     if not esclient:
         raise Exception("esclient is None")
 
@@ -117,6 +118,7 @@ def search_es_full(args: dict):
 
 
 def search_tags_es(q: str, kind="all", current_user_id=None, limit=10, offset=0):
+    esclient = get_esclient()
     if not esclient:
         raise Exception("esclient is None")
 
@@ -199,6 +201,7 @@ def finalize_response(
     """Hydrates users and contextualizes results for current user (if applicable).
     Also removes extra indexed fields so as to match the fieldset from postgres.
     """
+    esclient = get_esclient()
     if not esclient:
         raise Exception("esclient is None")
 
@@ -261,6 +264,11 @@ def finalize_response(
             hydrate_saves_reposts(playlists, follow_saves, follow_reposts)
         hydrate_user(playlists, users_by_id)
         response[k] = [map_playlist(playlist, current_user) for playlist in playlists]
+
+        # batch populate gated playlist metadata
+        db = get_db_read_replica()
+        with db.scoped_session() as session:
+            _populate_gated_content_metadata(session, response[k], current_user_id)
 
     return response
 

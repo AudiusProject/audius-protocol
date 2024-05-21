@@ -28,8 +28,8 @@ from src.tasks.entity_manager.utils import (
     ManageEntityParameters,
     copy_record,
     is_ddex_signer,
-    validate_signer,
     parse_release_date,
+    validate_signer,
 )
 from src.tasks.metadata import immutable_track_fields
 from src.tasks.task_helpers import generate_slug_and_collision_id
@@ -146,13 +146,10 @@ def update_track_price_history(
             .order_by(desc(TrackPriceHistory.block_timestamp))
             .first()
         )
-        if (
-            not old_record
-            or old_record.block_timestamp != new_record.block_timestamp
-            and (
-                old_record.total_price_cents != new_record.total_price_cents
-                or old_record.splits != new_record.splits
-            )
+
+        if not old_record or (
+            old_record.block_timestamp != new_record.block_timestamp
+            and not old_record.equals(new_record)
         ):
             logger.debug(
                 f"track.py | Updating price history for {track_record.track_id}. Old record={old_record} New record={new_record}"
@@ -251,7 +248,11 @@ def populate_track_record_metadata(track_record: Track, track_metadata, handle, 
                 or track_metadata["download_conditions"] is None
             ):
                 track_record.download_conditions = track_metadata["download_conditions"]
-
+        elif key == "allowed_api_keys":
+            if key in track_metadata and track_metadata[key]:
+                track_record.allowed_api_keys = [
+                    api_key.lower() for api_key in track_metadata["allowed_api_keys"]
+                ]
         elif key == "stem_of":
             if "stem_of" in track_metadata and is_valid_json_field(
                 track_metadata, "stem_of"

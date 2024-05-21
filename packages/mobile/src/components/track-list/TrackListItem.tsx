@@ -226,10 +226,6 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
     ddex_app: ddexApp,
     stream_conditions: streamConditions
   } = track
-  const { isEnabled: isEditAlbumsEnabled } = useFeatureFlag(
-    FeatureFlags.EDIT_ALBUMS
-  )
-
   const { is_deactivated, name } = user
 
   const isDeleted = is_delete || !!is_deactivated
@@ -307,17 +303,15 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
           ? OverflowAction.UNREPOST
           : OverflowAction.REPOST
         : null,
-      !isTrackOwner && isLocked ? OverflowAction.PURCHASE_TRACK : null,
-      isEditAlbumsEnabled && isTrackOwner && !ddexApp
-        ? OverflowAction.ADD_TO_ALBUM
+      !isTrackOwner && isLocked && !isDeleted
+        ? OverflowAction.PURCHASE_TRACK
         : null,
+      isTrackOwner && !ddexApp ? OverflowAction.ADD_TO_ALBUM : null,
       isPlaylistAddable ? OverflowAction.ADD_TO_PLAYLIST : null,
       isNewPodcastControlsEnabled && isLongFormContent
         ? OverflowAction.VIEW_EPISODE_PAGE
         : OverflowAction.VIEW_TRACK_PAGE,
-      isEditAlbumsEnabled && !showViewAlbum && albumInfo
-        ? OverflowAction.VIEW_ALBUM_PAGE
-        : null,
+      !showViewAlbum && albumInfo ? OverflowAction.VIEW_ALBUM_PAGE : null,
       isNewPodcastControlsEnabled && isLongFormContent
         ? playbackPositionInfo?.status === 'COMPLETED'
           ? OverflowAction.MARK_AS_UNPLAYED
@@ -338,9 +332,10 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
     )
   }, [
     isTrackOwner,
+    isLocked,
     has_current_user_saved,
     has_current_user_reposted,
-    isEditAlbumsEnabled,
+    isDeleted,
     ddexApp,
     isPlaylistAddable,
     isNewPodcastControlsEnabled,

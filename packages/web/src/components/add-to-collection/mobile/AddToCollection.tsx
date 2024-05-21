@@ -18,7 +18,7 @@ import TextElement, { Type } from 'components/nav/mobile/TextElement'
 import { useTemporaryNavContext } from 'components/nav/store/context'
 import { ToastContext } from 'components/toast/ToastContext'
 import useHasChangedRoute from 'hooks/useHasChangedRoute'
-import NewPlaylistButton from 'pages/saved-page/components/mobile/NewPlaylistButton'
+import NewCollectionButton from 'pages/saved-page/components/mobile/NewCollectionButton'
 import { AppState } from 'store/types'
 import { withNullGuard } from 'utils/withNullGuard'
 
@@ -28,7 +28,8 @@ const { getTrackId, getTrackTitle, getCollectionType } =
 const { close } = addToCollectionUIActions
 const { addTrackToPlaylist, createPlaylist, createAlbum } =
   cacheCollectionsActions
-const { getAccountWithOwnPlaylists } = accountSelectors
+
+const { getAccountWithNameSortedPlaylistsAndAlbums } = accountSelectors
 
 const getMessages = (collectionType: 'album' | 'playlist') => ({
   title: `Add To ${capitalize(collectionType)}`,
@@ -78,7 +79,9 @@ const AddToCollection = g(
 
     const { toast } = useContext(ToastContext)
 
-    const cards = account.playlists.map((playlist) => {
+    const cards = (
+      collectionType === 'album' ? account.albums : account.playlists
+    ).map((playlist) => {
       return (
         <CollectionCard
           key={playlist.playlist_id}
@@ -116,7 +119,10 @@ const AddToCollection = g(
     return (
       <MobilePageContainer>
         <div className={styles.bodyContainer}>
-          <NewPlaylistButton onClick={addToNewPlaylist} />
+          <NewCollectionButton
+            onClick={addToNewPlaylist}
+            collectionType={collectionType}
+          />
           <div className={styles.cardsContainer}>
             <CardLineup cards={cards} />
           </div>
@@ -128,7 +134,7 @@ const AddToCollection = g(
 
 function mapStateToProps(state: AppState) {
   return {
-    account: getAccountWithOwnPlaylists(state),
+    account: getAccountWithNameSortedPlaylistsAndAlbums(state),
     trackId: getTrackId(state),
     trackTitle: getTrackTitle(state),
     collectionType: getCollectionType(state)

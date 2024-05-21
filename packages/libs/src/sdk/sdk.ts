@@ -26,7 +26,7 @@ import { developmentConfig } from './config/development'
 import { productionConfig } from './config/production'
 import { stagingConfig } from './config/staging'
 import {
-  addAppNameMiddleware,
+  addAppInfoMiddleware,
   addRequestSignatureMiddleware
 } from './middleware'
 import { OAuth } from './oauth'
@@ -77,6 +77,7 @@ export const sdk = (config: SdkConfig) => {
 
   // Initialize APIs
   const apis = initializeApis({
+    apiKey,
     appName,
     services
   })
@@ -221,14 +222,16 @@ const initializeServices = (config: SdkConfig) => {
 }
 
 const initializeApis = ({
+  apiKey,
   appName,
   services
 }: {
+  apiKey?: string
   appName?: string
   services: ServicesContainer
 }) => {
   const middleware = [
-    addAppNameMiddleware({ appName, services }),
+    addAppInfoMiddleware({ apiKey, appName, services }),
     addRequestSignatureMiddleware({ services }),
     services.discoveryNodeSelector.createMiddleware()
   ]

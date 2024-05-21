@@ -52,14 +52,16 @@ export const TextLink = <ParamList extends ReactNavigation.RootParamList>(
     default: color.link.default,
     subdued: color.link.subdued,
     visible: color.link.visible,
-    inverted: color.static.white
+    inverted: color.static.white,
+    active: color.primary.primary
   }
 
   const variantPressingColors = {
     default: color.primary.p300,
     subdued: color.primary.p300,
     visible: color.link.visible,
-    inverted: color.static.white
+    inverted: color.static.white,
+    active: color.primary.primary
   }
 
   const tap = Gesture.Tap().onBegin(() => {

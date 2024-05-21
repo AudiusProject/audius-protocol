@@ -1,9 +1,9 @@
 .giantTrackTile {
   width: 100%;
   max-width: 1080px;
-  margin: 0 auto;
   text-align: left;
   user-select: none;
+  margin: 0 auto;
 }
 
 .topSection {
@@ -212,7 +212,6 @@
 
 .gatedContentSectionCollection {
   display: flex;
-  align-items: center;
   margin-top: var(--harmony-unit-2);
   width: fit-content;
 }

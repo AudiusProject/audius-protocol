@@ -87,7 +87,7 @@
       <ImageDetailsByTerritory>
         <TerritoryCode>Worldwide</TerritoryCode>
         <TechnicalImageDetails>
-          <ImageCodecType>JPEG</ImageCodecType>
+          <TechnicalResourceDetailsReference>T2</TechnicalResourceDetailsReference>
           <ImageHeight>2000</ImageHeight>
           <ImageWidth>2000</ImageWidth>
           <File>
@@ -107,33 +107,32 @@
       <ReferenceTitle>
         <TitleText>Example Album</TitleText>
       </ReferenceTitle>
-
       <ReleaseResourceReferenceList>
         <ReleaseResourceReference>A1</ReleaseResourceReference>
         <ReleaseResourceReference>A2</ReleaseResourceReference>
       </ReleaseResourceReferenceList>
-
       <ReleaseDetailsByTerritory>
         <TerritoryCode>Worldwide</TerritoryCode>
-        <Title>
+        <DisplayArtistName>DJ Theo</DisplayArtistName>
+        <LabelName>Iron Crown Music</LabelName>
+        <Title TitleType="FormalTitle">
           <TitleText>Example Album</TitleText>
         </Title>
-        <CLine>
-          <Year>2024</Year>
-          <CLineText>© 2024 Label Name</CLineText>
-        </CLine>
-
-        <Genre>
-          <GenreText>Folk</GenreText>
-          <SubGenre>Indie Folk</SubGenre>
-        </Genre>
+        <Title TitleType="DisplayTitle">
+          <TitleText>Example Album</TitleText>
+        </Title>
         <DisplayArtist SequenceNumber="1">
           <PartyName>
             <FullName>DJ Theo</FullName>
           </PartyName>
           <ArtistRole>MainArtist</ArtistRole>
         </DisplayArtist>
-
+        <ParentalWarningType>NotExplicit</ParentalWarningType>
+        <Genre>
+          <GenreText>Metal</GenreText>
+          <SubGenre>Progressive Metal</SubGenre>
+        </Genre>
+        <ReleaseDate IsApproximate="true">2010-01-01</ReleaseDate>
       </ReleaseDetailsByTerritory>
     </Release>
   </ReleaseList>
@@ -142,7 +141,7 @@
       <DealReleaseReference>RL1</DealReleaseReference>
       <Deal>
         <DealTerms>
-          <CommercialModelType>PayAsYouGoModel</CommercialModelType>
+          <CommercialModelType>FreeOfChargeModel</CommercialModelType>
           <Usage>
             <UseType>OnDemandStream</UseType>
             <UseType>PermanentDownload</UseType>

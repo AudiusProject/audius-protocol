@@ -22,10 +22,10 @@ const getCooldownChallengeInfo = (
   challenge: UndisbursedUserChallenge,
   now: Dayjs
 ) => {
-  const createdAt = utcToLocalTime(challenge.created_at)
+  const completedAt = utcToLocalTime(challenge.completed_at)
   const cooldownDays = challenge.cooldown_days ?? 0
-  const diff = now.diff(createdAt, 'day')
-  const claimableDate = createdAt.add(cooldownDays, 'day')
+  const diff = now.diff(completedAt, 'day')
+  const claimableDate = completedAt.add(cooldownDays, 'day')
   const isClose = cooldownDays - diff <= 1
   let label = claimableDate.format('dddd')
   if (diff === cooldownDays) {
@@ -47,8 +47,8 @@ export const formatCooldownChallenges = (
   const now = dayjs().endOf('day')
   const cooldownChallenges = new Array(challenges[0].cooldown_days)
   challenges.forEach((c) => {
-    const createdAt = utcToLocalTime(c.created_at)
-    const diff = now.diff(createdAt, 'day')
+    const completedAt = utcToLocalTime(c.completed_at)
+    const diff = now.diff(completedAt, 'day')
     cooldownChallenges[diff] = {
       ...cooldownChallenges[diff],
       id: c.specifier,
@@ -74,7 +74,6 @@ export const useChallengeCooldownSchedule = ({
   const challenges = useSelector(getUndisbursedUserChallenges)
     .filter((c) => multiple || c.challenge_id === challengeId)
     .filter((c) => !TRENDING_CHALLENGE_IDS.has(c.challenge_id))
-    .map((c) => ({ ...c, createdAtDate: dayjs.utc(c.created_at) }))
 
   const [claimableChallenges, cooldownChallenges] = partition(
     challenges,

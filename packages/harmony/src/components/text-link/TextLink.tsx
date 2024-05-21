@@ -32,7 +32,8 @@ export const TextLink = forwardRef((props: TextLinkProps, ref: Ref<'a'>) => {
     subdued: color.link.subdued,
     visible: color.link.visible,
     inverted: color.static.white,
-    secondary: color.secondary.secondary
+    secondary: color.secondary.secondary,
+    active: color.primary.primary
   }
 
   const variantHoverColors = {
@@ -40,7 +41,8 @@ export const TextLink = forwardRef((props: TextLinkProps, ref: Ref<'a'>) => {
     subdued: color.primary.p300,
     visible: color.link.visible,
     inverted: color.static.white,
-    secondary: color.secondary.secondary
+    secondary: color.secondary.secondary,
+    active: color.primary.primary
   }
 
   const hoverStyles = {
@@ -60,7 +62,6 @@ export const TextLink = forwardRef((props: TextLinkProps, ref: Ref<'a'>) => {
       ref={ref}
       asChild
       onClick={onClick}
-      tag='a'
       css={{
         display: 'inline-flex',
         gap: spacing.s,

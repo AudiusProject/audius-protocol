@@ -27,6 +27,13 @@ jobs:
         branches:
           only: main
   - push-docker-image:
+      name: push-ddex-processor
+      context: [Vercel, dockerhub]
+      service: ddex-processor
+      filters:
+        branches:
+          only: main
+  - push-docker-image:
       name: push-ddex-publisher
       context: [Vercel, dockerhub]
       service: ddex-publisher

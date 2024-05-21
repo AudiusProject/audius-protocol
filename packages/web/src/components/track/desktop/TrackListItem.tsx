@@ -1,8 +1,16 @@
 import { memo, MouseEvent, useRef } from 'react'
 
 import { useGetCurrentUserId } from '@audius/common/api'
-import { useIsGatedContentPlaylistAddable } from '@audius/common/hooks'
-import { ID, Track, UID } from '@audius/common/models'
+import {
+  useGatedContentAccess,
+  useIsGatedContentPlaylistAddable
+} from '@audius/common/hooks'
+import {
+  ID,
+  isContentUSDCPurchaseGated,
+  Track,
+  UID
+} from '@audius/common/models'
 import { EnhancedCollectionTrack } from '@audius/common/store'
 import { Genre, formatSeconds } from '@audius/common/utils'
 import { IconKebabHorizontal } from '@audius/harmony'
@@ -59,6 +67,8 @@ const TrackListItem = ({
   const { data: currentUserId } = useGetCurrentUserId({})
   const isOwner = track?.owner_id === currentUserId
   const isPlaylistAddable = useIsGatedContentPlaylistAddable(track as Track)
+  const isPremium = isContentUSDCPurchaseGated(track?.stream_conditions)
+  const { hasStreamAccess } = useGatedContentAccess(track as Track)
 
   if (forceSkeleton) {
     return (
@@ -163,6 +173,8 @@ const TrackListItem = ({
               playing={active}
               paused={!playing}
               hideDefault={false}
+              isTrackPremium={isPremium}
+              isLocked={!hasStreamAccess}
             />
           </div>
         ) : null}

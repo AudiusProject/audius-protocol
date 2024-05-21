@@ -37,6 +37,7 @@ export const LineupTile = ({
   index,
   isTrending,
   isUnlisted,
+  source,
   onPress,
   onPressOverflow,
   onPressRepost,
@@ -63,7 +64,7 @@ export const LineupTile = ({
     save_count
   } = item
   const dispatch = useDispatch()
-  const { artist_pick_track_id, name, user_id } = user
+  const { artist_pick_track_id, user_id } = user
   const currentUserId = useSelector(getUserId)
   const isOwner = user_id === currentUserId
   const isCollection = 'playlist_id' in item
@@ -117,7 +118,6 @@ export const LineupTile = ({
           isCollection={isCollection}
         />
         <LineupTileMetadata
-          artistName={name}
           coSign={coSign}
           renderImage={renderImage}
           onPressTitle={onPressTitle}
@@ -147,6 +147,7 @@ export const LineupTile = ({
           isArtistPick={isArtistPick}
           showArtistPick={showArtistPick}
           releaseDate={item?.release_date ? item.release_date : undefined}
+          source={source}
         />
       </View>
       {children}
@@ -167,6 +168,7 @@ export const LineupTile = ({
           }
           streamConditions={streamConditions}
           hasStreamAccess={hasStreamAccess}
+          source={source}
           onPressOverflow={onPressOverflow}
           onPressRepost={onPressRepost}
           onPressSave={onPressSave}

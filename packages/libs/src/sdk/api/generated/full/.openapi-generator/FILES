@@ -18,7 +18,6 @@ models/CollectionActivityFull.ts
 models/CollectionLibraryResponseFull.ts
 models/CoverArt.ts
 models/CoverPhoto.ts
-models/DownloadMetadata.ts
 models/Favorite.ts
 models/FieldVisibility.ts
 models/FollowGate.ts
@@ -26,6 +25,7 @@ models/FollowingResponse.ts
 models/FollowingResponseFull.ts
 models/FullBulkSubscribersResponse.ts
 models/FullFollowersResponse.ts
+models/FullGetSupportedUsers.ts
 models/FullGetSupporter.ts
 models/FullGetSupporters.ts
 models/FullGetSupporting.ts

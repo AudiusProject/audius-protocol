@@ -16,6 +16,7 @@ type DetailsTileGatedAccessProps = {
   isOwner: boolean
   hasStreamAccess: boolean
   style?: ViewStyle
+  contentType: PurchaseableContentType
 }
 
 export const DetailsTileGatedAccess = ({
@@ -23,7 +24,8 @@ export const DetailsTileGatedAccess = ({
   streamConditions,
   isOwner,
   hasStreamAccess,
-  style
+  style,
+  contentType
 }: DetailsTileGatedAccessProps) => {
   const shouldDisplay =
     isContentCollectibleGated(streamConditions) ||
@@ -38,6 +40,7 @@ export const DetailsTileGatedAccess = ({
         streamConditions={streamConditions}
         isOwner={isOwner}
         style={style}
+        contentType={contentType}
       />
     )
   }

@@ -1,5 +1,6 @@
 import { useCallback, useMemo } from 'react'
 
+import { useAccountSwitcher } from '@audius/common/hooks'
 import { User, UserMetadata } from '@audius/common/models'
 import { accountSelectors, chatSelectors } from '@audius/common/store'
 import {
