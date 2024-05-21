@@ -48,7 +48,7 @@ export const AccountSwitcher = () => {
       ref={parentElementRef}
       direction='column'
       alignItems='center'
-      justifyContent='flex-start'
+      justifyContent='center'
       h='2xl'
       w='2xl'
     >
