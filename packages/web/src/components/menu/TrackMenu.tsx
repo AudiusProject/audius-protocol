@@ -107,7 +107,6 @@ const TrackMenu = (props: TrackMenuProps) => {
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
   )
-  const { isEnabled: isEditAlbumsEnabled } = useFlag(FeatureFlags.EDIT_ALBUMS)
 
   const trackPlaybackPositions = useSelector((state: CommonState) =>
     getUserTrackPositions(state, { userId: currentUserId })
@@ -283,7 +282,7 @@ const TrackMenu = (props: TrackMenuProps) => {
     if (includeFavorite && !isOwner && (!isDeleted || isFavorited)) {
       menu.items.push(favoriteMenuItem)
     }
-    if (isEditAlbumsEnabled && includeAddToAlbum && !isDeleted && isOwner) {
+    if (includeAddToAlbum && !isDeleted && isOwner) {
       menu.items.push(addToAlbumMenuItem)
     }
     if (includeAddToPlaylist && !isDeleted) {
@@ -303,7 +302,7 @@ const TrackMenu = (props: TrackMenuProps) => {
     if (trackId && isOwner && includeArtistPick && !isDeleted) {
       menu.items.push(artistPickMenuItem)
     }
-    if (albumInfo && includeAlbumPage && isEditAlbumsEnabled) {
+    if (albumInfo && includeAlbumPage) {
       menu.items.push(albumPageMenuItem)
     }
     if (handle && !isOwnerDeactivated) {

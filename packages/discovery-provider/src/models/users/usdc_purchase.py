@@ -29,6 +29,9 @@ class USDCPurchase(Base, RepresentableMixin):
     content_type = Column(Enum(PurchaseType), nullable=False, index=True)
     content_id = Column(Integer, nullable=False)
     access = Column(Enum(PurchaseAccessType), nullable=False)
+    city = Column(String, nullable=True)
+    region = Column(String, nullable=True)
+    country = Column(String, nullable=True)
 
     created_at = Column(
         DateTime, nullable=False, index=True, server_default=text("CURRENT_TIMESTAMP")

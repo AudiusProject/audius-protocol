@@ -59,3 +59,12 @@ services:
       dockerfile: ${PROJECT_ROOT}/packages/discovery-provider/plugins/pedalboard/docker/Dockerfile.dev
     volumes:
       - ${PROJECT_ROOT}:/app
+  
+  mri:
+    extends:
+      file: docker-compose.pedalboard.prod.yml
+      service: mri
+    build:
+      dockerfile: ${PROJECT_ROOT}/packages/discovery-provider/plugins/pedalboard/docker/Dockerfile.dev
+    volumes:
+      - ${PROJECT_ROOT}:/app

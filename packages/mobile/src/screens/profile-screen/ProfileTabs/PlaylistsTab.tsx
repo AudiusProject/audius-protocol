@@ -28,6 +28,7 @@ export const PlaylistsTab = () => {
   const isOwner = useSelector((state) => getIsOwner(state, handle ?? ''))
   const isFocused = useIsFocused()
   const dispatch = useDispatch()
+  const isLoading = collectionsStatus === Status.LOADING
 
   const shouldFetchPlaylists =
     isFocused &&
@@ -50,8 +51,9 @@ export const PlaylistsTab = () => {
       disableTopTabScroll
       showsVerticalScrollIndicator={false}
       totalCount={playlist_count}
-      showCreatePlaylistTile={isOwner}
+      showCreateCollectionTile={isOwner}
       createPlaylistSource={CreatePlaylistSource.PROFILE_PAGE}
+      isLoading={isLoading}
     />
   )
 }

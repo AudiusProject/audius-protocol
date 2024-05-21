@@ -1,4 +1,4 @@
-import { useCallback, useState, useEffect, MouseEvent } from 'react'
+import { useCallback, useEffect, MouseEvent } from 'react'
 
 import {
   ModalSource,
@@ -274,16 +274,15 @@ const TrackTile = (props: CombinedProps) => {
     openLockedContentModal
   ])
 
-  const [artworkLoaded, setArtworkLoaded] = useState(false)
   useEffect(() => {
-    if (artworkLoaded && !showSkeleton) {
+    if (!showSkeleton) {
       hasLoaded(index)
     }
-  }, [artworkLoaded, hasLoaded, index, showSkeleton])
+  }, [hasLoaded, index, showSkeleton])
 
   const fadeIn = {
-    [styles.show]: artworkLoaded && !showSkeleton,
-    [styles.hide]: !artworkLoaded || showSkeleton
+    [styles.show]: !showSkeleton,
+    [styles.hide]: showSkeleton
   }
 
   const handleClick = useCallback(() => {
@@ -369,7 +368,6 @@ const TrackTile = (props: CombinedProps) => {
             isTrack
             isPlaying={isPlaying}
             isBuffering={isBuffering}
-            callback={() => setArtworkLoaded(true)}
             showSkeleton={showSkeleton}
             coverArtSizes={props.coverArtSizes}
             coSign={coSign}
@@ -393,12 +391,12 @@ const TrackTile = (props: CombinedProps) => {
             >
               <Text ellipses>{title}</Text>
               {isPlaying ? <IconVolume size='m' /> : null}
-              {(!artworkLoaded || showSkeleton) && (
+              {showSkeleton && (
                 <Skeleton className={styles.skeleton} height='20px' />
               )}
             </TextLink>
             <UserLink userId={userId} textVariant='body' badgeSize='xs'>
-              {(!artworkLoaded || showSkeleton) && (
+              {showSkeleton && (
                 <Skeleton className={styles.skeleton} height='20px' />
               )}
             </UserLink>
@@ -431,7 +429,7 @@ const TrackTile = (props: CombinedProps) => {
             <RankIcon
               showCrown={showRankIcon}
               index={index}
-              isVisible={isTrending && artworkLoaded && !showSkeleton}
+              isVisible={isTrending && !showSkeleton}
               className={styles.rankIconContainer}
             />
             {specialContentLabel}

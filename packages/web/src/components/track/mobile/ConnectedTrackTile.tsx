@@ -148,7 +148,6 @@ const ConnectedTrackTile = ({
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
   )
-  const { isEnabled: isEditAlbumsEnabled } = useFlag(FeatureFlags.EDIT_ALBUMS)
   const { data: albumInfo } = trpc.tracks.getAlbumBacklink.useQuery(
     { trackId: track_id },
     { enabled: !!track_id }
@@ -207,8 +206,7 @@ const ConnectedTrackTile = ({
           ? OverflowAction.UNFAVORITE
           : OverflowAction.FAVORITE
         : null
-    const addToAlbumAction =
-      isEditAlbumsEnabled && isOwner ? OverflowAction.ADD_TO_ALBUM : null
+    const addToAlbumAction = isOwner ? OverflowAction.ADD_TO_ALBUM : null
     const addToPlaylistAction = isPlaylistAddable
       ? OverflowAction.ADD_TO_PLAYLIST
       : null
@@ -220,7 +218,7 @@ const ConnectedTrackTile = ({
       isNewPodcastControlsEnabled && isLongFormContent
         ? OverflowAction.VIEW_EPISODE_PAGE
         : OverflowAction.VIEW_TRACK_PAGE,
-      isEditAlbumsEnabled && albumInfo ? OverflowAction.VIEW_ALBUM_PAGE : null,
+      albumInfo ? OverflowAction.VIEW_ALBUM_PAGE : null,
       OverflowAction.VIEW_ARTIST_PAGE
     ].filter(Boolean) as OverflowAction[]
 

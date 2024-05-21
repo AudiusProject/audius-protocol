@@ -1,5 +1,6 @@
 import { useCallback, useEffect } from 'react'
 
+import { useGetCurrentUserId, useGetPlaylistById } from '@audius/common/api'
 import { Name, PlaybackSource, Status } from '@audius/common/models'
 import type {
   SmartCollectionVariant,
@@ -14,7 +15,8 @@ import {
   reachabilitySelectors,
   playerSelectors,
   cacheTracksSelectors,
-  PurchaseableContentType
+  PurchaseableContentType,
+  queueActions
 } from '@audius/common/store'
 import { removeNullable } from '@audius/common/utils'
 import type { Maybe, Nullable } from '@audius/common/utils'
@@ -97,11 +99,14 @@ const useRefetchLineupOnTrackAdd = (
   }, [previousTrackCount, trackCount, dispatch])
 }
 
-const getMessages = (collectionType: 'album' | 'playlist') => ({
+const getMessages = (
+  collectionType: 'album' | 'playlist',
+  isPremium = false
+) => ({
   empty: `This ${collectionType} is empty. Start adding tracks to share it or make it public.`,
   emptyPublic: `This ${collectionType} is empty`,
   detailsPlaceholder: '---',
-  collectionType,
+  collectionType: `${isPremium ? 'premium ' : ''}${collectionType}`,
   hiddenType: `Hidden ${collectionType}`
 })
 
@@ -170,6 +175,19 @@ export const CollectionScreenDetailsTile = ({
 
   const isReachable = useSelector(getIsReachable)
 
+  const { data: currentUserId } = useGetCurrentUserId({})
+  // Since we're supporting SmartCollections, need to explicitly check that
+  // collectionId is a number before fetching the playlist. -1 is a placeholder,
+  // the request should not go out as the hook is disabled in that case.
+  const { data: collection } = useGetPlaylistById(
+    {
+      playlistId: typeof collectionId === 'number' ? collectionId : -1,
+      currentUserId
+    },
+    { disabled: typeof collectionId !== 'number' }
+  )
+  const isStreamGated = collection?.is_stream_gated
+
   const trackUids = useSelector(selectTrackUids)
   const collectionTrackCount = useSelector(selectTrackCount)
   const trackCount = trackCountProp ?? collectionTrackCount
@@ -182,7 +200,7 @@ export const CollectionScreenDetailsTile = ({
   const playingTrack = useSelector(getCurrentTrack)
   const playingTrackId = playingTrack?.track_id
   const firstTrack = useSelector(selectFirstTrack)
-  const messages = getMessages(isAlbum ? 'album' : 'playlist')
+  const messages = getMessages(isAlbum ? 'album' : 'playlist', isStreamGated)
   useRefetchLineupOnTrackAdd(collectionId)
 
   const play = useCallback(
@@ -194,6 +212,7 @@ export const CollectionScreenDetailsTile = ({
         dispatch(tracksActions.play())
         recordPlay(playingTrackId)
       } else if (trackCount > 0 && firstTrack) {
+        dispatch(queueActions.clear({}))
         dispatch(tracksActions.play(firstTrack.uid, { isPreview }))
         recordPlay(firstTrack.id)
       }

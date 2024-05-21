@@ -30,7 +30,8 @@ import {
   repostsUserListActions,
   favoritesUserListActions,
   RepostType,
-  playerSelectors
+  playerSelectors,
+  playerActions
 } from '@audius/common/store'
 import { formatDate, Uid } from '@audius/common/utils'
 import { push as pushRoute, replace } from 'connected-react-router'
@@ -253,15 +254,19 @@ class TrackPageProvider extends Component<
     const {
       play,
       pause,
+      stop,
       previewing,
       currentQueueItem,
       moreByArtist: { entries },
-      record
+      record,
+      userId
     } = this.props
     if (!entries || !entries[0]) return
     const track = entries[0]
 
-    if (isPlaying && previewing === isPreview) {
+    const isOwner = track?.owner_id === userId
+    const shouldPreview = isPreview && isOwner
+    if (isPlaying && previewing === shouldPreview) {
       pause()
       record(
         make(Name.PLAYBACK_PAUSE, {
@@ -270,24 +275,25 @@ class TrackPageProvider extends Component<
         })
       )
     } else if (
-      currentQueueItem.uid !== track.uid &&
       currentQueueItem.track &&
-      currentQueueItem.track.track_id === track.id
+      currentQueueItem.track.track_id === track.id &&
+      previewing === shouldPreview
     ) {
       play()
       record(
         make(Name.PLAYBACK_PLAY, {
           id: `${track.id}`,
-          isPreview,
+          isPreview: shouldPreview,
           source: PlaybackSource.TRACK_PAGE
         })
       )
     } else if (track) {
-      play(track.uid, { isPreview })
+      stop()
+      play(track.uid, { isPreview: shouldPreview && isOwner })
       record(
         make(Name.PLAYBACK_PLAY, {
           id: `${track.id}`,
-          isPreview,
+          isPreview: shouldPreview,
           source: PlaybackSource.TRACK_PAGE
         })
       )
@@ -555,6 +561,9 @@ function mapDispatchToProps(dispatch: Dispatch) {
     reset: (source?: string) => dispatch(tracksActions.reset(source)),
     play: (uid?: string, options: { isPreview?: boolean } = {}) =>
       dispatch(tracksActions.play(uid, options)),
+    stop: () => {
+      dispatch(playerActions.stop({}))
+    },
     recordPlayMoreByArtist: (trackId: ID) => {
       const trackEvent: TrackEvent = make(Name.TRACK_PAGE_PLAY_MORE, {
         id: trackId

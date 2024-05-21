@@ -43,23 +43,25 @@ export const Tile = forwardRef(
     } = props
 
     return (
-      <RootComponent
-        className={cn(
-          styles.root,
-          size && styles[size],
-          styles[elevation],
-          className
-        )}
-        type={onClick ? 'button' : undefined}
-        onClick={onClick}
-        ref={ref}
-        {...other}
-      >
+      <>
         {dogEar ? (
           <DogEar type={dogEar} className={styles.borderOffset} />
         ) : null}
-        {children}
-      </RootComponent>
+        <RootComponent
+          className={cn(
+            styles.root,
+            size && styles[size],
+            styles[elevation],
+            className
+          )}
+          type={onClick ? 'button' : undefined}
+          onClick={onClick}
+          ref={ref}
+          {...other}
+        >
+          {children}
+        </RootComponent>
+      </>
     )
   }
 )

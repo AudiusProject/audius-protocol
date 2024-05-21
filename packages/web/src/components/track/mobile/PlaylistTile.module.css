@@ -150,6 +150,13 @@
   color: var(--harmony-primary);
 }
 
+.trackItem.deletedTrackItem .index,
+.trackItem.deletedTrackItem .trackTitle,
+.trackItem.deletedTrackItem .byArtist,
+.trackItem.deletedTrackItem .deletedTrack {
+  color: var(--harmony-text-subdued);
+}
+
 .trackItemDivider {
   margin: 0px 11px;
   width: calc(100% - 22px);

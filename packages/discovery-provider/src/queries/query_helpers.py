@@ -333,24 +333,24 @@ def populate_user_metadata(
             user_id, {}
         ).get(response_name_constants.supporting_count, 0)
         # current user specific
-        user[response_name_constants.does_current_user_follow] = (
-            current_user_followed_user_ids.get(user_id, False)
-        )
-        user[response_name_constants.does_current_user_subscribe] = (
-            current_user_subscribed_user_ids.get(user_id, False)
-        )
-        user[response_name_constants.current_user_followee_follow_count] = (
-            current_user_followee_follow_count_dict.get(user_id, 0)
-        )
+        user[
+            response_name_constants.does_current_user_follow
+        ] = current_user_followed_user_ids.get(user_id, False)
+        user[
+            response_name_constants.does_current_user_subscribe
+        ] = current_user_subscribed_user_ids.get(user_id, False)
+        user[
+            response_name_constants.current_user_followee_follow_count
+        ] = current_user_followee_follow_count_dict.get(user_id, 0)
         user[response_name_constants.balance] = user_balance.get(
             "owner_wallet_balance", "0"
         )
         user[response_name_constants.total_balance] = user_balance.get(
             "total_balance", "0"
         )
-        user[response_name_constants.total_audio_balance] = (
-            helpers.format_total_audio_balance(user_balance.get("total_balance", "0"))
-        )
+        user[
+            response_name_constants.total_audio_balance
+        ] = helpers.format_total_audio_balance(user_balance.get("total_balance", "0"))
         user[response_name_constants.associated_wallets_balance] = user_balance.get(
             "associated_wallets_balance", "0"
         )
@@ -525,18 +525,18 @@ def populate_track_metadata(
             ).get(response_name_constants.save_count, 0)
             track[response_name_constants.play_count] = play_count_dict.get(track_id, 0)
         # current user specific
-        track[response_name_constants.followee_reposts] = (
-            followee_track_repost_dict.get(track_id, [])
-        )
+        track[
+            response_name_constants.followee_reposts
+        ] = followee_track_repost_dict.get(track_id, [])
         track[response_name_constants.followee_saves] = followee_track_save_dict.get(
             track_id, []
         )
-        track[response_name_constants.has_current_user_reposted] = (
-            user_reposted_track_dict.get(track_id, False)
-        )
-        track[response_name_constants.has_current_user_saved] = (
-            user_saved_track_dict.get(track["track_id"], False)
-        )
+        track[
+            response_name_constants.has_current_user_reposted
+        ] = user_reposted_track_dict.get(track_id, False)
+        track[
+            response_name_constants.has_current_user_saved
+        ] = user_saved_track_dict.get(track["track_id"], False)
 
         # Populate the remix_of tracks w/ the parent track's user and if that user saved/reposted the child
         if (
@@ -556,9 +556,7 @@ def populate_track_metadata(
     return tracks
 
 
-def _populate_gated_content_metadata(
-    session, entities, current_user_id, content_type="track"
-):
+def _populate_gated_content_metadata(session, entities, current_user_id):
     if not entities:
         return
     if not current_user_id:
@@ -599,7 +597,7 @@ def _populate_gated_content_metadata(
     def getContentId(metadata):
         return (
             metadata.get("track_id")
-            if content_type == "track"
+            if "track_id" in metadata
             else metadata.get("playlist_id")
         )
 
@@ -616,6 +614,7 @@ def _populate_gated_content_metadata(
     gated_content_ids = set([getContentId(metadata) for metadata in gated_entities])
     gated_content_access_args = []
     for entity in gated_entities:
+        content_type = "track" if entity.get("track_id") else "album"
         gated_content_access_args.append(
             {
                 "user_id": current_user_id,
@@ -925,9 +924,7 @@ def populate_playlist_metadata(
     # has current user unlocked gated tracks?
     # if so, also populate corresponding signatures.
     # if no current user (guest), populate access based on track stream/download conditions
-    _populate_gated_content_metadata(
-        session, playlists, current_user_id, content_type="album"
-    )
+    _populate_gated_content_metadata(session, playlists, current_user_id)
 
     track_ids = []
     for playlist in playlists:
@@ -959,18 +956,18 @@ def populate_playlist_metadata(
         playlist[response_name_constants.total_play_count] = total_play_count
 
         # current user specific
-        playlist[response_name_constants.followee_reposts] = (
-            followee_playlist_repost_dict.get(playlist_id, [])
-        )
-        playlist[response_name_constants.followee_saves] = (
-            followee_playlist_save_dict.get(playlist_id, [])
-        )
-        playlist[response_name_constants.has_current_user_reposted] = (
-            user_reposted_playlist_dict.get(playlist_id, False)
-        )
-        playlist[response_name_constants.has_current_user_saved] = (
-            user_saved_playlist_dict.get(playlist_id, False)
-        )
+        playlist[
+            response_name_constants.followee_reposts
+        ] = followee_playlist_repost_dict.get(playlist_id, [])
+        playlist[
+            response_name_constants.followee_saves
+        ] = followee_playlist_save_dict.get(playlist_id, [])
+        playlist[
+            response_name_constants.has_current_user_reposted
+        ] = user_reposted_playlist_dict.get(playlist_id, False)
+        playlist[
+            response_name_constants.has_current_user_saved
+        ] = user_saved_playlist_dict.get(playlist_id, False)
 
     return playlists
 

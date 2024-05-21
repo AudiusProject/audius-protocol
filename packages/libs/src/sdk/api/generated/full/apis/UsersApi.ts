@@ -20,6 +20,7 @@ import type {
   FollowingResponseFull,
   FullBulkSubscribersResponse,
   FullFollowersResponse,
+  FullGetSupportedUsers,
   FullGetSupporter,
   FullGetSupporters,
   FullGetSupporting,
@@ -48,6 +49,8 @@ import {
     FullBulkSubscribersResponseToJSON,
     FullFollowersResponseFromJSON,
     FullFollowersResponseToJSON,
+    FullGetSupportedUsersFromJSON,
+    FullGetSupportedUsersToJSON,
     FullGetSupporterFromJSON,
     FullGetSupporterToJSON,
     FullGetSupportersFromJSON,
@@ -220,6 +223,13 @@ export interface GetSubscribersRequest {
     userId?: string;
 }
 
+export interface GetSupportedUsersRequest {
+    id: string;
+    offset?: number;
+    limit?: number;
+    userId?: string;
+}
+
 export interface GetSupporterRequest {
     id: string;
     supporterUserId: string;
@@ -236,13 +246,6 @@ export interface GetSupportersRequest {
 export interface GetSupportingRequest {
     id: string;
     supportedUserId: string;
-    userId?: string;
-}
-
-export interface GetSupportingsRequest {
-    id: string;
-    offset?: number;
-    limit?: number;
     userId?: string;
 }
 
@@ -1190,6 +1193,49 @@ export class UsersApi extends runtime.BaseAPI {
 
     /**
      * @hidden
+     * Gets the users that the given user supports
+     */
+    async getSupportedUsersRaw(params: GetSupportedUsersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullGetSupportedUsers>> {
+        if (params.id === null || params.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getSupportedUsers.');
+        }
+
+        const queryParameters: any = {};
+
+        if (params.offset !== undefined) {
+            queryParameters['offset'] = params.offset;
+        }
+
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
+        }
+
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/users/{id}/supporting`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => FullGetSupportedUsersFromJSON(jsonValue));
+    }
+
+    /**
+     * Gets the users that the given user supports
+     */
+    async getSupportedUsers(params: GetSupportedUsersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullGetSupportedUsers> {
+        const response = await this.getSupportedUsersRaw(params, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * @hidden
      * Gets the specified supporter of the given user
      */
     async getSupporterRaw(params: GetSupporterRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullGetSupporter>> {
@@ -1306,49 +1352,6 @@ export class UsersApi extends runtime.BaseAPI {
      */
     async getSupporting(params: GetSupportingRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullGetSupporting> {
         const response = await this.getSupportingRaw(params, initOverrides);
-        return await response.value();
-    }
-
-    /**
-     * @hidden
-     * Gets the users that the given user supports
-     */
-    async getSupportingsRaw(params: GetSupportingsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullGetSupporting>> {
-        if (params.id === null || params.id === undefined) {
-            throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getSupportings.');
-        }
-
-        const queryParameters: any = {};
-
-        if (params.offset !== undefined) {
-            queryParameters['offset'] = params.offset;
-        }
-
-        if (params.limit !== undefined) {
-            queryParameters['limit'] = params.limit;
-        }
-
-        if (params.userId !== undefined) {
-            queryParameters['user_id'] = params.userId;
-        }
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        const response = await this.request({
-            path: `/users/{id}/supporting`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => FullGetSupportingFromJSON(jsonValue));
-    }
-
-    /**
-     * Gets the users that the given user supports
-     */
-    async getSupportings(params: GetSupportingsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullGetSupporting> {
-        const response = await this.getSupportingsRaw(params, initOverrides);
         return await response.value();
     }
 

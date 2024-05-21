@@ -40,10 +40,11 @@ const messages = {
 type CollectionCardProps = {
   id: ID
   onPress?: (e: GestureResponderEvent) => void
+  noNavigation?: boolean
 }
 
 export const CollectionCard = (props: CollectionCardProps) => {
-  const { id, onPress } = props
+  const { id, onPress, noNavigation } = props
 
   const collection = useSelector((state) => getCollection(state, { id }))
   const accountId = useSelector(getUserId)
@@ -53,9 +54,10 @@ export const CollectionCard = (props: CollectionCardProps) => {
   const handlePress = useCallback(
     (e: GestureResponderEvent) => {
       onPress?.(e)
+      if (noNavigation) return
       navigation.navigate('Collection', { id })
     },
-    [onPress, navigation, id]
+    [onPress, noNavigation, navigation, id]
   )
 
   if (!collection) {
