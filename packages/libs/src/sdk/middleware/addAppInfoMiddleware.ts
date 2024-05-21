@@ -30,13 +30,8 @@ export const addAppInfoMiddleware = ({
   appName = providedAppName
   return {
     pre: async (context: RequestContext): Promise<FetchParams> => {
-      // If an api key is not provided, use the authed address (hedgehog / external wallet)
-      if (!apiKey) {
-        apiKey = await services.auth.getAddress()
-      }
-
       // If an app name is not provided, fetch the name from the dev app
-      if (!appName) {
+      if (!providedAppName) {
         const middleware = [services.discoveryNodeSelector.createMiddleware()]
         const apiClientConfig = new Configuration({
           fetchApi: fetch,
@@ -48,11 +43,18 @@ export const addAppInfoMiddleware = ({
           services.auth
         )
 
-        appName = (
-          await developerApps.getDeveloperApp({
-            address: apiKey!
-          })
-        ).data?.name
+        apiKey = providedApiKey ?? (await services.auth.getAddress())
+        if (apiKey) {
+          appName = (
+            await developerApps.getDeveloperApp({
+              address: apiKey
+            })
+          ).data?.name
+        }
+      }
+
+      if (!appName && !apiKey) {
+        throw new Error('No appName or apiKey provided')
       }
 
       return {
@@ -60,7 +62,10 @@ export const addAppInfoMiddleware = ({
         url:
           context.url +
           (context.url.includes('?') ? '&' : '?') +
-          querystring({ app_name: appName ?? '', api_key: apiKey! }),
+          querystring({
+            app_name: appName ?? '',
+            api_key: apiKey ?? ''
+          }),
         init: {
           ...context.init
         }
