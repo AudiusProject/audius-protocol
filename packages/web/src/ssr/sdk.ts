@@ -6,6 +6,8 @@ import {
   developmentConfig
 } from '@audius/sdk'
 
+import { env } from 'services/env'
+
 const sdkConfigs = {
   production: productionConfig,
   staging: stagingConfig,
@@ -20,7 +22,7 @@ const discoveryNodeSelector = new DiscoveryNodeSelector({
 })
 
 export const audiusSdk = sdk({
-  appName: process.env.VITE_PUBLIC_HOSTNAME ?? 'audius.co',
+  appName: env.APP_NAME,
   services: {
     discoveryNodeSelector
   }

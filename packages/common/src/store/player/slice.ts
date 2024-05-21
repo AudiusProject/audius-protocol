@@ -3,7 +3,7 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { UID, ID, Collectible } from '../../models'
 import { Maybe, Nullable } from '../../utils'
 
-import { PlaybackRate } from './types'
+import { PlaybackRate, PlayerBehavior } from './types'
 
 export type PlayerState = {
   // Identifiers for the audio that's playing.
@@ -56,8 +56,8 @@ export const initialState: PlayerState = {
 type PlayPayload = Maybe<{
   uid?: Nullable<UID>
   trackId?: ID
-  isPreview?: boolean
   startTime?: number
+  playerBehavior?: PlayerBehavior
   onEnd?: (...args: any) => any
 }>
 

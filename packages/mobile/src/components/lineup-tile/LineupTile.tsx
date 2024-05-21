@@ -37,6 +37,7 @@ export const LineupTile = ({
   index,
   isTrending,
   isUnlisted,
+  source,
   onPress,
   onPressOverflow,
   onPressRepost,
@@ -147,6 +148,7 @@ export const LineupTile = ({
           isArtistPick={isArtistPick}
           showArtistPick={showArtistPick}
           releaseDate={item?.release_date ? item.release_date : undefined}
+          source={source}
         />
       </View>
       {children}
@@ -167,6 +169,7 @@ export const LineupTile = ({
           }
           streamConditions={streamConditions}
           hasStreamAccess={hasStreamAccess}
+          source={source}
           onPressOverflow={onPressOverflow}
           onPressRepost={onPressRepost}
           onPressSave={onPressSave}

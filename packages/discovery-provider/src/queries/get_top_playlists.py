@@ -21,7 +21,7 @@ from src.queries.query_helpers import (
 )
 from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
-from src.utils.elasticdsl import esclient
+from src.utils.elasticdsl import get_esclient
 
 logger = logging.getLogger(__name__)
 
@@ -41,7 +41,7 @@ class TopPlaylistKind(str, enum.Enum):
 
 def get_top_playlists(kind: TopPlaylistKind, args: GetTopPlaylistsArgs):
     skip_es = args.get("es") == "0"
-    use_es = esclient and not skip_es
+    use_es = get_esclient() and not skip_es
     if use_es:
         try:
             return get_top_playlists_es(kind, args)

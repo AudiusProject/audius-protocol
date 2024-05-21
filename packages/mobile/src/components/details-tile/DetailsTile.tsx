@@ -149,7 +149,9 @@ export const DetailsTile = ({
   const isUnpublishedScheduledRelease =
     track?.is_scheduled_release && track?.is_unlisted
   const showPreviewButton =
-    isUSDCPurchaseGated && (isOwner || !hasStreamAccess) && onPressPreview
+    isUSDCPurchaseGated &&
+    ((isOwner && !isCollection) || !hasStreamAccess) &&
+    onPressPreview
 
   const handlePressArtistName = useCallback(() => {
     if (!user) {
@@ -266,7 +268,7 @@ export const DetailsTile = ({
   }
 
   return (
-    <Paper>
+    <Paper mb='2xl' style={{ overflow: 'hidden' }}>
       {renderDogEar()}
       <Flex p='l' gap='l' alignItems='center' w='100%'>
         <Text
@@ -354,6 +356,21 @@ export const DetailsTile = ({
         borderBottomLeftRadius='m'
         borderBottomRightRadius='m'
       >
+        {!hasStreamAccess && !isOwner && streamConditions && contentId ? (
+          <DetailsTileNoAccess
+            trackId={contentId}
+            contentType={contentType}
+            streamConditions={streamConditions}
+          />
+        ) : null}
+        {(hasStreamAccess || isOwner) && streamConditions ? (
+          <DetailsTileHasAccess
+            streamConditions={streamConditions}
+            isOwner={isOwner}
+            trackArtist={user}
+            contentType={contentType}
+          />
+        ) : null}
         {!isPublished ? null : (
           <DetailsTileStats
             favoriteCount={saveCount}
@@ -375,22 +392,11 @@ export const DetailsTile = ({
             </UserGeneratedText>
           </Box>
         ) : null}
-        {!hasStreamAccess && !isOwner && streamConditions && contentId ? (
-          <DetailsTileNoAccess
-            trackId={contentId}
-            contentType={contentType}
-            streamConditions={streamConditions}
-          />
-        ) : null}
-        {(hasStreamAccess || isOwner) && streamConditions ? (
-          <DetailsTileHasAccess
-            streamConditions={streamConditions}
-            isOwner={isOwner}
-            trackArtist={user}
-            contentType={contentType}
-          />
-        ) : null}
-        <DetailsTileMetadata genre={track?.genre} mood={track?.mood} />
+        <DetailsTileMetadata
+          id={contentId}
+          genre={track?.genre}
+          mood={track?.mood}
+        />
         <SecondaryStats
           isCollection={isCollection}
           playCount={playCount}

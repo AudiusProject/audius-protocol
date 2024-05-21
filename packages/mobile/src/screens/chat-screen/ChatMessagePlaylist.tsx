@@ -18,6 +18,7 @@ import { getPathFromPlaylistUrl, makeUid } from '@audius/common/utils'
 import { useSelector } from 'react-redux'
 
 import { CollectionTile } from 'app/components/lineup-tile'
+import { LineupTileSource } from 'app/components/lineup-tile/types'
 import { make, track as trackEvent } from 'app/services/analytics'
 
 const { getUserId } = accountSelectors
@@ -171,6 +172,7 @@ export const ChatMessagePlaylist = ({
       showRankIcon={false}
       styles={styles}
       variant='readonly'
+      source={LineupTileSource.DM_COLLECTION}
     />
   ) : null
 }

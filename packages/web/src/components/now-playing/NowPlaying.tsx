@@ -12,7 +12,6 @@ import {
   SquareSizes,
   ID
 } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import {
   accountSelectors,
   averageColorSelectors,
@@ -53,7 +52,6 @@ import { PlayButtonStatus } from 'components/play-bar/types'
 import { GatedConditionsPill } from 'components/track/GatedConditionsPill'
 import UserBadges from 'components/user-badges/UserBadges'
 import { useAuthenticatedClickCallback } from 'hooks/useAuthenticatedCallback'
-import { useFlag } from 'hooks/useRemoteConfig'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 import { audioPlayer } from 'services/audio-player'
 import { AppState } from 'store/types'
@@ -139,8 +137,6 @@ const NowPlaying = g(
     goToRoute,
     dominantColors
   }) => {
-    const { isEnabled: isEditAlbumsEnabled } = useFlag(FeatureFlags.EDIT_ALBUMS)
-
     const { uid, track, user, collectible } = currentQueueItem
     const { history } = useHistoryContext()
 
@@ -323,14 +319,12 @@ const NowPlaying = g(
             ? OverflowAction.UNFAVORITE
             : OverflowAction.FAVORITE
           : null,
-        isEditAlbumsEnabled && isOwner ? OverflowAction.ADD_TO_ALBUM : null,
+        isOwner ? OverflowAction.ADD_TO_ALBUM : null,
         !collectible && !track?.is_stream_gated
           ? OverflowAction.ADD_TO_PLAYLIST
           : null,
         track && OverflowAction.VIEW_TRACK_PAGE,
-        isEditAlbumsEnabled && albumInfo
-          ? OverflowAction.VIEW_ALBUM_PAGE
-          : null,
+        albumInfo ? OverflowAction.VIEW_ALBUM_PAGE : null,
 
         collectible && OverflowAction.VIEW_COLLECTIBLE_PAGE,
         OverflowAction.VIEW_ARTIST_PAGE
@@ -349,7 +343,6 @@ const NowPlaying = g(
       collectible,
       has_current_user_reposted,
       has_current_user_saved,
-      isEditAlbumsEnabled,
       track,
       albumInfo,
       onClose,

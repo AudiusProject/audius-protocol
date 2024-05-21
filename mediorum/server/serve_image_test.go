@@ -33,6 +33,7 @@ func TestServeImage(t *testing.T) {
 		assert.Equal(t, 200, resp.StatusCode)
 		assert.NotEmpty(t, resp.Header.Get("x-fetch-ok"))
 		assert.NotEmpty(t, resp.Header.Get("x-resize-ok"))
+		assert.Empty(t, resp.Header.Get("x-image-cache-hit"))
 	}
 
 	// the second time it should have the variant on disk
@@ -41,6 +42,7 @@ func TestServeImage(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, 200, resp.StatusCode)
 		assert.Empty(t, resp.Header.Get("x-resize-ok"))
+		assert.Equal(t, "true", resp.Header.Get("x-image-cache-hit"))
 	}
 
 	// it should also have the orig

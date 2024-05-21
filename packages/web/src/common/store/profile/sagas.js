@@ -85,7 +85,6 @@ function* fetchProfileCustomizedCollectibles(user) {
     const metadata = yield call(
       audiusBackendInstance.fetchCID,
       cid,
-      /* cache */ false,
       /* asUrl */ false
     )
     if (metadata?.collectibles) {
@@ -504,7 +503,6 @@ export function* updateProfileAsync(action) {
       const metadataFromIPFS = yield call(
         audiusBackendInstance.fetchCID,
         cid,
-        /* cache */ false,
         /* asUrl */ false
       )
       const collectibles = metadata.collectibles

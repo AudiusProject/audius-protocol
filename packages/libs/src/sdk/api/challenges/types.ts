@@ -94,3 +94,12 @@ export const ClaimRewardsSchema = z
   .strict()
 
 export type ClaimRewardsRequest = z.input<typeof ClaimRewardsSchema>
+
+export type AttestationTransactionSignature = {
+  transactionSignature: string
+  antiAbuseOracleEthAddress: string
+}
+
+export type AAOErrorResponse = {
+  aaoErrorCode: number
+}

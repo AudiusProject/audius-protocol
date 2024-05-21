@@ -17,6 +17,7 @@ class UndisbursedChallengeResponse(TypedDict):
     handle: str
     wallet: str
     created_at: str
+    completed_at: str
     cooldown_days: Optional[int]
 
 
@@ -35,6 +36,7 @@ def to_challenge_response(
         "handle": handle,
         "wallet": wallet,
         "created_at": str(user_challenge.created_at),
+        "completed_at": str(user_challenge.completed_at),
         "cooldown_days": challenge.cooldown_days,
     }
 
@@ -108,9 +110,9 @@ def get_undisbursed_challenges(
             args["offset"]
         )
 
-    undisbursed_challenges: List[Tuple[UserChallenge, Challenge, str, str]] = (
-        undisbursed_challenges_query.all()
-    )
+    undisbursed_challenges: List[
+        Tuple[UserChallenge, Challenge, str, str]
+    ] = undisbursed_challenges_query.all()
 
     undisbursed_challenges_response: List[UndisbursedChallengeResponse] = [
         to_challenge_response(user_challenge, challenge, handle, wallet)
