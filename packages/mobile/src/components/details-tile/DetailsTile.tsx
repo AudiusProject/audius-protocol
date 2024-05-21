@@ -1,11 +1,13 @@
 import { useCallback } from 'react'
 
+import { useGatedContentAccessMap } from '@audius/common/hooks'
 import { isContentUSDCPurchaseGated } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import {
   accountSelectors,
   playerSelectors,
-  playbackPositionSelectors
+  playbackPositionSelectors,
+  cacheCollectionsSelectors
 } from '@audius/common/store'
 import type { CommonState } from '@audius/common/store'
 import { dayjs, getDogEarType, Genre } from '@audius/common/utils'
@@ -50,6 +52,7 @@ import type { DetailsTileProps } from './types'
 
 const { getTrackId } = playerSelectors
 const { getTrackPosition } = playbackPositionSelectors
+const { getCollectionTracks } = cacheCollectionsSelectors
 
 const messages = {
   play: 'Play',
@@ -138,6 +141,14 @@ export const DetailsTile = ({
     return track && track.track_id === getTrackId(state)
   })
 
+  const tracks = useSelector((state: CommonState) =>
+    getCollectionTracks(state, { id: contentId })
+  )
+  const trackAccessMap = useGatedContentAccessMap(tracks ?? [])
+  const doesUserHaveAccessToAnyTrack = Object.values(trackAccessMap).some(
+    ({ hasStreamAccess }) => hasStreamAccess
+  )
+
   const isOwner = user?.user_id === currentUserId
   const isLongFormContent =
     track?.genre === Genre.PODCASTS || track?.genre === Genre.AUDIOBOOKS
@@ -148,10 +159,13 @@ export const DetailsTile = ({
   const isPlayingFullAccess = isPlaying && !isPreviewing
   const isUnpublishedScheduledRelease =
     track?.is_scheduled_release && track?.is_unlisted
-  const showPreviewButton =
-    isUSDCPurchaseGated &&
-    ((isOwner && !isCollection) || !hasStreamAccess) &&
-    onPressPreview
+
+  // Show play if user has access to the collection or any of its contents,
+  // otherwise show preview
+  const shouldShowPlay =
+    (isPlayable && hasStreamAccess) || doesUserHaveAccessToAnyTrack
+  const shouldShowPreview =
+    isUSDCPurchaseGated && !hasStreamAccess && !shouldShowPlay && onPressPreview
 
   const handlePressArtistName = useCallback(() => {
     if (!user) {
@@ -305,7 +319,7 @@ export const DetailsTile = ({
         {isLongFormContent && isNewPodcastControlsEnabled && track ? (
           <DetailsProgressInfo track={track} />
         ) : null}
-        {hasStreamAccess || isOwner ? (
+        {shouldShowPlay ? (
           <Button
             iconLeft={isPlayingFullAccess ? IconPause : PlayIcon}
             onPress={handlePressPlay}
@@ -315,7 +329,7 @@ export const DetailsTile = ({
             {isPlayingFullAccess ? messages.pause : playText}
           </Button>
         ) : null}
-        {showPreviewButton ? <PreviewButton /> : null}
+        {shouldShowPreview ? <PreviewButton /> : null}
         <DetailsTileActionButtons
           ddexApp={ddexApp}
           hasReposted={!!hasReposted}
