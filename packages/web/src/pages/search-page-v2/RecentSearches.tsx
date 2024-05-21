@@ -1,10 +1,15 @@
 import {
+  ID,
   Kind,
   SquareSizes,
   UserMetadata,
   UserTrackMetadata
 } from '@audius/common/models'
-import { searchSelectors } from '@audius/common/store'
+import {
+  SearchItem,
+  accountSelectors,
+  searchSelectors
+} from '@audius/common/store'
 import {
   Artwork,
   Avatar,
@@ -19,11 +24,12 @@ import {
 import { useSelector } from 'react-redux'
 
 import { UserNameAndBadges } from 'components/user-name-and-badges/UserNameAndBadges'
-import { useGetRecentSearches } from '@audius/common/api'
+import { useGetRecentSearches, useGetTrackById } from '@audius/common/api'
 import { useTrackCoverArt2 } from 'hooks/useTrackCoverArt'
 import { useCallback } from 'react'
 import { useHistoryContext } from 'app/HistoryProvider'
 import { useProfilePicture } from 'hooks/useUserProfilePicture'
+const { getUserId } = accountSelectors
 const { getSearchHistory } = searchSelectors
 
 const messages = {
@@ -64,14 +70,15 @@ const RecentSearch = (props: RecentSearchProps) => {
   )
 }
 
-type RecentSearchTrackProps = {
-  track: UserTrackMetadata
-}
+const RecentSearchTrack = (props: { id: ID }) => {
+  const { id } = props
+  const currentUserId = useSelector(getUserId)
+  const { data: track } = useGetTrackById({ id, currentUserId })
 
-const RecentSearchTrack = (props: RecentSearchTrackProps) => {
-  const { track } = props
-  const { track_id, user, title } = track
-  const image = useTrackCoverArt2(track_id, SquareSizes.SIZE_150_BY_150)
+  const image = useTrackCoverArt2(track?.track_id, SquareSizes.SIZE_150_BY_150)
+
+  if (!track) return null
+  const { title, user } = track
 
   return (
     <RecentSearch title={title}>
@@ -127,8 +134,8 @@ const RecentSearchUser = (props: RecentSearchUserProps) => {
 export const RecentSearches = () => {
   const searchItems = useSelector(getSearchHistory)
   console.log('searchItems', searchItems)
-  const recentSearches = useGetRecentSearches({ searchItems })
-  console.log('recentSearches', recentSearches)
+  //   const recentSearches = useGetRecentSearches({ searchItems })
+  //   console.log('recentSearches', recentSearches)
 
   return (
     <Paper
@@ -142,23 +149,20 @@ export const RecentSearches = () => {
         {messages.title}
       </Text>
       <Flex direction='column' gap='s'>
-        {(recentSearches || []).map((recentSearch) => {
-          if (recentSearch.kind === Kind.TRACKS) {
-            return (
-              <RecentSearchTrack
-                track={recentSearch.item as UserTrackMetadata}
-                key={recentSearch.id}
-              />
-            )
+        {console.log('renderr')}
+        {(searchItems || []).map((searchItem: SearchItem) => {
+          if (searchItem.kind === Kind.TRACKS) {
+            console.log('searchItem', searchItem.id)
+            return <RecentSearchTrack id={searchItem.id} key={searchItem.id} />
           }
-          if (recentSearch.kind === Kind.USERS) {
-            return (
-              <RecentSearchUser
-                user={recentSearch.item}
-                key={recentSearch.id}
-              />
-            )
-          }
+          //   if (recentSearch.kind === Kind.USERS) {
+          //     return (
+          //       <RecentSearchUser
+          //         user={recentSearch.item}
+          //         key={recentSearch.id}
+          //       />
+          //     )
+          //   }
         })}
       </Flex>
       <Button

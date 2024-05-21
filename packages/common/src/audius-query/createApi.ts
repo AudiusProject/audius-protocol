@@ -4,7 +4,7 @@ import { ResponseError } from '@audius/sdk'
 import { CaseReducerActions, createSlice } from '@reduxjs/toolkit'
 import retry from 'async-retry'
 import { produce } from 'immer'
-import { isEqual, mapValues } from 'lodash'
+import { isEqual, keyBy, mapValues, omit } from 'lodash'
 import { denormalize, normalize } from 'normalizr'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch } from 'redux'
@@ -52,9 +52,11 @@ import {
   QueryHookResults,
   FetchResetAction,
   RetryConfig,
-  MutationHookResults
+  MutationHookResults,
+  FetchBatchArgs
 } from './types'
 import { capitalize, getKeyFromFetchArgs, selectCommonEntityMap } from './utils'
+import { decodeHashId, pluralize } from '~/utils'
 
 type Entity = Collection | Track | User
 
@@ -294,6 +296,122 @@ const useCacheData = <Args, Data>(
   }, isEqual)
 }
 
+type RequestQueueItem<Args, Data> = {
+  fetchArgs: Args
+  context: AudiusQueryContextType
+  resolve: (value: Data) => void
+  reject: (error: unknown) => void
+}
+
+const createRequestBatcher = () => {
+  // TODO: set maximum wait time for any given request
+  const BATCH_PERIOD = 500
+  const endpoints: Record<
+    string,
+    {
+      queue: RequestQueueItem<any, any>[]
+      timer: Nullable<NodeJS.Timeout>
+    }
+  > = {}
+
+  const fetch =
+    <Args, Data>(
+      endpointName: string,
+      endpointConfig: EndpointConfig<Args, Data>
+    ) =>
+    (fetchArgs: Args, context: AudiusQueryContextType) => {
+      return new Promise<Data>((resolve, reject) => {
+        endpoints[endpointName] = endpoints[endpointName] ?? {
+          queue: []
+        }
+
+        const endpoint = endpoints[endpointName]
+
+        // Queue the request
+        endpoint.queue = [
+          ...endpoint.queue,
+          { fetchArgs, context, resolve, reject }
+        ]
+
+        // Set up a timer to perform the batch request
+        if (!endpoint.timer) {
+          endpoint.timer = setTimeout(
+            () => performBatch(endpointName, endpointConfig),
+            BATCH_PERIOD
+          )
+        }
+      })
+    }
+
+  const performBatch = async <Args, Data>(
+    endpointName: string,
+    endpointConfig: EndpointConfig<Args, Data>
+  ) => {
+    if (!endpoints[endpointName]) {
+      return
+    }
+
+    const endpoint = endpoints[endpointName]
+    const queuedRequests = [...endpoint.queue]
+
+    endpoint.queue = []
+    endpoint.timer = null
+
+    // Extract the IDs from the queued requests
+    const ids = queuedRequests.map(({ fetchArgs }) => fetchArgs.id)
+
+    // Use the context and other args from the most recent request. This does not support
+    // varying arguments other than ids between requests. We could add a hash map to the queue
+    // to keep track of different arguments if needed.
+    const mostRecentRequest = queuedRequests[queuedRequests.length - 1]
+    const batchArgs = {
+      ...omit(mostRecentRequest.fetchArgs, 'id'),
+      ids
+    }
+
+    try {
+      // Make the batch request
+      const result = await endpointConfig.fetchBatch?.(
+        batchArgs,
+        mostRecentRequest.context
+      )
+
+      const resultsById = keyBy(result, (result) => {
+        const schema = (apiResponseSchema as any).schema[
+          endpointConfig.options.schemaKey!
+        ]
+        return schema.getId(result)
+      })
+
+      queuedRequests.forEach((request) => {
+        if (result) {
+          const resultEntity = resultsById[request.fetchArgs.id]
+
+          if (resultEntity) {
+            request.resolve(resultEntity)
+            return
+          }
+        }
+        request.reject(
+          new Error(
+            `Batched request failed, entity not found: ${endpointName} ${request.fetchArgs}`
+          )
+        )
+      })
+    } catch (error) {
+      // Reject all promises if the batch request fails
+      queuedRequests.forEach((request) => request.reject(error))
+    }
+  }
+
+  return {
+    fetch,
+    performBatch
+  }
+}
+
+const requestBatcher = createRequestBatcher()
+
 const fetchData = async <Args, Data>(
   fetchArgs: Args,
   endpointName: string,
@@ -312,13 +430,18 @@ const fetchData = async <Args, Data>(
 
     endpoint.onQueryStarted?.(fetchArgs, { dispatch })
 
+    // Batch the request if `fetchBatch` is defined
+    const fetch = endpoint.fetchBatch
+      ? requestBatcher.fetch(endpointName, endpoint)
+      : endpoint.fetch
+
     // If endpoint config specifies retries wrap the fetch
     // and return a single error at the end if all retries fail
     const apiData = endpoint.options.retry
       ? await retry(
           async (bail) => {
             try {
-              return endpoint.fetch(fetchArgs, context)
+              return fetch(fetchArgs, context)
             } catch (e) {
               if (isNonRetryableError(e)) {
                 bail(new Error(`Non-retryable error: ${e}`))
@@ -328,7 +451,7 @@ const fetchData = async <Args, Data>(
           },
           { ...defaultRetryConfig, ...endpoint.options.retryConfig }
         )
-      : await endpoint.fetch(fetchArgs, context)
+      : await fetch(fetchArgs, context)
     if (apiData == null) {
       throw new RemoteDataNotFoundError('Remote data not found')
     }
