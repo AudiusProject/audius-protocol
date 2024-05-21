@@ -88,12 +88,7 @@ export const SignInScreen = () => {
             >
               {signInPageMessages.signIn}
             </Button>
-            <TextLink
-              variant='visible'
-              textVariant='body'
-              textAlign='center'
-              onPress={onOpen}
-            >
+            <TextLink variant='visible' textAlign='center' onPress={onOpen}>
               {signInPageMessages.forgotPassword}
             </TextLink>
           </Flex>
