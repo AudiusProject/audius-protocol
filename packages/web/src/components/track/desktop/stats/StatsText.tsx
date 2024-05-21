@@ -11,13 +11,22 @@ export enum Flavor {
 const flavorize = (favoriteText: string, repostText: string, flavor: Flavor) =>
   flavor === Flavor.FAVORITE ? favoriteText : repostText
 
-const formatEmptyState = (flavor: Flavor, contentTitle?: string) => {
+const formatEmptyState = (
+  flavor: Flavor,
+  contentTitle?: string,
+  isOwner?: boolean
+) => {
   if (flavor === Flavor.FAVORITE) {
     return '0 Favorites'
   }
-  return `Be the first to repost this ${
-    contentTitle ? contentTitle.toLowerCase() : 'track'
-  }!`
+  if (flavor === Flavor.REPOST) {
+    if (isOwner) {
+      return '0 Reposts'
+    }
+    return `Be the first to repost this ${
+      contentTitle ? contentTitle.toLowerCase() : 'track'
+    }!`
+  }
 }
 
 export const formatLongString = (
@@ -72,10 +81,11 @@ type RepostTextProps = {
   contentTitle: string
   flavor: Flavor
   size: 'small' | 'medium' | 'large'
+  isOwner?: boolean
 }
 
 export const StatsText = (props: RepostTextProps) => {
-  const { users, count, contentTitle, flavor, size } = props
+  const { users, count, contentTitle, flavor, size, isOwner } = props
   if (size === 'small') {
     return <span>{formatCount(count)}</span>
   }
@@ -83,7 +93,7 @@ export const StatsText = (props: RepostTextProps) => {
   if (count === 0) {
     return (
       <span className={styles.first}>
-        {formatEmptyState(flavor, contentTitle)}
+        {formatEmptyState(flavor, contentTitle, isOwner)}
       </span>
     )
   }

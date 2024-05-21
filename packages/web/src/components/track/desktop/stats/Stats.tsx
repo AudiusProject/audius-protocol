@@ -32,6 +32,7 @@ type StatsProps = {
   onClick?: () => void
   flavor: Flavor
   hideImage?: boolean
+  isOwner?: boolean
 }
 
 const Stats = memo((props: StatsProps) => {
@@ -43,7 +44,8 @@ const Stats = memo((props: StatsProps) => {
     contentTitle,
     onClick,
     flavor,
-    hideImage
+    hideImage,
+    isOwner
   } = props
 
   const handleClick = useCallback(
@@ -97,6 +99,7 @@ const Stats = memo((props: StatsProps) => {
           contentTitle={contentTitle}
           users={followeeActionUsers}
           size={size}
+          isOwner={isOwner}
         />
       </span>
     </div>
