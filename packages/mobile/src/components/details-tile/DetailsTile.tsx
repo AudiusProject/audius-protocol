@@ -160,12 +160,14 @@ export const DetailsTile = ({
   const isUnpublishedScheduledRelease =
     track?.is_scheduled_release && track?.is_unlisted
 
-  // Show play if user has access to the collection or any of its contents,
-  // otherwise show preview
+  // Show play if user has access to the collection or any of its contents.
+  // Show preview only if the user is the owner on a track screen.
   const shouldShowPlay =
     (isPlayable && hasStreamAccess) || doesUserHaveAccessToAnyTrack
   const shouldShowPreview =
-    isUSDCPurchaseGated && !hasStreamAccess && !shouldShowPlay && onPressPreview
+    isUSDCPurchaseGated &&
+    ((isOwner && !isCollection) || !hasStreamAccess) &&
+    onPressPreview
 
   const handlePressArtistName = useCallback(() => {
     if (!user) {
