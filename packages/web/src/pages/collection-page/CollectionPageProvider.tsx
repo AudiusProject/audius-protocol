@@ -884,8 +884,7 @@ function mapDispatchToProps(dispatch: Dispatch) {
       permalink?: string
       fetchLineup?: boolean
       forceFetch?: boolean
-    }) => {
-      console.log('REED got action')
+    }) =>
       dispatch(
         collectionActions.fetchCollection(
           id,
@@ -893,8 +892,7 @@ function mapDispatchToProps(dispatch: Dispatch) {
           fetchLineup,
           forceFetch
         )
-      )
-    },
+      ),
     fetchTracks: () =>
       dispatch(tracksActions.fetchLineupMetadatas(0, 200, false, undefined)),
     resetCollection: (collectionUid: string, userUid: string) =>
