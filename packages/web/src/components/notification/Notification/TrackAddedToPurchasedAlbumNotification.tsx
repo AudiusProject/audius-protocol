@@ -45,7 +45,7 @@ export const TrackAddedToPurchasedAlbumNotification = (
   const dispatch = useDispatch()
 
   const handleClick = useCallback(() => {
-    dispatch(push(getEntityLink(playlist)))
+    dispatch(push(getEntityLink(playlist), { forceFetch: true }))
   }, [playlist, dispatch])
 
   if (!playlistOwner || !track) return null

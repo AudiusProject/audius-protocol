@@ -20,6 +20,7 @@ export type FetchCollectionAction = {
   id: ID | null
   permalink?: string
   fetchLineup?: boolean
+  forceFetch?: boolean
 }
 
 export type FetchCollectionSucceededAction = {
@@ -57,12 +58,14 @@ export type CollectionPageAction =
 export const fetchCollection = (
   id: number | null,
   permalink?: string,
-  fetchLineup?: boolean
+  fetchLineup?: boolean,
+  forceFetch?: boolean
 ): FetchCollectionAction => ({
   type: FETCH_COLLECTION,
   id,
   permalink,
-  fetchLineup
+  fetchLineup,
+  forceFetch
 })
 
 export const fetchCollectionSucceeded = (
