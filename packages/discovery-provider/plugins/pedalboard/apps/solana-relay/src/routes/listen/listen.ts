@@ -44,6 +44,8 @@ export const recordListen = async (params: RecordListenParams): Promise<RecordLi
 
     logger.info({ location }, "location")
 
+    const tx = sendTran
+
     return { solTxSignature: null }
 }
 
