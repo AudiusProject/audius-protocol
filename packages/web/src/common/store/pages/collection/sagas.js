@@ -23,7 +23,7 @@ const { getIsReachable } = reachabilitySelectors
 
 function* watchFetchCollection() {
   yield takeLatest(collectionActions.FETCH_COLLECTION, function* (action) {
-    const { id: collectionId, permalink, fetchLineup } = action
+    const { id: collectionId, permalink, fetchLineup, forceFetch } = action
     let retrievedCollections
     if (permalink) {
       retrievedCollections = yield call(
@@ -31,13 +31,15 @@ function* watchFetchCollection() {
         permalink,
         {
           requiresAllTracks: true,
-          deleteExistingEntry: true
+          deleteExistingEntry: true,
+          forceRetrieveFromSource: forceFetch ?? false
         }
       )
     } else {
       retrievedCollections = yield call(retrieveCollections, [collectionId], {
         requiresAllTracks: true,
-        deleteExistingEntry: true
+        deleteExistingEntry: true,
+        forceRetrieveFromSource: forceFetch ?? false
       })
     }
 
