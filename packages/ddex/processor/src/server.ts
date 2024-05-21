@@ -111,6 +111,9 @@ app.get('/auth/redirect', async (c) => {
       name: payload.name,
     })
 
+    // after user upsert, rescan for matches
+    reParsePastXml()
+
     // set cookie
     const j = JSON.stringify(payload)
     await setSignedCookie(c, COOKIE_NAME, j, COOKIE_SECRET!)
@@ -272,7 +275,7 @@ app.get('/releases', (c) => {
 })
 
 app.post('/releases/reparse', async (c) => {
-  await reParsePastXml()
+  reParsePastXml()
   return c.redirect('/releases')
 })
 
