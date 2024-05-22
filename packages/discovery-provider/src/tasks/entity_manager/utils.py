@@ -30,6 +30,7 @@ from src.models.social.subscription import Subscription
 from src.models.tracks.track import Track
 from src.models.tracks.track_route import TrackRoute
 from src.models.users.user import User
+from src.solana.solana_client_manager import SolanaClientManager
 from src.tasks.metadata import (
     playlist_metadata_format,
     track_metadata_format,
@@ -194,6 +195,7 @@ class ManageEntityParameters:
         pending_playlist_routes: List[PlaylistRoute],
         eth_manager: EthManager,
         web3: Web3,
+        solana_client_manager: SolanaClientManager,
         block_timestamp: int,
         block_number: int,
         event_blockhash: str,
@@ -213,6 +215,7 @@ class ManageEntityParameters:
         self.challenge_bus = challenge_bus
         self.web3 = web3
         self.eth_manager = eth_manager
+        self.solana_client_manager = solana_client_manager
         self.pending_track_routes = pending_track_routes
         self.pending_playlist_routes = pending_playlist_routes
 
