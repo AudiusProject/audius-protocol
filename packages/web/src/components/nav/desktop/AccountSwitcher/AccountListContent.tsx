@@ -1,7 +1,14 @@
 import { useCallback, useMemo } from 'react'
 
 import { ID, ManagedUserMetadata, UserMetadata } from '@audius/common/models'
-import { Box, Flex, IconUserArrowRotate, Text, useTheme } from '@audius/harmony'
+import {
+  Box,
+  Flex,
+  IconUserArrowRotate,
+  Scrollbar,
+  Text,
+  useTheme
+} from '@audius/harmony'
 
 import { AccountSwitcherRow } from './AccountSwitcherRow'
 
@@ -18,7 +25,7 @@ export type AccountListContentProps = {
 }
 
 export const AccountListContent = ({
-  accounts,
+  accounts: accountsProp,
   managerAccount,
   currentUserId,
   onAccountSelected
@@ -26,15 +33,15 @@ export const AccountListContent = ({
   const { spacing } = useTheme()
   // If the current user is one of the managed account, sort it to the top of
   // the list
-  const sortedAccounts = useMemo(() => {
-    const selectedIdx = accounts.findIndex(
+  const accounts = useMemo(() => {
+    const selectedIdx = accountsProp.findIndex(
       ({ user }) => user.user_id === currentUserId
     )
-    if (selectedIdx === -1) return accounts
-    const withoutSelected = [...accounts]
+    if (selectedIdx === -1) return accountsProp
+    const withoutSelected = [...accountsProp]
     const selectedAccount = withoutSelected.splice(selectedIdx, 1)[0]
     return [selectedAccount, ...withoutSelected]
-  }, [accounts, currentUserId])
+  }, [accountsProp, currentUserId])
 
   const onUserSelected = useCallback(
     (user: UserMetadata) => {
@@ -100,8 +107,8 @@ export const AccountListContent = ({
           </Text>
         </Box>
 
-        <Box flex={1} css={{ overflowY: 'auto' }}>
-          {sortedAccounts.map(({ user }, i) => (
+        <Scrollbar>
+          {accounts.map(({ user }, i) => (
             <li
               key={user.user_id}
               role='menuitem'
@@ -118,7 +125,7 @@ export const AccountListContent = ({
               </Box>
             </li>
           ))}
-        </Box>
+        </Scrollbar>
       </Flex>
     </Flex>
   )

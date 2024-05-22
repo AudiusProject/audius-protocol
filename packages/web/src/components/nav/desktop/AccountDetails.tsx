@@ -61,12 +61,7 @@ export const AccountDetails = () => {
             : {})
         }}
       >
-        <Flex
-          alignItems='center'
-          w='100%'
-          justifyContent='space-between'
-          gap='l'
-        >
+        <Flex alignItems='center' w='100%' justifyContent='flex-start' gap='l'>
           <AvatarLegacy userId={account?.user_id} />
           <Flex
             direction='column'
@@ -81,18 +76,26 @@ export const AccountDetails = () => {
           >
             {account ? (
               <>
-                <UserLink
-                  textVariant='title'
-                  size='s'
-                  userId={account.user_id}
-                  badgeSize='xs'
-                  css={
-                    isManagedAccount && {
-                      color: color.text.accent,
-                      '&:hover': { color: color.text.accent }
-                    }
-                  }
-                />
+                <Flex
+                  alignItems='center'
+                  justifyContent='space-between'
+                  gap='l'
+                >
+                  <UserLink
+                    textVariant='title'
+                    size='s'
+                    userId={account.user_id}
+                    badgeSize='xs'
+                    css={{
+                      flex: 1,
+                      ...(isManagedAccount && {
+                        color: color.text.accent,
+                        '&:hover': { color: color.text.accent }
+                      })
+                    }}
+                  />
+                  {isManagerModeEnabled ? <AccountSwitcher /> : null}
+                </Flex>
                 <TextLink
                   textVariant='body'
                   size='s'
@@ -122,17 +125,6 @@ export const AccountDetails = () => {
               </>
             )}
           </Flex>
-          {isManagerModeEnabled && account ? (
-            <Flex
-              flex={0}
-              pt='xs'
-              alignItems='flex-start'
-              justifyContent='flex-end'
-              h='100%'
-            >
-              <AccountSwitcher />
-            </Flex>
-          ) : null}
         </Flex>
       </Flex>
     </Flex>
