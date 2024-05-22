@@ -19,7 +19,7 @@ import {
 } from 'utils/route'
 
 import { CreateEmailPage } from './pages/CreateEmailPage'
-import { CreateLoginDetailsPage } from './pages/CreateLoginDetails'
+import { CreateLoginDetailsPage } from './pages/CreateLoginDetailsPage'
 import { CreatePasswordPage } from './pages/CreatePasswordPage'
 import { FinishProfilePage } from './pages/FinishProfilePage'
 import { LoadingAccountPage } from './pages/LoadingAccountPage'
