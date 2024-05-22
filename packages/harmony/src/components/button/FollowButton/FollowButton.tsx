@@ -5,7 +5,7 @@ import styled from '@emotion/styled'
 
 import type { IconComponent } from 'components/icon'
 import { Flex } from 'components/layout/Flex'
-import { Text } from 'components/text/Text'
+import { Text } from 'components/text'
 import { useControlled } from 'hooks/useControlled'
 import { IconUserFollowing, IconUserFollow, IconUserUnfollow } from 'icons'
 

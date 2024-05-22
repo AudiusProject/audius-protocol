@@ -105,11 +105,7 @@ export const WaitForDownloadDrawer = () => {
             <Hint
               icon={IconError}
               actions={
-                <TextLink
-                  variant='visible'
-                  textVariant='body'
-                  onPress={performDownload}
-                >
+                <TextLink variant='visible' onPress={performDownload}>
                   {messages.tryAgain}
                 </TextLink>
               }

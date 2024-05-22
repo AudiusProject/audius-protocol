@@ -3,7 +3,7 @@ import { Ref, forwardRef } from 'react'
 import { useTheme } from '@emotion/react'
 import { Slot } from '@radix-ui/react-slot'
 
-import { Text } from 'components/text/Text'
+import { Text } from 'components/text'
 
 import type { TextLinkProps } from './types'
 

@@ -39,7 +39,6 @@ export const AccountDetails = () => {
                 badgeSize='xs'
               />
               <TextLink
-                textVariant='body'
                 size='xs'
                 to={profileLink}
               >{`@${account.handle}`}</TextLink>
@@ -52,7 +51,6 @@ export const AccountDetails = () => {
               <TextLink
                 to={SIGN_IN_PAGE}
                 variant='visible'
-                textVariant='body'
                 size='xs'
                 strength='weak'
               >
