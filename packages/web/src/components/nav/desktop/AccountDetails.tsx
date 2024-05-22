@@ -1,3 +1,4 @@
+import { useIsManagedAccount } from '@audius/common/hooks'
 import { FeatureFlags } from '@audius/common/services'
 import { accountSelectors } from '@audius/common/store'
 import { Box, Flex, Text, useTheme } from '@audius/harmony'
@@ -9,7 +10,6 @@ import { useSelector } from 'utils/reducer'
 import { SIGN_IN_PAGE, profilePage } from 'utils/route'
 
 import { AccountSwitcher } from './AccountSwitcher/AccountSwitcher'
-import { useIsManagedAccount } from '@audius/common/hooks'
 
 const { getAccountUser } = accountSelectors
 
