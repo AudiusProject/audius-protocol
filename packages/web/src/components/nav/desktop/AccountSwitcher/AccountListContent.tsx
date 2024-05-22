@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useMemo } from 'react'
 
 import { ID, ManagedUserMetadata, UserMetadata } from '@audius/common/models'
 import { Box, Flex, IconUserArrowRotate, Text } from '@audius/harmony'
@@ -29,6 +29,18 @@ export const AccountListContent = ({
   currentUserId,
   onAccountSelected
 }: AccountListContentProps) => {
+  // If the current user is one of the managed account, sort it to the top of
+  // the list
+  const sortedAccounts = useMemo(() => {
+    const selectedIdx = accounts.findIndex(
+      ({ user }) => user.user_id === currentUserId
+    )
+    if (selectedIdx === -1) return accounts
+    const withoutSelected = [...accounts]
+    const selectedAccount = withoutSelected.splice(selectedIdx, 1)[0]
+    return [selectedAccount, ...withoutSelected]
+  }, [accounts, currentUserId])
+
   const onUserSelected = useCallback(
     (user: UserMetadata) => {
       if (user.user_id !== currentUserId) {
@@ -82,7 +94,7 @@ export const AccountListContent = ({
           </Text>
         </Box>
 
-        {accounts.map(({ user }, i) => (
+        {sortedAccounts.map(({ user }, i) => (
           <li
             key={user.user_id}
             role='menuitem'
