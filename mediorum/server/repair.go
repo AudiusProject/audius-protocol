@@ -206,7 +206,6 @@ func (ss *MediorumServer) repairCid(cid string, placementHosts []string, tracker
 	logger := ss.logger.With("task", "repair", "cid", cid, "cleanup", tracker.CleanupMode)
 
 	preferredHosts, isMine := ss.rendezvousAllHosts(cid)
-	preferredHealthyHosts, isMineHealthy := ss.rendezvousHealthyHosts(cid)
 
 	// if placementHosts is specified
 	isPlaced := len(placementHosts) > 0
@@ -218,13 +217,11 @@ func (ss *MediorumServer) repairCid(cid string, placementHosts []string, tracker
 
 		// we are a preffered host
 		preferredHosts = placementHosts
-		preferredHealthyHosts = placementHosts
 		isMine = true
-		isMineHealthy = true
 	}
 
 	// fast path: do zero bucket ops if we know we don't care about this cid
-	if !tracker.CleanupMode && !isMineHealthy {
+	if !tracker.CleanupMode && !isMine {
 		return nil
 	}
 
@@ -234,7 +231,7 @@ func (ss *MediorumServer) repairCid(cid string, placementHosts []string, tracker
 	tracker.Counters["total_checked"]++
 
 	// use preferredHealthyHosts when determining my rank because we want to check if we're in the top N*2 healthy nodes not the top N*2 unhealthy nodes
-	myRank := slices.Index(preferredHealthyHosts, ss.Config.Self.Host)
+	myRank := slices.Index(preferredHosts, ss.Config.Self.Host)
 
 	key := cidutil.ShardCID(cid)
 	alreadyHave := true
