@@ -1,4 +1,5 @@
 import { omit, keyBy } from 'lodash'
+import objectHash from 'object-hash'
 
 import { ID } from '~/models'
 import { Nullable } from '~/utils/typeUtils'
@@ -8,7 +9,7 @@ import { schemas } from './schema'
 import { EndpointConfig } from './types'
 
 // Requests occuring in this period will be batched
-const BATCH_PERIOD = 50
+const BATCH_PERIOD_MS = 10
 
 type RequestQueueItem<Args, Data> = {
   fetchArgs: Args
@@ -17,17 +18,16 @@ type RequestQueueItem<Args, Data> = {
   reject: (error: unknown) => void
 }
 
+type RequestGroup = {
+  queue: RequestQueueItem<any, any>[]
+  timer: Nullable<NodeJS.Timeout>
+}
+
 /**
  * Create a request batcher that batches requests for the same endpoint
  */
 export const createRequestBatcher = () => {
-  const endpoints: Record<
-    string,
-    {
-      queue: RequestQueueItem<any, any>[]
-      timer: Nullable<NodeJS.Timeout>
-    }
-  > = {}
+  const requestGroups: Record<string, RequestGroup> = {}
 
   const fetch =
     <Args, Data>(
@@ -36,52 +36,59 @@ export const createRequestBatcher = () => {
     ) =>
     (fetchArgs: Args, context: AudiusQueryContextType) => {
       return new Promise<Data>((resolve, reject) => {
-        endpoints[endpointName] = endpoints[endpointName] ?? {
-          queue: []
+        const idArgKey = endpointConfig.options.idArgKey ?? 'id'
+
+        // Hash the request args and endpointName to determine the request group
+        const requestGroupKey = objectHash({
+          args: omit(fetchArgs ?? {}, idArgKey),
+          endpointName
+        })
+
+        requestGroups[requestGroupKey] = requestGroups[requestGroupKey] ?? {
+          queue: [],
+          timer: null
         }
 
-        const endpoint = endpoints[endpointName]
+        const requestGroup = requestGroups[requestGroupKey]
 
         // Queue the request
-        endpoint.queue = [
-          ...endpoint.queue,
+        requestGroup.queue = [
+          ...requestGroup.queue,
           { fetchArgs, context, resolve, reject }
         ]
 
         // Set up a timer to perform the batch request
-        if (!endpoint.timer) {
-          endpoint.timer = setTimeout(
-            () => performBatch(endpointName, endpointConfig),
-            BATCH_PERIOD
+        if (!requestGroup.timer) {
+          requestGroup.timer = setTimeout(
+            () => performBatch(requestGroup, endpointName, endpointConfig),
+            BATCH_PERIOD_MS
           )
         }
       })
     }
 
   const performBatch = async <Args, Data>(
+    requestGroup: RequestGroup,
     endpointName: string,
     endpointConfig: EndpointConfig<Args, Data>
   ) => {
-    if (!endpoints[endpointName]) {
-      // TODO: log
-      return
-    }
-
     const idArgKey = endpointConfig.options.idArgKey ?? 'id'
-    const endpoint = endpoints[endpointName]
-    const queuedRequests = [...endpoint.queue] as RequestQueueItem<Args, Data>[]
+    const queuedRequests = [...requestGroup.queue] as RequestQueueItem<
+      Args,
+      Data
+    >[]
 
-    endpoint.queue = []
-    endpoint.timer = null
+    requestGroup.queue = []
+    requestGroup.timer = null
 
     // Extract the IDs from the queued requests
     const ids = queuedRequests.map(
       ({ fetchArgs }) => fetchArgs[idArgKey]
     ) as ID[]
 
-    // Use the context and other args from the most recent request. This does not support
-    // varying arguments other than ids between requests. We could add a hash map to the queue
-    // to keep track of different arguments if needed.
+    // Use the context and other args from the most recent request
+    // Args are guaranteed to be the same for all requests in the group
+    // Context is not guaranteed to be the same, but we use the most recent one
     const mostRecentRequest = queuedRequests[queuedRequests.length - 1]
     const batchArgs = {
       ...omit(mostRecentRequest.fetchArgs ?? {}, 'id'),
