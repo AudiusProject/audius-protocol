@@ -38,7 +38,7 @@ export interface AuthorizedApps {
 /**
  * Check if a given object implements the AuthorizedApps interface.
  */
-export function instanceOfAuthorizedApps(value: object): boolean {
+export function instanceOfAuthorizedApps(value: object): value is AuthorizedApps {
     let isInstance = true;
 
     return isInstance;

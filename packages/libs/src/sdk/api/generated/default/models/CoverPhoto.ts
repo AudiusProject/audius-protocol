@@ -37,7 +37,7 @@ export interface CoverPhoto {
 /**
  * Check if a given object implements the CoverPhoto interface.
  */
-export function instanceOfCoverPhoto(value: object): boolean {
+export function instanceOfCoverPhoto(value: object): value is CoverPhoto {
     let isInstance = true;
 
     return isInstance;

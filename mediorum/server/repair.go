@@ -54,8 +54,8 @@ func (ss *MediorumServer) startRepairer() {
 				// run the next job
 				tracker.CursorI = lastRun.CursorI + 1
 
-				// 10% percent of time... clean up over-replicated and pull under-replicated
-				if tracker.CursorI >= 10 {
+				// 50% percent of time... clean up over-replicated and pull under-replicated
+				if tracker.CursorI > 2 {
 					tracker.CursorI = 1
 				}
 				tracker.CleanupMode = tracker.CursorI == 1
@@ -233,7 +233,7 @@ func (ss *MediorumServer) repairCid(cid string, placementHosts []string, tracker
 
 	tracker.Counters["total_checked"]++
 
-	// use preferredHealthyHosts when determining my rank because we want to check if we're in the top N*2 healthy nodes not the top N*2 unhealthy nodes
+	// use preferredHealthyHosts when determining my rank because we want to check if we're in the top healthy nodes not top of all nodes
 	myRank := slices.Index(preferredHealthyHosts, ss.Config.Self.Host)
 
 	key := cidutil.ShardCID(cid)
@@ -322,7 +322,7 @@ func (ss *MediorumServer) repairCid(cid string, placementHosts []string, tracker
 	// wasReplicatedToday := attrs.CreateTime.After(time.Now().Add(-24 * time.Hour))
 	wasReplicatedThisWeek := attrs.CreateTime.After(time.Now().Add(-24 * 7 * time.Hour))
 
-	if !isPlaced && !ss.Config.StoreAll && tracker.CleanupMode && alreadyHave && myRank > ss.Config.ReplicationFactor+2 && !wasReplicatedThisWeek {
+	if !isPlaced && !ss.Config.StoreAll && tracker.CleanupMode && alreadyHave && myRank > ss.Config.ReplicationFactor+1 && !wasReplicatedThisWeek {
 		// depth := 0
 		// // loop preferredHealthyHosts (not preferredHosts) because we don't mind storing a blob a little while longer if it's not on enough healthy nodes
 		// for _, host := range preferredHealthyHosts {

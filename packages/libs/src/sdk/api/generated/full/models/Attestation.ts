@@ -37,10 +37,10 @@ export interface Attestation {
 /**
  * Check if a given object implements the Attestation interface.
  */
-export function instanceOfAttestation(value: object): boolean {
+export function instanceOfAttestation(value: object): value is Attestation {
     let isInstance = true;
-    isInstance = isInstance && "ownerWallet" in value;
-    isInstance = isInstance && "attestation" in value;
+    isInstance = isInstance && "ownerWallet" in value && value["ownerWallet"] !== undefined;
+    isInstance = isInstance && "attestation" in value && value["attestation"] !== undefined;
 
     return isInstance;
 }

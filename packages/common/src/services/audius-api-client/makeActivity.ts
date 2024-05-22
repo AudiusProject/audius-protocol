@@ -1,5 +1,4 @@
 import { full } from '@audius/sdk'
-import { pickBy } from 'lodash'
 
 import { UserTrackMetadata, UserCollectionMetadata } from '~/models'
 
@@ -14,16 +13,7 @@ export const makeActivity = (
       return undefined
     }
     if (activity.itemType === 'track') {
-      // HACK to cover for sdk
-      // https://linear.app/audius/issue/PAY-2994/oneofmodel-breaking-premium-conditions-in-client
-      const picked = pickBy(activity.item.streamConditions, (value) => !!value)
-      const trackFull: full.TrackFull = {
-        ...activity.item,
-        // @ts-ignore
-        streamConditions: picked
-      }
-
-      return makeTrack(full.TrackFullToJSON(trackFull as full.TrackFull))
+      return makeTrack(full.TrackFullToJSON(activity.item as full.TrackFull))
     } else if (activity.itemType === 'playlist') {
       return makePlaylist(
         full.PlaylistFullWithoutTracksToJSON(

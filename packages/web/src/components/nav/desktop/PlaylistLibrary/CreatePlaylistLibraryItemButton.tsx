@@ -10,13 +10,14 @@ import {
 import {
   IconFolder,
   IconPlaylists,
+  IconSave,
+  Pill,
   PopupMenu,
   PopupMenuItem
 } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 
 import { useSelector } from 'common/hooks/useSelector'
-import Pill from 'components/pill/Pill'
 import { Tooltip } from 'components/tooltip'
 import { useAuthenticatedCallback } from 'hooks/useAuthenticatedCallback'
 
@@ -103,11 +104,20 @@ export const CreatePlaylistLibraryItemButton = (props: Props) => {
           <Pill
             // @ts-ignore
             ref={anchorRef}
+            iconLeft={IconSave}
+            onClick={() => handleClickPill(onClick)}
+            {...triggerProps}
+          >
+            {messages.new}
+          </Pill>
+          {/* <Pill
+            // @ts-ignore
+            ref={anchorRef}
             text={messages.new}
             icon='save'
             onClick={() => handleClickPill(onClick)}
             {...triggerProps}
-          />
+          /> */}
         </Tooltip>
       )}
     />

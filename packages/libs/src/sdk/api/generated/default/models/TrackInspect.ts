@@ -38,7 +38,7 @@ export interface TrackInspect {
 /**
  * Check if a given object implements the TrackInspect interface.
  */
-export function instanceOfTrackInspect(value: object): boolean {
+export function instanceOfTrackInspect(value: object): value is TrackInspect {
     let isInstance = true;
 
     return isInstance;

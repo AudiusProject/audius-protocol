@@ -1,15 +1,22 @@
 import { useGetCurrentUserId, useGetPlaylistById } from '@audius/common/api'
-import { useGatedContentAccess } from '@audius/common/hooks'
+import {
+  useGatedContentAccess,
+  useGatedContentAccessMap
+} from '@audius/common/hooks'
 import { Variant, SmartCollectionVariant, ID } from '@audius/common/models'
+import { CommonState, cacheCollectionsSelectors } from '@audius/common/store'
 import { Nullable } from '@audius/common/utils'
 import { Button, Flex, IconPause, IconPlay } from '@audius/harmony'
 import cn from 'classnames'
+import { useSelector } from 'react-redux'
 
 import styles from './CollectionHeader.module.css'
 import { OwnerActionButtons } from './OwnerActionButtons'
 import { SmartCollectionActionButtons } from './SmartCollectionActionButtons'
 import { ViewerActionButtons } from './ViewerActionButtons'
 import { BUTTON_COLLAPSE_WIDTHS } from './utils'
+
+const { getCollectionTracks } = cacheCollectionsSelectors
 
 const messages = {
   actionGroupLabel: 'collection actions',
@@ -55,10 +62,22 @@ export const CollectionActionButtons = (props: CollectionActionButtonProps) => {
     { disabled: typeof collectionId !== 'number' }
   )
   const { hasStreamAccess } = useGatedContentAccess(collection)
+  // Dirty hack to get around the possibility that collectionId is a SmartCollectionVariant
+  const tracks = useSelector((state: CommonState) =>
+    getCollectionTracks(state, {
+      id: typeof collectionId === 'number' ? collectionId : -1
+    })
+  )
+  const trackAccessMap = useGatedContentAccessMap(tracks ?? [])
+  const doesUserHaveAccessToAnyTrack = Object.values(trackAccessMap).some(
+    ({ hasStreamAccess }) => hasStreamAccess
+  )
 
-  // If user doesn't have access, show preview only. If user has access, show play only.
-  const shouldShowPlay = isPlayable && hasStreamAccess
-  const shouldShowPreview = isPremium && !hasStreamAccess
+  // Show play if user has access to the collection or any of its contents,
+  // otherwise show preview
+  const shouldShowPlay =
+    (isPlayable && hasStreamAccess) || doesUserHaveAccessToAnyTrack
+  const shouldShowPreview = isPremium && !hasStreamAccess && !shouldShowPlay
 
   let actionButtons: Nullable<JSX.Element> = null
 
@@ -80,24 +99,24 @@ export const CollectionActionButtons = (props: CollectionActionButtonProps) => {
   const playButton = (
     <Button
       variant='primary'
-      iconLeft={isPlaying && hasStreamAccess ? IconPause : IconPlay}
+      iconLeft={isPlaying ? IconPause : IconPlay}
       onClick={onPlay}
       widthToHideText={BUTTON_COLLAPSE_WIDTHS.first}
       size='large'
     >
-      {isPlaying && hasStreamAccess ? messages.pause : messages.play}
+      {isPlaying ? messages.pause : messages.play}
     </Button>
   )
 
   const previewButton = (
     <Button
       variant='secondary'
-      iconLeft={isPlaying && !hasStreamAccess ? IconPause : IconPlay}
+      iconLeft={isPlaying ? IconPause : IconPlay}
       onClick={onPreview}
       widthToHideText={BUTTON_COLLAPSE_WIDTHS.first}
       size='large'
     >
-      {isPlaying && !hasStreamAccess ? messages.pause : messages.preview}
+      {isPlaying ? messages.pause : messages.preview}
     </Button>
   )
 

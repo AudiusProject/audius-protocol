@@ -38,7 +38,7 @@ export interface FavoritesResponse {
 /**
  * Check if a given object implements the FavoritesResponse interface.
  */
-export function instanceOfFavoritesResponse(value: object): boolean {
+export function instanceOfFavoritesResponse(value: object): value is FavoritesResponse {
     let isInstance = true;
 
     return isInstance;
