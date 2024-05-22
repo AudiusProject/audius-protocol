@@ -179,6 +179,7 @@ track_full = ns.clone(
         "remix_of": fields.Nested(full_remix_parent),
         "is_available": fields.Boolean,
         "ai_attribution_user_id": fields.Integer(allow_null=True),
+        "allowed_api_keys": fields.List(fields.String, allow_null=True),
         "audio_upload_id": fields.String,
         "preview_start_seconds": fields.Float,
         # DDEX fields

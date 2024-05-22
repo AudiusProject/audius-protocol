@@ -413,6 +413,12 @@ export interface TrackFull {
     aiAttributionUserId?: number;
     /**
      * 
+     * @type {Array<string>}
+     * @memberof TrackFull
+     */
+    allowedApiKeys?: Array<string>;
+    /**
+     * 
      * @type {string}
      * @memberof TrackFull
      */
@@ -555,6 +561,7 @@ export function TrackFullFromJSONTyped(json: any, ignoreDiscriminator: boolean):
         'coverArt': !exists(json, 'cover_art') ? undefined : json['cover_art'],
         'isAvailable': !exists(json, 'is_available') ? undefined : json['is_available'],
         'aiAttributionUserId': !exists(json, 'ai_attribution_user_id') ? undefined : json['ai_attribution_user_id'],
+        'allowedApiKeys': !exists(json, 'allowed_api_keys') ? undefined : json['allowed_api_keys'],
         'audioUploadId': !exists(json, 'audio_upload_id') ? undefined : json['audio_upload_id'],
         'previewStartSeconds': !exists(json, 'preview_start_seconds') ? undefined : json['preview_start_seconds'],
         'ddexReleaseIds': !exists(json, 'ddex_release_ids') ? undefined : json['ddex_release_ids'],
@@ -630,6 +637,7 @@ export function TrackFullToJSON(value?: TrackFull | null): any {
         'cover_art': value.coverArt,
         'is_available': value.isAvailable,
         'ai_attribution_user_id': value.aiAttributionUserId,
+        'allowed_api_keys': value.allowedApiKeys,
         'audio_upload_id': value.audioUploadId,
         'preview_start_seconds': value.previewStartSeconds,
         'ddex_release_ids': value.ddexReleaseIds,
