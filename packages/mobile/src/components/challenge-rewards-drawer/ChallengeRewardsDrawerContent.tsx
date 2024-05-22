@@ -130,9 +130,6 @@ export const ChallengeRewardsDrawerContent = ({
       )
     : messages.incomplete
 
-  const claimedAmountText = `(${formatNumberCommas(claimedAmount)} ${
-    messages.claimedLabel
-  })`
   const claimableAmountText = `${formatNumberCommas(claimableAmount)} ${
     messages.claimableLabel
   }`
@@ -213,7 +210,6 @@ export const ChallengeRewardsDrawerContent = ({
             </Text>
           </View>
         </View>
-        {children}
         <View style={styles.claimRewardsContainer}>
           {isClaimable && onClaim ? (
             isCooldownChallenge && isRewardsCooldownEnabled ? (
@@ -241,18 +237,9 @@ export const ChallengeRewardsDrawerContent = ({
               </>
             )
           ) : null}
-          {claimedAmount > 0 && challengeState !== 'disbursed' ? (
-            <Text
-              variant='label'
-              color='subdued'
-              textAlign='center'
-              strength='strong'
-            >
-              {claimedAmountText}
-            </Text>
-          ) : null}
           {claimError ? <ClaimError aaoErrorCode={aaoErrorCode} /> : null}
         </View>
+        {children}
       </ScrollView>
       {isClaimable &&
       onClaim &&

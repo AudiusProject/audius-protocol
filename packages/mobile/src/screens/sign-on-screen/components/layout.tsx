@@ -32,7 +32,7 @@ type PageProps = FlexProps & {
 }
 
 // Horizontal gutter size
-export const gutterSize: FlexProps['p'] = 'l'
+export const gutterSize = 'l'
 
 export const Page = (props: PageProps) => {
   const { children, style, noGutter, ...other } = props

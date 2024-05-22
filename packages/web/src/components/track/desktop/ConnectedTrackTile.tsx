@@ -1,11 +1,4 @@
-import {
-  memo,
-  useState,
-  useCallback,
-  useEffect,
-  MouseEvent,
-  useRef
-} from 'react'
+import { memo, useCallback, useEffect, MouseEvent, useRef } from 'react'
 
 import {
   useGatedContentAccess,
@@ -177,12 +170,11 @@ const ConnectedTrackTile = ({
     setModalVisibility()
   }
 
-  const [artworkLoaded, setArtworkLoaded] = useState(false)
   useEffect(() => {
-    if (artworkLoaded && !loading && hasLoaded) {
+    if (!loading && hasLoaded) {
       hasLoaded(index)
     }
-  }, [artworkLoaded, hasLoaded, index, loading])
+  }, [hasLoaded, index, loading])
 
   const renderImage = () => {
     const artworkProps = {
@@ -195,7 +187,6 @@ const ConnectedTrackTile = ({
       artworkIconClassName: styles.artworkIcon,
       showArtworkIcon: !loading,
       showSkeleton: loading,
-      callback: () => setArtworkLoaded(true),
       label: `${title} by ${name}`,
       hasStreamAccess: hasStreamAccess || hasPreview
     }
@@ -253,13 +244,7 @@ const ConnectedTrackTile = ({
   }
 
   const userName = (
-    <UserLink
-      userId={user_id}
-      badgeSize='xs'
-      textVariant='body'
-      isActive={isActive}
-      popover
-    />
+    <UserLink userId={user_id} badgeSize='xs' isActive={isActive} popover />
   )
 
   const renderStats = () => {
@@ -275,6 +260,7 @@ const ConnectedTrackTile = ({
           size={statSize}
           onClick={onClickStatRepost}
           flavor={Flavor.REPOST}
+          isOwner={isOwner}
         />
         <Stats
           count={save_count}
@@ -283,6 +269,7 @@ const ConnectedTrackTile = ({
           size={statSize}
           onClick={onClickStatFavorite}
           flavor={Flavor.FAVORITE}
+          isOwner={isOwner}
         />
       </div>
     )

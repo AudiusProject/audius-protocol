@@ -80,15 +80,15 @@ export interface DecodedUserToken {
 /**
  * Check if a given object implements the DecodedUserToken interface.
  */
-export function instanceOfDecodedUserToken(value: object): boolean {
+export function instanceOfDecodedUserToken(value: object): value is DecodedUserToken {
     let isInstance = true;
-    isInstance = isInstance && "userId" in value;
-    isInstance = isInstance && "email" in value;
-    isInstance = isInstance && "name" in value;
-    isInstance = isInstance && "handle" in value;
-    isInstance = isInstance && "verified" in value;
-    isInstance = isInstance && "sub" in value;
-    isInstance = isInstance && "iat" in value;
+    isInstance = isInstance && "userId" in value && value["userId"] !== undefined;
+    isInstance = isInstance && "email" in value && value["email"] !== undefined;
+    isInstance = isInstance && "name" in value && value["name"] !== undefined;
+    isInstance = isInstance && "handle" in value && value["handle"] !== undefined;
+    isInstance = isInstance && "verified" in value && value["verified"] !== undefined;
+    isInstance = isInstance && "sub" in value && value["sub"] !== undefined;
+    isInstance = isInstance && "iat" in value && value["iat"] !== undefined;
 
     return isInstance;
 }

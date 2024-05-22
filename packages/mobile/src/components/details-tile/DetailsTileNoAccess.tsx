@@ -13,8 +13,8 @@ import {
 } from '@audius/common/models'
 import type { ID, AccessConditions, User } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
-import type { PurchaseableContentType } from '@audius/common/store'
 import {
+  PurchaseableContentType,
   usersSocialActions,
   tippingActions,
   usePremiumContentPurchaseModal,
@@ -209,6 +209,9 @@ export const DetailsTileNoAccess = ({
   const { isEnabled: isIosGatedContentEnabled } = useFeatureFlag(
     FeatureFlags.IOS_GATED_CONTENT_ENABLED
   )
+  const { isEnabled: isUsdcPurchasesEnabled } = useFeatureFlag(
+    FeatureFlags.USDC_PURCHASES
+  )
 
   const { onPress: handlePressCollection } = useLink(collectionLink)
 
@@ -226,7 +229,12 @@ export const DetailsTileNoAccess = ({
   const handlePurchasePress = useCallback(() => {
     openPremiumContentPurchaseModal(
       { contentId: trackId, contentType },
-      { source: ModalSource.TrackDetails }
+      {
+        source:
+          contentType === PurchaseableContentType.ALBUM
+            ? ModalSource.CollectionDetails
+            : ModalSource.TrackDetails
+      }
     )
   }, [trackId, openPremiumContentPurchaseModal, contentType])
 
@@ -479,6 +487,10 @@ export const DetailsTileNoAccess = ({
   ])
 
   const isUnlocking = gatedTrackStatus === 'UNLOCKING'
+
+  if (!isUsdcPurchasesEnabled && isContentUSDCPurchaseGated(streamConditions)) {
+    return null
+  }
 
   return (
     <DetailsTileNoAccessSection

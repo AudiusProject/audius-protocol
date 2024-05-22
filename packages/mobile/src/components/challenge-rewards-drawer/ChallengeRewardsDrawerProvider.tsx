@@ -83,11 +83,11 @@ export const ChallengeRewardsDrawerProvider = () => {
   if (challenge?.challenge_type === 'aggregate') {
     audioToClaim = challenge.claimableAmount
     audioClaimedSoFar = challenge.disbursed_amount
-  } else if (challenge?.state === 'completed') {
+  } else if (challenge?.state === 'completed' && challenge?.cooldown_days) {
+    audioToClaim = challenge.claimableAmount
+  } else if (challenge?.state === 'completed' && !challenge?.cooldown_days) {
     audioToClaim = challenge.totalAmount
-    audioClaimedSoFar = 0
   } else if (challenge?.state === 'disbursed') {
-    audioToClaim = 0
     audioClaimedSoFar = challenge.totalAmount
   }
 
@@ -143,7 +143,7 @@ export const ChallengeRewardsDrawerProvider = () => {
 
   // Challenge drawer contents
   let contents: Maybe<React.ReactElement>
-  if (challenge?.state && challenge?.state !== 'completed') {
+  if (!audioToClaim) {
     switch (modalType) {
       case 'referrals':
       case 'ref-v':

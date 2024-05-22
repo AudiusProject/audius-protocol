@@ -92,7 +92,7 @@ const SocialLink = (props: SocialLinkProps) => {
 
   if (href) {
     return (
-      <ExternalTextLink to={href} onClick={onClick} textVariant='body'>
+      <ExternalTextLink to={href} onClick={onClick}>
         {icon} <Text ellipses>{iconOnly ? null : text}</Text>
       </ExternalTextLink>
     )

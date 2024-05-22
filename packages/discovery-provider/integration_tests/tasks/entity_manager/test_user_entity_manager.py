@@ -2,7 +2,9 @@ import json
 from datetime import datetime
 from typing import List
 from unittest import mock
+from unittest.mock import create_autospec
 
+from solders.account import AccountJSON
 from sqlalchemy import asc
 from web3 import Web3
 from web3.datastructures import AttributeDict
@@ -12,6 +14,7 @@ from integration_tests.utils import populate_mock_db, populate_mock_db_blocks
 from src.challenges.challenge_event import ChallengeEvent
 from src.models.indexing.cid_data import CIDData
 from src.models.users.user import User
+from src.solana.solana_client_manager import SolanaClientManager
 from src.tasks.entity_manager.entities.user import UserEventMetadata, update_user_events
 from src.tasks.entity_manager.entity_manager import entity_manager_update
 from src.tasks.entity_manager.utils import (
@@ -19,6 +22,7 @@ from src.tasks.entity_manager.utils import (
     TRACK_ID_OFFSET,
     USER_ID_OFFSET,
 )
+from src.utils.config import shared_config
 from src.utils.db_session import get_db
 from src.utils.redis_connection import get_redis
 
@@ -1271,3 +1275,165 @@ def test_index_empty_bio(app, mocker):
         assert user_3.name == "Isaac"
         assert user_3.handle == "isaac"
         assert user_3.bio == ""
+
+
+def test_index_adding_spl_usdc_payout_wallet(app, mocker):
+    bus_mock = set_patches(mocker)
+
+    # setup db and mocked txs
+    with app.app_context():
+        db = get_db()
+        web3 = Web3()
+        solana_client_manager_mock = create_autospec(SolanaClientManager)
+        solana_client_manager_mock.get_account_info_json_parsed.return_value = AccountJSON.from_json(
+            json.dumps(
+                {
+                    "lamports": 2039280,
+                    "data": {
+                        "program": "spl-token",
+                        "parsed": {
+                            "info": {
+                                "isNative": False,
+                                "mint": shared_config["solana"]["usdc_mint"],
+                                "owner": "F1vVY6VtF5oLT2QYEqy6276JGGhgaLEDZMamoFsJWSYk",
+                                "state": "initialized",
+                                "tokenAmount": {
+                                    "amount": "3267791",
+                                    "decimals": 6,
+                                    "uiAmount": 3.267791,
+                                    "uiAmountString": "3.267791",
+                                },
+                            },
+                            "type": "account",
+                        },
+                        "space": 165,
+                    },
+                    "owner": [
+                        6,
+                        221,
+                        246,
+                        225,
+                        215,
+                        101,
+                        161,
+                        147,
+                        217,
+                        203,
+                        225,
+                        70,
+                        206,
+                        235,
+                        121,
+                        172,
+                        28,
+                        180,
+                        133,
+                        237,
+                        95,
+                        91,
+                        55,
+                        145,
+                        58,
+                        140,
+                        245,
+                        133,
+                        126,
+                        255,
+                        0,
+                        169,
+                    ],
+                    "executable": False,
+                    "rentEpoch": 18446744073709551615,
+                }
+            )
+        )
+        update_task = UpdateTask(
+            web3, bus_mock, solana_client_manager=solana_client_manager_mock
+        )
+
+    test_metadata = {
+        "QmUpdateUser": {
+            "name": "Britney Spores",
+            "handle": "britneyspores",
+            "profile_picture_sizes": "QmNmzMoiLYSAgrLbAAnaPW9q3YZwZvHybbbs59QamzUQxg",
+            "cover_photo_sizes": "QmR2fSFvtpWg7nfdYtoJ3KgDNf4YgcuSzKjwZjansW9wcj",
+            "bio": "No but I'm like actually Toxic",
+            "location": "McComb, MS",
+            "spl_usdc_payout_wallet": "7MjEvdyxduYPYwikWovAJ9TjLkzgdW3DiihysYTTN4up",
+            "user_id": 1,
+        },
+    }
+
+    update_user_json = json.dumps(test_metadata["QmUpdateUser"])
+
+    tx_receipts = {
+        "UpdateUserTx": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 1,
+                        "_entityType": "User",
+                        "_userId": 1,
+                        "_action": "Update",
+                        "_metadata": f'{{"cid": "QmUpdateUser", "data": {update_user_json}}}',
+                        "_signer": "wallet",
+                    }
+                )
+            },
+        ]
+    }
+
+    entity_manager_txs = [
+        AttributeDict({"transactionHash": update_task.web3.to_bytes(text=tx_receipt)})
+        for tx_receipt in tx_receipts
+    ]
+
+    def get_events_side_effect(_, tx_receipt):
+        return tx_receipts[tx_receipt["transactionHash"].decode("utf-8")]
+
+    mocker.patch(
+        "src.tasks.entity_manager.entity_manager.get_entity_manager_events_tx",
+        side_effect=get_events_side_effect,
+        autospec=True,
+    )
+
+    entities = {
+        "users": [
+            {
+                "user_id": 1,
+                "handle": "britneyspores",
+                "wallet": "wallet",
+            },
+        ]
+    }
+
+    populate_mock_db(db, entities)
+
+    with db.scoped_session() as session:
+        # index transactions
+        entity_manager_update(
+            update_task,
+            session,
+            entity_manager_txs,
+            block_number=0,
+            block_timestamp=BLOCK_DATETIME.timestamp(),
+            block_hash=hex(0),
+        )
+
+    with db.scoped_session() as session:
+        all_users: List[User] = session.query(User).all()
+        assert len(all_users) == 1
+
+        user: User = (
+            session.query(User)
+            .filter(
+                User.user_id == 1,
+            )
+            .first()
+        )
+        assert user.name == "Britney Spores"
+        assert user.handle == "britneyspores"
+        assert (
+            user.spl_usdc_payout_wallet
+            == "7MjEvdyxduYPYwikWovAJ9TjLkzgdW3DiihysYTTN4up"
+        )

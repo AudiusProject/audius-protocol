@@ -1,4 +1,4 @@
-import { useState, useEffect, MouseEvent, useCallback } from 'react'
+import { useEffect, MouseEvent, useCallback } from 'react'
 
 import {
   ID,
@@ -253,15 +253,14 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
     streamConditions,
     source
   } = props
-  const [artworkLoaded, setArtworkLoaded] = useState(false)
   useEffect(() => {
-    if (artworkLoaded && !showSkeleton) {
+    if (!showSkeleton) {
       hasLoaded(index)
     }
-  }, [artworkLoaded, hasLoaded, index, showSkeleton])
+  }, [hasLoaded, index, showSkeleton])
 
   const isReadonly = variant === 'readonly'
-  const shouldShow = artworkLoaded && !showSkeleton
+  const shouldShow = !showSkeleton
   const fadeIn = {
     [styles.show]: shouldShow,
     [styles.hide]: !shouldShow
@@ -356,7 +355,6 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
             id={props.id}
             isTrack={false}
             showSkeleton={props.showSkeleton}
-            callback={() => setArtworkLoaded(true)}
             coverArtSizes={props.coverArtSizes}
             className={styles.albumArtContainer}
             isPlaying={props.isPlaying}
@@ -386,7 +384,7 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
                 <Skeleton className={styles.skeleton} height='20px' />
               ) : null}
             </TextLink>
-            <UserLink userId={ownerId} textVariant='body' badgeSize='xs'>
+            <UserLink userId={ownerId} badgeSize='xs'>
               {!shouldShow ? (
                 <Skeleton className={styles.skeleton} height='20px' />
               ) : null}

@@ -65,9 +65,7 @@ const SocialMediaSection = (props: SocialMediaSectionProps) => {
           size={isMobile ? 'm' : 's'}
         >
           {pickHandlePageMessages.claimHandleHeaderPrefix}{' '}
-          <Text color='accent' tag='span'>
-            @{pickHandlePageMessages.handle}
-          </Text>{' '}
+          <Text color='accent'>@{pickHandlePageMessages.handle}</Text>{' '}
           <IconVerified
             size={isMobile ? 's' : 'm'}
             css={{ verticalAlign: 'sub' }}

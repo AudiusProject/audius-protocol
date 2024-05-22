@@ -23,7 +23,8 @@ import {
   IconVisibilityHidden,
   Text,
   Flex,
-  ProgressBar
+  ProgressBar,
+  Paper
 } from '@audius/harmony'
 import cn from 'classnames'
 import moment from 'moment'
@@ -276,8 +277,10 @@ const TrackTile = ({
     }
   }
 
+  const Root = standalone ? Paper : 'div'
+
   return (
-    <div
+    <Root
       className={cn(styles.container, {
         [containerClassName!]: !!containerClassName,
         // Active indicates that the track is the current queue item
@@ -408,7 +411,7 @@ const TrackTile = ({
           </>
         ) : null}
       </div>
-    </div>
+    </Root>
   )
 }
 

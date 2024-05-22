@@ -33,7 +33,7 @@ import { LineupTileAccessStatus } from './LineupTileAccessStatus'
 import { LineupTileGatedContentTypeTag } from './LineupTilePremiumContentTypeTag'
 import { LineupTileRankIcon } from './LineupTileRankIcon'
 import { useStyles as useTrackTileStyles } from './styles'
-import type { LineupItemVariant } from './types'
+import type { LineupItemVariant, LineupTileSource } from './types'
 const { setFavorite } = favoritesUserListActions
 const { setRepost } = repostsUserListActions
 
@@ -111,6 +111,7 @@ type Props = {
   isArtistPick?: boolean
   showArtistPick?: boolean
   releaseDate?: string
+  source?: LineupTileSource
 }
 
 export const LineupTileStats = ({
@@ -132,7 +133,8 @@ export const LineupTileStats = ({
   isOwner,
   isArtistPick,
   showArtistPick,
-  releaseDate
+  releaseDate,
+  source
 }: Props) => {
   const styles = useStyles()
   const trackTileStyles = useTrackTileStyles()
@@ -175,6 +177,7 @@ export const LineupTileStats = ({
             }
             streamConditions={streamConditions}
             hasStreamAccess={hasStreamAccess}
+            source={source}
           />
         )
       }

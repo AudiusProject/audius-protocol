@@ -1,3 +1,5 @@
+import { Pill } from '@audius/harmony'
+
 import styles from './NotificationFooter.module.css'
 
 const messages = {
@@ -14,9 +16,7 @@ export const NotificationFooter = (props: NotificationFooterProps) => {
   return (
     <div className={styles.root}>
       <span className={styles.timeLabel}>{timeLabel}</span>
-      {isViewed ? null : (
-        <span className={styles.unreadPill}>{messages.unread}</span>
-      )}
+      {!isViewed ? null : <Pill variant='active'>{messages.unread}</Pill>}
     </div>
   )
 }

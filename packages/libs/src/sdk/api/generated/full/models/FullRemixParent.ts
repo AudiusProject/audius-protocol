@@ -38,7 +38,7 @@ export interface FullRemixParent {
 /**
  * Check if a given object implements the FullRemixParent interface.
  */
-export function instanceOfFullRemixParent(value: object): boolean {
+export function instanceOfFullRemixParent(value: object): value is FullRemixParent {
     let isInstance = true;
 
     return isInstance;

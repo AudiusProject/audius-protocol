@@ -72,10 +72,12 @@ function* filterDeletes<T extends Track | Collection>(
   const getFeatureEnabled = yield* getContext('getFeatureEnabled')
   yield* call(remoteConfig.waitForRemoteConfig)
 
-  const isUSDCGatedContentEnabled = getFeatureEnabled(
+  const isUSDCGatedContentEnabled = yield* call(
+    getFeatureEnabled,
     FeatureFlags.USDC_PURCHASES
   )
-  const isPremiumAlbumsEnabled = getFeatureEnabled(
+  const isPremiumAlbumsEnabled = yield* call(
+    getFeatureEnabled,
     FeatureFlags.PREMIUM_ALBUMS_ENABLED
   )
 
@@ -97,7 +99,6 @@ function* filterDeletes<T extends Track | Collection>(
       // Remove this when removing the feature flags
       if (
         !isUSDCGatedContentEnabled &&
-        'track_id' in metadata &&
         metadata.is_stream_gated &&
         isContentUSDCPurchaseGated(metadata.stream_conditions)
       ) {

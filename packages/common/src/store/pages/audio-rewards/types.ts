@@ -31,6 +31,7 @@ export type UndisbursedUserChallenge = Pick<
   handle: string
   wallet: string
   created_at: string
+  completed_at: string
   cooldown_days?: number
 }
 

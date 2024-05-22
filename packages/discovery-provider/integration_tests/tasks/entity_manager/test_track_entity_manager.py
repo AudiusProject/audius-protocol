@@ -88,6 +88,7 @@ def test_index_valid_track(app, mocker):
             "orig_filename": "original-filename",
             "is_downloadable": False,
             "is_original_available": False,
+            "allowed_api_keys": ["0xApiKey"],
         },
         "QmCreateTrack2": {
             "owner_id": 1,
@@ -467,6 +468,7 @@ def test_index_valid_track(app, mocker):
         assert track_1.is_unlisted
         assert track_1.is_delete == True
         assert track_1.duration == 100
+        assert track_1.allowed_api_keys == ["0xapikey"]
 
         track_2: Track = (
             session.query(Track)
