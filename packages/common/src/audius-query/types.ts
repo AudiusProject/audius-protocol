@@ -87,7 +87,7 @@ export type EndpointConfig<Args, Data> = {
   fetch: (fetchArgs: Args, context: AudiusQueryContextType) => Promise<Data>
   options: EndpointOptions
   fetchBatch?: (
-    fetchArgs: any,
+    fetchArgs: { ids: ID[] } & Args,
     context: AudiusQueryContextType
   ) => Promise<Data[]>
   onQueryStarted?: (fetchArgs: Args, context: { dispatch: Dispatch }) => void
