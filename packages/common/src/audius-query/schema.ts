@@ -1,4 +1,4 @@
-import { Schema, schema } from 'normalizr'
+import { schema } from 'normalizr'
 
 import { Kind } from '~/models/Kind'
 

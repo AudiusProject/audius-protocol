@@ -35,6 +35,7 @@ import {
   AudiusQueryContext,
   AudiusQueryContextType
 } from './AudiusQueryContext'
+import { createRequestBatcher } from './createRequestBatcher'
 import { RemoteDataNotFoundError } from './errors'
 import { apiResponseSchema } from './schema'
 import {
@@ -55,7 +56,6 @@ import {
   MutationHookResults
 } from './types'
 import { capitalize, getKeyFromFetchArgs, selectCommonEntityMap } from './utils'
-import { createRequestBatcher } from './createRequestBatcher'
 
 type Entity = Collection | Track | User
 
