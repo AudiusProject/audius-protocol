@@ -1,6 +1,6 @@
 import { FeatureFlags } from '@audius/common/services'
 import { accountSelectors } from '@audius/common/store'
-import { Box, Flex, Text } from '@audius/harmony'
+import { Box, Flex, Text, useTheme } from '@audius/harmony'
 
 import { AvatarLegacy } from 'components/avatar/AvatarLegacy'
 import { TextLink, UserLink } from 'components/link'
@@ -21,26 +21,57 @@ const messages = {
 
 export const AccountDetails = () => {
   const account = useSelector((state) => getAccountUser(state))
-  const { isEnabled: isManagerModeEnabled } = useFlag(FeatureFlags.MANAGER_MODE)
-  const isManagedAccount = useIsManagedAccount()
+  const { color } = useTheme()
+  const { isEnabled: isManagerModeEnabled = false } = useFlag(
+    FeatureFlags.MANAGER_MODE
+  )
+  const isManagedAccount = useIsManagedAccount() && isManagerModeEnabled
 
   const profileLink = profilePage(account?.handle ?? '')
 
   return (
-    <Flex direction='column' pb='unit5'>
-      {isManagerModeEnabled && isManagedAccount ? (
+    <Flex direction='column' pb='unit5' w='100%'>
+      {isManagedAccount ? (
         <Box pv='xs' ph='m' backgroundColor='accent'>
           <Text variant='label' size='xs' color='staticWhite'>
             {messages.managedAccount}
           </Text>
         </Box>
       ) : null}
-      <Flex pt='l' pr='s' pb='s' pl='m'>
-        <Flex alignItems='center' flex={0} gap='l'>
+      <Flex
+        pt='l'
+        pr='s'
+        pb='s'
+        pl='m'
+        css={{
+          ...(isManagedAccount
+            ? {
+                '&:before': {
+                  content: '""',
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  height: '100%',
+                  width: '100%',
+                  backgroundColor: color.background.accent,
+                  opacity: 0.03
+                },
+                borderBottom: `1px solid ${color.border.strong}`
+              }
+            : {})
+        }}
+      >
+        <Flex
+          alignItems='center'
+          w='100%'
+          justifyContent='space-between'
+          gap='l'
+        >
           <AvatarLegacy userId={account?.user_id} />
           <Flex
             direction='column'
             gap='xs'
+            flex={1}
             css={{
               textAlign: 'left',
               whiteSpace: 'nowrap',
@@ -53,14 +84,25 @@ export const AccountDetails = () => {
                 <UserLink
                   textVariant='title'
                   size='s'
-                  strength='weak'
                   userId={account.user_id}
                   badgeSize='xs'
+                  css={
+                    isManagedAccount && {
+                      color: color.text.accent,
+                      '&:hover': { color: color.text.accent }
+                    }
+                  }
                 />
                 <TextLink
                   textVariant='body'
-                  size='xs'
+                  size='s'
                   to={profileLink}
+                  css={
+                    isManagedAccount && {
+                      color: color.text.accent,
+                      '&:hover': { color: color.text.accent }
+                    }
+                  }
                 >{`@${account.handle}`}</TextLink>
               </>
             ) : (
@@ -82,9 +124,10 @@ export const AccountDetails = () => {
           </Flex>
           {isManagerModeEnabled && account ? (
             <Flex
-              direction='column'
-              alignItems='center'
-              justifyContent='flex-start'
+              flex={0}
+              pt='xs'
+              alignItems='flex-start'
+              justifyContent='flex-end'
               h='100%'
             >
               <AccountSwitcher />

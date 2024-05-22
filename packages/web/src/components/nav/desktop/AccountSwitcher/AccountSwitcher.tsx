@@ -7,7 +7,7 @@ import {
 } from '@audius/common/api'
 import { useAccountSwitcher } from '@audius/common/hooks'
 import { UserMetadata } from '@audius/common/models'
-import { Flex, IconButton, IconCaretDown, Popup } from '@audius/harmony'
+import { Box, IconButton, IconCaretDown, Popup } from '@audius/harmony'
 
 import { AccountListContent } from './AccountListContent'
 
@@ -44,14 +44,7 @@ export const AccountSwitcher = () => {
   }, [managedAccounts])
 
   return !currentWeb3User || !currentUserId || accounts.length === 0 ? null : (
-    <Flex
-      ref={parentElementRef}
-      direction='column'
-      alignItems='center'
-      justifyContent='center'
-      h='2xl'
-      w='2xl'
-    >
+    <Box ref={parentElementRef}>
       <IconButton
         color='default'
         size='2xs'
@@ -80,6 +73,6 @@ export const AccountSwitcher = () => {
           accounts={accounts}
         />
       </Popup>
-    </Flex>
+    </Box>
   )
 }

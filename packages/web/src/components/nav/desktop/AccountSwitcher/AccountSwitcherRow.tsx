@@ -49,7 +49,7 @@ export const AccountSwitcherRow = ({
                 height: '100%',
                 width: '100%',
                 backgroundColor: color.background.accent,
-                opacity: 0.05
+                opacity: 0.03
               }
             }
           : {
