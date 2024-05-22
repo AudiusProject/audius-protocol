@@ -10,8 +10,8 @@ declare
   is_album boolean;
   delta int;
   entity_type text;
-  is_purchased boolean;
-  is_containing_album_purchased boolean;
+  is_purchased boolean default false;
+  is_containing_album_purchased boolean default false;
 begin
 
   insert into aggregate_user (user_id) values (new.user_id) on conflict do nothing;
