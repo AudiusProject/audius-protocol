@@ -8,13 +8,13 @@ const trackApi = createApi({
   endpoints: {
     getTrackById: {
       fetch: async (
-        { id, currentUserId }: { id: ID; currentUserId: Nullable<ID> },
+        { id, currentUserId }: { id: ID; currentUserId?: Nullable<ID> },
         { apiClient }
       ) => {
         return await apiClient.getTrack({ id, currentUserId })
       },
       fetchBatch: async (
-        { ids, currentUserId }: { ids: ID[]; currentUserId: Nullable<ID> },
+        { ids, currentUserId }: { ids: ID[]; currentUserId?: Nullable<ID> },
         { apiClient }
       ) => {
         return (await apiClient.getTracks({ ids, currentUserId })) ?? []
