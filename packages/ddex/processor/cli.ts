@@ -32,7 +32,7 @@ program
   .command('publish')
   .description('Publish any valid deliveries')
   .action(async () => {
-    await reParsePastXml()
+    reParsePastXml()
     await publishValidPendingReleases()
     process.exit(0) // sdk client doesn't know when to quit
   })

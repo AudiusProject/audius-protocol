@@ -28,6 +28,7 @@ type RemoveManagerPayload = {
 
 type ApproveManagedAccountPayload = {
   userId: number
+  userWalletAddress: string
   grantorUser: UserMetadata | User
 }
 
@@ -212,7 +213,6 @@ const accountApi = createApi({
           )
         )
       }
-      // TODO(C-4331) - Add onQueryErrored for cleaning up optimistic update if the call fails.
     },
     approveManagedAccount: {
       async fetch(payload: ApproveManagedAccountPayload, { audiusSdk }) {
@@ -237,7 +237,7 @@ const accountApi = createApi({
         payload: ApproveManagedAccountPayload,
         { dispatch }
       ) {
-        const { userId, grantorUser } = payload
+        const { userId, grantorUser, userWalletAddress } = payload
         dispatch(
           accountApi.util.updateQueryData(
             'getManagedAccounts',
@@ -254,7 +254,7 @@ const accountApi = createApi({
                 grant: {
                   created_at: currentTime,
                   // TODO(nkang - C-4332) - Fill this in
-                  grantee_address: '',
+                  grantee_address: userWalletAddress,
                   is_approved: true,
                   is_revoked: false,
                   updated_at: currentTime,
@@ -266,7 +266,6 @@ const accountApi = createApi({
           )
         )
       }
-      // TODO(C-4331) - Add onQueryErrored for cleaning up optimistic update if the call fails.
     }
   }
 })

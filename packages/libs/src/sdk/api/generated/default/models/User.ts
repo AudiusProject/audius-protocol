@@ -176,26 +176,26 @@ export interface User {
 /**
  * Check if a given object implements the User interface.
  */
-export function instanceOfUser(value: object): boolean {
+export function instanceOfUser(value: object): value is User {
     let isInstance = true;
-    isInstance = isInstance && "albumCount" in value;
-    isInstance = isInstance && "followeeCount" in value;
-    isInstance = isInstance && "followerCount" in value;
-    isInstance = isInstance && "handle" in value;
-    isInstance = isInstance && "id" in value;
-    isInstance = isInstance && "isVerified" in value;
-    isInstance = isInstance && "name" in value;
-    isInstance = isInstance && "playlistCount" in value;
-    isInstance = isInstance && "repostCount" in value;
-    isInstance = isInstance && "trackCount" in value;
-    isInstance = isInstance && "isDeactivated" in value;
-    isInstance = isInstance && "isAvailable" in value;
-    isInstance = isInstance && "ercWallet" in value;
-    isInstance = isInstance && "splWallet" in value;
-    isInstance = isInstance && "supporterCount" in value;
-    isInstance = isInstance && "supportingCount" in value;
-    isInstance = isInstance && "totalAudioBalance" in value;
-    isInstance = isInstance && "wallet" in value;
+    isInstance = isInstance && "albumCount" in value && value["albumCount"] !== undefined;
+    isInstance = isInstance && "followeeCount" in value && value["followeeCount"] !== undefined;
+    isInstance = isInstance && "followerCount" in value && value["followerCount"] !== undefined;
+    isInstance = isInstance && "handle" in value && value["handle"] !== undefined;
+    isInstance = isInstance && "id" in value && value["id"] !== undefined;
+    isInstance = isInstance && "isVerified" in value && value["isVerified"] !== undefined;
+    isInstance = isInstance && "name" in value && value["name"] !== undefined;
+    isInstance = isInstance && "playlistCount" in value && value["playlistCount"] !== undefined;
+    isInstance = isInstance && "repostCount" in value && value["repostCount"] !== undefined;
+    isInstance = isInstance && "trackCount" in value && value["trackCount"] !== undefined;
+    isInstance = isInstance && "isDeactivated" in value && value["isDeactivated"] !== undefined;
+    isInstance = isInstance && "isAvailable" in value && value["isAvailable"] !== undefined;
+    isInstance = isInstance && "ercWallet" in value && value["ercWallet"] !== undefined;
+    isInstance = isInstance && "splWallet" in value && value["splWallet"] !== undefined;
+    isInstance = isInstance && "supporterCount" in value && value["supporterCount"] !== undefined;
+    isInstance = isInstance && "supportingCount" in value && value["supportingCount"] !== undefined;
+    isInstance = isInstance && "totalAudioBalance" in value && value["totalAudioBalance"] !== undefined;
+    isInstance = isInstance && "wallet" in value && value["wallet"] !== undefined;
 
     return isInstance;
 }

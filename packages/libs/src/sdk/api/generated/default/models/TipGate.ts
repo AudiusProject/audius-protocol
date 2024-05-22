@@ -31,9 +31,9 @@ export interface TipGate {
 /**
  * Check if a given object implements the TipGate interface.
  */
-export function instanceOfTipGate(value: object): boolean {
+export function instanceOfTipGate(value: object): value is TipGate {
     let isInstance = true;
-    isInstance = isInstance && "tipUserId" in value;
+    isInstance = isInstance && "tipUserId" in value && value["tipUserId"] !== undefined;
 
     return isInstance;
 }

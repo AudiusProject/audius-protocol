@@ -38,7 +38,7 @@ export interface Reposts {
 /**
  * Check if a given object implements the Reposts interface.
  */
-export function instanceOfReposts(value: object): boolean {
+export function instanceOfReposts(value: object): value is Reposts {
     let isInstance = true;
 
     return isInstance;

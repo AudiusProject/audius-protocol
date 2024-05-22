@@ -37,10 +37,10 @@ export interface UsdcGate {
 /**
  * Check if a given object implements the UsdcGate interface.
  */
-export function instanceOfUsdcGate(value: object): boolean {
+export function instanceOfUsdcGate(value: object): value is UsdcGate {
     let isInstance = true;
-    isInstance = isInstance && "splits" in value;
-    isInstance = isInstance && "price" in value;
+    isInstance = isInstance && "splits" in value && value["splits"] !== undefined;
+    isInstance = isInstance && "price" in value && value["price"] !== undefined;
 
     return isInstance;
 }

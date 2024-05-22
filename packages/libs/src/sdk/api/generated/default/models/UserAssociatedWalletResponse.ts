@@ -38,7 +38,7 @@ export interface UserAssociatedWalletResponse {
 /**
  * Check if a given object implements the UserAssociatedWalletResponse interface.
  */
-export function instanceOfUserAssociatedWalletResponse(value: object): boolean {
+export function instanceOfUserAssociatedWalletResponse(value: object): value is UserAssociatedWalletResponse {
     let isInstance = true;
 
     return isInstance;

@@ -116,6 +116,7 @@ export const SaleModalContent = ({
                 popover
                 textVariant='body'
                 size='l'
+                onClick={onClose}
               />
             </Flex>
           </DetailSection>
