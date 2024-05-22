@@ -29,6 +29,7 @@ import { RemixSettingsModalTrigger } from 'components/remix-settings-modal/Remix
 import PreviewButton from 'components/upload/PreviewButton'
 import UploadArtwork from 'components/upload/UploadArtwork'
 import { useFlag } from 'hooks/useRemoteConfig'
+import { env } from 'services/env'
 import { moodMap } from 'utils/Moods'
 import { resizeImage } from 'utils/imageProcessingUtil'
 
@@ -334,7 +335,7 @@ const AdvancedForm = (props) => {
     isRemix,
     setIsRemix
   } = props
-    console.log('asdf advanced form props: ', props)
+
   let availabilityState = {
     is_stream_gated: props.defaultFields.is_stream_gated,
     stream_conditions: props.defaultFields.stream_conditions,
@@ -469,7 +470,7 @@ const AdvancedForm = (props) => {
       />
     )
   }
-  
+
   return (
     <>
       <div
@@ -557,10 +558,7 @@ const AdvancedForm = (props) => {
               size='medium'
               variant='border'
               menu={{
-                items: [
-                  { text: 'Allow' },
-                  { text: 'Don\'t Allow' }
-                ]
+                items: [{ text: 'Allow' }, { text: "Don't Allow" }]
               }}
               defaultIndex={props.allowThirdPartyStream ? 0 : 1}
               onSelect={props.onSelectAllowThirdPartyStream}
@@ -656,10 +654,11 @@ class FormTile extends Component {
     remixSettingsModalVisible: false,
     aiAttributionModalVisible: false,
     isRemix: !!this.props.defaultFields.remix_of,
-        forceOpenAccessAndSale: false,
+    forceOpenAccessAndSale: false,
     lastGateKeeper: {},
     allowedApiKeys: this.props.defaultFields.allowed_api_keys
   }
+
   componentDidMount() {
     this.props.onChangeField('license', this.state.license.licenseType)
   }
@@ -669,7 +668,7 @@ class FormTile extends Component {
   }
 
   onSelectAllowAttribution = (value) => {
-        let allowAttribution = true
+    let allowAttribution = true
     if (value === 'No Attribution') allowAttribution = false
     const license = computeLicense(
       allowAttribution,
@@ -684,16 +683,13 @@ class FormTile extends Component {
   }
 
   onSelectAllowThirdPartyStream = (value) => {
-    console.log('asdf value: ', value)
-
-    let allowedApiKeys = []
+    let allowedApiKeys = null
     if (value === "Don't Allow") {
-      allowedApiKeys = ['asdf']
-    } 
+      allowedApiKeys = [env.API_KEY]
+    }
     this.setState({
-      allowedApiKeys: allowedApiKeys
+      allowedApiKeys
     })
-    console.log('asdf this.state: ', allowedApiKeys)
     this.props.onChangeField('allowed_api_keys', allowedApiKeys)
   }
 
@@ -800,7 +796,7 @@ class FormTile extends Component {
   }
 
   render() {
-        const {
+    const {
       advancedShow,
       advancedVisible,
       license,
@@ -811,9 +807,9 @@ class FormTile extends Component {
       remixSettingsModalVisible,
       aiAttributionModalVisible,
       allowedApiKeys,
-            isRemix
+      isRemix
     } = this.state
-        
+
     const { licenseType, licenseDescription } = license
     return (
       <div className={styles.formTile}>
@@ -842,13 +838,12 @@ class FormTile extends Component {
           licenseType={licenseType}
           licenseDescription={licenseDescription}
           allowAttribution={allowAttribution}
-          allowThirdPartyStream={allowedApiKeys ? false : true}
-                              commercialUse={commercialUse}
+          allowThirdPartyStream={!allowedApiKeys}
+          commercialUse={commercialUse}
           derivativeWorks={derivativeWorks}
           onSelectAllowAttribution={this.onSelectAllowAttribution}
           onSelectAllowThirdPartyStream={this.onSelectAllowThirdPartyStream}
-
-                    onSelectCommercialUse={this.onSelectCommercialUse}
+          onSelectCommercialUse={this.onSelectCommercialUse}
           onSelectDerivativeWorks={this.onSelectDerivativeWorks}
           remixSettingsModalVisible={remixSettingsModalVisible}
           setRemixSettingsModalVisible={this.setRemixSettingsModalVisible}

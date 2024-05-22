@@ -66,7 +66,7 @@ const trackMetadataSchema = {
 }
 
 export const newTrackMetadata = (fields, validate = false): TrackMetadata => {
-    const validFields = validate
+  const validFields = validate
     ? pick(fields, Object.keys(trackMetadataSchema).concat(['track_id']))
     : fields
   const remixParentTrackId = fields?.remix_of?.tracks?.[0]?.parent_track_id

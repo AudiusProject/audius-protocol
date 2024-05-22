@@ -59,7 +59,6 @@ export const UploadPage = (props: UploadPageProps) => {
   const dispatch = useDispatch()
   const [phase, setPhase] = useState(Phase.SELECT)
   const [formState, setFormState] = useState<UploadFormState>(initialFormState)
-  console.log('asdf formState: ', formState)
   const shouldResetState = useSelector(getShouldReset)
 
   const { tracks, uploadType } = formState
@@ -114,7 +113,6 @@ export const UploadPage = (props: UploadPageProps) => {
         <SelectPageNew
           formState={formState}
           onContinue={(formState: UploadFormState) => {
-            console.log('asdf select formState: ', formState)
             setFormState(formState)
             setPhase(Phase.EDIT)
           }}

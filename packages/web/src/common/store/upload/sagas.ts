@@ -217,7 +217,6 @@ function* uploadWorker(
     try {
       const audiusBackendInstance = yield* getContext('audiusBackendInstance')
       const libs = yield* call(audiusBackendInstance.getAudiusLibsTyped)
-      console.log('asdf track.metadata: ', track.metadata)
       const metadata = toUploadTrackMetadata(track.metadata)
 
       const updatedMetadata = yield* call(
@@ -366,7 +365,6 @@ export function* handleUploads({
   tracks: TrackForUpload[]
   kind: 'album' | 'playlist' | 'tracks' | 'stems'
 }) {
-  console.log('asdf handleUpoads: ', tracks)
   const isCollection = kind === 'album' || kind === 'playlist'
 
   // Queue for the upload tasks (uploading files to storage)

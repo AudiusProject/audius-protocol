@@ -66,7 +66,7 @@ const MenuForm = (props: MenuFormProps) => {
   } = props
   const { resetForm, errors, initialStatus, status, setStatus } =
     useFormikContext()
-  console.log('asdf errors: ', errors)
+
   const handleCancel = useCallback(() => {
     resetForm()
     onClose()

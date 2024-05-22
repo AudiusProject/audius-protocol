@@ -596,12 +596,6 @@ export class Track extends Base {
 
   // Throws an error upon validation failure
   _validateTrackMetadata(metadata: Partial<TrackMetadata>) {
-    console.log(
-      'asdf validate metadata: ',
-      metadata,
-      TRACK_PROPS,
-      TRACK_REQUIRED_PROPS
-    )
     this.OBJECT_HAS_PROPS(metadata, TRACK_PROPS, TRACK_REQUIRED_PROPS)
     this.creatorNode.validateTrackSchema(metadata)
   }

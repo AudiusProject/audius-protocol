@@ -7,7 +7,7 @@ import {
   Text
 } from '@audius/harmony'
 import cn from 'classnames'
-import { useField, useFormikContext } from 'formik'
+import { useField } from 'formik'
 import { get, set } from 'lodash'
 import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
@@ -25,6 +25,7 @@ import layoutStyles from 'components/layout/layout.module.css'
 import { useTrackField } from 'pages/upload-page/hooks'
 import { SingleTrackEditValues } from 'pages/upload-page/types'
 import { computeLicenseIcons } from 'pages/upload-page/utils/computeLicenseIcons'
+import { env } from 'services/env'
 
 import styles from './AttributionField.module.css'
 import { SwitchRowField } from './SwitchRowField'
@@ -195,14 +196,13 @@ export const AttributionField = () => {
 
   const onSubmit = useCallback(
     (values: AttributionFormValues) => {
-      console.log('asdf onSubmit values: ', values)
       if (get(values, IS_AI_ATTRIBUTED)) {
         setAiUserId(get(values, AI_USER_ID) ?? aiUserId)
       } else {
         setAiUserId(null)
       }
       if (get(values, BLOCK_THIRD_PARTY_STREAMING)) {
-        setAllowedApiKeys(['asdf'])
+        setAllowedApiKeys([env.API_KEY])
       } else {
         setAllowedApiKeys(null)
       }

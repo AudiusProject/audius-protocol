@@ -19,7 +19,7 @@ const messages = {
     description:
       "Set defaults for all tracks in this collection. Use 'Override' to personalize individual track details."
   },
-  completeButton: 'Complete Uploadfdsa',
+  completeButton: 'Complete Upload',
   editPlaylistButtonText: 'Save Changes',
   cancelButtonText: 'Cancel',
   deletePlaylistButtonText: 'Delete Playlist',

@@ -103,8 +103,6 @@ export function* trackNewRemixEvent(track: TrackWithRemix) {
 }
 
 function* editTrackAsync(action: ReturnType<typeof trackActions.editTrack>) {
-  console.log('asdf editTrackAsync')
-
   yield* call(waitForWrite)
   action.formFields.description = squashNewLines(action.formFields.description)
 
@@ -168,7 +166,6 @@ function* confirmEditTrack(
   isNowListed: boolean,
   currentTrack: Track
 ) {
-  console.log('asdf confirmEditTrack: ', currentTrack, formFields)
   yield* waitForWrite()
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const apiClient = yield* getContext('apiClient')

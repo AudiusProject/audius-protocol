@@ -152,6 +152,7 @@ const createSdkSchema = () =>
       ai_attribution_user_id: z.optional(z.number()).nullable(),
       allowed_api_keys: z.optional(z.array(z.string())).nullable(),
       description: z.optional(z.string().max(1000)),
+
       genre: GenreSchema,
       isrc: z.optional(z.string().nullable()),
       is_scheduled_release: z.optional(z.boolean()),
