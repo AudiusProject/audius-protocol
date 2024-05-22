@@ -608,6 +608,182 @@ async function* purchaseTrackWithCoinflow(args: {
   }
 }
 
+/**
+ * Intended to replace the old purchaseWithCoinflow Saga to use new SDK.
+ * Creates the purchase transaction but doesn't send it and instead pops the coinflow modal.
+ * @see {@link https://github.com/AudiusProject/audius-protocol/blob/75169cfb00894f5462a612b423129895f58a53fe/packages/libs/src/sdk/api/albums/AlbumsApi.ts#L386 purchase}
+ */
+async function* purchaseAlbumWithCoinflow(args: {
+  sdk: AudiusSdk
+  albumId: ID
+  userId: ID
+  price: number
+  extraAmount?: number
+}) {
+  const contentType = 'track'
+  const mint = 'USDC'
+
+  const {
+    sdk,
+    userId,
+    albumId,
+    price: priceNumber,
+    extraAmount: extraAmountNumber = 0
+  } = args
+  const params = {
+    ...args,
+    trackId: encodeHashId(albumId),
+    userId: encodeHashId(userId)
+  }
+
+  // In theory, we could have the caller pass in the cached album with all the
+  // proper information, but we want an up-to-date album so we should fetch
+  // an up-to-date album
+  // TODO: Use a method that gets the album into the cache
+  const { data: albums } = yield* call([sdk.albums, sdk.albums.getAlbum], {
+    albumId: encodeHashId(albumId)
+  })
+
+  const album = albums ? albums[0] : undefined
+
+  // Validate purchase attempt
+  if (!album) {
+    throw new Error('Album not found.')
+  }
+
+  if (!album.isStreamGated) {
+    throw new Error('Attempted to purchase free album.')
+  }
+
+  if (album.user.id === params.userId) {
+    throw new Error('Attempted to purchase own album.')
+  }
+
+  let numberSplits: UsdcGate['splits'] = {}
+  let centPrice: number
+  let accessType: 'stream' | 'download' = 'stream'
+
+  // Get conditions
+  if (
+    album.streamConditions &&
+    instanceOfPurchaseGate(album.streamConditions)
+  ) {
+    centPrice = album.streamConditions.usdcPurchase.price
+    numberSplits = album.streamConditions.usdcPurchase.splits
+  } else {
+    throw new Error('Track is not available for purchase.')
+  }
+
+  // Check if already purchased
+  if (accessType === 'stream' && album.access?.stream) {
+    throw new Error('album already purchased')
+  }
+
+  // Check if price changed
+  if (USDC(priceNumber).value < USDC(centPrice / 100).value) {
+    throw new Error('Track price increased.')
+  }
+
+  let extraAmount = USDC(extraAmountNumber).value
+  const total = USDC(centPrice / 100.0).value + extraAmount
+  console.debug('Purchase total:', total)
+
+  // Convert splits to big int and spread extra amount to every split
+  const splits = Object.entries<bigint | number>(numberSplits).reduce(
+    (prev, [key, value], index, arr) => {
+      const amountToAdd = extraAmount / BigInt(arr.length - index)
+      extraAmount = USDC(extraAmount - amountToAdd).value
+      return {
+        ...prev,
+        [key]: BigInt(value) + amountToAdd
+      }
+    },
+    {}
+  )
+  console.debug('Calculated splits after extra amount:', splits)
+
+  // Create user bank for recipient if not exists
+  console.debug('Checking for recipient user bank...')
+  const { userBank: recipientUserBank, didExist } =
+    await sdk.services.claimableTokensClient.getOrCreateUserBank({
+      ethWallet: album.user.wallet,
+      mint: 'USDC'
+    })
+  if (!didExist) {
+    console.debug('Created user bank', {
+      recipientUserBank: recipientUserBank.toBase58()
+    })
+  } else {
+    console.debug('User bank exists', {
+      recipientUserBank: recipientUserBank.toBase58()
+    })
+  }
+
+  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const rootAccount = yield* call(getRootSolanaAccount, audiusBackendInstance)
+  const instructions = yield* call(
+    sdk.services.paymentRouterClient.createPurchaseContentInstructions,
+    {
+      total,
+      blockNumber: album.blocknumber,
+      buyerUserId: userId,
+      sourceWallet: rootAccount.publicKey,
+      splits,
+      mint,
+      contentType,
+      accessType,
+      contentId: albumId
+    }
+  )
+  const transaction = yield* call(
+    [
+      sdk.services.paymentRouterClient,
+      sdk.services.paymentRouterClient.buildTransaction
+    ],
+    {
+      instructions
+    }
+  )
+  const serializedTransaction = Buffer.from(transaction.serialize()).toString(
+    'base64'
+  )
+  const purchaseMetadata = yield* call(getCoinflowPurchaseMetadata, {
+    blocknumber: album.blocknumber,
+    purchaserUserId: userId,
+    purchaseAccess: PurchaseAccess[accessType],
+    contentId: albumId,
+    contentType: PurchaseableContentType[contentType],
+    price: Number(USDC(total).toString()),
+    extraAmount: extraAmountNumber,
+    splits
+  })
+  yield* put(
+    coinflowOnrampModalActions.open({
+      amount: Number(USDC(total).toString()),
+      serializedTransaction,
+      purchaseMetadata,
+      contentId: albumId
+    })
+  )
+
+  const result = yield* race({
+    succeeded: take(transactionSucceeded),
+    failed: take(transactionFailed),
+    canceled: take(transactionCanceled)
+  })
+
+  // Return early for failure or cancellation
+  if (result.canceled) {
+    throw new PurchaseContentError(
+      PurchaseErrorCode.Canceled,
+      'Coinflow transaction canceled'
+    )
+  }
+  if (result.failed) {
+    throw result.failed.payload.error
+  }
+}
+
 type PurchaseUSDCWithStripeArgs = {
   /** Amount of USDC to purchase, as dollars */
   amount: number
@@ -686,6 +862,10 @@ function* doStartPurchaseContentFlow({
   const isUseSDKPurchaseTrackEnabled = yield* call(
     getFeatureEnabled,
     FeatureFlags.USE_SDK_PURCHASE_TRACK
+  )
+  const isUseSDKPurchaseAlbumEnabled = yield* call(
+    getFeatureEnabled,
+    FeatureFlags.USE_SDK_PURCHASE_ALBUM
   )
 
   const { price, title, artistInfo, purchaseAccess } = yield* call(
@@ -774,6 +954,13 @@ function* doStartPurchaseContentFlow({
             price: price / 100.0,
             extraAmount: extraAmount ? extraAmount / 100.0 : undefined
           })
+        } else if (isUseSDKPurchaseAlbumEnabled && contentType === 'album') {
+          yield* call([sdk.albums, sdk.albums.purchase], {
+            userId: encodeHashId(purchaserUserId),
+            albumId: encodeHashId(contentId),
+            price: price / 100.0,
+            extraAmount: extraAmount ? extraAmount / 100.0 : undefined
+          })
         } else {
           yield* call(purchaseContent, audiusBackendInstance, {
             id: contentId,
@@ -800,6 +987,17 @@ function* doStartPurchaseContentFlow({
                 price: price / 100.0,
                 extraAmount: extraAmount ? extraAmount / 100.0 : undefined
               })
+            } else if (
+              isUseSDKPurchaseAlbumEnabled &&
+              contentType === 'album'
+            ) {
+              yield* call(purchaseAlbumWithCoinflow, {
+                sdk,
+                albumId: contentId,
+                userId: purchaserUserId,
+                price: price / 100.0,
+                extraAmount: extraAmount ? extraAmount / 100.0 : undefined
+              })
             } else {
               yield* call(purchaseWithCoinflowOld, {
                 blocknumber,
@@ -820,6 +1018,16 @@ function* doStartPurchaseContentFlow({
               yield* call([sdk.tracks, sdk.tracks.purchase], {
                 userId: encodeHashId(purchaserUserId),
                 trackId: encodeHashId(contentId),
+                price: price / 100.0,
+                extraAmount: extraAmount ? extraAmount / 100.0 : undefined
+              })
+            } else if (
+              isUseSDKPurchaseAlbumEnabled &&
+              contentType === 'album'
+            ) {
+              yield* call([sdk.albums, sdk.albums.purchase], {
+                userId: encodeHashId(purchaserUserId),
+                albumId: encodeHashId(contentId),
                 price: price / 100.0,
                 extraAmount: extraAmount ? extraAmount / 100.0 : undefined
               })
