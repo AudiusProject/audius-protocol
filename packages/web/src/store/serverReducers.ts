@@ -1,7 +1,7 @@
-// import { serverReducers } from '@audius/common/serverStore'
+import { serverReducers } from '@audius/common/serverStore'
 import { connectRouter } from 'connected-react-router'
 import { History } from 'history'
-// import localForage from 'localforage'
+import localForage from 'localforage'
 import { combineReducers } from 'redux'
 
 import error from 'store/errors/reducers'
@@ -21,16 +21,16 @@ const createRootReducer = (
   ssrPageProps?: SsrPageProps,
   isServerSide?: boolean
 ) => {
-  // const commonStoreReducers = serverReducers(
-  //   localForage,
-  //   ssrPageProps,
-  //   isServerSide,
-  //   routeHistory
-  // )
+  const commonStoreReducers = serverReducers(
+    localForage,
+    ssrPageProps,
+    isServerSide,
+    routeHistory
+  )
 
   return combineReducers({
     // Common store
-    // ...commonStoreReducers,
+    ...commonStoreReducers,
     // (End common store)
 
     // Router

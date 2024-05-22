@@ -3,10 +3,10 @@ import { combineReducers } from 'redux'
 import type { Storage } from 'redux-persist'
 
 import account from '~/store/account/slice'
-import collectionsReducer from '~/store/cache/collections/reducer'
-import { asCache } from '~/store/cache/reducer'
-import tracksReducer from '~/store/cache/tracks/reducer'
-import usersReducer from '~/store/cache/users/reducer'
+// import collectionsReducer from '~/store/cache/collections/reducer'
+// import { asCache } from '~/store/cache/reducer'
+// import tracksReducer from '~/store/cache/tracks/reducer'
+// import usersReducer from '~/store/cache/users/reducer'
 // import collection from '~/store/pages/collection/reducer'
 // import profileReducer from '~/store/pages/profile/reducer'
 import track from '~/store/pages/track/reducer'
@@ -30,13 +30,13 @@ export const serverReducers = (
   // Cache
   // @ts-ignore
   // collections: asCache(collectionsReducer(ssrPageProps), Kind.COLLECTIONS),
-  collections: asCache(collectionsReducer(ssrPageProps), 'COLLECTIONS'),
+  // collections: asCache(collectionsReducer(ssrPageProps), 'COLLECTIONS'),
   // @ts-ignore
   // tracks: asCache(tracksReducer(ssrPageProps), Kind.TRACKS),
-  tracks: asCache(tracksReducer(ssrPageProps), 'TRACKS'),
+  // tracks: asCache(tracksReducer(ssrPageProps), 'TRACKS')
   // @ts-ignore
   // users: asCache(usersReducer(ssrPageProps), Kind.USERS),
-  users: asCache(usersReducer(ssrPageProps), 'USERS'),
+  // users: asCache(usersReducer(ssrPageProps), 'USERS')
 
   // UI
   ui: combineReducers({

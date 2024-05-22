@@ -9,7 +9,7 @@ import createSentryMiddleware from 'redux-sentry-middleware'
 import thunk from 'redux-thunk'
 import { PartialDeep } from 'type-fest'
 
-import { track as amplitudeTrack } from 'services/analytics/amplitude'
+// import { track as amplitudeTrack } from 'services/analytics/amplitude'
 import * as errorActions from 'store/errors/actions'
 import createRootReducer from 'store/serverReducers'
 
@@ -123,13 +123,13 @@ export const configureStore = (
         shouldRedirect: true
       })
     )
-    const additionalInfo = {
-      ...errorInfo,
-      route: window.location.pathname
-    }
+    // const additionalInfo = {
+    //   ...errorInfo,
+    //   route: window.location.pathname
+    // }
 
     // amplitudeTrack(Name.ERROR_PAGE, additionalInfo)
-    amplitudeTrack('Error Page', additionalInfo)
+    // amplitudeTrack('Error Page', additionalInfo)
   }
 
   const sagaMiddleware = createSagaMiddleware({
