@@ -171,7 +171,6 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 
 	logger := slog.With("self", config.Self.Host)
 
-	// debug
 	if config.discoveryListensEnabled() {
 		logger.Info("discovery listens enabled")	
 	}

@@ -4,10 +4,9 @@ import { Logger } from 'pino'
 import { getIP, getIpData } from '../../utils/ipData'
 import { getConnection } from '../../utils/connections'
 import { createTrackListenInstructions, getFeePayerKeyPair } from './trackListenInstructions'
-import { Connection, Transaction, TransactionMessage, VersionedTransaction } from '@solana/web3.js'
-import { forwardTransaction, sendTransactionWithRetries } from '../relay/relay'
+import { Transaction, TransactionMessage, VersionedTransaction } from '@solana/web3.js'
+import { sendTransactionWithRetries } from '../relay/relay'
 import bs58 from 'bs58'
-import { cacheTransaction } from '../../redis'
 import { broadcastTx } from '../../utils/broadcastTx'
 
 export type LocationData = { city: string, region: string, country: string } | null

@@ -1,6 +1,5 @@
 import {
   Commitment,
-  Connection,
   PublicKey,
   SendOptions,
   TransactionConfirmationStrategy,
@@ -11,16 +10,14 @@ import { Request, Response, NextFunction } from 'express'
 import { config } from '../../config'
 import { BadRequestError } from '../../errors'
 import { assertRelayAllowedInstructions } from './assertRelayAllowedInstructions'
-import { cacheTransaction, getCachedDiscoveryNodes } from '../../redis'
-import fetch from 'cross-fetch'
+import {} from 'cross-fetch'
 import { Logger } from 'pino'
 import bs58 from 'bs58'
-import { personalSign } from 'eth-sig-util'
 import type { RelayRequestBody } from '@audius/sdk'
 import { getRequestIpData } from '../../utils/ipData'
 import { attachLocationData, isPaymentTransaction } from './attachLocationData'
 import { connections } from '../../utils/connections'
-import { broadcastTx, forwardTransaction } from '../../utils/broadcastTx'
+import { broadcastTx } from '../../utils/broadcastTx'
 
 const RETRY_DELAY_MS = 2 * 1000
 const RETRY_TIMEOUT_MS = 60 * 1000
