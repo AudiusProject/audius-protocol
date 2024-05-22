@@ -4,14 +4,18 @@ import { TransactionHandler } from '@audius/sdk/dist/core'
 import { Connection, PublicKey, Transaction } from '@solana/web3.js'
 import { useSelector } from 'react-redux'
 
+import { useAudiusQueryContext } from '~/audius-query'
 import { useAppContext } from '~/context'
 import { Name } from '~/models/Analytics'
+import { FeatureFlags } from '~/services'
 import {
   decorateCoinflowWithdrawalTransaction,
   relayTransaction,
   getRootSolanaAccount
 } from '~/services/audius-backend'
 import { getFeePayer } from '~/store/solana/selectors'
+
+import { useFeatureFlag } from './useFeatureFlag'
 
 type CoinflowAdapter = {
   wallet: {
@@ -103,6 +107,10 @@ export const useCoinflowWithdrawalAdapter = () => {
 export const useCoinflowAdapter = () => {
   const { audiusBackend } = useAppContext()
   const [adapter, setAdapter] = useState<CoinflowAdapter | null>(null)
+  const { isEnabled: isUseSDKPurchaseTrackEnabled } = useFeatureFlag(
+    FeatureFlags.USE_SDK_PURCHASE_TRACK
+  )
+  const { audiusSdk } = useAudiusQueryContext()
 
   useEffect(() => {
     const initWallet = async () => {
@@ -116,40 +124,48 @@ export const useCoinflowAdapter = () => {
           publicKey: wallet.publicKey,
           sendTransaction: async (transaction: Transaction) => {
             transaction.partialSign(wallet)
-            const transactionHandler = new TransactionHandler({
-              connection,
-              useRelay: false
-            })
-            const { res, error, errorCode } =
-              await transactionHandler.handleTransaction({
-                instructions: transaction.instructions,
-                recentBlockhash: transaction.recentBlockhash,
-                skipPreflight: true,
-                feePayerOverride: transaction.feePayer,
-                signatures: transaction.signatures.map((s) => ({
-                  signature: s.signature!, // already completely signed
-                  publicKey: s.publicKey.toBase58()
-                }))
-              })
-            if (!res) {
-              console.error('Sending Coinflow transaction failed.', {
-                error,
-                errorCode,
+            if (isUseSDKPurchaseTrackEnabled) {
+              const sdk = await audiusSdk()
+              const { signature } = await sdk.services.solanaRelay.relay({
                 transaction
               })
-              throw new Error(
-                `Sending Coinflow transaction failed: ${
-                  error ?? 'Unknown error'
-                }`
-              )
+              return signature
+            } else {
+              const transactionHandler = new TransactionHandler({
+                connection,
+                useRelay: false
+              })
+              const { res, error, errorCode } =
+                await transactionHandler.handleTransaction({
+                  instructions: transaction.instructions,
+                  recentBlockhash: transaction.recentBlockhash,
+                  skipPreflight: true,
+                  feePayerOverride: transaction.feePayer,
+                  signatures: transaction.signatures.map((s) => ({
+                    signature: s.signature!, // already completely signed
+                    publicKey: s.publicKey.toBase58()
+                  }))
+                })
+              if (!res) {
+                console.error('Sending Coinflow transaction failed.', {
+                  error,
+                  errorCode,
+                  transaction
+                })
+                throw new Error(
+                  `Sending Coinflow transaction failed: ${
+                    error ?? 'Unknown error'
+                  }`
+                )
+              }
+              return res
             }
-            return res
           }
         }
       })
     }
     initWallet()
-  }, [audiusBackend])
+  }, [audiusBackend, isUseSDKPurchaseTrackEnabled, audiusSdk])
 
   return adapter
 }
