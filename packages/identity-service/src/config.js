@@ -109,7 +109,7 @@ const config = convict({
     doc: 'Twitter Bearer Token',
     format: String,
     env: 'twitterBearerToken',
-    default: ""
+    default: null
   },
   instagramAPIKey: {
     doc: 'Instagram API Key',
