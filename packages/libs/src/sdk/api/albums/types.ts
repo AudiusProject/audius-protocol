@@ -9,7 +9,7 @@ import { Mood } from '../../types/Mood'
 import { createUploadTrackMetadataSchema } from '../tracks/types'
 
 export const getAlbumSchema = z.object({
-  userId: z.string(),
+  userId: z.string().optional(),
   albumId: z.string()
 })
 

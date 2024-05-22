@@ -250,7 +250,7 @@ export class AlbumsApi {
     // Fetch album
     this.logger.debug('Fetching album...', { albumId })
     const { data: albums } = await this.getAlbum({
-      userId: params.userId, // not sure why this is required
+      userId: params.userId, // use hashed userId
       albumId: params.albumId // use hashed albumId
     })
 
