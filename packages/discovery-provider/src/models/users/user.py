@@ -70,6 +70,7 @@ class User(Base, RepresentableMixin):
     user_storage_account = Column(String)
     user_authority_account = Column(String)
     allow_ai_attribution = Column(Boolean, nullable=False, server_default=text("false"))
+    spl_usdc_payout_wallet = Column(String)
 
     block1 = relationship(  # type: ignore
         "Block", primaryjoin="User.blocknumber == Block.number"
