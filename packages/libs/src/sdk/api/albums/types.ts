@@ -1,3 +1,4 @@
+import { WalletAdapter } from '@solana/wallet-adapter-base'
 import { z } from 'zod'
 
 import { DDEXResourceContributor, DDEXCopyright } from '../../types/DDEX'
@@ -148,3 +149,28 @@ export const UnrepostAlbumSchema = z
   .strict()
 
 export type UnrepostAlbumRequest = z.input<typeof UnrepostAlbumSchema>
+
+export const PurchaseAlbumSchema = z
+  .object({
+    /** The ID of the user purchasing the album. */
+    userId: HashId,
+    /** The ID of the album to purchase. */
+    albumId: HashId,
+    /**
+     * The price of the album at the time of purchase (in dollars if number, USDC if bigint).
+     * Used to check against current album price in case it changed,
+     * effectively setting a "max price" for the purchase.
+     */
+    price: z.union([z.number().min(0), z.bigint().min(BigInt(0))]),
+    /** Any extra amount the user wants to donate (in dollars if number, USDC if bigint) */
+    extraAmount: z
+      .union([z.number().min(0), z.bigint().min(BigInt(0))])
+      .optional(),
+    /** A wallet to use to purchase (defaults to the authed user's user bank if not specified) */
+    walletAdapter: z
+      .custom<Pick<WalletAdapter, 'publicKey' | 'sendTransaction'>>()
+      .optional()
+  })
+  .strict()
+
+export type PurchaseAlbumRequest = z.input<typeof PurchaseAlbumSchema>
