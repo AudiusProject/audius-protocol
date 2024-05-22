@@ -1,11 +1,14 @@
-import { Connection, PublicKey, Secp256k1Program, TransactionInstruction } from "@solana/web3.js";
+import { Connection, Keypair, PublicKey, Secp256k1Program, TransactionInstruction } from "@solana/web3.js";
 import { LocationData } from "../../utils/ipData";
 import secp256k1 from "secp256k1"
 import { connections } from "../../utils/connections";
 import { serialize } from "borsh";
 import keccak256 from "keccak256";
+import { ClockProgram, InstructionsProgram, config } from "../../config";
+import { Logger } from "pino";
 
 class TrackData {
+
     userId: string;
     trackId: string;
     source: string;
@@ -18,7 +21,7 @@ class TrackData {
     }
 }
 
-const trackDataSchema = Object.fromEntries(new Map([
+const trackDataSchema = new Map([
     [
         TrackData,
         {
@@ -31,7 +34,7 @@ const trackDataSchema = Object.fromEntries(new Map([
             ]
         }
     ]
-]))
+])
 
 class InstructionArgs {
     trackData: TrackData;
@@ -110,21 +113,35 @@ async function getListenTimestamp(connection: Connection) {
     return blockTime
 }
 
+export function getFeePayerKeyPair(): Keypair {
+    const feePayers = config.solanaFeePayerWallets
+    const randomFeePayerIndex = Math.floor(
+        Math.random() * feePayers.length
+    )
+    return feePayers[randomFeePayerIndex]
+}
+
 export async function createTrackListenInstructions({
-    privateKey,
+    logger,
     userId,
     trackId,
-    source,
     location
-}: { privateKey: string, userId: string, trackId: string, source: string, location: LocationData }): Promise<TransactionInstruction[]> {
-    const privKey = Buffer.from(privateKey, "hex")
+}: { logger: Logger,userId: string, trackId: string, location: LocationData }): Promise<TransactionInstruction[]> {
+    const trackListenProgram = new PublicKey(config.trackListenCountProgramId)
+    const ethRegistryProgram = new PublicKey(config.ethRegistryProgramId)
+    const validSignerPubK = new PublicKey(config.listensValidSigner)
+    const privKey = Buffer.from(config.solanaSignerPrivateKey, 'hex')
     const pubKey = secp256k1.publicKeyCreate(privKey, false).slice(1)
 
-    const connection = connections[0]
+    logger.info({ trackListenProgram, ethRegistryProgram, validSignerPubK }, "ids and keys")
 
-    const validSignerPubK = new PublicKey(validSigner)
+    const connection = connections[0]
+    const source = 'relay'
+
     const accInfo = await connection.getAccountInfo(validSignerPubK)
     const accPublicKeyInit = accInfo?.data.toJSON().data.slice(1, 33)
+
+    logger.info({ accInfo }, "account info")
 
     if (accPublicKeyInit === undefined) {
         throw new Error("pub key not found for acc into")
@@ -143,9 +160,13 @@ export async function createTrackListenInstructions({
             Math.round(new Date().getTime() / 1000)
     })
 
+    logger.info({ signerGroup, sourceData, trackData }, "some data")
+
     const serializedTrackData = serialize(trackDataSchema, trackData)
+    logger.info("SUP")
     // previously .toJSON().data
-    const msgHash = keccak256(JSON.stringify(serializedTrackData))
+    const buffered = Buffer.from(serializedTrackData)
+    const msgHash = keccak256(buffered)
 
     const sigObj = secp256k1.ecdsaSign(Uint8Array.from(msgHash), privKey)
 
@@ -160,8 +181,9 @@ export async function createTrackListenInstructions({
         choose: 'instruction'
     })
 
-    // @ts-expect-error instructionSchema doesn't have correct type
     const serializedInstructionArgs = serialize(instructionSchema, instructionData)
+
+    logger.info({ serializedTrackData, serializedInstructionArgs }, "serialized")
 
 
     const secpInstruction = Secp256k1Program.createInstructionWithPublicKey({
@@ -176,14 +198,14 @@ export async function createTrackListenInstructions({
             { pubkey: validSignerPubK, isSigner: false, isWritable: false },
             { pubkey: signerGroup, isSigner: false, isWritable: false },
             {
-                pubkey: AUDIUS_ETH_REGISTRY_PROGRAM,
+                pubkey: ethRegistryProgram,
                 isSigner: false,
                 isWritable: false
             },
-            { pubkey: INSTRUCTIONS_PROGRAM, isSigner: false, isWritable: false },
-            { pubkey: CLOCK_PROGRAM, isSigner: false, isWritable: false }
+            { pubkey: InstructionsProgram, isSigner: false, isWritable: false },
+            { pubkey: ClockProgram, isSigner: false, isWritable: false }
         ],
-        programId: "TRACK_LISTEN_PROGRAM",
+        programId: trackListenProgram,
         data: Buffer.from(serializedInstructionArgs)
     })
 

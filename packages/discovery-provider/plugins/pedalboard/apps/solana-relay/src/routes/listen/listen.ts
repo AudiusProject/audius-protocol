@@ -2,9 +2,13 @@ import { Request, Response } from 'express'
 import { z } from 'zod'
 import { Logger } from 'pino'
 import { getIP, getIpData } from '../../utils/ipData'
-import { connections } from '../../utils/connections'
+import { getConnection } from '../../utils/connections'
+import { createTrackListenInstructions, getFeePayerKeyPair } from './trackListenInstructions'
+import { Transaction, TransactionMessage, VersionedTransaction } from '@solana/web3.js'
+import { sendTransactionWithRetries } from '../relay/relay'
+import bs58 from 'bs58'
 
-export type LocationData = { city: string, region: string, country: string} | {}
+export type LocationData = { city: string, region: string, country: string } | null
 
 export const recordListenBodySchema = z.object({
     userId: z.string(),
@@ -14,13 +18,13 @@ export const recordListenParamsSchema = z.object({
     // validate that it can parse as an int
     trackId: z.string().transform((s) => parseInt(s)).refine((val) => !isNaN(val), {
         message: "trackId must be a numeric string",
-      }).transform((val) => val.toString()),
+    }).transform((val) => val.toString()),
 })
 
 export interface RecordListenRequest extends Request {
     body: z.infer<typeof recordListenBodySchema>;
     params: z.infer<typeof recordListenParamsSchema>;
-  }
+}
 
 export type RecordListenParams = {
     logger: Logger
@@ -34,27 +38,72 @@ export type RecordListenResponse = {
 }
 
 export const recordListen = async (params: RecordListenParams): Promise<RecordListenResponse> => {
-    const { logger, userId, trackId, ip } = params
+    const { logger: plogger, userId, trackId, ip } = params
+    const logger = plogger.child({ id: `${userId}-${trackId}-${new Date().getUTCSeconds()}` })
 
     logger.info({ ip }, "record listen")
-
-    const connection = connections[0]
 
     const location = await getIpData(logger, ip)
 
     logger.info({ location }, "location")
 
-    const tx = sendTran
+    const [secpInstruction, listenInstruction] = await createTrackListenInstructions({
+        logger,
+        userId,
+        trackId,
+        location,
+    })
 
-    return { solTxSignature: null }
+    logger.info({ secpInstruction, listenInstruction }, "instructions")
+    const latestBlockHash = await getConnection().getLatestBlockhash()
+
+    const feePayer = getFeePayerKeyPair()
+    const tx = new Transaction({
+        blockhash: latestBlockHash.blockhash,
+        lastValidBlockHeight: latestBlockHash.lastValidBlockHeight
+    })
+        .add(secpInstruction)
+        .add(listenInstruction)
+    tx.feePayer = feePayer.publicKey
+    tx.sign(feePayer)
+
+    logger.info({ tx }, "tx")
+
+    const message = new TransactionMessage({
+        payerKey: feePayer.publicKey,
+        recentBlockhash: latestBlockHash.blockhash,
+        instructions: tx.instructions
+    })
+
+    const versionedMessage = message.compileToV0Message()
+
+    const transaction = new VersionedTransaction(versionedMessage)
+    transaction.sign([feePayer])
+
+    const signature = bs58.encode(transaction.signatures[0])
+    const confirmationStrategy = { ...latestBlockHash, signature }
+
+    logger.info({ latestBlockHash, versionedMessage, transaction, signature }, "pre send")
+
+    const solTxSignature = await sendTransactionWithRetries({
+        transaction,
+        commitment: 'confirmed',
+        confirmationStrategy,
+        logger,
+    })
+
+    logger.info({ solTxSignature }, "transaction sig")
+
+    return { solTxSignature }
 }
 
 export const listen = async (req: Request, res: Response) => {
+    let logger
     try {
         // validation
         const { userId } = recordListenBodySchema.parse(req.body)
         const { trackId } = recordListenParamsSchema.parse(req.params)
-        const logger = res.locals.logger.child({ userId, trackId })
+        logger = res.locals.logger.child({ userId, trackId })
         const ip = getIP(req)
 
         // record listen after validation
@@ -63,6 +112,13 @@ export const listen = async (req: Request, res: Response) => {
     } catch (e: unknown) {
         if (e instanceof z.ZodError) {
             return res.status(400).json({ message: 'Validation Error', errors: e.errors });
+        }
+        if (e instanceof Error) {
+            logger?.error({ message: e.message, stack: e.stack, name: e.name }, "listen error");
+        } else if (typeof e === 'object' && e !== null) {
+            logger?.error({ error: JSON.stringify(e) }, "listen error");
+        } else {
+            logger?.error({ error: String(e) }, "listen error");
         }
         return res.status(500).json({ message: 'Internal Server Error' });
     }
