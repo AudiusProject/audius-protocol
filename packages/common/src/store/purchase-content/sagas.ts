@@ -1,3 +1,9 @@
+import { USDC } from '@audius/fixed-decimal'
+import {
+  type AudiusSdk,
+  type UsdcGate,
+  instanceOfPurchaseGate
+} from '@audius/sdk'
 import BN from 'bn.js'
 import { sumBy } from 'lodash'
 import { takeLatest } from 'redux-saga/effects'
@@ -58,6 +64,7 @@ import {
   CoinflowPurchaseMetadata,
   coinflowOnrampModalActions
 } from '~/store/ui/modals/coinflow-onramp-modal'
+import { encodeHashId } from '~/utils/hashIds'
 import { BN_USDC_CENT_WEI } from '~/utils/wallet'
 
 import { cacheActions } from '../cache'
@@ -80,13 +87,6 @@ import {
   PurchaseErrorCode
 } from './types'
 import { getBalanceNeeded } from './utils'
-import { encodeHashId } from '~/utils/hashIds'
-import { USDC } from '@audius/fixed-decimal'
-import {
-  type AudiusSdk,
-  type UsdcGate,
-  instanceOfPurchaseGate
-} from '@audius/sdk'
 
 const { getUserId, getAccountUser } = accountSelectors
 

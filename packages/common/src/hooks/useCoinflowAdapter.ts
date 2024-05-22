@@ -4,17 +4,18 @@ import { TransactionHandler } from '@audius/sdk/dist/core'
 import { Connection, PublicKey, Transaction } from '@solana/web3.js'
 import { useSelector } from 'react-redux'
 
+import { useAudiusQueryContext } from '~/audius-query'
 import { useAppContext } from '~/context'
 import { Name } from '~/models/Analytics'
+import { FeatureFlags } from '~/services'
 import {
   decorateCoinflowWithdrawalTransaction,
   relayTransaction,
   getRootSolanaAccount
 } from '~/services/audius-backend'
 import { getFeePayer } from '~/store/solana/selectors'
-import { FeatureFlags } from '~/services'
+
 import { useFeatureFlag } from './useFeatureFlag'
-import { useAudiusQueryContext } from '~/audius-query'
 
 type CoinflowAdapter = {
   wallet: {
