@@ -53,7 +53,6 @@ export const CreatePasswordPage = () => {
     >
       {({ isValid, dirty }) => (
         <Page
-          // centered
           as={Form}
           transition={isMobile ? undefined : 'horizontal'}
           autoFocusInputRef={passwordInputRef}

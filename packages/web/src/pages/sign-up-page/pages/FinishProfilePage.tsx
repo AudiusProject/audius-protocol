@@ -129,7 +129,7 @@ export const FinishProfilePage = () => {
       }
       dispatch(setFinishedPhase1(true))
       navigate(SIGN_UP_GENRES_PAGE)
-      // dispatch(signUp())
+      dispatch(signUp())
     },
     [navigate, dispatch]
   )
