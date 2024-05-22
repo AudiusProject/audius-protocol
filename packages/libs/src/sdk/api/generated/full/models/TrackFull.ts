@@ -470,23 +470,23 @@ export interface TrackFull {
 /**
  * Check if a given object implements the TrackFull interface.
  */
-export function instanceOfTrackFull(value: object): boolean {
+export function instanceOfTrackFull(value: object): value is TrackFull {
     let isInstance = true;
-    isInstance = isInstance && "blocknumber" in value;
-    isInstance = isInstance && "id" in value;
-    isInstance = isInstance && "repostCount" in value;
-    isInstance = isInstance && "favoriteCount" in value;
-    isInstance = isInstance && "title" in value;
-    isInstance = isInstance && "user" in value;
-    isInstance = isInstance && "duration" in value;
-    isInstance = isInstance && "playCount" in value;
-    isInstance = isInstance && "followeeReposts" in value;
-    isInstance = isInstance && "hasCurrentUserReposted" in value;
-    isInstance = isInstance && "isUnlisted" in value;
-    isInstance = isInstance && "hasCurrentUserSaved" in value;
-    isInstance = isInstance && "followeeFavorites" in value;
-    isInstance = isInstance && "routeId" in value;
-    isInstance = isInstance && "userId" in value;
+    isInstance = isInstance && "blocknumber" in value && value["blocknumber"] !== undefined;
+    isInstance = isInstance && "id" in value && value["id"] !== undefined;
+    isInstance = isInstance && "repostCount" in value && value["repostCount"] !== undefined;
+    isInstance = isInstance && "favoriteCount" in value && value["favoriteCount"] !== undefined;
+    isInstance = isInstance && "title" in value && value["title"] !== undefined;
+    isInstance = isInstance && "user" in value && value["user"] !== undefined;
+    isInstance = isInstance && "duration" in value && value["duration"] !== undefined;
+    isInstance = isInstance && "playCount" in value && value["playCount"] !== undefined;
+    isInstance = isInstance && "followeeReposts" in value && value["followeeReposts"] !== undefined;
+    isInstance = isInstance && "hasCurrentUserReposted" in value && value["hasCurrentUserReposted"] !== undefined;
+    isInstance = isInstance && "isUnlisted" in value && value["isUnlisted"] !== undefined;
+    isInstance = isInstance && "hasCurrentUserSaved" in value && value["hasCurrentUserSaved"] !== undefined;
+    isInstance = isInstance && "followeeFavorites" in value && value["followeeFavorites"] !== undefined;
+    isInstance = isInstance && "routeId" in value && value["routeId"] !== undefined;
+    isInstance = isInstance && "userId" in value && value["userId"] !== undefined;
 
     return isInstance;
 }

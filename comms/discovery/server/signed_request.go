@@ -53,10 +53,11 @@ func userIdForSignedGet(c echo.Context) (int32, error) {
 		return logError(errors.New("timestamp not current"))
 	}
 
-	// Strip out the app_name query parameter to get the true signature payload
+	// Strip out the app_name and api_key query parameters to get the true signature payload
 	u := *c.Request().URL
 	q := u.Query()
 	q.Del("app_name")
+	q.Del("api_key")
 	q.Del("signature")
 	u.RawQuery = q.Encode()
 	payload := []byte(u.String())

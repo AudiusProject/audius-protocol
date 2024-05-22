@@ -31,9 +31,9 @@ export interface TrackElement {
 /**
  * Check if a given object implements the TrackElement interface.
  */
-export function instanceOfTrackElement(value: object): boolean {
+export function instanceOfTrackElement(value: object): value is TrackElement {
     let isInstance = true;
-    isInstance = isInstance && "parentTrackId" in value;
+    isInstance = isInstance && "parentTrackId" in value && value["parentTrackId"] !== undefined;
 
     return isInstance;
 }

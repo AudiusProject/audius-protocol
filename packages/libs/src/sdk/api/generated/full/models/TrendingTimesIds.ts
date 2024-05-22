@@ -50,7 +50,7 @@ export interface TrendingTimesIds {
 /**
  * Check if a given object implements the TrendingTimesIds interface.
  */
-export function instanceOfTrendingTimesIds(value: object): boolean {
+export function instanceOfTrendingTimesIds(value: object): value is TrendingTimesIds {
     let isInstance = true;
 
     return isInstance;

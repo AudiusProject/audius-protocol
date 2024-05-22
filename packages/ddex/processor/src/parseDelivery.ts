@@ -157,7 +157,7 @@ export async function parseDelivery(source: string, maybeZip: string) {
   }
 }
 
-export async function reParsePastXml() {
+export function reParsePastXml() {
   // loop over db xml and reprocess
   const rows = xmlRepo.all()
   for (const row of rows) {

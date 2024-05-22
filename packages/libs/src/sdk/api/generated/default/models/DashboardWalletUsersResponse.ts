@@ -38,7 +38,7 @@ export interface DashboardWalletUsersResponse {
 /**
  * Check if a given object implements the DashboardWalletUsersResponse interface.
  */
-export function instanceOfDashboardWalletUsersResponse(value: object): boolean {
+export function instanceOfDashboardWalletUsersResponse(value: object): value is DashboardWalletUsersResponse {
     let isInstance = true;
 
     return isInstance;

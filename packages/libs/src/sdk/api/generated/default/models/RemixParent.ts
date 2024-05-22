@@ -38,7 +38,7 @@ export interface RemixParent {
 /**
  * Check if a given object implements the RemixParent interface.
  */
-export function instanceOfRemixParent(value: object): boolean {
+export function instanceOfRemixParent(value: object): value is RemixParent {
     let isInstance = true;
 
     return isInstance;

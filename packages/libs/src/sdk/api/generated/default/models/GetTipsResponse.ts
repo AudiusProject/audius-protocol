@@ -38,7 +38,7 @@ export interface GetTipsResponse {
 /**
  * Check if a given object implements the GetTipsResponse interface.
  */
-export function instanceOfGetTipsResponse(value: object): boolean {
+export function instanceOfGetTipsResponse(value: object): value is GetTipsResponse {
     let isInstance = true;
 
     return isInstance;

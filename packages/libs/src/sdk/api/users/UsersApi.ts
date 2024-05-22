@@ -1,10 +1,6 @@
 import snakecaseKeys from 'snakecase-keys'
 
-import type {
-  AuthService,
-  DiscoveryNodeSelectorService,
-  StorageService
-} from '../../services'
+import type { AuthService, StorageService } from '../../services'
 import {
   Action,
   EntityManagerService,
@@ -16,7 +12,6 @@ import type { ClaimableTokensClient } from '../../services/Solana/programs/Claim
 import { parseParams } from '../../utils/parseParams'
 import { retry3 } from '../../utils/retry'
 import {
-  BASE_PATH,
   Configuration,
   DownloadPurchasesAsCSVRequest,
   DownloadSalesAsCSVRequest,
@@ -45,7 +40,6 @@ import {
 export class UsersApi extends GeneratedUsersApi {
   constructor(
     configuration: Configuration,
-    private readonly discoveryNodeSelectorService: DiscoveryNodeSelectorService,
     private readonly storage: StorageService,
     private readonly entityManager: EntityManagerService,
     private readonly auth: AuthService,
