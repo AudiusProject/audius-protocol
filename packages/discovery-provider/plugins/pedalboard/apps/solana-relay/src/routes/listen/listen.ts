@@ -4,9 +4,10 @@ import { Logger } from 'pino'
 import { getIP, getIpData } from '../../utils/ipData'
 import { getConnection } from '../../utils/connections'
 import { createTrackListenInstructions, getFeePayerKeyPair } from './trackListenInstructions'
-import { Transaction, TransactionMessage, VersionedTransaction } from '@solana/web3.js'
-import { sendTransactionWithRetries } from '../relay/relay'
+import { Connection, Transaction, TransactionMessage, VersionedTransaction } from '@solana/web3.js'
+import { forwardTransaction, sendTransactionWithRetries } from '../relay/relay'
 import bs58 from 'bs58'
+import { cacheTransaction } from '../../redis'
 
 export type LocationData = { city: string, region: string, country: string } | null
 
@@ -93,6 +94,28 @@ export const recordListen = async (params: RecordListenParams): Promise<RecordLi
     })
 
     logger.info({ solTxSignature }, "transaction sig")
+
+    const rpcResponse = await (
+        getConnection() as Connection & {
+          _rpcRequest: (
+            methodName: string,
+            args: Array<unknown>
+          ) => Promise<unknown>
+        }
+      )._rpcRequest('getTransaction', [
+        signature,
+        {
+          maxSupportedTransactionVersion: 0,
+          commitment: 'confirmed',
+          encoding: 'json'
+        }
+      ])
+      const formattedResponse = JSON.stringify(rpcResponse)
+      logger.info('Caching transaction...')
+      await cacheTransaction(signature, formattedResponse)
+      logger.info('Forwarding transaction to other nodes to cache...')
+      await forwardTransaction(logger, formattedResponse)
+      logger.info('Request finished.')
 
     return { solTxSignature }
 }

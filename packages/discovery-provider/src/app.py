@@ -363,7 +363,7 @@ def configure_celery(celery, test_config=None):
             },
             "index_solana_plays": {
                 "task": "index_solana_plays",
-                "schedule": timedelta(seconds=5),
+                "schedule": timedelta(seconds=30),
             },
             "index_challenges": {
                 "task": "index_challenges",

@@ -57,7 +57,7 @@ const getFeePayerKeyPair = (feePayerPublicKey?: PublicKey) => {
  * Forwards the transaction response to other Solana Relays on other discovery
  * nodes so that they can cache it to lighten the RPC load on indexing.
  */
-const forwardTransaction = async (logger: Logger, transaction: string) => {
+export const forwardTransaction = async (logger: Logger, transaction: string) => {
   const endpoints = await getCachedDiscoveryNodes()
   logger.info(`Forwarding to ${endpoints.length} endpoints...`)
   const body = JSON.stringify({ transaction })
