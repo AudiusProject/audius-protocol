@@ -88,7 +88,7 @@ export class PaymentRouterClient extends BaseSolanaProgramClient {
       sourceWallet,
       false
     )
-    const amount = mintFixedDecimalMap[args.mint](args.amount)
+    const amount = mintFixedDecimalMap[args.mint](args.total)
     return createTransferCheckedInstruction(
       sourceTokenAccount,
       mint,
@@ -153,7 +153,6 @@ export class PaymentRouterClient extends BaseSolanaProgramClient {
     params: CreatePurchaseContentInstructionsRequest
   ) {
     const {
-      amount,
       mint,
       splits,
       total,
@@ -168,13 +167,13 @@ export class PaymentRouterClient extends BaseSolanaProgramClient {
       CreatePurchaseContentInstructionsSchema
     )(params)
     return [
-      this.createTransferInstruction({
-        amount,
+      await this.createTransferInstruction({
+        total,
         mint,
         sourceWallet
       }),
-      this.createRouteInstruction({ splits, total, mint }),
-      this.createPurchaseMemoInstruction({
+      await this.createRouteInstruction({ splits, total, mint }),
+      await this.createPurchaseMemoInstruction({
         contentId,
         contentType,
         blockNumber,
