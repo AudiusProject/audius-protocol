@@ -215,7 +215,8 @@ func (ss *MediorumServer) analyzeAudio(upload *Upload) error {
 	defer os.Remove(temp.Name())
 
 	// invoke analyze_audio.py script
-	cmd := exec.Command("python3", "server/analyze_audio.py", temp.Name())
+	// cmd := exec.Command("python3", "server/analyze_audio.py", temp.Name())
+	cmd := exec.Command("sh", "bash_scripts/analyze_audio.sh", temp.Name())
 	var out, stderr strings.Builder
 	cmd.Stdout = &out
 	cmd.Stderr = &stderr
