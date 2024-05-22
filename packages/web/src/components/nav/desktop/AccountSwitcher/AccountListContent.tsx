@@ -50,13 +50,7 @@ export const AccountListContent = ({
     [currentUserId, onAccountSelected]
   )
   return (
-    <Flex
-      direction='column'
-      w={360}
-      borderRadius='s'
-      border='strong'
-      backgroundColor='white'
-    >
+    <Flex direction='column' w={360} backgroundColor='white'>
       <Flex
         backgroundColor='white'
         borderBottom='default'

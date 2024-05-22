@@ -7,12 +7,19 @@ import {
 } from '@audius/common/api'
 import { useAccountSwitcher } from '@audius/common/hooks'
 import { UserMetadata } from '@audius/common/models'
-import { Box, IconButton, IconCaretDown, Popup } from '@audius/harmony'
+import {
+  Box,
+  IconButton,
+  IconCaretDown,
+  Popup,
+  useTheme
+} from '@audius/harmony'
 
 import { AccountListContent } from './AccountListContent'
 
 export const AccountSwitcher = () => {
   const [isExpanded, setIsExpanded] = useState(false)
+  const { color } = useTheme()
 
   const { data: currentWeb3User } = useGetCurrentWeb3User({})
   const { data: currentUserId } = useGetCurrentUserId({})
@@ -65,6 +72,7 @@ export const AccountSwitcher = () => {
         dismissOnMouseLeave={false}
         isVisible={isExpanded}
         onClose={() => setIsExpanded(false)}
+        css={{ overflow: 'hidden', border: `1px solid ${color.border.strong}` }}
       >
         <AccountListContent
           managerAccount={currentWeb3User}
