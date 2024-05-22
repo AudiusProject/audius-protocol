@@ -505,12 +505,7 @@ export class TracksApi extends GeneratedTracksApi {
       })
 
     if (walletAdapter) {
-      this.logger.debug(
-        `Using walletAdapter ${walletAdapter.name} to purchase...`
-      )
-      if (!walletAdapter.connected) {
-        await walletAdapter.connect()
-      }
+      this.logger.debug('Using connected wallet to purchase...')
       if (!walletAdapter.publicKey) {
         throw new Error('Could not get connected wallet address')
       }
@@ -522,6 +517,7 @@ export class TracksApi extends GeneratedTracksApi {
           mint
         })
       const transaction = await this.paymentRouterClient.buildTransaction({
+        feePayer: walletAdapter.publicKey,
         instructions: [transferInstruction, routeInstruction, memoInstruction]
       })
       return await walletAdapter.sendTransaction(

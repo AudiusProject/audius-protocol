@@ -1,4 +1,4 @@
-import { BaseSignerWalletAdapter } from '@solana/wallet-adapter-base'
+import type { WalletAdapter } from '@solana/wallet-adapter-base'
 import { z } from 'zod'
 
 import {
@@ -287,7 +287,9 @@ export const PurchaseTrackSchema = z
       .union([z.number().min(0), z.bigint().min(BigInt(0))])
       .optional(),
     /** A wallet to use to purchase (defaults to the authed user's user bank if not specified) */
-    walletAdapter: z.instanceof(BaseSignerWalletAdapter).optional()
+    walletAdapter: z
+      .custom<Pick<WalletAdapter, 'publicKey' | 'sendTransaction'>>()
+      .optional()
   })
   .strict()
 
