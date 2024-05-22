@@ -191,7 +191,8 @@ export const AttributionField = () => {
     commercialUse,
     derivativeWorks,
     isrcValue,
-    iswcValue
+    iswcValue,
+    allowedApiKeys
   ])
 
   const onSubmit = useCallback(
@@ -229,7 +230,8 @@ export const AttributionField = () => {
       setCommercialUse,
       setDerivateWorks,
       setIsrc,
-      setIswc
+      setIswc,
+      setAllowedApiKeys
     ]
   )
 
@@ -432,7 +434,7 @@ const AttributionModalFields = () => {
         name={BLOCK_THIRD_PARTY_STREAMING}
         header={messages.apiAllowed.header}
         description={messages.apiAllowed.description}
-      ></SwitchRowField>
+      />
       <Divider />
       <SwitchRowField
         name={IS_AI_ATTRIBUTED}

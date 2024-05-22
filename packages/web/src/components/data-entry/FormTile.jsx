@@ -683,13 +683,8 @@ class FormTile extends Component {
   }
 
   onSelectAllowThirdPartyStream = (value) => {
-    let allowedApiKeys = null
-    if (value === "Don't Allow") {
-      allowedApiKeys = [env.API_KEY]
-    }
-    this.setState({
-      allowedApiKeys
-    })
+    const allowedApiKeys = value === 'Allow' ? null : [env.API_KEY]
+    this.setState({ allowedApiKeys })
     this.props.onChangeField('allowed_api_keys', allowedApiKeys)
   }
 
