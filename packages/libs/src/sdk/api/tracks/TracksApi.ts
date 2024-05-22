@@ -23,7 +23,6 @@ import {
   StreamTrackRequest,
   TracksApi as GeneratedTracksApi,
   UsdcGate,
-  instanceOfUsdcGate,
   instanceOfPurchaseGate
 } from '../generated/default'
 import { BASE_PATH, RequiredError } from '../generated/default/runtime'
