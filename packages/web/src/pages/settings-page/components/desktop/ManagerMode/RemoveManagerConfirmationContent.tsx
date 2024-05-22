@@ -48,7 +48,6 @@ export const RemoveManagerConfirmationContent = ({
       <Text variant='body' size='l'>
         {confirmationMessage}
       </Text>
-
       <Flex gap='s'>
         <Button
           variant='secondary'
@@ -67,7 +66,7 @@ export const RemoveManagerConfirmationContent = ({
           {messages.remove}
         </Button>
       </Flex>
-      {status === Status.ERROR ? null : (
+      {status !== Status.ERROR ? null : (
         <Text textAlign='center' color='danger' variant='body'>
           {messages.errorGeneral}
         </Text>

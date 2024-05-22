@@ -38,7 +38,7 @@ export interface UserResponse {
 /**
  * Check if a given object implements the UserResponse interface.
  */
-export function instanceOfUserResponse(value: object): boolean {
+export function instanceOfUserResponse(value: object): value is UserResponse {
     let isInstance = true;
 
     return isInstance;

@@ -38,7 +38,7 @@ export interface PlaylistSearchResult {
 /**
  * Check if a given object implements the PlaylistSearchResult interface.
  */
-export function instanceOfPlaylistSearchResult(value: object): boolean {
+export function instanceOfPlaylistSearchResult(value: object): value is PlaylistSearchResult {
     let isInstance = true;
 
     return isInstance;

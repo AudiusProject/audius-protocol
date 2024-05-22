@@ -326,41 +326,41 @@ export interface UserFull {
 /**
  * Check if a given object implements the UserFull interface.
  */
-export function instanceOfUserFull(value: object): boolean {
+export function instanceOfUserFull(value: object): value is UserFull {
     let isInstance = true;
-    isInstance = isInstance && "albumCount" in value;
-    isInstance = isInstance && "followeeCount" in value;
-    isInstance = isInstance && "followerCount" in value;
-    isInstance = isInstance && "handle" in value;
-    isInstance = isInstance && "id" in value;
-    isInstance = isInstance && "isVerified" in value;
-    isInstance = isInstance && "name" in value;
-    isInstance = isInstance && "playlistCount" in value;
-    isInstance = isInstance && "repostCount" in value;
-    isInstance = isInstance && "trackCount" in value;
-    isInstance = isInstance && "isDeactivated" in value;
-    isInstance = isInstance && "isAvailable" in value;
-    isInstance = isInstance && "ercWallet" in value;
-    isInstance = isInstance && "splWallet" in value;
-    isInstance = isInstance && "supporterCount" in value;
-    isInstance = isInstance && "supportingCount" in value;
-    isInstance = isInstance && "totalAudioBalance" in value;
-    isInstance = isInstance && "wallet" in value;
-    isInstance = isInstance && "balance" in value;
-    isInstance = isInstance && "associatedWalletsBalance" in value;
-    isInstance = isInstance && "totalBalance" in value;
-    isInstance = isInstance && "waudioBalance" in value;
-    isInstance = isInstance && "associatedSolWalletsBalance" in value;
-    isInstance = isInstance && "blocknumber" in value;
-    isInstance = isInstance && "createdAt" in value;
-    isInstance = isInstance && "isStorageV2" in value;
-    isInstance = isInstance && "currentUserFolloweeFollowCount" in value;
-    isInstance = isInstance && "doesCurrentUserFollow" in value;
-    isInstance = isInstance && "doesCurrentUserSubscribe" in value;
-    isInstance = isInstance && "handleLc" in value;
-    isInstance = isInstance && "updatedAt" in value;
-    isInstance = isInstance && "hasCollectibles" in value;
-    isInstance = isInstance && "allowAiAttribution" in value;
+    isInstance = isInstance && "albumCount" in value && value["albumCount"] !== undefined;
+    isInstance = isInstance && "followeeCount" in value && value["followeeCount"] !== undefined;
+    isInstance = isInstance && "followerCount" in value && value["followerCount"] !== undefined;
+    isInstance = isInstance && "handle" in value && value["handle"] !== undefined;
+    isInstance = isInstance && "id" in value && value["id"] !== undefined;
+    isInstance = isInstance && "isVerified" in value && value["isVerified"] !== undefined;
+    isInstance = isInstance && "name" in value && value["name"] !== undefined;
+    isInstance = isInstance && "playlistCount" in value && value["playlistCount"] !== undefined;
+    isInstance = isInstance && "repostCount" in value && value["repostCount"] !== undefined;
+    isInstance = isInstance && "trackCount" in value && value["trackCount"] !== undefined;
+    isInstance = isInstance && "isDeactivated" in value && value["isDeactivated"] !== undefined;
+    isInstance = isInstance && "isAvailable" in value && value["isAvailable"] !== undefined;
+    isInstance = isInstance && "ercWallet" in value && value["ercWallet"] !== undefined;
+    isInstance = isInstance && "splWallet" in value && value["splWallet"] !== undefined;
+    isInstance = isInstance && "supporterCount" in value && value["supporterCount"] !== undefined;
+    isInstance = isInstance && "supportingCount" in value && value["supportingCount"] !== undefined;
+    isInstance = isInstance && "totalAudioBalance" in value && value["totalAudioBalance"] !== undefined;
+    isInstance = isInstance && "wallet" in value && value["wallet"] !== undefined;
+    isInstance = isInstance && "balance" in value && value["balance"] !== undefined;
+    isInstance = isInstance && "associatedWalletsBalance" in value && value["associatedWalletsBalance"] !== undefined;
+    isInstance = isInstance && "totalBalance" in value && value["totalBalance"] !== undefined;
+    isInstance = isInstance && "waudioBalance" in value && value["waudioBalance"] !== undefined;
+    isInstance = isInstance && "associatedSolWalletsBalance" in value && value["associatedSolWalletsBalance"] !== undefined;
+    isInstance = isInstance && "blocknumber" in value && value["blocknumber"] !== undefined;
+    isInstance = isInstance && "createdAt" in value && value["createdAt"] !== undefined;
+    isInstance = isInstance && "isStorageV2" in value && value["isStorageV2"] !== undefined;
+    isInstance = isInstance && "currentUserFolloweeFollowCount" in value && value["currentUserFolloweeFollowCount"] !== undefined;
+    isInstance = isInstance && "doesCurrentUserFollow" in value && value["doesCurrentUserFollow"] !== undefined;
+    isInstance = isInstance && "doesCurrentUserSubscribe" in value && value["doesCurrentUserSubscribe"] !== undefined;
+    isInstance = isInstance && "handleLc" in value && value["handleLc"] !== undefined;
+    isInstance = isInstance && "updatedAt" in value && value["updatedAt"] !== undefined;
+    isInstance = isInstance && "hasCollectibles" in value && value["hasCollectibles"] !== undefined;
+    isInstance = isInstance && "allowAiAttribution" in value && value["allowAiAttribution"] !== undefined;
 
     return isInstance;
 }

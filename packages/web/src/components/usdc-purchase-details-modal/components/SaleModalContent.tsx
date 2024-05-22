@@ -115,6 +115,7 @@ export const SaleModalContent = ({
                 userId={purchaseDetails.sellerUserId}
                 popover
                 size='l'
+                onClick={onClose}
               />
             </Flex>
           </DetailSection>

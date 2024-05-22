@@ -45,12 +45,8 @@ FROM node:18-alpine AS runner
 RUN apk add --no-cache python3 py3-pip make g++ curl bash libc6-compat
 RUN apk update
 
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nodejs
-USER nodejs
-
 WORKDIR /app
-COPY --from=app-builder --chown=nodejs:nodejs /app .
+COPY --from=app-builder /app .
 WORKDIR /app/packages/ddex/processor
 
 EXPOSE 9001

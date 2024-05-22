@@ -31,7 +31,7 @@ export interface TagsResponse {
 /**
  * Check if a given object implements the TagsResponse interface.
  */
-export function instanceOfTagsResponse(value: object): boolean {
+export function instanceOfTagsResponse(value: object): value is TagsResponse {
     let isInstance = true;
 
     return isInstance;

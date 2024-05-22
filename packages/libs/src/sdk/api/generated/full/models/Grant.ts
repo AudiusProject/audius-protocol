@@ -61,14 +61,14 @@ export interface Grant {
 /**
  * Check if a given object implements the Grant interface.
  */
-export function instanceOfGrant(value: object): boolean {
+export function instanceOfGrant(value: object): value is Grant {
     let isInstance = true;
-    isInstance = isInstance && "granteeAddress" in value;
-    isInstance = isInstance && "userId" in value;
-    isInstance = isInstance && "isRevoked" in value;
-    isInstance = isInstance && "isApproved" in value;
-    isInstance = isInstance && "createdAt" in value;
-    isInstance = isInstance && "updatedAt" in value;
+    isInstance = isInstance && "granteeAddress" in value && value["granteeAddress"] !== undefined;
+    isInstance = isInstance && "userId" in value && value["userId"] !== undefined;
+    isInstance = isInstance && "isRevoked" in value && value["isRevoked"] !== undefined;
+    isInstance = isInstance && "isApproved" in value && value["isApproved"] !== undefined;
+    isInstance = isInstance && "createdAt" in value && value["createdAt"] !== undefined;
+    isInstance = isInstance && "updatedAt" in value && value["updatedAt"] !== undefined;
 
     return isInstance;
 }

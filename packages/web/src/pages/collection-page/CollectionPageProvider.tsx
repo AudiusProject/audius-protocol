@@ -371,16 +371,25 @@ class CollectionPage extends Component<
     return s
   }
 
-  fetchCollection = (pathname: string, forceFetch = false) => {
+  fetchCollection = (pathname: string, fetchLineup = false) => {
     const { fetchCollection } = this.props
     const params = parseCollectionRoute(pathname)
     if (!params) return
 
     const { permalink, collectionId } = params
 
+    // Need typecast as can't set type via connected-react-router, see https://github.com/reach/router/issues/414
+    const locationState = this.props.location.state as { forceFetch?: boolean }
+    const forceFetch = locationState?.forceFetch
+
     if (forceFetch || permalink || collectionId !== this.state.playlistId) {
       this.setState({ playlistId: collectionId as number })
-      fetchCollection(collectionId, permalink, forceFetch)
+      fetchCollection({
+        id: collectionId,
+        permalink,
+        fetchLineup,
+        forceFetch
+      })
     }
   }
 
@@ -865,12 +874,25 @@ function makeMapStateToProps() {
 
 function mapDispatchToProps(dispatch: Dispatch) {
   return {
-    fetchCollection: (
-      id: Nullable<number>,
-      permalink?: string,
+    fetchCollection: ({
+      id,
+      permalink,
+      fetchLineup,
+      forceFetch
+    }: {
+      id: Nullable<number>
+      permalink?: string
       fetchLineup?: boolean
-    ) =>
-      dispatch(collectionActions.fetchCollection(id, permalink, fetchLineup)),
+      forceFetch?: boolean
+    }) =>
+      dispatch(
+        collectionActions.fetchCollection(
+          id,
+          permalink,
+          fetchLineup,
+          forceFetch
+        )
+      ),
     fetchTracks: () =>
       dispatch(tracksActions.fetchLineupMetadatas(0, 200, false, undefined)),
     resetCollection: (collectionUid: string, userUid: string) =>

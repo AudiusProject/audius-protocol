@@ -44,9 +44,9 @@ export interface RemixesResponse {
 /**
  * Check if a given object implements the RemixesResponse interface.
  */
-export function instanceOfRemixesResponse(value: object): boolean {
+export function instanceOfRemixesResponse(value: object): value is RemixesResponse {
     let isInstance = true;
-    isInstance = isInstance && "count" in value;
+    isInstance = isInstance && "count" in value && value["count"] !== undefined;
 
     return isInstance;
 }

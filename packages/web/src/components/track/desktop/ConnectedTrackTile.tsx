@@ -260,6 +260,7 @@ const ConnectedTrackTile = ({
           size={statSize}
           onClick={onClickStatRepost}
           flavor={Flavor.REPOST}
+          isOwner={isOwner}
         />
         <Stats
           count={save_count}
@@ -268,6 +269,7 @@ const ConnectedTrackTile = ({
           size={statSize}
           onClick={onClickStatFavorite}
           flavor={Flavor.FAVORITE}
+          isOwner={isOwner}
         />
       </div>
     )

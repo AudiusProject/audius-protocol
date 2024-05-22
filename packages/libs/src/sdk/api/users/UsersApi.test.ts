@@ -80,7 +80,6 @@ describe('UsersApi', () => {
   beforeAll(() => {
     users = new UsersApi(
       new Configuration(),
-      discoveryNodeSelector,
       new Storage({ storageNodeSelector, logger: new Logger() }),
       new EntityManager({ discoveryNodeSelector: new DiscoveryNodeSelector() }),
       auth,

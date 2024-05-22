@@ -86,15 +86,15 @@ export interface SearchAutocompleteResponse {
 /**
  * Check if a given object implements the SearchAutocompleteResponse interface.
  */
-export function instanceOfSearchAutocompleteResponse(value: object): boolean {
+export function instanceOfSearchAutocompleteResponse(value: object): value is SearchAutocompleteResponse {
     let isInstance = true;
-    isInstance = isInstance && "latestChainBlock" in value;
-    isInstance = isInstance && "latestIndexedBlock" in value;
-    isInstance = isInstance && "latestChainSlotPlays" in value;
-    isInstance = isInstance && "latestIndexedSlotPlays" in value;
-    isInstance = isInstance && "signature" in value;
-    isInstance = isInstance && "timestamp" in value;
-    isInstance = isInstance && "version" in value;
+    isInstance = isInstance && "latestChainBlock" in value && value["latestChainBlock"] !== undefined;
+    isInstance = isInstance && "latestIndexedBlock" in value && value["latestIndexedBlock"] !== undefined;
+    isInstance = isInstance && "latestChainSlotPlays" in value && value["latestChainSlotPlays"] !== undefined;
+    isInstance = isInstance && "latestIndexedSlotPlays" in value && value["latestIndexedSlotPlays"] !== undefined;
+    isInstance = isInstance && "signature" in value && value["signature"] !== undefined;
+    isInstance = isInstance && "timestamp" in value && value["timestamp"] !== undefined;
+    isInstance = isInstance && "version" in value && value["version"] !== undefined;
 
     return isInstance;
 }

@@ -38,7 +38,7 @@ export interface GetSupportedUsers {
 /**
  * Check if a given object implements the GetSupportedUsers interface.
  */
-export function instanceOfGetSupportedUsers(value: object): boolean {
+export function instanceOfGetSupportedUsers(value: object): value is GetSupportedUsers {
     let isInstance = true;
 
     return isInstance;
