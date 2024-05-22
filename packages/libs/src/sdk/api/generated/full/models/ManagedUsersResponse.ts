@@ -38,7 +38,7 @@ export interface ManagedUsersResponse {
 /**
  * Check if a given object implements the ManagedUsersResponse interface.
  */
-export function instanceOfManagedUsersResponse(value: object): boolean {
+export function instanceOfManagedUsersResponse(value: object): value is ManagedUsersResponse {
     let isInstance = true;
 
     return isInstance;

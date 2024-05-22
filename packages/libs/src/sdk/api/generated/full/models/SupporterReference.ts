@@ -31,9 +31,9 @@ export interface SupporterReference {
 /**
  * Check if a given object implements the SupporterReference interface.
  */
-export function instanceOfSupporterReference(value: object): boolean {
+export function instanceOfSupporterReference(value: object): value is SupporterReference {
     let isInstance = true;
-    isInstance = isInstance && "userId" in value;
+    isInstance = isInstance && "userId" in value && value["userId"] !== undefined;
 
     return isInstance;
 }

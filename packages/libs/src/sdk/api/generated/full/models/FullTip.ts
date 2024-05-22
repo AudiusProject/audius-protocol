@@ -80,15 +80,15 @@ export interface FullTip {
 /**
  * Check if a given object implements the FullTip interface.
  */
-export function instanceOfFullTip(value: object): boolean {
+export function instanceOfFullTip(value: object): value is FullTip {
     let isInstance = true;
-    isInstance = isInstance && "amount" in value;
-    isInstance = isInstance && "sender" in value;
-    isInstance = isInstance && "receiver" in value;
-    isInstance = isInstance && "createdAt" in value;
-    isInstance = isInstance && "slot" in value;
-    isInstance = isInstance && "followeeSupporters" in value;
-    isInstance = isInstance && "txSignature" in value;
+    isInstance = isInstance && "amount" in value && value["amount"] !== undefined;
+    isInstance = isInstance && "sender" in value && value["sender"] !== undefined;
+    isInstance = isInstance && "receiver" in value && value["receiver"] !== undefined;
+    isInstance = isInstance && "createdAt" in value && value["createdAt"] !== undefined;
+    isInstance = isInstance && "slot" in value && value["slot"] !== undefined;
+    isInstance = isInstance && "followeeSupporters" in value && value["followeeSupporters"] !== undefined;
+    isInstance = isInstance && "txSignature" in value && value["txSignature"] !== undefined;
 
     return isInstance;
 }

@@ -43,7 +43,7 @@ export interface ProfilePicture {
 /**
  * Check if a given object implements the ProfilePicture interface.
  */
-export function instanceOfProfilePicture(value: object): boolean {
+export function instanceOfProfilePicture(value: object): value is ProfilePicture {
     let isInstance = true;
 
     return isInstance;

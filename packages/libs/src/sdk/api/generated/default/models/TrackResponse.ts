@@ -38,7 +38,7 @@ export interface TrackResponse {
 /**
  * Check if a given object implements the TrackResponse interface.
  */
-export function instanceOfTrackResponse(value: object): boolean {
+export function instanceOfTrackResponse(value: object): value is TrackResponse {
     let isInstance = true;
 
     return isInstance;

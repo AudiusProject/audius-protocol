@@ -31,7 +31,7 @@ export interface FullTopListener {
 /**
  * Check if a given object implements the FullTopListener interface.
  */
-export function instanceOfFullTopListener(value: object): boolean {
+export function instanceOfFullTopListener(value: object): value is FullTopListener {
     let isInstance = true;
 
     return isInstance;
