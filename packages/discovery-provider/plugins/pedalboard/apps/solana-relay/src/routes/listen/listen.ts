@@ -8,6 +8,7 @@ import { Connection, Transaction, TransactionMessage, VersionedTransaction } fro
 import { forwardTransaction, sendTransactionWithRetries } from '../relay/relay'
 import bs58 from 'bs58'
 import { cacheTransaction } from '../../redis'
+import { broadcastTx } from '../../utils/broadcastTx'
 
 export type LocationData = { city: string, region: string, country: string } | null
 
@@ -95,27 +96,8 @@ export const recordListen = async (params: RecordListenParams): Promise<RecordLi
 
     logger.info({ solTxSignature }, "transaction sig")
 
-    const rpcResponse = await (
-        getConnection() as Connection & {
-          _rpcRequest: (
-            methodName: string,
-            args: Array<unknown>
-          ) => Promise<unknown>
-        }
-      )._rpcRequest('getTransaction', [
-        signature,
-        {
-          maxSupportedTransactionVersion: 0,
-          commitment: 'confirmed',
-          encoding: 'json'
-        }
-      ])
-      const formattedResponse = JSON.stringify(rpcResponse)
-      logger.info('Caching transaction...')
-      await cacheTransaction(signature, formattedResponse)
-      logger.info('Forwarding transaction to other nodes to cache...')
-      await forwardTransaction(logger, formattedResponse)
-      logger.info('Request finished.')
+    // no need to confirm since we already confirm in the sendTransactionWithRetries
+    await broadcastTx({ logger, confirm: false, signature: solTxSignature })
 
     return { solTxSignature }
 }
