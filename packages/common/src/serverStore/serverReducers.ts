@@ -12,7 +12,7 @@ import usersReducer from '~/store/cache/users/reducer'
 import track from '~/store/pages/track/reducer'
 import theme from '~/store/ui/theme/slice'
 
-import { Kind, SsrPageProps } from '../models'
+// import { Kind, SsrPageProps } from '../models'
 
 /**
  * A function that creates common reducers.
@@ -20,7 +20,8 @@ import { Kind, SsrPageProps } from '../models'
  */
 export const serverReducers = (
   _storage: Storage,
-  ssrPageProps?: SsrPageProps,
+  // ssrPageProps?: SsrPageProps,
+  ssrPageProps?: any,
   _isServerSide?: boolean,
   _history?: History
 ) => ({
@@ -28,11 +29,14 @@ export const serverReducers = (
 
   // Cache
   // @ts-ignore
-  collections: asCache(collectionsReducer(ssrPageProps), Kind.COLLECTIONS),
+  // collections: asCache(collectionsReducer(ssrPageProps), Kind.COLLECTIONS),
+  collections: asCache(collectionsReducer(ssrPageProps), 'COLLECTIONS'),
   // @ts-ignore
-  tracks: asCache(tracksReducer(ssrPageProps), Kind.TRACKS),
+  // tracks: asCache(tracksReducer(ssrPageProps), Kind.TRACKS),
+  tracks: asCache(tracksReducer(ssrPageProps), 'TRACKS'),
   // @ts-ignore
-  users: asCache(usersReducer(ssrPageProps), Kind.USERS),
+  // users: asCache(usersReducer(ssrPageProps), Kind.USERS),
+  users: asCache(usersReducer(ssrPageProps), 'USERS'),
 
   // UI
   ui: combineReducers({

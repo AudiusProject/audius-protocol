@@ -1,30 +1,41 @@
-import { Maybe } from '@audius/common/utils'
-import type { full as FullSdk } from '@audius/sdk'
+import { developmentConfig } from '@audius/sdk/src/sdk/config/development'
+import { productionConfig } from '@audius/sdk/src/sdk/config/production'
+import { stagingConfig } from '@audius/sdk/src/sdk/config/staging'
 import type { PageContextServer } from 'vike/types'
 
-import { audiusSdk } from '../sdk'
-
-export type CollectionPageProps = {
-  collection: Maybe<FullSdk.PlaylistFull>
+const sdkConfigs = {
+  production: productionConfig,
+  staging: stagingConfig,
+  development: developmentConfig
 }
 
 export async function onBeforeRender(pageContext: PageContextServer) {
   const { handle, slug } = pageContext.routeParams
 
   try {
-    // NOTE: This is the playlist api, but works for both albums and playlists
-    const { data: collections } =
-      await audiusSdk.full.playlists.getPlaylistByHandleAndSlug({
-        handle,
-        slug
-      })
-    const collection = collections?.[0]
+    // Fetching directly from discovery node rather than using the sdk because
+    // including the sdk increases bundle size and creates substantial cold start times
+    const discoveryNodes = (
+      sdkConfigs[process.env.VITE_ENVIRONMENT as keyof typeof sdkConfigs] ??
+      productionConfig
+    ).network.discoveryNodes
+
+    const discoveryNode =
+      discoveryNodes[Math.floor(Math.random() * discoveryNodes.length)]
+
+    const discoveryRequestPath = `v1/full/playlists/by_permalink/${handle}/${slug}`
+    const discoveryRequestUrl = `${discoveryNode.endpoint}/${discoveryRequestPath}`
+
+    const res = await fetch(discoveryRequestUrl)
+    if (res.status !== 200) {
+      throw new Error(discoveryRequestUrl)
+    }
+
+    const json = await res.json()
 
     return {
       pageContext: {
-        pageProps: {
-          collection
-        }
+        pageProps: { collection: json.data[0] }
       }
     }
   } catch (e) {

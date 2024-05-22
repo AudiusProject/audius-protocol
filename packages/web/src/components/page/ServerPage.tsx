@@ -8,7 +8,6 @@ import {
   MutableRefObject
 } from 'react'
 
-import { Nullable } from '@audius/common/utils'
 import cn from 'classnames'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { animated, useSpring } from 'react-spring'
@@ -25,7 +24,7 @@ const MIN_GUTTER_WIDTH = 20
 
 // Responsible for positioning the header
 type HeaderContainerProps = Pick<ServerPageProps, 'header'> & {
-  containerRef: (element: Nullable<HTMLElement>) => void
+  containerRef: (element: HTMLElement | null) => void
 }
 
 const HeaderContainer = (props: HeaderContainerProps) => {
@@ -136,7 +135,7 @@ export const ServerPage = (props: ServerPageProps) => {
 
   const [headerHeight, setHeaderHeight] = useState(0)
 
-  const calculateHeaderHeight = (element: Nullable<HTMLElement>) => {
+  const calculateHeaderHeight = (element: HTMLElement | null) => {
     if (element) {
       setHeaderHeight(element.offsetHeight)
     }

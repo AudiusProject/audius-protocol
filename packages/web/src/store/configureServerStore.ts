@@ -1,4 +1,4 @@
-import { Name, SsrPageProps } from '@audius/common/models'
+// import { Name, SsrPageProps } from '@audius/common/models'
 import { composeWithDevToolsLogOnlyInProduction } from '@redux-devtools/extension'
 import { configureScope, addBreadcrumb } from '@sentry/browser'
 import { routerMiddleware } from 'connected-react-router'
@@ -15,6 +15,16 @@ import createRootReducer from 'store/serverReducers'
 
 // import { buildStoreContext } from './storeContext'
 import { AppState } from './types'
+
+export type SsrPageProps = {
+  // track?: FullSdk.TrackFull
+  // user?: FullSdk.UserFull
+  // collection?: FullSdk.PlaylistFull
+  track?: any
+  user?: any
+  collection?: any
+  error?: { isErrorPageOpen: boolean }
+}
 
 declare global {
   interface Window {
@@ -118,7 +128,8 @@ export const configureStore = (
       route: window.location.pathname
     }
 
-    amplitudeTrack(Name.ERROR_PAGE, additionalInfo)
+    // amplitudeTrack(Name.ERROR_PAGE, additionalInfo)
+    amplitudeTrack('Error Page', additionalInfo)
   }
 
   const sagaMiddleware = createSagaMiddleware({

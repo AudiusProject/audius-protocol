@@ -1,13 +1,14 @@
 import { PropsWithChildren, ReactNode, useRef } from 'react'
 
 import '@audius/harmony/dist/harmony.css'
+
 import cn from 'classnames'
 import { ConnectedRouter } from 'connected-react-router'
 
-import { AppErrorBoundary } from 'app/AppErrorBoundary'
 import { HistoryContextProvider, useHistoryContext } from 'app/HistoryProvider'
+import { ServerAppErrorBoundary } from 'app/ServerAppErrorBoundary'
 import { ServerReduxProvider } from 'app/ServerReduxProvider'
-import { ThemeProvider } from 'app/ThemeProvider'
+import { ServerThemeProvider } from 'app/ServerThemeProvider'
 import {
   HeaderContextProvider,
   HeaderContextConsumer
@@ -17,7 +18,7 @@ import { ServerPlayBar } from 'components/play-bar/desktop/ServerPlayBar'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { MAIN_CONTENT_ID } from 'pages/MainContentContext'
 import { SsrContextProvider, SsrContextType } from 'ssr/SsrContext'
-import { getSystemAppearance, getTheme } from 'utils/theme/theme'
+// import { getSystemAppearance, getTheme } from 'utils/theme/theme'
 
 import styles from './WebPlayer.module.css'
 
@@ -31,25 +32,25 @@ const InnerProviderContainer = ({ children }: { children: ReactNode }) => {
   const initialStoreState = {
     ui: {
       theme: {
-        theme: getTheme(),
-        systemPreference: getSystemAppearance()
+        // theme: getTheme(),
+        // systemPreference: getSystemAppearance()
+        theme: 'day' as any,
+        systemPreference: 'light'
       }
     }
   }
 
   return (
-    <>
-      <ServerReduxProvider initialStoreState={initialStoreState}>
-        <ConnectedRouter history={history}>
-          <ThemeProvider>
-            <HeaderContextProvider>
-              {/* @ts-ignore */}
-              {children}
-            </HeaderContextProvider>
-          </ThemeProvider>
-        </ConnectedRouter>
-      </ServerReduxProvider>
-    </>
+    <ServerReduxProvider initialStoreState={initialStoreState}>
+      <ConnectedRouter history={history}>
+        <ServerThemeProvider>
+          <HeaderContextProvider>
+            {/* @ts-ignore */}
+            {children}
+          </HeaderContextProvider>
+        </ServerThemeProvider>
+      </ConnectedRouter>
+    </ServerReduxProvider>
   )
 }
 
@@ -57,15 +58,13 @@ const ProviderContainer = ({
   ssrContextValue,
   children
 }: ServerWebPlayerProps) => (
-  <>
-    <SsrContextProvider value={ssrContextValue}>
-      <HistoryContextProvider>
-        <InnerProviderContainer>
-          <AppErrorBoundary>{children}</AppErrorBoundary>
-        </InnerProviderContainer>
-      </HistoryContextProvider>
-    </SsrContextProvider>
-  </>
+  <SsrContextProvider value={ssrContextValue}>
+    <HistoryContextProvider>
+      <InnerProviderContainer>
+        <ServerAppErrorBoundary>{children}</ServerAppErrorBoundary>
+      </InnerProviderContainer>
+    </HistoryContextProvider>
+  </SsrContextProvider>
 )
 
 const WebPlayerContent = ({ children }: Partial<ServerWebPlayerProps>) => {
