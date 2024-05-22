@@ -57,6 +57,7 @@ type healthCheckResponseData struct {
 	FailsPeerReachability   bool                       `json:"failsPeerReachability"`
 	StoreAll                bool                       `json:"storeAll"`
 	IsDbLocalhost           bool                       `json:"isDbLocalhost"`
+	DiskHasSpace            bool                       `json:"diskHasSpace"`
 }
 
 func (ss *MediorumServer) serveHealthCheck(c echo.Context) error {
@@ -118,6 +119,7 @@ func (ss *MediorumServer) serveHealthCheck(c echo.Context) error {
 		Signers:                 ss.Config.Signers,
 		StoreAll:                ss.Config.StoreAll,
 		IsDbLocalhost:           ss.Config.PostgresDSN == "postgres://postgres:postgres@db:5432/audius_creator_node" || ss.Config.PostgresDSN == "postgresql://postgres:postgres@db:5432/audius_creator_node" || ss.Config.PostgresDSN == "localhost",
+		DiskHasSpace:            ss.diskHasSpace(),
 	}
 
 	dataBytes, err := json.Marshal(data)
