@@ -53,7 +53,6 @@ export const CreatePasswordPage = () => {
     >
       {({ isValid, dirty }) => (
         <Page
-          centered
           as={Form}
           transition={isMobile ? undefined : 'horizontal'}
           autoFocusInputRef={passwordInputRef}
@@ -71,7 +70,7 @@ export const CreatePasswordPage = () => {
           </Flex>
           <PageFooter
             shadow='flat'
-            p={isMobile ? 'l' : '2xl'}
+            p={0}
             prefix={<SignUpAgreementText />}
             buttonProps={{ disabled: !(dirty && isValid) }}
           />

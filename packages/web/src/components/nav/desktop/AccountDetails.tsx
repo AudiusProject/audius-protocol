@@ -97,7 +97,6 @@ export const AccountDetails = () => {
                   {isManagerModeEnabled ? <AccountSwitcher /> : null}
                 </Flex>
                 <TextLink
-                  textVariant='body'
                   size='s'
                   to={profileLink}
                   css={
@@ -116,7 +115,6 @@ export const AccountDetails = () => {
                 <TextLink
                   to={SIGN_IN_PAGE}
                   variant='visible'
-                  textVariant='body'
                   size='xs'
                   strength='weak'
                 >

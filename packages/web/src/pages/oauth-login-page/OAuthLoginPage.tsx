@@ -327,12 +327,7 @@ export const OAuthLoginPage = () => {
               />
             </div>
             <div className={styles.signOutButtonContainer}>
-              <TextLink
-                variant='visible'
-                textVariant='body'
-                size='s'
-                onClick={handleSignOut}
-              >
+              <TextLink variant='visible' size='s' onClick={handleSignOut}>
                 {messages.signOut}
               </TextLink>
             </div>
