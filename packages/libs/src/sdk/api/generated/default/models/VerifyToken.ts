@@ -38,7 +38,7 @@ export interface VerifyToken {
 /**
  * Check if a given object implements the VerifyToken interface.
  */
-export function instanceOfVerifyToken(value: object): boolean {
+export function instanceOfVerifyToken(value: object): value is VerifyToken {
     let isInstance = true;
 
     return isInstance;

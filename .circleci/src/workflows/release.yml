@@ -51,6 +51,11 @@ jobs:
       service: crm
       notify_slack_on_failure: true
   - push-docker-image:
+      name: push-pedalboard-mri
+      context: [Vercel, dockerhub, slack-secrets]
+      service: mri
+      notify_slack_on_failure: true
+  - push-docker-image:
       name: push-comms
       context: [Vercel, dockerhub, slack-secrets]
       service: comms
@@ -89,6 +94,11 @@ jobs:
       name: push-ddex-ingester
       context: [GCP, dockerhub, slack-secrets]
       service: ddex-ingester
+      notify_slack_on_failure: true
+  - push-docker-image:
+      name: push-ddex-processor
+      context: [GCP, dockerhub, slack-secrets]
+      service: ddex-processor
       notify_slack_on_failure: true
   - push-docker-image:
       name: push-ddex-publisher
@@ -139,6 +149,12 @@ jobs:
       service: crm
       requires:
         - push-pedalboard-crm
+  - push-arm-image:
+      name: push-pedalboard-mri-arm
+      context: [Vercel, dockerhub]
+      service: mri
+      requires:
+        - push-pedalboard-mri
   - push-arm-image:
       name: push-comms-arm
       context: [Vercel, dockerhub]
@@ -220,6 +236,7 @@ jobs:
         - push-pedalboard-solana-relay
         - push-pedalboard-sla-auditor
         - push-pedalboard-crm
+        - push-pedalboard-mri
         - push-comms
         - push-trpc
         - push-healthz
@@ -227,6 +244,7 @@ jobs:
         - push-uptime
         - push-ddex-web
         - push-ddex-ingester
+        - push-ddex-processor
         - push-ddex-publisher
         # uncomment these when arm builds are stable
         # - push-identity-service-arm
@@ -237,6 +255,7 @@ jobs:
         # - push-pedalboard-relay-arm
         # - push-pedalboard-sla-auditor-arm
         # - push-pedalboard-crm
+        # - push-pedalboard-mri
         # - push-comms-arm
         # - push-trpc-arm
         # - push-healthz-arm

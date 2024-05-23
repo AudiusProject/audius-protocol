@@ -89,7 +89,6 @@ export const TikTokAuthButton = (props: TikTokAuthButtonProps) => {
       icon={IconTikTok}
       onPress={handleTikTokPress}
       title='Sign up with TikTok'
-      noText
       {...buttonProps}
     />
   )

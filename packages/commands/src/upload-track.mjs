@@ -252,6 +252,7 @@ program
             is_original_available: true,
             is_downloadable: !!isDownloadable,
             ai_attribution_user_id: null,
+            allowed_api_keys: null,
             preview_start_seconds: previewStartSeconds
               ? parseInt(previewStartSeconds)
               : null,

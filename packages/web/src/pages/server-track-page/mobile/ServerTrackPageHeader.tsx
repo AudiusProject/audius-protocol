@@ -270,12 +270,7 @@ export const ServerTrackPageHeader = ({
       {imageElement}
       <div className={styles.titleArtistSection}>
         <h1 className={styles.title}>{title}</h1>
-        <ServerUserLink
-          userId={userId}
-          variant='visible'
-          textVariant='body'
-          size='l'
-        />
+        <ServerUserLink userId={userId} variant='visible' size='l' />
       </div>
       <PlayButton
         disabled={!hasStreamAccess}

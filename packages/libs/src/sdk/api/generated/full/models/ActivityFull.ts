@@ -43,7 +43,7 @@ export interface ActivityFull {
 /**
  * Check if a given object implements the ActivityFull interface.
  */
-export function instanceOfActivityFull(value: object): boolean {
+export function instanceOfActivityFull(value: object): value is ActivityFull {
     let isInstance = true;
 
     return isInstance;

@@ -1,4 +1,11 @@
-import { DefaultSizes, Kind, User, UserMetadata } from '@audius/common/models'
+import {
+  DefaultSizes,
+  Id,
+  Kind,
+  User,
+  UserMetadata,
+  userMetadataListFromSDK
+} from '@audius/common/models'
 import {
   Metadata,
   accountSelectors,
@@ -7,7 +14,8 @@ import {
   cacheReducer,
   cacheUsersSelectors,
   getContext,
-  reformatUser
+  reformatUser,
+  getSDK
 } from '@audius/common/store'
 import { waitForAccount, waitForValue } from '@audius/common/utils'
 import { mergeWith } from 'lodash'
@@ -53,17 +61,20 @@ export function* fetchUsers(
 
 function* retrieveUserByHandle(handle: string, retry: boolean) {
   yield* waitForRead()
-  const apiClient = yield* getContext('apiClient')
+  const sdk = yield* getSDK()
   const userId = yield* select(getUserId)
   if (Array.isArray(handle)) {
     handle = handle[0]
   }
-  const user = yield* call([apiClient, apiClient.getUserByHandle], {
-    handle,
-    currentUserId: userId,
-    retry
-  })
-  return user
+
+  const { data: users = [] } = yield* call(
+    [sdk.full.users, sdk.full.users.getUserByHandle],
+    {
+      handle,
+      userId: Id.parse(userId)
+    }
+  )
+  return userMetadataListFromSDK(users)
 }
 
 export function* fetchUserByHandle(

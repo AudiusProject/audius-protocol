@@ -10,6 +10,8 @@ declare
   is_album boolean;
   delta int;
   entity_type text;
+  is_purchased boolean default false;
+  is_containing_album_purchased boolean default false;
 begin
 
   insert into aggregate_user (user_id) values (new.user_id) on conflict do nothing;
@@ -17,6 +19,28 @@ begin
     insert into aggregate_track (track_id) values (new.save_item_id) on conflict do nothing;
 
     entity_type := 'track';
+
+    -- check if the track has been purchased
+    select exists (
+        select 1
+        from usdc_purchases
+        where content_type = 'track'
+        and content_id = new.save_item_id
+        and buyer_user_id = new.user_id
+    ) into is_purchased;
+
+    -- check if the track is part of an album that has been purchased
+    select exists (
+      select 1
+      from
+        usdc_purchases
+        join playlist_tracks as pt
+        on content_id = pt.playlist_id
+      where track_id = new.save_item_id
+      and buyer_user_id = new.user_id
+    ) into is_containing_album_purchased;
+
+    is_purchased := is_purchased or is_containing_album_purchased;
   else
     insert into aggregate_playlist (playlist_id, is_album)
     select p.playlist_id, p.is_album
@@ -28,6 +52,14 @@ begin
     select ap.is_album into is_album
     from aggregate_playlist ap
     where ap.playlist_id = new.save_item_id;
+
+    select exists (
+      select 1
+      from usdc_purchases
+      where content_type = 'album'
+      and content_id = new.save_item_id
+      and buyer_user_id = new.user_id
+    ) into is_purchased;
   end if;
 
   -- increment or decrement?
@@ -133,7 +165,8 @@ begin
 
   begin
     -- create a notification for the saved content's owner
-    if new.is_delete is false then
+    -- skip notification for purchased content as the purchase triggers its own notification
+    if new.is_delete is false and is_purchased is false then
       insert into notification
         (blocknumber, user_ids, timestamp, type, specifier, group_id, data)
         values
@@ -152,7 +185,10 @@ begin
     -- notify followees of the favoriter who have reposted the same content
     -- within the last month
     if new.is_delete is false
-    and new.is_save_of_repost is true then
+    and new.is_save_of_repost is true
+    -- skip notification for tracks contained within a purchased album
+    -- the favorite of the album itself will still trigger this notification
+    and is_containing_album_purchased is false then
     with
         followee_save_repost_ids as (
             select user_id

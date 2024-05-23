@@ -43,7 +43,7 @@ export interface TrackArtwork {
 /**
  * Check if a given object implements the TrackArtwork interface.
  */
-export function instanceOfTrackArtwork(value: object): boolean {
+export function instanceOfTrackArtwork(value: object): value is TrackArtwork {
     let isInstance = true;
 
     return isInstance;

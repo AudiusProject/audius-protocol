@@ -30,7 +30,7 @@ export const userManagerSchema = new schema.Object({
   manager: userSchema
 })
 
-export const apiResponseSchema = new schema.Object({
+export const schemas = {
   currentWeb3User: userSchema,
   managedUsers: new schema.Array(managedUserSchema),
   user: userSchema,
@@ -40,4 +40,6 @@ export const apiResponseSchema = new schema.Object({
   users: new schema.Array(userSchema),
   tracks: new schema.Array(trackSchema),
   collections: new schema.Array(collectionSchema)
-})
+}
+
+export const apiResponseSchema = new schema.Object(schemas)

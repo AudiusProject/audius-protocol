@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
 
+import { useGetCurrentUserId, useGetCurrentWeb3User } from '~/api/account'
 import { useAppContext } from '~/context'
 import { UserMetadata } from '~/models/User'
 
@@ -25,4 +26,14 @@ export const useAccountSwitcher = () => {
   )
 
   return { switchAccount }
+}
+
+export const useIsManagedAccount = () => {
+  const { data: currentWeb3User } = useGetCurrentWeb3User({})
+  const { data: currentUserId } = useGetCurrentUserId({})
+  return (
+    !!currentWeb3User &&
+    !!currentUserId &&
+    currentWeb3User.user_id !== currentUserId
+  )
 }

@@ -371,16 +371,25 @@ class CollectionPage extends Component<
     return s
   }
 
-  fetchCollection = (pathname: string, forceFetch = false) => {
+  fetchCollection = (pathname: string, fetchLineup = false) => {
     const { fetchCollection } = this.props
     const params = parseCollectionRoute(pathname)
     if (!params) return
 
     const { permalink, collectionId } = params
 
+    // Need typecast as can't set type via connected-react-router, see https://github.com/reach/router/issues/414
+    const locationState = this.props.location.state as { forceFetch?: boolean }
+    const forceFetch = locationState?.forceFetch
+
     if (forceFetch || permalink || collectionId !== this.state.playlistId) {
       this.setState({ playlistId: collectionId as number })
-      fetchCollection(collectionId, permalink, forceFetch)
+      fetchCollection({
+        id: collectionId,
+        permalink,
+        fetchLineup,
+        forceFetch
+      })
     }
   }
 
@@ -544,7 +553,9 @@ class CollectionPage extends Component<
     } = this.props
     const isQueued = this.isQueued()
     const playingId = this.getPlayingId()
-    if (playing && isQueued && previewing === isPreview) {
+    const isOwner = collection?.playlist_owner_id === userId
+    const shouldPreview = isPreview && isOwner
+    if (playing && isQueued && previewing === shouldPreview) {
       pause()
       record(
         make(Name.PLAYBACK_PAUSE, {
@@ -552,23 +563,22 @@ class CollectionPage extends Component<
           source: PlaybackSource.PLAYLIST_PAGE
         })
       )
-    } else if (!playing && previewing === isPreview && isQueued) {
+    } else if (!playing && previewing === shouldPreview && isQueued) {
       play()
       record(
         make(Name.PLAYBACK_PLAY, {
           id: `${playingId}`,
-          isPreview,
+          isPreview: shouldPreview,
           source: PlaybackSource.PLAYLIST_PAGE
         })
       )
     } else if (entries.length > 0) {
-      const isOwner = collection?.playlist_owner_id === userId
       stop()
-      play(entries[0].uid, { isPreview: isPreview && isOwner })
+      play(entries[0].uid, { isPreview: shouldPreview && isOwner })
       record(
         make(Name.PLAYBACK_PLAY, {
           id: `${entries[0].track_id}`,
-          isPreview: isPreview && isOwner,
+          isPreview: shouldPreview,
           source: PlaybackSource.PLAYLIST_PAGE
         })
       )
@@ -864,12 +874,25 @@ function makeMapStateToProps() {
 
 function mapDispatchToProps(dispatch: Dispatch) {
   return {
-    fetchCollection: (
-      id: Nullable<number>,
-      permalink?: string,
+    fetchCollection: ({
+      id,
+      permalink,
+      fetchLineup,
+      forceFetch
+    }: {
+      id: Nullable<number>
+      permalink?: string
       fetchLineup?: boolean
-    ) =>
-      dispatch(collectionActions.fetchCollection(id, permalink, fetchLineup)),
+      forceFetch?: boolean
+    }) =>
+      dispatch(
+        collectionActions.fetchCollection(
+          id,
+          permalink,
+          fetchLineup,
+          forceFetch
+        )
+      ),
     fetchTracks: () =>
       dispatch(tracksActions.fetchLineupMetadatas(0, 200, false, undefined)),
     resetCollection: (collectionUid: string, userUid: string) =>

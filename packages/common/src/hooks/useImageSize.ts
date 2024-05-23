@@ -224,29 +224,3 @@ export function useImageSize<
   if (!onDemand) return imageUrl
   return handleOnDemandImage
 }
-
-const ARTWORK_HAS_LOADED_TIMEOUT = 1000
-// We don't want to indefinitely delay tile loading
-// waiting for the image, so set a timeout before
-// we call callback().
-export const useLoadImageWithTimeout = (
-  image: any,
-  callback?: () => void,
-  timeout: number = ARTWORK_HAS_LOADED_TIMEOUT
-) => {
-  const [getDidCallback, setDidCallback] = useInstanceVar(false)
-
-  useEffect(() => {
-    const t = setTimeout(() => {
-      if (!image) {
-        if (callback) callback()
-        setDidCallback(true)
-      }
-    }, timeout)
-    return () => clearTimeout(t)
-  }, [image, callback, timeout, setDidCallback])
-
-  useEffect(() => {
-    if (image && !getDidCallback() && callback) callback()
-  }, [image, callback, getDidCallback])
-}

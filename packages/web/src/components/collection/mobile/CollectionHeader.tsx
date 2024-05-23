@@ -2,10 +2,15 @@ import { memo, useCallback } from 'react'
 
 import { useGetCurrentUserId, useGetPlaylistById } from '@audius/common/api'
 import { imageBlank } from '@audius/common/assets'
-import { useGatedContentAccess } from '@audius/common/hooks'
+import {
+  useGatedContentAccessMap,
+  useGatedContentAccess
+} from '@audius/common/hooks'
 import { Variant, SquareSizes, ID, ModalSource } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import {
+  CommonState,
+  cacheCollectionsSelectors,
   OverflowAction,
   PurchaseableContentType,
   useEditPlaylistModal
@@ -13,6 +18,7 @@ import {
 import { getDogEarType } from '@audius/common/utils'
 import { Box, Button, Flex, IconPause, IconPlay, Text } from '@audius/harmony'
 import cn from 'classnames'
+import { useSelector } from 'react-redux'
 
 import { DogEar } from 'components/dog-ear'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
@@ -33,6 +39,8 @@ import { RepostsFavoritesStats } from '../components/RepostsFavoritesStats'
 import { CollectionHeaderProps } from '../types'
 
 import styles from './CollectionHeader.module.css'
+
+const { getCollectionTracks } = cacheCollectionsSelectors
 
 const messages = {
   hiddenPlaylist: 'Hidden Playlist',
@@ -73,7 +81,6 @@ const CollectionHeader = ({
   lastModifiedDate,
   numTracks,
   isPlayable,
-  isStreamGated,
   streamConditions,
   access,
   duration,
@@ -104,23 +111,27 @@ const CollectionHeader = ({
   )
 
   const { data: currentUserId } = useGetCurrentUserId({})
-  const { data: collection } = useGetPlaylistById(
-    {
-      playlistId: typeof collectionId === 'number' ? collectionId : null,
-      currentUserId
-    },
-    { disabled: typeof collectionId !== 'number' }
-  )
+  const { data: collection } = useGetPlaylistById({
+    playlistId: collectionId,
+    currentUserId
+  })
   const { hasStreamAccess } = useGatedContentAccess(collection)
   const isPremium = collection?.is_stream_gated
   const isUnlisted = collection?.is_private
 
-  // If user doesn't have access, show preview only. If user has access, show play only.
-  // If user is owner, show both.
-  const shouldShowPlay = isPlayable && hasStreamAccess
-  const shouldShowPreview = isOwner
-    ? isPlayable && isPremium
-    : isPremium && !hasStreamAccess
+  const tracks = useSelector((state: CommonState) =>
+    getCollectionTracks(state, { id: collectionId })
+  )
+  const trackAccessMap = useGatedContentAccessMap(tracks ?? [])
+  const doesUserHaveAccessToAnyTrack = Object.values(trackAccessMap).some(
+    ({ hasStreamAccess }) => hasStreamAccess
+  )
+
+  // Show play if user has access to the collection or any of its contents,
+  // otherwise show preview
+  const shouldShowPlay =
+    (isPlayable && hasStreamAccess) || doesUserHaveAccessToAnyTrack
+  const shouldShowPreview = isPremium && !hasStreamAccess && !shouldShowPlay
 
   const showPremiumSection =
     isPremiumAlbumsEnabled && isAlbum && streamConditions && collectionId
@@ -242,12 +253,7 @@ const CollectionHeader = ({
             {title}
           </Text>
           {userId ? (
-            <UserLink
-              userId={userId}
-              textVariant='body'
-              size='l'
-              variant='visible'
-            />
+            <UserLink userId={userId} size='l' variant='visible' />
           ) : null}
         </Flex>
         {shouldShowPlay ? (

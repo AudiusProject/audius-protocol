@@ -2,8 +2,8 @@ import { useCallback } from 'react'
 
 import type { ID, AccessConditions } from '@audius/common/models'
 import { ModalSource, isContentUSDCPurchaseGated } from '@audius/common/models'
-import type { PurchaseableContentType } from '@audius/common/store'
 import {
+  PurchaseableContentType,
   usePremiumContentPurchaseModal,
   gatedContentActions,
   gatedContentSelectors
@@ -25,6 +25,8 @@ import { useIsUSDCEnabled } from 'app/hooks/useIsUSDCEnabled'
 import { setVisibility } from 'app/store/drawers/slice'
 import { makeStyles } from 'app/styles'
 
+import { LineupTileSource } from './types'
+
 const { getGatedContentStatusMap } = gatedContentSelectors
 const { setLockedContentId } = gatedContentActions
 
@@ -45,12 +47,14 @@ export const LineupTileAccessStatus = ({
   contentId,
   contentType,
   streamConditions,
-  hasStreamAccess
+  hasStreamAccess,
+  source: tileSource
 }: {
   contentId: ID
   contentType: PurchaseableContentType
   streamConditions: AccessConditions
   hasStreamAccess: boolean | undefined
+  source?: LineupTileSource
 }) => {
   const styles = useStyles()
   const { color } = useTheme()
@@ -69,20 +73,34 @@ export const LineupTileAccessStatus = ({
       return
     }
     if (isUSDCPurchase) {
+      const determineModalSource = () => {
+        if (tileSource === LineupTileSource.DM_COLLECTION) {
+          return ModalSource.DirectMessageCollectionTile
+        }
+        if (tileSource === LineupTileSource.DM_TRACK) {
+          return ModalSource.DirectMessageTrackTile
+        }
+        return contentType === PurchaseableContentType.ALBUM
+          ? ModalSource.LineUpCollectionTile
+          : ModalSource.LineUpTrackTile
+      }
       openPremiumContentPurchaseModal(
         { contentId, contentType },
-        { source: ModalSource.TrackTile }
+        {
+          source: determineModalSource()
+        }
       )
     } else if (contentId) {
       dispatch(setLockedContentId({ id: contentId }))
       dispatch(setVisibility({ drawer: 'LockedContent', visible: true }))
     }
   }, [
-    isUSDCPurchase,
     hasStreamAccess,
+    isUSDCPurchase,
     contentId,
     openPremiumContentPurchaseModal,
     contentType,
+    tileSource,
     dispatch
   ])
 

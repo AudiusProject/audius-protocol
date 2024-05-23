@@ -23,6 +23,13 @@ import type { TileProps } from '../core'
  */
 export type LineupItemVariant = 'readonly'
 
+export enum LineupTileSource {
+  DM_COLLECTION = 'DM - Collection',
+  DM_TRACK = 'DM - Track',
+  LINEUP_COLLECTION = 'Lineup - Collection',
+  LINEUP_TRACK = 'Lineup - Track'
+}
+
 export type LineupItemProps = {
   /** Index of tile in lineup */
   index: number
@@ -59,6 +66,9 @@ export type LineupItemProps = {
 
   /** Passed in styles */
   styles?: StyleProp<ViewStyle>
+
+  /** Tell the tile where it's being used */
+  source?: LineupTileSource
 }
 
 export type LineupTileProps = Omit<LineupItemProps, 'togglePlay'> & {
@@ -125,4 +135,7 @@ export type LineupTileProps = Omit<LineupItemProps, 'togglePlay'> & {
   isPlayingUid: boolean
 
   TileProps?: Partial<TileProps>
+
+  /** Analytics context about where this tile is being used */
+  source?: LineupTileSource
 }

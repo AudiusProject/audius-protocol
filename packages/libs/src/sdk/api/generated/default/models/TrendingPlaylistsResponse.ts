@@ -38,7 +38,7 @@ export interface TrendingPlaylistsResponse {
 /**
  * Check if a given object implements the TrendingPlaylistsResponse interface.
  */
-export function instanceOfTrendingPlaylistsResponse(value: object): boolean {
+export function instanceOfTrendingPlaylistsResponse(value: object): value is TrendingPlaylistsResponse {
     let isInstance = true;
 
     return isInstance;

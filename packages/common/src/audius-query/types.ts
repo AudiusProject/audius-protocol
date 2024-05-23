@@ -9,9 +9,8 @@ import {
   ThunkDispatch
 } from '@reduxjs/toolkit'
 import AsyncRetry from 'async-retry'
-import { Dispatch } from 'redux'
 
-import { Kind, Status } from '~/models'
+import { ID, Kind, Status } from '~/models'
 
 import { AudiusQueryContextType } from './AudiusQueryContext'
 
@@ -79,10 +78,21 @@ type EndpointOptions = {
   type?: 'query' | 'mutation'
 }
 
+export type FetchBatchArgs<Args> = Omit<Args, 'id'> & {
+  ids: ID[]
+}
+
 export type EndpointConfig<Args, Data> = {
   fetch: (fetchArgs: Args, context: AudiusQueryContextType) => Promise<Data>
   options: EndpointOptions
-  onQueryStarted?: (fetchArgs: Args, context: { dispatch: Dispatch }) => void
+  fetchBatch?: (
+    fetchArgs: FetchBatchArgs<Args>,
+    context: AudiusQueryContextType
+  ) => Promise<Data[]>
+  onQueryStarted?: (
+    fetchArgs: Args,
+    context: { dispatch: ThunkDispatch<any, any, any> }
+  ) => void
   onQuerySuccess?: (
     data: Data,
     fetchArgs: Args,

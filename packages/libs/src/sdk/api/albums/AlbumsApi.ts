@@ -1,11 +1,22 @@
-import type { AuthService, StorageService } from '../../services'
+import { USDC } from '@audius/fixed-decimal'
+
+import type {
+  AuthService,
+  ClaimableTokensClient,
+  PaymentRouterClient,
+  StorageService
+} from '../../services'
 import type {
   EntityManagerService,
   AdvancedOptions
 } from '../../services/EntityManager/types'
 import type { LoggerService } from '../../services/Logger'
 import { parseParams } from '../../utils/parseParams'
-import type { Configuration } from '../generated/default'
+import {
+  instanceOfPurchaseGate,
+  UsdcGate,
+  type Configuration
+} from '../generated/default'
 import { PlaylistsApi } from '../playlists/PlaylistsApi'
 
 import {
@@ -17,6 +28,8 @@ import {
   FavoriteAlbumSchema,
   getAlbumRequest,
   getAlbumTracksRequest,
+  PurchaseAlbumRequest,
+  PurchaseAlbumSchema,
   RepostAlbumRequest,
   RepostAlbumSchema,
   UnfavoriteAlbumRequest,
@@ -33,8 +46,10 @@ export class AlbumsApi {
     configuration: Configuration,
     storage: StorageService,
     entityManager: EntityManagerService,
-    auth: AuthService,
-    logger: LoggerService
+    private auth: AuthService,
+    private logger: LoggerService,
+    private claimableTokensClient: ClaimableTokensClient,
+    private paymentRouterClient: PaymentRouterClient
   ) {
     this.playlistsApi = new PlaylistsApi(
       configuration,
@@ -213,5 +228,180 @@ export class AlbumsApi {
       },
       advancedOptions
     )
+  }
+
+  /**
+   * Purchases stream access to an album
+   *
+   * @hidden
+   */
+  async purchase(params: PurchaseAlbumRequest) {
+    const {
+      userId,
+      albumId,
+      price: priceNumber,
+      extraAmount: extraAmountNumber = 0,
+      walletAdapter
+    } = await parseParams('purchase', PurchaseAlbumSchema)(params)
+
+    const contentType = 'album'
+    const mint = 'USDC'
+
+    // Fetch album
+    this.logger.debug('Fetching album...', { albumId })
+    const { data: albums } = await this.getAlbum({
+      userId: params.userId, // use hashed userId
+      albumId: params.albumId // use hashed albumId
+    })
+
+    const album = albums ? albums[0] : undefined
+
+    // Validate purchase attempt
+    if (!album) {
+      throw new Error('Album not found.')
+    }
+
+    if (!album.isStreamGated) {
+      throw new Error('Attempted to purchase free album.')
+    }
+
+    if (album.user.id === params.userId) {
+      throw new Error('Attempted to purchase own album.')
+    }
+
+    let numberSplits: UsdcGate['splits'] = {}
+    let centPrice: number
+    const accessType: 'stream' | 'download' = 'stream'
+
+    // Get conditions
+    if (
+      album.streamConditions &&
+      instanceOfPurchaseGate(album.streamConditions)
+    ) {
+      centPrice = album.streamConditions.usdcPurchase.price
+      numberSplits = album.streamConditions.usdcPurchase.splits
+    } else {
+      this.logger.debug(album.streamConditions)
+      throw new Error('Album is not available for purchase.')
+    }
+
+    // Check if already purchased
+    if (accessType === 'stream' && album.access?.stream) {
+      throw new Error('Album already purchased')
+    }
+
+    // Check if price changed
+    if (USDC(priceNumber).value < USDC(centPrice / 100).value) {
+      throw new Error('Track price increased.')
+    }
+
+    let extraAmount = USDC(extraAmountNumber).value
+    const total = USDC(centPrice / 100.0).value + extraAmount
+    this.logger.debug('Purchase total:', total)
+
+    // Convert splits to big int and spread extra amount to every split
+    const splits = Object.entries(numberSplits).reduce(
+      (prev, [key, value], index, arr) => {
+        const amountToAdd = extraAmount / BigInt(arr.length - index)
+        extraAmount = USDC(extraAmount - amountToAdd).value
+        return {
+          ...prev,
+          [key]: BigInt(value) + amountToAdd
+        }
+      },
+      {}
+    )
+    this.logger.debug('Calculated splits after extra amount:', splits)
+
+    // Create user bank for recipient if not exists
+    this.logger.debug('Checking for recipient user bank...')
+    const { userBank: recipientUserBank, didExist } =
+      await this.claimableTokensClient.getOrCreateUserBank({
+        ethWallet: album.user.wallet,
+        mint: 'USDC'
+      })
+    if (!didExist) {
+      this.logger.debug('Created user bank', {
+        recipientUserBank: recipientUserBank.toBase58()
+      })
+    } else {
+      this.logger.debug('User bank exists', {
+        recipientUserBank: recipientUserBank.toBase58()
+      })
+    }
+
+    const routeInstruction =
+      await this.paymentRouterClient.createRouteInstruction({
+        splits,
+        total,
+        mint
+      })
+    const memoInstruction =
+      await this.paymentRouterClient.createPurchaseMemoInstruction({
+        contentId: albumId,
+        contentType,
+        blockNumber: album.blocknumber,
+        buyerUserId: userId,
+        accessType
+      })
+
+    if (walletAdapter) {
+      this.logger.debug('Using connected wallet to purchase...')
+      if (!walletAdapter.publicKey) {
+        throw new Error('Could not get connected wallet address')
+      }
+      // Use the specified Solana wallet
+      const transferInstruction =
+        await this.paymentRouterClient.createTransferInstruction({
+          sourceWallet: walletAdapter.publicKey,
+          total,
+          mint
+        })
+      const transaction = await this.paymentRouterClient.buildTransaction({
+        feePayer: walletAdapter.publicKey,
+        instructions: [transferInstruction, routeInstruction, memoInstruction]
+      })
+      return await walletAdapter.sendTransaction(
+        transaction,
+        this.paymentRouterClient.connection
+      )
+    } else {
+      // Use the authed wallet's userbank and relay
+      const ethWallet = await this.auth.getAddress()
+      this.logger.debug(
+        `Using userBank ${await this.claimableTokensClient.deriveUserBank({
+          ethWallet,
+          mint: 'USDC'
+        })} to purchase...`
+      )
+      const paymentRouterTokenAccount =
+        await this.paymentRouterClient.getOrCreateProgramTokenAccount({
+          mint
+        })
+
+      const transferSecpInstruction =
+        await this.claimableTokensClient.createTransferSecpInstruction({
+          ethWallet,
+          destination: paymentRouterTokenAccount.address,
+          mint,
+          amount: total,
+          auth: this.auth
+        })
+      const transferInstruction =
+        await this.claimableTokensClient.createTransferInstruction({
+          ethWallet,
+          destination: paymentRouterTokenAccount.address,
+          mint
+        })
+      const transaction = await this.paymentRouterClient.buildTransaction({
+        instructions: [
+          transferSecpInstruction,
+          transferInstruction,
+          routeInstruction,
+          memoInstruction
+        ]
+      })
+      return await this.paymentRouterClient.sendTransaction(transaction)
+    }
   }
 }

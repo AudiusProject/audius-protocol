@@ -38,7 +38,7 @@ export interface DeveloperApps {
 /**
  * Check if a given object implements the DeveloperApps interface.
  */
-export function instanceOfDeveloperApps(value: object): boolean {
+export function instanceOfDeveloperApps(value: object): value is DeveloperApps {
     let isInstance = true;
 
     return isInstance;

@@ -5,7 +5,7 @@ import {
   useGetManagedAccounts,
   useRemoveManager
 } from '@audius/common/api'
-import { ID, Status, UserMetadata } from '@audius/common/models'
+import { Status, UserMetadata } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
 import { Box, Divider, Flex, Text, TextLink } from '@audius/harmony'
 
@@ -16,21 +16,21 @@ import { useSelector } from 'utils/reducer'
 import { AccountListItem } from './AccountListItem'
 import { sharedMessages } from './sharedMessages'
 import { AccountsYouManagePageProps, AccountsYouManagePages } from './types'
-const { getUserId } = accountSelectors
+const { getAccountUser } = accountSelectors
 
 const messages = {
   takeControl:
     'Take control of your managed accounts by making changes to their profiles, preferences, and content.',
-  noAccounts: 'You don’t manage any accounts.',
-  somethingWentWrong: 'Something went wrong. Please try again later.'
+  noAccounts: 'You don’t manage any accounts.'
 }
 
 export const AccountsYouManageHomePage = ({
   setPage
 }: AccountsYouManagePageProps) => {
-  const userId = useSelector(getUserId)
+  const currentUser = useSelector(getAccountUser)
+  const userId = currentUser?.user_id
   const { data: managedAccounts, status } = useGetManagedAccounts(
-    { userId: userId as ID },
+    { userId: userId! },
     { disabled: userId == null }
   )
   const [approveManagedAccount, approveResult] = useApproveManagedAccount()
@@ -45,16 +45,16 @@ export const AccountsYouManageHomePage = ({
   )
 
   const handleApprove = useCallback(
-    ({
-      currentUserId,
-      grantorUser
-    }: {
-      currentUserId: number
-      grantorUser: UserMetadata
-    }) => {
-      approveManagedAccount({ userId: currentUserId, grantorUser })
+    ({ grantorUser }: { grantorUser: UserMetadata }) => {
+      if (currentUser) {
+        approveManagedAccount({
+          userId: currentUser.user_id,
+          grantorUser,
+          userWalletAddress: currentUser.erc_wallet
+        })
+      }
     },
-    [approveManagedAccount]
+    [approveManagedAccount, currentUser]
   )
 
   const handleReject = useCallback(
@@ -74,13 +74,16 @@ export const AccountsYouManageHomePage = ({
   )
 
   useEffect(() => {
-    if (
-      approveResult.status === Status.ERROR ||
-      rejectResult.status === Status.ERROR
-    ) {
-      toast(messages.somethingWentWrong)
+    if (approveResult.status === Status.ERROR) {
+      toast(sharedMessages.somethingWentWrong)
     }
-  }, [toast, approveResult.status, rejectResult.status])
+  }, [toast, approveResult.status])
+
+  useEffect(() => {
+    if (rejectResult.status === Status.ERROR) {
+      toast(sharedMessages.somethingWentWrong)
+    }
+  }, [toast, rejectResult.status])
 
   return (
     <Flex direction='column' gap='xl'>

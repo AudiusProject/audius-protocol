@@ -194,6 +194,11 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
           // This will get the client to pick new discovery providers
           // if the selected one falls behind, even if requests are succeeding
           const responseClone = response.clone()
+          const contentType = responseClone.headers.get('Content-Type')
+          if (!contentType?.includes('json')) {
+            return response
+          }
+
           const data = (await responseClone.json()) as ApiHealthResponseData
           const { health, reason } = parseApiHealthStatusReason({
             data,

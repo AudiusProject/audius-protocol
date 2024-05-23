@@ -110,11 +110,7 @@ export const WaitForDownloadModal = () => {
               <Text variant='body' color='default'>
                 {messages.somethingWrong}
               </Text>
-              <TextLink
-                variant='visible'
-                textVariant='body'
-                onClick={performDownload}
-              >
+              <TextLink variant='visible' onClick={performDownload}>
                 {messages.tryAgain}
               </TextLink>
             </Flex>

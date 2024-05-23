@@ -145,7 +145,7 @@ export const TracksTab = () => {
     const matchValue = filterValue?.toLowerCase()
     return (
       track.title?.toLowerCase().indexOf(matchValue) > -1 ||
-      user.name.toLowerCase().indexOf(matchValue) > -1
+      user.name?.toLowerCase().indexOf(matchValue) > -1
     )
   }
 

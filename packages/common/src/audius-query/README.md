@@ -87,6 +87,7 @@
     - **`type`** - by default endpoint additions are viewed as "queries" ie methods that fetch data. Specifying `type: 'mutation'` tells audius-query you are implementing a method that will write data to the server.
     - **`retry`** - enables retries for the endpoint. The fetch function will automatically be called multiple times, with the final error bubbling up if all retries are exhausted. Fetches resulting in `400`, `401`, and `403` are never retried.
     - **`retryConfig`** - Overrides the default retry config for advanced use cases. The options are passed directly to [`async-retry`](https://github.com/vercel/async-retry).
+    - **`fetchBatch`** - If specified, the endpoint will automatically batch groups of requests that fall into a batch period. `fetchBatch` takes an args object containing an `ids` array and should return an array of entities. It requires that you specify both the `idArgKey` and `schemaKey` options
 
 1.  Export the query hook
 
@@ -106,38 +107,36 @@
     export default userApi.reducer
     ```
 
-1. Use the query hook
+1.  Use the query hook
+
 - Generated fetch hooks take the same args as the fetch function plus an options object. They return the same type returned by the fetch function.
 
-    ```typescript
-    type QueryHook = (
-        fetchArgs: /* matches the first argument to the endpoint fetch fn */
-        options: /* {...} */
-    ) => {
-        data: /* return value from fetch function */
-        status: Status
-        errorMessage?: string
-    }
-    ```
+  ```typescript
+  type QueryHook = (
+      fetchArgs: /* matches the first argument to the endpoint fetch fn */
+      options: /* {...} */
+  ) => {
+      data: /* return value from fetch function */
+      status: Status
+      errorMessage?: string
+  }
+  ```
 
 - In your component:
 
-    ```typescript
-    const {
-      data: someData,
-      status,
-      errorMessage
-    } = useGetSomeData(
-      { id: elementId },
-      /* optional */ { disabled: !elementId }
-    )
+  ```typescript
+  const {
+    data: someData,
+    status,
+    errorMessage
+  } = useGetSomeData({ id: elementId }, /* optional */ { disabled: !elementId })
 
-    return status === Status.LOADING ? (
-      <Loading />
-    ) : (
-      <DisplayComponent data={someData} />
-    )
-    ```
+  return status === Status.LOADING ? (
+    <Loading />
+  ) : (
+    <DisplayComponent data={someData} />
+  )
+  ```
 
 ## Adding a mutation endpoint
 
@@ -159,9 +158,11 @@
       }
     }
     ```
-1. Export hooks (same process as query endpoints)
 
-1. Use hook in your component
+1.  Export hooks (same process as query endpoints)
+
+1.  Use hook in your component
+
     ```typescript
     const [updateSomeData, result] = useUpdateSomeData()
     const { data: someData, status, errorMessage } = result
@@ -176,8 +177,10 @@
       )}
     )
     ```
+
 ## Adding optimistic updates to your mutation endpoint
- In some cases, you may want to update the cache manually. When you wish to update cache data that already exists for query endpoints, you can do so using the updateQueryData thunk action available on the util object of your created API.
+
+In some cases, you may want to update the cache manually. When you wish to update cache data that already exists for query endpoints, you can do so using the updateQueryData thunk action available on the util object of your created API.
 
 ```typescript
 const api = createApi({
@@ -211,7 +214,6 @@ const api = createApi({
 })
 ```
 
-
 ## Pre-fetching related entities
 
 Many endpoints return related data as nested fields (ex. Tracks including a user field with basic info about a user). However, some endpoints only return identifiers pointing to the related entities. In cases where we know we will need that information before rendering, there are a couple of options.
@@ -221,15 +223,20 @@ Many endpoints return related data as nested fields (ex. Tracks including a user
 The simpler and more common usage is to use the output of one hook as the input for another:
 
 ```typescript
-const {data: firstDataset, status: firstDatasetStatus} = useFirstDataset()
-const {data: secondDataset, status: secondDatasetStatus} = useSecondDataset(firstDataset, {
-  disabled: firstDatasetStatus !== Status.Success
-})
+const { data: firstDataset, status: firstDatasetStatus } = useFirstDataset()
+const { data: secondDataset, status: secondDatasetStatus } = useSecondDataset(
+  firstDataset,
+  {
+    disabled: firstDatasetStatus !== Status.Success
+  }
+)
 
 return secondDatasetStatus === Status.Success ? (
-  <SomeMultiDatasetComponent firstSet={firstDataset} secondSet={secondDataset} />
+  <SomeMultiDatasetComponent
+    firstSet={firstDataset}
+    secondSet={secondDataset}
+  />
 ) : null
-
 ```
 
 ### Pre-fetching in endpoint implementations
@@ -240,6 +247,7 @@ mapping it is the same as before. But when fetching subsequent pages, we need so
 new page of data until its related entities have been fetched.
 
 API definitions can opt in to exposing raw fetch functions by exporting the `api.fetch` property:
+
 ```typescript
 const tracksApi = createApi(...)
 
@@ -265,6 +273,35 @@ const purchasesApi = createApi({
 ```
 
 Note that in the above code, we're simply issuing a fetch for the related tracks, which will be inserted into the cache, before returning our original data. This is merely a performance optimization.
+
+### Batching requests
+
+If you want to use a "get by id" pattern in leaf components such as a list of tracks, it's recommended to batch the requests so that only a single request is performed. This can be achieved by specifying the `fetchBatch` function on the endpoint:
+
+```typescript
+const trackApi = createApi({
+  endpoints: {
+    getTrackById: {
+      fetch: async (
+        { id }: { id: ID },
+        context
+      ) => {
+        // return a single track
+      },
+      fetchBatch: async (
+        { ids }: { ids: ID[]; },
+        context
+      ) => {
+        // return an array of tracks
+      },
+      options: {
+        idArgKey: 'id',
+        schemaKey: 'track'
+      }
+    },
+```
+
+Audius-query will automatically merge requests that fall within a short time frame (10 ms) into a single bulk request. It only merges requests that have the same arguments, exlcuding the id argument. You can continue to use the resulting hooks as usual, and all the entities will continue to have the same caching behavior as non-batched.
 
 ## Query Hook options
 

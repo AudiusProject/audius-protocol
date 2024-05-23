@@ -89,11 +89,6 @@ export const relay = async (
     next()
     await broadcastTransaction({ logger, signature })
   } catch (e) {
-    if (!res.writableEnded && e) {
-      res.status(500).send({ error: e })
-      next()
-    } else {
-      next(e)
-    }
+    next(e)
   }
 }

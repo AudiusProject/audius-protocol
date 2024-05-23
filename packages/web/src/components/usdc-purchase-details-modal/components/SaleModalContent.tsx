@@ -114,8 +114,8 @@ export const SaleModalContent = ({
               <UserLink
                 userId={purchaseDetails.sellerUserId}
                 popover
-                textVariant='body'
                 size='l'
+                onClick={onClose}
               />
             </Flex>
           </DetailSection>
@@ -134,12 +134,7 @@ export const SaleModalContent = ({
               </Button>
             }
           >
-            <UserLink
-              userId={purchaseDetails.buyerUserId}
-              popover
-              textVariant='body'
-              size='l'
-            />
+            <UserLink userId={purchaseDetails.buyerUserId} popover size='l' />
           </DetailSection>
         </Flex>
         <DetailSection
