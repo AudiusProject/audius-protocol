@@ -56,7 +56,6 @@ import {
   MutationHookResults
 } from './types'
 import { capitalize, getKeyFromFetchArgs, selectCommonEntityMap } from './utils'
-import { createRequestBatcher } from './createRequestBatcher'
 
 type Entity = Collection | Track | User
 

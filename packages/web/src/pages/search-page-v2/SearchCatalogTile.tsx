@@ -19,7 +19,7 @@ export const SearchCatalogTile = () => {
       direction='column'
       gap={isMobile ? 's' : 'l'}
       alignItems='center'
-      css={{ width: '100%' }}
+      w={isMobile ? 'auto' : '100%'}
     >
       <IconSearch size={isMobile ? 'l' : '2xl'} fill={color.icon.default} />
       <Text

@@ -89,6 +89,10 @@ export type EndpointConfig<Args, Data> = {
     fetchArgs: FetchBatchArgs<Args>,
     context: AudiusQueryContextType
   ) => Promise<Data[]>
+  onQueryStarted?: (
+    fetchArgs: Args,
+    context: { dispatch: ThunkDispatch<any, any, any> }
+  ) => void
   onQuerySuccess?: (
     data: Data,
     fetchArgs: Args,

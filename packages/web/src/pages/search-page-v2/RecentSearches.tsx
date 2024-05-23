@@ -28,6 +28,7 @@ import { Link } from 'react-router-dom'
 
 import { UserNameAndBadges } from 'components/user-name-and-badges/UserNameAndBadges'
 import { useCollectionCoverArt2 } from 'hooks/useCollectionCoverArt'
+import { useMedia } from 'hooks/useMedia'
 import { useTrackCoverArt2 } from 'hooks/useTrackCoverArt'
 import { useProfilePicture } from 'hooks/useUserProfilePicture'
 import { profilePage } from 'utils/route'
@@ -236,6 +237,7 @@ const itemComponentByKind = {
 export const RecentSearches = () => {
   const searchItems = useSelector(getSearchHistory)
   const dispatch = useDispatch()
+  const { isMobile } = useMedia()
 
   const truncatedSearchItems = useMemo(
     () => searchItems.slice(0, MAX_RECENT_SEARCHES),
@@ -246,14 +248,8 @@ export const RecentSearches = () => {
     dispatch(clearHistory())
   }, [dispatch])
 
-  return truncatedSearchItems.length ? (
-    <Paper
-      pv='xl'
-      w='100%'
-      css={{ maxWidth: '688px' }}
-      direction='column'
-      gap='l'
-    >
+  const content = (
+    <>
       <Flex mh='xl'>
         <Text variant='heading' size='s' css={{ alignSelf: 'flex-start' }}>
           {messages.title}
@@ -275,6 +271,24 @@ export const RecentSearches = () => {
       >
         {messages.clear}
       </Button>
+    </>
+  )
+
+  if (!truncatedSearchItems.length) return null
+
+  return isMobile ? (
+    <Flex w='100%' direction='column' gap='l'>
+      {content}
+    </Flex>
+  ) : (
+    <Paper
+      pv='xl'
+      w='100%'
+      css={{ maxWidth: '688px' }}
+      direction='column'
+      gap='l'
+    >
+      {content}
     </Paper>
-  ) : null
+  )
 }

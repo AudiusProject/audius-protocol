@@ -169,10 +169,14 @@ export const SearchPageV2 = () => {
       // canonicalUrl={fullSearchResultsPage(query)}
       header={header}
     >
-      <Flex direction='column' w='100'>
+      <Flex direction='column' w='100%'>
         {isMobile ? header : null}
         {!query ? (
-          <Flex direction='column' alignItems='center' gap='2xl'>
+          <Flex
+            direction='column'
+            alignItems='center'
+            gap={isMobile ? 'xl' : 'l'}
+          >
             <SearchCatalogTile />
             <RecentSearches />
           </Flex>
