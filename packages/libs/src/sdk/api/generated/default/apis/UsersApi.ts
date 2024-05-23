@@ -32,6 +32,7 @@ import type {
   UserAssociatedWalletResponse,
   UserResponse,
   UserSearch,
+  UsersResponse,
   VerifyToken,
 } from '../models';
 import {
@@ -67,6 +68,8 @@ import {
     UserResponseToJSON,
     UserSearchFromJSON,
     UserSearchToJSON,
+    UsersResponseFromJSON,
+    UsersResponseToJSON,
     VerifyTokenFromJSON,
     VerifyTokenToJSON,
 } from '../models';
@@ -200,6 +203,11 @@ export interface GetUserByHandleRequest {
 
 export interface GetUserIDFromWalletRequest {
     associatedWallet: string;
+}
+
+export interface GetUsersRequest {
+    userId?: string;
+    id?: Array<string>;
 }
 
 export interface SearchUsersRequest {
@@ -1039,6 +1047,41 @@ export class UsersApi extends runtime.BaseAPI {
      */
     async getUserIDFromWallet(params: GetUserIDFromWalletRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<UserAssociatedWalletResponse> {
         const response = await this.getUserIDFromWalletRaw(params, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * @hidden
+     * Gets a list of users by ID
+     */
+    async getUsersRaw(params: GetUsersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<UsersResponse>> {
+        const queryParameters: any = {};
+
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
+        }
+
+        if (params.id) {
+            queryParameters['id'] = params.id;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/users`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => UsersResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Gets a list of users by ID
+     */
+    async getUsers(params: GetUsersRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<UsersResponse> {
+        const response = await this.getUsersRaw(params, initOverrides);
         return await response.value();
     }
 

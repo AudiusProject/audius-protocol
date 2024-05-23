@@ -83,6 +83,7 @@ const FULL_ENDPOINT_MAP = {
   playlistUpdates: (userId: OpaqueID) =>
     `/notifications/${userId}/playlist_updates`,
   getUser: (userId: OpaqueID) => `/users/${userId}`,
+  getUsers: `/users`,
   userByHandle: (handle: OpaqueID) => `/users/handle/${handle}`,
   userTracksByHandle: (handle: OpaqueID) => `/users/handle/${handle}/tracks`,
   userAiTracksByHandle: (handle: OpaqueID) =>
@@ -234,6 +235,12 @@ type GetPlaylistFavoriteUsersArgs = {
 
 type GetUserArgs = {
   userId: ID
+  currentUserId: Nullable<ID>
+  abortOnUnreachable?: boolean
+}
+
+type GetUsersArgs = {
+  userIds: ID[]
   currentUserId: Nullable<ID>
   abortOnUnreachable?: boolean
 }
@@ -1014,6 +1021,33 @@ export class AudiusAPIClient {
 
     const response = await this._getResponse<APIResponse<APIUser[]>>(
       FULL_ENDPOINT_MAP.getUser(encodedUserId),
+      params,
+      undefined,
+      undefined,
+      undefined,
+      abortOnUnreachable
+    )
+
+    if (!response) return []
+
+    const adapted = response.data.map(adapter.makeUser).filter(removeNullable)
+    return adapted
+  }
+
+  async getUsers({ userIds, currentUserId, abortOnUnreachable }: GetUsersArgs) {
+    this._assertInitialized()
+    const encodedUserIds = userIds.map((id) => this._encodeOrThrow(id))
+    const encodedCurrentUserId = encodeHashId(currentUserId)
+
+    const params = {
+      id: encodedUserIds,
+      user_id: encodedCurrentUserId || undefined,
+      limit: encodedUserIds.length,
+      seb: 'sebastian'
+    }
+
+    const response = await this._getResponse<APIResponse<APIUser[]>>(
+      FULL_ENDPOINT_MAP.getUsers,
       params,
       undefined,
       undefined,
