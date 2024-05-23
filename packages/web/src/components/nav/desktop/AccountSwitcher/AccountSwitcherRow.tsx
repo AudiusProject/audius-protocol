@@ -5,6 +5,7 @@ import styled from '@emotion/styled'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import UserBadges from 'components/user-badges/UserBadges'
 import { useProfilePicture } from 'hooks/useUserProfilePicture'
+import { backgroundOverlay } from 'utils/styleUtils'
 
 import styles from './AccountSwitcherRow.module.css'
 
@@ -41,16 +42,10 @@ export const AccountSwitcherRow = ({
       css={{
         ...(isSelected
           ? {
-              '&:before': {
-                content: '""',
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                height: '100%',
-                width: '100%',
-                backgroundColor: color.background.accent,
-                opacity: 0.05
-              }
+              ...backgroundOverlay({
+                color: color.background.accent,
+                opacity: 0.03
+              })
             }
           : {
               '&:hover': {

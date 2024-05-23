@@ -1,8 +1,14 @@
-import { useCallback } from 'react'
+import { useCallback, useMemo } from 'react'
 
 import { ID, ManagedUserMetadata, UserMetadata } from '@audius/common/models'
-import { Box, Flex, IconUserArrowRotate, Text } from '@audius/harmony'
-import styled from '@emotion/styled'
+import {
+  Box,
+  Flex,
+  IconUserArrowRotate,
+  Scrollbar,
+  Text,
+  useTheme
+} from '@audius/harmony'
 
 import { AccountSwitcherRow } from './AccountSwitcherRow'
 
@@ -18,17 +24,25 @@ export type AccountListContentProps = {
   onAccountSelected: (user: UserMetadata) => void
 }
 
-const StyledList = styled.ul`
-  all: unset;
-  list-style: none;
-`
-
 export const AccountListContent = ({
-  accounts,
+  accounts: accountsProp,
   managerAccount,
   currentUserId,
   onAccountSelected
 }: AccountListContentProps) => {
+  const { spacing } = useTheme()
+  // If the current user is one of the managed account, sort it to the top of
+  // the list
+  const accounts = useMemo(() => {
+    const selectedIdx = accountsProp.findIndex(
+      ({ user }) => user.user_id === currentUserId
+    )
+    if (selectedIdx === -1) return accountsProp
+    const withoutSelected = [...accountsProp]
+    const selectedAccount = withoutSelected.splice(selectedIdx, 1)[0]
+    return [selectedAccount, ...withoutSelected]
+  }, [accountsProp, currentUserId])
+
   const onUserSelected = useCallback(
     (user: UserMetadata) => {
       if (user.user_id !== currentUserId) {
@@ -41,9 +55,13 @@ export const AccountListContent = ({
     <Flex
       direction='column'
       w={360}
-      borderRadius='s'
-      border='strong'
       backgroundColor='white'
+      css={{
+        // Make sure the popup has at least 24 unites of space from the
+        // top of the page and 16 units from the bottom.
+        maxHeight: `calc(100vh - ${spacing.unit24 + spacing.unit16}px)`,
+        overflow: 'hidden'
+      }}
     >
       <Flex
         backgroundColor='white'
@@ -59,7 +77,14 @@ export const AccountListContent = ({
           {messages.switchAccount}
         </Text>
       </Flex>
-      <StyledList role='menu' tabIndex={-1}>
+      <Flex
+        as='ul'
+        flex={1}
+        direction='column'
+        role='menu'
+        tabIndex={-1}
+        css={{ listStyle: 'none', overflow: 'hidden' }}
+      >
         <li
           role='menuitem'
           tabIndex={0}
@@ -82,22 +107,26 @@ export const AccountListContent = ({
           </Text>
         </Box>
 
-        {accounts.map(({ user }, i) => (
-          <li
-            key={user.user_id}
-            role='menuitem'
-            onClick={() => onUserSelected(user)}
-            tabIndex={-1}
-          >
-            <Box borderBottom={i < accounts.length - 1 ? 'default' : undefined}>
-              <AccountSwitcherRow
-                user={user}
-                isSelected={currentUserId === user.user_id}
-              />
-            </Box>
-          </li>
-        ))}
-      </StyledList>
+        <Scrollbar>
+          {accounts.map(({ user }, i) => (
+            <li
+              key={user.user_id}
+              role='menuitem'
+              onClick={() => onUserSelected(user)}
+              tabIndex={-1}
+            >
+              <Box
+                borderBottom={i < accounts.length - 1 ? 'default' : undefined}
+              >
+                <AccountSwitcherRow
+                  user={user}
+                  isSelected={currentUserId === user.user_id}
+                />
+              </Box>
+            </li>
+          ))}
+        </Scrollbar>
+      </Flex>
     </Flex>
   )
 }
