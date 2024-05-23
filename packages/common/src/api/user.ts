@@ -51,6 +51,12 @@ const userApi = createApi({
         const apiUser = await apiClient.getUser({ userId: id, currentUserId })
         return apiUser?.[0]
       },
+      fetchBatch: async (
+        { ids, currentUserId }: { ids: ID[]; currentUserId: Nullable<ID> },
+        { apiClient }
+      ) => {
+        return await apiClient.getUsers({ userIds: ids, currentUserId })
+      },
       options: {
         idArgKey: 'id',
         kind: Kind.USERS,

@@ -1,12 +1,14 @@
+import { MouseEventHandler, useCallback, useMemo } from 'react'
+
 import {
-  ID,
-  Kind,
-  SquareSizes,
-  UserMetadata,
-  UserTrackMetadata
-} from '@audius/common/models'
+  useGetPlaylistById,
+  useGetTrackById,
+  useGetUserById
+} from '@audius/common/api'
+import { Kind, SquareSizes } from '@audius/common/models'
 import {
   SearchItem,
+  searchActions,
   accountSelectors,
   searchSelectors
 } from '@audius/common/store'
@@ -21,98 +23,191 @@ import {
   Text,
   useTheme
 } from '@audius/harmony'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
+import { Link } from 'react-router-dom'
 
-import { UserNameAndBadges } from 'components/user-name-and-badges/UserNameAndBadges'
-import { useGetRecentSearches, useGetTrackById } from '@audius/common/api'
-import { useTrackCoverArt2 } from 'hooks/useTrackCoverArt'
-import { useCallback } from 'react'
 import { useHistoryContext } from 'app/HistoryProvider'
+import { UserNameAndBadges } from 'components/user-name-and-badges/UserNameAndBadges'
+import { useCollectionCoverArt2 } from 'hooks/useCollectionCoverArt'
+import { useTrackCoverArt2 } from 'hooks/useTrackCoverArt'
 import { useProfilePicture } from 'hooks/useUserProfilePicture'
+import { albumPage, profilePage } from 'utils/route'
+
+const { removeItem, clearHistory } = searchActions
 const { getUserId } = accountSelectors
 const { getSearchHistory } = searchSelectors
 
 const messages = {
+  album: 'Album',
+  clear: 'Clear Recent Searches',
+  goTo: 'Go to: ',
+  playlist: 'Playlist',
+  profile: 'Profile',
+  remove: 'Remove recent search',
   title: 'Recent searches',
-  clear: 'Clear Recent Searches'
+  track: 'Track'
 }
 
 type RecentSearchProps = {
   children: React.ReactNode
   title: string
+  searchItem: SearchItem
+  linkTo: string
 }
 
 const RecentSearch = (props: RecentSearchProps) => {
-  const { children, title } = props
-  const { history } = useHistoryContext()
+  const { children, linkTo, searchItem, title } = props
+  const { color } = useTheme()
+  const dispatch = useDispatch()
 
-  const handleClick = useCallback(() => {
-    history.push(`/search/${title}`)
-  }, [])
+  const handleClickRemove = useCallback<MouseEventHandler>(
+    (e) => {
+      e.stopPropagation()
+      dispatch(removeItem({ searchItem }))
+    },
+    [dispatch, searchItem]
+  )
 
   return (
-    <Flex
-      w='100%'
-      pv='xs'
-      css={{ justifyContent: 'space-between', cursor: 'pointer' }}
-      onClick={handleClick}
-      role='button'
-      aria-label={`Go to search result for ${title}`}
-    >
-      <Flex gap='m'>{children}</Flex>
-      <IconButton
-        aria-label='Remove recent search'
-        icon={IconClose}
-        color='subdued'
-        size='s'
-      />
-    </Flex>
+    <Link to={linkTo}>
+      <Flex
+        w='100%'
+        pv='s'
+        ph='xl'
+        css={{
+          justifyContent: 'space-between',
+          cursor: 'pointer',
+          ':hover': {
+            backgroundColor: color.background.surface2
+          }
+        }}
+        role='button'
+        aria-label={`${messages.goTo} ${title}`}
+      >
+        <Flex gap='m'>{children}</Flex>
+        <IconButton
+          aria-label={messages.remove}
+          icon={IconClose}
+          color='subdued'
+          size='s'
+          onClick={handleClickRemove}
+        />
+      </Flex>
+    </Link>
   )
 }
 
-const RecentSearchTrack = (props: { id: ID }) => {
-  const { id } = props
+const RecentSearchTrack = (props: { searchItem: SearchItem }) => {
+  const { searchItem } = props
+  const { id } = searchItem
   const currentUserId = useSelector(getUserId)
   const { data: track } = useGetTrackById({ id, currentUserId })
 
   const image = useTrackCoverArt2(track?.track_id, SquareSizes.SIZE_150_BY_150)
 
   if (!track) return null
-  const { title, user } = track
+  const { permalink, title, user } = track
 
   return (
-    <RecentSearch title={title}>
+    <RecentSearch searchItem={searchItem} title={title} linkTo={permalink}>
       <Artwork src={image} w='40px' borderRadius='xs' />
       <Flex direction='column' css={{ alignItems: 'flex-start' }}>
         <Text variant='body' size='s'>
           {title}
         </Text>
-        {user ? (
-          <UserNameAndBadges
-            renderName={(name) => (
-              <Text variant='body' size='xs' color='subdued'>
-                {name}
-              </Text>
-            )}
-            userId={user.user_id}
-          />
-        ) : null}
+        <Flex alignItems='baseline'>
+          <Text variant='body' size='xs' color='subdued'>
+            {messages.track}
+            {' |'}
+            &nbsp;
+          </Text>
+          {user ? (
+            <UserNameAndBadges
+              renderName={(name) => (
+                <Text variant='body' size='xs' color='subdued'>
+                  {name}
+                </Text>
+              )}
+              userId={user.user_id}
+            />
+          ) : null}
+        </Flex>
+      </Flex>
+    </RecentSearch>
+  )
+}
+
+const RecentSearchCollection = (props: { searchItem: SearchItem }) => {
+  const { searchItem } = props
+  const { id } = searchItem
+  const currentUserId = useSelector(getUserId)
+  const { data: playlist } = useGetPlaylistById({
+    playlistId: id,
+    currentUserId
+  })
+
+  const image = useCollectionCoverArt2(
+    playlist?.playlist_id,
+    SquareSizes.SIZE_150_BY_150
+  )
+
+  if (!playlist) return null
+  const { is_album, playlist_name, permalink, user } = playlist
+
+  return (
+    <RecentSearch
+      searchItem={searchItem}
+      title={playlist_name}
+      linkTo={permalink}
+    >
+      <Artwork src={image} w='40px' borderRadius='xs' />
+      <Flex direction='column' css={{ alignItems: 'flex-start' }}>
+        <Text variant='body' size='s'>
+          {playlist_name}
+        </Text>
+        <Flex alignItems='baseline'>
+          <Text variant='body' size='xs' color='subdued'>
+            {is_album ? messages.album : messages.playlist}
+            {' |'}
+            &nbsp;
+          </Text>
+          {user ? (
+            <UserNameAndBadges
+              renderName={(name) => (
+                <Text variant='body' size='xs' color='subdued'>
+                  {name}
+                </Text>
+              )}
+              userId={user.user_id}
+            />
+          ) : null}
+        </Flex>
       </Flex>
     </RecentSearch>
   )
 }
 
 type RecentSearchUserProps = {
-  user: UserMetadata
+  searchItem: SearchItem
 }
 
 const RecentSearchUser = (props: RecentSearchUserProps) => {
-  const { user } = props
-  const { user_id, name } = user
-  const image = useProfilePicture(user_id, SquareSizes.SIZE_150_BY_150)
+  const { searchItem } = props
+  const { id } = searchItem
+  const currentUserId = useSelector(getUserId)
+  const { data: user } = useGetUserById({ id, currentUserId })
+
+  const image = useProfilePicture(id, SquareSizes.SIZE_150_BY_150)
+
+  if (!user) return null
+  const { handle, name } = user
 
   return (
-    <RecentSearch title={name}>
+    <RecentSearch
+      searchItem={searchItem}
+      title={name}
+      linkTo={profilePage(handle)}
+    >
       <Avatar src={image} w='40px' borderWidth='thin' />
       <Flex direction='column' css={{ alignItems: 'flex-start' }}>
         <UserNameAndBadges
@@ -131,38 +226,43 @@ const RecentSearchUser = (props: RecentSearchUserProps) => {
   )
 }
 
+const itemComponentByKind = {
+  [Kind.TRACKS]: RecentSearchTrack,
+  [Kind.USERS]: RecentSearchUser,
+  [Kind.COLLECTIONS]: RecentSearchCollection
+}
+
 export const RecentSearches = () => {
   const searchItems = useSelector(getSearchHistory)
-  console.log('searchItems', searchItems)
-  //   const recentSearches = useGetRecentSearches({ searchItems })
-  //   console.log('recentSearches', recentSearches)
+  const dispatch = useDispatch()
+
+  const truncatedSearchItems = useMemo(
+    () => searchItems.slice(0, 12),
+    [searchItems]
+  )
+
+  const handleClickClear = useCallback(() => {
+    dispatch(clearHistory())
+  }, [dispatch])
 
   return (
     <Paper
-      p='xl'
+      pv='xl'
       w='100%'
       css={{ maxWidth: '688px' }}
       direction='column'
       gap='l'
     >
-      <Text variant='heading' size='s' css={{ alignSelf: 'flex-start' }}>
-        {messages.title}
-      </Text>
-      <Flex direction='column' gap='s'>
-        {console.log('renderr')}
-        {(searchItems || []).map((searchItem: SearchItem) => {
-          if (searchItem.kind === Kind.TRACKS) {
-            console.log('searchItem', searchItem.id)
-            return <RecentSearchTrack id={searchItem.id} key={searchItem.id} />
-          }
-          //   if (recentSearch.kind === Kind.USERS) {
-          //     return (
-          //       <RecentSearchUser
-          //         user={recentSearch.item}
-          //         key={recentSearch.id}
-          //       />
-          //     )
-          //   }
+      <Flex mh='xl'>
+        <Text variant='heading' size='s' css={{ alignSelf: 'flex-start' }}>
+          {messages.title}
+        </Text>
+      </Flex>
+      <Flex direction='column'>
+        {(truncatedSearchItems || []).map((searchItem: SearchItem) => {
+          const { kind, id } = searchItem
+          const ItemComponent = itemComponentByKind[kind]
+          return <ItemComponent searchItem={searchItem} key={id} />
         })}
       </Flex>
       <Button
@@ -170,6 +270,7 @@ export const RecentSearches = () => {
         size='small'
         fullWidth={false}
         css={{ alignSelf: 'center' }}
+        onClick={handleClickClear}
       >
         {messages.clear}
       </Button>

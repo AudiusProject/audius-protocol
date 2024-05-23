@@ -21,6 +21,12 @@ const collectionApi = createApi({
           })
         )[0]
       },
+      fetchBatch: async (
+        { ids, currentUserId }: { ids: ID[]; currentUserId: Nullable<ID> },
+        { apiClient }
+      ) => {
+        return await apiClient.getPlaylists({ playlistIds: ids, currentUserId })
+      },
       options: {
         idArgKey: 'playlistId',
         kind: Kind.COLLECTIONS,

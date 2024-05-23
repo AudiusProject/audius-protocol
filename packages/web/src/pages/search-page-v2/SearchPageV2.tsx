@@ -165,7 +165,7 @@ export const SearchPageV2 = () => {
 
   return (
     <PageComponent
-      title={`${query}`}
+      title={query ?? 'Search'}
       description={`Search results for ${query}`}
       // canonicalUrl={fullSearchResultsPage(query)}
       header={header}

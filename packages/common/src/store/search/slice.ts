@@ -4,6 +4,7 @@ import type { Storage } from 'redux-persist'
 import { persistReducer } from 'redux-persist'
 
 import { Nullable } from '~/utils/typeUtils'
+
 import { SearchItem as SearchItemV2 } from './types'
 
 type SearchItem = string | SearchItemV2
@@ -26,6 +27,10 @@ export type SetSearchHistoryAction = PayloadAction<{
 
 export type AddSearchHistoryItemAction = PayloadAction<{
   searchItem: Nullable<SearchItem>
+}>
+
+export type RemoveSearchHistoryItemAction = PayloadAction<{
+  searchItem: SearchItem
 }>
 
 const slice = createSlice({
@@ -55,6 +60,16 @@ const slice = createSlice({
         )
         state.history = [trimmedItem, ...filteredSearch]
       }
+    },
+    removeItem: (state, action: RemoveSearchHistoryItemAction) => {
+      const { searchItem } = action.payload
+      state.history = state.history.filter((item) => {
+        if (isSearchItemV2(searchItem) && isSearchItemV2(item)) {
+          return item.id !== searchItem.id || item.kind !== searchItem.kind
+        } else {
+          return item !== searchItem
+        }
+      })
     }
   }
 })
