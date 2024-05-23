@@ -1,5 +1,6 @@
 import { USDC } from '@audius/fixed-decimal'
 import { Button, Text } from '@audius/harmony'
+import { instanceOfPurchaseGate } from '@audius/sdk'
 
 import { getCopyableLink } from '../../util/shareUtil'
 
@@ -12,7 +13,7 @@ const ListenOnAudiusCTA = ({ audiusURL, streamConditions }) => {
   const onClick = () => {
     window.open(getCopyableLink(audiusURL), '_blank')
   }
-  const isPurchaseable = streamConditions && 'usdc_purchase' in streamConditions
+  const isPurchaseable = instanceOfPurchaseGate(streamConditions)
 
   return (
     <Button
@@ -23,7 +24,7 @@ const ListenOnAudiusCTA = ({ audiusURL, streamConditions }) => {
       <Text variant='title' size='l'>
         {isPurchaseable
           ? `${messages.buy} $${USDC(
-              streamConditions.usdc_purchase.price / 100
+              streamConditions.usdcPurchase.price / 100
             ).toLocaleString('en-US', {
               minimumFractionDigits: 2,
               maximumFractionDigits: 2

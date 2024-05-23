@@ -1,5 +1,7 @@
 import { useState, useContext, useEffect } from 'react'
 
+import { instanceOfPurchaseGate } from '@audius/sdk'
+
 import { isMobileWebTwitter } from '../../util/isMobileWebTwitter'
 import Artwork from '../artwork/Artwork'
 import ShareButton from '../button/ShareButton'
@@ -58,7 +60,7 @@ const TrackPlayerCard = ({
     }
     setArtworkWrapperStyle(newStyle)
   }, [height, width])
-  const isPurchaseable = streamConditions && 'usdc_purchase' in streamConditions
+  const isPurchaseable = instanceOfPurchaseGate(streamConditions)
 
   return (
     <Card

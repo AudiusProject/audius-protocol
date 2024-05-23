@@ -1,4 +1,5 @@
 import { useState, useContext, useCallback, useEffect } from 'react'
+
 import { instanceOfPurchaseGate } from '@audius/sdk'
 
 import usePlayback from '../../hooks/usePlayback'
@@ -177,6 +178,7 @@ const CollectionPlayerContainer = ({
         playingState={playingState}
         seekTo={seekTo}
         isTwitter={isTwitter}
+        streamConditions={collection.streamConditions}
       />
     </>
   )

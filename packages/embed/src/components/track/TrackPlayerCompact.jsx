@@ -1,3 +1,5 @@
+import { instanceOfPurchaseGate } from '@audius/sdk'
+
 import Artwork from '../artwork/Artwork'
 import AudiusLogoButton from '../button/AudiusLogoButton'
 import ShareButton from '../button/ShareButton'
@@ -25,7 +27,7 @@ const TrackPlayerCompact = ({
   backgroundColor,
   streamConditions
 }) => {
-  const isPurchaseable = streamConditions && 'usdc_purchase' in streamConditions
+  const isPurchaseable = instanceOfPurchaseGate(streamConditions)
 
   return (
     <div
