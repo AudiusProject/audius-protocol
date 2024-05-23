@@ -208,7 +208,7 @@ playlists_route_parser.add_argument(
 class BulkPlaylists(Resource):
     @record_metrics
     @ns.doc(
-        id="""Get Playlists""",
+        id="""Get Bulk Playlists""",
         description="""Gets a list of playlists by ID""",
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
@@ -231,7 +231,7 @@ class BulkPlaylists(Resource):
 class BulkPlaylistsFull(Resource):
     @record_metrics
     @ns.doc(
-        id="""Get Playlists""",
+        id="""Get Bulk Playlists""",
         description="""Gets a list of playlists by ID""",
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )

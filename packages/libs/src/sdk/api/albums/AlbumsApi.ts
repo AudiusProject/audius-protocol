@@ -27,6 +27,7 @@ import {
   FavoriteAlbumRequest,
   FavoriteAlbumSchema,
   getAlbumRequest,
+  getAlbumsRequest,
   getAlbumTracksRequest,
   PurchaseAlbumRequest,
   PurchaseAlbumSchema,
@@ -64,6 +65,11 @@ export class AlbumsApi {
   async getAlbum(params: getAlbumRequest) {
     const { userId, albumId } = params
     return await this.playlistsApi.getPlaylist({ userId, playlistId: albumId })
+  }
+
+  async getBulkAlbums(params: getAlbumsRequest) {
+    const { userId, id } = params
+    return await this.playlistsApi.getBulkPlaylists({ userId, id })
   }
 
   async getAlbumTracks(params: getAlbumTracksRequest) {

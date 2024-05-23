@@ -127,6 +127,12 @@ export interface GetAudioTransactionsRequest {
     encodedDataSignature?: string;
 }
 
+export interface GetBulkUsersRequest {
+    userId?: string;
+    id?: Array<string>;
+    ids?: string;
+}
+
 export interface GetFavoritesRequest {
     id: string;
     offset?: number;
@@ -312,9 +318,8 @@ export interface GetUSDCTransactionsRequest {
 }
 
 export interface GetUserRequest {
+    id: string;
     userId?: string;
-    id?: Array<string>;
-    ids?: string;
 }
 
 export interface GetUserByHandleRequest {
@@ -359,11 +364,6 @@ export interface GetUserLibraryTracksRequest {
     type?: GetUserLibraryTracksTypeEnum;
     encodedDataMessage?: string;
     encodedDataSignature?: string;
-}
-
-export interface GetUser0Request {
-    id: string;
-    userId?: string;
 }
 
 export interface GetUsersTrackHistoryRequest {
@@ -615,6 +615,45 @@ export class UsersApi extends runtime.BaseAPI {
      */
     async getAudioTransactions(params: GetAudioTransactionsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TransactionHistoryResponse> {
         const response = await this.getAudioTransactionsRaw(params, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * @hidden
+     * Gets a list of users by ID
+     */
+    async getBulkUsersRaw(params: GetBulkUsersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullUserResponse>> {
+        const queryParameters: any = {};
+
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
+        }
+
+        if (params.id) {
+            queryParameters['id'] = params.id;
+        }
+
+        if (params.ids !== undefined) {
+            queryParameters['ids'] = params.ids;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/users`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => FullUserResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Gets a list of users by ID
+     */
+    async getBulkUsers(params: GetBulkUsersRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullUserResponse> {
+        const response = await this.getBulkUsersRaw(params, initOverrides);
         return await response.value();
     }
 
@@ -1701,27 +1740,23 @@ export class UsersApi extends runtime.BaseAPI {
 
     /**
      * @hidden
-     * Gets a list of users by ID
+     * Gets a single user by their user ID
      */
     async getUserRaw(params: GetUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullUserResponse>> {
+        if (params.id === null || params.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getUser.');
+        }
+
         const queryParameters: any = {};
 
         if (params.userId !== undefined) {
             queryParameters['user_id'] = params.userId;
         }
 
-        if (params.id) {
-            queryParameters['id'] = params.id;
-        }
-
-        if (params.ids !== undefined) {
-            queryParameters['ids'] = params.ids;
-        }
-
         const headerParameters: runtime.HTTPHeaders = {};
 
         const response = await this.request({
-            path: `/users`,
+            path: `/users/{id}`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
@@ -1731,9 +1766,9 @@ export class UsersApi extends runtime.BaseAPI {
     }
 
     /**
-     * Gets a list of users by ID
+     * Gets a single user by their user ID
      */
-    async getUser(params: GetUserRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullUserResponse> {
+    async getUser(params: GetUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullUserResponse> {
         const response = await this.getUserRaw(params, initOverrides);
         return await response.value();
     }
@@ -1977,41 +2012,6 @@ export class UsersApi extends runtime.BaseAPI {
      */
     async getUserLibraryTracks(params: GetUserLibraryTracksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TrackLibraryResponseFull> {
         const response = await this.getUserLibraryTracksRaw(params, initOverrides);
-        return await response.value();
-    }
-
-    /**
-     * @hidden
-     * Gets a single user by their user ID
-     */
-    async getUser_1Raw(params: GetUser0Request, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullUserResponse>> {
-        if (params.id === null || params.id === undefined) {
-            throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getUser_1.');
-        }
-
-        const queryParameters: any = {};
-
-        if (params.userId !== undefined) {
-            queryParameters['user_id'] = params.userId;
-        }
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        const response = await this.request({
-            path: `/users/{id}`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => FullUserResponseFromJSON(jsonValue));
-    }
-
-    /**
-     * Gets a single user by their user ID
-     */
-    async getUser_1(params: GetUser0Request, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullUserResponse> {
-        const response = await this.getUser_1Raw(params, initOverrides);
         return await response.value();
     }
 

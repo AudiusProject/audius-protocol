@@ -230,7 +230,7 @@ class FullUser(Resource):
 
 tracks_route_parser = current_user_parser.copy()
 tracks_route_parser.add_argument(
-    "id", action="append", required=False, description="The ID of the track(s)"
+    "id", action="append", required=False, description="The ID of the user(s)"
 )
 
 
@@ -238,7 +238,7 @@ tracks_route_parser.add_argument(
 class BulkUsers(Resource):
     @record_metrics
     @ns.doc(
-        id="""Get Users""",
+        id="""Get Bulk Users""",
         description="Gets a list of users by ID",
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
@@ -259,9 +259,8 @@ class BulkUsers(Resource):
 class BulkFullUsers(Resource):
     @record_metrics
     @ns.doc(
-        id="""Get User""",
+        id="""Get Bulk Users""",
         description="Gets a list of users by ID",
-        params={"ids": "A list of user IDs"},
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
     @ns.expect(tracks_route_parser)

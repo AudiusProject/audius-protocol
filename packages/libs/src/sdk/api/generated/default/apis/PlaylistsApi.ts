@@ -32,6 +32,11 @@ import {
     TrendingPlaylistsResponseToJSON,
 } from '../models';
 
+export interface GetBulkPlaylistsRequest {
+    userId?: string;
+    id?: Array<string>;
+}
+
 export interface GetPlaylistRequest {
     playlistId: string;
     userId?: string;
@@ -47,11 +52,6 @@ export interface GetPlaylistTracksRequest {
     playlistId: string;
 }
 
-export interface GetPlaylistsRequest {
-    userId?: string;
-    id?: Array<string>;
-}
-
 export interface GetTrendingPlaylistsRequest {
     time?: GetTrendingPlaylistsTimeEnum;
 }
@@ -64,6 +64,41 @@ export interface SearchPlaylistsRequest {
  * 
  */
 export class PlaylistsApi extends runtime.BaseAPI {
+
+    /**
+     * @hidden
+     * Gets a list of playlists by ID
+     */
+    async getBulkPlaylistsRaw(params: GetBulkPlaylistsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PlaylistResponse>> {
+        const queryParameters: any = {};
+
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
+        }
+
+        if (params.id) {
+            queryParameters['id'] = params.id;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/playlists`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => PlaylistResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Gets a list of playlists by ID
+     */
+    async getBulkPlaylists(params: GetBulkPlaylistsRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PlaylistResponse> {
+        const response = await this.getBulkPlaylistsRaw(params, initOverrides);
+        return await response.value();
+    }
 
     /**
      * @hidden
@@ -167,41 +202,6 @@ export class PlaylistsApi extends runtime.BaseAPI {
      */
     async getPlaylistTracks(params: GetPlaylistTracksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PlaylistTracksResponse> {
         const response = await this.getPlaylistTracksRaw(params, initOverrides);
-        return await response.value();
-    }
-
-    /**
-     * @hidden
-     * Gets a list of playlists by ID
-     */
-    async getPlaylistsRaw(params: GetPlaylistsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PlaylistResponse>> {
-        const queryParameters: any = {};
-
-        if (params.userId !== undefined) {
-            queryParameters['user_id'] = params.userId;
-        }
-
-        if (params.id) {
-            queryParameters['id'] = params.id;
-        }
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        const response = await this.request({
-            path: `/playlists`,
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => PlaylistResponseFromJSON(jsonValue));
-    }
-
-    /**
-     * Gets a list of playlists by ID
-     */
-    async getPlaylists(params: GetPlaylistsRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PlaylistResponse> {
-        const response = await this.getPlaylistsRaw(params, initOverrides);
         return await response.value();
     }
 
