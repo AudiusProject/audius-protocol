@@ -26,12 +26,13 @@ import {
 import { useDispatch, useSelector } from 'react-redux'
 import { Link } from 'react-router-dom'
 
-import { useHistoryContext } from 'app/HistoryProvider'
 import { UserNameAndBadges } from 'components/user-name-and-badges/UserNameAndBadges'
 import { useCollectionCoverArt2 } from 'hooks/useCollectionCoverArt'
 import { useTrackCoverArt2 } from 'hooks/useTrackCoverArt'
 import { useProfilePicture } from 'hooks/useUserProfilePicture'
-import { albumPage, profilePage } from 'utils/route'
+import { profilePage } from 'utils/route'
+
+const MAX_RECENT_SEARCHES = 12
 
 const { removeItem, clearHistory } = searchActions
 const { getUserId } = accountSelectors
@@ -237,7 +238,7 @@ export const RecentSearches = () => {
   const dispatch = useDispatch()
 
   const truncatedSearchItems = useMemo(
-    () => searchItems.slice(0, 12),
+    () => searchItems.slice(0, MAX_RECENT_SEARCHES),
     [searchItems]
   )
 
@@ -245,7 +246,7 @@ export const RecentSearches = () => {
     dispatch(clearHistory())
   }, [dispatch])
 
-  return (
+  return truncatedSearchItems.length ? (
     <Paper
       pv='xl'
       w='100%'
@@ -275,5 +276,5 @@ export const RecentSearches = () => {
         {messages.clear}
       </Button>
     </Paper>
-  )
+  ) : null
 }
