@@ -1,3 +1,7 @@
+import {
+  makeTrack,
+  makeUser
+} from '@audius/common/src/services/audius-api-client/ResponseAdapter'
 import { developmentConfig } from '@audius/sdk/src/sdk/config/development'
 import { productionConfig } from '@audius/sdk/src/sdk/config/production'
 import { stagingConfig } from '@audius/sdk/src/sdk/config/staging'
@@ -31,11 +35,16 @@ export async function onBeforeRender(pageContext: PageContextServer) {
       throw new Error(discoveryRequestUrl)
     }
 
-    const json = await res.json()
+    const { data } = await res.json()
+    const [apiTrack] = data
+    const track = makeTrack(apiTrack)
+
+    const { user: apiUser } = apiTrack
+    const user = makeUser(apiUser)
 
     return {
       pageContext: {
-        pageProps: { track: json.data[0] }
+        pageProps: { track, user }
       }
     }
   } catch (e) {

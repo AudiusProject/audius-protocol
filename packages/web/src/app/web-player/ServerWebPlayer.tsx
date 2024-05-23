@@ -1,107 +1,57 @@
-import { PropsWithChildren, ReactNode, useRef } from 'react'
+import { PropsWithChildren, ReactNode } from 'react'
 
-import '@audius/harmony/dist/harmony.css'
-import cn from 'classnames'
-import { ConnectedRouter } from 'connected-react-router'
+import { Flex } from '@audius/harmony/src/components/layout/Flex'
+import { ThemeProvider } from '@audius/harmony/src/foundations/theme/ThemeProvider'
+import { StaticRouter } from 'react-router-dom'
+import { PartialDeep } from 'type-fest'
 
-import { AppErrorBoundary } from 'app/AppErrorBoundary'
-import { HistoryContextProvider, useHistoryContext } from 'app/HistoryProvider'
-import { ServerReduxProvider } from 'app/ServerReduxProvider'
-import { ThemeProvider } from 'app/ThemeProvider'
-import {
-  HeaderContextProvider,
-  HeaderContextConsumer
-} from 'components/header/mobile/HeaderContextProvider'
-import ServerNavigator from 'components/nav/ServerNavigator'
-import { ServerPlayBar } from 'components/play-bar/desktop/ServerPlayBar'
-import { useIsMobile } from 'hooks/useIsMobile'
-import { MAIN_CONTENT_ID } from 'pages/MainContentContext'
-import { SsrContextProvider, SsrContextType } from 'ssr/SsrContext'
-import { getSystemAppearance, getTheme } from 'utils/theme/theme'
+import { AppState } from 'store/types'
 
-import styles from './WebPlayer.module.css'
+import { ServerReduxProvider } from './ServerReduxProvider'
 
-type ServerWebPlayerProps = PropsWithChildren<{
-  ssrContextValue: SsrContextType
+type ServerProviderProps = PropsWithChildren<{
+  initialState: PartialDeep<AppState>
+  isMobile: boolean
 }>
 
-const InnerProviderContainer = ({ children }: { children: ReactNode }) => {
-  const { history } = useHistoryContext()
+const ServerProviders = (props: ServerProviderProps) => {
+  const { initialState, children } = props
 
-  const initialStoreState = {
-    ui: {
-      theme: {
-        theme: getTheme(),
-        systemPreference: getSystemAppearance()
-      }
-    }
+  return (
+    <ServerReduxProvider initialState={initialState}>
+      <StaticRouter>
+        <ThemeProvider theme='day'>{children}</ThemeProvider>
+      </StaticRouter>
+    </ServerReduxProvider>
+  )
+}
+
+type WebPlayerContentProps = {
+  children: ReactNode
+  isMobile: boolean
+}
+
+const WebPlayerContent = (props: WebPlayerContentProps) => {
+  const { isMobile, children } = props
+
+  if (isMobile) {
+    // TODO add header
+    return children
   }
 
   return (
-    <>
-      <ServerReduxProvider initialStoreState={initialStoreState}>
-        <ConnectedRouter history={history}>
-          <ThemeProvider>
-            <HeaderContextProvider>
-              {/* @ts-ignore */}
-              {children}
-            </HeaderContextProvider>
-          </ThemeProvider>
-        </ConnectedRouter>
-      </ServerReduxProvider>
-    </>
+    <Flex w='100%'>
+      <Flex h='100%' w={240} backgroundColor='surface1' />
+      {children}
+    </Flex>
   )
 }
 
-const ProviderContainer = ({
-  ssrContextValue,
-  children
-}: ServerWebPlayerProps) => (
-  <>
-    <SsrContextProvider value={ssrContextValue}>
-      <HistoryContextProvider>
-        <InnerProviderContainer>
-          <AppErrorBoundary>{children}</AppErrorBoundary>
-        </InnerProviderContainer>
-      </HistoryContextProvider>
-    </SsrContextProvider>
-  </>
-)
-
-const WebPlayerContent = ({ children }: Partial<ServerWebPlayerProps>) => {
-  const isMobile = useIsMobile()
-  const mainContentRef = useRef(null)
-
+export const ServerWebPlayer = (props: ServerProviderProps) => {
+  const { initialState, isMobile, children } = props
   return (
-    <div className={styles.root}>
-      <div className={cn(styles.app, { [styles.mobileApp]: isMobile })}>
-        <ServerNavigator />
-        <div
-          ref={mainContentRef}
-          id={MAIN_CONTENT_ID}
-          role='main'
-          className={cn(styles.mainContentWrapper, {
-            [styles.mainContentWrapperMobile]: isMobile
-          })}
-        >
-          {/* @ts-ignore */}
-          {isMobile && <HeaderContextConsumer />}
-          {children}
-        </div>
-
-        <ServerPlayBar isMobile={isMobile} />
-      </div>
-    </div>
-  )
-}
-
-export const ServerWebPlayer = ({
-  ssrContextValue,
-  ...other
-}: ServerWebPlayerProps) => {
-  return (
-    <ProviderContainer ssrContextValue={ssrContextValue}>
-      <WebPlayerContent {...other} />
-    </ProviderContainer>
+    <ServerProviders initialState={initialState}>
+      <WebPlayerContent isMobile={isMobile}>{children}</WebPlayerContent>
+    </ServerProviders>
   )
 }

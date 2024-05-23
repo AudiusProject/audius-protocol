@@ -1,10 +1,10 @@
 import { uniq } from 'lodash'
 
 import { createApi } from '~/audius-query'
-import { userMetadataListFromSDK } from '~/models'
 import { ID } from '~/models/Identifiers'
 import { Kind } from '~/models/Kind'
 
+import { userMetadataListFromSDK } from './adapters/user'
 import { userApiFetch } from './user'
 
 type GetTopArtistsForGenreArgs = {

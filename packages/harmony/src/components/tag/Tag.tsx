@@ -2,9 +2,10 @@ import { MouseEvent } from 'react'
 
 import { CSSObject, useTheme } from '@emotion/react'
 
-import { IconButton } from 'components/button'
+import { IconButton } from '../button/IconButton/IconButton'
 
-import { IconCloseAlt, IconPlus } from '../../icons'
+import IconCloseAlt from '../../assets/icons/CloseAlt.svg'
+import IconPlus from '../../assets/icons/Plus.svg'
 import { Text } from '../text'
 
 const messages = {

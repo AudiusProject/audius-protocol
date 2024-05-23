@@ -24,6 +24,7 @@
     "types": ["vite/client"],
     "paths": {
       // "@audius/test": ["./test/test-utils.tsx"],
+      "@audius/common/src/*": ["../../common/src/*"],
       "@audius/common/*": ["../../common/src/*"],
       "~/*": ["../../common/src/*"],
     }

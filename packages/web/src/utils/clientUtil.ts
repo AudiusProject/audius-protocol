@@ -1,4 +1,5 @@
-import { Client, OS, MobileOS } from '@audius/common/models'
+import { Client } from '@audius/common/src/models/Client'
+import { OS, MobileOS } from '@audius/common/src/models/OS'
 
 declare global {
   interface Window {

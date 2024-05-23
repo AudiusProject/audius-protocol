@@ -43,7 +43,7 @@ export const ServerTrackPage = ({
   const track = useSelector(
     (state: AppState) => state.tracks.entries[trackId as ID].metadata
   )
-  // @ts-ignore
+  // @ts-ignore:
   const trackOwner = track?.user
 
   const isOwner = track?.owner_id === userId

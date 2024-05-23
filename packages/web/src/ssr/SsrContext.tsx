@@ -1,4 +1,4 @@
-import { createContext, memo, useContext } from 'react'
+import { createContext, useContext } from 'react'
 
 import { SsrPageProps } from '@audius/common/models'
 import { Nullable } from '@audius/common/utils'
@@ -47,16 +47,18 @@ export const SsrContext = createContext<SsrContextType>({
   history: null
 })
 
-export const SsrContextProvider = memo(
-  (props: { value: SsrContextType; children: JSX.Element }) => {
-    const isMobile = props.value.isServerSide
-      ? props.value.isMobile
-      : isMobileClient()
+type SsrContextProviderProps = {
+  value: SsrContextType
+  children: JSX.Element
+}
 
-    return (
-      <SsrContext.Provider value={{ ...props.value, isMobile }}>
-        {props.children}
-      </SsrContext.Provider>
-    )
-  }
-)
+export const SsrContextProvider = (props: SsrContextProviderProps) => {
+  const { value, children } = props
+  const isMobile = value.isServerSide ? value.isMobile : isMobileClient()
+
+  return (
+    <SsrContext.Provider value={{ ...value, isMobile }}>
+      {children}
+    </SsrContext.Provider>
+  )
+}
