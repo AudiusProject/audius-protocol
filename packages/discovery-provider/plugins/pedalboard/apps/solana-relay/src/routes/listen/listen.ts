@@ -38,8 +38,8 @@ export type RecordListenResponse = {
 }
 
 export const recordListen = async (params: RecordListenParams): Promise<RecordListenResponse> => {
-    const { logger: plogger, userId, trackId, ip } = params
-    const logger = plogger.child({ id: `${userId}-${trackId}-${new Date().getUTCSeconds()}` })
+    const { logger: parentLogger, userId, trackId, ip } = params
+    const logger = parentLogger.child({ id: `${userId}-${trackId}-${new Date().getUTCSeconds()}` })
 
     logger.info({ ip }, "record listen")
 
