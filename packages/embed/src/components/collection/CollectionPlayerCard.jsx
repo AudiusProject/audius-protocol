@@ -102,7 +102,7 @@ const CollectionPlayerCard = ({
       backgroundColor={backgroundColor}
       twitterURL={permalink}
     >
-      {isPurchaseable ? <DogEar /> : null}
+      {isPurchaseable ? <DogEar size='s' /> : null}
       <div className={styles.padding}>
         <div className={styles.topRow}>
           <div className={styles.logo}>
