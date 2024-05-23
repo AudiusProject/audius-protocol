@@ -10,7 +10,7 @@ import MobilePageContainer from 'components/mobile-page-container/MobilePageCont
 import NavContext, {
   LeftPreset,
   RightPreset
-} from 'components/nav/store/context'
+} from 'components/nav/mobile/NavContext'
 import Page from 'components/page/Page'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { useFlag, useRemoteVar } from 'hooks/useRemoteConfig'

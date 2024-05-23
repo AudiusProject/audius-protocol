@@ -25,7 +25,7 @@ import NavContext, {
   LeftPreset,
   CenterPreset,
   RightPreset
-} from 'components/nav/store/context'
+} from 'components/nav/mobile/NavContext'
 import TrackList from 'components/track/mobile/TrackList'
 import { smartCollectionIcons } from 'pages/collection-page/smartCollectionIcons'
 import { computeCollectionMetadataProps } from 'pages/collection-page/store/utils'

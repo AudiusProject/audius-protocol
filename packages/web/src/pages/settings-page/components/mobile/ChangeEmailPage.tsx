@@ -13,7 +13,7 @@ import {
   NewEmailPage,
   VerifyEmailPage
 } from 'components/change-email/ChangeEmailModal'
-import NavContext, { LeftPreset } from 'components/nav/store/context'
+import NavContext, { LeftPreset } from 'components/nav/mobile/NavContext'
 import { ToastContext } from 'components/toast/ToastContext'
 
 import { SettingsPageProps } from './SettingsPage'

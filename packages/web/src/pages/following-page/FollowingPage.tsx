@@ -6,7 +6,7 @@ import {
 } from '@audius/common/store'
 
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
-import NavContext, { LeftPreset } from 'components/nav/store/context'
+import NavContext, { LeftPreset } from 'components/nav/mobile/NavContext'
 import UserList from 'components/user-list/UserList'
 const { getUserList } = followingUserListSelectors
 

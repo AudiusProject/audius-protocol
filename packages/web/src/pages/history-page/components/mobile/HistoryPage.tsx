@@ -6,7 +6,7 @@ import { Button } from '@audius/harmony'
 
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
-import NavContext, { LeftPreset } from 'components/nav/store/context'
+import NavContext, { LeftPreset } from 'components/nav/mobile/NavContext'
 import TrackList from 'components/track/mobile/TrackList'
 import { TrackItemAction } from 'components/track/mobile/TrackListItem'
 import { TRENDING_PAGE } from 'utils/route'

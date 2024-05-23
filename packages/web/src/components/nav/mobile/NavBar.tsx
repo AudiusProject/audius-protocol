@@ -1,5 +1,6 @@
 import { useState, useContext, useCallback, useEffect } from 'react'
 
+import { useFeatureFlag } from '@audius/common/hooks'
 import { Status } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import { formatCount } from '@audius/common/utils'
@@ -18,6 +19,7 @@ import { Link } from 'react-router-dom'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { useTransition, animated } from 'react-spring'
 
+import { useHistoryContext } from 'app/HistoryProvider'
 import {
   RouterContext,
   SlideDirection
@@ -26,7 +28,7 @@ import NavContext, {
   LeftPreset,
   CenterPreset,
   RightPreset
-} from 'components/nav/store/context'
+} from 'components/nav/mobile/NavContext'
 import SearchBar from 'components/search-bar/SearchBar'
 import { useFlag } from 'hooks/useRemoteConfig'
 import { getIsIOS } from 'utils/browser'
@@ -52,6 +54,7 @@ interface NavBarProps {
 const messages = {
   signUp: 'Sign Up',
   searchPlaceholder: 'Search Audius',
+  searchPlaceholderV2: 'What do you want to listen to?',
   earlyAccess: 'Early Access'
 }
 
@@ -70,7 +73,11 @@ const NavBar = ({
     location: { pathname }
   }
 }: NavBarProps) => {
+  const { history } = useHistoryContext()
   const { leftElement, centerElement, rightElement } = useContext(NavContext)!
+  const { isEnabled: isSearchV2Enabled } = useFeatureFlag(
+    FeatureFlags.SEARCH_V2
+  )
 
   const [isSearching, setIsSearching] = useState(false)
   const [searchValue, setSearchValue] = useState('')
@@ -84,10 +91,16 @@ const NavBar = ({
   useEffect(() => {
     const splitPath = pathname.split('/')
     const isSearch = splitPath.length > 1 && splitPath[1] === 'search'
-    if (!isSearch) {
-      setIsSearching(false)
-    }
+    setIsSearching(isSearch)
   }, [pathname])
+
+  const handleOpenSearch = useCallback(() => {
+    if (isSearchV2Enabled) {
+      history.push(`/search`)
+    } else {
+      setIsSearching(true)
+    }
+  }, [history, isSearchV2Enabled])
 
   const onCloseSearch = () => {
     setIsSearching(false)
@@ -243,13 +256,15 @@ const NavBar = ({
         {rightElement === RightPreset.SEARCH ? (
           <SearchBar
             open={isSearching}
-            onOpen={() => {
-              setIsSearching(true)
-            }}
+            onOpen={handleOpenSearch}
             onClose={onCloseSearch}
             value={searchValue}
             onSearch={setSearchValue}
-            placeholder={messages.searchPlaceholder}
+            placeholder={
+              isSearchV2Enabled
+                ? messages.searchPlaceholderV2
+                : messages.searchPlaceholder
+            }
             showHeader={false}
             className={cn(
               styles.searchBar,

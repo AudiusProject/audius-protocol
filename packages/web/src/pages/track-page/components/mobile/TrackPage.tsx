@@ -16,7 +16,7 @@ import NavContext, {
   LeftPreset,
   CenterPreset,
   RightPreset
-} from 'components/nav/store/context'
+} from 'components/nav/mobile/NavContext'
 import SectionButton from 'components/section-button/SectionButton'
 import { getTrackDefaults } from 'pages/track-page/utils'
 

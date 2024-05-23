@@ -6,7 +6,7 @@ import MobilePageContainer from 'components/mobile-page-container/MobilePageCont
 import NavContext, {
   LeftPreset,
   RightPreset
-} from 'components/nav/store/context'
+} from 'components/nav/mobile/NavContext'
 import { BASE_URL, DEACTIVATE_PAGE } from 'utils/route'
 
 import {

@@ -63,6 +63,7 @@ export enum FeatureFlags {
   DISCOVERY_TIP_REACTIONS = 'discovery_tip_reactions',
   USE_ADDRESS_LOOKUPS = 'use_address_lookups',
   MANAGER_MODE = 'manager_mode',
+  SEARCH_V2 = 'search_v2',
   USE_SDK_PURCHASE_TRACK = 'use_sdk_purchase_track',
   USE_SDK_PURCHASE_ALBUM = 'use_sdk_purchase_album'
 }
@@ -143,6 +144,7 @@ export const flagDefaults: FlagDefaults = {
   [FeatureFlags.DISCOVERY_TIP_REACTIONS]: false,
   [FeatureFlags.USE_ADDRESS_LOOKUPS]: false,
   [FeatureFlags.MANAGER_MODE]: false,
+  [FeatureFlags.SEARCH_V2]: false,
   [FeatureFlags.USE_SDK_PURCHASE_TRACK]: false,
   [FeatureFlags.USE_SDK_PURCHASE_ALBUM]: false
 }

@@ -20,7 +20,7 @@ import {
   ConfirmCredentialsPage,
   NewPasswordPage
 } from 'components/change-password/ChangePasswordModal'
-import NavContext, { LeftPreset } from 'components/nav/store/context'
+import NavContext, { LeftPreset } from 'components/nav/mobile/NavContext'
 import { ToastContext } from 'components/toast/ToastContext'
 
 import { SettingsPageProps } from './SettingsPage'
