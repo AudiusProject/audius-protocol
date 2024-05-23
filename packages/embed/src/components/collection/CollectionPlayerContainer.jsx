@@ -1,4 +1,5 @@
 import { useState, useContext, useCallback, useEffect } from 'react'
+import { instanceOfPurchaseGate } from '@audius/sdk'
 
 import usePlayback from '../../hooks/usePlayback'
 import { useRecordListens } from '../../hooks/useRecordListens'
@@ -31,17 +32,24 @@ const CollectionPlayerContainer = ({
   const getTrackInfoForPlayback = useCallback(
     (trackIndex) => {
       const activeTrack = collection.tracks[trackIndex]
+      const isPurchaseable = instanceOfPurchaseGate(
+        activeTrack.streamConditions
+      )
       if (activeTrack == null) {
         return null
       }
-      const mp3StreamUrl = getTrackStreamEndpoint(activeTrack.id)
+      const mp3StreamUrl = getTrackStreamEndpoint(
+        activeTrack.id,
+        isPurchaseable
+      )
 
       return {
         segments: activeTrack.trackSegments,
         gateways: formatGateways(activeTrack.user.creatorNodeEndpoint),
         title: activeTrack.title,
         artistName: activeTrack.user.name,
-        mp3StreamUrl
+        mp3StreamUrl,
+        isPurchaseable
       }
     },
     [collection.tracks]
