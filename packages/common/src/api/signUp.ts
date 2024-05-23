@@ -24,8 +24,7 @@ const signUpApi = createApi({
         const user = await userApiFetch.getUserByHandle(
           {
             handle,
-            currentUserId: null,
-            retry: false
+            currentUserId: null
           },
           context
         )

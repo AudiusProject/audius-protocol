@@ -1,12 +1,19 @@
-import { ID, User } from '@audius/common/models'
+import {
+  ID,
+  Id,
+  OptionalId,
+  User,
+  userMetadataListFromSDK
+} from '@audius/common/models'
 import {
   cacheUsersSelectors,
   UserListSagaFactory,
   followingUserListActions,
   followingUserListSelectors,
-  FOLLOWING_USER_LIST_TAG
+  FOLLOWING_USER_LIST_TAG,
+  getSDK
 } from '@audius/common/store'
-import { put, select } from 'typed-redux-saga'
+import { call, put, select } from 'typed-redux-saga'
 
 import { watchFollowingError } from 'common/store/user-list/following/errorSagas'
 import { createUserListProvider } from 'common/store/user-list/utils'
@@ -17,19 +24,24 @@ const { getUser } = cacheUsersSelectors
 const provider = createUserListProvider<User>({
   getExistingEntity: getUser,
   extractUserIDSubsetFromEntity: () => [],
-  fetchAllUsersForEntity: async ({
+  fetchAllUsersForEntity: function* ({
     limit,
     offset,
     entityId,
-    currentUserId,
-    apiClient
-  }) => {
-    const users = await apiClient.getFollowing({
-      currentUserId,
-      profileUserId: entityId,
-      limit,
-      offset
-    })
+    currentUserId
+  }) {
+    const sdk = yield* getSDK()
+    const { data } = yield* call(
+      [sdk.full.users, sdk.full.users.getFollowing],
+      {
+        id: Id.parse(entityId),
+        limit,
+        offset,
+        userId: OptionalId.parse(currentUserId)
+      }
+    )
+    const users = userMetadataListFromSDK(data)
+
     return { users }
   },
   selectCurrentUserIDsInList: getUserIds,

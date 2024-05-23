@@ -1,13 +1,13 @@
 import { ID, User } from '@audius/common/models'
-import { AudiusBackend } from '@audius/common/services'
 import {
   cacheUsersSelectors,
   UserListSagaFactory,
   mutualsUserListActions,
   mutualsUserListSelectors,
-  MUTUALS_USER_LIST_TAG
+  MUTUALS_USER_LIST_TAG,
+  getContext
 } from '@audius/common/store'
-import { put, select } from 'typed-redux-saga'
+import { call, put, select } from 'typed-redux-saga'
 
 import { watchMutualsError } from 'common/store/user-list/mutuals/errorSagas'
 import { createUserListProvider } from 'common/store/user-list/utils'
@@ -20,16 +20,17 @@ type FetchMutualsConfig = {
   offset: number
   entityId: ID
   currentUserId: ID | null
-  audiusBackendInstance: AudiusBackend
 }
 
-const fetchAllUsersForEntity = async ({
+const fetchMutualFollowers = function* ({
   limit,
   offset,
-  entityId: userId,
-  audiusBackendInstance
-}: FetchMutualsConfig) => {
-  const mutuals = await audiusBackendInstance.getFolloweeFollows(
+  entityId: userId
+}: FetchMutualsConfig) {
+  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+
+  const mutuals = yield* call(
+    [audiusBackendInstance, audiusBackendInstance.getFolloweeFollows],
     userId,
     limit,
     offset
@@ -40,7 +41,7 @@ const fetchAllUsersForEntity = async ({
 const provider = createUserListProvider<User>({
   getExistingEntity: getUser,
   extractUserIDSubsetFromEntity: () => [],
-  fetchAllUsersForEntity,
+  fetchAllUsersForEntity: fetchMutualFollowers,
   selectCurrentUserIDsInList: getUserIds,
   canFetchMoreUsers: (user: User, combinedUserIDs: ID[]) =>
     combinedUserIDs.length < user.current_user_followee_follow_count,
