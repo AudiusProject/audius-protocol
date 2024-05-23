@@ -247,14 +247,12 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
             </Flex>
             {isLoading ? (
               <Skeleton height='24px' width='150px' />
-            ) : (
+            ) : userId !== null ? (
               <Text variant='title' strength='weak' tag='h2' textAlign='left'>
                 <Text color='subdued'>{messages.by}</Text>
-                {userId !== null ? (
-                  <UserLink userId={userId} popover variant='visible' />
-                ) : null}
+                <UserLink userId={userId} popover variant='visible' />
               </Text>
-            )}
+            ) : null}
           </Flex>
           <div>{renderStatsRow(isLoading)}</div>
         </Flex>
