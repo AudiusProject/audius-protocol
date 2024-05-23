@@ -23,6 +23,7 @@ import {
   calculatePlayerBehavior
 } from '@audius/common/store'
 import type { Queueable, CommonState } from '@audius/common/store'
+import { setBuffering } from '@audius/common/store/player/slice'
 import {
   Genre,
   encodeHashId,
@@ -40,7 +41,8 @@ import TrackPlayer, {
   State,
   useTrackPlayerEvents,
   RepeatMode as TrackPlayerRepeatMode,
-  TrackType
+  TrackType,
+  useIsPlaying
 } from 'react-native-track-player'
 import { useDispatch, useSelector } from 'react-redux'
 import { useAsync, usePrevious } from 'react-use'
@@ -247,6 +249,19 @@ export const AudioPlayer = () => {
   }, isEqual)
 
   const dispatch = useDispatch()
+
+  const { bufferingDuringPlay } = useIsPlaying()
+
+  const previousBufferingState = usePrevious(bufferingDuringPlay)
+
+  useEffect(() => {
+    if (
+      bufferingDuringPlay !== undefined &&
+      bufferingDuringPlay !== previousBufferingState
+    ) {
+      dispatch(setBuffering({ buffering: bufferingDuringPlay }))
+    }
+  }, [bufferingDuringPlay, dispatch, previousBufferingState])
 
   const isLongFormContentRef = useRef<boolean>(false)
   const [isAudioSetup, setIsAudioSetup] = useState(false)
