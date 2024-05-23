@@ -15,7 +15,8 @@ import { Theme } from 'app/utils/theme'
 const { pause, play } = playerActions
 const { getPlaying, getBuffering } = playerSelectors
 
-const BUFFER_SHOW_AFTER_TIME = 500
+// Minimum of how long spent buffering for until we show the spinner
+const MINIMUM_BUFFER_TIME_TO_SHOW = 500 // ms
 
 const useAnimatedIcons = makeAnimations(({ palette, type }) => {
   const iconColor =
@@ -55,12 +56,14 @@ export const PlayButton = ({ isActive, ...props }: PlayButtonProps) => {
 
   const isBuffering = useSelector(getBuffering)
 
+  // To prevent "flashes" of buffering states & not show it at all when tracks are playing quickly,
+  // we only show the buffering spinner state if a minimum amount of time has passed
   useEffect(() => {
     let timeout
     if (isBuffering) {
       timeout = setTimeout(() => {
         setShowBufferingState(true)
-      }, BUFFER_SHOW_AFTER_TIME)
+      }, MINIMUM_BUFFER_TIME_TO_SHOW)
     } else {
       clearTimeout(timeout)
       setShowBufferingState(false)

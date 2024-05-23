@@ -23,7 +23,6 @@ import {
   calculatePlayerBehavior
 } from '@audius/common/store'
 import type { Queueable, CommonState } from '@audius/common/store'
-import { setBuffering } from '@audius/common/store/player/slice'
 import {
   Genre,
   encodeHashId,
@@ -250,19 +249,6 @@ export const AudioPlayer = () => {
 
   const dispatch = useDispatch()
 
-  const { bufferingDuringPlay } = useIsPlaying()
-
-  const previousBufferingState = usePrevious(bufferingDuringPlay)
-
-  useEffect(() => {
-    if (
-      bufferingDuringPlay !== undefined &&
-      bufferingDuringPlay !== previousBufferingState
-    ) {
-      dispatch(setBuffering({ buffering: bufferingDuringPlay }))
-    }
-  }, [bufferingDuringPlay, dispatch, previousBufferingState])
-
   const isLongFormContentRef = useRef<boolean>(false)
   const [isAudioSetup, setIsAudioSetup] = useState(false)
 
@@ -295,6 +281,21 @@ export const AudioPlayer = () => {
     },
     [dispatch]
   )
+
+  const { bufferingDuringPlay } = useIsPlaying() // react-native-track-player hook
+
+  const previousBufferingState = usePrevious(bufferingDuringPlay)
+
+  useEffect(() => {
+    // Keep redux buffering status in sync with react-native-track-player's buffering status
+    // Only need to dispatch when the value actually changes so we check against the previous value
+    if (
+      bufferingDuringPlay !== undefined &&
+      bufferingDuringPlay !== previousBufferingState
+    ) {
+      dispatch(playerActions.setBuffering({ buffering: bufferingDuringPlay }))
+    }
+  }, [bufferingDuringPlay, dispatch, previousBufferingState])
 
   const makeTrackData = useCallback(
     async ({ track, playerBehavior }: QueueableTrack) => {
