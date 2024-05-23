@@ -1,7 +1,7 @@
 import { useIsManagedAccount } from '@audius/common/hooks'
 import { FeatureFlags } from '@audius/common/services'
 import { accountSelectors } from '@audius/common/store'
-import { Box, Flex, Text, useTheme } from '@audius/harmony'
+import { Box, Flex, FlexProps, Text, useTheme } from '@audius/harmony'
 
 import { AvatarLegacy } from 'components/avatar/AvatarLegacy'
 import { TextLink, UserLink } from 'components/link'
@@ -10,6 +10,7 @@ import { useSelector } from 'utils/reducer'
 import { SIGN_IN_PAGE, profilePage } from 'utils/route'
 
 import { AccountSwitcher } from './AccountSwitcher/AccountSwitcher'
+import { backgroundOverlay } from 'utils/styleUtils'
 
 const { getAccountUser } = accountSelectors
 
@@ -43,23 +44,17 @@ export const AccountDetails = () => {
         pr='s'
         pb='s'
         pl='m'
-        css={{
-          ...(isManagedAccount
-            ? {
-                '&:before': {
-                  content: '""',
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  height: '100%',
-                  width: '100%',
-                  backgroundColor: color.background.accent,
+        {...(isManagedAccount
+          ? {
+              borderBottom: 'strong',
+              css: {
+                ...backgroundOverlay({
+                  color: color.background.accent,
                   opacity: 0.03
-                },
-                borderBottom: `1px solid ${color.border.strong}`
+                })
               }
-            : {})
-        }}
+            }
+          : undefined)}
       >
         <Flex alignItems='center' w='100%' justifyContent='flex-start' gap='l'>
           <AvatarLegacy userId={account?.user_id} />

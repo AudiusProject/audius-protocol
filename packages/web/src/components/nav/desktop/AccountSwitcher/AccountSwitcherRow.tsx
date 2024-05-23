@@ -7,6 +7,7 @@ import UserBadges from 'components/user-badges/UserBadges'
 import { useProfilePicture } from 'hooks/useUserProfilePicture'
 
 import styles from './AccountSwitcherRow.module.css'
+import { backgroundOverlay } from 'utils/styleUtils'
 
 export type AccountSwitcherRowProps = {
   user: UserMetadata
@@ -41,16 +42,10 @@ export const AccountSwitcherRow = ({
       css={{
         ...(isSelected
           ? {
-              '&:before': {
-                content: '""',
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                height: '100%',
-                width: '100%',
-                backgroundColor: color.background.accent,
+              ...backgroundOverlay({
+                color: color.background.accent,
                 opacity: 0.03
-              }
+              })
             }
           : {
               '&:hover': {
