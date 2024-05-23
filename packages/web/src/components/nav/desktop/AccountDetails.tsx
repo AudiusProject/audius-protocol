@@ -1,16 +1,16 @@
 import { useIsManagedAccount } from '@audius/common/hooks'
 import { FeatureFlags } from '@audius/common/services'
 import { accountSelectors } from '@audius/common/store'
-import { Box, Flex, FlexProps, Text, useTheme } from '@audius/harmony'
+import { Box, Flex, Text, useTheme } from '@audius/harmony'
 
 import { AvatarLegacy } from 'components/avatar/AvatarLegacy'
 import { TextLink, UserLink } from 'components/link'
 import { useFlag } from 'hooks/useRemoteConfig'
 import { useSelector } from 'utils/reducer'
 import { SIGN_IN_PAGE, profilePage } from 'utils/route'
+import { backgroundOverlay } from 'utils/styleUtils'
 
 import { AccountSwitcher } from './AccountSwitcher/AccountSwitcher'
-import { backgroundOverlay } from 'utils/styleUtils'
 
 const { getAccountUser } = accountSelectors
 
