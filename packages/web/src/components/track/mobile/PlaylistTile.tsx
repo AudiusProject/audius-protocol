@@ -384,7 +384,7 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
                 <Skeleton className={styles.skeleton} height='20px' />
               ) : null}
             </TextLink>
-            <UserLink userId={ownerId} textVariant='body' badgeSize='xs'>
+            <UserLink userId={ownerId} badgeSize='xs'>
               {!shouldShow ? (
                 <Skeleton className={styles.skeleton} height='20px' />
               ) : null}

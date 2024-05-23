@@ -9,7 +9,7 @@ import {
   TextStrength,
   TextVariant
 } from 'components'
-import { variantStylesMap } from 'components/text/Text'
+import { variantStylesMap } from 'components/text'
 
 type TypographyCardProps = {
   variant: TextVariant

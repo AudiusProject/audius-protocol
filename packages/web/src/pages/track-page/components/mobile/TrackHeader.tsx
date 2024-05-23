@@ -404,12 +404,7 @@ const TrackHeader = ({
       {imageElement}
       <div className={styles.titleArtistSection}>
         <h1 className={styles.title}>{title}</h1>
-        <UserLink
-          userId={userId}
-          variant='visible'
-          textVariant='body'
-          size='l'
-        />
+        <UserLink userId={userId} variant='visible' size='l' />
       </div>
       {showPlay ? (
         <PlayButton

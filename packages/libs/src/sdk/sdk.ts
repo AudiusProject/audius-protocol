@@ -263,7 +263,9 @@ const initializeApis = ({
     services.storage,
     services.entityManager,
     services.auth,
-    services.logger
+    services.logger,
+    services.claimableTokensClient,
+    services.paymentRouterClient
   )
   const playlists = new PlaylistsApi(
     generatedApiClientConfig,

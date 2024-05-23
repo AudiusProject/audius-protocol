@@ -87,7 +87,6 @@ export const PurchaseModalContent = ({
               <UserLink
                 userId={purchaseDetails.sellerUserId}
                 popover
-                textVariant='body'
                 size='l'
                 onClick={onClose}
               />
