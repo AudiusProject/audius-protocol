@@ -661,7 +661,7 @@ async function* purchaseAlbumWithCoinflow(args: {
 
   let numberSplits: UsdcGate['splits'] = {}
   let centPrice: number
-  let accessType: 'stream' | 'download' = 'stream'
+  const accessType: 'stream' | 'download' = 'stream'
 
   // Get conditions
   if (
