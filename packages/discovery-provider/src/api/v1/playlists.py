@@ -8,6 +8,7 @@ from src.api.v1.helpers import (
     abort_bad_path_param,
     abort_bad_request_param,
     current_user_parser,
+    decode_ids_array,
     decode_with_abort,
     extend_playlist,
     extend_track,
@@ -124,6 +125,27 @@ def get_tracks_for_playlist(playlist_id, current_user_id=None, exclude_gated=Fal
         return tracks
 
 
+def get_bulk_playlists(
+    current_user_id,
+    playlist_ids=None,
+    route=None,
+    with_users=True,
+):
+    """Returns a list of playlists"""
+    args = {
+        "playlist_ids": playlist_ids,
+        "routes": route,
+        "current_user_id": current_user_id,
+        "with_users": with_users,
+    }
+
+    playlists = get_playlists(args)
+    if playlists:
+        extendedPlaylists = list(map(extend_playlist, playlists))
+        return extendedPlaylists
+    return None
+
+
 PLAYLIST_ROUTE = "/<string:playlist_id>"
 
 
@@ -173,6 +195,65 @@ class FullPlaylist(Resource):
             tracks = get_tracks_for_playlist(playlist_id, current_user_id)
             playlist["tracks"] = tracks
         response = success_response([playlist] if playlist else [])
+        return response
+
+
+playlists_route_parser = current_user_parser.copy()
+playlists_route_parser.add_argument(
+    "id", action="append", required=False, description="The ID of the playlist(s)"
+)
+
+
+@ns.route("")
+class BulkPlaylists(Resource):
+    @record_metrics
+    @ns.doc(
+        id="""Get Playlists""",
+        description="""Gets a list of playlists by ID""",
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    @ns.expect(playlists_route_parser)
+    @ns.marshal_with(playlists_response)
+    @cache(ttl_sec=5)
+    def get(self):
+        args = playlists_route_parser.parse_args()
+        ids = decode_ids_array(args.get("id"))
+        current_user_id = get_current_user_id(args)
+        playlists = get_bulk_playlists(
+            current_user_id=current_user_id,
+            playlist_ids=ids,
+        )
+        response = success_response(playlists)
+        return response
+
+
+@full_ns.route("")
+class BulkPlaylistsFull(Resource):
+    @record_metrics
+    @ns.doc(
+        id="""Get Playlists""",
+        description="""Gets a list of playlists by ID""",
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    @ns.expect(playlists_route_parser)
+    @ns.marshal_with(full_playlists_response)
+    @cache(ttl_sec=5)
+    def get(self):
+        args = playlists_route_parser.parse_args()
+        ids = decode_ids_array(args.get("id"))
+        current_user_id = get_current_user_id(args)
+        playlists = get_bulk_playlists(
+            current_user_id=current_user_id,
+            playlist_ids=ids,
+        )
+
+        def add_playlist_tracks(playlist):
+            tracks = get_tracks_for_playlist(playlist["playlist_id"], current_user_id)
+            playlist["tracks"] = tracks
+            return playlist
+
+        playlists = list(map(add_playlist_tracks, playlists))
+        response = success_response(playlists)
         return response
 
 
