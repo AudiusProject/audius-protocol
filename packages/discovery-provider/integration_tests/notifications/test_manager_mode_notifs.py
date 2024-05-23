@@ -2,6 +2,8 @@ import logging
 from datetime import datetime, timedelta
 from typing import List
 
+from freezegun import freeze_time
+
 from integration_tests.utils import populate_mock_db
 from src.models.notifications.notification import Notification
 from src.utils.db_session import get_db
@@ -9,6 +11,7 @@ from src.utils.db_session import get_db
 logger = logging.getLogger(__name__)
 
 
+@freeze_time("2024-05-23 00:12:51.695089")
 def test_manager_mode_notifications(app):
     with app.app_context():
         db = get_db()
