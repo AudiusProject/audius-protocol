@@ -72,9 +72,7 @@ const FULL_ENDPOINT_MAP = {
   remixables: '/tracks/remixables',
   playlistUpdates: (userId: OpaqueID) =>
     `/notifications/${userId}/playlist_updates`,
-  getUser: (userId: OpaqueID) => `/users/${userId}`,
   getUsers: '/users',
-  userByHandle: (handle: OpaqueID) => `/users/handle/${handle}`,
   userTracksByHandle: (handle: OpaqueID) => `/users/handle/${handle}/tracks`,
   userAiTracksByHandle: (handle: OpaqueID) =>
     `/users/handle/${handle}/tracks/ai_attributed`,
@@ -176,64 +174,10 @@ type GetRemixablesArgs = {
   currentUserId: Nullable<ID>
 }
 
-type GetFollowingArgs = {
-  profileUserId: ID
-  currentUserId: Nullable<ID>
-  offset?: number
-  limit?: number
-}
-
-type GetFollowersArgs = {
-  profileUserId: ID
-  currentUserId: Nullable<ID>
-  offset?: number
-  limit?: number
-}
-
-type GetTrackRepostUsersArgs = {
-  trackId: ID
-  currentUserId: Nullable<ID>
-  limit?: number
-  offset?: number
-}
-
-type GetTrackFavoriteUsersArgs = {
-  trackId: ID
-  currentUserId: Nullable<ID>
-  limit?: number
-  offset?: number
-}
-
-type GetPlaylistRepostUsersArgs = {
-  playlistId: ID
-  currentUserId: Nullable<ID>
-  limit?: number
-  offset?: number
-}
-
-type GetPlaylistFavoriteUsersArgs = {
-  playlistId: ID
-  currentUserId: Nullable<ID>
-  limit?: number
-  offset?: number
-}
-
-type GetUserArgs = {
-  userId: ID
-  currentUserId: Nullable<ID>
-  abortOnUnreachable?: boolean
-}
-
 type GetUsersArgs = {
   userIds: ID[]
   currentUserId: Nullable<ID>
   abortOnUnreachable?: boolean
-}
-
-type GetUserByHandleArgs = {
-  handle: string
-  currentUserId: Nullable<ID>
-  retry?: boolean
 }
 
 type GetUserTracksByHandleArgs = {
@@ -824,29 +768,6 @@ export class AudiusAPIClient {
     return tracks
   }
 
-  async getUser({ userId, currentUserId, abortOnUnreachable }: GetUserArgs) {
-    const encodedUserId = this._encodeOrThrow(userId)
-    const encodedCurrentUserId = encodeHashId(currentUserId)
-    this._assertInitialized()
-    const params = {
-      user_id: encodedCurrentUserId || undefined
-    }
-
-    const response = await this._getResponse<APIResponse<APIUser[]>>(
-      FULL_ENDPOINT_MAP.getUser(encodedUserId),
-      params,
-      undefined,
-      undefined,
-      undefined,
-      abortOnUnreachable
-    )
-
-    if (!response) return []
-
-    const adapted = response.data.map(adapter.makeUser).filter(removeNullable)
-    return adapted
-  }
-
   async getUsers({ userIds, currentUserId, abortOnUnreachable }: GetUsersArgs) {
     this._assertInitialized()
     const encodedUserIds = userIds.map((id) => this._encodeOrThrow(id))
@@ -865,29 +786,6 @@ export class AudiusAPIClient {
       undefined,
       undefined,
       abortOnUnreachable
-    )
-
-    if (!response) return []
-
-    const adapted = response.data.map(adapter.makeUser).filter(removeNullable)
-    return adapted
-  }
-
-  async getUserByHandle({
-    handle,
-    currentUserId,
-    retry = true
-  }: GetUserByHandleArgs) {
-    const encodedCurrentUserId = encodeHashId(currentUserId)
-    this._assertInitialized()
-    const params = {
-      user_id: encodedCurrentUserId || undefined
-    }
-
-    const response = await this._getResponse<APIResponse<APIUser[]>>(
-      FULL_ENDPOINT_MAP.userByHandle(handle),
-      params,
-      retry
     )
 
     if (!response) return []
