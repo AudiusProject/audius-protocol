@@ -81,6 +81,7 @@ class Track(Base, RepresentableMixin):
     )
     slot = Column(Integer)
     is_available = Column(Boolean, nullable=False, server_default=text("true"))
+    allowed_api_keys = Column(ARRAY(String))
     is_stream_gated = Column(Boolean, nullable=False, server_default=text("false"))
     stream_conditions = Column(JSONB(True))
     is_download_gated = Column(Boolean, nullable=False, server_default=text("false"))

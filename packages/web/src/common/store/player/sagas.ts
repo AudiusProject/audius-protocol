@@ -226,6 +226,8 @@ export function* watchPlay() {
         audioPlayer.seek(startTime)
       }
       audioPlayer.play()
+
+      console.log(' -- Saga finished')
       yield* put(playSucceeded({ uid, trackId, isPreview: shouldPreview }))
     }
   })

@@ -18,6 +18,7 @@ import { flexRowCentered, makeStyles } from 'app/styles'
 import type { GestureResponderHandler } from 'app/types/gesture'
 
 import { LineupTileAccessStatus } from './LineupTileAccessStatus'
+import type { LineupTileSource } from './types'
 
 const messages = {
   shareButtonLabel: 'Share Content',
@@ -38,6 +39,7 @@ type Props = {
   contentType?: PurchaseableContentType
   streamConditions?: Nullable<AccessConditions>
   hasStreamAccess?: boolean
+  source?: LineupTileSource
   onPressOverflow?: GestureResponderHandler
   onPressRepost?: GestureResponderHandler
   onPressSave?: GestureResponderHandler
@@ -81,6 +83,7 @@ export const LineupTileActionButtons = ({
   hasStreamAccess = false,
   readonly = false,
   streamConditions,
+  source,
   onPressOverflow,
   onPressRepost,
   onPressSave,
@@ -146,6 +149,7 @@ export const LineupTileActionButtons = ({
             contentType={contentType}
             streamConditions={streamConditions}
             hasStreamAccess={hasStreamAccess}
+            source={source}
           />
         </View>
       )
@@ -160,6 +164,7 @@ export const LineupTileActionButtons = ({
               contentType={contentType}
               streamConditions={streamConditions}
               hasStreamAccess={hasStreamAccess}
+              source={source}
             />
           ) : null}
           {showLeftButtons && (

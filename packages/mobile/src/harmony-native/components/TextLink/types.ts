@@ -19,10 +19,9 @@ export type TextLinkProps<
 > = TextLinkTextProps &
   (InternalLinkToProps<ParamList> | ExternalLinkProps | NonLinkProps) & {
     /**
-     * Which variant to display.
-     * @default default
+     * Which variant to display. 'active' is temporary intil this pattern is removed
      */
-    variant?: 'default' | 'subdued' | 'visible' | 'inverted'
+    variant?: 'default' | 'subdued' | 'visible' | 'inverted' | 'active'
 
     /**
      * Which text variant to display.

@@ -28,6 +28,7 @@ type RemoveManagerPayload = {
 
 type ApproveManagedAccountPayload = {
   userId: number
+  userWalletAddress: string
   grantorUser: UserMetadata | User
 }
 
@@ -141,8 +142,7 @@ const accountApi = createApi({
               state.userManagers.push({
                 grant: {
                   created_at: currentTime,
-                  // TODO(nkang - C-4332) - Fill this in
-                  grantee_address: '',
+                  grantee_address: managerUser.erc_wallet ?? managerUser.wallet,
                   is_approved: null,
                   is_revoked: false,
                   updated_at: currentTime,
@@ -177,8 +177,6 @@ const accountApi = createApi({
       async onQueryStarted(payload: RemoveManagerPayload, { dispatch }) {
         const { managerUserId, userId } = payload
         dispatch(
-          // TODO(C-4330) - The return typing here for `updateQueryData` is erroneous - fix.
-          // @ts-expect-error
           accountApi.util.updateQueryData(
             'getManagedAccounts',
             { userId: managerUserId },
@@ -196,7 +194,6 @@ const accountApi = createApi({
           )
         )
         dispatch(
-          // @ts-expect-error
           accountApi.util.updateQueryData(
             'getManagers',
             { userId },
@@ -216,7 +213,6 @@ const accountApi = createApi({
           )
         )
       }
-      // TODO(C-4331) - Add onQueryErrored for cleaning up optimistic update if the call fails.
     },
     approveManagedAccount: {
       async fetch(payload: ApproveManagedAccountPayload, { audiusSdk }) {
@@ -241,10 +237,8 @@ const accountApi = createApi({
         payload: ApproveManagedAccountPayload,
         { dispatch }
       ) {
-        const { userId, grantorUser } = payload
+        const { userId, grantorUser, userWalletAddress } = payload
         dispatch(
-          // TODO(C-4330) - The return typing here for `updateQueryData` is erroneous - fix.
-          // @ts-expect-error
           accountApi.util.updateQueryData(
             'getManagedAccounts',
             { userId },
@@ -260,7 +254,7 @@ const accountApi = createApi({
                 grant: {
                   created_at: currentTime,
                   // TODO(nkang - C-4332) - Fill this in
-                  grantee_address: '',
+                  grantee_address: userWalletAddress,
                   is_approved: true,
                   is_revoked: false,
                   updated_at: currentTime,
@@ -272,7 +266,6 @@ const accountApi = createApi({
           )
         )
       }
-      // TODO(C-4331) - Add onQueryErrored for cleaning up optimistic update if the call fails.
     }
   }
 })

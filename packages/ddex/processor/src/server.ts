@@ -1,7 +1,7 @@
 import 'dotenv/config'
 
 import { serve } from '@hono/node-server'
-import { fileTypeFromBuffer } from 'file-type'
+import { fromBuffer as fileTypeFromBuffer } from 'file-type'
 import { Context, Hono } from 'hono'
 import { deleteCookie, getSignedCookie, setSignedCookie } from 'hono/cookie'
 import { html } from 'hono/html'
@@ -110,6 +110,9 @@ app.get('/auth/redirect', async (c) => {
       handle: payload.handle,
       name: payload.name,
     })
+
+    // after user upsert, rescan for matches
+    reParsePastXml()
 
     // set cookie
     const j = JSON.stringify(payload)
@@ -272,7 +275,7 @@ app.get('/releases', (c) => {
 })
 
 app.post('/releases/reparse', async (c) => {
-  await reParsePastXml()
+  reParsePastXml()
   return c.redirect('/releases')
 })
 

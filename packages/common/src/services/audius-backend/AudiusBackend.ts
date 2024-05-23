@@ -72,14 +72,12 @@ import {
   PushNotifications,
   TrackMetadataForUpload
 } from '../../store'
-import { CIDCache } from '../../store/cache/CIDCache'
 import {
   getErrorMessage,
   uuid,
   Maybe,
   encodeHashId,
   decodeHashId,
-  Timer,
   Nullable,
   removeNullable,
   isNullOrUndefined
@@ -127,7 +125,6 @@ declare global {
 
 const SEARCH_MAX_SAVED_RESULTS = 10
 const SEARCH_MAX_TOTAL_RESULTS = 50
-const IMAGE_CACHE_MAX_SIZE = 200
 
 export const AuthHeaders = Object.freeze({
   Message: 'Encoded-Data-Message',
@@ -182,9 +179,6 @@ const notDeleted = (e: { is_delete: boolean }) => !e.is_delete
 
 export type TransactionReceipt = { blockHash: string; blockNumber: number }
 
-let preloadImageTimer: Timer
-const avoidGC: HTMLImageElement[] = []
-
 type DiscoveryProviderListener = (endpoint: Nullable<string>) => void
 
 type AudiusBackendSolanaConfig = Partial<{
@@ -224,7 +218,7 @@ type WaitForLibsInit = () => Promise<unknown>
 
 type AudiusBackendParams = {
   claimDistributionContractAddress: Maybe<string>
-  imagePreloader?: (url: string) => Promise<boolean>
+  imagePreloader: (url: string) => Promise<boolean>
   env: Env
   ethOwnerWallet: Maybe<string>
   ethProviderUrls: Maybe<string[]>
@@ -365,77 +359,7 @@ export const audiusBackend = ({
     }
   }
 
-  async function preloadImage(url: string): Promise<boolean> {
-    if (!preloadImageTimer) {
-      const batchSize =
-        getRemoteVar(IntKeys.IMAGE_QUICK_FETCH_PERFORMANCE_BATCH_SIZE) ??
-        undefined
-
-      preloadImageTimer = new Timer(
-        {
-          name: 'image_preload',
-          batch: true,
-          batchSize
-        },
-        ({ name, duration }) => {
-          console.info(`Recorded event ${name} with duration ${duration}`)
-          recordAnalytics({
-            eventName: Name.PERFORMANCE,
-            properties: {
-              metric: name,
-              value: duration
-            }
-          })
-        }
-      )
-    }
-    const start = preloadImageTimer.start()
-    const timeoutMs =
-      getRemoteVar(IntKeys.IMAGE_QUICK_FETCH_TIMEOUT_MS) ?? undefined
-    let timeoutId: any = null
-
-    try {
-      const response = await Promise.race([
-        fetch(url),
-        new Promise<Response>((_resolve, reject) => {
-          timeoutId = setTimeout(() => reject(new Error('Timeout')), timeoutMs)
-        })
-      ])
-
-      if (timeoutId) {
-        clearTimeout(timeoutId)
-      }
-
-      if (!response.ok) {
-        return false
-      }
-
-      const blob = await response.blob()
-      const objectUrl = URL.createObjectURL(blob)
-      const image = new Image()
-      avoidGC.push(image)
-      if (avoidGC.length > IMAGE_CACHE_MAX_SIZE) avoidGC.shift()
-
-      await new Promise<void>((resolve, reject) => {
-        image.onload = () => {
-          preloadImageTimer.end(start)
-          resolve()
-        }
-        image.onerror = () => {
-          preloadImageTimer.end(start)
-          reject(new Error('Image loading error'))
-        }
-        image.src = objectUrl
-      })
-
-      return true
-    } catch (error) {
-      preloadImageTimer.end(start)
-      return false
-    }
-  }
-
-  async function fetchCID(cid: CID, cache = true, asUrl = true) {
+  async function fetchCID(cid: CID, asUrl = true) {
     await waitForLibsInit()
 
     // If requesting a url (we mean a blob url for the file),
@@ -448,7 +372,6 @@ export const audiusBackend = ({
         const url = nativeMobile
           ? res.config.url
           : URL.createObjectURL(res.data)
-        if (cache) CIDCache.add(cid, url)
         return url
       }
       return res?.data ?? null
@@ -475,9 +398,6 @@ export const audiusBackend = ({
     if (size && cidMap && cidMap[size]) {
       cidFileName = cidMap[size]
     }
-    if (CIDCache.has(cidFileName)) {
-      return CIDCache.get(cidFileName) as string
-    }
 
     const storageNodeSelector = await getStorageNodeSelector()
     // Only rendezvous hash the cid for extremely old legacy
@@ -487,21 +407,9 @@ export const audiusBackend = ({
     for (const storageNode of storageNodes) {
       const imageUrl = `${storageNode}/content/${cidFileName}`
 
-      if (imagePreloader) {
-        try {
-          const preloaded = await imagePreloader(imageUrl)
-          if (preloaded) {
-            return imageUrl
-          }
-        } catch (e) {
-          // swallow error and continue
-        }
-      } else {
-        const isSuccessful = await preloadImage(imageUrl)
-        if (isSuccessful) {
-          CIDCache.add(cidFileName, imageUrl)
-          return imageUrl
-        }
+      const preloaded = await imagePreloader(imageUrl)
+      if (preloaded) {
+        return imageUrl
       }
     }
     return ''
@@ -1080,7 +988,7 @@ export const audiusBackend = ({
   async function fetchUserAssociatedEthWallets(user: User) {
     const cid = user?.metadata_multihash ?? null
     if (cid) {
-      const metadata = await fetchCID(cid, /* cache */ false, /* asUrl */ false)
+      const metadata = await fetchCID(cid, /* asUrl */ false)
       if (metadata?.associated_wallets) {
         return metadata.associated_wallets
       }
@@ -1097,7 +1005,7 @@ export const audiusBackend = ({
   async function fetchUserAssociatedSolWallets(user: User) {
     const cid = user?.metadata_multihash ?? null
     if (cid) {
-      const metadata = await fetchCID(cid, /* cache */ false, /* asUrl */ false)
+      const metadata = await fetchCID(cid, /* asUrl */ false)
       if (metadata?.associated_sol_wallets) {
         return metadata.associated_sol_wallets
       }
@@ -1114,7 +1022,7 @@ export const audiusBackend = ({
   async function fetchUserAssociatedWallets(user: User) {
     const cid = user?.metadata_multihash ?? null
     if (cid) {
-      const metadata = await fetchCID(cid, /* cache */ false, /* asUrl */ false)
+      const metadata = await fetchCID(cid, /* asUrl */ false)
       return {
         associated_sol_wallets: metadata?.associated_sol_wallets ?? null,
         associated_wallets: metadata?.associated_wallets ?? null

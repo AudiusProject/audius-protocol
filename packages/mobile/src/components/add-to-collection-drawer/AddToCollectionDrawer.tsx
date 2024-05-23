@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState } from 'react'
 
 import type { Collection } from '@audius/common/models'
-import { CreatePlaylistSource, SquareSizes } from '@audius/common/models'
+import { CreatePlaylistSource } from '@audius/common/models'
 import type { CommonState } from '@audius/common/store'
 import {
   accountSelectors,
@@ -15,16 +15,14 @@ import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 import { useEffectOnce } from 'react-use'
 
-import type { ImageProps } from '@audius/harmony-native'
-import { Card } from 'app/components/card'
 import { AppDrawer, useDrawerState } from 'app/components/drawer'
-import { CollectionImage } from 'app/components/image/CollectionImage'
 import { useToast } from 'app/hooks/useToast'
-import { makeStyles, shadow } from 'app/styles'
+import { makeStyles } from 'app/styles'
 import { fuzzySearch } from 'app/utils/fuzzySearch'
 
 import { CollectionList } from '../collection-list'
 import { AddCollectionCard } from '../collection-list/AddCollectionCard'
+import { CollectionCard } from '../collection-list/CollectionCard'
 import { FilterInput } from '../filter-input'
 
 const { addTrackToPlaylist, createAlbum, createPlaylist } =
@@ -57,15 +55,6 @@ const getMessages = (collectionType: 'album' | 'playlist') => ({
 })
 
 const useStyles = makeStyles(() => ({
-  buttonContainer: {
-    alignSelf: 'center',
-    borderRadius: 4,
-    marginBottom: 16,
-    ...shadow()
-  },
-  button: {
-    width: 256
-  },
   cardList: {
     paddingBottom: 240
   }
@@ -134,15 +123,10 @@ export const AddToCollectionDrawer = () => {
           collectionType={collectionType}
         />
       ) : (
-        <Card
-          style={{ opacity: isTrackUnlisted && !item.is_private ? 0.5 : 1 }}
+        <CollectionCard
           key={item.playlist_id}
-          type='collection'
           id={item.playlist_id}
-          primaryText={item.playlist_name}
-          secondaryText={messages.tracks(
-            item.playlist_contents.track_ids.length
-          )}
+          noNavigation
           onPress={() => {
             if (!trackId) return
 
@@ -170,13 +154,6 @@ export const AddToCollectionDrawer = () => {
             }
             onClose()
           }}
-          renderImage={(props?: ImageProps) => (
-            <CollectionImage
-              collection={item}
-              size={SquareSizes.SIZE_480_BY_480}
-              {...props}
-            />
-          )}
         />
       ),
     [

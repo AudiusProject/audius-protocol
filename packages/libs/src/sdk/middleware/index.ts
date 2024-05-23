@@ -1,2 +1,2 @@
-export { addAppNameMiddleware } from './addAppNameMiddleware'
+export { addAppInfoMiddleware } from './addAppInfoMiddleware'
 export { addRequestSignatureMiddleware } from './addRequestSignatureMiddleware'

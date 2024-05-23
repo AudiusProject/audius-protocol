@@ -1,7 +1,9 @@
 import { useRef, useEffect, useCallback, useState } from 'react'
 
+import { time, timeEnd } from 'console'
+
 import { useAppContext } from '@audius/common/context'
-import { SquareSizes } from '@audius/common/models'
+import { SquareSizes, isContentUSDCPurchaseGated } from '@audius/common/models'
 import type { Track } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import {
@@ -46,6 +48,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useAsync, usePrevious } from 'react-use'
 
 import { DEFAULT_IMAGE_URL } from 'app/components/image/TrackImage'
+import { useBufferTracking } from 'app/hooks/useBufferTracking'
 import { getImageSourceOptimistic } from 'app/hooks/useContentNodeImage'
 import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
@@ -280,6 +283,7 @@ export const AudioPlayer = () => {
     },
     [dispatch]
   )
+  const { startTimer } = useBufferTracking()
 
   const makeTrackData = useCallback(
     async ({ track, playerBehavior }: QueueableTrack) => {
@@ -515,6 +519,8 @@ export const AudioPlayer = () => {
     const trackId = track?.track_id
     if (!trackId) return
 
+    startTimer()
+
     const playCounterTimeout = setTimeout(() => {
       if (isReachable) {
         dispatch(recordListen(trackId))
@@ -594,6 +600,7 @@ export const AudioPlayer = () => {
   const trackQueryParams = useRef({})
 
   const handleQueueChange = useCallback(async () => {
+    // time('Entire Queue Change')
     const refUids = queueListRef.current
     if (queueIndex === -1) {
       return
@@ -676,7 +683,6 @@ export const AudioPlayer = () => {
         currentPivot++
       }
     }
-
     if (isQueueAppend) {
       enqueueTracksJobRef.current = enqueueTracks(newQueueTracks)
       await enqueueTracksJobRef.current
@@ -686,14 +692,22 @@ export const AudioPlayer = () => {
 
       await TrackPlayer.play()
 
+      // console.log('---- Triggering track player Play ----')
       const firstTrack = newQueueTracks[queueIndex]
       if (!firstTrack) return
-
+      // time('Making Track Data')
       await TrackPlayer.add(await makeTrackData(firstTrack))
+
+      // console.log('Finished making track data')
+      // timeEnd('Making Track Data')
+      // time('TracksRef.current')
 
       enqueueTracksJobRef.current = enqueueTracks(newQueueTracks, queueIndex)
       await enqueueTracksJobRef.current
+      // timeEnd('TracksRef.current')
       enqueueTracksJobRef.current = undefined
+
+      // timeEnd('Entire Queue Change')
     }
   }, [
     queueIndex,

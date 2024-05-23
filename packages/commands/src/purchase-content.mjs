@@ -85,12 +85,13 @@ program
 program.command('purchase-track')
   .description('Buys a track using USDC')
   .argument('<id>', 'The track ID')
+  .argument('<price>', 'The expected price of the track', parseFloat)
   .option('-f, --from [from]', 'The account purchasing the content (handle)')
   .option(
     '-e, --extra-amount [amount]',
     'Extra amount to pay in addition to the price (in dollars)'
     , parseFloat)
-  .action(async (id, { from, extraAmount }) => {
+  .action(async (id, price, { from, extraAmount }) => {
     const audiusLibs = await initializeAudiusLibs(from)
     const userIdNumber = audiusLibs.userStateManager.getCurrentUserId()
     const userId = Utils.encodeHashId(userIdNumber)
@@ -107,8 +108,8 @@ program.command('purchase-track')
     const audiusSdk = await initializeAudiusSdk({ apiKey: pubKey, apiSecret: privKey })
 
     try {
-      console.log('Purchasing track...', { trackId, userId, extraAmount })
-      const response = await audiusSdk.tracks.purchase({ trackId, userId, extraAmount })
+      console.log('Purchasing track...', { trackId, userId, price, extraAmount })
+      const response = await audiusSdk.tracks.purchase({ trackId, userId, price, extraAmount })
       console.log(chalk.green('Successfully purchased track'))
       console.log(chalk.yellow('Transaction Signature:'), response)
     } catch (err) {

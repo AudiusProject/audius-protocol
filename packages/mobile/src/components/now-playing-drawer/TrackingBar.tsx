@@ -54,6 +54,7 @@ export const TrackingBar = (props: TrackingBarProps) => {
   const seek = useSelector(getSeek) ?? 0
   const playing = useSelector(getPlaying)
   const paused = useSelector(getPaused)
+  console.log({ seek, playing, paused })
 
   const runTranslateXAnimation = useCallback((timeRemaining: number) => {
     currentAnimation.current = Animated.timing(translateXAnimation.current, {

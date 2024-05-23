@@ -43,7 +43,7 @@ export interface CoverArt {
 /**
  * Check if a given object implements the CoverArt interface.
  */
-export function instanceOfCoverArt(value: object): boolean {
+export function instanceOfCoverArt(value: object): value is CoverArt {
     let isInstance = true;
 
     return isInstance;

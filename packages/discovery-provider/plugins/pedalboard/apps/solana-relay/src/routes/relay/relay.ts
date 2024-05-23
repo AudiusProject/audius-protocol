@@ -284,11 +284,6 @@ export const relay = async (
     await forwardTransaction(logger, formattedResponse)
     logger.info('Request finished.')
   } catch (e) {
-    if (!res.writableEnded && e) {
-      res.status(500).send({ error: e })
-      next()
-    } else {
-      next(e)
-    }
+    next(e)
   }
 }
