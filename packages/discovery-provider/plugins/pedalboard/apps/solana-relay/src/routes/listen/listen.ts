@@ -7,6 +7,10 @@ import { createTrackListenInstructions, getFeePayerKeyPair } from './trackListen
 import { Transaction, TransactionMessage, VersionedTransaction } from '@solana/web3.js'
 import bs58 from 'bs58'
 import { broadcastTransaction, sendTransactionWithRetries } from '../../utils/transaction'
+import { keccak256 } from 'web3-utils'
+import { sortKeys } from '../../utils/sortKeys'
+import { recover } from 'web3-eth-accounts'
+import { getCachedContentNodes } from '../../redis'
 
 export type LocationData = { city: string, region: string, country: string } | null
 
@@ -102,7 +106,14 @@ export const recordListen = async (params: RecordListenParams): Promise<RecordLi
     return { solTxSignature }
 }
 
-export const validateListenSignature = (timestamp: string, signature: string): boolean => {
+export const validateListenSignature = async (timestamp: string, signature: string): Promise<boolean> => {
+    const data = JSON.stringify(sortKeys({ "data": "listen", "timestamp": timestamp }))
+    const hashedData = keccak256(data)
+    const recoveredWallet = recover(hashedData, signature)
+    const contentNodes = await getCachedContentNodes()
+    for (const { delegateOwnerWallet } of contentNodes) {
+        if (recoveredWallet === delegateOwnerWallet) return true
+    }
     return false
 }
 
@@ -115,7 +126,7 @@ export const listen = async (req: Request, res: Response) => {
         logger = res.locals.logger.child({ userId, trackId })
         const ip = getIP(req)
 
-        if (!validateListenSignature(timestamp, signature)) {
+        if (!(await validateListenSignature(timestamp, signature))) {
             logger.info({ userId, trackId, ip, timestamp, signature }, "unauthorized request")
             return res.status(401).json({ message: 'Unauthorized Error' })
         }
