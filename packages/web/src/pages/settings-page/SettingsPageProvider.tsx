@@ -34,6 +34,7 @@ import {
   subscribeSafariPushBrowser,
   Permission
 } from 'utils/browserNotifications'
+import { THEME_KEY } from 'utils/theme/theme'
 import { withClassNullGuard } from 'utils/withNullGuard'
 
 import { SettingsPageProps as DesktopSettingsPageProps } from './components/desktop/SettingsPage'
@@ -248,7 +249,12 @@ function makeMapStateToProps() {
 
 function mapDispatchToProps(dispatch: Dispatch) {
   return {
-    setTheme: (theme: any) => dispatch(setTheme({ theme })),
+    setTheme: (theme: any) => {
+      dispatch(setTheme({ theme }))
+      if (typeof window !== 'undefined') {
+        window.localStorage.setItem(THEME_KEY, theme)
+      }
+    },
     getNotificationSettings: () =>
       dispatch(settingPageActions.getNotificationSettings()),
     getPushNotificationSettings: () =>
