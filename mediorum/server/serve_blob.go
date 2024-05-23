@@ -379,14 +379,12 @@ func (ss *MediorumServer) logTrackListen(c echo.Context) {
 		return
 	}
 
-	req, err := http.NewRequest("POST", endpoint, bytes.NewReader(buf))
+	req, err := signature.SignedPost(endpoint, "application/json", bytes.NewReader(buf), ss.Config.privateKey, ss.Config.Self.Host)
 	if err != nil {
 		ss.logger.Error("unable to build request", "err", err)
 		return
 	}
-	req.Header.Set("content-type", "application/json")
 	req.Header.Add("x-forwarded-for", c.RealIP())
-	req.Header.Set("User-Agent", "mediorum "+ss.Config.Self.Host)
 
 	res, err := httpClient.Do(req)
 	if err != nil {

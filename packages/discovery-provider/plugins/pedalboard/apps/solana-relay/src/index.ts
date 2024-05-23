@@ -11,7 +11,7 @@ import { relay } from './routes/relay/relay'
 import { errorHandlerMiddleware } from './middleware/errorHandler'
 import {
   userSignerRecoveryMiddleware,
-  discoveryNodeSignerRecoveryMiddleware
+  discoveryNodeSignerRecoveryMiddleware,
 } from './middleware/signerRecovery'
 import { cache } from './routes/cache'
 import { feePayer } from './routes/feePayer'

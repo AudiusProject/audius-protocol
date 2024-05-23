@@ -6,7 +6,8 @@
     "start": "ts-node ./src/index.ts",
     "dev": "ts-node-dev ./src/index.ts",
     "test": "vitest",
-    "lint": "tsc --noEmit && eslint \"src/**/*.ts*\""
+    "lint": "tsc --noEmit && eslint \"src/**/*.ts*\"",
+    "script": "ts-node ./src/script.ts"
   },
   "jest": {
     "preset": "jest-presets/jest/node"
@@ -21,18 +22,23 @@
     "body-parser": "1.19.0",
     "borsh": "0.3.1",
     "bs58": "4.0.1",
+    "buffer": "^6.0.3",
     "cors": "2.8.5",
     "cross-fetch": "3.1.8",
     "dotenv": "16.4.5",
     "envalid": "8.0.0",
     "eth-sig-util": "3.0.1",
+    "ethers": "^6.12.1",
     "express": "4.17.1",
     "keccak256": "1.0.6",
     "morgan": "1.10.0",
     "pino": "8.16.1",
     "redis": "4.6.11",
     "request-ip": "3.3.0",
-    "secp256k1": "5.0.0"
+    "secp256k1": "5.0.0",
+    "web3-core": "^4.3.2",
+    "web3-eth-accounts": "^4.1.2",
+    "web3-utils": "^4.2.3"
   },
   "devDependencies": {
     "@audius/sdk": "*",

@@ -158,13 +158,16 @@ func (ss *MediorumServer) replicateFileToHost(peer string, fileName string, file
 		close(errChan)
 	}()
 
-	req := signature.SignedPost(
+	req, err := signature.SignedPost(
 		peer+"/internal/blobs",
 		m.FormDataContentType(),
 		r,
 		ss.Config.privateKey,
 		ss.Config.Self.Host,
 	)
+	if err != nil {
+		return err
+	}
 
 	// send it
 	resp, err := client.Do(req)

@@ -12,6 +12,8 @@ export type LocationData = { city: string, region: string, country: string } | n
 
 export const recordListenBodySchema = z.object({
     userId: z.string(),
+    timestamp: z.string(),
+    signature: z.string()
 })
 
 export const recordListenParamsSchema = z.object({
@@ -100,14 +102,24 @@ export const recordListen = async (params: RecordListenParams): Promise<RecordLi
     return { solTxSignature }
 }
 
+export const validateListenSignature = (timestamp: string, signature: string): boolean => {
+    return false
+}
+
 export const listen = async (req: Request, res: Response) => {
     let logger
     try {
         // validation
-        const { userId } = recordListenBodySchema.parse(req.body)
+        const { userId, timestamp, signature } = recordListenBodySchema.parse(req.body)
         const { trackId } = recordListenParamsSchema.parse(req.params)
         logger = res.locals.logger.child({ userId, trackId })
         const ip = getIP(req)
+
+        if (!validateListenSignature(timestamp, signature)) {
+            logger.info({ userId, trackId, ip, timestamp, signature }, "unauthorized request")
+            return res.status(401).json({ message: 'Unauthorized Error' })
+        }
+
 
         // record listen after validation
         const record = await recordListen({ userId, trackId, logger, ip })
