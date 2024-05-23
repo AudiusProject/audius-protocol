@@ -46,7 +46,9 @@ export const webServer = (db: Knex, s3s: ClmS3Config[]): Application => {
 
     app.post("/record_now", async (_, res) => {
         try {
-            await clm(db, s3s, new Date())
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1)
+            await clm(db, s3s, yesterday)
         } catch (e) {
             logger.error({ e }, "error in record request")
             return res.status(500).send()

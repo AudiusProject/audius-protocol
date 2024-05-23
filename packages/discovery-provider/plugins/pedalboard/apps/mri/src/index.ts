@@ -1,5 +1,4 @@
 import knex from "knex"
-import { S3Client } from "@aws-sdk/client-s3"
 import { logger } from "./logger"
 import { CronJob } from "cron"
 import { webServer } from "./server"
