@@ -40,15 +40,15 @@ func SignedGet(endpoint string, privateKey *ecdsa.PrivateKey, selfHost string) (
 	return req, nil
 }
 
-func SignedPost(endpoint string, contentType string, r io.Reader, privateKey *ecdsa.PrivateKey, selfHost string) *http.Request {
+func SignedPost(endpoint string, contentType string, r io.Reader, privateKey *ecdsa.PrivateKey, selfHost string) (*http.Request, error) {
 	req, err := http.NewRequest("POST", endpoint, r)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	req.Header.Add("Content-Type", contentType)
 	req.Header.Add("Authorization", basicAuthNonce(privateKey))
 	req.Header.Set("User-Agent", "mediorum "+selfHost)
 
-	return req
+	return req, nil
 }

@@ -209,7 +209,7 @@ func (ss *MediorumServer) findMissedJobs(work chan *Upload, myHost string, retra
 	}
 }
 
-func (ss *MediorumServer) startTranscodeWorker(n int, work chan *Upload) {
+func (ss *MediorumServer) startTranscodeWorker(_ int, work chan *Upload) {
 	for upload := range work {
 		ss.logger.Debug("transcoding", "upload", upload.ID)
 		err := ss.transcode(upload)
@@ -263,7 +263,7 @@ func (ss *MediorumServer) getKeyToTempFile(fileHash string) (*os.File, error) {
 
 type errorCallback func(err error, uploadStatus string, info ...string) error
 
-func (ss *MediorumServer) transcodeAudio(upload *Upload, destPath string, cmd *exec.Cmd, logger *slog.Logger, onError errorCallback) error {
+func (ss *MediorumServer) transcodeAudio(upload *Upload, _ string, cmd *exec.Cmd, logger *slog.Logger, onError errorCallback) error {
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
 		return onError(err, upload.Status, "cmd.StdoutPipe")

@@ -1,7 +1,10 @@
 import dotenv from 'dotenv'
 import { cleanEnv, str, num, json } from 'envalid'
 import { logger } from './logger'
-import { Keypair } from '@solana/web3.js'
+import { Keypair, PublicKey } from '@solana/web3.js'
+
+export const ClockProgram = new PublicKey('SysvarC1ock11111111111111111111111111111111')
+export const InstructionsProgram = new PublicKey('Sysvar1nstructions1111111111111111111111111')
 
 // reads .env file based on environment
 const readDotEnv = () => {
@@ -28,11 +31,14 @@ type Config = {
   claimableTokenProgramId: string
   paymentRouterProgramId: string
   trackListenCountProgramId: string
+  ethRegistryProgramId: string
   usdcMintAddress: string
   waudioMintAddress: string
   solanaFeePayerWallets: Keypair[]
   delegatePrivateKey: Buffer,
   ipdataApiKey: string | null
+  listensValidSigner: string
+  solanaSignerPrivateKey: string
 }
 
 let cachedConfig: Config | null = null
@@ -96,6 +102,15 @@ const readConfig = (): Config => {
     audius_ipdata_api_key: str({
       // Throwaway test key
       default: '01b633611c0b57babd56a6fdf7400b21340956e1840da6dd788f9c37'
+    }),
+    audius_solana_eth_registry_program: str({
+      default: 'testBgRfFcage1hN7zmTsktdQCJZkHEhM1eguYPaeKg',
+    }),
+    audius_solana_listens_valid_signer: str({
+      default: 'yM9adjwKaRbYxQzLPF6zvZMSAfKUNte5xvK4B3iGbkL',
+    }),
+    audius_solana_signer_private_key: str({
+      default: 'd242765e718801781440d77572b9dafcdc9baadf0269eff24cf61510ddbf1003',
     })
   })
   const solanaFeePayerWalletsParsed = env.audius_solana_fee_payer_wallets
@@ -125,7 +140,10 @@ const readConfig = (): Config => {
       waudioMintAddress: env.audius_solana_waudio_mint,
       solanaFeePayerWallets,
       delegatePrivateKey,
-      ipdataApiKey: env.audius_ipdata_api_key === ""  ? null : env.audius_ipdata_api_key
+      ipdataApiKey: env.audius_ipdata_api_key === ""  ? null : env.audius_ipdata_api_key,
+      listensValidSigner: env.audius_solana_listens_valid_signer,
+      ethRegistryProgramId: env.audius_solana_eth_registry_program,
+      solanaSignerPrivateKey: env.audius_solana_signer_private_key
     }
   return readConfig()
 }

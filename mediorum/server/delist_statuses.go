@@ -166,7 +166,7 @@ func (ss *MediorumServer) startPollingDelistStatuses() {
 	}
 }
 
-func (ss *MediorumServer) pollDelistStatuses(entity DelistEntity, endpoint, wallet string) error {
+func (ss *MediorumServer) pollDelistStatuses(entity DelistEntity, endpoint, _ string) error {
 	ctx := context.Background()
 
 	var cursorBefore time.Time

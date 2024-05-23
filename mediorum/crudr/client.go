@@ -65,13 +65,17 @@ func (p *PeerClient) startSender() {
 	}
 	for data := range p.outbox {
 		endpoint := p.Host + "/internal/crud/push" // hardcoded
-		req := signature.SignedPost(
+		req, err := signature.SignedPost(
 			endpoint,
 			"application/json",
 			bytes.NewReader(data),
 			p.crudr.myPrivateKey,
 			p.selfHost,
 		)
+		if err != nil {
+			log.Println("could not create req client", "host", p.Host, "err", err)
+			continue
+		}
 
 		resp, err := httpClient.Do(req)
 		if err != nil {

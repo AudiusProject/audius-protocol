@@ -11,11 +11,12 @@ import { relay } from './routes/relay/relay'
 import { errorHandlerMiddleware } from './middleware/errorHandler'
 import {
   userSignerRecoveryMiddleware,
-  discoveryNodeSignerRecoveryMiddleware
+  discoveryNodeSignerRecoveryMiddleware,
 } from './middleware/signerRecovery'
 import { cache } from './routes/cache'
 import { feePayer } from './routes/feePayer'
 import { health } from './routes/health/health'
+import { listen } from './routes/listen/listen'
 
 const main = async () => {
   const { serverHost, serverPort } = config
@@ -24,6 +25,7 @@ const main = async () => {
   app.use(cors())
   app.use(incomingRequestLogger)
   app.get('/solana/health_check', health)
+  app.post('/solana/tracks/:trackId/listen', listen)
   app.use(userSignerRecoveryMiddleware)
   app.use(discoveryNodeSignerRecoveryMiddleware)
   app.post('/solana/relay', relay)

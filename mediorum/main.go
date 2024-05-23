@@ -131,6 +131,7 @@ func startStagingOrProd(isProd bool) {
 		AutoUpgradeEnabled:   os.Getenv("autoUpgradeEnabled") == "true",
 		StoreAll:             os.Getenv("STORE_ALL") == "true",
 		VersionJson:          GetVersionJson(),
+		DiscoveryListensEndpoints: discoveryListensEndpoints(),
 	}
 
 	ss, err := server.New(config)
@@ -214,6 +215,7 @@ func startSandbox() {
 		AutoUpgradeEnabled:   os.Getenv("autoUpgradeEnabled") == "true",
 		StoreAll:             os.Getenv("STORE_ALL") == "true",
 		VersionJson:          GetVersionJson(),
+		DiscoveryListensEndpoints: discoveryListensEndpoints(),
 	}
 
 	ss, err := server.New(config)
@@ -261,6 +263,7 @@ func startDevInstance() {
 		AudiusDockerCompose: os.Getenv("AUDIUS_DOCKER_COMPOSE_GIT_SHA"),
 		AutoUpgradeEnabled:  os.Getenv("autoUpgradeEnabled") == "true",
 		VersionJson:         GetVersionJson(),
+		DiscoveryListensEndpoints: discoveryListensEndpoints(),
 	}
 
 	ss, err := server.New(config)
@@ -317,6 +320,7 @@ func startDevCluster() {
 			AudiusDockerCompose: os.Getenv("AUDIUS_DOCKER_COMPOSE_GIT_SHA"),
 			AutoUpgradeEnabled:  os.Getenv("autoUpgradeEnabled") == "true",
 			VersionJson:         GetVersionJson(),
+			DiscoveryListensEndpoints: discoveryListensEndpoints(),
 		}
 		privKeyEnvVar := fmt.Sprintf("CN%d_SP_OWNER_PRIVATE_KEY", idx+1)
 		if privateKey, found := os.LookupEnv(privKeyEnvVar); found {
@@ -441,4 +445,8 @@ func refreshPeersAndSigners(ss *server.MediorumServer, g registrar.PeerProvider)
 			os.Exit(0) // restarting from inside the app is too error-prone so we'll let docker compose autoheal handle it
 		}
 	}
+}
+
+func discoveryListensEndpoints() []string {
+	return strings.Split(os.Getenv("discoveryListensEndpoints"), ",")
 }
