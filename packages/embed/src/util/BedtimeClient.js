@@ -1,11 +1,5 @@
 import { FetchNFTClient } from '@audius/fetch-nft'
-import {
-  sdk,
-  DiscoveryNodeSelector,
-  stagingConfig,
-  developmentConfig,
-  productionConfig
-} from '@audius/sdk'
+import { sdk } from '@audius/sdk'
 
 import { recordListen as recordAnalyticsListen } from '../analytics/analytics'
 
@@ -20,13 +14,9 @@ const env = process.env.VITE_ENVIRONMENT
 const openSeaApiUrl = process.env.VITE_OPEN_SEA_API_URL
 const heliusDasApiUrl = process.env.VITE_HELIUS_DAS_API_URL
 const solanaRpcEndpoint = process.env.VITE_SOLANA_RPC_ENDPOINT
-
-const sdkConfigOptions =
-  env === 'development'
-    ? developmentConfig
-    : env === 'staging'
-    ? stagingConfig
-    : productionConfig
+const appName = process.env.VITE_APP_NAME
+const apiKey = process.env.VITE_API_KEY
+console.log(process.env, appName, apiKey)
 
 export const RequestedEntity = Object.seal({
   TRACKS: 'tracks',
@@ -34,21 +24,14 @@ export const RequestedEntity = Object.seal({
   COLLECTIBLES: 'collectibles'
 })
 let discoveryEndpoint
-const discoveryNodeSelector = new DiscoveryNodeSelector({
-  healthCheckThresholds: {
-    minVersion: sdkConfigOptions.minVersion
-  },
-  bootstrapServices: sdkConfigOptions.discoveryNodes
-})
-discoveryNodeSelector.addEventListener('change', (endpoint) => {
-  discoveryEndpoint = endpoint
-})
 const audiusSdk = sdk({
-  appName: 'Audius Embed Player',
-  services: {
-    discoveryNodeSelector
-  },
-  ...sdkConfigOptions
+  appName,
+  apiKey,
+  environment: env
+})
+
+audiusSdk.services.discoveryNodeSelector.addEventListener('change', (endpoint) => {
+  discoveryEndpoint = endpoint
 })
 
 const fetchNFTClient = new FetchNFTClient({
@@ -58,8 +41,7 @@ const fetchNFTClient = new FetchNFTClient({
 })
 
 export const getTrackStreamEndpoint = (trackId, isPurchaseable) =>
-  `${discoveryEndpoint}/v1/tracks/${trackId}/stream${
-    isPurchaseable ? '?preview=true' : ''
+  `${discoveryEndpoint}/v1/tracks/${trackId}/stream?app_name=${appName}&api_key=${apiKey}${isPurchaseable ? '&preview=true' : ''
   }`
 
 export const getCollectiblesJson = async (cid) => {

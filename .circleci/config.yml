@@ -606,6 +606,7 @@ workflows:
             .* run-web-workflow true
             .* run-mobile-workflow true
             .* run-harmony-workflow true
+            .* run-embed-workflow true
             .* run-protocol-dashboard-workflow true
           requires:
             - generate-config

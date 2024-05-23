@@ -12,7 +12,6 @@ embed-build:
         at: ./
     - run:
         name: build
-        no_output_timeout: 60m
         command: |
           cd packages/embed
           npm run build:<< parameters.build-type >>
@@ -21,13 +20,11 @@ embed-build:
         paths:
           - << parameters.build-directory >>
 
-
 embed-install-wrangler:
   steps:
     - run:
         name: install wrangler
         command: 'cd packages/embed && npm install @cloudflare/wrangler'
-
 
 embed-deploy-cloudflare:
   parameters:
