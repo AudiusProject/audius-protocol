@@ -7,7 +7,7 @@ import { createTrackListenInstructions, getFeePayerKeyPair } from './trackListen
 import { Transaction, TransactionMessage, VersionedTransaction } from '@solana/web3.js'
 import { sendTransactionWithRetries } from '../relay/relay'
 import bs58 from 'bs58'
-import { broadcastTx } from '../../utils/broadcastTx'
+import { broadcastTransaction } from '../../utils/transaction'
 
 export type LocationData = { city: string, region: string, country: string } | null
 
@@ -96,7 +96,7 @@ export const recordListen = async (params: RecordListenParams): Promise<RecordLi
     logger.info({ solTxSignature }, "transaction sig")
 
     // no need to confirm since we already confirm in the sendTransactionWithRetries
-    await broadcastTx({ logger, confirm: false, signature: solTxSignature })
+    await broadcastTransaction({ logger, confirm: false, signature: solTxSignature })
 
     return { solTxSignature }
 }

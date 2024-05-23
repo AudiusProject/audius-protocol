@@ -27,12 +27,12 @@
     "envalid": "8.0.0",
     "eth-sig-util": "3.0.1",
     "express": "4.17.1",
-    "keccak256": "^1.0.6",
+    "keccak256": "1.0.6",
     "morgan": "1.10.0",
     "pino": "8.16.1",
     "redis": "4.6.11",
     "request-ip": "3.3.0",
-    "secp256k1": "^5.0.0"
+    "secp256k1": "5.0.0"
   },
   "devDependencies": {
     "@audius/sdk": "*",

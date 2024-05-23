@@ -144,7 +144,7 @@ export async function createTrackListenInstructions({
     logger.info({ accInfo }, "account info")
 
     if (accPublicKeyInit === undefined) {
-        throw new Error("pub key not found for acc into")
+        throw new Error("pub key not found for acc info")
     }
 
     const signerGroup = new PublicKey(accPublicKeyInit)
@@ -163,8 +163,6 @@ export async function createTrackListenInstructions({
     logger.info({ signerGroup, sourceData, trackData }, "some data")
 
     const serializedTrackData = serialize(trackDataSchema, trackData)
-    logger.info("SUP")
-    // previously .toJSON().data
     const buffered = Buffer.from(serializedTrackData)
     const msgHash = keccak256(buffered)
 
