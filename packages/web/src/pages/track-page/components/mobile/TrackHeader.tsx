@@ -12,7 +12,6 @@ import {
   Remix,
   AccessConditions
 } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import {
   CommonState,
   OverflowAction,
@@ -53,7 +52,6 @@ import Badge from 'components/track/Badge'
 import { DownloadSection } from 'components/track/DownloadSection'
 import { GatedContentSection } from 'components/track/GatedContentSection'
 import { UserGeneratedText } from 'components/user-generated-text'
-import { useFlag } from 'hooks/useRemoteConfig'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 import { useSsrContext } from 'ssr/SsrContext'
 import { moodMap } from 'utils/Moods'
@@ -196,7 +194,6 @@ const TrackHeader = ({
   goToFavoritesPage,
   goToRepostsPage
 }: TrackHeaderProps) => {
-  const { isEnabled: isEditAlbumsEnabled } = useFlag(FeatureFlags.EDIT_ALBUMS)
   const { getTrack } = cacheTracksSelectors
   const { isSsrEnabled } = useSsrContext()
   const track = useSelector(
@@ -264,9 +261,9 @@ const TrackHeader = ({
         : isSaved
         ? OverflowAction.UNFAVORITE
         : OverflowAction.FAVORITE,
-      isEditAlbumsEnabled && isOwner ? OverflowAction.ADD_TO_ALBUM : null,
+      isOwner ? OverflowAction.ADD_TO_ALBUM : null,
       isPlaylistAddable ? OverflowAction.ADD_TO_PLAYLIST : null,
-      isEditAlbumsEnabled && albumInfo ? OverflowAction.VIEW_ALBUM_PAGE : null,
+      albumInfo ? OverflowAction.VIEW_ALBUM_PAGE : null,
       isFollowing
         ? OverflowAction.UNFOLLOW_ARTIST
         : OverflowAction.FOLLOW_ARTIST,
@@ -407,12 +404,7 @@ const TrackHeader = ({
       {imageElement}
       <div className={styles.titleArtistSection}>
         <h1 className={styles.title}>{title}</h1>
-        <UserLink
-          userId={userId}
-          variant='visible'
-          textVariant='body'
-          size='l'
-        />
+        <UserLink userId={userId} variant='visible' size='l' />
       </div>
       {showPlay ? (
         <PlayButton
@@ -421,8 +413,11 @@ const TrackHeader = ({
           onPlay={onPlay}
         />
       ) : null}
+      {showPreview ? (
+        <PreviewButton playing={isPlaying && isPreviewing} onPlay={onPreview} />
+      ) : null}
       {streamConditions && trackId ? (
-        <Box mb='xl' w='100%'>
+        <Box w='100%'>
           <GatedContentSection
             isLoading={isLoading}
             contentId={trackId}
@@ -437,9 +432,7 @@ const TrackHeader = ({
           />
         </Box>
       ) : null}
-      {showPreview ? (
-        <PreviewButton playing={isPlaying && isPreviewing} onPlay={onPreview} />
-      ) : null}
+
       <ActionButtonRow
         showRepost={showSocials}
         showFavorite={showSocials}

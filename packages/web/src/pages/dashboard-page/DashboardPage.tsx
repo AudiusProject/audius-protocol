@@ -1,7 +1,6 @@
 import { useState, Suspense, ReactNode, useEffect, useCallback } from 'react'
 
-import { Status, Track } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
+import { Status } from '@audius/common/models'
 import { themeSelectors } from '@audius/common/store'
 import { formatCount } from '@audius/common/utils'
 import cn from 'classnames'
@@ -12,17 +11,11 @@ import { useDispatch, useSelector } from 'react-redux'
 import Header from 'components/header/desktop/Header'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Page from 'components/page/Page'
-import { useGoToRoute } from 'hooks/useGoToRoute'
-import { useFlag } from 'hooks/useRemoteConfig'
 import lazyWithPreload from 'utils/lazyWithPreload'
 
 import styles from './DashboardPage.module.css'
 import { ArtistCard } from './components/ArtistCard'
 import { ArtistContentSection } from './components/ArtistContentSection'
-import {
-  TracksTableContainer,
-  DataSourceTrack
-} from './components/TracksTableContainer'
 import { TABLE_PAGE_SIZE } from './components/constants'
 import {
   getDashboardListenData,
@@ -43,21 +36,6 @@ export const messages = {
   thisYear: 'This Year'
 }
 
-const formatMetadata = (trackMetadatas: Track[]): DataSourceTrack[] => {
-  return trackMetadatas
-    .map((metadata, i) => ({
-      ...metadata,
-      key: `${metadata.title}_${metadata.dateListened}_${i}`,
-      name: metadata.title,
-      date: metadata.created_at,
-      time: metadata.duration,
-      saves: metadata.save_count,
-      reposts: metadata.repost_count,
-      plays: metadata.play_count
-    }))
-    .filter((meta) => !meta.is_invalid)
-}
-
 const StatTile = (props: { title: string; value: any }) => {
   return (
     <div className={styles.statTileContainer}>
@@ -68,11 +46,7 @@ const StatTile = (props: { title: string; value: any }) => {
 }
 
 export const DashboardPage = () => {
-  const goToRoute = useGoToRoute()
   const dispatch = useDispatch()
-  const { isEnabled: isPremiumAlbumsEnabled } = useFlag(
-    FeatureFlags.PREMIUM_ALBUMS_ENABLED
-  )
   const [selectedTrack, setSelectedTrack] = useState(-1)
   const { account, tracks, stats } = useSelector(makeGetDashboard())
   const listenData = useSelector(getDashboardListenData)
@@ -88,14 +62,6 @@ export const DashboardPage = () => {
       dispatch(reset({}))
     }
   }, [dispatch])
-
-  const onClickRow = useCallback(
-    (record: any) => {
-      if (!account) return
-      goToRoute(record.permalink)
-    },
-    [account, goToRoute]
-  )
 
   const onSetYearOption = useCallback(
     (year: string) => {
@@ -159,22 +125,6 @@ export const DashboardPage = () => {
     return <div className={styles.statsContainer}>{statTiles}</div>
   }, [account, stats])
 
-  const renderTable = useCallback(() => {
-    const trackCount = account?.track_count || 0
-    if (!account || !(trackCount > 0)) return null
-
-    const dataSource = formatMetadata(tracks)
-    return (
-      <div className={styles.tracksTableWrapper}>
-        <TracksTableContainer
-          onClickRow={onClickRow}
-          dataSource={dataSource}
-          account={account}
-        />
-      </div>
-    )
-  }, [account, onClickRow, tracks])
-
   return (
     <Page
       title={messages.title}
@@ -200,7 +150,7 @@ export const DashboardPage = () => {
           <div className={styles.sectionContainer}>
             {renderChart()}
             {renderStats()}
-            {isPremiumAlbumsEnabled ? <ArtistContentSection /> : renderTable()}
+            <ArtistContentSection />
           </div>
         </>
       )}

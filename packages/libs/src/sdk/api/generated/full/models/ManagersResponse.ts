@@ -38,7 +38,7 @@ export interface ManagersResponse {
 /**
  * Check if a given object implements the ManagersResponse interface.
  */
-export function instanceOfManagersResponse(value: object): boolean {
+export function instanceOfManagersResponse(value: object): value is ManagersResponse {
     let isInstance = true;
 
     return isInstance;

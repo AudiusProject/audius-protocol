@@ -13,11 +13,11 @@ export type BaseBoxProps = {
   w?: SpacingOptions | CSSProperties['width']
 
   /** Padding */
-  p?: SpacingOptions
+  p?: SpacingOptions | CSSProperties['padding']
   /** Padding Horizontal */
-  ph?: SpacingOptions
+  ph?: SpacingOptions | CSSProperties['paddingInline']
   /** Padding Vertical */
-  pv?: SpacingOptions
+  pv?: SpacingOptions | CSSProperties['paddingBlock']
   /** Padding Top */
   pt?: SpacingOptions | CSSProperties['paddingTop']
   /** Padding Left */

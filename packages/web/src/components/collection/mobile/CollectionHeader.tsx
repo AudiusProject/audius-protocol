@@ -2,10 +2,15 @@ import { memo, useCallback } from 'react'
 
 import { useGetCurrentUserId, useGetPlaylistById } from '@audius/common/api'
 import { imageBlank } from '@audius/common/assets'
-import { useGatedContentAccess } from '@audius/common/hooks'
+import {
+  useGatedContentAccessMap,
+  useGatedContentAccess
+} from '@audius/common/hooks'
 import { Variant, SquareSizes, ID, ModalSource } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import {
+  CommonState,
+  cacheCollectionsSelectors,
   OverflowAction,
   PurchaseableContentType,
   useEditPlaylistModal
@@ -13,6 +18,7 @@ import {
 import { getDogEarType } from '@audius/common/utils'
 import { Box, Button, Flex, IconPause, IconPlay, Text } from '@audius/harmony'
 import cn from 'classnames'
+import { useSelector } from 'react-redux'
 
 import { DogEar } from 'components/dog-ear'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
@@ -33,6 +39,8 @@ import { RepostsFavoritesStats } from '../components/RepostsFavoritesStats'
 import { CollectionHeaderProps } from '../types'
 
 import styles from './CollectionHeader.module.css'
+
+const { getCollectionTracks } = cacheCollectionsSelectors
 
 const messages = {
   hiddenPlaylist: 'Hidden Playlist',
@@ -73,7 +81,6 @@ const CollectionHeader = ({
   lastModifiedDate,
   numTracks,
   isPlayable,
-  isStreamGated,
   streamConditions,
   access,
   duration,
@@ -99,29 +106,35 @@ const CollectionHeader = ({
   icon: Icon
 }: MobileCollectionHeaderProps) => {
   const { isSsrEnabled } = useSsrContext()
-  const { isEnabled: isEditAlbumsEnabled } = useFlag(FeatureFlags.EDIT_ALBUMS)
   const { isEnabled: isPremiumAlbumsEnabled } = useFlag(
     FeatureFlags.PREMIUM_ALBUMS_ENABLED
   )
 
   const { data: currentUserId } = useGetCurrentUserId({})
-  const { data: collection } = useGetPlaylistById(
-    {
-      playlistId: typeof collectionId === 'number' ? collectionId : null,
-      currentUserId
-    },
-    { disabled: typeof collectionId !== 'number' }
-  )
+  const { data: collection } = useGetPlaylistById({
+    playlistId: collectionId,
+    currentUserId
+  })
   const { hasStreamAccess } = useGatedContentAccess(collection)
   const isPremium = collection?.is_stream_gated
   const isUnlisted = collection?.is_private
 
-  // If user doesn't have access, show preview only. If user has access, show play only.
-  // If user is owner, show both.
-  const shouldShowPlay = isPlayable && hasStreamAccess
-  const shouldShowPreview = isOwner
-    ? isPlayable && isPremium
-    : isPremium && !hasStreamAccess
+  const tracks = useSelector((state: CommonState) =>
+    getCollectionTracks(state, { id: collectionId })
+  )
+  const trackAccessMap = useGatedContentAccessMap(tracks ?? [])
+  const doesUserHaveAccessToAnyTrack = Object.values(trackAccessMap).some(
+    ({ hasStreamAccess }) => hasStreamAccess
+  )
+
+  // Show play if user has access to the collection or any of its contents,
+  // otherwise show preview
+  const shouldShowPlay =
+    (isPlayable && hasStreamAccess) || doesUserHaveAccessToAnyTrack
+  const shouldShowPreview = isPremium && !hasStreamAccess && !shouldShowPlay
+
+  const showPremiumSection =
+    isPremiumAlbumsEnabled && isAlbum && streamConditions && collectionId
 
   const onSaveCollection = () => {
     if (!isOwner) onSave?.()
@@ -139,10 +152,8 @@ const CollectionHeader = ({
         : isSaved
         ? OverflowAction.UNFAVORITE
         : OverflowAction.FAVORITE,
-      isOwner && (!isAlbum || isEditAlbumsEnabled) && !isPublished
-        ? OverflowAction.PUBLISH_PLAYLIST
-        : null,
-      isOwner && (!isAlbum || isEditAlbumsEnabled) && !ddexApp
+      isOwner && !isPublished ? OverflowAction.PUBLISH_PLAYLIST : null,
+      isOwner && !ddexApp
         ? isAlbum
           ? OverflowAction.DELETE_ALBUM
           : OverflowAction.DELETE_PLAYLIST
@@ -242,12 +253,7 @@ const CollectionHeader = ({
             {title}
           </Text>
           {userId ? (
-            <UserLink
-              userId={userId}
-              textVariant='body'
-              size='l'
-              variant='visible'
-            />
+            <UserLink userId={userId} size='l' variant='visible' />
           ) : null}
         </Flex>
         {shouldShowPlay ? (
@@ -269,26 +275,6 @@ const CollectionHeader = ({
           >
             {playing && previewing ? messages.pause : messages.preview}
           </Button>
-        ) : null}
-        {isPremiumAlbumsEnabled &&
-        isAlbum &&
-        streamConditions &&
-        collectionId ? (
-          <Box mb='xl' w='100%'>
-            <GatedContentSection
-              isLoading={isLoading}
-              contentId={collectionId}
-              contentType={PurchaseableContentType.ALBUM}
-              streamConditions={streamConditions}
-              hasStreamAccess={!!access?.stream}
-              isOwner={isOwner}
-              wrapperClassName={styles.gatedContentSectionWrapper}
-              className={styles.gatedContentSection}
-              buttonClassName={styles.gatedContentSectionButton}
-              ownerId={userId}
-              source={ModalSource.CollectionDetails}
-            />
-          </Box>
         ) : null}
 
         <ActionButtonRow
@@ -320,6 +306,22 @@ const CollectionHeader = ({
         borderBottom='strong'
         justifyContent='flex-start'
       >
+        {showPremiumSection ? (
+          <Box w='100%'>
+            <GatedContentSection
+              isLoading={isLoading}
+              contentId={collectionId}
+              contentType={PurchaseableContentType.ALBUM}
+              streamConditions={streamConditions}
+              hasStreamAccess={!!access?.stream}
+              isOwner={isOwner}
+              wrapperClassName={styles.gatedContentSectionWrapper}
+              buttonClassName={styles.gatedContentSectionButton}
+              ownerId={userId}
+              source={ModalSource.CollectionDetails}
+            />
+          </Box>
+        ) : null}
         {isPublished && variant !== Variant.SMART ? (
           <RepostsFavoritesStats
             isUnlisted={false}

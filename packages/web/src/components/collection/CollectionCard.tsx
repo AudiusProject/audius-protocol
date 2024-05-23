@@ -108,14 +108,19 @@ export const CollectionCard = forwardRef(
             </TextLink>
             <UserLink
               userId={playlist_owner_id}
-              textVariant='body'
               css={{ justifyContent: 'center' }}
             />
           </CardContent>
         </Flex>
         <CardFooter>
           {is_private ? (
-            <Text variant='body' size='s' strength='strong' color='subdued'>
+            <Text
+              variant='body'
+              size='s'
+              strength='strong'
+              color='subdued'
+              css={(theme) => ({ lineHeight: theme.typography.lineHeight.s })}
+            >
               {messages.hidden}
             </Text>
           ) : (

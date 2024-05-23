@@ -1,13 +1,22 @@
-import { FavoriteType, Collection, ID, Track } from '@audius/common/models'
+import {
+  FavoriteType,
+  Collection,
+  ID,
+  Track,
+  Id,
+  userMetadataListFromSDK,
+  OptionalId
+} from '@audius/common/models'
 import {
   cacheCollectionsSelectors,
   cacheTracksSelectors,
   UserListSagaFactory,
   favoritesUserListActions,
   favoritesUserListSelectors,
-  FAVORITES_USER_LIST_TAG
+  FAVORITES_USER_LIST_TAG,
+  getSDK
 } from '@audius/common/store'
-import { select, put } from 'typed-redux-saga'
+import { select, put, call } from 'typed-redux-saga'
 
 import { watchFavoriteError } from 'common/store/user-list/favorites/errorSagas'
 import { createUserListProvider } from 'common/store/user-list/utils'
@@ -22,19 +31,24 @@ const getPlaylistFavorites = createUserListProvider<Collection>({
   getExistingEntity: getCollection,
   extractUserIDSubsetFromEntity: (collection: Collection) =>
     collection.followee_saves.map((r) => r.user_id),
-  fetchAllUsersForEntity: async ({
+  fetchAllUsersForEntity: function* ({
     limit,
     offset,
     entityId,
-    currentUserId,
-    apiClient
-  }) => {
-    const users = await apiClient.getPlaylistFavoriteUsers({
-      limit,
-      offset,
-      playlistId: entityId,
-      currentUserId
-    })
+    currentUserId
+  }) {
+    const sdk = yield* getSDK()
+
+    const { data } = yield* call(
+      [sdk.full.playlists, sdk.full.playlists.getUsersFromPlaylistFavorites],
+      {
+        limit,
+        offset,
+        playlistId: Id.parse(entityId),
+        userId: OptionalId.parse(currentUserId)
+      }
+    )
+    const users = userMetadataListFromSDK(data)
     return { users }
   },
   selectCurrentUserIDsInList: getUserIds,
@@ -47,19 +61,25 @@ const getTrackFavorites = createUserListProvider<Track>({
   getExistingEntity: getTrack,
   extractUserIDSubsetFromEntity: (track: Track) =>
     track.followee_saves.map((r) => r.user_id),
-  fetchAllUsersForEntity: async ({
+  fetchAllUsersForEntity: function* ({
     limit,
     offset,
     entityId,
-    currentUserId,
-    apiClient
-  }) => {
-    const users = await apiClient.getTrackFavoriteUsers({
-      limit,
-      offset,
-      trackId: entityId,
-      currentUserId
-    })
+    currentUserId
+  }) {
+    const sdk = yield* getSDK()
+
+    const { data } = yield* call(
+      [sdk.full.tracks, sdk.full.tracks.getUsersFromFavorites],
+      {
+        limit,
+        offset,
+        trackId: Id.parse(entityId),
+        userId: OptionalId.parse(currentUserId)
+      }
+    )
+    const users = userMetadataListFromSDK(data)
+
     return { users }
   },
   selectCurrentUserIDsInList: getUserIds,

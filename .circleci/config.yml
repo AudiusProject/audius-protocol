@@ -475,6 +475,7 @@ workflows:
             packages/ddex/webapp/.* run-ddex-webapp-workflow true
             packages/ddex/webapp/.* run-ddex-e2e-workflow true
             packages/ddex/ingester/.* run-ddex-e2e-workflow true
+            packages/ddex/processor/.* run-ddex-processor-workflow true
             packages/ddex/publisher/.* run-ddex-publisher-workflow true
             eth-contracts/.* run-eth-contracts-workflow true
             monitoring/healthz/.* run-healthz-workflow true
@@ -487,6 +488,7 @@ workflows:
             .circleci/.* run-protocol-dashboard-workflow true
             .circleci/.* run-ddex-webapp-workflow true
             .circleci/.* run-ddex-e2e-workflow true
+            .circleci/.* run-ddex-processor-workflow true
             .circleci/.* run-ddex-publisher-workflow true
             .circleci/.* run-healthz-workflow true
             .circleci/.* run-contracts-workflow true
@@ -515,6 +517,7 @@ workflows:
             packages/libs/.* run-identity-workflow true
             packages/libs/.* run-protocol-dashboard-workflow true
             packages/libs/.* run-ddex-webapp-workflow true
+            packages/libs/.* run-ddex-processor-workflow true
             packages/libs/.* run-ddex-publisher-workflow true
             packages/libs/.* run-sdk-workflow true
             packages/libs/.* run-web-workflow true
@@ -564,6 +567,7 @@ workflows:
             packages/ddex/webapp/.* run-ddex-webapp-workflow true
             packages/ddex/webapp/.* run-ddex-e2e-workflow true
             packages/ddex/ingester/.* run-ddex-e2e-workflow true
+            packages/ddex/processor/.* run-ddex-processor-workflow true
             packages/ddex/publisher/.* run-ddex-publisher-workflow true
             packages/create-audius-app/.* run-create-audius-app-workflow true
             protocol-dashboard/.* run-protocol-dashboard-workflow true
@@ -602,6 +606,7 @@ workflows:
             .* run-web-workflow true
             .* run-mobile-workflow true
             .* run-harmony-workflow true
+            .* run-embed-workflow true
             .* run-protocol-dashboard-workflow true
           requires:
             - generate-config

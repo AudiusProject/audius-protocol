@@ -1,8 +1,11 @@
-import { ID, UserMetadata, User } from '@audius/common/models'
 import {
-  responseAdapter as adapter,
-  SupportingResponse
-} from '@audius/common/services'
+  ID,
+  User,
+  Id,
+  supportedUserMetadataListFromSDK,
+  OptionalId,
+  SupportedUserMetadata
+} from '@audius/common/models'
 import {
   cacheUsersSelectors,
   tippingActions,
@@ -10,10 +13,11 @@ import {
   supportingUserListActions,
   supportingUserListSelectors,
   SUPPORTING_USER_LIST_TAG,
-  SupportingMapForUser
+  getSDK,
+  tippingUtils
 } from '@audius/common/store'
-import { decodeHashId, stringWeiToBN } from '@audius/common/utils'
-import { put, select } from 'typed-redux-saga'
+import { stringWeiToBN } from '@audius/common/utils'
+import { call, put, select } from 'typed-redux-saga'
 
 import { watchSupportingError } from 'common/store/user-list/supporting/errorSagas'
 import { createUserListProvider } from 'common/store/user-list/utils'
@@ -24,27 +28,37 @@ const { getUser } = cacheUsersSelectors
 
 type SupportingProcessExtraType = {
   userId: ID
-  supportingList: SupportingResponse[]
+  supportingList: SupportedUserMetadata[]
 }
 
 const provider = createUserListProvider<User, SupportingProcessExtraType>({
   getExistingEntity: getUser,
   extractUserIDSubsetFromEntity: () => [],
-  fetchAllUsersForEntity: async ({ limit, offset, entityId, apiClient }) => {
-    const supporting =
-      (await apiClient.getSupporting({
-        userId: entityId,
+  fetchAllUsersForEntity: function* ({
+    limit,
+    offset,
+    entityId,
+    currentUserId
+  }) {
+    const sdk = yield* getSDK()
+    const { data = [] } = yield* call(
+      [sdk.full.users, sdk.full.users.getSupportedUsers],
+      {
+        id: Id.parse(entityId),
         limit,
-        offset
-      })) || []
+        offset,
+        userId: OptionalId.parse(currentUserId)
+      }
+    )
+    const supporting = supportedUserMetadataListFromSDK(data)
+
     const users = supporting
       .sort((s1, s2) => {
         const amount1BN = stringWeiToBN(s1.amount)
         const amount2BN = stringWeiToBN(s2.amount)
         return amount1BN.gte(amount2BN) ? -1 : 1
       })
-      .map((s) => adapter.makeUser(s.receiver))
-      .filter((user): user is UserMetadata => !!user)
+      .map((s) => s.receiver)
     return { users, extra: { userId: entityId, supportingList: supporting } }
   },
   selectCurrentUserIDsInList: getUserIds,
@@ -59,17 +73,7 @@ const provider = createUserListProvider<User, SupportingProcessExtraType>({
    * in the interface, to update the store.
    */
   processExtra: function* ({ userId, supportingList }) {
-    const supportingMap: SupportingMapForUser = {}
-    supportingList.forEach((supporting: SupportingResponse) => {
-      const supportingUserId = decodeHashId(supporting.receiver.id)
-      if (supportingUserId) {
-        supportingMap[supportingUserId] = {
-          receiver_id: supportingUserId,
-          rank: supporting.rank,
-          amount: supporting.amount
-        }
-      }
-    })
+    const supportingMap = tippingUtils.makeSupportingMapForUser(supportingList)
     yield put(
       setSupportingForUser({
         id: userId,

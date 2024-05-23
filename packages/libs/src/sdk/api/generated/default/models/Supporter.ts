@@ -50,11 +50,11 @@ export interface Supporter {
 /**
  * Check if a given object implements the Supporter interface.
  */
-export function instanceOfSupporter(value: object): boolean {
+export function instanceOfSupporter(value: object): value is Supporter {
     let isInstance = true;
-    isInstance = isInstance && "rank" in value;
-    isInstance = isInstance && "amount" in value;
-    isInstance = isInstance && "sender" in value;
+    isInstance = isInstance && "rank" in value && value["rank"] !== undefined;
+    isInstance = isInstance && "amount" in value && value["amount"] !== undefined;
+    isInstance = isInstance && "sender" in value && value["sender"] !== undefined;
 
     return isInstance;
 }

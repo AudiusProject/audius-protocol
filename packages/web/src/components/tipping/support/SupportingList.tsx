@@ -56,7 +56,10 @@ const SupportingListForProfile = ({ profile }: { profile: User }) => {
       {rankedSupportingList
         .slice(0, MAX_PROFILE_SUPPORTING_TILES)
         .map((supporting) => (
-          <SupportingTile key={supporting.rank} supporting={supporting} />
+          <SupportingTile
+            key={supporting.receiver_id}
+            supporting={supporting}
+          />
         ))}
       {profile.supporting_count > MAX_PROFILE_SUPPORTING_TILES ? (
         <PlainButton

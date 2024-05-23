@@ -200,6 +200,7 @@ def entity_manager_update(
                         pending_playlist_routes,
                         update_task.eth_manager,
                         update_task.web3,
+                        update_task.solana_client_manager,
                         block_timestamp,
                         block_number,
                         block_hash,

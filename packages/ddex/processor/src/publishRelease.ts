@@ -8,7 +8,7 @@ import { ReleaseProcessingStatus, ReleaseRow, releaseRepo } from './db'
 import { DDEXContributor, DDEXRelease, DDEXResource } from './parseDelivery'
 import { readAssetWithCaching } from './s3poller'
 import { getSdk } from './sdk'
-import { sources } from './sources'
+import { SourceConfig, sources } from './sources'
 
 export async function publishValidPendingReleases() {
   const rows = releaseRepo.all({ pendingPublish: true })
@@ -34,7 +34,7 @@ export async function publishValidPendingReleases() {
     } else {
       // create
       try {
-        await publishRelease(sdk, row, parsed)
+        await publishRelease(source, sdk, row, parsed)
       } catch (e: any) {
         console.log('failed to publish', row.key, e)
         releaseRepo.addPublishError(row.key, e)
@@ -44,6 +44,7 @@ export async function publishValidPendingReleases() {
 }
 
 export async function publishRelease(
+  source: SourceConfig,
   sdk: AudiusSdk,
   releaseRow: ReleaseRow,
   release: DDEXRelease
@@ -73,6 +74,12 @@ export async function publishRelease(
   )
 
   const trackMetadatas = prepareTrackMetadatas(release)
+
+  if (source.placementHosts) {
+    for (const t of trackMetadatas) {
+      t.placementHosts = source.placementHosts
+    }
+  }
 
   // publish album
   if (release.soundRecordings.length > 1) {

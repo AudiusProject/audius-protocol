@@ -1,9 +1,11 @@
 import copy
 
 from integration_tests.utils import populate_mock_db
-from src.queries.get_managed_users import get_managed_users_with_grants, get_user_managers_with_grants
+from src.queries.get_managed_users import (
+    get_managed_users_with_grants,
+    get_user_managers_with_grants,
+)
 from src.utils.db_session import get_db
-
 
 test_users = [
     {"user_id": 10, "name": "a", "wallet": "0x10"},
@@ -85,7 +87,7 @@ test_user_manager_grants = [
         "grantee_address": "0x60",
         "is_approved": False,
         "is_revoked": True,
-    }
+    },
 ]
 
 # ### get_managed_users ### #
@@ -129,7 +131,10 @@ def test_get_managed_users_grants_without_users(app):
     with app.app_context():
         db = get_db()
 
-        entities = ({"users": copy.deepcopy(test_users), "grants": copy.deepcopy(test_managed_user_grants)})
+        entities = {
+            "users": copy.deepcopy(test_users),
+            "grants": copy.deepcopy(test_managed_user_grants),
+        }
         # Record for a user which won't be found
         entities["grants"].append(
             {
@@ -182,9 +187,7 @@ def test_get_user_managers_default(app):
         db = get_db()
         populate_mock_db(db, {"users": test_users, "grants": test_user_manager_grants})
 
-        user_managers = get_user_managers_with_grants(
-            {"user_id": 10}
-        )
+        user_managers = get_user_managers_with_grants({"user_id": 10})
 
         # return all non-revoked records by default
         assert len(user_managers) == 3, "Expected exactly 3 records"
@@ -214,7 +217,10 @@ def test_get_user_managers_grants_without_users(app):
     with app.app_context():
         db = get_db()
 
-        entities = {"users": copy.deepcopy(test_users), "grants": copy.deepcopy(test_user_manager_grants)}
+        entities = {
+            "users": copy.deepcopy(test_users),
+            "grants": copy.deepcopy(test_user_manager_grants),
+        }
         # Record for a user which won't be found
         entities["grants"].append(
             {
@@ -226,9 +232,7 @@ def test_get_user_managers_grants_without_users(app):
         )
         populate_mock_db(db, entities)
 
-        user_managers = get_user_managers_with_grants(
-            {"user_id": 10}
-        )
+        user_managers = get_user_managers_with_grants({"user_id": 10})
 
         # return all non-revoked records by default
         assert len(user_managers) == 3, "Expected exactly 3 records"
@@ -243,9 +247,7 @@ def test_get_user_managers_invalid_parameters(app):
         populate_mock_db(db, {"users": test_users, "grants": test_user_manager_grants})
 
         try:
-            get_user_managers_with_grants(
-                {}
-            )
+            get_user_managers_with_grants({})
             assert False, "Should have thrown an error for missing user id"
         except ValueError as e:
             assert str(e) == "user_id is required"

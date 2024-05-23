@@ -6,10 +6,11 @@ import { Nullable } from '~/utils/typeUtils'
 
 import { AudiusQueryContextType } from './AudiusQueryContext'
 import { schemas } from './schema'
-import { EndpointConfig } from './types'
+import { EndpointConfig, FetchBatchArgs } from './types'
 
 // Requests occuring in this period will be batched
 const BATCH_PERIOD_MS = 10
+const MAX_BATCH_SIZE = 100
 
 type RequestQueueItem<Args, Data> = {
   fetchArgs: Args
@@ -71,12 +72,16 @@ export const createRequestBatcher = () => {
     requestGroup: RequestGroup,
     endpointName: string,
     endpointConfig: EndpointConfig<Args, Data>
-  ) => {
+  ): Promise<void> => {
+    if (requestGroup.queue.length === 0) return
+
     const idArgKey = endpointConfig.options.idArgKey ?? 'id'
-    const queuedRequests = [...requestGroup.queue] as RequestQueueItem<
-      Args,
-      Data
-    >[]
+
+    // Extract the first MAX_BATCH_SIZE requests from the queue
+    const requests = requestGroup.queue.slice(0, MAX_BATCH_SIZE)
+    const remainingRequests = requestGroup.queue.slice(MAX_BATCH_SIZE)
+
+    const queuedRequests = [...requests] as RequestQueueItem<Args, Data>[]
 
     requestGroup.queue = []
     requestGroup.timer = null
@@ -91,9 +96,9 @@ export const createRequestBatcher = () => {
     // Context is not guaranteed to be the same, but we use the most recent one
     const mostRecentRequest = queuedRequests[queuedRequests.length - 1]
     const batchArgs = {
-      ...omit(mostRecentRequest.fetchArgs ?? {}, 'id'),
-      ids
-    } as { ids: ID[] } & Args
+      ...omit(mostRecentRequest.fetchArgs ?? {}, idArgKey),
+      ids: [...new Set(ids)]
+    } as FetchBatchArgs<Args>
 
     try {
       // Make the batch request
@@ -117,7 +122,7 @@ export const createRequestBatcher = () => {
             resultsById[request.fetchArgs[endpointConfig.options.idArgKey!]]
 
           if (resultEntity) {
-            request.resolve(resultEntity as any)
+            request.resolve(resultEntity as Data)
             return
           }
         }
@@ -131,10 +136,21 @@ export const createRequestBatcher = () => {
       // Reject all promises if the batch request fails
       queuedRequests.forEach((request) => request.reject(error))
     }
+
+    // If there are remaining requests, perform another batch
+    if (remainingRequests) {
+      performBatch(
+        {
+          queue: remainingRequests,
+          timer: null
+        },
+        endpointName,
+        endpointConfig
+      )
+    }
   }
 
   return {
-    fetch,
-    performBatch
+    fetch
   }
 }

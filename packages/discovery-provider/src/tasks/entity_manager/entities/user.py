@@ -7,6 +7,8 @@ import base58
 from eth_account.messages import defunct_hash_message
 from nacl.encoding import HexEncoder
 from nacl.signing import VerifyKey
+from solders.pubkey import Pubkey
+from sqlalchemy.orm.session import Session
 
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
@@ -17,6 +19,8 @@ from src.models.users.associated_wallet import AssociatedWallet
 from src.models.users.user import User
 from src.models.users.user_events import UserEvent
 from src.queries.get_balances import enqueue_immediate_balance_refresh
+from src.solana.solana_client_manager import SolanaClientManager
+from src.solana.solana_helpers import SPL_TOKEN_ID
 from src.tasks.entity_manager.utils import (
     CHARACTER_LIMIT_USER_BIO,
     USER_ID_OFFSET,
@@ -36,6 +40,9 @@ from src.utils.indexing_errors import EntityMissingRequiredFieldError
 from src.utils.model_nullable_validator import all_required_fields_present
 
 logger = logging.getLogger(__name__)
+
+SPL_TOKEN_PUBKEY = Pubkey.from_string(SPL_TOKEN_ID)
+USDC_MINT = shared_config["solana"]["usdc_mint"]
 
 
 def get_verifier_address():
@@ -105,7 +112,12 @@ def validate_user_tx(params: ManageEntityParameters):
         )
 
 
-def validate_user_metadata(session, user_record: User, user_metadata: Dict):
+def validate_user_metadata(
+    session: Session,
+    solana_client_manager: SolanaClientManager,
+    user_record: User,
+    user_metadata: Dict,
+):
     if not isinstance(user_metadata, dict):
         raise IndexingValidationError("Invalid user metadata")
     # If the user's handle is not set, validate that it is unique
@@ -140,6 +152,25 @@ def validate_user_metadata(session, user_record: User, user_metadata: Dict):
             # Invalid artist pick. Should not continue to save
             raise IndexingValidationError(
                 f"Cannot set artist pick. Track {user_metadata['artist_pick_track_id']} does not exist"
+            )
+
+    if user_metadata.get("spl_usdc_payout_wallet"):
+        wallet = user_metadata["spl_usdc_payout_wallet"]
+        pubkey = Pubkey.from_string(wallet)
+
+        if str(pubkey) != wallet:
+            raise IndexingValidationError(f"Invalid spl address {wallet}")
+
+        account_info = solana_client_manager.get_account_info_json_parsed(pubkey)
+
+        if account_info.owner != SPL_TOKEN_PUBKEY:
+            raise IndexingValidationError(
+                f"Spl address is not a token account {wallet}"
+            )
+
+        if account_info.data.parsed["info"]["mint"] != USDC_MINT:
+            raise IndexingValidationError(
+                f"Spl address is not a USDC token account {wallet}"
             )
 
 
@@ -196,6 +227,7 @@ def create_user(
     if user_metadata is not None:
         validate_user_metadata(
             params.session,
+            params.solana_client_manager,
             user_record,
             user_metadata,
         )
@@ -237,6 +269,7 @@ def update_user(
 
     validate_user_metadata(
         params.session,
+        params.solana_client_manager,
         user_record,
         params.metadata,
     )

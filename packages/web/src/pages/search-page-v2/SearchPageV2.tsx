@@ -1,7 +1,6 @@
 import { ChangeEvent, useCallback, useContext, useEffect } from 'react'
 
 import { Status } from '@audius/common/models'
-import { searchSelectors } from '@audius/common/store'
 import { Maybe } from '@audius/common/utils'
 import {
   Flex,
@@ -15,7 +14,7 @@ import {
   SelectablePill,
   Text
 } from '@audius/harmony'
-import { capitalize, get } from 'lodash'
+import { capitalize } from 'lodash'
 import { useParams } from 'react-router-dom'
 
 import { useHistoryContext } from 'app/HistoryProvider'
@@ -79,7 +78,7 @@ const SearchHeader = (props: SearchHeaderProps) => {
     [setCategory]
   )
 
-  const CategoryRadioGroup = (
+  const categoryRadioGroup = (
     <RadioGroup
       direction='row'
       gap='s'
@@ -107,7 +106,7 @@ const SearchHeader = (props: SearchHeaderProps) => {
 
   return isMobile ? (
     <Flex p='s' css={{ overflow: 'scroll' }}>
-      {CategoryRadioGroup}
+      {categoryRadioGroup}
     </Flex>
   ) : (
     <Header
@@ -122,7 +121,7 @@ const SearchHeader = (props: SearchHeaderProps) => {
           </Flex>
         ) : null
       }
-      rightDecorator={CategoryRadioGroup}
+      rightDecorator={categoryRadioGroup}
       variant='main'
     />
   )
@@ -170,7 +169,7 @@ export const SearchPageV2 = () => {
       // canonicalUrl={fullSearchResultsPage(query)}
       header={header}
     >
-      <Flex direction='column' css={{ width: '100%' }}>
+      <Flex direction='column' w='100'>
         {isMobile ? header : null}
         {!query ? (
           <Flex direction='column' alignItems='center' gap='2xl'>

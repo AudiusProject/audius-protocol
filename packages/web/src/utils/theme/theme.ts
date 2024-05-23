@@ -1,6 +1,6 @@
 import { SystemAppearance, Theme } from '@audius/common/models'
 
-const THEME_KEY = 'theme'
+export const THEME_KEY = 'theme'
 export const PREFERS_DARK_MEDIA_QUERY = '(prefers-color-scheme: dark)'
 
 export const doesPreferDarkMode = () => {
@@ -16,12 +16,6 @@ export const shouldShowDark = (theme?: Theme | null) => {
     !!theme &&
     (theme === Theme.DARK || (theme === Theme.AUTO && doesPreferDarkMode()))
   )
-}
-
-export const setTheme = (theme: Theme) => {
-  if (typeof window !== 'undefined') {
-    window.localStorage.setItem(THEME_KEY, theme)
-  }
 }
 
 export const getTheme = (): Theme | null => {

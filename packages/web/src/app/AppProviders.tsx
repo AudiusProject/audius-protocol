@@ -32,7 +32,7 @@ export const AppProviders = ({ children }: AppContextProps) => {
     ui: {
       theme: {
         theme: getTheme(),
-        systemPreference: getSystemAppearance()
+        systemAppearance: getSystemAppearance()
       }
     }
   }

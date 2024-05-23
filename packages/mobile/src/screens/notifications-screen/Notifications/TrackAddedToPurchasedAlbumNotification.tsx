@@ -41,10 +41,8 @@ export const TrackAddedToPurchasedAlbumNotification = (
   const playlistOwner = playlist.user
 
   const handlePress = useCallback(() => {
-    if (playlist) {
-      navigation.navigate(notification)
-    }
-  }, [playlist, navigation, notification])
+    navigation.navigate(notification)
+  }, [navigation, notification])
 
   if (!playlistOwner || !track || !playlist) return null
 

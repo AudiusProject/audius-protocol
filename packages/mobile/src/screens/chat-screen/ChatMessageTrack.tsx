@@ -11,6 +11,7 @@ import { getPathFromTrackUrl, makeUid } from '@audius/common/utils'
 import { useSelector } from 'react-redux'
 
 import { TrackTile } from 'app/components/lineup-tile'
+import { LineupTileSource } from 'app/components/lineup-tile/types'
 import { make, track as trackEvent } from 'app/services/analytics'
 
 const { getUserId } = accountSelectors
@@ -87,6 +88,7 @@ export const ChatMessageTrack = ({
       showRankIcon={false}
       styles={styles}
       variant='readonly'
+      source={LineupTileSource.DM_TRACK}
     />
   ) : null
 }

@@ -107,6 +107,7 @@ function* editPlaylistAsync(
   const userId = yield* call(ensureLoggedIn)
   yield* waitForWrite()
 
+  const isNative = yield* getContext('isNativeMobile')
   const audiusBackend = yield* getContext('audiusBackendInstance')
   const { generatePlaylistArtwork } = yield* getContext('imageUtils')
 
@@ -140,7 +141,9 @@ function* editPlaylistAsync(
   }
 
   // Optimistic update #1 to quickly update metadata and track lineup
-  yield* call(optimisticUpdateCollection, playlist)
+  if (isNative) {
+    yield* call(optimisticUpdateCollection, playlist)
+  }
 
   playlist = yield* call(
     updatePlaylistArtwork,
@@ -248,9 +251,7 @@ function* removeTrackFromPlaylistAsync(
     updatePlaylistArtwork,
     playlist!,
     playlistTracks!,
-    {
-      removed: removedTrack!
-    },
+    { removed: removedTrack! },
     { audiusBackend, generateImage: generatePlaylistArtwork }
   )
 

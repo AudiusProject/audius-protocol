@@ -3,7 +3,7 @@ import { Ref, forwardRef } from 'react'
 import { useTheme } from '@emotion/react'
 import { Slot } from '@radix-ui/react-slot'
 
-import { Text } from 'components/text/Text'
+import { Text } from 'components/text'
 
 import type { TextLinkProps } from './types'
 
@@ -32,7 +32,8 @@ export const TextLink = forwardRef((props: TextLinkProps, ref: Ref<'a'>) => {
     subdued: color.link.subdued,
     visible: color.link.visible,
     inverted: color.static.white,
-    secondary: color.secondary.secondary
+    secondary: color.secondary.secondary,
+    active: color.primary.primary
   }
 
   const variantHoverColors = {
@@ -40,7 +41,8 @@ export const TextLink = forwardRef((props: TextLinkProps, ref: Ref<'a'>) => {
     subdued: color.primary.p300,
     visible: color.link.visible,
     inverted: color.static.white,
-    secondary: color.secondary.secondary
+    secondary: color.secondary.secondary,
+    active: color.primary.primary
   }
 
   const hoverStyles = {

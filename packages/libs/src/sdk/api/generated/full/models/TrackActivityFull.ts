@@ -50,7 +50,7 @@ export interface TrackActivityFull {
 /**
  * Check if a given object implements the TrackActivityFull interface.
  */
-export function instanceOfTrackActivityFull(value: object): boolean {
+export function instanceOfTrackActivityFull(value: object): value is TrackActivityFull {
     let isInstance = true;
 
     return isInstance;

@@ -2,6 +2,7 @@ import React from 'react'
 
 import cn from 'classnames'
 
+import { Card } from 'components/card'
 import { Draggable } from 'components/dragndrop'
 import CategoryHeader from 'components/header/desktop/CategoryHeader'
 import { useIsMobile } from 'hooks/useIsMobile'
@@ -49,6 +50,30 @@ const DesktopCardContainer = ({
   )
 }
 
+const EmptyMobileCard = () => (
+  <div className={styles.mobileCardContainer}>
+    <Card size='xs' css={{ display: 'none' }} />
+  </div>
+)
+
+const renderEmptyCards = (cardsLength: number) => {
+  if (cardsLength === 1) {
+    return (
+      <>
+        <EmptyMobileCard />
+        <EmptyMobileCard />
+      </>
+    )
+  }
+  if (cardsLength === 2) {
+    return <EmptyMobileCard />
+  }
+  if (cardsLength % 2 === 1) {
+    return <EmptyMobileCard />
+  }
+  return null
+}
+
 const MobileCardContainer = ({
   cards,
   containerClassName
@@ -60,6 +85,7 @@ const MobileCardContainer = ({
           {card}
         </div>
       ))}
+      {renderEmptyCards(cards.length)}
     </div>
   )
 }

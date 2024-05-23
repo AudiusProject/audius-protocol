@@ -17,6 +17,8 @@ import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'
 import { useReachabilityEffect } from 'app/hooks/useReachabilityEffect'
 import { getOfflineTrackIds } from 'app/store/offline-downloads/selectors'
 
+import { useHasCollectionChanged } from './useHasCollectionChanged'
+
 const { getCollection } = cacheCollectionsSelectors
 const { getCollectionTracksLineup } = collectionPageSelectors
 const { getPositions } = queueSelectors
@@ -129,4 +131,5 @@ export const useFetchCollectionLineup = (
 
   // Fetch the lineup based on reachability
   useReachabilityEffect(fetchLineup, fetchLineupOffline)
+  useHasCollectionChanged(collectionId as number, fetchLineup)
 }

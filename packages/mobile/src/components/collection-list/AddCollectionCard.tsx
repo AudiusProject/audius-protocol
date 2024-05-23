@@ -34,7 +34,10 @@ export const AddCollectionCard = ({
     if (onCreate) return onCreate()
     dispatch(
       (collectionType === 'album' ? createAlbum : createPlaylist)(
-        { playlist_name: 'New Playlist' },
+        {
+          playlist_name:
+            collectionType === 'album' ? 'New Album' : 'New Playlist'
+        },
         source,
         sourceTrackId,
         source === CreatePlaylistSource.FROM_TRACK ? 'toast' : 'route'

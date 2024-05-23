@@ -120,9 +120,6 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
   )
-  const { isEnabled: isEditAlbumsEnabled } = useFeatureFlag(
-    FeatureFlags.EDIT_ALBUMS
-  )
   const isPlaylistAddable = useIsGatedContentPlaylistAddable(track)
 
   const isOwner = track?.owner_id === accountUser?.user_id
@@ -204,14 +201,12 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
       const isLongFormContent =
         track.genre === Genre.PODCASTS || track.genre === Genre.AUDIOBOOKS
       const overflowActions = [
-        isEditAlbumsEnabled && isOwner ? OverflowAction.ADD_TO_ALBUM : null,
+        isOwner ? OverflowAction.ADD_TO_ALBUM : null,
         isPlaylistAddable ? OverflowAction.ADD_TO_PLAYLIST : null,
         isNewPodcastControlsEnabled && isLongFormContent
           ? OverflowAction.VIEW_EPISODE_PAGE
           : OverflowAction.VIEW_TRACK_PAGE,
-        isEditAlbumsEnabled && albumInfo
-          ? OverflowAction.VIEW_ALBUM_PAGE
-          : null,
+        albumInfo ? OverflowAction.VIEW_ALBUM_PAGE : null,
         isNewPodcastControlsEnabled && isLongFormContent
           ? playbackPositionInfo?.status === 'COMPLETED'
             ? OverflowAction.MARK_AS_UNPLAYED
@@ -230,7 +225,6 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
     }
   }, [
     track,
-    isEditAlbumsEnabled,
     isOwner,
     isPlaylistAddable,
     isNewPodcastControlsEnabled,

@@ -158,8 +158,6 @@ track_full = ns.clone(
         "cover_art_cids": fields.Nested(cover_art, allow_null=True),
         "created_at": fields.String,
         "credits_splits": fields.String,
-        # todo: remove once clients catch up i.e. no longer use this field
-        "download": fields.Nested(download),
         "isrc": fields.String,
         "license": fields.String,
         "iswc": fields.String,
@@ -181,6 +179,7 @@ track_full = ns.clone(
         "remix_of": fields.Nested(full_remix_parent),
         "is_available": fields.Boolean,
         "ai_attribution_user_id": fields.Integer(allow_null=True),
+        "allowed_api_keys": fields.List(fields.String, allow_null=True),
         "audio_upload_id": fields.String,
         "preview_start_seconds": fields.Float,
         # DDEX fields

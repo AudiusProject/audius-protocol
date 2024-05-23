@@ -22,7 +22,8 @@ import {
   Configuration,
   StreamTrackRequest,
   TracksApi as GeneratedTracksApi,
-  UsdcGate
+  UsdcGate,
+  instanceOfPurchaseGate
 } from '../generated/default'
 import { BASE_PATH, RequiredError } from '../generated/default/runtime'
 
@@ -112,6 +113,10 @@ export class TracksApi extends GeneratedTracksApi {
     if (metadata.previewStartSeconds) {
       uploadOptions.previewStartSeconds =
         metadata.previewStartSeconds.toString()
+    }
+
+    if (metadata.placementHosts) {
+      uploadOptions.placement_hosts = metadata.placementHosts
     }
 
     // Upload track audio and cover art to storage node
@@ -387,6 +392,7 @@ export class TracksApi extends GeneratedTracksApi {
     const {
       userId,
       trackId,
+      price: priceNumber,
       extraAmount: extraAmountNumber = 0,
       walletAdapter
     } = await parseParams('purchase', PurchaseTrackSchema)(params)
@@ -418,12 +424,15 @@ export class TracksApi extends GeneratedTracksApi {
     let accessType: 'stream' | 'download' = 'stream'
 
     // Get conditions
-    if (track.streamConditions && 'usdcPurchase' in track.streamConditions) {
+    if (
+      track.streamConditions &&
+      instanceOfPurchaseGate(track.streamConditions)
+    ) {
       centPrice = track.streamConditions.usdcPurchase.price
       numberSplits = track.streamConditions.usdcPurchase.splits
     } else if (
       track.downloadConditions &&
-      'usdcPurchase' in track.downloadConditions
+      instanceOfPurchaseGate(track.downloadConditions)
     ) {
       centPrice = track.downloadConditions.usdcPurchase.price
       numberSplits = track.downloadConditions.usdcPurchase.splits
@@ -438,6 +447,11 @@ export class TracksApi extends GeneratedTracksApi {
       (accessType === 'stream' && track.access?.stream)
     ) {
       throw new Error('Track already purchased')
+    }
+
+    // Check if price changed
+    if (USDC(priceNumber).value < USDC(centPrice / 100).value) {
+      throw new Error('Track price increased.')
     }
 
     let extraAmount = USDC(extraAmountNumber).value
@@ -491,12 +505,7 @@ export class TracksApi extends GeneratedTracksApi {
       })
 
     if (walletAdapter) {
-      this.logger.debug(
-        `Using walletAdapter ${walletAdapter.name} to purchase...`
-      )
-      if (!walletAdapter.connected) {
-        await walletAdapter.connect()
-      }
+      this.logger.debug('Using connected wallet to purchase...')
       if (!walletAdapter.publicKey) {
         throw new Error('Could not get connected wallet address')
       }
@@ -504,10 +513,11 @@ export class TracksApi extends GeneratedTracksApi {
       const transferInstruction =
         await this.paymentRouterClient.createTransferInstruction({
           sourceWallet: walletAdapter.publicKey,
-          amount: total,
+          total,
           mint
         })
       const transaction = await this.paymentRouterClient.buildTransaction({
+        feePayer: walletAdapter.publicKey,
         instructions: [transferInstruction, routeInstruction, memoInstruction]
       })
       return await walletAdapter.sendTransaction(

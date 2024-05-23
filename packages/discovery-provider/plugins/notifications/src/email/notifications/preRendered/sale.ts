@@ -318,7 +318,9 @@ export const email = ({
 										</td></tr>
 										</table>
 									</div> 
-									<div>
+									${
+                    payExtra !== '0.00'
+                      ? `<div>
 										<table border="0" cellspacing="0" cellpadding="0" width="100%">
 										<tr><td align="left" valign="middle" bgcolor="#ffffff" style="padding: 12px 24px; border-top: 1px solid #f2f2f4;">
 											<div>
@@ -369,7 +371,9 @@ export const email = ({
 											</div>
 										</td></tr>
 										</table>
-									</div> 
+									</div>`
+                      : ''
+                  }
 									<div>
 										<table border="0" cellspacing="0" cellpadding="0" width="100%">
 										<tr><td align="left" valign="middle" bgcolor="#fcfcfc" style="padding: 12px 24px; border-top: 1px solid #f2f2f4;">

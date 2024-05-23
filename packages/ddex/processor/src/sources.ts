@@ -1,5 +1,7 @@
 import { readFileSync } from 'fs'
 
+const sourcesLocation = process.env.SOURCES_LOCATION || './data/sources.json'
+
 export type SourceConfig = {
   env?: 'production' | 'staging' | 'development'
   name: string
@@ -9,6 +11,7 @@ export type SourceConfig = {
   awsSecret: string
   awsRegion: string
   awsBucket: string
+  placementHosts?: string
 }
 
 let sourceList: SourceConfig[] = []
@@ -16,7 +19,7 @@ let sourceList: SourceConfig[] = []
 export const sources = {
   load(configPath?: string) {
     try {
-      const j = readFileSync(configPath || './sources.json', 'utf8')
+      const j = readFileSync(configPath || sourcesLocation, 'utf8')
       const sourceConfig = JSON.parse(j) as {
         sources: SourceConfig[]
       }

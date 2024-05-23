@@ -87,6 +87,7 @@
     - **`type`** - by default endpoint additions are viewed as "queries" ie methods that fetch data. Specifying `type: 'mutation'` tells audius-query you are implementing a method that will write data to the server.
     - **`retry`** - enables retries for the endpoint. The fetch function will automatically be called multiple times, with the final error bubbling up if all retries are exhausted. Fetches resulting in `400`, `401`, and `403` are never retried.
     - **`retryConfig`** - Overrides the default retry config for advanced use cases. The options are passed directly to [`async-retry`](https://github.com/vercel/async-retry).
+    - **`fetchBatch`** - If specified, the endpoint will automatically batch groups of requests that fall into a batch period. `fetchBatch` takes an args object containing an `ids` array and should return an array of entities. It requires that you specify both the `idArgKey` and `schemaKey` options
 
 1.  Export the query hook
 
@@ -272,6 +273,35 @@ const purchasesApi = createApi({
 ```
 
 Note that in the above code, we're simply issuing a fetch for the related tracks, which will be inserted into the cache, before returning our original data. This is merely a performance optimization.
+
+### Batching requests
+
+If you want to use a "get by id" pattern in leaf components such as a list of tracks, it's recommended to batch the requests so that only a single request is performed. This can be achieved by specifying the `fetchBatch` function on the endpoint:
+
+```typescript
+const trackApi = createApi({
+  endpoints: {
+    getTrackById: {
+      fetch: async (
+        { id }: { id: ID },
+        context
+      ) => {
+        // return a single track
+      },
+      fetchBatch: async (
+        { ids }: { ids: ID[]; },
+        context
+      ) => {
+        // return an array of tracks
+      },
+      options: {
+        idArgKey: 'id',
+        schemaKey: 'track'
+      }
+    },
+```
+
+Audius-query will automatically merge requests that fall within a short time frame (10 ms) into a single bulk request. It only merges requests that have the same arguments, exlcuding the id argument. You can continue to use the resulting hooks as usual, and all the entities will continue to have the same caching behavior as non-batched.
 
 ## Query Hook options
 

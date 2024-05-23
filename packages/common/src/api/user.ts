@@ -1,7 +1,13 @@
 import { full } from '@audius/sdk'
 
 import { createApi } from '~/audius-query'
-import { ID, Kind, StringUSDC } from '~/models'
+import {
+  ID,
+  Kind,
+  OptionalId,
+  StringUSDC,
+  userMetadataListFromSDK
+} from '~/models'
 import {
   USDCTransactionDetails,
   USDCTransactionMethod,
@@ -46,10 +52,14 @@ const userApi = createApi({
     getUserById: {
       fetch: async (
         { id, currentUserId }: { id: ID; currentUserId: Nullable<ID> },
-        { apiClient }
+        { audiusSdk }
       ) => {
-        const apiUser = await apiClient.getUser({ userId: id, currentUserId })
-        return apiUser?.[0]
+        const sdk = await audiusSdk()
+        const { data: users = [] } = await sdk.full.users.getUser({
+          id: Id.parse(id),
+          userId: OptionalId.parse(currentUserId)
+        })
+        return userMetadataListFromSDK(users)[0]
       },
       fetchBatch: async (
         { ids, currentUserId }: { ids: ID[]; currentUserId: Nullable<ID> },
@@ -67,17 +77,16 @@ const userApi = createApi({
       fetch: async (
         {
           handle,
-          currentUserId,
-          retry = true
-        }: { handle: string; currentUserId: Nullable<ID>; retry?: boolean },
-        { apiClient }
+          currentUserId
+        }: { handle: string; currentUserId: Nullable<ID> },
+        { audiusSdk }
       ) => {
-        const apiUser = await apiClient.getUserByHandle({
+        const sdk = await audiusSdk()
+        const { data: users = [] } = await sdk.full.users.getUserByHandle({
           handle,
-          currentUserId,
-          retry
+          userId: OptionalId.parse(currentUserId)
         })
-        return apiUser?.[0]
+        return userMetadataListFromSDK(users)[0]
       },
       options: {
         kind: Kind.USERS,

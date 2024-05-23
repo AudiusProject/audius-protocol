@@ -78,6 +78,7 @@ const EditPlaylistPage = g(
 
     // Close the page if the route was changed
     useHasChangedRoute(onClose)
+
     const initialMetadata = {
       ...(metadata as Collection),
       artwork: { url: '' }
@@ -88,7 +89,7 @@ const EditPlaylistPage = g(
     )
 
     const [showRemoveTrackDrawer, setShowRemoveTrackDrawer] = useState(false)
-    const onDrawerClose = () => setShowRemoveTrackDrawer(false)
+    const onDrawerClose = useCallback(() => setShowRemoveTrackDrawer(false), [])
 
     // Holds all tracks to be removed on save
     const [removedTracks, setRemovedTracks] = useState<
@@ -228,16 +229,7 @@ const EditPlaylistPage = g(
         }
         refreshLineup()
 
-        const editPlaylistData: any = {
-          playlist_name: formFields.playlist_name,
-          description: formFields.description,
-          artwork: formFields.artwork,
-          tracks: formFields.tracks as any,
-          track_ids: formFields.playlist_contents.track_ids,
-          removedTracks: []
-        }
-
-        editPlaylist(metadata.playlist_id, editPlaylistData)
+        editPlaylist(metadata.playlist_id, formFields)
 
         track({
           eventName: Name.COLLECTION_EDIT,
@@ -315,12 +307,16 @@ const EditPlaylistPage = g(
         tracks.filter((trackIndex) => trackIndex !== removeIdx)
       )
       onDrawerClose()
-    }, [metadata, confirmRemoveTrack, setRemovedTracks, setReorderedTracks])
+    }, [
+      confirmRemoveTrack,
+      metadata?.playlist_contents.track_ids,
+      onDrawerClose
+    ])
 
     const setters = useCallback(
       () => ({
         left: (
-          <TextElement text='Cancel' type={Type.SECONDARY} onClick={close} />
+          <TextElement text='Cancel' type={Type.SECONDARY} onClick={onClose} />
         ),
         center: messages.editPlaylist,
         right: (
@@ -332,7 +328,7 @@ const EditPlaylistPage = g(
           />
         )
       }),
-      [formFields.playlist_name, messages.editPlaylist, onSave]
+      [formFields.playlist_name, messages.editPlaylist, onClose, onSave]
     )
 
     useTemporaryNavContext(setters)

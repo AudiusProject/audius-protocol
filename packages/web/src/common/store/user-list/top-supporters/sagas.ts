@@ -1,8 +1,11 @@
-import { ID, User } from '@audius/common/models'
 import {
-  responseAdapter as adapter,
-  SupporterResponse
-} from '@audius/common/services'
+  ID,
+  Id,
+  OptionalId,
+  SupporterMetadata,
+  User,
+  supporterMetadataListFromSDK
+} from '@audius/common/models'
 import {
   cacheUsersSelectors,
   tippingActions,
@@ -10,10 +13,10 @@ import {
   topSupportersUserListActions,
   topSupportersUserListSelectors,
   TOP_SUPPORTERS_USER_LIST_TAG,
-  SupportersMapForUser
+  getSDK,
+  tippingUtils
 } from '@audius/common/store'
-import { decodeHashId, removeNullable } from '@audius/common/utils'
-import { put, select } from 'typed-redux-saga'
+import { call, put, select } from 'typed-redux-saga'
 
 import { watchTopSupportersError } from 'common/store/user-list/top-supporters/errorSagas'
 import { createUserListProvider } from 'common/store/user-list/utils'
@@ -24,23 +27,34 @@ const { getUser } = cacheUsersSelectors
 
 type SupportersProcessExtraType = {
   userId: ID
-  supporters: SupporterResponse[]
+  supporters: SupporterMetadata[]
 }
 
 const provider = createUserListProvider<User, SupportersProcessExtraType>({
   getExistingEntity: getUser,
   extractUserIDSubsetFromEntity: () => [],
-  fetchAllUsersForEntity: async ({ limit, offset, entityId, apiClient }) => {
-    const supporters =
-      (await apiClient.getSupporters({
-        userId: entityId,
+  fetchAllUsersForEntity: function* ({
+    limit,
+    offset,
+    entityId,
+    currentUserId
+  }) {
+    const sdk = yield* getSDK()
+
+    const { data = [] } = yield* call(
+      [sdk.full.users, sdk.full.users.getSupporters],
+      {
+        id: Id.parse(entityId),
         limit,
-        offset
-      })) || []
+        offset,
+        userId: OptionalId.parse(currentUserId)
+      }
+    )
+    const supporters = supporterMetadataListFromSDK(data)
+
     const users = supporters
       .sort((s1, s2) => s1.rank - s2.rank)
-      .map((s) => adapter.makeUser(s.sender))
-      .filter(removeNullable)
+      .map((s) => s.sender)
     return { users, extra: { userId: entityId, supporters } }
   },
   selectCurrentUserIDsInList: getUserIds,
@@ -55,17 +69,8 @@ const provider = createUserListProvider<User, SupportersProcessExtraType>({
    * in the interface, to update the store.
    */
   processExtra: function* ({ userId, supporters }) {
-    const supportersMap: SupportersMapForUser = {}
-    supporters.forEach((supporter: SupporterResponse) => {
-      const supporterUserId = decodeHashId(supporter.sender.id)
-      if (supporterUserId) {
-        supportersMap[supporterUserId] = {
-          sender_id: supporterUserId,
-          rank: supporter.rank,
-          amount: supporter.amount
-        }
-      }
-    })
+    const supportersMap = tippingUtils.makeSupportersMapForUser(supporters)
+
     yield* put(
       setSupportersForUser({
         id: userId,

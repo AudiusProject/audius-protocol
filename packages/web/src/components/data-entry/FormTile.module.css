@@ -122,9 +122,11 @@
 }
 .trackId > div {
   flex: 1 auto;
+  width: 100%;
 }
-.trackId > div:first-child {
-  margin-right: 38px;
+.trackId > div:first-child,
+.trackId > div:nth-child(2) {
+  margin-right: 32px;
 }
 
 .divider {
