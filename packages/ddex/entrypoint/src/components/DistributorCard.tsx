@@ -1,33 +1,37 @@
 import {
   useQuery,
 } from '@tanstack/react-query'
-import { sdk } from '@audius/sdk'
+import { DeveloperApp, sdk } from '@audius/sdk'
 import { Flex, IconEmbed, Text } from "@audius/harmony"
 import { useSdk } from '../hooks/useSdk'
 import { useCallback } from 'react'
 import { Status } from '../contexts/types'
+import { PreloadImage } from './PreloadImage'
 
 const env = import.meta.env.VITE_ENVIRONMENT as 'dev' | 'stage' | 'prod'
 
 type DistributorCardProps = {
   appKey: string
-  url: string
+  url?: string
+  initialData?: DeveloperApp
 }
 
 export const DistributorCard = ({
   appKey,
-  url
+  url,
+  initialData
 }: DistributorCardProps) => {
   const {sdk: audiusSdk } = useSdk()
 
-  const { data } = useQuery({
+  const { data: fetchedData } = useQuery({
     queryKey: ['apps', appKey],
     queryFn: () =>
       audiusSdk
         ?.developerApps.getDeveloperApp({ address: appKey })
         .then(res => res.data),
-    enabled: status !== Status.IDLE && status !== Status.LOADING
+    enabled: !initialData && status !== Status.IDLE && status !== Status.LOADING
   })
+  const data = initialData ?? fetchedData
 
   const handleClick = useCallback(() => {
     // Initialize an sdk for the distributor and use that to auth the user.
@@ -48,7 +52,7 @@ export const DistributorCard = ({
 
   return (
     <Flex
-      onClick={handleClick}
+      onClick={url ? handleClick : undefined}
       borderRadius='m'
       border='default'
       backgroundColor='white'
@@ -61,9 +65,9 @@ export const DistributorCard = ({
       h='136px'
       css={{
         transition: 'all var(--harmony-quick)',
-        cursor: 'pointer',
-        '&:hover': { 'box-shadow': 'var(--harmony-shadow-mid)' },
-        '&:active': { 'background': 'var(--harmony-bg-surface-1)' }
+        cursor: url ? 'pointer' : 'default',
+        '&:hover': url ? { 'box-shadow': 'var(--harmony-shadow-mid)' } : undefined,
+        '&:active':  url ? { 'background': 'var(--harmony-bg-surface-1)' } : undefined
       }}
     >
       {
@@ -77,8 +81,8 @@ export const DistributorCard = ({
               h='56px'
               w='56px'
             >
-              {data.imageUrl
-                ? <img src={data?.imageUrl} />
+              {data?.imageUrl
+                ? <PreloadImage src={data.imageUrl} />
                 : <Flex
                     w='100%'
                     justifyContent='center'

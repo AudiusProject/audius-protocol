@@ -176,7 +176,10 @@ import {
   PAYMENTS_PAGE,
   WITHDRAWALS_PAGE,
   PURCHASES_PAGE,
-  SALES_PAGE
+  SALES_PAGE,
+  AUTHORIZED_APPS_SETTINGS_PAGE,
+  ACCOUNTS_MANAGING_YOU_SETTINGS_PAGE,
+  ACCOUNTS_YOU_MANAGE_SETTINGS_PAGE
 } from 'utils/route'
 
 import styles from './WebPlayer.module.css'
@@ -758,7 +761,12 @@ class WebPlayer extends Component {
                 />
                 <Route
                   exact
-                  path={SETTINGS_PAGE}
+                  path={[
+                    SETTINGS_PAGE,
+                    AUTHORIZED_APPS_SETTINGS_PAGE,
+                    ACCOUNTS_YOU_MANAGE_SETTINGS_PAGE,
+                    ACCOUNTS_MANAGING_YOU_SETTINGS_PAGE
+                  ]}
                   isMobile={isMobile}
                   component={SettingsPage}
                 />

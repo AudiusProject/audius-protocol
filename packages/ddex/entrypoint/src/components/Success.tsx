@@ -1,10 +1,15 @@
 import {
   Button,
+  Flex,
   IconPlus,
   Text,
   TextLink,
 } from '@audius/harmony'
 import { useAuth } from '../contexts/AuthProvider'
+import { useSdk } from '../hooks/useSdk'
+import { useQuery } from '@tanstack/react-query'
+import { DistributorCard } from './DistributorCard'
+import { useDistributors } from '../hooks/useDistributors'
 
 
 const messages = {
@@ -20,11 +25,23 @@ const messages = {
 
 const env = import.meta.env.VITE_ENVIRONMENT as 'dev' | 'stage' | 'prod'
 const settingsLink = env === 'prod'
-  ? 'https://audius.co/settings'
-  : 'https://staging.audius.co/settings'
+  ? 'https://audius.co/settings/authorized-apps'
+  : 'https://staging.audius.co/settings/authorized-apps'
 
 export const Success = () => {
-  const { logout } = useAuth()
+  const { logout, user } = useAuth()
+
+  const {sdk: audiusSdk } = useSdk()
+  const distributors = useDistributors()
+  const distributorAppKeys = distributors.map(d => `0x${d.appKey}`)
+
+  const { data } = useQuery({
+    queryKey: ['authorizedApps', user?.id],
+    queryFn: () =>
+      user ? audiusSdk.users.getAuthorizedApps({ id: user.id })
+        .then(res => res.data) : [],
+    enabled:!!audiusSdk && !!user
+  })
 
   return (
     <>
@@ -44,6 +61,15 @@ export const Success = () => {
       >
         {messages.access}
       </Text>
+      <Flex gap='m' justifyContent='center'>
+        {user ? data?.filter(app => distributorAppKeys.includes(app.address)).map(app =>
+          <DistributorCard
+            key={app.address}
+            appKey={app.address}
+            initialData={{...app, userId: user.id }}
+          />
+        ) : null}
+      </Flex>
       <Button
         iconLeft={IconPlus}
         variant="primary"

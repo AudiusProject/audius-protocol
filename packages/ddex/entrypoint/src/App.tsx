@@ -16,6 +16,7 @@ import { ConnectDistributor } from './components/ConnectDistributor'
 import { AuthProvider, useAuth } from './contexts/AuthProvider'
 import { Success } from './components/Success'
 import { Status } from './contexts/types'
+import { PreloadImage } from './components/PreloadImage'
 
 const queryClient = new QueryClient()
 
@@ -74,7 +75,7 @@ const Nav = () => {
             borderRadius: '50%'
           }}
         >
-          <img src={user.profilePicture?._150x150} />
+          {user.profilePicture?._150x150 ? <PreloadImage src={user.profilePicture?._150x150} /> : null}
         </Flex>
         <Text variant='body' size='l' color='default'>
           {`${messages.loggedIn} @${user.handle}`}
@@ -117,6 +118,7 @@ const Page = () => {
                     direction='column'
                     p='2xl'
                     gap='2xl'
+                    w='640px'
                   >
                     <Flex justifyContent='center'>
                       <IconAudiusLogoHorizontalColor />
