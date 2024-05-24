@@ -231,7 +231,7 @@ program
             genre:
               genre ||
               Genre[
-                Object.keys(Genre)[randomInt(Object.keys(Genre).length - 1)]
+              Object.keys(Genre)[randomInt(Object.keys(Genre).length - 2) + 1]
               ],
             mood: mood || `mood ${rand}`,
             credits_splits: '',
