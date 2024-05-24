@@ -1,5 +1,7 @@
 import { useState, useContext, useCallback, useEffect, useMemo } from 'react'
 
+import { instanceOfPurchaseGate } from '@audius/sdk'
+
 import usePlayback from '../../hooks/usePlayback'
 import { useRecordListens } from '../../hooks/useRecordListens'
 import { useSpacebar } from '../../hooks/useSpacebar'
@@ -49,8 +51,7 @@ const TrackPlayerContainer = ({
   } = usePlayback(track.id, onTrackEnd)
 
   const trackInfoForPlayback = useMemo(() => {
-    const isPurchaseable =
-      track.streamConditions && 'usdc_purchase' in track.streamConditions
+    const isPurchaseable = instanceOfPurchaseGate(track.streamConditions)
     return {
       gateways: formatGateways(track.user.creatorNodeEndpoint),
       title: track.title,
