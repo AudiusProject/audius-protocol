@@ -22,7 +22,7 @@ async function assertOnCreatePasswordPage(user: User, page: Page) {
   ).toBeVisible()
 
   await expect(
-    page.getByText(/Create a password that’s secure and easy to remember./i)
+    page.getByText(/Create a password that's secure and easy to remember./i)
   ).toBeVisible()
 
   await expect(page.getByText(/your email/i)).toBeVisible()
