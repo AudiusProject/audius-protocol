@@ -1,6 +1,6 @@
 FROM golang:alpine AS builder
 
-RUN apk add build-base make ffmpeg cmake fftw-dev libsndfile-dev git python3 py3-pip python3-dev gcc g++
+RUN apk add build-base make ffmpeg cmake fftw-dev libsndfile-dev git python3-dev py3-pip
 
 WORKDIR /app
 
@@ -28,8 +28,8 @@ RUN go build -o mediorum-cmd cmd/main.go
 
 FROM alpine:3.17 AS final
 
-RUN apk add curl ffmpeg libsndfile python3 py3-pip python3-dev build-base
-RUN pip install numpy aubio
+RUN apk add curl ffmpeg libsndfile python3-dev py3-pip build-base
+RUN python3 -m pip install numpy aubio
 
 COPY --from=builder /go/bin/* /bin
 COPY --from=builder /app/mediorum /bin/mediorum

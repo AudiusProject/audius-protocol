@@ -1,11 +1,21 @@
 FROM golang:alpine3.18
 
-RUN apk add build-base make ffmpeg
+RUN apk add build-base make ffmpeg cmake fftw-dev libsndfile-dev git 
 
 # Required for service registration
 RUN apk add curl build-base python3-dev=3.11.8-r0 py3-pip
 RUN python3 -m pip install --upgrade pip
 RUN python3 -m pip install 'web3==6.6.1'
+RUN python3 -m pip install numpy aubio
+
+WORKDIR /app
+
+# Build and install libkeyfinder
+RUN git clone https://github.com/mixxxdj/libKeyFinder.git /libKeyFinder
+WORKDIR /libKeyFinder
+RUN cmake -DCMAKE_INSTALL_PREFIX=/usr/local -DBUILD_TESTING=OFF -S . -B build && \
+    cmake --build build --parallel $(nproc) && \
+    cmake --install build
 
 WORKDIR /app
 ENV CGO_ENABLED=0
@@ -16,6 +26,11 @@ COPY go.mod go.sum ./
 RUN go mod graph | awk '{if ($1 !~ "@") print $2}' | xargs go get
 
 COPY . .
+
+# Compile the keyfinder C++ executable
+RUN g++ -o /bin/analyze-key cpp/keyfinder.cpp -I/usr/local/include -L/usr/local/lib -lkeyfinder -lsndfile && \
+    chmod +x /bin/analyze-key
+
 RUN go build
 RUN go build -o mediorum-cmd cmd/main.go
 
