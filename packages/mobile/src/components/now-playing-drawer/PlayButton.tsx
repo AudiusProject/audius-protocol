@@ -42,7 +42,12 @@ const useAnimatedIcons = makeAnimations(({ palette, type }) => {
     'layers.2.shapes.0.it.1.c.k': palette.primary
   })
 
-  const ColorizedSpinnerIcon = IconLoadingSpinner
+  const ColorizedSpinnerIcon = colorize(IconLoadingSpinner, {
+    // change color of the internal spinner
+    'layers.0.shapes.1.c.k': iconColor,
+    // change color of the background circle
+    'layers.1.shapes.0.it.2.c.k': palette.primary
+  })
   return [ColorizedPlayIcon, ColorizedPauseIcon, ColorizedSpinnerIcon]
 })
 
