@@ -9,6 +9,7 @@ import { Nullable } from '../../utils'
 // discoveryProvider/constants is migrated to typescript.
 const AUDIUS_ACCOUNT_KEY = '@audius/account'
 const AUDIUS_ACCOUNT_USER_KEY = '@audius/audius-user'
+const AUDIUS_USER_WALLET_OVERRIDE_KEY = '@audius/user-wallet-override'
 
 type LocalStorageType = {
   getItem: (key: string) => Promise<string | null> | string | null
@@ -99,6 +100,13 @@ export class LocalStorage {
   setAudiusAccount = async (value: object) => {
     await this.setJSONValue(AUDIUS_ACCOUNT_KEY, value)
   }
+
+  clearAudiusUserWalletOverride = async () =>
+    this.removeItem(AUDIUS_USER_WALLET_OVERRIDE_KEY)
+  getAudiusUserWalletOverride = async () =>
+    this.getValue(AUDIUS_USER_WALLET_OVERRIDE_KEY)
+  setAudiusUserWalletOverride = async (value: string) =>
+    this.setValue(AUDIUS_USER_WALLET_OVERRIDE_KEY, value)
 
   clearAudiusAccount = async () => this.removeItem(AUDIUS_ACCOUNT_KEY)
 
