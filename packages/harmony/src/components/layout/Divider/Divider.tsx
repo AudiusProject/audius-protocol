@@ -6,9 +6,14 @@ import { DividerProps } from './types'
  * A separator between two elements, usually consisting of a horizontal or vertical line.
  */
 export const Divider = (props: DividerProps) => {
-  const { orientation = 'horizontal', children, className } = props
-  const { color, spacing } = useTheme()
-  const border = `1px solid ${color.border.strong}`
+  const {
+    orientation = 'horizontal',
+    children,
+    color = 'strong',
+    className
+  } = props
+  const theme = useTheme()
+  const border = `1px solid ${theme.color.border[color]}`
 
   const css: CSSObject = {
     border: 'none',
@@ -16,7 +21,7 @@ export const Divider = (props: DividerProps) => {
     ...(children &&
       orientation === 'horizontal' && {
         display: 'flex',
-        gap: spacing.s,
+        gap: theme.spacing.s,
         whiteSpace: 'nowrap',
         textAlign: 'center',
         border: 0,

@@ -145,6 +145,7 @@ export { default as IconValidationX } from '@audius/harmony/src/assets/icons/Val
 export { default as IconSoundwave } from '@audius/harmony/src/assets/icons/Soundwave.svg'
 export { default as IconCreditCard } from '@audius/harmony/src/assets/icons/CreditCard.svg'
 export { default as IconWaveform } from '@audius/harmony/src/assets/icons/Waveform.svg'
+export { default as IconMonekyBracket } '@audius/harmony/src/assets/icons/IconMoneyBracket.svg'
 
 // Two Tone / Special Styling
 

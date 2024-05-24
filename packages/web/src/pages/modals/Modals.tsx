@@ -48,6 +48,7 @@ import { ClaimAllRewardsModal } from 'pages/audio-rewards-page/components/modals
 import TopAPIModal from 'pages/audio-rewards-page/components/modals/TopAPI'
 import TransferAudioMobileDrawer from 'pages/audio-rewards-page/components/modals/TransferAudioMobileDrawer'
 import { VipDiscordModal } from 'pages/audio-rewards-page/components/modals/VipDiscordModal'
+import { PayoutWalletModal } from 'components/payout-wallet-modal/PayoutWalletModal'
 
 import { AppModal } from './AppModal'
 
@@ -116,7 +117,8 @@ const commonModalsMap: { [Modal in ModalTypes]?: ComponentType } = {
   AddFundsModal,
   CoinflowWithdraw: CoinflowWithdrawModal,
   WaitForDownloadModal,
-  ArtistPick: ArtistPickModal
+  ArtistPick: ArtistPickModal,
+  PayoutWallet: PayoutWalletModal
 }
 
 const commonModals = Object.entries(commonModalsMap) as [

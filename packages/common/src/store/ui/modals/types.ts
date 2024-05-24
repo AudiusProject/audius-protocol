@@ -86,6 +86,7 @@ export type Modals =
   | 'WaitForDownloadModal'
   | 'ArtistPick'
   | 'AlbumTrackRemoveConfirmation'
+  | 'PayoutWallet'
 
 export type BasicModalsState = {
   [modal in Modals]: BaseModalState
