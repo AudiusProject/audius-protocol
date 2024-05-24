@@ -1,3 +1,4 @@
+import { instanceOfPurchaseGate } from '@audius/sdk'
 import cn from 'classnames'
 import SimpleBar from 'simplebar-react'
 
@@ -9,7 +10,9 @@ import Artwork from '../artwork/Artwork'
 import AudiusLogoButton from '../button/AudiusLogoButton'
 import ShareButton from '../button/ShareButton'
 import Card from '../card/Card'
+import { DogEar } from '../dog-ear/DogEar'
 import PlayButton, { PlayingState } from '../playbutton/PlayButton'
+import { Preview } from '../preview/Preview'
 import BedtimeScrubber from '../scrubber/BedtimeScrubber'
 import Titles from '../titles/Titles'
 
@@ -87,16 +90,19 @@ const CollectionPlayerCard = ({
   rowBackgroundColor,
   activeTrackIndex,
   onTogglePlay,
-  isTwitter
+  isTwitter,
+  streamConditions
 }) => {
   const makeOnTogglePlay = (index) => () => onTogglePlay(index)
   const permalink = `${stripLeadingSlash(collection.permalink)}`
+  const isPurchaseable = instanceOfPurchaseGate(streamConditions)
   return (
     <Card
       isTwitter={isTwitter}
       backgroundColor={backgroundColor}
       twitterURL={permalink}
     >
+      {isPurchaseable ? <DogEar size='s' /> : null}
       <div className={styles.padding}>
         <div className={styles.topRow}>
           <div className={styles.logo}>
@@ -128,13 +134,16 @@ const CollectionPlayerCard = ({
               title={collection.playlistName}
               titleUrl={permalink}
             />
-            <BedtimeScrubber
-              duration={duration}
-              elapsedSeconds={elapsedSeconds}
-              mediaKey={mediaKey}
-              playingState={playingState}
-              seekTo={seekTo}
-            />
+            <div className={styles.scrubber}>
+              <BedtimeScrubber
+                duration={duration}
+                elapsedSeconds={elapsedSeconds}
+                mediaKey={mediaKey}
+                playingState={playingState}
+                seekTo={seekTo}
+              />
+              {isPurchaseable ? <Preview /> : null}
+            </div>
           </div>
         </div>
         <div className={styles.listContainer}>
