@@ -575,9 +575,9 @@ access_info_response = make_response(
 
 
 @ns.route("/<string:playlist_id>/access-info")
-class GetPurchaseInfo(Resource):
+class GetPlaylistAccessInfo(Resource):
     @record_metrics
-    @ns.doc(id="Get Access Info", params={"playlist_id": "A Track ID"})
+    @ns.doc(id="Get Playlist Access Info", params={"playlist_id": "A Playlist ID"})
     @ns.expect(current_user_parser)
     @ns.marshal_with(access_info_response)
     def get(self, playlist_id: str):

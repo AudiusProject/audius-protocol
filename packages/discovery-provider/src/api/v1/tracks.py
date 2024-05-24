@@ -1753,9 +1753,9 @@ access_info_response = make_response(
 
 
 @ns.route("/<string:track_id>/access-info")
-class GetPurchaseInfo(Resource):
+class GetTrackAccessInfo(Resource):
     @record_metrics
-    @ns.doc(id="Get Access Info", params={"track_id": "A Track ID"})
+    @ns.doc(id="Get Track Access Info", params={"track_id": "A Track ID"})
     @ns.expect(current_user_parser)
     @ns.marshal_with(access_info_response)
     def get(self, track_id: str):
