@@ -40,7 +40,7 @@ const messages = {
 }
 
 export enum MenuFormCallbackStatus {
-  OPEN_ACCESS_AND_SALE = 'OPEN_ACCESS_AND_SALE'
+  OPEN_PRICE_AND_AUDIENCE = 'OPEN_ACCESS_AND_SALE'
 }
 
 type MenuFormProps = {

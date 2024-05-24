@@ -159,7 +159,7 @@ const TrackEditForm = (props: FormikProps<TrackEditFormValues>) => {
               <AttributionField />
               <StemsAndDownloadsField
                 closeMenuCallback={(data) => {
-                  if (data === MenuFormCallbackStatus.OPEN_ACCESS_AND_SALE) {
+                  if (data === MenuFormCallbackStatus.OPEN_PRICE_AND_AUDIENCE) {
                     setForceOpenPriceAndAudience(true)
                   }
                 }}

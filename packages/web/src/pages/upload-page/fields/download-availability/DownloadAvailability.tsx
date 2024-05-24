@@ -100,7 +100,7 @@ export const DownloadAvailability = ({
   }, [isCollectibleGated, isSpecialAccess, isUsdcGated])
 
   const handleCalloutClick = useCallback(() => {
-    setStatus(MenuFormCallbackStatus.OPEN_ACCESS_AND_SALE)
+    setStatus(MenuFormCallbackStatus.OPEN_PRICE_AND_AUDIENCE)
     submitForm()
   }, [setStatus, submitForm])
 

@@ -265,7 +265,7 @@ const BasicForm = (props) => {
         setLastGateKeeper={props.setLastGateKeeper}
         initialForm={props.initialForm}
         closeMenuCallback={(data) => {
-          if (data === MenuFormCallbackStatus.OPEN_ACCESS_AND_SALE) {
+          if (data === MenuFormCallbackStatus.OPEN_PRICE_AND_AUDIENCE) {
             props.setForceOpenPriceAndAudience(true)
           }
         }}

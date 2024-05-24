@@ -2,10 +2,17 @@ import { useMemo, useState } from 'react'
 
 import { Track } from '@audius/common/models'
 import { dayjs } from '@audius/common/utils'
-import { Button, Flex, IconCalendarMonth, Text } from '@audius/harmony'
+import {
+  Button,
+  Flex,
+  IconCalendarMonth,
+  IconVisibilityHidden,
+  Text
+} from '@audius/harmony'
 import moment from 'moment'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
+import { defaultFieldVisibility } from 'pages/track-page/utils'
 import {
   RELEASE_DATE,
   RELEASE_DATE_HOUR,
@@ -17,6 +24,7 @@ import {
   VisibilityFormValues,
   timeValidationSchema
 } from 'pages/upload-page/fields/VisibilityField'
+import { FIELD_VISIBILITY } from 'pages/upload-page/fields/types'
 import { formatCalendarTime } from 'utils/dateUtils'
 
 import { ContextualMenu } from './ContextualMenu'
@@ -51,6 +59,9 @@ export const ReleaseDateTriggerLegacy = (
   const [trackReleaseDateState, setTrackReleaseDateState] = useState(
     moment(trackReleaseDate).toString()
   )
+  const isUnlisted = props.metadataState.is_unlisted
+  const fieldVisibility = props.metadataState[FIELD_VISIBILITY]
+
   const initialValues = useMemo(() => {
     return {
       [RELEASE_DATE]:
@@ -61,9 +72,10 @@ export const ReleaseDateTriggerLegacy = (
       [RELEASE_DATE_MERIDIAN]: trackReleaseDateState
         ? moment(trackReleaseDateState).format('A')
         : moment().format('A'),
-      [RELEASE_DATE_TYPE]: VisibilityType.SCHEDULED_RELEASE
+      [RELEASE_DATE_TYPE]: VisibilityType.SCHEDULED_RELEASE,
+      [FIELD_VISIBILITY]: fieldVisibility ?? defaultFieldVisibility
     }
-  }, [trackReleaseDateState])
+  }, [fieldVisibility, trackReleaseDateState])
   const onSubmit = (values: VisibilityFormValues) => {
     const mergedReleaseDate = mergeDateTimeValues(
       values[RELEASE_DATE],
@@ -83,13 +95,13 @@ export const ReleaseDateTriggerLegacy = (
     if (values[RELEASE_DATE_TYPE] === VisibilityType.PUBLIC) {
       // publish if release now or release date has passed
       newState.is_unlisted = false
-
-      newState.release_date = dayjs()
-        // @ts-ignore
-        .utc()
-        .format('ddd MMM DD YYYY HH:mm:ss [GMT]ZZ')
+    } else if (values[RELEASE_DATE_TYPE] === VisibilityType.HIDDEN) {
+      newState.is_unlisted = true
+      newState.release_date = trackReleaseDate
+      newState.is_scheduled_release = false
     } else if (mergedReleaseDate.isBefore(moment())) {
       newState.is_unlisted = false
+      newState.is_scheduled_release = false
     } else {
       newState.is_unlisted = true
       newState.is_scheduled_release = true
@@ -106,7 +118,6 @@ export const ReleaseDateTriggerLegacy = (
       label={messages.title}
       description={messages.description}
       icon={<IconCalendarMonth />}
-      // @ts-ignore legacy form doesn't support hidden option here
       initialValues={initialValues}
       validationSchema={toFormikValidationSchema(timeValidationSchema)}
       onSubmit={onSubmit}
@@ -129,9 +140,11 @@ export const ReleaseDateTriggerLegacy = (
           name='releaseDateModal'
           size='small'
           onClick={toggleMenu}
-          iconLeft={IconCalendarMonth}
+          iconLeft={isUnlisted ? IconVisibilityHidden : IconCalendarMonth}
         >
-          {formatCalendarTime(trackReleaseDate, 'Scheduled for')}
+          {isUnlisted
+            ? 'Hidden'
+            : formatCalendarTime(trackReleaseDate, 'Scheduled for')}
         </Button>
       )}
     />
