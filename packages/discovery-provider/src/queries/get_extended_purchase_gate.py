@@ -1,0 +1,208 @@
+import logging
+from datetime import datetime
+from typing import Dict, List, Optional, TypedDict, Union, cast
+
+from sqlalchemy import and_, func
+from sqlalchemy.orm import aliased
+from sqlalchemy.orm.session import Session
+
+from src.models.playlists.playlist import Playlist
+from src.models.tracks.track import Track
+from src.models.users.user import User
+from src.models.users.user_bank import USDCUserBankAccount
+from src.models.users.user_payout_wallet_history import UserPayoutWalletHistory
+from src.utils.db_session import get_db_read_replica
+from src.utils.session_manager import SessionManager
+
+logger = logging.getLogger(__name__)
+
+
+class GetPurchaseInfoArgs(TypedDict):
+    content_id: int
+    content_type: str
+    content: Union[Track, Playlist]
+
+
+class Split(TypedDict):
+    user_id: int
+    percentage: float
+
+
+class USDCPurchaseCondition(TypedDict):
+    price: int
+    splits: List[Split]
+
+
+class PurchaseGate(TypedDict):
+    usdc_purchase: USDCPurchaseCondition
+
+
+class ExtendedSplit(Split):
+    amount: int
+    payout_wallet: str
+    eth_wallet: str
+
+
+class ExtendedUSDCPurchaseCondition(TypedDict):
+    price: int
+    splits: List[ExtendedSplit]
+
+
+class ExtendedPurchaseGate(TypedDict):
+    usdc_purchase: ExtendedUSDCPurchaseCondition
+
+
+class LegacyUSDCPurchaseCondition(TypedDict):
+    price: int
+    splits: Dict[str, int]
+
+
+class LegacyPurchaseGate(TypedDict):
+    usdc_purchase: LegacyUSDCPurchaseCondition
+
+
+class FollowGate(TypedDict):
+    follow_user_id: int
+
+
+class TipGate(TypedDict):
+    tip_user_id: int
+
+
+class NFTCollection(TypedDict):
+    chain: str
+    address: str
+    name: str
+    imageUrl: Optional[str]
+    externalLink: Optional[str]
+
+
+class NFTGate(TypedDict):
+    nft_collection: NFTCollection
+
+
+AccessGate = Union[PurchaseGate, FollowGate, TipGate, NFTGate]
+
+percentage_decimals = 4
+percentage_multiplier = 10**percentage_decimals
+
+
+def calculate_split_amounts(price: int, splits: List[Split]):
+    price_in_usdc = 10000 * price
+    running_total = 0
+    new_splits: List[Dict] = []
+    for split in splits:
+        # multiply percentage to make it a whole number
+        percentage_integer = int(split["percentage"] * percentage_multiplier)
+        # do safe integer math on the price
+        amount_whole = int(percentage_integer * price_in_usdc)
+        # divide by the percentage multiplier afterward, and convert percent
+        amount_uncapped = int(amount_whole / (percentage_multiplier * 100))
+        # cap to make sure we don't have sum(splits) > price
+        amount = min(
+            amount_uncapped,
+            price_in_usdc - running_total,
+        )
+        running_total += amount
+        new_split: Dict = cast(dict, split)
+        new_split["amount"] = amount
+        new_splits.append(new_split)
+    if running_total != price_in_usdc:
+        raise Exception(
+            f"Bad splits math: Expected {price_in_usdc} but got {running_total}"
+        )
+    return new_splits
+
+
+def add_wallet_info_to_splits(
+    session: Session, splits: List[Split], timestamp: Optional[datetime]
+):
+    user_ids = [split["user_id"] for split in splits]
+
+    max_block_timestamps = (
+        session.query(
+            UserPayoutWalletHistory.user_id,
+            func.max(UserPayoutWalletHistory.block_timestamp).label("block_timestamp"),
+        )
+        .filter(UserPayoutWalletHistory.block_timestamp < timestamp)
+        .filter(UserPayoutWalletHistory.user_id.in_(user_ids))
+        .group_by(UserPayoutWalletHistory.user_id)
+        .cte("max_block_timestamps")
+    )
+    RelevantTimestamps = aliased(max_block_timestamps)
+
+    wallets_query = (
+        session.query(
+            User.user_id,
+            User.wallet,
+            UserPayoutWalletHistory.spl_usdc_payout_wallet,
+            USDCUserBankAccount.bank_account,
+        )
+        .outerjoin(
+            USDCUserBankAccount, USDCUserBankAccount.ethereum_address == User.wallet
+        )
+        .outerjoin(RelevantTimestamps, RelevantTimestamps.c.user_id == User.user_id)
+        .outerjoin(
+            UserPayoutWalletHistory,
+            and_(
+                UserPayoutWalletHistory.user_id == RelevantTimestamps.c.user_id,
+                UserPayoutWalletHistory.block_timestamp
+                == RelevantTimestamps.c.block_timestamp,
+            ),
+        )
+        .filter(User.user_id.in_(user_ids))
+    )
+    wallets = wallets_query.all()
+    new_splits: List[dict] = []
+    for split in splits:
+        user_id = split["user_id"]
+        (user_id, eth_wallet, payout_wallet, usdc_bank_account) = next(
+            (p for p in wallets if p[0] == user_id),
+            (user_id, None, None, None),
+        )
+        new_split: Dict = cast(dict, split)
+        new_split["eth_wallet"] = eth_wallet
+        new_split["payout_wallet"] = (
+            payout_wallet if payout_wallet else usdc_bank_account
+        )
+        new_splits.append(new_split)
+    return splits
+
+
+def to_wallet_amount_map(splits: List[ExtendedSplit]):
+    return {
+        split["payout_wallet"]: split["amount"]
+        for split in splits
+        if split["payout_wallet"] is not None
+    }
+
+
+def _get_extended_purchase_gate(session: Session, gate: PurchaseGate, legacy=False):
+    price = gate["usdc_purchase"]["price"]
+    splits = gate["usdc_purchase"]["splits"]
+    splits = add_wallet_info_to_splits(session, splits, datetime.now())
+    splits = calculate_split_amounts(price, splits)
+    extended_splits = [cast(ExtendedSplit, split) for split in splits]
+    if legacy:
+        legacy_splits = to_wallet_amount_map(extended_splits)
+        legacy_gate: LegacyPurchaseGate = {
+            "usdc_purchase": {"price": price, "splits": legacy_splits}
+        }
+        return legacy_gate
+
+    extended_gate: ExtendedPurchaseGate = {
+        "usdc_purchase": {"price": price, "splits": extended_splits}
+    }
+    return extended_gate
+
+
+def get_extended_purchase_gate(gate: AccessGate, session=None, legacy=False):
+    if gate and "usdc_purchase" in gate:
+        # mypy gets confused....
+        gate = cast(PurchaseGate, gate)
+        if session:
+            return _get_extended_purchase_gate(session, gate, legacy=legacy)
+        else:
+            db: SessionManager = get_db_read_replica()
+            with db.scoped_session() as session:
+                return _get_extended_purchase_gate(session, gate, legacy=legacy)

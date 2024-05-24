@@ -20,6 +20,7 @@ from src.tasks.entity_manager.utils import (
     Action,
     EntityType,
     ManageEntityParameters,
+    convert_legacy_purchase_access_gate,
     copy_record,
     is_ddex_signer,
     parse_release_date,
@@ -389,6 +390,12 @@ def validate_access_conditions(params: ManageEntityParameters):
             raise IndexingValidationError(
                 f"Playlist {params.entity_id} has an invalid number of stream conditions"
             )
+
+        # Convert legacy conditions to new array format with user IDs if necessary
+        params.metadata["stream_conditions"] = convert_legacy_purchase_access_gate(
+            params.user_id,
+            playlist_metadata.get("stream_conditions", None),
+        )
 
 
 # Make sure that access conditions do not incorrectly change during playlist update.
