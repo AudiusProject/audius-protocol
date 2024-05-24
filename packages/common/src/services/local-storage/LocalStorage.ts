@@ -103,8 +103,10 @@ export class LocalStorage {
 
   clearAudiusUserWalletOverride = async () =>
     this.removeItem(AUDIUS_USER_WALLET_OVERRIDE_KEY)
+
   getAudiusUserWalletOverride = async () =>
     this.getValue(AUDIUS_USER_WALLET_OVERRIDE_KEY)
+
   setAudiusUserWalletOverride = async (value: string) =>
     this.setValue(AUDIUS_USER_WALLET_OVERRIDE_KEY, value)
 
