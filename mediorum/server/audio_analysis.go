@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"runtime"
+	"strconv"
 	"strings"
 	"time"
 
@@ -214,35 +215,30 @@ func (ss *MediorumServer) analyzeAudio(upload *Upload) error {
 	defer temp.Close()
 	defer os.Remove(temp.Name())
 
-	// invoke analyze_audio.py script
-	// cmd := exec.Command("python3", "server/analyze_audio.py", temp.Name())
-	cmd := exec.Command("sh", "bash_scripts/analyze_audio.sh", temp.Name())
-	var out, stderr strings.Builder
-	cmd.Stdout = &out
-	cmd.Stderr = &stderr
-
-	err = cmd.Run()
+	// analyze musical key
+	musicalKey, err := ss.analyzeKey(temp.Name())
 	if err != nil {
-		logger.Error("failed to execute analyze_audio.py", "err", err, "stderr", stderr.String())
+		logger.Error("failed to analyze key", "err", err)
 		return onError(err)
 	}
-	result := out.String()
-	parts := strings.Split(result, ",")
-	if len(parts) != 3 {
-		err := fmt.Errorf("unexpected output: %v", result)
-		logger.Error("failed to parse analyze_audio.py output", "err", err)
+	if musicalKey == "" || musicalKey == "Unknown" {
+		err := fmt.Errorf("unexpected output: %s", musicalKey)
+		logger.Error("failed to analyze key", "err", err)
 		return onError(err)
 	}
 
-	musicalKey := strings.TrimSpace(parts[0][5:]) // remove "Key: " prefix
-	scale := strings.TrimSpace(parts[1][7:])      // Remove "Scale: " prefix
-	bpm := strings.TrimSpace(parts[2][5:])        // remove "BPM: " prefix
+	// analyze BPM
+	bpmFloat, err := ss.analyzeBPM(temp.Name())
+	if err != nil {
+		logger.Error("failed to analyze BPM", "err", err)
+		return onError(err)
+	}
+	bpm := strconv.FormatFloat(bpmFloat, 'f', 1, 64)
 
 	// success
 	upload.AudioAnalysisResults = map[string]string{
-		"key":   musicalKey,
-		"scale": scale,
-		"bpm":   bpm,
+		"key": musicalKey,
+		"bpm": bpm,
 	}
 	upload.AudioAnalysisError = ""
 	upload.AudioAnalyzedAt = time.Now().UTC()
@@ -250,4 +246,38 @@ func (ss *MediorumServer) analyzeAudio(upload *Upload) error {
 	upload.Status = JobStatusDone
 	ss.crud.Update(upload)
 	return nil
+}
+
+func (ss *MediorumServer) analyzeKey(filename string) (string, error) {
+	cmd := exec.Command("/bin/analyze-key", filename)
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return "", err
+	}
+	return string(output), nil
+}
+
+func (ss *MediorumServer) analyzeBPM(filename string) (float64, error) {
+	cmd := exec.Command("aubio", "tempo", filename)
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return 0, err
+	}
+
+	outputStr := string(output)
+	lines := strings.Split(outputStr, "\n")
+	for _, line := range lines {
+		if strings.HasPrefix(line, "BPM") {
+			parts := strings.Fields(line)
+			if len(parts) > 1 {
+				bpm, err := strconv.ParseFloat(parts[1], 64)
+				if err != nil {
+					return 0, err
+				}
+				return bpm, nil
+			}
+		}
+	}
+
+	return 0, fmt.Errorf("BPM not found in aubio output")
 }
