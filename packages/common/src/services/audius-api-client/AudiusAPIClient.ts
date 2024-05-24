@@ -72,7 +72,6 @@ const FULL_ENDPOINT_MAP = {
   remixables: '/tracks/remixables',
   playlistUpdates: (userId: OpaqueID) =>
     `/notifications/${userId}/playlist_updates`,
-  getUsers: '/users',
   userTracksByHandle: (handle: OpaqueID) => `/users/handle/${handle}/tracks`,
   userAiTracksByHandle: (handle: OpaqueID) =>
     `/users/handle/${handle}/tracks/ai_attributed`,
@@ -766,32 +765,6 @@ export class AudiusAPIClient {
 
     const tracks = remixingResponse.data.map(adapter.makeTrack)
     return tracks
-  }
-
-  async getUsers({ userIds, currentUserId, abortOnUnreachable }: GetUsersArgs) {
-    this._assertInitialized()
-    const encodedUserIds = userIds.map((id) => this._encodeOrThrow(id))
-    const encodedCurrentUserId = encodeHashId(currentUserId)
-
-    const params = {
-      id: encodedUserIds,
-      user_id: encodedCurrentUserId || undefined,
-      limit: encodedUserIds.length
-    }
-
-    const response = await this._getResponse<APIResponse<APIUser[]>>(
-      FULL_ENDPOINT_MAP.getUsers,
-      params,
-      undefined,
-      undefined,
-      undefined,
-      abortOnUnreachable
-    )
-
-    if (!response) return []
-
-    const adapted = response.data.map(adapter.makeUser).filter(removeNullable)
-    return adapted
   }
 
   async getUserTracksByHandle({

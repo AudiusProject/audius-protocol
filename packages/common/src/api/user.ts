@@ -51,7 +51,7 @@ const userApi = createApi({
   endpoints: {
     getUserById: {
       fetch: async (
-        { id, currentUserId }: { id: ID; currentUserId: Nullable<ID> },
+        { id, currentUserId }: { id: ID; currentUserId?: Nullable<ID> },
         { audiusSdk }
       ) => {
         const sdk = await audiusSdk()
@@ -62,10 +62,15 @@ const userApi = createApi({
         return userMetadataListFromSDK(users)[0]
       },
       fetchBatch: async (
-        { ids, currentUserId }: { ids: ID[]; currentUserId: Nullable<ID> },
-        { apiClient }
+        { ids, currentUserId }: { ids: ID[]; currentUserId?: Nullable<ID> },
+        { audiusSdk }
       ) => {
-        return await apiClient.getUsers({ userIds: ids, currentUserId })
+        const sdk = await audiusSdk()
+        const { data: users = [] } = await sdk.full.users.getBulkUsers({
+          id: ids.map((id) => Id.parse(id)),
+          userId: OptionalId.parse(currentUserId)
+        })
+        return userMetadataListFromSDK(users)
       },
       options: {
         idArgKey: 'id',

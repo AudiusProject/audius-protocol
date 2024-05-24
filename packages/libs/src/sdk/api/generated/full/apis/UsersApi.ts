@@ -130,7 +130,6 @@ export interface GetAudioTransactionsRequest {
 export interface GetBulkUsersRequest {
     userId?: string;
     id?: Array<string>;
-    ids?: string;
 }
 
 export interface GetFavoritesRequest {
@@ -631,10 +630,6 @@ export class UsersApi extends runtime.BaseAPI {
 
         if (params.id) {
             queryParameters['id'] = params.id;
-        }
-
-        if (params.ids !== undefined) {
-            queryParameters['ids'] = params.ids;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
