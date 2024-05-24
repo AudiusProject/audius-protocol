@@ -39,7 +39,7 @@ export default function render(pageContext: TrackPageContext) {
         users: { entries: { [user_id]: { metadata: user } } }
       }}
     >
-      <ServerTrackPage trackId={track_id} />
+      <ServerTrackPage trackId={track_id} isMobile={isMobile} />
     </ServerWebPlayer>
   )
 

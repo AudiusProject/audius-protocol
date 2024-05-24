@@ -37,10 +37,19 @@ export async function onBeforeRender(pageContext: PageContextServer) {
 
     const { data } = await res.json()
     const [apiTrack] = data
-    const track = makeTrack(apiTrack)
+    // Include artwork in the track object
+    const track = {
+      ...makeTrack(apiTrack),
+      cover_art: apiTrack.artwork['1000x1000']
+    }
 
     const { user: apiUser } = apiTrack
-    const user = makeUser(apiUser)
+    // Include api user images.
+    const user = {
+      ...makeUser(apiUser),
+      cover_photo: apiUser.cover_photo['1000x1000'],
+      profile_picture: apiUser.profile_picture['1000x1000']
+    }
 
     return {
       pageContext: {

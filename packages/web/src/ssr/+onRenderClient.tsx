@@ -31,7 +31,7 @@ export default async function render(
   const isCrawler = checkIsCrawler(userAgent)
   const isMobile = getIsMobile()
 
-  if (HYDRATE_CLIENT && !isCrawler) {
+  if (!HYDRATE_CLIENT && !isCrawler) {
     const { RootWithProviders } = await import('./RootWithProviders')
     hydrateRoot(
       document.getElementById('root') as HTMLElement,

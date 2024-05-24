@@ -1,6 +1,6 @@
 import { keyframes, useTheme } from '@emotion/react'
 
-import { Box, BoxProps } from 'components/layout'
+import { Box, BoxProps } from '../layout/Box'
 
 const shimmer = keyframes({
   from: {

@@ -2,13 +2,15 @@ import { ComponentProps, useEffect, useState } from 'react'
 
 import { useTheme } from '@emotion/react'
 
-import { Box, BoxProps, Flex } from 'components/layout'
-import { Skeleton } from 'components/skeleton'
+import { Box, BoxProps } from '../layout/Box'
+import { Flex } from '../layout/Flex'
+import { Skeleton } from '../skeleton'
 
 export type ArtworkProps = {
   isLoading?: boolean
   borderWidth?: number
   'data-testid'?: string
+  noLoading?: boolean
 } & Pick<ComponentProps<'img'>, 'src'> &
   BoxProps
 

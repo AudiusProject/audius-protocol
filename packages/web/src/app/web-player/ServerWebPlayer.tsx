@@ -1,6 +1,7 @@
 import { PropsWithChildren, ReactElement } from 'react'
 import '@audius/harmony/dist/harmony.css'
 
+import { Box } from '@audius/harmony/src/components/layout/Box'
 import { Flex } from '@audius/harmony/src/components/layout/Flex'
 import { ThemeProvider } from '@audius/harmony/src/foundations/theme/ThemeProvider'
 import { StaticRouter } from 'react-router-dom'
@@ -35,8 +36,18 @@ const WebPlayerContent = (props: WebPlayerContentProps) => {
   const { isMobile, children } = props
 
   if (isMobile) {
-    // TODO add header
-    return children
+    return (
+      <Flex direction='column' w='100%' backgroundColor='default'>
+        <Flex h={40} w='100%' backgroundColor='white' />
+        <Box pb={50}>{children}</Box>
+        <Flex
+          h={50}
+          w='100%'
+          backgroundColor='surface1'
+          css={{ position: 'fixed', bottom: 0, zIndex: 1 }}
+        />
+      </Flex>
+    )
   }
 
   return (
