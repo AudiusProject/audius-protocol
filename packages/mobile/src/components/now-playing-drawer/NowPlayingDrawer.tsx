@@ -49,7 +49,8 @@ import { PLAY_BAR_HEIGHT } from './constants'
 import { useCurrentTrackDuration } from './useCurrentTrackDuration'
 const { seek, reset } = playerActions
 
-const { getPlaying, getCurrentTrack, getCounter, getUid } = playerSelectors
+const { getPlaying, getCurrentTrack, getCounter, getUid, getBuffering } =
+  playerSelectors
 const { next, previous } = queueActions
 const { getUser } = cacheUsersSelectors
 
@@ -117,6 +118,7 @@ export const NowPlayingDrawer = memo(function NowPlayingDrawer(
   const playCounter = useSelector(getCounter)
   const currentUid = useSelector(getUid)
   const isPlaying = useSelector(getPlaying)
+  const isBuffering = useSelector(getBuffering)
   const [isPlayBarShowing, setIsPlayBarShowing] = useState(false)
 
   const { drawerNavigation } = useContext(AppDrawerContext)
@@ -339,7 +341,7 @@ export const NowPlayingDrawer = memo(function NowPlayingDrawer(
         <View style={styles.scrubberContainer}>
           <Scrubber
             mediaKey={`${mediaKey}`}
-            isPlaying={isPlaying}
+            isPlaying={isPlaying && !isBuffering}
             onPressIn={onPressScrubberIn}
             onPressOut={onPressScrubberOut}
             duration={trackDuration}
