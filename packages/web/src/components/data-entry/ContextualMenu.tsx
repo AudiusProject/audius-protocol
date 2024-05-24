@@ -18,7 +18,9 @@ import {
   Text,
   IconCaretRight,
   IconComponent,
-  Button
+  Button,
+  Flex,
+  Paper
 } from '@audius/harmony'
 import {
   Form,
@@ -32,9 +34,6 @@ import {
 import { useToggle } from 'react-use'
 
 import { HelperText } from 'components/data-entry/HelperText'
-import { Tile } from 'components/tile'
-
-import styles from './ContextualMenu.module.css'
 
 const messages = {
   save: 'Save'
@@ -94,7 +93,7 @@ const MenuForm = (props: MenuFormProps) => {
       <ModalContent>
         <Form id={label}>{menuFields}</Form>
       </ModalContent>
-      <ModalFooter className={styles.footer}>
+      <Flex as={ModalFooter} direction='column' alignItems='center'>
         {errorMessage ? (
           <Box pb='l' ph='xl'>
             <Text variant='body' color='danger' size='s'>
@@ -105,7 +104,7 @@ const MenuForm = (props: MenuFormProps) => {
         <Button variant='primary' form={label} type='submit'>
           {messages.save}
         </Button>
-      </ModalFooter>
+      </Flex>
     </Modal>
   )
 }
@@ -120,15 +119,25 @@ export type SelectedValueProps = {
 export const SelectedValue = (props: SelectedValueProps) => {
   const { label, icon: Icon, children, ...rest } = props
   return (
-    <span className={styles.selectedValue} {...rest}>
+    <Flex
+      inline
+      pv='xs'
+      ph='s'
+      gap='xs'
+      alignItems='center'
+      border='strong'
+      backgroundColor='surface2'
+      css={{ borderRadius: '2px' }}
+      {...rest}
+    >
       {Icon ? <Icon size='s' color='default' /> : null}
       {label ? (
-        <Text variant='body' strength='strong'>
+        <Text variant='body' size='s' strength='default'>
           {label}
         </Text>
       ) : null}
       {children}
-    </span>
+    </Flex>
   )
 }
 
@@ -138,7 +147,11 @@ type SelectedValuesProps = {
 
 export const SelectedValues = (props: SelectedValuesProps) => {
   const { children } = props
-  return <span className={styles.value}>{children}</span>
+  return (
+    <Flex inline gap='s' wrap='wrap' css={{ flexShrink: 1 }}>
+      {children}
+    </Flex>
+  )
 }
 
 type ContextualMenuProps<FormValues extends FormikValues> = {
@@ -190,26 +203,35 @@ export const ContextualMenu = <FormValues extends FormikValues = FormikValues>(
   const preview = previewOverride ? (
     previewOverride(toggleMenu)
   ) : (
-    <Tile
+    <Paper
       onClick={toggleMenu}
-      className={styles.root}
-      elevation='flat'
-      css={{ width: '100%' }}
+      shadow='flat'
+      w='100%'
+      gap='m'
+      ph='xl'
+      pv='l'
+      direction='column'
+      border='default'
+      css={{ cursor: 'pointer' }}
     >
-      <div className={styles.header}>
-        <div className={styles.title}>
+      <Flex direction='column' w='100%' gap='s'>
+        <Flex
+          direction='row'
+          justifyContent='space-between'
+          alignItems='center'
+        >
           <Text variant='title' size='l'>
             {label}
           </Text>
           <IconCaretRight color='subdued' size='s' />
-        </div>
+        </Flex>
         <Text variant='body' textAlign='left'>
           {description}
         </Text>
-      </div>
-      {renderValue()}
+      </Flex>
+      <Box flex={1}>{renderValue()}</Box>
       {error ? <HelperText error>{errorMessage}</HelperText> : null}
-    </Tile>
+    </Paper>
   )
 
   const handleSubmit = useCallback(

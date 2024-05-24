@@ -6,7 +6,6 @@ import {
   isContentFollowGated,
   isContentTipGated,
   isContentUSDCPurchaseGated,
-  FieldVisibility,
   StreamTrackAvailabilityType,
   CollectibleGatedConditions,
   FollowGatedConditions,
@@ -18,6 +17,7 @@ import { CollectionValues } from '@audius/common/schemas'
 import { accountSelectors, EditPlaylistValues } from '@audius/common/store'
 import { formatPrice, Nullable } from '@audius/common/utils'
 import {
+  Flex,
   IconCart,
   IconCollectible,
   IconVisibilityHidden as IconHidden,
@@ -38,20 +38,18 @@ import {
   SelectedValueProps
 } from 'components/data-entry/ContextualMenu'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
-import { defaultFieldVisibility } from 'pages/track-page/utils'
 
 import { useIndexedField, useTrackField } from '../hooks'
 import { SingleTrackEditValues, TrackEditFormValues } from '../types'
 
-import styles from './AccessAndSaleField.module.css'
-import { AccessAndSaleMenuFields } from './AccessAndSaleMenuFields'
+import styles from './PriceAndAudienceField.module.css'
+import { PriceAndAudienceMenuFields } from './PriceAndAudienceMenuFields'
 import { REMIX_OF } from './RemixSettingsField'
 import { getCombinedDefaultGatedConditionValues } from './helpers'
 import {
   ALBUM_TRACK_PRICE,
-  AccessAndSaleFormValues,
+  PriceAndAudienceFormValues,
   DOWNLOAD_CONDITIONS,
-  FIELD_VISIBILITY,
   GateKeeper,
   IS_DOWNLOADABLE,
   IS_DOWNLOAD_GATED,
@@ -72,21 +70,12 @@ import {
 const { getUserId } = accountSelectors
 
 const messages = {
-  title: 'Access & Sale',
+  title: 'Price & Audience',
   description:
     "Customize your music's availability for different audiences, and create personalized gated experiences for your fans.",
-  public: 'Public (Free to Stream)',
+  public: 'Free for Everyone',
   specialAccess: 'Special Access',
   collectibleGated: 'Collectible Gated',
-  hidden: 'Hidden',
-  fieldVisibility: {
-    genre: 'Show Genre',
-    mood: 'Show Mood',
-    tags: 'Show Tags',
-    share: 'Show Share Button',
-    play_count: 'Show Play Count',
-    remixes: 'Show Remixes'
-  },
   followersOnly: 'Followers Only',
   supportersOnly: 'Supporters Only',
   ownersOf: 'Owners Of',
@@ -116,7 +105,7 @@ export type USDCPurchaseRemoteConfig = Pick<
   'minContentPriceCents' | 'maxContentPriceCents'
 >
 
-// This type is specific to the AccessAndSaleFormSchema during refinement
+// This type is specific to the PriceAndAudienceFormSchema during refinement
 type ZodSchemaValues = {
   stream_availability_type: StreamTrackAvailabilityType
   stream_conditions?: Nullable<AccessConditions>
@@ -150,7 +139,7 @@ const refineMaxPrice =
     }
     return true
   }
-export const AccessAndSaleFormSchema = (
+export const PriceAndAudienceFormSchema = (
   trackLength: number,
   { minContentPriceCents, maxContentPriceCents }: USDCPurchaseRemoteConfig,
   isAlbum?: boolean,
@@ -198,7 +187,7 @@ export const AccessAndSaleFormSchema = (
     // Check preview start time exists and is >= 0
     .refine(
       (values) => {
-        const formValues = values as AccessAndSaleFormValues
+        const formValues = values as PriceAndAudienceFormValues
         if (
           formValues[STREAM_AVAILABILITY_TYPE] === 'USDC_PURCHASE' &&
           !isAlbum
@@ -212,7 +201,7 @@ export const AccessAndSaleFormSchema = (
     // Check for preview being >30s before the end of the track
     .refine(
       (values) => {
-        const formValues = values as AccessAndSaleFormValues
+        const formValues = values as PriceAndAudienceFormValues
         if (
           formValues[STREAM_AVAILABILITY_TYPE] === 'USDC_PURCHASE' &&
           !isAlbum
@@ -230,7 +219,7 @@ export const AccessAndSaleFormSchema = (
       { message: messages.errors.preview.tooLate, path: [PREVIEW] }
     )
 
-type AccessAndSaleFieldProps = {
+type PriceAndAudienceFieldProps = {
   isUpload?: boolean
   isAlbum?: boolean
   trackLength?: number
@@ -239,7 +228,7 @@ type AccessAndSaleFieldProps = {
   isPublishDisabled?: boolean
 }
 
-export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
+export const PriceAndAudienceField = (props: PriceAndAudienceFieldProps) => {
   const {
     isUpload = false,
     isAlbum = false,
@@ -270,8 +259,7 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
       : undefined
 
   // Fields from the outer form
-  const [{ value: isUnlisted }, , { setValue: setIsUnlistedValue }] =
-    useTrackField<boolean>(isHiddenFieldName)
+  const [{ value: isUnlisted }] = useTrackField<boolean>(isHiddenFieldName)
   const [{ value: isScheduledRelease }, ,] =
     useTrackField<SingleTrackEditValues[typeof IS_SCHEDULED_RELEASE]>(
       IS_SCHEDULED_RELEASE
@@ -289,10 +277,6 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
       STREAM_CONDITIONS
     )
 
-  const [{ value: fieldVisibility }, , { setValue: setFieldVisibilityValue }] =
-    useTrackField<SingleTrackEditValues[typeof FIELD_VISIBILITY]>(
-      FIELD_VISIBILITY
-    )
   const [{ value: remixOfValue }] =
     useTrackField<SingleTrackEditValues[typeof REMIX_OF]>(REMIX_OF)
 
@@ -339,7 +323,6 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
     const isCollectibleGated = isContentCollectibleGated(savedStreamConditions)
 
     const initialValues = {}
-    set(initialValues, isHiddenFieldName, isUnlisted)
     set(initialValues, IS_STREAM_GATED, isStreamGated)
     set(initialValues, STREAM_CONDITIONS, tempStreamConditions)
     set(initialValues, IS_DOWNLOAD_GATED, isDownloadGated)
@@ -347,7 +330,7 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
     set(initialValues, IS_DOWNLOADABLE, isDownloadable)
     set(initialValues, LAST_GATE_KEEPER, lastGateKeeper ?? {})
 
-    let availabilityType = StreamTrackAvailabilityType.PUBLIC
+    let availabilityType = StreamTrackAvailabilityType.FREE_TO_STREAM
     if (isUsdcGated) {
       availabilityType = StreamTrackAvailabilityType.USDC_PURCHASE
       set(
@@ -364,55 +347,36 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
     if (isCollectibleGated) {
       availabilityType = StreamTrackAvailabilityType.COLLECTIBLE_GATED
     }
-    if (isUnlisted && !isScheduledRelease) {
-      availabilityType = StreamTrackAvailabilityType.HIDDEN
-    }
     set(initialValues, STREAM_AVAILABILITY_TYPE, availabilityType)
-    set(initialValues, FIELD_VISIBILITY, fieldVisibility)
     set(initialValues, PREVIEW, preview)
     set(
       initialValues,
       SPECIAL_ACCESS_TYPE,
       isTipGated ? SpecialAccessType.TIP : SpecialAccessType.FOLLOW
     )
-    return initialValues as AccessAndSaleFormValues
+    return initialValues as PriceAndAudienceFormValues
   }, [
     savedStreamConditions,
-    isHiddenFieldName,
-    isUnlisted,
     isStreamGated,
     tempStreamConditions,
     isDownloadGated,
     downloadConditions,
     isDownloadable,
     lastGateKeeper,
-    isScheduledRelease,
-    fieldVisibility,
     preview
   ])
 
   const handleSubmit = useCallback(
-    (values: AccessAndSaleFormValues) => {
+    (values: PriceAndAudienceFormValues) => {
       const availabilityType = get(values, STREAM_AVAILABILITY_TYPE)
       const preview = get(values, PREVIEW)
       const specialAccessType = get(values, SPECIAL_ACCESS_TYPE)
-      const fieldVisibility = get(values, FIELD_VISIBILITY)
       const streamConditions = get(values, STREAM_CONDITIONS)
       const lastGateKeeper = get(values, LAST_GATE_KEEPER)
 
-      setFieldVisibilityValue({
-        ...defaultFieldVisibility,
-        remixes: fieldVisibility?.remixes ?? defaultFieldVisibility.remixes
-      })
       setIsStreamGated(false)
       setStreamConditionsValue(null)
       setPreviewValue(undefined)
-
-      if (availabilityType === StreamTrackAvailabilityType.HIDDEN) {
-        setIsUnlistedValue(true)
-      } else {
-        setIsUnlistedValue(false)
-      }
 
       // For gated options, extract the correct stream conditions based on the selected availability type
       switch (availabilityType) {
@@ -441,10 +405,10 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
             isDownloadable &&
             lastGateKeeper.downloadable === 'stemsAndDownloads'
               ? 'stemsAndDownloads'
-              : 'accessAndSale'
+              : 'priceAndAudience'
           setLastGateKeeper({
             ...lastGateKeeper,
-            access: 'accessAndSale',
+            access: 'priceAndAudience',
             downloadable: downloadableGateKeeper
           })
           break
@@ -463,7 +427,7 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
           setIsDownloadGated(true)
           setLastGateKeeper({
             ...lastGateKeeper,
-            access: 'accessAndSale'
+            access: 'priceAndAudience'
           })
           break
         }
@@ -476,32 +440,16 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
           setDownloadConditionsValue({ nft_collection })
           setLastGateKeeper({
             ...lastGateKeeper,
-            access: 'accessAndSale'
+            access: 'priceAndAudience'
           })
           break
         }
-        case StreamTrackAvailabilityType.HIDDEN: {
-          setFieldVisibilityValue({
-            ...(fieldVisibility ?? undefined),
-            remixes: fieldVisibility?.remixes ?? defaultFieldVisibility.remixes
-          })
-          setIsUnlistedValue(true)
-          if (lastGateKeeper.access === 'accessAndSale') {
+        case StreamTrackAvailabilityType.FREE_TO_STREAM: {
+          if (lastGateKeeper.access === 'priceAndAudience') {
             setIsDownloadGated(false)
             setDownloadConditionsValue(null)
           }
-          if (lastGateKeeper.downloadable === 'accessAndSale') {
-            setIsDownloadable(false)
-          }
-          break
-        }
-        case StreamTrackAvailabilityType.PUBLIC: {
-          setIsUnlistedValue(false)
-          if (lastGateKeeper.access === 'accessAndSale') {
-            setIsDownloadGated(false)
-            setDownloadConditionsValue(null)
-          }
-          if (lastGateKeeper.downloadable === 'accessAndSale') {
+          if (lastGateKeeper.downloadable === 'priceAndAudience') {
             setIsDownloadable(false)
           }
           break
@@ -509,8 +457,6 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
       }
     },
     [
-      setFieldVisibilityValue,
-      setIsUnlistedValue,
       setIsStreamGated,
       setStreamConditionsValue,
       setPreviewValue,
@@ -534,7 +480,7 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
             label={messages.collectibleGated}
             icon={IconCollectible}
           />
-          <div className={styles.nftOwner}>
+          <Flex direction='column' alignItems='flex-start' gap='s'>
             <Text variant='label' size='s'>
               {messages.ownersOf}:
             </Text>
@@ -549,7 +495,7 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
                 {name}
               </Text>
             </SelectedValue>
-          </div>
+          </Flex>
         </>
       )
     }
@@ -590,27 +536,12 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
       selectedValues = [specialAccessValue, messages.followersOnly]
     } else if (isContentTipGated(savedStreamConditions)) {
       selectedValues = [specialAccessValue, messages.supportersOnly]
-    } else if (isUnlisted && !isScheduledRelease) {
-      const fieldVisibilityKeys = Object.keys(
-        messages.fieldVisibility
-      ) as Array<keyof FieldVisibility>
-
-      const fieldVisibilityLabels =
-        fieldVisibility && !isAlbum
-          ? fieldVisibilityKeys
-              .filter((visibilityKey) => fieldVisibility[visibilityKey])
-              .map((visibilityKey) => messages.fieldVisibility[visibilityKey])
-          : []
-      selectedValues = [
-        { label: messages.hidden, icon: IconHidden },
-        ...fieldVisibilityLabels
-      ]
     } else {
       selectedValues = [{ label: messages.public, icon: IconVisibilityPublic }]
     }
 
     return (
-      <div className={styles.value}>
+      <Flex inline gap='s' wrap='wrap' css={{ flexShrink: 1 }}>
         {selectedValues.map((value) => {
           const valueProps =
             typeof value === 'string' ? { label: value } : value
@@ -625,17 +556,9 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
             />
           )
         })}
-      </div>
+      </Flex>
     )
-  }, [
-    savedStreamConditions,
-    isUnlisted,
-    isScheduledRelease,
-    preview,
-    isUpload,
-    fieldVisibility,
-    isAlbum
-  ])
+  }, [savedStreamConditions, preview, isUpload])
 
   return (
     <ContextualMenu
@@ -646,7 +569,7 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
       onSubmit={handleSubmit}
       renderValue={renderValue}
       validationSchema={toFormikValidationSchema(
-        AccessAndSaleFormSchema(
+        PriceAndAudienceFormSchema(
           trackLength,
           usdcPurchaseConfig,
           isAlbum,
@@ -654,7 +577,7 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
         )
       )}
       menuFields={
-        <AccessAndSaleMenuFields
+        <PriceAndAudienceMenuFields
           isRemix={isRemix}
           isUpload={isUpload}
           isAlbum={isAlbum}

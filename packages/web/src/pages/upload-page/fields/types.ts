@@ -19,7 +19,7 @@ export enum SpecialAccessType {
   FOLLOW = 'follow'
 }
 
-export type GateKeeperField = 'accessAndSale' | 'stemsAndDownloads'
+export type GateKeeperField = 'priceAndAudience' | 'stemsAndDownloads'
 export type GateKeeper = {
   access: GateKeeperField // who last changed the access gates
   downloadable: GateKeeperField // who last changed the downloadability
@@ -46,10 +46,10 @@ export const IS_UNLISTED = 'is_unlisted'
 export const IS_PRIVATE = 'is_private'
 export const FIELD_VISIBILITY = 'field_visibility'
 export const IS_SCHEDULED_RELEASE = 'is_scheduled_release'
-// whether Access & Sale or Stems & Downloads last set the stream / download conditions
+// whether Price & Audience or Stems & Downloads last set the stream / download conditions
 export const LAST_GATE_KEEPER = 'last_gate_keeper'
 
-export type AccessAndSaleFormValues = {
+export type PriceAndAudienceFormValues = {
   [IS_UNLISTED]: boolean
   [STREAM_AVAILABILITY_TYPE]: StreamTrackAvailabilityType
   [STREAM_CONDITIONS]: Nullable<AccessConditions>

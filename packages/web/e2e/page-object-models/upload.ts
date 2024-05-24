@@ -76,7 +76,7 @@ class BaseEditPage {
 export class EditTrackPage extends BaseEditPage {
   protected readonly titleInput: Locator
   private readonly remixSettingsButton: Locator
-  private readonly accessAndSaleSettingsButton: Locator
+  private readonly priceAndAudienceSettingsButton: Locator
   private readonly attributionSettingsButton: Locator
   private readonly stemsAndDownloadsSettingsButton: Locator
 
@@ -86,8 +86,8 @@ export class EditTrackPage extends BaseEditPage {
     this.remixSettingsButton = page.getByRole('button', {
       name: /remix settings/i
     })
-    this.accessAndSaleSettingsButton = page.getByRole('button', {
-      name: /access & sale/i
+    this.priceAndAudienceSettingsButton = page.getByRole('button', {
+      name: /price & audience/i
     })
     this.attributionSettingsButton = page.getByRole('button', {
       name: /attribution/i
@@ -101,8 +101,8 @@ export class EditTrackPage extends BaseEditPage {
     await this.remixSettingsButton.click()
   }
 
-  async openAccessAndSaleSettings() {
-    await this.accessAndSaleSettingsButton.click()
+  async openPriceAndAudienceSettings() {
+    await this.priceAndAudienceSettingsButton.click()
   }
 
   async openAttributionSettings() {
@@ -202,13 +202,13 @@ type AlbumAccessType = 'public' | 'premium' | 'hidden'
 type AlbumAccessArgs = { albumPrice: number; albumTrackPrice: number }
 export class EditAlbumPage extends EditPlaylistPage {
   protected readonly titleInput: Locator
-  protected readonly accessAndSaleMenu: Locator
+  protected readonly priceAndAudienceMenu: Locator
   protected readonly albumPriceInput: Locator
   protected readonly albumTrackPriceInput: Locator
   protected readonly accessMenuSaveButton: Locator
   protected readonly accessPriceDisplay: Locator
   protected readonly accessTrackPriceDisplay: Locator
-  protected readonly accessAndSaleMenuOptions: {
+  protected readonly priceAndAudienceMenuOptions: {
     [k in AlbumAccessType]: Locator
   }
 
@@ -217,10 +217,10 @@ export class EditAlbumPage extends EditPlaylistPage {
   constructor(page: Page) {
     super(page)
     this.titleInput = page.getByRole('textbox', { name: /album name/i })
-    this.accessAndSaleMenu = page.getByRole('heading', {
-      name: /access & sale/i
+    this.priceAndAudienceMenu = page.getByRole('heading', {
+      name: /price & audience/i
     })
-    this.accessAndSaleMenuOptions = {
+    this.priceAndAudienceMenuOptions = {
       public: page.getByRole('radio', { name: /public/i }),
       premium: page.getByRole('radio', { name: /premium/i }),
       hidden: page.getByRole('radio', { name: /hidden/i })
@@ -240,8 +240,8 @@ export class EditAlbumPage extends EditPlaylistPage {
   }
 
   async setAlbumAccessType(type: AlbumAccessType, args?: AlbumAccessArgs) {
-    await this.accessAndSaleMenu.click()
-    await this.accessAndSaleMenuOptions[type].click()
+    await this.priceAndAudienceMenu.click()
+    await this.priceAndAudienceMenuOptions[type].click()
     if (args !== undefined && type === 'premium' && 'albumPrice' in args) {
       await this.albumPriceInput.fill(args.albumPrice.toString())
       await this.albumTrackPriceInput.fill(args.albumTrackPrice.toString())

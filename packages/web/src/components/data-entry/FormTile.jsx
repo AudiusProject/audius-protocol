@@ -33,8 +33,8 @@ import { env } from 'services/env'
 import { moodMap } from 'utils/Moods'
 import { resizeImage } from 'utils/imageProcessingUtil'
 
-import { AccessAndSaleTriggerLegacy } from './AccessAndSaleTriggerLegacy'
 import styles from './FormTile.module.css'
+import { PriceAndAudienceTriggerLegacy } from './PriceAndAudienceTriggerLegacy'
 import { ReleaseDateTriggerLegacy } from './ReleaseDateTriggerLegacy'
 import { StemsAndDownloadsTriggerLegacy } from './StemsAndDownloadsTriggerLegacy'
 
@@ -266,7 +266,7 @@ const BasicForm = (props) => {
         initialForm={props.initialForm}
         closeMenuCallback={(data) => {
           if (data === MenuFormCallbackStatus.OPEN_ACCESS_AND_SALE) {
-            props.setForceOpenAccessAndSale(true)
+            props.setForceOpenPriceAndAudience(true)
           }
         }}
       />
@@ -493,15 +493,15 @@ const AdvancedForm = (props) => {
             /> */}
           </div>
           {showAvailability && (
-            <AccessAndSaleTriggerLegacy
+            <PriceAndAudienceTriggerLegacy
               didUpdateState={didUpdateAvailabilityState}
               metadataState={availabilityState}
               trackLength={props.trackLength}
               isRemix={!!props.defaultFields.remix_of?.tracks?.length}
               isUpload={props.isUpload}
               initialForm={props.initialForm}
-              forceOpen={props.forceOpenAccessAndSale}
-              setForceOpen={props.setForceOpenAccessAndSale}
+              forceOpen={props.forceOpenPriceAndAudience}
+              setForceOpen={props.setForceOpenPriceAndAudience}
               lastGateKeeper={props.lastGateKeeper}
               setLastGateKeeper={props.setLastGateKeeper}
             />
@@ -654,7 +654,7 @@ class FormTile extends Component {
     remixSettingsModalVisible: false,
     aiAttributionModalVisible: false,
     isRemix: !!this.props.defaultFields.remix_of,
-    forceOpenAccessAndSale: false,
+    forceOpenPriceAndAudience: false,
     lastGateKeeper: {},
     allowedApiKeys: this.props.defaultFields.allowed_api_keys
   }
@@ -782,8 +782,8 @@ class FormTile extends Component {
     this.setState({ isRemix })
   }
 
-  setForceOpenAccessAndSale = (forceOpen) => {
-    this.setState({ forceOpenAccessAndSale: forceOpen })
+  setForceOpenPriceAndAudience = (forceOpen) => {
+    this.setState({ forceOpenPriceAndAudience: forceOpen })
   }
 
   setLastGateKeeper = (lastGateKeeper) => {
@@ -820,8 +820,8 @@ class FormTile extends Component {
           setAiAttributionModalVisible={this.setAiAttributionModalVisible}
           isRemix={isRemix}
           setIsRemix={this.setIsRemix}
-          forceOpenAccessAndSale={this.state.forceOpenAccessAndSale}
-          setForceOpenAccessAndSale={this.setForceOpenAccessAndSale}
+          forceOpenPriceAndAudience={this.state.forceOpenPriceAndAudience}
+          setForceOpenPriceAndAudience={this.setForceOpenPriceAndAudience}
           lastGateKeeper={this.state.lastGateKeeper}
           setLastGateKeeper={this.setLastGateKeeper}
         />
@@ -846,8 +846,8 @@ class FormTile extends Component {
           setAiAttributionModalVisible={this.setAiAttributionModalVisible}
           isRemix={isRemix}
           setIsRemix={this.setIsRemix}
-          forceOpenAccessAndSale={this.state.forceOpenAccessAndSale}
-          setForceOpenAccessAndSale={this.setForceOpenAccessAndSale}
+          forceOpenPriceAndAudience={this.state.forceOpenPriceAndAudience}
+          setForceOpenPriceAndAudience={this.setForceOpenPriceAndAudience}
           lastGateKeeper={this.state.lastGateKeeper}
           setLastGateKeeper={this.setLastGateKeeper}
         />

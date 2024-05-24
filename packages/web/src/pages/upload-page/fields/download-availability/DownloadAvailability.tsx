@@ -52,7 +52,7 @@ const messages = {
       "You're uploading a Special Access track. By default, users who unlock your track will be able to download your available files. If you'd like to only sell your files, set your track to Public or Hidden in the",
     collectibleGated:
       "You're uploading a Collectible Gated track. By default, users who unlock your track will be able to download your available files. If you'd like to only sell your files, set your track to Public or Hidden in the",
-    accessAndSale: 'Access & Sale Settings'
+    priceAndAudience: 'Price & Audience Settings'
   },
   waitlist:
     'Start selling your music on Audius today! Limited access beta now available.',
@@ -202,7 +202,7 @@ export const DownloadAvailability = ({
           icon={IconError}
           actions={
             <TextLink onClick={handleCalloutClick} variant='visible'>
-              {messages.callout.accessAndSale}
+              {messages.callout.priceAndAudience}
             </TextLink>
           }
         >

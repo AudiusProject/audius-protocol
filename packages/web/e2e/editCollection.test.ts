@@ -20,8 +20,8 @@ test.skip('Change premium album price', async ({ page }) => {
 
   // Open Edit modal
   await page.getByRole('button', { name: 'Edit Collection' }).click()
-  // Open access & sale modal
-  await page.getByRole('button', { name: /access & sale/i }).click()
+  // Open price & audience modal
+  await page.getByRole('button', { name: /price & audience/i }).click()
 
   // Assert all the correct buttons are enabled/disabled
   expect(await page.getByLabel(/hidden/i)).toBeDisabled()
@@ -57,8 +57,8 @@ test.skip('Cannot edit public album access to premium/hidden', async ({
   await page.goto(PUBLIC_ALBUM)
   // Open Edit modal
   await page.getByRole('button', { name: 'Edit Collection' }).click()
-  // Open access & sale modal
-  await page.getByRole('button', { name: /access & sale/i }).click()
+  // Open price & audience modal
+  await page.getByRole('button', { name: /price & audience/i }).click()
   // Should have no options other than public
 
   expect(await page.getByLabel(/premium/i)).toBeDisabled()

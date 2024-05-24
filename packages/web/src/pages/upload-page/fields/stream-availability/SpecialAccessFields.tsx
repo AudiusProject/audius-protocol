@@ -11,7 +11,7 @@ import { useSelector } from 'react-redux'
 import Tooltip from 'components/tooltip/Tooltip'
 
 import {
-  AccessAndSaleFormValues,
+  PriceAndAudienceFormValues,
   DOWNLOAD_CONDITIONS,
   STREAM_CONDITIONS,
   SpecialAccessType
@@ -43,7 +43,7 @@ export const SpecialAccessFields = (props: TrackAvailabilityFieldsProps) => {
   })
 
   const [, , { setValue: setStreamConditionsValue }] =
-    useField<AccessAndSaleFormValues[typeof STREAM_CONDITIONS]>(
+    useField<PriceAndAudienceFormValues[typeof STREAM_CONDITIONS]>(
       STREAM_CONDITIONS
     )
   const [{ value: downloadConditions }] =

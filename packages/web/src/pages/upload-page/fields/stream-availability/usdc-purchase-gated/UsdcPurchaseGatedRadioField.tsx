@@ -20,7 +20,7 @@ import styles from './UsdcPurchaseGatedRadioField.module.css'
 const WAITLIST_TYPEFORM = 'https://link.audius.co/waitlist'
 
 const messages = {
-  usdcPurchase: 'Premium (Pay-to-Unlock)',
+  usdcPurchase: 'Premium',
   usdcPurchaseSubtitle: (contentType: 'album' | 'track') =>
     `Unlockable by purchase, these ${pluralize(
       contentType,

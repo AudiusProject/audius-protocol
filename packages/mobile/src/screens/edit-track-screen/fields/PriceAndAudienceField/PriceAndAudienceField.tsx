@@ -13,10 +13,10 @@ import { useField } from 'formik'
 import type { ContextualMenuProps } from 'app/components/core'
 import { ContextualMenu } from 'app/components/core'
 
-export const accessAndSaleScreenName = 'AccessAndSale'
+export const PriceAndAudienceScreenName = 'priceAndAudience'
 
 const messages = {
-  accessAndSale: 'Access & Sale',
+  priceAndAudience: 'Price & Audience',
   public: 'Public',
   premium: 'Premium',
   collectibleGated: 'Collectible Gated',
@@ -41,9 +41,9 @@ const fieldVisibilityLabelMap = {
 
 const fieldVisibilityKeys = Object.keys(fieldVisibilityLabelMap)
 
-type AccessAndSaleFieldProps = Partial<ContextualMenuProps>
+type PriceAndAudienceFieldProps = Partial<ContextualMenuProps>
 
-export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
+export const PriceAndAudienceField = (props: PriceAndAudienceFieldProps) => {
   const [{ value: streamConditions }] =
     useField<Nullable<AccessConditions>>('stream_conditions')
   const [{ value: isUnlisted }] = useField<boolean>('is_unlisted')
@@ -80,8 +80,8 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
 
   return (
     <ContextualMenu
-      label={messages.accessAndSale}
-      menuScreenName={accessAndSaleScreenName}
+      label={messages.priceAndAudience}
+      menuScreenName={PriceAndAudienceScreenName}
       value={trackAvailabilityLabels}
       {...props}
     />

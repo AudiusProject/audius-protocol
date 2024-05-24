@@ -1,9 +1,10 @@
 import { expect } from '@playwright/test'
 
+import { getAiAttributionUser, getTrack } from './data'
 import {
   RemixSettingsModal,
-  AccessAndSaleModal,
   AttributionModal,
+  PriceAndAudienceModal,
   StemsAndDownloadsModal
 } from './page-object-models/modals'
 import {
@@ -13,7 +14,6 @@ import {
 } from './page-object-models/upload'
 import { test, waitForUser } from './test'
 import { openCleanBrowser } from './utils'
-import { getAiAttributionUser, getTrack } from './data'
 
 test('should upload a track', async ({ page }) => {
   const trackTitle = `Test track ${Date.now()}`
@@ -88,15 +88,15 @@ test.skip('should upload a remix, hidden, AI-attributed track', async ({
   await remixSettingsModal.setAsRemixOf(remixUrl, remixName)
   await remixSettingsModal.save()
 
-  await editPage.openAccessAndSaleSettings()
-  const accessAndSaleModal = new AccessAndSaleModal(page)
-  expect(accessAndSaleModal.remixAlert).toBeVisible()
+  await editPage.openPriceAndAudienceSettings()
+  const priceAndAudienceModal = new PriceAndAudienceModal(page)
+  expect(priceAndAudienceModal.remixAlert).toBeVisible()
   // Only public and hidden allowed for remixes
   await expect(
-    accessAndSaleModal.locator.getByRole('radio', { disabled: false })
+    priceAndAudienceModal.locator.getByRole('radio', { disabled: false })
   ).toHaveCount(2)
-  await accessAndSaleModal.setHidden({ 'Share Button': true })
-  await accessAndSaleModal.save()
+  await priceAndAudienceModal.setHidden({ 'Share Button': true })
+  await priceAndAudienceModal.save()
 
   await editPage.openAttributionSettings()
   const attributionModal = new AttributionModal(page)
@@ -186,10 +186,10 @@ test.skip('should upload a premium track', async ({ page, browser }) => {
   await editPage.setTitle(trackTitle)
   await editPage.setGenre(genre)
 
-  await editPage.openAccessAndSaleSettings()
-  const accessAndSaleModal = new AccessAndSaleModal(page)
-  await accessAndSaleModal.setPremium({ price, previewSeconds })
-  await accessAndSaleModal.save()
+  await editPage.openPriceAndAudienceSettings()
+  const priceAndAudienceModal = new PriceAndAudienceModal(page)
+  await priceAndAudienceModal.setPremium({ price, previewSeconds })
+  await priceAndAudienceModal.save()
 
   await editPage.complete()
 

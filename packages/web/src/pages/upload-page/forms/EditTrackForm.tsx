@@ -23,14 +23,14 @@ import { UploadFormScrollContext } from 'pages/upload-page/UploadPage'
 
 import { AnchoredSubmitRow } from '../components/AnchoredSubmitRow'
 import { PreviewButton } from '../components/PreviewButton'
-import { AccessAndSaleField } from '../fields/AccessAndSaleField'
 import { AttributionField } from '../fields/AttributionField'
 import { MultiTrackSidebar } from '../fields/MultiTrackSidebar'
-import { ReleaseDateField } from '../fields/ReleaseDateField'
+import { PriceAndAudienceField } from '../fields/PriceAndAudienceField'
 import { ReleaseDateFieldLegacy } from '../fields/ReleaseDateFieldLegacy'
 import { RemixSettingsField } from '../fields/RemixSettingsField'
 import { StemsAndDownloadsField } from '../fields/StemsAndDownloadsField'
 import { TrackMetadataFields } from '../fields/TrackMetadataFields'
+import { VisibilityField } from '../fields/VisibilityField'
 import { defaultHiddenFields } from '../fields/stream-availability/HiddenAvailabilityFields'
 import { TrackEditFormValues, TrackFormState } from '../types'
 
@@ -128,7 +128,8 @@ const TrackEditForm = (props: FormikProps<TrackEditFormValues>) => {
   const { isEnabled: isScheduledReleasesEnabled } = useFlag(
     FeatureFlags.SCHEDULED_RELEASES
   )
-  const [forceOpenAccessAndSale, setForceOpenAccessAndSale] = useState(false)
+  const [forceOpenPriceAndAudience, setForceOpenPriceAndAudience] =
+    useState(false)
 
   return (
     <Form>
@@ -146,20 +147,20 @@ const TrackEditForm = (props: FormikProps<TrackEditFormValues>) => {
             <TrackMetadataFields />
             <div className={cn(layoutStyles.col, layoutStyles.gap4)}>
               {isScheduledReleasesEnabled ? (
-                <ReleaseDateField />
+                <VisibilityField isAlbum={false} />
               ) : (
                 <ReleaseDateFieldLegacy />
               )}
-              <AccessAndSaleField
+              <PriceAndAudienceField
                 isUpload
-                forceOpen={forceOpenAccessAndSale}
-                setForceOpen={setForceOpenAccessAndSale}
+                forceOpen={forceOpenPriceAndAudience}
+                setForceOpen={setForceOpenPriceAndAudience}
               />
               <AttributionField />
               <StemsAndDownloadsField
                 closeMenuCallback={(data) => {
                   if (data === MenuFormCallbackStatus.OPEN_ACCESS_AND_SALE) {
-                    setForceOpenAccessAndSale(true)
+                    setForceOpenPriceAndAudience(true)
                   }
                 }}
               />

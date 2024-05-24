@@ -18,7 +18,7 @@ import { stemDropdownRows } from 'utils/stems'
 
 import { processFiles } from '../store/utils/processFiles'
 
-import { USDCPurchaseRemoteConfig } from './AccessAndSaleField'
+import { USDCPurchaseRemoteConfig } from './PriceAndAudienceField'
 import { StemFilesView } from './StemFilesView'
 import styles from './StemsAndDownloadsField.module.css'
 import { SwitchRowField } from './SwitchRowField'

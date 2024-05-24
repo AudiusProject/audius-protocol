@@ -9,9 +9,9 @@ import { useAppScreenOptions } from 'app/screens/app-screen/useAppScreenOptions'
 import { messages as completeMessages } from '../upload-screen/screens/CompleteTrackScreen'
 
 import { EditTrackForm } from './EditTrackForm'
-import { accessAndSaleScreenName } from './fields'
+import { PriceAndAudienceScreenName } from './fields'
 import {
-  AccessAndSaleScreen,
+  PriceAndAudienceScreen,
   AdvancedOptionsScreen,
   IsrcIswcScreen,
   LicenseTypeScreen,
@@ -61,8 +61,8 @@ export const EditTrackNavigator = (props: EditTrackNavigatorProps) => {
           component={AdvancedOptionsScreen}
         />
         <Stack.Screen
-          name={accessAndSaleScreenName}
-          component={AccessAndSaleScreen}
+          name={PriceAndAudienceScreenName}
+          component={PriceAndAudienceScreen}
         />
         <Stack.Screen name='NFTCollections' component={NFTCollectionsScreen} />
         <Stack.Screen name='IsrcIswc' component={IsrcIswcScreen} />

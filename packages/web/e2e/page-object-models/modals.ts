@@ -1,5 +1,6 @@
-import { Locator, Page } from '@playwright/test'
 import path from 'path'
+
+import { Locator, Page } from '@playwright/test'
 
 export class StemsAndDownloadsModal {
   public readonly locator: Locator
@@ -97,6 +98,7 @@ export class AttributionModal {
   async setISRC(isrc: string) {
     await this.locator.getByRole('textbox', { name: /isrc/i }).fill(isrc)
   }
+
   async setISWC(iswc: string) {
     await this.locator.getByRole('textbox', { name: /iswc/i }).fill(iswc)
   }
@@ -139,7 +141,7 @@ export class AttributionModal {
 }
 
 type VisibleDetail = 'Genre' | 'Mood' | 'Tags' | 'Share Button' | 'Play Count'
-export class AccessAndSaleModal {
+export class PriceAndAudienceModal {
   public readonly locator: Locator
   public readonly remixAlert: Locator
 
@@ -151,14 +153,14 @@ export class AccessAndSaleModal {
 
   constructor(page: Page) {
     this.locator = page.getByRole('dialog', {
-      name: /access & sale/i
+      name: /price & audience/i
     })
     this.remixAlert = this.locator
       .getByRole('alert')
       .first()
       .getByText('this track is marked as a remix')
     this.radioGroup = this.locator.getByRole('radiogroup', {
-      name: /access & sale/i
+      name: /price & audience/i
     })
     this.visibleTrackDetails = this.radioGroup.getByRole('group', {
       name: /visible track details/i

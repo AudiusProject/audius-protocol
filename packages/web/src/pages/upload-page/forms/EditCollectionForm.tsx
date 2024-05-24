@@ -22,8 +22,8 @@ import {
 import { Tile } from 'components/tile'
 
 import { AnchoredSubmitRow } from '../components/AnchoredSubmitRow'
-import { AccessAndSaleField } from '../fields/AccessAndSaleField'
 import { CollectionTrackFieldArray } from '../fields/CollectionTrackFieldArray'
+import { PriceAndAudienceField } from '../fields/PriceAndAudienceField'
 import { ReleaseDateFieldLegacy } from '../fields/ReleaseDateFieldLegacy'
 import { SelectGenreField } from '../fields/SelectGenreField'
 import { SelectMoodField } from '../fields/SelectMoodField'
@@ -129,7 +129,7 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
           <ReleaseDateFieldLegacy />
           {isAlbum && showPremiumAlbums ? (
             <Flex w='100%' css={{ flexGrow: 1 }}>
-              <AccessAndSaleField isAlbum isUpload />
+              <PriceAndAudienceField isAlbum isUpload />
             </Flex>
           ) : null}
           <div className={styles.trackDetails}>

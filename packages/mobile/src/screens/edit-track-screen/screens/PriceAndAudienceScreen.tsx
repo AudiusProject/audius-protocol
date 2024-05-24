@@ -23,17 +23,17 @@ import { makeStyles } from 'app/styles'
 import { CollectibleGatedAvailability } from '../components/CollectibleGatedAvailability'
 import { HiddenAvailability } from '../components/HiddenAvailability'
 import { SpecialAccessAvailability } from '../components/SpecialAccessAvailability'
-import { PremiumRadioField } from '../fields/AccessAndSaleField/PremiumRadioField/PremiumRadioField'
-import { TRACK_PREVIEW } from '../fields/AccessAndSaleField/PremiumRadioField/TrackPreviewField'
-import { TRACK_PRICE } from '../fields/AccessAndSaleField/PremiumRadioField/TrackPriceField'
-import { PublicAvailabilityRadioField } from '../fields/AccessAndSaleField/PublicAvailabilityRadioField'
+import { PremiumRadioField } from '../fields/PriceAndAudienceField/PremiumRadioField/PremiumRadioField'
+import { TRACK_PREVIEW } from '../fields/PriceAndAudienceField/PremiumRadioField/TrackPreviewField'
+import { TRACK_PRICE } from '../fields/PriceAndAudienceField/PremiumRadioField/TrackPriceField'
+import { PublicAvailabilityRadioField } from '../fields/PriceAndAudienceField/PublicAvailabilityRadioField'
 import type { FormValues, RemixOfField } from '../types'
 
 import type { ListSelectionData } from './ListSelectionScreen'
 import { ListSelectionScreen } from './ListSelectionScreen'
 
 const messages = {
-  title: 'Access & Sale',
+  title: 'Price & Audience',
   description:
     "Hidden tracks won't show up on your profile. Anyone who has the link will be able to listen.",
   hideTrack: 'Hide Track',
@@ -47,7 +47,7 @@ const messages = {
   done: 'Done'
 }
 
-const publicAvailability = StreamTrackAvailabilityType.PUBLIC
+const publicAvailability = StreamTrackAvailabilityType.FREE_TO_STREAM
 const premiumAvailability = StreamTrackAvailabilityType.USDC_PURCHASE
 const specialAccessAvailability = StreamTrackAvailabilityType.SPECIAL_ACCESS
 const collectibleGatedAvailability =
@@ -69,7 +69,7 @@ const MarkedAsRemix = () => {
   return remixOf ? <Hint m='l'>{messages.markedAsRemix}</Hint> : null
 }
 
-export const AccessAndSaleScreen = () => {
+export const PriceAndAudienceScreen = () => {
   const styles = useStyles()
   const navigation = useNavigation()
   const { initialValues } = useFormikContext<FormValues>()
@@ -107,7 +107,7 @@ export const AccessAndSaleScreen = () => {
     if (isUnlisted && !isScheduledRelease) {
       return StreamTrackAvailabilityType.HIDDEN
     }
-    return StreamTrackAvailabilityType.PUBLIC
+    return StreamTrackAvailabilityType.FREE_TO_STREAM
     // we only care about what the initial value was here
     // eslint-disable-next-line
   }, [])
@@ -168,7 +168,7 @@ export const AccessAndSaleScreen = () => {
   const items = {
     [publicAvailability]: (
       <PublicAvailabilityRadioField
-        selected={availability === StreamTrackAvailabilityType.PUBLIC}
+        selected={availability === StreamTrackAvailabilityType.FREE_TO_STREAM}
       />
     )
   }

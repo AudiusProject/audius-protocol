@@ -12,11 +12,11 @@ import {
   RELEASE_DATE_MERIDIAN,
   RELEASE_DATE_TYPE,
   ReleaseDateRadioItems,
-  ReleaseDateType,
+  VisibilityType,
   mergeDateTimeValues,
-  ReleaseDateFormValues,
+  VisibilityFormValues,
   timeValidationSchema
-} from 'pages/upload-page/fields/ReleaseDateField'
+} from 'pages/upload-page/fields/VisibilityField'
 import { formatCalendarTime } from 'utils/dateUtils'
 
 import { ContextualMenu } from './ContextualMenu'
@@ -61,10 +61,10 @@ export const ReleaseDateTriggerLegacy = (
       [RELEASE_DATE_MERIDIAN]: trackReleaseDateState
         ? moment(trackReleaseDateState).format('A')
         : moment().format('A'),
-      [RELEASE_DATE_TYPE]: ReleaseDateType.SCHEDULED_RELEASE
+      [RELEASE_DATE_TYPE]: VisibilityType.SCHEDULED_RELEASE
     }
   }, [trackReleaseDateState])
-  const onSubmit = (values: ReleaseDateFormValues) => {
+  const onSubmit = (values: VisibilityFormValues) => {
     const mergedReleaseDate = mergeDateTimeValues(
       values[RELEASE_DATE],
       values[RELEASE_DATE_HOUR],
@@ -80,7 +80,7 @@ export const ReleaseDateTriggerLegacy = (
       ...metadataState,
       release_date: dayjsTime
     }
-    if (values[RELEASE_DATE_TYPE] === ReleaseDateType.RELEASE_NOW) {
+    if (values[RELEASE_DATE_TYPE] === VisibilityType.PUBLIC) {
       // publish if release now or release date has passed
       newState.is_unlisted = false
 
@@ -106,6 +106,7 @@ export const ReleaseDateTriggerLegacy = (
       label={messages.title}
       description={messages.description}
       icon={<IconCalendarMonth />}
+      // @ts-ignore legacy form doesn't support hidden option here
       initialValues={initialValues}
       validationSchema={toFormikValidationSchema(timeValidationSchema)}
       onSubmit={onSubmit}

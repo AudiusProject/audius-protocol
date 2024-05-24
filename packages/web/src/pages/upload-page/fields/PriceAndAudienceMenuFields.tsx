@@ -5,10 +5,8 @@ import {
 } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import {
-  IconVisibilityHidden,
   RadioGroup,
   IconSpecialAccess,
-  IconVisibilityPublic,
   Text,
   IconQuestionCircle,
   Hint
@@ -19,30 +17,24 @@ import { useField } from 'formik'
 import layoutStyles from 'components/layout/layout.module.css'
 import { ModalRadioItem } from 'components/modal-radio/ModalRadioItem'
 import { useFlag } from 'hooks/useRemoteConfig'
-import { pluralize } from 'utils/stringUtils'
 
 import { SingleTrackEditValues } from '../types'
 
-import styles from './AccessAndSaleField.module.css'
-import { HiddenAvailabilityFields } from './stream-availability/HiddenAvailabilityFields'
 import { SpecialAccessFields } from './stream-availability/SpecialAccessFields'
 import { CollectibleGatedRadioField } from './stream-availability/collectible-gated/CollectibleGatedRadioField'
 import { UsdcPurchaseGatedRadioField } from './stream-availability/usdc-purchase-gated/UsdcPurchaseGatedRadioField'
 import { STREAM_AVAILABILITY_TYPE, STREAM_CONDITIONS } from './types'
 
 const messages = {
-  title: 'Access & Sale',
+  title: 'Price & Audience',
   modalDescription:
     'Control who has access to listen. Create gated experiences or require users pay to unlock your music.',
   isRemix:
     'This track is marked as a remix. To enable additional availability options, unmark within Remix Settings.',
   done: 'Done',
-  public: 'Public (Free to Stream)',
+  public: 'Free for Everyone',
   publicSubtitle: (contentType: 'album' | 'track') =>
-    `Public ${pluralize(
-      contentType,
-      2
-    )} are visible to all users and appear throughout Audius.`,
+    `Everyone can play your ${contentType} for free.`,
   specialAccess: 'Special Access',
   specialAccessSubtitle:
     'Special Access tracks are only available to users who meet certain criteria, such as following the artist.',
@@ -56,7 +48,7 @@ const messages = {
     'Publishing is disabled for empty albums and albums containing hidden tracks.'
 }
 
-export type AccesAndSaleMenuFieldsProps = {
+export type PriceAndAudienceMenuFieldsProps = {
   streamConditions: SingleTrackEditValues[typeof STREAM_CONDITIONS]
   isRemix: boolean
   isUpload?: boolean
@@ -67,7 +59,9 @@ export type AccesAndSaleMenuFieldsProps = {
   isPublishDisabled?: boolean
 }
 
-export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
+export const PriceAndAudienceMenuFields = (
+  props: PriceAndAudienceMenuFieldsProps
+) => {
   const {
     isRemix,
     isUpload,
@@ -101,19 +95,16 @@ export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
     name: STREAM_AVAILABILITY_TYPE
   })
 
-  const {
-    disableSpecialAccessGate,
-    disableSpecialAccessGateFields,
-    disableHidden
-  } = useAccessAndRemixSettings({
-    isUpload: !!isUpload,
-    isRemix,
-    isAlbum,
-    initialStreamConditions: initialStreamConditions ?? null,
-    isInitiallyUnlisted: !!isInitiallyUnlisted,
-    isScheduledRelease: !!isScheduledRelease,
-    isPublishDisabled
-  })
+  const { disableSpecialAccessGate, disableSpecialAccessGateFields } =
+    useAccessAndRemixSettings({
+      isUpload: !!isUpload,
+      isRemix,
+      isAlbum,
+      initialStreamConditions: initialStreamConditions ?? null,
+      isInitiallyUnlisted: !!isInitiallyUnlisted,
+      isScheduledRelease: !!isScheduledRelease,
+      isPublishDisabled
+    })
 
   return (
     <div className={cn(layoutStyles.col, layoutStyles.gap4)}>
@@ -124,10 +115,9 @@ export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
       {isPublishDisabled ? <Hint>{messages.publishDisabled}</Hint> : null}
       <RadioGroup {...availabilityField} aria-label={messages.title}>
         <ModalRadioItem
-          icon={<IconVisibilityPublic className={styles.icon} />}
           label={messages.public}
           description={messages.publicSubtitle(isAlbum ? 'album' : 'track')}
-          value={StreamTrackAvailabilityType.PUBLIC}
+          value={StreamTrackAvailabilityType.FREE_TO_STREAM}
           disabled={isPublishDisabled}
         />
         {isUsdcUploadEnabled ? (
@@ -159,27 +149,6 @@ export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
             isUpload={isUpload}
             initialStreamConditions={initialStreamConditions}
             isInitiallyUnlisted={isInitiallyUnlisted}
-          />
-        ) : null}
-        {!isAlbum ? (
-          <ModalRadioItem
-            icon={<IconVisibilityHidden />}
-            label={messages.hidden}
-            value={StreamTrackAvailabilityType.HIDDEN}
-            description={
-              isAlbum
-                ? messages.hiddenSubtitleAlbums
-                : messages.hiddenSubtitleTracks
-            }
-            disabled={disableHidden}
-            // isInitiallyUnlisted is undefined on create
-            // show hint on scheduled releases that are in create or already unlisted
-            hintContent={
-              isScheduledRelease && isInitiallyUnlisted !== false
-                ? messages.hiddenHint
-                : ''
-            }
-            checkedContent={isAlbum ? null : <HiddenAvailabilityFields />}
           />
         ) : null}
       </RadioGroup>

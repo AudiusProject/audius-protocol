@@ -29,11 +29,11 @@ import { useSelector } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { defaultFieldVisibility } from 'pages/track-page/utils'
-import { AccessAndSaleFormSchema } from 'pages/upload-page/fields/AccessAndSaleField'
-import { AccessAndSaleMenuFields } from 'pages/upload-page/fields/AccessAndSaleMenuFields'
+import { PriceAndAudienceFormSchema } from 'pages/upload-page/fields/PriceAndAudienceField'
+import { PriceAndAudienceMenuFields } from 'pages/upload-page/fields/PriceAndAudienceMenuFields'
 import { getCombinedDefaultGatedConditionValues } from 'pages/upload-page/fields/helpers'
 import {
-  AccessAndSaleFormValues,
+  PriceAndAudienceFormValues,
   DOWNLOAD_CONDITIONS,
   FIELD_VISIBILITY,
   GateKeeper,
@@ -55,7 +55,7 @@ import { ContextualMenu } from './ContextualMenu'
 const { getUserId } = accountSelectors
 
 const messages = {
-  title: 'Access & Sale',
+  title: 'Price & Audience',
   description:
     "Customize your music's availability for different audiences, and create personalized gated experiences for your fans.",
   public: 'Public (Default)',
@@ -100,7 +100,7 @@ type TrackMetadataState = {
   [UnlistedTrackMetadataField.PLAYS]: boolean
 }
 
-type AccessAndSaleTriggerLegacyProps = {
+type PriceAndAudienceTriggerLegacyProps = {
   isRemix: boolean
   isUpload: boolean
   initialForm: Track
@@ -113,8 +113,8 @@ type AccessAndSaleTriggerLegacyProps = {
   setForceOpen?: (value: boolean) => void
 }
 
-export const AccessAndSaleTriggerLegacy = (
-  props: AccessAndSaleTriggerLegacyProps
+export const PriceAndAudienceTriggerLegacy = (
+  props: PriceAndAudienceTriggerLegacyProps
 ) => {
   const {
     isUpload,
@@ -157,7 +157,7 @@ export const AccessAndSaleTriggerLegacy = (
 
   const usdcPurchaseConfig = useUSDCPurchaseConfig()
 
-  const initialValues: AccessAndSaleFormValues = useMemo(() => {
+  const initialValues: PriceAndAudienceFormValues = useMemo(() => {
     const isUsdcGated = isContentUSDCPurchaseGated(savedStreamConditions)
     const isTipGated = isContentTipGated(savedStreamConditions)
     const isFollowGated = isContentFollowGated(savedStreamConditions)
@@ -172,7 +172,7 @@ export const AccessAndSaleTriggerLegacy = (
     set(initialValues, IS_DOWNLOADABLE, isDownloadable)
     set(initialValues, LAST_GATE_KEEPER, lastGateKeeper ?? {})
 
-    let availabilityType = StreamTrackAvailabilityType.PUBLIC
+    let availabilityType = StreamTrackAvailabilityType.FREE_TO_STREAM
     if (isUsdcGated) {
       availabilityType = StreamTrackAvailabilityType.USDC_PURCHASE
       set(
@@ -203,7 +203,7 @@ export const AccessAndSaleTriggerLegacy = (
         ? SpecialAccessType.TIP
         : SpecialAccessType.FOLLOW
     )
-    return initialValues as AccessAndSaleFormValues
+    return initialValues as PriceAndAudienceFormValues
   }, [
     savedStreamConditions,
     isUnlisted,
@@ -219,7 +219,7 @@ export const AccessAndSaleTriggerLegacy = (
     initialStreamConditions
   ])
 
-  const onSubmit = (values: AccessAndSaleFormValues) => {
+  const onSubmit = (values: PriceAndAudienceFormValues) => {
     const availabilityType = get(values, STREAM_AVAILABILITY_TYPE)
     const preview = get(values, PREVIEW)
     const specialAccessType = get(values, SPECIAL_ACCESS_TYPE)
@@ -257,10 +257,10 @@ export const AccessAndSaleTriggerLegacy = (
         const downloadableGateKeeper =
           isDownloadable && lastGateKeeper.downloadable === 'stemsAndDownloads'
             ? 'stemsAndDownloads'
-            : 'accessAndSale'
+            : 'priceAndAudience'
         setLastGateKeeper({
           ...lastGateKeeper,
-          access: 'accessAndSale',
+          access: 'priceAndAudience',
           downloadable: downloadableGateKeeper
         })
         break
@@ -279,7 +279,7 @@ export const AccessAndSaleTriggerLegacy = (
         newState.is_download_gated = true
         setLastGateKeeper({
           ...lastGateKeeper,
-          access: 'accessAndSale'
+          access: 'priceAndAudience'
         })
         break
       }
@@ -292,7 +292,7 @@ export const AccessAndSaleTriggerLegacy = (
         newState.download_conditions = { nft_collection }
         setLastGateKeeper({
           ...lastGateKeeper,
-          access: 'accessAndSale'
+          access: 'priceAndAudience'
         })
         break
       }
@@ -303,21 +303,21 @@ export const AccessAndSaleTriggerLegacy = (
           remixes: fieldVisibility?.remixes ?? defaultFieldVisibility.remixes,
           unlisted: true
         }
-        if (lastGateKeeper.access === 'accessAndSale') {
+        if (lastGateKeeper.access === 'priceAndAudience') {
           newState.is_download_gated = false
           newState.download_conditions = null
         }
-        if (lastGateKeeper.downloadable === 'accessAndSale') {
+        if (lastGateKeeper.downloadable === 'priceAndAudience') {
           newState.is_downloadable = false
         }
         break
       }
-      case StreamTrackAvailabilityType.PUBLIC: {
-        if (lastGateKeeper.access === 'accessAndSale') {
+      case StreamTrackAvailabilityType.FREE_TO_STREAM: {
+        if (lastGateKeeper.access === 'priceAndAudience') {
           newState.is_download_gated = false
           newState.download_conditions = null
         }
-        if (lastGateKeeper.downloadable === 'accessAndSale') {
+        if (lastGateKeeper.downloadable === 'priceAndAudience') {
           newState.is_downloadable = false
         }
         break
@@ -353,10 +353,10 @@ export const AccessAndSaleTriggerLegacy = (
       initialValues={initialValues}
       onSubmit={onSubmit}
       validationSchema={toFormikValidationSchema(
-        AccessAndSaleFormSchema(trackLength, usdcPurchaseConfig)
+        PriceAndAudienceFormSchema(trackLength, usdcPurchaseConfig)
       )}
       menuFields={
-        <AccessAndSaleMenuFields
+        <PriceAndAudienceMenuFields
           isRemix={isRemix}
           isUpload={isUpload}
           isInitiallyUnlisted={initialForm[IS_UNLISTED]}

@@ -17,7 +17,7 @@ import DropdownInput from 'components/ai-attribution-modal/DropdownInput'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 
 import {
-  AccessAndSaleFormValues,
+  PriceAndAudienceFormValues,
   DOWNLOAD_CONDITIONS,
   STREAM_AVAILABILITY_TYPE,
   STREAM_CONDITIONS
@@ -48,7 +48,7 @@ export const CollectibleGatedFields = (props: CollectibleGatedFieldsProps) => {
     ,
     { setValue: setStreamConditionsValue }
   ] =
-    useField<AccessAndSaleFormValues[typeof STREAM_CONDITIONS]>(
+    useField<PriceAndAudienceFormValues[typeof STREAM_CONDITIONS]>(
       STREAM_CONDITIONS
     )
   const [{ value: downloadConditions }] =

@@ -38,7 +38,7 @@ export const useSetTrackAvailabilityFields = () => {
     () => ({
       is_stream_gated: false,
       stream_conditions: null as Nullable<AccessConditions>,
-      is_unlisted: !!(isScheduledRelease && isUnlisted), // scheduled releases cannot be made public via access & sale
+      is_unlisted: !!(isScheduledRelease && isUnlisted), // scheduled releases cannot be made public via price & audience
       preview_start_seconds: null as Nullable<Number>,
       'field_visibility.genre': true,
       'field_visibility.mood': true,
