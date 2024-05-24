@@ -285,6 +285,9 @@ export enum Name {
   // Playback
   PLAYBACK_PLAY = 'Playback: Play',
   PLAYBACK_PAUSE = 'Playback: Pause',
+  // Playback performance metrics
+  BUFFERING_TIME = 'Buffering Time',
+
   // A listen is when we record against the backend vs. a play which is a UI action
   LISTEN = 'Listen',
 
@@ -1381,6 +1384,10 @@ type PlaybackPause = {
   source: PlaybackSource
 }
 
+type BufferingTime = {
+  eventName: Name.BUFFERING_TIME
+  duration: number
+}
 // Linking
 type LinkClicking = {
   eventName: Name.LINK_CLICKING
@@ -2522,6 +2529,7 @@ export type AllTrackingEvents =
   | TrackPagePlayMore
   | PlaybackPlay
   | PlaybackPause
+  | BufferingTime
   | Follow
   | Unfollow
   | LinkClicking

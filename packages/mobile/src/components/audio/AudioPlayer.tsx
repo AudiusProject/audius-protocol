@@ -1,7 +1,7 @@
 import { useRef, useEffect, useCallback, useState } from 'react'
 
 import { useAppContext } from '@audius/common/context'
-import { SquareSizes } from '@audius/common/models'
+import { Name, SquareSizes } from '@audius/common/models'
 import type { Track } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import {
@@ -50,6 +50,7 @@ import { DEFAULT_IMAGE_URL } from 'app/components/image/TrackImage'
 import { getImageSourceOptimistic } from 'app/hooks/useContentNodeImage'
 import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
+import { make, track as analyticsTrack } from 'app/services/analytics'
 import { apiClient } from 'app/services/audius-api-client'
 import { audiusBackendInstance } from 'app/services/audius-backend-instance'
 import {
@@ -282,6 +283,8 @@ export const AudioPlayer = () => {
     [dispatch]
   )
 
+  const [bufferStartTime, setBufferStartTime] = useState<number>()
+
   const { bufferingDuringPlay } = useIsPlaying() // react-native-track-player hook
 
   const previousBufferingState = usePrevious(bufferingDuringPlay)
@@ -294,8 +297,21 @@ export const AudioPlayer = () => {
       bufferingDuringPlay !== previousBufferingState
     ) {
       dispatch(playerActions.setBuffering({ buffering: bufferingDuringPlay }))
+      if (!bufferingDuringPlay && bufferStartTime) {
+        const bufferDuration = Math.ceil(performance.now() - bufferStartTime)
+        analyticsTrack(
+          make({ eventName: Name.BUFFERING_TIME, duration: bufferDuration })
+        )
+        setBufferStartTime(undefined)
+      }
     }
-  }, [bufferingDuringPlay, dispatch, previousBufferingState])
+  }, [
+    bufferStartTime,
+    bufferingDuringPlay,
+    dispatch,
+    previousBufferingState,
+    track
+  ])
 
   const makeTrackData = useCallback(
     async ({ track, playerBehavior }: QueueableTrack) => {
@@ -428,6 +444,7 @@ export const AudioPlayer = () => {
     }
 
     if (event.type === Event.PlaybackActiveTrackChanged) {
+      setBufferStartTime(performance.now())
       await enqueueTracksJobRef.current
       const playerIndex = await TrackPlayer.getActiveTrackIndex()
       if (playerIndex === undefined) return
