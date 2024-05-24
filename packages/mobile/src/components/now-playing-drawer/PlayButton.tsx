@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 
 import { playerActions, playerSelectors } from '@audius/common/store'
+import { MIN_BUFFERING_DELAY_MS } from '@audius/common/utils'
 import { useDispatch, useSelector } from 'react-redux'
 
 import IconPause from 'app/assets/animations/iconPause.json'
@@ -14,9 +15,6 @@ import { Theme } from 'app/utils/theme'
 
 const { pause, play } = playerActions
 const { getPlaying, getBuffering } = playerSelectors
-
-// Minimum of how long spent buffering for until we show the spinner
-const MINIMUM_BUFFER_TIME_TO_SHOW = 500 // ms
 
 const useAnimatedIcons = makeAnimations(({ palette, type }) => {
   const iconColor =
@@ -63,7 +61,7 @@ export const PlayButton = ({ isActive, ...props }: PlayButtonProps) => {
     if (isBuffering) {
       timeout = setTimeout(() => {
         setShowBufferingState(true)
-      }, MINIMUM_BUFFER_TIME_TO_SHOW)
+      }, MIN_BUFFERING_DELAY_MS)
     } else {
       clearTimeout(timeout)
       setShowBufferingState(false)
