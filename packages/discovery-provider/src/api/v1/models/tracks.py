@@ -1,6 +1,6 @@
 from flask_restx import fields
 
-from .access_gate import access_gate
+from .access_gate import access_gate, extended_access_gate
 from .common import favorite, ns, repost
 from .extensions.fields import NestedOneOf
 from .users import user_model, user_model_full
@@ -211,5 +211,37 @@ remixes_response = ns.model(
     {
         "count": fields.Integer(required=True),
         "tracks": fields.List(fields.Nested(track_full)),
+    },
+)
+
+
+track_access_info = ns.model(
+    "track_access_info",
+    {
+        "access": fields.Nested(
+            access, description="Describes what access the given user has"
+        ),
+        "user_id": fields.String(
+            required=True, description="The user ID of the owner of this track"
+        ),
+        "blocknumber": fields.Integer(
+            required=True, description="The blocknumber this track was last updated"
+        ),
+        "is_stream_gated": fields.Boolean(
+            description="Whether or not the owner has restricted streaming behind an access gate"
+        ),
+        "stream_conditions": NestedOneOf(
+            extended_access_gate,
+            allow_null=True,
+            description="How to unlock stream access to the track",
+        ),
+        "is_download_gated": fields.Boolean(
+            description="Whether or not the owner has restricted downloading behind an access gate"
+        ),
+        "download_conditions": NestedOneOf(
+            extended_access_gate,
+            allow_null=True,
+            description="How to unlock the track download",
+        ),
     },
 )

@@ -42,6 +42,7 @@ from src.queries.generate_unpopulated_trending_tracks import (
     TRENDING_TRACKS_LIMIT,
     TRENDING_TRACKS_TTL_SEC,
 )
+from src.queries.get_extended_purchase_gate import get_extended_purchase_gate
 from src.queries.get_feed import get_feed
 from src.queries.get_latest_entities import get_latest_entities
 from src.queries.get_nft_gated_track_signatures import get_nft_gated_track_signatures
@@ -67,7 +68,7 @@ from src.queries.get_track_signature import (
     get_track_download_signature,
     get_track_stream_signature,
 )
-from src.queries.get_tracks import RouteArgs, get_tracks
+from src.queries.get_tracks import GetTrackArgs, RouteArgs, get_tracks
 from src.queries.get_trending import get_trending
 from src.queries.get_trending_ids import get_trending_ids
 from src.queries.get_unclaimed_id import get_unclaimed_id
@@ -86,7 +87,7 @@ from src.utils.rendezvous import RendezvousHash
 
 from .models.tracks import blob_info
 from .models.tracks import remixes_response as remixes_response_model
-from .models.tracks import stem_full, track, track_full
+from .models.tracks import stem_full, track, track_access_info, track_full
 
 logger = logging.getLogger(__name__)
 
@@ -1744,3 +1745,38 @@ class GetUnclaimedTrackId(Resource):
     def get(self):
         unclaimed_id = get_unclaimed_id("track")
         return success_response(unclaimed_id)
+
+
+access_info_response = make_response(
+    "access_info_response", ns, fields.Nested(track_access_info)
+)
+
+
+@ns.route("/<string:track_id>/access-info")
+class GetPurchaseInfo(Resource):
+    @record_metrics
+    @ns.doc(id="Get Access Info", params={"track_id": "A Track ID"})
+    @ns.expect(current_user_parser)
+    @ns.marshal_with(access_info_response)
+    def get(self, track_id: str):
+        args = current_user_parser.parse_args()
+        decoded_id = decode_with_abort(track_id, full_ns)
+        current_user_id = get_current_user_id(args)
+        get_track_args: GetTrackArgs = {
+            "id": [decoded_id],
+            "filter_deleted": True,
+            "exclude_gated": False,
+            "skip_unlisted_filter": True,
+            "current_user_id": current_user_id,
+        }
+        tracks = get_tracks(get_track_args)
+        if not tracks:
+            abort_not_found(track_id, ns)
+        track = extend_track(tracks[0])
+        track["stream_conditions"] = get_extended_purchase_gate(
+            track["stream_conditions"]
+        )
+        track["download_conditions"] = get_extended_purchase_gate(
+            track["download_conditions"]
+        )
+        return success_response(track)
