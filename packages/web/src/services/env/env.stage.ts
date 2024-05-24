@@ -68,7 +68,7 @@ export const env: Env = {
   SOL_BRIDGE_ADDRESS: null,
   SOL_TOKEN_BRIDGE_ADDRESS: null,
   SOLANA_CLUSTER_ENDPOINT:
-    process.env.VITE_SOLANA_CLUSTER_ENDPOINT || 'https://audius-fe.rpcpool.com',
+    process.env.VITE_SOLANA_CLUSTER_ENDPOINT || 'https://solana-mainnet.g.alchemy.com/v2/v-pjHiJSTwzbZ5lAFHQosAHaJf4oi0zR',
   SOLANA_FEE_PAYER_ADDRESS: 'E3CfijtAJwBSHfwFEViAUd3xp7c8TBxwC1eXn1Fgxp8h',
   SOLANA_RELAY_ENDPOINT: 'https://discoveryprovider.staging.audius.co',
   SOLANA_TOKEN_PROGRAM_ADDRESS: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
