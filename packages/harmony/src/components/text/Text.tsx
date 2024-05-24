@@ -17,8 +17,8 @@ export const Text = forwardRef(
     const {
       children,
       variant: propVariant,
-      strength = propVariant ? 'default' : undefined,
-      size = propVariant ? 'm' : undefined,
+      strength: strengthProp,
+      size: sizeProp,
       color,
       shadow,
       tag,
@@ -32,6 +32,8 @@ export const Text = forwardRef(
     const theme = useTheme()
     const { variant: contextVariant } = useContext(TextContext)
     const variant = propVariant ?? contextVariant ?? 'body'
+    const strength = strengthProp ?? (contextVariant ? undefined : 'default')
+    const size = sizeProp ?? (contextVariant ? undefined : 'm')
 
     const variantConfig = variant && variantStylesMap[variant]
     const css = {
