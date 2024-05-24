@@ -17,13 +17,14 @@ import type { LoggerService } from '../../services/Logger'
 import type { StorageService } from '../../services/Storage'
 import { encodeHashId } from '../../utils/hashId'
 import { parseParams } from '../../utils/parseParams'
+import { prepareSplits } from '../../utils/preparePaymentSplits'
 import { retry3 } from '../../utils/retry'
 import {
   Configuration,
   StreamTrackRequest,
   TracksApi as GeneratedTracksApi,
-  UsdcGate,
-  instanceOfPurchaseGate
+  ExtendedPaymentSplit,
+  instanceOfExtendedPurchaseGate
 } from '../generated/default'
 import { BASE_PATH, RequiredError } from '../generated/default/runtime'
 
@@ -401,9 +402,10 @@ export class TracksApi extends GeneratedTracksApi {
     const mint = 'USDC'
 
     // Fetch track
-    this.logger.debug('Fetching track...', { trackId })
-    const { data: track } = await this.getTrack({
-      trackId: params.trackId // use hashed trackId
+    this.logger.debug('Fetching track purchase info...', { trackId })
+    const { data: track } = await this.getTrackAccessInfo({
+      trackId: params.trackId, // use hashed trackId
+      userId: params.userId // use hashed userId
     })
 
     // Validate purchase attempt
@@ -415,24 +417,24 @@ export class TracksApi extends GeneratedTracksApi {
       throw new Error('Attempted to purchase free track.')
     }
 
-    if (track.user.id === params.userId) {
+    if (track.userId === params.userId) {
       throw new Error('Attempted to purchase own track.')
     }
 
-    let numberSplits: UsdcGate['splits'] = {}
+    let numberSplits: ExtendedPaymentSplit[] = []
     let centPrice: number
     let accessType: 'stream' | 'download' = 'stream'
 
     // Get conditions
     if (
       track.streamConditions &&
-      instanceOfPurchaseGate(track.streamConditions)
+      instanceOfExtendedPurchaseGate(track.streamConditions)
     ) {
       centPrice = track.streamConditions.usdcPurchase.price
       numberSplits = track.streamConditions.usdcPurchase.splits
     } else if (
       track.downloadConditions &&
-      instanceOfPurchaseGate(track.downloadConditions)
+      instanceOfExtendedPurchaseGate(track.downloadConditions)
     ) {
       centPrice = track.downloadConditions.usdcPurchase.price
       numberSplits = track.downloadConditions.usdcPurchase.splits
@@ -454,40 +456,17 @@ export class TracksApi extends GeneratedTracksApi {
       throw new Error('Track price increased.')
     }
 
-    let extraAmount = USDC(extraAmountNumber).value
+    const extraAmount = USDC(extraAmountNumber).value
     const total = USDC(centPrice / 100.0).value + extraAmount
     this.logger.debug('Purchase total:', total)
 
-    // Convert splits to big int and spread extra amount to every split
-    const splits = Object.entries(numberSplits).reduce(
-      (prev, [key, value], index, arr) => {
-        const amountToAdd = extraAmount / BigInt(arr.length - index)
-        extraAmount = USDC(extraAmount - amountToAdd).value
-        return {
-          ...prev,
-          [key]: BigInt(value) + amountToAdd
-        }
-      },
-      {}
-    )
-    this.logger.debug('Calculated splits after extra amount:', splits)
-
-    // Create user bank for recipient if not exists
-    this.logger.debug('Checking for recipient user bank...')
-    const { userBank: recipientUserBank, didExist } =
-      await this.claimableTokensClient.getOrCreateUserBank({
-        ethWallet: track.user.wallet,
-        mint: 'USDC'
-      })
-    if (!didExist) {
-      this.logger.debug('Created user bank', {
-        recipientUserBank: recipientUserBank.toBase58()
-      })
-    } else {
-      this.logger.debug('User bank exists', {
-        recipientUserBank: recipientUserBank.toBase58()
-      })
-    }
+    const splits = await prepareSplits({
+      splits: numberSplits,
+      extraAmount,
+      claimableTokensClient: this.claimableTokensClient,
+      logger: this.logger
+    })
+    this.logger.debug('Calculated splits:', splits)
 
     const routeInstruction =
       await this.paymentRouterClient.createRouteInstruction({

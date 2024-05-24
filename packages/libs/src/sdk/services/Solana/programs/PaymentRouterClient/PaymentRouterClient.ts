@@ -109,9 +109,9 @@ export class PaymentRouterClient extends BaseSolanaProgramClient {
     })
     const recipients: PublicKey[] = []
     const amounts: bigint[] = []
-    for (const [key, value] of Object.entries(args.splits)) {
-      recipients.push(new PublicKey(key))
-      amounts.push(value)
+    for (const split of args.splits) {
+      recipients.push(split.wallet)
+      amounts.push(split.amount)
     }
     const totalAmount = mintFixedDecimalMap[args.mint](args.total).value
     return PaymentRouterProgram.createRouteInstruction({

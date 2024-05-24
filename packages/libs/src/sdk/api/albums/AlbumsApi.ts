@@ -12,9 +12,10 @@ import type {
 } from '../../services/EntityManager/types'
 import type { LoggerService } from '../../services/Logger'
 import { parseParams } from '../../utils/parseParams'
+import { prepareSplits } from '../../utils/preparePaymentSplits'
 import {
-  instanceOfPurchaseGate,
-  UsdcGate,
+  ExtendedPaymentSplit,
+  instanceOfExtendedPurchaseGate,
   type Configuration
 } from '../generated/default'
 import { PlaylistsApi } from '../playlists/PlaylistsApi'
@@ -249,12 +250,10 @@ export class AlbumsApi {
 
     // Fetch album
     this.logger.debug('Fetching album...', { albumId })
-    const { data: albums } = await this.getAlbum({
+    const { data: album } = await this.playlistsApi.getPlaylistAccessInfo({
       userId: params.userId, // use hashed userId
-      albumId: params.albumId // use hashed albumId
+      playlistId: params.albumId // use hashed albumId
     })
-
-    const album = albums ? albums[0] : undefined
 
     // Validate purchase attempt
     if (!album) {
@@ -265,18 +264,18 @@ export class AlbumsApi {
       throw new Error('Attempted to purchase free album.')
     }
 
-    if (album.user.id === params.userId) {
+    if (album.userId === params.userId) {
       throw new Error('Attempted to purchase own album.')
     }
 
-    let numberSplits: UsdcGate['splits'] = {}
+    let numberSplits: ExtendedPaymentSplit[] = []
     let centPrice: number
     const accessType: 'stream' | 'download' = 'stream'
 
     // Get conditions
     if (
       album.streamConditions &&
-      instanceOfPurchaseGate(album.streamConditions)
+      instanceOfExtendedPurchaseGate(album.streamConditions)
     ) {
       centPrice = album.streamConditions.usdcPurchase.price
       numberSplits = album.streamConditions.usdcPurchase.splits
@@ -295,40 +294,17 @@ export class AlbumsApi {
       throw new Error('Track price increased.')
     }
 
-    let extraAmount = USDC(extraAmountNumber).value
+    const extraAmount = USDC(extraAmountNumber).value
     const total = USDC(centPrice / 100.0).value + extraAmount
     this.logger.debug('Purchase total:', total)
 
-    // Convert splits to big int and spread extra amount to every split
-    const splits = Object.entries(numberSplits).reduce(
-      (prev, [key, value], index, arr) => {
-        const amountToAdd = extraAmount / BigInt(arr.length - index)
-        extraAmount = USDC(extraAmount - amountToAdd).value
-        return {
-          ...prev,
-          [key]: BigInt(value) + amountToAdd
-        }
-      },
-      {}
-    )
-    this.logger.debug('Calculated splits after extra amount:', splits)
-
-    // Create user bank for recipient if not exists
-    this.logger.debug('Checking for recipient user bank...')
-    const { userBank: recipientUserBank, didExist } =
-      await this.claimableTokensClient.getOrCreateUserBank({
-        ethWallet: album.user.wallet,
-        mint: 'USDC'
-      })
-    if (!didExist) {
-      this.logger.debug('Created user bank', {
-        recipientUserBank: recipientUserBank.toBase58()
-      })
-    } else {
-      this.logger.debug('User bank exists', {
-        recipientUserBank: recipientUserBank.toBase58()
-      })
-    }
+    const splits = await prepareSplits({
+      splits: numberSplits,
+      extraAmount,
+      claimableTokensClient: this.claimableTokensClient,
+      logger: this.logger
+    })
+    this.logger.debug('Calculated splits:', splits)
 
     const routeInstruction =
       await this.paymentRouterClient.createRouteInstruction({
