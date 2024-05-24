@@ -65,111 +65,120 @@ export const ServerTrackPage = (props: ServerTrackPageProps) => {
     <Flex w='100%' direction='column'>
       <Box
         as='img'
+        // @ts-ignore
         src={mockCoverArt}
         w='100%'
         h={376}
         css={{ position: 'absolute', top: 0, objectFit: 'cover' }}
       />
-      <Paper direction='column' mt={200} mh='l' css={{ maxWidth: 1080 }}>
-        <Flex p='l' gap='xl'>
-          <Box as='img' src={mockTrackArt} h={320} w={320} borderRadius='m' />
-          <Flex direction='column' gap='2xl'>
-            <Flex direction='column' gap='l'>
-              <Text variant='label'>Track</Text>
-              <Flex direction='column' gap='s'>
-                <Text variant='heading' size='xl'>
-                  {title}
-                </Text>
-                <Text variant='body' size='s' strength='strong' color='subdued'>
-                  By{' '}
-                  <TextLink
-                    size='m'
-                    strength='default'
-                    href={profilePage(handle)}
-                    variant='visible'
+      <Box w='100%' css={{ maxWidth: 1080 }} pt={200} ph='l' alignSelf='center'>
+        <Paper direction='column' w='100%'>
+          <Flex p='l' gap='xl'>
+            {/* @ts-ignore */}
+            <Box as='img' src={mockTrackArt} h={320} w={320} borderRadius='m' />
+            <Flex direction='column' gap='2xl'>
+              <Flex direction='column' gap='l'>
+                <Text variant='label'>Track</Text>
+                <Flex direction='column' gap='s'>
+                  <Text variant='heading' size='xl'>
+                    {title}
+                  </Text>
+                  <Text
+                    variant='body'
+                    size='s'
+                    strength='strong'
+                    color='subdued'
                   >
-                    {name}
-                  </TextLink>
+                    By{' '}
+                    <TextLink
+                      size='m'
+                      strength='default'
+                      href={profilePage(handle)}
+                      variant='visible'
+                    >
+                      {name}
+                    </TextLink>
+                  </Text>
+                </Flex>
+                <Flex gap='l'>
+                  <PlainButton
+                    variant='subdued'
+                    size='large'
+                    iconLeft={IconRepost}
+                    css={{ padding: 0 }}
+                  >
+                    {formatCount(repost_count)} Reposts
+                  </PlainButton>
+                  <PlainButton
+                    variant='subdued'
+                    size='large'
+                    iconLeft={IconHeart}
+                    css={{ padding: 0 }}
+                  >
+                    {formatCount(save_count)} Favorites
+                  </PlainButton>
+                </Flex>
+              </Flex>
+              <Flex gap='xl' alignItems='center'>
+                <Button iconLeft={IconPlay}>Play</Button>
+                <Text variant='title' color='subdued'>
+                  {formatCount(play_count)} Plays
                 </Text>
               </Flex>
-              <Flex gap='l'>
-                <PlainButton
-                  variant='subdued'
-                  size='large'
-                  iconLeft={IconRepost}
-                  css={{ padding: 0 }}
-                >
-                  {formatCount(repost_count)} Reposts
-                </PlainButton>
-                <PlainButton
-                  variant='subdued'
-                  size='large'
-                  iconLeft={IconHeart}
-                  css={{ padding: 0 }}
-                >
-                  {formatCount(save_count)} Favorites
-                </PlainButton>
+              <Flex gap='2xl'>
+                <IconButton
+                  icon={IconRepost}
+                  aria-label='repost track'
+                  size='2xl'
+                  color='subdued'
+                />
+                <IconButton
+                  icon={IconHeart as IconComponent}
+                  aria-label='favorite track'
+                  size='2xl'
+                  color='subdued'
+                />
+                <IconButton
+                  icon={IconShare}
+                  aria-label='share track'
+                  size='2xl'
+                  color='subdued'
+                />
+                <IconButton
+                  icon={IconKebabHorizontal}
+                  aria-label='more options'
+                  size='2xl'
+                  color='subdued'
+                />
               </Flex>
             </Flex>
-            <Flex gap='xl' alignItems='center'>
-              <Button iconLeft={IconPlay}>Play</Button>
-              <Text variant='title' color='subdued'>
-                {formatCount(play_count)} Plays
-              </Text>
-            </Flex>
-            <Flex gap='2xl'>
-              <IconButton
-                icon={IconRepost}
-                aria-label='repost track'
-                size='2xl'
-                color='subdued'
-              />
-              <IconButton
-                icon={IconHeart as IconComponent}
-                aria-label='favorite track'
-                size='2xl'
-                color='subdued'
-              />
-              <IconButton
-                icon={IconShare}
-                aria-label='share track'
-                size='2xl'
-                color='subdued'
-              />
-              <IconButton
-                icon={IconKebabHorizontal}
-                aria-label='more options'
-                size='2xl'
-                color='subdued'
-              />
-            </Flex>
           </Flex>
-        </Flex>
-        <Divider />
-        <Flex direction='column' backgroundColor='surface1' p='xl' gap='l'>
-          <ServerUserGeneratedText>{description}</ServerUserGeneratedText>
-          <Flex gap='l'>
-            <Metadata attribute='genre' value={genre} />
-            {mood ? <Metadata attribute='mood' value={mood} /> : null}
-          </Flex>
-          <Text variant='body' size='s' strength='strong'>
-            {release_date ? `Released ${formatDate(release_date)}, ` : null}
-            {duration ? formatSecondsAsText(duration) : null}
-          </Text>
-          {field_visibility?.tags && tags ? (
-            <Flex gap='s'>
-              {tags
-                .split(',')
-                .filter((t) => t)
-                .map((tag) => (
-                  <Link key={tag} to={searchResultsPage(`#${tag}`)}>
-                    <Tag>{tag}</Tag>
-                  </Link>
-                ))}
+          <Divider />
+          <Flex direction='column' backgroundColor='surface1' p='xl' gap='l'>
+            <ServerUserGeneratedText>{description}</ServerUserGeneratedText>
+            <Flex gap='l'>
+              <Metadata attribute='genre' value={genre} />
+              {mood ? <Metadata attribute='mood' value={mood} /> : null}
             </Flex>
-          ) : null}
-        </Flex>
-      </Paper>
+            <Text variant='body' size='s' strength='strong'>
+              {release_date ? `Released ${formatDate(release_date)}, ` : null}
+              {duration ? formatSecondsAsText(duration) : null}
+            </Text>
+            {field_visibility?.tags && tags ? (
+              <Flex gap='s'>
+                {tags
+                  .split(',')
+                  .filter((t) => t)
+                  .map((tag) => (
+                    <Link key={tag} to={searchResultsPage(`#${tag}`)}>
+                      <Tag>{tag}</Tag>
+                    </Link>
+                  ))}
+              </Flex>
+            ) : null}
+          </Flex>
+        </Paper>
+      </Box>
       <Box />
     </Flex>
   )

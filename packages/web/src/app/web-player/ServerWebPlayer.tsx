@@ -1,4 +1,5 @@
-import { PropsWithChildren, ReactNode } from 'react'
+import { PropsWithChildren, ReactElement } from 'react'
+import '@audius/harmony/dist/harmony.css'
 
 import { Flex } from '@audius/harmony/src/components/layout/Flex'
 import { ThemeProvider } from '@audius/harmony/src/foundations/theme/ThemeProvider'
@@ -11,7 +12,6 @@ import { ServerReduxProvider } from './ServerReduxProvider'
 
 type ServerProviderProps = PropsWithChildren<{
   initialState: PartialDeep<AppState>
-  isMobile: boolean
 }>
 
 const ServerProviders = (props: ServerProviderProps) => {
@@ -27,7 +27,7 @@ const ServerProviders = (props: ServerProviderProps) => {
 }
 
 type WebPlayerContentProps = {
-  children: ReactNode
+  children: ReactElement
   isMobile: boolean
 }
 
@@ -47,7 +47,13 @@ const WebPlayerContent = (props: WebPlayerContentProps) => {
   )
 }
 
-export const ServerWebPlayer = (props: ServerProviderProps) => {
+type ServerWebPlayerProps = {
+  initialState: PartialDeep<AppState>
+  isMobile: boolean
+  children: ReactElement
+}
+
+export const ServerWebPlayer = (props: ServerWebPlayerProps) => {
   const { initialState, isMobile, children } = props
   return (
     <ServerProviders initialState={initialState}>

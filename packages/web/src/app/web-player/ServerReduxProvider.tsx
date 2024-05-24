@@ -19,8 +19,11 @@ type ServerReduxProviderProps = {
 }
 
 const reducers = {
+  // @ts-ignore
   users: asCache(cacheUsersReducer, Kind.TRACKS),
+  // @ts-ignore
   tracks: asCache(cacheTracksReducer, Kind.TRACKS),
+  // @ts-ignore
   collections: asCache(cacheCollectionsReducer, Kind.COLLECTIONS)
 }
 
@@ -28,6 +31,7 @@ export const ServerReduxProvider = (props: ServerReduxProviderProps) => {
   const { initialState, children } = props
   return (
     <Provider
+      // @ts-ignore
       store={createStore(combineReducers(reducers), initialState, undefined)}
     >
       {children}
