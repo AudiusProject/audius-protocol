@@ -164,7 +164,11 @@ export const useGetSuggestedPlaylistTracks = (collectionId: ID) => {
 
   const suggestedTracks = useSelector(
     (state: CommonState) =>
-      selectSuggestedTracks(state, suggestedTrackIds, setSuggestedTrackIds),
+      selectSuggestedTracks(
+        state,
+        [...new Set(suggestedTrackIds)],
+        setSuggestedTrackIds
+      ),
     isEqual
   )
 
