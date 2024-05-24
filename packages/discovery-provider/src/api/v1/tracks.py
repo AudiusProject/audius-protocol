@@ -1772,11 +1772,10 @@ class GetTrackAccessInfo(Resource):
         tracks = get_tracks(get_track_args)
         if not tracks:
             abort_not_found(track_id, ns)
-        track = extend_track(tracks[0])
-        track["stream_conditions"] = get_extended_purchase_gate(
-            track["stream_conditions"]
-        )
-        track["download_conditions"] = get_extended_purchase_gate(
-            track["download_conditions"]
-        )
+        raw = tracks[0]
+        stream_conditions = get_extended_purchase_gate(raw["stream_conditions"])
+        download_conditions = get_extended_purchase_gate(raw["download_conditions"])
+        track = extend_track(raw)
+        track["stream_conditions"] = stream_conditions
+        track["download_conditions"] = download_conditions
         return success_response(track)
