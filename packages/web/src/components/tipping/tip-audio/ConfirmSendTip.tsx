@@ -138,7 +138,7 @@ export const ConfirmSendTip = () => {
         <Button
           variant='primary'
           onClick={handleConfirmSendClick}
-          iconRight={IconCheck}
+          iconRight={isSending ? undefined : IconCheck}
           isLoading={isSending || isConverting}
           disabled={isDisabled}
         >
