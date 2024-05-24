@@ -2,6 +2,7 @@
 /* eslint-disable */
 export * from './Access';
 export * from './AccessGate';
+export * from './AccessInfoResponse';
 export * from './Activity';
 export * from './AuthorizedApp';
 export * from './AuthorizedApps';
@@ -16,6 +17,10 @@ export * from './DeveloperApp';
 export * from './DeveloperAppResponse';
 export * from './DeveloperApps';
 export * from './EncodedUserId';
+export * from './ExtendedAccessGate';
+export * from './ExtendedPaymentSplit';
+export * from './ExtendedPurchaseGate';
+export * from './ExtendedUsdcGate';
 export * from './Favorite';
 export * from './FavoritesResponse';
 export * from './FollowGate';
@@ -45,6 +50,7 @@ export * from './Tip';
 export * from './TipGate';
 export * from './TopListener';
 export * from './Track';
+export * from './TrackAccessInfo';
 export * from './TrackArtwork';
 export * from './TrackElement';
 export * from './TrackInspect';
