@@ -5,7 +5,7 @@ import {
   useGetTrackById,
   useGetUserById
 } from '@audius/common/api'
-import { Kind, SquareSizes } from '@audius/common/models'
+import { Kind, SquareSizes, Status } from '@audius/common/models'
 import {
   SearchItem,
   searchActions,
@@ -20,6 +20,7 @@ import {
   IconButton,
   IconClose,
   Paper,
+  Skeleton,
   Text,
   useTheme
 } from '@audius/harmony'
@@ -50,11 +51,31 @@ const messages = {
   track: 'Track'
 }
 
+const RecentSearchSkeleton = () => (
+  <Flex
+    w='100%'
+    pv='s'
+    ph='xl'
+    css={{
+      justifyContent: 'space-between'
+    }}
+  >
+    <Flex gap='m'>
+      <Skeleton w='40px' h='40px' />
+
+      <Flex direction='column' gap='s'>
+        <Skeleton w='120px' h='12px' />
+        <Skeleton w='100px' h='12px' />
+      </Flex>
+    </Flex>
+  </Flex>
+)
+
 type RecentSearchProps = {
   children: React.ReactNode
-  title: string
-  searchItem: SearchItem
   linkTo: string
+  searchItem: SearchItem
+  title: string
 }
 
 const RecentSearch = (props: RecentSearchProps) => {
@@ -65,6 +86,7 @@ const RecentSearch = (props: RecentSearchProps) => {
   const handleClickRemove = useCallback<MouseEventHandler>(
     (e) => {
       e.stopPropagation()
+      e.preventDefault()
       dispatch(removeItem({ searchItem }))
     },
     [dispatch, searchItem]
@@ -102,13 +124,16 @@ const RecentSearch = (props: RecentSearchProps) => {
 const RecentSearchTrack = (props: { searchItem: SearchItem }) => {
   const { searchItem } = props
   const { id } = searchItem
-  const currentUserId = useSelector(getUserId)
-  const { data: track } = useGetTrackById({ id, currentUserId })
+  const { data: track, status } = useGetTrackById({ id })
 
   const image = useTrackCoverArt2(track?.track_id, SquareSizes.SIZE_150_BY_150)
 
+  if (status === Status.LOADING) return <RecentSearchSkeleton />
+
   if (!track) return null
   const { permalink, title, user } = track
+
+  if (!user) return null
 
   return (
     <RecentSearch searchItem={searchItem} title={title} linkTo={permalink}>
@@ -123,16 +148,14 @@ const RecentSearchTrack = (props: { searchItem: SearchItem }) => {
             {' |'}
             &nbsp;
           </Text>
-          {user ? (
-            <UserNameAndBadges
-              renderName={(name) => (
-                <Text variant='body' size='xs' color='subdued'>
-                  {name}
-                </Text>
-              )}
-              userId={user.user_id}
-            />
-          ) : null}
+          <UserNameAndBadges
+            renderName={(name) => (
+              <Text variant='body' size='xs' color='subdued'>
+                {name}
+              </Text>
+            )}
+            userId={user.user_id}
+          />
         </Flex>
       </Flex>
     </RecentSearch>
@@ -142,10 +165,8 @@ const RecentSearchTrack = (props: { searchItem: SearchItem }) => {
 const RecentSearchCollection = (props: { searchItem: SearchItem }) => {
   const { searchItem } = props
   const { id } = searchItem
-  const currentUserId = useSelector(getUserId)
-  const { data: playlist } = useGetPlaylistById({
-    playlistId: id,
-    currentUserId
+  const { data: playlist, status } = useGetPlaylistById({
+    playlistId: id
   })
 
   const image = useCollectionCoverArt2(
@@ -153,8 +174,12 @@ const RecentSearchCollection = (props: { searchItem: SearchItem }) => {
     SquareSizes.SIZE_150_BY_150
   )
 
+  if (status === Status.LOADING) return <RecentSearchSkeleton />
+
   if (!playlist) return null
   const { is_album, playlist_name, permalink, user } = playlist
+
+  if (!user) return null
 
   return (
     <RecentSearch
@@ -173,16 +198,14 @@ const RecentSearchCollection = (props: { searchItem: SearchItem }) => {
             {' |'}
             &nbsp;
           </Text>
-          {user ? (
-            <UserNameAndBadges
-              renderName={(name) => (
-                <Text variant='body' size='xs' color='subdued'>
-                  {name}
-                </Text>
-              )}
-              userId={user.user_id}
-            />
-          ) : null}
+          <UserNameAndBadges
+            renderName={(name) => (
+              <Text variant='body' size='xs' color='subdued'>
+                {name}
+              </Text>
+            )}
+            userId={user.user_id}
+          />
         </Flex>
       </Flex>
     </RecentSearch>
@@ -196,10 +219,11 @@ type RecentSearchUserProps = {
 const RecentSearchUser = (props: RecentSearchUserProps) => {
   const { searchItem } = props
   const { id } = searchItem
-  const currentUserId = useSelector(getUserId)
-  const { data: user } = useGetUserById({ id, currentUserId })
+  const { data: user, status } = useGetUserById({ id })
 
   const image = useProfilePicture(id, SquareSizes.SIZE_150_BY_150)
+
+  if (status === Status.LOADING) return <RecentSearchSkeleton />
 
   if (!user) return null
   const { handle, name } = user
