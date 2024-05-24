@@ -1,8 +1,12 @@
 import { useCallback } from 'react'
 
-import { Flex, IconLogoCircle, Paper, Text, TextLink } from '@audius/harmony'
+import { Flex, IconLogoCircle, IconLogoCircleUSDC, Paper, Text, TextLink } from '@audius/harmony'
 
 import { useModalState } from 'common/hooks/useModalState'
+import { accountSelectors } from '@audius/common/store'
+import { useSelector } from 'react-redux'
+import { shortenSPLAddress } from '@audius/common/utils'
+const { getAccountUser } = accountSelectors
 
 const messages = {
   payoutWallet: 'Payout Wallet',
@@ -12,6 +16,7 @@ const messages = {
 }
 
 export const PayoutWallet = () => {
+  const user = useSelector(getAccountUser)
   const [, setIsOpen] = useModalState('PayoutWallet')
 
   const handleChangeWallet = useCallback(() => {
@@ -38,10 +43,11 @@ export const PayoutWallet = () => {
             p='s'
             wrap='wrap'
             justifyContent='center'
+            alignItems='center'
           >
-            <IconLogoCircle size='m' />
+            { user?.spl_usdc_payout_wallet? <IconLogoCircleUSDC /> : <IconLogoCircle size='m' />}
             <Text variant='body' size='m' strength='strong'>
-              {messages.audiusWallet}
+              {user?.spl_usdc_payout_wallet ? shortenSPLAddress(user?.spl_usdc_payout_wallet) : messages.audiusWallet}
             </Text>
           </Flex>
           <TextLink
