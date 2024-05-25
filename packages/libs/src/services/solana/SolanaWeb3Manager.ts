@@ -421,15 +421,37 @@ export class SolanaWeb3Manager {
     }
   }
 
+  async getRawTokenAccountInfo(solanaAddress: string) {
+    const connection = this.getConnection()
+    return await connection.getAccountInfo(
+      new PublicKey(solanaAddress),
+      'processed'
+    )
+  }
+
+  async assertRawTokenAccountInfoDoesNotExist(solanaAddress: string) {
+    const rawAccount = await this.getRawTokenAccountInfo(solanaAddress)
+    if (rawAccount) {
+      // Token account exists, but could not unpack.
+      throw new Error('Error unpacking token account')
+    }
+  }
+
   /**
    * Gets the SPL waudio balance for a solana address in wei with 18 decimals
    */
   async getWAudioBalance(solanaAddress: string) {
     try {
       let tokenAccount = await this.getTokenAccountInfo(solanaAddress)
-      // If the token account doesn't exist, check if solanaAddress is a root account
-      // if so, derive the associated token account & check that balance
       if (!tokenAccount) {
+        // tokenAccount may be null because the token account doesn't exist,
+        // or because an error was thrown while unpacking the account.
+        // In the latter scenario, we throw an error.
+        this.assertRawTokenAccountInfoDoesNotExist(solanaAddress)
+
+        // Token account does not exist.
+        // Check if solanaAddress is a root account.
+        // If so, derive the associated token account & check that balance
         const associatedTokenAccount = await this.findAssociatedTokenAddress(
           solanaAddress
         )
@@ -437,6 +459,7 @@ export class SolanaWeb3Manager {
           associatedTokenAccount.toString()
         )
         if (!tokenAccount) {
+          this.assertRawTokenAccountInfoDoesNotExist(solanaAddress)
           return BigInt(0)
         }
       }
