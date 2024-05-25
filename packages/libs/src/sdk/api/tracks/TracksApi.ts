@@ -45,7 +45,9 @@ import {
   UpdateTrackRequest,
   UploadTrackRequest,
   PurchaseTrackRequest,
-  PurchaseTrackSchema
+  PurchaseTrackSchema,
+  GetPurchaseTrackTransactionRequest,
+  GetPurchaseTrackTransactionSchema
 } from './types'
 
 // Extend that new class
@@ -385,18 +387,23 @@ export class TracksApi extends GeneratedTracksApi {
   }
 
   /**
-   * Purchases stream or download access to a track
+   * Gets the Solana transaction that purchases the track
    *
    * @hidden
    */
-  public async purchase(params: PurchaseTrackRequest) {
+  public async getPurchaseTrackTransaction(
+    params: GetPurchaseTrackTransactionRequest
+  ) {
     const {
       userId,
       trackId,
       price: priceNumber,
       extraAmount: extraAmountNumber = 0,
-      walletAdapter
-    } = await parseParams('purchase', PurchaseTrackSchema)(params)
+      wallet
+    } = await parseParams(
+      'getPurchaseTrackTransaction',
+      GetPurchaseTrackTransactionSchema
+    )(params)
 
     const contentType = 'track'
     const mint = 'USDC'
@@ -483,26 +490,22 @@ export class TracksApi extends GeneratedTracksApi {
         accessType
       })
 
-    if (walletAdapter) {
-      this.logger.debug('Using connected wallet to purchase...')
-      if (!walletAdapter.publicKey) {
-        throw new Error('Could not get connected wallet address')
-      }
+    if (wallet) {
+      this.logger.debug('Using provided wallet to purchase...', {
+        wallet: wallet.toBase58()
+      })
       // Use the specified Solana wallet
       const transferInstruction =
         await this.paymentRouterClient.createTransferInstruction({
-          sourceWallet: walletAdapter.publicKey,
+          sourceWallet: wallet,
           total,
           mint
         })
       const transaction = await this.paymentRouterClient.buildTransaction({
-        feePayer: walletAdapter.publicKey,
+        feePayer: wallet,
         instructions: [transferInstruction, routeInstruction, memoInstruction]
       })
-      return await walletAdapter.sendTransaction(
-        transaction,
-        this.paymentRouterClient.connection
-      )
+      return transaction
     } else {
       // Use the authed wallet's userbank and relay
       const ethWallet = await this.auth.getAddress()
@@ -539,7 +542,29 @@ export class TracksApi extends GeneratedTracksApi {
           memoInstruction
         ]
       })
-      return await this.paymentRouterClient.sendTransaction(transaction)
+      return transaction
     }
+  }
+
+  /**
+   * Purchases stream or download access to a track
+   *
+   * @hidden
+   */
+  public async purchaseTrack(params: PurchaseTrackRequest) {
+    await parseParams('purchaseTrack', PurchaseTrackSchema)(params)
+    const transaction = await this.getPurchaseTrackTransaction(params)
+    if (params.walletAdapter) {
+      if (!params.walletAdapter.publicKey) {
+        throw new Error(
+          'Param walletAdapter was specified, but no wallet selected'
+        )
+      }
+      return await params.walletAdapter.sendTransaction(
+        transaction,
+        this.paymentRouterClient.connection
+      )
+    }
+    return this.paymentRouterClient.sendTransaction(transaction)
   }
 }

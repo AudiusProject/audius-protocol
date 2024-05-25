@@ -29,6 +29,8 @@ import {
   FavoriteAlbumSchema,
   getAlbumRequest,
   getAlbumTracksRequest,
+  GetPurchaseAlbumTransactionRequest,
+  GetPurchaseAlbumTransactionSchema,
   PurchaseAlbumRequest,
   PurchaseAlbumSchema,
   RepostAlbumRequest,
@@ -232,18 +234,23 @@ export class AlbumsApi {
   }
 
   /**
-   * Purchases stream access to an album
+   * Gets the Solana transaction that purchases the album
    *
    * @hidden
    */
-  async purchase(params: PurchaseAlbumRequest) {
+  async getPurchaseAlbumTransaction(
+    params: GetPurchaseAlbumTransactionRequest
+  ) {
     const {
       userId,
       albumId,
       price: priceNumber,
       extraAmount: extraAmountNumber = 0,
-      walletAdapter
-    } = await parseParams('purchase', PurchaseAlbumSchema)(params)
+      wallet
+    } = await parseParams(
+      'getPurchaseAlbumTransaction',
+      GetPurchaseAlbumTransactionSchema
+    )(params)
 
     const contentType = 'album'
     const mint = 'USDC'
@@ -321,26 +328,22 @@ export class AlbumsApi {
         accessType
       })
 
-    if (walletAdapter) {
-      this.logger.debug('Using connected wallet to purchase...')
-      if (!walletAdapter.publicKey) {
-        throw new Error('Could not get connected wallet address')
-      }
+    if (wallet) {
+      this.logger.debug('Using provided wallet to purchase...', {
+        wallet: wallet.toBase58()
+      })
       // Use the specified Solana wallet
       const transferInstruction =
         await this.paymentRouterClient.createTransferInstruction({
-          sourceWallet: walletAdapter.publicKey,
+          sourceWallet: wallet,
           total,
           mint
         })
       const transaction = await this.paymentRouterClient.buildTransaction({
-        feePayer: walletAdapter.publicKey,
+        feePayer: wallet,
         instructions: [transferInstruction, routeInstruction, memoInstruction]
       })
-      return await walletAdapter.sendTransaction(
-        transaction,
-        this.paymentRouterClient.connection
-      )
+      return transaction
     } else {
       // Use the authed wallet's userbank and relay
       const ethWallet = await this.auth.getAddress()
@@ -377,7 +380,29 @@ export class AlbumsApi {
           memoInstruction
         ]
       })
-      return await this.paymentRouterClient.sendTransaction(transaction)
+      return transaction
     }
+  }
+
+  /**
+   * Purchases stream access to an album
+   *
+   * @hidden
+   */
+  public async purchaseAlbum(params: PurchaseAlbumRequest) {
+    await parseParams('purchaseAlbum', PurchaseAlbumSchema)(params)
+    const transaction = await this.getPurchaseAlbumTransaction(params)
+    if (params.walletAdapter) {
+      if (!params.walletAdapter.publicKey) {
+        throw new Error(
+          'Param walletAdapter was specified, but no wallet selected'
+        )
+      }
+      return await params.walletAdapter.sendTransaction(
+        transaction,
+        this.paymentRouterClient.connection
+      )
+    }
+    return this.paymentRouterClient.sendTransaction(transaction)
   }
 }
