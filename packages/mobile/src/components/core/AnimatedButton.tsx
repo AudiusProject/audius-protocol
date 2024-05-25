@@ -34,6 +34,7 @@ export type AnimatedButtonProps = {
   hapticsConfig?: Haptics[]
   waitForAnimationFinish?: boolean
   children?: ReactNode
+  lottieProps?: Partial<LottieViewProps>
 } & PressableProps
 
 export const AnimatedButton = ({
@@ -51,6 +52,7 @@ export const AnimatedButton = ({
   hapticsConfig,
   waitForAnimationFinish,
   children,
+  lottieProps,
   ...pressableProps
 }: AnimatedButtonProps) => {
   const [iconIndex, setIconIndex] = useState<number>(externalIconIndex ?? 0)
@@ -201,6 +203,7 @@ export const AnimatedButton = ({
             loop={false}
             source={source}
             resizeMode={resizeMode}
+            {...lottieProps}
           />
           {/**
            * Secondary animation that is visible when inactive. This ensures

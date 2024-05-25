@@ -1,16 +1,17 @@
 import { Text } from '@audius/harmony'
+import { instanceOfPurchaseGate } from '@audius/sdk'
 
 const messages = {
   more: 'Looking for more like this?',
-  buy: 'Buy The Full Track On Audius'
+  buy: (isTrack) => `Buy The Full ${isTrack ? 'Song' : 'Album'} On Audius`
 }
 
-const PrimaryLabel = ({ streamConditions }) => {
-  const isPurchaseable = streamConditions && 'usdc_purchase' in streamConditions
+const PrimaryLabel = ({ streamConditions, isTrack }) => {
+  const isPurchaseable = instanceOfPurchaseGate(streamConditions)
 
   return (
     <Text color='default' variant='heading' size='s'>
-      {isPurchaseable ? messages.buy : messages.more}
+      {isPurchaseable ? messages.buy(isTrack) : messages.more}
     </Text>
   )
 }

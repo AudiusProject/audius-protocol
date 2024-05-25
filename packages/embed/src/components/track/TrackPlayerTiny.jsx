@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
+import { instanceOfPurchaseGate } from '@audius/sdk'
 import cn from 'classnames'
 
 import AudiusLogoGlyph from '../../assets/img/audiusLogoGlyph.svg'
@@ -73,7 +74,7 @@ const TrackPlayerTiny = ({
     infoStyle['--info-width'] = `${infoWidth + MARQUEE_SPACING}px`
   }
 
-  const isPurchaseable = streamConditions && 'usdc_purchase' in streamConditions
+  const isPurchaseable = instanceOfPurchaseGate(streamConditions)
 
   return (
     <div className={styles.wrapper}>

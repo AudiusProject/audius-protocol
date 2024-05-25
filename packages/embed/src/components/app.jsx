@@ -439,6 +439,7 @@ const App = (props) => {
         : null
     const listenOnAudiusURL = artworkClickURL
     const flavor = requestState.playerFlavor
+    const isTrack = !!tracksResponse
     return (
       <PausePopover
         artworkURL={artworkURL}
@@ -446,7 +447,11 @@ const App = (props) => {
         listenOnAudiusURL={listenOnAudiusURL}
         flavor={flavor}
         isMobileWebTwitter={mobileWebTwitter}
-        streamConditions={tracksResponse?.streamConditions}
+        streamConditions={
+          tracksResponse?.streamConditions ||
+          collectionsResponse?.streamConditions
+        }
+        isTrack={isTrack}
       />
     )
   }

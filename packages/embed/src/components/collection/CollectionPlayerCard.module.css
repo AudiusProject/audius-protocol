@@ -53,10 +53,6 @@
   min-width: 0;
 }
 
-.middleRowRight div {
-  margin-top: auto;
-}
-
 .listContainer {
   display: flex;
   flex-direction: column;
@@ -148,4 +144,11 @@
   height: 20px;
   width: 20px;
   border-radius: 10px;
+}
+
+.scrubber {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 24px;
 }

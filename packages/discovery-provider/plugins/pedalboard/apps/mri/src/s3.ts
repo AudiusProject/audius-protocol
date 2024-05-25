@@ -10,32 +10,38 @@ export type ClmS3Config = {
   keyPrefix: string
 }
 
+const config = readConfig()
+const isDev = config.env === "dev"
+
 // creates s3 instance objects for later use, if in dev it will automatically create buckets
 export const createS3Instances = async (): Promise<ClmS3Config[]> => {
-  const config = readConfig()
-  const isDev = config.env === "dev"
-  return Promise.all(config.s3Configs.map(async ({ bucket, keyPrefix, region, endpoint, accessKeyId, secretAccessKey }) => {
-    const s3 = new S3Client({
-      region,
-      endpoint,
-      credentials: {
-        accessKeyId,
-        secretAccessKey
-      },
-      forcePathStyle: true
-    })
+  try {
+    return await Promise.all(config.s3Configs.map(async ({ bucket, keyPrefix, region, endpoint, accessKeyId, secretAccessKey }) => {
+      const s3 = new S3Client({
+        region,
+        endpoint,
+        credentials: {
+          accessKeyId,
+          secretAccessKey
+        },
+        forcePathStyle: true
+      })
 
-    if (isDev) {
-      const data = await s3.send(new CreateBucketCommand({ Bucket: bucket }));
-      logger.info(`Bucket "${bucket}" created successfully`, data);
-    }
+      if (isDev) {
+        const data = await s3.send(new CreateBucketCommand({ Bucket: bucket }));
+        logger.info(`Bucket "${bucket}" created successfully`, data);
+      }
 
-    return {
-      s3,
-      bucket,
-      keyPrefix
-    }
-  }))
+      return {
+        s3,
+        bucket,
+        keyPrefix
+      }
+    }))
+  } catch (e) {
+    if (isDev) return []
+    throw e
+  }
 }
 
 export const publishToS3 = async (logger: Logger, config: ClmS3Config, date: Date, csv: string): Promise<string> => {

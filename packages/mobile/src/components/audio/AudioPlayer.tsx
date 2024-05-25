@@ -40,7 +40,8 @@ import TrackPlayer, {
   State,
   useTrackPlayerEvents,
   RepeatMode as TrackPlayerRepeatMode,
-  TrackType
+  TrackType,
+  useIsPlaying
 } from 'react-native-track-player'
 import { useDispatch, useSelector } from 'react-redux'
 import { useAsync, usePrevious } from 'react-use'
@@ -280,6 +281,21 @@ export const AudioPlayer = () => {
     },
     [dispatch]
   )
+
+  const { bufferingDuringPlay } = useIsPlaying() // react-native-track-player hook
+
+  const previousBufferingState = usePrevious(bufferingDuringPlay)
+
+  useEffect(() => {
+    // Keep redux buffering status in sync with react-native-track-player's buffering status
+    // Only need to dispatch when the value actually changes so we check against the previous value
+    if (
+      bufferingDuringPlay !== undefined &&
+      bufferingDuringPlay !== previousBufferingState
+    ) {
+      dispatch(playerActions.setBuffering({ buffering: bufferingDuringPlay }))
+    }
+  }, [bufferingDuringPlay, dispatch, previousBufferingState])
 
   const makeTrackData = useCallback(
     async ({ track, playerBehavior }: QueueableTrack) => {

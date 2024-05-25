@@ -20,8 +20,8 @@ export type TextProps = NativeTextProps &
 export const Text = forwardRef<TextBase, TextProps>((props, ref) => {
   const {
     variant: propVariant,
-    size = propVariant ? 'm' : undefined,
-    strength = propVariant ? 'default' : undefined,
+    size: sizeProp,
+    strength: strengthProp,
     style: styleProp,
     color: colorProp = 'default',
     textAlign,
@@ -33,6 +33,8 @@ export const Text = forwardRef<TextBase, TextProps>((props, ref) => {
   const theme = useTheme()
   const { variant: contextVariant } = useContext(TextContext)
   const variant = propVariant ?? contextVariant ?? 'body'
+  const strength = strengthProp ?? (contextVariant ? undefined : 'default')
+  const size = sizeProp ?? (contextVariant ? undefined : 'm')
   // TODO: make heading a proper gradient
   const color =
     colorProp === 'heading'
