@@ -9,7 +9,7 @@ class UserPayoutWalletHistory(Base, RepresentableMixin):
     __tablename__ = "user_payout_wallet_history"
 
     user_id = Column(Integer, nullable=False, primary_key=True)
-    spl_usdc_payout_wallet = Column(String, nullable=False)
+    spl_usdc_payout_wallet = Column(String, nullable=True)
     blocknumber = Column(BigInteger, nullable=False)
     block_timestamp = Column(DateTime, nullable=False, primary_key=True)
     created_at = Column(
