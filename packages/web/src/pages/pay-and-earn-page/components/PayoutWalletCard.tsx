@@ -15,7 +15,7 @@ const messages = {
   change: 'Change'
 }
 
-export const PayoutWallet = () => {
+export const PayoutWalletCard = () => {
   const user = useSelector(getAccountUser)
   const [, setIsOpen] = useModalState('PayoutWallet')
 

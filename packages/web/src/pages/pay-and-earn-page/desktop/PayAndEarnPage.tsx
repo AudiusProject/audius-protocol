@@ -19,7 +19,7 @@ import { useFlag } from 'hooks/useRemoteConfig'
 import { PURCHASES_PAGE, SALES_PAGE, WITHDRAWALS_PAGE } from 'utils/route'
 
 import styles from '../PayAndEarnPage.module.css'
-import { PayoutWallet } from '../components/PayoutWallet'
+import { PayoutWalletCard } from '../components/PayoutWalletCard'
 import { PurchasesTab, usePurchases } from '../components/PurchasesTab'
 import { SalesTab, useSales } from '../components/SalesTab'
 import { USDCCard } from '../components/USDCCard'
@@ -145,7 +145,7 @@ export const PayAndEarnPage = ({ tableView }: PayAndEarnPageProps) => {
       ) : (
         <>
           <USDCCard />
-          {isPayoutWalletEnabled ? <PayoutWallet /> : null}
+          {isPayoutWalletEnabled ? <PayoutWalletCard /> : null}
           <Paper w='100%'>
             <Flex direction='column' w='100%'>
               <Flex

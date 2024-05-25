@@ -10,19 +10,21 @@ import {
   IconMoneyBracket,
   Modal,
   ModalContent,
+  ModalFooter,
   ModalHeader,
   ModalTitle,
   Radio,
   RadioGroup,
   Text
 } from '@audius/harmony'
-import { Form, Formik, useField } from 'formik'
+import { Formik, useField } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
 import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { useModalState } from 'common/hooks/useModalState'
 import { TextField } from 'components/form-fields'
+import { ModalForm } from 'components/modal-form/ModalForm'
 import { isValidSolAddress } from 'services/solana/solana'
 
 const { getAccountUser } = accountSelectors
@@ -59,74 +61,80 @@ type PayoutWalletValues = z.input<typeof payoutWalletSchema>
 
 const PayoutWalletSchema = toFormikValidationSchema(payoutWalletSchema)
 
-const PayoutWalletForm = ({ handleClose }: { handleClose: () => void }) => {
+const PayoutWalletModalForm = ({
+  handleClose
+}: {
+  handleClose: () => void
+}) => {
   const [optionField] = useField('option')
   const [addressField, { error }] = useField('address')
 
   return (
-    <Form>
-      <Flex direction='column' gap='l'>
-        <Text variant='body' size='m'>
-          {messages.body}
-        </Text>
-        <Text variant='label' size='l' color='subdued'>
-          {messages.destination}
-        </Text>
-        <RadioGroup {...optionField}>
-          <Flex gap='l' direction='column'>
-            <Flex gap='m' alignItems='center'>
-              <Radio value='default' />
-              <Text variant='body' color='default' size='m'>
-                {messages.optionBuiltIn}
-              </Text>
-            </Flex>
-            {optionField.value === 'default' ? (
-              <Flex
-                backgroundColor='surface2'
-                gap='s'
-                border='strong'
-                borderRadius='xs'
-                p='s'
-                wrap='wrap'
-                justifyContent='center'
-                alignSelf='flex-start'
-              >
-                <IconLogoCircle size='m' />
-                <Text variant='body' size='m' strength='strong'>
-                  {messages.builtIn}
+    <ModalForm>
+      <ModalContent>
+        <Flex direction='column' gap='l'>
+          <Text variant='body' size='m'>
+            {messages.body}
+          </Text>
+          <Text variant='label' size='l' color='subdued'>
+            {messages.destination}
+          </Text>
+          <RadioGroup {...optionField}>
+            <Flex gap='l' direction='column'>
+              <Flex gap='m' alignItems='center'>
+                <Radio value='default' />
+                <Text variant='body' color='default' size='m'>
+                  {messages.optionBuiltIn}
                 </Text>
               </Flex>
-            ) : null}
-            <Divider color='default' />
-            <Flex gap='m' alignItems='center'>
-              <Radio value='custom' />
-              <Text variant='body' color='default' size='m'>
-                {messages.optionCustom}
-              </Text>
+              {optionField.value === 'default' ? (
+                <Flex
+                  backgroundColor='surface2'
+                  gap='s'
+                  border='strong'
+                  borderRadius='xs'
+                  p='s'
+                  wrap='wrap'
+                  justifyContent='center'
+                  alignSelf='flex-start'
+                >
+                  <IconLogoCircle size='m' />
+                  <Text variant='body' size='m' strength='strong'>
+                    {messages.builtIn}
+                  </Text>
+                </Flex>
+              ) : null}
+              <Divider color='default' />
+              <Flex gap='m' alignItems='center'>
+                <Radio value='custom' />
+                <Text variant='body' color='default' size='m'>
+                  {messages.optionCustom}
+                </Text>
+              </Flex>
+              {optionField.value === 'custom' ? (
+                <TextField
+                  {...addressField}
+                  label={messages.addressPlaceholder}
+                />
+              ) : null}
             </Flex>
-            {optionField.value === 'custom' ? (
-              <TextField
-                {...addressField}
-                label={messages.addressPlaceholder}
-              />
-            ) : null}
-          </Flex>
-        </RadioGroup>
-        <Flex gap='l' pt='l'>
-          <Button
-            onClick={handleClose}
-            variant='secondary'
-            isLoading={false}
-            fullWidth
-          >
-            {messages.back}
-          </Button>
-          <Button type='submit' isLoading={false} fullWidth disabled={!!error}>
-            {messages.save}
-          </Button>
+          </RadioGroup>
         </Flex>
-      </Flex>
-    </Form>
+      </ModalContent>
+      <ModalFooter>
+        <Button
+          onClick={handleClose}
+          variant='secondary'
+          isLoading={false}
+          fullWidth
+        >
+          {messages.back}
+        </Button>
+        <Button type='submit' isLoading={false} fullWidth disabled={!!error}>
+          {messages.save}
+        </Button>
+      </ModalFooter>
+    </ModalForm>
   )
 }
 
@@ -168,15 +176,13 @@ export const PayoutWalletModal = () => {
       <ModalHeader onClose={handleClose}>
         <ModalTitle title={messages.title} icon={<IconMoneyBracket />} />
       </ModalHeader>
-      <ModalContent>
-        <Formik
-          initialValues={initialValues}
-          validationSchema={PayoutWalletSchema}
-          onSubmit={handleSubmit}
-        >
-          <PayoutWalletForm handleClose={handleClose} />
-        </Formik>
-      </ModalContent>
+      <Formik
+        initialValues={initialValues}
+        validationSchema={PayoutWalletSchema}
+        onSubmit={handleSubmit}
+      >
+        <PayoutWalletModalForm handleClose={handleClose} />
+      </Formik>
     </Modal>
   )
 }
