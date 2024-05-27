@@ -130,9 +130,6 @@ export const ChallengeRewardsDrawerContent = ({
       )
     : messages.incomplete
 
-  const claimedAmountText = `(${formatNumberCommas(claimedAmount)} ${
-    messages.claimedLabel
-  })`
   const claimableAmountText = `${formatNumberCommas(claimableAmount)} ${
     messages.claimableLabel
   }`
@@ -214,39 +211,31 @@ export const ChallengeRewardsDrawerContent = ({
           </View>
         </View>
         <View style={styles.claimRewardsContainer}>
-          {isCooldownChallenge && isRewardsCooldownEnabled ? (
-            renderCooldownSummaryTable()
-          ) : (
-            <>
-              <Text
-                key='claimableAmount'
-                style={styles.claimableAmount}
-                variant='label'
-                strength='strong'
-                textTransform='uppercase'
-              >
-                {claimableAmountText}
-              </Text>
-              <Button
-                style={styles.claimButton}
-                variant={claimInProgress ? 'secondary' : 'primary'}
-                isLoading={claimInProgress}
-                onPress={onClaim}
-                iconLeft={IconCheck}
-              >
-                {messages.claim}
-              </Button>
-            </>
-          )}
-          {claimedAmount > 0 && challengeState !== 'disbursed' ? (
-            <Text
-              variant='label'
-              color='subdued'
-              textAlign='center'
-              strength='strong'
-            >
-              {claimedAmountText}
-            </Text>
+          {isClaimable && onClaim ? (
+            isCooldownChallenge && isRewardsCooldownEnabled ? (
+              renderCooldownSummaryTable()
+            ) : (
+              <>
+                <Text
+                  key='claimableAmount'
+                  style={styles.claimableAmount}
+                  variant='label'
+                  strength='strong'
+                  textTransform='uppercase'
+                >
+                  {claimableAmountText}
+                </Text>
+                <Button
+                  style={styles.claimButton}
+                  variant={claimInProgress ? 'secondary' : 'primary'}
+                  isLoading={claimInProgress}
+                  onPress={onClaim}
+                  iconLeft={IconCheck}
+                >
+                  {messages.claim}
+                </Button>
+              </>
+            )
           ) : null}
           {claimError ? <ClaimError aaoErrorCode={aaoErrorCode} /> : null}
         </View>
