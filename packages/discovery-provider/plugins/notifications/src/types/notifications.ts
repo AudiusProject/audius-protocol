@@ -138,6 +138,18 @@ export type ReactionNotification = {
   tip_amount: string
 }
 
+export type RequestManagerNotification = {
+  grantee_user_id: number
+  grantee_address: string
+  user_id: number
+}
+
+export type ApproveManagerNotification = {
+  grantee_user_id: number
+  grantee_address: string
+  user_id: number
+}
+
 export type SupporterRankUpNotification = {
   rank: number
   sender_user_id: number
