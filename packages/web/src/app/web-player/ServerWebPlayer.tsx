@@ -7,21 +7,31 @@ import { ThemeProvider } from '@audius/harmony/src/foundations/theme/ThemeProvid
 import { StaticRouter } from 'react-router-dom'
 import { PartialDeep } from 'type-fest'
 
+import { SsrContextProvider } from 'ssr/SsrContext'
 import { AppState } from 'store/types'
 
 import { ServerReduxProvider } from './ServerReduxProvider'
 
 type ServerProviderProps = PropsWithChildren<{
   initialState: PartialDeep<AppState>
+  isMobile: boolean
 }>
 
 const ServerProviders = (props: ServerProviderProps) => {
-  const { initialState, children } = props
+  const { initialState, isMobile, children } = props
 
   return (
     <ServerReduxProvider initialState={initialState}>
       <StaticRouter>
-        <ThemeProvider theme='day'>{children}</ThemeProvider>
+        <SsrContextProvider
+          value={{
+            isMobile,
+            isServerSide: true,
+            isSsrEnabled: true
+          }}
+        >
+          <ThemeProvider theme='day'>{children}</ThemeProvider>
+        </SsrContextProvider>
       </StaticRouter>
     </ServerReduxProvider>
   )
@@ -67,7 +77,7 @@ type ServerWebPlayerProps = {
 export const ServerWebPlayer = (props: ServerWebPlayerProps) => {
   const { initialState, isMobile, children } = props
   return (
-    <ServerProviders initialState={initialState}>
+    <ServerProviders initialState={initialState} isMobile={isMobile}>
       <WebPlayerContent isMobile={isMobile}>{children}</WebPlayerContent>
     </ServerProviders>
   )

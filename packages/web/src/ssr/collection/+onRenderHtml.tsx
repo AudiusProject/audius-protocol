@@ -46,7 +46,7 @@ export default function render(pageContext: TrackPageContext) {
         }
       }}
     >
-      <ServerCollectionPage collectionId={playlist_id} />
+      <ServerCollectionPage collectionId={playlist_id} isMobile={isMobile} />
     </ServerWebPlayer>
   )
 

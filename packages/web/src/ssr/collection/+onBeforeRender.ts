@@ -1,3 +1,4 @@
+import { APITrack } from '@audius/common/src/services'
 import {
   makePlaylist,
   makeTrack,
@@ -51,7 +52,10 @@ export async function onBeforeRender(pageContext: PageContextServer) {
     profile_picture: apiUser.profile_picture['1000x1000']
   }
 
-  const tracks = apiCollection.tracks.map(makeTrack)
+  const tracks = apiCollection.tracks.map((apiTrack: APITrack) => ({
+    ...makeTrack(apiTrack),
+    cover_art: apiTrack.artwork['150x150']
+  }))
 
   try {
     return {
