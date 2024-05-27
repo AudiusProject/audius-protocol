@@ -34,7 +34,7 @@ const Render = (props: PopupProps) => {
 }
 
 const meta: Meta<typeof Popup> = {
-  title: 'Layout/Popup [beta]',
+  title: 'Components/Popup [beta]',
   component: Popup,
   parameters: {
     controls: {

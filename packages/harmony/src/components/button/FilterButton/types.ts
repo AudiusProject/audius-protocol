@@ -1,5 +1,5 @@
 import { IconComponent } from 'components/icon'
-import { Origin } from 'components/layout/Popup/types'
+import { Origin } from 'components/popup/types'
 
 export type FilterButtonSize = 'default' | 'small'
 
