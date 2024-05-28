@@ -88,23 +88,11 @@ import {
  */
 export interface TrackFull {
     /**
-     * Describes what access the given user has
-     * @type {Access}
-     * @memberof TrackFull
-     */
-    access?: Access;
-    /**
      * 
      * @type {TrackArtwork}
      * @memberof TrackFull
      */
     artwork?: TrackArtwork;
-    /**
-     * The blocknumber this track was last updated
-     * @type {number}
-     * @memberof TrackFull
-     */
-    blocknumber: number;
     /**
      * 
      * @type {string}
@@ -244,29 +232,17 @@ export interface TrackFull {
      */
     playlistsContainingTrack?: Array<number>;
     /**
-     * Whether or not the owner has restricted streaming behind an access gate
-     * @type {boolean}
+     * Describes what access the given user has
+     * @type {Access}
      * @memberof TrackFull
      */
-    isStreamGated?: boolean;
+    access?: Access;
     /**
-     * How to unlock stream access to the track
-     * @type {AccessGate}
+     * The blocknumber this track was last updated
+     * @type {number}
      * @memberof TrackFull
      */
-    streamConditions?: AccessGate;
-    /**
-     * Whether or not the owner has restricted downloading behind an access gate
-     * @type {boolean}
-     * @memberof TrackFull
-     */
-    isDownloadGated?: boolean;
-    /**
-     * How to unlock the track download
-     * @type {AccessGate}
-     * @memberof TrackFull
-     */
-    downloadConditions?: AccessGate;
+    blocknumber: number;
     /**
      * 
      * @type {string}
@@ -471,6 +447,30 @@ export interface TrackFull {
      * @memberof TrackFull
      */
     parentalWarningType?: string;
+    /**
+     * Whether or not the owner has restricted streaming behind an access gate
+     * @type {boolean}
+     * @memberof TrackFull
+     */
+    isStreamGated?: boolean;
+    /**
+     * How to unlock stream access to the track
+     * @type {AccessGate}
+     * @memberof TrackFull
+     */
+    streamConditions?: AccessGate;
+    /**
+     * Whether or not the owner has restricted downloading behind an access gate
+     * @type {boolean}
+     * @memberof TrackFull
+     */
+    isDownloadGated?: boolean;
+    /**
+     * How to unlock the track download
+     * @type {AccessGate}
+     * @memberof TrackFull
+     */
+    downloadConditions?: AccessGate;
 }
 
 /**
@@ -478,7 +478,6 @@ export interface TrackFull {
  */
 export function instanceOfTrackFull(value: object): value is TrackFull {
     let isInstance = true;
-    isInstance = isInstance && "blocknumber" in value && value["blocknumber"] !== undefined;
     isInstance = isInstance && "id" in value && value["id"] !== undefined;
     isInstance = isInstance && "repostCount" in value && value["repostCount"] !== undefined;
     isInstance = isInstance && "favoriteCount" in value && value["favoriteCount"] !== undefined;
@@ -486,6 +485,7 @@ export function instanceOfTrackFull(value: object): value is TrackFull {
     isInstance = isInstance && "user" in value && value["user"] !== undefined;
     isInstance = isInstance && "duration" in value && value["duration"] !== undefined;
     isInstance = isInstance && "playCount" in value && value["playCount"] !== undefined;
+    isInstance = isInstance && "blocknumber" in value && value["blocknumber"] !== undefined;
     isInstance = isInstance && "followeeReposts" in value && value["followeeReposts"] !== undefined;
     isInstance = isInstance && "hasCurrentUserReposted" in value && value["hasCurrentUserReposted"] !== undefined;
     isInstance = isInstance && "isUnlisted" in value && value["isUnlisted"] !== undefined;
@@ -507,9 +507,7 @@ export function TrackFullFromJSONTyped(json: any, ignoreDiscriminator: boolean):
     }
     return {
         
-        'access': !exists(json, 'access') ? undefined : AccessFromJSON(json['access']),
         'artwork': !exists(json, 'artwork') ? undefined : TrackArtworkFromJSON(json['artwork']),
-        'blocknumber': json['blocknumber'],
         'description': !exists(json, 'description') ? undefined : json['description'],
         'genre': !exists(json, 'genre') ? undefined : json['genre'],
         'id': json['id'],
@@ -533,10 +531,8 @@ export function TrackFullFromJSONTyped(json: any, ignoreDiscriminator: boolean):
         'isStreamable': !exists(json, 'is_streamable') ? undefined : json['is_streamable'],
         'ddexApp': !exists(json, 'ddex_app') ? undefined : json['ddex_app'],
         'playlistsContainingTrack': !exists(json, 'playlists_containing_track') ? undefined : json['playlists_containing_track'],
-        'isStreamGated': !exists(json, 'is_stream_gated') ? undefined : json['is_stream_gated'],
-        'streamConditions': !exists(json, 'stream_conditions') ? undefined : AccessGateFromJSON(json['stream_conditions']),
-        'isDownloadGated': !exists(json, 'is_download_gated') ? undefined : json['is_download_gated'],
-        'downloadConditions': !exists(json, 'download_conditions') ? undefined : AccessGateFromJSON(json['download_conditions']),
+        'access': !exists(json, 'access') ? undefined : AccessFromJSON(json['access']),
+        'blocknumber': json['blocknumber'],
         'createDate': !exists(json, 'create_date') ? undefined : json['create_date'],
         'coverArtSizes': !exists(json, 'cover_art_sizes') ? undefined : json['cover_art_sizes'],
         'coverArtCids': !exists(json, 'cover_art_cids') ? undefined : CoverArtFromJSON(json['cover_art_cids']),
@@ -571,6 +567,10 @@ export function TrackFullFromJSONTyped(json: any, ignoreDiscriminator: boolean):
         'copyrightLine': !exists(json, 'copyright_line') ? undefined : json['copyright_line'],
         'producerCopyrightLine': !exists(json, 'producer_copyright_line') ? undefined : json['producer_copyright_line'],
         'parentalWarningType': !exists(json, 'parental_warning_type') ? undefined : json['parental_warning_type'],
+        'isStreamGated': !exists(json, 'is_stream_gated') ? undefined : json['is_stream_gated'],
+        'streamConditions': !exists(json, 'stream_conditions') ? undefined : AccessGateFromJSON(json['stream_conditions']),
+        'isDownloadGated': !exists(json, 'is_download_gated') ? undefined : json['is_download_gated'],
+        'downloadConditions': !exists(json, 'download_conditions') ? undefined : AccessGateFromJSON(json['download_conditions']),
     };
 }
 
@@ -583,9 +583,7 @@ export function TrackFullToJSON(value?: TrackFull | null): any {
     }
     return {
         
-        'access': AccessToJSON(value.access),
         'artwork': TrackArtworkToJSON(value.artwork),
-        'blocknumber': value.blocknumber,
         'description': value.description,
         'genre': value.genre,
         'id': value.id,
@@ -609,10 +607,8 @@ export function TrackFullToJSON(value?: TrackFull | null): any {
         'is_streamable': value.isStreamable,
         'ddex_app': value.ddexApp,
         'playlists_containing_track': value.playlistsContainingTrack,
-        'is_stream_gated': value.isStreamGated,
-        'stream_conditions': AccessGateToJSON(value.streamConditions),
-        'is_download_gated': value.isDownloadGated,
-        'download_conditions': AccessGateToJSON(value.downloadConditions),
+        'access': AccessToJSON(value.access),
+        'blocknumber': value.blocknumber,
         'create_date': value.createDate,
         'cover_art_sizes': value.coverArtSizes,
         'cover_art_cids': CoverArtToJSON(value.coverArtCids),
@@ -647,6 +643,10 @@ export function TrackFullToJSON(value?: TrackFull | null): any {
         'copyright_line': value.copyrightLine,
         'producer_copyright_line': value.producerCopyrightLine,
         'parental_warning_type': value.parentalWarningType,
+        'is_stream_gated': value.isStreamGated,
+        'stream_conditions': AccessGateToJSON(value.streamConditions),
+        'is_download_gated': value.isDownloadGated,
+        'download_conditions': AccessGateToJSON(value.downloadConditions),
     };
 }
 

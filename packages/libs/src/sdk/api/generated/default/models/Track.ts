@@ -14,18 +14,6 @@
  */
 
 import { exists, mapValues } from '../runtime';
-import type { Access } from './Access';
-import {
-    AccessFromJSON,
-    AccessFromJSONTyped,
-    AccessToJSON,
-} from './Access';
-import type { AccessGate } from './AccessGate';
-import {
-    AccessGateFromJSON,
-    AccessGateFromJSONTyped,
-    AccessGateToJSON,
-} from './AccessGate';
 import type { RemixParent } from './RemixParent';
 import {
     RemixParentFromJSON,
@@ -52,23 +40,11 @@ import {
  */
 export interface Track {
     /**
-     * Describes what access the given user has
-     * @type {Access}
-     * @memberof Track
-     */
-    access?: Access;
-    /**
      * 
      * @type {TrackArtwork}
      * @memberof Track
      */
     artwork?: TrackArtwork;
-    /**
-     * The blocknumber this track was last updated
-     * @type {number}
-     * @memberof Track
-     */
-    blocknumber: number;
     /**
      * 
      * @type {string}
@@ -207,30 +183,6 @@ export interface Track {
      * @memberof Track
      */
     playlistsContainingTrack?: Array<number>;
-    /**
-     * Whether or not the owner has restricted streaming behind an access gate
-     * @type {boolean}
-     * @memberof Track
-     */
-    isStreamGated?: boolean;
-    /**
-     * How to unlock stream access to the track
-     * @type {AccessGate}
-     * @memberof Track
-     */
-    streamConditions?: AccessGate;
-    /**
-     * Whether or not the owner has restricted downloading behind an access gate
-     * @type {boolean}
-     * @memberof Track
-     */
-    isDownloadGated?: boolean;
-    /**
-     * How to unlock the track download
-     * @type {AccessGate}
-     * @memberof Track
-     */
-    downloadConditions?: AccessGate;
 }
 
 /**
@@ -238,7 +190,6 @@ export interface Track {
  */
 export function instanceOfTrack(value: object): value is Track {
     let isInstance = true;
-    isInstance = isInstance && "blocknumber" in value && value["blocknumber"] !== undefined;
     isInstance = isInstance && "id" in value && value["id"] !== undefined;
     isInstance = isInstance && "repostCount" in value && value["repostCount"] !== undefined;
     isInstance = isInstance && "favoriteCount" in value && value["favoriteCount"] !== undefined;
@@ -260,9 +211,7 @@ export function TrackFromJSONTyped(json: any, ignoreDiscriminator: boolean): Tra
     }
     return {
         
-        'access': !exists(json, 'access') ? undefined : AccessFromJSON(json['access']),
         'artwork': !exists(json, 'artwork') ? undefined : TrackArtworkFromJSON(json['artwork']),
-        'blocknumber': json['blocknumber'],
         'description': !exists(json, 'description') ? undefined : json['description'],
         'genre': !exists(json, 'genre') ? undefined : json['genre'],
         'id': json['id'],
@@ -286,10 +235,6 @@ export function TrackFromJSONTyped(json: any, ignoreDiscriminator: boolean): Tra
         'isStreamable': !exists(json, 'is_streamable') ? undefined : json['is_streamable'],
         'ddexApp': !exists(json, 'ddex_app') ? undefined : json['ddex_app'],
         'playlistsContainingTrack': !exists(json, 'playlists_containing_track') ? undefined : json['playlists_containing_track'],
-        'isStreamGated': !exists(json, 'is_stream_gated') ? undefined : json['is_stream_gated'],
-        'streamConditions': !exists(json, 'stream_conditions') ? undefined : AccessGateFromJSON(json['stream_conditions']),
-        'isDownloadGated': !exists(json, 'is_download_gated') ? undefined : json['is_download_gated'],
-        'downloadConditions': !exists(json, 'download_conditions') ? undefined : AccessGateFromJSON(json['download_conditions']),
     };
 }
 
@@ -302,9 +247,7 @@ export function TrackToJSON(value?: Track | null): any {
     }
     return {
         
-        'access': AccessToJSON(value.access),
         'artwork': TrackArtworkToJSON(value.artwork),
-        'blocknumber': value.blocknumber,
         'description': value.description,
         'genre': value.genre,
         'id': value.id,
@@ -328,10 +271,6 @@ export function TrackToJSON(value?: Track | null): any {
         'is_streamable': value.isStreamable,
         'ddex_app': value.ddexApp,
         'playlists_containing_track': value.playlistsContainingTrack,
-        'is_stream_gated': value.isStreamGated,
-        'stream_conditions': AccessGateToJSON(value.streamConditions),
-        'is_download_gated': value.isDownloadGated,
-        'download_conditions': AccessGateToJSON(value.downloadConditions),
     };
 }
 
