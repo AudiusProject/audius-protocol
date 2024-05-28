@@ -11,8 +11,6 @@ const messages = {
   learnMore: 'Learn more'
 }
 
-const env = import.meta.env.VITE_ENVIRONMENT as 'dev' | 'stage' | 'prod'
-
 export const ConnectDistributor = () => {
   return (
     <>
@@ -40,7 +38,7 @@ export const ConnectDistributor = () => {
       >
         {messages.choose}
       </Text>
-      <DistributorList environment={env} />
+      <DistributorList />
     </>
   )
 }
