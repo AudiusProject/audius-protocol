@@ -1,17 +1,31 @@
-import type { ReactNode } from 'react'
+import { View, Image, ImageSourcePropType } from 'react-native'
 
-import { View } from 'react-native'
-
-import { IconArrowRight } from '@audius/harmony-native'
-import { GradientText, Shadow, Text } from 'app/components/core'
+import {
+  Button,
+  Flex,
+  IconArrowRight,
+  IconDiscord,
+  useTheme
+} from '@audius/harmony-native'
+import { GradientText, Shadow } from 'app/components/core'
+import { Text } from '@audius/harmony-native'
 import { makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
 import { useThemeColors } from 'app/utils/theme'
+import Checkmark from 'app/assets/images/emojis/white-heavy-check-mark.png'
+import Sparkles from 'app/assets/images/emojis/sparkles.png'
+import Rabbit from 'app/assets/images/emojis/rabbit.png'
+import Hole from 'app/assets/images/emojis/hole.png'
+import { useDispatch } from 'react-redux'
+import { vipDiscordModalActions } from '@audius/common/store'
+const { pressDiscord } = vipDiscordModalActions
 
 const messages = {
   tier: 'Tier',
   minAmount: '$AUDIO',
-  current: 'Current Tier'
+  current: 'Current Tier',
+  unlocks: 'Unlocks',
+  updateRole: 'Update Role'
 }
 
 const useStyles = makeStyles(({ spacing, palette, typography }) => ({
@@ -49,23 +63,11 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     transform: [{ rotate: '90deg' }],
     marginBottom: spacing(2)
   },
-  tier: {
-    color: palette.neutralLight6,
-    fontFamily: typography.fontByWeight.bold,
-    fontSize: typography.fontSize.medium,
-    textTransform: 'uppercase'
-  },
   title: {
     margin: 8,
     fontFamily: typography.fontByWeight.heavy,
     fontSize: 28,
     textTransform: 'uppercase'
-  },
-  minAmount: {
-    color: palette.secondary,
-    fontFamily: typography.fontByWeight.bold,
-    fontSize: typography.fontSize.small,
-    lineHeight: spacing(4)
   },
   separator: {
     height: 1,
@@ -75,39 +77,96 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
   }
 }))
 
+const Unlock = ({ images, children }) => {
+  const { spacing } = useTheme()
+  return (
+    <Text variant='body' size='l' strength='strong' textTransform='capitalize'>
+      {images.map((image, i) => (
+        <>
+          <Image
+            key={i}
+            source={image}
+            style={{ height: spacing.l, width: spacing.l }}
+          />{' '}
+        </>
+      ))}
+      {children}
+    </Text>
+  )
+}
+
 type TierProps = {
   tierNumber: number
   title: string
-  colors: string[]
+  gradientColors: string[]
   minAmount: number
-  image: ReactNode
+  imageSource: ImageSourcePropType
   isCurrentTier: boolean
+  unlocks?: 'matrix'[]
 }
 
-export const Tier = ({
-  tierNumber,
-  title,
-  colors,
-  minAmount,
-  image,
-  isCurrentTier
-}: TierProps) => {
+export const Tier = (props: TierProps) => {
+  const {
+    tierNumber,
+    title,
+    gradientColors,
+    minAmount,
+    imageSource,
+    isCurrentTier,
+    unlocks = []
+  } = props
   const styles = useStyles()
   const { secondary } = useThemeColors()
+  const dispatch = useDispatch()
 
   const renderTierBody = () => {
     return (
       <>
         <View style={[styles.container, isCurrentTier && styles.current]}>
-          <Text style={styles.tier}>{`${messages.tier} ${tierNumber}`}</Text>
-          <GradientText style={styles.title} colors={colors}>
+          <Text
+            variant='label'
+            size='l'
+            color='subdued'
+          >{`${messages.tier} ${tierNumber}`}</Text>
+          <GradientText style={styles.title} colors={gradientColors}>
             {title}
           </GradientText>
           <Text
-            style={styles.minAmount}
+            variant='title'
+            size='s'
+            color='accent'
           >{`${minAmount}+ ${messages.minAmount}`}</Text>
           <View style={styles.separator} />
-          {image}
+          <Image source={imageSource} style={{ height: 108, width: 108 }} />
+          <Flex mt='xl' gap='l' alignItems='center'>
+            <Text variant='label' size='l' color='subdued'>
+              {messages.unlocks}
+            </Text>
+            <Unlock images={[Checkmark]}>{title} Badge</Unlock>
+            <Unlock images={[Checkmark]}>{title} Discord Role</Unlock>
+            {isCurrentTier ? (
+              <Button
+                variant='secondary'
+                onPress={() => dispatch(pressDiscord())}
+                iconLeft={IconDiscord}
+              >
+                {messages.updateRole}
+              </Button>
+            ) : null}
+            {unlocks.map((unlock) => {
+              switch (unlock) {
+                case 'matrix':
+                  return (
+                    <Unlock key={unlock} images={[Rabbit, Hole]}>
+                      Matrix Mode
+                    </Unlock>
+                  )
+                default:
+                  return null
+              }
+            })}
+            <Unlock images={[Sparkles]}>More Coming Soon</Unlock>
+          </Flex>
         </View>
       </>
     )

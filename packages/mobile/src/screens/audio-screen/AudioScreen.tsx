@@ -402,34 +402,36 @@ export const AudioScreen = () => {
         <Tier
           tierNumber={1}
           title='bronze'
-          colors={['rgba(141, 48, 8, 0.5)', 'rgb(182, 97, 11)']}
+          gradientColors={['rgba(141, 48, 8, 0.5)', 'rgb(182, 97, 11)']}
           minAmount={10}
-          image={<Image source={Bronze} />}
+          imageSource={Bronze}
           isCurrentTier={tierNumber === 1}
         />
         <Tier
           tierNumber={2}
           title='silver'
-          colors={['rgba(179, 182, 185, 0.5)', 'rgb(189, 189, 189)']}
+          gradientColors={['rgba(179, 182, 185, 0.5)', 'rgb(189, 189, 189)']}
           minAmount={100}
-          image={<Image source={Silver} />}
+          imageSource={Silver}
           isCurrentTier={tierNumber === 2}
         />
         <Tier
           tierNumber={3}
           title='gold'
-          colors={['rgb(236, 173, 11)', 'rgb(236, 173, 11)']}
+          gradientColors={['rgb(236, 173, 11)', 'rgb(236, 173, 11)']}
           minAmount={1000}
-          image={<Image source={Gold} />}
+          imageSource={Gold}
           isCurrentTier={tierNumber === 3}
+          unlocks={['matrix']}
         />
         <Tier
           tierNumber={4}
           title='platinum'
-          colors={['rgb(179, 236, 249)', 'rgb(87, 194, 215)']}
+          gradientColors={['rgb(179, 236, 249)', 'rgb(87, 194, 215)']}
           minAmount={10000}
-          image={<Image source={Platinum} />}
+          imageSource={Platinum}
           isCurrentTier={tierNumber === 4}
+          unlocks={['matrix']}
         />
         <Button
           title={messages.learnMore}
