@@ -56,7 +56,7 @@ export const AccountDetails = () => {
             }
           : undefined)}
       >
-        <Flex alignItems='center' w='100%' justifyContent='flex-start' gap='l'>
+        <Flex alignItems='center' w='100%' justifyContent='flex-start' gap='s'>
           <AvatarLegacy userId={account?.user_id} />
           <Flex
             direction='column'
@@ -74,7 +74,7 @@ export const AccountDetails = () => {
                 <Flex
                   alignItems='center'
                   justifyContent='space-between'
-                  gap='l'
+                  gap='s'
                 >
                   <UserLink
                     textVariant='title'
