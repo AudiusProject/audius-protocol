@@ -233,7 +233,7 @@ export const email = ({
   </table>
   </td>
   <td style="width:8px; min-width:8px;" width="8"></td>
-  <td style="vertical-align: middle;" width="72" align="center"><img src="images/logoVertical.jpeg" width="72" border="0" style="min-width:72px; width:72px;
+  <td style="vertical-align: middle;" width="72" align="center"><img src="https://download.audius.co/static-resources/email/logoVertical.jpeg" width="72" border="0" style="min-width:72px; width:72px;
            height: auto; display: block;"></td>
   </tr>
   <tr>
@@ -460,7 +460,7 @@ export const email = ({
   <td width="528" align="center" style="vertical-align: middle;  ">
   <table class="table-w-full-mobile" width="100%" border="0" cellpadding="0" cellspacing="0">
   <tr>
-  <td style="vertical-align: middle;" class="stack-column-center" align="center"><a href="https://www.audius.co"><img src="images/grayLogoHorizontal.png" width="168" border="0" style="width: 100%;
+  <td style="vertical-align: middle;" class="stack-column-center" align="center"><a href="https://www.audius.co"><img src="https://download.audius.co/static-resources/email/grayLogoHorizontal.png" width="168" border="0" style="width: 100%;
           border-radius:2px; height: auto; display: block;"></a></td>
   <td class="stack-column-center" height="12" style="width:12px; min-width:12px; height:12px; min-height:12px;" width="12"> </td>
   <td class="stack-column-center" style="width:168px;"> </td>
@@ -492,16 +492,16 @@ export const email = ({
   <td width="144" style="vertical-align: middle;  ">
   <table width="100%" border="0" cellpadding="0" cellspacing="0">
   <tr>
-  <td style="vertical-align: middle;"><a href="https://twitter.com/audius"><img src="images/grayTwitter.png" width="24" border="0" style="min-width:24px; width:24px;
+  <td style="vertical-align: middle;"><a href="https://twitter.com/audius"><img src="https://download.audius.co/static-resources/email/grayTwitter.png" width="24" border="0" style="min-width:24px; width:24px;
            height: auto; display: block;"></a></td>
   <td style="width:16px; min-width:16px;" width="16"></td>
-  <td style="vertical-align: middle;"><a href="https://www.instagram.com/audius/"><img src="images/grayInstagram.png" width="24" border="0" style="min-width:24px; width:24px;
+  <td style="vertical-align: middle;"><a href="https://www.instagram.com/audius/"><img src="https://download.audius.co/static-resources/email/grayInstagram.png" width="24" border="0" style="min-width:24px; width:24px;
            height: auto; display: block;"></a></td>
   <td style="width:16px; min-width:16px;" width="16"></td>
-  <td style="vertical-align: middle;"><a href="https://tiktok.com/@audius"><img src="images/grayTikTok.png" width="24" border="0" style="min-width:24px; width:24px;
+  <td style="vertical-align: middle;"><a href="https://tiktok.com/@audius"><img src="https://download.audius.co/static-resources/email/grayTikTok.png" width="24" border="0" style="min-width:24px; width:24px;
            height: auto; display: block;"></a></td>
   <td style="width:16px; min-width:16px;" width="16"></td>
-  <td style="vertical-align: middle;"><a href="https://www.youtube.com/@AudiusMusic"><img src="images/grayYoutube.png" width="24" border="0" style="min-width:24px; width:24px;
+  <td style="vertical-align: middle;"><a href="https://www.youtube.com/@AudiusMusic"><img src="https://download.audius.co/static-resources/email/grayYoutube.png" width="24" border="0" style="min-width:24px; width:24px;
            height: auto; display: block;"></a></td>
   </tr>
   </table>

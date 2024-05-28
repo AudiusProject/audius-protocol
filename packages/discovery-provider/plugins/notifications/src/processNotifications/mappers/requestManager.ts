@@ -117,7 +117,7 @@ export class RequestManager extends BaseNotification<RequestManagerRow> {
         managerHandle: managerUser.handle,
         managerName: managerUser.name,
         managerProfilePicture: managerUser.profile_picture_sizes,
-        link: `${getHostname()}/settings/manager/accounts-you-manage?pending=${
+        link: `${getHostname()}/settings/accounts-you-manage?pending=${
           managedAccountUser.user_id
         }`
       }),
