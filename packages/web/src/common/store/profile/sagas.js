@@ -1,9 +1,5 @@
-import {
-  DefaultSizes,
-  Kind,
-  Id,
-  userMetadataListFromSDK
-} from '@audius/common/models'
+import { userMetadataListFromSDK } from '@audius/common/adapters'
+import { DefaultSizes, Kind, Id } from '@audius/common/models'
 import { DoubleKeys, FeatureFlags } from '@audius/common/services'
 import {
   accountSelectors,
