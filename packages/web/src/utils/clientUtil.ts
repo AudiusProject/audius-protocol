@@ -1,4 +1,6 @@
+// @ts-ignore -- Can't get mobile types to be happy
 import { Client } from '@audius/common/src/models/Client'
+// @ts-ignore -- Can't get mobile types to be happy
 import { OS, MobileOS } from '@audius/common/src/models/OS'
 
 declare global {
