@@ -9,3 +9,7 @@ export const MAX_ARTIST_HOVER_TOP_SUPPORTING = 7
 export const SUPPORTING_PAGINATION_SIZE = 9
 
 export const MESSAGE_GROUP_THRESHOLD_MINUTES = 2
+
+// Minimum time spent buffering until we show visual indicators (loading spinners, etc)
+// Intended to avoid flickering buffer states and avoid showing anything at all if the buffer is short & barely noticeable
+export const MIN_BUFFERING_DELAY_MS = 1000

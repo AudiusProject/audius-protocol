@@ -1,4 +1,9 @@
-import { DefaultSizes, Kind } from '@audius/common/models'
+import {
+  DefaultSizes,
+  Kind,
+  Id,
+  userMetadataListFromSDK
+} from '@audius/common/models'
 import { DoubleKeys, FeatureFlags } from '@audius/common/services'
 import {
   accountSelectors,
@@ -52,6 +57,7 @@ import { waitForRead, waitForWrite } from 'utils/sagaHelpers'
 
 import { watchFetchProfileCollections } from './fetchProfileCollectionsSaga'
 import { watchFetchTopTags } from './fetchTopTagsSaga'
+
 const { refreshSupport } = tippingActions
 const { getIsReachable } = reachabilitySelectors
 const { getProfileUserId, getProfileFollowers, getProfileUser } =
@@ -549,7 +555,8 @@ export function* updateProfileAsync(action) {
 
 function* confirmUpdateProfile(userId, metadata) {
   yield waitForWrite()
-  const apiClient = yield getContext('apiClient')
+  const getSDK = yield getContext('audiusSdk')
+  const sdk = yield getSDK()
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
   yield put(
     confirmerActions.requestConfirmation(
@@ -570,11 +577,14 @@ function* confirmUpdateProfile(userId, metadata) {
         }
         yield waitForAccount()
         const currentUserId = yield select(getUserId)
-        const users = yield apiClient.getUser({
-          userId,
-          currentUserId
-        })
-        return users[0]
+        const { data = [] } = yield call(
+          [sdk.full.users, sdk.full.users.getUser],
+          {
+            id: Id.parse(userId),
+            userId: Id.parse(currentUserId)
+          }
+        )
+        return userMetadataListFromSDK(data)[0]
       },
       function* (confirmedUser) {
         // Update the cached user so it no longer contains image upload artifacts

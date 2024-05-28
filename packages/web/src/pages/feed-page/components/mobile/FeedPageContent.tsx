@@ -10,7 +10,7 @@ import Header from 'components/header/mobile/Header'
 import { HeaderContext } from 'components/header/mobile/HeaderContextProvider'
 import Lineup from 'components/lineup/Lineup'
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
-import { useMainPageHeader } from 'components/nav/store/context'
+import { useMainPageHeader } from 'components/nav/mobile/NavContext'
 import { FeedPageContentProps } from 'pages/feed-page/types'
 import { BASE_URL, FEED_PAGE } from 'utils/route'
 

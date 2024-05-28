@@ -25,6 +25,7 @@ import layoutStyles from 'components/layout/layout.module.css'
 import { useTrackField } from 'pages/upload-page/hooks'
 import { SingleTrackEditValues } from 'pages/upload-page/types'
 import { computeLicenseIcons } from 'pages/upload-page/utils/computeLicenseIcons'
+import { env } from 'services/env'
 
 import styles from './AttributionField.module.css'
 import { SwitchRowField } from './SwitchRowField'
@@ -43,6 +44,12 @@ const messages = {
     placeholder: 'Search for Users',
     requiredError: 'Valid user must be selected.'
   },
+  apiAllowed: {
+    header: 'Disallow Streaming via the API',
+    description:
+      'Keep your track from being streamed on third-party apps or services that utilize the Audius API.'
+  },
+
   isrc: {
     header: 'ISRC',
     placeholder: 'CC-XXX-YY-NNNNN',
@@ -80,6 +87,8 @@ const messages = {
 }
 
 const IS_AI_ATTRIBUTED = 'isAiAttribution'
+const BLOCK_THIRD_PARTY_STREAMING = 'blockThirdPartyStreaming'
+const ALLOWED_API_KEYS = 'allowed_api_keys'
 const AI_USER_ID = 'ai_attribution_user_id'
 const ISRC = 'isrc'
 const ISWC = 'iswc'
@@ -116,6 +125,8 @@ const iswcRegex = /^T-?\d{3}.?\d{3}.?\d{3}.?-?\d$/i
 const AttributionFormSchema = z
   .object({
     [IS_AI_ATTRIBUTED]: z.optional(z.boolean()),
+    [BLOCK_THIRD_PARTY_STREAMING]: z.optional(z.boolean()),
+    [ALLOWED_API_KEYS]: z.optional(z.array(z.string()).nullable()),
     [AI_USER_ID]: z.optional(z.number().nullable()),
     [ISRC]: z.optional(z.string().nullable()),
     [ISWC]: z.optional(z.string().nullable()),
@@ -157,7 +168,10 @@ export const AttributionField = () => {
     useTrackField<
       SingleTrackEditValues[typeof LICENSE_TYPE][typeof DERIVATIVE_WORKS_BASE]
     >(DERIVATIVE_WORKS)
-
+  const [{ value: allowedApiKeys }, , { setValue: setAllowedApiKeys }] =
+    useTrackField<SingleTrackEditValues[typeof ALLOWED_API_KEYS]>(
+      ALLOWED_API_KEYS
+    )
   const initialValues = useMemo(() => {
     const initialValues = {}
     set(initialValues, AI_USER_ID, aiUserId)
@@ -167,6 +181,7 @@ export const AttributionField = () => {
     set(initialValues, ISRC, isrcValue)
     set(initialValues, ISWC, iswcValue)
     set(initialValues, ALLOW_ATTRIBUTION, allowAttribution)
+    set(initialValues, ALLOWED_API_KEYS, allowedApiKeys)
     set(initialValues, COMMERCIAL_USE, commercialUse)
     set(initialValues, DERIVATIVE_WORKS, derivativeWorks)
     return initialValues as AttributionFormValues
@@ -176,7 +191,8 @@ export const AttributionField = () => {
     commercialUse,
     derivativeWorks,
     isrcValue,
-    iswcValue
+    iswcValue,
+    allowedApiKeys
   ])
 
   const onSubmit = useCallback(
@@ -185,6 +201,11 @@ export const AttributionField = () => {
         setAiUserId(get(values, AI_USER_ID) ?? aiUserId)
       } else {
         setAiUserId(null)
+      }
+      if (get(values, BLOCK_THIRD_PARTY_STREAMING)) {
+        setAllowedApiKeys([env.API_KEY])
+      } else {
+        setAllowedApiKeys(null)
       }
       setIsrc(get(values, ISRC) ?? isrcValue)
       setIswc(get(values, ISWC) ?? iswcValue)
@@ -209,7 +230,8 @@ export const AttributionField = () => {
       setCommercialUse,
       setDerivateWorks,
       setIsrc,
-      setIswc
+      setIswc,
+      setAllowedApiKeys
     ]
   )
 
@@ -306,22 +328,6 @@ const AttributionModalFields = () => {
 
   return (
     <div className={cn(layoutStyles.col, layoutStyles.gap4)}>
-      <SwitchRowField
-        name={IS_AI_ATTRIBUTED}
-        header={messages.aiGenerated.header}
-        description={messages.aiGenerated.description}
-      >
-        <AiAttributionDropdown
-          {...aiUserIdField}
-          error={dropdownHasError}
-          helperText={dropdownHasError && aiUserHelperFields.error}
-          value={aiUserIdField.value}
-          onSelect={(value: SingleTrackEditValues[typeof AI_USER_ID]) => {
-            setAiUserId(value ?? null)
-          }}
-        />
-      </SwitchRowField>
-      <Divider />
       <div className={cn(layoutStyles.col, layoutStyles.gap4)}>
         <Text variant='title' size='l' tag='h3'>
           {`${messages.isrc.header} / ${messages.iswc.header}`}
@@ -423,6 +429,29 @@ const AttributionModalFields = () => {
         </div>
         {licenseDescription ? <Text size='s'>{licenseDescription}</Text> : null}
       </div>
+      <Divider />
+      <SwitchRowField
+        name={BLOCK_THIRD_PARTY_STREAMING}
+        header={messages.apiAllowed.header}
+        description={messages.apiAllowed.description}
+      />
+      <Divider />
+      <SwitchRowField
+        name={IS_AI_ATTRIBUTED}
+        header={messages.aiGenerated.header}
+        description={messages.aiGenerated.description}
+      >
+        <AiAttributionDropdown
+          {...aiUserIdField}
+          error={dropdownHasError}
+          helperText={dropdownHasError && aiUserHelperFields.error}
+          value={aiUserIdField.value}
+          onSelect={(value: SingleTrackEditValues[typeof AI_USER_ID]) => {
+            setAiUserId(value ?? null)
+          }}
+        />
+      </SwitchRowField>
+      <Divider />
     </div>
   )
 }

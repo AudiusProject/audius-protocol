@@ -35,6 +35,7 @@ import {
   AudiusQueryContext,
   AudiusQueryContextType
 } from './AudiusQueryContext'
+import { createRequestBatcher } from './createRequestBatcher'
 import { RemoteDataNotFoundError } from './errors'
 import { apiResponseSchema } from './schema'
 import {
@@ -294,6 +295,8 @@ const useCacheData = <Args, Data>(
   }, isEqual)
 }
 
+const requestBatcher = createRequestBatcher()
+
 const fetchData = async <Args, Data>(
   fetchArgs: Args,
   endpointName: string,
@@ -312,13 +315,18 @@ const fetchData = async <Args, Data>(
 
     endpoint.onQueryStarted?.(fetchArgs, { dispatch })
 
+    // Batch the request if `fetchBatch` is defined
+    const fetch = endpoint.fetchBatch
+      ? requestBatcher.fetch(endpointName, endpoint)
+      : endpoint.fetch
+
     // If endpoint config specifies retries wrap the fetch
     // and return a single error at the end if all retries fail
     const apiData = endpoint.options.retry
       ? await retry(
           async (bail) => {
             try {
-              return endpoint.fetch(fetchArgs, context)
+              return fetch(fetchArgs, context)
             } catch (e) {
               if (isNonRetryableError(e)) {
                 bail(new Error(`Non-retryable error: ${e}`))
@@ -328,7 +336,7 @@ const fetchData = async <Args, Data>(
           },
           { ...defaultRetryConfig, ...endpoint.options.retryConfig }
         )
-      : await endpoint.fetch(fetchArgs, context)
+      : await fetch(fetchArgs, context)
     if (apiData == null) {
       throw new RemoteDataNotFoundError('Remote data not found')
     }

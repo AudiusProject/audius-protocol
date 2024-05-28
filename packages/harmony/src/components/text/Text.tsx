@@ -1,11 +1,12 @@
-import { ElementType, ForwardedRef, forwardRef } from 'react'
+import { ElementType, ForwardedRef, forwardRef, useContext } from 'react'
 
 import { useTheme } from '@emotion/react'
 import { Slot } from '@radix-ui/react-slot'
 
-import { typography } from '../../../foundations/typography'
+import { typography } from '../../foundations/typography'
 
 import { variantStylesMap, variantTagMap } from './constants'
+import { TextContext } from './textContext'
 import type { TextProps } from './types'
 
 export const Text = forwardRef(
@@ -15,9 +16,9 @@ export const Text = forwardRef(
   ) => {
     const {
       children,
-      variant,
-      strength = 'default',
-      size = 'm',
+      variant: propVariant,
+      strength: strengthProp,
+      size: sizeProp,
       color,
       shadow,
       tag,
@@ -29,6 +30,10 @@ export const Text = forwardRef(
     } = props
 
     const theme = useTheme()
+    const { variant: contextVariant } = useContext(TextContext)
+    const variant = propVariant ?? contextVariant ?? 'body'
+    const strength = strengthProp ?? (contextVariant ? undefined : 'default')
+    const size = sizeProp ?? (contextVariant ? undefined : 'm')
 
     const variantConfig = variant && variantStylesMap[variant]
     const css = {
@@ -72,10 +77,20 @@ export const Text = forwardRef(
 
     const Tag: ElementType = asChild ? Slot : tag ?? variantTag ?? 'span'
 
-    return (
+    const textElement = (
       <Tag ref={ref} css={css} {...other}>
         {children}
       </Tag>
+    )
+
+    if (contextVariant && !propVariant) {
+      return textElement
+    }
+
+    return (
+      <TextContext.Provider value={{ variant }}>
+        {textElement}
+      </TextContext.Provider>
     )
   }
 )

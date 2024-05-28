@@ -368,7 +368,7 @@ export const email = ({
 										</td></tr>
 										</table>
 									</div>`
-                      : null
+                      : ''
                   } 
 									<div>
 										<table border="0" cellspacing="0" cellpadding="0" width="100%">

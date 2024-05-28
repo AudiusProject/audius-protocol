@@ -35,6 +35,7 @@ export const getTrackDefaults = (heroTrack: Track | null) => ({
   downloadConditions: heroTrack?.download_conditions ?? null,
   isPublishing: heroTrack?._is_publishing ?? false,
   aiAttributionUserId: heroTrack?.ai_attribution_user_id ?? null,
+  allowedApiKeys: heroTrack?.allowed_api_keys ?? null,
   fieldVisibility: {
     ...defaultFieldVisibility,
     ...(heroTrack?.field_visibility ?? {})

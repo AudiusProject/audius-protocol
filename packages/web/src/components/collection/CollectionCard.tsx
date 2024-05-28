@@ -108,7 +108,6 @@ export const CollectionCard = forwardRef(
             </TextLink>
             <UserLink
               userId={playlist_owner_id}
-              textVariant='body'
               css={{ justifyContent: 'center' }}
             />
           </CardContent>

@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"math/rand"
 	"mime"
 	"net/http"
 	"os"
@@ -280,7 +281,7 @@ func (ss *MediorumServer) recordMetric(action string) {
 	}
 }
 
-func (ss *MediorumServer) findNodeToServeBlob(ctx context.Context, key string) string {
+func (ss *MediorumServer) findNodeToServeBlob(_ context.Context, key string) string {
 
 	// use cache if possible
 	if host, ok := ss.redirectCache.Get(key); ok {
@@ -304,7 +305,7 @@ func (ss *MediorumServer) findNodeToServeBlob(ctx context.Context, key string) s
 	return ""
 }
 
-func (ss *MediorumServer) findAndPullBlob(ctx context.Context, key string) (string, error) {
+func (ss *MediorumServer) findAndPullBlob(_ context.Context, key string) (string, error) {
 	// start := time.Now()
 
 	hosts, _ := ss.rendezvousAllHosts(key)
@@ -347,7 +348,18 @@ func (ss *MediorumServer) logTrackListen(c echo.Context) {
 		userId = strconv.Itoa(sig.Data.UserID)
 	}
 
-	endpoint := fmt.Sprintf("%s/tracks/%d/listen", os.Getenv("identityService"), sig.Data.TrackId)
+	// default to identity
+	solanaRelayService := os.Getenv("identityService")
+	if ss.Config.discoveryListensEnabled() {
+		// pick random discovery node and append '/solana' for the relay plugin
+		endpoint := ss.Config.DiscoveryListensEndpoints[rand.Intn(len(ss.Config.DiscoveryListensEndpoints))]
+		solanaRelayService = fmt.Sprintf("%s/solana", endpoint)
+	}
+
+	endpoint := fmt.Sprintf("%s/tracks/%d/listen", solanaRelayService, sig.Data.TrackId)
+
+	ss.logger.Info("logging listen", "endpoint", endpoint)
+
 	signatureData, err := signature.GenerateListenTimestampAndSignature(ss.Config.privateKey)
 	if err != nil {
 		ss.logger.Error("unable to build request", "err", err)
@@ -367,18 +379,16 @@ func (ss *MediorumServer) logTrackListen(c echo.Context) {
 		return
 	}
 
-	req, err := http.NewRequest("POST", endpoint, bytes.NewReader(buf))
+	req, err := signature.SignedPost(endpoint, "application/json", bytes.NewReader(buf), ss.Config.privateKey, ss.Config.Self.Host)
 	if err != nil {
 		ss.logger.Error("unable to build request", "err", err)
 		return
 	}
-	req.Header.Set("content-type", "application/json")
 	req.Header.Add("x-forwarded-for", c.RealIP())
-	req.Header.Set("User-Agent", "mediorum "+ss.Config.Self.Host)
 
 	res, err := httpClient.Do(req)
 	if err != nil {
-		ss.logger.Error("unable to POST to identity service", "err", err)
+		ss.logger.Error("unable to POST to listen service", "err", err)
 		return
 	}
 	defer res.Body.Close()

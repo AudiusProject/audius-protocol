@@ -7,8 +7,22 @@ const trackApi = createApi({
   reducerPath: 'trackApi',
   endpoints: {
     getTrackById: {
-      fetch: async ({ id }: { id: ID }, { apiClient }) => {
-        return await apiClient.getTrack({ id })
+      fetch: async (
+        { id, currentUserId }: { id: ID; currentUserId?: ID },
+        { apiClient }
+      ) => {
+        return await apiClient.getTrack({ id, currentUserId })
+      },
+      fetchBatch: async (
+        { ids, currentUserId }: { ids: ID[]; currentUserId?: ID },
+        { apiClient }
+      ) => {
+        return (
+          (await apiClient.getTracks({
+            ids,
+            currentUserId: currentUserId ?? null
+          })) ?? []
+        )
       },
       options: {
         idArgKey: 'id',

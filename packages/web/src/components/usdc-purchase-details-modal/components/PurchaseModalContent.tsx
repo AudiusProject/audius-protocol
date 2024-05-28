@@ -1,7 +1,4 @@
-import { useCallback } from 'react'
-
 import { USDCPurchaseDetails } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import { makeSolanaTransactionLink } from '@audius/common/utils'
 import {
   ModalContent,
@@ -10,20 +7,13 @@ import {
   ModalFooter,
   Button,
   Flex,
-  IconArrowRight,
   IconExternalLink,
-  TextLink,
-  IconCart,
   Text
 } from '@audius/harmony'
 import moment from 'moment'
 
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { ExternalLink, UserLink } from 'components/link'
-import { DynamicTrackArtwork } from 'components/track/DynamicTrackArtwork'
-import { UserNameAndBadges } from 'components/user-name-and-badges/UserNameAndBadges'
-import { useGoToRoute } from 'hooks/useGoToRoute'
-import { useFlag } from 'hooks/useRemoteConfig'
 
 import { ContentLink } from './ContentLink'
 import { DetailSection } from './DetailSection'
@@ -57,17 +47,7 @@ export const PurchaseModalContent = ({
   artwork,
   onClose
 }: PurchaseModalContentProps) => {
-  const goToRoute = useGoToRoute()
-  const { isEnabled: isPremiumAlbumsEnabled } = useFlag(
-    FeatureFlags.PREMIUM_ALBUMS_ENABLED
-  )
-
-  const handleClickVisit = useCallback(() => {
-    onClose()
-    goToRoute(link)
-  }, [onClose, link, goToRoute])
-
-  return isPremiumAlbumsEnabled ? (
+  return (
     <>
       <ModalHeader>
         <ModalTitle title={messages.purchaseDetails} />
@@ -87,7 +67,6 @@ export const PurchaseModalContent = ({
               <UserLink
                 userId={purchaseDetails.sellerUserId}
                 popover
-                textVariant='body'
                 size='l'
                 onClick={onClose}
               />
@@ -119,65 +98,6 @@ export const PurchaseModalContent = ({
       </ModalContent>
       <ModalFooter style={{ paddingTop: 0 }}>
         <Button onClick={onClose} fullWidth>
-          {messages.done}
-        </Button>
-      </ModalFooter>
-    </>
-  ) : (
-    <>
-      <ModalHeader>
-        <ModalTitle
-          icon={<IconCart color='subdued' />}
-          title={messages.purchaseDetails}
-        />
-      </ModalHeader>
-      <ModalContent className={styles.content}>
-        <div className={styles.trackRow}>
-          <DetailSection label={contentLabel}>
-            <ContentLink onClick={onClose} link={link} title={contentTitle} />
-          </DetailSection>
-          <DynamicTrackArtwork id={purchaseDetails.contentId} />
-        </div>
-        <DetailSection label={messages.by}>
-          <Text variant='body' size='l' color='accent'>
-            <UserNameAndBadges
-              onNavigateAway={onClose}
-              userId={purchaseDetails.sellerUserId}
-            />
-          </Text>
-        </DetailSection>
-        <DetailSection label={messages.date}>
-          <Text variant='body' size='l'>
-            {moment(purchaseDetails.createdAt).format('MMM DD, YYYY')}
-          </Text>
-        </DetailSection>
-        <DetailSection
-          label={
-            <TextLink
-              variant='subdued'
-              href={makeSolanaTransactionLink(purchaseDetails.signature)}
-              isExternal
-              applyHoverStylesToInnerSvg
-            >
-              <Flex gap='xs'>
-                {messages.transaction}
-                <IconExternalLink size='s' color='subdued' />
-              </Flex>
-            </TextLink>
-          }
-        />
-        <TransactionSummary transaction={purchaseDetails} />
-      </ModalContent>
-      <ModalFooter className={styles.footer}>
-        <Button
-          className={styles.button}
-          variant='secondary'
-          iconRight={IconArrowRight}
-          onClick={handleClickVisit}
-        >
-          {messages.visitTrack}
-        </Button>
-        <Button className={styles.button} onClick={onClose}>
           {messages.done}
         </Button>
       </ModalFooter>

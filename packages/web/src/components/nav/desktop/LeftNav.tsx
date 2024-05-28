@@ -141,7 +141,6 @@ const LeftNav = (props: NavColumnProps) => {
             containerRef={(el: HTMLElement) => {
               scrollbarRef.current = el
             }}
-            className={styles.scrollable}
           >
             <DragAutoscroller
               containerBoundaries={navBodyContainerBoundaries}

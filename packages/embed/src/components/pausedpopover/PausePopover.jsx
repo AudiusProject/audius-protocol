@@ -23,7 +23,8 @@ const PausedPopoverCard = ({
   listenOnAudiusURL,
   flavor,
   isMobileWebTwitter,
-  streamConditions
+  streamConditions,
+  isTrack
 }) => {
   const { popoverVisibility, setPopoverVisibility } = useContext(PauseContext)
   const { width } = useContext(CardDimensionsContext)
@@ -75,7 +76,10 @@ const PausedPopoverCard = ({
                 <IconRemove />
               </div>
             ) : null}
-            <PrimaryLabel streamConditions={streamConditions} />
+            <PrimaryLabel
+              streamConditions={streamConditions}
+              isTrack={isTrack}
+            />
             {flavor === PlayerFlavor.COMPACT ? (
               <div className={styles.audiusIcon}>
                 <IconAudius />

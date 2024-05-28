@@ -30,6 +30,10 @@ import { parseBool, simulateDeliveryForUserName } from './util'
 const { NODE_ENV, DDEX_URL, COOKIE_SECRET } = process.env
 const COOKIE_NAME = 'audiusUser'
 
+// validate ENV
+if (!DDEX_URL) console.warn('DDEX_URL not defined')
+if (!COOKIE_SECRET) console.warn('COOKIE_SECRET not defined')
+
 const IS_PROD = NODE_ENV == 'production'
 const API_HOST = IS_PROD
   ? 'https://discoveryprovider2.audius.co'

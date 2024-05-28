@@ -8,7 +8,7 @@ import { HeaderContext } from 'components/header/mobile/HeaderContextProvider'
 import CardLineup from 'components/lineup/CardLineup'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
-import { useSubPageHeader } from 'components/nav/store/context'
+import { useSubPageHeader } from 'components/nav/mobile/NavContext'
 import { BASE_URL, EXPLORE_PAGE } from 'utils/route'
 
 import styles from './CollectionsPage.module.css'

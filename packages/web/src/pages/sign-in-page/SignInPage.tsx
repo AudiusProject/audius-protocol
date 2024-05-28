@@ -135,7 +135,6 @@ export const SignInPage = () => {
               {!isMobile ? <SignInWithMetaMaskButton /> : null}
               <TextLink
                 variant='visible'
-                textVariant='body'
                 css={{ alignSelf: isMobile ? 'center' : undefined }}
                 onClick={() => {
                   setShowForgotPassword(true)

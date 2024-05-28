@@ -184,6 +184,7 @@ export type Copyright = {
 
 export type TrackMetadata = {
   ai_attribution_user_id?: Nullable<number>
+  allowed_api_keys?: Nullable<string[]>
   blocknumber: number
   activity_timestamp?: string
   is_delete: boolean

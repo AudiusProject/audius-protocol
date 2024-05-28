@@ -35,7 +35,7 @@ export const CollectibleGatedDescription = (
       {!hasCollectibles && isUpload ? (
         <Hint icon={IconQuestionCircle}>{helpContent}</Hint>
       ) : null}
-      <ExternalTextLink to={AUDIUS_GATED_CONTENT_BLOG_LINK} textVariant='body'>
+      <ExternalTextLink to={AUDIUS_GATED_CONTENT_BLOG_LINK}>
         {messages.learnMore} <IconExternalLink size='s' color='default' />
       </ExternalTextLink>
     </Flex>

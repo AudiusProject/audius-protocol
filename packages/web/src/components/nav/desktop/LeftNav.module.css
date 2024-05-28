@@ -50,10 +50,6 @@ svg.logo path {
   fill: var(--harmony-n-300);
 }
 
-.scrollable {
-  padding-top: 24px;
-}
-
 .photo {
   position: relative;
   cursor: pointer;

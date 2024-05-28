@@ -53,3 +53,21 @@ export const getCachedDiscoveryNodes = async () => {
       typeof p.endpoint === 'string'
   )
 }
+
+type ContentNode = {
+  delegateOwnerWallet: string
+  endpoint: string
+}
+
+export const getCachedContentNodes = async () => {
+  const redis = await getRedisConnection()
+  const key = 'all-content-nodes'
+  const json = await redis.get(key)
+  return parseArray(json).filter(
+    (p): p is ContentNode =>
+      'delegateOwnerWallet' in p &&
+      'endpoint' in p &&
+      typeof p.delegateOwnerWallet === 'string' &&
+      typeof p.endpoint === 'string'
+  )
+}

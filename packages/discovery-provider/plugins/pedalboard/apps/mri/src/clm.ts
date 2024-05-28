@@ -2,6 +2,10 @@ import { Knex } from "knex";
 import { logger as plogger } from "./logger";
 import { toCsvString } from "./csv";
 import { ClmS3Config, publishToS3 } from "./s3";
+import { readConfig } from "./config";
+
+const config = readConfig()
+const isDev = config.env === "dev"
 
 export type ClientLabelMetadata = {
     UniqueTrackIdentifier: number;
@@ -17,6 +21,20 @@ export type ClientLabelMetadata = {
     ResourceType: string;
 }
 
+export const ClientLabelMetadataHeader: (keyof ClientLabelMetadata)[] = [
+    "UniqueTrackIdentifier",
+    "TrackTitle",
+    "Artist",
+    "AlbumTitle",
+    "AlbumId",
+    "ReleaseLabel",
+    "ISRC",
+    "UPC",
+    "Composer",
+    "Duration",
+    "ResourceType"
+]
+
 // gathers data from a 24 hour period between "YYYY-MM-DDT00:00:00.000Z" to "YYYY-MM-DDT23:59:59.999Z"
 // formats it into csv format compatible with the mri spec
 // publishes it to all the provided s3 configs
@@ -27,7 +45,8 @@ export const clm = async (db: Knex, s3s: ClmS3Config[], date: Date): Promise<voi
     // Gather data from "YYYY-MM-DDT00:00:00.000Z" to "YYYY-MM-DDT23:59:59.999Z"
     const start = new Date(date);
     start.setHours(0, 0, 0, 0)
-    const end = new Date(start.getDate() + 1);
+    const end = new Date(start)
+    end.setDate(start.getDate() + 1);
 
     logger.info({ start: start.toISOString(), end: end.toISOString() }, "time range")
 
@@ -55,13 +74,13 @@ export const clm = async (db: Knex, s3s: ClmS3Config[], date: Date): Promise<voi
             `tracks.duration as Duration`,
             db.raw(`'Audio' as "ResourceType"`)
         )
-        .whereNotNull('playlists.playlist_id')
-        .whereNotNull('isrc')
-        .andWhereNot('isrc', '=', '')
         .where('tracks.created_at', '>=', start)
         .where('tracks.created_at', '<', end)
 
     const csv = toCsvString(clmRows)
+    if (isDev) {
+        logger.info(csv)
+    }
 
     const uploads = s3s.map((s3config) => publishToS3(logger, s3config, date, csv))
     const results = await Promise.allSettled(uploads)

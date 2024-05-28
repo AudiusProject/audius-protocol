@@ -2,11 +2,12 @@ import { randomBytes, randomInt } from 'crypto'
 import { createReadStream } from 'fs'
 import { spawn } from 'child_process'
 import fs from 'fs'
+import { Utils } from '@audius/sdk'
 
 import chalk from 'chalk'
 import { program } from 'commander'
 
-import { initializeAudiusLibs } from './utils.mjs'
+import { initializeAudiusLibs, initializeAudiusSdk } from './utils.mjs'
 import { Genre } from '@audius/sdk'
 
 function generateWhiteNoise(duration, outFile) {
@@ -176,7 +177,8 @@ program
         downloadPrice,
         downloadConditions,
         remixOf,
-        output
+        output,
+        listen
       }
     ) => {
       const audiusLibs = await initializeAudiusLibs(from)
@@ -250,6 +252,7 @@ program
             is_original_available: true,
             is_downloadable: !!isDownloadable,
             ai_attribution_user_id: null,
+            allowed_api_keys: null,
             preview_start_seconds: previewStartSeconds
               ? parseInt(previewStartSeconds)
               : null,
@@ -262,9 +265,12 @@ program
           program.error(chalk.red(response.error))
         }
 
+        const url = `http://audius-protocol-discovery-provider-1/v1/tracks/${Utils.encodeHashId(response.trackId)}/stream`
+
         console.log(chalk.green('Successfully uploaded track!'))
         console.log(chalk.yellow.bold('Track ID:   '), response.trackId)
         console.log(chalk.yellow.bold('Track Title:'), trackTitle)
+        console.log(chalk.yellow.bold('Track Stream URL:'), url)
 
         if (output) {
           fs.writeFileSync(

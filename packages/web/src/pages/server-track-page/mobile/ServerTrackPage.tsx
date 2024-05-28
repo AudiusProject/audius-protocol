@@ -15,7 +15,7 @@ import NavContext, {
   LeftPreset,
   CenterPreset,
   RightPreset
-} from 'components/nav/store/context'
+} from 'components/nav/mobile/NavContext'
 import { getTrackDefaults } from 'pages/track-page/utils'
 import { decodeHashId } from 'utils/hashIds'
 

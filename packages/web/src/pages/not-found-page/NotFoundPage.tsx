@@ -13,7 +13,7 @@ import { useRecord, make } from 'common/store/analytics/actions'
 import NavContext, {
   CenterPreset,
   RightPreset
-} from 'components/nav/store/context'
+} from 'components/nav/mobile/NavContext'
 import Page from 'components/page/Page'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { HOME_PAGE } from 'utils/route'

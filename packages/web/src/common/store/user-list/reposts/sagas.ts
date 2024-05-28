@@ -1,4 +1,11 @@
-import { Collection, ID, Track } from '@audius/common/models'
+import {
+  Collection,
+  ID,
+  Id,
+  OptionalId,
+  Track,
+  userMetadataListFromSDK
+} from '@audius/common/models'
 import {
   cacheCollectionsSelectors,
   cacheTracksSelectors,
@@ -6,9 +13,10 @@ import {
   repostsUserListActions,
   repostsUserListSelectors,
   RepostType,
-  REPOSTS_USER_LIST_TAG
+  REPOSTS_USER_LIST_TAG,
+  getSDK
 } from '@audius/common/store'
-import { put, select } from 'typed-redux-saga'
+import { call, put, select } from 'typed-redux-saga'
 
 import { watchRepostsError } from 'common/store/user-list/reposts/errorSagas'
 import { createUserListProvider } from 'common/store/user-list/utils'
@@ -22,19 +30,25 @@ const getPlaylistReposts = createUserListProvider<Collection>({
   getExistingEntity: getCollection,
   extractUserIDSubsetFromEntity: (collection: Collection) =>
     collection.followee_reposts.map((r) => r.user_id),
-  fetchAllUsersForEntity: async ({
+  fetchAllUsersForEntity: function* ({
     limit,
     offset,
     entityId,
-    currentUserId,
-    apiClient
-  }) => {
-    const users = await apiClient.getPlaylistRepostUsers({
-      limit,
-      offset,
-      playlistId: entityId,
-      currentUserId
-    })
+    currentUserId
+  }) {
+    const sdk = yield* getSDK()
+
+    const { data } = yield* call(
+      [sdk.full.playlists, sdk.full.playlists.getUsersFromPlaylistReposts],
+      {
+        limit,
+        offset,
+        playlistId: Id.parse(entityId),
+        userId: OptionalId.parse(currentUserId)
+      }
+    )
+    const users = userMetadataListFromSDK(data)
+
     return { users }
   },
   selectCurrentUserIDsInList: getUserIds,
@@ -47,19 +61,24 @@ const getTrackReposts = createUserListProvider<Track>({
   getExistingEntity: getTrack,
   extractUserIDSubsetFromEntity: (track: Track) =>
     track.followee_reposts.map((r) => r.user_id),
-  fetchAllUsersForEntity: async ({
+  fetchAllUsersForEntity: function* ({
     limit,
     offset,
     entityId,
-    currentUserId,
-    apiClient
-  }) => {
-    const users = await apiClient.getTrackRepostUsers({
-      limit,
-      offset,
-      trackId: entityId,
-      currentUserId
-    })
+    currentUserId
+  }) {
+    const sdk = yield* getSDK()
+    const { data } = yield* call(
+      [sdk.full.tracks, sdk.full.tracks.getUsersFromReposts],
+      {
+        limit,
+        offset,
+        trackId: Id.parse(entityId),
+        userId: OptionalId.parse(currentUserId)
+      }
+    )
+    const users = userMetadataListFromSDK(data)
+
     return { users }
   },
   selectCurrentUserIDsInList: getUserIds,

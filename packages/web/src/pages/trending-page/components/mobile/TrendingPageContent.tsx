@@ -20,7 +20,7 @@ import NavContext, {
   CenterPreset,
   LeftPreset,
   RightPreset
-} from 'components/nav/store/context'
+} from 'components/nav/mobile/NavContext'
 import useTabs from 'hooks/useTabs/useTabs'
 import { TrendingPageContentProps } from 'pages/trending-page/types'
 import { BASE_URL, TRENDING_PAGE } from 'utils/route'
