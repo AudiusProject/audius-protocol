@@ -291,6 +291,10 @@ def configure_celery(celery, test_config=None):
             if "url_read_replica" in test_config["db"]:
                 database_url_read_replica = test_config["db"]["url_read_replica"]
 
+    audius_solana_plays_indexing_interval_s = int(
+        os.getenv("audius_solana_plays_indexing_interval_s", 30)
+    )
+
     # Update celery configuration
     celery.conf.update(
         imports=[
@@ -363,7 +367,7 @@ def configure_celery(celery, test_config=None):
             },
             "index_solana_plays": {
                 "task": "index_solana_plays",
-                "schedule": timedelta(seconds=5),
+                "schedule": timedelta(seconds=audius_solana_plays_indexing_interval_s),
             },
             "index_challenges": {
                 "task": "index_challenges",
