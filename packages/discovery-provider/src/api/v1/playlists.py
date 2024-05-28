@@ -589,9 +589,9 @@ class GetPlaylistAccessInfo(Resource):
             abort_not_found(playlist_id, ns)
         playlist = extend_track(playlist[0])
         playlist["stream_conditions"] = get_extended_purchase_gate(
-            track["stream_conditions"]
+            playlist["stream_conditions"]
         )
         playlist["download_conditions"] = get_extended_purchase_gate(
-            track["download_conditions"]
+            playlist["download_conditions"]
         )
         return success_response(playlist)
