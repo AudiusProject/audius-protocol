@@ -15,7 +15,7 @@ t3 = t1 - timedelta(hours=2)
 t4 = t1 - timedelta(hours=3)
 
 
-def test_get_repost_notifications(app):
+def test_get_usdc_purchase_notifications(app):
     with app.app_context():
         db_mock = get_db()
 

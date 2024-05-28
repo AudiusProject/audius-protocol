@@ -1,4 +1,5 @@
 import { playbackRateValueMap, PlaybackRate } from '@audius/common/store'
+import { MIN_BUFFERING_DELAY_MS } from '@audius/common/utils'
 
 declare global {
   interface Window {
@@ -17,7 +18,6 @@ const IS_UI_WEBVIEW =
 const FADE_IN_EVENT = new Event('fade-in')
 const FADE_OUT_EVENT = new Event('fade-out')
 const VOLUME_CHANGE_BASE = 10
-const BUFFERING_DELAY_MILLISECONDS = 1000
 const FADE_IN_TIME_MILLISECONDS = 320
 const FADE_OUT_TIME_MILLISECONDS = 400
 
@@ -174,7 +174,7 @@ export class AudioPlayer {
       this.bufferingTimeout = setTimeout(() => {
         this.buffering = true
         this.onBufferingChange(this.buffering)
-      }, BUFFERING_DELAY_MILLISECONDS)
+      }, MIN_BUFFERING_DELAY_MS)
     }
     this.audio.addEventListener('waiting', this.waitingListener)
   }
