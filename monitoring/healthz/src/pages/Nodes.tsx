@@ -344,7 +344,7 @@ function HealthRow({ isContent, sp, isStaging }: { isContent: boolean; sp: SP, i
       )}
       {isContent && (
         <td className={"whitespace-nowrap px-3 py-5 text-sm"}>
-          {health?.isDiscoveryListensEnabled}
+          {JSON.stringify(health?.isDiscoveryListensEnabled === undefined ? false : health?.isDiscoveryListensEnabled)}
         </td>
       )}
     </tr>
