@@ -54,6 +54,7 @@ export default function Nodes() {
               {isContent && <th scope="col" className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-200">Started</th>}
               {isContent && <th scope="col" className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-200">Uploads</th>}
               {isContent && <th scope="col" className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-200">Healthy Peers {'<'}2m</th>}
+              {isContent && <th scope="col" className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-200">Discovery Listens Enabled</th>}
             </tr >
           </thead >
           <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
@@ -339,6 +340,11 @@ function HealthRow({ isContent, sp, isStaging }: { isContent: boolean; sp: SP, i
         <td className={`whitespace-nowrap px-3 py-5 text-sm unreachable-peers ${peerReachabilityClass}`}>
           {healthyPeers2m}
           {unreachablePeers && <div>{`Can't reach: ${unreachablePeers}`}</div>}
+        </td>
+      )}
+      {isContent && (
+        <td className={"whitespace-nowrap px-3 py-5 text-sm"}>
+          {health?.isDiscoveryListensEnabled}
         </td>
       )}
     </tr>
