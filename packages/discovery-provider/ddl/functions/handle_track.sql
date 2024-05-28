@@ -12,8 +12,7 @@ begin
   if tg_op = 'UPDATE' and old_track.track_id is not null then
     return not track_is_public(old_track) and track_is_public(new_track);
   else
-    return new_track.created_at = new_track.updated_at
-      and tg_op = 'INSERT'
+    return tg_op = 'INSERT'
       and track_is_public(new_track)
     ;
   end if;
