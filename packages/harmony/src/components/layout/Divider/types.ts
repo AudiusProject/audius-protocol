@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+
 import { BorderColors } from '../../../foundations/color'
 
 export type DividerProps = {
