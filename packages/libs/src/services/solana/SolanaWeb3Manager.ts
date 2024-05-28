@@ -429,11 +429,16 @@ export class SolanaWeb3Manager {
     )
   }
 
-  async assertRawTokenAccountInfoDoesNotExist(solanaAddress: string) {
+  // We call this because we want to throw an error if the token account exists.
+  // The caller passes in the error message as it has context about why it expects
+  // the token account to exist.
+  async assertRawTokenAccountInfoDoesNotExist(
+    solanaAddress: string,
+    errorMsg: string
+  ) {
     const rawAccount = await this.getRawTokenAccountInfo(solanaAddress)
     if (rawAccount) {
-      // Token account exists, but could not unpack.
-      throw new Error('Error unpacking token account')
+      throw new Error(errorMsg)
     }
   }
 
@@ -447,7 +452,10 @@ export class SolanaWeb3Manager {
         // tokenAccount may be null because the token account doesn't exist,
         // or because an error was thrown while unpacking the account.
         // In the latter scenario, we throw an error.
-        this.assertRawTokenAccountInfoDoesNotExist(solanaAddress)
+        await this.assertRawTokenAccountInfoDoesNotExist(
+          solanaAddress,
+          'Error unpacking token account'
+        )
 
         // Token account does not exist.
         // Check if solanaAddress is a root account.
@@ -459,7 +467,10 @@ export class SolanaWeb3Manager {
           associatedTokenAccount.toString()
         )
         if (!tokenAccount) {
-          this.assertRawTokenAccountInfoDoesNotExist(solanaAddress)
+          await this.assertRawTokenAccountInfoDoesNotExist(
+            solanaAddress,
+            'Error unpacking token account'
+          )
           return BigInt(0)
         }
       }

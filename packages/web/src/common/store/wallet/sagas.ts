@@ -247,6 +247,19 @@ function* fetchBalanceAsync() {
       return
     }
 
+    if (isNullOrUndefined(currentSolAudioWeiBalance)) {
+      console.warn(
+        "Failed to fetch and set user's balance - error getting SOL Audio balance."
+      )
+      yield* put(
+        setBalanceError({
+          balanceLoadDidFail: true,
+          totalBalanceLoadDidFail: true
+        })
+      )
+      return
+    }
+
     const associatedWalletBalance: BNWei | null = yield* call(
       [walletClient, 'getAssociatedWalletBalance'],
       account.user_id,
