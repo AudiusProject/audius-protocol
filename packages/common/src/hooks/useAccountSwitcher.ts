@@ -4,11 +4,10 @@ import { useGetCurrentUserId, useGetCurrentWeb3User } from '~/api/account'
 import { useAppContext } from '~/context'
 import { UserMetadata } from '~/models/User'
 
-// Matches corresponding key in libs (DISCOVERY_PROVIDER_USER_WALLET_OVERRIDE)
-const USER_WALLET_OVERRIDE_KEY = '@audius/user-wallet-override'
-
 export const useAccountSwitcher = () => {
   const { localStorage } = useAppContext()
+  const { data: currentWeb3User } = useGetCurrentWeb3User({})
+
   const switchAccount = useCallback(
     async (user: UserMetadata) => {
       if (!user.wallet) {
@@ -16,13 +15,19 @@ export const useAccountSwitcher = () => {
         return
       }
 
-      await localStorage.setItem(USER_WALLET_OVERRIDE_KEY, user.wallet)
+      // Set an override if we aren't using the wallet of the "signed in" user
+      if (currentWeb3User && currentWeb3User.wallet === user.wallet) {
+        await localStorage.clearAudiusUserWalletOverride()
+      } else {
+        await localStorage.setAudiusUserWalletOverride(user.wallet)
+      }
+
       await localStorage.clearAudiusAccount()
       await localStorage.clearAudiusAccountUser()
 
       window.location.reload()
     },
-    [localStorage]
+    [currentWeb3User, localStorage]
   )
 
   return { switchAccount }
