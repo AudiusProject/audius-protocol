@@ -17,10 +17,8 @@ const messages = {
   access: `You've granted access for your music to be uploaded to Audius through DDEX.`,
   addAnother: 'Add Another Distributor',
   unlink: 'To unlink your account, go to',
-  apps: 'Authenticated Apps',
-  located: 'located under',
-  settings: 'Settings',
-  inApp: 'in the Audius app'
+  apps: 'Authorized Apps',
+  located: 'located under Settings in the Audius app'
 }
 
 const env = import.meta.env.VITE_ENVIRONMENT as 'dev' | 'stage' | 'prod'
@@ -86,12 +84,6 @@ export const Success = () => {
         </TextLink>
         {' '}
         {messages.located}
-        {' '}
-        <TextLink variant='visible' href={settingsLink}>
-          {messages.settings}
-        </TextLink>
-        {' '}
-        {messages.inApp}
       </Text>
     </>
   )

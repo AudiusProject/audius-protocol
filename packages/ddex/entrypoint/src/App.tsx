@@ -94,8 +94,7 @@ const Page = () => {
     <Flex
       direction='column'
       backgroundColor='default'
-      h={'100vh'}
-      css={{ userSelect: 'none' }}
+      css={{ userSelect: 'none', minHeight: '100vh' }}
     >
       {status === Status.LOADING || status === Status.IDLE
           ? <></>
