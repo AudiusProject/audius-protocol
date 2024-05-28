@@ -164,13 +164,13 @@ export const reducers = (
 
   // Cache
   // @ts-ignore
-  collections: asCache(collectionsReducer(ssrPageProps), Kind.COLLECTIONS),
+  collections: asCache(collectionsReducer, Kind.COLLECTIONS),
   // TODO: Fix type error
   // @ts-ignore
-  tracks: asCache(tracksReducer(ssrPageProps), Kind.TRACKS),
+  tracks: asCache(tracksReducer, Kind.TRACKS),
   // TODO: Fix type error
   // @ts-ignore
-  users: asCache(usersReducer(ssrPageProps), Kind.USERS),
+  users: asCache(usersReducer, Kind.USERS),
 
   savedCollections: savedCollectionsReducer,
 
