@@ -56,6 +56,10 @@
                 "artist_pick_track_id": {
                     "type": ["integer", "null"],
                     "default": null
+                },
+                "spl_usdc_payout_wallet": {
+                    "type": ["string", "null"],
+                    "default": null
                 }
             },
             "required": [

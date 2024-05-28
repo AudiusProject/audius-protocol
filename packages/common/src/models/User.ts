@@ -49,6 +49,7 @@ export type UserMetadata = {
   repost_count: number
   solanaCollectibleList?: Collectible[]
   spl_wallet: Nullable<SolanaWalletAddress>
+  spl_usdc_payout_wallet?: Nullable<SolanaWalletAddress>
   supporter_count: number
   supporting_count: number
   track_count: number

@@ -419,6 +419,18 @@ class UsdcPurchaseBuyerNotification(TypedDict):
     extra_amount: int
 
 
+class RequestManagerNotification(TypedDict):
+    user_id: int
+    grantee_user_id: int
+    grantee_address: str
+
+
+class ApproveManagerNotification(TypedDict):
+    user_id: int
+    grantee_user_id: int
+    grantee_address: str
+
+
 class AnnouncementNotification(TypedDict):
     title: str
     short_description: str

@@ -32,10 +32,12 @@ export const typography = {
     m: '20px',
     l: '24px',
     xl: '32px',
+    // heading large one-off
+    hl: '36px',
     '2xl': '48px',
     '3xl': '52px',
     '4xl': '72px',
-    '5xl': '96x',
+    '5xl': '96px',
     '6xl': '120px'
   },
   shadow: {
