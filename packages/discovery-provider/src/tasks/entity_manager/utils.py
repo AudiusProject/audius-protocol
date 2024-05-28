@@ -542,13 +542,3 @@ def parse_release_date(release_date_str):
         pass
 
     return None
-
-
-def hex_to_blocknumber(bl: str | int) -> int:
-    if isinstance(bl, str) and bl.startswith("0x"):
-        return int(bl, 16)
-    if isinstance(bl, int):
-        return bl
-    err_msg = f"not valid block hex str or int {bl}"
-    utils_logger.error(f"utils.py | {err_msg}")
-    raise TypeError(err_msg)

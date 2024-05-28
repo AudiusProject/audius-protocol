@@ -20,7 +20,6 @@ from src.queries.get_underground_trending import (
 )
 from src.tasks.aggregates import get_latest_blocknumber
 from src.tasks.celery_app import celery
-from src.tasks.entity_manager.utils import hex_to_blocknumber
 from src.trending_strategies.trending_strategy_factory import TrendingStrategyFactory
 from src.trending_strategies.trending_type_and_version import TrendingType
 from src.utils import helpers, web3_provider
@@ -96,8 +95,6 @@ def enqueue_trending_challenges(
             )
             return
 
-        # convert possibly from hex to int
-        latest_blocknumber = hex_to_blocknumber(latest_blocknumber)
         # subtract final poa block because db is final_poa_block + latest_acdc_block
         latest_blocknumber = latest_blocknumber - helpers.get_final_poa_block()
 
