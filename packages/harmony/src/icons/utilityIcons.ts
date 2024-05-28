@@ -67,6 +67,7 @@ import IconMessageBlockSVG from '../assets/icons/MessageBlock.svg'
 import IconMessageLockedSVG from '../assets/icons/MessageLocked.svg'
 import IconMessageUnblockSVG from '../assets/icons/MessageUnblock.svg'
 import IconMinusSVG from '../assets/icons/Minus.svg'
+import IconMoneyBracketSVG from '../assets/icons/MoneyBracket.svg'
 import IconMoodSVG from '../assets/icons/Mood.svg'
 import IconNoWifiSVG from '../assets/icons/NoWifi.svg'
 import IconNoteSVG from '../assets/icons/Note.svg'
@@ -209,6 +210,7 @@ export const IconMinus = IconMinusSVG as IconComponent
 export const IconThumbsUp = IconThumbsUpSVG as IconComponent
 export const IconCloseAlt = IconCloseAltSVG as IconComponent
 export const IconMood = IconMoodSVG as IconComponent
+export const IconMoneyBracket = IconMoneyBracketSVG as IconComponent
 export const IconTipping = IconTippingSVG as IconComponent
 export const IconCloudDownload = IconCloudDownloadSVG as IconComponent
 export const IconNoWifi = IconNoWifiSVG as IconComponent

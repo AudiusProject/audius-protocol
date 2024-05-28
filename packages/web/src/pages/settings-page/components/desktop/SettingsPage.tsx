@@ -62,6 +62,7 @@ import { DeveloperAppsSettingsCard } from './DeveloperApps'
 import { AccountsManagingYouSettingsCard } from './ManagerMode/AccountsManagingYouSettingsCard'
 import { AccountsYouManageSettingsCard } from './ManagerMode/AccountsYouManageSettingsCard'
 import NotificationSettings from './NotificationSettings'
+import { PayoutWalletSettingsCard } from './PayoutWallet/PayoutWalletSettingsCard'
 import SettingsCard from './SettingsCard'
 import styles from './SettingsPage.module.css'
 import VerificationModal from './VerificationModal'
@@ -303,7 +304,9 @@ export const SettingsPage = (props: SettingsPageProps) => {
     return options
   }, [showMatrix])
 
-  const { isEnabled: isChatEnabled } = useFlag(FeatureFlags.CHAT_ENABLED)
+  const { isEnabled: isPayoutWalletEnabled } = useFlag(
+    FeatureFlags.PAYOUT_WALLET_ENABLED
+  )
   const allowAiAttribution = useSelector(getAllowAiAttribution)
   const { isEnabled: isAiAttributionEnabled } = useFlag(
     FeatureFlags.AI_ATTRIBUTION
@@ -338,21 +341,20 @@ export const SettingsPage = (props: SettingsPageProps) => {
             key={`tab-slider-${appearanceOptions.length}`}
           />
         </SettingsCard>
-        {isChatEnabled ? (
-          <SettingsCard
-            icon={<IconMessage />}
-            title={messages.inboxSettingsCardTitle}
-            description={messages.inboxSettingsCardDescription}
+        {isPayoutWalletEnabled ? <PayoutWalletSettingsCard /> : null}
+        <SettingsCard
+          icon={<IconMessage />}
+          title={messages.inboxSettingsCardTitle}
+          description={messages.inboxSettingsCardDescription}
+        >
+          <Button
+            variant='secondary'
+            onClick={openInboxSettingsModal}
+            fullWidth
           >
-            <Button
-              variant='secondary'
-              onClick={openInboxSettingsModal}
-              fullWidth
-            >
-              {messages.inboxSettingsButtonText}
-            </Button>
-          </SettingsCard>
-        ) : null}
+            {messages.inboxSettingsButtonText}
+          </Button>
+        </SettingsCard>
         <SettingsCard
           icon={<IconNotification />}
           title={messages.notificationsCardTitle}
