@@ -9,8 +9,8 @@ from web3.datastructures import AttributeDict
 from integration_tests.challenges.index_helpers import UpdateTask
 from integration_tests.utils import populate_mock_db
 from src.challenges.challenge_event_bus import ChallengeEventBus, setup_challenge_bus
-from src.models.tracks.track import Track
 from src.models.notifications.notification import Notification
+from src.models.tracks.track import Track
 from src.models.tracks.track_route import TrackRoute
 from src.tasks.entity_manager.entity_manager import (
     ENABLE_DEVELOPMENT_FEATURES,
@@ -2169,12 +2169,16 @@ def test_publish_track(app, mocker):
     metadatas = {
         "CreateHiddenTrack": {
             **default_metadata,
+            "title": "track 1",
             "track_id": TRACK_ID_OFFSET,
+            "owner_id": 1,
             "is_unlisted": True,
             "is_playlist_upload": False,
         },
         "PublishTrack": {
             **default_metadata,
+            "title": "track 1",
+            "owner_id": 1,
             "track_id": TRACK_ID_OFFSET,
             "is_unlisted": False,
             "is_playlist_upload": False,
