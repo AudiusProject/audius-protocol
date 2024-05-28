@@ -25,6 +25,7 @@ import { InboxUnavailableModal } from 'components/inbox-unavailable-modal/InboxU
 import { LeavingAudiusModal } from 'components/leaving-audius-modal/LeavingAudiusModal'
 import { LockedContentModal } from 'components/locked-content-modal/LockedContentModal'
 import { PasswordResetModal } from 'components/password-reset/PasswordResetModal'
+import { PayoutWalletModal } from 'components/payout-wallet-modal/PayoutWalletModal'
 import { PremiumContentPurchaseModal } from 'components/premium-content-purchase-modal/PremiumContentPurchaseModal'
 import { PublishTrackConfirmationModal } from 'components/publish-track-confirmation-modal/PublishTrackConfirmationModal'
 import { TipAudioModal } from 'components/tipping/tip-audio/TipAudioModal'
@@ -48,7 +49,6 @@ import { ClaimAllRewardsModal } from 'pages/audio-rewards-page/components/modals
 import TopAPIModal from 'pages/audio-rewards-page/components/modals/TopAPI'
 import TransferAudioMobileDrawer from 'pages/audio-rewards-page/components/modals/TransferAudioMobileDrawer'
 import { VipDiscordModal } from 'pages/audio-rewards-page/components/modals/VipDiscordModal'
-import { PayoutWalletModal } from 'components/payout-wallet-modal/PayoutWalletModal'
 
 import { AppModal } from './AppModal'
 
