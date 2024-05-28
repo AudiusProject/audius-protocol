@@ -271,7 +271,9 @@ export class DiscoveryProvider {
       } else {
         const currentUser = await web3AccountPromise
         if (currentUser) {
-          this.userStateManager.setWeb3User(currentUser)
+          if (this.enableUserWalletOverride) {
+            this.userStateManager.setWeb3User(structuredClone(currentUser))
+          }
           await this.userStateManager.setCurrentUser(currentUser)
         }
       }

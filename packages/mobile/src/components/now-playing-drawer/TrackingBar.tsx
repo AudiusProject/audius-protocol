@@ -3,7 +3,7 @@ import { useCallback, useEffect, useRef } from 'react'
 import { playerSelectors } from '@audius/common/store'
 import { Animated, Dimensions, Easing } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
-import TrackPlayer from 'react-native-track-player'
+import TrackPlayer, { useIsPlaying } from 'react-native-track-player'
 import { useSelector } from 'react-redux'
 import { useAsync } from 'react-use'
 
@@ -14,7 +14,7 @@ import { NOW_PLAYING_HEIGHT } from './constants'
 
 const width = Dimensions.get('window').width
 
-const { getSeek, getPlaying, getPaused } = playerSelectors
+const { getSeek, getPaused, getBuffering } = playerSelectors
 
 const useStyles = makeStyles(({ palette }) => ({
   rail: {
@@ -52,8 +52,10 @@ export const TrackingBar = (props: TrackingBarProps) => {
   const currentAnimation = useRef<Animated.CompositeAnimation>()
 
   const seek = useSelector(getSeek) ?? 0
-  const playing = useSelector(getPlaying)
+  const { playing } = useIsPlaying()
+  const buffering = useSelector(getBuffering)
   const paused = useSelector(getPaused)
+  const isPlaying = playing && !buffering
 
   const runTranslateXAnimation = useCallback((timeRemaining: number) => {
     currentAnimation.current = Animated.timing(translateXAnimation.current, {
@@ -77,14 +79,14 @@ export const TrackingBar = (props: TrackingBarProps) => {
   }, [mediaKey, duration, runTranslateXAnimation])
 
   useAsync(async () => {
-    if (paused) {
+    if (paused || buffering) {
       currentAnimation.current?.stop()
-    } else if (playing) {
+    } else if (isPlaying) {
       const position = await TrackPlayer.getPosition()
       runTranslateXAnimation(duration - position)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- no duration
-  }, [playing, paused, runTranslateXAnimation])
+  }, [isPlaying, paused, runTranslateXAnimation])
 
   useEffect(() => {
     const percentComplete = duration === 0 ? 0 : seek / duration
@@ -92,7 +94,7 @@ export const TrackingBar = (props: TrackingBarProps) => {
 
     translateXAnimation.current.setValue(percentComplete)
 
-    if (playing) {
+    if (isPlaying) {
       runTranslateXAnimation(timeRemaining)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- no duration

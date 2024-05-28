@@ -16,7 +16,6 @@ const heliusDasApiUrl = process.env.VITE_HELIUS_DAS_API_URL
 const solanaRpcEndpoint = process.env.VITE_SOLANA_RPC_ENDPOINT
 const appName = process.env.VITE_APP_NAME
 const apiKey = process.env.VITE_API_KEY
-console.log(process.env, appName, apiKey)
 
 export const RequestedEntity = Object.seal({
   TRACKS: 'tracks',
@@ -30,9 +29,12 @@ const audiusSdk = sdk({
   environment: env
 })
 
-audiusSdk.services.discoveryNodeSelector.addEventListener('change', (endpoint) => {
-  discoveryEndpoint = endpoint
-})
+audiusSdk.services.discoveryNodeSelector.addEventListener(
+  'change',
+  (endpoint) => {
+    discoveryEndpoint = endpoint
+  }
+)
 
 const fetchNFTClient = new FetchNFTClient({
   openSeaConfig: { apiEndpoint: openSeaApiUrl },
@@ -41,7 +43,8 @@ const fetchNFTClient = new FetchNFTClient({
 })
 
 export const getTrackStreamEndpoint = (trackId, isPurchaseable) =>
-  `${discoveryEndpoint}/v1/tracks/${trackId}/stream?app_name=${appName}&api_key=${apiKey}${isPurchaseable ? '&preview=true' : ''
+  `${discoveryEndpoint}/v1/tracks/${trackId}/stream?app_name=${appName}&api_key=${apiKey}${
+    isPurchaseable ? '&preview=true' : ''
   }`
 
 export const getCollectiblesJson = async (cid) => {

@@ -5,13 +5,11 @@
     "outDir": "./build_test",
     "types": ["node", "mocha"]
   },
-  "include": [
-    "src",
-    "test",
-    "sequelize"
-  ],
-  "exclude": [
-    "node_modules",
-    "build"
-  ]
+  "include": ["src", "test", "sequelize"],
+  "exclude": ["node_modules", "build"],
+  "ts-node": {
+    "moduleTypes": {
+      "*.ts": "cjs"
+    }
+  }
 }

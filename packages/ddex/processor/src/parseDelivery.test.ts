@@ -7,6 +7,7 @@ import {
   DealSolGated,
   DealTipGated,
   parseDdexXmlFile,
+  parseDuration,
 } from './parseDelivery'
 import { sources } from './sources'
 
@@ -69,4 +70,11 @@ test('separate stream / download deal conditions', async () => {
     forStream: false,
     forDownload: true,
   })
+})
+
+test('parse duration', () => {
+  expect(parseDuration('')).toEqual(undefined)
+  expect(parseDuration('PT2M5S')).toEqual(125)
+  expect(parseDuration('PT20M5S')).toEqual(1205)
+  expect(parseDuration('PT2H20M5S')).toEqual(8405)
 })

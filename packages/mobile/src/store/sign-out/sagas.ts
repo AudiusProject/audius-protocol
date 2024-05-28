@@ -50,6 +50,7 @@ function* signOut() {
   yield* put(resetSignOn())
 
   yield* call(deregisterPushNotifications)
+  yield* call([localStorage, 'clearAudiusUserWalletOverride'])
   yield* call([localStorage, 'clearAudiusAccount'])
   yield* call([localStorage, 'clearAudiusAccountUser'])
   yield* call([audiusBackendInstance, 'signOut'])

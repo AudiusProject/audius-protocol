@@ -18,6 +18,7 @@ export const signOut = async (
   localStorage: LocalStorage
 ) => {
   await removeLocalStorageItems(localStorage)
+  await localStorage.clearAudiusUserWalletOverride()
   await localStorage.clearAudiusAccount()
   await localStorage.clearAudiusAccountUser()
   await localStorage.clearPlaybackRate()
