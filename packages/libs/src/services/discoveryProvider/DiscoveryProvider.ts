@@ -6,6 +6,7 @@ import axios, {
   ResponseType
 } from 'axios'
 import fetch from 'cross-fetch'
+import { cloneDeep } from 'lodash'
 // @ts-ignore
 import urlJoin, { PathArg } from 'proper-url-join/es/index.js'
 import type { TransactionReceipt } from 'web3-core'
@@ -272,7 +273,7 @@ export class DiscoveryProvider {
         const currentUser = await web3AccountPromise
         if (currentUser) {
           if (this.enableUserWalletOverride) {
-            this.userStateManager.setWeb3User(structuredClone(currentUser))
+            this.userStateManager.setWeb3User(cloneDeep(currentUser))
           }
           await this.userStateManager.setCurrentUser(currentUser)
         }
