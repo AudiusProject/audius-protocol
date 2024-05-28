@@ -39,7 +39,10 @@ test('crud', async () => {
   {
     await parseDdexXmlFile(source, 'fixtures/01_delivery.xml')
     const rr = releaseRepo.get(grid)!
+    expect(rr._parsed?.labelName).toBe('Iron Crown Music')
     expect(rr._parsed?.soundRecordings[0].title).toBe('Example Song')
+    expect(rr._parsed?.soundRecordings[0].labelName).toBe('Label Name, Inc.')
+    expect(rr._parsed?.soundRecordings[0].duration).toBe(225)
     expect(rr.status).toBe(ReleaseProcessingStatus.PublishPending)
     expect(rr.source).toBe('crudTest')
   }

@@ -191,6 +191,8 @@ export function prepareTrackMetadatas(release: DDEXRelease) {
         genre: audiusGenre,
         title: sound.title,
         isrc: release.releaseIds.isrc,
+        iswc: release.releaseIds.iswc,
+        ddexReleaseIds: release.releaseIds,
         releaseDate,
         copyrightLine,
         producerCopyrightLine,
@@ -206,9 +208,11 @@ export function prepareTrackMetadatas(release: DDEXRelease) {
         if (deal.audiusDealType == 'FollowGated') {
           const cond = { followUserId: release.audiusUser! }
           if (deal.forStream) {
+            meta.isStreamGated = true
             meta.streamConditions = cond
           }
           if (deal.forDownload) {
+            meta.isDownloadGated = true
             meta.downloadConditions = cond
           }
         }
@@ -216,9 +220,11 @@ export function prepareTrackMetadatas(release: DDEXRelease) {
         if (deal.audiusDealType == 'TipGated') {
           const cond = { tipUserId: release.audiusUser! }
           if (deal.forStream) {
+            meta.isStreamGated = true
             meta.streamConditions = cond
           }
           if (deal.forDownload) {
+            meta.isDownloadGated = true
             meta.downloadConditions = cond
           }
         }
@@ -230,9 +236,11 @@ export function prepareTrackMetadatas(release: DDEXRelease) {
             },
           }
           if (deal.forStream) {
+            meta.isStreamGated = true
             meta.streamConditions = cond
           }
           if (deal.forDownload) {
+            meta.isDownloadGated = true
             meta.downloadConditions = cond
           }
         }
@@ -322,6 +330,10 @@ export function prepareAlbumMetadata(release: DDEXRelease) {
     releaseDate,
     ddexReleaseIds: release.releaseIds,
     artists: release.artists.map(mapContributor),
+    upc: release.releaseIds.icpn, // ICPN is either UPC (USA/Canada) or EAN (rest of world), but we call them both UPC
+    parentalWarningType: release.parentalWarningType,
+    copyrightLine: release.copyrightLine,
+    producerCopyrightLine: release.producerCopyrightLine,
   }
 
   // todo: album stream + download conditions

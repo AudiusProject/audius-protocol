@@ -58,6 +58,7 @@ type ReleaseAndSoundRecordingSharedFields = {
   artists: DDEXContributor[]
   contributors: DDEXContributor[]
   indirectContributors: DDEXContributor[]
+  labelName: string
 }
 
 type CopyrightPair = {
@@ -87,6 +88,7 @@ export type DDEXSoundRecording = {
     roles: string[]
     // rightShareUnknown: string
   }
+  duration?: number
 
   audiusGenre?: Genre
 } & DDEXResource &
@@ -403,6 +405,8 @@ function parseReleaseXml(source: string, $: cheerio.CheerioAPI) {
         'IndirectResourceContributor',
         $el
       ),
+      labelName: $el.find('LabelName').text(),
+      duration: parseDuration($el.find('Duration').text()),
       genre: $el.find('GenreText').text(),
       subGenre: $el.find('SubGenre').text(),
       releaseDate: $el
@@ -478,6 +482,7 @@ function parseReleaseXml(source: string, $: cheerio.CheerioAPI) {
           'IndirectResourceContributor',
           $el
         ),
+        labelName: $el.find('LabelName').text(),
         genre: $el.find('GenreText').text(),
         subGenre: $el.find('SubGenre').text(),
         releaseIds: parseReleaseIds($el),
@@ -633,4 +638,14 @@ function resolveAudiusGenre(
   // maybe try some edit distance magic?
   // for now just log
   console.warn(`failed to resolve genre: subgenre=${subgenre} genre=${genre}`)
+}
+
+export function parseDuration(dur: string) {
+  const m = dur.match(/PT(\d+H)?(\d+M)?(\d+S)?/)
+  if (!m) return
+  const hours = parseInt(m[1]) || 0
+  const minutes = parseInt(m[2]) || 0
+  const seconds = parseInt(m[3]) || 0
+  const totalSeconds = hours * 3600 + minutes * 60 + seconds
+  return totalSeconds
 }
