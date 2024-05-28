@@ -4,11 +4,11 @@ import { CSSObject, useTheme } from '@emotion/react'
 
 import { BaseButton } from 'components/button/BaseButton/BaseButton'
 import { Box, Flex, Paper } from 'components/layout'
+import { Popup } from 'components/popup'
 import { useControlled } from 'hooks/useControlled'
 import { IconCaretDown, IconCloseAlt } from 'icons'
 
 import { FilterButtonOption, FilterButtonProps } from './types'
-import { Popup } from 'components/popup'
 
 export const FilterButton = forwardRef<HTMLButtonElement, FilterButtonProps>(
   function FilterButton(props, ref) {

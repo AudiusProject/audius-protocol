@@ -3,7 +3,6 @@ import { forwardRef } from 'react'
 import { useTheme, type CSSObject } from '@emotion/react'
 
 import type { IconComponent, IconProps } from '../../icon'
-
 import { BaseButton } from '../BaseButton/BaseButton'
 import type { BaseButtonProps } from '../BaseButton/types'
 

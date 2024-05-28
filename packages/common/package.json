@@ -7,6 +7,7 @@
   "homepage": "https://github.com/AudiusProject/audius-protocol/packages/common#readme",
   "license": "",
   "exports": {
+    "./adapters": "./src/adapters/index.ts",
     "./api": "./src/api/index.ts",
     "./assets": "./src/assets/index.ts",
     "./audius-query": "./src/audius-query/index.ts",

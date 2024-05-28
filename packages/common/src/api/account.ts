@@ -1,9 +1,9 @@
 import dayjs from 'dayjs'
 
+import { managedUserListFromSDK, userManagerListFromSDK } from '~/adapters/user'
 import { createApi } from '~/audius-query'
 import { ID, User, UserMetadata } from '~/models'
 
-import { managedUserListFromSDK, userManagerListFromSDK } from './adapters/user'
 import { Id } from './utils'
 
 type ResetPasswordArgs = {

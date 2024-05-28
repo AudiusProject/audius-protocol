@@ -1,10 +1,10 @@
+import { userMetadataListFromSDK } from '@audius/common/adapters'
 import {
   DefaultSizes,
   Id,
   Kind,
   User,
-  UserMetadata,
-  userMetadataListFromSDK
+  UserMetadata
 } from '@audius/common/models'
 import {
   Metadata,
