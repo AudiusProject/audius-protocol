@@ -1,7 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
 export * from './Access';
-export * from './AccessGate';
 export * from './AccessInfoResponse';
 export * from './Activity';
 export * from './AuthorizedApp';
@@ -38,7 +37,6 @@ export * from './PlaylistResponse';
 export * from './PlaylistSearchResult';
 export * from './PlaylistTracksResponse';
 export * from './ProfilePicture';
-export * from './PurchaseGate';
 export * from './RelatedArtistResponse';
 export * from './RemixParent';
 export * from './Reposts';
@@ -58,7 +56,6 @@ export * from './TrackResponse';
 export * from './TrackSearch';
 export * from './TracksResponse';
 export * from './TrendingPlaylistsResponse';
-export * from './UsdcGate';
 export * from './User';
 export * from './UserAssociatedWalletResponse';
 export * from './UserResponse';
