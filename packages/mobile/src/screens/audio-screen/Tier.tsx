@@ -1,23 +1,24 @@
-import { View, Image, ImageSourcePropType } from 'react-native'
+import { vipDiscordModalActions } from '@audius/common/store'
+import type { ImageSourcePropType } from 'react-native'
+import { View, Image } from 'react-native'
+import { useDispatch } from 'react-redux'
 
 import {
   Button,
   Flex,
   IconArrowRight,
   IconDiscord,
-  useTheme
+  useTheme,
+  Text
 } from '@audius/harmony-native'
+import Hole from 'app/assets/images/emojis/hole.png'
+import Rabbit from 'app/assets/images/emojis/rabbit.png'
+import Sparkles from 'app/assets/images/emojis/sparkles.png'
+import Checkmark from 'app/assets/images/emojis/white-heavy-check-mark.png'
 import { GradientText, Shadow } from 'app/components/core'
-import { Text } from '@audius/harmony-native'
 import { makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
 import { useThemeColors } from 'app/utils/theme'
-import Checkmark from 'app/assets/images/emojis/white-heavy-check-mark.png'
-import Sparkles from 'app/assets/images/emojis/sparkles.png'
-import Rabbit from 'app/assets/images/emojis/rabbit.png'
-import Hole from 'app/assets/images/emojis/hole.png'
-import { useDispatch } from 'react-redux'
-import { vipDiscordModalActions } from '@audius/common/store'
 const { pressDiscord } = vipDiscordModalActions
 
 const messages = {
