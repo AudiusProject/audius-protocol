@@ -219,13 +219,25 @@ def _get_extended_purchase_gate(session: Session, gate: PurchaseGate, legacy=Fal
     return extended_gate
 
 
-def get_extended_purchase_gate(gate: AccessGate, session=None, legacy=False):
+def get_extended_purchase_gate(gate: AccessGate, session=None):
     if gate and "usdc_purchase" in gate:
         # mypy gets confused....
         gate = cast(PurchaseGate, gate)
         if session:
-            return _get_extended_purchase_gate(session, gate, legacy=legacy)
+            return _get_extended_purchase_gate(session, gate, legacy=False)
         else:
             db: SessionManager = get_db_read_replica()
             with db.scoped_session() as session:
-                return _get_extended_purchase_gate(session, gate, legacy=legacy)
+                return _get_extended_purchase_gate(session, gate, legacy=False)
+
+
+def get_legacy_purchase_gate(gate: AccessGate, session=None):
+    if gate and "usdc_purchase" in gate:
+        # mypy gets confused....
+        gate = cast(PurchaseGate, gate)
+        if session:
+            return _get_extended_purchase_gate(session, gate, legacy=True)
+        else:
+            db: SessionManager = get_db_read_replica()
+            with db.scoped_session() as session:
+                return _get_extended_purchase_gate(session, gate, legacy=True)

@@ -11,7 +11,7 @@ from src import api_helpers
 from src.api.v1.models.common import full_response
 from src.models.rewards.challenge import ChallengeType
 from src.queries.get_challenges import ChallengeResponse
-from src.queries.get_extended_purchase_gate import get_extended_purchase_gate
+from src.queries.get_extended_purchase_gate import get_legacy_purchase_gate
 from src.queries.get_support_for_user import SupportResponse
 from src.queries.get_undisbursed_challenges import UndisbursedChallengeResponse
 from src.queries.query_helpers import (
@@ -394,12 +394,12 @@ def extend_track(track):
 
     # Transform new format of splits to legacy format for client compatibility
     if "stream_conditions" in track:
-        track["stream_conditions"] = get_extended_purchase_gate(
-            track["stream_conditions"], legacy=True
+        track["stream_conditions"] = get_legacy_purchase_gate(
+            track["stream_conditions"]
         )
     if "download_conditions" in track:
-        track["download_conditions"] = get_extended_purchase_gate(
-            track["download_conditions"], legacy=True
+        track["download_conditions"] = get_legacy_purchase_gate(
+            track["download_conditions"]
         )
 
     return track
