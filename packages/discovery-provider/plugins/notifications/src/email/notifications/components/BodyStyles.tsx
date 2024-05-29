@@ -395,12 +395,6 @@ export const BodyStyles = () => {
     }
 
     @media (max-width: 720px) {
-      #bodyCell {
-        text-align: center;
-      }
-    }
-
-    @media (max-width: 720px) {
       .templateContainer {
         display: table !important;
         max-width: 384px !important;
