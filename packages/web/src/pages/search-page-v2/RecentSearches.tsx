@@ -9,12 +9,10 @@ import { Kind, SquareSizes, Status } from '@audius/common/models'
 import {
   SearchItem,
   searchActions,
-  accountSelectors,
   searchSelectors
 } from '@audius/common/store'
 import {
   Artwork,
-  Avatar,
   Button,
   Flex,
   IconButton,
@@ -31,13 +29,13 @@ import { UserNameAndBadges } from 'components/user-name-and-badges/UserNameAndBa
 import { useCollectionCoverArt2 } from 'hooks/useCollectionCoverArt'
 import { useMedia } from 'hooks/useMedia'
 import { useTrackCoverArt2 } from 'hooks/useTrackCoverArt'
-import { useProfilePicture } from 'hooks/useUserProfilePicture'
 import { profilePage } from 'utils/route'
+import { Avatar } from 'components/avatar'
+import { UserLink } from 'components/link'
 
 const MAX_RECENT_SEARCHES = 12
 
 const { removeItem, clearHistory } = searchActions
-const { getUserId } = accountSelectors
 const { getSearchHistory } = searchSelectors
 
 const messages = {
@@ -52,14 +50,7 @@ const messages = {
 }
 
 const RecentSearchSkeleton = () => (
-  <Flex
-    w='100%'
-    pv='s'
-    ph='xl'
-    css={{
-      justifyContent: 'space-between'
-    }}
-  >
+  <Flex w='100%' pv='s' ph='xl' justifyContent='space-between'>
     <Flex gap='m'>
       <Skeleton w='40px' h='40px' />
 
@@ -98,8 +89,8 @@ const RecentSearch = (props: RecentSearchProps) => {
         w='100%'
         pv='s'
         ph='xl'
+        justifyContent='space-between'
         css={{
-          justifyContent: 'space-between',
           cursor: 'pointer',
           ':hover': {
             backgroundColor: color.background.surface2
@@ -138,7 +129,7 @@ const RecentSearchTrack = (props: { searchItem: SearchItem }) => {
   return (
     <RecentSearch searchItem={searchItem} title={title} linkTo={permalink}>
       <Artwork src={image} w='40px' borderRadius='xs' />
-      <Flex direction='column' css={{ alignItems: 'flex-start' }}>
+      <Flex direction='column' alignItems='flex-start'>
         <Text variant='body' size='s'>
           {title}
         </Text>
@@ -147,15 +138,8 @@ const RecentSearchTrack = (props: { searchItem: SearchItem }) => {
             {messages.track}
             {' |'}
             &nbsp;
+            <UserLink userId={user.user_id} variant='subdued' badgeSize='2xs' />
           </Text>
-          <UserNameAndBadges
-            renderName={(name) => (
-              <Text variant='body' size='xs' color='subdued'>
-                {name}
-              </Text>
-            )}
-            userId={user.user_id}
-          />
         </Flex>
       </Flex>
     </RecentSearch>
@@ -187,8 +171,8 @@ const RecentSearchCollection = (props: { searchItem: SearchItem }) => {
       title={playlist_name}
       linkTo={permalink}
     >
-      <Artwork src={image} w='40px' borderRadius='xs' />
-      <Flex direction='column' css={{ alignItems: 'flex-start' }}>
+      <Artwork src={image} w={40} borderRadius='xs' />
+      <Flex direction='column' alignItems='flex-start'>
         <Text variant='body' size='s'>
           {playlist_name}
         </Text>
@@ -197,15 +181,8 @@ const RecentSearchCollection = (props: { searchItem: SearchItem }) => {
             {is_album ? messages.album : messages.playlist}
             {' |'}
             &nbsp;
+            <UserLink userId={user.user_id} variant='subdued' badgeSize='2xs' />
           </Text>
-          <UserNameAndBadges
-            renderName={(name) => (
-              <Text variant='body' size='xs' color='subdued'>
-                {name}
-              </Text>
-            )}
-            userId={user.user_id}
-          />
         </Flex>
       </Flex>
     </RecentSearch>
@@ -221,8 +198,6 @@ const RecentSearchUser = (props: RecentSearchUserProps) => {
   const { id } = searchItem
   const { data: user, status } = useGetUserById({ id })
 
-  const image = useProfilePicture(id, SquareSizes.SIZE_150_BY_150)
-
   if (status === Status.LOADING) return <RecentSearchSkeleton />
 
   if (!user) return null
@@ -234,16 +209,9 @@ const RecentSearchUser = (props: RecentSearchUserProps) => {
       title={name}
       linkTo={profilePage(handle)}
     >
-      <Avatar src={image} w='40px' borderWidth='thin' />
-      <Flex direction='column' css={{ alignItems: 'flex-start' }}>
-        <UserNameAndBadges
-          renderName={(name) => (
-            <Text variant='body' size='s'>
-              {name}
-            </Text>
-          )}
-          userId={user.user_id}
-        />
+      <Avatar userId={id} w={40} borderWidth='thin' />
+      <Flex direction='column' alignItems='flex-start'>
+        <UserLink userId={user.user_id} variant='secondary' size='xs' />
         <Text variant='body' size='xs' color='subdued'>
           Profile
         </Text>
