@@ -7,7 +7,7 @@ export type HTMLButtonProps = ComponentPropsWithoutRef<'button'>
 
 export type ButtonVariant = 'primary' | 'secondary' | 'tertiary' | 'destructive'
 
-export type ButtonSize = 'small' | 'default' | 'large'
+export type ButtonSize = 'xs' | 'small' | 'default' | 'large'
 
 export type ButtonProps = {
   /**
