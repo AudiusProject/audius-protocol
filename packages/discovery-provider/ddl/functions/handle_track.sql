@@ -12,8 +12,7 @@ begin
   if tg_op = 'UPDATE' and old_track.track_id is not null then
     return not track_is_public(old_track) and track_is_public(new_track);
   else
-    return new_track.created_at = new_track.updated_at
-      and tg_op = 'INSERT'
+    return tg_op = 'INSERT'
       and track_is_public(new_track)
     ;
   end if;
@@ -88,7 +87,7 @@ begin
           new.updated_at,
           'remix',
           new.owner_id,
-          'remix:track:' || new.track_id || ':parent_track:' || (new.remix_of->'tracks'->0->>'parent_track_id')::int || ':blocknumber:' || new.blocknumber,
+          'remix:track:' || new.track_id || ':parent_track:' || (new.remix_of->'tracks'->0->>'parent_track_id')::int,
           json_build_object('track_id', new.track_id, 'parent_track_id', (new.remix_of->'tracks'->0->>'parent_track_id')::int)
         )
         on conflict do nothing;
