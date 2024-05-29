@@ -4,9 +4,9 @@ import { IconDrag, IconTrash, Text, IconButton } from '@audius/harmony'
 import { useField } from 'formik'
 
 import { Tile } from 'components/tile'
+import { CollectionTrackForUpload } from 'pages/upload-page/types'
 
-import { CollectionTrackForUpload } from '../../../pages/upload-page/types'
-import { UploadPreviewContext } from '../utils/uploadPreviewContext'
+import { UploadPreviewContext } from '../../edit-track/utils/uploadPreviewContext'
 
 import styles from './CollectionTrackField.module.css'
 import { TrackNameField } from './TrackNameField'

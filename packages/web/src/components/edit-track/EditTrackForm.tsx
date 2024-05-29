@@ -21,18 +21,18 @@ import { useFlag } from 'hooks/useRemoteConfig'
 import { UploadFormScrollContext } from 'pages/upload-page/UploadPage'
 
 import { AnchoredSubmitRow } from '../../pages/upload-page/components/AnchoredSubmitRow'
-import { TrackEditFormValues } from '../../pages/upload-page/types'
+import { AccessAndSaleField } from '../edit/fields/AccessAndSaleField'
+import { AttributionField } from '../edit/fields/AttributionField'
+import { MultiTrackSidebar } from '../edit/fields/MultiTrackSidebar'
+import { ReleaseDateField } from '../edit/fields/ReleaseDateField'
+import { ReleaseDateFieldLegacy } from '../edit/fields/ReleaseDateFieldLegacy'
+import { RemixSettingsField } from '../edit/fields/RemixSettingsField'
+import { StemsAndDownloadsField } from '../edit/fields/StemsAndDownloadsField'
+import { TrackMetadataFields } from '../edit/fields/TrackMetadataFields'
 
 import styles from './EditTrackForm.module.css'
 import { PreviewButton } from './components/PreviewButton'
-import { AccessAndSaleField } from './fields/AccessAndSaleField'
-import { AttributionField } from './fields/AttributionField'
-import { MultiTrackSidebar } from './fields/MultiTrackSidebar'
-import { ReleaseDateField } from './fields/ReleaseDateField'
-import { ReleaseDateFieldLegacy } from './fields/ReleaseDateFieldLegacy'
-import { RemixSettingsField } from './fields/RemixSettingsField'
-import { StemsAndDownloadsField } from './fields/StemsAndDownloadsField'
-import { TrackMetadataFields } from './fields/TrackMetadataFields'
+import { TrackEditFormValues } from './types'
 
 const messages = {
   multiTrackCount: (index: number, total: number) =>

@@ -4,7 +4,7 @@ import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
 import AddToCollectionPage from 'components/add-to-collection/mobile/AddToCollection'
-import EditPlaylistPage from 'components/edit-playlist/mobile/EditPlaylistPage'
+import EditPlaylistPage from 'components/edit-collection/mobile/EditPlaylistPage'
 import useScrollLock from 'hooks/useScrollLock'
 import { AppState } from 'store/types'
 

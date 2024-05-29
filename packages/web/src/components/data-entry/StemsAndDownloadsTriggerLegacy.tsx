@@ -21,10 +21,10 @@ import { useSelector } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import {
-  StemsAndDownloadsMenuFields,
-  stemsAndDownloadsSchema
-} from 'components/edit-track/fields/StemsAndDownloadsMenuFields'
-import { getCombinedDefaultGatedConditionValues } from 'components/edit-track/fields/helpers'
+  stemsAndDownloadsSchema,
+  StemsAndDownloadsMenuFields
+} from 'components/edit/fields/StemsAndDownloadsMenuFields'
+import { getCombinedDefaultGatedConditionValues } from 'components/edit/fields/helpers'
 import {
   DOWNLOAD_AVAILABILITY_TYPE,
   DOWNLOAD_CONDITIONS,
@@ -35,9 +35,9 @@ import {
   IS_ORIGINAL_AVAILABLE,
   LAST_GATE_KEEPER,
   STEMS,
-  STREAM_CONDITIONS,
-  StemsAndDownloadsFormValues
-} from 'components/edit-track/fields/types'
+  StemsAndDownloadsFormValues,
+  STREAM_CONDITIONS
+} from 'components/edit/fields/types'
 
 import { ContextualMenu } from './ContextualMenu'
 import styles from './StemsAndDownloadsTriggerLegacy.module.css'

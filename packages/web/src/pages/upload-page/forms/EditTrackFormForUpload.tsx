@@ -3,10 +3,11 @@ import { useCallback, useMemo } from 'react'
 import moment from 'moment'
 
 import { EditTrackForm } from 'components/edit-track/EditTrackForm'
-
 // TODO: maybe move this to a shared location
-import { defaultHiddenFields } from '../../../components/edit-track/fields/stream-availability/HiddenAvailabilityFields'
-import { TrackEditFormValues, TrackFormState } from '../types'
+import { TrackEditFormValues } from 'components/edit-track/types'
+
+import { defaultHiddenFields } from '../../../components/edit/fields/stream-availability/HiddenAvailabilityFields'
+import { TrackFormState } from '../types'
 
 type EditTrackFormProps = {
   formState: TrackFormState

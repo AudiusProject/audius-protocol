@@ -21,7 +21,7 @@ import { ModalRadioItem } from 'components/modal-radio/ModalRadioItem'
 import { useFlag } from 'hooks/useRemoteConfig'
 import { pluralize } from 'utils/stringUtils'
 
-import { SingleTrackEditValues } from '../../../pages/upload-page/types'
+import { SingleTrackEditValues } from '../../edit-track/types'
 
 import styles from './AccessAndSaleField.module.css'
 import { HiddenAvailabilityFields } from './stream-availability/HiddenAvailabilityFields'

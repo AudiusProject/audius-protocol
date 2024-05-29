@@ -16,7 +16,7 @@ import {
   mergeDateTimeValues,
   ReleaseDateFormValues,
   timeValidationSchema
-} from 'components/edit-track/fields/ReleaseDateField'
+} from 'components/edit/fields/ReleaseDateField'
 import { formatCalendarTime } from 'utils/dateUtils'
 
 import { ContextualMenu } from './ContextualMenu'

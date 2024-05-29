@@ -17,12 +17,12 @@ import DynamicImage from 'components/dynamic-image/DynamicImage'
 import layoutStyles from 'components/layout/layout.module.css'
 
 import { UploadFormScrollContext } from '../../../pages/upload-page/UploadPage'
-import { useIndexedField } from '../../../pages/upload-page/hooks'
+import { useIndexedField } from '../../edit-track/hooks'
 import {
   SingleTrackEditValues,
   TrackEditFormValues
-} from '../../../pages/upload-page/types'
-import { UploadPreviewContext } from '../utils/uploadPreviewContext'
+} from '../../edit-track/types'
+import { UploadPreviewContext } from '../../edit-track/utils/uploadPreviewContext'
 
 import styles from './MultiTrackSidebar.module.css'
 

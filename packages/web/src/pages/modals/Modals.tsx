@@ -55,7 +55,7 @@ import { AppModal } from './AppModal'
 const ShareModal = lazy(() => import('components/share-modal'))
 
 const EditPlaylistModal = lazy(
-  () => import('components/edit-playlist/desktop/EditPlaylistModal')
+  () => import('components/edit-collection/desktop/EditCollectionModal')
 )
 const HCaptchaModal = lazy(
   () => import('pages/audio-rewards-page/components/modals/HCaptchaModal')

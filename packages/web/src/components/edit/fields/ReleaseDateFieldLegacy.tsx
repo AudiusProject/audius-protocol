@@ -9,8 +9,8 @@ import {
   SelectedValue
 } from 'components/data-entry/ContextualMenu'
 
-import { useTrackField } from '../../../pages/upload-page/hooks'
-import { SingleTrackEditValues } from '../../../pages/upload-page/types'
+import { useTrackField } from '../../edit-track/hooks'
+import { SingleTrackEditValues } from '../../edit-track/types'
 
 import { DatePickerField } from './DatePickerField'
 import styles from './ReleaseDateFieldLegacy.module.css'

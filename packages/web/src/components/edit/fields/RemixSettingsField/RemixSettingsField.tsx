@@ -18,8 +18,8 @@ import {
 } from 'components/data-entry/ContextualMenu'
 import { fullTrackPage } from 'utils/route'
 
-import { useTrackField } from '../../../../pages/upload-page/hooks'
-import { SingleTrackEditValues } from '../../../../pages/upload-page/types'
+import { useTrackField } from '../../../edit-track/hooks'
+import { SingleTrackEditValues } from '../../../edit-track/types'
 import { IS_STREAM_GATED, STREAM_CONDITIONS } from '../types'
 
 import styles from './RemixSettingsField.module.css'
