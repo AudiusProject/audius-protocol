@@ -83,8 +83,15 @@ nodes:
     rewardsWallet: 0xABC123     # <--- ADDRESS OF WALLET HOLDING STAKED TOKENS
     storage:
       storageUrl:               # <--- REQUIRED
-      googleApplicationCredentials: google-application-credentials.json
+      googleApplicationCredentials: google-application-credentials.json # See Note below
 ```
+
+:::tip file location
+
+For GCP configurations, the `google-application-credentials.json` file **MUST** be stored under
+`/var/k8s/mediorum` on the host machine.
+
+:::
 
 </TabItem>
 
