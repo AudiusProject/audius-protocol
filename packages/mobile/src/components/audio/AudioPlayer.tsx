@@ -178,8 +178,7 @@ export const AudioPlayer = () => {
   const playbackRate = useSelector(getPlaybackRate)
   const currentUserId = useSelector(getUserId)
   const uid = useSelector(getUid)
-  const playerBehavior =
-    useSelector(getPlayerBehavior) || PlayerBehavior.FULL_OR_PREVIEW
+  const playerBehavior = useSelector(getPlayerBehavior)
   const previousUid = usePrevious(uid)
   const previousPlayerBehavior =
     usePrevious(playerBehavior) || PlayerBehavior.FULL_OR_PREVIEW
