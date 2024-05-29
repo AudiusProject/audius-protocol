@@ -189,6 +189,6 @@ If your bundler doesn't automatically polyfill node libraries (like when using c
 
 ## What's next?
 
-- [Get authorization](https://docs.audius.org/developers/log-in-with-audius) to access your app's users' Audius accounts
+- [Get authorization](https://docs.audius.org/developers/guides/log-in-with-audius) to access your app's users' Audius accounts
 
-- [Explore the API docs](https://docs.audius.org/developers/sdk/classes/TracksApi) to see what else you can do with the Audius SDK
+- [Explore the API docs](https://docs.audius.org/developers/sdk/tracks) to see what else you can do with the Audius SDK

@@ -13,7 +13,7 @@ import { CreateAppPageProps, CreateAppsPages } from './types'
 
 type AppDetailsPageProps = CreateAppPageProps
 
-const AUDIUS_SDK_LINK = 'https://docs.audius.org/developers/sdk/'
+const AUDIUS_SDK_LINK = 'https://docs.audius.org/developers'
 
 const messages = {
   secretReminder:
