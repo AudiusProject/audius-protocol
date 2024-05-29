@@ -1,37 +1,25 @@
-import type { PayloadAction } from '@reduxjs/toolkit'
 import { createSlice } from '@reduxjs/toolkit'
 import type { Storage } from 'redux-persist'
 import { persistReducer } from 'redux-persist'
 
-import { Nullable } from '~/utils/typeUtils'
-
-import { SearchItem as SearchItemV2 } from './types'
-
-type SearchItem = string | SearchItemV2
-
-const isSearchItemV2 = (searchItem: SearchItem): searchItem is SearchItemV2 => {
-  return (searchItem as SearchItemV2).kind !== undefined
-}
-
-export type SearchState = {
-  history: SearchItem[]
-}
+import {
+  AddSearchHistoryItemAction,
+  RemoveSearchHistoryItemAction,
+  SearchItem,
+  SearchItemBackwardsCompatible,
+  SearchState,
+  SetSearchHistoryAction
+} from './types'
 
 const initialState: SearchState = {
   history: []
 }
 
-export type SetSearchHistoryAction = PayloadAction<{
-  searchHistory: SearchItem[]
-}>
-
-export type AddSearchHistoryItemAction = PayloadAction<{
-  searchItem: Nullable<SearchItem>
-}>
-
-export type RemoveSearchHistoryItemAction = PayloadAction<{
-  searchItem: SearchItem
-}>
+const isSearchItem = (
+  searchItem: SearchItemBackwardsCompatible
+): searchItem is SearchItem => {
+  return (searchItem as SearchItem).kind !== undefined
+}
 
 const slice = createSlice({
   name: 'search',
@@ -47,9 +35,9 @@ const slice = createSlice({
       const { searchItem } = action.payload
       if (!searchItem) return state
 
-      if (isSearchItemV2(searchItem)) {
+      if (isSearchItem(searchItem)) {
         const filteredSearch = state.history.filter(
-          (i) => !isSearchItemV2(i) || i.id !== searchItem.id
+          (i) => !isSearchItem(i) || i.id !== searchItem.id
         )
         state.history = [searchItem, ...filteredSearch]
       } else {
@@ -64,7 +52,7 @@ const slice = createSlice({
     removeItem: (state, action: RemoveSearchHistoryItemAction) => {
       const { searchItem } = action.payload
       state.history = state.history.filter((item) => {
-        if (isSearchItemV2(searchItem) && isSearchItemV2(item)) {
+        if (isSearchItem(searchItem) && isSearchItem(item)) {
           return item.id !== searchItem.id || item.kind !== searchItem.kind
         } else {
           return item !== searchItem

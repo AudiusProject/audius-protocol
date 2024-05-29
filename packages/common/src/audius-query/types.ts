@@ -78,15 +78,11 @@ type EndpointOptions = {
   type?: 'query' | 'mutation'
 }
 
-export type FetchBatchArgs<Args> = Omit<Args, 'id'> & {
-  ids: ID[]
-}
-
 export type EndpointConfig<Args, Data> = {
   fetch: (fetchArgs: Args, context: AudiusQueryContextType) => Promise<Data>
   options: EndpointOptions
   fetchBatch?: (
-    fetchArgs: FetchBatchArgs<Args>,
+    fetchArgs: any,
     context: AudiusQueryContextType
   ) => Promise<Data[]>
   onQueryStarted?: (

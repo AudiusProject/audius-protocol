@@ -10,22 +10,25 @@ const collectionApi = createApi({
         {
           playlistId,
           currentUserId
-        }: { playlistId: Nullable<ID>; currentUserId: Nullable<ID> },
+        }: { playlistId: Nullable<ID>; currentUserId?: Nullable<ID> },
         { apiClient }
       ) => {
         if (!playlistId) return null
         return (
           await apiClient.getPlaylist({
             playlistId,
-            currentUserId
+            currentUserId: currentUserId ?? null
           })
         )[0]
       },
       fetchBatch: async (
-        { ids, currentUserId }: { ids: ID[]; currentUserId: Nullable<ID> },
+        { ids, currentUserId }: { ids: ID[]; currentUserId?: Nullable<ID> },
         { apiClient }
       ) => {
-        return await apiClient.getPlaylists({ playlistIds: ids, currentUserId })
+        return await apiClient.getPlaylists({
+          playlistIds: ids,
+          currentUserId: currentUserId ?? null
+        })
       },
       options: {
         idArgKey: 'playlistId',

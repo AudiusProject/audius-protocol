@@ -1,10 +1,12 @@
 import { useCallback } from 'react'
 
+import { searchActions } from '@audius/common/store'
 import { useDispatch } from 'react-redux'
 
 import { Divider, TextButton } from 'app/components/core'
-import { clearHistory } from 'app/store/search/searchSlice'
 import { makeStyles } from 'app/styles'
+
+const { clearHistory } = searchActions
 
 const messages = {
   clear: 'Clear Recent Searches'
