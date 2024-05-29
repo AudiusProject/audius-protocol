@@ -52,35 +52,30 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    // Read the audio data
-    std::vector<float> audioData(sfinfo.frames * sfinfo.channels);
-    sf_readf_float(sndfile, audioData.data(), sfinfo.frames);
-    sf_close(sndfile);
-
-    // Initialize KeyFinder
     static KeyFinder::KeyFinder keyFinder;
 
     // Build an empty audio object
     KeyFinder::AudioData audioDataStruct;
-
-    // Prepare the object for your audio stream
     audioDataStruct.setFrameRate(sfinfo.samplerate);
     audioDataStruct.setChannels(sfinfo.channels);
-    audioDataStruct.addToSampleCount(sfinfo.frames * sfinfo.channels); // Total number of samples
 
-    // Copy audio into the object
-    for (size_t i = 0; i < audioData.size(); ++i) {
-        audioDataStruct.setSample(i, audioData[i]);
+    const size_t CHUNK_SIZE = 4096;
+    std::vector<float> buffer(CHUNK_SIZE * sfinfo.channels);
+    size_t totalSamples = 0;
+
+    // Read and process the file in chunks
+    while (sf_count_t framesRead = sf_readf_float(sndfile, buffer.data(), CHUNK_SIZE)) {
+        totalSamples += framesRead * sfinfo.channels;
+        audioDataStruct.addToSampleCount(framesRead * sfinfo.channels);
+        for (size_t i = 0; i < framesRead * sfinfo.channels; ++i) {
+            audioDataStruct.setSample(totalSamples - framesRead * sfinfo.channels + i, buffer[i]);
+        }
     }
 
-    // Run the analysis
+    sf_close(sndfile);
+
     KeyFinder::key_t key = keyFinder.keyOfAudio(audioDataStruct);
-
-    // Convert the key to a string
     std::string keyString = keyToString(key);
-
-    // Output the result
     std::cout << keyString << std::endl;
-
     return 0;
 }
