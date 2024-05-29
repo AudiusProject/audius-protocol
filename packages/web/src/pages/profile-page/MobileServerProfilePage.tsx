@@ -1,5 +1,4 @@
-import { useState } from 'react'
-
+import { ID } from '@audius/common/src/models/Identifiers'
 import { getUser } from '@audius/common/src/store/cache/users/selectors'
 import { formatCount } from '@audius/common/src/utils/formatUtil'
 import BadgeArtist from '@audius/harmony/src/assets/icons/ArtistBadge.svg'
@@ -8,7 +7,6 @@ import IconLink from '@audius/harmony/src/assets/icons/Link.svg'
 import { Box } from '@audius/harmony/src/components/layout/Box'
 import { Flex } from '@audius/harmony/src/components/layout/Flex'
 import { Text } from '@audius/harmony/src/components/text'
-import cn from 'classnames'
 
 // import ProfilePageBadge from 'components/user-badges/ProfilePageBadge'
 import { ServerUserGeneratedText } from 'components/user-generated-text/ServerUserGeneratedText'
@@ -28,13 +26,11 @@ const messages = {
 }
 
 export type OwnProps = {
-  // userId: ID
-  userId: any
+  userId: ID
 }
 
 export const ServerProfilePage = ({ userId }: OwnProps) => {
   const user = useSelector((state) => getUser(state, { id: userId }))
-  const [isDescriptionMinimized, setIsDescriptionMinimized] = useState(true)
   if (!user) return null
 
   const {
@@ -53,6 +49,7 @@ export const ServerProfilePage = ({ userId }: OwnProps) => {
 
   const isArtist = track_count > 0
   const hasEllipsis = donation || website
+  const isDescriptionMinimized = true
 
   return (
     <Flex direction='column' backgroundColor='default'>
@@ -70,7 +67,23 @@ export const ServerProfilePage = ({ userId }: OwnProps) => {
           <BadgeArtist className={styles.badgeArtist} />
         ) : null}
       </Flex>
-      <Box className={styles.profilePictureWrapper}>
+      <Flex
+        alignItems='center'
+        justifyContent='center'
+        h={82}
+        w={82}
+        borderRadius='circle'
+        backgroundColor='white'
+        css={{
+          zIndex: 10,
+          position: 'absolute',
+          top: 37,
+          left: 11,
+          boxSizing: 'border-box',
+          border: '2px solid var(--harmony-white)',
+          overflow: 'hidden'
+        }}
+      >
         <Box
           as='img'
           // @ts-ignore
@@ -79,8 +92,14 @@ export const ServerProfilePage = ({ userId }: OwnProps) => {
           w='100%'
           borderRadius='m'
         />
-      </Box>
-      <div className={styles.artistInfo}>
+      </Flex>
+      <Flex
+        inline
+        direction='column'
+        p='m'
+        backgroundColor='surface1'
+        css={{ paddingTop: 30, zIndex: 5 }}
+      >
         <Flex justifyContent='space-between'>
           <Flex direction='column' gap='xs'>
             <Flex>
@@ -94,7 +113,14 @@ export const ServerProfilePage = ({ userId }: OwnProps) => {
               </Text>
             </Flex>
             <Box css={{ textAlign: 'left', marginBottom: 14 }}>
-              <Box className={styles.artistHandle}>{handle}</Box>
+              <Text
+                variant='body'
+                size='s'
+                color='subdued'
+                css={{ lineHeight: 'normal' }}
+              >
+                @{handle}
+              </Text>
             </Box>
           </Flex>
         </Flex>
@@ -168,46 +194,52 @@ export const ServerProfilePage = ({ userId }: OwnProps) => {
         </Flex>
 
         {bio ? (
-          <>
-            <ServerUserGeneratedText
-              color='subdued'
-              size='s'
-              className={cn(styles.bio, {
-                [styles.bioExpanded]: hasEllipsis && !isDescriptionMinimized
-              })}
-            >
-              {bio}
-            </ServerUserGeneratedText>
-          </>
+          <ServerUserGeneratedText
+            color='subdued'
+            size='s'
+            css={{
+              display: '-webkit-box',
+              width: '100%',
+              marginTop: 8,
+              maxHeight: 40,
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden',
+              textAlign: 'left'
+            }}
+          >
+            {bio}
+          </ServerUserGeneratedText>
         ) : null}
         {hasEllipsis && !isDescriptionMinimized ? (
-          <div className={styles.sites}>
-            {website && (
-              <div className={styles.website} onClick={() => {}}>
+          <Flex direction='column' mb='s'>
+            {website ? (
+              <Flex
+                justifyContent='flex-start'
+                gap='m'
+                mt='m'
+                css={{ lineHeight: '19px' }}
+              >
                 <IconLink size='m' color='default' />
                 <span>{website}</span>
-              </div>
-            )}
-            {donation && (
-              <div className={styles.donation}>
+              </Flex>
+            ) : null}
+            {donation ? (
+              <Flex
+                justifyContent='flex-start'
+                gap='m'
+                mt='m'
+                css={{ lineHeight: '19px' }}
+              >
                 <IconDonate size='m' color='default' />
                 <ServerUserGeneratedText size='s'>
                   {donation}
                 </ServerUserGeneratedText>
-              </div>
-            )}
-          </div>
+              </Flex>
+            ) : null}
+          </Flex>
         ) : null}
-
-        {hasEllipsis ? (
-          <div
-            className={styles.expandDescription}
-            onClick={() => setIsDescriptionMinimized(!isDescriptionMinimized)}
-          >
-            {isDescriptionMinimized ? messages.showMore : messages.showLess}
-          </div>
-        ) : null}
-      </div>
+      </Flex>
     </Flex>
   )
 }
