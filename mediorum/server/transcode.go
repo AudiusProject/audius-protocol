@@ -581,6 +581,7 @@ func (ss *MediorumServer) transcode(upload *Upload) error {
 			}
 			// analyze audio for new full audio uploads
 			nextJobStatus = JobStatusAudioAnalysis
+			upload.AudioAnalyzedAt = time.Now().UTC()
 		}
 	}
 

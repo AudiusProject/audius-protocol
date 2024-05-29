@@ -239,12 +239,17 @@ func (ss *MediorumServer) analyzeUpload(c echo.Context) error {
 		return err
 	}
 
-	if upload.Template == "audio" && upload.Status == JobStatusDone && upload.AudioAnalysisResults == nil {
-		upload.UpdatedAt = time.Now().UTC()
+	if upload.Template == "audio" && upload.Status == JobStatusDone && upload.AudioAnalysisStatus != JobStatusDone {
+		upload.AudioAnalyzedAt = time.Now().UTC()
+		upload.AudioAnalysisStatus = ""
+		upload.AudioAnalysisError = ""
 		upload.Status = JobStatusAudioAnalysis
 		err = ss.crud.Update(upload)
 		if err != nil {
 			ss.logger.Warn("update upload failed", "err", err)
+			return c.JSON(500, map[string]string{
+				"message": "Failed to trigger audio analysis",
+			})
 		}
 	}
 
