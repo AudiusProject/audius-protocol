@@ -66,7 +66,8 @@ export enum FeatureFlags {
   SEARCH_V2 = 'search_v2',
   USE_SDK_PURCHASE_TRACK = 'use_sdk_purchase_track',
   USE_SDK_PURCHASE_ALBUM = 'use_sdk_purchase_album',
-  PAYOUT_WALLET_ENABLED = 'payout_wallet_enabled'
+  PAYOUT_WALLET_ENABLED = 'payout_wallet_enabled',
+  EDIT_TRACK_REDESIGN = 'edit_track_redesign'
 }
 
 type FlagDefaults = Record<FeatureFlags, boolean>
@@ -148,5 +149,6 @@ export const flagDefaults: FlagDefaults = {
   [FeatureFlags.SEARCH_V2]: false,
   [FeatureFlags.USE_SDK_PURCHASE_TRACK]: false,
   [FeatureFlags.USE_SDK_PURCHASE_ALBUM]: false,
-  [FeatureFlags.PAYOUT_WALLET_ENABLED]: false
+  [FeatureFlags.PAYOUT_WALLET_ENABLED]: false,
+  [FeatureFlags.EDIT_TRACK_REDESIGN]: false
 }
