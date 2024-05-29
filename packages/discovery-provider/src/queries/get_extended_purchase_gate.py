@@ -200,19 +200,12 @@ def to_wallet_amount_map(splits: List[ExtendedSplit]):
     }
 
 
-def _get_extended_purchase_gate(session: Session, gate: PurchaseGate, legacy=False):
+def _get_extended_purchase_gate(session: Session, gate: PurchaseGate):
     price = gate["usdc_purchase"]["price"]
     splits = gate["usdc_purchase"]["splits"]
     splits = add_wallet_info_to_splits(session, splits, datetime.now())
     splits = calculate_split_amounts(price, splits)
     extended_splits = [cast(ExtendedSplit, split) for split in splits]
-    if legacy:
-        legacy_splits = to_wallet_amount_map(extended_splits)
-        legacy_gate: LegacyPurchaseGate = {
-            "usdc_purchase": {"price": price, "splits": legacy_splits}
-        }
-        return legacy_gate
-
     extended_gate: ExtendedPurchaseGate = {
         "usdc_purchase": {"price": price, "splits": extended_splits}
     }
@@ -224,11 +217,11 @@ def get_extended_purchase_gate(gate: AccessGate, session=None):
         # mypy gets confused....
         gate = cast(PurchaseGate, gate)
         if session:
-            return _get_extended_purchase_gate(session, gate, legacy=False)
+            return _get_extended_purchase_gate(session, gate)
         else:
             db: SessionManager = get_db_read_replica()
             with db.scoped_session() as session:
-                return _get_extended_purchase_gate(session, gate, legacy=False)
+                return _get_extended_purchase_gate(session, gate)
 
 
 def get_legacy_purchase_gate(gate: AccessGate, session=None):
@@ -236,8 +229,12 @@ def get_legacy_purchase_gate(gate: AccessGate, session=None):
         # mypy gets confused....
         gate = cast(PurchaseGate, gate)
         if session:
-            return _get_extended_purchase_gate(session, gate, legacy=True)
+            new_gate = _get_extended_purchase_gate(session, gate)
         else:
             db: SessionManager = get_db_read_replica()
             with db.scoped_session() as session:
-                return _get_extended_purchase_gate(session, gate, legacy=True)
+                new_gate = _get_extended_purchase_gate(session, gate)
+        extended_splits = new_gate["usdc_purchase"]["splits"]
+        splits = to_wallet_amount_map(extended_splits)
+        new_gate["usdc_purchase"]["splits"] = splits
+        return new_gate
