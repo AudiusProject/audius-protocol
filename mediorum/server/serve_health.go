@@ -21,43 +21,44 @@ type healthCheckResponse struct {
 	Timestamp time.Time               `json:"timestamp"`
 }
 type healthCheckResponseData struct {
-	Healthy                 bool                       `json:"healthy"`
-	Version                 string                     `json:"version"`
-	Service                 string                     `json:"service"` // used by registerWithDelegate()
-	IsSeeding               bool                       `json:"isSeeding"`
-	IsAudiusdManaged        bool                       `json:"isAudiusdManaged"`
-	BuiltAt                 string                     `json:"builtAt"`
-	StartedAt               time.Time                  `json:"startedAt"`
-	SPID                    int                        `json:"spID"`
-	SPOwnerWallet           string                     `json:"spOwnerWallet"`
-	Git                     string                     `json:"git"`
-	AudiusDockerCompose     string                     `json:"audiusDockerCompose"`
-	MediorumPathUsed        uint64                     `json:"mediorumPathUsed"` // bytes
-	MediorumPathSize        uint64                     `json:"mediorumPathSize"` // bytes
-	DatabaseSize            uint64                     `json:"databaseSize"`     // bytes
-	DbSizeErr               string                     `json:"dbSizeErr"`
-	LastSuccessfulRepair    RepairTracker              `json:"lastSuccessfulRepair"`
-	LastSuccessfulCleanup   RepairTracker              `json:"lastSuccessfulCleanup"`
-	UploadsCount            int64                      `json:"uploadsCount"`
-	UploadsCountErr         string                     `json:"uploadsCountErr"`
-	AutoUpgradeEnabled      bool                       `json:"autoUpgradeEnabled"`
-	TrustedNotifier         *ethcontracts.NotifierInfo `json:"trustedNotifier"`
-	Env                     string                     `json:"env"`
-	Self                    Peer                       `json:"self"`
-	WalletIsRegistered      bool                       `json:"wallet_is_registered"`
-	Signers                 []Peer                     `json:"signers"`
-	ReplicationFactor       int                        `json:"replicationFactor"`
-	Dir                     string                     `json:"dir"`
-	BlobStorePrefix         string                     `json:"blobStorePrefix"`
-	MoveFromBlobStorePrefix string                     `json:"moveFromBlobStorePrefix"`
-	ListenPort              string                     `json:"listenPort"`
-	TrustedNotifierID       int                        `json:"trustedNotifierId"`
-	PeerHealths             map[string]*PeerHealth     `json:"peerHealths"`
-	UnreachablePeers        []string                   `json:"unreachablePeers"`
-	FailsPeerReachability   bool                       `json:"failsPeerReachability"`
-	StoreAll                bool                       `json:"storeAll"`
-	IsDbLocalhost           bool                       `json:"isDbLocalhost"`
-	DiskHasSpace            bool                       `json:"diskHasSpace"`
+	Healthy                   bool                       `json:"healthy"`
+	Version                   string                     `json:"version"`
+	Service                   string                     `json:"service"` // used by registerWithDelegate()
+	IsSeeding                 bool                       `json:"isSeeding"`
+	IsAudiusdManaged          bool                       `json:"isAudiusdManaged"`
+	BuiltAt                   string                     `json:"builtAt"`
+	StartedAt                 time.Time                  `json:"startedAt"`
+	SPID                      int                        `json:"spID"`
+	SPOwnerWallet             string                     `json:"spOwnerWallet"`
+	Git                       string                     `json:"git"`
+	AudiusDockerCompose       string                     `json:"audiusDockerCompose"`
+	MediorumPathUsed          uint64                     `json:"mediorumPathUsed"` // bytes
+	MediorumPathSize          uint64                     `json:"mediorumPathSize"` // bytes
+	DatabaseSize              uint64                     `json:"databaseSize"`     // bytes
+	DbSizeErr                 string                     `json:"dbSizeErr"`
+	LastSuccessfulRepair      RepairTracker              `json:"lastSuccessfulRepair"`
+	LastSuccessfulCleanup     RepairTracker              `json:"lastSuccessfulCleanup"`
+	UploadsCount              int64                      `json:"uploadsCount"`
+	UploadsCountErr           string                     `json:"uploadsCountErr"`
+	AutoUpgradeEnabled        bool                       `json:"autoUpgradeEnabled"`
+	TrustedNotifier           *ethcontracts.NotifierInfo `json:"trustedNotifier"`
+	Env                       string                     `json:"env"`
+	Self                      Peer                       `json:"self"`
+	WalletIsRegistered        bool                       `json:"wallet_is_registered"`
+	Signers                   []Peer                     `json:"signers"`
+	ReplicationFactor         int                        `json:"replicationFactor"`
+	Dir                       string                     `json:"dir"`
+	BlobStorePrefix           string                     `json:"blobStorePrefix"`
+	MoveFromBlobStorePrefix   string                     `json:"moveFromBlobStorePrefix"`
+	ListenPort                string                     `json:"listenPort"`
+	TrustedNotifierID         int                        `json:"trustedNotifierId"`
+	PeerHealths               map[string]*PeerHealth     `json:"peerHealths"`
+	UnreachablePeers          []string                   `json:"unreachablePeers"`
+	FailsPeerReachability     bool                       `json:"failsPeerReachability"`
+	StoreAll                  bool                       `json:"storeAll"`
+	IsDbLocalhost             bool                       `json:"isDbLocalhost"`
+	DiskHasSpace              bool                       `json:"diskHasSpace"`
+	IsDiscoveryListensEnabled bool                       `json:"isDiscoveryListensEnabled"`
 }
 
 func (ss *MediorumServer) serveHealthCheck(c echo.Context) error {
@@ -83,43 +84,44 @@ func (ss *MediorumServer) serveHealthCheck(c echo.Context) error {
 	defer ss.peerHealthsMutex.RUnlock()
 
 	data := healthCheckResponseData{
-		Healthy:                 healthy,
-		Version:                 ss.Config.VersionJson.Version,
-		Service:                 ss.Config.VersionJson.Service,
-		IsSeeding:               ss.isSeeding,
-		IsAudiusdManaged:        ss.isAudiusdManaged,
-		BuiltAt:                 vcsBuildTime,
-		StartedAt:               ss.StartedAt,
-		SPID:                    ss.Config.SPID,
-		SPOwnerWallet:           ss.Config.SPOwnerWallet,
-		Git:                     ss.Config.GitSHA,
-		AudiusDockerCompose:     ss.Config.AudiusDockerCompose,
-		MediorumPathUsed:        ss.mediorumPathUsed,
-		MediorumPathSize:        ss.mediorumPathSize,
-		DatabaseSize:            ss.databaseSize,
-		DbSizeErr:               ss.dbSizeErr,
-		LastSuccessfulRepair:    ss.lastSuccessfulRepair,
-		LastSuccessfulCleanup:   ss.lastSuccessfulCleanup,
-		UploadsCount:            ss.uploadsCount,
-		UploadsCountErr:         ss.uploadsCountErr,
-		AutoUpgradeEnabled:      ss.Config.AutoUpgradeEnabled,
-		TrustedNotifier:         ss.trustedNotifier,
-		Dir:                     ss.Config.Dir,
-		BlobStorePrefix:         blobStorePrefix,
-		MoveFromBlobStorePrefix: blobStoreMoveFromPrefix,
-		ListenPort:              ss.Config.ListenPort,
-		ReplicationFactor:       ss.Config.ReplicationFactor,
-		Env:                     ss.Config.Env,
-		Self:                    ss.Config.Self,
-		WalletIsRegistered:      ss.Config.WalletIsRegistered,
-		TrustedNotifierID:       ss.Config.TrustedNotifierID,
-		PeerHealths:             ss.peerHealths,
-		UnreachablePeers:        ss.unreachablePeers,
-		FailsPeerReachability:   ss.failsPeerReachability,
-		Signers:                 ss.Config.Signers,
-		StoreAll:                ss.Config.StoreAll,
-		IsDbLocalhost:           ss.Config.PostgresDSN == "postgres://postgres:postgres@db:5432/audius_creator_node" || ss.Config.PostgresDSN == "postgresql://postgres:postgres@db:5432/audius_creator_node" || ss.Config.PostgresDSN == "localhost",
-		DiskHasSpace:            ss.diskHasSpace(),
+		Healthy:                   healthy,
+		Version:                   ss.Config.VersionJson.Version,
+		Service:                   ss.Config.VersionJson.Service,
+		IsSeeding:                 ss.isSeeding,
+		IsAudiusdManaged:          ss.isAudiusdManaged,
+		BuiltAt:                   vcsBuildTime,
+		StartedAt:                 ss.StartedAt,
+		SPID:                      ss.Config.SPID,
+		SPOwnerWallet:             ss.Config.SPOwnerWallet,
+		Git:                       ss.Config.GitSHA,
+		AudiusDockerCompose:       ss.Config.AudiusDockerCompose,
+		MediorumPathUsed:          ss.mediorumPathUsed,
+		MediorumPathSize:          ss.mediorumPathSize,
+		DatabaseSize:              ss.databaseSize,
+		DbSizeErr:                 ss.dbSizeErr,
+		LastSuccessfulRepair:      ss.lastSuccessfulRepair,
+		LastSuccessfulCleanup:     ss.lastSuccessfulCleanup,
+		UploadsCount:              ss.uploadsCount,
+		UploadsCountErr:           ss.uploadsCountErr,
+		AutoUpgradeEnabled:        ss.Config.AutoUpgradeEnabled,
+		TrustedNotifier:           ss.trustedNotifier,
+		Dir:                       ss.Config.Dir,
+		BlobStorePrefix:           blobStorePrefix,
+		MoveFromBlobStorePrefix:   blobStoreMoveFromPrefix,
+		ListenPort:                ss.Config.ListenPort,
+		ReplicationFactor:         ss.Config.ReplicationFactor,
+		Env:                       ss.Config.Env,
+		Self:                      ss.Config.Self,
+		WalletIsRegistered:        ss.Config.WalletIsRegistered,
+		TrustedNotifierID:         ss.Config.TrustedNotifierID,
+		PeerHealths:               ss.peerHealths,
+		UnreachablePeers:          ss.unreachablePeers,
+		FailsPeerReachability:     ss.failsPeerReachability,
+		Signers:                   ss.Config.Signers,
+		StoreAll:                  ss.Config.StoreAll,
+		IsDbLocalhost:             ss.Config.PostgresDSN == "postgres://postgres:postgres@db:5432/audius_creator_node" || ss.Config.PostgresDSN == "postgresql://postgres:postgres@db:5432/audius_creator_node" || ss.Config.PostgresDSN == "localhost",
+		IsDiscoveryListensEnabled: ss.Config.discoveryListensEnabled(),
+		DiskHasSpace:              ss.diskHasSpace(),
 	}
 
 	dataBytes, err := json.Marshal(data)
