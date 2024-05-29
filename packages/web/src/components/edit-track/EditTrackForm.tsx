@@ -51,6 +51,7 @@ const messages = {
 type EditTrackFormProps = {
   initialValues: TrackEditFormValues
   onSubmit: (values: TrackEditFormValues) => void
+  hideContainer?: boolean
 }
 
 const EditFormValidationSchema = z.object({
@@ -58,7 +59,7 @@ const EditFormValidationSchema = z.object({
 })
 
 export const EditTrackForm = (props: EditTrackFormProps) => {
-  const { initialValues, onSubmit } = props
+  const { initialValues, onSubmit, hideContainer } = props
 
   return (
     <Formik<TrackEditFormValues>
@@ -66,13 +67,15 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
       onSubmit={onSubmit}
       validationSchema={toFormikValidationSchema(EditFormValidationSchema)}
     >
-      {(props) => <TrackEditForm {...props} />}
+      {(props) => <TrackEditForm {...props} hideContainer={hideContainer} />}
     </Formik>
   )
 }
 
-const TrackEditForm = (props: FormikProps<TrackEditFormValues>) => {
-  const { values, dirty } = props
+const TrackEditForm = (
+  props: FormikProps<TrackEditFormValues> & { hideContainer?: boolean }
+) => {
+  const { values, dirty, hideContainer = false } = props
   const isMultiTrack = values.trackMetadatas.length > 1
   const trackIdx = values.trackMetadatasIndex
   const [, , { setValue: setIndex }] = useField('trackMetadatasIndex')
@@ -88,11 +91,16 @@ const TrackEditForm = (props: FormikProps<TrackEditFormValues>) => {
     <Form>
       <NavigationPrompt when={dirty} messages={messages.navigationPrompt} />
       <div className={cn(layoutStyles.row, layoutStyles.gap2)}>
-        <div className={cn(styles.formContainer, layoutStyles.col)}>
+        <div
+          className={cn(
+            { [styles.formContainer]: !hideContainer },
+            layoutStyles.col
+          )}
+        >
           {isMultiTrack ? <MultiTrackHeader /> : null}
           <div
             className={cn(
-              styles.trackEditForm,
+              { [styles.trackEditForm]: !hideContainer },
               layoutStyles.col,
               layoutStyles.gap4
             )}
