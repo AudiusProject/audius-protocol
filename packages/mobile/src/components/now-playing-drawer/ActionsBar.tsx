@@ -277,12 +277,7 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
       />
     ) : (
       <View style={{ ...styles.button, width: 24 }}>
-        <IconCastChromecast
-          fill={neutralLight6}
-          height={30}
-          width={30}
-          style={{ transform: [{ scaleX: -1 }] }}
-        />
+        <IconCastChromecast fill={neutralLight6} height={24} width={24} />
       </View>
     )
   }
