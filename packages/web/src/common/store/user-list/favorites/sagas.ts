@@ -1,10 +1,10 @@
+import { userMetadataListFromSDK } from '@audius/common/adapters'
 import {
   FavoriteType,
   Collection,
   ID,
   Track,
   Id,
-  userMetadataListFromSDK,
   OptionalId
 } from '@audius/common/models'
 import {

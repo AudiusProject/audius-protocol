@@ -1,16 +1,7 @@
-import snakecaseKeys from 'snakecase-keys'
-
-import { makePlaylist } from '~/services/audius-api-client/ResponseAdapter'
 import { initialCacheState } from '~/store/cache/reducer'
 import { makeUid } from '~/utils/uid'
 
-import {
-  Collection,
-  ID,
-  Kind,
-  PlaylistTrackId,
-  SsrPageProps
-} from '../../../models'
+import { Collection, ID, Kind, PlaylistTrackId } from '../../../models'
 import {
   AddEntriesAction,
   AddSuccededAction,
@@ -98,54 +89,10 @@ const actionsMap = {
   }
 }
 
-const buildInitialState = (ssrPageProps?: SsrPageProps) => {
-  // If we have preloaded data from the server, populate the initial
-  // cache state with it
-  if (ssrPageProps?.collection) {
-    // @ts-ignore
-    const collection = makePlaylist(snakecaseKeys(ssrPageProps.collection))
-    if (!collection) return initialState
-
-    const id = collection.playlist_id
-    const uid = makeUid(Kind.COLLECTIONS, id)
-
-    return {
-      ...initialState,
-      entries: {
-        [id]: {
-          metadata: collection,
-          _timestamp: Date.now()
-        }
-      },
-      uids: {
-        [uid]: collection.playlist_id
-      },
-      statuses: {
-        [id]: 'SUCCESS'
-      },
-      permalinks: {
-        ...(collection.permalink
-          ? {
-              [collection.permalink]: collection.playlist_id
-            }
-          : {})
-      }
-    }
-  }
-  return initialState
+const reducer = (state = initialState, action: any) => {
+  const matchingReduceFunction = actionsMap[action.type]
+  if (!matchingReduceFunction) return state
+  return matchingReduceFunction(state, action)
 }
-
-const reducer =
-  (ssrPageProps?: SsrPageProps) =>
-  (state: CollectionsCacheState, action: any) => {
-    if (!state) {
-      // @ts-ignore
-      state = buildInitialState(ssrPageProps)
-    }
-
-    const matchingReduceFunction = actionsMap[action.type]
-    if (!matchingReduceFunction) return state
-    return matchingReduceFunction(state, action)
-  }
 
 export default reducer

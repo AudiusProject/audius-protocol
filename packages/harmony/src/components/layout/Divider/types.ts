@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 
-import { BorderColors } from 'foundations'
+import { BorderColors } from '../../../foundations/color'
 
 export type DividerProps = {
   orientation?: 'horizontal' | 'vertical'

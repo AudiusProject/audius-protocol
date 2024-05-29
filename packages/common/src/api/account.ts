@@ -1,13 +1,8 @@
 import dayjs from 'dayjs'
 
+import { managedUserListFromSDK, userManagerListFromSDK } from '~/adapters/user'
 import { createApi } from '~/audius-query'
-import {
-  ID,
-  User,
-  UserMetadata,
-  managedUserListFromSDK,
-  userManagerListFromSDK
-} from '~/models'
+import { ID, User, UserMetadata } from '~/models'
 
 import { Id } from './utils'
 

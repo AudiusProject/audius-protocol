@@ -1,13 +1,8 @@
-import snakecaseKeys from 'snakecase-keys'
-
 import { Cache } from '~/models/Cache'
 import { ID } from '~/models/Identifiers'
 import { Kind } from '~/models/Kind'
-import { SsrPageProps } from '~/models/SsrPageProps'
 import { User } from '~/models/User'
-import { makeUser } from '~/services/audius-api-client/ResponseAdapter'
 import { initialCacheState } from '~/store/cache/reducer'
-import { makeUid } from '~/utils/uid'
 
 import {
   AddEntriesAction,
@@ -63,53 +58,13 @@ const actionsMap = {
   }
 }
 
-const buildInitialState = (ssrPageProps?: SsrPageProps) => {
-  // If we have preloaded data from the server, populate the initial
-  // cache state with it
-  if (ssrPageProps) {
-    const apiUser =
-      ssrPageProps.user ??
-      ssrPageProps.track?.user ??
-      ssrPageProps.collection?.user ??
-      null
-
-    // @ts-ignore
-    const user = apiUser ? makeUser(snakecaseKeys(apiUser)) : null
-    if (!user) return initialState
-
-    const id = user.user_id
-    const uid = makeUid(Kind.USERS, id)
-
-    return {
-      ...initialState,
-      entries: {
-        [id]: {
-          metadata: user,
-          _timestamp: Date.now()
-        }
-      },
-      uids: {
-        [uid]: user.user_id
-      },
-      statuses: {
-        [id]: 'SUCCESS'
-      }
-    }
-  }
-  return initialState
+const reducer = (
+  state: UsersCacheState = initialState,
+  action: AddSuccededAction<User>
+) => {
+  const matchingReduceFunction = actionsMap[action.type]
+  if (!matchingReduceFunction) return state
+  return matchingReduceFunction(state, action)
 }
-
-const reducer =
-  (ssrPageProps?: SsrPageProps) =>
-  (state: UsersCacheState, action: AddSuccededAction<User>) => {
-    if (!state) {
-      // @ts-ignore
-      state = buildInitialState(ssrPageProps)
-    }
-
-    const matchingReduceFunction = actionsMap[action.type]
-    if (!matchingReduceFunction) return state
-    return matchingReduceFunction(state, action)
-  }
 
 export default reducer

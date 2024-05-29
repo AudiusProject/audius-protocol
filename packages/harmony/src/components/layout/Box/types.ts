@@ -34,7 +34,7 @@ export type BaseBoxProps = {
   /** Margin Vertical */
   mv?: SpacingOptions
   /** Margin Top */
-  mt?: SpacingOptions
+  mt?: SpacingOptions | CSSProperties['marginTop']
   /** Margin Left */
   ml?: SpacingOptions
   /** Margin Right */

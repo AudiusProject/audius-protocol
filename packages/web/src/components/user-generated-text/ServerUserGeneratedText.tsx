@@ -1,101 +1,52 @@
-import {
-  forwardRef,
-  useMemo,
-  MouseEvent,
-  Ref,
-  ForwardedRef,
-  ElementType
-} from 'react'
+import { Ref, forwardRef } from 'react'
 
-import { Text, TextProps } from '@audius/harmony'
+import { squashNewLines } from '@audius/common/src/utils/formatUtil'
+import { Text, TextProps } from '@audius/harmony/src/components/text'
+import { TextLink } from '@audius/harmony/src/components/text-link'
 import Linkify from 'linkify-react'
-import { IntermediateRepresentation, Opts } from 'linkifyjs'
+import { IntermediateRepresentation } from 'linkifyjs'
 
-import { ServerExternalTextLink } from 'components/link/ServerExternalTextLink'
-import { TextLink } from 'components/link/TextLink'
-import { squashNewLines } from 'utils/stringUtils'
-import { getPathFromAudiusUrl, isAudiusUrl } from 'utils/urlUtils'
+type LinkifyTextProps = TextProps<any>
 
-type LinkifyTextProps = TextProps<any> & {
-  innerRef?: Ref<any>
-}
-
-const LinkifyText = forwardRef((props: LinkifyTextProps, ref) => {
-  const { innerRef, ...other } = props
-  return <Text ref={innerRef ?? ref} {...other} />
-})
-
-type ServerUserGeneratedTextProps<T extends ElementType> = TextProps<T> & {
-  linkSource?: 'profile page' | 'track page' | 'collection page'
-  onClickLink?: (event: MouseEvent<HTMLAnchorElement>) => void
-}
-
-const formatExternalLink = (href: string) => {
-  const strippedHref = href.replace(/((?:https?):\/\/)|www./g, '')
-  return `https://${strippedHref}`
-}
-
-const formatAudiusUrl = (href: string) => {
-  return getPathFromAudiusUrl(href) as string
-}
+const LinkifyText = forwardRef(
+  (props: LinkifyTextProps, ref: Ref<HTMLSpanElement>) => {
+    const { ...other } = props
+    return <Text ref={ref} {...other} />
+  }
+)
 
 const renderLink = ({ attributes, content }: IntermediateRepresentation) => {
   const { href, ...props } = attributes
 
-  const isExternalLink = !isAudiusUrl(href)
-  const to = isExternalLink ? formatExternalLink(href) : formatAudiusUrl(href)
-
-  const LinkComponent = isExternalLink ? ServerExternalTextLink : TextLink
-
   return (
-    <LinkComponent to={to} variant='visible' {...props}>
+    <TextLink href={href} {...props} variant='visible'>
       {content}
-    </LinkComponent>
+    </TextLink>
   )
 }
 
-export const ServerUserGeneratedText = forwardRef(function <
-  T extends ElementType
->(props: ServerUserGeneratedTextProps<T>, ref: ForwardedRef<HTMLElement>) {
-  const {
-    children: childrenProp,
-    variant = 'body',
-    color,
-    size,
-    strength,
-    tag = 'p',
-    linkSource,
-    onClickLink,
-    ...other
-  } = props
+type ServerUserGeneratedTextProps = TextProps
 
-  const options: Opts = useMemo(
-    () => ({
-      render: renderLink,
-      attributes: { source: linkSource, onClick: onClickLink }
-    }),
-    [linkSource, onClickLink]
-  )
+export const ServerUserGeneratedText = (
+  props: ServerUserGeneratedTextProps
+) => {
+  const { children: childrenProp, ...other } = props
 
   const children =
     typeof childrenProp === 'string'
       ? squashNewLines(childrenProp)
       : childrenProp
 
+  if (!children) return null
+
   return (
     <Linkify
-      options={options}
+      options={{ render: renderLink }}
       as={LinkifyText}
-      innerRef={ref}
-      tag={tag}
-      variant={variant}
-      color={color}
-      size={size}
-      strength={strength}
       css={{ whiteSpace: 'pre-line' }}
       {...other}
     >
       {children}
     </Linkify>
   )
-})
+}

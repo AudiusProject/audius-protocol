@@ -1,4 +1,4 @@
-import { ID } from '@audius/common/models'
+import type { ID } from '@audius/common/models'
 import { push as pushRoute } from 'connected-react-router'
 import { Location } from 'history'
 import { matchPath } from 'react-router'

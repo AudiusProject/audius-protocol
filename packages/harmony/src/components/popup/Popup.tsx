@@ -17,8 +17,8 @@ import { PlainButton } from 'components/button'
 import { IconClose } from 'icons'
 import { ModalState } from 'utils/modalState'
 
-import { useClickOutside } from '../../../hooks/useClickOutside'
-import { getScrollParent } from '../../../utils/getScrollParent'
+import { useClickOutside } from '../../hooks/useClickOutside'
+import { getScrollParent } from '../../utils/getScrollParent'
 
 import styles from './Popup.module.css'
 import type { PopupProps, Origin } from './types'
