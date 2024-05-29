@@ -46,7 +46,7 @@ def test_track_remix_notification(app):
         assert len(notifications) == 1
         notification = notifications[0]
         assert notification.specifier == "2"
-        assert notification.group_id == "remix:track:100:parent_track:20:blocknumber:1"
+        assert notification.group_id == "remix:track:100:parent_track:20"
         assert notification.type == "remix"
         assert notification.slot == None
         assert notification.blocknumber == 1
@@ -74,6 +74,7 @@ def test_track_create_notification_on_track_update(app):
                 "owner_id": 1,
                 "created_at": track_20_creation_datetime,
                 "updated_at": track_20_creation_datetime + timedelta(days=1),
+                "is_unlisted": True,
             },
             {"track_id": 21, "owner_id": 1, "is_playlist_upload": True},
             {"track_id": 2, "owner_id": 2},
@@ -217,6 +218,7 @@ def test_track_create_notification_on_track_with_previous_specifier(app):
                 "blocknumber": 32,
                 "created_at": track20_created_at,
                 "updated_at": track20_created_at + timedelta(days=1),
+                "is_unlisted": True,
             },
         ],
     }

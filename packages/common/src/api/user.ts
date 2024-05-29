@@ -1,13 +1,8 @@
 import { full } from '@audius/sdk'
 
+import { userMetadataListFromSDK } from '~/adapters/user'
 import { createApi } from '~/audius-query'
-import {
-  ID,
-  Kind,
-  OptionalId,
-  StringUSDC,
-  userMetadataListFromSDK
-} from '~/models'
+import { ID, Kind, OptionalId, StringUSDC } from '~/models'
 import {
   USDCTransactionDetails,
   USDCTransactionMethod,

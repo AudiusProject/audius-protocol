@@ -159,7 +159,7 @@ export default defineConfig(async ({ mode }) => {
         ssr: '/src/ssr',
         '~': path.resolve(__dirname, '../../packages/common/src'),
         test: '/src/test',
-
+        '@audius/common/src': path.resolve(__dirname, '../common/src'),
         os: require.resolve('os-browserify'),
         path: require.resolve('path-browserify'),
         url: require.resolve('url'),

@@ -1,4 +1,5 @@
-import { Id, userMetadataListFromSDK } from '@audius/common/models'
+import { userMetadataListFromSDK } from '@audius/common/adapters'
+import { Id } from '@audius/common/models'
 import { accountSelectors, getSDK } from '@audius/common/store'
 import { select, call } from 'typed-redux-saga'
 

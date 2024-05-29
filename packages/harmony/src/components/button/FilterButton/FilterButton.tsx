@@ -3,7 +3,8 @@ import { forwardRef, RefObject, useRef, useState, useCallback } from 'react'
 import { CSSObject, useTheme } from '@emotion/react'
 
 import { BaseButton } from 'components/button/BaseButton/BaseButton'
-import { Box, Flex, Paper, Popup } from 'components/layout'
+import { Box, Flex, Paper } from 'components/layout'
+import { Popup } from 'components/popup'
 import { useControlled } from 'hooks/useControlled'
 import { IconCaretDown, IconCloseAlt } from 'icons'
 

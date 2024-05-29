@@ -15,6 +15,7 @@ module.exports = {
           ['audio', './src/audio'],
           ['assets', './src/assets'],
           ['common', './src/common'],
+          ['@audius/common/src', '../common/src'],
           ['components', './src/components'],
           ['hooks', './src/hooks'],
           ['models', './src/models'],

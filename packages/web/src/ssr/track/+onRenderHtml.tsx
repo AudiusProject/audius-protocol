@@ -1,45 +1,46 @@
-import { SsrPageProps } from '@audius/common/models'
+import type { Track, User } from '@audius/common/models'
 import createEmotionServer from '@emotion/server/create-instance'
-import { createMemoryHistory } from 'history'
 import { renderToString } from 'react-dom/server'
 import { Helmet } from 'react-helmet'
 import { escapeInject, dangerouslySkipEscape } from 'vike/server'
 import type { PageContextServer } from 'vike/types'
 
+import { ServerWebPlayer } from 'app/web-player/ServerWebPlayer'
+import { ServerTrackPage } from 'pages/track-page/ServerTrackPage'
 import { isMobileUserAgent } from 'utils/clientUtil'
 
-import { harmonyCache } from '../HarmonyCacheProvider'
-
-import RootWithProviders from './RootWithProviders'
-import { getIndexHtml } from './getIndexHtml'
+import { harmonyCache } from '../../HarmonyCacheProvider'
+import { getIndexHtml } from '../getIndexHtml'
 
 const { extractCriticalToChunks, constructStyleTagsFromChunks } =
   createEmotionServer(harmonyCache)
 
-export default function render(
-  pageContext: PageContextServer & {
-    pageProps: SsrPageProps
-    userAgent: string
+type TrackPageContext = PageContextServer & {
+  pageProps: {
+    track: Track
+    user: User
   }
-) {
-  const { pageProps, urlPathname } = pageContext
+  userAgent: string
+}
 
-  const isMobile = isMobileUserAgent(pageContext.userAgent)
+export default function render(pageContext: TrackPageContext) {
+  const { pageProps, userAgent } = pageContext
+  const { track, user } = pageProps
+  const { track_id } = track
+  const { user_id } = user
 
-  const history = createMemoryHistory({
-    initialEntries: [urlPathname]
-  })
+  const isMobile = isMobileUserAgent(userAgent)
 
   const pageHtml = renderToString(
-    <RootWithProviders
-      ssrContextValue={{
-        isServerSide: true,
-        isSsrEnabled: true,
-        pageProps,
-        history,
-        isMobile
+    <ServerWebPlayer
+      isMobile={isMobile}
+      initialState={{
+        tracks: { entries: { [track_id]: { metadata: track } } },
+        users: { entries: { [user_id]: { metadata: user } } }
       }}
-    />
+    >
+      <ServerTrackPage trackId={track_id} isMobile={isMobile} />
+    </ServerWebPlayer>
   )
 
   const helmet = Helmet.renderStatic()

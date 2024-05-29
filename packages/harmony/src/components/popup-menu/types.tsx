@@ -1,6 +1,6 @@
 import { ComponentProps, MouseEvent } from 'react'
 
-import { PopupProps } from '../layout/Popup'
+import { PopupProps } from '../popup'
 
 type ApplicablePopupProps = Pick<
   PopupProps,

@@ -1,11 +1,5 @@
-import {
-  Collection,
-  ID,
-  Id,
-  OptionalId,
-  Track,
-  userMetadataListFromSDK
-} from '@audius/common/models'
+import { userMetadataListFromSDK } from '@audius/common/adapters'
+import { Collection, ID, Id, OptionalId, Track } from '@audius/common/models'
 import {
   cacheCollectionsSelectors,
   cacheTracksSelectors,

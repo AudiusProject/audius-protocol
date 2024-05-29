@@ -1,7 +1,7 @@
-import { createContext, memo, useContext } from 'react'
+import { createContext, useContext } from 'react'
 
-import { SsrPageProps } from '@audius/common/models'
-import { Nullable } from '@audius/common/utils'
+import type { SsrPageProps } from '@audius/common/models'
+import type { Nullable } from '@audius/common/utils'
 import { History } from 'history'
 
 import { isMobile as isMobileClient } from 'utils/clientUtil'
@@ -24,12 +24,12 @@ export type SsrContextType = {
    * The page props for the current request. This is available on both the server and the client.
    * For example, this can contain track data for rendering the track page
    */
-  pageProps: SsrPageProps
+  pageProps?: SsrPageProps
   /**
    * The history object for the current request. This is only available on the server.
    * Use useHistoryContext to access the history object on the client.
    */
-  history: Nullable<History>
+  history?: Nullable<History>
 }
 
 export const useSsrContext = () => {
@@ -47,16 +47,18 @@ export const SsrContext = createContext<SsrContextType>({
   history: null
 })
 
-export const SsrContextProvider = memo(
-  (props: { value: SsrContextType; children: JSX.Element }) => {
-    const isMobile = props.value.isServerSide
-      ? props.value.isMobile
-      : isMobileClient()
+type SsrContextProviderProps = {
+  value: SsrContextType
+  children: JSX.Element
+}
 
-    return (
-      <SsrContext.Provider value={{ ...props.value, isMobile }}>
-        {props.children}
-      </SsrContext.Provider>
-    )
-  }
-)
+export const SsrContextProvider = (props: SsrContextProviderProps) => {
+  const { value, children } = props
+  const isMobile = value.isServerSide ? value.isMobile : isMobileClient()
+
+  return (
+    <SsrContext.Provider value={{ ...value, isMobile }}>
+      {children}
+    </SsrContext.Provider>
+  )
+}

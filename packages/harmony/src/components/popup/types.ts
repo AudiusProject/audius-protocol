@@ -1,4 +1,4 @@
-import type { MutableRefObject, ReactChild } from 'react'
+import type { MutableRefObject, ReactElement } from 'react'
 
 import { ShadowOptions } from 'foundations'
 
@@ -36,7 +36,7 @@ export type PopupProps = {
   /**
    * Children to render inside the Popup
    */
-  children?: ReactChild
+  children?: ReactElement
 
   /**
    * Whether to dismiss the popup on mouse leave

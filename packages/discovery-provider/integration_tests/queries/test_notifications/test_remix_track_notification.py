@@ -58,16 +58,14 @@ def test_remix_track_notifications(app):
             args_1 = {"limit": 10, "user_id": 1}
             u1_notifs = get_notifications(session, args_1)
             assert len(u1_notifs) == 1
-            assert (
-                u1_notifs[0]["group_id"] == "remix:track:2:parent_track:1:blocknumber:4"
-            )
+            assert u1_notifs[0]["group_id"] == "remix:track:2:parent_track:1"
             assert u1_notifs[0]["is_seen"] == False
             assert u1_notifs[0]["actions"] == [
                 {
                     "specifier": "2",
                     "type": "remix",
                     "timestamp": t1,
-                    "group_id": "remix:track:2:parent_track:1:blocknumber:4",
+                    "group_id": "remix:track:2:parent_track:1",
                     "data": {"parent_track_id": 1, "track_id": 2},
                 }
             ]

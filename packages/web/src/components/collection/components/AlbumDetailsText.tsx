@@ -1,5 +1,9 @@
-import { formatDate, formatSecondsAsText } from '@audius/common/utils'
-import { Box, Flex, Text } from '@audius/harmony'
+import {
+  formatDate,
+  formatSecondsAsText
+} from '@audius/common/src/utils/timeUtil'
+import { Box, Flex } from '@audius/harmony/src/components/layout/'
+import { Text } from '@audius/harmony/src/components/text/Text'
 
 import { useIsMobile } from 'hooks/useIsMobile'
 
@@ -9,12 +13,9 @@ type AlbumDetailsTextProps = {
   numTracks: number
   duration: number | null
 }
-export const AlbumDetailsText = ({
-  duration,
-  lastModifiedDate,
-  numTracks,
-  releaseDate
-}: AlbumDetailsTextProps) => {
+
+export const AlbumDetailsText = (props: AlbumDetailsTextProps) => {
+  const { duration, lastModifiedDate, numTracks, releaseDate } = props
   const isMobile = useIsMobile()
   const renderAlbumDetailsText = () => {
     const hasDate = lastModifiedDate || releaseDate
@@ -26,6 +27,7 @@ export const AlbumDetailsText = ({
 
     const trackCountText = `${numTracks} tracks`
     const durationText = duration ? `, ${formatSecondsAsText(duration)}` : ''
+
     return isMobile ? (
       <Flex direction='column' gap='xs'>
         {hasDate ? <Box>{releaseAndUpdatedText}</Box> : null}

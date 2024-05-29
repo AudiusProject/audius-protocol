@@ -50,6 +50,8 @@ export const AuthProvider = ({ children }: { children: ReactNode}) => {
           setUser(user)
           localStorage.setItem(tokenLocalStorageKey, token)
           setStatus(Status.SUCCESS)
+          // Clear url params
+          window.history.replaceState(null, '', window.location.pathname)
         } catch (e) {
           console.error(e)
           localStorage.removeItem(tokenLocalStorageKey)

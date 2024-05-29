@@ -1,28 +1,13 @@
-import { Maybe } from '@audius/common/utils'
-import { full as FullSdk } from '@audius/sdk'
 import type { PageContextServer } from 'vike/types'
 
-import { audiusSdk } from '../sdk'
-
-export type ProfilePageProps = {
-  user: Maybe<FullSdk.UserFull>
-}
+export type ProfilePageProps = {}
 
 export async function onBeforeRender(pageContext: PageContextServer) {
   const { handle } = pageContext.routeParams
 
   try {
-    const { data: users } = await audiusSdk.full.users.getUserByHandle({
-      handle
-    })
-    const user = users?.[0]
-
-    const pageProps = { user }
-
     return {
-      pageContext: {
-        pageProps
-      }
+      pageContext: {}
     }
   } catch (e) {
     console.error(

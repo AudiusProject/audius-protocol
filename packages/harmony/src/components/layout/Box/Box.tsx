@@ -60,7 +60,7 @@ export const Box = styled.div<BoxProps>(
       paddingLeft: (padL && spacing[padL as SpacingOptions]) ?? padL,
       paddingRight: (padR && spacing[padR as SpacingOptions]) ?? padR,
       paddingBottom: (padB && spacing[padB as SpacingOptions]) ?? padB,
-      marginTop: marginT && spacing[marginT],
+      marginTop: (marginT && spacing[marginT as SpacingOptions]) ?? marginT,
       marginLeft: marginL && spacing[marginL],
       marginRight: marginR && spacing[marginR],
       marginBottom: marginB && spacing[marginB],

@@ -67,7 +67,7 @@ describe('Remix Notification', () => {
         body: 'New remix of your track track_title_10: user_2 uploaded track_title_20',
         data: {
           childTrackId: 20,
-          id: 'timestamp:1589373217:group_id:remix:track:20:parent_track:10:blocknumber:1',
+          id: 'timestamp:1589373217:group_id:remix:track:20:parent_track:10',
           type: 'RemixCreate'
         }
       }
@@ -98,7 +98,7 @@ describe('Remix Notification', () => {
         type: 'remix',
         timestamp: new Date(),
         specifier: '2',
-        group_id: 'remix:track:20:parent_track:10:blocknumber:1',
+        group_id: 'remix:track:20:parent_track:10',
         data,
         user_ids: [1],
         receiver_user_id: 1
