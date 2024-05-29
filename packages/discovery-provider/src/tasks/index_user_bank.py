@@ -40,6 +40,11 @@ from src.models.users.user import User
 from src.models.users.user_bank import USDCUserBankAccount, UserBankAccount, UserBankTx
 from src.models.users.user_tip import UserTip
 from src.queries.get_balances import enqueue_immediate_balance_refresh
+from src.queries.get_extended_purchase_gate import (
+    add_wallet_info_to_splits,
+    calculate_split_amounts,
+    to_wallet_amount_map,
+)
 from src.solana.constants import (
     FETCH_TX_SIGNATURES_BATCH_SIZE,
     TX_SIGNATURES_MAX_BATCHES,
@@ -376,6 +381,12 @@ def get_purchase_metadata_from_memo(
                 logger.error(f"index_user_bank.py | Unknown content type {type}")
                 continue
 
+            # Convert the new splits format to the old splits format for
+            # maximal backwards compatibility
+            if price is not None and splits is not None and isinstance(splits, list):
+                wallet_splits = add_wallet_info_to_splits(session, splits, timestamp)
+                amount_splits = calculate_split_amounts(price, wallet_splits)
+                splits = to_wallet_amount_map(amount_splits)
             if price is not None and splits is not None and isinstance(splits, dict):
                 purchase_metadata: PurchaseMetadataDict = {
                     "type": type,
