@@ -242,6 +242,10 @@ export const TrackScreenDetailsTile = ({
     )
   }
 
+  const handlePressEdit = useCallback(() => {
+    navigation?.push('EditTrack', { id: trackId })
+  }, [navigation, trackId])
+
   const playbackPositionInfo = useSelector((state) =>
     getTrackPosition(state, { trackId, userId: currentUserId })
   )
@@ -320,6 +324,7 @@ export const TrackScreenDetailsTile = ({
       isPreviewing={isPreviewing}
       isUnlisted={is_unlisted}
       isDeleted={is_delete}
+      onPressEdit={handlePressEdit}
       onPressFavorites={handlePressFavorites}
       onPressOverflow={handlePressOverflow}
       onPressPlay={handlePressPlay}
