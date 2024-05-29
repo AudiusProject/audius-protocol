@@ -64,6 +64,15 @@ transaction_history_parser.add_argument(
 )
 
 
+# TODO: The Plan
+# 1. Update auth middleware to accept an id_param, options check_unauthorized, check_forbidden
+# 2. Auth middleware needs to take in the namespace? So it can do the aborts(). Is this something it could read from context, request?
+# 3. Decode user id in auth middleware
+# 4. Normalize passed user_id from auth middleware?
+# 5. Get rid of the get/_get pattern below
+# 6. Update other usages of the decorator
+
+
 @full_user_ns.route("/<string:id>/transactions/audio")
 class GetTransactionHistory(Resource):
     @full_user_ns.doc(

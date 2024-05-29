@@ -149,7 +149,7 @@ from src.queries.query_helpers import (
 )
 from src.queries.search_queries import SearchKind, search
 from src.utils import web3_provider
-from src.utils.auth_middleware import auth_middleware
+from src.utils.auth_middleware import AccessLevel, auth_middleware
 from src.utils.config import shared_config
 from src.utils.db_session import get_db_read_replica
 from src.utils.helpers import decode_string_id, encode_int_id
@@ -350,7 +350,12 @@ class TrackList(Resource):
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
     @ns.expect(user_tracks_route_parser)
-    @auth_middleware(user_tracks_route_parser)
+    @auth_middleware(
+        parser=user_tracks_route_parser,
+        ns=ns,
+        id_param="id",
+        access_level=AccessLevel.ALL,
+    )
     @ns.marshal_with(tracks_response)
     @cache(ttl_sec=5)
     def get(self, id, authed_user_id=None):
