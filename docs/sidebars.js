@@ -125,6 +125,7 @@ module.exports = {
         'node-operator/setup/wallet-management',
         'node-operator/setup/hardware-requirements',
         'node-operator/setup/installation',
+        'node-operator/setup/storage-configuration',
         'node-operator/setup/advanced',
         'node-operator/sla',
         'node-operator/migration-guide',

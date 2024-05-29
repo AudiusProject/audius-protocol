@@ -7,8 +7,6 @@ description: Audius Protocol Documentation
 ---
 
 import useBaseUrl from '@docusaurus/useBaseUrl'
-import Tabs from '@theme/Tabs'
-import TabItem from '@theme/TabItem'
 
 :::caution Already a Node Operator?
 
@@ -103,78 +101,13 @@ nodes:
 </div>
 </details>
 
-### 3.2 Storage Configuration Details
+:::info Storage Configuration Options
 
-The configuration file will be pre-populated with the required fields. Enter your information into
-each field for each Audius Node you will be running.
+[Content Node](/learn/architecture/content-node) Operators can use a variety of storage providers to
+best suite their needs. Read the [Storage Configuration](/node-operator/setup/storage-configuration)
+guide for more information.
 
-<Tabs
-  block={true}
-  defaultValue="aws"
-  values={[
-    { label: 'AWS', value: 'aws' },
-    { label: 'Azure', value: 'azure' },
-    { label: 'Google Cloud', value: 'gcp' },
-  ]}
->
-<TabItem value="aws">
-
-```bash showLineNumbers title="audius-ctl configuration file with AWS storage config"
-network:
-  deployOn: mainnet
-nodes:
-  content-1.example.com:        # <--- THE URL OF YOUR CONTENT NODE
-    type: content
-    privateKey: abc123          # <--- UNIQUE PRIV KEY USED BY THIS NODE TO SIGN RESPONSES
-    wallet: 0xABC123            # <--- UNIQUE WALLET ADDRESS OF ABOVE PRIV KEY
-    rewardsWallet: 0xABC123     # <--- ADDRESS OF WALLET HOLDING STAKED TOKENS
-    storage:
-      storageUrl:               # <--- REQUIRED
-      awsAccessKeyId:
-      awsSecretAccessKey:
-      awsRegion:
-```
-
-</TabItem>
-
-<TabItem value="azure">
-
-```bash showLineNumbers title="audius-ctl configuration file with Azure storage config"
-network:
-  deployOn: mainnet
-nodes:
-  content-1.example.com:        # <--- THE URL OF YOUR CONTENT NODE
-    type: content
-    privateKey: abc123          # <--- UNIQUE PRIV KEY USED BY THIS NODE TO SIGN RESPONSES
-    wallet: 0xABC123            # <--- UNIQUE WALLET ADDRESS OF ABOVE PRIV KEY
-    rewardsWallet: 0xABC123     # <--- ADDRESS OF WALLET HOLDING STAKED TOKENS
-    storage:
-      storageUrl:               # <--- REQUIRED
-      azureStorageAccount:
-      azureStorageKey:
-```
-
-</TabItem>
-
-<TabItem value="gcp">
-
-```bash showLineNumbers title="audius-ctl configuration file with GCP storage config"
-network:
-  deployOn: mainnet
-nodes:
-  content-1.example.com:        # <--- THE URL OF YOUR CONTENT NODE
-    type: content
-    privateKey: abc123          # <--- UNIQUE PRIV KEY USED BY THIS NODE TO SIGN RESPONSES
-    wallet: 0xABC123            # <--- UNIQUE WALLET ADDRESS OF ABOVE PRIV KEY
-    rewardsWallet: 0xABC123     # <--- ADDRESS OF WALLET HOLDING STAKED TOKENS
-    storage:
-      storageUrl:               # <--- REQUIRED
-      googleApplicationCredentials: google-application-credentials.json
-```
-
-</TabItem>
-
-</Tabs>
+:::
 
 ---
 
