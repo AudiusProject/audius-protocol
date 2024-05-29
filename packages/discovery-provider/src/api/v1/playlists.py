@@ -7,6 +7,7 @@ from flask_restx import Namespace, Resource, fields
 from src.api.v1.helpers import (
     abort_bad_path_param,
     abort_bad_request_param,
+    abort_not_found,
     current_user_parser,
     decode_ids_array,
     decode_with_abort,
@@ -223,6 +224,8 @@ class BulkPlaylists(Resource):
             current_user_id=current_user_id,
             playlist_ids=ids,
         )
+        if not playlists:
+            abort_not_found(ids, ns)
         response = success_response(playlists)
         return response
 
@@ -246,6 +249,9 @@ class BulkPlaylistsFull(Resource):
             current_user_id=current_user_id,
             playlist_ids=ids,
         )
+
+        if not playlists:
+            abort_not_found(ids, ns)
 
         def add_playlist_tracks(playlist):
             tracks = get_tracks_for_playlist(playlist["playlist_id"], current_user_id)
