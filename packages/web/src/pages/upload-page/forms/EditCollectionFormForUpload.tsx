@@ -4,7 +4,8 @@ import { CollectionValues } from '@audius/common/schemas'
 import { UploadType } from '@audius/common/store'
 import moment from 'moment'
 
-import { EditCollectionForm } from '../../../components/edit-collection/desktop/EditCollectionForm'
+import { EditCollectionForm } from 'components/edit-collection/desktop/EditCollectionForm'
+
 import { CollectionFormState } from '../types'
 
 type EditCollectionFormProps = {

@@ -8,10 +8,9 @@ import {
 } from '@audius/common/store'
 import { useDispatch, useSelector } from 'react-redux'
 
+import { UploadPreviewContextProvider } from 'components/edit-track/utils/uploadPreviewContext'
 import Header from 'components/header/desktop/Header'
 import Page from 'components/page/Page'
-
-import { UploadPreviewContextProvider } from '../../components/edit-track/utils/uploadPreviewContext'
 
 import styles from './UploadPage.module.css'
 import { EditPage } from './pages/EditPage'

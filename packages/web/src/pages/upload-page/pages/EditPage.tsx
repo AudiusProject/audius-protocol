@@ -3,7 +3,8 @@ import { useContext } from 'react'
 import { UploadType } from '@audius/common/store'
 import { useUnmount } from 'react-use'
 
-import { UploadPreviewContext } from '../../../components/edit-track/utils/uploadPreviewContext'
+import { UploadPreviewContext } from 'components/edit-track/utils/uploadPreviewContext'
+
 import { EditCollectionFormForUpload } from '../forms/EditCollectionFormForUpload'
 import { EditTrackFormForUpload } from '../forms/EditTrackFormForUpload'
 import { CollectionFormState, TrackFormState, UploadFormState } from '../types'
