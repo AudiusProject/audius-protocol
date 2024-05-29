@@ -20,7 +20,8 @@ import {
   playbackPositionActions,
   playbackPositionSelectors,
   gatedContentSelectors,
-  calculatePlayerBehavior
+  calculatePlayerBehavior,
+  PlayerBehavior
 } from '@audius/common/store'
 import type { Queueable, CommonState } from '@audius/common/store'
 import {
@@ -179,7 +180,8 @@ export const AudioPlayer = () => {
   const uid = useSelector(getUid)
   const playerBehavior = useSelector(getPlayerBehavior)
   const previousUid = usePrevious(uid)
-  const previousPlayerBehavior = usePrevious(playerBehavior)
+  const previousPlayerBehavior =
+    usePrevious(playerBehavior) || PlayerBehavior.FULL_OR_PREVIEW
   const trackPositions = useSelector((state: CommonState) =>
     getUserTrackPositions(state, { userId: currentUserId })
   )
