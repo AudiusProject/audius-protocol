@@ -100,6 +100,8 @@ func (ss *MediorumServer) findMissedAnalysisJobs(work chan *Upload, myHost strin
 		if time.Since(upload.TranscodedAt) > time.Minute {
 			// mark analysis as timed out and the upload as done.
 			// failed or timed out analyses do not block uploads.
+			ss.logger.Warn("audio analysis timed out", "upload", upload.ID)
+
 			upload.AudioAnalysisStatus = JobStatusTimeout
 			upload.Status = JobStatusDone
 			ss.crud.Update(upload)
@@ -107,7 +109,7 @@ func (ss *MediorumServer) findMissedAnalysisJobs(work chan *Upload, myHost strin
 
 		// this is already handled by a callback and there's a chance this job gets enqueued twice
 		if myRank == 1 && upload.Status == JobStatusAudioAnalysis {
-			logger.Info("my upload audio analysis not started")
+			logger.Info("my upload's audio analysis not started")
 			work <- upload
 			continue
 		}
@@ -139,10 +141,10 @@ func (ss *MediorumServer) findMissedAnalysisJobs(work chan *Upload, myHost strin
 		}
 
 		if timedOut {
-			logger.Info("upload audio analysis timed out... starting")
+			logger.Info("audio analysis timed out... starting")
 			work <- upload
 		} else if neverStarted {
-			logger.Info("upload audio analysis never started")
+			logger.Info("audio analysis never started")
 			work <- upload
 		}
 	}
