@@ -25,13 +25,12 @@ import {
 import { useDispatch, useSelector } from 'react-redux'
 import { Link } from 'react-router-dom'
 
-import { UserNameAndBadges } from 'components/user-name-and-badges/UserNameAndBadges'
+import { Avatar } from 'components/avatar'
+import { UserLink } from 'components/link'
 import { useCollectionCoverArt2 } from 'hooks/useCollectionCoverArt'
 import { useMedia } from 'hooks/useMedia'
 import { useTrackCoverArt2 } from 'hooks/useTrackCoverArt'
 import { profilePage } from 'utils/route'
-import { Avatar } from 'components/avatar'
-import { UserLink } from 'components/link'
 
 const MAX_RECENT_SEARCHES = 12
 

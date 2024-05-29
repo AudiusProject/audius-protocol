@@ -10,7 +10,7 @@ import {
 } from '@reduxjs/toolkit'
 import AsyncRetry from 'async-retry'
 
-import { ID, Kind, Status } from '~/models'
+import { Kind, Status } from '~/models'
 
 import { AudiusQueryContextType } from './AudiusQueryContext'
 

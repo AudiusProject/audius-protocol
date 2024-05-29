@@ -173,12 +173,6 @@ type GetRemixablesArgs = {
   currentUserId: Nullable<ID>
 }
 
-type GetUsersArgs = {
-  userIds: ID[]
-  currentUserId: Nullable<ID>
-  abortOnUnreachable?: boolean
-}
-
 type GetUserTracksByHandleArgs = {
   handle: string
   currentUserId: Nullable<ID>
