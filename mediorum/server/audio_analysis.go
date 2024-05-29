@@ -154,6 +154,8 @@ func (ss *MediorumServer) startAudioAnalysisWorker(n int, work chan *Upload) {
 		err := ss.analyzeAudio(upload)
 		if err != nil {
 			ss.logger.Warn("audio analysis failed", "upload", upload, "err", err)
+		} else {
+			ss.logger.Info("audio analysis done", "upload", upload.ID)
 		}
 	}
 }
@@ -187,7 +189,7 @@ func (ss *MediorumServer) analyzeAudio(upload *Upload) error {
 	// so that the next mirror may pick the job up
 	logger = logger.With("cid", cid)
 	key := cidutil.ShardCID(cid)
-	_, err := ss.bucket.Attributes(ctx, key)
+	attrs, err := ss.bucket.Attributes(ctx, key)
 	if err != nil {
 		if gcerrors.Code(err) == gcerrors.NotFound {
 			return errors.New("failed to find audio file on node")
@@ -215,8 +217,22 @@ func (ss *MediorumServer) analyzeAudio(upload *Upload) error {
 	defer temp.Close()
 	defer os.Remove(temp.Name())
 
+	// convert the file to WAV for audio processing
+	wavFile := temp.Name()
+	// should always be audio/mpeg after transcoding
+	if attrs.ContentType == "audio/mpeg" {
+		inputFile := temp.Name()
+		wavFile = temp.Name() + ".wav"
+		defer os.Remove(wavFile)
+		err = convertToWav(inputFile, wavFile)
+		if err != nil {
+			logger.Error("failed to convert MP3 to WAV", "err", err)
+			return err
+		}
+	}
+
 	// analyze musical key
-	musicalKey, err := ss.analyzeKey(temp.Name())
+	musicalKey, err := ss.analyzeKey(wavFile)
 	if err != nil {
 		logger.Error("failed to analyze key", "err", err)
 		return onError(err)
@@ -228,7 +244,7 @@ func (ss *MediorumServer) analyzeAudio(upload *Upload) error {
 	}
 
 	// analyze BPM
-	bpmFloat, err := ss.analyzeBPM(temp.Name())
+	bpmFloat, err := ss.analyzeBPM(wavFile)
 	if err != nil {
 		logger.Error("failed to analyze BPM", "err", err)
 		return onError(err)
@@ -245,6 +261,7 @@ func (ss *MediorumServer) analyzeAudio(upload *Upload) error {
 	upload.AudioAnalysisStatus = JobStatusDone
 	upload.Status = JobStatusDone
 	ss.crud.Update(upload)
+
 	return nil
 }
 
@@ -252,9 +269,14 @@ func (ss *MediorumServer) analyzeKey(filename string) (string, error) {
 	cmd := exec.Command("/bin/analyze-key", filename)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		return "", err
+		exitError, ok := err.(*exec.ExitError)
+		if ok {
+			return "", fmt.Errorf("command exited with status %d: %s", exitError.ExitCode(), string(output))
+		}
+		return "", fmt.Errorf("failed to execute command: %v", err)
 	}
-	return string(output), nil
+	formattedOutput := strings.ReplaceAll(string(output), "\n", "")
+	return formattedOutput, nil
 }
 
 func (ss *MediorumServer) analyzeBPM(filename string) (float64, error) {
@@ -267,10 +289,10 @@ func (ss *MediorumServer) analyzeBPM(filename string) (float64, error) {
 	outputStr := string(output)
 	lines := strings.Split(outputStr, "\n")
 	for _, line := range lines {
-		if strings.HasPrefix(line, "BPM") {
+		if strings.HasSuffix(line, "bpm") {
 			parts := strings.Fields(line)
 			if len(parts) > 1 {
-				bpm, err := strconv.ParseFloat(parts[1], 64)
+				bpm, err := strconv.ParseFloat(parts[0], 64)
 				if err != nil {
 					return 0, err
 				}
@@ -280,4 +302,13 @@ func (ss *MediorumServer) analyzeBPM(filename string) (float64, error) {
 	}
 
 	return 0, fmt.Errorf("BPM not found in aubio output")
+}
+
+// converts an MP3 file to WAV format using ffmpeg
+func convertToWav(inputFile, outputFile string) error {
+	cmd := exec.Command("ffmpeg", "-i", inputFile, outputFile)
+	if output, err := cmd.CombinedOutput(); err != nil {
+		return fmt.Errorf("failed to convert to WAV: %v, output: %s", err, string(output))
+	}
+	return nil
 }
