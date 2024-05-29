@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import { SquareSizes } from '@audius/common/models'
 import {
@@ -6,7 +6,6 @@ import {
   castActions,
   playerSelectors
 } from '@audius/common/store'
-import { encodeHashId } from '@audius/common/utils'
 import {
   CastState,
   useCastState,
@@ -16,7 +15,6 @@ import TrackPlayer from 'react-native-track-player'
 import { useDispatch, useSelector } from 'react-redux'
 import { useAsync, usePrevious } from 'react-use'
 
-import { apiClient } from 'app/services/audius-api-client'
 import { audiusBackendInstance } from 'app/services/audius-backend-instance'
 
 const { setIsCasting } = castActions
@@ -47,40 +45,39 @@ export const useChromecast = () => {
   const castState = useCastState()
 
   const [internalCounter, setInternalCounter] = useState(0)
-  const streamingUri = useMemo(() => {
-    return track
-      ? apiClient.makeUrl(`/tracks/${encodeHashId(track.track_id)}/stream`)
-      : null
-  }, [track])
 
   const loadCast = useCallback(
-    async (track, startTime) => {
-      if (client && track && owner && streamingUri) {
+    async (track, startTime, contentUrl) => {
+      if (client && track && owner) {
         const imageUrl = await audiusBackendInstance.getImageUrl(
           track.cover_art_sizes,
           SquareSizes.SIZE_1000_BY_1000,
           track.cover_art_cids
         )
 
-        client.loadMedia({
-          mediaInfo: {
-            contentUrl: streamingUri,
-            metadata: {
-              type: 'musicTrack',
-              images: [
-                {
-                  url: imageUrl
-                }
-              ],
-              title: track.title,
-              artist: owner.name
-            }
-          },
-          startTime
-        })
+        try {
+          client.loadMedia({
+            mediaInfo: {
+              contentUrl,
+              metadata: {
+                type: 'musicTrack',
+                images: [
+                  {
+                    url: imageUrl
+                  }
+                ],
+                title: track.title,
+                artist: owner.name
+              }
+            },
+            startTime
+          })
+        } catch (e) {
+          console.error('failed to load', e)
+        }
       }
     },
-    [client, streamingUri, owner]
+    [client, owner]
   )
 
   const playCast = useCallback(() => {
@@ -115,9 +112,12 @@ export const useChromecast = () => {
   useAsync(async () => {
     if (castState === CastState.CONNECTED) {
       const currentPosition = await TrackPlayer.getPosition()
-      loadCast(track, currentPosition)
+      const currentPlaying = await TrackPlayer.getActiveTrack()
+      if (track && currentPlaying) {
+        loadCast(track, currentPosition, currentPlaying.url)
+      }
     }
-  }, [loadCast, track, prevTrack, castState])
+  }, [loadCast, track, castState])
 
   // Play & pause the cast device
   useEffect(() => {
