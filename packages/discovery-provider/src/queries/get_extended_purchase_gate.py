@@ -83,12 +83,13 @@ class NFTGate(TypedDict):
 
 AccessGate = Union[PurchaseGate, FollowGate, TipGate, NFTGate]
 
-percentage_decimals = 4
+
+# Allow up to 6 decimal points for split percentages
+percentage_decimals = 6
 percentage_multiplier = 10**percentage_decimals
 
 
-# Same as percentage multiplier (10^4) since both cents and percents have two decimals
-cents_to_usdc_multiplier = percentage_multiplier
+cents_to_usdc_multiplier = 10**4
 
 
 def calculate_split_amounts(price: int, splits: List[Split]):
