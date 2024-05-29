@@ -43,7 +43,6 @@ def test_track_remix_notification(app):
 
     with db.scoped_session() as session:
         notifications: List[Notification] = session.query(Notification).all()
-        logger.info(f"asdf notifications {notifications}")
         assert len(notifications) == 1
         notification = notifications[0]
         assert notification.specifier == "2"
@@ -229,7 +228,6 @@ def test_track_create_notification_on_track_with_previous_specifier(app):
         notifications: List[Notification] = (
             session.query(Notification).filter(Notification.type == "create").all()
         )
-        logger.info(f"asdf notifications {notifications}")
         assert len(notifications) == 1
         notification = notifications[0]
         assert notification.specifier == "1"
