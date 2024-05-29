@@ -68,7 +68,7 @@ int main(int argc, char* argv[]) {
     audioDataStruct.setChannels(sfinfo.channels);
     audioDataStruct.addToSampleCount(sfinfo.frames * sfinfo.channels); // Total number of samples
 
-    // Copy your audio into the object
+    // Copy audio into the object
     for (size_t i = 0; i < audioData.size(); ++i) {
         audioDataStruct.setSample(i, audioData[i]);
     }

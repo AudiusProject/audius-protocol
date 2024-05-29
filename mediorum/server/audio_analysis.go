@@ -42,7 +42,7 @@ func (ss *MediorumServer) startAudioAnalyzer() {
 		ss.logger.Info("reset stuck audio analyses", "count", tx.RowsAffected)
 	}
 
-	// add a callback to crudr that so we can consider audio analyses
+	// add a callback to crudr so we can consider audio analyses
 	ss.crud.AddOpCallback(func(op *crudr.Op, records interface{}) {
 		if op.Table != "uploads" || op.Action != crudr.ActionUpdate {
 			return
