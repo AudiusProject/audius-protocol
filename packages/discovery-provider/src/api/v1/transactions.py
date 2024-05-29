@@ -6,8 +6,6 @@ from src.api.v1.helpers import (
     DescriptiveArgument,
     ListEnumArgument,
     abort_bad_request_param,
-    abort_forbidden,
-    abort_unauthorized,
     decode_with_abort,
     extend_transaction_details,
     make_full_response,
@@ -28,7 +26,7 @@ from src.queries.get_usdc_transactions_history import (
     get_usdc_transactions_history_count,
 )
 from src.queries.query_helpers import SortDirection, TransactionSortMethod
-from src.utils.auth_middleware import auth_middleware
+from src.utils.auth_middleware import AccessLevel, auth_middleware
 
 from .models.transactions import transaction_details
 
@@ -81,23 +79,24 @@ class GetTransactionHistory(Resource):
         params={"id": "A User ID"},
     )
     @full_user_ns.expect(transaction_history_parser)
-    @auth_middleware(transaction_history_parser)
+    @auth_middleware(
+        parser=transaction_history_parser,
+        id_param="id",
+        ns=full_user_ns,
+        access_level=AccessLevel.OWNER,
+    )
     @full_user_ns.marshal_with(transaction_history_response)
     def get(self, id, authed_user_id=None):
         user_id = decode_with_abort(id, full_user_ns)
-        return self._get(user_id, authed_user_id)
+        return self._get(user_id)
 
-    def _get(self, user_id, authed_user_id=None):
-        if authed_user_id is None:
-            abort_unauthorized(full_user_ns)
-        elif authed_user_id != user_id:
-            abort_forbidden(full_user_ns)
+    def _get(self, user_id):
         args = transaction_history_parser.parse_args()
         sort_method = args.get("sort_method", TransactionSortMethod.date)
         sort_direction = args.get("sort_direction", SortDirection.desc)
         transactions = get_audio_transactions_history(
             {
-                "user_id": authed_user_id,
+                "user_id": user_id,
                 "sort_method": sort_method,
                 "sort_direction": sort_direction,
             }
@@ -112,14 +111,14 @@ class LegacyGetTransactionHistory(GetTransactionHistory):
         deprecated=True,
     )
     @full_ns.expect(transaction_history_parser)
-    @auth_middleware(transaction_history_parser)
+    @auth_middleware(parser=transaction_history_parser)
     @full_ns.marshal_with(transaction_history_response)
     def get(self, authed_user_id=None):
         """Gets the user's $AUDIO transaction history within the App
 
         Deprecated: Use `/users/{id}/transactions/audio` or `sdk.full.users.getAudioTransactions()` instead.
         """
-        return self._get(authed_user_id, authed_user_id)
+        return self._get(authed_user_id)
 
 
 transaction_history_count_response = make_full_response(
@@ -139,15 +138,16 @@ class GetTransactionHistoryCount(Resource):
         params={"id": "A User ID"},
     )
     @full_user_ns.expect(transaction_history_count_parser)
-    @auth_middleware(transaction_history_count_parser)
+    @auth_middleware(
+        parser=transaction_history_count_parser,
+        id_param="id",
+        ns=full_user_ns,
+        access_level=AccessLevel.OWNER,
+    )
     @full_user_ns.marshal_with(transaction_history_count_response)
     def get(self, id, authed_user_id=None):
         user_id = decode_with_abort(id, full_ns)
-        if authed_user_id is None:
-            abort_unauthorized(full_user_ns)
-        elif authed_user_id != user_id:
-            abort_forbidden(full_user_ns)
-        transactions_count = get_audio_transactions_history_count(authed_user_id)
+        transactions_count = get_audio_transactions_history_count(user_id)
         response = success_response(transactions_count)
         return response
 
@@ -213,20 +213,21 @@ class GetUSDCTransactionHistory(Resource):
         params={"id": "A User ID"},
     )
     @full_user_ns.expect(usdc_transaction_history_parser)
-    @auth_middleware(usdc_transaction_history_parser)
+    @auth_middleware(
+        parser=usdc_transaction_history_parser,
+        id_param="id",
+        ns=full_user_ns,
+        access_level=AccessLevel.OWNER,
+    )
     @full_user_ns.marshal_with(transaction_history_response)
     def get(self, id, authed_user_id=None):
         user_id = decode_with_abort(id, full_ns)
-        if authed_user_id is None:
-            abort_unauthorized(full_user_ns)
-        elif authed_user_id != user_id:
-            abort_forbidden(full_user_ns)
         args = usdc_transaction_history_parser.parse_args()
         sort_method = args.get("sort_method", TransactionSortMethod.date)
         sort_direction = args.get("sort_direction", SortDirection.desc)
         transactions = get_usdc_transactions_history(
             {
-                "user_id": authed_user_id,
+                "user_id": user_id,
                 "sort_method": sort_method,
                 "sort_direction": sort_direction,
                 "include_system_transactions": args.get(
@@ -253,18 +254,19 @@ class GetUSDCTransactionHistoryCount(Resource):
         params={"id": "A User ID"},
     )
     @full_user_ns.expect(usdc_transaction_history_count_parser)
-    @auth_middleware(usdc_transaction_history_count_parser)
+    @auth_middleware(
+        parser=usdc_transaction_history_count_parser,
+        id_param="id",
+        ns=full_user_ns,
+        access_level=AccessLevel.OWNER,
+    )
     @full_user_ns.marshal_with(transaction_history_count_response)
     def get(self, id, authed_user_id=None):
         user_id = decode_with_abort(id, full_ns)
-        if authed_user_id is None:
-            abort_unauthorized(full_user_ns)
-        elif authed_user_id != user_id:
-            abort_forbidden(full_user_ns)
         args = usdc_transaction_history_count_parser.parse_args()
         transactions_count = get_usdc_transactions_history_count(
             {
-                "user_id": authed_user_id,
+                "user_id": user_id,
                 "transaction_type": args.get("type", None),
                 "include_system_transactions": args.get(
                     "include_system_transactions", False

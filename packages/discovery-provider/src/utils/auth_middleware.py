@@ -155,7 +155,9 @@ def auth_middleware(
                     )
                     ns.abort(400, "Failed to validate requested user.")
 
-                if not is_active_manager(user_id=user_id, manager_id=authed_user_id):
+                if user_id != authed_user_id and not is_active_manager(
+                    user_id=user_id, manager_id=authed_user_id
+                ):
                     ns.abort(403, "You do not have permission to access this resource.")
 
             return func(*args, **kwargs)

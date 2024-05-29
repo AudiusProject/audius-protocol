@@ -31,11 +31,11 @@ program
 
     try {
       const {
-        data: { user_id: userId }
+        data: { id: userId }
       } = await audiusSdk.users.getUserByHandle({ handle: from })
       const {
-        data: { user_id: managerUserId }
-      } = await audiusSdk.users.getUserByHandle({ handle: from })
+        data: { id: managerUserId }
+      } = await audiusSdk.users.getUserByHandle({ handle })
 
       await audiusSdk.grants.addManager({ userId, managerUserId })
       console.log(
@@ -71,8 +71,12 @@ program
     })
 
     try {
-      const userId = parseUserId(from)
-      const grantorUserId = parseUserId(handle)
+      const {
+        data: { id: userId }
+      } = await audiusSdk.users.getUserByHandle({ handle: from })
+      const {
+        data: { id: grantorUserId }
+      } = await audiusSdk.users.getUserByHandle({ handle })
 
       await audiusSdk.grants.approveGrant({ userId, grantorUserId })
       console.log(chalk.green(`Manager request approved!`))
