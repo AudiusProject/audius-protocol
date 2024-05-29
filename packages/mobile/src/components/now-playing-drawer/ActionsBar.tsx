@@ -29,7 +29,7 @@ import {
 import { formatPrice, Genre, removeNullable } from '@audius/common/utils'
 import type { Nullable } from '@audius/common/utils'
 import { View, Platform } from 'react-native'
-import { CastButton } from 'react-native-google-cast'
+import { CastButton, useDevices } from 'react-native-google-cast'
 import { useDispatch, useSelector } from 'react-redux'
 import { trpc } from 'utils/trpcClientWeb'
 
@@ -234,6 +234,7 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
   ])
 
   const { openAirplayDialog } = useAirplay()
+  const castDevices = useDevices()
 
   const renderPurchaseButton = () => {
     if (
@@ -266,7 +267,7 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
         />
       )
     }
-    return isReachable ? (
+    return isReachable && castDevices.length > 0 ? (
       <CastButton
         style={{
           ...styles.button,
