@@ -119,10 +119,11 @@ def calculate_split_amounts(price: int, splits: List[Split]):
     # Resolve rounding errors by iteratively choosing the highest fractional
     # rounding errors to round up until the running total is correct
     new_splits.sort(key=lambda item: (-item["_amount_fractional"], item["amount"]))
-    for index in range(price_in_usdc - running_total):
-        index = index % len(new_splits)
+    index = 0
+    while running_total < price_in_usdc:
         new_splits[index]["amount"] += 1
         running_total += 1
+        index = (index + 1) % len(new_splits)
     if running_total != price_in_usdc:
         raise Exception(
             f"Bad splits math: Expected {price_in_usdc} but got {running_total}. new_splits={new_splits}"
