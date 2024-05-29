@@ -87,30 +87,51 @@ percentage_decimals = 4
 percentage_multiplier = 10**percentage_decimals
 
 
+# Same as percentage multiplier (10^4) since both cents and percents have two decimals
+cents_to_usdc_multiplier = percentage_multiplier
+
+
 def calculate_split_amounts(price: int, splits: List[Split]):
-    price_in_usdc = 10000 * price
+    """
+    Deterministically calculates the USDC amounts to pay to each person,
+    adjusting for rounding errors and ensuring the total matches the price.
+    """
+    price_in_usdc = int(cents_to_usdc_multiplier * price)
     running_total = 0
     new_splits: List[Dict] = []
-    for split in splits:
+    for index in range(len(splits)):
+        split = splits[index]
         # multiply percentage to make it a whole number
-        percentage_integer = int(split["percentage"] * percentage_multiplier)
+        percentage_whole = int(split["percentage"] * percentage_multiplier)
         # do safe integer math on the price
-        amount_whole = int(percentage_integer * price_in_usdc)
+        amount = int(percentage_whole * price_in_usdc)
         # divide by the percentage multiplier afterward, and convert percent
-        amount_uncapped = int(amount_whole / (percentage_multiplier * 100))
-        # cap to make sure we don't have sum(splits) > price
-        amount = min(
-            amount_uncapped,
-            price_in_usdc - running_total,
-        )
-        running_total += amount
+        amount = amount / (percentage_multiplier * 100)
+        # round towards zero, it'll round up later as necessary
+        amount_in_usdc = int(amount)
         new_split: Dict = cast(dict, split)
-        new_split["amount"] = amount
+        new_split["amount"] = amount_in_usdc
+        # save the fractional component and index for rounding/sorting later
+        new_split["_amount_fractional"] = amount - amount_in_usdc
+        new_split["_index"] = index
         new_splits.append(new_split)
+        running_total += amount_in_usdc
+    # Resolve rounding errors by iteratively choosing the highest fractional
+    # rounding errors to round up until the running total is correct
+    new_splits.sort(key=lambda item: (-item["_amount_fractional"], item["amount"]))
+    for index in range(price_in_usdc - running_total):
+        index = index % len(new_splits)
+        new_splits[index]["amount"] += 1
+        running_total += 1
     if running_total != price_in_usdc:
         raise Exception(
-            f"Bad splits math: Expected {price_in_usdc} but got {running_total}"
+            f"Bad splits math: Expected {price_in_usdc} but got {running_total}. new_splits={new_splits}"
         )
+    # sort back to original order
+    new_splits.sort(key=lambda item: item["_index"])
+    for s in new_splits:
+        del s["_index"]
+        del s["_amount_fractional"]
     return new_splits
 
 
