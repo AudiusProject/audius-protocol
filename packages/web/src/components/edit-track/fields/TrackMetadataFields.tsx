@@ -4,7 +4,7 @@ import { useField } from 'formik'
 import { ArtworkField, TagField, TextAreaField } from 'components/form-fields'
 import layoutStyles from 'components/layout/layout.module.css'
 
-import { getTrackFieldName } from '../hooks'
+import { getTrackFieldName } from '../../../pages/upload-page/hooks'
 
 import { SelectGenreField } from './SelectGenreField'
 import { SelectMoodField } from './SelectMoodField'

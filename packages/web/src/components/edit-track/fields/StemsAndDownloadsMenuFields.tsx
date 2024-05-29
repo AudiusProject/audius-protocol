@@ -16,7 +16,7 @@ import { z } from 'zod'
 import { Divider } from 'components/divider'
 import { stemDropdownRows } from 'utils/stems'
 
-import { processFiles } from '../store/utils/processFiles'
+import { processFiles } from '../../../pages/upload-page/store/utils/processFiles'
 
 import { USDCPurchaseRemoteConfig } from './AccessAndSaleField'
 import { StemFilesView } from './StemFilesView'

@@ -16,9 +16,12 @@ import { isEmpty } from 'lodash'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import layoutStyles from 'components/layout/layout.module.css'
 
-import { UploadFormScrollContext } from '../UploadPage'
-import { useIndexedField } from '../hooks'
-import { SingleTrackEditValues, TrackEditFormValues } from '../types'
+import { UploadFormScrollContext } from '../../../pages/upload-page/UploadPage'
+import { useIndexedField } from '../../../pages/upload-page/hooks'
+import {
+  SingleTrackEditValues,
+  TrackEditFormValues
+} from '../../../pages/upload-page/types'
 import { UploadPreviewContext } from '../utils/uploadPreviewContext'
 
 import styles from './MultiTrackSidebar.module.css'

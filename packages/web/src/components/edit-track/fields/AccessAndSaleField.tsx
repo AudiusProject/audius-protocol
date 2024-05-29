@@ -40,8 +40,14 @@ import {
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { defaultFieldVisibility } from 'pages/track-page/utils'
 
-import { useIndexedField, useTrackField } from '../hooks'
-import { SingleTrackEditValues, TrackEditFormValues } from '../types'
+import {
+  useIndexedField,
+  useTrackField
+} from '../../../pages/upload-page/hooks'
+import {
+  SingleTrackEditValues,
+  TrackEditFormValues
+} from '../../../pages/upload-page/types'
 
 import styles from './AccessAndSaleField.module.css'
 import { AccessAndSaleMenuFields } from './AccessAndSaleMenuFields'

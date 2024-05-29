@@ -5,11 +5,11 @@ import { useField } from 'formik'
 
 import { Tile } from 'components/tile'
 
-import { TrackNameField } from '../fields/TrackNameField'
-import { CollectionTrackForUpload } from '../types'
+import { CollectionTrackForUpload } from '../../../pages/upload-page/types'
 import { UploadPreviewContext } from '../utils/uploadPreviewContext'
 
 import styles from './CollectionTrackField.module.css'
+import { TrackNameField } from './TrackNameField'
 
 type CollectionTrackFieldProps = {
   index: number

@@ -3,7 +3,7 @@ import { useCallback, useContext, useEffect, useState } from 'react'
 import { IconPause, IconPlay, PlainButton } from '@audius/harmony'
 import { useField } from 'formik'
 
-import { CollectionTrackForUpload } from '../types'
+import { CollectionTrackForUpload } from '../../../pages/upload-page/types'
 import { UploadPreviewContext } from '../utils/uploadPreviewContext'
 
 const messages = {

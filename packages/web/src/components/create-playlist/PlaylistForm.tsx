@@ -5,9 +5,9 @@ import { Flex } from '@audius/harmony'
 import { Form, Formik } from 'formik'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
+import { AccessAndSaleField } from 'components/edit-track/fields/AccessAndSaleField'
 import { ArtworkField, TextAreaField, TextField } from 'components/form-fields'
 import { useCollectionCoverArt } from 'hooks/useCollectionCoverArt'
-import { AccessAndSaleField } from 'pages/upload-page/fields/AccessAndSaleField'
 
 import { EditActions } from './FormActions'
 

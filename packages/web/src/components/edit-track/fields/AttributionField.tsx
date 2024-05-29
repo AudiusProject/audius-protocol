@@ -19,12 +19,12 @@ import {
   SelectedValues
 } from 'components/data-entry/ContextualMenu'
 import { Divider } from 'components/divider'
+import { computeLicenseIcons } from 'components/edit-track/utils/computeLicenseIcons'
 import { TextField } from 'components/form-fields'
 import { SegmentedControlField } from 'components/form-fields/SegmentedControlField'
 import layoutStyles from 'components/layout/layout.module.css'
 import { useTrackField } from 'pages/upload-page/hooks'
 import { SingleTrackEditValues } from 'pages/upload-page/types'
-import { computeLicenseIcons } from 'pages/upload-page/utils/computeLicenseIcons'
 import { env } from 'services/env'
 
 import styles from './AttributionField.module.css'

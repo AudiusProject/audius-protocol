@@ -23,8 +23,8 @@ import { toFormikValidationSchema } from 'zod-formik-adapter'
 import {
   StemsAndDownloadsMenuFields,
   stemsAndDownloadsSchema
-} from 'pages/upload-page/fields/StemsAndDownloadsMenuFields'
-import { getCombinedDefaultGatedConditionValues } from 'pages/upload-page/fields/helpers'
+} from 'components/edit-track/fields/StemsAndDownloadsMenuFields'
+import { getCombinedDefaultGatedConditionValues } from 'components/edit-track/fields/helpers'
 import {
   DOWNLOAD_AVAILABILITY_TYPE,
   DOWNLOAD_CONDITIONS,
@@ -37,7 +37,7 @@ import {
   STEMS,
   STREAM_CONDITIONS,
   StemsAndDownloadsFormValues
-} from 'pages/upload-page/fields/types'
+} from 'components/edit-track/fields/types'
 
 import { ContextualMenu } from './ContextualMenu'
 import styles from './StemsAndDownloadsTriggerLegacy.module.css'

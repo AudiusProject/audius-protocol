@@ -28,10 +28,9 @@ import { set, get } from 'lodash'
 import { useSelector } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
-import { defaultFieldVisibility } from 'pages/track-page/utils'
-import { AccessAndSaleFormSchema } from 'pages/upload-page/fields/AccessAndSaleField'
-import { AccessAndSaleMenuFields } from 'pages/upload-page/fields/AccessAndSaleMenuFields'
-import { getCombinedDefaultGatedConditionValues } from 'pages/upload-page/fields/helpers'
+import { AccessAndSaleFormSchema } from 'components/edit-track/fields/AccessAndSaleField'
+import { AccessAndSaleMenuFields } from 'components/edit-track/fields/AccessAndSaleMenuFields'
+import { getCombinedDefaultGatedConditionValues } from 'components/edit-track/fields/helpers'
 import {
   AccessAndSaleFormValues,
   DOWNLOAD_CONDITIONS,
@@ -48,7 +47,8 @@ import {
   STREAM_AVAILABILITY_TYPE,
   STREAM_CONDITIONS,
   SpecialAccessType
-} from 'pages/upload-page/fields/types'
+} from 'components/edit-track/fields/types'
+import { defaultFieldVisibility } from 'pages/track-page/utils'
 
 import { ContextualMenu } from './ContextualMenu'
 
