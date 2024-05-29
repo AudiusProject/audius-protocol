@@ -75,7 +75,7 @@ module.exports = {
     },
     {
       type: 'category',
-      label: 'Community Built',
+      label: 'Community Projects',
       items: [
         'developers/community-projects/unreal-engine-plugin',
         'developers/community-projects/go-sdk',
