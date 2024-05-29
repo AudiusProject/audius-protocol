@@ -48,33 +48,29 @@ export const useChromecast = () => {
 
   const loadCast = useCallback(
     async (track, startTime, contentUrl) => {
-      if (client && track && owner) {
+      if (client && track && owner && contentUrl) {
         const imageUrl = await audiusBackendInstance.getImageUrl(
           track.cover_art_sizes,
           SquareSizes.SIZE_1000_BY_1000,
           track.cover_art_cids
         )
 
-        try {
-          client.loadMedia({
-            mediaInfo: {
-              contentUrl,
-              metadata: {
-                type: 'musicTrack',
-                images: [
-                  {
-                    url: imageUrl
-                  }
-                ],
-                title: track.title,
-                artist: owner.name
-              }
-            },
-            startTime
-          })
-        } catch (e) {
-          console.error('failed to load', e)
-        }
+        client.loadMedia({
+          mediaInfo: {
+            contentUrl,
+            metadata: {
+              type: 'musicTrack',
+              images: [
+                {
+                  url: imageUrl
+                }
+              ],
+              title: track.title,
+              artist: owner.name
+            }
+          },
+          startTime
+        })
       }
     },
     [client, owner]
@@ -113,9 +109,7 @@ export const useChromecast = () => {
     if (castState === CastState.CONNECTED) {
       const currentPosition = await TrackPlayer.getPosition()
       const currentPlaying = await TrackPlayer.getActiveTrack()
-      if (track && currentPlaying) {
-        loadCast(track, currentPosition, currentPlaying.url)
-      }
+      loadCast(track, currentPosition, currentPlaying?.url)
     }
   }, [loadCast, track, castState])
 
