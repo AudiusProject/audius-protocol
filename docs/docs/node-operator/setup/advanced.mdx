@@ -7,6 +7,8 @@ description: Audius Protocol Documentation
 ---
 
 import useBaseUrl from '@docusaurus/useBaseUrl'
+import Tabs from '@theme/Tabs'
+import TabItem from '@theme/TabItem'
 
 ## Controllers and Nodes
 
@@ -161,3 +163,88 @@ audius-ctl down content-1.example.com
 The same can be done with the `up` command when you are ready to start the Audius Node again.
 
 :::
+
+---
+
+## Content Node
+
+### Storage Configuration
+
+Content nodes support s3 compatible blob storage as an alternative to SSD storage.
+
+Enter your information into each field for each Audius Content Node you will be running.
+
+<Tabs
+  block={true}
+  defaultValue="aws"
+  values={[
+    { label: 'AWS', value: 'aws' },
+    { label: 'Azure', value: 'azure' },
+    { label: 'Google Cloud', value: 'gcp' },
+  ]}
+>
+<TabItem value="aws">
+
+```bash showLineNumbers title="audius-ctl configuration file with AWS storage config"
+network:
+  deployOn: mainnet
+nodes:
+  content-1.example.com:        # <--- THE URL OF YOUR CONTENT NODE
+    type: content
+    privateKey: abc123          # <--- UNIQUE PRIV KEY USED BY THIS NODE TO SIGN RESPONSES
+    wallet: 0xABC123            # <--- UNIQUE WALLET ADDRESS OF ABOVE PRIV KEY
+    rewardsWallet: 0xABC123     # <--- ADDRESS OF WALLET HOLDING STAKED TOKENS
+    storage:
+      storageUrl: s3://my-s3-bucket       # <--- REQUIRED
+      awsAccessKeyId: abc123
+      awsSecretAccessKey: 321cba
+      awsRegion: us-west-2
+```
+
+</TabItem>
+
+<TabItem value="azure">
+
+```bash showLineNumbers title="audius-ctl configuration file with Azure storage config"
+network:
+  deployOn: mainnet
+nodes:
+  content-1.example.com:        # <--- THE URL OF YOUR CONTENT NODE
+    type: content
+    privateKey: abc123          # <--- UNIQUE PRIV KEY USED BY THIS NODE TO SIGN RESPONSES
+    wallet: 0xABC123            # <--- UNIQUE WALLET ADDRESS OF ABOVE PRIV KEY
+    rewardsWallet: 0xABC123     # <--- ADDRESS OF WALLET HOLDING STAKED TOKENS
+    storage:
+      storageUrl: azblob://my-az-blob     # <--- REQUIRED
+      azureStorageAccount: abc123
+      azureStorageKey: abc123
+```
+
+</TabItem>
+
+<TabItem value="gcp">
+
+```bash showLineNumbers title="audius-ctl configuration file with GCP storage config"
+network:
+  deployOn: mainnet
+nodes:
+  content-1.example.com:        # <--- THE URL OF YOUR CONTENT NODE
+    type: content
+    privateKey: abc123          # <--- UNIQUE PRIV KEY USED BY THIS NODE TO SIGN RESPONSES
+    wallet: 0xABC123            # <--- UNIQUE WALLET ADDRESS OF ABOVE PRIV KEY
+    rewardsWallet: 0xABC123     # <--- ADDRESS OF WALLET HOLDING STAKED TOKENS
+    storage:
+      storageUrl: gs://my-gs-blob         # <--- REQUIRED
+      googleApplicationCredentials: google-application-credentials.json # See Note below
+```
+
+:::tip file location
+
+For GCP configurations, the `google-application-credentials.json` file **MUST** be stored under
+`/var/k8s/mediorum` on the host machine.
+
+:::
+
+</TabItem>
+
+</Tabs>
