@@ -15,7 +15,7 @@ const initialState: SearchState = {
   history: []
 }
 
-const isSearchItem = (
+export const isSearchItem = (
   searchItem: SearchItemBackwardsCompatible
 ): searchItem is SearchItem => {
   return (searchItem as SearchItem).kind !== undefined
@@ -40,14 +40,16 @@ const slice = createSlice({
           (i) => !isSearchItem(i) || i.id !== searchItem.id
         )
         state.history = [searchItem, ...filteredSearch]
-      } else {
-        const trimmedItem = searchItem.trim()
-        if (trimmedItem === '') return state
-        const filteredSearch = state.history.filter(
-          (term) => term !== trimmedItem
-        )
-        state.history = [trimmedItem, ...filteredSearch]
+        return state
       }
+
+      const trimmedItem = searchItem.trim()
+      if (trimmedItem === '') return state
+      const filteredSearch = state.history.filter(
+        (term) => term !== trimmedItem
+      )
+      state.history = [trimmedItem, ...filteredSearch]
+      return state
     },
     removeItem: (state, action: RemoveSearchHistoryItemAction) => {
       const { searchItem } = action.payload

@@ -17,8 +17,8 @@ export const SearchHistory = () => {
       onTouchStart={Keyboard.dismiss}
       keyboardShouldPersistTaps='always'
       data={history}
-      keyExtractor={(item) => item}
-      renderItem={({ item }) => <SearchHistoryListItem text={item} />}
+      keyExtractor={(item) => item as string}
+      renderItem={({ item }) => <SearchHistoryListItem text={item as string} />}
       ItemSeparatorComponent={Divider}
       ListFooterComponent={ClearSearchHistoryListItem}
     />

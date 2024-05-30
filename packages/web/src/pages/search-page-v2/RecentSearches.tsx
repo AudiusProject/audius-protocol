@@ -8,6 +8,7 @@ import {
 import { Kind, SquareSizes, Status } from '@audius/common/models'
 import {
   SearchItem,
+  isSearchItem,
   searchActions,
   searchSelectors
 } from '@audius/common/store'
@@ -247,10 +248,13 @@ export const RecentSearches = () => {
         </Text>
       </Flex>
       <Flex direction='column'>
-        {(truncatedSearchItems || []).map((searchItem: SearchItem) => {
-          const { kind, id } = searchItem
-          const ItemComponent = itemComponentByKind[kind]
-          return <ItemComponent searchItem={searchItem} key={id} />
+        {(truncatedSearchItems || []).map((searchItem) => {
+          if (isSearchItem(searchItem)) {
+            const { kind, id } = searchItem
+            const ItemComponent = itemComponentByKind[kind]
+            return <ItemComponent searchItem={searchItem} key={id} />
+          }
+          return null
         })}
       </Flex>
       <Button
