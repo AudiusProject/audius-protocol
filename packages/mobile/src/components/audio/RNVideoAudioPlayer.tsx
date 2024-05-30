@@ -1,10 +1,9 @@
 import { useRef, useEffect, useCallback, useState, useMemo } from 'react'
 
 import { useAppContext } from '@audius/common/context'
-import { SquareSizes } from '@audius/common/models'
+import { Name, SquareSizes } from '@audius/common/models'
 import type { Track } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
-import { makeTrack } from '@audius/common/services/audius-api-client/ResponseAdapter'
+import { make, track as analyticsTrack } from 'app/services/analytics'
 import {
   accountSelectors,
   cacheTracksSelectors,
@@ -26,7 +25,6 @@ import {
 } from '@audius/common/store'
 import type { Queueable, CommonState } from '@audius/common/store'
 import {
-  Genre,
   encodeHashId,
   shallowCompare,
   removeNullable,
@@ -36,14 +34,13 @@ import {
 import type { Nullable } from '@audius/common/utils'
 import { isEqual } from 'lodash'
 import { TrackType } from 'react-native-track-player'
-import Video, { type Video as RNVideo } from 'react-native-video'
+import Video from 'react-native-video'
 import { useDispatch, useSelector } from 'react-redux'
-import { useAsync, usePrevious } from 'react-use'
+import { usePrevious } from 'react-use'
 
 import { DEFAULT_IMAGE_URL } from 'app/components/image/TrackImage'
 import { getImageSourceOptimistic } from 'app/hooks/useContentNodeImage'
 import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'
-import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { apiClient } from 'app/services/audius-api-client'
 import { audiusBackendInstance } from 'app/services/audius-backend-instance'
 import {
@@ -59,9 +56,6 @@ import {
   addOfflineEntries,
   OfflineDownloadStatus
 } from 'app/store/offline-downloads/slice'
-
-import { useChromecast } from './GoogleCast'
-import { useSavePodcastProgress } from './useSavePodcastProgress'
 
 const { getUserId } = accountSelectors
 const { getUsers } = cacheUsersSelectors
@@ -519,9 +513,11 @@ export const RNVideoAudioPlayer = () => {
   const onLoadFinish = () => {
     setTrackLoadStartTime(performance.now())
     if (trackLoadStartTime) {
-      const loadDuration = Math.ceil(performance.now() - trackLoadStartTime)
-      console.log(`-- Song load duration: ${loadDuration}ms`)
-      // TODO: report load to analytics
+      const bufferDuration = Math.ceil(performance.now() - trackLoadStartTime)
+      console.log(`-- Song buffer duration: ${bufferDuration}ms`)
+      analyticsTrack(
+        make({ eventName: Name.BUFFERING_TIME, duration: bufferDuration })
+      )
     }
     dispatch(playerActions.setBuffering({ buffering: false }))
   }
