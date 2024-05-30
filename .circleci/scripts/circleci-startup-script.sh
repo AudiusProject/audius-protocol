@@ -51,5 +51,9 @@ sed -i "s/<< AUTH_TOKEN >>/$RUNNER_AUTH_TOKEN/g" /etc/circleci-runner/circleci-r
 echo "circleci ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/circleci
 chmod 440 /etc/sudoers.d/circleci
 
+# allow docker
+groupadd -f docker
+usermod -aG docker circleci
+
 systemctl enable circleci-runner
 systemctl start circleci-runner
