@@ -110,13 +110,21 @@ const Wallet = ({
       <Flex alignItems='center' gap='s'>
         <>
           {chain === Chain.Eth ? <IconLogoCircleETH /> : <IconLogoCircleSOL />}
-          <span className={styles.walletText}>{displayAddress(address)}</span>
+          <Text variant='body' size='m' strength='strong'>
+            {displayAddress(address)}
+          </Text>
+          {/* <span className={styles.walletText}>{displayAddress(address)}</span> */}
         </>
       </Flex>
       {!isMobile && (
-        <div className={cn(styles.collectibleCount, styles.walletText)}>
+        <Text
+          variant='body'
+          size='m'
+          strength='strong'
+          css={{ flex: 1, textAlign: 'right' }}
+        >
           {collectibleCount}
-        </div>
+        </Text>
       )}
       <div className={cn(styles.audioBalance, styles.walletText)}>
         <DisplayAudio

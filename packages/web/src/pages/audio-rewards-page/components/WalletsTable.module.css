@@ -5,13 +5,6 @@
   align-items: center;
 }
 
-/* Wallet */
-.walletContainer {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--harmony-unit-2);
-}
-
 .copyContainer {
   display: flex;
   justify-content: space-between;
@@ -25,41 +18,6 @@
   justify-content: space-between;
 }
 
-.removingWallet {
-  opacity: 0.5;
-}
-
-.removeContainer {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 48px;
-  height: 40px;
-  background: var(--harmony-n-25);
-  border: 1px solid var(--harmony-n-100);
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all ease-in-out 0.07s;
-  margin: 0px 24px;
-}
-
-.removeContainer.disabled {
-  cursor: default;
-}
-
-.removeContainer:hover:not(.disabled) {
-  background-color: var(--harmony-red);
-}
-
-.removeContainer:hover:not(.disabled) .iconRemove path {
-  fill: var(--harmony-static-white);
-}
-
-.iconRemove {
-  height: 18px;
-  width: 18px;
-}
-
 .loading {
   margin: 0px 36px;
   height: 24px;
@@ -67,8 +25,7 @@
 }
 
 .loading svg path {
-  fill: var(--secondary-light);
-  stroke: var(--harmony-s-200);
+  stroke: var(--harmony-neutral);
 }
 
 :global(#bitski-dialog-container) {
@@ -90,23 +47,6 @@
   flex-basis: 100px;
 }
 
-.headerCollectibles {
-  text-align: right;
-}
-
-.headerAudio {
-  padding-right: 98px;
-  text-align: right;
-}
-
-.noActions .headerAudio {
-  padding-right: 24px;
-}
-
-.mobile .headerAudio {
-  padding-right: 24px;
-}
-
 .collectibleCount {
   flex: 1;
   text-align: right;
@@ -125,22 +65,6 @@
 .mobile.noActions .audioBalance {
   flex: 0 0 100px;
   padding-right: 24px;
-}
-
-.actionSpacing {
-  flex: 0 0 96px;
-}
-
-.walletText {
-  font-weight: var(--harmony-font-demi-bold);
-  font-size: var(--harmony-font-m);
-  color: var(--harmony-neutral);
-}
-
-.mobile .walletText {
-  font-weight: var(--harmony-font-demi-bold);
-  font-size: var(--harmony-font-s);
-  color: var(--harmony-neutral);
 }
 
 .balanceContainer {
