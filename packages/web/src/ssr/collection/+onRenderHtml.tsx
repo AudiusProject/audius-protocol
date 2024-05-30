@@ -6,8 +6,10 @@ import { escapeInject, dangerouslySkipEscape } from 'vike/server'
 import type { PageContextServer } from 'vike/types'
 
 import { ServerWebPlayer } from 'app/web-player/ServerWebPlayer'
+import { MetaTags } from 'components/meta-tags/MetaTags'
 import { ServerCollectionPage } from 'pages/collection-page/ServerCollectionPage'
 import { isMobileUserAgent } from 'utils/clientUtil'
+import { getCollectionPageSEOFields } from 'utils/seo'
 
 import { harmonyCache } from '../../HarmonyCacheProvider'
 import { getIndexHtml } from '../getIndexHtml'
@@ -27,10 +29,19 @@ type TrackPageContext = PageContextServer & {
 export default function render(pageContext: TrackPageContext) {
   const { pageProps, userAgent } = pageContext
   const { collection, user, tracks } = pageProps
-  const { playlist_id } = collection
-  const { user_id } = user
+  const { playlist_id, playlist_name, permalink, is_album } = collection
+  const { user_id, name: userName, handle: userHandle } = user
 
   const isMobile = isMobileUserAgent(userAgent)
+
+  const seoMetadata = getCollectionPageSEOFields({
+    playlistName: playlist_name,
+    playlistId: playlist_id,
+    userName,
+    userHandle,
+    isAlbum: is_album,
+    permalink
+  })
 
   const pageHtml = renderToString(
     <ServerWebPlayer
@@ -46,7 +57,10 @@ export default function render(pageContext: TrackPageContext) {
         }
       }}
     >
-      <ServerCollectionPage collectionId={playlist_id} isMobile={isMobile} />
+      <>
+        <MetaTags {...seoMetadata} />
+        <ServerCollectionPage collectionId={playlist_id} isMobile={isMobile} />
+      </>
     </ServerWebPlayer>
   )
 
