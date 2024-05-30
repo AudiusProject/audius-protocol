@@ -4,7 +4,8 @@ import {
   tokenDashboardPageActions,
   feedPageLineupActions,
   signOutActions,
-  themeActions
+  themeActions,
+  searchActions
 } from '@audius/common/store'
 import { waitForValue } from '@audius/common/utils'
 import { setupBackend } from '@audius/web/src/common/store/backend/actions'
@@ -23,11 +24,11 @@ import { localStorage } from 'app/services/local-storage'
 
 import { resetOAuthState } from '../oauth/actions'
 import { clearOfflineDownloads } from '../offline-downloads/slice'
-import { clearHistory } from '../search/searchSlice'
 import { deregisterPushNotifications } from '../settings/sagas'
 
 const { resetAccount } = accountActions
 const { resetState: resetWalletState } = tokenDashboardPageActions
+const { clearHistory } = searchActions
 const { signOut: signOutAction } = signOutActions
 const { setTheme } = themeActions
 

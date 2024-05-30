@@ -118,6 +118,20 @@ class SearchBar extends Component {
         this.props.onSubmit(this.state.value)
       }
     } else if (value !== NO_RESULTS_OPTION) {
+      // Have to do this lookup because ant d autocomplete only accepts string values
+      const results = this.props.dataSource.sections.reduce(
+        (result, current) => [...result, ...current.children],
+        []
+      )
+      const recentSearch = results.find(({ key }) => key === value)
+      if (recentSearch) {
+        this.props.addRecentSearch({
+          searchItem: {
+            kind: recentSearch.kind,
+            id: recentSearch.id
+          }
+        })
+      }
       this.props.goToRoute(value)
       if (this.props.onSelect) this.props.onSelect(value)
     }

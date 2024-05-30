@@ -76,6 +76,37 @@ user as described below.
 
 ---
 
+### getBulkUsers
+
+#### getBulkUser(`params`)
+
+Gets a list of users.
+
+Example:
+
+```ts
+const { data: users } = await audiusSdk.users.getBulkUsers({
+  id: ['eAZl3', 'v7O9O'],
+})
+
+console.log(users)
+```
+
+#### Params
+
+Create an object with the following fields and pass it as the first argument, as shown in the
+example above.
+
+| Name | Type       | Description          | Required?    |
+| :--- | :--------- | :------------------- | :----------- |
+| `id` | `string[]` | The IDs of the users | **Required** |
+
+#### Returns
+
+Returns an array of users, see [`getUser`](#getuser).
+
+---
+
 ### getAIAttributedTracksByUserHandle
 
 #### getAIAttributedTracksByUserHandle(`params`)

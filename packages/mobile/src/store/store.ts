@@ -38,8 +38,6 @@ import offlineDownloads from './offline-downloads/slice'
 import type { PurchaseVendorState } from './purchase-vendor/slice'
 import purchaseVendor from './purchase-vendor/slice'
 import rootSaga from './sagas'
-import type { SearchState } from './search/searchSlice'
-import search from './search/searchSlice'
 import shareToStoryProgress from './share-to-story-progress/slice'
 import type { ShareToStoryProgressState } from './share-to-story-progress/slice'
 import { storeContext } from './storeContext'
@@ -61,7 +59,6 @@ export type AppState = CommonState & {
   oauth: OAuthState
   offlineDownloads: OfflineDownloadsState
   remoteConfig: RemoteConfigState
-  search: SearchState
   walletConnect: WalletConnectState
   shareToStoryProgress: ShareToStoryProgressState
   purchaseVendor: PurchaseVendorState
@@ -121,7 +118,6 @@ const rootReducer = combineReducers({
   oauth,
   offlineDownloads,
   remoteConfig,
-  search,
   walletConnect,
   shareToStoryProgress,
   purchaseVendor

@@ -6,6 +6,7 @@ import type {
   SearchPlaylist
 } from '@audius/common/models'
 import { SquareSizes } from '@audius/common/models'
+import { searchActions } from '@audius/common/store'
 import { View } from 'react-native'
 import { useDispatch } from 'react-redux'
 
@@ -15,11 +16,12 @@ import { TrackImage } from 'app/components/image/TrackImage'
 import UserBadges from 'app/components/user-badges/UserBadges'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useTrackSearchResultSelect } from 'app/screens/search-results-screen/tabs/useTrackSearchResultSelect'
-import { addItem } from 'app/store/search/searchSlice'
 import { makeStyles } from 'app/styles'
 
 import { SearchResultItem } from './SearchResult'
 import type { SectionHeader } from './SearchSectionHeader'
+
+const { addItem } = searchActions
 
 const useStyles = makeStyles(({ typography, palette, spacing }) => ({
   name: {

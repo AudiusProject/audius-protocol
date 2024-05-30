@@ -98,6 +98,37 @@ album as described below.
 
 ---
 
+### getBulkAlbums
+
+#### getBulkAlbum(`params`)
+
+Get a list of albums by id.
+
+Example:
+
+```ts
+const { data: albums } = await audiusSdk.album.getBulkAlbum({
+  id: ['D7KyD', '68yPZb'],
+})
+
+console.log(albums)
+```
+
+#### Params
+
+Create an object with the following fields and pass it as the first argument, as shown in the
+example above.
+
+| Name | Type       | Description           | Required?    |
+| :--- | :--------- | :-------------------- | :----------- |
+| `id` | `string[]` | The IDs of the albums | **Required** |
+
+#### Returns
+
+Returns an array of albums, see [`getAlbum`](#getalbum).
+
+---
+
 ### getAlbumTracks
 
 #### getAlbumTracks(`params`)
