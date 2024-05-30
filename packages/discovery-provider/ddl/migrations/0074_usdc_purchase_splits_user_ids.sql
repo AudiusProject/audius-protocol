@@ -110,8 +110,6 @@ FROM
 WHERE
     updated_track_download_splits.track_id = tracks.track_id;
 
-COMMIT;
-
 -- Update album price history
 WITH updated_album_stream_splits AS (
     SELECT
@@ -173,3 +171,5 @@ FROM
     updated_album_stream_splits
 WHERE
     updated_album_stream_splits.playlist_id = playlists.playlist_id;
+
+COMMIT;
