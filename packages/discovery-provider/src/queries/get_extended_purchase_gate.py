@@ -105,7 +105,7 @@ def calculate_split_amounts(price: int, splits: List[Split]):
         # multiply percentage to make it a whole number
         percentage_whole = int(split["percentage"] * percentage_multiplier)
         # do safe integer math on the price
-        amount = int(percentage_whole * price_in_usdc)
+        amount = percentage_whole * price_in_usdc
         # divide by the percentage multiplier afterward, and convert percent
         amount = amount / (percentage_multiplier * 100)
         # round towards zero, it'll round up later as necessary
