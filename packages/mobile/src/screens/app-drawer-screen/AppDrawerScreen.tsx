@@ -1,5 +1,7 @@
 import { memo, useMemo, useState } from 'react'
 
+import { useFeatureFlag } from '@audius/common/hooks'
+import { FeatureFlags } from '@audius/common/services'
 import { createDrawerNavigator } from '@react-navigation/drawer'
 // eslint-disable-next-line import/no-unresolved
 import type { DrawerNavigationHelpers } from '@react-navigation/drawer/lib/typescript/src/types'
@@ -53,6 +55,8 @@ export const AppDrawerScreen = memo(
   () => {
     const [gesturesDisabled, setGesturesDisabled] = useState(false)
 
+    const useRNVideoPlayer = true // useFeatureFlag(FeatureFlags.USE_RN_VIDEO_PLAYER)
+
     const drawerScreenOptions = useMemo(
       () => ({
         headerShown: false,
@@ -69,8 +73,7 @@ export const AppDrawerScreen = memo(
     return (
       <>
         <RepeatListener />
-        {/* <AudioPlayer /> */}
-        <RNVideoAudioPlayer />
+        {useRNVideoPlayer ? <RNVideoAudioPlayer /> : <AudioPlayer />}
         <Drawer.Navigator
           screenOptions={drawerScreenOptions}
           drawerContent={(props) => (

@@ -4,6 +4,7 @@ import { useAppContext } from '@audius/common/context'
 import { SquareSizes } from '@audius/common/models'
 import type { Track } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
+import { makeTrack } from '@audius/common/services/audius-api-client/ResponseAdapter'
 import {
   accountSelectors,
   cacheTracksSelectors,
@@ -20,7 +21,8 @@ import {
   playbackPositionActions,
   playbackPositionSelectors,
   gatedContentSelectors,
-  calculatePlayerBehavior
+  calculatePlayerBehavior,
+  PlayerBehavior
 } from '@audius/common/store'
 import type { Queueable, CommonState } from '@audius/common/store'
 import {
@@ -103,6 +105,7 @@ type QueueableTrack = {
   track: Nullable<Track>
 } & Pick<Queueable, 'playerBehavior'>
 
+// TODO: native mobile controls not implemented
 // TODO: These constants are the same in now playing drawer. Move them to shared location
 const SKIP_DURATION_SEC = 15
 const RESTART_THRESHOLD_SEC = 3
@@ -112,30 +115,32 @@ const TRACK_END_BUFFER = 2
 
 export const RNVideoAudioPlayer = () => {
   const dispatch = useDispatch()
+  // Internal state keeping track of current url (could be a preview url or a full track url)
+  // const [currentTrackURL, setCurrentTrackURL] = useState<string>()
+
+  // Redux store data
   const track = useSelector(getCurrentTrack)
+  const previousTrackId = usePrevious(track?.track_id)
   const isPlaying = useSelector(getPlaying)
   const seek = useSelector(getSeek)
   const counter = useSelector(getCounter)
   const repeatMode = useSelector(getRepeat)
-  const playbackRate = useSelector(getPlaybackRate)
+  // const playbackRate = useSelector(getPlaybackRate)
   const currentUserId = useSelector(getUserId)
   const uid = useSelector(getUid)
-  const playerBehavior = useSelector(getPlayerBehavior)
-  const previousUid = usePrevious(uid)
+  // Player behavior determines whether to preview a track or play the full track
+  const playerBehavior =
+    useSelector(getPlayerBehavior) || PlayerBehavior.FULL_OR_PREVIEW
+  // const previousUid = usePrevious(uid)
   const previousPlayerBehavior = usePrevious(playerBehavior)
+  // TODO: logic for preview/play swapping not implemented
+  const didPlayerBehaviorChange = previousPlayerBehavior !== playerBehavior
   const trackPositions = useSelector((state: CommonState) =>
     getUserTrackPositions(state, { userId: currentUserId })
   )
-
-  const videoRef = useRef<Video>(null)
-
-  const isReachable = useSelector(getIsReachable)
-  const isNotReachable = isReachable === false
-  const isOfflineModeEnabled = useIsOfflineModeEnabled()
   const nftAccessSignatureMap = useSelector(getNftAccessSignatureMap)
-  const { storageNodeSelector } = useAppContext()
 
-  // Queue Things
+  // Queue things
   const queueIndex = useSelector(getIndex)
   const queueShuffle = useSelector(getShuffle)
   const queueOrder = useSelector(getOrder)
@@ -156,21 +161,14 @@ export const RNVideoAudioPlayer = () => {
   const queueTrackOwnerIds = queueTracks
     .map(({ track }) => track?.owner_id)
     .filter(removeNullable)
-
   const queueTrackOwnersMap = useSelector(
     (state) => getUsers(state, { ids: queueTrackOwnerIds }),
     shallowCompare
   )
-  // Ref to keep track of the queue in the track player vs the queue in state
-  const queueListRef = useRef<string[]>([])
-  // A ref to the enqueue task to await before either requeing or appending to queue
-  const enqueueTracksJobRef = useRef<Promise<void>>()
-  // A way to abort the enqeue tracks job if a new lineup is played
-  const abortEnqueueControllerRef = useRef(new AbortController())
-  // The ref of trackQueryParams to avoid re-generating query params for the same track
-  const trackQueryParams = useRef({})
 
   // Offline Things
+  // TODO: offline mode partially implemented but not tested
+  const isReachable = useSelector(getIsReachable)
   const isCollectionMarkedForDownload = useSelector(
     getIsCollectionMarkedForDownload(
       queueSource === savedPageTracksLineupActions.prefix
@@ -184,8 +182,9 @@ export const RNVideoAudioPlayer = () => {
   const didOfflineToggleChange =
     isCollectionMarkedForDownload !== wasCollectionMarkedForDownload
 
-  const didPlayerBehaviorChange = previousPlayerBehavior !== playerBehavior
-
+  const isNotReachable = isReachable === false
+  const isOfflineModeEnabled = useIsOfflineModeEnabled()
+  const { storageNodeSelector } = useAppContext()
   // A map from trackId to offline availability
   const offlineAvailabilityByTrackId = useSelector((state) => {
     const offlineTrackStatus = getOfflineTrackStatus(state)
@@ -200,6 +199,24 @@ export const RNVideoAudioPlayer = () => {
     }, {})
   }, isEqual)
 
+  // Video player ref (controls audio output)
+  const videoRef = useRef<Video>(null)
+  // The ref of trackQueryParams to avoid re-generating query params for the same track
+  const trackQueryParams = useRef({})
+  // Ref to keep track of the queue in the track player vs the queue in state
+  const queueUIDsRef = useRef<string[]>([])
+  // Ref to keep track of the playable queue urls\
+  const queueRef = useRef<any[]>([]) // TODO: replace any
+  // Performance tracker for measuring track load time
+  const [trackLoadStartTime, setTrackLoadStartTime] = useState<number>()
+
+  // A ref to the enqueue task to await before either requeing or appending to queue
+  const enqueueTracksJobRef = useRef<Promise<void>>()
+  // A way to abort the enqeue tracks job if a new lineup is played
+  const abortEnqueueControllerRef = useRef(new AbortController())
+
+  // TODO: these will be used by native controls but these are currently not implemented
+  // Callbacks to dispatch redux changes
   const play = useCallback(() => dispatch(playerActions.play()), [dispatch])
   const pause = useCallback(() => dispatch(playerActions.pause()), [dispatch])
   const next = useCallback(() => dispatch(queueActions.next()), [dispatch])
@@ -309,28 +326,10 @@ export const RNVideoAudioPlayer = () => {
     ]
   )
 
-  const trackSource = null
-
-  let source
-  // TODO: offline listening
-  let offlineTrackUri
-
-  const streamingUri = useMemo(() => {
-    return track && isReachable
-      ? apiClient.makeUrl(`/tracks/${encodeHashId(track.track_id)}/stream`)
-      : null
-  }, [isReachable, track])
-  if (offlineTrackUri) {
-    source = { uri: offlineTrackUri }
-  } else if (streamingUri) {
-    source = {
-      uri: streamingUri
-    }
-  }
-  console.log({ streamingUri })
   const handleError = (e: any) => {
     console.error('---- Error occurred', e)
-    // TODO: report to sentry ideally
+    // TODO: would report any errors here
+    dispatch(playerActions.setBuffering({ buffering: false }))
   }
 
   // When component unmounts (App is closed), reset player state
@@ -340,26 +339,27 @@ export const RNVideoAudioPlayer = () => {
     }
   }, [reset])
 
-  // Record play effect
-  //    useEffect(() => {
-  //     const trackId = track?.track_id
-  //     if (!trackId) return
+  // Record plays (for play count stats)
+  useEffect(() => {
+    const trackId = track?.track_id
+    if (!trackId) return
 
-  //     const playCounterTimeout = setTimeout(() => {
-  //       if (isReachable) {
-  //         dispatch(recordListen(trackId))
-  //       } else if (isOfflineModeEnabled) {
-  //         dispatch(
-  //           addOfflineEntries({ items: [{ type: 'play-count', id: trackId }] })
-  //         )
-  //       }
-  //     }, RECORD_LISTEN_SECONDS)
+    const playCounterTimeout = setTimeout(() => {
+      if (isReachable) {
+        dispatch(recordListen(trackId))
+      } else if (isOfflineModeEnabled) {
+        dispatch(
+          addOfflineEntries({ items: [{ type: 'play-count', id: trackId }] })
+        )
+      }
+    }, RECORD_LISTEN_SECONDS)
 
-  //     return () => clearTimeout(playCounterTimeout)
-  //   }, [counter, dispatch, isOfflineModeEnabled, isReachable, track?.track_id])
+    return () => clearTimeout(playCounterTimeout)
+  }, [counter, dispatch, isOfflineModeEnabled, isReachable, track?.track_id])
 
+  // TODO: with RN video this could be probably be handled in saga land and not here
   const handleQueueChange = useCallback(async () => {
-    const refUids = queueListRef.current
+    const refUids = queueUIDsRef.current
     if (queueIndex === -1) {
       return
     }
@@ -371,7 +371,9 @@ export const RNVideoAudioPlayer = () => {
       return
     }
 
-    queueListRef.current = queueTrackUids
+    console.log('-- Handling queue change!')
+
+    queueUIDsRef.current = queueTrackUids
 
     // Checks to allow for continuous playback while making queue updates
     // Check if we are appending to the end of the queue
@@ -429,20 +431,18 @@ export const RNVideoAudioPlayer = () => {
           return
         }
 
-        const nextTrack = queuableTracks[queueIndex + currentPivot]
+        const nextIndex = queueIndex + currentPivot
+        const nextTrack = queuableTracks[nextIndex]
         if (nextTrack) {
-          console.log('-- ADDING NEXT TRACK TO QUEUE', {
-            trackName: nextTrack.track?.title
-          })
-          //   await TrackPlayer.add(await makeTrackData(nextTrack))
+          const nextTrackData = await makeTrackData(nextTrack)
+          queueRef.current[nextIndex] = nextTrackData
         }
 
-        const previousTrack = queuableTracks[queueIndex - currentPivot]
+        const prevIndex = queueIndex - currentPivot
+        const previousTrack = queuableTracks[prevIndex]
         if (previousTrack) {
-          console.log('-- ADDING PREV TRACK TO QUEUE', {
-            trackName: previousTrack.track?.title
-          })
-          //   await TrackPlayer.add(await makeTrackData(previousTrack), 0)
+          const prevTrackData = await makeTrackData(previousTrack)
+          queueRef.current[prevIndex] = prevTrackData
         }
         currentPivot++
       }
@@ -453,17 +453,12 @@ export const RNVideoAudioPlayer = () => {
       await enqueueTracksJobRef.current
       enqueueTracksJobRef.current = undefined
     } else {
-      // TODO: reset player?
-      //   await TrackPlayer.reset()
-
-      // TODO: play player here
-      //   await TrackPlayer.play()
-      console.log('-- PLAYING SONG NOW')
-
+      console.log('ISNT QUEUE APPEND')
+      queueRef.current = []
       const firstTrack = newQueueTracks[queueIndex]
       if (!firstTrack) return
 
-      //   await TrackPlayer.add(await makeTrackData(firstTrack))
+      queueRef.current[queueIndex] = await makeTrackData(firstTrack)
 
       enqueueTracksJobRef.current = enqueueTracks(newQueueTracks, queueIndex)
       await enqueueTracksJobRef.current
@@ -474,47 +469,100 @@ export const RNVideoAudioPlayer = () => {
     queueTrackUids,
     didOfflineToggleChange,
     didPlayerBehaviorChange,
-    queueTracks
+    queueTracks,
+    makeTrackData
   ])
 
   useEffect(() => {
     handleQueueChange()
   }, [handleQueueChange, queueTrackUids])
 
+  const setSeekPosition = useCallback((seek = 0) => {
+    if (videoRef.current) {
+      videoRef.current.seek(seek)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (seek !== null) {
+      setSeekPosition(seek)
+    }
+  }, [seek, setSeekPosition])
+
   const onNext = useCallback(() => {
-    const isSingleRepeating = repeatMode === RepeatMode.SINGLE
-    // TODO: single repeating mode
+    // TODO: single repeating not implemented
+    // const isSingleRepeating = repeatMode === RepeatMode.SINGLE
+    const nextTrack = queueTracks[queueIndex + 1]
+    if (nextTrack && nextTrack.track) {
+      next()
+      updateQueueIndex(queueIndex + 1)
+      updatePlayerInfo({
+        previewing: nextTrack.playerBehavior === PlayerBehavior.PREVIEW_OR_FULL,
+        trackId: nextTrack.track.track_id,
+        uid: queueTrackUids[queueIndex + 1]
+      })
+    }
+  }, [
+    next,
+    queueIndex,
+    queueTrackUids,
+    queueTracks,
+    updatePlayerInfo,
+    updateQueueIndex
+  ])
 
-    next()
-  }, [next, repeatMode])
+  const onLoadStart = () => {
+    setTrackLoadStartTime(performance.now())
+    dispatch(playerActions.setBuffering({ buffering: true }))
+  }
 
-  console.log({ source })
+  const onLoadFinish = () => {
+    setTrackLoadStartTime(performance.now())
+    if (trackLoadStartTime) {
+      const loadDuration = Math.ceil(performance.now() - trackLoadStartTime)
+      console.log(`-- Song load duration: ${loadDuration}ms`)
+      // TODO: report load to analytics
+    }
+    dispatch(playerActions.setBuffering({ buffering: false }))
+  }
+
+  useEffect(() => {
+    console.log({ currentQueueLength: queueRef.current.length })
+    console.log(queueRef.current[queueIndex])
+    const trackurl = queueRef.current[queueIndex]?.url
+    if (queueRef.current[queueIndex]?.url) {
+      console.log({ trackurl })
+    }
+  }, [queueIndex])
+
+  // console.log({ currentTrack })
+
+  const trackURI = useMemo(() => {
+    return queueRef.current[queueIndex]?.url
+  }, [queueIndex])
+
   return (
-    source && (
+    trackURI && (
       <Video
-        // @ts-ignore: type: m3u8 is actually a valid prop override
-        source={source}
+        source={{ uri: trackURI }}
         ref={videoRef}
         playInBackground
         playWhenInactive
         allowsExternalPlayback={false}
         audioOnly
+        progressUpdateInterval={100}
+        // TODO: casting features not implemented
         // Mute playback if we are casting to an external source
         // muted={isCasting}
         onError={handleError}
         onEnd={() => {
-          //   setDuration(0)
-          pause()
           onNext()
         }}
-        progressUpdateInterval={100}
-        onLoad={(payload) => {
-          //   setDuration(payload.duration)
-        }}
-        // onProgress={onProgress}
-        repeat={repeatMode === RepeatMode.SINGLE}
+        onLoadStart={onLoadStart}
+        onLoad={onLoadFinish}
+        // TODO: repeating mode not implemented
+        // repeat={repeatMode === RepeatMode.SINGLE}
         paused={!isPlaying}
-        // onBuffer={this.onBuffer}
       />
     )
   )

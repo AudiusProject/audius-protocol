@@ -65,7 +65,8 @@ export enum FeatureFlags {
   MANAGER_MODE = 'manager_mode',
   SEARCH_V2 = 'search_v2',
   USE_SDK_PURCHASE_TRACK = 'use_sdk_purchase_track',
-  USE_SDK_PURCHASE_ALBUM = 'use_sdk_purchase_album'
+  USE_SDK_PURCHASE_ALBUM = 'use_sdk_purchase_album',
+  USE_RN_VIDEO_PLAYER = 'USE_RN_VIDEO_PLAYER'
 }
 
 type FlagDefaults = Record<FeatureFlags, boolean>
