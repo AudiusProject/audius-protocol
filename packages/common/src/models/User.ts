@@ -1,7 +1,3 @@
-import { full } from '@audius/sdk'
-import { omit } from 'lodash'
-import snakecaseKeys from 'snakecase-keys'
-
 import { Collectible, CollectiblesMetadata } from '~/models/Collectible'
 import { Color } from '~/models/Color'
 import { CID, ID } from '~/models/Identifiers'
@@ -9,19 +5,13 @@ import {
   CoverPhotoSizes,
   CoverPhotoSizesCids,
   ProfilePictureSizes,
-  ProfilePictureSizesCids,
-  coverPhotoSizesCIDsFromSDK,
-  profilePictureSizesCIDsFromSDK
+  ProfilePictureSizesCids
 } from '~/models/ImageSizes'
-import {
-  PlaylistLibrary,
-  playlistLibraryFromSDK
-} from '~/models/PlaylistLibrary'
+import { PlaylistLibrary } from '~/models/PlaylistLibrary'
 import { SolanaWalletAddress, StringWei, WalletAddress } from '~/models/Wallet'
-import { decodeHashId } from '~/utils/hashIds'
-import { Nullable, removeNullable } from '~/utils/typeUtils'
+import { Nullable } from '~/utils/typeUtils'
 
-import { Grant, grantFromSDK } from './Grant'
+import { Grant } from './Grant'
 import { Timestamped } from './Timestamped'
 import { UserEvent } from './UserEvent'
 
@@ -59,6 +49,7 @@ export type UserMetadata = {
   repost_count: number
   solanaCollectibleList?: Collectible[]
   spl_wallet: Nullable<SolanaWalletAddress>
+  spl_usdc_payout_wallet?: Nullable<SolanaWalletAddress>
   supporter_count: number
   supporting_count: number
   track_count: number
@@ -133,89 +124,3 @@ export type InstagramUser = {
 export type TikTokUser = {
   verified: boolean
 }
-
-/** Converts a SDK `full.UserFull` response to a UserMetadata. Note: Will _not_ include the "current user" fields as those aren't returned by the Users API */
-export const userMetadataFromSDK = (
-  input: full.UserFull
-): UserMetadata | undefined => {
-  const user = snakecaseKeys(input)
-  const decodedUserId = decodeHashId(user.id)
-  if (!decodedUserId) {
-    return undefined
-  }
-
-  const newUser: UserMetadata = {
-    // Fields from API that are omitted in this model
-    ...omit(user, ['id', 'cover_photo_legacy', 'profile_picture_legacy']),
-
-    // Conversions
-    artist_pick_track_id: user.artist_pick_track_id
-      ? decodeHashId(user.artist_pick_track_id)
-      : null,
-
-    // Nested Types
-    playlist_library: playlistLibraryFromSDK(user.playlist_library) ?? null,
-    cover_photo_cids: user.cover_photo_cids
-      ? coverPhotoSizesCIDsFromSDK(user.cover_photo_cids)
-      : null,
-    profile_picture_cids: user.profile_picture_cids
-      ? profilePictureSizesCIDsFromSDK(user.profile_picture_cids)
-      : null,
-
-    // Re-types
-    balance: user.balance as StringWei,
-    associated_wallets_balance: user.associated_wallets_balance as StringWei,
-    total_balance: user.total_balance as StringWei,
-    user_id: decodedUserId,
-    spl_wallet: user.spl_wallet as SolanaWalletAddress,
-
-    // Legacy Overrides
-    cover_photo: user.cover_photo_legacy ?? null,
-    profile_picture: user.profile_picture_legacy ?? null,
-
-    // Required Nullable fields
-    bio: user.bio ?? null,
-    cover_photo_sizes: user.cover_photo_sizes ?? null,
-    creator_node_endpoint: user.creator_node_endpoint ?? null,
-    location: user.location ?? null,
-    metadata_multihash: user.metadata_multihash ?? null,
-    profile_picture_sizes: user.profile_picture_sizes ?? null
-  }
-
-  return newUser
-}
-
-export const userMetadataListFromSDK = (input?: full.UserFull[]) =>
-  input ? input.map((d) => userMetadataFromSDK(d)).filter(removeNullable) : []
-
-export const managedUserFromSDK = (
-  input: full.ManagedUser
-): ManagedUserMetadata | undefined => {
-  const user = userMetadataFromSDK(input.user)
-  if (!user) {
-    return undefined
-  }
-  return {
-    user,
-    grant: grantFromSDK(input.grant)
-  }
-}
-
-export const managedUserListFromSDK = (input?: full.ManagedUser[]) =>
-  input ? input.map((d) => managedUserFromSDK(d)).filter(removeNullable) : []
-
-export const userManagerFromSDK = (
-  input: full.UserManager
-): UserManagerMetadata | undefined => {
-  const manager = userMetadataFromSDK(input.manager)
-  if (!manager) {
-    return undefined
-  }
-  return {
-    manager,
-    grant: grantFromSDK(input.grant)
-  }
-}
-
-export const userManagerListFromSDK = (input?: full.UserManager[]) =>
-  input ? input.map((d) => userManagerFromSDK(d)).filter(removeNullable) : []

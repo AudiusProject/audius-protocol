@@ -1,7 +1,6 @@
 import { ComponentPropsWithoutRef } from 'react'
 
-import type { SpecialColors } from 'foundations/color'
-
+import type { SpecialColors } from '../../../foundations/color'
 import { BaseButtonProps } from '../BaseButton/types'
 
 export type HTMLButtonProps = ComponentPropsWithoutRef<'button'>

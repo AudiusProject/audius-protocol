@@ -1,10 +1,10 @@
+import { userMetadataListFromSDK } from '@audius/common/adapters'
 import {
   DefaultSizes,
-  Id,
   Kind,
+  OptionalId,
   User,
-  UserMetadata,
-  userMetadataListFromSDK
+  UserMetadata
 } from '@audius/common/models'
 import {
   Metadata,
@@ -71,7 +71,7 @@ function* retrieveUserByHandle(handle: string, retry: boolean) {
     [sdk.full.users, sdk.full.users.getUserByHandle],
     {
       handle,
-      userId: Id.parse(userId)
+      userId: OptionalId.parse(userId)
     }
   )
   return userMetadataListFromSDK(users)

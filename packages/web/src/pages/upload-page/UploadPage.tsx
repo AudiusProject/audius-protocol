@@ -8,6 +8,7 @@ import {
 } from '@audius/common/store'
 import { useDispatch, useSelector } from 'react-redux'
 
+import { UploadPreviewContextProvider } from 'components/edit-track/utils/uploadPreviewContext'
 import Header from 'components/header/desktop/Header'
 import Page from 'components/page/Page'
 
@@ -16,7 +17,6 @@ import { EditPage } from './pages/EditPage'
 import { FinishPage } from './pages/FinishPage'
 import SelectPageNew from './pages/SelectPage'
 import { UploadFormState } from './types'
-import { UploadPreviewContextProvider } from './utils/uploadPreviewContext'
 
 const { uploadTracks, undoResetState } = uploadActions
 const { requestOpen: openUploadConfirmationModal } =

@@ -21,7 +21,7 @@ export const shouldShowDark = (theme?: Theme | null) => {
 export const getTheme = (): Theme | null => {
   const theme =
     typeof window !== 'undefined'
-      ? window.localStorage.getItem(THEME_KEY)
+      ? window.localStorage.getItem(THEME_KEY) || Theme.DEFAULT
       : null
   if (theme && Object.values(Theme).includes(theme as Theme)) {
     return theme as Theme

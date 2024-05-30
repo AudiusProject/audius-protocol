@@ -2,7 +2,7 @@ import { forwardRef, useCallback, useRef, useState, MouseEvent } from 'react'
 
 import cn from 'classnames'
 
-import { Popup } from '../layout/Popup'
+import { Popup } from '../popup'
 
 import styles from './PopupMenu.module.css'
 import { PopupMenuItem, PopupMenuProps } from './types'

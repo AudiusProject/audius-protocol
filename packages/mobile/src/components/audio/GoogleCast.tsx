@@ -1,22 +1,23 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import { SquareSizes } from '@audius/common/models'
 import {
   cacheUsersSelectors,
   castActions,
-  playerSelectors
+  playerSelectors,
+  playerActions
 } from '@audius/common/store'
-import { encodeHashId } from '@audius/common/utils'
 import {
   CastState,
+  MediaPlayerState,
   useCastState,
+  useMediaStatus,
   useRemoteMediaClient
 } from 'react-native-google-cast'
-import TrackPlayer from 'react-native-track-player'
+import TrackPlayer, { Event } from 'react-native-track-player'
 import { useDispatch, useSelector } from 'react-redux'
 import { useAsync, usePrevious } from 'react-use'
 
-import { apiClient } from 'app/services/audius-api-client'
 import { audiusBackendInstance } from 'app/services/audius-backend-instance'
 
 const { setIsCasting } = castActions
@@ -24,7 +25,7 @@ const { getCurrentTrack, getPlaying, getSeek, getCounter } = playerSelectors
 
 const { getUser } = cacheUsersSelectors
 
-export { CastState } from 'react-native-google-cast'
+export { CastState, MediaPlayerState } from 'react-native-google-cast'
 
 export const useChromecast = () => {
   const dispatch = useDispatch()
@@ -45,17 +46,14 @@ export const useChromecast = () => {
   // Cast hooks
   const client = useRemoteMediaClient()
   const castState = useCastState()
+  const mediaStatus = useMediaStatus()
+  const previousCastState = usePrevious(castState)
 
   const [internalCounter, setInternalCounter] = useState(0)
-  const streamingUri = useMemo(() => {
-    return track
-      ? apiClient.makeUrl(`/tracks/${encodeHashId(track.track_id)}/stream`)
-      : null
-  }, [track])
 
   const loadCast = useCallback(
-    async (track, startTime) => {
-      if (client && track && owner && streamingUri) {
+    async (track, startTime, contentUrl) => {
+      if (client && track && owner && contentUrl) {
         const imageUrl = await audiusBackendInstance.getImageUrl(
           track.cover_art_sizes,
           SquareSizes.SIZE_1000_BY_1000,
@@ -64,7 +62,7 @@ export const useChromecast = () => {
 
         client.loadMedia({
           mediaInfo: {
-            contentUrl: streamingUri,
+            contentUrl,
             metadata: {
               type: 'musicTrack',
               images: [
@@ -80,7 +78,7 @@ export const useChromecast = () => {
         })
       }
     },
-    [client, streamingUri, owner]
+    [client, owner]
   )
 
   const playCast = useCallback(() => {
@@ -115,9 +113,23 @@ export const useChromecast = () => {
   useAsync(async () => {
     if (castState === CastState.CONNECTED) {
       const currentPosition = await TrackPlayer.getPosition()
-      loadCast(track, currentPosition)
+      const currentPlaying = await TrackPlayer.getActiveTrack()
+      if (currentPlaying) {
+        loadCast(track, currentPosition, currentPlaying?.url)
+      } else {
+        // If nothing is currently playing, listen for something to start
+        // playing and then load it to cast.
+        TrackPlayer.addEventListener(
+          Event.PlaybackActiveTrackChanged,
+          async () => {
+            const currentPosition = await TrackPlayer.getPosition()
+            const currentPlaying = await TrackPlayer.getActiveTrack()
+            loadCast(track, currentPosition, currentPlaying?.url)
+          }
+        )
+      }
     }
-  }, [loadCast, track, prevTrack, castState])
+  }, [castState, track, loadCast])
 
   // Play & pause the cast device
   useEffect(() => {
@@ -130,6 +142,23 @@ export const useChromecast = () => {
     }
   }, [playing, playCast, pauseCast, castState])
 
+  // Set buffering state when cast is buffering
+  useEffect(() => {
+    if (
+      castState === CastState.CONNECTING ||
+      ((mediaStatus === undefined ||
+        mediaStatus?.playerState === undefined ||
+        mediaStatus?.playerState === MediaPlayerState.IDLE ||
+        mediaStatus?.playerState === MediaPlayerState.LOADING ||
+        mediaStatus?.playerState === MediaPlayerState.BUFFERING) &&
+        castState !== CastState.NOT_CONNECTED)
+    ) {
+      dispatch(playerActions.setBuffering({ buffering: true }))
+    } else {
+      dispatch(playerActions.setBuffering({ buffering: false }))
+    }
+  }, [mediaStatus, castState, dispatch])
+
   // Seek the cast device
   useEffect(() => {
     if (seek !== null) {
@@ -137,16 +166,26 @@ export const useChromecast = () => {
     }
   }, [client, seek])
 
+  // Mute the track player if we are connecting to cast
   useEffect(() => {
     if (
       castState === CastState.CONNECTED ||
       castState === CastState.CONNECTING
     ) {
       TrackPlayer.setVolume(0)
-    } else {
-      TrackPlayer.setVolume(1)
     }
   }, [castState])
+
+  // Handle disconnection from cast device
+  useEffect(() => {
+    if (
+      castState === CastState.NOT_CONNECTED &&
+      previousCastState === CastState.CONNECTED
+    ) {
+      TrackPlayer.setVolume(1)
+      dispatch(playerActions.pause())
+    }
+  }, [castState, previousCastState, dispatch])
 
   return {
     castState

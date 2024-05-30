@@ -41,14 +41,12 @@ export const Footer = () => (
           variant='subdued'
           textVariant='body'
           size='s'
-          color='subdued'
           href={links.privacy}
         >{messages.privacy}</TextLink>
         <TextLink
           variant='subdued'
           textVariant='body'
           size='s'
-          color='subdued'
           href={links.terms}
         >{messages.terms}</TextLink>
       </Flex>
@@ -57,14 +55,12 @@ export const Footer = () => (
           variant='subdued'
           textVariant='body'
           size='s'
-          color='subdued'
           href={links.developers}
         >{messages.developers}</TextLink>
         <TextLink
           variant='subdued'
           textVariant='body'
           size='s'
-          color='subdued'
           href={links.audius}
         >{messages.audius}</TextLink>
       </Flex>

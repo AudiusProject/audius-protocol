@@ -76,7 +76,6 @@ const useStyles = makeStyles(({ spacing }) => ({
 
 export const UploadCompleteScreen = () => {
   const styles = useStyles()
-  // const track = { title: 'test title', permalink: '/dylan/test-track-6' }
   const track = useSelector(
     (state: CommonState) => getTracks(state)?.[0]?.metadata
   )

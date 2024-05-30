@@ -4,6 +4,7 @@ from typing import List, Union, cast
 
 from src.queries.get_notifications import (
     AnnouncementNotification,
+    ApproveManagerNotification,
     ChallengeRewardNotification,
     CosignRemixNotification,
     CreatePlaylistNotification,
@@ -18,6 +19,7 @@ from src.queries.get_notifications import (
     RemixNotification,
     RepostNotification,
     RepostOfRepostNotification,
+    RequestManagerNotification,
     SaveNotification,
     SaveOfRepostNotification,
     SupporterDethronedNotification,
@@ -570,6 +572,44 @@ def extend_usdc_purchase_buyer(action: NotificationAction):
     return notification
 
 
+def extend_request_manager(action: NotificationAction):
+    data: RequestManagerNotification = action["data"]  # type: ignore
+    notification = {
+        "specifier": encode_int_id(int(action["specifier"])),
+        "type": action["type"],
+        "timestamp": (
+            datetime.timestamp(action["timestamp"])
+            if action["timestamp"]
+            else action["timestamp"]
+        ),
+        "data": {
+            "user_id": encode_int_id(data["user_id"]),
+            "grantee_user_id": encode_int_id(data["grantee_user_id"]),
+            "grantee_address": data["grantee_address"],
+        },
+    }
+    return notification
+
+
+def extend_approve_manager_request(action: NotificationAction):
+    data: ApproveManagerNotification = action["data"]  # type: ignore
+    notification = {
+        "specifier": encode_int_id(int(action["specifier"])),
+        "type": action["type"],
+        "timestamp": (
+            datetime.timestamp(action["timestamp"])
+            if action["timestamp"]
+            else action["timestamp"]
+        ),
+        "data": {
+            "user_id": encode_int_id(data["user_id"]),
+            "grantee_user_id": encode_int_id(data["grantee_user_id"]),
+            "grantee_address": data["grantee_address"],
+        },
+    }
+    return notification
+
+
 def extend_trending_underground(action: NotificationAction):
     data: TrendingUndergroundNotification = action["data"]  # type: ignore
     notification = {
@@ -631,5 +671,7 @@ notification_action_handler = {
     "trending_underground": extend_trending_underground,
     "usdc_purchase_buyer": extend_usdc_purchase_buyer,
     "usdc_purchase_seller": extend_usdc_purchase_seller,
+    "request_manager": extend_request_manager,
+    "approve_manager_request": extend_approve_manager_request,
     "announcement": extend_announcement,
 }

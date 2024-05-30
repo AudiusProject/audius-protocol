@@ -4,10 +4,10 @@ import { getErrorMessage } from '@audius/common/utils'
 import { useField, useFormikContext } from 'formik'
 
 import { HelperText } from 'components/data-entry/HelperText'
+import { TrackEditFormValues } from 'components/edit-track/types'
 import UploadArtwork, {
   UploadArtworkProps
 } from 'components/upload/UploadArtwork'
-import { TrackEditFormValues } from 'pages/upload-page/types'
 import { resizeImage } from 'utils/imageProcessingUtil'
 
 type ArtworkFieldProps = Partial<UploadArtworkProps> & {

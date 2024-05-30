@@ -45,10 +45,10 @@ export const useStyles = makeStyles(({ palette }) => ({
   },
   title: {
     ...flexRowCentered(),
-    width: '100%',
-    minHeight: 20,
-    marginTop: 'auto',
-    marginBottom: 2
+    width: '100%'
+  },
+  titlePlaying: {
+    paddingRight: spacing(5)
   },
   artist: {
     ...flexRowCentered(),

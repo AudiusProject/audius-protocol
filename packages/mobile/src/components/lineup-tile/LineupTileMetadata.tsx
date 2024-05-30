@@ -91,7 +91,13 @@ export const LineupTileMetadata = ({
           </Text>
         ) : null}
 
-        <TouchableOpacity onPress={onPressTitle}>
+        <TouchableOpacity
+          style={{
+            ...trackTileStyles.title,
+            ...(isPlaying ? trackTileStyles.titlePlaying : {})
+          }}
+          onPress={onPressTitle}
+        >
           <Text
             color={isActive ? 'primary' : 'neutral'}
             weight='bold'

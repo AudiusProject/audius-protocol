@@ -34,23 +34,23 @@ export const variantStylesMap = {
   },
   heading: {
     fontSize: { s: 'xl', m: '2xl', l: '3xl', xl: '5xl' },
-    lineHeight: { s: 'l', m: 'xl', l: 'xl', xl: '2xl' },
+    lineHeight: { s: 'l', m: 'xl', l: 'hl', xl: '2xl' },
     fontWeight: { default: 'bold', strong: 'heavy' }
   },
   title: {
     fontSize: { xs: 'xs', s: 's', m: 'm', l: 'l' },
-    lineHeight: { xs: 's', s: 's', m: 'm', l: 'l' },
+    lineHeight: { xs: 's', s: 'm', m: 'l', l: 'l' },
     fontWeight: { weak: 'demiBold', default: 'bold', strong: 'heavy' }
   },
   label: {
     fontSize: { xs: '2xs', s: 'xs', m: 's', l: 'm', xl: 'xl' },
-    lineHeight: { xs: 'xs', s: 's', m: 's', l: 'm', xl: 'l' },
+    lineHeight: { xs: 'xs', s: 'xs', m: 's', l: 's', xl: 'l' },
     fontWeight: { default: 'bold', strong: 'heavy' },
     css: { textTransform: 'uppercase' as const, letterSpacing: 0.5 }
   },
   body: {
     fontSize: { xs: 'xs', s: 's', m: 'm', l: 'l' },
-    lineHeight: { xs: 's', s: 'm', m: 'm', l: 'l' },
+    lineHeight: { xs: 's', s: 'm', m: 'l', l: 'l' },
     fontWeight: { default: 'medium', strong: 'demiBold' }
   }
 }
