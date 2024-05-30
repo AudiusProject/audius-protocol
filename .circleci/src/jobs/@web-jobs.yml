@@ -96,7 +96,7 @@ web-check-ssr-staging-bundlesize:
     - image: cimg/node:18.17
   resource_class: xlarge
   steps:
-    - web-check-bundlesize:
+    - web-check-ssr-bundlesize:
         build-type: stage
 
 web-test:
@@ -143,13 +143,13 @@ web-build-ssr-production:
         paths:
           - node_modules/@brillout/vite-plugin-import-build/dist
 
-web-check-ssr-prod-bundlesize:
+web-check-ssr-production-bundlesize:
   working_directory: ~/audius-protocol
   docker:
     - image: cimg/node:18.17
   resource_class: xlarge
   steps:
-    - web-check-bundlesize:
+    - web-check-ssr-bundlesize:
         build-type: prod
 
 web-deploy-demo:

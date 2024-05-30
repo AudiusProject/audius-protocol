@@ -84,7 +84,7 @@ web-build:
         paths:
           - << parameters.build-directory >>
 
-web-check-bundlesize:
+web-check-ssr-bundlesize:
   parameters:
     build-type:
       default: 'prod'
