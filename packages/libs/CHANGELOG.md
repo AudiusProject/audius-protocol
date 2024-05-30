@@ -1,5 +1,11 @@
 # @audius/sdk
 
+## 4.1.0
+
+### Minor Changes
+
+- 15a34b3: Add getUsers and getPlaylists methods
+
 ## 4.0.0
 
 ### Major Changes
