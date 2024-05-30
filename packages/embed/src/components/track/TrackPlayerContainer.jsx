@@ -52,7 +52,7 @@ const TrackPlayerContainer = ({
 
   const trackInfoForPlayback = useMemo(() => {
     const isPurchaseable =
-      streamConditions && instanceOfPurchaseGate(track.streamConditions)
+      track.streamConditions && instanceOfPurchaseGate(track.streamConditions)
     return {
       gateways: formatGateways(track.user.creatorNodeEndpoint),
       title: track.title,
