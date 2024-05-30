@@ -1,6 +1,8 @@
 import snakecaseKeys from 'snakecase-keys'
 
 import { Collection } from '~/models/Collection'
+import { Kind } from '~/models/Kind'
+import { SsrPageProps } from '~/models/SsrPageProps'
 import { makePlaylist } from '~/services/audius-api-client/ResponseAdapter'
 import tracksReducer, {
   initialState as initialLineupState
@@ -27,8 +29,6 @@ import {
 } from './actions'
 import { PREFIX as tracksPrefix } from './lineup/actions'
 import { CollectionsPageState } from './types'
-import { Kind } from '~/models/Kind'
-import { SsrPageProps } from '~/models/SsrPageProps'
 
 export const initialState = {
   collectionId: null,
