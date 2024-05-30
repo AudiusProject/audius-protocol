@@ -677,7 +677,6 @@ const ProfilePage = ({
           </Flex>
         </Mask>
       </Box>
-      {/* NOTE: KJ - This ClientOnly might not be necessary, but helps keep server computation down */}
       <ClientOnly>
         {profile ? (
           <>
