@@ -3,10 +3,9 @@ import { useCallback, useContext, useEffect } from 'react'
 import { IconDrag, IconTrash, Text, IconButton } from '@audius/harmony'
 import { useField } from 'formik'
 
+import { UploadPreviewContext } from 'components/edit-track/utils/uploadPreviewContext'
 import { Tile } from 'components/tile'
 import { CollectionTrackForUpload } from 'pages/upload-page/types'
-
-import { UploadPreviewContext } from '../../edit-track/utils/uploadPreviewContext'
 
 import styles from './CollectionTrackField.module.css'
 import { TrackNameField } from './TrackNameField'

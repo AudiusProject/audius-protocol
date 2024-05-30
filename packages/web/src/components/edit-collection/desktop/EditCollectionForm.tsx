@@ -9,6 +9,12 @@ import { Flex, Text } from '@audius/harmony'
 import { Form, Formik } from 'formik'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
+import { AccessAndSaleField } from 'components/edit/fields/AccessAndSaleField'
+import { CollectionTrackFieldArray } from 'components/edit/fields/CollectionTrackFieldArray'
+import { ReleaseDateFieldLegacy } from 'components/edit/fields/ReleaseDateFieldLegacy'
+import { SelectGenreField } from 'components/edit/fields/SelectGenreField'
+import { SelectMoodField } from 'components/edit/fields/SelectMoodField'
+import { StemsAndDownloadsCollectionField } from 'components/edit/fields/StemsAndDownloadsCollectionsField'
 import {
   ArtworkField,
   TagField,
@@ -16,14 +22,7 @@ import {
   TextField
 } from 'components/form-fields'
 import { Tile } from 'components/tile'
-
-import { AnchoredSubmitRow } from '../../../pages/upload-page/components/AnchoredSubmitRow'
-import { AccessAndSaleField } from '../../edit/fields/AccessAndSaleField'
-import { CollectionTrackFieldArray } from '../../edit/fields/CollectionTrackFieldArray'
-import { ReleaseDateFieldLegacy } from '../../edit/fields/ReleaseDateFieldLegacy'
-import { SelectGenreField } from '../../edit/fields/SelectGenreField'
-import { SelectMoodField } from '../../edit/fields/SelectMoodField'
-import { StemsAndDownloadsCollectionField } from '../../edit/fields/StemsAndDownloadsCollectionsField'
+import { AnchoredSubmitRow } from 'pages/upload-page/components/AnchoredSubmitRow'
 
 import styles from './EditCollectionForm.module.css'
 

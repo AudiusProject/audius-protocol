@@ -38,13 +38,12 @@ import {
   SelectedValueProps
 } from 'components/data-entry/ContextualMenu'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
-import { defaultFieldVisibility } from 'pages/track-page/utils'
-
-import { useIndexedField, useTrackField } from '../../edit-track/hooks'
+import { useIndexedField, useTrackField } from 'components/edit-track/hooks'
 import {
   SingleTrackEditValues,
   TrackEditFormValues
-} from '../../edit-track/types'
+} from 'components/edit-track/types'
+import { defaultFieldVisibility } from 'pages/track-page/utils'
 
 import styles from './AccessAndSaleField.module.css'
 import { AccessAndSaleMenuFields } from './AccessAndSaleMenuFields'

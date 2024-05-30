@@ -26,8 +26,7 @@ import {
   SelectedValue,
   SelectedValues
 } from 'components/data-entry/ContextualMenu'
-
-import { useTrackField } from '../../edit-track/hooks'
+import { useTrackField } from 'components/edit-track/hooks'
 
 import {
   StemsAndDownloadsMenuFields,
