@@ -1,9 +1,9 @@
 import { useCallback, useContext, useEffect, useState } from 'react'
 
+import { TrackForUpload } from '@audius/common/store'
 import { IconPause, IconPlay, PlainButton } from '@audius/harmony'
 import { useField } from 'formik'
 
-import { CollectionTrackForUpload } from '../types'
 import { UploadPreviewContext } from '../utils/uploadPreviewContext'
 
 const messages = {
@@ -21,9 +21,7 @@ export const PreviewButton = (props: PreviewButtonProps) => {
   const { index, className } = props
   const { playingPreviewIndex, togglePreview } =
     useContext(UploadPreviewContext)
-  const [{ value: track }] = useField<CollectionTrackForUpload>(
-    `tracks.${index}`
-  )
+  const [{ value: track }] = useField<TrackForUpload>(`tracks.${index}`)
   const isPreviewPlaying = playingPreviewIndex === index
 
   const [canPlayPreview, setCanPlayPreview] = useState(false)

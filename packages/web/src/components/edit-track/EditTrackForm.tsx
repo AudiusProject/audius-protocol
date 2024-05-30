@@ -1,4 +1,4 @@
-import { useCallback, useContext, useMemo, useState } from 'react'
+import { useCallback, useContext, useState } from 'react'
 
 import { TrackMetadataFormSchema } from '@audius/common/schemas'
 import { FeatureFlags } from '@audius/common/services'
@@ -10,31 +10,28 @@ import {
 } from '@audius/harmony'
 import cn from 'classnames'
 import { Form, Formik, FormikProps, useField } from 'formik'
-import moment from 'moment'
 import { useUnmount } from 'react-use'
 import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { MenuFormCallbackStatus } from 'components/data-entry/ContextualMenu'
+import { AccessAndSaleField } from 'components/edit/fields/AccessAndSaleField'
+import { AttributionField } from 'components/edit/fields/AttributionField'
+import { MultiTrackSidebar } from 'components/edit/fields/MultiTrackSidebar'
+import { ReleaseDateField } from 'components/edit/fields/ReleaseDateField'
+import { ReleaseDateFieldLegacy } from 'components/edit/fields/ReleaseDateFieldLegacy'
+import { RemixSettingsField } from 'components/edit/fields/RemixSettingsField'
+import { StemsAndDownloadsField } from 'components/edit/fields/StemsAndDownloadsField'
+import { TrackMetadataFields } from 'components/edit/fields/TrackMetadataFields'
 import layoutStyles from 'components/layout/layout.module.css'
 import { NavigationPrompt } from 'components/navigation-prompt/NavigationPrompt'
 import { useFlag } from 'hooks/useRemoteConfig'
 import { UploadFormScrollContext } from 'pages/upload-page/UploadPage'
-
-import { AnchoredSubmitRow } from '../components/AnchoredSubmitRow'
-import { PreviewButton } from '../components/PreviewButton'
-import { AccessAndSaleField } from '../fields/AccessAndSaleField'
-import { AttributionField } from '../fields/AttributionField'
-import { MultiTrackSidebar } from '../fields/MultiTrackSidebar'
-import { ReleaseDateField } from '../fields/ReleaseDateField'
-import { ReleaseDateFieldLegacy } from '../fields/ReleaseDateFieldLegacy'
-import { RemixSettingsField } from '../fields/RemixSettingsField'
-import { StemsAndDownloadsField } from '../fields/StemsAndDownloadsField'
-import { TrackMetadataFields } from '../fields/TrackMetadataFields'
-import { defaultHiddenFields } from '../fields/stream-availability/HiddenAvailabilityFields'
-import { TrackEditFormValues, TrackFormState } from '../types'
+import { AnchoredSubmitRow } from 'pages/upload-page/components/AnchoredSubmitRow'
 
 import styles from './EditTrackForm.module.css'
+import { PreviewButton } from './components/PreviewButton'
+import { TrackEditFormValues } from './types'
 
 const messages = {
   multiTrackCount: (index: number, total: number) =>
@@ -51,8 +48,8 @@ const messages = {
 }
 
 type EditTrackFormProps = {
-  formState: TrackFormState
-  onContinue: (formState: TrackFormState) => void
+  initialValues: TrackEditFormValues
+  onSubmit: (values: TrackEditFormValues) => void
 }
 
 const EditFormValidationSchema = z.object({
@@ -60,51 +57,7 @@ const EditFormValidationSchema = z.object({
 })
 
 export const EditTrackForm = (props: EditTrackFormProps) => {
-  const { formState, onContinue } = props
-  const { tracks } = formState
-
-  const initialValues: TrackEditFormValues = useMemo(
-    () => ({
-      trackMetadatasIndex: 0,
-      tracks,
-      trackMetadatas: tracks.map((track) => ({
-        ...track.metadata,
-        description: '',
-        releaseDate: new Date(moment().toString()),
-        tags: '',
-        field_visibility: {
-          ...defaultHiddenFields,
-          remixes: true
-        },
-        licenseType: {
-          allowAttribution: null,
-          commercialUse: null,
-          derivativeWorks: null
-        },
-        stems: [],
-        isrc: '',
-        iswc: ''
-      }))
-    }),
-    [tracks]
-  )
-
-  const onSubmit = useCallback(
-    (values: TrackEditFormValues) => {
-      const tracksForUpload = tracks.map((track, i) => {
-        const metadata = values.trackMetadatas[i]
-        const { licenseType: ignoredLicenseType, ...restMetadata } = metadata
-        return {
-          ...track,
-          metadata: {
-            ...restMetadata
-          }
-        }
-      })
-      onContinue({ ...formState, tracks: tracksForUpload })
-    },
-    [formState, onContinue, tracks]
-  )
+  const { initialValues, onSubmit } = props
 
   return (
     <Formik<TrackEditFormValues>

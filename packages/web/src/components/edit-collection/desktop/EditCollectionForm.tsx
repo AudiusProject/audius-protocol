@@ -1,5 +1,3 @@
-import { useCallback } from 'react'
-
 import { useFeatureFlag } from '@audius/common/hooks'
 import {
   AlbumSchema,
@@ -7,12 +5,16 @@ import {
   PlaylistSchema
 } from '@audius/common/schemas'
 import { FeatureFlags } from '@audius/common/services'
-import { UploadType } from '@audius/common/store'
 import { Flex, Text } from '@audius/harmony'
 import { Form, Formik } from 'formik'
-import moment from 'moment'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
+import { AccessAndSaleField } from 'components/edit/fields/AccessAndSaleField'
+import { CollectionTrackFieldArray } from 'components/edit/fields/CollectionTrackFieldArray'
+import { ReleaseDateFieldLegacy } from 'components/edit/fields/ReleaseDateFieldLegacy'
+import { SelectGenreField } from 'components/edit/fields/SelectGenreField'
+import { SelectMoodField } from 'components/edit/fields/SelectMoodField'
+import { StemsAndDownloadsCollectionField } from 'components/edit/fields/StemsAndDownloadsCollectionsField'
 import {
   ArtworkField,
   TagField,
@@ -20,15 +22,7 @@ import {
   TextField
 } from 'components/form-fields'
 import { Tile } from 'components/tile'
-
-import { AnchoredSubmitRow } from '../components/AnchoredSubmitRow'
-import { AccessAndSaleField } from '../fields/AccessAndSaleField'
-import { CollectionTrackFieldArray } from '../fields/CollectionTrackFieldArray'
-import { ReleaseDateFieldLegacy } from '../fields/ReleaseDateFieldLegacy'
-import { SelectGenreField } from '../fields/SelectGenreField'
-import { SelectMoodField } from '../fields/SelectMoodField'
-import { StemsAndDownloadsCollectionField } from '../fields/StemsAndDownloadsCollectionsField'
-import { CollectionFormState } from '../types'
+import { AnchoredSubmitRow } from 'pages/upload-page/components/AnchoredSubmitRow'
 
 import styles from './EditCollectionForm.module.css'
 
@@ -44,14 +38,13 @@ const messages = {
 }
 
 type EditCollectionFormProps = {
-  formState: CollectionFormState
-  onContinue: (formState: CollectionFormState) => void
+  initialValues: CollectionValues
+  onSubmit: (values: CollectionValues) => void
+  isAlbum: boolean
 }
 
 export const EditCollectionForm = (props: EditCollectionFormProps) => {
-  const { formState, onContinue } = props
-  const { tracks, uploadType, metadata } = formState
-  const isAlbum = uploadType === UploadType.ALBUM
+  const { initialValues, onSubmit, isAlbum } = props
   const { isEnabled: isPremiumAlbumsEnabled } = useFeatureFlag(
     FeatureFlags.PREMIUM_ALBUMS_ENABLED
   )
@@ -60,44 +53,13 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
   )
   const showPremiumAlbums = isPremiumAlbumsEnabled && isUSDCUploadEnabled
 
-  const initialValues: CollectionValues = {
-    ...metadata,
-    is_album: isAlbum,
-    is_downloadable: false,
-    artwork: null,
-    playlist_name: '',
-    description: '',
-    release_date: moment().toString(),
-    is_private: false,
-    trackDetails: {
-      genre: null,
-      mood: null,
-      tags: ''
-    },
-    tracks: tracks.map((track) => ({ ...track, override: false }))
-  }
-
-  const handleSubmit = useCallback(
-    (values: CollectionValues) => {
-      onContinue({
-        uploadType,
-        tracks: values.tracks,
-        metadata: values
-      })
-    },
-    [onContinue, uploadType]
-  )
-
-  const collectionTypeName =
-    uploadType === UploadType.ALBUM ? 'Album' : 'Playlist'
-
-  const validationSchema =
-    uploadType === UploadType.ALBUM ? AlbumSchema : PlaylistSchema
+  const collectionTypeName = isAlbum ? 'Album' : 'Playlist'
+  const validationSchema = isAlbum ? AlbumSchema : PlaylistSchema
 
   return (
     <Formik
       initialValues={initialValues}
-      onSubmit={handleSubmit}
+      onSubmit={onSubmit}
       validationSchema={toFormikValidationSchema(validationSchema)}
     >
       <Form className={styles.root}>

@@ -28,7 +28,7 @@ import { useSelector } from 'utils/reducer'
 import { TRENDING_PAGE } from 'utils/route'
 import zIndex from 'utils/zIndex'
 
-import styles from './EditPlaylistModal.module.css'
+import styles from './EditCollectionModal.module.css'
 const { editPlaylist } = cacheCollectionsActions
 const { getCollectionWithUser } = cacheCollectionsSelectors
 const { fetchSavedPlaylists } = accountActions
@@ -46,7 +46,7 @@ const messages = {
   }
 }
 
-const EditPlaylistModal = () => {
+const EditCollectionModal = () => {
   const dispatch = useDispatch()
   const { isOpen, onClose, data } = useEditPlaylistModal()
   const { collectionId, isCollectionViewed } = data
@@ -143,4 +143,4 @@ const EditPlaylistModal = () => {
   )
 }
 
-export default EditPlaylistModal
+export default EditCollectionModal

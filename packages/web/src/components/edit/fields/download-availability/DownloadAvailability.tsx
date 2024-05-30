@@ -30,7 +30,7 @@ import { useFormikContext } from 'formik'
 
 import { MenuFormCallbackStatus } from 'components/data-entry/ContextualMenu'
 import { Divider } from 'components/divider'
-import { useTrackField } from 'pages/upload-page/hooks'
+import { useTrackField } from 'components/edit-track/hooks'
 import { make, track } from 'services/analytics'
 
 import { STREAM_CONDITIONS } from '../types'

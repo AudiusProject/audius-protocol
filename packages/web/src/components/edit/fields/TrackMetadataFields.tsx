@@ -1,10 +1,9 @@
 import cn from 'classnames'
 import { useField } from 'formik'
 
+import { getTrackFieldName } from 'components/edit-track/hooks'
 import { ArtworkField, TagField, TextAreaField } from 'components/form-fields'
 import layoutStyles from 'components/layout/layout.module.css'
-
-import { getTrackFieldName } from '../hooks'
 
 import { SelectGenreField } from './SelectGenreField'
 import { SelectMoodField } from './SelectMoodField'

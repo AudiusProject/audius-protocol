@@ -14,12 +14,14 @@ import { useField, useFormikContext } from 'formik'
 import { isEmpty } from 'lodash'
 
 import DynamicImage from 'components/dynamic-image/DynamicImage'
+import { useIndexedField } from 'components/edit-track/hooks'
+import {
+  SingleTrackEditValues,
+  TrackEditFormValues
+} from 'components/edit-track/types'
+import { UploadPreviewContext } from 'components/edit-track/utils/uploadPreviewContext'
 import layoutStyles from 'components/layout/layout.module.css'
-
-import { UploadFormScrollContext } from '../UploadPage'
-import { useIndexedField } from '../hooks'
-import { SingleTrackEditValues, TrackEditFormValues } from '../types'
-import { UploadPreviewContext } from '../utils/uploadPreviewContext'
+import { UploadFormScrollContext } from 'pages/upload-page/UploadPage'
 
 import styles from './MultiTrackSidebar.module.css'
 

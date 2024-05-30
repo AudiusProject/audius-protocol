@@ -1,7 +1,7 @@
 import { FieldArray, useField } from 'formik'
 import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd'
 
-import { CollectionTrackForUpload } from '../types'
+import { CollectionTrackForUpload } from 'pages/upload-page/types'
 
 import { CollectionTrackField } from './CollectionTrackField'
 
