@@ -1,7 +1,8 @@
-import { NextFunction, Request, Response } from 'express'
-import { recoverPersonalSignature } from 'eth-sig-util'
-import { Table, Users } from '@pedalboard/storage'
 import { initializeDiscoveryDb } from '@pedalboard/basekit'
+import { Table, Users } from '@pedalboard/storage'
+import { recoverPersonalSignature } from 'eth-sig-util'
+import { NextFunction, Request, Response } from 'express'
+
 import { config } from '../config'
 import { getCachedDiscoveryNodes } from '../redis'
 

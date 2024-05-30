@@ -1,22 +1,23 @@
+import type { RelayRequestBody } from '@audius/sdk'
 import {
   PublicKey,
   TransactionMessage,
   VersionedTransaction
 } from '@solana/web3.js'
+import bs58 from 'bs58'
 import { Request, Response, NextFunction } from 'express'
+
 import { config } from '../../config'
 import { BadRequestError } from '../../errors'
-import { assertRelayAllowedInstructions } from './assertRelayAllowedInstructions'
-import {} from 'cross-fetch'
-import bs58 from 'bs58'
-import type { RelayRequestBody } from '@audius/sdk'
-import { getRequestIpData } from '../../utils/ipData'
-import { attachLocationData, isPaymentTransaction } from './attachLocationData'
 import { connections } from '../../utils/connections'
+import { getRequestIpData } from '../../utils/ipData'
 import {
   broadcastTransaction,
   sendTransactionWithRetries
 } from '../../utils/transaction'
+
+import { assertRelayAllowedInstructions } from './assertRelayAllowedInstructions'
+import { attachLocationData, isPaymentTransaction } from './attachLocationData'
 
 const getFeePayerKeyPair = (feePayerPublicKey?: PublicKey) => {
   if (!feePayerPublicKey) {

@@ -1,14 +1,17 @@
+import assert from 'assert'
+
 import { PaymentRouterProgram } from '@audius/spl'
 import {
   Keypair,
   PublicKey,
   TransactionInstruction,
-  TransactionMessage,
+  TransactionMessage
 } from '@solana/web3.js'
-import { config } from '../../config'
 import { describe, it } from 'vitest'
+
+import { config } from '../../config'
+
 import { attachLocationData, isPaymentTransaction } from './attachLocationData'
-import assert from 'assert'
 
 const PAYMENT_ROUTER_PROGRAM_ID = new PublicKey(config.paymentRouterProgramId)
 const MEMO_V2_PROGRAM_ID = new PublicKey(
@@ -18,50 +21,52 @@ const MEMO_V2_PROGRAM_ID = new PublicKey(
 const getRandomPublicKey = () => Keypair.generate().publicKey
 
 describe('isPaymentTransaction', () => {
-    it('returns true when instructions are a payment', async () => {
-      const [pda, bump] = PublicKey.findProgramAddressSync(
-        [new TextEncoder().encode('payment_router')],
-        new PublicKey(PAYMENT_ROUTER_PROGRAM_ID)
-      )
-      const instructions = [
-        await PaymentRouterProgram.createRouteInstruction({
-          sender: getRandomPublicKey(),
-          senderOwner: pda,
-          paymentRouterPdaBump: bump,
-          recipients: [getRandomPublicKey()],
-          amounts: [BigInt(100)],
-          totalAmount: BigInt(100),
-          programId: PAYMENT_ROUTER_PROGRAM_ID
-        })
-      ]
-      const isPayment = await isPaymentTransaction(instructions)
-      assert.strictEqual(isPayment, true)
-    })
+  it('returns true when instructions are a payment', async () => {
+    const [pda, bump] = PublicKey.findProgramAddressSync(
+      [new TextEncoder().encode('payment_router')],
+      new PublicKey(PAYMENT_ROUTER_PROGRAM_ID)
+    )
+    const instructions = [
+      await PaymentRouterProgram.createRouteInstruction({
+        sender: getRandomPublicKey(),
+        senderOwner: pda,
+        paymentRouterPdaBump: bump,
+        recipients: [getRandomPublicKey()],
+        amounts: [BigInt(100)],
+        totalAmount: BigInt(100),
+        programId: PAYMENT_ROUTER_PROGRAM_ID
+      })
+    ]
+    const isPayment = await isPaymentTransaction(instructions)
+    assert.strictEqual(isPayment, true)
+  })
 
-    it('returns false whe instructions are a recovery', async () => {
-      const [pda, bump] = PublicKey.findProgramAddressSync(
-        [new TextEncoder().encode('payment_router')],
-        new PublicKey(PAYMENT_ROUTER_PROGRAM_ID)
-      )
-      const instructions = [
-        await PaymentRouterProgram.createRouteInstruction({
-          sender: getRandomPublicKey(),
-          senderOwner: pda,
-          paymentRouterPdaBump: bump,
-          recipients: [getRandomPublicKey()],
-          amounts: [BigInt(100)],
-          totalAmount: BigInt(100),
-          programId: PAYMENT_ROUTER_PROGRAM_ID
-        }),
-        new TransactionInstruction({
-          keys: [{ pubkey: getRandomPublicKey(), isSigner: true, isWritable: true }],
-          data: Buffer.from('Recover Withdrawal'),
-          programId: MEMO_V2_PROGRAM_ID
-        })
-      ]
-      const isPayment = await isPaymentTransaction(instructions)
-      assert.strictEqual(isPayment, false)
-    })
+  it('returns false whe instructions are a recovery', async () => {
+    const [pda, bump] = PublicKey.findProgramAddressSync(
+      [new TextEncoder().encode('payment_router')],
+      new PublicKey(PAYMENT_ROUTER_PROGRAM_ID)
+    )
+    const instructions = [
+      await PaymentRouterProgram.createRouteInstruction({
+        sender: getRandomPublicKey(),
+        senderOwner: pda,
+        paymentRouterPdaBump: bump,
+        recipients: [getRandomPublicKey()],
+        amounts: [BigInt(100)],
+        totalAmount: BigInt(100),
+        programId: PAYMENT_ROUTER_PROGRAM_ID
+      }),
+      new TransactionInstruction({
+        keys: [
+          { pubkey: getRandomPublicKey(), isSigner: true, isWritable: true }
+        ],
+        data: Buffer.from('Recover Withdrawal'),
+        programId: MEMO_V2_PROGRAM_ID
+      })
+    ]
+    const isPayment = await isPaymentTransaction(instructions)
+    assert.strictEqual(isPayment, false)
+  })
 })
 
 describe('attachLocationData', () => {
@@ -83,7 +88,9 @@ describe('attachLocationData', () => {
         programId: PAYMENT_ROUTER_PROGRAM_ID
       }),
       new TransactionInstruction({
-        keys: [{ pubkey: getRandomPublicKey(), isSigner: true, isWritable: true }],
+        keys: [
+          { pubkey: getRandomPublicKey(), isSigner: true, isWritable: true }
+        ],
         data: Buffer.from('Some random memo'),
         programId: MEMO_V2_PROGRAM_ID
       })
@@ -95,7 +102,7 @@ describe('attachLocationData', () => {
     })
     const updatedMessage = attachLocationData({
       transactionMessage: message,
-      location: {city: 'Nashville', region: 'TN', country: 'United States'}
+      location: { city: 'Nashville', region: 'TN', country: 'United States' }
     })
     assert.strictEqual(updatedMessage.instructions.length, 3)
 

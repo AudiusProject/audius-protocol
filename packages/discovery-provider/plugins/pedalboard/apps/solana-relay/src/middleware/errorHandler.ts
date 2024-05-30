@@ -1,15 +1,17 @@
-import { Request, Response } from 'express'
+import { NextFunction, Request, Response } from 'express'
+
 import { InternalServerError, ResponseError } from '../errors'
 import { logger as rootLogger } from '../logger'
 
 export const errorHandlerMiddleware = (
   err: unknown,
-  req: Request,
-  res: Response
+  _req: Request,
+  res: Response,
+  _next: NextFunction
 ) => {
   const error =
     err instanceof ResponseError ? err : new InternalServerError(String(err))
-  if (!res.writableEnded) {
+  if (!res.headersSent) {
     res.status(error.status).send({ error: error.name })
   }
   // in milliseconds

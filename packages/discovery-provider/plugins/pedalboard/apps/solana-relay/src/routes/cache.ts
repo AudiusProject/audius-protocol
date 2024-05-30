@@ -1,7 +1,8 @@
+import { TransactionResponse } from '@solana/web3.js'
 import { NextFunction, Request, Response } from 'express'
+
 import { BadRequestError, UnauthorizedError } from '../errors'
 import { cacheTransaction } from '../redis'
-import { TransactionResponse } from '@solana/web3.js'
 
 type RequestBody = {
   transaction: string
