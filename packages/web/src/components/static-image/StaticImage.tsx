@@ -1,17 +1,17 @@
 import { ComponentPropsWithoutRef } from 'react'
 
-import { WidthSizes, SquareSizes } from '@audius/common/models'
-import { Box, Flex } from '@audius/harmony'
+import { SquareSizes, WidthSizes } from '@audius/common/src/models/ImageSizes'
+import { Box } from '@audius/harmony/src/components/layout/Box'
+import { Flex } from '@audius/harmony/src/components/layout/Flex'
+import { developmentConfig } from '@audius/sdk/src/sdk/config/development'
+import { productionConfig } from '@audius/sdk/src/sdk/config/production'
+import { stagingConfig } from '@audius/sdk/src/sdk/config/staging'
 import {
-  DiscoveryNodeSelector,
-  productionConfig,
-  stagingConfig,
-  developmentConfig,
-  StorageNodeSelector,
   AppAuth,
-  getDefaultStorageNodeSelectorConfig,
-  getDefaultDiscoveryNodeSelectorConfig
-} from '@audius/sdk'
+  getDefaultStorageNodeSelectorConfig
+} from '@audius/sdk/src/sdk/services'
+import { DiscoveryNodeSelector } from '@audius/sdk/src/sdk/services/DiscoveryNodeSelector/DiscoveryNodeSelector'
+import { StorageNodeSelector } from '@audius/sdk/src/sdk/services/StorageNodeSelector/StorageNodeSelector'
 
 import { env } from 'services/env'
 
@@ -42,7 +42,7 @@ const sdkConfig =
   sdkConfigs[env.ENVIRONMENT as keyof typeof sdkConfigs] ?? productionConfig
 
 const discoveryNodeSelector = new DiscoveryNodeSelector({
-  ...getDefaultDiscoveryNodeSelectorConfig(sdkConfig)
+  ...getDefaultStorageNodeSelectorConfig(sdkConfig)
 })
 
 const auth = new AppAuth('', '')
