@@ -55,7 +55,7 @@ export const AppDrawerScreen = memo(
   () => {
     const [gesturesDisabled, setGesturesDisabled] = useState(false)
 
-    const useRNVideoPlayer = true // useFeatureFlag(FeatureFlags.USE_RN_VIDEO_PLAYER)
+    const useRNVideoPlayer = useFeatureFlag(FeatureFlags.USE_RN_VIDEO_PLAYER)
 
     const drawerScreenOptions = useMemo(
       () => ({

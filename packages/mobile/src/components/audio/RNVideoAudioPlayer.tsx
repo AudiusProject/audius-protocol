@@ -3,27 +3,21 @@ import { useRef, useEffect, useCallback, useState, useMemo } from 'react'
 import { useAppContext } from '@audius/common/context'
 import { Name, SquareSizes } from '@audius/common/models'
 import type { Track } from '@audius/common/models'
-import { make, track as analyticsTrack } from 'app/services/analytics'
 import {
-  accountSelectors,
   cacheTracksSelectors,
   cacheUsersSelectors,
   savedPageTracksLineupActions,
   queueActions,
   queueSelectors,
-  RepeatMode,
   reachabilitySelectors,
   tracksSocialActions,
   playerActions,
   playerSelectors,
-  playbackRateValueMap,
-  playbackPositionActions,
-  playbackPositionSelectors,
   gatedContentSelectors,
   calculatePlayerBehavior,
   PlayerBehavior
 } from '@audius/common/store'
-import type { Queueable, CommonState } from '@audius/common/store'
+import type { Queueable } from '@audius/common/store'
 import {
   encodeHashId,
   shallowCompare,
@@ -41,6 +35,7 @@ import { usePrevious } from 'react-use'
 import { DEFAULT_IMAGE_URL } from 'app/components/image/TrackImage'
 import { getImageSourceOptimistic } from 'app/hooks/useContentNodeImage'
 import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'
+import { make, track as analyticsTrack } from 'app/services/analytics'
 import { apiClient } from 'app/services/audius-api-client'
 import { audiusBackendInstance } from 'app/services/audius-backend-instance'
 import {
@@ -57,29 +52,12 @@ import {
   OfflineDownloadStatus
 } from 'app/store/offline-downloads/slice'
 
-const { getUserId } = accountSelectors
 const { getUsers } = cacheUsersSelectors
 const { getTracks } = cacheTracksSelectors
-const {
-  getPlaying,
-  getSeek,
-  getCurrentTrack,
-  getCounter,
-  getPlaybackRate,
-  getUid
-} = playerSelectors
-const { setTrackPosition } = playbackPositionActions
-const { getUserTrackPositions } = playbackPositionSelectors
+const { getPlaying, getSeek, getCurrentTrack, getCounter } = playerSelectors
 const { recordListen } = tracksSocialActions
 const { getPlayerBehavior } = queueSelectors
-const {
-  getIndex,
-  getOrder,
-  getSource,
-  getCollectionId,
-  getRepeat,
-  getShuffle
-} = queueSelectors
+const { getIndex, getOrder, getSource, getCollectionId } = queueSelectors
 const { getIsReachable } = reachabilitySelectors
 
 const { getNftAccessSignatureMap } = gatedContentSelectors
@@ -101,11 +79,11 @@ type QueueableTrack = {
 
 // TODO: native mobile controls not implemented
 // TODO: These constants are the same in now playing drawer. Move them to shared location
-const SKIP_DURATION_SEC = 15
-const RESTART_THRESHOLD_SEC = 3
+// const SKIP_DURATION_SEC = 15
+// const RESTART_THRESHOLD_SEC = 3
 const RECORD_LISTEN_SECONDS = 1
 
-const TRACK_END_BUFFER = 2
+// const TRACK_END_BUFFER = 2
 
 export const RNVideoAudioPlayer = () => {
   const dispatch = useDispatch()
@@ -114,14 +92,14 @@ export const RNVideoAudioPlayer = () => {
 
   // Redux store data
   const track = useSelector(getCurrentTrack)
-  const previousTrackId = usePrevious(track?.track_id)
+  // const previousTrackId = usePrevious(track?.track_id)
   const isPlaying = useSelector(getPlaying)
   const seek = useSelector(getSeek)
   const counter = useSelector(getCounter)
-  const repeatMode = useSelector(getRepeat)
+  // const repeatMode = useSelector(getRepeat)
   // const playbackRate = useSelector(getPlaybackRate)
-  const currentUserId = useSelector(getUserId)
-  const uid = useSelector(getUid)
+  // const currentUserId = useSelector(getUserId)
+  // const uid = useSelector(getUid)
   // Player behavior determines whether to preview a track or play the full track
   const playerBehavior =
     useSelector(getPlayerBehavior) || PlayerBehavior.FULL_OR_PREVIEW
@@ -129,14 +107,14 @@ export const RNVideoAudioPlayer = () => {
   const previousPlayerBehavior = usePrevious(playerBehavior)
   // TODO: logic for preview/play swapping not implemented
   const didPlayerBehaviorChange = previousPlayerBehavior !== playerBehavior
-  const trackPositions = useSelector((state: CommonState) =>
-    getUserTrackPositions(state, { userId: currentUserId })
-  )
+  // const trackPositions = useSelector((state: CommonState) =>
+  //   getUserTrackPositions(state, { userId: currentUserId })
+  // )
   const nftAccessSignatureMap = useSelector(getNftAccessSignatureMap)
 
   // Queue things
   const queueIndex = useSelector(getIndex)
-  const queueShuffle = useSelector(getShuffle)
+  // const queueShuffle = useSelector(getShuffle)
   const queueOrder = useSelector(getOrder)
   const queueSource = useSelector(getSource)
   const queueCollectionId = useSelector(getCollectionId)
@@ -211,13 +189,13 @@ export const RNVideoAudioPlayer = () => {
 
   // TODO: these will be used by native controls but these are currently not implemented
   // Callbacks to dispatch redux changes
-  const play = useCallback(() => dispatch(playerActions.play()), [dispatch])
-  const pause = useCallback(() => dispatch(playerActions.pause()), [dispatch])
+  // const play = useCallback(() => dispatch(playerActions.play()), [dispatch])
+  // const pause = useCallback(() => dispatch(playerActions.pause()), [dispatch])
   const next = useCallback(() => dispatch(queueActions.next()), [dispatch])
-  const previous = useCallback(
-    () => dispatch(queueActions.previous()),
-    [dispatch]
-  )
+  // const previous = useCallback(
+  //   () => dispatch(queueActions.previous()),
+  //   [dispatch]
+  // )
   const reset = useCallback(
     () => dispatch(playerActions.reset({ shouldAutoplay: false })),
     [dispatch]
@@ -365,8 +343,6 @@ export const RNVideoAudioPlayer = () => {
       return
     }
 
-    console.log('-- Handling queue change!')
-
     queueUIDsRef.current = queueTrackUids
 
     // Checks to allow for continuous playback while making queue updates
@@ -447,7 +423,6 @@ export const RNVideoAudioPlayer = () => {
       await enqueueTracksJobRef.current
       enqueueTracksJobRef.current = undefined
     } else {
-      console.log('ISNT QUEUE APPEND')
       queueRef.current = []
       const firstTrack = newQueueTracks[queueIndex]
       if (!firstTrack) return
@@ -514,24 +489,13 @@ export const RNVideoAudioPlayer = () => {
     setTrackLoadStartTime(performance.now())
     if (trackLoadStartTime) {
       const bufferDuration = Math.ceil(performance.now() - trackLoadStartTime)
-      console.log(`-- Song buffer duration: ${bufferDuration}ms`)
+      // console.log(`-- Song buffer duration: ${bufferDuration}ms`)
       analyticsTrack(
         make({ eventName: Name.BUFFERING_TIME, duration: bufferDuration })
       )
     }
     dispatch(playerActions.setBuffering({ buffering: false }))
   }
-
-  useEffect(() => {
-    console.log({ currentQueueLength: queueRef.current.length })
-    console.log(queueRef.current[queueIndex])
-    const trackurl = queueRef.current[queueIndex]?.url
-    if (queueRef.current[queueIndex]?.url) {
-      console.log({ trackurl })
-    }
-  }, [queueIndex])
-
-  // console.log({ currentTrack })
 
   const trackURI = useMemo(() => {
     return queueRef.current[queueIndex]?.url
