@@ -6,12 +6,11 @@ import { Flex } from '@audius/harmony/src/components/layout/Flex'
 import { developmentConfig } from '@audius/sdk/src/sdk/config/development'
 import { productionConfig } from '@audius/sdk/src/sdk/config/production'
 import { stagingConfig } from '@audius/sdk/src/sdk/config/staging'
-import {
-  AppAuth,
-  getDefaultStorageNodeSelectorConfig
-} from '@audius/sdk/src/sdk/services'
+import { AppAuth } from '@audius/sdk/src/sdk/services/Auth/AppAuth'
 import { DiscoveryNodeSelector } from '@audius/sdk/src/sdk/services/DiscoveryNodeSelector/DiscoveryNodeSelector'
+import { getDefaultDiscoveryNodeSelectorConfig } from '@audius/sdk/src/sdk/services/DiscoveryNodeSelector/getDefaultConfig'
 import { StorageNodeSelector } from '@audius/sdk/src/sdk/services/StorageNodeSelector/StorageNodeSelector'
+import { getDefaultStorageNodeSelectorConfig } from '@audius/sdk/src/sdk/services/StorageNodeSelector/getDefaultConfig'
 
 import { env } from 'services/env'
 
@@ -42,7 +41,7 @@ const sdkConfig =
   sdkConfigs[env.ENVIRONMENT as keyof typeof sdkConfigs] ?? productionConfig
 
 const discoveryNodeSelector = new DiscoveryNodeSelector({
-  ...getDefaultStorageNodeSelectorConfig(sdkConfig)
+  ...getDefaultDiscoveryNodeSelectorConfig(sdkConfig)
 })
 
 const auth = new AppAuth('', '')
