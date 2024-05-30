@@ -270,7 +270,7 @@ const SendInputBody = ({
 
   return (
     <ModalBodyWrapper>
-      <Flex direction='column' gap='xl' pv='xl'>
+      <Flex direction='column' gap='xl' pv='xl' alignItems='center'>
         <div>
           <ModalBodyTitle text={messages.warningTitle} />
           <div className={styles.subtitle}>{messages.warningSubtitle}</div>

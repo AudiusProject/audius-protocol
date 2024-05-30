@@ -63,7 +63,7 @@ const messages = {
   sendLabel: 'Send',
   transactionsLabel: 'View Transactions',
   audio: '$AUDIO',
-  externalWallets: 'External Wallets',
+  connectedWallets: 'Connected Wallets',
   buyAudio: 'Buy $AUDIO Tokens',
   buyAudioNotSupported: 'Buy $AUDIO is not yet supported in your region',
   findArtists: 'Find Artists to Support on Trending',
@@ -279,7 +279,7 @@ const ManageWalletsButton = () => {
   return (
     <>
       <OptionButton onClick={onClickConnectWallets} iconLeft={IconWallet}>
-        {messages.externalWallets}
+        {messages.connectedWallets}
       </OptionButton>
       {isMobile && (
         <MobileConnectWalletsDrawer onClose={onCloseConnectWalletsDrawer} />
