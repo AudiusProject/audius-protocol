@@ -36,7 +36,7 @@ def is_active_manager(user_id: int, manager_id: int) -> bool:
     return False
 
 
-def require_owner_or_manager(user_id, authed_user_id):
+def check_authorized(user_id, authed_user_id):
     """
     Checks that the authenticated user matches or is a manager of the requested user.
 

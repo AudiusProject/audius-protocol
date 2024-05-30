@@ -27,7 +27,7 @@ from src.queries.get_usdc_transactions_history import (
 from src.queries.query_helpers import SortDirection, TransactionSortMethod
 from src.utils.auth_middleware import auth_middleware
 
-from .access_helpers import require_owner_or_manager
+from .access_helpers import check_authorized
 from .models.transactions import transaction_details
 
 logger = logging.getLogger(__name__)
@@ -77,7 +77,7 @@ class GetTransactionHistory(Resource):
         return self._get(user_id, authed_user_id)
 
     def _get(self, user_id, authed_user_id):
-        require_owner_or_manager(user_id, authed_user_id)
+        check_authorized(user_id, authed_user_id)
         args = transaction_history_parser.parse_args()
         sort_method = args.get("sort_method", TransactionSortMethod.date)
         sort_direction = args.get("sort_direction", SortDirection.desc)
@@ -132,7 +132,7 @@ class GetTransactionHistoryCount(Resource):
     @full_user_ns.marshal_with(transaction_history_count_response)
     def get(self, id, authed_user_id):
         user_id = decode_with_abort(id, full_ns)
-        require_owner_or_manager(user_id, authed_user_id)
+        check_authorized(user_id, authed_user_id)
         transactions_count = get_audio_transactions_history_count(user_id)
         response = success_response(transactions_count)
         return response
@@ -204,7 +204,7 @@ class GetUSDCTransactionHistory(Resource):
     @full_user_ns.marshal_with(transaction_history_response)
     def get(self, id, authed_user_id):
         user_id = decode_with_abort(id, full_ns)
-        require_owner_or_manager(user_id, authed_user_id)
+        check_authorized(user_id, authed_user_id)
         args = usdc_transaction_history_parser.parse_args()
         sort_method = args.get("sort_method", TransactionSortMethod.date)
         sort_direction = args.get("sort_direction", SortDirection.desc)
@@ -244,7 +244,7 @@ class GetUSDCTransactionHistoryCount(Resource):
     @full_user_ns.marshal_with(transaction_history_count_response)
     def get(self, id, authed_user_id):
         user_id = decode_with_abort(id, full_ns)
-        require_owner_or_manager(user_id, authed_user_id)
+        check_authorized(user_id, authed_user_id)
         args = usdc_transaction_history_count_parser.parse_args()
         transactions_count = get_usdc_transactions_history_count(
             {
