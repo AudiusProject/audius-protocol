@@ -27,7 +27,8 @@ const TrackPlayerCompact = ({
   backgroundColor,
   streamConditions
 }) => {
-  const isPurchaseable = instanceOfPurchaseGate(streamConditions)
+  const isPurchaseable =
+    streamConditions && instanceOfPurchaseGate(streamConditions)
 
   return (
     <div

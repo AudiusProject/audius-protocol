@@ -33,9 +33,9 @@ const CollectionPlayerContainer = ({
   const getTrackInfoForPlayback = useCallback(
     (trackIndex) => {
       const activeTrack = collection.tracks[trackIndex]
-      const isPurchaseable = instanceOfPurchaseGate(
-        activeTrack.streamConditions
-      )
+      const isPurchaseable =
+        activeTrack.streamConditions &&
+        instanceOfPurchaseGate(activeTrack.streamConditions)
       if (activeTrack == null) {
         return null
       }

@@ -7,7 +7,8 @@ const messages = {
 }
 
 const PrimaryLabel = ({ streamConditions, isTrack }) => {
-  const isPurchaseable = instanceOfPurchaseGate(streamConditions)
+  const isPurchaseable =
+    streamConditions && instanceOfPurchaseGate(streamConditions)
 
   return (
     <Text color='default' variant='heading' size='s'>
