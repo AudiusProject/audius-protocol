@@ -223,6 +223,7 @@ export class TracksApi extends runtime.BaseAPI {
 
     /**
      * @hidden
+     * Gets whether the current user has access and any details needed to unlock access
      */
     async getTrackAccessInfoRaw(params: GetTrackAccessInfoRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AccessInfoResponse>> {
         if (params.trackId === null || params.trackId === undefined) {
@@ -248,6 +249,7 @@ export class TracksApi extends runtime.BaseAPI {
     }
 
     /**
+     * Gets whether the current user has access and any details needed to unlock access
      */
     async getTrackAccessInfo(params: GetTrackAccessInfoRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AccessInfoResponse> {
         const response = await this.getTrackAccessInfoRaw(params, initOverrides);

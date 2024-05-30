@@ -577,7 +577,11 @@ access_info_response = make_response(
 @ns.route("/<string:playlist_id>/access-info")
 class GetPlaylistAccessInfo(Resource):
     @record_metrics
-    @ns.doc(id="Get Playlist Access Info", params={"playlist_id": "A Playlist ID"})
+    @ns.doc(
+        id="Get Playlist Access Info",
+        description="Gets information regarding the given user's access, and any details needed to unlock access",
+        params={"playlist_id": "A Playlist ID"},
+    )
     @ns.expect(current_user_parser)
     @ns.marshal_with(access_info_response)
     def get(self, playlist_id: str):

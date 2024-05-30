@@ -105,6 +105,7 @@ export class PlaylistsApi extends runtime.BaseAPI {
 
     /**
      * @hidden
+     * Gets information regarding the current user\'s access, and any details needed to unlock access
      */
     async getPlaylistAccessInfoRaw(params: GetPlaylistAccessInfoRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AccessInfoResponse>> {
         if (params.playlistId === null || params.playlistId === undefined) {
@@ -130,6 +131,7 @@ export class PlaylistsApi extends runtime.BaseAPI {
     }
 
     /**
+     * Gets information regarding the current user\'s access, and any details needed to unlock access
      */
     async getPlaylistAccessInfo(params: GetPlaylistAccessInfoRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AccessInfoResponse> {
         const response = await this.getPlaylistAccessInfoRaw(params, initOverrides);
