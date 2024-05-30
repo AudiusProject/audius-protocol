@@ -1,4 +1,5 @@
 import { createClient, RedisClientType } from 'redis'
+
 import { config } from './config'
 
 let redisClient: RedisClientType

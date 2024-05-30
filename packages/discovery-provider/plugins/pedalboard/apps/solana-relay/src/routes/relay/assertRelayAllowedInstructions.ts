@@ -1,4 +1,12 @@
 import {
+  decodeAssociatedTokenAccountInstruction,
+  ClaimableTokensProgram,
+  RewardManagerProgram,
+  isCreateAssociatedTokenAccountIdempotentInstruction,
+  isCreateAssociatedTokenAccountInstruction,
+  Secp256k1Program
+} from '@audius/spl'
+import {
   NATIVE_MINT,
   ASSOCIATED_TOKEN_PROGRAM_ID,
   TOKEN_PROGRAM_ID,
@@ -15,18 +23,11 @@ import {
   SystemInstruction,
   ComputeBudgetProgram
 } from '@solana/web3.js'
-import { InvalidRelayInstructionError } from './InvalidRelayInstructionError'
-
-import {
-  decodeAssociatedTokenAccountInstruction,
-  ClaimableTokensProgram,
-  RewardManagerProgram,
-  isCreateAssociatedTokenAccountIdempotentInstruction,
-  isCreateAssociatedTokenAccountInstruction,
-  Secp256k1Program
-} from '@audius/spl'
-import { config } from '../../config'
 import bs58 from 'bs58'
+
+import { config } from '../../config'
+
+import { InvalidRelayInstructionError } from './InvalidRelayInstructionError'
 
 const MEMO_PROGRAM_ID = 'Memo1UhkJRfHyvLMcVucJwxXeuD728EqVDDwQDxFMNo'
 const MEMO_V2_PROGRAM_ID = 'MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr'
@@ -174,7 +175,7 @@ const assertAllowedTokenProgramInstruction = async (
     const destination = decodedInstruction.keys.destination.pubkey
     const userbank = await deriveUserBank(
       wallet,
-      claimableTokenAuthorities['usdc']
+      claimableTokenAuthorities.usdc
     )
 
     // Check that destination is either a userbank or a payment router token account
@@ -229,8 +230,8 @@ const assertAllowedClaimableTokenProgramInstruction = async (
     ClaimableTokensProgram.decodeInstruction(instruction)
   const authority = decodedInstruction.keys.authority.pubkey
   if (
-    !authority.equals(claimableTokenAuthorities['usdc']) &&
-    !authority.equals(claimableTokenAuthorities['waudio'])
+    !authority.equals(claimableTokenAuthorities.usdc) &&
+    !authority.equals(claimableTokenAuthorities.waudio)
   ) {
     throw new InvalidRelayInstructionError(
       instructionIndex,
