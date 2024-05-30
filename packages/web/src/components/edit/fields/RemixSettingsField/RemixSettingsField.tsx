@@ -16,10 +16,10 @@ import {
   ContextualMenu,
   SelectedValue
 } from 'components/data-entry/ContextualMenu'
+import { useTrackField } from 'components/edit-track/hooks'
+import { SingleTrackEditValues } from 'components/edit-track/types'
 import { fullTrackPage } from 'utils/route'
 
-import { useTrackField } from '../../../edit-track/hooks'
-import { SingleTrackEditValues } from '../../../edit-track/types'
 import { IS_STREAM_GATED, STREAM_CONDITIONS } from '../types'
 
 import styles from './RemixSettingsField.module.css'

@@ -20,14 +20,13 @@ import {
   ContextualMenu,
   SelectedValue
 } from 'components/data-entry/ContextualMenu'
+import { useTrackField } from 'components/edit-track/hooks'
+import { SingleTrackEditValues } from 'components/edit-track/types'
 import { DropdownField } from 'components/form-fields'
 import { HarmonyTextField } from 'components/form-fields/HarmonyTextField'
 import layoutStyles from 'components/layout/layout.module.css'
 import { ModalRadioItem } from 'components/modal-radio/ModalRadioItem'
 import { formatCalendarTime } from 'utils/dateUtils'
-
-import { useTrackField } from '../../edit-track/hooks'
-import { SingleTrackEditValues } from '../../edit-track/types'
 
 import { DatePickerField } from './DatePickerField'
 import styles from './ReleaseDateField.module.css'

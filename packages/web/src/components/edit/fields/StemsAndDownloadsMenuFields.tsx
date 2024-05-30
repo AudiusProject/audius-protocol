@@ -14,9 +14,8 @@ import { usePrevious } from 'react-use'
 import { z } from 'zod'
 
 import { Divider } from 'components/divider'
+import { processFiles } from 'pages/upload-page/store/utils/processFiles'
 import { stemDropdownRows } from 'utils/stems'
-
-import { processFiles } from '../../../pages/upload-page/store/utils/processFiles'
 
 import { USDCPurchaseRemoteConfig } from './AccessAndSaleField'
 import { StemFilesView } from './StemFilesView'
