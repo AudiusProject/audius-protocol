@@ -151,5 +151,6 @@ export const flagDefaults: FlagDefaults = {
   [FeatureFlags.USE_SDK_PURCHASE_TRACK]: false,
   [FeatureFlags.USE_SDK_PURCHASE_ALBUM]: false,
   [FeatureFlags.PAYOUT_WALLET_ENABLED]: false,
-  [FeatureFlags.EDIT_TRACK_REDESIGN]: false
+  [FeatureFlags.EDIT_TRACK_REDESIGN]: false,
+  [FeatureFlags.USE_RN_VIDEO_PLAYER]: false
 }
