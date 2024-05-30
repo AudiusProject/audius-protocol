@@ -14,10 +14,10 @@
     - [Cascading hooks](#cascading-hooks)
     - [Pre-fetching in endpoint implementations](#pre-fetching-in-endpoint-implementations)
   - [Query Hook options](#query-hook-options)
-  - [Cacheing](#cacheing)
-    - [Endpoint response cacheing](#endpoint-response-cacheing)
-    - [Entity cacheing](#entity-cacheing)
-    - [Enable entity cacheing on an endpoint](#enable-entity-cacheing-on-an-endpoint)
+  - [Caching](#caching)
+    - [Endpoint response caching](#endpoint-response-caching)
+    - [Entity caching](#entity-caching)
+    - [Enable entity caching on an endpoint](#enable-entity-caching-on-an-endpoint)
     - [Enable single-entity cache hits](#enable-single-entity-cache-hits)
       - [Example (useGetTrackById)](#example-usegettrackbyid)
   - [Debugging](#debugging)
@@ -76,7 +76,7 @@
 
 1.  Add relevant endpoint options
 
-    - **`schemaKey`** - the corresponding key in `apiResponseSchema` see [schema.ts](./schema.ts). See [enable entity cachineg on an endpoint](#enable-entity-cacheing-on-an-endpoint) below
+    - **`schemaKey`** - the corresponding key in `apiResponseSchema` see [schema.ts](./schema.ts). See [enable entity caching on an endpoint](#enable-entity-caching-on-an-endpoint) below
 
       _Note: A schema key is required, though any unreserved key can be used if the data does not contain any of the entities stored in the entity cache (i.e. any of the `Kinds` from [Kind.ts](/packages/common/src/models/Kind.ts))_
 
@@ -311,19 +311,19 @@ Query Hooks accept an options object as the optional second argument
 - `shallow` - skips pulling subentities out of the cache. (e.g. get a track but not the full user inside `track.user`). Omitted subentities will be replaced by id references.
 - `force` - forces a fetch to occur when the hook instance renders for the first time. This is useful for data which should be re-fetched when a user navigates away from and back to a page.
 
-## Cacheing
+## Caching
 
-### Endpoint response cacheing
+### Endpoint response caching
 
-Each endpoint will keep the lateset response per unique set of `fetchArgs` passed in. This means two separate components calling the same hook with the same arguments will only result in a single remote fetch. However, different endpoints or the same hook with two different arguments passed in will fetch separetly for each.
+Each endpoint will keep the latest response per unique set of `fetchArgs` passed in. This means two separate components calling the same hook with the same arguments will only result in a single remote fetch. However, different endpoints or the same hook with two different arguments passed in will fetch separately for each.
 
-### Entity cacheing
+### Entity caching
 
 Audius-query uses the `apiResponseSchema` in [schema.ts](./schema.ts) to extract instances of common entity types from fetched data. Any entities found in the response will be extracted and stored individually in the redux entity cache. The cached copy is the source of truth, and the latest cached version will be returned from audius-query hooks.
 
-### Enable entity cacheing on an endpoint
+### Enable entity caching on an endpoint
 
-In order to enable the automated cacheing behavior for your endpoint, please ensure you follow these steps:
+In order to enable the automated caching behavior for your endpoint, please ensure you follow these steps:
 
 1. Add the schema for your response structure to `apiResponseSchema` under the appropriate key
 

@@ -78,6 +78,7 @@ const FULL_ENDPOINT_MAP = {
   userRepostsByHandle: (handle: OpaqueID) => `/users/handle/${handle}/reposts`,
   getRelatedArtists: (userId: OpaqueID) => `/users/${userId}/related`,
   getPlaylist: (playlistId: OpaqueID) => `/playlists/${playlistId}`,
+  getPlaylists: '/playlists',
   getPlaylistByPermalink: (handle: string, slug: string) =>
     `/playlists/by_permalink/${handle}/${slug}`,
   topGenreUsers: '/users/genre/top',
@@ -226,6 +227,12 @@ type GetCollectionMetadataArgs = {
 
 type GetPlaylistArgs = {
   playlistId: ID
+  currentUserId: Nullable<ID>
+  abortOnUnreachable?: boolean
+}
+
+type GetPlaylistsArgs = {
+  playlistIds: ID[]
   currentUserId: Nullable<ID>
   abortOnUnreachable?: boolean
 }
@@ -991,6 +998,38 @@ export class AudiusAPIClient {
 
     const response = await this._getResponse<APIResponse<APIPlaylist[]>>(
       FULL_ENDPOINT_MAP.getPlaylist(encodedPlaylistId),
+      params,
+      undefined,
+      undefined,
+      undefined,
+      abortOnUnreachable
+    )
+
+    if (!response) return []
+
+    const adapted = response.data
+      .map(adapter.makePlaylist)
+      .filter(removeNullable)
+    return adapted
+  }
+
+  async getPlaylists({
+    playlistIds,
+    currentUserId,
+    abortOnUnreachable
+  }: GetPlaylistsArgs) {
+    this._assertInitialized()
+    const encodedCurrentUserId = encodeHashId(currentUserId)
+    const encodedPlaylistIds = playlistIds.map((id) => this._encodeOrThrow(id))
+
+    const params = {
+      id: encodedPlaylistIds,
+      user_id: encodedCurrentUserId || undefined,
+      limit: encodedPlaylistIds.length
+    }
+
+    const response = await this._getResponse<APIResponse<APIPlaylist[]>>(
+      FULL_ENDPOINT_MAP.getPlaylists,
       params,
       undefined,
       undefined,

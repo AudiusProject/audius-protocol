@@ -65,6 +65,7 @@ models/User.ts
 models/UserAssociatedWalletResponse.ts
 models/UserResponse.ts
 models/UserSearch.ts
+models/UsersResponse.ts
 models/VerifyToken.ts
 models/index.ts
 runtime.ts

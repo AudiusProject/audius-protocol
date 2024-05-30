@@ -1,4 +1,7 @@
-import { TextLink, TextLinkProps } from '@audius/harmony'
+import {
+  TextLink,
+  TextLinkProps
+} from '@audius/harmony/src/components/text-link'
 
 import { ExternalLink, ExternalLinkProps } from './ExternalLink'
 

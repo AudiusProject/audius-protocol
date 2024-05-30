@@ -1,3 +1,4 @@
+import { searchSelectors } from '@audius/common/store'
 import {
   getSearch,
   getSearchBarText
@@ -6,7 +7,6 @@ import { Dimensions, View } from 'react-native'
 import { useSelector } from 'react-redux'
 
 import { Screen, ScreenContent, ScreenHeader } from 'app/components/core'
-import { getSearchHistory } from 'app/store/search/selectors'
 import { makeStyles } from 'app/styles'
 
 import { EmptySearch } from './EmptySearch'
@@ -15,6 +15,7 @@ import { SearchHistory } from './SearchHistory'
 import { SearchResults } from './SearchResults'
 
 const SCREEN_WIDTH = Dimensions.get('window').width
+const { getSearchHistory } = searchSelectors
 
 const useStyles = makeStyles(({ spacing }) => ({
   topbarRight: {

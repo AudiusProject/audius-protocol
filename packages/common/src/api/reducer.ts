@@ -15,17 +15,17 @@ import { trendingApiReducer } from './trending'
 import { userApiReducer } from './user'
 
 export default combineReducers({
-  collectionApi: collectionApiReducer,
-  relatedArtistsApi: relatedArtistsApiReducer,
-  trackApi: trackApiReducer,
-  userApi: userApiReducer,
-  developerAppsApi: developerAppsApiReducer,
+  accountApi: accountApiReducer,
   authorizedAppsApi: authorizedAppsApiReducer,
+  collectionApi: collectionApiReducer,
+  developerAppsApi: developerAppsApiReducer,
   favoritesApi: favoritesApiReducer,
-  trendingApi: trendingApiReducer,
   libraryApi: libraryApiReducer,
   purchasesApi: purchasesApiReducer,
+  relatedArtistsApi: relatedArtistsApiReducer,
+  signUpApi: signUpReducer,
   topArtistsApi: topArtistsApiReducer,
-  accountApi: accountApiReducer,
-  signUpApi: signUpReducer
+  trackApi: trackApiReducer,
+  trendingApi: trendingApiReducer,
+  userApi: userApiReducer
 })
