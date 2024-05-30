@@ -7,8 +7,6 @@ import { Text } from '@audius/harmony/src/components/text'
 
 import { useSelector } from 'utils/reducer'
 
-import styles from './components/desktop/ProfilePage.module.css'
-
 export type OwnProps = {
   userId: ID
 }
@@ -47,8 +45,20 @@ export const ServerProfilePage = ({ userId }: OwnProps) => {
         h={376}
         css={{ objectFit: 'cover' }}
       />
-      <div className={styles.profileWrapping}>
-        <div className={styles.header}>
+      <Box
+        w='100%'
+        ph='l'
+        css={{
+          zIndex: 10,
+          position: 'absolute',
+          margin: '0 auto',
+          top: 264,
+          left: 0,
+          right: 0,
+          maxWidth: 992
+        }}
+      >
+        <Flex>
           <Box
             h={208}
             w={208}
@@ -67,7 +77,17 @@ export const ServerProfilePage = ({ userId }: OwnProps) => {
               borderRadius='circle'
             />
           </Box>
-          <div className={styles.nameWrapper}>
+          <Box
+            w='100%'
+            mt='xs'
+            ml='2xl'
+            css={{
+              position: 'relative',
+              textAlign: 'left',
+              userSelect: 'none',
+              maxWidth: 720
+            }}
+          >
             <BadgeArtist
               css={{
                 filter: 'drop-shadow(0 1px 4px rgba(0, 0, 0, 0.3))',
@@ -83,12 +103,12 @@ export const ServerProfilePage = ({ userId }: OwnProps) => {
             >
               {name}
             </Text>
-            <div className={styles.handleWrapper}>
-              <h2 className={styles.handle}>@{handle}</h2>
-            </div>
-          </div>
-        </div>
-      </div>
+            <Text variant='body' color='staticWhite' strength='strong'>
+              @{handle}
+            </Text>
+          </Box>
+        </Flex>
+      </Box>
 
       {/* Stat Banner */}
       <Flex
