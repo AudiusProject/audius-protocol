@@ -611,7 +611,23 @@ def verify_user(params: ManageEntityParameters):
     )
 
     user_record = validate_user_record(user_record)
-    user_record.is_verified = True
+
+    metadata = params.metadata
+    is_verified = metadata.get("is_verified", False)
+    twitter_handle = metadata.get("twitter_handle")
+    instagram_handle = metadata.get("instagram_handle")
+    tiktok_handle = metadata.get("tiktok_handle")
+
+    # Update user record with verification information
+    # Only update the social handle fields if they are provided in the metadata
+    user_record.is_verified = is_verified
+    if twitter_handle:
+        user_record.twitter_handle = twitter_handle
+    if instagram_handle:
+        user_record.instagram_handle = instagram_handle
+    if tiktok_handle:
+        user_record.tiktok_handle = tiktok_handle
+
     params.add_record(user_id, user_record)
     params.challenge_bus.dispatch(
         ChallengeEvent.connect_verified,
