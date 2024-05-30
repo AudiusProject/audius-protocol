@@ -520,12 +520,6 @@ exports[`Create Notification Process email notification for create album 1`] = `
     }
 
     @media (max-width: 720px) {
-      #bodyCell {
-        text-align: center;
-      }
-    }
-
-    @media (max-width: 720px) {
       .templateContainer {
         display: table !important;
         max-width: 384px !important;
@@ -1118,12 +1112,6 @@ exports[`Create Notification Process email notification for create playlist 1`] 
     }
 
     @media (max-width: 720px) {
-      #bodyCell {
-        text-align: center;
-      }
-    }
-
-    @media (max-width: 720px) {
       .templateContainer {
         display: table !important;
         max-width: 384px !important;
@@ -1712,12 +1700,6 @@ exports[`Create Notification Process email notification for create tracks 1`] = 
       #templateHeader p {
         font-size: 16px !important;
         line-height: 150% !important;
-      }
-    }
-
-    @media (max-width: 720px) {
-      #bodyCell {
-        text-align: center;
       }
     }
 
