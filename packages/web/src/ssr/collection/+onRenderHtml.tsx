@@ -7,7 +7,8 @@ import type { PageContextServer } from 'vike/types'
 
 import { ServerWebPlayer } from 'app/web-player/ServerWebPlayer'
 import { MetaTags } from 'components/meta-tags/MetaTags'
-import { ServerCollectionPage } from 'pages/collection-page/ServerCollectionPage'
+import { DesktopServerCollectionPage } from 'pages/collection-page/DesktopServerCollectionPage'
+import { MobileServerCollectionPage } from 'pages/collection-page/MobileServerCollectionPage'
 import { isMobileUserAgent } from 'utils/clientUtil'
 import { getCollectionPageSEOFields } from 'utils/seo'
 
@@ -47,19 +48,32 @@ export default function render(pageContext: TrackPageContext) {
     <ServerWebPlayer
       isMobile={isMobile}
       initialState={{
-        collections: { entries: { [playlist_id]: { metadata: collection } } },
+        collections: {
+          entries: { [playlist_id]: { metadata: collection } },
+          permalinks: { [permalink.toLowerCase()]: playlist_id }
+        },
         users: { entries: { [user_id]: { metadata: user } } },
         tracks: {
           entries: tracks.reduce((acc, track) => {
             const { track_id } = track
             return { ...acc, [track_id]: { metadata: track } }
           }, {})
+        },
+        pages: {
+          collection: {
+            collectionId: playlist_id,
+            collectionPermalink: permalink
+          }
         }
       }}
     >
       <>
         <MetaTags {...seoMetadata} />
-        <ServerCollectionPage collectionId={playlist_id} isMobile={isMobile} />
+        {isMobile ? (
+          <MobileServerCollectionPage />
+        ) : (
+          <DesktopServerCollectionPage />
+        )}
       </>
     </ServerWebPlayer>
   )

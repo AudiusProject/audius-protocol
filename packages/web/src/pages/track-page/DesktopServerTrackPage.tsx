@@ -1,6 +1,7 @@
-import { ID } from '@audius/common/src/models/Identifiers'
-import { getTrack } from '@audius/common/src/store/cache/tracks/selectors'
-import { getUser } from '@audius/common/src/store/cache/users/selectors'
+import {
+  getTrack,
+  getUser
+} from '@audius/common/src/store/pages/track/selectors'
 import { formatCount } from '@audius/common/src/utils/formatUtil'
 import {
   formatDate,
@@ -30,14 +31,9 @@ import { profilePage, searchResultsPage } from 'utils/route'
 
 import { Metadata } from './components/Metadata'
 
-type ServerTrackPageProps = {
-  trackId: ID
-}
-
-export const DesktopServerTrackPage = (props: ServerTrackPageProps) => {
-  const { trackId } = props
-  const track = useSelector((state) => getTrack(state, { id: trackId }))
-  const user = useSelector((state) => getUser(state, { id: track?.owner_id }))
+export const DesktopServerTrackPage = () => {
+  const track = useSelector(getTrack)
+  const user = useSelector(getUser)
   if (!track || !user) return null
 
   const {

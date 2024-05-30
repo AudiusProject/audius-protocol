@@ -9,10 +9,6 @@ type ServerTrackPageProps = {
 }
 
 export const ServerTrackPage = (props: ServerTrackPageProps) => {
-  const { trackId, isMobile } = props
-  return isMobile ? (
-    <MobileServerTrackPage trackId={trackId} />
-  ) : (
-    <DesktopServerTrackPage trackId={trackId} />
-  )
+  const { isMobile } = props
+  return isMobile ? <MobileServerTrackPage /> : <DesktopServerTrackPage />
 }
