@@ -1,12 +1,7 @@
 .modalBody {
-  max-width: 760px;
+  max-width: 380px;
   min-height: 320px;
   width: 100%;
-}
-
-.modalBody.wallets {
-  max-width: 720px;
-  min-height: 250px;
 }
 
 .modalBody.convertingEth {
