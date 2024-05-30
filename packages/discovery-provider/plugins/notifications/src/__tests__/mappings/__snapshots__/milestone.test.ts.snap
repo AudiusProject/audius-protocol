@@ -520,12 +520,6 @@ exports[`Milestone Notification Process email notification for follow count mile
     }
 
     @media (max-width: 720px) {
-      #bodyCell {
-        text-align: center;
-      }
-    }
-
-    @media (max-width: 720px) {
       .templateContainer {
         display: table !important;
         max-width: 384px !important;
@@ -1114,12 +1108,6 @@ exports[`Milestone Notification Process email notification for playlist repost m
       #templateHeader p {
         font-size: 16px !important;
         line-height: 150% !important;
-      }
-    }
-
-    @media (max-width: 720px) {
-      #bodyCell {
-        text-align: center;
       }
     }
 
@@ -1716,12 +1704,6 @@ exports[`Milestone Notification Process email notification for playlist save mil
     }
 
     @media (max-width: 720px) {
-      #bodyCell {
-        text-align: center;
-      }
-    }
-
-    @media (max-width: 720px) {
       .templateContainer {
         display: table !important;
         max-width: 384px !important;
@@ -2314,12 +2296,6 @@ exports[`Milestone Notification Process email notification for track repost mile
     }
 
     @media (max-width: 720px) {
-      #bodyCell {
-        text-align: center;
-      }
-    }
-
-    @media (max-width: 720px) {
       .templateContainer {
         display: table !important;
         max-width: 384px !important;
@@ -2908,12 +2884,6 @@ exports[`Milestone Notification Process email notification for track save milest
       #templateHeader p {
         font-size: 16px !important;
         line-height: 150% !important;
-      }
-    }
-
-    @media (max-width: 720px) {
-      #bodyCell {
-        text-align: center;
       }
     }
 
