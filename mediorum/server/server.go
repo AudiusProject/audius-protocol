@@ -293,6 +293,7 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	routes.GET("/uploads", ss.serveUploadList)
 	routes.GET("/uploads/:id", ss.serveUploadDetail, ss.requireHealthy)
 	routes.POST("/uploads/:id", ss.updateUpload, ss.requireHealthy, ss.requireUserSignature)
+	routes.POST("/uploads/:id/analyze", ss.analyzeUpload, ss.requireHealthy, ss.requireRegisteredSignature)
 	routes.POST("/uploads", ss.postUpload, ss.requireHealthy)
 	// workaround because reverse proxy catches the browser's preflight OPTIONS request instead of letting our CORS middleware handle it
 	routes.OPTIONS("/uploads", func(c echo.Context) error {
@@ -416,6 +417,7 @@ func (ss *MediorumServer) MustStart() {
 	}()
 
 	go ss.startTranscoder()
+	go ss.startAudioAnalyzer()
 
 	zeroTime := time.Time{}
 	var lastSuccessfulRepair RepairTracker

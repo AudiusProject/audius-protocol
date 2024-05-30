@@ -32,14 +32,45 @@ type Upload struct {
 	CreatedAt time.Time `json:"created_at" gorm:"autoCreateTime:false"`
 	UpdatedAt time.Time `json:"updated_at" gorm:"autoCreateTime:false"`
 
-	TranscodedBy      string    `json:"transcoded_by"`
-	TranscodeProgress float64   `json:"transcode_progress"`
-	TranscodedAt      time.Time `json:"transcoded_at"`
+	TranscodedBy      string            `json:"transcoded_by"`
+	TranscodeProgress float64           `json:"transcode_progress"`
+	TranscodedAt      time.Time         `json:"transcoded_at"`
+	TranscodeResults  map[string]string `json:"results" gorm:"serializer:json"`
 
-	TranscodeResults map[string]string `json:"results" gorm:"serializer:json"`
+	AudioAnalysisStatus  string            `json:"audio_analysis_status"`
+	AudioAnalysisError   string            `json:"audio_analysis_error,omitempty"`
+	AudioAnalyzedBy      string            `json:"audio_analyzed_by"`
+	AudioAnalyzedAt      time.Time         `json:"audio_analyzed_at"`
+	AudioAnalysisResults map[string]string `json:"audio_analysis_results" gorm:"serializer:json"`
 
 	// UpldateULID - this is the last ULID that change this thing
 }
+
+// Upload templates
+type JobTemplate string
+
+const (
+	JobTemplateAudio       JobTemplate = "audio"
+	JobTemplateImgSquare   JobTemplate = "img_square"
+	JobTemplateImgBackdrop JobTemplate = "img_backdrop"
+)
+
+// Job statuses
+const (
+	JobStatusNew     = "new"
+	JobStatusError   = "error"
+	JobStatusBusy    = "busy"
+	JobStatusTimeout = "timeout"
+
+	JobStatusRetranscode      = "retranscode_preview"
+	JobStatusBusyRetranscode  = "busy_retranscode_preview"
+	JobStatusErrorRetranscode = "error_retranscode_preview"
+
+	JobStatusAudioAnalysis     = "audio_analysis"
+	JobStatusBusyAudioAnalysis = "busy_audio_analysis"
+
+	JobStatusDone = "done"
+)
 
 // Metric actions
 const (
