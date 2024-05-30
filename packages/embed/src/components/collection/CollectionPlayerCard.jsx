@@ -95,7 +95,8 @@ const CollectionPlayerCard = ({
 }) => {
   const makeOnTogglePlay = (index) => () => onTogglePlay(index)
   const permalink = `${stripLeadingSlash(collection.permalink)}`
-  const isPurchaseable = instanceOfPurchaseGate(streamConditions)
+  const isPurchaseable =
+    streamConditions && instanceOfPurchaseGate(streamConditions)
   return (
     <Card
       isTwitter={isTwitter}

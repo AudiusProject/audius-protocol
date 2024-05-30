@@ -60,7 +60,8 @@ const TrackPlayerCard = ({
     }
     setArtworkWrapperStyle(newStyle)
   }, [height, width])
-  const isPurchaseable = instanceOfPurchaseGate(streamConditions)
+  const isPurchaseable =
+    streamConditions && instanceOfPurchaseGate(streamConditions)
 
   return (
     <Card

@@ -6,7 +6,7 @@ import { Nullable } from '~/utils/typeUtils'
 
 import { AudiusQueryContextType } from './AudiusQueryContext'
 import { schemas } from './schema'
-import { EndpointConfig, FetchBatchArgs } from './types'
+import { EndpointConfig } from './types'
 
 // Requests occuring in this period will be batched
 const BATCH_PERIOD_MS = 10
@@ -98,7 +98,7 @@ export const createRequestBatcher = () => {
     const batchArgs = {
       ...omit(mostRecentRequest.fetchArgs ?? {}, idArgKey),
       ids: [...new Set(ids)]
-    } as FetchBatchArgs<Args>
+    }
 
     try {
       // Make the batch request

@@ -1,11 +1,13 @@
+import { searchSelectors } from '@audius/common/store'
 import { FlatList, Keyboard } from 'react-native'
 import { useSelector } from 'react-redux'
 
 import { Divider } from 'app/components/core'
-import { getSearchHistory } from 'app/store/search/selectors'
 
 import { ClearSearchHistoryListItem } from './ClearSearchHistoryListItem'
 import { SearchHistoryListItem } from './SearchHistoryListItem'
+
+const { getSearchHistory } = searchSelectors
 
 export const SearchHistory = () => {
   const history = useSelector(getSearchHistory)
@@ -15,8 +17,8 @@ export const SearchHistory = () => {
       onTouchStart={Keyboard.dismiss}
       keyboardShouldPersistTaps='always'
       data={history}
-      keyExtractor={(item) => item}
-      renderItem={({ item }) => <SearchHistoryListItem text={item} />}
+      keyExtractor={(item) => item as string}
+      renderItem={({ item }) => <SearchHistoryListItem text={item as string} />}
       ItemSeparatorComponent={Divider}
       ListFooterComponent={ClearSearchHistoryListItem}
     />

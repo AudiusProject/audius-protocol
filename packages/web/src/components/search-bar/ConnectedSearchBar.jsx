@@ -4,9 +4,9 @@ import {
   imageBlank as placeholderArt,
   imageProfilePicEmpty as profilePicEmpty
 } from '@audius/common/assets'
-import { Name, SquareSizes } from '@audius/common/models'
+import { Kind, Name, SquareSizes } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
-import { getTierForUser } from '@audius/common/store'
+import { getTierForUser, searchActions } from '@audius/common/store'
 import { push as pushRoute } from 'connected-react-router'
 import { has } from 'lodash'
 import { connect } from 'react-redux'
@@ -27,6 +27,8 @@ import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import { collectionPage, profilePage, getPathname } from 'utils/route'
 
 import styles from './ConnectedSearchBar.module.css'
+
+const { addItem: addRecentSearch } = searchActions
 
 class ConnectedSearchBar extends Component {
   static contextType = HistoryContext
@@ -170,7 +172,8 @@ class ConnectedSearchBar extends Component {
               creatorNodeEndpoint: user.creator_node_endpoint,
               defaultImage: profilePicEmpty,
               isVerifiedUser: user.is_verified,
-              tier: getTierForUser(user)
+              tier: getTierForUser(user),
+              kind: Kind.USERS
             }
           })
         },
@@ -190,7 +193,8 @@ class ConnectedSearchBar extends Component {
                 : '',
               defaultImage: placeholderArt,
               isVerifiedUser: track.user.is_verified,
-              tier: getTierForUser(track.user)
+              tier: getTierForUser(track.user),
+              kind: Kind.TRACKS
             }
           })
         },
@@ -220,7 +224,8 @@ class ConnectedSearchBar extends Component {
                 ? playlist.user.creator_node_endpoint
                 : '',
               isVerifiedUser: playlist.user.is_verified,
-              tier: getTierForUser(playlist.user)
+              tier: getTierForUser(playlist.user),
+              kind: Kind.COLLECTIONS
             }
           })
         },
@@ -248,7 +253,8 @@ class ConnectedSearchBar extends Component {
                 ? album.user.creator_node_endpoint
                 : '',
               isVerifiedUser: album.user.is_verified,
-              tier: getTierForUser(album.user)
+              tier: getTierForUser(album.user),
+              kind: Kind.COLLECTIONS
             }
           })
         }
@@ -276,6 +282,7 @@ class ConnectedSearchBar extends Component {
           onCancel={this.props.cancelFetchSearch}
           onSubmit={this.onSubmit}
           goToRoute={this.props.goToRoute}
+          addRecentSearch={this.props.addRecentSearch}
         />
       </div>
     )
@@ -292,7 +299,8 @@ const mapDispatchToProps = (dispatch) => ({
   clearSearch: () => dispatch(clearSearch()),
   goToRoute: (route) => dispatch(pushRoute(route)),
   recordSearchResultClick: ({ term, kind, id, source }) =>
-    dispatch(make(Name.SEARCH_RESULT_SELECT, { term, kind, id, source }))
+    dispatch(make(Name.SEARCH_RESULT_SELECT, { term, kind, id, source })),
+  addRecentSearch: (searchItem) => dispatch(addRecentSearch(searchItem))
 })
 
 export default withRouter(

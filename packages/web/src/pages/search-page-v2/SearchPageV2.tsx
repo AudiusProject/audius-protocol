@@ -28,6 +28,7 @@ import NavContext, {
 import Page from 'components/page/Page'
 import { useMedia } from 'hooks/useMedia'
 
+import { RecentSearches } from './RecentSearches'
 import { SearchCatalogTile } from './SearchCatalogTile'
 
 type Filter =
@@ -163,14 +164,23 @@ export const SearchPageV2 = () => {
 
   return (
     <PageComponent
-      title={`${query}`}
+      title={query ?? 'Search'}
       description={`Search results for ${query}`}
       // canonicalUrl={fullSearchResultsPage(query)}
       header={header}
     >
       <Flex direction='column' w='100%'>
         {isMobile ? header : null}
-        {!query ? <SearchCatalogTile /> : null}
+        {!query ? (
+          <Flex
+            direction='column'
+            alignItems='center'
+            gap={isMobile ? 'xl' : 'l'}
+          >
+            <SearchCatalogTile />
+            <RecentSearches />
+          </Flex>
+        ) : null}
         {status === Status.LOADING ? <LoadingSpinner /> : <div></div>}
       </Flex>
     </PageComponent>
