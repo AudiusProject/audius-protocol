@@ -84,6 +84,21 @@ web-build:
         paths:
           - << parameters.build-directory >>
 
+web-check-bundlesize:
+  parameters:
+    build-type:
+      default: 'prod'
+      type: string
+  steps:
+    - checkout
+    - attach_workspace:
+        at: ./
+    - run:
+        name: check bundlesize
+        command: |
+          cd packages/web
+          npm run bundlesize:<< parameters.build-type >>
+
 web-distribute:
   parameters:
     build-type:
