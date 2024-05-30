@@ -123,7 +123,7 @@ export default defineConfig({
       ? 'npm run preview:dev'
       : 'npm run preview:stage',
     url: 'http://localhost:4173',
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: true,
     stdout: 'pipe',
     stderr: 'pipe',
     timeout: 60000 * 15

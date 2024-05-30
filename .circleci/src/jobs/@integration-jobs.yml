@@ -54,7 +54,11 @@ integration-test:
           audius-compose connect --nopass
           ./scripts/check-generated-types.sh
     - run: sudo NEEDRESTART_MODE=l PLAYWRIGHT_BROWSERS_PATH=/home/circleci/.cache/ms-playwright npx playwright install --with-deps
-    - run: cd packages/web && RUN_AGAINST_LOCAL_STACK=true npx playwright test
+    - run:
+        command: |
+          cd packages/web
+          npm run preview:dev &
+          RUN_AGAINST_LOCAL_STACK=true npx playwright test
     - store_test_results:
         path: packages/web/report.xml
         when: always
@@ -66,6 +70,8 @@ integration-test:
     - run:
         name: cleanup
         no_output_timeout: 5m
-        command: . ~/.profile; audius-compose down
+        command: |
+          . ~/.profile; audius-compose down
+          kill $!
         when: always
     - docker-prune
