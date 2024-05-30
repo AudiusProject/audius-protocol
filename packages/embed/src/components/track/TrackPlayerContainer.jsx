@@ -51,7 +51,8 @@ const TrackPlayerContainer = ({
   } = usePlayback(track.id, onTrackEnd)
 
   const trackInfoForPlayback = useMemo(() => {
-    const isPurchaseable = instanceOfPurchaseGate(track.streamConditions)
+    const isPurchaseable =
+      track.streamConditions && instanceOfPurchaseGate(track.streamConditions)
     return {
       gateways: formatGateways(track.user.creatorNodeEndpoint),
       title: track.title,

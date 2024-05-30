@@ -76,7 +76,7 @@ Do NOT include your API secret if you are running the SDK on the frontend, as th
 
 :::
 
-## Make your first API call using the SDK!
+## Make your first API call using the SDK
 
 Once you have the initialized SDK instance, it's smooth sailing to making your first API calls.
 
@@ -181,6 +181,6 @@ If your bundler doesn't automatically polyfill node libraries (like when using c
 
 ## What's next?
 
-- [Get authorization](https://docs.audius.org/developers/log-in-with-audius) to access your app's users' Audius accounts
+- [Get authorization](https://docs.audius.org/developers/guides/log-in-with-audius) to access your app's users' Audius accounts
 
-- [Explore the API docs](https://docs.audius.org/developers/sdk/classes/TracksApi) to see what else you can do with the Audius SDK
+- [Explore the API docs](https://docs.audius.org/developers/sdk/tracks) to see what else you can do with the Audius SDK

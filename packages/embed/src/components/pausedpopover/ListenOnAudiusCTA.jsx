@@ -13,7 +13,8 @@ const ListenOnAudiusCTA = ({ audiusURL, streamConditions }) => {
   const onClick = () => {
     window.open(getCopyableLink(audiusURL), '_blank')
   }
-  const isPurchaseable = instanceOfPurchaseGate(streamConditions)
+  const isPurchaseable =
+    streamConditions && instanceOfPurchaseGate(streamConditions)
 
   return (
     <Button

@@ -31,8 +31,9 @@ export const HashId = z.string().transform<number>((data: string, context) => {
 export const OptionalId = z
   .number()
   .nullable()
-  .transform<string | undefined>(
-    (data: number | null) => encodeHashId(data) ?? undefined
+  .optional()
+  .transform<string | undefined>((data: number | null | undefined) =>
+    data ? encodeHashId(data) ?? undefined : undefined
   )
 
 export const Id = z.number().transform<string>((data: number, context) => {

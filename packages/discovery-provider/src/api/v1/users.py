@@ -13,6 +13,7 @@ from src.api.v1.helpers import (
     abort_not_found,
     abort_unauthorized,
     current_user_parser,
+    decode_ids_array,
     decode_with_abort,
     extend_activity,
     extend_challenge_response,
@@ -167,6 +168,14 @@ full_user_response = make_full_response(
     "full_user_response", full_ns, fields.List(fields.Nested(user_model_full))
 )
 
+users_response = make_response(
+    "users_response", ns, fields.List(fields.Nested(user_model))
+)
+
+full_users_response = make_response(
+    "full_users_response", full_ns, fields.List(fields.Nested(user_model_full))
+)
+
 # Cache TTL in seconds for the v1/full/users/content_node route
 GET_USERS_CNODE_TTL_SEC = shared_config["discprov"]["get_users_cnode_ttl_sec"]
 
@@ -217,6 +226,56 @@ class FullUser(Resource):
         current_user_id = get_current_user_id(args)
 
         return get_single_user(user_id, current_user_id)
+
+
+tracks_route_parser = current_user_parser.copy()
+tracks_route_parser.add_argument(
+    "id", action="append", required=False, description="The ID of the user(s)"
+)
+
+
+@ns.route("")
+class BulkUsers(Resource):
+    @record_metrics
+    @ns.doc(
+        id="""Get Bulk Users""",
+        description="Gets a list of users by ID",
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    @ns.expect(tracks_route_parser)
+    @ns.marshal_with(users_response)
+    @cache(ttl_sec=5)
+    def get(self):
+        args = tracks_route_parser.parse_args()
+        ids = decode_ids_array(args.get("id"))
+        users = get_users({"id": ids})
+        if not users:
+            abort_not_found(ids, ns)
+        users = list(map(extend_user, users))
+        return success_response(users)
+
+
+@full_ns.route("")
+class BulkFullUsers(Resource):
+    @record_metrics
+    @ns.doc(
+        id="""Get Bulk Users""",
+        description="Gets a list of users by ID",
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    @ns.expect(tracks_route_parser)
+    @full_ns.marshal_with(full_user_response)
+    @cache(ttl_sec=5)
+    def get(self):
+        args = tracks_route_parser.parse_args()
+        ids = decode_ids_array(args.get("id"))
+        current_user_id = get_current_user_id(args)
+
+        users = get_users({"id": ids, "current_user_id": current_user_id})
+        if not users:
+            abort_not_found(ids, ns)
+        users = list(map(extend_user, users))
+        return success_response(users)
 
 
 USER_HANDLE_ROUTE = "/handle/<string:handle>"

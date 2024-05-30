@@ -25,7 +25,6 @@
   "dependencies": {
     "@aws-sdk/client-s3": "3.574.0",
     "@aws-sdk/lib-storage": "3.574.0",
-    "@types/cron": "2.4.0",
     "cron": "3.1.7",
     "csv-stringify": "6.5.0",
     "csv-writer": "1.6.0",

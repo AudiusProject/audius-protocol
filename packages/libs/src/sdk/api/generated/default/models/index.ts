@@ -57,4 +57,5 @@ export * from './User';
 export * from './UserAssociatedWalletResponse';
 export * from './UserResponse';
 export * from './UserSearch';
+export * from './UsersResponse';
 export * from './VerifyToken';

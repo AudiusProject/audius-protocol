@@ -111,7 +111,7 @@ Description:
 | delegationSentAmount              | BigInt!                                     | The total delegation sent                                                              |
 | hasStakeOrDelegation              | Boolean!                                    | Boolean set to true if the user has stake or delegation                                |
 | validBounds                       | Boolean                                     | If the user's stake is between the min/max stake                                       |
-| deployerCut                       | BigInt                                      | The percentage of the claim from the delegator that the the deployer takes             |
+| deployerCut                       | BigInt                                      | The percentage of the claim from the delegator that the deployer takes                 |
 | services                          | [ServiceNode!] @derivedFrom(field: "owner") | List of services operated by the user                                                  |
 | minAccountStake                   | BigInt                                      | Max stake of the user as determined by number of services and service types            |
 | maxAccountStake                   | BigInt                                      | Min stake of the user as determined by number of services and service types            |

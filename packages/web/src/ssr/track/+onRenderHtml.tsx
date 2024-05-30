@@ -6,8 +6,10 @@ import { escapeInject, dangerouslySkipEscape } from 'vike/server'
 import type { PageContextServer } from 'vike/types'
 
 import { ServerWebPlayer } from 'app/web-player/ServerWebPlayer'
+import { MetaTags } from 'components/meta-tags/MetaTags'
 import { ServerTrackPage } from 'pages/track-page/ServerTrackPage'
 import { isMobileUserAgent } from 'utils/clientUtil'
+import { getTrackPageSEOFields } from 'utils/seo'
 
 import { harmonyCache } from '../../HarmonyCacheProvider'
 import { getIndexHtml } from '../getIndexHtml'
@@ -26,10 +28,17 @@ type TrackPageContext = PageContextServer & {
 export default function render(pageContext: TrackPageContext) {
   const { pageProps, userAgent } = pageContext
   const { track, user } = pageProps
-  const { track_id } = track
-  const { user_id } = user
+  const { track_id, title, permalink, release_date, created_at } = track
+  const { user_id, name: userName } = user
 
   const isMobile = isMobileUserAgent(userAgent)
+
+  const seoMetadata = getTrackPageSEOFields({
+    title,
+    permalink,
+    userName,
+    releaseDate: release_date || created_at
+  })
 
   const pageHtml = renderToString(
     <ServerWebPlayer
@@ -39,7 +48,10 @@ export default function render(pageContext: TrackPageContext) {
         users: { entries: { [user_id]: { metadata: user } } }
       }}
     >
-      <ServerTrackPage trackId={track_id} isMobile={isMobile} />
+      <>
+        <MetaTags {...seoMetadata} />
+        <ServerTrackPage trackId={track_id} isMobile={isMobile} />
+      </>
     </ServerWebPlayer>
   )
 

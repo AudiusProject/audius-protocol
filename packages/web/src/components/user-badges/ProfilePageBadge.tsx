@@ -1,15 +1,15 @@
 import { useCallback } from 'react'
 
-import { useSelectTierInfo } from '@audius/common/hooks'
-import { BadgeTier, ID } from '@audius/common/models'
-import { modalsActions } from '@audius/common/store'
+import { useSelectTierInfo } from '@audius/common/src/hooks/useSelectTierInfo'
+import { BadgeTier } from '@audius/common/src/models/BadgeTier'
+import { ID } from '@audius/common/src/models/Identifiers'
+import { setVisibility } from '@audius/common/src/store/ui/modals/parentSlice'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
 import { audioTierMapPng } from 'components/user-badges/UserBadges'
 
 import styles from './ProfilePageBadge.module.css'
-const { setVisibility } = modalsActions
 
 type ProfilePageBadgeProps = {
   userId: ID

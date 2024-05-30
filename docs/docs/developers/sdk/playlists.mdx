@@ -99,6 +99,37 @@ playlist as described below.
 
 ---
 
+### getBulkPlaylists
+
+#### getBulkPlaylists(`params`)
+
+Get a list of playlists by id.
+
+Example:
+
+```ts
+const { data: playlists } = await audiusSdk.playlists.getBulkPlaylists({
+  id: ['D7KyD', '68yPZb'],
+})
+
+console.log(playlists)
+```
+
+#### Params
+
+Create an object with the following fields and pass it as the first argument, as shown in the
+example above.
+
+| Name  | Type       | Description              | Required?    |
+| :---- | :--------- | :----------------------- | :----------- |
+| `ids` | `string[]` | The IDs of the playlists | **Required** |
+
+#### Returns
+
+Returns an array of playlists, see [`getPlaylist`](#getplaylist).
+
+---
+
 ### getPlaylistTracks
 
 #### getPlaylistTracks(`params`)

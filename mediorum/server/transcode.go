@@ -219,26 +219,6 @@ func (ss *MediorumServer) startTranscodeWorker(_ int, work chan *Upload) {
 	}
 }
 
-type JobTemplate string
-
-const (
-	JobTemplateAudio       JobTemplate = "audio"
-	JobTemplateImgSquare   JobTemplate = "img_square"
-	JobTemplateImgBackdrop JobTemplate = "img_backdrop"
-)
-
-const (
-	JobStatusNew   = "new"
-	JobStatusError = "error"
-	JobStatusBusy  = "busy"
-
-	JobStatusRetranscode      = "retranscode_preview"
-	JobStatusBusyRetranscode  = "busy_retranscode_preview"
-	JobStatusErrorRetranscode = "error_retranscode_preview"
-
-	JobStatusDone = "done"
-)
-
 func (ss *MediorumServer) getKeyToTempFile(fileHash string) (*os.File, error) {
 	temp, err := os.CreateTemp("", "mediorumTemp")
 	if err != nil {
@@ -539,6 +519,8 @@ func (ss *MediorumServer) transcode(upload *Upload) error {
 	defer temp.Close()
 	defer os.Remove(temp.Name())
 
+	nextJobStatus := JobStatusDone
+
 	switch JobTemplate(upload.Template) {
 	case JobTemplateImgSquare:
 		// 150x150, 480x480, 1000x1000
@@ -597,12 +579,15 @@ func (ss *MediorumServer) transcode(upload *Upload) error {
 			if err != nil {
 				return err
 			}
+			// analyze audio for new full audio uploads
+			nextJobStatus = JobStatusAudioAnalysis
+			upload.AudioAnalyzedAt = time.Now().UTC()
 		}
 	}
 
 	upload.TranscodeProgress = 1
 	upload.TranscodedAt = time.Now().UTC()
-	upload.Status = "done"
+	upload.Status = nextJobStatus
 	upload.Error = ""
 	ss.crud.Update(upload)
 

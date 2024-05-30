@@ -127,6 +127,11 @@ export interface GetAudioTransactionsRequest {
     encodedDataSignature?: string;
 }
 
+export interface GetBulkUsersRequest {
+    userId?: string;
+    id?: Array<string>;
+}
+
 export interface GetFavoritesRequest {
     id: string;
     offset?: number;
@@ -609,6 +614,41 @@ export class UsersApi extends runtime.BaseAPI {
      */
     async getAudioTransactions(params: GetAudioTransactionsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TransactionHistoryResponse> {
         const response = await this.getAudioTransactionsRaw(params, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * @hidden
+     * Gets a list of users by ID
+     */
+    async getBulkUsersRaw(params: GetBulkUsersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullUserResponse>> {
+        const queryParameters: any = {};
+
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
+        }
+
+        if (params.id) {
+            queryParameters['id'] = params.id;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/users`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => FullUserResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Gets a list of users by ID
+     */
+    async getBulkUsers(params: GetBulkUsersRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullUserResponse> {
+        const response = await this.getBulkUsersRaw(params, initOverrides);
         return await response.value();
     }
 

@@ -40,13 +40,14 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     // Size Styles
     const smallStyles: CSSObject = {
       gap: spacing.xs,
-      height: spacing.unit8,
+      height: size === 'xs' ? spacing.unit7 : spacing.unit8,
       paddingInline: spacing.m,
       fontSize: typography.size.s,
       fontWeight: typography.weight.bold,
       lineHeight: typography.lineHeight.s,
       textTransform: 'capitalize'
     }
+
     const smallIconStyles: CSSObject = {
       zIndex: 1,
       width: spacing.unit4,
@@ -171,7 +172,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       borderRadius: cornerRadius.s,
       boxShadow: shadows.near,
 
-      ...(size === 'small'
+      ...(size === 'small' || size === 'xs'
         ? smallStyles
         : size === 'large'
         ? largeStyles
