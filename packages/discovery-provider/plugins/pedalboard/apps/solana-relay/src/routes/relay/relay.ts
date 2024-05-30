@@ -13,7 +13,10 @@ import type { RelayRequestBody } from '@audius/sdk'
 import { getRequestIpData } from '../../utils/ipData'
 import { attachLocationData, isPaymentTransaction } from './attachLocationData'
 import { connections } from '../../utils/connections'
-import { broadcastTransaction, sendTransactionWithRetries } from '../../utils/transaction'
+import {
+  broadcastTransaction,
+  sendTransactionWithRetries
+} from '../../utils/transaction'
 
 const getFeePayerKeyPair = (feePayerPublicKey?: PublicKey) => {
   if (!feePayerPublicKey) {
@@ -86,8 +89,10 @@ export const relay = async (
       logger
     })
     res.status(200).send({ signature })
-    next()
+    const responseTime = new Date().getTime() - res.locals.requestStartTime
+    logger.info({ responseTime, statusCode: res.statusCode }, 'response sent')
     await broadcastTransaction({ logger, signature })
+    next()
   } catch (e) {
     next(e)
   }
