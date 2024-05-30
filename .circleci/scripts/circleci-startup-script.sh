@@ -47,6 +47,9 @@ RUNNER_AUTH_TOKEN="$(gcloud secrets versions access 1 --secret=$gcp_key)"
 export RUNNER_AUTH_TOKEN
 sed -i "s/<< AUTH_TOKEN >>/$RUNNER_AUTH_TOKEN/g" /etc/circleci-runner/circleci-runner-config.yaml
 
+# allow sudo
+echo "circleci ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/circleci
+chmod 440 /etc/sudoers.d/circleci
 
 systemctl enable circleci-runner
 systemctl start circleci-runner
