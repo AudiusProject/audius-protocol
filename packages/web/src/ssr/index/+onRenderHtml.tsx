@@ -1,4 +1,4 @@
-// For all routes except the explicitly defined ones (Track)
+// For all routes except the explicitly defined ones
 // simply render the SPA without SSR
 
 import { escapeInject, dangerouslySkipEscape } from 'vike/server'

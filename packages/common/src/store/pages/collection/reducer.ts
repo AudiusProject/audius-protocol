@@ -1,12 +1,13 @@
 import snakecaseKeys from 'snakecase-keys'
 
-import { Kind, SsrPageProps } from '~/models'
 import { Collection } from '~/models/Collection'
+import { Kind } from '~/models/Kind'
+import { SsrPageProps } from '~/models/SsrPageProps'
 import { makePlaylist } from '~/services/audius-api-client/ResponseAdapter'
 import tracksReducer, {
   initialState as initialLineupState
 } from '~/store/pages/collection/lineup/reducer'
-import { makeUid } from '~/utils'
+import { makeUid } from '~/utils/uid'
 
 import { Status } from '../../../models/Status'
 import { LineupActions, asLineup } from '../../../store/lineup/reducer'
