@@ -1761,10 +1761,16 @@ def test_update_access_conditions(app, mocker):
         track3 = all_tracks[2]
         assert track3.is_downloadable == True
         assert track3.stream_conditions == {
-            "usdc_purchase": {"price": 200, "splits": {"user-bank": 2000000}}
+            "usdc_purchase": {
+                "price": 200,
+                "splits": [{"user_id": 1, "percentage": 100}],
+            }
         }
         assert track3.download_conditions == {
-            "usdc_purchase": {"price": 200, "splits": {"user-bank": 2000000}}
+            "usdc_purchase": {
+                "price": 200,
+                "splits": [{"user_id": 1, "percentage": 100}],
+            }
         }
 
 

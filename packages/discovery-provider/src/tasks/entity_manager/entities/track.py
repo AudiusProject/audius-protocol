@@ -102,6 +102,10 @@ def update_track_price_history(
             if is_stream_gated
             else track_metadata["download_conditions"]
         )
+        # Convert legacy conditions to new array format with user IDs
+        conditions = convert_legacy_purchase_access_gate(
+            track_record.owner_id, conditions
+        )
         if USDC_PURCHASE_KEY in conditions:
             usdc_purchase = conditions[USDC_PURCHASE_KEY]
             new_record = TrackPriceHistory()
@@ -241,14 +245,20 @@ def populate_track_record_metadata(track_record: Track, track_metadata, handle, 
                 is_valid_json_field(track_metadata, "stream_conditions")
                 or track_metadata["stream_conditions"] is None
             ):
-                track_record.stream_conditions = track_metadata["stream_conditions"]
+                # Convert legacy conditions to new array format with user IDs
+                track_record.stream_conditions = convert_legacy_purchase_access_gate(
+                    track_record.owner_id, track_metadata["stream_conditions"]
+                )
 
         elif key == "download_conditions":
             if "download_conditions" in track_metadata and (
                 is_valid_json_field(track_metadata, "download_conditions")
                 or track_metadata["download_conditions"] is None
             ):
-                track_record.download_conditions = track_metadata["download_conditions"]
+                # Convert legacy conditions to new array format with user IDs
+                track_record.download_conditions = convert_legacy_purchase_access_gate(
+                    track_record.owner_id, track_metadata["download_conditions"]
+                )
         elif key == "allowed_api_keys":
             if key in track_metadata:
                 if track_metadata[key] is None:
@@ -717,14 +727,6 @@ def validate_access_conditions(params: ManageEntityParameters):
             raise IndexingValidationError(
                 f"Track {params.entity_id} stream conditions do not match download conditions"
             )
-
-        # Convert legacy conditions to new array format with user IDs
-        params.metadata["stream_conditions"] = convert_legacy_purchase_access_gate(
-            params.user_id, track_metadata.get("stream_conditions", None)
-        )
-        params.metadata["download_conditions"] = convert_legacy_purchase_access_gate(
-            params.user_id, track_metadata.get("download_conditions", None)
-        )
     elif is_download_gated:
         # if download gated, must have download conditions
         if not download_conditions:
@@ -736,11 +738,6 @@ def validate_access_conditions(params: ManageEntityParameters):
             raise IndexingValidationError(
                 f"Track {params.entity_id} has an invalid number of download conditions"
             )
-
-        # Convert legacy conditions to new array format with user IDs
-        params.metadata["download_conditions"] = convert_legacy_purchase_access_gate(
-            params.user_id, track_metadata.get("download_conditions", None)
-        )
 
 
 # Make sure that access conditions do not incorrectly change during track update.

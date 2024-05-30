@@ -551,6 +551,6 @@ def convert_legacy_purchase_access_gate(owner_id: int, access_gate: dict):
         if isinstance(access_gate["usdc_purchase"]["splits"], dict):
             # Legacy client uploads only have one split, and it's to the owner
             access_gate["usdc_purchase"]["splits"] = [
-                {"user_id": owner_id, "percentage": 100.0000}
+                {"user_id": owner_id, "percentage": 100.0}
             ]
     return access_gate
