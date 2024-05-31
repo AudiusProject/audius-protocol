@@ -113,6 +113,7 @@ export const RNVideoAudioPlayer = () => {
   const nftAccessSignatureMap = useSelector(getNftAccessSignatureMap)
 
   // Queue things
+  const [isQueueLoaded, setIsQueueLoaded] = useState(false)
   const queueIndex = useSelector(getIndex)
   // const queueShuffle = useSelector(getShuffle)
   const queueOrder = useSelector(getOrder)
@@ -423,12 +424,13 @@ export const RNVideoAudioPlayer = () => {
       await enqueueTracksJobRef.current
       enqueueTracksJobRef.current = undefined
     } else {
+      setIsQueueLoaded(false)
       queueRef.current = []
       const firstTrack = newQueueTracks[queueIndex]
       if (!firstTrack) return
 
       queueRef.current[queueIndex] = await makeTrackData(firstTrack)
-
+      setIsQueueLoaded(true)
       enqueueTracksJobRef.current = enqueueTracks(newQueueTracks, queueIndex)
       await enqueueTracksJobRef.current
       enqueueTracksJobRef.current = undefined
@@ -499,7 +501,8 @@ export const RNVideoAudioPlayer = () => {
 
   const trackURI = useMemo(() => {
     return queueRef.current[queueIndex]?.url
-  }, [queueIndex])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [queueIndex, isQueueLoaded]) // need to recompute track if the queue isn't loaded
 
   return (
     trackURI && (
@@ -518,6 +521,7 @@ export const RNVideoAudioPlayer = () => {
         onEnd={() => {
           onNext()
         }}
+        ignoreSilentSwitch='ignore'
         onLoadStart={onLoadStart}
         onLoad={onLoadFinish}
         // TODO: repeating mode not implemented

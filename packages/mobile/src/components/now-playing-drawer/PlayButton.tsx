@@ -3,6 +3,8 @@ import { useCallback, useEffect, useState } from 'react'
 import { playerActions, playerSelectors } from '@audius/common/store'
 import { MIN_BUFFERING_DELAY_MS } from '@audius/common/utils'
 import { useDispatch, useSelector } from 'react-redux'
+import { useFeatureFlag } from '~/hooks'
+import { FeatureFlags } from '~/services'
 
 import IconPause from 'app/assets/animations/iconPause.json'
 import IconPlay from 'app/assets/animations/iconPlay.json'
@@ -16,40 +18,42 @@ import { Theme } from 'app/utils/theme'
 const { pause, play } = playerActions
 const { getPlaying, getBuffering } = playerSelectors
 
-const useAnimatedIcons = makeAnimations(({ palette, type }) => {
-  const iconColor =
-    type === Theme.MATRIX ? palette.background : palette.staticWhite
+const useAnimatedIcons = (useRNVideoPlayer?: boolean) =>
+  makeAnimations(({ palette, type }) => {
+    const iconColor =
+      type === Theme.MATRIX ? palette.background : palette.staticWhite
+    const primaryBG = useRNVideoPlayer ? palette.accentBlue : palette.primary
 
-  const ColorizedPlayIcon = colorize(IconPlay, {
-    // #playpause1.Group 1.Fill 1
-    'layers.0.shapes.0.it.1.c.k': iconColor,
-    // #playpause2.Left.Fill 1
-    'layers.1.shapes.0.it.1.c.k': iconColor,
-    // #playpause2.Right.Fill 1
-    'layers.1.shapes.1.it.1.c.k': iconColor,
-    // #primaryBG.Group 2.Fill 1
-    'layers.2.shapes.0.it.1.c.k': palette.primary
-  })
+    const ColorizedPlayIcon = colorize(IconPlay, {
+      // #playpause1.Group 1.Fill 1
+      'layers.0.shapes.0.it.1.c.k': iconColor,
+      // #playpause2.Left.Fill 1
+      'layers.1.shapes.0.it.1.c.k': iconColor,
+      // #playpause2.Right.Fill 1
+      'layers.1.shapes.1.it.1.c.k': iconColor,
+      // #primaryBG.Group 2.Fill 1
+      'layers.2.shapes.0.it.1.c.k': primaryBG
+    })
 
-  const ColorizedPauseIcon = colorize(IconPause, {
-    // #playpause1.Group 1.Fill 1
-    'layers.0.shapes.0.it.1.c.k': iconColor,
-    // #playpause2.Left.Fill 1
-    'layers.1.shapes.0.it.1.c.k': iconColor,
-    // #playpause2.Right.Fill 1
-    'layers.1.shapes.1.it.1.c.k': iconColor,
-    // #primaryBG.Group 2.Fill 1
-    'layers.2.shapes.0.it.1.c.k': palette.primary
-  })
+    const ColorizedPauseIcon = colorize(IconPause, {
+      // #playpause1.Group 1.Fill 1
+      'layers.0.shapes.0.it.1.c.k': iconColor,
+      // #playpause2.Left.Fill 1
+      'layers.1.shapes.0.it.1.c.k': iconColor,
+      // #playpause2.Right.Fill 1
+      'layers.1.shapes.1.it.1.c.k': iconColor,
+      // #primaryBG.Group 2.Fill 1
+      'layers.2.shapes.0.it.1.c.k': primaryBG
+    })
 
-  const ColorizedSpinnerIcon = colorize(IconLoadingSpinner, {
-    // change color of the internal spinner
-    'layers.0.shapes.1.c.k': iconColor,
-    // change color of the background circle
-    'layers.1.shapes.0.it.2.c.k': palette.primary
+    const ColorizedSpinnerIcon = colorize(IconLoadingSpinner, {
+      // change color of the internal spinner
+      'layers.0.shapes.1.c.k': iconColor,
+      // change color of the background circle
+      'layers.1.shapes.0.it.2.c.k': primaryBG
+    })
+    return [ColorizedPlayIcon, ColorizedPauseIcon, ColorizedSpinnerIcon]
   })
-  return [ColorizedPlayIcon, ColorizedPauseIcon, ColorizedSpinnerIcon]
-})
 
 type PlayButtonProps = Omit<AnimatedButtonProps, 'iconJSON' | 'iconIndex'>
 
@@ -78,7 +82,10 @@ export const PlayButton = ({ isActive, ...props }: PlayButtonProps) => {
   }, [isBuffering])
 
   const dispatch = useDispatch()
-  const animatedIcons = useAnimatedIcons()
+  const { isEnabled: useRNVideoPlayer } = useFeatureFlag(
+    FeatureFlags.USE_RN_VIDEO_PLAYER
+  )
+  const animatedIcons = useAnimatedIcons(useRNVideoPlayer)()
 
   const handlePress = useCallback(() => {
     if (isPlaying) {
