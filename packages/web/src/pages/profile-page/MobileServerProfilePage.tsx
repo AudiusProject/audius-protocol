@@ -186,12 +186,6 @@ export const MobileServerProfilePage = () => {
             </Text>
           </Flex>
         </Flex>
-
-        <Flex alignItems='center' gap='m'>
-          {/* TODO: Need to add this once the profile page state is added to server state */}
-          {/* <ProfilePageBadge userId={user.user_id} isCompact /> */}
-        </Flex>
-
         {bio ? (
           <ServerUserGeneratedText
             color='subdued'
