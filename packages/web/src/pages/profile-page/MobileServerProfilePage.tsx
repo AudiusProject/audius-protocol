@@ -10,8 +10,6 @@ import { Text } from '@audius/harmony/src/components/text'
 import { ServerUserGeneratedText } from 'components/user-generated-text/ServerUserGeneratedText'
 import { useSelector } from 'utils/reducer'
 
-import styles from './components/mobile/ProfileHeader.module.css'
-
 const messages = {
   tracks: 'Tracks',
   followers: 'Followers',
@@ -58,7 +56,14 @@ export const MobileServerProfilePage = () => {
         {/* @ts-ignore */}
         <Box as='img' src={cover_photo!} w='100%' />
         {isArtist && !user.is_deactivated ? (
-          <BadgeArtist className={styles.badgeArtist} />
+          <BadgeArtist
+            css={{
+              position: 'absolute',
+              top: 21,
+              right: 13,
+              boxShadow: '0 1px 4px 0 rgba(0, 0, 0, 0.3)'
+            }}
+          />
         ) : null}
       </Flex>
       <Flex
