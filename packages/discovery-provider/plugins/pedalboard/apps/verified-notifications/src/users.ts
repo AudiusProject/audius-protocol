@@ -1,6 +1,6 @@
 import { App } from "@pedalboard/basekit";
 import { Users } from "@pedalboard/storage";
-import { getPreviousState } from "./utils";
+import { getPreviousState, logError } from "./utils";
 import { discoveryDb } from ".";
 import axios from "axios";
 import retry from "async-retry"
@@ -119,24 +119,6 @@ export const userRowHandler = async (app: App<object>, userRow: Users) => {
     try {
         await onNewUserRow(userRow)
     } catch (e: unknown) {
-        if (e instanceof Error) {
-            console.error({
-                message: e.message,
-                name: e.name,
-                stack: e.stack,
-                error: e,
-            }, "user event error")
-        } else if (typeof e === "object" && e !== null) {
-            console.error({
-                message: (e as { message?: string }).message,
-                name: (e as { name?: string }).name,
-                stack: (e as { stack?: string }).stack,
-                error: e,
-            }, "user event error")
-        } else {
-            console.error({
-                error: e,
-            }, "user event error")
-        }
+        logError(e, "user event error")
     }
 }

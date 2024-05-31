@@ -2,6 +2,7 @@ import { App } from "@pedalboard/basekit";
 import { Tracks } from "@pedalboard/storage";
 import { discoveryDb } from ".";
 import { sendSlackMsg } from "./slack";
+import { logError } from "./utils";
 
 const TRACKS_SLACK_CHANNEL = process.env.TRACKS_SLACK_CHANNEL
 
@@ -64,24 +65,6 @@ export const trackRowHandler = async (app: App<object>, trackRow: Tracks) => {
     try {
         await onNewTrackRow(trackRow)
     } catch (e: unknown) {
-        if (e instanceof Error) {
-            console.error({
-                message: e.message,
-                name: e.name,
-                stack: e.stack,
-                error: e,
-            }, "track event error")
-        } else if (typeof e === "object" && e !== null) {
-            console.error({
-                message: (e as { message?: string }).message,
-                name: (e as { name?: string }).name,
-                stack: (e as { stack?: string }).stack,
-                error: e,
-            }, "track event error")
-        } else {
-            console.error({
-                error: e,
-            }, "track event error")
-        }
+        logError(e, "track event error")
     }
 }

@@ -20,3 +20,25 @@ export const getPreviousState = async ({ table, id, blocknumber }: { table: stri
     const pkeyKey = table === 'users' ? 'user_id' : 'track_id'
     return previousStates.find((update: { [x: string]: number }) => update[pkeyKey] === id)
 }
+
+export const logError = (e: unknown, msg: string) => {
+    if (e instanceof Error) {
+        console.error({
+            message: e.message,
+            name: e.name,
+            stack: e.stack,
+            error: e,
+        }, msg)
+    } else if (typeof e === "object" && e !== null) {
+        console.error({
+            message: (e as { message?: string }).message,
+            name: (e as { name?: string }).name,
+            stack: (e as { stack?: string }).stack,
+            error: e,
+        }, msg)
+    } else {
+        console.error({
+            error: e,
+        }, msg)
+    }
+}

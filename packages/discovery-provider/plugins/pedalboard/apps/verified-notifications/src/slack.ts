@@ -12,7 +12,7 @@ export const sendSlackMsg = (channel: string | undefined, header: string, body: 
     });
 }
 
-const formatter = (data: any) => {
+const formatter = (data: object) => {
     const msg = [];
     for (const [key, value] of Object.entries(data)) {
         // omit any null entries of the track
