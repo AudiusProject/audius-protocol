@@ -1,57 +1,5 @@
 import { useCallback } from 'react'
 
-import { useIsGatedContentPlaylistAddable } from '@audius/common/hooks'
-import {
-  ShareSource,
-  RepostSource,
-  FavoriteSource,
-  PlaybackSource,
-  FavoriteType,
-  SquareSizes,
-  isContentUSDCPurchaseGated
-} from '@audius/common/models'
-import type { Track, User } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
-import {
-  accountSelectors,
-  cacheTracksSelectors,
-  cacheUsersSelectors,
-  tracksSocialActions,
-  mobileOverflowMenuUIActions,
-  shareModalUIActions,
-  OverflowAction,
-  OverflowSource,
-  RepostType,
-  playerSelectors,
-  playbackPositionSelectors
-} from '@audius/common/store'
-import type { CommonState } from '@audius/common/store'
-import { Genre, removeNullable } from '@audius/common/utils'
-import { useNavigationState } from '@react-navigation/native'
-import { useDispatch, useSelector } from 'react-redux'
-import { trpc } from 'utils/trpcClientWeb'
-
-import type { ImageProps } from '@audius/harmony-native'
-import { TrackImage } from 'app/components/image/TrackImage'
-import type { LineupItemProps } from 'app/components/lineup-tile/types'
-import { useIsUSDCEnabled } from 'app/hooks/useIsUSDCEnabled'
-import { useNavigation } from 'app/hooks/useNavigation'
-import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
-
-import type { TileProps } from '../core'
-
-import { LineupTile } from './LineupTile'
-
-const { getUid } = playerSelectors
-const { requestOpen: requestOpenShareModal } = shareModalUIActions
-const { open: openOverflowMenu } = mobileOverflowMenuUIActions
-const { repostTrack, saveTrack, undoRepostTrack, unsaveTrack } =
-  tracksSocialActions
-const { getUserFromTrack } = cacheUsersSelectors
-const { getTrack } = cacheTracksSelectors
-const { getUserId } = accountSelectors
-const { getTrackPosition } = playbackPositionSelectors
-
 export const TrackTile = (props: LineupItemProps) => {
   const { uid } = props
 
