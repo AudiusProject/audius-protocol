@@ -10,13 +10,11 @@ import {
   RESET,
   SET_TRACK_RANK,
   SET_TRACK_TRENDING_RANKS,
-  SET_IS_INITIAL_FETCH_AFTER_SSR,
   SetTrackIdAction,
   SetTrackPermalinkAction,
   SetTrackRankAction,
   SetTrackTrendingRanksAction,
   ResetAction,
-  SetIsInitialFetchAfterSSRAction,
   TrackPageAction
 } from './actions'
 import { PREFIX as tracksPrefix } from './lineup/actions'
@@ -37,8 +35,7 @@ const initialState: TrackPageState = {
     year: null,
     allTime: null
   },
-  tracks: initialLineupState,
-  isInitialFetchAfterSsr: false
+  tracks: initialLineupState
 }
 
 const actionsMap = {
@@ -85,15 +82,6 @@ const actionsMap = {
       // @ts-ignore - Massaging the old reset action for track page to work with the lineup reducer
       // Probably should use the lineup reset action instead
       tracks: tracksLineupReducer(undefined, action)
-    }
-  },
-  [SET_IS_INITIAL_FETCH_AFTER_SSR](
-    state: TrackPageState,
-    action: SetIsInitialFetchAfterSSRAction
-  ) {
-    return {
-      ...state,
-      isInitialFetchAfterSsr: action.isInitialFetchAfterSsr
     }
   }
 }

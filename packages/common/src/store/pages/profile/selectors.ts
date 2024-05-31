@@ -120,10 +120,6 @@ const sortByDateDesc = (a: Collection, b: Collection) =>
 const sortBySaveCountDesc = (a: Collection, b: Collection) =>
   b.save_count - a.save_count
 
-export const getIsInitialFetchAfterSsr = (state: CommonState) => {
-  return state.pages.profile.isInitialFetchAfterSsr
-}
-
 export const makeGetProfile = () => {
   return createDeepEqualSelector(
     [

@@ -78,8 +78,7 @@ const {
   makeGetProfile,
   getProfileFeedLineup,
   getProfileTracksLineup,
-  getProfileUserId,
-  getIsInitialFetchAfterSsr
+  getProfileUserId
 } = profilePageSelectors
 const { getAccountUser, getAccountHasTracks } = accountSelectors
 const { createChat, blockUser, unblockUser } = chatActions
@@ -297,10 +296,8 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
         params?.handle?.toLowerCase() ?? null,
         params.userId,
         forceUpdate,
-        shouldSetLoading,
-        this.props.isInitialFetchAfterSsr
+        shouldSetLoading
       )
-      this.props.setIsInitialFetchAfterSsr(false)
       if (params.tab) {
         this.setState({ activeTab: getTabForRoute(params.tab) })
       }
@@ -1034,7 +1031,6 @@ function makeMapStateToProps() {
       }),
       blockeeList: getBlockees(state),
       blockerList: getBlockers(state),
-      isInitialFetchAfterSsr: getIsInitialFetchAfterSsr(state),
       accountHasTracks
     }
   }
@@ -1064,9 +1060,6 @@ function mapDispatchToProps(dispatch: Dispatch, props: RouteComponentProps) {
           deleteExistingEntry
         )
       ),
-    setIsInitialFetchAfterSsr: (value: boolean) => {
-      dispatch(profileActions.setIsInitialFetchAfterSsr(value))
-    },
     fetchAccountHasTracks: () => {
       dispatch(fetchHasTracks())
     },

@@ -16,5 +16,4 @@ export type TrackPageState = {
     allTime: ID[] | null
   }
   tracks: LineupState<Track>
-  isInitialFetchAfterSsr: boolean
 }

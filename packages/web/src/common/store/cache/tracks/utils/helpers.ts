@@ -18,8 +18,7 @@ const getAccountUser = accountSelectors.getAccountUser
  * @param metadataArray
  */
 export function* addUsersFromTracks<T extends TrackMetadata & { user?: User }>(
-  metadataArray: T[],
-  isInitialFetchAfterSsr?: boolean
+  metadataArray: T[]
 ) {
   yield* waitForRead()
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
@@ -42,12 +41,5 @@ export function* addUsersFromTracks<T extends TrackMetadata & { user?: User }>(
   users = uniqBy(users, 'id')
   users = users.filter((user) => !(currentUserId && user.id === currentUserId))
 
-  yield put(
-    cacheActions.add(
-      Kind.USERS,
-      users,
-      /* replace */ isInitialFetchAfterSsr,
-      /* persist */ true
-    )
-  )
+  yield put(cacheActions.add(Kind.USERS, users, false, /* persist */ true))
 }

@@ -29,7 +29,6 @@ import {
   FETCH_TOP_TAGS,
   FETCH_TOP_TAGS_SUCCEEDED,
   FETCH_TOP_TAGS_FAILED,
-  SET_IS_INITIAL_FETCH_AFTER_SSR,
   FetchProfileAction,
   FetchProfileSucceededAction,
   SetCurrentUserAction,
@@ -50,7 +49,6 @@ import {
   FetchTopTagsAction,
   FetchTopTagsFailedAction,
   FetchTopTagsSucceededAction,
-  SetIsInitialFetchAfterSSRAction,
   ProfilePageAction
 } from './actions'
 import { PREFIX as feedPrefix } from './lineups/feed/actions'
@@ -115,8 +113,7 @@ const updateProfile = (
 
 const initialState = {
   currentUser: null,
-  entries: {},
-  isInitialFetchAfterSsr: false
+  entries: {}
 }
 
 const actionsMap = {
@@ -328,15 +325,6 @@ const actionsMap = {
     action: FetchTopTagsFailedAction
   ) {
     return updateProfile(state, action, { topTagsStatus: Status.ERROR })
-  },
-  [SET_IS_INITIAL_FETCH_AFTER_SSR](
-    state: ProfilePageState,
-    action: SetIsInitialFetchAfterSSRAction
-  ) {
-    return {
-      ...state,
-      isInitialFetchAfterSsr: action.isInitialFetchAfterSsr
-    }
   }
 }
 
