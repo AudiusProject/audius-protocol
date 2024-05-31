@@ -26,3 +26,15 @@ ddex-processor-init:
           - node_modules
           - packages/ddex/node_modules
           - packages/ddex/processor/node_modules
+
+ddex-processor-test:
+  working_directory: ~/audius-protocol
+  docker:
+    - image: cimg/node:18.17
+  steps:
+    - checkout
+    - attach_workspace:
+        at: ./
+    - run:
+        name: test
+        command: npm run test
