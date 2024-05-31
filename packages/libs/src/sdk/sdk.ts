@@ -22,7 +22,6 @@ import { PlaylistsApi } from './api/playlists/PlaylistsApi'
 import { TracksApi } from './api/tracks/TracksApi'
 import { UsersApi } from './api/users/UsersApi'
 import { developmentConfig } from './config/development'
-import { productionConfig } from './config/production'
 import { OAuth } from './oauth'
 import {
   PaymentRouterClient,
