@@ -26,7 +26,7 @@ RUN cmake -DCMAKE_INSTALL_PREFIX=/usr/local -DBUILD_TESTING=OFF -S . -B build &&
     cmake --build build --parallel $(nproc) && \
     cmake --install build
 
-WORKDIR /app
+WORKDIR /
 
 COPY --from=builder /go/bin/* /bin
 COPY --from=builder /app/mediorum /bin/mediorum
