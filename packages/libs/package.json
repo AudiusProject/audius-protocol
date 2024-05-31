@@ -49,6 +49,7 @@
     "lint": "eslint ./src ./types",
     "lint:fix": "npm run lint -- --fix",
     "typecheck": "tsc --noEmit",
+    "verify": "npm run lint && npm run typecheck",
     "sdk:config": "ts-node ./src/sdk/scripts/generateServicesConfig.ts",
     "gen": "npm run gen:prod",
     "gen:dev": "npm run gen:dev:default ; npm run gen:dev:full",
