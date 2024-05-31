@@ -1,5 +1,9 @@
 when: << pipeline.parameters.run-sdk-workflow >>
 jobs:
+  - sdk-init:
+      context:
+        - Vercel
+
   - test:
       name: test-audius-libs
       context: Vercel

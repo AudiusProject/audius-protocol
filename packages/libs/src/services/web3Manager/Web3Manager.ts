@@ -119,7 +119,11 @@ export class Web3Manager {
   }
 
   usingInternalWeb3(): boolean {
-    return (this.web3Config && !this.web3Config.useExternalWeb3 && this.web3Config.internalWeb3Config?.web3ProviderEndpoints.length > 0)
+    return (
+      this.web3Config &&
+      !this.web3Config.useExternalWeb3 &&
+      this.web3Config.internalWeb3Config?.web3ProviderEndpoints.length > 0
+    )
   }
 
   setDiscoveryProvider(discoveryProvider: DiscoveryProvider) {
@@ -131,9 +135,13 @@ export class Web3Manager {
   }
 
   setInternalWeb3Endpoint() {
-    const gatewayweb3endpoint = this.web3Config.internalWeb3Config.web3ProviderEndpoints[0]!
+    const gatewayweb3endpoint =
+      this.web3Config.internalWeb3Config.web3ProviderEndpoints[0]!
     const discoveryweb3endpoint = `${this.discoveryProvider?.discoveryProviderEndpoint}/chain`
-    const web3endpoint = this.discoveryProvider !== null ? discoveryweb3endpoint : gatewayweb3endpoint
+    const web3endpoint =
+      this.discoveryProvider !== null
+        ? discoveryweb3endpoint
+        : gatewayweb3endpoint
     this.web3 = new Web3(this.provider(web3endpoint, 10000))
     this.useExternalWeb3 = false
   }
