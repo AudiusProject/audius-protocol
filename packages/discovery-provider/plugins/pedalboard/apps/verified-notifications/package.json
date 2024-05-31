@@ -15,11 +15,18 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "concurrently": "8.2.2",
+    "ts-node": "10.9.2",
+    "ts-node-dev": "2.0.0"
+  },
+  "dependencies": {
     "@pedalboard/logger": "*",
     "@pedalboard/basekit": "0.0.30",
     "@pedalboard/storage": "0.0.30",
-    "concurrently": "^8.2.2",
-    "ts-node": "10.9.2",
-    "ts-node-dev": "2.0.0"
+    "@slack/web-api": "7.0.4",
+    "async-retry": "1.3.3",
+    "axios": "1.7.2",
+    "knex": "3.1.0",
+    "pg": "8.8.0"
   }
 }
