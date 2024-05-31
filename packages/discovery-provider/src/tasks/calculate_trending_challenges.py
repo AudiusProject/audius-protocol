@@ -96,10 +96,11 @@ def enqueue_trending_challenges(
             return
 
         # subtract final poa block because db is final_poa_block + latest_acdc_block
-        latest_blocknumber = latest_blocknumber - helpers.get_final_poa_block()
 
         latest_block_datetime = datetime.fromtimestamp(
-            web3.eth.get_block(latest_blocknumber)["timestamp"]
+            web3.eth.get_block(latest_blocknumber - helpers.get_final_poa_block())[
+                "timestamp"
+            ]
         )
 
         trending_track_versions = trending_strategy_factory.get_versions_for_type(
