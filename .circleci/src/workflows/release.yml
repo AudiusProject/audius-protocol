@@ -31,6 +31,11 @@ jobs:
       service: trending-challenge-rewards
       notify_slack_on_failure: true
   - push-docker-image:
+      name: push-pedalboard-verified-notifications
+      context: [Vercel, dockerhub, slack-secrets]
+      service: verified-notifications
+      notify_slack_on_failure: true
+  - push-docker-image:
       name: push-pedalboard-relay
       context: [Vercel, dockerhub, slack-secrets]
       service: relay
@@ -124,6 +129,12 @@ jobs:
       service: trending-challenge-rewards
       requires:
         - push-pedalboard-trending-challenge-rewards
+  - push-arm-image:
+      name: push-pedalboard-verified-notifications-arm
+      context: [Vercel, dockerhub]
+      service: verified-notifications
+      requires:
+        - push-pedalboard-verified-notifications
   - push-arm-image:
       name: push-pedalboard-relay-arm
       context: [Vercel, dockerhub]
