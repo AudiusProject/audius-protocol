@@ -10,14 +10,21 @@ import { Mood } from '../../types/Mood'
 import { createUploadTrackMetadataSchema } from '../tracks/types'
 
 export const getAlbumSchema = z.object({
-  userId: z.string().optional(),
-  albumId: z.string()
+  userId: HashId.optional(),
+  albumId: HashId
 })
 
 export type getAlbumRequest = z.input<typeof getAlbumSchema>
 
+export const getAlbumsSchema = z.object({
+  userId: HashId.optional(),
+  id: z.array(HashId)
+})
+
+export type getAlbumsRequest = z.input<typeof getAlbumsSchema>
+
 export const getAlbumTracksSchema = z.object({
-  albumId: z.string()
+  albumId: HashId
 })
 
 export type getAlbumTracksRequest = z.input<typeof getAlbumTracksSchema>
