@@ -21,14 +21,6 @@ export function render() {
   const container = document.getElementById('root')
   if (container) {
     const root = createRoot(container)
-    root.render(
-      <RootWithProviders
-        ssrContextValue={{
-          isServerSide: false,
-          isSsrEnabled: false,
-          isMobile: false
-        }}
-      />
-    )
+    root.render(<RootWithProviders isServerSide={false} isMobile={false} />)
   }
 }

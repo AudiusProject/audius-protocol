@@ -8,11 +8,6 @@ export type SsrContextType = {
    */
   isServerSide: boolean
   /**
-   * Is SSR enabled
-   * If so, this will be true on both the server and the client
-   */
-  isSsrEnabled: boolean
-  /**
    * Is the app being rendered for a mobile device
    */
   isMobile: boolean
@@ -27,7 +22,6 @@ export const useSsrContext = () => {
  */
 export const SsrContext = createContext<SsrContextType>({
   isServerSide: false,
-  isSsrEnabled: false,
   isMobile: false
 })
 

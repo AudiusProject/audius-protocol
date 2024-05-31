@@ -37,7 +37,6 @@ import Skeleton from 'components/skeleton/Skeleton'
 import { GatedContentSection } from 'components/track/GatedContentSection'
 import { UserGeneratedText } from 'components/user-generated-text'
 import { useFlag } from 'hooks/useRemoteConfig'
-import { useSsrContext } from 'ssr/SsrContext'
 
 import { AlbumDetailsText } from '../components/AlbumDetailsText'
 import { RepostsFavoritesStats } from '../components/RepostsFavoritesStats'
@@ -131,7 +130,6 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
   const { isEnabled: isPremiumAlbumsEnabled } = useFlag(
     FeatureFlags.PREMIUM_ALBUMS_ENABLED
   )
-  const { isSsrEnabled } = useSsrContext()
   const [artworkLoading, setIsArtworkLoading] = useState(true)
   const [filterText, setFilterText] = useState('')
   const { spacing } = useTheme()
@@ -172,7 +170,7 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
     )
   }
 
-  const isLoading = !isSsrEnabled && (loading || artworkLoading)
+  const isLoading = loading || artworkLoading
 
   const isPremium =
     isStreamGated && isContentUSDCPurchaseGated(streamConditions)

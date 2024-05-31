@@ -19,7 +19,6 @@ import ProfilePageBadge from 'components/user-badges/ProfilePageBadge'
 import { Type } from 'pages/profile-page/components/SocialLink'
 import SocialLinkInput from 'pages/profile-page/components/SocialLinkInput'
 import { ProfileTopTags } from 'pages/profile-page/components/desktop/ProfileTopTags'
-import { useSsrContext } from 'ssr/SsrContext'
 
 import { ProfileBio } from './ProfileBio'
 import { ProfileMutuals } from './ProfileMutuals'
@@ -95,7 +94,6 @@ export const ProfileLeftNav = (props: ProfileLeftNavProps) => {
   } = props
 
   const accountUser = useSelector(getAccountUser)
-  const { isSsrEnabled } = useSsrContext()
 
   const renderTipAudioButton = (_: any, style: object) => (
     <animated.div className={styles.tipAudioButtonContainer} style={style}>
@@ -182,7 +180,7 @@ export const ProfileLeftNav = (props: ProfileLeftNavProps) => {
         </div>
       </div>
     )
-  } else if ((!loading || isSsrEnabled) && !isDeactivated) {
+  } else if (!loading && !isDeactivated) {
     const showUploadChip = isOwner && !isArtist
     return (
       <div className={styles.about}>

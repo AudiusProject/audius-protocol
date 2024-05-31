@@ -1,18 +1,12 @@
 import { useEffect, useCallback } from 'react'
 
 import { useInstanceVar } from '@audius/common/hooks'
-import { WidthSizes } from '@audius/common/models'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { useSpring, animated } from 'react-spring'
 
 import DynamicImage, {
   DynamicImageProps
 } from 'components/dynamic-image/DynamicImage'
-import {
-  StaticImage,
-  StaticImageProps
-} from 'components/static-image/StaticImage'
-import { useSsrContext } from 'ssr/SsrContext'
 
 // Scale the image by making it larger relative to y-pos and translate it up slightly (capping at -15px) so it
 // covers the gap made by overscroll.
@@ -42,11 +36,7 @@ const messages = {
  * A cover photo for mobile that grows as the user overflow scrolls in the Y direction (up).
  * Same props as DynamicImage.
  */
-const GrowingCoverPhoto = ({
-  children,
-  ...rest
-}: DynamicImageProps | StaticImageProps) => {
-  const { isSsrEnabled } = useSsrContext()
+const GrowingCoverPhoto = ({ children, ...rest }: DynamicImageProps) => {
   const [getShouldTrackScroll, setShouldTrackScroll] = useInstanceVar(false)
   const [springProps, setSpringProps] = useSpring(() => ({
     to: {
@@ -113,8 +103,6 @@ const GrowingCoverPhoto = ({
     }
   }, [handleScrollEvent, handleReset, handleTouch])
 
-  const ImageElement = isSsrEnabled ? StaticImage : DynamicImage
-
   return (
     <animated.div
       style={{
@@ -127,13 +115,9 @@ const GrowingCoverPhoto = ({
         transform: springProps.y.interpolate(interpTransform)
       }}
     >
-      <ImageElement
-        size={WidthSizes.SIZE_640}
-        alt={messages.coverArtAltText}
-        {...rest}
-      >
+      <DynamicImage alt={messages.coverArtAltText} {...rest}>
         {children}
-      </ImageElement>
+      </DynamicImage>
     </animated.div>
   )
 }

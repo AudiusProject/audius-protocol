@@ -33,7 +33,6 @@ import { ArtistRecommendationsDropdown } from 'components/artist-recommendations
 import { ClientOnly } from 'components/client-only/ClientOnly'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import Skeleton from 'components/skeleton/Skeleton'
-import { StaticImage } from 'components/static-image/StaticImage'
 import SubscribeButton from 'components/subscribe-button/SubscribeButton'
 import FollowsYouBadge from 'components/user-badges/FollowsYouBadge'
 import ProfilePageBadge from 'components/user-badges/ProfilePageBadge'
@@ -41,7 +40,6 @@ import UserBadges from 'components/user-badges/UserBadges'
 import { UserGeneratedText } from 'components/user-generated-text'
 import { useCoverPhoto } from 'hooks/useCoverPhoto'
 import { useUserProfilePicture } from 'hooks/useUserProfilePicture'
-import { useSsrContext } from 'ssr/SsrContext'
 import { FOLLOWING_USERS_ROUTE, FOLLOWERS_USERS_ROUTE } from 'utils/route'
 
 import GrowingCoverPhoto from './GrowingCoverPhoto'
@@ -144,7 +142,6 @@ const ProfileHeader = ({
   bio,
   userId,
   loading,
-  coverPhotoSizes,
   profilePictureSizes,
   playlistCount,
   trackCount,
@@ -174,7 +171,6 @@ const ProfileHeader = ({
 }: ProfileHeaderProps) => {
   const [hasEllipsis, setHasEllipsis] = useState(false)
   const [isDescriptionMinimized, setIsDescriptionMinimized] = useState(true)
-  const { isSsrEnabled } = useSsrContext()
   const bioRef = useRef<HTMLElement | null>(null)
   const isEditing = mode === 'editing'
 
@@ -293,27 +289,13 @@ const ProfileHeader = ({
 
   // If we're not loading, we know that
   // nullable fields such as userId are valid.
-  if (loading && !isSsrEnabled) {
+  if (loading) {
     return <LoadingProfileHeader />
   }
-
-  const ImageElement = isSsrEnabled ? StaticImage : DynamicImage
-
-  const isUserMissingImage =
-    !profile?.cover_photo_sizes && !profile?.profile_picture_sizes
 
   return (
     <div className={styles.headerContainer}>
       <GrowingCoverPhoto
-        cid={
-          profile?.cover_photo_sizes ?? profile?.profile_picture_sizes ?? null
-        }
-        imageUrl={
-          updatedCoverPhoto ??
-          (isUserMissingImage || isDeactivated
-            ? imageCoverPhotoBlank
-            : undefined)
-        }
         image={updatedCoverPhoto || coverPhoto}
         imageStyle={coverPhotoStyle}
         wrapperClassName={cn(styles.coverPhoto, {
@@ -328,24 +310,16 @@ const ProfileHeader = ({
         ) : null}
         {isEditing && <UploadStub onChange={onUpdateCoverPhoto} />}
       </GrowingCoverPhoto>
-      <ImageElement
+      <DynamicImage
         image={updatedProfilePicture || profilePicture}
         alt={messages.profilePicAltText}
-        cid={profile?.profile_picture_sizes}
-        size={SquareSizes.SIZE_150_BY_150}
-        imageUrl={
-          updatedProfilePicture ||
-          (isUserMissingImage || isDeactivated
-            ? imageProfilePicEmpty
-            : undefined)
-        }
         className={styles.profilePicture}
         wrapperClassName={cn(styles.profilePictureWrapper, {
           [styles.isEditing]: isEditing
         })}
       >
         {isEditing && <UploadStub onChange={onUpdateProfilePicture} />}
-      </ImageElement>
+      </DynamicImage>
       {!isEditing && !isDeactivated && (
         <div className={styles.artistInfo}>
           <div className={styles.titleContainer}>

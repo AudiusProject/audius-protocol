@@ -33,13 +33,7 @@ export default async function render(
     const { RootWithProviders } = await import('./RootWithProviders')
     hydrateRoot(
       document.getElementById('root') as HTMLElement,
-      <RootWithProviders
-        ssrContextValue={{
-          isServerSide: false,
-          isSsrEnabled: true,
-          isMobile
-        }}
-      />
+      <RootWithProviders isServerSide={false} isMobile={isMobile} />
     )
   }
 }

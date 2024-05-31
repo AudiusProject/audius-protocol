@@ -40,7 +40,6 @@ import NavContext, {
 import TextElement, { Type } from 'components/nav/mobile/TextElement'
 import TierExplainerDrawer from 'components/user-badges/TierExplainerDrawer'
 import useTabs, { TabHeader } from 'hooks/useTabs/useTabs'
-import { useSsrContext } from 'ssr/SsrContext'
 import { profilePage } from 'utils/route'
 import { getUserPageSEOFields } from 'utils/seo'
 import { withNullGuard } from 'utils/withNullGuard'
@@ -293,7 +292,6 @@ const ProfilePage = g(
     onCloseArtistRecommendations
   }) => {
     const { setHeader } = useContext(HeaderContext)
-    const { isSsrEnabled } = useSsrContext()
     useEffect(() => {
       setHeader(null)
     }, [setHeader])
@@ -302,7 +300,7 @@ const ProfilePage = g(
     let content
     let profileTabs
     let profileElements
-    const isLoading = status === Status.LOADING && !isSsrEnabled
+    const isLoading = status === Status.LOADING
     const isEditing = mode === 'editing'
 
     // Set Nav-Bar Menu

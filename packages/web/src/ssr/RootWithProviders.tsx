@@ -5,16 +5,12 @@ import { Root } from '../Root'
 
 import { SsrContextProvider, SsrContextType } from './SsrContext'
 
-type RootWithProvidersProps = {
-  ssrContextValue: SsrContextType
-}
+type RootWithProvidersProps = SsrContextType
 
-export const RootWithProviders = ({
-  ssrContextValue
-}: RootWithProvidersProps) => {
+export const RootWithProviders = (props: RootWithProvidersProps) => {
   return (
     <HarmonyCacheProvider>
-      <SsrContextProvider value={ssrContextValue}>
+      <SsrContextProvider value={props}>
         <>
           <Root />
           <ClientOnly>

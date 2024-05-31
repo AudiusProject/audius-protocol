@@ -54,7 +54,6 @@ import Tooltip from 'components/tooltip/Tooltip'
 import { ComponentPlacement } from 'components/types'
 import { UserGeneratedText } from 'components/user-generated-text'
 import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
-import { useSsrContext } from 'ssr/SsrContext'
 import { moodMap } from 'utils/Moods'
 import { trpc } from 'utils/trpcClientWeb'
 
@@ -199,8 +198,7 @@ export const GiantTrackTile = ({
   ddexApp
 }: GiantTrackTileProps) => {
   const dispatch = useDispatch()
-  const { isSsrEnabled } = useSsrContext()
-  const [artworkLoading, setArtworkLoading] = useState(!isSsrEnabled)
+  const [artworkLoading, setArtworkLoading] = useState(false)
   const onArtworkLoad = useCallback(
     () => setArtworkLoading(false),
     [setArtworkLoading]
@@ -546,7 +544,6 @@ export const GiantTrackTile = ({
             trackId={trackId}
             coverArtSizes={coverArtSizes}
             coSign={coSign}
-            cid={track?.cover_art_sizes ?? null}
             callback={onArtworkLoad}
           />
           <div className={styles.infoSection}>
