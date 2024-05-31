@@ -35,5 +35,7 @@ export function* addUsersFromCollections(
   users = uniqBy(users, 'id')
   users = users.filter((user) => !(currentUserId && user.id === currentUserId))
 
-  yield put(cacheActions.add(Kind.USERS, users, false, /* persist */ true))
+  yield put(
+    cacheActions.add(Kind.USERS, users, /* replace */ false, /* persist */ true)
+  )
 }

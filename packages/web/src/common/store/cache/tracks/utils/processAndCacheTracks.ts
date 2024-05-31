@@ -34,6 +34,7 @@ export function* processAndCacheTracks<T extends TrackMetadata>(
         uid: makeUid(Kind.TRACKS, t.track_id),
         metadata: t
       })),
+      /* replace */
       false,
       /* persist */ true
     )
