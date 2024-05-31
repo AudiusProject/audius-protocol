@@ -286,7 +286,12 @@ article a:link {
 /* force underline on links in admonitions */
 .alert a {
   text-decoration: underline;
-  color: white;
+  color: blue;
+}
+
+html[data-theme='dark'] .alert a {
+  text-decoration: underline;
+  color: #0f82af;
 }
 
 .alert,
