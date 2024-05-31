@@ -26,6 +26,26 @@
                     "type": ["string", "null"],
                     "default": null
                 },
+                "twitter_handle": {
+                    "type": ["string", "null"],
+                    "default": null
+                },
+                "instagram_handle": {
+                    "type": ["string", "null"],
+                    "default": null
+                },
+                "tiktok_handle": {
+                    "type": ["string", "null"],
+                    "default": null
+                },
+                "website": {
+                    "type": ["string", "null"],
+                    "default": null
+                },
+                "donation": {
+                    "type": ["string", "null"],
+                    "default": null
+                },
                 "bio": {
                     "type": ["string", "null"],
                     "default": null
