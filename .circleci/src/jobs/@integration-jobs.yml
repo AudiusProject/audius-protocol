@@ -55,10 +55,23 @@ integration-test:
           ./scripts/check-generated-types.sh
     - run: sudo NEEDRESTART_MODE=l PLAYWRIGHT_BROWSERS_PATH=/home/circleci/.cache/ms-playwright npx playwright install --with-deps
     - run:
+        name: Run web test server
         command: |
           cd packages/web
           npm run preview:dev &
-          RUN_AGAINST_LOCAL_STACK=true npx playwright test
+          echo $! > background_process.pid
+
+    - run:
+        name: Run playwright tests
+        command: |
+        RUN_AGAINST_LOCAL_STACK=true npx playwright test
+
+    - run:
+        name: Kill web test server
+        command: |
+        kill $(cat background_process.pid)
+        rm background_process.pid
+
     - store_test_results:
         path: packages/web/report.xml
         when: always
