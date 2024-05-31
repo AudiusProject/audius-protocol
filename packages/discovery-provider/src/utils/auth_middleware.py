@@ -4,6 +4,7 @@ import logging
 from eth_account.messages import encode_defunct
 from flask.globals import request
 from flask_restx import reqparse
+from flask_restx.errors import abort
 
 from src.models.users.user import User
 from src.utils import db_session, web3_provider
@@ -15,7 +16,11 @@ SIGNATURE_HEADER = "Encoded-Data-Signature"
 
 
 def auth_middleware(
-    parser: reqparse.RequestParser = None, include_wallet: bool = False
+    parser: reqparse.RequestParser = None,
+    # Include the wallet in the kwargs for the wrapped function
+    include_wallet: bool = False,
+    # If True, user must be authenticated to access this route, will abort with 401 if no user is found in headers.
+    require_auth: bool = False,
 ):
     """
     Auth middleware decorator.
@@ -38,6 +43,14 @@ def auth_middleware(
     @auth_middleware(request_parser)
     def get(self):
         request.headers.get("Encoded-Data-Message")
+
+    If you want to abort the request if the user is not authenticated, set require_auth=True.
+
+    e.g.
+
+    @auth_middleware(require_auth=True)
+    def get(self, authed_user_id):
+        print(authed_user_id)
 
     """
 
@@ -91,9 +104,14 @@ def auth_middleware(
                         logger.info(
                             f"auth_middleware.py | authed_user_id: {authed_user_id}"
                         )
+
+            if require_auth and authed_user_id is None:
+                abort(401, "You must be logged in to make this request.")
+
             kwargs["authed_user_id"] = authed_user_id
             if include_wallet:
                 kwargs["authed_user_wallet"] = wallet_lower
+
             return func(*args, **kwargs)
 
         return wrapper

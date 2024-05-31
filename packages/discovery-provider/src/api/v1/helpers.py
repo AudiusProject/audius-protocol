@@ -567,10 +567,6 @@ def abort_unauthorized(namespace):
     namespace.abort(401, "Oh no! User is not authorized.")
 
 
-def abort_forbidden(namespace):
-    namespace.abort(403, "Oh no! User does not have access to that resource.")
-
-
 def decode_with_abort(identifier: str, namespace) -> int:
     decoded = decode_string_id(identifier)
     if decoded is None:

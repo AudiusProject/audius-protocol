@@ -27,6 +27,7 @@ import './create-user-bank.mjs'
 import './purchase-content.mjs'
 import './route-tokens-to-user-bank.mjs'
 import './withdraw-tokens.mjs'
+import './add-manager.mjs'
 
 async function main() {
   program.parseAsync(process.argv)
