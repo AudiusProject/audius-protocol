@@ -63,10 +63,7 @@ docker-tag-images:
             identity-service
           )
           ddex=(
-            ddex-ingester
-            ddex-publisher
             ddex-processor
-            ddex-web
           )
 
           case "<< parameters.service >>" in
