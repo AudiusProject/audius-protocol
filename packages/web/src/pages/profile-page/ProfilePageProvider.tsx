@@ -55,7 +55,6 @@ import {
 import { ProfileMode } from 'components/stat-banner/StatBanner'
 import { StatProps } from 'components/stats/Stats'
 import * as unfollowConfirmationActions from 'components/unfollow-confirmation-modal/store/actions'
-import { SsrContext } from 'ssr/SsrContext'
 import { getLocationPathname } from 'store/routing/selectors'
 import { AppState } from 'store/types'
 import { verifiedHandleWhitelist } from 'utils/handleWhitelist'
@@ -133,8 +132,6 @@ type ProfilePageState = {
 
 class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
   static defaultProps = {}
-  static contextType = SsrContext
-  declare context: React.ContextType<typeof SsrContext>
 
   state: ProfilePageState = {
     activeTab: null,

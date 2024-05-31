@@ -22,7 +22,6 @@ import {
 } from '@audius/common/store'
 import { getDogEarType, removeNullable } from '@audius/common/utils'
 
-import { ClientOnly } from 'components/client-only/ClientOnly'
 import {
   CollectiblesPlaylistTableColumn,
   CollectiblesPlaylistTable
@@ -346,52 +345,47 @@ const CollectionPage = ({
           />
         ) : (
           <div className={styles.tableWrapper}>
-            <ClientOnly>
-              <TableComponent
-                // @ts-ignore
-                columns={tracksTableColumns}
-                wrapperClassName={styles.tracksTableWrapper}
-                key={playlistName}
-                loading={isNftPlaylist ? collectionLoading : tracksLoading}
-                userId={userId}
-                playing={playing}
-                playingIndex={playingIndex}
-                data={dataSource}
-                onClickRow={onClickRow}
-                onClickFavorite={onClickSave}
-                onClickRemove={isOwner ? onClickRemove : undefined}
-                onClickRepost={onClickRepostTrack}
-                onClickPurchase={openPurchaseModal}
-                isPremiumEnabled={isPremiumAlbumsEnabled}
-                onReorderTracks={onReorderTracks}
-                onSortTracks={onSortTracks}
-                isReorderable={
-                  userId !== null &&
-                  userId === playlistOwnerId &&
-                  allowReordering
-                }
-                removeText={`${messages.remove} ${
-                  isAlbum ? messages.type.album : messages.type.playlist
-                }`}
-                isAlbumPage={isAlbum}
-                isAlbumPremium={
-                  !!metadata && 'is_stream_gated' in metadata
-                    ? metadata?.is_stream_gated
-                    : false
-                }
-              />
-            </ClientOnly>
+            <TableComponent
+              // @ts-ignore
+              columns={tracksTableColumns}
+              wrapperClassName={styles.tracksTableWrapper}
+              key={playlistName}
+              loading={isNftPlaylist ? collectionLoading : tracksLoading}
+              userId={userId}
+              playing={playing}
+              playingIndex={playingIndex}
+              data={dataSource}
+              onClickRow={onClickRow}
+              onClickFavorite={onClickSave}
+              onClickRemove={isOwner ? onClickRemove : undefined}
+              onClickRepost={onClickRepostTrack}
+              onClickPurchase={openPurchaseModal}
+              isPremiumEnabled={isPremiumAlbumsEnabled}
+              onReorderTracks={onReorderTracks}
+              onSortTracks={onSortTracks}
+              isReorderable={
+                userId !== null && userId === playlistOwnerId && allowReordering
+              }
+              removeText={`${messages.remove} ${
+                isAlbum ? messages.type.album : messages.type.playlist
+              }`}
+              isAlbumPage={isAlbum}
+              isAlbumPremium={
+                !!metadata && 'is_stream_gated' in metadata
+                  ? metadata?.is_stream_gated
+                  : false
+              }
+            />
           </div>
         )}
       </Tile>
-      <ClientOnly>
-        {!collectionLoading && isOwner && !isAlbum && !isNftPlaylist ? (
-          <>
-            <Divider variant='default' className={styles.tileDivider} />
-            <SuggestedTracks collectionId={playlistId} />
-          </>
-        ) : null}
-      </ClientOnly>
+
+      {!collectionLoading && isOwner && !isAlbum && !isNftPlaylist ? (
+        <>
+          <Divider variant='default' className={styles.tileDivider} />
+          <SuggestedTracks collectionId={playlistId} />
+        </>
+      ) : null}
     </Page>
   )
 }

@@ -41,7 +41,6 @@ import cn from 'classnames'
 import moment from 'moment'
 import { useDispatch, shallowEqual, useSelector } from 'react-redux'
 
-import { ClientOnly } from 'components/client-only/ClientOnly'
 import { TextLink, UserLink } from 'components/link'
 import Menu from 'components/menu/Menu'
 import RepostFavoritesStats from 'components/repost-favorites-stats/RepostFavoritesStats'
@@ -571,68 +570,64 @@ export const GiantTrackTile = ({
               </Flex>
             </div>
 
-            <ClientOnly>
-              <div className={cn(styles.playSection, fadeIn)}>
-                {showPlay ? (
-                  <PlayPauseButton
-                    disabled={!hasStreamAccess}
-                    playing={playing && !previewing}
-                    onPlay={onPlay}
-                    trackId={trackId}
-                  />
-                ) : null}
-                {showPreview ? (
-                  <PlayPauseButton
-                    playing={playing && previewing}
-                    onPlay={onPreview}
-                    trackId={trackId}
-                    isPreview
-                  />
-                ) : null}
-                {isLongFormContent && isNewPodcastControlsEnabled ? (
-                  <GiantTrackTileProgressInfo
-                    duration={duration}
-                    trackId={trackId}
-                  />
-                ) : (
-                  renderListenCount()
-                )}
-              </div>
-            </ClientOnly>
+            <div className={cn(styles.playSection, fadeIn)}>
+              {showPlay ? (
+                <PlayPauseButton
+                  disabled={!hasStreamAccess}
+                  playing={playing && !previewing}
+                  onPlay={onPlay}
+                  trackId={trackId}
+                />
+              ) : null}
+              {showPreview ? (
+                <PlayPauseButton
+                  playing={playing && previewing}
+                  onPlay={onPreview}
+                  trackId={trackId}
+                  isPreview
+                />
+              ) : null}
+              {isLongFormContent && isNewPodcastControlsEnabled ? (
+                <GiantTrackTileProgressInfo
+                  duration={duration}
+                  trackId={trackId}
+                />
+              ) : (
+                renderListenCount()
+              )}
+            </div>
 
             <div className={cn(styles.statsSection, fadeIn)}>
               {renderStatsRow()}
               {renderScheduledReleaseRow()}
             </div>
 
-            <ClientOnly>
-              <div
-                className={cn(styles.actionButtons, fadeIn)}
-                role='group'
-                aria-label={messages.actionGroupLabel}
-              >
-                {renderShareButton()}
-                {renderMakePublicButton()}
-                {hasStreamAccess && renderRepostButton()}
-                {hasStreamAccess && renderFavoriteButton()}
-                <span>
-                  {/* prop types for overflow menu don't work correctly
+            <div
+              className={cn(styles.actionButtons, fadeIn)}
+              role='group'
+              aria-label={messages.actionGroupLabel}
+            >
+              {renderShareButton()}
+              {renderMakePublicButton()}
+              {hasStreamAccess && renderRepostButton()}
+              {hasStreamAccess && renderFavoriteButton()}
+              <span>
+                {/* prop types for overflow menu don't work correctly
               so we need to cast here */}
-                  <Menu {...(overflowMenu as any)}>
-                    {(ref, triggerPopup) => (
-                      <div className={cn(styles.menuKebabContainer)} ref={ref}>
-                        <Button
-                          variant='secondary'
-                          aria-label='More options'
-                          iconLeft={IconKebabHorizontal}
-                          onClick={() => triggerPopup()}
-                        />
-                      </div>
-                    )}
-                  </Menu>
-                </span>
-              </div>
-            </ClientOnly>
+                <Menu {...(overflowMenu as any)}>
+                  {(ref, triggerPopup) => (
+                    <div className={cn(styles.menuKebabContainer)} ref={ref}>
+                      <Button
+                        variant='secondary'
+                        aria-label='More options'
+                        iconLeft={IconKebabHorizontal}
+                        onClick={() => triggerPopup()}
+                      />
+                    </div>
+                  )}
+                </Menu>
+              </span>
+            </div>
           </div>
           <div className={styles.badges}>
             {aiAttributionUserId ? (
@@ -648,27 +643,23 @@ export const GiantTrackTile = ({
           </div>
         </div>
 
-        <ClientOnly>
-          {isStreamGated && streamConditions ? (
-            <Box mb='xl' ph='xl' w='100%'>
-              <GatedContentSection
-                isLoading={isLoading}
-                contentId={trackId}
-                contentType={PurchaseableContentType.TRACK}
-                streamConditions={streamConditions}
-                hasStreamAccess={hasStreamAccess}
-                isOwner={isOwner}
-                ownerId={userId}
-              />
-            </Box>
-          ) : null}
-        </ClientOnly>
+        {isStreamGated && streamConditions ? (
+          <Box mb='xl' ph='xl' w='100%'>
+            <GatedContentSection
+              isLoading={isLoading}
+              contentId={trackId}
+              contentType={PurchaseableContentType.TRACK}
+              streamConditions={streamConditions}
+              hasStreamAccess={hasStreamAccess}
+              isOwner={isOwner}
+              ownerId={userId}
+            />
+          </Box>
+        ) : null}
 
-        <ClientOnly>
-          {aiAttributionUserId ? (
-            <AiTrackSection attributedUserId={aiAttributionUserId} />
-          ) : null}
-        </ClientOnly>
+        {aiAttributionUserId ? (
+          <AiTrackSection attributedUserId={aiAttributionUserId} />
+        ) : null}
 
         <div className={cn(styles.bottomSection, fadeIn)}>
           <div className={styles.infoLabelsSection}>
@@ -694,16 +685,15 @@ export const GiantTrackTile = ({
               {description}
             </UserGeneratedText>
           ) : null}
-          <ClientOnly>
-            {renderTags()}
-            {hasDownloadableAssets ? (
-              <Box pt='l' w='100%'>
-                <Suspense>
-                  <DownloadSection trackId={trackId} />
-                </Suspense>
-              </Box>
-            ) : null}
-          </ClientOnly>
+
+          {renderTags()}
+          {hasDownloadableAssets ? (
+            <Box pt='l' w='100%'>
+              <Suspense>
+                <DownloadSection trackId={trackId} />
+              </Suspense>
+            </Box>
+          ) : null}
         </div>
       </Tile>
     </Flex>

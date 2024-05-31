@@ -30,7 +30,6 @@ import cn from 'classnames'
 
 import { make, useRecord } from 'common/store/analytics/actions'
 import { ArtistRecommendationsDropdown } from 'components/artist-recommendations/ArtistRecommendationsDropdown'
-import { ClientOnly } from 'components/client-only/ClientOnly'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import Skeleton from 'components/skeleton/Skeleton'
 import SubscribeButton from 'components/subscribe-button/SubscribeButton'
@@ -341,34 +340,33 @@ const ProfileHeader = ({
                 <FollowsYouBadge userId={userId} />
               </div>
             </div>
-            <ClientOnly>
-              <Flex gap='s' justifyContent='flex-end' flex={1}>
-                {following ? (
-                  <SubscribeButton
-                    isSubscribed={isSubscribed}
-                    isFollowing={following}
-                    onToggleSubscribe={toggleNotificationSubscription}
-                  />
-                ) : null}
-                {mode === 'owner' ? (
-                  <Button
-                    variant='secondary'
-                    size='small'
-                    onClick={switchToEditMode}
-                    iconLeft={IconPencil}
-                  >
-                    {messages.editProfile}
-                  </Button>
-                ) : (
-                  <FollowButton
-                    isFollowing={following}
-                    onFollow={() => onFollow(userId)}
-                    onUnfollow={() => onUnfollow(userId)}
-                    fullWidth={false}
-                  />
-                )}
-              </Flex>
-            </ClientOnly>
+
+            <Flex gap='s' justifyContent='flex-end' flex={1}>
+              {following ? (
+                <SubscribeButton
+                  isSubscribed={isSubscribed}
+                  isFollowing={following}
+                  onToggleSubscribe={toggleNotificationSubscription}
+                />
+              ) : null}
+              {mode === 'owner' ? (
+                <Button
+                  variant='secondary'
+                  size='small'
+                  onClick={switchToEditMode}
+                  iconLeft={IconPencil}
+                >
+                  {messages.editProfile}
+                </Button>
+              ) : (
+                <FollowButton
+                  isFollowing={following}
+                  onFollow={() => onFollow(userId)}
+                  onUnfollow={() => onUnfollow(userId)}
+                  fullWidth={false}
+                />
+              )}
+            </Flex>
           </div>
           <div className={styles.artistMetrics}>
             <div className={styles.artistMetric}>
@@ -471,16 +469,15 @@ const ProfileHeader = ({
               {isDescriptionMinimized ? messages.showMore : messages.showLess}
             </div>
           ) : null}
-          <ClientOnly>
-            <ArtistRecommendationsDropdown
-              isVisible={areArtistRecommendationsVisible}
-              renderHeader={() => (
-                <p>Here are some accounts that vibe well with {name}</p>
-              )}
-              artistId={userId}
-              onClose={onCloseArtistRecommendations}
-            />
-          </ClientOnly>
+
+          <ArtistRecommendationsDropdown
+            isVisible={areArtistRecommendationsVisible}
+            renderHeader={() => (
+              <p>Here are some accounts that vibe well with {name}</p>
+            )}
+            artistId={userId}
+            onClose={onCloseArtistRecommendations}
+          />
         </div>
       )}
       {mode === 'owner' && !isEditing && <UploadButton />}

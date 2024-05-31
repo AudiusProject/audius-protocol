@@ -1,5 +1,3 @@
-import { ClientOnly } from 'components/client-only/ClientOnly'
-
 import { HarmonyCacheProvider } from '../HarmonyCacheProvider'
 import { Root } from '../Root'
 
@@ -13,10 +11,9 @@ export const RootWithProviders = (props: RootWithProvidersProps) => {
       <SsrContextProvider value={props}>
         <>
           <Root />
-          <ClientOnly>
-            {/* This is used in E2E tests to determine that client-side JS is loaded */}
-            <div data-testid='app-hydrated'></div>
-          </ClientOnly>
+
+          {/* This is used in E2E tests to determine that client-side JS is loaded */}
+          <div data-testid='app-hydrated'></div>
         </>
       </SsrContextProvider>
     </HarmonyCacheProvider>

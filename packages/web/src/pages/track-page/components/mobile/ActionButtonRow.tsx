@@ -12,7 +12,6 @@ import loadingSpinner from 'assets/animations/loadingSpinner.json'
 import AnimatedIconButton, {
   AnimatedIconType
 } from 'components/animated-button/AnimatedIconButton'
-import { ClientOnly } from 'components/client-only/ClientOnly'
 
 import styles from './ActionButtonRow.module.css'
 
@@ -141,13 +140,11 @@ const ActionButtonRow = ({
 
   return (
     <Flex direction='row' alignItems='center' justifyContent='center' gap='xl'>
-      <ClientOnly>
-        {showRepost && renderRepostButton()}
-        {showFavorite && renderFavoriteButton()}
-        {showShare && (isPublishing ? renderSpinner() : renderShareButton())}
-        {showEdit && renderEditButton()}
-        {showOverflow && renderOverflowMenu()}
-      </ClientOnly>
+      {showRepost && renderRepostButton()}
+      {showFavorite && renderFavoriteButton()}
+      {showShare && (isPublishing ? renderSpinner() : renderShareButton())}
+      {showEdit && renderEditButton()}
+      {showOverflow && renderOverflowMenu()}
     </Flex>
   )
 }

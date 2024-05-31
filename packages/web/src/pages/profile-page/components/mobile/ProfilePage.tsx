@@ -26,7 +26,6 @@ import {
 } from '@audius/harmony'
 import cn from 'classnames'
 
-import { ClientOnly } from 'components/client-only/ClientOnly'
 import CollectiblesPage from 'components/collectibles/components/CollectiblesPage'
 import { CollectionCard } from 'components/collection'
 import { HeaderContext } from 'components/header/mobile/HeaderContextProvider'
@@ -576,7 +575,7 @@ const ProfilePage = g(
       content = (
         <div className={styles.contentContainer}>
           <div className={styles.tabs}>{tabs}</div>
-          <ClientOnly>{body}</ClientOnly>
+          {body}
         </div>
       )
     }
@@ -639,11 +638,10 @@ const ProfilePage = g(
             areArtistRecommendationsVisible={areArtistRecommendationsVisible}
             onCloseArtistRecommendations={onCloseArtistRecommendations}
           />
-          <ClientOnly>{content}</ClientOnly>
+          {content}
         </MobilePageContainer>
-        <ClientOnly>
-          <TierExplainerDrawer />
-        </ClientOnly>
+
+        <TierExplainerDrawer />
       </>
     )
   }

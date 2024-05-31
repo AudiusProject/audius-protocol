@@ -6,7 +6,6 @@ import { animated } from 'react-spring'
 
 import { useSelector } from 'common/hooks/useSelector'
 import { AiGeneratedCallout } from 'components/ai-generated-button/AiGeneratedCallout'
-import { ClientOnly } from 'components/client-only/ClientOnly'
 import Input from 'components/data-entry/Input'
 import TextArea from 'components/data-entry/TextArea'
 import { RelatedArtists } from 'components/related-artists/RelatedArtists'
@@ -185,37 +184,36 @@ export const ProfileLeftNav = (props: ProfileLeftNavProps) => {
     return (
       <div className={styles.about}>
         <ProfilePageBadge userId={userId} className={styles.badge} />
-        <ClientOnly>
-          <ProfileBio
-            handle={handle}
-            bio={bio}
-            location={location}
-            website={website}
-            donation={donation}
-            created={created}
-            twitterHandle={twitterHandle}
-            instagramHandle={instagramHandle}
-            tikTokHandle={tikTokHandle}
-          />
-          {!accountUser || accountUser.user_id !== userId ? (
-            <OpacityTransition render={renderTipAudioButton} />
-          ) : null}
-          {allowAiAttribution ? (
-            <div className={styles.aiGeneratedCalloutContainer}>
-              <AiGeneratedCallout handle={handle} />
-            </div>
-          ) : null}
-          <SupportingList />
-          <div className={styles.profileBottomSection}>
-            <TopSupporters />
-            <ProfileMutuals />
-            <RelatedArtists />
-            {isArtist ? <ProfileTopTags /> : null}
-            {showUploadChip ? (
-              <UploadChip type='track' variant='nav' source='nav' />
-            ) : null}
+
+        <ProfileBio
+          handle={handle}
+          bio={bio}
+          location={location}
+          website={website}
+          donation={donation}
+          created={created}
+          twitterHandle={twitterHandle}
+          instagramHandle={instagramHandle}
+          tikTokHandle={tikTokHandle}
+        />
+        {!accountUser || accountUser.user_id !== userId ? (
+          <OpacityTransition render={renderTipAudioButton} />
+        ) : null}
+        {allowAiAttribution ? (
+          <div className={styles.aiGeneratedCalloutContainer}>
+            <AiGeneratedCallout handle={handle} />
           </div>
-        </ClientOnly>
+        ) : null}
+        <SupportingList />
+        <div className={styles.profileBottomSection}>
+          <TopSupporters />
+          <ProfileMutuals />
+          <RelatedArtists />
+          {isArtist ? <ProfileTopTags /> : null}
+          {showUploadChip ? (
+            <UploadChip type='track' variant='nav' source='nav' />
+          ) : null}
+        </div>
       </div>
     )
   } else {
