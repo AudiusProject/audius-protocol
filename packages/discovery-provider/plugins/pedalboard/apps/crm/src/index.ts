@@ -134,7 +134,7 @@ const handler = async (
 
 const main = async () => {
   console.log('Starting up')
-  await new App<SharedData>()
+  await new App<SharedData>({})
     .listen('usdc_purchases', handler)
     .run()
 }

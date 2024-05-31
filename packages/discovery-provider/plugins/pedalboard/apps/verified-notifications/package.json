@@ -1,0 +1,25 @@
+{
+  "name": "@pedalboard/verified-notifications",
+  "version": "0.1.0",
+  "description": "bot to send slack notifications when new users are verified",
+  "main": "src/index.ts",  
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "watch": "tsc --watch",
+    "serve": "nodemon",
+    "dev": "concurrently \"npm run watch\" \"npm run serve\"",
+    "deps": "docker compose up -d && chmod +x ./scripts/seed-prod-db.sh",
+    "lint": "tsc --noEmit && eslint \"src/**/*.ts*\""
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@pedalboard/logger": "*",
+    "@pedalboard/basekit": "0.0.30",
+    "@pedalboard/storage": "0.0.30",
+    "concurrently": "^8.2.2",
+    "ts-node": "10.9.2",
+    "ts-node-dev": "2.0.0"
+  }
+}
