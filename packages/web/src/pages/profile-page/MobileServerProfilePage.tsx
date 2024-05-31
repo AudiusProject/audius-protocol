@@ -1,5 +1,4 @@
-import { ID } from '@audius/common/src/models/Identifiers'
-import { getUser } from '@audius/common/src/store/cache/users/selectors'
+import { getProfileUser } from '@audius/common/src/store/pages/profile/selectors'
 import { formatCount } from '@audius/common/src/utils/formatUtil'
 import BadgeArtist from '@audius/harmony/src/assets/icons/ArtistBadge.svg'
 import IconDonate from '@audius/harmony/src/assets/icons/Donate.svg'
@@ -24,12 +23,8 @@ const messages = {
   profilePicAltText: 'User Profile Picture'
 }
 
-export type OwnProps = {
-  userId: ID
-}
-
-export const ServerProfilePage = ({ userId }: OwnProps) => {
-  const user = useSelector((state) => getUser(state, { id: userId }))
+export const MobileServerProfilePage = () => {
+  const user = useSelector(getProfileUser)
   if (!user) return null
 
   const {

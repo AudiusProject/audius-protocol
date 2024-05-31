@@ -8,6 +8,7 @@ import {
 } from '@audius/common/src/store/cache'
 import { asCache } from '@audius/common/src/store/cache/reducer'
 import collectionPageReducer from '@audius/common/src/store/pages/collection/reducer'
+import profilePageReducer from '@audius/common/src/store/pages/profile/reducer'
 import trackPageReducer from '@audius/common/src/store/pages/track/reducer'
 import { Provider } from 'react-redux'
 import { combineReducers, createStore } from 'redux'
@@ -29,7 +30,8 @@ const reducers = {
   collections: asCache(cacheCollectionsReducer, Kind.COLLECTIONS),
   pages: combineReducers({
     track: trackPageReducer,
-    collection: collectionPageReducer
+    collection: collectionPageReducer,
+    profile: profilePageReducer
   })
 }
 
