@@ -36,6 +36,11 @@ from src.models.users.usdc_transactions_history import (
 )
 from src.models.users.user import User
 from src.models.users.user_bank import USDCUserBankAccount
+from src.queries.get_extended_purchase_gate import (
+    add_wallet_info_to_splits,
+    calculate_split_amounts,
+    to_wallet_amount_map,
+)
 from src.solana.constants import (
     FETCH_TX_SIGNATURES_BATCH_SIZE,
     TX_SIGNATURES_MAX_BATCHES,
@@ -348,6 +353,18 @@ def parse_route_transaction_memos(
                     splits = result.splits
             else:
                 logger.error(f"index_payment_router.py | Unknown content type {type}")
+
+            # Convert the new splits format to the old splits format for
+            # maximal backwards compatibility
+            if (
+                price is not None
+                and splits is not None
+                and isinstance(splits, list)
+                and content_owner_id is not None
+            ):
+                wallet_splits = add_wallet_info_to_splits(session, splits, timestamp)
+                amount_splits = calculate_split_amounts(price, wallet_splits)
+                splits = to_wallet_amount_map(amount_splits)
             if (
                 price is not None
                 and splits is not None
@@ -369,7 +386,7 @@ def parse_route_transaction_memos(
                 continue
             else:
                 logger.error(
-                    f"index_payment_router.py | Couldn't find relevant price for {content_metadata}"
+                    f"index_payment_router.py | Couldn't find relevant price for {content_metadata}."
                 )
         except (ValueError, KeyError) as e:
             logger.info(

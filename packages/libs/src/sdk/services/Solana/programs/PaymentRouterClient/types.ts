@@ -33,7 +33,7 @@ export type CreateTransferInstructionRequest = z.input<
 
 export const CreateRouteInstructionSchema = z.object({
   mint: MintSchema,
-  splits: z.record(z.string(), z.bigint()),
+  splits: z.array(z.object({ wallet: PublicKeySchema, amount: z.bigint() })),
   total: z.union([z.bigint(), z.number()])
 })
 

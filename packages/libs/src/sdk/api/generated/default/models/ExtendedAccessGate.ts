@@ -14,6 +14,13 @@
  */
 
 import {
+    ExtendedPurchaseGate,
+    instanceOfExtendedPurchaseGate,
+    ExtendedPurchaseGateFromJSON,
+    ExtendedPurchaseGateFromJSONTyped,
+    ExtendedPurchaseGateToJSON,
+} from './ExtendedPurchaseGate';
+import {
     FollowGate,
     instanceOfFollowGate,
     FollowGateFromJSON,
@@ -28,13 +35,6 @@ import {
     NftGateToJSON,
 } from './NftGate';
 import {
-    PurchaseGate,
-    instanceOfPurchaseGate,
-    PurchaseGateFromJSON,
-    PurchaseGateFromJSONTyped,
-    PurchaseGateToJSON,
-} from './PurchaseGate';
-import {
     TipGate,
     instanceOfTipGate,
     TipGateFromJSON,
@@ -43,24 +43,24 @@ import {
 } from './TipGate';
 
 /**
- * @type AccessGate
+ * @type ExtendedAccessGate
  * 
  * @export
  */
-export type AccessGate = FollowGate | NftGate | PurchaseGate | TipGate;
+export type ExtendedAccessGate = ExtendedPurchaseGate | FollowGate | NftGate | TipGate;
 
-export function AccessGateFromJSON(json: any): AccessGate {
-    return AccessGateFromJSONTyped(json, false);
+export function ExtendedAccessGateFromJSON(json: any): ExtendedAccessGate {
+    return ExtendedAccessGateFromJSONTyped(json, false);
 }
 
-export function AccessGateFromJSONTyped(json: any, ignoreDiscriminator: boolean): AccessGate {
+export function ExtendedAccessGateFromJSONTyped(json: any, ignoreDiscriminator: boolean): ExtendedAccessGate {
     if ((json === undefined) || (json === null)) {
         return json;
     }
-    return { ...FollowGateFromJSONTyped(json, true), ...NftGateFromJSONTyped(json, true), ...PurchaseGateFromJSONTyped(json, true), ...TipGateFromJSONTyped(json, true) };
+    return { ...ExtendedPurchaseGateFromJSONTyped(json, true), ...FollowGateFromJSONTyped(json, true), ...NftGateFromJSONTyped(json, true), ...TipGateFromJSONTyped(json, true) };
 }
 
-export function AccessGateToJSON(value?: AccessGate | null): any {
+export function ExtendedAccessGateToJSON(value?: ExtendedAccessGate | null): any {
     if (value === undefined) {
         return undefined;
     }
@@ -68,14 +68,14 @@ export function AccessGateToJSON(value?: AccessGate | null): any {
         return null;
     }
 
+    if (instanceOfExtendedPurchaseGate(value)) {
+        return ExtendedPurchaseGateToJSON(value as ExtendedPurchaseGate);
+    }
     if (instanceOfFollowGate(value)) {
         return FollowGateToJSON(value as FollowGate);
     }
     if (instanceOfNftGate(value)) {
         return NftGateToJSON(value as NftGate);
-    }
-    if (instanceOfPurchaseGate(value)) {
-        return PurchaseGateToJSON(value as PurchaseGate);
     }
     if (instanceOfTipGate(value)) {
         return TipGateToJSON(value as TipGate);
