@@ -1757,7 +1757,7 @@ class GetTrackAccessInfo(Resource):
     @record_metrics
     @ns.doc(
         id="Get Track Access Info",
-        description="Gets information regarding the given user's access, and any details needed to unlock access",
+        description="Gets the information necessary to access the track and what access the given user has.",
         params={"track_id": "A Track ID"},
     )
     @ns.expect(current_user_parser)

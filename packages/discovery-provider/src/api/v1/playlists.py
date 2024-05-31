@@ -579,7 +579,7 @@ class GetPlaylistAccessInfo(Resource):
     @record_metrics
     @ns.doc(
         id="Get Playlist Access Info",
-        description="Gets information regarding the given user's access, and any details needed to unlock access",
+        description="Gets the information necessary to access the playlist and what access the given user has.",
         params={"playlist_id": "A Playlist ID"},
     )
     @ns.expect(current_user_parser)
