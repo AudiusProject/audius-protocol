@@ -34,6 +34,7 @@ RUN python3 -m pip install numpy aubio
 COPY --from=builder /go/bin/* /bin
 COPY --from=builder /app/mediorum /bin/mediorum
 COPY --from=builder /app/mediorum-cmd /bin/mediorum-cmd
+COPY --from=builder /usr/local/lib/libkeyfinder.so* /usr/local/lib/
 COPY --from=builder /app/analyze-key /bin/analyze-key
 
 # ARGs can be optionally defined with --build-arg while doing docker build eg in CI and then set to env vars
