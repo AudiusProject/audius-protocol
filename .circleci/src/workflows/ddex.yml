@@ -1,0 +1,10 @@
+when: << pipeline.parameters.run-ddex-processor-workflow >>
+jobs:
+  - ddex-processor-init
+  - push-docker-image:
+    name: push-ddex-processor
+    context: [Vercel, dockerhub]
+    service: ddex-processor
+    filters:
+      branches:
+        only: main

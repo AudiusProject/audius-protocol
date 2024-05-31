@@ -1,3 +1,0 @@
-when: << pipeline.parameters.run-ddex-publisher-workflow >>
-jobs:
-  - ddex-publisher-init
