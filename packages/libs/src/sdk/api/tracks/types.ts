@@ -11,6 +11,7 @@ import { AudioFile, ImageFile } from '../../types/File'
 import { Genre } from '../../types/Genre'
 import { HashId } from '../../types/HashId'
 import { Mood } from '../../types/Mood'
+import { StemCategory } from '../../types/StemCategory'
 
 const messages = {
   titleRequiredError: 'Your track must have a name',
@@ -135,6 +136,14 @@ export const createUploadTrackMetadataSchema = () =>
         })
         .strict()
     ),
+    stemOf: z.optional(
+      z.object({
+        category: z.enum(
+          Object.values(StemCategory) as [StemCategory, ...StemCategory[]]
+        ),
+        parentTrackId: HashId
+      })
+    ),
     tags: z.optional(z.string()),
     title: z.string({
       required_error: messages.titleRequiredError
@@ -145,8 +154,8 @@ export const createUploadTrackMetadataSchema = () =>
     previewCid: z.optional(z.string()),
     origFileCid: z.optional(z.string()),
     origFilename: z.optional(z.string()),
-    isDownloadable: z.optional(z.string()),
-    isOriginalAvailable: z.optional(z.string()),
+    isDownloadable: z.optional(z.boolean()),
+    isOriginalAvailable: z.optional(z.boolean()),
     ddexReleaseIds: z.optional(z.record(z.string()).nullable()),
     artists: z.optional(z.array(DDEXResourceContributor)).nullable(),
     resourceContributors: z.optional(
