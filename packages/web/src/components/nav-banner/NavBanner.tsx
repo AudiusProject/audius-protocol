@@ -3,7 +3,6 @@ import { ReactElement } from 'react'
 import { Flex, Button, PopupMenu, IconSort as SortIcon } from '@audius/harmony'
 import cn from 'classnames'
 
-import { ClientOnly } from 'components/client-only/ClientOnly'
 import { removeNullable } from 'utils/typeUtils'
 
 import styles from './NavBanner.module.css'
@@ -65,24 +64,22 @@ const NavBanner = (props: NavBannerProps) => {
 
           {isArtist && (
             <div className={styles.dropdown}>
-              <ClientOnly>
-                {!dropdownDisabled ? (
-                  <PopupMenu
-                    items={menuItems}
-                    anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
-                    renderTrigger={(ref, triggerPopup) => (
-                      <Button
-                        ref={ref}
-                        size='small'
-                        variant='secondary'
-                        iconLeft={SortIcon}
-                        aria-label={messages.openSortButton}
-                        onClick={() => triggerPopup()}
-                      />
-                    )}
-                  />
-                ) : null}
-              </ClientOnly>
+              {!dropdownDisabled ? (
+                <PopupMenu
+                  items={menuItems}
+                  anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+                  renderTrigger={(ref, triggerPopup) => (
+                    <Button
+                      ref={ref}
+                      size='small'
+                      variant='secondary'
+                      iconLeft={SortIcon}
+                      aria-label={messages.openSortButton}
+                      onClick={() => triggerPopup()}
+                    />
+                  )}
+                />
+              ) : null}
             </div>
           )}
         </div>

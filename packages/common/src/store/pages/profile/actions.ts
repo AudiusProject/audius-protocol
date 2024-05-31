@@ -4,9 +4,6 @@ import { ID, UID, UserMetadata } from '../../../models'
 
 import { CollectionSortMode, FollowType } from './types'
 
-export const SET_IS_INITIAL_FETCH_AFTER_SSR =
-  'PROFILE/SET_IS_INITIAL_FETCH_AFTER_SSR'
-
 export const FETCH_PROFILE = 'PROFILE/FETCH_PROFILE'
 export const FETCH_PROFILE_SUCCEEDED = 'PROFILE/FETCH_PROFILE_SUCCEEDED'
 export const FETCH_PROFILE_FAILED = 'PROFILE/FETCH_PROFILE_FAILED'
@@ -153,11 +150,6 @@ export type SetNotificationSubscriptionAction = {
   handle?: string
 }
 
-export type SetIsInitialFetchAfterSSRAction = {
-  type: typeof SET_IS_INITIAL_FETCH_AFTER_SSR
-  isInitialFetchAfterSsr: boolean
-}
-
 export type FetchCollectionsAction = {
   type: typeof FETCH_COLLECTIONS
   handle: string
@@ -195,7 +187,6 @@ export type ProfilePageAction =
   | FetchCollectionsAction
   | FetchCollectionsSucceededAction
   | FetchCollectionsFailedAction
-  | SetIsInitialFetchAfterSSRAction
 
 // Either handle or userId is required
 // TODO: Move this to redux toolkit
@@ -380,10 +371,3 @@ export function fetchTopTagsFailed(handle: string): FetchTopTagsFailedAction {
     handle
   }
 }
-
-export const setIsInitialFetchAfterSsr = (
-  isInitialFetchAfterSsr: boolean
-): SetIsInitialFetchAfterSSRAction => ({
-  type: SET_IS_INITIAL_FETCH_AFTER_SSR,
-  isInitialFetchAfterSsr
-})

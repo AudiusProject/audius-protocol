@@ -55,7 +55,6 @@ import {
 import { ProfileMode } from 'components/stat-banner/StatBanner'
 import { StatProps } from 'components/stats/Stats'
 import * as unfollowConfirmationActions from 'components/unfollow-confirmation-modal/store/actions'
-import { SsrContext } from 'ssr/SsrContext'
 import { getLocationPathname } from 'store/routing/selectors'
 import { AppState } from 'store/types'
 import { verifiedHandleWhitelist } from 'utils/handleWhitelist'
@@ -79,8 +78,7 @@ const {
   makeGetProfile,
   getProfileFeedLineup,
   getProfileTracksLineup,
-  getProfileUserId,
-  getIsInitialFetchAfterSsr
+  getProfileUserId
 } = profilePageSelectors
 const { getAccountUser, getAccountHasTracks } = accountSelectors
 const { createChat, blockUser, unblockUser } = chatActions
@@ -133,8 +131,6 @@ type ProfilePageState = {
 
 class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
   static defaultProps = {}
-  static contextType = SsrContext
-  declare context: React.ContextType<typeof SsrContext>
 
   state: ProfilePageState = {
     activeTab: null,
@@ -300,10 +296,8 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
         params?.handle?.toLowerCase() ?? null,
         params.userId,
         forceUpdate,
-        shouldSetLoading,
-        this.props.isInitialFetchAfterSsr
+        shouldSetLoading
       )
-      this.props.setIsInitialFetchAfterSsr(false)
       if (params.tab) {
         this.setState({ activeTab: getTabForRoute(params.tab) })
       }
@@ -1037,7 +1031,6 @@ function makeMapStateToProps() {
       }),
       blockeeList: getBlockees(state),
       blockerList: getBlockers(state),
-      isInitialFetchAfterSsr: getIsInitialFetchAfterSsr(state),
       accountHasTracks
     }
   }
@@ -1067,9 +1060,6 @@ function mapDispatchToProps(dispatch: Dispatch, props: RouteComponentProps) {
           deleteExistingEntry
         )
       ),
-    setIsInitialFetchAfterSsr: (value: boolean) => {
-      dispatch(profileActions.setIsInitialFetchAfterSsr(value))
-    },
     fetchAccountHasTracks: () => {
       dispatch(fetchHasTracks())
     },

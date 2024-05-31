@@ -6,7 +6,6 @@ import cn from 'classnames'
 import Lottie from 'react-lottie'
 
 import loadingSpinner from 'assets/animations/loadingSpinner.json'
-import { ClientOnly } from 'components/client-only/ClientOnly'
 import Tooltip from 'components/tooltip/Tooltip'
 
 import styles from './SearchBar.module.css'
@@ -110,17 +109,16 @@ const SearchBar = ({
         onBlur={onBlur}
         {...(open ? {} : { disabled: true })}
       />
-      <ClientOnly>
-        <div
-          className={cn(styles.searchWrapper, iconClassname)}
-          onMouseDown={handleClick}
-        >
-          <DetailIcon
-            tooltipText={tooltipText}
-            isLoading={status === Status.LOADING && open}
-          />
-        </div>
-      </ClientOnly>
+
+      <div
+        className={cn(styles.searchWrapper, iconClassname)}
+        onMouseDown={handleClick}
+      >
+        <DetailIcon
+          tooltipText={tooltipText}
+          isLoading={status === Status.LOADING && open}
+        />
+      </div>
     </div>
   )
 }

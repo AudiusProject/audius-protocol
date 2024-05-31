@@ -1,23 +1,16 @@
 import { memo, useState, useEffect } from 'react'
 
-import { imageProfilePicEmpty } from '@audius/common/assets'
 import { SquareSizes } from '@audius/common/models'
-import { cacheUsersSelectors } from '@audius/common/store'
 import cn from 'classnames'
 import PropTypes from 'prop-types'
 import Lottie from 'react-lottie'
-import { useSelector } from 'react-redux'
 
 import loadingSpinner from 'assets/animations/loadingSpinner.json'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import ImageSelectionButton from 'components/image-selection/ImageSelectionButton'
-import { StaticImage } from 'components/static-image/StaticImage'
 import { useUserProfilePicture } from 'hooks/useUserProfilePicture'
-import { useSsrContext } from 'ssr/SsrContext'
 
 import styles from './ProfilePicture.module.css'
-
-const { getUser } = cacheUsersSelectors
 
 const messages = {
   profilePicAltText: 'User Profile Picture'
@@ -45,8 +38,6 @@ const ProfilePicture = ({
   const [hasChanged, setHasChanged] = useState(false)
   const [processing, setProcessing] = useState(false)
   const [modalOpen, setModalOpen] = useState(false)
-  const user = useSelector((state) => getUser(state, { id: userId }))
-  const { isSsrEnabled } = useSsrContext()
 
   useEffect(() => {
     if (editMode) {
@@ -70,8 +61,6 @@ const ProfilePicture = ({
     setModalOpen(false)
   }
 
-  const ImageElement = isSsrEnabled ? StaticImage : DynamicImage
-
   return (
     <div
       className={cn(styles.profilePictureWrapper, {
@@ -82,13 +71,7 @@ const ProfilePicture = ({
       })}
     >
       <div className={styles.profilePictureBackground}>
-        <ImageElement
-          cid={user?.profile_picture_sizes}
-          size={SquareSizes.SIZE_480_BY_480}
-          imageUrl={
-            updatedProfilePicture ||
-            (!user?.profile_picture_sizes ? imageProfilePicEmpty : undefined)
-          }
+        <DynamicImage
           alt={messages.profilePicAltText}
           usePlaceholder={false}
           image={updatedProfilePicture || image}
@@ -110,7 +93,7 @@ const ProfilePicture = ({
               />
             </div>
           )}
-        </ImageElement>
+        </DynamicImage>
         {editMode || showEdit ? (
           <ImageSelectionButton
             wrapperClassName={styles.imageSelectionButtonWrapper}

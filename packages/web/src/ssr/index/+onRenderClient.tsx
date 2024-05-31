@@ -1,4 +1,4 @@
-// For all routes except the explicitly defined ones (Track)
+// For all routes except the explicitly defined ones
 // simply render the SPA without SSR
 // TODO: Use vike SPA setting
 
@@ -21,16 +21,6 @@ export function render() {
   const container = document.getElementById('root')
   if (container) {
     const root = createRoot(container)
-    root.render(
-      <RootWithProviders
-        ssrContextValue={{
-          isServerSide: false,
-          isSsrEnabled: false,
-          pageProps: {},
-          isMobile: false,
-          history: null
-        }}
-      />
-    )
+    root.render(<RootWithProviders isServerSide={false} isMobile={false} />)
   }
 }

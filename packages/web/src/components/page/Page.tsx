@@ -15,7 +15,6 @@ import { animated, useSpring } from 'react-spring'
 // @ts-ignore
 import calcScrollbarWidth from 'scrollbar-width'
 
-import { ClientOnly } from 'components/client-only/ClientOnly'
 import { MetaTags, MetaTagsProps } from 'components/meta-tags/MetaTags'
 import SearchBar from 'components/search-bar/ConnectedSearchBar'
 
@@ -205,13 +204,12 @@ export const Page = (props: PageProps) => {
             {children}
           </div>
         </div>
-        <ClientOnly>
-          {scrollableSearch && (
-            <div className={styles.searchWrapper}>
-              <SearchBar />
-            </div>
-          )}
-        </ClientOnly>
+
+        {scrollableSearch && (
+          <div className={styles.searchWrapper}>
+            <SearchBar />
+          </div>
+        )}
       </animated.div>
     </>
   )
