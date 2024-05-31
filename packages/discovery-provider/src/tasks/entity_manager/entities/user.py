@@ -336,6 +336,15 @@ def update_user_metadata(
                 continue
             setattr(user_record, key, metadata[key])
 
+    # Ensure verified social handle is same as audius handle
+    if user_record.is_verified:
+        if user_record.verified_with == "twitter":
+            user_record.twitter_handle = user_record.handle
+        elif user_record.verified_with == "instagram":
+            user_record.instagram_handle = user_record.handle
+        elif user_record.verified_with == "tiktok":
+            user_record.tiktok_handle = user_record.handle
+
     if "collectibles" in metadata:
         if (
             metadata["collectibles"]
@@ -619,14 +628,17 @@ def verify_user(params: ManageEntityParameters):
     tiktok_handle = metadata.get("tiktok_handle")
 
     # Update user record with verification information
-    # Only update the social handle fields if they are provided in the metadata
+    # Only update the social handle field provided in the metadata
     user_record.is_verified = is_verified
     if twitter_handle:
         user_record.twitter_handle = twitter_handle
-    if instagram_handle:
+        user_record.verified_with = "twitter"
+    elif instagram_handle:
         user_record.instagram_handle = instagram_handle
-    if tiktok_handle:
+        user_record.verified_with = "instagram"
+    elif tiktok_handle:
         user_record.tiktok_handle = tiktok_handle
+        user_record.verified_with = "tiktok"
 
     params.add_record(user_id, user_record)
     params.challenge_bus.dispatch(

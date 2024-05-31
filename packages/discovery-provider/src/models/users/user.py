@@ -1,8 +1,11 @@
+import enum
+
 from sqlalchemy import (
     ARRAY,
     Boolean,
     Column,
     DateTime,
+    Enum,
     ForeignKey,
     Integer,
     String,
@@ -19,6 +22,12 @@ from src.models.model_utils import (
     get_fields_to_validate,
     validate_field_helper,
 )
+
+
+class SocialPlatform(str, enum.Enum):
+    twitter = "twitter"
+    instagram = "instagram"
+    tiktok = "tiktok"
 
 
 class User(Base, RepresentableMixin):
@@ -41,6 +50,12 @@ class User(Base, RepresentableMixin):
     metadata_multihash = Column(String)
     creator_node_endpoint = Column(String)
     is_verified = Column(Boolean, nullable=False, server_default=text("false"))
+    verified_with = Column(Enum(SocialPlatform))
+    twitter_handle = Column(String)
+    instagram_handle = Column(String)
+    tiktok_handle = Column(String)
+    website = Column(String)
+    donation = Column(String)
     artist_pick_track_id = Column(Integer)
     created_at = Column(
         DateTime, nullable=False, server_default=text("CURRENT_TIMESTAMP")

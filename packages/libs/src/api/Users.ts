@@ -457,15 +457,15 @@ export class Users extends Base {
     metadata:
       | {
           isVerified: boolean
-          twitterHandle?: string
+          twitterHandle: string
         }
       | {
           isVerified: boolean
-          instagramHandle?: string
+          instagramHandle: string
         }
       | {
           isVerified: boolean
-          tiktokHandle?: string
+          tiktokHandle: string
         }
   ) {
     const cid = await Utils.fileHasher.generateMetadataCidV1(metadata)
