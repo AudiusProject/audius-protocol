@@ -1,5 +1,3 @@
-import { useCallback } from 'react'
-
 export const TrackTile = (props: LineupItemProps) => {
   const { uid } = props
 
