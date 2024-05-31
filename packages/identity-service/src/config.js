@@ -892,6 +892,12 @@ const config = convict({
     format: String,
     env: 'solanaUSDCMintAddress',
     default: ''
+  },
+  useDiscoveryListens: {
+    doc: 'Relay listen requests to discovery instead of forwarding to solana.',
+    format: Boolean,
+    env: 'useDiscoveryListens',
+    default: false
   }
 })
 

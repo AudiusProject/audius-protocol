@@ -379,8 +379,6 @@ module.exports = function (app) {
         )
       }
 
-      const timeout = req.body.timeout || 60000
-
       const currentHour = trimToHour(new Date())
       // Dedicated listen flow
       const suffix = currentHour.toISOString()
@@ -441,28 +439,62 @@ module.exports = function (app) {
         location = {}
       }
 
+      let error
+      let solTxSignature
       try {
-        const instructions = await createTrackListenInstructions({
-          privateKey: config.get('solanaSignerPrivateKey'),
-          userId: userId.toString(),
-          trackId: trackId.toString(),
-          source: 'relay',
-          location,
-          connection
-        })
-        const feePayerAccount = getFeePayerKeypair(false)
-        req.logger.info(
-          `TrackListen tx submission, trackId=${trackId} userId=${userId} - sendRawTransaction`
-        )
+        const useDiscoveryListens = config.get('useDiscoveryListens')
+        if (useDiscoveryListens) {
+          req.logger.info(
+            `TrackListen tx, trackId=${trackId} userId=${userId} - preparing listen to discovery`
+          )
+          let baseUrl = 'http://audius-protocol-discovery-provider-1'
+          const environment = config.get('environment')
+          if (environment === 'staging')
+            baseUrl = 'https://discoveryprovider.staging.audius.co'
+          if (environment === 'production')
+            baseUrl = 'https://discoveryprovider.audius.co'
 
-        const transactionHandler = libs.solanaWeb3Manager.transactionHandler
-        const { res: solTxSignature, error } =
-          await transactionHandler.handleTransaction({
+          // sign request with relayer priv key
+          const timestamp = new Date().getUTCMilliseconds().toString()
+          const signature = ''
+
+          // send
+          // TODO add forwarding IP
+          const body = { userId, timestamp, signature }
+          req.logger.info(
+            `TrackListen tx submission, body=${body} baseUrl=${baseUrl} sending listen to discovery`
+          )
+          const res = await axios.post(
+            `${baseUrl}/solana/tracks/${trackId}/listen`,
+            body
+          )
+          solTxSignature = res.data.solTxSignature
+        } else {
+          const instructions = await createTrackListenInstructions({
+            privateKey: config.get('solanaSignerPrivateKey'),
+            userId: userId.toString(),
+            trackId: trackId.toString(),
+            source: 'relay',
+            location,
+            connection
+          })
+          const feePayerAccount = getFeePayerKeypair(false)
+          req.logger.info(
+            `TrackListen tx submission, trackId=${trackId} userId=${userId} - sendRawTransaction`
+          )
+
+          const transactionHandler = libs.solanaWeb3Manager.transactionHandler
+          // const { res: solTxSignature, error } =
+          const res = await transactionHandler.handleTransaction({
             instructions,
             skipPreflight: false, // TODO
             feePayerOverride: feePayerAccount,
             retry: true
           })
+
+          error = res.error
+          solTxSignature = res.res
+        }
 
         if (error) {
           return errorResponseServerError(
