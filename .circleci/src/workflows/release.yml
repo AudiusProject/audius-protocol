@@ -243,6 +243,7 @@ jobs:
         - push-discovery-provider-openresty
         - push-discovery-provider-notifications
         - push-pedalboard-trending-challenge-rewards
+        - push-pedalboard-verified-notifications
         - push-pedalboard-relay
         - push-pedalboard-solana-relay
         - push-pedalboard-sla-auditor
