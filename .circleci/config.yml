@@ -468,6 +468,7 @@ workflows:
           base-revision: main
           config-path: ../workspace/.circleci/continue_config.yml
           mapping: |
+            packages/ddex/.* run-ddex-stage-workflow true
             comms/.* run-discovery-workflow true
             mediorum/.* run-creator-workflow true
             packages/identity-service/.* run-identity-workflow true
