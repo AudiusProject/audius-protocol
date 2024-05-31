@@ -18,7 +18,6 @@ import {
   TipsApi as TipsApiFull,
   TransactionsApi as TransactionsApiFull
 } from './api/generated/full'
-import { GrantsApi } from './api/grants/GrantsApi'
 import { PlaylistsApi } from './api/playlists/PlaylistsApi'
 import { TracksApi } from './api/tracks/TracksApi'
 import { UsersApi } from './api/users/UsersApi'
