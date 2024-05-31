@@ -5,9 +5,8 @@ import feedReducer, {
 import tracksReducer, {
   initialState as initialTracksLineupState
 } from '~/store/pages/profile/lineups/tracks/reducer'
-import { decodeHashId } from '~/utils'
 
-import { Collection, SsrPageProps, Status, Track } from '../../../models'
+import { Collection, Status, Track } from '../../../models'
 
 import {
   FETCH_PROFILE,
@@ -344,76 +343,51 @@ const actionsMap = {
 const feedLineupReducer = asLineup(feedPrefix, feedReducer)
 const tracksLineupReducer = asLineup(tracksPrefix, tracksReducer)
 
-const buildInitialState = (ssrPageProps?: SsrPageProps) => {
-  // If we have preloaded data from the server, populate the initial
-  // page state with it
-  if (ssrPageProps?.user) {
-    const { user } = ssrPageProps
-    const lowerHandle = user.handle.toLowerCase()
-
-    return {
-      ...initialState,
-      currentUser: lowerHandle,
-      entries: {
-        [lowerHandle]: {
-          ...initialProfileState,
-          handle: lowerHandle,
-          userId: decodeHashId(user.id)
-        } as ProfileState
-      },
-      isInitialFetchAfterSsr: true
-    }
+const reducer = (
+  state: ProfilePageState,
+  action:
+    | ProfilePageAction
+    | LineupActions<Track>
+    | LineupActions<Track | Collection>
+) => {
+  if (!state) {
+    state = initialState
   }
-  return initialState
+
+  // profile state with the user from ssr
+  const { currentUser, entries } = state
+
+  const profileHandle =
+    ('handle' in action && action.handle?.toLowerCase()) ?? currentUser
+  if (!profileHandle) return state
+
+  let newEntry = entries[profileHandle] ?? initialProfileState
+
+  const feed = feedLineupReducer(
+    newEntry.feed,
+    action as LineupActions<Track | Collection>
+  )
+  if (feed !== newEntry.feed) {
+    newEntry = { ...newEntry, feed }
+  }
+
+  const tracks = tracksLineupReducer(
+    // @ts-ignore
+    newEntry.tracks,
+    action as LineupActions<Track>
+  )
+  if (tracks !== newEntry.tracks) {
+    newEntry = { ...newEntry, tracks }
+  }
+
+  const newState = {
+    ...state,
+    entries: { ...entries, [profileHandle]: newEntry }
+  }
+
+  const matchingReduceFunction = actionsMap[action.type]
+  if (!matchingReduceFunction) return newState
+  return matchingReduceFunction(newState, action as ProfilePageAction)
 }
-
-const reducer =
-  (ssrPageProps?: SsrPageProps) =>
-  (
-    state: ProfilePageState,
-    action:
-      | ProfilePageAction
-      | LineupActions<Track>
-      | LineupActions<Track | Collection>
-  ) => {
-    if (!state) {
-      state = buildInitialState(ssrPageProps)
-    }
-
-    // profile state with the user from ssr
-    const { currentUser, entries } = state
-
-    const profileHandle =
-      ('handle' in action && action.handle?.toLowerCase()) ?? currentUser
-    if (!profileHandle) return state
-
-    let newEntry = entries[profileHandle] ?? initialProfileState
-
-    const feed = feedLineupReducer(
-      newEntry.feed,
-      action as LineupActions<Track | Collection>
-    )
-    if (feed !== newEntry.feed) {
-      newEntry = { ...newEntry, feed }
-    }
-
-    const tracks = tracksLineupReducer(
-      // @ts-ignore
-      newEntry.tracks,
-      action as LineupActions<Track>
-    )
-    if (tracks !== newEntry.tracks) {
-      newEntry = { ...newEntry, tracks }
-    }
-
-    const newState = {
-      ...state,
-      entries: { ...entries, [profileHandle]: newEntry }
-    }
-
-    const matchingReduceFunction = actionsMap[action.type]
-    if (!matchingReduceFunction) return newState
-    return matchingReduceFunction(newState, action as ProfilePageAction)
-  }
 
 export default reducer

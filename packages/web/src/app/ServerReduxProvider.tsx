@@ -28,8 +28,8 @@ const reducers = {
   // @ts-ignore
   collections: asCache(cacheCollectionsReducer, Kind.COLLECTIONS),
   pages: combineReducers({
-    track: trackPageReducer(),
-    collection: collectionPageReducer()
+    track: trackPageReducer,
+    collection: collectionPageReducer
   })
 }
 

@@ -16,9 +16,7 @@ if (container) {
       ssrContextValue={{
         isServerSide: false,
         isSsrEnabled: false,
-        pageProps: {},
-        isMobile: false,
-        history: null
+        isMobile: false
       }}
     />
   )

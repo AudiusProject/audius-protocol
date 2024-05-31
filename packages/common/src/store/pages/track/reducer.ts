@@ -1,10 +1,8 @@
-import { SsrPageProps } from '~/models/SsrPageProps'
 import { Track } from '~/models/Track'
 import { LineupActions, asLineup } from '~/store/lineup/reducer'
 import tracksReducer, {
   initialState as initialLineupState
 } from '~/store/pages/track/lineup/reducer'
-import { decodeHashId } from '~/utils/hashIds'
 
 import {
   SET_TRACK_ID,
@@ -102,35 +100,23 @@ const actionsMap = {
 
 const tracksLineupReducer = asLineup(tracksPrefix, tracksReducer)
 
-const buildInitialState = (ssrPageProps?: SsrPageProps) => {
-  // If we have preloaded data from the server, populate the initial
-  // page state with it
-  if (ssrPageProps?.track) {
-    return {
-      ...initialState,
-      trackId: decodeHashId(ssrPageProps.track.id),
-      isInitialFetchAfterSsr: true
-    }
+const reducer = (
+  state: TrackPageState,
+  action: TrackPageAction | LineupActions<Track>
+) => {
+  if (!state) {
+    state = initialState
   }
-  return initialState
+
+  const tracks = tracksLineupReducer(
+    state.tracks,
+    action as LineupActions<Track>
+  )
+  if (tracks !== state.tracks) return { ...state, tracks }
+
+  const matchingReduceFunction = actionsMap[action.type]
+  if (!matchingReduceFunction) return state
+  return matchingReduceFunction(state, action as TrackPageAction)
 }
-
-const reducer =
-  (ssrPageProps?: SsrPageProps) =>
-  (state: TrackPageState, action: TrackPageAction | LineupActions<Track>) => {
-    if (!state) {
-      state = buildInitialState(ssrPageProps)
-    }
-
-    const tracks = tracksLineupReducer(
-      state.tracks,
-      action as LineupActions<Track>
-    )
-    if (tracks !== state.tracks) return { ...state, tracks }
-
-    const matchingReduceFunction = actionsMap[action.type]
-    if (!matchingReduceFunction) return state
-    return matchingReduceFunction(state, action as TrackPageAction)
-  }
 
 export default reducer

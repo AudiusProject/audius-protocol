@@ -1,7 +1,6 @@
 import { Buffer } from 'buffer'
 
 import 'setimmediate'
-import { SsrPageProps } from '@audius/common/models'
 import processBrowser from 'process/browser'
 import { hydrateRoot } from 'react-dom/client'
 import type { PageContextClient } from 'vike/types'
@@ -19,15 +18,14 @@ window.process = { ...processBrowser, env: process.env }
 
 // Set this to false to turn off client hydration
 // Useful for testing the SSR output
-const HYDRATE_CLIENT = true
+const HYDRATE_CLIENT = false
 
 export default async function render(
   pageContext: PageContextClient & {
-    pageProps: Pick<SsrPageProps, 'track'>
     userAgent: string
   }
 ) {
-  const { pageProps, userAgent } = pageContext
+  const { userAgent } = pageContext
   const isCrawler = checkIsCrawler(userAgent)
   const isMobile = getIsMobile()
 
@@ -39,9 +37,7 @@ export default async function render(
         ssrContextValue={{
           isServerSide: false,
           isSsrEnabled: true,
-          pageProps,
-          isMobile,
-          history: null
+          isMobile
         }}
       />
     )

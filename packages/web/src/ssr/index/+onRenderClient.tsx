@@ -26,9 +26,7 @@ export function render() {
         ssrContextValue={{
           isServerSide: false,
           isSsrEnabled: false,
-          pageProps: {},
-          isMobile: false,
-          history: null
+          isMobile: false
         }}
       />
     )

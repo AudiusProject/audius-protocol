@@ -23,7 +23,7 @@ import { PartialDeep } from 'type-fest'
 import { SsrContextProvider } from 'ssr/SsrContext'
 import { AppState } from 'store/types'
 
-import { ServerReduxProvider } from './ServerReduxProvider'
+import { ServerReduxProvider } from '../ServerReduxProvider'
 
 type ServerProviderProps = PropsWithChildren<{
   initialState: PartialDeep<AppState>
