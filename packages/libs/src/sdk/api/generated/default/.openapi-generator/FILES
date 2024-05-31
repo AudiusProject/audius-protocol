@@ -9,7 +9,7 @@ apis/UsersApi.ts
 apis/index.ts
 index.ts
 models/Access.ts
-models/AccessGate.ts
+models/AccessInfoResponse.ts
 models/Activity.ts
 models/AuthorizedApp.ts
 models/AuthorizedApps.ts
@@ -24,6 +24,10 @@ models/DeveloperApp.ts
 models/DeveloperAppResponse.ts
 models/DeveloperApps.ts
 models/EncodedUserId.ts
+models/ExtendedAccessGate.ts
+models/ExtendedPaymentSplit.ts
+models/ExtendedPurchaseGate.ts
+models/ExtendedUsdcGate.ts
 models/Favorite.ts
 models/FavoritesResponse.ts
 models/FollowGate.ts
@@ -41,7 +45,6 @@ models/PlaylistResponse.ts
 models/PlaylistSearchResult.ts
 models/PlaylistTracksResponse.ts
 models/ProfilePicture.ts
-models/PurchaseGate.ts
 models/RelatedArtistResponse.ts
 models/RemixParent.ts
 models/Reposts.ts
@@ -53,6 +56,7 @@ models/Tip.ts
 models/TipGate.ts
 models/TopListener.ts
 models/Track.ts
+models/TrackAccessInfo.ts
 models/TrackArtwork.ts
 models/TrackElement.ts
 models/TrackInspect.ts
@@ -60,7 +64,6 @@ models/TrackResponse.ts
 models/TrackSearch.ts
 models/TracksResponse.ts
 models/TrendingPlaylistsResponse.ts
-models/UsdcGate.ts
 models/User.ts
 models/UserAssociatedWalletResponse.ts
 models/UserResponse.ts

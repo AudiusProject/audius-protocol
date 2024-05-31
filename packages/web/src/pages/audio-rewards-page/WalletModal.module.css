@@ -4,11 +4,6 @@
   width: 100%;
 }
 
-.modalBody.wallets {
-  max-width: 720px;
-  min-height: 250px;
-}
-
 .modalBody.convertingEth {
   min-height: 250px;
 }

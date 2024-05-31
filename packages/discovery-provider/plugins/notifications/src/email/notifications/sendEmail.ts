@@ -5,9 +5,7 @@ import { logger } from '../../logger'
 import { getSendgrid } from '../../sendgrid'
 import { MailDataRequired } from '@sendgrid/mail'
 import { Knex } from 'knex'
-import {
-  EmailFrequency,
-} from '../../processNotifications/mappers/userNotificationSettings'
+import { EmailFrequency } from '../../processNotifications/mappers/userNotificationSettings'
 
 // id of unsubscribe group at https://mc.sendgrid.com/unsubscribe-groups
 const NOTIFICATION_EMAIL_UNSUBSCRIBE_GROUP_ID = 19141
@@ -81,7 +79,7 @@ export const sendNotificationEmail = async ({
       html: notifHtml,
       subject: emailSubject,
       asm: {
-        groupId: NOTIFICATION_EMAIL_UNSUBSCRIBE_GROUP_ID 
+        groupId: NOTIFICATION_EMAIL_UNSUBSCRIBE_GROUP_ID
       }
     }
 

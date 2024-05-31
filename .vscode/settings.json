@@ -5,17 +5,13 @@
     "reportMissingModuleSource": "none"
   },
   "python.languageServer": "Pylance",
-  "python.linting.enabled": true,
-  "python.linting.flake8Enabled": true,
-  "python.linting.flake8Args": [
+  "mypy-type-checker.args": [
     "--config",
     "packages/discovery-provider/setup.cfg"
   ],
-  "python.linting.lintOnSave": true,
-  "python.linting.mypyEnabled": true,
+  "flake8.args": ["--config", "packages/discovery-provider/setup.cfg"],
+
   "isort.args": ["--settings-path", "packages/discovery-provider/setup.cfg"],
-  "mypy.configFile": "packages/discovery-provider/setup.cfg",
-  "mypy.runUsingActiveInterpreter": true,
   "python.analysis.indexing": true,
   "python.testing.pytestEnabled": true,
   "python.testing.unittestEnabled": false,

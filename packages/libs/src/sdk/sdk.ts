@@ -144,7 +144,8 @@ const initializeServices = (config: SdkConfig) => {
     config.services?.entityManager ??
     new EntityManager({
       ...getDefaultEntityManagerConfig(servicesConfig),
-      discoveryNodeSelector
+      discoveryNodeSelector,
+      logger
     })
 
   const storage =

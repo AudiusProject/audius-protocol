@@ -520,12 +520,6 @@ exports[`Cosign Notification Render a single cosign email 1`] = `
     }
 
     @media (max-width: 720px) {
-      #bodyCell {
-        text-align: center;
-      }
-    }
-
-    @media (max-width: 720px) {
       .templateContainer {
         display: table !important;
         max-width: 384px !important;

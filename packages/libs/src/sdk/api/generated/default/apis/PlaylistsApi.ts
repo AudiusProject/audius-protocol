@@ -16,12 +16,15 @@
 
 import * as runtime from '../runtime';
 import type {
+  AccessInfoResponse,
   PlaylistResponse,
   PlaylistSearchResult,
   PlaylistTracksResponse,
   TrendingPlaylistsResponse,
 } from '../models';
 import {
+    AccessInfoResponseFromJSON,
+    AccessInfoResponseToJSON,
     PlaylistResponseFromJSON,
     PlaylistResponseToJSON,
     PlaylistSearchResultFromJSON,
@@ -38,6 +41,11 @@ export interface GetBulkPlaylistsRequest {
 }
 
 export interface GetPlaylistRequest {
+    playlistId: string;
+    userId?: string;
+}
+
+export interface GetPlaylistAccessInfoRequest {
     playlistId: string;
     userId?: string;
 }
@@ -132,6 +140,41 @@ export class PlaylistsApi extends runtime.BaseAPI {
      */
     async getPlaylist(params: GetPlaylistRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PlaylistResponse> {
         const response = await this.getPlaylistRaw(params, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * @hidden
+     * Gets information necessary to access the playlist and what access the given user has.
+     */
+    async getPlaylistAccessInfoRaw(params: GetPlaylistAccessInfoRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AccessInfoResponse>> {
+        if (params.playlistId === null || params.playlistId === undefined) {
+            throw new runtime.RequiredError('playlistId','Required parameter params.playlistId was null or undefined when calling getPlaylistAccessInfo.');
+        }
+
+        const queryParameters: any = {};
+
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/playlists/{playlist_id}/access-info`.replace(`{${"playlist_id"}}`, encodeURIComponent(String(params.playlistId))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => AccessInfoResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Gets information necessary to access the playlist and what access the given user has.
+     */
+    async getPlaylistAccessInfo(params: GetPlaylistAccessInfoRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AccessInfoResponse> {
+        const response = await this.getPlaylistAccessInfoRaw(params, initOverrides);
         return await response.value();
     }
 

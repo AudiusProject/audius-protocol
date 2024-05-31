@@ -286,6 +286,12 @@ article a:link {
 /* force underline on links in admonitions */
 .alert a {
   text-decoration: underline;
+  color: white;
+}
+
+.alert,
+.alert--success {
+  --ifm-code-background: unset;
 }
 
 /* padding between navbar and body */

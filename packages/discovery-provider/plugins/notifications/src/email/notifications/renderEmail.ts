@@ -11,6 +11,7 @@ import { Knex } from 'knex'
 import { mapNotifications } from '../../processNotifications/mappers/mapNotifications'
 import { BaseNotification } from '../../processNotifications/mappers/base'
 import { EmailFrequency } from '../../processNotifications/mappers/userNotificationSettings'
+import { getContentNode } from '../../utils/env'
 
 type RenderEmailProps = {
   userId: number
@@ -86,16 +87,12 @@ const DEFAULT_TRACK_COVER_ART_URL = ''
 const DEFAULT_PLAYLIST_IMAGE_IRL = ''
 
 const getUserProfileUrl = (user: UserResource) => {
-  if (!user.creator_node_endpoint) {
-    return null
-  }
-  const contentNodes = user.creator_node_endpoint.split(',')
-  const primaryEndpoint = contentNodes[0]
   let profilePictureUrl = DEFAULT_PROFILE_IMG
+  const contentNode = getContentNode()
   if (user.profile_picture_sizes) {
-    profilePictureUrl = `${primaryEndpoint}/ipfs/${user.profile_picture_sizes}/1000x1000.jpg`
+    profilePictureUrl = `${contentNode}/content/${user.profile_picture_sizes}/1000x1000.jpg`
   } else if (user.profile_picture) {
-    profilePictureUrl = `${primaryEndpoint}/ipfs/${user.profile_picture}`
+    profilePictureUrl = `${contentNode}/content/${user.profile_picture}`
   }
   return profilePictureUrl
 }
@@ -252,7 +249,7 @@ const getNotificationProps = async (
   for (const notification of mappedNotifications) {
     const resourcesToFetch = notification.getResourcesForEmail()
     Object.entries(resourcesToFetch).forEach(([key, value]) => {
-      ; (value as Set<number>).forEach(
+      ;(value as Set<number>).forEach(
         idsToFetch[key as keyof ResourceIds].add,
         idsToFetch[key as keyof ResourceIds]
       )
@@ -266,7 +263,7 @@ const getNotificationProps = async (
       for (const notification of acc[n]) {
         const resourcesToFetch = notification.getResourcesForEmail()
         Object.entries(resourcesToFetch).forEach(([key, value]) => {
-          ; (value as Set<number>).forEach(
+          ;(value as Set<number>).forEach(
             idsToFetch[key as keyof ResourceIds].add,
             idsToFetch[key as keyof ResourceIds]
           )
@@ -310,12 +307,15 @@ const getEmailSubject = (
   // they receive the email.
   const formattedDayAgo = now.format('MMMM Do YYYY')
   const shortWeekAgoFormat = weekAgo.format('MMMM Do')
-  const liveSubjectFormat = `${notificationCount} unread notification${notificationCount > 1 ? 's' : ''
-    }`
-  const weeklySubjectFormat = `${notificationCount} unread notification${notificationCount > 1 ? 's' : ''
-    } from ${shortWeekAgoFormat} - ${formattedDayAgo}`
-  const dailySubjectFormat = `${notificationCount} unread notification${notificationCount > 1 ? 's' : ''
-    } from ${formattedDayAgo}`
+  const liveSubjectFormat = `${notificationCount} unread notification${
+    notificationCount > 1 ? 's' : ''
+  }`
+  const weeklySubjectFormat = `${notificationCount} unread notification${
+    notificationCount > 1 ? 's' : ''
+  } from ${shortWeekAgoFormat} - ${formattedDayAgo}`
+  const dailySubjectFormat = `${notificationCount} unread notification${
+    notificationCount > 1 ? 's' : ''
+  } from ${formattedDayAgo}`
 
   let subject
   if (frequency === 'live') {

@@ -520,12 +520,6 @@ exports[`Render email Render a live email 1`] = `
     }
 
     @media (max-width: 720px) {
-      #bodyCell {
-        text-align: center;
-      }
-    }
-
-    @media (max-width: 720px) {
       .templateContainer {
         display: table !important;
         max-width: 384px !important;
@@ -1114,12 +1108,6 @@ exports[`Render email Render a multiple Message Reactions email 1`] = `
       #templateHeader p {
         font-size: 16px !important;
         line-height: 150% !important;
-      }
-    }
-
-    @media (max-width: 720px) {
-      #bodyCell {
-        text-align: center;
       }
     }
 
@@ -1716,12 +1704,6 @@ exports[`Render email Render a multiple Messages email 1`] = `
     }
 
     @media (max-width: 720px) {
-      #bodyCell {
-        text-align: center;
-      }
-    }
-
-    @media (max-width: 720px) {
       .templateContainer {
         display: table !important;
         max-width: 384px !important;
@@ -2310,12 +2292,6 @@ exports[`Render email Render a single Message Reaction email 1`] = `
       #templateHeader p {
         font-size: 16px !important;
         line-height: 150% !important;
-      }
-    }
-
-    @media (max-width: 720px) {
-      #bodyCell {
-        text-align: center;
       }
     }
 
@@ -2912,12 +2888,6 @@ exports[`Render email Render a single Message email 1`] = `
     }
 
     @media (max-width: 720px) {
-      #bodyCell {
-        text-align: center;
-      }
-    }
-
-    @media (max-width: 720px) {
       .templateContainer {
         display: table !important;
         max-width: 384px !important;
@@ -3506,12 +3476,6 @@ exports[`Render email Render a weekly email 1`] = `
       #templateHeader p {
         font-size: 16px !important;
         line-height: 150% !important;
-      }
-    }
-
-    @media (max-width: 720px) {
-      #bodyCell {
-        text-align: center;
       }
     }
 

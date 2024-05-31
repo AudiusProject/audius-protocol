@@ -86,16 +86,18 @@ class NestedOneOf(fields.Nested):
                 return None
             elif self.default is not None:
                 return self.default
+        logs = []
         for field in self.model.fields:
             try:
                 marshalled = marshal(value, field.nested)
                 if value == marshalled:
                     return value
+                logs.append(f"marshalled={marshalled}")
             except fields.MarshallingError as e:
                 logger.error(
                     f"fields.py | NestedOneOf | Failed to marshal key={key} value={value} error={e.msg}"
                 )
         logger.error(
-            f"fields.py | NestedOneOf | Failed to marshal key={key} value={data}: No matching models."
+            f"fields.py | NestedOneOf | Failed to marshal key={key} value={value}: No matching models. {logs}"
         )
         return value

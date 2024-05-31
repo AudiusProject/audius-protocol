@@ -1408,7 +1408,10 @@ def test_access_conditions(app, mocker, tx_receipts):
         assert album.is_album == True
         assert album.is_stream_gated == True
         assert album.stream_conditions == {
-            "usdc_purchase": {"price": 100, "splits": {"user-bank": 1000000}}
+            "usdc_purchase": {
+                "price": 100,
+                "splits": [{"user_id": 1, "percentage": 100}],
+            }
         }
 
         # Validate previously usdc-gated album that is now public

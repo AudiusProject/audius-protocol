@@ -1,4 +1,5 @@
 import { NextFunction, Request, Response } from 'express'
+
 import { config } from '../config'
 import { InternalServerError } from '../errors'
 

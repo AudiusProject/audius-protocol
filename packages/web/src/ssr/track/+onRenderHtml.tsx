@@ -7,7 +7,8 @@ import type { PageContextServer } from 'vike/types'
 
 import { ServerWebPlayer } from 'app/web-player/ServerWebPlayer'
 import { MetaTags } from 'components/meta-tags/MetaTags'
-import { ServerTrackPage } from 'pages/track-page/ServerTrackPage'
+import { DesktopServerTrackPage } from 'pages/track-page/DesktopServerTrackPage'
+import { MobileServerTrackPage } from 'pages/track-page/MobileServerTrackPage'
 import { isMobileUserAgent } from 'utils/clientUtil'
 import { getTrackPageSEOFields } from 'utils/seo'
 
@@ -45,12 +46,15 @@ export default function render(pageContext: TrackPageContext) {
       isMobile={isMobile}
       initialState={{
         tracks: { entries: { [track_id]: { metadata: track } } },
-        users: { entries: { [user_id]: { metadata: user } } }
+        users: { entries: { [user_id]: { metadata: user } } },
+        pages: {
+          track: { trackId: track_id, trackPermalink: permalink }
+        }
       }}
     >
       <>
         <MetaTags {...seoMetadata} />
-        <ServerTrackPage trackId={track_id} isMobile={isMobile} />
+        {isMobile ? <MobileServerTrackPage /> : <DesktopServerTrackPage />}
       </>
     </ServerWebPlayer>
   )

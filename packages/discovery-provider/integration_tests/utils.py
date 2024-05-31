@@ -47,6 +47,7 @@ from src.models.users.user import User
 from src.models.users.user_balance_change import UserBalanceChange
 from src.models.users.user_bank import USDCUserBankAccount, UserBankAccount, UserBankTx
 from src.models.users.user_listening_history import UserListeningHistory
+from src.models.users.user_payout_wallet_history import UserPayoutWalletHistory
 from src.models.users.user_tip import UserTip
 from src.tasks.aggregates import get_latest_blocknumber
 from src.utils import helpers
@@ -161,6 +162,7 @@ def populate_mock_db(db, entities, block_offset=None):
         usdc_transactions_history = entities.get("usdc_transactions_history", [])
         track_price_history = entities.get("track_price_history", [])
         album_price_history = entities.get("album_price_history", [])
+        user_payout_wallet_history = entities.get("user_payout_wallet_history", [])
 
         num_blocks = max(
             len(tracks),
@@ -174,6 +176,9 @@ def populate_mock_db(db, entities, block_offset=None):
             len(reposts),
             len(subscriptions),
             len(playlist_seens),
+            len(track_price_history),
+            len(album_price_history),
+            len(user_payout_wallet_history),
         )
         for i in range(block_offset, block_offset + num_blocks):
             max_block = session.query(Block).filter(Block.number == i).first()
@@ -752,5 +757,17 @@ def populate_mock_db(db, entities, block_offset=None):
                 tx_metadata=usdc_transaction.get("tx_metadata"),
             )
             session.add(transaction)
+        for i, user_payout_wallet in enumerate(user_payout_wallet_history):
+            user_payout_wallet_history_record = UserPayoutWalletHistory(
+                user_id=user_payout_wallet.get("user_id", i),
+                spl_usdc_payout_wallet=user_payout_wallet.get(
+                    "spl_usdc_payout_wallet", None
+                ),
+                blocknumber=user_payout_wallet.get("blocknumber", i + block_offset),
+                block_timestamp=user_payout_wallet.get(
+                    "block_timestamp", datetime.now()
+                ),
+            )
+            session.add(user_payout_wallet_history_record)
 
         session.commit()

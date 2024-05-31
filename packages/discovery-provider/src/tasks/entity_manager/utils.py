@@ -542,3 +542,15 @@ def parse_release_date(release_date_str):
         pass
 
     return None
+
+
+def convert_legacy_purchase_access_gate(owner_id: int, access_gate: dict):
+    """Converts the legacy splits in a purchase gate to the new array format"""
+    if access_gate and "usdc_purchase" in access_gate:
+        # Legacy purchase gates have a split dictionary instead of array
+        if isinstance(access_gate["usdc_purchase"]["splits"], dict):
+            # Legacy client uploads only have one split, and it's to the owner
+            access_gate["usdc_purchase"]["splits"] = [
+                {"user_id": owner_id, "percentage": 100.0}
+            ]
+    return access_gate

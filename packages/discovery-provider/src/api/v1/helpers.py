@@ -11,6 +11,7 @@ from src import api_helpers
 from src.api.v1.models.common import full_response
 from src.models.rewards.challenge import ChallengeType
 from src.queries.get_challenges import ChallengeResponse
+from src.queries.get_extended_purchase_gate import get_legacy_purchase_gate
 from src.queries.get_support_for_user import SupportResponse
 from src.queries.get_undisbursed_challenges import UndisbursedChallengeResponse
 from src.queries.query_helpers import (
@@ -391,6 +392,16 @@ def extend_track(track):
             duration += float(segment["duration"])
         track["duration"] = round(duration)
 
+    # Transform new format of splits to legacy format for client compatibility
+    if "stream_conditions" in track:
+        track["stream_conditions"] = get_legacy_purchase_gate(
+            track["stream_conditions"]
+        )
+    if "download_conditions" in track:
+        track["download_conditions"] = get_legacy_purchase_gate(
+            track["download_conditions"]
+        )
+
     return track
 
 
@@ -556,10 +567,6 @@ def abort_unauthorized(namespace):
     namespace.abort(401, "Oh no! User is not authorized.")
 
 
-def abort_forbidden(namespace):
-    namespace.abort(403, "Oh no! User does not have access to that resource.")
-
-
 def decode_with_abort(identifier: str, namespace) -> int:
     decoded = decode_string_id(identifier)
     if decoded is None:
@@ -652,7 +659,7 @@ class DescriptiveArgument(reqparse.Argument):
 
     @property
     def __schema__(self):
-        if self.doc == False:
+        if self.doc is False:
             return None
         param = super().__schema__
         param["description"] = self.description

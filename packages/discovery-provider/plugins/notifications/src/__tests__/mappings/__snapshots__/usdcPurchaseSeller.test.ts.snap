@@ -520,12 +520,6 @@ exports[`USDC Purchase Seller Render emails 1`] = `
     }
 
     @media (max-width: 720px) {
-      #bodyCell {
-        text-align: center;
-      }
-    }
-
-    @media (max-width: 720px) {
       .templateContainer {
         display: table !important;
         max-width: 384px !important;
@@ -1114,12 +1108,6 @@ exports[`USDC Purchase Seller Render emails 2`] = `
       #templateHeader p {
         font-size: 16px !important;
         line-height: 150% !important;
-      }
-    }
-
-    @media (max-width: 720px) {
-      #bodyCell {
-        text-align: center;
       }
     }
 

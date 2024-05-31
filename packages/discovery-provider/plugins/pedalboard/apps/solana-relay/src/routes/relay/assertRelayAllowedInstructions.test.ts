@@ -1,3 +1,10 @@
+import assert from 'assert'
+
+import {
+  ClaimableTokensProgram,
+  RewardManagerProgram,
+  RewardManagerInstruction
+} from '@audius/spl'
 import {
   NATIVE_MINT,
   TOKEN_PROGRAM_ID,
@@ -15,16 +22,12 @@ import {
   SystemProgram,
   TransactionInstruction
 } from '@solana/web3.js'
-import assert from 'assert'
-import { assertRelayAllowedInstructions } from './assertRelayAllowedInstructions'
-import { config } from '../../config'
-import {
-  ClaimableTokensProgram,
-  RewardManagerProgram,
-  RewardManagerInstruction
-} from '@audius/spl'
-import { InvalidRelayInstructionError } from './InvalidRelayInstructionError'
 import { describe, it } from 'vitest'
+
+import { config } from '../../config'
+
+import { InvalidRelayInstructionError } from './InvalidRelayInstructionError'
+import { assertRelayAllowedInstructions } from './assertRelayAllowedInstructions'
 
 const CLAIMABLE_TOKEN_PROGRAM_ID = new PublicKey(config.claimableTokenProgramId)
 
