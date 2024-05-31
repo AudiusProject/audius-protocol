@@ -70,6 +70,7 @@ export const TrackTile = (props: LineupItemProps) => {
 
   return <TrackTileComponent {...props} track={track} user={user} />
 }
+console.log('test')
 
 type TrackTileProps = LineupItemProps & {
   track: Track
