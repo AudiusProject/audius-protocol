@@ -24,12 +24,6 @@ from src.models.model_utils import (
 )
 
 
-class SocialPlatform(str, enum.Enum):
-    twitter = "twitter"
-    instagram = "instagram"
-    tiktok = "tiktok"
-
-
 class User(Base, RepresentableMixin):
     __tablename__ = "users"
 
@@ -50,7 +44,9 @@ class User(Base, RepresentableMixin):
     metadata_multihash = Column(String)
     creator_node_endpoint = Column(String)
     is_verified = Column(Boolean, nullable=False, server_default=text("false"))
-    verified_with = Column(Enum(SocialPlatform))
+    verified_with_twitter = Column(Boolean, nullable=False, server_default=text("false"))
+    verified_with_instagram = Column(Boolean, nullable=False, server_default=text("false"))
+    verified_with_tiktok = Column(Boolean, nullable=False, server_default=text("false"))
     twitter_handle = Column(String)
     instagram_handle = Column(String)
     tiktok_handle = Column(String)

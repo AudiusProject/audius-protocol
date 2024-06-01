@@ -41,10 +41,12 @@ export type UserMetadata = {
   has_collectibles: boolean
   is_deactivated: boolean
   is_verified: boolean
-  verified_with: Nullable<SocialPlatform>
   twitter_handle: Nullable<string>
   instagram_handle: Nullable<string>
   tiktok_handle: Nullable<string>
+  verified_with_twitter: boolean
+  verified_with_instagram: boolean
+  verified_with_tiktok: boolean
   website: Nullable<string>
   donation: Nullable<string>
   location: Nullable<string>

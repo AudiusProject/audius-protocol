@@ -338,11 +338,11 @@ def update_user_metadata(
 
     # Ensure verified social handle is same as audius handle
     if user_record.is_verified:
-        if user_record.verified_with == "twitter":
+        if user_record.verified_with_twitter:
             user_record.twitter_handle = user_record.handle
-        elif user_record.verified_with == "instagram":
+        elif user_record.verified_with_instagram:
             user_record.instagram_handle = user_record.handle
-        elif user_record.verified_with == "tiktok":
+        elif user_record.verified_with_tiktok:
             user_record.tiktok_handle = user_record.handle
 
     if "collectibles" in metadata:
@@ -632,13 +632,13 @@ def verify_user(params: ManageEntityParameters):
     user_record.is_verified = is_verified
     if twitter_handle:
         user_record.twitter_handle = twitter_handle
-        user_record.verified_with = "twitter"
+        user_record.verified_with_twitter = True
     elif instagram_handle:
         user_record.instagram_handle = instagram_handle
-        user_record.verified_with = "instagram"
+        user_record.verified_with_instagram = True
     elif tiktok_handle:
         user_record.tiktok_handle = tiktok_handle
-        user_record.verified_with = "tiktok"
+        user_record.verified_with_tiktok = True
 
     params.add_record(user_id, user_record)
     params.challenge_bus.dispatch(
