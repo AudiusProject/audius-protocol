@@ -60,35 +60,16 @@ export default async ({ user_id, blocknumber }) => {
     const is_verified = current.is_verified
     const handle = current.handle
 
+    const { verified_with_twitter: verifiedWithTwitter, verified_with_instagram: instagramVerified, verified_with_tiktok: tikTokVerified } = current
     let source
-    try {
-      const data = await retry(
-        async (_) => {
-          const { data } = await axios
-            .get(social_handle_url(handle))
-            .catch(console.error)
-
-          if (Object.keys(data).length === 0) {
-            throw new Error('social handles not in identity yet')
-          }
-
-          return data
-        },
-      )
-      const { twitterVerified, instagramVerified, tikTokVerified } = data
-
-      if (twitterVerified) {
-        source = 'twitter'
-      }
-      if (instagramVerified) {
-        source = 'instagram'
-      }
-      if (tikTokVerified) {
-        source = 'tiktok'
-      }
-    } catch (e) {
+    if (verifiedWithTwitter) {
+      source = 'twitter'
+    } else if (instagramVerified) {
+      source = 'instagram'
+    } else if (tikTokVerified) {
+      source = 'tiktok'
+    } else {
       source = 'could not figure out source!'
-      console.error(e)
     }
 
     const header = `User *${handle}* ${
