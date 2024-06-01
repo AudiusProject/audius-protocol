@@ -17,7 +17,7 @@ import {
   reformatUser,
   getSDK
 } from '@audius/common/store'
-import { waitForAccount, waitForValue } from '@audius/common/utils'
+import { waitForAccount } from '@audius/common/utils'
 import { mergeWith } from 'lodash'
 import { call, put, select, takeEvery } from 'typed-redux-saga'
 
@@ -352,41 +352,6 @@ function* watchFetchCoverPhoto() {
   )
 }
 
-export function* fetchUserSocials({
-  handle
-}: ReturnType<typeof userActions.fetchUserSocials>) {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-  let user = yield* select(getUser, { handle })
-  if (!user) {
-    yield* call(fetchUserByHandle, handle, new Set())
-  }
-  user = yield* call(waitForValue, getUser, { handle })
-  if (!user) return
-  const socials = yield* call(
-    audiusBackendInstance.getSocialHandles,
-    user.handle
-  )
-
-  yield* put(
-    cacheActions.update(Kind.USERS, [
-      {
-        id: user.user_id,
-        metadata: {
-          twitter_handle: socials.twitterHandle || null,
-          instagram_handle: socials.instagramHandle || null,
-          tiktok_handle: socials.tikTokHandle || null,
-          website: socials.website || null,
-          donation: socials.donation || null
-        }
-      }
-    ])
-  )
-}
-
-function* watchFetchUserSocials() {
-  yield* takeEvery(userActions.FETCH_USER_SOCIALS, fetchUserSocials)
-}
-
 function* watchFetchUsers() {
   yield* takeEvery(
     userActions.FETCH_USERS,
@@ -403,7 +368,6 @@ const sagas = () => {
     watchFetchProfilePicture,
     watchFetchCoverPhoto,
     watchSyncLocalStorageUser,
-    watchFetchUserSocials,
     watchFetchUsers
   ]
 }

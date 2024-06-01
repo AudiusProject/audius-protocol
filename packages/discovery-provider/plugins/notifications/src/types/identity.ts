@@ -147,7 +147,6 @@ export interface SocialHandleRow {
   donation?: string | null
   handle: string
   instagramHandle?: string | null
-  pinnedTrackId?: number | null
   tikTokHandle?: string | null
   twitterHandle?: string | null
   updatedAt: Date

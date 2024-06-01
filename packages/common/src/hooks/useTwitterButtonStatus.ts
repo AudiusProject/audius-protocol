@@ -14,24 +14,16 @@ export const useTwitterButtonStatus = (
     useState<ShareStatus>('idle')
 
   const userName = user?.name
-  const twitterHandle = user ? user.twitter_handle : null
+  const twitterHandle = user?.twitter_handle
 
   const additionalUserName = additionalUser?.name
-  const additionalTwitterHandle = additionalUser
-    ? additionalUser.twitter_handle
-    : null
-
-  // Initially twitter handle is undefined; after fetch it's
-  // set to either null or a value in `fetchUserSocials` sagas
-  const twitterHandleFetched =
-    twitterHandle !== undefined &&
-    (additionalUser ? additionalTwitterHandle !== undefined : true)
+  const additionalTwitterHandle = additionalUser?.twitter_handle ?? null
 
   useEffect(() => {
-    if (shareTwitterStatus === 'loading' && twitterHandleFetched) {
+    if (shareTwitterStatus === 'loading') {
       setShareTwitterStatus('success')
     }
-  }, [setShareTwitterStatus, shareTwitterStatus, twitterHandleFetched])
+  }, [setShareTwitterStatus, shareTwitterStatus])
 
   const setLoading = useCallback(() => setShareTwitterStatus('loading'), [])
   const setIdle = useCallback(() => setShareTwitterStatus('idle'), [])

@@ -40,8 +40,7 @@ import {
 import {
   fetchUsers,
   fetchUserByHandle,
-  fetchUserCollections,
-  fetchUserSocials
+  fetchUserCollections
 } from 'common/store/cache/users/sagas'
 import feedSagas from 'common/store/pages/profile/lineups/feed/sagas.js'
 import tracksSagas from 'common/store/pages/profile/lineups/tracks/sagas.js'
@@ -366,8 +365,7 @@ function* fetchProfileAsync(action) {
     )
 
     if (!isNativeMobile) {
-      // Fetch user socials and collections after fetching the user itself
-      yield fork(fetchUserSocials, action)
+      // Fetch user collections after fetching the user itself
       yield fork(fetchUserCollections, user.user_id)
       yield fork(fetchSupportersAndSupporting, user.user_id)
     }

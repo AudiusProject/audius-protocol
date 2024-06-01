@@ -743,19 +743,6 @@ export const audiusBackend = ({
       if (!account) return null
 
       try {
-        const body = await getSocialHandles(account.handle)
-        account.twitter_handle = body.twitterHandle || null
-        account.instagram_handle = body.instagramHandle || null
-        account.tiktok_handle = body.tikTokHandle || null
-        account.website = body.website || null
-        account.donation = body.donation || null
-        account.twitterVerified = body.twitterVerified || false
-        account.instagramVerified = body.instagramVerified || false
-        account.tikTokVerified = body.tikTokVerified || false
-      } catch (e) {
-        console.error(e)
-      }
-      try {
         const userBank = await audiusLibs.solanaWeb3Manager.deriveUserBank()
         account.userBank = userBank.toString()
         return getUserImages(account)
@@ -963,19 +950,6 @@ export const audiusBackend = ({
     } catch (err) {
       console.error(getErrorMessage(err))
       return []
-    }
-  }
-
-  async function getSocialHandles(handle: string) {
-    try {
-      const res = await fetch(
-        `${identityServiceUrl}/social_handles?handle=${handle}`
-      )
-      const json = await res.json()
-      return json
-    } catch (e) {
-      console.error(e)
-      return {}
     }
   }
 
@@ -3029,7 +3003,6 @@ export const audiusBackend = ({
     getBrowserPushSubscription,
     getCollectionImages,
     getCreators,
-    getSocialHandles,
     getEmailNotificationSettings,
     getFolloweeFollows,
     getImageUrl,
