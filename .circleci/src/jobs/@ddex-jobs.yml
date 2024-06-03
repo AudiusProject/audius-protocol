@@ -37,4 +37,5 @@ ddex-processor-test:
         at: ./
     - run:
         name: test
-        command: npm run test
+        command: |
+          npm run test -w packages/ddex/processor
