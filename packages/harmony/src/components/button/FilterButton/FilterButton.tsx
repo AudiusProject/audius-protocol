@@ -6,9 +6,10 @@ import { BaseButton } from 'components/button/BaseButton/BaseButton'
 import { Flex, Paper } from 'components/layout'
 import { Popup } from 'components/popup'
 import { useControlled } from 'hooks/useControlled'
-import { IconCaretDown, IconCloseAlt } from 'icons'
+import { IconCaretDown, IconCloseAlt, IconSearch } from 'icons'
 
 import { FilterButtonOption, FilterButtonProps } from './types'
+import { TextInput, TextInputSize } from 'components/input'
 
 export const FilterButton = forwardRef<HTMLButtonElement, FilterButtonProps>(
   function FilterButton(props, ref) {
@@ -18,6 +19,7 @@ export const FilterButton = forwardRef<HTMLButtonElement, FilterButtonProps>(
       options,
       onSelect,
       disabled,
+      showFilterInput,
       variant = 'fillContainer',
       size = 'default',
       iconRight = IconCaretDown,
@@ -34,6 +36,7 @@ export const FilterButton = forwardRef<HTMLButtonElement, FilterButtonProps>(
       stateName: 'selection',
       componentName: 'FilterButton'
     })
+    const [filterInputValue, setFilterInputValue] = useState('')
     const selectedOption = options.find((option) => option.value === selection)
     const selectedLabel = selectedOption?.label ?? selectedOption?.value
 
@@ -144,6 +147,7 @@ export const FilterButton = forwardRef<HTMLButtonElement, FilterButtonProps>(
     }
 
     const handleButtonClick = useCallback(() => {
+      setFilterInputValue('')
       if (variant === 'fillContainer' && selection !== null) {
         setSelection(null)
         // @ts-ignore
@@ -200,21 +204,46 @@ export const FilterButton = forwardRef<HTMLButtonElement, FilterButtonProps>(
               aria-activedescendant={selectedLabel}
               css={{ maxHeight: popupMaxHeight, overflowY: 'auto' }}
             >
-              {options.map((option) => (
-                <BaseButton
-                  key={option.value}
-                  iconLeft={option.icon}
-                  styles={{
-                    button: optionCss,
-                    icon: optionIconCss
-                  }}
-                  onClick={() => handleOptionSelect(option)}
-                  aria-label={option.label ?? option.value}
-                  role='option'
-                >
-                  {option.label ?? option.value}
-                </BaseButton>
-              ))}
+              <Flex direction='column' w='100%' gap='s'>
+                {showFilterInput ? (
+                  <TextInput
+                    placeholder='Search'
+                    label='Search'
+                    size={TextInputSize.SMALL}
+                    startIcon={IconSearch}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                    }}
+                    onChange={(e) => {
+                      setFilterInputValue(e.target.value)
+                    }}
+                  />
+                ) : null}
+                {options
+                  .filter(({ label }) => {
+                    return (
+                      !filterInputValue ||
+                      label
+                        ?.toLowerCase()
+                        .includes(filterInputValue.toLowerCase())
+                    )
+                  })
+                  .map((option) => (
+                    <BaseButton
+                      key={option.value}
+                      iconLeft={option.icon}
+                      styles={{
+                        button: optionCss,
+                        icon: optionIconCss
+                      }}
+                      onClick={() => handleOptionSelect(option)}
+                      aria-label={option.label ?? option.value}
+                      role='option'
+                    >
+                      {option.label ?? option.value}
+                    </BaseButton>
+                  ))}
+              </Flex>
             </Flex>
           </Paper>
         </Popup>

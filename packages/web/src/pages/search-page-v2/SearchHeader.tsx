@@ -23,7 +23,6 @@ import { capitalize } from 'lodash'
 import Header from 'components/header/desktop/Header'
 import { useMedia } from 'hooks/useMedia'
 import { Category, Filter } from './types'
-import { useParams } from 'react-router-dom'
 import { useSearchParams } from 'react-router-dom-v5-compat'
 
 export const categories = {
@@ -69,6 +68,7 @@ const filters: Record<Filter, () => ReactElement> = {
           label: genre,
           value: convertGenreLabelToValue(genre)
         }))}
+        showFilterInput
       />
     )
   },

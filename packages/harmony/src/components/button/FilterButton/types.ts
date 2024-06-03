@@ -96,4 +96,9 @@ export type FilterButtonProps = {
    * zIndex applied to the inner Popup component
    */
   popupZIndex?: number
+
+  /**
+   * Show a text input to filter the options
+   */
+  showFilterInput?: boolean
 }
