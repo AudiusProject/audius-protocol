@@ -2076,17 +2076,12 @@ class ManagedUsers(Resource):
             500: "Server error",
         },
     )
-    @auth_middleware(include_wallet=True, require_auth=True)
+    @auth_middleware(require_auth=True)
     @full_ns.marshal_with(managed_users_response)
-    def get(self, id, authed_user_id, authed_user_wallet):
+    def get(self, id, authed_user_id):
         user_id = decode_with_abort(id, full_ns)
-
         check_authorized(user_id, authed_user_id)
-
-        args = GetManagedUsersArgs(
-            manager_wallet_address=authed_user_wallet, current_user_id=user_id
-        )
-        users = get_managed_users_with_grants(args)
+        users = get_managed_users_with_grants(GetManagedUsersArgs(user_id=user_id))
         users = list(map(format_managed_user, users))
 
         return success_response(users)
@@ -2112,15 +2107,13 @@ class Managers(Resource):
             500: "Server error",
         },
     )
-    @auth_middleware(include_wallet=True, require_auth=True)
+    @auth_middleware(require_auth=True)
     @full_ns.marshal_with(managers_response)
-    def get(self, id, authed_user_id, authed_user_wallet):
+    def get(self, id, authed_user_id):
         user_id = decode_with_abort(id, full_ns)
         check_authorized(user_id, authed_user_id)
 
-        args = GetUserManagersArgs(
-            manager_wallet_address=authed_user_wallet, user_id=user_id
-        )
+        args = GetUserManagersArgs(user_id=user_id)
         managers = get_user_managers_with_grants(args)
         managers = list(map(format_user_manager, managers))
 
