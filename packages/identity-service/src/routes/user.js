@@ -18,15 +18,19 @@ const bouncerApiKey = config.get('bouncerEmailValidationKey')
 
 const isEmailDeliverable = async (email, logger) => {
   try {
+    // remove subaddressing since usebouncer rejects those
+    const strippedEmail =
+      email.split('+')[0] + email.substring(email.indexOf('@'))
+
     const res = await axios.get(
-      `${BOUNCER_BASE_URL}?email=${encodeURIComponent(email)}`,
+      `${BOUNCER_BASE_URL}?email=${encodeURIComponent(strippedEmail)}`,
       {
         headers: {
           'x-api-key': bouncerApiKey
         }
       }
     )
-    return res?.data?.status === 'undeliverable'
+    return res?.data?.status === 'deliverable'
   } catch (err) {
     // Couldn't figure out if delivable, so say it was
     logger.error(`Unable to validate email for ${email}`, err)
