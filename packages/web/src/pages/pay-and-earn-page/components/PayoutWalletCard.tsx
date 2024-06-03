@@ -38,7 +38,7 @@ export const PayoutWalletCard = () => {
       const owner = await getUSDCAssociatedTokenAccountOwner(
         user.spl_usdc_payout_wallet
       )
-      return owner.toString()
+      return owner.toBase58()
     }
     return null
   }, [user])

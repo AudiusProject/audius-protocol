@@ -31,6 +31,7 @@ import {
   isTokenAccount,
   isValidSolAddress
 } from 'services/solana/solana'
+import { reportToSentry } from 'store/errors/reportToSentry'
 
 const { getAccountUser } = accountSelectors
 
@@ -181,6 +182,10 @@ export const PayoutWalletModal = () => {
         setIsOpen(false)
       } catch (e) {
         setErrors({ address: 'Please try again later' })
+        await reportToSentry({
+          error: e as Error,
+          name: 'Payout Wallet: Error setting wallet'
+        })
       }
     },
     [dispatch, user, setIsOpen]

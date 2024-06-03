@@ -145,22 +145,24 @@ export const getUSDCAssociatedTokenAccount = async (
 }
 
 /**
- * Returns the owner of the USDC token acccount, if the provided account
- * is a USDC token account. Otherwise, just returns the account
+ * Returns the owner of the token acccount, if the provided account
+ * is a token account. Otherwise, just returns the account
  */
-export const getUSDCAssociatedTokenAccountOwner = async (
+export const getAssociatedTokenAccountOwner = async (
   accountAddress: SolanaWalletAddress
 ) => {
   const connection = await getSolanaConnection()
-  const isAta = await isTokenAccount({ accountAddress, mint: 'usdc' })
-  if (isAta) {
+  try {
     const { owner } = await getAccount(
       connection,
       new PublicKey(accountAddress)
     )
     return owner
+  } catch (e) {
+    // Not a token account, so return the provided address
+    console.error(e)
+    return new PublicKey(accountAddress)
   }
-  return accountAddress
 }
 
 /**
