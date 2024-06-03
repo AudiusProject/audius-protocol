@@ -27,7 +27,7 @@ import { useModalState } from 'common/hooks/useModalState'
 import { TextField } from 'components/form-fields'
 import { ModalForm } from 'components/modal-form/ModalForm'
 import {
-  getUSDCAssociatedTokenAccountOwner,
+  getAssociatedTokenAccountOwner,
   isTokenAccount,
   isValidSolAddress
 } from 'services/solana/solana'
@@ -193,7 +193,7 @@ export const PayoutWalletModal = () => {
 
   const { value: payoutWallet } = useAsync(async () => {
     if (user?.spl_usdc_payout_wallet) {
-      const owner = await getUSDCAssociatedTokenAccountOwner(
+      const owner = await getAssociatedTokenAccountOwner(
         user.spl_usdc_payout_wallet
       )
       return owner.toString()

@@ -14,7 +14,7 @@ import { useSelector } from 'react-redux'
 import { useAsync } from 'react-use'
 
 import { useModalState } from 'common/hooks/useModalState'
-import { getUSDCAssociatedTokenAccountOwner } from 'services/solana/solana'
+import { getAssociatedTokenAccountOwner } from 'services/solana/solana'
 
 const { getAccountUser } = accountSelectors
 
@@ -35,7 +35,7 @@ export const PayoutWalletCard = () => {
 
   const { value: payoutWallet } = useAsync(async () => {
     if (user?.spl_usdc_payout_wallet) {
-      const owner = await getUSDCAssociatedTokenAccountOwner(
+      const owner = await getAssociatedTokenAccountOwner(
         user.spl_usdc_payout_wallet
       )
       return owner.toBase58()
