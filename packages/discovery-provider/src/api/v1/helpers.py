@@ -705,7 +705,7 @@ pagination_with_current_user_parser.add_argument(
 search_parser = reqparse.RequestParser(argument_class=DescriptiveArgument)
 search_parser.add_argument("query", required=True, description="The search query")
 
-track_history_parser = pagination_with_current_user_parser.copy()
+track_history_parser = pagination_parser.copy()
 track_history_parser.add_argument(
     "query", required=False, description="The filter query"
 )

@@ -34,7 +34,6 @@ function* getHistoryTracks() {
       [sdk.full.users, sdk.full.users.getUsersTrackHistory],
       {
         id: hashedId,
-        userId: hashedId,
         limit: 100
       }
     )
