@@ -2,16 +2,15 @@ when: << pipeline.parameters.run-ddex-workflow >>
 jobs:
   - ddex-processor-init
   - ddex-processor-test:
-    name: ddex-processor-test
-    requires:
-      - ddex-processor-init
+      requires:
+        - ddex-processor-init
   - push-docker-image:
-    name: push-ddex-processor
-    context: [Vercel, dockerhub]
-    service: ddex-processor
-    filters:
-      branches:
-        only: main
+      name: push-ddex-processor
+      context: [Vercel, dockerhub]
+      service: ddex-processor
+      filters:
+        branches:
+          only: main
   - deploy-stage-nodes:
       name: deploy-stage-ddex
       requires:
