@@ -30,6 +30,8 @@ ddex-processor-init:
           - packages/libs/dist
           - packages/fixed-decimal/node_modules
           - packages/fixed-decimal/dist
+          - packages/spl/node_modules
+          - packages/spl/dist
 
 ddex-processor-test:
   working_directory: ~/audius-protocol
