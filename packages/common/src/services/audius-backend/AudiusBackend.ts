@@ -1029,31 +1029,6 @@ export const audiusBackend = ({
         newMetadata.cover_photo_sizes = resp.id
       }
 
-      if (
-        typeof newMetadata.twitter_handle === 'string' ||
-        typeof newMetadata.instagram_handle === 'string' ||
-        typeof newMetadata.tiktok_handle === 'string' ||
-        typeof newMetadata.website === 'string' ||
-        typeof newMetadata.donation === 'string'
-      ) {
-        const { data, signature } = await signData()
-        await fetch(`${identityServiceUrl}/social_handles`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            [AuthHeaders.Message]: data,
-            [AuthHeaders.Signature]: signature
-          },
-          body: JSON.stringify({
-            twitterHandle: newMetadata.twitter_handle,
-            instagramHandle: newMetadata.instagram_handle,
-            tikTokHandle: newMetadata.tiktok_handle,
-            website: newMetadata.website,
-            donation: newMetadata.donation
-          })
-        })
-      }
-
       newMetadata = schemas.newUserMetadata(newMetadata, true)
       const userId = newMetadata.user_id
       const { blockHash, blockNumber } = await audiusLibs.User.updateMetadataV2(

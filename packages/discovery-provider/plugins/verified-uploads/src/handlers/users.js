@@ -1,15 +1,10 @@
-import retry from 'async-retry'
 import { dp_db } from '../db.js'
 import { slack } from '../slack.js'
 import dotenv from 'dotenv'
-import axios from 'axios'
 import { getPreviousState } from './utils.js'
 
 dotenv.config()
-const { audius_discprov_identity_service_url, USERS_SLACK_CHANNEL } =
-  process.env
-const social_handle_url = (handle) =>
-  `${audius_discprov_identity_service_url}/social_handles?handle=${handle}`
+const { USERS_SLACK_CHANNEL } = process.env
 
 // TODO: send blocknumber through pg trigger
 export default async ({ user_id, blocknumber }) => {
@@ -60,13 +55,13 @@ export default async ({ user_id, blocknumber }) => {
     const is_verified = current.is_verified
     const handle = current.handle
 
-    const { verified_with_twitter: verifiedWithTwitter, verified_with_instagram: instagramVerified, verified_with_tiktok: tikTokVerified } = current
+    const { verified_with_twitter: verifiedWithTwitter, verified_with_instagram: verifiedWithInstagram, verified_with_tiktok: verifiedWithTiktok } = current
     let source
     if (verifiedWithTwitter) {
       source = 'twitter'
-    } else if (instagramVerified) {
+    } else if (verifiedWithInstagram) {
       source = 'instagram'
-    } else if (tikTokVerified) {
+    } else if (verifiedWithTiktok) {
       source = 'tiktok'
     } else {
       source = 'could not figure out source!'
