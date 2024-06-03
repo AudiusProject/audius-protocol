@@ -112,6 +112,7 @@ export const queryHandles = async (
   const twitterHandles = await discoveryDb<Users>(Table.Users)
     .select('handle', 'twitter_handle')
     .whereIn('handle', handles)
+    .andWhere('is_current', true)
 
   const handleMap = new Map<number, string>()
   for (const userId of blockchainUserIds) {
