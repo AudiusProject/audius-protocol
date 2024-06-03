@@ -180,7 +180,7 @@ import {
   AUTHORIZED_APPS_SETTINGS_PAGE,
   ACCOUNTS_MANAGING_YOU_SETTINGS_PAGE,
   ACCOUNTS_YOU_MANAGE_SETTINGS_PAGE,
-  EDIT_PAGE
+  TRACK_EDIT_PAGE
 } from 'utils/route'
 
 import styles from './WebPlayer.module.css'
@@ -188,6 +188,8 @@ import styles from './WebPlayer.module.css'
 const { getHasAccount, getAccountStatus, getUserId, getUserHandle } =
   accountSelectors
 
+// TODO: do we need to lazy load edit?
+const EditTrackPage = lazy(() => import('pages/edit-page'))
 const UploadPage = lazy(() => import('pages/upload-page'))
 const Modals = lazy(() => import('pages/modals/Modals'))
 const ConnectedMusicConfetti = lazy(() =>
@@ -697,14 +699,6 @@ class WebPlayer extends Component {
                   )}
                 />
 
-                <DesktopRoute
-                  path={EDIT_PAGE}
-                  isMobile={isMobile}
-                  render={(props) => (
-                    <UploadPage {...props} scrollToTop={this.scrollToTop} />
-                  )}
-                />
-
                 <Route
                   exact
                   path={[SAVED_PAGE, LIBRARY_PAGE]}
@@ -897,6 +891,14 @@ class WebPlayer extends Component {
                 />
 
                 <Route exact path={TRACK_PAGE} component={TrackPage} />
+
+                <DesktopRoute
+                  path={TRACK_EDIT_PAGE}
+                  isMobile={isMobile}
+                  render={(props) => (
+                    <EditTrackPage {...props} scrollToTop={this.scrollToTop} />
+                  )}
+                />
 
                 <Route
                   exact
