@@ -197,7 +197,7 @@ export const SearchHeader = (props: SearchHeaderProps) => {
         <Flex direction='row' gap='s' mv='m'>
           {filterKeys.map((filterKey) => {
             const FilterComponent = filters[filterKey]
-            return <FilterComponent key={filterKey}>{}</FilterComponent>
+            return <FilterComponent key={filterKey} />
           })}
         </Flex>
       }
