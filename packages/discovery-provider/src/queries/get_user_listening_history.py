@@ -25,9 +25,6 @@ class GetUserListeningHistoryArgs(TypedDict):
     # The current user logged in (from route param)
     user_id: int
 
-    # The current user logged in (from query arg)
-    current_user_id: int
-
     # The maximum number of listens to return
     limit: int
 
@@ -44,7 +41,7 @@ class GetUserListeningHistoryArgs(TypedDict):
 
 def get_user_listening_history(args: GetUserListeningHistoryArgs):
     """
-    Returns a user's listening history
+    Returns a user's listening history. DOES NOT check authorization.
 
     Args:
         args: GetUserListeningHistoryArgs The parsed args from the request
@@ -60,7 +57,6 @@ def get_user_listening_history(args: GetUserListeningHistoryArgs):
 
 def _get_user_listening_history(session: Session, args: GetUserListeningHistoryArgs):
     user_id = args["user_id"]
-    current_user_id = args["current_user_id"]
     limit = args["limit"]
     offset = args["offset"]
     query = args["query"]
@@ -68,12 +64,9 @@ def _get_user_listening_history(session: Session, args: GetUserListeningHistoryA
     sort_direction = args["sort_direction"]
     sort_fn = desc if sort_direction == SortDirection.desc else asc
 
-    if user_id != current_user_id:
-        return []
-
     listening_history_results = (
         session.query(UserListeningHistory.listening_history).filter(
-            UserListeningHistory.user_id == current_user_id
+            UserListeningHistory.user_id == user_id
         )
     ).scalar()
 
@@ -119,9 +112,9 @@ def _get_user_listening_history(session: Session, args: GetUserListeningHistoryA
 
     # bundle peripheral info into track results
     tracks = populate_track_metadata(
-        session, track_ids, tracks, current_user_id, track_has_aggregates=True
+        session, track_ids, tracks, current_user_id=user_id, track_has_aggregates=True
     )
-    tracks = add_users_to_tracks(session, tracks, current_user_id)
+    tracks = add_users_to_tracks(session, tracks, current_user_id=user_id)
 
     for track in tracks:
         track[response_name_constants.activity_timestamp] = listen_dates[

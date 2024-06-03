@@ -1,15 +1,16 @@
-import { LineupEntry, Track, UserTrackMetadata } from '@audius/common/models'
+import {
+  Id,
+  LineupEntry,
+  Track,
+  UserTrackMetadata
+} from '@audius/common/models'
 import { makeActivity } from '@audius/common/services'
 import {
   accountSelectors,
   getContext,
   historyPageTracksLineupActions as tracksActions
 } from '@audius/common/store'
-import {
-  decodeHashId,
-  encodeHashId,
-  removeNullable
-} from '@audius/common/utils'
+import { decodeHashId, removeNullable } from '@audius/common/utils'
 import { keyBy } from 'lodash'
 import { call, select } from 'typed-redux-saga'
 
@@ -27,11 +28,13 @@ function* getHistoryTracks() {
   try {
     const currentUserId = yield* select(getUserId)
     if (!currentUserId) return []
+    const hashedId = Id.parse(currentUserId)
 
     const activity = yield* call(
       [sdk.full.users, sdk.full.users.getUsersTrackHistory],
       {
-        id: encodeHashId(currentUserId),
+        id: hashedId,
+        userId: hashedId,
         limit: 100
       }
     )

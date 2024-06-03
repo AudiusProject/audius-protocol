@@ -66,7 +66,6 @@ def test_get_user_listening_history_multiple_plays(app):
             session,
             GetUserListeningHistoryArgs(
                 user_id=1,
-                current_user_id=1,
                 limit=10,
                 offset=0,
                 query=None,
@@ -116,7 +115,6 @@ def test_get_user_listening_history_no_plays(app):
             session,
             GetUserListeningHistoryArgs(
                 user_id=3,
-                current_user_id=3,
                 limit=10,
                 offset=0,
                 query=None,
@@ -142,7 +140,6 @@ def test_get_user_listening_history_single_play(app):
             session,
             GetUserListeningHistoryArgs(
                 user_id=2,
-                current_user_id=2,
                 limit=10,
                 offset=0,
                 query=None,
@@ -176,7 +173,6 @@ def test_get_user_listening_history_pagination(app):
             session,
             GetUserListeningHistoryArgs(
                 user_id=1,
-                current_user_id=1,
                 limit=1,
                 offset=1,
                 query=None,
@@ -196,32 +192,6 @@ def test_get_user_listening_history_pagination(app):
     )
 
 
-def test_get_user_listening_history_mismatch_user_id(app):
-    """Tests a listening history with mismatching user ids"""
-    with app.app_context():
-        db = get_db()
-
-    populate_mock_db(db, test_entities)
-
-    with db.scoped_session() as session:
-        _index_user_listening_history(session)
-
-        track_history = _get_user_listening_history(
-            session,
-            GetUserListeningHistoryArgs(
-                user_id=1,
-                current_user_id=2,
-                limit=10,
-                offset=0,
-                query=None,
-                sort_method=None,
-                sort_direction=None,
-            ),
-        )
-
-    assert len(track_history) == 0
-
-
 def test_get_user_listening_history_with_query(app):
     """Tests listening history from user with a query"""
     with app.app_context():
@@ -236,7 +206,6 @@ def test_get_user_listening_history_with_query(app):
             session,
             GetUserListeningHistoryArgs(
                 user_id=1,
-                current_user_id=1,
                 limit=10,
                 offset=0,
                 query="track 2",
@@ -268,7 +237,6 @@ def test_get_user_listening_history_custom_sort(app):
             session,
             GetUserListeningHistoryArgs(
                 user_id=1,
-                current_user_id=1,
                 limit=10,
                 offset=0,
                 query=None,
@@ -318,7 +286,6 @@ def test_get_user_listening_history_sort_by_most_listens(app):
             session,
             GetUserListeningHistoryArgs(
                 user_id=1,
-                current_user_id=1,
                 limit=10,
                 offset=0,
                 query=None,
