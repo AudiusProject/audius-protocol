@@ -18,12 +18,8 @@ const bouncerApiKey = config.get('bouncerEmailValidationKey')
 
 const isEmailDeliverable = async (email, logger) => {
   try {
-    // remove subaddressing since usebouncer rejects those
-    const strippedEmail =
-      email.split('+')[0] + email.substring(email.indexOf('@'))
-
     const res = await axios.get(
-      `${BOUNCER_BASE_URL}?email=${encodeURIComponent(strippedEmail)}`,
+      `${BOUNCER_BASE_URL}?email=${encodeURIComponent(email)}`,
       {
         headers: {
           'x-api-key': bouncerApiKey
