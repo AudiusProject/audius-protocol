@@ -37,6 +37,8 @@ class Playlist(Base, RepresentableMixin):
     is_stream_gated = Column(Boolean, nullable=False, server_default=text("false"))
     stream_conditions = Column(JSONB(True))
     description = Column(String)
+    release_date = Column(DateTime)
+    is_scheduled_release = Column(Boolean, nullable=False, server_default=text("false"))
     created_at = Column(DateTime, nullable=False, index=True)
     upc = Column(String)
     updated_at = Column(DateTime, nullable=False)
