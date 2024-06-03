@@ -1,4 +1,4 @@
-import { useCallback, useContext, useState } from 'react'
+import { useCallback, useContext, useEffect, useState } from 'react'
 
 import { TrackMetadataFormSchema } from '@audius/common/schemas'
 import { FeatureFlags } from '@audius/common/services'
@@ -26,6 +26,7 @@ import { TrackMetadataFields } from 'components/edit/fields/TrackMetadataFields'
 import layoutStyles from 'components/layout/layout.module.css'
 import { NavigationPrompt } from 'components/navigation-prompt/NavigationPrompt'
 import { useFlag } from 'hooks/useRemoteConfig'
+import { AnchoredSubmitRowEdit } from 'pages/edit-page/components/AnchoredSubmitRowEdit'
 import { UploadFormScrollContext } from 'pages/upload-page/UploadPage'
 import { AnchoredSubmitRow } from 'pages/upload-page/components/AnchoredSubmitRow'
 
@@ -74,8 +75,9 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
 const TrackEditForm = (
   props: FormikProps<TrackEditFormValues> & { hideContainer?: boolean }
 ) => {
-  const { values, dirty, hideContainer = false } = props
+  const { values, dirty, hideContainer = false, errors } = props
   const isMultiTrack = values.trackMetadatas.length > 1
+  const isEdit = values.trackMetadatas[0].track_id !== undefined
   const trackIdx = values.trackMetadatasIndex
   const [, , { setValue: setIndex }] = useField('trackMetadatasIndex')
   useUnmount(() => {
@@ -85,6 +87,11 @@ const TrackEditForm = (
     FeatureFlags.SCHEDULED_RELEASES
   )
   const [forceOpenAccessAndSale, setForceOpenAccessAndSale] = useState(false)
+
+  // Debug:
+  useEffect(() => {
+    console.log({ errors })
+  }, [errors])
 
   return (
     <Form>
@@ -137,7 +144,11 @@ const TrackEditForm = (
         </div>
         {isMultiTrack ? <MultiTrackSidebar /> : null}
       </div>
-      {!isMultiTrack ? <AnchoredSubmitRow /> : null}
+      {isEdit ? (
+        <AnchoredSubmitRowEdit />
+      ) : !isMultiTrack ? (
+        <AnchoredSubmitRow />
+      ) : null}
     </Form>
   )
 }
