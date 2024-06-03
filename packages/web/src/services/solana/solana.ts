@@ -152,9 +152,12 @@ export const getUSDCAssociatedTokenAccountOwner = async (
   accountAddress: SolanaWalletAddress
 ) => {
   const connection = await getSolanaConnection()
-  const isATA = await isTokenAccount({ accountAddress, mint: 'usdc' })
-  if (isATA) {
-    const { owner } = await getAccount(connection, new PublicKey(accountAddress))
+  const isAta = await isTokenAccount({ accountAddress, mint: 'usdc' })
+  if (isAta) {
+    const { owner } = await getAccount(
+      connection,
+      new PublicKey(accountAddress)
+    )
     return owner
   }
   return accountAddress

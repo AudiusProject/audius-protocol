@@ -11,10 +11,10 @@ import {
   TextLink
 } from '@audius/harmony'
 import { useSelector } from 'react-redux'
+import { useAsync } from 'react-use'
 
 import { useModalState } from 'common/hooks/useModalState'
 import { getUSDCAssociatedTokenAccountOwner } from 'services/solana/solana'
-import { useAsync } from 'react-use'
 
 const { getAccountUser } = accountSelectors
 
@@ -35,7 +35,9 @@ export const PayoutWalletCard = () => {
 
   const { value: payoutWallet } = useAsync(async () => {
     if (user?.spl_usdc_payout_wallet) {
-      const owner = await getUSDCAssociatedTokenAccountOwner(user.spl_usdc_payout_wallet)
+      const owner = await getUSDCAssociatedTokenAccountOwner(
+        user.spl_usdc_payout_wallet
+      )
       return owner.toString()
     }
     return null

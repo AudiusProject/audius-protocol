@@ -19,14 +19,18 @@ import {
 } from '@audius/harmony'
 import { Formik, useField } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
+import { useAsync } from 'react-use'
 import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { useModalState } from 'common/hooks/useModalState'
 import { TextField } from 'components/form-fields'
 import { ModalForm } from 'components/modal-form/ModalForm'
-import { getUSDCAssociatedTokenAccountOwner, isValidSolAddress } from 'services/solana/solana'
-import { useAsync } from 'react-use'
+import {
+  getUSDCAssociatedTokenAccountOwner,
+  isTokenAccount,
+  isValidSolAddress
+} from 'services/solana/solana'
 
 const { getAccountUser } = accountSelectors
 
@@ -149,9 +153,24 @@ export const PayoutWalletModal = () => {
   }, [setIsOpen])
 
   const handleSubmit = useCallback(
-    ({ option, address }: PayoutWalletValues) => {
-      // TODO: Token account validation
-      if (user) {
+    async (
+      { option, address }: PayoutWalletValues,
+      { setErrors }: { setErrors: any }
+    ) => {
+      try {
+        if (!address || !user) {
+          throw new Error('No user or address')
+        }
+
+        const isUsdcAta = await isTokenAccount({
+          accountAddress: address as SolanaWalletAddress,
+          mint: 'usdc'
+        })
+        if (!isUsdcAta) {
+          // Create ATA via relay
+          throw new Error('Create ATA not implemented')
+        }
+
         const updatedUser = { ...user }
         if (option === 'default') {
           updatedUser.spl_usdc_payout_wallet = null
@@ -159,15 +178,19 @@ export const PayoutWalletModal = () => {
           updatedUser.spl_usdc_payout_wallet = address as SolanaWalletAddress
         }
         dispatch(profilePageActions.updateProfile(updatedUser))
+        setIsOpen(false)
+      } catch (e) {
+        setErrors({ address: 'Please try again later' })
       }
-      setIsOpen(false)
     },
     [dispatch, user, setIsOpen]
   )
 
   const { value: payoutWallet } = useAsync(async () => {
     if (user?.spl_usdc_payout_wallet) {
-      const owner = await getUSDCAssociatedTokenAccountOwner(user.spl_usdc_payout_wallet)
+      const owner = await getUSDCAssociatedTokenAccountOwner(
+        user.spl_usdc_payout_wallet
+      )
       return owner.toString()
     }
     return null
