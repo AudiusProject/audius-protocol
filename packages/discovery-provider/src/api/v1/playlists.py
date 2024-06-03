@@ -677,7 +677,7 @@ class GetPlaylistAccessInfo(Resource):
         playlist = get_playlist(playlist_id=decoded_id, current_user_id=current_user_id)
         if not playlist:
             abort_not_found(playlist_id, ns)
-        playlist = extend_track(playlist[0])
+        playlist = extend_playlist(playlist[0])
         playlist["stream_conditions"] = get_extended_purchase_gate(
             playlist["stream_conditions"]
         )

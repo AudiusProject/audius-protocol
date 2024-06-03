@@ -4,6 +4,7 @@ from flask import Blueprint, Response, request
 
 from src import api_helpers, exceptions
 from src.queries.get_cid_source import get_cid_source
+from src.queries.get_extended_purchase_gate import get_legacy_purchase_gate
 from src.queries.get_feed import get_feed
 from src.queries.get_follow_intersection_users import get_follow_intersection_users
 from src.queries.get_followees_for_user import get_followees_for_user
@@ -175,6 +176,10 @@ def get_playlists_route():
         args["with_users"] = parse_bool_param(request.args.get("with_users"))
     args["current_user_id"] = get_current_user_id(required=False)
     playlists = get_playlists(args)
+    for playlist in playlists:
+        playlist["stream_conditions"] = get_legacy_purchase_gate(
+            playlist["stream_conditions"]
+        )
     return api_helpers.success_response(playlists)
 
 
