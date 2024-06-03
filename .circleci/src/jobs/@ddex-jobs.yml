@@ -26,6 +26,8 @@ ddex-processor-init:
           - node_modules
           - packages/ddex/node_modules
           - packages/ddex/processor/node_modules
+          - packages/libs/node_modules
+          - packages/libs/dist
 
 ddex-processor-test:
   working_directory: ~/audius-protocol
