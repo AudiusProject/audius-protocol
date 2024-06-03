@@ -180,7 +180,8 @@ import {
   SALES_PAGE,
   AUTHORIZED_APPS_SETTINGS_PAGE,
   ACCOUNTS_MANAGING_YOU_SETTINGS_PAGE,
-  ACCOUNTS_YOU_MANAGE_SETTINGS_PAGE
+  ACCOUNTS_YOU_MANAGE_SETTINGS_PAGE,
+  EDIT_PAGE
 } from 'utils/route'
 
 import styles from './WebPlayer.module.css'
@@ -691,6 +692,14 @@ class WebPlayer extends Component {
                 />
                 <DesktopRoute
                   path={UPLOAD_PAGE}
+                  isMobile={isMobile}
+                  render={(props) => (
+                    <UploadPage {...props} scrollToTop={this.scrollToTop} />
+                  )}
+                />
+
+                <DesktopRoute
+                  path={EDIT_PAGE}
                   isMobile={isMobile}
                   render={(props) => (
                     <UploadPage {...props} scrollToTop={this.scrollToTop} />
