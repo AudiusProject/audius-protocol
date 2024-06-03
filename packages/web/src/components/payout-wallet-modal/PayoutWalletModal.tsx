@@ -25,7 +25,8 @@ import { toFormikValidationSchema } from 'zod-formik-adapter'
 import { useModalState } from 'common/hooks/useModalState'
 import { TextField } from 'components/form-fields'
 import { ModalForm } from 'components/modal-form/ModalForm'
-import { isValidSolAddress } from 'services/solana/solana'
+import { getUSDCAssociatedTokenAccountOwner, isValidSolAddress } from 'services/solana/solana'
+import { useAsync } from 'react-use'
 
 const { getAccountUser } = accountSelectors
 
@@ -164,10 +165,18 @@ export const PayoutWalletModal = () => {
     [dispatch, user, setIsOpen]
   )
 
+  const { value: payoutWallet } = useAsync(async () => {
+    if (user?.spl_usdc_payout_wallet) {
+      const owner = await getUSDCAssociatedTokenAccountOwner(user.spl_usdc_payout_wallet)
+      return owner.toString()
+    }
+    return null
+  }, [user])
+
   const initialValues: PayoutWalletValues = user?.spl_usdc_payout_wallet
     ? {
         option: 'custom',
-        address: user.spl_usdc_payout_wallet as string
+        address: payoutWallet ?? ''
       }
     : { option: 'default' }
 
@@ -177,6 +186,7 @@ export const PayoutWalletModal = () => {
         <ModalTitle title={messages.title} icon={<IconMoneyBracket />} />
       </ModalHeader>
       <Formik
+        enableReinitialize
         initialValues={initialValues}
         validationSchema={PayoutWalletSchema}
         onSubmit={handleSubmit}

@@ -13,6 +13,9 @@ import {
 import { useSelector } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'
+import { getUSDCAssociatedTokenAccountOwner } from 'services/solana/solana'
+import { useAsync } from 'react-use'
+
 const { getAccountUser } = accountSelectors
 
 const messages = {
@@ -29,6 +32,14 @@ export const PayoutWalletCard = () => {
   const handleChangeWallet = useCallback(() => {
     setIsOpen(true)
   }, [setIsOpen])
+
+  const { value: payoutWallet } = useAsync(async () => {
+    if (user?.spl_usdc_payout_wallet) {
+      const owner = await getUSDCAssociatedTokenAccountOwner(user.spl_usdc_payout_wallet)
+      return owner.toString()
+    }
+    return null
+  }, [user])
 
   return (
     <Paper direction='column' shadow='far' borderRadius='l' pv='l' ph='xl'>
@@ -58,8 +69,8 @@ export const PayoutWalletCard = () => {
               <IconLogoCircle size='m' />
             )}
             <Text variant='body' size='m' strength='strong'>
-              {user?.spl_usdc_payout_wallet
-                ? shortenSPLAddress(user?.spl_usdc_payout_wallet)
+              {payoutWallet
+                ? shortenSPLAddress(payoutWallet)
                 : messages.audiusWallet}
             </Text>
           </Flex>
