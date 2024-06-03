@@ -11,8 +11,11 @@ import {
   TextLink
 } from '@audius/harmony'
 import { useSelector } from 'react-redux'
+import { useAsync } from 'react-use'
 
 import { useModalState } from 'common/hooks/useModalState'
+import { getAssociatedTokenAccountOwner } from 'services/solana/solana'
+
 const { getAccountUser } = accountSelectors
 
 const messages = {
@@ -29,6 +32,16 @@ export const PayoutWalletCard = () => {
   const handleChangeWallet = useCallback(() => {
     setIsOpen(true)
   }, [setIsOpen])
+
+  const { value: payoutWallet } = useAsync(async () => {
+    if (user?.spl_usdc_payout_wallet) {
+      const owner = await getAssociatedTokenAccountOwner(
+        user.spl_usdc_payout_wallet
+      )
+      return owner.toBase58()
+    }
+    return null
+  }, [user])
 
   return (
     <Paper direction='column' shadow='far' borderRadius='l' pv='l' ph='xl'>
@@ -58,8 +71,8 @@ export const PayoutWalletCard = () => {
               <IconLogoCircle size='m' />
             )}
             <Text variant='body' size='m' strength='strong'>
-              {user?.spl_usdc_payout_wallet
-                ? shortenSPLAddress(user?.spl_usdc_payout_wallet)
+              {payoutWallet
+                ? shortenSPLAddress(payoutWallet)
                 : messages.audiusWallet}
             </Text>
           </Flex>
