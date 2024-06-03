@@ -1,19 +1,12 @@
 import { StyleSheet, View } from 'react-native'
 
+import { Flex } from '@audius/harmony-native'
 import Skeleton from 'app/components/skeleton'
 
 import { LineupTileActionButtons } from './LineupTileActionButtons'
 import { LineupTileRoot } from './LineupTileRoot'
-import { useStyles as useTrackTileStyles } from './styles'
 
 const styles = StyleSheet.create({
-  skeleton: {
-    position: 'absolute',
-    top: 0
-  },
-  metadata: {
-    flexDirection: 'row'
-  },
   bottomButtons: {
     position: 'absolute',
     bottom: 0,
@@ -22,23 +15,15 @@ const styles = StyleSheet.create({
 })
 
 export const LineupTileSkeleton = () => {
-  const trackTileStyles = useTrackTileStyles()
   return (
     <LineupTileRoot>
-      <View style={styles.metadata}>
-        <View style={[trackTileStyles.imageContainer, trackTileStyles.image]}>
-          <Skeleton style={trackTileStyles.image} />
-        </View>
-
-        <View style={[trackTileStyles.titles]}>
-          <View style={trackTileStyles.title}>
-            <Skeleton style={styles.skeleton} width='80%' height='80%' />
-          </View>
-          <View style={[trackTileStyles.artist, { width: '100%' }]}>
-            <Skeleton style={styles.skeleton} width='60%' height='80%' />
-          </View>
-        </View>
-      </View>
+      <Flex direction='row' alignItems='center' style={{ padding: 10 }} gap='m'>
+        <Skeleton height={72} width={72} />
+        <Flex gap='s' flex={1}>
+          <Skeleton width='80%' height={20} />
+          <Skeleton width='60%' height={20} />
+        </Flex>
+      </Flex>
 
       <View style={styles.bottomButtons}>
         <LineupTileActionButtons disabled />

@@ -261,7 +261,7 @@ def update_album_price_history(
             if "splits" in usdc_purchase:
                 splits = usdc_purchase["splits"]
                 # TODO: [PAY-2553] better validation of splits
-                if isinstance(splits, dict):
+                if isinstance(splits, list):
                     new_record.splits = splits
                 else:
                     raise IndexingValidationError(

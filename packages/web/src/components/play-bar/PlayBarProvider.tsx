@@ -3,7 +3,6 @@ import cn from 'classnames'
 import { connect } from 'react-redux'
 import { RouteComponentProps, withRouter } from 'react-router-dom'
 
-import { ClientOnly } from 'components/client-only/ClientOnly'
 import NowPlayingDrawer from 'components/now-playing/NowPlayingDrawer'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { AppState } from 'store/types'
@@ -34,12 +33,10 @@ const PlayBarProvider = ({
       })}
     >
       {isMobile ? (
-        <ClientOnly>
-          <NowPlayingDrawer
-            isPlaying={!!playingUid || !!collectible}
-            shouldClose={addToCollectionOpen === true}
-          />
-        </ClientOnly>
+        <NowPlayingDrawer
+          isPlaying={!!playingUid || !!collectible}
+          shouldClose={addToCollectionOpen === true}
+        />
       ) : (
         <>
           <div className={styles.customHr} />

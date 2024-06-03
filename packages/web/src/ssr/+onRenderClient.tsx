@@ -1,7 +1,6 @@
 import { Buffer } from 'buffer'
 
 import 'setimmediate'
-import { SsrPageProps } from '@audius/common/models'
 import processBrowser from 'process/browser'
 import { hydrateRoot } from 'react-dom/client'
 import type { PageContextClient } from 'vike/types'
@@ -23,11 +22,10 @@ const HYDRATE_CLIENT = true
 
 export default async function render(
   pageContext: PageContextClient & {
-    pageProps: Pick<SsrPageProps, 'track'>
     userAgent: string
   }
 ) {
-  const { pageProps, userAgent } = pageContext
+  const { userAgent } = pageContext
   const isCrawler = checkIsCrawler(userAgent)
   const isMobile = getIsMobile()
 
@@ -35,15 +33,7 @@ export default async function render(
     const { RootWithProviders } = await import('./RootWithProviders')
     hydrateRoot(
       document.getElementById('root') as HTMLElement,
-      <RootWithProviders
-        ssrContextValue={{
-          isServerSide: false,
-          isSsrEnabled: true,
-          pageProps,
-          isMobile,
-          history: null
-        }}
-      />
+      <RootWithProviders isServerSide={false} isMobile={isMobile} />
     )
   }
 }

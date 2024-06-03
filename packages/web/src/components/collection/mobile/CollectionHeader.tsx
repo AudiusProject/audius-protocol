@@ -1,7 +1,6 @@
 import { memo, useCallback } from 'react'
 
 import { useGetCurrentUserId, useGetPlaylistById } from '@audius/common/api'
-import { imageBlank } from '@audius/common/assets'
 import {
   useGatedContentAccessMap,
   useGatedContentAccess
@@ -24,13 +23,11 @@ import { DogEar } from 'components/dog-ear'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { UserLink } from 'components/link'
 import Skeleton from 'components/skeleton/Skeleton'
-import { StaticImage } from 'components/static-image/StaticImage'
 import { GatedContentSection } from 'components/track/GatedContentSection'
 import { UserGeneratedText } from 'components/user-generated-text'
 import { useCollectionCoverArt } from 'hooks/useCollectionCoverArt'
 import { useFlag } from 'hooks/useRemoteConfig'
 import ActionButtonRow from 'pages/track-page/components/mobile/ActionButtonRow'
-import { useSsrContext } from 'ssr/SsrContext'
 import { isShareToastDisabled } from 'utils/clipboardUtil'
 import { isDarkMode } from 'utils/theme/theme'
 
@@ -105,7 +102,6 @@ const CollectionHeader = ({
   imageOverride,
   icon: Icon
 }: MobileCollectionHeaderProps) => {
-  const { isSsrEnabled } = useSsrContext()
   const { isEnabled: isPremiumAlbumsEnabled } = useFlag(
     FeatureFlags.PREMIUM_ALBUMS_ENABLED
   )
@@ -175,10 +171,7 @@ const CollectionHeader = ({
     onOpen({ collectionId, initialFocusedField: 'name' })
   }, [onOpen, collectionId])
 
-  const isLoading = isSsrEnabled && loading
-  const ImageElement = isSsrEnabled ? StaticImage : DynamicImage
-
-  if (isLoading) {
+  if (loading) {
     return (
       <Flex alignItems='center' direction='column' gap='l' p='l'>
         <Skeleton
@@ -206,7 +199,7 @@ const CollectionHeader = ({
       isOwner,
       hasStreamAccess
     })
-    if (!isLoading && DogEarType) {
+    if (!loading && DogEarType) {
       return (
         <div className={styles.borderOffset}>
           <DogEar type={DogEarType} />
@@ -227,10 +220,7 @@ const CollectionHeader = ({
               : messages.hiddenPlaylist
             : type}
         </Text>
-        <ImageElement
-          cid={collection?.cover_art_sizes}
-          size={SquareSizes.SIZE_480_BY_480}
-          fallbackImageUrl={imageBlank}
+        <DynamicImage
           alt={messages.coverArtAltText}
           wrapperClassName={styles.coverArt}
           image={gradient || imageOverride || image}
@@ -247,7 +237,7 @@ const CollectionHeader = ({
               }}
             />
           )}
-        </ImageElement>
+        </DynamicImage>
         <Flex gap='xs' direction='column' alignItems='center'>
           <Text variant='heading' size='s' tag='h1'>
             {title}
@@ -309,7 +299,7 @@ const CollectionHeader = ({
         {showPremiumSection ? (
           <Box w='100%'>
             <GatedContentSection
-              isLoading={isLoading}
+              isLoading={loading}
               contentId={collectionId}
               contentType={PurchaseableContentType.ALBUM}
               streamConditions={streamConditions}
