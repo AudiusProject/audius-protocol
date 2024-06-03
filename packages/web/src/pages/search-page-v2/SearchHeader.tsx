@@ -54,7 +54,7 @@ const filters: Record<Filter, () => ReactElement> = {
       <FilterButton
         label='Genre'
         popupAnchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
-        popupMaxHeight={300}
+        popupMaxHeight={400}
         popupTransformOrigin={{ vertical: 'top', horizontal: 'left' }}
         selection={genre}
         onSelect={(value) => {
@@ -69,6 +69,7 @@ const filters: Record<Filter, () => ReactElement> = {
           value: convertGenreLabelToValue(genre)
         }))}
         showFilterInput
+        filterInputPlaceholder='Search genre'
       />
     )
   },

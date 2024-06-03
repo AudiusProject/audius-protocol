@@ -20,6 +20,7 @@ export const FilterButton = forwardRef<HTMLButtonElement, FilterButtonProps>(
       onSelect,
       disabled,
       showFilterInput,
+      filterInputPlaceholder = 'Search',
       variant = 'fillContainer',
       size = 'default',
       iconRight = IconCaretDown,
@@ -207,8 +208,8 @@ export const FilterButton = forwardRef<HTMLButtonElement, FilterButtonProps>(
               <Flex direction='column' w='100%' gap='s'>
                 {showFilterInput ? (
                   <TextInput
-                    placeholder='Search'
-                    label='Search'
+                    placeholder={filterInputPlaceholder}
+                    label={filterInputPlaceholder}
                     size={TextInputSize.SMALL}
                     startIcon={IconSearch}
                     onClick={(e) => {

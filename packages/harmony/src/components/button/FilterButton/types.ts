@@ -101,4 +101,9 @@ export type FilterButtonProps = {
    * Show a text input to filter the options
    */
   showFilterInput?: boolean
+
+  /**
+   * Placeholder text for the filter input
+   */
+  filterInputPlaceholder?: string
 }
