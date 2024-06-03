@@ -16,6 +16,7 @@
 
 import * as runtime from '../runtime';
 import type {
+  AccessInfoResponse,
   TopListener,
   TrackInspect,
   TrackResponse,
@@ -23,6 +24,8 @@ import type {
   TracksResponse,
 } from '../models';
 import {
+    AccessInfoResponseFromJSON,
+    AccessInfoResponseToJSON,
     TopListenerFromJSON,
     TopListenerToJSON,
     TrackInspectFromJSON,
@@ -51,6 +54,11 @@ export interface GetBulkTracksRequest {
 
 export interface GetTrackRequest {
     trackId: string;
+}
+
+export interface GetTrackAccessInfoRequest {
+    trackId: string;
+    userId?: string;
 }
 
 export interface GetTrackTopListenersRequest {
@@ -210,6 +218,41 @@ export class TracksApi extends runtime.BaseAPI {
      */
     async getTrack(params: GetTrackRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TrackResponse> {
         const response = await this.getTrackRaw(params, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * @hidden
+     * Gets the information necessary to access the track and what access the given user has.
+     */
+    async getTrackAccessInfoRaw(params: GetTrackAccessInfoRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AccessInfoResponse>> {
+        if (params.trackId === null || params.trackId === undefined) {
+            throw new runtime.RequiredError('trackId','Required parameter params.trackId was null or undefined when calling getTrackAccessInfo.');
+        }
+
+        const queryParameters: any = {};
+
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/tracks/{track_id}/access-info`.replace(`{${"track_id"}}`, encodeURIComponent(String(params.trackId))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => AccessInfoResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Gets the information necessary to access the track and what access the given user has.
+     */
+    async getTrackAccessInfo(params: GetTrackAccessInfoRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AccessInfoResponse> {
+        const response = await this.getTrackAccessInfoRaw(params, initOverrides);
         return await response.value();
     }
 

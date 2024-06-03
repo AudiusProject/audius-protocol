@@ -33,7 +33,6 @@ import { DownloadAppBanner } from 'components/banner/DownloadAppBanner'
 import { UpdateAppBanner } from 'components/banner/UpdateAppBanner'
 import { Web3ErrorBanner } from 'components/banner/Web3ErrorBanner'
 import { ChatListener } from 'components/chat-listener/ChatListener'
-import { ClientOnly } from 'components/client-only/ClientOnly'
 import CookieBanner from 'components/cookie-banner/CookieBanner'
 import { DevModeMananger } from 'components/dev-mode-manager/DevModeManager'
 import { HeaderContextConsumer } from 'components/header/mobile/HeaderContextProvider'
@@ -984,12 +983,11 @@ class WebPlayer extends Component {
             </Suspense>
           </div>
           <PlayBarProvider />
-          <ClientOnly>
-            <Suspense fallback={null}>
-              <Modals />
-            </Suspense>
-            <ConnectedMusicConfetti />
-          </ClientOnly>
+
+          <Suspense fallback={null}>
+            <Modals />
+          </Suspense>
+          <ConnectedMusicConfetti />
 
           <RewardClaimedToast />
           {/* Non-mobile */}
@@ -997,12 +995,10 @@ class WebPlayer extends Component {
           {!isMobile ? <DevModeMananger /> : null}
           {/* Mobile-only */}
           {isMobile ? (
-            <ClientOnly>
-              <AppRedirectPopover
-                incrementScroll={incrementScroll}
-                decrementScroll={decrementScroll}
-              />
-            </ClientOnly>
+            <AppRedirectPopover
+              incrementScroll={incrementScroll}
+              decrementScroll={decrementScroll}
+            />
           ) : null}
         </div>
       </div>

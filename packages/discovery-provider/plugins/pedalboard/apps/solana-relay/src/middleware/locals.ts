@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-namespace */
 import { Users } from '@pedalboard/storage'
 import { Logger } from 'pino'
 

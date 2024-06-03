@@ -31,13 +31,11 @@ import {
 } from '@audius/harmony'
 import cn from 'classnames'
 
-import { ClientOnly } from 'components/client-only/ClientOnly'
 import { UserLink } from 'components/link'
 import Skeleton from 'components/skeleton/Skeleton'
 import { GatedContentSection } from 'components/track/GatedContentSection'
 import { UserGeneratedText } from 'components/user-generated-text'
 import { useFlag } from 'hooks/useRemoteConfig'
-import { useSsrContext } from 'ssr/SsrContext'
 
 import { AlbumDetailsText } from '../components/AlbumDetailsText'
 import { RepostsFavoritesStats } from '../components/RepostsFavoritesStats'
@@ -131,7 +129,6 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
   const { isEnabled: isPremiumAlbumsEnabled } = useFlag(
     FeatureFlags.PREMIUM_ALBUMS_ENABLED
   )
-  const { isSsrEnabled } = useSsrContext()
   const [artworkLoading, setIsArtworkLoading] = useState(true)
   const [filterText, setFilterText] = useState('')
   const { spacing } = useTheme()
@@ -172,7 +169,7 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
     )
   }
 
-  const isLoading = !isSsrEnabled && (loading || artworkLoading)
+  const isLoading = loading || artworkLoading
 
   const isPremium =
     isStreamGated && isContentUSDCPurchaseGated(streamConditions)
@@ -237,11 +234,10 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
                   >
                     {title}
                   </Text>
-                  <ClientOnly>
-                    {!isLoading && isOwner ? (
-                      <IconPencil className={styles.editIcon} color='subdued' />
-                    ) : null}
-                  </ClientOnly>
+
+                  {!isLoading && isOwner ? (
+                    <IconPencil className={styles.editIcon} color='subdued' />
+                  ) : null}
                 </>
               )}
             </Flex>
@@ -256,25 +252,24 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
           </Flex>
           <div>{renderStatsRow(isLoading)}</div>
         </Flex>
-        <ClientOnly>
-          {isLoading ? (
-            <Skeleton height='64px' width='100%' />
-          ) : (
-            <CollectionActionButtons
-              variant={variant}
-              userId={userId}
-              collectionId={collectionId}
-              isPlayable={isPlayable}
-              isPlaying={playing}
-              isPreviewing={previewing}
-              isPremium={isPremium}
-              isOwner={isOwner}
-              tracksLoading={tracksLoading}
-              onPlay={onPlay}
-              onPreview={onPreview}
-            />
-          )}
-        </ClientOnly>
+
+        {isLoading ? (
+          <Skeleton height='64px' width='100%' />
+        ) : (
+          <CollectionActionButtons
+            variant={variant}
+            userId={userId}
+            collectionId={collectionId}
+            isPlayable={isPlayable}
+            isPlaying={playing}
+            isPreviewing={previewing}
+            isPremium={isPremium}
+            isOwner={isOwner}
+            tracksLoading={tracksLoading}
+            onPlay={onPlay}
+            onPreview={onPreview}
+          />
+        )}
       </Flex>
       {onFilterChange ? (
         <Flex

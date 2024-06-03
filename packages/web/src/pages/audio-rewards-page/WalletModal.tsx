@@ -10,7 +10,14 @@ import {
   TokenDashboardPageModalState
 } from '@audius/common/store'
 import { stringWeiToBN, weiToString, Nullable } from '@audius/common/utils'
-import { IconReceive, IconSend } from '@audius/harmony'
+import {
+  IconReceive,
+  IconSend,
+  IconWallet,
+  Modal,
+  ModalHeader,
+  ModalTitle
+} from '@audius/harmony'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
@@ -50,7 +57,7 @@ const messages = {
   sending: 'Your $AUDIO is Sending',
   sent: 'Your $AUDIO Has Been Sent',
   sendError: 'Uh oh! Something went wrong sending your $AUDIO.',
-  externalWallets: 'External Wallets',
+  connectedWallets: 'Connected Wallets',
   removeWallets: 'Remove Wallet',
   awaitConvertingEthToSolAudio: 'Hold On a Moment'
 }
@@ -72,7 +79,7 @@ export const TitleWrapper = ({
 
 const titlesMap = {
   CONNECT_WALLETS: {
-    ADD_WALLET: () => messages.externalWallets,
+    ADD_WALLET: () => messages.connectedWallets,
     REMOVE_WALLET: () => messages.removeWallets,
     ERROR: () => messages.sendError
   },
@@ -190,7 +197,7 @@ const ModalContent = ({
       const claimStage = modalState.flowState
       switch (claimStage.stage) {
         case 'ADD_WALLET':
-          ret = <ConnectWalletsBody />
+          ret = <ConnectWalletsBody onClose={onClose} />
           break
         case 'REMOVE_WALLET':
           ret = <RemoveWalletBody />
@@ -319,13 +326,28 @@ const WalletModal = () => {
 
   const wm = useWithMobileStyle(styles.mobile)
 
+  if (modalState?.stage === 'CONNECT_WALLETS') {
+    return (
+      <Modal size='small' isOpen={modalVisible} onClose={onClose}>
+        <ModalHeader onClose={onClose}>
+          <ModalTitle title={getTitle(modalState)} icon={<IconWallet />} />
+        </ModalHeader>
+        <ModalContent
+          modalState={modalState}
+          onInputSendData={onInputSendData}
+          onConfirmSend={onConfirmSend}
+          onClose={onClose}
+        />
+      </Modal>
+    )
+  }
+
   return (
     <>
       <ModalDrawer
         isOpen={modalVisible}
         onClose={onClose}
         bodyClassName={cn(styles.modalBody, {
-          [styles.wallets]: modalState?.stage === 'CONNECT_WALLETS',
           [styles.convertingEth]:
             modalState &&
             'flowState' in modalState &&

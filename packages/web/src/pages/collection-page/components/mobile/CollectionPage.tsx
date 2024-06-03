@@ -16,7 +16,6 @@ import {
   CollectionsPageType
 } from '@audius/common/store'
 
-import { ClientOnly } from 'components/client-only/ClientOnly'
 import CollectionHeader from 'components/collection/mobile/CollectionHeader'
 import { HeaderContext } from 'components/header/mobile/HeaderContextProvider'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
@@ -312,30 +311,28 @@ const CollectionPage = ({
           />
         </div>
         <div className={styles.collectionTracksContainer}>
-          <ClientOnly>
-            {!tracksLoading ? (
-              isEmpty ? (
-                <>
-                  <div className={styles.divider}></div>
-                  <EmptyTrackList
-                    isAlbum={isAlbum}
-                    customEmptyText={customEmptyText}
-                  />
-                </>
-              ) : (
-                <TrackList
-                  containerClassName={''}
-                  itemClassName={''}
-                  tracks={trackList}
-                  showDivider
-                  togglePlay={togglePlay}
+          {!tracksLoading ? (
+            isEmpty ? (
+              <>
+                <div className={styles.divider}></div>
+                <EmptyTrackList
+                  isAlbum={isAlbum}
+                  customEmptyText={customEmptyText}
                 />
-              )
-            ) : null}
-            {collectionLoading && typeTitle === 'Audio NFT Playlist' ? (
-              <LoadingSpinner className={styles.spinner} />
-            ) : null}
-          </ClientOnly>
+              </>
+            ) : (
+              <TrackList
+                containerClassName={''}
+                itemClassName={''}
+                tracks={trackList}
+                showDivider
+                togglePlay={togglePlay}
+              />
+            )
+          ) : null}
+          {collectionLoading && typeTitle === 'Audio NFT Playlist' ? (
+            <LoadingSpinner className={styles.spinner} />
+          ) : null}
         </div>
       </div>
     </MobilePageContainer>

@@ -34,6 +34,12 @@ jobs:
       requires:
         - web-init
 
+  - web-check-ssr-staging-bundlesize:
+      context:
+        - Vercel
+      requires:
+        - web-build-ssr-staging
+
   - web-build-production:
       context:
         - Vercel
@@ -51,6 +57,13 @@ jobs:
       filters:
         branches:
           only: /(^release.*)$/
+
+  - web-check-ssr-production-bundlesize:
+      context:
+        - Vercel
+      requires:
+        - web-build-ssr-production
+
 
   - web-test:
       context:
@@ -73,6 +86,7 @@ jobs:
       requires:
         - web-build-staging
         - web-build-ssr-staging
+        - web-check-ssr-staging-bundlesize
       filters:
         branches:
           only: /^main$/
@@ -83,6 +97,7 @@ jobs:
         - web-init
         - web-build-production
         - web-build-ssr-production
+        - web-check-ssr-production-bundlesize
       filters:
         branches:
           only: /(^release.*)$/
@@ -93,6 +108,7 @@ jobs:
         - web-init
         - web-build-staging
         - web-build-ssr-staging
+        - web-check-ssr-staging-bundlesize
       filters:
         branches:
           only: /(^release.*)$/
@@ -103,6 +119,7 @@ jobs:
       requires:
         - web-build-production
         - web-build-ssr-production
+        - web-check-ssr-production-bundlesize
       filters:
         branches:
           only: /(^release.*)$/

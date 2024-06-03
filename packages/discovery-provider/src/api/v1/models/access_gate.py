@@ -47,6 +47,14 @@ wild_card_split = WildcardModel(
 )
 ns.add_model("wild_card_split", wild_card_split)
 
+payment_split = ns.model(
+    "payment_split",
+    {
+        "user_id": fields.Integer(required=True),
+        "percentage": fields.Float(required=True),
+    },
+)
+
 usdc_gate = ns.model(
     "usdc_gate",
     {
@@ -73,6 +81,50 @@ access_gate = ns.add_model(
             fields.Nested(tip_gate),
             fields.Nested(follow_gate),
             fields.Nested(purchase_gate),
+            fields.Nested(nft_gate),
+        ],
+    ),
+)
+
+
+extended_payment_split = ns.clone(
+    "extended_payment_split",
+    payment_split,
+    {
+        "eth_wallet": fields.String(required=True),
+        "payout_wallet": fields.String(required=True),
+        "amount": fields.Integer(required=True),
+    },
+)
+
+
+extended_usdc_gate = ns.model(
+    "extended_usdc_gate",
+    {
+        "price": fields.Integer(required=True),
+        "splits": fields.List(fields.Nested(extended_payment_split), required=True),
+    },
+)
+
+extended_purchase_gate = ns.model(
+    "extended_purchase_gate",
+    {
+        "usdc_purchase": fields.Nested(
+            extended_usdc_gate,
+            required=True,
+            description="Must pay the total price and split to the given addresses to unlock",
+        )
+    },
+)
+
+extended_access_gate = ns.add_model(
+    "extended_access_gate",
+    OneOfModel(
+        "extended_access_gate",
+        [
+            fields.Nested(tip_gate),
+            fields.Nested(follow_gate),
+            fields.Nested(extended_purchase_gate),
             fields.Nested(nft_gate),
         ],
     ),

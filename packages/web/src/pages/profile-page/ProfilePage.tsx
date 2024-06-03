@@ -1,6 +1,6 @@
 import { RefObject, memo } from 'react'
 
-import { useSsrContext } from 'ssr/SsrContext'
+import { useIsMobile } from 'hooks/useIsMobile'
 
 import ProfilePageProvider from './ProfilePageProvider'
 import DesktopProfilePage from './components/desktop/ProfilePage'
@@ -11,7 +11,7 @@ type ProfilePageProps = {
 }
 
 const ProfilePage = ({ containerRef }: ProfilePageProps) => {
-  const { isMobile } = useSsrContext()
+  const isMobile = useIsMobile()
   const content = isMobile ? MobileProfilePage : DesktopProfilePage
 
   return (

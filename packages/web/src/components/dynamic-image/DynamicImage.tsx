@@ -19,6 +19,7 @@ const placeholder =
   'linear-gradient(315deg, var(--harmony-n-100) 0%, var(--harmony-n-50) 100%)'
 
 export type DynamicImageProps = {
+  alt?: string
   // Image URL (or style.backgroundImage)
   image?: string
   // Whether or not the image is a full URL. This can be set to false

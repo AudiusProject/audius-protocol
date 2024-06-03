@@ -1,22 +1,23 @@
-import express from 'express'
 import { json } from 'body-parser'
 import cors from 'cors'
+import express from 'express'
+
 import { config } from './config'
 import { logger } from './logger'
+import { errorHandlerMiddleware } from './middleware/errorHandler'
 import {
   incomingRequestLogger,
   outgoingRequestLogger
 } from './middleware/logging'
-import { relay } from './routes/relay/relay'
-import { errorHandlerMiddleware } from './middleware/errorHandler'
 import {
   userSignerRecoveryMiddleware,
-  discoveryNodeSignerRecoveryMiddleware,
+  discoveryNodeSignerRecoveryMiddleware
 } from './middleware/signerRecovery'
 import { cache } from './routes/cache'
 import { feePayer } from './routes/feePayer'
 import { health } from './routes/health/health'
 import { listen } from './routes/listen/listen'
+import { relay } from './routes/relay/relay'
 
 const main = async () => {
   const { serverHost, serverPort } = config
@@ -39,4 +40,4 @@ const main = async () => {
   })
 }
 
-main().catch(logger.error.bind(logger))
+main().catch((e) => logger.error({ error: e }, 'Fatal error in main!'))

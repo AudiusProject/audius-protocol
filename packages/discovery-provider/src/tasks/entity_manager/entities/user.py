@@ -8,6 +8,7 @@ from eth_account.messages import defunct_hash_message
 from nacl.encoding import HexEncoder
 from nacl.signing import VerifyKey
 from solders.pubkey import Pubkey
+from sqlalchemy import desc
 from sqlalchemy.orm.session import Session
 
 from src.challenges.challenge_event import ChallengeEvent
@@ -18,6 +19,7 @@ from src.models.tracks.track import Track
 from src.models.users.associated_wallet import AssociatedWallet
 from src.models.users.user import User
 from src.models.users.user_events import UserEvent
+from src.models.users.user_payout_wallet_history import UserPayoutWalletHistory
 from src.queries.get_balances import enqueue_immediate_balance_refresh
 from src.solana.solana_client_manager import SolanaClientManager
 from src.solana.solana_helpers import SPL_TOKEN_ID
@@ -296,7 +298,30 @@ def update_user(
     return user_record
 
 
-def update_user_metadata(user_record: User, metadata: Dict, params):
+def update_user_payout_wallet_history(
+    session: Session, wallet: str, params: ManageEntityParameters
+):
+    new_record = UserPayoutWalletHistory()
+    new_record.user_id = params.user_id
+    new_record.spl_usdc_payout_wallet = wallet
+    new_record.block_timestamp = params.block_datetime
+    new_record.blocknumber = params.block_number
+    old_record = (
+        session.query(UserPayoutWalletHistory)
+        .filter(UserPayoutWalletHistory.user_id == params.user_id)
+        .order_by(desc(UserPayoutWalletHistory.block_timestamp))
+        .first()
+    )
+    if not old_record or (
+        old_record.block_timestamp != new_record.block_timestamp
+        and not old_record.equals(new_record)
+    ):
+        session.add(new_record)
+
+
+def update_user_metadata(
+    user_record: User, metadata: Dict, params: ManageEntityParameters
+):
     session = params.session
     redis = params.redis
     web3 = params.web3
@@ -344,6 +369,11 @@ def update_user_metadata(user_record: User, metadata: Dict, params):
         )
     if "events" in metadata and metadata["events"]:
         update_user_events(user_record, metadata["events"], challenge_event_bus, params)
+
+    if "spl_usdc_payout_wallet" in metadata:
+        update_user_payout_wallet_history(
+            session, metadata["spl_usdc_payout_wallet"], params
+        )
 
     return user_record
 

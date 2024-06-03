@@ -14,15 +14,15 @@ import { useSsrContext } from '../ssr/SsrContext'
 
 import { useHistoryContext } from './HistoryProvider'
 
-export const ReduxProvider = ({
-  children,
-  initialStoreState
-}: {
+type ReduxProviderProps = {
   children: ReactNode
   // Sets up an initial store state
   initialStoreState?: PartialDeep<AppState>
-}) => {
-  const { pageProps, isServerSide } = useSsrContext()
+}
+
+export const ReduxProvider = (props: ReduxProviderProps) => {
+  const { children, initialStoreState } = props
+  const { isServerSide } = useSsrContext()
   const { history } = useHistoryContext()
   const isMobile = useIsMobile()
 
@@ -30,13 +30,7 @@ export const ReduxProvider = ({
   const persistorRef = useRef<Persistor>()
 
   if (!storeRef.current) {
-    const store = configureStore(
-      history,
-      isMobile,
-      pageProps,
-      isServerSide,
-      initialStoreState
-    )
+    const store = configureStore(history, isMobile, initialStoreState)
     storeRef.current = store
     const persistor = persistStore(store)
     persistorRef.current = persistor

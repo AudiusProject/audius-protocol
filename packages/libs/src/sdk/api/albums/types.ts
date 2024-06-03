@@ -1,6 +1,7 @@
 import { WalletAdapter } from '@solana/wallet-adapter-base'
 import { z } from 'zod'
 
+import { PublicKeySchema } from '../../services/Solana'
 import { DDEXResourceContributor, DDEXCopyright } from '../../types/DDEX'
 import { AudioFile, ImageFile } from '../../types/File'
 import { Genre } from '../../types/Genre'
@@ -9,14 +10,21 @@ import { Mood } from '../../types/Mood'
 import { createUploadTrackMetadataSchema } from '../tracks/types'
 
 export const getAlbumSchema = z.object({
-  userId: z.string().optional(),
-  albumId: z.string()
+  userId: HashId.optional(),
+  albumId: HashId
 })
 
 export type getAlbumRequest = z.input<typeof getAlbumSchema>
 
+export const getAlbumsSchema = z.object({
+  userId: HashId.optional(),
+  id: z.array(HashId)
+})
+
+export type getAlbumsRequest = z.input<typeof getAlbumsSchema>
+
 export const getAlbumTracksSchema = z.object({
-  albumId: z.string()
+  albumId: HashId
 })
 
 export type getAlbumTracksRequest = z.input<typeof getAlbumTracksSchema>
@@ -150,27 +158,43 @@ export const UnrepostAlbumSchema = z
 
 export type UnrepostAlbumRequest = z.input<typeof UnrepostAlbumSchema>
 
+const PurchaseAlbumSchemaBase = z.object({
+  /** The ID of the user purchasing the album. */
+  userId: HashId,
+  /** The ID of the album to purchase. */
+  albumId: HashId,
+  /**
+   * The price of the album at the time of purchase (in dollars if number, USDC if bigint).
+   * Used to check against current album price in case it changed,
+   * effectively setting a "max price" for the purchase.
+   */
+  price: z.union([z.number().min(0), z.bigint().min(BigInt(0))]),
+  /** Any extra amount the user wants to donate (in dollars if number, USDC if bigint) */
+  extraAmount: z
+    .union([z.number().min(0), z.bigint().min(BigInt(0))])
+    .optional()
+})
+
+export const GetPurchaseAlbumTransactionSchema = z
+  .object({
+    /** A wallet to use to purchase (defaults to the authed user's user bank if not specified) */
+    wallet: PublicKeySchema.optional()
+  })
+  .merge(PurchaseAlbumSchemaBase)
+  .strict()
+
+export type GetPurchaseAlbumTransactionRequest = z.input<
+  typeof GetPurchaseAlbumTransactionSchema
+>
+
 export const PurchaseAlbumSchema = z
   .object({
-    /** The ID of the user purchasing the album. */
-    userId: HashId,
-    /** The ID of the album to purchase. */
-    albumId: HashId,
-    /**
-     * The price of the album at the time of purchase (in dollars if number, USDC if bigint).
-     * Used to check against current album price in case it changed,
-     * effectively setting a "max price" for the purchase.
-     */
-    price: z.union([z.number().min(0), z.bigint().min(BigInt(0))]),
-    /** Any extra amount the user wants to donate (in dollars if number, USDC if bigint) */
-    extraAmount: z
-      .union([z.number().min(0), z.bigint().min(BigInt(0))])
-      .optional(),
     /** A wallet to use to purchase (defaults to the authed user's user bank if not specified) */
     walletAdapter: z
       .custom<Pick<WalletAdapter, 'publicKey' | 'sendTransaction'>>()
       .optional()
   })
+  .merge(PurchaseAlbumSchemaBase)
   .strict()
 
 export type PurchaseAlbumRequest = z.input<typeof PurchaseAlbumSchema>

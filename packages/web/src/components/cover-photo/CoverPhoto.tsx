@@ -8,7 +8,6 @@ import { FileWithPreview } from 'react-dropzone'
 import Lottie from 'react-lottie'
 
 import loadingSpinner from 'assets/animations/loadingSpinner.json'
-import { ClientOnly } from 'components/client-only/ClientOnly'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import ImageSelectionButton from 'components/image-selection/ImageSelectionButton'
 import { useCoverPhoto } from 'hooks/useCoverPhoto'
@@ -95,17 +94,15 @@ const CoverPhoto = ({
   }
 
   const loadingElement = (
-    <ClientOnly>
-      <div className={cn(styles.overlay, { [styles.processing]: processing })}>
-        <Lottie
-          options={{
-            loop: true,
-            autoplay: true,
-            animationData: loadingSpinner
-          }}
-        />
-      </div>
-    </ClientOnly>
+    <div className={cn(styles.overlay, { [styles.processing]: processing })}>
+      <Lottie
+        options={{
+          loop: true,
+          autoplay: true,
+          animationData: loadingSpinner
+        }}
+      />
+    </div>
   )
 
   return (
@@ -123,19 +120,18 @@ const CoverPhoto = ({
           {processing ? loadingElement : null}
         </div>
       </DynamicImage>
-      <ClientOnly>
-        <div className={styles.button}>
-          {edit ? (
-            <ImageSelectionButton
-              imageName={messages.imageName}
-              hasImage={Boolean(image || updatedCoverPhoto)}
-              error={!!error}
-              onSelect={handleDrop}
-              source='CoverPhoto'
-            />
-          ) : null}
-        </div>
-      </ClientOnly>
+
+      <div className={styles.button}>
+        {edit ? (
+          <ImageSelectionButton
+            imageName={messages.imageName}
+            hasImage={Boolean(image || updatedCoverPhoto)}
+            error={!!error}
+            onSelect={handleDrop}
+            source='CoverPhoto'
+          />
+        ) : null}
+      </div>
     </div>
   )
 }

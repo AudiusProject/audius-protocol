@@ -24,8 +24,13 @@ from src.api.v1.helpers import (
     success_response,
     trending_parser,
 )
-from src.api.v1.models.playlists import full_playlist_model, playlist_model
+from src.api.v1.models.playlists import (
+    album_access_info,
+    full_playlist_model,
+    playlist_model,
+)
 from src.api.v1.models.users import user_model_full
+from src.queries.get_extended_purchase_gate import get_extended_purchase_gate
 from src.queries.get_playlist_tracks import get_playlist_tracks
 from src.queries.get_playlists import get_playlists
 from src.queries.get_reposters_for_playlist import get_reposters_for_playlist
@@ -648,3 +653,35 @@ class GetUnclaimedPlaylistId(Resource):
     def get(self):
         unclaimed_id = get_unclaimed_id("playlist")
         return success_response(unclaimed_id)
+
+
+access_info_response = make_response(
+    "access_info_response", ns, fields.Nested(album_access_info)
+)
+
+
+@ns.route("/<string:playlist_id>/access-info")
+class GetPlaylistAccessInfo(Resource):
+    @record_metrics
+    @ns.doc(
+        id="Get Playlist Access Info",
+        description="Gets the information necessary to access the playlist and what access the given user has.",
+        params={"playlist_id": "A Playlist ID"},
+    )
+    @ns.expect(current_user_parser)
+    @ns.marshal_with(access_info_response)
+    def get(self, playlist_id: str):
+        args = current_user_parser.parse_args()
+        decoded_id = decode_with_abort(playlist_id, full_ns)
+        current_user_id = get_current_user_id(args)
+        playlist = get_playlist(playlist_id=decoded_id, current_user_id=current_user_id)
+        if not playlist:
+            abort_not_found(playlist_id, ns)
+        playlist = extend_playlist(playlist[0])
+        playlist["stream_conditions"] = get_extended_purchase_gate(
+            playlist["stream_conditions"]
+        )
+        playlist["download_conditions"] = get_extended_purchase_gate(
+            playlist["download_conditions"]
+        )
+        return success_response(playlist)

@@ -118,17 +118,18 @@ export class Create extends BaseNotification<CreateNotificationRow> {
     if (this.trackId) {
       description = `${userName} released a new track`
     } else {
-      description = `${userName} released a new ${this.isAlbum ? 'album' : 'playlist'
-        } ${playlist.playlist_name}`
+      description = `${userName} released a new ${
+        this.isAlbum ? 'album' : 'playlist'
+      } ${playlist.playlist_name}`
     }
 
     const entityType = this.trackId
       ? 'Track'
       : this.playlistId && this.isAlbum
-        ? 'Album'
-        : this.playlistId && !this.isAlbum
-          ? 'Playlist'
-          : null
+      ? 'Album'
+      : this.playlistId && !this.isAlbum
+      ? 'Playlist'
+      : null
 
     const entityId = this.trackId ?? this.playlistId
 
@@ -191,8 +192,9 @@ export class Create extends BaseNotification<CreateNotificationRow> {
                 body: description,
                 data: {
                   type: 'UserSubscription',
-                  id: `timestamp:${this.getNotificationTimestamp()}:group_id:${this.notification.group_id
-                    }`,
+                  id: `timestamp:${this.getNotificationTimestamp()}:group_id:${
+                    this.notification.group_id
+                  }`,
                   entityType: capitalize(entityType),
                   entityIds: [entityId],
                   userId: ownerId

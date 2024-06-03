@@ -27,7 +27,6 @@ import {
   IconRepost as IconReposts
 } from '@audius/harmony'
 
-import { ClientOnly } from 'components/client-only/ClientOnly'
 import CollectiblesPage from 'components/collectibles/components/CollectiblesPage'
 import { CollectionCard } from 'components/collection'
 import CoverPhoto from 'components/cover-photo/CoverPhoto'
@@ -665,35 +664,32 @@ const ProfilePage = ({
               onSortByPopular={onSortByPopular}
               shouldMaskContent={shouldMaskContent}
             />
-            <ClientOnly>
-              <div className={styles.content}>
-                {profile && profile.is_deactivated ? (
-                  <DeactivatedProfileTombstone />
-                ) : (
-                  body
-                )}
-              </div>
-            </ClientOnly>
+
+            <div className={styles.content}>
+              {profile && profile.is_deactivated ? (
+                <DeactivatedProfileTombstone />
+              ) : (
+                body
+              )}
+            </div>
           </Flex>
         </Mask>
       </Box>
-      {/* NOTE: KJ - This ClientOnly might not be necessary, but helps keep server computation down */}
-      <ClientOnly>
-        {profile ? (
-          <>
-            <BlockUserConfirmationModal
-              user={profile}
-              isVisible={showBlockUserConfirmationModal}
-              onClose={onCloseBlockUserConfirmationModal}
-            />
-            <UnblockUserConfirmationModal
-              user={profile}
-              isVisible={showUnblockUserConfirmationModal}
-              onClose={onCloseUnblockUserConfirmationModal}
-            />
-          </>
-        ) : null}
-      </ClientOnly>
+
+      {profile ? (
+        <>
+          <BlockUserConfirmationModal
+            user={profile}
+            isVisible={showBlockUserConfirmationModal}
+            onClose={onCloseBlockUserConfirmationModal}
+          />
+          <UnblockUserConfirmationModal
+            user={profile}
+            isVisible={showUnblockUserConfirmationModal}
+            onClose={onCloseUnblockUserConfirmationModal}
+          />
+        </>
+      ) : null}
     </Page>
   )
 }

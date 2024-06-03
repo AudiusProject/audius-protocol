@@ -31,7 +31,7 @@ class RouteArgs(TypedDict):
     slug: str
 
 
-class GetTrackArgs(TypedDict):
+class GetTrackArgs(TypedDict, total=False):
     user_id: int
     limit: int
     offset: int

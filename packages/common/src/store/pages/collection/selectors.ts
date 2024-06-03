@@ -1,12 +1,12 @@
 import { createSelector } from 'reselect'
 
+import { ID, UID } from '~/models/Identifiers'
+import { Status } from '~/models/Status'
 import { getCollection as getCachedCollection } from '~/store/cache/collections/selectors'
 import { getUser as getCachedUser } from '~/store/cache/users/selectors'
-import { CommonState } from '~/store/commonStore'
+import type { CommonState } from '~/store/commonStore'
 import { getCollection as getSmartCollection } from '~/store/pages/smart-collection/selectors'
 import { Nullable } from '~/utils/typeUtils'
-
-import { ID, UID, Status } from '../../../models'
 
 export const getCollectionUid = (state: CommonState) =>
   state.pages.collection.collectionUid
@@ -47,10 +47,6 @@ export const getCollection = (
 export const getUser = (state: CommonState, params?: { id?: ID }) => {
   const props = params?.id ? { id: params.id } : { uid: getUserUid(state) }
   return getCachedUser(state, props)
-}
-
-export const getIsInitialFetchAfterSsr = (state: CommonState) => {
-  return state.pages.collection.isInitialFetchAfterSsr
 }
 
 export const makeGetCollection = () =>

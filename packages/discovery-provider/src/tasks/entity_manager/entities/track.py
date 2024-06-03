@@ -26,6 +26,7 @@ from src.tasks.entity_manager.utils import (
     Action,
     EntityType,
     ManageEntityParameters,
+    convert_legacy_purchase_access_gate,
     copy_record,
     is_ddex_signer,
     parse_release_date,
@@ -101,13 +102,17 @@ def update_track_price_history(
             if is_stream_gated
             else track_metadata["download_conditions"]
         )
+        # Convert legacy conditions to new array format with user IDs
+        conditions = convert_legacy_purchase_access_gate(
+            track_record.owner_id, conditions
+        )
         if USDC_PURCHASE_KEY in conditions:
             usdc_purchase = conditions[USDC_PURCHASE_KEY]
             new_record = TrackPriceHistory()
             new_record.track_id = track_record.track_id
             new_record.block_timestamp = timestamp
             new_record.blocknumber = blocknumber
-            new_record.splits = {}
+            new_record.splits = []
             new_record.access = (
                 PurchaseAccessType.stream
                 if is_stream_gated
@@ -129,7 +134,7 @@ def update_track_price_history(
             if "splits" in usdc_purchase:
                 splits = usdc_purchase["splits"]
                 # TODO: [PAY-2553] better validation of splits
-                if isinstance(splits, dict):
+                if isinstance(splits, list):
                     new_record.splits = splits
                 else:
                     raise IndexingValidationError(
@@ -240,14 +245,20 @@ def populate_track_record_metadata(track_record: Track, track_metadata, handle, 
                 is_valid_json_field(track_metadata, "stream_conditions")
                 or track_metadata["stream_conditions"] is None
             ):
-                track_record.stream_conditions = track_metadata["stream_conditions"]
+                # Convert legacy conditions to new array format with user IDs
+                track_record.stream_conditions = convert_legacy_purchase_access_gate(
+                    track_record.owner_id, track_metadata["stream_conditions"]
+                )
 
         elif key == "download_conditions":
             if "download_conditions" in track_metadata and (
                 is_valid_json_field(track_metadata, "download_conditions")
                 or track_metadata["download_conditions"] is None
             ):
-                track_record.download_conditions = track_metadata["download_conditions"]
+                # Convert legacy conditions to new array format with user IDs
+                track_record.download_conditions = convert_legacy_purchase_access_gate(
+                    track_record.owner_id, track_metadata["download_conditions"]
+                )
         elif key == "allowed_api_keys":
             if key in track_metadata:
                 if track_metadata[key] is None:

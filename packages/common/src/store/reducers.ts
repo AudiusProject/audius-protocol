@@ -2,8 +2,6 @@ import { History } from 'history'
 import { combineReducers } from 'redux'
 import type { Storage } from 'redux-persist'
 
-import { SsrPageProps } from '~/models/SsrPageProps'
-
 import apiReducer from '../api/reducer'
 import { Kind } from '../models'
 
@@ -50,10 +48,7 @@ import premiumTracks from './pages/premium-tracks/slice'
 import profileReducer from './pages/profile/reducer'
 import { ProfilePageState } from './pages/profile/types'
 import remixes from './pages/remixes/slice'
-import {
-  savePageReducer,
-  persistedSavePageReducer
-} from './pages/saved-page/reducer'
+import { persistedSavePageReducer } from './pages/saved-page/reducer'
 import searchResults from './pages/search-results/reducer'
 import { SearchPageState } from './pages/search-results/types'
 import settings from './pages/settings/reducer'
@@ -146,12 +141,7 @@ import wallet from './wallet/slice'
  * A function that creates common reducers.
  * @returns an object of all reducers to be used with `combineReducers`
  */
-export const reducers = (
-  storage: Storage,
-  ssrPageProps?: SsrPageProps,
-  isServerSide?: boolean,
-  history?: History
-) => ({
+export const reducers = (storage: Storage, history?: History) => ({
   account,
 
   api: apiReducer,
@@ -241,20 +231,18 @@ export const reducers = (
     audioRewards: audioRewardsSlice.reducer,
     audioTransactions: audioTransactionsSlice.reducer,
     chat: chatReducer,
-    collection: collection(ssrPageProps),
+    collection,
     deactivateAccount: deactivateAccountReducer,
     feed,
     explore: explorePageReducer,
     exploreCollections: exploreCollectionsReducer,
     historyPage: historyPageReducer,
-    profile: profileReducer(ssrPageProps),
+    profile: profileReducer,
     smartCollection,
-    savedPage: isServerSide
-      ? savePageReducer
-      : persistedSavePageReducer(storage),
+    savedPage: persistedSavePageReducer(storage),
     searchResults,
     tokenDashboard: tokenDashboardSlice.reducer,
-    track: track(ssrPageProps),
+    track,
     trending: trending(history),
     trendingPlaylists,
     trendingUnderground,

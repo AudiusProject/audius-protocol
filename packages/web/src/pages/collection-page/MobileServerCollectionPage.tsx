@@ -1,7 +1,10 @@
-import { ID } from '@audius/common/src/models'
-import { getCollection } from '@audius/common/src/store/cache/collections/selectors'
-import { getUser } from '@audius/common/src/store/cache/users/selectors'
+import { Collection } from '@audius/common/src/models/Collection'
+import {
+  getCollection,
+  getUser
+} from '@audius/common/src/store/pages/collection/selectors'
 import { formatCount } from '@audius/common/src/utils/formatUtil'
+import { Nullable } from '@audius/common/src/utils/typeUtils'
 import IconHeart from '@audius/harmony/src/assets/icons/Heart.svg'
 import IconKebabHorizontal from '@audius/harmony/src/assets/icons/KebabHorizontal.svg'
 import IconPlay from '@audius/harmony/src/assets/icons/Play.svg'
@@ -25,18 +28,8 @@ import { profilePage } from 'utils/route'
 
 import { ServerTrackList } from './components/ServerTrackList'
 
-type ServerCollectionPageProps = {
-  collectionId: ID
-}
-
-export const MobileServerCollectionPage = (
-  props: ServerCollectionPageProps
-) => {
-  const { collectionId } = props
-
-  const collection = useSelector((state) =>
-    getCollection(state, { id: collectionId })
-  )
+export const MobileServerCollectionPage = () => {
+  const collection = useSelector(getCollection) as Nullable<Collection>
   const user = useSelector((state) =>
     getUser(state, { id: collection?.playlist_owner_id })
   )
@@ -44,6 +37,7 @@ export const MobileServerCollectionPage = (
   if (!collection || !user) return null
 
   const {
+    playlist_id,
     cover_art,
     is_album,
     playlist_name,
@@ -135,7 +129,7 @@ export const MobileServerCollectionPage = (
           />
         </Flex>
         <Divider />
-        <ServerTrackList collectionId={collectionId} />
+        <ServerTrackList collectionId={playlist_id} />
       </Paper>
     </Flex>
   )

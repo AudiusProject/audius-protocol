@@ -520,12 +520,6 @@ exports[`Supporting Rank Up Notification Process email notification for supporti
     }
 
     @media (max-width: 720px) {
-      #bodyCell {
-        text-align: center;
-      }
-    }
-
-    @media (max-width: 720px) {
       .templateContainer {
         display: table !important;
         max-width: 384px !important;

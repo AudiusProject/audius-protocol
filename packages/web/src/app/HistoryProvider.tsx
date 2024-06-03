@@ -2,7 +2,6 @@ import { createContext, memo, useContext } from 'react'
 
 import { History } from 'history'
 
-import { useSsrContext } from 'ssr/SsrContext'
 import { createHistory } from 'utils/history'
 
 export type HistoryContextType = {
@@ -17,11 +16,11 @@ export const HistoryContext = createContext<HistoryContextType>({
   history: null as any
 })
 
+const history = createHistory()
+
 // TODO: could put getPathname in here
 export const HistoryContextProvider = memo(
   (props: { children: JSX.Element }) => {
-    const { history: ssrHistory } = useSsrContext()
-    const history = ssrHistory || createHistory()
     return (
       <HistoryContext.Provider value={{ history }}>
         {props.children}

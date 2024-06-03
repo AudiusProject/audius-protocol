@@ -1,4 +1,4 @@
-import { useCallback, useContext, useEffect, MouseEvent } from 'react'
+import { useCallback, useContext, useEffect, MouseEvent, useMemo } from 'react'
 
 import { Chain, BNWei } from '@audius/common/models'
 import {
@@ -8,23 +8,28 @@ import {
 import { shortenSPLAddress, shortenEthAddress } from '@audius/common/utils'
 import {
   IconCopy,
-  IconRemove,
   IconLogoCircleETH,
-  IconLogoCircleSOL
+  IconLogoCircleSOL,
+  Text,
+  PopupMenu,
+  PopupMenuItem,
+  IconTrash,
+  IconButton,
+  IconKebabHorizontal,
+  Flex
 } from '@audius/harmony'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
-import Toast from 'components/toast/Toast'
 import { ToastContext } from 'components/toast/ToastContext'
-import { ComponentPlacement, MountPlacement } from 'components/types'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
 import { copyToClipboard } from 'utils/clipboardUtil'
 import { NEW_WALLET_CONNECTED_TOAST_TIMEOUT_MILLIS } from 'utils/constants'
 import { useSelector } from 'utils/reducer'
 
+import { WALLET_COUNT_LIMIT } from './ConnectWalletsBody'
 import DisplayAudio from './DisplayAudio'
 import styles from './WalletsTable.module.css'
 const { getAssociatedWallets, getRemoveWallet } = tokenDashboardPageSelectors
@@ -35,9 +40,11 @@ const COPIED_TOAST_TIMEOUT = 2000
 const messages = {
   copied: 'Copied To Clipboard!',
   newWalletConnected: 'New Wallet Successfully Connected!',
-  linkedWallets: 'LINKED WALLETS',
   collectibles: 'COLLECTIBLES',
-  audio: '$AUDIO'
+  audio: '$AUDIO',
+  copy: 'Copy Wallet Address',
+  remove: 'Remove Wallet',
+  options: 'Options'
 }
 
 type WalletProps = {
@@ -50,7 +57,6 @@ type WalletProps = {
   isConfirmAdding: boolean
   isConfirmRemoving: boolean
   hasActions: boolean
-  hideCollectibles?: boolean
 }
 
 const Wallet = ({
@@ -61,8 +67,7 @@ const Wallet = ({
   collectibleCount,
   audioBalance,
   isDisabled,
-  hasActions,
-  hideCollectibles
+  hasActions
 }: WalletProps) => {
   const isMobile = useIsMobile()
   const dispatch = useDispatch()
@@ -75,41 +80,51 @@ const Wallet = ({
   )
   const displayAddress =
     chain === Chain.Eth ? shortenEthAddress : shortenSPLAddress
+  const { toast } = useContext(ToastContext)
   const copyAddressToClipboard = useCallback(() => {
     copyToClipboard(address)
-  }, [address])
+    toast(messages.copied, COPIED_TOAST_TIMEOUT)
+  }, [address, toast])
   const isCopyDisabled = isConfirmAdding || isConfirmRemoving
+  const items: PopupMenuItem[] = useMemo(
+    () =>
+      [
+        !isCopyDisabled
+          ? {
+              text: messages.copy,
+              icon: <IconCopy />,
+              onClick: copyAddressToClipboard
+            }
+          : null,
+        {
+          text: messages.remove,
+          icon: <IconTrash />,
+          onClick: onRequestRemoveWallet
+        }
+      ].filter(Boolean) as PopupMenuItem[],
+    [isCopyDisabled, onRequestRemoveWallet, copyAddressToClipboard]
+  )
+
   return (
-    <div className={cn(styles.copyContainer)} onClick={copyAddressToClipboard}>
-      <div className={styles.addressContainer}>
-        <Toast
-          text={messages.copied}
-          mount={MountPlacement.PARENT}
-          disabled={isCopyDisabled}
-          requireAccount={false}
-          delay={COPIED_TOAST_TIMEOUT}
-          tooltipClassName={styles.copyTooltip}
-          containerClassName={cn(styles.walletContainer, {
-            [styles.removingWallet]: isConfirmRemoving,
-            [styles.disabled]: isCopyDisabled
-          })}
-          placement={ComponentPlacement.TOP}
+    <div className={cn(styles.copyContainer)}>
+      <Flex alignItems='center' gap='s'>
+        <>
+          {chain === Chain.Eth ? <IconLogoCircleETH /> : <IconLogoCircleSOL />}
+          <Text variant='body' size='m' strength='strong'>
+            {displayAddress(address)}
+          </Text>
+          {/* <span className={styles.walletText}>{displayAddress(address)}</span> */}
+        </>
+      </Flex>
+      {!isMobile && (
+        <Text
+          variant='body'
+          size='m'
+          strength='strong'
+          css={{ flex: 1, textAlign: 'right' }}
         >
-          <>
-            {chain === Chain.Eth ? (
-              <IconLogoCircleETH />
-            ) : (
-              <IconLogoCircleSOL />
-            )}
-            <span className={styles.walletText}>{displayAddress(address)}</span>
-            {!isCopyDisabled && <IconCopy size='s' color='subdued' />}
-          </>
-        </Toast>
-      </div>
-      {!hideCollectibles && !isMobile && (
-        <div className={cn(styles.collectibleCount, styles.walletText)}>
           {collectibleCount}
-        </div>
+        </Text>
       )}
       <div className={cn(styles.audioBalance, styles.walletText)}>
         <DisplayAudio
@@ -122,14 +137,25 @@ const Wallet = ({
       {hasActions && (isConfirmAdding || isConfirmRemoving) && (
         <LoadingSpinner className={styles.loading}></LoadingSpinner>
       )}
-      {hasActions && !(isConfirmAdding || isConfirmRemoving) && !isDisabled && (
-        <div className={styles.removeContainer} onClick={onRequestRemoveWallet}>
-          <IconRemove className={styles.iconRemove} color='danger' />
-        </div>
-      )}
-      {hasActions && !(isConfirmAdding || isConfirmRemoving) && isDisabled && (
-        <div className={styles.actionSpacing} />
-      )}
+      <Flex pl='l' css={{ marginLeft: 'auto', flexBasis: 0 }}>
+        {hasActions &&
+          !(isConfirmAdding || isConfirmRemoving) &&
+          !isDisabled && (
+            <PopupMenu
+              items={items}
+              renderTrigger={(ref, trigger) => (
+                <IconButton
+                  ref={ref}
+                  icon={IconKebabHorizontal}
+                  size='s'
+                  color='subdued'
+                  onClick={() => trigger()}
+                  aria-label={messages.options}
+                />
+              )}
+            />
+          )}
+      </Flex>
     </div>
   )
 }
@@ -137,14 +163,9 @@ const Wallet = ({
 type WalletsTableProps = {
   className?: string
   hasActions?: boolean
-  hideCollectibles?: boolean
 }
 
-const WalletsTable = ({
-  hasActions = false,
-  className,
-  hideCollectibles
-}: WalletsTableProps) => {
+const WalletsTable = ({ hasActions = false, className }: WalletsTableProps) => {
   const {
     status,
     confirmingWallet,
@@ -189,24 +210,23 @@ const WalletsTable = ({
     <div
       className={wm(styles.container, {
         [className!]: !!className,
-        [styles.noActions]: !hasActions,
-        [styles.hideCollectibles]: hideCollectibles
+        [styles.noActions]: !hasActions
       })}
     >
       <div className={styles.walletsHeader}>
-        <h6 className={cn(styles.walletsHeaderItem, styles.headerWallet)}>
-          {messages.linkedWallets}
-        </h6>
-        {!hideCollectibles && !isMobile && (
-          <h6
-            className={cn(styles.walletsHeaderItem, styles.headerCollectibles)}
-          >
+        <Text variant='label' size='m' strength='strong' color='subdued'>
+          {`(${
+            (ethWallets?.length ?? 0) + (solWallets?.length ?? 0)
+          }/${WALLET_COUNT_LIMIT})`}
+        </Text>
+        {!isMobile && (
+          <Text variant='label' size='m' strength='strong' color='subdued'>
             {messages.collectibles}
-          </h6>
+          </Text>
         )}
-        <h6 className={cn(styles.walletsHeaderItem, styles.headerAudio)}>
+        <Text variant='label' size='m' strength='strong' color='subdued'>
           {messages.audio}
-        </h6>
+        </Text>
       </div>
       {ethWallets?.map((wallet) => (
         <Wallet
@@ -218,7 +238,6 @@ const WalletsTable = ({
           isDisabled={isDisabled}
           isConfirmAdding={false}
           hasActions={hasActions}
-          hideCollectibles={hideCollectibles}
           isConfirmRemoving={removeWallets.wallet === wallet.address}
         />
       ))}
@@ -231,7 +250,6 @@ const WalletsTable = ({
           audioBalance={wallet.balance}
           isDisabled={isDisabled}
           hasActions={hasActions}
-          hideCollectibles={hideCollectibles}
           isConfirmAdding={false}
           isConfirmRemoving={removeWallets.wallet === wallet.address}
         />
@@ -245,7 +263,6 @@ const WalletsTable = ({
           isDisabled
           hasActions
           isConfirmAdding
-          hideCollectibles={hideCollectibles}
           isConfirmRemoving={false}
         />
       )}

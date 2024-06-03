@@ -286,6 +286,17 @@ article a:link {
 /* force underline on links in admonitions */
 .alert a {
   text-decoration: underline;
+  color: blue;
+}
+
+html[data-theme='dark'] .alert a {
+  text-decoration: underline;
+  color: #0f82af;
+}
+
+.alert,
+.alert--success {
+  --ifm-code-background: unset;
 }
 
 /* padding between navbar and body */
