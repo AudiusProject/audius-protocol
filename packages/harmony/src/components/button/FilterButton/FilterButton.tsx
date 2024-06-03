@@ -3,7 +3,7 @@ import { forwardRef, RefObject, useRef, useState, useCallback } from 'react'
 import { CSSObject, useTheme } from '@emotion/react'
 
 import { BaseButton } from 'components/button/BaseButton/BaseButton'
-import { Box, Flex, Paper } from 'components/layout'
+import { Flex, Paper } from 'components/layout'
 import { Popup } from 'components/popup'
 import { useControlled } from 'hooks/useControlled'
 import { IconCaretDown, IconCloseAlt } from 'icons'
@@ -22,6 +22,7 @@ export const FilterButton = forwardRef<HTMLButtonElement, FilterButtonProps>(
       size = 'default',
       iconRight = IconCaretDown,
       popupAnchorOrigin,
+      popupMaxHeight,
       popupTransformOrigin,
       popupPortalLocation,
       popupZIndex
@@ -190,32 +191,31 @@ export const FilterButton = forwardRef<HTMLButtonElement, FilterButtonProps>(
           zIndex={popupZIndex}
         >
           <Paper mt='s' border='strong' shadow='far'>
-            <Box p='s'>
-              <Flex
-                direction='column'
-                alignItems='flex-start'
-                justifyContent='center'
-                role='listbox'
-                aria-label={selectedLabel ?? label ?? props['aria-label']}
-                aria-activedescendant={selectedLabel}
-              >
-                {options.map((option) => (
-                  <BaseButton
-                    key={option.value}
-                    iconLeft={option.icon}
-                    styles={{
-                      button: optionCss,
-                      icon: optionIconCss
-                    }}
-                    onClick={() => handleOptionSelect(option)}
-                    aria-label={option.label ?? option.value}
-                    role='option'
-                  >
-                    {option.label ?? option.value}
-                  </BaseButton>
-                ))}
-              </Flex>
-            </Box>
+            <Flex
+              p='s'
+              direction='column'
+              alignItems='flex-start'
+              role='listbox'
+              aria-label={selectedLabel ?? label ?? props['aria-label']}
+              aria-activedescendant={selectedLabel}
+              css={{ maxHeight: popupMaxHeight, overflowY: 'auto' }}
+            >
+              {options.map((option) => (
+                <BaseButton
+                  key={option.value}
+                  iconLeft={option.icon}
+                  styles={{
+                    button: optionCss,
+                    icon: optionIconCss
+                  }}
+                  onClick={() => handleOptionSelect(option)}
+                  aria-label={option.label ?? option.value}
+                  role='option'
+                >
+                  {option.label ?? option.value}
+                </BaseButton>
+              ))}
+            </Flex>
           </Paper>
         </Popup>
       </BaseButton>

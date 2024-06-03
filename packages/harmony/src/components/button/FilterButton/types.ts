@@ -77,6 +77,11 @@ export type FilterButtonProps = {
   popupAnchorOrigin?: Origin
 
   /**
+   * Popup max height
+   */
+  popupMaxHeight?: number
+
+  /**
    * Popup transform origin
    * @default { horizontal: 'center', vertical: 'top' }
    */

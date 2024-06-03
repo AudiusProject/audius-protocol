@@ -1,6 +1,12 @@
-import { ChangeEvent, ReactNode, useCallback } from 'react'
+import {
+  ChangeEvent,
+  Component,
+  ReactElement,
+  ReactNode,
+  useCallback
+} from 'react'
 
-import { Maybe } from '@audius/common/utils'
+import { GENRES, Maybe, convertGenreLabelToValue } from '@audius/common/utils'
 import {
   FilterButton,
   Flex,
@@ -17,6 +23,8 @@ import { capitalize } from 'lodash'
 import Header from 'components/header/desktop/Header'
 import { useMedia } from 'hooks/useMedia'
 import { Category, Filter } from './types'
+import { useParams } from 'react-router-dom'
+import { useSearchParams } from 'react-router-dom-v5-compat'
 
 export const categories = {
   all: { filters: [] },
@@ -38,18 +46,33 @@ type SearchHeaderProps = {
   query: Maybe<string>
 }
 
-const filters: Record<Filter, ReactNode> = {
-  genre: (
-    <FilterButton
-      label='Genre'
-      options={[
-        {
-          value: 'Filter'
-        }
-      ]}
-    />
-  ),
-  mood: (
+const filters: Record<Filter, () => ReactElement> = {
+  genre: () => {
+    const [urlSearchParams, setUrlSearchParams] = useSearchParams()
+    const genre = urlSearchParams.get('genre')
+
+    return (
+      <FilterButton
+        label='Genre'
+        popupAnchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+        popupMaxHeight={300}
+        popupTransformOrigin={{ vertical: 'top', horizontal: 'left' }}
+        selection={genre}
+        onSelect={(value) => {
+          if (value) {
+            setUrlSearchParams((params) => ({ ...params, genre: value }))
+          } else {
+            setUrlSearchParams(({ genre, ...params }: any) => params)
+          }
+        }}
+        options={GENRES.map((genre) => ({
+          label: genre,
+          value: convertGenreLabelToValue(genre)
+        }))}
+      />
+    )
+  },
+  mood: () => (
     <FilterButton
       label='Mood'
       options={[
@@ -59,7 +82,7 @@ const filters: Record<Filter, ReactNode> = {
       ]}
     />
   ),
-  key: (
+  key: () => (
     <FilterButton
       label='Key'
       options={[
@@ -69,7 +92,7 @@ const filters: Record<Filter, ReactNode> = {
       ]}
     />
   ),
-  bpm: (
+  bpm: () => (
     <FilterButton
       label='BPM'
       options={[
@@ -79,7 +102,7 @@ const filters: Record<Filter, ReactNode> = {
       ]}
     />
   ),
-  isPremium: (
+  isPremium: () => (
     <FilterButton
       label='Premium'
       options={[
@@ -89,7 +112,7 @@ const filters: Record<Filter, ReactNode> = {
       ]}
     />
   ),
-  hasDownloads: (
+  hasDownloads: () => (
     <FilterButton
       label='Downloads Available'
       options={[
@@ -99,7 +122,7 @@ const filters: Record<Filter, ReactNode> = {
       ]}
     />
   ),
-  isVerified: (
+  isVerified: () => (
     <FilterButton
       label='Verified'
       options={[
@@ -171,9 +194,10 @@ export const SearchHeader = (props: SearchHeaderProps) => {
       }
       bottomBar={
         <Flex direction='row' gap='s' mv='m'>
-          {filterKeys.map((filterKey) => (
-            <div key={filterKey}>{filters[filterKey]}</div>
-          ))}
+          {filterKeys.map((filterKey) => {
+            const FilterComponent = filters[filterKey]
+            return <FilterComponent key={filterKey}>{}</FilterComponent>
+          })}
         </Flex>
       }
       rightDecorator={categoryRadioGroup}
