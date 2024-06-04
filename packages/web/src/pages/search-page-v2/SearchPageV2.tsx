@@ -1,25 +1,10 @@
-import { ChangeEvent, useCallback, useContext, useEffect } from 'react'
+import { useCallback, useContext, useEffect } from 'react'
 
 import { Status } from '@audius/common/models'
-import { Maybe } from '@audius/common/utils'
-import {
-  FilterButton,
-  Flex,
-  IconAlbum,
-  IconComponent,
-  IconNote,
-  IconPlaylists,
-  IconUser,
-  LoadingSpinner,
-  RadioGroup,
-  SelectablePill,
-  Text
-} from '@audius/harmony'
-import { capitalize } from 'lodash'
+import { Flex, LoadingSpinner } from '@audius/harmony'
 import { useParams } from 'react-router-dom'
 
 import { useHistoryContext } from 'app/HistoryProvider'
-import Header from 'components/header/desktop/Header'
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
 import NavContext, {
   CenterPreset,
@@ -31,7 +16,6 @@ import { useMedia } from 'hooks/useMedia'
 
 import { RecentSearches } from './RecentSearches'
 import { SearchCatalogTile } from './SearchCatalogTile'
-import { Category } from './types'
 import { CategoryKey, SearchHeader } from './SearchHeader'
 
 export const SearchPageV2 = () => {

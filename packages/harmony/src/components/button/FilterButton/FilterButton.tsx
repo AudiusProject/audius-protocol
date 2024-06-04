@@ -3,13 +3,13 @@ import { forwardRef, RefObject, useRef, useState, useCallback } from 'react'
 import { CSSObject, useTheme } from '@emotion/react'
 
 import { BaseButton } from 'components/button/BaseButton/BaseButton'
+import { TextInput, TextInputSize } from 'components/input'
 import { Flex, Paper } from 'components/layout'
 import { Popup } from 'components/popup'
 import { useControlled } from 'hooks/useControlled'
 import { IconCaretDown, IconCloseAlt, IconSearch } from 'icons'
 
 import { FilterButtonOption, FilterButtonProps } from './types'
-import { TextInput, TextInputSize } from 'components/input'
 
 export const FilterButton = forwardRef<HTMLButtonElement, FilterButtonProps>(
   function FilterButton(props, ref) {

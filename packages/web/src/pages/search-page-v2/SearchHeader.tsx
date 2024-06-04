@@ -1,10 +1,4 @@
-import {
-  ChangeEvent,
-  Component,
-  ReactElement,
-  ReactNode,
-  useCallback
-} from 'react'
+import { ChangeEvent, ReactElement, useCallback } from 'react'
 
 import { GENRES, Maybe, convertGenreLabelToValue } from '@audius/common/utils'
 import {
@@ -19,11 +13,12 @@ import {
   Text
 } from '@audius/harmony'
 import { capitalize } from 'lodash'
+import { useSearchParams } from 'react-router-dom-v5-compat'
 
 import Header from 'components/header/desktop/Header'
 import { useMedia } from 'hooks/useMedia'
+
 import { Category, Filter } from './types'
-import { useSearchParams } from 'react-router-dom-v5-compat'
 
 export const categories = {
   all: { filters: [] },
@@ -45,34 +40,36 @@ type SearchHeaderProps = {
   query: Maybe<string>
 }
 
-const filters: Record<Filter, () => ReactElement> = {
-  genre: () => {
-    const [urlSearchParams, setUrlSearchParams] = useSearchParams()
-    const genre = urlSearchParams.get('genre')
+const GenreFilter = () => {
+  const [urlSearchParams, setUrlSearchParams] = useSearchParams()
+  const genre = urlSearchParams.get('genre')
 
-    return (
-      <FilterButton
-        label='Genre'
-        popupAnchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
-        popupMaxHeight={400}
-        popupTransformOrigin={{ vertical: 'top', horizontal: 'left' }}
-        selection={genre}
-        onSelect={(value) => {
-          if (value) {
-            setUrlSearchParams((params) => ({ ...params, genre: value }))
-          } else {
-            setUrlSearchParams(({ genre, ...params }: any) => params)
-          }
-        }}
-        options={GENRES.map((genre) => ({
-          label: genre,
-          value: convertGenreLabelToValue(genre)
-        }))}
-        showFilterInput
-        filterInputPlaceholder='Search genre'
-      />
-    )
-  },
+  return (
+    <FilterButton
+      label='Genre'
+      popupAnchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+      popupMaxHeight={400}
+      popupTransformOrigin={{ vertical: 'top', horizontal: 'left' }}
+      selection={genre}
+      onSelect={(value) => {
+        if (value) {
+          setUrlSearchParams((params) => ({ ...params, genre: value }))
+        } else {
+          setUrlSearchParams(({ genre, ...params }: any) => params)
+        }
+      }}
+      options={GENRES.map((genre) => ({
+        label: genre,
+        value: convertGenreLabelToValue(genre)
+      }))}
+      showFilterInput
+      filterInputPlaceholder='Search genre'
+    />
+  )
+}
+
+const filters: Record<Filter, () => ReactElement> = {
+  genre: GenreFilter,
   mood: () => (
     <FilterButton
       label='Mood'
