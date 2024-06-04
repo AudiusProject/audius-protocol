@@ -181,12 +181,13 @@ export const PayoutWalletModal = () => {
 
         let usdcAta: string | null = null
 
-        if (
+        // If our account is on the curve and owned by system program,
+        // derive a USDC ATA for the user and relay to create it
+        const shouldCreateAta =
           (!info || info?.owner.equals(SystemProgram.programId)) &&
           PublicKey.isOnCurve(addressPubkey)
-        ) {
-          // If our account is on the curve and owned by system program,
-          // derive a USDC ATA for the user and relay to create it
+
+        if (shouldCreateAta) {
           const ataPubkey = await getAssociatedTokenAddressSync(
             usdcMint,
             addressPubkey
@@ -221,6 +222,7 @@ export const PayoutWalletModal = () => {
               usdcAta = address
             }
           } catch (e) {
+            console.debug(e)
             // fall through
           }
         }
