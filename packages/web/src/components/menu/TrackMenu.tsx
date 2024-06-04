@@ -1,5 +1,6 @@
 import { useContext } from 'react'
 
+import { useGetTrackById } from '@audius/common/api'
 import {
   ShareSource,
   RepostSource,
@@ -99,14 +100,25 @@ export type TrackMenuProps = OwnProps &
   ReturnType<typeof mapStateToProps>
 
 const TrackMenu = (props: TrackMenuProps) => {
+  const { trackPermalink, goToRoute } = props
   const { toast } = useContext(ToastContext)
   const dispatch = useDispatch()
   const currentUserId = useSelector(getUserId)
-  const { onOpen } = useEditTrackModal()
+  const { isEnabled: isEditTrackRedesignEnabled } = useFlag(
+    FeatureFlags.EDIT_TRACK_REDESIGN
+  )
   const { isEnabled: isNewPodcastControlsEnabled } = useFlag(
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
   )
+
+  const { onOpen } = useEditTrackModal()
+  const onEditTrack = (trackId: number | null) => {
+    if (!trackId || !trackPermalink) return
+    isEditTrackRedesignEnabled
+      ? goToRoute(`/${trackPermalink}/edit`)
+      : onOpen({ trackId })
+  }
 
   const trackPlaybackPositions = useSelector((state: CommonState) =>
     getUserTrackPositions(state, { userId: currentUserId })
@@ -215,7 +227,9 @@ const TrackMenu = (props: TrackMenuProps) => {
         isLongFormContent && isNewPodcastControlsEnabled
           ? messages.visitEpisodePage
           : messages.visitTrackPage,
-      onClick: () => goToRoute(trackPermalink)
+      onClick: () => {
+        goToRoute(trackPermalink)
+      }
     }
 
     const markAsUnplayedItem = {
@@ -263,7 +277,7 @@ const TrackMenu = (props: TrackMenuProps) => {
 
     const editTrackMenuItem = {
       text: 'Edit Track',
-      onClick: () => onOpen({ trackId })
+      onClick: () => onEditTrack(trackId)
     }
 
     const embedMenuItem = {

@@ -404,8 +404,13 @@ class WebPlayer extends Component {
   }
 
   render() {
-    const { incrementScroll, decrementScroll, userHandle, isSearchV2Enabled } =
-      this.props
+    const {
+      incrementScroll,
+      decrementScroll,
+      userHandle,
+      isSearchV2Enabled,
+      isEditTrackRedesignEnabled
+    } = this.props
 
     const {
       showWebUpdateBanner,
@@ -892,13 +897,18 @@ class WebPlayer extends Component {
 
                 <Route exact path={TRACK_PAGE} component={TrackPage} />
 
-                <DesktopRoute
-                  path={TRACK_EDIT_PAGE}
-                  isMobile={isMobile}
-                  render={(props) => (
-                    <EditTrackPage {...props} scrollToTop={this.scrollToTop} />
-                  )}
-                />
+                {isEditTrackRedesignEnabled ? (
+                  <DesktopRoute
+                    path={TRACK_EDIT_PAGE}
+                    isMobile={isMobile}
+                    render={(props) => (
+                      <EditTrackPage
+                        {...props}
+                        scrollToTop={this.scrollToTop}
+                      />
+                    )}
+                  />
+                ) : null}
 
                 <Route
                   exact
@@ -1016,7 +1026,10 @@ const mapStateToProps = (state) => ({
   signOnStatus: getSignOnStatus(state),
   showCookieBanner: getShowCookieBanner(state),
   isChatEnabled: getFeatureEnabled(FeatureFlags.CHAT_ENABLED),
-  isSearchV2Enabled: getFeatureEnabled(FeatureFlags.SEARCH_V2)
+  isSearchV2Enabled: getFeatureEnabled(FeatureFlags.SEARCH_V2),
+  isEditTrackRedesignEnabled: getFeatureEnabled(
+    FeatureFlags.EDIT_TRACK_REDESIGN
+  )
 })
 
 const mapDispatchToProps = (dispatch) => ({
