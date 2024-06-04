@@ -41,7 +41,7 @@ class GetUserListeningHistoryArgs(TypedDict):
 
 def get_user_listening_history(args: GetUserListeningHistoryArgs):
     """
-    Returns a user's listening history. DOES NOT check authorization.
+    Returns a user's listening history.
 
     Args:
         args: GetUserListeningHistoryArgs The parsed args from the request
