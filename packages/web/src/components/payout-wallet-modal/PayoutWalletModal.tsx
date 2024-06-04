@@ -21,7 +21,6 @@ import {
   TOKEN_PROGRAM_ID,
   TokenAccountNotFoundError,
   createAssociatedTokenAccountIdempotentInstruction,
-  createAssociatedTokenAccountInstruction,
   getAccount,
   getAssociatedTokenAddressSync,
   unpackAccount
