@@ -303,6 +303,7 @@ export const OAuthLoginPage = () => {
           tx={tx as WriteOnceTx}
           userEmail={userEmail}
           isLoggedIn={isLoggedIn}
+          isLoading={userEmail === null}
           txParams={txParams}
         />
       )}

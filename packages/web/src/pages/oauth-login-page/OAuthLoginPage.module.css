@@ -79,20 +79,6 @@
   display: flex;
 }
 
-.visibilityIconWrapper {
-  width: 15px;
-}
-
-.visibilityIcon {
-  position: relative;
-  left: -3px;
-}
-
-.atSignIcon {
-  position: relative;
-  top: 3px;
-}
-
 .userProfileContentContainer {
   display: flex;
   align-items: center;

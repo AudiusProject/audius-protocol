@@ -3,6 +3,7 @@ import { PropsWithChildren } from 'react'
 import {
   Flex,
   IconEmailAddress,
+  IconInfo,
   IconPencil,
   IconVisibilityPublic,
   Text
@@ -17,7 +18,11 @@ import { WriteOnceParams, WriteOnceTx } from '../utils'
 
 type PermissionTextProps = PropsWithChildren<{}>
 const PermissionText = ({ children }: PermissionTextProps) => {
-  return <div className={styles.permissionText}>{children}</div>
+  return (
+    <Text variant='body' size='m'>
+      {children}
+    </Text>
+  )
 }
 
 type PermissionDetailProps = PropsWithChildren<{
@@ -26,7 +31,10 @@ type PermissionDetailProps = PropsWithChildren<{
 const PermissionDetail = ({ className, children }: PermissionDetailProps) => {
   return (
     <div>
-      <span
+      <Text variant='body' size='s' color='subdued'>
+        {children}
+      </Text>
+      {/* <span
         className={cn(
           styles.permissionText,
           styles.permissionDetailText,
@@ -34,7 +42,7 @@ const PermissionDetail = ({ className, children }: PermissionDetailProps) => {
         )}
       >
         {children}
-      </span>
+      </span> */}
     </div>
   )
 }
@@ -51,6 +59,7 @@ const getWriteOncePermissionTitle = (tx: WriteOnceTx | null) => {
 export const PermissionsSection = ({
   scope,
   isLoggedIn,
+  isLoading,
   userEmail,
   txParams,
   tx
@@ -58,7 +67,8 @@ export const PermissionsSection = ({
   scope: string | string[] | null
   tx: WriteOnceTx | null
   isLoggedIn: boolean
-  userEmail?: string | null
+  isLoading: boolean
+  userEmail: string | null
   txParams?: WriteOnceParams
 }) => {
   return (
@@ -70,22 +80,13 @@ export const PermissionsSection = ({
       </div>
       <div className={styles.tile}>
         <div className={styles.permissionContainer}>
-          <div
-            className={cn({
-              [styles.visibilityIconWrapper]: scope === 'read'
-            })}
-          >
+          <Flex pt='xs'>
             {scope === 'write' || scope === 'write_once' ? (
-              <IconPencil color='default' width={18} height={18} />
+              <IconPencil color='default' width={16} height={16} />
             ) : (
-              <IconVisibilityPublic
-                color='default'
-                className={cn(styles.visibilityIcon)}
-                width={21}
-                height={22}
-              />
+              <IconVisibilityPublic color='default' width={16} height={16} />
             )}
-          </div>
+          </Flex>
 
           <Flex ml='l' gap='s' direction='column'>
             <Text variant='body' size='m'>
@@ -122,31 +123,19 @@ export const PermissionsSection = ({
             styles.nonFirstPermissionContainer
           )}
         >
-          <div>
-            <IconEmailAddress
-              width={15}
-              height={15}
-              color='default'
-              className={cn(styles.atSignIcon)}
-            />
-          </div>
+          <Flex pt='xs'>
+            <IconInfo width={16} height={16} color='default' />
+          </Flex>
           <Flex ml='l' gap='s' direction='column'>
-            <PermissionText>{messages.emailAddressAccess}</PermissionText>
+            <PermissionText>{messages.yourAccountData}</PermissionText>
             {isLoggedIn ? (
-              <PermissionDetail
-                className={
-                  userEmail == null
-                    ? styles.permissionTextExtraLight
-                    : undefined
-                }
-              >
-                {userEmail == null ? (
-                  <>
-                    <LoadingSpinner className={styles.loadingSpinner} />{' '}
-                    {messages.emailLoading}&#8230;
-                  </>
+              <PermissionDetail>
+                {isLoading ? (
+                  <LoadingSpinner className={styles.loadingSpinner} />
+                ) : userEmail ? (
+                  `${messages.yourAccountDataAccess}: ${userEmail}`
                 ) : (
-                  userEmail
+                  messages.yourAccountDataAccess
                 )}
               </PermissionDetail>
             ) : null}

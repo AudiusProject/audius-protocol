@@ -9,8 +9,9 @@ export const messages = {
   disconnectDashboardWalletAccess:
     'Permission to unlink this wallet from your account',
   writeAccountAccess: 'Read/Write Access',
-  emailLoading: 'Email loading',
-  emailAddressAccess: 'Your Email Address',
+  yourAccountData: 'Your Audius Account Data',
+  yourAccountDataAccess:
+    'Account activity, and identifiying information, including the email address',
   writeAccessGrants:
     'Grant this app permission to make changes to your account on your behalf.',
   signOut: 'Sign Out',
