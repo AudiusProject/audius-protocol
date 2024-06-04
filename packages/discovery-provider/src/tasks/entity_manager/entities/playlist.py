@@ -292,55 +292,6 @@ def update_album_price_history(
             session.add(new_record)
 
 
-def populate_playlist_record_metadata(
-    playlist_record: Playlist, playlist_metadata, action
-):
-    playlist_record_attributes = playlist_record.get_attributes_dict()
-    for key, _ in playlist_record_attributes.items():
-        if key == "release_date":
-            if "release_date" in playlist_metadata:
-                # casting to string because datetime doesn't work for some reason
-                parsed_release_date = parse_release_date(
-                    playlist_metadata["release_date"]
-                )
-                # postgres will convert to a timestamp
-
-                if (
-                    parsed_release_date
-                    and parsed_release_date > datetime.now().astimezone(timezone.utc)
-                ):
-                    # ignore release date if in the future and updating public albums
-                    if action == Action.UPDATE and playlist_record.is_private == False:
-                        continue
-
-                if parsed_release_date:
-                    playlist_record.release_date = str(  # type:ignore
-                        parsed_release_date
-                    )
-        elif key == "is_private":
-            if "is_private" in playlist_metadata:
-                playlist_record.is_private = playlist_metadata["is_private"]
-
-            # allow scheduled_releases to override is_private value based on release date
-            # only for CREATE because publish_scheduled releases will publish this once
-            if (
-                playlist_record.is_scheduled_release
-                and playlist_record.release_date
-                and action == Action.CREATE
-            ):
-                playlist_record.is_private = (
-                    playlist_record.release_date
-                    >= str(  # type:ignore
-                        datetime.now()
-                    )
-                )
-        else:
-            if key in playlist_metadata:
-                setattr(playlist_record, key, playlist_metadata[key])
-
-    return playlist_record
-
-
 def get_playlist_events_tx(update_task, event_type, tx_receipt):
     return getattr(update_task.playlist_contract.events, event_type)().process_receipt(
         tx_receipt
@@ -567,9 +518,9 @@ def create_playlist(params: ManageEntityParameters):
         upc=params.metadata.get("upc", None),
     )
 
-    populate_playlist_record_metadata(playlist_record, params.metadata, params.action)
-
     update_playlist_routes_table(params, playlist_record, True)
+
+    populate_playlist_record_metadata(playlist_record, params)
 
     params.add_record(playlist_id, playlist_record)
 
@@ -638,9 +589,7 @@ def update_playlist(params: ManageEntityParameters):
         params.block_datetime,
     )
 
-    populate_playlist_record_metadata(playlist_record, params.metadata, params.action)
-
-    process_playlist_data_event(params, playlist_record)
+    populate_playlist_record_metadata(playlist_record, params)
 
     update_playlist_routes_table(params, playlist_record, False)
 
@@ -723,14 +672,15 @@ def process_playlist_contents(
     return {"track_ids": updated_tracks}
 
 
-def process_playlist_data_event(
-    params: ManageEntityParameters,
+def populate_playlist_record_metadata(
     playlist_record,
+    params: ManageEntityParameters,
 ):
     playlist_metadata = params.metadata
     block_integer_time = params.block_integer_time
     block_datetime = params.block_datetime
     metadata_cid = params.metadata_cid
+    action = params.action
 
     # Iterate over the playlist_record keys
     playlist_record_attributes = playlist_record.get_attributes_dict()
@@ -746,8 +696,45 @@ def process_playlist_data_event(
                 block_integer_time,
                 params.existing_records["Track"],
             )
+        if key == "release_date":
+            if "release_date" in playlist_metadata:
+                # casting to string because datetime doesn't work for some reason
+                parsed_release_date = parse_release_date(
+                    playlist_metadata["release_date"]
+                )
+                # postgres will convert to a timestamp
+
+                if (
+                    parsed_release_date
+                    and parsed_release_date > datetime.now().astimezone(timezone.utc)
+                ):
+                    # ignore release date if in the future and updating public albums
+                    if action == Action.UPDATE and playlist_record.is_private == False:
+                        continue
+
+                if parsed_release_date:
+                    playlist_record.release_date = str(  # type:ignore
+                        parsed_release_date
+                    )
+        elif key == "is_private":
+            if "is_private" in playlist_metadata:
+                playlist_record.is_private = playlist_metadata["is_private"]
+
+            # allow scheduled_releases to override is_private value based on release date
+            # only for CREATE because publish_scheduled releases will publish this once
+            if (
+                playlist_record.is_scheduled_release
+                and playlist_record.release_date
+                and action == Action.CREATE
+            ):
+                playlist_record.is_private = (
+                    playlist_record.release_date
+                    >= str(  # type:ignore
+                        datetime.now()
+                    )
+                )
         elif key in playlist_metadata:
-            if key in immutable_playlist_fields and params.action == Action.UPDATE:
+            if key in immutable_playlist_fields and action == Action.UPDATE:
                 # skip fields that cannot be modified after creation
                 continue
             elif key == "stream_conditions":

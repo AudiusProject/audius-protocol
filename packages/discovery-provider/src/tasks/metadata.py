@@ -174,7 +174,6 @@ user_metadata_format = {
 
 
 class PlaylistMetadata(TypedDict):
-    playlist_id: Optional[int]
     playlist_contents: Optional[Any]
     playlist_name: Optional[str]
     playlist_image_sizes_multihash: Optional[str]
@@ -196,7 +195,6 @@ class PlaylistMetadata(TypedDict):
 
 
 playlist_metadata_format: PlaylistMetadata = {
-    "playlist_id": None,
     "playlist_contents": {},
     "playlist_name": None,
     "playlist_image_sizes_multihash": None,

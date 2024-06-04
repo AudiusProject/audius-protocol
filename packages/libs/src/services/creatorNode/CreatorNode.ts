@@ -47,6 +47,7 @@ export type PlaylistMetadata = {
   is_stream_gated: boolean
   stream_conditions: Nullable<GatedConditions>
   release_date: Nullable<string>
+  is_scheduled_release: boolean
   ddex_app?: string | null
 }
 
