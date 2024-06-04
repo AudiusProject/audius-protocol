@@ -238,6 +238,6 @@ def get_support_sent_by_user(args) -> List[SupportResponse]:
         rows: List[Tuple[int, AggregateUserTip]] = query.all()
         user_ids = [row[1].receiver_user_id for row in rows]
         users = get_users_by_id(session, user_ids, current_user_id)
-        print(f"TEST users {users}")
+
         support = query_result_to_support_response(rows, users, user_is_sender=False)
     return support
