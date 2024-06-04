@@ -622,7 +622,8 @@ def verify_user(params: ManageEntityParameters):
     user_record = validate_user_record(user_record)
 
     metadata = params.metadata
-    is_verified = metadata.get("is_verified", False)
+    # todo: default below to false instead of true after identity change has been deployed
+    is_verified = metadata.get("is_verified", True)
     twitter_handle = metadata.get("twitter_handle")
     instagram_handle = metadata.get("instagram_handle")
     tiktok_handle = metadata.get("tiktok_handle")
