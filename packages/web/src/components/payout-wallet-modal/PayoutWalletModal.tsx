@@ -19,7 +19,9 @@ import {
 } from '@audius/harmony'
 import {
   TOKEN_PROGRAM_ID,
-  createAssociatedTokenAccountInstruction,
+  TokenAccountNotFoundError,
+  createAssociatedTokenAccountIdempotentInstruction,
+  getAccount,
   getAssociatedTokenAddressSync,
   unpackAccount
 } from '@solana/spl-token'
@@ -181,37 +183,12 @@ export const PayoutWalletModal = () => {
 
         let usdcAta: string | null = null
 
-        // If our account is on the curve and owned by system program,
-        // derive a USDC ATA for the user and relay to create it
-        const shouldCreateAta =
+        const isRootWallet =
           (!info || info?.owner.equals(SystemProgram.programId)) &&
           PublicKey.isOnCurve(addressPubkey)
 
-        if (shouldCreateAta) {
-          const ataPubkey = await getAssociatedTokenAddressSync(
-            usdcMint,
-            addressPubkey
-          )
-          const payer = await sdk.services.solanaRelay.getFeePayer()
-          const transaction =
-            await sdk.services.claimableTokensClient.buildTransaction({
-              instructions: [
-                createAssociatedTokenAccountInstruction(
-                  payer,
-                  ataPubkey,
-                  addressPubkey,
-                  usdcMint
-                )
-              ]
-            })
-
-          await sdk.services.solanaRelay.relay({
-            transaction
-          })
-          usdcAta = ataPubkey.toBase58()
-        } else {
-          // Otherwise, we want to see if this is already a USDC ATA, and if
-          // it is, just set the user's payout wallet to it directly.
+        if (!isRootWallet) {
+          // If not a root wallet, maybe it's a USDC account
           try {
             const unpacked = unpackAccount(
               addressPubkey,
@@ -224,6 +201,42 @@ export const PayoutWalletModal = () => {
           } catch (e) {
             console.debug(e)
             // fall through
+          }
+        } else {
+          // It's a root wallet - check for USDC mint ATA
+          const ataPubkey = getAssociatedTokenAddressSync(
+            usdcMint,
+            addressPubkey
+          )
+          try {
+            const account = await getAccount(
+              sdk.services.claimableTokensClient.connection,
+              ataPubkey
+            )
+            if (account.mint.equals(usdcMint)) {
+              usdcAta = ataPubkey.toBase58()
+            }
+          } catch (e) {
+            // No USDC mint ATA. Make one if possible.
+            if (e instanceof TokenAccountNotFoundError) {
+              const payer = await sdk.services.solanaRelay.getFeePayer()
+              const transaction =
+                await sdk.services.claimableTokensClient.buildTransaction({
+                  instructions: [
+                    createAssociatedTokenAccountIdempotentInstruction(
+                      payer,
+                      ataPubkey,
+                      addressPubkey,
+                      usdcMint
+                    )
+                  ]
+                })
+
+              await sdk.services.solanaRelay.relay({
+                transaction
+              })
+              usdcAta = ataPubkey.toBase58()
+            }
           }
         }
 

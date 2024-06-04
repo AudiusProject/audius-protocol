@@ -13,9 +13,10 @@ export const userSignerRecoveryMiddleware = async (
   res: Response,
   next: NextFunction
 ) => {
-  const data = JSON.stringify(req.body)
-  const sig = req.get('User-Signature')
-  if (!sig) {
+  const data = req.get('Encoded-Data-Message')
+  const sig = req.get('Encoded-Data-Signature')
+
+  if (!sig || !data) {
     return next()
   }
   const walletAddress = recoverPersonalSignature({ data, sig })
