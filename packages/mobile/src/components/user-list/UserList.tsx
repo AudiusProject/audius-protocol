@@ -8,12 +8,12 @@ import { UserCardSkeleton } from './UserCardSkeleton'
 
 type ListProps = Omit<CardListProps<User>, 'data'>
 
-export type ProfileListProps = {
+export type UserListProps = {
   profiles: User[] | undefined
   onCardPress?: (user_id: ID) => void
 } & Partial<ListProps>
 
-export const ProfileList = (props: ProfileListProps) => {
+export const UserList = (props: UserListProps) => {
   const { profiles, onCardPress, ...other } = props
   return (
     <CardList
