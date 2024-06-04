@@ -3,8 +3,8 @@ import type { ID, User } from '@audius/common/models'
 import type { CardListProps } from 'app/components/core'
 import { CardList } from 'app/components/core'
 
-import { ProfileCard } from './ProfileCard'
-import { ProfileCardSkeleton } from './ProfileCardSkeleton'
+import { UserCard } from './UserCard'
+import { UserCardSkeleton } from './UserCardSkeleton'
 
 type ListProps = Omit<CardListProps<User>, 'data'>
 
@@ -19,9 +19,12 @@ export const ProfileList = (props: ProfileListProps) => {
     <CardList
       data={profiles}
       renderItem={({ item }) => (
-        <ProfileCard profile={item} onPress={onCardPress} />
+        <UserCard
+          userId={item.user_id}
+          onPress={() => onCardPress?.(item.user_id)}
+        />
       )}
-      LoadingCardComponent={ProfileCardSkeleton}
+      LoadingCardComponent={UserCardSkeleton}
       {...other}
     />
   )
