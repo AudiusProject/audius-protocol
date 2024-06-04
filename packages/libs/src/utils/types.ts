@@ -218,6 +218,7 @@ export type CollectionMetadata = {
   is_delete: boolean
   is_private: boolean
   is_scheduled_release: boolean
+  release_date: Nullable<string>
   playlist_contents: {
     track_ids: Array<{
       metadata_time: number
