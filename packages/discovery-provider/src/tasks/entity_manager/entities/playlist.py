@@ -696,7 +696,7 @@ def populate_playlist_record_metadata(
                 block_integer_time,
                 params.existing_records["Track"],
             )
-        if key == "release_date":
+        elif key == "release_date":
             if "release_date" in playlist_metadata:
                 # casting to string because datetime doesn't work for some reason
                 parsed_release_date = parse_release_date(

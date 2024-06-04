@@ -4,7 +4,6 @@ import { program } from 'commander'
 import fs from 'fs'
 
 import { initializeAudiusLibs } from './utils.mjs'
-import { release } from 'os'
 
 program
   .command('create-playlist')
