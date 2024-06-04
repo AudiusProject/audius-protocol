@@ -1,13 +1,7 @@
-import snakecaseKeys from 'snakecase-keys'
-
 import { Collection } from '~/models/Collection'
-import { Kind } from '~/models/Kind'
-import { SsrPageProps } from '~/models/SsrPageProps'
-import { makePlaylist } from '~/services/audius-api-client/ResponseAdapter'
 import tracksReducer, {
   initialState as initialLineupState
 } from '~/store/pages/collection/lineup/reducer'
-import { makeUid } from '~/utils/uid'
 
 import { Status } from '../../../models/Status'
 import { LineupActions, asLineup } from '../../../store/lineup/reducer'
@@ -18,14 +12,12 @@ import {
   FETCH_COLLECTION_FAILED,
   RESET_COLLECTION,
   SET_SMART_COLLECTION,
-  SET_IS_INITIAL_FETCH_AFTER_SSR,
   FetchCollectionSucceededAction,
   FetchCollectionFailedAction,
   CollectionPageAction,
   SetSmartCollectionAction,
   FetchCollectionAction,
-  ResetCollectionAction,
-  SetIsInitialFetchAfterSSRAction
+  ResetCollectionAction
 } from './actions'
 import { PREFIX as tracksPrefix } from './lineup/actions'
 import { CollectionsPageState } from './types'
@@ -37,8 +29,7 @@ export const initialState = {
   status: null,
   smartCollectionVariant: null,
   tracks: initialLineupState,
-  collectionPermalink: null,
-  isInitialFetchAfterSsr: false
+  collectionPermalink: null
 }
 
 const actionsMap = {
@@ -92,62 +83,29 @@ const actionsMap = {
       ...state,
       smartCollectionVariant: action.smartCollectionVariant
     }
-  },
-  [SET_IS_INITIAL_FETCH_AFTER_SSR](
-    state: CollectionsPageState,
-    action: SetIsInitialFetchAfterSSRAction
-  ) {
-    return {
-      ...state,
-      isInitialFetchAfterSsr: action.isInitialFetchAfterSsr
-    }
   }
 }
 
 const tracksLineupReducer = asLineup(tracksPrefix, tracksReducer)
 
-const buildInitialState = (ssrPageProps?: SsrPageProps) => {
-  // If we have preloaded data from the server, populate the initial
-  // page state with it
-  if (ssrPageProps?.collection) {
+const reducer = (
+  state: CollectionsPageState,
+  action: CollectionPageAction | LineupActions<Collection>
+) => {
+  if (!state) {
     // @ts-ignore
-    const collection = makePlaylist(snakecaseKeys(ssrPageProps.collection))
-    if (!collection) return initialState
-
-    return {
-      ...initialState,
-      collectionId: collection.playlist_id,
-      collectionUid: makeUid(Kind.COLLECTIONS, collection.playlist_id),
-      userUid: makeUid(Kind.USERS, collection.user.user_id),
-      status: Status.SUCCESS,
-      collectionPermalink: collection.permalink,
-      isInitialFetchAfterSsr: true
-    }
+    state = initialState
   }
-  return initialState
+
+  const updatedTracks = tracksLineupReducer(
+    // @ts-ignore
+    state.tracks,
+    action as LineupActions<Collection>
+  )
+  if (updatedTracks !== state.tracks) return { ...state, tracks: updatedTracks }
+  const matchingReduceFunction = actionsMap[action.type]
+  if (!matchingReduceFunction) return state
+  return matchingReduceFunction(state, action as CollectionPageAction)
 }
-
-const reducer =
-  (ssrPageProps?: SsrPageProps) =>
-  (
-    state: CollectionsPageState,
-    action: CollectionPageAction | LineupActions<Collection>
-  ) => {
-    if (!state) {
-      // @ts-ignore
-      state = buildInitialState(ssrPageProps)
-    }
-
-    const updatedTracks = tracksLineupReducer(
-      // @ts-ignore
-      state.tracks,
-      action as LineupActions<Collection>
-    )
-    if (updatedTracks !== state.tracks)
-      return { ...state, tracks: updatedTracks }
-    const matchingReduceFunction = actionsMap[action.type]
-    if (!matchingReduceFunction) return state
-    return matchingReduceFunction(state, action as CollectionPageAction)
-  }
 
 export default reducer

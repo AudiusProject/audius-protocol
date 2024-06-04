@@ -1,4 +1,4 @@
-import { Name, ErrorLevel, SsrPageProps } from '@audius/common/models'
+import { Name, ErrorLevel } from '@audius/common/models'
 import { chatMiddleware } from '@audius/common/store'
 import { composeWithDevToolsLogOnlyInProduction } from '@redux-devtools/extension'
 import { configureScope, addBreadcrumb } from '@sentry/browser'
@@ -96,8 +96,6 @@ const sentryMiddleware = createSentryMiddleware(
 export const configureStore = (
   history: History,
   isMobile: boolean,
-  ssrPageProps?: SsrPageProps,
-  isServerSide?: boolean,
   initialStoreState?: PartialDeep<AppState>
 ) => {
   const onSagaError = (
@@ -150,7 +148,7 @@ export const configureStore = (
   })
 
   const store = createStore(
-    createRootReducer(history, ssrPageProps, isServerSide),
+    createRootReducer(history),
     // @ts-ignore - Initial state is just for test mocking purposes
     initialStoreState,
     composeEnhancers(middlewares)

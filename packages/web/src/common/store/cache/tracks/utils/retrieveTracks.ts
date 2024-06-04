@@ -10,8 +10,6 @@ import {
   cacheTracksActions,
   cacheTracksSelectors,
   cacheSelectors,
-  trackPageActions,
-  trackPageSelectors,
   getContext,
   CommonState
 } from '@audius/common/store'
@@ -31,8 +29,6 @@ const { getEntryTimestamp } = cacheSelectors
 const { getTracks: getTracksSelector } = cacheTracksSelectors
 const { setPermalink } = cacheTracksActions
 const getUserId = accountSelectors.getUserId
-const { getIsInitialFetchAfterSsr } = trackPageSelectors
-const { setIsInitialFetchAfterSsr } = trackPageActions
 
 type UnlistedTrackRequest = {
   id: ID
@@ -69,8 +65,6 @@ export function* retrieveTrackByHandleAndSlug({
 }: RetrieveTrackByHandleAndSlugArgs) {
   const permalink = `/${handle}/${slug}`
 
-  // Check if this is the first fetch after server side rendering the track page
-  const isInitialFetchAfterSsr = yield* select(getIsInitialFetchAfterSsr)
   // @ts-ignore string IDs don't play well with the current retrieve typing
   const tracks = (yield* call(retrieve, {
     ids: [permalink],
@@ -100,9 +94,9 @@ export function* retrieveTrackByHandleAndSlug({
     idField: 'track_id',
     // If this is the first fetch after server side rendering the track page,
     // force retrieve from source to ensure we have personalized data
-    forceRetrieveFromSource: forceRetrieveFromSource || isInitialFetchAfterSsr,
+    forceRetrieveFromSource,
     shouldSetLoading: true,
-    deleteExistingEntry: isInitialFetchAfterSsr,
+    deleteExistingEntry: false,
     getEntriesTimestamp: function* (ids: ID[]) {
       const selected = yield* select(
         (state: CommonState, ids: ID[]) =>
@@ -116,14 +110,11 @@ export function* retrieveTrackByHandleAndSlug({
     },
     onBeforeAddToCache: function* (tracks: TrackMetadata[]) {
       const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-      yield* addUsersFromTracks(tracks, isInitialFetchAfterSsr)
+      yield* addUsersFromTracks(tracks)
       const [track] = tracks
       const isLegacyPermalink = track.permalink !== permalink
       if (isLegacyPermalink) {
         yield* put(setPermalink(permalink, track.track_id))
-      }
-      if (isInitialFetchAfterSsr) {
-        yield* put(setIsInitialFetchAfterSsr(false))
       }
       return tracks.map((track) => reformat(track, audiusBackendInstance))
     }

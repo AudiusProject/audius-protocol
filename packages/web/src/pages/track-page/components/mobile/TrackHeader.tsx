@@ -46,14 +46,12 @@ import { DogEar } from 'components/dog-ear'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { UserLink } from 'components/link'
 import { SearchTag } from 'components/search/SearchTag'
-import { StaticImage } from 'components/static-image/StaticImage'
 import { AiTrackSection } from 'components/track/AiTrackSection'
 import Badge from 'components/track/Badge'
 import { DownloadSection } from 'components/track/DownloadSection'
 import { GatedContentSection } from 'components/track/GatedContentSection'
 import { UserGeneratedText } from 'components/user-generated-text'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
-import { useSsrContext } from 'ssr/SsrContext'
 import { moodMap } from 'utils/Moods'
 import { isDarkMode } from 'utils/theme/theme'
 import { trpc } from 'utils/trpcClientWeb'
@@ -173,7 +171,6 @@ const TrackHeader = ({
   isStreamGated,
   streamConditions,
   hasStreamAccess,
-  hasDownloadAccess,
   isRemix,
   fieldVisibility,
   coSign,
@@ -195,7 +192,6 @@ const TrackHeader = ({
   goToRepostsPage
 }: TrackHeaderProps) => {
   const { getTrack } = cacheTracksSelectors
-  const { isSsrEnabled } = useSsrContext()
   const track = useSelector(
     (state: CommonState) => getTrack(state, { id: trackId }),
     shallowEqual
@@ -313,9 +309,6 @@ const TrackHeader = ({
     goToRepostsPage(trackId)
   }, [goToRepostsPage, trackId])
 
-  const InnerImageElement = isSsrEnabled ? StaticImage : DynamicImage
-  const imageSrc = isSsrEnabled ? track?.cover_art_sizes : image
-
   const imageElement = coSign ? (
     <CoSign
       size={Size.LARGE}
@@ -325,17 +318,15 @@ const TrackHeader = ({
       className={styles.coverArt}
       userId={coSign.user.user_id}
     >
-      <InnerImageElement
-        cid={imageSrc}
-        image={imageSrc ?? undefined}
+      <DynamicImage
+        image={image ?? undefined}
         alt={messages.artworkAltText}
         wrapperClassName={cn(styles.imageWrapper, styles.cosignImageWrapper)}
       />
     </CoSign>
   ) : (
-    <InnerImageElement
-      cid={imageSrc}
-      image={imageSrc ?? undefined}
+    <DynamicImage
+      image={image ?? undefined}
       alt='Track Artwork'
       wrapperClassName={cn(styles.coverArt, styles.imageWrapper)}
     />

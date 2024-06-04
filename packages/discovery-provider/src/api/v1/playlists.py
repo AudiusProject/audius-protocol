@@ -672,16 +672,19 @@ class GetPlaylistAccessInfo(Resource):
     @ns.marshal_with(access_info_response)
     def get(self, playlist_id: str):
         args = current_user_parser.parse_args()
-        decoded_id = decode_with_abort(playlist_id, full_ns)
+        decoded_id = decode_with_abort(playlist_id, ns)
         current_user_id = get_current_user_id(args)
-        playlist = get_playlist(playlist_id=decoded_id, current_user_id=current_user_id)
-        if not playlist:
+        playlists = get_playlists(
+            {
+                "current_user_id": current_user_id,
+                "playlist_ids": [decoded_id],
+                "with_users": True,  # needed for extend_playlist()
+            }
+        )
+        if not playlists:
             abort_not_found(playlist_id, ns)
-        playlist = extend_track(playlist[0])
-        playlist["stream_conditions"] = get_extended_purchase_gate(
-            playlist["stream_conditions"]
-        )
-        playlist["download_conditions"] = get_extended_purchase_gate(
-            playlist["download_conditions"]
-        )
+        raw = playlists[0]
+        stream_conditions = get_extended_purchase_gate(raw["stream_conditions"])
+        playlist = extend_playlist(raw)
+        playlist["stream_conditions"] = stream_conditions
         return success_response(playlist)

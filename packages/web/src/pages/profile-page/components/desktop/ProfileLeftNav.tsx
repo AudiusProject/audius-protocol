@@ -6,7 +6,6 @@ import { animated } from 'react-spring'
 
 import { useSelector } from 'common/hooks/useSelector'
 import { AiGeneratedCallout } from 'components/ai-generated-button/AiGeneratedCallout'
-import { ClientOnly } from 'components/client-only/ClientOnly'
 import Input from 'components/data-entry/Input'
 import TextArea from 'components/data-entry/TextArea'
 import { RelatedArtists } from 'components/related-artists/RelatedArtists'
@@ -19,7 +18,6 @@ import ProfilePageBadge from 'components/user-badges/ProfilePageBadge'
 import { Type } from 'pages/profile-page/components/SocialLink'
 import SocialLinkInput from 'pages/profile-page/components/SocialLinkInput'
 import { ProfileTopTags } from 'pages/profile-page/components/desktop/ProfileTopTags'
-import { useSsrContext } from 'ssr/SsrContext'
 
 import { ProfileBio } from './ProfileBio'
 import { ProfileMutuals } from './ProfileMutuals'
@@ -95,7 +93,6 @@ export const ProfileLeftNav = (props: ProfileLeftNavProps) => {
   } = props
 
   const accountUser = useSelector(getAccountUser)
-  const { isSsrEnabled } = useSsrContext()
 
   const renderTipAudioButton = (_: any, style: object) => (
     <animated.div className={styles.tipAudioButtonContainer} style={style}>
@@ -182,42 +179,41 @@ export const ProfileLeftNav = (props: ProfileLeftNavProps) => {
         </div>
       </div>
     )
-  } else if ((!loading || isSsrEnabled) && !isDeactivated) {
+  } else if (!loading && !isDeactivated) {
     const showUploadChip = isOwner && !isArtist
     return (
       <div className={styles.about}>
         <ProfilePageBadge userId={userId} className={styles.badge} />
-        <ClientOnly>
-          <ProfileBio
-            handle={handle}
-            bio={bio}
-            location={location}
-            website={website}
-            donation={donation}
-            created={created}
-            twitterHandle={twitterHandle}
-            instagramHandle={instagramHandle}
-            tikTokHandle={tikTokHandle}
-          />
-          {!accountUser || accountUser.user_id !== userId ? (
-            <OpacityTransition render={renderTipAudioButton} />
-          ) : null}
-          {allowAiAttribution ? (
-            <div className={styles.aiGeneratedCalloutContainer}>
-              <AiGeneratedCallout handle={handle} />
-            </div>
-          ) : null}
-          <SupportingList />
-          <div className={styles.profileBottomSection}>
-            <TopSupporters />
-            <ProfileMutuals />
-            <RelatedArtists />
-            {isArtist ? <ProfileTopTags /> : null}
-            {showUploadChip ? (
-              <UploadChip type='track' variant='nav' source='nav' />
-            ) : null}
+
+        <ProfileBio
+          handle={handle}
+          bio={bio}
+          location={location}
+          website={website}
+          donation={donation}
+          created={created}
+          twitterHandle={twitterHandle}
+          instagramHandle={instagramHandle}
+          tikTokHandle={tikTokHandle}
+        />
+        {!accountUser || accountUser.user_id !== userId ? (
+          <OpacityTransition render={renderTipAudioButton} />
+        ) : null}
+        {allowAiAttribution ? (
+          <div className={styles.aiGeneratedCalloutContainer}>
+            <AiGeneratedCallout handle={handle} />
           </div>
-        </ClientOnly>
+        ) : null}
+        <SupportingList />
+        <div className={styles.profileBottomSection}>
+          <TopSupporters />
+          <ProfileMutuals />
+          <RelatedArtists />
+          {isArtist ? <ProfileTopTags /> : null}
+          {showUploadChip ? (
+            <UploadChip type='track' variant='nav' source='nav' />
+          ) : null}
+        </div>
       </div>
     )
   } else {

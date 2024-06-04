@@ -98,9 +98,7 @@ def test_get_managed_users_default(app):
         db = get_db()
         populate_mock_db(db, {"users": test_users, "grants": test_managed_user_grants})
 
-        managed_users = get_managed_users_with_grants(
-            {"manager_wallet_address": "0x10", "current_user_id": 10}
-        )
+        managed_users = get_managed_users_with_grants({"user_id": 10})
 
         # return all non-revoked records by default
         assert len(managed_users) == 3, "Expected exactly 3 records"
@@ -116,8 +114,7 @@ def test_get_managed_users_no_filters(app):
 
         managed_users = get_managed_users_with_grants(
             {
-                "manager_wallet_address": "0x10",
-                "current_user_id": 10,
+                "user_id": 10,
                 "is_approved": None,
                 "is_revoked": None,
             }
@@ -146,9 +143,7 @@ def test_get_managed_users_grants_without_users(app):
         )
         populate_mock_db(db, entities)
 
-        managed_users = get_managed_users_with_grants(
-            {"manager_wallet_address": "0x10", "current_user_id": 10}
-        )
+        managed_users = get_managed_users_with_grants({"user_id": 10})
 
         # return all non-revoked records by default
         assert len(managed_users) == 3, "Expected exactly 3 records"
@@ -163,20 +158,10 @@ def test_get_managed_users_invalid_parameters(app):
         populate_mock_db(db, {"users": test_users, "grants": test_managed_user_grants})
 
         try:
-            get_managed_users_with_grants(
-                {"manager_wallet_address": None, "current_user_id": 10}
-            )
-            assert False, "Should have thrown an error for missing wallet address"
+            get_managed_users_with_grants({"user_id": None})
+            assert False, "Should have thrown an error for missing user_id"
         except ValueError as e:
-            assert str(e) == "manager_wallet_address is required"
-
-        try:
-            get_managed_users_with_grants(
-                {"manager_wallet_address": "0x10", "current_user_id": None}
-            )
-            assert False, "Should have thrown an error for missing current user id"
-        except ValueError as e:
-            assert str(e) == "current_user_id is required"
+            assert str(e) == "user_id is required"
 
 
 # ### get_user_managers ### #

@@ -77,6 +77,11 @@ export type FilterButtonProps = {
   popupAnchorOrigin?: Origin
 
   /**
+   * Popup max height
+   */
+  popupMaxHeight?: number
+
+  /**
    * Popup transform origin
    * @default { horizontal: 'center', vertical: 'top' }
    */
@@ -91,4 +96,14 @@ export type FilterButtonProps = {
    * zIndex applied to the inner Popup component
    */
   popupZIndex?: number
+
+  /**
+   * Show a text input to filter the options
+   */
+  showFilterInput?: boolean
+
+  /**
+   * Placeholder text for the filter input
+   */
+  filterInputPlaceholder?: string
 }
