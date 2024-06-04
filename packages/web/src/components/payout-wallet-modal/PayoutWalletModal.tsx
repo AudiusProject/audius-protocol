@@ -25,7 +25,7 @@ import {
   getAssociatedTokenAddressSync,
   unpackAccount
 } from '@solana/spl-token'
-import { PublicKey, SystemProgram } from '@solana/web3.js'
+import { ComputeBudgetProgram, PublicKey, SystemProgram } from '@solana/web3.js'
 import { Formik, useField } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
 import { useAsync } from 'react-use'
@@ -228,7 +228,10 @@ export const PayoutWalletModal = () => {
                       ataPubkey,
                       addressPubkey,
                       usdcMint
-                    )
+                    ),
+                    ComputeBudgetProgram.setComputeUnitPrice({
+                      microLamports: 100000
+                    })
                   ]
                 })
 
