@@ -1,0 +1,548 @@
+---
+id: tracks
+title: Tracks
+pagination_label: Tracks
+sidebar_label: Tracks
+description: Audius Protocol Documentation
+---
+
+import Tabs from '@theme/Tabs'
+import TabItem from '@theme/TabItem'
+import useBaseUrl from '@docusaurus/useBaseUrl'
+
+## Get Track
+
+Gets a track by ID
+
+<Tabs
+  block={true}
+  defaultValue="request"
+  values={[{"label":"Request","value":"request"},{"label":"Response","value":"response"}]}
+>
+<TabItem value="request">
+
+```bash
+GET https://audius-discovery-3.theblueprint.xyz/v1/tracks/D7KyD?app_name=EXAMPLEAPP HTTP/1.1
+```
+
+> Path Parameters
+
+| Param    | Type     | Required | Note          |
+| -------- | -------- | -------- | ------------- |
+| track_id | _string_ | true     | A track ID    |
+| app_name | _string_ | false    | Your App Name |
+
+</TabItem>
+<TabItem value="response">
+
+`200: OK`
+
+```json
+{
+  "data": {
+    "artwork": {
+      "150x150": "https://audius.prod.capturealpha.io/content/QmVJjA6zXhDZn3BjcjYa33P9NDiPZj7Vyq9TCx1bHjvHmG/150x150.jpg",
+      "480x480": "https://audius.prod.capturealpha.io/content/QmVJjA6zXhDZn3BjcjYa33P9NDiPZj7Vyq9TCx1bHjvHmG/480x480.jpg",
+      "1000x1000": "https://audius.prod.capturealpha.io/content/QmVJjA6zXhDZn3BjcjYa33P9NDiPZj7Vyq9TCx1bHjvHmG/1000x1000.jpg"
+    },
+    "description": "@baauer b2b @partyfavor live set at Brownies & Lemonade Block Party LA at The Shrine on 7.3.19.",
+    "genre": "Electronic",
+    "id": "D7KyD",
+    "track_cid": "QmeeTjhUvwQRtNYQwiC7Uebuhi4p9mNQNESb3AFaJCYqNz",
+    "mood": "Fiery",
+    "release_date": "Mon Sep 23 2019 12:35:10 GMT-0700",
+    "remix_of": {
+      "tracks": null
+    },
+    "repost_count": 430,
+    "favorite_count": 977,
+    "tags": "baauer,partyfavor,browniesandlemonade,live",
+    "title": "Paauer | Baauer B2B Party Favor | B&L Block Party LA (Live Set)",
+    "user": {
+      "album_count": 0,
+      "artist_pick_track_id": "D7KyD",
+      "bio": "Makin' moves & keeping you on your toes.\nlinktr.ee/browniesandlemonade",
+      "cover_photo": {
+        "640x": "https://audius.prod.capturealpha.io/content/QmcVZH5C2ygxoVS4ihPBJrkFrS1Ua6YJB5srNtXafPzihZ/640x.jpg",
+        "2000x": "https://audius.prod.capturealpha.io/content/QmcVZH5C2ygxoVS4ihPBJrkFrS1Ua6YJB5srNtXafPzihZ/2000x.jpg"
+      },
+      "followee_count": 26,
+      "follower_count": 34503,
+      "does_follow_current_user": false,
+      "handle": "TeamBandL",
+      "id": "nlGNe",
+      "is_verified": true,
+      "location": "Los Angeles, CA",
+      "name": "Brownies & Lemonade",
+      "playlist_count": 2,
+      "profile_picture": {
+        "150x150": "https://audius.prod.capturealpha.io/content/QmU9L4beAM96MpiNqqVTZdiDiCRTeBku1AJCh3NXrE5PxV/150x150.jpg",
+        "480x480": "https://audius.prod.capturealpha.io/content/QmU9L4beAM96MpiNqqVTZdiDiCRTeBku1AJCh3NXrE5PxV/480x480.jpg",
+        "1000x1000": "https://audius.prod.capturealpha.io/content/QmU9L4beAM96MpiNqqVTZdiDiCRTeBku1AJCh3NXrE5PxV/1000x1000.jpg"
+      },
+      "repost_count": 5,
+      "track_count": 10,
+      "is_deactivated": false,
+      "is_available": true,
+      "erc_wallet": "0x8bc337e467cec1e7b05e54c7d1f90814a78d259e",
+      "spl_wallet": "WXBYqzejMr5qxmuDrvVTDQopr7vdZt5szsoSSb3EvQH",
+      "supporter_count": 9,
+      "supporting_count": 0,
+      "total_audio_balance": 3123
+    },
+    "duration": 5265,
+    "downloadable": false,
+    "play_count": 355660,
+    "permalink": "/TeamBandL/paauer-|-baauer-b2b-party-favor-|-bl-block-party-la-live-set-725",
+    "is_streamable": true
+  }
+}
+```
+
+</TabItem>
+</Tabs>
+
+---
+
+## Get Bulk Track
+
+Gets a list of tracks using their IDs or permalinks
+
+<Tabs
+  block={true}
+  defaultValue="request"
+  values={[{"label":"Request","value":"request"},{"label":"Response","value":"response"}]}
+>
+<TabItem value="request">
+
+```bash
+GET https://audius-discovery-3.theblueprint.xyz/v1/tracks?permalink=/TeamBandL/paauer-|-baauer-b2b-party-favor-|-bl-block-party-la-live-set-725&app_name=EXAMPLEAPP HTTP/1.1
+```
+
+> Path Parameters
+
+| Param     | Type            | Required | Note                          |
+| --------- | --------------- | -------- | ----------------------------- |
+| permalink | _array[string]_ | false    | The permalink of the track(s) |
+| id        | _array[string]_ | false    | The ID of the track(s)        |
+| app_name  | _string_        | false    | Your App Name                 |
+
+</TabItem>
+<TabItem value="response">
+
+`200: OK`
+
+```json
+{
+  "data": [
+    {
+      "artwork": {
+        "150x150": "https://audius.prod.capturealpha.io/content/QmVJjA6zXhDZn3BjcjYa33P9NDiPZj7Vyq9TCx1bHjvHmG/150x150.jpg",
+        "480x480": "https://audius.prod.capturealpha.io/content/QmVJjA6zXhDZn3BjcjYa33P9NDiPZj7Vyq9TCx1bHjvHmG/480x480.jpg",
+        "1000x1000": "https://audius.prod.capturealpha.io/content/QmVJjA6zXhDZn3BjcjYa33P9NDiPZj7Vyq9TCx1bHjvHmG/1000x1000.jpg"
+      },
+      "description": "@baauer b2b @partyfavor live set at Brownies & Lemonade Block Party LA at The Shrine on 7.3.19.",
+      "genre": "Electronic",
+      "id": "D7KyD",
+      "track_cid": "QmeeTjhUvwQRtNYQwiC7Uebuhi4p9mNQNESb3AFaJCYqNz",
+      "mood": "Fiery",
+      "release_date": "Mon Sep 23 2019 12:35:10 GMT-0700",
+      "remix_of": {
+        "tracks": null
+      },
+      "repost_count": 430,
+      "favorite_count": 977,
+      "tags": "baauer,partyfavor,browniesandlemonade,live",
+      "title": "Paauer | Baauer B2B Party Favor | B&L Block Party LA (Live Set)",
+      "user": {
+        "album_count": 0,
+        "artist_pick_track_id": "D7KyD",
+        "bio": "Makin' moves & keeping you on your toes.\nlinktr.ee/browniesandlemonade",
+        "cover_photo": {
+          "640x": "https://audius.prod.capturealpha.io/content/QmcVZH5C2ygxoVS4ihPBJrkFrS1Ua6YJB5srNtXafPzihZ/640x.jpg",
+          "2000x": "https://audius.prod.capturealpha.io/content/QmcVZH5C2ygxoVS4ihPBJrkFrS1Ua6YJB5srNtXafPzihZ/2000x.jpg"
+        },
+        "followee_count": 26,
+        "follower_count": 34503,
+        "does_follow_current_user": false,
+        "handle": "TeamBandL",
+        "id": "nlGNe",
+        "is_verified": true,
+        "location": "Los Angeles, CA",
+        "name": "Brownies & Lemonade",
+        "playlist_count": 2,
+        "profile_picture": {
+          "150x150": "https://audius.prod.capturealpha.io/content/QmU9L4beAM96MpiNqqVTZdiDiCRTeBku1AJCh3NXrE5PxV/150x150.jpg",
+          "480x480": "https://audius.prod.capturealpha.io/content/QmU9L4beAM96MpiNqqVTZdiDiCRTeBku1AJCh3NXrE5PxV/480x480.jpg",
+          "1000x1000": "https://audius.prod.capturealpha.io/content/QmU9L4beAM96MpiNqqVTZdiDiCRTeBku1AJCh3NXrE5PxV/1000x1000.jpg"
+        },
+        "repost_count": 5,
+        "track_count": 10,
+        "is_deactivated": false,
+        "is_available": true,
+        "erc_wallet": "0x8bc337e467cec1e7b05e54c7d1f90814a78d259e",
+        "spl_wallet": "WXBYqzejMr5qxmuDrvVTDQopr7vdZt5szsoSSb3EvQH",
+        "supporter_count": 9,
+        "supporting_count": 0,
+        "total_audio_balance": 3123
+      },
+      "duration": 5265,
+      "downloadable": false,
+      "play_count": 355660,
+      "permalink": "/TeamBandL/paauer-|-baauer-b2b-party-favor-|-bl-block-party-la-live-set-725",
+      "is_streamable": true
+    }
+  ]
+}
+```
+
+</TabItem>
+</Tabs>
+
+---
+
+## Search Tracks
+
+Search for a track or tracks
+
+<Tabs
+  block={true}
+  defaultValue="request"
+  values={[{"label":"Request","value":"request"},{"label":"Response","value":"response"}]}
+>
+<TabItem value="request">
+
+```bash
+GET https://audius-discovery-3.theblueprint.xyz/v1/tracks/search?query=baauer%20b2b&app_name=EXAMPLEAPP HTTP/1.1
+```
+
+> Path Parameters
+
+| Param             | Type     | Required | Note                            |
+| ----------------- | -------- | -------- | ------------------------------- |
+| query             | _string_ | true     | The search query                |
+| only_downloadable | _string_ | false    | Return only downloadable tracks |
+| app_name          | _string_ | false    | Your App Name                   |
+
+</TabItem>
+<TabItem value="response">
+
+`200: OK`
+
+```json
+{
+  "data": [
+    {
+      "artwork": {
+        "150x150": "https://audius-content-4.figment.io/content/QmVJjA6zXhDZn3BjcjYa33P9NDiPZj7Vyq9TCx1bHjvHmG/150x150.jpg",
+        "480x480": "https://audius-content-4.figment.io/content/QmVJjA6zXhDZn3BjcjYa33P9NDiPZj7Vyq9TCx1bHjvHmG/480x480.jpg",
+        "1000x1000": "https://audius-content-4.figment.io/content/QmVJjA6zXhDZn3BjcjYa33P9NDiPZj7Vyq9TCx1bHjvHmG/1000x1000.jpg"
+      },
+      "description": "@baauer b2b @partyfavor live set at Brownies & Lemonade Block Party LA at The Shrine on 7.3.19.",
+      "genre": "Electronic",
+      "id": "D7KyD",
+      "track_cid": "QmeeTjhUvwQRtNYQwiC7Uebuhi4p9mNQNESb3AFaJCYqNz",
+      "preview_cid": null,
+      "orig_file_cid": "QmeeTjhUvwQRtNYQwiC7Uebuhi4p9mNQNESb3AFaJCYqNz",
+      "orig_filename": "Paauer | Baauer B2B Party Favor | B&L Block Party LA (Live Set) - [Brownies & Lemonade].mp3",
+      "is_original_available": false,
+      "mood": "Fiery",
+      "release_date": "2019-09-23T12:03:00.000Z",
+      "remix_of": {
+        "tracks": null
+      },
+      "repost_count": 444,
+      "favorite_count": 1020,
+      "tags": "baauer,partyfavor,browniesandlemonade,live",
+      "title": "Paauer | Baauer B2B Party Favor | B&L Block Party LA (Live Set)",
+      "user": {
+        "album_count": 0,
+        "artist_pick_track_id": "D7KyD",
+        "bio": "Makin' moves & keeping you on your toes.\nlinktr.ee/browniesandlemonade",
+        "cover_photo": {
+          "640x": "https://audius-content-3.figment.io/content/QmcVZH5C2ygxoVS4ihPBJrkFrS1Ua6YJB5srNtXafPzihZ/640x.jpg",
+          "2000x": "https://audius-content-3.figment.io/content/QmcVZH5C2ygxoVS4ihPBJrkFrS1Ua6YJB5srNtXafPzihZ/2000x.jpg"
+        },
+        "followee_count": 26,
+        "follower_count": 34604,
+        "handle": "TeamBandL",
+        "id": "nlGNe",
+        "is_verified": true,
+        "location": "Los Angeles, CA",
+        "name": "Brownies & Lemonade",
+        "playlist_count": 2,
+        "profile_picture": {
+          "150x150": "https://audius-content-13.figment.io/content/QmU9L4beAM96MpiNqqVTZdiDiCRTeBku1AJCh3NXrE5PxV/150x150.jpg",
+          "480x480": "https://audius-content-13.figment.io/content/QmU9L4beAM96MpiNqqVTZdiDiCRTeBku1AJCh3NXrE5PxV/480x480.jpg",
+          "1000x1000": "https://audius-content-13.figment.io/content/QmU9L4beAM96MpiNqqVTZdiDiCRTeBku1AJCh3NXrE5PxV/1000x1000.jpg"
+        },
+        "repost_count": 5,
+        "track_count": 8,
+        "is_deactivated": false,
+        "is_available": true,
+        "erc_wallet": "0x8bc337e467cec1e7b05e54c7d1f90814a78d259e",
+        "spl_wallet": "WXBYqzejMr5qxmuDrvVTDQopr7vdZt5szsoSSb3EvQH",
+        "supporter_count": 10,
+        "supporting_count": 0,
+        "total_audio_balance": null,
+        "wallet": "0x8bc337e467cec1e7b05e54c7d1f90814a78d259e"
+      },
+      "duration": 5265,
+      "is_downloadable": false,
+      "play_count": 377599,
+      "permalink": "/TeamBandL/paauer-|-baauer-b2b-party-favor-|-bl-block-party-la-live-set-725",
+      "is_streamable": true,
+      "ddex_app": null,
+      "playlists_containing_track": [259194883, 41990, 11782, 11784, 2038, 4607]
+    }
+  ]
+}
+```
+
+</TabItem>
+</Tabs>
+
+---
+
+## Get Trending Tracks
+
+Gets the top 100 trending (most popular) tracks on Audius
+
+<Tabs
+  block={true}
+  defaultValue="request"
+  values={[{"label":"Request","value":"request"},{"label":"Response","value":"response"}]}
+>
+<TabItem value="request">
+
+```bash
+GET https://audius-discovery-3.theblueprint.xyz/v1/tracks/trending?app_name=EXAMPLEAPP HTTP/1.1
+```
+
+> Path Parameters
+
+| Param    | Type     | Required | Note                                           | Available values                |
+| -------- | -------- | -------- | ---------------------------------------------- | ------------------------------- |
+| genre    | string   | false    | Filter trending to a specified genre           |
+| time     | string   | false    | Calculate trending over a specified time range | `week` `month` `year` `allTime` |
+| app_name | _string_ | false    | Your App Name                                  |
+
+</TabItem>
+<TabItem value="response">
+
+`200: OK`
+
+```json
+{
+  "data": [
+    {
+      "artwork": {
+        "150x150": "https://creatornode3.audius.co/content/QmY7uocBHuSyW3aWuzZ6MeHNod8ph4TmStJJa2v4KXCdXe/150x150.jpg",
+        "480x480": "https://creatornode3.audius.co/content/QmY7uocBHuSyW3aWuzZ6MeHNod8ph4TmStJJa2v4KXCdXe/480x480.jpg",
+        "1000x1000": "https://creatornode3.audius.co/content/QmY7uocBHuSyW3aWuzZ6MeHNod8ph4TmStJJa2v4KXCdXe/1000x1000.jpg"
+      },
+      "description": "PBJ with NITTI out now!! ",
+      "genre": "Electronic",
+      "id": "2o8qVY6",
+      "track_cid": "QmVbmiJQ5vHB5RfTGWDrUdHUrd4aTKVV4SpCx48aBoPdS6",
+      "mood": "Energizing",
+      "release_date": "Mon May 08 2023 06:37:27 GMT-0700",
+      "remix_of": {
+        "tracks": null
+      },
+      "repost_count": 33,
+      "favorite_count": 58,
+      "tags": "henryfong,nitti,pbj,basshouse",
+      "title": "Henry Fong & NITTI - PBJ",
+      "user": {
+        "album_count": 0,
+        "artist_pick_track_id": "y8Nvx",
+        "bio": "DJ/Producer",
+        "cover_photo": {
+          "640x": "https://creatornode3.audius.co/content/QmSADrMwcqUFHjnuh3r3aWGgZjYFYovfsUxDDtxYwWHsv2/640x.jpg",
+          "2000x": "https://creatornode3.audius.co/content/QmSADrMwcqUFHjnuh3r3aWGgZjYFYovfsUxDDtxYwWHsv2/2000x.jpg"
+        },
+        "followee_count": 19,
+        "follower_count": 511,
+        "does_follow_current_user": false,
+        "handle": "henryfong",
+        "id": "nolY2",
+        "is_verified": true,
+        "location": "Los Angeles",
+        "name": "Henry Fong",
+        "playlist_count": 1,
+        "profile_picture": {
+          "150x150": "https://creatornode3.audius.co/content/QmaxRd8YNYzzhU1gkzfaX3vCucNHfyZTiUKCTRtv9QCUjh/150x150.jpg",
+          "480x480": "https://creatornode3.audius.co/content/QmaxRd8YNYzzhU1gkzfaX3vCucNHfyZTiUKCTRtv9QCUjh/480x480.jpg",
+          "1000x1000": "https://creatornode3.audius.co/content/QmaxRd8YNYzzhU1gkzfaX3vCucNHfyZTiUKCTRtv9QCUjh/1000x1000.jpg"
+        },
+        "repost_count": 2,
+        "track_count": 12,
+        "is_deactivated": false,
+        "is_available": true,
+        "erc_wallet": "0x106a6b57ca0731cf57bf4fc7ef6b6bd447f5f5dd",
+        "spl_wallet": "3WZRg5pbFLP4ey7RhF4n95hR4WnGJTAq6KZBrfmwxBct",
+        "supporter_count": 7,
+        "supporting_count": 0,
+        "total_audio_balance": 133
+      },
+      "duration": 222,
+      "downloadable": false,
+      "play_count": 13424,
+      "permalink": "/henryfong/henry-fong-nitti-pbj",
+      "is_streamable": true
+    }
+  ]
+}
+```
+
+</TabItem>
+</Tabs>
+
+---
+
+## Get Underground Trending Tracks
+
+Gets the top 100 trending underground tracks on Audius
+
+<Tabs
+  block={true}
+  defaultValue="request"
+  values={[{"label":"Request","value":"request"},{"label":"Response","value":"response"}]}
+>
+<TabItem value="request">
+
+```bash
+GET https://audius-discovery-3.theblueprint.xyz/v1/tracks/trending/underground?app_name=EXAMPLEAPP HTTP/1.1
+```
+
+> Path Parameters
+
+| Param    | Type      | Required | Note                                                                      |
+| -------- | --------- | -------- | ------------------------------------------------------------------------- |
+| offset   | _integer_ | false    | The number of items to skip. Useful for pagination (page number \* limit) |
+| limit    | _integer_ | false    | The number of items to fetch                                              |
+| app_name | _string_  | false    | Your App Name                                                             |
+
+</TabItem>
+<TabItem value="response">
+
+`200: OK`
+
+```json
+{
+  "data": [
+    {
+      "artwork": {
+        "150x150": "https://audius-content-1.cultur3stake.com/content/QmNwXj3vESow9b1hvessexnuiHhAA8Bhwzycf2UWsQXHGW/150x150.jpg",
+        "480x480": "https://audius-content-1.cultur3stake.com/content/QmNwXj3vESow9b1hvessexnuiHhAA8Bhwzycf2UWsQXHGW/480x480.jpg",
+        "1000x1000": "https://audius-content-1.cultur3stake.com/content/QmNwXj3vESow9b1hvessexnuiHhAA8Bhwzycf2UWsQXHGW/1000x1000.jpg"
+      },
+      "description": null,
+      "genre": "Electronic",
+      "id": "MYvY63X",
+      "track_cid": "QmWXgp758zKWd4KtmQJwTaLnGR2oGubVhZH7qjiu7Vwi6f",
+      "mood": "Empowering",
+      "release_date": null,
+      "remix_of": {
+        "tracks": null
+      },
+      "repost_count": 14,
+      "favorite_count": 31,
+      "tags": "bass,dubstep,trap,beats,downtempo",
+      "title": "04_Mindex - Wormhole",
+      "user": {
+        "album_count": 1,
+        "artist_pick_track_id": "gQRgZ",
+        "bio": "Storytelling Bass Music",
+        "cover_photo": {
+          "640x": "https://audius-content-1.cultur3stake.com/content/QmQGJeLf73YymgeL9nrtDgSrM255ownEAw8pKupbCbVHFj/640x.jpg",
+          "2000x": "https://audius-content-1.cultur3stake.com/content/QmQGJeLf73YymgeL9nrtDgSrM255ownEAw8pKupbCbVHFj/2000x.jpg"
+        },
+        "followee_count": 12,
+        "follower_count": 419,
+        "does_follow_current_user": false,
+        "handle": "mindex",
+        "id": "n6OJl",
+        "is_verified": false,
+        "location": "Austin, TX",
+        "name": "MINDEX",
+        "playlist_count": 0,
+        "profile_picture": {
+          "150x150": "https://audius-content-1.cultur3stake.com/content/QmPFsokU1XFz9aKfyd1x2jqZjrJyiPNrXVN6SKf4fkdqBx/150x150.jpg",
+          "480x480": "https://audius-content-1.cultur3stake.com/content/QmPFsokU1XFz9aKfyd1x2jqZjrJyiPNrXVN6SKf4fkdqBx/480x480.jpg",
+          "1000x1000": "https://audius-content-1.cultur3stake.com/content/QmPFsokU1XFz9aKfyd1x2jqZjrJyiPNrXVN6SKf4fkdqBx/1000x1000.jpg"
+        },
+        "repost_count": 1,
+        "track_count": 11,
+        "is_deactivated": false,
+        "is_available": true,
+        "erc_wallet": "0x6f69411eb84a058ec4df2f8da426c420ddbede06",
+        "spl_wallet": "FQavSBuMGzsavG2M2WbeGWpFDyZwiC4y1XmXeBw13mSw",
+        "supporter_count": 3,
+        "supporting_count": 0,
+        "total_audio_balance": 7
+      },
+      "duration": 219,
+      "downloadable": false,
+      "play_count": 5557,
+      "permalink": "/mindex/04_mindex-wormhole",
+      "is_streamable": true
+    }
+  ]
+}
+```
+
+</TabItem>
+</Tabs>
+
+---
+
+## Stream Track
+
+Get the streamable MP3 file of a track
+
+:::info This endpoint accepts the Range header for streaming.
+
+An HTTP Range request asks the server to send only a portion of an HTTP message back to a client.
+
+Read
+[more about Range headers here](https://developer.mozilla.org/en-US/docs/Web/HTTP/Range_requests)
+
+:::
+
+<Tabs
+  block={true}
+  defaultValue="request"
+  values={[{"label":"Request","value":"request"},{"label":"Response","value":"response"}]}
+>
+<TabItem value="request">
+
+```bash
+GET https://audius-discovery-3.theblueprint.xyz/v1/tracks/D7KyD/stream?app_name=EXAMPLEAPP HTTP/1.1
+```
+
+> Path Parameters
+
+| Param                     | Type     | Required | Note                                                                                                   |
+| ------------------------- | -------- | -------- | ------------------------------------------------------------------------------------------------------ |
+| track_id                  | _string_ | true     | A Track ID                                                                                             |
+| user_signature            | _string_ | false    | Optional - signature from the requesting user's wallet.                                                |
+| user_data                 | _string_ | false    | Optional - data which was used to generate the optional signature argument.                            |
+| premium_content_signature | _string_ | false    | Optional - premium content signature for this track which was previously generated by a registered DN. |
+| filename                  | _string_ | false    | Optional - Filename in case user is trying to download track.                                          |
+| app_name                  | _string_ | false    | Your App Name                                                                                          |
+
+</TabItem>
+<TabItem value="response">
+
+`200: OK`
+
+```json
+{}
+```
+
+</TabItem>
+</Tabs>
+
+---

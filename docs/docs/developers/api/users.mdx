@@ -25,7 +25,7 @@ Gets a single user by their user ID
 GET https://audius-discovery-6.cultur3stake.com/v1/users/nlGNe?app_name=EXAMPLEAPP HTTP/1.1
 ```
 
-`Path Parameters`
+> Path Parameters
 
 | Param    | Type     | Required | Note          |
 | -------- | -------- | -------- | ------------- |
@@ -104,7 +104,7 @@ Search for users that match the given query
 GET https://audius-discovery-6.cultur3stake.com/v1/users/search?query=Brownies&app_name=EXAMPLEAPP HTTP/1.1
 ```
 
-`Path Parameters`
+> Path Parameters
 
 | Param    | Type     | Required | Note             |
 | -------- | -------- | -------- | ---------------- |
@@ -175,7 +175,7 @@ Verify if the given jwt ID token was signed by the subject (user) in the payload
 GET https://audius-discovery-6.cultur3stake.com/v1/users/verify_token?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJrZWNjYWsyNTYifQ.eyJ1c2VySWQiOjE0MTYxMTUsImVtYWlsIjoiaXNhYWN0ZXN0NDUxQGdtYWlsLmNvbSIsIm5hbWUiOiJ0ZXN0aW5nMTIiLCJoYW5kbGUiOiJ0ZXN0dGVzdDQ1MSIsInZlcmlmaWVkIjpmYWxzZSwic3ViIjoxNDE2MTE1LCJpYXQiOjE2NTY1MTgzMzN9.MHhkZmYyYWY5ZThmNDAxZDUyZDlhNjUxNGRiOTg0ZjM5YjFhOTZkYmNmZmViZjMzZjNkNmEzMTk4OTVlZWE2MTZjNjg0NWIwOGEyOGQ4MTA4OTEyMTc4ZDU0ODRhZGU4M2I1Yzg4ZTUwM2Y3OGYzMDYzZjYxMmQxZDQwYTYwMGZmZDFi&app_name=EXAMPLEAPP HTTP/1.1
 ```
 
-`Path Parameters`
+> Path Parameters
 
 | Param    | Type     | Required | Note          |
 | -------- | -------- | -------- | ------------- |
@@ -222,7 +222,7 @@ Get the User's ERC and SPL connected wallets
 GET https://audius-discovery-6.cultur3stake.com/v1/users/Wem1e/connected_wallets?app_name=EXAMPLEAPP HTTP/1.1
 ```
 
-`Path Parameters`
+> Path Parameters
 
 | Param    | Type     | Required | Note          |
 | -------- | -------- | -------- | ------------- |
@@ -263,7 +263,7 @@ Get the User's ERC and SPL connected wallets
 GET https://audius-discovery-6.cultur3stake.com/v1/users/nlGNe/favorites?app_name=EXAMPLEAPP HTTP/1.1
 ```
 
-`Path Parameters`
+> Path Parameters
 
 | Param    | Type     | Required | Note          |
 | -------- | -------- | -------- | ------------- |
@@ -308,7 +308,7 @@ Gets the given user's reposts
 GET https://audius-discovery-6.cultur3stake.com/v1/users/nlGNe/reposts?app_name=EXAMPLEAPP HTTP/1.1
 ```
 
-`Path Parameters`
+> Path Parameters
 
 | Param    | Type      | Required | Note                                                                      |
 | -------- | --------- | -------- | ------------------------------------------------------------------------- |
@@ -411,7 +411,7 @@ All users that follow the provided user
 GET https://audius-discovery-6.cultur3stake.com/v1/users/nlGNe/followers?app_name=EXAMPLEAPP HTTP/1.1
 ```
 
-`Path Parameters`
+> Path Parameters
 
 | Param    | Type      | Required | Note                                                                      |
 | -------- | --------- | -------- | ------------------------------------------------------------------------- |
@@ -485,7 +485,7 @@ All users that the provided user follows
 GET https://audius-discovery-6.cultur3stake.com/v1/users/nlGNe/following?app_name=EXAMPLEAPP HTTP/1.1
 ```
 
-`Path Parameters`
+> Path Parameters
 
 | Param    | Type      | Required | Note                                                                      |
 | -------- | --------- | -------- | ------------------------------------------------------------------------- |
@@ -559,7 +559,7 @@ Gets the supporters of the given user
 GET https://audius-discovery-6.cultur3stake.com/v1/users/lzkyZ/supporters?app_name=EXAMPLEAPP HTTP/1.1
 ```
 
-`Path Parameters`
+> Path Parameters
 
 | Param    | Type      | Required | Note                                                                      |
 | -------- | --------- | -------- | ------------------------------------------------------------------------- |
@@ -637,7 +637,7 @@ Gets the users that the given user supports
 GET https://audius-discovery-6.cultur3stake.com/v1/users/aW8mr/supporting?app_name=EXAMPLEAPP HTTP/1.1
 ```
 
-`Path Parameters`
+> Path Parameters
 
 | Param    | Type      | Required | Note                                                                      |
 | -------- | --------- | -------- | ------------------------------------------------------------------------- |
@@ -715,7 +715,7 @@ Gets the tracks created by a user using their user ID
 GET https://audius-discovery-6.cultur3stake.com/v1/users/nlGNe/tracks?app_name=EXAMPLEAPP HTTP/1.1
 ```
 
-`Path Parameters`
+> Path Parameters
 
 | Param    | Type      | Required | Note                                                                      |
 | -------- | --------- | -------- | ------------------------------------------------------------------------- |
@@ -820,7 +820,7 @@ Gets a list of users that might be of interest to followers of this user.
 GET https://audius-discovery-6.cultur3stake.com/v1/users/nlGNe/related?app_name=EXAMPLEAPP HTTP/1.1
 ```
 
-`Path Parameters`
+> Path Parameters
 
 | Param    | Type      | Required | Note                                                                      |
 | -------- | --------- | -------- | ------------------------------------------------------------------------- |
@@ -894,7 +894,7 @@ All users that subscribe to the provided user
 GET https://audius-discovery-6.cultur3stake.com/v1/users/nlGNe/subscribers?app_name=EXAMPLEAPP HTTP/1.1
 ```
 
-`Path Parameters`
+> Path Parameters
 
 | Param    | Type      | Required | Note                                                                      |
 | -------- | --------- | -------- | ------------------------------------------------------------------------- |
@@ -968,7 +968,7 @@ Gets the most used track tags by a user.
 GET https://audius-discovery-6.cultur3stake.com/v1/users/nlGNe/tags?app_name=EXAMPLEAPP HTTP/1.1
 ```
 
-`Path Parameters`
+> Path Parameters
 
 | Param    | Type      | Required | Note                                       |
 | -------- | --------- | -------- | ------------------------------------------ |
@@ -1008,7 +1008,7 @@ Gets a single user by their handle
 GET https://audius-discovery-6.cultur3stake.com/v1/users/handle/rac?app_name=EXAMPLEAPP HTTP/1.1
 ```
 
-`Path Parameters`
+> Path Parameters
 
 | Param    | Type     | Required | Note                                       |
 | -------- | -------- | -------- | ------------------------------------------ |
@@ -1078,7 +1078,7 @@ Gets the AI generated tracks attributed to a user using the user's handle
 GET https://audius-discovery-6.cultur3stake.com/v1/users/handle/phuture/tracks/ai_attributed?app_name=EXAMPLEAPP HTTP/1.1
 ```
 
-`Path Parameters`
+> Path Parameters
 
 | Param          |   Type    | Required | Note                                                                      | Available values                                                                                                               |
 | -------------- | :-------: | :------: | ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
