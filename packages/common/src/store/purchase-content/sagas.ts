@@ -426,7 +426,7 @@ function* purchaseWithCoinflowOld(args: PurchaseWithCoinflowOldArgs) {
  * Creates the purchase transaction but doesn't send it and instead pops the coinflow modal.
  * @see {@link https://github.com/AudiusProject/audius-protocol/blob/75169cfb00894f5462a612b423129895f58a53fe/packages/libs/src/sdk/api/tracks/TracksApi.ts#L386 purchase}
  */
-async function* purchaseTrackWithCoinflow(args: {
+function* purchaseTrackWithCoinflow(args: {
   sdk: AudiusSdk
   trackId: ID
   userId: ID
@@ -439,7 +439,8 @@ async function* purchaseTrackWithCoinflow(args: {
   const wallet = yield* call(getRootSolanaAccount, audiusBackendInstance)
 
   const params = {
-    ...args,
+    price: args.price,
+    extraAmount: args.extraAmount,
     trackId: encodeHashId(trackId),
     userId: encodeHashId(userId),
     wallet: wallet.publicKey
@@ -456,7 +457,7 @@ async function* purchaseTrackWithCoinflow(args: {
     contentId: trackId,
     contentType: PurchaseableContentType.TRACK
   })
-  const total = (price + extraAmount) / 100
+  const total = price + extraAmount
   yield* put(
     coinflowOnrampModalActions.open({
       amount: Number(USDC(total).toString()),
@@ -489,7 +490,7 @@ async function* purchaseTrackWithCoinflow(args: {
  * Creates the purchase transaction but doesn't send it and instead pops the coinflow modal.
  * @see {@link https://github.com/AudiusProject/audius-protocol/blob/75169cfb00894f5462a612b423129895f58a53fe/packages/libs/src/sdk/api/albums/AlbumsApi.ts#L386 purchase}
  */
-async function* purchaseAlbumWithCoinflow(args: {
+function* purchaseAlbumWithCoinflow(args: {
   sdk: AudiusSdk
   albumId: ID
   userId: ID
@@ -502,14 +503,15 @@ async function* purchaseAlbumWithCoinflow(args: {
   const wallet = yield* call(getRootSolanaAccount, audiusBackendInstance)
 
   const params = {
-    ...args,
+    price: args.price,
+    extraAmount: args.extraAmount,
     albumId: encodeHashId(albumId),
     userId: encodeHashId(userId),
     wallet: wallet.publicKey
   }
 
   const transaction = yield* call(
-    [sdk.tracks, sdk.albums.getPurchaseAlbumTransaction],
+    [sdk.albums, sdk.albums.getPurchaseAlbumTransaction],
     params
   )
   const serializedTransaction = Buffer.from(transaction.serialize()).toString(
@@ -520,7 +522,7 @@ async function* purchaseAlbumWithCoinflow(args: {
     contentId: albumId,
     contentType: PurchaseableContentType.ALBUM
   })
-  const total = (price + extraAmount) / 100
+  const total = price + extraAmount
   yield* put(
     coinflowOnrampModalActions.open({
       amount: Number(USDC(total).toString()),
