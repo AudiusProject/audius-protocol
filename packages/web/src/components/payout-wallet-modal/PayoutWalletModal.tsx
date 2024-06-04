@@ -17,6 +17,13 @@ import {
   RadioGroup,
   Text
 } from '@audius/harmony'
+import {
+  TOKEN_PROGRAM_ID,
+  createAssociatedTokenAccountInstruction,
+  getAssociatedTokenAddressSync,
+  unpackAccount
+} from '@solana/spl-token'
+import { PublicKey, SystemProgram } from '@solana/web3.js'
 import { Formik, useField } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
 import { useAsync } from 'react-use'
@@ -26,9 +33,10 @@ import { toFormikValidationSchema } from 'zod-formik-adapter'
 import { useModalState } from 'common/hooks/useModalState'
 import { TextField } from 'components/form-fields'
 import { ModalForm } from 'components/modal-form/ModalForm'
+import { audiusSdk } from 'services/audius-sdk'
+import { env } from 'services/env'
 import {
   getAssociatedTokenAccountOwner,
-  isTokenAccount,
   isValidSolAddress
 } from 'services/solana/solana'
 import { reportToSentry } from 'store/errors/reportToSentry'
@@ -158,27 +166,77 @@ export const PayoutWalletModal = () => {
       { option, address }: PayoutWalletValues,
       { setErrors }: { setErrors: any }
     ) => {
+      const sdk = await audiusSdk()
       try {
         if (!address || !user) {
           throw new Error('No user or address')
         }
 
-        const isUsdcAta = await isTokenAccount({
-          accountAddress: address as SolanaWalletAddress,
-          mint: 'usdc'
-        })
-        if (!isUsdcAta) {
-          // Create ATA via relay
-          throw new Error('Create ATA not implemented')
+        const usdcMint = new PublicKey(env.USDC_MINT_ADDRESS)
+        const addressPubkey = new PublicKey(address)
+        const info =
+          await sdk.services.claimableTokensClient.connection.getAccountInfo(
+            addressPubkey
+          )
+
+        let usdcAta: string | null = null
+
+        if (
+          (!info || info?.owner.equals(SystemProgram.programId)) &&
+          PublicKey.isOnCurve(addressPubkey)
+        ) {
+          // If our account is on the curve and owned by system program,
+          // derive a USDC ATA for the user and relay to create it
+          const ataPubkey = await getAssociatedTokenAddressSync(
+            usdcMint,
+            addressPubkey
+          )
+          const payer = await sdk.services.solanaRelay.getFeePayer()
+          const transaction =
+            await sdk.services.claimableTokensClient.buildTransaction({
+              instructions: [
+                createAssociatedTokenAccountInstruction(
+                  payer,
+                  ataPubkey,
+                  addressPubkey,
+                  usdcMint
+                )
+              ]
+            })
+
+          await sdk.services.solanaRelay.relay({
+            transaction
+          })
+          usdcAta = ataPubkey.toBase58()
+        } else {
+          // Otherwise, we want to see if this is already a USDC ATA, and if
+          // it is, just set the user's payout wallet to it directly.
+          try {
+            const unpacked = unpackAccount(
+              addressPubkey,
+              info,
+              TOKEN_PROGRAM_ID
+            )
+            if (unpacked.mint.equals(usdcMint)) {
+              usdcAta = address
+            }
+          } catch (e) {
+            // fall through
+          }
+        }
+
+        if (!usdcAta) {
+          throw new Error('Cannot create USDC token account')
         }
 
         const updatedUser = { ...user }
         if (option === 'default') {
           updatedUser.spl_usdc_payout_wallet = null
         } else {
-          updatedUser.spl_usdc_payout_wallet = address as SolanaWalletAddress
+          updatedUser.spl_usdc_payout_wallet = usdcAta as SolanaWalletAddress
         }
         dispatch(profilePageActions.updateProfile(updatedUser))
+
         setIsOpen(false)
       } catch (e) {
         setErrors({ address: 'Please try again later' })
