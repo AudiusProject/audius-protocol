@@ -245,7 +245,10 @@ export const PayoutWalletModal = () => {
                 })
 
               await sdk.services.solanaRelay.relay({
-                transaction
+                transaction,
+                confirmationOptions: {
+                  commitment: 'finalized'
+                }
               })
               usdcAta = ataPubkey.toBase58()
             }
