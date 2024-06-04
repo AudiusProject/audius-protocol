@@ -71,8 +71,10 @@ export const PayoutWalletCard = () => {
               <IconLogoCircle size='m' />
             )}
             <Text variant='body' size='m' strength='strong'>
-              {payoutWallet
-                ? shortenSPLAddress(payoutWallet)
+              {user?.spl_usdc_payout_wallet
+                ? payoutWallet
+                  ? shortenSPLAddress(payoutWallet)
+                  : ''
                 : messages.audiusWallet}
             </Text>
           </Flex>
