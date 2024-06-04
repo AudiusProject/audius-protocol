@@ -1,0 +1,71 @@
+---
+id: rest-api
+title: REST API
+pagination_label: REST API
+sidebar_label: Overview
+description: Audius Protocol Documentation
+---
+
+import Tabs from '@theme/Tabs'
+import TabItem from '@theme/TabItem'
+import useBaseUrl from '@docusaurus/useBaseUrl'
+
+The Audius API is entirely free to use. We ask that you adhere to the guidelines in this
+documentation and always credit artists.
+
+## Selecting a Host
+
+Audius is a decentralized music streaming service. To use the API, you first select an API endpoint
+from the list of endpoints returned by:
+
+<Tabs
+  block={true}
+  defaultValue="request"
+  values={[{"label":"Request","value":"request"},{"label":"Response","value":"response"}]}
+>
+<TabItem value="request">
+
+```bash
+GET https://api.audius.co HTTP/1.1
+```
+
+</TabItem>
+<TabItem value="response">
+
+`200: OK`
+
+```json
+{
+  "data": [
+    "https://audius-discovery-1.cultur3stake.com",
+    "https://audius-discovery-1.theblueprint.xyz"
+    "https://audius-discovery-11.cultur3stake.com",
+    "https://audius-discovery-12.cultur3stake.com",
+    "https://audius-discovery-13.cultur3stake.com",
+    ...
+    "https://dn1.monophonic.digital",
+    "https://dn1.nodeoperator.io",
+    "https://dn1.stuffisup.com",
+  ]
+}
+```
+
+</TabItem>
+</Tabs>
+
+The Audius REST API lets you query, stream, and search for tracks, users & playlists across the
+network.
+
+Once you've selected a host, all API requests can be sent directly to it. We recommend selecting a
+host each time your application starts up as availability may change over time.
+
+---
+
+## Specifying App Name
+
+If you're integrating the Audius API into an app in production, we ask that you include the
+`app_name` param with each query. Your unique app name is entirely up to you!
+
+```bash
+&app_name=<YOUR-UNIQUE-APP-NAME>
+```

@@ -55,12 +55,23 @@ module.exports = {
     },
     {
       type: 'category',
-      label: 'Guides',
+      label: 'API',
       items: [
-        'developers/guides/log-in-with-audius',
-        'developers/guides/rest-api',
-        'developers/guides/hedgehog',
+        'developers/api/rest-api',
+        // 'developers/api/tracks',
+        'developers/api/users',
+        // 'developers/api/playlists',
+        // 'developers/api/albums',
+        // 'developers/api/resolve',
+        // 'developers/api/tips',
+        // 'developers/api/schemas',
       ],
+      collapsed: false,
+    },
+    {
+      type: 'category',
+      label: 'Guides',
+      items: ['developers/guides/log-in-with-audius', 'developers/guides/hedgehog'],
       collapsed: false,
     },
     {
