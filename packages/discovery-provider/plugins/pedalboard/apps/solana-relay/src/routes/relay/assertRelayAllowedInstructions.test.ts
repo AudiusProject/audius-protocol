@@ -215,7 +215,7 @@ describe('Solana Relay', function () {
       ]
       await assertRelayAllowedInstructions(instructions, {
         user: {
-          walletAddress: wallet
+          wallet
         }
       })
     })
@@ -248,7 +248,7 @@ describe('Solana Relay', function () {
         async () =>
           assertRelayAllowedInstructions(instructions, {
             user: {
-              walletAddress: wallet
+              wallet
             }
           }),
         InvalidRelayInstructionError,
@@ -640,7 +640,7 @@ describe('Solana Relay', function () {
 
       await assertRelayAllowedInstructions(instructions, {
         user: {
-          walletAddress: 'something'
+          wallet: 'something'
         }
       })
     })
@@ -791,7 +791,7 @@ describe('Solana Relay', function () {
         async () =>
           assertRelayAllowedInstructions(instructions, {
             user: {
-              walletAddress: 'something'
+              wallet: 'something'
             }
           }),
         InvalidRelayInstructionError,
@@ -870,7 +870,7 @@ describe('Solana Relay', function () {
         async () =>
           assertRelayAllowedInstructions(instructions, {
             user: {
-              walletAddress: 'something'
+              wallet: 'something'
             }
           }),
         InvalidRelayInstructionError,
@@ -885,7 +885,7 @@ describe('Solana Relay', function () {
       const fromPubkey = getRandomPublicKey()
       const toPubkey = getRandomPublicKey()
       // Dummy eth address, no significance
-      const walletAddress = '0x36034724e7bda41d5142efd85e1f6773460f5679'
+      const wallet = '0x36034724e7bda41d5142efd85e1f6773460f5679'
       await assertRelayAllowedInstructions(
         [
           SystemProgram.transfer({
@@ -894,7 +894,7 @@ describe('Solana Relay', function () {
             lamports: 1
           })
         ],
-        { user: { walletAddress }, feePayer: feePayer.toBase58() }
+        { user: { wallet }, feePayer: feePayer.toBase58() }
       )
     })
 
@@ -913,7 +913,7 @@ describe('Solana Relay', function () {
     })
 
     it('should not allow transfers from the feePayer', async function () {
-      const walletAddress = '0x36034724e7bda41d5142efd85e1f6773460f5679'
+      const wallet = '0x36034724e7bda41d5142efd85e1f6773460f5679'
       const feePayer = getRandomPublicKey()
       const toPubkey = getRandomPublicKey()
       await assert.rejects(async () =>
@@ -926,13 +926,13 @@ describe('Solana Relay', function () {
             })
           ],
 
-          { user: { walletAddress }, feePayer: feePayer.toBase58() }
+          { user: { wallet }, feePayer: feePayer.toBase58() }
         )
       )
     })
 
     it('should not allow other system instructions', async function () {
-      const walletAddress = '0x36034724e7bda41d5142efd85e1f6773460f5679'
+      const wallet = '0x36034724e7bda41d5142efd85e1f6773460f5679'
       const feePayer = getRandomPublicKey()
       const fromPubkey = getRandomPublicKey()
       const newAccountPubkey = getRandomPublicKey()
@@ -949,7 +949,7 @@ describe('Solana Relay', function () {
             })
           ],
 
-          { user: { walletAddress }, feePayer: feePayer.toBase58() }
+          { user: { wallet }, feePayer: feePayer.toBase58() }
         )
       )
     })
