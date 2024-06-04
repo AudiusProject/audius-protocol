@@ -26,6 +26,7 @@ import {
 import bs58 from 'bs58'
 
 import { config } from '../../config'
+import { rateLimitTokenAccountCreation } from '../../redis'
 
 import { InvalidRelayInstructionError } from './InvalidRelayInstructionError'
 
@@ -84,10 +85,11 @@ const PAYMENT_ROUTER_USDC_TOKEN_ACCOUNT = getAssociatedTokenAddressSync(
  * Account program, provided it has matching close instructions.
  * Close instructions are on the Token Programand are not validated here.
  */
-const assertAllowedAssociatedTokenAccountProgramInstruction = (
+const assertAllowedAssociatedTokenAccountProgramInstruction = async (
   instructionIndex: number,
   instruction: TransactionInstruction,
-  instructions: TransactionInstruction[]
+  instructions: TransactionInstruction[],
+  wallet?: string
 ) => {
   const decodedInstruction =
     decodeAssociatedTokenAccountInstruction(instruction)
@@ -139,7 +141,14 @@ const assertAllowedAssociatedTokenAccountProgramInstruction = (
             instr.keys.destination.pubkey
           )
       )
-    if (
+    if (wallet) {
+      try {
+        await rateLimitTokenAccountCreation(wallet)
+      } catch (e) {
+        const error = e as Error
+        throw new InvalidRelayInstructionError(instructionIndex, error.message)
+      }
+    } else if (
       matchingCreateInstructions.length !== matchingCloseInstructions.length
     ) {
       throw new InvalidRelayInstructionError(
@@ -399,7 +408,8 @@ export const assertRelayAllowedInstructions = async (
         assertAllowedAssociatedTokenAccountProgramInstruction(
           i,
           instruction,
-          instructions
+          instructions,
+          options?.user?.walletAddress
         )
         break
       case TOKEN_PROGRAM_ID.toBase58():

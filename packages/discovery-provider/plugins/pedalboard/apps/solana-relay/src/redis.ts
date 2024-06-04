@@ -72,3 +72,38 @@ export const getCachedContentNodes = async () => {
       typeof p.endpoint === 'string'
   )
 }
+
+const TOKEN_ACCOUNT_CREATION_USER_KEY_EXPIRY = 60 * 60 * 24
+const TOKEN_ACCOUNT_CREATION_USER_LIMIT = 2
+const TOKEN_ACCOUNT_CREATION_SYSTEM_KEY_EXPIRY = 60 * 60 * 24
+const TOKEN_ACCOUNT_CREATION_SYSTEM_LIMIT = 5000
+
+export const rateLimitTokenAccountCreation = async (userId: string) => {
+  const redis = await getRedisConnection()
+  const userKey = `ata-creation-count:user:${userId}`
+  const [userCount] = await redis
+    .multi()
+    .incr(userKey)
+    .expire(userKey, TOKEN_ACCOUNT_CREATION_USER_KEY_EXPIRY)
+    .exec()
+  if (
+    typeof userCount !== 'number' ||
+    userCount > TOKEN_ACCOUNT_CREATION_USER_LIMIT
+  ) {
+    throw new Error(`User ${userId} has created too many token accounts`)
+  }
+
+  const systemKey = `ata-creation-count`
+  const [systemCount] = await redis
+    .multi()
+    .incr(systemKey)
+    .expire(systemKey, TOKEN_ACCOUNT_CREATION_SYSTEM_KEY_EXPIRY)
+    .exec()
+
+  if (
+    typeof systemCount !== 'number' ||
+    systemCount > TOKEN_ACCOUNT_CREATION_SYSTEM_LIMIT
+  ) {
+    throw new Error('System has created too many token accounts')
+  }
+}
