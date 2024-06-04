@@ -2,7 +2,6 @@ import { PropsWithChildren } from 'react'
 
 import {
   Flex,
-  IconEmailAddress,
   IconInfo,
   IconPencil,
   IconVisibilityPublic,
@@ -28,21 +27,12 @@ const PermissionText = ({ children }: PermissionTextProps) => {
 type PermissionDetailProps = PropsWithChildren<{
   className?: string
 }>
-const PermissionDetail = ({ className, children }: PermissionDetailProps) => {
+const PermissionDetail = ({ children }: PermissionDetailProps) => {
   return (
     <div>
       <Text variant='body' size='s' color='subdued'>
         {children}
       </Text>
-      {/* <span
-        className={cn(
-          styles.permissionText,
-          styles.permissionDetailText,
-          className
-        )}
-      >
-        {children}
-      </span> */}
     </div>
   )
 }
@@ -135,7 +125,7 @@ export const PermissionsSection = ({
                 ) : userEmail ? (
                   `${messages.yourAccountDataAccess}: ${userEmail}`
                 ) : (
-                  messages.yourAccountDataAccess
+                  messages.yourAccountDataAccessNoEmail
                 )}
               </PermissionDetail>
             ) : null}
