@@ -1157,7 +1157,7 @@ export type Users = {
   verified_with_twitter: boolean;
   verified_with_instagram: boolean;
   verified_with_tiktok: boolean;
-  webiste: string | null;
+  website: string | null;
   donation: string | null;
   created_at: Date;
   updated_at: Date;
