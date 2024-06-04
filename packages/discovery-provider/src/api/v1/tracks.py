@@ -353,10 +353,13 @@ class FullBulkTracks(Resource):
             return marshal(response, full_tracks_response), status
 
 
-def get_stream_url_from_content_node(content_node: str, path: str, skip_check:bool=False):
+def get_stream_url_from_content_node(
+    content_node: str, path: str, skip_check: bool = False
+):
     # Add additional query parameters
     joined_url = urljoin(content_node, path)
     parsed_url = urlparse(joined_url)
+
     # Performance improvement POC to skip node status check
     if skip_check:
         return parsed_url.geturl()
@@ -593,7 +596,9 @@ class TrackStream(Resource):
         stream_url = None
         if cached_content_node:
             cached_content_node = cached_content_node.decode("utf-8")
-            stream_url = get_stream_url_from_content_node(cached_content_node, path, skip_check)
+            stream_url = get_stream_url_from_content_node(
+                cached_content_node, path, skip_check
+            )
             if stream_url:
                 return stream_url
 
@@ -616,7 +621,9 @@ class TrackStream(Resource):
 
         for content_node in content_nodes:
             try:
-                stream_url = get_stream_url_from_content_node(content_node, path, skip_check)
+                stream_url = get_stream_url_from_content_node(
+                    content_node, path, skip_check
+                )
                 if stream_url:
                     redis.set(redis_key, content_node)
                     redis.expire(redis_key, 60 * 30)  # 30 min ttl
