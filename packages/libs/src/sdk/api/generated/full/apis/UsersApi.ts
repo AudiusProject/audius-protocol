@@ -369,7 +369,6 @@ export interface GetUsersTrackHistoryRequest {
     id: string;
     offset?: number;
     limit?: number;
-    userId?: string;
     query?: string;
     sortMethod?: GetUsersTrackHistorySortMethodEnum;
     sortDirection?: GetUsersTrackHistorySortDirectionEnum;
@@ -2027,10 +2026,6 @@ export class UsersApi extends runtime.BaseAPI {
 
         if (params.limit !== undefined) {
             queryParameters['limit'] = params.limit;
-        }
-
-        if (params.userId !== undefined) {
-            queryParameters['user_id'] = params.userId;
         }
 
         if (params.query !== undefined) {

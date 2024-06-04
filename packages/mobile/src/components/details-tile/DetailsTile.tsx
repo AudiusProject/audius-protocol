@@ -166,8 +166,10 @@ export const DetailsTile = ({
     (isPlayable && hasStreamAccess) || doesUserHaveAccessToAnyTrack
   const shouldShowPreview =
     isUSDCPurchaseGated &&
-    ((isOwner && !isCollection) || !hasStreamAccess) &&
-    onPressPreview
+    ((!isCollection && isOwner) || // own track
+      (isCollection && !hasStreamAccess && !shouldShowPlay) || // premium collection
+      (!isCollection && !hasStreamAccess)) && // premium track
+    !!onPressPreview
 
   const handlePressArtistName = useCallback(() => {
     if (!user) {

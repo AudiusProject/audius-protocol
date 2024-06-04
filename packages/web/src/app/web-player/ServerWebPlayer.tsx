@@ -23,7 +23,7 @@ import { PartialDeep } from 'type-fest'
 import { SsrContextProvider } from 'ssr/SsrContext'
 import { AppState } from 'store/types'
 
-import { ServerReduxProvider } from './ServerReduxProvider'
+import { ServerReduxProvider } from '../ServerReduxProvider'
 
 type ServerProviderProps = PropsWithChildren<{
   initialState: PartialDeep<AppState>
@@ -36,13 +36,7 @@ const ServerProviders = (props: ServerProviderProps) => {
   return (
     <ServerReduxProvider initialState={initialState}>
       <StaticRouter>
-        <SsrContextProvider
-          value={{
-            isMobile,
-            isServerSide: true,
-            isSsrEnabled: true
-          }}
-        >
+        <SsrContextProvider value={{ isMobile, isServerSide: true }}>
           <ThemeProvider theme='day'>{children}</ThemeProvider>
         </SsrContextProvider>
       </StaticRouter>

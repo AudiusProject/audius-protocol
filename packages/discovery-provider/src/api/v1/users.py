@@ -9,9 +9,7 @@ from flask_restx import Namespace, Resource, fields, reqparse
 from src.api.v1.helpers import (
     DescriptiveArgument,
     abort_bad_request_param,
-    abort_forbidden,
     abort_not_found,
-    abort_unauthorized,
     current_user_parser,
     decode_ids_array,
     decode_with_abort,
@@ -157,6 +155,8 @@ from src.utils.helpers import decode_string_id, encode_int_id
 from src.utils.redis_cache import cache
 from src.utils.redis_metrics import record_metrics
 from src.utils.structured_logger import StructuredLogger, log_duration
+
+from .access_helpers import check_authorized
 
 logger = StructuredLogger(__name__)
 
@@ -409,7 +409,7 @@ class TrackList(Resource):
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
     @ns.expect(user_tracks_route_parser)
-    @auth_middleware(user_tracks_route_parser)
+    @auth_middleware(parser=user_tracks_route_parser)
     @ns.marshal_with(tracks_response)
     @cache(ttl_sec=5)
     def get(self, id, authed_user_id=None):
@@ -874,15 +874,14 @@ class UserTracksLibraryFull(Resource):
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
     @full_ns.expect(user_tracks_library_parser)
-    @auth_middleware(user_tracks_library_parser)
+    @auth_middleware(user_tracks_library_parser, require_auth=True)
     @full_ns.marshal_with(track_library_full_response)
     @cache(ttl_sec=5)
-    def get(self, id: str, authed_user_id: Optional[int] = None):
+    def get(self, id: str, authed_user_id: int):
         """Fetch a user's full library tracks."""
         args = user_tracks_library_parser.parse_args()
         decoded_id = decode_with_abort(id, ns)
-        if authed_user_id != decoded_id:
-            abort_forbidden(full_ns)
+        check_authorized(decoded_id, authed_user_id)
 
         offset = format_offset(args)
         limit = format_limit(args)
@@ -907,14 +906,11 @@ class UserTracksLibraryFull(Resource):
         return success_response(tracks)
 
 
-def get_user_collections(
-    id: str, collection_type: CollectionType, authed_user_id: Optional[int] = None
-):
+def get_user_collections(id: str, collection_type: CollectionType, authed_user_id: int):
     """Fetches albums or playlists from a user's library"""
     args = user_collections_library_parser.parse_args()
     decoded_id = decode_with_abort(id, ns)
-    if authed_user_id != decoded_id:
-        abort_forbidden(full_ns)
+    check_authorized(decoded_id, authed_user_id)
 
     offset = format_offset(args)
     limit = format_limit(args)
@@ -949,10 +945,10 @@ class UserPlaylistsLibraryFull(Resource):
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
     @full_ns.expect(user_collections_library_parser)
-    @auth_middleware(user_collections_library_parser)
+    @auth_middleware(user_collections_library_parser, require_auth=True)
     @full_ns.marshal_with(collection_library_full_response)
     @cache(ttl_sec=5)
-    def get(self, id: str, authed_user_id: Optional[int] = None):
+    def get(self, id: str, authed_user_id: int):
         """Fetch a user's full library playlists."""
         return get_user_collections(id, CollectionType.playlist, authed_user_id)
 
@@ -967,10 +963,10 @@ class UserAlbumsLibraryFull(Resource):
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
     @full_ns.expect(user_collections_library_parser)
-    @auth_middleware(user_collections_library_parser)
+    @auth_middleware(user_collections_library_parser, require_auth=True)
     @full_ns.marshal_with(collection_library_full_response)
     @cache(ttl_sec=5)
-    def get(self, id: str, authed_user_id: Optional[int] = None):
+    def get(self, id: str, authed_user_id: int):
         """Fetch a user's full library playlists."""
         return get_user_collections(id, CollectionType.album, authed_user_id)
 
@@ -1075,9 +1071,8 @@ class TrackHistoryFull(Resource):
     def _get(self, id, authed_user_id):
         args = track_history_parser.parse_args()
         decoded_id = decode_with_abort(id, ns)
-        current_user_id = get_current_user_id(args)
-        if not current_user_id and decoded_id == authed_user_id:
-            current_user_id = authed_user_id
+        check_authorized(decoded_id, authed_user_id)
+
         offset = format_offset(args)
         limit = format_limit(args)
         query = format_query(args)
@@ -1085,7 +1080,6 @@ class TrackHistoryFull(Resource):
         sort_direction = format_sort_direction(args)
         get_tracks_args = GetUserListeningHistoryArgs(
             user_id=decoded_id,
-            current_user_id=current_user_id,
             limit=limit,
             offset=offset,
             query=query,
@@ -1100,10 +1094,16 @@ class TrackHistoryFull(Resource):
         id="""Get User's Track History""",
         description="""Get the tracks the user recently listened to.""",
         params={"id": "A User ID"},
-        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+        responses={
+            200: "Success",
+            400: "Bad request",
+            401: "Unauthorized",
+            403: "Forbidden",
+            500: "Server error",
+        },
     )
     @full_ns.expect(track_history_parser)
-    @auth_middleware(track_history_parser)
+    @auth_middleware(track_history_parser, require_auth=True)
     @full_ns.marshal_with(history_response_full)
     def get(self, id, authed_user_id=None):
         return self._get(id, authed_user_id)
@@ -1115,10 +1115,16 @@ class TrackHistory(TrackHistoryFull):
         id="""Get User's Track History""",
         description="""Get the tracks the user recently listened to.""",
         params={"id": "A User ID"},
-        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+        responses={
+            200: "Success",
+            400: "Bad request",
+            401: "Unauthorized",
+            403: "Forbidden",
+            500: "Server error",
+        },
     )
     @ns.expect(track_history_parser)
-    @auth_middleware(track_history_parser)
+    @auth_middleware(track_history_parser, require_auth=True)
     @ns.marshal_with(history_response)
     def get(self, id, authed_user_id):
         return super()._get(id, authed_user_id)
@@ -2080,21 +2086,12 @@ class ManagedUsers(Resource):
             500: "Server error",
         },
     )
-    @auth_middleware(include_wallet=True)
+    @auth_middleware(require_auth=True)
     @full_ns.marshal_with(managed_users_response)
-    def get(self, id, authed_user_id, authed_user_wallet):
+    def get(self, id, authed_user_id):
         user_id = decode_with_abort(id, full_ns)
-
-        if authed_user_id is None:
-            abort_unauthorized(full_ns)
-
-        if authed_user_id != user_id:
-            abort_forbidden(full_ns)
-
-        args = GetManagedUsersArgs(
-            manager_wallet_address=authed_user_wallet, current_user_id=user_id
-        )
-        users = get_managed_users_with_grants(args)
+        check_authorized(user_id, authed_user_id)
+        users = get_managed_users_with_grants(GetManagedUsersArgs(user_id=user_id))
         users = list(map(format_managed_user, users))
 
         return success_response(users)
@@ -2120,23 +2117,13 @@ class Managers(Resource):
             500: "Server error",
         },
     )
-    @auth_middleware(include_wallet=True)
+    @auth_middleware(require_auth=True)
     @full_ns.marshal_with(managers_response)
-    def get(self, id, authed_user_id, authed_user_wallet):
+    def get(self, id, authed_user_id):
         user_id = decode_with_abort(id, full_ns)
+        check_authorized(user_id, authed_user_id)
 
-        if authed_user_id is None:
-            abort_unauthorized(full_ns)
-
-        # TODO: If accessing this endpoint as a manager, this check will not
-        # work correctly.
-        # https://linear.app/audius/issue/PAY-2780/support-getting-target-user-in-auth-middleware
-        if authed_user_id != user_id:
-            abort_forbidden(full_ns)
-
-        args = GetUserManagersArgs(
-            manager_wallet_address=authed_user_wallet, user_id=user_id
-        )
+        args = GetUserManagersArgs(user_id=user_id)
         managers = get_user_managers_with_grants(args)
         managers = list(map(format_user_manager, managers))
 
@@ -2178,12 +2165,11 @@ class FullPurchases(Resource):
         params={"id": "A User ID"},
     )
     @full_ns.expect(purchases_and_sales_parser)
-    @auth_middleware(purchases_and_sales_parser)
+    @auth_middleware(purchases_and_sales_parser, require_auth=True)
     @full_ns.marshal_with(purchases_response)
     def get(self, id, authed_user_id=None):
         decoded_id = decode_with_abort(id, full_ns)
-        if decoded_id != authed_user_id:
-            abort_forbidden(full_ns)
+        check_authorized(decoded_id, authed_user_id)
         args = purchases_and_sales_parser.parse_args()
         limit = get_default_max(args.get("limit"), 10, 100)
         offset = get_default_max(args.get("offset"), 0)
@@ -2211,12 +2197,11 @@ class FullPurchasesCount(Resource):
         params={"id": "A User ID"},
     )
     @full_ns.expect(purchases_and_sales_count_parser)
-    @auth_middleware(purchases_and_sales_count_parser)
+    @auth_middleware(purchases_and_sales_count_parser, require_auth=True)
     @full_ns.marshal_with(purchases_count_response)
-    def get(self, id, authed_user_id=None):
+    def get(self, id, authed_user_id):
         decoded_id = decode_with_abort(id, full_ns)
-        if decoded_id != authed_user_id:
-            abort_forbidden(full_ns)
+        check_authorized(decoded_id, authed_user_id)
         args = purchases_and_sales_count_parser.parse_args()
         args = GetUSDCPurchasesCountArgs(
             buyer_user_id=decoded_id,
@@ -2235,10 +2220,9 @@ class FullSales(Resource):
     @full_ns.expect(purchases_and_sales_parser)
     @auth_middleware(purchases_and_sales_parser)
     @full_ns.marshal_with(purchases_response)
-    def get(self, id, authed_user_id=None):
+    def get(self, id, authed_user_id):
         decoded_id = decode_with_abort(id, full_ns)
-        if decoded_id != authed_user_id:
-            abort_forbidden(full_ns)
+        check_authorized(decoded_id, authed_user_id)
         args = purchases_and_sales_parser.parse_args()
         limit = get_default_max(args.get("limit"), 10, 100)
         offset = get_default_max(args.get("offset"), 0)
@@ -2263,12 +2247,11 @@ class FullSalesCount(Resource):
         params={"id": "A User ID"},
     )
     @full_ns.expect(purchases_and_sales_count_parser)
-    @auth_middleware(purchases_and_sales_count_parser)
+    @auth_middleware(purchases_and_sales_count_parser, require_auth=True)
     @full_ns.marshal_with(purchases_count_response)
-    def get(self, id, authed_user_id=None):
+    def get(self, id, authed_user_id):
         decoded_id = decode_with_abort(id, full_ns)
-        if decoded_id != authed_user_id:
-            abort_forbidden(full_ns)
+        check_authorized(decoded_id, authed_user_id)
         args = purchases_and_sales_count_parser.parse_args()
         args = GetUSDCPurchasesCountArgs(
             seller_user_id=decoded_id,
@@ -2289,11 +2272,10 @@ class PurchasesDownload(Resource):
     )
     @ns.produces(["text/csv"])
     @ns.expect(purchases_download_parser)
-    @auth_middleware(purchases_download_parser)
-    def get(self, id, authed_user_id=None):
+    @auth_middleware(purchases_download_parser, require_auth=True)
+    def get(self, id, authed_user_id):
         decoded_id = decode_with_abort(id, ns)
-        if decoded_id != authed_user_id:
-            abort_forbidden(ns)
+        check_authorized(decoded_id, authed_user_id)
         args = DownloadPurchasesArgs(buyer_user_id=decoded_id)
         purchases = download_purchases(args)
         response = Response(purchases, content_type="text/csv")
@@ -2313,11 +2295,10 @@ class SalesDownload(Resource):
     )
     @ns.produces(["text/csv"])
     @ns.expect(sales_download_parser)
-    @auth_middleware(sales_download_parser)
-    def get(self, id, authed_user_id=None):
+    @auth_middleware(sales_download_parser, require_auth=True)
+    def get(self, id, authed_user_id):
         decoded_id = decode_with_abort(id, ns)
-        if decoded_id != authed_user_id:
-            abort_forbidden(ns)
+        check_authorized(decoded_id, authed_user_id)
         args = DownloadSalesArgs(seller_user_id=decoded_id)
         sales = download_sales(args)
         response = Response(sales, content_type="text/csv")
@@ -2337,11 +2318,10 @@ class WithdrawalsDownload(Resource):
     )
     @ns.produces(["text/csv"])
     @ns.expect(withdrawals_download_parser)
-    @auth_middleware(withdrawals_download_parser)
-    def get(self, id, authed_user_id=None):
+    @auth_middleware(withdrawals_download_parser, require_auth=True)
+    def get(self, id, authed_user_id):
         decoded_id = decode_with_abort(id, ns)
-        if decoded_id != authed_user_id:
-            abort_forbidden(ns)
+        check_authorized(decoded_id, authed_user_id)
         args = DownloadWithdrawalsArgs(user_id=decoded_id)
         withdrawals = download_withdrawals(args)
         response = Response(withdrawals, content_type="text/csv")

@@ -4,7 +4,6 @@ import { IconSize, Text, useTheme } from '@audius/harmony'
 
 import { ArtistPopover } from 'components/artist/ArtistPopover'
 import UserBadges from 'components/user-badges/UserBadges'
-import { useSsrContext } from 'ssr/SsrContext'
 import { useSelector } from 'utils/reducer'
 import { profilePage } from 'utils/route'
 
@@ -19,7 +18,6 @@ type UserLinkProps = Omit<TextLinkProps, 'to'> & {
 }
 
 export const UserLink = (props: UserLinkProps) => {
-  const { isServerSide } = useSsrContext()
   const { userId, badgeSize = 's', popover, children, ...other } = props
   const { iconSizes, spacing } = useTheme()
 
@@ -52,7 +50,7 @@ export const UserLink = (props: UserLinkProps) => {
     </TextLink>
   )
 
-  return !isServerSide && popover && handle ? (
+  return popover && handle ? (
     <ArtistPopover
       css={{ display: 'inline-flex', overflow: 'hidden' }}
       handle={handle}

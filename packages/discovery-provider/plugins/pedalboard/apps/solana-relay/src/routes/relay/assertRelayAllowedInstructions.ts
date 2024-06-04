@@ -6,6 +6,7 @@ import {
   isCreateAssociatedTokenAccountInstruction,
   Secp256k1Program
 } from '@audius/spl'
+import { Users } from '@pedalboard/storage'
 import {
   NATIVE_MINT,
   ASSOCIATED_TOKEN_PROGRAM_ID,
@@ -26,6 +27,7 @@ import {
 import bs58 from 'bs58'
 
 import { config } from '../../config'
+import { rateLimitTokenAccountCreation } from '../../redis'
 
 import { InvalidRelayInstructionError } from './InvalidRelayInstructionError'
 
@@ -84,10 +86,11 @@ const PAYMENT_ROUTER_USDC_TOKEN_ACCOUNT = getAssociatedTokenAddressSync(
  * Account program, provided it has matching close instructions.
  * Close instructions are on the Token Programand are not validated here.
  */
-const assertAllowedAssociatedTokenAccountProgramInstruction = (
+const assertAllowedAssociatedTokenAccountProgramInstruction = async (
   instructionIndex: number,
   instruction: TransactionInstruction,
-  instructions: TransactionInstruction[]
+  instructions: TransactionInstruction[],
+  wallet?: string | null
 ) => {
   const decodedInstruction =
     decodeAssociatedTokenAccountInstruction(instruction)
@@ -139,7 +142,14 @@ const assertAllowedAssociatedTokenAccountProgramInstruction = (
             instr.keys.destination.pubkey
           )
       )
-    if (
+    if (wallet) {
+      try {
+        await rateLimitTokenAccountCreation(wallet)
+      } catch (e) {
+        const error = e as Error
+        throw new InvalidRelayInstructionError(instructionIndex, error.message)
+      }
+    } else if (
       matchingCreateInstructions.length !== matchingCloseInstructions.length
     ) {
       throw new InvalidRelayInstructionError(
@@ -162,7 +172,7 @@ const assertAllowedAssociatedTokenAccountProgramInstruction = (
 const assertAllowedTokenProgramInstruction = async (
   instructionIndex: number,
   instruction: TransactionInstruction,
-  wallet?: string
+  wallet?: string | null
 ) => {
   const decodedInstruction = decodeInstruction(instruction)
   if (isTransferCheckedInstruction(decodedInstruction)) {
@@ -268,7 +278,7 @@ const allowedDestinationMints = [
 const assertAllowedJupiterProgramInstruction = async (
   instructionIndex: number,
   instruction: TransactionInstruction,
-  wallet?: string
+  wallet?: string | null
 ) => {
   if (!wallet) {
     throw new InvalidRelayInstructionError(
@@ -318,10 +328,10 @@ const assertAllowedJupiterProgramInstruction = async (
 const assertAllowedSystemProgramInstruction = (
   instructionIndex: number,
   instruction: TransactionInstruction,
-  walletAddress?: string,
+  wallet?: string | null,
   feePayer?: string
 ) => {
-  if (!walletAddress) {
+  if (!wallet) {
     throw new InvalidRelayInstructionError(
       instructionIndex,
       'System program requires authentication'
@@ -384,11 +394,7 @@ const assertValidSecp256k1ProgramInstruction = (
 export const assertRelayAllowedInstructions = async (
   instructions: TransactionInstruction[],
   options?: {
-    user?: {
-      walletAddress?: string
-      blockchainUserId?: number
-      handle?: string | null
-    }
+    user?: Pick<Users, 'wallet'>
     feePayer?: string
   }
 ) => {
@@ -396,17 +402,18 @@ export const assertRelayAllowedInstructions = async (
     const instruction = instructions[i]
     switch (instruction.programId.toBase58()) {
       case ASSOCIATED_TOKEN_PROGRAM_ID.toBase58():
-        assertAllowedAssociatedTokenAccountProgramInstruction(
+        await assertAllowedAssociatedTokenAccountProgramInstruction(
           i,
           instruction,
-          instructions
+          instructions,
+          options?.user?.wallet
         )
         break
       case TOKEN_PROGRAM_ID.toBase58():
         await assertAllowedTokenProgramInstruction(
           i,
           instruction,
-          options?.user?.walletAddress
+          options?.user?.wallet
         )
         break
       case REWARDS_MANAGER_PROGRAM_ID:
@@ -419,14 +426,14 @@ export const assertRelayAllowedInstructions = async (
         await assertAllowedJupiterProgramInstruction(
           i,
           instruction,
-          options?.user?.walletAddress
+          options?.user?.wallet
         )
         break
       case SystemProgram.programId.toBase58():
         assertAllowedSystemProgramInstruction(
           i,
           instruction,
-          options?.user?.walletAddress,
+          options?.user?.wallet,
           options?.feePayer
         )
         break

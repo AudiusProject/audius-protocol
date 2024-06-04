@@ -1,5 +1,4 @@
-import { ID } from '@audius/common/src/models/Identifiers'
-import { getUser } from '@audius/common/src/store/cache/users/selectors'
+import { getProfileUser } from '@audius/common/src/store/pages/profile/selectors'
 import { formatCount } from '@audius/common/src/utils/formatUtil'
 import BadgeArtist from '@audius/harmony/src/assets/icons/ArtistBadge.svg'
 import IconDonate from '@audius/harmony/src/assets/icons/Donate.svg'
@@ -8,11 +7,8 @@ import { Box } from '@audius/harmony/src/components/layout/Box'
 import { Flex } from '@audius/harmony/src/components/layout/Flex'
 import { Text } from '@audius/harmony/src/components/text'
 
-// import ProfilePageBadge from 'components/user-badges/ProfilePageBadge'
 import { ServerUserGeneratedText } from 'components/user-generated-text/ServerUserGeneratedText'
 import { useSelector } from 'utils/reducer'
-
-import styles from './components/mobile/ProfileHeader.module.css'
 
 const messages = {
   tracks: 'Tracks',
@@ -25,12 +21,8 @@ const messages = {
   profilePicAltText: 'User Profile Picture'
 }
 
-export type OwnProps = {
-  userId: ID
-}
-
-export const ServerProfilePage = ({ userId }: OwnProps) => {
-  const user = useSelector((state) => getUser(state, { id: userId }))
+export const MobileServerProfilePage = () => {
+  const user = useSelector(getProfileUser)
   if (!user) return null
 
   const {
@@ -64,7 +56,14 @@ export const ServerProfilePage = ({ userId }: OwnProps) => {
         {/* @ts-ignore */}
         <Box as='img' src={cover_photo!} w='100%' />
         {isArtist && !user.is_deactivated ? (
-          <BadgeArtist className={styles.badgeArtist} />
+          <BadgeArtist
+            css={{
+              position: 'absolute',
+              top: 21,
+              right: 13,
+              boxShadow: '0 1px 4px 0 rgba(0, 0, 0, 0.3)'
+            }}
+          />
         ) : null}
       </Flex>
       <Flex
@@ -187,12 +186,6 @@ export const ServerProfilePage = ({ userId }: OwnProps) => {
             </Text>
           </Flex>
         </Flex>
-
-        <Flex alignItems='center' gap='m'>
-          {/* TODO: Need to add this once the profile page state is added to server state */}
-          {/* <ProfilePageBadge userId={user.user_id} isCompact /> */}
-        </Flex>
-
         {bio ? (
           <ServerUserGeneratedText
             color='subdued'

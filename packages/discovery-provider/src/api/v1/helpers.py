@@ -454,6 +454,9 @@ def extend_playlist(playlist):
         if "track_count" in playlist
         else len(playlist["playlist_contents"]["track_ids"])
     )
+    playlist["stream_conditions"] = get_legacy_purchase_gate(
+        playlist.get("stream_conditions", None)
+    )
     return playlist
 
 
@@ -565,10 +568,6 @@ def abort_not_found(identifier, namespace):
 
 def abort_unauthorized(namespace):
     namespace.abort(401, "Oh no! User is not authorized.")
-
-
-def abort_forbidden(namespace):
-    namespace.abort(403, "Oh no! User does not have access to that resource.")
 
 
 def decode_with_abort(identifier: str, namespace) -> int:
@@ -709,7 +708,7 @@ pagination_with_current_user_parser.add_argument(
 search_parser = reqparse.RequestParser(argument_class=DescriptiveArgument)
 search_parser.add_argument("query", required=True, description="The search query")
 
-track_history_parser = pagination_with_current_user_parser.copy()
+track_history_parser = pagination_parser.copy()
 track_history_parser.add_argument(
     "query", required=False, description="The filter query"
 )

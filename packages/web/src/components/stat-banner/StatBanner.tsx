@@ -18,7 +18,6 @@ import {
 import cn from 'classnames'
 
 import { ArtistRecommendationsPopup } from 'components/artist-recommendations/ArtistRecommendationsPopup'
-import { ClientOnly } from 'components/client-only/ClientOnly'
 import Stats, { StatProps } from 'components/stats/Stats'
 import SubscribeButton from 'components/subscribe-button/SubscribeButton'
 import { useFlag } from 'hooks/useRemoteConfig'
@@ -245,14 +244,13 @@ export const StatBanner = (props: StatsBannerProps) => {
               onFollow={onFollow}
               onUnfollow={onUnfollow}
             />
-            <ClientOnly>
-              <ArtistRecommendationsPopup
-                anchorRef={followButtonRef}
-                artistId={profileId!}
-                isVisible={areArtistRecommendationsVisible}
-                onClose={onCloseArtistRecommendations!}
-              />
-            </ClientOnly>
+
+            <ArtistRecommendationsPopup
+              anchorRef={followButtonRef}
+              artistId={profileId!}
+              isVisible={areArtistRecommendationsVisible}
+              onClose={onCloseArtistRecommendations!}
+            />
           </>
         </>
       )

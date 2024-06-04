@@ -1,15 +1,10 @@
-import { ID } from '@audius/common/src/models/Identifiers'
-import { getUser } from '@audius/common/src/store/cache/users/selectors'
+import { getProfileUser } from '@audius/common/src/store/pages/profile/selectors'
 import BadgeArtist from '@audius/harmony/src/assets/icons/ArtistBadge.svg'
 import { Box } from '@audius/harmony/src/components/layout/Box'
 import { Flex } from '@audius/harmony/src/components/layout/Flex'
 import { Text } from '@audius/harmony/src/components/text'
 
 import { useSelector } from 'utils/reducer'
-
-export type OwnProps = {
-  userId: ID
-}
 
 const messages = {
   tracks: 'Tracks',
@@ -18,8 +13,8 @@ const messages = {
   following: 'Following'
 }
 
-export const ServerProfilePage = ({ userId }: OwnProps) => {
-  const user = useSelector((state) => getUser(state, { id: userId }))
+export const DesktopServerProfilePage = () => {
+  const user = useSelector(getProfileUser)
   if (!user) return null
 
   const {

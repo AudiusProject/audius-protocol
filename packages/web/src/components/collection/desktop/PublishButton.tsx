@@ -4,7 +4,7 @@ import {
   collectionPageSelectors,
   CommonState
 } from '@audius/common/store'
-import { ButtonProps, IconRocket, Button } from '@audius/harmony'
+import { IconRocket, IconButton, IconButtonProps } from '@audius/harmony'
 import { useSelector } from 'react-redux'
 import { useToggle } from 'react-use'
 
@@ -24,7 +24,7 @@ const messages = {
     `You cannot make a ${collectionType} with hidden tracks public.`
 }
 
-type PublishButtonProps = Partial<ButtonProps> & {
+type PublishButtonProps = Partial<IconButtonProps> & {
   collectionId: number
 }
 
@@ -44,20 +44,15 @@ export const PublishButton = (props: PublishButtonProps) => {
     !track_count || track_count === 0 || hasHiddenTracks || !cover_art_sizes
 
   const publishButtonElement = (
-    <Button
-      variant='secondary'
-      iconLeft={IconRocket}
+    <IconButton
+      icon={IconRocket}
       onClick={toggleIsConfirming}
+      aria-label='Publish Collection'
+      color='subdued'
       disabled={isDisabled}
       isLoading={_is_publishing}
       {...other}
-    >
-      {_is_publishing ? (
-        <span>{messages.publishing}&#8230;</span>
-      ) : (
-        messages.publish
-      )}
-    </Button>
+    />
   )
 
   return (

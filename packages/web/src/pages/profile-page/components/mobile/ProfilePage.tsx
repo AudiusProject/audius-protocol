@@ -26,7 +26,6 @@ import {
 } from '@audius/harmony'
 import cn from 'classnames'
 
-import { ClientOnly } from 'components/client-only/ClientOnly'
 import CollectiblesPage from 'components/collectibles/components/CollectiblesPage'
 import { CollectionCard } from 'components/collection'
 import { HeaderContext } from 'components/header/mobile/HeaderContextProvider'
@@ -40,7 +39,6 @@ import NavContext, {
 import TextElement, { Type } from 'components/nav/mobile/TextElement'
 import TierExplainerDrawer from 'components/user-badges/TierExplainerDrawer'
 import useTabs, { TabHeader } from 'hooks/useTabs/useTabs'
-import { useSsrContext } from 'ssr/SsrContext'
 import { profilePage } from 'utils/route'
 import { getUserPageSEOFields } from 'utils/seo'
 import { withNullGuard } from 'utils/withNullGuard'
@@ -293,7 +291,6 @@ const ProfilePage = g(
     onCloseArtistRecommendations
   }) => {
     const { setHeader } = useContext(HeaderContext)
-    const { isSsrEnabled } = useSsrContext()
     useEffect(() => {
       setHeader(null)
     }, [setHeader])
@@ -302,7 +299,7 @@ const ProfilePage = g(
     let content
     let profileTabs
     let profileElements
-    const isLoading = status === Status.LOADING && !isSsrEnabled
+    const isLoading = status === Status.LOADING
     const isEditing = mode === 'editing'
 
     // Set Nav-Bar Menu
@@ -578,7 +575,7 @@ const ProfilePage = g(
       content = (
         <div className={styles.contentContainer}>
           <div className={styles.tabs}>{tabs}</div>
-          <ClientOnly>{body}</ClientOnly>
+          {body}
         </div>
       )
     }
@@ -641,11 +638,10 @@ const ProfilePage = g(
             areArtistRecommendationsVisible={areArtistRecommendationsVisible}
             onCloseArtistRecommendations={onCloseArtistRecommendations}
           />
-          <ClientOnly>{content}</ClientOnly>
+          {content}
         </MobilePageContainer>
-        <ClientOnly>
-          <TierExplainerDrawer />
-        </ClientOnly>
+
+        <TierExplainerDrawer />
       </>
     )
   }
