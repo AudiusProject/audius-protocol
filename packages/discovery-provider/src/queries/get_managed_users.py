@@ -156,3 +156,29 @@ def get_managed_users_with_grants(args: GetManagedUsersArgs) -> List[Dict]:
         grants = query_result_to_list(grants)
 
         return make_managed_users_list(users, grants)
+
+
+def is_active_manager(user_id: int, manager_id: int) -> bool:
+    """
+    Check if a manager is active for a given user.
+
+    Args:
+        user_id (int): The ID of the user.
+        manager_id (int): The ID of the manager.
+
+    Returns:
+        bool: True if the manager is active for the user, False otherwise.
+    """
+    try:
+        grants = get_user_managers_with_grants(
+            GetUserManagersArgs(user_id=user_id, is_approved=True, is_revoked=False)
+        )
+        for grant in grants:
+            manager = grant.get("manager")
+            if manager and manager.get("user_id") == manager_id:
+                return True
+    except Exception as e:
+        logger.error(
+            f"get_managed_users.py | Unexpected exception checking managers for user: {e}"
+        )
+    return False
