@@ -12,8 +12,8 @@ import {
 import LinearGradient from 'react-native-linear-gradient'
 import { useDispatch, useSelector } from 'react-redux'
 
-import type { ProfileListProps } from 'app/components/profile-list'
-import { ProfileCard, ProfileList } from 'app/components/profile-list'
+import type { ProfileListProps } from 'app/components/user-list'
+import { ProfileCard, ProfileList } from 'app/components/user-list'
 import type { AppState } from 'app/store'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'

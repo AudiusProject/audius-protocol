@@ -5,7 +5,7 @@ import { Status } from '@audius/common/models'
 import { explorePageSelectors, explorePageActions } from '@audius/common/store'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { ProfileList } from 'app/components/profile-list'
+import { ProfileList } from 'app/components/user-list'
 
 import { TabInfo } from '../components/TabInfo'
 const { getExploreArtists, getExploreStatus, getArtistsStatus } =

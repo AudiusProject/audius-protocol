@@ -3,7 +3,7 @@ import { Status } from '@audius/common/models'
 import type { CommonState } from '@audius/common/store'
 import { searchResultsPageSelectors, SearchKind } from '@audius/common/store'
 
-import { ProfileList } from 'app/components/profile-list'
+import { ProfileList } from 'app/components/user-list'
 import { spacing } from 'app/styles/spacing'
 
 import { EmptyResults } from '../EmptyResults'
