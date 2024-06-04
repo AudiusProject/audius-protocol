@@ -42,19 +42,19 @@ export async function onBeforeRender(pageContext: PageContextServer) {
   const [apiCollection] = data
   const collection = {
     ...makePlaylist(apiCollection),
-    cover_art: apiCollection.artwork['1000x1000']
+    cover_art: apiCollection.artwork?.['1000x1000']
   }
 
   const { user: apiUser } = apiCollection
   const user = {
     ...makeUser(apiUser),
-    cover_photo: apiUser.cover_photo['2000x'],
-    profile_picture: apiUser.profile_picture['1000x1000']
+    cover_photo: apiUser.cover_photo?.['2000x'],
+    profile_picture: apiUser.profile_picture?.['1000x1000']
   }
 
   const tracks = apiCollection.tracks.map((apiTrack: APITrack) => ({
     ...makeTrack(apiTrack),
-    cover_art: apiTrack.artwork['150x150']
+    cover_art: apiTrack.artwork?.['150x150']
   }))
 
   try {
