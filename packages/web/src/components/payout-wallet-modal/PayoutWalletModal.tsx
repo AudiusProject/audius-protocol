@@ -19,7 +19,7 @@ import {
 } from '@audius/harmony'
 import {
   TOKEN_PROGRAM_ID,
-  createAssociatedTokenAccountInstruction,
+  createAssociatedTokenAccountIdempotentInstruction,
   getAssociatedTokenAddressSync,
   unpackAccount
 } from '@solana/spl-token'
@@ -196,7 +196,7 @@ export const PayoutWalletModal = () => {
           const transaction =
             await sdk.services.claimableTokensClient.buildTransaction({
               instructions: [
-                createAssociatedTokenAccountInstruction(
+                createAssociatedTokenAccountIdempotentInstruction(
                   payer,
                   ataPubkey,
                   addressPubkey,
