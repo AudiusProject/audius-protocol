@@ -38,6 +38,18 @@
                     "type": ["string", "null"],
                     "default": null
                 },
+                "verified_with_twitter": {
+                    "type": "boolean",
+                    "default": false
+                },
+                "verified_with_instagram": {
+                    "type": "boolean",
+                    "default": false
+                },
+                "verified_with_tiktok": {
+                    "type": "boolean",
+                    "default": false
+                },
                 "website": {
                     "type": ["string", "null"],
                     "default": null
