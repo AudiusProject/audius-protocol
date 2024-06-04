@@ -78,9 +78,9 @@ const TOKEN_ACCOUNT_CREATION_USER_LIMIT = 2
 const TOKEN_ACCOUNT_CREATION_SYSTEM_KEY_EXPIRY = 60 * 60 * 24
 const TOKEN_ACCOUNT_CREATION_SYSTEM_LIMIT = 5000
 
-export const rateLimitTokenAccountCreation = async (userId: string) => {
+export const rateLimitTokenAccountCreation = async (wallet: string) => {
   const redis = await getRedisConnection()
-  const userKey = `ata-creation-count:user:${userId}`
+  const userKey = `ata-creation-count:user:${wallet}`
   const [userCount] = await redis
     .multi()
     .incr(userKey)
@@ -90,7 +90,7 @@ export const rateLimitTokenAccountCreation = async (userId: string) => {
     typeof userCount !== 'number' ||
     userCount > TOKEN_ACCOUNT_CREATION_USER_LIMIT
   ) {
-    throw new Error(`User ${userId} has created too many token accounts`)
+    throw new Error(`User ${wallet} has created too many token accounts`)
   }
 
   const systemKey = `ata-creation-count`

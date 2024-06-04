@@ -173,7 +173,10 @@ const initializeServices = (config: SdkConfig) => {
     config.services?.solanaRelay ??
     new SolanaRelay(
       new Configuration({
-        middleware: [discoveryNodeSelector.createMiddleware()]
+        middleware: [
+          discoveryNodeSelector.createMiddleware(),
+          addRequestSignatureMiddleware({ services: { auth, logger } })
+        ]
       })
     )
 
