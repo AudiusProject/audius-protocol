@@ -169,16 +169,22 @@ const initializeServices = (config: SdkConfig) => {
       antiAbuseOracleSelector
     })
 
-  const solanaRelay =
-    config.services?.solanaRelay ??
-    new SolanaRelay(
+  let solanaRelay
+  if (config.services?.solanaRelay) {
+    solanaRelay = config.services.solanaRelay
+    solanaRelay = solanaRelay.withMiddleware(
+      addRequestSignatureMiddleware({ services: { auth, logger } })
+    )
+  } else {
+    solanaRelay = new SolanaRelay(
       new Configuration({
         middleware: [
-          discoveryNodeSelector.createMiddleware(),
-          addRequestSignatureMiddleware({ services: { auth, logger } })
+          addRequestSignatureMiddleware({ services: { auth, logger } }),
+          discoveryNodeSelector.createMiddleware()
         ]
       })
     )
+  }
 
   const solanaWalletAdapter =
     config.services?.solanaWalletAdapter ??
