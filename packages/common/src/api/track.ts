@@ -128,6 +128,9 @@ export const {
 export const trackApiFetch = trackApi.fetch
 export const trackApiReducer = trackApi.reducer
 
+export const getTrackStreamUrls = (state: CommonState) =>
+  state.api.trackApi.getTrackStreamUrl
+
 export const getTrackStreamUrl = (
   state: CommonState,
   { trackId, currentUserId }: { trackId: ID; currentUserId?: Nullable<ID> }

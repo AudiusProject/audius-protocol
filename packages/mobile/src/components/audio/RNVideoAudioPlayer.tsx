@@ -31,6 +31,7 @@ import { TrackType } from 'react-native-track-player'
 import Video from 'react-native-video'
 import { useDispatch, useSelector } from 'react-redux'
 import { usePrevious } from 'react-use'
+import { getTrackStreamUrls } from '~/api'
 
 import { DEFAULT_IMAGE_URL } from 'app/components/image/TrackImage'
 import { getImageSourceOptimistic } from 'app/hooks/useContentNodeImage'
@@ -111,6 +112,8 @@ export const RNVideoAudioPlayer = () => {
   //   getUserTrackPositions(state, { userId: currentUserId })
   // )
   const nftAccessSignatureMap = useSelector(getNftAccessSignatureMap)
+
+  const trackStreamUrls = useSelector(getTrackStreamUrls)
 
   // Queue things
   const [isQueueLoaded, setIsQueueLoaded] = useState(false)
@@ -235,9 +238,14 @@ export const RNVideoAudioPlayer = () => {
 
       // Get Track url
       let url: string
+      // Performance POC: use a pre-fetched DN url if we have it
+      const trackStreamUrl =
+        trackStreamUrls[`{"id":${trackId},"currentUserId":${currentUserId}}`]
       if (offlineTrackAvailable && isCollectionMarkedForDownload) {
         const audioFilePath = getLocalAudioPath(trackId)
         url = `file://${audioFilePath}`
+      } else if (trackStreamUrl) {
+        url = trackStreamUrl
       } else {
         let queryParams = trackQueryParams.current[trackId]
 

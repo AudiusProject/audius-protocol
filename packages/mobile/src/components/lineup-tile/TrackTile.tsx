@@ -41,6 +41,7 @@ import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import type { TileProps } from '../core'
 
 import { LineupTile } from './LineupTile'
+import { useGetTrackStreamUrl } from '~/api'
 
 const { getUid } = playerSelectors
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
@@ -102,6 +103,7 @@ export const TrackTileComponent = ({
   )
 
   const currentUserId = useSelector(getUserId)
+
   const isOwner = currentUserId === track.owner_id
 
   const {
@@ -118,6 +120,11 @@ export const TrackTileComponent = ({
     preview_cid,
     ddex_app: ddexApp
   } = track
+
+  useGetTrackStreamUrl({
+    id: track_id,
+    currentUserId
+  })
 
   const hasPreview =
     isUSDCEnabled &&
