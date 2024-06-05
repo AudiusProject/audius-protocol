@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -11,6 +12,7 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/AudiusProject/audius-protocol/mediorum/cidutil"
@@ -254,35 +256,64 @@ func (ss *MediorumServer) analyzeAudio(upload *Upload) error {
 		}
 	}
 
-	// analyze BPM
-	bpmFloat, err := ss.analyzeBPM(wavFile)
-	if err != nil {
-		logger.Error("failed to analyze BPM", "err", err)
-		return onError(fmt.Errorf("failed to analyze BPM: %w", err))
-	}
-	bpm := strconv.FormatFloat(bpmFloat, 'f', 1, 64)
+	bpmChan := make(chan string)
+	keyChan := make(chan string)
+	errorChan := make(chan error)
 
-	upload.AudioAnalysisResults = map[string]string{
-		"bpm": bpm,
-	}
-	upload.AudioAnalysisError = ""
-	ss.crud.Update(upload)
+	var mu sync.Mutex
 
-	// analyze musical key
-	musicalKey, err := ss.analyzeKey(wavFile)
-	if err != nil {
-		logger.Error("failed to analyze key", "err", err)
-		return onError(fmt.Errorf("failed to analyze key: %w", err))
+	// goroutine to analyze BPM
+	go func() {
+		bpmFloat, err := ss.analyzeBPM(wavFile)
+		if err != nil {
+			logger.Error("failed to analyze BPM", "err", err)
+			errorChan <- fmt.Errorf("failed to analyze BPM: %w", err)
+			return
+		}
+		bpm := strconv.FormatFloat(bpmFloat, 'f', 1, 64)
+		bpmChan <- bpm
+	}()
+
+	// goroutine to analyze musical key
+	go func() {
+		musicalKey, err := ss.analyzeKey(wavFile)
+		if err != nil {
+			logger.Error("failed to analyze key", "err", err)
+			errorChan <- fmt.Errorf("failed to analyze key: %w", err)
+			return
+		}
+		if musicalKey == "" || musicalKey == "Unknown" {
+			err := fmt.Errorf("unexpected output: %s", musicalKey)
+			logger.Error("failed to analyze key", "err", err)
+			errorChan <- fmt.Errorf("failed to analyze key: %w", err)
+			return
+		}
+		keyChan <- musicalKey
+	}()
+
+	for i := 0; i < 2; i++ {
+		select {
+		case bpm := <-bpmChan:
+			mu.Lock()
+			if upload.AudioAnalysisResults == nil {
+				upload.AudioAnalysisResults = make(map[string]string)
+			}
+			upload.AudioAnalysisResults["bpm"] = bpm
+			mu.Unlock()
+		case musicalKey := <-keyChan:
+			mu.Lock()
+			if upload.AudioAnalysisResults == nil {
+				upload.AudioAnalysisResults = make(map[string]string)
+			}
+			upload.AudioAnalysisResults["key"] = musicalKey
+			mu.Unlock()
+		case err := <-errorChan:
+			return onError(err)
+		}
 	}
-	if musicalKey == "" || musicalKey == "Unknown" {
-		err := fmt.Errorf("unexpected output: %s", musicalKey)
-		logger.Error("failed to analyze key", "err", err)
-		return onError(fmt.Errorf("failed to analyze key: %w", err))
-	}
-	upload.AudioAnalysisResults["key"] = musicalKey
-	upload.AudioAnalysisError = ""
 
 	// success
+	upload.AudioAnalysisError = ""
 	upload.AudioAnalyzedAt = time.Now().UTC()
 	upload.AudioAnalysisStatus = JobStatusDone
 	upload.Status = JobStatusDone
@@ -306,28 +337,31 @@ func (ss *MediorumServer) analyzeKey(filename string) (string, error) {
 }
 
 func (ss *MediorumServer) analyzeBPM(filename string) (float64, error) {
-	cmd := exec.Command("aubio", "tempo", filename)
-	output, err := cmd.CombinedOutput()
+	temp, err := os.CreateTemp("", "audioAnalysisBPMOutputTemp-*.json")
+	if err != nil {
+		return 0, err
+	}
+	defer temp.Close()
+	defer os.Remove(temp.Name())
+
+	cmd := exec.Command("/usr/local/bin/essentia_streaming_extractor_freesound", filename, temp.Name())
+	err = cmd.Run()
+	if err != nil {
+		return 0, err
+	}
+	data, err := os.ReadFile(temp.Name())
+	if err != nil {
+		return 0, err
+	}
+	var output map[string]interface{}
+	err = json.Unmarshal(data, &output)
 	if err != nil {
 		return 0, err
 	}
 
-	outputStr := string(output)
-	lines := strings.Split(outputStr, "\n")
-	for _, line := range lines {
-		if strings.HasSuffix(line, "bpm") {
-			parts := strings.Fields(line)
-			if len(parts) > 1 {
-				bpm, err := strconv.ParseFloat(parts[0], 64)
-				if err != nil {
-					return 0, fmt.Errorf("failed to parse BPM from aubio output %s: %v", outputStr, err)
-				}
-				return bpm, nil
-			}
-		}
-	}
-
-	return 0, fmt.Errorf("BPM not found in aubio output %s", outputStr)
+	// Extract the BPM value
+	bpm := output["rhythm"].(map[string]interface{})["bpm"].(float64)
+	return bpm, nil
 }
 
 // converts an MP3 file to WAV format using ffmpeg
