@@ -16,8 +16,8 @@ import { capitalize } from 'lodash'
 import Header from 'components/header/desktop/Header'
 import { useMedia } from 'hooks/useMedia'
 
-import { Category } from './types'
 import { filters } from './SearchFilters'
+import { Category } from './types'
 
 export const categories = {
   all: { filters: [] },
