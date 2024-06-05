@@ -199,8 +199,8 @@ module.exports = function (app) {
               userId,
               config.get('userVerifierPrivateKey'),
               {
-                isVerified: twitterObj.verified,
-                twitterHandle: twitterObj.twitterProfile.screen_name
+                is_verified: twitterObj.verified,
+                twitter_handle: twitterObj.twitterProfile.screen_name
               }
             )
           const senderAddress = config.get('userVerifierPublicKey')

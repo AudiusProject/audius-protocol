@@ -182,8 +182,8 @@ module.exports = function (app) {
               userId,
               config.get('userVerifierPrivateKey'),
               {
-                isVerified: tikTokObj.verified,
-                tiktokHandle: tikTokObj.profile.username
+                is_verified: tikTokObj.verified,
+                tiktok_handle: tikTokObj.profile.username
               }
             )
           const senderAddress = config.get('userVerifierPublicKey')

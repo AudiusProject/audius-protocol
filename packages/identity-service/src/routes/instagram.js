@@ -143,8 +143,8 @@ module.exports = function (app) {
               userId,
               config.get('userVerifierPrivateKey'),
               {
-                isVerified: instagramObj.verified,
-                instagramHandle: instagramObj.profile.username
+                is_verified: instagramObj.verified,
+                instagram_handle: instagramObj.profile.username
               }
             )
           const senderAddress = config.get('userVerifierPublicKey')

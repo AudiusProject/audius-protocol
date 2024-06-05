@@ -456,16 +456,16 @@ export class Users extends Base {
     privateKey: string,
     metadata:
       | {
-          isVerified: boolean
-          twitterHandle: string
+          is_verified: boolean
+          twitter_handle: string
         }
       | {
-          isVerified: boolean
-          instagramHandle: string
+          is_verified: boolean
+          instagram_handle: string
         }
       | {
-          isVerified: boolean
-          tiktokHandle: string
+          is_verified: boolean
+          tiktok_handle: string
         }
   ) {
     const cid = await Utils.fileHasher.generateMetadataCidV1(metadata)
