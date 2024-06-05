@@ -38,8 +38,8 @@ export async function onBeforeRender(pageContext: PageContextServer) {
     // Include api user images.
     const user = {
       ...makeUser(apiUser),
-      cover_photo: apiUser.cover_photo['2000x'],
-      profile_picture: apiUser.profile_picture['1000x1000']
+      cover_photo: apiUser.cover_photo?.['2000x'],
+      profile_picture: apiUser.profile_picture?.['1000x1000']
     }
 
     return {
