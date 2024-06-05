@@ -744,7 +744,6 @@ def populate_playlist_record_metadata(
                 )
             else:
                 setattr(playlist_record, key, playlist_metadata[key])
-    playlist_record.last_added_to = None
     track_ids = playlist_record.playlist_contents["track_ids"]
     if track_ids:
         last_added_to = track_ids[0]["time"]
