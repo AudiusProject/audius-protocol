@@ -2,7 +2,7 @@ import { ChangeEvent, ReactElement, useCallback } from 'react'
 
 import { GENRES, Maybe, convertGenreLabelToValue } from '@audius/common/utils'
 import {
-  FilterButton,
+  OptionsFilterButton,
   Flex,
   IconAlbum,
   IconNote,
@@ -45,13 +45,13 @@ const GenreFilter = () => {
   const genre = urlSearchParams.get('genre')
 
   return (
-    <FilterButton
+    <OptionsFilterButton
       label='Genre'
       popupAnchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
       popupMaxHeight={400}
       popupTransformOrigin={{ vertical: 'top', horizontal: 'left' }}
       selection={genre}
-      onSelect={(value) => {
+      onChange={(value) => {
         if (value) {
           setUrlSearchParams((params) => ({ ...params, genre: value }))
         } else {
@@ -71,7 +71,7 @@ const GenreFilter = () => {
 const filters: Record<Filter, () => ReactElement> = {
   genre: GenreFilter,
   mood: () => (
-    <FilterButton
+    <OptionsFilterButton
       label='Mood'
       options={[
         {
@@ -81,7 +81,7 @@ const filters: Record<Filter, () => ReactElement> = {
     />
   ),
   key: () => (
-    <FilterButton
+    <OptionsFilterButton
       label='Key'
       options={[
         {
@@ -91,7 +91,7 @@ const filters: Record<Filter, () => ReactElement> = {
     />
   ),
   bpm: () => (
-    <FilterButton
+    <OptionsFilterButton
       label='BPM'
       options={[
         {
@@ -101,7 +101,7 @@ const filters: Record<Filter, () => ReactElement> = {
     />
   ),
   isPremium: () => (
-    <FilterButton
+    <OptionsFilterButton
       label='Premium'
       options={[
         {
@@ -111,7 +111,7 @@ const filters: Record<Filter, () => ReactElement> = {
     />
   ),
   hasDownloads: () => (
-    <FilterButton
+    <OptionsFilterButton
       label='Downloads Available'
       options={[
         {
@@ -121,7 +121,7 @@ const filters: Record<Filter, () => ReactElement> = {
     />
   ),
   isVerified: () => (
-    <FilterButton
+    <OptionsFilterButton
       label='Verified'
       options={[
         {
