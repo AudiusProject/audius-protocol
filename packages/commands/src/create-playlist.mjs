@@ -24,9 +24,12 @@ program
     'The price for the album. Cannot be used without --album option'
   )
   .option('-f, --from <from>', 'The account to create playlist from')
-  .option('-r, --release-date <date>', 'The release date of the album')
   .option(
-    '-s, --scheduled-release',
+    '-r, --release-date <date>',
+    'The release date of the album, eg. 2024-06-05T02:50:45'
+  )
+  .option(
+    '-s, --scheduled',
     'The album will be released at the (future) release date. --private and --release-date are required.'
   )
   .option(
@@ -44,7 +47,7 @@ program
         private: isPrivate,
         from,
         releaseDate,
-        isScheduledRelease,
+        scheduled: isScheduledRelease,
         output
       }
     ) => {
