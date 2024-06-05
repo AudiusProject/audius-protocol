@@ -171,6 +171,9 @@ export const AudioPlayer = () => {
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
   )
+  const { isEnabled: isPerformanceExperimentEnabled } = useFeatureFlag(
+    FeatureFlags.SKIP_STREAM_CHECK
+  )
   const track = useSelector(getCurrentTrack)
   const playing = useSelector(getPlaying)
   const seek = useSelector(getSeek)
@@ -341,7 +344,7 @@ export const AudioPlayer = () => {
       if (offlineTrackAvailable && isCollectionMarkedForDownload) {
         const audioFilePath = getLocalAudioPath(trackId)
         url = `file://${audioFilePath}`
-      } else if (trackStreamUrl) {
+      } else if (trackStreamUrl && isPerformanceExperimentEnabled) {
         url = trackStreamUrl
       } else {
         let queryParams = trackQueryParams.current[trackId]
@@ -394,13 +397,16 @@ export const AudioPlayer = () => {
       }
     },
     [
+      currentUserId,
       isCollectionMarkedForDownload,
       isNotReachable,
       isOfflineModeEnabled,
+      isPerformanceExperimentEnabled,
       nftAccessSignatureMap,
       offlineAvailabilityByTrackId,
       queueTrackOwnersMap,
-      storageNodeSelector
+      storageNodeSelector,
+      trackStreamUrls
     ]
   )
 

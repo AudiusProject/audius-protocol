@@ -119,6 +119,11 @@ export function* watchPlay() {
 
       let trackDuration = track.duration
 
+      const usePrefetchStreamUrls = yield* call(
+        getFeatureEnabled,
+        FeatureFlags.SKIP_STREAM_CHECK // TODO: replace with correct feature flag
+      )
+
       const { shouldSkip, shouldPreview } = calculatePlayerBehavior(
         track,
         playerBehavior
@@ -172,7 +177,7 @@ export function* watchPlay() {
               )
             }
           },
-          streamUrl ?? mp3Url
+          usePrefetchStreamUrls && streamUrl ? streamUrl : mp3Url
         )
         return () => {}
       })

@@ -1,5 +1,6 @@
 import { createApi } from '~/audius-query'
 import { ID, Kind } from '~/models'
+import { FeatureFlags } from '~/services'
 import { CommonState } from '~/store'
 import { getQueryParams } from '~/utils'
 import { parseTrackRouteFromPermalink } from '~/utils/stringUtils'
@@ -35,9 +36,13 @@ const trackApi = createApi({
     getTrackStreamUrl: {
       fetch: async (
         { id, currentUserId }: { id: ID; currentUserId?: Nullable<ID> },
-        { apiClient, audiusBackend }
+        { apiClient, audiusBackend, getFeatureEnabled }
       ) => {
-        if (id === -1) {
+        const usePrefetchStreamUrls = getFeatureEnabled(
+          FeatureFlags.SKIP_STREAM_CHECK // TODO: replace with correct feature flag
+        )
+
+        if (id === -1 || !usePrefetchStreamUrls) {
           return
         }
         const queryParams = await getQueryParams({
