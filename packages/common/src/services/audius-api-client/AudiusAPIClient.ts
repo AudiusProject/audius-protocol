@@ -84,6 +84,7 @@ const FULL_ENDPOINT_MAP = {
   topGenreUsers: '/users/genre/top',
   topArtists: '/users/top',
   getTrack: (trackId: OpaqueID) => `/tracks/${trackId}`,
+  getTrackStreamUrl: (trackId: OpaqueID) => `/tracks/${trackId}/stream-url`,
   getTracks: () => `/tracks`,
   getTrackByHandleAndSlug: `/tracks`,
   getStems: (trackId: OpaqueID) => `/tracks/${trackId}/stems`,
@@ -116,6 +117,17 @@ export type QueryParams = {
 type GetTrackArgs = {
   id: ID
   currentUserId?: Nullable<ID>
+  unlistedArgs?: {
+    urlTitle: string
+    handle: string
+  }
+  abortOnUnreachable?: boolean
+}
+
+type GetTrackStreamUrlArgs = {
+  id: ID
+  currentUserId?: Nullable<ID>
+  queryParams: QueryParams
   unlistedArgs?: {
     urlTitle: string
     handle: string
@@ -648,6 +660,32 @@ export class AudiusAPIClient {
     if (!trackResponse) return null
     const adapted = adapter.makeTrack(trackResponse.data)
     return adapted
+  }
+
+  async getTrackStreamUrl(
+    {
+      id,
+      currentUserId,
+      queryParams,
+      abortOnUnreachable
+    }: GetTrackStreamUrlArgs,
+    retry = true
+  ) {
+    const encodedTrackId = this._encodeOrThrow(id)
+    // const encodedCurrentUserId = encodeHashId(currentUserId ?? null)
+
+    this._assertInitialized()
+
+    const trackUrl = await this._getResponse<APIResponse<string>>(
+      FULL_ENDPOINT_MAP.getTrackStreamUrl(encodedTrackId),
+      queryParams,
+      retry,
+      PathType.VersionPath,
+      undefined,
+      abortOnUnreachable
+    )
+
+    return trackUrl?.data
   }
 
   async getTracks({ ids, currentUserId }: GetTracksArgs) {
