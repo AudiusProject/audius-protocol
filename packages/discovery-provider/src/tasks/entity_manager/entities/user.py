@@ -622,11 +622,25 @@ def verify_user(params: ManageEntityParameters):
     user_record = validate_user_record(user_record)
 
     metadata = params.metadata
-    # todo: default below to false instead of true after identity change has been deployed
-    is_verified = metadata.get("is_verified", True)
-    twitter_handle = metadata.get("twitter_handle")
-    instagram_handle = metadata.get("instagram_handle")
-    tiktok_handle = metadata.get("tiktok_handle")
+
+    # todo: this if/else block is for backwards compatibility with old clients
+    # who still update verification using old way by sending an entity manager
+    # verify transaction without any metadata.
+    # metadata should ultimately always be there and this whole block would be:
+    # is_verified = metadata.get("is_verified", False)
+    # twitter_handle = metadata.get("twitter_handle")
+    # instagram_handle = metadata.get("instagram_handle")
+    # tiktok_handle = metadata.get("tiktok_handle")
+    if metadata:
+        is_verified = metadata.get("is_verified", True)
+        twitter_handle = metadata.get("twitter_handle")
+        instagram_handle = metadata.get("instagram_handle")
+        tiktok_handle = metadata.get("tiktok_handle")
+    else:
+        is_verified = True
+        twitter_handle = None
+        instagram_handle = None
+        tiktok_handle = None
 
     # Update user record with verification information.
     # Only update the social handle field provided in the metadata.
