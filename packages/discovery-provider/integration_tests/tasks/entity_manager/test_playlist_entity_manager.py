@@ -720,11 +720,15 @@ def test_index_invalid_playlists(app, mocker):
         "CreatePlaylistInvalidTracks": {
             "playlist_contents": {"track_ids": [{"track": 1}]}
         },
+        "UpdatePlaylistInvalidPlaylistId": {"playlist_id": 1234},
     }
     private_metadata = json.dumps(test_metadata["UpdatePlaylistInvalidPrivate"])
     album_metadata = json.dumps(test_metadata["UpdatePlaylistInvalidAlbum"])
     invalid_release_date_metadata = json.dumps(
         test_metadata["UpdatePlaylistInvalidReleaseDate"]
+    )
+    invalid_playlist_id_metadata = json.dumps(
+        test_metadata["UpdatePlaylistInvalidPlaylistId"]
     )
     playlist_metadata = json.dumps(test_metadata["CreatePlaylistInvalidTracks"])
 
@@ -923,6 +927,20 @@ def test_index_invalid_playlists(app, mocker):
                         "_userId": 1,
                         "_action": "Update",
                         "_metadata": f'{{"cid": "UpdatePlaylistInvalidReleaseDate", "data": {invalid_release_date_metadata}}}',
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
+        "UpdatePlaylistInvalidPlaylistId": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": PLAYLIST_ID_OFFSET,
+                        "_entityType": "Playlist",
+                        "_userId": 1,
+                        "_action": "Update",
+                        "_metadata": f'{{"cid": "UpdatePlaylistInvalidPlaylistId", "data": {invalid_playlist_id_metadata}}}',
                         "_signer": "user1wallet",
                     }
                 )
