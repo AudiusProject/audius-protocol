@@ -17,8 +17,6 @@ SIGNATURE_HEADER = "Encoded-Data-Signature"
 
 def auth_middleware(
     parser: reqparse.RequestParser = None,
-    # Include the wallet in the kwargs for the wrapped function
-    include_wallet: bool = False,
     # If True, user must be authenticated to access this route, will abort with 401 if no user is found in headers.
     require_auth: bool = False,
 ):
@@ -109,8 +107,6 @@ def auth_middleware(
                 abort(401, "You must be logged in to make this request.")
 
             kwargs["authed_user_id"] = authed_user_id
-            if include_wallet:
-                kwargs["authed_user_wallet"] = wallet_lower
 
             return func(*args, **kwargs)
 

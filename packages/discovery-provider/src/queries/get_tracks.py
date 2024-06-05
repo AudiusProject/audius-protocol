@@ -9,6 +9,7 @@ from src.models.tracks.aggregate_track import AggregateTrack
 from src.models.tracks.track_route import TrackRoute
 from src.models.tracks.track_with_aggregates import TrackWithAggregates
 from src.models.users.user import User
+from src.queries.get_managed_users import is_active_manager
 from src.queries.query_helpers import (
     SortDirection,
     SortMethod,
@@ -89,15 +90,25 @@ def _get_tracks(session, args):
     elif args.get("skip_unlisted_filter", False):
         pass
     else:
+        current_user_id = args.get("current_user_id")
+        user_id = args.get("user_id")
+        authed_user_id = args.get("authed_user_id")
+        is_authed_user_owner = (
+            user_id is not None
+            and authed_user_id is not None
+            and authed_user_id == user_id
+        )
+        is_authed_user_manager = (
+            user_id is not None
+            and current_user_id is not None
+            and authed_user_id is not None
+            and current_user_id == user_id
+            and is_active_manager(user_id, authed_user_id)
+        )
         # Only return unlisted tracks if either
         # - above case, routes are present (direct links to hidden tracks)
-        # - the user is authenticated as the owner
-        is_authed_user = (
-            "user_id" in args
-            and "authed_user_id" in args
-            and args.get("user_id") == args.get("authed_user_id")
-        )
-        if not is_authed_user:
+        # - the current user is authenticated as the owner or a manager of the owner
+        if not (is_authed_user_owner or is_authed_user_manager):
             base_query = base_query.filter(TrackWithAggregates.is_unlisted == False)
 
     # Conditionally process an array of tracks

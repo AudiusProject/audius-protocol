@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useState } from 'react'
 
 import { SolanaWalletAddress } from '@audius/common/models'
 import { accountSelectors, profilePageActions } from '@audius/common/store'
@@ -25,7 +25,7 @@ import {
   getAssociatedTokenAddressSync,
   unpackAccount
 } from '@solana/spl-token'
-import { PublicKey, SystemProgram } from '@solana/web3.js'
+import { ComputeBudgetProgram, PublicKey, SystemProgram } from '@solana/web3.js'
 import { Formik, useField } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
 import { useAsync } from 'react-use'
@@ -78,9 +78,11 @@ type PayoutWalletValues = z.input<typeof payoutWalletSchema>
 const PayoutWalletSchema = toFormikValidationSchema(payoutWalletSchema)
 
 const PayoutWalletModalForm = ({
-  handleClose
+  handleClose,
+  isSubmitting
 }: {
   handleClose: () => void
+  isSubmitting: boolean
 }) => {
   const [optionField] = useField('option')
   const [addressField, { error }] = useField('address')
@@ -146,7 +148,12 @@ const PayoutWalletModalForm = ({
         >
           {messages.back}
         </Button>
-        <Button type='submit' isLoading={false} fullWidth disabled={!!error}>
+        <Button
+          type='submit'
+          isLoading={isSubmitting}
+          fullWidth
+          disabled={!!error || isSubmitting}
+        >
           {messages.save}
         </Button>
       </ModalFooter>
@@ -158,6 +165,7 @@ export const PayoutWalletModal = () => {
   const [isOpen, setIsOpen] = useModalState('PayoutWallet')
   const user = useSelector(getAccountUser)
   const dispatch = useDispatch()
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const handleClose = useCallback(() => {
     setIsOpen(false)
@@ -168,6 +176,7 @@ export const PayoutWalletModal = () => {
       { option, address }: PayoutWalletValues,
       { setErrors }: { setErrors: any }
     ) => {
+      setIsSubmitting(true)
       const sdk = await audiusSdk()
       try {
         if (!address || !user) {
@@ -228,7 +237,10 @@ export const PayoutWalletModal = () => {
                       ataPubkey,
                       addressPubkey,
                       usdcMint
-                    )
+                    ),
+                    ComputeBudgetProgram.setComputeUnitPrice({
+                      microLamports: 100000
+                    })
                   ]
                 })
 
@@ -260,6 +272,7 @@ export const PayoutWalletModal = () => {
           name: 'Payout Wallet: Error setting wallet'
         })
       }
+      setIsSubmitting(false)
     },
     [dispatch, user, setIsOpen]
   )
@@ -292,7 +305,10 @@ export const PayoutWalletModal = () => {
         validationSchema={PayoutWalletSchema}
         onSubmit={handleSubmit}
       >
-        <PayoutWalletModalForm handleClose={handleClose} />
+        <PayoutWalletModalForm
+          handleClose={handleClose}
+          isSubmitting={isSubmitting}
+        />
       </Formik>
     </Modal>
   )

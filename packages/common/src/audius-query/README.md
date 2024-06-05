@@ -13,6 +13,7 @@
   - [Pre-fetching related entities](#pre-fetching-related-entities)
     - [Cascading hooks](#cascading-hooks)
     - [Pre-fetching in endpoint implementations](#pre-fetching-in-endpoint-implementations)
+  - [Batching requests](#batching-requests)
   - [Query Hook options](#query-hook-options)
   - [Caching](#caching)
     - [Endpoint response caching](#endpoint-response-caching)

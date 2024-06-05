@@ -1,3 +1,0 @@
-when: << pipeline.parameters.run-ddex-processor-workflow >>
-jobs:
-  - ddex-processor-init
