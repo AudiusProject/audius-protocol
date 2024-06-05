@@ -116,7 +116,7 @@ const TrackMenu = (props: TrackMenuProps) => {
   const onEditTrack = (trackId: number | null) => {
     if (!trackId || !trackPermalink) return
     isEditTrackRedesignEnabled
-      ? goToRoute(`/${trackPermalink}/edit`)
+      ? goToRoute(`${trackPermalink}/edit`)
       : onOpen({ trackId })
   }
 
