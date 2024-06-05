@@ -682,9 +682,6 @@ def test_index_invalid_playlists(app, mocker):
 
     test_metadata = {
         "UpdatePlaylistInvalidPrivate": {"is_private": True},
-        "AlbumTracklistUpdate": {
-            "playlist_contents": {"track_ids": [{"track": 1, "time": 1}]}
-        },
         "UpdatePlaylistInvalidAlbum": {"is_album": True},
         "CreatePlaylistInvalidTracks": {
             "playlist_contents": {"track_ids": [{"track": 1}]}
@@ -692,7 +689,6 @@ def test_index_invalid_playlists(app, mocker):
     }
     private_metadata = json.dumps(test_metadata["UpdatePlaylistInvalidPrivate"])
     album_metadata = json.dumps(test_metadata["UpdatePlaylistInvalidAlbum"])
-    album_tracklist_update_json = json.dumps(test_metadata["AlbumTracklistUpdate"])
     playlist_metadata = json.dumps(test_metadata["CreatePlaylistInvalidTracks"])
 
     tx_receipts = {

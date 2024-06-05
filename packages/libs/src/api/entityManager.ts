@@ -238,7 +238,8 @@ export class EntityManager extends Base {
         ddex_app: playlist.ddex_app,
         is_stream_gated: playlist.is_stream_gated,
         stream_conditions: playlist.stream_conditions,
-        release_date: playlist.release_date
+        release_date: playlist.release_date,
+        is_scheduled_release: playlist.is_scheduled_release
       }
       this.creatorNode.validatePlaylistSchema(metadata)
 
