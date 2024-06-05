@@ -7,7 +7,7 @@ import { TextInput, TextInputSize } from 'components/input'
 import { Flex, Paper } from 'components/layout'
 import { Popup } from 'components/popup'
 import { useControlled } from 'hooks/useControlled'
-import { IconSearch } from 'icons'
+import { IconCaretDown, IconSearch } from 'icons'
 
 import { FilterButton } from '../FilterButton/FilterButton'
 
@@ -36,6 +36,7 @@ export const OptionsFilterButton = forwardRef<
     stateName: 'selection',
     componentName: 'FilterButton'
   })
+
   const [filterInputValue, setFilterInputValue] = useState('')
   const selectedOption = options.find((option) => option.value === selection)
   const selectedLabel = selectedOption?.label ?? selectedOption?.value
@@ -80,7 +81,12 @@ export const OptionsFilterButton = forwardRef<
   )
 
   return (
-    <FilterButton {...filterButtonProps}>
+    <FilterButton
+      iconRight={IconCaretDown}
+      {...filterButtonProps}
+      value={selection}
+      label={selectedLabel ?? filterButtonProps.label}
+    >
       {({ isOpen, setIsOpen, handleChange, anchorRef }) => (
         <Popup
           anchorRef={(ref as RefObject<HTMLElement>) || anchorRef}
@@ -90,6 +96,7 @@ export const OptionsFilterButton = forwardRef<
           transformOrigin={popupTransformOrigin}
           portalLocation={popupPortalLocation}
           zIndex={popupZIndex}
+          onAfterClose={() => setFilterInputValue('')}
         >
           <Paper mt='s' border='strong' shadow='far'>
             <Flex

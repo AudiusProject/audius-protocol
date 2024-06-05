@@ -1,4 +1,4 @@
-import { ChangeEvent, ReactElement, useCallback } from 'react'
+import { ChangeEvent, ReactElement, useCallback, useState } from 'react'
 
 import { GENRES, Maybe, convertGenreLabelToValue } from '@audius/common/utils'
 import {
@@ -10,7 +10,14 @@ import {
   IconUser,
   RadioGroup,
   SelectablePill,
-  Text
+  Text,
+  FilterButton,
+  Popup,
+  Paper,
+  TextInput,
+  Switch,
+  SegmentedControl,
+  TextInputSize
 } from '@audius/harmony'
 import { capitalize } from 'lodash'
 import { useSearchParams } from 'react-router-dom-v5-compat'
@@ -68,6 +75,136 @@ const GenreFilter = () => {
   )
 }
 
+const BpmFilter = () => {
+  const [urlSearchParams, setUrlSearchParams] = useSearchParams()
+  const bpm = urlSearchParams.get('bpm')
+
+  const [bpmFilterType, setBpmFilterType] = useState<'range' | 'target'>(
+    'range'
+  )
+
+  const label = bpm ? `${bpm} BPM` : 'BPM'
+
+  const handleBpmInputChange = useCallback(
+    (handleChange: (value: string, label: string) => void) =>
+      (value: string) => {
+        handleChange(value, `${value} BPM`)
+      },
+    []
+  )
+
+  return (
+    <FilterButton
+      value={bpm}
+      label={label}
+      onChange={(value) => {
+        if (value) {
+          setUrlSearchParams((params) => ({ ...params, bpm: value }))
+        } else {
+          setUrlSearchParams(({ bpm, ...params }: any) => params)
+        }
+      }}
+    >
+      {({ handleChange, isOpen, setIsOpen, anchorRef }) => (
+        <Popup
+          anchorRef={anchorRef}
+          isVisible={isOpen}
+          onClose={() => setIsOpen(false)}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+          transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+        >
+          <Paper mt='s' border='strong' shadow='far'>
+            <Flex
+              p='s'
+              direction='column'
+              alignItems='flex-start'
+              role='listbox'
+            >
+              <Flex direction='column' w='100%' gap='s'>
+                <SegmentedControl
+                  options={[
+                    { key: 'range', text: 'Range' },
+                    { key: 'target', text: 'Target' }
+                  ]}
+                  selected={bpmFilterType}
+                  onSelectOption={setBpmFilterType}
+                />
+                <TextInput
+                  placeholder='BPM'
+                  label='BPM'
+                  onClick={(e) => {
+                    e.stopPropagation()
+                  }}
+                  onChange={(e) => {
+                    handleBpmInputChange(handleChange)(e.target.value)
+                  }}
+                />
+              </Flex>
+            </Flex>
+          </Paper>
+        </Popup>
+      )}
+    </FilterButton>
+  )
+}
+
+const IsPremiumFilter = () => {
+  const [urlSearchParams, setUrlSearchParams] = useSearchParams()
+  const isPremium = urlSearchParams.get('isPremium')
+
+  return (
+    <FilterButton
+      label='Premium'
+      value={isPremium}
+      onClick={() => {
+        if (!isPremium) {
+          setUrlSearchParams((params) => ({ ...params, isPremium: true }))
+        } else {
+          setUrlSearchParams(({ isPremium, ...params }: any) => params)
+        }
+      }}
+    ></FilterButton>
+  )
+}
+
+const HasDownloadsFilter = () => {
+  const [urlSearchParams, setUrlSearchParams] = useSearchParams()
+  const hasDownloads = urlSearchParams.get('hasDownloads')
+
+  return (
+    <FilterButton
+      label='Downloads Available'
+      value={hasDownloads}
+      onClick={() => {
+        if (!hasDownloads) {
+          setUrlSearchParams((params) => ({ ...params, hasDownloads: true }))
+        } else {
+          setUrlSearchParams(({ hasDownloads, ...params }: any) => params)
+        }
+      }}
+    ></FilterButton>
+  )
+}
+
+const IsVerifiedFiler = () => {
+  const [urlSearchParams, setUrlSearchParams] = useSearchParams()
+  const isVerified = urlSearchParams.get('isVerified')
+
+  return (
+    <FilterButton
+      label='Verified'
+      value={isVerified}
+      onClick={() => {
+        if (!isVerified) {
+          setUrlSearchParams((params) => ({ ...params, isVerified: true }))
+        } else {
+          setUrlSearchParams(({ isVerified, ...params }: any) => params)
+        }
+      }}
+    ></FilterButton>
+  )
+}
+
 const filters: Record<Filter, () => ReactElement> = {
   genre: GenreFilter,
   mood: () => (
@@ -90,46 +227,10 @@ const filters: Record<Filter, () => ReactElement> = {
       ]}
     />
   ),
-  bpm: () => (
-    <OptionsFilterButton
-      label='BPM'
-      options={[
-        {
-          value: 'Filter'
-        }
-      ]}
-    />
-  ),
-  isPremium: () => (
-    <OptionsFilterButton
-      label='Premium'
-      options={[
-        {
-          value: 'Filter'
-        }
-      ]}
-    />
-  ),
-  hasDownloads: () => (
-    <OptionsFilterButton
-      label='Downloads Available'
-      options={[
-        {
-          value: 'Filter'
-        }
-      ]}
-    />
-  ),
-  isVerified: () => (
-    <OptionsFilterButton
-      label='Verified'
-      options={[
-        {
-          value: 'Filter'
-        }
-      ]}
-    />
-  )
+  bpm: BpmFilter,
+  isPremium: IsPremiumFilter,
+  hasDownloads: HasDownloadsFilter,
+  isVerified: IsVerifiedFiler
 }
 
 export const SearchHeader = (props: SearchHeaderProps) => {

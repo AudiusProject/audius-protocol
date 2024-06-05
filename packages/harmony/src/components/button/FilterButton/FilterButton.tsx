@@ -4,7 +4,7 @@ import { CSSObject, useTheme } from '@emotion/react'
 
 import { BaseButton } from 'components/button/BaseButton/BaseButton'
 import { useControlled } from 'hooks/useControlled'
-import { IconCaretDown, IconCloseAlt } from 'icons'
+import { IconCloseAlt } from 'icons'
 
 import { FilterButtonProps } from './types'
 
@@ -15,10 +15,11 @@ export const FilterButton = forwardRef<HTMLButtonElement, FilterButtonProps>(
       children,
       label: labelProp,
       onChange,
+      onClick,
       disabled,
       variant = 'fillContainer',
       size = 'default',
-      iconRight = IconCaretDown
+      iconRight
     } = props
     const { color, cornerRadius, spacing, typography } = useTheme()
     const [value, setValue] = useControlled({
@@ -112,13 +113,17 @@ export const FilterButton = forwardRef<HTMLButtonElement, FilterButtonProps>(
     const iconCss = size === 'small' ? smallIconStyles : defaultIconStyles
 
     const handleButtonClick = useCallback(() => {
-      if (variant === 'fillContainer' && value !== null) {
-        setValue(null)
-        setLabel(null)
-        // @ts-ignore
-        onChange?.(null)
+      if (onClick) {
+        onClick()
       } else {
-        setIsOpen((isOpen: boolean) => !isOpen)
+        if (variant === 'fillContainer' && value !== null) {
+          setValue(null)
+          setLabel(null)
+          // @ts-ignore
+          onChange?.(null)
+        } else {
+          setIsOpen((isOpen: boolean) => !isOpen)
+        }
       }
     }, [value, variant, setIsOpen, setValue, setLabel, onChange])
 
@@ -151,7 +156,7 @@ export const FilterButton = forwardRef<HTMLButtonElement, FilterButtonProps>(
         aria-expanded={isOpen}
       >
         {label}
-        {children({
+        {children?.({
           isOpen,
           setIsOpen,
           handleChange,

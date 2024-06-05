@@ -17,14 +17,31 @@ export type FilterButtonOption = {
 }
 
 type ChildrenProps = {
+  /**
+   * State representing whether the FilterButton is open.
+   * This can be used to implement a popup via `children`
+   */
   isOpen: boolean
+  /**
+   * Set open state
+   */
   setIsOpen: (isOpen: boolean) => void
+  /**
+   * A function to handle when the value is changed
+   */
   handleChange: (value: string, label: string) => void
+  /**
+   * A ref to the anchor element (button)
+   */
   anchorRef: React.RefObject<HTMLButtonElement>
 }
 
 export type FilterButtonProps = {
-  children: (props: ChildrenProps) => ReactNode
+  /**
+   * Children render prop. This can be used to render a dropdown component
+   * for example
+   */
+  children?: (props: ChildrenProps) => ReactNode
 
   /**
    * The text that appears on the button component.
@@ -63,12 +80,18 @@ export type FilterButtonProps = {
   /**
    * Optional icon element to include on the right side of the button
    */
-  iconRight?: IconComponent
+  iconRight?: IconComponent | null
 
   /**
    * What to do when the value is changed
    */
   onChange?: (value: string) => void
+
+  /**
+   * What to do when the button is clicked
+   * This will override the default behavior of toggling isOpen
+   */
+  onClick?: () => void
 
   /**
    * Whether interaction is disabled
