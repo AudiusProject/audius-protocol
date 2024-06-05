@@ -30,7 +30,9 @@ module.exports = function (app) {
           tiktokHandle: user.tiktok_handle,
           twitterVerified: user.verified_with_twitter,
           instagramVerified: user.verified_with_instagram,
-          tikTokVerified: user.verified_with_tiktok
+          tikTokVerified: user.verified_with_tiktok,
+          website: user.website,
+          donation: user.donation
         })
       } else return successResponse()
     })
