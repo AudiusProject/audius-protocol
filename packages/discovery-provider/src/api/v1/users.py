@@ -1071,9 +1071,8 @@ class TrackHistoryFull(Resource):
     def _get(self, id, authed_user_id):
         args = track_history_parser.parse_args()
         decoded_id = decode_with_abort(id, ns)
-        current_user_id = get_current_user_id(args)
-        if not current_user_id and decoded_id == authed_user_id:
-            current_user_id = authed_user_id
+        check_authorized(decoded_id, authed_user_id)
+
         offset = format_offset(args)
         limit = format_limit(args)
         query = format_query(args)
@@ -1081,7 +1080,6 @@ class TrackHistoryFull(Resource):
         sort_direction = format_sort_direction(args)
         get_tracks_args = GetUserListeningHistoryArgs(
             user_id=decoded_id,
-            current_user_id=current_user_id,
             limit=limit,
             offset=offset,
             query=query,
@@ -1096,10 +1094,16 @@ class TrackHistoryFull(Resource):
         id="""Get User's Track History""",
         description="""Get the tracks the user recently listened to.""",
         params={"id": "A User ID"},
-        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+        responses={
+            200: "Success",
+            400: "Bad request",
+            401: "Unauthorized",
+            403: "Forbidden",
+            500: "Server error",
+        },
     )
     @full_ns.expect(track_history_parser)
-    @auth_middleware(track_history_parser)
+    @auth_middleware(track_history_parser, require_auth=True)
     @full_ns.marshal_with(history_response_full)
     def get(self, id, authed_user_id=None):
         return self._get(id, authed_user_id)
@@ -1111,10 +1115,16 @@ class TrackHistory(TrackHistoryFull):
         id="""Get User's Track History""",
         description="""Get the tracks the user recently listened to.""",
         params={"id": "A User ID"},
-        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+        responses={
+            200: "Success",
+            400: "Bad request",
+            401: "Unauthorized",
+            403: "Forbidden",
+            500: "Server error",
+        },
     )
     @ns.expect(track_history_parser)
-    @auth_middleware(track_history_parser)
+    @auth_middleware(track_history_parser, require_auth=True)
     @ns.marshal_with(history_response)
     def get(self, id, authed_user_id):
         return super()._get(id, authed_user_id)
@@ -2076,17 +2086,12 @@ class ManagedUsers(Resource):
             500: "Server error",
         },
     )
-    @auth_middleware(include_wallet=True, require_auth=True)
+    @auth_middleware(require_auth=True)
     @full_ns.marshal_with(managed_users_response)
-    def get(self, id, authed_user_id, authed_user_wallet):
+    def get(self, id, authed_user_id):
         user_id = decode_with_abort(id, full_ns)
-
         check_authorized(user_id, authed_user_id)
-
-        args = GetManagedUsersArgs(
-            manager_wallet_address=authed_user_wallet, current_user_id=user_id
-        )
-        users = get_managed_users_with_grants(args)
+        users = get_managed_users_with_grants(GetManagedUsersArgs(user_id=user_id))
         users = list(map(format_managed_user, users))
 
         return success_response(users)
@@ -2112,15 +2117,13 @@ class Managers(Resource):
             500: "Server error",
         },
     )
-    @auth_middleware(include_wallet=True, require_auth=True)
+    @auth_middleware(require_auth=True)
     @full_ns.marshal_with(managers_response)
-    def get(self, id, authed_user_id, authed_user_wallet):
+    def get(self, id, authed_user_id):
         user_id = decode_with_abort(id, full_ns)
         check_authorized(user_id, authed_user_id)
 
-        args = GetUserManagersArgs(
-            manager_wallet_address=authed_user_wallet, user_id=user_id
-        )
+        args = GetUserManagersArgs(user_id=user_id)
         managers = get_user_managers_with_grants(args)
         managers = list(map(format_user_manager, managers))
 

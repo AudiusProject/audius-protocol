@@ -109,7 +109,7 @@ program.command('purchase-track')
 
     try {
       console.log('Purchasing track...', { trackId, userId, price, extraAmount })
-      const response = await audiusSdk.tracks.purchase({ trackId, userId, price, extraAmount })
+      const response = await audiusSdk.tracks.purchaseTrack({ trackId, userId, price, extraAmount })
       console.log(chalk.green('Successfully purchased track'))
       console.log(chalk.yellow('Transaction Signature:'), response)
     } catch (err) {
@@ -145,7 +145,7 @@ program.command('purchase-album')
 
     try {
       console.log('Purchasing album...', { albumId, userId, price, extraAmount })
-      const response = await audiusSdk.albums.purchase({ albumId, userId, price, extraAmount })
+      const response = await audiusSdk.albums.purchaseAlbum({ albumId, userId, price, extraAmount })
       console.log(chalk.green('Successfully purchased album'))
       console.log(chalk.yellow('Transaction Signature:'), response)
     } catch (err) {

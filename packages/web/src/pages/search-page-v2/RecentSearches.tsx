@@ -211,7 +211,9 @@ const RecentSearchUser = (props: RecentSearchUserProps) => {
     >
       <Avatar userId={id} w={40} borderWidth='thin' />
       <Flex direction='column' alignItems='flex-start'>
-        <UserLink userId={user.user_id} variant='secondary' size='xs' />
+        <Text variant='body' size='s'>
+          <UserLink userId={user.user_id} size='s' badgeSize='xs' />
+        </Text>
         <Text variant='body' size='xs' color='subdued'>
           Profile
         </Text>
