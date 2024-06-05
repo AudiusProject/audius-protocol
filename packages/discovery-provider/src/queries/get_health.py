@@ -134,7 +134,7 @@ def _is_relay_healthy(relay_health_res):
 
 def _get_chain_health():
     try:
-        health_res = requests.get(LOCAL_RPC + "/health")
+        health_res = requests.get(LOCAL_RPC + "/health", timeout=1)
         chain_res = health_res.json()
 
         web3 = get_web3(LOCAL_RPC)
