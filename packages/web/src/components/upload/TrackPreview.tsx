@@ -4,7 +4,6 @@ import { StemCategory, stemCategoryFriendlyNames } from '@audius/common/models'
 import { Nullable } from '@audius/common/utils'
 import {
   Box,
-  FilterButton,
   Flex,
   IconButton,
   IconCompose,

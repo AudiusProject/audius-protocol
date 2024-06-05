@@ -18,14 +18,13 @@ import {
   SegmentedControl,
   IconCaretDown
 } from '@audius/harmony'
-import { capitalize, update } from 'lodash'
+import { capitalize } from 'lodash'
 import { useSearchParams } from 'react-router-dom-v5-compat'
 
 import Header from 'components/header/desktop/Header'
 import { useMedia } from 'hooks/useMedia'
 
 import { Category, Filter } from './types'
-import { SetURLSearchParams } from 'react-router-dom-v5-compat/dist/react-router-dom'
 
 export const categories = {
   all: { filters: [] },
@@ -55,14 +54,15 @@ const useUpdateSearchParams = (key: string) => {
   const [searchParams, setUrlSearchParams] = useSearchParams()
   return (value: string) => {
     if (value) {
-      // TODO: This is causing an amplitude page view everytime
+      // TODO: This is causing an amplitude page view every time
       // let's fix this
       setUrlSearchParams({
         ...urlSearchParamsToObject(searchParams),
         [key]: value
       })
     } else {
-      const { [key]: omit, ...params } = urlSearchParamsToObject(searchParams)
+      const { [key]: ignored, ...params } =
+        urlSearchParamsToObject(searchParams)
       setUrlSearchParams(params)
     }
   }
@@ -191,7 +191,7 @@ const HasDownloadsFilter = () => {
 }
 
 const IsVerifiedFilter = () => {
-  const [urlSearchParams, setUrlSearchParams] = useSearchParams()
+  const [urlSearchParams] = useSearchParams()
   const isVerified = urlSearchParams.get('isVerified')
   const updateSearchParams = useUpdateSearchParams('isVerified')
 

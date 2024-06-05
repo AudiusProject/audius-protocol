@@ -7,7 +7,6 @@ import {
   Nullable
 } from '@audius/common/utils'
 import {
-  FilterButton,
   Flex,
   IconCreditCard,
   IconDonate,

@@ -6,7 +6,6 @@ import {
   IconSearch,
   Paper,
   Flex,
-  FilterButton,
   TextInput,
   TextInputSize,
   OptionsFilterButton
