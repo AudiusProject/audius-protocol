@@ -125,7 +125,7 @@ export const FilterButton = forwardRef<HTMLButtonElement, FilterButtonProps>(
           setIsOpen((isOpen: boolean) => !isOpen)
         }
       }
-    }, [value, variant, setIsOpen, setValue, setLabel, onChange])
+    }, [value, variant, setIsOpen, setValue, setLabel, onChange, onClick])
 
     const handleChange = useCallback(
       (value: string, label: string) => {

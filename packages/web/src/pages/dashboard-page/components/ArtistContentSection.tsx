@@ -112,7 +112,7 @@ export const ArtistContentSection = () => {
           </Flex>
           <OptionsFilterButton
             onChange={handleSelectFilter}
-            value={isTracks ? selectedTrackFilter : selectedAlbumFilter}
+            selection={isTracks ? selectedTrackFilter : selectedAlbumFilter}
             label={messages.allReleases}
             options={filterButtonOptions}
             popupAnchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}

@@ -15,17 +15,17 @@ import {
   Popup,
   Paper,
   TextInput,
-  Switch,
   SegmentedControl,
-  TextInputSize
+  IconCaretDown
 } from '@audius/harmony'
-import { capitalize } from 'lodash'
+import { capitalize, update } from 'lodash'
 import { useSearchParams } from 'react-router-dom-v5-compat'
 
 import Header from 'components/header/desktop/Header'
 import { useMedia } from 'hooks/useMedia'
 
 import { Category, Filter } from './types'
+import { SetURLSearchParams } from 'react-router-dom-v5-compat/dist/react-router-dom'
 
 export const categories = {
   all: { filters: [] },
@@ -40,16 +40,38 @@ export const categories = {
 
 export type CategoryKey = keyof typeof categories
 
-type SearchHeaderProps = {
-  category?: CategoryKey
-  setCategory: (category: CategoryKey) => void
-  title: string
-  query: Maybe<string>
+const urlSearchParamsToObject = (
+  searchParams: URLSearchParams
+): Record<string, string> =>
+  [...searchParams.entries()].reduce(
+    (result, [key, value]) => ({
+      ...result,
+      [key]: value
+    }),
+    {}
+  )
+
+const useUpdateSearchParams = (key: string) => {
+  const [searchParams, setUrlSearchParams] = useSearchParams()
+  return (value: string) => {
+    if (value) {
+      // TODO: This is causing an amplitude page view everytime
+      // let's fix this
+      setUrlSearchParams({
+        ...urlSearchParamsToObject(searchParams),
+        [key]: value
+      })
+    } else {
+      const { [key]: omit, ...params } = urlSearchParamsToObject(searchParams)
+      setUrlSearchParams(params)
+    }
+  }
 }
 
 const GenreFilter = () => {
-  const [urlSearchParams, setUrlSearchParams] = useSearchParams()
+  const [urlSearchParams] = useSearchParams()
   const genre = urlSearchParams.get('genre')
+  const updateSearchParams = useUpdateSearchParams('genre')
 
   return (
     <OptionsFilterButton
@@ -58,13 +80,7 @@ const GenreFilter = () => {
       popupMaxHeight={400}
       popupTransformOrigin={{ vertical: 'top', horizontal: 'left' }}
       selection={genre}
-      onChange={(value) => {
-        if (value) {
-          setUrlSearchParams((params) => ({ ...params, genre: value }))
-        } else {
-          setUrlSearchParams(({ genre, ...params }: any) => params)
-        }
-      }}
+      onChange={updateSearchParams}
       options={GENRES.map((genre) => ({
         label: genre,
         value: convertGenreLabelToValue(genre)
@@ -76,8 +92,9 @@ const GenreFilter = () => {
 }
 
 const BpmFilter = () => {
-  const [urlSearchParams, setUrlSearchParams] = useSearchParams()
+  const [urlSearchParams] = useSearchParams()
   const bpm = urlSearchParams.get('bpm')
+  const updateSearchParams = useUpdateSearchParams('bpm')
 
   const [bpmFilterType, setBpmFilterType] = useState<'range' | 'target'>(
     'range'
@@ -97,13 +114,8 @@ const BpmFilter = () => {
     <FilterButton
       value={bpm}
       label={label}
-      onChange={(value) => {
-        if (value) {
-          setUrlSearchParams((params) => ({ ...params, bpm: value }))
-        } else {
-          setUrlSearchParams(({ bpm, ...params }: any) => params)
-        }
-      }}
+      onChange={updateSearchParams}
+      iconRight={IconCaretDown}
     >
       {({ handleChange, isOpen, setIsOpen, anchorRef }) => (
         <Popup
@@ -149,57 +161,46 @@ const BpmFilter = () => {
 }
 
 const IsPremiumFilter = () => {
-  const [urlSearchParams, setUrlSearchParams] = useSearchParams()
+  const [urlSearchParams] = useSearchParams()
   const isPremium = urlSearchParams.get('isPremium')
+  const updateSearchParams = useUpdateSearchParams('isPremium')
 
   return (
     <FilterButton
       label='Premium'
       value={isPremium}
-      onClick={() => {
-        if (!isPremium) {
-          setUrlSearchParams((params) => ({ ...params, isPremium: true }))
-        } else {
-          setUrlSearchParams(({ isPremium, ...params }: any) => params)
-        }
-      }}
+      onClick={() => updateSearchParams(isPremium ? '' : 'true')}
     ></FilterButton>
   )
 }
 
 const HasDownloadsFilter = () => {
-  const [urlSearchParams, setUrlSearchParams] = useSearchParams()
+  const [urlSearchParams] = useSearchParams()
   const hasDownloads = urlSearchParams.get('hasDownloads')
+  const updateSearchParams = useUpdateSearchParams('hasDownloads')
 
   return (
     <FilterButton
       label='Downloads Available'
       value={hasDownloads}
       onClick={() => {
-        if (!hasDownloads) {
-          setUrlSearchParams((params) => ({ ...params, hasDownloads: true }))
-        } else {
-          setUrlSearchParams(({ hasDownloads, ...params }: any) => params)
-        }
+        updateSearchParams(hasDownloads ? '' : 'true')
       }}
     ></FilterButton>
   )
 }
 
-const IsVerifiedFiler = () => {
+const IsVerifiedFilter = () => {
   const [urlSearchParams, setUrlSearchParams] = useSearchParams()
   const isVerified = urlSearchParams.get('isVerified')
+  const updateSearchParams = useUpdateSearchParams('isVerified')
 
   return (
     <FilterButton
       label='Verified'
       value={isVerified}
       onClick={() => {
-        if (!isVerified) {
-          setUrlSearchParams((params) => ({ ...params, isVerified: true }))
-        } else {
-          setUrlSearchParams(({ isVerified, ...params }: any) => params)
-        }
+        updateSearchParams(isVerified ? '' : 'true')
       }}
     ></FilterButton>
   )
@@ -230,7 +231,14 @@ const filters: Record<Filter, () => ReactElement> = {
   bpm: BpmFilter,
   isPremium: IsPremiumFilter,
   hasDownloads: HasDownloadsFilter,
-  isVerified: IsVerifiedFiler
+  isVerified: IsVerifiedFilter
+}
+
+type SearchHeaderProps = {
+  category?: CategoryKey
+  setCategory: (category: CategoryKey) => void
+  title: string
+  query: Maybe<string>
 }
 
 export const SearchHeader = (props: SearchHeaderProps) => {
