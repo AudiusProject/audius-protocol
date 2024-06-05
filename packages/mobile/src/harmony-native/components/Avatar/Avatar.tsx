@@ -15,7 +15,10 @@ type TweakedFastImageProps = Omit<FastImageProps, 'priority'> &
   Partial<PickRename<FastImageProps, 'priority', 'imagePriority'>>
 
 export type AvatarProps = Omit<HarmonyAvatarProps, 'src'> &
-  SetRequired<TweakedFastImageProps, 'accessibilityLabel'> &
+  (
+    | SetRequired<TweakedFastImageProps, 'accessibilityLabel'>
+    | (TweakedFastImageProps & { 'aria-hidden'?: true })
+  ) &
   BoxProps
 
 const sizeMap = {

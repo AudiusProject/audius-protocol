@@ -11,6 +11,7 @@ export const UserCardSkeleton = () => {
         />
       </Box>
       <Flex ph='l' pt='xs' pb='m' gap='xs' alignItems='center'>
+        {/* marginBottom is simulating line-height */}
         <Skeleton height={18} width={150} style={{ marginBottom: 6 }} />
         <Skeleton height={16} width={100} />
       </Flex>
@@ -22,6 +23,7 @@ export const UserCardSkeleton = () => {
         borderBottomLeftRadius='m'
         borderBottomRightRadius='m'
       >
+        {/* marginBottom is simulating line-height */}
         <Skeleton height={16} width={100} style={{ marginBottom: 2 }} />
       </Flex>
     </Paper>

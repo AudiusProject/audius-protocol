@@ -2,7 +2,7 @@ import { useCallback } from 'react'
 
 import { SquareSizes, type ID } from '@audius/common/models'
 import { cacheUsersSelectors } from '@audius/common/store'
-import { formatCount } from '@audius/common/utils'
+import { formatCount, pluralize } from '@audius/common/utils'
 import type { GestureResponderEvent } from 'react-native'
 import { useSelector } from 'react-redux'
 
@@ -22,7 +22,7 @@ import { UserLink } from '../user-link'
 const { getUser } = cacheUsersSelectors
 
 const messages = {
-  followers: (count: number) => (count === 1 ? 'Follower' : 'Followers')
+  follower: 'Follower'
 }
 
 type UserCardProps = PaperProps & {
@@ -55,13 +55,7 @@ export const UserCard = (props: UserCardProps) => {
 
   return (
     <Paper border='default' onPress={handlePress} {...other}>
-      <Avatar
-        source={source}
-        onError={handleError}
-        accessibilityLabel=''
-        p='m'
-        pb='s'
-      />
+      <Avatar source={source} onError={handleError} aria-hidden p='m' pb='s' />
       <Flex ph='l' pb='s' gap='xs'>
         <UserLink userId={userId} textVariant='title' />
         <Text ellipses textAlign='center'>
@@ -76,8 +70,10 @@ export const UserCard = (props: UserCardProps) => {
         borderBottomLeftRadius='m'
         borderBottomRightRadius='m'
       >
+        {/* Ensures correct footer height */}
         <Text size='s' strength='strong' style={{ lineHeight: 16 }}>
-          {formatCount(follower_count)} {messages.followers(follower_count)}
+          {formatCount(follower_count)}{' '}
+          {pluralize(messages.follower, follower_count)}
         </Text>
       </Flex>
     </Paper>
