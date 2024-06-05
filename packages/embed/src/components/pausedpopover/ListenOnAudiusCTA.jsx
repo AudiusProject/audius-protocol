@@ -1,8 +1,10 @@
 import { USDC } from '@audius/fixed-decimal'
 import { Button, Text } from '@audius/harmony'
-import { instanceOfPurchaseGate } from '@audius/sdk'
+import { full } from '@audius/sdk'
 
 import { getCopyableLink } from '../../util/shareUtil'
+
+const { instanceOfPurchaseGate } = full
 
 const messages = {
   listen: 'Listen on Audius',

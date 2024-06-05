@@ -60,7 +60,7 @@ export const SelectablePill = (props: SelectablePillProps) => {
     position: 'relative',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: theme.spacing.xs,
+    gap: theme.spacing.s,
     color: theme.color.text.default,
     backgroundColor: theme.color.background.white,
     cursor: 'pointer',

@@ -1,6 +1,6 @@
 import { useState, useContext, useEffect } from 'react'
 
-import { instanceOfPurchaseGate } from '@audius/sdk'
+import { full } from '@audius/sdk'
 
 import { isMobileWebTwitter } from '../../util/isMobileWebTwitter'
 import Artwork from '../artwork/Artwork'
@@ -13,6 +13,8 @@ import BedtimeScrubber from '../scrubber/BedtimeScrubber'
 import Titles from '../titles/Titles'
 
 import styles from './TrackPlayerCard.module.css'
+
+const { instanceOfPurchaseGate } = full
 
 const TrackPlayerCard = ({
   title,

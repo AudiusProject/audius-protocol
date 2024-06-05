@@ -9,8 +9,8 @@ export type ButtonVariant = 'primary' | 'secondary' | 'tertiary' | 'destructive'
 export type ButtonSize = 'small' | 'default' | 'large'
 
 type BaseButtonStyles = {
-  button: CSSObject
-  icon: CSSObject
+  button?: CSSObject
+  icon?: CSSObject
 }
 
 export type HTMLButtonProps = ComponentPropsWithoutRef<'button'>

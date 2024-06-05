@@ -3,7 +3,7 @@ import { Status } from '@audius/common/models'
 import type { CommonState } from '@audius/common/store'
 import { searchResultsPageSelectors, SearchKind } from '@audius/common/store'
 
-import { ProfileList } from 'app/components/profile-list'
+import { UserList } from 'app/components/user-list'
 import { spacing } from 'app/styles/spacing'
 
 import { EmptyResults } from '../EmptyResults'
@@ -32,7 +32,7 @@ export const ProfilesTab = () => {
   useFetchTabResultsEffect(SearchKind.USERS)
 
   return (
-    <ProfileList
+    <UserList
       style={{ paddingTop: spacing(3) }}
       onCardPress={onSelectSearchResult}
       isLoading={!users}

@@ -189,11 +189,7 @@ const RecentSearchCollection = (props: { searchItem: SearchItem }) => {
   )
 }
 
-type RecentSearchUserProps = {
-  searchItem: SearchItem
-}
-
-const RecentSearchUser = (props: RecentSearchUserProps) => {
+const RecentSearchUser = (props: { searchItem: SearchItem }) => {
   const { searchItem } = props
   const { id } = searchItem
   const { data: user, status } = useGetUserById({ id })
@@ -211,7 +207,9 @@ const RecentSearchUser = (props: RecentSearchUserProps) => {
     >
       <Avatar userId={id} w={40} borderWidth='thin' />
       <Flex direction='column' alignItems='flex-start'>
-        <UserLink userId={user.user_id} variant='secondary' size='xs' />
+        <Text variant='body' size='s'>
+          <UserLink userId={user.user_id} size='s' badgeSize='xs' />
+        </Text>
         <Text variant='body' size='xs' color='subdued'>
           Profile
         </Text>

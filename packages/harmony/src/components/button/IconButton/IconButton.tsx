@@ -14,7 +14,7 @@ export type IconButtonProps = {
 } & Pick<IconProps, 'color' | 'size' | 'shadow' | 'height' | 'width'> &
   Pick<
     BaseButtonProps,
-    'onClick' | 'disabled' | 'className' | 'type' | 'children'
+    'onClick' | 'disabled' | 'className' | 'type' | 'children' | 'isLoading'
   >
 
 /**
@@ -35,8 +35,8 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
       children,
       ...other
     } = props
-    const { disabled } = other
-    const { color, cornerRadius, spacing, motion } = useTheme()
+    const { disabled, isLoading } = other
+    const { color, cornerRadius, spacing, motion, iconSizes } = useTheme()
 
     const buttonCss: CSSObject = {
       background: 'transparent',
@@ -77,22 +77,32 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
       }
     }
 
+    const loadingIconCss: CSSObject = {
+      ...iconCss,
+      height: iconSizes[size],
+      width: iconSizes[size],
+      color: color.icon[iconColor ?? 'default']
+    }
+
     return (
       <BaseButton
         ref={ref}
         type='button'
         {...other}
         css={[buttonCss, ripple && rippleCss]}
+        styles={{ icon: loadingIconCss }}
       >
-        <Icon
-          aria-hidden
-          color={disabled ? 'disabled' : iconColor}
-          size={size}
-          shadow={shadow}
-          height={height}
-          width={width}
-          css={iconCss}
-        />
+        {isLoading ? null : (
+          <Icon
+            aria-hidden
+            color={disabled ? 'disabled' : iconColor}
+            size={size}
+            shadow={shadow}
+            height={height}
+            width={width}
+            css={iconCss}
+          />
+        )}
         {children}
       </BaseButton>
     )

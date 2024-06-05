@@ -20,6 +20,11 @@ export default async ({ track_id, updated_at, created_at }) => {
     created_at !== undefined
   if (!isUpload) return
 
+  if (isOldUpload(created_at)) {
+    console.log({ created_at, track_id }, "old upload")
+    return
+  }
+
   const trackId = track_id
   const results = await dp_db('tracks')
     .innerJoin('users', 'tracks.owner_id', '=', 'users.user_id')

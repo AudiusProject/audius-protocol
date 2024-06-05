@@ -1,4 +1,4 @@
-import { instanceOfPurchaseGate } from '@audius/sdk'
+import { full } from '@audius/sdk'
 
 import Artwork from '../artwork/Artwork'
 import AudiusLogoButton from '../button/AudiusLogoButton'
@@ -10,6 +10,8 @@ import BedtimeScrubber from '../scrubber/BedtimeScrubber'
 import Titles from '../titles/Titles'
 
 import styles from './TrackPlayerCompact.module.css'
+
+const { instanceOfPurchaseGate } = full
 
 const TrackPlayerCompact = ({
   title,

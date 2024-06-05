@@ -1,2 +1,2 @@
-export * from './ProfileList'
+export * from './UserList'
 export * from './ProfileCard'
