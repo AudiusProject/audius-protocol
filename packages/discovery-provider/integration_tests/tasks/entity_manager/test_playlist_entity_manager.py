@@ -74,7 +74,7 @@ def tx_receipts():
             "is_album": True,
             "is_private": False,  # Should be overwritten by is_scheduled_release
             "is_scheduled_release": True,
-            "release_date": "2050-11-30T08:00:00Z",
+            "release_date": "2050-11-30T08:00:00.00Z",
         },
     }
 
@@ -716,12 +716,16 @@ def test_index_invalid_playlists(app, mocker):
     test_metadata = {
         "UpdatePlaylistInvalidPrivate": {"is_private": True},
         "UpdatePlaylistInvalidAlbum": {"is_album": True},
+        "UpdatePlaylistInvalidReleaseDate": {"release_date": "invalid"},
         "CreatePlaylistInvalidTracks": {
             "playlist_contents": {"track_ids": [{"track": 1}]}
         },
     }
     private_metadata = json.dumps(test_metadata["UpdatePlaylistInvalidPrivate"])
     album_metadata = json.dumps(test_metadata["UpdatePlaylistInvalidAlbum"])
+    invalid_release_date_metadata = json.dumps(
+        test_metadata["UpdatePlaylistInvalidReleaseDate"]
+    )
     playlist_metadata = json.dumps(test_metadata["CreatePlaylistInvalidTracks"])
 
     tx_receipts = {
@@ -906,6 +910,20 @@ def test_index_invalid_playlists(app, mocker):
                         "_action": "Update",
                         "_metadata": "",
                         "_signer": "User2Wallet",
+                    }
+                )
+            },
+        ],
+        "UpdatePlaylistInvalidReleaseDate": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": PLAYLIST_ID_OFFSET,
+                        "_entityType": "Playlist",
+                        "_userId": 1,
+                        "_action": "Update",
+                        "_metadata": f'{{"cid": "UpdatePlaylistInvalidReleaseDate", "data": {invalid_release_date_metadata}}}',
+                        "_signer": "user1wallet",
                     }
                 )
             },

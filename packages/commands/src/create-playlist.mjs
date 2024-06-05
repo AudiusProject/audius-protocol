@@ -26,7 +26,7 @@ program
   .option('-f, --from <from>', 'The account to create playlist from')
   .option(
     '-r, --release-date <date>',
-    'The release date of the album, eg. 2024-06-05T02:50:45'
+    'The release date of the album, eg. 2024-06-05T02:50:45.00Z'
   )
   .option(
     '-s, --scheduled',
