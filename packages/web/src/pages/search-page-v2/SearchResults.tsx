@@ -145,9 +145,9 @@ export const SearchResults = ({ query }: SearchResultsProps) => {
     [dispatch, query]
   )
 
-  const [trackView, setTrackView] = useState<TrackView>('list')
+  const [tracksLayout, setTracksLayout] = useState<TrackView>('list')
   const isTrackGridView =
-    !isCategoryActive(Category.TRACKS) || trackView === 'grid'
+    !isCategoryActive(Category.TRACKS) || tracksLayout === 'grid'
 
   return (
     <Flex direction='column' gap='unit10' ref={containerRef}>
@@ -182,10 +182,10 @@ export const SearchResults = ({ query }: SearchResultsProps) => {
             </Text>
             {isCategoryActive(Category.TRACKS) ? (
               <FilterButton
-                selection={trackView}
+                selection={tracksLayout}
                 variant='replaceLabel'
                 onSelect={(value) => {
-                  setTrackView(value as TrackView)
+                  setTracksLayout(value as TrackView)
                 }}
                 options={[
                   { label: 'Grid', value: 'grid' },
