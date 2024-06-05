@@ -1,9 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-// import { Status } from '@audius/common/models'
-// import { useGetPlaylistById } from '@audius/common/src/api/collection'
 import { useGetSearchFull } from '@audius/common/src/api/search'
-// import { useGetUserById } from '@audius/common/src/api/user'
 import { Name } from '@audius/common/src/models/Analytics'
 import { accountSelectors } from '@audius/common/src/store/account'
 import { makeGetLineupMetadatas } from '@audius/common/src/store/lineup/selectors'
@@ -18,6 +15,7 @@ import {
   SearchKind,
   searchResultsPageTracksLineupActions
 } from '@audius/common/store'
+import { FilterButton } from '@audius/harmony'
 import { Box, Flex } from '@audius/harmony/src/components/layout'
 import { Text } from '@audius/harmony/src/components/text'
 import { css } from '@emotion/css'
@@ -37,6 +35,10 @@ const { getUserId } = accountSelectors
 
 const MAX_RESULTS = 100
 const MAX_PREVIEW_RESULTS = 5
+const PAGE_WIDTH = 1080
+const HALF_TILE_WIDTH = (PAGE_WIDTH - 16) / 2
+
+type TrackView = 'grid' | 'list'
 
 enum Category {
   ALL = 'all',
@@ -46,25 +48,15 @@ enum Category {
   ALBUMS = 'albums'
 }
 
+type SearchResultsProps = {
+  query: string
+}
+
 const messages = {
   profiles: 'Profiles',
   tracks: 'Tracks',
   albums: 'Albums',
   playlists: 'Playlists'
-}
-
-// const ResultsUserCard = ({ id }: { id: number }) => {
-//   const { status } = useGetUserById({ id })
-//   return <UserCard id={id} size='s' loading={status === Status.LOADING} />
-// }
-
-// const ResultsCollectionCard = ({ id }: { id: number }) => {
-//   const { status } = useGetPlaylistById({ playlistId: id })
-//   return <CollectionCard id={id} size='s' loading={status === Status.LOADING} />
-// }
-
-type SearchResultsProps = {
-  query: string
 }
 
 const cardGridStyles = {
@@ -105,6 +97,10 @@ export const SearchResults = ({ query }: SearchResultsProps) => {
     }
   }, [results, query, isLoading])
 
+  const isCategoryActive = useCallback(
+    (category: Category) => categoryMatch?.category === category,
+    [categoryMatch]
+  )
   const isCategoryVisible = useCallback(
     (category: Category) =>
       !categoryMatch ||
@@ -144,13 +140,18 @@ export const SearchResults = ({ query }: SearchResultsProps) => {
     [dispatch, query]
   )
 
+  const [trackView, setTrackView] = useState<TrackView>('list')
+  const isTrackGridView = isCategoryActive(Category.ALL) || trackView === 'grid'
+
   return (
     <Flex direction='column' gap='unit10' ref={containerRef}>
       {isCategoryVisible(Category.PROFILES) ? (
         <Flex direction='column' gap='xl'>
-          <Text variant='heading' textAlign='left'>
-            {messages.profiles}
-          </Text>
+          <Flex justifyContent='space-between' alignItems='center'>
+            <Text variant='heading' textAlign='left'>
+              {messages.profiles}
+            </Text>
+          </Flex>
           <Box css={cardGridStyles}>
             {isLoading
               ? range(5).map((_, i) => (
@@ -169,13 +170,37 @@ export const SearchResults = ({ query }: SearchResultsProps) => {
       ) : null}
       {isCategoryVisible(Category.TRACKS) ? (
         <Flex direction='column' gap='xl' wrap='wrap'>
-          <Text variant='heading' textAlign='left'>
-            {messages.tracks}
-          </Text>
+          <Flex justifyContent='space-between' alignItems='center'>
+            <Text variant='heading' textAlign='left'>
+              {messages.tracks}
+            </Text>
+            {isCategoryActive(Category.TRACKS) ? (
+              <FilterButton
+                selection={trackView}
+                variant='replaceLabel'
+                onSelect={(value) => {
+                  setTrackView(value as TrackView)
+                }}
+                options={[
+                  { label: 'Grid', value: 'grid' },
+                  { label: 'List', value: 'list' }
+                ]}
+              />
+            ) : null}
+          </Flex>
           <Flex gap='l'>
             {results.data ? (
               <Lineup
                 lineupContainerStyles={css({ width: '100%' })}
+                tileContainerStyles={css({
+                  display: 'grid',
+                  gridTemplateColumns: isTrackGridView ? '1fr 1fr' : '1fr',
+                  gap: '4px 16px',
+                  justifyContent: 'space-between'
+                })}
+                tileStyles={css({
+                  maxWidth: isTrackGridView ? HALF_TILE_WIDTH : PAGE_WIDTH
+                })}
                 key='searchTracks'
                 variant={LineupVariant.SECTION}
                 lineup={tracks}
@@ -204,9 +229,11 @@ export const SearchResults = ({ query }: SearchResultsProps) => {
       ) : null}
       {isCategoryVisible(Category.ALBUMS) ? (
         <Flex direction='column' gap='xl'>
-          <Text variant='heading' textAlign='left'>
-            {messages.albums}
-          </Text>
+          <Flex justifyContent='space-between' alignItems='center'>
+            <Text variant='heading' textAlign='left'>
+              {messages.albums}
+            </Text>
+          </Flex>
           <Box css={cardGridStyles}>
             {isLoading
               ? range(5).map((_, i) => (
@@ -229,9 +256,11 @@ export const SearchResults = ({ query }: SearchResultsProps) => {
       ) : null}
       {isCategoryVisible(Category.PLAYLISTS) ? (
         <Flex direction='column' gap='xl'>
-          <Text variant='heading' textAlign='left'>
-            {messages.playlists}
-          </Text>
+          <Flex justifyContent='space-between' alignItems='center'>
+            <Text variant='heading' textAlign='left'>
+              {messages.playlists}
+            </Text>
+          </Flex>
           <Box css={cardGridStyles}>
             {isLoading
               ? range(5).map((_, i) => (

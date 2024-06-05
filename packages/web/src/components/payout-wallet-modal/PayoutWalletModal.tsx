@@ -292,9 +292,9 @@ export const PayoutWalletModal = () => {
 
   const initialValues: PayoutWalletValues = user?.spl_usdc_payout_wallet
     ? {
-      option: 'custom',
-      address: payoutWallet ?? ''
-    }
+        option: 'custom',
+        address: payoutWallet ?? ''
+      }
     : { option: 'default' }
 
   return (
