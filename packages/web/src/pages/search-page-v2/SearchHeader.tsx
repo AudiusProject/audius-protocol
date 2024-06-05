@@ -39,6 +39,16 @@ export const categories = {
 
 export type CategoryKey = keyof typeof categories
 
+const messages = {
+  genre: 'Genre',
+  mood: 'Mood',
+  key: 'Key',
+  bpm: 'BPM',
+  isPremium: 'Premium',
+  isVerified: 'Verified',
+  hasDownloads: 'Downloads Available'
+}
+
 const urlSearchParamsToObject = (
   searchParams: URLSearchParams
 ): Record<string, string> =>
@@ -75,7 +85,7 @@ const GenreFilter = () => {
 
   return (
     <OptionsFilterButton
-      label='Genre'
+      label={messages.genre}
       popupAnchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
       popupMaxHeight={400}
       popupTransformOrigin={{ vertical: 'top', horizontal: 'left' }}
@@ -100,12 +110,12 @@ const BpmFilter = () => {
     'range'
   )
 
-  const label = bpm ? `${bpm} BPM` : 'BPM'
+  const label = bpm ? `${bpm} ${messages.bpm}` : `${messages.bpm}`
 
   const handleBpmInputChange = useCallback(
     (handleChange: (value: string, label: string) => void) =>
       (value: string) => {
-        handleChange(value, `${value} BPM`)
+        handleChange(value, `${value} ${messages.bpm}`)
       },
     []
   )
@@ -142,8 +152,8 @@ const BpmFilter = () => {
                   onSelectOption={setBpmFilterType}
                 />
                 <TextInput
-                  placeholder='BPM'
-                  label='BPM'
+                  placeholder={messages.bpm}
+                  label={messages.bpm}
                   onClick={(e) => {
                     e.stopPropagation()
                   }}
@@ -167,7 +177,7 @@ const IsPremiumFilter = () => {
 
   return (
     <FilterButton
-      label='Premium'
+      label={messages.isPremium}
       value={isPremium}
       onClick={() => updateSearchParams(isPremium ? '' : 'true')}
     ></FilterButton>
@@ -181,7 +191,7 @@ const HasDownloadsFilter = () => {
 
   return (
     <FilterButton
-      label='Downloads Available'
+      label={messages.hasDownloads}
       value={hasDownloads}
       onClick={() => {
         updateSearchParams(hasDownloads ? '' : 'true')
@@ -197,7 +207,7 @@ const IsVerifiedFilter = () => {
 
   return (
     <FilterButton
-      label='Verified'
+      label={messages.isVerified}
       value={isVerified}
       onClick={() => {
         updateSearchParams(isVerified ? '' : 'true')
@@ -210,7 +220,7 @@ const filters: Record<Filter, () => ReactElement> = {
   genre: GenreFilter,
   mood: () => (
     <OptionsFilterButton
-      label='Mood'
+      label={messages.mood}
       options={[
         {
           value: 'Filter'
@@ -220,7 +230,7 @@ const filters: Record<Filter, () => ReactElement> = {
   ),
   key: () => (
     <OptionsFilterButton
-      label='Key'
+      label={messages.key}
       options={[
         {
           value: 'Filter'
