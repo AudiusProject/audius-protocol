@@ -340,9 +340,9 @@ def update_user_metadata(
     if user_record.is_verified:
         if user_record.verified_with_twitter:
             user_record.twitter_handle = user_record.handle
-        elif user_record.verified_with_instagram:
+        if user_record.verified_with_instagram:
             user_record.instagram_handle = user_record.handle
-        elif user_record.verified_with_tiktok:
+        if user_record.verified_with_tiktok:
             user_record.tiktok_handle = user_record.handle
 
     if "collectibles" in metadata:
