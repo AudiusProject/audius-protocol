@@ -1,10 +1,5 @@
 FROM golang:alpine3.18
 
-# RUN apk add build-base make cmake ffmpeg fftw-dev libsndfile-dev git curl
-
-# Essentia dependencies
-# RUN apk add eigen-dev yaml-dev ffmpeg-dev libsamplerate-dev taglib-dev pkgconfig zlib-dev chromaprint-dev
-
 RUN apk add \
     build-base \
     make \
