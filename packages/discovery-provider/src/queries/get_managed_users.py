@@ -2,6 +2,7 @@ import logging
 from typing import Dict, List, Optional, TypedDict
 
 from src.models.grants.grant import Grant
+from src.models.users.user import User
 from src.queries.get_unpopulated_users import (
     get_unpopulated_users,
     get_unpopulated_users_by_wallet,
@@ -14,8 +15,7 @@ logger = logging.getLogger(__name__)
 
 
 class GetManagedUsersArgs(TypedDict):
-    manager_wallet_address: str
-    current_user_id: int
+    user_id: int
     is_approved: Optional[bool]
     is_revoked: Optional[bool]
 
@@ -115,7 +115,7 @@ def get_managed_users_with_grants(args: GetManagedUsersArgs) -> List[Dict]:
     Returns users managed by the given wallet address
 
     Args:
-        manager_wallet_address: str wallet address of the manager
+        user_id: Id of the manager
         is_approved: Optional[bool] If set, filters by approval status
         is_revoked: Optional[bool] If set, filters by revocation status, defaults to False
 
@@ -124,17 +124,17 @@ def get_managed_users_with_grants(args: GetManagedUsersArgs) -> List[Dict]:
     """
     is_approved = args.get("is_approved", None)
     is_revoked = args.get("is_revoked", False)
-    current_user_id = args.get("current_user_id")
-    grantee_address = args.get("manager_wallet_address")
-    if grantee_address is None:
-        raise ValueError("manager_wallet_address is required")
-    if current_user_id is None:
-        raise ValueError("current_user_id is required")
+    user_id = args.get("user_id")
+    if user_id is None:
+        raise ValueError("user_id is required")
 
     db = db_session.get_db_read_replica()
     with db.scoped_session() as session:
-        query = session.query(Grant).filter(
-            Grant.grantee_address == grantee_address, Grant.is_current == True
+        query = (
+            session.query(User.user_id, Grant)
+            .join(Grant, User.wallet == Grant.grantee_address)
+            .filter(User.user_id == user_id)
+            .filter(Grant.is_current == True)
         )
 
         if is_approved is not None:
@@ -142,14 +142,43 @@ def get_managed_users_with_grants(args: GetManagedUsersArgs) -> List[Dict]:
         if is_revoked is not None:
             query = query.filter(Grant.is_revoked == is_revoked)
 
-        grants = query.all()
-        if len(grants) == 0:
+        results = query.all()
+        if len(results) == 0:
             return []
+        grants = [grant for [_, grant] in results]
 
         user_ids = [grant.user_id for grant in grants]
         users = get_unpopulated_users(session, user_ids)
-        users = populate_user_metadata(session, user_ids, users, current_user_id)
+        users = populate_user_metadata(
+            session, user_ids, users, current_user_id=user_id
+        )
 
         grants = query_result_to_list(grants)
 
         return make_managed_users_list(users, grants)
+
+
+def is_active_manager(user_id: int, manager_id: int) -> bool:
+    """
+    Check if a manager is active for a given user.
+
+    Args:
+        user_id (int): The ID of the user.
+        manager_id (int): The ID of the manager.
+
+    Returns:
+        bool: True if the manager is active for the user, False otherwise.
+    """
+    try:
+        grants = get_user_managers_with_grants(
+            GetUserManagersArgs(user_id=user_id, is_approved=True, is_revoked=False)
+        )
+        for grant in grants:
+            manager = grant.get("manager")
+            if manager and manager.get("user_id") == manager_id:
+                return True
+    except Exception as e:
+        logger.error(
+            f"get_managed_users.py | Unexpected exception checking managers for user: {e}"
+        )
+    return False

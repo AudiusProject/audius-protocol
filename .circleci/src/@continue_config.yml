@@ -70,7 +70,7 @@ parameters:
   run-ddex-webapp-workflow:
     type: boolean
     default: false
-  run-ddex-processor-workflow:
+  run-ddex-workflow:
     type: boolean
     default: false
   run-ddex-publisher-workflow:

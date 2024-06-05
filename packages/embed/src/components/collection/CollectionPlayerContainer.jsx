@@ -1,6 +1,6 @@
 import { useState, useContext, useCallback, useEffect } from 'react'
 
-import { instanceOfPurchaseGate } from '@audius/sdk'
+import { full } from '@audius/sdk'
 
 import usePlayback from '../../hooks/usePlayback'
 import { useRecordListens } from '../../hooks/useRecordListens'
@@ -14,6 +14,8 @@ import { PlayingState } from '../playbutton/PlayButton'
 
 import CollectionHelmet from './CollectionHelmet'
 import CollectionPlayerCard from './CollectionPlayerCard'
+
+const { instanceOfPurchaseGate } = full
 
 const LISTEN_INTERVAL_SECONDS = 1
 

@@ -3,7 +3,8 @@ import { DEFAULT_MINT, MintName } from '@audius/common/services'
 import {
   Account,
   getMinimumBalanceForRentExemptAccount,
-  getAssociatedTokenAddressSync
+  getAssociatedTokenAddressSync,
+  getAccount
 } from '@solana/spl-token'
 import { PublicKey, Transaction, Keypair } from '@solana/web3.js'
 
@@ -141,6 +142,27 @@ export const getUSDCAssociatedTokenAccount = async (
     libs.solanaWeb3Manager!.mints.usdc,
     solanaRootAccountPubkey
   )
+}
+
+/**
+ * Returns the owner of the token acccount, if the provided account
+ * is a token account. Otherwise, just returns the account
+ */
+export const getAssociatedTokenAccountOwner = async (
+  accountAddress: SolanaWalletAddress
+) => {
+  const connection = await getSolanaConnection()
+  try {
+    const { owner } = await getAccount(
+      connection,
+      new PublicKey(accountAddress)
+    )
+    return owner
+  } catch (e) {
+    // Not a token account, so return the provided address
+    console.error(e)
+    return new PublicKey(accountAddress)
+  }
 }
 
 /**

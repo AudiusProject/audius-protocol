@@ -1,51 +1,25 @@
-import { View } from 'react-native'
+import { Divider, Flex, Paper } from '@audius/harmony-native'
 
-import { Tile } from 'app/components/core'
-import { Skeleton, StaticSkeleton } from 'app/components/skeleton'
-import { makeStyles } from 'app/styles'
-
-const useStyles = makeStyles(({ spacing }) => ({
-  root: {
-    height: 218
-  },
-  cardContent: {
-    paddingHorizontal: spacing(2)
-  },
-  imageContainer: {
-    paddingTop: spacing(2),
-    paddingHorizontal: spacing(1)
-  },
-  image: {
-    height: 152,
-    width: '100%',
-    borderRadius: 6
-  },
-  textContainer: {
-    paddingVertical: spacing(1),
-    alignItems: 'center'
-  },
-  title: {
-    height: 16,
-    width: 75,
-    marginVertical: spacing(1)
-  },
-  stats: {
-    height: 14,
-    width: 150
-  }
-}))
+import { Skeleton } from '../skeleton'
 
 export const CollectionCardSkeleton = () => {
-  const styles = useStyles()
   return (
-    <Tile styles={{ tile: styles.root, content: styles.cardContent }}>
-      <View style={styles.imageContainer}>
-        <Skeleton style={styles.image} />
-      </View>
-      <View style={styles.textContainer}>
-        <StaticSkeleton style={styles.title} />
-        <StaticSkeleton style={styles.stats} />
-      </View>
-    </Tile>
+    <Paper border='default'>
+      <Flex p='s' gap='s' alignItems='center'>
+        <Skeleton style={{ width: '100%', aspectRatio: 1 }} />
+        <Skeleton height={20} width={150} style={{ marginBottom: 6 }} />
+        <Skeleton height={18} width={100} style={{ marginBottom: 4 }} />
+      </Flex>
+      <Divider orientation='horizontal' />
+      <Flex
+        pv='s'
+        backgroundColor='surface1'
+        alignItems='center'
+        borderBottomLeftRadius='m'
+        borderBottomRightRadius='m'
+      >
+        <Skeleton height={16} width={100} />
+      </Flex>
+    </Paper>
   )
 }

@@ -29,7 +29,7 @@ class RouteArgs(TypedDict):
     slug: str
 
 
-class GetPlaylistsArgs(TypedDict):
+class GetPlaylistsArgs(TypedDict, total=False):
     current_user_id: int
     playlist_ids: List[int]
     user_id: int

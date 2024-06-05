@@ -1,5 +1,6 @@
 from sqlalchemy import func
 
+from src.models.playlists.playlist import Playlist
 from src.models.tracks.track import Track
 from src.tasks.celery_app import celery
 from src.utils.structured_logger import StructuredLogger, log_duration
@@ -30,6 +31,25 @@ def _publish_scheduled_releases(session):
     for track in tracks_to_release:
         logger.info(f"Releasing track {track.track_id}")
         track.is_unlisted = False
+
+    playlists_to_release = (
+        session.query(Playlist)
+        .filter(
+            Playlist.is_private == True,
+            Playlist.is_album == True,  # Only support albums for now
+            Playlist.is_scheduled_release == True,
+            Playlist.release_date != None,  # Filter for non-null release_date
+            Playlist.release_date < func.current_timestamp(),
+        )
+        .order_by(Playlist.created_at.asc())
+        .limit(batch_size)
+        .all()
+    )
+    logger.info(f"Found {len(playlists_to_release)} albums ready for release")
+
+    for playlist in playlists_to_release:
+        logger.info(f"Releasing album {playlist.playlist_id}")
+        playlist.is_private = False
 
 
 # ####### CELERY TASKS ####### #
