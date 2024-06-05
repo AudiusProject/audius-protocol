@@ -41,6 +41,18 @@ class User(Base, RepresentableMixin):
     metadata_multihash = Column(String)
     creator_node_endpoint = Column(String)
     is_verified = Column(Boolean, nullable=False, server_default=text("false"))
+    verified_with_twitter = Column(
+        Boolean, nullable=False, server_default=text("false")
+    )
+    verified_with_instagram = Column(
+        Boolean, nullable=False, server_default=text("false")
+    )
+    verified_with_tiktok = Column(Boolean, nullable=False, server_default=text("false"))
+    twitter_handle = Column(String)
+    instagram_handle = Column(String)
+    tiktok_handle = Column(String)
+    website = Column(String)
+    donation = Column(String)
     artist_pick_track_id = Column(Integer)
     created_at = Column(
         DateTime, nullable=False, server_default=text("CURRENT_TIMESTAMP")
