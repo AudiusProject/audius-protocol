@@ -33,6 +33,7 @@ import { useFlag } from 'hooks/useRemoteConfig'
 import { AppState } from 'store/types'
 import { albumPage, profilePage } from 'utils/route'
 import { trpc } from 'utils/trpcClientWeb'
+import { track } from 'services/analytics'
 const { requestOpen: openAddToCollection } = addToCollectionUIActions
 const { saveTrack, unsaveTrack, repostTrack, undoRepostTrack, shareTrack } =
   tracksSocialActions
@@ -114,9 +115,9 @@ const TrackMenu = (props: TrackMenuProps) => {
 
   const { onOpen } = useEditTrackModal()
   const onEditTrack = (trackId: number | null) => {
-    if (!trackId || !trackPermalink) return
+    if (!trackId) return
     isEditTrackRedesignEnabled
-      ? goToRoute(`${trackPermalink}/edit`)
+      ? trackPermalink && goToRoute(`${trackPermalink}/edit`)
       : onOpen({ trackId })
   }
 
