@@ -405,9 +405,9 @@ export function* handleUploads({
         artworkSource: track.metadata.artwork?.source,
         genre: track.metadata.genre,
         moode: track.metadata.mood,
-        size: track.file.size,
-        type: track.file.type,
-        name: track.file.name,
+        size: track.file?.size,
+        type: track.file?.type,
+        name: track.file?.name,
         downloadable: isContentFollowGated(track.metadata.download_conditions)
           ? 'follow'
           : track.metadata.is_downloadable
@@ -625,7 +625,7 @@ export function* handleUploads({
           stemIndex === null
             ? tracks[trackIndex].metadata
             : tracks[trackIndex].metadata.stems?.[stemIndex].metadata,
-        fileSize: tracks[trackIndex].file.size,
+        fileSize: tracks[trackIndex].file?.size,
         trackIndex,
         stemIndex,
         trackCount: tracks.length,

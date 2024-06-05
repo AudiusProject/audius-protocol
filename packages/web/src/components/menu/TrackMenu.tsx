@@ -1,6 +1,5 @@
 import { useContext } from 'react'
 
-import { useGetTrackById } from '@audius/common/api'
 import {
   ShareSource,
   RepostSource,
@@ -33,7 +32,6 @@ import { useFlag } from 'hooks/useRemoteConfig'
 import { AppState } from 'store/types'
 import { albumPage, profilePage } from 'utils/route'
 import { trpc } from 'utils/trpcClientWeb'
-import { track } from 'services/analytics'
 const { requestOpen: openAddToCollection } = addToCollectionUIActions
 const { saveTrack, unsaveTrack, repostTrack, undoRepostTrack, shareTrack } =
   tracksSocialActions

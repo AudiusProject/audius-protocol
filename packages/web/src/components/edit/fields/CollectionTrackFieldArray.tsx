@@ -33,8 +33,10 @@ export const CollectionTrackFieldArray = () => {
               >
                 {tracks.map((track, index) => (
                   <Draggable
-                    key={track.file.name}
-                    draggableId={track.file.name!} // Safe: Not on native mobile so file.name is non-null
+                    key={track.file?.name ?? track.metadata.track_id}
+                    draggableId={
+                      track.file?.name ?? track.metadata.track_id.toString()
+                    } // Safe: Not on native mobile so file.name is non-null
                     index={index}
                   >
                     {(provided) => (

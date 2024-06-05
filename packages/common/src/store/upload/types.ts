@@ -30,7 +30,7 @@ export enum UploadType {
  * Represents a track file, its metadata prior to upload, and a preview.
  */
 export interface TrackForUpload {
-  file?: File | NativeFile
+  file: File | NativeFile | null
   preview?: any // Basically the Howler.js API, but with underscores.
   metadata: TrackMetadataForUpload
 }

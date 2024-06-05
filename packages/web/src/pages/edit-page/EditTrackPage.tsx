@@ -1,27 +1,22 @@
-import { createContext, useEffect, useState } from 'react'
+import { createContext, useState } from 'react'
 
-import Header from 'components/header/desktop/Header'
-import Page from 'components/page/Page'
-
-import { EditTrackForm } from 'components/edit-track/EditTrackForm'
-import { useParams } from 'react-router'
 import { useGetCurrentUserId, useGetTrackByPermalink } from '@audius/common/api'
-import { TrackEditFormValues } from 'components/edit-track/types'
+import { SquareSizes, Status, TrackMetadata } from '@audius/common/models'
 import {
   TrackMetadataForUpload,
   cacheTracksActions
 } from '@audius/common/store'
-import { DeleteConfirmationModal } from 'components/delete-confirmation'
+import { Flex } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
-import {
-  SquareSizes,
-  Status,
-  Track,
-  TrackMetadata
-} from '@audius/common/models'
-import { useTrackCoverArt, useTrackCoverArt2 } from 'hooks/useTrackCoverArt'
-import { Flex, Text } from '@audius/harmony'
+import { useParams } from 'react-router'
+
+import { DeleteConfirmationModal } from 'components/delete-confirmation'
+import { EditTrackForm } from 'components/edit-track/EditTrackForm'
+import { TrackEditFormValues } from 'components/edit-track/types'
+import Header from 'components/header/desktop/Header'
 import LoadingSpinnerFullPage from 'components/loading-spinner-full-page/LoadingSpinnerFullPage'
+import Page from 'components/page/Page'
+import { useTrackCoverArt2 } from 'hooks/useTrackCoverArt'
 
 const { deleteTrack, editTrack } = cacheTracksActions
 
@@ -36,6 +31,7 @@ type UploadPageProps = {
 
 export const UploadFormScrollContext = createContext(() => {})
 
+// This component is in development, only used behind the EDIT_TRACK_REDESIGN feature flag
 export const EditTrackPage = (props: UploadPageProps) => {
   const { scrollToTop } = props
   //   const dispatch = useDispatch()
@@ -46,7 +42,7 @@ export const EditTrackPage = (props: UploadPageProps) => {
   const { data: currentUserId } = useGetCurrentUserId({})
   const permalink = `/${handle}/${slug}`
   const { data: track, status: trackStatus } = useGetTrackByPermalink({
-    permalink: permalink,
+    permalink,
     currentUserId
   })
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false)
@@ -78,6 +74,7 @@ export const EditTrackPage = (props: UploadPageProps) => {
   const initialValues: TrackEditFormValues = {
     tracks: [
       {
+        file: null,
         metadata: trackAsMetadataForUpload
       }
     ],
