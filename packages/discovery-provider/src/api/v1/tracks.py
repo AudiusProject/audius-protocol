@@ -10,6 +10,7 @@ from flask import redirect
 from flask.globals import request
 from flask_restx import Namespace, Resource, fields, inputs, marshal, reqparse
 
+from src.api.v1.access_helpers import check_authorized
 from src.api.v1.helpers import (
     DescriptiveArgument,
     abort_bad_path_param,
@@ -80,6 +81,7 @@ from src.trending_strategies.trending_strategy_factory import (
 )
 from src.trending_strategies.trending_type_and_version import TrendingType
 from src.utils import redis_connection
+from src.utils.auth_middleware import auth_middleware
 from src.utils.get_all_nodes import get_all_healthy_content_nodes_cached
 from src.utils.redis_cache import cache
 from src.utils.redis_metrics import record_metrics
@@ -456,8 +458,7 @@ class TrackInspect(Resource):
 
 
 # Stream
-
-stream_parser = reqparse.RequestParser(argument_class=DescriptiveArgument)
+stream_parser = current_user_parser.copy()
 stream_parser.add_argument(
     "preview",
     description="""Optional - true if streaming track preview""",
@@ -514,8 +515,9 @@ class TrackStream(Resource):
         },
     )
     @ns.expect(stream_parser)
+    @auth_middleware(stream_parser)
     @cache(ttl_sec=5, transform=redirect)
-    def get(self, track_id):
+    def get(self, track_id, authed_user_id=None):
         """
         Get the streamable MP3 file of a track
 
@@ -524,10 +526,15 @@ class TrackStream(Resource):
         """
         request_args = stream_parser.parse_args()
         is_preview = request_args.get("preview")
+        user_id = get_current_user_id(request_args)
         user_data = request_args.get("user_data")
         user_signature = request_args.get("user_signature")
         nft_access_signature = request_args.get("nft_access_signature")
         api_key = request_args.get("api_key")
+
+        # If streaming on behalf of managed user, ensure access to that user
+        if user_id:
+            check_authorized(user_id, authed_user_id)
 
         decoded_id = decode_with_abort(track_id, ns)
 
@@ -555,6 +562,7 @@ class TrackStream(Resource):
             {
                 "track": track,
                 "is_preview": is_preview,
+                "user_id": user_id,
                 "user_data": user_data,
                 "user_signature": user_signature,
                 "nft_access_signature": nft_access_signature,
@@ -617,7 +625,7 @@ class TrackStream(Resource):
 
 # Download
 
-download_parser = reqparse.RequestParser(argument_class=DescriptiveArgument)
+download_parser = current_user_parser.copy()
 download_parser.add_argument(
     "user_signature",
     description="""Optional - signature from the requesting user's wallet.
@@ -665,12 +673,14 @@ class TrackDownload(Resource):
         },
     )
     @ns.expect(download_parser)
+    @auth_middleware(download_parser)
     @cache(ttl_sec=5, transform=redirect)
-    def get(self, track_id):
+    def get(self, track_id, authed_user_id=None):
         """
         Download the original or MP3 file of a track.
         """
         request_args = download_parser.parse_args()
+        user_id = get_current_user_id(request_args)
         decoded_id = decode_with_abort(track_id, ns)
         info = get_track_access_info(decoded_id)
         track = info.get("track")
@@ -680,6 +690,10 @@ class TrackDownload(Resource):
             )
             abort_not_found(track_id, ns)
 
+        # If downloading on behalf of managed user, ensure access to that user
+        if user_id is not None:
+            check_authorized(user_id, authed_user_id)
+
         redis = redis_connection.get_redis()
 
         # signature for the track to be included as a query param in the redirect to CN
@@ -688,6 +702,7 @@ class TrackDownload(Resource):
                 "track": track,
                 "is_original": request_args.get("original"),
                 "filename": request_args.get("filename"),
+                "user_id": user_id,
                 "user_data": request_args.get("user_data"),
                 "user_signature": request_args.get("user_signature"),
                 "nft_access_signature": request_args.get("nft_access_signature"),
