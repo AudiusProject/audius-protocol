@@ -238,3 +238,4 @@ def get_legacy_purchase_gate(gate: AccessGate, session=None):
         splits = to_wallet_amount_map(extended_splits)
         new_gate["usdc_purchase"]["splits"] = splits
         return new_gate
+    return gate
