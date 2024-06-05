@@ -35,6 +35,7 @@ const { getUserId } = accountSelectors
 
 const MAX_RESULTS = 100
 const MAX_PREVIEW_RESULTS = 5
+const MAX_TRACK_PREVIEW_RESULTS = 10
 const PAGE_WIDTH = 1080
 const HALF_TILE_WIDTH = (PAGE_WIDTH - 16) / 2
 
@@ -73,7 +74,7 @@ export const SearchResults = ({ query }: SearchResultsProps) => {
   const containerRef = useRef<HTMLDivElement>(null)
   const currentUserId = useSelector(getUserId)
   const currentQueueItem = useSelector(getCurrentQueueItem)
-  const tracks = useSelector(getTracksLineup)
+  const tracksLineup = useSelector(getTracksLineup)
   const playing = useSelector(getPlaying)
   const buffering = useSelector(getBuffering)
   const results = useGetSearchFull({ currentUserId, query })
@@ -109,24 +110,28 @@ export const SearchResults = ({ query }: SearchResultsProps) => {
     [categoryMatch]
   )
 
-  const profileLimit =
-    categoryMatch?.category === Category.PROFILES
-      ? MAX_RESULTS
-      : MAX_PREVIEW_RESULTS
-  const playlistLimit =
-    categoryMatch?.category === Category.PLAYLISTS
-      ? MAX_RESULTS
-      : MAX_PREVIEW_RESULTS
-  const albumLimit =
-    categoryMatch?.category === Category.ALBUMS
-      ? MAX_RESULTS
-      : MAX_PREVIEW_RESULTS
+  const profileLimit = isCategoryActive(Category.PROFILES)
+    ? MAX_RESULTS
+    : MAX_PREVIEW_RESULTS
+  const playlistLimit = isCategoryActive(Category.PLAYLISTS)
+    ? MAX_RESULTS
+    : MAX_PREVIEW_RESULTS
+  const albumLimit = isCategoryActive(Category.ALBUMS)
+    ? MAX_RESULTS
+    : MAX_PREVIEW_RESULTS
+  const trackLimit = isCategoryActive(Category.TRACKS)
+    ? MAX_RESULTS
+    : MAX_TRACK_PREVIEW_RESULTS
 
   const profileData = results.data?.users.slice(0, profileLimit) ?? []
   const playlistData = results.data?.playlists.slice(0, playlistLimit) ?? []
   const albumData = results.data?.albums.slice(0, albumLimit) ?? []
+  const tracksData = {
+    ...tracksLineup,
+    entries: tracksLineup.entries.slice(0, trackLimit)
+  }
 
-  const onClickTile = useCallback(
+  const onClickTrackTile = useCallback(
     (id?: number) => {
       dispatch(
         make(Name.SEARCH_RESULT_SELECT, {
@@ -140,8 +145,9 @@ export const SearchResults = ({ query }: SearchResultsProps) => {
     [dispatch, query]
   )
 
-  const [trackView, setTrackView] = useState<TrackView>('list')
-  const isTrackGridView = isCategoryActive(Category.ALL) || trackView === 'grid'
+  const [tracksLayout, setTracksLayout] = useState<TrackView>('list')
+  const isTrackGridView =
+    !isCategoryActive(Category.TRACKS) || tracksLayout === 'grid'
 
   return (
     <Flex direction='column' gap='unit10' ref={containerRef}>
@@ -176,10 +182,10 @@ export const SearchResults = ({ query }: SearchResultsProps) => {
             </Text>
             {isCategoryActive(Category.TRACKS) ? (
               <FilterButton
-                selection={trackView}
+                selection={tracksLayout}
                 variant='replaceLabel'
                 onSelect={(value) => {
-                  setTrackView(value as TrackView)
+                  setTracksLayout(value as TrackView)
                 }}
                 options={[
                   { label: 'Grid', value: 'grid' },
@@ -203,7 +209,7 @@ export const SearchResults = ({ query }: SearchResultsProps) => {
                 })}
                 key='searchTracks'
                 variant={LineupVariant.SECTION}
-                lineup={tracks}
+                lineup={tracksData}
                 playingSource={currentQueueItem.source}
                 playingUid={currentQueueItem.uid}
                 playingTrackId={
@@ -212,7 +218,7 @@ export const SearchResults = ({ query }: SearchResultsProps) => {
                 playing={playing}
                 buffering={buffering}
                 playTrack={(uid, trackId) => {
-                  onClickTile(trackId)
+                  onClickTrackTile(trackId)
                   dispatch(searchResultsPageTracksLineupActions.play(uid))
                 }}
                 pauseTrack={() =>
@@ -220,7 +226,7 @@ export const SearchResults = ({ query }: SearchResultsProps) => {
                 }
                 actions={searchResultsPageTracksLineupActions}
                 onClickTile={(trackId) => {
-                  onClickTile(trackId)
+                  onClickTrackTile(trackId)
                 }}
               />
             ) : null}
