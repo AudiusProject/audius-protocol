@@ -3,6 +3,7 @@ import { Tracks, Users } from '@pedalboard/storage'
 import { userRowHandler } from './users'
 import { trackRowHandler } from './tracks'
 import { logError } from './utils'
+import { Knex } from 'knex'
 
 type SharedData = object
 
