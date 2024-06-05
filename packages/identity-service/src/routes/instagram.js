@@ -134,44 +134,36 @@ module.exports = function (app) {
         if (isUnassociated && handlesMatch) {
           instagramObj.blockchainUserId = userId
 
-          // if the user is verified, write to chain, otherwise skip to next step
-          if (instagramObj.verified) {
-            const [encodedABI, contractAddress] =
-              await audiusLibsInstance.User.updateIsVerified(
-                userId,
-                config.get('userVerifierPrivateKey')
-              )
-            const senderAddress = config.get('userVerifierPublicKey')
-            try {
-              const txProps = {
-                contractRegistryKey: 'EntityManager',
-                contractAddress: contractAddress,
-                encodedABI: encodedABI,
-                senderAddress: senderAddress,
-                gasLimit: null
+          // Update the instagram handle and the verified flag in DN via entity manager.
+          // We do this here because we still want the above checks to only proceed
+          // if the user was previously unassociated and the handles match.
+          // Also, we still depend on identity for the instagram oauth flow.
+          const [encodedABI, contractAddress] =
+            await audiusLibsInstance.User.updateSocialVerification(
+              userId,
+              config.get('userVerifierPrivateKey'),
+              {
+                isVerified: instagramObj.verified,
+                instagramHandle: instagramObj.profile.username
               }
-              await txRelay.sendTransaction(
-                req,
-                false,
-                txProps,
-                'instagramVerified'
-              )
-            } catch (e) {
-              return errorResponseBadRequest(e)
+            )
+          const senderAddress = config.get('userVerifierPublicKey')
+          try {
+            const txProps = {
+              contractRegistryKey: 'EntityManager',
+              contractAddress: contractAddress,
+              encodedABI: encodedABI,
+              senderAddress: senderAddress,
+              gasLimit: null
             }
-          }
-
-          const socialHandle = await models.SocialHandles.findOne({
-            where: { handle }
-          })
-          if (socialHandle) {
-            socialHandle.instagramHandle = instagramObj.profile.username
-            await socialHandle.save()
-          } else if (instagramObj.profile && instagramObj.profile.username) {
-            await models.SocialHandles.create({
-              handle,
-              instagramHandle: instagramObj.profile.username
-            })
+            await txRelay.sendTransaction(
+              req,
+              false,
+              txProps,
+              'instagramVerified'
+            )
+          } catch (e) {
+            return errorResponseBadRequest(e)
           }
 
           // the final step is to save userId to db and respond to request
