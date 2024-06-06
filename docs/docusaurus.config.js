@@ -64,6 +64,7 @@ const config = {
       // image: 'img/docusaurus-social-card.jpg',
       navbar: {
         title: 'Audius',
+        hideOnScroll: true,
         logo: {
           alt: 'Audius Logo',
           src: 'img/logo.png',
@@ -74,31 +75,41 @@ const config = {
             label: 'Learn',
             to: '/',
             position: 'right',
-            activeBasePath: 'learn'
+            activeBasePath: 'learn',
           },
+          // {
+          //   label: 'Developers',
+          //   to: '/developers/introduction/overview',
+          //   position: 'right',
+          //   activeBasePath: 'developers',
+          // },
           {
             label: 'Developers',
-            to: '/developers/introduction/overview',
             position: 'right',
-            activeBasePath: 'developers'
+            activeBasePath: 'developers',
+            items: [
+              { label: 'Getting Started', to: '/developers/introduction/overview' },
+              { label: 'Javascript SDK', to: '/developers/sdk/overview' },
+              { label: 'REST API', to: '/developers/api/rest-api' },
+            ],
           },
           {
             label: 'Staking',
             to: '/node-operator/overview',
             position: 'right',
-            activeBasePath: 'staking'
+            activeBasePath: 'staking',
           },
           {
             label: 'Distributors',
             to: '/distributors/introduction/overview',
             position: 'right',
-            activeBasePath: 'distributors'
+            activeBasePath: 'distributors',
           },
           {
             label: 'Reference',
             to: '/reference/overview',
             position: 'right',
-            activeBasePath: 'reference'
+            activeBasePath: 'reference',
           },
           {
             'aria-label': 'Discord',

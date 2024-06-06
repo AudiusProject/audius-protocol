@@ -1,0 +1,90 @@
+---
+id: get-user-supportings
+title: Get User Supportings
+pagination_label: Get User Supportings
+sidebar_label: Get User Supportings
+hide_table_of_contents: true
+description: Audius Protocol Documentation
+---
+
+import Tabs from '@theme/Tabs'
+import TabItem from '@theme/TabItem'
+import useBaseUrl from '@docusaurus/useBaseUrl'
+
+## Get User Supportings
+
+Gets the users that the given user supports
+
+<Tabs
+  block={true}
+  defaultValue="request"
+  values={[{"label":"Request","value":"request"},{"label":"Response","value":"response"}]}
+>
+<TabItem value="request">
+
+```bash
+GET https://audius-discovery-6.cultur3stake.com/v1/users/aW8mr/supporting?app_name=EXAMPLEAPP HTTP/1.1
+```
+
+> Path Parameters
+
+| Param    | Type      | Required | Note                                                                      |
+| -------- | --------- | -------- | ------------------------------------------------------------------------- |
+| id       | _string_  | true     | A User ID                                                                 |
+| offset   | _integer_ | false    | The number of items to skip. Useful for pagination (page number \* limit) |
+| limit    | _integer_ | false    | The number of items to fetch                                              |
+| user_id  | _string_  | false    | The user ID of the user making the request                                |
+| app_name | _string_  | false    | Your app name                                                             |
+
+</TabItem>
+<TabItem value="response">
+
+`200: OK`
+
+```json
+{
+  "data": [
+    {
+      "rank": 1,
+      "amount": "6000000000000000000",
+      "receiver": {
+        "album_count": 9,
+        "artist_pick_track_id": "oPRA7",
+        "bio": "house music\ntreinta3tres@gmail.com",
+        "cover_photo": {
+          "640x": "https://creatornode2.audius.co/content/QmRUUUoeJmhbpvqSr9d34Gb71zk7xZkNtswHdixzhMkXYG/640x.jpg",
+          "2000x": "https://creatornode2.audius.co/content/QmRUUUoeJmhbpvqSr9d34Gb71zk7xZkNtswHdixzhMkXYG/2000x.jpg"
+        },
+        "followee_count": 12,
+        "follower_count": 103,
+        "does_follow_current_user": false,
+        "handle": "treinta3tres",
+        "id": "lzkyZ",
+        "is_verified": false,
+        "location": "Barcelona",
+        "name": "treinta3tres",
+        "playlist_count": 3,
+        "profile_picture": {
+          "150x150": "https://creatornode2.audius.co/content/QmdJJf81jjRhpmrj2JzeMEzDNbPKfrUWkECE3NjfWnLDMr/150x150.jpg",
+          "480x480": "https://creatornode2.audius.co/content/QmdJJf81jjRhpmrj2JzeMEzDNbPKfrUWkECE3NjfWnLDMr/480x480.jpg",
+          "1000x1000": "https://creatornode2.audius.co/content/QmdJJf81jjRhpmrj2JzeMEzDNbPKfrUWkECE3NjfWnLDMr/1000x1000.jpg"
+        },
+        "repost_count": 24,
+        "track_count": 71,
+        "is_deactivated": false,
+        "is_available": true,
+        "erc_wallet": "0xa18d959231ca5728fefbf7b45ddc87f44e0832db",
+        "spl_wallet": "3Mm5mdBT3jtRifHpxBfJavRXyfM4G4kbV7KKrX2nj12M",
+        "supporter_count": 2,
+        "supporting_count": 0,
+        "total_audio_balance": 21
+      }
+    }
+  ]
+}
+```
+
+</TabItem>
+</Tabs>
+
+---

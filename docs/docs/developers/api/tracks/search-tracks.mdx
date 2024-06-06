@@ -1,0 +1,115 @@
+---
+id: search-tracks
+title: Search Tracks
+pagination_label: Search Tracks
+sidebar_label: Search Tracks
+hide_table_of_contents: true
+description: Audius Protocol Documentation
+---
+
+import Tabs from '@theme/Tabs'
+import TabItem from '@theme/TabItem'
+import useBaseUrl from '@docusaurus/useBaseUrl'
+
+## Search Tracks
+
+Search for a track or tracks
+
+<Tabs
+  block={true}
+  defaultValue="request"
+  values={[{"label":"Request","value":"request"},{"label":"Response","value":"response"}]}
+>
+<TabItem value="request">
+
+```bash
+GET https://audius-discovery-3.theblueprint.xyz/v1/tracks/search?query=baauer%20b2b&app_name=EXAMPLEAPP HTTP/1.1
+```
+
+> Path Parameters
+
+| Param             | Type     | Required | Note                            |
+| ----------------- | -------- | -------- | ------------------------------- |
+| query             | _string_ | true     | The search query                |
+| only_downloadable | _string_ | false    | Return only downloadable tracks |
+| app_name          | _string_ | false    | Your App Name                   |
+
+</TabItem>
+<TabItem value="response">
+
+`200: OK`
+
+```json
+{
+  "data": [
+    {
+      "artwork": {
+        "150x150": "https://audius-content-4.figment.io/content/QmVJjA6zXhDZn3BjcjYa33P9NDiPZj7Vyq9TCx1bHjvHmG/150x150.jpg",
+        "480x480": "https://audius-content-4.figment.io/content/QmVJjA6zXhDZn3BjcjYa33P9NDiPZj7Vyq9TCx1bHjvHmG/480x480.jpg",
+        "1000x1000": "https://audius-content-4.figment.io/content/QmVJjA6zXhDZn3BjcjYa33P9NDiPZj7Vyq9TCx1bHjvHmG/1000x1000.jpg"
+      },
+      "description": "@baauer b2b @partyfavor live set at Brownies & Lemonade Block Party LA at The Shrine on 7.3.19.",
+      "genre": "Electronic",
+      "id": "D7KyD",
+      "track_cid": "QmeeTjhUvwQRtNYQwiC7Uebuhi4p9mNQNESb3AFaJCYqNz",
+      "preview_cid": null,
+      "orig_file_cid": "QmeeTjhUvwQRtNYQwiC7Uebuhi4p9mNQNESb3AFaJCYqNz",
+      "orig_filename": "Paauer | Baauer B2B Party Favor | B&L Block Party LA (Live Set) - [Brownies & Lemonade].mp3",
+      "is_original_available": false,
+      "mood": "Fiery",
+      "release_date": "2019-09-23T12:03:00.000Z",
+      "remix_of": {
+        "tracks": null
+      },
+      "repost_count": 444,
+      "favorite_count": 1020,
+      "tags": "baauer,partyfavor,browniesandlemonade,live",
+      "title": "Paauer | Baauer B2B Party Favor | B&L Block Party LA (Live Set)",
+      "user": {
+        "album_count": 0,
+        "artist_pick_track_id": "D7KyD",
+        "bio": "Makin' moves & keeping you on your toes.\nlinktr.ee/browniesandlemonade",
+        "cover_photo": {
+          "640x": "https://audius-content-3.figment.io/content/QmcVZH5C2ygxoVS4ihPBJrkFrS1Ua6YJB5srNtXafPzihZ/640x.jpg",
+          "2000x": "https://audius-content-3.figment.io/content/QmcVZH5C2ygxoVS4ihPBJrkFrS1Ua6YJB5srNtXafPzihZ/2000x.jpg"
+        },
+        "followee_count": 26,
+        "follower_count": 34604,
+        "handle": "TeamBandL",
+        "id": "nlGNe",
+        "is_verified": true,
+        "location": "Los Angeles, CA",
+        "name": "Brownies & Lemonade",
+        "playlist_count": 2,
+        "profile_picture": {
+          "150x150": "https://audius-content-13.figment.io/content/QmU9L4beAM96MpiNqqVTZdiDiCRTeBku1AJCh3NXrE5PxV/150x150.jpg",
+          "480x480": "https://audius-content-13.figment.io/content/QmU9L4beAM96MpiNqqVTZdiDiCRTeBku1AJCh3NXrE5PxV/480x480.jpg",
+          "1000x1000": "https://audius-content-13.figment.io/content/QmU9L4beAM96MpiNqqVTZdiDiCRTeBku1AJCh3NXrE5PxV/1000x1000.jpg"
+        },
+        "repost_count": 5,
+        "track_count": 8,
+        "is_deactivated": false,
+        "is_available": true,
+        "erc_wallet": "0x8bc337e467cec1e7b05e54c7d1f90814a78d259e",
+        "spl_wallet": "WXBYqzejMr5qxmuDrvVTDQopr7vdZt5szsoSSb3EvQH",
+        "supporter_count": 10,
+        "supporting_count": 0,
+        "total_audio_balance": null,
+        "wallet": "0x8bc337e467cec1e7b05e54c7d1f90814a78d259e"
+      },
+      "duration": 5265,
+      "is_downloadable": false,
+      "play_count": 377599,
+      "permalink": "/TeamBandL/paauer-|-baauer-b2b-party-favor-|-bl-block-party-la-live-set-725",
+      "is_streamable": true,
+      "ddex_app": null,
+      "playlists_containing_track": [259194883, 41990, 11782, 11784, 2038, 4607]
+    }
+  ]
+}
+```
+
+</TabItem>
+</Tabs>
+
+---

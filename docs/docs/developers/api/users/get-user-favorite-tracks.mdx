@@ -1,0 +1,57 @@
+---
+id: get-user-favorite-tracks
+title: Get User Favorite Tracks
+pagination_label: Get User Favorite Tracks
+sidebar_label: Get User Favorite Tracks
+hide_table_of_contents: true
+description: Audius Protocol Documentation
+---
+
+import Tabs from '@theme/Tabs'
+import TabItem from '@theme/TabItem'
+import useBaseUrl from '@docusaurus/useBaseUrl'
+
+## Get User Favorite Tracks
+
+Get the User's ERC and SPL connected wallets
+
+<Tabs
+  block={true}
+  defaultValue="request"
+  values={[{"label":"Request","value":"request"},{"label":"Response","value":"response"}]}
+>
+<TabItem value="request">
+
+```bash
+GET https://audius-discovery-6.cultur3stake.com/v1/users/nlGNe/favorites?app_name=EXAMPLEAPP HTTP/1.1
+```
+
+> Path Parameters
+
+| Param    | Type     | Required | Note          |
+| -------- | -------- | -------- | ------------- |
+| id       | _string_ | true     | A User ID     |
+| app_name | _string_ | false    | Your App Name |
+
+</TabItem>
+<TabItem value="response">
+
+`200: OK`
+
+```json
+{
+  "data": [
+    {
+      "favorite_item_id": "5O2pg",
+      "favorite_type": "SaveType.track",
+      "user_id": "nlGNe",
+      "created_at": "2022-07-27 01:25:15"
+    }
+  ]
+}
+```
+
+</TabItem>
+</Tabs>
+
+---

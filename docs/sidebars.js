@@ -39,6 +39,25 @@ module.exports = {
     },
     {
       type: 'category',
+      label: 'Guides',
+      items: ['developers/guides/log-in-with-audius', 'developers/guides/hedgehog'],
+      collapsed: false,
+    },
+    {
+      type: 'category',
+      label: 'The Graph',
+      items: [
+        'developers/subgraph/overview',
+        'developers/subgraph/entities',
+        'developers/subgraph/queries',
+      ],
+      collapsed: false,
+    },
+  ],
+
+  sdk: [
+    {
+      type: 'category',
       label: 'Javascript SDK',
       items: [
         'developers/sdk/overview',
@@ -53,35 +72,76 @@ module.exports = {
       ],
       collapsed: false,
     },
+  ],
+
+  api: [
     {
       type: 'category',
-      label: 'API',
+      label: 'Overview',
       items: [
         'developers/api/rest-api',
-        'developers/api/tracks',
-        'developers/api/users',
-        'developers/api/playlists',
         // 'developers/api/albums',
         // 'developers/api/resolve',
-        'developers/api/tips',
         // 'developers/api/schemas',
       ],
       collapsed: false,
     },
+
     {
       type: 'category',
-      label: 'Guides',
-      items: ['developers/guides/log-in-with-audius', 'developers/guides/hedgehog'],
+      label: 'Users',
+      items: [
+        'developers/api/users/get-user-by-handle',
+        'developers/api/users/get-user-connected-wallets',
+        'developers/api/users/get-user-favorite-tracks',
+        'developers/api/users/get-user-followers',
+        'developers/api/users/get-user-following',
+        'developers/api/users/get-user-id-from-wallet',
+        'developers/api/users/get-user-most-used-track-tags',
+        'developers/api/users/get-user-reposts',
+        'developers/api/users/get-user-subscribers',
+        'developers/api/users/get-user-supporters',
+        'developers/api/users/get-user-supportings',
+        'developers/api/users/get-user-tracks',
+        'developers/api/users/get-user',
+        'developers/api/users/search-users',
+        'developers/api/users/get-ai-tracks-by-handle',
+        'developers/api/users/get-related-users',
+        'developers/api/users/verify-id-token',
+      ],
       collapsed: false,
     },
+
     {
       type: 'category',
-      label: 'The Graph',
+      label: 'Tracks',
       items: [
-        'developers/subgraph/overview',
-        'developers/subgraph/entities',
-        'developers/subgraph/queries',
+        'developers/api/tracks/get-bulk-track',
+        'developers/api/tracks/get-track',
+        'developers/api/tracks/get-trending-tracks',
+        'developers/api/tracks/get-underground-trending-tracks',
+        'developers/api/tracks/search-tracks',
+        'developers/api/tracks/stream-track',
       ],
+      collapsed: false,
+    },
+
+    {
+      type: 'category',
+      label: 'Playlists',
+      items: [
+        'developers/api/playlists/get-playlist-tracks',
+        'developers/api/playlists/get-playlists',
+        'developers/api/playlists/get-trending-playlists',
+        'developers/api/playlists/search-playlists',
+      ],
+      collapsed: false,
+    },
+
+    {
+      type: 'category',
+      label: 'Tips',
+      items: ['developers/api/tips/get-tips'],
       collapsed: false,
     },
   ],

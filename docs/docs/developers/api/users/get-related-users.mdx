@@ -1,0 +1,86 @@
+---
+id: get-related-users
+title: Get Related Users
+pagination_label: Get Related Users
+sidebar_label: Get Related Users
+description: Audius Protocol Documentation
+hide_table_of_contents: true
+---
+
+import Tabs from '@theme/Tabs'
+import TabItem from '@theme/TabItem'
+import useBaseUrl from '@docusaurus/useBaseUrl'
+
+## Get Related Users
+
+Gets a list of users that might be of interest to followers of this user.
+
+<Tabs
+  block={true}
+  defaultValue="request"
+  values={[{"label":"Request","value":"request"},{"label":"Response","value":"response"}]}
+>
+<TabItem value="request">
+
+```bash
+GET https://audius-discovery-6.cultur3stake.com/v1/users/nlGNe/related?app_name=EXAMPLEAPP HTTP/1.1
+```
+
+> Path Parameters
+
+| Param    | Type      | Required | Note                                                                      |
+| -------- | --------- | -------- | ------------------------------------------------------------------------- |
+| id       | _string_  | true     | A User ID                                                                 |
+| offset   | _integer_ | false    | The number of items to skip. Useful for pagination (page number \* limit) |
+| limit    | _integer_ | false    | The number of items to fetch                                              |
+| user_id  | _string_  | false    | The user ID of the user making the request                                |
+| app_name | _string_  | false    | Your app name                                                             |
+
+</TabItem>
+<TabItem value="response">
+
+`200: OK`
+
+```json
+{
+  "data": [
+    {
+      "album_count": 0,
+      "artist_pick_track_id": null,
+      "bio": "we are here for now. \n\ninquiries: joey@keel.la",
+      "cover_photo": {
+        "640x": "https://creatornode3.audius.co/content/QmZFh4413dNdy8RCg6bAx7jLeqMKxVHbKPdq18rG4JhPg1/640x.jpg",
+        "2000x": "https://creatornode3.audius.co/content/QmZFh4413dNdy8RCg6bAx7jLeqMKxVHbKPdq18rG4JhPg1/2000x.jpg"
+      },
+      "followee_count": 8,
+      "follower_count": 39042,
+      "does_follow_current_user": false,
+      "handle": "LouisTheChild",
+      "id": "LxQm2",
+      "is_verified": true,
+      "location": "Chicago, IL",
+      "name": "Louis The Child",
+      "playlist_count": 0,
+      "profile_picture": {
+        "150x150": "https://creatornode3.audius.co/content/Qmat15zauKpvWK83WiYiQLJ7LHXTEDViXFAUZayC1AFN5v/150x150.jpg",
+        "480x480": "https://creatornode3.audius.co/content/Qmat15zauKpvWK83WiYiQLJ7LHXTEDViXFAUZayC1AFN5v/480x480.jpg",
+        "1000x1000": "https://creatornode3.audius.co/content/Qmat15zauKpvWK83WiYiQLJ7LHXTEDViXFAUZayC1AFN5v/1000x1000.jpg"
+      },
+      "repost_count": 1,
+      "track_count": 94,
+      "is_deactivated": false,
+      "is_available": true,
+      "erc_wallet": "0x0fd1293443c366bc433d85c94be56ca8117d0ef6",
+      "spl_wallet": "4V5UASoUDPSMRNU1AJ8vNh2kC7y1DXoMnaoehXCxNZsk",
+      "supporter_count": 4,
+      "supporting_count": 0,
+      "total_audio_balance": 12
+    }
+  ]
+}
+```
+
+</TabItem>
+</Tabs>
+
+---

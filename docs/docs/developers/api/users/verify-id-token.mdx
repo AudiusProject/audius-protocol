@@ -1,0 +1,59 @@
+---
+id: verify-id-token
+title: Verify ID Token
+pagination_label: Verify ID Token
+sidebar_label: Verify ID Token
+hide_table_of_contents: true
+description: Audius Protocol Documentation
+---
+
+import Tabs from '@theme/Tabs'
+import TabItem from '@theme/TabItem'
+import useBaseUrl from '@docusaurus/useBaseUrl'
+
+## Verify ID Token
+
+Verify if the given jwt ID token was signed by the subject (user) in the payload.
+
+<Tabs
+  block={true}
+  defaultValue="request"
+  values={[{"label":"Request","value":"request"},{"label":"Response","value":"response"}]}
+>
+<TabItem value="request">
+
+```bash
+GET https://audius-discovery-6.cultur3stake.com/v1/users/verify_token?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJrZWNjYWsyNTYifQ.eyJ1c2VySWQiOjE0MTYxMTUsImVtYWlsIjoiaXNhYWN0ZXN0NDUxQGdtYWlsLmNvbSIsIm5hbWUiOiJ0ZXN0aW5nMTIiLCJoYW5kbGUiOiJ0ZXN0dGVzdDQ1MSIsInZlcmlmaWVkIjpmYWxzZSwic3ViIjoxNDE2MTE1LCJpYXQiOjE2NTY1MTgzMzN9.MHhkZmYyYWY5ZThmNDAxZDUyZDlhNjUxNGRiOTg0ZjM5YjFhOTZkYmNmZmViZjMzZjNkNmEzMTk4OTVlZWE2MTZjNjg0NWIwOGEyOGQ4MTA4OTEyMTc4ZDU0ODRhZGU4M2I1Yzg4ZTUwM2Y3OGYzMDYzZjYxMmQxZDQwYTYwMGZmZDFi&app_name=EXAMPLEAPP HTTP/1.1
+```
+
+> Path Parameters
+
+| Param    | Type     | Required | Note          |
+| -------- | -------- | -------- | ------------- |
+| token    | _string_ | true     | JWT to verify |
+| app_name | _string_ | false    | Your App Name |
+
+</TabItem>
+<TabItem value="response">
+
+`200: OK`
+
+```json
+{
+  "data": {
+    "userId": "1416115",
+    "email": "isaactest451@gmail.com",
+    "name": "testing12",
+    "handle": "testtest451",
+    "verified": false,
+    "profilePicture": null,
+    "sub": "1416115",
+    "iat": "1656518333"
+  }
+}
+```
+
+</TabItem>
+</Tabs>
+
+---

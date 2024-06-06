@@ -1,0 +1,125 @@
+---
+id: get-tips
+title: Get Tips
+pagination_label: Get Tips
+sidebar_label: Get Tips
+hide_table_of_contents: true
+description: Audius Protocol Documentation
+---
+
+import Tabs from '@theme/Tabs'
+import TabItem from '@theme/TabItem'
+import useBaseUrl from '@docusaurus/useBaseUrl'
+
+## Get Tips
+
+Gets the most recent tips on the network
+
+<Tabs
+  block={true}
+  defaultValue="request"
+  values={[{"label":"Request","value":"request"},{"label":"Response","value":"response"}]}
+>
+<TabItem value="request">
+
+```bash
+GET https://audius-discovery-3.theblueprint.xyz/v1/tips?app_name=EXAMPLEAPP HTTP/1.1
+```
+
+> Path Parameters
+
+| Param                  | Type      | Required | Note                                                                                                | Available values                         |
+| ---------------------- | --------- | -------- | --------------------------------------------------------------------------------------------------- | ---------------------------------------- |
+| offset                 | _integer_ | false    | The number of items to skip. Useful for pagination (page number \* limit)                           |
+| limit                  | _integer_ | false    | The number of items to fetch                                                                        |
+| user_id                | _string_  | false    | The user ID of the user making the request                                                          |
+| receiver_min_followers | _integer_ | false    | Only include tips to recipients that have this many followers                                       |
+| receiver_is_verified   | _boolean_ | false    | Only include tips to recipients that are verified                                                   |
+| current_user_follows   | _string_  | false    | Only include tips involving the user's followers in the given capacity. Requires user_id to be set. | `sender` `receiver` `sender_or_receiver` |
+| unique_by              | _string_  | false    | Only include the most recent tip for a user was involved in the given capacity.                     | `sender` `receiver`                      |
+| app_name               | _string_  | false    | Your App Name                                                                                       |
+
+</TabItem>
+<TabItem value="response">
+
+`200: OK`
+
+```json
+{
+  "data": [
+    {
+      "amount": "1000000000000000000",
+      "sender": {
+        "album_count": 10,
+        "artist_pick_track_id": "j4ZMobV",
+        "bio": "Casanova Records ® is an American record company. Casanova was founded predominantly as a Hip-Hop music label in 1999.\n\nCasanova Records ® is a registered trademark. All Rights Reserved.",
+        "cover_photo": {
+          "640x": "https://audius-content-16.cultur3stake.com/content/QmbgaDXsxYgUSgaNREUZgFZ9LfUwk117xNZ3gvoXji8R2a/640x.jpg",
+          "2000x": "https://audius-content-16.cultur3stake.com/content/QmbgaDXsxYgUSgaNREUZgFZ9LfUwk117xNZ3gvoXji8R2a/2000x.jpg"
+        },
+        "followee_count": 331,
+        "follower_count": 137,
+        "handle": "CasanovaRecords",
+        "id": "ePm6X",
+        "is_verified": false,
+        "location": "",
+        "name": "Casanova Records",
+        "playlist_count": 11,
+        "profile_picture": {
+          "150x150": "https://cn0.mainnet.audiusindex.org/content/Qmb84nedV7mCjCfpZUYtLRwNGGHg3gHkxvfV1LS69QrLRA/150x150.jpg",
+          "480x480": "https://cn0.mainnet.audiusindex.org/content/Qmb84nedV7mCjCfpZUYtLRwNGGHg3gHkxvfV1LS69QrLRA/480x480.jpg",
+          "1000x1000": "https://cn0.mainnet.audiusindex.org/content/Qmb84nedV7mCjCfpZUYtLRwNGGHg3gHkxvfV1LS69QrLRA/1000x1000.jpg"
+        },
+        "repost_count": 9,
+        "track_count": 130,
+        "is_deactivated": false,
+        "is_available": true,
+        "erc_wallet": "0x0324d9e0ba37967664394100def6a2290ebc5200",
+        "spl_wallet": "FKBVqQoVregV2gZ626qHgyTn4gGTAhPPc67Un2ifVrh1",
+        "supporter_count": 2,
+        "supporting_count": 2,
+        "total_audio_balance": 13,
+        "wallet": "0x0324d9e0ba37967664394100def6a2290ebc5200"
+      },
+      "receiver": {
+        "album_count": 0,
+        "artist_pick_track_id": null,
+        "bio": "Pew Pew",
+        "cover_photo": {
+          "640x": "https://audius-content-9.figment.io/content/01HY4N5S0TZJJ9SKKFWTYJ395T/640x.jpg",
+          "2000x": "https://audius-content-9.figment.io/content/01HY4N5S0TZJJ9SKKFWTYJ395T/2000x.jpg"
+        },
+        "followee_count": 4,
+        "follower_count": 1,
+        "handle": "QuakeHerOats",
+        "id": "GYA48Rj",
+        "is_verified": false,
+        "location": "Newark, DE",
+        "name": "I love lasers",
+        "playlist_count": 0,
+        "profile_picture": {
+          "150x150": "https://audius-content-1.figment.io/content/01HY4N5KBFC0JG3XXTSGCTT6CQ/150x150.jpg",
+          "480x480": "https://audius-content-1.figment.io/content/01HY4N5KBFC0JG3XXTSGCTT6CQ/480x480.jpg",
+          "1000x1000": "https://audius-content-1.figment.io/content/01HY4N5KBFC0JG3XXTSGCTT6CQ/1000x1000.jpg"
+        },
+        "repost_count": 1,
+        "track_count": 12,
+        "is_deactivated": false,
+        "is_available": true,
+        "erc_wallet": "0x11736a324e4c6eded7c46c4ae8a50cfcaf56fae3",
+        "spl_wallet": "HgEgSWwWbE8Vz3HY9dyD5u8CxEryhE76QXXyJrDianQa",
+        "supporter_count": 1,
+        "supporting_count": 0,
+        "total_audio_balance": 2,
+        "wallet": "0x11736a324e4c6eded7c46c4ae8a50cfcaf56fae3"
+      },
+      "created_at": "2024-06-04 22:29:49"
+    }
+  ]
+}
+```
+
+</TabItem>
+</Tabs>
+
+---

@@ -1,0 +1,109 @@
+---
+id: get-underground-trending-tracks
+title: Get Underground Trending Tracks
+pagination_label: Get Underground Trending Tracks
+sidebar_label: Get Underground Trending Tracks
+hide_table_of_contents: true
+description: Audius Protocol Documentation
+---
+
+import Tabs from '@theme/Tabs'
+import TabItem from '@theme/TabItem'
+import useBaseUrl from '@docusaurus/useBaseUrl'
+
+## Get Underground Trending Tracks
+
+Gets the top 100 trending underground tracks on Audius
+
+<Tabs
+  block={true}
+  defaultValue="request"
+  values={[{"label":"Request","value":"request"},{"label":"Response","value":"response"}]}
+>
+<TabItem value="request">
+
+```bash
+GET https://audius-discovery-3.theblueprint.xyz/v1/tracks/trending/underground?app_name=EXAMPLEAPP HTTP/1.1
+```
+
+> Path Parameters
+
+| Param    | Type      | Required | Note                                                                      |
+| -------- | --------- | -------- | ------------------------------------------------------------------------- |
+| offset   | _integer_ | false    | The number of items to skip. Useful for pagination (page number \* limit) |
+| limit    | _integer_ | false    | The number of items to fetch                                              |
+| app_name | _string_  | false    | Your App Name                                                             |
+
+</TabItem>
+<TabItem value="response">
+
+`200: OK`
+
+```json
+{
+  "data": [
+    {
+      "artwork": {
+        "150x150": "https://audius-content-1.cultur3stake.com/content/QmNwXj3vESow9b1hvessexnuiHhAA8Bhwzycf2UWsQXHGW/150x150.jpg",
+        "480x480": "https://audius-content-1.cultur3stake.com/content/QmNwXj3vESow9b1hvessexnuiHhAA8Bhwzycf2UWsQXHGW/480x480.jpg",
+        "1000x1000": "https://audius-content-1.cultur3stake.com/content/QmNwXj3vESow9b1hvessexnuiHhAA8Bhwzycf2UWsQXHGW/1000x1000.jpg"
+      },
+      "description": null,
+      "genre": "Electronic",
+      "id": "MYvY63X",
+      "track_cid": "QmWXgp758zKWd4KtmQJwTaLnGR2oGubVhZH7qjiu7Vwi6f",
+      "mood": "Empowering",
+      "release_date": null,
+      "remix_of": {
+        "tracks": null
+      },
+      "repost_count": 14,
+      "favorite_count": 31,
+      "tags": "bass,dubstep,trap,beats,downtempo",
+      "title": "04_Mindex - Wormhole",
+      "user": {
+        "album_count": 1,
+        "artist_pick_track_id": "gQRgZ",
+        "bio": "Storytelling Bass Music",
+        "cover_photo": {
+          "640x": "https://audius-content-1.cultur3stake.com/content/QmQGJeLf73YymgeL9nrtDgSrM255ownEAw8pKupbCbVHFj/640x.jpg",
+          "2000x": "https://audius-content-1.cultur3stake.com/content/QmQGJeLf73YymgeL9nrtDgSrM255ownEAw8pKupbCbVHFj/2000x.jpg"
+        },
+        "followee_count": 12,
+        "follower_count": 419,
+        "does_follow_current_user": false,
+        "handle": "mindex",
+        "id": "n6OJl",
+        "is_verified": false,
+        "location": "Austin, TX",
+        "name": "MINDEX",
+        "playlist_count": 0,
+        "profile_picture": {
+          "150x150": "https://audius-content-1.cultur3stake.com/content/QmPFsokU1XFz9aKfyd1x2jqZjrJyiPNrXVN6SKf4fkdqBx/150x150.jpg",
+          "480x480": "https://audius-content-1.cultur3stake.com/content/QmPFsokU1XFz9aKfyd1x2jqZjrJyiPNrXVN6SKf4fkdqBx/480x480.jpg",
+          "1000x1000": "https://audius-content-1.cultur3stake.com/content/QmPFsokU1XFz9aKfyd1x2jqZjrJyiPNrXVN6SKf4fkdqBx/1000x1000.jpg"
+        },
+        "repost_count": 1,
+        "track_count": 11,
+        "is_deactivated": false,
+        "is_available": true,
+        "erc_wallet": "0x6f69411eb84a058ec4df2f8da426c420ddbede06",
+        "spl_wallet": "FQavSBuMGzsavG2M2WbeGWpFDyZwiC4y1XmXeBw13mSw",
+        "supporter_count": 3,
+        "supporting_count": 0,
+        "total_audio_balance": 7
+      },
+      "duration": 219,
+      "downloadable": false,
+      "play_count": 5557,
+      "permalink": "/mindex/04_mindex-wormhole",
+      "is_streamable": true
+    }
+  ]
+}
+```
+
+</TabItem>
+</Tabs>
+
+---

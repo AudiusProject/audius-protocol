@@ -1,0 +1,98 @@
+---
+id: get-trending-playlists
+title: Get Trending Playlists
+pagination_label: Get Trending Playlists
+sidebar_label: Get Trending Playlists
+hide_table_of_contents: true
+description: Audius Protocol Documentation
+---
+
+import Tabs from '@theme/Tabs'
+import TabItem from '@theme/TabItem'
+import useBaseUrl from '@docusaurus/useBaseUrl'
+
+## Get Trending Playlists
+
+Gets trending playlists for a time period
+
+<Tabs
+  block={true}
+  defaultValue="request"
+  values={[{"label":"Request","value":"request"},{"label":"Response","value":"response"}]}
+>
+<TabItem value="request">
+
+```bash
+GET https://audius-discovery-3.theblueprint.xyz/v1/playlists/trending?app_name=EXAMPLEAPP HTTP/1.1
+```
+
+> Path Parameters
+
+| Param    | Type     | Required | Note                                           | Available values                |
+| -------- | -------- | -------- | ---------------------------------------------- | ------------------------------- |
+| time     | _string_ | false    | Calculate trending over a specified time range | `week` `month` `year` `allTime` |
+| app_name | _string_ | false    | Your App Name                                  |
+
+</TabItem>
+<TabItem value="response">
+
+`200: OK`
+
+```json
+{
+  "data": [
+    {
+      "artwork": {
+        "150x150": "https://audius-content-12.cultur3stake.com/content/Qmf53YjSDjsu1w7sYian2tJcNpzvwQZWN8uS3ajBZUTEVZ/150x150.jpg",
+        "480x480": "https://audius-content-12.cultur3stake.com/content/Qmf53YjSDjsu1w7sYian2tJcNpzvwQZWN8uS3ajBZUTEVZ/480x480.jpg",
+        "1000x1000": "https://audius-content-12.cultur3stake.com/content/Qmf53YjSDjsu1w7sYian2tJcNpzvwQZWN8uS3ajBZUTEVZ/1000x1000.jpg"
+      },
+      "description": "The first installment of Pala Chrome's 'You Stay High' remix EP is out now featuring:\n\nalex martian\nfreeloadr\nDust Of Apollon\nGabriel Earwood\n2chills\n\nArtworks by 6amsunset.",
+      "permalink": "/kumocollective/playlist/pala-chrome-you-stay-high-remix-pack-part-1",
+      "id": "5123bEX",
+      "is_album": false,
+      "playlist_name": "Pala Chrome - You Stay High REMIX PACK (part 1)",
+      "repost_count": 18,
+      "favorite_count": 27,
+      "total_play_count": 1845,
+      "user": {
+        "album_count": 6,
+        "artist_pick_track_id": "WNYwG6Z",
+        "bio": "Record label from Italy, established in 2017. \n\nas free as a cloud ☁️\n\nVisit the KUMOverse\nhttps://kumocollective.com",
+        "cover_photo": {
+          "640x": "https://audius-content-12.cultur3stake.com/content/Qme9kcC1xNmRWYsfmzqXYiahUrAb5uuqrT1Lf48VU27goY/640x.jpg",
+          "2000x": "https://audius-content-12.cultur3stake.com/content/Qme9kcC1xNmRWYsfmzqXYiahUrAb5uuqrT1Lf48VU27goY/2000x.jpg"
+        },
+        "followee_count": 19,
+        "follower_count": 13558,
+        "does_follow_current_user": false,
+        "handle": "kumocollective",
+        "id": "Lj0ae",
+        "is_verified": false,
+        "location": "Amsterdam",
+        "name": "KUMO Collective",
+        "playlist_count": 32,
+        "profile_picture": {
+          "150x150": "https://audius-content-12.cultur3stake.com/content/QmWd4zNC8hEfTScBDi5YSHf6YV6ETUbstoDynXMGsoHX6Q/150x150.jpg",
+          "480x480": "https://audius-content-12.cultur3stake.com/content/QmWd4zNC8hEfTScBDi5YSHf6YV6ETUbstoDynXMGsoHX6Q/480x480.jpg",
+          "1000x1000": "https://audius-content-12.cultur3stake.com/content/QmWd4zNC8hEfTScBDi5YSHf6YV6ETUbstoDynXMGsoHX6Q/1000x1000.jpg"
+        },
+        "repost_count": 533,
+        "track_count": 134,
+        "is_deactivated": false,
+        "is_available": true,
+        "erc_wallet": "0x62b166e2d2c8882e5e624ba1d6eba939424fc3f7",
+        "spl_wallet": "5f5AkVbVPFDCVXBr1fcZ7kYaahQEXYYTFuxJ6RDvjeHS",
+        "supporter_count": 12,
+        "supporting_count": 0,
+        "total_audio_balance": 1271
+      }
+    }
+  ]
+}
+```
+
+</TabItem>
+</Tabs>
+
+---

@@ -1,0 +1,54 @@
+---
+id: get-ai-tracks-by-handle
+title: Get AI Tracks by Handle
+pagination_label: Get AI Tracks by Handle
+sidebar_label: Get AI Tracks by Handle
+description: Audius Protocol Documentation
+hide_table_of_contents: true
+---
+
+import Tabs from '@theme/Tabs'
+import TabItem from '@theme/TabItem'
+import useBaseUrl from '@docusaurus/useBaseUrl'
+
+## Get AI Tracks by Handle
+
+Gets the AI generated tracks attributed to a user using the user's handle
+
+<Tabs
+  block={true}
+  defaultValue="request"
+  values={[{"label":"Request","value":"request"},{"label":"Response","value":"response"}]}
+>
+<TabItem value="request">
+
+```bash
+GET https://audius-discovery-6.cultur3stake.com/v1/users/handle/phuture/tracks/ai_attributed?app_name=EXAMPLEAPP HTTP/1.1
+```
+
+> Path Parameters
+
+| Param          |   Type    | Required | Note                                                                      | Available values                                                                                                               |
+| -------------- | :-------: | :------: | ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| handle         | _string_  |   true   | A User handle                                                             |
+| offset         | _integer_ |  false   | The number of items to skip. Useful for pagination (page number \* limit) |
+| limit          | _integer_ |  false   | The number of items to fetch                                              |
+| user_id        | _string_  |  false   | The user ID of the user making the request                                |
+| sort           | _string_  |  false   | [Deprecated] Field to sort by                                             | `date` `plays`                                                                                                                 |
+| query          | _string_  |  false   | The filter query                                                          |
+| sort_method    | _string_  |  false   | The sort method                                                           | `title` `artist_name` `release_date` `last_listen_date` `added_date` `length` `plays` `reposts` `saves` `most_listens_by_user` |
+| sort_direction | _string_  |  false   | The sort direction                                                        | `asc` `desc`                                                                                                                   |
+| filter_tracks  | _string_  |  false   | Filter by unlisted or public tracks                                       | `all` `public` `unlisted`                                                                                                      |
+| app_name       | _string_  |  false   | Your app name                                                             |
+
+</TabItem>
+<TabItem value="response">
+
+`200: OK`
+
+```json
+{}
+```
+
+</TabItem>
+</Tabs>
