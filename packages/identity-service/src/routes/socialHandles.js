@@ -14,6 +14,34 @@ module.exports = function (app) {
       const { handle } = req.query
       if (!handle) return errorResponseBadRequest('Please provide handle')
 
+      const socialHandles = await models.SocialHandles.findOne({
+        where: { handle }
+      })
+
+      const twitterUser = await models.TwitterUser.findOne({
+        where: {
+          // Twitter stores case sensitive screen names
+          'twitterProfile.screen_name': handle,
+          verified: true
+        }
+      })
+
+      const instagramUser = await models.InstagramUser.findOne({
+        where: {
+          // Instagram does not store case sensitive screen names
+          'profile.username': handle.toLowerCase(),
+          verified: true
+        }
+      })
+
+      const tikTokUser = await models.TikTokUser.findOne({
+        where: {
+          // TikTok does not store case sensitive screen names
+          'profile.display_name': handle.toLowerCase(),
+          verified: true
+        }
+      })
+
       const { discoveryProvider } = audiusLibsWrapper.getAudiusLibs()
       const dnUsers = await discoveryProvider.getUsers(
         1 /* limit */,
@@ -23,18 +51,34 @@ module.exports = function (app) {
         handle /* handle */
       )
       const user = dnUsers[0]
-      if (user) {
+
+      if (user || socialHandles) {
+        const twitterHandle =
+          user?.twitter_handle ?? socialHandles?.twitterHandle ?? null
+        const instagramHandle =
+          user?.instagram_handle ?? socialHandles?.instagramHandle ?? null
+        const tikTokHandle =
+          user?.tiktok_handle ?? socialHandles?.tikTokHandle ?? null
+        const twitterVerified = user?.verified_with_twitter || !!twitterUser
+        const instagramVerified =
+          user?.verified_with_instagram || !!instagramUser
+        const tikTokVerified = user?.verified_with_tiktok || !!tikTokUser
+        const website = user?.website ?? socialHandles?.website ?? null
+        const donation = user?.donation ?? socialHandles?.donation ?? null
+
         return successResponse({
-          twitterHandle: user.twitter_handle,
-          instagramHandle: user.instagram_handle,
-          tiktokHandle: user.tiktok_handle,
-          twitterVerified: user.verified_with_twitter,
-          instagramVerified: user.verified_with_instagram,
-          tikTokVerified: user.verified_with_tiktok,
-          website: user.website,
-          donation: user.donation
+          twitterHandle,
+          instagramHandle,
+          tikTokHandle,
+          twitterVerified,
+          instagramVerified,
+          tikTokVerified,
+          website,
+          donation
         })
-      } else return successResponse()
+      }
+
+      return successResponse()
     })
   )
 
