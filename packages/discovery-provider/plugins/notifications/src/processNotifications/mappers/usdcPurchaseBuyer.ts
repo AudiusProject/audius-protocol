@@ -19,7 +19,12 @@ import { disableDeviceArns } from '../../utils/disableArnEndpoint'
 import { capitalize } from 'lodash'
 import { sendBrowserNotification } from '../../web'
 import { EntityType } from '../../email/notifications/types'
-import { formatUSDCWeiToUSDString } from '../../utils/format'
+import {
+  formatContentUrl,
+  formatImageUrl,
+  formatProfileUrl,
+  formatUSDCWeiToUSDString
+} from '../../utils/format'
 import { email } from '../../email/notifications/preRendered/purchase'
 import { logger } from '../../logger'
 import { getContentNode, getHostname } from '../../utils/env'
@@ -111,6 +116,9 @@ export class USDCPurchaseBuyer extends BaseNotification<USDCPurchaseBuyerRow> {
     const sellerUsername = users[this.sellerUserId]?.name
     const sellerHandle = users[this.sellerUserId]?.handle
     const purchaserUsername = users[this.notificationReceiverUserId]?.name
+    const purchaserProfilePictureSizes =
+      users[this.notificationReceiverUserId]?.profile_picture_sizes
+    const purchaserHandle = users[this.notificationReceiverUserId]?.handle
 
     const title = 'Purchase Successful'
     const body = `You just purchased ${purchasedContentName} from ${capitalize(
@@ -192,11 +200,16 @@ export class USDCPurchaseBuyer extends BaseNotification<USDCPurchaseBuyerRow> {
       ),
       html: email({
         purchaserName: purchaserUsername,
+        purchaserProfileImage: formatImageUrl(
+          purchaserProfilePictureSizes,
+          150
+        ),
+        purchaserHandle,
+        purchaserLink: formatProfileUrl(purchaserHandle),
         artistName: sellerUsername,
-        contentType: this.contentType,
         contentTitle: purchasedContentName,
-        contentLink: `${getHostname()}/${sellerHandle}/${slug}`,
-        contentImage: `${getContentNode()}/content/${cover_art_sizes}/480x480.jpg`,
+        contentLink: formatContentUrl(sellerHandle, slug),
+        contentImage: formatImageUrl(cover_art_sizes, 480),
         price: this.amount,
         payExtra: this.extraAmount,
         total: this.totalAmount
