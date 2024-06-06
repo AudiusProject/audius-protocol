@@ -166,6 +166,21 @@ module.exports = function (app) {
             return errorResponseBadRequest(e)
           }
 
+          // This is kept only because of backwards compatibility with old clients
+          // which may still be updating socials only on identity and not DN.
+          const socialHandle = await models.SocialHandles.findOne({
+            where: { handle }
+          })
+          if (socialHandle) {
+            socialHandle.instagramHandle = instagramObj.profile.username
+            await socialHandle.save()
+          } else if (instagramObj.profile && instagramObj.profile.username) {
+            await models.SocialHandles.create({
+              handle,
+              instagramHandle: instagramObj.profile.username
+            })
+          }
+
           // the final step is to save userId to db and respond to request
           try {
             await instagramObj.save()

@@ -200,6 +200,21 @@ module.exports = function (app) {
             return errorResponseBadRequest(e)
           }
 
+          // This is kept only because of backwards compatibility with old clients
+          // which may still be updating socials only on identity and not DN.
+          const socialHandle = await models.SocialHandles.findOne({
+            where: { handle }
+          })
+          if (socialHandle) {
+            socialHandle.tikTokHandle = tikTokObj.profile.username
+            await socialHandle.save()
+          } else if (tikTokObj.profile && tikTokObj.profile.username) {
+            await models.SocialHandles.create({
+              handle,
+              tikTokHandle: tikTokObj.profile.username
+            })
+          }
+
           // the final step is to save userId to db and respond to request
           try {
             await tikTokObj.save()
