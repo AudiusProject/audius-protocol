@@ -7,7 +7,8 @@ import {
   IconError,
   IconCloudUpload,
   Text,
-  useTheme
+  useTheme,
+  IconButton
 } from '@audius/harmony'
 import cn from 'classnames'
 import { useField, useFormikContext } from 'formik'
@@ -29,12 +30,15 @@ const messages = {
   title: 'UPLOADED TRACKS',
   complete: 'Complete Upload',
   fixErrors: 'Fix errors to complete your upload.',
-  titleRequired: 'Track name required'
+  titleRequired: 'Track name required',
+  removeTrack: 'Remove track'
 }
 
 export const MultiTrackSidebar = () => {
   const scrollToTop = useContext(UploadFormScrollContext)
   const { errors, submitCount } = useFormikContext<TrackEditFormValues>()
+  const [{ value: tracks }] =
+    useField<TrackEditFormValues['trackMetadatas']>('trackMetadatas')
   const { spacing } = useTheme()
 
   return (
@@ -46,7 +50,11 @@ export const MultiTrackSidebar = () => {
           </Text>
         </div>
         <div className={cn(styles.body, layoutStyles.col, layoutStyles.gap2)}>
-          <TrackNavigator />
+          <div className={cn(styles.tracks, layoutStyles.col)}>
+            {tracks.map((_, i) => (
+              <TrackRow key={i} index={i} />
+            ))}
+          </div>
           <div className={styles.completeButton}>
             <Button
               onClick={scrollToTop}
@@ -72,18 +80,6 @@ export const MultiTrackSidebar = () => {
           ) : null}
         </div>
       </div>
-    </div>
-  )
-}
-
-const TrackNavigator = () => {
-  const [{ value: tracks }] =
-    useField<TrackEditFormValues['trackMetadatas']>('trackMetadatas')
-  return (
-    <div className={cn(styles.tracks, layoutStyles.col)}>
-      {tracks.map((track, i) => (
-        <TrackRow key={i} index={i} />
-      ))}
     </div>
   )
 }
@@ -123,7 +119,7 @@ const TrackRow = (props: TrackRowProps) => {
   )
 
   const handleRemoveTrack = useCallback(
-    (e: MouseEvent<HTMLDivElement>, index: number) => {
+    (e: MouseEvent<HTMLButtonElement>, index: number) => {
       if (index === playingPreviewIndex) stopPreview()
 
       e.stopPropagation()
@@ -186,22 +182,23 @@ const TrackRow = (props: TrackRowProps) => {
               isUrl
             />
           </div>
-          <div className={styles.trackTitleContainer}>
-            <Text
-              variant='body'
-              size='s'
-              color={hasError ? 'danger' : isSelected ? 'accent' : 'default'}
-            >
-              {isTitleMissing ? messages.titleRequired : title}
-            </Text>
-          </div>
+          <Text
+            variant='body'
+            size='s'
+            color={hasError ? 'danger' : isSelected ? 'accent' : 'default'}
+            ellipses
+          >
+            {isTitleMissing ? messages.titleRequired : title}
+          </Text>
           {values.trackMetadatas.length > 1 ? (
-            <div
+            <IconButton
               className={styles.iconRemove}
+              size='m'
+              color='default'
+              aria-label={messages.removeTrack}
+              icon={IconTrash}
               onClick={(e) => handleRemoveTrack(e, index)}
-            >
-              <IconTrash color='default' />
-            </div>
+            />
           ) : null}
         </div>
       </div>
