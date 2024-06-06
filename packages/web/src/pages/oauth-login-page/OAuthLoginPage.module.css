@@ -33,10 +33,6 @@
   text-overflow: ellipsis;
 }
 
-.popup .loadingStateContainer {
-  margin-top: 200px;
-}
-
 .loadingStateSpinner {
   width: 24px;
   height: 24px;
