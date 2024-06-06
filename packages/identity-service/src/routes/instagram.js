@@ -166,6 +166,19 @@ module.exports = function (app) {
             return errorResponseBadRequest(e)
           }
 
+          const socialHandle = await models.SocialHandles.findOne({
+            where: { handle }
+          })
+          if (socialHandle) {
+            socialHandle.instagramHandle = instagramObj.profile.username
+            await socialHandle.save()
+          } else if (instagramObj.profile && instagramObj.profile.username) {
+            await models.SocialHandles.create({
+              handle,
+              instagramHandle: instagramObj.profile.username
+            })
+          }
+
           // the final step is to save userId to db and respond to request
           try {
             await instagramObj.save()

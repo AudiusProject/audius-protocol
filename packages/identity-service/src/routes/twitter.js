@@ -222,6 +222,22 @@ module.exports = function (app) {
             return errorResponseBadRequest(e)
           }
 
+          const socialHandle = await models.SocialHandles.findOne({
+            where: { handle }
+          })
+          if (socialHandle) {
+            socialHandle.twitterHandle = twitterObj.twitterProfile.screen_name
+            await socialHandle.save()
+          } else if (
+            twitterObj.twitterProfile &&
+            twitterObj.twitterProfile.screen_name
+          ) {
+            await models.SocialHandles.create({
+              handle,
+              twitterHandle: twitterObj.twitterProfile.screen_name
+            })
+          }
+
           // the final step is to save userId to db and respond to request
           try {
             await twitterObj.save()

@@ -200,6 +200,19 @@ module.exports = function (app) {
             return errorResponseBadRequest(e)
           }
 
+          const socialHandle = await models.SocialHandles.findOne({
+            where: { handle }
+          })
+          if (socialHandle) {
+            socialHandle.tikTokHandle = tikTokObj.profile.username
+            await socialHandle.save()
+          } else if (tikTokObj.profile && tikTokObj.profile.username) {
+            await models.SocialHandles.create({
+              handle,
+              tikTokHandle: tikTokObj.profile.username
+            })
+          }
+
           // the final step is to save userId to db and respond to request
           try {
             await tikTokObj.save()
