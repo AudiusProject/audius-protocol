@@ -23,6 +23,8 @@ export const email = ({
   payExtra: string
   total: string
 }) => {
+  const copyrightYear = new Date().getFullYear().toString()
+
   return `
   <!doctype html>
   <html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
@@ -919,7 +921,7 @@ export const email = ({
   <table cellspacing="0" cellpadding="0" border="0">
   <tr>
   <td style="vertical-align: middle;" align="center">
-  <div style="line-height:14px;text-align:center;"><span style="color:#6a677a;font-family:Inter,Arial,sans-serif;font-size:12px;line-height:14px;text-align:center;">© 2024 Audius, Inc. All Rights Reserved.</span></div>
+  <div style="line-height:14px;text-align:center;"><span style="color:#6a677a;font-family:Inter,Arial,sans-serif;font-size:12px;line-height:14px;text-align:center;">© ${copyrightYear} Audius, Inc. All Rights Reserved.</span></div>
   </td>
   </tr>
   </table>
