@@ -2,7 +2,6 @@ package server
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -337,30 +336,35 @@ func (ss *MediorumServer) analyzeKey(filename string) (string, error) {
 }
 
 func (ss *MediorumServer) analyzeBPM(filename string) (float64, error) {
-	temp, err := os.CreateTemp("", "audioAnalysisBPMOutputTemp-*.json")
+	cmd := exec.Command("/bin/analyze-bpm", filename)
+	output, err := cmd.CombinedOutput()
 	if err != nil {
-		return 0, err
-	}
-	defer temp.Close()
-	defer os.Remove(temp.Name())
-
-	cmd := exec.Command("/usr/local/bin/essentia_streaming_extractor_freesound", filename, temp.Name())
-	err = cmd.Run()
-	if err != nil {
-		return 0, err
-	}
-	data, err := os.ReadFile(temp.Name())
-	if err != nil {
-		return 0, err
-	}
-	var output map[string]interface{}
-	err = json.Unmarshal(data, &output)
-	if err != nil {
-		return 0, err
+		exitError, ok := err.(*exec.ExitError)
+		if ok {
+			return 0, fmt.Errorf("command exited with status %d: %s", exitError.ExitCode(), string(output))
+		}
+		return 0, fmt.Errorf("failed to execute command: %v", err)
 	}
 
-	// Extract the BPM value
-	bpm := output["rhythm"].(map[string]interface{})["bpm"].(float64)
+	outputStr := string(output)
+	lines := strings.Split(outputStr, "\n")
+	var bpm float64
+	for _, line := range lines {
+		if strings.HasPrefix(line, "BPM:") {
+			parts := strings.Fields(line)
+			if len(parts) == 2 {
+				bpm, err = strconv.ParseFloat(parts[1], 64)
+				if err != nil {
+					return 0, err
+				}
+			}
+		}
+	}
+
+	if bpm == 0 {
+		return 0, fmt.Errorf("failed to parse BPM from output: %s", outputStr)
+	}
+
 	return bpm, nil
 }
 
