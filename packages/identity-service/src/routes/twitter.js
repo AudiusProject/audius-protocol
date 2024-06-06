@@ -222,24 +222,6 @@ module.exports = function (app) {
             return errorResponseBadRequest(e)
           }
 
-          // This is kept only because of backwards compatibility with old clients
-          // which may still be updating socials only on identity and not DN.
-          const socialHandle = await models.SocialHandles.findOne({
-            where: { handle }
-          })
-          if (socialHandle) {
-            socialHandle.twitterHandle = twitterObj.twitterProfile.screen_name
-            await socialHandle.save()
-          } else if (
-            twitterObj.twitterProfile &&
-            twitterObj.twitterProfile.screen_name
-          ) {
-            await models.SocialHandles.create({
-              handle,
-              twitterHandle: twitterObj.twitterProfile.screen_name
-            })
-          }
-
           // the final step is to save userId to db and respond to request
           try {
             await twitterObj.save()
