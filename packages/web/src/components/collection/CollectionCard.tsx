@@ -11,7 +11,7 @@ import {
   cacheCollectionsSelectors
 } from '@audius/common/store'
 import { formatCount } from '@audius/common/utils'
-import { Flex, Text } from '@audius/harmony'
+import { Flex, Skeleton, Text } from '@audius/harmony'
 import IconHeart from '@audius/harmony/src/assets/icons/Heart.svg'
 import IconRepost from '@audius/harmony/src/assets/icons/Repost.svg'
 import { useLinkClickHandler } from 'react-router-dom-v5-compat'
@@ -35,6 +35,7 @@ const messages = {
 
 type CollectionCardProps = Omit<CardProps, 'id'> & {
   id: ID
+  loading?: boolean
   noNavigation?: boolean
 }
 
@@ -47,7 +48,7 @@ const cardSizeToCoverArtSizeMap = {
 
 export const CollectionCard = forwardRef(
   (props: CollectionCardProps, ref: Ref<HTMLDivElement>) => {
-    const { id, size, onClick, noNavigation, ...other } = props
+    const { id, loading, size, onClick, noNavigation, ...other } = props
 
     const collection = useSelector((state) => getCollection(state, { id }))
     const accountId = useSelector(getUserId)
@@ -65,7 +66,22 @@ export const CollectionCard = forwardRef(
       [noNavigation, handleNavigate, onClick]
     )
 
-    if (!collection) return null
+    if (!collection || loading) {
+      return (
+        <Card size={size} {...other}>
+          <Flex direction='column' p='s' gap='s'>
+            <Skeleton border='default' css={{ aspectRatio: 1 }} />
+            <CardContent gap='xs'>
+              <Skeleton h={24} w='80%' alignSelf='center' />
+              <Skeleton h={20} w='50%' alignSelf='center' />
+            </CardContent>
+          </Flex>
+          <CardFooter>
+            <Skeleton h={16} w='60%' alignSelf='center' />
+          </CardFooter>
+        </Card>
+      )
+    }
 
     const {
       playlist_name,

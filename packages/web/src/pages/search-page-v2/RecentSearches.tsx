@@ -189,11 +189,7 @@ const RecentSearchCollection = (props: { searchItem: SearchItem }) => {
   )
 }
 
-type RecentSearchUserProps = {
-  searchItem: SearchItem
-}
-
-const RecentSearchUser = (props: RecentSearchUserProps) => {
+const RecentSearchUser = (props: { searchItem: SearchItem }) => {
   const { searchItem } = props
   const { id } = searchItem
   const { data: user, status } = useGetUserById({ id })
