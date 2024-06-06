@@ -1,6 +1,7 @@
 import { ShareToTwitter } from '@audius/common/models'
 import { ShareContent } from '@audius/common/store'
 import { Nullable } from '@audius/common/utils'
+import { getTwitterHandleByUserHandle } from 'components/notification/Notification/utils'
 
 import {
   fullCollectionPage,
@@ -13,13 +14,17 @@ import { messages } from './messages'
 
 type ShareToTwitterEvent = Omit<ShareToTwitter, 'eventName' | 'source'>
 
-const getTwitterShareHandle = ({
+const getTwitterShareHandle = async ({
   handle,
   twitterHandle
 }: {
   handle: string
   twitterHandle: Nullable<string>
 }) => {
+  if (!twitterHandle) {
+    const theTwitterHandle = await getTwitterHandleByUserHandle(handle)
+    return theTwitterHandle ? `@${theTwitterHandle}` : handle
+  }
   return twitterHandle ? `@${twitterHandle}` : handle
 }
 
@@ -48,7 +53,7 @@ export const getTwitterShareText = async (
       } = content
       twitterText = messageConfig.trackShareText(
         title,
-        getTwitterShareHandle({ handle, twitterHandle })
+        await getTwitterShareHandle({ handle, twitterHandle })
       )
       link = fullTrackPage(permalink)
       analyticsEvent = { kind: 'track', id: track_id, url: link }
@@ -59,7 +64,7 @@ export const getTwitterShareText = async (
         profile: { handle, user_id, twitter_handle: twitterHandle }
       } = content
       twitterText = messageConfig.profileShareText(
-        getTwitterShareHandle({ handle, twitterHandle })
+        await getTwitterShareHandle({ handle, twitterHandle })
       )
       link = fullProfilePage(handle)
       analyticsEvent = { kind: 'profile', id: user_id, url: link }
@@ -72,7 +77,7 @@ export const getTwitterShareText = async (
       } = content
       twitterText = messageConfig.albumShareText(
         playlist_name,
-        getTwitterShareHandle({ handle, twitterHandle })
+        await getTwitterShareHandle({ handle, twitterHandle })
       )
       link = fullCollectionPage(
         handle,
@@ -91,7 +96,7 @@ export const getTwitterShareText = async (
       } = content
       twitterText = messageConfig.playlistShareText(
         playlist_name,
-        getTwitterShareHandle({ handle, twitterHandle })
+        await getTwitterShareHandle({ handle, twitterHandle })
       )
       link = fullCollectionPage(
         handle,
