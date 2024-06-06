@@ -15,7 +15,7 @@ import {
   SearchKind,
   searchResultsPageTracksLineupActions
 } from '@audius/common/store'
-import { FilterButton } from '@audius/harmony'
+import { OptionsFilterButton } from '@audius/harmony'
 import { Box, Flex } from '@audius/harmony/src/components/layout'
 import { Text } from '@audius/harmony/src/components/text'
 import { css } from '@emotion/css'
@@ -181,10 +181,10 @@ export const SearchResults = ({ query }: SearchResultsProps) => {
               {messages.tracks}
             </Text>
             {isCategoryActive(Category.TRACKS) ? (
-              <FilterButton
+              <OptionsFilterButton
                 selection={tracksLayout}
                 variant='replaceLabel'
-                onSelect={(value) => {
+                onChange={(value) => {
                   setTracksLayout(value as TrackView)
                 }}
                 options={[
