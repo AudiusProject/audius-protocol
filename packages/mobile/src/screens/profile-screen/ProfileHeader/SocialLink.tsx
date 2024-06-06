@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react'
 
+import type { Nullable } from '@audius/common/utils'
 import type { StyleProp, ViewStyle } from 'react-native'
-import type { Nullable } from '~/utils'
 
 import type { IconButtonProps } from '@audius/harmony-native'
 import {
