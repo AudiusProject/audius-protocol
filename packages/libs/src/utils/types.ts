@@ -45,14 +45,6 @@ export type UserMetadata = {
   handle_lc: string
   is_deactivated: boolean
   is_verified: boolean
-  twitter_handle: Nullable<string>
-  instagram_handle: Nullable<string>
-  tiktok_handle: Nullable<string>
-  verified_with_twitter: boolean
-  verified_with_instagram: boolean
-  verified_with_tiktok: boolean
-  website: Nullable<string>
-  donation: Nullable<string>
   is_storage_v2: boolean
   location: Nullable<string>
   // this should be removed
@@ -72,7 +64,15 @@ export type UserMetadata = {
 
   // Only present on the "current" account
   track_save_count?: number
+  twitter_handle?: string
+  instagram_handle?: string
+  tiktok_handle?: string
+  website?: string
   wallet?: string
+  donation?: string
+  twitterVerified?: boolean
+  instagramVerified?: boolean
+  tikTokVerified?: boolean
 }
 
 export type User = UserMetadata

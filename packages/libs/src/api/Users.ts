@@ -10,11 +10,6 @@ import { Base, BaseConstructorArgs, Services } from './base'
 // null or non-null values
 const USER_PROPS = [
   'is_verified',
-  'twitter_handle',
-  'instagram_handle',
-  'tiktok_handle',
-  'website',
-  'donation',
   'is_deactivated',
   'name',
   'handle',
