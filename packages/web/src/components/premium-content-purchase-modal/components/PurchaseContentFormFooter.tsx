@@ -40,7 +40,7 @@ const messages = {
   purchasing: 'Purchasing',
   shareButtonContent: 'I just purchased a track on Audius!',
   shareTwitterText: (contentType: string, title: string, handle: string) =>
-    `I bought the ${contentType} ${title} by ${handle} on @Audius! #AudiusPremium`,
+    `I bought the ${contentType} ${title} by ${handle} on @Audius! $AUDIO #AudiusPremium`,
   reposted: 'Reposted',
   repost: 'Repost'
 }

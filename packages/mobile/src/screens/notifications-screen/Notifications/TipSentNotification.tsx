@@ -35,7 +35,7 @@ const messages = {
     `I just ${
       ios ? 'tipped' : 'sent'
     } ${senderHandle} ${uiAmount} $AUDIO on @audius #Audius ${
-      ios ? '$#AUDIO' : '#AUDIOTip'
+      ios ? '#AUDIO' : '#AUDIOTip'
     }`
 }
 
