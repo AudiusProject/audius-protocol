@@ -12,8 +12,8 @@ import {
 import LinearGradient from 'react-native-linear-gradient'
 import { useDispatch, useSelector } from 'react-redux'
 
-import type { ProfileListProps } from 'app/components/profile-list'
-import { ProfileCard, ProfileList } from 'app/components/profile-list'
+import type { UserListProps } from 'app/components/user-list'
+import { ProfileCard, UserList } from 'app/components/user-list'
 import type { AppState } from 'app/store'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
@@ -24,7 +24,7 @@ const useStyles = makeStyles(({ palette }) => ({
   }
 }))
 
-type SuggestedArtistsListProps = Partial<ProfileListProps>
+type SuggestedArtistsListProps = Partial<UserListProps>
 
 export const SuggestedArtistsList = (props: SuggestedArtistsListProps) => {
   const styles = useStyles()
@@ -59,7 +59,7 @@ export const SuggestedArtistsList = (props: SuggestedArtistsListProps) => {
   )
 
   return (
-    <ProfileList
+    <UserList
       profiles={suggestedArtists}
       renderItem={({ item: artist }) => {
         const { user_id } = artist

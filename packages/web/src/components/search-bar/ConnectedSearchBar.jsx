@@ -24,7 +24,12 @@ import { getSearch } from 'common/store/search-bar/selectors'
 import SearchBar from 'components/search/SearchBar'
 import SearchBarV2 from 'components/search/SearchBarV2'
 import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
-import { collectionPage, profilePage, getPathname } from 'utils/route'
+import {
+  collectionPage,
+  profilePage,
+  getPathname,
+  SEARCH_PAGE
+} from 'utils/route'
 
 import styles from './ConnectedSearchBar.module.css'
 
@@ -273,6 +278,7 @@ class ConnectedSearchBar extends Component {
         <SearchBarComponent
           value={this.state.value}
           isTagSearch={this.isTagSearch()}
+          isViewingSearchPage={this.props.isViewingSearchPage}
           status={status}
           searchText={searchText}
           dataSource={dataSource}
@@ -291,7 +297,10 @@ class ConnectedSearchBar extends Component {
 
 const mapStateToProps = (state, props) => ({
   search: getSearch(state, props),
-  isSearchV2Enabled: getFeatureEnabled(FeatureFlags.SEARCH_V2)
+  isSearchV2Enabled: getFeatureEnabled(FeatureFlags.SEARCH_V2),
+  isViewingSearchPage: !!matchPath(state.router.location.pathname, {
+    path: SEARCH_PAGE
+  })
 })
 const mapDispatchToProps = (dispatch) => ({
   fetchSearch: (value) => dispatch(fetchSearch(value)),

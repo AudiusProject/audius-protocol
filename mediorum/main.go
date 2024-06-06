@@ -448,5 +448,9 @@ func refreshPeersAndSigners(ss *server.MediorumServer, g registrar.PeerProvider)
 }
 
 func discoveryListensEndpoints() []string {
-	return strings.Split(os.Getenv("discoveryListensEndpoints"), ",")
+	endpoints := os.Getenv("discoveryListensEndpoints")
+	if endpoints == "" {
+		return []string{}
+	}
+	return strings.Split(endpoints, ",")
 }

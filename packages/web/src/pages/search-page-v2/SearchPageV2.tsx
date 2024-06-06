@@ -1,7 +1,6 @@
 import { useCallback, useContext, useEffect } from 'react'
 
-import { Status } from '@audius/common/models'
-import { Flex, LoadingSpinner } from '@audius/harmony'
+import { Flex } from '@audius/harmony'
 import { useParams } from 'react-router-dom'
 
 import { useHistoryContext } from 'app/HistoryProvider'
@@ -17,6 +16,7 @@ import { useMedia } from 'hooks/useMedia'
 import { RecentSearches } from './RecentSearches'
 import { SearchCatalogTile } from './SearchCatalogTile'
 import { CategoryKey, SearchHeader } from './SearchHeader'
+import { SearchResults } from './SearchResults'
 
 export const SearchPageV2 = () => {
   const { isMobile } = useMedia()
@@ -71,8 +71,9 @@ export const SearchPageV2 = () => {
             <SearchCatalogTile />
             <RecentSearches />
           </Flex>
-        ) : null}
-        {status === Status.LOADING ? <LoadingSpinner /> : <div></div>}
+        ) : (
+          <SearchResults query={query} />
+        )}
       </Flex>
     </PageComponent>
   )

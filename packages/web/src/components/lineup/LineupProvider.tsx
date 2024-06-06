@@ -195,6 +195,8 @@ export interface LineupProviderProps {
   buffering: boolean
   ordered?: boolean
   lineupContainerStyles?: string
+  tileContainerStyles?: string
+  tileStyles?: string
   setInView?: (inView: boolean) => void
   playingSource: string | null
   emptyElement?: JSX.Element
@@ -486,6 +488,8 @@ class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
       extraPrecedingElement,
       endOfLineup,
       lineupContainerStyles,
+      tileContainerStyles,
+      tileStyles,
       showLeadingElementArtistPick = true,
       lineup: { isMetadataLoading, page, entries = [] },
       numPlaylistSkeletonRows,
@@ -780,6 +784,9 @@ class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
             <InfiniteScroll
               aria-label={this.props['aria-label']}
               pageStart={0}
+              className={cn({
+                [tileContainerStyles!]: !!tileContainerStyles
+              })}
               loadMore={lineup.hasMore ? this.loadMore : () => {}}
               hasMore={lineup.hasMore && canLoadMore}
               // If we're on mobile, we scroll the entire page so we should use the window
@@ -792,7 +799,9 @@ class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
             >
               {showFeedTipTile ? <FeedTipTile /> : null}
               {tiles.map((tile, index) => (
-                <li key={index}>{tile}</li>
+                <li key={index} className={cn({ [tileStyles!]: !!tileStyles })}>
+                  {tile}
+                </li>
               ))}
             </InfiniteScroll>
           )}
