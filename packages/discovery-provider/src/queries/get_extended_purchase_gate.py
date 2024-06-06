@@ -44,7 +44,7 @@ class ExtendedSplit(Split):
 
 
 class ExtendedUSDCPurchaseCondition(TypedDict):
-    price: int
+    price: int | None
     splits: List[ExtendedSplit]
 
 
