@@ -1,6 +1,13 @@
 import { ReactNode } from 'react'
 
-import { Flex, Text, TextLink, IconCloudUpload, Paper } from '@audius/harmony'
+import {
+  Flex,
+  Text,
+  TextLink,
+  IconCloudUpload,
+  Paper,
+  Box
+} from '@audius/harmony'
 import cn from 'classnames'
 import ReactDropzone from 'react-dropzone'
 
@@ -126,7 +133,12 @@ export const Dropzone = ({
                 {subtextAboveIcon}
               </Text>
             ) : null}
-            <IconCloudUpload className={cn(styles.iconUpload, iconClassName)} />
+            <Box w='100%'>
+              <IconCloudUpload
+                width='100%'
+                className={cn(styles.iconUpload, iconClassName)}
+              />
+            </Box>
           </>
         ) : null}
         <div className={cn(styles.text, messageClassName)}>{getMessage()}</div>
