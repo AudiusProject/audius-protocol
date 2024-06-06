@@ -1,6 +1,4 @@
-import { ReactNode } from 'react'
-
-import { Flex, Text, TextLink, IconCloudUpload, Paper } from '@audius/harmony'
+import { Flex, Text, TextLink, IconCloudUpload } from '@audius/harmony'
 import cn from 'classnames'
 import ReactDropzone from 'react-dropzone'
 
@@ -17,7 +15,6 @@ const messages = {
 
 type DropzoneProps = {
   className?: string
-  children?: ReactNode
   messageClassName?: string
   titleTextClassName?: string
   subtitleTextClassName?: string
@@ -44,7 +41,6 @@ type DropzoneProps = {
 
 export const Dropzone = ({
   className,
-  children,
   titleTextClassName,
   subtitleTextClassName,
   messageClassName,
@@ -93,19 +89,13 @@ export const Dropzone = ({
   }
 
   return (
-    <Paper
-      h='100%'
-      direction='column'
-      alignItems='center'
-      justifyContent='center'
-      shadow='flat'
-      css={{ minHeight: isTruncated ? undefined : 600, textAlign: 'center' }}
-      className={className}
-      as={ReactDropzone}
-      // @ts-ignore
+    <ReactDropzone
       multiple={allowMultiple}
       onDropAccepted={onDropAccepted}
       onDropRejected={onDropRejected}
+      className={cn(styles.dropzone, className, {
+        [styles.truncated]: isTruncated
+      })}
       disabled={disabled}
       disableClick={disabled || disableClick}
       accept={
@@ -114,31 +104,29 @@ export const Dropzone = ({
       data-testid='upload-dropzone'
     >
       <div className={styles.hoverBoundingBox}>
-        {!isTruncated ? (
-          <>
-            {textAboveIcon ? (
-              <div className={cn(styles.textAboveIcon, titleTextClassName)}>
-                {textAboveIcon}
-              </div>
-            ) : null}
-            {subtextAboveIcon ? (
-              <Text size='s' variant='body' className={subtitleTextClassName}>
-                {subtextAboveIcon}
-              </Text>
-            ) : null}
-            <IconCloudUpload className={cn(styles.iconUpload, iconClassName)} />
-          </>
-        ) : null}
-        <div className={cn(styles.text, messageClassName)}>{getMessage()}</div>
+        <span className={styles.contentWrapper}>
+          {!isTruncated ? (
+            <>
+              {textAboveIcon ? (
+                <div className={cn(styles.textAboveIcon, titleTextClassName)}>
+                  {textAboveIcon}
+                </div>
+              ) : null}
+              {subtextAboveIcon ? (
+                <Text size='s' variant='body' className={subtitleTextClassName}>
+                  {subtextAboveIcon}
+                </Text>
+              ) : null}
+              <IconCloudUpload
+                className={cn(styles.iconUpload, iconClassName)}
+              />
+            </>
+          ) : null}
+          <div className={cn(styles.text, messageClassName)}>
+            {getMessage()}
+          </div>
+        </span>
       </div>
-      <Flex
-        css={(theme) => ({
-          position: 'absolute',
-          bottom: theme.spacing['3xl']
-        })}
-      >
-        {children}
-      </Flex>
-    </Paper>
+    </ReactDropzone>
   )
 }

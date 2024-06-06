@@ -15,7 +15,7 @@ import Page from 'components/page/Page'
 import styles from './UploadPage.module.css'
 import { EditPage } from './pages/EditPage'
 import { FinishPage } from './pages/FinishPage'
-import SelectPage from './pages/SelectPage'
+import SelectPageNew from './pages/SelectPage'
 import { UploadFormState } from './types'
 
 const { uploadTracks, undoResetState } = uploadActions
@@ -110,7 +110,7 @@ export const UploadPage = (props: UploadPageProps) => {
   switch (phase) {
     case Phase.SELECT:
       page = (
-        <SelectPage
+        <SelectPageNew
           formState={formState}
           onContinue={(formState: UploadFormState) => {
             setFormState(formState)
