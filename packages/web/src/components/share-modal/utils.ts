@@ -1,8 +1,8 @@
 import { ShareToTwitter } from '@audius/common/models'
 import { ShareContent } from '@audius/common/store'
 import { Nullable } from '@audius/common/utils'
-import { getTwitterHandleByUserHandle } from 'components/notification/Notification/utils'
 
+import { getTwitterHandleByUserHandle } from 'components/notification/Notification/utils'
 import {
   fullCollectionPage,
   fullProfilePage,
