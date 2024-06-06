@@ -134,10 +134,8 @@ module.exports = function (app) {
         if (isUnassociated && handlesMatch) {
           instagramObj.blockchainUserId = userId
 
-          // Update the instagram handle and the verified flag in DN via entity manager.
-          // We do this here because we still want the above checks to only proceed
-          // if the user was previously unassociated and the handles match.
-          // Also, we still depend on identity for the instagram oauth flow.
+          // Update the user's social verification status along with the social app handle that verification came from.
+          // If the user is not verified, send the transaction to ensure that their linked social handle is updated.
           const [encodedABI, contractAddress] =
             await audiusLibsInstance.User.updateSocialVerification(
               userId,
