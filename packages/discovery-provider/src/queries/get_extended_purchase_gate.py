@@ -97,6 +97,8 @@ def calculate_split_amounts(price: int, splits: List[Split]):
     Deterministically calculates the USDC amounts to pay to each person,
     adjusting for rounding errors and ensuring the total matches the price.
     """
+    if not price or not splits:
+        return []
     price_in_usdc = int(cents_to_usdc_multiplier * price)
     running_total = 0
     new_splits: List[Dict] = []
@@ -201,8 +203,8 @@ def to_wallet_amount_map(splits: List[ExtendedSplit]):
 
 
 def _get_extended_purchase_gate(session: Session, gate: PurchaseGate):
-    price = gate["usdc_purchase"]["price"]
-    splits = gate["usdc_purchase"]["splits"]
+    price = gate.get("usdc_purchase", {}).get("price", None)
+    splits = gate.get("usdc_purchase", {}).get("splits", [])
     splits = add_wallet_info_to_splits(session, splits, datetime.now())
     splits = calculate_split_amounts(price, splits)
     extended_splits = [cast(ExtendedSplit, split) for split in splits]
