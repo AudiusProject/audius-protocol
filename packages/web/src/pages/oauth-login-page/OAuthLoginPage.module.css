@@ -33,10 +33,6 @@
   text-overflow: ellipsis;
 }
 
-.popup .loadingStateContainer {
-  margin-top: 200px;
-}
-
 .loadingStateSpinner {
   width: 24px;
   height: 24px;
@@ -79,20 +75,6 @@
   display: flex;
 }
 
-.visibilityIconWrapper {
-  width: 15px;
-}
-
-.visibilityIcon {
-  position: relative;
-  left: -3px;
-}
-
-.atSignIcon {
-  position: relative;
-  top: 3px;
-}
-
 .userProfileContentContainer {
   display: flex;
   align-items: center;
@@ -102,20 +84,6 @@
   margin-top: var(--harmony-unit-2);
   padding-top: var(--harmony-unit-2);
   border-top: solid 1px var(--harmony-n-100);
-}
-
-.permissionText {
-  color: var(--harmony-neutral);
-  font-weight: var(--harmony-font-medium);
-  font-size: var(--harmony-font-m);
-  line-height: 130%;
-}
-
-.permissionDetailText {
-  color: var(--harmony-n-500);
-  font-size: var(--harmony-font-s);
-  font-weight: var(--harmony-font-bold);
-  line-height: 180%;
 }
 
 .userInfoContainer,
@@ -142,10 +110,6 @@
 
 .userInfoHandle {
   font-weight: var(--harmony-font-medium);
-}
-
-.signOutButtonContainer {
-  margin-top: var(--harmony-unit-2);
 }
 
 .signUpButtonContainer {
@@ -180,7 +144,7 @@
 }
 
 .ctaButton {
-  margin-top: var(--harmony-unit-8);
+  margin-top: var(--harmony-unit-6);
 }
 
 .loadingSpinner {
@@ -188,10 +152,6 @@
   display: inline-block;
   height: var(--harmony-font-s);
   width: var(--harmony-font-s);
-}
-
-.permissionTextExtraLight {
-  color: var(--harmony-n-400);
 }
 
 .passwordInput,

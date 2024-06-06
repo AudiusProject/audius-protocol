@@ -1,5 +1,6 @@
 import { memo, useCallback, useEffect, MouseEvent, useRef } from 'react'
 
+import { useGetCurrentUserId, useGetTrackStreamUrl } from '@audius/common/api'
 import {
   useGatedContentAccess,
   useIsGatedContentPlaylistAddable
@@ -143,6 +144,12 @@ const ConnectedTrackTile = ({
     handle,
     is_deactivated: isOwnerDeactivated
   } = getUserWithFallback(user)
+
+  const currentUserId = useGetCurrentUserId({})
+  useGetTrackStreamUrl({
+    id: trackId,
+    currentUserId: currentUserId?.data
+  })
 
   const isActive = uid === playingUid
   const isTrackBuffering = isActive && isBuffering
