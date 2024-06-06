@@ -68,9 +68,6 @@ export type UserMetadata = {
   track_save_count?: number
   user_id: number
   wallet?: string
-  verifiedWithTwitter?: boolean
-  verifiedWithInstagram?: boolean
-  verifiedWithTiktok?: boolean
   balance?: Nullable<StringWei>
   total_balance?: Nullable<StringWei>
   associated_wallets?: Nullable<string[]>
