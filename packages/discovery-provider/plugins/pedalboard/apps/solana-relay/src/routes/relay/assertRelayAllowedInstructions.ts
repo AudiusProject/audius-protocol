@@ -145,7 +145,7 @@ const assertAllowedAssociatedTokenAccountProgramInstruction = async (
       )
     if (wallet) {
       try {
-        await rateLimitTokenAccountCreation(wallet, isVerified)
+        await rateLimitTokenAccountCreation(wallet, !!isVerified)
       } catch (e) {
         const error = e as Error
         throw new InvalidRelayInstructionError(instructionIndex, error.message)
