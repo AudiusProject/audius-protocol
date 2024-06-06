@@ -89,7 +89,6 @@ export function* watchPlay() {
     if (trackId) {
       // Load and set end action.
       const track = yield* select(getTrack, { id: trackId })
-      const currentUserId = yield* select(getUserId)
 
       const isReachable = yield* select(getIsReachable)
 
