@@ -52,6 +52,8 @@ module.exports = function (app) {
       )
       const user = dnUsers[0]
 
+      // Normally this would only use DN to get the socials, but for now we need to check the
+      // identity table in case old clients are still updating socials only on identity and not DN.
       if (user || socialHandles) {
         const twitterHandle =
           user?.twitter_handle ?? socialHandles?.twitterHandle ?? null
