@@ -353,10 +353,16 @@ class FullBulkTracks(Resource):
             return marshal(response, full_tracks_response), status
 
 
-def get_stream_url_from_content_node(content_node: str, path: str):
+def get_stream_url_from_content_node(
+    content_node: str, path: str, skip_check: bool = False
+):
     # Add additional query parameters
     joined_url = urljoin(content_node, path)
     parsed_url = urlparse(joined_url)
+
+    # Performance improvement POC to skip node status check
+    if skip_check:
+        return parsed_url.geturl()
     query_params = parse_qs(parsed_url.query)
     query_params["skip_play_count"] = ["true"]
     stream_url = parsed_url._replace(query=urlencode(query_params, doseq=True)).geturl()
@@ -652,6 +658,13 @@ stream_parser.add_argument(
     required=False,
     default=None,
 )
+stream_parser.add_argument(
+    "skip_check",
+    description="""Optional - POC to skip node 'double dip' health check""",
+    type=str,
+    required=False,
+    default=None,
+)
 
 
 @ns.route("/<string:track_id>/stream")
@@ -684,6 +697,7 @@ class TrackStream(Resource):
         user_signature = request_args.get("user_signature")
         nft_access_signature = request_args.get("nft_access_signature")
         api_key = request_args.get("api_key")
+        skip_check = request_args.get("skip_check")
 
         decoded_id = decode_with_abort(track_id, ns)
 
@@ -738,7 +752,9 @@ class TrackStream(Resource):
         stream_url = None
         if cached_content_node:
             cached_content_node = cached_content_node.decode("utf-8")
-            stream_url = get_stream_url_from_content_node(cached_content_node, path)
+            stream_url = get_stream_url_from_content_node(
+                cached_content_node, path, skip_check
+            )
             if stream_url:
                 return stream_url
 
@@ -761,7 +777,9 @@ class TrackStream(Resource):
 
         for content_node in content_nodes:
             try:
-                stream_url = get_stream_url_from_content_node(content_node, path)
+                stream_url = get_stream_url_from_content_node(
+                    content_node, path, skip_check
+                )
                 if stream_url:
                     redis.set(redis_key, content_node)
                     redis.expire(redis_key, 60 * 30)  # 30 min ttl

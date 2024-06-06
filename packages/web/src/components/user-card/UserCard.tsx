@@ -3,7 +3,7 @@ import { useCallback, MouseEvent } from 'react'
 import { ID, SquareSizes } from '@audius/common/models'
 import { cacheUsersSelectors } from '@audius/common/store'
 import { formatCount } from '@audius/common/utils'
-import { Text } from '@audius/harmony'
+import { Box, Skeleton, Text } from '@audius/harmony'
 import { useLinkClickHandler } from 'react-router-dom-v5-compat'
 
 import { Avatar } from 'components/avatar'
@@ -27,10 +27,11 @@ const avatarSizeMap = {
 
 export type UserCardProps = Omit<CardProps, 'id'> & {
   id: ID
+  loading?: boolean
 }
 
 export const UserCard = (props: UserCardProps) => {
-  const { id, size, onClick, ...other } = props
+  const { id, loading, size, onClick, ...other } = props
 
   const user = useSelector((state) => getUser(state, { id }))
 
@@ -46,7 +47,26 @@ export const UserCard = (props: UserCardProps) => {
     [onClick, handleNavigate]
   )
 
-  if (!user) return null
+  if (!user || loading) {
+    return (
+      <Card size={size} {...other}>
+        <Box p='l' pb='s'>
+          <Skeleton
+            border='default'
+            borderRadius='circle'
+            css={{ aspectRatio: 1 }}
+          />
+        </Box>
+        <CardContent p='s' pt={0} gap='xs'>
+          <Skeleton h={22} w='80%' alignSelf='center' />
+          <Skeleton h={16} w='50%' mv='xs' alignSelf='center' />
+        </CardContent>
+        <CardFooter>
+          <Skeleton h={20} w='60%' alignSelf='center' />
+        </CardFooter>
+      </Card>
+    )
+  }
 
   const { handle, follower_count } = user
 
