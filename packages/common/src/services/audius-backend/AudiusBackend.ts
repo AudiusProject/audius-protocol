@@ -746,7 +746,15 @@ export const audiusBackend = ({
       // then we should not attempt to fetch socials from identity.
       // It is possible that identity has more up-to-date socials than DN,
       // but we can live with that until we do the final social backfill from identity to DN.
-      const hasSocialsFromDn = account.twitter_handle || account.instagram_handle || account.tiktok_handle || account.website || account.donation || account.verified_with_twitter || account.verified_with_instagram || account.verified_with_tiktok
+      const hasSocialsFromDn =
+        account.twitter_handle ||
+        account.instagram_handle ||
+        account.tiktok_handle ||
+        account.website ||
+        account.donation ||
+        account.verified_with_twitter ||
+        account.verified_with_instagram ||
+        account.verified_with_tiktok
       if (!hasSocialsFromDn) {
         try {
           const body = await getSocialHandles(account.handle)
@@ -756,7 +764,7 @@ export const audiusBackend = ({
           account.website = body.website || null
           account.donation = body.donation || null
           account.verified_with_twitter = body.twitterVerified || false
-          account.verified_with_instagram= body.instagramVerified || false
+          account.verified_with_instagram = body.instagramVerified || false
           account.verified_with_tiktok = body.tikTokVerified || false
         } catch (e) {
           console.error(e)
