@@ -46,9 +46,11 @@ export const MusicBadge = (props: MusicBadgeProps) => {
 
   const gap = size === 'm' ? 's' : 'xs'
   const height = size === 'm' ? '2xl' : 'xl'
-  const backgroundColor =
-    colorProp ||
-    (variant === 'default' ? color.background.default : color.background.accent)
+  const backgroundColor = colorProp
+    ? color.special[colorProp]
+    : variant === 'default'
+    ? color.background.default
+    : color.background.accent
   const textColor =
     colorProp ||
     (variant === 'default' ? color.text.default : color.text.accent)
@@ -56,7 +58,7 @@ export const MusicBadge = (props: MusicBadgeProps) => {
     colorProp ||
     (variant === 'default' ? color.icon.default : color.icon.accent)
   const borderColor = colorProp
-    ? hexToRgba(colorProp, 0.5)
+    ? hexToRgba(color.special[colorProp], 0.5)
     : variant === 'default'
     ? color.border.strong
     : color.icon.accent // Hacky - should there be a color.border.accent?
@@ -70,20 +72,10 @@ export const MusicBadge = (props: MusicBadgeProps) => {
       gap={gap}
       h={height}
       ph={size}
-      css={{
-        backgroundColor: hexToRgba(backgroundColor, 0.08),
-        borderColor
-      }}
+      css={{ backgroundColor: hexToRgba(backgroundColor, 0.08), borderColor }}
     >
       {Icon ? <Icon size={size} fill={iconColor} /> : null}
-      <Text
-        variant='label'
-        size={size}
-        textTransform='uppercase'
-        css={{
-          color: textColor
-        }}
-      >
+      <Text variant='label' size={size} css={{ color: textColor }}>
         {textLabel}
       </Text>
     </Flex>
