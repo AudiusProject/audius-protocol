@@ -146,6 +146,7 @@ export const OptionsFilterButton = forwardRef<
                       aria-label={option.label ?? option.value}
                       role='option'
                     >
+                      {option.leadingElement ?? null}
                       {option.label ?? option.value}
                     </BaseButton>
                   ))}

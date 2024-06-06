@@ -10,6 +10,7 @@ export type OptionsFilterButtonOption = {
    */
   label?: string
   icon?: IconComponent
+  leadingElement?: JSX.Element
 }
 
 export type FilterButtonPopupProps = {
