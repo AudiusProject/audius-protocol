@@ -4,7 +4,6 @@ import { StemCategory, stemCategoryFriendlyNames } from '@audius/common/models'
 import { Nullable } from '@audius/common/utils'
 import {
   Box,
-  FilterButton,
   Flex,
   IconButton,
   IconCompose,
@@ -20,6 +19,7 @@ import {
   IconFileWAV as iconFileWav,
   IconFileWEBM,
   IconTrash,
+  OptionsFilterButton,
   Text
 } from '@audius/harmony'
 import cn from 'classnames'
@@ -150,7 +150,7 @@ export const TrackPreview = (props: TrackPreviewProps) => {
       <Flex alignItems='center'>
         {isStem && onEditStemCategory ? (
           <Box mr='xl'>
-            <FilterButton
+            <OptionsFilterButton
               label={messages.selectType}
               options={stemCategories}
               popupAnchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
@@ -158,7 +158,7 @@ export const TrackPreview = (props: TrackPreviewProps) => {
                 vertical: 'top',
                 horizontal: 'right'
               }}
-              onSelect={(label) => onEditStemCategory(label as StemCategory)}
+              onChange={(label) => onEditStemCategory(label as StemCategory)}
               selection={stemCategory?.toString() ?? null}
               popupZIndex={zIndex.STEMS_AND_DOWNLOADS_FILTER_BUTTON_POPUP}
               disabled={!allowCategorySwitch}
