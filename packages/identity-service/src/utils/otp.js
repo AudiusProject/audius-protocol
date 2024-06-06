@@ -24,10 +24,9 @@ const generateOtp = () => {
 }
 
 const getEmail = ({ otp }) => {
-  const expire = 'This code will expire in 10 minutes.'
   const copyrightYear = new Date().getFullYear().toString()
   const formattedOtp = `${otp.substring(0, 3)} ${otp.substring(3, 6)}`
-  return getOtpEmail({ otp: formattedOtp, expire, copyrightYear })
+  return getOtpEmail({ otp: formattedOtp, copyrightYear })
 }
 
 const validateOtp = async ({ email, otp, redis }) => {
