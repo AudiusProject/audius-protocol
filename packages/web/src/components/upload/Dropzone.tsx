@@ -135,7 +135,6 @@ export const Dropzone = ({
             ) : null}
             <Box w='100%'>
               <IconCloudUpload
-                width='100%'
                 className={cn(styles.iconUpload, iconClassName)}
               />
             </Box>
