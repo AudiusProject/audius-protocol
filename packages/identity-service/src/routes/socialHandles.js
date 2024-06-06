@@ -5,7 +5,6 @@ const {
 } = require('../apiHelpers')
 const authMiddleware = require('../authMiddleware')
 const models = require('../models')
-const audiusLibsWrapper = require('../audiusLibsInstance')
 
 module.exports = function (app) {
   app.get(
@@ -42,45 +41,14 @@ module.exports = function (app) {
         }
       })
 
-      const { discoveryProvider } = audiusLibsWrapper.getAudiusLibs()
-      const dnUsers = await discoveryProvider.getUsers(
-        1 /* limit */,
-        0 /* offset */,
-        null /* user ids */,
-        null /* user wallets */,
-        handle /* handle */
-      )
-      const user = dnUsers[0]
-
-      // Normally this would only use DN to get the socials, but for now we need to check the
-      // identity table in case old clients are still updating socials only on identity and not DN.
-      if (user || socialHandles) {
-        const twitterHandle =
-          user?.twitter_handle ?? socialHandles?.twitterHandle ?? null
-        const instagramHandle =
-          user?.instagram_handle ?? socialHandles?.instagramHandle ?? null
-        const tikTokHandle =
-          user?.tiktok_handle ?? socialHandles?.tikTokHandle ?? null
-        const twitterVerified = user?.verified_with_twitter || !!twitterUser
-        const instagramVerified =
-          user?.verified_with_instagram || !!instagramUser
-        const tikTokVerified = user?.verified_with_tiktok || !!tikTokUser
-        const website = user?.website ?? socialHandles?.website ?? null
-        const donation = user?.donation ?? socialHandles?.donation ?? null
-
+      if (socialHandles) {
         return successResponse({
-          twitterHandle,
-          instagramHandle,
-          tikTokHandle,
-          twitterVerified,
-          instagramVerified,
-          tikTokVerified,
-          website,
-          donation
+          ...socialHandles.dataValues,
+          twitterVerified: !!twitterUser,
+          instagramVerified: !!instagramUser,
+          tikTokVerified: !!tikTokUser
         })
-      }
-
-      return successResponse()
+      } else return successResponse()
     })
   )
 
