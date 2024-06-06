@@ -92,7 +92,7 @@ percentage_multiplier = 10**percentage_decimals
 cents_to_usdc_multiplier = 10**4
 
 
-def calculate_split_amounts(price: int, splits: List[Split]):
+def calculate_split_amounts(price: int | None, splits: List[Split]):
     """
     Deterministically calculates the USDC amounts to pay to each person,
     adjusting for rounding errors and ensuring the total matches the price.
