@@ -7,15 +7,9 @@ import { hexToRgba } from 'utils/colorUtils'
 import { Flex } from '../layout/Flex'
 import { Text } from '../text/Text'
 
-export enum MusicBadgeVariant {
-  DEFAULT = 'default',
-  ACCENT = 'accent'
-}
+export type MusicBadgeVariant = 'default' | 'accent'
 
-export enum MusicBadgeSize {
-  SMALL = 's',
-  DEFAULT = 'm'
-}
+export type MusicBadgeSize = 's' | 'm'
 
 export type MusicBadgeProps = {
   /**
@@ -42,34 +36,30 @@ export type MusicBadgeProps = {
 
 export const MusicBadge = (props: MusicBadgeProps) => {
   const {
-    variant = MusicBadgeVariant.DEFAULT,
+    variant = 'default',
     textLabel,
     icon: Icon,
-    size = MusicBadgeSize.DEFAULT,
+    size = 'm',
     color: colorProp
   } = props
   const { color } = useTheme()
 
-  const gap = size === MusicBadgeSize.DEFAULT ? 's' : 'xs'
-  const height = size === MusicBadgeSize.DEFAULT ? '2xl' : 'xl'
+  const gap = size === 'm' ? 's' : 'xs'
+  const height = size === 'm' ? '2xl' : 'xl'
   const backgroundColor =
     colorProp ||
-    (variant === MusicBadgeVariant.DEFAULT
-      ? color.background.default
-      : color.background.accent)
+    (variant === 'default' ? color.background.default : color.background.accent)
   const textColor =
     colorProp ||
-    (variant === MusicBadgeVariant.DEFAULT
-      ? color.text.default
-      : color.text.accent)
+    (variant === 'default' ? color.text.default : color.text.accent)
   const iconColor =
     colorProp ||
-    (variant === MusicBadgeVariant.DEFAULT
-      ? color.icon.default
-      : color.icon.accent)
+    (variant === 'default' ? color.icon.default : color.icon.accent)
   const borderColor = colorProp
     ? hexToRgba(colorProp, 0.5)
-    : color.border.strong
+    : variant === 'default'
+    ? color.border.strong
+    : color.icon.accent // Hacky - should there be a color.border.accent?
 
   return (
     <Flex
