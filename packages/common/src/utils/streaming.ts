@@ -5,6 +5,7 @@ import { Nullable } from './typeUtils'
 
 const PREVIEW_LENGTH_SECONDS = 30
 
+// TODO: Stop doing this entirely.
 export async function generateUserSignature(
   audiusBackendInstance: AudiusBackend
 ) {
@@ -13,6 +14,8 @@ export async function generateUserSignature(
   return { data, signature }
 }
 
+// TODO: This needs to use SDK and/or currentUserId and auth headers
+// Might need to add a manual method to SDK to generate the params.
 export async function getQueryParams({
   audiusBackendInstance,
   nftAccessSignature

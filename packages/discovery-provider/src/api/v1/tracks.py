@@ -10,7 +10,6 @@ from flask import redirect
 from flask.globals import request
 from flask_restx import Namespace, Resource, fields, inputs, marshal, reqparse
 
-from src.api.v1.access_helpers import check_authorized
 from src.api.v1.helpers import (
     DescriptiveArgument,
     abort_bad_path_param,
@@ -81,7 +80,6 @@ from src.trending_strategies.trending_strategy_factory import (
 )
 from src.trending_strategies.trending_type_and_version import TrendingType
 from src.utils import redis_connection
-from src.utils.auth_middleware import auth_middleware
 from src.utils.get_all_nodes import get_all_healthy_content_nodes_cached
 from src.utils.redis_cache import cache
 from src.utils.redis_metrics import record_metrics
@@ -515,9 +513,8 @@ class TrackStream(Resource):
         },
     )
     @ns.expect(stream_parser)
-    @auth_middleware(stream_parser)
     @cache(ttl_sec=5, transform=redirect)
-    def get(self, track_id, authed_user_id=None):
+    def get(self, track_id):
         """
         Get the streamable MP3 file of a track
 
@@ -531,10 +528,6 @@ class TrackStream(Resource):
         user_signature = request_args.get("user_signature")
         nft_access_signature = request_args.get("nft_access_signature")
         api_key = request_args.get("api_key")
-
-        # If streaming on behalf of managed user, ensure access to that user
-        if user_id:
-            check_authorized(user_id, authed_user_id)
 
         decoded_id = decode_with_abort(track_id, ns)
 
@@ -673,9 +666,8 @@ class TrackDownload(Resource):
         },
     )
     @ns.expect(download_parser)
-    @auth_middleware(download_parser)
     @cache(ttl_sec=5, transform=redirect)
-    def get(self, track_id, authed_user_id=None):
+    def get(self, track_id):
         """
         Download the original or MP3 file of a track.
         """
@@ -689,10 +681,6 @@ class TrackDownload(Resource):
                 f"tracks.py | download | Track with id {track_id} may not exist. Please investigate."
             )
             abort_not_found(track_id, ns)
-
-        # If downloading on behalf of managed user, ensure access to that user
-        if user_id is not None:
-            check_authorized(user_id, authed_user_id)
 
         redis = redis_connection.get_redis()
 
