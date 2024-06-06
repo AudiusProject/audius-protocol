@@ -506,8 +506,8 @@ stream_url_parser.add_argument(
 class TrackStreamUrl(Resource):
     @record_metrics
     @ns.doc(
-        id="""Inspect Track""",
-        description="""Inspect a track""",
+        id="""Stream Url""",
+        description="""Fetch the CN url for a track stream""",
         params={"track_id": "A Track ID"},
         responses={
             200: "Success",
