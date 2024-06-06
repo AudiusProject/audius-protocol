@@ -84,10 +84,11 @@ const MoodFilter = () => {
   const [urlSearchParams] = useSearchParams()
   const mood = urlSearchParams.get('mood')
   const updateSearchParams = useUpdateSearchParams('mood')
-  const moodOptions = Object.values(MOODS).map((mood) => ({
-    label: mood.label,
-    value: mood.value,
-    leadingElement: mood.icon
+  const sortedKeys = Object.keys(MOODS).sort()
+  const moodOptions = sortedKeys.map((mood) => ({
+    label: MOODS[mood].label,
+    value: MOODS[mood].value,
+    leadingElement: MOODS[mood].icon
   }))
 
   return (
