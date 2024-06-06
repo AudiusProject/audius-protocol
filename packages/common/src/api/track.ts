@@ -140,6 +140,6 @@ export const getTrackStreamUrl = (
   state: CommonState,
   { trackId, currentUserId }: { trackId: ID; currentUserId?: Nullable<ID> }
 ) =>
-  state.api.trackApi.getTrackStreamUrl?.[
+  state.api?.trackApi?.getTrackStreamUrl?.[
     `{"id":${trackId},"currentUserId":${currentUserId}}`
   ]?.nonNormalizedData?.['stream-url']
