@@ -1,11 +1,10 @@
-import { AccessSignature, Track } from '~/models'
+import { AccessSignature, ID, OptionalId, Track } from '~/models'
 import { AudiusBackend, QueryParams } from '~/services/index'
 
 import { Nullable } from './typeUtils'
 
 const PREVIEW_LENGTH_SECONDS = 30
 
-// TODO: Stop doing this entirely.
 export async function generateUserSignature(
   audiusBackendInstance: AudiusBackend
 ) {
@@ -14,17 +13,20 @@ export async function generateUserSignature(
   return { data, signature }
 }
 
-// TODO: This needs to use SDK and/or currentUserId and auth headers
-// Might need to add a manual method to SDK to generate the params.
 export async function getQueryParams({
   audiusBackendInstance,
-  nftAccessSignature
+  nftAccessSignature,
+  userId
 }: {
   audiusBackendInstance: AudiusBackend
   nftAccessSignature?: Nullable<AccessSignature>
+  userId?: Nullable<ID>
 }) {
   const { data, signature } = await generateUserSignature(audiusBackendInstance)
   const queryParams: QueryParams = {}
+  if (userId) {
+    queryParams.user_id = OptionalId.parse(userId)
+  }
   queryParams.user_data = data
   queryParams.user_signature = signature
   if (nftAccessSignature) {
