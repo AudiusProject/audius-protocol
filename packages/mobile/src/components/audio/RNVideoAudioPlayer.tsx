@@ -298,13 +298,15 @@ export const RNVideoAudioPlayer = () => {
       }
     },
     [
+      currentUserId,
       isCollectionMarkedForDownload,
       isNotReachable,
       isOfflineModeEnabled,
       nftAccessSignatureMap,
       offlineAvailabilityByTrackId,
       queueTrackOwnersMap,
-      storageNodeSelector
+      storageNodeSelector,
+      trackStreamUrls
     ]
   )
 

@@ -513,7 +513,9 @@ class TrackStreamUrl(Resource):
     @cache(ttl_sec=5)
     def get(self, track_id):
         """
-        TODO: add description
+        POC: An alternate form of the /stream url.
+        Instead of redirecting to the content node, it just returns the url as a string
+        This means the client can pre-fetch the url
         """
         request_args = stream_parser.parse_args()
         is_preview = request_args.get("preview")
@@ -596,7 +598,6 @@ class TrackStreamUrl(Resource):
         # if track has placement_hosts, use that instead
         if track.get("placement_hosts"):
             content_nodes = track.get("placement_hosts").split(",")
-
 
         for content_node in content_nodes:
             try:

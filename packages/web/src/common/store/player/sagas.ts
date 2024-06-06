@@ -181,6 +181,10 @@ export function* watchPlay() {
         )
         return () => {}
       })
+      if (usePrefetchStreamUrls && streamUrl) {
+        // eslint-disable-next-line no-console
+        console.log('Using pre-fetched stream url for ', track.title)
+      }
       yield* spawn(actionChannelDispatcher, endChannel)
       yield* put(
         cacheActions.subscribe(Kind.TRACKS, [

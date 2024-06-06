@@ -27,7 +27,7 @@ export type AudiusQueryContextType = {
   getFeatureEnabled: (
     flag: FeatureFlags,
     fallbackFlag?: FeatureFlags
-  ) => Promise<boolean>
+  ) => Promise<boolean> | boolean
 }
 
 export const AudiusQueryContext = createContext<AudiusQueryContextType>(
