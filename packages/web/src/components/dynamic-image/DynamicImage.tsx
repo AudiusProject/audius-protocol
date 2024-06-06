@@ -168,7 +168,7 @@ const DynamicImage = (props: DynamicImageProps) => {
       role='img'
       css={{
         '&:before': {
-          content: '""',
+          content: '"\\00A0"',
           position: 'absolute',
           top: 0,
           left: 0,
