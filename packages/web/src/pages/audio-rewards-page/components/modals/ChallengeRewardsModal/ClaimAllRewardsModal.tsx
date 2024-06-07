@@ -32,8 +32,6 @@ import { ToastContext } from 'components/toast/ToastContext'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
 import { CLAIM_REWARD_TOAST_TIMEOUT_MILLIS } from 'utils/constants'
 
-import ModalDrawer from '../ModalDrawer'
-
 import styles from './styles.module.css'
 
 const messages = {
