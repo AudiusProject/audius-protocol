@@ -151,7 +151,7 @@ const createSdkSchema = () =>
     .object({
       ai_attribution_user_id: z.optional(z.number()).nullable(),
       allowed_api_keys: z.optional(z.array(z.string())).nullable(),
-      description: z.optional(z.string().max(1000)),
+      description: z.optional(z.string().max(1000)).nullable(),
 
       genre: GenreSchema,
       isrc: z.optional(z.string().nullable()),
@@ -174,7 +174,7 @@ const createSdkSchema = () =>
           .strict()
           .nullable()
       ),
-      tags: z.optional(z.string()),
+      tags: z.optional(z.string()).nullable(),
       title: z.string({
         required_error: messages.track.titleRequiredError
       }),

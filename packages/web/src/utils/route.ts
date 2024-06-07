@@ -133,6 +133,7 @@ export const PLAYLIST_BY_PERMALINK_PAGE = '/:handle/playlist/:slug'
 export const ALBUM_BY_PERMALINK_PAGE = '/:handle/album/:slug'
 export const ALBUM_PAGE = '/:handle/album/:albumName'
 export const TRACK_PAGE = '/:handle/:slug'
+export const TRACK_EDIT_PAGE = '/:handle/:slug/edit'
 export const TRACK_REMIXES_PAGE = '/:handle/:slug/remixes'
 export const PROFILE_PAGE = '/:handle'
 export const PROFILE_PAGE_TRACKS = '/:handle/tracks'
@@ -143,6 +144,7 @@ export const PROFILE_PAGE_COLLECTIBLES = '/:handle/collectibles'
 export const PROFILE_PAGE_COLLECTIBLE_DETAILS =
   '/:handle/collectibles/:collectibleId'
 export const PROFILE_PAGE_AI_ATTRIBUTED_TRACKS = '/:handle/ai'
+
 // Opaque id routes
 export const TRACK_ID_PAGE = '/tracks/:id'
 export const USER_ID_PAGE = '/users/:id'
@@ -212,6 +214,7 @@ export const authenticatedRoutes = [
   SAVED_PAGE,
   LIBRARY_PAGE,
   HISTORY_PAGE,
+  TRACK_EDIT_PAGE,
   UPLOAD_PAGE,
   SETTINGS_PAGE,
   PRIVATE_KEY_EXPORTER_SETTINGS_PAGE,
@@ -253,6 +256,7 @@ export const orderedRoutes = [
   SEARCH_PAGE,
   UPLOAD_ALBUM_PAGE,
   UPLOAD_PLAYLIST_PAGE,
+  TRACK_EDIT_PAGE,
   UPLOAD_PAGE,
   SAVED_PAGE,
   LIBRARY_PAGE,
@@ -297,6 +301,7 @@ export const staticRoutes = new Set([
   PAYMENTS_PAGE,
   AUDIO_PAGE,
   AUDIO_TRANSACTIONS_PAGE,
+  TRACK_EDIT_PAGE,
   UPLOAD_PAGE,
   UPLOAD_ALBUM_PAGE,
   UPLOAD_PLAYLIST_PAGE,
