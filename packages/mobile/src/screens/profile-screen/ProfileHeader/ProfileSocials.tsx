@@ -55,10 +55,8 @@ export const ProfileSocials = () => {
   const dispatch = useDispatch()
 
   useEffect(() => {
-    if (twitter_handle === undefined) {
-      dispatch(fetchUserSocials(handle))
-    }
-  }, [twitter_handle, dispatch, handle])
+    dispatch(fetchUserSocials(handle))
+  }, [dispatch, handle])
 
   const socialLinks = useMemo(() => {
     const links = [

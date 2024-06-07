@@ -13,7 +13,7 @@ import { messages } from './messages'
 
 type ShareToTwitterEvent = Omit<ShareToTwitter, 'eventName' | 'source'>
 
-const getShareHandle = async (handle: string) => {
+const getTwitterShareHandle = async (handle: string) => {
   const twitterHandle = await getTwitterHandleByUserHandle(handle)
   return twitterHandle ? `@${twitterHandle}` : handle
 }
@@ -43,7 +43,7 @@ export const getTwitterShareText = async (
       } = content
       twitterText = messageConfig.trackShareText(
         title,
-        await getShareHandle(handle)
+        await getTwitterShareHandle(handle)
       )
       link = fullTrackPage(permalink)
       analyticsEvent = { kind: 'track', id: track_id, url: link }
@@ -53,7 +53,9 @@ export const getTwitterShareText = async (
       const {
         profile: { handle, user_id }
       } = content
-      twitterText = messageConfig.profileShareText(await getShareHandle(handle))
+      twitterText = messageConfig.profileShareText(
+        await getTwitterShareHandle(handle)
+      )
       link = fullProfilePage(handle)
       analyticsEvent = { kind: 'profile', id: user_id, url: link }
       break
@@ -65,7 +67,7 @@ export const getTwitterShareText = async (
       } = content
       twitterText = messageConfig.albumShareText(
         playlist_name,
-        await getShareHandle(handle)
+        await getTwitterShareHandle(handle)
       )
       link = fullCollectionPage(
         handle,
@@ -84,7 +86,7 @@ export const getTwitterShareText = async (
       } = content
       twitterText = messageConfig.playlistShareText(
         playlist_name,
-        await getShareHandle(handle)
+        await getTwitterShareHandle(handle)
       )
       link = fullCollectionPage(
         handle,
