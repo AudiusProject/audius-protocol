@@ -16,7 +16,10 @@ import {
   Button,
   Flex,
   IconArrowRight,
+  Modal,
   ModalContent,
+  ModalHeader,
+  ModalTitle,
   ProgressBar,
   Text
 } from '@audius/harmony'
@@ -121,16 +124,10 @@ export const ClaimAllRewardsModal = () => {
   }, [])
 
   return (
-    <ModalDrawer
-      title={messages.rewards}
-      showTitleHeader
-      isOpen={isOpen}
-      onClose={handleClose}
-      isFullscreen={true}
-      useGradientTitle={false}
-      titleClassName={wm(styles.title)}
-      headerContainerClassName={styles.header}
-    >
+    <Modal size='medium' isOpen={isOpen} onClose={handleClose}>
+      <ModalHeader onClose={handleClose}>
+        <ModalTitle title={messages.rewards} />
+      </ModalHeader>
       <ModalContent>
         <Flex direction='column' gap='2xl' mt='s'>
           <Text variant='body' textAlign='left'>
@@ -196,6 +193,6 @@ export const ClaimAllRewardsModal = () => {
           )}
         </Flex>
       </ModalContent>
-    </ModalDrawer>
+    </Modal>
   )
 }
