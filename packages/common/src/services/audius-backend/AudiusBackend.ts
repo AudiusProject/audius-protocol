@@ -2023,6 +2023,22 @@ export const audiusBackend = ({
         entityType,
         ...formatBaseNotification(notification)
       }
+    } else if (notification.type === 'request_manager') {
+      const data = notification.actions[0].data
+
+      return {
+        type: NotificationType.RequestManager,
+        userId: decodeHashId(data.user_id)!,
+        ...formatBaseNotification(notification)
+      }
+    } else if (notification.type === 'approve_manager_request') {
+      const data = notification.actions[0].data
+
+      return {
+        type: NotificationType.ApproveManagerRequest,
+        userId: decodeHashId(data.grantee_user_id)!,
+        ...formatBaseNotification(notification)
+      }
     } else {
       console.error('Notification does not match an expected type.')
     }
