@@ -47,7 +47,7 @@
     "@storybook/testing-library": "0.2.2",
     "@svgr/rollup": "8.1.0",
     "@svgr/webpack": "8.1.0",
-    "@types/color": "^3.0.6",
+    "@types/color": "3.0.6",
     "@types/react": "18.2.0",
     "@types/react-dom": "18.2.0",
     "@types/react-lottie": "1.2.3",
