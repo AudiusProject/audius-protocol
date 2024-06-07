@@ -1,6 +1,5 @@
 import { ShareToTwitter } from '@audius/common/models'
 import { ShareContent } from '@audius/common/store'
-import { Nullable } from '@audius/common/utils'
 
 import { getTwitterHandleByUserHandle } from 'components/notification/Notification/utils'
 import {
@@ -14,17 +13,8 @@ import { messages } from './messages'
 
 type ShareToTwitterEvent = Omit<ShareToTwitter, 'eventName' | 'source'>
 
-const getTwitterShareHandle = async ({
-  handle,
-  twitterHandle
-}: {
-  handle: string
-  twitterHandle: Nullable<string>
-}) => {
-  if (!twitterHandle) {
-    const theTwitterHandle = await getTwitterHandleByUserHandle(handle)
-    return theTwitterHandle ? `@${theTwitterHandle}` : handle
-  }
+const getTwitterShareHandle = async (handle: string) => {
+  const twitterHandle = await getTwitterHandleByUserHandle(handle)
   return twitterHandle ? `@${twitterHandle}` : handle
 }
 
@@ -49,11 +39,11 @@ export const getTwitterShareText = async (
     case 'track': {
       const {
         track: { title, permalink, track_id },
-        artist: { handle, twitter_handle: twitterHandle }
+        artist: { handle }
       } = content
       twitterText = messageConfig.trackShareText(
         title,
-        await getTwitterShareHandle({ handle, twitterHandle })
+        await getTwitterShareHandle(handle)
       )
       link = fullTrackPage(permalink)
       analyticsEvent = { kind: 'track', id: track_id, url: link }
@@ -61,10 +51,10 @@ export const getTwitterShareText = async (
     }
     case 'profile': {
       const {
-        profile: { handle, user_id, twitter_handle: twitterHandle }
+        profile: { handle, user_id }
       } = content
       twitterText = messageConfig.profileShareText(
-        await getTwitterShareHandle({ handle, twitterHandle })
+        await getTwitterShareHandle(handle)
       )
       link = fullProfilePage(handle)
       analyticsEvent = { kind: 'profile', id: user_id, url: link }
@@ -73,11 +63,11 @@ export const getTwitterShareText = async (
     case 'album': {
       const {
         album: { playlist_name, playlist_id, permalink },
-        artist: { handle, twitter_handle: twitterHandle }
+        artist: { handle }
       } = content
       twitterText = messageConfig.albumShareText(
         playlist_name,
-        await getTwitterShareHandle({ handle, twitterHandle })
+        await getTwitterShareHandle(handle)
       )
       link = fullCollectionPage(
         handle,
@@ -92,11 +82,11 @@ export const getTwitterShareText = async (
     case 'playlist': {
       const {
         playlist: { playlist_name, playlist_id, permalink, is_album },
-        creator: { handle, twitter_handle: twitterHandle }
+        creator: { handle }
       } = content
       twitterText = messageConfig.playlistShareText(
         playlist_name,
-        await getTwitterShareHandle({ handle, twitterHandle })
+        await getTwitterShareHandle(handle)
       )
       link = fullCollectionPage(
         handle,

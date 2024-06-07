@@ -1,5 +1,4 @@
 import type { ShareContent } from '@audius/common/store'
-import type { Nullable } from '@audius/common/utils'
 import { makeTwitterShareUrl } from '@audius/common/utils'
 
 import { audiusBackendInstance } from 'app/services/audius-backend-instance'
@@ -36,17 +35,8 @@ export const getContentUrl = (content: ShareContent) => {
   }
 }
 
-const getTwitterShareHandle = async ({
-  handle,
-  twitterHandle
-}: {
-  handle: string
-  twitterHandle: Nullable<string>
-}) => {
-  if (!twitterHandle) {
-    const socials = await audiusBackendInstance.getSocialHandles(handle)
-    return socials.twitterHandle ? `@${socials.twitterHandle}` : handle
-  }
+const getTwitterShareHandle = async (handle: string) => {
+  const { twitterHandle } = await audiusBackendInstance.getSocialHandles(handle)
   return twitterHandle ? `@${twitterHandle}` : handle
 }
 
@@ -55,39 +45,34 @@ export const getTwitterShareText = async (content: ShareContent) => {
     case 'track': {
       const {
         track: { title },
-        artist: { handle, twitter_handle: twitterHandle }
+        artist: { handle }
       } = content
-      return messages.trackShareText(
-        title,
-        await getTwitterShareHandle({ handle, twitterHandle })
-      )
+      return messages.trackShareText(title, await getTwitterShareHandle(handle))
     }
     case 'profile': {
       const {
-        profile: { handle, twitter_handle: twitterHandle }
+        profile: { handle }
       } = content
-      return messages.profileShareText(
-        await getTwitterShareHandle({ handle, twitterHandle })
-      )
+      return messages.profileShareText(await getTwitterShareHandle(handle))
     }
     case 'album': {
       const {
         album: { playlist_name },
-        artist: { handle, twitter_handle: twitterHandle }
+        artist: { handle }
       } = content
       return messages.albumShareText(
         playlist_name,
-        await getTwitterShareHandle({ handle, twitterHandle })
+        await getTwitterShareHandle(handle)
       )
     }
     case 'playlist': {
       const {
         playlist: { playlist_name },
-        creator: { handle, twitter_handle: twitterHandle }
+        creator: { handle }
       } = content
       return messages.playlistShareText(
         playlist_name,
-        await getTwitterShareHandle({ handle, twitterHandle })
+        await getTwitterShareHandle(handle)
       )
     }
     case 'audioNftPlaylist': {
