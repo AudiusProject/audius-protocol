@@ -53,7 +53,6 @@ const { getClaimStatus } = audioRewardsPageSelectors
 export const ClaimAllRewardsModal = () => {
   const dispatch = useDispatch()
   const { toast } = useContext(ToastContext)
-  const wm = useWithMobileStyle(styles.mobile)
   const [isOpen, setOpen] = useModalState('ClaimAllRewards')
   const claimStatus = useSelector(getClaimStatus)
   const { claimableAmount, claimableChallenges, cooldownChallenges, summary } =
