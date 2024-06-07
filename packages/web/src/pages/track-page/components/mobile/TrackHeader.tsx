@@ -27,15 +27,16 @@ import {
 } from '@audius/common/utils'
 import {
   Flex,
-  IconRobot,
   IconCollectible,
   IconPause,
   IconPlay,
   IconSpecialAccess,
   IconCart,
   Box,
-  Button
+  Button,
+  MusicBadge
 } from '@audius/harmony'
+import IconRobot from '@audius/harmony/src/assets/icons/Robot.svg'
 import cn from 'classnames'
 import { shallowEqual, useSelector } from 'react-redux'
 
@@ -47,7 +48,6 @@ import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { UserLink } from 'components/link'
 import { SearchTag } from 'components/search/SearchTag'
 import { AiTrackSection } from 'components/track/AiTrackSection'
-import Badge from 'components/track/Badge'
 import { DownloadSection } from 'components/track/DownloadSection'
 import { GatedContentSection } from 'components/track/GatedContentSection'
 import { UserGeneratedText } from 'components/user-generated-text'
@@ -385,13 +385,14 @@ const TrackHeader = ({
       ) : (
         renderHeaderText()
       )}
-      {aiAttributedUserId ? (
-        <Badge
-          icon={<IconRobot />}
-          className={styles.badgeAi}
-          textLabel={messages.generatedWithAi}
-        />
-      ) : null}
+      {/* {aiAttributedUserId ? ( */}
+      <IconButton icon={IconRobot} aria-label='Generated with AI' />
+      {/* <MusicBadge
+        icon={IconRobot}
+        // className={styles.badgeAi}
+        textLabel={messages.generatedWithAi}
+      /> */}
+      {/* ) : null} */}
       {imageElement}
       <div className={styles.titleArtistSection}>
         <h1 className={styles.title}>{title}</h1>
