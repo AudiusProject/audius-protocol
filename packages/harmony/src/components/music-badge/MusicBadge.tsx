@@ -11,8 +11,6 @@ import { Text } from '../text/Text'
 
 export type MusicBadgeVariant = 'default' | 'accent'
 
-export type MusicBadgeSize = 's' | 'm'
-
 export type MusicBadgeProps = {
   /**
    * The type of the MusicBadge
@@ -23,27 +21,15 @@ export type MusicBadgeProps = {
    */
   icon?: IconComponent
   /**
-   * The size of the MusicBadge
-   */
-  size?: 's' | 'm'
-  /**
    * Override the colors of the MusicBadge
    */
   color?: SpecialColors
 } & ComponentPropsWithoutRef<'div'>
 
 export const MusicBadge = (props: MusicBadgeProps) => {
-  const {
-    variant = 'default',
-    icon: Icon,
-    size = 'm',
-    color: colorProp,
-    children
-  } = props
+  const { variant = 'default', icon: Icon, color: colorProp, children } = props
   const { color } = useTheme()
 
-  const gap = size === 'm' ? 's' : 'xs'
-  const height = size === 'm' ? '2xl' : 'xl'
   const backgroundColor = colorProp
     ? color.special[colorProp]
     : variant === 'default'
@@ -71,16 +57,16 @@ export const MusicBadge = (props: MusicBadgeProps) => {
       justifyContent='center'
       borderRadius='s'
       border='strong'
-      gap={gap}
-      h={height}
-      ph={size}
+      gap='s'
+      h='2xl'
+      ph='m'
       css={{
         backgroundColor: Color(backgroundColor).fade(0.92).toString(),
         borderColor
       }}
     >
-      {Icon ? <Icon size={size} fill={iconColor} /> : null}
-      <Text variant='label' size={size} css={{ color: textColor }}>
+      {Icon ? <Icon size='m' fill={iconColor} /> : null}
+      <Text variant='label' css={{ color: textColor }}>
         {children}
       </Text>
     </Flex>
