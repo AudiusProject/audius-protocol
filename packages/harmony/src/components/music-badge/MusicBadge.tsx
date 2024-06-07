@@ -1,10 +1,10 @@
 import { ComponentPropsWithoutRef } from 'react'
 
 import { useTheme } from '@emotion/react'
+import Color from 'color'
 
 import type { IconComponent } from 'components/icon'
 import { SpecialColors } from 'foundations'
-import { hexToRgba } from 'utils/colorUtils'
 
 import { Flex } from '../layout/Flex'
 import { Text } from '../text/Text'
@@ -49,17 +49,21 @@ export const MusicBadge = (props: MusicBadgeProps) => {
     : variant === 'default'
     ? color.background.default
     : color.background.accent
-  const textColor =
-    colorProp ||
-    (variant === 'default' ? color.text.default : color.text.accent)
-  const iconColor =
-    colorProp ||
-    (variant === 'default' ? color.icon.default : color.icon.accent)
+  const textColor = colorProp
+    ? color.special[colorProp]
+    : variant === 'default'
+    ? color.text.default
+    : color.text.accent
+  const iconColor = colorProp
+    ? color.special[colorProp]
+    : variant === 'default'
+    ? color.icon.default
+    : color.icon.accent
   const borderColor = colorProp
-    ? hexToRgba(color.special[colorProp], 0.5)
+    ? Color(color.special[colorProp]).fade(0.5).toString()
     : variant === 'default'
     ? color.border.strong
-    : color.icon.accent // Hacky - should there be a color.border.accent?
+    : color.border.accent
 
   return (
     <Flex
@@ -70,7 +74,10 @@ export const MusicBadge = (props: MusicBadgeProps) => {
       gap={gap}
       h={height}
       ph={size}
-      css={{ backgroundColor: hexToRgba(backgroundColor, 0.08), borderColor }}
+      css={{
+        backgroundColor: Color(backgroundColor).fade(0.92).toString(),
+        borderColor
+      }}
     >
       {Icon ? <Icon size={size} fill={iconColor} /> : null}
       <Text variant='label' size={size} css={{ color: textColor }}>
