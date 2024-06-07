@@ -6,10 +6,9 @@ import {
   TrackMetadataForUpload,
   cacheTracksActions
 } from '@audius/common/store'
-import { Flex } from '@audius/harmony'
+import { push as pushRoute } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 import { useParams } from 'react-router'
-import { useHistory } from 'react-router-dom'
 
 import { DeleteConfirmationModal } from 'components/delete-confirmation'
 import { EditTrackForm } from 'components/edit-track/EditTrackForm'
@@ -48,14 +47,13 @@ export const EditTrackPage = (props: EditPageProps) => {
   })
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false)
 
-  const { goBack } = useHistory()
   const onSubmit = (formValues: TrackEditFormValues) => {
     const metadata = { ...formValues.trackMetadatas[0] }
     if (!metadata.artwork?.file) {
       metadata.artwork = null
     }
     dispatch(editTrack(metadata.track_id, metadata))
-    goBack()
+    dispatch(pushRoute(metadata.permalink))
   }
 
   const onDeleteTrack = () => {
