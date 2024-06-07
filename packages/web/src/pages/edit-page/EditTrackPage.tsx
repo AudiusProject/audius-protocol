@@ -102,10 +102,6 @@ export const EditTrackPage = (props: EditPageProps) => {
       title={messages.title}
       header={<Header primary={messages.title} showBackButton />}
     >
-      {/* // Debug: */}
-      <Flex w='100%' direction='column' gap='xs' justifyContent='flex-start'>
-        {/* <Text>{coverArtUrl}</Text> */}
-      </Flex>
       {trackStatus !== Status.SUCCESS || !coverArtUrl ? (
         <LoadingSpinnerFullPage />
       ) : (
