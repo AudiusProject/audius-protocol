@@ -29,10 +29,7 @@ import { useModalState } from 'common/hooks/useModalState'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { SummaryTable } from 'components/summary-table'
 import { ToastContext } from 'components/toast/ToastContext'
-import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
 import { CLAIM_REWARD_TOAST_TIMEOUT_MILLIS } from 'utils/constants'
-
-import styles from './styles.module.css'
 
 const messages = {
   upcomingRewards: 'Upcoming Rewards',
