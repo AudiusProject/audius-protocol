@@ -21,7 +21,7 @@ import {
 } from 'components/edit-track/types'
 import { UploadPreviewContext } from 'components/edit-track/utils/uploadPreviewContext'
 import layoutStyles from 'components/layout/layout.module.css'
-import { UploadFormScrollContext } from 'pages/upload-page/UploadPage'
+import { EditFormScrollContext } from 'pages/edit-page/EditTrackPage'
 
 import styles from './MultiTrackSidebar.module.css'
 
@@ -33,7 +33,7 @@ const messages = {
 }
 
 export const MultiTrackSidebar = () => {
-  const scrollToTop = useContext(UploadFormScrollContext)
+  const scrollToTop = useContext(EditFormScrollContext)
   const { errors, submitCount } = useFormikContext<TrackEditFormValues>()
   const { spacing } = useTheme()
 
@@ -94,7 +94,7 @@ type TrackRowProps = {
 
 const TrackRow = (props: TrackRowProps) => {
   const { index } = props
-  const scrollToTop = useContext(UploadFormScrollContext)
+  const scrollToTop = useContext(EditFormScrollContext)
   const { spacing } = useTheme()
   const { values, setValues, errors, submitCount } =
     useFormikContext<TrackEditFormValues>()

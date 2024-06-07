@@ -6,7 +6,7 @@ import {
   TrackMetadataForUpload,
   cacheTracksActions
 } from '@audius/common/store'
-import { Flex } from '@audius/harmony'
+import { push as pushRoute } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 import { useParams } from 'react-router'
 
@@ -25,14 +25,14 @@ const messages = {
   deleteTrack: 'DELETE TRACK'
 }
 
-type UploadPageProps = {
+type EditPageProps = {
   scrollToTop: () => void
 }
 
-export const UploadFormScrollContext = createContext(() => {})
+export const EditFormScrollContext = createContext(() => {})
 
 // This component is in development, only used behind the EDIT_TRACK_REDESIGN feature flag
-export const EditTrackPage = (props: UploadPageProps) => {
+export const EditTrackPage = (props: EditPageProps) => {
   const { scrollToTop } = props
   //   const dispatch = useDispatch()
   //   const [formState, setFormState] = useState<UploadFormState>(initialFormState)
@@ -48,8 +48,12 @@ export const EditTrackPage = (props: UploadPageProps) => {
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false)
 
   const onSubmit = (formValues: TrackEditFormValues) => {
-    const metadata = formValues.tracks[0].metadata
+    const metadata = { ...formValues.trackMetadatas[0] }
+    if (!metadata.artwork?.file) {
+      metadata.artwork = null
+    }
     dispatch(editTrack(metadata.track_id, metadata))
+    dispatch(pushRoute(metadata.permalink))
   }
 
   const onDeleteTrack = () => {
@@ -96,16 +100,12 @@ export const EditTrackPage = (props: UploadPageProps) => {
       title={messages.title}
       header={<Header primary={messages.title} showBackButton />}
     >
-      {/* // Debug: */}
-      <Flex w='100%' direction='column' gap='xs' justifyContent='flex-start'>
-        {/* <Text>{coverArtUrl}</Text> */}
-      </Flex>
       {trackStatus !== Status.SUCCESS || !coverArtUrl ? (
         <LoadingSpinnerFullPage />
       ) : (
-        <UploadFormScrollContext.Provider value={scrollToTop}>
+        <EditFormScrollContext.Provider value={scrollToTop}>
           <EditTrackForm initialValues={initialValues} onSubmit={onSubmit} />
-        </UploadFormScrollContext.Provider>
+        </EditFormScrollContext.Provider>
       )}
       <DeleteConfirmationModal
         title={messages.deleteTrack}

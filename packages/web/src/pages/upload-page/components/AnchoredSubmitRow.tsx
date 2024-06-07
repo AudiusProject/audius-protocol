@@ -3,7 +3,7 @@ import { useContext, useEffect, useState } from 'react'
 import { Button, Flex, IconCloudUpload, IconError, Text } from '@audius/harmony'
 import { useFormikContext } from 'formik'
 
-import { UploadFormScrollContext } from '../UploadPage'
+import { EditFormScrollContext } from 'pages/edit-page/EditTrackPage'
 
 import styles from './AnchoredSubmitRow.module.css'
 
@@ -13,7 +13,7 @@ const messages = {
 }
 
 export const AnchoredSubmitRow = () => {
-  const scrollToTop = useContext(UploadFormScrollContext)
+  const scrollToTop = useContext(EditFormScrollContext)
   const { isValid } = useFormikContext()
   const [showError, setShowError] = useState(false)
 
