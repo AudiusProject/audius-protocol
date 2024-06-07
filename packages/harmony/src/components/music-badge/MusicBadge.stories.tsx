@@ -1,5 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react'
 
+import IconRobot from 'assets/icons/Robot.svg'
+
 import { MusicBadge } from './MusicBadge'
 
 const meta: Meta<typeof MusicBadge> = {
@@ -12,5 +14,8 @@ export default meta
 type Story = StoryObj<typeof MusicBadge>
 
 export const Default: Story = {
-  args: { textLabel: 'Badge text' }
+  args: {
+    icon: IconRobot,
+    children: 'Example Badge'
+  }
 }
