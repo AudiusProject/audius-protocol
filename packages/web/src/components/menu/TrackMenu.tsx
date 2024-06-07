@@ -20,7 +20,7 @@ import {
   CommonState,
   artistPickModalActions
 } from '@audius/common/store'
-import { Genre } from '@audius/common/utils'
+import { Genre, Nullable } from '@audius/common/utils'
 import { PopupMenuItem } from '@audius/harmony'
 import { push as pushRoute } from 'connected-react-router'
 import { connect, useDispatch, useSelector } from 'react-redux'
@@ -112,7 +112,7 @@ const TrackMenu = (props: TrackMenuProps) => {
   )
 
   const { onOpen } = useEditTrackModal()
-  const onEditTrack = (trackId: number | null) => {
+  const onEditTrack = (trackId: Nullable<number>) => {
     if (!trackId) return
     isEditTrackRedesignEnabled
       ? trackPermalink && goToRoute(`${trackPermalink}/edit`)

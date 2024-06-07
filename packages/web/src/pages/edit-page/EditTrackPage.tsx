@@ -74,7 +74,6 @@ export const EditTrackPage = (props: UploadPageProps) => {
   const initialValues: TrackEditFormValues = {
     tracks: [
       {
-        file: null,
         metadata: trackAsMetadataForUpload
       }
     ],

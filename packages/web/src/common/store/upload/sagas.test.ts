@@ -293,7 +293,7 @@ describe('upload', () => {
               additionalInfo: {
                 trackId: 1,
                 metadata: testTrack.metadata,
-                fileSize: testTrack.file?.size,
+                fileSize: testTrack.file.size,
                 trackIndex: 0,
                 stemIndex: null,
                 trackCount: 1,
