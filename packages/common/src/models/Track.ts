@@ -237,6 +237,8 @@ export type TrackMetadata = {
   copyright_line?: Copyright | null
   producer_copyright_line?: Copyright | null
   parental_warning_type?: string | null
+  bpm?: number | null
+  musical_key?: string | null
 
   // Optional Fields
   is_playlist_upload?: boolean

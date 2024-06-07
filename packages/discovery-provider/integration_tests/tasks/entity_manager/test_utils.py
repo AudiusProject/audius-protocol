@@ -195,6 +195,8 @@ def test_valid_parse_metadata(app):
                 "producer_copyright_line": None,
                 "parental_warning_type": None,
                 "allowed_api_keys": None,
+                "bpm": None,
+                "musical_key": None,
             },
             "QmUpdatePlaylist1": {
                 "playlist_id": 1,

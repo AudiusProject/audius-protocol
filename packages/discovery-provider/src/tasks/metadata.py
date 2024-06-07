@@ -97,6 +97,8 @@ class TrackMetadata(TypedDict):
     producer_copyright_line: Optional[Copyright]
     parental_warning_type: Optional[str]
     allowed_api_keys: Optional[str]
+    bpm: Optional[float]
+    musical_key: Optional[str]
 
 
 track_metadata_format: TrackMetadata = {
@@ -149,6 +151,8 @@ track_metadata_format: TrackMetadata = {
     "producer_copyright_line": None,
     "parental_warning_type": None,
     "allowed_api_keys": None,
+    "bpm": None,
+    "musical_key": None,
 }
 
 # Required format for user metadata retrieved from the content system
