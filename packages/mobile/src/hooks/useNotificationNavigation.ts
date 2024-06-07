@@ -336,6 +336,7 @@ export const useNotificationNavigation = () => {
       socialActionHandler,
       entityHandler,
       messagesHandler,
+      userIdHandler,
       store
     ]
   )

@@ -5,6 +5,7 @@ import { notificationsSelectors } from '@audius/common/store'
 import { View } from 'react-native'
 import { useSelector } from 'react-redux'
 
+import { IconUserArrowRotate } from '@audius/harmony-native'
 import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
 
 import {
@@ -16,7 +17,6 @@ import {
   UserNameLink
 } from '../Notification'
 
-import { IconUserArrowRotate } from '@audius/harmony-native'
 const { getNotificationUser } = notificationsSelectors
 
 const messages = {

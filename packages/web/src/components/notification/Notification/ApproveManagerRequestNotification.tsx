@@ -4,13 +4,13 @@ import {
   ApproveManagerRequestNotification as ApproveManagerNotificationType,
   notificationsSelectors
 } from '@audius/common/store'
+import { IconUserArrowRotate } from '@audius/harmony'
 import { push } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
 import { useSelector } from 'utils/reducer'
-
-import { IconUserArrowRotate } from '@audius/harmony'
 import { profilePage } from 'utils/route'
+
 import { NotificationBody } from './components/NotificationBody'
 import { NotificationFooter } from './components/NotificationFooter'
 import { NotificationHeader } from './components/NotificationHeader'

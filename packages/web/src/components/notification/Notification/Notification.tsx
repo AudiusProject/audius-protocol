@@ -6,8 +6,8 @@ import {
 import ErrorWrapper from 'components/error-wrapper/ErrorWrapper'
 
 import { AddTrackToPlaylistNotification } from './AddTrackToPlaylistNotification'
-import { ApproveManagerNotification } from './ApproveManagerRequestNotification'
 import { AnnouncementNotification } from './AnnouncementNotification'
+import { ApproveManagerNotification } from './ApproveManagerRequestNotification'
 import { ChallengeRewardNotification } from './ChallengeRewardNotification'
 import { FavoriteNotification } from './FavoriteNotification'
 import { FavoriteOfRepostNotification } from './FavoriteOfRepostNotification'
