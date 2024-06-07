@@ -1,3 +1,5 @@
+import { ComponentPropsWithoutRef } from 'react'
+
 import { useTheme } from '@emotion/react'
 
 import type { IconComponent } from 'components/icon'
@@ -12,10 +14,6 @@ export type MusicBadgeVariant = 'default' | 'accent'
 export type MusicBadgeSize = 's' | 'm'
 
 export type MusicBadgeProps = {
-  /**
-   * The text label to display in the MusicBadge
-   */
-  textLabel: string
   /**
    * The type of the MusicBadge
    */
@@ -32,15 +30,15 @@ export type MusicBadgeProps = {
    * Override the colors of the MusicBadge
    */
   color?: SpecialColors
-}
+} & ComponentPropsWithoutRef<'div'>
 
 export const MusicBadge = (props: MusicBadgeProps) => {
   const {
     variant = 'default',
-    textLabel,
     icon: Icon,
     size = 'm',
-    color: colorProp
+    color: colorProp,
+    children
   } = props
   const { color } = useTheme()
 
@@ -76,7 +74,7 @@ export const MusicBadge = (props: MusicBadgeProps) => {
     >
       {Icon ? <Icon size={size} fill={iconColor} /> : null}
       <Text variant='label' size={size} css={{ color: textColor }}>
-        {textLabel}
+        {children}
       </Text>
     </Flex>
   )
