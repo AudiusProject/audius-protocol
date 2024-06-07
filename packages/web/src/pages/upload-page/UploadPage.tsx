@@ -15,7 +15,7 @@ import Page from 'components/page/Page'
 import styles from './UploadPage.module.css'
 import { EditPage } from './pages/EditPage'
 import { FinishPage } from './pages/FinishPage'
-import SelectPageNew from './pages/SelectPage'
+import SelectPage from './pages/SelectPage'
 import { UploadFormState } from './types'
 
 const { uploadTracks, undoResetState } = uploadActions
@@ -63,30 +63,6 @@ export const UploadPage = (props: UploadPageProps) => {
 
   const { tracks, uploadType } = formState
 
-  // Pretty print json just for testing
-  useEffect(() => {
-    if (phase !== Phase.FINISH) return
-    const stylizePreElements = function () {
-      const preElements = document.getElementsByTagName('pre')
-      for (let i = 0; i < preElements.length; ++i) {
-        const preElement = preElements[i]
-        preElement.className += 'prettyprint'
-      }
-    }
-
-    const injectPrettifyScript = function () {
-      const scriptElement = document.createElement('script')
-      scriptElement.setAttribute(
-        'src',
-        'https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js'
-      )
-      document.head.appendChild(scriptElement)
-    }
-
-    stylizePreElements()
-    injectPrettifyScript()
-  }, [phase])
-
   const pageTitleUploadType =
     !uploadType ||
     (uploadType === UploadType.INDIVIDUAL_TRACKS && tracks?.length === 1)
@@ -110,7 +86,7 @@ export const UploadPage = (props: UploadPageProps) => {
   switch (phase) {
     case Phase.SELECT:
       page = (
-        <SelectPageNew
+        <SelectPage
           formState={formState}
           onContinue={(formState: UploadFormState) => {
             setFormState(formState)

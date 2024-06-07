@@ -46,6 +46,7 @@ import TrackPlayer, {
 } from 'react-native-track-player'
 import { useDispatch, useSelector } from 'react-redux'
 import { useAsync, usePrevious } from 'react-use'
+import { getTrackStreamUrls } from '~/api'
 
 import { DEFAULT_IMAGE_URL } from 'app/components/image/TrackImage'
 import { getImageSourceOptimistic } from 'app/hooks/useContentNodeImage'
@@ -170,6 +171,9 @@ export const AudioPlayer = () => {
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
   )
+  const { isEnabled: isPerformanceExperimentEnabled } = useFeatureFlag(
+    FeatureFlags.SKIP_STREAM_CHECK
+  )
   const track = useSelector(getCurrentTrack)
   const playing = useSelector(getPlaying)
   const seek = useSelector(getSeek)
@@ -262,6 +266,8 @@ export const AudioPlayer = () => {
     () => dispatch(queueActions.previous()),
     [dispatch]
   )
+
+  const trackStreamUrls = useSelector(getTrackStreamUrls)
   const reset = useCallback(
     () => dispatch(playerActions.reset({ shouldAutoplay: false })),
     [dispatch]
@@ -330,9 +336,16 @@ export const AudioPlayer = () => {
 
       // Get Track url
       let url: string
+
+      // Performance POC: use a pre-fetched DN url if we have it
+      const trackStreamUrl =
+        trackStreamUrls[`{"id":${trackId},"currentUserId":${currentUserId}}`]
+          ?.nonNormalizedData?.['stream-url']
       if (offlineTrackAvailable && isCollectionMarkedForDownload) {
         const audioFilePath = getLocalAudioPath(trackId)
         url = `file://${audioFilePath}`
+      } else if (trackStreamUrl && isPerformanceExperimentEnabled) {
+        url = trackStreamUrl
       } else {
         let queryParams = trackQueryParams.current[trackId]
 
@@ -384,13 +397,16 @@ export const AudioPlayer = () => {
       }
     },
     [
+      currentUserId,
       isCollectionMarkedForDownload,
       isNotReachable,
       isOfflineModeEnabled,
+      isPerformanceExperimentEnabled,
       nftAccessSignatureMap,
       offlineAvailabilityByTrackId,
       queueTrackOwnersMap,
-      storageNodeSelector
+      storageNodeSelector,
+      trackStreamUrls
     ]
   )
 

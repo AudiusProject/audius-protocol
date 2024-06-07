@@ -18,11 +18,27 @@ import { Theme } from 'app/utils/theme'
 const { pause, play } = playerActions
 const { getPlaying, getBuffering } = playerSelectors
 
-const useAnimatedIcons = (useRNVideoPlayer?: boolean) =>
+const useAnimatedIcons = (
+  useRNVideoPlayer?: boolean,
+  usePrefetchTrack?: boolean
+) =>
   makeAnimations(({ palette, type }) => {
     const iconColor =
       type === Theme.MATRIX ? palette.background : palette.staticWhite
-    const primaryBG = useRNVideoPlayer ? palette.accentBlue : palette.primary
+    let primaryBG
+    if (useRNVideoPlayer) {
+      if (usePrefetchTrack) {
+        primaryBG = palette.accentOrange
+      } else {
+        primaryBG = palette.accentBlue
+      }
+    } else {
+      if (usePrefetchTrack) {
+        primaryBG = palette.accentGreen
+      } else {
+        primaryBG = palette.primary
+      }
+    }
 
     const ColorizedPlayIcon = colorize(IconPlay, {
       // #playpause1.Group 1.Fill 1
@@ -85,7 +101,10 @@ export const PlayButton = ({ isActive, ...props }: PlayButtonProps) => {
   const { isEnabled: useRNVideoPlayer } = useFeatureFlag(
     FeatureFlags.USE_RN_VIDEO_PLAYER
   )
-  const animatedIcons = useAnimatedIcons(useRNVideoPlayer)()
+  const { isEnabled: usePrefetchTrack } = useFeatureFlag(
+    FeatureFlags.SKIP_STREAM_CHECK // TODO: this is not the correct flag have to wait for optimizely to fix their shit
+  )
+  const animatedIcons = useAnimatedIcons(useRNVideoPlayer, usePrefetchTrack)()
 
   const handlePress = useCallback(() => {
     if (isPlaying) {
