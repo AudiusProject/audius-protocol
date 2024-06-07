@@ -1,8 +1,8 @@
 ---
-id: get-user-following
-title: Get User Following
-pagination_label: Get User Following
-sidebar_label: Get User Following
+id: get-followers
+title: Get Followers
+pagination_label: Get Followers
+sidebar_label: Get Followers
 hide_table_of_contents: true
 description: Audius Protocol Documentation
 ---
@@ -11,9 +11,9 @@ import Tabs from '@theme/Tabs'
 import TabItem from '@theme/TabItem'
 import useBaseUrl from '@docusaurus/useBaseUrl'
 
-## Get User Following
+## Get Followers
 
-All users that the provided user follows
+All users that follow the provided user
 
 <Tabs
   block={true}
@@ -23,7 +23,7 @@ All users that the provided user follows
 <TabItem value="request">
 
 ```bash
-GET https://audius-discovery-6.cultur3stake.com/v1/users/nlGNe/following?app_name=EXAMPLEAPP HTTP/1.1
+GET https://audius-discovery-6.cultur3stake.com/v1/users/nlGNe/followers?app_name=EXAMPLEAPP HTTP/1.1
 ```
 
 > Path Parameters
