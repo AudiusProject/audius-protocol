@@ -32,6 +32,7 @@ class USDCPurchase(Base, RepresentableMixin):
     city = Column(String, nullable=True)
     region = Column(String, nullable=True)
     country = Column(String, nullable=True)
+    vendor = Column(String, nullable=True)
 
     created_at = Column(
         DateTime, nullable=False, index=True, server_default=text("CURRENT_TIMESTAMP")
