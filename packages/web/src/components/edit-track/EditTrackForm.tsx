@@ -1,4 +1,4 @@
-import { useCallback, useContext, useEffect, useState } from 'react'
+import { useCallback, useContext, useState } from 'react'
 
 import { TrackMetadataFormSchema } from '@audius/common/schemas'
 import { FeatureFlags } from '@audius/common/services'
@@ -26,8 +26,8 @@ import { TrackMetadataFields } from 'components/edit/fields/TrackMetadataFields'
 import layoutStyles from 'components/layout/layout.module.css'
 import { NavigationPrompt } from 'components/navigation-prompt/NavigationPrompt'
 import { useFlag } from 'hooks/useRemoteConfig'
+import { EditFormScrollContext } from 'pages/edit-page/EditTrackPage'
 import { AnchoredSubmitRowEdit } from 'pages/edit-page/components/AnchoredSubmitRowEdit'
-import { UploadFormScrollContext } from 'pages/upload-page/UploadPage'
 import { AnchoredSubmitRow } from 'pages/upload-page/components/AnchoredSubmitRow'
 
 import styles from './EditTrackForm.module.css'
@@ -87,13 +87,6 @@ const TrackEditForm = (
     FeatureFlags.SCHEDULED_RELEASES
   )
   const [forceOpenAccessAndSale, setForceOpenAccessAndSale] = useState(false)
-
-  // DEBUG
-  useEffect(() => {
-    console.log('EditTrackForm', {
-      values
-    })
-  }, [values])
 
   return (
     <Form>
@@ -172,7 +165,7 @@ const MultiTrackHeader = () => {
 }
 
 const MultiTrackFooter = () => {
-  const scrollToTop = useContext(UploadFormScrollContext)
+  const scrollToTop = useContext(EditFormScrollContext)
   const [{ value: index }, , { setValue: setIndex }] = useField(
     'trackMetadatasIndex'
   )

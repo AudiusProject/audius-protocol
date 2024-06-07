@@ -26,14 +26,14 @@ const messages = {
   deleteTrack: 'DELETE TRACK'
 }
 
-type UploadPageProps = {
+type EditPageProps = {
   scrollToTop: () => void
 }
 
-export const UploadFormScrollContext = createContext(() => {})
+export const EditFormScrollContext = createContext(() => {})
 
 // This component is in development, only used behind the EDIT_TRACK_REDESIGN feature flag
-export const EditTrackPage = (props: UploadPageProps) => {
+export const EditTrackPage = (props: EditPageProps) => {
   const { scrollToTop } = props
   //   const dispatch = useDispatch()
   //   const [formState, setFormState] = useState<UploadFormState>(initialFormState)
@@ -109,9 +109,9 @@ export const EditTrackPage = (props: UploadPageProps) => {
       {trackStatus !== Status.SUCCESS || !coverArtUrl ? (
         <LoadingSpinnerFullPage />
       ) : (
-        <UploadFormScrollContext.Provider value={scrollToTop}>
+        <EditFormScrollContext.Provider value={scrollToTop}>
           <EditTrackForm initialValues={initialValues} onSubmit={onSubmit} />
-        </UploadFormScrollContext.Provider>
+        </EditFormScrollContext.Provider>
       )}
       <DeleteConfirmationModal
         title={messages.deleteTrack}
