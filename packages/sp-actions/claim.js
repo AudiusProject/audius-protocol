@@ -5,21 +5,21 @@ const Web3 = require('web3')
 const HDWalletProvider = require('@truffle/hdwallet-provider')
 const { program } = require('commander')
 
-const audius = require('@audius/libs')
+const { AudiusLibs } = require('@audius/sdk')
 
 const defaultRegistryAddress = '0xd976d3b4f4e22a238c1A736b6612D22f17b6f64C'
 const defaultTokenAddress = '0x18aAA7115705e8be94bfFEBDE57Af9BFc265B998'
 const defaultWeb3Provider = 'https://eth-mainnet.g.alchemy.com/v2/4hFRA61i6OFXz2UmkyFsSvgXBQBBOGgW'
 
 async function configureLibs(ethRegistryAddress, ethTokenAddress, web3Provider) {
-  const configuredWeb3 = await audius.Utils.configureWeb3(web3Provider, null, false)
+  const configuredWeb3 = await AudiusLibs.Utils.configureWeb3(web3Provider, null, false)
 
   const audiusLibsConfig = {
-    ethWeb3Config: audius.configEthWeb3(ethTokenAddress, ethRegistryAddress, configuredWeb3, '0x0'),
+    ethWeb3Config: AudiusLibs.configEthWeb3(ethTokenAddress, ethRegistryAddress, configuredWeb3, '0x0'),
     isServer: true,
   }
 
-  const libs = new audius(audiusLibsConfig)
+  const libs = new AudiusLibs(audiusLibsConfig)
   await libs.init()
 
   return libs
@@ -81,7 +81,7 @@ async function initiateRound(privateKey, { ethRegistryAddress, ethTokenAddress, 
   console.log('Successfully initiated Round')
 
   if (transferRewardsToSolana) {
-    const { transferCommunityRewardsToSolana } = require('@audius/libs/scripts/communityRewards/transferCommunityRewardsToSolana')
+    const { transferCommunityRewardsToSolana } = require('@audius/sdk/scripts/communityRewards/transferCommunityRewardsToSolana')
     console.log('Running rewards manager transfer')
     await transferCommunityRewardsToSolana()
     console.log('Successfully transferred rewards to solana')

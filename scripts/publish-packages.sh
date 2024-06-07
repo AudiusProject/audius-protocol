@@ -18,4 +18,4 @@ npx turbo run build lint typecheck test \
     --filter=@audius/spl \
 
 echo "Publishing packages..."
-npx changeset publish  
+npx changeset publish

@@ -17,7 +17,7 @@ Any wallet can make a claim on behalf of any node operator and their delegators 
 npm install -g @audius/sp-actions
 
 # 3. Setup a cron job with the following command: (NOTE: replace <npm_prefix> with the output from 'npm config get prefix')
-(crontab -l 2>/dev/null; echo "0 */6 * * * <npm_prefix>/node_modules/@audius/sp-actions/claim.js claim-rewards <spOwnerWallet> <privateKey>") | crontab -
+(crontab -l 2>/dev/null; echo "0 */6 * * * <npm_prefix>/bin/claim claim-rewards <spOwnerWallet> <privateKey>") | crontab -
 ```
 
 ```
