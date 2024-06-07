@@ -20,6 +20,11 @@ import (
 	"golang.org/x/exp/slices"
 )
 
+type AudioAnalysisResult struct {
+	BPM float64 `json:bpm`
+	Key string  `json:key`
+}
+
 func (ss *MediorumServer) startAudioAnalyzer() {
 	myHost := ss.Config.Self.Host
 	work := make(chan *Upload)
@@ -255,7 +260,7 @@ func (ss *MediorumServer) analyzeAudio(upload *Upload) error {
 		}
 	}
 
-	bpmChan := make(chan string)
+	bpmChan := make(chan float64)
 	keyChan := make(chan string)
 	errorChan := make(chan error)
 
@@ -263,13 +268,12 @@ func (ss *MediorumServer) analyzeAudio(upload *Upload) error {
 
 	// goroutine to analyze BPM
 	go func() {
-		bpmFloat, err := ss.analyzeBPM(wavFile)
+		bpm, err := ss.analyzeBPM(wavFile)
 		if err != nil {
 			logger.Error("failed to analyze BPM", "err", err)
 			errorChan <- fmt.Errorf("failed to analyze BPM: %w", err)
 			return
 		}
-		bpm := strconv.FormatFloat(bpmFloat, 'f', 1, 64)
 		bpmChan <- bpm
 	}()
 
@@ -295,16 +299,16 @@ func (ss *MediorumServer) analyzeAudio(upload *Upload) error {
 		case bpm := <-bpmChan:
 			mu.Lock()
 			if upload.AudioAnalysisResults == nil {
-				upload.AudioAnalysisResults = make(map[string]string)
+				upload.AudioAnalysisResults = &AudioAnalysisResult{}
 			}
-			upload.AudioAnalysisResults["bpm"] = bpm
+			upload.AudioAnalysisResults.BPM = bpm
 			mu.Unlock()
 		case musicalKey := <-keyChan:
 			mu.Lock()
 			if upload.AudioAnalysisResults == nil {
-				upload.AudioAnalysisResults = make(map[string]string)
+				upload.AudioAnalysisResults = &AudioAnalysisResult{}
 			}
-			upload.AudioAnalysisResults["key"] = musicalKey
+			upload.AudioAnalysisResults.Key = musicalKey
 			mu.Unlock()
 		case err := <-errorChan:
 			return onError(err)
@@ -365,7 +369,14 @@ func (ss *MediorumServer) analyzeBPM(filename string) (float64, error) {
 		return 0, fmt.Errorf("failed to parse BPM from output: %s", outputStr)
 	}
 
-	return bpm, nil
+	// Round float to 1 decimal place
+	bpmRoundedStr := strconv.FormatFloat(bpm, 'f', 1, 64)
+	bpmRounded, err := strconv.ParseFloat(bpmRoundedStr, 64)
+	if err != nil {
+		return 0, err
+	}
+
+	return bpmRounded, nil
 }
 
 // converts an MP3 file to WAV format using ffmpeg
