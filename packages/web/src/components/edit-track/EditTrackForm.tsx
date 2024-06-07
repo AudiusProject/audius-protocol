@@ -1,4 +1,4 @@
-import { useCallback, useContext, useState } from 'react'
+import { useCallback, useContext, useEffect, useState } from 'react'
 
 import { TrackMetadataFormSchema } from '@audius/common/schemas'
 import { FeatureFlags } from '@audius/common/services'
@@ -75,7 +75,7 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
 const TrackEditForm = (
   props: FormikProps<TrackEditFormValues> & { hideContainer?: boolean }
 ) => {
-  const { values, dirty, hideContainer = false } = props
+  const { values, dirty, isSubmitting, hideContainer = false } = props
   const isMultiTrack = values.trackMetadatas.length > 1
   const isEdit = values.trackMetadatas[0].track_id !== undefined
   const trackIdx = values.trackMetadatasIndex
@@ -88,9 +88,19 @@ const TrackEditForm = (
   )
   const [forceOpenAccessAndSale, setForceOpenAccessAndSale] = useState(false)
 
+  // DEBUG
+  useEffect(() => {
+    console.log('EditTrackForm', {
+      values
+    })
+  }, [values])
+
   return (
     <Form>
-      <NavigationPrompt when={dirty} messages={messages.navigationPrompt} />
+      <NavigationPrompt
+        when={dirty && !isSubmitting}
+        messages={messages.navigationPrompt}
+      />
       <div className={cn(layoutStyles.row, layoutStyles.gap2)}>
         <div
           className={cn(

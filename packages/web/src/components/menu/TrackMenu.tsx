@@ -1,5 +1,6 @@
 import { useContext } from 'react'
 
+import { useGetTrackById } from '@audius/common/api'
 import {
   ShareSource,
   RepostSource,
@@ -111,11 +112,14 @@ const TrackMenu = (props: TrackMenuProps) => {
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
   )
 
+  const { data: track } = useGetTrackById({ id: props.trackId })
+
   const { onOpen } = useEditTrackModal()
   const onEditTrack = (trackId: Nullable<number>) => {
     if (!trackId) return
+    const permalink = trackPermalink || track?.permalink
     isEditTrackRedesignEnabled
-      ? trackPermalink && goToRoute(`${trackPermalink}/edit`)
+      ? permalink && goToRoute(`${permalink}/edit`)
       : onOpen({ trackId })
   }
 
