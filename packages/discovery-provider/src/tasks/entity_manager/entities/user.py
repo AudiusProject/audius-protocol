@@ -257,7 +257,7 @@ def update_user(
 ):
     validate_user_tx(params)
 
-    print(f"zal4: after validate params.metadata: {params.metadata}")
+    print(f"zal4: after validate_user_tx params.metadata: {params.metadata}")
 
     user_id = params.user_id
     existing_user = params.existing_records["User"][user_id]
@@ -273,6 +273,7 @@ def update_user(
         params.txhash,
         params.block_datetime,
     )
+    print(f"zal5: copied user_record: {user_record}")
 
     validate_user_metadata(
         params.session,
@@ -282,16 +283,19 @@ def update_user(
     )
 
     user_record = update_user_metadata(user_record, params.metadata, params)
+    print(f"zal5: after validate_user_metadata user_record: {user_record}")
 
     updated_metadata, updated_metadata_cid = merge_metadata(
         params, user_record, cid_metadata
     )
+    print(f"zal6: updated_metadata: {updated_metadata}")
     metadata_type, _ = get_metadata_type_and_format(params.entity_type)
     cid_type[updated_metadata_cid] = metadata_type
     cid_metadata[updated_metadata_cid] = updated_metadata
     user_record.metadata_multihash = updated_metadata_cid
 
     user_record = validate_user_record(user_record)
+    print(f"zal7: after validate_user_record user_record: {user_record}")
     params.add_record(user_id, user_record)
     params.challenge_bus.dispatch(
         ChallengeEvent.profile_update,
