@@ -14,9 +14,13 @@ import {
 import { useSearchParams } from 'react-router-dom-v5-compat'
 
 import { Filter } from './types'
+import { MOODS } from './utils'
+
 const messages = {
   genre: 'Genre',
+  genreSearchPlaceholder: 'Search Genre',
   mood: 'Mood',
+  moodSearchPlaceholder: 'Search Mood',
   key: 'Key',
   bpm: 'BPM',
   isPremium: 'Premium',
@@ -71,11 +75,38 @@ const GenreFilter = () => {
         value: convertGenreLabelToValue(genre)
       }))}
       showFilterInput
-      filterInputPlaceholder='Search genre'
+      filterInputPlaceholder={messages.genreSearchPlaceholder}
     />
   )
 }
 
+const MoodFilter = () => {
+  const [urlSearchParams] = useSearchParams()
+  const mood = urlSearchParams.get('mood')
+  const updateSearchParams = useUpdateSearchParams('mood')
+  const sortedKeys = Object.keys(MOODS).sort()
+  const moodOptions = sortedKeys.map((mood) => ({
+    label: MOODS[mood].label,
+    value: MOODS[mood].value,
+    leadingElement: MOODS[mood].icon
+  }))
+
+  return (
+    <OptionsFilterButton
+      label={messages.mood}
+      popupAnchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+      popupMaxHeight={400}
+      popupTransformOrigin={{ vertical: 'top', horizontal: 'left' }}
+      selection={mood}
+      onChange={updateSearchParams}
+      options={moodOptions}
+      showFilterInput
+      filterInputPlaceholder={messages.moodSearchPlaceholder}
+    />
+  )
+}
+
+// TODO: Need to debounce the on change for this bc it locks up the UI a bit. only like 100ms
 const BpmFilter = () => {
   const [urlSearchParams] = useSearchParams()
   const bpm = urlSearchParams.get('bpm')
@@ -193,16 +224,7 @@ const IsVerifiedFilter = () => {
 
 export const filters: Record<Filter, () => ReactElement> = {
   genre: GenreFilter,
-  mood: () => (
-    <OptionsFilterButton
-      label={messages.mood}
-      options={[
-        {
-          value: 'Filter'
-        }
-      ]}
-    />
-  ),
+  mood: MoodFilter,
   key: () => (
     <OptionsFilterButton
       label={messages.key}
