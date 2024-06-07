@@ -1,4 +1,5 @@
 import { View } from 'react-native'
+import type { Nullable } from '~/utils'
 
 import { IconDonate, IconLink } from '@audius/harmony-native'
 import { makeStyles } from 'app/styles'
@@ -29,7 +30,7 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
 }))
 
 // adds https to urls that don't include http protocol
-const prependProtocol = (url?: string) =>
+const prependProtocol = (url: Nullable<string>) =>
   !url?.match(/^https?:\/\//i) ? `https://${url}` : url
 
 export const SocialsAndSites = () => {

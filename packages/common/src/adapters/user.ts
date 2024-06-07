@@ -59,6 +59,11 @@ export const userMetadataFromSDK = (
 
     // Required Nullable fields
     bio: user.bio ?? null,
+    twitter_handle: user.twitter_handle ?? null,
+    instagram_handle: user.instagram_handle ?? null,
+    tiktok_handle: user.tiktok_handle ?? null,
+    website: user.website ?? null,
+    donation: user.donation ?? null,
     cover_photo_sizes: user.cover_photo_sizes ?? null,
     creator_node_endpoint: user.creator_node_endpoint ?? null,
     location: user.location ?? null,

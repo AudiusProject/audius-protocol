@@ -35,7 +35,7 @@ export const getContentUrl = (content: ShareContent) => {
   }
 }
 
-const getShareHandle = async (handle: string) => {
+const getTwitterShareHandle = async (handle: string) => {
   const { twitterHandle } = await audiusBackendInstance.getSocialHandles(handle)
   return twitterHandle ? `@${twitterHandle}` : handle
 }
@@ -47,13 +47,13 @@ export const getTwitterShareText = async (content: ShareContent) => {
         track: { title },
         artist: { handle }
       } = content
-      return messages.trackShareText(title, await getShareHandle(handle))
+      return messages.trackShareText(title, await getTwitterShareHandle(handle))
     }
     case 'profile': {
       const {
         profile: { handle }
       } = content
-      return messages.profileShareText(await getShareHandle(handle))
+      return messages.profileShareText(await getTwitterShareHandle(handle))
     }
     case 'album': {
       const {
@@ -62,7 +62,7 @@ export const getTwitterShareText = async (content: ShareContent) => {
       } = content
       return messages.albumShareText(
         playlist_name,
-        await getShareHandle(handle)
+        await getTwitterShareHandle(handle)
       )
     }
     case 'playlist': {
@@ -72,7 +72,7 @@ export const getTwitterShareText = async (content: ShareContent) => {
       } = content
       return messages.playlistShareText(
         playlist_name,
-        await getShareHandle(handle)
+        await getTwitterShareHandle(handle)
       )
     }
     case 'audioNftPlaylist': {

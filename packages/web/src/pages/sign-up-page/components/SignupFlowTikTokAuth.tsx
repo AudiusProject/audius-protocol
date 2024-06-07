@@ -1,12 +1,11 @@
 import { ReactElement } from 'react'
 
+import { SocialPlatform } from '@audius/common/models'
 import { TikTokProfile } from '@audius/common/store'
 
 import { TikTokAuth } from 'components/tiktok-auth/TikTokAuthButton'
 
 import { useSetProfileFromTikTok } from '../hooks/socialMediaLogin'
-
-import { SocialPlatform } from './SocialMediaLoginOptions'
 
 type SignupFlowTikTokAuthProps = {
   onStart: (platform: SocialPlatform) => void
