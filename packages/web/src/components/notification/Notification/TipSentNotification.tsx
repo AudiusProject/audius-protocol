@@ -8,6 +8,7 @@ import {
 } from '@audius/common/store'
 
 import { make } from 'common/store/analytics/actions'
+import { env } from 'services/env'
 import { useSelector } from 'utils/reducer'
 
 import styles from './TipSentNotification.module.css'
@@ -74,6 +75,7 @@ export const TipSentNotification = (props: TipSentNotificationProps) => {
       <TwitterShareButton
         type='dynamic'
         handle={user.handle}
+        url={`${env.AUDIUS_URL}/${user.handle}`}
         shareData={handleShare}
       />
       <NotificationFooter timeLabel={timeLabel} isViewed={isViewed} />
