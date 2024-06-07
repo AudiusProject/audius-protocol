@@ -245,18 +245,19 @@ function* watchEditTrack() {
 function* deleteTrackAsync(
   action: ReturnType<typeof trackActions.deleteTrack>
 ) {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   yield* waitForWrite()
-  const userId = yield* select(getUserId)
-  if (!userId) {
+  const user = yield* select(getAccountUser)
+  if (!user) {
     yield* put(signOnActions.openSignOn(false))
     return
   }
-  const handle = yield* select(getUserHandle)
+  const userId = user.user_id
+
+  const track = yield* select(getTrack, { id: action.trackId })
+  if (!track) return
 
   // Before deleting, check if the track is set as the artist pick & delete if so
-  const socials = yield* call(audiusBackendInstance.getSocialHandles, handle!)
-  if (socials.pinnedTrackId === action.trackId) {
+  if (user.artist_pick_track_id === action.trackId) {
     yield* put(
       cacheActions.update(Kind.USERS, [
         {
@@ -271,8 +272,6 @@ function* deleteTrackAsync(
     yield* fork(updateProfileAsync, { metadata: user })
   }
 
-  const track = yield* select(getTrack, { id: action.trackId })
-  if (!track) return
   yield* put(
     cacheActions.update(Kind.TRACKS, [
       { id: track.track_id, metadata: { _marked_deleted: true } }

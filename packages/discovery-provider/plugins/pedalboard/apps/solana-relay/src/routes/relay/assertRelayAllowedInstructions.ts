@@ -90,8 +90,9 @@ const assertAllowedAssociatedTokenAccountProgramInstruction = async (
   instructionIndex: number,
   instruction: TransactionInstruction,
   instructions: TransactionInstruction[],
-  wallet?: string | null
+  user?: Users | null
 ) => {
+  const { wallet, is_verified: isVerified } = user ?? {}
   const decodedInstruction =
     decodeAssociatedTokenAccountInstruction(instruction)
   if (
@@ -144,7 +145,7 @@ const assertAllowedAssociatedTokenAccountProgramInstruction = async (
       )
     if (wallet) {
       try {
-        await rateLimitTokenAccountCreation(wallet)
+        await rateLimitTokenAccountCreation(wallet, !!isVerified)
       } catch (e) {
         const error = e as Error
         throw new InvalidRelayInstructionError(instructionIndex, error.message)
@@ -394,7 +395,7 @@ const assertValidSecp256k1ProgramInstruction = (
 export const assertRelayAllowedInstructions = async (
   instructions: TransactionInstruction[],
   options?: {
-    user?: Pick<Users, 'wallet'>
+    user?: Users
     feePayer?: string
   }
 ) => {
@@ -406,7 +407,7 @@ export const assertRelayAllowedInstructions = async (
           i,
           instruction,
           instructions,
-          options?.user?.wallet
+          options?.user
         )
         break
       case TOKEN_PROGRAM_ID.toBase58():

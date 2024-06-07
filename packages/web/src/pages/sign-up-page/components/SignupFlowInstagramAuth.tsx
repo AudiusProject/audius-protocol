@@ -1,12 +1,11 @@
 import { PropsWithChildren } from 'react'
 
+import { SocialPlatform } from '@audius/common/models'
 import { InstagramProfile } from '@audius/common/store'
 
 import InstagramAuth from 'components/instagram-auth/InstagramAuth'
 
 import { useSetProfileFromInstagram } from '../hooks/socialMediaLogin'
-
-import { SocialPlatform } from './SocialMediaLoginOptions'
 
 type SignupFlowInstagramAuthProps = PropsWithChildren<{
   className?: string

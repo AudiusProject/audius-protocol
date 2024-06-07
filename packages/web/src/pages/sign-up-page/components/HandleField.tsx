@@ -5,6 +5,7 @@ import {
   socialMediaMessages,
   pickHandlePageMessages as messages
 } from '@audius/common/messages'
+import { SocialPlatform } from '@audius/common/models'
 import { pickHandleErrorMessages } from '@audius/common/schemas'
 import { MAX_HANDLE_LENGTH } from '@audius/common/services'
 import { TextLink, IconCheck } from '@audius/harmony'
@@ -19,7 +20,6 @@ import { ToastContext } from 'components/toast/ToastContext'
 import { SignupFlowInstagramAuth } from './SignupFlowInstagramAuth'
 import { SignupFlowTikTokAuth } from './SignupFlowTikTokAuth'
 import { SignupFlowTwitterAuth } from './SignupFlowTwitterAuth'
-import { SocialPlatform } from './SocialMediaLoginOptions'
 
 const handleAuthMap = {
   [pickHandleErrorMessages.twitterReservedError]: SignupFlowTwitterAuth,
@@ -31,7 +31,7 @@ type HandleFieldProps = Partial<HarmonyTextFieldProps> & {
   onCompleteSocialMediaLogin?: (info: {
     requiresReview: boolean
     handle: string
-    platform: 'twitter' | 'instagram' | 'tiktok'
+    platform: SocialPlatform
   }) => void
   onStartSocialMediaLogin?: (platform: SocialPlatform) => void
   onErrorSocialMediaLogin?: (error: Error, platform: SocialPlatform) => void

@@ -11,7 +11,7 @@ import { push as pushRoute } from 'connected-react-router'
 import { has } from 'lodash'
 import { connect } from 'react-redux'
 import { matchPath } from 'react-router'
-import { withRouter } from 'react-router-dom'
+import { generatePath, withRouter } from 'react-router-dom'
 
 import { HistoryContext } from 'app/HistoryProvider'
 import { make } from 'common/store/analytics/actions'
@@ -28,7 +28,8 @@ import {
   collectionPage,
   profilePage,
   getPathname,
-  SEARCH_PAGE
+  SEARCH_PAGE,
+  SEARCH_CATEGORY_PAGE
 } from 'utils/route'
 
 import styles from './ConnectedSearchBar.module.css'
@@ -90,6 +91,32 @@ class ConnectedSearchBar extends Component {
   onSubmit = (value) => {
     // Encode everything besides tag searches
     const pathname = '/search'
+
+    let newPath = `${pathname}/${value}`
+    if (value) {
+      const categoryMatch = matchPath(
+        getPathname(this.props.history.location),
+        {
+          path: SEARCH_CATEGORY_PAGE
+        }
+      )
+      const searchMatch = matchPath(getPathname(this.props.history.location), {
+        path: SEARCH_PAGE
+      })
+
+      if (categoryMatch) {
+        newPath = generatePath(SEARCH_CATEGORY_PAGE, {
+          ...categoryMatch.params,
+          query: value
+        })
+      } else if (searchMatch) {
+        newPath = generatePath(SEARCH_PAGE, {
+          ...searchMatch.params,
+          query: value
+        })
+      }
+    }
+
     if (value.startsWith('#')) {
       // perform tag search
       this.props.history.push({
@@ -100,7 +127,8 @@ class ConnectedSearchBar extends Component {
     } else {
       value = encodeURIComponent(value)
       this.props.history.push({
-        pathname: pathname + '/' + value,
+        pathname: newPath,
+        search: this.props.history.location.search,
         state: {}
       })
     }

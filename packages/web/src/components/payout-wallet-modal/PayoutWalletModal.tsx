@@ -99,7 +99,12 @@ const PayoutWalletModalForm = ({
           </Text>
           <RadioGroup {...optionField}>
             <Flex gap='l' direction='column'>
-              <Flex gap='m' alignItems='center'>
+              <Flex
+                gap='m'
+                alignItems='center'
+                as='label'
+                css={{ cursor: 'pointer' }}
+              >
                 <Radio value='default' />
                 <Text variant='body' color='default' size='m'>
                   {messages.optionBuiltIn}
@@ -123,7 +128,12 @@ const PayoutWalletModalForm = ({
                 </Flex>
               ) : null}
               <Divider color='default' />
-              <Flex gap='m' alignItems='center'>
+              <Flex
+                gap='m'
+                alignItems='center'
+                as='label'
+                css={{ cursor: 'pointer' }}
+              >
                 <Radio value='custom' />
                 <Text variant='body' color='default' size='m'>
                   {messages.optionCustom}
