@@ -60,6 +60,7 @@ def validate_user_tx(params: ManageEntityParameters):
             f"Invalid User Transaction, wrong entity type {params.entity_type}"
         )
 
+    print(f"zal1: params.metadata: {params.metadata}")
     if params.action == Action.CREATE or params.action == Action.UPDATE:
         user_bio = None
         # TODO remove this clause for non-dict params.metadata after single
@@ -70,11 +71,13 @@ def validate_user_tx(params: ManageEntityParameters):
                 user_metadata, _ = parse_metadata(
                     params.metadata, Action.UPDATE, EntityType.USER
                 )
+                print(f"zal2: user_metadata: {user_metadata}")
                 if user_metadata:
                     user_bio = user_metadata.get("bio")
             except Exception:
                 # enforce json metadata after single transaction sign up
                 # dont want to raise here, only check bio IF it exists
+                print(f"zal3: exception")
                 pass
         else:
             user_bio = params.metadata.get("bio")
@@ -253,6 +256,8 @@ def update_user(
     cid_metadata: Dict[str, Dict],
 ):
     validate_user_tx(params)
+
+    print(f"zal4: after validate params.metadata: {params.metadata}")
 
     user_id = params.user_id
     existing_user = params.existing_records["User"][user_id]
