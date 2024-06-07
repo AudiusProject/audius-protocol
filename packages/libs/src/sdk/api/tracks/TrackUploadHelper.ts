@@ -62,7 +62,6 @@ export class TrackUploadHelper extends BaseAPI {
     audioResponse: UploadResponse,
     coverArtResponse: UploadResponse
   ) {
-    const audioAnalysisResults = audioResponse.audio_analysis_results
     return {
       ...trackMetadata,
       trackSegments: [],
