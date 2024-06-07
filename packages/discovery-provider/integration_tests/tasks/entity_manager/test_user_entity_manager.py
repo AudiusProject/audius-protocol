@@ -893,6 +893,11 @@ def test_index_verify_users(app, mocker):
             challenge_event_bus=bus_mock,
         )
 
+        metadata = {
+            "is_verified": True,
+            "twitter_handle": "twitter handle",
+        }
+
         tx_receipts = {
             "VerifyUser": [
                 {
@@ -902,7 +907,7 @@ def test_index_verify_users(app, mocker):
                             "_entityType": "User",
                             "_userId": 1,
                             "_action": "Verify",
-                            "_metadata": "",
+                            "_metadata": f'{{"cid": "VerifyUserCid", "data": {json.dumps(metadata)}}}',
                             "_signer": "0x",
                         }
                     )
@@ -916,8 +921,22 @@ def test_index_verify_users(app, mocker):
                             "_entityType": "User",
                             "_userId": 2,
                             "_action": "Verify",
-                            "_metadata": "",
+                            "_metadata": f'{{"cid": "InvalidVerifyUserCid", "data": {json.dumps(metadata)}}}',
                             "_signer": "user1wallet",
+                        }
+                    )
+                },
+            ],
+            "VerifyUserNoMetadataForBackwardsCompatibility": [
+                {
+                    "args": AttributeDict(
+                        {
+                            "_entityId": 3,
+                            "_entityType": "User",
+                            "_userId": 3,
+                            "_action": "Verify",
+                            "_metadata": "",
+                            "_signer": "0x",
                         }
                     )
                 },
@@ -942,7 +961,8 @@ def test_index_verify_users(app, mocker):
         entities = {
             "users": [
                 {"user_id": 1, "handle": "user-1", "wallet": "user1wallet"},
-                {"user_id": 2, "handle": "user-1", "wallet": "user2wallet"},
+                {"user_id": 2, "handle": "user-2", "wallet": "user2wallet"},
+                {"user_id": 3, "handle": "user-3", "wallet": "user3wallet"},
             ]
         }
         populate_mock_db(db, entities)
@@ -964,9 +984,12 @@ def test_index_verify_users(app, mocker):
                 .order_by(asc(User.user_id))
                 .all()
             )
-            assert len(all_users) == 2  # no new users indexed
+            assert len(all_users) == 3  # no new users indexed
             assert all_users[0].is_verified  # user 1 is verified
             assert not all_users[1].is_verified  # user 2 is not verified
+            assert all_users[
+                2
+            ].is_verified  # user 3 is verified (with backwards compatible format)
             calls = [
                 mock.call.dispatch(
                     ChallengeEvent.connect_verified, 0, BLOCK_DATETIME, 1

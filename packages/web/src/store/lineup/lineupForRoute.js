@@ -26,7 +26,8 @@ import {
   SETTINGS_PAGE,
   NOT_FOUND_PAGE,
   getPathname,
-  LIBRARY_PAGE
+  LIBRARY_PAGE,
+  TRACK_EDIT_PAGE
 } from 'utils/route'
 const { getCollectionTracksLineup } = collectionPageSelectors
 const { getDiscoverFeedLineup } = feedPageSelectors
@@ -47,6 +48,7 @@ export const getLineupSelectorForRoute = (location) => {
   }
 
   if (
+    matchPage(TRACK_EDIT_PAGE) ||
     matchPage(UPLOAD_PAGE) ||
     matchPage(DASHBOARD_PAGE) ||
     matchPage(SETTINGS_PAGE) ||

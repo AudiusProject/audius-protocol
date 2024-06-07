@@ -2,11 +2,10 @@ import {
   Button,
   Flex,
   SelectablePill,
-  FilterButton,
   IconFilter,
-  TextLink
+  TextLink,
+  OptionsFilterButton
 } from '@audius/harmony'
-
 import {
   CollectionData,
   PaginatedTable
@@ -151,7 +150,7 @@ const Releases = () => {
         >
           Re-Process Errors
         </Button>
-        <FilterButton
+        <OptionsFilterButton
           iconRight={IconFilter}
           options={[
             {

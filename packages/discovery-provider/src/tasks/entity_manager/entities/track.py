@@ -237,6 +237,7 @@ def is_valid_json_field(metadata, field):
 def populate_track_record_metadata(track_record: Track, track_metadata, handle, action):
     # Iterate over the track_record keys
     # Update track_record values for which keys exist in track_metadata
+    # Note: order matters - the order follows the order of the keys in the Track model
     track_record_attributes = track_record.get_attributes_dict()
     for key, _ in track_record_attributes.items():
         # For certain fields, update track_record under certain conditions

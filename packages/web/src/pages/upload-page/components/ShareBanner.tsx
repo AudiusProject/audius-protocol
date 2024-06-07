@@ -54,13 +54,13 @@ const messages = {
 }
 
 const twitterSharMessages: ShareMessageConfig = {
-  profileShareText: () => 'Check out my new tracks on @audius #Audius',
+  profileShareText: () => 'Check out my new tracks on @audius #Audius $AUDIO',
   trackShareText: (title: string) =>
-    `Check out my new track ${title} on @audius #Audius`,
+    `Check out my new track ${title} on @audius #Audius $AUDIO`,
   albumShareText: (albumName: string) =>
-    `Check out my new album, ${albumName} on @audius #Audius`,
+    `Check out my new album, ${albumName} on @audius #Audius $AUDIO`,
   playlistShareText: (playlistName: string) =>
-    `Check out my new playlist, ${playlistName} on @audius #Audius`,
+    `Check out my new playlist, ${playlistName} on @audius #Audius $AUDIO`,
   audioNftPlaylistShareText: () => ''
 }
 

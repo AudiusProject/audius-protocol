@@ -110,7 +110,7 @@ const messages = {
   claimableAmountLabel: (amount: number) => `Claim $${amount} AUDIO`,
   twitterShare: (modalType: 'referrals' | 'ref-v') =>
     `Share Invite With Your ${modalType === 'referrals' ? 'Friends' : 'Fans'}`,
-  twitterCopy: `Come support me on @audius! Use my link and we both earn $AUDIO when you sign up.\n\n #audius #audiorewards\n\n`,
+  twitterCopy: `Come support me on @audius! Use my link and we both earn $AUDIO when you sign up.\n\n #Audius #AudioRewards\n\n`,
   twitterReferralLabel: 'Share referral link on Twitter',
   verifiedChallenge: 'VERIFIED CHALLENGE',
   claimAmountLabel: '$AUDIO available to claim',
