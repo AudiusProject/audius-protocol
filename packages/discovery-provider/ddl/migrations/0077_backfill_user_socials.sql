@@ -1,15 +1,19 @@
 begin;
 
 -- do not run migration on prod
+do $$ begin
 if exists (select * from "blocks" where "blockhash" = '0x8d5e6984014505e1e11bcbb1ca1a13bcc6ae85ac74014710a73271d82ca49f01') then
     return;
 end if;
+end $$;
 
 -- check whether the data has already been backfilled and return early if it has
 -- this is so that the migration is idempotent
+do $$ begin
 if exists (select 1 from users where website is not null) then
     return;
 end if;
+end $$;
 
 -- ========== USER SOCIALS BACKFILL ==========
 -- step 1: create a temporary table to hold the tsv data
