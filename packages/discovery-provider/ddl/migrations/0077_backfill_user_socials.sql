@@ -21,7 +21,7 @@ begin
         instagramHandle varchar,
         tiktokHandle varchar,
         website varchar,
-        donation varchar,
+        donation varchar
     );
 
     -- step 2: copy the data from the tsv file into the temporary table
