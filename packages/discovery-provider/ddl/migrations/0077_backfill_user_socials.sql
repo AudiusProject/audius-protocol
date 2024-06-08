@@ -34,6 +34,7 @@ set
     twitter_handle = temp.twitterHandle
 from temp_user_socials_tsv_data as temp
 where u.handle = temp.handle
+and u.is_current is true
 and u.twitter_handle is null and temp.twitterHandle is not null;
 
 -- instagram
@@ -42,6 +43,7 @@ set
     instagram_handle = temp.instagramHandle
 from temp_user_socials_tsv_data as temp
 where u.handle = temp.handle
+and u.is_current is true
 and u.instagram_handle is null and temp.instagramHandle is not null;
 
 -- tiktok
@@ -50,6 +52,7 @@ set
     tiktok_handle = temp.tiktokHandle
 from temp_user_socials_tsv_data as temp
 where u.handle = temp.handle
+and u.is_current is true
 and u.tiktok_handle is null and temp.tiktokHandle is not null;
 
 -- website
@@ -58,6 +61,7 @@ set
     website = temp.website
 from temp_user_socials_tsv_data as temp
 where u.handle = temp.handle
+and u.is_current is true
 and u.website is null and temp.website is not null;
 
 -- donation
@@ -66,6 +70,7 @@ set
     donation = temp.donation
 from temp_user_socials_tsv_data as temp
 where u.handle = temp.handle
+and u.is_current is true
 and u.donation is null and temp.donation is not null;
 
 -- step 4: drop the temporary table
@@ -106,21 +111,24 @@ set
     verified_with_twitter = true,
     is_verified = true
 from temp_verified_twitter_users_tsv_data as temp
-where u.handle = temp.handle;
+where u.handle = temp.handle
+and u.is_current is true;
 
 update users u
 set
     verified_with_instagram = true,
     is_verified = true
 from temp_verified_instagram_users_tsv_data as temp
-where u.handle = temp.handle;
+where u.handle = temp.handle
+and u.is_current is true;
 
 update users u
 set
     verified_with_tiktok = true,
     is_verified = true
 from temp_verified_tiktok_users_tsv_data as temp
-where u.handle = temp.handle;
+where u.handle = temp.handle
+and u.is_current is true;
 
 -- step 4: drop the temporary tables
 drop table temp_verified_twitter_users_tsv_data;
