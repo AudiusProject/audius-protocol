@@ -24,7 +24,7 @@ create temp table temp_user_socials_tsv_data (
 
 -- step 2: copy the data from the tsv file into the temporary table
 copy temp_user_socials_tsv_data (handle, twitterHandle, instagramHandle, tiktokHandle, website, donation)
-from '../tsvs/user_socials.tsv'
+from '../tsvs/stage/stage_user_socials.tsv'
 with (format csv, delimiter e'\t');
 
 -- step 3: update records in the user table based on the data in the temporary table
@@ -94,15 +94,15 @@ create temp table temp_verified_tiktok_users_tsv_data (
 
 -- step 2: copy the data from the tsv files into the temporary tables
 copy temp_verified_twitter_users_tsv_data (handle)
-from '../tsvs/verified_twitter_users.tsv'
+from '../tsvs/stage/stage_verified_twitter_users.tsv'
 with (format csv, delimiter e'\t');
 
 copy temp_verified_instagram_users_tsv_data (handle)
-from '../tsvs/verified_instagram_users.tsv'
+from '../tsvs/stage/stage_verified_instagram_users.tsv'
 with (format csv, delimiter e'\t');
 
 copy temp_verified_tiktok_users_tsv_data (handle)
-from '../tsvs/verified_tiktok_users.tsv'
+from '../tsvs/stage/stage_verified_tiktok_users.tsv'
 with (format csv, delimiter e'\t');
 
 -- step 3: update records in the user table based on the data in the temporary tables
