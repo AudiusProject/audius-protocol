@@ -18,7 +18,14 @@ type UserLinkProps = Omit<TextLinkProps, 'to'> & {
 }
 
 export const UserLink = (props: UserLinkProps) => {
-  const { userId, badgeSize = 's', popover, children, ...other } = props
+  const {
+    userId,
+    badgeSize = 's',
+    popover,
+    children,
+    className,
+    ...other
+  } = props
   const { iconSizes, spacing } = useTheme()
 
   const url = useSelector((state) => {
@@ -38,6 +45,7 @@ export const UserLink = (props: UserLinkProps) => {
         lineHeight: 'normal'
       }}
       ellipses={popover}
+      className={popover ? undefined : className}
       {...other}
     >
       <Text ellipses>{userName}</Text>
@@ -55,6 +63,7 @@ export const UserLink = (props: UserLinkProps) => {
       css={{ display: 'inline-flex', overflow: 'hidden' }}
       handle={handle}
       component='span'
+      className={className}
     >
       {linkElement}
     </ArtistPopover>

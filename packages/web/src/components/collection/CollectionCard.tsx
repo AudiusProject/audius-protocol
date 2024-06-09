@@ -123,6 +123,7 @@ export const CollectionCard = forwardRef(
               <Text ellipses>{playlist_name}</Text>
             </TextLink>
             <UserLink
+              popover
               userId={playlist_owner_id}
               css={{ justifyContent: 'center' }}
             />
