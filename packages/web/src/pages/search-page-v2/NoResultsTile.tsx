@@ -2,12 +2,12 @@ import { IconSearch, Paper, Text } from '@audius/harmony'
 
 import { useMedia } from 'hooks/useMedia'
 const messages = {
-  cta: 'Search the Catalog',
+  noResults: 'No Results',
   description:
     'Apply filters or search to discover tracks, profile, playlists, and albums.'
 }
 
-export const SearchCatalogTile = () => {
+export const NoResultsTile = () => {
   const { isMobile } = useMedia()
   return (
     <Paper
@@ -25,7 +25,7 @@ export const SearchCatalogTile = () => {
         variant={isMobile ? 'title' : 'heading'}
         size={isMobile ? 'l' : 'm'}
       >
-        {messages.cta}
+        {messages.noResults}
       </Text>
       <Text variant='body' size={isMobile ? 'm' : 'l'}>
         {messages.description}
