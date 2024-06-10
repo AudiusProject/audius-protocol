@@ -16,6 +16,7 @@ export type MetaTagsProps = {
    */
   ogDescription?: string
   image?: string
+  imageAlt?: string
   canonicalUrl?: string
   structuredData?: object
   noIndex?: boolean
@@ -31,6 +32,7 @@ export const MetaTags = (props: MetaTagsProps) => {
     description,
     ogDescription,
     image,
+    imageAlt,
     canonicalUrl,
     structuredData,
     noIndex = false
@@ -84,6 +86,13 @@ export const MetaTags = (props: MetaTagsProps) => {
         <Helmet encodeSpecialCharacters={false}>
           <meta property='og:image' content={image} />
           <meta name='twitter:image' content={image} />
+        </Helmet>
+      ) : null}
+
+      {imageAlt ? (
+        <Helmet encodeSpecialCharacters={false}>
+          <meta name='twitter:image:alt' content={imageAlt} />
+          <meta name='og:image:alt' content={imageAlt} />
         </Helmet>
       ) : null}
 
