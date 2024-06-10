@@ -6,6 +6,7 @@ import {
   TextLink,
   OptionsFilterButton
 } from '@audius/harmony'
+
 import {
   CollectionData,
   PaginatedTable
@@ -110,8 +111,8 @@ const Table = ({ data }: { data: CollectionData }) => {
               {item?.sdk_upload_metadata?.title
                 ? 'track'
                 : item?.sdk_upload_metadata?.playlist_name
-                ? 'album'
-                : 'unknown'}
+                  ? 'album'
+                  : 'unknown'}
             </td>
             <td>
               {item?.sdk_upload_metadata?.artist_id ||
