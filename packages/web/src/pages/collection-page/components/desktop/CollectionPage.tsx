@@ -229,8 +229,7 @@ const CollectionPage = ({
   const dogEarType =
     (!collectionLoading &&
       getDogEarType({
-        streamConditions,
-        isUnlisted: isPrivate
+        streamConditions
       })) ||
     undefined
 

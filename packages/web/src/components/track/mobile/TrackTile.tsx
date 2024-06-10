@@ -235,8 +235,7 @@ const TrackTile = (props: CombinedProps) => {
         streamConditions,
         isOwner,
         hasStreamAccess,
-        isArtistPick,
-        isUnlisted
+        isArtistPick
       })
 
   const onToggleSave = useCallback(() => toggleSave(id), [toggleSave, id])
