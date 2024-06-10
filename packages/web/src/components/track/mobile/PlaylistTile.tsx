@@ -302,8 +302,7 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
     streamConditions,
     isOwner,
     hasStreamAccess,
-    isArtistPick: false,
-    isUnlisted
+    isArtistPick: false
   })
 
   let specialContentLabel = null

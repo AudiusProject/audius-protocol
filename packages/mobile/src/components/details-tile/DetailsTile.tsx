@@ -1,7 +1,5 @@
 import { useCallback } from 'react'
 
-import { release } from 'os'
-
 import { useGatedContentAccessMap } from '@audius/common/hooks'
 import { isContentUSDCPurchaseGated } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
@@ -12,12 +10,7 @@ import {
   cacheCollectionsSelectors
 } from '@audius/common/store'
 import type { CommonState } from '@audius/common/store'
-import {
-  dayjs,
-  getDogEarType,
-  Genre,
-  getLocalTimezone
-} from '@audius/common/utils'
+import { getDogEarType, Genre, getLocalTimezone } from '@audius/common/utils'
 import moment from 'moment'
 import { TouchableOpacity } from 'react-native'
 import { useSelector } from 'react-redux'
