@@ -7,7 +7,7 @@ import { useHistoryContext } from 'app/HistoryProvider'
 import { useGoToRoute } from 'hooks/useGoToRoute'
 import { FEED_PAGE } from 'utils/route'
 
-import { UploadFormScrollContext } from '../EditTrackPage'
+import { EditFormScrollContext } from '../EditTrackPage'
 
 import styles from './AnchoredSubmitRowEdit.module.css'
 
@@ -18,7 +18,7 @@ const messages = {
 }
 
 export const AnchoredSubmitRowEdit = () => {
-  const scrollToTop = useContext(UploadFormScrollContext)
+  const scrollToTop = useContext(EditFormScrollContext)
   const { isValid } = useFormikContext()
   const [showError, setShowError] = useState(false)
 

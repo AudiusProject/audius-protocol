@@ -253,6 +253,7 @@ export function* watchCollectiblePlay() {
     playCollectible.type,
     function* (action: ReturnType<typeof playCollectible>) {
       const { collectible, onEnd } = action.payload
+      const { animationUrl, videoUrl } = collectible
       const audioPlayer = yield* getContext('audioPlayer')
       const endChannel = eventChannel((emitter) => {
         audioPlayer.load(
@@ -262,7 +263,7 @@ export function* watchCollectiblePlay() {
               emitter(onEnd({}))
             }
           },
-          collectible.animationUrl
+          animationUrl ?? videoUrl
         )
         return () => {}
       })

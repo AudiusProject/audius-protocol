@@ -5,6 +5,7 @@ import {
   OptionsFilterButton,
   Flex,
   FilterButton,
+  FilterButtonOptions,
   Popup,
   Paper,
   TextInput,
@@ -103,6 +104,80 @@ const MoodFilter = () => {
       showFilterInput
       filterInputPlaceholder={messages.moodSearchPlaceholder}
     />
+  )
+}
+
+const keyArr = [
+  'C',
+  'C#/Db',
+  'D',
+  'D#/Eb',
+  'E',
+  'F',
+  'F#/Gb',
+  'G',
+  'G#/Ab',
+  'A',
+  'A#/Bb',
+  'B'
+]
+
+const KeyFilter = () => {
+  const [urlSearchParams] = useSearchParams()
+  const key = urlSearchParams.get('key')
+  const updateSearchParams = useUpdateSearchParams('key')
+  const [scale, setScale] = useState<'Major' | 'Minor'>('Major')
+  const keyOptions = keyArr.map((key) => ({
+    label: key,
+    value: key
+  }))
+
+  return (
+    <FilterButton
+      value={key}
+      label={key ?? messages.key}
+      onChange={updateSearchParams}
+      iconRight={IconCaretDown}
+    >
+      {({ handleChange, isOpen, setIsOpen, anchorRef }) => (
+        <Popup
+          anchorRef={anchorRef}
+          isVisible={isOpen}
+          onClose={() => setIsOpen(false)}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+          transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+        >
+          <Paper mt='s' border='strong' shadow='far' css={{ minWidth: 200 }}>
+            <Flex
+              w='100%'
+              p='s'
+              direction='column'
+              alignItems='flex-start'
+              role='listbox'
+            >
+              <SegmentedControl
+                fullWidth
+                options={[
+                  { key: 'Major', text: 'Major' },
+                  { key: 'Minor', text: 'Minor' }
+                ]}
+                selected={scale}
+                onSelectOption={setScale}
+              />
+              <FilterButtonOptions
+                options={keyOptions}
+                onChange={(option) =>
+                  handleChange(
+                    `${option.value} ${scale}`,
+                    `${option.value} ${scale}`
+                  )
+                }
+              />
+            </Flex>
+          </Paper>
+        </Popup>
+      )}
+    </FilterButton>
   )
 }
 
@@ -225,16 +300,7 @@ const IsVerifiedFilter = () => {
 export const filters: Record<Filter, () => ReactElement> = {
   genre: GenreFilter,
   mood: MoodFilter,
-  key: () => (
-    <OptionsFilterButton
-      label={messages.key}
-      options={[
-        {
-          value: 'Filter'
-        }
-      ]}
-    />
-  ),
+  key: KeyFilter,
   bpm: BpmFilter,
   isPremium: IsPremiumFilter,
   hasDownloads: HasDownloadsFilter,
