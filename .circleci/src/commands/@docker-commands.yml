@@ -55,6 +55,8 @@ docker-tag-images:
             crm
             trpc
             uptime
+            mri
+            verified-notifications
           )
           creator=(
             mediorum
