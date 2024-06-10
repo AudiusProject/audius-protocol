@@ -36,7 +36,9 @@ export enum NotificationType {
   TrackAddedToPurchasedAlbum = 'TrackAddedToPurchasedAlbum',
   SupporterDethroned = 'SupporterDethroned',
   USDCPurchaseSeller = 'USDCPurchaseSeller',
-  USDCPurchaseBuyer = 'USDCPurchaseBuyer'
+  USDCPurchaseBuyer = 'USDCPurchaseBuyer',
+  RequestManager = 'RequestManager',
+  ApproveManagerRequest = 'ApproveManagerRequest'
 }
 
 export enum PushNotificationType {
@@ -78,7 +80,9 @@ export enum PushNotificationType {
   AddTrackToPlaylist = 'AddTrackToPlaylist',
   TrackAddedToPurchasedAlbum = 'TrackAddedToPurchasedAlbum',
   Message = 'Message',
-  MessageReaction = 'MessageReaction'
+  MessageReaction = 'MessageReaction',
+  RequestManager = 'RequestManager',
+  ApproveManagerRequest = 'ApproveManagerRequest'
 }
 
 export enum Entity {
@@ -260,6 +264,18 @@ export type DiscoveryUSDCPurchaseNotificationAction = {
   extra_amount: StringUSDC
 }
 
+export type DiscoveryRequestManagerNotificationAction = {
+  user_id: string
+  grantee_user_id: string
+  grantee_address: string
+}
+
+export type DiscoveryApproveManagerRequestNotificationAction = {
+  user_id: string
+  grantee_user_id: string
+  grantee_address: string
+}
+
 export type TrendingRange = 'week' | 'month' | 'year'
 
 export type DiscoveryTrendingNotificationAction = {
@@ -352,6 +368,18 @@ export type DiscoveryUSDCPurchaseSellerNotification = DiscoveryBaseNotification<
   'usdc_purchase_seller',
   DiscoveryUSDCPurchaseNotificationAction
 >
+
+export type DiscoveryRequestManagerNotification = DiscoveryBaseNotification<
+  'request_manager',
+  DiscoveryRequestManagerNotificationAction
+>
+
+export type DiscoveryApproveManagerRequestNotification =
+  DiscoveryBaseNotification<
+    'approve_manager_request',
+    DiscoveryApproveManagerRequestNotificationAction
+  >
+
 export type DiscoveryTrendingPlaylistNotification = DiscoveryBaseNotification<
   'trending_playlist',
   {
@@ -414,6 +442,8 @@ export type DiscoveryNotification =
   | DiscoveryTastemakerNotification
   | DiscoveryUSDCPurchaseBuyerNotification
   | DiscoveryUSDCPurchaseSellerNotification
+  | DiscoveryRequestManagerNotification
+  | DiscoveryApproveManagerRequestNotification
 
 export type AnnouncementNotification = BaseNotification & {
   type: NotificationType.Announcement
@@ -936,6 +966,16 @@ export type USDCPurchaseBuyerNotification = BaseNotification & {
   entityType: Entity.Track | Entity.Album
 }
 
+export type RequestManagerNotification = BaseNotification & {
+  type: NotificationType.RequestManager
+  userId: ID
+}
+
+export type ApproveManagerRequestNotification = BaseNotification & {
+  type: NotificationType.ApproveManagerRequest
+  userId: ID
+}
+
 export type Notification =
   | AnnouncementNotification
   | UserSubscriptionNotification
@@ -963,6 +1003,8 @@ export type Notification =
   | TrackAddedToPurchasedAlbumNotification
   | USDCPurchaseSellerNotification
   | USDCPurchaseBuyerNotification
+  | RequestManagerNotification
+  | ApproveManagerRequestNotification
 
 export type IdentityNotification = Omit<Notification, 'timestamp'> & {
   timestamp: string
