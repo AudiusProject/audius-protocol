@@ -32,9 +32,10 @@ export const useAddAudioNftPlaylistToLibrary = () => {
     }
     const accountCollectibles = getAccountCollectibles(state)
     const hasAudioNfts = accountCollectibles?.some((collectible) => {
-      const { hasAudio, animationUrl } = collectible
+      const { hasAudio, animationUrl, videoUrl } = collectible
       if (hasAudio) return true
-      const collectibleExtension = animationUrl?.split('.').pop()
+      const mediaUrl = animationUrl ?? videoUrl
+      const collectibleExtension = mediaUrl?.split('.').pop()
       return collectibleExtension && audioFormatSet.has(collectibleExtension)
     })
 

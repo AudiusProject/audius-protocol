@@ -742,19 +742,35 @@ export const audiusBackend = ({
       const account = audiusLibs.Account.getCurrentUser()
       if (!account) return null
 
-      try {
-        const body = await getSocialHandles(account.handle)
-        account.twitter_handle = body.twitterHandle || null
-        account.instagram_handle = body.instagramHandle || null
-        account.tiktok_handle = body.tikTokHandle || null
-        account.website = body.website || null
-        account.donation = body.donation || null
-        account.twitterVerified = body.twitterVerified || false
-        account.instagramVerified = body.instagramVerified || false
-        account.tikTokVerified = body.tikTokVerified || false
-      } catch (e) {
-        console.error(e)
+      // This is saying that if there is any social info coming back from DN,
+      // then we should not attempt to fetch socials from identity.
+      // It is possible that identity has more up-to-date socials than DN,
+      // but we can live with that until we do the final social backfill from identity to DN.
+      const hasSocialsFromDn =
+        account.twitter_handle ||
+        account.instagram_handle ||
+        account.tiktok_handle ||
+        account.website ||
+        account.donation ||
+        account.verified_with_twitter ||
+        account.verified_with_instagram ||
+        account.verified_with_tiktok
+      if (!hasSocialsFromDn) {
+        try {
+          const body = await getSocialHandles(account.handle)
+          account.twitter_handle = body.twitterHandle || null
+          account.instagram_handle = body.instagramHandle || null
+          account.tiktok_handle = body.tikTokHandle || null
+          account.website = body.website || null
+          account.donation = body.donation || null
+          account.verified_with_twitter = body.twitterVerified || false
+          account.verified_with_instagram = body.instagramVerified || false
+          account.verified_with_tiktok = body.tikTokVerified || false
+        } catch (e) {
+          console.error(e)
+        }
       }
+
       try {
         const userBank = await audiusLibs.solanaWeb3Manager.deriveUserBank()
         account.userBank = userBank.toString()
@@ -1055,29 +1071,37 @@ export const audiusBackend = ({
         newMetadata.cover_photo_sizes = resp.id
       }
 
-      if (
-        typeof newMetadata.twitter_handle === 'string' ||
-        typeof newMetadata.instagram_handle === 'string' ||
-        typeof newMetadata.tiktok_handle === 'string' ||
-        typeof newMetadata.website === 'string' ||
-        typeof newMetadata.donation === 'string'
-      ) {
-        const { data, signature } = await signData()
-        await fetch(`${identityServiceUrl}/social_handles`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            [AuthHeaders.Message]: data,
-            [AuthHeaders.Signature]: signature
-          },
-          body: JSON.stringify({
-            twitterHandle: newMetadata.twitter_handle,
-            instagramHandle: newMetadata.instagram_handle,
-            tikTokHandle: newMetadata.tiktok_handle,
-            website: newMetadata.website,
-            donation: newMetadata.donation
+      // Leave this here for now, but this should be removed once we believe
+      // that old clients have caught up and are updating socials via entity manager to DN.
+      try {
+        if (
+          typeof newMetadata.twitter_handle === 'string' ||
+          typeof newMetadata.instagram_handle === 'string' ||
+          typeof newMetadata.tiktok_handle === 'string' ||
+          typeof newMetadata.website === 'string' ||
+          typeof newMetadata.donation === 'string'
+        ) {
+          const { data, signature } = await signData()
+          await fetch(`${identityServiceUrl}/social_handles`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              [AuthHeaders.Message]: data,
+              [AuthHeaders.Signature]: signature
+            },
+            body: JSON.stringify({
+              twitterHandle: newMetadata.twitter_handle,
+              instagramHandle: newMetadata.instagram_handle,
+              tikTokHandle: newMetadata.tiktok_handle,
+              website: newMetadata.website,
+              donation: newMetadata.donation
+            })
           })
-        })
+        }
+      } catch (e) {
+        console.error(
+          `Could not update socials in identity, but they should still be updated in DN with code below. Error: ${e}`
+        )
       }
 
       newMetadata = schemas.newUserMetadata(newMetadata, true)
@@ -2021,6 +2045,22 @@ export const audiusBackend = ({
         userIds,
         entityId,
         entityType,
+        ...formatBaseNotification(notification)
+      }
+    } else if (notification.type === 'request_manager') {
+      const data = notification.actions[0].data
+
+      return {
+        type: NotificationType.RequestManager,
+        userId: decodeHashId(data.user_id)!,
+        ...formatBaseNotification(notification)
+      }
+    } else if (notification.type === 'approve_manager_request') {
+      const data = notification.actions[0].data
+
+      return {
+        type: NotificationType.ApproveManagerRequest,
+        userId: decodeHashId(data.grantee_user_id)!,
         ...formatBaseNotification(notification)
       }
     } else {

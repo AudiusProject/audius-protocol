@@ -11,7 +11,7 @@ import { push as pushRoute } from 'connected-react-router'
 import { has } from 'lodash'
 import { connect } from 'react-redux'
 import { matchPath } from 'react-router'
-import { withRouter } from 'react-router-dom'
+import { generatePath, withRouter } from 'react-router-dom'
 
 import { HistoryContext } from 'app/HistoryProvider'
 import { make } from 'common/store/analytics/actions'
@@ -24,7 +24,13 @@ import { getSearch } from 'common/store/search-bar/selectors'
 import SearchBar from 'components/search/SearchBar'
 import SearchBarV2 from 'components/search/SearchBarV2'
 import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
-import { collectionPage, profilePage, getPathname } from 'utils/route'
+import {
+  collectionPage,
+  profilePage,
+  getPathname,
+  SEARCH_PAGE,
+  SEARCH_CATEGORY_PAGE
+} from 'utils/route'
 
 import styles from './ConnectedSearchBar.module.css'
 
@@ -85,6 +91,32 @@ class ConnectedSearchBar extends Component {
   onSubmit = (value) => {
     // Encode everything besides tag searches
     const pathname = '/search'
+
+    let newPath = `${pathname}/${value}`
+    if (value) {
+      const categoryMatch = matchPath(
+        getPathname(this.props.history.location),
+        {
+          path: SEARCH_CATEGORY_PAGE
+        }
+      )
+      const searchMatch = matchPath(getPathname(this.props.history.location), {
+        path: SEARCH_PAGE
+      })
+
+      if (categoryMatch) {
+        newPath = generatePath(SEARCH_CATEGORY_PAGE, {
+          ...categoryMatch.params,
+          query: value
+        })
+      } else if (searchMatch) {
+        newPath = generatePath(SEARCH_PAGE, {
+          ...searchMatch.params,
+          query: value
+        })
+      }
+    }
+
     if (value.startsWith('#')) {
       // perform tag search
       this.props.history.push({
@@ -95,7 +127,8 @@ class ConnectedSearchBar extends Component {
     } else {
       value = encodeURIComponent(value)
       this.props.history.push({
-        pathname: pathname + '/' + value,
+        pathname: newPath,
+        search: this.props.history.location.search,
         state: {}
       })
     }
@@ -273,6 +306,7 @@ class ConnectedSearchBar extends Component {
         <SearchBarComponent
           value={this.state.value}
           isTagSearch={this.isTagSearch()}
+          isViewingSearchPage={this.props.isViewingSearchPage}
           status={status}
           searchText={searchText}
           dataSource={dataSource}
@@ -291,7 +325,10 @@ class ConnectedSearchBar extends Component {
 
 const mapStateToProps = (state, props) => ({
   search: getSearch(state, props),
-  isSearchV2Enabled: getFeatureEnabled(FeatureFlags.SEARCH_V2)
+  isSearchV2Enabled: getFeatureEnabled(FeatureFlags.SEARCH_V2),
+  isViewingSearchPage: !!matchPath(state.router.location.pathname, {
+    path: SEARCH_PAGE
+  })
 })
 const mapDispatchToProps = (dispatch) => ({
   fetchSearch: (value) => dispatch(fetchSearch(value)),

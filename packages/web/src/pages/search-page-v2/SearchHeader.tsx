@@ -1,8 +1,7 @@
-import { ChangeEvent, ReactElement, useCallback } from 'react'
+import { ChangeEvent, useCallback } from 'react'
 
-import { GENRES, Maybe, convertGenreLabelToValue } from '@audius/common/utils'
+import { Maybe } from '@audius/common/utils'
 import {
-  FilterButton,
   Flex,
   IconAlbum,
   IconNote,
@@ -13,12 +12,12 @@ import {
   Text
 } from '@audius/harmony'
 import { capitalize } from 'lodash'
-import { useSearchParams } from 'react-router-dom-v5-compat'
 
 import Header from 'components/header/desktop/Header'
 import { useMedia } from 'hooks/useMedia'
 
-import { Category, Filter } from './types'
+import { filters } from './SearchFilters'
+import { Category } from './types'
 
 export const categories = {
   all: { filters: [] },
@@ -38,98 +37,6 @@ type SearchHeaderProps = {
   setCategory: (category: CategoryKey) => void
   title: string
   query: Maybe<string>
-}
-
-const GenreFilter = () => {
-  const [urlSearchParams, setUrlSearchParams] = useSearchParams()
-  const genre = urlSearchParams.get('genre')
-
-  return (
-    <FilterButton
-      label='Genre'
-      popupAnchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
-      popupMaxHeight={400}
-      popupTransformOrigin={{ vertical: 'top', horizontal: 'left' }}
-      selection={genre}
-      onSelect={(value) => {
-        if (value) {
-          setUrlSearchParams((params) => ({ ...params, genre: value }))
-        } else {
-          setUrlSearchParams(({ genre, ...params }: any) => params)
-        }
-      }}
-      options={GENRES.map((genre) => ({
-        label: genre,
-        value: convertGenreLabelToValue(genre)
-      }))}
-      showFilterInput
-      filterInputPlaceholder='Search genre'
-    />
-  )
-}
-
-const filters: Record<Filter, () => ReactElement> = {
-  genre: GenreFilter,
-  mood: () => (
-    <FilterButton
-      label='Mood'
-      options={[
-        {
-          value: 'Filter'
-        }
-      ]}
-    />
-  ),
-  key: () => (
-    <FilterButton
-      label='Key'
-      options={[
-        {
-          value: 'Filter'
-        }
-      ]}
-    />
-  ),
-  bpm: () => (
-    <FilterButton
-      label='BPM'
-      options={[
-        {
-          value: 'Filter'
-        }
-      ]}
-    />
-  ),
-  isPremium: () => (
-    <FilterButton
-      label='Premium'
-      options={[
-        {
-          value: 'Filter'
-        }
-      ]}
-    />
-  ),
-  hasDownloads: () => (
-    <FilterButton
-      label='Downloads Available'
-      options={[
-        {
-          value: 'Filter'
-        }
-      ]}
-    />
-  ),
-  isVerified: () => (
-    <FilterButton
-      label='Verified'
-      options={[
-        {
-          value: 'Filter'
-        }
-      ]}
-    />
-  )
 }
 
 export const SearchHeader = (props: SearchHeaderProps) => {

@@ -6,7 +6,10 @@ import { createMigrationChecker } from '@audius/common/utils'
 import { env } from 'app/env'
 import { apiClient } from 'app/services/audius-api-client'
 import { audiusBackendInstance } from 'app/services/audius-backend-instance'
-import { remoteConfigInstance } from 'app/services/remote-config'
+import {
+  getFeatureEnabled,
+  remoteConfigInstance
+} from 'app/services/remote-config'
 import { audiusSdk } from 'app/services/sdk/audius-sdk'
 import { store } from 'app/store'
 import { reportToSentry } from 'app/utils/reportToSentry'
@@ -29,7 +32,8 @@ export const audiusQueryContext = {
   reportToSentry,
   env,
   fetch,
-  remoteConfigInstance
+  remoteConfigInstance,
+  getFeatureEnabled
 }
 
 export const AudiusQueryProvider = (props: AudiusQueryProviderProps) => {

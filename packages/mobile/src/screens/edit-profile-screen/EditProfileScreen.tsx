@@ -64,9 +64,9 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
 }))
 
 type EditProfileFormProps = FormikProps<ProfileValues> & {
-  isTwitterVerified?: boolean
-  isInstagramVerified?: boolean
-  isTikTokVerified?: boolean
+  isTwitterVerified: boolean
+  isInstagramVerified: boolean
+  isTikTokVerified: boolean
 }
 
 const EditProfileForm = (props: EditProfileFormProps) => {
@@ -134,8 +134,12 @@ const EditProfileForm = (props: EditProfileFormProps) => {
 
 export const EditProfileScreen = () => {
   const profile = useSelector(getAccountUser)!
-  const { user_id, twitterVerified, instagramVerified, tikTokVerified } =
-    profile
+  const {
+    user_id,
+    verified_with_twitter: verifiedWithTwitter,
+    verified_with_instagram: verifiedWithInstagram,
+    verified_with_tiktok: verifiedWithTiktok
+  } = profile
 
   const dispatch = useDispatch()
 
@@ -208,9 +212,9 @@ export const EditProfileScreen = () => {
         return (
           <EditProfileForm
             {...formikProps}
-            isTwitterVerified={twitterVerified}
-            isInstagramVerified={instagramVerified}
-            isTikTokVerified={tikTokVerified}
+            isTwitterVerified={verifiedWithTwitter}
+            isInstagramVerified={verifiedWithInstagram}
+            isTikTokVerified={verifiedWithTiktok}
           />
         )
       }}

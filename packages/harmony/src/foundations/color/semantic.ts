@@ -39,7 +39,8 @@ const createSemanticTheme = (primitives: PrimitiveColors) => ({
   },
   border: {
     default: primitives.neutral.n100,
-    strong: primitives.neutral.n150
+    strong: primitives.neutral.n150,
+    accent: primitives.secondary.s300
   },
   focus: { default: primitives.secondary.secondary },
   status: {

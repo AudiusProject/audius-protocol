@@ -29,7 +29,7 @@ import { TwitterButton } from '../twitter-button'
 const messages = {
   success: 'Your Purchase Was Successful!',
   shareTwitterText: (contentType: string, trackTitle: string, handle: string) =>
-    `I bought the ${contentType} ${trackTitle} by ${handle} on @Audius! #AudiusPremium`,
+    `I bought the ${contentType} ${trackTitle} by ${handle} on @Audius! $AUDIO #AudiusPremium`,
   view: (contentType: string) => `View ${capitalize(contentType)}`,
   repost: 'Repost',
   reposted: 'Reposted'

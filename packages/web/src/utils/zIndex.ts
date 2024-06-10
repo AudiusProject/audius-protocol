@@ -26,6 +26,8 @@ export enum zIndex {
 
   NAV_BANNER_POPUP = 101,
 
+  FORM_PAGE_FOOTER = 200,
+
   // Set to 1000 to account for nested modals inside, which take a higher z-index
   EDIT_TRACK_MODAL = 1000,
   CREATE_PLAYLIST_MODAL = 1000,

@@ -1,3 +1,4 @@
+import { getTrackStreamUrl } from '@audius/common/api'
 import { Kind } from '@audius/common/models'
 import { FeatureFlags, QueryParams } from '@audius/common/services'
 import {
@@ -88,7 +89,10 @@ export function* watchPlay() {
     if (trackId) {
       // Load and set end action.
       const track = yield* select(getTrack, { id: trackId })
+      const currentUserId = yield* select(getUserId)
+
       const isReachable = yield* select(getIsReachable)
+
       if (!track) return
 
       if (!isReachable && isNativeMobile) {
@@ -115,6 +119,11 @@ export function* watchPlay() {
 
       let trackDuration = track.duration
 
+      const usePrefetchStreamUrls = yield* call(
+        getFeatureEnabled,
+        FeatureFlags.SKIP_STREAM_CHECK // TODO: replace with correct feature flag
+      )
+
       const { shouldSkip, shouldPreview } = calculatePlayerBehavior(
         track,
         playerBehavior
@@ -131,6 +140,11 @@ export function* watchPlay() {
         trackDuration = getTrackPreviewDuration(track)
       }
 
+      const streamUrl = yield* select(getTrackStreamUrl, {
+        trackId,
+        currentUserId
+      })
+
       const mp3Url = apiClient.makeUrl(
         `/tracks/${encodedTrackId}/stream`,
         queryParams
@@ -139,7 +153,6 @@ export function* watchPlay() {
       const isLongFormContent =
         track.genre === Genre.PODCASTS || track.genre === Genre.AUDIOBOOKS
 
-      const currentUserId = yield* select(getUserId)
       const endChannel = eventChannel((emitter) => {
         audioPlayer.load(
           trackDuration ||
@@ -164,10 +177,14 @@ export function* watchPlay() {
               )
             }
           },
-          mp3Url
+          usePrefetchStreamUrls && streamUrl ? streamUrl : mp3Url
         )
         return () => {}
       })
+      if (usePrefetchStreamUrls && streamUrl) {
+        // eslint-disable-next-line no-console
+        console.log('Using pre-fetched stream url for ', track.title)
+      }
       yield* spawn(actionChannelDispatcher, endChannel)
       yield* put(
         cacheActions.subscribe(Kind.TRACKS, [
@@ -236,6 +253,7 @@ export function* watchCollectiblePlay() {
     playCollectible.type,
     function* (action: ReturnType<typeof playCollectible>) {
       const { collectible, onEnd } = action.payload
+      const { animationUrl, videoUrl } = collectible
       const audioPlayer = yield* getContext('audioPlayer')
       const endChannel = eventChannel((emitter) => {
         audioPlayer.load(
@@ -245,7 +263,7 @@ export function* watchCollectiblePlay() {
               emitter(onEnd({}))
             }
           },
-          collectible.animationUrl
+          animationUrl ?? videoUrl
         )
         return () => {}
       })
