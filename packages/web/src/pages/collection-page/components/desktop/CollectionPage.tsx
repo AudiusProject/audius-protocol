@@ -2,7 +2,6 @@ import { ChangeEvent, useMemo } from 'react'
 
 import {
   Variant,
-  DogEarType,
   Status,
   Collection,
   SmartCollection,
