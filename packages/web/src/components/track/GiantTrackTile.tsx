@@ -63,7 +63,7 @@ import { GatedContentSection } from './GatedContentSection'
 import GiantArtwork from './GiantArtwork'
 import styles from './GiantTrackTile.module.css'
 import { GiantTrackTileProgressInfo } from './GiantTrackTileProgressInfo'
-import InfoLabel from './InfoLabel'
+import { InfoLabel } from './InfoLabel'
 import { PlayPauseButton } from './PlayPauseButton'
 
 const DownloadSection = lazy(() =>
@@ -662,7 +662,7 @@ export const GiantTrackTile = ({
         ) : null}
 
         <div className={cn(styles.bottomSection, fadeIn)}>
-          <div className={styles.infoLabelsSection}>
+          <Flex w='100%' gap='l' wrap='wrap'>
             <InfoLabel
               className={styles.infoLabelPlacement}
               labelName='duration'
@@ -679,7 +679,7 @@ export const GiantTrackTile = ({
               />
             ) : null}
             {renderAlbum()}
-          </div>
+          </Flex>
           {description ? (
             <UserGeneratedText tag='h3' size='s' className={styles.description}>
               {description}
