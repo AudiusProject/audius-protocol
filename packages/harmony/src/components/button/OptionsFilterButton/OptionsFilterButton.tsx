@@ -6,6 +6,7 @@ import { BaseButton } from 'components/button/BaseButton/BaseButton'
 import { TextInput, TextInputSize } from 'components/input'
 import { Flex, Paper } from 'components/layout'
 import { Popup } from 'components/popup'
+import { Text } from 'components/text'
 import { useControlled } from 'hooks/useControlled'
 import { IconCaretDown, IconSearch } from 'icons'
 
@@ -70,7 +71,14 @@ export const FilterButtonOptions = ({
           role='option'
         >
           {option.leadingElement ?? null}
-          {option.label ?? option.value}
+          <Text variant='body' strength='strong'>
+            {option.label ?? option.value}
+          </Text>
+          {option.helperText ? (
+            <Text variant='body' strength='strong' color='subdued'>
+              {option.helperText}
+            </Text>
+          ) : null}
         </BaseButton>
       ))}
     </>
@@ -118,6 +126,7 @@ export const OptionsFilterButton = forwardRef<
       iconRight={IconCaretDown}
       {...filterButtonProps}
       value={selection}
+      onReset={() => setFilterInputValue('')}
       label={selectedLabel ?? filterButtonProps.label}
     >
       {({ isOpen, setIsOpen, handleChange, anchorRef }) => (
@@ -129,7 +138,6 @@ export const OptionsFilterButton = forwardRef<
           transformOrigin={popupTransformOrigin}
           portalLocation={popupPortalLocation}
           zIndex={popupZIndex}
-          onAfterClose={() => setFilterInputValue('')}
         >
           <Paper mt='s' border='strong' shadow='far'>
             <Flex

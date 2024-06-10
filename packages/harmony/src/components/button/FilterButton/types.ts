@@ -88,6 +88,11 @@ export type FilterButtonProps = {
   onChange?: (value: string) => void
 
   /**
+   * If provided, will be called when the selected value is reset
+   */
+  onReset?: () => void
+
+  /**
    * What to do when the button is clicked
    * This will override the default behavior of toggling isOpen
    */

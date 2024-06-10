@@ -1,4 +1,4 @@
-import { ReactElement, useCallback, useState } from 'react'
+import { ReactElement, useCallback, useRef, useState } from 'react'
 
 import { GENRES, convertGenreLabelToValue } from '@audius/common/utils'
 import {
@@ -10,8 +10,13 @@ import {
   Paper,
   TextInput,
   SegmentedControl,
-  IconCaretDown
+  IconCaretDown,
+  Divider,
+  Button,
+  Box,
+  useTheme
 } from '@audius/harmony'
+import { css } from '@emotion/css'
 import { useSearchParams } from 'react-router-dom-v5-compat'
 
 import { Filter } from './types'
@@ -24,6 +29,8 @@ const messages = {
   moodSearchPlaceholder: 'Search Mood',
   key: 'Key',
   bpm: 'BPM',
+  minBpm: 'Min',
+  maxBpm: 'Max',
   isPremium: 'Premium',
   isVerified: 'Verified',
   hasDownloads: 'Downloads Available'
@@ -150,29 +157,35 @@ const KeyFilter = () => {
           <Paper mt='s' border='strong' shadow='far' css={{ minWidth: 200 }}>
             <Flex
               w='100%'
-              p='s'
+              gap='s'
+              pv='s'
               direction='column'
               alignItems='flex-start'
               role='listbox'
             >
-              <SegmentedControl
-                fullWidth
-                options={[
-                  { key: 'Major', text: 'Major' },
-                  { key: 'Minor', text: 'Minor' }
-                ]}
-                selected={scale}
-                onSelectOption={setScale}
-              />
-              <FilterButtonOptions
-                options={keyOptions}
-                onChange={(option) =>
-                  handleChange(
-                    `${option.value} ${scale}`,
-                    `${option.value} ${scale}`
-                  )
-                }
-              />
+              <Box w='100%' ph='s'>
+                <SegmentedControl
+                  fullWidth
+                  options={[
+                    { key: 'Major', text: 'Major' },
+                    { key: 'Minor', text: 'Minor' }
+                  ]}
+                  selected={scale}
+                  onSelectOption={setScale}
+                />
+              </Box>
+              <Divider css={{ width: '100%' }} />
+              <Flex direction='column' w='100%' ph='s'>
+                <FilterButtonOptions
+                  options={keyOptions}
+                  onChange={(option) =>
+                    handleChange(
+                      `${option.value} ${scale}`,
+                      `${option.value} ${scale}`
+                    )
+                  }
+                />
+              </Flex>
             </Flex>
           </Paper>
         </Popup>
@@ -181,31 +194,115 @@ const KeyFilter = () => {
   )
 }
 
-// TODO: Need to debounce the on change for this bc it locks up the UI a bit. only like 100ms
+type BpmTargetType = 'exact' | 'range5' | 'range10'
+const targetOptions: { label: string; value: BpmTargetType }[] = [
+  {
+    label: 'Exact',
+    value: 'exact'
+  },
+  {
+    label: '± 5',
+    value: 'range5'
+  },
+  {
+    label: '± 10',
+    value: 'range10'
+  }
+]
+const bpmOptions = [
+  {
+    label: 'Very Slow',
+    value: '1-60',
+    helperText: '<60 BPM'
+  },
+  {
+    label: 'Slow',
+    value: '60-90',
+    helperText: '60-90 BPM'
+  },
+  {
+    label: 'Medium',
+    value: '90-110',
+    helperText: '90-110 BPM'
+  },
+  {
+    label: 'Upbeat',
+    value: '110-140',
+    helperText: '110-140 BPM'
+  },
+  {
+    label: 'Fast',
+    value: '140-160',
+    helperText: '140-160 BPM'
+  },
+  {
+    label: 'Very Fast',
+    value: '160-999',
+    helperText: '160+ BPM'
+  }
+]
+
 const BpmFilter = () => {
+  const { color } = useTheme()
   const [urlSearchParams] = useSearchParams()
   const bpm = urlSearchParams.get('bpm')
   const updateSearchParams = useUpdateSearchParams('bpm')
-
   const [bpmFilterType, setBpmFilterType] = useState<'range' | 'target'>(
     'range'
   )
+  const [bpmTargetType, setBpmTargetType] = useState<BpmTargetType>('exact')
 
-  const label = bpm ? `${bpm} ${messages.bpm}` : `${messages.bpm}`
+  const minRef = useRef('')
+  const maxRef = useRef('')
+  const targetBpmRef = useRef('')
+  const targetTypeRef = useRef<BpmTargetType>('exact')
 
-  const handleBpmInputChange = useCallback(
-    (handleChange: (value: string, label: string) => void) =>
-      (value: string) => {
-        handleChange(value, `${value} ${messages.bpm}`)
-      },
+  const handleBpmRangeChange = useCallback(
+    (handleChange: (value: string, label: string) => void) => {
+      let value = ''
+
+      if (minRef.current || maxRef.current) {
+        value = `${minRef.current || '1'}-${maxRef.current || '999'}`
+      }
+
+      handleChange(value, `${value} ${messages.bpm}`)
+    },
     []
   )
+
+  const handleBpmTargetChange = useCallback(
+    (handleChange: (value: string, label: string) => void) => {
+      let value = ''
+
+      if (targetBpmRef.current) {
+        if (targetTypeRef.current === 'exact') {
+          value = targetBpmRef.current
+        } else {
+          const mod = targetTypeRef.current === 'range5' ? 5 : 10
+          value = `${Math.max(
+            Number(targetBpmRef.current) - mod,
+            1
+          )}-${Math.min(Number(targetBpmRef.current) + mod, 999)}`
+        }
+      }
+
+      handleChange(value, `${value} ${messages.bpm}`)
+    },
+    []
+  )
+
+  const label = bpm ? `${bpm} ${messages.bpm}` : `${messages.bpm}`
 
   return (
     <FilterButton
       value={bpm}
       label={label}
       onChange={updateSearchParams}
+      onReset={() => {
+        minRef.current = ''
+        maxRef.current = ''
+        targetBpmRef.current = ''
+      }}
       iconRight={IconCaretDown}
     >
       {({ handleChange, isOpen, setIsOpen, anchorRef }) => (
@@ -216,33 +313,137 @@ const BpmFilter = () => {
           anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
           transformOrigin={{ vertical: 'top', horizontal: 'left' }}
         >
-          <Paper mt='s' border='strong' shadow='far'>
+          <Paper w={242} mt='s' border='strong' shadow='far'>
             <Flex
-              p='s'
+              w='100%'
+              pv='s'
+              gap='s'
               direction='column'
               alignItems='flex-start'
               role='listbox'
             >
-              <Flex direction='column' w='100%' gap='s'>
+              <Flex
+                direction='column'
+                w='100%'
+                ph='s'
+                // NOTE: Adds a little flexibility so the user doesn't close the popup by accident
+                onClick={(e) => e.stopPropagation()}
+              >
                 <SegmentedControl
                   options={[
                     { key: 'range', text: 'Range' },
                     { key: 'target', text: 'Target' }
                   ]}
                   selected={bpmFilterType}
-                  onSelectOption={setBpmFilterType}
-                />
-                <TextInput
-                  placeholder={messages.bpm}
-                  label={messages.bpm}
-                  onClick={(e) => {
-                    e.stopPropagation()
-                  }}
-                  onChange={(e) => {
-                    handleBpmInputChange(handleChange)(e.target.value)
+                  onSelectOption={(type) => {
+                    if (type === 'target') {
+                      minRef.current = ''
+                      maxRef.current = ''
+                    } else {
+                      targetBpmRef.current = ''
+                    }
+                    setBpmFilterType(type)
                   }}
                 />
               </Flex>
+              <Divider css={{ width: '100%' }} />
+              {bpmFilterType === 'range' ? (
+                <>
+                  <Flex direction='column' w='100%' ph='s'>
+                    <FilterButtonOptions
+                      options={bpmOptions}
+                      onChange={(option) => {
+                        handleChange(
+                          option.value,
+                          option.helperText ?? option.value
+                        )
+                      }}
+                    />
+                  </Flex>
+                  <Flex
+                    ph='s'
+                    gap='xs'
+                    w={240}
+                    alignItems='center'
+                    // NOTE: Adds a little flexibility so the user doesn't close the popup by accident
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <TextInput
+                      label={messages.minBpm}
+                      placeholder={messages.minBpm}
+                      hideLabel
+                      onChange={(e) => {
+                        minRef.current = e.target.value
+                        handleBpmRangeChange(handleChange)
+                      }}
+                      inputRootClassName={css({
+                        height: '48px !important'
+                      })}
+                    />
+                    -
+                    <TextInput
+                      label={messages.maxBpm}
+                      placeholder={messages.maxBpm}
+                      hideLabel
+                      onChange={(e) => {
+                        maxRef.current = e.target.value
+                        handleBpmRangeChange(handleChange)
+                      }}
+                      inputRootClassName={css({
+                        height: '48px !important'
+                      })}
+                    />
+                  </Flex>
+                </>
+              ) : (
+                <Flex
+                  direction='column'
+                  ph='s'
+                  gap='s'
+                  // NOTE: Adds a little flexibility so the user doesn't close the popup by accident
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <TextInput
+                    label={messages.bpm}
+                    placeholder={messages.bpm}
+                    hideLabel
+                    onChange={(e) => {
+                      targetBpmRef.current = e.target.value
+                      handleBpmTargetChange(handleChange)
+                    }}
+                    inputRootClassName={css({
+                      height: '48px !important'
+                    })}
+                  />
+                  <Flex justifyContent='center' alignItems='center' gap='xs'>
+                    {targetOptions.map((option) => (
+                      <Button
+                        key={`targetOption_${option.value}`}
+                        size='small'
+                        variant={
+                          bpmTargetType === option.value
+                            ? 'primary'
+                            : 'tertiary'
+                        }
+                        // @ts-ignore
+                        hexColor={
+                          bpmTargetType === option.value
+                            ? color.secondary.secondary
+                            : undefined
+                        }
+                        fullWidth
+                        onClick={() => {
+                          setBpmTargetType(option.value)
+                          targetTypeRef.current = option.value
+                          handleBpmTargetChange(handleChange)
+                        }}
+                      >
+                        {option.label}
+                      </Button>
+                    ))}
+                  </Flex>
+                </Flex>
+              )}
             </Flex>
           </Paper>
         </Popup>
