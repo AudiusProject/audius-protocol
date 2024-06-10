@@ -413,7 +413,7 @@ class TrackPageProvider extends Component<
         ? `#${trackRank.month} This Month`
         : trackRank.week && trackRank.week <= TRENDING_BADGE_LIMIT
         ? `#${trackRank.week} This Week`
-        : `#2 This Week`
+        : null
 
     const desktopProps = {
       // Follow Props
