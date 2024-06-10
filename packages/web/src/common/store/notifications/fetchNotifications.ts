@@ -99,11 +99,6 @@ function* fetchDiscoveryNotifications(params: FetchNotificationsParams) {
     FeatureFlags.PREMIUM_ALBUMS_ENABLED
   )
 
-  const isManagerModeEnabled = yield* call(
-    getFeatureEnabled,
-    FeatureFlags.MANAGER_MODE
-  )
-
   const validTypes = [
     isRepostOfRepostEnabled ? 'repost_of_repost' : null,
     isSaveOfRepostEnabled ? 'save_of_repost' : null,
@@ -112,9 +107,7 @@ function* fetchDiscoveryNotifications(params: FetchNotificationsParams) {
     isTastemakerEnabled ? 'tastemaker' : null,
     isUSDCPurchasesEnabled ? 'usdc_purchase_buyer' : null,
     isUSDCPurchasesEnabled ? 'usdc_purchase_seller' : null,
-    isPurchaseableAlbumsEnabled ? 'track_added_to_purchased_album' : null,
-    isManagerModeEnabled ? 'request_manager' : null,
-    isManagerModeEnabled ? 'approve_manager_request' : null
+    isPurchaseableAlbumsEnabled ? 'track_added_to_purchased_album' : null
   ].filter(removeNullable)
 
   const discoveryNotifications = yield* call(
