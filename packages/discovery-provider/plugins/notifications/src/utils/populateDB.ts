@@ -332,6 +332,7 @@ export const createGrants = async (db: Knex, grants: CreateGrant[]) => {
         is_current: true,
         created_at: grant.created_at ?? new Date(Date.now()),
         updated_at: grant.updated_at ?? new Date(Date.now()),
+        txhash: `0x${grant.user_id}${grant.grantee_address}`,
         ...grant
       }))
     )

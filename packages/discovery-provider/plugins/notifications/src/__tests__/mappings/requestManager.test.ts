@@ -40,20 +40,21 @@ describe('Request Manager', () => {
 
   test('Process push notification for request manager', async () => {
     await createUsers(processor.discoveryDB, [{ user_id: 1 }, { user_id: 2 }])
-    const time = new Date('2024-05-23 00:12:51.695081')
+    await setUserEmailAndSettings(processor.identityDB, 'live', 1)
+
+    const timeString = '2024-05-23 00:12:51.695'
+    const time = new Date(timeString)
     await createGrants(processor.discoveryDB, [
       {
         user_id: 2,
-        grantee_address: `0x${2}`,
+        grantee_address: `0x${1}`,
         updated_at: time,
         created_at: time
       }
     ])
 
-    await insertMobileSettings(processor.identityDB, [{ userId: 2 }])
-    await insertMobileDevices(processor.identityDB, [{ userId: 2 }])
-    await setUserEmailAndSettings(processor.identityDB, 'live', 2)
-
+    await insertMobileSettings(processor.identityDB, [{ userId: 1 }])
+    await insertMobileDevices(processor.identityDB, [{ userId: 1 }])
     const pending = processor.listener.takePending()
     expect(pending?.appNotifications).toHaveLength(1)
 
@@ -63,14 +64,14 @@ describe('Request Manager', () => {
     expect(sendPushNotificationSpy).toHaveBeenCalledWith(
       {
         type: 'ios',
-        targetARN: 'arn:2',
+        targetARN: 'arn:1',
         badgeCount: 1
       },
       {
         title,
         body,
         data: {
-          id: `timestamp:1589373217:group_id:request_manager:grantee_user_id:1:user_id:2:updated_at:${time}:created_at:${time}`,
+          id: `timestamp:1716423171:group_id:request_manager:grantee_user_id:1:grantee_address:0x1:user_id:2:updated_at:${timeString}:created_at:${timeString}`,
           type: 'RequestManager',
           entityId: 2
         }
@@ -90,89 +91,4 @@ describe('Request Manager', () => {
       subject: 'Account Management Request'
     })
   })
-
-  // TODO(nkang): Render request maager tx email and compare to snapshot
-  // test('Render emails', async () => {
-  //   await createUsers(processor.discoveryDB, [{ user_id: 1 }, { user_id: 2 }])
-  //   await createTracks(processor.discoveryDB, [{ track_id: 10, owner_id: 1 }])
-  //   await createPlaylists(processor.discoveryDB, [
-  //     { playlist_id: 15, playlist_owner_id: 1 }
-  //   ])
-  //   await createUSDCPurchase(processor.discoveryDB, [
-  //     {
-  //       seller_user_id: 1,
-  //       buyer_user_id: 2,
-  //       content_type: usdc_purchase_content_type.track,
-  //       content_id: 10,
-  //       amount: '1000000',
-  //       extra_amount: '0'
-  //     },
-  //     {
-  //       seller_user_id: 1,
-  //       buyer_user_id: 2,
-  //       content_type: usdc_purchase_content_type.album,
-  //       content_id: 15,
-  //       amount: '1000000',
-  //       extra_amount: '0'
-  //     }
-  //   ])
-
-  //   const trackNotifications: AppEmailNotification[] = [
-  //     {
-  //       type: 'usdc_purchase_buyer',
-  //       timestamp: new Date(),
-  //       specifier: '2',
-  //       group_id:
-  //         'usdc_purchase_buyer:seller_user_id:1:buyer_user_id:2:content_id:10:content_type:track',
-  //       data: {
-  //         buyer_user_id: 2,
-  //         seller_user_id: 1,
-  //         amount: 1000000,
-  //         extra_amount: 0,
-  //         content_id: 10,
-  //         content_type: 'track'
-  //       },
-  //       user_ids: [2],
-  //       receiver_user_id: 2
-  //     }
-  //   ]
-  //   const trackNotificationHtml = await renderEmail({
-  //     userId: 2,
-  //     email: 'joey@audius.co',
-  //     frequency: 'daily',
-  //     notifications: trackNotifications,
-  //     dnDb: processor.discoveryDB,
-  //     identityDb: processor.identityDB
-  //   })
-  //   expect(trackNotificationHtml).toMatchSnapshot()
-
-  //   const albumNotifications: AppEmailNotification[] = [
-  //     {
-  //       type: 'usdc_purchase_buyer',
-  //       timestamp: new Date(),
-  //       specifier: '2',
-  //       group_id:
-  //         'usdc_purchase_buyer:seller_user_id:1:buyer_user_id:2:content_id:15:content_type:album',
-  //       data: {
-  //         buyer_user_id: 2,
-  //         seller_user_id: 1,
-  //         amount: 1000000,
-  //         extra_amount: 0,
-  //         content_id: 15,
-  //         content_type: 'album'
-  //       },
-  //       user_ids: [2],
-  //       receiver_user_id: 2
-  //     }
-  //   ]
-  //   const albumNotificationHtml = await renderEmail({
-  //     userId: 2,
-  //     email: 'joey@audius.co',
-  //     frequency: 'daily',
-  //     notifications: albumNotifications,
-  //     dnDb: processor.discoveryDB,
-  //     identityDb: processor.identityDB
-  //   })
-  //   expect(albumNotificationHtml).toMatchSnapshot()
-  // })
 })

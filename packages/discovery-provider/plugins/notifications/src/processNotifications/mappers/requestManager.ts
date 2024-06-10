@@ -116,7 +116,11 @@ export class RequestManager extends BaseNotification<RequestManagerRow> {
           : `${getContentNode()}/content/${managedAccountUser.profile_picture}`,
         managerHandle: managerUser.handle,
         managerName: managerUser.name,
-        managerProfilePicture: managerUser.profile_picture_sizes,
+        managerProfilePicture: managerUser.profile_picture_sizes
+          ? `${getContentNode()}/content/${
+              managerUser.profile_picture_sizes
+            }/480x480.jpg`
+          : `${getContentNode()}/content/${managerUser.profile_picture}`,
         link: `${getHostname()}/settings/accounts-you-manage?pending=${
           managedAccountUser.user_id
         }`
@@ -132,9 +136,11 @@ export class RequestManager extends BaseNotification<RequestManagerRow> {
   }
 
   formatEmailProps(resources: Resources) {
+    const user = resources.users[this.userId]
+
     return {
       type: this.notification.type,
-      users: resources.users
+      users: [user]
     }
   }
 }
