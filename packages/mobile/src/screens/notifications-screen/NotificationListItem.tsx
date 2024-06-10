@@ -27,9 +27,7 @@ import {
   FavoriteOfRepostNotification,
   TastemakerNotification,
   USDCPurchaseSellerNotification,
-  USDCPurchaseBuyerNotification,
-  ApproveManagerRequestNotification,
-  RequestManagerNotification
+  USDCPurchaseBuyerNotification
 } from './Notifications'
 import { TrackAddedToPurchasedAlbumNotification } from './Notifications/TrackAddedToPurchasedAlbumNotification'
 
@@ -106,10 +104,6 @@ export const NotificationListItem = (props: NotificationListItemProps) => {
         return <USDCPurchaseSellerNotification notification={notification} />
       case NotificationType.USDCPurchaseBuyer:
         return <USDCPurchaseBuyerNotification notification={notification} />
-      case NotificationType.RequestManager:
-        return <RequestManagerNotification notification={notification} />
-      case NotificationType.ApproveManagerRequest:
-        return <ApproveManagerRequestNotification notification={notification} />
       default:
         return null
     }

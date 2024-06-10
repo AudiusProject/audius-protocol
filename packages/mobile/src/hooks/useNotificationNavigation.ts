@@ -40,9 +40,7 @@ import type {
   MessagePushNotification,
   MessageReactionPushNotification,
   USDCPurchaseBuyerNotification,
-  USDCPurchaseSellerNotification,
-  RequestManagerNotification,
-  ApproveManagerRequestNotification
+  USDCPurchaseSellerNotification
 } from '@audius/common/store'
 import {
   NotificationType,
@@ -103,17 +101,6 @@ export const useNotificationNavigation = () => {
       }
     },
     [dispatch, navigation]
-  )
-
-  const userIdHandler = useCallback(
-    (
-      notification:
-        | ApproveManagerRequestNotification
-        | RequestManagerNotification
-    ) => {
-      navigation.navigate('Profile', { id: notification.userId })
-    },
-    [navigation]
   )
 
   const entityHandler = useCallback(
@@ -323,8 +310,7 @@ export const useNotificationNavigation = () => {
           canBeUnlisted: false
         })
       },
-      [NotificationType.ApproveManagerRequest]: userIdHandler,
-      [NotificationType.RequestManager]: userIdHandler,
+
       [PushNotificationType.Message]: messagesHandler,
       [PushNotificationType.MessageReaction]: messagesHandler
     }),
@@ -336,7 +322,6 @@ export const useNotificationNavigation = () => {
       socialActionHandler,
       entityHandler,
       messagesHandler,
-      userIdHandler,
       store
     ]
   )
