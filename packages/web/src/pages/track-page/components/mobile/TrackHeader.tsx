@@ -60,8 +60,6 @@ import { getLocalTimezone } from 'utils/dateUtils'
 import { isDarkMode } from 'utils/theme/theme'
 import { trpc } from 'utils/trpcClientWeb'
 
-import HiddenTrackHeader from '../HiddenTrackHeader'
-
 import ActionButtonRow from './ActionButtonRow'
 import StatsButtonRow from './StatsButtonRow'
 import styles from './TrackHeader.module.css'
