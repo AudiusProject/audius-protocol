@@ -1,4 +1,5 @@
 import { ReactElement } from 'react'
+
 import { Text } from '@audius/harmony'
 
 type InfoLabelProps = {
