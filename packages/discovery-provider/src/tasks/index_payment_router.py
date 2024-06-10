@@ -833,9 +833,11 @@ def process_payment_router_tx_details(
             slot=result.slot,
             challenge_event_bus=challenge_event_bus,
             timestamp=timestamp,
-            vendor=PurchaseVendor.coinflow
-            if contains_conflow_instruction
-            else PurchaseVendor.user_bank,
+            vendor=(
+                PurchaseVendor.coinflow
+                if contains_conflow_instruction
+                else PurchaseVendor.user_bank
+            ),
         )
 
 
