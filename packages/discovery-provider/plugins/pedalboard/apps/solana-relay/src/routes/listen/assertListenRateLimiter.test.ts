@@ -29,15 +29,9 @@ describe('Listens Route Rate Limiter', function () {
         listensIpTrackRateLimiter.setLimits({ hourlyLimit: 40 })
 
         // ten listens for user one with track one
-        await listenRouteRateLimiter({ ip: ipOne, trackId: track1 })
-        await listenRouteRateLimiter({ ip: ipOne, trackId: track1 })
-        await listenRouteRateLimiter({ ip: ipOne, trackId: track1 })
-        await listenRouteRateLimiter({ ip: ipOne, trackId: track1 })
-        await listenRouteRateLimiter({ ip: ipOne, trackId: track1 })
-        await listenRouteRateLimiter({ ip: ipOne, trackId: track1 })
-        await listenRouteRateLimiter({ ip: ipOne, trackId: track1 })
-        await listenRouteRateLimiter({ ip: ipOne, trackId: track1 })
-        await listenRouteRateLimiter({ ip: ipOne, trackId: track1 })
+        for (let i = 0; i < 9; i++) {
+            await listenRouteRateLimiter({ ip: ipOne, trackId: track1 })
+        }
         const trackOneAllowed = await listenRouteRateLimiter({ ip: ipOne, trackId: track1 })
         expect(trackOneAllowed.allowed).toBe(true)
         const trackOneNotAllowed = await listenRouteRateLimiter({ ip: ipOne, trackId: track1 })
@@ -50,15 +44,9 @@ describe('Listens Route Rate Limiter', function () {
         expect(trackTwoNotAllowed.allowed).toBe(false)
 
         // ten listens for second user and track one, first user is blocked on this one
-        await listenRouteRateLimiter({ ip: ipTwo, trackId: track1 })
-        await listenRouteRateLimiter({ ip: ipTwo, trackId: track1 })
-        await listenRouteRateLimiter({ ip: ipTwo, trackId: track1 })
-        await listenRouteRateLimiter({ ip: ipTwo, trackId: track1 })
-        await listenRouteRateLimiter({ ip: ipTwo, trackId: track1 })
-        await listenRouteRateLimiter({ ip: ipTwo, trackId: track1 })
-        await listenRouteRateLimiter({ ip: ipTwo, trackId: track1 })
-        await listenRouteRateLimiter({ ip: ipTwo, trackId: track1 })
-        await listenRouteRateLimiter({ ip: ipTwo, trackId: track1 })
+        for (let i = 0; i < 9; i++) {
+            await listenRouteRateLimiter({ ip: ipTwo, trackId: track1 })
+        }
         const trackOneAllowedUserTwo = await listenRouteRateLimiter({ ip: ipTwo, trackId: track1 })
         expect(trackOneAllowedUserTwo.allowed).toBe(true)
 
@@ -87,45 +75,28 @@ describe('Listens Route Rate Limiter', function () {
         listensIpTrackRateLimiter.setLimits({ hourlyLimit: 10 })
 
         // ten listens for user one with track one
-        await listenRouteRateLimiter({ ip: ipOne, trackId: track1 })
-        await listenRouteRateLimiter({ ip: ipOne, trackId: track1 })
-        await listenRouteRateLimiter({ ip: ipOne, trackId: track1 })
-        await listenRouteRateLimiter({ ip: ipOne, trackId: track1 })
-        await listenRouteRateLimiter({ ip: ipOne, trackId: track1 })
-        await listenRouteRateLimiter({ ip: ipOne, trackId: track1 })
-        await listenRouteRateLimiter({ ip: ipOne, trackId: track1 })
-        await listenRouteRateLimiter({ ip: ipOne, trackId: track1 })
-        await listenRouteRateLimiter({ ip: ipOne, trackId: track1 })
+        for (let i = 0; i < 9; i++) {
+            await listenRouteRateLimiter({ ip: ipOne, trackId: track1 })
+        }
         const trackOneAllowed = await listenRouteRateLimiter({ ip: ipOne, trackId: track1 })
         expect(trackOneAllowed.allowed).toBe(true)
         const trackOneNotAllowed = await listenRouteRateLimiter({ ip: ipOne, trackId: track1 })
         expect(trackOneNotAllowed.allowed).toBe(false)
 
         // ten listens for another track with same user
-        await listenRouteRateLimiter({ ip: ipOne, trackId: track2 })
-        await listenRouteRateLimiter({ ip: ipOne, trackId: track2 })
-        await listenRouteRateLimiter({ ip: ipOne, trackId: track2 })
-        await listenRouteRateLimiter({ ip: ipOne, trackId: track2 })
-        await listenRouteRateLimiter({ ip: ipOne, trackId: track2 })
-        await listenRouteRateLimiter({ ip: ipOne, trackId: track2 })
-        await listenRouteRateLimiter({ ip: ipOne, trackId: track2 })
-        await listenRouteRateLimiter({ ip: ipOne, trackId: track2 })
-        await listenRouteRateLimiter({ ip: ipOne, trackId: track2 })
+        for (let i = 0; i < 9; i++) {
+            await listenRouteRateLimiter({ ip: ipOne, trackId: track2 })
+        }
         const trackTwoAllowed = await listenRouteRateLimiter({ ip: ipOne, trackId: track2 })
         expect(trackTwoAllowed.allowed).toBe(true)
         const trackTwoNotAllowed = await listenRouteRateLimiter({ ip: ipOne, trackId: track2 })
         expect(trackTwoNotAllowed.allowed).toBe(false)
 
         // ten listens for second user and track one, first user is blocked on this one
-        await listenRouteRateLimiter({ ip: ipTwo, trackId: track1 })
-        await listenRouteRateLimiter({ ip: ipTwo, trackId: track1 })
-        await listenRouteRateLimiter({ ip: ipTwo, trackId: track1 })
-        await listenRouteRateLimiter({ ip: ipTwo, trackId: track1 })
-        await listenRouteRateLimiter({ ip: ipTwo, trackId: track1 })
-        await listenRouteRateLimiter({ ip: ipTwo, trackId: track1 })
-        await listenRouteRateLimiter({ ip: ipTwo, trackId: track1 })
-        await listenRouteRateLimiter({ ip: ipTwo, trackId: track1 })
-        await listenRouteRateLimiter({ ip: ipTwo, trackId: track1 })
+        for (let i = 0; i < 9; i++) {
+            await listenRouteRateLimiter({ ip: ipTwo, trackId: track1 })
+        }
+
         const trackOneAllowedUserTwo = await listenRouteRateLimiter({ ip: ipTwo, trackId: track1 })
         expect(trackOneAllowedUserTwo.allowed).toBe(true)
 
@@ -136,15 +107,9 @@ describe('Listens Route Rate Limiter', function () {
         expect(trackOneNotAllowedUserOne.allowed).toBe(false)
 
         // ten listens for second track from second user
-        await listenRouteRateLimiter({ ip: ipTwo, trackId: track2 })
-        await listenRouteRateLimiter({ ip: ipTwo, trackId: track2 })
-        await listenRouteRateLimiter({ ip: ipTwo, trackId: track2 })
-        await listenRouteRateLimiter({ ip: ipTwo, trackId: track2 })
-        await listenRouteRateLimiter({ ip: ipTwo, trackId: track2 })
-        await listenRouteRateLimiter({ ip: ipTwo, trackId: track2 })
-        await listenRouteRateLimiter({ ip: ipTwo, trackId: track2 })
-        await listenRouteRateLimiter({ ip: ipTwo, trackId: track2 })
-        await listenRouteRateLimiter({ ip: ipTwo, trackId: track2 })
+        for (let i = 0; i < 9; i++) {
+            await listenRouteRateLimiter({ ip: ipTwo, trackId: track2 })
+        }
         const trackTwoAllowedUserTwo = await listenRouteRateLimiter({ ip: ipTwo, trackId: track2 })
         expect(trackTwoAllowedUserTwo.allowed).toBe(true)
 
@@ -167,45 +132,27 @@ describe('Listens Route Rate Limiter', function () {
         listensIpTrackRateLimiter.setLimits({ hourlyLimit: 100, weeklyLimit: 10 })
 
         // ten listens for user one with track one
-        await listenRouteRateLimiter({ ip: ipOne, trackId: track1 })
-        await listenRouteRateLimiter({ ip: ipOne, trackId: track1 })
-        await listenRouteRateLimiter({ ip: ipOne, trackId: track1 })
-        await listenRouteRateLimiter({ ip: ipOne, trackId: track1 })
-        await listenRouteRateLimiter({ ip: ipOne, trackId: track1 })
-        await listenRouteRateLimiter({ ip: ipOne, trackId: track1 })
-        await listenRouteRateLimiter({ ip: ipOne, trackId: track1 })
-        await listenRouteRateLimiter({ ip: ipOne, trackId: track1 })
-        await listenRouteRateLimiter({ ip: ipOne, trackId: track1 })
+        for (let i = 0; i < 9; i++) {
+            await listenRouteRateLimiter({ ip: ipOne, trackId: track1 })
+        }
         const trackOneAllowed = await listenRouteRateLimiter({ ip: ipOne, trackId: track1 })
         expect(trackOneAllowed.allowed).toBe(true)
         const trackOneNotAllowed = await listenRouteRateLimiter({ ip: ipOne, trackId: track1 })
         expect(trackOneNotAllowed.allowed).toBe(false)
 
         // ten listens for another track with same user
-        await listenRouteRateLimiter({ ip: ipOne, trackId: track2 })
-        await listenRouteRateLimiter({ ip: ipOne, trackId: track2 })
-        await listenRouteRateLimiter({ ip: ipOne, trackId: track2 })
-        await listenRouteRateLimiter({ ip: ipOne, trackId: track2 })
-        await listenRouteRateLimiter({ ip: ipOne, trackId: track2 })
-        await listenRouteRateLimiter({ ip: ipOne, trackId: track2 })
-        await listenRouteRateLimiter({ ip: ipOne, trackId: track2 })
-        await listenRouteRateLimiter({ ip: ipOne, trackId: track2 })
-        await listenRouteRateLimiter({ ip: ipOne, trackId: track2 })
+        for (let i = 0; i < 9; i++) {
+            await listenRouteRateLimiter({ ip: ipOne, trackId: track2 })
+        }
         const trackTwoAllowed = await listenRouteRateLimiter({ ip: ipOne, trackId: track2 })
         expect(trackTwoAllowed.allowed).toBe(true)
         const trackTwoNotAllowed = await listenRouteRateLimiter({ ip: ipOne, trackId: track2 })
         expect(trackTwoNotAllowed.allowed).toBe(false)
 
         // ten listens for second user and track one, first user is blocked on this one
-        await listenRouteRateLimiter({ ip: ipTwo, trackId: track1 })
-        await listenRouteRateLimiter({ ip: ipTwo, trackId: track1 })
-        await listenRouteRateLimiter({ ip: ipTwo, trackId: track1 })
-        await listenRouteRateLimiter({ ip: ipTwo, trackId: track1 })
-        await listenRouteRateLimiter({ ip: ipTwo, trackId: track1 })
-        await listenRouteRateLimiter({ ip: ipTwo, trackId: track1 })
-        await listenRouteRateLimiter({ ip: ipTwo, trackId: track1 })
-        await listenRouteRateLimiter({ ip: ipTwo, trackId: track1 })
-        await listenRouteRateLimiter({ ip: ipTwo, trackId: track1 })
+        for (let i = 0; i < 9; i++) {
+            await listenRouteRateLimiter({ ip: ipTwo, trackId: track1 })
+        }
         const trackOneAllowedUserTwo = await listenRouteRateLimiter({ ip: ipTwo, trackId: track1 })
         expect(trackOneAllowedUserTwo.allowed).toBe(true)
 
@@ -216,15 +163,9 @@ describe('Listens Route Rate Limiter', function () {
         expect(trackOneNotAllowedUserOne.allowed).toBe(false)
 
         // ten listens for second track from second user
-        await listenRouteRateLimiter({ ip: ipTwo, trackId: track2 })
-        await listenRouteRateLimiter({ ip: ipTwo, trackId: track2 })
-        await listenRouteRateLimiter({ ip: ipTwo, trackId: track2 })
-        await listenRouteRateLimiter({ ip: ipTwo, trackId: track2 })
-        await listenRouteRateLimiter({ ip: ipTwo, trackId: track2 })
-        await listenRouteRateLimiter({ ip: ipTwo, trackId: track2 })
-        await listenRouteRateLimiter({ ip: ipTwo, trackId: track2 })
-        await listenRouteRateLimiter({ ip: ipTwo, trackId: track2 })
-        await listenRouteRateLimiter({ ip: ipTwo, trackId: track2 })
+        for (let i = 0; i < 9; i++) {
+            await listenRouteRateLimiter({ ip: ipTwo, trackId: track2 })
+        }
         const trackTwoAllowedUserTwo = await listenRouteRateLimiter({ ip: ipTwo, trackId: track2 })
         expect(trackTwoAllowedUserTwo.allowed).toBe(true)
 
