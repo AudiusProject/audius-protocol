@@ -30,7 +30,6 @@ import { Genre, removeNullable } from '@audius/common/utils'
 import { useNavigationState } from '@react-navigation/native'
 import { useDispatch, useSelector } from 'react-redux'
 import { trpc } from 'utils/trpcClientWeb'
-import { useGetTrackStreamUrl } from '~/api'
 
 import type { ImageProps } from '@audius/harmony-native'
 import { TrackImage } from 'app/components/image/TrackImage'
@@ -120,11 +119,6 @@ export const TrackTileComponent = ({
     preview_cid,
     ddex_app: ddexApp
   } = track
-
-  useGetTrackStreamUrl({
-    id: track_id,
-    currentUserId
-  })
 
   const hasPreview =
     isUSDCEnabled &&

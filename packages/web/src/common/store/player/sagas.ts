@@ -1,4 +1,3 @@
-import { cacheSelectors } from '@audius/common/store'
 import { Kind } from '@audius/common/models'
 import { FeatureFlags, QueryParams } from '@audius/common/services'
 import {
@@ -43,7 +42,7 @@ import errorSagas from './errorSagas'
 const { getUserId } = accountSelectors
 const { setTrackPosition } = playbackPositionActions
 const { getTrackPosition } = playbackPositionSelectors
-const { getTrackStreamUrl } = cacheSelectors
+const { getTrackStreamUrl } = cacheTracksSelectors
 const {
   play,
   playSucceeded,

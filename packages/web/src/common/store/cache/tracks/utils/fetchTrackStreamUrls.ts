@@ -1,20 +1,27 @@
-import { getContext, accountSelectors, CommonState } from '@audius/common/store'
-import { all, call, select, put } from 'typed-redux-saga'
 import { ID } from '@audius/common/models'
+import {
+  cacheTracksActions,
+  getContext,
+  accountSelectors,
+  gatedContentSelectors,
+  cacheTracksSelectors
+} from '@audius/common/store'
 import { getQueryParams } from '@audius/common/utils'
-import { setStreamUrl } from '@audius/common/src/store/cache/tracks/actions'
-import { getNftAccessSignatureMap } from '@audius/common/src/store/gated-content/selectors'
-import { getTrackStreamUrl } from '@audius/common/src/store/cache/selectors'
-const getUserId = accountSelectors.getUserId
+import { all, call, select, put } from 'typed-redux-saga'
+const { getUserId } = accountSelectors
+const { getTrackStreamUrl } = cacheTracksSelectors
+const { setStreamUrl } = cacheTracksActions
+const { getNftAccessSignatureMap } = gatedContentSelectors
 
 export function* fetchTrackStreamUrls({ trackIds }: { trackIds: ID[] }) {
   const apiClient = yield* getContext('apiClient')
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const reportToSentry = yield* getContext('reportToSentry')
 
   const currentUserId = yield* select(getUserId)
 
   try {
-    // TODO: this should ideally have some batching logic instead of individual tracks
+    // TODO: Ideally we should batch this method (needs a backend change to support)
     const callEffects = trackIds.map(function* (id) {
       try {
         const existingUrl = yield* select(getTrackStreamUrl, id)
@@ -36,23 +43,29 @@ export function* fetchTrackStreamUrls({ trackIds }: { trackIds: ID[] }) {
           abortOnUnreachable: true
         })
         if (streamUrl !== undefined) {
-          console.log('DEBUG: got info for trackId ', id)
           // Set the stream url in the cache
           yield* put(setStreamUrl(id, streamUrl))
         }
         return streamUrl
       } catch (e) {
-        console.error('ERROR WITH TRACK ID: ', id, e)
+        reportToSentry({
+          error: e as Error,
+          name: 'Stream Prefetch',
+          additionalInfo: { trackId: id }
+        })
       }
     })
 
     // Fetch all stream urls in parallel
-    const results = yield* all(callEffects)
-
-    console.log('STREAM URLS: ', results)
-  } catch (error) {
-    // TODO: error logging/handling
-    console.error(error)
+    yield* all(callEffects)
+  } catch (e) {
+    reportToSentry({
+      error: e as Error,
+      name: 'Stream Prefetch',
+      additionalInfo: {
+        trackIds
+      }
+    })
   }
 
   return null

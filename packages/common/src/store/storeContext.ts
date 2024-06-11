@@ -81,5 +81,4 @@ export type CommonStoreContext = {
     ) => Promise<{ file: File; url: string }>
   }
   isMobile: boolean
-  audiusQueryContext: AudiusQueryContextType
 }

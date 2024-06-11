@@ -13,7 +13,7 @@ import {
   getContext,
   CommonState
 } from '@audius/common/store'
-import { all, call, put, select, spawn } from 'typed-redux-saga'
+import { call, put, select, spawn } from 'typed-redux-saga'
 
 import { retrieve } from 'common/store/cache/sagas'
 import { waitForRead } from 'utils/sagaHelpers'

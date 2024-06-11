@@ -1,6 +1,5 @@
 import { memo, useCallback, useEffect, MouseEvent, useRef } from 'react'
 
-import { useGetCurrentUserId, useGetTrackStreamUrl } from '@audius/common/api'
 import {
   useGatedContentAccess,
   useIsGatedContentPlaylistAddable
