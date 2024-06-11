@@ -117,7 +117,7 @@ const TrackEditForm = (
                 <ReleaseDateFieldLegacy />
               )}
               <AccessAndSaleField
-                isUpload
+                isUpload={!isEdit}
                 forceOpen={forceOpenAccessAndSale}
                 setForceOpen={setForceOpenAccessAndSale}
               />
