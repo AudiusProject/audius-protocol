@@ -6,7 +6,11 @@ import { logger } from '../../logger'
 import { sendTransactionalEmail } from '../../email/notifications/sendEmail'
 import { buildUserNotificationSettings } from './userNotificationSettings'
 import { email } from '../../email/notifications/preRendered/transfer'
-import { formatUSDCWeiToUSDString } from '../../utils/format'
+import {
+  formatImageUrl,
+  formatProfileUrl,
+  formatUSDCWeiToUSDString
+} from '../../utils/format'
 
 type USDCTransferRow = Omit<NotificationRow, 'data'> & {
   data: USDCTransferNotification
@@ -50,6 +54,9 @@ export class USDCTransfer extends BaseNotification<USDCTransferRow> {
       email: userNotificationSettings.getUserEmail(user.user_id),
       html: email({
         name: user.name,
+        handle: user.handle,
+        profilePicture: formatImageUrl(user.profile_picture_sizes, 150),
+        profileLink: formatProfileUrl(user.handle),
         amount: this.amount,
         wallet: this.receiverAccount,
         signature: this.signature
