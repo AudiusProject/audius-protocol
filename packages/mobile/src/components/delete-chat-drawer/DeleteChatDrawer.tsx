@@ -95,7 +95,6 @@ export const DeleteChatDrawer = () => {
           {messages.description}
         </Text>
         <Button
-          title={messages.deleteButton}
           onPress={handleConfirmPress}
           variant={'destructive'}
           styles={{
@@ -103,9 +102,10 @@ export const DeleteChatDrawer = () => {
             text: styles.blockText
           }}
           fullWidth
-        />
+        >
+          {messages.deleteButton}
+        </Button>
         <Button
-          title={messages.cancel}
           onPress={closeDrawer}
           variant={'common'}
           styles={{
@@ -113,7 +113,9 @@ export const DeleteChatDrawer = () => {
             text: styles.blockText
           }}
           fullWidth
-        />
+        >
+          {messages.cancel}
+        </Button>
       </View>
     </NativeDrawer>
   )

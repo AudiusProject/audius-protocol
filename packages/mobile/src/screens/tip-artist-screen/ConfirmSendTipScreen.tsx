@@ -97,14 +97,15 @@ export const ConfirmSendTipScreen = ({
       <Button
         variant='primary'
         size='large'
-        title={Platform.OS === 'ios' ? messages.confirmAlt : messages.confirm}
         onPress={handleConfirm}
         icon={inProgress ? LoadingSpinner : IconCheck}
         disabled={inProgress}
         iconPosition='right'
         fullWidth
         style={styles.confirmButton}
-      />
+      >
+        {Platform.OS === 'ios' ? messages.confirmAlt : messages.confirm}
+      </Button>
       {inProgress ? null : (
         <TextButton
           variant='neutralLight4'

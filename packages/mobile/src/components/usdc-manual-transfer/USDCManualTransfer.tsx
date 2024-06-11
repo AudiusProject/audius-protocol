@@ -170,19 +170,16 @@ export const USDCManualTransfer = ({
         {amountInCents === undefined ? (
           <>
             <Button
-              title={messages.copy}
               onPress={handleConfirmPress}
               variant='primary'
               size='large'
               fullWidth
-            />
-            <Button
-              title={messages.goBack}
-              onPress={onClose}
-              variant='common'
-              size='large'
-              fullWidth
-            />
+            >
+              {messages.copy}
+            </Button>
+            <Button onPress={onClose} variant='common' size='large' fullWidth>
+              {messages.goBack}
+            </Button>
           </>
         ) : null}
       </View>

@@ -167,12 +167,9 @@ export const EnablePushNotificationsDrawer = () => {
             </View>
           ))}
         </View>
-        <Button
-          title={messages.enable}
-          onPress={enablePushNotifications}
-          size='large'
-          fullWidth
-        />
+        <Button onPress={enablePushNotifications} size='large' fullWidth>
+          {messages.enable}
+        </Button>
       </View>
     </NativeDrawer>
   )

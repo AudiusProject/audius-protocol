@@ -93,12 +93,9 @@ export const AddFundsDrawer = () => {
           setSelectedMethod={setSelectedPurchaseMethod}
           showVendorChoice
         />
-        <Button
-          title={messages.continue}
-          onPress={onContinuePress}
-          size='large'
-          fullWidth
-        />
+        <Button onPress={onContinuePress} size='large' fullWidth>
+          {messages.continue}
+        </Button>
       </View>
     </Drawer>
   )

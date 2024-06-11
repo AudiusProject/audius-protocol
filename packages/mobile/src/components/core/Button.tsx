@@ -59,7 +59,7 @@ export type ButtonProps = Omit<RNButtonProps, 'title'> &
     // Custom color that will override the variant
     color?: string
     corners?: ButtonCorners
-    title: ReactNode
+    children: ReactNode
     pressScale?: number
   }
 
@@ -306,7 +306,7 @@ export const Button = (props: ButtonProps) => {
     size = 'medium',
     style,
     styles: stylesProp,
-    title,
+    children,
     url,
     variant = 'primary',
     ...other
@@ -453,7 +453,7 @@ export const Button = (props: ButtonProps) => {
         accessibilityRole='button'
         accessibilityLabel={
           accessibilityLabel ??
-          (noText && typeof title === 'string' ? title : undefined)
+          (noText && typeof children === 'string' ? children : undefined)
         }
         onPress={handlePress}
         onPressIn={handlePressIn}
@@ -462,12 +462,12 @@ export const Button = (props: ButtonProps) => {
         {...other}
       >
         {iconPosition !== 'left' ? null : icon}
-        {noText ? null : typeof title === 'string' ? (
+        {noText ? null : typeof children === 'string' ? (
           <Text style={[baseStyles.text, styles.text, stylesProp?.text]}>
-            {title}
+            {children}
           </Text>
         ) : (
-          title
+          children
         )}
         {iconPosition !== 'right' ? null : icon}
       </PressableComponent>

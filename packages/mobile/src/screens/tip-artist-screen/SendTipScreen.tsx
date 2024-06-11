@@ -139,7 +139,6 @@ export const SendTipScreen = () => {
       <Button
         variant='primary'
         size='large'
-        title={Platform.OS === 'ios' ? messages.sendAudio : messages.sendTip}
         onPress={handleSendTip}
         icon={IconArrowRight}
         iconPosition='right'
@@ -148,7 +147,9 @@ export const SendTipScreen = () => {
           !tipAmount || tipAmountWei.lte(zeroWei) || hasInsufficientBalance
         }
         style={styles.sendButton}
-      />
+      >
+        {Platform.OS === 'ios' ? messages.sendAudio : messages.sendTip}
+      </Button>
       {hasInsufficientBalance ? (
         <ErrorText>{messages.insufficientBalance}</ErrorText>
       ) : null}

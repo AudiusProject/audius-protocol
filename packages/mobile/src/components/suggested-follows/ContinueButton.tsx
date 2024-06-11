@@ -45,13 +45,14 @@ export const ContinueButton = (props: ContinueButtonProps) => {
     <View style={styles.root}>
       <Button
         {...props}
-        title={messages.continue}
         style={styles.button}
         size='large'
         fullWidth
         disabled={!hasFollowedEnoughArtists}
         icon={IconArrowRight}
-      />
+      >
+        {messages.continue}
+      </Button>
       <Text fontSize='small' style={styles.followCounter}>
         {messages.following}{' '}
         {hasFollowedEnoughArtists

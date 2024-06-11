@@ -54,10 +54,9 @@ export const TwitterShareButton = ({
       iconPosition='left'
       renderIcon={renderIcon}
       onPress={onClick}
-      title={
-        isVerified ? messages.buttonTitleFans : messages.buttonTitleFriends
-      }
       underlayColor={'rgba(0, 0, 0, 0.2)'}
-    />
+    >
+      {isVerified ? messages.buttonTitleFans : messages.buttonTitleFriends}
+    </Button>
   )
 }

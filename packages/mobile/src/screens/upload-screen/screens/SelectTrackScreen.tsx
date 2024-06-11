@@ -121,14 +121,15 @@ export const SelectTrackScreen = () => {
             {messages.description}
           </Text>
           <Button
-            title={messages.browse}
             fullWidth
             variant='primary'
             size='large'
             icon={isLoading ? LoadingSpinner : undefined}
             disabled={Boolean(isLoading)}
             onPress={handleSelectTrack}
-          />
+          >
+            {messages.browse}
+          </Button>
           {error && !loading ? (
             <ErrorText style={styles.errorText}>{error.message}</ErrorText>
           ) : null}

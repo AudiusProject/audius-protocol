@@ -90,13 +90,14 @@ const ChatsEmpty = ({ onPress }: { onPress: () => void }) => {
         {messages.connect}
       </Text>
       <Button
-        title={messages.writeMessage}
         renderIcon={() => <IconCompose fill={white} />}
         iconPosition='left'
         onPress={onPress}
         containerStyle={styles.writeMessageButton}
         type={ButtonType.PRIMARY}
-      />
+      >
+        {messages.writeMessage}
+      </Button>
     </View>
   )
 }

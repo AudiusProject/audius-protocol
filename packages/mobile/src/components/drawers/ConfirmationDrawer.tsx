@@ -108,18 +108,15 @@ const ConfirmationDrawerContent = (props: DrawerContentProps) => {
       <Button
         variant='destructive'
         size='large'
-        title={messages.confirm}
         style={styles.confirmButton}
         fullWidth
         onPress={handleConfirm}
-      />
-      <Button
-        variant='commonAlt'
-        size='large'
-        title={messages.cancel}
-        fullWidth
-        onPress={handleCancel}
-      />
+      >
+        {messages.confirm}
+      </Button>
+      <Button variant='commonAlt' size='large' fullWidth onPress={handleCancel}>
+        {messages.cancel}
+      </Button>
       <View style={{ height: bottomChinHeight }} />
     </>
   )

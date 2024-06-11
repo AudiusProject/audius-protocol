@@ -67,7 +67,6 @@ export const OfflinePlaceholder = (props: OfflinePlaceholderProps) => {
         {messages.subtitle}
       </Text>
       <Button
-        title={messages.reloading(isRefreshing)}
         disabled={isRefreshing}
         fullWidth
         icon={IconRefresh}
@@ -75,7 +74,9 @@ export const OfflinePlaceholder = (props: OfflinePlaceholderProps) => {
         onPress={handleRefresh}
         styles={{ root: styles.button, icon: styles.icon }}
         size='large'
-      />
+      >
+        {messages.reloading(isRefreshing)}
+      </Button>
     </View>
   )
 

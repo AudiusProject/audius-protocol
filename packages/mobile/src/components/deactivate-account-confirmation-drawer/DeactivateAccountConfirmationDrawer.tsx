@@ -67,7 +67,6 @@ export const DeactivateAccountConfirmationDrawer = () => {
           {messages.doubleCheckText}
         </Text>
         <Button
-          title={messages.cancelText}
           fullWidth
           styles={{
             root: styles.buttonRoot,
@@ -75,9 +74,10 @@ export const DeactivateAccountConfirmationDrawer = () => {
           }}
           onPress={onClose}
           disabled={status !== Status.IDLE}
-        />
+        >
+          {messages.cancelText}
+        </Button>
         <Button
-          title={messages.confirmText}
           fullWidth
           styles={{
             root: styles.buttonRoot,
@@ -87,7 +87,9 @@ export const DeactivateAccountConfirmationDrawer = () => {
           onPress={handleConfirmation}
           icon={status === Status.LOADING ? LoadingSpinner : undefined}
           disabled={status !== Status.IDLE}
-        />
+        >
+          {messages.confirmText}
+        </Button>
       </View>
     </AppDrawer>
   )

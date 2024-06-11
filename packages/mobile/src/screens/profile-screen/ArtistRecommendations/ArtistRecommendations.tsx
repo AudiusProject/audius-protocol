@@ -201,9 +201,6 @@ export const ArtistRecommendations = (props: ArtistRecommendationsProps) => {
       </View>
       <Button
         variant='primary'
-        title={
-          isFollowingAllArtists ? messages.followingAll : messages.followAll
-        }
         icon={isFollowingAllArtists ? IconUserFollowing : IconUserFollow}
         iconPosition='left'
         fullWidth
@@ -211,7 +208,9 @@ export const ArtistRecommendations = (props: ArtistRecommendationsProps) => {
         styles={{
           text: styles.followButtonText
         }}
-      />
+      >
+        {isFollowingAllArtists ? messages.followingAll : messages.followAll}
+      </Button>
     </View>
   )
 }

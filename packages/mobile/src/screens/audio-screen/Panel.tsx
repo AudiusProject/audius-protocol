@@ -211,14 +211,15 @@ export const Panel = ({
         {
           <Button
             fullWidth
-            title={buttonMessage}
             variant='common'
             iconPosition='right'
             size='medium'
             icon={hasDisbursed ? undefined : IconArrowRight}
             onPress={onPress}
             style={[styles.button, hasDisbursed ? styles.disbursed : null]}
-          />
+          >
+            {buttonMessage}
+          </Button>
         }
       </View>
     </TouchableOpacity>

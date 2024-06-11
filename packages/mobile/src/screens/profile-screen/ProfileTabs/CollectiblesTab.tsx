@@ -162,13 +162,14 @@ export const CollectiblesTab = () => {
             fullWidth
             variant='commonAlt'
             size='small'
-            title={messages.share}
             icon={IconShare}
             iconPosition='left'
             IconProps={{ height: 15, width: 15 }}
             styles={{ icon: styles.shareButtonIcon }}
             onPress={handlePressShare}
-          />
+          >
+            {messages.share}
+          </Button>
         </Tile>
       }
       data={collectibles}

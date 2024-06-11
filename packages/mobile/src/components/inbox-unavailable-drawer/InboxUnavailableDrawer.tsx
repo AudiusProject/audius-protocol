@@ -181,7 +181,6 @@ const DrawerContent = ({ data, onClose }: DrawerContentProps) => {
           </Text>
           <Button
             key={messages.learnMore}
-            title={messages.learnMore}
             onPress={handleLearnMorePress}
             variant={'common'}
             styles={{
@@ -189,7 +188,9 @@ const DrawerContent = ({ data, onClose }: DrawerContentProps) => {
               text: styles.buttonText
             }}
             fullWidth
-          />
+          >
+            {messages.learnMore}
+          </Button>
         </>
       )
     case ChatPermissionAction.TIP:
@@ -208,7 +209,6 @@ const DrawerContent = ({ data, onClose }: DrawerContentProps) => {
           </Text>
           <Button
             key={messages.sendAudio}
-            title={messages.sendAudio}
             onPress={handleTipPress}
             variant={'primary'}
             icon={IconTipping}
@@ -218,7 +218,9 @@ const DrawerContent = ({ data, onClose }: DrawerContentProps) => {
               text: styles.buttonText
             }}
             fullWidth
-          />
+          >
+            {messages.sendAudio}
+          </Button>
         </>
       )
     case ChatPermissionAction.UNBLOCK:
@@ -227,7 +229,6 @@ const DrawerContent = ({ data, onClose }: DrawerContentProps) => {
           <Text style={styles.callToActionText}>{messages.blockee}</Text>
           <Button
             key={messages.unblockUser}
-            title={messages.unblockUser}
             onPress={handleUnblockPress}
             variant={'primary'}
             styles={{
@@ -235,10 +236,11 @@ const DrawerContent = ({ data, onClose }: DrawerContentProps) => {
               text: styles.buttonText
             }}
             fullWidth
-          />
+          >
+            {messages.unblockUser}
+          </Button>
           <Button
             key={messages.cancel}
-            title={messages.cancel}
             onPress={onClose}
             variant={'common'}
             styles={{
@@ -246,7 +248,9 @@ const DrawerContent = ({ data, onClose }: DrawerContentProps) => {
               text: styles.buttonText
             }}
             fullWidth
-          />
+          >
+            {messages.cancel}
+          </Button>
         </>
       )
     default:

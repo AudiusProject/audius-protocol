@@ -108,11 +108,12 @@ const SuggestedTrackRow = (props: SuggestedTrackProps) => {
       <View>
         <Button
           variant='common'
-          title={messages.addTrack}
           size='small'
           styles={{ text: styles.buttonText }}
           onPress={() => onAddTrack(track_id)}
-        />
+        >
+          {messages.addTrack}
+        </Button>
       </View>
     </View>
   )

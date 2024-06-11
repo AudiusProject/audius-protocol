@@ -155,7 +155,6 @@ export const ChallengeRewardsDrawerProvider = () => {
         contents = config?.buttonInfo && (
           <Button
             containerStyle={styles.button}
-            title={config.panelButtonText}
             renderIcon={config.buttonInfo.renderIcon}
             iconPosition='right'
             type={
@@ -164,7 +163,9 @@ export const ChallengeRewardsDrawerProvider = () => {
                 : ButtonType.PRIMARY
             }
             onPress={openUploadModal}
-          />
+          >
+            {config.panelButtonText}
+          </Button>
         )
         break
       case 'profile-completion':
@@ -179,14 +180,15 @@ export const ChallengeRewardsDrawerProvider = () => {
         contents = config?.buttonInfo && (
           <Button
             containerStyle={styles.button}
-            title={config.panelButtonText}
             renderIcon={config.buttonInfo.renderIcon}
             iconPosition={config.buttonInfo.iconPosition}
             type={
               hasChallengeCompleted ? ButtonType.COMMON : ButtonType.PRIMARY
             }
             onPress={handleNavigation}
-          />
+          >
+            {config.panelButtonText}
+          </Button>
         )
     }
   }

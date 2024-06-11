@@ -29,12 +29,13 @@ export const UploadTrackButton = () => {
     <View pointerEvents='box-none' style={styles.root}>
       <Button
         variant='common'
-        title={messages.uploadTrack}
         icon={IconCloudUpload}
         iconPosition='left'
         fullWidth
         onPress={handlePress}
-      />
+      >
+        {messages.uploadTrack}
+      </Button>
     </View>
   )
 }

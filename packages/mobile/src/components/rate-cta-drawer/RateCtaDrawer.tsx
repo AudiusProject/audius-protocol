@@ -121,7 +121,6 @@ export const RateCtaDrawer = () => {
               {messages.enjoyingText}
             </Text>
             <Button
-              title={messages.confirmText}
               icon={IconThumbsUp}
               iconPosition='left'
               fullWidth
@@ -132,9 +131,10 @@ export const RateCtaDrawer = () => {
               }}
               variant='commonAlt'
               onPress={handleReviewConfirm}
-            />
+            >
+              {messages.confirmText}
+            </Button>
             <Button
-              title={messages.cancelText}
               icon={IconThumbsDown}
               iconPosition='left'
               fullWidth
@@ -145,7 +145,9 @@ export const RateCtaDrawer = () => {
               }}
               variant='commonAlt'
               onPress={handleReviewDeny}
-            />
+            >
+              {messages.cancelText}
+            </Button>
           </>
         )}
       </View>

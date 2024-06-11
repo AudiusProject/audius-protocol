@@ -52,9 +52,10 @@ export const SocialButton = (props: SocialButtonProps) => {
     <Button
       {...socialButtonProps}
       {...rest}
-      title={accessibilityLabel}
       noText
       icon={getButtonLogo(socialType)}
-    />
+    >
+      {accessibilityLabel}
+    </Button>
   )
 }

@@ -334,10 +334,11 @@ export const ReleaseDateScreen = (props) => {
           variant='primary'
           size='large'
           fullWidth
-          title={messages.done}
           onPress={handleSubmit}
           disabled={false}
-        />
+        >
+          {messages.done}
+        </Button>
       }
     />
   )

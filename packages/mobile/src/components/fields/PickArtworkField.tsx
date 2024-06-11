@@ -109,14 +109,13 @@ export const PickArtworkField = (props: PickArtworkFieldProps) => {
           <Button
             variant='secondaryAlt'
             size='large'
-            title={
-              buttonTitle ||
-              (trackArtworkUrl ? messages.changeArtwork : messages.addArtwork)
-            }
             icon={IconPencil}
             iconPosition='left'
             onPress={onPress ?? handleChangeArtwork}
-          />
+          >
+            {buttonTitle ||
+              (trackArtworkUrl ? messages.changeArtwork : messages.addArtwork)}
+          </Button>
         </View>
       </DynamicImage>
       {error && touched ? <InputErrorMessage message={error} /> : null}

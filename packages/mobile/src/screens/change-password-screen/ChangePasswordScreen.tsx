@@ -147,16 +147,15 @@ const ChangePasswordNavigator = ({
                 : IconArrowRight
             }
             iconPosition='right'
-            title={
-              page === ChangePasswordPage.NewPassword
-                ? messages.change
-                : messages.continue
-            }
             disabled={isSubmitting}
             onPress={() => {
               handleSubmit()
             }}
-          />
+          >
+            {page === ChangePasswordPage.NewPassword
+              ? messages.change
+              : messages.continue}
+          </Button>
         </KeyboardAvoidingView>
       </ScreenContent>
     </Screen>

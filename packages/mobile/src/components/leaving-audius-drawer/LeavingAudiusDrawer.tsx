@@ -39,13 +39,12 @@ export const LeavingAudiusDrawer = () => {
       <View style={styles.root}>
         <Text>{messages.content}</Text>
         <Hint icon={IconExternalLink}>{link}</Hint>
-        <Button title={messages.visit} onPress={onLinkPress} fullWidth />
-        <Button
-          variant='common'
-          title={messages.back}
-          onPress={onClose}
-          fullWidth
-        />
+        <Button onPress={onLinkPress} fullWidth>
+          {messages.visit}
+        </Button>
+        <Button variant='common' onPress={onClose} fullWidth>
+          {messages.back}
+        </Button>
       </View>
     </Drawer>
   )

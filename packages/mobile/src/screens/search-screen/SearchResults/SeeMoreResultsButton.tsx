@@ -35,10 +35,11 @@ export const SeeMoreResultsButton = () => {
         variant='primary'
         size='small'
         fullWidth
-        title={messages.more}
         onPress={handlePress}
         icon={IconArrowRight}
-      />
+      >
+        {messages.more}
+      </Button>
     </View>
   )
 }

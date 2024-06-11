@@ -81,7 +81,6 @@ export const TrackScreenRemixes = ({
         })}
       </View>
       <Button
-        title={messages.viewAll(count)}
         icon={IconArrowRight}
         variant='primary'
         size='medium'
@@ -89,7 +88,9 @@ export const TrackScreenRemixes = ({
         styles={{
           root: styles.button
         }}
-      />
+      >
+        {messages.viewAll(count)}
+      </Button>
     </Tile>
   )
 }

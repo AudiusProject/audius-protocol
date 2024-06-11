@@ -416,24 +416,26 @@ const RenderForm = ({
           {error ? <RenderError error={error} /> : null}
           {page === PurchaseContentPage.TRANSFER ? (
             <Button
-              title={messages.goBack}
               onPress={handleGoBackPress}
               variant='common'
               size='large'
               fullWidth
-            />
+            >
+              {messages.goBack}
+            </Button>
           ) : null}
           <Button
             onPress={submitForm}
             disabled={isUnlocking}
-            title={getButtonText(isUnlocking, totalPriceInCents)}
             variant={'primary'}
             size='large'
             color={specialLightGreen}
             iconPosition='left'
             icon={isUnlocking ? LoadingSpinner : undefined}
             fullWidth
-          />
+          >
+            {getButtonText(isUnlocking, totalPriceInCents)}
+          </Button>
         </View>
       )}
     </View>

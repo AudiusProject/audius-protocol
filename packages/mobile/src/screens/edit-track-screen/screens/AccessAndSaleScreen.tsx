@@ -267,10 +267,11 @@ export const AccessAndSaleScreen = () => {
           variant='primary'
           size='large'
           fullWidth
-          title={messages.done}
           onPress={goBack}
           disabled={isFormInvalid}
-        />
+        >
+          {messages.done}
+        </Button>
       }
     />
   )

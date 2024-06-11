@@ -55,12 +55,13 @@ export const RemoveAllDownloadsRow = () => {
       <SettingsRowLabel label={messages.label} />
       <SettingsRowDescription>{messages.body}</SettingsRowDescription>
       <Button
-        title={messages.button}
         onPress={handleRemoveAllDownloads}
         variant='destructiveAlt'
         style={styles.button}
         fullWidth
-      />
+      >
+        {messages.button}
+      </Button>
     </SettingsRow>
   )
 }

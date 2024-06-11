@@ -38,9 +38,10 @@ export const FormScreen = (props: FormScreenProps) => {
       variant='primary'
       size='large'
       fullWidth
-      title={messages.done}
       onPress={navigation.goBack}
-    />
+    >
+      {messages.done}
+    </Button>
   )
 
   return (

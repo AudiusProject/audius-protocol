@@ -50,7 +50,6 @@ export const FollowButton = (props: FollowButtonsProps) => {
   return (
     <Button
       style={style}
-      title={isFollowing ? messages.following : messages.follow}
       haptics={!isFollowing}
       variant={variant}
       icon={noIcon ? undefined : Icon}
@@ -58,6 +57,8 @@ export const FollowButton = (props: FollowButtonsProps) => {
       size='small'
       onPress={handlePress}
       {...other}
-    />
+    >
+      {isFollowing ? messages.following : messages.follow}
+    </Button>
   )
 }

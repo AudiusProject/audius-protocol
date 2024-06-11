@@ -142,16 +142,15 @@ const ChangeEmailNavigator = ({
               page === ChangeEmailPage.NewEmail ? undefined : IconArrowRight
             }
             iconPosition='right'
-            title={
-              page === ChangeEmailPage.NewEmail
-                ? messages.change
-                : messages.continue
-            }
             disabled={isSubmitting}
             onPress={() => {
               handleSubmit()
             }}
-          />
+          >
+            {page === ChangeEmailPage.NewEmail
+              ? messages.change
+              : messages.continue}
+          </Button>
         </KeyboardAvoidingView>
       </ScreenContent>
     </Screen>

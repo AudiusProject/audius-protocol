@@ -596,12 +596,13 @@ export const ShareToStoryProgressDrawer = () => {
           {subtitle}
         </Text>
         <Button
-          title={messages.cancel}
           fullWidth
           variant='common'
           onPress={handleCancel}
           style={styles.button}
-        />
+        >
+          {messages.cancel}
+        </Button>
       </View>
     </NativeDrawer>
   )

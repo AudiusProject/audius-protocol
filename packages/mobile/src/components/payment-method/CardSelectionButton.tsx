@@ -28,7 +28,6 @@ export const CardSelectionButton = ({
   return (
     <TouchableOpacity onPress={handlePress}>
       <Button
-        title={selectedVendor}
         variant='commonAlt'
         icon={IconCaretDown}
         size='small'
@@ -42,7 +41,9 @@ export const CardSelectionButton = ({
         }}
         fullWidth
         onPress={handlePress}
-      />
+      >
+        {selectedVendor}
+      </Button>
     </TouchableOpacity>
   )
 }

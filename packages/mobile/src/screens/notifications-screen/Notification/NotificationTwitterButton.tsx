@@ -26,5 +26,9 @@ export const NotificationTwitterButton = (
   props: NotificationTwitterButtonProps
 ) => {
   const styles = useStyles()
-  return <TwitterButton styles={styles} {...props} title={messages.share} />
+  return (
+    <TwitterButton styles={styles} {...props}>
+      {messages.share}
+    </TwitterButton>
+  )
 }

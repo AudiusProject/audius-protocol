@@ -188,13 +188,6 @@ export const BlockMessagesDrawer = () => {
           </View>
         )}
         <Button
-          title={
-            isReportAbuse
-              ? messages.reportUser
-              : doesBlockUser
-              ? messages.unblockUser
-              : messages.blockUser
-          }
           onPress={handleConfirmPress}
           variant={doesBlockUser ? 'primary' : 'destructive'}
           styles={{
@@ -202,9 +195,14 @@ export const BlockMessagesDrawer = () => {
             text: styles.blockText
           }}
           fullWidth
-        />
+        >
+          {isReportAbuse
+            ? messages.reportUser
+            : doesBlockUser
+            ? messages.unblockUser
+            : messages.blockUser}
+        </Button>
         <Button
-          title={messages.cancel}
           onPress={handleCancelPress}
           variant={doesBlockUser ? 'common' : 'primary'}
           styles={{
@@ -212,7 +210,9 @@ export const BlockMessagesDrawer = () => {
             text: styles.blockText
           }}
           fullWidth
-        />
+        >
+          {messages.cancel}
+        </Button>
       </View>
     </NativeDrawer>
   )

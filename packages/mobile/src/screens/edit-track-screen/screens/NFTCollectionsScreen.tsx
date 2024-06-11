@@ -164,10 +164,11 @@ export const NFTCollectionsScreen = () => {
           variant='primary'
           size='large'
           fullWidth
-          title={messages.done}
           onPress={handleSubmit}
           disabled={!isContentCollectibleGated(streamConditions)}
-        />
+        >
+          {messages.done}
+        </Button>
       }
     />
   )

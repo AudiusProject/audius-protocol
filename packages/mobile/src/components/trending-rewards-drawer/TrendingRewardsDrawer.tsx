@@ -267,10 +267,11 @@ export const TrendingRewardsDrawer = (titleIcon) => {
               icon={IconArrowRight}
               iconPosition='right'
               fullWidth
-              title={textMap[modalType].button}
               onPress={handleGoToTrending}
               styles={{ button: styles.button }}
-            />
+            >
+              {textMap[modalType].button}
+            </Button>
           </View>
           <Link url={TOS_URL}>
             <Text style={styles.terms} variant='body2'>

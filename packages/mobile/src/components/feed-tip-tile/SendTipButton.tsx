@@ -70,7 +70,15 @@ export const SendTipButton = (props: SendTipButtonProps) => {
   return (
     <View style={styles.sendTipButton}>
       <Button
-        title={
+        onPress={handlePress}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        size='small'
+        variant='common'
+        corners='pill'
+        fullWidth
+      >
+        {
           <View style={styles.sendTipButtonTitleContainer}>
             <Text
               style={[styles.sendTipButtonTitle, isActive && styles.textWhite]}
@@ -89,14 +97,7 @@ export const SendTipButton = (props: SendTipButtonProps) => {
             <UserBadges user={receiver} badgeSize={12} hideName />
           </View>
         }
-        onPress={handlePress}
-        onPressIn={handlePressIn}
-        onPressOut={handlePressOut}
-        size='small'
-        variant='common'
-        corners='pill'
-        fullWidth
-      />
+      </Button>
     </View>
   )
 }

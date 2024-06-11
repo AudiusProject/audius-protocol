@@ -93,7 +93,7 @@ const useStyles = makeStyles(({ palette }) => ({
 }))
 
 export type ButtonProps = {
-  title: string
+  children: string
   onPress: () => void
   type?: ButtonType
   /**
@@ -123,7 +123,7 @@ export type ButtonProps = {
  * @deprecated use `import { Button } from 'app/components/core'`
  */
 const Button = ({
-  title,
+  children,
   onPress,
   type = ButtonType.PRIMARY,
   icon,
@@ -175,7 +175,7 @@ const Button = ({
             </View>
           ) : null}
           <Text style={[styles.buttonText, typeStyles.buttonText, textStyle]}>
-            {title}
+            {children}
           </Text>
           {(icon || renderIcon) && iconPosition === 'right' ? (
             <View style={[styles.iconRight, iconStyle]}>

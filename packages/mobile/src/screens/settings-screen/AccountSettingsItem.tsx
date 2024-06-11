@@ -33,12 +33,13 @@ export const AccountSettingsItem = (props: AccountSettingsItemProps) => {
       <SettingsRowDescription>{description}</SettingsRowDescription>
       <Button
         style={styles.button}
-        title={buttonTitle}
         iconPosition='left'
         variant='commonAlt'
         fullWidth
         onPress={onPress}
-      />
+      >
+        {buttonTitle}
+      </Button>
     </SettingsRow>
   )
 }

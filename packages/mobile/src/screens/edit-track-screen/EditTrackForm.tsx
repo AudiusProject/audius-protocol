@@ -126,12 +126,13 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
               size='large'
               icon={IconArrowRight}
               fullWidth
-              title={doneText}
               onPress={() => {
                 handleSubmit()
               }}
               disabled={isSubmitting || hasErrors}
-            />
+            >
+              {doneText}
+            </Button>
           </>
         }
       >

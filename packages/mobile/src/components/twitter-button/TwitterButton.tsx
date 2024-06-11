@@ -108,7 +108,6 @@ export const TwitterButton = (props: TwitterButtonProps) => {
 
   return (
     <Button
-      title={messages.share}
       style={[styles.root, style]}
       icon={IconTwitter}
       iconPosition='left'
@@ -125,6 +124,8 @@ export const TwitterButton = (props: TwitterButtonProps) => {
         ...IconProps
       }}
       {...other}
-    />
+    >
+      {messages.share}
+    </Button>
   )
 }

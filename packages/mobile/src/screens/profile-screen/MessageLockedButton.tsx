@@ -39,11 +39,12 @@ export const MessageLockedButton = (props: MessageLockedButtonProps) => {
     <Button
       style={styles.root}
       noText
-      title={messages.inboxUnavailable}
       icon={IconMessageLocked}
       variant={'common'}
       size='small'
       onPress={handlePress}
-    />
+    >
+      {messages.inboxUnavailable}
+    </Button>
   )
 }

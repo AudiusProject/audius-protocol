@@ -303,7 +303,6 @@ export const AudioScreen = () => {
         }}
       >
         <Button
-          title={messages.send}
           styles={{
             root: styles.buttonRoot,
             text: styles.buttonText,
@@ -314,9 +313,10 @@ export const AudioScreen = () => {
           size='medium'
           icon={IconSend}
           onPress={handlePressSend}
-        />
+        >
+          {messages.send}
+        </Button>
         <Button
-          title={messages.receive}
           styles={{
             root: styles.buttonRoot,
             text: styles.buttonText,
@@ -327,9 +327,10 @@ export const AudioScreen = () => {
           size='medium'
           icon={IconReceive}
           onPress={handlePressReceive}
-        />
+        >
+          {messages.receive}
+        </Button>
         <Button
-          title={messages.externalWallets}
           styles={{
             root: styles.buttonRoot,
             text: styles.buttonText,
@@ -340,7 +341,9 @@ export const AudioScreen = () => {
           size='medium'
           icon={IconWallet}
           onPress={handlePressManageWallets}
-        />
+        >
+          {messages.externalWallets}
+        </Button>
       </Tile>
     )
   }
@@ -434,7 +437,6 @@ export const AudioScreen = () => {
           unlocks={['matrix']}
         />
         <Button
-          title={messages.learnMore}
           styles={{
             root: styles.buttonRoot,
             text: styles.buttonText,
@@ -444,9 +446,10 @@ export const AudioScreen = () => {
           size='medium'
           onPress={() => Linking.openURL(LEARN_MORE_LINK)}
           fullWidth
-        />
+        >
+          {messages.learnMore}
+        </Button>
         <Button
-          title={messages.launchDiscord}
           styles={{
             root: styles.buttonRoot,
             text: styles.buttonText,
@@ -457,7 +460,9 @@ export const AudioScreen = () => {
           iconPosition='left'
           icon={IconDiscord}
           onPress={onPressLaunchDiscord}
-        />
+        >
+          {messages.launchDiscord}
+        </Button>
       </Tile>
     )
   }

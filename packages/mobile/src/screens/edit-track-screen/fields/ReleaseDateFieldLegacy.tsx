@@ -46,24 +46,21 @@ const ConfirmDateButton = (props: CustomConfirmButtonPropTypes) => {
       style={{ borderRadius: 0 }}
       variant='primary'
       size='large'
-      title={label}
       fullWidth
       onPress={onPress}
       pressScale={1}
-    />
+    >
+      {label}
+    </Button>
   )
 }
 
 const CancelDateButton = (props: CustomCancelButtonPropTypes) => {
   const { label, onPress } = props
   return (
-    <Button
-      variant='commonAlt'
-      size='large'
-      title={label}
-      fullWidth
-      onPress={onPress}
-    />
+    <Button variant='commonAlt' size='large' fullWidth onPress={onPress}>
+      {label}
+    </Button>
   )
 }
 

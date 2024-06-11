@@ -148,7 +148,6 @@ export const TrackScreen = () => {
             <>
               <View style={styles.buttonContainer}>
                 <Button
-                  title={messages.viewOtherRemixes}
                   icon={IconArrowRight}
                   variant='primary'
                   size='small'
@@ -157,7 +156,9 @@ export const TrackScreen = () => {
                   styles={{
                     root: styles.button
                   }}
-                />
+                >
+                  {messages.viewOtherRemixes}
+                </Button>
               </View>
               {moreByArtistTitle}
             </>

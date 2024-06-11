@@ -122,7 +122,6 @@ export const GatedContentUploadPromptDrawer = ({
           />
         </TouchableOpacity>
         <Button
-          title={messages.gotIt}
           onPress={handleClose}
           variant='commonAlt'
           size='large'
@@ -131,9 +130,10 @@ export const GatedContentUploadPromptDrawer = ({
             text: styles.buttonText
           }}
           fullWidth
-        />
+        >
+          {messages.gotIt}
+        </Button>
         <Button
-          title={messages.checkItOut}
           onPress={handleSubmit}
           styles={{
             root: styles.button,
@@ -142,7 +142,9 @@ export const GatedContentUploadPromptDrawer = ({
           size='large'
           icon={IconArrowRight}
           fullWidth
-        />
+        >
+          {messages.checkItOut}
+        </Button>
       </View>
     </NativeDrawer>
   )

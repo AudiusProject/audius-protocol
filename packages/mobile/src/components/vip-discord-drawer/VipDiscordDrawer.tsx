@@ -56,13 +56,14 @@ export const VipDiscordDrawer = () => {
         ) : null}
         <Button
           style={styles.launchDiscord}
-          title={messages.launchDiscord}
           variant='primary'
           size='medium'
           iconPosition='left'
           icon={IconDiscord}
           url={AUDIUS_DISCORD_LINK}
-        />
+        >
+          {messages.launchDiscord}
+        </Button>
       </View>
     </Drawer>
   )

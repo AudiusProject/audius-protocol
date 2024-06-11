@@ -151,7 +151,6 @@ export const CollectibleDetailsDrawer = () => {
             <Button
               style={styles.shareButton}
               variant='commonAlt'
-              title={messages.share}
               size='large'
               fullWidth
               onPress={handleShare}
@@ -161,7 +160,9 @@ export const CollectibleDetailsDrawer = () => {
                 height: spacing(6),
                 width: spacing(6)
               }}
-            />
+            >
+              {messages.share}
+            </Button>
           </View>
         </ScrollView>
       ) : null}

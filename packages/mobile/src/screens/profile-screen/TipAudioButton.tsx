@@ -46,7 +46,6 @@ export const TipAudioButton = () => {
       accessibilityLabel={
         Platform.OS === 'ios' ? messages.labelAlt : messages.label
       }
-      title={Platform.OS === 'ios' ? messages.titleAlt : messages.title}
       icon={IconTokenGold}
       iconPosition='left'
       fullWidth
@@ -54,6 +53,8 @@ export const TipAudioButton = () => {
       styles={{
         text: styles.text
       }}
-    />
+    >
+      {Platform.OS === 'ios' ? messages.titleAlt : messages.title}
+    </Button>
   )
 }

@@ -123,13 +123,9 @@ export const UploadCompleteScreen = () => {
       topbarLeft={null}
       url='/upload-complete'
       bottomSection={
-        <Button
-          variant='primary'
-          size='large'
-          title={messages.close}
-          fullWidth
-          onPress={handleDone}
-        />
+        <Button variant='primary' size='large' fullWidth onPress={handleDone}>
+          {messages.close}
+        </Button>
       }
     >
       <View style={styles.content}>

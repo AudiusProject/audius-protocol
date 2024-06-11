@@ -56,16 +56,16 @@ export const SignOutConfirmationDrawer = () => {
           {messages.doubleCheckText}
         </Text>
         <Button
-          title={messages.cancelText}
           fullWidth
           styles={{
             root: styles.buttonRoot,
             text: { textTransform: 'uppercase' }
           }}
           onPress={onClose}
-        />
+        >
+          {messages.cancelText}
+        </Button>
         <Button
-          title={messages.confirmText}
           fullWidth
           styles={{
             root: styles.buttonRoot,
@@ -73,7 +73,9 @@ export const SignOutConfirmationDrawer = () => {
           }}
           variant='common'
           onPress={handleSignOut}
-        />
+        >
+          {messages.confirmText}
+        </Button>
       </View>
     </AppDrawer>
   )

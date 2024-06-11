@@ -312,8 +312,9 @@ export const AccountVerificationScreen = () => {
           icon={IconTwitter}
           onPress={handleTwitterPress}
           styles={{ root: styles.socialButtonContainer }}
-          title={messages.verifyTwitter}
-        />
+        >
+          {messages.verifyTwitter}
+        </SocialButton>
       ) : null}
 
       {isInstagramEnabled ? (
@@ -322,16 +323,18 @@ export const AccountVerificationScreen = () => {
           icon={IconInstagram}
           onPress={handleInstagramPress}
           styles={{ root: styles.socialButtonContainer }}
-          title={messages.verifyInstagram}
-        />
+        >
+          {messages.verifyInstagram}
+        </SocialButton>
       ) : null}
 
       {isTikTokEnabled ? (
         <TikTokAuthButton
           onPress={handleTikTokPress}
           styles={{ root: styles.socialButtonContainer }}
-          title={messages.verifyTikTok}
-        />
+        >
+          {messages.verifyTikTok}
+        </TikTokAuthButton>
       ) : null}
       {error ? (
         <StatusMessage
@@ -361,7 +364,6 @@ export const AccountVerificationScreen = () => {
       </View>
       <Button
         variant='commonAlt'
-        title={messages.backButtonText}
         size='large'
         styles={{
           root: [styles.buttonContainer],
@@ -371,7 +373,9 @@ export const AccountVerificationScreen = () => {
         onPress={goBacktoProfile}
         icon={IconNote}
         iconPosition='right'
-      />
+      >
+        {messages.backButtonText}
+      </Button>
     </View>
   )
 

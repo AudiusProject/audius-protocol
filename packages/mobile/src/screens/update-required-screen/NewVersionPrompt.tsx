@@ -54,13 +54,14 @@ export const NewVersionPrompt = ({
       </Text>
       {!url && !onPress ? null : (
         <Button
-          title={buttonText}
           size='large'
           icon={IconCloudDownload}
           iconPosition='left'
           url={url}
           onPress={onPress}
-        />
+        >
+          {buttonText}
+        </Button>
       )}
     </View>
   )

@@ -307,13 +307,14 @@ export const DetailsTileNoAccess = ({
           <Button
             style={styles.mainButton}
             styles={{ icon: { width: spacing(4), height: spacing(4) } }}
-            title={messages.goToCollection}
             size='large'
             iconPosition='right'
             icon={IconExternalLink}
             onPress={handlePressCollection}
             fullWidth
-          />
+          >
+            {messages.goToCollection}
+          </Button>
         </>
       )
     }
@@ -328,13 +329,14 @@ export const DetailsTileNoAccess = ({
           <Button
             style={styles.mainButton}
             styles={{ icon: { width: spacing(4), height: spacing(4) } }}
-            title={messages.followArtist}
             size='large'
             iconPosition='left'
             icon={IconUserFollow}
             onPress={handleFollowArtist}
             fullWidth
-          />
+          >
+            {messages.followArtist}
+          </Button>
         </>
       )
     }
@@ -350,13 +352,14 @@ export const DetailsTileNoAccess = ({
           <Button
             style={styles.mainButton}
             styles={{ icon: { width: spacing(4), height: spacing(4) } }}
-            title={messages.sendTip}
             size='large'
             iconPosition='right'
             icon={IconTipping}
             onPress={handleSendTip}
             fullWidth
-          />
+          >
+            {messages.sendTip}
+          </Button>
         </>
       )
     }
@@ -372,13 +375,12 @@ export const DetailsTileNoAccess = ({
             <Button
               style={[styles.mainButton, styles.buyButton]}
               styles={{ icon: { width: spacing(4), height: spacing(4) } }}
-              title={messages.buy(
-                formatPrice(streamConditions.usdc_purchase.price)
-              )}
               size='large'
               onPress={handlePurchasePress}
               fullWidth
-            />
+            >
+              {messages.buy(formatPrice(streamConditions.usdc_purchase.price))}
+            </Button>
           )}
         </>
       )

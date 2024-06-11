@@ -223,10 +223,11 @@ export const RemixSettingsScreen = () => {
           variant='primary'
           size='large'
           fullWidth
-          title={messages.done}
           onPress={handleSubmit}
           disabled={hasErrors}
-        />
+        >
+          {messages.done}
+        </Button>
       }
     >
       <View>

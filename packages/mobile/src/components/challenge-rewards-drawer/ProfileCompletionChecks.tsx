@@ -109,12 +109,13 @@ export const ProfileCompletionChecks = ({
         ))}
       </View>
       <Button
-        title={messages.profileCompletionButton}
         renderIcon={renderArrowIcon}
         iconPosition='right'
         onPress={goToProfile}
         type={isComplete ? ButtonType.COMMON : ButtonType.PRIMARY}
-      />
+      >
+        {messages.profileCompletionButton}
+      </Button>
     </View>
   )
 }

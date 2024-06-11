@@ -15,7 +15,7 @@ const useStyles = makeStyles(({ spacing }) => ({
   }
 }))
 
-type ArtistCategoryButtonProps = Omit<ButtonProps, 'title'> & {
+type ArtistCategoryButtonProps = Omit<ButtonProps, 'children'> & {
   isSelected: boolean
   category: FollowArtistsCategory
 }
@@ -34,9 +34,10 @@ export const ArtistCategoryButton = (props: ArtistCategoryButtonProps) => {
       style={styles.root}
       variant={isSelected ? 'secondary' : 'commonAlt'}
       size='xs'
-      title={category}
       onPress={handlePress}
       {...other}
-    />
+    >
+      {category}
+    </Button>
   )
 }

@@ -119,7 +119,6 @@ export const PublishPlaylistDrawer = () => {
         </Text>
         <View style={styles.buttonContainer}>
           <Button
-            title={messages.buttonConfirmText}
             variant='primary'
             size='large'
             iconPosition='left'
@@ -127,14 +126,12 @@ export const PublishPlaylistDrawer = () => {
             styles={{ icon: { height: 24, width: 24 } }}
             fullWidth
             onPress={handlePublish}
-          />
-          <Button
-            title={messages.buttonCancelText}
-            variant='common'
-            size='large'
-            fullWidth
-            onPress={onClose}
-          />
+          >
+            {messages.buttonConfirmText}
+          </Button>
+          <Button variant='common' size='large' fullWidth onPress={onClose}>
+            {messages.buttonCancelText}
+          </Button>
         </View>
       </View>
     </Drawer>

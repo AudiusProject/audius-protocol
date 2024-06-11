@@ -51,13 +51,14 @@ export const ConnectNewWalletButton = () => {
   return (
     <View style={styles.root}>
       <Button
-        title={title}
         variant='primary'
         size='large'
         fullWidth
         onPress={handleConnectWallet}
         disabled={!canConnectNewWallet}
-      />
+      >
+        {title}
+      </Button>
     </View>
   )
 }

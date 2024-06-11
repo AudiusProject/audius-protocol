@@ -54,18 +54,18 @@ type AudioMatchingChallengeDrawerContentProps = {
 const ctaButtonProps: {
   [k in AudioMatchingChallengeName]: Pick<
     ButtonProps,
-    'icon' | 'iconPosition' | 'title'
+    'icon' | 'iconPosition' | 'children'
   >
 } = {
   [ChallengeName.AudioMatchingBuy]: {
     icon: IconArrowRight,
     iconPosition: 'right',
-    title: messages.viewPremiumTracks
+    children: messages.viewPremiumTracks
   },
   [ChallengeName.AudioMatchingSell]: {
     icon: IconCloudUpload,
     iconPosition: 'left',
-    title: messages.uploadTrack
+    children: messages.uploadTrack
   }
 }
 
@@ -140,11 +140,12 @@ export const AudioMatchingChallengeDrawerContent = ({
             disabled={claimInProgress}
             variant='primary'
             onPress={onClaim}
-            title={messages.claimAudio(formatNumberCommas(claimableAmount))}
             icon={claimInProgress ? LoadingSpinner : IconArrowRight}
             iconPosition='right'
             fullWidth
-          />
+          >
+            {messages.claimAudio(formatNumberCommas(claimableAmount))}
+          </Button>
         ) : (
           <Button
             {...ctaButtonProps[challengeName]}

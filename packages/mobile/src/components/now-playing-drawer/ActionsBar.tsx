@@ -45,7 +45,6 @@ import { Button } from 'app/components/core'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { useToast } from 'app/hooks/useToast'
 import { makeStyles } from 'app/styles'
-import { spacing } from 'app/styles/spacing'
 import { useThemeColors } from 'app/utils/theme'
 
 import { FavoriteButton } from './FavoriteButton'
@@ -245,11 +244,11 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
       return (
         <Button
           style={styles.buyButton}
-          styles={{ icon: { width: spacing(4), height: spacing(4) } }}
-          title={`$${formatPrice(price)}`}
           size='large'
           onPress={handlePurchasePress}
-        />
+        >
+          {formatPrice(price)}
+        </Button>
       )
     }
   }
