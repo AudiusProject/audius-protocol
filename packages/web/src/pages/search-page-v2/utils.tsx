@@ -1,4 +1,34 @@
 import { Mood } from '@audius/sdk'
+import { useSearchParams } from 'react-router-dom-v5-compat'
+
+const urlSearchParamsToObject = (
+  searchParams: URLSearchParams
+): Record<string, string> =>
+  [...searchParams.entries()].reduce(
+    (result, [key, value]) => ({
+      ...result,
+      [key]: value
+    }),
+    {}
+  )
+
+export const useUpdateSearchParams = (key: string) => {
+  const [searchParams, setUrlSearchParams] = useSearchParams()
+  return (value: string) => {
+    if (value) {
+      // TODO: This is causing an amplitude page view every time
+      // let's fix this
+      setUrlSearchParams({
+        ...urlSearchParamsToObject(searchParams),
+        [key]: value
+      })
+    } else {
+      const { [key]: ignored, ...params } =
+        urlSearchParamsToObject(searchParams)
+      setUrlSearchParams(params)
+    }
+  }
+}
 
 type MoodInfo = {
   label: Mood

@@ -4,7 +4,7 @@ import { CSSObject, useTheme } from '@emotion/react'
 
 import { BaseButton } from 'components/button/BaseButton/BaseButton'
 import { TextInput, TextInputSize } from 'components/input'
-import { Flex, Paper } from 'components/layout'
+import { Box, Flex, Paper } from 'components/layout'
 import { Popup } from 'components/popup'
 import { Text } from 'components/text'
 import { useControlled } from 'hooks/useControlled'
@@ -92,6 +92,7 @@ export const OptionsFilterButton = forwardRef<
   const {
     selection: selectionProp,
     options,
+    optionsLabel,
     showFilterInput,
     filterInputPlaceholder = 'Search',
     popupAnchorOrigin,
@@ -166,6 +167,13 @@ export const OptionsFilterButton = forwardRef<
                       setFilterInputValue(e.target.value)
                     }}
                   />
+                ) : null}
+                {optionsLabel ? (
+                  <Box pt='s' ph='m'>
+                    <Text variant='label' size='xs'>
+                      {optionsLabel}
+                    </Text>
+                  </Box>
                 ) : null}
                 <FilterButtonOptions
                   options={options.filter(({ label }) => {

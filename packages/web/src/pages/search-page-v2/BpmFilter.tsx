@@ -16,6 +16,8 @@ import {
 import { css } from '@emotion/css'
 import { useSearchParams } from 'react-router-dom-v5-compat'
 
+import { useUpdateSearchParams } from './utils'
+
 type BpmTargetType = 'exact' | 'range5' | 'range10'
 const targetOptions: { label: string; value: BpmTargetType }[] = [
   {
@@ -68,10 +70,6 @@ const messages = {
   bpm: 'BPM',
   minBpm: 'Min',
   maxBpm: 'Max'
-}
-
-type FilterProps = {
-  useUpdateSearchParams: (key: string) => (value: string) => void
 }
 
 type ViewProps = {
@@ -197,7 +195,7 @@ const BpmTargetView = ({ handleChange }: ViewProps) => {
   )
 }
 
-export const BpmFilter = ({ useUpdateSearchParams }: FilterProps) => {
+export const BpmFilter = () => {
   const [urlSearchParams] = useSearchParams()
   const bpm = urlSearchParams.get('bpm')
   const updateSearchParams = useUpdateSearchParams('bpm')

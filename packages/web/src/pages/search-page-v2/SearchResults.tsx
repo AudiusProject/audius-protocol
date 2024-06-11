@@ -21,6 +21,7 @@ import { Text } from '@audius/harmony/src/components/text'
 import { css } from '@emotion/css'
 import { range } from 'lodash'
 import { useDispatch } from 'react-redux'
+import { useSearchParams } from 'react-router-dom-v5-compat'
 
 import { make } from 'common/store/analytics/actions'
 import { CollectionCard } from 'components/collection'
@@ -32,14 +33,13 @@ import { useSelector } from 'utils/reducer'
 import { SEARCH_CATEGORY_PAGE } from 'utils/route'
 
 import { NoResultsTile } from './NoResultsTile'
+import { useUpdateSearchParams } from './utils'
 
 const MAX_RESULTS = 100
 const MAX_PREVIEW_RESULTS = 5
 const MAX_TRACK_PREVIEW_RESULTS = 10
 const PAGE_WIDTH = 1080
 const HALF_TILE_WIDTH = (PAGE_WIDTH - 16) / 2
-
-type TrackView = 'grid' | 'list'
 
 enum Category {
   ALL = 'all',
@@ -49,6 +49,18 @@ enum Category {
   ALBUMS = 'albums'
 }
 
+type ViewLayout = 'grid' | 'list'
+const viewLayoutOptions: { label: string; value: ViewLayout }[] = [
+  { label: 'Grid', value: 'grid' },
+  { label: 'List', value: 'list' }
+]
+
+type SortOption = 'relevant' | 'recent'
+const sortOptions: { label: string; value: SortOption }[] = [
+  { label: 'Most Relevant', value: 'relevant' },
+  { label: 'Most Recent', value: 'recent' }
+]
+
 type SearchResultsProps = {
   query: string
 }
@@ -57,7 +69,9 @@ const messages = {
   profiles: 'Profiles',
   tracks: 'Tracks',
   albums: 'Albums',
-  playlists: 'Playlists'
+  playlists: 'Playlists',
+  layoutOptionsLabel: 'View As',
+  sortOptionsLabel: 'Sort By'
 }
 
 const cardGridStyles = {
@@ -134,9 +148,23 @@ export const SearchResults = ({ query }: SearchResultsProps) => {
     [dispatch, query]
   )
 
-  const [tracksLayout, setTracksLayout] = useState<TrackView>('list')
-  const isTrackGridView =
+  const [tracksLayout, setTracksLayout] = useState<ViewLayout>('list')
+  const isTrackGridLayout =
     !isCategoryActive(Category.TRACKS) || tracksLayout === 'grid'
+
+  const [urlSearchParams] = useSearchParams()
+  const sort = urlSearchParams.get('sort')
+  const updateSearchParams = useUpdateSearchParams('sort')
+
+  const sortButton = (
+    <OptionsFilterButton
+      selection={sort ?? 'relevant'}
+      variant='replaceLabel'
+      optionsLabel={messages.sortOptionsLabel}
+      onChange={updateSearchParams}
+      options={sortOptions}
+    />
+  )
 
   // Check if there are no results
   const isResultsEmpty =
@@ -163,6 +191,9 @@ export const SearchResults = ({ query }: SearchResultsProps) => {
             <Text variant='heading' textAlign='left'>
               {messages.profiles}
             </Text>
+            {isCategoryActive(Category.PROFILES) ? (
+              <Flex gap='s'>{sortButton}</Flex>
+            ) : null}
           </Flex>
           <Box css={cardGridStyles}>
             {isLoading
@@ -185,17 +216,18 @@ export const SearchResults = ({ query }: SearchResultsProps) => {
               {messages.tracks}
             </Text>
             {isCategoryActive(Category.TRACKS) ? (
-              <OptionsFilterButton
-                selection={tracksLayout}
-                variant='replaceLabel'
-                onChange={(value) => {
-                  setTracksLayout(value as TrackView)
-                }}
-                options={[
-                  { label: 'Grid', value: 'grid' },
-                  { label: 'List', value: 'list' }
-                ]}
-              />
+              <Flex gap='s'>
+                {sortButton}
+                <OptionsFilterButton
+                  selection={tracksLayout}
+                  variant='replaceLabel'
+                  optionsLabel={messages.layoutOptionsLabel}
+                  onChange={(value) => {
+                    setTracksLayout(value as ViewLayout)
+                  }}
+                  options={viewLayoutOptions}
+                />
+              </Flex>
             ) : null}
           </Flex>
           <Flex gap='l'>
@@ -204,12 +236,12 @@ export const SearchResults = ({ query }: SearchResultsProps) => {
                 lineupContainerStyles={css({ width: '100%' })}
                 tileContainerStyles={css({
                   display: 'grid',
-                  gridTemplateColumns: isTrackGridView ? '1fr 1fr' : '1fr',
+                  gridTemplateColumns: isTrackGridLayout ? '1fr 1fr' : '1fr',
                   gap: '4px 16px',
                   justifyContent: 'space-between'
                 })}
                 tileStyles={css({
-                  maxWidth: isTrackGridView ? HALF_TILE_WIDTH : PAGE_WIDTH
+                  maxWidth: isTrackGridLayout ? HALF_TILE_WIDTH : PAGE_WIDTH
                 })}
                 key='searchTracks'
                 variant={LineupVariant.SECTION}
@@ -243,6 +275,9 @@ export const SearchResults = ({ query }: SearchResultsProps) => {
             <Text variant='heading' textAlign='left'>
               {messages.albums}
             </Text>
+            {isCategoryActive(Category.ALBUMS) ? (
+              <Flex gap='s'>{sortButton}</Flex>
+            ) : null}
           </Flex>
           <Box css={cardGridStyles}>
             {isLoading
@@ -266,6 +301,9 @@ export const SearchResults = ({ query }: SearchResultsProps) => {
             <Text variant='heading' textAlign='left'>
               {messages.playlists}
             </Text>
+            {isCategoryActive(Category.PLAYLISTS) ? (
+              <Flex gap='s'>{sortButton}</Flex>
+            ) : null}
           </Flex>
           <Box css={cardGridStyles}>
             {isLoading
