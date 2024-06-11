@@ -138,6 +138,7 @@ export const OptionsFilterButton = forwardRef<
           transformOrigin={popupTransformOrigin}
           portalLocation={popupPortalLocation}
           zIndex={popupZIndex}
+          onAfterClose={() => setFilterInputValue('')}
         >
           <Paper mt='s' border='strong' shadow='far'>
             <Flex
