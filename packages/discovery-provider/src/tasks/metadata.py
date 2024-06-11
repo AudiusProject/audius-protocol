@@ -256,6 +256,7 @@ immutable_track_fields = immutable_fields | {
     "orig_filename",
     "duration",
     "is_available",
+    "audio_analysis_error_count",
 }
 
 immutable_user_fields = immutable_fields | {
