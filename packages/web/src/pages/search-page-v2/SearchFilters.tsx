@@ -17,7 +17,7 @@ import { useSearchParams } from 'react-router-dom-v5-compat'
 
 import { BpmFilter } from './BpmFilter'
 import { Filter } from './types'
-import { MOODS } from './utils'
+import { MOODS, useUpdateSearchParams } from './utils'
 
 const messages = {
   genre: 'Genre',
@@ -28,35 +28,6 @@ const messages = {
   isPremium: 'Premium',
   isVerified: 'Verified',
   hasDownloads: 'Downloads Available'
-}
-
-const urlSearchParamsToObject = (
-  searchParams: URLSearchParams
-): Record<string, string> =>
-  [...searchParams.entries()].reduce(
-    (result, [key, value]) => ({
-      ...result,
-      [key]: value
-    }),
-    {}
-  )
-
-const useUpdateSearchParams = (key: string) => {
-  const [searchParams, setUrlSearchParams] = useSearchParams()
-  return (value: string) => {
-    if (value) {
-      // TODO: This is causing an amplitude page view every time
-      // let's fix this
-      setUrlSearchParams({
-        ...urlSearchParamsToObject(searchParams),
-        [key]: value
-      })
-    } else {
-      const { [key]: ignored, ...params } =
-        urlSearchParamsToObject(searchParams)
-      setUrlSearchParams(params)
-    }
-  }
 }
 
 const GenreFilter = () => {
@@ -238,7 +209,7 @@ export const filters: Record<Filter, () => ReactElement> = {
   genre: GenreFilter,
   mood: MoodFilter,
   key: KeyFilter,
-  bpm: () => <BpmFilter useUpdateSearchParams={useUpdateSearchParams} />,
+  bpm: BpmFilter,
   isPremium: IsPremiumFilter,
   hasDownloads: HasDownloadsFilter,
   isVerified: IsVerifiedFilter

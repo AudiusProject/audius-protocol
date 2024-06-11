@@ -51,6 +51,11 @@ export type OptionsFilterButtonProps = {
   options: OptionsFilterButtonOption[]
 
   /**
+   * Label to display above options
+   */
+  optionsLabel?: string
+
+  /**
    * The selected value
    */
   selection?: string | null
