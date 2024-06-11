@@ -635,6 +635,12 @@ const config = convict({
     env: 'solanaEndpoint',
     default: null
   },
+  solanaEndpointListensProgram: {
+    doc: 'The Solana RPC endpoint to make requests against for the listens program',
+    format: String,
+    env: 'solanaEndpointListensProgram',
+    default: null
+  },
   solanaTrackListenCountAddress: {
     doc: 'solanaTrackListenCountAddress',
     format: String,

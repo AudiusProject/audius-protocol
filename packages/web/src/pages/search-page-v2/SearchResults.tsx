@@ -31,6 +31,8 @@ import { useRouteMatch } from 'hooks/useRouteMatch'
 import { useSelector } from 'utils/reducer'
 import { SEARCH_CATEGORY_PAGE } from 'utils/route'
 
+import { NoResultsTile } from './NoResultsTile'
+
 const MAX_RESULTS = 100
 const MAX_PREVIEW_RESULTS = 5
 const MAX_TRACK_PREVIEW_RESULTS = 10
@@ -135,6 +137,23 @@ export const SearchResults = ({ query }: SearchResultsProps) => {
   const [tracksLayout, setTracksLayout] = useState<TrackView>('list')
   const isTrackGridView =
     !isCategoryActive(Category.TRACKS) || tracksLayout === 'grid'
+
+  // Check if there are no results
+  const isResultsEmpty =
+    results.albumIds?.length === 0 &&
+    results.artistIds?.length === 0 &&
+    results.playlistIds?.length === 0 &&
+    results.trackIds?.length === 0
+
+  const showNoResultsTile =
+    isResultsEmpty ||
+    (isCategoryActive(Category.ALBUMS) && results.albumIds?.length === 0) ||
+    (isCategoryActive(Category.PROFILES) && results.artistIds?.length === 0) ||
+    (isCategoryActive(Category.PLAYLISTS) &&
+      results.playlistIds?.length === 0) ||
+    (isCategoryActive(Category.TRACKS) && results.trackIds?.length === 0)
+
+  if (showNoResultsTile) return <NoResultsTile />
 
   return (
     <Flex direction='column' gap='unit10' ref={containerRef}>
