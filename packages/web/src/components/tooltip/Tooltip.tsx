@@ -89,7 +89,7 @@ export const Tooltip = ({
     visibility: isHiddenOverride ? 'hidden' : 'visible'
   } as CSSProperties
 
-  if (disabled) return children
+  if (disabled) return <>{children}</>
 
   return (
     <AntTooltip
