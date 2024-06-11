@@ -77,7 +77,7 @@ const TrackEditForm = (
 ) => {
   const { values, dirty, isSubmitting, hideContainer = false } = props
   const isMultiTrack = values.trackMetadatas.length > 1
-  const isUpload = !values.trackMetadatas[0].track_id === undefined
+  const isUpload = values.trackMetadatas[0].track_id === undefined
   const trackIdx = values.trackMetadatasIndex
   const [, , { setValue: setIndex }] = useField('trackMetadatasIndex')
   useUnmount(() => {
