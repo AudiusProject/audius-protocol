@@ -18,7 +18,6 @@ import { feePayer } from './routes/feePayer'
 import { health } from './routes/health/health'
 import { listen } from './routes/listen/listen'
 import { relay } from './routes/relay/relay'
-import { rateLimitMiddleware } from './middleware/rateLimiter'
 
 const main = async () => {
   const { serverHost, serverPort } = config
@@ -27,7 +26,7 @@ const main = async () => {
   app.use(cors())
   app.use(incomingRequestLogger)
   app.get('/solana/health_check', health)
-  app.post('/solana/tracks/:trackId/listen', incomingRequestLogger, rateLimitMiddleware, listen, outgoingRequestLogger)
+  app.post('/solana/tracks/:trackId/listen', incomingRequestLogger, listen, outgoingRequestLogger)
   app.use(userSignerRecoveryMiddleware)
   app.use(discoveryNodeSignerRecoveryMiddleware)
   app.post('/solana/relay', relay)
