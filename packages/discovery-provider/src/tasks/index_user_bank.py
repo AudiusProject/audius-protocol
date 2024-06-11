@@ -29,6 +29,7 @@ from src.models.users.audio_transactions_history import (
 from src.models.users.usdc_purchase import (
     PurchaseAccessType,
     PurchaseType,
+    PurchaseVendor,
     USDCPurchase,
 )
 from src.models.users.usdc_transactions_history import (
@@ -460,6 +461,7 @@ def index_purchase(
         content_type=purchase_metadata["type"],
         content_id=purchase_metadata["id"],
         access=purchase_metadata["access"],
+        vendor=PurchaseVendor.user_bank,
     )
     logger.debug(
         f"index_user_bank.py | Creating usdc_purchase for purchase {usdc_purchase}"

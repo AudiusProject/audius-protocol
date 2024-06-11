@@ -27,6 +27,7 @@ from src.models.users.payment_router import PaymentRouterTx
 from src.models.users.usdc_purchase import (
     PurchaseAccessType,
     PurchaseType,
+    PurchaseVendor,
     USDCPurchase,
 )
 from src.models.users.usdc_transactions_history import (
@@ -153,11 +154,6 @@ class RouteTransactionMemoType(str, enum.Enum):
     purchase = "purchase"
     recovery = "recovery"
     unknown = "unknown"
-
-
-class PurchaseVendor(str, enum.Enum):
-    user_bank = "user_bank"
-    coinflow = "coinflow"
 
 
 class RouteTransactionMemo(TypedDict):
