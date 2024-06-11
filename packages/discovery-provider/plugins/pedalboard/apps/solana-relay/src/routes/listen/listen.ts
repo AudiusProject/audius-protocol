@@ -65,8 +65,8 @@ export type RecordListenResponse = {
   solTxSignature: string | null
 }
 
-const listensIpRateLimiter = new RateLimiter(LISTENS_RATE_LIMIT_IP_PREFIX, config.listensIpHourlyRateLimit, config.listensIpDailyRateLimit, config.listensIpWeeklyRateLimit)
-const listensIpTrackRateLimiter = new RateLimiter(LISTENS_RATE_LIMIT_TRACK_PREFIX, config.listensTrackHourlyRateLimit, config.listensTrackDailyRateLimit, config.listensTrackWeeklyRateLimit)
+export const listensIpRateLimiter = new RateLimiter(LISTENS_RATE_LIMIT_IP_PREFIX, config.listensIpHourlyRateLimit, config.listensIpDailyRateLimit, config.listensIpWeeklyRateLimit)
+export const listensIpTrackRateLimiter = new RateLimiter(LISTENS_RATE_LIMIT_TRACK_PREFIX, config.listensTrackHourlyRateLimit, config.listensTrackDailyRateLimit, config.listensTrackWeeklyRateLimit)
 
 
 export const recordListen = async (
@@ -164,7 +164,7 @@ export const listenRouteRateLimiter = async (params: { ip: string, trackId: stri
   const ipTrackLimit = await listensIpTrackRateLimiter.checkLimit(ipTrackConcatKey)
 
   // merge limits and check if both allow passage
-  const allowed = ipLimit.allowed || ipTrackLimit.allowed
+  const allowed = ipLimit.allowed && ipTrackLimit.allowed
 
   if (!allowed) {
     logger?.info({ ipLimit, ipTrackLimit, ip }, "rate limit hit")

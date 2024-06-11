@@ -1,8 +1,4 @@
-import { Request, Response, NextFunction } from "express"
-import { getIP } from "../utils/ipData"
 import { getRedisConnection } from "../redis"
-import { LISTENS_RATE_LIMIT_IP_PREFIX, LISTENS_RATE_LIMIT_TRACK_PREFIX, config } from "../config"
-import { recordListenParamsSchema } from "../routes/listen/listen"
 
 export class RateLimiter {
     private hourlyLimit: number
@@ -31,7 +27,6 @@ export class RateLimiter {
         return currentCount >= limit
     }
 
-    // track count or 
     public async checkLimit(entityKey: string): Promise<{
         hourLimitReached: boolean,
         dayLimitReached: boolean,
@@ -49,5 +44,22 @@ export class RateLimiter {
         const allowed = !(hourLimitReached || dayLimitReached || weekLimitReached)
 
         return { allowed, hourLimitReached, dayLimitReached, weekLimitReached }
+    }
+
+    // set limits after instantiation, primarily for tests
+    public setLimits(limits: { hourlyLimit?: number, dailyLimit?: number, weeklyLimit?: number }) {
+        const { hourlyLimit, dailyLimit, weeklyLimit } = limits
+
+        if (hourlyLimit !== undefined) {
+            this.hourlyLimit = hourlyLimit
+        }
+
+        if (dailyLimit !== undefined) {
+            this.dailyLimit = dailyLimit
+        }
+
+        if (weeklyLimit !== undefined) {
+            this.weeklyLimit = weeklyLimit
+        }
     }
 }

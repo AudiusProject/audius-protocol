@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { LISTENS_RATE_LIMIT_IP_PREFIX, LISTENS_RATE_LIMIT_TRACK_PREFIX, config } from "../../config";
 import { getRedisConnection } from "../../redis";
-import { listenRouteRateLimiter } from "./listen";
+import { listenRouteRateLimiter, listensIpRateLimiter, listensIpTrackRateLimiter } from "./listen";
 
 beforeEach(async () => {
     // run with npm run test with audius-compose up
@@ -15,9 +15,6 @@ beforeEach(async () => {
             }
         }
     } while (cursor !== '0')
-
-    // reset config to defaults between each test
-    config.listensIpHourlyRateLimit = 10
 })
 
 describe('Listens Route Rate Limiter', function () {
@@ -28,9 +25,8 @@ describe('Listens Route Rate Limiter', function () {
         const track2 = "track2"
         const ipTwo = "2.3.4.5"
 
-        // set config so ip is only hit
-        config.listensIpHourlyRateLimit = 10
-        config.listensTrackHourlyRateLimit = 11
+        listensIpRateLimiter.setLimits({ hourlyLimit: 10 })
+        listensIpTrackRateLimiter.setLimits({ hourlyLimit: 40 })
 
         // ten listens for user one with track one
         await listenRouteRateLimiter({ ip: ipOne, trackId: track1 })
@@ -48,15 +44,7 @@ describe('Listens Route Rate Limiter', function () {
 
         // ten listens for another track with same user
         await listenRouteRateLimiter({ ip: ipOne, trackId: track2 })
-        await listenRouteRateLimiter({ ip: ipOne, trackId: track2 })
-        await listenRouteRateLimiter({ ip: ipOne, trackId: track2 })
-        await listenRouteRateLimiter({ ip: ipOne, trackId: track2 })
-        await listenRouteRateLimiter({ ip: ipOne, trackId: track2 })
-        await listenRouteRateLimiter({ ip: ipOne, trackId: track2 })
-        await listenRouteRateLimiter({ ip: ipOne, trackId: track2 })
-        await listenRouteRateLimiter({ ip: ipOne, trackId: track2 })
-        const trackTwoAllowed = await listenRouteRateLimiter({ ip: ipOne, trackId: track2 })
-        expect(trackTwoAllowed.allowed).toBe(true)
+        // user one can no longer record listens to any tracks because they're blocked at ip level
         const trackTwoNotAllowed = await listenRouteRateLimiter({ ip: ipOne, trackId: track2 })
         expect(trackTwoNotAllowed.allowed).toBe(false)
 
@@ -78,18 +66,6 @@ describe('Listens Route Rate Limiter', function () {
         const trackOneNotAllowedUserOne = await listenRouteRateLimiter({ ip: ipOne, trackId: track1 })
         expect(trackOneNotAllowedUserOne.allowed).toBe(false)
 
-        // ten listens for second track from second user
-        await listenRouteRateLimiter({ ip: ipTwo, trackId: track2 })
-        await listenRouteRateLimiter({ ip: ipTwo, trackId: track2 })
-        await listenRouteRateLimiter({ ip: ipTwo, trackId: track2 })
-        await listenRouteRateLimiter({ ip: ipTwo, trackId: track2 })
-        await listenRouteRateLimiter({ ip: ipTwo, trackId: track2 })
-        await listenRouteRateLimiter({ ip: ipTwo, trackId: track2 })
-        await listenRouteRateLimiter({ ip: ipTwo, trackId: track2 })
-        await listenRouteRateLimiter({ ip: ipTwo, trackId: track2 })
-        const trackTwoAllowedUserTwo = await listenRouteRateLimiter({ ip: ipTwo, trackId: track2 })
-        expect(trackTwoAllowedUserTwo.allowed).toBe(true)
-
         // assert both users now blocked on both tracks
         const trackTwoNotAllowedUserTwo = await listenRouteRateLimiter({ ip: ipTwo, trackId: track2 })
         expect(trackTwoNotAllowedUserTwo.allowed).toBe(false)
@@ -105,8 +81,8 @@ describe('Listens Route Rate Limiter', function () {
         const ipTwo = "2.3.4.5"
 
         // set config so hourly track and ip is the lowest
-        config.listensIpHourlyRateLimit = 11
-        config.listensTrackHourlyRateLimit = 10
+        listensIpRateLimiter.setLimits({ hourlyLimit: 100 })
+        listensIpTrackRateLimiter.setLimits({ hourlyLimit: 10 })
 
         // ten listens for user one with track one
         await listenRouteRateLimiter({ ip: ipOne, trackId: track1 })
@@ -181,9 +157,8 @@ describe('Listens Route Rate Limiter', function () {
         const ipTwo = "2.3.4.5"
 
         // set config so weekly track and ip is the lowest
-        config.listensIpHourlyRateLimit = 100
-        config.listensTrackHourlyRateLimit = 100
-        config.listensTrackWeeklyRateLimit = 10
+        listensIpRateLimiter.setLimits({ hourlyLimit: 100 })
+        listensIpTrackRateLimiter.setLimits({ hourlyLimit: 100, weeklyLimit: 10 })
 
         // ten listens for user one with track one
         await listenRouteRateLimiter({ ip: ipOne, trackId: track1 })
