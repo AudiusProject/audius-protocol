@@ -65,8 +65,8 @@ export type RecordListenResponse = {
   solTxSignature: string | null
 }
 
-export const listensIpRateLimiter = new RateLimiter(LISTENS_RATE_LIMIT_IP_PREFIX, config.listensIpHourlyRateLimit, config.listensIpDailyRateLimit, config.listensIpWeeklyRateLimit)
-export const listensIpTrackRateLimiter = new RateLimiter(LISTENS_RATE_LIMIT_TRACK_PREFIX, config.listensTrackHourlyRateLimit, config.listensTrackDailyRateLimit, config.listensTrackWeeklyRateLimit)
+export const listensIpRateLimiter = new RateLimiter({ prefix: LISTENS_RATE_LIMIT_IP_PREFIX, hourlyLimit: config.listensIpHourlyRateLimit, dailyLimit: config.listensIpDailyRateLimit, weeklyLimit: config.listensIpWeeklyRateLimit })
+export const listensIpTrackRateLimiter = new RateLimiter({ prefix: LISTENS_RATE_LIMIT_TRACK_PREFIX, hourlyLimit: config.listensTrackHourlyRateLimit, dailyLimit: config.listensTrackDailyRateLimit, weeklyLimit: config.listensTrackWeeklyRateLimit })
 
 
 export const recordListen = async (

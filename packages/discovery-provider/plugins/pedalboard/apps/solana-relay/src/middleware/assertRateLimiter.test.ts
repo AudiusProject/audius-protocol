@@ -1,4 +1,4 @@
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import { RateLimiter } from "./rateLimiter";
 import { config } from "../config";
 import { getRedisConnection } from "../redis";
@@ -22,28 +22,31 @@ describe('Rate Limiter', function () {
         it('disallows when one limit is reached', async function () {
             const userIP = "1.2.3.4"
 
-            const hourLimitLimiter = new RateLimiter("listens-rate-limit-hour", 1, 2, 2)
+            const hourLimitLimiter = new RateLimiter({ prefix: "listens-rate-limit-hour", hourlyLimit: 1, dailyLimit: 2, weeklyLimit: 2 })
+            await hourLimitLimiter.checkLimit(userIP)
             const checkHour = await hourLimitLimiter.checkLimit(userIP)
             expect(checkHour.allowed).toBe(false)
             expect(checkHour.hourLimitReached).toBe(true)
             expect(checkHour.dayLimitReached).toBe(false)
             expect(checkHour.weekLimitReached).toBe(false)
 
-            const dayLimitLimiter = new RateLimiter("listens-rate-limit-day", 2, 1, 2)
+            const dayLimitLimiter = new RateLimiter({ prefix: "listens-rate-limit-day", hourlyLimit: 2, dailyLimit: 1, weeklyLimit: 2 })
+            await dayLimitLimiter.checkLimit(userIP)
             const checkDay = await dayLimitLimiter.checkLimit(userIP)
             expect(checkDay.allowed).toBe(false)
             expect(checkDay.hourLimitReached).toBe(false)
             expect(checkDay.dayLimitReached).toBe(true)
             expect(checkDay.weekLimitReached).toBe(false)
 
-            const weekLimitLimiter = new RateLimiter("listens-rate-limit-week", 2, 2, 1)
+            const weekLimitLimiter = new RateLimiter({ prefix: "listens-rate-limit-week", hourlyLimit: 2, dailyLimit: 2, weeklyLimit: 1 })
+            await weekLimitLimiter.checkLimit(userIP)
             const checkWeek = await weekLimitLimiter.checkLimit(userIP)
             expect(checkWeek.allowed).toBe(false)
             expect(checkWeek.hourLimitReached).toBe(false)
             expect(checkWeek.dayLimitReached).toBe(false)
             expect(checkWeek.weekLimitReached).toBe(true)
 
-            const allowedRateLimiter = new RateLimiter("listens-rate-limit-allowed", 2, 2, 2)
+            const allowedRateLimiter = new RateLimiter({ prefix: "listens-rate-limit-allowed", hourlyLimit: 2, dailyLimit: 2, weeklyLimit: 2 })
             const checkAllowed = await allowedRateLimiter.checkLimit(userIP)
             expect(checkAllowed.allowed).toBe(true)
             expect(checkAllowed.hourLimitReached).toBe(false)
@@ -54,7 +57,7 @@ describe('Rate Limiter', function () {
             const userIP1 = "1.2.3.4"
             const userIP2 = "9.8.7.6"
 
-            const hourLimitLimiter = new RateLimiter("listens-rate-limit-hour", 3, 5, 10)
+            const hourLimitLimiter = new RateLimiter({ prefix: "listens-rate-limit-hour", hourlyLimit: 3, dailyLimit: 5, weeklyLimit: 10 })
             // reach hourly limit for user 1
             await hourLimitLimiter.checkLimit(userIP1)
             await hourLimitLimiter.checkLimit(userIP1)

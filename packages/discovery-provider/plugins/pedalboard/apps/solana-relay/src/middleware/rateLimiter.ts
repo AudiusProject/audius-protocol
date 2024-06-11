@@ -6,7 +6,8 @@ export class RateLimiter {
     private weeklyLimit: number
     private prefix: string
 
-    constructor(prefix: string, hourlyLimit: number, dailyLimit: number, weeklyLimit: number) {
+    constructor(params: { prefix: string, hourlyLimit: number, dailyLimit: number, weeklyLimit: number }) {
+        const { prefix, hourlyLimit, dailyLimit, weeklyLimit } = params
         this.prefix = prefix
         this.hourlyLimit = hourlyLimit
         this.dailyLimit = dailyLimit
