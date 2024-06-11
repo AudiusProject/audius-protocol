@@ -191,7 +191,9 @@ const createSdkSchema = () =>
       rightsController: z.optional(DDEXRightsController).nullable(),
       copyrightLine: z.optional(DDEXCopyright.nullable()),
       producerCopyrightLine: z.optional(DDEXCopyright.nullable()),
-      parentalWarningType: z.optional(z.string().nullable())
+      parentalWarningType: z.optional(z.string().nullable()),
+      bpm: z.optional(z.number().nullable()),
+      musicalKey: z.optional(z.string().nullable())
     })
     .merge(premiumMetadataSchema)
     .merge(hiddenMetadataSchema)

@@ -99,6 +99,7 @@ class TrackMetadata(TypedDict):
     allowed_api_keys: Optional[str]
     bpm: Optional[float]
     musical_key: Optional[str]
+    audio_analysis_error_count: Optional[int]
 
 
 track_metadata_format: TrackMetadata = {
@@ -153,6 +154,7 @@ track_metadata_format: TrackMetadata = {
     "allowed_api_keys": None,
     "bpm": None,
     "musical_key": None,
+    "audio_analysis_error_count": 0,
 }
 
 # Required format for user metadata retrieved from the content system

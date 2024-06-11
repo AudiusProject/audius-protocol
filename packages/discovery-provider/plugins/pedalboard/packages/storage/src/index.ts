@@ -1005,6 +1005,7 @@ export type Tracks = {
   parental_warning_type: string | null;
   bpm: number | null;
   musical_key: string | null;
+  audio_analysis_error_count: number;
 };
 
 export type TrendingResults = {

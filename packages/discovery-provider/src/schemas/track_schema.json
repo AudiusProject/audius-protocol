@@ -371,6 +371,12 @@
             "null"
           ],
           "default": null
+        },
+        "audio_analysis_error_count": {
+          "type": [
+            "integer"
+          ],
+          "default": 0
         }
       },
       "required": [

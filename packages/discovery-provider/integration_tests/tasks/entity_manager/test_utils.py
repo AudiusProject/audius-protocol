@@ -197,6 +197,7 @@ def test_valid_parse_metadata(app):
                 "allowed_api_keys": None,
                 "bpm": None,
                 "musical_key": None,
+                "audio_analysis_error_count": 0,
             },
             "QmUpdatePlaylist1": {
                 "playlist_id": 1,
