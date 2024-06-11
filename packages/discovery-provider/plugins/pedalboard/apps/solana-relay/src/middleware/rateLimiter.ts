@@ -24,7 +24,7 @@ export class RateLimiter {
         if (currentCount === 1) {
             await redis.expire(key, expiry)
         }
-        return currentCount >= limit
+        return currentCount > limit
     }
 
     public async checkLimit(entityKey: string): Promise<{
