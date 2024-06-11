@@ -48,7 +48,6 @@ export class USDCPurchaseBuyer extends BaseNotification<USDCPurchaseBuyerRow> {
     notification: USDCPurchaseBuyerRow
   ) {
     super(dnDB, identityDB, notification)
-    logger.info(`asdf constructor`)
     this.amount = formatUSDCWeiToUSDString(
       this.notification.data.amount.toString()
     )
@@ -196,7 +195,7 @@ export class USDCPurchaseBuyer extends BaseNotification<USDCPurchaseBuyerRow> {
         identityDb: this.identityDB
       })
     }
-    logger.info(`asdf this ${this}`)
+
     await sendTransactionalEmail({
       email: userNotificationSettings.getUserEmail(
         this.notificationReceiverUserId
