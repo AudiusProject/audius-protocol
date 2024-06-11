@@ -256,6 +256,7 @@ export type USDCPurchaseBuyerNotification = {
   amount: number
   extra_amount: number
   content_id: number
+  vendor: string
 }
 
 export type USDCPurchaseSellerNotification = {

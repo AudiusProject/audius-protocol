@@ -14,8 +14,6 @@ import { flexRowCentered, makeStyles } from 'app/styles'
 
 import { CollectionDownloadStatusIndicator } from '../offline-downloads/CollectionDownloadStatusIndicator'
 
-import { CollectionDogEar } from './CollectionDogEar'
-
 export type CardType = 'user' | 'collection'
 
 const useStyles = makeStyles(({ palette, typography, spacing }) => ({
@@ -104,9 +102,6 @@ export const Card = (props: CardProps) => {
       styles={{ root: style, content: styles.cardContent }}
       {...TileProps}
     >
-      {props.type === 'collection' ? (
-        <CollectionDogEar collectionId={props.id} borderOffset={1} />
-      ) : null}
       {renderImage({
         style: [styles.cardImage, props.type === 'user' && styles.userImage]
       })}

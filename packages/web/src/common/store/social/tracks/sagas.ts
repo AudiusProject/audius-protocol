@@ -685,6 +685,7 @@ function* downloadTracks({
   original?: boolean
   rootDirectoryName?: string
   abortSignal?: AbortSignal
+  userId?: ID
 }) {
   const { trackId: parentTrackId } = tracks[0]
   try {
@@ -694,13 +695,17 @@ function* downloadTracks({
     let queryParams: QueryParams = {}
 
     const nftAccessSignatureMap = yield* select(getNftAccessSignatureMap)
+    const userId = yield* select(getUserId)
     const nftAccessSignature = original
       ? nftAccessSignatureMap[parentTrackId]?.original ?? null
       : nftAccessSignatureMap[parentTrackId]?.mp3 ?? null
+
     queryParams = (yield* call(getQueryParams, {
       audiusBackendInstance,
-      nftAccessSignature
+      nftAccessSignature,
+      userId
     })) as unknown as QueryParams
+
     queryParams.original = original
 
     const files = tracks.map(({ trackId, filename }) => {
