@@ -23,7 +23,8 @@ import {
   formatSeconds,
   formatDate,
   getDogEarType,
-  Nullable
+  Nullable,
+  formatReleaseDate
 } from '@audius/common/utils'
 import {
   Flex,
@@ -56,7 +57,6 @@ import { GatedContentSection } from 'components/track/GatedContentSection'
 import { UserGeneratedText } from 'components/user-generated-text'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 import { moodMap } from 'utils/Moods'
-import { getLocalTimezone } from 'utils/dateUtils'
 import { isDarkMode } from 'utils/theme/theme'
 import { trpc } from 'utils/trpcClientWeb'
 
@@ -77,9 +77,7 @@ const messages = {
   artworkAltText: 'Track Artwork',
   hidden: 'Hidden',
   releases: (releaseDate: string) =>
-    `Releases ${moment(releaseDate).format(
-      'M/D/YY [@] h:mm A'
-    )} ${getLocalTimezone()}`
+    `Releases ${formatReleaseDate({ date: releaseDate, withHour: true })}`
 }
 
 type PlayButtonProps = {
