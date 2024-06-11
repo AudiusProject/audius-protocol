@@ -618,8 +618,7 @@ class TrackStreamUrl(Resource):
 
 
 # Stream
-
-stream_parser = reqparse.RequestParser(argument_class=DescriptiveArgument)
+stream_parser = current_user_parser.copy()
 stream_parser.add_argument(
     "preview",
     description="""Optional - true if streaming track preview""",
@@ -693,6 +692,7 @@ class TrackStream(Resource):
         """
         request_args = stream_parser.parse_args()
         is_preview = request_args.get("preview")
+        user_id = get_current_user_id(request_args)
         user_data = request_args.get("user_data")
         user_signature = request_args.get("user_signature")
         nft_access_signature = request_args.get("nft_access_signature")
@@ -725,6 +725,7 @@ class TrackStream(Resource):
             {
                 "track": track,
                 "is_preview": is_preview,
+                "user_id": user_id,
                 "user_data": user_data,
                 "user_signature": user_signature,
                 "nft_access_signature": nft_access_signature,
@@ -791,7 +792,7 @@ class TrackStream(Resource):
 
 # Download
 
-download_parser = reqparse.RequestParser(argument_class=DescriptiveArgument)
+download_parser = current_user_parser.copy()
 download_parser.add_argument(
     "user_signature",
     description="""Optional - signature from the requesting user's wallet.
@@ -845,6 +846,7 @@ class TrackDownload(Resource):
         Download the original or MP3 file of a track.
         """
         request_args = download_parser.parse_args()
+        user_id = get_current_user_id(request_args)
         decoded_id = decode_with_abort(track_id, ns)
         info = get_track_access_info(decoded_id)
         track = info.get("track")
@@ -862,6 +864,7 @@ class TrackDownload(Resource):
                 "track": track,
                 "is_original": request_args.get("original"),
                 "filename": request_args.get("filename"),
+                "user_id": user_id,
                 "user_data": request_args.get("user_data"),
                 "user_signature": request_args.get("user_signature"),
                 "nft_access_signature": request_args.get("nft_access_signature"),
