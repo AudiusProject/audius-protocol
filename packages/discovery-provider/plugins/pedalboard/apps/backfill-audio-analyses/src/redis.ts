@@ -61,6 +61,24 @@ export const readDbOffset = async (
   }
 }
 
+type DiscoveryNode = {
+  delegateOwnerWallet: string
+  endpoint: string
+}
+
+export const getCachedDiscoveryNodes = async () => {
+  const redis = await getRedisConnection()
+  const key = 'all-discovery-nodes-with-wallets'
+  const json = await redis.get(key)
+  return parseArray(json).filter(
+    (p): p is DiscoveryNode =>
+      'delegateOwnerWallet' in p &&
+      'endpoint' in p &&
+      typeof p.delegateOwnerWallet === 'string' &&
+      typeof p.endpoint === 'string'
+  )
+}
+
 type ContentNode = {
   delegateOwnerWallet: string
   endpoint: string

@@ -6,7 +6,7 @@ import { Knex } from 'knex'
 import { App } from '@pedalboard/basekit'
 import { config } from '.'
 import { SharedData } from './index'
-import { storeDbOffset, readDbOffset, getCachedHealthyContentNodes } from './redis'
+import { storeDbOffset, readDbOffset, getCachedDiscoveryNodes, getCachedHealthyContentNodes } from './redis'
 
 // Batch size for fetching tracks
 const BACKFILL_BATCH_SIZE = 1000;
@@ -15,12 +15,14 @@ const BACKFILL_BATCH_SIZE = 1000;
 const MAX_CONCURRENT_REQUESTS = 10;
 const semaphore = new Semaphore(MAX_CONCURRENT_REQUESTS);
 
-const BACKFILL_NODES = [
-  "https://discoveryprovider.audius.co",
-  "https://discoveryprovider2.audius.co",
-  "https://discoveryprovider3.audius.co"
-]
-
+let BACKFILL_NODES = config.environment == 'prod' 
+  ? 
+    [
+      "https://discoveryprovider.audius.co",
+      "https://discoveryprovider2.audius.co",
+      "https://discoveryprovider3.audius.co"
+    ]
+  : []
 const DEFAULT_BPM = 0
 const DEFAULT_MUSICAL_KEY = '-'
 const POLL_STATUS_INTERVAL = 5000 // 5s
@@ -140,7 +142,7 @@ async function fetchTracks(offset: number, limit: number, nodeId: number, db: Kn
     .whereNull('musical_key')
     .whereNull('bpm')
     .andWhere('audio_analysis_error_count', 0)
-    .andWhere(db.raw('(track_id % 3) = ?', [nodeId]))
+    .andWhere(db.raw('(track_id % ?) = ?', [BACKFILL_NODES.length, nodeId]))
     .orderBy('track_id')
     .offset(offset)
     .limit(limit);
@@ -207,6 +209,9 @@ export const backfill = async (app: App<SharedData>) => {
   const { libs } = app.viewAppData()
   const db = app.getDnDb()
   const myUrl = config.url
+  if (BACKFILL_NODES.length == 0) {
+    BACKFILL_NODES = (await getCachedDiscoveryNodes()).map(node => node.endpoint)
+  }
   const nodeId = BACKFILL_NODES.indexOf(myUrl)
 
   if (nodeId == -1) {
