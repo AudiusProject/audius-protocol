@@ -40,7 +40,6 @@ type ButtonCorners = 'rounded' | 'pill'
 
 export type ButtonProps = Omit<RNButtonProps, 'title'> &
   PressableProps & {
-    iconRight?: ComponentType<SvgProps>
     iconLeft?: ComponentType<SvgProps>
     iconRight?: ComponentType<SvgProps>
     IconProps?: SvgProps

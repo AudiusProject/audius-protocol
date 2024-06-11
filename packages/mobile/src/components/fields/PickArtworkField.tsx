@@ -109,8 +109,7 @@ export const PickArtworkField = (props: PickArtworkFieldProps) => {
           <Button
             variant='secondaryAlt'
             size='large'
-            iconRight={IconPencil}
-            iconPosition='left'
+            iconLeft={IconPencil}
             onPress={onPress ?? handleChangeArtwork}
           >
             {buttonTitle ||

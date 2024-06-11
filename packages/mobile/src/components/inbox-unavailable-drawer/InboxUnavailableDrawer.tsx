@@ -211,8 +211,7 @@ const DrawerContent = ({ data, onClose }: DrawerContentProps) => {
             key={messages.sendAudio}
             onPress={handleTipPress}
             variant={'primary'}
-            iconRight={IconTipping}
-            iconPosition='left'
+            iconLeft={IconTipping}
             styles={{
               root: styles.button,
               text: styles.buttonText

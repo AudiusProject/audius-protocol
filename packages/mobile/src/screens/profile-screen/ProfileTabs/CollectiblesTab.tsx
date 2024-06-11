@@ -162,8 +162,7 @@ export const CollectiblesTab = () => {
             fullWidth
             variant='commonAlt'
             size='small'
-            iconRight={IconShare}
-            iconPosition='left'
+            iconLeft={IconShare}
             IconProps={{ height: 15, width: 15 }}
             styles={{ icon: styles.shareButtonIcon }}
             onPress={handlePressShare}

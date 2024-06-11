@@ -141,7 +141,6 @@ export const SendTipScreen = () => {
         size='large'
         onPress={handleSendTip}
         iconRight={IconArrowRight}
-        iconPosition='right'
         fullWidth
         disabled={
           !tipAmount || tipAmountWei.lte(zeroWei) || hasInsufficientBalance

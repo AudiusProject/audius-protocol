@@ -46,8 +46,7 @@ export const TipAudioButton = () => {
       accessibilityLabel={
         Platform.OS === 'ios' ? messages.labelAlt : messages.label
       }
-      iconRight={IconTokenGold}
-      iconPosition='left'
+      iconLeft={IconTokenGold}
       fullWidth
       onPress={handlePress}
       styles={{

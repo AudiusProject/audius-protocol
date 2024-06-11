@@ -224,7 +224,6 @@ export const EnterPassword = (props: EnterPasswordProps) => {
         disabled={!isValid || isLoading}
         onPress={handleSubmit}
         iconRight={isLoading ? LoadingSpinner : IconArrowRight}
-        iconPosition='right'
       >
         {submitButtonText}
       </Button>

@@ -201,8 +201,7 @@ export const ArtistRecommendations = (props: ArtistRecommendationsProps) => {
       </View>
       <Button
         variant='primary'
-        iconRight={isFollowingAllArtists ? IconUserFollowing : IconUserFollow}
-        iconPosition='left'
+        iconLeft={isFollowingAllArtists ? IconUserFollowing : IconUserFollow}
         fullWidth
         onPress={handlePressFollow}
         styles={{

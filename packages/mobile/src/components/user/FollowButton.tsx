@@ -52,8 +52,7 @@ export const FollowButton = (props: FollowButtonsProps) => {
       style={style}
       haptics={!isFollowing}
       variant={variant}
-      iconRight={noIcon ? undefined : Icon}
-      iconPosition='left'
+      iconLeft={noIcon ? undefined : Icon}
       size='small'
       onPress={handlePress}
       {...other}

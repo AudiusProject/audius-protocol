@@ -309,7 +309,7 @@ export const AccountVerificationScreen = () => {
         <SocialButton
           color={'#1BA1F1'}
           fullWidth
-          iconRight={IconTwitter}
+          iconLeft={IconTwitter}
           onPress={handleTwitterPress}
           styles={{ root: styles.socialButtonContainer }}
         >
@@ -320,7 +320,7 @@ export const AccountVerificationScreen = () => {
       {isInstagramEnabled ? (
         <SocialButton
           fullWidth
-          iconRight={IconInstagram}
+          iconLeft={IconInstagram}
           onPress={handleInstagramPress}
           styles={{ root: styles.socialButtonContainer }}
         >
@@ -372,7 +372,6 @@ export const AccountVerificationScreen = () => {
         }}
         onPress={goBacktoProfile}
         iconRight={IconNote}
-        iconPosition='right'
       >
         {messages.backButtonText}
       </Button>

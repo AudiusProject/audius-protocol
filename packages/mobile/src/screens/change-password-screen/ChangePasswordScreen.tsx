@@ -146,7 +146,6 @@ const ChangePasswordNavigator = ({
                 ? IconLock
                 : IconArrowRight
             }
-            iconPosition='right'
             disabled={isSubmitting}
             onPress={() => {
               handleSubmit()

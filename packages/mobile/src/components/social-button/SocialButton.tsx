@@ -24,7 +24,6 @@ export const SocialButton = (props: SocialButtonProps) => {
 
   return (
     <Button
-      iconPosition={'left'}
       {...props}
       styles={{
         button: [styles.button, props.styles?.button],

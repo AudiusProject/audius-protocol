@@ -265,7 +265,6 @@ export const TrendingRewardsDrawer = (titleIcon) => {
               variant='primary'
               size='large'
               iconRight={IconArrowRight}
-              iconPosition='right'
               fullWidth
               onPress={handleGoToTrending}
               styles={{ button: styles.button }}

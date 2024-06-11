@@ -55,8 +55,7 @@ export const NewVersionPrompt = ({
       {!url && !onPress ? null : (
         <Button
           size='large'
-          iconRight={IconCloudDownload}
-          iconPosition='left'
+          iconLeft={IconCloudDownload}
           url={url}
           onPress={onPress}
         >

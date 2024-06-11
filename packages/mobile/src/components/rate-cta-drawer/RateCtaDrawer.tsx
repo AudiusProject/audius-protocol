@@ -121,8 +121,7 @@ export const RateCtaDrawer = () => {
               {messages.enjoyingText}
             </Text>
             <Button
-              iconRight={IconThumbsUp}
-              iconPosition='left'
+              iconLeft={IconThumbsUp}
               fullWidth
               styles={{
                 root: styles.buttonRoot,
@@ -135,8 +134,7 @@ export const RateCtaDrawer = () => {
               {messages.confirmText}
             </Button>
             <Button
-              iconRight={IconThumbsDown}
-              iconPosition='left'
+              iconLeft={IconThumbsDown}
               fullWidth
               styles={{
                 root: styles.buttonRoot,

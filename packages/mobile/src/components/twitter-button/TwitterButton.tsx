@@ -109,8 +109,7 @@ export const TwitterButton = (props: TwitterButtonProps) => {
   return (
     <Button
       style={[styles.root, style]}
-      iconRight={IconTwitter}
-      iconPosition='left'
+      iconLeft={IconTwitter}
       url={
         other.type === 'static'
           ? makeTwitterShareUrl(url, other.shareText)
