@@ -40,6 +40,6 @@ export const readConfig = (): Config => {
     delegateOwnerWallet: env.audius_delegate_owner_wallet,
     delegatePrivateKey: env.audius_delegate_private_key,
     redisUrl: env.audius_redis_url,
-    testRun: env.test_run === "true"
+    testRun: env.test_run === 'true'
   }
 }

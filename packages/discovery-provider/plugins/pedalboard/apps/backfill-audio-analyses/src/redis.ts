@@ -30,14 +30,12 @@ export const getRedisConnection = async () => {
   return redisClient
 }
 
-export const storeDbOffset = async (
-  offset: number
-) => {
+export const storeDbOffset = async (offset: number) => {
   try {
     const redis = await getRedisConnection()
     await redis.set(DB_OFFSET_KEY, offset.toString())
   } catch (e) {
-    logger.error({ error: e }, "could not store db offset")
+    logger.error({ error: e }, 'could not store db offset')
   }
 }
 
@@ -50,7 +48,7 @@ export const readDbOffset = async (): Promise<number | null> => {
     if (cacheValue == null) return null
     return parseInt(cacheValue, 10)
   } catch (e) {
-    logger.error({ error: e }, "could not read db offset")
+    logger.error({ error: e }, 'could not read db offset')
     return null
   }
 }

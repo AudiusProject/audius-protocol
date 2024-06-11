@@ -4,15 +4,13 @@ import { App } from '@pedalboard/basekit'
 import { backfill } from './backfill'
 
 export type SharedData = {
-  config: Config;
+  config: Config
 }
 
 export const config = readConfig()
 
 const main = async () => {
-  await new App<SharedData>({})
-    .task(backfill)
-    .run()
+  await new App<SharedData>({}).task(backfill).run()
 }
 
 main().catch(logger.error.bind(logger))
