@@ -1,3 +1,4 @@
+import { AudiusLibs } from '@audius/sdk'
 import axios from 'axios';
 import { ethers } from 'ethers';
 import { Semaphore } from 'await-semaphore';
@@ -69,7 +70,7 @@ function shuffleArray(array: string[]): string[] {
   return array;
 }
 
-async function analyzeAudio(contentNodes: string[], track: Track): Promise<void> {
+async function analyzeAudio(libs: AudiusLibs, contentNodes: string[], track: Track): Promise<void> {
   const audioUploadId = track.audio_upload_id;
 
   const release = await semaphore.acquire(); // Acquire a semaphore permit
@@ -110,11 +111,11 @@ async function analyzeAudio(contentNodes: string[], track: Track): Promise<void>
         // Handle the result based on analysis status
         if (audioAnalysisStatus === 'timeout' || audioAnalysisStatus === 'error' || (audioAnalysisStatus === '' && analysisResult.status === 'audio_analysis')) {
           // Audio analysis job ran and errored, or we timed out waiting for an update from the content node
-          await writeToChain(track.track_id, DEFAULT_MUSICAL_KEY, DEFAULT_BPM, (track.audio_analysis_error_count || 0) + 1);
+          await writeToChain(libs, track.track_id, DEFAULT_MUSICAL_KEY, DEFAULT_BPM, (track.audio_analysis_error_count || 0) + 1);
         } else if (audioAnalysisStatus === 'done') {
           const bpm = analysisResult.audio_analysis_results.bpm || DEFAULT_BPM;
           const key = analysisResult.audio_analysis_results.key || DEFAULT_MUSICAL_KEY;
-          await writeToChain(track.track_id, key, bpm, track.audio_analysis_error_count || 0);
+          await writeToChain(libs, track.track_id, key, bpm, track.audio_analysis_error_count || 0);
         }
       } else {
         console.log(`Received ${response.status} response from ${contentNodeEndpoint}. Trying next node in rendezvous order`)
@@ -146,7 +147,7 @@ async function fetchTracks(offset: number, limit: number, nodeId: number, db: Kn
 }
 
 // Backfill BACKFILL_BATCH_SIZE tracks at a time
-async function processBatches(nodeId: number, db: Knex): Promise<void> {
+async function processBatches(libs: AudiusLibs, db: Knex, nodeId: number): Promise<void> {
   let offset
   while (true) {
     console.time('Batch processing time');
@@ -167,7 +168,7 @@ async function processBatches(nodeId: number, db: Knex): Promise<void> {
       console.timeEnd('Batch processing time');
       break;
     }
-    const analyzePromises = tracks.map(track => analyzeAudio(endpoints, track));
+    const analyzePromises = tracks.map(track => analyzeAudio(libs, endpoints, track));
     await Promise.all(analyzePromises);
 
     offset += BACKFILL_BATCH_SIZE;
@@ -181,13 +182,29 @@ async function processBatches(nodeId: number, db: Knex): Promise<void> {
   console.log("No more tracks to backfill. Terminating...")
 }
 
-// Mock writeToChain function
-async function writeToChain(trackId: number, musicalKey: string, bpm: number, errorCount: number): Promise<void> {
-  // Implement your chain writing logic here
+async function writeToChain(libs: AudiusLibs, trackId: number, musicalKey: string, bpm: number, errorCount: number): Promise<void> {
   console.log(`Writing to chain: ${trackId}, Key: ${musicalKey}, BPM: ${bpm}, Errors: ${errorCount}`);
+  const trackUpdate = {
+    track_id: trackId,
+    musical_key: musicalKey,
+    bpm: bpm,
+    audio_analysis_error_count: errorCount,
+  }
+  const res = await libs.contracts!.EntityManagerClient!.manageEntity(
+    0, // userId
+    // @ts-ignore
+    'Track', // EntityManagerClient.EntityType.TRACK,
+    0, // userId
+    // @ts-ignore
+    'Update', // EntityManagerClient.Action.UPDATE,
+    JSON.stringify(trackUpdate),
+    config.delegatePrivateKey
+  )
+  console.log({ res })
 }
 
 export const backfill = async (app: App<SharedData>) => {
+  const { libs } = app.viewAppData()
   const db = app.getDnDb()
   const myUrl = config.url
   const nodeId = BACKFILL_NODES.indexOf(myUrl)
@@ -197,5 +214,5 @@ export const backfill = async (app: App<SharedData>) => {
     return
   }
 
-  await processBatches(nodeId, db)
+  await processBatches(libs, db, nodeId)
 }

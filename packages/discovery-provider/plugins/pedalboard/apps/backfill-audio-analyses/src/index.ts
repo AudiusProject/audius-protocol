@@ -1,17 +1,25 @@
+import { AudiusLibs } from "@audius/sdk";
 import { Config, readConfig } from './config'
 import { logger } from './logger'
 import { App } from '@pedalboard/basekit'
-import { backfillAudioAnalyses } from './backfill'
+import { backfill } from './backfill'
+import { initAudiusLibs } from './libs'
 
 export type SharedData = {
-  config: Config
+  config: Config;
+  libs: AudiusLibs;
 }
 
 export const config = readConfig()
 
 const main = async () => {
-  await new App<SharedData>({})
-    .task(backfillAudioAnalyses)
+  const libs = await initAudiusLibs()
+  const appData: SharedData = {
+    config,
+    libs
+  }
+  await new App<SharedData>({ appData })
+    .task(backfill)
     .run()
 }
 
