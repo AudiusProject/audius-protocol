@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from "express"
 import { RedisClientType } from "redis"
 import { getIP } from "../utils/ipData"
 import { getRedisConnection } from "../redis"
+import { config } from "../config"
 
 export class RateLimiter {
     private hourlyLimit: number
@@ -46,7 +47,7 @@ export class RateLimiter {
     }
 }
 
-const listensRateLimiter = new RateLimiter("listens-rate-limit", 100, 1000, 5000)
+const listensRateLimiter = new RateLimiter("listens-rate-limit", config.listensHourlyRateLimit, config.listensDailyRateLimit, config.listensWeeklyRateLimit)
 
 export const rateLimitMiddleware = async (req: Request, res: Response, next: NextFunction) => {
     const logger = res.locals.logger

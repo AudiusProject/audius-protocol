@@ -44,6 +44,9 @@ type Config = {
   ipdataApiKey: string | null
   listensValidSigner: string
   solanaSignerPrivateKey: string
+  listensHourlyRateLimit: number
+  listensDailyRateLimit: number
+  listensWeeklyRateLimit: number
 }
 
 let cachedConfig: Config | null = null
@@ -117,7 +120,10 @@ const readConfig = (): Config => {
     audius_solana_signer_private_key: str({
       default:
         'd242765e718801781440d77572b9dafcdc9baadf0269eff24cf61510ddbf1003'
-    })
+    }),
+    audius_solana_listens_hourly_rate_limit: num({ default: 10 }),
+    audius_solana_listens_daily_rate_limit: num({ default: 40 }),
+    audius_solana_listens_weekly_rate_limit: num({ default: 120 })
   })
   const solanaFeePayerWalletsParsed = env.audius_solana_fee_payer_wallets
   let solanaFeePayerWallets: Keypair[] = []
@@ -150,7 +156,10 @@ const readConfig = (): Config => {
       env.audius_ipdata_api_key === '' ? null : env.audius_ipdata_api_key,
     listensValidSigner: env.audius_solana_listens_valid_signer,
     ethRegistryProgramId: env.audius_solana_eth_registry_program,
-    solanaSignerPrivateKey: env.audius_solana_signer_private_key
+    solanaSignerPrivateKey: env.audius_solana_signer_private_key,
+    listensHourlyRateLimit: env.audius_solana_listens_hourly_rate_limit,
+    listensDailyRateLimit: env.audius_solana_listens_daily_rate_limit,
+    listensWeeklyRateLimit: env.audius_solana_listens_weekly_rate_limit
   }
   return readConfig()
 }
