@@ -9,6 +9,7 @@ export type OptionsFilterButtonOption = {
    * The label to display. If not provided, uses the value.
    */
   label?: string
+  helperText?: string
   icon?: IconComponent
   leadingElement?: JSX.Element
 }
