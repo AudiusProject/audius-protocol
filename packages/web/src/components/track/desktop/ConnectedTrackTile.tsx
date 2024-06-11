@@ -145,12 +145,6 @@ const ConnectedTrackTile = ({
     is_deactivated: isOwnerDeactivated
   } = getUserWithFallback(user)
 
-  const currentUserId = useGetCurrentUserId({})
-  useGetTrackStreamUrl({
-    id: trackId,
-    currentUserId: currentUserId?.data
-  })
-
   const isActive = uid === playingUid
   const isTrackBuffering = isActive && isBuffering
   const isTrackPlaying = isActive && isPlaying

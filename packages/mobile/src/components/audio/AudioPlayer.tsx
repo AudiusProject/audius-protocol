@@ -172,7 +172,7 @@ export const AudioPlayer = () => {
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
   )
   const { isEnabled: isPerformanceExperimentEnabled } = useFeatureFlag(
-    FeatureFlags.SKIP_STREAM_CHECK
+    FeatureFlags.PREFETCH_STREAM_URLS
   )
   const track = useSelector(getCurrentTrack)
   const playing = useSelector(getPlaying)

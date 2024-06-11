@@ -102,7 +102,7 @@ export const PlayButton = ({ isActive, ...props }: PlayButtonProps) => {
     FeatureFlags.USE_RN_VIDEO_PLAYER
   )
   const { isEnabled: usePrefetchTrack } = useFeatureFlag(
-    FeatureFlags.SKIP_STREAM_CHECK // TODO: this is not the correct flag have to wait for optimizely to fix their shit
+    FeatureFlags.PREFETCH_STREAM_URLS
   )
   const animatedIcons = useAnimatedIcons(useRNVideoPlayer, usePrefetchTrack)()
 

@@ -2,6 +2,8 @@ import { FetchNFTClient } from '@audius/fetch-nft'
 import type { AudiusSdk } from '@audius/sdk'
 import { Location } from 'history'
 
+import { AudiusQueryContextType } from '~/audius-query'
+
 import {
   AllTrackingEvents,
   AnalyticsEvent,
@@ -79,4 +81,5 @@ export type CommonStoreContext = {
     ) => Promise<{ file: File; url: string }>
   }
   isMobile: boolean
+  audiusQueryContext: AudiusQueryContextType
 }

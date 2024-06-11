@@ -11,12 +11,18 @@ import {
   ADD_SUCCEEDED
 } from '../actions'
 
-import { SET_PERMALINK, setPermalink } from './actions'
+import {
+  SET_PERMALINK,
+  SET_STREAM_URL,
+  setPermalink,
+  setStreamUrl
+} from './actions'
 import { TracksCacheState } from './types'
 
 const initialState: TracksCacheState = {
   ...(initialCacheState as unknown as Cache<Track>),
-  permalinks: {}
+  permalinks: {},
+  streamUrls: {}
 }
 
 const addEntries = (state: TracksCacheState, entries: any[]) => {
@@ -68,6 +74,18 @@ const actionsMap = {
     return {
       ...state,
       permalinks: { ...state.permalinks, [permalink.toLowerCase()]: trackId }
+    }
+  },
+  [SET_STREAM_URL](
+    state: TracksCacheState,
+    action: ReturnType<typeof setStreamUrl>
+  ): TracksCacheState {
+    const { streamUrl, trackId } = action
+
+    if (!streamUrl) return state
+    return {
+      ...state,
+      streamUrls: { ...state.streamUrls, [trackId]: streamUrl }
     }
   }
 }

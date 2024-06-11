@@ -156,3 +156,6 @@ export function getId(state: CommonState, props: { kind: Kind; uid: UID }) {
 export function getEntryTTL(state: CommonState) {
   return state.users.entryTTL
 }
+
+export const getTrackStreamUrl = (state: CommonState, trackId: ID) =>
+  state.tracks.streamUrls[trackId]

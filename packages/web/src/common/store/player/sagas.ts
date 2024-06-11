@@ -1,4 +1,4 @@
-import { getTrackStreamUrl } from '@audius/common/api'
+import { cacheSelectors } from '@audius/common/store'
 import { Kind } from '@audius/common/models'
 import { FeatureFlags, QueryParams } from '@audius/common/services'
 import {
@@ -43,7 +43,7 @@ import errorSagas from './errorSagas'
 const { getUserId } = accountSelectors
 const { setTrackPosition } = playbackPositionActions
 const { getTrackPosition } = playbackPositionSelectors
-
+const { getTrackStreamUrl } = cacheSelectors
 const {
   play,
   playSucceeded,
@@ -121,7 +121,7 @@ export function* watchPlay() {
 
       const usePrefetchStreamUrls = yield* call(
         getFeatureEnabled,
-        FeatureFlags.SKIP_STREAM_CHECK // TODO: replace with correct feature flag
+        FeatureFlags.PREFETCH_STREAM_URLS
       )
 
       const { shouldSkip, shouldPreview } = calculatePlayerBehavior(
@@ -140,10 +140,7 @@ export function* watchPlay() {
         trackDuration = getTrackPreviewDuration(track)
       }
 
-      const streamUrl = yield* select(getTrackStreamUrl, {
-        trackId,
-        currentUserId
-      })
+      const streamUrl = yield* select(getTrackStreamUrl, track.track_id)
 
       const mp3Url = apiClient.makeUrl(
         `/tracks/${encodedTrackId}/stream`,
@@ -153,6 +150,7 @@ export function* watchPlay() {
       const isLongFormContent =
         track.genre === Genre.PODCASTS || track.genre === Genre.AUDIOBOOKS
 
+      const url = usePrefetchStreamUrls && streamUrl ? streamUrl : mp3Url
       const endChannel = eventChannel((emitter) => {
         audioPlayer.load(
           trackDuration ||
@@ -177,7 +175,7 @@ export function* watchPlay() {
               )
             }
           },
-          usePrefetchStreamUrls && streamUrl ? streamUrl : mp3Url
+          url
         )
         return () => {}
       })
