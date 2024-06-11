@@ -49,7 +49,7 @@ export const ContinueButton = (props: ContinueButtonProps) => {
         size='large'
         fullWidth
         disabled={!hasFollowedEnoughArtists}
-        icon={IconArrowRight}
+        iconRight={IconArrowRight}
       >
         {messages.continue}
       </Button>

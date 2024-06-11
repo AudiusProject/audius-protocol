@@ -58,8 +58,7 @@ export const VipDiscordDrawer = () => {
           style={styles.launchDiscord}
           variant='primary'
           size='medium'
-          iconPosition='left'
-          icon={IconDiscord}
+          iconLeft={IconDiscord}
           url={AUDIUS_DISCORD_LINK}
         >
           {messages.launchDiscord}

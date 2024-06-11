@@ -86,7 +86,7 @@ export const TikTokAuthButton = (props: TikTokAuthButtonProps) => {
     <SocialButton
       color={'#FE2C55'}
       fullWidth
-      icon={IconTikTok}
+      iconRight={IconTikTok}
       onPress={handleTikTokPress}
       {...buttonProps}
     >

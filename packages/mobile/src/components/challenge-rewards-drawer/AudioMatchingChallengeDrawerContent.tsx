@@ -58,12 +58,12 @@ const ctaButtonProps: {
   >
 } = {
   [ChallengeName.AudioMatchingBuy]: {
-    icon: IconArrowRight,
+    iconRight: IconArrowRight,
     iconPosition: 'right',
     children: messages.viewPremiumTracks
   },
   [ChallengeName.AudioMatchingSell]: {
-    icon: IconCloudUpload,
+    iconRight: IconCloudUpload,
     iconPosition: 'left',
     children: messages.uploadTrack
   }
@@ -140,7 +140,7 @@ export const AudioMatchingChallengeDrawerContent = ({
             disabled={claimInProgress}
             variant='primary'
             onPress={onClaim}
-            icon={claimInProgress ? LoadingSpinner : IconArrowRight}
+            iconRight={claimInProgress ? LoadingSpinner : IconArrowRight}
             iconPosition='right'
             fullWidth
           >

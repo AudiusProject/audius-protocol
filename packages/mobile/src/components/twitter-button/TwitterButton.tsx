@@ -109,7 +109,7 @@ export const TwitterButton = (props: TwitterButtonProps) => {
   return (
     <Button
       style={[styles.root, style]}
-      icon={IconTwitter}
+      iconRight={IconTwitter}
       iconPosition='left'
       url={
         other.type === 'static'

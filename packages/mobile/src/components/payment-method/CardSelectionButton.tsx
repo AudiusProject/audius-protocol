@@ -29,7 +29,7 @@ export const CardSelectionButton = ({
     <TouchableOpacity onPress={handlePress}>
       <Button
         variant='commonAlt'
-        icon={IconCaretDown}
+        iconRight={IconCaretDown}
         size='small'
         IconProps={{ width: spacing(4), height: spacing(4) }}
         styles={{

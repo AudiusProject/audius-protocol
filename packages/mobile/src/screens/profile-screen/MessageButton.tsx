@@ -45,7 +45,7 @@ export const MessageButton = (props: MessageButtonProps) => {
     <Button
       style={styles.root}
       noText
-      icon={IconMessage}
+      iconRight={IconMessage}
       variant={'common'}
       size='small'
       onPress={handlePress}

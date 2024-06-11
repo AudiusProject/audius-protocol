@@ -71,7 +71,7 @@ export const ApiRewardsDrawer = () => {
         <Button
           variant='primary'
           size='large'
-          icon={IconArrowRight}
+          iconRight={IconArrowRight}
           url={AUDIUS_API_LINK}
           styles={{ button: styles.button, text: styles.buttonText }}
           fullWidth

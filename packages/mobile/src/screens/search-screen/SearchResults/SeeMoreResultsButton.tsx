@@ -36,7 +36,7 @@ export const SeeMoreResultsButton = () => {
         size='small'
         fullWidth
         onPress={handlePress}
-        icon={IconArrowRight}
+        iconRight={IconArrowRight}
       >
         {messages.more}
       </Button>

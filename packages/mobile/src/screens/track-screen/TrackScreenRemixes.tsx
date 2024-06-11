@@ -81,7 +81,7 @@ export const TrackScreenRemixes = ({
         })}
       </View>
       <Button
-        icon={IconArrowRight}
+        iconRight={IconArrowRight}
         variant='primary'
         size='medium'
         onPress={onPressGoToRemixes}

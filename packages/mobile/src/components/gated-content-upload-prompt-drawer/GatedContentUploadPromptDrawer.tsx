@@ -140,7 +140,7 @@ export const GatedContentUploadPromptDrawer = ({
             text: styles.buttonText
           }}
           size='large'
-          icon={IconArrowRight}
+          iconRight={IconArrowRight}
           fullWidth
         >
           {messages.checkItOut}

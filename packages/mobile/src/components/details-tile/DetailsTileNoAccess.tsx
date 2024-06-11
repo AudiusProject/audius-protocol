@@ -308,8 +308,7 @@ export const DetailsTileNoAccess = ({
             style={styles.mainButton}
             styles={{ icon: { width: spacing(4), height: spacing(4) } }}
             size='large'
-            iconPosition='right'
-            icon={IconExternalLink}
+            iconRight={IconExternalLink}
             onPress={handlePressCollection}
             fullWidth
           >
@@ -330,8 +329,7 @@ export const DetailsTileNoAccess = ({
             style={styles.mainButton}
             styles={{ icon: { width: spacing(4), height: spacing(4) } }}
             size='large'
-            iconPosition='left'
-            icon={IconUserFollow}
+            iconLeft={IconUserFollow}
             onPress={handleFollowArtist}
             fullWidth
           >
@@ -353,8 +351,7 @@ export const DetailsTileNoAccess = ({
             style={styles.mainButton}
             styles={{ icon: { width: spacing(4), height: spacing(4) } }}
             size='large'
-            iconPosition='right'
-            icon={IconTipping}
+            iconRight={IconTipping}
             onPress={handleSendTip}
             fullWidth
           >

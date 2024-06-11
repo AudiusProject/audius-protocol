@@ -124,7 +124,7 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
             <Button
               variant='primary'
               size='large'
-              icon={IconArrowRight}
+              iconRight={IconArrowRight}
               fullWidth
               onPress={() => {
                 handleSubmit()

@@ -98,7 +98,7 @@ export const ConfirmSendTipScreen = ({
         variant='primary'
         size='large'
         onPress={handleConfirm}
-        icon={inProgress ? LoadingSpinner : IconCheck}
+        iconRight={inProgress ? LoadingSpinner : IconCheck}
         disabled={inProgress}
         iconPosition='right'
         fullWidth

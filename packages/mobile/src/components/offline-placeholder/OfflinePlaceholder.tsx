@@ -69,7 +69,7 @@ export const OfflinePlaceholder = (props: OfflinePlaceholderProps) => {
       <Button
         disabled={isRefreshing}
         fullWidth
-        icon={IconRefresh}
+        iconRight={IconRefresh}
         iconPosition='left'
         onPress={handleRefresh}
         styles={{ root: styles.button, icon: styles.icon }}

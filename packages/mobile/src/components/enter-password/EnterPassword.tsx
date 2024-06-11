@@ -223,7 +223,7 @@ export const EnterPassword = (props: EnterPasswordProps) => {
         fullWidth
         disabled={!isValid || isLoading}
         onPress={handleSubmit}
-        icon={isLoading ? LoadingSpinner : IconArrowRight}
+        iconRight={isLoading ? LoadingSpinner : IconArrowRight}
         iconPosition='right'
       >
         {submitButtonText}

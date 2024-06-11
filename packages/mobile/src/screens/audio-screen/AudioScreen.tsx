@@ -309,9 +309,8 @@ export const AudioScreen = () => {
             button: styles.button
           }}
           variant='commonAlt'
-          iconPosition='left'
+          iconLeft={IconSend}
           size='medium'
-          icon={IconSend}
           onPress={handlePressSend}
         >
           {messages.send}
@@ -323,9 +322,8 @@ export const AudioScreen = () => {
             button: styles.button
           }}
           variant='commonAlt'
-          iconPosition='left'
+          iconLeft={IconReceive}
           size='medium'
-          icon={IconReceive}
           onPress={handlePressReceive}
         >
           {messages.receive}
@@ -337,9 +335,8 @@ export const AudioScreen = () => {
             button: styles.button
           }}
           variant='commonAlt'
-          iconPosition='left'
+          iconLeft={IconWallet}
           size='medium'
-          icon={IconWallet}
           onPress={handlePressManageWallets}
         >
           {messages.externalWallets}
@@ -457,8 +454,7 @@ export const AudioScreen = () => {
           }}
           variant='commonAlt'
           size='medium'
-          iconPosition='left'
-          icon={IconDiscord}
+          iconLeft={IconDiscord}
           onPress={onPressLaunchDiscord}
         >
           {messages.launchDiscord}

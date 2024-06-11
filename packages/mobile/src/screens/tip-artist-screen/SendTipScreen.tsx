@@ -140,7 +140,7 @@ export const SendTipScreen = () => {
         variant='primary'
         size='large'
         onPress={handleSendTip}
-        icon={IconArrowRight}
+        iconRight={IconArrowRight}
         iconPosition='right'
         fullWidth
         disabled={

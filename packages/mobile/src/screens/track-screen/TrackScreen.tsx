@@ -148,7 +148,7 @@ export const TrackScreen = () => {
             <>
               <View style={styles.buttonContainer}>
                 <Button
-                  icon={IconArrowRight}
+                  iconRight={IconArrowRight}
                   variant='primary'
                   size='small'
                   onPress={handlePressGoToRemixes}

@@ -85,7 +85,7 @@ export const DeactivateAccountConfirmationDrawer = () => {
           }}
           variant='destructive'
           onPress={handleConfirmation}
-          icon={status === Status.LOADING ? LoadingSpinner : undefined}
+          iconRight={status === Status.LOADING ? LoadingSpinner : undefined}
           disabled={status !== Status.IDLE}
         >
           {messages.confirmText}

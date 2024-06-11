@@ -124,7 +124,7 @@ export const SelectTrackScreen = () => {
             fullWidth
             variant='primary'
             size='large'
-            icon={isLoading ? LoadingSpinner : undefined}
+            iconRight={isLoading ? LoadingSpinner : undefined}
             disabled={Boolean(isLoading)}
             onPress={handleSelectTrack}
           >

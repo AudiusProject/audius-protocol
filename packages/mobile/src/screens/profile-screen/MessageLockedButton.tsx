@@ -39,7 +39,7 @@ export const MessageLockedButton = (props: MessageLockedButtonProps) => {
     <Button
       style={styles.root}
       noText
-      icon={IconMessageLocked}
+      iconRight={IconMessageLocked}
       variant={'common'}
       size='small'
       onPress={handlePress}

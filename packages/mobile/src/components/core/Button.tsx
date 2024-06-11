@@ -40,8 +40,9 @@ type ButtonCorners = 'rounded' | 'pill'
 
 export type ButtonProps = Omit<RNButtonProps, 'title'> &
   PressableProps & {
-    icon?: ComponentType<SvgProps>
-    iconPosition?: 'left' | 'right'
+    iconRight?: ComponentType<SvgProps>
+    iconLeft?: ComponentType<SvgProps>
+    iconRight?: ComponentType<SvgProps>
     IconProps?: SvgProps
     fullWidth?: boolean
     noText?: boolean
@@ -295,8 +296,8 @@ export const Button = (props: ButtonProps) => {
     disabled,
     fullWidth,
     haptics,
-    icon: Icon,
-    iconPosition = 'right',
+    iconLeft: IconLeft,
+    iconRight: IconRight,
     IconProps,
     noText,
     onPress,
@@ -414,10 +415,12 @@ export const Button = (props: ButtonProps) => {
     stylesProp?.icon
   ])
 
+  const Icon = IconLeft ?? IconRight
+
   const icon = Icon ? (
     <Icon
       style={[
-        iconPosition === 'left' ? styles.iconLeft : styles.iconRight,
+        IconLeft ? styles.iconLeft : styles.iconRight,
         iconStyles,
         noText && { marginLeft: 0, marginRight: 0 }
       ]}
@@ -461,7 +464,7 @@ export const Button = (props: ButtonProps) => {
         disabled={disabled}
         {...other}
       >
-        {iconPosition !== 'left' ? null : icon}
+        {IconLeft ? icon : null}
         {noText ? null : typeof children === 'string' ? (
           <Text style={[baseStyles.text, styles.text, stylesProp?.text]}>
             {children}
@@ -469,7 +472,7 @@ export const Button = (props: ButtonProps) => {
         ) : (
           children
         )}
-        {iconPosition !== 'right' ? null : icon}
+        {IconRight ? icon : null}
       </PressableComponent>
     </Animated.View>
   )

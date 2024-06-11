@@ -141,7 +141,7 @@ const ChangePasswordNavigator = ({
             fullWidth
             variant='primary'
             size='large'
-            icon={
+            iconRight={
               page === ChangePasswordPage.NewPassword
                 ? IconLock
                 : IconArrowRight

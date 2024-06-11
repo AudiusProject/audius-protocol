@@ -154,8 +154,7 @@ export const CollectibleDetailsDrawer = () => {
               size='large'
               fullWidth
               onPress={handleShare}
-              iconPosition='left'
-              icon={IconShare}
+              iconLeft={IconShare}
               IconProps={{
                 height: spacing(6),
                 width: spacing(6)

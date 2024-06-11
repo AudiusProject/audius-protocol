@@ -430,8 +430,7 @@ const RenderForm = ({
             variant={'primary'}
             size='large'
             color={specialLightGreen}
-            iconPosition='left'
-            icon={isUnlocking ? LoadingSpinner : undefined}
+            iconLeft={isUnlocking ? LoadingSpinner : undefined}
             fullWidth
           >
             {getButtonText(isUnlocking, totalPriceInCents)}
