@@ -15,11 +15,9 @@
     "preset": "jest-presets/jest/node"
   },
   "dependencies": {
-    "@audius/sdk": "*",
     "@pedalboard/basekit": "*",
     "@pedalboard/logger": "*",
     "@pedalboard/storage": "*",
-    "@truffle/hdwallet-provider": "1.7.0",
     "await-semaphore": "0.1.3",
     "axios": "0.19.2",
     "body-parser": "1.19.0",
@@ -29,6 +27,7 @@
     "ethers": "5.7.2",
     "express": "4.17.1",
     "knex": "2.4.2",
+    "lodash": "4.17.21",
     "morgan": "1.10.0",
     "pino": "8.16.1",
     "redis": "4.6.11"
