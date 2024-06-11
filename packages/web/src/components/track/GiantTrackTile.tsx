@@ -63,7 +63,7 @@ import { GatedContentSection } from './GatedContentSection'
 import GiantArtwork from './GiantArtwork'
 import styles from './GiantTrackTile.module.css'
 import { GiantTrackTileProgressInfo } from './GiantTrackTileProgressInfo'
-import InfoLabel from './InfoLabel'
+import { InfoLabel } from './InfoLabel'
 import { PlayPauseButton } from './PlayPauseButton'
 
 const DownloadSection = lazy(() =>
@@ -359,7 +359,6 @@ export const GiantTrackTile = ({
       shouldShow &&
       mood && (
         <InfoLabel
-          className={styles.infoLabelPlacement}
           labelName='mood'
           labelValue={mood in moodMap ? moodMap[mood as Mood] : mood}
         />
@@ -372,11 +371,7 @@ export const GiantTrackTile = ({
 
     return (
       shouldShow && (
-        <InfoLabel
-          className={styles.infoLabelPlacement}
-          labelName='genre'
-          labelValue={getCanonicalName(genre)}
-        />
+        <InfoLabel labelName='genre' labelValue={getCanonicalName(genre)} />
       )
     )
   }
@@ -429,7 +424,6 @@ export const GiantTrackTile = ({
     if (!albumInfo) return null
     return (
       <InfoLabel
-        className={styles.infoLabelPlacement}
         labelName='album'
         labelValue={
           <TextLink to={albumInfo.permalink}>
@@ -444,11 +438,7 @@ export const GiantTrackTile = ({
     return (
       !isUnlisted &&
       released && (
-        <InfoLabel
-          className={styles.infoLabelPlacement}
-          labelName='released'
-          labelValue={formatDate(released)}
-        />
+        <InfoLabel labelName='released' labelValue={formatDate(released)} />
       )
     )
   }
@@ -662,9 +652,8 @@ export const GiantTrackTile = ({
         ) : null}
 
         <div className={cn(styles.bottomSection, fadeIn)}>
-          <div className={styles.infoLabelsSection}>
+          <Flex w='100%' gap='l' wrap='wrap'>
             <InfoLabel
-              className={styles.infoLabelPlacement}
               labelName='duration'
               labelValue={`${formatSeconds(duration)}`}
             />
@@ -672,14 +661,10 @@ export const GiantTrackTile = ({
             {renderGenre()}
             {renderMood()}
             {credits ? (
-              <InfoLabel
-                className={styles.infoLabelPlacement}
-                labelName='credit'
-                labelValue={credits}
-              />
+              <InfoLabel labelName='credit' labelValue={credits} />
             ) : null}
             {renderAlbum()}
-          </div>
+          </Flex>
           {description ? (
             <UserGeneratedText tag='h3' size='s' className={styles.description}>
               {description}
