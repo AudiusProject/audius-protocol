@@ -116,6 +116,7 @@ export const CollectiblesPlaylistPageProvider = ({
   const hasFetchedCollectibles = useRef(false)
   const [hasFetchedAllCollectibles, setHasFetchedAllCollectibles] =
     useState(false)
+
   useEffect(() => {
     const asyncFn = async (cs: Collectible[]) => {
       const collectibleIds = Object.keys(user?.collectibles ?? {})
@@ -136,8 +137,8 @@ export const CollectiblesPlaylistPageProvider = ({
 
       const potentiallyHasAudio = (c: Collectible) =>
         c.hasAudio ||
-        ['mp3', 'wav', 'oga', 'mp4'].some((ext) =>
-          c.animationUrl?.endsWith(ext)
+        ['mp3', 'wav', 'oga', 'mp4'].some(
+          (ext) => c.animationUrl?.endsWith(ext) || c.videoUrl?.endsWith(ext)
         )
 
       const filteredAndSortedCollectibles = cs
@@ -147,19 +148,19 @@ export const CollectiblesPlaylistPageProvider = ({
 
       await Promise.all(
         filteredAndSortedCollectibles.map(async (collectible, index) => {
-          if (collectible.animationUrl?.endsWith('mp4')) {
+          if (collectible.videoUrl?.endsWith('mp4')) {
             const v = document.createElement('video')
             v.muted = true
             const duration: Promise<number> = new Promise((resolve) => {
-              setTimeout(() => resolve(0), 60000)
+              setTimeout(() => resolve(0), 4000)
               v.onloadedmetadata = () => {
                 resolve(v.duration)
               }
             })
 
             v.preload = 'metadata'
-            v.src = collectible.animationUrl
-            collectible.duration = await duration
+            v.src = collectible.videoUrl
+            collectible = { ...collectible, duration: await duration }
             v.play().catch((e) => console.error('video error', e))
 
             const videoHasAudio = await new Promise((resolve) => {
@@ -188,14 +189,14 @@ export const CollectiblesPlaylistPageProvider = ({
           } else {
             const a = new Audio()
             const duration: Promise<number> = new Promise((resolve) => {
-              setTimeout(() => resolve(0), 60000)
+              setTimeout(() => resolve(0), 4000)
               a.onloadedmetadata = () => {
                 resolve(a.duration)
               }
             })
             a.preload = 'metadata'
-            a.src = collectible.animationUrl ?? ''
-            collectible.duration = await duration
+            a.src = collectible.animationUrl ?? collectible.videoUrl ?? ''
+            collectible = { ...collectible, duration: await duration }
           }
           if (collectible) {
             setAudioCollectibles((currentCollectibles) => {

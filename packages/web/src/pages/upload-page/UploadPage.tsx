@@ -1,4 +1,4 @@
-import { createContext, useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import {
   uploadConfirmationModalUIActions,
@@ -11,6 +11,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { UploadPreviewContextProvider } from 'components/edit-track/utils/uploadPreviewContext'
 import Header from 'components/header/desktop/Header'
 import Page from 'components/page/Page'
+import { EditFormScrollContext } from 'pages/edit-page/EditTrackPage'
 
 import styles from './UploadPage.module.css'
 import { EditPage } from './pages/EditPage'
@@ -51,8 +52,6 @@ const initialFormState = {
 type UploadPageProps = {
   scrollToTop: () => void
 }
-
-export const UploadFormScrollContext = createContext(() => {})
 
 export const UploadPage = (props: UploadPageProps) => {
   const { scrollToTop } = props
@@ -177,9 +176,9 @@ export const UploadPage = (props: UploadPageProps) => {
       }
     >
       <UploadPreviewContextProvider>
-        <UploadFormScrollContext.Provider value={scrollToTop}>
+        <EditFormScrollContext.Provider value={scrollToTop}>
           {page}
-        </UploadFormScrollContext.Provider>
+        </EditFormScrollContext.Provider>
       </UploadPreviewContextProvider>
     </Page>
   )

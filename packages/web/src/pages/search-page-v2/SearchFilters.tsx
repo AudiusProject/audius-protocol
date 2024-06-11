@@ -5,6 +5,7 @@ import {
   OptionsFilterButton,
   Flex,
   FilterButton,
+  FilterButtonOptions,
   Popup,
   Paper,
   TextInput,
@@ -14,9 +15,13 @@ import {
 import { useSearchParams } from 'react-router-dom-v5-compat'
 
 import { Filter } from './types'
+import { MOODS } from './utils'
+
 const messages = {
   genre: 'Genre',
+  genreSearchPlaceholder: 'Search Genre',
   mood: 'Mood',
+  moodSearchPlaceholder: 'Search Mood',
   key: 'Key',
   bpm: 'BPM',
   isPremium: 'Premium',
@@ -71,11 +76,112 @@ const GenreFilter = () => {
         value: convertGenreLabelToValue(genre)
       }))}
       showFilterInput
-      filterInputPlaceholder='Search genre'
+      filterInputPlaceholder={messages.genreSearchPlaceholder}
     />
   )
 }
 
+const MoodFilter = () => {
+  const [urlSearchParams] = useSearchParams()
+  const mood = urlSearchParams.get('mood')
+  const updateSearchParams = useUpdateSearchParams('mood')
+  const sortedKeys = Object.keys(MOODS).sort()
+  const moodOptions = sortedKeys.map((mood) => ({
+    label: MOODS[mood].label,
+    value: MOODS[mood].value,
+    leadingElement: MOODS[mood].icon
+  }))
+
+  return (
+    <OptionsFilterButton
+      label={messages.mood}
+      popupAnchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+      popupMaxHeight={400}
+      popupTransformOrigin={{ vertical: 'top', horizontal: 'left' }}
+      selection={mood}
+      onChange={updateSearchParams}
+      options={moodOptions}
+      showFilterInput
+      filterInputPlaceholder={messages.moodSearchPlaceholder}
+    />
+  )
+}
+
+const keyArr = [
+  'C',
+  'C#/Db',
+  'D',
+  'D#/Eb',
+  'E',
+  'F',
+  'F#/Gb',
+  'G',
+  'G#/Ab',
+  'A',
+  'A#/Bb',
+  'B'
+]
+
+const KeyFilter = () => {
+  const [urlSearchParams] = useSearchParams()
+  const key = urlSearchParams.get('key')
+  const updateSearchParams = useUpdateSearchParams('key')
+  const [scale, setScale] = useState<'Major' | 'Minor'>('Major')
+  const keyOptions = keyArr.map((key) => ({
+    label: key,
+    value: key
+  }))
+
+  return (
+    <FilterButton
+      value={key}
+      label={key ?? messages.key}
+      onChange={updateSearchParams}
+      iconRight={IconCaretDown}
+    >
+      {({ handleChange, isOpen, setIsOpen, anchorRef }) => (
+        <Popup
+          anchorRef={anchorRef}
+          isVisible={isOpen}
+          onClose={() => setIsOpen(false)}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+          transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+        >
+          <Paper mt='s' border='strong' shadow='far' css={{ minWidth: 200 }}>
+            <Flex
+              w='100%'
+              p='s'
+              direction='column'
+              alignItems='flex-start'
+              role='listbox'
+            >
+              <SegmentedControl
+                fullWidth
+                options={[
+                  { key: 'Major', text: 'Major' },
+                  { key: 'Minor', text: 'Minor' }
+                ]}
+                selected={scale}
+                onSelectOption={setScale}
+              />
+              <FilterButtonOptions
+                options={keyOptions}
+                onChange={(option) =>
+                  handleChange(
+                    `${option.value} ${scale}`,
+                    `${option.value} ${scale}`
+                  )
+                }
+              />
+            </Flex>
+          </Paper>
+        </Popup>
+      )}
+    </FilterButton>
+  )
+}
+
+// TODO: Need to debounce the on change for this bc it locks up the UI a bit. only like 100ms
 const BpmFilter = () => {
   const [urlSearchParams] = useSearchParams()
   const bpm = urlSearchParams.get('bpm')
@@ -193,26 +299,8 @@ const IsVerifiedFilter = () => {
 
 export const filters: Record<Filter, () => ReactElement> = {
   genre: GenreFilter,
-  mood: () => (
-    <OptionsFilterButton
-      label={messages.mood}
-      options={[
-        {
-          value: 'Filter'
-        }
-      ]}
-    />
-  ),
-  key: () => (
-    <OptionsFilterButton
-      label={messages.key}
-      options={[
-        {
-          value: 'Filter'
-        }
-      ]}
-    />
-  ),
+  mood: MoodFilter,
+  key: KeyFilter,
   bpm: BpmFilter,
   isPremium: IsPremiumFilter,
   hasDownloads: HasDownloadsFilter,

@@ -113,7 +113,6 @@ const CollectionHeader = ({
   })
   const { hasStreamAccess } = useGatedContentAccess(collection)
   const isPremium = collection?.is_stream_gated
-  const isUnlisted = collection?.is_private
 
   const tracks = useSelector((state: CommonState) =>
     getCollectionTracks(state, { id: collectionId })
@@ -194,7 +193,6 @@ const CollectionHeader = ({
 
   const renderDogEar = () => {
     const DogEarType = getDogEarType({
-      isUnlisted,
       streamConditions,
       isOwner,
       hasStreamAccess

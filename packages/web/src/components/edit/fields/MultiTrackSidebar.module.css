@@ -66,17 +66,6 @@
   color: var(--harmony-red);
 }
 
-.trackTitleContainer {
-  min-width: 0;
-  flex-grow: 1;
-}
-
-.trackTitleContainer > * {
-  text-overflow: ellipsis;
-  overflow: hidden;
-  white-space: nowrap;
-}
-
 .selectedIndicator {
   width: 4px;
   height: 42px;
@@ -106,7 +95,6 @@
 }
 
 .iconRemove {
-  padding-right: 8px;
   display: none;
 }
 

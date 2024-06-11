@@ -8,7 +8,8 @@ type UserBasicInfo = {
   name: string
   handle: string
   is_deactivated: boolean
-  profile_picture_sizes: string
+  profile_picture_sizes?: string | null
+  profile_picture?: string | null
 }
 
 type PlaylistInfo = {
@@ -106,12 +107,20 @@ export abstract class BaseNotification<Type> {
   }
 
   async getUsersBasicInfo(userIds: Array<number>) {
-    const res: Array<UserBasicInfo> = await this.dnDB
+    const res: Array<{
+      user_id: number
+      name: string
+      handle: string
+      is_deactivated: boolean
+      profile_picture?: string | null
+      profile_picture_sizes?: string | null
+    }> = await this.dnDB
       .select(
         'user_id',
         'name',
         'handle',
         'is_deactivated',
+        'profile_picture',
         'profile_picture_sizes'
       )
       .from<UserRow>('users')
