@@ -19,7 +19,6 @@ class GetAuthedUserResult(TypedDict):
 def get_authed_user(
     session, data: str, signature: str
 ) -> Optional[GetAuthedUserResult]:
-    # Use acdc RPC to avoid calling external eth RPC
     message_hash = defunct_hash_message(text=data)
     user_wallet = web3.eth.account._recover_hash(message_hash, signature=signature)
     result = (
