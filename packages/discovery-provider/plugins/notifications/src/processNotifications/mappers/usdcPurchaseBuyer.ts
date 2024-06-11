@@ -40,6 +40,7 @@ export class USDCPurchaseBuyer extends BaseNotification<USDCPurchaseBuyerRow> {
   contentType: string
   extraAmount: string
   totalAmount: string
+  vendor: string
 
   constructor(
     dnDB: Knex,
@@ -47,6 +48,7 @@ export class USDCPurchaseBuyer extends BaseNotification<USDCPurchaseBuyerRow> {
     notification: USDCPurchaseBuyerRow
   ) {
     super(dnDB, identityDB, notification)
+    logger.info(`asdf constructor`)
     this.amount = formatUSDCWeiToUSDString(
       this.notification.data.amount.toString()
     )
@@ -62,6 +64,7 @@ export class USDCPurchaseBuyer extends BaseNotification<USDCPurchaseBuyerRow> {
     this.notificationReceiverUserId = this.notification.data.buyer_user_id
     this.contentId = this.notification.data.content_id
     this.contentType = this.notification.data.content_type
+    this.vendor = this.notification.data.vendor
   }
 
   async processNotification({
@@ -193,7 +196,7 @@ export class USDCPurchaseBuyer extends BaseNotification<USDCPurchaseBuyerRow> {
         identityDb: this.identityDB
       })
     }
-
+    logger.info(`asdf this ${this}`)
     await sendTransactionalEmail({
       email: userNotificationSettings.getUserEmail(
         this.notificationReceiverUserId
@@ -212,7 +215,8 @@ export class USDCPurchaseBuyer extends BaseNotification<USDCPurchaseBuyerRow> {
         contentImage: formatImageUrl(cover_art_sizes, 480),
         price: this.amount,
         payExtra: this.extraAmount,
-        total: this.totalAmount
+        total: this.totalAmount,
+        vendor: this.vendor
       }),
       subject: 'Thank You For Your Support'
     })

@@ -9,7 +9,8 @@ export const email = ({
   artistName,
   price,
   payExtra,
-  total
+  total,
+  vendor
 }: {
   purchaserName: string
   purchaserHandle: string
@@ -22,6 +23,7 @@ export const email = ({
   price: string
   payExtra: string
   total: string
+  vendor: string
 }) => {
   const copyrightYear = new Date().getFullYear().toString()
 
@@ -537,6 +539,11 @@ export const email = ({
   </table>
   </td>
   </tr>
+
+
+  ${
+    vendor === 'coinflow'
+      ? `
   <tr>
   <td width="552" style="  padding-left:24px; padding-right:24px;">
   <table width="100%" border="0" cellpadding="0" cellspacing="0">
@@ -572,6 +579,9 @@ export const email = ({
   </table>
   </td>
   </tr>
+`
+      : ``
+  }
   <tr>
   <td width="100%">
   <table width="100%" cellspacing="0" cellpadding="0" border="0">
