@@ -41,7 +41,7 @@ export interface TrackForUpload {
  */
 export interface TrackMetadataForUpload extends TrackMetadata {
   artwork: Nullable<{
-    file: Blob | NativeFile
+    file?: Blob | NativeFile
     url: string
     source?: string
   }>

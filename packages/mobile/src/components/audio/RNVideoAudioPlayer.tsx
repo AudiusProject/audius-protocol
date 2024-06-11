@@ -242,6 +242,7 @@ export const RNVideoAudioPlayer = () => {
       // Performance POC: use a pre-fetched DN url if we have it
       const trackStreamUrl =
         trackStreamUrls[`{"id":${trackId},"currentUserId":${currentUserId}}`]
+          ?.nonNormalizedData?.['stream-url']
       if (offlineTrackAvailable && isCollectionMarkedForDownload) {
         const audioFilePath = getLocalAudioPath(trackId)
         url = `file://${audioFilePath}`

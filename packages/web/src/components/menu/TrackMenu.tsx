@@ -1,5 +1,6 @@
 import { useContext } from 'react'
 
+import { useGetTrackById } from '@audius/common/api'
 import {
   ShareSource,
   RepostSource,
@@ -20,7 +21,7 @@ import {
   CommonState,
   artistPickModalActions
 } from '@audius/common/store'
-import { Genre } from '@audius/common/utils'
+import { Genre, Nullable } from '@audius/common/utils'
 import { PopupMenuItem } from '@audius/harmony'
 import { push as pushRoute } from 'connected-react-router'
 import { connect, useDispatch, useSelector } from 'react-redux'
@@ -99,14 +100,28 @@ export type TrackMenuProps = OwnProps &
   ReturnType<typeof mapStateToProps>
 
 const TrackMenu = (props: TrackMenuProps) => {
+  const { trackPermalink, goToRoute } = props
   const { toast } = useContext(ToastContext)
   const dispatch = useDispatch()
   const currentUserId = useSelector(getUserId)
-  const { onOpen } = useEditTrackModal()
+  const { isEnabled: isEditTrackRedesignEnabled } = useFlag(
+    FeatureFlags.EDIT_TRACK_REDESIGN
+  )
   const { isEnabled: isNewPodcastControlsEnabled } = useFlag(
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
   )
+
+  const { data: track } = useGetTrackById({ id: props.trackId })
+
+  const { onOpen } = useEditTrackModal()
+  const onEditTrack = (trackId: Nullable<number>) => {
+    if (!trackId) return
+    const permalink = trackPermalink || track?.permalink
+    isEditTrackRedesignEnabled
+      ? permalink && goToRoute(`${permalink}/edit`)
+      : onOpen({ trackId })
+  }
 
   const trackPlaybackPositions = useSelector((state: CommonState) =>
     getUserTrackPositions(state, { userId: currentUserId })
@@ -215,7 +230,9 @@ const TrackMenu = (props: TrackMenuProps) => {
         isLongFormContent && isNewPodcastControlsEnabled
           ? messages.visitEpisodePage
           : messages.visitTrackPage,
-      onClick: () => goToRoute(trackPermalink)
+      onClick: () => {
+        goToRoute(trackPermalink)
+      }
     }
 
     const markAsUnplayedItem = {
@@ -263,7 +280,7 @@ const TrackMenu = (props: TrackMenuProps) => {
 
     const editTrackMenuItem = {
       text: 'Edit Track',
-      onClick: () => onOpen({ trackId })
+      onClick: () => onEditTrack(trackId)
     }
 
     const embedMenuItem = {

@@ -158,6 +158,12 @@ export function* parseAndProcessNotifications(
         collectionIdsToFetch.add(notification.entityId)
       }
     }
+    if (
+      type === NotificationType.RequestManager ||
+      type === NotificationType.ApproveManagerRequest
+    ) {
+      userIdsToFetch.add(notification.userId)
+    }
   })
 
   const [tracks] = yield* all([

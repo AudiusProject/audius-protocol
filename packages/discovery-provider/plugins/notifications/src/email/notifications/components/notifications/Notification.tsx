@@ -304,6 +304,26 @@ const notificationMap = {
       </span>
     )
   },
+  ['request_manager'](notification) {
+    const [user] = notification.users
+    return (
+      <span className={'notificationText'}>
+        <BodyText
+          text={`${user.name} has invited you to manage their account.`}
+        />
+      </span>
+    )
+  },
+  ['approve_manager_request'](notification) {
+    const [user] = notification.users
+    return (
+      <span className={'notificationText'}>
+        <BodyText
+          text={`${user.name} has been added as a manager on your account.`}
+        />
+      </span>
+    )
+  },
   ['create'](notification) {
     const [user] = notification.users
     if (

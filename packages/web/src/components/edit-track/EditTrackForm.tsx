@@ -26,7 +26,8 @@ import { TrackMetadataFields } from 'components/edit/fields/TrackMetadataFields'
 import layoutStyles from 'components/layout/layout.module.css'
 import { NavigationPrompt } from 'components/navigation-prompt/NavigationPrompt'
 import { useFlag } from 'hooks/useRemoteConfig'
-import { UploadFormScrollContext } from 'pages/upload-page/UploadPage'
+import { EditFormScrollContext } from 'pages/edit-page/EditTrackPage'
+import { AnchoredSubmitRowEdit } from 'pages/edit-page/components/AnchoredSubmitRowEdit'
 import { AnchoredSubmitRow } from 'pages/upload-page/components/AnchoredSubmitRow'
 
 import styles from './EditTrackForm.module.css'
@@ -50,6 +51,7 @@ const messages = {
 type EditTrackFormProps = {
   initialValues: TrackEditFormValues
   onSubmit: (values: TrackEditFormValues) => void
+  hideContainer?: boolean
 }
 
 const EditFormValidationSchema = z.object({
@@ -57,7 +59,7 @@ const EditFormValidationSchema = z.object({
 })
 
 export const EditTrackForm = (props: EditTrackFormProps) => {
-  const { initialValues, onSubmit } = props
+  const { initialValues, onSubmit, hideContainer } = props
 
   return (
     <Formik<TrackEditFormValues>
@@ -65,14 +67,17 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
       onSubmit={onSubmit}
       validationSchema={toFormikValidationSchema(EditFormValidationSchema)}
     >
-      {(props) => <TrackEditForm {...props} />}
+      {(props) => <TrackEditForm {...props} hideContainer={hideContainer} />}
     </Formik>
   )
 }
 
-const TrackEditForm = (props: FormikProps<TrackEditFormValues>) => {
-  const { values, dirty } = props
+const TrackEditForm = (
+  props: FormikProps<TrackEditFormValues> & { hideContainer?: boolean }
+) => {
+  const { values, dirty, isSubmitting, hideContainer = false } = props
   const isMultiTrack = values.trackMetadatas.length > 1
+  const isEdit = values.trackMetadatas[0].track_id !== undefined
   const trackIdx = values.trackMetadatasIndex
   const [, , { setValue: setIndex }] = useField('trackMetadatasIndex')
   useUnmount(() => {
@@ -85,13 +90,21 @@ const TrackEditForm = (props: FormikProps<TrackEditFormValues>) => {
 
   return (
     <Form>
-      <NavigationPrompt when={dirty} messages={messages.navigationPrompt} />
+      <NavigationPrompt
+        when={dirty && !isSubmitting}
+        messages={messages.navigationPrompt}
+      />
       <div className={cn(layoutStyles.row, layoutStyles.gap2)}>
-        <div className={cn(styles.formContainer, layoutStyles.col)}>
+        <div
+          className={cn(
+            { [styles.formContainer]: !hideContainer },
+            layoutStyles.col
+          )}
+        >
           {isMultiTrack ? <MultiTrackHeader /> : null}
           <div
             className={cn(
-              styles.trackEditForm,
+              { [styles.trackEditForm]: !hideContainer },
               layoutStyles.col,
               layoutStyles.gap4
             )}
@@ -129,7 +142,11 @@ const TrackEditForm = (props: FormikProps<TrackEditFormValues>) => {
         </div>
         {isMultiTrack ? <MultiTrackSidebar /> : null}
       </div>
-      {!isMultiTrack ? <AnchoredSubmitRow /> : null}
+      {isEdit ? (
+        <AnchoredSubmitRowEdit />
+      ) : !isMultiTrack ? (
+        <AnchoredSubmitRow />
+      ) : null}
     </Form>
   )
 }
@@ -148,7 +165,7 @@ const MultiTrackHeader = () => {
 }
 
 const MultiTrackFooter = () => {
-  const scrollToTop = useContext(UploadFormScrollContext)
+  const scrollToTop = useContext(EditFormScrollContext)
   const [{ value: index }, , { setValue: setIndex }] = useField(
     'trackMetadatasIndex'
   )

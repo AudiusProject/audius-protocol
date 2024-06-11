@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-import { useGetSearchFull } from '@audius/common/src/api/search'
+import { Status } from '@audius/common/models'
 import { Name } from '@audius/common/src/models/Analytics'
-import { accountSelectors } from '@audius/common/src/store/account'
 import { makeGetLineupMetadatas } from '@audius/common/src/store/lineup/selectors'
 import { fetchSearchPageResults } from '@audius/common/src/store/pages/search-results/actions'
 import { getSearchTracksLineup } from '@audius/common/src/store/pages/search-results/selectors'
@@ -13,9 +12,10 @@ import {
 import { makeGetCurrent } from '@audius/common/src/store/queue/selectors'
 import {
   SearchKind,
+  searchResultsPageSelectors,
   searchResultsPageTracksLineupActions
 } from '@audius/common/store'
-import { FilterButton } from '@audius/harmony'
+import { OptionsFilterButton } from '@audius/harmony'
 import { Box, Flex } from '@audius/harmony/src/components/layout'
 import { Text } from '@audius/harmony/src/components/text'
 import { css } from '@emotion/css'
@@ -31,7 +31,7 @@ import { useRouteMatch } from 'hooks/useRouteMatch'
 import { useSelector } from 'utils/reducer'
 import { SEARCH_CATEGORY_PAGE } from 'utils/route'
 
-const { getUserId } = accountSelectors
+import { NoResultsTile } from './NoResultsTile'
 
 const MAX_RESULTS = 100
 const MAX_PREVIEW_RESULTS = 5
@@ -72,31 +72,20 @@ const getTracksLineup = makeGetLineupMetadatas(getSearchTracksLineup)
 
 export const SearchResults = ({ query }: SearchResultsProps) => {
   const containerRef = useRef<HTMLDivElement>(null)
-  const currentUserId = useSelector(getUserId)
   const currentQueueItem = useSelector(getCurrentQueueItem)
   const tracksLineup = useSelector(getTracksLineup)
   const playing = useSelector(getPlaying)
   const buffering = useSelector(getBuffering)
-  const results = useGetSearchFull({ currentUserId, query })
+  const results = useSelector(searchResultsPageSelectors.getSearchResults)
   const categoryMatch = useRouteMatch<{ query: string; category: string }>(
     SEARCH_CATEGORY_PAGE
   )
 
+  const isLoading = results.status === Status.LOADING
   const dispatch = useDispatch()
   useEffect(() => {
     dispatch(fetchSearchPageResults(query, SearchKind.ALL, 50, 0))
   }, [dispatch, query])
-
-  const [isLoading, setIsLoading] = useState(true)
-  const prevQuery = useRef('')
-  useEffect(() => {
-    if (results.data && isLoading && query !== prevQuery.current) {
-      prevQuery.current = query
-      setIsLoading(false)
-    } else if (!isLoading && query !== prevQuery.current) {
-      setIsLoading(true)
-    }
-  }, [results, query, isLoading])
 
   const isCategoryActive = useCallback(
     (category: Category) => categoryMatch?.category === category,
@@ -123,9 +112,9 @@ export const SearchResults = ({ query }: SearchResultsProps) => {
     ? MAX_RESULTS
     : MAX_TRACK_PREVIEW_RESULTS
 
-  const profileData = results.data?.users.slice(0, profileLimit) ?? []
-  const playlistData = results.data?.playlists.slice(0, playlistLimit) ?? []
-  const albumData = results.data?.albums.slice(0, albumLimit) ?? []
+  const profileIds = results.artistIds?.slice(0, profileLimit) ?? []
+  const playlistIds = results.playlistIds?.slice(0, playlistLimit) ?? []
+  const albumIds = results.albumIds?.slice(0, albumLimit) ?? []
   const tracksData = {
     ...tracksLineup,
     entries: tracksLineup.entries.slice(0, trackLimit)
@@ -149,6 +138,23 @@ export const SearchResults = ({ query }: SearchResultsProps) => {
   const isTrackGridView =
     !isCategoryActive(Category.TRACKS) || tracksLayout === 'grid'
 
+  // Check if there are no results
+  const isResultsEmpty =
+    results.albumIds?.length === 0 &&
+    results.artistIds?.length === 0 &&
+    results.playlistIds?.length === 0 &&
+    results.trackIds?.length === 0
+
+  const showNoResultsTile =
+    isResultsEmpty ||
+    (isCategoryActive(Category.ALBUMS) && results.albumIds?.length === 0) ||
+    (isCategoryActive(Category.PROFILES) && results.artistIds?.length === 0) ||
+    (isCategoryActive(Category.PLAYLISTS) &&
+      results.playlistIds?.length === 0) ||
+    (isCategoryActive(Category.TRACKS) && results.trackIds?.length === 0)
+
+  if (showNoResultsTile) return <NoResultsTile />
+
   return (
     <Flex direction='column' gap='unit10' ref={containerRef}>
       {isCategoryVisible(Category.PROFILES) ? (
@@ -168,9 +174,7 @@ export const SearchResults = ({ query }: SearchResultsProps) => {
                     loading={true}
                   />
                 ))
-              : profileData.map((user) => (
-                  <UserCard key={user.user_id} id={user.user_id} size='s' />
-                ))}
+              : profileIds.map((id) => <UserCard key={id} id={id} size='s' />)}
           </Box>
         </Flex>
       ) : null}
@@ -181,10 +185,10 @@ export const SearchResults = ({ query }: SearchResultsProps) => {
               {messages.tracks}
             </Text>
             {isCategoryActive(Category.TRACKS) ? (
-              <FilterButton
+              <OptionsFilterButton
                 selection={tracksLayout}
                 variant='replaceLabel'
-                onSelect={(value) => {
+                onChange={(value) => {
                   setTracksLayout(value as TrackView)
                 }}
                 options={[
@@ -195,7 +199,7 @@ export const SearchResults = ({ query }: SearchResultsProps) => {
             ) : null}
           </Flex>
           <Flex gap='l'>
-            {results.data ? (
+            {!isLoading && tracksLineup ? (
               <Lineup
                 lineupContainerStyles={css({ width: '100%' })}
                 tileContainerStyles={css({
@@ -250,12 +254,8 @@ export const SearchResults = ({ query }: SearchResultsProps) => {
                     loading={true}
                   />
                 ))
-              : albumData.map((album) => (
-                  <CollectionCard
-                    key={album.playlist_id}
-                    id={album.playlist_id}
-                    size='s'
-                  />
+              : albumIds.map((id) => (
+                  <CollectionCard key={id} id={id} size='s' />
                 ))}
           </Box>
         </Flex>
@@ -277,12 +277,8 @@ export const SearchResults = ({ query }: SearchResultsProps) => {
                     loading={true}
                   />
                 ))
-              : playlistData.map((playlist) => (
-                  <CollectionCard
-                    key={playlist.playlist_id}
-                    id={playlist.playlist_id}
-                    size='s'
-                  />
+              : playlistIds.map((id) => (
+                  <CollectionCard key={id} id={id} size='s' />
                 ))}
           </Box>
         </Flex>
