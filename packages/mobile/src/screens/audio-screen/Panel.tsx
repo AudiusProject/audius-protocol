@@ -213,7 +213,6 @@ export const Panel = ({
             fullWidth
             variant='secondary'
             iconRight={hasDisbursed ? undefined : IconArrowRight}
-            size='medium'
             onPress={onPress}
             style={[styles.button, hasDisbursed ? styles.disbursed : null]}
           >

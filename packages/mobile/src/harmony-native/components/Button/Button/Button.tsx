@@ -42,7 +42,7 @@ export const Button = (props: ButtonProps) => {
   // - Size Styles -
   const smallStyles: ReactNativeStyle = {
     gap: spacing.xs,
-    height: spacing.unit8,
+    height: size === 'xs' ? spacing.unit7 : spacing.unit8,
     paddingHorizontal: spacing.m
   }
   // title-s-default

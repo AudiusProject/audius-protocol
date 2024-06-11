@@ -83,7 +83,6 @@ export const TrackScreenRemixes = ({
       <Button
         iconRight={IconArrowRight}
         variant='primary'
-        size='medium'
         onPress={onPressGoToRemixes}
         styles={{
           root: styles.button

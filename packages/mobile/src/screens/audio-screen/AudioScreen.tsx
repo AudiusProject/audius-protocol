@@ -310,7 +310,6 @@ export const AudioScreen = () => {
           }}
           variant='secondary'
           iconLeft={IconSend}
-          size='medium'
           onPress={handlePressSend}
         >
           {messages.send}
@@ -323,7 +322,6 @@ export const AudioScreen = () => {
           }}
           variant='secondary'
           iconLeft={IconReceive}
-          size='medium'
           onPress={handlePressReceive}
         >
           {messages.receive}
@@ -336,7 +334,6 @@ export const AudioScreen = () => {
           }}
           variant='secondary'
           iconLeft={IconWallet}
-          size='medium'
           onPress={handlePressManageWallets}
         >
           {messages.externalWallets}
@@ -440,7 +437,6 @@ export const AudioScreen = () => {
             button: styles.button
           }}
           variant='secondary'
-          size='medium'
           onPress={() => Linking.openURL(LEARN_MORE_LINK)}
           fullWidth
         >
@@ -453,7 +449,6 @@ export const AudioScreen = () => {
             button: styles.button
           }}
           variant='secondary'
-          size='medium'
           iconLeft={IconDiscord}
           onPress={onPressLaunchDiscord}
         >

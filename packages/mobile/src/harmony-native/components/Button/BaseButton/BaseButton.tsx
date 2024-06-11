@@ -3,8 +3,8 @@ import { useCallback, useState } from 'react'
 import { Pressable } from 'react-native'
 import type {
   GestureResponderEvent,
-  type LayoutChangeEvent,
-  type ViewStyle
+  LayoutChangeEvent,
+  ViewStyle
 } from 'react-native'
 import { Gesture, GestureDetector } from 'react-native-gesture-handler'
 import Animated, {

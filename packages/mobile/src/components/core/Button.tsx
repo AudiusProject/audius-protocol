@@ -26,7 +26,7 @@ import { Link } from './Link'
 
 export type ButtonVariant = 'primary' | 'secondary' | 'destructive'
 
-type ButtonSize = 'small' | 'medium' | 'large'
+type ButtonSize = 'xs' | 'small' | 'default' | 'large'
 type ButtonCorners = 'rounded' | 'pill'
 
 export type ButtonProps = Omit<RNButtonProps, 'title'> &
@@ -294,7 +294,7 @@ export const Button = (props: ButtonProps) => {
     onPressIn,
     onPressOut,
     pressScale = 0.97,
-    size = 'medium',
+    size = 'default',
     style,
     styles: stylesProp,
     children,
