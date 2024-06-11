@@ -267,6 +267,18 @@ export interface PlaylistFull {
      * @memberof PlaylistFull
      */
     streamConditions?: AccessGate;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof PlaylistFull
+     */
+    isScheduledRelease?: boolean;
+    /**
+     * 
+     * @type {string}
+     * @memberof PlaylistFull
+     */
+    releaseDate?: string;
 }
 
 /**
@@ -342,6 +354,8 @@ export function PlaylistFullFromJSONTyped(json: any, ignoreDiscriminator: boolea
         'trackCount': json['track_count'],
         'isStreamGated': json['is_stream_gated'],
         'streamConditions': !exists(json, 'stream_conditions') ? undefined : AccessGateFromJSON(json['stream_conditions']),
+        'isScheduledRelease': !exists(json, 'is_scheduled_release') ? undefined : json['is_scheduled_release'],
+        'releaseDate': !exists(json, 'release_date') ? undefined : json['release_date'],
     };
 }
 
@@ -387,6 +401,8 @@ export function PlaylistFullToJSON(value?: PlaylistFull | null): any {
         'track_count': value.trackCount,
         'is_stream_gated': value.isStreamGated,
         'stream_conditions': AccessGateToJSON(value.streamConditions),
+        'is_scheduled_release': value.isScheduledRelease,
+        'release_date': value.releaseDate,
     };
 }
 
