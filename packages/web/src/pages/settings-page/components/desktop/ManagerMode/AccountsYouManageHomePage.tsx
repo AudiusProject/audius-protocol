@@ -89,9 +89,6 @@ export const AccountsYouManageHomePage = ({
     <Flex direction='column' gap='xl'>
       <Text variant='body' size='l'>
         {messages.takeControl}{' '}
-        <TextLink isExternal href='#' variant='visible'>
-          {sharedMessages.learnMore}
-        </TextLink>
       </Text>
       {status !== Status.SUCCESS ? (
         <Box pv='2xl'>

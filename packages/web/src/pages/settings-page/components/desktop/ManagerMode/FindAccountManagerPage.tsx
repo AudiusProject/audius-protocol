@@ -87,9 +87,6 @@ export const FindAccountManagerPage = (props: FindAccountManagerPageProps) => {
       <Box ph='xl'>
         <Text variant='body' size='l'>
           {messages.description} {sharedMessages.accountManagersExplanation}{' '}
-          <TextLink href='#' variant='visible'>
-            {sharedMessages.learnMore}
-          </TextLink>
         </Text>
       </Box>
       <UsersSearch

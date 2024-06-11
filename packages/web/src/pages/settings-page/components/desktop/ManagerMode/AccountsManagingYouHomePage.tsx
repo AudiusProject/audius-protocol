@@ -64,10 +64,7 @@ export const AccountsManagingYouHomePage = (
   return (
     <Flex direction='column' gap='xl' ph='xl'>
       <Text variant='body' size='l'>
-        {sharedMessages.accountManagersExplanation}{' '}
-        <TextLink href='#' variant='visible'>
-          {sharedMessages.learnMore}
-        </TextLink>
+        {sharedMessages.accountManagersExplanation}
       </Text>
       <Divider />
       <Flex justifyContent='space-between' alignItems='center'>
