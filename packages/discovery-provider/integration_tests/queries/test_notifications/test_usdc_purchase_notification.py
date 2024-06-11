@@ -134,7 +134,6 @@ def test_extended_usdc_purchase_notification(app):
                 "amount": "1000000",
                 "extra_amount": "0",
                 "content_id": "7eP5n",
-                "vendor": None,
             }
 
             args = {
@@ -158,5 +157,4 @@ def test_extended_usdc_purchase_notification(app):
                 "amount": "1000000",
                 "extra_amount": "0",
                 "content_id": "7eP5n",
-                "vendor": None,
             }
