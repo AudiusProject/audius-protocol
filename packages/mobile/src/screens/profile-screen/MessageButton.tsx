@@ -44,13 +44,11 @@ export const MessageButton = (props: MessageButtonProps) => {
   return (
     <Button
       style={styles.root}
-      noText
       iconRight={IconMessage}
       variant={'secondary'}
       size='small'
       onPress={handlePress}
-    >
-      {messages.message}
-    </Button>
+      accessibilityLabel={messages.message}
+    />
   )
 }

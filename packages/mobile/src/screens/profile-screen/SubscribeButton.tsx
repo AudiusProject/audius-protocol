@@ -45,13 +45,13 @@ export const SubscribeButton = (props: SubscribeButtonProps) => {
     <Button
       style={styles.root}
       haptics={!isSubscribed}
-      noText
       iconRight={IconNotificationOn}
       variant={isSubscribed ? 'primary' : 'secondary'}
       size='small'
       onPress={handlePress}
-    >
-      {isSubscribed ? messages.subscribed : messages.subscribe}
-    </Button>
+      accessibilityLabel={
+        isSubscribed ? messages.subscribed : messages.subscribe
+      }
+    />
   )
 }

@@ -26,7 +26,7 @@ import { Link } from './Link'
 
 export type ButtonVariant = 'primary' | 'secondary' | 'destructive'
 
-type ButtonSize = 'xs' | 'small' | 'medium' | 'large'
+type ButtonSize = 'small' | 'medium' | 'large'
 type ButtonCorners = 'rounded' | 'pill'
 
 export type ButtonProps = Omit<RNButtonProps, 'title'> &
@@ -50,7 +50,7 @@ export type ButtonProps = Omit<RNButtonProps, 'title'> &
     // Custom color that will override the variant
     color?: string
     corners?: ButtonCorners
-    children: ReactNode
+    children?: ReactNode
     pressScale?: number
   }
 

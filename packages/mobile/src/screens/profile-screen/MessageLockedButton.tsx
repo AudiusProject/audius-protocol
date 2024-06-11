@@ -38,13 +38,11 @@ export const MessageLockedButton = (props: MessageLockedButtonProps) => {
   return (
     <Button
       style={styles.root}
-      noText
       iconRight={IconMessageLocked}
       variant={'secondary'}
       size='small'
       onPress={handlePress}
-    >
-      {messages.inboxUnavailable}
-    </Button>
+      accessibilityLabel={messages.inboxUnavailable}
+    />
   )
 }

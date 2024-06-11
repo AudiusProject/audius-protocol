@@ -31,4 +31,5 @@ export type ButtonProps = {
   size?: ButtonSize
 
   style?: StyleProp<ViewStyle>
+  haptics?: boolean
 } & Omit<BaseButtonProps, 'styles'>
