@@ -1,4 +1,4 @@
-import { IconSearch, Paper, Text, useTheme } from '@audius/harmony'
+import { IconSearch, Paper, Text } from '@audius/harmony'
 
 import { useMedia } from 'hooks/useMedia'
 const messages = {
@@ -8,7 +8,6 @@ const messages = {
 }
 
 export const SearchCatalogTile = () => {
-  const { color } = useTheme()
   const { isMobile } = useMedia()
   return (
     <Paper
@@ -21,7 +20,7 @@ export const SearchCatalogTile = () => {
       alignItems='center'
       w={isMobile ? 'auto' : '100%'}
     >
-      <IconSearch size={isMobile ? 'l' : '2xl'} fill={color.icon.default} />
+      <IconSearch color='default' size={isMobile ? 'l' : '2xl'} />
       <Text
         variant={isMobile ? 'title' : 'heading'}
         size={isMobile ? 'l' : 'm'}

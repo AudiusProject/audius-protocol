@@ -19,10 +19,14 @@ import { disableDeviceArns } from '../../utils/disableArnEndpoint'
 import { capitalize } from 'lodash'
 import { sendBrowserNotification } from '../../web'
 import { EntityType } from '../../email/notifications/types'
-import { formatUSDCWeiToUSDString } from '../../utils/format'
+import {
+  formatContentUrl,
+  formatImageUrl,
+  formatProfileUrl,
+  formatUSDCWeiToUSDString
+} from '../../utils/format'
 import { email } from '../../email/notifications/preRendered/sale'
 import { logger } from '../../logger'
-import { getContentNode, getHostname } from '../../utils/env'
 
 type USDCPurchaseSellerRow = Omit<NotificationRow, 'data'> & {
   data: USDCPurchaseSellerNotification
@@ -124,6 +128,8 @@ export class USDCPurchaseSeller extends BaseNotification<USDCPurchaseSellerRow> 
     const buyerHandle = users[this.buyerUserId]?.handle
     const sellerUsername = users[this.notificationReceiverUserId]?.name
     const sellerHandle = users[this.notificationReceiverUserId]?.handle
+    const sellerProfilePictureSizes =
+      users[this.notificationReceiverUserId]?.profile_picture_sizes
     const price = this.totalAmount
 
     await sendBrowserNotification(
@@ -206,12 +212,15 @@ export class USDCPurchaseSeller extends BaseNotification<USDCPurchaseSellerRow> 
       ),
       html: email({
         purchaserName: buyerUsername,
-        purchaserLink: `${getHostname()}/${buyerHandle}`,
+        purchaserLink: formatProfileUrl(buyerHandle),
         artistName: sellerUsername,
+        artistHandle: sellerHandle,
         contentType: this.contentType,
         contentTitle: purchasedContentName,
-        contentLink: `${getHostname()}/${sellerHandle}/${slug}`,
-        contentImage: `${getContentNode()}/content/${cover_art_sizes}/480x480.jpg`,
+        contentLink: formatContentUrl(sellerHandle, slug),
+        contentImage: formatImageUrl(cover_art_sizes, 480),
+        artistImage: formatImageUrl(sellerProfilePictureSizes, 150),
+        artistLink: formatProfileUrl(sellerHandle),
         price: this.amount,
         payExtra: this.extraAmount,
         total: this.totalAmount

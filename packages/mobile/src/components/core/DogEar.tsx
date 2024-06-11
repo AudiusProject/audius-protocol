@@ -5,7 +5,6 @@ import { View } from 'react-native'
 import {
   IconCart,
   IconCollectible,
-  IconVisibilityHidden,
   IconSpecialAccess,
   IconStar
 } from '@audius/harmony-native'
@@ -63,8 +62,6 @@ export const DogEar = (props: DogEarProps) => {
   const { borderOffset, type, style } = props
   const styles = useStyles()
   const {
-    neutral,
-    neutralLight3,
     pageHeaderGradientColor2,
     secondary,
     staticWhite,
@@ -76,10 +73,6 @@ export const DogEar = (props: DogEarProps) => {
     [DogEarType.STAR]: {
       icon: IconStar,
       colors: [secondary, pageHeaderGradientColor2]
-    },
-    [DogEarType.HIDDEN]: {
-      icon: IconVisibilityHidden,
-      colors: [neutral, neutralLight3]
     },
     [DogEarType.COLLECTIBLE_GATED]: {
       icon: IconCollectible,

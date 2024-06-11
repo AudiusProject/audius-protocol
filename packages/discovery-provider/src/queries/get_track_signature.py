@@ -7,6 +7,8 @@ from src.gated_content.content_access_checker import content_access_checker
 from src.gated_content.signature import get_gated_content_signature
 from src.models.tracks.track import Track
 from src.queries.get_authed_user import get_authed_user
+from src.queries.get_managed_users import is_active_manager
+from src.queries.get_unpopulated_users import get_unpopulated_users
 from src.utils import db_session
 
 
@@ -14,6 +16,7 @@ class GetTrackStreamSignature(TypedDict):
     track: dict
     is_preview: Optional[bool]
     user_data: Optional[str]
+    user_id: Optional[int]
     user_signature: Optional[str]
     nft_access_signature: Optional[str]
     filename: Optional[str]
@@ -24,8 +27,45 @@ class GetTrackDownloadSignature(TypedDict):
     is_original: bool
     filename: Optional[str]
     user_data: Optional[str]
+    user_id: Optional[int]
     user_signature: Optional[str]
     nft_access_signature: Optional[str]
+
+
+def get_authed_or_managed_user(
+    user_data: Optional[str],
+    user_signature: Optional[str],
+    user_id: Optional[int] = None,
+):
+    # Can't recover an authed_user
+    if not user_data or not user_signature:
+        return None
+
+    db = db_session.get_db_read_replica()
+    with db.scoped_session() as session:
+        authed_user = get_authed_user(session, user_data, user_signature)
+
+        # Failed to find user for signature
+        if not authed_user:
+            return None
+
+        authed_user_id = authed_user["user_id"]
+
+        # If no user_id is passed, authed_user matches user_id, or authed_user is not a manager of user_id
+        # then we will keep authed_user as the context
+        if (
+            not user_id
+            or authed_user["user_id"] == user_id
+            or not is_active_manager(user_id, authed_user_id)
+        ):
+            return authed_user
+
+        # Attempt to look up the user_id specified and return that user instead
+        fetched_users = get_unpopulated_users(session, [user_id])
+        if not fetched_users:
+            return authed_user
+
+        return {"user_id": user_id, "user_wallet": fetched_users[0]["wallet"]}
 
 
 # Returns a dictionary {signature, cid} if user has stream access
@@ -35,6 +75,7 @@ def get_track_stream_signature(args: GetTrackStreamSignature):
     is_stream_gated = track["is_stream_gated"]
     is_preview = args.get("is_preview", False)
     user_data = args.get("user_data")
+    user_id = args.get("user_id")
     user_signature = args.get("user_signature")
     nft_access_signature = args.get("nft_access_signature")
     cid = track.get("preview_cid") if is_preview else track.get("track_cid")
@@ -42,10 +83,8 @@ def get_track_stream_signature(args: GetTrackStreamSignature):
         return None
 
     cid = cid.strip()
-    authed_user_id = None
-    if user_data and user_signature:
-        authed_user = get_authed_user(user_data, user_signature)
-        authed_user_id = authed_user.get("user_id") if authed_user else None
+
+    authed_user = get_authed_or_managed_user(user_data, user_signature, user_id)
 
     # all track previews and non-stream-gated tracks should be publicly available
     if is_preview or not is_stream_gated:
@@ -54,13 +93,13 @@ def get_track_stream_signature(args: GetTrackStreamSignature):
                 "track_id": track["track_id"],
                 "cid": cid,
                 "type": "track",
-                "user_id": authed_user_id,
+                "user_id": authed_user["user_id"] if authed_user else None,
                 "is_gated": False,
             }
         )
         return {"signature": signature, "cid": cid}
 
-    if not authed_user_id:
+    if not authed_user:
         return None
 
     if nft_access_signature:
@@ -121,6 +160,7 @@ def get_track_download_signature(args: GetTrackDownloadSignature):
             orig_filename if is_original else f"{orig_name_without_extension}.mp3"
         )
     user_data = args.get("user_data")
+    user_id = args.get("user_id")
     user_signature = args.get("user_signature")
     nft_access_signature = args.get("nft_access_signature")
     cid = track.get("orig_file_cid") if is_original else track.get("track_cid")
@@ -128,11 +168,7 @@ def get_track_download_signature(args: GetTrackDownloadSignature):
         return None
 
     cid = cid.strip()
-    authed_user_id = None
-
-    if user_data and user_signature:
-        authed_user = get_authed_user(user_data, user_signature)
-        authed_user_id = authed_user.get("user_id") if authed_user else None
+    authed_user = get_authed_or_managed_user(user_data, user_signature, user_id)
 
     # all non-download-gated tracks should be publicly available
     if not is_download_gated:
@@ -141,13 +177,13 @@ def get_track_download_signature(args: GetTrackDownloadSignature):
                 "track_id": track["track_id"],
                 "cid": cid,
                 "type": "track",
-                "user_id": authed_user_id,
+                "user_id": authed_user["user_id"] if authed_user else None,
                 "is_gated": False,
             }
         )
         return {"signature": signature, "cid": cid, "filename": filename}
 
-    if not authed_user_id:
+    if not authed_user:
         return None
 
     if nft_access_signature:

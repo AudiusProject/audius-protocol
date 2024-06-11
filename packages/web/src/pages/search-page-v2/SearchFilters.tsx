@@ -1,4 +1,4 @@
-import { ReactElement, useCallback, useState } from 'react'
+import { ReactElement, useState } from 'react'
 
 import { GENRES, convertGenreLabelToValue } from '@audius/common/utils'
 import {
@@ -8,12 +8,14 @@ import {
   FilterButtonOptions,
   Popup,
   Paper,
-  TextInput,
   SegmentedControl,
-  IconCaretDown
+  IconCaretDown,
+  Divider,
+  Box
 } from '@audius/harmony'
 import { useSearchParams } from 'react-router-dom-v5-compat'
 
+import { BpmFilter } from './BpmFilter'
 import { Filter } from './types'
 import { MOODS } from './utils'
 
@@ -23,7 +25,6 @@ const messages = {
   mood: 'Mood',
   moodSearchPlaceholder: 'Search Mood',
   key: 'Key',
-  bpm: 'BPM',
   isPremium: 'Premium',
   isVerified: 'Verified',
   hasDownloads: 'Downloads Available'
@@ -150,97 +151,33 @@ const KeyFilter = () => {
           <Paper mt='s' border='strong' shadow='far' css={{ minWidth: 200 }}>
             <Flex
               w='100%'
-              p='s'
+              gap='s'
+              pv='s'
               direction='column'
               alignItems='flex-start'
               role='listbox'
             >
-              <SegmentedControl
-                fullWidth
-                options={[
-                  { key: 'Major', text: 'Major' },
-                  { key: 'Minor', text: 'Minor' }
-                ]}
-                selected={scale}
-                onSelectOption={setScale}
-              />
-              <FilterButtonOptions
-                options={keyOptions}
-                onChange={(option) =>
-                  handleChange(
-                    `${option.value} ${scale}`,
-                    `${option.value} ${scale}`
-                  )
-                }
-              />
-            </Flex>
-          </Paper>
-        </Popup>
-      )}
-    </FilterButton>
-  )
-}
-
-// TODO: Need to debounce the on change for this bc it locks up the UI a bit. only like 100ms
-const BpmFilter = () => {
-  const [urlSearchParams] = useSearchParams()
-  const bpm = urlSearchParams.get('bpm')
-  const updateSearchParams = useUpdateSearchParams('bpm')
-
-  const [bpmFilterType, setBpmFilterType] = useState<'range' | 'target'>(
-    'range'
-  )
-
-  const label = bpm ? `${bpm} ${messages.bpm}` : `${messages.bpm}`
-
-  const handleBpmInputChange = useCallback(
-    (handleChange: (value: string, label: string) => void) =>
-      (value: string) => {
-        handleChange(value, `${value} ${messages.bpm}`)
-      },
-    []
-  )
-
-  return (
-    <FilterButton
-      value={bpm}
-      label={label}
-      onChange={updateSearchParams}
-      iconRight={IconCaretDown}
-    >
-      {({ handleChange, isOpen, setIsOpen, anchorRef }) => (
-        <Popup
-          anchorRef={anchorRef}
-          isVisible={isOpen}
-          onClose={() => setIsOpen(false)}
-          anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
-          transformOrigin={{ vertical: 'top', horizontal: 'left' }}
-        >
-          <Paper mt='s' border='strong' shadow='far'>
-            <Flex
-              p='s'
-              direction='column'
-              alignItems='flex-start'
-              role='listbox'
-            >
-              <Flex direction='column' w='100%' gap='s'>
+              <Box w='100%' ph='s'>
                 <SegmentedControl
+                  fullWidth
                   options={[
-                    { key: 'range', text: 'Range' },
-                    { key: 'target', text: 'Target' }
+                    { key: 'Major', text: 'Major' },
+                    { key: 'Minor', text: 'Minor' }
                   ]}
-                  selected={bpmFilterType}
-                  onSelectOption={setBpmFilterType}
+                  selected={scale}
+                  onSelectOption={setScale}
                 />
-                <TextInput
-                  placeholder={messages.bpm}
-                  label={messages.bpm}
-                  onClick={(e) => {
-                    e.stopPropagation()
-                  }}
-                  onChange={(e) => {
-                    handleBpmInputChange(handleChange)(e.target.value)
-                  }}
+              </Box>
+              <Divider css={{ width: '100%' }} />
+              <Flex direction='column' w='100%' ph='s'>
+                <FilterButtonOptions
+                  options={keyOptions}
+                  onChange={(option) =>
+                    handleChange(
+                      `${option.value} ${scale}`,
+                      `${option.value} ${scale}`
+                    )
+                  }
                 />
               </Flex>
             </Flex>
@@ -301,7 +238,7 @@ export const filters: Record<Filter, () => ReactElement> = {
   genre: GenreFilter,
   mood: MoodFilter,
   key: KeyFilter,
-  bpm: BpmFilter,
+  bpm: () => <BpmFilter useUpdateSearchParams={useUpdateSearchParams} />,
   isPremium: IsPremiumFilter,
   hasDownloads: HasDownloadsFilter,
   isVerified: IsVerifiedFilter

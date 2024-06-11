@@ -18,7 +18,8 @@ import {
   SupporterRankUpRow,
   UsdcPurchaseRow,
   UsdcTransactionsHistoryRow,
-  UsdcUserBankAccountRow
+  UsdcUserBankAccountRow,
+  GrantRow
 } from '../types/dn'
 import { UserRow as IdentityUserRow } from '../types/identity'
 import {
@@ -319,6 +320,23 @@ export const createSaves = async (db: Knex, saves: CreateSave[]) => {
       }))
     )
     .into('saves')
+}
+
+type CreateGrant = Pick<GrantRow, 'user_id' | 'grantee_address'> &
+  Partial<GrantRow>
+export const createGrants = async (db: Knex, grants: CreateGrant[]) => {
+  await db
+    .insert(
+      grants.map((grant) => ({
+        is_revoked: false,
+        is_current: true,
+        created_at: grant.created_at ?? new Date(Date.now()),
+        updated_at: grant.updated_at ?? new Date(Date.now()),
+        txhash: `0x${grant.user_id}${grant.grantee_address}`,
+        ...grant
+      }))
+    )
+    .into('grants')
 }
 
 type CreateFollow = Pick<FollowRow, 'followee_user_id' | 'follower_user_id'> &

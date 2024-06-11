@@ -89,7 +89,6 @@ export function* watchPlay() {
     if (trackId) {
       // Load and set end action.
       const track = yield* select(getTrack, { id: trackId })
-      const currentUserId = yield* select(getUserId)
 
       const isReachable = yield* select(getIsReachable)
 
@@ -105,6 +104,7 @@ export function* watchPlay() {
       yield* call(waitForWrite)
       const audiusBackendInstance = yield* getContext('audiusBackendInstance')
       const apiClient = yield* getContext('apiClient')
+      const currentUserId = yield* select(getUserId)
 
       const encodedTrackId = encodeHashId(trackId)
 
@@ -114,7 +114,8 @@ export function* watchPlay() {
         nftAccessSignatureMap[track.track_id]?.mp3 ?? null
       queryParams = (yield* call(getQueryParams, {
         audiusBackendInstance,
-        nftAccessSignature
+        nftAccessSignature,
+        userId: currentUserId
       })) as unknown as QueryParams
 
       let trackDuration = track.duration

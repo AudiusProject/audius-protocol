@@ -47,9 +47,9 @@ export const SearchHeader = (props: SearchHeaderProps) => {
   const handleChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
       const value = e.target.value
-      setCategory(value as CategoryKey)
+      if (query) setCategory(value as CategoryKey)
     },
-    [setCategory]
+    [setCategory, query]
   )
 
   const filterKeys = categories[categoryKey].filters
