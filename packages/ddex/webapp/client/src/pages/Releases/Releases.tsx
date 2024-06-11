@@ -6,7 +6,6 @@ import {
   TextLink,
   OptionsFilterButton
 } from '@audius/harmony'
-
 import {
   CollectionData,
   PaginatedTable
