@@ -248,6 +248,10 @@ class App {
       prefix: `listenCountLimiter:::${interval}-ip-track:::`,
       expiry: timeInSeconds,
       max: config.get(`rateLimitingListensPerIPTrackPer${interval}`), // max requests per interval
+      skip: function (req) {
+        const { ip } = getIP(req)
+        return isIPWhitelisted(ip, req)
+      },
       keyGenerator: function (req) {
         const trackId = req.params.id
         const { ip } = getIP(req)
@@ -260,6 +264,10 @@ class App {
       prefix: `listenCountLimiter:::${interval}-ip-exclusive:::`,
       expiry: timeInSeconds,
       max: config.get(`rateLimitingListensPerIPPer${interval}`), // max requests per interval
+      skip: function (req) {
+        const { ip } = getIP(req)
+        return isIPWhitelisted(ip, req)
+      },
       keyGenerator: function (req) {
         const { ip } = getIP(req)
         return `${ip}`
