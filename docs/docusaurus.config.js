@@ -77,12 +77,6 @@ const config = {
             position: 'right',
             activeBasePath: 'learn',
           },
-          // {
-          //   label: 'Developers',
-          //   to: '/developers/introduction/overview',
-          //   position: 'right',
-          //   activeBasePath: 'developers',
-          // },
           {
             label: 'Developers',
             position: 'right',
