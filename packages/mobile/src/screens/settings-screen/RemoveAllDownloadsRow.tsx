@@ -56,7 +56,7 @@ export const RemoveAllDownloadsRow = () => {
       <SettingsRowDescription>{messages.body}</SettingsRowDescription>
       <Button
         onPress={handleRemoveAllDownloads}
-        variant='destructiveAlt'
+        variant='destructive'
         style={styles.button}
         fullWidth
       >

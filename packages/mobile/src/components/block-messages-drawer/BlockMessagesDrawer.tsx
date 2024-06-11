@@ -204,7 +204,7 @@ export const BlockMessagesDrawer = () => {
         </Button>
         <Button
           onPress={handleCancelPress}
-          variant={doesBlockUser ? 'common' : 'primary'}
+          variant={doesBlockUser ? 'secondary' : 'primary'}
           styles={{
             root: styles.button,
             text: styles.blockText

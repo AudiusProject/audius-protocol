@@ -597,7 +597,7 @@ export const ShareToStoryProgressDrawer = () => {
         </Text>
         <Button
           fullWidth
-          variant='common'
+          variant='secondary'
           onPress={handleCancel}
           style={styles.button}
         >

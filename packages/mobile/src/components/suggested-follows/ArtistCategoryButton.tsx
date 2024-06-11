@@ -32,7 +32,7 @@ export const ArtistCategoryButton = (props: ArtistCategoryButtonProps) => {
   return (
     <Button
       style={styles.root}
-      variant={isSelected ? 'secondary' : 'commonAlt'}
+      variant={isSelected ? 'secondary' : 'secondary'}
       size='xs'
       onPress={handlePress}
       {...other}

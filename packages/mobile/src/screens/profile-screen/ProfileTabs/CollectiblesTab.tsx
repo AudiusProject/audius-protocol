@@ -160,7 +160,7 @@ export const CollectiblesTab = () => {
           </Text>
           <Button
             fullWidth
-            variant='commonAlt'
+            variant='secondary'
             size='small'
             iconLeft={IconShare}
             IconProps={{ height: 15, width: 15 }}

@@ -33,7 +33,7 @@ export const FollowButton = (props: FollowButtonsProps) => {
 
   const Icon = isFollowing ? IconUserFollowing : IconUserFollow
 
-  const variant = isFollowing ? 'primary' : 'primaryAlt'
+  const variant = isFollowing ? 'primary' : 'secondary'
 
   const handlePress = useCallback(
     (event: GestureResponderEvent) => {

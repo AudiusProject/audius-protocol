@@ -12,7 +12,7 @@ import { useThemeColors, useThemePalette } from 'app/utils/theme'
 export enum ButtonType {
   PRIMARY = 'primary',
   SECONDARY = 'secondary',
-  COMMON = 'common'
+  COMMON = 'secondary-tmp'
 }
 
 type ButtonTypeStyleConfig = { type: ButtonType; palette: ThemeColors }

@@ -146,7 +146,7 @@ export const AudioMatchingChallengeDrawerContent = ({
         ) : (
           <Button
             {...ctaButtonProps[challengeName]}
-            variant='commonAlt'
+            variant='secondary'
             onPress={onNavigate}
             fullWidth
           />

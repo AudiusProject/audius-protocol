@@ -123,7 +123,7 @@ export const GatedContentUploadPromptDrawer = ({
         </TouchableOpacity>
         <Button
           onPress={handleClose}
-          variant='commonAlt'
+          variant='secondary'
           size='large'
           styles={{
             root: styles.button,

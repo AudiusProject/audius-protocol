@@ -182,7 +182,7 @@ const DrawerContent = ({ data, onClose }: DrawerContentProps) => {
           <Button
             key={messages.learnMore}
             onPress={handleLearnMorePress}
-            variant={'common'}
+            variant={'secondary'}
             styles={{
               root: styles.button,
               text: styles.buttonText
@@ -241,7 +241,7 @@ const DrawerContent = ({ data, onClose }: DrawerContentProps) => {
           <Button
             key={messages.cancel}
             onPress={onClose}
-            variant={'common'}
+            variant={'secondary'}
             styles={{
               root: styles.button,
               text: styles.buttonText

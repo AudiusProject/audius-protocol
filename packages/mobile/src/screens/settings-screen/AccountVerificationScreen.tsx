@@ -363,7 +363,7 @@ export const AccountVerificationScreen = () => {
         <Text style={styles.profileHandle}>@{accountHandle}</Text>
       </View>
       <Button
-        variant='commonAlt'
+        variant='secondary'
         size='large'
         styles={{
           root: [styles.buttonContainer],

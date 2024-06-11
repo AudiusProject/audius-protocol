@@ -150,7 +150,7 @@ export const CollectibleDetailsDrawer = () => {
             )}
             <Button
               style={styles.shareButton}
-              variant='commonAlt'
+              variant='secondary'
               size='large'
               fullWidth
               onPress={handleShare}

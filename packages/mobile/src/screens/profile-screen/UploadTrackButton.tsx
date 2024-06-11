@@ -28,7 +28,7 @@ export const UploadTrackButton = () => {
   return (
     <View pointerEvents='box-none' style={styles.root}>
       <Button
-        variant='common'
+        variant='secondary'
         iconLeft={IconCloudUpload}
         fullWidth
         onPress={handlePress}

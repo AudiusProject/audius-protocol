@@ -107,7 +107,7 @@ export const DeleteChatDrawer = () => {
         </Button>
         <Button
           onPress={closeDrawer}
-          variant={'common'}
+          variant={'secondary'}
           styles={{
             root: styles.button,
             text: styles.blockText

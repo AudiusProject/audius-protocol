@@ -211,7 +211,7 @@ export const Panel = ({
         {
           <Button
             fullWidth
-            variant='common'
+            variant='secondary'
             iconRight={hasDisbursed ? undefined : IconArrowRight}
             size='medium'
             onPress={onPress}

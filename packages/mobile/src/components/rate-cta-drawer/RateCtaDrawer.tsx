@@ -128,7 +128,7 @@ export const RateCtaDrawer = () => {
                 icon: styles.buttonIcon,
                 text: styles.buttonText
               }}
-              variant='commonAlt'
+              variant='secondary'
               onPress={handleReviewConfirm}
             >
               {messages.confirmText}
@@ -141,7 +141,7 @@ export const RateCtaDrawer = () => {
                 icon: styles.buttonIcon,
                 text: styles.buttonText
               }}
-              variant='commonAlt'
+              variant='secondary'
               onPress={handleReviewDeny}
             >
               {messages.cancelText}

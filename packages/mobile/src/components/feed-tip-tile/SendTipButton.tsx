@@ -74,7 +74,7 @@ export const SendTipButton = (props: SendTipButtonProps) => {
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
         size='small'
-        variant='common'
+        variant='secondary'
         corners='pill'
         fullWidth
       >

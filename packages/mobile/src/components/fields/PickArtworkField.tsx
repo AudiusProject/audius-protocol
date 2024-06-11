@@ -107,7 +107,7 @@ export const PickArtworkField = (props: PickArtworkFieldProps) => {
         </View>
         <View style={styles.button}>
           <Button
-            variant='secondaryAlt'
+            variant='secondary'
             size='large'
             iconLeft={IconPencil}
             onPress={onPress ?? handleChangeArtwork}

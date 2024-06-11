@@ -417,7 +417,7 @@ const RenderForm = ({
           {page === PurchaseContentPage.TRANSFER ? (
             <Button
               onPress={handleGoBackPress}
-              variant='common'
+              variant='secondary'
               size='large'
               fullWidth
             >

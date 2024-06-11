@@ -42,7 +42,7 @@ export const LeavingAudiusDrawer = () => {
         <Button onPress={onLinkPress} fullWidth>
           {messages.visit}
         </Button>
-        <Button variant='common' onPress={onClose} fullWidth>
+        <Button variant='secondary' onPress={onClose} fullWidth>
           {messages.back}
         </Button>
       </View>

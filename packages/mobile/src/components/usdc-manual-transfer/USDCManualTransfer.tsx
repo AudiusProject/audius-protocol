@@ -177,7 +177,12 @@ export const USDCManualTransfer = ({
             >
               {messages.copy}
             </Button>
-            <Button onPress={onClose} variant='common' size='large' fullWidth>
+            <Button
+              onPress={onClose}
+              variant='secondary'
+              size='large'
+              fullWidth
+            >
               {messages.goBack}
             </Button>
           </>

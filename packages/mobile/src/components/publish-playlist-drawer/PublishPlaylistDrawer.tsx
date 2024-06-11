@@ -128,7 +128,7 @@ export const PublishPlaylistDrawer = () => {
           >
             {messages.buttonConfirmText}
           </Button>
-          <Button variant='common' size='large' fullWidth onPress={onClose}>
+          <Button variant='secondary' size='large' fullWidth onPress={onClose}>
             {messages.buttonCancelText}
           </Button>
         </View>

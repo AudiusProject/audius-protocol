@@ -18,12 +18,7 @@ export const EditProfileButton = (props: EditProfileButtonProps) => {
 
   return (
     <OnlineOnly>
-      <Button
-        variant='primaryAlt'
-        onPress={handlePress}
-        size='small'
-        {...props}
-      >
+      <Button variant='secondary' onPress={handlePress} size='small' {...props}>
         Edit Profile
       </Button>
     </OnlineOnly>

@@ -71,7 +71,7 @@ export const SignOutConfirmationDrawer = () => {
             root: styles.buttonRoot,
             text: { textTransform: 'uppercase' }
           }}
-          variant='common'
+          variant='secondary'
           onPress={handleSignOut}
         >
           {messages.confirmText}

@@ -85,7 +85,7 @@ export const FormScreen = (props: FormScreenProps) => {
       {onSubmit ? (
         <>
           <Button
-            variant='commonAlt'
+            variant='secondary'
             size='large'
             style={styles.bottomButton}
             onPress={handleCancel}

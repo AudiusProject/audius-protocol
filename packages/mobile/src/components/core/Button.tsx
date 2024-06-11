@@ -24,16 +24,7 @@ import { useThemeColors, useThemePalette } from 'app/utils/theme'
 
 import { Link } from './Link'
 
-export type ButtonVariant =
-  | 'primary'
-  | 'primaryAlt'
-  | 'secondary'
-  | 'secondaryAlt'
-  | 'common'
-  | 'commonAlt'
-  | 'commonSecondary'
-  | 'destructive'
-  | 'destructiveAlt'
+export type ButtonVariant = 'primary' | 'secondary' | 'destructive'
 
 type ButtonSize = 'xs' | 'small' | 'medium' | 'large'
 type ButtonCorners = 'rounded' | 'pill'

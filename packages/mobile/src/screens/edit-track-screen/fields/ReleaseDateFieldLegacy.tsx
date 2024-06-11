@@ -58,7 +58,7 @@ const ConfirmDateButton = (props: CustomConfirmButtonPropTypes) => {
 const CancelDateButton = (props: CustomCancelButtonPropTypes) => {
   const { label, onPress } = props
   return (
-    <Button variant='commonAlt' size='large' fullWidth onPress={onPress}>
+    <Button variant='secondary' size='large' fullWidth onPress={onPress}>
       {label}
     </Button>
   )
