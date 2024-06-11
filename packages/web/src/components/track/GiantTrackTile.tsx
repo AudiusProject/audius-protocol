@@ -22,7 +22,8 @@ import {
   formatSeconds,
   formatDate,
   getDogEarType,
-  Nullable
+  Nullable,
+  formatReleaseDate
 } from '@audius/common/utils'
 import {
   Text,
@@ -42,7 +43,7 @@ import IconTrending from '@audius/harmony/src/assets/icons/Trending.svg'
 import IconVisibilityHidden from '@audius/harmony/src/assets/icons/VisibilityHidden.svg'
 import { Mood } from '@audius/sdk'
 import cn from 'classnames'
-import moment from 'moment'
+import dayjs from 'dayjs'
 import { useDispatch, shallowEqual, useSelector } from 'react-redux'
 
 import { TextLink, UserLink } from 'components/link'
@@ -57,7 +58,6 @@ import { ComponentPlacement } from 'components/types'
 import { UserGeneratedText } from 'components/user-generated-text'
 import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import { moodMap } from 'utils/Moods'
-import { getLocalTimezone } from 'utils/dateUtils'
 import { trpc } from 'utils/trpcClientWeb'
 
 import { AiTrackSection } from './AiTrackSection'
@@ -101,9 +101,7 @@ const messages = {
   actionGroupLabel: 'track actions',
   hidden: 'hidden',
   releases: (releaseDate: string) =>
-    `Releases ${moment(releaseDate).format(
-      'M/D/YY [@] h:mm A'
-    )} ${getLocalTimezone()}`
+    `Releases ${formatReleaseDate({ date: releaseDate, withHour: true })}`
 }
 
 export type GiantTrackTileProps = {
@@ -229,7 +227,7 @@ export const GiantTrackTile = ({
   // Play button is conditionally hidden for USDC-gated tracks when the user does not have access
   const showPlay = isUSDCPurchaseGated ? hasStreamAccess : true
   const isPlaylistAddable = useIsGatedContentPlaylistAddable(track)
-  const shouldShowScheduledRelease = moment(releaseDate).isAfter(moment())
+  const shouldShowScheduledRelease = dayjs(releaseDate).isAfter(dayjs())
   const { data: albumInfo } = trpc.tracks.getAlbumBacklink.useQuery(
     { trackId },
     { enabled: !!trackId }
