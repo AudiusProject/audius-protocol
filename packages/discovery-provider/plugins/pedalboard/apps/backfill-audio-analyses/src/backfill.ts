@@ -84,7 +84,7 @@ async function analyzeAudio(libs: AudiusLibs, contentNodes: string[], track: Tra
         timestamp,
         uploadId: audioUploadId
       };
-      const signature = generateSignature(dataToSign, config.audiusDelegatePrivateKey);
+      const signature = generateSignature(dataToSign, config.delegatePrivateKey);
       const queryParams = new URLSearchParams({ signature });
       const response = await axios.post<AnalysisResult>(`${analysisUrl}?${queryParams.toString()}`, null, { timeout: REQUEST_TIMEOUT });
       if (response.status === 200) {
