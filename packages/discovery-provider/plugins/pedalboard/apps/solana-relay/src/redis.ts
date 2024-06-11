@@ -5,7 +5,7 @@ import { config } from './config'
 let redisClient: RedisClientType
 let isReady: boolean
 
-const getRedisConnection = async () => {
+export const getRedisConnection = async () => {
   if (!isReady) {
     redisClient = createClient({ url: config.redisUrl })
     redisClient.on('ready', () => {
