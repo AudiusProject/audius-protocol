@@ -286,7 +286,7 @@ type GetSearchArgs = {
   includePurchaseable?: boolean
   genre?: Genre
   mood?: Mood
-  is_verified?: boolean
+  isVerified?: boolean
 }
 
 type TrendingIdsResponse = {
@@ -679,6 +679,7 @@ export class AudiusAPIClient {
 
     this._assertInitialized()
 
+    // TODO: pass currentUserId
     const trackUrl = await this._getResponse<APIResponse<string>>(
       FULL_ENDPOINT_MAP.getTrackStreamUrl(encodedTrackId),
       queryParams,
@@ -1124,7 +1125,7 @@ export class AudiusAPIClient {
     includePurchaseable,
     genre,
     mood,
-    is_verified
+    isVerified
   }: GetSearchArgs) {
     this._assertInitialized()
     const encodedUserId = encodeHashId(currentUserId)
@@ -1137,7 +1138,7 @@ export class AudiusAPIClient {
       includePurchaseable,
       genre,
       mood,
-      is_verified
+      is_verified: isVerified
     }
 
     const searchResponse =

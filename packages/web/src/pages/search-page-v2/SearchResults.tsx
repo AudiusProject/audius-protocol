@@ -30,7 +30,7 @@ import { LineupVariant } from 'components/lineup/types'
 import { UserCard } from 'components/user-card'
 import { useRouteMatch } from 'hooks/useRouteMatch'
 import { useSelector } from 'utils/reducer'
-import { SEARCH_CATEGORY_PAGE } from 'utils/route'
+import { SEARCH_PAGE } from 'utils/route'
 
 import { NoResultsTile } from './NoResultsTile'
 import { useUpdateSearchParams } from './utils'
@@ -92,13 +92,14 @@ export const SearchResults = ({ query }: SearchResultsProps) => {
   const playing = useSelector(getPlaying)
   const buffering = useSelector(getBuffering)
   const results = useSelector(searchResultsPageSelectors.getSearchResults)
-  const categoryMatch = useRouteMatch<{
-    query: string
+  const routeMatch = useRouteMatch<{
     category: string
-    genre?: Genre
-    mood?: Mood
-    is_verified?: boolean
-  }>(SEARCH_CATEGORY_PAGE)
+  }>(SEARCH_PAGE)
+  const [urlSearchParams] = useSearchParams()
+  const sort = urlSearchParams.get('sort')
+  const genre = urlSearchParams.get('genre')
+  const mood = urlSearchParams.get('mood')
+  const isVerified = urlSearchParams.get('is_verified')
 
   const isLoading = results.status === Status.LOADING
   const dispatch = useDispatch()
@@ -109,23 +110,24 @@ export const SearchResults = ({ query }: SearchResultsProps) => {
         kind: SearchKind.ALL,
         limit: 50,
         offset: 0,
-        genre,
-        mood,
-        is_verified
+        genre: (genre || undefined) as Genre,
+        mood: (mood || undefined) as Mood,
+        isVerified: isVerified === 'true'
       })
     )
   }, [dispatch, query])
 
   const isCategoryActive = useCallback(
-    (category: Category) => categoryMatch?.category === category,
-    [categoryMatch]
+    (category: Category) => routeMatch?.category === category,
+    [routeMatch]
   )
   const isCategoryVisible = useCallback(
     (category: Category) =>
-      !categoryMatch ||
-      categoryMatch.category === Category.ALL ||
-      categoryMatch.category === category,
-    [categoryMatch]
+      !routeMatch ||
+      routeMatch.category === undefined ||
+      routeMatch.category === Category.ALL ||
+      routeMatch.category === category,
+    [routeMatch]
   )
 
   const profileLimit = isCategoryActive(Category.PROFILES)
@@ -167,8 +169,6 @@ export const SearchResults = ({ query }: SearchResultsProps) => {
   const isTrackGridLayout =
     !isCategoryActive(Category.TRACKS) || tracksLayout === 'grid'
 
-  const [urlSearchParams] = useSearchParams()
-  const sort = urlSearchParams.get('sort')
   const updateSearchParams = useUpdateSearchParams('sort')
 
   const sortButton = (

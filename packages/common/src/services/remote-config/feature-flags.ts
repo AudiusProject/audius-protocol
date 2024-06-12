@@ -70,7 +70,8 @@ export enum FeatureFlags {
   EDIT_TRACK_REDESIGN = 'edit_track_redesign',
   // Performance POC flags:
   USE_RN_VIDEO_PLAYER = 'USE_RN_VIDEO_PLAYER',
-  SKIP_STREAM_CHECK = 'skip_stream_check'
+  SKIP_STREAM_CHECK = 'skip_stream_check',
+  PREFETCH_STREAM_URLS = 'prefetch_stream_urls'
 }
 
 type FlagDefaults = Record<FeatureFlags, boolean>
@@ -155,5 +156,6 @@ export const flagDefaults: FlagDefaults = {
   [FeatureFlags.PAYOUT_WALLET_ENABLED]: false,
   [FeatureFlags.EDIT_TRACK_REDESIGN]: false,
   [FeatureFlags.USE_RN_VIDEO_PLAYER]: false,
-  [FeatureFlags.SKIP_STREAM_CHECK]: false
+  [FeatureFlags.SKIP_STREAM_CHECK]: false,
+  [FeatureFlags.PREFETCH_STREAM_URLS]: false
 }

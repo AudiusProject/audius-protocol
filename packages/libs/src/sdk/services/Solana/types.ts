@@ -38,9 +38,7 @@ export const PublicKeySchema = z.union([
 
 export const RelaySchema = z
   .object({
-    transaction: z.custom<VersionedTransaction | Transaction>(
-      (tx) => tx instanceof VersionedTransaction || tx instanceof Transaction
-    ),
+    transaction: z.custom<VersionedTransaction | Transaction>(),
     /**
      * Confirmation options used when sending the transaction on the server.
      * @see {@link https://solana-labs.github.io/solana-web3.js/classes/Connection.html#confirmTransaction confirmTransaction}

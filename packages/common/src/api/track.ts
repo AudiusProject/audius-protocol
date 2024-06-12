@@ -1,8 +1,5 @@
 import { createApi } from '~/audius-query'
 import { ID, Kind } from '~/models'
-import { FeatureFlags } from '~/services'
-import { CommonState } from '~/store'
-import { getQueryParams } from '~/utils'
 import { parseTrackRouteFromPermalink } from '~/utils/stringUtils'
 import { Nullable } from '~/utils/typeUtils'
 
@@ -31,33 +28,6 @@ const trackApi = createApi({
         idArgKey: 'id',
         kind: Kind.TRACKS,
         schemaKey: 'track'
-      }
-    },
-    getTrackStreamUrl: {
-      fetch: async (
-        { id, currentUserId }: { id: ID; currentUserId?: Nullable<ID> },
-        { apiClient, audiusBackend, getFeatureEnabled }
-      ) => {
-        const usePrefetchStreamUrls = getFeatureEnabled(
-          FeatureFlags.SKIP_STREAM_CHECK // TODO: replace with correct feature flag
-        )
-
-        if (id === -1 || !usePrefetchStreamUrls) {
-          return
-        }
-        const queryParams = await getQueryParams({
-          audiusBackendInstance: audiusBackend
-        })
-        return await apiClient.getTrackStreamUrl({
-          id,
-          currentUserId,
-          queryParams
-        })
-      },
-      options: {
-        idArgKey: 'stream-url',
-        kind: Kind.TRACKS,
-        schemaKey: 'stream-url'
       }
     },
     getTrackByPermalink: {
@@ -125,21 +95,9 @@ const trackApi = createApi({
 
 export const {
   useGetTrackById,
-  useGetTrackStreamUrl,
   useGetTrackByPermalink,
   useGetTracksByIds,
   useGetUserTracksByHandle
 } = trackApi.hooks
 export const trackApiFetch = trackApi.fetch
 export const trackApiReducer = trackApi.reducer
-
-export const getTrackStreamUrls = (state: CommonState) =>
-  state.api.trackApi.getTrackStreamUrl
-
-export const getTrackStreamUrl = (
-  state: CommonState,
-  { trackId, currentUserId }: { trackId: ID; currentUserId?: Nullable<ID> }
-) =>
-  state.api?.trackApi?.getTrackStreamUrl?.[
-    `{"id":${trackId},"currentUserId":${currentUserId}}`
-  ]?.nonNormalizedData?.['stream-url']

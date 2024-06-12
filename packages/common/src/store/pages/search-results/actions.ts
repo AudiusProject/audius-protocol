@@ -69,7 +69,7 @@ type FetchSearchPageResultsActionArgs = {
   offset: number
   genre?: Genre
   mood?: Mood
-  is_verified?: boolean
+  isVerified?: boolean
 }
 
 export const fetchSearchPageResults = (
