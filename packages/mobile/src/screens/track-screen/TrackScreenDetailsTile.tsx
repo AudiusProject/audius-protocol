@@ -134,7 +134,8 @@ export const TrackScreenDetailsTile = ({
     ddex_app: ddexApp,
     is_delete,
     duration,
-    release_date
+    release_date: releaseDate,
+    is_scheduled_release: isScheduledRelease
   } = track
 
   const isOwner = owner_id === currentUserId
@@ -272,7 +273,7 @@ export const TrackScreenDetailsTile = ({
       albumInfo ? OverflowAction.VIEW_ALBUM_PAGE : null,
       OverflowAction.VIEW_ARTIST_PAGE,
       isOwner && !ddexApp ? OverflowAction.EDIT_TRACK : null,
-      isOwner && track?.is_scheduled_release && track?.isUnlisted
+      isOwner && isScheduledRelease && isUnlisted
         ? OverflowAction.RELEASE_NOW
         : null,
       isOwner && !ddexApp ? OverflowAction.DELETE_TRACK : null
@@ -339,7 +340,7 @@ export const TrackScreenDetailsTile = ({
       contentType={PurchaseableContentType.TRACK}
       ddexApp={ddexApp}
       duration={duration}
-      releaseDate={release_date}
+      releaseDate={releaseDate}
     />
   )
 }
