@@ -17,6 +17,11 @@ import {
 
 import { assertRelayAllowedInstructions } from './assertRelayAllowedInstructions'
 
+/**
+ * Gets the specified fee payer's key pair from the config.
+ * @param feePayerPublicKey the fee payer to find
+ * @returns the Keypair of the given fee payer or null if not found
+ */
 const getFeePayerKeyPair = (feePayerPublicKey?: PublicKey) => {
   if (!feePayerPublicKey) {
     return null
@@ -63,6 +68,14 @@ const verifySignatures = (transaction: VersionedTransaction) => {
   return true
 }
 
+/**
+ * The core Solana relay route, /solana/relay.
+ *
+ * This endpoint takes a transaction and some options in the POST body,
+ * and signs the transaction (if necessary) and sends it (with retry logic).
+ * If successful, it broadcasts the resulting transaction metadata to the
+ * other discovery nodes to help them save on RPC calls when indexing.
+ */
 export const relay = async (
   req: Request<unknown, unknown, RelayRequestBody>,
   res: Response,
