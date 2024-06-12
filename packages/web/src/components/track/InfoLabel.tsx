@@ -1,22 +1,26 @@
-import { ReactElement } from 'react'
+import { PropsWithChildren } from 'react'
 
 import { Text } from '@audius/harmony'
+import { Mood } from '@audius/sdk'
 
-type InfoLabelProps = {
-  labelName: string
-  labelValue: string | ReactElement
-}
+import { moodMap } from 'utils/Moods'
+
+type InfoLabelProps = PropsWithChildren<{
+  label: string
+}>
 
 export const InfoLabel = (props: InfoLabelProps) => {
-  const { labelName, labelValue } = props
+  const { label, children } = props
 
   return (
     <Text>
       <Text variant='label' color='subdued' tag='span'>
-        {labelName}
+        {label}
       </Text>{' '}
       <Text variant='body' size='s' strength='strong'>
-        {labelValue}
+        {label === 'Mood' && (children as Mood) in moodMap
+          ? moodMap[children as Mood]
+          : children}
       </Text>
     </Text>
   )

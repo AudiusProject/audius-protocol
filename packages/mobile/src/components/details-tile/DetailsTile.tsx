@@ -41,15 +41,15 @@ import { makeStyles } from 'app/styles'
 
 import { OfflineStatusRow } from '../offline-downloads'
 
+import { CollectionSecondaryStats } from './CollectionSecondaryStats'
 import { DeletedTile } from './DeletedTile'
 import { DetailsProgressInfo } from './DetailsProgressInfo'
 import { DetailsTileActionButtons } from './DetailsTileActionButtons'
 import { DetailsTileAiAttribution } from './DetailsTileAiAttribution'
 import { DetailsTileHasAccess } from './DetailsTileHasAccess'
-import { DetailsTileMetadata } from './DetailsTileMetadata'
 import { DetailsTileNoAccess } from './DetailsTileNoAccess'
 import { DetailsTileStats } from './DetailsTileStats'
-import { SecondaryStats } from './SecondaryStats'
+import { TrackSecondaryStats } from './TrackSecondaryStats'
 import type { DetailsTileProps } from './types'
 
 const { getTrackId } = playerSelectors
@@ -118,8 +118,6 @@ export const DetailsTile = ({
   onPressSave,
   onPressShare,
   playCount,
-  duration,
-  trackCount,
   renderBottomContent,
   renderImage,
   repostCount,
@@ -129,8 +127,7 @@ export const DetailsTile = ({
   user,
   track,
   ddexApp,
-  releaseDate,
-  updatedAt
+  releaseDate
 }: DetailsTileProps) => {
   const { isEnabled: isNewPodcastControlsEnabled } = useFeatureFlag(
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
@@ -412,20 +409,11 @@ export const DetailsTile = ({
             </UserGeneratedText>
           </Box>
         ) : null}
-        <DetailsTileMetadata
-          id={contentId}
-          genre={track?.genre}
-          mood={track?.mood}
-        />
-        <SecondaryStats
-          isCollection={isCollection}
-          playCount={playCount}
-          duration={duration}
-          trackCount={trackCount}
-          releaseDate={releaseDate}
-          updatedAt={updatedAt}
-          hidePlayCount={hidePlayCount}
-        />
+        {isCollection ? (
+          <CollectionSecondaryStats collectionId={contentId} />
+        ) : (
+          <TrackSecondaryStats trackId={contentId} />
+        )}
         {renderTags()}
         <OfflineStatusRow contentId={contentId} isCollection={isCollection} />
       </Flex>

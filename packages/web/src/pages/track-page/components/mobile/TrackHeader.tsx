@@ -1,7 +1,10 @@
 import { Suspense, useCallback } from 'react'
 
 import { imageBlank as placeholderArt } from '@audius/common/assets'
-import { useIsGatedContentPlaylistAddable } from '@audius/common/hooks'
+import {
+  useIsGatedContentPlaylistAddable,
+  useTrackSecondaryStats
+} from '@audius/common/hooks'
 import {
   SquareSizes,
   isContentCollectibleGated,
@@ -19,9 +22,6 @@ import {
   cacheTracksSelectors
 } from '@audius/common/store'
 import {
-  getCanonicalName,
-  formatSeconds,
-  formatDate,
   getDogEarType,
   Nullable,
   formatReleaseDate
@@ -54,6 +54,7 @@ import { SearchTag } from 'components/search/SearchTag'
 import { AiTrackSection } from 'components/track/AiTrackSection'
 import { DownloadSection } from 'components/track/DownloadSection'
 import { GatedContentSection } from 'components/track/GatedContentSection'
+import { InfoLabel } from 'components/track/InfoLabel'
 import { UserGeneratedText } from 'components/user-generated-text'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 import { moodMap } from 'utils/Moods'
@@ -166,7 +167,6 @@ const TrackHeader = ({
   isOwner,
   isFollowing,
   releaseDate,
-  duration,
   isLoading,
   isPlaying,
   isPreviewing,
@@ -183,8 +183,6 @@ const TrackHeader = ({
   repostCount,
   listenCount,
   mood,
-  credits,
-  genre,
   tags,
   aiAttributedUserId,
   onPlay,
@@ -231,25 +229,13 @@ const TrackHeader = ({
   }
   const filteredTags = (tags || '').split(',').filter(Boolean)
 
-  const trackLabels: { isHidden?: boolean; label: string; value: any }[] = [
-    {
-      label: 'Duration',
-      value: formatSeconds(duration)
-    },
-    {
-      label: 'Genre',
-      isHidden: isUnlisted && !fieldVisibility?.genre,
-      value: getCanonicalName(genre)
-    },
-    { value: formatDate(releaseDate), label: 'Released', isHidden: isUnlisted },
-    {
-      isHidden: isUnlisted && !fieldVisibility?.mood,
-      label: 'Mood',
-      // @ts-ignore
-      value: mood && mood in moodMap ? moodMap[mood] : mood
-    },
-    { label: 'Credit', value: credits }
-  ].filter(({ isHidden, value }) => !isHidden && !!value)
+  const { labels } = useTrackSecondaryStats({
+    duration: track?.duration,
+    isUnlisted,
+    genre: track?.genre,
+    releaseDate: track?.release_date,
+    mood: track?.mood
+  })
 
   const onClickOverflow = () => {
     const overflowActions = [
@@ -297,14 +283,17 @@ const TrackHeader = ({
   }
 
   const renderTrackLabels = () => {
-    return trackLabels.map((infoFact) => {
-      return (
-        <div key={infoFact.label} className={styles.infoFact}>
-          <div className={styles.infoLabel}>{infoFact.label}</div>
-          <div className={styles.infoValue}>{infoFact.value}</div>
-        </div>
-      )
-    })
+    return (
+      <Flex direction='row' gap='l' wrap='wrap'>
+        {labels.map(({ label, value }) => {
+          return (
+            <InfoLabel key={label} label={label}>
+              {value}
+            </InfoLabel>
+          )
+        })}
+      </Flex>
+    )
   }
 
   const onClickFavorites = useCallback(() => {

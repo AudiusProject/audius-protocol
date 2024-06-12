@@ -3,9 +3,16 @@ import { memo, useCallback } from 'react'
 import { useGetCurrentUserId, useGetPlaylistById } from '@audius/common/api'
 import {
   useGatedContentAccessMap,
-  useGatedContentAccess
+  useGatedContentAccess,
+  useCollectionSecondaryStats
 } from '@audius/common/hooks'
-import { Variant, SquareSizes, ID, ModalSource } from '@audius/common/models'
+import {
+  Variant,
+  SquareSizes,
+  ID,
+  ModalSource,
+  Track
+} from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import {
   CommonState,
@@ -24,6 +31,7 @@ import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { UserLink } from 'components/link'
 import Skeleton from 'components/skeleton/Skeleton'
 import { GatedContentSection } from 'components/track/GatedContentSection'
+import { InfoLabel } from 'components/track/InfoLabel'
 import { UserGeneratedText } from 'components/user-generated-text'
 import { useCollectionCoverArt } from 'hooks/useCollectionCoverArt'
 import { useFlag } from 'hooks/useRemoteConfig'
@@ -31,7 +39,6 @@ import ActionButtonRow from 'pages/track-page/components/mobile/ActionButtonRow'
 import { isShareToastDisabled } from 'utils/clipboardUtil'
 import { isDarkMode } from 'utils/theme/theme'
 
-import { AlbumDetailsText } from '../components/AlbumDetailsText'
 import { RepostsFavoritesStats } from '../components/RepostsFavoritesStats'
 import { CollectionHeaderProps } from '../types'
 
@@ -74,13 +81,9 @@ const CollectionHeader = ({
   isOwner = false,
   isReposted = false,
   isSaved = false,
-  releaseDate,
-  lastModifiedDate,
-  numTracks,
   isPlayable,
   streamConditions,
   access,
-  duration,
   isPublished = false,
   isPublishing = false,
   isAlbum = false,
@@ -130,6 +133,16 @@ const CollectionHeader = ({
 
   const showPremiumSection =
     isPremiumAlbumsEnabled && isAlbum && streamConditions && collectionId
+
+  const { labels } = useCollectionSecondaryStats({
+    duration:
+      tracks?.reduce((acc: number, track: Track) => acc + track.duration, 0) ??
+      0,
+    numTracks: collection?.playlist_contents?.track_ids?.length,
+    isScheduledRelease: collection?.is_scheduled_release,
+    releaseDate: collection?.release_date,
+    updatedAt: collection?.updated_at
+  })
 
   const onSaveCollection = () => {
     if (!isOwner) onSave?.()
@@ -327,12 +340,15 @@ const CollectionHeader = ({
             {description}
           </UserGeneratedText>
         ) : null}
-        <AlbumDetailsText
-          duration={duration}
-          lastModifiedDate={lastModifiedDate}
-          numTracks={numTracks}
-          releaseDate={releaseDate}
-        />
+        <Flex direction='row' gap='l' wrap='wrap'>
+          {labels.map(({ label, value }) => {
+            return (
+              <InfoLabel key={label} label={label}>
+                {value}
+              </InfoLabel>
+            )
+          })}
+        </Flex>
       </Flex>
     </Flex>
   )

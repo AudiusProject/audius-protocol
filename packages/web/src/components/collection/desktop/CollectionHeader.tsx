@@ -1,6 +1,7 @@
 import { ChangeEvent, useCallback, useState } from 'react'
 
-import { useGetCurrentUserId } from '@audius/common/api'
+import { useGetCurrentUserId, useGetPlaylistById } from '@audius/common/api'
+import { useCollectionSecondaryStats } from '@audius/common/hooks'
 import {
   AccessConditions,
   AccessPermissions,
@@ -35,10 +36,10 @@ import cn from 'classnames'
 import { UserLink } from 'components/link'
 import Skeleton from 'components/skeleton/Skeleton'
 import { GatedContentSection } from 'components/track/GatedContentSection'
+import { InfoLabel } from 'components/track/InfoLabel'
 import { UserGeneratedText } from 'components/user-generated-text'
 import { useFlag } from 'hooks/useRemoteConfig'
 
-import { AlbumDetailsText } from '../components/AlbumDetailsText'
 import { RepostsFavoritesStats } from '../components/RepostsFavoritesStats'
 
 import { Artwork } from './Artwork'
@@ -102,8 +103,6 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
     coverArtSizes,
     description,
     isOwner,
-    releaseDate,
-    lastModifiedDate,
     numTracks,
     isPlayable,
     duration,
@@ -131,11 +130,22 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
   const { isEnabled: isPremiumAlbumsEnabled } = useFlag(
     FeatureFlags.PREMIUM_ALBUMS_ENABLED
   )
+  const { data: currentUserId } = useGetCurrentUserId({})
+  const { data: collection } = useGetPlaylistById({
+    playlistId: collectionId,
+    currentUserId
+  })
   const [artworkLoading, setIsArtworkLoading] = useState(true)
   const [filterText, setFilterText] = useState('')
   const { spacing } = useTheme()
 
-  const { data: currentUserId } = useGetCurrentUserId({})
+  const { labels } = useCollectionSecondaryStats({
+    duration,
+    numTracks,
+    isScheduledRelease: collection?.is_scheduled_release,
+    releaseDate: collection?.release_date,
+    updatedAt: collection?.updated_at
+  })
 
   const hasStreamAccess = access?.stream
 
@@ -332,12 +342,15 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
               {description}
             </UserGeneratedText>
           ) : null}
-          <AlbumDetailsText
-            duration={duration}
-            lastModifiedDate={lastModifiedDate}
-            numTracks={numTracks}
-            releaseDate={releaseDate}
-          />
+          <Flex direction='row' gap='l' wrap='wrap'>
+            {labels.map(({ label, value }) => {
+              return (
+                <InfoLabel key={label} label={label}>
+                  {value}
+                </InfoLabel>
+              )
+            })}
+          </Flex>
         </Flex>
       )}
     </Flex>
