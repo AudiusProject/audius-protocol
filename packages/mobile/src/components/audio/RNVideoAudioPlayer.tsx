@@ -31,8 +31,8 @@ import { TrackType } from 'react-native-track-player'
 import Video from 'react-native-video'
 import { useDispatch, useSelector } from 'react-redux'
 import { usePrevious } from 'react-use'
-import { getTrackStreamUrls } from '~/api'
-import { getUserId } from '~/store/account/selectors'
+import { useFeatureFlag } from '~/hooks'
+import { FeatureFlags } from '~/services'
 
 import { DEFAULT_IMAGE_URL } from 'app/components/image/TrackImage'
 import { getImageSourceOptimistic } from 'app/hooks/useContentNodeImage'
@@ -55,7 +55,7 @@ import {
 } from 'app/store/offline-downloads/slice'
 
 const { getUsers } = cacheUsersSelectors
-const { getTracks } = cacheTracksSelectors
+const { getTracks, getTrackStreamUrls } = cacheTracksSelectors
 const { getPlaying, getSeek, getCurrentTrack, getCounter } = playerSelectors
 const { recordListen } = tracksSocialActions
 const { getPlayerBehavior } = queueSelectors
@@ -63,6 +63,8 @@ const { getIndex, getOrder, getSource, getCollectionId } = queueSelectors
 const { getIsReachable } = reachabilitySelectors
 
 const { getNftAccessSignatureMap } = gatedContentSelectors
+
+// const bufferTimes: number[] = []
 
 const unlistedTrackFallbackTrackData = {
   url: 'url',
@@ -100,7 +102,7 @@ export const RNVideoAudioPlayer = () => {
   const counter = useSelector(getCounter)
   // const repeatMode = useSelector(getRepeat)
   // const playbackRate = useSelector(getPlaybackRate)
-  const currentUserId = useSelector(getUserId)
+  // const currentUserId = useSelector(getUserId)
   // const uid = useSelector(getUid)
   // Player behavior determines whether to preview a track or play the full track
   const playerBehavior =
@@ -128,6 +130,10 @@ export const RNVideoAudioPlayer = () => {
   const queueTrackMap = useSelector(
     (state) => getTracks(state, { uids: queueTrackUids }),
     shallowCompare
+  )
+  const [bufferStartTime, setBufferStartTime] = useState<number>()
+  const { isEnabled: isPerformanceExperimentEnabled } = useFeatureFlag(
+    FeatureFlags.SKIP_STREAM_CHECK
   )
   const queueTracks: QueueableTrack[] = queueOrder.map(
     ({ id, playerBehavior }) => ({
@@ -240,13 +246,11 @@ export const RNVideoAudioPlayer = () => {
       // Get Track url
       let url: string
       // Performance POC: use a pre-fetched DN url if we have it
-      const trackStreamUrl =
-        trackStreamUrls[`{"id":${trackId},"currentUserId":${currentUserId}}`]
-          ?.nonNormalizedData?.['stream-url']
+      const trackStreamUrl = trackStreamUrls[trackId]
       if (offlineTrackAvailable && isCollectionMarkedForDownload) {
         const audioFilePath = getLocalAudioPath(trackId)
         url = `file://${audioFilePath}`
-      } else if (trackStreamUrl) {
+      } else if (trackStreamUrl && isPerformanceExperimentEnabled) {
         url = trackStreamUrl
       } else {
         let queryParams = trackQueryParams.current[trackId]
@@ -300,10 +304,10 @@ export const RNVideoAudioPlayer = () => {
       }
     },
     [
-      currentUserId,
       isCollectionMarkedForDownload,
       isNotReachable,
       isOfflineModeEnabled,
+      isPerformanceExperimentEnabled,
       nftAccessSignatureMap,
       offlineAvailabilityByTrackId,
       queueTrackOwnersMap,
@@ -497,17 +501,26 @@ export const RNVideoAudioPlayer = () => {
 
   const onLoadStart = () => {
     setTrackLoadStartTime(performance.now())
-    dispatch(playerActions.setBuffering({ buffering: true }))
+    // dispatch(playerActions.setBuffering({ buffering: true }))
   }
 
   const onLoadFinish = () => {
     setTrackLoadStartTime(performance.now())
-    if (trackLoadStartTime) {
-      const bufferDuration = Math.ceil(performance.now() - trackLoadStartTime)
-      // console.log(`-- Song buffer duration: ${bufferDuration}ms`)
-      analyticsTrack(
-        make({ eventName: Name.BUFFERING_TIME, duration: bufferDuration })
-      )
+    if (trackLoadStartTime && bufferStartTime) {
+      const ttp = Math.ceil(performance.now() - bufferStartTime)
+      // bufferTimes.push(ttp)
+      // const currentAvg =
+      //   bufferTimes.reduce((a, b) => a + b, 0) / bufferTimes.length
+
+      // const bufferDuration = Math.ceil(performance.now() - trackLoadStartTime)
+
+      // console.log(
+      //   `-- Time till play: ${ttp}ms. Current avg: ${currentAvg}ms. Sample Size: ${bufferTimes.length}`
+      // )
+      // console.log(
+      //   `-- Buffer duration: ${bufferDuration}ms - diff=${ttp - bufferDuration}`
+      // )
+      analyticsTrack(make({ eventName: Name.BUFFERING_TIME, duration: ttp }))
     }
     dispatch(playerActions.setBuffering({ buffering: false }))
   }
@@ -517,30 +530,42 @@ export const RNVideoAudioPlayer = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [queueIndex, isQueueLoaded]) // need to recompute track if the queue isn't loaded
 
-  return (
-    trackURI && (
-      <Video
-        source={{ uri: trackURI }}
-        ref={videoRef}
-        playInBackground
-        playWhenInactive
-        allowsExternalPlayback={false}
-        audioOnly
-        progressUpdateInterval={100}
-        // TODO: casting features not implemented
-        // Mute playback if we are casting to an external source
-        // muted={isCasting}
-        onError={handleError}
-        onEnd={() => {
-          onNext()
-        }}
-        ignoreSilentSwitch='ignore'
-        onLoadStart={onLoadStart}
-        onLoad={onLoadFinish}
-        // TODO: repeating mode not implemented
-        // repeat={repeatMode === RepeatMode.SINGLE}
-        paused={!isPlaying}
-      />
-    )
-  )
+  useEffect(() => {
+    if (trackURI) {
+      setBufferStartTime(performance.now())
+      dispatch(playerActions.setBuffering({ buffering: true }))
+    }
+  }, [dispatch, trackURI])
+
+  return trackURI ? (
+    <Video
+      source={{ uri: trackURI }}
+      ref={videoRef}
+      playInBackground
+      playWhenInactive
+      allowsExternalPlayback={false}
+      audioOnly
+      progressUpdateInterval={10000}
+      // TODO: casting features not implemented
+      // Mute playback if we are casting to an external source
+      // muted={isCasting}
+      onError={handleError}
+      onEnd={() => {
+        onNext()
+      }}
+      ignoreSilentSwitch='ignore'
+      onLoadStart={onLoadStart}
+      onLoad={onLoadFinish}
+      // TODO: repeating mode not implemented
+      // repeat={repeatMode === RepeatMode.SINGLE}
+      paused={!isPlaying}
+      automaticallyWaitsToMinimizeStalling={false}
+      bufferConfig={{
+        minBufferMs: 1000,
+        maxBufferMs: 50000,
+        bufferForPlaybackMs: 1000,
+        bufferForPlaybackAfterRebufferMs: 2000
+      }}
+    />
+  ) : null
 }
