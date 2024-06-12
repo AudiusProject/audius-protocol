@@ -676,6 +676,7 @@ export class AudiusAPIClient {
 
     this._assertInitialized()
 
+    // TODO: pass currentUserId
     const trackUrl = await this._getResponse<APIResponse<string>>(
       FULL_ENDPOINT_MAP.getTrackStreamUrl(encodedTrackId),
       queryParams,
