@@ -29,7 +29,7 @@
     "csv-stringify": "6.5.0",
     "csv-writer": "1.6.0",
     "envalid": "8.0.0",
-    "knex": "3.0.1",
+    "knex": "2.5.1",
     "pg": "8.11.5"
   }
 }
