@@ -47,6 +47,7 @@ class FullSearch(Resource):
         include_purchaseable = parse_bool_param(args.get("includePurchaseable"))
         genres = args.get("genre")
         moods = args.get("mood")
+        is_verified = parse_bool_param(args.get("is_verified"))
 
         search_args = {
             "is_auto_complete": False,
@@ -60,6 +61,7 @@ class FullSearch(Resource):
             "include_purchaseable": include_purchaseable,
             "genres": genres,
             "moods": moods,
+            "only_verified": is_verified,
         }
         resp = search(search_args)
         return success_response(resp)

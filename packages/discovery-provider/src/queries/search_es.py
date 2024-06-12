@@ -49,6 +49,7 @@ def search_es_full(args: dict):
     include_purchaseable = args.get("include_purchaseable", False)
     genres = args.get("genres", [])
     moods = args.get("moods", [])
+    only_verified = args.get("only_verified", False)
     do_tracks = search_type == "all" or search_type == "tracks"
     do_users = search_type == "all" or search_type == "users"
     do_playlists = search_type == "all" or search_type == "playlists"
@@ -83,7 +84,12 @@ def search_es_full(args: dict):
         mdsl.extend(
             [
                 {"index": ES_USERS},
-                user_dsl(search_str, current_user_id),
+                user_dsl(
+                    search_str=search_str,
+                    current_user_id=current_user_id,
+                    must_saved=False,
+                    only_verified=only_verified,
+                ),
             ]
         )
 
@@ -466,7 +472,7 @@ def track_dsl(
     return default_function_score(dsl, "repost_count")
 
 
-def user_dsl(search_str, current_user_id, must_saved=False):
+def user_dsl(search_str, current_user_id, only_verified, must_saved=False):
     # must_search_str = search_str + " " + search_str.replace(" ", "")
     dsl = {
         "must": [
@@ -570,6 +576,9 @@ def user_dsl(search_str, current_user_id, must_saved=False):
 
     if current_user_id and must_saved:
         dsl["must"].append(be_followed(current_user_id))
+
+    if only_verified:
+        dsl["must"].append({"term": {"is_verified": {"value": True}}})
 
     if current_user_id:
         dsl["should"].append(be_followed(current_user_id))

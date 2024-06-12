@@ -845,6 +845,12 @@ full_search_parser.add_argument(
     type=str,
     description="The moods to filter by",
 )
+full_search_parser.add_argument(
+    "is_verified",
+    required=False,
+    type=str,
+    description="Only include verified users in the user results",
+)
 
 verify_token_parser = reqparse.RequestParser(argument_class=DescriptiveArgument)
 verify_token_parser.add_argument("token", required=True, description="JWT to verify")

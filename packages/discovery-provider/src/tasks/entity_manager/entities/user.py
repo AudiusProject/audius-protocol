@@ -328,11 +328,13 @@ def update_user_metadata(
     challenge_event_bus = params.challenge_bus
     # Iterate over the user_record keys
     user_record_attributes = user_record.get_attributes_dict()
+
+    env = shared_config["discprov"]["env"]
     for key, _ in user_record_attributes.items():
         # Update the user_record when the corresponding field exists
         # in metadata
         if key in metadata:
-            if key in immutable_user_fields:
+            if key in immutable_user_fields and env != "dev":
                 continue
             setattr(user_record, key, metadata[key])
 
