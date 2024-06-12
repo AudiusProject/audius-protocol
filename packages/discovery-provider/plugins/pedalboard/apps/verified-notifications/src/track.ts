@@ -1,12 +1,13 @@
-import { App } from "@pedalboard/basekit";
+import { App, initializeDiscoveryDb } from "@pedalboard/basekit";
 import { Tracks } from "@pedalboard/storage";
 import { sendSlackMsg } from "./slack";
 import { logError } from "./utils";
 
 const TRACKS_SLACK_CHANNEL = process.env.TRACKS_SLACK_CHANNEL
 
-const onNewTrackRow = async (app: App<object>, trackRow: Tracks) => {
-    const discoveryDb = app.getDnDb()
+const discoveryDb = initializeDiscoveryDb()
+
+const onNewTrackRow = async (trackRow: Tracks) => {
     const { track_id, updated_at, created_at } = trackRow
     const isUpload =
         updated_at === created_at &&
@@ -63,7 +64,7 @@ const onNewTrackRow = async (app: App<object>, trackRow: Tracks) => {
 
 export const trackRowHandler = async (app: App<object>, trackRow: Tracks) => {
     try {
-        await onNewTrackRow(app, trackRow)
+        await onNewTrackRow(trackRow)
     } catch (e: unknown) {
         logError(e, "track event error")
     }

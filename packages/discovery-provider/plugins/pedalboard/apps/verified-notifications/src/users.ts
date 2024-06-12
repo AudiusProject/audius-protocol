@@ -1,9 +1,11 @@
-import { App } from "@pedalboard/basekit";
+import { App, initializeDiscoveryDb } from "@pedalboard/basekit";
 import { Users } from "@pedalboard/storage";
 import { getPreviousState, logError } from "./utils";
 import axios from "axios";
 import retry from "async-retry"
 import { sendSlackMsg } from "./slack";
+
+const discoveryDb = initializeDiscoveryDb()
 
 type SocialHandlesResponse = {
     twitterVerified?: string
@@ -16,8 +18,7 @@ const { audius_discprov_identity_service_url, USERS_SLACK_CHANNEL } =
 const social_handle_url = (handle: string) =>
     `${audius_discprov_identity_service_url}/social_handles?handle=${handle}`
 
-const onNewUserRow = async (app: App<object>, userRow: Users) => {
-    const discoveryDb = app.getDnDb()
+const onNewUserRow = async (userRow: Users) => {
     const { user_id, blocknumber } = userRow
     if (blocknumber === undefined || blocknumber === null) {
         console.warn('no block number returned')
@@ -28,7 +29,7 @@ const onNewUserRow = async (app: App<object>, userRow: Users) => {
         .where('user_id', '=', user_id)
         .first()
         .catch(console.error)
-    const old = await getPreviousState(app, {
+    const old = await getPreviousState({
         table: 'users',
         id: user_id,
         blocknumber
@@ -117,8 +118,9 @@ const onNewUserRow = async (app: App<object>, userRow: Users) => {
 
 export const userRowHandler = async (app: App<object>, userRow: Users) => {
     try {
-        await onNewUserRow(app, userRow)
+        await onNewUserRow(userRow)
     } catch (e: unknown) {
         logError(e, "user event error")
     }
 }
+

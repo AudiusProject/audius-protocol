@@ -1,8 +1,8 @@
-import { App } from '@pedalboard/basekit'
-import { Tracks, Users } from '@pedalboard/storage'
-import { userRowHandler } from './users'
-import { trackRowHandler } from './tracks'
-import { logError } from './utils'
+import { App, initializeDiscoveryDb } from "@pedalboard/basekit";
+import { Tracks, Users } from "@pedalboard/storage";
+import { trackRowHandler } from "./track";
+import { userRowHandler } from "./users";
+import { logError } from "./utils";
 
 type SharedData = object
 

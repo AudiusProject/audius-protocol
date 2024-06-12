@@ -1,11 +1,11 @@
-// takes in a table, entity id, and blocknumber. traverses the block for the previous
-
-import { App } from "@pedalboard/basekit"
+import { initializeDiscoveryDb } from "@pedalboard/basekit"
 import { Table } from "@pedalboard/storage"
+import { Knex } from "knex"
+
+export const discoveryDb: Knex = initializeDiscoveryDb()
 
 // state of this entity should it be in there
-export const getPreviousState = async (app: App<object>, { table, id, blocknumber }: { table: string, id: number, blocknumber: number }) => {
-    const discoveryDb = app.getDnDb()
+export const getPreviousState = async ({ table, id, blocknumber }: { table: string, id: number, blocknumber: number }) => {
     const block = await discoveryDb(Table.RevertBlocks)
         .where('blocknumber', '=', blocknumber)
         .first()
