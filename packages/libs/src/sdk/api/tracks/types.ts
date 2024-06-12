@@ -158,7 +158,10 @@ export const createUploadTrackMetadataSchema = () =>
     rightsController: z.optional(DDEXRightsController.nullable()),
     copyrightLine: z.optional(DDEXCopyright.nullable()),
     producerCopyrightLine: z.optional(DDEXCopyright.nullable()),
-    parentalWarningType: z.optional(z.string().nullable())
+    parentalWarningType: z.optional(z.string().nullable()),
+    bpm: z.optional(z.number().nullable()),
+    musicalKey: z.optional(z.string().nullable()),
+    audioAnalysisErrorCount: z.optional(z.number())
   })
 
 export type TrackMetadata = z.input<
