@@ -19,8 +19,11 @@ from src.utils.hardcoded_data import genre_allowlist
 
 logger = logging.getLogger(__name__)
 
-
 lowercase_to_capitalized_genre = {genre.lower(): genre for genre in genre_allowlist}
+
+
+def get_capitalized_genre(genre):
+    return lowercase_to_capitalized_genre.get(genre.lower())
 
 
 def search_es_full(args: dict):
@@ -423,10 +426,6 @@ def track_dsl(
     }
 
     if genres:
-
-        def get_capitalized_genre(genre):
-            return lowercase_to_capitalized_genre.get(genre.lower())
-
         capitalized_genres = [get_capitalized_genre(genre) for genre in genres]
         dsl["filter"].append({"terms": {"genre": capitalized_genres}})
 
