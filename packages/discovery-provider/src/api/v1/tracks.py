@@ -612,7 +612,6 @@ class TrackStream(Resource):
                 if no_redirect:
                     return success_response(stream_url)
                 else:
-                    print("DEBUGCHECK: Returning redirect")
                     return stream_url
 
         healthy_nodes = get_all_healthy_content_nodes_cached(redis)
@@ -643,7 +642,6 @@ class TrackStream(Resource):
                     if no_redirect:
                         return success_response(stream_url)
                     else:
-                        print("DEBUGCHECK: Returning redirect 2")
                         return stream_url
             except Exception as e:
                 logger.error(f"Could not locate cid {cid} on {content_node}: {e}")

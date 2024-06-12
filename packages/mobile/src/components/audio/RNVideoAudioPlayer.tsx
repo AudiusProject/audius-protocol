@@ -15,7 +15,8 @@ import {
   playerSelectors,
   gatedContentSelectors,
   calculatePlayerBehavior,
-  PlayerBehavior
+  PlayerBehavior,
+  accountSelectors
 } from '@audius/common/store'
 import type { Queueable } from '@audius/common/store'
 import {
@@ -61,6 +62,7 @@ const { recordListen } = tracksSocialActions
 const { getPlayerBehavior } = queueSelectors
 const { getIndex, getOrder, getSource, getCollectionId } = queueSelectors
 const { getIsReachable } = reachabilitySelectors
+const { getUserId } = accountSelectors
 
 const { getNftAccessSignatureMap } = gatedContentSelectors
 
@@ -102,7 +104,7 @@ export const RNVideoAudioPlayer = () => {
   const counter = useSelector(getCounter)
   // const repeatMode = useSelector(getRepeat)
   // const playbackRate = useSelector(getPlaybackRate)
-  // const currentUserId = useSelector(getUserId)
+  const currentUserId = useSelector(getUserId)
   // const uid = useSelector(getUid)
   // Player behavior determines whether to preview a track or play the full track
   const playerBehavior =
@@ -260,7 +262,7 @@ export const RNVideoAudioPlayer = () => {
           queryParams = await getQueryParams({
             audiusBackendInstance,
             nftAccessSignature,
-            userId: currentUserId
+            userId: currentUserId || undefined
           })
           trackQueryParams.current[trackId] = queryParams
         }
@@ -304,6 +306,7 @@ export const RNVideoAudioPlayer = () => {
       }
     },
     [
+      currentUserId,
       isCollectionMarkedForDownload,
       isNotReachable,
       isOfflineModeEnabled,
