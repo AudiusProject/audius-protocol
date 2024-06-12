@@ -15,8 +15,8 @@ import { useSelector } from 'react-redux'
 import { useAsync } from 'react-use'
 
 import { useModalState } from 'common/hooks/useModalState'
-import { getAssociatedTokenAccountOwner } from 'services/solana/solana'
 import { ToastContext } from 'components/toast/ToastContext'
+import { getAssociatedTokenAccountOwner } from 'services/solana/solana'
 
 const { getAccountUser } = accountSelectors
 
