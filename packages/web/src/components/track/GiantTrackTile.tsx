@@ -68,6 +68,8 @@ import styles from './GiantTrackTile.module.css'
 import { GiantTrackTileProgressInfo } from './GiantTrackTileProgressInfo'
 import { InfoLabel } from './InfoLabel'
 import { PlayPauseButton } from './PlayPauseButton'
+import { SEARCH_PAGE } from 'utils/route'
+import { generatePath } from 'react-router-dom'
 
 const DownloadSection = lazy(() =>
   import('./DownloadSection').then((module) => ({
@@ -367,7 +369,16 @@ export const GiantTrackTile = ({
       mood && (
         <InfoLabel
           labelName='mood'
-          labelValue={mood in moodMap ? moodMap[mood as Mood] : mood}
+          labelValue={
+            <TextLink
+              to={{
+                pathname: generatePath(SEARCH_PAGE, { category: 'tracks' }),
+                search: new URLSearchParams({ mood }).toString()
+              }}
+            >
+              {mood in moodMap ? moodMap[mood as Mood] : mood}
+            </TextLink>
+          }
         />
       )
     )
@@ -378,7 +389,19 @@ export const GiantTrackTile = ({
 
     return (
       shouldShow && (
-        <InfoLabel labelName='genre' labelValue={getCanonicalName(genre)} />
+        <InfoLabel
+          labelName='genre'
+          labelValue={
+            <TextLink
+              to={{
+                pathname: generatePath(SEARCH_PAGE, { category: 'tracks' }),
+                search: new URLSearchParams({ genre }).toString()
+              }}
+            >
+              {getCanonicalName(genre)}
+            </TextLink>
+          }
+        />
       )
     )
   }
