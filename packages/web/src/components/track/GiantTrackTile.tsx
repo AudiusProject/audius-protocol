@@ -22,29 +22,33 @@ import {
   formatSeconds,
   formatDate,
   getDogEarType,
-  Nullable
+  Nullable,
+  formatReleaseDate
 } from '@audius/common/utils'
 import {
   Text,
   Box,
   Flex,
-  IconRobot,
   IconRepost,
   IconHeart,
   IconKebabHorizontal,
   IconShare,
   IconRocket,
-  Button
+  Button,
+  MusicBadge
 } from '@audius/harmony'
+import IconCalendarMonth from '@audius/harmony/src/assets/icons/CalendarMonth.svg'
+import IconRobot from '@audius/harmony/src/assets/icons/Robot.svg'
+import IconTrending from '@audius/harmony/src/assets/icons/Trending.svg'
+import IconVisibilityHidden from '@audius/harmony/src/assets/icons/VisibilityHidden.svg'
 import { Mood } from '@audius/sdk'
 import cn from 'classnames'
-import moment from 'moment'
+import dayjs from 'dayjs'
 import { useDispatch, shallowEqual, useSelector } from 'react-redux'
 
 import { TextLink, UserLink } from 'components/link'
 import Menu from 'components/menu/Menu'
 import RepostFavoritesStats from 'components/repost-favorites-stats/RepostFavoritesStats'
-import { ScheduledReleaseGiantLabel } from 'components/scheduled-release-label/ScheduledReleaseLabel'
 import { SearchTag } from 'components/search/SearchTag'
 import Skeleton from 'components/skeleton/Skeleton'
 import { Tile } from 'components/tile'
@@ -57,7 +61,6 @@ import { moodMap } from 'utils/Moods'
 import { trpc } from 'utils/trpcClientWeb'
 
 import { AiTrackSection } from './AiTrackSection'
-import Badge from './Badge'
 import { CardTitle } from './CardTitle'
 import { GatedContentSection } from './GatedContentSection'
 import GiantArtwork from './GiantArtwork'
@@ -95,13 +98,16 @@ const messages = {
   timeLeft: 'left',
   played: 'Played',
   generatedWithAi: 'Generated With AI',
-  actionGroupLabel: 'track actions'
+  actionGroupLabel: 'track actions',
+  hidden: 'hidden',
+  releases: (releaseDate: string) =>
+    `Releases ${formatReleaseDate({ date: releaseDate, withHour: true })}`
 }
 
 export type GiantTrackTileProps = {
   aiAttributionUserId: Nullable<number>
   artistHandle: string
-  badge: Nullable<string>
+  trendingBadgeLabel: Nullable<string>
   coSign: Nullable<Remix>
   coverArtSizes: Nullable<CoverArtSizes>
   credits: string
@@ -139,7 +145,7 @@ export type GiantTrackTileProps = {
   previewing: boolean
   streamConditions: Nullable<AccessConditions>
   downloadConditions: Nullable<AccessConditions>
-  released: string
+  releaseDate: string
   repostCount: number
   saveCount: number
   tags: string
@@ -152,7 +158,7 @@ export type GiantTrackTileProps = {
 export const GiantTrackTile = ({
   aiAttributionUserId,
   artistHandle,
-  badge,
+  trendingBadgeLabel,
   coSign,
   coverArtSizes,
   credits,
@@ -184,7 +190,7 @@ export const GiantTrackTile = ({
   onShare,
   onRepost,
   onUnfollow,
-  released,
+  releaseDate,
   repostCount,
   saveCount,
   playing,
@@ -221,6 +227,7 @@ export const GiantTrackTile = ({
   // Play button is conditionally hidden for USDC-gated tracks when the user does not have access
   const showPlay = isUSDCPurchaseGated ? hasStreamAccess : true
   const isPlaylistAddable = useIsGatedContentPlaylistAddable(track)
+  const shouldShowScheduledRelease = dayjs(releaseDate).isAfter(dayjs())
   const { data: albumInfo } = trpc.tracks.getAlbumBacklink.useQuery(
     { trackId },
     { enabled: !!trackId }
@@ -443,11 +450,11 @@ export const GiantTrackTile = ({
   const renderReleased = () => {
     return (
       !isUnlisted &&
-      released && (
+      releaseDate && (
         <InfoLabel
           className={styles.infoLabelPlacement}
           labelName='released'
-          labelValue={formatDate(released)}
+          labelValue={formatDate(releaseDate)}
         />
       )
     )
@@ -477,20 +484,12 @@ export const GiantTrackTile = ({
     )
   }
 
-  const renderScheduledReleaseRow = () => {
-    return (
-      <ScheduledReleaseGiantLabel released={released} isUnlisted={isUnlisted} />
-    )
-  }
-
   const isLoading = loading || artworkLoading
   // Omitting isOwner and hasStreamAccess so that we always show gated DogEars
   const dogEarType = isLoading
     ? undefined
     : getDogEarType({
-        streamConditions,
-        isUnlisted:
-          isUnlisted && (!released || moment(released).isBefore(moment()))
+        streamConditions
       })
 
   const overflowMenuExtraItems = []
@@ -599,7 +598,6 @@ export const GiantTrackTile = ({
 
             <div className={cn(styles.statsSection, fadeIn)}>
               {renderStatsRow()}
-              {renderScheduledReleaseRow()}
             </div>
 
             <div
@@ -629,18 +627,31 @@ export const GiantTrackTile = ({
               </span>
             </div>
           </div>
-          <div className={styles.badges}>
+          <Flex
+            gap='s'
+            justifyContent='flex-end'
+            css={{ position: 'absolute', right: 'var(--harmony-unit-6)' }}
+          >
             {aiAttributionUserId ? (
-              <Badge
-                icon={<IconRobot />}
-                className={styles.badgeAi}
-                textLabel={messages.generatedWithAi}
-              />
+              <MusicBadge icon={IconRobot} color='lightGreen'>
+                {messages.generatedWithAi}
+              </MusicBadge>
             ) : null}
-            {badge ? (
-              <Badge className={styles.badgePlacement} textLabel={badge} />
+            {trendingBadgeLabel ? (
+              <MusicBadge color='blue' icon={IconTrending}>
+                {trendingBadgeLabel}
+              </MusicBadge>
             ) : null}
-          </div>
+            {shouldShowScheduledRelease ? (
+              <MusicBadge variant='accent' icon={IconCalendarMonth}>
+                {messages.releases(releaseDate)}
+              </MusicBadge>
+            ) : isUnlisted ? (
+              <MusicBadge icon={IconVisibilityHidden}>
+                {messages.hidden}
+              </MusicBadge>
+            ) : null}
+          </Flex>
         </div>
 
         {isStreamGated && streamConditions ? (

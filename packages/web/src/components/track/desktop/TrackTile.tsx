@@ -27,7 +27,6 @@ import {
   Paper
 } from '@audius/harmony'
 import cn from 'classnames'
-import moment from 'moment'
 import { useSelector } from 'react-redux'
 
 import { DogEar } from 'components/dog-ear'
@@ -245,9 +244,6 @@ const TrackTile = ({
         hasStreamAccess,
         isArtistPick,
         isOwner,
-        isUnlisted:
-          isUnlisted &&
-          (!releaseDate || moment(releaseDate).isBefore(moment())),
         streamConditions
       })
 

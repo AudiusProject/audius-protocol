@@ -1,4 +1,5 @@
 import BN from 'bn.js'
+import { getContentNode, getHostname } from './env'
 
 export const formatNumberCommas = (num) => {
   const parts = num.toString().split('.')
@@ -75,4 +76,16 @@ export const getNumberSuffix = (num) => {
   else if (num === 2) return 'nd'
   else if (num === 3) return 'rd'
   return 'th'
+}
+
+export const formatImageUrl = (profilePictureSizes: string, size: number) => {
+  return `${getContentNode()}/content/${profilePictureSizes}/${size}x${size}.jpg`
+}
+
+export const formatProfileUrl = (handle: string) => {
+  return `${getHostname()}/${handle}`
+}
+
+export const formatContentUrl = (handle: string, slug: string) => {
+  return `${getHostname()}/${handle}/${slug}`
 }
