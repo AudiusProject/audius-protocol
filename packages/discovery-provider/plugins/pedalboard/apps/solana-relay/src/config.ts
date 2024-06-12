@@ -127,12 +127,12 @@ const readConfig = (): Config => {
       default:
         'd242765e718801781440d77572b9dafcdc9baadf0269eff24cf61510ddbf1003'
     }),
-    audius_solana_listens_ip_hourly_rate_limit: num({ default: 10 }),
-    audius_solana_listens_ip_daily_rate_limit: num({ default: 40 }),
-    audius_solana_listens_ip_weekly_rate_limit: num({ default: 120 }),
-    audius_solana_listens_track_hourly_rate_limit: num({ default: 10 }),
-    audius_solana_listens_track_daily_rate_limit: num({ default: 40 }),
-    audius_solana_listens_track_weekly_rate_limit: num({ default: 120 })
+    audius_solana_listens_ip_hourly_rate_limit: num({ default: 120 }),
+    audius_solana_listens_ip_daily_rate_limit: num({ default: 50000 }),
+    audius_solana_listens_ip_weekly_rate_limit: num({ default: 50000000 }),
+    audius_solana_listens_track_hourly_rate_limit: num({ default: 120 }),
+    audius_solana_listens_track_daily_rate_limit: num({ default: 50000 }),
+    audius_solana_listens_track_weekly_rate_limit: num({ default: 50000000 })
   })
   const solanaFeePayerWalletsParsed = env.audius_solana_fee_payer_wallets
   let solanaFeePayerWallets: Keypair[] = []
