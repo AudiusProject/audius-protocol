@@ -14,7 +14,8 @@ import {
 import { FlatList, Keyboard, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { TextInput, Button } from 'app/components/core'
+import { Button } from '@audius/harmony-native'
+import { TextInput } from 'app/components/core'
 import { AppDrawer, useDrawerState } from 'app/components/drawer'
 import { makeStyles } from 'app/styles'
 const { setTrendingGenre } = trendingPageActions

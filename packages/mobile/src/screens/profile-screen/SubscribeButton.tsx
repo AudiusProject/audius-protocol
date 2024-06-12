@@ -4,8 +4,7 @@ import type { User } from '@audius/common/models'
 import { profilePageActions, profilePageSelectors } from '@audius/common/store'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { IconNotificationOn } from '@audius/harmony-native'
-import { Button } from 'app/components/core'
+import { IconNotificationOn, Button } from '@audius/harmony-native'
 import { makeStyles } from 'app/styles'
 
 const { setNotificationSubscription } = profilePageActions

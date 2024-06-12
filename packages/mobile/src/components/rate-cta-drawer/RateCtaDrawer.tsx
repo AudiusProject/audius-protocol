@@ -6,8 +6,13 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 import { View } from 'react-native'
 import InAppReview from 'react-native-in-app-review'
 
-import { IconHeart, IconThumbsDown, IconThumbsUp } from '@audius/harmony-native'
-import { Button, Text } from 'app/components/core'
+import {
+  IconHeart,
+  IconThumbsDown,
+  IconThumbsUp,
+  Button
+} from '@audius/harmony-native'
+import { Text } from 'app/components/core'
 import { NativeDrawer } from 'app/components/drawer'
 import { RATE_CTA_STORAGE_KEY } from 'app/constants/storage-keys'
 import { make, track } from 'app/services/analytics'

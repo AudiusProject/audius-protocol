@@ -38,10 +38,10 @@ import {
   IconCastAirplay,
   IconCastChromecast,
   IconKebabHorizontal,
-  IconShare
+  IconShare,
+  Button
 } from '@audius/harmony-native'
 import { useAirplay } from 'app/components/audio/Airplay'
-import { Button } from 'app/components/core'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { useToast } from 'app/hooks/useToast'
 import { makeStyles } from 'app/styles'

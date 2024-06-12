@@ -3,9 +3,9 @@ import { AUDIUS_DISCORD_LINK } from '@audius/web/src/utils/route'
 import { View } from 'react-native'
 import { useSelector } from 'react-redux'
 
-import { IconDiscord } from '@audius/harmony-native'
+import { IconDiscord, Button } from '@audius/harmony-native'
 import { CopyTextTile } from 'app/components/copy-text-tile'
-import { Text, Button, useLink } from 'app/components/core'
+import { Text, useLink } from 'app/components/core'
 import Drawer, { useDrawerState } from 'app/components/drawer'
 import { makeStyles } from 'app/styles'
 const { getDiscordCode } = vipDiscordModalSelectors

@@ -4,7 +4,7 @@ import { tokenDashboardPageSelectors } from '@audius/common/store'
 import { View } from 'react-native'
 import { useSelector } from 'react-redux'
 
-import { Button } from 'app/components/core'
+import { Button } from '@audius/harmony-native'
 import { makeStyles } from 'app/styles'
 
 import { useCanConnectNewWallet } from './useCanConnectNewWallet'

@@ -29,11 +29,12 @@ import {
   IconExternalLink,
   IconUserFollow,
   IconTipping,
-  Flex
+  Flex,
+  Button
 } from '@audius/harmony-native'
 import LogoEth from 'app/assets/images/logoEth.svg'
 import LogoSol from 'app/assets/images/logoSol.svg'
-import { Button, LockedStatusBadge, useLink } from 'app/components/core'
+import { LockedStatusBadge, useLink } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
 import UserBadges from 'app/components/user-badges'
 import { useDrawer } from 'app/hooks/useDrawer'

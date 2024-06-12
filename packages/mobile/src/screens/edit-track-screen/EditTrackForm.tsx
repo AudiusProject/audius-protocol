@@ -11,7 +11,8 @@ import {
   IconCaretLeft,
   IconCloudUpload
 } from '@audius/harmony-native'
-import { Button, Tile } from 'app/components/core'
+import { Tile } from 'app/components/core'
+import { Button } from '@audius/harmony-native'
 import { InputErrorMessage } from 'app/components/core/InputErrorMessage'
 import { PickArtworkField, TextField } from 'app/components/fields'
 import { useNavigation } from 'app/hooks/useNavigation'

@@ -2,7 +2,7 @@ import type { ComponentType } from 'react'
 
 import type { SvgProps } from 'react-native-svg'
 
-import { Button } from 'app/components/core'
+import { Button } from '@audius/harmony-native'
 import { makeStyles } from 'app/styles'
 
 import { SettingsRowLabel } from './SettingRowLabel'

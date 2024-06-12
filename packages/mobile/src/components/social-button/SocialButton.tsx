@@ -1,5 +1,5 @@
-import type { ButtonProps } from 'app/components/core'
-import { Button } from 'app/components/core'
+import type { ButtonProps } from '@audius/harmony-native'
+import { Button } from '@audius/harmony-native'
 import { makeStyles } from 'app/styles'
 
 export type SocialButtonProps = ButtonProps

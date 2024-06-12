@@ -1,8 +1,8 @@
 import type { ID } from '@audius/common/models'
 import { View } from 'react-native'
 
-import { IconArrowRight, IconRemix } from '@audius/harmony-native'
-import { Button, Tile, GradientText } from 'app/components/core'
+import { Button, IconArrowRight, IconRemix } from '@audius/harmony-native'
+import { Tile, GradientText } from 'app/components/core'
 import { flexRowCentered, makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 

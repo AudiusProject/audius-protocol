@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 
-import { Button, EmptyTile } from 'app/components/core'
+import { Button } from '@audius/harmony-native'
+import { EmptyTile } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
 
 const messages = {

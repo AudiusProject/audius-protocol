@@ -3,7 +3,7 @@ import { useCallback } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { createSelector } from 'reselect'
 
-import { Button } from 'app/components/core'
+import { Button } from '@audius/harmony-native'
 import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'
 import { setVisibility } from 'app/store/drawers/slice'
 import { getOfflineCollectionsStatus } from 'app/store/offline-downloads/selectors'

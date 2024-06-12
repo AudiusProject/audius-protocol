@@ -3,8 +3,13 @@ import React from 'react'
 import { useLeavingAudiusModal } from '@audius/common/store'
 import { View } from 'react-native'
 
-import { Hint, IconExternalLink, IconInfo } from '@audius/harmony-native'
-import { Button, Text, useLink } from 'app/components/core'
+import {
+  Hint,
+  IconExternalLink,
+  IconInfo,
+  Button
+} from '@audius/harmony-native'
+import { Text, useLink } from 'app/components/core'
 import Drawer from 'app/components/drawer/Drawer'
 import { makeStyles } from 'app/styles'
 

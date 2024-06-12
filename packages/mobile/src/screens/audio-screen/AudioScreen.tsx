@@ -25,7 +25,8 @@ import {
   IconInfo,
   IconReceive,
   IconSend,
-  IconWallet
+  IconWallet,
+  Button
 } from '@audius/harmony-native'
 import Bronze from 'app/assets/images/tokenBadgeBronze108.png'
 import Gold from 'app/assets/images/tokenBadgeGold108.png'
@@ -35,7 +36,6 @@ import TokenStill from 'app/assets/images/tokenSpinStill.png'
 import {
   ScrollView,
   Screen,
-  Button,
   GradientText,
   Text,
   Tile,

@@ -2,8 +2,8 @@ import { useCallback } from 'react'
 
 import { View } from 'react-native'
 
-import { IconCloudDownload } from '@audius/harmony-native'
-import { Button, GradientText, Text, useLink } from 'app/components/core'
+import { IconCloudDownload, Button } from '@audius/harmony-native'
+import { GradientText, Text, useLink } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 
 const useStyles = makeStyles(({ spacing }) => ({

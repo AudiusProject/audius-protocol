@@ -49,8 +49,13 @@ import {
 import { useDispatch, useSelector } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
-import { IconCart, IconCloseAlt, IconError } from '@audius/harmony-native'
-import { Button, LockedStatusBadge, Text } from 'app/components/core'
+import {
+  IconCart,
+  IconCloseAlt,
+  IconError,
+  Button
+} from '@audius/harmony-native'
+import { LockedStatusBadge, Text } from 'app/components/core'
 import Drawer from 'app/components/drawer'
 import { useIsUSDCEnabled } from 'app/hooks/useIsUSDCEnabled'
 import { useNavigation } from 'app/hooks/useNavigation'

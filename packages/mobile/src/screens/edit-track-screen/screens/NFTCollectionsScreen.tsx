@@ -9,7 +9,8 @@ import { View, Image } from 'react-native'
 import { useSelector } from 'react-redux'
 
 import { IconImage } from '@audius/harmony-native'
-import { Button, Text } from 'app/components/core'
+import { Text } from 'app/components/core'
+import { Button } from '@audius/harmony-native'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles, typography } from 'app/styles'
 

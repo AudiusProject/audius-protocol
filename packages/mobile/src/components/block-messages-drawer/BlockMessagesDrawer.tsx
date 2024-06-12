@@ -8,8 +8,8 @@ import {
 import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { IconMessageBlock, IconInfo } from '@audius/harmony-native'
-import { Text, Button } from 'app/components/core'
+import { IconMessageBlock, IconInfo, Button } from '@audius/harmony-native'
+import { Text } from 'app/components/core'
 import { NativeDrawer } from 'app/components/drawer'
 import { useDrawer } from 'app/hooks/useDrawer'
 import { track, make } from 'app/services/analytics'

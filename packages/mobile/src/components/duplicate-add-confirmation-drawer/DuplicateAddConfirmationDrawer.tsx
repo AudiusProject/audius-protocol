@@ -10,7 +10,8 @@ import { capitalize } from 'lodash'
 import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { Text, Button } from 'app/components/core'
+import { Button } from '@audius/harmony-native'
+import { Text } from 'app/components/core'
 import { useToast } from 'app/hooks/useToast'
 import { makeStyles } from 'app/styles'
 

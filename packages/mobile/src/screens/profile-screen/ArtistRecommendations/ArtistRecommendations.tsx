@@ -22,7 +22,8 @@ import {
   useTheme,
   IconButton
 } from '@audius/harmony-native'
-import { Button, Text, ProfilePicture } from 'app/components/core'
+import { Text, ProfilePicture } from 'app/components/core'
+import { Button } from '@audius/harmony-native'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { track, make } from 'app/services/analytics'
 import { makeStyles } from 'app/styles'

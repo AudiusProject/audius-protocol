@@ -7,8 +7,8 @@ import {
 import { ScrollView, View } from 'react-native'
 import { useSelector } from 'react-redux'
 
-import { IconShare } from '@audius/harmony-native'
-import { Button, ChainLogo, Text } from 'app/components/core'
+import { IconShare, Button } from '@audius/harmony-native'
+import { ChainLogo, Text } from 'app/components/core'
 import { AppDrawer } from 'app/components/drawer'
 import { makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'

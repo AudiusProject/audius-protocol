@@ -3,8 +3,8 @@ import NetInfo from '@react-native-community/netinfo'
 import { View } from 'react-native'
 import { useAsyncFn } from 'react-use'
 
-import { IconNoWifi, IconRefresh } from '@audius/harmony-native'
-import { Button, Text, Tile } from 'app/components/core'
+import { IconNoWifi, IconRefresh, Button } from '@audius/harmony-native'
+import { Text, Tile } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 

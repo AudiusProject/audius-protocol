@@ -9,9 +9,10 @@ import {
   IconCart,
   IconCloudDownload,
   IconHeart,
-  IconRepost
+  IconRepost,
+  Button
 } from '@audius/harmony-native'
-import { Button, Switch, Text } from 'app/components/core'
+import { Switch, Text } from 'app/components/core'
 import { useDrawer } from 'app/hooks/useDrawer'
 import { useIsUSDCEnabled } from 'app/hooks/useIsUSDCEnabled'
 import { setVisibility } from 'app/store/drawers/slice'

@@ -2,8 +2,9 @@ import type { ReactElement, ReactNode } from 'react'
 
 import { View } from 'react-native'
 
+import { Button } from '@audius/harmony-native'
 import type { ScreenProps } from 'app/components/core'
-import { ScreenContent, Button, Screen } from 'app/components/core'
+import { ScreenContent, Screen } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles } from 'app/styles'
 

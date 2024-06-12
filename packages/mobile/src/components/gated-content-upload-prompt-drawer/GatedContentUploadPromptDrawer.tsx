@@ -6,9 +6,10 @@ import { useDispatch } from 'react-redux'
 import {
   IconArrowRight,
   IconExternalLink,
-  IconRocket
+  IconRocket,
+  Button
 } from '@audius/harmony-native'
-import { Button, Text, useLink } from 'app/components/core'
+import { Text, useLink } from 'app/components/core'
 import { NativeDrawer } from 'app/components/drawer'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { setVisibility } from 'app/store/drawers/slice'

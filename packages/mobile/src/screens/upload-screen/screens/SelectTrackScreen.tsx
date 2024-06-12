@@ -7,13 +7,13 @@ import { useAsyncFn } from 'react-use'
 
 import { IconClose, IconCloudUpload } from '@audius/harmony-native'
 import {
-  Button,
   ErrorText,
   Screen,
   ScreenContent,
   Text,
   Tile
 } from 'app/components/core'
+import { Button } from '@audius/harmony-native'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { make, track as trackAnalytcs } from 'app/services/analytics'

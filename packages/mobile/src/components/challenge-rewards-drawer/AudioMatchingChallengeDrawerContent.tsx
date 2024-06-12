@@ -6,9 +6,9 @@ import { ClaimStatus } from '@audius/common/store'
 import { formatNumberCommas } from '@audius/common/utils'
 import { ScrollView, View } from 'react-native'
 
-import { IconArrowRight, IconCloudUpload } from '@audius/harmony-native'
+import { IconArrowRight, IconCloudUpload, Button } from '@audius/harmony-native'
 import type { ButtonProps } from 'app/components/core'
-import { Button, Text } from 'app/components/core'
+import { Text } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { getChallengeConfig } from 'app/utils/challenges'
 

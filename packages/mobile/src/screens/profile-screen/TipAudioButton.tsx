@@ -4,8 +4,7 @@ import { cacheUsersSelectors, tippingActions } from '@audius/common/store'
 import { Platform } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { IconTokenGold } from '@audius/harmony-native'
-import { Button } from 'app/components/core'
+import { IconTokenGold, Button } from '@audius/harmony-native'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles } from 'app/styles'
 

@@ -4,7 +4,8 @@ import { signOutActions } from '@audius/common/store'
 import { View } from 'react-native'
 import { useDispatch } from 'react-redux'
 
-import { Button, Text } from 'app/components/core'
+import { Button } from '@audius/harmony-native'
+import { Text } from 'app/components/core'
 import { AppDrawer, useDrawerState } from 'app/components/drawer/AppDrawer'
 import { makeStyles } from 'app/styles'
 

@@ -15,9 +15,10 @@ import {
   IconMessage,
   IconStars,
   IconRemix,
-  IconRepost
+  IconRepost,
+  Button
 } from '@audius/harmony-native'
-import { Button, GradientText } from 'app/components/core'
+import { GradientText } from 'app/components/core'
 import { NativeDrawer } from 'app/components/drawer'
 import Text from 'app/components/text'
 import { useDrawer } from 'app/hooks/useDrawer'

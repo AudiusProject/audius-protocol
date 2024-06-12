@@ -1,9 +1,9 @@
 import { View } from 'react-native'
 import { useSelector } from 'react-redux'
 
-import { IconArrowRight } from '@audius/harmony-native'
+import { IconArrowRight, Button } from '@audius/harmony-native'
 import type { ButtonProps } from 'app/components/core'
-import { Button, Text } from 'app/components/core'
+import { Text } from 'app/components/core'
 import type { AppState } from 'app/store'
 import { makeStyles } from 'app/styles'
 

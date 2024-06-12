@@ -13,12 +13,12 @@ import { useDispatch, useSelector } from 'react-redux'
 import { IconInstagram, IconNote, IconTwitter } from '@audius/harmony-native'
 import PartyFace from 'app/assets/images/emojis/face-with-party-horn-and-party-hat.png'
 import {
-  Button,
   Screen,
   ScreenContent,
   Text,
   ProfilePicture
 } from 'app/components/core'
+import { Button } from '@audius/harmony-native'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { SocialButton } from 'app/components/social-button'
 import { StatusMessage } from 'app/components/status-message'

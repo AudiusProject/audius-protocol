@@ -16,12 +16,12 @@ import { TouchableOpacity } from 'react-native'
 import { IconArrowRight, IconClose, IconLock } from '@audius/harmony-native'
 import { BackButton } from 'app/app/navigation/BackButton'
 import {
-  Button,
   KeyboardAvoidingView,
   ModalScreen,
   Screen,
   ScreenContent
 } from 'app/components/core'
+import { Button } from '@audius/harmony-native'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useToast } from 'app/hooks/useToast'
 import { makeStyles } from 'app/styles'
