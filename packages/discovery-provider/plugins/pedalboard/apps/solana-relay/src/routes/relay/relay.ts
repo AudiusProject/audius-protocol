@@ -10,14 +10,12 @@ import { Request, Response, NextFunction } from 'express'
 import { config } from '../../config'
 import { BadRequestError } from '../../errors'
 import { connections } from '../../utils/connections'
-import { getRequestIpData } from '../../utils/ipData'
 import {
   broadcastTransaction,
   sendTransactionWithRetries
 } from '../../utils/transaction'
 
 import { assertRelayAllowedInstructions } from './assertRelayAllowedInstructions'
-import { attachLocationData, isPaymentTransaction } from './attachLocationData'
 
 const getFeePayerKeyPair = (feePayerPublicKey?: PublicKey) => {
   if (!feePayerPublicKey) {
@@ -46,7 +44,7 @@ export const relay = async (
     const strategy =
       confirmationOptions?.strategy ?? (await connection.getLatestBlockhash())
     const decoded = Buffer.from(encodedTransaction, 'base64')
-    let transaction = VersionedTransaction.deserialize(decoded)
+    const transaction = VersionedTransaction.deserialize(decoded)
 
     const decompiled = TransactionMessage.decompile(transaction.message)
     const feePayerKey = transaction.message.getAccountKeys().get(0)
@@ -60,18 +58,6 @@ export const relay = async (
       user: res.locals.signerUser,
       feePayer: feePayerKey.toBase58()
     })
-
-    if (isPaymentTransaction(decompiled.instructions)) {
-      const location = await getRequestIpData(res.locals.logger, req)
-      if (location) {
-        transaction = new VersionedTransaction(
-          attachLocationData({
-            transactionMessage: decompiled,
-            location
-          }).compileToV0Message()
-        )
-      }
-    }
 
     transaction.sign([feePayerKeyPair])
     const signature = bs58.encode(transaction.signatures[0])
