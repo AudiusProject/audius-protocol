@@ -816,7 +816,7 @@ user_tracks_route_parser.add_argument(
 )
 
 full_search_parser = pagination_with_current_user_parser.copy()
-full_search_parser.add_argument("query", required=True, description="The search query")
+full_search_parser.add_argument("query", required=False, description="The search query")
 full_search_parser.add_argument(
     "kind",
     required=False,

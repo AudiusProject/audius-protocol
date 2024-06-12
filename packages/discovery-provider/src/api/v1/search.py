@@ -52,7 +52,7 @@ class FullSearch(Resource):
         search_args = {
             "is_auto_complete": False,
             "kind": args.get("kind", "all"),
-            "query": args.get("query"),
+            "query": args.get("query", ""),
             "current_user_id": current_user_id,
             "with_users": True,
             "limit": limit,
