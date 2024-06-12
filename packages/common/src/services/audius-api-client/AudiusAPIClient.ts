@@ -84,7 +84,7 @@ const FULL_ENDPOINT_MAP = {
   topGenreUsers: '/users/genre/top',
   topArtists: '/users/top',
   getTrack: (trackId: OpaqueID) => `/tracks/${trackId}`,
-  getTrackStreamUrl: (trackId: OpaqueID) => `/tracks/${trackId}/stream-url`,
+  getTrackStreamUrl: (trackId: OpaqueID) => `/tracks/${trackId}/stream`,
   getTracks: () => `/tracks`,
   getTrackByHandleAndSlug: `/tracks`,
   getStems: (trackId: OpaqueID) => `/tracks/${trackId}/stems`,
@@ -672,14 +672,18 @@ export class AudiusAPIClient {
     retry = true
   ) {
     const encodedTrackId = this._encodeOrThrow(id)
-    // const encodedCurrentUserId = encodeHashId(currentUserId ?? null)
+    const encodedCurrentUserId =
+      encodeHashId(currentUserId ?? null) || undefined
 
     this._assertInitialized()
 
-    // TODO: pass currentUserId
     const trackUrl = await this._getResponse<APIResponse<string>>(
       FULL_ENDPOINT_MAP.getTrackStreamUrl(encodedTrackId),
-      queryParams,
+      {
+        ...queryParams,
+        no_redirect: true,
+        user_id: encodedCurrentUserId
+      },
       retry,
       PathType.VersionPath,
       undefined,
