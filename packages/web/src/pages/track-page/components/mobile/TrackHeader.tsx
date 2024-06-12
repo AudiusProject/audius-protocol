@@ -57,7 +57,6 @@ import { GatedContentSection } from 'components/track/GatedContentSection'
 import { InfoLabel } from 'components/track/InfoLabel'
 import { UserGeneratedText } from 'components/user-generated-text'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
-import { moodMap } from 'utils/Moods'
 import { isDarkMode } from 'utils/theme/theme'
 import { trpc } from 'utils/trpcClientWeb'
 
