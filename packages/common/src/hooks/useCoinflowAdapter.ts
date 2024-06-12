@@ -25,7 +25,7 @@ import { useFeatureFlag } from './useFeatureFlag'
 type CoinflowAdapter = {
   wallet: {
     publicKey: PublicKey
-    sendTransaction: (transaction: Transaction) => Promise<string>
+    sendTransaction: (transaction: Transaction | VersionedTransaction) => Promise<string>
   }
   connection: Connection
 }
@@ -53,8 +53,13 @@ export const useCoinflowWithdrawalAdapter = () => {
         connection,
         wallet: {
           publicKey: wallet.publicKey,
-          sendTransaction: async (transaction: Transaction) => {
-            if (!feePayerOverride) throw new Error('Missing fee payer override')
+          sendTransaction: async (transaction: Transaction | VersionedTransaction) => {
+            if (!feePayerOverride) {
+              throw new Error('Missing fee payer override')
+            }
+            if (transaction instanceof VersionedTransaction) {
+              throw new Error('VersionedTransaction not supported in withdrawal adapter')
+            }
             const feePayer = new PublicKey(feePayerOverride)
             const finalTransaction =
               await decorateCoinflowWithdrawalTransaction(audiusBackend, {
