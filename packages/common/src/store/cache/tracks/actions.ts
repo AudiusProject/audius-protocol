@@ -11,7 +11,7 @@ export const SET_PERMALINK = 'CACHE/TRACKS/SET_PERMALINK'
 
 export const FETCH_COVER_ART = 'CACHE/TRACKS/FETCH_COVER_ART'
 export const FETCH_STREAM_URLS = 'CACHE/TRACKS/FETCH_STREAM_URLS'
-export const SET_STREAM_URL = 'CACHE/TRACKS/SET_STREAM_URL'
+export const SET_STREAM_URLS = 'CACHE/TRACKS/SET_STREAM_URLS'
 
 export function editTrack(trackId: ID, formFields: TrackMetadata) {
   return { type: EDIT_TRACK, trackId, formFields }
@@ -49,6 +49,6 @@ export function fetchStreamUrls(trackIds: ID[]) {
   return { type: FETCH_STREAM_URLS, trackIds }
 }
 
-export function setStreamUrl(trackId: ID, streamUrl: string) {
-  return { type: SET_STREAM_URL, trackId, streamUrl }
+export function setStreamUrls(streamUrls: { [trackId: ID]: string }) {
+  return { type: SET_STREAM_URLS, streamUrls }
 }

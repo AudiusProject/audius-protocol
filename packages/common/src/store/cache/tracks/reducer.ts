@@ -13,9 +13,9 @@ import {
 
 import {
   SET_PERMALINK,
-  SET_STREAM_URL,
+  SET_STREAM_URLS,
   setPermalink,
-  setStreamUrl
+  setStreamUrls
 } from './actions'
 import { TracksCacheState } from './types'
 
@@ -76,16 +76,16 @@ const actionsMap = {
       permalinks: { ...state.permalinks, [permalink.toLowerCase()]: trackId }
     }
   },
-  [SET_STREAM_URL](
+  [SET_STREAM_URLS](
     state: TracksCacheState,
-    action: ReturnType<typeof setStreamUrl>
+    action: ReturnType<typeof setStreamUrls>
   ): TracksCacheState {
-    const { streamUrl, trackId } = action
+    const { streamUrls } = action
 
-    if (!streamUrl) return state
+    if (!streamUrls) return state
     return {
       ...state,
-      streamUrls: { ...state.streamUrls, [trackId]: streamUrl }
+      streamUrls: { ...state.streamUrls, ...streamUrls }
     }
   }
 }

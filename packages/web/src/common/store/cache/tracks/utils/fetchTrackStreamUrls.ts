@@ -10,7 +10,7 @@ import { getQueryParams } from '@audius/common/utils'
 import { all, call, select, put } from 'typed-redux-saga'
 const { getUserId } = accountSelectors
 const { getTrackStreamUrl } = cacheTracksSelectors
-const { setStreamUrl } = cacheTracksActions
+const { setStreamUrls } = cacheTracksActions
 const { getNftAccessSignatureMap } = gatedContentSelectors
 
 export function* fetchTrackStreamUrls({ trackIds }: { trackIds: ID[] }) {
@@ -21,13 +21,13 @@ export function* fetchTrackStreamUrls({ trackIds }: { trackIds: ID[] }) {
   const currentUserId = yield* select(getUserId)
 
   try {
-    // TODO: Ideally we should batch this method (needs a backend change to support)
-    const callEffects = trackIds.map(function* (id) {
+    // TODO: Ideally we should batch these fetches (needs a backend change to support)
+    const streamUrlCallEffects = trackIds.map(function* (id: ID) {
       try {
         const existingUrl = yield* select(getTrackStreamUrl, id)
 
         if (existingUrl) {
-          return existingUrl
+          return { [id]: existingUrl }
         }
 
         const nftAccessSignatureMap = yield* select(getNftAccessSignatureMap)
@@ -42,11 +42,7 @@ export function* fetchTrackStreamUrls({ trackIds }: { trackIds: ID[] }) {
           queryParams,
           abortOnUnreachable: true
         })
-        if (streamUrl !== undefined) {
-          // Set the stream url in the cache
-          yield* put(setStreamUrl(id, streamUrl))
-        }
-        return streamUrl
+        return streamUrl !== undefined ? { [id]: streamUrl } : undefined
       } catch (e) {
         reportToSentry({
           error: e as Error,
@@ -56,8 +52,15 @@ export function* fetchTrackStreamUrls({ trackIds }: { trackIds: ID[] }) {
       }
     })
 
-    // Fetch all stream urls in parallel
-    yield* all(callEffects)
+    // Fetch stream urls concurrently
+    const streamUrlArray = yield* all(streamUrlCallEffects)
+
+    // Convert to an object & put it in the store
+    const streamUrls = streamUrlArray.reduce(
+      (acc, streamUrl) => ({ ...acc, ...streamUrl }),
+      {}
+    ) as { [trackId: ID]: string }
+    yield* put(setStreamUrls(streamUrls))
   } catch (e) {
     reportToSentry({
       error: e as Error,
