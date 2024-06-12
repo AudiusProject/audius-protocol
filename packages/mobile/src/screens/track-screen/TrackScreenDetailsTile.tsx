@@ -118,11 +118,10 @@ export const TrackScreenDetailsTile = ({
   const {
     _co_sign,
     description,
-    field_visibility,
     genre,
     has_current_user_reposted,
     has_current_user_saved,
-    is_unlisted,
+    is_unlisted: isUnlisted,
     is_stream_gated: isStreamGated,
     owner_id,
     play_count,
@@ -135,12 +134,13 @@ export const TrackScreenDetailsTile = ({
     ddex_app: ddexApp,
     is_delete,
     duration,
-    release_date
+    release_date: releaseDate,
+    is_scheduled_release: isScheduledRelease
   } = track
 
   const isOwner = owner_id === currentUserId
-  const hideFavorite = is_unlisted || !hasStreamAccess
-  const hideRepost = is_unlisted || !isReachable || !hasStreamAccess
+  const hideFavorite = isUnlisted || !hasStreamAccess
+  const hideRepost = isUnlisted || !isReachable || !hasStreamAccess
 
   const remixParentTrackId = remix_of?.tracks?.[0]?.parent_track_id
   const isRemix = !!remixParentTrackId
@@ -273,7 +273,7 @@ export const TrackScreenDetailsTile = ({
       albumInfo ? OverflowAction.VIEW_ALBUM_PAGE : null,
       OverflowAction.VIEW_ARTIST_PAGE,
       isOwner && !ddexApp ? OverflowAction.EDIT_TRACK : null,
-      isOwner && track?.is_scheduled_release && track?.is_unlisted
+      isOwner && isScheduledRelease && isUnlisted
         ? OverflowAction.RELEASE_NOW
         : null,
       isOwner && !ddexApp ? OverflowAction.DELETE_TRACK : null
@@ -312,17 +312,14 @@ export const TrackScreenDetailsTile = ({
       }
       hideFavorite={hideFavorite}
       hideRepost={hideRepost}
-      hideShare={(is_unlisted && !isOwner) || !field_visibility?.share}
-      hideOverflow={!isReachable}
-      hideFavoriteCount={is_unlisted}
-      hidePlayCount={
-        (!isOwner && is_unlisted && !field_visibility?.play_count) ||
-        isStreamGated
-      }
-      hideRepostCount={is_unlisted}
+      hideShare={isUnlisted && !isOwner}
+      hideOverflow={!isReachable || (isUnlisted && !isOwner)}
+      hideFavoriteCount={isUnlisted}
+      hidePlayCount={(!isOwner && isUnlisted) || isStreamGated}
+      hideRepostCount={isUnlisted}
       isPlaying={isPlaying && isPlayingId}
       isPreviewing={isPreviewing}
-      isUnlisted={is_unlisted}
+      isUnlisted={isUnlisted}
       isDeleted={is_delete}
       onPressEdit={handlePressEdit}
       onPressFavorites={handlePressFavorites}
@@ -343,7 +340,7 @@ export const TrackScreenDetailsTile = ({
       contentType={PurchaseableContentType.TRACK}
       ddexApp={ddexApp}
       duration={duration}
-      releaseDate={release_date}
+      releaseDate={releaseDate}
     />
   )
 }
