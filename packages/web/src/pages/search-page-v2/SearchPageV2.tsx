@@ -26,7 +26,6 @@ export const SearchPageV2 = () => {
   const { history } = useHistoryContext()
   const [urlSearchParams] = useSearchParams()
   const query = urlSearchParams.get('query')
-  const genre = urlSearchParams.get('genre')
 
   // Set nav header
   const { setLeft, setCenter, setRight } = useContext(NavContext)!
@@ -40,14 +39,11 @@ export const SearchPageV2 = () => {
     (category: CategoryKey) => {
       history.push({
         pathname: generatePath(SEARCH_PAGE, { category }),
-        search: new URLSearchParams({
-          ...(query ? { query } : {}),
-          ...(genre && category !== 'all' ? { genre } : {})
-        }).toString(),
+        search: query ? new URLSearchParams({ query }).toString() : undefined,
         state: {}
       })
     },
-    [genre, history, query]
+    [history, query]
   )
 
   const header = (
