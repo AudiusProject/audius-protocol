@@ -79,7 +79,7 @@ export const getStatuses = (state: CommonState, props: { ids: ID[] }) => {
 }
 
 export const getTrackStreamUrl = (state: CommonState, trackId: ID) =>
-  state.tracks.streamUrls[trackId]
+  state.tracks?.streamUrls?.[trackId]
 
 export const getTrackStreamUrls = (state: CommonState) =>
-  state.tracks.streamUrls
+  state.tracks?.streamUrls

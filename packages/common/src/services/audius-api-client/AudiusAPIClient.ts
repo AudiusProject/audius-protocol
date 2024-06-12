@@ -674,7 +674,6 @@ export class AudiusAPIClient {
     const encodedTrackId = this._encodeOrThrow(id)
     // const encodedCurrentUserId = encodeHashId(currentUserId ?? null)
 
-    console.log('GETTING STREAM URL')
     this._assertInitialized()
 
     // TODO: pass currentUserId
