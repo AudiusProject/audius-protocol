@@ -42,7 +42,7 @@ export const SearchPageV2 = () => {
         pathname: generatePath(SEARCH_PAGE, { category }),
         search: new URLSearchParams({
           ...(query ? { query } : {}),
-          ...(genre ? { genre } : {})
+          ...(genre && category !== 'all' ? { genre } : {})
         }).toString(),
         state: {}
       })
