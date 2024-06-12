@@ -85,16 +85,21 @@ func (ss *MediorumServer) findMissedAnalysisJobs(work chan *Upload, myHost strin
 	uploads := []*Upload{}
 	ss.crud.DB.Where("status in ?", []string{JobStatusAudioAnalysis, JobStatusBusyAudioAnalysis}).Find(&uploads)
 
+	// extract and log the upload IDs for debugging
+	var ids []string
 	for _, upload := range uploads {
-		mirrors := upload.Mirrors
+		ids = append(ids, upload.ID)
+	}
+	ss.logger.Info("Found new or busy audio analysis jobs", "upload_ids", strings.Join(ids, ", "), "count", len(ids))
 
-		myIdx := slices.Index(mirrors, myHost)
+	for _, upload := range uploads {
+		myIdx := slices.Index(upload.TranscodedMirrors, myHost)
 		if myIdx == -1 {
 			continue
 		}
 		myRank := myIdx + 1
 
-		logger := ss.logger.With("upload_id", upload.ID, "upload_status", upload.Status, "my_rank", myRank)
+		logger := ss.logger.With("upload", upload.ID, "upload_status", upload.Status, "my_rank", myRank)
 
 		// allow a 1 minute timeout period for audio analysis.
 		// upload.AudioAnalyzedAt is set in transcode.go after successfully transcoding a new audio upload,
@@ -105,8 +110,10 @@ func (ss *MediorumServer) findMissedAnalysisJobs(work chan *Upload, myHost strin
 			ss.logger.Warn("audio analysis timed out", "upload", upload.ID)
 
 			upload.AudioAnalysisStatus = JobStatusTimeout
+			// upload.AudioAnalysisErrorCount = upload.AudioAnalysisErrorCount + 1
 			upload.Status = JobStatusDone
 			ss.crud.Update(upload)
+			continue
 		}
 
 		// this is already handled by a callback and there's a chance this job gets enqueued twice
@@ -154,17 +161,26 @@ func (ss *MediorumServer) findMissedAnalysisJobs(work chan *Upload, myHost strin
 
 func (ss *MediorumServer) startAudioAnalysisWorker(n int, work chan *Upload) {
 	for upload := range work {
+		logger := ss.logger.With("upload", upload.ID)
+		if time.Since(upload.AudioAnalyzedAt) > time.Minute {
+			logger.Info("audio analysis window has passed. skipping job")
+		}
+
 		ss.logger.Debug("analyzing audio", "upload", upload.ID)
+		startTime := time.Now()
 		err := ss.analyzeAudio(upload)
+		elapsedTime := time.Since(startTime)
+		logger = logger.With("duration", elapsedTime)
 		if err != nil {
-			ss.logger.Warn("audio analysis failed", "upload", upload, "err", err)
+			logger.Warn("audio analysis failed", "err", err)
 		} else {
-			ss.logger.Info("audio analysis done", "upload", upload.ID)
+			logger.Info("audio analysis done")
 		}
 	}
 }
 
 func (ss *MediorumServer) analyzeAudio(upload *Upload) error {
+	// TODO michelle time this work and abort if taking > 1 min
 	upload.AudioAnalyzedBy = ss.Config.Self.Host
 	upload.Status = JobStatusBusyAudioAnalysis
 	ss.crud.Update(upload)
@@ -172,6 +188,7 @@ func (ss *MediorumServer) analyzeAudio(upload *Upload) error {
 
 	onError := func(err error) error {
 		upload.AudioAnalysisError = err.Error()
+		upload.AudioAnalysisErrorCount = upload.AudioAnalysisErrorCount + 1
 		upload.AudioAnalyzedAt = time.Now().UTC()
 		upload.AudioAnalysisStatus = JobStatusError
 		// failed analyses do not block uploads
@@ -301,14 +318,14 @@ func (ss *MediorumServer) analyzeBPM(filename string) (float64, error) {
 			if len(parts) > 1 {
 				bpm, err := strconv.ParseFloat(parts[0], 64)
 				if err != nil {
-					return 0, err
+					return 0, fmt.Errorf("failed to parse BPM from aubio output %s: %v", outputStr, err)
 				}
 				return bpm, nil
 			}
 		}
 	}
 
-	return 0, fmt.Errorf("BPM not found in aubio output")
+	return 0, fmt.Errorf("BPM not found in aubio output %s", outputStr)
 }
 
 // converts an MP3 file to WAV format using ffmpeg

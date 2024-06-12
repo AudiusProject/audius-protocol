@@ -37,11 +37,12 @@ type Upload struct {
 	TranscodedAt      time.Time         `json:"transcoded_at"`
 	TranscodeResults  map[string]string `json:"results" gorm:"serializer:json"`
 
-	AudioAnalysisStatus  string            `json:"audio_analysis_status"`
-	AudioAnalysisError   string            `json:"audio_analysis_error,omitempty"`
-	AudioAnalyzedBy      string            `json:"audio_analyzed_by"`
-	AudioAnalyzedAt      time.Time         `json:"audio_analyzed_at"`
-	AudioAnalysisResults map[string]string `json:"audio_analysis_results" gorm:"serializer:json"`
+	AudioAnalysisStatus     string            `json:"audio_analysis_status"`
+	AudioAnalysisError      string            `json:"audio_analysis_error,omitempty"`
+	AudioAnalysisErrorCount int               `json:"audio_analysis_error_count,omitempty"`
+	AudioAnalyzedBy         string            `json:"audio_analyzed_by"`
+	AudioAnalyzedAt         time.Time         `json:"audio_analyzed_at"`
+	AudioAnalysisResults    map[string]string `json:"audio_analysis_results" gorm:"serializer:json"`
 
 	// UpldateULID - this is the last ULID that change this thing
 }
