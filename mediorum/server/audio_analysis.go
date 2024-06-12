@@ -82,15 +82,17 @@ func (ss *MediorumServer) startAudioAnalyzer() {
 }
 
 func (ss *MediorumServer) findMissedAnalysisJobs(work chan *Upload, myHost string) {
+	queryStartTime := time.Now().UTC()
 	uploads := []*Upload{}
 	ss.crud.DB.Where("status in ?", []string{JobStatusAudioAnalysis, JobStatusBusyAudioAnalysis}).Find(&uploads)
+	queryElapsedTime := time.Since(queryStartTime)
 
 	// extract and log the upload IDs for debugging
 	var ids []string
 	for _, upload := range uploads {
 		ids = append(ids, upload.ID)
 	}
-	ss.logger.Info("Found new or busy audio analysis jobs", "upload_ids", strings.Join(ids, ", "), "count", len(ids))
+	ss.logger.Info("found new or busy audio analysis jobs", "upload_ids", strings.Join(ids, ", "), "count", len(ids), "query_elapsed_time", queryElapsedTime, "query_start_time", queryStartTime)
 
 	for _, upload := range uploads {
 		myIdx := slices.Index(upload.TranscodedMirrors, myHost)
@@ -107,7 +109,7 @@ func (ss *MediorumServer) findMissedAnalysisJobs(work chan *Upload, myHost strin
 		if time.Since(upload.AudioAnalyzedAt) > time.Minute {
 			// mark analysis as timed out and the upload as done.
 			// failed or timed out analyses do not block uploads.
-			ss.logger.Warn("audio analysis timed out", "upload", upload.ID)
+			ss.logger.Warn("audio analysis timed out", "upload", upload.ID, "upload_debug", upload)
 
 			upload.AudioAnalysisStatus = JobStatusTimeout
 			// upload.AudioAnalysisErrorCount = upload.AudioAnalysisErrorCount + 1
@@ -167,10 +169,10 @@ func (ss *MediorumServer) startAudioAnalysisWorker(n int, work chan *Upload) {
 		}
 
 		ss.logger.Debug("analyzing audio", "upload", upload.ID)
-		startTime := time.Now()
+		startTime := time.Now().UTC()
 		err := ss.analyzeAudio(upload)
 		elapsedTime := time.Since(startTime)
-		logger = logger.With("duration", elapsedTime)
+		logger = logger.With("duration", elapsedTime, "start_time", startTime)
 		if err != nil {
 			logger.Warn("audio analysis failed", "err", err)
 		} else {
