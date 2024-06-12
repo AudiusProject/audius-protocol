@@ -838,6 +838,13 @@ full_search_parser.add_argument(
     type=str,
     description="The genres to filter by",
 )
+full_search_parser.add_argument(
+    "mood",
+    action="append",
+    required=False,
+    type=str,
+    description="The moods to filter by",
+)
 
 verify_token_parser = reqparse.RequestParser(argument_class=DescriptiveArgument)
 verify_token_parser.add_argument("token", required=True, description="JWT to verify")
