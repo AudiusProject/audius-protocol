@@ -28,6 +28,23 @@ const getFeePayerKeyPair = (feePayerPublicKey?: PublicKey) => {
   )
 }
 
+/**
+ * Gets the lookup table account datas for the addresses given.
+ * @param lookupTableKeys the addresses of the lookup tables
+ * @returns the lookup table account data for each address
+ */
+const getLookupTableAccounts = async (lookupTableKeys: PublicKey[]) => {
+  return await Promise.all(
+    lookupTableKeys.map(async (accountKey) => {
+      const res = await connections[0].getAddressLookupTable(accountKey)
+      if (res.value === null) {
+        throw new Error(`Lookup table not found: ${accountKey.toBase58()}`)
+      }
+      return res.value
+    })
+  )
+}
+
 export const relay = async (
   req: Request<unknown, unknown, RelayRequestBody>,
   res: Response,
@@ -46,8 +63,14 @@ export const relay = async (
     const decoded = Buffer.from(encodedTransaction, 'base64')
     const transaction = VersionedTransaction.deserialize(decoded)
 
-    const decompiled = TransactionMessage.decompile(transaction.message)
-    const feePayerKey = transaction.message.getAccountKeys().get(0)
+    const lookupTableAccounts = await getLookupTableAccounts(
+      transaction.message.addressTableLookups.map((k) => k.accountKey)
+    )
+    const decompiled = TransactionMessage.decompile(transaction.message, {
+      addressLookupTableAccounts: lookupTableAccounts
+    })
+
+    const feePayerKey = decompiled.payerKey
     const feePayerKeyPair = getFeePayerKeyPair(feePayerKey)
     if (!feePayerKey || !feePayerKeyPair) {
       throw new BadRequestError(
