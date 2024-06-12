@@ -30,7 +30,7 @@ import { LineupVariant } from 'components/lineup/types'
 import { UserCard } from 'components/user-card'
 import { useRouteMatch } from 'hooks/useRouteMatch'
 import { useSelector } from 'utils/reducer'
-import { SEARCH_CATEGORY_PAGE } from 'utils/route'
+import { SEARCH_PAGE } from 'utils/route'
 
 import { NoResultsTile } from './NoResultsTile'
 import { useUpdateSearchParams } from './utils'
@@ -91,8 +91,8 @@ export const SearchResults = ({ query }: SearchResultsProps) => {
   const playing = useSelector(getPlaying)
   const buffering = useSelector(getBuffering)
   const results = useSelector(searchResultsPageSelectors.getSearchResults)
-  const categoryMatch = useRouteMatch<{ query: string; category: string }>(
-    SEARCH_CATEGORY_PAGE
+  const routeMatch = useRouteMatch<{ query: string; category: string }>(
+    SEARCH_PAGE
   )
 
   const isLoading = results.status === Status.LOADING
@@ -102,15 +102,16 @@ export const SearchResults = ({ query }: SearchResultsProps) => {
   }, [dispatch, query])
 
   const isCategoryActive = useCallback(
-    (category: Category) => categoryMatch?.category === category,
-    [categoryMatch]
+    (category: Category) => routeMatch?.category === category,
+    [routeMatch]
   )
   const isCategoryVisible = useCallback(
     (category: Category) =>
-      !categoryMatch ||
-      categoryMatch.category === Category.ALL ||
-      categoryMatch.category === category,
-    [categoryMatch]
+      !routeMatch ||
+      routeMatch.category === undefined ||
+      routeMatch.category === Category.ALL ||
+      routeMatch.category === category,
+    [routeMatch]
   )
 
   const profileLimit = isCategoryActive(Category.PROFILES)

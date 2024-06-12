@@ -1,7 +1,8 @@
 import { useCallback, useContext, useEffect } from 'react'
 
 import { Flex } from '@audius/harmony'
-import { useParams } from 'react-router-dom'
+import { generatePath, useParams } from 'react-router-dom'
+import { useSearchParams } from 'react-router-dom-v5-compat'
 
 import { useHistoryContext } from 'app/HistoryProvider'
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
@@ -12,6 +13,7 @@ import NavContext, {
 } from 'components/nav/mobile/NavContext'
 import Page from 'components/page/Page'
 import { useMedia } from 'hooks/useMedia'
+import { SEARCH_PAGE } from 'utils/route'
 
 import { RecentSearches } from './RecentSearches'
 import { SearchCatalogTile } from './SearchCatalogTile'
@@ -20,12 +22,10 @@ import { SearchResults } from './SearchResults'
 
 export const SearchPageV2 = () => {
   const { isMobile } = useMedia()
-
-  const { category, query } = useParams<{
-    category: CategoryKey
-    query: string
-  }>()
+  const { category } = useParams<{ category: CategoryKey }>()
   const { history } = useHistoryContext()
+  const [urlSearchParams] = useSearchParams()
+  const query = urlSearchParams.get('query')
 
   // Set nav header
   const { setLeft, setCenter, setRight } = useContext(NavContext)!
@@ -37,14 +37,18 @@ export const SearchPageV2 = () => {
 
   const setCategory = useCallback(
     (category: CategoryKey) => {
-      history.push(`/search/${query}/${category}`)
+      history.push({
+        pathname: generatePath(SEARCH_PAGE, { category }),
+        search: query ? new URLSearchParams({ query }).toString() : undefined,
+        state: {}
+      })
     },
     [history, query]
   )
 
   const header = (
     <SearchHeader
-      query={query}
+      query={query ?? undefined}
       title={'Search'}
       category={category as CategoryKey}
       setCategory={setCategory}
