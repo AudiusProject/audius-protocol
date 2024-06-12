@@ -59,6 +59,7 @@ export type UploadResponse = {
   results: {
     [key: string]: string
   }
+  audio_analysis_error_count: number
   audio_analysis_results: {
     [key: string]: string
   }
