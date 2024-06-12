@@ -1,7 +1,12 @@
 import { useEffect, useState } from 'react'
 
 import { TransactionHandler } from '@audius/sdk/dist/core'
-import { Connection, PublicKey, Transaction } from '@solana/web3.js'
+import {
+  Connection,
+  PublicKey,
+  Transaction,
+  VersionedTransaction
+} from '@solana/web3.js'
 import { useSelector } from 'react-redux'
 
 import { useAudiusQueryContext } from '~/audius-query'
@@ -122,15 +127,36 @@ export const useCoinflowAdapter = () => {
         connection,
         wallet: {
           publicKey: wallet.publicKey,
-          sendTransaction: async (transaction: Transaction) => {
-            transaction.partialSign(wallet)
-            if (isUseSDKPurchaseTrackEnabled) {
+          sendTransaction: async (
+            transaction: Transaction | VersionedTransaction
+          ) => {
+            if (
+              isUseSDKPurchaseTrackEnabled &&
+              transaction instanceof VersionedTransaction
+            ) {
               const sdk = await audiusSdk()
+
+              // Get a more recent blockhash to prevent BlockhashNotFound errors
+              transaction.message.recentBlockhash = (
+                await connection.getLatestBlockhash()
+              ).blockhash
+
+              // Use our own fee payer as signer
+              transaction.message.staticAccountKeys[0] =
+                await sdk.services.solanaRelay.getFeePayer()
+              transaction.signatures[0] = Buffer.alloc(64, 0)
+
+              // Sign with user's Eth wallet derived "root" Solana wallet,
+              // which is the source of the funds for the purchase
+              transaction.sign([wallet])
+
+              // Send to relay to make use of retry and caching logic
               const { signature } = await sdk.services.solanaRelay.relay({
                 transaction
               })
               return signature
-            } else {
+            } else if (transaction instanceof Transaction) {
+              transaction.partialSign(wallet)
               const transactionHandler = new TransactionHandler({
                 connection,
                 useRelay: false
@@ -159,6 +185,8 @@ export const useCoinflowAdapter = () => {
                 )
               }
               return res
+            } else {
+              throw new Error('Invalid transaction type')
             }
           }
         }
