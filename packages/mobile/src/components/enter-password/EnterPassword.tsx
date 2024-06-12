@@ -4,10 +4,8 @@ import commonPasswordList from 'fxa-common-password-list'
 import { View } from 'react-native'
 
 import { IconArrowRight, PasswordInput, Button } from '@audius/harmony-native'
-import LoadingSpinner from 'app/components/loading-spinner'
 import { StatusMessage } from 'app/components/status-message'
 import { makeStyles } from 'app/styles'
-import { useThemeColors } from 'app/utils/theme'
 
 type CheckState = 'error' | 'default' | 'valid'
 
@@ -62,10 +60,6 @@ const useStyles = makeStyles(({ spacing }) => ({
   input: {
     marginTop: spacing(3)
   },
-  button: {
-    width: '100%',
-    borderRadius: 4
-  },
   checkContainer: {
     marginTop: spacing(3),
     marginBottom: spacing(4)
@@ -89,7 +83,6 @@ export const EnterPassword = (props: EnterPasswordProps) => {
     match: 'default',
     common: 'default'
   })
-  const { neutralLight4, primary } = useThemeColors()
 
   const handlePasswordChange = (password: string) => {
     const number =
@@ -213,16 +206,11 @@ export const EnterPassword = (props: EnterPasswordProps) => {
         ))}
       </View>
       <Button
-        styles={{
-          button: [
-            styles.button,
-            { backgroundColor: !isValid || isLoading ? neutralLight4 : primary }
-          ]
-        }}
+        isLoading={isLoading}
         fullWidth
-        disabled={!isValid || isLoading}
+        disabled={!isValid}
         onPress={handleSubmit}
-        iconRight={isLoading ? LoadingSpinner : IconArrowRight}
+        iconRight={IconArrowRight}
       >
         {submitButtonText}
       </Button>

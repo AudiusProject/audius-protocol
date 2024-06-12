@@ -116,7 +116,6 @@ const useStyles = makeStyles(({ spacing, typography }) => ({
     marginHorizontal: spacing(4),
     marginBottom: spacing(2)
   },
-  button: { paddingHorizontal: 0 },
   terms: {
     marginBottom: spacing(4),
     textAlign: 'center',
@@ -261,7 +260,6 @@ export const TrendingRewardsDrawer = (titleIcon) => {
               iconRight={IconArrowRight}
               fullWidth
               onPress={handleGoToTrending}
-              styles={{ button: styles.button }}
             >
               {textMap[modalType].button}
             </Button>

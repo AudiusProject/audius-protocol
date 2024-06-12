@@ -84,14 +84,6 @@ const useStyles = makeStyles(({ spacing, typography, palette }) => ({
     lineHeight: typography.fontSize.large * 1.3,
     textAlign: 'center'
   },
-  button: {
-    padding: spacing(4),
-    height: spacing(12)
-  },
-  buttonText: {
-    fontSize: typography.fontSize.large,
-    fontFamily: typography.fontByWeight.bold
-  },
   border: {
     borderBottomWidth: 1,
     borderBottomColor: palette.neutralLight8
@@ -182,11 +174,7 @@ const DrawerContent = ({ data, onClose }: DrawerContentProps) => {
           <Button
             key={messages.learnMore}
             onPress={handleLearnMorePress}
-            variant={'secondary'}
-            styles={{
-              root: styles.button,
-              text: styles.buttonText
-            }}
+            variant='secondary'
             fullWidth
           >
             {messages.learnMore}
@@ -210,12 +198,8 @@ const DrawerContent = ({ data, onClose }: DrawerContentProps) => {
           <Button
             key={messages.sendAudio}
             onPress={handleTipPress}
-            variant={'primary'}
+            variant='primary'
             iconLeft={IconTipping}
-            styles={{
-              root: styles.button,
-              text: styles.buttonText
-            }}
             fullWidth
           >
             {messages.sendAudio}
@@ -229,11 +213,7 @@ const DrawerContent = ({ data, onClose }: DrawerContentProps) => {
           <Button
             key={messages.unblockUser}
             onPress={handleUnblockPress}
-            variant={'primary'}
-            styles={{
-              root: styles.button,
-              text: styles.buttonText
-            }}
+            variant='primary'
             fullWidth
           >
             {messages.unblockUser}
@@ -241,11 +221,7 @@ const DrawerContent = ({ data, onClose }: DrawerContentProps) => {
           <Button
             key={messages.cancel}
             onPress={onClose}
-            variant={'secondary'}
-            styles={{
-              root: styles.button,
-              text: styles.buttonText
-            }}
+            variant='secondary'
             fullWidth
           >
             {messages.cancel}

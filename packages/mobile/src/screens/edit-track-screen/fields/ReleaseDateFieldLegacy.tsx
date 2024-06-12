@@ -11,8 +11,8 @@ import type {
 } from 'react-native-modal-datetime-picker'
 import DateTimePickerModal from 'react-native-modal-datetime-picker'
 
-import { Pill, Text } from 'app/components/core'
 import { Button } from '@audius/harmony-native'
+import { Pill, Text } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 import { useThemeColors, useThemeVariant } from 'app/utils/theme'
 

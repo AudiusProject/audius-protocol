@@ -122,7 +122,6 @@ export const PublishPlaylistDrawer = () => {
             variant='primary'
             size='large'
             iconLeft={IconRocket}
-            styles={{ icon: { height: 24, width: 24 } }}
             fullWidth
             onPress={handlePublish}
           >

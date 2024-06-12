@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 
 import type { ReactNativeStyle } from '@emotion/native'
 import Color from 'color'
@@ -213,7 +213,7 @@ export const Button = (props: ButtonProps) => {
       ? destructiveStyles
       : primaryStyles),
 
-    ...(size === 'small'
+    ...(size === 'small' || size === 'xs'
       ? smallStyles
       : size === 'large'
       ? largeStyles
@@ -279,21 +279,12 @@ export const Button = (props: ButtonProps) => {
     setIsPressing(false)
   }
 
-  const iconColor = useMemo(() => {
-    if (isDisabled && variant === 'secondary') {
-      return 'staticWhite'
-    }
-
-    return isPressing && !isDisabled
+  const iconColor =
+    isDisabled && variant === 'secondary'
+      ? 'staticWhite'
+      : isPressing && !isDisabled
       ? dynamicStyles.press.icon
       : dynamicStyles.default.icon
-  }, [
-    dynamicStyles.default.icon,
-    dynamicStyles.press.icon,
-    isDisabled,
-    isPressing,
-    variant
-  ])
 
   return (
     <BaseButton

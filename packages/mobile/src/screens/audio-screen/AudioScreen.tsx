@@ -152,19 +152,6 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     textTransform: 'uppercase',
     marginRight: spacing(1)
   },
-  buttonRoot: {
-    marginTop: spacing(2),
-    marginBottom: spacing(2),
-    height: spacing(12),
-    width: 260
-  },
-  button: {
-    paddingHorizontal: spacing(2)
-  },
-  buttonText: {
-    padding: 0,
-    textTransform: 'uppercase'
-  },
   token: {
     width: 200,
     height: 200,
@@ -303,11 +290,6 @@ export const AudioScreen = () => {
         }}
       >
         <Button
-          styles={{
-            root: styles.buttonRoot,
-            text: styles.buttonText,
-            button: styles.button
-          }}
           variant='secondary'
           iconLeft={IconSend}
           onPress={handlePressSend}
@@ -315,11 +297,6 @@ export const AudioScreen = () => {
           {messages.send}
         </Button>
         <Button
-          styles={{
-            root: styles.buttonRoot,
-            text: styles.buttonText,
-            button: styles.button
-          }}
           variant='secondary'
           iconLeft={IconReceive}
           onPress={handlePressReceive}
@@ -327,11 +304,6 @@ export const AudioScreen = () => {
           {messages.receive}
         </Button>
         <Button
-          styles={{
-            root: styles.buttonRoot,
-            text: styles.buttonText,
-            button: styles.button
-          }}
           variant='secondary'
           iconLeft={IconWallet}
           onPress={handlePressManageWallets}
@@ -431,11 +403,6 @@ export const AudioScreen = () => {
           unlocks={['matrix']}
         />
         <Button
-          styles={{
-            root: styles.buttonRoot,
-            text: styles.buttonText,
-            button: styles.button
-          }}
           variant='secondary'
           onPress={() => Linking.openURL(LEARN_MORE_LINK)}
           fullWidth
@@ -443,11 +410,6 @@ export const AudioScreen = () => {
           {messages.learnMore}
         </Button>
         <Button
-          styles={{
-            root: styles.buttonRoot,
-            text: styles.buttonText,
-            button: styles.button
-          }}
           variant='secondary'
           iconLeft={IconDiscord}
           onPress={onPressLaunchDiscord}

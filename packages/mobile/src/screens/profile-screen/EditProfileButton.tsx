@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 
+import type { ButtonProps } from '@audius/harmony-native'
 import { Button } from '@audius/harmony-native'
-import type { ButtonProps } from 'app/components/core'
 import { OnlineOnly } from 'app/components/offline-placeholder/OnlineOnly'
 import { useNavigation } from 'app/hooks/useNavigation'
 

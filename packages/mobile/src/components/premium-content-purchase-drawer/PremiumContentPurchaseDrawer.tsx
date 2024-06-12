@@ -255,7 +255,7 @@ const RenderForm = ({
   const navigation = useNavigation()
   const styles = useStyles()
   const dispatch = useDispatch()
-  const { specialLightGreen, primary } = useThemeColors()
+  const { primary } = useThemeColors()
   const presetValues = usePayExtraPresets()
   const { isEnabled: isIOSUSDCPurchaseEnabled } = useFeatureFlag(
     FeatureFlags.IOS_USDC_PURCHASE_ENABLED
@@ -432,10 +432,10 @@ const RenderForm = ({
           <Button
             onPress={submitForm}
             disabled={isUnlocking}
-            variant={'primary'}
+            variant='primary'
             size='large'
-            color={specialLightGreen}
-            iconLeft={isUnlocking ? LoadingSpinner : undefined}
+            color='lightGreen'
+            isLoading={isUnlocking}
             fullWidth
           >
             {getButtonText(isUnlocking, totalPriceInCents)}

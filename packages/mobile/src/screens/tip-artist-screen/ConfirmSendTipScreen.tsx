@@ -8,7 +8,6 @@ import { useDispatch, useSelector } from 'react-redux'
 
 import { Button, IconCaretLeft, IconCheck } from '@audius/harmony-native'
 import { TextButton } from 'app/components/core'
-import LoadingSpinner from 'app/components/loading-spinner'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles } from 'app/styles'
 
@@ -98,7 +97,8 @@ export const ConfirmSendTipScreen = ({
         variant='primary'
         size='large'
         onPress={handleConfirm}
-        iconRight={inProgress ? LoadingSpinner : IconCheck}
+        isLoading={inProgress}
+        iconRight={IconCheck}
         disabled={inProgress}
         fullWidth
         style={styles.confirmButton}

@@ -4,8 +4,8 @@ import { setFollowAristsCategory } from 'common/store/pages/signon/actions'
 import type { FollowArtistsCategory } from 'common/store/pages/signon/types'
 import { useDispatch } from 'react-redux'
 
+import type { ButtonProps } from '@audius/harmony-native'
 import { Button } from '@audius/harmony-native'
-import type { ButtonProps } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 
 const useStyles = makeStyles(({ spacing }) => ({

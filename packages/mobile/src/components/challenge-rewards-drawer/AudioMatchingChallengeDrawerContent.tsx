@@ -6,10 +6,9 @@ import { ClaimStatus } from '@audius/common/store'
 import { formatNumberCommas } from '@audius/common/utils'
 import { ScrollView, View } from 'react-native'
 
+import type { ButtonProps } from '@audius/harmony-native'
 import { IconArrowRight, IconCloudUpload, Button } from '@audius/harmony-native'
-import type { ButtonProps } from 'app/components/core'
 import { Text } from 'app/components/core'
-import LoadingSpinner from 'app/components/loading-spinner'
 import { getChallengeConfig } from 'app/utils/challenges'
 
 import { ChallengeDescription } from './ChallengeDescription'
@@ -138,7 +137,8 @@ export const AudioMatchingChallengeDrawerContent = ({
             disabled={claimInProgress}
             variant='primary'
             onPress={onClaim}
-            iconRight={claimInProgress ? LoadingSpinner : IconArrowRight}
+            isLoading={claimInProgress}
+            iconRight={IconArrowRight}
             fullWidth
           >
             {messages.claimAudio(formatNumberCommas(claimableAmount))}

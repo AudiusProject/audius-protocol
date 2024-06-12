@@ -11,7 +11,6 @@ import { IconShare, Button } from '@audius/harmony-native'
 import { ChainLogo, Text } from 'app/components/core'
 import { AppDrawer } from 'app/components/drawer'
 import { makeStyles } from 'app/styles'
-import { spacing } from 'app/styles/spacing'
 import { getCollectiblesRoute } from 'app/utils/routes'
 import share from 'app/utils/share'
 
@@ -155,10 +154,6 @@ export const CollectibleDetailsDrawer = () => {
               fullWidth
               onPress={handleShare}
               iconLeft={IconShare}
-              IconProps={{
-                height: spacing(6),
-                width: spacing(6)
-              }}
             >
               {messages.share}
             </Button>

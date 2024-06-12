@@ -27,9 +27,6 @@ const useStyles = makeStyles(({ spacing }) => ({
     paddingHorizontal: spacing(6),
     paddingBottom: spacing(4)
   },
-  buttonRoot: {
-    marginTop: spacing(4)
-  },
   text: {
     textAlign: 'center',
     marginBottom: spacing(2)
@@ -56,25 +53,10 @@ export const SignOutConfirmationDrawer = () => {
         <Text variant='body' style={styles.text}>
           {messages.doubleCheckText}
         </Text>
-        <Button
-          fullWidth
-          styles={{
-            root: styles.buttonRoot,
-            text: { textTransform: 'uppercase' }
-          }}
-          onPress={onClose}
-        >
+        <Button fullWidth onPress={onClose}>
           {messages.cancelText}
         </Button>
-        <Button
-          fullWidth
-          styles={{
-            root: styles.buttonRoot,
-            text: { textTransform: 'uppercase' }
-          }}
-          variant='secondary'
-          onPress={handleSignOut}
-        >
+        <Button fullWidth variant='secondary' onPress={handleSignOut}>
           {messages.confirmText}
         </Button>
       </View>

@@ -10,7 +10,8 @@ import {
   IconHeart,
   IconThumbsDown,
   IconThumbsUp,
-  Button
+  Button,
+  Flex
 } from '@audius/harmony-native'
 import { Text } from 'app/components/core'
 import { NativeDrawer } from 'app/components/drawer'
@@ -50,17 +51,6 @@ const useStyles = makeStyles(({ palette, typography, spacing }) => ({
   titleText: {
     textTransform: 'uppercase',
     marginTop: spacing(4)
-  },
-  buttonRoot: {
-    marginTop: spacing(4)
-  },
-  buttonIcon: {
-    height: 18,
-    width: 18,
-    marginRight: spacing(2)
-  },
-  buttonText: {
-    fontSize: typography.fontSize.large
   },
   text: {
     textAlign: 'center',
@@ -121,18 +111,13 @@ export const RateCtaDrawer = () => {
             {messages.thankYouText}
           </Text>
         ) : (
-          <>
+          <Flex gap='l'>
             <Text variant='body' style={styles.text}>
               {messages.enjoyingText}
             </Text>
             <Button
               iconLeft={IconThumbsUp}
               fullWidth
-              styles={{
-                root: styles.buttonRoot,
-                icon: styles.buttonIcon,
-                text: styles.buttonText
-              }}
               variant='secondary'
               onPress={handleReviewConfirm}
             >
@@ -141,17 +126,12 @@ export const RateCtaDrawer = () => {
             <Button
               iconLeft={IconThumbsDown}
               fullWidth
-              styles={{
-                root: styles.buttonRoot,
-                icon: styles.buttonIcon,
-                text: styles.buttonText
-              }}
               variant='secondary'
               onPress={handleReviewDeny}
             >
               {messages.cancelText}
             </Button>
-          </>
+          </Flex>
         )}
       </View>
     </NativeDrawer>

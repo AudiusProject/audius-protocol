@@ -66,8 +66,7 @@ const useStyles = makeStyles(({ spacing, typography, palette }) => ({
   refreshButton: {
     marginVertical: spacing(4),
     alignSelf: 'center'
-  },
-  buttonText: { textTransform: 'none', marginHorizontal: spacing(1) }
+  }
 }))
 
 type SuggestedTrackProps = {
@@ -109,7 +108,6 @@ const SuggestedTrackRow = (props: SuggestedTrackProps) => {
         <Button
           variant='secondary'
           size='small'
-          styles={{ text: styles.buttonText }}
           onPress={() => onAddTrack(track_id)}
         >
           {messages.addTrack}

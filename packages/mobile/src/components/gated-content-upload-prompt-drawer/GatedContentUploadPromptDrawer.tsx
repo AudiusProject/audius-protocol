@@ -61,12 +61,6 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     fontSize: typography.fontSize.large,
     lineHeight: spacing(7)
   },
-  button: {
-    marginBottom: spacing(6)
-  },
-  buttonText: {
-    fontSize: typography.fontSize.large
-  },
   learnMore: {
     ...flexRowCentered(),
     marginBottom: spacing(6)
@@ -126,20 +120,12 @@ export const GatedContentUploadPromptDrawer = ({
           onPress={handleClose}
           variant='secondary'
           size='large'
-          styles={{
-            root: styles.button,
-            text: styles.buttonText
-          }}
           fullWidth
         >
           {messages.gotIt}
         </Button>
         <Button
           onPress={handleSubmit}
-          styles={{
-            root: styles.button,
-            text: styles.buttonText
-          }}
           size='large'
           iconRight={IconArrowRight}
           fullWidth

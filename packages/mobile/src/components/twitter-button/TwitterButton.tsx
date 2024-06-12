@@ -6,12 +6,10 @@ import { makeTwitterShareUrl } from '@audius/common/utils'
 import type { Nullable } from '@audius/common/utils'
 import { useDispatch, useSelector } from 'react-redux'
 
+import type { ButtonProps } from '@audius/harmony-native'
 import { IconTwitter, Button } from '@audius/harmony-native'
-import type { ButtonProps } from 'app/components/core'
 import { useLink, useOnOpenLink } from 'app/components/core'
 import { make, track } from 'app/services/analytics'
-import { makeStyles } from 'app/styles'
-import { spacing } from 'app/styles/spacing'
 import type { AllEvents } from 'app/types/analytics'
 const { getUser } = cacheUsersSelectors
 const { fetchUserSocials } = cacheUsersActions
@@ -19,12 +17,6 @@ const { fetchUserSocials } = cacheUsersActions
 const messages = {
   share: 'Share to Twitter'
 }
-
-const useStyles = makeStyles(({ palette }) => ({
-  root: {
-    backgroundColor: palette.staticTwitterBlue
-  }
-}))
 
 type StaticTwitterProps = {
   type: 'static'
@@ -51,9 +43,7 @@ export type TwitterButtonProps = Partial<ButtonProps> & { url?: string } & (
   )
 
 export const TwitterButton = (props: TwitterButtonProps) => {
-  const { url = null, style, IconProps, ...other } = props
-  const { size } = other
-  const styles = useStyles()
+  const { url = null, children = messages.share, ...other } = props
   const openLink = useOnOpenLink()
   const dispatch = useDispatch()
 
@@ -115,18 +105,12 @@ export const TwitterButton = (props: TwitterButtonProps) => {
 
   return (
     <Button
-      style={[styles.root, style]}
+      color='blue'
       iconLeft={IconTwitter}
       onPress={handlePress}
-      IconProps={{
-        ...(size === 'large'
-          ? { height: spacing(6), width: spacing(6) }
-          : null),
-        ...IconProps
-      }}
       {...other}
     >
-      {messages.share}
+      {children}
     </Button>
   )
 }

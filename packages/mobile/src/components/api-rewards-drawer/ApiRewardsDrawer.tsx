@@ -43,12 +43,6 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
   subtitle: {
     color: palette.neutralLight4,
     marginBottom: spacing(6)
-  },
-  button: {
-    paddingHorizontal: spacing(2)
-  },
-  buttonText: {
-    fontSize: typography.fontSize.medium
   }
 }))
 
@@ -75,7 +69,6 @@ export const ApiRewardsDrawer = () => {
           size='large'
           iconRight={IconArrowRight}
           onPress={onPress}
-          styles={{ button: styles.button, text: styles.buttonText }}
           fullWidth
         >
           {messages.button}

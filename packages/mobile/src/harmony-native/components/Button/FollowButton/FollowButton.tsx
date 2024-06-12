@@ -74,6 +74,7 @@ export const FollowButton = (props: FollowButtonProps) => {
         justifyContent='center'
         gap='xs'
         pv='s'
+        ph='l'
         border='default'
         style={css({
           opacity: disabled ? 0.45 : 1,

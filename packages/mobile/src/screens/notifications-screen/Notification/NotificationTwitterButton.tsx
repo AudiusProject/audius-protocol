@@ -10,13 +10,6 @@ const useStyles = makeStyles(({ spacing }) => ({
   root: {
     marginTop: spacing(4),
     alignSelf: 'flex-start'
-  },
-  button: {
-    paddingHorizontal: spacing(6)
-  },
-  icon: {
-    height: 14,
-    weight: 14
   }
 }))
 
@@ -27,7 +20,7 @@ export const NotificationTwitterButton = (
 ) => {
   const styles = useStyles()
   return (
-    <TwitterButton styles={styles} {...props}>
+    <TwitterButton style={styles.root} size='small' {...props}>
       {messages.share}
     </TwitterButton>
   )

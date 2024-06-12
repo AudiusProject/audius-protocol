@@ -55,10 +55,6 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
   track: {
     marginHorizontal: spacing(3),
     marginBottom: spacing(5)
-  },
-
-  button: {
-    backgroundColor: palette.secondary
   }
 }))
 
@@ -84,9 +80,6 @@ export const TrackScreenRemixes = ({
         iconRight={IconArrowRight}
         variant='primary'
         onPress={onPressGoToRemixes}
-        styles={{
-          root: styles.button
-        }}
       >
         {messages.viewAll(count)}
       </Button>

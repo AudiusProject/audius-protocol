@@ -13,7 +13,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import { Formik, useFormikContext } from 'formik'
 import { TouchableOpacity } from 'react-native'
 
-import { IconArrowRight, IconClose } from '@audius/harmony-native'
+import { IconArrowRight, IconClose, Button } from '@audius/harmony-native'
 import { BackButton } from 'app/app/navigation/BackButton'
 import {
   KeyboardAvoidingView,
@@ -21,7 +21,6 @@ import {
   Screen,
   ScreenContent
 } from 'app/components/core'
-import { Button } from '@audius/harmony-native'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useToast } from 'app/hooks/useToast'
 import { makeStyles } from 'app/styles'

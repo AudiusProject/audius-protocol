@@ -96,16 +96,6 @@ const useStyles = makeStyles(({ spacing, typography, palette }) => ({
     width: spacing(5),
     height: spacing(5),
     color: palette.neutral
-  },
-  button: {
-    padding: spacing(4),
-    height: spacing(12)
-  },
-  blockButton: {
-    borderColor: palette.accentRed
-  },
-  blockText: {
-    fontSize: typography.fontSize.large
   }
 }))
 
@@ -190,10 +180,6 @@ export const BlockMessagesDrawer = () => {
         <Button
           onPress={handleConfirmPress}
           variant={doesBlockUser ? 'primary' : 'destructive'}
-          styles={{
-            root: styles.button,
-            text: styles.blockText
-          }}
           fullWidth
         >
           {isReportAbuse
@@ -205,10 +191,6 @@ export const BlockMessagesDrawer = () => {
         <Button
           onPress={handleCancelPress}
           variant={doesBlockUser ? 'secondary' : 'primary'}
-          styles={{
-            root: styles.button,
-            text: styles.blockText
-          }}
           fullWidth
         >
           {messages.cancel}

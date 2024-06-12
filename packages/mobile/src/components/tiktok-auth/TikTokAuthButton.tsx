@@ -3,12 +3,10 @@ import { formatTikTokProfile } from '@audius/common/services'
 import type { GestureResponderEvent } from 'react-native'
 import { useDispatch } from 'react-redux'
 
-import { IconTikTok } from '@audius/harmony-native'
+import type { SocialButtonProps } from '@audius/harmony-native'
+import { SocialButton } from '@audius/harmony-native'
 import { useTikTokAuth } from 'app/hooks/useTikTokAuth'
 import * as oauthActions from 'app/store/oauth/actions'
-
-import { SocialButton } from '../social-button'
-import type { SocialButtonProps } from '../social-button/SocialButton'
 
 type TikTokAuthButtonProps = Partial<SocialButtonProps> & {
   onSuccess?: ({
@@ -84,13 +82,11 @@ export const TikTokAuthButton = (props: TikTokAuthButtonProps) => {
 
   return (
     <SocialButton
-      color={'#FE2C55'}
+      aria-label='Sign up with TikTok'
+      socialType='tiktok'
       fullWidth
-      iconLeft={IconTikTok}
       onPress={handleTikTokPress}
       {...buttonProps}
-    >
-      Sign up with TikTok
-    </SocialButton>
+    />
   )
 }

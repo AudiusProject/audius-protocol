@@ -48,16 +48,6 @@ const useStyles = makeStyles(({ spacing, typography, palette }) => ({
     fontSize: typography.fontSize.large,
     lineHeight: typography.fontSize.large * 1.3,
     color: palette.neutral
-  },
-  button: {
-    padding: spacing(4),
-    height: spacing(12)
-  },
-  blockButton: {
-    borderColor: palette.accentRed
-  },
-  blockText: {
-    fontSize: typography.fontSize.large
   }
 }))
 
@@ -94,26 +84,10 @@ export const DeleteChatDrawer = () => {
         <Text style={styles.confirm} allowNewline>
           {messages.description}
         </Text>
-        <Button
-          onPress={handleConfirmPress}
-          variant={'destructive'}
-          styles={{
-            root: styles.button,
-            text: styles.blockText
-          }}
-          fullWidth
-        >
+        <Button onPress={handleConfirmPress} variant={'destructive'} fullWidth>
           {messages.deleteButton}
         </Button>
-        <Button
-          onPress={closeDrawer}
-          variant={'secondary'}
-          styles={{
-            root: styles.button,
-            text: styles.blockText
-          }}
-          fullWidth
-        >
+        <Button onPress={closeDrawer} variant={'secondary'} fullWidth>
           {messages.cancel}
         </Button>
       </View>

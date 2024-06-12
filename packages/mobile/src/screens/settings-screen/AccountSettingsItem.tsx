@@ -34,6 +34,7 @@ export const AccountSettingsItem = (props: AccountSettingsItemProps) => {
       <Button
         style={styles.button}
         variant='secondary'
+        size='small'
         fullWidth
         onPress={onPress}
       >

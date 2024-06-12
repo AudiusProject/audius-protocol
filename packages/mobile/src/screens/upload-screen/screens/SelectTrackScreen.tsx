@@ -5,7 +5,7 @@ import { useFocusEffect } from '@react-navigation/native'
 import DocumentPicker from 'react-native-document-picker'
 import { useAsyncFn } from 'react-use'
 
-import { IconClose, IconCloudUpload } from '@audius/harmony-native'
+import { IconClose, IconCloudUpload, Button } from '@audius/harmony-native'
 import {
   ErrorText,
   Screen,
@@ -13,8 +13,6 @@ import {
   Text,
   Tile
 } from 'app/components/core'
-import { Button } from '@audius/harmony-native'
-import LoadingSpinner from 'app/components/loading-spinner'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { make, track as trackAnalytcs } from 'app/services/analytics'
 import { makeStyles } from 'app/styles'
@@ -124,8 +122,7 @@ export const SelectTrackScreen = () => {
             fullWidth
             variant='primary'
             size='large'
-            iconRight={isLoading ? LoadingSpinner : undefined}
-            disabled={Boolean(isLoading)}
+            isLoading={!!isLoading}
             onPress={handleSelectTrack}
           >
             {messages.browse}

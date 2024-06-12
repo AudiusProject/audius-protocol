@@ -9,10 +9,10 @@ import { useDispatch } from 'react-redux'
 import {
   IconArrowRight,
   IconCaretLeft,
-  IconCloudUpload
+  IconCloudUpload,
+  Button
 } from '@audius/harmony-native'
 import { Tile } from 'app/components/core'
-import { Button } from '@audius/harmony-native'
 import { InputErrorMessage } from 'app/components/core/InputErrorMessage'
 import { PickArtworkField, TextField } from 'app/components/fields'
 import { useNavigation } from 'app/hooks/useNavigation'

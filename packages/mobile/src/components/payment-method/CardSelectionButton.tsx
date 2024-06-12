@@ -6,8 +6,6 @@ import { TouchableOpacity } from 'react-native'
 import { useDispatch } from 'react-redux'
 
 import { IconCaretDown, Button } from '@audius/harmony-native'
-import { typography } from 'app/styles'
-import { spacing } from 'app/styles/spacing'
 
 const { setVisibility } = modalsActions
 
@@ -30,14 +28,6 @@ export const CardSelectionButton = ({
         variant='secondary'
         iconRight={IconCaretDown}
         size='small'
-        IconProps={{ width: spacing(4), height: spacing(4) }}
-        styles={{
-          text: {
-            fontWeight: '600',
-            fontSize: typography.fontSize.small,
-            textTransform: 'none'
-          }
-        }}
         fullWidth
         onPress={handlePress}
       >

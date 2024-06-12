@@ -61,9 +61,6 @@ const useStyles = makeStyles(({ typography, palette, spacing }) => ({
     textAlign: 'center',
     marginBottom: spacing(4)
   },
-  shareButtonIcon: {
-    marginRight: spacing(2)
-  },
   collectibleListItem: {
     marginHorizontal: spacing(4),
     paddingVertical: spacing(2)
@@ -163,8 +160,6 @@ export const CollectiblesTab = () => {
             variant='secondary'
             size='small'
             iconLeft={IconShare}
-            IconProps={{ height: 15, width: 15 }}
-            styles={{ icon: styles.shareButtonIcon }}
             onPress={handlePressShare}
           >
             {messages.share}

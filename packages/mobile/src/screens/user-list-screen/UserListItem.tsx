@@ -116,10 +116,9 @@ export const UserListItem = (props: UserListItemProps) => {
         </View>
         {currentUserId !== user_id ? (
           <FollowButton
+            variant='pill'
             userId={user.user_id}
             followSource={FollowSource.USER_LIST}
-            fullWidth
-            corners='pill'
           />
         ) : null}
       </Pressable>

@@ -20,10 +20,10 @@ import {
   IconUserFollowing,
   IconClose,
   useTheme,
-  IconButton
+  IconButton,
+  Button
 } from '@audius/harmony-native'
 import { Text, ProfilePicture } from 'app/components/core'
-import { Button } from '@audius/harmony-native'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { track, make } from 'app/services/analytics'
 import { makeStyles } from 'app/styles'
@@ -73,9 +73,6 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     justifyContent: 'center',
     flexWrap: 'wrap',
     marginBottom: spacing(2)
-  },
-  followButtonText: {
-    fontSize: typography.fontSize.medium
   }
 }))
 
@@ -205,9 +202,6 @@ export const ArtistRecommendations = (props: ArtistRecommendationsProps) => {
         iconLeft={isFollowingAllArtists ? IconUserFollowing : IconUserFollow}
         fullWidth
         onPress={handlePressFollow}
-        styles={{
-          text: styles.followButtonText
-        }}
       >
         {isFollowingAllArtists ? messages.followingAll : messages.followAll}
       </Button>

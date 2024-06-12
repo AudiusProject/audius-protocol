@@ -121,13 +121,6 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
     top: -spacing(0.25),
     left: -spacing(1.25)
   },
-  mainButton: {
-    marginTop: spacing(2),
-    backgroundColor: palette.accentBlue
-  },
-  buyButton: {
-    backgroundColor: palette.specialLightGreen
-  },
   loadingSpinner: {
     width: spacing(5),
     height: spacing(5)
@@ -306,8 +299,6 @@ export const DetailsTileNoAccess = ({
             </View>
           </View>
           <Button
-            style={styles.mainButton}
-            styles={{ icon: { width: spacing(4), height: spacing(4) } }}
             size='large'
             iconRight={IconExternalLink}
             onPress={handlePressCollection}
@@ -327,8 +318,6 @@ export const DetailsTileNoAccess = ({
             prefix: messages.lockedFollowGatedPrefix
           })}
           <Button
-            style={styles.mainButton}
-            styles={{ icon: { width: spacing(4), height: spacing(4) } }}
             size='large'
             iconLeft={IconUserFollow}
             onPress={handleFollowArtist}
@@ -349,8 +338,6 @@ export const DetailsTileNoAccess = ({
             suffix: messages.lockedTipGatedSuffix
           })}
           <Button
-            style={styles.mainButton}
-            styles={{ icon: { width: spacing(4), height: spacing(4) } }}
             size='large'
             iconRight={IconTipping}
             onPress={handleSendTip}
@@ -370,13 +357,7 @@ export const DetailsTileNoAccess = ({
             </Text>
           </View>
           {isIosGatedContentEnabled && (
-            <Button
-              style={[styles.mainButton, styles.buyButton]}
-              styles={{ icon: { width: spacing(4), height: spacing(4) } }}
-              size='large'
-              onPress={handlePurchasePress}
-              fullWidth
-            >
+            <Button size='large' onPress={handlePurchasePress} fullWidth>
               {messages.buy(formatPrice(streamConditions.usdc_purchase.price))}
             </Button>
           )}
@@ -398,8 +379,6 @@ export const DetailsTileNoAccess = ({
     styles.collectionImage,
     styles.collectionChainImageContainer,
     styles.collectionChainImage,
-    styles.mainButton,
-    styles.buyButton,
     handlePressCollection,
     followee,
     renderLockedSpecialAccessDescription,
