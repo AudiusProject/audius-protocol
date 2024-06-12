@@ -168,11 +168,12 @@ func (ss *MediorumServer) startAudioAnalysisWorker(n int, work chan *Upload) {
 			logger.Info("audio analysis window has passed. skipping job")
 		}
 
-		ss.logger.Debug("analyzing audio", "upload", upload.ID)
+		logger.Debug("analyzing audio")
 		startTime := time.Now().UTC()
 		err := ss.analyzeAudio(upload)
 		elapsedTime := time.Since(startTime)
 		logger = logger.With("duration", elapsedTime, "start_time", startTime)
+
 		if err != nil {
 			logger.Warn("audio analysis failed", "err", err)
 		} else {
