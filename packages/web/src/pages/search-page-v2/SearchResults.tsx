@@ -115,7 +115,7 @@ export const SearchResults = ({ query }: SearchResultsProps) => {
         isVerified: isVerified === 'true'
       })
     )
-  }, [dispatch, query])
+  }, [dispatch, query, sort, genre, mood, isVerified])
 
   const isCategoryActive = useCallback(
     (category: Category) => routeMatch?.category === category,
