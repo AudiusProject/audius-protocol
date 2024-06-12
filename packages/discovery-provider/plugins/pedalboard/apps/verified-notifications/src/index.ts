@@ -1,13 +1,10 @@
-import { App, initializeDiscoveryDb } from '@pedalboard/basekit'
+import { App } from '@pedalboard/basekit'
 import { Tracks, Users } from '@pedalboard/storage'
 import { userRowHandler } from './users'
 import { trackRowHandler } from './tracks'
 import { logError } from './utils'
-import { Knex } from 'knex'
 
 type SharedData = object
-
-export const discoveryDb = initializeDiscoveryDb()
 
 new App<SharedData>({})
     .listen<Tracks>('tracks', trackRowHandler)
