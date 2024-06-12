@@ -7,6 +7,14 @@ const TRACKS_SLACK_CHANNEL = process.env.TRACKS_SLACK_CHANNEL
 
 const discoveryDb = initializeDiscoveryDb()
 
+export const isOldUpload = (uploadDate: Date) => {
+    let uploadedDate = new Date(uploadDate).getTime()
+    let oneWeekAgoDate = new Date()
+    oneWeekAgoDate.setDate(oneWeekAgoDate.getDate() - 7)
+    const oneWeekAgo = oneWeekAgoDate.getTime()
+    return oneWeekAgo > uploadedDate
+}
+
 const onNewTrackRow = async (trackRow: Tracks) => {
     const { track_id, updated_at, created_at } = trackRow
     const isUpload =
@@ -14,6 +22,11 @@ const onNewTrackRow = async (trackRow: Tracks) => {
         updated_at !== undefined &&
         created_at !== undefined
     if (!isUpload) return
+
+    if (isOldUpload(created_at)) {
+        console.log({ created_at, track_id }, "old upload")
+        return
+    }
 
     const trackId = track_id
     const results = await discoveryDb('tracks')
