@@ -9,6 +9,7 @@ import {
   Remix,
   TrackMetadata
 } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import {
   Entry,
   getContext,
@@ -73,10 +74,17 @@ function* watchAdd() {
           yield* fork(fetchRepostInfo, action.entries as Entry<Collection>[])
         }
 
-        // Fetch stream urls
-        yield* fork(fetchTrackStreamUrls, {
-          trackIds: action.entries.map((e) => e.id)
-        })
+        // Prefetch stream urls
+        const getFeatureEnabled = yield* getContext('getFeatureEnabled')
+        const isPrefetchEnabled = yield* call(
+          getFeatureEnabled,
+          FeatureFlags.PREFETCH_STREAM_URLS
+        )
+        if (isPrefetchEnabled) {
+          yield* fork(fetchTrackStreamUrls, {
+            trackIds: action.entries.map((e) => e.id)
+          })
+        }
       }
     }
   )
