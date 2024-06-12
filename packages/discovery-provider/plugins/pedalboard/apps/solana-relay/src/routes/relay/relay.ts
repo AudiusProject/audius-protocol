@@ -45,6 +45,24 @@ const getLookupTableAccounts = async (lookupTableKeys: PublicKey[]) => {
   )
 }
 
+/**
+ * Checks that the transaction is signed
+ *
+ * TODO PAY-3106: Verify the signature is correct as well as non-empty.
+ * @see {@link https://github.com/solana-labs/solana-web3.js/blob/9344bbfa5dd68f3e15918ff606284373ae18911f/packages/library-legacy/src/transaction/legacy.ts#L767 verifySignatures} for Transaction in @solana/web3.js
+ * @param transaction the versioned transaction to check
+ * @returns false if missing a signature, true if all signatures are present.
+ */
+const verifySignatures = (transaction: VersionedTransaction) => {
+  for (const signature of transaction.signatures) {
+    if (signature === null || signature.every((b) => b === 0)) {
+      return false
+    }
+    // TODO PAY-3106: Use ed25519 to verify signature
+  }
+  return true
+}
+
 export const relay = async (
   req: Request<unknown, unknown, RelayRequestBody>,
   res: Response,
@@ -72,17 +90,25 @@ export const relay = async (
 
     const feePayerKey = decompiled.payerKey
     const feePayerKeyPair = getFeePayerKeyPair(feePayerKey)
-    if (!feePayerKey || !feePayerKeyPair) {
-      throw new BadRequestError(
-        `No fee payer for address '${feePayerKey?.toBase58()}'`
-      )
-    }
     await assertRelayAllowedInstructions(decompiled.instructions, {
       user: res.locals.signerUser,
       feePayer: feePayerKey.toBase58()
     })
 
-    transaction.sign([feePayerKeyPair])
+    if (feePayerKeyPair) {
+      res.locals.logger.info(
+        `Signing with fee payer '${feePayerKey.toBase58()}'`
+      )
+      transaction.sign([feePayerKeyPair])
+    } else if (verifySignatures(transaction)) {
+      res.locals.logger.info(
+        `Transaction already signed by '${feePayerKey.toBase58()}'`
+      )
+    } else {
+      throw new BadRequestError(
+        `No fee payer for address '${feePayerKey?.toBase58()}' and signature missing or invalid`
+      )
+    }
     const signature = bs58.encode(transaction.signatures[0])
 
     const logger = res.locals.logger.child({ signature })
