@@ -4,5 +4,5 @@ import type { SelectablePillProps } from 'app/harmony-native/components/input/Se
 type ScreenHeaderButtonProps = Omit<SelectablePillProps, 'type'>
 
 export const ScreenHeaderButton = (props: ScreenHeaderButtonProps) => {
-  return <SelectablePill type='button' {...props} />
+  return <SelectablePill type='button' isSelected {...props} />
 }

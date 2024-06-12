@@ -4,7 +4,7 @@ import { Image, View } from 'react-native'
 
 import { IconArrowRight } from '@audius/harmony-native'
 import AudiusAPI from 'app/assets/images/audiusAPI.png'
-import { Button, GradientText } from 'app/components/core'
+import { Button, GradientText, useLink } from 'app/components/core'
 import { AppDrawer } from 'app/components/drawer'
 import Text from 'app/components/text'
 import { makeStyles } from 'app/styles'
@@ -55,6 +55,8 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
 export const ApiRewardsDrawer = () => {
   const styles = useStyles()
 
+  const { onPress } = useLink(AUDIUS_API_LINK)
+
   return (
     <AppDrawer modalName={MODAL_NAME}>
       <View style={styles.content}>
@@ -72,7 +74,7 @@ export const ApiRewardsDrawer = () => {
           variant='primary'
           size='large'
           iconRight={IconArrowRight}
-          url={AUDIUS_API_LINK}
+          onPress={onPress}
           styles={{ button: styles.button, text: styles.buttonText }}
           fullWidth
         >

@@ -5,18 +5,17 @@ import { cacheUsersSelectors, usersSocialActions } from '@audius/common/store'
 import type { GestureResponderEvent, StyleProp, ViewStyle } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { IconUserFollow, IconUserFollowing } from '@audius/harmony-native'
-import type { ButtonProps } from 'app/components/core'
-import { Button } from 'app/components/core'
+import {
+  FollowButton as HarmonyFollowButton,
+  IconUserFollow,
+  IconUserFollowing
+} from '@audius/harmony-native'
+import type { FollowButtonProps as HarmonyFollowButtonProps } from '@audius/harmony-native'
+
 const { followUser, unfollowUser } = usersSocialActions
 const { getUser } = cacheUsersSelectors
 
-const messages = {
-  follow: 'follow',
-  following: 'following'
-}
-
-type FollowButtonsProps = Partial<ButtonProps> & {
+type FollowButtonsProps = Partial<HarmonyFollowButtonProps> & {
   userId: ID
   noIcon?: boolean
   style?: StyleProp<ViewStyle>
@@ -33,8 +32,6 @@ export const FollowButton = (props: FollowButtonsProps) => {
 
   const Icon = isFollowing ? IconUserFollowing : IconUserFollow
 
-  const variant = isFollowing ? 'primary' : 'secondary'
-
   const handlePress = useCallback(
     (event: GestureResponderEvent) => {
       onPress?.(event)
@@ -48,16 +45,14 @@ export const FollowButton = (props: FollowButtonsProps) => {
   )
 
   return (
-    <Button
+    <HarmonyFollowButton
+      variant='pill'
+      isFollowing={isFollowing}
       style={style}
       haptics={!isFollowing}
-      variant={variant}
       iconLeft={noIcon ? undefined : Icon}
-      size='small'
       onPress={handlePress}
       {...other}
-    >
-      {isFollowing ? messages.following : messages.follow}
-    </Button>
+    />
   )
 }

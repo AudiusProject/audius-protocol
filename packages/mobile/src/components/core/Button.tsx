@@ -22,12 +22,9 @@ import { spacing } from 'app/styles/spacing'
 import type { ThemeColors } from 'app/utils/theme'
 import { useThemeColors, useThemePalette } from 'app/utils/theme'
 
-import { Link } from './Link'
-
 export type ButtonVariant = 'primary' | 'secondary' | 'destructive'
 
 type ButtonSize = 'xs' | 'small' | 'default' | 'large'
-type ButtonCorners = 'rounded' | 'pill'
 
 export type ButtonProps = Omit<RNButtonProps, 'title'> &
   PressableProps & {
@@ -46,10 +43,8 @@ export type ButtonProps = Omit<RNButtonProps, 'title'> &
     }>
     variant?: ButtonVariant
     haptics?: boolean | 'light' | 'medium'
-    url?: string
     // Custom color that will override the variant
     color?: string
-    corners?: ButtonCorners
     children?: ReactNode
     pressScale?: number
   }
@@ -77,16 +72,16 @@ type CustomStylesConfig = {
   isPressing: boolean
   size: ButtonSize
   variant: ButtonVariant
-  corners: ButtonCorners
 }
 
 const getCustomStyles = (config: CustomStylesConfig) => {
-  const { palette, isPressing, size, variant, corners } = config
+  const { palette, isPressing, size, variant } = config
   const commonVariantStyles = {
     root: {
       borderColor: palette.neutralLight6,
       borderWidth: 1,
-      backgroundColor: palette.white
+      backgroundColor: palette.white,
+      borderRadius: spacing(1)
     },
     text: {
       color: palette.neutral
@@ -257,24 +252,10 @@ const getCustomStyles = (config: CustomStylesConfig) => {
     }
   }
 
-  const cornerStyles = {
-    rounded: {
-      root: {
-        borderRadius: spacing(1)
-      }
-    },
-    pill: {
-      root: {
-        borderRadius: spacing(10)
-      }
-    }
-  }
-
   return merge(
     variantStyles[variant],
     isPressing && variantPressingStyles[variant],
-    sizeStyles[size],
-    cornerStyles[corners]
+    sizeStyles[size]
   )
 }
 
@@ -282,7 +263,6 @@ export const Button = (props: ButtonProps) => {
   const {
     accessibilityLabel,
     color: customColor,
-    corners = 'rounded',
     disabled,
     fullWidth,
     haptics,
@@ -298,7 +278,6 @@ export const Button = (props: ButtonProps) => {
     style,
     styles: stylesProp,
     children,
-    url,
     variant = 'primary',
     ...other
   } = props
@@ -306,8 +285,8 @@ export const Button = (props: ButtonProps) => {
   const palette = useThemePalette()
   const baseStyles = useStyles()
   const styles = useMemo(
-    () => getCustomStyles({ isPressing, size, variant, corners, palette }),
-    [isPressing, size, variant, corners, palette]
+    () => getCustomStyles({ isPressing, size, variant, palette }),
+    [isPressing, size, variant, palette]
   )
 
   const {
@@ -421,7 +400,7 @@ export const Button = (props: ButtonProps) => {
     />
   ) : null
 
-  const PressableComponent = url ? Link : Pressable
+  const PressableComponent = Pressable
 
   return (
     <Animated.View
@@ -436,7 +415,6 @@ export const Button = (props: ButtonProps) => {
       ]}
     >
       <PressableComponent
-        url={url as string}
         style={[
           baseStyles.button,
           styles.button,

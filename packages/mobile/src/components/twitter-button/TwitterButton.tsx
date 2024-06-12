@@ -8,7 +8,7 @@ import { useDispatch, useSelector } from 'react-redux'
 
 import { IconTwitter } from '@audius/harmony-native'
 import type { ButtonProps } from 'app/components/core'
-import { Button, useOnOpenLink } from 'app/components/core'
+import { Button, useLink, useOnOpenLink } from 'app/components/core'
 import { make, track } from 'app/services/analytics'
 import { makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
@@ -45,8 +45,10 @@ type DynamicTwitterProps = {
   }>
 }
 
-export type TwitterButtonProps = Partial<ButtonProps> &
-  (StaticTwitterProps | DynamicTwitterProps)
+export type TwitterButtonProps = Partial<ButtonProps> & { url?: string } & (
+    | StaticTwitterProps
+    | DynamicTwitterProps
+  )
 
 export const TwitterButton = (props: TwitterButtonProps) => {
   const { url = null, style, IconProps, ...other } = props
@@ -75,7 +77,12 @@ export const TwitterButton = (props: TwitterButtonProps) => {
     setIdle
   } = useTwitterButtonStatus(user, additionalUser)
 
+  const { onPress: onPressLink } = useLink(
+    other.type === 'static' ? makeTwitterShareUrl(url, other.shareText) : ''
+  )
+
   const handlePress = useCallback(() => {
+    onPressLink()
     if (other.type === 'static' && other.analytics) {
       track(make(other.analytics))
     }
@@ -86,7 +93,7 @@ export const TwitterButton = (props: TwitterButtonProps) => {
       }
       setLoading()
     }
-  }, [other, dispatch, setLoading])
+  }, [onPressLink, other, dispatch, setLoading])
 
   if (other.type === 'dynamic' && shareTwitterStatus === 'success') {
     const handle = twitterHandle ? `@${twitterHandle}` : userName
@@ -110,11 +117,6 @@ export const TwitterButton = (props: TwitterButtonProps) => {
     <Button
       style={[styles.root, style]}
       iconLeft={IconTwitter}
-      url={
-        other.type === 'static'
-          ? makeTwitterShareUrl(url, other.shareText)
-          : undefined
-      }
       onPress={handlePress}
       IconProps={{
         ...(size === 'large'
