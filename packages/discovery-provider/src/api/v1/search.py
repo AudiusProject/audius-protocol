@@ -45,6 +45,7 @@ class FullSearch(Resource):
         limit = format_limit(args)
         current_user_id = get_current_user_id(args)
         include_purchaseable = parse_bool_param(args.get("includePurchaseable"))
+        genres = args.get("genre")
 
         search_args = {
             "is_auto_complete": False,
@@ -56,6 +57,7 @@ class FullSearch(Resource):
             "offset": offset,
             "only_downloadable": False,
             "include_purchaseable": include_purchaseable,
+            "genres": genres,
         }
         resp = search(search_args)
         return success_response(resp)

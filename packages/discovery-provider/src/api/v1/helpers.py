@@ -831,6 +831,13 @@ full_search_parser.add_argument(
     type=str,
     description="Whether or not to include purchaseable content",
 )
+full_search_parser.add_argument(
+    "genre",
+    action="append",
+    required=False,
+    type=str,
+    description="The genres to filter by",
+)
 
 verify_token_parser = reqparse.RequestParser(argument_class=DescriptiveArgument)
 verify_token_parser.add_argument("token", required=True, description="JWT to verify")

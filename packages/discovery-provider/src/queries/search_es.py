@@ -15,8 +15,12 @@ from src.utils.elasticdsl import (
     populate_track_or_playlist_metadata_es,
     populate_user_metadata_es,
 )
+from src.utils.hardcoded_data import genre_allowlist
 
 logger = logging.getLogger(__name__)
+
+
+lowercase_to_capitalized_genre = {genre.lower(): genre for genre in genre_allowlist}
 
 
 def search_es_full(args: dict):
@@ -32,6 +36,7 @@ def search_es_full(args: dict):
     only_downloadable = args.get("only_downloadable")
     is_auto_complete = args.get("is_auto_complete")
     include_purchaseable = args.get("include_purchaseable", False)
+    genres = args.get("genres", [])
     do_tracks = search_type == "all" or search_type == "tracks"
     do_users = search_type == "all" or search_type == "users"
     do_playlists = search_type == "all" or search_type == "playlists"
@@ -55,6 +60,7 @@ def search_es_full(args: dict):
                     must_saved=False,
                     only_downloadable=only_downloadable,
                     include_purchaseable=include_purchaseable,
+                    genres=genres,
                 ),
             ]
         )
@@ -345,6 +351,7 @@ def track_dsl(
     must_saved=False,
     only_downloadable=False,
     include_purchaseable=False,
+    genres=[],
 ):
     dsl = {
         "must": [
@@ -412,7 +419,16 @@ def track_dsl(
             *base_match(search_str, operator="and", boost=len(search_str)),
             {"term": {"user.is_verified": {"value": True}}},
         ],
+        "filter": [],
     }
+
+    if genres:
+
+        def get_capitalized_genre(genre):
+            return lowercase_to_capitalized_genre.get(genre.lower())
+
+        capitalized_genres = [get_capitalized_genre(genre) for genre in genres]
+        dsl["filter"].append({"terms": {"genre": capitalized_genres}})
 
     if only_downloadable:
         dsl["must"].append({"term": {"downloadable": {"value": True}}})
