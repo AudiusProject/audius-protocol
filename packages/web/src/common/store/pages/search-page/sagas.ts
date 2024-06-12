@@ -7,7 +7,7 @@ import {
   SearchKind,
   getContext
 } from '@audius/common/store'
-import { trimToAlphaNumeric } from '@audius/common/utils'
+import { Genre, trimToAlphaNumeric } from '@audius/common/utils'
 import { select, call, takeLatest, put } from 'typed-redux-saga'
 
 import { processAndCacheCollections } from 'common/store/cache/collections/utils'
@@ -15,6 +15,7 @@ import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
 import { fetchUsers } from 'common/store/cache/users/sagas'
 import tracksSagas from 'common/store/pages/search-page/lineups/tracks/sagas'
 import { waitForRead } from 'utils/sagaHelpers'
+import { Mood } from '@audius/sdk'
 
 const getUserId = accountSelectors.getUserId
 
@@ -97,12 +98,25 @@ export function* fetchSearchPageTags(
   }
 }
 
-export function* getSearchResults(
-  searchText: string,
-  kind: SearchKind,
-  limit: number,
+type GetSearchResultsArgs = {
+  searchText: string
+  kind: SearchKind
+  limit: number
   offset: number
-) {
+  genre?: Genre
+  mood?: Mood
+  is_verified?: boolean
+}
+
+export function* getSearchResults({
+  searchText,
+  kind,
+  limit,
+  offset,
+  genre,
+  mood,
+  is_verified
+}: GetSearchResultsArgs) {
   yield* waitForRead()
   const getFeatureEnabled = yield* getContext('getFeatureEnabled')
   const isUSDCEnabled = yield* call(
@@ -118,7 +132,10 @@ export function* getSearchResults(
     kind,
     limit,
     offset,
-    includePurchaseable: isUSDCEnabled
+    includePurchaseable: isUSDCEnabled,
+    genre,
+    mood,
+    is_verified
   })
   const { tracks, albums, playlists, users } = results
 
@@ -140,33 +157,24 @@ function* fetchSearchPageResults(
 ) {
   yield* call(waitForRead)
 
-  const rawResults = yield* call(
-    getSearchResults,
-    action.searchText,
-    action.searchKind,
-    action.limit,
-    action.offset
-  )
+  const { type, ...rest } = action
+  const rawResults = yield* call(getSearchResults, rest)
   if (rawResults) {
     const results = {
       users:
-        action.searchKind === SearchKind.USERS ||
-        action.searchKind === SearchKind.ALL
+        action.kind === SearchKind.USERS || action.kind === SearchKind.ALL
           ? rawResults.users.map(({ user_id: id }) => id)
           : undefined,
       tracks:
-        action.searchKind === SearchKind.TRACKS ||
-        action.searchKind === SearchKind.ALL
+        action.kind === SearchKind.TRACKS || action.kind === SearchKind.ALL
           ? rawResults.tracks.map(({ track_id: id }) => id)
           : undefined,
       albums:
-        action.searchKind === SearchKind.ALBUMS ||
-        action.searchKind === SearchKind.ALL
+        action.kind === SearchKind.ALBUMS || action.kind === SearchKind.ALL
           ? rawResults.albums.map(({ playlist_id: id }) => id)
           : undefined,
       playlists:
-        action.searchKind === SearchKind.PLAYLISTS ||
-        action.searchKind === SearchKind.ALL
+        action.kind === SearchKind.PLAYLISTS || action.kind === SearchKind.ALL
           ? rawResults.playlists.map(({ playlist_id: id }) => id)
           : undefined
     }
@@ -176,13 +184,10 @@ function* fetchSearchPageResults(
         action.searchText
       )
     )
-    if (
-      action.searchKind === SearchKind.TRACKS ||
-      action.searchKind === SearchKind.ALL
-    ) {
+    if (action.kind === SearchKind.TRACKS || action.kind === SearchKind.ALL) {
       yield* put(
         tracksLineupActions.fetchLineupMetadatas(0, 10, false, {
-          category: action.searchKind,
+          category: action.kind,
           query: action.searchText,
           isTagSearch: false
         })

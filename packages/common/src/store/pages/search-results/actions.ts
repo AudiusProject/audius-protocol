@@ -1,3 +1,4 @@
+import { Genre, Mood } from '@audius/sdk'
 import { SearchKind } from './types'
 
 export const FETCH_SEARCH_PAGE_RESULTS = 'SEARCH/FETCH_SEARCH_PAGE_RESULTS'
@@ -15,9 +16,12 @@ export const FETCH_SEARCH_PAGE_TAGS_FAILED =
 export type FetchSearchPageResultsAction = {
   type: typeof FETCH_SEARCH_PAGE_RESULTS
   searchText: string
-  searchKind: SearchKind
+  kind: SearchKind
   limit: number
   offset: number
+  genre?: Genre
+  mood?: Mood
+  is_verified?: boolean
 }
 
 export type FetchSearchPageResultsSuceededAction = {
@@ -58,19 +62,24 @@ export type SearchPageActions =
 
 // Query-based search
 
-export const fetchSearchPageResults = (
-  searchText: string,
-  searchKind: SearchKind,
-  limit: number,
+type FetchSearchPageResultsActionArgs = {
+  searchText: string
+  kind: SearchKind
+  limit: number
   offset: number
+  genre?: Genre
+  mood?: Mood
+  is_verified?: boolean
+}
+
+export const fetchSearchPageResults = (
+  args: FetchSearchPageResultsActionArgs
 ): SearchPageActions => ({
   type: FETCH_SEARCH_PAGE_RESULTS,
-  searchText,
-  searchKind,
-  limit,
-  offset
+  ...args
 })
 
+// TODO: update the rest of these actions to object args
 export const fetchSearchPageResultsSucceeded = (
   results: any,
   searchText: string

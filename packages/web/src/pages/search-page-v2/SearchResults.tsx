@@ -34,6 +34,7 @@ import { SEARCH_CATEGORY_PAGE } from 'utils/route'
 
 import { NoResultsTile } from './NoResultsTile'
 import { useUpdateSearchParams } from './utils'
+import { Genre, Mood } from '@audius/sdk'
 
 const MAX_RESULTS = 100
 const MAX_PREVIEW_RESULTS = 5
@@ -91,14 +92,28 @@ export const SearchResults = ({ query }: SearchResultsProps) => {
   const playing = useSelector(getPlaying)
   const buffering = useSelector(getBuffering)
   const results = useSelector(searchResultsPageSelectors.getSearchResults)
-  const categoryMatch = useRouteMatch<{ query: string; category: string }>(
-    SEARCH_CATEGORY_PAGE
-  )
+  const categoryMatch = useRouteMatch<{
+    query: string
+    category: string
+    genre?: Genre
+    mood?: Mood
+    is_verified?: boolean
+  }>(SEARCH_CATEGORY_PAGE)
 
   const isLoading = results.status === Status.LOADING
   const dispatch = useDispatch()
   useEffect(() => {
-    dispatch(fetchSearchPageResults(query, SearchKind.ALL, 50, 0))
+    dispatch(
+      fetchSearchPageResults({
+        searchText: query,
+        kind: SearchKind.ALL,
+        limit: 50,
+        offset: 0,
+        genre,
+        mood,
+        is_verified
+      })
+    )
   }, [dispatch, query])
 
   const isCategoryActive = useCallback(
