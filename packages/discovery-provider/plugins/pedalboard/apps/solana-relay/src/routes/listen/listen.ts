@@ -23,6 +23,8 @@ import {
   createTrackListenInstructions,
   getFeePayerKeyPair
 } from './trackListenInstructions'
+import { RateLimiter } from '../../middleware/rateLimiter'
+import { LISTENS_RATE_LIMIT_IP_PREFIX, LISTENS_RATE_LIMIT_TRACK_PREFIX, config } from '../../config'
 
 export type LocationData = {
   city: string
@@ -62,6 +64,10 @@ export type RecordListenParams = {
 export type RecordListenResponse = {
   solTxSignature: string | null
 }
+
+export const listensIpRateLimiter = new RateLimiter({ prefix: LISTENS_RATE_LIMIT_IP_PREFIX, hourlyLimit: config.listensIpHourlyRateLimit, dailyLimit: config.listensIpDailyRateLimit, weeklyLimit: config.listensIpWeeklyRateLimit })
+export const listensIpTrackRateLimiter = new RateLimiter({ prefix: LISTENS_RATE_LIMIT_TRACK_PREFIX, hourlyLimit: config.listensTrackHourlyRateLimit, dailyLimit: config.listensTrackDailyRateLimit, weeklyLimit: config.listensTrackWeeklyRateLimit })
+
 
 export const recordListen = async (
   params: RecordListenParams
@@ -148,6 +154,25 @@ export const validateListenSignature = async (
   return false
 }
 
+// rate limiter for after request validation
+export const listenRouteRateLimiter = async (params: { ip: string, trackId: string, logger?: Logger }): Promise<{ allowed: boolean }> => {
+  const { ip, trackId, logger } = params
+  const ipTrackConcatKey = `${ip}:${trackId}`
+
+  // consume and check rate limits
+  const ipLimit = await listensIpRateLimiter.checkLimit(ip)
+  const ipTrackLimit = await listensIpTrackRateLimiter.checkLimit(ipTrackConcatKey)
+
+  // merge limits and check if both allow passage
+  const allowed = ipLimit.allowed && ipTrackLimit.allowed
+
+  if (!allowed) {
+    logger?.info({ ipLimit, ipTrackLimit, ip }, "rate limit hit")
+  }
+
+  return { allowed }
+}
+
 export const listen = async (req: Request, res: Response) => {
   let logger
   try {
@@ -159,12 +184,19 @@ export const listen = async (req: Request, res: Response) => {
     logger = res.locals.logger.child({ userId, trackId })
     const ip = getIP(req)
 
+    // require request came from content
     if (!(await validateListenSignature(timestamp, signature))) {
       logger.info(
         { userId, trackId, ip, timestamp, signature },
         'unauthorized request'
       )
       return res.status(401).json({ message: 'Unauthorized Error' })
+    }
+
+    // check rate limit on forwarded IP and track
+    const allowed = await listenRouteRateLimiter({ ip, trackId, logger })
+    if (!allowed) {
+      return res.send(429).json({ message: "Too Many Requests" })
     }
 
     // record listen after validation

@@ -12,6 +12,8 @@ services:
     deploy:
       mode: replicated
       replicas: '${DISCOVERY_PROVIDER_REPLICAS}'
+    ports:
+      - '6379:6379'
     profiles:
       - discovery
 
