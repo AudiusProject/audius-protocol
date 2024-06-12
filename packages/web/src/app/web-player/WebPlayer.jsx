@@ -692,7 +692,7 @@ class WebPlayer extends Component {
                         to={{
                           pathname: SEARCH_BASE_ROUTE,
                           search: new URLSearchParams({
-                            query: props.match.params.category
+                            query: category
                           }).toString()
                         }}
                       />
