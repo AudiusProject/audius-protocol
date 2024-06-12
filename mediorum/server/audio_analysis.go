@@ -182,7 +182,6 @@ func (ss *MediorumServer) startAudioAnalysisWorker(n int, work chan *Upload) {
 }
 
 func (ss *MediorumServer) analyzeAudio(upload *Upload) error {
-	// TODO michelle time this work and abort if taking > 1 min
 	upload.AudioAnalyzedBy = ss.Config.Self.Host
 	upload.Status = JobStatusBusyAudioAnalysis
 	ss.crud.Update(upload)
