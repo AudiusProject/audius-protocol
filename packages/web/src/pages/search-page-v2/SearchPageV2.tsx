@@ -20,12 +20,23 @@ import { SearchCatalogTile } from './SearchCatalogTile'
 import { CategoryKey, SearchHeader } from './SearchHeader'
 import { SearchResults } from './SearchResults'
 
+const useShowSearchResults = () => {
+  const [urlSearchParams] = useSearchParams()
+  const query = urlSearchParams.get('query')
+  const genre = urlSearchParams.get('genre')
+  const mood = urlSearchParams.get('mood')
+  const isVerified = urlSearchParams.get('isVerified')
+
+  return query || genre || mood || isVerified
+}
+
 export const SearchPageV2 = () => {
   const { isMobile } = useMedia()
   const { category } = useParams<{ category: CategoryKey }>()
   const { history } = useHistoryContext()
   const [urlSearchParams] = useSearchParams()
   const query = urlSearchParams.get('query')
+  const showSearchResults = useShowSearchResults()
 
   // Set nav header
   const { setLeft, setCenter, setRight } = useContext(NavContext)!
@@ -66,7 +77,7 @@ export const SearchPageV2 = () => {
     >
       <Flex direction='column' w='100%'>
         {isMobile ? header : null}
-        {!query ? (
+        {!showSearchResults ? (
           <Flex
             direction='column'
             alignItems='center'
@@ -76,7 +87,7 @@ export const SearchPageV2 = () => {
             <RecentSearches />
           </Flex>
         ) : (
-          <SearchResults query={query} />
+          <SearchResults />
         )}
       </Flex>
     </PageComponent>
