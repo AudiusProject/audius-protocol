@@ -125,10 +125,7 @@ export class IdentityService {
   }
 
   async setAuthFn(obj: Data) {
-    const headers = {
-      'Encoded-Message': obj["encodedMessage"],
-      'Encoded-Data-Message': obj["encodedMessage"]
-    }
+    const headers = await this._signData()
     return await this._makeRequest({
       url: '/authentication',
       method: 'post',

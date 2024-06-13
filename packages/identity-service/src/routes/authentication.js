@@ -1,3 +1,4 @@
+const sigUtil = require("eth-sig-util")
 const models = require('../models')
 const {
   handleResponse,
@@ -5,7 +6,7 @@ const {
   errorResponseBadRequest,
   errorResponseForbidden,
   errorResponseUnauthorized
-} = require('../apiHelpers')
+  } = require('../apiHelpers')
 const {
   validateOtp,
   shouldSendOtp,
@@ -13,6 +14,9 @@ const {
   bypassOtp
 } = require('../utils/otp')
 const authMiddleware = require('../authMiddleware')
+
+const EncodedDataMessageHeader = 'encoded-data-message'
+const EncodedDataSignatureHeader = 'encoded-data-signature'
 
 module.exports = function (app) {
   /**
@@ -25,6 +29,7 @@ module.exports = function (app) {
     handleResponse(async (req, res, next) => {
       // body should contain {iv, cipherText, lookupKey}
       const body = req.body
+      const headers = req.headers
 
       if (body && body.iv && body.cipherText && body.lookupKey) {
         try {
@@ -39,11 +44,26 @@ module.exports = function (app) {
             paranoid: false
           })
           if (!existingRecord) {
+            // default to null
+            let walletAddress = null
+            req.logger.info({ headers }, "request headers")
+            if (headers && headers[EncodedDataMessageHeader] && headers[EncodedDataSignatureHeader]) {
+              const encodedDataMessage = headers[EncodedDataMessageHeader]
+              const encodedDataSignature = headers[EncodedDataSignatureHeader]
+              try {
+                walletAddress = sigUtil.recoverPersonalSignature({ data: encodedDataMessage, sig: encodedDataSignature })
+              } catch (err) {
+                // keep address as null for future user recovery
+                req.logger.error('Error recovering users signed address', err)
+              }
+            }
+
             await models.Authentication.create(
               {
                 iv: body.iv,
                 cipherText: body.cipherText,
-                lookupKey: body.lookupKey
+                lookupKey: body.lookupKey,
+                walletAddress: walletAddress
               },
               { transaction }
             )
