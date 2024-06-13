@@ -16,6 +16,7 @@ from src.utils.elasticdsl import (
     populate_user_metadata_es,
 )
 from src.utils.hardcoded_data import genre_allowlist
+from src.utils.hardcoded_data import moods as mood_allowlist
 
 logger = logging.getLogger(__name__)
 
@@ -26,12 +27,19 @@ def get_capitalized_genre(genre):
     return lowercase_to_capitalized_genre.get(genre.lower())
 
 
+lowercase_to_capitalized_mood = {mood.lower(): mood for mood in mood_allowlist}
+
+
+def get_capitalized_mood(mood):
+    return lowercase_to_capitalized_mood.get(mood.lower())
+
+
 def search_es_full(args: dict):
     esclient = get_esclient()
     if not esclient:
         raise Exception("esclient is None")
 
-    search_str = args.get("query", "").strip()
+    search_str = (args.get("query", "") or "").strip()
     current_user_id = args.get("current_user_id")
     limit = args.get("limit", 10)
     offset = args.get("offset", 0)
@@ -40,6 +48,8 @@ def search_es_full(args: dict):
     is_auto_complete = args.get("is_auto_complete")
     include_purchaseable = args.get("include_purchaseable", False)
     genres = args.get("genres", [])
+    moods = args.get("moods", [])
+    only_verified = args.get("only_verified", False)
     do_tracks = search_type == "all" or search_type == "tracks"
     do_users = search_type == "all" or search_type == "users"
     do_playlists = search_type == "all" or search_type == "playlists"
@@ -64,6 +74,7 @@ def search_es_full(args: dict):
                     only_downloadable=only_downloadable,
                     include_purchaseable=include_purchaseable,
                     genres=genres,
+                    moods=moods,
                 ),
             ]
         )
@@ -73,7 +84,12 @@ def search_es_full(args: dict):
         mdsl.extend(
             [
                 {"index": ES_USERS},
-                user_dsl(search_str, current_user_id),
+                user_dsl(
+                    search_str=search_str,
+                    current_user_id=current_user_id,
+                    must_saved=False,
+                    only_verified=only_verified,
+                ),
             ]
         )
 
@@ -355,6 +371,7 @@ def track_dsl(
     only_downloadable=False,
     include_purchaseable=False,
     genres=[],
+    moods=[],
 ):
     dsl = {
         "must": [
@@ -426,8 +443,24 @@ def track_dsl(
     }
 
     if genres:
-        capitalized_genres = [get_capitalized_genre(genre) for genre in genres]
-        dsl["filter"].append({"terms": {"genre": capitalized_genres}})
+        capitalized_genres = list(
+            filter(
+                None,
+                [get_capitalized_genre(genre) for genre in genres if genre is not None],
+            )
+        )
+        if capitalized_genres:
+            dsl["filter"].append({"terms": {"genre": capitalized_genres}})
+
+    if moods:
+        capitalized_moods = list(
+            filter(
+                None, [get_capitalized_mood(mood) for mood in moods if mood is not None]
+            )
+        )
+
+        if capitalized_moods:
+            dsl["filter"].append({"terms": {"mood": capitalized_moods}})
 
     if only_downloadable:
         dsl["must"].append({"term": {"downloadable": {"value": True}}})
@@ -439,7 +472,7 @@ def track_dsl(
     return default_function_score(dsl, "repost_count")
 
 
-def user_dsl(search_str, current_user_id, must_saved=False):
+def user_dsl(search_str, current_user_id, only_verified, must_saved=False):
     # must_search_str = search_str + " " + search_str.replace(" ", "")
     dsl = {
         "must": [
@@ -543,6 +576,9 @@ def user_dsl(search_str, current_user_id, must_saved=False):
 
     if current_user_id and must_saved:
         dsl["must"].append(be_followed(current_user_id))
+
+    if only_verified:
+        dsl["must"].append({"term": {"is_verified": {"value": True}}})
 
     if current_user_id:
         dsl["should"].append(be_followed(current_user_id))

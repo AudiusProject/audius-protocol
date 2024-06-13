@@ -816,7 +816,7 @@ user_tracks_route_parser.add_argument(
 )
 
 full_search_parser = pagination_with_current_user_parser.copy()
-full_search_parser.add_argument("query", required=True, description="The search query")
+full_search_parser.add_argument("query", required=False, description="The search query")
 full_search_parser.add_argument(
     "kind",
     required=False,
@@ -837,6 +837,19 @@ full_search_parser.add_argument(
     required=False,
     type=str,
     description="The genres to filter by",
+)
+full_search_parser.add_argument(
+    "mood",
+    action="append",
+    required=False,
+    type=str,
+    description="The moods to filter by",
+)
+full_search_parser.add_argument(
+    "is_verified",
+    required=False,
+    type=str,
+    description="Only include verified users in the user results",
 )
 
 verify_token_parser = reqparse.RequestParser(argument_class=DescriptiveArgument)

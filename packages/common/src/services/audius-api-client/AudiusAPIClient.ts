@@ -1,4 +1,4 @@
-import type { AudiusLibs } from '@audius/sdk'
+import type { AudiusLibs, Genre, Mood } from '@audius/sdk'
 
 import {
   ID,
@@ -284,6 +284,9 @@ type GetSearchArgs = {
   limit?: number
   offset?: number
   includePurchaseable?: boolean
+  genre?: Genre
+  mood?: Mood
+  isVerified?: boolean
 }
 
 type TrendingIdsResponse = {
@@ -1119,7 +1122,10 @@ export class AudiusAPIClient {
     kind,
     offset,
     limit,
-    includePurchaseable
+    includePurchaseable,
+    genre,
+    mood,
+    isVerified
   }: GetSearchArgs) {
     this._assertInitialized()
     const encodedUserId = encodeHashId(currentUserId)
@@ -1129,7 +1135,10 @@ export class AudiusAPIClient {
       kind,
       offset,
       limit,
-      includePurchaseable
+      includePurchaseable,
+      genre,
+      mood,
+      is_verified: isVerified
     }
 
     const searchResponse =
