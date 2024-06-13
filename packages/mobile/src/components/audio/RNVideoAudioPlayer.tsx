@@ -33,6 +33,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { usePrevious } from 'react-use'
 import { useFeatureFlag } from '~/hooks'
 import { FeatureFlags } from '~/services'
+import { getUserId } from '~/store/account/selectors'
 
 import { DEFAULT_IMAGE_URL } from 'app/components/image/TrackImage'
 import { getImageSourceOptimistic } from 'app/hooks/useContentNodeImage'
@@ -102,7 +103,7 @@ export const RNVideoAudioPlayer = () => {
   const counter = useSelector(getCounter)
   // const repeatMode = useSelector(getRepeat)
   // const playbackRate = useSelector(getPlaybackRate)
-  // const currentUserId = useSelector(getUserId)
+  const currentUserId = useSelector(getUserId)
   // const uid = useSelector(getUid)
   // Player behavior determines whether to preview a track or play the full track
   const playerBehavior =
