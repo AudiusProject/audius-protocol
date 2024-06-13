@@ -326,7 +326,6 @@ function* fetchProfileAsync(action) {
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
   const isNativeMobile = yield getContext('isNativeMobile')
   const { getRemoteVar } = yield getContext('remoteConfigInstance')
-  const getFeatureEnabled = yield getContext('getFeatureEnabled')
 
   try {
     let user

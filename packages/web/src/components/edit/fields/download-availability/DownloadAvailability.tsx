@@ -97,7 +97,7 @@ export const DownloadAvailability = (props: DownloadAvailabilityProps) => {
       return messages.callout.collectibleGated
     }
     return ''
-  }, [isCollectibleGated, isSpecialAccess, isUsdcGated])
+  }, [isCollectibleGated, isSpecialAccess, isUsdcGated, messages])
 
   const handleCalloutClick = useCallback(() => {
     setStatus(MenuFormCallbackStatus.OPEN_ACCESS_AND_SALE)
