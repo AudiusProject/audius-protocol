@@ -473,9 +473,9 @@ export const DetailsTileNoAccess = ({
       })
     }
 
-    // console.warn(
-    //   'No entity for stream conditions... should not have reached here.'
-    // )
+    console.warn(
+      'No entity for stream conditions... should not have reached here.'
+    )
     return null
   }, [
     nftCollection,
