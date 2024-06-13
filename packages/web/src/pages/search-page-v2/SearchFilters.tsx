@@ -13,6 +13,7 @@ import {
   Divider,
   Box
 } from '@audius/harmony'
+import { CSSObject } from '@emotion/react'
 import { useSearchParams } from 'react-router-dom-v5-compat'
 
 import { BpmFilter } from './BpmFilter'
@@ -58,10 +59,17 @@ const MoodFilter = () => {
   const mood = urlSearchParams.get('mood')
   const updateSearchParams = useUpdateSearchParams('mood')
   const sortedKeys = Object.keys(MOODS).sort()
+
+  const moodCss = {
+    '& .emoji': {
+      marginBottom: 0
+    }
+  }
+
   const moodOptions = sortedKeys.map((mood) => ({
     label: MOODS[mood].label,
     value: MOODS[mood].value,
-    leadingElement: MOODS[mood].icon
+    leadingElement: <Box css={moodCss}>{MOODS[mood].icon}</Box>
   }))
 
   return (
