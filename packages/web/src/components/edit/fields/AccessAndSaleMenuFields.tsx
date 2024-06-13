@@ -19,7 +19,6 @@ import { useField } from 'formik'
 import { SingleTrackEditValues } from 'components/edit-track/types'
 import layoutStyles from 'components/layout/layout.module.css'
 import { ModalRadioItem } from 'components/modal-radio/ModalRadioItem'
-import { useFlag } from 'hooks/useRemoteConfig'
 import { pluralize } from 'utils/stringUtils'
 
 import styles from './AccessAndSaleField.module.css'
