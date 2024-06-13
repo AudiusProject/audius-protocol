@@ -50,6 +50,7 @@ import dayjs from 'dayjs'
 import { useDispatch, shallowEqual, useSelector } from 'react-redux'
 import { generatePath } from 'react-router-dom'
 
+import search from 'common/store/search-ai-bar/reducer'
 import { TextLink, UserLink } from 'components/link'
 import Menu from 'components/menu/Menu'
 import RepostFavoritesStats from 'components/repost-favorites-stats/RepostFavoritesStats'
@@ -441,13 +442,18 @@ export const GiantTrackTile = ({
 
   const renderTrackLabelMapping = useCallback(
     (value: string) => {
-      if (!isSearchV2Enabled) return {}
       return {
-        [MetadataType.GENRE]: renderGenre(value),
-        [MetadataType.MOOD]: renderMood(value as Mood)
+        [MetadataType.GENRE]: isSearchV2Enabled
+          ? renderGenre(value)
+          : undefined,
+        [MetadataType.MOOD]: isSearchV2Enabled
+          ? renderMood(value as Mood)
+          : mood in moodMap
+          ? moodMap[mood]
+          : mood
       }
     },
-    [isSearchV2Enabled]
+    [isSearchV2Enabled, mood]
   )
 
   const renderAlbum = useCallback(() => {

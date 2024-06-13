@@ -1,14 +1,37 @@
 import { useGetTrackById } from '@audius/common/api'
-import { useTrackMetadata } from '@audius/common/hooks'
+import { MetadataType, useTrackMetadata } from '@audius/common/hooks'
 import type { ID } from '@audius/common/models'
+import type { Mood } from '@audius/sdk'
 import { trpc } from '@audius/web/src/utils/trpcClientWeb'
+import { Image } from 'react-native'
 
-import { Flex, TextLink } from '@audius/harmony-native'
+import { Flex, Text, TextLink, spacing } from '@audius/harmony-native'
+import { moodMap } from 'app/utils/moods'
 
 import { MetadataRow } from './MetadataRow'
 
 const messages = {
   album: 'Album'
+}
+
+const renderTrackLabelMapping = (value: string) => {
+  return {
+    [MetadataType.MOOD]: renderMood(value)
+  }
+}
+
+const renderMood = (mood: string) => {
+  return (
+    <Flex direction='row' gap='xs' alignItems='center'>
+      <Text variant='body' size='s' strength='strong'>
+        {mood}
+      </Text>
+      <Image
+        source={moodMap[mood as Mood]}
+        style={{ height: spacing.l, width: spacing.l }}
+      />
+    </Flex>
+  )
 }
 
 type TrackMetadataProps = {
@@ -40,7 +63,7 @@ export const TrackMetadata = ({ trackId }: TrackMetadataProps) => {
     <Flex gap='l' w='100%' direction='row' wrap='wrap'>
       {labels.map((label) => (
         <MetadataRow key={label.id} label={label.label}>
-          {label.value}
+          {renderTrackLabelMapping(label.value)[label.id] ?? label.value}
         </MetadataRow>
       ))}
       {albumInfo ? (
