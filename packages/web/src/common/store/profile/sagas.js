@@ -1,6 +1,6 @@
 import { userMetadataListFromSDK } from '@audius/common/adapters'
 import { DefaultSizes, Kind, Id } from '@audius/common/models'
-import { DoubleKeys, FeatureFlags } from '@audius/common/services'
+import { DoubleKeys } from '@audius/common/services'
 import {
   accountSelectors,
   cacheActions,
@@ -327,7 +327,6 @@ function* fetchProfileAsync(action) {
   const isNativeMobile = yield getContext('isNativeMobile')
   const { getRemoteVar } = yield getContext('remoteConfigInstance')
   const getFeatureEnabled = yield getContext('getFeatureEnabled')
-  const isChatEnabled = yield call(getFeatureEnabled, FeatureFlags.CHAT_ENABLED)
 
   try {
     let user
@@ -373,9 +372,7 @@ function* fetchProfileAsync(action) {
     }
 
     // Get chat permissions
-    if (isChatEnabled) {
-      yield put(fetchPermissions({ userIds: [user.user_id] }))
-    }
+    yield put(fetchPermissions({ userIds: [user.user_id] }))
 
     yield fork(fetchProfileCustomizedCollectibles, user)
     yield fork(fetchEthereumCollectibles, user)

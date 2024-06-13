@@ -65,7 +65,6 @@ const WrappedLeftNavDrawer = () => {
   const challengeRewardIds = useRemoteVar(StringKeys.CHALLENGE_REWARD_IDS)
   const hasClaimableRewards = useAccountHasClaimableRewards(challengeRewardIds)
   const hasUnreadMessages = useSelector(getHasUnreadMessages)
-  const { isEnabled: isChatEnabled } = useFeatureFlag(FeatureFlags.CHAT_ENABLED)
   const { isEnabled: isFeatureFlagAccessEnabled } = useFeatureFlag(
     FeatureFlags.FEATURE_FLAG_ACCESS
   )
@@ -74,18 +73,16 @@ const WrappedLeftNavDrawer = () => {
     <DrawerContentScrollView>
       <AccountDetails />
       <VanityMetrics />
-      {isChatEnabled ? (
-        <LeftNavLink
-          icon={IconMessage}
-          label={'Messages'}
-          to='ChatList'
-          params={{}}
-          onPress={() => {
-            track(make({ eventName: Name.CHAT_ENTRY_POINT, source: 'navmenu' }))
-          }}
-          showNotificationBubble={hasUnreadMessages}
-        />
-      ) : null}
+      <LeftNavLink
+        icon={IconMessage}
+        label={'Messages'}
+        to='ChatList'
+        params={{}}
+        onPress={() => {
+          track(make({ eventName: Name.CHAT_ENTRY_POINT, source: 'navmenu' }))
+        }}
+        showNotificationBubble={hasUnreadMessages}
+      />
       <LeftNavLink
         icon={IconDonate}
         label={messages.payAndEarn}
