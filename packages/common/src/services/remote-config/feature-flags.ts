@@ -68,8 +68,6 @@ export enum FeatureFlags {
   USE_SDK_PURCHASE_ALBUM = 'use_sdk_purchase_album',
   PAYOUT_WALLET_ENABLED = 'payout_wallet_enabled',
   EDIT_TRACK_REDESIGN = 'edit_track_redesign',
-  // Performance POC flags:
-  USE_RN_VIDEO_PLAYER = 'USE_RN_VIDEO_PLAYER',
   SKIP_STREAM_CHECK = 'skip_stream_check',
   PREFETCH_STREAM_URLS = 'prefetch_stream_urls'
 }
@@ -155,7 +153,6 @@ export const flagDefaults: FlagDefaults = {
   [FeatureFlags.USE_SDK_PURCHASE_ALBUM]: false,
   [FeatureFlags.PAYOUT_WALLET_ENABLED]: false,
   [FeatureFlags.EDIT_TRACK_REDESIGN]: false,
-  [FeatureFlags.USE_RN_VIDEO_PLAYER]: false,
   [FeatureFlags.SKIP_STREAM_CHECK]: false,
   [FeatureFlags.PREFETCH_STREAM_URLS]: false
 }
