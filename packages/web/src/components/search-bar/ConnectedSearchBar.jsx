@@ -83,8 +83,10 @@ class ConnectedSearchBar extends Component {
   }
 
   onSubmit = (value) => {
-    // Encode everything besides tag searches
     const pathname = '/search'
+    const locationSearchParams = new URLSearchParams(
+      this.props.history.location.search
+    )
 
     let newPath = pathname
     if (value) {
@@ -97,6 +99,8 @@ class ConnectedSearchBar extends Component {
           ...searchMatch.params
         })
       }
+
+      locationSearchParams.set('query', value)
     }
 
     if (value.startsWith('#')) {
@@ -110,9 +114,7 @@ class ConnectedSearchBar extends Component {
       value = encodeURIComponent(value)
       this.props.history.push({
         pathname: newPath,
-        search: value
-          ? new URLSearchParams({ query: value }).toString()
-          : undefined,
+        search: locationSearchParams.toString(),
         state: {}
       })
     }
