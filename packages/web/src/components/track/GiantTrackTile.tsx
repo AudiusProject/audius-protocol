@@ -50,7 +50,6 @@ import dayjs from 'dayjs'
 import { useDispatch, shallowEqual, useSelector } from 'react-redux'
 import { generatePath } from 'react-router-dom'
 
-import search from 'common/store/search-ai-bar/reducer'
 import { TextLink, UserLink } from 'components/link'
 import Menu from 'components/menu/Menu'
 import RepostFavoritesStats from 'components/repost-favorites-stats/RepostFavoritesStats'
