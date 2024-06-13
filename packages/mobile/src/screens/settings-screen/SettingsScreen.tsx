@@ -11,7 +11,6 @@ import {
 } from '@audius/harmony-native'
 import audiusLogoHorizontal from 'app/assets/images/Horizontal-Logo-Full-Color.png'
 import { Screen, ScreenContent, ScrollView } from 'app/components/core'
-import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles } from 'app/styles'
 import { Theme } from 'app/utils/theme'
@@ -53,8 +52,6 @@ const IconProps = { height: 28, width: 28, style: { marginRight: 4 } }
 
 export const SettingsScreen = () => {
   const styles = useStyles()
-  const isOfflineDownloadEnabled = useIsOfflineModeEnabled()
-
   const navigation = useNavigation<ProfileTabScreenParamList>()
 
   const handlePressInbox = useCallback(() => {
@@ -104,14 +101,12 @@ export const SettingsScreen = () => {
             </SettingsRowDescription>
           </SettingsRow>
           {IS_IOS ? <CastSettingsRow /> : null}
-          {isOfflineDownloadEnabled ? (
-            <SettingsRow onPress={handlePressDownloads}>
-              <SettingsRowLabel
-                label={messages.downloads}
-                icon={IconCloudDownload}
-              />
-            </SettingsRow>
-          ) : null}
+          <SettingsRow onPress={handlePressDownloads}>
+            <SettingsRowLabel
+              label={messages.downloads}
+              icon={IconCloudDownload}
+            />
+          </SettingsRow>
           <Divider />
           <SettingsRow onPress={handlePressAbout}>
             <SettingsRowLabel label={messages.about} icon={IconInfo} />
