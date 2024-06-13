@@ -45,6 +45,7 @@ import { Mood } from '@audius/sdk'
 import cn from 'classnames'
 import dayjs from 'dayjs'
 import { useDispatch, shallowEqual, useSelector } from 'react-redux'
+import { generatePath } from 'react-router-dom'
 
 import { TextLink, UserLink } from 'components/link'
 import Menu from 'components/menu/Menu'
@@ -58,6 +59,7 @@ import { ComponentPlacement } from 'components/types'
 import { UserGeneratedText } from 'components/user-generated-text'
 import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import { moodMap } from 'utils/Moods'
+import { SEARCH_PAGE } from 'utils/route'
 import { trpc } from 'utils/trpcClientWeb'
 
 import { AiTrackSection } from './AiTrackSection'
@@ -68,8 +70,6 @@ import styles from './GiantTrackTile.module.css'
 import { GiantTrackTileProgressInfo } from './GiantTrackTileProgressInfo'
 import { InfoLabel } from './InfoLabel'
 import { PlayPauseButton } from './PlayPauseButton'
-import { SEARCH_PAGE } from 'utils/route'
-import { generatePath } from 'react-router-dom'
 
 const DownloadSection = lazy(() =>
   import('./DownloadSection').then((module) => ({
