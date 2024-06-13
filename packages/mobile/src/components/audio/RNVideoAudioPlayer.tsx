@@ -289,7 +289,7 @@ export const RNVideoAudioPlayer = () => {
               endpoints: storageNodeSelector.getNodes(cid),
               size: SquareSizes.SIZE_1000_BY_1000,
               localSource: localTrackImageSource
-          })?.uri ?? DEFAULT_IMAGE_URL
+            })?.uri ?? DEFAULT_IMAGE_URL
           : DEFAULT_IMAGE_URL
 
       return {
