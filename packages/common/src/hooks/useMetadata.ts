@@ -83,7 +83,12 @@ export const useCollectionMetadata = ({
   releaseDate,
   isScheduledRelease
 }: CollectionMetadataProps) => {
-  const labels: { isHidden?: boolean; label: string; value: any }[] = [
+  const labels: {
+    id: MetadataType
+    isHidden?: boolean
+    label: string
+    value: any
+  }[] = [
     {
       id: MetadataType.DURATION,
       label: 'Duration',
