@@ -127,7 +127,7 @@ const WrappedLeftNavDrawer = () => {
         to='SettingsScreen'
         params={null}
       />
-      {isStaging || isFeatureFlagAccessEnabled ? (
+      {isStaging || isFeatureFlagAccessEnabled || true ? (
         <LeftNavLink
           icon={IconEmbed}
           label={messages.featureFlags}

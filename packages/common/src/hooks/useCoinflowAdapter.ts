@@ -123,9 +123,10 @@ export const useCoinflowWithdrawalAdapter = () => {
 export const useCoinflowAdapter = () => {
   const { audiusBackend } = useAppContext()
   const [adapter, setAdapter] = useState<CoinflowAdapter | null>(null)
-  const { isEnabled: isUseSDKPurchaseTrackEnabled } = useFeatureFlag(
-    FeatureFlags.USE_SDK_PURCHASE_TRACK
-  )
+  // const { isEnabled: isUseSDKPurchaseTrackEnabled } = useFeatureFlag(
+  //   FeatureFlags.USE_SDK_PURCHASE_TRACK
+  // )
+  const isUseSDKPurchaseTrackEnabled = true
   const { audiusSdk } = useAudiusQueryContext()
 
   useEffect(() => {
@@ -162,6 +163,7 @@ export const useCoinflowAdapter = () => {
                 const { signature } = await sdk.services.solanaRelay.relay({
                   transaction
                 })
+                console.log('relayed response', signature)
                 return signature
               } else {
                 const transaction = tx as Transaction
