@@ -4,10 +4,14 @@ import {
   AccessConditions
 } from '@audius/common/models'
 import { Nullable } from '@audius/common/utils'
-import { IconCart, IconCollectible, IconSpecialAccess } from '@audius/harmony'
-import cn from 'classnames'
-
-import styles from './GatedContentLabel.module.css'
+import {
+  Flex,
+  Text,
+  IconCart,
+  IconCollectible,
+  IconSpecialAccess,
+  useTheme
+} from '@audius/harmony'
 
 const messages = {
   collectibleGated: 'Collectible Gated',
@@ -27,10 +31,11 @@ export const GatedContentLabel = ({
   hasStreamAccess: boolean
   isOwner: boolean
 }) => {
+  const { color } = useTheme()
   const showColor = isOwner || !hasStreamAccess
   let message = messages.specialAccess
   let IconComponent = IconSpecialAccess
-  let colorStyle = styles.gatedContent
+  let iconColor = color.special.blue
 
   if (isContentCollectibleGated(streamConditions)) {
     message = messages.collectibleGated
@@ -39,13 +44,15 @@ export const GatedContentLabel = ({
   if (isContentUSDCPurchaseGated(streamConditions)) {
     message = messages.premium
     IconComponent = IconCart
-    colorStyle = styles.premiumContent
+    iconColor = color.special.lightGreen
   }
 
   return (
-    <div className={cn(styles.labelContainer, { [colorStyle]: showColor })}>
-      <IconComponent className={styles.icon} />
-      {message}
-    </div>
+    <Flex alignItems='center' gap='xs'>
+      <IconComponent size='s' fill={showColor ? iconColor : undefined} />
+      <Text variant='body' size='xs' css={{ color: iconColor }}>
+        {message}
+      </Text>
+    </Flex>
   )
 }

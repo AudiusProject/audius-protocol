@@ -1,12 +1,7 @@
-import { Text, IconCalendarMonth } from '@audius/harmony'
-import cn from 'classnames'
+import { Text, IconCalendarMonth, Flex, useTheme } from '@audius/harmony'
 import dayjs from 'dayjs'
 
 import { getLocalTimezone } from 'utils/dateUtils'
-
-import gatedContentLabelStyles from '../track/GatedContentLabel.module.css'
-
-import styles from './ScheduledReleaseLabel.module.css'
 
 export type ScheduledReleaseLabelProps = {
   released?: string | null
@@ -19,6 +14,7 @@ export const ScheduledReleaseLabel = ({
   isUnlisted,
   isScheduledRelease
 }: ScheduledReleaseLabelProps) => {
+  const { color } = useTheme()
   if (
     !released ||
     !isUnlisted ||
@@ -28,17 +24,12 @@ export const ScheduledReleaseLabel = ({
     return null
   }
   return (
-    <div
-      className={cn(
-        gatedContentLabelStyles.labelContainer,
-        styles.scheduledReleaseLabel
-      )}
-    >
-      <IconCalendarMonth size='s' />
-      <Text variant='body' size='xs'>
+    <Flex alignItems='center' gap='xs'>
+      <IconCalendarMonth size='s' fill={color.icon.accent} />
+      <Text variant='body' size='xs' color='accent'>
         Releases{' '}
         {dayjs(released).format('M/D/YY [@] h A') + ' ' + getLocalTimezone()}
       </Text>
-    </div>
+    </Flex>
   )
 }
