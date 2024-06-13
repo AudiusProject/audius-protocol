@@ -1,7 +1,6 @@
 import { Component, useState, useCallback } from 'react'
 
 import { createRemixOfMetadata } from '@audius/common/schemas'
-import { FeatureFlags } from '@audius/common/services'
 import {
   creativeCommons,
   getCanonicalName,
@@ -28,7 +27,6 @@ import ConnectedRemixSettingsModal from 'components/remix-settings-modal/Connect
 import { RemixSettingsModalTrigger } from 'components/remix-settings-modal/RemixSettingsModalTrigger'
 import PreviewButton from 'components/upload/PreviewButton'
 import UploadArtwork from 'components/upload/UploadArtwork'
-import { useFlag } from 'hooks/useRemoteConfig'
 import { env } from 'services/env'
 import { moodMap } from 'utils/Moods'
 import { resizeImage } from 'utils/imageProcessingUtil'
@@ -287,10 +285,6 @@ const BasicForm = (props) => {
 }
 
 const AdvancedForm = (props) => {
-  const { isEnabled: isScheduledReleasesEnabled } = useFlag(
-    FeatureFlags.SCHEDULED_RELEASES
-  )
-
   const {
     remixSettingsModalVisible,
     setRemixSettingsModalVisible,
@@ -484,13 +478,11 @@ const AdvancedForm = (props) => {
               onClick={() => setAiAttributionModalVisible(true)}
             />
           )}
-          {isScheduledReleasesEnabled && (
-            <ReleaseDateTriggerLegacy
-              didUpdateState={didUpdateReleaseDate}
-              metadataState={releaseDateState}
-              initialForm={props.initialForm}
-            />
-          )}
+          <ReleaseDateTriggerLegacy
+            didUpdateState={didUpdateReleaseDate}
+            metadataState={releaseDateState}
+            initialForm={props.initialForm}
+          />
           {props.type !== 'track' && (
             <LabeledInput
               label='UPC'
