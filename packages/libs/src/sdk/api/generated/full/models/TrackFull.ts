@@ -407,6 +407,24 @@ export interface TrackFull {
     previewStartSeconds?: number;
     /**
      * 
+     * @type {number}
+     * @memberof TrackFull
+     */
+    bpm?: number;
+    /**
+     * 
+     * @type {string}
+     * @memberof TrackFull
+     */
+    musicalKey?: string;
+    /**
+     * 
+     * @type {number}
+     * @memberof TrackFull
+     */
+    audioAnalysisErrorCount?: number;
+    /**
+     * 
      * @type {object}
      * @memberof TrackFull
      */
@@ -560,6 +578,9 @@ export function TrackFullFromJSONTyped(json: any, ignoreDiscriminator: boolean):
         'allowedApiKeys': !exists(json, 'allowed_api_keys') ? undefined : json['allowed_api_keys'],
         'audioUploadId': !exists(json, 'audio_upload_id') ? undefined : json['audio_upload_id'],
         'previewStartSeconds': !exists(json, 'preview_start_seconds') ? undefined : json['preview_start_seconds'],
+        'bpm': !exists(json, 'bpm') ? undefined : json['bpm'],
+        'musicalKey': !exists(json, 'musical_key') ? undefined : json['musical_key'],
+        'audioAnalysisErrorCount': !exists(json, 'audio_analysis_error_count') ? undefined : json['audio_analysis_error_count'],
         'ddexReleaseIds': !exists(json, 'ddex_release_ids') ? undefined : json['ddex_release_ids'],
         'artists': !exists(json, 'artists') ? undefined : json['artists'],
         'resourceContributors': !exists(json, 'resource_contributors') ? undefined : json['resource_contributors'],
@@ -636,6 +657,9 @@ export function TrackFullToJSON(value?: TrackFull | null): any {
         'allowed_api_keys': value.allowedApiKeys,
         'audio_upload_id': value.audioUploadId,
         'preview_start_seconds': value.previewStartSeconds,
+        'bpm': value.bpm,
+        'musical_key': value.musicalKey,
+        'audio_analysis_error_count': value.audioAnalysisErrorCount,
         'ddex_release_ids': value.ddexReleaseIds,
         'artists': value.artists,
         'resource_contributors': value.resourceContributors,

@@ -15,7 +15,8 @@ import {
   playerSelectors,
   gatedContentSelectors,
   calculatePlayerBehavior,
-  PlayerBehavior
+  PlayerBehavior,
+  accountSelectors
 } from '@audius/common/store'
 import type { Queueable } from '@audius/common/store'
 import {
@@ -62,6 +63,7 @@ const { recordListen } = tracksSocialActions
 const { getPlayerBehavior } = queueSelectors
 const { getIndex, getOrder, getSource, getCollectionId } = queueSelectors
 const { getIsReachable } = reachabilitySelectors
+const { getUserId } = accountSelectors
 
 const { getNftAccessSignatureMap } = gatedContentSelectors
 
@@ -305,6 +307,7 @@ export const RNVideoAudioPlayer = () => {
       }
     },
     [
+      currentUserId,
       isCollectionMarkedForDownload,
       isNotReachable,
       isOfflineModeEnabled,
