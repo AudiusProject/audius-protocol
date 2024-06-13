@@ -1,7 +1,6 @@
 import { useEffect } from 'react'
 
 import { FollowSource } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import {
   accountSelectors,
   profilePageSelectors,
@@ -14,7 +13,6 @@ import { useDispatch, useSelector } from 'react-redux'
 
 import { FollowButton, FollowsYouChip } from 'app/components/user'
 import UserBadges from 'app/components/user-badges'
-import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { useRoute } from 'app/hooks/useRoute'
 import { flexRowCentered, makeStyles } from 'app/styles'
 
@@ -100,7 +98,6 @@ export const ProfileInfo = (props: ProfileInfoProps) => {
   const accountHandle = useSelector(getUserHandle)
   const styles = useStyles()
   const dispatch = useDispatch()
-  const { isEnabled: isChatEnabled } = useFeatureFlag(FeatureFlags.CHAT_ENABLED)
 
   const profileUserId = useSelector((state) =>
     getProfileUserId(state, params.handle)
@@ -140,7 +137,7 @@ export const ProfileInfo = (props: ProfileInfoProps) => {
       <EditProfileButton style={styles.followButton} />
     ) : (
       <>
-        {isChatEnabled && !isOwner ? (
+        {!isOwner ? (
           canCreateChat ? (
             <MessageButton profile={profile} />
           ) : (
