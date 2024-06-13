@@ -12,7 +12,7 @@ const messages = {
 }
 
 type TrackMetadataProps = {
-  trackId?: ID
+  trackId: ID
 }
 
 /**

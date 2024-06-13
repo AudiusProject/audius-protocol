@@ -14,7 +14,7 @@ import { MetadataRow } from './MetadataRow'
 const { getCollectionTracks } = cacheCollectionsSelectors
 
 type CollectionMetadataProps = {
-  collectionId?: ID
+  collectionId: ID
 }
 
 /**
@@ -48,8 +48,8 @@ export const CollectionMetadata = ({
 
   return (
     <Flex gap='l' w='100%' direction='row' wrap='wrap'>
-      {labels.map((label, i) => (
-        <MetadataRow key={i} label={label.label}>
+      {labels.map((label) => (
+        <MetadataRow key={label.id} label={label.label}>
           {label.value}
         </MetadataRow>
       ))}

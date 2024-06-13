@@ -397,10 +397,12 @@ export const DetailsTile = ({
           </Box>
         ) : null}
         {isCollection ? (
-          <CollectionMetadata collectionId={contentId} />
-        ) : (
+          contentId ? (
+            <CollectionMetadata collectionId={contentId} />
+          ) : null
+        ) : contentId ? (
           <TrackMetadata trackId={contentId} />
-        )}
+        ) : null}
         {renderTags()}
         <OfflineStatusRow contentId={contentId} isCollection={isCollection} />
       </Flex>
