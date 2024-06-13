@@ -18,6 +18,7 @@ import {
 import { OptionsFilterButton } from '@audius/harmony'
 import { Box, Flex } from '@audius/harmony/src/components/layout'
 import { Text } from '@audius/harmony/src/components/text'
+import { Genre, Mood } from '@audius/sdk'
 import { css } from '@emotion/css'
 import { range } from 'lodash'
 import { useDispatch } from 'react-redux'
@@ -30,7 +31,7 @@ import { LineupVariant } from 'components/lineup/types'
 import { UserCard } from 'components/user-card'
 import { useRouteMatch } from 'hooks/useRouteMatch'
 import { useSelector } from 'utils/reducer'
-import { SEARCH_CATEGORY_PAGE } from 'utils/route'
+import { SEARCH_PAGE } from 'utils/route'
 
 import { NoResultsTile } from './NoResultsTile'
 import { useUpdateSearchParams } from './utils'
@@ -91,26 +92,42 @@ export const SearchResults = ({ query }: SearchResultsProps) => {
   const playing = useSelector(getPlaying)
   const buffering = useSelector(getBuffering)
   const results = useSelector(searchResultsPageSelectors.getSearchResults)
-  const categoryMatch = useRouteMatch<{ query: string; category: string }>(
-    SEARCH_CATEGORY_PAGE
-  )
+  const routeMatch = useRouteMatch<{
+    category: string
+  }>(SEARCH_PAGE)
+  const [urlSearchParams] = useSearchParams()
+  const sort = urlSearchParams.get('sort')
+  const genre = urlSearchParams.get('genre')
+  const mood = urlSearchParams.get('mood')
+  const isVerified = urlSearchParams.get('is_verified')
 
   const isLoading = results.status === Status.LOADING
   const dispatch = useDispatch()
   useEffect(() => {
-    dispatch(fetchSearchPageResults(query, SearchKind.ALL, 50, 0))
-  }, [dispatch, query])
+    dispatch(
+      fetchSearchPageResults({
+        searchText: query,
+        kind: SearchKind.ALL,
+        limit: 50,
+        offset: 0,
+        genre: (genre || undefined) as Genre,
+        mood: (mood || undefined) as Mood,
+        isVerified: isVerified === 'true'
+      })
+    )
+  }, [dispatch, query, sort, genre, mood, isVerified])
 
   const isCategoryActive = useCallback(
-    (category: Category) => categoryMatch?.category === category,
-    [categoryMatch]
+    (category: Category) => routeMatch?.category === category,
+    [routeMatch]
   )
   const isCategoryVisible = useCallback(
     (category: Category) =>
-      !categoryMatch ||
-      categoryMatch.category === Category.ALL ||
-      categoryMatch.category === category,
-    [categoryMatch]
+      !routeMatch ||
+      routeMatch.category === undefined ||
+      routeMatch.category === Category.ALL ||
+      routeMatch.category === category,
+    [routeMatch]
   )
 
   const profileLimit = isCategoryActive(Category.PROFILES)
@@ -152,8 +169,6 @@ export const SearchResults = ({ query }: SearchResultsProps) => {
   const isTrackGridLayout =
     !isCategoryActive(Category.TRACKS) || tracksLayout === 'grid'
 
-  const [urlSearchParams] = useSearchParams()
-  const sort = urlSearchParams.get('sort')
   const updateSearchParams = useUpdateSearchParams('sort')
 
   const sortButton = (

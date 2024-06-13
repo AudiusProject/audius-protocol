@@ -5,8 +5,7 @@ import { View } from 'react-native'
 import {
   IconCart,
   IconCollectible,
-  IconSpecialAccess,
-  IconStar
+  IconSpecialAccess
 } from '@audius/harmony-native'
 import DogEarRectangle from 'app/assets/images/dogEarRectangle.svg'
 import { makeStyles } from 'app/styles'
@@ -61,19 +60,9 @@ export type DogEarProps = {
 export const DogEar = (props: DogEarProps) => {
   const { borderOffset, type, style } = props
   const styles = useStyles()
-  const {
-    pageHeaderGradientColor2,
-    secondary,
-    staticWhite,
-    accentBlue,
-    specialLightGreen
-  } = useThemeColors()
+  const { staticWhite, accentBlue, specialLightGreen } = useThemeColors()
 
   const { icon: Icon, colors } = {
-    [DogEarType.STAR]: {
-      icon: IconStar,
-      colors: [secondary, pageHeaderGradientColor2]
-    },
     [DogEarType.COLLECTIBLE_GATED]: {
       icon: IconCollectible,
       colors: [accentBlue, accentBlue]

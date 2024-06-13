@@ -46,7 +46,6 @@ import TrackPlayer, {
 } from 'react-native-track-player'
 import { useDispatch, useSelector } from 'react-redux'
 import { useAsync, usePrevious } from 'react-use'
-import { getTrackStreamUrls } from '~/api'
 
 import { DEFAULT_IMAGE_URL } from 'app/components/image/TrackImage'
 import { getImageSourceOptimistic } from 'app/hooks/useContentNodeImage'
@@ -74,7 +73,7 @@ import { useSavePodcastProgress } from './useSavePodcastProgress'
 
 const { getUserId } = accountSelectors
 const { getUsers } = cacheUsersSelectors
-const { getTracks } = cacheTracksSelectors
+const { getTracks, getTrackStreamUrls } = cacheTracksSelectors
 const {
   getPlaying,
   getSeek,
@@ -172,7 +171,7 @@ export const AudioPlayer = () => {
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
   )
   const { isEnabled: isPerformanceExperimentEnabled } = useFeatureFlag(
-    FeatureFlags.SKIP_STREAM_CHECK
+    FeatureFlags.PREFETCH_STREAM_URLS
   )
   const track = useSelector(getCurrentTrack)
   const playing = useSelector(getPlaying)
@@ -337,10 +336,8 @@ export const AudioPlayer = () => {
       // Get Track url
       let url: string
 
-      // Performance POC: use a pre-fetched DN url if we have it
-      const trackStreamUrl =
-        trackStreamUrls[`{"id":${trackId},"currentUserId":${currentUserId}}`]
-          ?.nonNormalizedData?.['stream-url']
+      // If we pre-fetched a stream url, prefer to use that
+      const trackStreamUrl = trackStreamUrls[trackId]
       if (offlineTrackAvailable && isCollectionMarkedForDownload) {
         const audioFilePath = getLocalAudioPath(trackId)
         url = `file://${audioFilePath}`
@@ -398,7 +395,6 @@ export const AudioPlayer = () => {
       }
     },
     [
-      currentUserId,
       isCollectionMarkedForDownload,
       isNotReachable,
       isOfflineModeEnabled,

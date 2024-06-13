@@ -25,7 +25,9 @@ import { useFeatureFlag } from './useFeatureFlag'
 type CoinflowAdapter = {
   wallet: {
     publicKey: PublicKey
-    sendTransaction: (transaction: Transaction) => Promise<string>
+    sendTransaction: (
+      transaction: Transaction | VersionedTransaction
+    ) => Promise<string>
   }
   connection: Connection
 }
@@ -53,8 +55,17 @@ export const useCoinflowWithdrawalAdapter = () => {
         connection,
         wallet: {
           publicKey: wallet.publicKey,
-          sendTransaction: async (transaction: Transaction) => {
-            if (!feePayerOverride) throw new Error('Missing fee payer override')
+          sendTransaction: async (
+            transaction: Transaction | VersionedTransaction
+          ) => {
+            if (!feePayerOverride) {
+              throw new Error('Missing fee payer override')
+            }
+            if (transaction instanceof VersionedTransaction) {
+              throw new Error(
+                'VersionedTransaction not supported in withdrawal adapter'
+              )
+            }
             const feePayer = new PublicKey(feePayerOverride)
             const finalTransaction =
               await decorateCoinflowWithdrawalTransaction(audiusBackend, {
@@ -127,66 +138,66 @@ export const useCoinflowAdapter = () => {
         connection,
         wallet: {
           publicKey: wallet.publicKey,
-          sendTransaction: async (
-            transaction: Transaction | VersionedTransaction
-          ) => {
-            if (
-              isUseSDKPurchaseTrackEnabled &&
-              transaction instanceof VersionedTransaction
-            ) {
-              const sdk = await audiusSdk()
+          sendTransaction: async (tx: Transaction | VersionedTransaction) => {
+            try {
+              if (isUseSDKPurchaseTrackEnabled) {
+                const transaction = tx as VersionedTransaction
+                const sdk = await audiusSdk()
 
-              // Get a more recent blockhash to prevent BlockhashNotFound errors
-              transaction.message.recentBlockhash = (
-                await connection.getLatestBlockhash()
-              ).blockhash
+                // Get a more recent blockhash to prevent BlockhashNotFound errors
+                transaction.message.recentBlockhash = (
+                  await connection.getLatestBlockhash()
+                ).blockhash
 
-              // Use our own fee payer as signer
-              transaction.message.staticAccountKeys[0] =
-                await sdk.services.solanaRelay.getFeePayer()
-              transaction.signatures[0] = Buffer.alloc(64, 0)
+                // Use our own fee payer as signer
+                transaction.message.staticAccountKeys[0] =
+                  await sdk.services.solanaRelay.getFeePayer()
+                transaction.signatures[0] = Buffer.alloc(64, 0)
 
-              // Sign with user's Eth wallet derived "root" Solana wallet,
-              // which is the source of the funds for the purchase
-              transaction.sign([wallet])
+                // Sign with user's Eth wallet derived "root" Solana wallet,
+                // which is the source of the funds for the purchase
+                transaction.sign([wallet])
 
-              // Send to relay to make use of retry and caching logic
-              const { signature } = await sdk.services.solanaRelay.relay({
-                transaction
-              })
-              return signature
-            } else if (transaction instanceof Transaction) {
-              transaction.partialSign(wallet)
-              const transactionHandler = new TransactionHandler({
-                connection,
-                useRelay: false
-              })
-              const { res, error, errorCode } =
-                await transactionHandler.handleTransaction({
-                  instructions: transaction.instructions,
-                  recentBlockhash: transaction.recentBlockhash,
-                  skipPreflight: true,
-                  feePayerOverride: transaction.feePayer,
-                  signatures: transaction.signatures.map((s) => ({
-                    signature: s.signature!, // already completely signed
-                    publicKey: s.publicKey.toBase58()
-                  }))
-                })
-              if (!res) {
-                console.error('Sending Coinflow transaction failed.', {
-                  error,
-                  errorCode,
+                // Send to relay to make use of retry and caching logic
+                const { signature } = await sdk.services.solanaRelay.relay({
                   transaction
                 })
-                throw new Error(
-                  `Sending Coinflow transaction failed: ${
-                    error ?? 'Unknown error'
-                  }`
-                )
+                return signature
+              } else {
+                const transaction = tx as Transaction
+                transaction.partialSign(wallet)
+                const transactionHandler = new TransactionHandler({
+                  connection,
+                  useRelay: false
+                })
+                const { res, error, errorCode } =
+                  await transactionHandler.handleTransaction({
+                    instructions: transaction.instructions,
+                    recentBlockhash: transaction.recentBlockhash,
+                    skipPreflight: true,
+                    feePayerOverride: transaction.feePayer,
+                    signatures: transaction.signatures.map((s) => ({
+                      signature: s.signature!, // already completely signed
+                      publicKey: s.publicKey.toBase58()
+                    }))
+                  })
+                if (!res) {
+                  console.error('Sending Coinflow transaction failed.', {
+                    error,
+                    errorCode,
+                    transaction
+                  })
+                  throw new Error(
+                    `Sending Coinflow transaction failed: ${
+                      error ?? 'Unknown error'
+                    }`
+                  )
+                }
+                return res
               }
-              return res
-            } else {
-              throw new Error('Invalid transaction type')
+            } catch (e) {
+              console.error('Caught error in sendTransaction', e)
+              throw e
             }
           }
         }

@@ -17,6 +17,7 @@ const TotalApiCallsChart: React.FC = () => {
   const { apiCalls: trailingApiCalls } = useTrailingApiCalls(
     bucket === Bucket.ALL_TIME ? Bucket.MONTH : bucket
   )
+  let topNumber = null
   if (trailingApiCalls === MetricError.ERROR) {
     topNumber = null
   } else {

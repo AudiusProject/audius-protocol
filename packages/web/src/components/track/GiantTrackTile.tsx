@@ -22,7 +22,8 @@ import {
   Genre,
   getDogEarType,
   Nullable,
-  formatReleaseDate
+  formatReleaseDate,
+  getCanonicalName
 } from '@audius/common/utils'
 import {
   Text,
@@ -40,9 +41,11 @@ import IconCalendarMonth from '@audius/harmony/src/assets/icons/CalendarMonth.sv
 import IconRobot from '@audius/harmony/src/assets/icons/Robot.svg'
 import IconTrending from '@audius/harmony/src/assets/icons/Trending.svg'
 import IconVisibilityHidden from '@audius/harmony/src/assets/icons/VisibilityHidden.svg'
+import { Mood } from '@audius/sdk'
 import cn from 'classnames'
 import dayjs from 'dayjs'
 import { useDispatch, shallowEqual, useSelector } from 'react-redux'
+import { generatePath } from 'react-router-dom'
 
 import { TextLink, UserLink } from 'components/link'
 import Menu from 'components/menu/Menu'
@@ -54,6 +57,9 @@ import Toast from 'components/toast/Toast'
 import Tooltip from 'components/tooltip/Tooltip'
 import { ComponentPlacement } from 'components/types'
 import { UserGeneratedText } from 'components/user-generated-text'
+import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
+import { moodMap } from 'utils/Moods'
+import { SEARCH_PAGE } from 'utils/route'
 import { trpc } from 'utils/trpcClientWeb'
 
 import { AiTrackSection } from './AiTrackSection'
@@ -355,6 +361,44 @@ export const GiantTrackTile = ({
             </div>
           </Tooltip>
         </Toast>
+      )
+    )
+  }
+
+  const renderMood = () => {
+    const shouldShow = !isUnlisted || fieldVisibility.mood
+    return (
+      shouldShow &&
+      mood && (
+        <InfoLabel label='mood'>
+          <TextLink
+            to={{
+              pathname: generatePath(SEARCH_PAGE, { category: 'tracks' }),
+              search: new URLSearchParams({ mood }).toString()
+            }}
+          >
+            {mood in moodMap ? moodMap[mood as Mood] : mood}
+          </TextLink>
+        </InfoLabel>
+      )
+    )
+  }
+
+  const renderGenre = () => {
+    const shouldShow = !isUnlisted || fieldVisibility.genre
+
+    return (
+      shouldShow && (
+        <InfoLabel label='genre'>
+          <TextLink
+            to={{
+              pathname: generatePath(SEARCH_PAGE, { category: 'tracks' }),
+              search: new URLSearchParams({ genre }).toString()
+            }}
+          >
+            {getCanonicalName(genre)}
+          </TextLink>
+        </InfoLabel>
       )
     )
   }
