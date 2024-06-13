@@ -97,7 +97,10 @@ export const CoinflowOnrampDrawer = () => {
     onClose()
   }, [dispatch, onClose])
 
-  const adapter = useCoinflowAdapter({ onSuccess: handleSuccess })
+  const adapter = useCoinflowAdapter({
+    onSuccess: handleSuccess,
+    onFailure: handleClose
+  })
   const deviceId = getCoinflowDeviceId()
   const showContent = isOpen && adapter
 

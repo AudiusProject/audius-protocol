@@ -56,7 +56,10 @@ export const CoinflowOnrampModal = () => {
     onClose()
   }, [dispatch, onClose])
 
-  const adapter = useCoinflowAdapter({ onSuccess: handleSuccess })
+  const adapter = useCoinflowAdapter({
+    onSuccess: handleSuccess,
+    onFailure: handleClose
+  })
   const showContent = isOpen && adapter
 
   return (

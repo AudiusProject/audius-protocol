@@ -7,7 +7,7 @@ import {
   Transaction,
   VersionedTransaction
 } from '@solana/web3.js'
-import { useSelector } from 'react-redux'
+import { useSelector, useDispatch } from 'react-redux'
 
 import { useAudiusQueryContext } from '~/audius-query'
 import { useAppContext } from '~/context'
@@ -18,6 +18,13 @@ import {
   relayTransaction,
   getRootSolanaAccount
 } from '~/services/audius-backend'
+import {
+  BuyUSDCError,
+  PurchaseContentError,
+  PurchaseErrorCode,
+  purchaseContentActions
+} from '~/store'
+import { BuyCryptoError } from '~/store/buy-crypto/types'
 import { getFeePayer } from '~/store/solana/selectors'
 
 import { useFeatureFlag } from './useFeatureFlag'
@@ -121,13 +128,20 @@ export const useCoinflowWithdrawalAdapter = () => {
  * current user's Solana root wallet and send/confirm locally (no relay).
  * @param onSuccess optional callback to invoke when the relay succeeds
  */
-export const useCoinflowAdapter = ({ onSuccess }: { onSuccess: () => void }) => {
+export const useCoinflowAdapter = ({
+  onSuccess,
+  onFailure
+}: {
+  onSuccess: () => void
+  onFailure: () => void
+}) => {
   const { audiusBackend } = useAppContext()
   const [adapter, setAdapter] = useState<CoinflowAdapter | null>(null)
   const { isEnabled: isUseSDKPurchaseTrackEnabled } = useFeatureFlag(
     FeatureFlags.USE_SDK_PURCHASE_TRACK
   )
   const { audiusSdk } = useAudiusQueryContext()
+  const dispatch = useDispatch()
 
   useEffect(() => {
     const initWallet = async () => {
@@ -203,6 +217,16 @@ export const useCoinflowAdapter = ({ onSuccess }: { onSuccess: () => void }) => 
               }
             } catch (e) {
               console.error('Caught error in sendTransaction', e)
+              const error =
+                e instanceof PurchaseContentError ||
+                e instanceof BuyUSDCError ||
+                e instanceof BuyCryptoError
+                  ? e
+                  : new PurchaseContentError(PurchaseErrorCode.Unknown, `${e}`)
+              dispatch(
+                purchaseContentActions.purchaseContentFlowFailed({ error })
+              )
+              onFailure()
               throw e
             }
           }
@@ -210,7 +234,14 @@ export const useCoinflowAdapter = ({ onSuccess }: { onSuccess: () => void }) => 
       })
     }
     initWallet()
-  }, [audiusBackend, isUseSDKPurchaseTrackEnabled, audiusSdk])
+  }, [
+    audiusBackend,
+    isUseSDKPurchaseTrackEnabled,
+    audiusSdk,
+    dispatch,
+    onSuccess,
+    onFailure
+  ])
 
   return adapter
 }
