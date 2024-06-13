@@ -2,6 +2,7 @@ import { Kind } from '@audius/common/models'
 import { FeatureFlags, QueryParams } from '@audius/common/services'
 import {
   accountSelectors,
+  cacheTracksActions,
   cacheTracksSelectors,
   cacheActions,
   queueActions,
@@ -42,7 +43,8 @@ import errorSagas from './errorSagas'
 const { getUserId } = accountSelectors
 const { setTrackPosition } = playbackPositionActions
 const { getTrackPosition } = playbackPositionSelectors
-const { getTrackStreamUrl } = cacheTracksSelectors
+const { getTrackStreamUrl, getTrack } = cacheTracksSelectors
+const { setStreamUrls } = cacheTracksActions
 const {
   play,
   playSucceeded,
@@ -63,7 +65,6 @@ const { getTrackId, getUid, getCounter, getPlaying, getPlaybackRate } =
 const { getPlayerBehavior } = queueSelectors
 
 const { recordListen } = tracksSocialActions
-const { getTrack } = cacheTracksSelectors
 const { getNftAccessSignatureMap } = gatedContentSelectors
 const { getIsReachable } = reachabilitySelectors
 
@@ -140,7 +141,8 @@ export function* watchPlay() {
         trackDuration = getTrackPreviewDuration(track)
       }
 
-      const streamUrl = yield* select(getTrackStreamUrl, track.track_id)
+      const streamUrl =
+        'http://audius-protocol-discovery-provider-1/v1/tracks/Ke0a62w/stream?no_redirect=true&user_data=Gated%20content%20user%20signature%20at%201718308572390&user_id=6NJPlWl&user_signature=0xe3f0acd571a1e739e0d57fb51b5f72f4411a2fc86bc8cb6ef7bf62aa27212caf79785bd6660150442e5d2f7bd8ec7b7fd476f47836d1205566f9dc27fd9b7e9d1b' // yield* select(getTrackStreamUrl, track.track_id)
 
       const mp3Url = apiClient.makeUrl(
         `/tracks/${encodedTrackId}/stream`,
@@ -417,7 +419,24 @@ export function* handleAudioErrors() {
   while (true) {
     const { error, data } = yield* take(chan)
     const trackId = yield* select(getTrackId)
+    console.log(data)
     if (trackId) {
+      const getFeatureEnabled = yield* getContext('getFeatureEnabled')
+      const usePrefetchStreamUrls = yield* call(
+        getFeatureEnabled,
+        FeatureFlags.PREFETCH_STREAM_URLS
+      )
+      const streamUrl = yield* select(getTrackStreamUrl, trackId)
+      console.log({ streamUrl })
+      // Check if we were attempting to use a prefetched url
+      if (streamUrl && usePrefetchStreamUrls) {
+        console.log('Swapping back to /stream')
+        // The pre-fetched stream url failed, so we unset it
+        yield* put(setStreamUrls({ [trackId]: undefined })
+        // Trigger another play action. 
+        // This time with the prefetch url unset will force it to use the discovery node /stream endpoint fallbcak
+        yield* put(play({ uid: 'error', trackId }))
+      }
       yield* put(errorAction({ error, trackId, info: data }))
     }
   }
