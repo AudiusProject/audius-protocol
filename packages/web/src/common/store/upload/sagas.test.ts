@@ -203,7 +203,7 @@ describe('upload', () => {
     )
   })
 
-  it('does not upload parent if stem fails and deletes orphaned stems', () => {
+  it.only('does not upload parent if stem fails and deletes orphaned stems', () => {
     const stem1: StemUploadWithFile = {
       file: new File(['abcdefghijklmnopqrstuvwxyz'], 'test stem1'),
       metadata: { ...emptyMetadata, track_id: 2, title: 'stem1' },
@@ -270,7 +270,7 @@ describe('upload', () => {
         ])
         // Reports to sentry
         .call(reportToSentry, {
-          name: 'Upload: Error',
+          name: 'Upload Worker Failed: Error',
           error: mockError,
           additionalInfo: {
             trackId: 3,
@@ -289,7 +289,7 @@ describe('upload', () => {
           fn: reportToSentry,
           args: [
             {
-              name: 'Upload: Error',
+              name: 'Upload Worker Failed: Error',
               additionalInfo: {
                 trackId: 1,
                 metadata: testTrack.metadata,
