@@ -1,71 +1,25 @@
-FROM golang:alpine3.18
+FROM golang:1.22-bullseye
 
-RUN apk add \
-    build-base \
+RUN apt-get update && apt-get install -y \
+    build-essential \
     make \
     cmake \
-    fftw-dev \
-    libsndfile-dev \
     git \
     curl \
-    eigen-dev \
-    yaml-dev \
-    libsamplerate-dev \
-    taglib-dev \
-    pkgconfig \
-    zlib-dev \
-    nasm \
-    yasm \
-    libogg-dev \
-    libvorbis-dev \
-    libvpx-dev \
-    x264-dev \
-    x265-dev \
     bash \
-    openssl-dev \
-    bzip2-dev \
-    musl-dev \
-    libffi-dev \
-    lame-dev \
-    gcc
+    gcc \
+    ffmpeg \
+    libmp3lame-dev \
+    python3.9 \
+    python3.9-venv \
+    python3.9-dev \
+    python3-pip
 
-# Install ffmpeg and python from source because essentia is not compatible with the default versions on alpine3.18
+# libKeyFinder dependencies
+RUN apt-get install -y libsndfile1-dev
 
-# Download and build FFmpeg 4.4
-ARG FFMPEG_VERSION=4.4
-RUN cd /tmp && \
-    wget https://ffmpeg.org/releases/ffmpeg-$FFMPEG_VERSION.tar.bz2 && \
-    tar -xvjf ffmpeg-$FFMPEG_VERSION.tar.bz2 && \
-    cd ffmpeg-$FFMPEG_VERSION && \
-    ./configure --prefix=/usr/local --enable-shared --enable-libx264 --enable-gpl --enable-libmp3lame --enable-avresample && \
-    make -j$(nproc) && \
-    make install && \
-    cd .. && \
-    rm -rf ffmpeg-$FFMPEG_VERSION
-
-# Build and install Chromaprint from source to ensure it uses the same FFmpeg version
-RUN git clone --depth=1 https://github.com/acoustid/chromaprint.git /chromaprint && \
-    cd /chromaprint && \
-    mkdir build && \
-    cd build && \
-    cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local -DCMAKE_PREFIX_PATH=/usr/local && \
-    make -j$(nproc) && \
-    make install && \
-    cd ../.. && \
-    rm -rf /chromaprint
-
-# Install Python 3.9 from pyenv
-RUN apk add python3 py3-pip py3-virtualenv bash && \
-    apk add --virtual .build-deps gcc musl-dev libffi-dev openssl-dev bzip2-dev zlib-dev && \
-    cd /tmp && \
-    curl -OL https://www.python.org/ftp/python/3.9.12/Python-3.9.12.tgz && \
-    tar -xzf Python-3.9.12.tgz && \
-    cd Python-3.9.12 && \
-    ./configure --enable-optimizations && \
-    make altinstall && \
-    cd .. && \
-    rm -rf Python-3.9.12 && \
-    apk del .build-deps
+# essentia dependencies
+RUN apt-get install -y build-essential libeigen3-dev libyaml-dev libfftw3-dev libavcodec-dev libavformat-dev libavutil-dev libswresample-dev libavresample-dev libsamplerate0-dev libtag1-dev libchromaprint-dev libavfilter-dev
 
 # Create and activate a virtual environment
 RUN python3.9 -m venv /opt/venv
@@ -73,7 +27,7 @@ ENV PATH="/opt/venv/bin:$PATH"
 
 RUN pip install --upgrade pip
 RUN pip install 'web3==6.6.1'
-RUN pip install ipython numpy matplotlib pyyaml
+RUN pip install numpy
 
 WORKDIR /app
 
@@ -109,7 +63,7 @@ RUN g++ -o /bin/analyze-key cpp/keyfinder.cpp -I/usr/local/include -L/usr/local/
     chmod +x /bin/analyze-key
 
 # Compile the bpm analyzer C++ executable
-RUN g++ -o /bin/analyze-bpm cpp/bpm-analyzer.cpp -I/usr/include/eigen3 -I/usr/local/include/essentia -I/usr/local/include -L/usr/local/lib -lessentia -lavcodec -lavformat -lavutil -lavfilter -lsamplerate -ltag -lyaml -lfftw3 -lfftw3f -lfftw3l -lfftw3_threads -lfftw3f_threads -lfftw3l_threads -lavresample -lchromaprint && \
+RUN g++ -o /bin/analyze-bpm cpp/bpm-analyzer.cpp -I/usr/include/eigen3 -I/usr/local/include/essentia -I/usr/local/include -L/usr/local/lib -lessentia -lavcodec -lavformat -lavutil -lavfilter -lsamplerate -ltag -lyaml -lfftw3 -lfftw3f -lfftw3l -lfftw3_threads -lfftw3f_threads -lfftw3l_threads -lavresample -lswresample -lchromaprint && \
     chmod +x /bin/analyze-bpm
 
 RUN go build
