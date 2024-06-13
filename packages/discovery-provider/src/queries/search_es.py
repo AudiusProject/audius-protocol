@@ -99,7 +99,11 @@ def search_es_full(args: dict):
         mdsl.extend(
             [
                 {"index": ES_PLAYLISTS},
-                playlist_dsl(search_str, current_user_id),
+                playlist_dsl(
+                    search_str=search_str,
+                    current_user_id=current_user_id,
+                    genres=genres,
+                ),
             ]
         )
 
@@ -108,7 +112,11 @@ def search_es_full(args: dict):
         mdsl.extend(
             [
                 {"index": ES_PLAYLISTS},
-                album_dsl(search_str, current_user_id),
+                album_dsl(
+                    search_str=search_str,
+                    current_user_id=current_user_id,
+                    genres=genres,
+                ),
             ]
         )
 
@@ -627,7 +635,7 @@ def user_dsl(
         if capitalized_genres:
             # At least one track genre must match
             dsl["must"].append({"terms": {"tracks.genre": capitalized_genres}})
-            # Boost profiles with multiple tracks matching genre
+            # Logarithmically boost profiles with multiple tracks matching genre
             query["query"]["function_score"]["functions"].append(
                 {
                     "script_score": {
@@ -655,8 +663,8 @@ def user_dsl(
     return query
 
 
-def base_playlist_dsl(search_str, is_album):
-    return {
+def base_playlist_dsl(search_str, is_album, genres, current_user_id, must_saved=False):
+    dsl = {
         "must": [
             {
                 "bool": {
@@ -720,17 +728,69 @@ def base_playlist_dsl(search_str, is_album):
         ],
     }
 
+    query = {
+        "query": {
+            "function_score": {
+                "functions": [
+                    {
+                        "field_value_factor": {
+                            "field": "repost_count",
+                            "factor": 1000,
+                            "modifier": "ln2p",
+                        },
+                    }
+                ],
+                "boost_mode": "multiply",
+            }
+        }
+    }
 
-def playlist_dsl(search_str, current_user_id, must_saved=False):
-    dsl = base_playlist_dsl(search_str, False)
+    if genres:
+        capitalized_genres = list(
+            filter(
+                None,
+                [get_capitalized_genre(genre) for genre in genres if genre is not None],
+            )
+        )
+        if capitalized_genres:
+            # At least one track genre must match
+            dsl["must"].append({"terms": {"tracks.genre": capitalized_genres}})
+            # Logarithmically boost profiles with multiple tracks matching genre
+            query["query"]["function_score"]["functions"].append(
+                {
+                    "script_score": {
+                        "script": {
+                            "source": """
+                                double matchedTracks = 0;
+                                for (track in params['_source'].tracks) {
+                                    if (params.genres.contains(track.genre)) {
+                                        matchedTracks++;
+                                    }
+                                }
+                                return Math.log(1 + matchedTracks) * params.boost;
+                            """,
+                            "params": {
+                                "genres": capitalized_genres,
+                                "boost": 2,
+                            },
+                        }
+                    },
+                }
+            )
+
     personalize_dsl(dsl, current_user_id, must_saved)
-    return default_function_score(dsl, "repost_count", factor=1000)
+
+    # Set the dsl on the query object
+    query["query"]["function_score"]["query"] = {"bool": dsl}
+    return query
 
 
-def album_dsl(search_str, current_user_id, must_saved=False):
-    dsl = base_playlist_dsl(search_str, True)
-    personalize_dsl(dsl, current_user_id, must_saved)
-    return default_function_score(dsl, "repost_count", factor=1000)
+def playlist_dsl(search_str, current_user_id, must_saved=False, genres=[]):
+    return base_playlist_dsl(search_str, False, genres, current_user_id, must_saved)
+
+
+def album_dsl(search_str, current_user_id, must_saved=False, genres=[]):
+    return base_playlist_dsl(search_str, False, genres, current_user_id, must_saved)
 
 
 def reorder_users(users):
