@@ -34,7 +34,6 @@ import { useDispatch, useSelector } from 'react-redux'
 import { usePrevious } from 'react-use'
 import { useFeatureFlag } from '~/hooks'
 import { FeatureFlags } from '~/services'
-import { getUserId } from '~/store/account/selectors'
 
 import { DEFAULT_IMAGE_URL } from 'app/components/image/TrackImage'
 import { getImageSourceOptimistic } from 'app/hooks/useContentNodeImage'
@@ -286,11 +285,11 @@ export const RNVideoAudioPlayer = () => {
       const imageUrl =
         cid && storageNodeSelector
           ? getImageSourceOptimistic({
-              cid,
-              endpoints: storageNodeSelector.getNodes(cid),
-              size: SquareSizes.SIZE_1000_BY_1000,
-              localSource: localTrackImageSource
-            })?.uri ?? DEFAULT_IMAGE_URL
+            cid,
+            endpoints: storageNodeSelector.getNodes(cid),
+            size: SquareSizes.SIZE_1000_BY_1000,
+            localSource: localTrackImageSource
+          })?.uri ?? DEFAULT_IMAGE_URL
           : DEFAULT_IMAGE_URL
 
       return {
