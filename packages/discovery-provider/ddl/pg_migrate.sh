@@ -45,7 +45,7 @@ copy_temp_data() {
             table_name="temp_$(basename "$csv_file" .csv)"
             created_tables+=("$table_name")
 
-            # Read CSV header to infer column names and types
+            # Read CSV header to infer column names
             header=$(head -n 1 "$csv_file")
             IFS=',' read -r -a columns <<< "$header"
 
