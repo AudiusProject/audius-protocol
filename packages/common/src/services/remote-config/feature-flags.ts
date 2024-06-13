@@ -3,7 +3,6 @@ import { Environment } from '../env'
 /* FeatureFlags must be lowercase snake case */
 export enum FeatureFlags {
   SOLANA_LISTEN_ENABLED = 'solana_listen_enabled',
-  CHALLENGE_REWARDS_UI = 'challenge_rewards_ui',
   SURFACE_AUDIO_ENABLED = 'surface_audio_enabled',
   PREFER_HIGHER_PATCH_FOR_PRIMARY = 'prefer_higher_patch_for_primary',
   PREFER_HIGHER_PATCH_FOR_SECONDARIES = 'prefer_higher_patch_for_secondaries',
@@ -44,7 +43,6 @@ export enum FeatureFlags {
   DEVELOPER_APPS_PAGE = 'developer_apps_page',
   USDC_PURCHASES = 'usdc_purchases',
   USDC_PURCHASES_UPLOAD = 'usdc_purchases_upload',
-  AUDIO_MATCHING_CHALLENGES = 'audio_matching_challenges',
   NEW_PLAYLIST_ROUTES = 'new_playlist_routes',
   FEATURE_FLAG_ACCESS = 'feature_flag_access',
   BUY_USDC_VIA_SOL = 'buy_usdc_via_sol',
@@ -87,7 +85,6 @@ export const environmentFlagDefaults: Record<
  */
 export const flagDefaults: FlagDefaults = {
   [FeatureFlags.SOLANA_LISTEN_ENABLED]: false,
-  [FeatureFlags.CHALLENGE_REWARDS_UI]: false,
   [FeatureFlags.SURFACE_AUDIO_ENABLED]: false,
   [FeatureFlags.PREFER_HIGHER_PATCH_FOR_PRIMARY]: true,
   [FeatureFlags.PREFER_HIGHER_PATCH_FOR_SECONDARIES]: true,
@@ -128,7 +125,6 @@ export const flagDefaults: FlagDefaults = {
   [FeatureFlags.DEVELOPER_APPS_PAGE]: false,
   [FeatureFlags.USDC_PURCHASES]: false,
   [FeatureFlags.USDC_PURCHASES_UPLOAD]: false,
-  [FeatureFlags.AUDIO_MATCHING_CHALLENGES]: false,
   [FeatureFlags.NEW_PLAYLIST_ROUTES]: false,
   [FeatureFlags.FEATURE_FLAG_ACCESS]: false,
   [FeatureFlags.BUY_USDC_VIA_SOL]: false,
