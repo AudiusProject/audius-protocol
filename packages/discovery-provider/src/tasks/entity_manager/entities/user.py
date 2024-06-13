@@ -329,7 +329,6 @@ def update_user_metadata(
     # Iterate over the user_record keys
     user_record_attributes = user_record.get_attributes_dict()
 
-    env = shared_config["discprov"]["env"]
     for key, _ in user_record_attributes.items():
         # Update the user_record when the corresponding field exists
         # in metadata
