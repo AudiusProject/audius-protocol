@@ -63,7 +63,7 @@ export type SearchPageActions =
 
 // Query-based search
 
-type FetchSearchPageResultsActionArgs = {
+type FetchSearchPageResultsArgs = {
   searchText: string
   kind: SearchKind
   limit: number
@@ -74,20 +74,22 @@ type FetchSearchPageResultsActionArgs = {
 }
 
 export const fetchSearchPageResults = (
-  args: FetchSearchPageResultsActionArgs
+  args: FetchSearchPageResultsArgs
 ): SearchPageActions => ({
   type: FETCH_SEARCH_PAGE_RESULTS,
   ...args
 })
 
-// TODO: update the rest of these actions to object args
-export const fetchSearchPageResultsSucceeded = (
-  results: any,
+type fetchSearchPageResultsSucceededArgs = {
+  results: any
   searchText: string
+}
+
+export const fetchSearchPageResultsSucceeded = (
+  args: fetchSearchPageResultsSucceededArgs
 ): SearchPageActions => ({
   type: FETCH_SEARCH_PAGE_RESULTS_SUCCEEDED,
-  results,
-  searchText
+  ...args
 })
 
 export const fetchSearchPageResultsFailed = (): SearchPageActions => ({
@@ -95,27 +97,30 @@ export const fetchSearchPageResultsFailed = (): SearchPageActions => ({
 })
 
 // Tag-based searcxh
+type FetchSearchPageTagsArgs = {
+  tag: string
+  searchKind: SearchKind
+  limit: number
+  offset: number
+}
 
 export const fetchSearchPageTags = (
-  tag: string,
-  searchKind: SearchKind,
-  limit: number,
-  offset: number
+  args: FetchSearchPageTagsArgs
 ): SearchPageActions => ({
   type: FETCH_SEARCH_PAGE_TAGS,
-  tag,
-  searchKind,
-  limit,
-  offset
+  ...args
 })
 
-export const fetchSearchPageTagsSucceeded = (
-  results: any,
+type FetchSearchPageTagsSucceededArgs = {
+  results: any
   tag: string
+}
+
+export const fetchSearchPageTagsSucceeded = (
+  args: FetchSearchPageTagsSucceededArgs
 ): SearchPageActions => ({
   type: FETCH_SEARCH_PAGE_TAGS_SUCCEEDED,
-  results,
-  tag
+  ...args
 })
 
 export const fetchSearchPageTagsFailed = (): SearchPageActions => ({

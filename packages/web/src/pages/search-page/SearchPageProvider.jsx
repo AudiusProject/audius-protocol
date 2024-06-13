@@ -90,7 +90,12 @@ class SearchPageProvider extends Component {
   search = (isTagSearch, query, searchKind, limit, offset) => {
     if (isTagSearch) {
       this.props.dispatch(
-        searchPageActions.fetchSearchPageTags(query, searchKind, limit, offset)
+        searchPageActions.fetchSearchPageTags({
+          tag: query,
+          searchKind,
+          limit,
+          offset
+        })
       )
       this.props.recordTagSearch(query)
     } else {

@@ -79,7 +79,10 @@ export function* fetchSearchPageTags(
           : undefined
     }
     yield* put(
-      searchPageActions.fetchSearchPageTagsSucceeded(results, action.tag)
+      searchPageActions.fetchSearchPageTagsSucceeded({
+        results,
+        tag: action.tag
+      })
     )
     if (
       action.searchKind === SearchKind.TRACKS ||
@@ -179,10 +182,10 @@ function* fetchSearchPageResults(
           : undefined
     }
     yield* put(
-      searchPageActions.fetchSearchPageResultsSucceeded(
+      searchPageActions.fetchSearchPageResultsSucceeded({
         results,
-        action.searchText
-      )
+        searchText: action.searchText
+      })
     )
     if (action.kind === SearchKind.TRACKS || action.kind === SearchKind.ALL) {
       yield* put(
