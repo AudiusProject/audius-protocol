@@ -2,11 +2,11 @@ import { PropsWithChildren } from 'react'
 
 import { Text } from '@audius/harmony'
 
-type InfoLabelProps = PropsWithChildren<{
+type MetadataLabelProps = PropsWithChildren<{
   label: string
 }>
 
-export const InfoLabel = (props: InfoLabelProps) => {
+export const MetadataLabel = (props: MetadataLabelProps) => {
   const { label, children } = props
 
   return (

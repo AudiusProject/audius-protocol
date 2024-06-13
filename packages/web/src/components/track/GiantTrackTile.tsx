@@ -70,7 +70,7 @@ import { GatedContentSection } from './GatedContentSection'
 import GiantArtwork from './GiantArtwork'
 import styles from './GiantTrackTile.module.css'
 import { GiantTrackTileProgressInfo } from './GiantTrackTileProgressInfo'
-import { InfoLabel } from './InfoLabel'
+import { MetadataLabel } from './MetadataLabel'
 import { PlayPauseButton } from './PlayPauseButton'
 
 const DownloadSection = lazy(() =>
@@ -453,9 +453,9 @@ export const GiantTrackTile = ({
   const renderAlbum = useCallback(() => {
     if (!albumInfo) return null
     return (
-      <InfoLabel label='album'>
+      <MetadataLabel label='album'>
         <TextLink to={albumInfo.permalink}>{albumInfo.playlist_name}</TextLink>
-      </InfoLabel>
+      </MetadataLabel>
     )
   }, [albumInfo])
 
@@ -480,10 +480,10 @@ export const GiantTrackTile = ({
   const renderTrackLabels = useCallback(() => {
     return labels.map((infoFact) => {
       return (
-        <InfoLabel key={infoFact.id} label={infoFact.label}>
+        <MetadataLabel key={infoFact.id} label={infoFact.label}>
           {renderTrackLabelMapping(infoFact.value)[infoFact.id] ??
             infoFact.value}
-        </InfoLabel>
+        </MetadataLabel>
       )
     })
   }, [labels, renderTrackLabelMapping])

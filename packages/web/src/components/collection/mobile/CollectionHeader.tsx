@@ -31,7 +31,7 @@ import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { UserLink } from 'components/link'
 import Skeleton from 'components/skeleton/Skeleton'
 import { GatedContentSection } from 'components/track/GatedContentSection'
-import { InfoLabel } from 'components/track/InfoLabel'
+import { MetadataLabel } from 'components/track/MetadataLabel'
 import { UserGeneratedText } from 'components/user-generated-text'
 import { useCollectionCoverArt } from 'hooks/useCollectionCoverArt'
 import { useFlag } from 'hooks/useRemoteConfig'
@@ -343,9 +343,9 @@ const CollectionHeader = ({
         <Flex direction='row' gap='l' wrap='wrap'>
           {labels.map(({ label, value }) => {
             return (
-              <InfoLabel key={label} label={label}>
+              <MetadataLabel key={label} label={label}>
                 {value}
-              </InfoLabel>
+              </MetadataLabel>
             )
           })}
         </Flex>
