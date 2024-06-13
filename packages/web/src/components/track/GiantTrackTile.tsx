@@ -1,6 +1,8 @@
 import { Suspense, lazy, useCallback, useState } from 'react'
 
 import {
+  MetadataType,
+  useFeatureFlag,
   useIsGatedContentPlaylistAddable,
   useTrackMetadata
 } from '@audius/common/hooks'
@@ -12,6 +14,7 @@ import {
   Remix,
   AccessConditions
 } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import {
   cacheTracksSelectors,
   publishTrackConfirmationModalUIActions,
@@ -57,7 +60,6 @@ import Toast from 'components/toast/Toast'
 import Tooltip from 'components/tooltip/Tooltip'
 import { ComponentPlacement } from 'components/types'
 import { UserGeneratedText } from 'components/user-generated-text'
-import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import { moodMap } from 'utils/Moods'
 import { SEARCH_PAGE } from 'utils/route'
 import { trpc } from 'utils/trpcClientWeb'
@@ -104,6 +106,32 @@ const messages = {
   hidden: 'hidden',
   releases: (releaseDate: string) =>
     `Releases ${formatReleaseDate({ date: releaseDate, withHour: true })}`
+}
+
+const renderMood = (mood: Mood) => {
+  return (
+    <TextLink
+      to={{
+        pathname: generatePath(SEARCH_PAGE, { category: 'tracks' }),
+        search: new URLSearchParams({ mood }).toString()
+      }}
+    >
+      {mood in moodMap ? moodMap[mood] : mood}
+    </TextLink>
+  )
+}
+
+const renderGenre = (genre: string) => {
+  return (
+    <TextLink
+      to={{
+        pathname: generatePath(SEARCH_PAGE, { category: 'tracks' }),
+        search: new URLSearchParams({ genre }).toString()
+      }}
+    >
+      {getCanonicalName(genre)}
+    </TextLink>
+  )
 }
 
 export type GiantTrackTileProps = {
@@ -206,6 +234,9 @@ export const GiantTrackTile = ({
 }: GiantTrackTileProps) => {
   const dispatch = useDispatch()
   const [artworkLoading, setArtworkLoading] = useState(false)
+  const { isEnabled: isSearchV2Enabled } = useFeatureFlag(
+    FeatureFlags.SEARCH_V2
+  )
   const onArtworkLoad = useCallback(
     () => setArtworkLoading(false),
     [setArtworkLoading]
@@ -365,44 +396,6 @@ export const GiantTrackTile = ({
     )
   }
 
-  const renderMood = () => {
-    const shouldShow = !isUnlisted || fieldVisibility.mood
-    return (
-      shouldShow &&
-      mood && (
-        <InfoLabel label='mood'>
-          <TextLink
-            to={{
-              pathname: generatePath(SEARCH_PAGE, { category: 'tracks' }),
-              search: new URLSearchParams({ mood }).toString()
-            }}
-          >
-            {mood in moodMap ? moodMap[mood as Mood] : mood}
-          </TextLink>
-        </InfoLabel>
-      )
-    )
-  }
-
-  const renderGenre = () => {
-    const shouldShow = !isUnlisted || fieldVisibility.genre
-
-    return (
-      shouldShow && (
-        <InfoLabel label='genre'>
-          <TextLink
-            to={{
-              pathname: generatePath(SEARCH_PAGE, { category: 'tracks' }),
-              search: new URLSearchParams({ genre }).toString()
-            }}
-          >
-            {getCanonicalName(genre)}
-          </TextLink>
-        </InfoLabel>
-      )
-    )
-  }
-
   const renderListenCount = () => {
     const shouldShow = isOwner || (!isStreamGated && !isUnlisted)
 
@@ -446,14 +439,26 @@ export const GiantTrackTile = ({
     )
   }
 
-  const renderAlbum = () => {
+  const renderTrackLabelMapping = useCallback(
+    (value: string) => {
+      if (!isSearchV2Enabled) return {}
+      return {
+        [MetadataType.GENRE]: renderGenre(value),
+        [MetadataType.MOOD]: renderMood(value as Mood)
+      }
+    },
+    [isSearchV2Enabled]
+  )
+
+  const renderAlbum = useCallback(() => {
     if (!albumInfo) return null
     return (
       <InfoLabel label='album'>
         <TextLink to={albumInfo.permalink}>{albumInfo.playlist_name}</TextLink>
       </InfoLabel>
     )
-  }
+  }, [albumInfo])
+
   const renderStatsRow = () => {
     const isLongFormContent =
       genre === Genre.PODCASTS || genre === Genre.AUDIOBOOKS
@@ -472,15 +477,16 @@ export const GiantTrackTile = ({
     )
   }
 
-  const renderTrackLabels = () => {
+  const renderTrackLabels = useCallback(() => {
     return labels.map((infoFact) => {
       return (
-        <InfoLabel key={infoFact.label} label={infoFact.label}>
-          {infoFact.value}
+        <InfoLabel key={infoFact.id} label={infoFact.label}>
+          {renderTrackLabelMapping(infoFact.value)[infoFact.id] ??
+            infoFact.value}
         </InfoLabel>
       )
     })
-  }
+  }, [labels, renderTrackLabelMapping])
 
   const isLoading = loading || artworkLoading
   // Omitting isOwner and hasStreamAccess so that we always show gated DogEars

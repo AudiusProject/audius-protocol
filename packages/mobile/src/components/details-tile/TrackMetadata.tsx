@@ -38,8 +38,8 @@ export const TrackMetadata = ({ trackId }: TrackMetadataProps) => {
 
   return (
     <Flex gap='l' w='100%' direction='row' wrap='wrap'>
-      {labels.map((label, i) => (
-        <MetadataRow key={i} label={label.label}>
+      {labels.map((label) => (
+        <MetadataRow key={label.id} label={label.label}>
           {label.value}
         </MetadataRow>
       ))}
