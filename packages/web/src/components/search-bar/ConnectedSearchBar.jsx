@@ -90,14 +90,19 @@ class ConnectedSearchBar extends Component {
 
     let newPath = pathname
     if (value) {
-      const searchMatch = matchPath(getPathname(this.props.history.location), {
-        path: SEARCH_PAGE
-      })
+      if (this.props.isSearchV2Enabled) {
+        const searchMatch = matchPath(
+          getPathname(this.props.history.location),
+          {
+            path: SEARCH_PAGE
+          }
+        )
 
-      if (searchMatch) {
-        newPath = generatePath(SEARCH_PAGE, {
-          ...searchMatch.params
-        })
+        if (searchMatch) {
+          newPath = generatePath(SEARCH_PAGE, {
+            ...searchMatch.params
+          })
+        }
       }
 
       locationSearchParams.set('query', value)
