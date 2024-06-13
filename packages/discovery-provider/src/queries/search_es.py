@@ -582,21 +582,6 @@ def user_dsl(
         ],
     }
 
-    if genres:
-        capitalized_genres = list(
-            filter(
-                None,
-                [get_capitalized_genre(genre) for genre in genres if genre is not None],
-            )
-        )
-        if capitalized_genres:
-            # At least one track genre must match
-            dsl["must"].append({"terms": {"tracks.genre": capitalized_genres}})
-            # Boost results with multiple tracks matching genre
-            dsl["should"].append(
-                {"terms": {"tracks.genre": capitalized_genres, "boost": 10}}
-            )
-
     if current_user_id and must_saved:
         dsl["must"].append(be_followed(current_user_id))
 
@@ -606,10 +591,9 @@ def user_dsl(
     if current_user_id:
         dsl["should"].append(be_followed(current_user_id))
 
-    return {
+    query = {
         "query": {
             "function_score": {
-                "query": {"bool": dsl},
                 "functions": [
                     {
                         "filter": {"term": {"is_verified": True}},
@@ -632,6 +616,43 @@ def user_dsl(
             }
         }
     }
+
+    if genres:
+        capitalized_genres = list(
+            filter(
+                None,
+                [get_capitalized_genre(genre) for genre in genres if genre is not None],
+            )
+        )
+        if capitalized_genres:
+            # At least one track genre must match
+            dsl["must"].append({"terms": {"tracks.genre": capitalized_genres}})
+            # Boost profiles with multiple tracks matching genre
+            query["query"]["function_score"]["functions"].append(
+                {
+                    "script_score": {
+                        "script": {
+                            "source": """
+                                double matchedTracks = 0;
+                                for (track in params['_source'].tracks) {
+                                    if (params.genres.contains(track.genre)) {
+                                        matchedTracks++;
+                                    }
+                                }
+                                return Math.log(1 + matchedTracks) * params.boost;
+                            """,
+                            "params": {
+                                "genres": capitalized_genres,
+                                "boost": 2,
+                            },
+                        }
+                    },
+                }
+            )
+
+    # Set the dsl on the query object
+    query["query"]["function_score"]["query"] = {"bool": dsl}
+    return query
 
 
 def base_playlist_dsl(search_str, is_album):
