@@ -141,8 +141,7 @@ export function* watchPlay() {
         trackDuration = getTrackPreviewDuration(track)
       }
 
-      const streamUrl =
-        'http://audius-protocol-discovery-provider-1/v1/tracks/Ke0a62w/stream?no_redirect=true&user_data=Gated%20content%20user%20signature%20at%201718308572390&user_id=6NJPlWl&user_signature=0xe3f0acd571a1e739e0d57fb51b5f72f4411a2fc86bc8cb6ef7bf62aa27212caf79785bd6660150442e5d2f7bd8ec7b7fd476f47836d1205566f9dc27fd9b7e9d1b' // yield* select(getTrackStreamUrl, track.track_id)
+      const streamUrl = yield* select(getTrackStreamUrl, track.track_id)
 
       const mp3Url = apiClient.makeUrl(
         `/tracks/${encodedTrackId}/stream`,
@@ -419,7 +418,6 @@ export function* handleAudioErrors() {
   while (true) {
     const { error, data } = yield* take(chan)
     const trackId = yield* select(getTrackId)
-    console.log(data)
     if (trackId) {
       const getFeatureEnabled = yield* getContext('getFeatureEnabled')
       const usePrefetchStreamUrls = yield* call(
@@ -427,17 +425,22 @@ export function* handleAudioErrors() {
         FeatureFlags.PREFETCH_STREAM_URLS
       )
       const streamUrl = yield* select(getTrackStreamUrl, trackId)
-      console.log({ streamUrl })
       // Check if we were attempting to use a prefetched url
+      // If so we likely have a recovery option
       if (streamUrl && usePrefetchStreamUrls) {
-        console.log('Swapping back to /stream')
-        // The pre-fetched stream url failed, so we unset it
-        yield* put(setStreamUrls({ [trackId]: undefined })
-        // Trigger another play action. 
-        // This time with the prefetch url unset will force it to use the discovery node /stream endpoint fallbcak
-        yield* put(play({ uid: 'error', trackId }))
+        const reportToSentry = yield* getContext('reportToSentry')
+        reportToSentry({
+          error: new Error('Audio prefetch playback saga error'),
+          additionalInfo: { trackId, streamUrl }
+        })
+        // The pre-fetched stream url failed, so we set the value to undefined
+        yield* put(setStreamUrls({ [trackId]: undefined }))
+        // Retrigger play action.
+        // Now the prefetch url is unset and it will instead play from the discovery node /stream endpoint as a fallback
+        yield* put(play({ trackId }))
+      } else {
+        yield* put(errorAction({ error, trackId, info: data }))
       }
-      yield* put(errorAction({ error, trackId, info: data }))
     }
   }
 }

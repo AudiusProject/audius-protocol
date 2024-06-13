@@ -49,6 +49,9 @@ export function fetchStreamUrls(trackIds: ID[]) {
   return { type: FETCH_STREAM_URLS, trackIds }
 }
 
-export function setStreamUrls(streamUrls: { [trackId: ID]: string | undefined }) {
+// The value should only be undefined if the stream URL had an error
+export function setStreamUrls(streamUrls: {
+  [trackId: ID]: string | undefined
+}) {
   return { type: SET_STREAM_URLS, streamUrls }
 }
