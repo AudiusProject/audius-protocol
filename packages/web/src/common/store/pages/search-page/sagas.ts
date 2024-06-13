@@ -8,6 +8,7 @@ import {
   getContext
 } from '@audius/common/store'
 import { Genre, trimToAlphaNumeric } from '@audius/common/utils'
+import { Mood } from '@audius/sdk'
 import { select, call, takeLatest, put } from 'typed-redux-saga'
 
 import { processAndCacheCollections } from 'common/store/cache/collections/utils'
@@ -15,7 +16,6 @@ import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
 import { fetchUsers } from 'common/store/cache/users/sagas'
 import tracksSagas from 'common/store/pages/search-page/lineups/tracks/sagas'
 import { waitForRead } from 'utils/sagaHelpers'
-import { Mood } from '@audius/sdk'
 
 const getUserId = accountSelectors.getUserId
 
@@ -157,7 +157,7 @@ function* fetchSearchPageResults(
 ) {
   yield* call(waitForRead)
 
-  const { type, ...rest } = action
+  const { type: ignoredType, ...rest } = action
   const rawResults = yield* call(getSearchResults, rest)
   if (rawResults) {
     const results = {

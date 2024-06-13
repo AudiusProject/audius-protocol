@@ -1,4 +1,5 @@
 import { Genre, Mood } from '@audius/sdk'
+
 import { SearchKind } from './types'
 
 export const FETCH_SEARCH_PAGE_RESULTS = 'SEARCH/FETCH_SEARCH_PAGE_RESULTS'

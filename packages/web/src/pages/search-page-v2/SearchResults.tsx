@@ -18,6 +18,7 @@ import {
 import { OptionsFilterButton } from '@audius/harmony'
 import { Box, Flex } from '@audius/harmony/src/components/layout'
 import { Text } from '@audius/harmony/src/components/text'
+import { Genre, Mood } from '@audius/sdk'
 import { css } from '@emotion/css'
 import { range } from 'lodash'
 import { useDispatch } from 'react-redux'
@@ -34,7 +35,6 @@ import { SEARCH_PAGE } from 'utils/route'
 
 import { NoResultsTile } from './NoResultsTile'
 import { useUpdateSearchParams } from './utils'
-import { Genre, Mood } from '@audius/sdk'
 
 const MAX_RESULTS = 100
 const MAX_PREVIEW_RESULTS = 5
