@@ -1,6 +1,6 @@
 import { Text, IconCalendarMonth } from '@audius/harmony'
 import cn from 'classnames'
-import moment from 'moment'
+import dayjs from 'dayjs'
 
 import { getLocalTimezone } from 'utils/dateUtils'
 
@@ -11,13 +11,20 @@ import styles from './ScheduledReleaseLabel.module.css'
 export type ScheduledReleaseLabelProps = {
   released?: string | null
   isUnlisted?: boolean
+  isScheduledRelease?: boolean
 }
 
 export const ScheduledReleaseLabel = ({
   released,
-  isUnlisted
+  isUnlisted,
+  isScheduledRelease
 }: ScheduledReleaseLabelProps) => {
-  if (!released || !isUnlisted || moment(released).isBefore(moment())) {
+  if (
+    !released ||
+    !isUnlisted ||
+    !isScheduledRelease ||
+    dayjs(released).isBefore(dayjs())
+  ) {
     return null
   }
   return (
@@ -28,11 +35,9 @@ export const ScheduledReleaseLabel = ({
       )}
     >
       <IconCalendarMonth size='s' />
-      <Text variant='body'>
+      <Text variant='body' size='xs'>
         Releases{' '}
-        {moment(released).format('M/D/YY [@] h:mm A') +
-          ' ' +
-          getLocalTimezone()}
+        {dayjs(released).format('M/D/YY [@] h A') + ' ' + getLocalTimezone()}
       </Text>
     </div>
   )
