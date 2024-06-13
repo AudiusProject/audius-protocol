@@ -1,7 +1,6 @@
 import { useRef } from 'react'
 
 import { ID } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import {
   IconMessageBlock,
   IconMessageUnblock,
@@ -20,7 +19,6 @@ import cn from 'classnames'
 import { ArtistRecommendationsPopup } from 'components/artist-recommendations/ArtistRecommendationsPopup'
 import Stats, { StatProps } from 'components/stats/Stats'
 import SubscribeButton from 'components/subscribe-button/SubscribeButton'
-import { useFlag } from 'hooks/useRemoteConfig'
 
 import styles from './StatBanner.module.css'
 
@@ -155,8 +153,6 @@ export const StatBanner = (props: StatsBannerProps) => {
   let buttons = null
   const followButtonRef = useRef<HTMLButtonElement>(null)
 
-  const { isEnabled: isChatEnabled } = useFlag(FeatureFlags.CHAT_ENABLED)
-
   const shareButton = (
     <Button
       variant='secondary'
@@ -206,7 +202,7 @@ export const StatBanner = (props: StatsBannerProps) => {
     default:
       buttons = (
         <>
-          {isChatEnabled && onShare && onUnblock && onBlock ? (
+          {onShare && onUnblock && onBlock ? (
             <>
               <StatsPopupMenu
                 onShare={onShare}
