@@ -34,7 +34,8 @@ export function* fetchTrackStreamUrls({ trackIds }: { trackIds: ID[] }) {
         const nftAccessSignature = nftAccessSignatureMap[id]?.mp3 ?? null
         const queryParams = yield* call(getQueryParams, {
           audiusBackendInstance,
-          nftAccessSignature
+          nftAccessSignature,
+          userId: currentUserId
         })
         const streamUrl = yield* call([apiClient, 'getTrackStreamUrl'], {
           id,

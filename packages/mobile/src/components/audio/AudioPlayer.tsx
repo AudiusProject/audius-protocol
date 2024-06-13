@@ -395,6 +395,7 @@ export const AudioPlayer = () => {
       }
     },
     [
+      currentUserId,
       isCollectionMarkedForDownload,
       isNotReachable,
       isOfflineModeEnabled,
@@ -403,8 +404,7 @@ export const AudioPlayer = () => {
       offlineAvailabilityByTrackId,
       queueTrackOwnersMap,
       storageNodeSelector,
-      trackStreamUrls,
-      currentUserId
+      trackStreamUrls
     ]
   )
 
