@@ -1,24 +1,24 @@
 import { useGetTrackById } from '@audius/common/api'
-import { useTrackSecondaryStats } from '@audius/common/hooks'
+import { useTrackMetadata } from '@audius/common/hooks'
 import type { ID } from '@audius/common/models'
 import { trpc } from '@audius/web/src/utils/trpcClientWeb'
 
 import { Flex, TextLink } from '@audius/harmony-native'
 
-import { SecondaryStatRow } from './SecondaryStatRow'
+import { MetadataRow } from './MetadataRow'
 
 const messages = {
   album: 'Album'
 }
 
-type SecondaryStatsProps = {
+type TrackMetadataProps = {
   trackId?: ID
 }
 
 /**
  * The additional metadata shown at the bottom of the Track Screen and Collection Screen Headers
  */
-export const TrackSecondaryStats = ({ trackId }: SecondaryStatsProps) => {
+export const TrackMetadata = ({ trackId }: TrackMetadataProps) => {
   const { data: track } = useGetTrackById(
     { id: trackId! },
     { disabled: !trackId }
@@ -28,7 +28,7 @@ export const TrackSecondaryStats = ({ trackId }: SecondaryStatsProps) => {
     { enabled: !!trackId }
   )
 
-  const { labels } = useTrackSecondaryStats({
+  const { labels } = useTrackMetadata({
     duration: track?.duration,
     releaseDate: track?.release_date,
     mood: track?.mood,
@@ -39,16 +39,16 @@ export const TrackSecondaryStats = ({ trackId }: SecondaryStatsProps) => {
   return (
     <Flex gap='l' w='100%' direction='row' wrap='wrap'>
       {labels.map((label, i) => (
-        <SecondaryStatRow key={i} label={label.label}>
+        <MetadataRow key={i} label={label.label}>
           {label.value}
-        </SecondaryStatRow>
+        </MetadataRow>
       ))}
       {albumInfo ? (
-        <SecondaryStatRow label={messages.album}>
+        <MetadataRow label={messages.album}>
           <TextLink to={albumInfo?.permalink}>
             {albumInfo?.playlist_name}
           </TextLink>
-        </SecondaryStatRow>
+        </MetadataRow>
       ) : null}
     </Flex>
   )

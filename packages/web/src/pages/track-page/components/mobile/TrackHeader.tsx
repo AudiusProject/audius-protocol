@@ -3,7 +3,7 @@ import { Suspense, useCallback } from 'react'
 import { imageBlank as placeholderArt } from '@audius/common/assets'
 import {
   useIsGatedContentPlaylistAddable,
-  useTrackSecondaryStats
+  useTrackMetadata
 } from '@audius/common/hooks'
 import {
   SquareSizes,
@@ -228,7 +228,7 @@ const TrackHeader = ({
   }
   const filteredTags = (tags || '').split(',').filter(Boolean)
 
-  const { labels } = useTrackSecondaryStats({
+  const { labels } = useTrackMetadata({
     duration: track?.duration,
     isUnlisted,
     genre: track?.genre,

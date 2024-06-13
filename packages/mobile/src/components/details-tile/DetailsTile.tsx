@@ -36,12 +36,11 @@ import { UserGeneratedText, DogEar, Tag } from 'app/components/core'
 import UserBadges from 'app/components/user-badges'
 import { light } from 'app/haptics'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { makeStyles } from 'app/styles'
 
 import { OfflineStatusRow } from '../offline-downloads'
 
-import { CollectionSecondaryStats } from './CollectionSecondaryStats'
+import { CollectionMetadata } from './CollectionMetadata'
 import { DeletedTile } from './DeletedTile'
 import { DetailsProgressInfo } from './DetailsProgressInfo'
 import { DetailsTileActionButtons } from './DetailsTileActionButtons'
@@ -49,7 +48,7 @@ import { DetailsTileAiAttribution } from './DetailsTileAiAttribution'
 import { DetailsTileHasAccess } from './DetailsTileHasAccess'
 import { DetailsTileNoAccess } from './DetailsTileNoAccess'
 import { DetailsTileStats } from './DetailsTileStats'
-import { TrackSecondaryStats } from './TrackSecondaryStats'
+import { TrackMetadata } from './TrackMetadata'
 import type { DetailsTileProps } from './types'
 
 const { getTrackId } = playerSelectors
@@ -129,14 +128,6 @@ export const DetailsTile = ({
   ddexApp,
   releaseDate
 }: DetailsTileProps) => {
-  const { isEnabled: isNewPodcastControlsEnabled } = useFeatureFlag(
-    FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
-    FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
-  )
-  const { isEnabled: isAiGeneratedTracksEnabled } = useFeatureFlag(
-    FeatureFlags.AI_ATTRIBUTION
-  )
-
   const styles = useStyles()
   const navigation = useNavigation()
 
@@ -214,17 +205,14 @@ export const DetailsTile = ({
     getTrackPosition(state, { trackId: contentId, userId: currentUserId })
   )
 
-  const playText =
-    isNewPodcastControlsEnabled && playbackPositionInfo?.status
-      ? playbackPositionInfo?.status === 'IN_PROGRESS' || isCurrentTrack
-        ? messages.resume
-        : messages.replay
-      : messages.play
+  const playText = playbackPositionInfo?.status
+    ? playbackPositionInfo?.status === 'IN_PROGRESS' || isCurrentTrack
+      ? messages.resume
+      : messages.replay
+    : messages.play
 
   const PlayIcon =
-    isNewPodcastControlsEnabled &&
-    playbackPositionInfo?.status === 'COMPLETED' &&
-    !isCurrentTrack
+    playbackPositionInfo?.status === 'COMPLETED' && !isCurrentTrack
       ? IconRepeatOff
       : IconPlay
 
@@ -241,7 +229,7 @@ export const DetailsTile = ({
   )
 
   const badges = [
-    isAiGeneratedTracksEnabled && aiAttributionUserId ? (
+    aiAttributionUserId ? (
       <DetailsTileAiAttribution userId={aiAttributionUserId} />
     ) : null,
     isUnpublishedScheduledRelease ? (
@@ -330,7 +318,7 @@ export const DetailsTile = ({
             </TouchableOpacity>
           ) : null}
         </Flex>
-        {isLongFormContent && isNewPodcastControlsEnabled && track ? (
+        {isLongFormContent && track ? (
           <DetailsProgressInfo track={track} />
         ) : null}
         {shouldShowPlay ? (
@@ -410,9 +398,9 @@ export const DetailsTile = ({
           </Box>
         ) : null}
         {isCollection ? (
-          <CollectionSecondaryStats collectionId={contentId} />
+          <CollectionMetadata collectionId={contentId} />
         ) : (
-          <TrackSecondaryStats trackId={contentId} />
+          <TrackMetadata trackId={contentId} />
         )}
         {renderTags()}
         <OfflineStatusRow contentId={contentId} isCollection={isCollection} />

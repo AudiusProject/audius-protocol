@@ -2,7 +2,7 @@ import { Suspense, lazy, useCallback, useState } from 'react'
 
 import {
   useIsGatedContentPlaylistAddable,
-  useTrackSecondaryStats
+  useTrackMetadata
 } from '@audius/common/hooks'
 import {
   isContentUSDCPurchaseGated,
@@ -230,7 +230,7 @@ export const GiantTrackTile = ({
     { trackId },
     { enabled: !!trackId }
   )
-  const { labels } = useTrackSecondaryStats({
+  const { labels } = useTrackMetadata({
     duration: track?.duration,
     isUnlisted,
     genre: track?.genre,

@@ -6,14 +6,11 @@ import { Image } from 'react-native'
 import { Flex, Text, spacing } from '@audius/harmony-native'
 import { moodMap } from 'app/utils/moods'
 
-type SecondaryStatRowProps = PropsWithChildren<{
+type MetadataRowProps = PropsWithChildren<{
   label: string
 }>
 
-export const SecondaryStatRow = ({
-  label,
-  children
-}: SecondaryStatRowProps) => {
+export const MetadataRow = ({ label, children }: MetadataRowProps) => {
   return (
     <Flex direction='row' alignItems='center' key={label} gap='xs'>
       <Text variant='label'>{label}</Text>

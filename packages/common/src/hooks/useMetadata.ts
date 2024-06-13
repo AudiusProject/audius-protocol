@@ -2,25 +2,23 @@ import { getCanonicalName } from '../utils/genres'
 import { formatDate, formatSecondsAsText } from '../utils/timeUtil'
 import { Nullable } from '../utils/typeUtils'
 
-type SecondaryStatsProps = {
+type CollectionMetadataProps = {
   duration?: number
-  isUnlisted?: boolean
+  isPrivate?: boolean
   numTracks?: number
-  genre?: string
   releaseDate?: Nullable<string>
   updatedAt?: Nullable<string>
   isScheduledRelease?: boolean
-  mood?: Nullable<string>
 }
 
-export const useCollectionSecondaryStats = ({
+export const useCollectionMetadata = ({
   duration,
-  isUnlisted,
+  isPrivate,
   numTracks,
   updatedAt,
   releaseDate,
   isScheduledRelease
-}: SecondaryStatsProps) => {
+}: CollectionMetadataProps) => {
   const labels: { isHidden?: boolean; label: string; value: any }[] = [
     {
       label: 'Duration',
@@ -32,26 +30,36 @@ export const useCollectionSecondaryStats = ({
     {
       value: formatDate(releaseDate ?? ''),
       label: 'Released',
-      isHidden: isUnlisted || !releaseDate || isScheduledRelease
+      isHidden: isPrivate || !releaseDate || isScheduledRelease
     },
     {
       value: formatDate(updatedAt ?? ''),
       label: 'Updated',
-      isHidden: isUnlisted || !updatedAt
+      isHidden: isPrivate || !updatedAt
     }
   ].filter(({ isHidden, value }) => !isHidden && !!value)
 
   return { labels }
 }
 
-export const useTrackSecondaryStats = ({
+type TrackMetadataProps = {
+  duration?: number
+  isUnlisted?: boolean
+  genre?: string
+  releaseDate?: Nullable<string>
+  updatedAt?: Nullable<string>
+  isScheduledRelease?: boolean
+  mood?: Nullable<string>
+}
+
+export const useTrackMetadata = ({
   duration,
   isUnlisted,
   genre,
   releaseDate,
   isScheduledRelease,
   mood
-}: SecondaryStatsProps) => {
+}: TrackMetadataProps) => {
   const labels: { isHidden?: boolean; label: string; value: any }[] = [
     {
       label: 'Duration',

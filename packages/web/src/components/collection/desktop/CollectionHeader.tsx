@@ -1,7 +1,7 @@
 import { ChangeEvent, useCallback, useState } from 'react'
 
 import { useGetCurrentUserId, useGetPlaylistById } from '@audius/common/api'
-import { useCollectionSecondaryStats } from '@audius/common/hooks'
+import { useCollectionMetadata } from '@audius/common/hooks'
 import {
   AccessConditions,
   AccessPermissions,
@@ -139,7 +139,7 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
   const [filterText, setFilterText] = useState('')
   const { spacing } = useTheme()
 
-  const { labels } = useCollectionSecondaryStats({
+  const { labels } = useCollectionMetadata({
     duration,
     numTracks,
     isScheduledRelease: collection?.is_scheduled_release,

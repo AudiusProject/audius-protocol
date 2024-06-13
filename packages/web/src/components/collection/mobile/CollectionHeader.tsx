@@ -4,7 +4,7 @@ import { useGetCurrentUserId, useGetPlaylistById } from '@audius/common/api'
 import {
   useGatedContentAccessMap,
   useGatedContentAccess,
-  useCollectionSecondaryStats
+  useCollectionMetadata
 } from '@audius/common/hooks'
 import {
   Variant,
@@ -134,7 +134,7 @@ const CollectionHeader = ({
   const showPremiumSection =
     isPremiumAlbumsEnabled && isAlbum && streamConditions && collectionId
 
-  const { labels } = useCollectionSecondaryStats({
+  const { labels } = useCollectionMetadata({
     duration:
       tracks?.reduce((acc: number, track: Track) => acc + track.duration, 0) ??
       0,

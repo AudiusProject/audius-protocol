@@ -1,5 +1,5 @@
 import { useGetPlaylistById, useGetCurrentUserId } from '@audius/common/api'
-import { useCollectionSecondaryStats } from '@audius/common/hooks'
+import { useCollectionMetadata } from '@audius/common/hooks'
 import type { ID, Track } from '@audius/common/models'
 import {
   cacheCollectionsSelectors,
@@ -9,20 +9,20 @@ import { useSelector } from 'react-redux'
 
 import { Flex } from '@audius/harmony-native'
 
-import { SecondaryStatRow } from './SecondaryStatRow'
+import { MetadataRow } from './MetadataRow'
 
 const { getCollectionTracks } = cacheCollectionsSelectors
 
-type CollectionSecondaryStatsProps = {
+type CollectionMetadataProps = {
   collectionId?: ID
 }
 
 /**
  * The additional metadata shown at the bottom of the Collection Screen Headers
  */
-export const CollectionSecondaryStats = ({
+export const CollectionMetadata = ({
   collectionId
-}: CollectionSecondaryStatsProps) => {
+}: CollectionMetadataProps) => {
   const { data: currentUserId } = useGetCurrentUserId({})
   const { data: collection } = useGetPlaylistById(
     { playlistId: collectionId!, currentUserId },
@@ -38,7 +38,7 @@ export const CollectionSecondaryStats = ({
       0
     ) ?? 0
 
-  const { labels } = useCollectionSecondaryStats({
+  const { labels } = useCollectionMetadata({
     duration,
     numTracks: collection?.playlist_contents?.track_ids?.length,
     isScheduledRelease: collection?.is_scheduled_release,
@@ -49,9 +49,9 @@ export const CollectionSecondaryStats = ({
   return (
     <Flex gap='l' w='100%' direction='row' wrap='wrap'>
       {labels.map((label, i) => (
-        <SecondaryStatRow key={i} label={label.label}>
+        <MetadataRow key={i} label={label.label}>
           {label.value}
-        </SecondaryStatRow>
+        </MetadataRow>
       ))}
     </Flex>
   )
