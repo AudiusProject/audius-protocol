@@ -285,10 +285,10 @@ export const RNVideoAudioPlayer = () => {
       const imageUrl =
         cid && storageNodeSelector
           ? getImageSourceOptimistic({
-            cid,
-            endpoints: storageNodeSelector.getNodes(cid),
-            size: SquareSizes.SIZE_1000_BY_1000,
-            localSource: localTrackImageSource
+              cid,
+              endpoints: storageNodeSelector.getNodes(cid),
+              size: SquareSizes.SIZE_1000_BY_1000,
+              localSource: localTrackImageSource
           })?.uri ?? DEFAULT_IMAGE_URL
           : DEFAULT_IMAGE_URL
 
