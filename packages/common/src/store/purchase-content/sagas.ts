@@ -625,16 +625,14 @@ function* doStartPurchaseContentFlow({
   const getFeatureEnabled = yield* getContext('getFeatureEnabled')
   const audiusSdk = yield* getContext('audiusSdk')
   const sdk = yield* call(audiusSdk)
-  // const isUseSDKPurchaseTrackEnabled = yield* call(
-  //   getFeatureEnabled,
-  //   FeatureFlags.USE_SDK_PURCHASE_TRACK
-  // )
-  const isUseSDKPurchaseTrackEnabled = true
-  // const isUseSDKPurchaseAlbumEnabled = yield* call(
-  //   getFeatureEnabled,
-  //   FeatureFlags.USE_SDK_PURCHASE_ALBUM
-  // )
-  const isUseSDKPurchaseAlbumEnabled = true
+  const isUseSDKPurchaseTrackEnabled = yield* call(
+    getFeatureEnabled,
+    FeatureFlags.USE_SDK_PURCHASE_TRACK
+  )
+  const isUseSDKPurchaseAlbumEnabled = yield* call(
+    getFeatureEnabled,
+    FeatureFlags.USE_SDK_PURCHASE_ALBUM
+  )
 
   const { price, title, artistInfo, purchaseAccess } = yield* call(
     getContentInfo,

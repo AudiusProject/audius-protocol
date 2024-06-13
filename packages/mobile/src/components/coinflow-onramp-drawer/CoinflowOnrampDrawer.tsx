@@ -74,10 +74,6 @@ export const CoinflowOnrampDrawer = () => {
     VersionedTransaction | undefined
   >(undefined)
 
-  const deviceId = getCoinflowDeviceId()
-
-  const adapter = useCoinflowAdapter()
-
   useEffect(() => {
     if (serializedTransaction) {
       console.log({ serializedTransaction })
@@ -102,6 +98,8 @@ export const CoinflowOnrampDrawer = () => {
     onClose()
   }, [dispatch, onClose])
 
+  const adapter = useCoinflowAdapter({ onSuccess: handleSuccess })
+  const deviceId = getCoinflowDeviceId()
   const showContent = isOpen && adapter
 
   return (

@@ -33,8 +33,6 @@ export const CoinflowOnrampModal = () => {
     VersionedTransaction | undefined
   >(undefined)
 
-  const adapter = useCoinflowAdapter()
-
   useEffect(() => {
     if (serializedTransaction) {
       try {
@@ -58,6 +56,7 @@ export const CoinflowOnrampModal = () => {
     onClose()
   }, [dispatch, onClose])
 
+  const adapter = useCoinflowAdapter({ onSuccess: handleSuccess })
   const showContent = isOpen && adapter
 
   return (

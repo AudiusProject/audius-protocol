@@ -119,14 +119,14 @@ export const useCoinflowWithdrawalAdapter = () => {
 
 /** An adapter for signing and sending unmodified Coinflow transactions. Will partialSign with the
  * current user's Solana root wallet and send/confirm locally (no relay).
+ * @param onSuccess optional callback to invoke when the relay succeeds
  */
-export const useCoinflowAdapter = () => {
+export const useCoinflowAdapter = ({ onSuccess }: { onSuccess: () => void }) => {
   const { audiusBackend } = useAppContext()
   const [adapter, setAdapter] = useState<CoinflowAdapter | null>(null)
-  // const { isEnabled: isUseSDKPurchaseTrackEnabled } = useFeatureFlag(
-  //   FeatureFlags.USE_SDK_PURCHASE_TRACK
-  // )
-  const isUseSDKPurchaseTrackEnabled = true
+  const { isEnabled: isUseSDKPurchaseTrackEnabled } = useFeatureFlag(
+    FeatureFlags.USE_SDK_PURCHASE_TRACK
+  )
   const { audiusSdk } = useAudiusQueryContext()
 
   useEffect(() => {
@@ -161,9 +161,12 @@ export const useCoinflowAdapter = () => {
 
                 // Send to relay to make use of retry and caching logic
                 const { signature } = await sdk.services.solanaRelay.relay({
-                  transaction
+                  transaction,
+                  sendOptions: {
+                    skipPreflight: true
+                  }
                 })
-                console.log('relayed response', signature)
+                onSuccess()
                 return signature
               } else {
                 const transaction = tx as Transaction
@@ -195,6 +198,7 @@ export const useCoinflowAdapter = () => {
                     }`
                   )
                 }
+                onSuccess()
                 return res
               }
             } catch (e) {
