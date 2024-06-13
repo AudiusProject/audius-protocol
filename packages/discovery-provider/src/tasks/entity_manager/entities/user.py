@@ -334,7 +334,7 @@ def update_user_metadata(
         # Update the user_record when the corresponding field exists
         # in metadata
         if key in metadata:
-            if key in immutable_user_fields and env != "dev":
+            if key in immutable_user_fields:
                 continue
             setattr(user_record, key, metadata[key])
 
