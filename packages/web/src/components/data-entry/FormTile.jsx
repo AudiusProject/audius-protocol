@@ -323,9 +323,6 @@ const AdvancedForm = (props) => {
   const { isEnabled: isGatedContentEnabled } = useFlag(
     FeatureFlags.GATED_CONTENT_ENABLED
   )
-  const { isEnabled: isScheduledReleasesEnabled } = useFlag(
-    FeatureFlags.SCHEDULED_RELEASES
-  )
 
   const {
     remixSettingsModalVisible,
@@ -520,13 +517,11 @@ const AdvancedForm = (props) => {
               onClick={() => setAiAttributionModalVisible(true)}
             />
           )}
-          {isScheduledReleasesEnabled && (
-            <ReleaseDateTriggerLegacy
-              didUpdateState={didUpdateReleaseDate}
-              metadataState={releaseDateState}
-              initialForm={props.initialForm}
-            />
-          )}
+          <ReleaseDateTriggerLegacy
+            didUpdateState={didUpdateReleaseDate}
+            metadataState={releaseDateState}
+            initialForm={props.initialForm}
+          />
           {props.type !== 'track' && (
             <LabeledInput
               label='UPC'

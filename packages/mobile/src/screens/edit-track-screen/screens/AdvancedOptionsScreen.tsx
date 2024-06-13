@@ -1,8 +1,6 @@
-import { FeatureFlags } from '@audius/common/services'
 import { View } from 'react-native'
 
 import { IconIndent } from '@audius/harmony-native'
-import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 
 import { FormScreen } from '../components'
 import {
@@ -17,10 +15,6 @@ const messages = {
 }
 
 export const AdvancedOptionsScreen = () => {
-  const { isEnabled: isScheduledReleasesEnabled } = useFeatureFlag(
-    FeatureFlags.SCHEDULED_RELEASES
-  )
-
   return (
     <FormScreen
       title={messages.screenTitle}
@@ -29,7 +23,7 @@ export const AdvancedOptionsScreen = () => {
       variant='white'
     >
       <View>
-        {isScheduledReleasesEnabled ? null : <ReleaseDateFieldLegacy />}
+        <ReleaseDateFieldLegacy />
         <SubmenuList>
           <IsrcField />
           <LicenseTypeField />
