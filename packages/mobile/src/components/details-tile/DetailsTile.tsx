@@ -2,7 +2,6 @@ import { useCallback } from 'react'
 
 import { useGatedContentAccessMap } from '@audius/common/hooks'
 import { isContentUSDCPurchaseGated } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import {
   accountSelectors,
   playerSelectors,
