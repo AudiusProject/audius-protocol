@@ -103,6 +103,7 @@ def search_es_full(args: dict):
                     search_str=search_str,
                     current_user_id=current_user_id,
                     genres=genres,
+                    moods=moods,
                 ),
             ]
         )
@@ -116,6 +117,7 @@ def search_es_full(args: dict):
                     search_str=search_str,
                     current_user_id=current_user_id,
                     genres=genres,
+                    moods=moods,
                 ),
             ]
         )
@@ -663,7 +665,9 @@ def user_dsl(
     return query
 
 
-def base_playlist_dsl(search_str, is_album, genres, current_user_id, must_saved=False):
+def base_playlist_dsl(
+    search_str, is_album, genres, moods, current_user_id, must_saved=False
+):
     dsl = {
         "must": [
             {
@@ -778,6 +782,39 @@ def base_playlist_dsl(search_str, is_album, genres, current_user_id, must_saved=
                 }
             )
 
+    if moods:
+        capitalized_moods = list(
+            filter(
+                None,
+                [get_capitalized_mood(mood) for mood in moods if mood is not None],
+            )
+        )
+        if capitalized_moods:
+            # At least one track moods must match
+            dsl["must"].append({"terms": {"tracks.mood": capitalized_moods}})
+            # Logarithmically boost profiles with multiple tracks matching mood
+            query["query"]["function_score"]["functions"].append(
+                {
+                    "script_score": {
+                        "script": {
+                            "source": """
+                                double matchedTracks = 0;
+                                for (track in params['_source'].tracks) {
+                                    if (params.moods.contains(track.mood)) {
+                                        matchedTracks++;
+                                    }
+                                }
+                                return Math.log(1 + matchedTracks) * params.boost;
+                            """,
+                            "params": {
+                                "moods": capitalized_moods,
+                                "boost": 2,
+                            },
+                        }
+                    },
+                }
+            )
+
     personalize_dsl(dsl, current_user_id, must_saved)
 
     # Set the dsl on the query object
@@ -785,12 +822,16 @@ def base_playlist_dsl(search_str, is_album, genres, current_user_id, must_saved=
     return query
 
 
-def playlist_dsl(search_str, current_user_id, must_saved=False, genres=[]):
-    return base_playlist_dsl(search_str, False, genres, current_user_id, must_saved)
+def playlist_dsl(search_str, current_user_id, must_saved=False, genres=[], moods=[]):
+    return base_playlist_dsl(
+        search_str, False, genres, moods, current_user_id, must_saved
+    )
 
 
-def album_dsl(search_str, current_user_id, must_saved=False, genres=[]):
-    return base_playlist_dsl(search_str, False, genres, current_user_id, must_saved)
+def album_dsl(search_str, current_user_id, must_saved=False, genres=[], moods=[]):
+    return base_playlist_dsl(
+        search_str, False, genres, moods, current_user_id, must_saved
+    )
 
 
 def reorder_users(users):
