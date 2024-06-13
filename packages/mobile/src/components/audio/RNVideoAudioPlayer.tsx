@@ -262,7 +262,7 @@ export const RNVideoAudioPlayer = () => {
           queryParams = await getQueryParams({
             audiusBackendInstance,
             nftAccessSignature,
-            userId: currentUserId || undefined
+            userId: currentUserId
           })
           trackQueryParams.current[trackId] = queryParams
         }
