@@ -76,7 +76,6 @@ export const CoinflowOnrampDrawer = () => {
 
   useEffect(() => {
     if (serializedTransaction) {
-      console.log({ serializedTransaction })
       try {
         const tx = VersionedTransaction.deserialize(
           Buffer.from(serializedTransaction, 'base64')
