@@ -71,11 +71,7 @@ const Divider = (props) => {
 }
 
 const BasicForm = (props) => {
-  const { isEnabled: isGatedContentEnabled } = useFlag(
-    FeatureFlags.GATED_CONTENT_ENABLED
-  )
   const {
-    remixSettingsModalVisible,
     setRemixSettingsModalVisible,
     aiAttributionModalVisible,
     setAiAttributionModalVisible,
@@ -187,34 +183,6 @@ const BasicForm = (props) => {
     )
   }
 
-  const renderRemixSettingsModal = () => {
-    return (
-      <ConnectedRemixSettingsModal
-        initialTrackId={
-          props.defaultFields.remix_of?.tracks?.[0]?.parent_track_id
-        }
-        isStreamGated={props.defaultFields.is_stream_gated ?? false}
-        streamConditions={props.defaultFields.stream_conditions ?? null}
-        isRemix={isRemix}
-        setIsRemix={setIsRemix}
-        isOpen={remixSettingsModalVisible}
-        onClose={(trackId) => {
-          if (!trackId) {
-            setIsRemix(false)
-            props.onChangeField('remix_of', null)
-          } else if (isRemix) {
-            props.onChangeField(
-              'remix_of',
-              createRemixOfMetadata({ parentTrackId: trackId })
-            )
-          }
-          setRemixSettingsModalVisible(false)
-        }}
-        onChangeField={props.onChangeField}
-      />
-    )
-  }
-
   const renderAiAttributionModal = () => {
     return (
       <AiAttributionModal
@@ -233,7 +201,7 @@ const BasicForm = (props) => {
   }, [isRemix, setIsRemix, setRemixSettingsModalVisible, onChangeField])
 
   const renderRemixSwitch = () => {
-    const shouldRender = props.type === 'track' && !isGatedContentEnabled
+    const shouldRender = props.type === 'track'
     return (
       shouldRender && (
         <div className={styles.remixSwitch}>
@@ -313,16 +281,12 @@ const BasicForm = (props) => {
     <div className={styles.basicContainer}>
       {renderBasicForm()}
       {renderBottomMenu()}
-      {!isGatedContentEnabled && renderRemixSettingsModal()}
       {renderAiAttributionModal()}
     </div>
   )
 }
 
 const AdvancedForm = (props) => {
-  const { isEnabled: isGatedContentEnabled } = useFlag(
-    FeatureFlags.GATED_CONTENT_ENABLED
-  )
   const { isEnabled: isScheduledReleasesEnabled } = useFlag(
     FeatureFlags.SCHEDULED_RELEASES
   )
@@ -622,7 +586,7 @@ const AdvancedForm = (props) => {
           <br />
           {props.licenseDescription}
         </div>
-        {isGatedContentEnabled && renderRemixSettingsModal()}
+        {renderRemixSettingsModal()}
         {renderAiAttributionModal()}
       </div>
     </>
