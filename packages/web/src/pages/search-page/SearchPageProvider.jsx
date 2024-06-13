@@ -101,7 +101,7 @@ class SearchPageProvider extends Component {
     } else {
       this.props.dispatch(
         searchPageActions.fetchSearchPageResults({
-          query,
+          searchText: query,
           kind: searchKind,
           limit,
           offset
