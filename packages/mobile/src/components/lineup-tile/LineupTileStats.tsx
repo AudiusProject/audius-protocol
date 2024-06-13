@@ -46,7 +46,7 @@ const formatPlayCount = (playCount?: number) => {
 }
 
 const messages = {
-  artistPick: "Artist's Pick",
+  artistPick: 'Artist Pick',
   hiddenTrack: 'Hidden Track'
 }
 
