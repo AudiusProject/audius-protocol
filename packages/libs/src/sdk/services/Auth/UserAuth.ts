@@ -51,7 +51,6 @@ export class UserAuth implements AuthService {
     }
 
     const setAuth: SetAuthFn = async (params) => {
-      console.info({ params }, "setAuth params")
       return fetch(`${this.config.identityService}/authentication`, {
         method: 'post',
         body: JSON.stringify(params)
