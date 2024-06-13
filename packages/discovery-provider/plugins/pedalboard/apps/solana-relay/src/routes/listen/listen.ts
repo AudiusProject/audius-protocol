@@ -181,8 +181,7 @@ export const listen = async (req: Request, res: Response) => {
       req.body
     )
     const { trackId } = recordListenParamsSchema.parse(req.params)
-    const host = req.hostname
-    logger = res.locals.logger.child({ userId, trackId, host, })
+    logger = res.locals.logger.child({ userId, trackId })
     const ip = getIP(req)
 
     // require request came from content
