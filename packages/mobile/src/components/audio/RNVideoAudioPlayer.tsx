@@ -34,7 +34,6 @@ import { useDispatch, useSelector } from 'react-redux'
 import { usePrevious } from 'react-use'
 import { useFeatureFlag } from '~/hooks'
 import { FeatureFlags } from '~/services'
-import { getUserId } from '~/store/account/selectors'
 
 import { DEFAULT_IMAGE_URL } from 'app/components/image/TrackImage'
 import { getImageSourceOptimistic } from 'app/hooks/useContentNodeImage'
