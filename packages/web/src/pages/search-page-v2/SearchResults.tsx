@@ -99,7 +99,7 @@ export const SearchResults = ({ query }: SearchResultsProps) => {
   const sort = urlSearchParams.get('sort')
   const genre = urlSearchParams.get('genre')
   const mood = urlSearchParams.get('mood')
-  const isVerified = urlSearchParams.get('is_verified')
+  const isVerified = urlSearchParams.get('isVerified')
 
   const isLoading = results.status === Status.LOADING
   const dispatch = useDispatch()
