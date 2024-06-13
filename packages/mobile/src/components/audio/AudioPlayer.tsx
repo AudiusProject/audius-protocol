@@ -403,7 +403,8 @@ export const AudioPlayer = () => {
       offlineAvailabilityByTrackId,
       queueTrackOwnersMap,
       storageNodeSelector,
-      trackStreamUrls
+      trackStreamUrls,
+      currentUserId
     ]
   )
 
