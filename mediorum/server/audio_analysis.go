@@ -88,17 +88,8 @@ func (ss *MediorumServer) startAudioAnalyzer() {
 }
 
 func (ss *MediorumServer) findMissedAnalysisJobs(work chan *Upload, myHost string) {
-	queryStartTime := time.Now().UTC()
 	uploads := []*Upload{}
 	ss.crud.DB.Where("status in ?", []string{JobStatusAudioAnalysis, JobStatusBusyAudioAnalysis}).Find(&uploads)
-	queryElapsedTime := time.Since(queryStartTime)
-
-	// extract and log the upload IDs for debugging
-	var ids []string
-	for _, upload := range uploads {
-		ids = append(ids, upload.ID)
-	}
-	ss.logger.Info("found new or busy audio analysis jobs", "upload_ids", strings.Join(ids, ", "), "count", len(ids), "query_elapsed_time", queryElapsedTime, "query_start_time", queryStartTime)
 
 	for _, upload := range uploads {
 		myIdx := slices.Index(upload.TranscodedMirrors, myHost)
@@ -118,7 +109,6 @@ func (ss *MediorumServer) findMissedAnalysisJobs(work chan *Upload, myHost strin
 			ss.logger.Warn("audio analysis timed out", "upload", upload.ID, "upload_debug", upload)
 
 			upload.AudioAnalysisStatus = JobStatusTimeout
-			// upload.AudioAnalysisErrorCount = upload.AudioAnalysisErrorCount + 1
 			upload.Status = JobStatusDone
 			ss.crud.Update(upload)
 			continue
@@ -264,8 +254,6 @@ func (ss *MediorumServer) analyzeAudio(upload *Upload) error {
 	keyChan := make(chan string)
 	errorChan := make(chan error)
 
-	var mu sync.Mutex
-
 	// goroutine to analyze BPM
 	go func() {
 		bpm, err := ss.analyzeBPM(wavFile)
@@ -294,6 +282,9 @@ func (ss *MediorumServer) analyzeAudio(upload *Upload) error {
 		keyChan <- musicalKey
 	}()
 
+	var mu sync.Mutex
+	firstResult := true
+
 	for i := 0; i < 2; i++ {
 		select {
 		case bpm := <-bpmChan:
@@ -302,6 +293,10 @@ func (ss *MediorumServer) analyzeAudio(upload *Upload) error {
 				upload.AudioAnalysisResults = &AudioAnalysisResult{}
 			}
 			upload.AudioAnalysisResults.BPM = bpm
+			if !firstResult {
+				ss.crud.Update(upload)
+				firstResult = false
+			}
 			mu.Unlock()
 		case musicalKey := <-keyChan:
 			mu.Lock()
@@ -309,13 +304,17 @@ func (ss *MediorumServer) analyzeAudio(upload *Upload) error {
 				upload.AudioAnalysisResults = &AudioAnalysisResult{}
 			}
 			upload.AudioAnalysisResults.Key = musicalKey
+			if !firstResult {
+				ss.crud.Update(upload)
+				firstResult = false
+			}
 			mu.Unlock()
 		case err := <-errorChan:
 			return onError(err)
 		}
 	}
 
-	// success
+	// all analyses complete
 	upload.AudioAnalysisError = ""
 	upload.AudioAnalyzedAt = time.Now().UTC()
 	upload.AudioAnalysisStatus = JobStatusDone
@@ -359,21 +358,21 @@ func (ss *MediorumServer) analyzeBPM(filename string) (float64, error) {
 			if len(parts) == 2 {
 				bpm, err = strconv.ParseFloat(parts[1], 64)
 				if err != nil {
-					return 0, err
+					return 0, fmt.Errorf("failed to parse BPM from output %s: %v", outputStr, err)
 				}
 			}
 		}
 	}
 
 	if bpm == 0 {
-		return 0, fmt.Errorf("failed to parse BPM from output: %s", outputStr)
+		return 0, fmt.Errorf("failed to parse BPM from output %s", outputStr)
 	}
 
 	// Round float to 1 decimal place
 	bpmRoundedStr := strconv.FormatFloat(bpm, 'f', 1, 64)
 	bpmRounded, err := strconv.ParseFloat(bpmRoundedStr, 64)
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("failed to parse formatted BPM string %s: %v", bpmRoundedStr, err)
 	}
 
 	return bpmRounded, nil
