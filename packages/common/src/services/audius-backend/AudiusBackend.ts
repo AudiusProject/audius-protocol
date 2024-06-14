@@ -2274,7 +2274,7 @@ export const audiusBackend = ({
     if (!account) return
     try {
       const { data, signature } = await signData()
-      const res = await fetch(`${identityServiceUrl}/notifications/settings`, {
+      const res = await fetch(`${identityServiceUrl}/notifications/settings?actingUserId=${account.user_id}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

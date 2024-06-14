@@ -5,6 +5,7 @@ const { sendResponse, errorResponseBadRequest } = require('./apiHelpers')
 const models = require('./models')
 
 const audiusLibsWrapper = require('./audiusLibsInstance')
+const { encodeHashId } = require('./notifications/utils')
 
 /**
  * queryDiscprovForUserId - Queries the discovery provider for the user w/ the walletaddress
@@ -39,6 +40,53 @@ const queryDiscprovForUserId = async (walletAddress, handle) => {
 }
 
 /**
+ * queryDiscprovForUserId - Queries the discovery provider for the user w/ the walletaddress
+ * @param {number} managerWalletAddress
+ * @param {number} actingUserId
+ * @param {number} authHeaders authentication headers from the manager account
+ * @returns boolean whether or not the managagingUserId manages actingUserId
+ */
+const getManagedUser = async (
+  managerWalletAddress,
+  actingUserId,
+  authHeaders
+) => {
+  const { discoveryProvider } = audiusLibsWrapper.getAudiusLibs()
+
+  const response = await axios({
+    method: 'get',
+    url: `${
+      discoveryProvider.discoveryProviderEndpoint
+    }/v1/full/users/${encodeHashId(actingUserId)}/managers`,
+    headers: authHeaders
+  })
+
+  if (!Array.isArray(response.data.data) || !(response.data.data.length >= 1)) {
+    throw new Error('Unable to retrieve managers from discovery provder')
+  }
+  const managersList = response.data.data
+  if (
+    managersList
+      .map((m) => m.erc_wallet)
+      .includes(managerWalletAddress.toLowerCase())
+  ) {
+    const user = await models.User.findOne({
+      where: { blockchainUserId: actingUserId },
+      attributes: [
+        'id',
+        'blockchainUserId',
+        'walletAddress',
+        'createdAt',
+        'handle'
+      ]
+    })
+    return user
+  } else {
+    throw new Error('Manager not permitted')
+  }
+}
+
+/**
  * Authentication Middleware
  * 1) Using the `Encoded-Data-Message` & `Encoded-Data-Signature` header recover the wallet address
  * 2) If a user in the `Users` table with the `walletAddress` value, attach that user to the request
@@ -49,6 +97,7 @@ async function authMiddleware(req, res, next) {
     const encodedDataMessage = req.get('Encoded-Data-Message')
     const signature = req.get('Encoded-Data-Signature')
     const handle = req.query.handle
+    const actingUserId = req.query.actingAsUserId
 
     if (!encodedDataMessage) throw new Error('[Error]: Encoded data missing')
     if (!signature) throw new Error('[Error]: Encoded data signature missing')
@@ -57,6 +106,7 @@ async function authMiddleware(req, res, next) {
       data: encodedDataMessage,
       sig: signature
     })
+
     let user = await models.User.findOne({
       where: { walletAddress },
       attributes: [
@@ -67,22 +117,32 @@ async function authMiddleware(req, res, next) {
         'handle'
       ]
     })
-    if (!user)
-      throw new Error(
-        `[Error]: no user found for wallet address ${walletAddress}`
-      )
-
-    // This overwrites any provisionally set handles (b/c blockchainUserId is never set with those),
-    // ensuring that the user.handle always represents the latest state on chain
-    if (!user.blockchainUserId || !user.handle) {
-      const discprovUser = await queryDiscprovForUserId(walletAddress, handle)
-      user = await user.update({
-        blockchainUserId: discprovUser.user_id,
-        handle: discprovUser.handle
+    // We are managing someone else
+    if (actingUserId && actingUserId !== user.blockchainUserId) {
+      const actingUser = await getManagedUser(walletAddress, actingUserId, {
+        'Encoded-Data-Message': encodedDataMessage,
+        'Encoded-Data-Signature': signature
       })
+      req.user = actingUser
+      next()
+    } else {
+      if (!user)
+        throw new Error(
+          `[Error]: no user found for wallet address ${walletAddress}`
+        )
+
+      // This overwrites any provisionally set handles (b/c blockchainUserId is never set with those),
+      // ensuring that the user.handle always represents the latest state on chain
+      if (!user.blockchainUserId || !user.handle) {
+        const discprovUser = await queryDiscprovForUserId(walletAddress, handle)
+        user = await user.update({
+          blockchainUserId: discprovUser.user_id,
+          handle: discprovUser.handle
+        })
+      }
+      req.user = user
+      next()
     }
-    req.user = user
-    next()
   } catch (err) {
     const errorResponse = errorResponseBadRequest(
       `[Error]: The wallet address is not associated with a user id ${err}`
