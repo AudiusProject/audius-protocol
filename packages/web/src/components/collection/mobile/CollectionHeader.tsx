@@ -39,6 +39,7 @@ import ActionButtonRow from 'pages/track-page/components/mobile/ActionButtonRow'
 import { isShareToastDisabled } from 'utils/clipboardUtil'
 import { isDarkMode } from 'utils/theme/theme'
 
+import { CollectionMetadataList } from '../CollectionMetadataList'
 import { RepostsFavoritesStats } from '../components/RepostsFavoritesStats'
 import { CollectionHeaderProps } from '../types'
 
@@ -133,16 +134,6 @@ const CollectionHeader = ({
 
   const showPremiumSection =
     isPremiumAlbumsEnabled && isAlbum && streamConditions && collectionId
-
-  const { labels } = useCollectionMetadata({
-    duration:
-      tracks?.reduce((acc: number, track: Track) => acc + track.duration, 0) ??
-      0,
-    numTracks: collection?.playlist_contents?.track_ids?.length,
-    isScheduledRelease: collection?.is_scheduled_release,
-    releaseDate: collection?.release_date,
-    updatedAt: collection?.updated_at
-  })
 
   const onSaveCollection = () => {
     if (!isOwner) onSave?.()
@@ -340,15 +331,7 @@ const CollectionHeader = ({
             {description}
           </UserGeneratedText>
         ) : null}
-        <Flex direction='row' gap='l' wrap='wrap'>
-          {labels.map(({ label, value }) => {
-            return (
-              <MetadataItem key={label} label={label}>
-                {value}
-              </MetadataItem>
-            )
-          })}
-        </Flex>
+        <CollectionMetadataList collectionId={collectionId} />
       </Flex>
     </Flex>
   )

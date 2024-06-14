@@ -1,7 +1,6 @@
 import { ChangeEvent, useCallback, useState } from 'react'
 
-import { useGetCurrentUserId, useGetPlaylistById } from '@audius/common/api'
-import { useCollectionMetadata } from '@audius/common/hooks'
+import { useGetCurrentUserId } from '@audius/common/api'
 import {
   AccessConditions,
   AccessPermissions,
@@ -36,10 +35,10 @@ import cn from 'classnames'
 import { UserLink } from 'components/link'
 import Skeleton from 'components/skeleton/Skeleton'
 import { GatedContentSection } from 'components/track/GatedContentSection'
-import { MetadataItem } from 'components/track/MetadataItem'
 import { UserGeneratedText } from 'components/user-generated-text'
 import { useFlag } from 'hooks/useRemoteConfig'
 
+import { CollectionMetadataList } from '../CollectionMetadataList'
 import { RepostsFavoritesStats } from '../components/RepostsFavoritesStats'
 
 import { Artwork } from './Artwork'
@@ -103,9 +102,7 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
     coverArtSizes,
     description,
     isOwner,
-    numTracks,
     isPlayable,
-    duration,
     isPublished,
     tracksLoading,
     loading,
@@ -131,21 +128,9 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
     FeatureFlags.PREMIUM_ALBUMS_ENABLED
   )
   const { data: currentUserId } = useGetCurrentUserId({})
-  const { data: collection } = useGetPlaylistById({
-    playlistId: collectionId,
-    currentUserId
-  })
   const [artworkLoading, setIsArtworkLoading] = useState(true)
   const [filterText, setFilterText] = useState('')
   const { spacing } = useTheme()
-
-  const { labels } = useCollectionMetadata({
-    duration,
-    numTracks,
-    isScheduledRelease: collection?.is_scheduled_release,
-    releaseDate: collection?.release_date,
-    updatedAt: collection?.updated_at
-  })
 
   const hasStreamAccess = access?.stream
 
@@ -342,15 +327,7 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
               {description}
             </UserGeneratedText>
           ) : null}
-          <Flex direction='row' gap='l' wrap='wrap'>
-            {labels.map(({ label, value }) => {
-              return (
-                <MetadataItem key={label} label={label}>
-                  {value}
-                </MetadataItem>
-              )
-            })}
-          </Flex>
+          <CollectionMetadataList collectionId={collectionId} />
         </Flex>
       )}
     </Flex>

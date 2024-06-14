@@ -21,7 +21,6 @@ type TrackMetadataInfo = {
   id: TrackMetadataType
   label: string
   value: string
-  // isHidden?: boolean
 }
 
 export const useTrackMetadata = ({
@@ -30,28 +29,36 @@ export const useTrackMetadata = ({
   const { data: track } = useGetTrackById({ id: trackId })
   if (!track) return []
 
+  const {
+    duration,
+    genre,
+    release_date: releaseDate,
+    is_scheduled_release: isScheduledRelease,
+    mood,
+    is_unlisted: isUnlisted
+  } = track
+
   const labels: TrackMetadataInfo[] = [
     {
       id: TrackMetadataType.DURATION,
       label: 'Duration',
-      value: formatSecondsAsText(track.duration ?? 0)
+      value: formatSecondsAsText(duration)
     },
     {
       id: TrackMetadataType.GENRE,
       label: 'Genre',
-      value: getCanonicalName(track?.genre)
+      value: getCanonicalName(genre)
     },
     {
       id: TrackMetadataType.RELEASE_DATE,
-      value: formatDate(track.release_date ?? ''),
+      value: formatDate(releaseDate ?? ''),
       label: 'Released',
-      isHidden:
-        track.is_unlisted || !track.release_date || track.is_scheduled_release
+      isHidden: isUnlisted || !releaseDate || isScheduledRelease
     },
     {
       id: TrackMetadataType.MOOD,
       label: 'Mood',
-      value: track.mood
+      value: mood
     }
   ].filter(({ isHidden, value }) => !isHidden && !!value)
 

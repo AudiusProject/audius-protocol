@@ -39,7 +39,7 @@ import { makeStyles } from 'app/styles'
 
 import { OfflineStatusRow } from '../offline-downloads'
 
-import { CollectionMetadata } from './CollectionMetadata'
+import { CollectionMetadataList } from './CollectionMetadataList'
 import { DeletedTile } from './DeletedTile'
 import { DetailsProgressInfo } from './DetailsProgressInfo'
 import { DetailsTileActionButtons } from './DetailsTileActionButtons'
@@ -398,7 +398,7 @@ export const DetailsTile = ({
         ) : null}
         {isCollection ? (
           contentId ? (
-            <CollectionMetadata collectionId={contentId} />
+            <CollectionMetadataList collectionId={contentId} />
           ) : null
         ) : contentId ? (
           <TrackMetadataList trackId={contentId} />
