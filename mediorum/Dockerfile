@@ -76,7 +76,7 @@ RUN g++ -o /bin/analyze-key /app/cpp/keyfinder.cpp -I/usr/local/include -L/usr/l
     chmod +x /bin/analyze-key
 
 # Compile the bpm analyzer C++ executable
-RUN g++ -o /bin/analyze-bpm cpp/bpm-analyzer.cpp -I/usr/include/eigen3 -I/usr/local/include/essentia -I/usr/local/include -L/usr/local/lib -lessentia -lavcodec -lavformat -lavutil -lavfilter -lsamplerate -ltag -lyaml -lfftw3 -lfftw3f -lfftw3l -lfftw3_threads -lfftw3f_threads -lfftw3l_threads -lavresample -lswresample -lchromaprint && \
+RUN g++ -o /bin/analyze-bpm /app/cpp/bpm-analyzer.cpp -I/usr/include/eigen3 -I/usr/local/include/essentia -I/usr/local/include -L/usr/local/lib -lessentia -lavcodec -lavformat -lavutil -lavfilter -lsamplerate -ltag -lyaml -lfftw3 -lfftw3f -lfftw3l -lfftw3_threads -lfftw3f_threads -lfftw3l_threads -lavresample -lswresample -lchromaprint && \
     chmod +x /bin/analyze-bpm
 
 # ARGs can be optionally defined with --build-arg while doing docker build eg in CI and then set to env vars
