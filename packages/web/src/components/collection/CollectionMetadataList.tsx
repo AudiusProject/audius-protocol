@@ -2,7 +2,7 @@ import { useCollectionMetadata } from '@audius/common/hooks'
 import { ID } from '@audius/common/models'
 import { Flex } from '@audius/harmony'
 
-import { MetadataItem } from 'components/track/MetadataItem'
+import { MetadataItem } from 'components/entity/MetadataItem'
 
 type CollectionMetadataListProps = {
   collectionId: ID

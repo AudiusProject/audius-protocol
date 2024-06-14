@@ -13,12 +13,11 @@ import { Flex } from '@audius/harmony'
 import { Mood } from '@audius/sdk'
 import { generatePath } from 'react-router-dom'
 
+import { MetadataItem } from 'components/entity/MetadataItem'
 import { TextLink } from 'components/link'
 import { moodMap } from 'utils/Moods'
 import { SEARCH_PAGE } from 'utils/route'
 import { trpc } from 'utils/trpcClientWeb'
-
-import { MetadataItem } from './MetadataItem'
 
 type TrackMetadataListProps = {
   trackId: ID
