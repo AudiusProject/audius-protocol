@@ -34,7 +34,6 @@ export const GatedContentLabel = ({
   isOwner: boolean
 }) => {
   const { color } = useTheme()
-  const shouldShowColor = isOwner || !hasStreamAccess
   let message = messages.specialAccess
   let IconComponent = IconSpecialAccess
   let specialColor = color.icon.default
@@ -53,7 +52,9 @@ export const GatedContentLabel = ({
     IconComponent = IconCart
     specialColor = color.special.lightGreen
   }
-  const finalColor = shouldShowColor ? specialColor : color.icon.default
+
+  const finalColor =
+    isOwner || !hasStreamAccess ? specialColor : color.icon.default
 
   return (
     <Flex alignItems='center' gap='xs' w='100%'>
