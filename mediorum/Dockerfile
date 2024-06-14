@@ -18,7 +18,7 @@ COPY . .
 RUN go build
 RUN go build -o mediorum-cmd cmd/main.go
 
-FROM golang:1.22-bullseye AS final
+FROM debian:bullseye AS final
 
 RUN apt-get update && apt-get install -y \
     build-essential \
@@ -31,21 +31,13 @@ RUN apt-get update && apt-get install -y \
     ffmpeg \
     libmp3lame-dev \
     python3.9 \
-    python3.9-venv \
-    python3.9-dev \
     python3-pip
 
 # libKeyFinder dependencies
 RUN apt-get install -y libsndfile1-dev
 
 # essentia dependencies
-RUN apt-get install -y build-essential libeigen3-dev libyaml-dev libfftw3-dev libavcodec-dev libavformat-dev libavutil-dev libswresample-dev libavresample-dev libsamplerate0-dev libtag1-dev libchromaprint-dev libavfilter-dev
-
-# Create and activate a virtual environment
-RUN python3.9 -m venv /opt/venv
-ENV PATH="/opt/venv/bin:$PATH"
-
-RUN pip install numpy
+RUN apt-get install -y libeigen3-dev libyaml-dev libfftw3-dev libavcodec-dev libavformat-dev libavutil-dev libswresample-dev libavresample-dev libsamplerate0-dev libtag1-dev libchromaprint-dev libavfilter-dev
 
 # Build and install libkeyfinder
 RUN git clone https://github.com/mixxxdj/libKeyFinder.git /libKeyFinder
@@ -55,7 +47,7 @@ RUN cmake -DCMAKE_INSTALL_PREFIX=/usr/local -DBUILD_TESTING=OFF -S . -B build &&
     cmake --install build
 
 # Clone and build Essentia
-ENV PKG_CONFIG_PATH="/usr/local/lib/pkgconfig:/usr/lib/pkgconfig"
+ENV PKG_CONFIG_PATH="/usr/local/lib/pkgconfig:/usr/lib/pkgconfig:/usr/lib/aarch64-linux-gnu/pkgconfig"
 ENV LD_LIBRARY_PATH="/usr/local/lib:/usr/lib"
 RUN git clone https://github.com/MTG/essentia.git /essentia
 WORKDIR /essentia
