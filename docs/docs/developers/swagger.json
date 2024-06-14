@@ -1,0 +1,2142 @@
+{
+  "swagger": "2.0",
+  "basePath": "https://discoveryprovider.audius.co/v1",
+  "paths": {
+    "/dashboard_wallet_users": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": { "$ref": "#/definitions/dashboard_wallet_users_response" }
+          },
+          "400": { "description": "Bad request" },
+          "404": { "description": "No such dashboard wallets" },
+          "500": { "description": "Server error" }
+        },
+        "description": "Gets Audius user profiles connected to given dashboard wallet addresses",
+        "operationId": "Bulk get dashboard wallet users",
+        "parameters": [
+          {
+            "name": "wallets",
+            "in": "query",
+            "type": "array",
+            "required": true,
+            "items": { "type": "string" },
+            "collectionFormat": "csv",
+            "description": "The wallets for which to fetch connected Audius user profiles."
+          }
+        ],
+        "tags": ["dashboard_wallet_users"]
+      }
+    },
+    "/developer_apps/{address}": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": { "$ref": "#/definitions/developer_app_response" }
+          },
+          "400": { "description": "Bad request" },
+          "404": { "description": "Not found" },
+          "500": { "description": "Server error" }
+        },
+        "description": "Gets developer app matching given address (API key)",
+        "operationId": "Get Developer App",
+        "parameters": [
+          {
+            "name": "address",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "A developer app address (API Key)"
+          }
+        ],
+        "tags": ["developer_apps"]
+      }
+    },
+    "/playlists": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": { "$ref": "#/definitions/playlist_response" }
+          },
+          "400": { "description": "Bad request" },
+          "500": { "description": "Server error" }
+        },
+        "description": "Gets a list of playlists by ID",
+        "operationId": "Get Bulk Playlists",
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "query",
+            "type": "string",
+            "description": "The user ID of the user making the request"
+          },
+          {
+            "name": "id",
+            "in": "query",
+            "type": "array",
+            "items": { "type": "string" },
+            "collectionFormat": "multi",
+            "description": "The ID of the playlist(s)"
+          }
+        ],
+        "tags": ["playlists"]
+      }
+    },
+    "/playlists/by_permalink/{handle}/{slug}": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": { "$ref": "#/definitions/playlist_response" }
+          }
+        },
+        "description": "Get a playlist by handle and slug",
+        "operationId": "Get Playlist By Handle and Slug",
+        "parameters": [
+          {
+            "name": "handle",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "playlist owner handle"
+          },
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "playlist slug"
+          },
+          {
+            "name": "user_id",
+            "in": "query",
+            "type": "string",
+            "description": "The user ID of the user making the request"
+          }
+        ],
+        "tags": ["playlists"]
+      }
+    },
+    "/playlists/search": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": { "$ref": "#/definitions/playlist_search_result" }
+          },
+          "400": { "description": "Bad request" },
+          "500": { "description": "Server error" }
+        },
+        "description": "Search for a playlist",
+        "operationId": "Search Playlists",
+        "parameters": [
+          {
+            "name": "query",
+            "in": "query",
+            "type": "string",
+            "required": true,
+            "description": "The search query"
+          }
+        ],
+        "tags": ["playlists"]
+      }
+    },
+    "/playlists/trending": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": { "$ref": "#/definitions/trending_playlists_response" }
+          },
+          "400": { "description": "Bad request" },
+          "500": { "description": "Server error" }
+        },
+        "description": "Gets trending playlists for a time period",
+        "operationId": "Get Trending Playlists",
+        "parameters": [
+          {
+            "name": "time",
+            "in": "query",
+            "type": "string",
+            "enum": ["week", "month", "year", "allTime"],
+            "description": "Calculate trending over a specified time range"
+          }
+        ],
+        "tags": ["playlists"]
+      }
+    },
+    "/playlists/{playlist_id}": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": { "$ref": "#/definitions/playlist_response" }
+          },
+          "400": { "description": "Bad request" },
+          "500": { "description": "Server error" }
+        },
+        "description": "Get a playlist by ID",
+        "operationId": "Get Playlist",
+        "parameters": [
+          {
+            "name": "playlist_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "A Playlist ID"
+          },
+          {
+            "name": "user_id",
+            "in": "query",
+            "type": "string",
+            "description": "The user ID of the user making the request"
+          }
+        ],
+        "tags": ["playlists"]
+      }
+    },
+    "/playlists/{playlist_id}/access-info": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": { "$ref": "#/definitions/access_info_response" }
+          }
+        },
+        "description": "Gets the information necessary to access the playlist and what access the given user has.",
+        "operationId": "Get Playlist Access Info",
+        "parameters": [
+          {
+            "name": "playlist_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "A Playlist ID"
+          },
+          {
+            "name": "user_id",
+            "in": "query",
+            "type": "string",
+            "description": "The user ID of the user making the request"
+          }
+        ],
+        "tags": ["playlists"]
+      }
+    },
+    "/playlists/{playlist_id}/tracks": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": { "$ref": "#/definitions/playlist_tracks_response" }
+          },
+          "400": { "description": "Bad request" },
+          "500": { "description": "Server error" }
+        },
+        "description": "Fetch tracks within a playlist.",
+        "operationId": "Get Playlist Tracks",
+        "parameters": [
+          {
+            "name": "playlist_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "A Playlist ID"
+          }
+        ],
+        "tags": ["playlists"]
+      }
+    },
+    "/resolve": {
+      "get": {
+        "responses": { "302": { "description": "Internal redirect" } },
+        "summary": "Resolves and redirects a provided Audius app URL to the API resource URL it represents",
+        "description": "This endpoint allows you to lookup and access API resources when you only know the\naudius.co URL.\nTracks, Playlists, and Users are supported.",
+        "operationId": "Resolve",
+        "parameters": [
+          {
+            "name": "url",
+            "in": "query",
+            "type": "string",
+            "required": true,
+            "description": "URL to resolve. Either fully formed URL (https://audius.co) or just the absolute path"
+          }
+        ],
+        "tags": ["resolve"]
+      }
+    },
+    "/tips": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": { "$ref": "#/definitions/get_tips_response" }
+          }
+        },
+        "description": "Gets the most recent tips on the network",
+        "operationId": "Get Tips",
+        "parameters": [
+          {
+            "name": "offset",
+            "in": "query",
+            "type": "integer",
+            "description": "The number of items to skip. Useful for pagination (page number * limit)"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "type": "integer",
+            "description": "The number of items to fetch"
+          },
+          {
+            "name": "user_id",
+            "in": "query",
+            "type": "string",
+            "description": "The user ID of the user making the request"
+          },
+          {
+            "name": "receiver_min_followers",
+            "in": "query",
+            "type": "integer",
+            "default": 0,
+            "description": "Only include tips to recipients that have this many followers"
+          },
+          {
+            "name": "receiver_is_verified",
+            "in": "query",
+            "type": "boolean",
+            "default": false,
+            "description": "Only include tips to recipients that are verified"
+          },
+          {
+            "name": "current_user_follows",
+            "in": "query",
+            "type": "string",
+            "enum": ["sender", "receiver", "sender_or_receiver"],
+            "description": "Only include tips involving the user's followers in the given capacity. Requires user_id to be set."
+          },
+          {
+            "name": "unique_by",
+            "in": "query",
+            "type": "string",
+            "enum": ["sender", "receiver"],
+            "description": "Only include the most recent tip for a user was involved in the given capacity.\n\nEg. 'sender' will ensure that each tip returned has a unique sender, using the most recent tip sent by a user if that user has sent multiple tips.\n    "
+          }
+        ],
+        "tags": ["tips"]
+      }
+    },
+    "/tracks": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": { "$ref": "#/definitions/tracks_response" }
+          },
+          "400": { "description": "Bad request" },
+          "500": { "description": "Server error" }
+        },
+        "description": "Gets a list of tracks using their IDs or permalinks",
+        "operationId": "Get Bulk Tracks",
+        "parameters": [
+          {
+            "name": "permalink",
+            "in": "query",
+            "type": "array",
+            "items": { "type": "string" },
+            "collectionFormat": "multi",
+            "description": "The permalink of the track(s)"
+          },
+          {
+            "name": "id",
+            "in": "query",
+            "type": "array",
+            "items": { "type": "string" },
+            "collectionFormat": "multi",
+            "description": "The ID of the track(s)"
+          }
+        ],
+        "tags": ["tracks"]
+      }
+    },
+    "/tracks/search": {
+      "get": {
+        "responses": {
+          "200": { "description": "Success", "schema": { "$ref": "#/definitions/track_search" } },
+          "400": { "description": "Bad request" },
+          "500": { "description": "Server error" }
+        },
+        "description": "Search for a track or tracks",
+        "operationId": "Search Tracks",
+        "parameters": [
+          {
+            "name": "query",
+            "in": "query",
+            "type": "string",
+            "required": true,
+            "description": "The search query"
+          },
+          {
+            "name": "only_downloadable",
+            "in": "query",
+            "type": "string",
+            "default": false,
+            "description": "Return only downloadable tracks"
+          }
+        ],
+        "tags": ["tracks"]
+      }
+    },
+    "/tracks/trending": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": { "$ref": "#/definitions/tracks_response" }
+          },
+          "400": { "description": "Bad request" },
+          "500": { "description": "Server error" }
+        },
+        "description": "Gets the top 100 trending (most popular) tracks on Audius",
+        "operationId": "Get Trending Tracks",
+        "parameters": [
+          {
+            "name": "genre",
+            "in": "query",
+            "type": "string",
+            "description": "Filter trending to a specified genre"
+          },
+          {
+            "name": "time",
+            "in": "query",
+            "type": "string",
+            "enum": ["week", "month", "year", "allTime"],
+            "description": "Calculate trending over a specified time range"
+          }
+        ],
+        "tags": ["tracks"]
+      }
+    },
+    "/tracks/trending/underground": {
+      "get": {
+        "responses": {
+          "200": { "description": "Success", "schema": { "$ref": "#/definitions/tracks_response" } }
+        },
+        "description": "Gets the top 100 trending underground tracks on Audius",
+        "operationId": "Get Underground Trending Tracks",
+        "parameters": [
+          {
+            "name": "offset",
+            "in": "query",
+            "type": "integer",
+            "description": "The number of items to skip. Useful for pagination (page number * limit)"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "type": "integer",
+            "description": "The number of items to fetch"
+          }
+        ],
+        "tags": ["tracks"]
+      }
+    },
+    "/tracks/{track_id}": {
+      "get": {
+        "responses": {
+          "200": { "description": "Success", "schema": { "$ref": "#/definitions/track_response" } },
+          "400": { "description": "Bad request" },
+          "500": { "description": "Server error" }
+        },
+        "description": "Gets a track by ID",
+        "operationId": "Get Track",
+        "parameters": [
+          {
+            "name": "track_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "A Track ID"
+          }
+        ],
+        "tags": ["tracks"]
+      }
+    },
+    "/tracks/{track_id}/access-info": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": { "$ref": "#/definitions/access_info_response" }
+          }
+        },
+        "description": "Gets the information necessary to access the track and what access the given user has.",
+        "operationId": "Get Track Access Info",
+        "parameters": [
+          {
+            "name": "track_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "A Track ID"
+          },
+          {
+            "name": "user_id",
+            "in": "query",
+            "type": "string",
+            "description": "The user ID of the user making the request"
+          }
+        ],
+        "tags": ["tracks"]
+      }
+    },
+    "/tracks/{track_id}/download": {
+      "get": {
+        "responses": {
+          "200": { "description": "Success" },
+          "216": { "description": "Partial content" },
+          "400": { "description": "Bad request" },
+          "416": { "description": "Content range invalid" },
+          "500": { "description": "Server error" }
+        },
+        "summary": "Download the original or MP3 file of a track",
+        "description": "Download an original or mp3 track",
+        "operationId": "Download Track",
+        "parameters": [
+          {
+            "name": "track_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "A Track ID"
+          },
+          {
+            "name": "user_signature",
+            "in": "query",
+            "type": "string",
+            "description": "Optional - signature from the requesting user's wallet.\n        This is needed to authenticate the user and verify access in case the track is gated."
+          },
+          {
+            "name": "user_data",
+            "in": "query",
+            "type": "string",
+            "description": "Optional - data which was used to generate the optional signature argument."
+          },
+          {
+            "name": "nft_access_signature",
+            "in": "query",
+            "type": "string",
+            "description": "Optional - nft access signature for this track which was previously generated by a registered DN.\n        We perform checks on it and pass it through to CN."
+          },
+          {
+            "name": "original",
+            "in": "query",
+            "type": "boolean",
+            "default": false,
+            "description": "Optional - true if downloading original file"
+          },
+          {
+            "name": "filename",
+            "in": "query",
+            "type": "string",
+            "description": "Optional - name of file to download. If not provided, defaults to track original filename or title."
+          }
+        ],
+        "tags": ["tracks"]
+      }
+    },
+    "/tracks/{track_id}/inspect": {
+      "get": {
+        "responses": {
+          "200": { "description": "Success", "schema": { "$ref": "#/definitions/track_inspect" } },
+          "400": { "description": "Bad request" },
+          "500": { "description": "Server error" }
+        },
+        "summary": "Inspects the details of the file for a track",
+        "description": "Inspect a track",
+        "operationId": "Inspect Track",
+        "parameters": [
+          {
+            "name": "track_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "A Track ID"
+          },
+          {
+            "name": "original",
+            "in": "query",
+            "type": "boolean",
+            "default": false,
+            "description": "Optional - if set to true inspects the original quality file"
+          }
+        ],
+        "tags": ["tracks"]
+      }
+    },
+    "/tracks/{track_id}/stream": {
+      "get": {
+        "responses": {
+          "200": { "description": "Success" },
+          "216": { "description": "Partial content" },
+          "400": { "description": "Bad request" },
+          "416": { "description": "Content range invalid" },
+          "500": { "description": "Server error" }
+        },
+        "summary": "Get the streamable MP3 file of a track",
+        "description": "Stream an mp3 track\nThis endpoint accepts the Range header for streaming.\nhttps://developer.mozilla.org/en-US/docs/Web/HTTP/Range_requests",
+        "operationId": "Stream Track",
+        "parameters": [
+          {
+            "name": "track_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "A Track ID"
+          },
+          {
+            "name": "preview",
+            "in": "query",
+            "type": "boolean",
+            "default": false,
+            "description": "Optional - true if streaming track preview"
+          },
+          {
+            "name": "user_signature",
+            "in": "query",
+            "type": "string",
+            "description": "Optional - signature from the requesting user's wallet.\n        This is needed to authenticate the user and verify access in case the track is gated."
+          },
+          {
+            "name": "user_data",
+            "in": "query",
+            "type": "string",
+            "description": "Optional - data which was used to generate the optional signature argument."
+          },
+          {
+            "name": "nft_access_signature",
+            "in": "query",
+            "type": "string",
+            "description": "Optional - gated content signature for this track which was previously generated by a registered DN.\n        We perform checks on it and pass it through to CN."
+          },
+          {
+            "name": "skip_play_count",
+            "in": "query",
+            "type": "boolean",
+            "default": false,
+            "description": "Optional - boolean that disables tracking of play counts."
+          },
+          {
+            "name": "api_key",
+            "in": "query",
+            "type": "string",
+            "description": "Optional - API key for third party apps. This is required for tracks that only allow specific API keys."
+          },
+          {
+            "name": "skip_check",
+            "in": "query",
+            "type": "string",
+            "description": "Optional - POC to skip node 'double dip' health check"
+          }
+        ],
+        "tags": ["tracks"]
+      }
+    },
+    "/tracks/{track_id}/stream-url": {
+      "get": {
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad request" },
+          "500": { "description": "Server error" }
+        },
+        "summary": "POC: An alternate form of the /stream url",
+        "description": "Fetch the CN url for a track stream\nInstead of redirecting to the content node, it just returns the url as a string\nThis means the client can pre-fetch the url",
+        "operationId": "Stream Url",
+        "parameters": [
+          {
+            "name": "track_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "A Track ID"
+          },
+          {
+            "name": "preview",
+            "in": "query",
+            "type": "boolean",
+            "default": false,
+            "description": "Optional - true if streaming track preview"
+          },
+          {
+            "name": "user_signature",
+            "in": "query",
+            "type": "string",
+            "description": "Optional - signature from the requesting user's wallet.\n        This is needed to authenticate the user and verify access in case the track is gated."
+          },
+          {
+            "name": "user_data",
+            "in": "query",
+            "type": "string",
+            "description": "Optional - data which was used to generate the optional signature argument."
+          },
+          {
+            "name": "nft_access_signature",
+            "in": "query",
+            "type": "string",
+            "description": "Optional - gated content signature for this track which was previously generated by a registered DN.\n        We perform checks on it and pass it through to CN."
+          },
+          {
+            "name": "skip_play_count",
+            "in": "query",
+            "type": "boolean",
+            "default": false,
+            "description": "Optional - boolean that disables tracking of play counts."
+          },
+          {
+            "name": "api_key",
+            "in": "query",
+            "type": "string",
+            "description": "Optional - API key for third party apps. This is required for tracks that only allow specific API keys."
+          }
+        ],
+        "tags": ["tracks"]
+      }
+    },
+    "/tracks/{track_id}/top_listeners": {
+      "get": {
+        "responses": {
+          "200": { "description": "Success", "schema": { "$ref": "#/definitions/top_listener" } },
+          "400": { "description": "Bad request" },
+          "500": { "description": "Server error" }
+        },
+        "description": "Get the users that have listened to a track the most",
+        "operationId": "Get Track Top Listeners",
+        "parameters": [
+          {
+            "name": "track_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "A Track ID"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "type": "integer",
+            "description": "The number of items to skip. Useful for pagination (page number * limit)"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "type": "integer",
+            "description": "The number of items to fetch"
+          },
+          {
+            "name": "user_id",
+            "in": "query",
+            "type": "string",
+            "description": "The user ID of the user making the request"
+          }
+        ],
+        "tags": ["tracks"]
+      }
+    },
+    "/users": {
+      "get": {
+        "responses": {
+          "200": { "description": "Success", "schema": { "$ref": "#/definitions/users_response" } },
+          "400": { "description": "Bad request" },
+          "500": { "description": "Server error" }
+        },
+        "description": "Gets a list of users by ID",
+        "operationId": "Get Bulk Users",
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "query",
+            "type": "string",
+            "description": "The user ID of the user making the request"
+          },
+          {
+            "name": "id",
+            "in": "query",
+            "type": "array",
+            "items": { "type": "string" },
+            "collectionFormat": "multi",
+            "description": "The ID of the user(s)"
+          }
+        ],
+        "tags": ["users"]
+      }
+    },
+    "/users/handle/{handle}": {
+      "get": {
+        "responses": {
+          "200": { "description": "Success", "schema": { "$ref": "#/definitions/user_response" } },
+          "400": { "description": "Bad request" },
+          "500": { "description": "Server error" }
+        },
+        "description": "Gets a single user by their handle",
+        "operationId": "Get User by Handle",
+        "parameters": [
+          {
+            "name": "handle",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "A User handle"
+          },
+          {
+            "name": "user_id",
+            "in": "query",
+            "type": "string",
+            "description": "The user ID of the user making the request"
+          }
+        ],
+        "tags": ["users"]
+      }
+    },
+    "/users/handle/{handle}/tracks/ai_attributed": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": { "$ref": "#/definitions/tracks_response" }
+          },
+          "400": { "description": "Bad request" },
+          "500": { "description": "Server error" }
+        },
+        "description": "Gets the AI generated tracks attributed to a user using the user's handle",
+        "operationId": "Get AI Attributed Tracks by User Handle",
+        "parameters": [
+          {
+            "name": "handle",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "A User handle"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "type": "integer",
+            "description": "The number of items to skip. Useful for pagination (page number * limit)"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "type": "integer",
+            "description": "The number of items to fetch"
+          },
+          {
+            "name": "user_id",
+            "in": "query",
+            "type": "string",
+            "description": "The user ID of the user making the request"
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "type": "string",
+            "default": "date",
+            "enum": ["date", "plays"],
+            "description": "[Deprecated] Field to sort by"
+          },
+          { "name": "query", "in": "query", "type": "string", "description": "The filter query" },
+          {
+            "name": "sort_method",
+            "in": "query",
+            "type": "string",
+            "enum": [
+              "title",
+              "artist_name",
+              "release_date",
+              "last_listen_date",
+              "added_date",
+              "plays",
+              "reposts",
+              "saves",
+              "most_listens_by_user"
+            ],
+            "description": "The sort method"
+          },
+          {
+            "name": "sort_direction",
+            "in": "query",
+            "type": "string",
+            "enum": ["asc", "desc"],
+            "description": "The sort direction"
+          },
+          {
+            "name": "filter_tracks",
+            "in": "query",
+            "type": "string",
+            "default": "all",
+            "enum": ["all", "public", "unlisted"],
+            "description": "Filter by unlisted or public tracks"
+          },
+          {
+            "name": "Encoded-Data-Message",
+            "in": "header",
+            "type": "string",
+            "description": "The data that was signed by the user for signature recovery"
+          },
+          {
+            "name": "Encoded-Data-Signature",
+            "in": "header",
+            "type": "string",
+            "description": "The signature of data, used for signature recovery"
+          }
+        ],
+        "tags": ["users"]
+      }
+    },
+    "/users/id": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": { "$ref": "#/definitions/user_associated_wallet_response" }
+          },
+          "400": { "description": "Bad request" },
+          "500": { "description": "Server error" }
+        },
+        "description": "Gets a User ID from an associated wallet address",
+        "operationId": "Get User ID from Wallet",
+        "parameters": [
+          {
+            "name": "associated_wallet",
+            "in": "query",
+            "type": "string",
+            "required": true,
+            "description": "Wallet address"
+          }
+        ],
+        "tags": ["users"]
+      }
+    },
+    "/users/search": {
+      "get": {
+        "responses": {
+          "200": { "description": "Success", "schema": { "$ref": "#/definitions/user_search" } },
+          "400": { "description": "Bad request" },
+          "500": { "description": "Server error" }
+        },
+        "description": "Search for users that match the given query",
+        "operationId": "Search Users",
+        "parameters": [
+          {
+            "name": "query",
+            "in": "query",
+            "type": "string",
+            "required": true,
+            "description": "The search query"
+          }
+        ],
+        "tags": ["users"]
+      }
+    },
+    "/users/verify_token": {
+      "get": {
+        "responses": {
+          "200": { "description": "Success", "schema": { "$ref": "#/definitions/verify_token" } },
+          "400": { "description": "Bad input" },
+          "404": { "description": "ID token not valid" },
+          "500": { "description": "Server error" }
+        },
+        "description": "Verify if the given jwt ID token was signed by the subject (user) in the payload",
+        "operationId": "Verify ID Token",
+        "parameters": [
+          {
+            "name": "token",
+            "in": "query",
+            "type": "string",
+            "required": true,
+            "description": "JWT to verify"
+          }
+        ],
+        "tags": ["users"]
+      }
+    },
+    "/users/{id}": {
+      "get": {
+        "responses": {
+          "200": { "description": "Success", "schema": { "$ref": "#/definitions/user_response" } },
+          "400": { "description": "Bad request" },
+          "500": { "description": "Server error" }
+        },
+        "description": "Gets a single user by their user ID",
+        "operationId": "Get User",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "A User ID"
+          }
+        ],
+        "tags": ["users"]
+      }
+    },
+    "/users/{id}/authorized_apps": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": { "$ref": "#/definitions/authorized_apps" }
+          },
+          "400": { "description": "Bad request" },
+          "500": { "description": "Server error" }
+        },
+        "description": "Get the apps that user has authorized to write to their account",
+        "operationId": "Get Authorized Apps",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "A User ID"
+          }
+        ],
+        "tags": ["users"]
+      }
+    },
+    "/users/{id}/connected_wallets": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": { "$ref": "#/definitions/connected_wallets_response" }
+          },
+          "400": { "description": "Bad request" },
+          "500": { "description": "Server error" }
+        },
+        "description": "Get the User's ERC and SPL connected wallets",
+        "operationId": "Get connected wallets",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "A User ID"
+          }
+        ],
+        "tags": ["users"]
+      }
+    },
+    "/users/{id}/developer_apps": {
+      "get": {
+        "responses": {
+          "200": { "description": "Success", "schema": { "$ref": "#/definitions/developer_apps" } },
+          "400": { "description": "Bad request" },
+          "500": { "description": "Server error" }
+        },
+        "description": "Gets the developer apps that the user owns",
+        "operationId": "Get Developer Apps",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "A User ID"
+          }
+        ],
+        "tags": ["users"]
+      }
+    },
+    "/users/{id}/favorites": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": { "$ref": "#/definitions/favorites_response" }
+          },
+          "400": { "description": "Bad request" },
+          "500": { "description": "Server error" }
+        },
+        "description": "Gets a user's favorite tracks",
+        "operationId": "Get Favorites",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "A User ID"
+          }
+        ],
+        "tags": ["users"]
+      }
+    },
+    "/users/{id}/followers": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": { "$ref": "#/definitions/followers_response" }
+          },
+          "400": { "description": "Bad request" },
+          "500": { "description": "Server error" }
+        },
+        "description": "All users that follow the provided user",
+        "operationId": "Get Followers",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "A User ID"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "type": "integer",
+            "description": "The number of items to skip. Useful for pagination (page number * limit)"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "type": "integer",
+            "description": "The number of items to fetch"
+          },
+          {
+            "name": "user_id",
+            "in": "query",
+            "type": "string",
+            "description": "The user ID of the user making the request"
+          }
+        ],
+        "tags": ["users"]
+      }
+    },
+    "/users/{id}/following": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": { "$ref": "#/definitions/following_response" }
+          },
+          "400": { "description": "Bad request" },
+          "500": { "description": "Server error" }
+        },
+        "description": "All users that the provided user follows",
+        "operationId": "Get Following",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "A User ID"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "type": "integer",
+            "description": "The number of items to skip. Useful for pagination (page number * limit)"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "type": "integer",
+            "description": "The number of items to fetch"
+          },
+          {
+            "name": "user_id",
+            "in": "query",
+            "type": "string",
+            "description": "The user ID of the user making the request"
+          }
+        ],
+        "tags": ["users"]
+      }
+    },
+    "/users/{id}/purchases/download": {
+      "get": {
+        "responses": { "200": { "description": "Success" } },
+        "description": "Downloads the purchases the user has made as a CSV file",
+        "operationId": "Download Purchases as CSV",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "A User ID"
+          },
+          {
+            "name": "user_id",
+            "in": "query",
+            "type": "string",
+            "description": "The user ID of the user making the request"
+          },
+          {
+            "name": "Encoded-Data-Message",
+            "in": "header",
+            "type": "string",
+            "description": "The data that was signed by the user for signature recovery"
+          },
+          {
+            "name": "Encoded-Data-Signature",
+            "in": "header",
+            "type": "string",
+            "description": "The signature of data, used for signature recovery"
+          }
+        ],
+        "produces": ["text/csv"],
+        "tags": ["users"]
+      }
+    },
+    "/users/{id}/related": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": { "$ref": "#/definitions/related_artist_response" }
+          },
+          "400": { "description": "Bad request" },
+          "500": { "description": "Server error" }
+        },
+        "description": "Gets a list of users that might be of interest to followers of this user.",
+        "operationId": "Get Related Users",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "A User ID"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "type": "integer",
+            "description": "The number of items to skip. Useful for pagination (page number * limit)"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "type": "integer",
+            "description": "The number of items to fetch"
+          },
+          {
+            "name": "user_id",
+            "in": "query",
+            "type": "string",
+            "description": "The user ID of the user making the request"
+          }
+        ],
+        "tags": ["users"]
+      }
+    },
+    "/users/{id}/reposts": {
+      "get": {
+        "responses": {
+          "200": { "description": "Success", "schema": { "$ref": "#/definitions/reposts" } },
+          "400": { "description": "Bad request" },
+          "500": { "description": "Server error" }
+        },
+        "description": "Gets the given user's reposts",
+        "operationId": "Get Reposts",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "A User ID"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "type": "integer",
+            "description": "The number of items to skip. Useful for pagination (page number * limit)"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "type": "integer",
+            "description": "The number of items to fetch"
+          },
+          {
+            "name": "user_id",
+            "in": "query",
+            "type": "string",
+            "description": "The user ID of the user making the request"
+          }
+        ],
+        "tags": ["users"]
+      }
+    },
+    "/users/{id}/sales/download": {
+      "get": {
+        "responses": { "200": { "description": "Success" } },
+        "description": "Downloads the sales the user has made as a CSV file",
+        "operationId": "Download Sales as CSV",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "A User ID"
+          },
+          {
+            "name": "user_id",
+            "in": "query",
+            "type": "string",
+            "description": "The user ID of the user making the request"
+          },
+          {
+            "name": "Encoded-Data-Message",
+            "in": "header",
+            "type": "string",
+            "description": "The data that was signed by the user for signature recovery"
+          },
+          {
+            "name": "Encoded-Data-Signature",
+            "in": "header",
+            "type": "string",
+            "description": "The signature of data, used for signature recovery"
+          }
+        ],
+        "produces": ["text/csv"],
+        "tags": ["users"]
+      }
+    },
+    "/users/{id}/subscribers": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": { "$ref": "#/definitions/subscribers_response" }
+          },
+          "400": { "description": "Bad request" },
+          "500": { "description": "Server error" }
+        },
+        "description": "All users that subscribe to the provided user",
+        "operationId": "Get Subscribers",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "A User ID"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "type": "integer",
+            "description": "The number of items to skip. Useful for pagination (page number * limit)"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "type": "integer",
+            "description": "The number of items to fetch"
+          },
+          {
+            "name": "user_id",
+            "in": "query",
+            "type": "string",
+            "description": "The user ID of the user making the request"
+          }
+        ],
+        "tags": ["users"]
+      }
+    },
+    "/users/{id}/supporters": {
+      "get": {
+        "responses": {
+          "200": { "description": "Success", "schema": { "$ref": "#/definitions/get_supporters" } }
+        },
+        "description": "Gets the supporters of the given user",
+        "operationId": "Get Supporters",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "A User ID"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "type": "integer",
+            "description": "The number of items to skip. Useful for pagination (page number * limit)"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "type": "integer",
+            "description": "The number of items to fetch"
+          }
+        ],
+        "tags": ["users"]
+      }
+    },
+    "/users/{id}/supporting": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": { "$ref": "#/definitions/get_supported_users" }
+          }
+        },
+        "description": "Gets the users that the given user supports",
+        "operationId": "Get Supported Users",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "A User ID"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "type": "integer",
+            "description": "The number of items to skip. Useful for pagination (page number * limit)"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "type": "integer",
+            "description": "The number of items to fetch"
+          }
+        ],
+        "tags": ["users"]
+      }
+    },
+    "/users/{id}/tags": {
+      "get": {
+        "responses": {
+          "200": { "description": "Success", "schema": { "$ref": "#/definitions/tags_response" } },
+          "400": { "description": "Bad request" },
+          "500": { "description": "Server error" }
+        },
+        "summary": "Fetch most used tags in a user's tracks",
+        "description": "Gets the most used track tags by a user.",
+        "operationId": "Get Top Track Tags",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "A User ID"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "type": "integer",
+            "description": "The number of items to fetch"
+          },
+          {
+            "name": "user_id",
+            "in": "query",
+            "type": "string",
+            "description": "The user ID of the user making the request"
+          }
+        ],
+        "tags": ["users"]
+      }
+    },
+    "/users/{id}/tracks": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": { "$ref": "#/definitions/tracks_response" }
+          },
+          "400": { "description": "Bad request" },
+          "500": { "description": "Server error" }
+        },
+        "description": "Gets the tracks created by a user using their user ID",
+        "operationId": "Get Tracks by User",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "A User ID"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "type": "integer",
+            "description": "The number of items to skip. Useful for pagination (page number * limit)"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "type": "integer",
+            "description": "The number of items to fetch"
+          },
+          {
+            "name": "user_id",
+            "in": "query",
+            "type": "string",
+            "description": "The user ID of the user making the request"
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "type": "string",
+            "default": "date",
+            "enum": ["date", "plays"],
+            "description": "[Deprecated] Field to sort by"
+          },
+          { "name": "query", "in": "query", "type": "string", "description": "The filter query" },
+          {
+            "name": "sort_method",
+            "in": "query",
+            "type": "string",
+            "enum": [
+              "title",
+              "artist_name",
+              "release_date",
+              "last_listen_date",
+              "added_date",
+              "plays",
+              "reposts",
+              "saves",
+              "most_listens_by_user"
+            ],
+            "description": "The sort method"
+          },
+          {
+            "name": "sort_direction",
+            "in": "query",
+            "type": "string",
+            "enum": ["asc", "desc"],
+            "description": "The sort direction"
+          },
+          {
+            "name": "filter_tracks",
+            "in": "query",
+            "type": "string",
+            "default": "all",
+            "enum": ["all", "public", "unlisted"],
+            "description": "Filter by unlisted or public tracks"
+          },
+          {
+            "name": "Encoded-Data-Message",
+            "in": "header",
+            "type": "string",
+            "description": "The data that was signed by the user for signature recovery"
+          },
+          {
+            "name": "Encoded-Data-Signature",
+            "in": "header",
+            "type": "string",
+            "description": "The signature of data, used for signature recovery"
+          }
+        ],
+        "tags": ["users"]
+      }
+    },
+    "/users/{id}/withdrawals/download": {
+      "get": {
+        "responses": { "200": { "description": "Success" } },
+        "description": "Downloads the USDC withdrawals the user has made as a CSV file",
+        "operationId": "Download USDC Withdrawals as CSV",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "A User ID"
+          },
+          {
+            "name": "user_id",
+            "in": "query",
+            "type": "string",
+            "description": "The user ID of the user making the request"
+          },
+          {
+            "name": "Encoded-Data-Message",
+            "in": "header",
+            "type": "string",
+            "description": "The data that was signed by the user for signature recovery"
+          },
+          {
+            "name": "Encoded-Data-Signature",
+            "in": "header",
+            "type": "string",
+            "description": "The signature of data, used for signature recovery"
+          }
+        ],
+        "produces": ["text/csv"],
+        "tags": ["users"]
+      }
+    }
+  },
+  "info": { "title": "API", "version": "1.0", "description": "Audius V1 API" },
+  "produces": ["application/json"],
+  "consumes": ["application/json"],
+  "tags": [
+    { "name": "users", "description": "User related operations" },
+    { "name": "playlists", "description": "Playlist related operations" },
+    { "name": "tracks", "description": "Track related operations" },
+    { "name": "tips", "description": "Tip related operations" },
+    { "name": "developer_apps", "description": "Developer app related operations" },
+    {
+      "name": "dashboard_wallet_users",
+      "description": "Protocol dashboard wallet users related operations"
+    },
+    { "name": "resolve", "description": "Audius Cannonical URL resolver" }
+  ],
+  "definitions": {
+    "user_response": {
+      "properties": { "data": { "$ref": "#/definitions/user" } },
+      "type": "object"
+    },
+    "user": {
+      "required": [
+        "album_count",
+        "erc_wallet",
+        "followee_count",
+        "follower_count",
+        "handle",
+        "id",
+        "is_available",
+        "is_deactivated",
+        "is_verified",
+        "name",
+        "playlist_count",
+        "repost_count",
+        "spl_wallet",
+        "supporter_count",
+        "supporting_count",
+        "total_audio_balance",
+        "track_count",
+        "verified_with_instagram",
+        "verified_with_tiktok",
+        "verified_with_twitter",
+        "wallet"
+      ],
+      "properties": {
+        "album_count": { "type": "integer" },
+        "artist_pick_track_id": { "type": "string" },
+        "bio": { "type": "string" },
+        "cover_photo": { "$ref": "#/definitions/cover_photo" },
+        "followee_count": { "type": "integer" },
+        "follower_count": { "type": "integer" },
+        "handle": { "type": "string" },
+        "id": { "type": "string" },
+        "is_verified": { "type": "boolean" },
+        "twitter_handle": { "type": "string" },
+        "instagram_handle": { "type": "string" },
+        "tiktok_handle": { "type": "string" },
+        "verified_with_twitter": { "type": "boolean" },
+        "verified_with_instagram": { "type": "boolean" },
+        "verified_with_tiktok": { "type": "boolean" },
+        "website": { "type": "string" },
+        "donation": { "type": "string" },
+        "location": { "type": "string" },
+        "name": { "type": "string" },
+        "playlist_count": { "type": "integer" },
+        "profile_picture": { "$ref": "#/definitions/profile_picture" },
+        "repost_count": { "type": "integer" },
+        "track_count": { "type": "integer" },
+        "is_deactivated": { "type": "boolean" },
+        "is_available": { "type": "boolean" },
+        "erc_wallet": { "type": "string" },
+        "spl_wallet": { "type": "string" },
+        "supporter_count": { "type": "integer" },
+        "supporting_count": { "type": "integer" },
+        "total_audio_balance": { "type": "integer" },
+        "wallet": {
+          "type": "string",
+          "description": "The user's Ethereum wallet address for their account"
+        }
+      },
+      "type": "object"
+    },
+    "cover_photo": {
+      "properties": { "640x": { "type": "string" }, "2000x": { "type": "string" } },
+      "type": "object"
+    },
+    "profile_picture": {
+      "properties": {
+        "150x150": { "type": "string" },
+        "480x480": { "type": "string" },
+        "1000x1000": { "type": "string" }
+      },
+      "type": "object"
+    },
+    "users_response": {
+      "properties": { "data": { "type": "array", "items": { "$ref": "#/definitions/user" } } },
+      "type": "object"
+    },
+    "tracks_response": {
+      "properties": { "data": { "type": "array", "items": { "$ref": "#/definitions/Track" } } },
+      "type": "object"
+    },
+    "Track": {
+      "required": [
+        "duration",
+        "favorite_count",
+        "id",
+        "play_count",
+        "repost_count",
+        "title",
+        "user"
+      ],
+      "properties": {
+        "artwork": { "$ref": "#/definitions/track_artwork" },
+        "description": { "type": "string" },
+        "genre": { "type": "string" },
+        "id": { "type": "string" },
+        "track_cid": { "type": "string" },
+        "preview_cid": { "type": "string" },
+        "orig_file_cid": { "type": "string" },
+        "orig_filename": { "type": "string" },
+        "is_original_available": { "type": "boolean" },
+        "mood": { "type": "string" },
+        "release_date": { "type": "string" },
+        "remix_of": { "$ref": "#/definitions/remix_parent" },
+        "repost_count": { "type": "integer" },
+        "favorite_count": { "type": "integer" },
+        "tags": { "type": "string" },
+        "title": { "type": "string" },
+        "user": { "$ref": "#/definitions/user" },
+        "duration": { "type": "integer" },
+        "is_downloadable": { "type": "boolean" },
+        "play_count": { "type": "integer" },
+        "permalink": { "type": "string" },
+        "is_streamable": { "type": "boolean" },
+        "ddex_app": { "type": "string" },
+        "playlists_containing_track": { "type": "array", "items": { "type": "integer" } }
+      },
+      "type": "object"
+    },
+    "track_artwork": {
+      "properties": {
+        "150x150": { "type": "string" },
+        "480x480": { "type": "string" },
+        "1000x1000": { "type": "string" }
+      },
+      "type": "object"
+    },
+    "remix_parent": {
+      "properties": {
+        "tracks": { "type": "array", "items": { "$ref": "#/definitions/track_element" } }
+      },
+      "type": "object"
+    },
+    "track_element": {
+      "required": ["parent_track_id"],
+      "properties": { "parent_track_id": { "type": "string" } },
+      "type": "object"
+    },
+    "reposts": {
+      "properties": { "data": { "type": "array", "items": { "$ref": "#/definitions/activity" } } },
+      "type": "object"
+    },
+    "activity": {
+      "properties": {
+        "timestamp": { "type": "string" },
+        "item_type": { "type": "object" },
+        "item": { "type": "object" }
+      },
+      "type": "object"
+    },
+    "tags_response": {
+      "properties": { "data": { "type": "array", "items": { "type": "string" } } },
+      "type": "object"
+    },
+    "favorites_response": {
+      "properties": { "data": { "type": "array", "items": { "$ref": "#/definitions/favorite" } } },
+      "type": "object"
+    },
+    "favorite": {
+      "required": ["created_at", "favorite_item_id", "favorite_type", "user_id"],
+      "properties": {
+        "favorite_item_id": { "type": "string" },
+        "favorite_type": { "type": "string" },
+        "user_id": { "type": "string" },
+        "created_at": { "type": "string" }
+      },
+      "type": "object"
+    },
+    "user_search": {
+      "properties": { "data": { "type": "array", "items": { "$ref": "#/definitions/user" } } },
+      "type": "object"
+    },
+    "subscribers_response": {
+      "properties": { "data": { "type": "array", "items": { "$ref": "#/definitions/user" } } },
+      "type": "object"
+    },
+    "followers_response": {
+      "properties": { "data": { "type": "array", "items": { "$ref": "#/definitions/user" } } },
+      "type": "object"
+    },
+    "following_response": {
+      "properties": { "data": { "type": "array", "items": { "$ref": "#/definitions/user" } } },
+      "type": "object"
+    },
+    "related_artist_response": {
+      "properties": { "data": { "type": "array", "items": { "$ref": "#/definitions/user" } } },
+      "type": "object"
+    },
+    "user_associated_wallet_response": {
+      "properties": { "data": { "$ref": "#/definitions/encoded_user_id" } },
+      "type": "object"
+    },
+    "encoded_user_id": { "properties": { "user_id": { "type": "string" } }, "type": "object" },
+    "connected_wallets_response": {
+      "properties": { "data": { "$ref": "#/definitions/connected_wallets" } },
+      "type": "object"
+    },
+    "connected_wallets": {
+      "required": ["erc_wallets", "spl_wallets"],
+      "properties": {
+        "erc_wallets": { "type": "array", "items": { "type": "string" } },
+        "spl_wallets": { "type": "array", "items": { "type": "string" } }
+      },
+      "type": "object"
+    },
+    "get_supporters": {
+      "properties": { "data": { "type": "array", "items": { "$ref": "#/definitions/supporter" } } },
+      "type": "object"
+    },
+    "supporter": {
+      "required": ["amount", "rank", "sender"],
+      "properties": {
+        "rank": { "type": "integer" },
+        "amount": { "type": "string" },
+        "sender": { "$ref": "#/definitions/user" }
+      },
+      "type": "object"
+    },
+    "get_supported_users": {
+      "properties": {
+        "data": { "type": "array", "items": { "$ref": "#/definitions/supporting" } }
+      },
+      "type": "object"
+    },
+    "supporting": {
+      "required": ["amount", "rank", "receiver"],
+      "properties": {
+        "rank": { "type": "integer" },
+        "amount": { "type": "string" },
+        "receiver": { "$ref": "#/definitions/user" }
+      },
+      "type": "object"
+    },
+    "verify_token": {
+      "properties": { "data": { "$ref": "#/definitions/decoded_user_token" } },
+      "type": "object"
+    },
+    "decoded_user_token": {
+      "required": ["email", "handle", "iat", "name", "sub", "userId", "verified"],
+      "properties": {
+        "userId": { "type": "string" },
+        "email": { "type": "string" },
+        "name": { "type": "string" },
+        "handle": { "type": "string" },
+        "verified": { "type": "boolean" },
+        "profilePicture": { "$ref": "#/definitions/profilePicture" },
+        "sub": { "type": "string" },
+        "iat": { "type": "string" }
+      },
+      "type": "object"
+    },
+    "profilePicture": {
+      "properties": {
+        "150x150": { "type": "string" },
+        "480x480": { "type": "string" },
+        "1000x1000": { "type": "string" }
+      },
+      "type": "object"
+    },
+    "developer_apps": {
+      "properties": {
+        "data": { "type": "array", "items": { "$ref": "#/definitions/developer_app" } }
+      },
+      "type": "object"
+    },
+    "developer_app": {
+      "required": ["address", "name", "user_id"],
+      "properties": {
+        "address": { "type": "string" },
+        "user_id": { "type": "string" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "image_url": { "type": "string" }
+      },
+      "type": "object"
+    },
+    "authorized_apps": {
+      "properties": {
+        "data": { "type": "array", "items": { "$ref": "#/definitions/authorized_app" } }
+      },
+      "type": "object"
+    },
+    "authorized_app": {
+      "required": ["address", "grant_created_at", "grant_updated_at", "grantor_user_id", "name"],
+      "properties": {
+        "address": { "type": "string" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "image_url": { "type": "string" },
+        "grantor_user_id": { "type": "string" },
+        "grant_created_at": { "type": "string" },
+        "grant_updated_at": { "type": "string" }
+      },
+      "type": "object"
+    },
+    "playlist_response": {
+      "properties": { "data": { "type": "array", "items": { "$ref": "#/definitions/playlist" } } },
+      "type": "object"
+    },
+    "playlist": {
+      "required": [
+        "favorite_count",
+        "id",
+        "is_album",
+        "is_image_autogenerated",
+        "playlist_contents",
+        "playlist_name",
+        "repost_count",
+        "total_play_count",
+        "user"
+      ],
+      "properties": {
+        "artwork": { "$ref": "#/definitions/playlist_artwork" },
+        "description": { "type": "string" },
+        "permalink": { "type": "string" },
+        "id": { "type": "string" },
+        "is_album": { "type": "boolean" },
+        "is_image_autogenerated": { "type": "boolean" },
+        "playlist_name": { "type": "string" },
+        "playlist_contents": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/playlist_added_timestamp" }
+        },
+        "repost_count": { "type": "integer" },
+        "favorite_count": { "type": "integer" },
+        "total_play_count": { "type": "integer" },
+        "user": { "$ref": "#/definitions/user" },
+        "ddex_app": { "type": "string" },
+        "access": { "$ref": "#/definitions/access" },
+        "upc": { "type": "string" }
+      },
+      "type": "object"
+    },
+    "playlist_artwork": {
+      "properties": {
+        "150x150": { "type": "string" },
+        "480x480": { "type": "string" },
+        "1000x1000": { "type": "string" }
+      },
+      "type": "object"
+    },
+    "playlist_added_timestamp": {
+      "required": ["metadata_timestamp", "timestamp", "track_id"],
+      "properties": {
+        "metadata_timestamp": { "type": "integer" },
+        "timestamp": { "type": "integer" },
+        "track_id": { "type": "string" }
+      },
+      "type": "object"
+    },
+    "access": {
+      "properties": { "stream": { "type": "boolean" }, "download": { "type": "boolean" } },
+      "type": "object"
+    },
+    "playlist_tracks_response": {
+      "properties": { "data": { "type": "array", "items": { "$ref": "#/definitions/Track" } } },
+      "type": "object"
+    },
+    "playlist_search_result": {
+      "properties": { "data": { "type": "array", "items": { "$ref": "#/definitions/playlist" } } },
+      "type": "object"
+    },
+    "trending_playlists_response": {
+      "properties": { "data": { "type": "array", "items": { "$ref": "#/definitions/playlist" } } },
+      "type": "object"
+    },
+    "access_info_response": {
+      "properties": { "data": { "$ref": "#/definitions/track_access_info" } },
+      "type": "object"
+    },
+    "track_access_info": {
+      "required": ["blocknumber", "user_id"],
+      "properties": {
+        "access": {
+          "description": "Describes what access the given user has",
+          "allOf": [{ "$ref": "#/definitions/access" }]
+        },
+        "user_id": { "type": "string", "description": "The user ID of the owner of this track" },
+        "blocknumber": {
+          "type": "integer",
+          "description": "The blocknumber this track was last updated"
+        },
+        "is_stream_gated": {
+          "type": "boolean",
+          "description": "Whether or not the owner has restricted streaming behind an access gate"
+        },
+        "stream_conditions": {
+          "description": "How to unlock stream access to the track",
+          "allOf": [{ "$ref": "#/definitions/extended_access_gate" }]
+        },
+        "is_download_gated": {
+          "type": "boolean",
+          "description": "Whether or not the owner has restricted downloading behind an access gate"
+        },
+        "download_conditions": {
+          "description": "How to unlock the track download",
+          "allOf": [{ "$ref": "#/definitions/extended_access_gate" }]
+        }
+      },
+      "type": "object"
+    },
+    "extended_access_gate": {
+      "oneOf": [
+        { "$ref": "#/definitions/tip_gate" },
+        { "$ref": "#/definitions/follow_gate" },
+        { "$ref": "#/definitions/extended_purchase_gate" },
+        { "$ref": "#/definitions/nft_gate" }
+      ]
+    },
+    "tip_gate": {
+      "required": ["tip_user_id"],
+      "properties": {
+        "tip_user_id": { "type": "integer", "description": "Must tip the given user ID to unlock" }
+      },
+      "type": "object"
+    },
+    "follow_gate": {
+      "required": ["follow_user_id"],
+      "properties": {
+        "follow_user_id": {
+          "type": "integer",
+          "description": "Must follow the given user ID to unlock"
+        }
+      },
+      "type": "object"
+    },
+    "extended_purchase_gate": {
+      "required": ["usdc_purchase"],
+      "properties": {
+        "usdc_purchase": {
+          "description": "Must pay the total price and split to the given addresses to unlock",
+          "allOf": [{ "$ref": "#/definitions/extended_usdc_gate" }]
+        }
+      },
+      "type": "object"
+    },
+    "extended_usdc_gate": {
+      "required": ["price", "splits"],
+      "properties": {
+        "price": { "type": "integer" },
+        "splits": { "type": "array", "items": { "$ref": "#/definitions/extended_payment_split" } }
+      },
+      "type": "object"
+    },
+    "extended_payment_split": {
+      "required": ["amount", "eth_wallet", "payout_wallet", "percentage", "user_id"],
+      "properties": {
+        "user_id": { "type": "integer" },
+        "percentage": { "type": "number" },
+        "eth_wallet": { "type": "string" },
+        "payout_wallet": { "type": "string" },
+        "amount": { "type": "integer" }
+      },
+      "type": "object"
+    },
+    "nft_gate": {
+      "required": ["nft_collection"],
+      "properties": {
+        "nft_collection": {
+          "description": "Must hold an NFT of the given collection to unlock",
+          "allOf": [{ "$ref": "#/definitions/nft_collection" }]
+        }
+      },
+      "type": "object"
+    },
+    "nft_collection": {
+      "required": ["address", "chain", "name"],
+      "properties": {
+        "chain": { "type": "string", "example": "eth", "enum": ["eth", "sol"] },
+        "address": { "type": "string" },
+        "name": { "type": "string" },
+        "imageUrl": { "type": "string" },
+        "externalLink": { "type": "string" }
+      },
+      "type": "object"
+    },
+    "track_response": {
+      "properties": { "data": { "$ref": "#/definitions/Track" } },
+      "type": "object"
+    },
+    "track_inspect": {
+      "properties": { "data": { "$ref": "#/definitions/blob_info" } },
+      "type": "object"
+    },
+    "blob_info": {
+      "required": ["content_type", "size"],
+      "properties": { "size": { "type": "integer" }, "content_type": { "type": "string" } },
+      "type": "object"
+    },
+    "track_search": {
+      "properties": { "data": { "type": "array", "items": { "$ref": "#/definitions/Track" } } },
+      "type": "object"
+    },
+    "top_listener": {
+      "properties": {
+        "data": { "type": "array", "items": { "$ref": "#/definitions/top_listener" } }
+      },
+      "type": "object"
+    },
+    "get_tips_response": {
+      "properties": { "data": { "type": "array", "items": { "$ref": "#/definitions/tip" } } },
+      "type": "object"
+    },
+    "tip": {
+      "required": ["amount", "created_at"],
+      "properties": {
+        "amount": { "type": "string" },
+        "sender": { "$ref": "#/definitions/user" },
+        "receiver": { "$ref": "#/definitions/user" },
+        "created_at": { "type": "string" }
+      },
+      "type": "object"
+    },
+    "developer_app_response": {
+      "properties": { "data": { "$ref": "#/definitions/developer_app" } },
+      "type": "object"
+    },
+    "dashboard_wallet_users_response": {
+      "properties": {
+        "data": { "type": "array", "items": { "$ref": "#/definitions/dashboard_wallet_user" } }
+      },
+      "type": "object"
+    },
+    "dashboard_wallet_user": {
+      "required": ["user", "wallet"],
+      "properties": { "wallet": { "type": "string" }, "user": { "$ref": "#/definitions/user" } },
+      "type": "object"
+    }
+  },
+  "responses": {
+    "ParseError": { "description": "When a mask can't be parsed" },
+    "MaskError": { "description": "When any error occurs on mask" }
+  }
+}
