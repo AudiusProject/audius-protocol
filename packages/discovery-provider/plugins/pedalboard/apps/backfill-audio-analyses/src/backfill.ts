@@ -19,7 +19,7 @@ const BACKFILL_BATCH_SIZE = config.testRun ? 100 : 1000
 const MAX_CONCURRENT_REQUESTS = 10
 const semaphore = new Semaphore(MAX_CONCURRENT_REQUESTS)
 
-const REQUEST_TIMEOUT = 30000 // 30s
+const REQUEST_TIMEOUT = 5000 // 5s
 
 interface Track {
   track_id: number
@@ -43,13 +43,17 @@ async function analyzeAudio(
 ): Promise<void> {
   const audioUploadId = track.audio_upload_id
 
+  // TODO handle legacy tracks, which have a track_cid but no audio_upload_id
+
   const release = await semaphore.acquire() // Acquire a semaphore permit
-  for (const contentNodeEndpoint of contentNodes) {
+  for (let i = 0; i < 5; i++) {
+    // Choose a random content node
+    const contentNode = contentNodes[Math.floor(Math.random() * contentNodes.length)]
     try {
       console.log(
-        `Querying ${contentNodeEndpoint} for audio analysis for track ID ${track.track_id}, upload ID ${track.audio_upload_id}`
+        `Querying ${contentNode} for audio analysis for track ID ${track.track_id}, upload ID ${track.audio_upload_id}`
       )
-      const analysisUrl = `${contentNodeEndpoint}/uploads/${audioUploadId}/analyze`
+      const analysisUrl = `${contentNode}/uploads/${audioUploadId}/analyze`
       const timestamp = Math.floor(Date.now() / 1000) // current timestamp in seconds
       const dataToSign = {
         trackId: track.track_id,
@@ -65,20 +69,20 @@ async function analyzeAudio(
       )
       if (response.status !== 200) {
         console.log(
-          `Received ${response.status} response from ${contentNodeEndpoint}. Trying another content node...`
+          `Error triggering audio analysis on ${contentNode}: Received ${response.status} response. Attempt #${i+1} to trigger audio analysis for track ID ${track.track_id}, upload ID ${audioUploadId}. Trying another content node...`
         )
         continue
       }
     } catch (error: any) {
       if (error.isAxiosError !== undefined && error.code === 'ECONNABORTED') {
         console.log(
-          `Timeout error triggering audio analysis for track ID ${track.track_id} on ${contentNodeEndpoint}: ${error.message}. Trying another content node...`
+          `Timeout error triggering audio analysis on ${contentNode}: ${error.message}. Attempt #${i+1} to trigger audio analysis for track ID ${track.track_id}, upload ID ${audioUploadId}. Trying another content node...`
         )
         continue
       } else {
         console.error(
-          `Error analyzing audio for track ID ${track.track_id}, upload ID ${
-            track.audio_upload_id
+          `Error triggering audio analysis for track ID ${track.track_id}, upload ID ${
+            audioUploadId
           }: ${(error as Error).message}. Skipping track...`
         )
         break
@@ -115,10 +119,6 @@ async function processBatches(db: Knex): Promise<void> {
       console.error(`No healthy content nodes found. Please investigate`)
       return
     }
-    // Take 5 random endpoints to query for audio analysis
-    const endpoints = _.shuffle(
-      contentNodes.map((node) => node.endpoint)
-    ).slice(0, 5)
     offset = await readDbOffset()
     if (offset == null) {
       offset = 0
@@ -129,7 +129,7 @@ async function processBatches(db: Knex): Promise<void> {
       break
     }
     const analyzePromises = tracks.map((track) =>
-      analyzeAudio(endpoints, track)
+      analyzeAudio(contentNodes.map((node) => node.endpoint), track)
     )
     await Promise.all(analyzePromises)
 
