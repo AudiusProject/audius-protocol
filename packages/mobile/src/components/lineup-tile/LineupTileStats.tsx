@@ -9,7 +9,6 @@ import {
 } from '@audius/common/store'
 import type { RepostType } from '@audius/common/store'
 import {
-  dayjs,
   formatCount,
   formatReleaseDate,
   getLocalTimezone
