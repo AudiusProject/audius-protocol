@@ -1,3 +1,4 @@
+import { useIsManagedAccount } from '@audius/common/hooks'
 import { profilePageSelectors, tippingActions } from '@audius/common/store'
 import { Button, IconTokenGold } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
@@ -13,12 +14,17 @@ const messages = {
 }
 
 export const TipAudioButton = () => {
+  const isManagedAccount = useIsManagedAccount()
   const dispatch = useDispatch()
   const profile = useSelector(getProfileUser)
 
   const handleClick = useAuthenticatedCallback(() => {
     dispatch(beginTip({ user: profile, source: 'profile' }))
   }, [dispatch, profile])
+
+  if (isManagedAccount) {
+    return null
+  }
 
   return (
     <Button

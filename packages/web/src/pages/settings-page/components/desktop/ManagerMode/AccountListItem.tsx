@@ -19,7 +19,7 @@ import {
 } from '@audius/harmony'
 
 import ArtistChip from 'components/artist/ArtistChip'
-import { useGoToRoute } from 'hooks/useGoToRoute'
+import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { useComposeChat } from 'pages/chat-page/components/useComposeChat'
 import { useSelector } from 'utils/reducer'
 import { profilePage } from 'utils/route'
@@ -66,11 +66,11 @@ export const AccountListItem = ({
 }: AccountListItemProps) => {
   const currentUserId = useSelector(getUserId)
 
-  const goToRoute = useGoToRoute()
+  const navigate = useNavigateToPage()
   const goToProfile = useCallback(() => {
     if (!user) return
-    goToRoute(profilePage(user.handle))
-  }, [goToRoute, user])
+    navigate(profilePage(user.handle))
+  }, [navigate, user])
 
   const { switchAccount } = useAccountSwitcher()
 

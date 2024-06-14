@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
 
+import { useIsManagedAccount } from '@audius/common/hooks'
 import {
   BrowserNotificationSetting,
   EmailFrequency,
@@ -73,6 +74,7 @@ type NotificationSettingsProps = {
 }
 
 const NotificationSettings = (props: NotificationSettingsProps) => {
+  const isManagedAccount = useIsManagedAccount()
   const browserPushEnabled =
     props.settings[BrowserNotificationSetting.BrowserPush]
   const notificationToggles = [
@@ -142,7 +144,7 @@ const NotificationSettings = (props: NotificationSettingsProps) => {
           <div className={styles.title}>{messages.title}</div>
         </div>
         <div className={styles.divider}></div>
-        {!isElectron() && (
+        {!isElectron() && !isManagedAccount ? (
           <>
             <div className={styles.description}>
               <ToggleNotification
@@ -168,7 +170,7 @@ const NotificationSettings = (props: NotificationSettingsProps) => {
             </div>
             <div className={styles.divider}></div>
           </>
-        )}
+        ) : null}
         <div className={styles.emailContainer}>
           <div className={cn(styles.bodyText, styles.email)}>
             {messages.emailFrequency}
