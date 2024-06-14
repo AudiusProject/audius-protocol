@@ -77,7 +77,7 @@ const TrackEditForm = (
 ) => {
   const { values, dirty, isSubmitting, hideContainer = false } = props
   const isMultiTrack = values.trackMetadatas.length > 1
-  const isEdit = values.trackMetadatas[0].track_id !== undefined
+  const isUpload = values.trackMetadatas[0].track_id === undefined
   const trackIdx = values.trackMetadatasIndex
   const [, , { setValue: setIndex }] = useField('trackMetadatasIndex')
   useUnmount(() => {
@@ -117,12 +117,13 @@ const TrackEditForm = (
                 <ReleaseDateFieldLegacy />
               )}
               <AccessAndSaleField
-                isUpload
+                isUpload={isUpload}
                 forceOpen={forceOpenAccessAndSale}
                 setForceOpen={setForceOpenAccessAndSale}
               />
               <AttributionField />
               <StemsAndDownloadsField
+                isUpload={isUpload}
                 closeMenuCallback={(data) => {
                   if (data === MenuFormCallbackStatus.OPEN_ACCESS_AND_SALE) {
                     setForceOpenAccessAndSale(true)
@@ -142,11 +143,13 @@ const TrackEditForm = (
         </div>
         {isMultiTrack ? <MultiTrackSidebar /> : null}
       </div>
-      {isEdit ? (
+      {isUpload ? (
+        !isMultiTrack ? (
+          <AnchoredSubmitRow />
+        ) : null
+      ) : (
         <AnchoredSubmitRowEdit />
-      ) : !isMultiTrack ? (
-        <AnchoredSubmitRow />
-      ) : null}
+      )}
     </Form>
   )
 }

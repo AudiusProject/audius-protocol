@@ -1,24 +1,23 @@
 import { ReactElement } from 'react'
 
-import cn from 'classnames'
-
-import styles from './InfoLabel.module.css'
+import { Text } from '@audius/harmony'
 
 type InfoLabelProps = {
-  className?: string
   labelName: string
   labelValue: string | ReactElement
 }
 
-const InfoLabel = (props: InfoLabelProps) => {
-  const { labelName, labelValue, className } = props
+export const InfoLabel = (props: InfoLabelProps) => {
+  const { labelName, labelValue } = props
 
   return (
-    <div className={cn(className, styles.infoLabel)}>
-      <h2 className={styles.labelName}>{labelName}</h2>
-      <h2 className={styles.labelValue}>{labelValue}</h2>
-    </div>
+    <Text>
+      <Text variant='label' color='subdued' tag='span'>
+        {labelName}
+      </Text>{' '}
+      <Text variant='body' size='s' strength='strong'>
+        {labelValue}
+      </Text>
+    </Text>
   )
 }
-
-export default InfoLabel

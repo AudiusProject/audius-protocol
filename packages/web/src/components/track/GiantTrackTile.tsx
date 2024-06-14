@@ -45,6 +45,7 @@ import { Mood } from '@audius/sdk'
 import cn from 'classnames'
 import dayjs from 'dayjs'
 import { useDispatch, shallowEqual, useSelector } from 'react-redux'
+import { generatePath } from 'react-router-dom'
 
 import { TextLink, UserLink } from 'components/link'
 import Menu from 'components/menu/Menu'
@@ -58,6 +59,7 @@ import { ComponentPlacement } from 'components/types'
 import { UserGeneratedText } from 'components/user-generated-text'
 import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import { moodMap } from 'utils/Moods'
+import { SEARCH_PAGE } from 'utils/route'
 import { trpc } from 'utils/trpcClientWeb'
 
 import { AiTrackSection } from './AiTrackSection'
@@ -66,7 +68,7 @@ import { GatedContentSection } from './GatedContentSection'
 import GiantArtwork from './GiantArtwork'
 import styles from './GiantTrackTile.module.css'
 import { GiantTrackTileProgressInfo } from './GiantTrackTileProgressInfo'
-import InfoLabel from './InfoLabel'
+import { InfoLabel } from './InfoLabel'
 import { PlayPauseButton } from './PlayPauseButton'
 
 const DownloadSection = lazy(() =>
@@ -366,9 +368,17 @@ export const GiantTrackTile = ({
       shouldShow &&
       mood && (
         <InfoLabel
-          className={styles.infoLabelPlacement}
           labelName='mood'
-          labelValue={mood in moodMap ? moodMap[mood as Mood] : mood}
+          labelValue={
+            <TextLink
+              to={{
+                pathname: generatePath(SEARCH_PAGE, { category: 'tracks' }),
+                search: new URLSearchParams({ mood }).toString()
+              }}
+            >
+              {mood in moodMap ? moodMap[mood as Mood] : mood}
+            </TextLink>
+          }
         />
       )
     )
@@ -380,17 +390,24 @@ export const GiantTrackTile = ({
     return (
       shouldShow && (
         <InfoLabel
-          className={styles.infoLabelPlacement}
           labelName='genre'
-          labelValue={getCanonicalName(genre)}
+          labelValue={
+            <TextLink
+              to={{
+                pathname: generatePath(SEARCH_PAGE, { category: 'tracks' }),
+                search: new URLSearchParams({ genre }).toString()
+              }}
+            >
+              {getCanonicalName(genre)}
+            </TextLink>
+          }
         />
       )
     )
   }
 
   const renderListenCount = () => {
-    const shouldShow =
-      isOwner || (!isStreamGated && (isUnlisted || fieldVisibility.play_count))
+    const shouldShow = isOwner || (!isStreamGated && !isUnlisted)
 
     if (!shouldShow) {
       return null
@@ -436,7 +453,6 @@ export const GiantTrackTile = ({
     if (!albumInfo) return null
     return (
       <InfoLabel
-        className={styles.infoLabelPlacement}
         labelName='album'
         labelValue={
           <TextLink to={albumInfo.permalink}>
@@ -451,11 +467,7 @@ export const GiantTrackTile = ({
     return (
       !isUnlisted &&
       releaseDate && (
-        <InfoLabel
-          className={styles.infoLabelPlacement}
-          labelName='released'
-          labelValue={formatDate(releaseDate)}
-        />
+        <InfoLabel labelName='released' labelValue={formatDate(releaseDate)} />
       )
     )
   }
@@ -600,32 +612,34 @@ export const GiantTrackTile = ({
               {renderStatsRow()}
             </div>
 
-            <div
-              className={cn(styles.actionButtons, fadeIn)}
-              role='group'
-              aria-label={messages.actionGroupLabel}
-            >
-              {renderShareButton()}
-              {renderMakePublicButton()}
-              {hasStreamAccess && renderRepostButton()}
-              {hasStreamAccess && renderFavoriteButton()}
-              <span>
-                {/* prop types for overflow menu don't work correctly
+            {isUnlisted && !isOwner ? null : (
+              <div
+                className={cn(styles.actionButtons, fadeIn)}
+                role='group'
+                aria-label={messages.actionGroupLabel}
+              >
+                {renderShareButton()}
+                {renderMakePublicButton()}
+                {hasStreamAccess && renderRepostButton()}
+                {hasStreamAccess && renderFavoriteButton()}
+                <span>
+                  {/* prop types for overflow menu don't work correctly
               so we need to cast here */}
-                <Menu {...(overflowMenu as any)}>
-                  {(ref, triggerPopup) => (
-                    <div className={cn(styles.menuKebabContainer)} ref={ref}>
-                      <Button
-                        variant='secondary'
-                        aria-label='More options'
-                        iconLeft={IconKebabHorizontal}
-                        onClick={() => triggerPopup()}
-                      />
-                    </div>
-                  )}
-                </Menu>
-              </span>
-            </div>
+                  <Menu {...(overflowMenu as any)}>
+                    {(ref, triggerPopup) => (
+                      <div className={cn(styles.menuKebabContainer)} ref={ref}>
+                        <Button
+                          variant='secondary'
+                          aria-label='More options'
+                          iconLeft={IconKebabHorizontal}
+                          onClick={() => triggerPopup()}
+                        />
+                      </div>
+                    )}
+                  </Menu>
+                </span>
+              </div>
+            )}
           </div>
           <Flex
             gap='s'
@@ -673,9 +687,8 @@ export const GiantTrackTile = ({
         ) : null}
 
         <div className={cn(styles.bottomSection, fadeIn)}>
-          <div className={styles.infoLabelsSection}>
+          <Flex w='100%' gap='l' wrap='wrap'>
             <InfoLabel
-              className={styles.infoLabelPlacement}
               labelName='duration'
               labelValue={`${formatSeconds(duration)}`}
             />
@@ -683,14 +696,10 @@ export const GiantTrackTile = ({
             {renderGenre()}
             {renderMood()}
             {credits ? (
-              <InfoLabel
-                className={styles.infoLabelPlacement}
-                labelName='credit'
-                labelValue={credits}
-              />
+              <InfoLabel labelName='credit' labelValue={credits} />
             ) : null}
             {renderAlbum()}
-          </div>
+          </Flex>
           {description ? (
             <UserGeneratedText tag='h3' size='s' className={styles.description}>
               {description}

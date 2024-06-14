@@ -4,6 +4,9 @@ import { cleanEnv, str, num, json } from 'envalid'
 
 import { logger } from './logger'
 
+export const LISTENS_RATE_LIMIT_IP_PREFIX = "listens-rate-limit-ip"
+export const LISTENS_RATE_LIMIT_TRACK_PREFIX = "listens-rate-limit-track"
+
 export const ClockProgram = new PublicKey(
   'SysvarC1ock11111111111111111111111111111111'
 )
@@ -44,6 +47,12 @@ type Config = {
   ipdataApiKey: string | null
   listensValidSigner: string
   solanaSignerPrivateKey: string
+  listensIpHourlyRateLimit: number
+  listensIpDailyRateLimit: number
+  listensIpWeeklyRateLimit: number
+  listensTrackHourlyRateLimit: number
+  listensTrackDailyRateLimit: number
+  listensTrackWeeklyRateLimit: number
 }
 
 let cachedConfig: Config | null = null
@@ -117,7 +126,13 @@ const readConfig = (): Config => {
     audius_solana_signer_private_key: str({
       default:
         'd242765e718801781440d77572b9dafcdc9baadf0269eff24cf61510ddbf1003'
-    })
+    }),
+    audius_solana_listens_ip_hourly_rate_limit: num({ default: 120 }),
+    audius_solana_listens_ip_daily_rate_limit: num({ default: 50000 }),
+    audius_solana_listens_ip_weekly_rate_limit: num({ default: 50000000 }),
+    audius_solana_listens_track_hourly_rate_limit: num({ default: 120 }),
+    audius_solana_listens_track_daily_rate_limit: num({ default: 50000 }),
+    audius_solana_listens_track_weekly_rate_limit: num({ default: 50000000 })
   })
   const solanaFeePayerWalletsParsed = env.audius_solana_fee_payer_wallets
   let solanaFeePayerWallets: Keypair[] = []
@@ -150,7 +165,13 @@ const readConfig = (): Config => {
       env.audius_ipdata_api_key === '' ? null : env.audius_ipdata_api_key,
     listensValidSigner: env.audius_solana_listens_valid_signer,
     ethRegistryProgramId: env.audius_solana_eth_registry_program,
-    solanaSignerPrivateKey: env.audius_solana_signer_private_key
+    solanaSignerPrivateKey: env.audius_solana_signer_private_key,
+    listensIpHourlyRateLimit: env.audius_solana_listens_ip_hourly_rate_limit,
+    listensIpDailyRateLimit: env.audius_solana_listens_ip_daily_rate_limit,
+    listensIpWeeklyRateLimit: env.audius_solana_listens_ip_weekly_rate_limit,
+    listensTrackHourlyRateLimit: env.audius_solana_listens_track_hourly_rate_limit,
+    listensTrackDailyRateLimit: env.audius_solana_listens_track_daily_rate_limit,
+    listensTrackWeeklyRateLimit: env.audius_solana_listens_track_weekly_rate_limit
   }
   return readConfig()
 }

@@ -243,8 +243,8 @@ type AccessAndSaleFieldProps = {
 
 export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
   const {
-    isUpload = false,
-    isAlbum = false,
+    isUpload,
+    isAlbum,
     forceOpen,
     setForceOpen,
     isPublishDisabled = false
@@ -269,6 +269,8 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
   const parentFormInitialStreamConditions =
     'stream_conditions' in parentFormInitialValues
       ? (parentFormInitialValues.stream_conditions as AccessConditions)
+      : 'trackMetadatas' in parentFormInitialValues
+      ? parentFormInitialValues.trackMetadatas[index].stream_conditions
       : undefined
 
   // Fields from the outer form

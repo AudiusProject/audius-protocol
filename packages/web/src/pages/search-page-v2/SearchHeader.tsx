@@ -44,12 +44,12 @@ export const SearchHeader = (props: SearchHeaderProps) => {
 
   const { isMobile } = useMedia()
 
-  const handleChange = useCallback(
+  const handleCategoryChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
       const value = e.target.value
-      if (query) setCategory(value as CategoryKey)
+      setCategory(value as CategoryKey)
     },
-    [setCategory, query]
+    [setCategory]
   )
 
   const filterKeys = categories[categoryKey].filters
@@ -61,7 +61,7 @@ export const SearchHeader = (props: SearchHeaderProps) => {
       aria-label={'Select search category'}
       name='searchcategory'
       value={categoryKey}
-      onChange={handleChange}
+      onChange={handleCategoryChange}
     >
       {Object.entries(categories)
         .filter(([key]) => !isMobile || key !== 'all')

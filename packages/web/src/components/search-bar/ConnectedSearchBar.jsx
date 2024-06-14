@@ -8,7 +8,6 @@ import { Kind, Name, SquareSizes } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import { getTierForUser, searchActions } from '@audius/common/store'
 import { push as pushRoute } from 'connected-react-router'
-import { has } from 'lodash'
 import { connect } from 'react-redux'
 import { matchPath } from 'react-router'
 import { generatePath, withRouter } from 'react-router-dom'
@@ -28,8 +27,7 @@ import {
   collectionPage,
   profilePage,
   getPathname,
-  SEARCH_PAGE,
-  SEARCH_CATEGORY_PAGE
+  SEARCH_PAGE
 } from 'utils/route'
 
 import styles from './ConnectedSearchBar.module.css'
@@ -47,20 +45,16 @@ class ConnectedSearchBar extends Component {
 
     // Clear search when navigating away from the search results page.
     history.listen((location, action) => {
-      const match = matchPath(getPathname(this.context.history.location), {
-        path: '/search/:query'
-      })
-      if (!match) {
+      const params = new URLSearchParams(this.context.history.location.search)
+      if (!params.has('query')) {
         this.onSearchChange('')
       }
     })
 
     // Set the initial search bar value if we loaded into a search page.
-    const match = matchPath(getPathname(this.context.history.location), {
-      path: '/search/:query'
-    })
-    if (has(match, 'params.query')) {
-      this.onSearchChange(match.params.query)
+    const params = new URLSearchParams(this.context.history.location.search)
+    if (params.has('query')) {
+      this.onSearchChange(params.get('query'))
     }
   }
 
@@ -89,32 +83,29 @@ class ConnectedSearchBar extends Component {
   }
 
   onSubmit = (value) => {
-    // Encode everything besides tag searches
     const pathname = '/search'
+    const locationSearchParams = new URLSearchParams(
+      this.props.history.location.search
+    )
 
-    let newPath = `${pathname}/${value}`
+    let newPath = pathname
     if (value) {
-      const categoryMatch = matchPath(
-        getPathname(this.props.history.location),
-        {
-          path: SEARCH_CATEGORY_PAGE
-        }
-      )
-      const searchMatch = matchPath(getPathname(this.props.history.location), {
-        path: SEARCH_PAGE
-      })
+      if (this.props.isSearchV2Enabled) {
+        const searchMatch = matchPath(
+          getPathname(this.props.history.location),
+          {
+            path: SEARCH_PAGE
+          }
+        )
 
-      if (categoryMatch) {
-        newPath = generatePath(SEARCH_CATEGORY_PAGE, {
-          ...categoryMatch.params,
-          query: value
-        })
-      } else if (searchMatch) {
-        newPath = generatePath(SEARCH_PAGE, {
-          ...searchMatch.params,
-          query: value
-        })
+        if (searchMatch) {
+          newPath = generatePath(SEARCH_PAGE, {
+            ...searchMatch.params
+          })
+        }
       }
+
+      locationSearchParams.set('query', value)
     }
 
     if (value.startsWith('#')) {
@@ -128,7 +119,7 @@ class ConnectedSearchBar extends Component {
       value = encodeURIComponent(value)
       this.props.history.push({
         pathname: newPath,
-        search: this.props.history.location.search,
+        search: locationSearchParams.toString(),
         state: {}
       })
     }
