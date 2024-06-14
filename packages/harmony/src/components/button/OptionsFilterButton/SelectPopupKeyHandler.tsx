@@ -75,6 +75,8 @@ export const SelectPopupKeyHandler = (props: SelectPopupKeyHandler) => {
           })
           break
         case 'Enter':
+          event.stopPropagation()
+          event.preventDefault()
           if (activeIndex !== null && options[activeIndex]) {
             onOptionSelect(options[activeIndex])
           }
