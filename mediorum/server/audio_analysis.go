@@ -293,7 +293,7 @@ func (ss *MediorumServer) analyzeAudio(upload *Upload) error {
 				upload.AudioAnalysisResults = &AudioAnalysisResult{}
 			}
 			upload.AudioAnalysisResults.BPM = bpm
-			if !firstResult {
+			if firstResult {
 				ss.crud.Update(upload)
 				firstResult = false
 			}
@@ -304,7 +304,7 @@ func (ss *MediorumServer) analyzeAudio(upload *Upload) error {
 				upload.AudioAnalysisResults = &AudioAnalysisResult{}
 			}
 			upload.AudioAnalysisResults.Key = musicalKey
-			if !firstResult {
+			if firstResult {
 				ss.crud.Update(upload)
 				firstResult = false
 			}
