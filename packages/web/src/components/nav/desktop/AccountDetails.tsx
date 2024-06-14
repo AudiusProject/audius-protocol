@@ -84,8 +84,8 @@ export const AccountDetails = () => {
                     css={{
                       flex: 1,
                       ...(isManagedAccount && {
-                        color: color.text.accent,
-                        '&:hover': { color: color.text.accent }
+                        color: color.secondary.s500,
+                        '&:hover': { color: color.secondary.s500 }
                       })
                     }}
                   />
@@ -96,8 +96,8 @@ export const AccountDetails = () => {
                   to={profileLink}
                   css={
                     isManagedAccount && {
-                      color: color.text.accent,
-                      '&:hover': { color: color.text.accent }
+                      color: color.secondary.s500,
+                      '&:hover': { color: color.secondary.s500 }
                     }
                   }
                 >{`@${account.handle}`}</TextLink>
