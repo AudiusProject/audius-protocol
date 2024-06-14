@@ -82,7 +82,7 @@ export class TrackUploadHelper extends BaseAPI {
       musicalKey: audioResponse.audio_analysis_results?.key
         ? audioResponse.audio_analysis_results.key
         : trackMetadata.musicalKey,
-      audioAnalysisErrorCount: audioResponse.audio_analysis_error_count
+      audioAnalysisErrorCount: audioResponse.audio_analysis_error_count || 0
     }
   }
 }

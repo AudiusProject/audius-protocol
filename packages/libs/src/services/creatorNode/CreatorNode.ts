@@ -253,7 +253,7 @@ export class CreatorNode {
         updatedMetadata.musical_key = audioResp.audio_analysis_results.key
       }
     }
-    updatedMetadata.audio_analysis_error_count = audioResp.audio_analysis_error_count
+    updatedMetadata.audio_analysis_error_count = audioResp.audio_analysis_error_count || 0
     updatedMetadata.audio_upload_id = audioResp.id
     if (coverArtResp) updatedMetadata.cover_art_sizes = coverArtResp.id
 
