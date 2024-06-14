@@ -4,7 +4,7 @@ import { Button, Flex, IconError, Text } from '@audius/harmony'
 import { useFormikContext } from 'formik'
 
 import { useHistoryContext } from 'app/HistoryProvider'
-import { useGoToRoute } from 'hooks/useGoToRoute'
+import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { FEED_PAGE } from 'utils/route'
 
 import { EditFormScrollContext } from '../EditTrackPage'
@@ -30,7 +30,7 @@ export const AnchoredSubmitRowEdit = () => {
   }, [isValid])
 
   const { history } = useHistoryContext()
-  const goToRoute = useGoToRoute()
+  const navigate = useNavigateToPage()
 
   return (
     <>
@@ -40,7 +40,7 @@ export const AnchoredSubmitRowEdit = () => {
             variant='secondary'
             size='default'
             onClick={() =>
-              history.length > 0 ? history.goBack() : goToRoute(FEED_PAGE)
+              history.length > 0 ? history.goBack() : navigate(FEED_PAGE)
             }
           >
             {messages.cancel}

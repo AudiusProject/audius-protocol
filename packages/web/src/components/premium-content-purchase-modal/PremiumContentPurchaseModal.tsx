@@ -52,6 +52,7 @@ import { LockedContentDetailsTile } from 'components/track/LockedContentDetailsT
 import { USDCManualTransfer } from 'components/usdc-manual-transfer/USDCManualTransfer'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { useIsUSDCEnabled } from 'hooks/useIsUSDCEnabled'
+import { useManagedAccountNotAllowedCallback } from 'hooks/useManagedAccountNotAllowedRedirect'
 import ModalDrawer from 'pages/audio-rewards-page/components/modals/ModalDrawer'
 import { pushUniqueRoute } from 'utils/route'
 import zIndex from 'utils/zIndex'
@@ -274,6 +275,11 @@ export const PremiumContentPurchaseModal = () => {
     dispatch(cleanup())
     dispatch(cleanupUSDCRecovery())
   }, [onClosed, dispatch])
+
+  useManagedAccountNotAllowedCallback({
+    trigger: isOpen,
+    callback: handleClose
+  })
 
   if (
     !metadata ||

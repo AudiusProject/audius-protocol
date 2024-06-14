@@ -30,14 +30,12 @@ function* watchFetchCollection() {
         retrieveCollectionByPermalink,
         permalink,
         {
-          requiresAllTracks: true,
           deleteExistingEntry: true,
           forceRetrieveFromSource: forceFetch
         }
       )
     } else {
       retrievedCollections = yield call(retrieveCollections, [collectionId], {
-        requiresAllTracks: true,
         deleteExistingEntry: true,
         forceRetrieveFromSource: forceFetch
       })

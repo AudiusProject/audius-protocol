@@ -88,8 +88,14 @@ class ConnectedSearchBar extends Component {
       this.props.history.location.search
     )
 
-    let newPath = pathname
     if (value) {
+      locationSearchParams.set('query', value)
+    } else {
+      locationSearchParams.delete('query')
+    }
+
+    let newPath = pathname
+    if (this.props.isSearchV2Enabled) {
       const searchMatch = matchPath(getPathname(this.props.history.location), {
         path: SEARCH_PAGE
       })
@@ -99,8 +105,6 @@ class ConnectedSearchBar extends Component {
           ...searchMatch.params
         })
       }
-
-      locationSearchParams.set('query', value)
     }
 
     if (value.startsWith('#')) {

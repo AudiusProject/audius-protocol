@@ -23,6 +23,7 @@ import { usePrevious } from 'react-use'
 
 import IconGoldBadge from 'assets/img/tokenBadgeGold48@2x.webp'
 import { useSelector } from 'common/hooks/useSelector'
+import { useManagedAccountNotAllowedCallback } from 'hooks/useManagedAccountNotAllowedRedirect'
 import { useRemoteVar } from 'hooks/useRemoteConfig'
 
 import { ConfirmSendTip } from './ConfirmSendTip'
@@ -159,9 +160,13 @@ export const TipAudioModal = () => {
       ? nextScreenTransition
       : previousScreenTransition
 
+  const isOpen = sendStatus !== null
+
+  useManagedAccountNotAllowedCallback({ trigger: isOpen, callback: onClose })
+
   return (
     <Modal
-      isOpen={sendStatus !== null}
+      isOpen={isOpen}
       onClose={onClose}
       bodyClassName={cn(styles.modalBody, {
         [styles.biggerModalBody]: !!audioFeaturesDegradedText

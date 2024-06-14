@@ -7,15 +7,21 @@ import {
 } from '@audius/common/api'
 import { useAccountSwitcher } from '@audius/common/hooks'
 import { UserMetadata } from '@audius/common/models'
+import { accountSelectors } from '@audius/common/store'
 import { Box, IconButton, IconCaretDown, Popup } from '@audius/harmony'
+import { useSelector } from 'react-redux'
 
 import { AccountListContent } from './AccountListContent'
 
 export const AccountSwitcher = () => {
   const [isExpanded, setIsExpanded] = useState(false)
+  const userId = useSelector(accountSelectors.getUserId)
 
-  const { data: currentWeb3User } = useGetCurrentWeb3User({})
-  const { data: currentUserId } = useGetCurrentUserId({})
+  const { data: currentWeb3User } = useGetCurrentWeb3User(
+    {},
+    { disabled: !userId }
+  )
+  const { data: currentUserId } = useGetCurrentUserId({}, { disabled: !userId })
 
   const { switchAccount } = useAccountSwitcher()
 
