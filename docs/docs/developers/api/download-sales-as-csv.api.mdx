@@ -1,0 +1,129 @@
+---
+id: download-sales-as-csv
+title: 'Download Sales as CSV'
+description: 'Downloads the sales the user has made as a CSV file'
+sidebar_label: 'Download Sales as CSV'
+hide_title: true
+hide_table_of_contents: true
+api: eJydlE1v2zAMhv+KoNMGuHGyY27BUgw5DBiWtpehGBiLiYU6kivJ7gLD/32kYjcfS4c4J9sS/fLhK1KNdOhLazx6OW3kl/GYHwp95nQZtDVyKpdVlqH3sm2Ts525fTOFBeVFyFF4KHD/Vnl0IgcvtqBQ0BPE1+WTWOsCZSJtiQ5YYaGONMQy/k7BFEpRJTjYYkBHYL8aaeiDorWiLc25Swg5vTt8rbRDUgquwnPAmXhklMWcIn2W4xa4vLArWcsHp82Gy3qXZ/DfhxyvFbqdPBd96CtczIVdHwrewgvpxW+mQh+uzHpvMqtQ3c0hwN13sho22CPkSBa6iwyKwikbBPFGrnm9MajEancAWlsXlyFUjpkyW+/rGQy17FWuwDpkJHOYMWEadQvNcyIDbLgB4sl4SQvUE7nlxtlgiG1CbTCVadxPG63aNPZhqrq+4gTo6r6PKlcwfgiln6ap0n6PUTpba6poBJXSlR9lNq0nkgG0WdvIpkPBcLMfC5JkvX3Jk9H4HxtmUUQ8TQRH09iU1octGNbp7P2o7U+EGplZE9CEm2etczTgn5CWBdDZEU30oOms661N5DQ2flRmkN4/8iAnfI5smhV4fHRF2/LyfjzYVfIRVgVP4RoKfz6Gx2UMGp6L9C+4O5nUGoqKo+Jp1eA0kwyk+vSzu0Y+i+Mr42L+bhHM7jh5z0VI7TNFdQMy3Jzbp/o/bn1wwxysS4ZiDp7ya+mOr5qTo30f/G/3D3Q3/AWNr0oi
+sidebar_class_name: 'get api-method'
+info_path: developers/api/api
+custom_edit_url: null
+---
+
+import ApiTabs from '@theme/ApiTabs'
+import DiscriminatorTabs from '@theme/DiscriminatorTabs'
+import MethodEndpoint from '@theme/ApiExplorer/MethodEndpoint'
+import SecuritySchemes from '@theme/ApiExplorer/SecuritySchemes'
+import MimeTabs from '@theme/MimeTabs'
+import ParamsItem from '@theme/ParamsItem'
+import ResponseSamples from '@theme/ResponseSamples'
+import SchemaItem from '@theme/SchemaItem'
+import SchemaTabs from '@theme/SchemaTabs'
+import Markdown from '@theme/Markdown'
+import Heading from '@theme/Heading'
+import OperationTabs from '@theme/OperationTabs'
+import TabItem from '@theme/TabItem'
+
+<Heading as={'h1'} className={'openapi__heading'} children={'Download Sales as CSV'}></Heading>
+
+<MethodEndpoint method={'get'} path={'/users/{id}/sales/download'}></MethodEndpoint>
+
+Downloads the sales the user has made as a CSV file
+
+<Heading
+  id={'request'}
+  as={'h2'}
+  className={'openapi-tabs__heading'}
+  children={'Request'}
+></Heading>
+
+<details
+  style={{ marginBottom: '1rem' }}
+  className={'openapi-markdown__details'}
+  data-collapsed={false}
+  open={true}
+>
+  <summary style={{}}>
+    <h3 className={'openapi-markdown__details-summary-header-params'}>Path Parameters</h3>
+  </summary>
+  <div>
+    <ul>
+      <ParamsItem
+        className={'paramsItem'}
+        param={{
+          name: 'id',
+          in: 'path',
+          required: true,
+          description: 'A User ID',
+          schema: { type: 'string' },
+        }}
+      ></ParamsItem>
+    </ul>
+  </div>
+</details>
+<details
+  style={{ marginBottom: '1rem' }}
+  className={'openapi-markdown__details'}
+  data-collapsed={false}
+  open={true}
+>
+  <summary style={{}}>
+    <h3 className={'openapi-markdown__details-summary-header-params'}>Query Parameters</h3>
+  </summary>
+  <div>
+    <ul>
+      <ParamsItem
+        className={'paramsItem'}
+        param={{
+          name: 'user_id',
+          in: 'query',
+          description: 'The user ID of the user making the request',
+          schema: { type: 'string' },
+        }}
+      ></ParamsItem>
+    </ul>
+  </div>
+</details>
+<details
+  style={{ marginBottom: '1rem' }}
+  className={'openapi-markdown__details'}
+  data-collapsed={false}
+  open={true}
+>
+  <summary style={{}}>
+    <h3 className={'openapi-markdown__details-summary-header-params'}>Header Parameters</h3>
+  </summary>
+  <div>
+    <ul>
+      <ParamsItem
+        className={'paramsItem'}
+        param={{
+          name: 'Encoded-Data-Message',
+          in: 'header',
+          description: 'The data that was signed by the user for signature recovery',
+          schema: { type: 'string' },
+        }}
+      ></ParamsItem>
+      <ParamsItem
+        className={'paramsItem'}
+        param={{
+          name: 'Encoded-Data-Signature',
+          in: 'header',
+          description: 'The signature of data, used for signature recovery',
+          schema: { type: 'string' },
+        }}
+      ></ParamsItem>
+    </ul>
+  </div>
+</details>
+<div>
+  <div>
+    <ApiTabs label={undefined} id={undefined}>
+      <TabItem label={'200'} value={'200'}>
+        <div>Success</div>
+        <div></div>
+      </TabItem>
+    </ApiTabs>
+  </div>
+</div>

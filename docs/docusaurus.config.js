@@ -45,6 +45,7 @@ const config = {
           routeBasePath: '/',
           sidebarPath: './sidebars.js',
           editUrl: 'https://github.com/AudiusProject/audius-protocol/tree/main/docs',
+          docItemComponent: '@theme/ApiItem', // add @theme/ApiItem here
         },
         theme: {
           customCss: './src/css/custom.css',
@@ -61,7 +62,12 @@ const config = {
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
       // Replace with your project's social card
-      // image: 'img/docusaurus-social-card.jpg',
+      image: 'img/dev.jpg',
+      docs: {
+        sidebar: {
+          hideable: true,
+        },
+      },
       navbar: {
         title: 'Audius',
         hideOnScroll: true,
@@ -129,12 +135,92 @@ const config = {
       prism: {
         theme: prismThemes.github,
         darkTheme: prismThemes.dracula,
+        // additionalLanguages: ['ruby', 'csharp', 'php', 'java', 'powershell'],
       },
+      languageTabs: [
+        {
+          highlight: 'bash',
+          language: 'curl',
+          logoClass: 'bash',
+          variant: 'cURL',
+        },
+        {
+          highlight: 'python',
+          language: 'python',
+          logoClass: 'python',
+          variant: 'requests',
+          variants: ['requests', 'http.client'],
+        },
+        {
+          highlight: 'go',
+          language: 'go',
+          logoClass: 'go',
+          variant: 'native',
+          variants: ['native'],
+        },
+        {
+          highlight: 'javascript',
+          language: 'nodejs',
+          logoClass: 'nodejs',
+          variant: 'axios',
+          variants: ['native', 'axios', 'request'],
+        },
+        // {
+        //   highlight: 'ruby',
+        //   language: 'ruby',
+        //   logoClass: 'ruby',
+        // },
+        // {
+        //   highlight: 'csharp',
+        //   language: 'csharp',
+        //   logoClass: 'csharp',
+        //   variant: 'httpclient',
+        // },
+        // {
+        //   highlight: 'php',
+        //   language: 'php',
+        //   logoClass: 'php',
+        // },
+        // {
+        //   highlight: 'java',
+        //   language: 'java',
+        //   logoClass: 'java',
+        //   variant: 'unirest',
+        // },
+        // {
+        //   highlight: 'powershell',
+        //   language: 'powershell',
+        //   logoClass: 'powershell',
+        // },
+      ],
+      // announcementBar: {
+      //   id: 'announcementBar',
+      //   content: 'Signup for the Hackathon!',
+      // },
     }),
   markdown: {
     mermaid: true,
   },
-  themes: ['@docusaurus/theme-mermaid'],
+  plugins: [
+    [
+      'docusaurus-plugin-openapi-docs',
+      {
+        id: 'openapi',
+        docsPluginId: 'classic', // e.g. "classic" or the plugin-content-docs id
+        config: {
+          api: {
+            specPath: 'docs/developers/swagger.json', // path or URL to the OpenAPI spec
+            // specPath: 'https://discoveryprovider.audius.co/v1/swagger.json', // path or URL to the OpenAPI spec
+            outputDir: 'docs/developers/api', // output directory for generated *.mdx and sidebar.js files
+            sidebarOptions: {
+              groupPathsBy: 'tag', // generate a sidebar.js slice that groups operations by tag
+            },
+          },
+        },
+      },
+    ],
+  ],
+  themes: ['@docusaurus/theme-mermaid', 'docusaurus-theme-openapi-docs'],
 }
 
 export default config

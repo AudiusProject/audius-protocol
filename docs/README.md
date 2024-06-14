@@ -14,6 +14,20 @@ To develop on cloudflare pages and test the whole stack, run:
 npm run pages:dev
 ```
 
+### Generate REST API docs
+
+- delete exsiting `/docs/api` directory
+- run the following command
+
+```sh
+npm run-script docusaurus gen-api-docs all
+```
+
+Copy the output sidebars to the `./sidebars.js` file
+
+> More info is available at the
+> [plugin repo](https://github.com/PaloAltoNetworks/docusaurus-openapi-docs)
+
 ## Build
 
 ```sh
