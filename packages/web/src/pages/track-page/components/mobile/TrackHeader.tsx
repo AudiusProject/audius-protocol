@@ -1,10 +1,7 @@
 import { Suspense, useCallback } from 'react'
 
 import { imageBlank as placeholderArt } from '@audius/common/assets'
-import {
-  useIsGatedContentPlaylistAddable,
-  useTrackMetadata
-} from '@audius/common/hooks'
+import { useIsGatedContentPlaylistAddable } from '@audius/common/hooks'
 import {
   SquareSizes,
   isContentCollectibleGated,
@@ -54,7 +51,6 @@ import { SearchTag } from 'components/search/SearchTag'
 import { AiTrackSection } from 'components/track/AiTrackSection'
 import { DownloadSection } from 'components/track/DownloadSection'
 import { GatedContentSection } from 'components/track/GatedContentSection'
-import { MetadataItem } from 'components/track/MetadataItem'
 import { TrackMetadataList } from 'components/track/TrackMetadataList'
 import { UserGeneratedText } from 'components/user-generated-text'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'

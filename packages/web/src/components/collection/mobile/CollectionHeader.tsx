@@ -3,16 +3,9 @@ import { memo, useCallback } from 'react'
 import { useGetCurrentUserId, useGetPlaylistById } from '@audius/common/api'
 import {
   useGatedContentAccessMap,
-  useGatedContentAccess,
-  useCollectionMetadata
+  useGatedContentAccess
 } from '@audius/common/hooks'
-import {
-  Variant,
-  SquareSizes,
-  ID,
-  ModalSource,
-  Track
-} from '@audius/common/models'
+import { Variant, SquareSizes, ID, ModalSource } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import {
   CommonState,
@@ -31,7 +24,6 @@ import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { UserLink } from 'components/link'
 import Skeleton from 'components/skeleton/Skeleton'
 import { GatedContentSection } from 'components/track/GatedContentSection'
-import { MetadataItem } from 'components/track/MetadataItem'
 import { UserGeneratedText } from 'components/user-generated-text'
 import { useCollectionCoverArt } from 'hooks/useCollectionCoverArt'
 import { useFlag } from 'hooks/useRemoteConfig'

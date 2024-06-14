@@ -74,7 +74,7 @@ export const TrackMetadataList = ({ trackId }: TrackMetadataListProps) => {
     trackId
   })
 
-  const trackMetadataRenderMap = useCallback(
+  const renderMetadataValue = useCallback(
     (value: string) => {
       return {
         [TrackMetadataType.GENRE]: isSearchV2Enabled
@@ -93,7 +93,7 @@ export const TrackMetadataList = ({ trackId }: TrackMetadataListProps) => {
       {metadataItems.map((metadataItem) => {
         return (
           <MetadataItem key={metadataItem.id} label={metadataItem.label}>
-            {trackMetadataRenderMap(metadataItem.value)[metadataItem.id] ??
+            {renderMetadataValue(metadataItem.value)[metadataItem.id] ??
               metadataItem.value}
           </MetadataItem>
         )

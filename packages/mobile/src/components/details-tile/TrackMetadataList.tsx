@@ -13,7 +13,7 @@ const messages = {
   album: 'Album'
 }
 
-const renderTrackLabelMapping = (value: string) => {
+const renderMetadataValue = (value: string) => {
   return {
     [TrackMetadataType.MOOD]: renderMood(value)
   }
@@ -53,7 +53,7 @@ export const TrackMetadataList = ({ trackId }: TrackMetadataListProps) => {
     <Flex gap='l' w='100%' direction='row' wrap='wrap'>
       {metadataItems.map((metadataItem) => (
         <MetadataItem key={metadataItem.id} label={metadataItem.label}>
-          {renderTrackLabelMapping(metadataItem.value)[metadataItem.id] ??
+          {renderMetadataValue(metadataItem.value)[metadataItem.id] ??
             metadataItem.value}
         </MetadataItem>
       ))}
