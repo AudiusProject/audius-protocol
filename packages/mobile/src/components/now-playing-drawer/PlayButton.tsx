@@ -20,27 +20,12 @@ import { Theme } from 'app/utils/theme'
 const { pause, play } = playerActions
 const { getPlaying, getBuffering } = playerSelectors
 
-const useAnimatedIcons = (
-  useRNVideoPlayer?: boolean,
-  usePrefetchTrack?: boolean
-) =>
+const useAnimatedIcons = (usePrefetchTrack?: boolean) =>
   makeAnimations(({ palette, type }) => {
     const iconColor =
       type === Theme.MATRIX ? palette.background : palette.staticWhite
-    let primaryBG
-    if (useRNVideoPlayer) {
-      if (usePrefetchTrack) {
-        primaryBG = palette.accentOrange
-      } else {
-        primaryBG = palette.accentBlue
-      }
-    } else {
-      if (usePrefetchTrack) {
-        primaryBG = palette.accentGreen
-      } else {
-        primaryBG = palette.primary
-      }
-    }
+
+    const primaryBG = usePrefetchTrack ? palette.accentGreen : palette.primary
 
     const ColorizedPlayIcon = colorize(IconPlay, {
       // #playpause1.Group 1.Fill 1
@@ -101,13 +86,10 @@ export const PlayButton = ({ isActive, ...props }: PlayButtonProps) => {
   }, [isBuffering])
 
   const dispatch = useDispatch()
-  const { isEnabled: useRNVideoPlayer } = useFeatureFlag(
-    FeatureFlags.USE_RN_VIDEO_PLAYER
-  )
   const { isEnabled: usePrefetchTrack } = useFeatureFlag(
     FeatureFlags.PREFETCH_STREAM_URLS
   )
-  const animatedIcons = useAnimatedIcons(useRNVideoPlayer, usePrefetchTrack)()
+  const animatedIcons = useAnimatedIcons(usePrefetchTrack)()
 
   const handlePress = useCallback(() => {
     if (isPlaying) {

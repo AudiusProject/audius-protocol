@@ -1,6 +1,5 @@
 import { useCallback } from 'react'
 
-import { FeatureFlags } from '@audius/common/services'
 import {
   BrowserNotificationSetting,
   EmailFrequency,
@@ -14,7 +13,6 @@ import {
 } from '@audius/harmony'
 import cn from 'classnames'
 
-import { useFlag } from 'hooks/useRemoteConfig'
 import { Permission } from 'utils/browserNotifications'
 import { isElectron } from 'utils/clientUtil'
 
@@ -75,7 +73,6 @@ type NotificationSettingsProps = {
 }
 
 const NotificationSettings = (props: NotificationSettingsProps) => {
-  const { isEnabled: isChatEnabled } = useFlag(FeatureFlags.CHAT_ENABLED)
   const browserPushEnabled =
     props.settings[BrowserNotificationSetting.BrowserPush]
   const notificationToggles = [
@@ -115,15 +112,12 @@ const NotificationSettings = (props: NotificationSettingsProps) => {
       type: BrowserNotificationSetting.Remixes
     }
   ]
-  if (isChatEnabled) {
-    notificationToggles.push({
-      text: messages.messages,
-      isOn:
-        browserPushEnabled &&
-        props.settings[BrowserNotificationSetting.Messages],
-      type: BrowserNotificationSetting.Messages
-    })
-  }
+  notificationToggles.push({
+    text: messages.messages,
+    isOn:
+      browserPushEnabled && props.settings[BrowserNotificationSetting.Messages],
+    type: BrowserNotificationSetting.Messages
+  })
 
   const emailOptions = [
     { key: EmailFrequency.Live, text: 'Live' },

@@ -34,6 +34,47 @@ create_migrations_table() {
     fi
 }
 
+copy_temp_data() {
+    local file=$1
+    local data_dir="./data/$(basename "$file" .sql)"
+    local created_tables=()
+
+    if [[ -d $data_dir ]]; then
+        csv_files=$(ls "$data_dir"/*.csv 2>/dev/null)
+        for csv_file in $csv_files; do
+            table_name="temp_$(basename "$csv_file" .csv)"
+            created_tables+=("$table_name")
+
+            # Read CSV header to infer column names
+            header=$(head -n 1 "$csv_file")
+            IFS=',' read -r -a columns <<< "$header"
+
+            psql -c "SET client_min_messages TO WARNING; DROP TABLE IF EXISTS $table_name"
+
+            # Create the table with inferred column names (all columns as text for simplicity)
+            create_table_sql="CREATE TABLE $table_name ("
+            for column in "${columns[@]}"; do
+                create_table_sql+="${column// /_} text, "
+            done
+            create_table_sql=${create_table_sql%, }  # Remove trailing comma and space
+            create_table_sql+=");"
+
+            psql -c "$create_table_sql"
+            psql -c "\COPY $table_name FROM '$csv_file' CSV HEADER"
+        done
+    fi
+
+    echo "${created_tables[@]}"
+}
+
+clear_temp_data() {
+    local tables=("$@")
+
+    for table_name in "${tables[@]}"; do
+        echo "Dropping table $table_name"
+        psql -c "DROP TABLE IF EXISTS $table_name"
+    done
+}
 
 migrate_dir() {
     migration_files=$(ls "$1"/*.sql | sort -V)
@@ -44,10 +85,16 @@ migrate_dir() {
         md5=$(cat "$file" | tr -d "[:space:]" | md5sum | awk '{print $1}')
 
         if [[ $md5s =~ $md5 ]]; then
-          # echo "... skipping $file $md5"
           continue
         fi
 
+        # Create temp data tables if needed
+        created_tables=($(copy_temp_data "$file"))
+        for table in "${created_tables[@]}"; do
+            echo "Created table $table"
+        done
+
+        # Execute migration sql file
         if [[ $file =~ "failable" ]]; then
             # echo "Applying failable $file"
             set +e
@@ -61,6 +108,9 @@ migrate_dir() {
             echo "Applying $file"
             psql < "$file"
         fi
+
+        # Clear temp data tables if any
+        clear_temp_data "${created_tables[@]}"
 
         psql -c "INSERT INTO $MIGRATIONS_TABLE (file_name, md5) VALUES ('$file', '$md5') on conflict(file_name) do update set md5='$md5', applied_at=now();"
     done
