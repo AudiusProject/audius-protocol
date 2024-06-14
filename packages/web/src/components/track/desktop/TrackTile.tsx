@@ -244,7 +244,6 @@ const TrackTile = ({
       })
 
   let specialContentLabel = null
-  let scheduledReleaseLabel = null
   if (!isLoading) {
     if (isStreamGated) {
       specialContentLabel = (
@@ -262,9 +261,6 @@ const TrackTile = ({
         </div>
       )
     }
-    scheduledReleaseLabel = (
-      <ScheduledReleaseLabel released={releaseDate} isUnlisted={isUnlisted} />
-    )
   }
 
   const Root = standalone ? Paper : 'div'
@@ -345,7 +341,11 @@ const TrackTile = ({
             ) : (
               <>
                 {specialContentLabel}
-                {scheduledReleaseLabel}
+                <ScheduledReleaseLabel
+                  releaseDate={releaseDate}
+                  isUnlisted={isUnlisted}
+                  isScheduledRelease={isScheduledRelease}
+                />
                 {isUnlisted ? null : stats}
               </>
             )}
