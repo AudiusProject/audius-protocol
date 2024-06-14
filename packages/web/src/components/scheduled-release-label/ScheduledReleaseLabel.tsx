@@ -1,34 +1,42 @@
+import { formatReleaseDate } from '@audius/common/utils'
 import { Text, IconCalendarMonth, Flex, useTheme } from '@audius/harmony'
 import dayjs from 'dayjs'
 
 import { getLocalTimezone } from 'utils/dateUtils'
 
+const messages = {
+  releases: (date: string) =>
+    `Releases ${formatReleaseDate({
+      date,
+      withHour: true
+    })} ${getLocalTimezone()}`
+}
+
 export type ScheduledReleaseLabelProps = {
-  released?: string | null
+  releaseDate?: string | null
   isUnlisted?: boolean
   isScheduledRelease?: boolean
 }
 
 export const ScheduledReleaseLabel = ({
-  released,
+  releaseDate,
   isUnlisted,
   isScheduledRelease
 }: ScheduledReleaseLabelProps) => {
   const { color } = useTheme()
   if (
-    !released ||
+    !releaseDate ||
     !isUnlisted ||
     !isScheduledRelease ||
-    dayjs(released).isBefore(dayjs())
-  ) {
+    dayjs(releaseDate).isBefore(dayjs())
+  )
     return null
-  }
+
   return (
-    <Flex alignItems='center' gap='xs'>
+    <Flex alignItems='center' gap='xs' w='100%'>
       <IconCalendarMonth size='s' fill={color.icon.accent} />
       <Text variant='body' size='xs' color='accent'>
-        Releases{' '}
-        {dayjs(released).format('M/D/YY [@] h A') + ' ' + getLocalTimezone()}
+        {messages.releases(releaseDate)}
       </Text>
     </Flex>
   )

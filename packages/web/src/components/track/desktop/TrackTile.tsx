@@ -268,7 +268,7 @@ const TrackTile = ({
     if (isScheduledReleasesEnabled) {
       scheduledReleaseLabel = (
         <ScheduledReleaseLabel
-          released={releaseDate}
+          releaseDate={releaseDate}
           isUnlisted={isUnlisted}
           isScheduledRelease={isScheduledRelease}
         />

@@ -1,7 +1,9 @@
 import {
   isContentCollectibleGated,
   isContentUSDCPurchaseGated,
-  AccessConditions
+  AccessConditions,
+  isContentFollowGated,
+  isContentTipGated
 } from '@audius/common/models'
 import { Nullable } from '@audius/common/utils'
 import {
@@ -32,25 +34,31 @@ export const GatedContentLabel = ({
   isOwner: boolean
 }) => {
   const { color } = useTheme()
-  const showColor = isOwner || !hasStreamAccess
+  const shouldShowColor = isOwner || !hasStreamAccess
   let message = messages.specialAccess
   let IconComponent = IconSpecialAccess
-  let iconColor = color.special.blue
+  let specialColor = color.icon.default
 
-  if (isContentCollectibleGated(streamConditions)) {
+  if (
+    isContentFollowGated(streamConditions) ||
+    isContentTipGated(streamConditions)
+  ) {
+    specialColor = color.special.blue
+  } else if (isContentCollectibleGated(streamConditions)) {
     message = messages.collectibleGated
     IconComponent = IconCollectible
-  }
-  if (isContentUSDCPurchaseGated(streamConditions)) {
+    specialColor = color.special.blue
+  } else if (isContentUSDCPurchaseGated(streamConditions)) {
     message = messages.premium
     IconComponent = IconCart
-    iconColor = color.special.lightGreen
+    specialColor = color.special.lightGreen
   }
+  const finalColor = shouldShowColor ? specialColor : color.icon.default
 
   return (
-    <Flex alignItems='center' gap='xs'>
-      <IconComponent size='s' fill={showColor ? iconColor : undefined} />
-      <Text variant='body' size='xs' css={{ color: iconColor }}>
+    <Flex alignItems='center' gap='xs' w='100%'>
+      <IconComponent size='s' fill={finalColor} />
+      <Text variant='body' size='xs' css={{ color: finalColor }}>
         {message}
       </Text>
     </Flex>
