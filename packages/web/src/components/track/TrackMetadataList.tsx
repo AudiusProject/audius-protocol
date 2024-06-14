@@ -89,7 +89,7 @@ export const TrackMetadataList = ({ trackId }: TrackMetadataListProps) => {
   )
 
   return (
-    <Flex w='100%' gap='l' wrap='wrap'>
+    <Flex as='dl' w='100%' gap='l' wrap='wrap'>
       {metadataItems.map((metadataItem) => {
         return (
           <MetadataItem key={metadataItem.id} label={metadataItem.label}>
