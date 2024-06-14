@@ -19,9 +19,9 @@ export const CollectionMetadataList = ({
 
   return (
     <Flex gap='l' w='100%' direction='row' wrap='wrap'>
-      {metadataItems.map((label) => (
-        <MetadataItem key={label.id} label={label.label}>
-          {label.value}
+      {metadataItems.map(({ label, id, value }) => (
+        <MetadataItem key={id} label={label}>
+          {value}
         </MetadataItem>
       ))}
     </Flex>

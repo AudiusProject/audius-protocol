@@ -75,14 +75,16 @@ export const TrackMetadataList = ({ trackId }: TrackMetadataListProps) => {
   })
 
   const renderMetadataValue = useCallback(
-    (value: string) => {
-      return {
-        [TrackMetadataType.GENRE]: isSearchV2Enabled
-          ? renderGenre(value)
-          : undefined,
-        [TrackMetadataType.MOOD]: isSearchV2Enabled
-          ? renderMood(value as Mood)
-          : renderMoodLegacy(value as Mood)
+    (id: TrackMetadataType, value: string) => {
+      switch (id) {
+        case TrackMetadataType.GENRE:
+          return isSearchV2Enabled ? renderGenre(value) : undefined
+        case TrackMetadataType.MOOD:
+          return isSearchV2Enabled
+            ? renderMood(value as Mood)
+            : renderMoodLegacy(value as Mood)
+        default:
+          return value
       }
     },
     [isSearchV2Enabled]
@@ -90,14 +92,11 @@ export const TrackMetadataList = ({ trackId }: TrackMetadataListProps) => {
 
   return (
     <Flex as='dl' w='100%' gap='l' wrap='wrap'>
-      {metadataItems.map((metadataItem) => {
-        return (
-          <MetadataItem key={metadataItem.id} label={metadataItem.label}>
-            {renderMetadataValue(metadataItem.value)[metadataItem.id] ??
-              metadataItem.value}
-          </MetadataItem>
-        )
-      })}
+      {metadataItems.map(({ id, label, value }) => (
+        <MetadataItem key={id} label={label}>
+          {renderMetadataValue(id, value)}
+        </MetadataItem>
+      ))}
       {albumInfo ? renderAlbum(albumInfo) : null}
     </Flex>
   )

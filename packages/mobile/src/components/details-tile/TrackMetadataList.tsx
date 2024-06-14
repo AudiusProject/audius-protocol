@@ -13,12 +13,6 @@ const messages = {
   album: 'Album'
 }
 
-const renderMetadataValue = (value: string) => {
-  return {
-    [TrackMetadataType.MOOD]: renderMood(value)
-  }
-}
-
 const renderMood = (mood: string) => {
   return (
     <Flex direction='row' gap='xs' alignItems='center'>
@@ -31,6 +25,14 @@ const renderMood = (mood: string) => {
       />
     </Flex>
   )
+}
+const renderMetadataValue = (id: TrackMetadataType, value: string) => {
+  switch (id) {
+    case TrackMetadataType.MOOD:
+      return renderMood(value)
+    default:
+      return value
+  }
 }
 
 type TrackMetadataListProps = {
@@ -51,10 +53,9 @@ export const TrackMetadataList = ({ trackId }: TrackMetadataListProps) => {
 
   return (
     <Flex gap='l' w='100%' direction='row' wrap='wrap'>
-      {metadataItems.map((metadataItem) => (
-        <MetadataItem key={metadataItem.id} label={metadataItem.label}>
-          {renderMetadataValue(metadataItem.value)[metadataItem.id] ??
-            metadataItem.value}
+      {metadataItems.map(({ id, label, value }) => (
+        <MetadataItem key={id} label={label}>
+          {renderMetadataValue(id, value)}
         </MetadataItem>
       ))}
       {albumInfo ? (
