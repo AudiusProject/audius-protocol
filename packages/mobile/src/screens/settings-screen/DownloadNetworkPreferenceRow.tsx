@@ -5,7 +5,6 @@ import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { Switch } from 'app/components/core'
-import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'
 import { getPreferredDownloadNetworkType } from 'app/store/offline-downloads/selectors'
 import { setDownloadNetworkPreference } from 'app/store/offline-downloads/slice'
 import { makeStyles } from 'app/styles'
@@ -30,7 +29,6 @@ const useStyles = makeStyles(({ palette }) => ({
 }))
 
 export const DownloadNetworkPreferenceRow = () => {
-  const isOfflineDownloadEnabled = useIsOfflineModeEnabled()
   const dispatch = useDispatch()
   const styles = useStyles()
   const preferredDownloadNetworkType = useSelector(
@@ -48,8 +46,6 @@ export const DownloadNetworkPreferenceRow = () => {
     },
     [dispatch]
   )
-
-  if (!isOfflineDownloadEnabled) return null
 
   return (
     <SettingsRow>

@@ -1,7 +1,6 @@
 import { useCallback, useContext, useState } from 'react'
 
 import { TrackMetadataFormSchema } from '@audius/common/schemas'
-import { FeatureFlags } from '@audius/common/services'
 import {
   IconCaretLeft,
   IconCaretRight,
@@ -19,13 +18,11 @@ import { AccessAndSaleField } from 'components/edit/fields/AccessAndSaleField'
 import { AttributionField } from 'components/edit/fields/AttributionField'
 import { MultiTrackSidebar } from 'components/edit/fields/MultiTrackSidebar'
 import { ReleaseDateField } from 'components/edit/fields/ReleaseDateField'
-import { ReleaseDateFieldLegacy } from 'components/edit/fields/ReleaseDateFieldLegacy'
 import { RemixSettingsField } from 'components/edit/fields/RemixSettingsField'
 import { StemsAndDownloadsField } from 'components/edit/fields/StemsAndDownloadsField'
 import { TrackMetadataFields } from 'components/edit/fields/TrackMetadataFields'
 import layoutStyles from 'components/layout/layout.module.css'
 import { NavigationPrompt } from 'components/navigation-prompt/NavigationPrompt'
-import { useFlag } from 'hooks/useRemoteConfig'
 import { EditFormScrollContext } from 'pages/edit-page/EditTrackPage'
 import { AnchoredSubmitRowEdit } from 'pages/edit-page/components/AnchoredSubmitRowEdit'
 import { AnchoredSubmitRow } from 'pages/upload-page/components/AnchoredSubmitRow'
@@ -83,9 +80,6 @@ const TrackEditForm = (
   useUnmount(() => {
     setIndex(0)
   })
-  const { isEnabled: isScheduledReleasesEnabled } = useFlag(
-    FeatureFlags.SCHEDULED_RELEASES
-  )
   const [forceOpenAccessAndSale, setForceOpenAccessAndSale] = useState(false)
 
   return (
@@ -111,11 +105,7 @@ const TrackEditForm = (
           >
             <TrackMetadataFields />
             <div className={cn(layoutStyles.col, layoutStyles.gap4)}>
-              {isScheduledReleasesEnabled ? (
-                <ReleaseDateField />
-              ) : (
-                <ReleaseDateFieldLegacy />
-              )}
+              <ReleaseDateField />
               <AccessAndSaleField
                 isUpload={isUpload}
                 forceOpen={forceOpenAccessAndSale}
