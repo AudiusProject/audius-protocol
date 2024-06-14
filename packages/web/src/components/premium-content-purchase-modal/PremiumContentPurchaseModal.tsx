@@ -276,7 +276,10 @@ export const PremiumContentPurchaseModal = () => {
     dispatch(cleanupUSDCRecovery())
   }, [onClosed, dispatch])
 
-  useManagedAccountNotAllowedCallback(isOpen, handleClose)
+  useManagedAccountNotAllowedCallback({
+    trigger: isOpen,
+    callback: handleClose
+  })
 
   if (
     !metadata ||

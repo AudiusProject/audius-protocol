@@ -35,10 +35,13 @@ export const useManagedAccountNotAllowedRedirect = (
  * @param trigger condition that when true, fires the callback (e.g. modal is open)
  * @param callback callback to fire when the action is performed (e.g. close the modal)
  */
-export const useManagedAccountNotAllowedCallback = (
-  trigger: boolean,
+export const useManagedAccountNotAllowedCallback = ({
+  trigger,
+  callback
+}: {
+  trigger: boolean
   callback: () => void
-) => {
+}) => {
   const isManagedAccount = useIsManagedAccount()
   const { toast } = useContext(ToastContext)
 

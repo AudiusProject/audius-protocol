@@ -162,7 +162,7 @@ export const TipAudioModal = () => {
 
   const isOpen = sendStatus !== null
 
-  useManagedAccountNotAllowedCallback(isOpen, onClose)
+  useManagedAccountNotAllowedCallback({ trigger: isOpen, callback: onClose })
 
   return (
     <Modal
