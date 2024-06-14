@@ -1,5 +1,5 @@
 import { useGetTrackById } from '@audius/common/api'
-import { MetadataType, useTrackMetadata } from '@audius/common/hooks'
+import { TrackMetadataType, useTrackMetadata } from '@audius/common/hooks'
 import type { ID } from '@audius/common/models'
 import type { Mood } from '@audius/sdk'
 import { trpc } from '@audius/web/src/utils/trpcClientWeb'
@@ -16,7 +16,7 @@ const messages = {
 
 const renderTrackLabelMapping = (value: string) => {
   return {
-    [MetadataType.MOOD]: renderMood(value)
+    [TrackMetadataType.MOOD]: renderMood(value)
   }
 }
 

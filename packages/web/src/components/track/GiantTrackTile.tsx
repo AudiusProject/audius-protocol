@@ -1,7 +1,7 @@
 import { Suspense, lazy, useCallback, useState } from 'react'
 
 import {
-  MetadataType,
+  TrackMetadataType,
   useFeatureFlag,
   useIsGatedContentPlaylistAddable,
   useTrackMetadata
@@ -442,10 +442,10 @@ export const GiantTrackTile = ({
   const renderTrackLabelMapping = useCallback(
     (value: string) => {
       return {
-        [MetadataType.GENRE]: isSearchV2Enabled
+        [TrackMetadataType.GENRE]: isSearchV2Enabled
           ? renderGenre(value)
           : undefined,
-        [MetadataType.MOOD]: isSearchV2Enabled
+        [TrackMetadataType.MOOD]: isSearchV2Enabled
           ? renderMood(value as Mood)
           : mood in moodMap
           ? moodMap[mood]
