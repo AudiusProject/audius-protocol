@@ -2,11 +2,11 @@ import type { PropsWithChildren } from 'react'
 
 import { Flex, Text } from '@audius/harmony-native'
 
-type MetadataRowProps = PropsWithChildren<{
+type MetadataItemProps = PropsWithChildren<{
   label: string
 }>
 
-export const MetadataRow = ({ label, children }: MetadataRowProps) => {
+export const MetadataItem = ({ label, children }: MetadataItemProps) => {
   return (
     <Flex direction='row' alignItems='center' key={label} gap='xs'>
       <Text variant='label'>{label}</Text>

@@ -9,7 +9,7 @@ import { useSelector } from 'react-redux'
 
 import { Flex } from '@audius/harmony-native'
 
-import { MetadataRow } from './MetadataRow'
+import { MetadataRow } from './MetadataItem'
 
 const { getCollectionTracks } = cacheCollectionsSelectors
 

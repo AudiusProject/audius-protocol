@@ -47,7 +47,7 @@ import { DetailsTileAiAttribution } from './DetailsTileAiAttribution'
 import { DetailsTileHasAccess } from './DetailsTileHasAccess'
 import { DetailsTileNoAccess } from './DetailsTileNoAccess'
 import { DetailsTileStats } from './DetailsTileStats'
-import { TrackMetadata } from './TrackMetadata'
+import { TrackMetadataList } from './TrackMetadataList'
 import type { DetailsTileProps } from './types'
 
 const { getTrackId } = playerSelectors
@@ -401,7 +401,7 @@ export const DetailsTile = ({
             <CollectionMetadata collectionId={contentId} />
           ) : null
         ) : contentId ? (
-          <TrackMetadata trackId={contentId} />
+          <TrackMetadataList trackId={contentId} />
         ) : null}
         {renderTags()}
         <OfflineStatusRow contentId={contentId} isCollection={isCollection} />

@@ -1,4 +1,3 @@
-import { useGetTrackById } from '@audius/common/api'
 import { TrackMetadataType, useTrackMetadata } from '@audius/common/hooks'
 import type { ID } from '@audius/common/models'
 import type { Mood } from '@audius/sdk'
@@ -8,7 +7,7 @@ import { Image } from 'react-native'
 import { Flex, Text, TextLink, spacing } from '@audius/harmony-native'
 import { moodMap } from 'app/utils/moods'
 
-import { MetadataRow } from './MetadataRow'
+import { MetadataItem } from './MetadataItem'
 
 const messages = {
   album: 'Album'
@@ -34,44 +33,36 @@ const renderMood = (mood: string) => {
   )
 }
 
-type TrackMetadataProps = {
+type TrackMetadataListProps = {
   trackId: ID
 }
 
 /**
  * The additional metadata shown at the bottom of the Track Screen and Collection Screen Headers
  */
-export const TrackMetadata = ({ trackId }: TrackMetadataProps) => {
-  const { data: track } = useGetTrackById(
-    { id: trackId! },
-    { disabled: !trackId }
-  )
-  const { data: albumInfo } = trpc.tracks.getAlbumBacklink.useQuery(
-    { trackId: trackId! },
-    { enabled: !!trackId }
-  )
+export const TrackMetadataList = ({ trackId }: TrackMetadataListProps) => {
+  const { data: albumInfo } = trpc.tracks.getAlbumBacklink.useQuery({
+    trackId
+  })
 
-  const { labels } = useTrackMetadata({
-    duration: track?.duration,
-    releaseDate: track?.release_date,
-    mood: track?.mood,
-    genre: track?.genre,
-    isUnlisted: track?.is_unlisted
+  const metadataItems = useTrackMetadata({
+    trackId
   })
 
   return (
     <Flex gap='l' w='100%' direction='row' wrap='wrap'>
-      {labels.map((label) => (
-        <MetadataRow key={label.id} label={label.label}>
-          {renderTrackLabelMapping(label.value)[label.id] ?? label.value}
-        </MetadataRow>
+      {metadataItems.map((metadataItem) => (
+        <MetadataItem key={metadataItem.id} label={metadataItem.label}>
+          {renderTrackLabelMapping(metadataItem.value)[metadataItem.id] ??
+            metadataItem.value}
+        </MetadataItem>
       ))}
       {albumInfo ? (
-        <MetadataRow label={messages.album}>
-          <TextLink to={albumInfo?.permalink}>
-            {albumInfo?.playlist_name}
+        <MetadataItem label={messages.album}>
+          <TextLink to={albumInfo.permalink}>
+            {albumInfo.playlist_name}
           </TextLink>
-        </MetadataRow>
+        </MetadataItem>
       ) : null}
     </Flex>
   )
