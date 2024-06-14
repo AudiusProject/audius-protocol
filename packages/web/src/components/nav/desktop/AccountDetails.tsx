@@ -75,6 +75,7 @@ export const AccountDetails = () => {
                   alignItems='center'
                   justifyContent='space-between'
                   gap='s'
+                  h={20}
                 >
                   <UserLink
                     textVariant='title'
