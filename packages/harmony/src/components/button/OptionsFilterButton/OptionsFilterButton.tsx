@@ -1,4 +1,4 @@
-import { forwardRef, RefObject, useState, useCallback } from 'react'
+import { forwardRef, RefObject, useState, useCallback, useRef } from 'react'
 
 import { CSSObject, useTheme } from '@emotion/react'
 
@@ -112,6 +112,7 @@ export const OptionsFilterButton = forwardRef<
   const [filterInputValue, setFilterInputValue] = useState('')
   const selectedOption = options.find((option) => option.value === selection)
   const selectedLabel = selectedOption?.label ?? selectedOption?.value
+  const inputRef = useRef<HTMLInputElement>(null)
 
   const handleOptionSelect = useCallback(
     (handleChange: (value: string, label: string) => void) =>
@@ -122,11 +123,19 @@ export const OptionsFilterButton = forwardRef<
     [setSelection]
   )
 
+  const handleOpen = useCallback(() => {
+    // Focus the input after the popup is open
+    setTimeout(() => {
+      inputRef.current?.focus({ preventScroll: true })
+    }, 0)
+  }, [inputRef])
+
   return (
     <FilterButton
       iconRight={IconCaretDown}
       {...filterButtonProps}
       value={selection}
+      onOpen={handleOpen}
       onReset={() => setFilterInputValue('')}
       label={selectedLabel ?? filterButtonProps.label}
     >
@@ -156,6 +165,7 @@ export const OptionsFilterButton = forwardRef<
               <Flex direction='column' w='100%' gap='s'>
                 {showFilterInput ? (
                   <TextInput
+                    ref={inputRef}
                     placeholder={filterInputPlaceholder}
                     label={filterInputPlaceholder}
                     size={TextInputSize.SMALL}
@@ -175,19 +185,21 @@ export const OptionsFilterButton = forwardRef<
                     </Text>
                   </Box>
                 ) : null}
-                <FilterButtonOptions
-                  options={options.filter(({ label }) => {
-                    return (
-                      !filterInputValue ||
-                      label
-                        ?.toLowerCase()
-                        .includes(filterInputValue.toLowerCase())
-                    )
-                  })}
-                  onChange={(option) =>
-                    handleOptionSelect(handleChange)(option)
-                  }
-                />
+                <Flex direction='column'>
+                  <FilterButtonOptions
+                    options={options.filter(({ label }) => {
+                      return (
+                        !filterInputValue ||
+                        label
+                          ?.toLowerCase()
+                          .includes(filterInputValue.toLowerCase())
+                      )
+                    })}
+                    onChange={(option) =>
+                      handleOptionSelect(handleChange)(option)
+                    }
+                  />
+                </Flex>
               </Flex>
             </Flex>
           </Paper>

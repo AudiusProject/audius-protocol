@@ -1,4 +1,4 @@
-import { forwardRef, useRef, useState, useCallback } from 'react'
+import { forwardRef, useRef, useState, useCallback, useEffect } from 'react'
 
 import { CSSObject, useTheme } from '@emotion/react'
 
@@ -16,6 +16,7 @@ export const FilterButton = forwardRef<HTMLButtonElement, FilterButtonProps>(
       label: labelProp,
       onChange,
       onClick,
+      onOpen,
       onReset,
       disabled,
       variant = 'fillContainer',
@@ -137,6 +138,12 @@ export const FilterButton = forwardRef<HTMLButtonElement, FilterButtonProps>(
       onClick,
       onReset
     ])
+
+    useEffect(() => {
+      if (isOpen) {
+        onOpen?.()
+      }
+    }, [isOpen, onOpen])
 
     const handleChange = useCallback(
       (value: string, label: string) => {
