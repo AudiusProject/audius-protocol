@@ -830,7 +830,7 @@ export const AudioPlayer = () => {
 
   useAsync(async () => {
     if (isAudioSetup && didPlayerBehaviorChange) {
-      const updatedTrack = await makeTrackData(queueTracks[queueIndex], f)
+      const updatedTrack = await makeTrackData(queueTracks[queueIndex])
       await TrackPlayer.load(updatedTrack)
       updatePlayerInfo({
         previewing: calculatePlayerBehavior(
