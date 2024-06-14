@@ -80,6 +80,11 @@ export const FilterButton = forwardRef<HTMLButtonElement, FilterButtonProps>(
           }
         : {}
 
+    const hoverStyle = {
+      border: `1px solid ${color.neutral.n800}`,
+      transform: 'none'
+    }
+
     // Button Styles
     const buttonCss: CSSObject = {
       background: 'transparent',
@@ -95,10 +100,8 @@ export const FilterButton = forwardRef<HTMLButtonElement, FilterButtonProps>(
       lineHeight: typography.lineHeight.s,
       opacity: disabled ? 0.6 : 1,
 
-      '&:hover': {
-        border: `1px solid ${color.neutral.n800}`,
-        transform: 'none'
-      },
+      '&:hover': hoverStyle,
+      '&:focus': hoverStyle,
 
       '&:active': {
         ...activeStyle,
