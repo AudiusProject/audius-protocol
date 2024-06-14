@@ -1,6 +1,8 @@
 import logging  # pylint: disable=C0302
 from datetime import datetime
 
+from integration_tests.utils import populate_mock_db
+from src.models.notifications.notification import Notification
 from src.tasks.create_engagement_notifications import (
     _create_engagement_notifications,
     get_cooldown_challenge_notification_group_id,
@@ -8,8 +10,6 @@ from src.tasks.create_engagement_notifications import (
 from src.utils.db_session import get_db
 
 logger = logging.getLogger(__name__)
-from integration_tests.utils import populate_mock_db
-from src.models.notifications.notification import Notification
 
 TEST_USER_ID = 1
 TEST_SPECIFIER = "1=>2"

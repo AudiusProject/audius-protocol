@@ -1,12 +1,10 @@
 from datetime import datetime, timedelta
 
-from sqlalchemy import String, and_, cast, func
+from sqlalchemy import String, and_, func
 
 from src.models.notifications.notification import Notification
-from src.models.playlists.playlist import Playlist
 from src.models.rewards.challenge_disbursement import ChallengeDisbursement
 from src.models.rewards.user_challenge import UserChallenge
-from src.models.tracks.track import Track
 from src.tasks.celery_app import celery
 from src.utils.structured_logger import StructuredLogger, log_duration
 

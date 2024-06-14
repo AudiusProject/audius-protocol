@@ -436,7 +436,7 @@ def configure_celery(celery, test_config=None):
             },
             "create_engagement_notifications": {
                 "task": "create_engagement_notifications",
-                "schedule": timedelta(minutes=1),
+                "schedule": timedelta(minutes=10),
             },
         },
         task_serializer="json",
