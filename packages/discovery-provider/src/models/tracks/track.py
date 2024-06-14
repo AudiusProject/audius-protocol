@@ -98,6 +98,13 @@ class Track(Base, RepresentableMixin):
     ai_attribution_user_id = Column(Integer, nullable=True)
     placement_hosts = Column(String, nullable=True)
 
+    # Audio analysis
+    bpm = Column(Float)
+    musical_key = Column(String)
+    audio_analysis_error_count = Column(
+        Integer, nullable=False, server_default=text("0")
+    )
+
     # From DDEX
     ddex_release_ids = Column(JSONB())
     ddex_app = Column(String)
@@ -108,11 +115,6 @@ class Track(Base, RepresentableMixin):
     copyright_line = Column(JSONB())
     producer_copyright_line = Column(JSONB())
     parental_warning_type = Column(String)
-    bpm = Column(Float)
-    musical_key = Column(String)
-    audio_analysis_error_count = Column(
-        Integer, nullable=False, server_default=text("0")
-    )
 
     block1 = relationship(  # type: ignore
         "Block", primaryjoin="Track.blocknumber == Block.number"
