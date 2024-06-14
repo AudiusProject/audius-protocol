@@ -13,8 +13,9 @@ import { CollectionCard } from 'components/collection'
 import { InfiniteCardLineup } from 'components/lineup/InfiniteCardLineup'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import EmptyTable from 'components/tracks-table/EmptyTable'
-import { useGoToRoute } from 'hooks/useGoToRoute'
+import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { useCollectionsData } from 'pages/saved-page/hooks/useCollectionsData'
+import { TRENDING_PAGE } from 'utils/route'
 
 import { emptyStateMessages } from '../emptyStateMessages'
 
@@ -28,7 +29,7 @@ const messages = {
 }
 
 export const AlbumsTabPage = () => {
-  const goToRoute = useGoToRoute()
+  const navigate = useNavigateToPage()
   const {
     status,
     hasMore,
@@ -72,7 +73,7 @@ export const AlbumsTabPage = () => {
         primaryText={emptyAlbumsHeader}
         secondaryText={messages.emptyAlbumsBody}
         buttonLabel={messages.goToTrending}
-        onClick={() => goToRoute('/trending')}
+        onClick={() => navigate(TRENDING_PAGE)}
       />
     )
   }
