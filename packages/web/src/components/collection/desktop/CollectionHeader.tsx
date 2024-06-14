@@ -38,7 +38,7 @@ import { GatedContentSection } from 'components/track/GatedContentSection'
 import { UserGeneratedText } from 'components/user-generated-text'
 import { useFlag } from 'hooks/useRemoteConfig'
 
-import { AlbumDetailsText } from '../components/AlbumDetailsText'
+import { CollectionMetadataList } from '../CollectionMetadataList'
 import { RepostsFavoritesStats } from '../components/RepostsFavoritesStats'
 
 import { Artwork } from './Artwork'
@@ -102,11 +102,7 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
     coverArtSizes,
     description,
     isOwner,
-    releaseDate,
-    lastModifiedDate,
-    numTracks,
     isPlayable,
-    duration,
     isPublished,
     tracksLoading,
     loading,
@@ -131,11 +127,10 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
   const { isEnabled: isPremiumAlbumsEnabled } = useFlag(
     FeatureFlags.PREMIUM_ALBUMS_ENABLED
   )
+  const { data: currentUserId } = useGetCurrentUserId({})
   const [artworkLoading, setIsArtworkLoading] = useState(true)
   const [filterText, setFilterText] = useState('')
   const { spacing } = useTheme()
-
-  const { data: currentUserId } = useGetCurrentUserId({})
 
   const hasStreamAccess = access?.stream
 
@@ -332,12 +327,7 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
               {description}
             </UserGeneratedText>
           ) : null}
-          <AlbumDetailsText
-            duration={duration}
-            lastModifiedDate={lastModifiedDate}
-            numTracks={numTracks}
-            releaseDate={releaseDate}
-          />
+          <CollectionMetadataList collectionId={collectionId} />
         </Flex>
       )}
     </Flex>

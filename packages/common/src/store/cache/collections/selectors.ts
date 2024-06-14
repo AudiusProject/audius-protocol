@@ -1,3 +1,5 @@
+import { createSelector } from 'reselect'
+
 import { getAllEntries, getEntry } from '~/store/cache/selectors'
 import { getTrack, getTracks } from '~/store/cache/tracks/selectors'
 import {
@@ -90,6 +92,12 @@ export const getCollectionTracks = (
 
   return tracks
 }
+
+export const getCollectionDuration = createSelector(
+  [getCollectionTracks],
+  (collectionTracks) =>
+    collectionTracks?.reduce((acc, track) => acc + track.duration, 0) ?? 0
+)
 
 export const getCollectionTracksWithUsers = (
   state: CommonState,

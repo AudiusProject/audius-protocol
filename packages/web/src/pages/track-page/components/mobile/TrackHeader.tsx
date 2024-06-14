@@ -19,9 +19,6 @@ import {
   cacheTracksSelectors
 } from '@audius/common/store'
 import {
-  getCanonicalName,
-  formatSeconds,
-  formatDate,
   getDogEarType,
   Nullable,
   formatReleaseDate
@@ -54,9 +51,9 @@ import { SearchTag } from 'components/search/SearchTag'
 import { AiTrackSection } from 'components/track/AiTrackSection'
 import { DownloadSection } from 'components/track/DownloadSection'
 import { GatedContentSection } from 'components/track/GatedContentSection'
+import { TrackMetadataList } from 'components/track/TrackMetadataList'
 import { UserGeneratedText } from 'components/user-generated-text'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
-import { moodMap } from 'utils/Moods'
 import { isDarkMode } from 'utils/theme/theme'
 import { trpc } from 'utils/trpcClientWeb'
 
@@ -166,7 +163,6 @@ const TrackHeader = ({
   isOwner,
   isFollowing,
   releaseDate,
-  duration,
   isLoading,
   isPlaying,
   isPreviewing,
@@ -183,8 +179,6 @@ const TrackHeader = ({
   repostCount,
   listenCount,
   mood,
-  credits,
-  genre,
   tags,
   aiAttributedUserId,
   onPlay,
@@ -231,26 +225,6 @@ const TrackHeader = ({
   }
   const filteredTags = (tags || '').split(',').filter(Boolean)
 
-  const trackLabels: { isHidden?: boolean; label: string; value: any }[] = [
-    {
-      label: 'Duration',
-      value: formatSeconds(duration)
-    },
-    {
-      label: 'Genre',
-      isHidden: isUnlisted && !fieldVisibility?.genre,
-      value: getCanonicalName(genre)
-    },
-    { value: formatDate(releaseDate), label: 'Released', isHidden: isUnlisted },
-    {
-      isHidden: isUnlisted && !fieldVisibility?.mood,
-      label: 'Mood',
-      // @ts-ignore
-      value: mood && mood in moodMap ? moodMap[mood] : mood
-    },
-    { label: 'Credit', value: credits }
-  ].filter(({ isHidden, value }) => !isHidden && !!value)
-
   const onClickOverflow = () => {
     const overflowActions = [
       isOwner || !showSocials
@@ -294,17 +268,6 @@ const TrackHeader = ({
         ))}
       </Flex>
     )
-  }
-
-  const renderTrackLabels = () => {
-    return trackLabels.map((infoFact) => {
-      return (
-        <div key={infoFact.label} className={styles.infoFact}>
-          <div className={styles.infoLabel}>{infoFact.label}</div>
-          <div className={styles.infoValue}>{infoFact.value}</div>
-        </div>
-      )
-    })
   }
 
   const onClickFavorites = useCallback(() => {
@@ -484,9 +447,7 @@ const TrackHeader = ({
           {description}
         </UserGeneratedText>
       ) : null}
-      <div className={cn(styles.infoSection, styles.withSectionDivider)}>
-        {renderTrackLabels()}
-      </div>
+      <TrackMetadataList trackId={trackId} />
       {renderTags()}
       {hasDownloadableAssets ? (
         <Box pt='l' w='100%'>
