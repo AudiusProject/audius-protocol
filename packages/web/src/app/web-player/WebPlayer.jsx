@@ -470,7 +470,7 @@ class WebPlayer extends Component {
             />
           ) : null}
         </AppBannerWrapper>
-        {this.props.isChatEnabled ? <ChatListener /> : null}
+        <ChatListener />
         <USDCBalanceFetcher />
         <div className={cn(styles.app, { [styles.mobileApp]: isMobile })}>
           {this.props.showCookieBanner ? <CookieBanner /> : null}
@@ -1047,7 +1047,6 @@ const mapStateToProps = (state) => ({
   accountStatus: getAccountStatus(state),
   signOnStatus: getSignOnStatus(state),
   showCookieBanner: getShowCookieBanner(state),
-  isChatEnabled: getFeatureEnabled(FeatureFlags.CHAT_ENABLED),
   isSearchV2Enabled: getFeatureEnabled(FeatureFlags.SEARCH_V2),
   isEditTrackRedesignEnabled: getFeatureEnabled(
     FeatureFlags.EDIT_TRACK_REDESIGN

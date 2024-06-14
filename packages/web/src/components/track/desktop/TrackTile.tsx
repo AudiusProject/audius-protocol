@@ -168,9 +168,6 @@ const TrackTile = ({
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
   )
-  const { isEnabled: isScheduledReleasesEnabled } = useFlag(
-    FeatureFlags.SCHEDULED_RELEASES
-  )
 
   const currentUserId = useSelector(getUserId)
   const trackPositionInfo = useSelector((state: CommonState) =>
@@ -265,11 +262,9 @@ const TrackTile = ({
         </div>
       )
     }
-    if (isScheduledReleasesEnabled) {
-      scheduledReleaseLabel = (
-        <ScheduledReleaseLabel released={releaseDate} isUnlisted={isUnlisted} />
-      )
-    }
+    scheduledReleaseLabel = (
+      <ScheduledReleaseLabel released={releaseDate} isUnlisted={isUnlisted} />
+    )
   }
 
   const Root = standalone ? Paper : 'div'

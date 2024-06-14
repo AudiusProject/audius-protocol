@@ -50,7 +50,6 @@ import { useAsync, usePrevious } from 'react-use'
 
 import { DEFAULT_IMAGE_URL } from 'app/components/image/TrackImage'
 import { getImageSourceOptimistic } from 'app/hooks/useContentNodeImage'
-import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { make, track as analyticsTrack } from 'app/services/analytics'
 import { apiClient } from 'app/services/audius-api-client'
@@ -193,7 +192,6 @@ export const AudioPlayer = () => {
 
   const isReachable = useSelector(getIsReachable)
   const isNotReachable = isReachable === false
-  const isOfflineModeEnabled = useIsOfflineModeEnabled()
   const nftAccessSignatureMap = useSelector(getNftAccessSignatureMap)
   const { storageNodeSelector } = useAppContext()
 
@@ -337,7 +335,7 @@ export const AudioPlayer = () => {
       const trackOwner = queueTrackOwnersMap[track.owner_id]
       const trackId = track.track_id
       const offlineTrackAvailable =
-        trackId && isOfflineModeEnabled && offlineAvailabilityByTrackId[trackId]
+        trackId && offlineAvailabilityByTrackId[trackId]
 
       const { shouldPreview } = calculatePlayerBehavior(track, playerBehavior)
 
@@ -406,7 +404,6 @@ export const AudioPlayer = () => {
       currentUserId,
       isCollectionMarkedForDownload,
       isNotReachable,
-      isOfflineModeEnabled,
       usePrefetchedStreamUrls,
       nftAccessSignatureMap,
       offlineAvailabilityByTrackId,
@@ -589,7 +586,7 @@ export const AudioPlayer = () => {
     const playCounterTimeout = setTimeout(() => {
       if (isReachable) {
         dispatch(recordListen(trackId))
-      } else if (isOfflineModeEnabled) {
+      } else {
         dispatch(
           addOfflineEntries({ items: [{ type: 'play-count', id: trackId }] })
         )
@@ -597,7 +594,7 @@ export const AudioPlayer = () => {
     }, RECORD_LISTEN_SECONDS)
 
     return () => clearTimeout(playCounterTimeout)
-  }, [counter, dispatch, isOfflineModeEnabled, isReachable, track?.track_id])
+  }, [counter, dispatch, isReachable, track?.track_id])
 
   const seekToRef = useRef<number | null>(null)
 

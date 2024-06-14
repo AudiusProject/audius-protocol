@@ -13,7 +13,6 @@ import { areSetsEqual, Uid, makeUid } from '@audius/common/utils'
 import moment from 'moment'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'
 import { useReachabilityEffect } from 'app/hooks/useReachabilityEffect'
 import { getOfflineTrackIds } from 'app/store/offline-downloads/selectors'
 
@@ -32,7 +31,6 @@ export const useFetchCollectionLineup = (
   fetchLineup: () => void
 ) => {
   const dispatch = useDispatch()
-  const isOfflineModeEnabled = useIsOfflineModeEnabled()
   const offlineTrackIds = useSelector(
     (state) => new Set(getOfflineTrackIds(state) || []),
     areSetsEqual
@@ -74,7 +72,7 @@ export const useFetchCollectionLineup = (
   ) as Record<number, string[]>
 
   const fetchLineupOffline = useCallback(() => {
-    if (isOfflineModeEnabled && collectionId && collection) {
+    if (collectionId && collection) {
       const trackIdEncounters = {} as Record<number, number>
       const sortedTracks = collection.playlist_contents.track_ids
         .filter(({ track: trackId }) => offlineTrackIds.has(trackId.toString()))
@@ -119,7 +117,6 @@ export const useFetchCollectionLineup = (
       )
     }
   }, [
-    isOfflineModeEnabled,
     collectionId,
     collection,
     dispatch,

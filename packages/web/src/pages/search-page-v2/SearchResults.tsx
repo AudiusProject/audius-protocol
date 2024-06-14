@@ -62,10 +62,6 @@ const sortOptions: { label: string; value: SortOption }[] = [
   { label: 'Most Recent', value: 'recent' }
 ]
 
-type SearchResultsProps = {
-  query: string
-}
-
 const messages = {
   profiles: 'Profiles',
   tracks: 'Tracks',
@@ -85,7 +81,7 @@ const cardGridStyles = {
 const getCurrentQueueItem = makeGetCurrent()
 const getTracksLineup = makeGetLineupMetadatas(getSearchTracksLineup)
 
-export const SearchResults = ({ query }: SearchResultsProps) => {
+export const SearchResults = () => {
   const containerRef = useRef<HTMLDivElement>(null)
   const currentQueueItem = useSelector(getCurrentQueueItem)
   const tracksLineup = useSelector(getTracksLineup)
@@ -96,17 +92,18 @@ export const SearchResults = ({ query }: SearchResultsProps) => {
     category: string
   }>(SEARCH_PAGE)
   const [urlSearchParams] = useSearchParams()
+  const query = urlSearchParams.get('query')
   const sort = urlSearchParams.get('sort')
   const genre = urlSearchParams.get('genre')
   const mood = urlSearchParams.get('mood')
-  const isVerified = urlSearchParams.get('is_verified')
+  const isVerified = urlSearchParams.get('isVerified')
 
   const isLoading = results.status === Status.LOADING
   const dispatch = useDispatch()
   useEffect(() => {
     dispatch(
       fetchSearchPageResults({
-        searchText: query,
+        searchText: query || '',
         kind: SearchKind.ALL,
         limit: 50,
         offset: 0,

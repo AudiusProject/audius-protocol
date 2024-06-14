@@ -6,7 +6,7 @@ import cn from 'classnames'
 import { ArtistPopover } from 'components/artist/ArtistPopover'
 import { ProfilePicture } from 'components/notification/Notification/components/ProfilePicture'
 import UserBadges from 'components/user-badges/UserBadges'
-import { useGoToRoute } from 'hooks/useGoToRoute'
+import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { profilePage } from 'utils/route'
 
 import styles from './ChatUser.module.css'
@@ -20,10 +20,10 @@ export const ChatUser = ({
   children?: ReactNode
   textClassName?: string
 }) => {
-  const goToRoute = useGoToRoute()
+  const navigate = useNavigateToPage()
   const goToProfile = useCallback(
-    () => goToRoute(profilePage(user.handle)),
-    [goToRoute, user]
+    () => navigate(profilePage(user.handle)),
+    [navigate, user]
   )
 
   return (
