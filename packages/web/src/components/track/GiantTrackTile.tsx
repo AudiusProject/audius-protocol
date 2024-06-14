@@ -1,11 +1,6 @@
 import { Suspense, lazy, useCallback, useState } from 'react'
 
-import {
-  TrackMetadataType,
-  useFeatureFlag,
-  useIsGatedContentPlaylistAddable,
-  useTrackMetadata
-} from '@audius/common/hooks'
+import { useIsGatedContentPlaylistAddable } from '@audius/common/hooks'
 import {
   isContentUSDCPurchaseGated,
   ID,
@@ -14,7 +9,6 @@ import {
   Remix,
   AccessConditions
 } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import {
   cacheTracksSelectors,
   publishTrackConfirmationModalUIActions,
@@ -25,8 +19,7 @@ import {
   Genre,
   getDogEarType,
   Nullable,
-  formatReleaseDate,
-  getCanonicalName
+  formatReleaseDate
 } from '@audius/common/utils'
 import {
   Text,
@@ -44,13 +37,11 @@ import IconCalendarMonth from '@audius/harmony/src/assets/icons/CalendarMonth.sv
 import IconRobot from '@audius/harmony/src/assets/icons/Robot.svg'
 import IconTrending from '@audius/harmony/src/assets/icons/Trending.svg'
 import IconVisibilityHidden from '@audius/harmony/src/assets/icons/VisibilityHidden.svg'
-import { Mood } from '@audius/sdk'
 import cn from 'classnames'
 import dayjs from 'dayjs'
 import { useDispatch, shallowEqual, useSelector } from 'react-redux'
-import { generatePath } from 'react-router-dom'
 
-import { TextLink, UserLink } from 'components/link'
+import { UserLink } from 'components/link'
 import Menu from 'components/menu/Menu'
 import RepostFavoritesStats from 'components/repost-favorites-stats/RepostFavoritesStats'
 import { SearchTag } from 'components/search/SearchTag'
@@ -60,9 +51,6 @@ import Toast from 'components/toast/Toast'
 import Tooltip from 'components/tooltip/Tooltip'
 import { ComponentPlacement } from 'components/types'
 import { UserGeneratedText } from 'components/user-generated-text'
-import { moodMap } from 'utils/Moods'
-import { SEARCH_PAGE } from 'utils/route'
-import { trpc } from 'utils/trpcClientWeb'
 
 import { AiTrackSection } from './AiTrackSection'
 import { CardTitle } from './CardTitle'
@@ -70,8 +58,8 @@ import { GatedContentSection } from './GatedContentSection'
 import GiantArtwork from './GiantArtwork'
 import styles from './GiantTrackTile.module.css'
 import { GiantTrackTileProgressInfo } from './GiantTrackTileProgressInfo'
-import { MetadataLabel } from './MetadataLabel'
 import { PlayPauseButton } from './PlayPauseButton'
+import { TrackMetadataList } from './TrackMetadataList'
 
 const DownloadSection = lazy(() =>
   import('./DownloadSection').then((module) => ({
@@ -106,32 +94,6 @@ const messages = {
   hidden: 'hidden',
   releases: (releaseDate: string) =>
     `Releases ${formatReleaseDate({ date: releaseDate, withHour: true })}`
-}
-
-const renderMood = (mood: Mood) => {
-  return (
-    <TextLink
-      to={{
-        pathname: generatePath(SEARCH_PAGE, { category: 'tracks' }),
-        search: new URLSearchParams({ mood }).toString()
-      }}
-    >
-      {mood in moodMap ? moodMap[mood] : mood}
-    </TextLink>
-  )
-}
-
-const renderGenre = (genre: string) => {
-  return (
-    <TextLink
-      to={{
-        pathname: generatePath(SEARCH_PAGE, { category: 'tracks' }),
-        search: new URLSearchParams({ genre }).toString()
-      }}
-    >
-      {getCanonicalName(genre)}
-    </TextLink>
-  )
 }
 
 export type GiantTrackTileProps = {
@@ -191,7 +153,6 @@ export const GiantTrackTile = ({
   trendingBadgeLabel,
   coSign,
   coverArtSizes,
-  credits,
   description,
   hasStreamAccess,
   duration,
@@ -209,7 +170,6 @@ export const GiantTrackTile = ({
   isUnlisted,
   listenCount,
   loading,
-  mood,
   onClickFavorites,
   onClickReposts,
   onFollow,
@@ -234,9 +194,6 @@ export const GiantTrackTile = ({
 }: GiantTrackTileProps) => {
   const dispatch = useDispatch()
   const [artworkLoading, setArtworkLoading] = useState(false)
-  const { isEnabled: isSearchV2Enabled } = useFeatureFlag(
-    FeatureFlags.SEARCH_V2
-  )
   const onArtworkLoad = useCallback(
     () => setArtworkLoading(false),
     [setArtworkLoading]
@@ -257,18 +214,6 @@ export const GiantTrackTile = ({
   const showPlay = isUSDCPurchaseGated ? hasStreamAccess : true
   const isPlaylistAddable = useIsGatedContentPlaylistAddable(track)
   const shouldShowScheduledRelease = dayjs(releaseDate).isAfter(dayjs())
-  const { data: albumInfo } = trpc.tracks.getAlbumBacklink.useQuery(
-    { trackId },
-    { enabled: !!trackId }
-  )
-  const { labels } = useTrackMetadata({
-    duration: track?.duration,
-    isUnlisted,
-    genre: track?.genre,
-    releaseDate: track?.release_date,
-    mood: track?.mood
-  })
-
   const renderCardTitle = (className: string) => {
     return (
       <CardTitle
@@ -439,31 +384,6 @@ export const GiantTrackTile = ({
     )
   }
 
-  const renderTrackLabelMapping = useCallback(
-    (value: string) => {
-      return {
-        [TrackMetadataType.GENRE]: isSearchV2Enabled
-          ? renderGenre(value)
-          : undefined,
-        [TrackMetadataType.MOOD]: isSearchV2Enabled
-          ? renderMood(value as Mood)
-          : mood in moodMap
-          ? moodMap[mood]
-          : mood
-      }
-    },
-    [isSearchV2Enabled, mood]
-  )
-
-  const renderAlbum = useCallback(() => {
-    if (!albumInfo) return null
-    return (
-      <MetadataLabel label='album'>
-        <TextLink to={albumInfo.permalink}>{albumInfo.playlist_name}</TextLink>
-      </MetadataLabel>
-    )
-  }, [albumInfo])
-
   const renderStatsRow = () => {
     const isLongFormContent =
       genre === Genre.PODCASTS || genre === Genre.AUDIOBOOKS
@@ -481,17 +401,6 @@ export const GiantTrackTile = ({
       </>
     )
   }
-
-  const renderTrackLabels = useCallback(() => {
-    return labels.map((infoFact) => {
-      return (
-        <MetadataLabel key={infoFact.id} label={infoFact.label}>
-          {renderTrackLabelMapping(infoFact.value)[infoFact.id] ??
-            infoFact.value}
-        </MetadataLabel>
-      )
-    })
-  }, [labels, renderTrackLabelMapping])
 
   const isLoading = loading || artworkLoading
   // Omitting isOwner and hasStreamAccess so that we always show gated DogEars
@@ -684,10 +593,7 @@ export const GiantTrackTile = ({
         ) : null}
 
         <div className={cn(styles.bottomSection, fadeIn)}>
-          <Flex w='100%' gap='l' wrap='wrap'>
-            {renderTrackLabels()}
-            {renderAlbum()}
-          </Flex>
+          <TrackMetadataList trackId={trackId} />
           {description ? (
             <UserGeneratedText tag='h3' size='s' className={styles.description}>
               {description}

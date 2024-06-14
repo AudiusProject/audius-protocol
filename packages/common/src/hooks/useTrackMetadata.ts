@@ -1,6 +1,8 @@
+import { useGetTrackById } from '~/api/track'
+import { ID } from '~/models'
+
 import { getCanonicalName } from '../utils/genres'
 import { formatDate, formatSecondsAsText } from '../utils/timeUtil'
-import { Nullable } from '../utils/typeUtils'
 
 export enum TrackMetadataType {
   DURATION = 'duration',
@@ -12,51 +14,46 @@ export enum TrackMetadataType {
 }
 
 type TrackMetadataProps = {
-  duration?: number
-  isUnlisted?: boolean
-  genre?: string
-  releaseDate?: Nullable<string>
-  updatedAt?: Nullable<string>
-  isScheduledRelease?: boolean
-  mood?: Nullable<string>
+  trackId: ID
+}
+
+type TrackMetadataInfo = {
+  id: TrackMetadataType
+  label: string
+  value: string
+  // isHidden?: boolean
 }
 
 export const useTrackMetadata = ({
-  duration,
-  isUnlisted,
-  genre,
-  releaseDate,
-  isScheduledRelease,
-  mood
-}: TrackMetadataProps) => {
-  const labels: {
-    id: TrackMetadataType
-    isHidden?: boolean
-    label: string
-    value: string
-  }[] = [
+  trackId
+}: TrackMetadataProps): TrackMetadataInfo[] => {
+  const { data: track } = useGetTrackById({ id: trackId })
+  if (!track) return []
+
+  const labels: TrackMetadataInfo[] = [
     {
       id: TrackMetadataType.DURATION,
       label: 'Duration',
-      value: formatSecondsAsText(duration ?? 0)
+      value: formatSecondsAsText(track.duration ?? 0)
     },
     {
       id: TrackMetadataType.GENRE,
       label: 'Genre',
-      value: getCanonicalName(genre)
+      value: getCanonicalName(track?.genre)
     },
     {
       id: TrackMetadataType.RELEASE_DATE,
-      value: formatDate(releaseDate ?? ''),
+      value: formatDate(track.release_date ?? ''),
       label: 'Released',
-      isHidden: isUnlisted || !releaseDate || isScheduledRelease
+      isHidden:
+        track.is_unlisted || !track.release_date || track.is_scheduled_release
     },
     {
       id: TrackMetadataType.MOOD,
       label: 'Mood',
-      value: mood
+      value: track.mood
     }
   ].filter(({ isHidden, value }) => !isHidden && !!value)
 
-  return { labels }
+  return labels
 }

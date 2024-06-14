@@ -54,7 +54,8 @@ import { SearchTag } from 'components/search/SearchTag'
 import { AiTrackSection } from 'components/track/AiTrackSection'
 import { DownloadSection } from 'components/track/DownloadSection'
 import { GatedContentSection } from 'components/track/GatedContentSection'
-import { MetadataLabel } from 'components/track/MetadataLabel'
+import { MetadataItem } from 'components/track/MetadataItem'
+import { TrackMetadataList } from 'components/track/TrackMetadataList'
 import { UserGeneratedText } from 'components/user-generated-text'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 import { isDarkMode } from 'utils/theme/theme'
@@ -228,14 +229,6 @@ const TrackHeader = ({
   }
   const filteredTags = (tags || '').split(',').filter(Boolean)
 
-  const { labels } = useTrackMetadata({
-    duration: track?.duration,
-    isUnlisted,
-    genre: track?.genre,
-    releaseDate: track?.release_date,
-    mood: track?.mood
-  })
-
   const onClickOverflow = () => {
     const overflowActions = [
       isOwner || !showSocials
@@ -277,20 +270,6 @@ const TrackHeader = ({
             {tag}
           </SearchTag>
         ))}
-      </Flex>
-    )
-  }
-
-  const renderTrackLabels = () => {
-    return (
-      <Flex direction='row' gap='l' wrap='wrap'>
-        {labels.map(({ label, value }) => {
-          return (
-            <MetadataLabel key={label} label={label}>
-              {value}
-            </MetadataLabel>
-          )
-        })}
       </Flex>
     )
   }
@@ -472,9 +451,7 @@ const TrackHeader = ({
           {description}
         </UserGeneratedText>
       ) : null}
-      <div className={cn(styles.infoSection, styles.withSectionDivider)}>
-        {renderTrackLabels()}
-      </div>
+      <TrackMetadataList trackId={trackId} />
       {renderTags()}
       {hasDownloadableAssets ? (
         <Box pt='l' w='100%'>
