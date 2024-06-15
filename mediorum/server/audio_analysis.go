@@ -67,7 +67,7 @@ func (ss *MediorumServer) startAudioAnalyzer() {
 				}
 				// only the first mirror transcodes
 				if slices.Index(upload.TranscodedMirrors, myHost) == 0 {
-					ss.logger.Info("got audio analysis job", "id", upload.ID)
+					ss.logger.Info("got audio analysis job", "upload", upload.ID)
 					work <- upload
 				}
 			}

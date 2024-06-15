@@ -12,6 +12,17 @@ import (
 	"gorm.io/gorm"
 )
 
+type QmAudioAnalysis struct {
+	CID        string               `json:"cid" gorm:"primaryKey"`
+	Mirrors    []string             `json:"mirrors" gorm:"serializer:json"`
+	Status     string               `json:"status"`
+	Error      string               `json:"error,omitempty"`
+	ErrorCount int                  `json:"error_count"`
+	AnalyzedBy string               `json:"analyzed_by"`
+	AnalyzedAt time.Time            `json:"analyzed_at"`
+	Results    *AudioAnalysisResult `json:"results" gorm:"serializer:json"`
+}
+
 type Upload struct {
 	ID string `json:"id"` // base32 file hash
 
@@ -45,6 +56,11 @@ type Upload struct {
 	AudioAnalysisResults    *AudioAnalysisResult `json:"audio_analysis_results" gorm:"serializer:json"`
 
 	// UpldateULID - this is the last ULID that change this thing
+}
+
+type AudioAnalysisResult struct {
+	BPM float64 `json:bpm`
+	Key string  `json:key`
 }
 
 // Upload templates
@@ -119,7 +135,7 @@ func dbMustDial(dbPath string) *gorm.DB {
 func dbMigrate(crud *crudr.Crudr, myHost string) {
 	// Migrate the schema
 	slog.Info("db: gorm automigrate")
-	err := crud.DB.AutoMigrate(&Upload{}, &RepairTracker{}, &UploadCursor{}, &StorageAndDbSize{}, &DailyMetrics{}, &MonthlyMetrics{})
+	err := crud.DB.AutoMigrate(&Upload{}, &RepairTracker{}, &UploadCursor{}, &StorageAndDbSize{}, &DailyMetrics{}, &MonthlyMetrics{}, &QmAudioAnalysis{})
 	if err != nil {
 		panic(err)
 	}
