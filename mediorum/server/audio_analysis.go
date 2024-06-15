@@ -20,11 +20,6 @@ import (
 	"golang.org/x/exp/slices"
 )
 
-type AudioAnalysisResult struct {
-	BPM float64 `json:bpm`
-	Key string  `json:key`
-}
-
 func (ss *MediorumServer) startAudioAnalyzer() {
 	myHost := ss.Config.Self.Host
 	work := make(chan *Upload)
