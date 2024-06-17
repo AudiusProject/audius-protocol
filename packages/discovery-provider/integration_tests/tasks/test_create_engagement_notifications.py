@@ -34,7 +34,7 @@ def test_create_challenge_cooldown_email(app):
                 "user_id": TEST_USER_ID,
             },
             {
-                "created_at": datetime(2024, 6, 7),
+                "completed_at": datetime(2024, 6, 7),
                 "challenge_id": TEST_CHALLENGE_ID,
                 "specifier": TEST_SPECIFIER,
                 "amount": TEST_AMOUNT,
