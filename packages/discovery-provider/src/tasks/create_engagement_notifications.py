@@ -5,6 +5,7 @@ from sqlalchemy import String, and_, func
 from src.models.notifications.notification import Notification
 from src.models.rewards.challenge_disbursement import ChallengeDisbursement
 from src.models.rewards.user_challenge import UserChallenge
+from src.models.rewards.challenge import Challenge
 from src.tasks.celery_app import celery
 from src.utils.structured_logger import StructuredLogger, log_duration
 
@@ -33,6 +34,7 @@ def _create_engagement_notifications(session):
                 UserChallenge.specifier == ChallengeDisbursement.specifier,
             ),
         )
+        .join(Challenge, Challenge.id == UserChallenge.challenge_id)
         .outerjoin(
             Notification,
             and_(
@@ -51,13 +53,17 @@ def _create_engagement_notifications(session):
         )
         .filter(
             UserChallenge.is_complete,
-            UserChallenge.created_at >= START_DATETIME,
-            UserChallenge.created_at < datetime.now() - week_cooldown_interval,
+            UserChallenge.completed_at >= START_DATETIME,
+            UserChallenge.completed_at < datetime.now() - week_cooldown_interval,
+            Challenge.cooldown_days == 7,
             ChallengeDisbursement.specifier.is_(None),  # no disbursement yet
             Notification.id.is_(None),  # no notification yet
         )
         .limit(BATCH_SIZE)
         .all()
+    )
+    logger.info(
+        f"asdf user_challenges_cooldown_completed: {user_challenges_cooldown_completed}"
     )
     for user_challenge in user_challenges_cooldown_completed:
         new_notification = Notification(
