@@ -47,7 +47,8 @@ RUN cmake -DCMAKE_INSTALL_PREFIX=/usr/local -DBUILD_TESTING=OFF -S . -B build &&
     cmake --install build
 
 # Clone and build Essentia
-ENV PKG_CONFIG_PATH="/usr/local/lib/pkgconfig:$(find /usr/lib -type d -name pkgconfig | tr '\n' ':')"
+RUN export PKG_CONFIG_PATH="/usr/local/lib/pkgconfig:$(find /usr/lib -type d -name pkgconfig | tr '\n' ':')" && \
+    echo "PKG_CONFIG_PATH=$PKG_CONFIG_PATH" >> /etc/environment
 ENV LD_LIBRARY_PATH="/usr/local/lib:/usr/lib"
 RUN git clone https://github.com/MTG/essentia.git /essentia
 WORKDIR /essentia
