@@ -15,6 +15,27 @@ jobs:
       name: test-mediorum-unittests
       context: Vercel
       service: mediorum-unittests
+  - push-docker-image:
+      name: push-protocol-dashboard
+      context: [Vercel, dockerhub]
+      service: dashboard
+      filters:
+        branches:
+          only: main
+  - push-docker-image:
+      name: push-healthz
+      context: [Vercel, dockerhub]
+      service: healthz
+      filters:
+        branches:
+          only: main
+  - push-docker-image:
+      name: push-uptime
+      context: [Vercel, dockerhub]
+      service: uptime
+      filters:
+        branches:
+          only: main
   - push-arm-image:
       name: push-mediorum-arm
       context: [Vercel, dockerhub]
@@ -24,6 +45,33 @@ jobs:
           only: main
       requires:
         - push-mediorum
+  - push-arm-image:
+      name: push-protocol-dashboard-arm
+      context: [Vercel, dockerhub]
+      service: dashboard
+      filters:
+        branches:
+          only: main
+      requires:
+        - push-protocol-dashboard
+  - push-arm-image:
+      name: push-healthz-arm
+      context: [Vercel, dockerhub]
+      service: healthz
+      filters:
+        branches:
+          only: main
+      requires:
+        - push-healthz
+  - push-arm-image:
+      name: push-uptime-arm
+      context: [Vercel, dockerhub]
+      service: uptime
+      filters:
+        branches:
+          only: main
+      requires:
+        - push-uptime
 
   # Deploy audius-protocol `main` branch (stage)
   - deploy-stage-nodes:
@@ -32,6 +80,13 @@ jobs:
         - test-mediorum
         - test-mediorum-unittests
         - push-mediorum
+        - push-protocol-dashboard
+        - push-uptime
+        - push-healthz
+        # - push-mediorum-arm
+        # - push-protocol-dashboard-arm
+        # - push-healthz-arm
+        # - push-uptime-arm
       filters:
         branches:
           only: main
