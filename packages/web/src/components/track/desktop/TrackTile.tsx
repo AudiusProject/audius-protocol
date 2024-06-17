@@ -49,6 +49,7 @@ import {
 
 import { BottomRow } from './BottomRow'
 import styles from './TrackTile.module.css'
+import { VisibilityLabel } from 'components/visibility-label/VisibilityLabel'
 
 const { getUserId } = accountSelectors
 const { getTrackPosition } = playbackPositionSelectors
@@ -341,7 +342,7 @@ const TrackTile = ({
             ) : (
               <>
                 {specialContentLabel}
-                <ScheduledReleaseLabel
+                <VisibilityLabel
                   releaseDate={releaseDate}
                   isUnlisted={isUnlisted}
                   isScheduledRelease={isScheduledRelease}
@@ -351,12 +352,6 @@ const TrackTile = ({
             )}
           </Text>
           <Text variant='body' size='xs' className={styles.topRight}>
-            {isUnlisted && !isScheduledRelease ? (
-              <div className={styles.topRightIconLabel}>
-                <IconVisibilityHidden className={styles.topRightIcon} />
-                {messages.hiddenTrack}
-              </div>
-            ) : null}
             {!isLoading && duration !== null && duration !== undefined ? (
               <div className={styles.duration}>{getDurationText()}</div>
             ) : null}
