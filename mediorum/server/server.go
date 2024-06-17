@@ -45,26 +45,26 @@ type VersionJson struct {
 }
 
 type MediorumConfig struct {
-	Env                  string
-	Self                 Peer
-	Peers                []Peer
-	Signers              []Peer
-	ReplicationFactor    int
-	Dir                  string `default:"/tmp/mediorum"`
-	BlobStoreDSN         string `json:"-"`
-	MoveFromBlobStoreDSN string `json:"-"`
-	PostgresDSN          string `json:"-"`
-	PrivateKey           string `json:"-"`
-	ListenPort           string
-	TrustedNotifierID    int
-	SPID                 int
-	SPOwnerWallet        string
-	GitSHA               string
-	AudiusDockerCompose  string
-	AutoUpgradeEnabled   bool
-	WalletIsRegistered   bool
-	StoreAll             bool
-	VersionJson          VersionJson
+	Env                       string
+	Self                      Peer
+	Peers                     []Peer
+	Signers                   []Peer
+	ReplicationFactor         int
+	Dir                       string `default:"/tmp/mediorum"`
+	BlobStoreDSN              string `json:"-"`
+	MoveFromBlobStoreDSN      string `json:"-"`
+	PostgresDSN               string `json:"-"`
+	PrivateKey                string `json:"-"`
+	ListenPort                string
+	TrustedNotifierID         int
+	SPID                      int
+	SPOwnerWallet             string
+	GitSHA                    string
+	AudiusDockerCompose       string
+	AutoUpgradeEnabled        bool
+	WalletIsRegistered        bool
+	StoreAll                  bool
+	VersionJson               VersionJson
 	DiscoveryListensEndpoints []string
 
 	// should have a basedir type of thing
@@ -173,7 +173,7 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	logger := slog.With("self", config.Self.Host)
 
 	if config.discoveryListensEnabled() {
-		logger.Info("discovery listens enabled")	
+		logger.Info("discovery listens enabled")
 	}
 
 	// ensure dir
@@ -300,6 +300,10 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 		return c.NoContent(http.StatusNoContent)
 	})
 
+	// legacy blob audio analysis
+	routes.GET("/tracks/legacy/:cid/analysis", ss.serveLegacyBlobAnalysis, ss.requireHealthy)
+	routes.POST("/tracks/legacy/:cid/analyze", ss.analyzeLegacyBlob, ss.requireHealthy, ss.requireRegisteredSignature)
+
 	// serve blob (audio)
 	routes.HEAD("/ipfs/:cid", ss.serveBlob, ss.requireHealthy, ss.ensureNotDelisted)
 	routes.GET("/ipfs/:cid", ss.serveBlob, ss.requireHealthy, ss.ensureNotDelisted)
@@ -418,6 +422,7 @@ func (ss *MediorumServer) MustStart() {
 
 	go ss.startTranscoder()
 	go ss.startAudioAnalyzer()
+	go ss.startLegacyAudioAnalyzer()
 
 	zeroTime := time.Time{}
 	var lastSuccessfulRepair RepairTracker

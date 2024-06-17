@@ -20,11 +20,6 @@ import (
 	"golang.org/x/exp/slices"
 )
 
-type AudioAnalysisResult struct {
-	BPM float64 `json:bpm`
-	Key string  `json:key`
-}
-
 func (ss *MediorumServer) startAudioAnalyzer() {
 	myHost := ss.Config.Self.Host
 	work := make(chan *Upload)
@@ -67,7 +62,7 @@ func (ss *MediorumServer) startAudioAnalyzer() {
 				}
 				// only the first mirror transcodes
 				if slices.Index(upload.TranscodedMirrors, myHost) == 0 {
-					ss.logger.Info("got audio analysis job", "id", upload.ID)
+					ss.logger.Info("got audio analysis job", "upload", upload.ID)
 					work <- upload
 				}
 			}
