@@ -203,7 +203,7 @@ func (ss *MediorumServer) serveBlob(c echo.Context) error {
 		}
 
 		if isAudioFile {
-			ss.recordMetric(StreamTrack)
+			go ss.recordMetric(StreamTrack)
 			http.ServeContent(c.Response(), c.Request(), cid, blob.ModTime(), blob)
 			return nil
 		}
@@ -212,7 +212,7 @@ func (ss *MediorumServer) serveBlob(c echo.Context) error {
 		if err != nil {
 			return err
 		}
-		ss.recordMetric(ServeImage)
+		go ss.recordMetric(ServeImage)
 		return c.Blob(200, blob.ContentType(), blobData)
 	}
 
