@@ -64,7 +64,7 @@ func (ss *MediorumServer) analyzeLegacyBlob(c echo.Context) error {
 		}
 		analysis.Status = JobStatusAudioAnalysis
 		analysis.AnalyzedAt = time.Now().UTC()
-		analysis.AnalysisError = ""
+		analysis.Error = ""
 		err = ss.crud.Update(analysis)
 		if err != nil {
 			ss.logger.Warn("crudr update legacy audio analysis failed", "err", err)

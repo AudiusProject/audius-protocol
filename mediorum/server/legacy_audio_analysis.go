@@ -31,8 +31,8 @@ func (ss *MediorumServer) startLegacyAudioAnalyzer() {
 	// on boot... reset any of my wip jobs
 	tx := ss.crud.DB.Model(QmAudioAnalysis{}).
 		Where(QmAudioAnalysis{
-			AnalyzedBy:     myHost,
-			AnalysisStatus: JobStatusBusyAudioAnalysis,
+			AnalyzedBy: myHost,
+			Status:     JobStatusBusyAudioAnalysis,
 		}).
 		Updates(QmAudioAnalysis{Status: JobStatusAudioAnalysis})
 	if tx.Error != nil {
@@ -179,8 +179,7 @@ func (ss *MediorumServer) analyzeLegacyAudio(analysis *QmAudioAnalysis) error {
 
 	// do not mark the audio analysis job as failed if this node cannot pull the file from its bucket
 	// so that the next mirror may pick the job up
-	logger = logger.With("cid", cid)
-	key := cidutil.ShardCID(cid)
+	key := cidutil.ShardCID(analysis.CID)
 	attrs, err := ss.bucket.Attributes(ctx, key)
 	if err != nil {
 		if gcerrors.Code(err) == gcerrors.NotFound {
