@@ -175,49 +175,49 @@ func (ss *MediorumServer) serveBlob(c echo.Context) error {
 
 		// redirect to it
 		host := ss.findNodeToServeBlob(ctx, cid)
-		if host != "" {
-			dest := ss.replaceHost(c, host)
-			query := dest.Query()
-			query.Add("allow_unhealthy", "true") // we confirmed the node has it, so allow it to serve it even if unhealthy
-			dest.RawQuery = query.Encode()
-			return c.Redirect(302, dest.String())
+		if host == "" {
+			return c.String(404, "blob not found")
 		}
 
-		return c.String(404, "blob not found")
+		dest := ss.replaceHost(c, host)
+		query := dest.Query()
+		query.Add("allow_unhealthy", "true") // we confirmed the node has it, so allow it to serve it even if unhealthy
+		dest.RawQuery = query.Encode()
+		return c.Redirect(302, dest.String())
 	}
 
-	isAudioFile := strings.HasPrefix(blob.ContentType(), "audio")
-	// detect mime type and block mp3 streaming outside of the /tracks/cidstream route
-	if !strings.Contains(c.Path(), "cidstream") && isAudioFile {
-		return c.String(401, "mp3 streaming is blocked. Please use Discovery /v1/tracks/:encodedId/stream")
-	}
-
-	defer blob.Close()
-
-	// v2 file listen
-	if isAudioFile {
-		go ss.logTrackListen(c)
-	} else {
-		// images: cache 30 days
-		c.Response().Header().Set(echo.HeaderCacheControl, "public, max-age=2592000, immutable")
-	}
 
 	if c.Request().Method == "HEAD" {
 		return c.NoContent(200)
 	}
 
-	if isAudioFile {
+	defer blob.Close()
+
+	isAudioFile := strings.HasPrefix(blob.ContentType(), "audio")
+
+	if (isAudioFile) {
+		// detect mime type and block mp3 streaming outside of the /tracks/cidstream route
+		if !strings.Contains(c.Path(), "cidstream") {
+			return c.String(401, "mp3 streaming is blocked. Please use Discovery /v1/tracks/:encodedId/stream")
+		}
+		// track metrics in separate threads
+		go ss.logTrackListen(c)
 		go ss.recordMetric(StreamTrack)
+
+		// stream audio
 		http.ServeContent(c.Response(), c.Request(), cid, blob.ModTime(), blob)
 		return nil
+	} else {
+		// non audio (images)
+		c.Response().Header().Set(echo.HeaderCacheControl, "public, max-age=2592000, immutable")
+		blobData, err := io.ReadAll(blob)
+		if err != nil {
+			return err
+		}
+		go ss.recordMetric(ServeImage)
+		return c.Blob(200, blob.ContentType(), blobData)
 	}
-
-	blobData, err := io.ReadAll(blob)
-	if err != nil {
-		return err
-	}
-	go ss.recordMetric(ServeImage)
-	return c.Blob(200, blob.ContentType(), blobData)
+	
 }
 
 func (ss *MediorumServer) recordMetric(action string) {
