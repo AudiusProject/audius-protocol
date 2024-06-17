@@ -19,8 +19,8 @@ import { IconCaretDown, IconSearch } from 'icons'
 
 import { FilterButton } from '../FilterButton/FilterButton'
 
-import { OptionsFilterButtonProps, OptionsFilterButtonOption } from './types'
 import { SelectPopupKeyHandler } from './SelectPopupKeyHandler'
+import { OptionsFilterButtonProps, OptionsFilterButtonOption } from './types'
 
 const messages = {
   noMatches: 'No matches'

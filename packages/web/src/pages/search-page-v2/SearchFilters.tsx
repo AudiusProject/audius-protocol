@@ -13,7 +13,6 @@ import {
   Divider,
   Box
 } from '@audius/harmony'
-import { CSSObject } from '@emotion/react'
 import { useSearchParams } from 'react-router-dom-v5-compat'
 
 import { BpmFilter } from './BpmFilter'

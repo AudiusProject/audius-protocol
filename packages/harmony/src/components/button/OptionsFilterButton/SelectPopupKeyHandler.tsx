@@ -2,7 +2,7 @@ import { RefObject, useState, ReactNode, useEffect } from 'react'
 
 import { FilterButtonOption } from '../FilterButton/types'
 
-type SelectPopupKeyHandler = {
+type SelectPopupKeyHandlerProps = {
   children: (activeValue: string | null) => ReactNode
   disabled?: boolean
   onOptionSelect: (option: FilterButtonOption) => void
@@ -16,7 +16,7 @@ type SelectPopupKeyHandler = {
  *
  * Call the `children` function with the currently active value
  */
-export const SelectPopupKeyHandler = (props: SelectPopupKeyHandler) => {
+export const SelectPopupKeyHandler = (props: SelectPopupKeyHandlerProps) => {
   const { disabled, options, onOptionSelect, optionRefs, scrollRef, children } =
     props
   const [activeIndex, setActiveIndex] = useState<number | null>(null)
