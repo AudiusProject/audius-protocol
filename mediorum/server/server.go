@@ -45,26 +45,26 @@ type VersionJson struct {
 }
 
 type MediorumConfig struct {
-	Env                  string
-	Self                 Peer
-	Peers                []Peer
-	Signers              []Peer
-	ReplicationFactor    int
-	Dir                  string `default:"/tmp/mediorum"`
-	BlobStoreDSN         string `json:"-"`
-	MoveFromBlobStoreDSN string `json:"-"`
-	PostgresDSN          string `json:"-"`
-	PrivateKey           string `json:"-"`
-	ListenPort           string
-	TrustedNotifierID    int
-	SPID                 int
-	SPOwnerWallet        string
-	GitSHA               string
-	AudiusDockerCompose  string
-	AutoUpgradeEnabled   bool
-	WalletIsRegistered   bool
-	StoreAll             bool
-	VersionJson          VersionJson
+	Env                       string
+	Self                      Peer
+	Peers                     []Peer
+	Signers                   []Peer
+	ReplicationFactor         int
+	Dir                       string `default:"/tmp/mediorum"`
+	BlobStoreDSN              string `json:"-"`
+	MoveFromBlobStoreDSN      string `json:"-"`
+	PostgresDSN               string `json:"-"`
+	PrivateKey                string `json:"-"`
+	ListenPort                string
+	TrustedNotifierID         int
+	SPID                      int
+	SPOwnerWallet             string
+	GitSHA                    string
+	AudiusDockerCompose       string
+	AutoUpgradeEnabled        bool
+	WalletIsRegistered        bool
+	StoreAll                  bool
+	VersionJson               VersionJson
 	DiscoveryListensEndpoints []string
 
 	// should have a basedir type of thing
@@ -74,14 +74,15 @@ type MediorumConfig struct {
 }
 
 type MediorumServer struct {
-	echo            *echo.Echo
-	bucket          *blob.Bucket
-	logger          *slog.Logger
-	crud            *crudr.Crudr
-	pgPool          *pgxpool.Pool
-	quit            chan os.Signal
-	trustedNotifier *ethcontracts.NotifierInfo
-	reqClient       *req.Client
+	echo             *echo.Echo
+	bucket           *blob.Bucket
+	logger           *slog.Logger
+	crud             *crudr.Crudr
+	pgPool           *pgxpool.Pool
+	quit             chan os.Signal
+	trustedNotifier  *ethcontracts.NotifierInfo
+	reqClient        *req.Client
+	rendezvousHasher *RendezvousHasher
 
 	// simplify
 	mediorumPathUsed uint64
@@ -173,7 +174,7 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	logger := slog.With("self", config.Self.Host)
 
 	if config.discoveryListensEnabled() {
-		logger.Info("discovery listens enabled")	
+		logger.Info("discovery listens enabled")
 	}
 
 	// ensure dir
@@ -223,14 +224,17 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 
 	// crud
 	peerHosts := []string{}
+	allHosts := []string{}
 	for _, peer := range config.Peers {
-		if peer.Host == config.Self.Host {
-			continue
+		allHosts = append(allHosts, peer.Host)
+		if peer.Host != config.Self.Host {
+			peerHosts = append(peerHosts, peer.Host)
 		}
-		peerHosts = append(peerHosts, peer.Host)
 	}
 	crud := crudr.New(config.Self.Host, config.privateKey, peerHosts, db)
 	dbMigrate(crud, config.Self.Host)
+
+	rendezvousHasher := NewRendezvousHasher(allHosts)
 
 	// req.cool http client
 	reqClient := req.C().
@@ -270,6 +274,7 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 		trustedNotifier:  &trustedNotifier,
 		isSeeding:        config.Env == "stage" || config.Env == "prod",
 		isAudiusdManaged: isAudiusdManaged,
+		rendezvousHasher: rendezvousHasher,
 
 		peerHealths:        map[string]*PeerHealth{},
 		redirectCache:      imcache.New(imcache.WithMaxEntriesLimitOption[string, string](50_000, imcache.EvictionPolicyLRU)),

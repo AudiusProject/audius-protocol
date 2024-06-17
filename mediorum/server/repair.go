@@ -249,7 +249,11 @@ func (ss *MediorumServer) repairCid(cid string, placementHosts []string, tracker
 
 	// in cleanup mode do some extra checks:
 	// - validate CID, delete if invalid (doesn't apply to Qm keys because their hash is not the CID)
-	if tracker.CleanupMode && alreadyHave && !cidutil.IsLegacyCID(cid) {
+
+	// HashMigration: skipping re-hash of blob content during content migration.
+	// todo: remove when done.
+	validateBlobContents := false
+	if validateBlobContents && tracker.CleanupMode && alreadyHave && !cidutil.IsLegacyCID(cid) {
 		if r, errRead := ss.bucket.NewReader(ctx, key, nil); errRead == nil {
 			errVal := cidutil.ValidateCID(cid, r)
 			errClose := r.Close()
@@ -317,7 +321,7 @@ func (ss *MediorumServer) repairCid(cid string, placementHosts []string, tracker
 	// don't delete if we replicated the blob within the past week
 	wasReplicatedThisWeek := attrs.CreateTime.After(time.Now().Add(-24 * 7 * time.Hour))
 
-	if !isPlaced && !ss.Config.StoreAll && tracker.CleanupMode && alreadyHave && myRank > ss.Config.ReplicationFactor+1 && !wasReplicatedThisWeek {
+	if !isPlaced && !ss.Config.StoreAll && tracker.CleanupMode && alreadyHave && myRank > ss.Config.ReplicationFactor+2 && !wasReplicatedThisWeek {
 		// if i'm the first node that over-replicated, keep the file for a week as a buffer since a node ahead of me in the preferred order will likely be down temporarily at some point
 		tracker.Counters["delete_over_replicated_needed"]++
 		err = ss.dropFromMyBucket(cid)
