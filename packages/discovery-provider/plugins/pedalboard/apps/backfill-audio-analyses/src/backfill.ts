@@ -23,6 +23,7 @@ const REQUEST_TIMEOUT = 5000 // 5s
 
 interface Track {
   track_id: number
+  track_cid: string
   audio_upload_id: string
   musical_key: string | null
   bpm: number | null
@@ -42,8 +43,11 @@ async function analyzeAudio(
   track: Track
 ): Promise<void> {
   const audioUploadId = track.audio_upload_id
+  const trackCid = track.track_cid
+  // only analyze streamable tracks
+  if (!trackCid) return
 
-  // TODO handle legacy tracks, which have a track_cid but no audio_upload_id
+  const isLegacyTrack = !audioUploadId && trackCid.startsWith("Qm")
 
   const release = await semaphore.acquire() // Acquire a semaphore permit
   for (let i = 0; i < 5; i++) {
@@ -51,9 +55,12 @@ async function analyzeAudio(
     const contentNode = contentNodes[Math.floor(Math.random() * contentNodes.length)]
     try {
       console.log(
-        `Querying ${contentNode} for audio analysis for track ID ${track.track_id}, upload ID ${track.audio_upload_id}`
+        `Querying ${contentNode} for audio analysis for track ID ${track.track_id}, track CID ${trackCid}, upload ID ${audioUploadId}`
       )
-      const analysisUrl = `${contentNode}/uploads/${audioUploadId}/analyze`
+      let analysisUrl = `${contentNode}/uploads/${audioUploadId}/analyze`
+      if (isLegacyTrack) {
+        analysisUrl = `${contentNode}/tracks/legacy/${trackCid}/analyze`
+      }
       const timestamp = Math.floor(Date.now() / 1000) // current timestamp in seconds
       const dataToSign = {
         trackId: track.track_id,
@@ -69,19 +76,19 @@ async function analyzeAudio(
       )
       if (response.status !== 200) {
         console.log(
-          `Error triggering audio analysis on ${contentNode}: Received ${response.status} response. Attempt #${i+1} to trigger audio analysis for track ID ${track.track_id}, upload ID ${audioUploadId}. Trying another content node...`
+          `Error triggering audio analysis on ${contentNode}: Received ${response.status} response. Attempt #${i+1} to trigger audio analysis for track ID ${track.track_id}, track CID ${trackCid}, upload ID ${audioUploadId}. Trying another content node...`
         )
         continue
       }
     } catch (error: any) {
       if (error.isAxiosError !== undefined && error.code === 'ECONNABORTED') {
         console.log(
-          `Timeout error triggering audio analysis on ${contentNode}: ${error.message}. Attempt #${i+1} to trigger audio analysis for track ID ${track.track_id}, upload ID ${audioUploadId}. Trying another content node...`
+          `Timeout error triggering audio analysis on ${contentNode}: ${error.message}. Attempt #${i+1} to trigger audio analysis for track ID ${track.track_id}, track CID ${trackCid}, upload ID ${audioUploadId}. Trying another content node...`
         )
         continue
       } else {
         console.error(
-          `Error triggering audio analysis for track ID ${track.track_id}, upload ID ${
+          `Error triggering audio analysis for track ID ${track.track_id}, track CID ${trackCid}, upload ID ${
             audioUploadId
           }: ${(error as Error).message}. Skipping track...`
         )
