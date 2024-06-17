@@ -830,7 +830,7 @@ def playlist_dsl(search_str, current_user_id, must_saved=False, genres=[], moods
 
 def album_dsl(search_str, current_user_id, must_saved=False, genres=[], moods=[]):
     return base_playlist_dsl(
-        search_str, False, genres, moods, current_user_id, must_saved
+        search_str, True, genres, moods, current_user_id, must_saved
     )
 
 
