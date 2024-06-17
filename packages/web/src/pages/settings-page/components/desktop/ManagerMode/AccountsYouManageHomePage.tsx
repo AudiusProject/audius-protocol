@@ -1,4 +1,4 @@
-import { useCallback, useContext, useEffect } from 'react'
+import { useCallback, useContext, useEffect, useMemo, useState } from 'react'
 
 import {
   useApproveManagedAccount,
@@ -8,6 +8,8 @@ import {
 import { Status, UserMetadata } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
 import { Box, Divider, Flex, Text } from '@audius/harmony'
+import queryString from 'query-string'
+import { useLocation } from 'react-router-dom'
 
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { ToastContext } from 'components/toast/ToastContext'
@@ -21,13 +23,20 @@ const { getAccountUser } = accountSelectors
 const messages = {
   takeControl:
     'Take control of your managed accounts by making changes to their profiles, preferences, and content.',
-  noAccounts: 'You don’t manage any accounts.'
+  noAccounts: 'You don’t manage any accounts.',
+  invalidInvitation: 'This invitation is no longer valid',
+  alreadyAcceptedInvitation: 'You already accepted this invitation'
 }
 
 export const AccountsYouManageHomePage = ({
   setPage
 }: AccountsYouManagePageProps) => {
+  const { search } = useLocation()
+  const pending = useMemo(() => queryString.parse(search)?.pending, [search])
   const currentUser = useSelector(getAccountUser)
+  const [hasInviteParamToValidate, setHasInviteParamToValidate] = useState(
+    pending != null
+  )
   const userId = currentUser?.user_id
   const { data: managedAccounts, status } = useGetManagedAccounts(
     { userId: userId! },
@@ -36,6 +45,31 @@ export const AccountsYouManageHomePage = ({
   const [approveManagedAccount, approveResult] = useApproveManagedAccount()
   const [rejectManagedAccount, rejectResult] = useRemoveManager()
   const { toast } = useContext(ToastContext)
+
+  useEffect(() => {
+    if (managedAccounts == null || !hasInviteParamToValidate) {
+      return
+    }
+    if (
+      pending != null &&
+      typeof pending === 'string' &&
+      pending.trim() !== '' &&
+      !isNaN(Number(pending))
+    ) {
+      const pendingUserId = Number(pending)
+      const pendingManagedAccount = managedAccounts.find(
+        (m) => m.grant.user_id === pendingUserId
+      )
+      if (!pendingManagedAccount) {
+        toast(messages.invalidInvitation)
+        return
+      }
+      if (pendingManagedAccount.grant.is_approved) {
+        toast(messages.alreadyAcceptedInvitation)
+      }
+    }
+    setHasInviteParamToValidate(false)
+  }, [toast, managedAccounts, hasInviteParamToValidate, pending])
 
   const handleStopManaging = useCallback(
     ({ userId }: { userId: number; managerUserId: number }) => {
