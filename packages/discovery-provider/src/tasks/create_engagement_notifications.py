@@ -78,10 +78,10 @@ def _create_engagement_notifications(session):
                 "challenge_id": user_challenge.challenge_id,
                 "amount": user_challenge.amount,
             },
-            timestamp=user_challenge.created_at,
+            timestamp=user_challenge.completed_at,
         )
         new_notifications.append(new_notification)
-    logger.info(f"inserting {len(new_notifications)} cooldown complete notifications")
+    logger.info(f"Inserting {len(new_notifications)} cooldown complete notifications")
     session.add_all(new_notifications)
     session.commit()
 
