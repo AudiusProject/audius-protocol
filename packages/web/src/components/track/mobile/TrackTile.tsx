@@ -38,6 +38,7 @@ import RepostButton from 'components/alt-button/RepostButton'
 import { DogEar } from 'components/dog-ear'
 import { TextLink, UserLink } from 'components/link'
 import { LockedStatusPill } from 'components/locked-status-pill'
+import { ScheduledReleaseLabel } from 'components/scheduled-release-label/ScheduledReleaseLabel'
 import Skeleton from 'components/skeleton/Skeleton'
 import { GatedContentLabel } from 'components/track/GatedContentLabel'
 import { TrackTileProps } from 'components/track/types'
@@ -195,6 +196,8 @@ const TrackTile = (props: CombinedProps) => {
     isMatrix,
     userId,
     isArtistPick,
+    isScheduledRelease,
+    releaseDate,
     isOwner,
     isUnlisted,
     isLoading,
@@ -234,9 +237,7 @@ const TrackTile = (props: CombinedProps) => {
     : getDogEarType({
         streamConditions,
         isOwner,
-        hasStreamAccess,
-        isArtistPick,
-        isUnlisted
+        hasStreamAccess
       })
 
   const onToggleSave = useCallback(() => toggleSave(id), [toggleSave, id])
@@ -433,6 +434,11 @@ const TrackTile = (props: CombinedProps) => {
               className={styles.rankIconContainer}
             />
             {specialContentLabel}
+            <ScheduledReleaseLabel
+              releaseDate={releaseDate}
+              isUnlisted={isUnlisted}
+              isScheduledRelease={isScheduledRelease}
+            />
             {!(props.repostCount || props.saveCount) ? null : (
               <>
                 <div

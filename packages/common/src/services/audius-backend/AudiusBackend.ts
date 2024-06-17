@@ -2124,13 +2124,11 @@ export const audiusBackend = ({
 
   async function getNotifications({
     limit,
-    timeOffset,
-    withDethroned
+    timeOffset
   }: {
     limit: number
     // unix timestamp
     timeOffset?: number
-    withDethroned: boolean
   }) {
     await waitForLibsInit()
     const account = audiusLibs.Account.getCurrentUser()
@@ -2149,7 +2147,7 @@ export const audiusBackend = ({
           : undefined,
         limit,
         handle,
-        withSupporterDethroned: withDethroned,
+        withDethroned: true,
         withTips: true,
         withRewards: true,
         withRemix: true,

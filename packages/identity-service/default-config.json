@@ -73,5 +73,6 @@
   "solanaFeePayerWallets": "[]",
   "sentryDSN": "",
   "solanaEndpoint": "https://api.mainnet-beta.solana.com",
+  "solanaEndpointListensProgram": "https://api.mainnet-beta.solana.com",
   "stripeSecretKey": ""
 }

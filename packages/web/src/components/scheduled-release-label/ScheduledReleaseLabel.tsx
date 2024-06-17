@@ -1,66 +1,43 @@
-import { Text, IconCalendarMonth } from '@audius/harmony'
-import cn from 'classnames'
-import moment from 'moment'
+import { formatReleaseDate } from '@audius/common/utils'
+import { Text, IconCalendarMonth, Flex, useTheme } from '@audius/harmony'
+import dayjs from 'dayjs'
 
 import { getLocalTimezone } from 'utils/dateUtils'
 
-import gatedContentLabelStyles from '../track/GatedContentLabel.module.css'
-
-import styles from './ScheduledReleaseLabel.module.css'
+const messages = {
+  releases: (date: string) =>
+    `Releases ${formatReleaseDate({
+      date,
+      withHour: true
+    })} ${getLocalTimezone()}`
+}
 
 export type ScheduledReleaseLabelProps = {
-  released?: string | null
+  releaseDate?: string | null
   isUnlisted?: boolean
+  isScheduledRelease?: boolean
 }
 
 export const ScheduledReleaseLabel = ({
-  released,
-  isUnlisted
+  releaseDate,
+  isUnlisted,
+  isScheduledRelease
 }: ScheduledReleaseLabelProps) => {
-  if (!released || !isUnlisted || moment(released).isBefore(moment())) {
-    return null
-  }
-  return (
-    <div
-      className={cn(
-        gatedContentLabelStyles.labelContainer,
-        styles.scheduledReleaseLabel
-      )}
-    >
-      <IconCalendarMonth size='s' />
-      <Text variant='body'>
-        Releases{' '}
-        {moment(released).format('M/D/YY [@] h:mm A') +
-          ' ' +
-          getLocalTimezone()}
-      </Text>
-    </div>
+  const { color } = useTheme()
+  if (
+    !releaseDate ||
+    !isUnlisted ||
+    !isScheduledRelease ||
+    dayjs(releaseDate).isBefore(dayjs())
   )
-}
-
-export const ScheduledReleaseGiantLabel = ({
-  released,
-  isUnlisted
-}: ScheduledReleaseLabelProps) => {
-  if (!released || !isUnlisted || moment(released).isBefore(moment())) {
     return null
-  }
 
   return (
-    <div
-      className={cn(
-        gatedContentLabelStyles.labelContainer,
-        styles.scheduledReleaseLabel
-      )}
-    >
-      <IconCalendarMonth />
-      <Text color='accent' variant='title'>
-        Releases
-        {' ' +
-          moment(released).format('M/D/YY [@] h:mm A') +
-          ' ' +
-          getLocalTimezone()}
+    <Flex alignItems='center' gap='xs' w='100%'>
+      <IconCalendarMonth size='s' fill={color.icon.accent} />
+      <Text variant='body' size='xs' color='accent'>
+        {messages.releases(releaseDate)}
       </Text>
-    </div>
+    </Flex>
   )
 }

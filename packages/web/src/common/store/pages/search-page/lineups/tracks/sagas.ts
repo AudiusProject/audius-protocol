@@ -43,13 +43,12 @@ function* getSearchPageResultsTracks({
       )
       results = tracks
     } else {
-      const { tracks } = yield* call(
-        getSearchResults,
-        query,
-        category,
+      const { tracks } = yield* call(getSearchResults, {
+        searchText: query,
+        kind: category,
         limit,
         offset
-      )
+      })
       results = tracks as unknown as Track[]
     }
     if (results) return results

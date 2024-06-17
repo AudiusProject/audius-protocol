@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useContext } from 'react'
 
 import { accountSelectors } from '@audius/common/store'
 import { shortenSPLAddress } from '@audius/common/utils'
@@ -6,6 +6,7 @@ import {
   Flex,
   IconLogoCircle,
   IconLogoCircleUSDC,
+  LoadingSpinner,
   Paper,
   Text,
   TextLink
@@ -14,6 +15,7 @@ import { useSelector } from 'react-redux'
 import { useAsync } from 'react-use'
 
 import { useModalState } from 'common/hooks/useModalState'
+import { ToastContext } from 'components/toast/ToastContext'
 import { getAssociatedTokenAccountOwner } from 'services/solana/solana'
 
 const { getAccountUser } = accountSelectors
@@ -28,6 +30,7 @@ const messages = {
 export const PayoutWalletCard = () => {
   const user = useSelector(getAccountUser)
   const [, setIsOpen] = useModalState('PayoutWallet')
+  const { toast } = useContext(ToastContext)
 
   const handleChangeWallet = useCallback(() => {
     setIsOpen(true)
@@ -35,13 +38,18 @@ export const PayoutWalletCard = () => {
 
   const { value: payoutWallet } = useAsync(async () => {
     if (user?.spl_usdc_payout_wallet) {
-      const owner = await getAssociatedTokenAccountOwner(
-        user.spl_usdc_payout_wallet
-      )
-      return owner.toBase58()
+      try {
+        const owner = await getAssociatedTokenAccountOwner(
+          user.spl_usdc_payout_wallet
+        )
+        return owner.toBase58()
+      } catch (e) {
+        toast('Failed to load USDC payout wallet')
+        return null
+      }
     }
     return null
-  }, [user])
+  }, [user?.spl_usdc_payout_wallet])
 
   return (
     <Paper direction='column' shadow='far' borderRadius='l' pv='l' ph='xl'>
@@ -71,11 +79,17 @@ export const PayoutWalletCard = () => {
               <IconLogoCircle size='m' />
             )}
             <Text variant='body' size='m' strength='strong'>
-              {user?.spl_usdc_payout_wallet
-                ? payoutWallet
-                  ? shortenSPLAddress(payoutWallet)
-                  : ''
-                : messages.audiusWallet}
+              {user?.spl_usdc_payout_wallet ? (
+                payoutWallet ? (
+                  shortenSPLAddress(payoutWallet)
+                ) : (
+                  <Flex w='xl'>
+                    <LoadingSpinner />
+                  </Flex>
+                )
+              ) : (
+                messages.audiusWallet
+              )}
             </Text>
           </Flex>
           <TextLink

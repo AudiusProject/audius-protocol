@@ -301,9 +301,7 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
   const DogEarIconType = getDogEarType({
     streamConditions,
     isOwner,
-    hasStreamAccess,
-    isArtistPick: false,
-    isUnlisted
+    hasStreamAccess
   })
 
   let specialContentLabel = null
@@ -496,7 +494,7 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
               isMatrixMode={props.isMatrix}
               hasStreamAccess={props.hasStreamAccess}
               streamConditions={props.streamConditions}
-              isUnlisted={props.isUnlisted}
+              isUnlisted={isUnlisted}
             />
           </div>
         ) : null}

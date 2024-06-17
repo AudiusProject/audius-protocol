@@ -1,16 +1,10 @@
 import { Knex } from 'knex'
 import { NotificationRow } from '../../types/dn'
-import {
-  USDCPurchaseBuyerNotification,
-  AppEmailNotification
-} from '../../types/notifications'
+import { USDCPurchaseBuyerNotification } from '../../types/notifications'
 import { BaseNotification } from './base'
 import { sendPushNotification } from '../../sns'
 import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
-import {
-  sendNotificationEmail,
-  sendTransactionalEmail
-} from '../../email/notifications/sendEmail'
+import { sendTransactionalEmail } from '../../email/notifications/sendEmail'
 import {
   buildUserNotificationSettings,
   Device
@@ -19,7 +13,12 @@ import { disableDeviceArns } from '../../utils/disableArnEndpoint'
 import { capitalize } from 'lodash'
 import { sendBrowserNotification } from '../../web'
 import { EntityType } from '../../email/notifications/types'
-import { formatUSDCWeiToUSDString } from '../../utils/format'
+import {
+  formatContentUrl,
+  formatImageUrl,
+  formatProfileUrl,
+  formatUSDCWeiToUSDString
+} from '../../utils/format'
 import { email } from '../../email/notifications/preRendered/purchase'
 import { logger } from '../../logger'
 import { getContentNode, getHostname } from '../../utils/env'
@@ -35,6 +34,7 @@ export class USDCPurchaseBuyer extends BaseNotification<USDCPurchaseBuyerRow> {
   contentType: string
   extraAmount: string
   totalAmount: string
+  vendor: string
 
   constructor(
     dnDB: Knex,
@@ -57,13 +57,12 @@ export class USDCPurchaseBuyer extends BaseNotification<USDCPurchaseBuyerRow> {
     this.notificationReceiverUserId = this.notification.data.buyer_user_id
     this.contentId = this.notification.data.content_id
     this.contentType = this.notification.data.content_type
+    this.vendor = this.notification.data.vendor
   }
 
   async processNotification({
-    isLiveEmailEnabled,
     isBrowserPushEnabled
   }: {
-    isLiveEmailEnabled: boolean
     isBrowserPushEnabled: boolean
   }) {
     const users = await this.getUsersBasicInfo([
@@ -111,6 +110,9 @@ export class USDCPurchaseBuyer extends BaseNotification<USDCPurchaseBuyerRow> {
     const sellerUsername = users[this.sellerUserId]?.name
     const sellerHandle = users[this.sellerUserId]?.handle
     const purchaserUsername = users[this.notificationReceiverUserId]?.name
+    const purchaserProfilePictureSizes =
+      users[this.notificationReceiverUserId]?.profile_picture_sizes
+    const purchaserHandle = users[this.notificationReceiverUserId]?.handle
 
     const title = 'Purchase Successful'
     const body = `You just purchased ${purchasedContentName} from ${capitalize(
@@ -162,44 +164,26 @@ export class USDCPurchaseBuyer extends BaseNotification<USDCPurchaseBuyerRow> {
       await this.incrementBadgeCount(this.notificationReceiverUserId)
     }
 
-    if (
-      isLiveEmailEnabled &&
-      userNotificationSettings.shouldSendEmailAtFrequency({
-        initiatorUserId: this.sellerUserId,
-        receiverUserId: this.notificationReceiverUserId,
-        frequency: 'live'
-      })
-    ) {
-      const notification: AppEmailNotification = {
-        receiver_user_id: this.notificationReceiverUserId,
-        ...this.notification
-      }
-      await sendNotificationEmail({
-        userId: this.notificationReceiverUserId,
-        email: userNotificationSettings.getUserEmail(
-          this.notificationReceiverUserId
-        ),
-        frequency: 'live',
-        notifications: [notification],
-        dnDb: this.dnDB,
-        identityDb: this.identityDB
-      })
-    }
-
     await sendTransactionalEmail({
       email: userNotificationSettings.getUserEmail(
         this.notificationReceiverUserId
       ),
       html: email({
         purchaserName: purchaserUsername,
+        purchaserProfileImage: formatImageUrl(
+          purchaserProfilePictureSizes,
+          150
+        ),
+        purchaserHandle,
+        purchaserLink: formatProfileUrl(purchaserHandle),
         artistName: sellerUsername,
-        contentType: this.contentType,
         contentTitle: purchasedContentName,
-        contentLink: `${getHostname()}/${sellerHandle}/${slug}`,
-        contentImage: `${getContentNode()}/content/${cover_art_sizes}/480x480.jpg`,
+        contentLink: formatContentUrl(sellerHandle, slug),
+        contentImage: formatImageUrl(cover_art_sizes, 480),
         price: this.amount,
         payExtra: this.extraAmount,
-        total: this.totalAmount
+        total: this.totalAmount,
+        vendor: this.vendor
       }),
       subject: 'Thank You For Your Support'
     })

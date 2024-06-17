@@ -19,7 +19,6 @@ import { useField } from 'formik'
 import { SingleTrackEditValues } from 'components/edit-track/types'
 import layoutStyles from 'components/layout/layout.module.css'
 import { ModalRadioItem } from 'components/modal-radio/ModalRadioItem'
-import { useFlag } from 'hooks/useRemoteConfig'
 import { pluralize } from 'utils/stringUtils'
 
 import styles from './AccessAndSaleField.module.css'
@@ -87,15 +86,6 @@ export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
     ? isPremiumAlbumsEnabled && isUsdcFlagUploadEnabled
     : isUsdcFlagUploadEnabled
 
-  const { isEnabled: isCollectibleGatedFlagEnabled } = useFlag(
-    FeatureFlags.COLLECTIBLE_GATED_ENABLED
-  )
-  const { isEnabled: isSpecialAccessFlagEnabled } = useFlag(
-    FeatureFlags.SPECIAL_ACCESS_ENABLED
-  )
-  const isCollectibleGatedEnabled = !isAlbum && isCollectibleGatedFlagEnabled
-  const isSpecialAccessEnabled = !isAlbum && isSpecialAccessFlagEnabled
-
   const [availabilityField] = useField({
     name: STREAM_AVAILABILITY_TYPE
   })
@@ -140,7 +130,7 @@ export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
           />
         ) : null}
 
-        {isSpecialAccessEnabled ? (
+        {!isAlbum ? (
           <ModalRadioItem
             icon={<IconSpecialAccess />}
             label={messages.specialAccess}
@@ -152,7 +142,7 @@ export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
             }
           />
         ) : null}
-        {isCollectibleGatedEnabled ? (
+        {!isAlbum ? (
           <CollectibleGatedRadioField
             isRemix={isRemix}
             isUpload={isUpload}

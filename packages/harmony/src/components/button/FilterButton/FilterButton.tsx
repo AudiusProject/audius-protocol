@@ -16,6 +16,7 @@ export const FilterButton = forwardRef<HTMLButtonElement, FilterButtonProps>(
       label: labelProp,
       onChange,
       onClick,
+      onReset,
       disabled,
       variant = 'fillContainer',
       size = 'default',
@@ -121,11 +122,21 @@ export const FilterButton = forwardRef<HTMLButtonElement, FilterButtonProps>(
           setLabel(null)
           // @ts-ignore
           onChange?.(null)
+          onReset?.()
         } else {
           setIsOpen((isOpen: boolean) => !isOpen)
         }
       }
-    }, [value, variant, setIsOpen, setValue, setLabel, onChange, onClick])
+    }, [
+      value,
+      variant,
+      setIsOpen,
+      setValue,
+      setLabel,
+      onChange,
+      onClick,
+      onReset
+    ])
 
     const handleChange = useCallback(
       (value: string, label: string) => {

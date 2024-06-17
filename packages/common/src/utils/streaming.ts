@@ -1,4 +1,4 @@
-import { AccessSignature, Track } from '~/models'
+import { AccessSignature, ID, OptionalId, Track } from '~/models'
 import { AudiusBackend, QueryParams } from '~/services/index'
 
 import { Nullable } from './typeUtils'
@@ -15,13 +15,18 @@ export async function generateUserSignature(
 
 export async function getQueryParams({
   audiusBackendInstance,
-  nftAccessSignature
+  nftAccessSignature,
+  userId
 }: {
   audiusBackendInstance: AudiusBackend
   nftAccessSignature?: Nullable<AccessSignature>
+  userId?: Nullable<ID>
 }) {
   const { data, signature } = await generateUserSignature(audiusBackendInstance)
   const queryParams: QueryParams = {}
+  if (userId) {
+    queryParams.user_id = OptionalId.parse(userId)
+  }
   queryParams.user_data = data
   queryParams.user_signature = signature
   if (nftAccessSignature) {

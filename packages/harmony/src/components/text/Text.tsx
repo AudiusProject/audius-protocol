@@ -16,7 +16,7 @@ export const Text = forwardRef(
   ) => {
     const {
       children,
-      variant: propVariant,
+      variant: variantProp,
       strength: strengthProp,
       size: sizeProp,
       color,
@@ -31,9 +31,10 @@ export const Text = forwardRef(
 
     const theme = useTheme()
     const { variant: contextVariant } = useContext(TextContext)
-    const variant = propVariant ?? contextVariant ?? 'body'
-    const strength = strengthProp ?? (contextVariant ? undefined : 'default')
-    const size = sizeProp ?? (contextVariant ? undefined : 'm')
+    const variant = variantProp ?? contextVariant ?? 'body'
+    const parentVariant = contextVariant && !variantProp
+    const strength = strengthProp ?? (parentVariant ? undefined : 'default')
+    const size = sizeProp ?? (parentVariant ? undefined : 'm')
 
     const variantConfig = variant && variantStylesMap[variant]
     const css = {
@@ -83,7 +84,7 @@ export const Text = forwardRef(
       </Tag>
     )
 
-    if (contextVariant && !propVariant) {
+    if (parentVariant) {
       return textElement
     }
 

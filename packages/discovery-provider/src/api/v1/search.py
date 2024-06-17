@@ -45,6 +45,9 @@ class FullSearch(Resource):
         limit = format_limit(args)
         current_user_id = get_current_user_id(args)
         include_purchaseable = parse_bool_param(args.get("includePurchaseable"))
+        genres = args.get("genre")
+        moods = args.get("mood")
+        is_verified = parse_bool_param(args.get("is_verified"))
 
         search_args = {
             "is_auto_complete": False,
@@ -56,6 +59,9 @@ class FullSearch(Resource):
             "offset": offset,
             "only_downloadable": False,
             "include_purchaseable": include_purchaseable,
+            "genres": genres,
+            "moods": moods,
+            "only_verified": is_verified,
         }
         resp = search(search_args)
         return success_response(resp)

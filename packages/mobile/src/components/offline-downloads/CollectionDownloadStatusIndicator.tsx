@@ -2,7 +2,6 @@ import type { ID } from '@audius/common/models'
 import { cacheCollectionsSelectors } from '@audius/common/store'
 import { removeNullable } from '@audius/common/utils'
 
-import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'
 import { useProxySelector } from 'app/hooks/useProxySelector'
 import type { AppState } from 'app/store'
 import {
@@ -84,14 +83,11 @@ export const CollectionDownloadStatusIndicator = (
   props: CollectionDownloadIndicatorProps
 ) => {
   const { collectionId, ...other } = props
-  const isOfflineModeEnabled = useIsOfflineModeEnabled()
 
   const status = useProxySelector(
     (state) => getCollectionDownloadStatus(state, collectionId),
     [collectionId]
   )
-
-  if (!isOfflineModeEnabled) return null
 
   return <DownloadStatusIndicator status={status} {...other} />
 }

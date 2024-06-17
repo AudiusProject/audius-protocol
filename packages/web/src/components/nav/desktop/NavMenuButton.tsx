@@ -1,6 +1,9 @@
-import { useAccountHasClaimableRewards } from '@audius/common/hooks'
+import {
+  useAccountHasClaimableRewards,
+  useIsManagedAccount
+} from '@audius/common/hooks'
 import { Name } from '@audius/common/models'
-import { StringKeys, FeatureFlags } from '@audius/common/services'
+import { StringKeys } from '@audius/common/services'
 import { chatSelectors } from '@audius/common/store'
 import { removeNullable } from '@audius/common/utils'
 import {
@@ -22,7 +25,7 @@ import { NotificationDot } from 'components/notification-dot'
 import { USDCBalancePill } from 'components/usdc-balance-pill/USDCBalancePill'
 import { useIsUSDCEnabled } from 'hooks/useIsUSDCEnabled'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
-import { useFlag, useRemoteVar } from 'hooks/useRemoteConfig'
+import { useRemoteVar } from 'hooks/useRemoteConfig'
 import { useSelector } from 'utils/reducer'
 import {
   AUDIO_PAGE,
@@ -49,10 +52,10 @@ export const NavMenuButton = () => {
   const dispatch = useDispatch()
   const navigate = useNavigateToPage()
   const hasUnreadMessages = useSelector(chatSelectors.getHasUnreadMessages)
-  const { isEnabled: isChatEnabled } = useFlag(FeatureFlags.CHAT_ENABLED)
   const isUSDCEnabled = useIsUSDCEnabled()
   const challengeRewardIds = useRemoteVar(StringKeys.CHALLENGE_REWARD_IDS)
   const hasClaimableRewards = useAccountHasClaimableRewards(challengeRewardIds)
+  const isManagedAccount = useIsManagedAccount()
   const showNotificationBubble = hasUnreadMessages || hasClaimableRewards
 
   const messagesIcon = hasUnreadMessages ? (
@@ -66,8 +69,9 @@ export const NavMenuButton = () => {
   ) : (
     <IconMessage />
   )
-  const messagesItem = isChatEnabled
-    ? {
+  const messagesItem = isManagedAccount
+    ? null
+    : {
         className: styles.item,
         text: messages.messages,
         onClick: () => {
@@ -77,7 +81,6 @@ export const NavMenuButton = () => {
         icon: messagesIcon,
         iconClassName: styles.menuItemIcon
       }
-    : null
 
   const payAndEarnItem = isUSDCEnabled
     ? {

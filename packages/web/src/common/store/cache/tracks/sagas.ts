@@ -9,6 +9,7 @@ import {
   Remix,
   TrackMetadata
 } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import {
   Entry,
   getContext,
@@ -43,6 +44,7 @@ import { dominantColor } from 'utils/imageProcessingUtil'
 import { waitForWrite } from 'utils/sagaHelpers'
 
 import { recordEditTrackAnalytics } from './sagaHelpers'
+import { fetchTrackStreamUrls } from './utils/fetchTrackStreamUrls'
 
 const { startStemUploads } = stemsUploadActions
 const { getCurrentUploads } = stemsUploadSelectors
@@ -71,9 +73,22 @@ function* watchAdd() {
     cacheActions.ADD_SUCCEEDED,
     function* (action: ReturnType<typeof cacheActions.addSucceeded>) {
       if (action.kind === Kind.TRACKS) {
+        // Fetch repost data
         const isNativeMobile = yield* getContext('isNativeMobile')
         if (!isNativeMobile) {
           yield* fork(fetchRepostInfo, action.entries as Entry<Collection>[])
+        }
+
+        // Prefetch stream urls
+        const getFeatureEnabled = yield* getContext('getFeatureEnabled')
+        const isPrefetchEnabled = yield* call(
+          getFeatureEnabled,
+          FeatureFlags.PREFETCH_STREAM_URLS
+        )
+        if (isPrefetchEnabled) {
+          yield* fork(fetchTrackStreamUrls, {
+            trackIds: action.entries.map((e) => e.id)
+          })
         }
       }
     }

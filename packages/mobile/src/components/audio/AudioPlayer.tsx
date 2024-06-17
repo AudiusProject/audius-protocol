@@ -46,11 +46,9 @@ import TrackPlayer, {
 } from 'react-native-track-player'
 import { useDispatch, useSelector } from 'react-redux'
 import { useAsync, usePrevious } from 'react-use'
-import { getTrackStreamUrls } from '~/api'
 
 import { DEFAULT_IMAGE_URL } from 'app/components/image/TrackImage'
 import { getImageSourceOptimistic } from 'app/hooks/useContentNodeImage'
-import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { make, track as analyticsTrack } from 'app/services/analytics'
 import { apiClient } from 'app/services/audius-api-client'
@@ -74,7 +72,7 @@ import { useSavePodcastProgress } from './useSavePodcastProgress'
 
 const { getUserId } = accountSelectors
 const { getUsers } = cacheUsersSelectors
-const { getTracks } = cacheTracksSelectors
+const { getTracks, getTrackStreamUrls } = cacheTracksSelectors
 const {
   getPlaying,
   getSeek,
@@ -172,7 +170,7 @@ export const AudioPlayer = () => {
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
   )
   const { isEnabled: isPerformanceExperimentEnabled } = useFeatureFlag(
-    FeatureFlags.SKIP_STREAM_CHECK
+    FeatureFlags.PREFETCH_STREAM_URLS
   )
   const track = useSelector(getCurrentTrack)
   const playing = useSelector(getPlaying)
@@ -192,7 +190,6 @@ export const AudioPlayer = () => {
 
   const isReachable = useSelector(getIsReachable)
   const isNotReachable = isReachable === false
-  const isOfflineModeEnabled = useIsOfflineModeEnabled()
   const nftAccessSignatureMap = useSelector(getNftAccessSignatureMap)
   const { storageNodeSelector } = useAppContext()
 
@@ -330,17 +327,15 @@ export const AudioPlayer = () => {
       const trackOwner = queueTrackOwnersMap[track.owner_id]
       const trackId = track.track_id
       const offlineTrackAvailable =
-        trackId && isOfflineModeEnabled && offlineAvailabilityByTrackId[trackId]
+        trackId && offlineAvailabilityByTrackId[trackId]
 
       const { shouldPreview } = calculatePlayerBehavior(track, playerBehavior)
 
       // Get Track url
       let url: string
 
-      // Performance POC: use a pre-fetched DN url if we have it
-      const trackStreamUrl =
-        trackStreamUrls[`{"id":${trackId},"currentUserId":${currentUserId}}`]
-          ?.nonNormalizedData?.['stream-url']
+      // If we pre-fetched a stream url, prefer to use that
+      const trackStreamUrl = trackStreamUrls[trackId]
       if (offlineTrackAvailable && isCollectionMarkedForDownload) {
         const audioFilePath = getLocalAudioPath(trackId)
         url = `file://${audioFilePath}`
@@ -353,7 +348,8 @@ export const AudioPlayer = () => {
           const nftAccessSignature = nftAccessSignatureMap[trackId]?.mp3 ?? null
           queryParams = await getQueryParams({
             audiusBackendInstance,
-            nftAccessSignature
+            nftAccessSignature,
+            userId: currentUserId
           })
           trackQueryParams.current[trackId] = queryParams
         }
@@ -400,7 +396,6 @@ export const AudioPlayer = () => {
       currentUserId,
       isCollectionMarkedForDownload,
       isNotReachable,
-      isOfflineModeEnabled,
       isPerformanceExperimentEnabled,
       nftAccessSignatureMap,
       offlineAvailabilityByTrackId,
@@ -569,7 +564,7 @@ export const AudioPlayer = () => {
     const playCounterTimeout = setTimeout(() => {
       if (isReachable) {
         dispatch(recordListen(trackId))
-      } else if (isOfflineModeEnabled) {
+      } else {
         dispatch(
           addOfflineEntries({ items: [{ type: 'play-count', id: trackId }] })
         )
@@ -577,7 +572,7 @@ export const AudioPlayer = () => {
     }, RECORD_LISTEN_SECONDS)
 
     return () => clearTimeout(playCounterTimeout)
-  }, [counter, dispatch, isOfflineModeEnabled, isReachable, track?.track_id])
+  }, [counter, dispatch, isReachable, track?.track_id])
 
   const seekToRef = useRef<number | null>(null)
 

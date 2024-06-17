@@ -1,4 +1,4 @@
-import { Flex, IconHeart, IconRepost } from '@audius/harmony-native'
+import { Flex, IconHeart, IconPlay, IconRepost } from '@audius/harmony-native'
 import type { GestureResponderHandler } from 'app/types/gesture'
 
 import { DetailsTileStat } from './DetailsStat'
@@ -10,28 +10,32 @@ const messages = {
 }
 
 type DetailsTileStatsProps = {
+  playCount?: number
+  repostCount?: number
   favoriteCount?: number
-  hideFavoriteCount?: boolean
+  hidePlayCount?: number
   hideRepostCount?: boolean
+  hideFavoriteCount?: boolean
   onPressFavorites?: GestureResponderHandler
   onPressReposts?: GestureResponderHandler
-  repostCount?: number
 }
 
 /**
  * The stats displayed on track and playlist screens
  */
 export const DetailsTileStats = ({
-  favoriteCount,
+  playCount,
   repostCount,
-  hideFavoriteCount,
+  favoriteCount,
+  hidePlayCount,
   hideRepostCount,
+  hideFavoriteCount,
   onPressFavorites,
   onPressReposts
 }: DetailsTileStatsProps) => {
   if (
-    (hideFavoriteCount && hideRepostCount) ||
-    (!favoriteCount && !repostCount)
+    (hideFavoriteCount && hideRepostCount && hidePlayCount) ||
+    (!favoriteCount && !repostCount && !playCount)
   ) {
     return null
   }
@@ -43,6 +47,9 @@ export const DetailsTileStats = ({
       alignItems='center'
       justifyContent='flex-start'
     >
+      {hidePlayCount ? null : (
+        <DetailsTileStat count={playCount ?? 0} icon={IconPlay} />
+      )}
       {hideRepostCount ? null : (
         <DetailsTileStat
           count={repostCount ?? 0}

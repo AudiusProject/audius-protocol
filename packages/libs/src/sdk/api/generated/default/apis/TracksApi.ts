@@ -40,6 +40,7 @@ import {
 
 export interface DownloadTrackRequest {
     trackId: string;
+    userId?: string;
     userSignature?: string;
     userData?: string;
     nftAccessSignature?: string;
@@ -90,12 +91,15 @@ export interface SearchTracksRequest {
 
 export interface StreamTrackRequest {
     trackId: string;
+    userId?: string;
     preview?: boolean;
     userSignature?: string;
     userData?: string;
     nftAccessSignature?: string;
     skipPlayCount?: boolean;
     apiKey?: string;
+    skipCheck?: boolean;
+    noRedirect?: boolean;
 }
 
 /**
@@ -114,6 +118,10 @@ export class TracksApi extends runtime.BaseAPI {
         }
 
         const queryParameters: any = {};
+
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
+        }
 
         if (params.userSignature !== undefined) {
             queryParameters['user_signature'] = params.userSignature;
@@ -457,6 +465,10 @@ export class TracksApi extends runtime.BaseAPI {
 
         const queryParameters: any = {};
 
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
+        }
+
         if (params.preview !== undefined) {
             queryParameters['preview'] = params.preview;
         }
@@ -479,6 +491,14 @@ export class TracksApi extends runtime.BaseAPI {
 
         if (params.apiKey !== undefined) {
             queryParameters['api_key'] = params.apiKey;
+        }
+
+        if (params.skipCheck !== undefined) {
+            queryParameters['skip_check'] = params.skipCheck;
+        }
+
+        if (params.noRedirect !== undefined) {
+            queryParameters['no_redirect'] = params.noRedirect;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};

@@ -267,6 +267,18 @@ export interface PlaylistFullWithoutTracks {
      * @memberof PlaylistFullWithoutTracks
      */
     streamConditions?: AccessGate;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof PlaylistFullWithoutTracks
+     */
+    isScheduledRelease?: boolean;
+    /**
+     * 
+     * @type {string}
+     * @memberof PlaylistFullWithoutTracks
+     */
+    releaseDate?: string;
 }
 
 /**
@@ -341,6 +353,8 @@ export function PlaylistFullWithoutTracksFromJSONTyped(json: any, ignoreDiscrimi
         'trackCount': json['track_count'],
         'isStreamGated': json['is_stream_gated'],
         'streamConditions': !exists(json, 'stream_conditions') ? undefined : AccessGateFromJSON(json['stream_conditions']),
+        'isScheduledRelease': !exists(json, 'is_scheduled_release') ? undefined : json['is_scheduled_release'],
+        'releaseDate': !exists(json, 'release_date') ? undefined : json['release_date'],
     };
 }
 
@@ -386,6 +400,8 @@ export function PlaylistFullWithoutTracksToJSON(value?: PlaylistFullWithoutTrack
         'track_count': value.trackCount,
         'is_stream_gated': value.isStreamGated,
         'stream_conditions': AccessGateToJSON(value.streamConditions),
+        'is_scheduled_release': value.isScheduledRelease,
+        'release_date': value.releaseDate,
     };
 }
 

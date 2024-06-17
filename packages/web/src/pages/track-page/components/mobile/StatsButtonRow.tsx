@@ -1,11 +1,17 @@
 import { formatCount } from '@audius/common/utils'
-import { IconHeart as IconFavorite, IconRepost } from '@audius/harmony'
+import {
+  Flex,
+  IconHeart as IconFavorite,
+  IconPlay,
+  IconRepost
+} from '@audius/harmony'
 import cn from 'classnames'
 
 import styles from './StatsButtonRow.module.css'
 
 const messages = {
-  plays: 'Plays'
+  reposts: 'Reposts',
+  favorites: 'Favorites'
 }
 
 type StatsButtonRowProps = {
@@ -32,11 +38,13 @@ const StatsButtonRow = ({
   onClickReposts,
   listenCount = 0
 }: StatsButtonRowProps) => {
+  if (!showListenCount && !showFavoriteCount && !showRepostCount) return null
+
   const renderListenCount = () => {
     return (
       <div className={cn(styles.countContainer, styles.listenCount)}>
+        <IconPlay />
         <span className={styles.count}>{formatCount(listenCount)}</span>
-        <span className={styles.countLabel}>{messages.plays}</span>
       </div>
     )
   }
@@ -44,8 +52,9 @@ const StatsButtonRow = ({
   const renderFavoriteCount = () => {
     return (
       <div className={styles.countContainer} onClick={onClickFavorites}>
-        <span className={styles.count}>{formatCount(favoriteCount)}</span>
         <IconFavorite />
+        <span className={styles.count}>{formatCount(favoriteCount)}</span>
+        <span className={styles.countLabel}>{messages.favorites}</span>
       </div>
     )
   }
@@ -53,22 +62,19 @@ const StatsButtonRow = ({
   const renderRepostCount = () => {
     return (
       <div className={styles.countContainer} onClick={onClickReposts}>
-        <span className={styles.count}>{formatCount(repostCount)}</span>
         <IconRepost />
+        <span className={styles.count}>{formatCount(repostCount)}</span>
+        <span className={styles.countLabel}>{messages.reposts}</span>
       </div>
     )
   }
 
   return (
-    <>
-      {(showListenCount || showFavoriteCount || showRepostCount) && (
-        <div className={cn(styles.statsContainer, className)}>
-          {showListenCount && renderListenCount()}
-          {showFavoriteCount && renderFavoriteCount()}
-          {showRepostCount && renderRepostCount()}
-        </div>
-      )}
-    </>
+    <Flex gap='xl' className={className} justifyContent='flex-start'>
+      {showListenCount && renderListenCount()}
+      {showRepostCount && renderRepostCount()}
+      {showFavoriteCount && renderFavoriteCount()}
+    </Flex>
   )
 }
 
