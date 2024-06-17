@@ -31,8 +31,8 @@ import { useSelector } from 'react-redux'
 
 import { DogEar } from 'components/dog-ear'
 import { TextLink } from 'components/link'
-import { ScheduledReleaseLabel } from 'components/scheduled-release-label/ScheduledReleaseLabel'
 import Skeleton from 'components/skeleton/Skeleton'
+import { VisibilityLabel } from 'components/visibility-label/VisibilityLabel'
 import { useAuthenticatedClickCallback } from 'hooks/useAuthenticatedCallback'
 import { useFlag } from 'hooks/useRemoteConfig'
 
@@ -49,7 +49,6 @@ import {
 
 import { BottomRow } from './BottomRow'
 import styles from './TrackTile.module.css'
-import { VisibilityLabel } from 'components/visibility-label/VisibilityLabel'
 
 const { getUserId } = accountSelectors
 const { getTrackPosition } = playbackPositionSelectors
