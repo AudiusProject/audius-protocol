@@ -156,18 +156,7 @@ func (ss *MediorumServer) serveBlob(c echo.Context) error {
 		c.SetParamValues(values...)
 	}
 
-	logger := ss.logger.With("cid", cid)
 	key := cidutil.ShardCID(cid)
-
-	// return 403 if the requested CID is delisted
-	shouldCheckDelistStatus := true
-	if checkedDelistStatus, exists := c.Get("checkedDelistStatus").(bool); exists && checkedDelistStatus {
-		shouldCheckDelistStatus = false
-	}
-	if shouldCheckDelistStatus && ss.isCidBlacklisted(ctx, cid) {
-		logger.Info("cid is blacklisted")
-		return c.String(403, "cid is blacklisted by this node")
-	}
 
 	// if the client provided a filename, set it in the header to be auto-populated in download prompt
 	filenameForDownload := c.QueryParam("filename")
@@ -176,62 +165,59 @@ func (ss *MediorumServer) serveBlob(c echo.Context) error {
 		c.Response().Header().Set("Content-Disposition", fmt.Sprintf(`attachment; filename="%s"`, contentDisposition))
 	}
 
-	// check our bucket and serve the file if we have it
-	if attrs, err := ss.bucket.Attributes(ctx, key); err == nil && attrs != nil {
-		isAudioFile := strings.HasPrefix(attrs.ContentType, "audio")
-		// detect mime type and block mp3 streaming outside of the /tracks/cidstream route
-		if !strings.Contains(c.Path(), "cidstream") && isAudioFile {
-			return c.String(401, "mp3 streaming is blocked. Please use Discovery /v1/tracks/:encodedId/stream")
+	blob, err := ss.bucket.NewReader(ctx, key, nil)
+
+	if err != nil {
+		// don't redirect if the client only wants to know if we have it (ie localOnly query param is true)
+		if localOnly, _ := strconv.ParseBool(c.QueryParam("localOnly")); localOnly {
+			return c.String(404, "blob not found")
 		}
 
-		blob, err := ss.bucket.NewReader(ctx, key, nil)
-		if err != nil {
-			return err
-		}
-		defer blob.Close()
-
-		// v2 file listen
-		if isAudioFile {
-			go ss.logTrackListen(c)
-		} else {
-			// images: cache 30 days
-			c.Response().Header().Set(echo.HeaderCacheControl, "public, max-age=2592000, immutable")
+		// redirect to it
+		host := ss.findNodeToServeBlob(ctx, cid)
+		if host != "" {
+			dest := ss.replaceHost(c, host)
+			query := dest.Query()
+			query.Add("allow_unhealthy", "true") // we confirmed the node has it, so allow it to serve it even if unhealthy
+			dest.RawQuery = query.Encode()
+			return c.Redirect(302, dest.String())
 		}
 
-		if c.Request().Method == "HEAD" {
-			return c.NoContent(200)
-		}
-
-		if isAudioFile {
-			ss.recordMetric(StreamTrack)
-			http.ServeContent(c.Response(), c.Request(), cid, blob.ModTime(), blob)
-			return nil
-		}
-
-		blobData, err := io.ReadAll(blob)
-		if err != nil {
-			return err
-		}
-		ss.recordMetric(ServeImage)
-		return c.Blob(200, blob.ContentType(), blobData)
-	}
-
-	// don't redirect if the client only wants to know if we have it (ie localOnly query param is true)
-	if localOnly, _ := strconv.ParseBool(c.QueryParam("localOnly")); localOnly {
 		return c.String(404, "blob not found")
 	}
 
-	// redirect to it
-	host := ss.findNodeToServeBlob(ctx, cid)
-	if host != "" {
-		dest := ss.replaceHost(c, host)
-		query := dest.Query()
-		query.Add("allow_unhealthy", "true") // we confirmed the node has it, so allow it to serve it even if unhealthy
-		dest.RawQuery = query.Encode()
-		return c.Redirect(302, dest.String())
+	isAudioFile := strings.HasPrefix(blob.ContentType(), "audio")
+	// detect mime type and block mp3 streaming outside of the /tracks/cidstream route
+	if !strings.Contains(c.Path(), "cidstream") && isAudioFile {
+		return c.String(401, "mp3 streaming is blocked. Please use Discovery /v1/tracks/:encodedId/stream")
 	}
 
-	return c.String(404, "blob not found")
+	defer blob.Close()
+
+	// v2 file listen
+	if isAudioFile {
+		go ss.logTrackListen(c)
+	} else {
+		// images: cache 30 days
+		c.Response().Header().Set(echo.HeaderCacheControl, "public, max-age=2592000, immutable")
+	}
+
+	if c.Request().Method == "HEAD" {
+		return c.NoContent(200)
+	}
+
+	if isAudioFile {
+		go ss.recordMetric(StreamTrack)
+		http.ServeContent(c.Response(), c.Request(), cid, blob.ModTime(), blob)
+		return nil
+	}
+
+	blobData, err := io.ReadAll(blob)
+	if err != nil {
+		return err
+	}
+	go ss.recordMetric(ServeImage)
+	return c.Blob(200, blob.ContentType(), blobData)
 }
 
 func (ss *MediorumServer) recordMetric(action string) {
