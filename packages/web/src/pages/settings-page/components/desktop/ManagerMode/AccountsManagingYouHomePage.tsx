@@ -3,15 +3,7 @@ import { useCallback, useContext, useEffect } from 'react'
 import { useGetManagers, useRemoveManager } from '@audius/common/api'
 import { Status } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
-import {
-  Box,
-  Button,
-  Divider,
-  Flex,
-  IconPlus,
-  Text,
-  TextLink
-} from '@audius/harmony'
+import { Box, Button, Divider, Flex, IconPlus, Text } from '@audius/harmony'
 
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { ToastContext } from 'components/toast/ToastContext'

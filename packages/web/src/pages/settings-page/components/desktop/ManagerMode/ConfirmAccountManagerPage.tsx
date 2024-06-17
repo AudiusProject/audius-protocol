@@ -10,8 +10,7 @@ import {
   Hint,
   IconCaretLeft,
   IconError,
-  Text,
-  TextLink
+  Text
 } from '@audius/harmony'
 
 import ArtistChip from 'components/artist/ArtistChip'

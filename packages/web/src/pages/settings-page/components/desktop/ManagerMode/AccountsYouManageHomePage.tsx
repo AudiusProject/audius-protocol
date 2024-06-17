@@ -7,7 +7,7 @@ import {
 } from '@audius/common/api'
 import { Status, UserMetadata } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
-import { Box, Divider, Flex, Text, TextLink } from '@audius/harmony'
+import { Box, Divider, Flex, Text } from '@audius/harmony'
 
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { ToastContext } from 'components/toast/ToastContext'
