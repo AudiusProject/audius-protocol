@@ -1,15 +1,15 @@
-import { useCallback, useContext, useEffect } from 'react'
+import { useCallback, useContext, useEffect, useMemo, useState } from 'react'
 
 import {
   useApproveManagedAccount,
   useGetManagedAccounts,
   useRemoveManager
 } from '@audius/common/api'
-import queryString from 'query-string'
-import { useLocation } from 'react-router-dom'
 import { Status, UserMetadata } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
 import { Box, Divider, Flex, Text } from '@audius/harmony'
+import queryString from 'query-string'
+import { useLocation } from 'react-router-dom'
 
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { ToastContext } from 'components/toast/ToastContext'
@@ -32,8 +32,11 @@ export const AccountsYouManageHomePage = ({
   setPage
 }: AccountsYouManagePageProps) => {
   const { search } = useLocation()
-  const { pending } = queryString.parse(search)
+  const pending = useMemo(() => queryString.parse(search)?.pending, [search])
   const currentUser = useSelector(getAccountUser)
+  const [hasInviteParamToValidate, setHasInviteParamToValidate] = useState(
+    pending != null
+  )
   const userId = currentUser?.user_id
   const { data: managedAccounts, status } = useGetManagedAccounts(
     { userId: userId! },
@@ -44,7 +47,9 @@ export const AccountsYouManageHomePage = ({
   const { toast } = useContext(ToastContext)
 
   useEffect(() => {
-    if (managedAccounts == null) return
+    if (managedAccounts == null || !hasInviteParamToValidate) {
+      return
+    }
     if (
       pending != null &&
       typeof pending === 'string' &&
@@ -63,7 +68,8 @@ export const AccountsYouManageHomePage = ({
         toast(messages.alreadyAcceptedInvitation)
       }
     }
-  }, [toast, pending, managedAccounts])
+    setHasInviteParamToValidate(false)
+  }, [toast, managedAccounts, hasInviteParamToValidate, pending])
 
   const handleStopManaging = useCallback(
     ({ userId }: { userId: number; managerUserId: number }) => {
