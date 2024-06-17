@@ -314,22 +314,10 @@ func (ss *MediorumServer) repairCid(cid string, placementHosts []string, tracker
 	// delete over-replicated blobs:
 	// check all healthy nodes ahead of me in the preferred order to ensure they have it.
 	// if R+1 healthy nodes in front of me have it, I can safely delete.
-	// don't delete if we replicated the blob within the past 24 hours
-	// wasReplicatedToday := attrs.CreateTime.After(time.Now().Add(-24 * time.Hour))
+	// don't delete if we replicated the blob within the past week
 	wasReplicatedThisWeek := attrs.CreateTime.After(time.Now().Add(-24 * 7 * time.Hour))
 
 	if !isPlaced && !ss.Config.StoreAll && tracker.CleanupMode && alreadyHave && myRank > ss.Config.ReplicationFactor+1 && !wasReplicatedThisWeek {
-		// depth := 0
-		// // loop preferredHealthyHosts (not preferredHosts) because we don't mind storing a blob a little while longer if it's not on enough healthy nodes
-		// for _, host := range preferredHealthyHosts {
-		// 	if ss.hostHasBlob(host, cid) {
-		// 		depth++
-		// 	}
-		// 	if host == ss.Config.Self.Host {
-		// 		break
-		// 	}
-		// }
-
 		// if i'm the first node that over-replicated, keep the file for a week as a buffer since a node ahead of me in the preferred order will likely be down temporarily at some point
 		tracker.Counters["delete_over_replicated_needed"]++
 		err = ss.dropFromMyBucket(cid)
@@ -344,52 +332,6 @@ func (ss *MediorumServer) repairCid(cid string, placementHosts []string, tracker
 			return nil
 		}
 	}
-
-	// replicate under-replicated blobs:
-	// even tho this blob isn't "mine"
-	// in cleanup mode the top N*2 healthy nodes will check to see if it's under-replicated
-	// and pull file if under-replicated
-	// if tracker.CleanupMode && !isMine && !alreadyHave && myRank >= 0 && myRank < ss.Config.ReplicationFactor*2 && ss.diskHasSpace() {
-	// 	hasIt := []string{}
-	// 	// loop preferredHosts (not preferredHealthyHosts) because hostHasBlob is the real source of truth for if a node can serve a blob (not our health info about the host, which could be outdated)
-	// 	for _, host := range preferredHosts {
-	// 		if ss.hostHasBlob(host, cid) {
-	// 			if host == ss.Config.Self.Host {
-	// 				continue
-	// 			}
-	// 			hasIt = append(hasIt, host)
-	// 			if len(hasIt) == ss.Config.ReplicationFactor {
-	// 				break
-	// 			}
-	// 		}
-	// 	}
-
-	// 	if len(hasIt) < ss.Config.ReplicationFactor {
-	// 		// get it
-	// 		tracker.Counters["pull_under_replicated_needed"]++
-	// 		success := false
-	// 		for _, host := range hasIt {
-	// 			err := ss.pullFileFromHost(host, cid)
-	// 			if err != nil {
-	// 				tracker.Counters["pull_under_replicated_fail"]++
-	// 				logger.Error("pull failed (under-replicated)", err, "host", host)
-	// 			} else {
-	// 				tracker.Counters["pull_under_replicated_success"]++
-	// 				logger.Info("pull OK (under-replicated)", "host", host)
-
-	// 				pulledAttrs, errAttrs := ss.bucket.Attributes(ctx, key)
-	// 				if errAttrs != nil {
-	// 					tracker.ContentSize += pulledAttrs.Size
-	// 				}
-	// 				return nil
-	// 			}
-	// 		}
-	// 		if !success {
-	// 			logger.Warn("failed to pull under-replicated from any host", "hosts", preferredHosts)
-	// 			return errors.New("failed to pull under-replicated from any host")
-	// 		}
-	// 	}
-	// }
 
 	return nil
 }
