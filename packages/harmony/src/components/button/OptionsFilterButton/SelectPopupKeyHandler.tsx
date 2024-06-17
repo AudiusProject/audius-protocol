@@ -14,7 +14,7 @@ type SelectPopupKeyHandlerProps = {
 /**
  * Handles key events for the popup inside the Select component
  *
- * Call the `children` function with the currently active value
+ * Calls the `children` function with the currently active value
  */
 export const SelectPopupKeyHandler = (props: SelectPopupKeyHandlerProps) => {
   const { disabled, options, onOptionSelect, optionRefs, scrollRef, children } =
@@ -43,6 +43,8 @@ export const SelectPopupKeyHandler = (props: SelectPopupKeyHandlerProps) => {
 
       switch (event.key) {
         case 'ArrowUp':
+          event.stopPropagation()
+          event.preventDefault()
           setActiveIndex((prevIndex) => {
             const getNewIndex = () => {
               if (prevIndex === null) {
@@ -59,6 +61,8 @@ export const SelectPopupKeyHandler = (props: SelectPopupKeyHandlerProps) => {
           })
           break
         case 'ArrowDown':
+          event.stopPropagation()
+          event.preventDefault()
           setActiveIndex((prevIndex) => {
             const getNewIndex = () => {
               if (prevIndex === null) {
