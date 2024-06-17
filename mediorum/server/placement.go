@@ -36,7 +36,7 @@ type HostTuples []HostTuple
 func (s HostTuples) Len() int      { return len(s) }
 func (s HostTuples) Swap(i, j int) { s[i], s[j] = s[j], s[i] }
 func (s HostTuples) Less(i, j int) bool {
-	c := bytes.Compare(s[j].score, s[i].score)
+	c := bytes.Compare(s[i].score, s[j].score)
 	if c == 0 {
 		return s[i].host < s[j].host
 	}
