@@ -3,7 +3,7 @@ import { useCallback, useMemo, useState } from 'react'
 import { useGetManagers } from '@audius/common/api'
 import { User } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
-import { Box, Flex, IconShieldUser, Text, TextLink } from '@audius/harmony'
+import { Box, Flex, IconShieldUser, Text } from '@audius/harmony'
 
 import ArtistChip from 'components/artist/ArtistChip'
 import { UsersSearch } from 'components/search-users-modal/SearchUsersModal'
@@ -87,9 +87,6 @@ export const FindAccountManagerPage = (props: FindAccountManagerPageProps) => {
       <Box ph='xl'>
         <Text variant='body' size='l'>
           {messages.description} {sharedMessages.accountManagersExplanation}{' '}
-          <TextLink href='#' variant='visible'>
-            {sharedMessages.learnMore}
-          </TextLink>
         </Text>
       </Box>
       <UsersSearch

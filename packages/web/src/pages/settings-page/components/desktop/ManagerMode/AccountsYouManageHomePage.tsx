@@ -7,7 +7,7 @@ import {
 } from '@audius/common/api'
 import { Status, UserMetadata } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
-import { Box, Divider, Flex, Text, TextLink } from '@audius/harmony'
+import { Box, Divider, Flex, Text } from '@audius/harmony'
 
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { ToastContext } from 'components/toast/ToastContext'
@@ -89,9 +89,6 @@ export const AccountsYouManageHomePage = ({
     <Flex direction='column' gap='xl'>
       <Text variant='body' size='l'>
         {messages.takeControl}{' '}
-        <TextLink isExternal href='#' variant='visible'>
-          {sharedMessages.learnMore}
-        </TextLink>
       </Text>
       {status !== Status.SUCCESS ? (
         <Box pv='2xl'>
