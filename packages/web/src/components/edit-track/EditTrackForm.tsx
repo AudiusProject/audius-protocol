@@ -1,6 +1,8 @@
 import { useCallback, useContext, useState } from 'react'
 
+import { useFeatureFlag } from '@audius/common/hooks'
 import { TrackMetadataFormSchema } from '@audius/common/schemas'
+import { FeatureFlags } from '@audius/common/services'
 import {
   IconCaretLeft,
   IconCaretRight,
@@ -21,6 +23,7 @@ import { ReleaseDateField } from 'components/edit/fields/ReleaseDateField'
 import { RemixSettingsField } from 'components/edit/fields/RemixSettingsField'
 import { StemsAndDownloadsField } from 'components/edit/fields/StemsAndDownloadsField'
 import { TrackMetadataFields } from 'components/edit/fields/TrackMetadataFields'
+import { VisibilityField } from 'components/edit/fields/visibility/VisibilityField'
 import layoutStyles from 'components/layout/layout.module.css'
 import { NavigationPrompt } from 'components/navigation-prompt/NavigationPrompt'
 import { EditFormScrollContext } from 'pages/edit-page/EditTrackPage'
@@ -82,6 +85,10 @@ const TrackEditForm = (
   })
   const [forceOpenAccessAndSale, setForceOpenAccessAndSale] = useState(false)
 
+  const { isEnabled: isHiddenPaidScheduledEnabled } = useFeatureFlag(
+    FeatureFlags.HIDDEN_PAID_SCHEDULED
+  )
+
   return (
     <Form>
       <NavigationPrompt
@@ -105,7 +112,11 @@ const TrackEditForm = (
           >
             <TrackMetadataFields />
             <div className={cn(layoutStyles.col, layoutStyles.gap4)}>
-              <ReleaseDateField />
+              {isHiddenPaidScheduledEnabled ? (
+                <VisibilityField entityType='track' />
+              ) : (
+                <ReleaseDateField />
+              )}
               <AccessAndSaleField
                 isUpload={isUpload}
                 forceOpen={forceOpenAccessAndSale}

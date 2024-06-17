@@ -15,6 +15,7 @@ import { ReleaseDateFieldLegacy } from 'components/edit/fields/ReleaseDateFieldL
 import { SelectGenreField } from 'components/edit/fields/SelectGenreField'
 import { SelectMoodField } from 'components/edit/fields/SelectMoodField'
 import { StemsAndDownloadsCollectionField } from 'components/edit/fields/StemsAndDownloadsCollectionsField'
+import { VisibilityField } from 'components/edit/fields/visibility/VisibilityField'
 import {
   ArtworkField,
   TagField,
@@ -53,6 +54,10 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
   )
   const showPremiumAlbums = isPremiumAlbumsEnabled && isUSDCUploadEnabled
 
+  const { isEnabled: isHiddenPaidScheduledEnabled } = useFeatureFlag(
+    FeatureFlags.HIDDEN_PAID_SCHEDULED
+  )
+
   const collectionTypeName = isAlbum ? 'Album' : 'Playlist'
   const validationSchema = isAlbum ? AlbumSchema : PlaylistSchema
 
@@ -88,7 +93,11 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
               />
             </div>
           </div>
-          <ReleaseDateFieldLegacy />
+          {isHiddenPaidScheduledEnabled ? (
+            <VisibilityField entityType={isAlbum ? 'album' : 'playlist'} />
+          ) : (
+            <ReleaseDateFieldLegacy />
+          )}
           {isAlbum && showPremiumAlbums ? (
             <Flex w='100%' css={{ flexGrow: 1 }}>
               <AccessAndSaleField isAlbum isUpload />
