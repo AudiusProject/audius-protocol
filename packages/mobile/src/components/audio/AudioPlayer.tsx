@@ -171,7 +171,7 @@ export const AudioPlayer = () => {
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
   )
-  const { isEnabled: usePrefetchedStreamUrls } = useFeatureFlag(
+  const { isEnabled: isStreamPrefetchEnabled } = useFeatureFlag(
     FeatureFlags.PREFETCH_STREAM_URLS
   )
   const track = useSelector(getCurrentTrack)
@@ -269,7 +269,7 @@ export const AudioPlayer = () => {
   const trackStreamUrls = useSelector(getTrackStreamUrls)
   const isUsingPrefetchUrl =
     trackStreamUrls[track?.track_id ?? -1] !== undefined &&
-    usePrefetchedStreamUrls
+    isStreamPrefetchEnabled
   const reset = useCallback(
     () => dispatch(playerActions.reset({ shouldAutoplay: false })),
     [dispatch]
@@ -347,7 +347,7 @@ export const AudioPlayer = () => {
       if (offlineTrackAvailable && isCollectionMarkedForDownload) {
         const audioFilePath = getLocalAudioPath(trackId)
         url = `file://${audioFilePath}`
-      } else if (trackStreamUrl && usePrefetchedStreamUrls && !noPrefetch) {
+      } else if (trackStreamUrl && isStreamPrefetchEnabled && !noPrefetch) {
         url = trackStreamUrl
       } else {
         let queryParams = trackQueryParams.current[trackId]
@@ -404,7 +404,7 @@ export const AudioPlayer = () => {
       currentUserId,
       isCollectionMarkedForDownload,
       isNotReachable,
-      usePrefetchedStreamUrls,
+      isStreamPrefetchEnabled,
       nftAccessSignatureMap,
       offlineAvailabilityByTrackId,
       queueTrackOwnersMap,
