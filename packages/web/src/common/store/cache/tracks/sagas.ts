@@ -20,12 +20,15 @@ import {
   cacheActions,
   confirmerActions,
   confirmTransaction,
-  TrackMetadataForUpload
+  TrackMetadataForUpload,
+  stemsUploadActions,
+  stemsUploadSelectors
 } from '@audius/common/store'
 import {
   formatUrlName,
   makeKindId,
   squashNewLines,
+  uuid,
   waitForAccount,
   waitForValue
 } from '@audius/common/utils'
@@ -41,6 +44,8 @@ import { waitForWrite } from 'utils/sagaHelpers'
 
 import { recordEditTrackAnalytics } from './sagaHelpers'
 
+const { startStemUploads } = stemsUploadActions
+const { getCurrentUploads } = stemsUploadSelectors
 const { getUser } = cacheUsersSelectors
 const { getTrack } = cacheTracksSelectors
 const setDominantColors = averageColorActions.setDominantColors
@@ -141,6 +146,28 @@ function* editTrackAsync(action: ReturnType<typeof trackActions.editTrack>) {
       ...track._cover_art_sizes,
       [DefaultSizes.OVERRIDE]: track.artwork.url
     }
+  }
+
+  // process stems
+  // TODO: feature flag this
+  if (track.stems) {
+    const currentStemUploads = yield* select(getCurrentUploads, track.track_id)
+    const existingStems = currentTrack._stems || []
+    const newStems = track.stems.filter((stem) => !stem.metadata.track_id)
+
+    const stemUploads = track.stems.map((stem) => {
+      return {
+        metadata: stem,
+        file: stem.file
+      }
+    })
+    yield* put(
+      startStemUploads({
+        parentId: track.track_id,
+        uploads: stemUploads,
+        batchUID: uuid()
+      })
+    )
   }
 
   yield* put(
