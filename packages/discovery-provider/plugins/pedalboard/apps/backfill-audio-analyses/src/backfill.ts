@@ -161,8 +161,8 @@ async function processBatches(db: Knex): Promise<void> {
     await new Promise((resolve) => setTimeout(resolve, 30000))
   }
 
-  console.log('No more tracks to backfill. Sleeping forever...')
-  await new Promise(() => {})
+  console.log('No more tracks to backfill. Goodbye!')
+  process.exit(0)
 }
 
 export const backfill = async (app: App<SharedData>) => {
