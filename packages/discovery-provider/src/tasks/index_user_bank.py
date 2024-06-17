@@ -967,7 +967,10 @@ def process_user_bank_txs() -> None:
                     logger.debug(
                         f"index_user_bank.py | Processing tx={tx_sig} | slot={tx_slot}"
                     )
-                    if transaction_with_signature.slot > latest_processed_slot:
+                    if (
+                        transaction_with_signature.slot > latest_processed_slot
+                        and transaction_with_signature.err is None
+                    ):
                         transaction_signature_batch.append(tx_sig)
                     elif (
                         transaction_with_signature.slot <= latest_processed_slot
@@ -985,7 +988,8 @@ def process_user_bank_txs() -> None:
                             intersection_found = True
                             break
                         # Ensure this transaction is still processed
-                        transaction_signature_batch.append(tx_sig)
+                        if transaction_with_signature.err is None:
+                            transaction_signature_batch.append(tx_sig)
 
                 # Restart processing at the end of this transaction signature batch
                 last_tx_signature = transactions_array[-1].signature

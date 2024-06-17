@@ -513,7 +513,7 @@ def get_transaction_signatures(
                     logger.debug(
                         f"index_rewards_manager.py | Processing tx={tx_sig} | slot={tx_slot}"
                     )
-                    if tx_info.slot > latest_processed_slot:
+                    if tx_info.slot > latest_processed_slot and tx_info.err is None:
                         transaction_signature_batch.append(tx_sig)
                     elif tx_info.slot <= latest_processed_slot and (
                         min_slot is None or tx_info.slot > min_slot
@@ -530,7 +530,8 @@ def get_transaction_signatures(
                             intersection_found = True
                             break
                         # Ensure this transaction is still processed
-                        transaction_signature_batch.append(tx_sig)
+                        if tx_info.err is None:
+                            transaction_signature_batch.append(tx_sig)
 
                 # Restart processing at the end of this transaction signature batch
                 last_tx = transactions_array[-1]

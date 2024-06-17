@@ -568,7 +568,7 @@ def process_spl_token_tx(
                 intersection_found = True
             else:
                 for tx in transactions_array:
-                    if tx.slot > latest_processed_slot:
+                    if tx.slot > latest_processed_slot and tx.err is None:
                         transaction_signature_batch.append(tx)
                     elif tx.slot <= latest_processed_slot:
                         intersection_found = True

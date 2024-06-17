@@ -636,7 +636,7 @@ def process_solana_plays(solana_client_manager: SolanaClientManager, redis: Redi
                 for tx in transactions_array:
                     tx_sig = str(tx.signature)
                     slot = tx.slot
-                    if tx.slot > latest_processed_slot:
+                    if tx.slot > latest_processed_slot and tx.err is None:
                         transaction_signature_batch.append(tx_sig)
                     elif tx.slot <= latest_processed_slot:
                         # Check the tx signature for any txs in the latest batch,
@@ -654,7 +654,8 @@ def process_solana_plays(solana_client_manager: SolanaClientManager, redis: Redi
                             intersection_found = True
                             break
                         # Otherwise, ensure this transaction is still processed
-                        transaction_signature_batch.append(tx_sig)
+                        if tx.err is None:
+                            transaction_signature_batch.append(tx_sig)
                 # Restart processing at the end of this transaction signature batch
 
                 # get latest play slot from the first fetch
