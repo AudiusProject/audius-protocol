@@ -85,12 +85,15 @@ func TestRepair(t *testing.T) {
 	}
 
 	// tell all servers do repair
-	testNetworkRunRepair(false)
+	testNetworkRunRepair(true)
 
 	// assert it exists on R hosts
 	{
 		hosts := testNetworkLocateBlob(cid)
-		assert.Len(t, hosts, replicationFactor)
+
+		// cleanup will permit blob on R+2
+		// so assert upper threshold thusly
+		assert.LessOrEqual(t, len(hosts), replicationFactor+2)
 	}
 
 	// --------------------------
