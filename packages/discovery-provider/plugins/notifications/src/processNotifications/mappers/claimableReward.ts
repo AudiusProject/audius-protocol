@@ -30,7 +30,6 @@ export class ClaimableReward extends BaseNotification<ClaimableRewardRow> {
   }
 
   async processNotification() {
-    logger.info(`asdf processNotification`)
     const users = await this.getUsersBasicInfo([this.userId])
     const user = users[this.userId]
     if (!user) {
@@ -43,7 +42,7 @@ export class ClaimableReward extends BaseNotification<ClaimableRewardRow> {
       [user.user_id]
     )
     await sendTransactionalEmail({
-      email: 'isaac@audius.co',
+      email: userNotificationSettings.getUserEmail(user.user_id),
       html: email({
         name: user.name,
         handle: user.handle,
