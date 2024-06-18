@@ -91,7 +91,9 @@ export const DatePickerField = (props: DatePickerFieldProps) => {
             }}
             focused={isFocused}
             isFocused={isFocused}
-            onFocusChange={({ focused }) => setIsFocused(focused)}
+            onFocusChange={({ focused }) => {
+              setIsFocused(focused)
+            }}
             // @ts-ignore mismatched moment versions; shouldn't be relevant here
             initialVisibleMonth={() => moment()} // PropTypes.func or null,
             hideKeyboardShortcutsPanel

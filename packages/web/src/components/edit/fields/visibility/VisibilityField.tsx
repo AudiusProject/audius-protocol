@@ -8,6 +8,8 @@ import {
 } from '@audius/harmony'
 import dayjs from 'dayjs'
 import { useField } from 'formik'
+import { z } from 'zod'
+import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import {
   ContextualMenu,
@@ -42,6 +44,19 @@ type VisibilityType = 'scheduled' | 'public' | 'hidden'
 type VisibilityFieldProps = {
   entityType: 'track' | 'album' | 'playlist'
 }
+
+const visibilitySchema = z
+  .object({
+    visibilityType: z.enum(['hidden', 'public', 'scheduled']),
+    releaseDate: z.string().optional()
+  })
+  .refine(
+    (data) => {
+      const { visibilityType, releaseDate } = data
+      return visibilityType === 'scheduled' ? !!releaseDate : true
+    },
+    { message: 'Release date required', path: ['releaseDate'] }
+  )
 
 export const VisibilityField = (props: VisibilityFieldProps) => {
   const { entityType } = props
@@ -104,6 +119,7 @@ export const VisibilityField = (props: VisibilityFieldProps) => {
       description={messages.description}
       renderValue={renderValue}
       initialValues={initialValues}
+      validationSchema={toFormikValidationSchema(visibilitySchema)}
       onSubmit={(values) => {
         const {
           visibilityType,

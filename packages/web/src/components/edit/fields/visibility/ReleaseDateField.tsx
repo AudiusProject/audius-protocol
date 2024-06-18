@@ -1,7 +1,6 @@
-import { Flex, Hint } from '@audius/harmony'
+import { Flex, Hint, Text } from '@audius/harmony'
 import { css } from '@emotion/css'
-import dayjs from 'dayjs'
-import { useFormikContext } from 'formik'
+import { useField, useFormikContext } from 'formik'
 
 import { DropdownField } from 'components/form-fields'
 import { HarmonyTextField } from 'components/form-fields/HarmonyTextField'
@@ -26,33 +25,34 @@ type ReleaseDateValues = {
 }
 
 export const ReleaseDateField = () => {
-  const { values } = useFormikContext<ReleaseDateValues>()
-  const { releaseDate } = values
-
-  const releaseDay = dayjs(releaseDate).startOf('day')
-  const today = dayjs().startOf('day')
-  const isScheduled = releaseDay.isAfter(today) && today.isBefore(releaseDay)
+  const { submitCount } = useFormikContext<ReleaseDateValues>()
+  const [{ value: releaseDate }, { touched, error }] = useField('releaseDate')
 
   return (
     <Flex direction='column' gap='l'>
       <Flex gap='l'>
-        <Flex
-          backgroundColor='surface1'
-          border='default'
-          borderRadius='s'
-          ph='l'
-          pv='m'
-          css={(theme) => ({
-            '&:hover': {
-              borderColor: theme.color.border.strong
-            }
-          })}
-        >
-          <DatePickerField
-            name='releaseDate'
-            label={messages.dateLabel}
-            futureDatesOnly
-          />
+        <Flex direction='column' gap='s'>
+          <Flex
+            backgroundColor='surface1'
+            border='default'
+            borderRadius='s'
+            ph='l'
+            pv='m'
+            css={(theme) => ({
+              '&:hover': {
+                borderColor: theme.color.border.strong
+              }
+            })}
+          >
+            <DatePickerField
+              name='releaseDate'
+              label={messages.dateLabel}
+              futureDatesOnly
+            />
+          </Flex>
+          {error && (touched || submitCount > 0) ? (
+            <Text color='danger'>{error}</Text>
+          ) : null}
         </Flex>
         <HarmonyTextField
           name='releaseDateTime'
@@ -83,7 +83,7 @@ export const ReleaseDateField = () => {
           })}
         />
       </Flex>
-      {isScheduled ? (
+      {releaseDate && touched ? (
         <Hint>{messages.futureReleaseHint(getLocalTimezone())}</Hint>
       ) : null}
     </Flex>
