@@ -1,4 +1,4 @@
-import { pluralize } from '~/utils'
+import { pluralize } from '@audius/common/utils'
 
 import { Flex, IconHeart, IconPlay, IconRepost } from '@audius/harmony-native'
 import type { GestureResponderHandler } from 'app/types/gesture'
