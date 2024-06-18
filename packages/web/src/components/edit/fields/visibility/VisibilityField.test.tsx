@@ -15,7 +15,7 @@ import { VisibilityField } from './VisibilityField'
 const submitSpy = vi.fn()
 
 const renderTrackVisibilityField = (options?: { initialValues: any }) => {
-  const now = new Date(2024, 6, 14)
+  const now = new Date(2024, 5, 14)
   vi.setSystemTime(now)
   const { initialValues } = options ?? {}
 
@@ -23,7 +23,6 @@ const renderTrackVisibilityField = (options?: { initialValues: any }) => {
     trackMetadatasIndex: 0,
     trackMetadatas: [
       {
-        release_date: now,
         is_unlisted: false,
         is_scheduled_release: false
       }
@@ -124,7 +123,7 @@ describe('VisibilityField', () => {
     })
   })
 
-  it.only('can set as a scheduled release', async () => {
+  it('can set as a scheduled release', async () => {
     renderTrackVisibilityField()
 
     fireEvent.click(screen.getByRole('button', { name: /visibility/i }))
@@ -144,7 +143,24 @@ describe('VisibilityField', () => {
     fireEvent.click(screen.getByRole('button', { name: /save/i }))
 
     expect(
-      await screen.findByLabelText(/Scheduled for 6\/15\/2024/)
+      await screen.findByLabelText(/scheduled for tomorrow @ 12:01 am/i)
     ).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: /submit/i }))
+
+    await waitFor(() => {
+      expect(submitSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          trackMetadatas: [
+            {
+              is_scheduled_release: true,
+              is_unlisted: true,
+              release_date: 'Sat Jun 15 2024 00:01:00 GMT-0700'
+            }
+          ]
+        }),
+        expect.anything()
+      )
+    })
   })
 })
