@@ -1,5 +1,6 @@
 import { useCallback, useContext } from 'react'
 
+import { useIsManagedAccount } from '@audius/common/hooks'
 import { Name, PlayableType } from '@audius/common/models'
 import {
   accountSelectors,
@@ -25,7 +26,7 @@ import { ShareDialog } from './components/ShareDialog'
 import { ShareDrawer } from './components/ShareDrawer'
 import { messages } from './messages'
 import { getTwitterShareText } from './utils'
-import { useIsManagedAccount } from '@audius/common/hooks'
+
 const { getShareState } = shareModalUISelectors
 const { shareUser } = usersSocialActions
 const { shareTrack } = tracksSocialActions

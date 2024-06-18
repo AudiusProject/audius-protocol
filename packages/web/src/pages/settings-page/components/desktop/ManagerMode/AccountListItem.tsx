@@ -147,6 +147,7 @@ export const AccountListItem = ({
     user,
     switchAccount,
     isManagedAccount,
+    isManagerMode,
     isPending,
     handleCancelInvite,
     handleRemoveManager,
