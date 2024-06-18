@@ -210,7 +210,7 @@ function* fetchBalanceAsync() {
   const getFeatureEnabled = yield* getContext('getFeatureEnabled')
 
   const account = yield* select(getAccountUser)
-  if (!account) return
+  if (!account || !account.wallet) return
 
   try {
     // Opt out of balance refreshes if the balance
@@ -227,11 +227,11 @@ function* fetchBalanceAsync() {
     )
 
     const [currentEthAudioWeiBalance, currentSolAudioWeiBalance] = yield* all([
-      call(
-        [walletClient, 'getCurrentBalance'],
-        /* bustCache */ localBalanceChange
-      ),
-      call([walletClient, 'getCurrentWAudioBalance'])
+      call([walletClient, 'getCurrentBalance'], {
+        ethAddress: account.wallet,
+        bustCache: localBalanceChange
+      }),
+      call([walletClient, 'getCurrentWAudioBalance'], account.wallet)
     ])
 
     if (isNullOrUndefined(currentEthAudioWeiBalance)) {
