@@ -167,31 +167,34 @@ func (ss *MediorumServer) serveBlob(c echo.Context) error {
 
 	blob, err := ss.bucket.NewReader(ctx, key, nil)
 
+	// If our bucket doesn't have the file, find a different node
 	if err != nil {
-		// don't redirect if the client only wants to know if we have it (ie localOnly query param is true)
-		if localOnly, _ := strconv.ParseBool(c.QueryParam("localOnly")); localOnly {
-			return c.String(404, "blob not found")
-		}
+		if gcerrors.Code(err) == gcerrors.NotFound {
+			// don't redirect if the client only wants to know if we have it (ie localOnly query param is true)
+			if localOnly, _ := strconv.ParseBool(c.QueryParam("localOnly")); localOnly {
+				return c.String(404, "blob not found")
+			}
 
-		// redirect to it
-		host := ss.findNodeToServeBlob(ctx, cid)
-		if host == "" {
-			return c.String(404, "blob not found")
-		}
+			// redirect to it
+			host := ss.findNodeToServeBlob(ctx, cid)
+			if host == "" {
+				return c.String(404, "blob not found")
+			}
 
-		dest := ss.replaceHost(c, host)
-		query := dest.Query()
-		query.Add("allow_unhealthy", "true") // we confirmed the node has it, so allow it to serve it even if unhealthy
-		dest.RawQuery = query.Encode()
-		return c.Redirect(302, dest.String())
+			dest := ss.replaceHost(c, host)
+			query := dest.Query()
+			query.Add("allow_unhealthy", "true") // we confirmed the node has it, so allow it to serve it even if unhealthy
+			dest.RawQuery = query.Encode()
+			return c.Redirect(302, dest.String())
+		}
+		return err
 	}
 
+	defer blob.Close()
 
 	if c.Request().Method == "HEAD" {
 		return c.NoContent(200)
 	}
-
-	defer blob.Close()
 
 	isAudioFile := strings.HasPrefix(blob.ContentType(), "audio")
 
@@ -209,6 +212,7 @@ func (ss *MediorumServer) serveBlob(c echo.Context) error {
 		return nil
 	} else {
 		// non audio (images)
+		// images: cache 30 days
 		c.Response().Header().Set(echo.HeaderCacheControl, "public, max-age=2592000, immutable")
 		blobData, err := io.ReadAll(blob)
 		if err != nil {
