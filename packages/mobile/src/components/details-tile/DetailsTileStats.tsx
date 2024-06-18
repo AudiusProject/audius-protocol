@@ -1,8 +1,9 @@
+import { pluralize } from '~/utils'
+
 import { Flex, IconHeart, IconPlay, IconRepost } from '@audius/harmony-native'
 import type { GestureResponderHandler } from 'app/types/gesture'
 
 import { DetailsTileStat } from './DetailsStat'
-import { pluralize } from '~/utils'
 
 const messages = {
   favorites: (count: number) => `${pluralize('Favorite', count)}`,
@@ -41,10 +42,10 @@ export const DetailsTileStats = ({
       alignItems='center'
       justifyContent='flex-start'
     >
-      {hidePlayCount || playCount <= 0 ? null : (
+      {hidePlayCount ? null : (
         <DetailsTileStat count={playCount} icon={IconPlay} />
       )}
-      {hideRepostCount || repostCount <= 0 ? null : (
+      {hideRepostCount ? null : (
         <DetailsTileStat
           count={repostCount}
           onPress={onPressReposts}
@@ -52,7 +53,7 @@ export const DetailsTileStats = ({
           label={messages.reposts(repostCount)}
         />
       )}
-      {hideFavoriteCount || favoriteCount <= 0 ? null : (
+      {hideFavoriteCount ? null : (
         <DetailsTileStat
           count={favoriteCount}
           onPress={onPressFavorites}
