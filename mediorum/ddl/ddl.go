@@ -22,6 +22,9 @@ var dropBlobs string
 //go:embed drop_old_audio_analyses.sql
 var dropAudioAnalysesDDL string
 
+//go:embed fix-qm-audio-analyses-typo.sql
+var fixQmAudioAnlaysesDDL string
+
 var mediorumMigrationTable = `
 	create table if not exists mediorum_migrations (
 		"hash" text primary key,
@@ -50,6 +53,7 @@ func Migrate(db *sql.DB, myHost string) {
 	runMigration(db, qmSyncTable)
 
 	runMigration(db, dropAudioAnalysesDDL)
+	runMigration(db, fixQmAudioAnlaysesDDL)
 }
 
 func runMigration(db *sql.DB, ddl string) {

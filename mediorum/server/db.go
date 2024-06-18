@@ -13,7 +13,7 @@ import (
 )
 
 type QmAudioAnalysis struct {
-	CID        string               `json:"cid" gorm:"primaryKey"`
+	CID        string               `json:"cid" gorm:"primaryKey;column:cid"`
 	Mirrors    []string             `json:"mirrors" gorm:"serializer:json"`
 	Status     string               `json:"status"`
 	Error      string               `json:"error,omitempty"`

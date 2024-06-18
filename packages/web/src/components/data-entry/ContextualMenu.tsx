@@ -18,7 +18,8 @@ import {
   Text,
   IconCaretRight,
   IconComponent,
-  Button
+  Button,
+  HiddenInput
 } from '@audius/harmony'
 import {
   Form,
@@ -120,7 +121,8 @@ export type SelectedValueProps = {
 export const SelectedValue = (props: SelectedValueProps) => {
   const { label, icon: Icon, children, ...rest } = props
   return (
-    <span className={styles.selectedValue} {...rest}>
+    <label className={styles.selectedValue} {...rest}>
+      <HiddenInput value={label} />
       {Icon ? <Icon size='s' color='default' /> : null}
       {label ? (
         <Text variant='body' strength='strong'>
@@ -128,7 +130,7 @@ export const SelectedValue = (props: SelectedValueProps) => {
         </Text>
       ) : null}
       {children}
-    </span>
+    </label>
   )
 }
 

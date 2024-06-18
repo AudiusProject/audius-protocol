@@ -215,7 +215,7 @@ export const LineupTileStats = ({
         {isTrending ? (
           <LineupTileRankIcon showCrown={showRankIcon} index={index} />
         ) : null}
-        {streamConditions ? (
+        {!isUnlisted && streamConditions ? (
           <LineupTileGatedContentTypeTag
             streamConditions={streamConditions}
             hasStreamAccess={hasStreamAccess}
