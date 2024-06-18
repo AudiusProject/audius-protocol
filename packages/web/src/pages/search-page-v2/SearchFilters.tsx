@@ -159,14 +159,12 @@ const KeyFilter = () => {
               <Flex direction='column' w='100%' ph='s'>
                 <FilterButtonOptions
                   options={keyOptions}
-                  onChange={(option) => {
-                    console.log('option', option)
-
+                  onChange={(option) =>
                     handleChange(
                       `${option.value} ${scale}`,
                       `${option.label} ${scale}`
                     )
-                  }}
+                  }
                 />
               </Flex>
             </Flex>
