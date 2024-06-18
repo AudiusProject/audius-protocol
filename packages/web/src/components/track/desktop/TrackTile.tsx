@@ -20,7 +20,6 @@ import {
   IconStar,
   IconCheck,
   IconCrown,
-  IconVisibilityHidden,
   Text,
   Flex,
   ProgressBar,
