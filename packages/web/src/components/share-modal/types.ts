@@ -1,7 +1,8 @@
 import { ShareType } from '@audius/common/store'
 
 export type ShareProps = {
-  onShareToDirectMessage: () => void
+  /** If excluded, will disable rendering of a 'Direct Message' option */
+  onShareToDirectMessage?: () => void
   onShareToTwitter: () => void
   onCopyLink: () => void
   onEmbed?: () => void

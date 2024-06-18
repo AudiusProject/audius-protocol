@@ -63,12 +63,14 @@ export const ShareDialog = ({
               : messages.shareDescription}
           </ModalContentText>
           <ul className={styles.actionList}>
-            <ShareActionListItem
-              iconLeft={IconMessage}
-              onClick={onShareToDirectMessage}
-            >
-              {messages.directMessage}
-            </ShareActionListItem>
+            {onShareToDirectMessage ? (
+              <ShareActionListItem
+                iconLeft={IconMessage}
+                onClick={onShareToDirectMessage}
+              >
+                {messages.directMessage}
+              </ShareActionListItem>
+            ) : null}
             <ShareActionListItem
               iconLeft={IconTwitterBird}
               onClick={onShareToTwitter}

@@ -25,6 +25,7 @@ import { ShareDialog } from './components/ShareDialog'
 import { ShareDrawer } from './components/ShareDrawer'
 import { messages } from './messages'
 import { getTwitterShareText } from './utils'
+import { useIsManagedAccount } from '@audius/common/hooks'
 const { getShareState } = shareModalUISelectors
 const { shareUser } = usersSocialActions
 const { shareTrack } = tracksSocialActions
@@ -42,6 +43,7 @@ export const ShareModal = () => {
   const { content, source } = useSelector(getShareState)
   const account = useSelector(getAccountUser)
   const { onOpen: openCreateChatModal } = useCreateChatModal()
+  const isManagerMode = useIsManagedAccount()
 
   const isOwner =
     content?.type === 'track' && account?.user_id === content.artist.user_id
@@ -120,7 +122,10 @@ export const ShareModal = () => {
   const shareProps = {
     isOpen,
     isOwner,
-    onShareToDirectMessage: handleShareToDirectMessage,
+    // Disable DM share in manager mode since we can't do that as a managed user
+    onShareToDirectMessage: isManagerMode
+      ? undefined
+      : handleShareToDirectMessage,
     onShareToTwitter: handleShareToTwitter,
     onCopyLink: handleCopyLink,
     onEmbed: ['playlist', 'album', 'track'].includes(content?.type ?? '')
