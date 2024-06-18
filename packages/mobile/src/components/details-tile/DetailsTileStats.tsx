@@ -2,18 +2,18 @@ import { Flex, IconHeart, IconPlay, IconRepost } from '@audius/harmony-native'
 import type { GestureResponderHandler } from 'app/types/gesture'
 
 import { DetailsTileStat } from './DetailsStat'
+import { pluralize } from '~/utils'
 
 const messages = {
-  plays: 'Plays',
-  favorites: 'Favorites',
-  reposts: 'Reposts'
+  favorites: (count: number) => `${pluralize('Favorite', count)}`,
+  reposts: (count: number) => `${pluralize('Repost', count)}`
 }
 
 type DetailsTileStatsProps = {
   playCount?: number
   repostCount?: number
   favoriteCount?: number
-  hidePlayCount?: number
+  hidePlayCount?: boolean
   hideRepostCount?: boolean
   hideFavoriteCount?: boolean
   onPressFavorites?: GestureResponderHandler
@@ -33,12 +33,6 @@ export const DetailsTileStats = ({
   onPressFavorites,
   onPressReposts
 }: DetailsTileStatsProps) => {
-  if (
-    (hideFavoriteCount && hideRepostCount && hidePlayCount) ||
-    (!favoriteCount && !repostCount && !playCount)
-  ) {
-    return null
-  }
   return (
     <Flex
       w='100%'
@@ -47,23 +41,23 @@ export const DetailsTileStats = ({
       alignItems='center'
       justifyContent='flex-start'
     >
-      {hidePlayCount && playCount > 0 ? null : (
+      {hidePlayCount || playCount <= 0 ? null : (
         <DetailsTileStat count={playCount} icon={IconPlay} />
       )}
-      {hideRepostCount ? null : (
+      {hideRepostCount || repostCount <= 0 ? null : (
         <DetailsTileStat
           count={repostCount}
           onPress={onPressReposts}
           icon={IconRepost}
-          label={messages.reposts}
+          label={messages.reposts(repostCount)}
         />
       )}
-      {hideFavoriteCount ? null : (
+      {hideFavoriteCount || favoriteCount <= 0 ? null : (
         <DetailsTileStat
           count={favoriteCount}
           onPress={onPressFavorites}
           icon={IconHeart}
-          label={messages.favorites}
+          label={messages.favorites(favoriteCount)}
         />
       )}
     </Flex>
