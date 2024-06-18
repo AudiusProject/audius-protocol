@@ -9,7 +9,9 @@ type MetadataItemProps = PropsWithChildren<{
 export const MetadataItem = ({ label, children }: MetadataItemProps) => {
   return (
     <Flex direction='row' alignItems='center' key={label} gap='xs'>
-      <Text variant='label'>{label}</Text>
+      <Text variant='label' color='subdued'>
+        {label}
+      </Text>
       <Text variant='body' size='s' strength='strong'>
         {children}
       </Text>
