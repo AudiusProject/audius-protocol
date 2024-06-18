@@ -14,7 +14,7 @@ import {
 const Web3 = require('web3')
 const web3 = new Web3()
 
-// Concurrency control
+// concurrency control
 const MAX_CONCURRENT_REQUESTS = 10
 const semaphore = new Semaphore(MAX_CONCURRENT_REQUESTS)
 
@@ -48,18 +48,15 @@ async function analyzeAudio(
   const trackCid = track.track_cid
   // only analyze streamable tracks
   if (!trackCid) return
-
   const isLegacyTrack = !audioUploadId && trackCid.startsWith("Qm")
 
-  const release = await semaphore.acquire() // Acquire a semaphore permit
+  const release = await semaphore.acquire() // acquire a semaphore permit
+
   // allow up to 5 attempts to trigger audio analysis for this track
   for (let i = 0; i < 5; i++) {
-    // Choose a random content node
+    // choose a random content node
     const contentNode = contentNodes[Math.floor(Math.random() * contentNodes.length)]
     try {
-      console.log(
-        `Querying ${contentNode} for audio analysis for track ID ${track.track_id}, track CID ${trackCid}, upload ID ${audioUploadId}`
-      )
       let analysisUrl = `${contentNode}/uploads/${audioUploadId}/analyze`
       let cid = ""
       if (isLegacyTrack) {
@@ -88,6 +85,9 @@ async function analyzeAudio(
         { timeout: REQUEST_TIMEOUT }
       )
       if (response.status == 200) {
+        console.log(
+          `Successfully triggered audio analysis for track ID ${track.track_id}, track CID ${trackCid}, upload ID ${audioUploadId} via ${contentNode}`
+        )
         break
       } else {
         console.log(
@@ -97,22 +97,22 @@ async function analyzeAudio(
       }
     } catch (error: any) {
       if (error.isAxiosError !== undefined && error.code === 'ECONNABORTED') {
+        // timeout
         console.log(
           `Timeout error triggering audio analysis on ${contentNode}: ${error.message}. Attempt #${i+1} to trigger audio analysis for track ID ${track.track_id}, track CID ${trackCid}, upload ID ${audioUploadId}. Trying another content node...`
         )
-        continue
       } else {
         console.error(
           `Error triggering audio analysis for track ID ${track.track_id}, track CID ${trackCid}, upload ID ${
             audioUploadId
-          }: ${(error as Error).message}. Skipping track...`
+          }: ${(error as Error).message}. Trying another content node...`
         )
-        break
       }
+      continue
     }
   }
 
-  release() // Release the semaphore permit
+  release() // release the semaphore permit
 }
 
 async function fetchTracks(
@@ -130,7 +130,7 @@ async function fetchTracks(
     .limit(limit)
 }
 
-// Trigger audio analyses for batchSize tracks at a time
+// trigger audio analyses for batchSize tracks at a time
 async function processBatches(db: any, batchSize: number): Promise<void> {
   let offset
   while (true) {
@@ -172,17 +172,15 @@ async function processBatches(db: any, batchSize: number): Promise<void> {
       break
     }
 
-    // Sleep for 30 seconds
+    // sleep for 30 seconds
     await new Promise((resolve) => setTimeout(resolve, 30000))
   }
-
-  console.log('No more tracks to backfill. Goodbye!')
-  process.exit(0)
 }
 
 export const backfill = async (app: App<SharedData>) => {
   const db = app.getDnDb()
-// Batch size for fetching tracks
   const BACKFILL_BATCH_SIZE = config.testRun ? 100 : 1000
   await processBatches(db, BACKFILL_BATCH_SIZE)
+
+  console.log('No more tracks to backfill. Goodbye!')
 }

@@ -11,6 +11,7 @@ export const config = readConfig()
 
 const main = async () => {
   await new App<SharedData>({}).task(backfill).run()
+  process.exit(0)
 }
 
 main().catch(logger.error.bind(logger))
