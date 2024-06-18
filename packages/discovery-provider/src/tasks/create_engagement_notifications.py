@@ -99,6 +99,7 @@ def _create_engagement_notifications(session):
             new_notifications.append(new_notification)
         else:
             logger.info(f"Debouncing notification for {user_challenge.user_id}")
+    logger.info(f"Inserting {len(new_notifications)} claimble reward notifications")
     session.add_all(new_notifications)
     session.commit()
 
