@@ -29,7 +29,7 @@ import {
   ALBUM_TRACK_PRICE
 } from '../../types'
 
-const messagesLegacy = {
+const messagesV1 = {
   price: {
     // Standalone purchaseable track flow
     standaloneTrackPrice: {
@@ -103,7 +103,7 @@ export type TrackAvailabilityFieldsProps = {
   isUpload?: boolean
 }
 
-type PriceMessages = typeof messagesLegacy.price
+type PriceMessages = typeof messagesV1.price
 export type PriceFieldProps = TrackAvailabilityFieldsProps & {
   messaging: PriceMessages[keyof PriceMessages]
   fieldName: typeof PRICE | typeof ALBUM_TRACK_PRICE
@@ -116,7 +116,7 @@ export const UsdcPurchaseFields = (props: TrackAvailabilityFieldsProps) => {
     useField<Nullable<AccessConditions>>(DOWNLOAD_CONDITIONS)
 
   const messages = useMessages(
-    messagesLegacy,
+    messagesV1,
     messagesV2,
     FeatureFlags.HIDDEN_PAID_SCHEDULED
   )
@@ -168,7 +168,7 @@ const PreviewField = (props: TrackAvailabilityFieldsProps) => {
   )
 
   const messages = useMessages(
-    messagesLegacy,
+    messagesV1,
     messagesV2,
     FeatureFlags.HIDDEN_PAID_SCHEDULED
   )
@@ -203,7 +203,7 @@ const PriceField = (props: PriceFieldProps) => {
   )
 
   const messages = useMessages(
-    messagesLegacy,
+    messagesV1,
     messagesV2,
     FeatureFlags.HIDDEN_PAID_SCHEDULED
   )

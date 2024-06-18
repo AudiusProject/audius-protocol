@@ -30,7 +30,7 @@ import { STREAM_AVAILABILITY_TYPE, STREAM_CONDITIONS } from '../types'
 
 import styles from './PriceAndAudienceField.module.css'
 
-const messagesLegacy = {
+const messagesV1 = {
   title: 'Access & Sale',
   modalDescription:
     'Control who has access to listen. Create gated experiences or require users pay to unlock your music.',
@@ -108,7 +108,7 @@ export const PriceAndAudienceMenuFields = (
   })
 
   const messages = useMessages(
-    messagesLegacy,
+    messagesV1,
     messagesV2,
     FeatureFlags.HIDDEN_PAID_SCHEDULED
   )

@@ -20,7 +20,7 @@ import styles from './UsdcPurchaseGatedRadioField.module.css'
 
 const WAITLIST_TYPEFORM = 'https://link.audius.co/waitlist'
 
-const messagesLegacy = {
+const messagesV1 = {
   usdcPurchase: 'Premium (Pay-to-Unlock)',
   usdcPurchaseSubtitle: (contentType: 'album' | 'track') =>
     `Unlockable by purchase, these ${pluralize(
@@ -61,7 +61,7 @@ export const UsdcPurchaseGatedRadioField = (
   } = props
 
   const messages = useMessages(
-    messagesLegacy,
+    messagesV1,
     messagesV2,
     FeatureFlags.HIDDEN_PAID_SCHEDULED
   )
