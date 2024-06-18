@@ -198,7 +198,7 @@ func (ss *MediorumServer) serveBlob(c echo.Context) error {
 
 	isAudioFile := strings.HasPrefix(blob.ContentType(), "audio")
 
-	if (isAudioFile) {
+	if isAudioFile {
 		// detect mime type and block mp3 streaming outside of the /tracks/cidstream route
 		if !strings.Contains(c.Path(), "cidstream") {
 			return c.String(401, "mp3 streaming is blocked. Please use Discovery /v1/tracks/:encodedId/stream")
@@ -392,11 +392,13 @@ func (ss *MediorumServer) logTrackListen(c echo.Context) {
 	}
 }
 
-// checks signature from discovery node for cidstream endpoint + gated content.
+// checks signature from discovery node
+// used for cidstream endpoint + gated content and audio analysis post endpoints
 // based on: https://github.com/AudiusProject/audius-protocol/blob/main/creator-node/src/middlewares/contentAccess/contentAccessMiddleware.ts
 func (s *MediorumServer) requireRegisteredSignature(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		cid := c.Param("cid")
+		uploadID := c.Param("id")
 		sig, err := signature.ParseFromQueryString(c.QueryParam("signature"))
 		if err != nil {
 			return c.JSON(401, map[string]string{
@@ -430,6 +432,14 @@ func (s *MediorumServer) requireRegisteredSignature(next echo.HandlerFunc) echo.
 				return c.JSON(401, map[string]string{
 					"error":  "signature contains incorrect CID",
 					"detail": fmt.Sprintf("url: %s, signature %s", cid, sig.Data.Cid),
+				})
+			}
+
+			// check it is for this upload
+			if sig.Data.UploadID != uploadID {
+				return c.JSON(401, map[string]string{
+					"error":  "signature contains incorrect upload ID",
+					"detail": fmt.Sprintf("url: %s, signature %s", uploadID, sig.Data.UploadID),
 				})
 			}
 
