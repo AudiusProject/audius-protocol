@@ -287,6 +287,7 @@ type GetSearchArgs = {
   genre?: Genre
   mood?: Mood
   isVerified?: boolean
+  hasDownloads?: boolean
 }
 
 type TrendingIdsResponse = {
@@ -1129,7 +1130,8 @@ export class AudiusAPIClient {
     includePurchaseable,
     genre,
     mood,
-    isVerified
+    isVerified,
+    hasDownloads
   }: GetSearchArgs) {
     this._assertInitialized()
     const encodedUserId = encodeHashId(currentUserId)
@@ -1142,7 +1144,8 @@ export class AudiusAPIClient {
       includePurchaseable,
       genre,
       mood,
-      is_verified: isVerified
+      is_verified: isVerified,
+      has_downloads: hasDownloads
     }
 
     const searchResponse =

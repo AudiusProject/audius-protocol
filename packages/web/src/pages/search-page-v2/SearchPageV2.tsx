@@ -26,8 +26,9 @@ const useShowSearchResults = () => {
   const genre = urlSearchParams.get('genre')
   const mood = urlSearchParams.get('mood')
   const isVerified = urlSearchParams.get('isVerified')
+  const hasDownloads = urlSearchParams.get('hasDownloads')
 
-  return query || genre || mood || isVerified
+  return query || genre || mood || isVerified || hasDownloads
 }
 
 export const SearchPageV2 = () => {

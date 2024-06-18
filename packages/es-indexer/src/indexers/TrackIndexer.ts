@@ -45,6 +45,7 @@ export class TrackIndexer extends BaseIndexer<TrackDoc> {
         is_unlisted: { type: 'boolean' },
         downloadable: { type: 'boolean' },
         purchaseable: { type: 'boolean' },
+        has_stems: { type: 'boolean' },
 
         // saves
         saved_by: { type: 'keyword' },
@@ -138,7 +139,16 @@ export class TrackIndexer extends BaseIndexer<TrackDoc> {
           and save_type = 'track' 
           and save_item_id = track_id
         order by created_at desc
-      ) as saved_by
+      ) as saved_by,
+
+      array(
+        select stems.child_track_id
+        from stems
+        left join tracks as stem_track on stems.child_track_id = stem_track.track_id
+        where
+          stem_track.is_delete = false
+          and stems.parent_track_id = tracks.track_id
+      ) as stem_ids
     
     from tracks
       join users on owner_id = user_id 
@@ -183,5 +193,7 @@ export class TrackIndexer extends BaseIndexer<TrackDoc> {
     // permalink
     const currentRoute = row.routes[row.routes.length - 1]
     row.permalink = `/${row.user.handle}/${currentRoute}`
+
+    row.has_stems = row.stem_ids.length > 0
   }
 }

@@ -53,6 +53,8 @@ export type TrackDoc = TrackRow & {
   purchaseable: boolean
   user: EntityUserDoc
   duration: number
+  stem_ids: number[]
+  has_stems: boolean
 }
 
 export type RepostDoc = RepostRow & {

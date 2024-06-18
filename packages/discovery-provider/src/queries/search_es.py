@@ -50,6 +50,7 @@ def search_es_full(args: dict):
     genres = args.get("genres", [])
     moods = args.get("moods", [])
     only_verified = args.get("only_verified", False)
+    only_with_downloads = args.get("only_with_downloads", False)
     do_tracks = search_type == "all" or search_type == "tracks"
     do_users = search_type == "all" or search_type == "users"
     do_playlists = search_type == "all" or search_type == "playlists"
@@ -75,6 +76,7 @@ def search_es_full(args: dict):
                     include_purchaseable=include_purchaseable,
                     genres=genres,
                     moods=moods,
+                    only_with_downloads=only_with_downloads,
                 ),
             ]
         )
@@ -383,6 +385,7 @@ def track_dsl(
     include_purchaseable=False,
     genres=[],
     moods=[],
+    only_with_downloads=False,
 ):
     dsl = {
         "must": [
@@ -473,8 +476,22 @@ def track_dsl(
         if capitalized_moods:
             dsl["filter"].append({"terms": {"mood": capitalized_moods}})
 
+    # Only include the track if it is downloadable
     if only_downloadable:
         dsl["must"].append({"term": {"downloadable": {"value": True}}})
+
+    # Only include the track if it is downloadable OR has stems
+    if only_with_downloads:
+        dsl["must"].append(
+            {
+                "bool": {
+                    "should": [
+                        {"term": {"downloadable": {"value": False}}},
+                        {"term": {"has_stems": {"value": True}}},
+                    ]
+                }
+            }
+        )
 
     if not include_purchaseable:
         dsl["must_not"].append({"term": {"purchaseable": {"value": True}}})

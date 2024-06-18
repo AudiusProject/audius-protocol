@@ -109,6 +109,7 @@ type GetSearchResultsArgs = {
   genre?: Genre
   mood?: Mood
   isVerified?: boolean
+  hasDownloads?: boolean
 }
 
 export function* getSearchResults({
@@ -118,7 +119,8 @@ export function* getSearchResults({
   offset,
   genre,
   mood,
-  isVerified
+  isVerified,
+  hasDownloads
 }: GetSearchResultsArgs) {
   yield* waitForRead()
   const getFeatureEnabled = yield* getContext('getFeatureEnabled')
@@ -138,7 +140,8 @@ export function* getSearchResults({
     includePurchaseable: isUSDCEnabled,
     genre,
     mood,
-    isVerified
+    isVerified,
+    hasDownloads
   })
   const { tracks, albums, playlists, users } = results
 

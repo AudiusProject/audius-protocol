@@ -71,6 +71,7 @@ type FetchSearchPageResultsArgs = {
   genre?: Genre
   mood?: Mood
   isVerified?: boolean
+  hasDownloads?: boolean
 }
 
 export const fetchSearchPageResults = (
