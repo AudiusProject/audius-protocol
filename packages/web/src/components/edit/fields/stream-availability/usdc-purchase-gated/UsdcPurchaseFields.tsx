@@ -7,6 +7,7 @@ import {
 } from 'react'
 
 import { AccessConditions } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import {
   filterDecimalString,
   padDecimalValue,
@@ -18,6 +19,7 @@ import cn from 'classnames'
 import { useField } from 'formik'
 
 import layoutStyles from 'components/layout/layout.module.css'
+import { useMessages } from 'hooks/useMessages'
 
 import { BoxedTextField } from '../../BoxedTextField'
 import {
@@ -27,7 +29,7 @@ import {
   ALBUM_TRACK_PRICE
 } from '../../types'
 
-const messages = {
+const messagesV1 = {
   price: {
     // Standalone purchaseable track flow
     standaloneTrackPrice: {
@@ -37,21 +39,21 @@ const messages = {
       label: 'Cost to Unlock',
       placeholder: '1.00'
     },
-    // Applies to the individual tracks within album upload flow
-    albumTrackPrice: {
-      title: 'Track Price',
-      description:
-        'Set the price fans must pay to unlock a single track on your album (minimum price of $1.00)',
-      label: 'Track price',
-      placeholder: '1.00'
-    },
     // Album purchase flow
     albumPrice: {
       title: 'Album Price',
       description:
         'Set the price fans must pay to unlock this album (minimum price of $1.00) ',
-      label: 'Album price',
+      label: 'Album Price',
       placeholder: '5.00'
+    },
+    // Applies to the individual tracks within album upload flow
+    albumTrackPrice: {
+      title: 'Track Price',
+      description:
+        'Set the price fans must pay to unlock a single track on your album (minimum price of $1.00)',
+      label: 'Track Price',
+      placeholder: '1.00'
     }
   },
   preview: {
@@ -67,6 +69,29 @@ const messages = {
     'Setting your track to Premium will remove the availability settings you set on your premium downloads. Don’t worry, your stems are still saved!'
 }
 
+const messagesV2 = {
+  price: {
+    standaloneTrackPrice: {
+      description: 'The price to unlock this track (min $1)'
+    },
+    // Album purchase flow
+    albumPrice: {
+      title: 'Set Album Price',
+      description: 'The price to unlock the entire album (min $1)'
+    },
+    albumTrackPrice: {
+      title: 'Track Price',
+      description:
+        'The price for each track on the album when purchased individually. (min $1)'
+    }
+  },
+  preview: {
+    title: 'Track Preview',
+    description: 'Specify when you want your 15 second track preview to start.'
+  },
+  seconds: 'Seconds'
+}
+
 export enum UsdcPurchaseType {
   TIP = 'tip',
   FOLLOW = 'follow'
@@ -78,7 +103,7 @@ export type TrackAvailabilityFieldsProps = {
   isUpload?: boolean
 }
 
-type PriceMessages = typeof messages.price
+type PriceMessages = typeof messagesV1.price
 export type PriceFieldProps = TrackAvailabilityFieldsProps & {
   messaging: PriceMessages[keyof PriceMessages]
   fieldName: typeof PRICE | typeof ALBUM_TRACK_PRICE
@@ -89,6 +114,12 @@ export const UsdcPurchaseFields = (props: TrackAvailabilityFieldsProps) => {
   const { disabled, isAlbum, isUpload } = props
   const [{ value: downloadConditions }] =
     useField<Nullable<AccessConditions>>(DOWNLOAD_CONDITIONS)
+
+  const messages = useMessages(
+    messagesV1,
+    messagesV2,
+    FeatureFlags.HIDDEN_PAID_SCHEDULED
+  )
 
   return (
     <div className={cn(layoutStyles.col, layoutStyles.gap4)}>
@@ -136,6 +167,12 @@ const PreviewField = (props: TrackAvailabilityFieldsProps) => {
     value?.toString()
   )
 
+  const messages = useMessages(
+    messagesV1,
+    messagesV2,
+    FeatureFlags.HIDDEN_PAID_SCHEDULED
+  )
+
   const handlePreviewChange: ChangeEventHandler<HTMLInputElement> = useCallback(
     (e) => {
       const input = e.target.value.replace(/[^0-9]+/g, '')
@@ -152,7 +189,7 @@ const PreviewField = (props: TrackAvailabilityFieldsProps) => {
       label={messages.preview.placeholder}
       value={humanizedValue}
       placeholder={messages.preview.placeholder}
-      endAdornment={messages.seconds}
+      endAdornmentText={messages.seconds}
       onChange={handlePreviewChange}
       disabled={disabled}
     />
@@ -163,6 +200,12 @@ const PriceField = (props: PriceFieldProps) => {
   const { disabled, messaging, fieldName, prefillValue } = props
   const [{ value }, , { setValue: setPrice }] = useField<number | null>(
     fieldName
+  )
+
+  const messages = useMessages(
+    messagesV1,
+    messagesV2,
+    FeatureFlags.HIDDEN_PAID_SCHEDULED
   )
 
   const [humanizedValue, setHumanizedValue] = useState<string | null>(

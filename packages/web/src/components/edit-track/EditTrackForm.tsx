@@ -16,13 +16,13 @@ import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { MenuFormCallbackStatus } from 'components/data-entry/ContextualMenu'
-import { AccessAndSaleField } from 'components/edit/fields/AccessAndSaleField'
 import { AttributionField } from 'components/edit/fields/AttributionField'
 import { MultiTrackSidebar } from 'components/edit/fields/MultiTrackSidebar'
 import { ReleaseDateField } from 'components/edit/fields/ReleaseDateField'
 import { RemixSettingsField } from 'components/edit/fields/RemixSettingsField'
 import { StemsAndDownloadsField } from 'components/edit/fields/StemsAndDownloadsField'
 import { TrackMetadataFields } from 'components/edit/fields/TrackMetadataFields'
+import { PriceAndAudienceField } from 'components/edit/fields/price-and-audience/PriceAndAudienceField'
 import { VisibilityField } from 'components/edit/fields/visibility/VisibilityField'
 import layoutStyles from 'components/layout/layout.module.css'
 import { NavigationPrompt } from 'components/navigation-prompt/NavigationPrompt'
@@ -117,7 +117,7 @@ const TrackEditForm = (
               ) : (
                 <ReleaseDateField />
               )}
-              <AccessAndSaleField
+              <PriceAndAudienceField
                 isUpload={isUpload}
                 forceOpen={forceOpenAccessAndSale}
                 setForceOpen={setForceOpenAccessAndSale}
