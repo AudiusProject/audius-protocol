@@ -59,6 +59,8 @@ export type UploadResponse = {
   results: {
     [key: string]: string
   }
+  orig_file_cid: string
+  orig_filename: string
   probe: {
     format: {
       duration: string
