@@ -159,6 +159,10 @@ program
     '--output <path>',
     'A path to which to write a json file containing the track data'
   )
+  .option(
+    '-h, --hidden',
+    'Whether the track is hidden from the feed (ie. is unlisted)'
+  )
   .action(
     async (
       track,
@@ -178,7 +182,7 @@ program
         downloadConditions,
         remixOf,
         output,
-        listen
+        hidden
       }
     ) => {
       const audiusLibs = await initializeAudiusLibs(from)
@@ -233,7 +237,7 @@ program
             genre:
               genre ||
               Genre[
-              Object.keys(Genre)[randomInt(Object.keys(Genre).length - 2) + 1]
+                Object.keys(Genre)[randomInt(Object.keys(Genre).length - 2) + 1]
               ],
             mood: mood || `mood ${rand}`,
             credits_splits: '',
@@ -256,7 +260,8 @@ program
             preview_start_seconds: previewStartSeconds
               ? parseInt(previewStartSeconds)
               : null,
-            remixOf
+            remixOf,
+            is_unlisted: !!hidden
           },
           () => null
         )
@@ -265,7 +270,9 @@ program
           program.error(chalk.red(response.error))
         }
 
-        const url = `http://audius-protocol-discovery-provider-1/v1/tracks/${Utils.encodeHashId(response.trackId)}/stream`
+        const url = `http://audius-protocol-discovery-provider-1/v1/tracks/${Utils.encodeHashId(
+          response.trackId
+        )}/stream`
 
         console.log(chalk.green('Successfully uploaded track!'))
         console.log(chalk.yellow.bold('Track ID:   '), response.trackId)

@@ -90,6 +90,7 @@ export const PurchaseContentFormFooter = ({
     'track_id' in metadata ? metadata.track_id : metadata.playlist_id
   const title = 'title' in metadata ? metadata.title : metadata.playlist_name
   const isAlbum = isPurchaseableAlbum(metadata)
+  const isHidden = isAlbum ? metadata.is_private : metadata.is_unlisted
   const dispatch = useDispatch()
   const isPurchased = stage === PurchaseContentStage.FINISH
   const { totalPrice } = purchaseSummaryValues
@@ -127,31 +128,33 @@ export const PurchaseContentFormFooter = ({
   if (isPurchased) {
     return (
       <Flex direction='column' gap='xl' alignSelf='stretch'>
-        <Flex gap='l'>
-          <Button
-            type='button'
-            variant={isReposted ? 'primary' : 'secondary'}
-            fullWidth
-            iconLeft={IconRepost}
-            onClick={onRepost}
-            role='log'
-          >
-            {isReposted ? messages.reposted : messages.repost}
-          </Button>
-          {permalink ? (
-            <TwitterShareButton
+        {isHidden ? null : (
+          <Flex gap='l'>
+            <Button
+              type='button'
+              variant={isReposted ? 'primary' : 'secondary'}
               fullWidth
-              type='dynamic'
-              url={
-                isAlbum
-                  ? fullCollectionPage(handle, null, null, permalink)
-                  : fullTrackPage(permalink)
-              }
-              shareData={handleTwitterShare}
-              handle={handle}
-            />
-          ) : null}
-        </Flex>
+              iconLeft={IconRepost}
+              onClick={onRepost}
+              role='log'
+            >
+              {isReposted ? messages.reposted : messages.repost}
+            </Button>
+            {permalink ? (
+              <TwitterShareButton
+                fullWidth
+                type='dynamic'
+                url={
+                  isAlbum
+                    ? fullCollectionPage(handle, null, null, permalink)
+                    : fullTrackPage(permalink)
+                }
+                shareData={handleTwitterShare}
+                handle={handle}
+              />
+            ) : null}
+          </Flex>
+        )}
         <PlainButton
           onClick={onViewTrackClicked}
           iconRight={IconCaretRight}

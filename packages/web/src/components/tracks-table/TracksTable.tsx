@@ -173,7 +173,6 @@ export const TracksTable = ({
       const index = cellInfo.row.index
       const active = index === playingIndex
       const track = cellInfo.row.original
-      const isTrackUnlisted = track.is_unlisted
       const isTrackPremium = isContentUSDCPurchaseGated(track.stream_conditions)
       const { isFetchingNFTAccess, hasStreamAccess } = trackAccessMap[
         track.track_id
@@ -181,21 +180,14 @@ export const TracksTable = ({
       const isLocked = !isFetchingNFTAccess && !hasStreamAccess
 
       return (
-        <>
-          <TablePlayButton
-            className={cn(styles.tablePlayButton, { [styles.active]: active })}
-            paused={!playing}
-            playing={active}
-            hideDefault={false}
-            isTrackPremium={isTrackPremium && isPremiumEnabled}
-            isLocked={isLocked}
-          />
-          {isTrackUnlisted ? (
-            <IconVisibilityHidden
-              className={cn(styles.hiddenIcon, { [styles.hidden]: active })}
-            />
-          ) : null}
-        </>
+        <TablePlayButton
+          className={cn(styles.tablePlayButton, { [styles.active]: active })}
+          paused={!playing}
+          playing={active}
+          hideDefault={false}
+          isTrackPremium={isTrackPremium && isPremiumEnabled}
+          isLocked={isLocked}
+        />
       )
     },
     [isPremiumEnabled, playing, playingIndex, trackAccessMap]
@@ -332,7 +324,8 @@ export const TracksTable = ({
       const deleted =
         track.is_delete || track._marked_deleted || !!track.user?.is_deactivated
       const isOwner = track.owner_id === userId
-      if (isLocked || deleted || isOwner) {
+      const isUnlisted = track.is_unlisted
+      if (isLocked || deleted || isOwner || isUnlisted) {
         return null
       }
 
@@ -366,8 +359,9 @@ export const TracksTable = ({
       const isLocked = !isFetchingNFTAccess && !hasStreamAccess
       const deleted =
         track.is_delete || track._marked_deleted || !!track.user?.is_deactivated
+      const isUnlisted = track.is_unlisted
       const isOwner = track.owner_id === userId
-      if (isLocked || deleted || isOwner) {
+      if (isLocked || deleted || isOwner || isUnlisted) {
         return null
       }
 
