@@ -15,7 +15,7 @@ CLAIMABLE_REWARD = "claimble_reward"
 START_DATETIME = datetime(2024, 6, 6)
 
 
-def get_cooldown_challenge_notification_group_id(user_id, challenge_id, specifier):
+def get_claimable_reward_notification_group_id(user_id, challenge_id, specifier):
     return (
         f"{CLAIMABLE_REWARD}:{user_id}:challenge:{challenge_id}:specifier:{specifier}"
     )
@@ -65,24 +65,40 @@ def _create_engagement_notifications(session):
         .all()
     )
     for user_challenge in user_challenges_cooldown_completed:
-        new_notification = Notification(
-            specifier=str(user_challenge.specifier),
-            group_id=get_cooldown_challenge_notification_group_id(
-                user_challenge.user_id,
-                user_challenge.challenge_id,
-                user_challenge.specifier,
-            ),
-            blocknumber=user_challenge.completed_blocknumber,
-            user_ids=[user_challenge.user_id],
-            type=CLAIMABLE_REWARD,
-            data={
-                "specifier": user_challenge.specifier,
-                "challenge_id": user_challenge.challenge_id,
-                "amount": user_challenge.amount,
-            },
-            timestamp=user_challenge.completed_at,
+        time_threshold = user_challenge.completed_at - timedelta(hours=1)
+        # Query to check if there's already a notification within the last hour for this user
+        existing_notification = (
+            session.query(Notification)
+            .filter(
+                Notification.user_ids.any(
+                    user_challenge.user_id
+                ),  # Assumes 'user_ids' can handle multiple IDs and is searchable this way
+                Notification.timestamp >= time_threshold,
+                Notification.type == CLAIMABLE_REWARD,
+            )
+            .first()
         )
-        new_notifications.append(new_notification)
+        if not existing_notification:
+            new_notification = Notification(
+                specifier=str(user_challenge.specifier),
+                group_id=get_claimable_reward_notification_group_id(
+                    user_challenge.user_id,
+                    user_challenge.challenge_id,
+                    user_challenge.specifier,
+                ),
+                blocknumber=user_challenge.completed_blocknumber,
+                user_ids=[user_challenge.user_id],
+                type=CLAIMABLE_REWARD,
+                data={
+                    "specifier": user_challenge.specifier,
+                    "challenge_id": user_challenge.challenge_id,
+                    "amount": user_challenge.amount,
+                },
+                timestamp=user_challenge.completed_at,
+            )
+            new_notifications.append(new_notification)
+        else:
+            logger.info(f"Debouncing notification for {user_challenge.user_id}")
     logger.info(f"Inserting {len(new_notifications)} claimble reward notifications")
     session.add_all(new_notifications)
     session.commit()
