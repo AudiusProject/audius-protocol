@@ -245,6 +245,16 @@ export class CreatorNode {
       const previewKey = `320_preview|${updatedMetadata.preview_start_seconds}`
       updatedMetadata.preview_cid = audioResp.results[previewKey]
     }
+    if (audioResp.audio_analysis_results !== null) {
+      if ('bpm' in audioResp.audio_analysis_results) {
+        updatedMetadata.bpm = audioResp.audio_analysis_results.bpm
+      }
+      if ('key' in audioResp.audio_analysis_results) {
+        updatedMetadata.musical_key = audioResp.audio_analysis_results.key
+      }
+    }
+    updatedMetadata.audio_analysis_error_count =
+      audioResp.audio_analysis_error_count || 0
     updatedMetadata.audio_upload_id = audioResp.id
     if (coverArtResp) updatedMetadata.cover_art_sizes = coverArtResp.id
 
