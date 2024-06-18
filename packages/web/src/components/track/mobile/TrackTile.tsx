@@ -120,18 +120,10 @@ const renderLockedContentOrPlayCount = ({
     )
   }
 
-  const hidePlays = fieldVisibility
-    ? fieldVisibility.play_count === false
-    : false
-
   return (
     listenCount !== undefined &&
     listenCount > 0 && (
-      <div
-        className={cn(styles.plays, {
-          [styles.isHidden]: hidePlays
-        })}
-      >
+      <div className={styles.plays}>
         {formatCount(listenCount)}
         {messages.getPlays(listenCount)}
       </div>
@@ -310,7 +302,7 @@ const TrackTile = (props: CombinedProps) => {
 
   let specialContentLabel = null
 
-  if (!isLoading) {
+  if (!isLoading && !isUnlisted) {
     if (isStreamGated) {
       specialContentLabel = (
         <GatedContentLabel

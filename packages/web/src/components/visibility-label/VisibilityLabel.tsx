@@ -34,7 +34,7 @@ export const VisibilityLabel = ({
 
   if (isUnlisted && !isScheduledRelease) {
     return (
-      <Flex alignItems='center' gap='xs' w='100%'>
+      <Flex alignItems='center' gap='xs'>
         <IconVisibilityHidden size='s' color='subdued' />
         <Text variant='body' size='xs' color='subdued'>
           {messages.hidden}
@@ -53,7 +53,7 @@ export const VisibilityLabel = ({
   }
 
   return (
-    <Flex alignItems='center' gap='xs' w='100%'>
+    <Flex alignItems='center' gap='xs'>
       <IconCalendarMonth size='s' fill={color.icon.accent} />
       <Text variant='body' size='xs' color='accent'>
         {messages.releases(releaseDate)}

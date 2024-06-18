@@ -243,7 +243,7 @@ const TrackTile = ({
       })
 
   let specialContentLabel = null
-  if (!isLoading) {
+  if (!isLoading && !isUnlisted) {
     if (isStreamGated) {
       specialContentLabel = (
         <GatedContentLabel

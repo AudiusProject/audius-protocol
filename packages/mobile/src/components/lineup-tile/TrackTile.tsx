@@ -85,10 +85,6 @@ export const TrackTileComponent = ({
   variant,
   ...lineupTileProps
 }: TrackTileProps) => {
-  const { isEnabled: isNewPodcastControlsEnabled } = useFeatureFlag(
-    FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
-    FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
-  )
   const isUSDCEnabled = useIsUSDCEnabled()
   const dispatch = useDispatch()
   const navigation = useNavigation()
@@ -165,11 +161,11 @@ export const TrackTileComponent = ({
     const overflowActions = [
       isOwner && !ddexApp ? OverflowAction.ADD_TO_ALBUM : null,
       isPlaylistAddable ? OverflowAction.ADD_TO_PLAYLIST : null,
-      isNewPodcastControlsEnabled && isLongFormContent
+      isLongFormContent
         ? OverflowAction.VIEW_EPISODE_PAGE
         : OverflowAction.VIEW_TRACK_PAGE,
       albumInfo ? OverflowAction.VIEW_ALBUM_PAGE : null,
-      isNewPodcastControlsEnabled && isLongFormContent
+      isLongFormContent
         ? playbackPositionInfo?.status === 'COMPLETED'
           ? OverflowAction.MARK_AS_UNPLAYED
           : OverflowAction.MARK_AS_PLAYED
@@ -195,7 +191,6 @@ export const TrackTileComponent = ({
     isOwner,
     ddexApp,
     isPlaylistAddable,
-    isNewPodcastControlsEnabled,
     albumInfo,
     playbackPositionInfo?.status,
     isOnArtistsTracksTab,
