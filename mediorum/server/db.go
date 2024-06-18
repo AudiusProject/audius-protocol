@@ -59,8 +59,8 @@ type Upload struct {
 }
 
 type AudioAnalysisResult struct {
-	BPM float64 `json:bpm`
-	Key string  `json:key`
+	BPM float64 `json:"bpm"`
+	Key string  `json:"key"`
 }
 
 // Upload templates
@@ -141,7 +141,7 @@ func dbMigrate(crud *crudr.Crudr, myHost string) {
 	}
 
 	// register any models to be managed by crudr
-	crud.RegisterModels(&Upload{}, &StorageAndDbSize{})
+	crud.RegisterModels(&Upload{}, &StorageAndDbSize{}, &QmAudioAnalysis{})
 
 	sqlDb, _ := crud.DB.DB()
 
