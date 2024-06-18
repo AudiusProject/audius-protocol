@@ -24,9 +24,9 @@ type DetailsTileStatsProps = {
  * The stats displayed on track and playlist screens
  */
 export const DetailsTileStats = ({
-  playCount,
-  repostCount,
-  favoriteCount,
+  playCount = 0,
+  repostCount = 0,
+  favoriteCount = 0,
   hidePlayCount,
   hideRepostCount,
   hideFavoriteCount,
@@ -47,12 +47,12 @@ export const DetailsTileStats = ({
       alignItems='center'
       justifyContent='flex-start'
     >
-      {hidePlayCount ? null : (
-        <DetailsTileStat count={playCount ?? 0} icon={IconPlay} />
+      {hidePlayCount && playCount > 0 ? null : (
+        <DetailsTileStat count={playCount} icon={IconPlay} />
       )}
       {hideRepostCount ? null : (
         <DetailsTileStat
-          count={repostCount ?? 0}
+          count={repostCount}
           onPress={onPressReposts}
           icon={IconRepost}
           label={messages.reposts}
@@ -60,7 +60,7 @@ export const DetailsTileStats = ({
       )}
       {hideFavoriteCount ? null : (
         <DetailsTileStat
-          count={favoriteCount ?? 0}
+          count={favoriteCount}
           onPress={onPressFavorites}
           icon={IconHeart}
           label={messages.favorites}
