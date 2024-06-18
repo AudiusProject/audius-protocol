@@ -25,7 +25,7 @@ func (ss *MediorumServer) analyzeUpload(c echo.Context) error {
 		upload.Status = JobStatusAudioAnalysis
 		err = ss.crud.Update(upload)
 		if err != nil {
-			ss.logger.Warn("crudr update upload failed", "err", err)
+			ss.logger.Warn("update upload failed", "err", err)
 			return c.String(500, "failed to trigger audio analysis")
 		}
 	}
@@ -67,7 +67,7 @@ func (ss *MediorumServer) analyzeLegacyBlob(c echo.Context) error {
 		analysis.Error = ""
 		err = ss.crud.Update(analysis)
 		if err != nil {
-			ss.logger.Warn("crudr update legacy audio analysis failed", "err", err)
+			ss.logger.Warn("update legacy audio analysis failed", "err", err)
 			return c.String(500, "failed to trigger audio analysis")
 		}
 	}
