@@ -98,6 +98,8 @@ export interface StreamTrackRequest {
     nftAccessSignature?: string;
     skipPlayCount?: boolean;
     apiKey?: string;
+    skipCheck?: boolean;
+    noRedirect?: boolean;
 }
 
 /**
@@ -489,6 +491,14 @@ export class TracksApi extends runtime.BaseAPI {
 
         if (params.apiKey !== undefined) {
             queryParameters['api_key'] = params.apiKey;
+        }
+
+        if (params.skipCheck !== undefined) {
+            queryParameters['skip_check'] = params.skipCheck;
+        }
+
+        if (params.noRedirect !== undefined) {
+            queryParameters['no_redirect'] = params.noRedirect;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};

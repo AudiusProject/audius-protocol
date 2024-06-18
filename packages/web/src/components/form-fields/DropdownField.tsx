@@ -17,6 +17,7 @@ export const DropdownField = (props: DropdownFieldProps) => {
   const [field, { touched, error }, { setValue }] = useField(name)
 
   const hasError = Boolean(touched && error)
+
   return (
     <DropdownInput
       {...field}

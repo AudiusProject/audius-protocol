@@ -8,7 +8,11 @@ import {
   PurchaseableContentType
 } from '@audius/common/store'
 import type { RepostType } from '@audius/common/store'
-import { dayjs, formatCount } from '@audius/common/utils'
+import {
+  formatCount,
+  formatReleaseDate,
+  getLocalTimezone
+} from '@audius/common/utils'
 import type { Nullable } from '@audius/common/utils'
 import moment from 'moment'
 import { View, TouchableOpacity } from 'react-native'
@@ -46,8 +50,13 @@ const formatPlayCount = (playCount?: number) => {
 }
 
 const messages = {
-  artistPick: "Artist's Pick",
-  hiddenTrack: 'Hidden Track'
+  artistPick: 'Artist Pick',
+  hiddenTrack: 'Hidden Track',
+  releases: (date: string) =>
+    `Releases ${formatReleaseDate({
+      date,
+      withHour: true
+    })} ${getLocalTimezone()}`
 }
 
 const useStyles = makeStyles(({ spacing, palette }) => ({
@@ -206,7 +215,7 @@ export const LineupTileStats = ({
         {isTrending ? (
           <LineupTileRankIcon showCrown={showRankIcon} index={index} />
         ) : null}
-        {streamConditions ? (
+        {!isUnlisted && streamConditions ? (
           <LineupTileGatedContentTypeTag
             streamConditions={streamConditions}
             hasStreamAccess={hasStreamAccess}
@@ -245,11 +254,7 @@ export const LineupTileStats = ({
               width={spacing(4)}
             />
             <Text fontSize='xs' colorValue={accentPurple}>
-              Releases
-              {' ' +
-                moment(releaseDate).local().format('M/D/YY @ h:mm A') +
-                ' ' +
-                dayjs().format('z')}
+              {messages.releases(releaseDate)}
             </Text>
           </View>
         ) : null}

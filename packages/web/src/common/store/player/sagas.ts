@@ -1,8 +1,8 @@
-import { getTrackStreamUrl } from '@audius/common/api'
 import { Kind } from '@audius/common/models'
 import { FeatureFlags, QueryParams } from '@audius/common/services'
 import {
   accountSelectors,
+  cacheTracksActions,
   cacheTracksSelectors,
   cacheActions,
   queueActions,
@@ -43,7 +43,8 @@ import errorSagas from './errorSagas'
 const { getUserId } = accountSelectors
 const { setTrackPosition } = playbackPositionActions
 const { getTrackPosition } = playbackPositionSelectors
-
+const { getTrackStreamUrl, getTrack } = cacheTracksSelectors
+const { setStreamUrls } = cacheTracksActions
 const {
   play,
   playSucceeded,
@@ -64,7 +65,6 @@ const { getTrackId, getUid, getCounter, getPlaying, getPlaybackRate } =
 const { getPlayerBehavior } = queueSelectors
 
 const { recordListen } = tracksSocialActions
-const { getTrack } = cacheTracksSelectors
 const { getNftAccessSignatureMap } = gatedContentSelectors
 const { getIsReachable } = reachabilitySelectors
 
@@ -122,7 +122,7 @@ export function* watchPlay() {
 
       const usePrefetchStreamUrls = yield* call(
         getFeatureEnabled,
-        FeatureFlags.SKIP_STREAM_CHECK // TODO: replace with correct feature flag
+        FeatureFlags.PREFETCH_STREAM_URLS
       )
 
       const { shouldSkip, shouldPreview } = calculatePlayerBehavior(
@@ -141,10 +141,7 @@ export function* watchPlay() {
         trackDuration = getTrackPreviewDuration(track)
       }
 
-      const streamUrl = yield* select(getTrackStreamUrl, {
-        trackId,
-        currentUserId
-      })
+      const streamUrl = yield* select(getTrackStreamUrl, track.track_id)
 
       const mp3Url = apiClient.makeUrl(
         `/tracks/${encodedTrackId}/stream`,
@@ -154,6 +151,7 @@ export function* watchPlay() {
       const isLongFormContent =
         track.genre === Genre.PODCASTS || track.genre === Genre.AUDIOBOOKS
 
+      const url = usePrefetchStreamUrls && streamUrl ? streamUrl : mp3Url
       const endChannel = eventChannel((emitter) => {
         audioPlayer.load(
           trackDuration ||
@@ -178,14 +176,10 @@ export function* watchPlay() {
               )
             }
           },
-          usePrefetchStreamUrls && streamUrl ? streamUrl : mp3Url
+          url
         )
         return () => {}
       })
-      if (usePrefetchStreamUrls && streamUrl) {
-        // eslint-disable-next-line no-console
-        console.log('Using pre-fetched stream url for ', track.title)
-      }
       yield* spawn(actionChannelDispatcher, endChannel)
       yield* put(
         cacheActions.subscribe(Kind.TRACKS, [
@@ -425,7 +419,28 @@ export function* handleAudioErrors() {
     const { error, data } = yield* take(chan)
     const trackId = yield* select(getTrackId)
     if (trackId) {
-      yield* put(errorAction({ error, trackId, info: data }))
+      const getFeatureEnabled = yield* getContext('getFeatureEnabled')
+      const usePrefetchStreamUrls = yield* call(
+        getFeatureEnabled,
+        FeatureFlags.PREFETCH_STREAM_URLS
+      )
+      const streamUrl = yield* select(getTrackStreamUrl, trackId)
+      // Check if we were attempting to use a prefetched url
+      // If so we likely have a recovery option
+      if (streamUrl && usePrefetchStreamUrls) {
+        const reportToSentry = yield* getContext('reportToSentry')
+        reportToSentry({
+          error: new Error('Audio prefetch playback saga error'),
+          additionalInfo: { trackId, streamUrl }
+        })
+        // The pre-fetched stream url failed, so we set the value to undefined
+        yield* put(setStreamUrls({ [trackId]: undefined }))
+        // Retrigger play action.
+        // Now the prefetch url is unset and it will instead play from the discovery node /stream endpoint as a fallback
+        yield* put(play({ trackId }))
+      } else {
+        yield* put(errorAction({ error, trackId, info: data }))
+      }
     }
   }
 }

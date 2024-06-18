@@ -125,8 +125,8 @@ export const SIGN_UP_COMPLETED_REDIRECT = `/signup/${SignUpPath.completedRedirec
 
 // Param routes.
 export const NOTIFICATION_USERS_PAGE = '/notification/:notificationId/users'
-export const SEARCH_CATEGORY_PAGE = '/search/:query/:category'
-export const SEARCH_PAGE = '/search/:query?'
+export const SEARCH_CATEGORY_PAGE_LEGACY = '/search/:query/:category'
+export const SEARCH_PAGE = '/search/:category?'
 export const SEARCH_BASE_ROUTE = '/search'
 export const PLAYLIST_PAGE = '/:handle/playlist/:playlistName'
 export const PLAYLIST_BY_PERMALINK_PAGE = '/:handle/playlist/:slug'
@@ -254,7 +254,6 @@ export const orderedRoutes = [
   TRENDING_PAGE,
   EXPLORE_PAGE,
   EMPTY_PAGE,
-  SEARCH_CATEGORY_PAGE,
   SEARCH_PAGE,
   UPLOAD_ALBUM_PAGE,
   UPLOAD_PLAYLIST_PAGE,
@@ -272,6 +271,9 @@ export const orderedRoutes = [
   NOTIFICATION_SETTINGS_PAGE,
   ABOUT_SETTINGS_PAGE,
   PRIVATE_KEY_EXPORTER_SETTINGS_PAGE,
+  ACCOUNTS_MANAGING_YOU_SETTINGS_PAGE,
+  ACCOUNTS_YOU_MANAGE_SETTINGS_PAGE,
+  AUTHORIZED_APPS_SETTINGS_PAGE,
   PURCHASES_PAGE,
   SALES_PAGE,
   WITHDRAWALS_PAGE,
@@ -337,6 +339,9 @@ export const staticRoutes = new Set([
   NOTIFICATION_SETTINGS_PAGE,
   ABOUT_SETTINGS_PAGE,
   PRIVATE_KEY_EXPORTER_SETTINGS_PAGE,
+  ACCOUNTS_MANAGING_YOU_SETTINGS_PAGE,
+  ACCOUNTS_YOU_MANAGE_SETTINGS_PAGE,
+  AUTHORIZED_APPS_SETTINGS_PAGE,
   TRENDING_GENRES,
   PURCHASES_PAGE,
   SALES_PAGE,

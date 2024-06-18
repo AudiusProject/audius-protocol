@@ -28,7 +28,7 @@ func (ss *MediorumServer) replicateFileParallel(cid string, filePath string, pla
 		replicaCount = len(placementHosts)
 	} else {
 		// use rendezvous
-		placementHosts, _ = ss.rendezvousHealthyHosts(cid)
+		placementHosts, _ = ss.rendezvousAllHosts(cid)
 	}
 
 	queue := make(chan string, len(placementHosts))
@@ -74,7 +74,7 @@ func (ss *MediorumServer) replicateFile(fileName string, file io.ReadSeeker) ([]
 	logger := ss.logger.With("task", "replicate", "cid", fileName)
 
 	success := []string{}
-	preferred, _ := ss.rendezvousHealthyHosts(fileName)
+	preferred, _ := ss.rendezvousAllHosts(fileName)
 	for _, peer := range preferred {
 		logger := logger.With("to", peer)
 

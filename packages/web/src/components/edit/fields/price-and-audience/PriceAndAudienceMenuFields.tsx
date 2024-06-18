@@ -19,17 +19,18 @@ import { useField } from 'formik'
 import { SingleTrackEditValues } from 'components/edit-track/types'
 import layoutStyles from 'components/layout/layout.module.css'
 import { ModalRadioItem } from 'components/modal-radio/ModalRadioItem'
-import { useFlag } from 'hooks/useRemoteConfig'
+import { useMessages } from 'hooks/useMessages'
 import { pluralize } from 'utils/stringUtils'
 
-import styles from './AccessAndSaleField.module.css'
-import { HiddenAvailabilityFields } from './stream-availability/HiddenAvailabilityFields'
-import { SpecialAccessFields } from './stream-availability/SpecialAccessFields'
-import { CollectibleGatedRadioField } from './stream-availability/collectible-gated/CollectibleGatedRadioField'
-import { UsdcPurchaseGatedRadioField } from './stream-availability/usdc-purchase-gated/UsdcPurchaseGatedRadioField'
-import { STREAM_AVAILABILITY_TYPE, STREAM_CONDITIONS } from './types'
+import { HiddenAvailabilityFields } from '../stream-availability/HiddenAvailabilityFields'
+import { SpecialAccessFields } from '../stream-availability/SpecialAccessFields'
+import { CollectibleGatedRadioField } from '../stream-availability/collectible-gated/CollectibleGatedRadioField'
+import { UsdcPurchaseGatedRadioField } from '../stream-availability/usdc-purchase-gated/UsdcPurchaseGatedRadioField'
+import { STREAM_AVAILABILITY_TYPE, STREAM_CONDITIONS } from '../types'
 
-const messages = {
+import styles from './PriceAndAudienceField.module.css'
+
+const messagesV1 = {
   title: 'Access & Sale',
   modalDescription:
     'Control who has access to listen. Create gated experiences or require users pay to unlock your music.',
@@ -55,7 +56,16 @@ const messages = {
     'Publishing is disabled for empty albums and albums containing hidden tracks.'
 }
 
-export type AccesAndSaleMenuFieldsProps = {
+const messagesV2 = {
+  title: 'Price & Audience',
+  modalDescription: '',
+  public: 'Free for Everyone',
+  publicSubtitle: (contentType: 'album' | 'track') =>
+    `Everyone can play your ${contentType} for free.`,
+  specialAccessSubtitle: 'Only fans who meet certain criteria can listen.'
+}
+
+type PriceAndAudienceMenuFieldsProps = {
   streamConditions: SingleTrackEditValues[typeof STREAM_CONDITIONS]
   isRemix: boolean
   isUpload?: boolean
@@ -66,7 +76,9 @@ export type AccesAndSaleMenuFieldsProps = {
   isPublishDisabled?: boolean
 }
 
-export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
+export const PriceAndAudienceMenuFields = (
+  props: PriceAndAudienceMenuFieldsProps
+) => {
   const {
     isRemix,
     isUpload,
@@ -83,22 +95,23 @@ export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
   const { isEnabled: isPremiumAlbumsEnabled } = useFeatureFlag(
     FeatureFlags.PREMIUM_ALBUMS_ENABLED
   )
+
+  const { isEnabled: isHiddenPaidScheduledEnabled } = useFeatureFlag(
+    FeatureFlags.HIDDEN_PAID_SCHEDULED
+  )
   const isUsdcUploadEnabled = isAlbum
     ? isPremiumAlbumsEnabled && isUsdcFlagUploadEnabled
     : isUsdcFlagUploadEnabled
 
-  const { isEnabled: isCollectibleGatedFlagEnabled } = useFlag(
-    FeatureFlags.COLLECTIBLE_GATED_ENABLED
-  )
-  const { isEnabled: isSpecialAccessFlagEnabled } = useFlag(
-    FeatureFlags.SPECIAL_ACCESS_ENABLED
-  )
-  const isCollectibleGatedEnabled = !isAlbum && isCollectibleGatedFlagEnabled
-  const isSpecialAccessEnabled = !isAlbum && isSpecialAccessFlagEnabled
-
   const [availabilityField] = useField({
     name: STREAM_AVAILABILITY_TYPE
   })
+
+  const messages = useMessages(
+    messagesV1,
+    messagesV2,
+    FeatureFlags.HIDDEN_PAID_SCHEDULED
+  )
 
   const {
     disableSpecialAccessGate,
@@ -119,7 +132,11 @@ export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
       {isRemix ? (
         <Hint icon={IconQuestionCircle}>{messages.isRemix}</Hint>
       ) : null}
-      <Text variant='body'>{messages.modalDescription}</Text>
+      {messages.modalDescription ? (
+        <Text variant='body'>{messages.modalDescription}</Text>
+      ) : (
+        <div />
+      )}
       {isPublishDisabled ? <Hint>{messages.publishDisabled}</Hint> : null}
       <RadioGroup {...availabilityField} aria-label={messages.title}>
         <ModalRadioItem
@@ -140,7 +157,7 @@ export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
           />
         ) : null}
 
-        {isSpecialAccessEnabled ? (
+        {!isAlbum ? (
           <ModalRadioItem
             icon={<IconSpecialAccess />}
             label={messages.specialAccess}
@@ -152,7 +169,7 @@ export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
             }
           />
         ) : null}
-        {isCollectibleGatedEnabled ? (
+        {!isAlbum ? (
           <CollectibleGatedRadioField
             isRemix={isRemix}
             isUpload={isUpload}
@@ -160,7 +177,7 @@ export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
             isInitiallyUnlisted={isInitiallyUnlisted}
           />
         ) : null}
-        {!isAlbum ? (
+        {!isAlbum && !isHiddenPaidScheduledEnabled ? (
           <ModalRadioItem
             icon={<IconVisibilityHidden />}
             label={messages.hidden}

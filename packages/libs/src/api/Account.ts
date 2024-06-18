@@ -97,6 +97,7 @@ export class Account extends Base {
     )
     if (userAccount) {
       this.userStateManager.setCurrentUser(userAccount)
+      this.userStateManager.setWeb3User(userAccount)
       const randomNodes = await this.ServiceProvider.autoSelectStorageV2Nodes(
         1,
         userAccount.wallet

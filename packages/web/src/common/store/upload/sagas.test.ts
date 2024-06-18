@@ -270,7 +270,7 @@ describe('upload', () => {
         ])
         // Reports to sentry
         .call(reportToSentry, {
-          name: 'Upload: Error',
+          name: 'Upload Worker Failed: Error',
           error: mockError,
           additionalInfo: {
             trackId: 3,
@@ -289,7 +289,7 @@ describe('upload', () => {
           fn: reportToSentry,
           args: [
             {
-              name: 'Upload: Error',
+              name: 'Upload Worker Failed: Error',
               additionalInfo: {
                 trackId: 1,
                 metadata: testTrack.metadata,

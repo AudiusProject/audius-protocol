@@ -4,6 +4,7 @@ import { playerActions, playerSelectors } from '@audius/common/store'
 import { MIN_BUFFERING_DELAY_MS } from '@audius/common/utils'
 import { useDispatch, useSelector } from 'react-redux'
 import { useFeatureFlag } from '~/hooks'
+import { Name } from '~/models'
 import { FeatureFlags } from '~/services'
 
 import IconPause from 'app/assets/animations/iconPause.json'
@@ -11,6 +12,7 @@ import IconPlay from 'app/assets/animations/iconPlay.json'
 import IconLoadingSpinner from 'app/assets/animations/iconPlayLoadingSpinner.json'
 import type { AnimatedButtonProps } from 'app/components/core'
 import { AnimatedButton } from 'app/components/core'
+import { make, track } from 'app/services/analytics'
 import { makeAnimations } from 'app/styles'
 import { colorize } from 'app/utils/colorizeLottie'
 import { Theme } from 'app/utils/theme'
@@ -18,27 +20,12 @@ import { Theme } from 'app/utils/theme'
 const { pause, play } = playerActions
 const { getPlaying, getBuffering } = playerSelectors
 
-const useAnimatedIcons = (
-  useRNVideoPlayer?: boolean,
-  usePrefetchTrack?: boolean
-) =>
+const useAnimatedIcons = (usePrefetchTrack?: boolean) =>
   makeAnimations(({ palette, type }) => {
     const iconColor =
       type === Theme.MATRIX ? palette.background : palette.staticWhite
-    let primaryBG
-    if (useRNVideoPlayer) {
-      if (usePrefetchTrack) {
-        primaryBG = palette.accentOrange
-      } else {
-        primaryBG = palette.accentBlue
-      }
-    } else {
-      if (usePrefetchTrack) {
-        primaryBG = palette.accentGreen
-      } else {
-        primaryBG = palette.primary
-      }
-    }
+
+    const primaryBG = usePrefetchTrack ? palette.accentGreen : palette.primary
 
     const ColorizedPlayIcon = colorize(IconPlay, {
       // #playpause1.Group 1.Fill 1
@@ -85,6 +72,7 @@ export const PlayButton = ({ isActive, ...props }: PlayButtonProps) => {
     let timeout
     if (isBuffering) {
       timeout = setTimeout(() => {
+        track(make({ eventName: Name.BUFFER_SPINNER_SHOWN }))
         setShowBufferingState(true)
       }, MIN_BUFFERING_DELAY_MS)
     } else {
@@ -98,13 +86,10 @@ export const PlayButton = ({ isActive, ...props }: PlayButtonProps) => {
   }, [isBuffering])
 
   const dispatch = useDispatch()
-  const { isEnabled: useRNVideoPlayer } = useFeatureFlag(
-    FeatureFlags.USE_RN_VIDEO_PLAYER
-  )
   const { isEnabled: usePrefetchTrack } = useFeatureFlag(
-    FeatureFlags.SKIP_STREAM_CHECK // TODO: this is not the correct flag have to wait for optimizely to fix their shit
+    FeatureFlags.PREFETCH_STREAM_URLS
   )
-  const animatedIcons = useAnimatedIcons(useRNVideoPlayer, usePrefetchTrack)()
+  const animatedIcons = useAnimatedIcons(usePrefetchTrack)()
 
   const handlePress = useCallback(() => {
     if (isPlaying) {

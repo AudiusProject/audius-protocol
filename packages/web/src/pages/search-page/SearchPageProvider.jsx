@@ -18,12 +18,7 @@ import { withRouter } from 'react-router-dom'
 
 import { HistoryContext } from 'app/HistoryProvider'
 import { make } from 'common/store/analytics/actions'
-import {
-  NOT_FOUND_PAGE,
-  SEARCH_CATEGORY_PAGE,
-  SEARCH_PAGE,
-  doesMatchRoute
-} from 'utils/route'
+import { NOT_FOUND_PAGE, SEARCH_PAGE, doesMatchRoute } from 'utils/route'
 
 import * as helpers from './helpers'
 const { makeGetCurrent } = queueSelectors
@@ -95,17 +90,22 @@ class SearchPageProvider extends Component {
   search = (isTagSearch, query, searchKind, limit, offset) => {
     if (isTagSearch) {
       this.props.dispatch(
-        searchPageActions.fetchSearchPageTags(query, searchKind, limit, offset)
+        searchPageActions.fetchSearchPageTags({
+          tag: query,
+          searchKind,
+          limit,
+          offset
+        })
       )
       this.props.recordTagSearch(query)
     } else {
       this.props.dispatch(
-        searchPageActions.fetchSearchPageResults(
-          query,
-          searchKind,
+        searchPageActions.fetchSearchPageResults({
+          searchText: query,
+          kind: searchKind,
           limit,
           offset
-        )
+        })
       )
       this.props.recordSearch(query)
     }
@@ -134,11 +134,7 @@ class SearchPageProvider extends Component {
     // search page, then we should not redirect & allow react router to render
     // the correct page.
     const query = helpers.getQuery(this.context.history.location)
-    if (
-      !query &&
-      (doesMatchRoute(this.context.history.location, SEARCH_CATEGORY_PAGE) ||
-        doesMatchRoute(this.context.history.location, SEARCH_PAGE))
-    ) {
+    if (!query && doesMatchRoute(this.context.history.location, SEARCH_PAGE)) {
       return <Redirect to={NOT_FOUND_PAGE} />
     }
 

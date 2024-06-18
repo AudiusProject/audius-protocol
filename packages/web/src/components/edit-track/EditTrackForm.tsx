@@ -1,5 +1,6 @@
 import { useCallback, useContext, useState } from 'react'
 
+import { useFeatureFlag } from '@audius/common/hooks'
 import { TrackMetadataFormSchema } from '@audius/common/schemas'
 import { FeatureFlags } from '@audius/common/services'
 import {
@@ -15,17 +16,16 @@ import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { MenuFormCallbackStatus } from 'components/data-entry/ContextualMenu'
-import { AccessAndSaleField } from 'components/edit/fields/AccessAndSaleField'
 import { AttributionField } from 'components/edit/fields/AttributionField'
 import { MultiTrackSidebar } from 'components/edit/fields/MultiTrackSidebar'
 import { ReleaseDateField } from 'components/edit/fields/ReleaseDateField'
-import { ReleaseDateFieldLegacy } from 'components/edit/fields/ReleaseDateFieldLegacy'
 import { RemixSettingsField } from 'components/edit/fields/RemixSettingsField'
 import { StemsAndDownloadsField } from 'components/edit/fields/StemsAndDownloadsField'
 import { TrackMetadataFields } from 'components/edit/fields/TrackMetadataFields'
+import { PriceAndAudienceField } from 'components/edit/fields/price-and-audience/PriceAndAudienceField'
+import { VisibilityField } from 'components/edit/fields/visibility/VisibilityField'
 import layoutStyles from 'components/layout/layout.module.css'
 import { NavigationPrompt } from 'components/navigation-prompt/NavigationPrompt'
-import { useFlag } from 'hooks/useRemoteConfig'
 import { EditFormScrollContext } from 'pages/edit-page/EditTrackPage'
 import { AnchoredSubmitRowEdit } from 'pages/edit-page/components/AnchoredSubmitRowEdit'
 import { AnchoredSubmitRow } from 'pages/upload-page/components/AnchoredSubmitRow'
@@ -77,16 +77,17 @@ const TrackEditForm = (
 ) => {
   const { values, dirty, isSubmitting, hideContainer = false } = props
   const isMultiTrack = values.trackMetadatas.length > 1
-  const isEdit = values.trackMetadatas[0].track_id !== undefined
+  const isUpload = values.trackMetadatas[0].track_id === undefined
   const trackIdx = values.trackMetadatasIndex
   const [, , { setValue: setIndex }] = useField('trackMetadatasIndex')
   useUnmount(() => {
     setIndex(0)
   })
-  const { isEnabled: isScheduledReleasesEnabled } = useFlag(
-    FeatureFlags.SCHEDULED_RELEASES
-  )
   const [forceOpenAccessAndSale, setForceOpenAccessAndSale] = useState(false)
+
+  const { isEnabled: isHiddenPaidScheduledEnabled } = useFeatureFlag(
+    FeatureFlags.HIDDEN_PAID_SCHEDULED
+  )
 
   return (
     <Form>
@@ -111,18 +112,19 @@ const TrackEditForm = (
           >
             <TrackMetadataFields />
             <div className={cn(layoutStyles.col, layoutStyles.gap4)}>
-              {isScheduledReleasesEnabled ? (
-                <ReleaseDateField />
+              {isHiddenPaidScheduledEnabled ? (
+                <VisibilityField entityType='track' />
               ) : (
-                <ReleaseDateFieldLegacy />
+                <ReleaseDateField />
               )}
-              <AccessAndSaleField
-                isUpload
+              <PriceAndAudienceField
+                isUpload={isUpload}
                 forceOpen={forceOpenAccessAndSale}
                 setForceOpen={setForceOpenAccessAndSale}
               />
               <AttributionField />
               <StemsAndDownloadsField
+                isUpload={isUpload}
                 closeMenuCallback={(data) => {
                   if (data === MenuFormCallbackStatus.OPEN_ACCESS_AND_SALE) {
                     setForceOpenAccessAndSale(true)
@@ -142,11 +144,13 @@ const TrackEditForm = (
         </div>
         {isMultiTrack ? <MultiTrackSidebar /> : null}
       </div>
-      {isEdit ? (
+      {isUpload ? (
+        !isMultiTrack ? (
+          <AnchoredSubmitRow />
+        ) : null
+      ) : (
         <AnchoredSubmitRowEdit />
-      ) : !isMultiTrack ? (
-        <AnchoredSubmitRow />
-      ) : null}
+      )}
     </Form>
   )
 }

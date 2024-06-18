@@ -5,7 +5,7 @@ import { Flex } from '@audius/harmony'
 import { Form, Formik } from 'formik'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
-import { AccessAndSaleField } from 'components/edit/fields/AccessAndSaleField'
+import { PriceAndAudienceField } from 'components/edit/fields/price-and-audience'
 import { ArtworkField, TextAreaField, TextField } from 'components/form-fields'
 import { useCollectionCoverArt } from 'hooks/useCollectionCoverArt'
 
@@ -110,7 +110,7 @@ const PlaylistForm = ({
             </Flex>
           </Flex>
           {isAlbum ? (
-            <AccessAndSaleField
+            <PriceAndAudienceField
               isAlbum
               isPublishDisabled={metadata.is_private && !hasNoHiddenTracks}
             />
