@@ -71,6 +71,7 @@ func TestRepair(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, 200, resp.StatusCode)
 		assert.Len(t, uploads, 1)
+		assert.NotEmpty(t, resp.GetHeader("x-took"))
 	}
 
 	// force sweep (since blob changes SkipBroadcast)
