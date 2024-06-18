@@ -36,7 +36,7 @@ import {
   TrackAddedToPurchasedAlbumNotification,
   RequestManagerNotification,
   ApproveManagerNotification,
-  ChallengeCooldownCompleteNotification
+  ClaimableRewardNotification
 } from '../../types/notifications'
 import { ApproveManagerRequest } from './approveManagerRequest'
 import { Follow } from './follow'
