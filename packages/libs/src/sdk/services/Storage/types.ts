@@ -61,6 +61,10 @@ export type UploadResponse = {
   }
   orig_file_cid: string
   orig_filename: string
+  audio_analysis_error_count: number
+  audio_analysis_results: {
+    [key: string]: string
+  }
   probe: {
     format: {
       duration: string

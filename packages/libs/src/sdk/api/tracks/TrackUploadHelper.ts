@@ -75,7 +75,14 @@ export class TrackUploadHelper extends BaseAPI {
       origFilename: audioResponse.orig_filename || trackMetadata.origFilename,
       audioUploadId: audioResponse.id,
       coverArtSizes: coverArtResponse.id,
-      duration: parseInt(audioResponse.probe.format.duration, 10)
+      duration: parseInt(audioResponse.probe.format.duration, 10),
+      bpm: audioResponse.audio_analysis_results?.bpm
+        ? audioResponse.audio_analysis_results.bpm
+        : trackMetadata.bpm,
+      musicalKey: audioResponse.audio_analysis_results?.key
+        ? audioResponse.audio_analysis_results.key
+        : trackMetadata.musicalKey,
+      audioAnalysisErrorCount: audioResponse.audio_analysis_error_count || 0
     }
   }
 }

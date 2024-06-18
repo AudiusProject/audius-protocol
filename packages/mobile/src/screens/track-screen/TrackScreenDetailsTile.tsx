@@ -314,9 +314,13 @@ export const TrackScreenDetailsTile = ({
       hideRepost={hideRepost}
       hideShare={isUnlisted && !isOwner}
       hideOverflow={!isReachable || (isUnlisted && !isOwner)}
-      hideFavoriteCount={isUnlisted}
-      hidePlayCount={(!isOwner && isUnlisted) || isStreamGated}
-      hideRepostCount={isUnlisted}
+      hideFavoriteCount={isUnlisted || (!isOwner && (save_count ?? 0) <= 0)}
+      hidePlayCount={
+        (!isOwner && isUnlisted) ||
+        isStreamGated ||
+        (!isOwner && (play_count ?? 0) <= 0)
+      }
+      hideRepostCount={isUnlisted || (!isOwner && (repost_count ?? 0) <= 0)}
       isPlaying={isPlaying && isPlayingId}
       isPreviewing={isPreviewing}
       isUnlisted={isUnlisted}
