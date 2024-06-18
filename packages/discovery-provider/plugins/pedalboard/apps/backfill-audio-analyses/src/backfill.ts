@@ -102,7 +102,7 @@ async function analyzeAudio(
           `Timeout error triggering audio analysis on ${contentNode}: ${error.message}. Attempt #${i+1} to trigger audio analysis for track ID ${track.track_id}, track CID ${trackCid}, upload ID ${audioUploadId}. Trying another content node...`
         )
       } else {
-        console.error(
+        console.log(
           `Error triggering audio analysis for track ID ${track.track_id}, track CID ${trackCid}, upload ID ${
             audioUploadId
           }: ${(error as Error).message}. Trying another content node...`
