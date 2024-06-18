@@ -90,6 +90,34 @@ function* watchAdd() {
   )
 }
 
+function* watchUpdate() {
+  yield* takeEvery(
+    cacheActions.UPDATE,
+    function* (action: ReturnType<typeof cacheActions.update>) {
+      const getFeatureEnabled = yield* getContext('getFeatureEnabled')
+      const isStreamPrefetchEnabled = yield* call(
+        getFeatureEnabled,
+        FeatureFlags.PREFETCH_STREAM_URLS
+      )
+      if (!isStreamPrefetchEnabled) return
+
+      if (action.kind === Kind.TRACKS) {
+        // Check for tracks with any changed access. If so we need to update the prefetched stream url
+        const tracksWithChangedAccess = action.entries
+          .filter((track) => track.metadata.access.stream !== undefined)
+          .map((track) => track.id)
+        // Re-trigger prefetching stream urls for any changed tracks
+        if (tracksWithChangedAccess.length > 0) {
+          yield* fork(fetchTrackStreamUrls, {
+            trackIds: tracksWithChangedAccess,
+            isUpdate: true
+          })
+        }
+      }
+    }
+  )
+}
+
 type TrackWithRemix = Pick<Track, 'track_id' | 'title'> & {
   remix_of: { tracks: Pick<Remix, 'parent_track_id'>[] } | null
 }
@@ -447,7 +475,13 @@ function* watchFetchCoverArt() {
 }
 
 const sagas = () => {
-  return [watchAdd, watchEditTrack, watchDeleteTrack, watchFetchCoverArt]
+  return [
+    watchAdd,
+    watchEditTrack,
+    watchDeleteTrack,
+    watchFetchCoverArt,
+    watchUpdate
+  ]
 }
 
 export default sagas

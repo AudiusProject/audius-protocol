@@ -16,7 +16,13 @@ const { setStreamUrls } = cacheTracksActions
 const { getNftAccessSignatureMap } = gatedContentSelectors
 const { getPlayerBehavior } = queueSelectors
 
-export function* fetchTrackStreamUrls({ trackIds }: { trackIds: ID[] }) {
+export function* fetchTrackStreamUrls({
+  trackIds,
+  isUpdate
+}: {
+  trackIds: ID[]
+  isUpdate?: boolean
+}) {
   const apiClient = yield* getContext('apiClient')
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const reportToSentry = yield* getContext('reportToSentry')
@@ -30,7 +36,7 @@ export function* fetchTrackStreamUrls({ trackIds }: { trackIds: ID[] }) {
       try {
         const existingUrl = yield* select(getTrackStreamUrl, id)
 
-        if (existingUrl) {
+        if (existingUrl && !isUpdate) {
           return { [id]: existingUrl }
         }
 
