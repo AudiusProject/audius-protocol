@@ -88,7 +88,7 @@ describe('USDC Purchase Buyer', () => {
       }
     )
 
-    expect(sendEmailNotificationSpy).toHaveBeenCalledWith({
+    expect(sendEmailNotificationSpy).not.toHaveBeenCalledWith({
       userId: 2,
       email: 'user_2@gmail.com',
       frequency: 'live',

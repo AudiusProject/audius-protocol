@@ -12,6 +12,7 @@ import { IconCart, IconStars } from '@audius/harmony'
 
 import { ExternalTextLink } from 'components/link'
 import { ModalRadioItem } from 'components/modal-radio/ModalRadioItem'
+import { useMessages } from 'hooks/useMessages'
 import { make, track } from 'services/analytics'
 
 import { UsdcPurchaseFields } from './UsdcPurchaseFields'
@@ -19,7 +20,7 @@ import styles from './UsdcPurchaseGatedRadioField.module.css'
 
 const WAITLIST_TYPEFORM = 'https://link.audius.co/waitlist'
 
-const messages = {
+const messagesV1 = {
   usdcPurchase: 'Premium (Pay-to-Unlock)',
   usdcPurchaseSubtitle: (contentType: 'album' | 'track') =>
     `Unlockable by purchase, these ${pluralize(
@@ -30,6 +31,12 @@ const messages = {
     'Start selling your music on Audius today! Limited access beta now available.',
   join: 'Join the Waitlist',
   comingSoon: 'Coming Soon'
+}
+
+const messagesV2 = {
+  usdcPurchase: 'Premium',
+  usdcPurchaseSubtitle: (contentType: 'album' | 'track') =>
+    `Only fans who make a purchase can play your ${contentType}.`
 }
 
 type UsdcPurchaseGatedRadioFieldProps = {
@@ -52,6 +59,12 @@ export const UsdcPurchaseGatedRadioField = (
     isInitiallyUnlisted,
     isPublishDisabled
   } = props
+
+  const messages = useMessages(
+    messagesV1,
+    messagesV2,
+    FeatureFlags.HIDDEN_PAID_SCHEDULED
+  )
 
   const handleClickWaitListLink = useCallback(() => {
     track(make({ eventName: Name.TRACK_UPLOAD_CLICK_USDC_WAITLIST_LINK }))

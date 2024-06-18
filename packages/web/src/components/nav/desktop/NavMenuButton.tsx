@@ -1,4 +1,7 @@
-import { useAccountHasClaimableRewards } from '@audius/common/hooks'
+import {
+  useAccountHasClaimableRewards,
+  useIsManagedAccount
+} from '@audius/common/hooks'
 import { Name } from '@audius/common/models'
 import { StringKeys } from '@audius/common/services'
 import { chatSelectors } from '@audius/common/store'
@@ -52,6 +55,7 @@ export const NavMenuButton = () => {
   const isUSDCEnabled = useIsUSDCEnabled()
   const challengeRewardIds = useRemoteVar(StringKeys.CHALLENGE_REWARD_IDS)
   const hasClaimableRewards = useAccountHasClaimableRewards(challengeRewardIds)
+  const isManagedAccount = useIsManagedAccount()
   const showNotificationBubble = hasUnreadMessages || hasClaimableRewards
 
   const messagesIcon = hasUnreadMessages ? (
@@ -65,16 +69,18 @@ export const NavMenuButton = () => {
   ) : (
     <IconMessage />
   )
-  const messagesItem = {
-    className: styles.item,
-    text: messages.messages,
-    onClick: () => {
-      navigate(CHATS_PAGE)
-      dispatch(make(Name.CHAT_ENTRY_POINT, { source: 'navmenu' }))
-    },
-    icon: messagesIcon,
-    iconClassName: styles.menuItemIcon
-  }
+  const messagesItem = isManagedAccount
+    ? null
+    : {
+        className: styles.item,
+        text: messages.messages,
+        onClick: () => {
+          navigate(CHATS_PAGE)
+          dispatch(make(Name.CHAT_ENTRY_POINT, { source: 'navmenu' }))
+        },
+        icon: messagesIcon,
+        iconClassName: styles.menuItemIcon
+      }
 
   const payAndEarnItem = isUSDCEnabled
     ? {

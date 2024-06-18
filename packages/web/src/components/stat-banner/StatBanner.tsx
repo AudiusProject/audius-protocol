@@ -1,5 +1,6 @@
 import { useRef } from 'react'
 
+import { useIsManagedAccount } from '@audius/common/hooks'
 import { ID } from '@audius/common/models'
 import {
   IconMessageBlock,
@@ -80,6 +81,7 @@ const StatsPopupMenu = ({
   onBlock,
   onUnblock
 }: StatsMenuPopupProps) => {
+  const isManagedAccount = useIsManagedAccount()
   const menuItems = [
     {
       text: messages.shareProfile,
@@ -88,7 +90,7 @@ const StatsPopupMenu = ({
     }
   ]
 
-  if (accountUserId) {
+  if (accountUserId && !isManagedAccount) {
     menuItems.push(
       isBlocked
         ? {
@@ -152,6 +154,7 @@ export const StatBanner = (props: StatsBannerProps) => {
   } = props
   let buttons = null
   const followButtonRef = useRef<HTMLButtonElement>(null)
+  const isManagedAccount = useIsManagedAccount()
 
   const shareButton = (
     <Button
@@ -211,7 +214,7 @@ export const StatBanner = (props: StatsBannerProps) => {
                 onBlock={onBlock}
                 onUnblock={onUnblock}
               />
-              {onMessage ? (
+              {onMessage && !isManagedAccount ? (
                 <Button
                   variant='secondary'
                   size='small'

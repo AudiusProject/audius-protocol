@@ -2711,11 +2711,22 @@ export const audiusBackend = ({
   /**
    * Make a request to fetch the eth AUDIO balance of the the user
    * @params {bool} bustCache
+   * @params {string} ethAddress - Optional ETH wallet address. Defaults to hedgehog wallet
    * @returns {Promise<BN | null>} balance or null if failed to fetch balance
    */
-  async function getBalance(bustCache = false) {
+  async function getBalance({
+    ethAddress,
+    bustCache = false
+  }: {
+    ethAddress?: string
+    bustCache?: boolean
+  } = {}): Promise<BN | null> {
     await waitForLibsInit()
-    const wallet = audiusLibs.web3Manager.getWalletAddress()
+
+    const wallet =
+      ethAddress !== undefined
+        ? ethAddress
+        : audiusLibs.web3Manager.getWalletAddress()
     if (!wallet) return null
 
     try {
@@ -2737,13 +2748,16 @@ export const audiusBackend = ({
 
   /**
    * Make a request to fetch the sol wrapped audio balance of the the user
-   * @returns {Promise<BN>} balance
+   * @params {string} ethAddress - Optional ETH wallet address to derive user bank. Defaults to hedgehog wallet
+   * @returns {Promise<BN>} balance or null if failed to fetch balance
    */
-  async function getWAudioBalance() {
+  async function getWAudioBalance(ethAddress?: string): Promise<BN | null> {
     await waitForLibsInit()
 
     try {
-      const userBank = await audiusLibs.solanaWeb3Manager.deriveUserBank()
+      const userBank = await audiusLibs.solanaWeb3Manager.deriveUserBank({
+        ethAddress
+      })
       const ownerWAudioBalance =
         await audiusLibs.solanaWeb3Manager.getWAudioBalance(userBank)
       if (isNullOrUndefined(ownerWAudioBalance)) {
@@ -2892,7 +2906,7 @@ export const audiusBackend = ({
    *   logs: Array<string>
    * }
    */
-  async function transferAudioToWAudio(balance: number) {
+  async function transferAudioToWAudio(balance: BN) {
     await waitForLibsInit()
     const userBank = await audiusLibs.solanaWeb3Manager.deriveUserBank()
     return audiusLibs.Account.proxySendTokensFromEthToSol(

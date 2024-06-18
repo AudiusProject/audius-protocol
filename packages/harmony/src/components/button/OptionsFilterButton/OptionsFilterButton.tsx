@@ -1,4 +1,11 @@
-import { forwardRef, RefObject, useState, useCallback } from 'react'
+import {
+  forwardRef,
+  RefObject,
+  useState,
+  useCallback,
+  useRef,
+  useMemo
+} from 'react'
 
 import { CSSObject, useTheme } from '@emotion/react'
 
@@ -12,23 +19,34 @@ import { IconCaretDown, IconSearch } from 'icons'
 
 import { FilterButton } from '../FilterButton/FilterButton'
 
+import { SelectPopupKeyHandler } from './SelectPopupKeyHandler'
 import { OptionsFilterButtonProps, OptionsFilterButtonOption } from './types'
 
+const messages = {
+  noMatches: 'No matches'
+}
+
 type FilterButtonOptionsProps = {
+  activeValue?: string | null
   options: OptionsFilterButtonOption[]
+  optionRefs?: RefObject<HTMLButtonElement[]>
   onChange: (option: OptionsFilterButtonOption) => void
 }
 
-export const FilterButtonOptions = ({
-  options,
-  onChange
-}: FilterButtonOptionsProps) => {
+export const FilterButtonOptions = (props: FilterButtonOptionsProps) => {
+  const { activeValue, options, onChange, optionRefs } = props
   const { color, cornerRadius, spacing, typography } = useTheme()
 
   // Popup Styles
   const optionIconCss: CSSObject = {
     width: spacing.unit4,
     height: spacing.unit4
+  }
+
+  const activeOptionCss: CSSObject = {
+    transform: 'none',
+    backgroundColor: color.secondary.s300,
+    color: color.special.white
   }
 
   const optionCss: CSSObject = {
@@ -45,30 +63,44 @@ export const FilterButtonOptions = ({
     borderRadius: cornerRadius.s,
     justifyContent: 'flex-start',
 
-    '&:hover': {
-      transform: 'none',
-      backgroundColor: color.secondary.s300,
-      color: color.special.white
-    },
+    '&:hover': activeOptionCss,
 
     '&:active': {
       transform: 'none'
     }
   }
 
+  if (!options.length) {
+    return (
+      <Flex justifyContent='center'>
+        <Text variant='body' color='subdued' size='s'>
+          {messages.noMatches}
+        </Text>
+      </Flex>
+    )
+  }
+
   return (
-    <>
-      {options.map((option) => (
+    <Flex direction='column'>
+      {options.map((option, index) => (
         <BaseButton
           key={option.value}
           iconLeft={option.icon}
           styles={{
-            button: optionCss,
+            button: {
+              ...optionCss,
+              ...(option.value === activeValue ? activeOptionCss : {})
+            },
             icon: optionIconCss
           }}
           onClick={() => onChange(option)}
           aria-label={option.label ?? option.value}
           role='option'
+          ref={(el) => {
+            if (optionRefs && optionRefs.current && el) {
+              optionRefs.current[index] = el
+            }
+          }}
         >
           {option.leadingElement ?? null}
           <Text variant='body' strength='strong'>
@@ -81,7 +113,7 @@ export const FilterButtonOptions = ({
           ) : null}
         </BaseButton>
       ))}
-    </>
+    </Flex>
   )
 }
 
@@ -102,6 +134,7 @@ export const OptionsFilterButton = forwardRef<
     popupZIndex,
     ...filterButtonProps
   } = props
+
   const [selection, setSelection] = useControlled({
     controlledProp: selectionProp,
     defaultValue: null,
@@ -112,14 +145,39 @@ export const OptionsFilterButton = forwardRef<
   const [filterInputValue, setFilterInputValue] = useState('')
   const selectedOption = options.find((option) => option.value === selection)
   const selectedLabel = selectedOption?.label ?? selectedOption?.value
+  const inputRef = useRef<HTMLInputElement>(null)
+  const optionRefs = useRef([])
+  const scrollRef = useRef<HTMLDivElement>(null)
 
   const handleOptionSelect = useCallback(
-    (handleChange: (value: string, label: string) => void) =>
+    (
+        handleChange: (value: string, label: string) => void,
+        setIsOpen: (isOpen: boolean) => void
+      ) =>
       (option: OptionsFilterButtonOption) => {
         setSelection(option.value)
         handleChange(option.value, option.label ?? '')
+        setIsOpen(false)
       },
     [setSelection]
+  )
+
+  const handleOpen = useCallback(() => {
+    // Focus the input after the popup is open
+    setTimeout(() => {
+      inputRef.current?.focus({ preventScroll: true })
+    }, 0)
+  }, [inputRef])
+
+  const filteredOptions = useMemo(
+    () =>
+      options.filter(({ label }) => {
+        return (
+          !filterInputValue ||
+          label?.toLowerCase().includes(filterInputValue.toLowerCase())
+        )
+      }),
+    [options, filterInputValue]
   )
 
   return (
@@ -127,71 +185,85 @@ export const OptionsFilterButton = forwardRef<
       iconRight={IconCaretDown}
       {...filterButtonProps}
       value={selection}
+      onOpen={handleOpen}
       onReset={() => setFilterInputValue('')}
       label={selectedLabel ?? filterButtonProps.label}
     >
       {({ isOpen, setIsOpen, handleChange, anchorRef }) => (
-        <Popup
-          anchorRef={(ref as RefObject<HTMLElement>) || anchorRef}
-          isVisible={isOpen}
-          onClose={() => setIsOpen(false)}
-          anchorOrigin={popupAnchorOrigin}
-          transformOrigin={popupTransformOrigin}
-          portalLocation={popupPortalLocation}
-          zIndex={popupZIndex}
-          onAfterClose={() => setFilterInputValue('')}
+        <SelectPopupKeyHandler
+          options={filteredOptions}
+          disabled={!isOpen}
+          onOptionSelect={handleOptionSelect(handleChange, setIsOpen)}
+          optionRefs={optionRefs}
+          scrollRef={scrollRef}
         >
-          <Paper mt='s' border='strong' shadow='far'>
-            <Flex
-              p='s'
-              direction='column'
-              alignItems='flex-start'
-              role='listbox'
-              aria-label={
-                selectedLabel ?? filterButtonProps.label ?? props['aria-label']
-              }
-              aria-activedescendant={selectedLabel}
-              css={{ maxHeight: popupMaxHeight, overflowY: 'auto' }}
+          {(activeValue) => (
+            <Popup
+              anchorRef={(ref as RefObject<HTMLElement>) || anchorRef}
+              isVisible={isOpen}
+              onClose={() => setIsOpen(false)}
+              anchorOrigin={popupAnchorOrigin}
+              transformOrigin={popupTransformOrigin}
+              portalLocation={popupPortalLocation}
+              zIndex={popupZIndex}
+              onAfterClose={() => setFilterInputValue('')}
             >
-              <Flex direction='column' w='100%' gap='s'>
-                {showFilterInput ? (
-                  <TextInput
-                    placeholder={filterInputPlaceholder}
-                    label={filterInputPlaceholder}
-                    size={TextInputSize.SMALL}
-                    startIcon={IconSearch}
-                    onClick={(e) => {
-                      e.stopPropagation()
-                    }}
-                    onChange={(e) => {
-                      setFilterInputValue(e.target.value)
-                    }}
-                  />
-                ) : null}
-                {optionsLabel ? (
-                  <Box pt='s' ph='m'>
-                    <Text variant='label' size='xs'>
-                      {optionsLabel}
-                    </Text>
-                  </Box>
-                ) : null}
-                <FilterButtonOptions
-                  options={options.filter(({ label }) => {
-                    return (
-                      !filterInputValue ||
-                      label
-                        ?.toLowerCase()
-                        .includes(filterInputValue.toLowerCase())
-                    )
-                  })}
-                  onChange={(option) =>
-                    handleOptionSelect(handleChange)(option)
+              <Paper
+                mt='s'
+                border='strong'
+                shadow='far'
+                onClick={(e) => e.stopPropagation()}
+              >
+                <Flex
+                  p='s'
+                  direction='column'
+                  alignItems='flex-start'
+                  role='listbox'
+                  aria-label={
+                    selectedLabel ??
+                    filterButtonProps.label ??
+                    props['aria-label']
                   }
-                />
-              </Flex>
-            </Flex>
-          </Paper>
-        </Popup>
+                  aria-activedescendant={selectedLabel}
+                  css={{ maxHeight: popupMaxHeight, overflowY: 'auto' }}
+                  ref={scrollRef}
+                >
+                  <Flex direction='column' w='100%' gap='s'>
+                    {showFilterInput ? (
+                      <TextInput
+                        ref={inputRef}
+                        placeholder={filterInputPlaceholder}
+                        label={filterInputPlaceholder}
+                        size={TextInputSize.SMALL}
+                        startIcon={IconSearch}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                        }}
+                        onChange={(e) => {
+                          setFilterInputValue(e.target.value)
+                        }}
+                        autoComplete='off'
+                      />
+                    ) : null}
+                    {optionsLabel ? (
+                      <Box pt='s' ph='m'>
+                        <Text variant='label' size='xs'>
+                          {optionsLabel}
+                        </Text>
+                      </Box>
+                    ) : null}
+                    <FilterButtonOptions
+                      activeValue={activeValue}
+                      options={filteredOptions}
+                      optionRefs={optionRefs}
+                      onChange={handleOptionSelect(handleChange, setIsOpen)}
+                    />
+                  </Flex>
+                </Flex>
+              </Paper>
+            </Popup>
+          )}
+        </SelectPopupKeyHandler>
       )}
     </FilterButton>
   )

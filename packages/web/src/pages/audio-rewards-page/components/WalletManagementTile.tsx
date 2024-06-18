@@ -1,5 +1,6 @@
 import { useCallback, useContext, useEffect, useMemo } from 'react'
 
+import { useIsManagedAccount } from '@audius/common/hooks'
 import { Client, BNWei } from '@audius/common/models'
 import { StringKeys, FeatureFlags, Location } from '@audius/common/services'
 import {
@@ -288,6 +289,7 @@ const ManageWalletsButton = () => {
   )
 }
 export const WalletManagementTile = () => {
+  const isManagedAccount = useIsManagedAccount()
   const totalBalance = useSelector(getAccountTotalBalance)
   const hasMultipleWallets = useSelector(getHasAssociatedWallets)
   const balanceLoadDidFail = useSelector(getTotalBalanceLoadDidFail)
@@ -348,38 +350,44 @@ export const WalletManagementTile = () => {
         </div>
       </div>
       <div className={styles.container}>
-        {!isMobileWeb() && onRampProviders[primaryProvider].isEnabled ? (
+        {!isManagedAccount &&
+        !isMobileWeb() &&
+        onRampProviders[primaryProvider].isEnabled ? (
           <OnRampTooltipButton
             provider={primaryProvider}
             isDisabled={!isAnyProviderAllowed}
             bannedState={onRampProviders[primaryProvider].bannedState}
           />
         ) : null}
-        <WalletActions />
+        {!isManagedAccount ? (
+          <>
+            <WalletActions />
 
-        <Flex
-          alignItems='center'
-          justifyContent='center'
-          gap='xl'
-          borderTop='default'
-          pt='xl'
-          pb='s'
-          wrap='wrap'
-        >
-          <Text variant='label' size='s' strength='default' color='subdued'>
-            {messages.onRampsPowered}
-          </Text>
-          <IconLogoLinkByStripe
-            width={'6em'}
-            height={'1.33em'}
-            color='subdued'
-          />
-          <IconLogoCoinbasePay
-            width={'6em'}
-            height={'1.33em'}
-            color='subdued'
-          />
-        </Flex>
+            <Flex
+              alignItems='center'
+              justifyContent='center'
+              gap='xl'
+              borderTop='default'
+              pt='xl'
+              pb='s'
+              wrap='wrap'
+            >
+              <Text variant='label' size='s' strength='default' color='subdued'>
+                {messages.onRampsPowered}
+              </Text>
+              <IconLogoLinkByStripe
+                width={'6em'}
+                height={'1.33em'}
+                color='subdued'
+              />
+              <IconLogoCoinbasePay
+                width={'6em'}
+                height={'1.33em'}
+                color='subdued'
+              />
+            </Flex>
+          </>
+        ) : null}
       </div>
     </div>
   )

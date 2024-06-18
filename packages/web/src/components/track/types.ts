@@ -74,7 +74,8 @@ export type TrackTileProps = TileProps & {
   isArtistPick?: boolean
   isUnlisted?: boolean
   coSign?: Remix | null
-  releaseDate?: string | null
+  releaseDate?: Nullable<string>
+  isScheduledRelease?: boolean
   onClickOverflow?: (trackId: ID) => void
   /** Provides more context to analytics about where the tile is being used */
   source?: ModalSource

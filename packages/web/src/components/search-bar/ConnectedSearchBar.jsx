@@ -88,41 +88,31 @@ class ConnectedSearchBar extends Component {
       this.props.history.location.search
     )
 
-    let newPath = pathname
     if (value) {
-      if (this.props.isSearchV2Enabled) {
-        const searchMatch = matchPath(
-          getPathname(this.props.history.location),
-          {
-            path: SEARCH_PAGE
-          }
-        )
-
-        if (searchMatch) {
-          newPath = generatePath(SEARCH_PAGE, {
-            ...searchMatch.params
-          })
-        }
-      }
-
       locationSearchParams.set('query', value)
+    } else {
+      locationSearchParams.delete('query')
     }
 
-    if (value.startsWith('#')) {
-      // perform tag search
-      this.props.history.push({
-        hash: value.split('#')[1],
-        pathname,
-        state: {}
+    let newPath = pathname
+    if (this.props.isSearchV2Enabled) {
+      const searchMatch = matchPath(getPathname(this.props.history.location), {
+        path: SEARCH_PAGE
       })
-    } else {
-      value = encodeURIComponent(value)
-      this.props.history.push({
-        pathname: newPath,
-        search: locationSearchParams.toString(),
-        state: {}
-      })
+
+      if (searchMatch) {
+        newPath = generatePath(SEARCH_PAGE, {
+          ...searchMatch.params
+        })
+      }
     }
+
+    value = encodeURIComponent(value)
+    this.props.history.push({
+      pathname: newPath,
+      search: locationSearchParams.toString(),
+      state: {}
+    })
   }
 
   onSelect = (value) => {

@@ -14,7 +14,6 @@ export const NoResultsTile = () => {
       pv={isMobile ? '2xl' : '3xl'}
       ph={isMobile ? 'l' : '3xl'}
       mv='s'
-      mh='xl'
       direction='column'
       gap={isMobile ? 's' : 'l'}
       alignItems='center'
