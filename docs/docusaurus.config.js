@@ -88,9 +88,18 @@ const config = {
             position: 'right',
             activeBasePath: 'developers',
             items: [
-              { label: 'Getting Started', to: '/developers/introduction/overview' },
-              { label: 'Javascript SDK', to: '/developers/sdk/overview' },
-              { label: 'REST API', to: '/developers/api/rest-api' },
+              {
+                label: 'Getting Started',
+                to: '/developers/introduction/overview',
+              },
+              {
+                label: 'Javascript SDK',
+                to: '/developers/sdk/overview',
+              },
+              {
+                label: 'REST API',
+                to: '/developers/api/rest-api',
+              },
             ],
           },
           {
@@ -165,38 +174,7 @@ const config = {
           variant: 'axios',
           variants: ['native', 'axios', 'request'],
         },
-        // {
-        //   highlight: 'ruby',
-        //   language: 'ruby',
-        //   logoClass: 'ruby',
-        // },
-        // {
-        //   highlight: 'csharp',
-        //   language: 'csharp',
-        //   logoClass: 'csharp',
-        //   variant: 'httpclient',
-        // },
-        // {
-        //   highlight: 'php',
-        //   language: 'php',
-        //   logoClass: 'php',
-        // },
-        // {
-        //   highlight: 'java',
-        //   language: 'java',
-        //   logoClass: 'java',
-        //   variant: 'unirest',
-        // },
-        // {
-        //   highlight: 'powershell',
-        //   language: 'powershell',
-        //   logoClass: 'powershell',
-        // },
       ],
-      // announcementBar: {
-      //   id: 'announcementBar',
-      //   content: 'Signup for the Hackathon!',
-      // },
     }),
   markdown: {
     mermaid: true,
