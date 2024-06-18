@@ -11,12 +11,14 @@ from src.utils.structured_logger import StructuredLogger, log_duration
 
 logger = StructuredLogger(__name__)
 BATCH_SIZE = 500
-CHALLENGE_COOLDOWN_COMPLETE = "challenge_cooldown_complete"
+CLAIMABLE_REWARD = "claimble_reward"
 START_DATETIME = datetime(2024, 6, 6)
 
 
 def get_cooldown_challenge_notification_group_id(user_id, challenge_id, specifier):
-    return f"{CHALLENGE_COOLDOWN_COMPLETE}:{user_id}:challenge:{challenge_id}:specifier:{specifier}"
+    return (
+        f"{CLAIMABLE_REWARD}:{user_id}:challenge:{challenge_id}:specifier:{specifier}"
+    )
 
 
 @log_duration(logger)
@@ -41,7 +43,7 @@ def _create_engagement_notifications(session):
                 Notification.specifier == UserChallenge.specifier,
                 Notification.group_id
                 == func.concat(
-                    CHALLENGE_COOLDOWN_COMPLETE,
+                    CLAIMABLE_REWARD,
                     ":",
                     func.cast(UserChallenge.user_id, String),
                     ":challenge:",
@@ -72,7 +74,7 @@ def _create_engagement_notifications(session):
             ),
             blocknumber=user_challenge.completed_blocknumber,
             user_ids=[user_challenge.user_id],
-            type=CHALLENGE_COOLDOWN_COMPLETE,
+            type=CLAIMABLE_REWARD,
             data={
                 "specifier": user_challenge.specifier,
                 "challenge_id": user_challenge.challenge_id,
@@ -81,7 +83,7 @@ def _create_engagement_notifications(session):
             timestamp=user_challenge.completed_at,
         )
         new_notifications.append(new_notification)
-    logger.info(f"Inserting {len(new_notifications)} cooldown complete notifications")
+    logger.info(f"Inserting {len(new_notifications)} claimble reward notifications")
     session.add_all(new_notifications)
     session.commit()
 
