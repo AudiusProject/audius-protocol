@@ -25,10 +25,12 @@ const useShowSearchResults = () => {
   const query = urlSearchParams.get('query')
   const genre = urlSearchParams.get('genre')
   const mood = urlSearchParams.get('mood')
+  const bpm = urlSearchParams.get('bpm')
+  const key = urlSearchParams.get('key')
   const isVerified = urlSearchParams.get('isVerified')
   const hasDownloads = urlSearchParams.get('hasDownloads')
 
-  return query || genre || mood || isVerified || hasDownloads
+  return query || genre || mood || isVerified || hasDownloads || bpm || key
 }
 
 export const SearchPageV2 = () => {

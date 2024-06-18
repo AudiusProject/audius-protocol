@@ -97,6 +97,7 @@ export const SearchResults = () => {
   const genre = urlSearchParams.get('genre')
   const mood = urlSearchParams.get('mood')
   const bpm = urlSearchParams.get('bpm')
+  const key = urlSearchParams.get('key')
   const isVerified = urlSearchParams.get('isVerified')
   const hasDownloads = urlSearchParams.get('hasDownloads')
 
@@ -112,11 +113,12 @@ export const SearchResults = () => {
         genre: (genre || undefined) as Genre,
         mood: (mood || undefined) as Mood,
         bpm: bpm || undefined,
+        key: key || undefined,
         isVerified: isVerified === 'true',
         hasDownloads: hasDownloads === 'true'
       })
     )
-  }, [dispatch, query, sort, genre, mood, isVerified, hasDownloads, bpm])
+  }, [dispatch, query, sort, genre, mood, isVerified, hasDownloads, bpm, key])
 
   const isCategoryActive = useCallback(
     (category: Category) => routeMatch?.category === category,

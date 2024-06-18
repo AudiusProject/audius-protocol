@@ -859,6 +859,7 @@ full_search_parser.add_argument(
 )
 full_search_parser.add_argument(
     "key",
+    action="append",
     required=False,
     type=str,
     description="Only include tracks that match the musical key",

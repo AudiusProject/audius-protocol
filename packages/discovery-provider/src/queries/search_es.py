@@ -34,6 +34,32 @@ def get_capitalized_mood(mood):
     return lowercase_to_capitalized_mood.get(mood.lower())
 
 
+def sharp_to_flat(key):
+    sharp_to_flat_mapping = {
+        "C sharp": "D flat",
+        "D sharp": "E flat",
+        "F sharp": "G flat",
+        "G sharp": "A flat",
+        "A sharp": "B flat",
+    }
+
+    # Split the key into root and type (major/minor)
+    key_parts = key.split()
+
+    if len(key_parts) == 2:
+        key_root = key_parts[0]
+        key_type = key_parts[1]
+    if len(key_parts) == 3:
+        key_root = key_parts[0] + " " + key_parts[1]
+        key_type = key_parts[2]
+
+    # Convert sharp keys to flat keys
+    if key_root in sharp_to_flat_mapping:
+        key_root = sharp_to_flat_mapping[key_root]
+
+    return key_root + " " + key_type
+
+
 def search_es_full(args: dict):
     esclient = get_esclient()
     if not esclient:
@@ -51,6 +77,7 @@ def search_es_full(args: dict):
     moods = args.get("moods", [])
     bpm_min = args.get("bpm_min")
     bpm_max = args.get("bpm_max")
+    keys = args.get("keys", [])
     only_verified = args.get("only_verified", False)
     only_with_downloads = args.get("only_with_downloads", False)
     do_tracks = search_type == "all" or search_type == "tracks"
@@ -80,6 +107,7 @@ def search_es_full(args: dict):
                     moods=moods,
                     bpm_min=bpm_min,
                     bpm_max=bpm_max,
+                    keys=keys,
                     only_with_downloads=only_with_downloads,
                 ),
             ]
@@ -391,6 +419,7 @@ def track_dsl(
     include_purchaseable=False,
     genres=[],
     moods=[],
+    keys=[],
     only_with_downloads=False,
 ):
     dsl = {
@@ -487,6 +516,14 @@ def track_dsl(
 
     if bpm_max:
         dsl["filter"].append({"range": {"bpm": {"lte": bpm_max}}})
+
+    if keys:
+        mapped_keys = list(
+            filter(None, [sharp_to_flat(key) for key in keys if key is not None])
+        )
+
+        if mapped_keys:
+            dsl["filter"].append({"terms": {"musical_key": mapped_keys}})
 
     # Only include the track if it is downloadable
     if only_downloadable:

@@ -49,7 +49,7 @@ class FullSearch(Resource):
         moods = args.get("mood")
         is_verified = parse_bool_param(args.get("is_verified"))
         has_downloads = parse_bool_param(args.get("has_downloads"))
-        key = args.get("key")
+        keys = args.get("key")
         bpm_min = args.get("bpm_min")
         bpm_max = args.get("bpm_max")
 
@@ -67,7 +67,7 @@ class FullSearch(Resource):
             "moods": moods,
             "only_verified": is_verified,
             "only_with_downloads": has_downloads,
-            "key": key,
+            "keys": keys,
             "bpm_min": bpm_min,
             "bpm_max": bpm_max,
         }

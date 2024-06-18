@@ -288,6 +288,7 @@ type GetSearchArgs = {
   mood?: Mood
   bpmMin?: number
   bpmMax?: number
+  key?: string
   isVerified?: boolean
   hasDownloads?: boolean
 }
@@ -1134,6 +1135,7 @@ export class AudiusAPIClient {
     mood,
     bpmMin,
     bpmMax,
+    key,
     isVerified,
     hasDownloads
   }: GetSearchArgs) {
@@ -1150,6 +1152,7 @@ export class AudiusAPIClient {
       mood,
       bpm_min: bpmMin,
       bpm_max: bpmMax,
+      key,
       is_verified: isVerified,
       has_downloads: hasDownloads
     }
