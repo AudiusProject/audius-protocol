@@ -45,6 +45,7 @@ export class TrackIndexer extends BaseIndexer<TrackDoc> {
         is_unlisted: { type: 'boolean' },
         downloadable: { type: 'boolean' },
         purchaseable: { type: 'boolean' },
+        purchaseable_download: { type: 'boolean' },
         has_stems: { type: 'boolean' },
         bpm: { type: 'float' },
         musical_key: { type: 'keyword' },
@@ -102,6 +103,10 @@ export class TrackIndexer extends BaseIndexer<TrackDoc> {
         is not null then true
         else false
       end as purchaseable,
+      case when tracks.download_conditions->>'usdc_purchase'
+        is not null then true
+        else false
+      end as purchaseable_download,
       tracks.is_downloadable as downloadable,
       coalesce(aggregate_plays.count, 0) as play_count,
   
@@ -151,7 +156,7 @@ export class TrackIndexer extends BaseIndexer<TrackDoc> {
           stem_track.is_delete = false
           and stems.parent_track_id = tracks.track_id
       ) as stem_ids
-    
+
     from tracks
       join users on owner_id = user_id 
       left join aggregate_user on users.user_id = aggregate_user.user_id

@@ -547,7 +547,16 @@ def track_dsl(
         )
 
     if only_purchaseable:
-        dsl["must"].append({"term": {"purchaseable": {"value": True}}})
+        dsl["must"].append(
+            {
+                "bool": {
+                    "should": [
+                        {"term": {"purchaseable": {"value": True}}},
+                        {"term": {"purchaseable_download": {"value": True}}},
+                    ]
+                }
+            }
+        )
 
     if not include_purchaseable:
         dsl["must_not"].append({"term": {"purchaseable": {"value": True}}})
