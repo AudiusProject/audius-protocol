@@ -24,13 +24,13 @@
     "cors": "2.8.5",
     "dotenv": "16.1.4",
     "envalid": "7.3.1",
-    "ethers": "5.7.2",
     "express": "4.17.1",
+    "fast-json-stable-stringify": "^2.1.0",
     "knex": "2.4.2",
-    "lodash": "4.17.21",
     "morgan": "1.10.0",
     "pino": "8.16.1",
-    "redis": "4.6.11"
+    "redis": "4.6.11",
+    "web3": "1.9.0"
   },
   "devDependencies": {
     "@types/body-parser": "1.19.0",

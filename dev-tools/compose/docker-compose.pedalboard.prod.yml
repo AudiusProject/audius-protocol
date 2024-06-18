@@ -148,6 +148,6 @@ services:
       dockerfile: ${PROJECT_ROOT}/packages/discovery-provider/plugins/pedalboard/docker/Dockerfile.prod
       args:
         app_name: backfill-audio-analyses
-    restart: always
+    restart: on-failure
     profiles:
       - pedalboard
