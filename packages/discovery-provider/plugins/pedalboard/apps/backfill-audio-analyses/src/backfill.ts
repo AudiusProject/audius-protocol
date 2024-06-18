@@ -33,32 +33,48 @@ async function generateSignature(data: any, privateKey: string) {
   // sort keys and stringify data
   const dataStr = stringify(data)
   const toSignHash = web3.utils.keccak256(dataStr)
-  const signedMessage = await web3.eth.accounts.sign(
-    toSignHash,
-    privateKey
-  )
+  const signedMessage = await web3.eth.accounts.sign(toSignHash, privateKey)
   return signedMessage.signature
+}
+
+function formatErrorLog(
+  message: string,
+  track: Track,
+  node: string,
+  attemptNo: number
+): string {
+  let errLog = `Error triggering audio analysis on ${node}: ${message}. Attempt #${attemptNo} to trigger audio analysis for track ID ${track.track_id}, track CID ${track.track_cid}`
+  if (track.audio_upload_id) {
+    errLog += `, upload ID ${track.audio_upload_id}`
+  }
+  if (attemptNo < 5) {
+    errLog += '. Trying another content node...'
+  } else {
+    errLog += '. Skipping track...'
+  }
+  return errLog
 }
 
 async function analyzeAudio(
   contentNodes: string[],
   track: Track
 ): Promise<void> {
-  const audioUploadId = track.audio_upload_id || ""
+  const audioUploadId = track.audio_upload_id || ''
   const trackCid = track.track_cid
   // only analyze streamable tracks
   if (!trackCid) return
-  const isLegacyTrack = !audioUploadId && trackCid.startsWith("Qm")
+  const isLegacyTrack = !audioUploadId && trackCid.startsWith('Qm')
 
   const release = await semaphore.acquire() // acquire a semaphore permit
 
   // allow up to 5 attempts to trigger audio analysis for this track
   for (let i = 0; i < 5; i++) {
     // choose a random content node
-    const contentNode = contentNodes[Math.floor(Math.random() * contentNodes.length)]
+    const contentNode =
+      contentNodes[Math.floor(Math.random() * contentNodes.length)]
     try {
       let analysisUrl = `${contentNode}/uploads/${audioUploadId}/analyze`
-      let cid = ""
+      let cid = ''
       if (isLegacyTrack) {
         analysisUrl = `${contentNode}/tracks/legacy/${trackCid}/analyze`
         cid = trackCid
@@ -70,14 +86,19 @@ async function analyzeAudio(
         shouldCache: 1,
         timestamp,
         trackId: track.track_id,
-        userId: 0,
+        userId: 0
       }
-      const signature = await generateSignature(dataToSign, config.delegatePrivateKey)
+      const signature = await generateSignature(
+        dataToSign,
+        config.delegatePrivateKey
+      )
       const signatureEnvelope = {
         data: JSON.stringify(dataToSign),
         signature: signature
       }
-      const queryParams = new URLSearchParams({ signature: JSON.stringify(signatureEnvelope) })
+      const queryParams = new URLSearchParams({
+        signature: JSON.stringify(signatureEnvelope)
+      })
 
       const response = await axios.post(
         `${analysisUrl}?${queryParams.toString()}`,
@@ -86,28 +107,26 @@ async function analyzeAudio(
       )
       if (response.status == 200) {
         console.log(
-          `Successfully triggered audio analysis for track ID ${track.track_id}, track CID ${trackCid}, upload ID ${audioUploadId} via ${contentNode}`
+          `Successfully triggered audio analysis for track ID ${
+            track.track_id
+          }, track CID ${trackCid}${
+            audioUploadId ? `, upload ID: ${audioUploadId}` : ''
+          } via ${contentNode}`
         )
         break
       } else {
         console.log(
-          `Error triggering audio analysis on ${contentNode}: Received ${response.status} response. Attempt #${i+1} to trigger audio analysis for track ID ${track.track_id}, track CID ${trackCid}, upload ID ${audioUploadId}. Trying another content node...`
+          formatErrorLog(
+            `Received ${response.status} response`,
+            track,
+            contentNode,
+            i + 1
+          )
         )
         continue
       }
     } catch (error: any) {
-      if (error.isAxiosError !== undefined && error.code === 'ECONNABORTED') {
-        // timeout
-        console.log(
-          `Timeout error triggering audio analysis on ${contentNode}: ${error.message}. Attempt #${i+1} to trigger audio analysis for track ID ${track.track_id}, track CID ${trackCid}, upload ID ${audioUploadId}. Trying another content node...`
-        )
-      } else {
-        console.log(
-          `Error triggering audio analysis for track ID ${track.track_id}, track CID ${trackCid}, upload ID ${
-            audioUploadId
-          }: ${(error as Error).message}. Trying another content node...`
-        )
-      }
+      console.log(formatErrorLog(error.message, track, contentNode, i + 1))
       continue
     }
   }
@@ -151,16 +170,17 @@ async function processBatches(db: any, batchSize: number): Promise<void> {
       break
     }
     const analyzePromises = tracks.map((track) =>
-      analyzeAudio(contentNodes.map((node) => node.endpoint), track)
+      analyzeAudio(
+        contentNodes.map((node) => node.endpoint),
+        track
+      )
     )
     await Promise.all(analyzePromises)
 
     offset += batchSize
     await storeDbOffset(offset)
     console.timeEnd('Batch processing time')
-    console.log(
-      `Triggered audio analyses for ${tracks.length} tracks. New offset: ${offset}`
-    )
+    console.log(`Processed ${tracks.length} tracks. New offset: ${offset}`)
 
     if (config.testRun) {
       console.log(
@@ -178,6 +198,10 @@ async function processBatches(db: any, batchSize: number): Promise<void> {
 }
 
 export const backfill = async (app: App<SharedData>) => {
+  if (!config.delegatePrivateKey) {
+    console.error('Missing required delegate private key. Terminating...')
+    return
+  }
   const db = app.getDnDb()
   const BACKFILL_BATCH_SIZE = config.testRun ? 100 : 1000
   await processBatches(db, BACKFILL_BATCH_SIZE)
