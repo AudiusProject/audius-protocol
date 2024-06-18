@@ -262,6 +262,7 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	echoServer.Use(middleware.Recover())
 	echoServer.Use(middleware.Logger())
 	echoServer.Use(middleware.CORS())
+	echoServer.Use(timingMiddleware)
 
 	ss := &MediorumServer{
 		echo:             echoServer,
@@ -407,6 +408,27 @@ func ACAOHeaderOverwriteMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 			setResponseACAOHeaderFromRequest(*ctx.Request(), *ctx.Response())
 		})
 		return next(ctx)
+	}
+}
+
+func timingMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		startTime := time.Now()
+		c.Set("startTime", startTime)
+		c.Response().Before(func() {
+			c.Response().Header().Set("x-took", time.Since(startTime).String())
+		})
+		return next(c)
+	}
+}
+
+// Calling echo response functions (c.JSON or c.String)
+// will automatically set timing header in timingMiddleware.
+// But for places where we do http.ServeContent
+// we have to manually call setTimingHeader right before writing response.
+func setTimingHeader(c echo.Context) {
+	if startTime, ok := c.Get("startTime").(time.Time); ok {
+		c.Response().Header().Set("x-took", time.Since(startTime).String())
 	}
 }
 
