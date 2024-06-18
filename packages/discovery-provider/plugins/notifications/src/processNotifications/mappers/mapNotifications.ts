@@ -258,16 +258,11 @@ const mapNotification = (
       identityDb,
       approveManagerNotification
     )
-  } else if (notification.type === 'challenge_cooldown_complete') {
-    const challengeCooldownCompleteNotification =
-      notification as NotificationRow & {
-        data: ChallengeCooldownCompleteNotification
-      }
-    return new ClaimableReward(
-      dnDb,
-      identityDb,
-      challengeCooldownCompleteNotification
-    )
+  } else if (notification.type === 'claimable_reward') {
+    const claimableRewardNotification = notification as NotificationRow & {
+      data: ClaimableRewardNotification
+    }
+    return new ClaimableReward(dnDb, identityDb, claimableRewardNotification)
   } else if (
     notification.type == DMEntityType.Message ||
     notification.type == DMEntityType.Reaction
