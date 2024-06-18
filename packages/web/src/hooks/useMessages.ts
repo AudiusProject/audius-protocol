@@ -1,12 +1,13 @@
 import { useFeatureFlag } from '@audius/common/hooks'
 import { FeatureFlags } from '@audius/common/services'
 import { merge } from 'lodash'
-
 export const useMessages = <
   A extends Record<string, unknown>,
   B extends Record<string, unknown>
 >(
+  // prioritized when the feature flag is off
   messages1: A,
+  // prioritized when the feature flag is on
   messages2: B,
   flag: FeatureFlags
 ) => {
