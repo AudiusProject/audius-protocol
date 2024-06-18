@@ -46,6 +46,8 @@ export class TrackIndexer extends BaseIndexer<TrackDoc> {
         downloadable: { type: 'boolean' },
         purchaseable: { type: 'boolean' },
         has_stems: { type: 'boolean' },
+        bpm: { type: 'float' },
+        musical_key: { type: 'keyword' },
 
         // saves
         saved_by: { type: 'keyword' },

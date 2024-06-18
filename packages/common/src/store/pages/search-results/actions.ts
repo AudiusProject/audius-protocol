@@ -70,6 +70,7 @@ type FetchSearchPageResultsArgs = {
   offset: number
   genre?: Genre
   mood?: Mood
+  bpm?: string
   isVerified?: boolean
   hasDownloads?: boolean
 }

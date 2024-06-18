@@ -108,6 +108,7 @@ type GetSearchResultsArgs = {
   offset: number
   genre?: Genre
   mood?: Mood
+  bpm?: string
   isVerified?: boolean
   hasDownloads?: boolean
 }
@@ -119,6 +120,7 @@ export function* getSearchResults({
   offset,
   genre,
   mood,
+  bpm,
   isVerified,
   hasDownloads
 }: GetSearchResultsArgs) {
@@ -131,6 +133,25 @@ export function* getSearchResults({
 
   const apiClient = yield* getContext('apiClient')
   const userId = yield* select(getUserId)
+  const bpmParts = bpm ? bpm.split('-') : [undefined, undefined]
+  const bpmMin = bpmParts[0] ? parseFloat(bpmParts[0]) : undefined
+  const bpmMax = bpmParts[1] ? parseFloat(bpmParts[1]) : bpmMin
+
+  apiClient.getSearchFull({
+    currentUserId: userId,
+    query: searchText,
+    kind,
+    limit,
+    offset,
+    includePurchaseable: isUSDCEnabled,
+    genre,
+    mood,
+    bpmMin,
+    bpmMax,
+    isVerified,
+    hasDownloads
+  })
+
   const results = yield* call([apiClient, 'getSearchFull'], {
     currentUserId: userId,
     query: searchText,
@@ -140,6 +161,8 @@ export function* getSearchResults({
     includePurchaseable: isUSDCEnabled,
     genre,
     mood,
+    bpmMin,
+    bpmMax,
     isVerified,
     hasDownloads
   })

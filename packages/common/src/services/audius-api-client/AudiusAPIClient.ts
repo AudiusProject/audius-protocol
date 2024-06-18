@@ -286,6 +286,8 @@ type GetSearchArgs = {
   includePurchaseable?: boolean
   genre?: Genre
   mood?: Mood
+  bpmMin?: number
+  bpmMax?: number
   isVerified?: boolean
   hasDownloads?: boolean
 }
@@ -1130,6 +1132,8 @@ export class AudiusAPIClient {
     includePurchaseable,
     genre,
     mood,
+    bpmMin,
+    bpmMax,
     isVerified,
     hasDownloads
   }: GetSearchArgs) {
@@ -1144,6 +1148,8 @@ export class AudiusAPIClient {
       includePurchaseable,
       genre,
       mood,
+      bpm_min: bpmMin,
+      bpm_max: bpmMax,
       is_verified: isVerified,
       has_downloads: hasDownloads
     }

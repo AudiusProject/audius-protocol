@@ -49,6 +49,8 @@ def search_es_full(args: dict):
     include_purchaseable = args.get("include_purchaseable", False)
     genres = args.get("genres", [])
     moods = args.get("moods", [])
+    bpm_min = args.get("bpm_min")
+    bpm_max = args.get("bpm_max")
     only_verified = args.get("only_verified", False)
     only_with_downloads = args.get("only_with_downloads", False)
     do_tracks = search_type == "all" or search_type == "tracks"
@@ -76,6 +78,8 @@ def search_es_full(args: dict):
                     include_purchaseable=include_purchaseable,
                     genres=genres,
                     moods=moods,
+                    bpm_min=bpm_min,
+                    bpm_max=bpm_max,
                     only_with_downloads=only_with_downloads,
                 ),
             ]
@@ -380,6 +384,8 @@ def default_function_score(dsl, ranking_field, factor=0.1):
 def track_dsl(
     search_str,
     current_user_id,
+    bpm_min,
+    bpm_max,
     must_saved=False,
     only_downloadable=False,
     include_purchaseable=False,
@@ -475,6 +481,12 @@ def track_dsl(
 
         if capitalized_moods:
             dsl["filter"].append({"terms": {"mood": capitalized_moods}})
+
+    if bpm_min:
+        dsl["filter"].append({"range": {"bpm": {"gte": bpm_min}}})
+
+    if bpm_max:
+        dsl["filter"].append({"range": {"bpm": {"lte": bpm_max}}})
 
     # Only include the track if it is downloadable
     if only_downloadable:
