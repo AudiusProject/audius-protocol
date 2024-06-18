@@ -28,6 +28,7 @@ export type PlaylistDoc = PlaylistRow & {
   total_play_count: number
   user: EntityUserDoc
   dominant_mood: string
+  purchaseable: boolean
 }
 
 export type UserDoc = UserRow & {

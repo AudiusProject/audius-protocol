@@ -74,6 +74,7 @@ type FetchSearchPageResultsArgs = {
   key?: string
   isVerified?: boolean
   hasDownloads?: boolean
+  isPremium?: boolean
 }
 
 export const fetchSearchPageResults = (

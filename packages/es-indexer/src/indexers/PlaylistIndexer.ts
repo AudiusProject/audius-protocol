@@ -53,6 +53,7 @@ export class PlaylistIndexer extends BaseIndexer<PlaylistDoc> {
           },
         },
         'playlist_contents.track_ids.track': { type: 'keyword' },
+        purchaseable: { type: 'boolean' },
 
         user: {
           properties: {
@@ -105,6 +106,10 @@ export class PlaylistIndexer extends BaseIndexer<PlaylistDoc> {
       -- etl playlists
       select 
         playlists.*,
+        case when playlists.stream_conditions->>'usdc_purchase'
+          is not null then true
+          else false
+        end as purchaseable,
 
         json_build_object(
           'handle', users.handle,

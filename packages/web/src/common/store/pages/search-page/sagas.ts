@@ -112,6 +112,7 @@ type GetSearchResultsArgs = {
   key?: string
   isVerified?: boolean
   hasDownloads?: boolean
+  isPremium?: boolean
 }
 
 export function* getSearchResults({
@@ -124,7 +125,8 @@ export function* getSearchResults({
   bpm,
   key,
   isVerified,
-  hasDownloads
+  hasDownloads,
+  isPremium
 }: GetSearchResultsArgs) {
   yield* waitForRead()
   const getFeatureEnabled = yield* getContext('getFeatureEnabled')
@@ -160,7 +162,8 @@ export function* getSearchResults({
     bpmMax,
     key: formatKey(key),
     isVerified,
-    hasDownloads
+    hasDownloads,
+    isPremium
   })
   const { tracks, albums, playlists, users } = results
 

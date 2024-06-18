@@ -49,6 +49,7 @@ class FullSearch(Resource):
         moods = args.get("mood")
         is_verified = parse_bool_param(args.get("is_verified"))
         has_downloads = parse_bool_param(args.get("has_downloads"))
+        is_purchaseable = parse_bool_param(args.get("is_purchaseable"))
         keys = args.get("key")
         bpm_min = args.get("bpm_min")
         bpm_max = args.get("bpm_max")
@@ -63,6 +64,7 @@ class FullSearch(Resource):
             "offset": offset,
             "only_downloadable": False,
             "include_purchaseable": include_purchaseable,
+            "only_purchaseable": is_purchaseable,
             "genres": genres,
             "moods": moods,
             "only_verified": is_verified,

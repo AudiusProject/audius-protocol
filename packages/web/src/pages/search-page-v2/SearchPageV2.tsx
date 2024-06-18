@@ -29,8 +29,18 @@ const useShowSearchResults = () => {
   const key = urlSearchParams.get('key')
   const isVerified = urlSearchParams.get('isVerified')
   const hasDownloads = urlSearchParams.get('hasDownloads')
+  const isPremium = urlSearchParams.get('isPremium')
 
-  return query || genre || mood || isVerified || hasDownloads || bpm || key
+  return (
+    query ||
+    genre ||
+    mood ||
+    isVerified ||
+    hasDownloads ||
+    bpm ||
+    key ||
+    isPremium
+  )
 }
 
 export const SearchPageV2 = () => {

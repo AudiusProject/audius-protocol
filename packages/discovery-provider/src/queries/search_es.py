@@ -80,6 +80,7 @@ def search_es_full(args: dict):
     keys = args.get("keys", [])
     only_verified = args.get("only_verified", False)
     only_with_downloads = args.get("only_with_downloads", False)
+    only_purchaseable = args.get("only_purchaseable", False)
     do_tracks = search_type == "all" or search_type == "tracks"
     do_users = search_type == "all" or search_type == "users"
     do_playlists = search_type == "all" or search_type == "playlists"
@@ -109,6 +110,7 @@ def search_es_full(args: dict):
                     bpm_max=bpm_max,
                     keys=keys,
                     only_with_downloads=only_with_downloads,
+                    only_purchaseable=only_purchaseable,
                 ),
             ]
         )
@@ -152,6 +154,7 @@ def search_es_full(args: dict):
                     current_user_id=current_user_id,
                     genres=genres,
                     moods=moods,
+                    only_purchaseable=only_purchaseable,
                 ),
             ]
         )
@@ -416,6 +419,7 @@ def track_dsl(
     bpm_max,
     must_saved=False,
     only_downloadable=False,
+    only_purchaseable=False,
     include_purchaseable=False,
     genres=[],
     moods=[],
@@ -541,6 +545,9 @@ def track_dsl(
                 }
             }
         )
+
+    if only_purchaseable:
+        dsl["must"].append({"term": {"purchaseable": {"value": True}}})
 
     if not include_purchaseable:
         dsl["must_not"].append({"term": {"purchaseable": {"value": True}}})
@@ -732,7 +739,13 @@ def user_dsl(
 
 
 def base_playlist_dsl(
-    search_str, is_album, genres, moods, current_user_id, must_saved=False
+    search_str,
+    is_album,
+    genres,
+    moods,
+    only_purchaseable,
+    current_user_id,
+    must_saved=False,
 ):
     dsl = {
         "must": [
@@ -848,6 +861,9 @@ def base_playlist_dsl(
                 }
             )
 
+    if only_purchaseable:
+        dsl["must"].append({"term": {"purchaseable": {"value": True}}})
+
     if moods:
         capitalized_moods = list(
             filter(
@@ -890,13 +906,20 @@ def base_playlist_dsl(
 
 def playlist_dsl(search_str, current_user_id, must_saved=False, genres=[], moods=[]):
     return base_playlist_dsl(
-        search_str, False, genres, moods, current_user_id, must_saved
+        search_str, False, genres, moods, False, current_user_id, must_saved
     )
 
 
-def album_dsl(search_str, current_user_id, must_saved=False, genres=[], moods=[]):
+def album_dsl(
+    search_str,
+    current_user_id,
+    only_purchaseable,
+    must_saved=False,
+    genres=[],
+    moods=[],
+):
     return base_playlist_dsl(
-        search_str, True, genres, moods, current_user_id, must_saved
+        search_str, True, genres, moods, only_purchaseable, current_user_id, must_saved
     )
 
 

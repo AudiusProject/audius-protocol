@@ -858,6 +858,12 @@ full_search_parser.add_argument(
     description="Only include tracks that have downloads in the track results",
 )
 full_search_parser.add_argument(
+    "is_purchaseable",
+    required=False,
+    type=str,
+    description="Only include purchaseable tracks and albums in the track and album results",
+)
+full_search_parser.add_argument(
     "key",
     action="append",
     required=False,
