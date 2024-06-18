@@ -138,9 +138,11 @@ export const createUploadTrackMetadataSchema = () =>
     ),
     stemOf: z.optional(
       z.object({
-        category: z.enum(
-          Object.values(StemCategory) as [StemCategory, ...StemCategory[]]
-        ),
+        category: z
+          .enum(
+            Object.values(StemCategory) as [StemCategory, ...StemCategory[]]
+          )
+          .default(StemCategory.OTHER),
         parentTrackId: HashId
       })
     ),

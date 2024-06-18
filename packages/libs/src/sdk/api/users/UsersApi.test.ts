@@ -43,6 +43,9 @@ jest.spyOn(Storage.prototype, 'uploadFile').mockImplementation(async () => {
     results: {
       '320': 'a'
     },
+    orig_file_cid:
+      'baeaaaiqsea7fukrfrjrugqts6jqfmqhcb5ruc5pjmdk3anj7amoht4d4gemvq',
+    orig_filename: 'file.wav',
     probe: {
       format: {
         duration: '10'
