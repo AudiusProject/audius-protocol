@@ -9,12 +9,12 @@ import { Flex, Text } from '@audius/harmony'
 import { Form, Formik } from 'formik'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
-import { AccessAndSaleField } from 'components/edit/fields/AccessAndSaleField'
 import { CollectionTrackFieldArray } from 'components/edit/fields/CollectionTrackFieldArray'
 import { ReleaseDateFieldLegacy } from 'components/edit/fields/ReleaseDateFieldLegacy'
 import { SelectGenreField } from 'components/edit/fields/SelectGenreField'
 import { SelectMoodField } from 'components/edit/fields/SelectMoodField'
 import { StemsAndDownloadsCollectionField } from 'components/edit/fields/StemsAndDownloadsCollectionsField'
+import { PriceAndAudienceField } from 'components/edit/fields/price-and-audience'
 import { VisibilityField } from 'components/edit/fields/visibility/VisibilityField'
 import {
   ArtworkField,
@@ -100,7 +100,7 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
           )}
           {isAlbum && showPremiumAlbums ? (
             <Flex w='100%' css={{ flexGrow: 1 }}>
-              <AccessAndSaleField isAlbum isUpload />
+              <PriceAndAudienceField isAlbum isUpload />
             </Flex>
           ) : null}
           <div className={styles.trackDetails}>
