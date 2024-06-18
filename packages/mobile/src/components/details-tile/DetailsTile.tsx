@@ -377,12 +377,14 @@ export const DetailsTile = ({
         ) : null}
         {!isPublished ? null : (
           <DetailsTileStats
+            playCount={playCount}
+            hidePlayCount={hidePlayCount}
             favoriteCount={saveCount}
             hideFavoriteCount={hideFavoriteCount}
+            repostCount={repostCount}
             hideRepostCount={hideRepostCount}
             onPressFavorites={onPressFavorites}
             onPressReposts={onPressReposts}
-            repostCount={repostCount}
           />
         )}
         {description ? (
