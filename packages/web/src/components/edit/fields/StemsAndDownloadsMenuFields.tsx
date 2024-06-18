@@ -17,11 +17,11 @@ import { Divider } from 'components/divider'
 import { processFiles } from 'pages/upload-page/store/utils/processFiles'
 import { stemDropdownRows } from 'utils/stems'
 
-import { USDCPurchaseRemoteConfig } from './AccessAndSaleField'
 import { StemFilesView } from './StemFilesView'
 import styles from './StemsAndDownloadsField.module.css'
 import { SwitchRowField } from './SwitchRowField'
 import { DownloadAvailability } from './download-availability/DownloadAvailability'
+import { USDCPurchaseRemoteConfig } from './price-and-audience/priceAndAudienceSchema'
 import {
   IS_DOWNLOAD_GATED,
   DOWNLOAD_CONDITIONS,

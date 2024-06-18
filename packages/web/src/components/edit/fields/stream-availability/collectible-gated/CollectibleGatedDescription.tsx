@@ -1,17 +1,19 @@
 import {
+  Box,
   Flex,
   Hint,
   IconExternalLink,
   IconQuestionCircle,
+  PlainButton,
   Text
 } from '@audius/harmony'
 
-import { ExternalTextLink } from 'components/link'
+import { ExternalLink } from 'components/link'
 import { AUDIUS_GATED_CONTENT_BLOG_LINK } from 'utils/route'
 
 const messages = {
   collectibleGatedSubtitle:
-    'Users who own a digital collectible matching your selection will have access to your track. Collectible gated content does not appear on trending or in user feeds.',
+    'Only fans who own a specific, digital collectible can play your track. (These tracks remain hidden from trending lists and user feeds.)',
   noCollectibles:
     'No Collectibles found. To enable this option, link a wallet containing a collectible.',
   learnMore: 'Learn More'
@@ -35,9 +37,13 @@ export const CollectibleGatedDescription = (
       {!hasCollectibles && isUpload ? (
         <Hint icon={IconQuestionCircle}>{helpContent}</Hint>
       ) : null}
-      <ExternalTextLink to={AUDIUS_GATED_CONTENT_BLOG_LINK}>
-        {messages.learnMore} <IconExternalLink size='s' color='default' />
-      </ExternalTextLink>
+      <Box>
+        <PlainButton iconRight={IconExternalLink} variant='subdued' asChild>
+          <ExternalLink to={AUDIUS_GATED_CONTENT_BLOG_LINK}>
+            {messages.learnMore}
+          </ExternalLink>
+        </PlainButton>
+      </Box>
     </Flex>
   )
 }

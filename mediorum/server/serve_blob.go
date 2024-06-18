@@ -205,6 +205,7 @@ func (ss *MediorumServer) serveBlob(c echo.Context) error {
 		}
 		// track metrics in separate threads
 		go ss.logTrackListen(c)
+		setTimingHeader(c)
 		go ss.recordMetric(StreamTrack)
 
 		// stream audio
@@ -221,7 +222,7 @@ func (ss *MediorumServer) serveBlob(c echo.Context) error {
 		go ss.recordMetric(ServeImage)
 		return c.Blob(200, blob.ContentType(), blobData)
 	}
-	
+
 }
 
 func (ss *MediorumServer) recordMetric(action string) {
