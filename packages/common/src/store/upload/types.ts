@@ -40,7 +40,7 @@ export interface TrackForUpload {
  * files: artwork and a stems field with StemsForUpload.
  */
 export interface TrackMetadataForUpload extends TrackMetadata {
-  artwork: Nullable<{
+  artwork?: Nullable<{
     file?: Blob | NativeFile
     url: string
     source?: string

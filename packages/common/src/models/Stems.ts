@@ -1,5 +1,5 @@
-import { TrackMetadataForUpload } from '~/store'
 import { Nullable } from '~/utils'
+
 import { TrackMetadata } from './Track'
 
 export enum StemCategory {

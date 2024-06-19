@@ -8,7 +8,6 @@ import {
   ID,
   Remix,
   TrackMetadata,
-  Stem,
   StemUploadWithFile
 } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
