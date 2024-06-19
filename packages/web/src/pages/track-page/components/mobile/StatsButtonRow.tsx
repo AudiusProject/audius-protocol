@@ -1,17 +1,11 @@
 import { formatCount } from '@audius/common/utils'
-import {
-  Flex,
-  IconHeart as IconFavorite,
-  IconPlay,
-  IconRepost
-} from '@audius/harmony'
+import { IconHeart as IconFavorite, IconRepost } from '@audius/harmony'
 import cn from 'classnames'
 
 import styles from './StatsButtonRow.module.css'
 
 const messages = {
-  reposts: 'Reposts',
-  favorites: 'Favorites'
+  plays: 'Plays'
 }
 
 type StatsButtonRowProps = {
@@ -38,13 +32,11 @@ const StatsButtonRow = ({
   onClickReposts,
   listenCount = 0
 }: StatsButtonRowProps) => {
-  if (!showListenCount && !showFavoriteCount && !showRepostCount) return null
-
   const renderListenCount = () => {
     return (
       <div className={cn(styles.countContainer, styles.listenCount)}>
-        <IconPlay />
         <span className={styles.count}>{formatCount(listenCount)}</span>
+        <span className={styles.countLabel}>{messages.plays}</span>
       </div>
     )
   }
@@ -52,9 +44,8 @@ const StatsButtonRow = ({
   const renderFavoriteCount = () => {
     return (
       <div className={styles.countContainer} onClick={onClickFavorites}>
-        <IconFavorite />
         <span className={styles.count}>{formatCount(favoriteCount)}</span>
-        <span className={styles.countLabel}>{messages.favorites}</span>
+        <IconFavorite />
       </div>
     )
   }
@@ -62,19 +53,22 @@ const StatsButtonRow = ({
   const renderRepostCount = () => {
     return (
       <div className={styles.countContainer} onClick={onClickReposts}>
-        <IconRepost />
         <span className={styles.count}>{formatCount(repostCount)}</span>
-        <span className={styles.countLabel}>{messages.reposts}</span>
+        <IconRepost />
       </div>
     )
   }
 
   return (
-    <Flex gap='xl' className={className} justifyContent='flex-start'>
-      {showListenCount && renderListenCount()}
-      {showRepostCount && renderRepostCount()}
-      {showFavoriteCount && renderFavoriteCount()}
-    </Flex>
+    <>
+      {(showListenCount || showFavoriteCount || showRepostCount) && (
+        <div className={cn(styles.statsContainer, className)}>
+          {showListenCount && renderListenCount()}
+          {showFavoriteCount && renderFavoriteCount()}
+          {showRepostCount && renderRepostCount()}
+        </div>
+      )}
+    </>
   )
 }
 

@@ -9,6 +9,7 @@ import {
   Remix,
   AccessConditions
 } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import {
   cacheTracksSelectors,
   publishTrackConfirmationModalUIActions,
@@ -17,6 +18,9 @@ import {
 } from '@audius/common/store'
 import {
   Genre,
+  getCanonicalName,
+  formatSeconds,
+  formatDate,
   getDogEarType,
   Nullable,
   formatReleaseDate
@@ -37,11 +41,13 @@ import IconCalendarMonth from '@audius/harmony/src/assets/icons/CalendarMonth.sv
 import IconRobot from '@audius/harmony/src/assets/icons/Robot.svg'
 import IconTrending from '@audius/harmony/src/assets/icons/Trending.svg'
 import IconVisibilityHidden from '@audius/harmony/src/assets/icons/VisibilityHidden.svg'
+import { Mood } from '@audius/sdk'
 import cn from 'classnames'
 import dayjs from 'dayjs'
 import { useDispatch, shallowEqual, useSelector } from 'react-redux'
+import { generatePath } from 'react-router-dom'
 
-import { UserLink } from 'components/link'
+import { TextLink, UserLink } from 'components/link'
 import Menu from 'components/menu/Menu'
 import RepostFavoritesStats from 'components/repost-favorites-stats/RepostFavoritesStats'
 import { SearchTag } from 'components/search/SearchTag'
@@ -51,6 +57,10 @@ import Toast from 'components/toast/Toast'
 import Tooltip from 'components/tooltip/Tooltip'
 import { ComponentPlacement } from 'components/types'
 import { UserGeneratedText } from 'components/user-generated-text'
+import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
+import { moodMap } from 'utils/Moods'
+import { SEARCH_PAGE } from 'utils/route'
+import { trpc } from 'utils/trpcClientWeb'
 
 import { AiTrackSection } from './AiTrackSection'
 import { CardTitle } from './CardTitle'
@@ -58,8 +68,8 @@ import { GatedContentSection } from './GatedContentSection'
 import GiantArtwork from './GiantArtwork'
 import styles from './GiantTrackTile.module.css'
 import { GiantTrackTileProgressInfo } from './GiantTrackTileProgressInfo'
+import { InfoLabel } from './InfoLabel'
 import { PlayPauseButton } from './PlayPauseButton'
-import { TrackMetadataList } from './TrackMetadataList'
 
 const DownloadSection = lazy(() =>
   import('./DownloadSection').then((module) => ({
@@ -153,6 +163,7 @@ export const GiantTrackTile = ({
   trendingBadgeLabel,
   coSign,
   coverArtSizes,
+  credits,
   description,
   hasStreamAccess,
   duration,
@@ -170,6 +181,7 @@ export const GiantTrackTile = ({
   isUnlisted,
   listenCount,
   loading,
+  mood,
   onClickFavorites,
   onClickReposts,
   onFollow,
@@ -200,6 +212,10 @@ export const GiantTrackTile = ({
   )
   const isLongFormContent =
     genre === Genre.PODCASTS || genre === Genre.AUDIOBOOKS
+  const isNewPodcastControlsEnabled = getFeatureEnabled(
+    FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
+    FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
+  )
   const isUSDCPurchaseGated = isContentUSDCPurchaseGated(streamConditions)
   const track = useSelector(
     (state: CommonState) => getTrack(state, { id: trackId }),
@@ -214,6 +230,11 @@ export const GiantTrackTile = ({
   const showPlay = isUSDCPurchaseGated ? hasStreamAccess : true
   const isPlaylistAddable = useIsGatedContentPlaylistAddable(track)
   const shouldShowScheduledRelease = dayjs(releaseDate).isAfter(dayjs())
+  const { data: albumInfo } = trpc.tracks.getAlbumBacklink.useQuery(
+    { trackId },
+    { enabled: !!trackId }
+  )
+
   const renderCardTitle = (className: string) => {
     return (
       <CardTitle
@@ -341,6 +362,50 @@ export const GiantTrackTile = ({
     )
   }
 
+  const renderMood = () => {
+    const shouldShow = !isUnlisted || fieldVisibility.mood
+    return (
+      shouldShow &&
+      mood && (
+        <InfoLabel
+          labelName='mood'
+          labelValue={
+            <TextLink
+              to={{
+                pathname: generatePath(SEARCH_PAGE, { category: 'tracks' }),
+                search: new URLSearchParams({ mood }).toString()
+              }}
+            >
+              {mood in moodMap ? moodMap[mood as Mood] : mood}
+            </TextLink>
+          }
+        />
+      )
+    )
+  }
+
+  const renderGenre = () => {
+    const shouldShow = !isUnlisted || fieldVisibility.genre
+
+    return (
+      shouldShow && (
+        <InfoLabel
+          labelName='genre'
+          labelValue={
+            <TextLink
+              to={{
+                pathname: generatePath(SEARCH_PAGE, { category: 'tracks' }),
+                search: new URLSearchParams({ genre }).toString()
+              }}
+            >
+              {getCanonicalName(genre)}
+            </TextLink>
+          }
+        />
+      )
+    )
+  }
+
   const renderListenCount = () => {
     const shouldShow = isOwner || (!isStreamGated && !isUnlisted)
 
@@ -384,9 +449,36 @@ export const GiantTrackTile = ({
     )
   }
 
+  const renderAlbum = () => {
+    if (!albumInfo) return null
+    return (
+      <InfoLabel
+        labelName='album'
+        labelValue={
+          <TextLink to={albumInfo.permalink}>
+            {albumInfo.playlist_name}
+          </TextLink>
+        }
+      />
+    )
+  }
+
+  const renderReleased = () => {
+    return (
+      !isUnlisted &&
+      releaseDate && (
+        <InfoLabel labelName='released' labelValue={formatDate(releaseDate)} />
+      )
+    )
+  }
+
   const renderStatsRow = () => {
     const isLongFormContent =
       genre === Genre.PODCASTS || genre === Genre.AUDIOBOOKS
+    const isNewPodcastControlsEnabled = getFeatureEnabled(
+      FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
+      FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
+    )
 
     return (
       <>
@@ -397,7 +489,9 @@ export const GiantTrackTile = ({
           onClickReposts={onClickReposts}
           onClickFavorites={onClickFavorites}
         />
-        {isLongFormContent ? renderListenCount() : null}
+        {isLongFormContent && isNewPodcastControlsEnabled
+          ? renderListenCount()
+          : null}
       </>
     )
   }
@@ -504,7 +598,7 @@ export const GiantTrackTile = ({
                   isPreview
                 />
               ) : null}
-              {isLongFormContent ? (
+              {isLongFormContent && isNewPodcastControlsEnabled ? (
                 <GiantTrackTileProgressInfo
                   duration={duration}
                   trackId={trackId}
@@ -593,7 +687,19 @@ export const GiantTrackTile = ({
         ) : null}
 
         <div className={cn(styles.bottomSection, fadeIn)}>
-          <TrackMetadataList trackId={trackId} />
+          <Flex w='100%' gap='l' wrap='wrap'>
+            <InfoLabel
+              labelName='duration'
+              labelValue={`${formatSeconds(duration)}`}
+            />
+            {renderReleased()}
+            {renderGenre()}
+            {renderMood()}
+            {credits ? (
+              <InfoLabel labelName='credit' labelValue={credits} />
+            ) : null}
+            {renderAlbum()}
+          </Flex>
           {description ? (
             <UserGeneratedText tag='h3' size='s' className={styles.description}>
               {description}

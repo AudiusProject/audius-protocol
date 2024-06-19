@@ -1,9 +1,11 @@
 .countContainer {
   display: flex;
   width: 100%;
+  justify-content: center;
   align-items: center;
+  margin: 0px 24px 0px;
+  padding: 4px 8px;
   transform: scale(1);
-  gap: var(--harmony-unit-1);
   transition: transform 0.07s ease-in-out;
 }
 

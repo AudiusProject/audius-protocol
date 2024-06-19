@@ -21,6 +21,7 @@ import { Paper } from '@audius/harmony/src/components/layout/Paper'
 import { Text } from '@audius/harmony/src/components/text'
 import { TextLink } from '@audius/harmony/src/components/text-link'
 
+import { AlbumDetailsText } from 'components/collection/components/AlbumDetailsText'
 import { ServerUserGeneratedText } from 'components/user-generated-text/ServerUserGeneratedText'
 import { useSelector } from 'utils/reducer'
 import { profilePage } from 'utils/route'
@@ -39,9 +40,14 @@ export const DesktopServerCollectionPage = () => {
     playlist_name,
     repost_count,
     save_count,
-    description
+    description,
+    updated_at,
+    created_at,
+    track_count,
+    tracks
   } = collection
 
+  const duration = tracks?.reduce((acc, track) => acc + track.duration, 0) ?? 0
   const { handle, name } = user
 
   return (
@@ -136,6 +142,12 @@ export const DesktopServerCollectionPage = () => {
           >
             <Flex direction='column' gap='l'>
               <ServerUserGeneratedText>{description}</ServerUserGeneratedText>
+              <AlbumDetailsText
+                lastModifiedDate={updated_at}
+                releaseDate={created_at}
+                numTracks={track_count}
+                duration={duration}
+              />
             </Flex>
           </Flex>
         </Paper>
