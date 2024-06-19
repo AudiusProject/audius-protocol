@@ -21,7 +21,7 @@ export class ClaimableReward extends BaseNotification<ClaimableRewardRow> {
   constructor(dnDB: Knex, identityDB: Knex, notification: ClaimableRewardRow) {
     super(dnDB, identityDB, notification)
     try {
-      const userIds: number[] = this.notification.user_ids!
+      const userIds = this.notification.user_ids!
       this.userId = userIds[0]
       // Change is not an absolute value and for a transfer out will always be negative
     } catch (e) {
