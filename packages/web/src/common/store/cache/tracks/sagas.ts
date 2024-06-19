@@ -168,21 +168,46 @@ function* editTrackAsync(action: ReturnType<typeof trackActions.editTrack>) {
   if (track.stems) {
     const currentStemUploads = yield* select(getCurrentUploads, track.track_id)
     const existingStems = currentTrack._stems || []
-    const newStems = track.stems.filter((stem) => !stem.metadata.track_id)
 
-    const stemUploads = track.stems.map((stem) => {
-      return {
-        metadata: stem,
-        file: stem.file
-      }
+    // new - existing - currentUploads
+    const addedStems = track.stems.filter((stem) => {
+      return !existingStems.find((existingStem) => {
+        return (
+          existingStem.track_id === stem.metadata.track_id &&
+          existingStem.category === stem.category
+        )
+      })
     })
+
+    const removedStems = existingStems
+      .filter((existingStem) => {
+        return !track.stems?.find(
+          (stem) =>
+            stem.metadata.track_id === existingStem.track_id &&
+            stem.category === existingStem.category
+        )
+      })
+      .filter((existingStem) => {
+        // probably unnecessary
+        return !currentStemUploads.find(
+          (upload) =>
+            upload.metadata.track_id === existingStem.track_id &&
+            upload.category === existingStem.category
+        )
+      })
+
     yield* put(
       startStemUploads({
         parentId: track.track_id,
-        uploads: stemUploads,
+        uploads: addedStems,
         batchUID: uuid()
       })
     )
+
+    // delete removed stems
+    for (const stem of removedStems) {
+      yield* put(trackActions.deleteTrack(stem.track_id))
+    }
   }
 
   yield* put(
