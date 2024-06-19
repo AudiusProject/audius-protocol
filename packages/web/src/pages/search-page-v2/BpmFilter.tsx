@@ -18,6 +18,9 @@ import { useSearchParams } from 'react-router-dom-v5-compat'
 
 import { useUpdateSearchParams } from './utils'
 
+const MIN_BPM = 1
+const MAX_BPM = 999
+
 type BpmTargetType = 'exact' | 'range5' | 'range10'
 const targetOptions: { label: string; value: BpmTargetType }[] = [
   {
@@ -36,7 +39,7 @@ const targetOptions: { label: string; value: BpmTargetType }[] = [
 const bpmOptions = [
   {
     label: 'Very Slow',
-    value: '1-60',
+    value: `${MIN_BPM}-60`,
     helperText: '<60 BPM'
   },
   {
@@ -61,7 +64,7 @@ const bpmOptions = [
   },
   {
     label: 'Very Fast',
-    value: '160-999',
+    value: `160-${MAX_BPM}`,
     helperText: '160+ BPM'
   }
 ]
@@ -69,7 +72,10 @@ const bpmOptions = [
 const messages = {
   bpm: 'BPM',
   minBpm: 'Min',
-  maxBpm: 'Max'
+  maxBpm: 'Max',
+  tooLowError: `BPM less than ${MIN_BPM}`,
+  tooHighError: `BPM greater than ${MAX_BPM}`,
+  invalidMinMaxError: 'Min greater than max'
 }
 
 type ViewProps = {
@@ -79,19 +85,60 @@ type ViewProps = {
 const BpmRangeView = ({ handleChange }: ViewProps) => {
   const [minBpm, setMinBpm] = useState('')
   const [maxBpm, setMaxBpm] = useState('')
+  const [minError, setMinError] = useState<string | null>(null)
+  const [maxError, setMaxError] = useState<string | null>(null)
   // NOTE: Memo to avoid the constantly changing function instance from triggering the effect
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const onChange = useMemo(() => handleChange, [])
 
   useEffect(() => {
+    // Validation
+    const minVal = Number(minBpm)
+    const maxVal = Number(maxBpm)
+    let hasError = false
+
+    if (minBpm) {
+      if (minVal < MIN_BPM) {
+        setMinError(messages.tooLowError)
+        hasError = true
+      } else if (minVal > MAX_BPM) {
+        setMinError(messages.tooHighError)
+        hasError = true
+      } else if (maxBpm && minVal > maxVal) {
+        setMinError(messages.invalidMinMaxError)
+        hasError = true
+      } else if (minError) {
+        setMinError(null)
+      }
+    } else if (minError) {
+      setMinError(null)
+    }
+
+    if (maxBpm) {
+      if (maxVal < MIN_BPM) {
+        setMaxError(messages.tooLowError)
+        hasError = true
+      } else if (maxVal > MAX_BPM) {
+        setMaxError(messages.tooHighError)
+        hasError = true
+      } else if (maxError) {
+        setMaxError(null)
+      }
+    } else if (maxError) {
+      setMaxError(null)
+    }
+
+    if (hasError) return
+
+    // Value Update
     let value = ''
 
     if (minBpm || maxBpm) {
-      value = `${minBpm || '1'}-${maxBpm || '999'}`
+      value = `${minBpm || MIN_BPM}-${maxBpm || MAX_BPM}`
     }
 
     onChange(value, `${value} ${messages.bpm}`)
-  }, [maxBpm, minBpm, onChange])
+  }, [maxBpm, minBpm, minError, maxError, onChange])
 
   return (
     <>
@@ -113,6 +160,10 @@ const BpmRangeView = ({ handleChange }: ViewProps) => {
       >
         <TextInput
           label={messages.minBpm}
+          type='number'
+          error={!!minError}
+          helperText={minError}
+          aria-errormessage={minError ?? undefined}
           placeholder={messages.minBpm}
           hideLabel
           onChange={(e) => setMinBpm(e.target.value)}
@@ -121,6 +172,10 @@ const BpmRangeView = ({ handleChange }: ViewProps) => {
         -
         <TextInput
           label={messages.maxBpm}
+          type='number'
+          error={!!maxError}
+          helperText={maxError}
+          aria-errormessage={maxError ?? undefined}
           placeholder={messages.maxBpm}
           hideLabel
           onChange={(e) => setMaxBpm(e.target.value)}
@@ -135,11 +190,33 @@ const BpmTargetView = ({ handleChange }: ViewProps) => {
   const { color } = useTheme()
   const [bpmTarget, setBpmTarget] = useState('')
   const [bpmTargetType, setBpmTargetType] = useState<BpmTargetType>('exact')
+  const [error, setError] = useState<string | null>(null)
   // NOTE: Memo to avoid the constantly changing function instance from triggering the effect
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const onChange = useMemo(() => handleChange, [])
 
   useEffect(() => {
+    // Validation
+    const val = Number(bpmTarget)
+    let hasError = false
+
+    if (bpmTarget) {
+      if (val < MIN_BPM) {
+        setError(messages.tooLowError)
+        hasError = true
+      } else if (val > MAX_BPM) {
+        setError(messages.tooHighError)
+        hasError = true
+      } else if (error) {
+        setError(null)
+      }
+    } else if (error) {
+      setError(null)
+    }
+
+    if (hasError) return
+
+    // Value Update
     let value = ''
 
     if (bpmTarget) {
@@ -147,19 +224,20 @@ const BpmTargetView = ({ handleChange }: ViewProps) => {
         value = bpmTarget
       } else {
         const mod = bpmTargetType === 'range5' ? 5 : 10
-        value = `${Math.max(Number(bpmTarget) - mod, 1)}-${Math.min(
+        value = `${Math.max(Number(bpmTarget) - mod, MIN_BPM)}-${Math.min(
           Number(bpmTarget) + mod,
-          999
+          MAX_BPM
         )}`
       }
     }
 
     onChange(value, `${value} ${messages.bpm}`)
-  }, [bpmTarget, bpmTargetType, onChange])
+  }, [bpmTarget, bpmTargetType, error, onChange])
 
   return (
     <Flex
       direction='column'
+      w='100%'
       ph='s'
       gap='s'
       // NOTE: Adds a little flexibility so the user doesn't close the popup by accident
@@ -167,6 +245,10 @@ const BpmTargetView = ({ handleChange }: ViewProps) => {
     >
       <TextInput
         label={messages.bpm}
+        type='number'
+        error={!!error}
+        helperText={error}
+        aria-errormessage={error ?? undefined}
         placeholder={messages.bpm}
         hideLabel
         onChange={(e) => setBpmTarget(e.target.value)}
