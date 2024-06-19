@@ -140,10 +140,6 @@ func (ss *MediorumServer) findMissedLegacyAnalysisJobs(work chan *QmAudioAnalysi
 func (ss *MediorumServer) startLegacyAudioAnalysisWorker(n int, work chan *QmAudioAnalysis) {
 	for analysis := range work {
 		logger := ss.logger.With("analysis_cid", analysis.CID)
-		if time.Since(analysis.AnalyzedAt) > time.Minute*3 {
-			logger.Info("legacy audio analysis window has passed. skipping job")
-		}
-
 		logger.Debug("analyzing legacy audio")
 		startTime := time.Now().UTC()
 		err := ss.analyzeLegacyAudio(analysis)
