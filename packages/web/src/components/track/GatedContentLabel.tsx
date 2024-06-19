@@ -1,19 +1,13 @@
 import {
   isContentCollectibleGated,
   isContentUSDCPurchaseGated,
-  AccessConditions,
-  isContentFollowGated,
-  isContentTipGated
+  AccessConditions
 } from '@audius/common/models'
 import { Nullable } from '@audius/common/utils'
-import {
-  Flex,
-  Text,
-  IconCart,
-  IconCollectible,
-  IconSpecialAccess,
-  useTheme
-} from '@audius/harmony'
+import { IconCart, IconCollectible, IconSpecialAccess } from '@audius/harmony'
+import cn from 'classnames'
+
+import styles from './GatedContentLabel.module.css'
 
 const messages = {
   collectibleGated: 'Collectible Gated',
@@ -33,35 +27,25 @@ export const GatedContentLabel = ({
   hasStreamAccess: boolean
   isOwner: boolean
 }) => {
-  const { color } = useTheme()
+  const showColor = isOwner || !hasStreamAccess
   let message = messages.specialAccess
   let IconComponent = IconSpecialAccess
-  let specialColor = color.icon.default
+  let colorStyle = styles.gatedContent
 
-  if (
-    isContentFollowGated(streamConditions) ||
-    isContentTipGated(streamConditions)
-  ) {
-    specialColor = color.special.blue
-  } else if (isContentCollectibleGated(streamConditions)) {
+  if (isContentCollectibleGated(streamConditions)) {
     message = messages.collectibleGated
     IconComponent = IconCollectible
-    specialColor = color.special.blue
-  } else if (isContentUSDCPurchaseGated(streamConditions)) {
+  }
+  if (isContentUSDCPurchaseGated(streamConditions)) {
     message = messages.premium
     IconComponent = IconCart
-    specialColor = color.special.lightGreen
+    colorStyle = styles.premiumContent
   }
 
-  const finalColor =
-    isOwner || !hasStreamAccess ? specialColor : color.icon.default
-
   return (
-    <Flex alignItems='center' gap='xs' w='100%'>
-      <IconComponent size='s' fill={finalColor} />
-      <Text variant='body' size='xs' css={{ color: finalColor }}>
-        {message}
-      </Text>
-    </Flex>
+    <div className={cn(styles.labelContainer, { [colorStyle]: showColor })}>
+      <IconComponent className={styles.icon} />
+      {message}
+    </div>
   )
 }

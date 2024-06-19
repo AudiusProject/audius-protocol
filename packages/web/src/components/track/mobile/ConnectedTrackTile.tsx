@@ -110,6 +110,7 @@ const ConnectedTrackTile = ({
   isActive,
   variant,
   containerClassName,
+  releaseDate,
   isFeed = false,
   source
 }: ConnectedTrackTileProps) => {
@@ -134,8 +135,6 @@ const ConnectedTrackTile = ({
     activity_timestamp,
     play_count,
     _co_sign,
-    is_scheduled_release: isScheduledRelease,
-    release_date: releaseDate,
     duration,
     preview_cid
   } = trackWithFallback
@@ -286,7 +285,6 @@ const ConnectedTrackTile = ({
       hasStreamAccess={hasStreamAccess}
       showRankIcon={showRankIcon}
       variant={variant}
-      isScheduledRelease={isScheduledRelease}
       releaseDate={releaseDate}
       source={source}
     />

@@ -186,6 +186,10 @@
   height: var(--harmony-unit-4);
 }
 
+.stats path {
+  fill: var(--harmony-n-400);
+}
+
 .albumArt {
   border-radius: var(--harmony-unit-1);
   flex: 0 0 74px;

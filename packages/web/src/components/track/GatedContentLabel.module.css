@@ -1,0 +1,32 @@
+.labelContainer {
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+  gap: var(--harmony-unit);
+  color: var(--harmony-n-400);
+}
+
+.icon {
+  height: var(--harmony-unit-4);
+  width: var(--harmony-unit-4);
+}
+
+.icon path {
+  fill: var(--harmony-n-400);
+}
+
+.gatedContent {
+  color: var(--harmony-blue);
+}
+
+.gatedContent .icon path {
+  fill: var(--harmony-blue);
+}
+
+.premiumContent {
+  color: var(--harmony-light-green);
+}
+
+.premiumContent .icon path {
+  fill: var(--harmony-light-green);
+}
