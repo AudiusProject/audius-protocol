@@ -1,7 +1,7 @@
 import { getEntry, getAllEntries } from '~/store/cache/selectors'
 import { CommonState } from '~/store/commonStore'
 
-import { Kind, ID, UID, Status, Track } from '../../../models'
+import { Kind, ID, UID, Status, Track, StemTrack } from '../../../models'
 
 export const getTrack = (
   state: CommonState,
@@ -83,3 +83,20 @@ export const getTrackStreamUrl = (state: CommonState, trackId: ID) =>
 
 export const getTrackStreamUrls = (state: CommonState) =>
   state.tracks?.streamUrls
+
+export const getStems = (state: CommonState, trackId?: ID) => {
+  if (!trackId) return []
+
+  const track = getTrack(state, { id: trackId })
+  if (!track?._stems?.length) return []
+
+  const stemIds = track._stems.map((s) => s.track_id)
+
+  const stemsMap = getTracks(state, { ids: stemIds }) as {
+    [id: number]: StemTrack
+  }
+  const stems = Object.values(stemsMap).filter(
+    (t) => !t.is_delete && !t._marked_deleted
+  )
+  return stems
+}

@@ -45,7 +45,7 @@ export interface TrackMetadataForUpload extends TrackMetadata {
     url: string
     source?: string
   }>
-  stems?: StemUploadWithFile[]
+  stems?: (StemUploadWithFile | StemUpload)[]
 }
 /**
  * Unlike normal CollectionMetadata, CollectionMetadataForUpload has artwork

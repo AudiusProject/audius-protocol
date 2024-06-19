@@ -7,7 +7,9 @@ import {
   Collection,
   ID,
   Remix,
-  TrackMetadata
+  TrackMetadata,
+  Stem,
+  StemUploadWithFile
 } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import {
@@ -196,10 +198,14 @@ function* editTrackAsync(action: ReturnType<typeof trackActions.editTrack>) {
         )
       })
 
+    const addedStemsWithFiles = addedStems.filter(
+      (stem) => 'file' in stem
+    ) as StemUploadWithFile[]
+
     yield* put(
       startStemUploads({
         parentId: track.track_id,
-        uploads: addedStems,
+        uploads: addedStemsWithFiles,
         batchUID: uuid()
       })
     )
