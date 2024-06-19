@@ -194,6 +194,12 @@ services:
       service: mri
     <<: *common
 
+  backfill-audio-analyses:
+    extends:
+      file: docker-compose.pedalboard.${DOCKERCOMPOSE_ENV_TYPE:-dev}.yml
+      service: backfill-audio-analyses
+    <<: *common
+
   # DDEX
 
   ddex-mongo:
