@@ -9,6 +9,7 @@ import { Flex, Text } from '@audius/harmony'
 import { Form, Formik } from 'formik'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
+import { AdvancedAlbumField } from 'components/edit/fields/AdvancedAlbumField'
 import { CollectionTrackFieldArray } from 'components/edit/fields/CollectionTrackFieldArray'
 import { ReleaseDateFieldLegacy } from 'components/edit/fields/ReleaseDateFieldLegacy'
 import { SelectGenreField } from 'components/edit/fields/SelectGenreField'
@@ -103,6 +104,7 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
               <PriceAndAudienceField isAlbum isUpload />
             </Flex>
           ) : null}
+          {isAlbum ? <AdvancedAlbumField /> : null}
           <div className={styles.trackDetails}>
             <Text variant='label'>{messages.trackDetails.title}</Text>
             <Text variant='body'>{messages.trackDetails.description}</Text>
