@@ -50,10 +50,10 @@ def retrigger_audio_analysis(
     track_id: int,
     track_cid: str,
     upload_id: Optional[str],
-    legacyTrack: bool,
+    legacy_track: bool,
 ):
     cid = ""
-    if legacyTrack:
+    if legacy_track:
         cid = track_cid
         upload_id = ""
     data = {
@@ -73,9 +73,11 @@ def retrigger_audio_analysis(
     }
     for endpoint in nodes:
         try:
-            endpoint = f"{endpoint}/uploads/{upload_id}/analyze"
-            if legacyTrack:
-                endpoint = f"{endpoint}/tracks/legacy/{track_cid}/analyze"
+            endpoint = (
+                f"{endpoint}/tracks/legacy/{track_cid}/analyze"
+                if legacy_track
+                else f"{endpoint}/uploads/{upload_id}/analyze"
+            )
             resp = requests.post(endpoint, params=params, timeout=5)
             resp.raise_for_status()
             break
@@ -92,13 +94,15 @@ def repair(session: Session, redis: Redis):
         if not track.track_cid:
             # Only analyze streamable tracks
             continue
-        legacyTrack = not track.audio_upload_id and track.track_cid.startswith("Qm")
+        legacy_track = not track.audio_upload_id and track.track_cid.startswith("Qm")
         for endpoint in nodes:
             try:
                 # Query random content node for the audio upload id
-                endpoint = f"${endpoint}/uploads/${track.audio_upload_id}"
-                if legacyTrack:
-                    endpoint = f"${endpoint}/tracks/legacy/${track.track_cid}/analysis"
+                endpoint = (
+                    f"${endpoint}/tracks/legacy/${track.track_cid}/analysis"
+                    if legacy_track
+                    else f"${endpoint}/uploads/${track.audio_upload_id}"
+                )
                 resp = requests.get(endpoint, timeout=5)
                 resp.raise_for_status()
                 data = resp.json()
@@ -106,9 +110,9 @@ def repair(session: Session, redis: Redis):
                 # Fallback to another random content node
                 continue
 
-            results_key = "results" if legacyTrack else "audio_analysis_results"
+            results_key = "results" if legacy_track else "audio_analysis_results"
             error_count_key = (
-                "error_count" if legacyTrack else "audio_analysis_error_count"
+                "error_count" if legacy_track else "audio_analysis_error_count"
             )
             results = data.get(results_key, {})
             error_count = data.get(error_count_key, 0)
@@ -130,7 +134,7 @@ def repair(session: Session, redis: Redis):
                     track.track_id,
                     track.track_cid,
                     track.audio_upload_id,
-                    legacyTrack,
+                    legacy_track,
                 )
             if error_count >= 3:
                 logger.warning(

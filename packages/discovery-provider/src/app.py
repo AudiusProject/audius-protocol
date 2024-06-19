@@ -442,7 +442,7 @@ def configure_celery(celery, test_config=None):
             },
             "repair_audio_analyses": {
                 "task": "repair_audio_analyses",
-                "schedule": timedelta(minutes=10),
+                "schedule": timedelta(minutes=2),
             },
         },
         task_serializer="json",
