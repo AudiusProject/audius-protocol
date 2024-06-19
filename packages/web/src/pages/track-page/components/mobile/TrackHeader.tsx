@@ -41,7 +41,7 @@ import IconCalendarMonth from '@audius/harmony/src/assets/icons/CalendarMonth.sv
 import IconRobot from '@audius/harmony/src/assets/icons/Robot.svg'
 import IconVisibilityHidden from '@audius/harmony/src/assets/icons/VisibilityHidden.svg'
 import cn from 'classnames'
-import dayjs from 'dayjs'
+import moment from 'moment'
 import { shallowEqual, useSelector } from 'react-redux'
 
 import CoSign from 'components/co-sign/CoSign'
@@ -211,14 +211,15 @@ const TrackHeader = ({
   const showPreview = isUSDCPurchaseGated && (isOwner || !hasStreamAccess)
   // Play button is conditionally hidden for USDC-gated tracks when the user does not have access
   const showPlay = isUSDCPurchaseGated ? hasStreamAccess : true
-  const showListenCount = isOwner || (!isStreamGated && !isUnlisted)
+  const showListenCount =
+    isOwner || (!isStreamGated && (isUnlisted || fieldVisibility.play_count))
   const { data: albumInfo } = trpc.tracks.getAlbumBacklink.useQuery(
     { trackId },
     { enabled: !!trackId }
   )
   const isPlaylistAddable = useIsGatedContentPlaylistAddable(track)
   const shouldShowScheduledRelease =
-    track?.release_date && dayjs(track.release_date).isAfter(dayjs())
+    track?.release_date && moment(track.release_date).isAfter(moment())
 
   const image = useTrackCoverArt(
     trackId,
@@ -435,8 +436,8 @@ const TrackHeader = ({
       <ActionButtonRow
         showRepost={showSocials}
         showFavorite={showSocials}
-        showShare={!isUnlisted || isOwner}
-        showOverflow={!isUnlisted || isOwner}
+        showShare={!isUnlisted || fieldVisibility.share || isOwner}
+        showOverflow
         shareToastDisabled
         isOwner={isOwner}
         isReposted={isReposted}

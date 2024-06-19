@@ -407,7 +407,8 @@ export const GiantTrackTile = ({
   }
 
   const renderListenCount = () => {
-    const shouldShow = isOwner || (!isStreamGated && !isUnlisted)
+    const shouldShow =
+      isOwner || (!isStreamGated && (isUnlisted || fieldVisibility.play_count))
 
     if (!shouldShow) {
       return null
@@ -612,34 +613,32 @@ export const GiantTrackTile = ({
               {renderStatsRow()}
             </div>
 
-            {isUnlisted && !isOwner ? null : (
-              <div
-                className={cn(styles.actionButtons, fadeIn)}
-                role='group'
-                aria-label={messages.actionGroupLabel}
-              >
-                {renderShareButton()}
-                {renderMakePublicButton()}
-                {hasStreamAccess && renderRepostButton()}
-                {hasStreamAccess && renderFavoriteButton()}
-                <span>
-                  {/* prop types for overflow menu don't work correctly
+            <div
+              className={cn(styles.actionButtons, fadeIn)}
+              role='group'
+              aria-label={messages.actionGroupLabel}
+            >
+              {renderShareButton()}
+              {renderMakePublicButton()}
+              {hasStreamAccess && renderRepostButton()}
+              {hasStreamAccess && renderFavoriteButton()}
+              <span>
+                {/* prop types for overflow menu don't work correctly
               so we need to cast here */}
-                  <Menu {...(overflowMenu as any)}>
-                    {(ref, triggerPopup) => (
-                      <div className={cn(styles.menuKebabContainer)} ref={ref}>
-                        <Button
-                          variant='secondary'
-                          aria-label='More options'
-                          iconLeft={IconKebabHorizontal}
-                          onClick={() => triggerPopup()}
-                        />
-                      </div>
-                    )}
-                  </Menu>
-                </span>
-              </div>
-            )}
+                <Menu {...(overflowMenu as any)}>
+                  {(ref, triggerPopup) => (
+                    <div className={cn(styles.menuKebabContainer)} ref={ref}>
+                      <Button
+                        variant='secondary'
+                        aria-label='More options'
+                        iconLeft={IconKebabHorizontal}
+                        onClick={() => triggerPopup()}
+                      />
+                    </div>
+                  )}
+                </Menu>
+              </span>
+            </div>
           </div>
           <Flex
             gap='s'
