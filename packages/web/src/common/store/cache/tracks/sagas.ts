@@ -201,13 +201,15 @@ function* editTrackAsync(action: ReturnType<typeof trackActions.editTrack>) {
       (stem) => 'file' in stem
     ) as StemUploadWithFile[]
 
-    yield* put(
-      startStemUploads({
-        parentId: track.track_id,
-        uploads: addedStemsWithFiles,
-        batchUID: uuid()
-      })
-    )
+    if (addedStemsWithFiles.length > 0) {
+      yield* put(
+        startStemUploads({
+          parentId: track.track_id,
+          uploads: addedStemsWithFiles,
+          batchUID: uuid()
+        })
+      )
+    }
 
     // delete removed stems
     for (const stem of removedStems) {
