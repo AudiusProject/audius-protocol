@@ -77,7 +77,8 @@ export const LineupTile = ({
   const dogEarType = getDogEarType({
     streamConditions,
     isOwner,
-    hasStreamAccess
+    hasStreamAccess,
+    isArtistPick: showArtistPick && isArtistPick
   })
 
   const handlePress = useCallback(() => {

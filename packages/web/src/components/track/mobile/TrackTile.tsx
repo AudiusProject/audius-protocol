@@ -234,7 +234,8 @@ const TrackTile = (props: CombinedProps) => {
     : getDogEarType({
         streamConditions,
         isOwner,
-        hasStreamAccess
+        hasStreamAccess,
+        isArtistPick
       })
 
   const onToggleSave = useCallback(() => toggleSave(id), [toggleSave, id])

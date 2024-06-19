@@ -301,7 +301,8 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
   const DogEarIconType = getDogEarType({
     streamConditions,
     isOwner,
-    hasStreamAccess
+    hasStreamAccess,
+    isArtistPick: false
   })
 
   let specialContentLabel = null

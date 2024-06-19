@@ -239,6 +239,7 @@ const TrackTile = ({
     ? undefined
     : getDogEarType({
         hasStreamAccess,
+        isArtistPick,
         isOwner,
         streamConditions
       })

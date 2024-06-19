@@ -7,6 +7,7 @@ import { Nullable } from './typeUtils'
 
 type GetDogEarTypeArgs = {
   hasStreamAccess?: boolean
+  isArtistPick?: boolean
   isOwner?: boolean
   streamConditions?: Nullable<AccessConditions>
   downloadConditions?: Nullable<AccessConditions>
@@ -23,6 +24,7 @@ type GetDogEarTypeArgs = {
  */
 export const getDogEarType = ({
   hasStreamAccess,
+  isArtistPick,
   isOwner,
   streamConditions,
   downloadConditions
@@ -49,6 +51,11 @@ export const getDogEarType = ({
     if ('usdc_purchase' in downloadConditions) {
       return DogEarType.USDC_PURCHASE
     }
+  }
+
+  // If no gated variant, optionally show artist pick if applicable
+  if (isArtistPick) {
+    return DogEarType.STAR
   }
 
   return undefined
