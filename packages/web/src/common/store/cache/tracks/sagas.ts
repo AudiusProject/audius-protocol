@@ -104,7 +104,7 @@ function* watchUpdate() {
       if (action.kind === Kind.TRACKS) {
         // Check for tracks with any changed access. If so we need to update the prefetched stream url
         const tracksWithChangedAccess = action.entries
-          .filter((track) => track.metadata.access.stream !== undefined)
+          .filter((track) => track?.metadata?.access?.stream !== undefined)
           .map((track) => track.id)
         // Re-trigger prefetching stream urls for any changed tracks
         if (tracksWithChangedAccess.length > 0) {
