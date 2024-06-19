@@ -67,8 +67,8 @@ const getManagedUser = async (
   const managersList = response.data.data
   if (
     managersList
-      .filter((m) => m.is_approved)
-      .map((m) => m.erc_wallet)
+      .filter((m) => m.grant.is_approved)
+      .map((m) => m.manager.erc_wallet.toLowerCase())
       .includes(managerWalletAddress.toLowerCase())
   ) {
     const user = await models.User.findOne({
