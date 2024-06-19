@@ -109,22 +109,22 @@ func (ss *MediorumServer) findMissedLegacyAnalysisJobs(work chan *QmAudioAnalysi
 		if myRank == 2 {
 			// no recent update?
 			timedOut = analysis.Status == JobStatusBusyAudioAnalysis &&
-				time.Since(analysis.AnalyzedAt) > time.Minute*1
+				time.Since(analysis.AnalyzedAt) > time.Minute*3
 
 			// never started?
 			neverStarted = analysis.Status == JobStatusAudioAnalysis &&
-				time.Since(analysis.AnalyzedAt) > time.Minute*1
+				time.Since(analysis.AnalyzedAt) > time.Minute*6
 		}
 
 		// for #3 rank worker:
 		if myRank == 3 {
 			// no recent update?
 			timedOut = analysis.Status == JobStatusBusyAudioAnalysis &&
-				time.Since(analysis.AnalyzedAt) > time.Minute*2
+				time.Since(analysis.AnalyzedAt) > time.Minute*7
 
 			// never started?
 			neverStarted = analysis.Status == JobStatusAudioAnalysis &&
-				time.Since(analysis.AnalyzedAt) > time.Minute*2
+				time.Since(analysis.AnalyzedAt) > time.Minute*14
 		}
 
 		if timedOut {
@@ -140,10 +140,6 @@ func (ss *MediorumServer) findMissedLegacyAnalysisJobs(work chan *QmAudioAnalysi
 func (ss *MediorumServer) startLegacyAudioAnalysisWorker(n int, work chan *QmAudioAnalysis) {
 	for analysis := range work {
 		logger := ss.logger.With("analysis_cid", analysis.CID)
-		if time.Since(analysis.AnalyzedAt) > time.Minute*3 {
-			logger.Info("legacy audio analysis window has passed. skipping job")
-		}
-
 		logger.Debug("analyzing legacy audio")
 		startTime := time.Now().UTC()
 		err := ss.analyzeLegacyAudio(analysis)
