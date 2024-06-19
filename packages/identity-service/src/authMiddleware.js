@@ -67,6 +67,7 @@ const getManagedUser = async (
   const managersList = response.data.data
   if (
     managersList
+      .filter((m) => m.is_approved)
       .map((m) => m.erc_wallet)
       .includes(managerWalletAddress.toLowerCase())
   ) {
@@ -97,7 +98,7 @@ async function authMiddleware(req, res, next) {
     const encodedDataMessage = req.get('Encoded-Data-Message')
     const signature = req.get('Encoded-Data-Signature')
     const handle = req.query.handle
-    const actingUserId = req.query.actingAsUserId
+    const actingUserId = req.query.user_id
 
     if (!encodedDataMessage) throw new Error('[Error]: Encoded data missing')
     if (!signature) throw new Error('[Error]: Encoded data signature missing')

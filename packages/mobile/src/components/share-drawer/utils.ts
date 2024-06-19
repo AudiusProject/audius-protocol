@@ -9,6 +9,7 @@ import {
 } from 'app/utils/routes'
 
 import { messages } from './messages'
+import { User } from '~/models'
 
 export const getContentUrl = (content: ShareContent) => {
   switch (content.type) {
@@ -35,9 +36,9 @@ export const getContentUrl = (content: ShareContent) => {
   }
 }
 
-const getTwitterShareHandle = async (handle: string) => {
-  const { twitterHandle } = await audiusBackendInstance.getSocialHandles(handle)
-  return twitterHandle ? `@${twitterHandle}` : handle
+const getTwitterShareHandle = async (user: User) => {
+  const { twitterHandle } = await audiusBackendInstance.getSocialHandles(user)
+  return twitterHandle ? `@${twitterHandle}` : user.handle
 }
 
 export const getTwitterShareText = async (content: ShareContent) => {
@@ -45,34 +46,34 @@ export const getTwitterShareText = async (content: ShareContent) => {
     case 'track': {
       const {
         track: { title },
-        artist: { handle }
+        artist
       } = content
-      return messages.trackShareText(title, await getTwitterShareHandle(handle))
+      return messages.trackShareText(title, await getTwitterShareHandle(artist))
     }
     case 'profile': {
       const {
-        profile: { handle }
+        profile
       } = content
-      return messages.profileShareText(await getTwitterShareHandle(handle))
+      return messages.profileShareText(await getTwitterShareHandle(profile))
     }
     case 'album': {
       const {
         album: { playlist_name },
-        artist: { handle }
+        artist
       } = content
       return messages.albumShareText(
         playlist_name,
-        await getTwitterShareHandle(handle)
+        await getTwitterShareHandle(artist)
       )
     }
     case 'playlist': {
       const {
         playlist: { playlist_name },
-        creator: { handle }
+        creator
       } = content
       return messages.playlistShareText(
         playlist_name,
-        await getTwitterShareHandle(handle)
+        await getTwitterShareHandle(creator)
       )
     }
     case 'audioNftPlaylist': {

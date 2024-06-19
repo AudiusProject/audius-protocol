@@ -742,34 +742,15 @@ export const audiusBackend = ({
       const account = audiusLibs.Account.getCurrentUser()
       if (!account) return null
 
-      // This is saying that if there is any social info coming back from DN,
-      // then we should not attempt to fetch socials from identity.
-      // It is possible that identity has more up-to-date socials than DN,
-      // but we can live with that until we do the final social backfill from identity to DN.
-      const hasSocialsFromDn =
-        account.twitter_handle ||
-        account.instagram_handle ||
-        account.tiktok_handle ||
-        account.website ||
-        account.donation ||
-        account.verified_with_twitter ||
-        account.verified_with_instagram ||
-        account.verified_with_tiktok
-      if (!hasSocialsFromDn) {
-        try {
-          const body = await getSocialHandles(account.handle)
-          account.twitter_handle = body.twitterHandle || null
-          account.instagram_handle = body.instagramHandle || null
-          account.tiktok_handle = body.tikTokHandle || null
-          account.website = body.website || null
-          account.donation = body.donation || null
-          account.verified_with_twitter = body.twitterVerified || false
-          account.verified_with_instagram = body.instagramVerified || false
-          account.verified_with_tiktok = body.tikTokVerified || false
-        } catch (e) {
-          console.error(e)
-        }
-      }
+      const socialHandles = await getSocialHandles(account)
+      account.twitter_handle = account.twitter_handle || socialHandles.twitterHandle || null
+      account.instagram_handle = account.instagram_handle || socialHandles.instagramHandle || null
+      account.tiktok_handle = account.tiktok_handle || socialHandles.tikTokHandle || null
+      account.website = account.website || socialHandles.website || null
+      account.donation = account.donation || socialHandles.donation || null
+      account.verified_with_twitter = account.verified_with_twitter || socialHandles.twitterVerified || false
+      account.verified_with_instagram = account.verified_with_instagram || socialHandles.instagramVerified || false
+      account.verified_with_tiktok = account.verified_with_tiktok || socialHandles.tikTokVerified || false
 
       try {
         const userBank = await audiusLibs.solanaWeb3Manager.deriveUserBank()
@@ -982,10 +963,24 @@ export const audiusBackend = ({
     }
   }
 
-  async function getSocialHandles(handle: string) {
+  async function getSocialHandles(user: User) {
+    // Fetch the socials from identity service if we didn't get anything back from discovery node.
+    // Before the final production migration runs, identity may have more up to date data.
+    const userHasSocials =
+      user.twitter_handle ||
+      user.instagram_handle ||
+      user.tiktok_handle ||
+      user.website ||
+      user.donation ||
+      user.verified_with_twitter ||
+      user.verified_with_instagram ||
+      user.verified_with_tiktok
+    if (userHasSocials) {
+      return {}
+    }
     try {
       const res = await fetch(
-        `${identityServiceUrl}/social_handles?handle=${handle}`
+        `${identityServiceUrl}/social_handles?handle=${user.handle}`
       )
       const json = await res.json()
       return json
@@ -2274,7 +2269,7 @@ export const audiusBackend = ({
     if (!account) return
     try {
       const { data, signature } = await signData()
-      const res = await fetch(`${identityServiceUrl}/notifications/settings?actingUserId=${account.user_id}`, {
+      const res = await fetch(`${identityServiceUrl}/notifications/settings?user_id=${account.user_id}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

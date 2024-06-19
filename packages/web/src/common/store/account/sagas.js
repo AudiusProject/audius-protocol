@@ -179,8 +179,8 @@ export function* fetchAccountAsync({ isSignUp = false }) {
   const clientOrigin = isNativeMobile
     ? 'mobile'
     : isElectron
-    ? 'desktop'
-    : 'web'
+      ? 'desktop'
+      : 'web'
   fingerprintClient.identify(account.user_id, clientOrigin)
 
   yield call(recordIPIfNotRecent, account.handle)
