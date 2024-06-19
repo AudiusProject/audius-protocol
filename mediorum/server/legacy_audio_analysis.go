@@ -109,22 +109,22 @@ func (ss *MediorumServer) findMissedLegacyAnalysisJobs(work chan *QmAudioAnalysi
 		if myRank == 2 {
 			// no recent update?
 			timedOut = analysis.Status == JobStatusBusyAudioAnalysis &&
-				time.Since(analysis.AnalyzedAt) > time.Minute*1
+				time.Since(analysis.AnalyzedAt) > time.Minute*3
 
 			// never started?
 			neverStarted = analysis.Status == JobStatusAudioAnalysis &&
-				time.Since(analysis.AnalyzedAt) > time.Minute*1
+				time.Since(analysis.AnalyzedAt) > time.Minute*6
 		}
 
 		// for #3 rank worker:
 		if myRank == 3 {
 			// no recent update?
 			timedOut = analysis.Status == JobStatusBusyAudioAnalysis &&
-				time.Since(analysis.AnalyzedAt) > time.Minute*2
+				time.Since(analysis.AnalyzedAt) > time.Minute*7
 
 			// never started?
 			neverStarted = analysis.Status == JobStatusAudioAnalysis &&
-				time.Since(analysis.AnalyzedAt) > time.Minute*2
+				time.Since(analysis.AnalyzedAt) > time.Minute*14
 		}
 
 		if timedOut {
