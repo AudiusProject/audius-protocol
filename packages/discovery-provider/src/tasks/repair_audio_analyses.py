@@ -30,6 +30,7 @@ def query_tracks(session: Session) -> List[Track]:
             Track.is_current == True,
             or_(Track.musical_key == None, Track.bpm == None),
             Track.audio_analysis_error_count < 3,
+            Track.track_cid != None,
         )
         .limit(BATCH_SIZE)
         .all()
