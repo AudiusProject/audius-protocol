@@ -10,7 +10,7 @@ import {
   accountSelectors,
   cacheCollectionsSelectors
 } from '@audius/common/store'
-import { formatCount, formatReleaseDate } from '@audius/common/utils'
+import { formatCount } from '@audius/common/utils'
 import type { GestureResponderEvent } from 'react-native'
 import { useSelector } from 'react-redux'
 
@@ -34,9 +34,7 @@ const { getUserId } = accountSelectors
 const messages = {
   repost: 'Reposts',
   favorites: 'Favorites',
-  hidden: 'Hidden',
-  releases: (releaseDate: string) =>
-    `Releases ${formatReleaseDate({ date: releaseDate })}`
+  hidden: 'Hidden'
 }
 
 type CollectionCardProps = {
@@ -74,9 +72,7 @@ export const CollectionCard = (props: CollectionCardProps) => {
     save_count,
     is_private,
     access,
-    stream_conditions,
-    release_date: releaseDate,
-    is_scheduled_release: isScheduledRelease
+    stream_conditions
   } = collection
 
   const isOwner = accountId === playlist_owner_id
@@ -120,9 +116,7 @@ export const CollectionCard = (props: CollectionCardProps) => {
             // Ensures footer height is not affected
             style={{ lineHeight: 16 }}
           >
-            {isScheduledRelease && releaseDate
-              ? messages.releases(releaseDate)
-              : messages.hidden}
+            {messages.hidden}
           </Text>
         ) : (
           <>

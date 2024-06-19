@@ -63,8 +63,7 @@ export type CollectionMetadata = {
   playlist_image_sizes_multihash?: string
   offline?: OfflineCollectionMetadata
   local?: boolean
-  release_date: Nullable<string>
-  is_scheduled_release: boolean
+  release_date?: string
   ddex_app?: string | null
   is_stream_gated: boolean
   stream_conditions: Nullable<AccessConditions>

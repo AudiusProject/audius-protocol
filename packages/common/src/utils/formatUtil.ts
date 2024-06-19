@@ -242,58 +242,18 @@ export const formatNumberString = (
   return options?.excludeCommas ? res : formatNumberCommas(res)
 }
 
-/** Capitalizes the given input string */
 export const formatCapitalizeString = (word: string) => {
   const lowerCase = word.toLowerCase()
   const firstChar = word.charAt(0).toUpperCase()
   return firstChar + lowerCase.slice(1)
 }
 
-/**
- * Formats a given date string into a human-readable format based on its proximity to the current date.
- *
- * - If the date is before the current week, it returns the date formatted as "M/D/YY h:mm A".
- * - If the date is before today but within the current week, it returns the date formatted as "dddd h:mm A".
- * - If the date is today, it returns the time formatted as "h:mm A".
- */
 export const formatMessageDate = (date: string) => {
   const d = dayjs(date)
   const today = dayjs()
   if (d.isBefore(today, 'week')) return d.format('M/D/YY h:mm A')
   if (d.isBefore(today, 'day')) return d.format('dddd h:mm A')
   return d.format('h:mm A')
-}
-
-/*
- * Formats a given date string into a human-readable format based on its proximity to the current date.
- *
- * - If the release date is within the next week, it returns the day of the week.
- * - If the release date is further out, it returns the full date formatted as "M/D/YY".
- * - If the `withHour` flag is set to true, it also includes the time formatted as "h:mm A".
- */
-export const formatReleaseDate = ({
-  date,
-  withHour
-}: {
-  date: string
-  withHour?: boolean
-}) => {
-  const releaseDate = dayjs(date)
-  const now = dayjs()
-
-  const daysDifference = releaseDate.diff(now, 'days')
-
-  if (daysDifference >= 0 && daysDifference < 7) {
-    return (
-      `${releaseDate.format('dddd')}` +
-      (withHour ? ` @ ${releaseDate.format('h A')}` : '')
-    )
-  } else {
-    return (
-      `${releaseDate.format('M/D/YY')}` +
-      (withHour ? ` @ ${releaseDate.format('h A')}` : '')
-    )
-  }
 }
 
 /**
