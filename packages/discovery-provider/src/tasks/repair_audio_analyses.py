@@ -1,7 +1,8 @@
+import json
 import random
 import re
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 
 import requests
 from redis import Redis
@@ -43,19 +44,38 @@ def select_content_nodes(redis: Redis):
     return random.sample(endpoints, 5)
 
 
-def retrigger_audio_analysis(nodes: List[str], track_id: int, upload_id: str):
+def retrigger_audio_analysis(
+    nodes: List[str],
+    track_id: int,
+    track_cid: str,
+    upload_id: Optional[str],
+    legacyTrack: bool,
+):
+    cid = ""
+    if legacyTrack:
+        cid = track_cid
+        upload_id = ""
     data = {
-        "track_id": track_id,
+        "trackId": track_id,
+        "cid": cid,
         "timestamp": int(datetime.utcnow().timestamp() * 1000),
         "upload_id": upload_id,
     }
     signature = generate_signature(data)
-    params = {"signature": signature}
+    params = {
+        "signature": json.dumps(
+            {
+                "data": json.dumps(data),
+                "signature": signature,
+            }
+        )
+    }
     for endpoint in nodes:
         try:
-            resp = requests.post(
-                f"{endpoint}/uploads/{upload_id}/analyze", params=params, timeout=5
-            )
+            endpoint = f"{endpoint}/uploads/{upload_id}/analyze"
+            if legacyTrack:
+                endpoint = f"{endpoint}/tracks/legacy/{track_cid}/analyze"
+            resp = requests.post(endpoint, params=params, timeout=5)
             resp.raise_for_status()
             break
         except Exception:
@@ -68,39 +88,52 @@ def repair(session: Session, redis: Redis):
     tracks = query_tracks(session)
     nodes = select_content_nodes(redis)
     for track in tracks:
-        if not track.audio_upload_id:
+        if not track.track_cid:
+            # Only analyze streamable tracks
             continue
+        legacyTrack = not track.audio_upload_id and track.track_cid.startswith("Qm")
         for endpoint in nodes:
             try:
                 # Query random content node for the audio upload id
-                resp = requests.get(
-                    f"${endpoint}/uploads/${track.audio_upload_id}", timeout=5
-                )
+                endpoint = f"${endpoint}/uploads/${track.audio_upload_id}"
+                if legacyTrack:
+                    endpoint = f"${endpoint}/tracks/legacy/${track.track_cid}/analysis"
+                resp = requests.get(endpoint, timeout=5)
                 resp.raise_for_status()
                 data = resp.json()
             except Exception:
                 # Fallback to another random content node
                 continue
 
-            audio_analysis_results = data.get("audio_analysis_results", {})
-            audio_analysis_error_count = data.get("audio_analysis_error_count", 0)
-            key = audio_analysis_results.get("key", None)
-            bpm = audio_analysis_results.get("bpm", None)
+            results_key = "results" if legacyTrack else "audio_analysis_results"
+            error_count_key = (
+                "error_count" if legacyTrack else "audio_analysis_error_count"
+            )
+            results = data.get(results_key, {})
+            error_count = data.get(error_count_key, 0)
+            key = results.get("key", None) or results.get("Key", None)
+            bpm = results.get("bpm", None) or results.get("BPM", None)
 
             # Populate analysis results and err count if present
             if key:
                 track.musical_key = key
             if bpm:
                 track.bpm = bpm
-            track.audio_analysis_error_count = audio_analysis_error_count
+            track.audio_analysis_error_count = error_count
 
             # Failures get retried up to 3 times
-            if (not key or not bpm) and audio_analysis_error_count < 3:
+            if (not key or not bpm) and error_count < 3:
                 # Trigger another audio analysis but don't bother polling for result. Will read it in next batch.
-                retrigger_audio_analysis(nodes, track.track_id, track.audio_upload_id)
-            if audio_analysis_error_count >= 3:
+                retrigger_audio_analysis(
+                    nodes,
+                    track.track_id,
+                    track.track_cid,
+                    track.audio_upload_id,
+                    legacyTrack,
+                )
+            if error_count >= 3:
                 logger.warning(
-                    f"repair_audio_analyses.py | Upload ID {track.audio_upload_id} failed audio analysis >= 3 times"
+                    f"repair_audio_analyses.py | Track ID {track.track_id} failed audio analysis >= 3 times"
                 )
             break
 
