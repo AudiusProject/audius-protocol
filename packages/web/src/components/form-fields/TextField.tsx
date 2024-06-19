@@ -14,6 +14,7 @@ export const TextField = (props: TextFieldProps) => {
   return (
     <TextInput
       {...field}
+      value={field.value ?? ''}
       error={hasError}
       helperText={hasError ? error : undefined}
       {...other}

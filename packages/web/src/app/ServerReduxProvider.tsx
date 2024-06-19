@@ -23,7 +23,7 @@ type ServerReduxProviderProps = {
 
 const reducers = {
   // @ts-ignore
-  users: asCache(cacheUsersReducer, Kind.TRACKS),
+  users: asCache(cacheUsersReducer, Kind.USERS),
   // @ts-ignore
   tracks: asCache(cacheTracksReducer, Kind.TRACKS),
   // @ts-ignore

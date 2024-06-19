@@ -26,7 +26,10 @@ export const categories = {
     icon: IconNote,
     filters: ['genre', 'mood', 'key', 'bpm', 'isPremium', 'hasDownloads']
   },
-  albums: { icon: IconAlbum, filters: ['genre', 'mood'] },
+  albums: {
+    icon: IconAlbum,
+    filters: ['genre', 'mood', 'isPremium', 'hasDownloads']
+  },
   playlists: { icon: IconPlaylists, filters: ['genre', 'mood'] }
 } satisfies Record<string, Category>
 

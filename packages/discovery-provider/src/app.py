@@ -327,6 +327,7 @@ def configure_celery(celery, test_config=None):
             "src.tasks.update_aggregates",
             "src.tasks.cache_entity_counts",
             "src.tasks.publish_scheduled_releases",
+            "src.tasks.create_engagement_notifications",
         ],
         beat_schedule={
             "aggregate_metrics": {
@@ -433,6 +434,10 @@ def configure_celery(celery, test_config=None):
                 "task": "publish_scheduled_releases",
                 "schedule": timedelta(minutes=1),
             },
+            "create_engagement_notifications": {
+                "task": "create_engagement_notifications",
+                "schedule": timedelta(minutes=10),
+            },
         },
         task_serializer="json",
         accept_content=["json"],
@@ -486,6 +491,7 @@ def configure_celery(celery, test_config=None):
     redis_inst.delete(UPDATE_DELIST_STATUSES_LOCK)
     redis_inst.delete("update_aggregates_lock")
     redis_inst.delete("publish_scheduled_releases_lock")
+    redis_inst.delete("create_engagement_notifications")
     # delete cached final_poa_block in case it has changed
     redis_inst.delete(final_poa_block_redis_key)
 

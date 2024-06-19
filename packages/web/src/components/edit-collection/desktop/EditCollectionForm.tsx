@@ -9,12 +9,14 @@ import { Flex, Text } from '@audius/harmony'
 import { Form, Formik } from 'formik'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
-import { AccessAndSaleField } from 'components/edit/fields/AccessAndSaleField'
+import { AdvancedAlbumField } from 'components/edit/fields/AdvancedAlbumField'
 import { CollectionTrackFieldArray } from 'components/edit/fields/CollectionTrackFieldArray'
 import { ReleaseDateFieldLegacy } from 'components/edit/fields/ReleaseDateFieldLegacy'
 import { SelectGenreField } from 'components/edit/fields/SelectGenreField'
 import { SelectMoodField } from 'components/edit/fields/SelectMoodField'
 import { StemsAndDownloadsCollectionField } from 'components/edit/fields/StemsAndDownloadsCollectionsField'
+import { PriceAndAudienceField } from 'components/edit/fields/price-and-audience'
+import { VisibilityField } from 'components/edit/fields/visibility/VisibilityField'
 import {
   ArtworkField,
   TagField,
@@ -53,6 +55,10 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
   )
   const showPremiumAlbums = isPremiumAlbumsEnabled && isUSDCUploadEnabled
 
+  const { isEnabled: isHiddenPaidScheduledEnabled } = useFeatureFlag(
+    FeatureFlags.HIDDEN_PAID_SCHEDULED
+  )
+
   const collectionTypeName = isAlbum ? 'Album' : 'Playlist'
   const validationSchema = isAlbum ? AlbumSchema : PlaylistSchema
 
@@ -88,12 +94,17 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
               />
             </div>
           </div>
-          <ReleaseDateFieldLegacy />
+          {isHiddenPaidScheduledEnabled ? (
+            <VisibilityField entityType={isAlbum ? 'album' : 'playlist'} />
+          ) : (
+            <ReleaseDateFieldLegacy />
+          )}
           {isAlbum && showPremiumAlbums ? (
             <Flex w='100%' css={{ flexGrow: 1 }}>
-              <AccessAndSaleField isAlbum isUpload />
+              <PriceAndAudienceField isAlbum isUpload />
             </Flex>
           ) : null}
+          {isAlbum ? <AdvancedAlbumField /> : null}
           <div className={styles.trackDetails}>
             <Text variant='label'>{messages.trackDetails.title}</Text>
             <Text variant='body'>{messages.trackDetails.description}</Text>

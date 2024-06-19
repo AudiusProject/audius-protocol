@@ -20,7 +20,6 @@ import {
   IconStar,
   IconCheck,
   IconCrown,
-  IconVisibilityHidden,
   Text,
   Flex,
   ProgressBar,
@@ -31,8 +30,8 @@ import { useSelector } from 'react-redux'
 
 import { DogEar } from 'components/dog-ear'
 import { TextLink } from 'components/link'
-import { ScheduledReleaseLabel } from 'components/scheduled-release-label/ScheduledReleaseLabel'
 import Skeleton from 'components/skeleton/Skeleton'
+import { VisibilityLabel } from 'components/visibility-label/VisibilityLabel'
 import { useAuthenticatedClickCallback } from 'hooks/useAuthenticatedCallback'
 import { useFlag } from 'hooks/useRemoteConfig'
 
@@ -244,7 +243,7 @@ const TrackTile = ({
       })
 
   let specialContentLabel = null
-  if (!isLoading) {
+  if (!isLoading && !isUnlisted) {
     if (isStreamGated) {
       specialContentLabel = (
         <GatedContentLabel
@@ -341,7 +340,7 @@ const TrackTile = ({
             ) : (
               <>
                 {specialContentLabel}
-                <ScheduledReleaseLabel
+                <VisibilityLabel
                   releaseDate={releaseDate}
                   isUnlisted={isUnlisted}
                   isScheduledRelease={isScheduledRelease}
@@ -351,12 +350,6 @@ const TrackTile = ({
             )}
           </Text>
           <Text variant='body' size='xs' className={styles.topRight}>
-            {isUnlisted && !isScheduledRelease ? (
-              <div className={styles.topRightIconLabel}>
-                <IconVisibilityHidden className={styles.topRightIcon} />
-                {messages.hiddenTrack}
-              </div>
-            ) : null}
             {!isLoading && duration !== null && duration !== undefined ? (
               <div className={styles.duration}>{getDurationText()}</div>
             ) : null}

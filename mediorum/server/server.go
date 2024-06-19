@@ -74,14 +74,15 @@ type MediorumConfig struct {
 }
 
 type MediorumServer struct {
-	echo            *echo.Echo
-	bucket          *blob.Bucket
-	logger          *slog.Logger
-	crud            *crudr.Crudr
-	pgPool          *pgxpool.Pool
-	quit            chan os.Signal
-	trustedNotifier *ethcontracts.NotifierInfo
-	reqClient       *req.Client
+	echo             *echo.Echo
+	bucket           *blob.Bucket
+	logger           *slog.Logger
+	crud             *crudr.Crudr
+	pgPool           *pgxpool.Pool
+	quit             chan os.Signal
+	trustedNotifier  *ethcontracts.NotifierInfo
+	reqClient        *req.Client
+	rendezvousHasher *RendezvousHasher
 
 	// simplify
 	mediorumPathUsed uint64
@@ -223,14 +224,17 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 
 	// crud
 	peerHosts := []string{}
+	allHosts := []string{}
 	for _, peer := range config.Peers {
-		if peer.Host == config.Self.Host {
-			continue
+		allHosts = append(allHosts, peer.Host)
+		if peer.Host != config.Self.Host {
+			peerHosts = append(peerHosts, peer.Host)
 		}
-		peerHosts = append(peerHosts, peer.Host)
 	}
 	crud := crudr.New(config.Self.Host, config.privateKey, peerHosts, db)
 	dbMigrate(crud, config.Self.Host)
+
+	rendezvousHasher := NewRendezvousHasher(allHosts)
 
 	// req.cool http client
 	reqClient := req.C().
@@ -258,6 +262,7 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	echoServer.Use(middleware.Recover())
 	echoServer.Use(middleware.Logger())
 	echoServer.Use(middleware.CORS())
+	echoServer.Use(timingMiddleware)
 
 	ss := &MediorumServer{
 		echo:             echoServer,
@@ -270,6 +275,7 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 		trustedNotifier:  &trustedNotifier,
 		isSeeding:        config.Env == "stage" || config.Env == "prod",
 		isAudiusdManaged: isAudiusdManaged,
+		rendezvousHasher: rendezvousHasher,
 
 		peerHealths:        map[string]*PeerHealth{},
 		redirectCache:      imcache.New(imcache.WithMaxEntriesLimitOption[string, string](50_000, imcache.EvictionPolicyLRU)),
@@ -402,6 +408,27 @@ func ACAOHeaderOverwriteMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 			setResponseACAOHeaderFromRequest(*ctx.Request(), *ctx.Response())
 		})
 		return next(ctx)
+	}
+}
+
+func timingMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		startTime := time.Now()
+		c.Set("startTime", startTime)
+		c.Response().Before(func() {
+			c.Response().Header().Set("x-took", time.Since(startTime).String())
+		})
+		return next(c)
+	}
+}
+
+// Calling echo response functions (c.JSON or c.String)
+// will automatically set timing header in timingMiddleware.
+// But for places where we do http.ServeContent
+// we have to manually call setTimingHeader right before writing response.
+func setTimingHeader(c echo.Context) {
+	if startTime, ok := c.Get("startTime").(time.Time); ok {
+		c.Response().Header().Set("x-took", time.Since(startTime).String())
 	}
 }
 

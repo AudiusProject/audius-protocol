@@ -1,5 +1,7 @@
+// TODO: Remove hidden and public when we go live with upload/edit updates
 export enum StreamTrackAvailabilityType {
   PUBLIC = 'PUBLIC',
+  FREE = 'FREE',
   USDC_PURCHASE = 'USDC_PURCHASE',
   SPECIAL_ACCESS = 'SPECIAL_ACCESS',
   COLLECTIBLE_GATED = 'COLLECTIBLE_GATED',

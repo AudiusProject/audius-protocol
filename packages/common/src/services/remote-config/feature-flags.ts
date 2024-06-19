@@ -60,7 +60,8 @@ export enum FeatureFlags {
   PAYOUT_WALLET_ENABLED = 'payout_wallet_enabled',
   EDIT_TRACK_REDESIGN = 'edit_track_redesign',
   SKIP_STREAM_CHECK = 'skip_stream_check',
-  PREFETCH_STREAM_URLS = 'prefetch_stream_urls'
+  PREFETCH_STREAM_URLS = 'prefetch_stream_urls',
+  HIDDEN_PAID_SCHEDULED = 'hidden_paid_scheduled'
 }
 
 type FlagDefaults = Record<FeatureFlags, boolean>
@@ -136,5 +137,6 @@ export const flagDefaults: FlagDefaults = {
   [FeatureFlags.PAYOUT_WALLET_ENABLED]: false,
   [FeatureFlags.EDIT_TRACK_REDESIGN]: false,
   [FeatureFlags.SKIP_STREAM_CHECK]: false,
-  [FeatureFlags.PREFETCH_STREAM_URLS]: false
+  [FeatureFlags.PREFETCH_STREAM_URLS]: false,
+  [FeatureFlags.HIDDEN_PAID_SCHEDULED]: false
 }

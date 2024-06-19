@@ -4,19 +4,23 @@ import {
   getContext,
   accountSelectors,
   gatedContentSelectors,
-  cacheTracksSelectors
+  cacheTracksSelectors,
+  queueSelectors,
+  calculatePlayerBehavior
 } from '@audius/common/store'
 import { getQueryParams } from '@audius/common/utils'
 import { all, call, select, put } from 'typed-redux-saga'
 const { getUserId } = accountSelectors
-const { getTrackStreamUrl } = cacheTracksSelectors
+const { getTrackStreamUrl, getTrack } = cacheTracksSelectors
 const { setStreamUrls } = cacheTracksActions
 const { getNftAccessSignatureMap } = gatedContentSelectors
+const { getPlayerBehavior } = queueSelectors
 
 export function* fetchTrackStreamUrls({ trackIds }: { trackIds: ID[] }) {
   const apiClient = yield* getContext('apiClient')
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const reportToSentry = yield* getContext('reportToSentry')
+  const playerBehavior = yield* select(getPlayerBehavior)
 
   const currentUserId = yield* select(getUserId)
 
@@ -30,6 +34,15 @@ export function* fetchTrackStreamUrls({ trackIds }: { trackIds: ID[] }) {
           return { [id]: existingUrl }
         }
 
+        const track = yield* select(getTrack, { id })
+        const { shouldSkip, shouldPreview } = calculatePlayerBehavior(
+          track,
+          playerBehavior
+        )
+
+        if (shouldSkip) {
+          return undefined
+        }
         const nftAccessSignatureMap = yield* select(getNftAccessSignatureMap)
         const nftAccessSignature = nftAccessSignatureMap[id]?.mp3 ?? null
         const queryParams = yield* call(getQueryParams, {
@@ -37,6 +50,9 @@ export function* fetchTrackStreamUrls({ trackIds }: { trackIds: ID[] }) {
           nftAccessSignature,
           userId: currentUserId
         })
+        if (shouldPreview) {
+          queryParams.preview = true
+        }
         const streamUrl = yield* call([apiClient, 'getTrackStreamUrl'], {
           id,
           currentUserId,
