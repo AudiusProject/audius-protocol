@@ -1,5 +1,17 @@
 # @audius/sdk
 
+## 4.2.0
+
+### Minor Changes
+
+- ca9fbd6: Support stem file upload in sdk
+
+### Patch Changes
+
+- fa19828: Update social verification
+- 667037e: updates stream and download endpoints to allow specifying current user
+- 3ef78ea: Remove unused user_id parameter from track history endpoint
+
 ## 4.1.0
 
 ### Minor Changes
