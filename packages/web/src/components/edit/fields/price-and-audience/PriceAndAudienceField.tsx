@@ -232,7 +232,10 @@ export const PriceAndAudienceField = (props: PriceAndAudienceFieldProps) => {
     set(initialValues, IS_DOWNLOADABLE, isDownloadable)
     set(initialValues, LAST_GATE_KEEPER, lastGateKeeper ?? {})
 
-    let availabilityType = StreamTrackAvailabilityType.PUBLIC
+    let availabilityType = isHiddenPaidScheduledEnabled
+      ? StreamTrackAvailabilityType.FREE
+      : StreamTrackAvailabilityType.PUBLIC
+
     if (isUsdcGated) {
       availabilityType = StreamTrackAvailabilityType.USDC_PURCHASE
       set(
@@ -249,7 +252,7 @@ export const PriceAndAudienceField = (props: PriceAndAudienceFieldProps) => {
     if (isCollectibleGated) {
       availabilityType = StreamTrackAvailabilityType.COLLECTIBLE_GATED
     }
-    if (isUnlisted && !isScheduledRelease) {
+    if (isUnlisted && !isScheduledRelease && !isHiddenPaidScheduledEnabled) {
       availabilityType = StreamTrackAvailabilityType.HIDDEN
     }
     set(initialValues, STREAM_AVAILABILITY_TYPE, availabilityType)
@@ -270,13 +273,14 @@ export const PriceAndAudienceField = (props: PriceAndAudienceFieldProps) => {
     downloadConditions,
     isDownloadable,
     lastGateKeeper,
-    isScheduledRelease,
-    fieldVisibility,
-    preview,
-    isCollectibleGated,
+    isHiddenPaidScheduledEnabled,
+    isUsdcGated,
     isFollowGated,
     isTipGated,
-    isUsdcGated
+    isCollectibleGated,
+    isScheduledRelease,
+    fieldVisibility,
+    preview
   ])
 
   const handleSubmit = useCallback(
@@ -479,7 +483,11 @@ export const PriceAndAudienceField = (props: PriceAndAudienceFieldProps) => {
       selectedValues = [specialAccessValue, messages.followersOnly]
     } else if (isContentTipGated(savedStreamConditions)) {
       selectedValues = [specialAccessValue, messages.supportersOnly]
-    } else if (isUnlisted && !isScheduledRelease) {
+    } else if (
+      isUnlisted &&
+      !isScheduledRelease &&
+      !isHiddenPaidScheduledEnabled
+    ) {
       const fieldVisibilityKeys = Object.keys(
         messages.fieldVisibility
       ) as Array<keyof FieldVisibility>
