@@ -406,7 +406,7 @@ class TrackPageProvider extends Component<
       !!track &&
       !!currentQueueItem.track &&
       currentQueueItem.track.track_id === track.track_id
-    const trendingBadgeLabel =
+    const badge =
       trackRank.year && trackRank.year <= TRENDING_BADGE_LIMIT
         ? `#${trackRank.year} This Year`
         : trackRank.month && trackRank.month <= TRENDING_BADGE_LIMIT
@@ -471,7 +471,7 @@ class TrackPageProvider extends Component<
       user,
       heroPlaying,
       userId,
-      trendingBadgeLabel,
+      badge,
       previewing,
       onHeroPlay: this.onHeroPlay,
       goToAllRemixesPage: this.goToAllRemixesPage,

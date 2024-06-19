@@ -7,6 +7,7 @@ import {
   gatedContentActions
 } from '@audius/common/store'
 import { Genre, getDogEarType } from '@audius/common/utils'
+import moment from 'moment'
 import { View } from 'react-native'
 import { useSelector, useDispatch } from 'react-redux'
 
@@ -73,12 +74,16 @@ export const LineupTile = ({
   const streamConditions = item.stream_conditions ?? null
   const isArtistPick = artist_pick_track_id === id
   const { hasStreamAccess } = useGatedContentAccess(item)
+  const isScheduledRelease = item.release_date
+    ? moment(item.release_date).isAfter(moment())
+    : false
 
   const dogEarType = getDogEarType({
     streamConditions,
     isOwner,
     hasStreamAccess,
-    isArtistPick: showArtistPick && isArtistPick
+    isArtistPick: showArtistPick && isArtistPick,
+    isUnlisted: isUnlisted && !isScheduledRelease
   })
 
   const handlePress = useCallback(() => {

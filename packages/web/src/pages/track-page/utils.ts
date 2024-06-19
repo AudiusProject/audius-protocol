@@ -20,9 +20,7 @@ export const getTrackDefaults = (heroTrack: Track | null) => ({
   description: emptyStringGuard(heroTrack?.description),
   playCount: heroTrack?.play_count ?? 0,
   duration: heroTrack?.duration ?? 0,
-  releaseDate: emptyStringGuard(
-    heroTrack?.release_date || heroTrack?.created_at
-  ),
+  released: emptyStringGuard(heroTrack?.release_date || heroTrack?.created_at),
   credits: emptyStringGuard(heroTrack?.credits_splits),
   genre: emptyStringGuard(heroTrack?.genre),
   mood: emptyStringGuard(heroTrack?.mood),

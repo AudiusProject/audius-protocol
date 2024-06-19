@@ -27,8 +27,7 @@ import {
   IconSearch,
   IconCart,
   useTheme,
-  IconComponent,
-  MusicBadge
+  IconComponent
 } from '@audius/harmony'
 import cn from 'classnames'
 
@@ -50,8 +49,7 @@ const messages = {
   filterAlbum: 'Search in album...',
   premiumLabel: 'premium',
   hiddenPlaylistLabel: 'hidden playlist',
-  by: 'By ',
-  hidden: 'Hidden'
+  by: 'By '
 }
 
 type CollectionHeaderProps = {
@@ -197,6 +195,9 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
             <Skeleton height='24px' width='200px' />
           ) : (
             <Flex gap='s' mt='s' alignItems='center'>
+              {!isPublished ? (
+                <IconVisibilityHidden color='subdued' aria-label='hidden' />
+              ) : null}
               {isPremium ? <IconCart size='s' color='subdued' /> : null}
               <Text
                 variant='label'
@@ -270,15 +271,15 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
           />
         )}
       </Flex>
-      <Flex
-        w='240px'
-        gap='s'
-        justifyContent='flex-end'
-        css={{ position: 'absolute', right: spacing.l, top: spacing.l }}
-      >
-        {!isPublished ? (
-          <MusicBadge icon={IconVisibilityHidden}>{messages.hidden}</MusicBadge>
-        ) : onFilterChange ? (
+      {onFilterChange ? (
+        <Flex
+          w='240px'
+          css={{
+            position: 'absolute',
+            top: spacing.l,
+            right: spacing.l
+          }}
+        >
           <TextInput
             label={
               type === 'album' ? messages.filterAlbum : messages.filterPlaylist
@@ -292,8 +293,8 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
             size={TextInputSize.SMALL}
             className={styles.searchInput}
           />
-        ) : null}
-      </Flex>
+        </Flex>
+      ) : null}
     </Flex>
   )
 

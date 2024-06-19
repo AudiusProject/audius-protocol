@@ -82,8 +82,11 @@ export const CollectionCard = (props: CollectionCardProps) => {
   const isOwner = accountId === playlist_owner_id
   const isPurchase = isContentUSDCPurchaseGated(stream_conditions)
 
-  const dogEarType =
-    isPurchase && (!access.stream || isOwner) ? DogEarType.USDC_PURCHASE : null
+  const dogEarType = is_private
+    ? DogEarType.HIDDEN
+    : isPurchase && (!access.stream || isOwner)
+    ? DogEarType.USDC_PURCHASE
+    : null
 
   return (
     <Paper border='default' onPress={handlePress}>

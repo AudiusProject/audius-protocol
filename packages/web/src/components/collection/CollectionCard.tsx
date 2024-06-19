@@ -101,10 +101,11 @@ export const CollectionCard = forwardRef(
     const isOwner = accountId === playlist_owner_id
     const isPurchase = isContentUSDCPurchaseGated(stream_conditions)
 
-    const dogEarType =
-      isPurchase && (!access.stream || isOwner)
-        ? DogEarType.USDC_PURCHASE
-        : null
+    const dogEarType = is_private
+      ? DogEarType.HIDDEN
+      : isPurchase && (!access.stream || isOwner)
+      ? DogEarType.USDC_PURCHASE
+      : null
 
     return (
       <Card ref={ref} onClick={handleClick} size={size} {...other}>

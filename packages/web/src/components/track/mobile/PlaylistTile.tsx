@@ -302,7 +302,8 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
     streamConditions,
     isOwner,
     hasStreamAccess,
-    isArtistPick: false
+    isArtistPick: false,
+    isUnlisted
   })
 
   let specialContentLabel = null
@@ -495,7 +496,7 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
               isMatrixMode={props.isMatrix}
               hasStreamAccess={props.hasStreamAccess}
               streamConditions={props.streamConditions}
-              isUnlisted={isUnlisted}
+              isUnlisted={props.isUnlisted}
             />
           </div>
         ) : null}

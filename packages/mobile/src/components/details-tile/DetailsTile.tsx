@@ -10,7 +10,7 @@ import {
   cacheCollectionsSelectors
 } from '@audius/common/store'
 import type { CommonState } from '@audius/common/store'
-import { getDogEarType, Genre, getLocalTimezone } from '@audius/common/utils'
+import { dayjs, getDogEarType, Genre } from '@audius/common/utils'
 import moment from 'moment'
 import { TouchableOpacity } from 'react-native'
 import { useSelector } from 'react-redux'
@@ -26,9 +26,7 @@ import {
   spacing,
   Button,
   Divider,
-  Box,
-  MusicBadge,
-  IconVisibilityHidden
+  Box
 } from '@audius/harmony-native'
 import CoSign from 'app/components/co-sign/CoSign'
 import { Size } from 'app/components/co-sign/types'
@@ -61,12 +59,7 @@ const messages = {
   pause: 'Pause',
   resume: 'Resume',
   replay: 'Replay',
-  preview: 'Preview',
-  hidden: 'Hidden',
-  releases: (releaseDate: string) =>
-    `Releases ${moment(releaseDate).format(
-      'M/D/YY [@] h:mm A'
-    )} ${getLocalTimezone()}`
+  preview: 'Preview'
 }
 
 const useStyles = makeStyles(({ palette, spacing }) => ({
@@ -165,7 +158,7 @@ export const DetailsTile = ({
   const isPlayingPreview = isPreviewing && isPlaying
   const isPlayingFullAccess = isPlaying && !isPreviewing
   const isUnpublishedScheduledRelease =
-    track?.is_scheduled_release && track?.is_unlisted && releaseDate
+    track?.is_scheduled_release && track?.is_unlisted
 
   // Show play if user has access to the collection or any of its contents.
   // Show preview only if the user is the owner on a track screen.
@@ -198,7 +191,8 @@ export const DetailsTile = ({
   const renderDogEar = () => {
     const dogEarType = getDogEarType({
       isOwner,
-      streamConditions
+      streamConditions,
+      isUnlisted: isUnlisted && !isUnpublishedScheduledRelease
     })
     return dogEarType ? <DogEar type={dogEarType} borderOffset={1} /> : null
   }
@@ -246,13 +240,6 @@ export const DetailsTile = ({
   const badges = [
     isAiGeneratedTracksEnabled && aiAttributionUserId ? (
       <DetailsTileAiAttribution userId={aiAttributionUserId} />
-    ) : null,
-    isUnpublishedScheduledRelease ? (
-      <MusicBadge variant='accent' icon={IconCalendarMonth}>
-        {messages.releases(releaseDate)}
-      </MusicBadge>
-    ) : isUnlisted ? (
-      <MusicBadge icon={IconVisibilityHidden}>{messages.hidden}</MusicBadge>
     ) : null
   ].filter((badge) => badge !== null)
 
@@ -366,6 +353,17 @@ export const DetailsTile = ({
           onPressShare={onPressShare}
           onPressPublish={onPressPublish}
         />
+        {isUnpublishedScheduledRelease && track?.release_date ? (
+          <Flex gap='xs' direction='row' alignItems='center'>
+            <IconCalendarMonth color='accent' size='m' />
+            <Text variant='body' color='accent' strength='strong' size='m'>
+              Releases
+              {' ' +
+                moment(track.release_date).format('M/D/YY @ h:mm A ') +
+                dayjs().format('z')}
+            </Text>
+          </Flex>
+        ) : null}
       </Flex>
       <Flex
         p='l'

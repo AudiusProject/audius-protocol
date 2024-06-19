@@ -23,25 +23,20 @@ import {
   formatSeconds,
   formatDate,
   getDogEarType,
-  Nullable,
-  formatReleaseDate
+  Nullable
 } from '@audius/common/utils'
 import {
   Flex,
+  IconRobot,
   IconCollectible,
   IconPause,
   IconPlay,
   IconSpecialAccess,
   IconCart,
   Box,
-  Button,
-  MusicBadge
+  Button
 } from '@audius/harmony'
-import IconCalendarMonth from '@audius/harmony/src/assets/icons/CalendarMonth.svg'
-import IconRobot from '@audius/harmony/src/assets/icons/Robot.svg'
-import IconVisibilityHidden from '@audius/harmony/src/assets/icons/VisibilityHidden.svg'
 import cn from 'classnames'
-import moment from 'moment'
 import { shallowEqual, useSelector } from 'react-redux'
 
 import CoSign from 'components/co-sign/CoSign'
@@ -52,6 +47,7 @@ import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { UserLink } from 'components/link'
 import { SearchTag } from 'components/search/SearchTag'
 import { AiTrackSection } from 'components/track/AiTrackSection'
+import Badge from 'components/track/Badge'
 import { DownloadSection } from 'components/track/DownloadSection'
 import { GatedContentSection } from 'components/track/GatedContentSection'
 import { UserGeneratedText } from 'components/user-generated-text'
@@ -59,6 +55,8 @@ import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 import { moodMap } from 'utils/Moods'
 import { isDarkMode } from 'utils/theme/theme'
 import { trpc } from 'utils/trpcClientWeb'
+
+import HiddenTrackHeader from '../HiddenTrackHeader'
 
 import ActionButtonRow from './ActionButtonRow'
 import StatsButtonRow from './StatsButtonRow'
@@ -74,10 +72,7 @@ const messages = {
   premiumTrack: 'PREMIUM TRACK',
   specialAccess: 'SPECIAL ACCESS',
   generatedWithAi: 'Generated With AI',
-  artworkAltText: 'Track Artwork',
-  hidden: 'Hidden',
-  releases: (releaseDate: string) =>
-    `Releases ${formatReleaseDate({ date: releaseDate, withHour: true })}`
+  artworkAltText: 'Track Artwork'
 }
 
 type PlayButtonProps = {
@@ -126,7 +121,7 @@ type TrackHeaderProps = {
   userId: ID
   coverArtSizes: CoverArtSizes | null
   description: string
-  releaseDate: string
+  released: string
   genre: string
   mood: string
   credits: string
@@ -165,7 +160,7 @@ const TrackHeader = ({
   description,
   isOwner,
   isFollowing,
-  releaseDate,
+  released,
   duration,
   isLoading,
   isPlaying,
@@ -218,8 +213,6 @@ const TrackHeader = ({
     { enabled: !!trackId }
   )
   const isPlaylistAddable = useIsGatedContentPlaylistAddable(track)
-  const shouldShowScheduledRelease =
-    track?.release_date && moment(track.release_date).isAfter(moment())
 
   const image = useTrackCoverArt(
     trackId,
@@ -242,7 +235,7 @@ const TrackHeader = ({
       isHidden: isUnlisted && !fieldVisibility?.genre,
       value: getCanonicalName(genre)
     },
-    { value: formatDate(releaseDate), label: 'Released', isHidden: isUnlisted },
+    { value: formatDate(released), label: 'Released', isHidden: isUnlisted },
     {
       isHidden: isUnlisted && !fieldVisibility?.mood,
       label: 'Mood',
@@ -341,6 +334,7 @@ const TrackHeader = ({
 
   const renderDogEar = () => {
     const DogEarType = getDogEarType({
+      isUnlisted,
       streamConditions,
       isOwner,
       hasStreamAccess
@@ -384,23 +378,20 @@ const TrackHeader = ({
   return (
     <div className={styles.trackHeader}>
       {renderDogEar()}
-      <Flex gap='s' direction='column'>
-        {renderHeaderText()}
-        {aiAttributedUserId ? (
-          <MusicBadge icon={IconRobot} color='lightGreen' size='s'>
-            {messages.generatedWithAi}
-          </MusicBadge>
-        ) : null}
-        {shouldShowScheduledRelease ? (
-          <MusicBadge variant='accent' icon={IconCalendarMonth} size='s'>
-            {messages.releases(releaseDate)}
-          </MusicBadge>
-        ) : isUnlisted ? (
-          <MusicBadge icon={IconVisibilityHidden} size='s'>
-            {messages.hidden}
-          </MusicBadge>
-        ) : null}
-      </Flex>
+      {isUnlisted ? (
+        <div className={styles.hiddenTrackHeaderWrapper}>
+          <HiddenTrackHeader />
+        </div>
+      ) : (
+        renderHeaderText()
+      )}
+      {aiAttributedUserId ? (
+        <Badge
+          icon={<IconRobot />}
+          className={styles.badgeAi}
+          textLabel={messages.generatedWithAi}
+        />
+      ) : null}
       {imageElement}
       <div className={styles.titleArtistSection}>
         <h1 className={styles.title}>{title}</h1>
@@ -476,7 +467,6 @@ const TrackHeader = ({
           descriptionClassName={styles.aiSectionDescription}
         />
       ) : null}
-
       {description ? (
         <UserGeneratedText
           className={styles.description}

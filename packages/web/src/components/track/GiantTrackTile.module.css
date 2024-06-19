@@ -249,6 +249,31 @@
   fill: var(--harmony-neutral);
 }
 
+.badges {
+  display: flex;
+  position: absolute;
+  right: var(--harmony-unit-6);
+  justify-content: flex-end;
+}
+
+.badgeIcon {
+  margin-left: var(--harmony-unit-1);
+}
+
+.badgeIcon svg {
+  margin-right: 0px !important; /* to override the !important in UserBadges */
+}
+
+.badgeAi {
+  background: linear-gradient(
+      180deg,
+      var(--ai-primary) 0%,
+      var(--ai-secondary) 100%
+    ),
+    var(--ai-primary);
+  margin-right: var(--harmony-unit-2);
+}
+
 .suffix {
   margin-left: var(--harmony-unit-1);
 }

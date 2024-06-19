@@ -2,12 +2,12 @@ import { useEffect } from 'react'
 
 import type { ID } from '@audius/common/models'
 import { aiPageActions, aiPageSelectors } from '@audius/common/store'
-import { TouchableOpacity } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { IconRobot } from '@audius/harmony-native'
-import { MusicBadge } from 'app/harmony-native/components/MusicBadge/MusicBadge'
 import { useNavigation } from 'app/hooks/useNavigation'
+import { useColor } from 'app/utils/theme'
+
+import { DetailsTileBadge } from './DetailsTileBadge'
 
 const { fetchAiUser, reset } = aiPageActions
 const { getAiUser } = aiPageSelectors
@@ -17,6 +17,7 @@ const messages = {
 }
 
 export const DetailsTileAiAttribution = ({ userId }: { userId: ID }) => {
+  const aiColor = useColor('aiPrimary')
   const navigation = useNavigation()
   const dispatch = useDispatch()
   const user = useSelector(getAiUser)
@@ -33,10 +34,8 @@ export const DetailsTileAiAttribution = ({ userId }: { userId: ID }) => {
   }
 
   return user ? (
-    <TouchableOpacity onPress={handlePress}>
-      <MusicBadge icon={IconRobot} color='aiGreen'>
-        {messages.aiGenerated}
-      </MusicBadge>
-    </TouchableOpacity>
+    <DetailsTileBadge color={aiColor} onPress={handlePress}>
+      {messages.aiGenerated}
+    </DetailsTileBadge>
   ) : null
 }
