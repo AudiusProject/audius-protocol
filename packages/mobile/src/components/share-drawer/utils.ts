@@ -1,5 +1,6 @@
 import type { ShareContent } from '@audius/common/store'
 import { makeTwitterShareUrl } from '@audius/common/utils'
+import type { User } from '~/models'
 
 import { audiusBackendInstance } from 'app/services/audius-backend-instance'
 import {
@@ -9,7 +10,6 @@ import {
 } from 'app/utils/routes'
 
 import { messages } from './messages'
-import { User } from '~/models'
 
 export const getContentUrl = (content: ShareContent) => {
   switch (content.type) {
@@ -51,9 +51,7 @@ export const getTwitterShareText = async (content: ShareContent) => {
       return messages.trackShareText(title, await getTwitterShareHandle(artist))
     }
     case 'profile': {
-      const {
-        profile
-      } = content
+      const { profile } = content
       return messages.profileShareText(await getTwitterShareHandle(profile))
     }
     case 'album': {

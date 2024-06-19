@@ -743,14 +743,22 @@ export const audiusBackend = ({
       if (!account) return null
 
       const socialHandles = await getSocialHandles(account)
-      account.twitter_handle = account.twitter_handle || socialHandles.twitterHandle || null
-      account.instagram_handle = account.instagram_handle || socialHandles.instagramHandle || null
-      account.tiktok_handle = account.tiktok_handle || socialHandles.tikTokHandle || null
+      account.twitter_handle =
+        account.twitter_handle || socialHandles.twitterHandle || null
+      account.instagram_handle =
+        account.instagram_handle || socialHandles.instagramHandle || null
+      account.tiktok_handle =
+        account.tiktok_handle || socialHandles.tikTokHandle || null
       account.website = account.website || socialHandles.website || null
       account.donation = account.donation || socialHandles.donation || null
-      account.verified_with_twitter = account.verified_with_twitter || socialHandles.twitterVerified || false
-      account.verified_with_instagram = account.verified_with_instagram || socialHandles.instagramVerified || false
-      account.verified_with_tiktok = account.verified_with_tiktok || socialHandles.tikTokVerified || false
+      account.verified_with_twitter =
+        account.verified_with_twitter || socialHandles.twitterVerified || false
+      account.verified_with_instagram =
+        account.verified_with_instagram ||
+        socialHandles.instagramVerified ||
+        false
+      account.verified_with_tiktok =
+        account.verified_with_tiktok || socialHandles.tikTokVerified || false
 
       try {
         const userBank = await audiusLibs.solanaWeb3Manager.deriveUserBank()
@@ -2269,15 +2277,18 @@ export const audiusBackend = ({
     if (!account) return
     try {
       const { data, signature } = await signData()
-      const res = await fetch(`${identityServiceUrl}/notifications/settings?user_id=${account.user_id}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          [AuthHeaders.Message]: data,
-          [AuthHeaders.Signature]: signature
-        },
-        body: JSON.stringify({ settings: { emailFrequency } })
-      }).then((res) => res.json())
+      const res = await fetch(
+        `${identityServiceUrl}/notifications/settings?user_id=${account.user_id}`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            [AuthHeaders.Message]: data,
+            [AuthHeaders.Signature]: signature
+          },
+          body: JSON.stringify({ settings: { emailFrequency } })
+        }
+      ).then((res) => res.json())
       return res
     } catch (e) {
       console.error(e)

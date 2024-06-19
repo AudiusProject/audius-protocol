@@ -50,9 +50,7 @@ export const getTwitterShareText = async (
       break
     }
     case 'profile': {
-      const {
-        profile
-      } = content
+      const { profile } = content
       twitterText = messageConfig.profileShareText(
         await getTwitterShareHandle(profile)
       )
