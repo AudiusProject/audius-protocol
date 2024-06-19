@@ -155,10 +155,6 @@ func (ss *MediorumServer) findMissedAnalysisJobs(work chan *Upload, myHost strin
 func (ss *MediorumServer) startAudioAnalysisWorker(n int, work chan *Upload) {
 	for upload := range work {
 		logger := ss.logger.With("upload", upload.ID)
-		if time.Since(upload.AudioAnalyzedAt) > time.Minute {
-			logger.Info("audio analysis window has passed. skipping job")
-		}
-
 		logger.Debug("analyzing audio")
 		startTime := time.Now().UTC()
 		err := ss.analyzeAudio(upload)
