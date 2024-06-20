@@ -8,6 +8,8 @@ export enum TrackMetadataType {
   DURATION = 'duration',
   GENRE = 'genre',
   MOOD = 'mood',
+  KEY = 'key',
+  BPM = 'bpm',
   RELEASE_DATE = 'releaseDate',
   UPDATED_AT = 'updatedAt',
   ALBUM = 'album'
@@ -35,7 +37,9 @@ export const useTrackMetadata = ({
     release_date: releaseDate,
     is_scheduled_release: isScheduledRelease,
     mood,
-    is_unlisted: isUnlisted
+    is_unlisted: isUnlisted,
+    musical_key,
+    bpm
   } = track
 
   const labels: TrackMetadataInfo[] = [
@@ -59,6 +63,17 @@ export const useTrackMetadata = ({
       id: TrackMetadataType.MOOD,
       label: 'Mood',
       value: mood
+    },
+    {
+      id: TrackMetadataType.BPM,
+      label: 'BPM',
+      value: bpm
+    },
+    {
+      id: TrackMetadataType.KEY,
+      label: 'Key',
+      // TODO: KJ - Might need a map for this to map to key options
+      value: musical_key
     }
   ].filter(({ isHidden, value }) => !isHidden && !!value)
 
