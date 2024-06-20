@@ -488,7 +488,7 @@ export const email = ({
   </tr>
   </table>
   </td>
-  <td class="stack-column-center" height="24" style="width:24px; min-width:24px; height:24px; min-height:24px;" width="24"> </td>
+  <td class="stack-column-center" height="24" style="width:24px; min-width:24px; height:24px; min-height:24px;" width="24"></td>
   <td align="center" width="47.83%" class="stack-column-center">
   <table width="100%" cellspacing="0" cellpadding="0" border="0">
   <tr>
@@ -620,7 +620,7 @@ export const email = ({
   </tr>
   </table>
   </td>
-  <td class="stack-column-center" height="24" style="width:24px; min-width:24px; height:24px; min-height:24px;" width="24"> </td>
+  <td class="stack-column-center" height="24" style="width:24px; min-width:24px; height:24px; min-height:24px;" width="24"></td>
   <td align="center" width="47.83%" class="stack-column-center">
   <table width="100%" cellspacing="0" cellpadding="0" border="0">
   <tr>
@@ -750,7 +750,7 @@ export const email = ({
   <tr>
   <td style="vertical-align: middle;" class="stack-column-center" align="center"><a target="_blank" href="https://apps.apple.com/us/app/audius-music/id1491270519"><img src="https://download.audius.co/emails/claimable-reward/Fpx8p4esnDqyStvVgHHOCaRBTS1V8M.png" width="142" border="0" style="min-width:142px; width:142px;
            height: auto; display: block;"></a></td>
-  <td class="stack-column-center" height="12" style="width:12px; min-width:12px; height:12px; min-height:12px;" width="12"> </td>
+  <td class="stack-column-center" height="12" style="width:12px; min-width:12px; height:12px; min-height:12px;" width="12"></td>
   <td style="vertical-align: middle;" class="stack-column-center" align="center"><a target="_blank" href="https://play.google.com/store/apps/details?id=co.audius.app&hl=en_US&gl=US"><img src="https://download.audius.co/emails/claimable-reward/TMRGFsZsPLVwhTNM8uUotGvlxhHCcv.png" width="166" border="0" style="min-width:166px; width:166px;
            height: auto; display: block;"></a></td>
   </tr>
@@ -818,9 +818,9 @@ export const email = ({
   <tr>
   <td style="vertical-align: middle;" class="stack-column-center" align="center"><a target="_blank" href="https://www.audius.co"><img src="https://download.audius.co/emails/claimable-reward/S0aJtkolLeL37THzn8DkLC9XcTJkB8.png" width="168" border="0" style="min-width:168px; width:168px;
           border-radius:2px; height: auto; display: block;"></a></td>
-  <td class="stack-column-center" height="12" style="width:12px; min-width:12px; height:12px; min-height:12px;" width="12"> </td>
-  <td class="stack-column-center" style="width:168px;"> </td>
-  <td class="stack-column-center" height="12" style="width:12px; min-width:12px; height:12px; min-height:12px;" width="12"> </td>
+  <td class="stack-column-center" height="12" style="width:12px; min-width:12px; height:12px; min-height:12px;" width="12"></td>
+  <td class="stack-column-center" style="width:168px;"></td>
+  <td class="stack-column-center" height="12" style="width:12px; min-width:12px; height:12px; min-height:12px;" width="12"></td>
   <td style="vertical-align: middle;" align="center" class="stack-column-center">
   <table width="100%" cellspacing="0" cellpadding="0" border="0">
   <tr>
@@ -944,7 +944,7 @@ export const email = ({
   </tr>
   </table>
   </td>
-  <td class="stack-column-center" height="8" style="width:8px; min-width:8px; height:8px; min-height:8px;" width="8"> </td>
+  <td class="stack-column-center" height="8" style="width:8px; min-width:8px; height:8px; min-height:8px;" width="8"></td>
   <td style="vertical-align: middle;" align="center" width="32.32%" class="stack-column-center">
   <table width="100%" cellspacing="0" cellpadding="0" border="0">
   <tr>
@@ -980,7 +980,7 @@ export const email = ({
   </tr>
   </table>
   </td>
-  <td class="stack-column-center" height="8" style="width:8px; min-width:8px; height:8px; min-height:8px;" width="8"> </td>
+  <td class="stack-column-center" height="8" style="width:8px; min-width:8px; height:8px; min-height:8px;" width="8"></td>
   <td style="vertical-align: middle;" align="center" width="32.32%" class="stack-column-center">
   <table width="100%" cellspacing="0" cellpadding="0" border="0">
   <tr>
