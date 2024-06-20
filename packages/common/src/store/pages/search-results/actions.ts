@@ -70,7 +70,11 @@ type FetchSearchPageResultsArgs = {
   offset: number
   genre?: Genre
   mood?: Mood
+  bpm?: string
+  key?: string
   isVerified?: boolean
+  hasDownloads?: boolean
+  isPremium?: boolean
 }
 
 export const fetchSearchPageResults = (

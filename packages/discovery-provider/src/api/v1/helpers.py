@@ -851,6 +851,37 @@ full_search_parser.add_argument(
     type=str,
     description="Only include verified users in the user results",
 )
+full_search_parser.add_argument(
+    "has_downloads",
+    required=False,
+    type=str,
+    description="Only include tracks that have downloads in the track results",
+)
+full_search_parser.add_argument(
+    "is_purchaseable",
+    required=False,
+    type=str,
+    description="Only include purchaseable tracks and albums in the track and album results",
+)
+full_search_parser.add_argument(
+    "key",
+    action="append",
+    required=False,
+    type=str,
+    description="Only include tracks that match the musical key",
+)
+full_search_parser.add_argument(
+    "bpm_min",
+    required=False,
+    type=str,
+    description="Only include tracks that have a bpm greater than or equal to",
+)
+full_search_parser.add_argument(
+    "bpm_max",
+    required=False,
+    type=str,
+    description="Only include tracks that have a bpm less than or equal to",
+)
 
 verify_token_parser = reqparse.RequestParser(argument_class=DescriptiveArgument)
 verify_token_parser.add_argument("token", required=True, description="JWT to verify")

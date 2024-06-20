@@ -28,6 +28,7 @@ export type PlaylistDoc = PlaylistRow & {
   total_play_count: number
   user: EntityUserDoc
   dominant_mood: string
+  purchaseable: boolean
 }
 
 export type UserDoc = UserRow & {
@@ -51,8 +52,11 @@ export type TrackDoc = TrackRow & {
   play_count: any // todo: is it a string or number?  pg returns string
   downloadable: boolean
   purchaseable: boolean
+  purchaseable_download: boolean
   user: EntityUserDoc
   duration: number
+  stem_ids: number[]
+  has_stems: boolean
 }
 
 export type RepostDoc = RepostRow & {

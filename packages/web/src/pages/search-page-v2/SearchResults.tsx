@@ -30,7 +30,11 @@ export const SearchResults = () => {
   const sort = urlSearchParams.get('sort')
   const genre = urlSearchParams.get('genre')
   const mood = urlSearchParams.get('mood')
+  const bpm = urlSearchParams.get('bpm')
+  const key = urlSearchParams.get('key')
   const isVerified = urlSearchParams.get('isVerified')
+  const hasDownloads = urlSearchParams.get('hasDownloads')
+  const isPremium = urlSearchParams.get('isPremium')
 
   const dispatch = useDispatch()
   useEffect(() => {
@@ -55,11 +59,26 @@ export const SearchResults = () => {
           offset: 0,
           genre: (genre || undefined) as Genre,
           mood: (mood || undefined) as Mood,
-          isVerified: isVerified === 'true'
+          bpm: bpm || undefined,
+          key: key || undefined,
+          isVerified: isVerified === 'true',
+          hasDownloads: hasDownloads === 'true',
+          isPremium: isPremium === 'true'
         })
       )
     }
-  }, [dispatch, query, sort, genre, mood, isVerified])
+  }, [
+    dispatch,
+    query,
+    sort,
+    genre,
+    mood,
+    isVerified,
+    hasDownloads,
+    bpm,
+    key,
+    isPremium
+  ])
 
   const isCategoryActive = useCallback(
     (category: CategoryView) => routeMatch?.category === category,
