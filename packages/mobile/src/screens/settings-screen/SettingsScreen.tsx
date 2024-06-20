@@ -11,13 +11,13 @@ import {
 } from '@audius/harmony-native'
 import audiusLogoHorizontal from 'app/assets/images/Horizontal-Logo-Full-Color.png'
 import { Screen, ScreenContent, ScrollView } from 'app/components/core'
+import { useShowManagerModeNotAvailable } from 'app/components/manager-mode-drawer/useShowManagerModeNotAvailable'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles } from 'app/styles'
 import { Theme } from 'app/utils/theme'
 
 import type { ProfileTabScreenParamList } from '../app-screen/ProfileTabScreen'
 
-import { useShowManagerModeNotAvailable } from 'app/components/manager-mode-drawer/useShowManagerModeNotAvailable'
 import { AccountSettingsRow } from './AccountSettingsRow'
 import { AppearanceSettingsRow } from './AppearanceSettingsRow'
 import { CastSettingsRow } from './CastSettingsRow'
