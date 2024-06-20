@@ -291,7 +291,6 @@ const CollectionScreenComponent = (props: CollectionScreenComponentProps) => {
               hasSaved={has_current_user_saved}
               isAlbum={is_album}
               collectionId={playlist_id}
-              isPrivate={is_private}
               isPublishing={_is_publishing ?? false}
               isDeleted={is_delete}
               onPressEdit={handlePressEdit}
