@@ -49,6 +49,6 @@ export function fetchStreamUrls(trackIds: ID[]) {
   return { type: FETCH_STREAM_URLS, trackIds }
 }
 
-export function setStreamUrls(streamUrls: { [trackId: ID]: string }) {
+export function setStreamUrls(streamUrls: { [trackId: ID]: string | undefined }) {
   return { type: SET_STREAM_URLS, streamUrls }
 }
