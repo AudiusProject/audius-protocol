@@ -573,7 +573,7 @@ def process_spl_token_tx(
                             f"index_spl_token.py | Skipping error transaction tx={tx.signature} err={tx.err}"
                         )
                         continue
-                    if tx.slot > latest_processed_slot and tx.err is None:
+                    if tx.slot > latest_processed_slot:
                         transaction_signature_batch.append(tx)
                     elif tx.slot <= latest_processed_slot:
                         intersection_found = True
