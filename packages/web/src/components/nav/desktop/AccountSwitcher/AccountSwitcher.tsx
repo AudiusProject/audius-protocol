@@ -65,9 +65,6 @@ export const AccountSwitcher = () => {
       currentUserId !== currentWeb3User.user_id &&
       !accounts.some(({ user: { user_id } }) => user_id === currentUserId)
     ) {
-      console.warn(
-        `Current user is not in managed accounts list. Switching to logged in user.`
-      )
       switchToWeb3User()
     }
   }, [
