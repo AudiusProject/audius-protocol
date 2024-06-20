@@ -94,7 +94,7 @@ def repair(session: Session, redis: Redis):
         if not track.track_cid:
             # Only analyze streamable tracks
             continue
-        legacy_track = not track.audio_upload_id and track.track_cid.startswith("Qm")
+        legacy_track = not track.audio_upload_id
         for endpoint in nodes:
             try:
                 # Query random content node for the audio upload id
