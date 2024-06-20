@@ -17,6 +17,7 @@ import { Theme } from 'app/utils/theme'
 
 import type { ProfileTabScreenParamList } from '../app-screen/ProfileTabScreen'
 
+import { useShowManagerModeNotAvailable } from 'app/components/manager-mode-drawer/useShowManagerModeNotAvailable'
 import { AccountSettingsRow } from './AccountSettingsRow'
 import { AppearanceSettingsRow } from './AppearanceSettingsRow'
 import { CastSettingsRow } from './CastSettingsRow'
@@ -53,6 +54,8 @@ const IconProps = { height: 28, width: 28, style: { marginRight: 4 } }
 export const SettingsScreen = () => {
   const styles = useStyles()
   const navigation = useNavigation<ProfileTabScreenParamList>()
+
+  useShowManagerModeNotAvailable()
 
   const handlePressInbox = useCallback(() => {
     navigation.push('InboxSettingsScreen')
