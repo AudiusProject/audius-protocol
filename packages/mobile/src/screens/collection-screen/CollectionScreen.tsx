@@ -28,7 +28,7 @@ import {
   favoritesUserListActions,
   RepostType
 } from '@audius/common/store'
-import { encodeUrlName, formatDate, removeNullable } from '@audius/common/utils'
+import { encodeUrlName, removeNullable } from '@audius/common/utils'
 import type { Nullable } from '@audius/common/utils'
 import { useDispatch, useSelector } from 'react-redux'
 
