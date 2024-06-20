@@ -173,15 +173,6 @@ const CollectionScreenComponent = (props: CollectionScreenComponentProps) => {
 
   const currentUserId = useSelector(getUserId)
   const isOwner = currentUserId === playlist_owner_id
-  const extraDetails = useMemo(
-    () => [
-      {
-        label: 'Modified',
-        value: formatDate(updated_at || Date.now().toString())
-      }
-    ],
-    [updated_at]
-  )
 
   const isCollectionMarkedForDownload = useSelector(
     getIsCollectionMarkedForDownload(playlist_id.toString())
@@ -286,7 +277,6 @@ const CollectionScreenComponent = (props: CollectionScreenComponentProps) => {
           <>
             <CollectionScreenDetailsTile
               description={description ?? ''}
-              extraDetails={extraDetails}
               hasReposted={has_current_user_reposted}
               hasSaved={has_current_user_saved}
               isAlbum={is_album}
