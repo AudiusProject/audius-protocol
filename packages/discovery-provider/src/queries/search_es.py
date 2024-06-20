@@ -154,6 +154,7 @@ def search_es_full(args: dict):
                     current_user_id=current_user_id,
                     genres=genres,
                     moods=moods,
+                    only_with_downloads=only_with_downloads,
                     only_purchaseable=only_purchaseable,
                 ),
             ]
@@ -539,7 +540,7 @@ def track_dsl(
             {
                 "bool": {
                     "should": [
-                        {"term": {"downloadable": {"value": False}}},
+                        {"term": {"downloadable": {"value": True}}},
                         {"term": {"has_stems": {"value": True}}},
                     ]
                 }
@@ -753,6 +754,7 @@ def base_playlist_dsl(
     is_album,
     genres,
     moods,
+    only_with_downloads,
     only_purchaseable,
     current_user_id,
     must_saved=False,
@@ -871,6 +873,18 @@ def base_playlist_dsl(
                 }
             )
 
+    if only_with_downloads:
+        dsl["must"].append(
+            {
+                "bool": {
+                    "should": [
+                        {"term": {"tracks.downloadable": {"value": True}}},
+                        {"term": {"tracks.has_stems": {"value": True}}},
+                    ]
+                }
+            }
+        )
+
     if only_purchaseable:
         dsl["must"].append({"term": {"purchaseable": {"value": True}}})
 
@@ -916,20 +930,28 @@ def base_playlist_dsl(
 
 def playlist_dsl(search_str, current_user_id, must_saved=False, genres=[], moods=[]):
     return base_playlist_dsl(
-        search_str, False, genres, moods, False, current_user_id, must_saved
+        search_str, False, genres, moods, False, False, current_user_id, must_saved
     )
 
 
 def album_dsl(
     search_str,
     current_user_id,
+    only_with_downloads,
     only_purchaseable,
     must_saved=False,
     genres=[],
     moods=[],
 ):
     return base_playlist_dsl(
-        search_str, True, genres, moods, only_purchaseable, current_user_id, must_saved
+        search_str,
+        True,
+        genres,
+        moods,
+        only_with_downloads,
+        only_purchaseable,
+        current_user_id,
+        must_saved,
     )
 
 
