@@ -38,6 +38,10 @@ export const AccountsYouManageHomePage = ({
     // TODO: This pattern causes a flash on both modals, maybe update it to SWR-style
     { disabled: userId == null, force: true }
   )
+  // Don't flash loading spinner if we are refreshing the cache
+  const isLoading =
+    status !== Status.SUCCESS &&
+    (!managedAccounts || managedAccounts.length === 0)
   const [approveManagedAccount, approveResult] = useApproveManagedAccount()
   const [rejectManagedAccount, rejectResult] = useRemoveManager()
   const { toast } = useContext(ToastContext)
@@ -97,7 +101,7 @@ export const AccountsYouManageHomePage = ({
       <Text variant='body' size='l'>
         {messages.takeControl}{' '}
       </Text>
-      {status !== Status.SUCCESS ? (
+      {isLoading ? (
         <Box pv='2xl'>
           <LoadingSpinner
             css={({ spacing }) => ({

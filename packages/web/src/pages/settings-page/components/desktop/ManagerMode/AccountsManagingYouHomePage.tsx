@@ -36,6 +36,9 @@ export const AccountsManagingYouHomePage = (
     { userId },
     { force: true }
   )
+  // Don't flash loading spinner if we are refreshing the cache
+  const isLoading =
+    managersStatus !== Status.SUCCESS && (!managers || managers.length === 0)
 
   const handleRemoveManager = useCallback(
     (params: { userId: number; managerUserId: number }) => {
@@ -76,7 +79,7 @@ export const AccountsManagingYouHomePage = (
         </Button>
       </Flex>
       <Flex direction='column' gap='s'>
-        {managersStatus !== Status.SUCCESS ? (
+        {isLoading ? (
           <Box pv='2xl'>
             <LoadingSpinner
               css={({ spacing }) => ({
