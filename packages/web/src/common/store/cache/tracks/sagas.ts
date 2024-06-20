@@ -67,30 +67,31 @@ function* watchAdd() {
   yield* takeEvery(
     cacheActions.ADD_SUCCEEDED,
     function* (action: ReturnType<typeof cacheActions.addSucceeded>) {
-      if (action.kind === Kind.TRACKS) {
-        // Fetch repost data
-        const isNativeMobile = yield* getContext('isNativeMobile')
-        if (!isNativeMobile) {
-          yield* fork(fetchRepostInfo, action.entries as Entry<Collection>[])
-        }
+      // This code only applies to tracks
+      if (action.kind !== Kind.TRACKS) return
 
-        // Prefetch stream urls
-        const getFeatureEnabled = yield* getContext('getFeatureEnabled')
-        const isPrefetchEnabled = yield* call(
-          getFeatureEnabled,
-          FeatureFlags.PREFETCH_STREAM_URLS
-        )
-        if (isPrefetchEnabled) {
-          yield* fork(fetchTrackStreamUrls, {
-            trackIds: action.entries.map((e) => e.id)
-          })
-        }
+      // Fetch repost data
+      const isNativeMobile = yield* getContext('isNativeMobile')
+      if (!isNativeMobile) {
+        yield* fork(fetchRepostInfo, action.entries as Entry<Collection>[])
+      }
+
+      // Prefetch stream urls
+      const getFeatureEnabled = yield* getContext('getFeatureEnabled')
+      const isPrefetchEnabled = yield* call(
+        getFeatureEnabled,
+        FeatureFlags.PREFETCH_STREAM_URLS
+      )
+      if (isPrefetchEnabled) {
+        yield* fork(fetchTrackStreamUrls, {
+          trackIds: action.entries.map((e) => e.id)
+        })
       }
     }
   )
 }
 
-function* watchUpdate() {
+function* watchCacheUpdate() {
   yield* takeEvery(
     cacheActions.UPDATE,
     function* (action: ReturnType<typeof cacheActions.update>) {
@@ -480,7 +481,7 @@ const sagas = () => {
     watchEditTrack,
     watchDeleteTrack,
     watchFetchCoverArt,
-    watchUpdate
+    watchCacheUpdate
   ]
 }
 
