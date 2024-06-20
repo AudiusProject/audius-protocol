@@ -39,7 +39,7 @@ import MobilePageContainer from 'components/mobile-page-container/MobilePageCont
 import { useMainPageHeader } from 'components/nav/mobile/NavContext'
 import TrackList from 'components/track/mobile/TrackList'
 import { TrackItemAction } from 'components/track/mobile/TrackListItem'
-import { useGoToRoute } from 'hooks/useGoToRoute'
+import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import useTabs from 'hooks/useTabs/useTabs'
 import { useCollectionsData } from 'pages/saved-page/hooks/useCollectionsData'
 import { TRENDING_PAGE } from 'utils/route'
@@ -287,7 +287,7 @@ const TracksLineup = ({
 }
 
 const AlbumCardLineup = () => {
-  const goToRoute = useGoToRoute()
+  const navigate = useNavigateToPage()
 
   const [filterText, setFilterText] = useState('')
   const {
@@ -316,8 +316,8 @@ const AlbumCardLineup = () => {
   })
 
   const handleGoToTrending = useCallback(
-    () => goToRoute(TRENDING_PAGE),
-    [goToRoute]
+    () => navigate(TRENDING_PAGE),
+    [navigate]
   )
   const debouncedSetFilter = useDebouncedCallback(
     (value: string) => {

@@ -88,6 +88,11 @@ export type FilterButtonProps = {
   onChange?: (value: string) => void
 
   /**
+   * What to do when the filter button is opened
+   */
+  onOpen?: () => void
+
+  /**
    * If provided, will be called when the selected value is reset
    */
   onReset?: () => void

@@ -33,6 +33,8 @@ func TestServeImage(t *testing.T) {
 		assert.Equal(t, 200, resp.StatusCode)
 		assert.NotEmpty(t, resp.Header.Get("x-fetch-ok"))
 		assert.NotEmpty(t, resp.Header.Get("x-resize-ok"))
+		assert.NotEmpty(t, resp.Header.Get("x-took"))
+
 		assert.Empty(t, resp.Header.Get("x-image-cache-hit"))
 	}
 

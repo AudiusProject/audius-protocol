@@ -1,7 +1,7 @@
 import { useRef } from 'react'
 
+import { useIsManagedAccount } from '@audius/common/hooks'
 import { ID } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import {
   IconMessageBlock,
   IconMessageUnblock,
@@ -20,7 +20,6 @@ import cn from 'classnames'
 import { ArtistRecommendationsPopup } from 'components/artist-recommendations/ArtistRecommendationsPopup'
 import Stats, { StatProps } from 'components/stats/Stats'
 import SubscribeButton from 'components/subscribe-button/SubscribeButton'
-import { useFlag } from 'hooks/useRemoteConfig'
 
 import styles from './StatBanner.module.css'
 
@@ -82,6 +81,7 @@ const StatsPopupMenu = ({
   onBlock,
   onUnblock
 }: StatsMenuPopupProps) => {
+  const isManagedAccount = useIsManagedAccount()
   const menuItems = [
     {
       text: messages.shareProfile,
@@ -90,7 +90,7 @@ const StatsPopupMenu = ({
     }
   ]
 
-  if (accountUserId) {
+  if (accountUserId && !isManagedAccount) {
     menuItems.push(
       isBlocked
         ? {
@@ -154,8 +154,7 @@ export const StatBanner = (props: StatsBannerProps) => {
   } = props
   let buttons = null
   const followButtonRef = useRef<HTMLButtonElement>(null)
-
-  const { isEnabled: isChatEnabled } = useFlag(FeatureFlags.CHAT_ENABLED)
+  const isManagedAccount = useIsManagedAccount()
 
   const shareButton = (
     <Button
@@ -206,7 +205,7 @@ export const StatBanner = (props: StatsBannerProps) => {
     default:
       buttons = (
         <>
-          {isChatEnabled && onShare && onUnblock && onBlock ? (
+          {onShare && onUnblock && onBlock ? (
             <>
               <StatsPopupMenu
                 onShare={onShare}
@@ -215,7 +214,7 @@ export const StatBanner = (props: StatsBannerProps) => {
                 onBlock={onBlock}
                 onUnblock={onUnblock}
               />
-              {onMessage ? (
+              {onMessage && !isManagedAccount ? (
                 <Button
                   variant='secondary'
                   size='small'

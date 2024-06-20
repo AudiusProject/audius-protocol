@@ -26,7 +26,7 @@ const main = async () => {
   app.use(cors())
   app.use(incomingRequestLogger)
   app.get('/solana/health_check', health)
-  app.post('/solana/tracks/:trackId/listen', listen)
+  app.post('/solana/tracks/:trackId/listen', incomingRequestLogger, listen, outgoingRequestLogger)
   app.use(userSignerRecoveryMiddleware)
   app.use(discoveryNodeSignerRecoveryMiddleware)
   app.post('/solana/relay', relay)

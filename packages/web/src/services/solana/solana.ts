@@ -152,17 +152,8 @@ export const getAssociatedTokenAccountOwner = async (
   accountAddress: SolanaWalletAddress
 ) => {
   const connection = await getSolanaConnection()
-  try {
-    const { owner } = await getAccount(
-      connection,
-      new PublicKey(accountAddress)
-    )
-    return owner
-  } catch (e) {
-    // Not a token account, so return the provided address
-    console.error(e)
-    return new PublicKey(accountAddress)
-  }
+  const { owner } = await getAccount(connection, new PublicKey(accountAddress))
+  return owner
 }
 
 /**

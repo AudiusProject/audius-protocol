@@ -9,6 +9,7 @@ import { useField } from 'formik'
 import moment from 'moment'
 import {
   isInclusivelyBeforeDay,
+  isInclusivelyAfterDay,
   DayPickerSingleDateController
 } from 'react-dates'
 
@@ -20,11 +21,19 @@ type DatePickerFieldProps = {
   style?: string
   shouldFocus?: boolean
   isInitiallyUnlisted?: boolean
+  futureDatesOnly?: boolean
 }
 
 export const DatePickerField = (props: DatePickerFieldProps) => {
-  const { name, label, style, shouldFocus, isInitiallyUnlisted } = props
-  const [field, , helpers] = useField<string | undefined>(name)
+  const {
+    name,
+    label,
+    style,
+    shouldFocus,
+    isInitiallyUnlisted,
+    futureDatesOnly
+  } = props
+  const [{ value }, , helpers] = useField<string | undefined>(name)
   const [isFocused, setIsFocused] = useState(false)
   const anchorRef = useRef<HTMLDivElement | null>(null)
 
@@ -42,16 +51,18 @@ export const DatePickerField = (props: DatePickerFieldProps) => {
       >
         <IconCalendarMonth color='subdued' className={styles.iconCalendar} />
         <div>
-          <div className={styles.label}>{label}</div>
+          <div className={cn(styles.label, { [styles.noValue]: !value })}>
+            {label}
+          </div>
           <input
             className={styles.input}
             name={name}
-            value={moment(field.value).format('L')}
+            value={moment(value).format('L')}
             aria-readonly
             readOnly
           />
           <div className={styles.displayValue}>
-            {moment(field.value).calendar().split(' at')[0]}
+            {value ? moment(value).calendar().split(' at')[0] : null}
           </div>
         </div>
       </div>
@@ -64,12 +75,14 @@ export const DatePickerField = (props: DatePickerFieldProps) => {
         <div className={cn(styles.datePicker, style)}>
           <DayPickerSingleDateController
             // @ts-ignore todo: upgrade moment
-            date={moment(field.value)}
+            date={moment(value)}
             onDateChange={(value) => {
               helpers.setValue(value?.toString())
             }}
             isOutsideRange={(day) => {
-              if (isInitiallyUnlisted) {
+              if (futureDatesOnly) {
+                return !isInclusivelyAfterDay(day, moment().add(1, 'day'))
+              } else if (isInitiallyUnlisted) {
                 return !isInclusivelyBeforeDay(day, moment().add(1, 'year'))
               } else {
                 // @ts-ignore mismatched moment versions; shouldn't be relevant here
@@ -78,7 +91,9 @@ export const DatePickerField = (props: DatePickerFieldProps) => {
             }}
             focused={isFocused}
             isFocused={isFocused}
-            onFocusChange={({ focused }) => setIsFocused(focused)}
+            onFocusChange={({ focused }) => {
+              setIsFocused(focused)
+            }}
             // @ts-ignore mismatched moment versions; shouldn't be relevant here
             initialVisibleMonth={() => moment()} // PropTypes.func or null,
             hideKeyboardShortcutsPanel

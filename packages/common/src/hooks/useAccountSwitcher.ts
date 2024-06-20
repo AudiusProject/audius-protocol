@@ -33,6 +33,7 @@ export const useAccountSwitcher = () => {
   return { switchAccount }
 }
 
+/** Determines if we are in Manager Mode, i.e. the current user is not the logged-in user */
 export const useIsManagedAccount = () => {
   const { data: currentWeb3User } = useGetCurrentWeb3User({})
   const { data: currentUserId } = useGetCurrentUserId({})

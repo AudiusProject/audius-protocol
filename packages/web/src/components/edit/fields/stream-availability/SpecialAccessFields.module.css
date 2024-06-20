@@ -22,10 +22,6 @@
   cursor: pointer;
 }
 
-.icon path {
-  fill: var(--harmony-n-400);
-}
-
 .tooltip :global(.ant-tooltip-inner) {
   width: 272px;
   text-align: center;

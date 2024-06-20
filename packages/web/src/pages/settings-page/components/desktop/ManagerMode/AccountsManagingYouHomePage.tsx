@@ -3,15 +3,7 @@ import { useCallback, useContext, useEffect } from 'react'
 import { useGetManagers, useRemoveManager } from '@audius/common/api'
 import { Status } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
-import {
-  Box,
-  Button,
-  Divider,
-  Flex,
-  IconPlus,
-  Text,
-  TextLink
-} from '@audius/harmony'
+import { Box, Button, Divider, Flex, IconPlus, Text } from '@audius/harmony'
 
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { ToastContext } from 'components/toast/ToastContext'
@@ -64,10 +56,7 @@ export const AccountsManagingYouHomePage = (
   return (
     <Flex direction='column' gap='xl' ph='xl'>
       <Text variant='body' size='l'>
-        {sharedMessages.accountManagersExplanation}{' '}
-        <TextLink href='#' variant='visible'>
-          {sharedMessages.learnMore}
-        </TextLink>
+        {sharedMessages.accountManagersExplanation}
       </Text>
       <Divider />
       <Flex justifyContent='space-between' alignItems='center'>

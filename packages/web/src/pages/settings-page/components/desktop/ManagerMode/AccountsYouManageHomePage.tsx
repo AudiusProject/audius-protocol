@@ -7,7 +7,7 @@ import {
 } from '@audius/common/api'
 import { Status, UserMetadata } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
-import { Box, Divider, Flex, Text, TextLink } from '@audius/harmony'
+import { Box, Divider, Flex, Text } from '@audius/harmony'
 
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { ToastContext } from 'components/toast/ToastContext'
@@ -16,12 +16,15 @@ import { useSelector } from 'utils/reducer'
 import { AccountListItem } from './AccountListItem'
 import { sharedMessages } from './sharedMessages'
 import { AccountsYouManagePageProps, AccountsYouManagePages } from './types'
+import { usePendingInviteValidator } from './usePendingInviteValidator'
 const { getAccountUser } = accountSelectors
 
 const messages = {
   takeControl:
     'Take control of your managed accounts by making changes to their profiles, preferences, and content.',
-  noAccounts: 'You don’t manage any accounts.'
+  noAccounts: 'You don’t manage any accounts.',
+  invalidInvitation: 'This invitation is no longer valid',
+  alreadyAcceptedInvitation: 'You already accepted this invitation'
 }
 
 export const AccountsYouManageHomePage = ({
@@ -36,6 +39,8 @@ export const AccountsYouManageHomePage = ({
   const [approveManagedAccount, approveResult] = useApproveManagedAccount()
   const [rejectManagedAccount, rejectResult] = useRemoveManager()
   const { toast } = useContext(ToastContext)
+
+  usePendingInviteValidator({ managedAccounts, userId })
 
   const handleStopManaging = useCallback(
     ({ userId }: { userId: number; managerUserId: number }) => {
@@ -89,9 +94,6 @@ export const AccountsYouManageHomePage = ({
     <Flex direction='column' gap='xl'>
       <Text variant='body' size='l'>
         {messages.takeControl}{' '}
-        <TextLink isExternal href='#' variant='visible'>
-          {sharedMessages.learnMore}
-        </TextLink>
       </Text>
       {status !== Status.SUCCESS ? (
         <Box pv='2xl'>

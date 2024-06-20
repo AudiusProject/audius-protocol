@@ -37,9 +37,15 @@ export class WalletClient {
   }
 
   /** Get user's current ETH Audio balance. Returns null on failure. */
-  async getCurrentBalance(bustCache = false): Promise<BNWei | null> {
+  async getCurrentBalance({
+    ethAddress,
+    bustCache
+  }: { ethAddress?: string; bustCache?: boolean } = {}): Promise<BNWei | null> {
     try {
-      const balance = await this.audiusBackendInstance.getBalance(bustCache)
+      const balance = await this.audiusBackendInstance.getBalance({
+        ethAddress,
+        bustCache
+      })
       return balance as BNWei
     } catch (err) {
       console.error(err)
@@ -48,8 +54,10 @@ export class WalletClient {
   }
 
   /** Get user's current SOL Audio balance. Returns null on failure. */
-  async getCurrentWAudioBalance(): Promise<BNWei | null> {
-    const balance = await this.audiusBackendInstance.getWAudioBalance()
+  async getCurrentWAudioBalance(ethAddress?: string): Promise<BNWei | null> {
+    const balance = await this.audiusBackendInstance.getWAudioBalance(
+      ethAddress
+    )
     return (
       isNullOrUndefined(balance) ? null : new BN(balance.toString())
     ) as BNWei | null
@@ -73,7 +81,9 @@ export class WalletClient {
       throw new Error('No userbank account.')
     }
 
-    const ercAudioBalance = await this.audiusBackendInstance.getBalance(true)
+    const ercAudioBalance = await this.audiusBackendInstance.getBalance({
+      bustCache: true
+    })
     if (
       !isNullOrUndefined(ercAudioBalance) &&
       ercAudioBalance.gt(new BN('0'))

@@ -2,7 +2,6 @@ import { useCallback } from 'react'
 
 import { useGatedContentAccessMap } from '@audius/common/hooks'
 import { isContentUSDCPurchaseGated } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import {
   accountSelectors,
   playerSelectors,
@@ -36,20 +35,19 @@ import { UserGeneratedText, DogEar, Tag } from 'app/components/core'
 import UserBadges from 'app/components/user-badges'
 import { light } from 'app/haptics'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { makeStyles } from 'app/styles'
 
 import { OfflineStatusRow } from '../offline-downloads'
 
+import { CollectionMetadataList } from './CollectionMetadataList'
 import { DeletedTile } from './DeletedTile'
 import { DetailsProgressInfo } from './DetailsProgressInfo'
 import { DetailsTileActionButtons } from './DetailsTileActionButtons'
 import { DetailsTileAiAttribution } from './DetailsTileAiAttribution'
 import { DetailsTileHasAccess } from './DetailsTileHasAccess'
-import { DetailsTileMetadata } from './DetailsTileMetadata'
 import { DetailsTileNoAccess } from './DetailsTileNoAccess'
 import { DetailsTileStats } from './DetailsTileStats'
-import { SecondaryStats } from './SecondaryStats'
+import { TrackMetadataList } from './TrackMetadataList'
 import type { DetailsTileProps } from './types'
 
 const { getTrackId } = playerSelectors
@@ -118,8 +116,6 @@ export const DetailsTile = ({
   onPressSave,
   onPressShare,
   playCount,
-  duration,
-  trackCount,
   renderBottomContent,
   renderImage,
   repostCount,
@@ -129,17 +125,8 @@ export const DetailsTile = ({
   user,
   track,
   ddexApp,
-  releaseDate,
-  updatedAt
+  releaseDate
 }: DetailsTileProps) => {
-  const { isEnabled: isNewPodcastControlsEnabled } = useFeatureFlag(
-    FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
-    FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
-  )
-  const { isEnabled: isAiGeneratedTracksEnabled } = useFeatureFlag(
-    FeatureFlags.AI_ATTRIBUTION
-  )
-
   const styles = useStyles()
   const navigation = useNavigation()
 
@@ -217,17 +204,14 @@ export const DetailsTile = ({
     getTrackPosition(state, { trackId: contentId, userId: currentUserId })
   )
 
-  const playText =
-    isNewPodcastControlsEnabled && playbackPositionInfo?.status
-      ? playbackPositionInfo?.status === 'IN_PROGRESS' || isCurrentTrack
-        ? messages.resume
-        : messages.replay
-      : messages.play
+  const playText = playbackPositionInfo?.status
+    ? playbackPositionInfo?.status === 'IN_PROGRESS' || isCurrentTrack
+      ? messages.resume
+      : messages.replay
+    : messages.play
 
   const PlayIcon =
-    isNewPodcastControlsEnabled &&
-    playbackPositionInfo?.status === 'COMPLETED' &&
-    !isCurrentTrack
+    playbackPositionInfo?.status === 'COMPLETED' && !isCurrentTrack
       ? IconRepeatOff
       : IconPlay
 
@@ -244,7 +228,7 @@ export const DetailsTile = ({
   )
 
   const badges = [
-    isAiGeneratedTracksEnabled && aiAttributionUserId ? (
+    aiAttributionUserId ? (
       <DetailsTileAiAttribution userId={aiAttributionUserId} />
     ) : null,
     isUnpublishedScheduledRelease ? (
@@ -333,7 +317,7 @@ export const DetailsTile = ({
             </TouchableOpacity>
           ) : null}
         </Flex>
-        {isLongFormContent && isNewPodcastControlsEnabled && track ? (
+        {isLongFormContent && track ? (
           <DetailsProgressInfo track={track} />
         ) : null}
         {shouldShowPlay ? (
@@ -393,12 +377,14 @@ export const DetailsTile = ({
         ) : null}
         {!isPublished ? null : (
           <DetailsTileStats
+            playCount={playCount}
+            hidePlayCount={hidePlayCount}
             favoriteCount={saveCount}
             hideFavoriteCount={hideFavoriteCount}
+            repostCount={repostCount}
             hideRepostCount={hideRepostCount}
             onPressFavorites={onPressFavorites}
             onPressReposts={onPressReposts}
-            repostCount={repostCount}
           />
         )}
         {description ? (
@@ -412,20 +398,13 @@ export const DetailsTile = ({
             </UserGeneratedText>
           </Box>
         ) : null}
-        <DetailsTileMetadata
-          id={contentId}
-          genre={track?.genre}
-          mood={track?.mood}
-        />
-        <SecondaryStats
-          isCollection={isCollection}
-          playCount={playCount}
-          duration={duration}
-          trackCount={trackCount}
-          releaseDate={releaseDate}
-          updatedAt={updatedAt}
-          hidePlayCount={hidePlayCount}
-        />
+        {isCollection ? (
+          contentId ? (
+            <CollectionMetadataList collectionId={contentId} />
+          ) : null
+        ) : contentId ? (
+          <TrackMetadataList trackId={contentId} />
+        ) : null}
         {renderTags()}
         <OfflineStatusRow contentId={contentId} isCollection={isCollection} />
       </Flex>

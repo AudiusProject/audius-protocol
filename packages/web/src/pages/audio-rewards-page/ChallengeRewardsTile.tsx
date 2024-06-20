@@ -44,7 +44,6 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useModalState, useSetVisibility } from 'common/hooks/useModalState'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { SummaryTableItem } from 'components/summary-table'
-import { useIsAudioMatchingChallengesEnabled } from 'hooks/useIsAudioMatchingChallengesEnabled'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { useRemoteVar } from 'hooks/useRemoteConfig'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
@@ -408,7 +407,6 @@ const RewardsTile = ({ className }: RewardsTileProps) => {
   const userChallenges = useSelector(getUserChallenges)
   const optimisticUserChallenges = useSelector(getOptimisticUserChallenges)
   const [haveChallengesLoaded, setHaveChallengesLoaded] = useState(false)
-  const isAudioMatchingChallengesEnabled = useIsAudioMatchingChallengesEnabled()
   const { isEnabled: isRewardsCooldownEnabled } = useFeatureFlag(
     FeatureFlags.REWARDS_COOLDOWN
   )
@@ -416,9 +414,7 @@ const RewardsTile = ({ className }: RewardsTileProps) => {
   // The referred challenge only needs a tile if the user was referred
   const hideReferredTile = !userChallenges.referred?.is_complete
   const rewardIds = useRewardIds({
-    referred: hideReferredTile,
-    b: !isAudioMatchingChallengesEnabled,
-    s: !isAudioMatchingChallengesEnabled
+    referred: hideReferredTile
   })
 
   useEffect(() => {

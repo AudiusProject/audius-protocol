@@ -62,12 +62,12 @@ const messages = {
 }
 
 type StemsAndDownloadsFieldProps = {
+  isUpload: boolean
   closeMenuCallback?: (data?: any) => void
 }
 
-export const StemsAndDownloadsField = ({
-  closeMenuCallback
-}: StemsAndDownloadsFieldProps) => {
+export const StemsAndDownloadsField = (props: StemsAndDownloadsFieldProps) => {
+  const { isUpload, closeMenuCallback } = props
   const { isEnabled: isUsdcUploadEnabled } = useFeatureFlag(
     FeatureFlags.USDC_PURCHASES_UPLOAD
   )
@@ -279,7 +279,7 @@ export const StemsAndDownloadsField = ({
       )}
       menuFields={
         <StemsAndDownloadsMenuFields
-          isUpload
+          isUpload={isUpload}
           initialDownloadConditions={savedDownloadConditions}
         />
       }

@@ -1,9 +1,7 @@
-import { FeatureFlags } from '@audius/common/services'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 
 import { GatedContentUploadPromptDrawer } from 'app/components/gated-content-upload-prompt-drawer'
 import { SupportersInfoDrawer } from 'app/components/supporters-info-drawer'
-import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { useAppScreenOptions } from 'app/screens/app-screen/useAppScreenOptions'
 
 import { messages as completeMessages } from '../upload-screen/screens/CompleteTrackScreen'
@@ -31,9 +29,6 @@ type EditTrackNavigatorProps = EditTrackFormProps
 
 export const EditTrackNavigator = (props: EditTrackNavigatorProps) => {
   const screenOptions = useAppScreenOptions(screenOptionOverrides)
-  const { isEnabled: isScheduledReleasesEnabled } = useFeatureFlag(
-    FeatureFlags.SCHEDULED_RELEASES
-  )
 
   return (
     <>
@@ -44,18 +39,16 @@ export const EditTrackNavigator = (props: EditTrackNavigatorProps) => {
         <Stack.Screen name='SelectGenre' component={SelectGenreScreen} />
         <Stack.Screen name='SelectMood' component={SelectMoodScreen} />
         <Stack.Screen name='RemixSettings' component={RemixSettingsScreen} />
-        {isScheduledReleasesEnabled ? (
-          <Stack.Screen
-            name='ReleaseDate'
-            component={ReleaseDateScreen}
-            initialParams={{
-              isInitiallyUnlisted:
-                props.doneText === completeMessages.done
-                  ? true
-                  : props.initialValues.is_unlisted
-            }}
-          />
-        ) : null}
+        <Stack.Screen
+          name='ReleaseDate'
+          component={ReleaseDateScreen}
+          initialParams={{
+            isInitiallyUnlisted:
+              props.doneText === completeMessages.done
+                ? true
+                : props.initialValues.is_unlisted
+          }}
+        />
         <Stack.Screen
           name='AdvancedOptions'
           component={AdvancedOptionsScreen}

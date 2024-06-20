@@ -97,6 +97,9 @@ class TrackMetadata(TypedDict):
     producer_copyright_line: Optional[Copyright]
     parental_warning_type: Optional[str]
     allowed_api_keys: Optional[str]
+    bpm: Optional[float]
+    musical_key: Optional[str]
+    audio_analysis_error_count: Optional[int]
 
 
 track_metadata_format: TrackMetadata = {
@@ -149,6 +152,9 @@ track_metadata_format: TrackMetadata = {
     "producer_copyright_line": None,
     "parental_warning_type": None,
     "allowed_api_keys": None,
+    "bpm": None,
+    "musical_key": None,
+    "audio_analysis_error_count": 0,
 }
 
 # Required format for user metadata retrieved from the content system
@@ -250,6 +256,7 @@ immutable_track_fields = immutable_fields | {
     "orig_filename",
     "duration",
     "is_available",
+    "audio_analysis_error_count",
 }
 
 immutable_user_fields = immutable_fields | {

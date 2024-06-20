@@ -6,7 +6,7 @@ import { Flex } from '@audius/harmony'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { TracksTable, TracksTableColumn } from 'components/tracks-table'
-import { useGoToRoute } from 'hooks/useGoToRoute'
+import { useNavigateToPage } from 'hooks/useNavigateToPage'
 
 import styles from '../DashboardPage.module.css'
 import { getDashboardTracksStatus, makeGetDashboard } from '../store/selectors'
@@ -39,7 +39,7 @@ export const ArtistDashboardTracksTab = ({
   filterText
 }: ArtistDashboardTracksTabProps) => {
   const dispatch = useDispatch()
-  const goToRoute = useGoToRoute()
+  const navigate = useNavigateToPage()
   const tracksStatus = useSelector(getDashboardTracksStatus)
   const { account } = useSelector(makeGetDashboard())
   const filteredData = useFilteredTrackData({
@@ -59,9 +59,9 @@ export const ArtistDashboardTracksTab = ({
   const onClickRow = useCallback(
     (track: any) => {
       if (!account) return
-      goToRoute(track.permalink)
+      navigate(track.permalink)
     },
-    [account, goToRoute]
+    [account, navigate]
   )
 
   return !filteredData.length || !account ? (

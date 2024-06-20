@@ -622,7 +622,7 @@ export const email = ({
   </td>
   <td class="stack-column-center" height="24" style="width:24px; min-width:24px; height:24px; min-height:24px;" width="24"></td>
   <td align="center" width="47.83%" class="stack-column-center">
-  <table width="100%" cellspacing="0" cellpadding="0" border="0">
+<table width="100%" cellspacing="0" cellpadding="0" border="0">
   <tr>
   <td align="center">
   <table width="100%" border="0" cellpadding="0" cellspacing="0">

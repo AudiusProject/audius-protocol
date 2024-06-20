@@ -11,6 +11,7 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/AudiusProject/audius-protocol/mediorum/cidutil"
@@ -61,7 +62,7 @@ func (ss *MediorumServer) startAudioAnalyzer() {
 				}
 				// only the first mirror transcodes
 				if slices.Index(upload.TranscodedMirrors, myHost) == 0 {
-					ss.logger.Info("got audio analysis job", "id", upload.ID)
+					ss.logger.Info("got audio analysis job", "upload", upload.ID)
 					work <- upload
 				}
 			}
@@ -86,15 +87,13 @@ func (ss *MediorumServer) findMissedAnalysisJobs(work chan *Upload, myHost strin
 	ss.crud.DB.Where("status in ?", []string{JobStatusAudioAnalysis, JobStatusBusyAudioAnalysis}).Find(&uploads)
 
 	for _, upload := range uploads {
-		mirrors := upload.Mirrors
-
-		myIdx := slices.Index(mirrors, myHost)
+		myIdx := slices.Index(upload.TranscodedMirrors, myHost)
 		if myIdx == -1 {
 			continue
 		}
 		myRank := myIdx + 1
 
-		logger := ss.logger.With("upload_id", upload.ID, "upload_status", upload.Status, "my_rank", myRank)
+		logger := ss.logger.With("upload", upload.ID, "upload_status", upload.Status, "my_rank", myRank)
 
 		// allow a 1 minute timeout period for audio analysis.
 		// upload.AudioAnalyzedAt is set in transcode.go after successfully transcoding a new audio upload,
@@ -102,11 +101,12 @@ func (ss *MediorumServer) findMissedAnalysisJobs(work chan *Upload, myHost strin
 		if time.Since(upload.AudioAnalyzedAt) > time.Minute {
 			// mark analysis as timed out and the upload as done.
 			// failed or timed out analyses do not block uploads.
-			ss.logger.Warn("audio analysis timed out", "upload", upload.ID)
+			ss.logger.Warn("audio analysis timed out", "upload", upload.ID, "upload_debug", upload)
 
 			upload.AudioAnalysisStatus = JobStatusTimeout
 			upload.Status = JobStatusDone
 			ss.crud.Update(upload)
+			continue
 		}
 
 		// this is already handled by a callback and there's a chance this job gets enqueued twice
@@ -154,12 +154,17 @@ func (ss *MediorumServer) findMissedAnalysisJobs(work chan *Upload, myHost strin
 
 func (ss *MediorumServer) startAudioAnalysisWorker(n int, work chan *Upload) {
 	for upload := range work {
-		ss.logger.Debug("analyzing audio", "upload", upload.ID)
+		logger := ss.logger.With("upload", upload.ID)
+		logger.Debug("analyzing audio")
+		startTime := time.Now().UTC()
 		err := ss.analyzeAudio(upload)
+		elapsedTime := time.Since(startTime)
+		logger = logger.With("duration", elapsedTime, "start_time", startTime)
+
 		if err != nil {
-			ss.logger.Warn("audio analysis failed", "upload", upload, "err", err)
+			logger.Warn("audio analysis failed", "err", err)
 		} else {
-			ss.logger.Info("audio analysis done", "upload", upload.ID)
+			logger.Info("audio analysis done")
 		}
 	}
 }
@@ -172,6 +177,7 @@ func (ss *MediorumServer) analyzeAudio(upload *Upload) error {
 
 	onError := func(err error) error {
 		upload.AudioAnalysisError = err.Error()
+		upload.AudioAnalysisErrorCount = upload.AudioAnalysisErrorCount + 1
 		upload.AudioAnalyzedAt = time.Now().UTC()
 		upload.AudioAnalysisStatus = JobStatusError
 		// failed analyses do not block uploads
@@ -235,35 +241,72 @@ func (ss *MediorumServer) analyzeAudio(upload *Upload) error {
 		}
 	}
 
-	// analyze BPM
-	bpmFloat, err := ss.analyzeBPM(wavFile)
-	if err != nil {
-		logger.Error("failed to analyze BPM", "err", err)
-		return onError(fmt.Errorf("failed to analyze BPM: %w", err))
-	}
-	bpm := strconv.FormatFloat(bpmFloat, 'f', 1, 64)
+	bpmChan := make(chan float64)
+	keyChan := make(chan string)
+	errorChan := make(chan error)
 
-	upload.AudioAnalysisResults = map[string]string{
-		"bpm": bpm,
+	// goroutine to analyze BPM
+	go func() {
+		bpm, err := ss.analyzeBPM(wavFile)
+		if err != nil {
+			logger.Error("failed to analyze BPM", "err", err)
+			errorChan <- fmt.Errorf("failed to analyze BPM: %w", err)
+			return
+		}
+		bpmChan <- bpm
+	}()
+
+	// goroutine to analyze musical key
+	go func() {
+		musicalKey, err := ss.analyzeKey(wavFile)
+		if err != nil {
+			logger.Error("failed to analyze key", "err", err)
+			errorChan <- fmt.Errorf("failed to analyze key: %w", err)
+			return
+		}
+		if musicalKey == "" || musicalKey == "Unknown" {
+			err := fmt.Errorf("unexpected output: %s", musicalKey)
+			logger.Error("failed to analyze key", "err", err)
+			errorChan <- fmt.Errorf("failed to analyze key: %w", err)
+			return
+		}
+		keyChan <- musicalKey
+	}()
+
+	var mu sync.Mutex
+	firstResult := true
+
+	for i := 0; i < 2; i++ {
+		select {
+		case bpm := <-bpmChan:
+			mu.Lock()
+			if upload.AudioAnalysisResults == nil {
+				upload.AudioAnalysisResults = &AudioAnalysisResult{}
+			}
+			upload.AudioAnalysisResults.BPM = bpm
+			if firstResult {
+				ss.crud.Update(upload)
+				firstResult = false
+			}
+			mu.Unlock()
+		case musicalKey := <-keyChan:
+			mu.Lock()
+			if upload.AudioAnalysisResults == nil {
+				upload.AudioAnalysisResults = &AudioAnalysisResult{}
+			}
+			upload.AudioAnalysisResults.Key = musicalKey
+			if firstResult {
+				ss.crud.Update(upload)
+				firstResult = false
+			}
+			mu.Unlock()
+		case err := <-errorChan:
+			return onError(err)
+		}
 	}
+
+	// all analyses complete
 	upload.AudioAnalysisError = ""
-	ss.crud.Update(upload)
-
-	// analyze musical key
-	musicalKey, err := ss.analyzeKey(wavFile)
-	if err != nil {
-		logger.Error("failed to analyze key", "err", err)
-		return onError(fmt.Errorf("failed to analyze key: %w", err))
-	}
-	if musicalKey == "" || musicalKey == "Unknown" {
-		err := fmt.Errorf("unexpected output: %s", musicalKey)
-		logger.Error("failed to analyze key", "err", err)
-		return onError(fmt.Errorf("failed to analyze key: %w", err))
-	}
-	upload.AudioAnalysisResults["key"] = musicalKey
-	upload.AudioAnalysisError = ""
-
-	// success
 	upload.AudioAnalyzedAt = time.Now().UTC()
 	upload.AudioAnalysisStatus = JobStatusDone
 	upload.Status = JobStatusDone
@@ -287,28 +330,43 @@ func (ss *MediorumServer) analyzeKey(filename string) (string, error) {
 }
 
 func (ss *MediorumServer) analyzeBPM(filename string) (float64, error) {
-	cmd := exec.Command("aubio", "tempo", filename)
+	cmd := exec.Command("/bin/analyze-bpm", filename)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		return 0, err
+		exitError, ok := err.(*exec.ExitError)
+		if ok {
+			return 0, fmt.Errorf("command exited with status %d: %s", exitError.ExitCode(), string(output))
+		}
+		return 0, fmt.Errorf("failed to execute command: %v", err)
 	}
 
 	outputStr := string(output)
 	lines := strings.Split(outputStr, "\n")
+	var bpm float64
 	for _, line := range lines {
-		if strings.HasSuffix(line, "bpm") {
+		if strings.HasPrefix(line, "BPM:") {
 			parts := strings.Fields(line)
-			if len(parts) > 1 {
-				bpm, err := strconv.ParseFloat(parts[0], 64)
+			if len(parts) == 2 {
+				bpm, err = strconv.ParseFloat(parts[1], 64)
 				if err != nil {
-					return 0, err
+					return 0, fmt.Errorf("failed to parse BPM from output %s: %v", outputStr, err)
 				}
-				return bpm, nil
 			}
 		}
 	}
 
-	return 0, fmt.Errorf("BPM not found in aubio output")
+	if bpm == 0 {
+		return 0, fmt.Errorf("failed to parse BPM from output %s", outputStr)
+	}
+
+	// Round float to 1 decimal place
+	bpmRoundedStr := strconv.FormatFloat(bpm, 'f', 1, 64)
+	bpmRounded, err := strconv.ParseFloat(bpmRoundedStr, 64)
+	if err != nil {
+		return 0, fmt.Errorf("failed to parse formatted BPM string %s: %v", bpmRoundedStr, err)
+	}
+
+	return bpmRounded, nil
 }
 
 // converts an MP3 file to WAV format using ffmpeg

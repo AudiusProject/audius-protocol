@@ -154,29 +154,27 @@ export const ReleaseDateField = () => {
   }, [trackReleaseDate])
 
   return (
-    <>
-      <ContextualMenu
-        label={messages.title}
-        description={messages.description}
-        icon={<IconCalendarMonth className={styles.titleIcon} />}
-        initialValues={initialValues}
-        validationSchema={toFormikValidationSchema(timeValidationSchema)}
-        validateOnChange={false}
-        validateOnBlur={false}
-        onSubmit={onSubmit}
-        // upload case is initially unlisted
-        menuFields={
-          <Flex direction='column' gap='l'>
-            <Text variant='body'>{messages.description}</Text>
-            <ReleaseDateRadioItems
-              isInitiallyUnlisted={true}
-              initialReleaseDate={trackReleaseDate}
-            />
-          </Flex>
-        }
-        renderValue={renderValue}
-      />
-    </>
+    <ContextualMenu
+      label={messages.title}
+      description={messages.description}
+      icon={<IconCalendarMonth className={styles.titleIcon} />}
+      initialValues={initialValues}
+      validationSchema={toFormikValidationSchema(timeValidationSchema)}
+      validateOnChange={false}
+      validateOnBlur={false}
+      onSubmit={onSubmit}
+      // upload case is initially unlisted
+      menuFields={
+        <Flex direction='column' gap='l'>
+          <Text variant='body'>{messages.description}</Text>
+          <ReleaseDateRadioItems
+            isInitiallyUnlisted={true}
+            initialReleaseDate={trackReleaseDate}
+          />
+        </Flex>
+      }
+      renderValue={renderValue}
+    />
   )
 }
 

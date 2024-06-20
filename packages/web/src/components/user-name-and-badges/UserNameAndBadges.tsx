@@ -8,7 +8,7 @@ import { useSelector } from 'react-redux'
 
 import { ArtistPopover } from 'components/artist/ArtistPopover'
 import UserBadges from 'components/user-badges/UserBadges'
-import { useGoToRoute } from 'hooks/useGoToRoute'
+import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { profilePage } from 'utils/route'
 
 import styles from './UserNameAndBadges.module.css'
@@ -33,14 +33,14 @@ type UserNameAndBadgesProps =
 
 const UserNameAndBadgesImpl = (props: UserNameAndBadgesImplProps) => {
   const { user, onNavigateAway, classes } = props
-  const goToRoute = useGoToRoute()
+  const navigate = useNavigateToPage()
   const handleClick: MouseEventHandler = useCallback(
     (event) => {
       event.stopPropagation()
-      goToRoute(profilePage(user.handle))
+      navigate(profilePage(user.handle))
       onNavigateAway?.()
     },
-    [goToRoute, onNavigateAway, user]
+    [navigate, onNavigateAway, user]
   )
   if (!user) {
     return null

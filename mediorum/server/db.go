@@ -12,6 +12,17 @@ import (
 	"gorm.io/gorm"
 )
 
+type QmAudioAnalysis struct {
+	CID        string               `json:"cid" gorm:"primaryKey;column:cid"`
+	Mirrors    []string             `json:"mirrors" gorm:"serializer:json"`
+	Status     string               `json:"status"`
+	Error      string               `json:"error,omitempty"`
+	ErrorCount int                  `json:"error_count"`
+	AnalyzedBy string               `json:"analyzed_by"`
+	AnalyzedAt time.Time            `json:"analyzed_at"`
+	Results    *AudioAnalysisResult `json:"results" gorm:"serializer:json"`
+}
+
 type Upload struct {
 	ID string `json:"id"` // base32 file hash
 
@@ -37,13 +48,19 @@ type Upload struct {
 	TranscodedAt      time.Time         `json:"transcoded_at"`
 	TranscodeResults  map[string]string `json:"results" gorm:"serializer:json"`
 
-	AudioAnalysisStatus  string            `json:"audio_analysis_status"`
-	AudioAnalysisError   string            `json:"audio_analysis_error,omitempty"`
-	AudioAnalyzedBy      string            `json:"audio_analyzed_by"`
-	AudioAnalyzedAt      time.Time         `json:"audio_analyzed_at"`
-	AudioAnalysisResults map[string]string `json:"audio_analysis_results" gorm:"serializer:json"`
+	AudioAnalysisStatus     string               `json:"audio_analysis_status"`
+	AudioAnalysisError      string               `json:"audio_analysis_error,omitempty"`
+	AudioAnalysisErrorCount int                  `json:"audio_analysis_error_count"`
+	AudioAnalyzedBy         string               `json:"audio_analyzed_by"`
+	AudioAnalyzedAt         time.Time            `json:"audio_analyzed_at"`
+	AudioAnalysisResults    *AudioAnalysisResult `json:"audio_analysis_results" gorm:"serializer:json"`
 
 	// UpldateULID - this is the last ULID that change this thing
+}
+
+type AudioAnalysisResult struct {
+	BPM float64 `json:"bpm"`
+	Key string  `json:"key"`
 }
 
 // Upload templates
@@ -118,13 +135,13 @@ func dbMustDial(dbPath string) *gorm.DB {
 func dbMigrate(crud *crudr.Crudr, myHost string) {
 	// Migrate the schema
 	slog.Info("db: gorm automigrate")
-	err := crud.DB.AutoMigrate(&Upload{}, &RepairTracker{}, &UploadCursor{}, &StorageAndDbSize{}, &DailyMetrics{}, &MonthlyMetrics{})
+	err := crud.DB.AutoMigrate(&Upload{}, &RepairTracker{}, &UploadCursor{}, &StorageAndDbSize{}, &DailyMetrics{}, &MonthlyMetrics{}, &QmAudioAnalysis{})
 	if err != nil {
 		panic(err)
 	}
 
 	// register any models to be managed by crudr
-	crud.RegisterModels(&Upload{}, &StorageAndDbSize{})
+	crud.RegisterModels(&Upload{}, &StorageAndDbSize{}, &QmAudioAnalysis{})
 
 	sqlDb, _ := crud.DB.DB()
 

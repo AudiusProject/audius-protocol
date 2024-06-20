@@ -1,6 +1,5 @@
 import { View } from 'react-native'
 
-import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'
 import { makeStyles } from 'app/styles'
 
 import { DownloadFavoritesSwitch } from '../favorites-screen/DownloadFavoritesSwitch'
@@ -25,10 +24,7 @@ const useStyles = makeStyles(({ palette }) => ({
 }))
 
 export const DownloadAllFavoritesRow = () => {
-  const isOfflineDownloadEnabled = useIsOfflineModeEnabled()
   const styles = useStyles()
-
-  if (!isOfflineDownloadEnabled) return null
 
   return (
     <SettingsRow>

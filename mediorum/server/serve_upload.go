@@ -232,30 +232,6 @@ func (ss *MediorumServer) postUpload(c echo.Context) error {
 	return c.JSON(status, uploads)
 }
 
-func (ss *MediorumServer) analyzeUpload(c echo.Context) error {
-	var upload *Upload
-	err := ss.crud.DB.First(&upload, "id = ?", c.Param("id")).Error
-	if err != nil {
-		return err
-	}
-
-	if upload.Template == "audio" && upload.Status == JobStatusDone && upload.AudioAnalysisStatus != JobStatusDone {
-		upload.AudioAnalyzedAt = time.Now().UTC()
-		upload.AudioAnalysisStatus = ""
-		upload.AudioAnalysisError = ""
-		upload.Status = JobStatusAudioAnalysis
-		err = ss.crud.Update(upload)
-		if err != nil {
-			ss.logger.Warn("update upload failed", "err", err)
-			return c.JSON(500, map[string]string{
-				"message": "Failed to trigger audio analysis",
-			})
-		}
-	}
-
-	return c.JSON(200, upload)
-}
-
 func copyUploadToTempFile(file *multipart.FileHeader) (*os.File, error) {
 	temp, err := os.CreateTemp("", "mediorumUpload")
 	if err != nil {

@@ -357,6 +357,26 @@
             "null"
           ],
           "default": null
+        },
+        "bpm": {
+          "type": [
+            "float",
+            "null"
+          ],
+          "default": null
+        },
+        "musical_key": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        },
+        "audio_analysis_error_count": {
+          "type": [
+            "integer"
+          ],
+          "default": 0
         }
       },
       "required": [

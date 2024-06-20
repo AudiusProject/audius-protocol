@@ -11,7 +11,6 @@ import {
   isContentUSDCPurchaseGated
 } from '@audius/common/models'
 import type { Track, User } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import {
   accountSelectors,
   cacheTracksSelectors,
@@ -30,14 +29,12 @@ import { Genre, removeNullable } from '@audius/common/utils'
 import { useNavigationState } from '@react-navigation/native'
 import { useDispatch, useSelector } from 'react-redux'
 import { trpc } from 'utils/trpcClientWeb'
-import { useGetTrackStreamUrl } from '~/api'
 
 import type { ImageProps } from '@audius/harmony-native'
 import { TrackImage } from 'app/components/image/TrackImage'
 import type { LineupItemProps } from 'app/components/lineup-tile/types'
 import { useIsUSDCEnabled } from 'app/hooks/useIsUSDCEnabled'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 
 import type { TileProps } from '../core'
 
@@ -86,10 +83,6 @@ export const TrackTileComponent = ({
   variant,
   ...lineupTileProps
 }: TrackTileProps) => {
-  const { isEnabled: isNewPodcastControlsEnabled } = useFeatureFlag(
-    FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
-    FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
-  )
   const isUSDCEnabled = useIsUSDCEnabled()
   const dispatch = useDispatch()
   const navigation = useNavigation()
@@ -120,11 +113,6 @@ export const TrackTileComponent = ({
     preview_cid,
     ddex_app: ddexApp
   } = track
-
-  useGetTrackStreamUrl({
-    id: track_id,
-    currentUserId
-  })
 
   const hasPreview =
     isUSDCEnabled &&
@@ -171,11 +159,11 @@ export const TrackTileComponent = ({
     const overflowActions = [
       isOwner && !ddexApp ? OverflowAction.ADD_TO_ALBUM : null,
       isPlaylistAddable ? OverflowAction.ADD_TO_PLAYLIST : null,
-      isNewPodcastControlsEnabled && isLongFormContent
+      isLongFormContent
         ? OverflowAction.VIEW_EPISODE_PAGE
         : OverflowAction.VIEW_TRACK_PAGE,
       albumInfo ? OverflowAction.VIEW_ALBUM_PAGE : null,
-      isNewPodcastControlsEnabled && isLongFormContent
+      isLongFormContent
         ? playbackPositionInfo?.status === 'COMPLETED'
           ? OverflowAction.MARK_AS_UNPLAYED
           : OverflowAction.MARK_AS_PLAYED
@@ -201,7 +189,6 @@ export const TrackTileComponent = ({
     isOwner,
     ddexApp,
     isPlaylistAddable,
-    isNewPodcastControlsEnabled,
     albumInfo,
     playbackPositionInfo?.status,
     isOnArtistsTracksTab,

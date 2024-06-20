@@ -31,7 +31,7 @@ import ActionButtonRow from 'pages/track-page/components/mobile/ActionButtonRow'
 import { isShareToastDisabled } from 'utils/clipboardUtil'
 import { isDarkMode } from 'utils/theme/theme'
 
-import { AlbumDetailsText } from '../components/AlbumDetailsText'
+import { CollectionMetadataList } from '../CollectionMetadataList'
 import { RepostsFavoritesStats } from '../components/RepostsFavoritesStats'
 import { CollectionHeaderProps } from '../types'
 
@@ -74,13 +74,9 @@ const CollectionHeader = ({
   isOwner = false,
   isReposted = false,
   isSaved = false,
-  releaseDate,
-  lastModifiedDate,
-  numTracks,
   isPlayable,
   streamConditions,
   access,
-  duration,
   isPublished = false,
   isPublishing = false,
   isAlbum = false,
@@ -327,12 +323,7 @@ const CollectionHeader = ({
             {description}
           </UserGeneratedText>
         ) : null}
-        <AlbumDetailsText
-          duration={duration}
-          lastModifiedDate={lastModifiedDate}
-          numTracks={numTracks}
-          releaseDate={releaseDate}
-        />
+        <CollectionMetadataList collectionId={collectionId} />
       </Flex>
     </Flex>
   )
