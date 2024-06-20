@@ -61,8 +61,6 @@ export class RewardInCooldown extends BaseNotification<RewardInCooldownRow> {
       this.userId = userIds[0]
       this.amount = this.notification.data.amount
       this.challengeId = this.notification.data.challenge_id
-
-      // Change is not an absolute value and for a transfer out will always be negative
     } catch (e) {
       logger.error('Unable to initialize RewardInCooldown notification', e)
     }
