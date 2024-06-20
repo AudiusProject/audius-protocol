@@ -1998,14 +1998,25 @@ class GetTokenVerification(Resource):
             ns.abort(400, "JWT payload could not be decoded.")
 
         wallet_user_id = get_user_with_wallet(wallet)
-        if not wallet_user_id or (
-            wallet_user_id != payload["userId"]
-            and wallet_user_id != decode_string_id(payload["userId"])
-        ):
-            ns.abort(
-                404,
-                "The JWT signature is invalid - the wallet does not match the user.",
-            )
+        jwt_user_id = decode_string_id(payload["userId"])
+
+        if not wallet_user_id:
+            ns.abort(404, "The JWT signature is invalid - invalid wallet")
+
+        if wallet_user_id != jwt_user_id:
+            # Check if the users manager matches
+            is_managed_user = False
+            args = GetUserManagersArgs(user_id=jwt_user_id, is_approved=True)
+            managed_users = get_user_managers_with_grants(args)
+            for m in managed_users:
+                if m["manager"]["user_id"] == wallet_user_id:
+                    is_managed_user = True
+
+            if not is_managed_user:
+                ns.abort(
+                    404,
+                    "The JWT signature is invalid - the wallet does not match the user.",
+                )
 
         # 5. Send back the decoded payload
         return success_response(payload)
