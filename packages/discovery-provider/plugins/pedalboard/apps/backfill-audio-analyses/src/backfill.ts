@@ -63,7 +63,7 @@ async function analyzeAudio(
   const trackCid = track.track_cid
   // only analyze streamable tracks
   if (!trackCid) return
-  const isLegacyTrack = !audioUploadId && trackCid.startsWith('Qm')
+  const isLegacyTrack = !audioUploadId
 
   const release = await semaphore.acquire() // acquire a semaphore permit
 

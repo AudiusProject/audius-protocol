@@ -4,8 +4,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/AudiusProject/audius-protocol/mediorum/cidutil"
-
 	"github.com/labstack/echo/v4"
 )
 
@@ -37,10 +35,6 @@ func (ss *MediorumServer) analyzeUpload(c echo.Context) error {
 // does nothing and returns the analysis results if analysis previously succeeded.
 func (ss *MediorumServer) analyzeLegacyBlob(c echo.Context) error {
 	cid := c.Param("cid")
-	if !cidutil.IsLegacyCIDStrict(cid) {
-		return c.String(http.StatusBadRequest, "must specify a legacy cid")
-	}
-
 	var analysis *QmAudioAnalysis
 	err := ss.crud.DB.First(&analysis, "cid = ?", cid).Error
 	if err != nil {
@@ -76,10 +70,6 @@ func (ss *MediorumServer) analyzeLegacyBlob(c echo.Context) error {
 
 func (ss *MediorumServer) serveLegacyBlobAnalysis(c echo.Context) error {
 	cid := c.Param("cid")
-	if !cidutil.IsLegacyCIDStrict(cid) {
-		return c.String(http.StatusBadRequest, "must specify a legacy cid")
-	}
-
 	var analysis *QmAudioAnalysis
 	err := ss.crud.DB.First(&analysis, "cid = ?", cid).Error
 	if err != nil {
