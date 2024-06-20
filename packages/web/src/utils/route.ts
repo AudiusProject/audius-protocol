@@ -1,12 +1,11 @@
 import type { ID } from '@audius/common/models'
+import { Genre, Mood } from '@audius/sdk'
 import { push as pushRoute } from 'connected-react-router'
 import { Location } from 'history'
 import { matchPath } from 'react-router'
 import { generatePath } from 'react-router-dom'
 
 import { encodeUrlName } from './urlUtils'
-import { CategoryView } from 'pages/search-page-v2/types'
-import { Genre, Mood } from '@audius/sdk'
 
 // TODO: Move routing to @audius/common with an injected env
 // so that it can properly handle routing to the correct environment.
@@ -503,7 +502,7 @@ export const getPathname = (location: Location) => {
 
 export const recordGoToSignup = (callback: () => void) => {
   if ((window as any).analytics) {
-    ; (window as any).analytics.track(
+    ;(window as any).analytics.track(
       'Create Account: Open',
       { source: 'landing page' },
       null,
@@ -555,13 +554,17 @@ export const getSearchPageLocation = ({
   mood?: Mood
   bpm?: string
   key?: string
-  // TODO: Not needed yet, add when used
-  // isVerified?: boolean
-  // isPremium?: boolean
-  // hasDownloads?: boolean
+  isVerified?: boolean
+  isPremium?: boolean
+  hasDownloads?: boolean
 }) => {
+  const params = Object.entries(searchParams).reduce((acc, [key, val]) => {
+    acc[key] = String(val)
+    return acc
+  }, {})
+
   return {
     pathname: generatePath(SEARCH_PAGE, { category }),
-    search: new URLSearchParams(searchParams).toString()
+    search: new URLSearchParams(params).toString()
   }
 }
