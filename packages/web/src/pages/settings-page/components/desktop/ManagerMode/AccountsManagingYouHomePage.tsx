@@ -31,7 +31,11 @@ export const AccountsManagingYouHomePage = (
   const { toast } = useContext(ToastContext)
 
   const [removeManager, removeResult] = useRemoveManager()
-  const { data: managers, status: managersStatus } = useGetManagers({ userId })
+  // Always update manager list when mounting this page
+  const { data: managers, status: managersStatus } = useGetManagers(
+    { userId },
+    { force: true }
+  )
 
   const handleRemoveManager = useCallback(
     (params: { userId: number; managerUserId: number }) => {

@@ -34,7 +34,9 @@ export const AccountsYouManageHomePage = ({
   const userId = currentUser?.user_id
   const { data: managedAccounts, status } = useGetManagedAccounts(
     { userId: userId! },
-    { disabled: userId == null }
+    // Always update managed accounts list when mounting this page
+    // TODO: This pattern causes a flash on both modals, maybe update it to SWR-style
+    { disabled: userId == null, force: true }
   )
   const [approveManagedAccount, approveResult] = useApproveManagedAccount()
   const [rejectManagedAccount, rejectResult] = useRemoveManager()
