@@ -2003,15 +2003,18 @@ class GetTokenVerification(Resource):
         if not wallet_user_id:
             ns.abort(404, "The JWT signature is invalid - invalid wallet")
 
+        # If the user id found in the token does not match the signer of the token,
+        # check if the signing user is a manager of that user. Otherwise, reject.
         if wallet_user_id != jwt_user_id:
-            # Check if the users manager matches
             is_managed_user = False
-            args = GetUserManagersArgs(user_id=jwt_user_id, is_approved=True)
-            managed_users = get_user_managers_with_grants(args)
+            managed_users = get_user_managers_with_grants(
+                GetUserManagersArgs(user_id=jwt_user_id, is_approved=True)
+            )
             for m in managed_users:
                 if m["manager"]["user_id"] == wallet_user_id:
                     is_managed_user = True
 
+            # Not authorized
             if not is_managed_user:
                 ns.abort(
                     404,
