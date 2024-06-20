@@ -164,13 +164,16 @@ function* editTrackAsync(action: ReturnType<typeof trackActions.editTrack>) {
     }
   }
 
-  // process stems
-  // TODO: feature flag this
-  if (track.stems) {
+  const getFeatureEnabled = yield* getContext('getFeatureEnabled')
+  const isEditTrackRedesignEnabled = yield* call(
+    getFeatureEnabled,
+    FeatureFlags.EDIT_TRACK_REDESIGN
+  )
+  if (isEditTrackRedesignEnabled && track.stems) {
     const currentStemUploads = yield* select(getCurrentUploads, track.track_id)
     const existingStems = currentTrack._stems || []
 
-    // new - existing - currentUploads
+    // upload net new stems
     const addedStems = track.stems.filter((stem) => {
       return !existingStems.find((existingStem) => {
         return (
@@ -179,23 +182,6 @@ function* editTrackAsync(action: ReturnType<typeof trackActions.editTrack>) {
         )
       })
     })
-
-    const removedStems = existingStems
-      .filter((existingStem) => {
-        return !track.stems?.find(
-          (stem) =>
-            stem.metadata.track_id === existingStem.track_id &&
-            stem.category === existingStem.category
-        )
-      })
-      .filter((existingStem) => {
-        // probably unnecessary
-        return !currentStemUploads.find(
-          (upload) =>
-            upload.metadata.track_id === existingStem.track_id &&
-            upload.category === existingStem.category
-        )
-      })
 
     const addedStemsWithFiles = addedStems.filter(
       (stem) => 'file' in stem
@@ -212,6 +198,22 @@ function* editTrackAsync(action: ReturnType<typeof trackActions.editTrack>) {
     }
 
     // delete removed stems
+    const removedStems = existingStems
+      .filter((existingStem) => {
+        return !track.stems?.find(
+          (stem) =>
+            stem.metadata.track_id === existingStem.track_id &&
+            stem.category === existingStem.category
+        )
+      })
+      .filter((existingStem) => {
+        return !currentStemUploads.find(
+          (upload) =>
+            upload.metadata.track_id === existingStem.track_id &&
+            upload.category === existingStem.category
+        )
+      })
+
     for (const stem of removedStems) {
       yield* put(trackActions.deleteTrack(stem.track_id))
     }
