@@ -157,6 +157,7 @@ def setup_db(session):
             specifier="1",
             is_complete=True,
             amount=5,
+            completed_at=datetime.now(),
         ),
         # Did finish the second challenge, did not disburse
         UserChallenge(
@@ -165,6 +166,7 @@ def setup_db(session):
             specifier="1",
             is_complete=True,
             amount=5,
+            completed_at=datetime.now(),
         ),
         # Did not finish challenge 3
         UserChallenge(
@@ -173,6 +175,7 @@ def setup_db(session):
             specifier="1",
             is_complete=False,
             amount=5,
+            completed_at=datetime.now(),
         ),
         # Inactive challenge
         UserChallenge(
@@ -181,6 +184,7 @@ def setup_db(session):
             specifier="1",
             is_complete=True,
             amount=5,
+            completed_at=datetime.now(),
         ),
         UserChallenge(
             challenge_id="aggregate_challenge_1",
@@ -188,6 +192,7 @@ def setup_db(session):
             specifier="1-2",  # compound specifiers, like if user1 invites user2
             is_complete=True,
             amount=AGGREGATE_CHALLENGES_AMOUNT,
+            completed_at=datetime.now(),
         ),
         # Ensure that a non-complete user-challenge isn't counted towards
         # aggregate challenge score
@@ -197,6 +202,7 @@ def setup_db(session):
             specifier="1-3",
             is_complete=False,
             amount=AGGREGATE_CHALLENGES_AMOUNT,
+            completed_at=datetime.now(),
         ),
         UserChallenge(
             challenge_id="aggregate_challenge_2",
@@ -204,6 +210,7 @@ def setup_db(session):
             specifier="1-2",
             is_complete=True,
             amount=AGGREGATE_CHALLENGES_AMOUNT,
+            completed_at=datetime.now(),
         ),
         UserChallenge(
             challenge_id="aggregate_challenge_2",
@@ -211,6 +218,7 @@ def setup_db(session):
             specifier="1-3",
             is_complete=True,
             amount=AGGREGATE_CHALLENGES_AMOUNT,
+            completed_at=datetime.now(),
         ),
         # Trending 1 should be finished and included
         UserChallenge(
@@ -219,6 +227,7 @@ def setup_db(session):
             specifier="06-01-2020",
             is_complete=True,
             amount=5,
+            completed_at=datetime.now(),
         ),
         # Trending 2 should not be included
         UserChallenge(
@@ -227,6 +236,7 @@ def setup_db(session):
             specifier="06-01-2020",
             is_complete=False,
             amount=5,
+            completed_at=datetime.now(),
         ),
     ]
     disbursements = [
@@ -423,6 +433,7 @@ def setup_extra_metadata_test(session):
             is_complete=False,
             current_step_count=5,
             amount=5,
+            completed_at=datetime.now(),
         ),
     ]
 
@@ -598,6 +609,7 @@ def setup_listen_streak_challenge(session):
             is_complete=False,
             current_step_count=5,
             amount=1,
+            completed_at=datetime.now(),
         ),
         UserChallenge(
             challenge_id="listen-streak",
@@ -606,6 +618,7 @@ def setup_listen_streak_challenge(session):
             is_complete=False,
             current_step_count=5,
             amount=1,
+            completed_at=datetime.now(),
         ),
     ]
 
