@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react'
 
-import { useAccountSwitcher } from '@audius/common/hooks'
+import { useAccountSwitcher, useIsManagedAccount } from '@audius/common/hooks'
 import { User, UserMetadata } from '@audius/common/models'
 import { accountSelectors, chatSelectors } from '@audius/common/store'
 import {
@@ -65,6 +65,7 @@ export const AccountListItem = ({
   onReject
 }: AccountListItemProps) => {
   const currentUserId = useSelector(getUserId)
+  const isManagerMode = useIsManagedAccount()
 
   const navigate = useNavigateToPage()
   const goToProfile = useCallback(() => {
@@ -122,7 +123,10 @@ export const AccountListItem = ({
       onClick: goToProfile
     })
 
-    if (canCreateChat) {
+    // Don't show DM/switch options if we're in manager mode as the
+    // logged in user won't have permission to do those things on behalf of a
+    // managed account.
+    if (canCreateChat && !isManagerMode) {
       items.push({
         icon: <IconMessage />,
         text: messages.sendMessage,
@@ -130,7 +134,7 @@ export const AccountListItem = ({
       })
     }
 
-    if (isManagedAccount) {
+    if (isManagedAccount && !isManagerMode) {
       items.push({
         icon: <IconUserArrowRotate />,
         text: messages.switchToUser,
@@ -143,6 +147,7 @@ export const AccountListItem = ({
     user,
     switchAccount,
     isManagedAccount,
+    isManagerMode,
     isPending,
     handleCancelInvite,
     handleRemoveManager,
@@ -170,7 +175,7 @@ export const AccountListItem = ({
       aria-label={messages.moreOptions}
       icon={IconKebabHorizontal}
       color='default'
-      onClick={triggerPopup}
+      onClick={() => triggerPopup()}
     />
   )
 
