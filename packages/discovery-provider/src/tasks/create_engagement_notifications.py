@@ -66,7 +66,7 @@ def _create_engagement_notifications(session):
     )
     for user_challenge in user_challenges_cooldown_completed:
         time_threshold = user_challenge.completed_at - timedelta(hours=1)
-        # Query to check if there's already a notification within the last hour for this user
+        # Query to check if there's already a claimable reward notification for this user
         existing_notification = (
             session.query(Notification)
             .filter(

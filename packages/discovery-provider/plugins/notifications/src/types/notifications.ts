@@ -128,6 +128,12 @@ export type ChallengeRewardNotification = {
   challenge_id: ChallengeId
 }
 
+export type ClaimableRewardNotification = {
+  amount: number
+  specifier: string
+  challenge_id: ChallengeId
+}
+
 export type ReactionNotification = {
   reacted_to: string
   reaction_type: string
