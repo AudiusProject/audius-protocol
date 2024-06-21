@@ -24,7 +24,6 @@ import {
   IconVolumeLevel2 as IconVolume,
   IconStar,
   IconCrown,
-  IconVisibilityHidden,
   IconTrending,
   Text,
   Flex
