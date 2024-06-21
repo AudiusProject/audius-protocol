@@ -10,12 +10,13 @@ const MESSAGE_HEADER = 'Encoded-Data-Message'
 const SIGNATURE_HEADER = 'Encoded-Data-Signature'
 
 let message: string | null = null
+let address: string | null = null
 let signature: string | null = null
 let timestamp: number | null = null
 
 /**
  * Appends request authentication headers to a request.
- * Request headers are computed only every SIGNATURE_EXPIRY_MS.
+ * Request headers are computed only every SIGNATURE_EXPIRY_MS or when the value returned by `auth.getAddress()` changes.
  * @param options the middleware options
  */
 export const addRequestSignatureMiddleware = ({
@@ -27,11 +28,13 @@ export const addRequestSignatureMiddleware = ({
     pre: async (context: RequestContext): Promise<FetchParams> => {
       const { auth, logger } = services
       try {
+        const walletAddress = await auth.getAddress()
         const currentTimestamp = new Date().getTime()
         const isExpired =
           !timestamp || timestamp + SIGNATURE_EXPIRY_MS < currentTimestamp
 
-        if (!message || !signature || isExpired) {
+        if (!message || !signature || isExpired || address !== walletAddress) {
+          address = walletAddress
           const m = `signature:${currentTimestamp}`
           // Add Ethereum-specific prefixes
           const prefix = `\x19Ethereum Signed Message:\n${m.length}`
