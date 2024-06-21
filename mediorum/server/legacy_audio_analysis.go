@@ -94,6 +94,18 @@ func (ss *MediorumServer) findMissedLegacyAnalysisJobs(work chan *QmAudioAnalysi
 
 		logger := ss.logger.With("analysis_cid", analysis.CID, "analysis_status", analysis.Status, "my_rank", myRank)
 
+		// mark job as timed out after 45 mins.
+		// AnalyzedAt is set by the /tracks/legacy/:cid/analyze endpoint when triggering an analysis.
+		if time.Since(analysis.AnalyzedAt) > time.Minute*45 {
+			// mark analysis as timed out and the upload as done.
+			// failed or timed out analyses do not block uploads.
+			ss.logger.Warn("legacy audio analysis timed out", "analysis_cid", analysis.CID, "analysis", analysis)
+
+			analysis.Status = JobStatusTimeout
+			ss.crud.Update(analysis)
+			continue
+		}
+
 		// this is already handled by a callback and there's a chance this job gets enqueued twice
 		if myRank == 1 && analysis.Status == JobStatusAudioAnalysis {
 			logger.Info("my legacy cid's audio analysis not started")
@@ -125,6 +137,17 @@ func (ss *MediorumServer) findMissedLegacyAnalysisJobs(work chan *QmAudioAnalysi
 			// never started?
 			neverStarted = analysis.Status == JobStatusAudioAnalysis &&
 				time.Since(analysis.AnalyzedAt) > time.Minute*14
+		}
+
+		// for #4 rank worker:
+		if myRank == 4 {
+			// no recent update?
+			timedOut = analysis.Status == JobStatusBusyAudioAnalysis &&
+				time.Since(analysis.AnalyzedAt) > time.Minute*15
+
+			// never started?
+			neverStarted = analysis.Status == JobStatusAudioAnalysis &&
+				time.Since(analysis.AnalyzedAt) > time.Minute*30
 		}
 
 		if timedOut {
@@ -171,16 +194,29 @@ func (ss *MediorumServer) analyzeLegacyAudio(analysis *QmAudioAnalysis) error {
 
 	logger := ss.logger.With("analysis_cid", analysis.CID)
 
+	myIdx := slices.Index(analysis.Mirrors, ss.Config.Self.Host)
+	myRank := myIdx + 1
+
 	// pull file from bucket
 
-	// do not mark the audio analysis job as failed if this node cannot pull the file from its bucket
+	// as long as this is not the last mirror, do not mark the audio analysis job
+	// as failed if this node cannot pull the file from its bucket
 	// so that the next mirror may pick the job up
 	key := cidutil.ShardCID(analysis.CID)
 	attrs, err := ss.bucket.Attributes(ctx, key)
 	if err != nil {
 		if gcerrors.Code(err) == gcerrors.NotFound {
-			return errors.New("failed to find legacy audio file on node")
+			err = errors.New("failed to find legacy audio file on node")
+			if myRank == len(analysis.Mirrors) {
+				// mark job as failed if the job has reached the last mirror
+				return onError(err)
+			}
+			return err
 		} else {
+			if myRank == len(analysis.Mirrors) {
+				// mark job as failed if the job has reached the last mirror
+				return onError(err)
+			}
 			return err
 		}
 	}
@@ -191,17 +227,29 @@ func (ss *MediorumServer) analyzeLegacyAudio(analysis *QmAudioAnalysis) error {
 	temp, err := os.CreateTemp("", "legacyAudioAnalysisTemp")
 	if err != nil {
 		logger.Error("failed to create temp file", "err", err)
+		if myRank == len(analysis.Mirrors) {
+			// mark job as failed if the job has reached the last mirror
+			return onError(err)
+		}
 		return err
 	}
 	r, err := ss.bucket.NewReader(ctx, key, nil)
 	if err != nil {
 		logger.Error("failed to read blob", "err", err)
+		if myRank == len(analysis.Mirrors) {
+			// mark job as failed if the job has reached the last mirror
+			return onError(err)
+		}
 		return err
 	}
 	defer r.Close()
 	_, err = io.Copy(temp, r)
 	if err != nil {
 		logger.Error("failed to read blob content", "err", err)
+		if myRank == len(analysis.Mirrors) {
+			// mark job as failed if the job has reached the last mirror
+			return onError(err)
+		}
 		return err
 	}
 	temp.Sync()
