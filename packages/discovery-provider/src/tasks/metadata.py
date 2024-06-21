@@ -182,6 +182,7 @@ user_metadata_format = {
     "events": None,
     "is_storage_v2": False,
     "is_deactivated": None,
+    "is_verified": False,
     "artist_pick_track_id": None,
     "allow_ai_attribution": False,
 }

@@ -948,7 +948,6 @@ def test_index_verify_users(app, mocker):
             "users": [
                 {"user_id": 1, "handle": "user-1", "wallet": "user1wallet"},
                 {"user_id": 2, "handle": "user-2", "wallet": "user2wallet"},
-                {"user_id": 3, "handle": "user-3", "wallet": "user3wallet"},
             ]
         }
         populate_mock_db(db, entities)
