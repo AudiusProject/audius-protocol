@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from 'react'
 
 import { useAccountSwitcher, useIsManagedAccount } from '@audius/common/hooks'
-import { User, UserMetadata } from '@audius/common/models'
+import { SquareSizes, User, UserMetadata } from '@audius/common/models'
 import { accountSelectors, chatSelectors } from '@audius/common/store'
 import {
   Button,
@@ -15,15 +15,19 @@ import {
   IconUser,
   IconUserArrowRotate,
   PopupMenu,
-  Text
+  Text,
+  useTheme
 } from '@audius/harmony'
 
-import ArtistChip from 'components/artist/ArtistChip'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { useComposeChat } from 'pages/chat-page/components/useComposeChat'
 import { useSelector } from 'utils/reducer'
 import { profilePage } from 'utils/route'
 import zIndex from 'utils/zIndex'
+import { useProfilePicture } from 'hooks/useUserProfilePicture'
+import DynamicImage from 'components/dynamic-image/DynamicImage'
+import UserBadges from 'components/user-badges/UserBadges'
+import styles from './AccountListItem.module.css'
 
 const { getUserId } = accountSelectors
 const { getCanCreateChat } = chatSelectors
@@ -53,6 +57,33 @@ type AccountListItemProps = {
     currentUserId: number
     grantorUser: User | UserMetadata
   }) => void
+}
+
+const ArtistInfo = ({ user }: { user: UserMetadata }) => {
+  const profilePicture = useProfilePicture(
+    user.user_id,
+    SquareSizes.SIZE_150_BY_150
+  )
+  const { iconSizes, color } = useTheme()
+  return (
+    <Flex gap='m' alignItems='center' justifyContent='flex-start'>
+      <DynamicImage
+        wrapperClassName={styles.profilePictureWrapper}
+        skeletonClassName={styles.profilePictureSkeleton}
+        className={styles.profilePicture}
+        image={profilePicture}
+      />
+      <Flex direction='column' gap='xs'>
+        <Flex gap='xs' alignItems='center' justifyContent='flex-start'>
+          <Text variant='body' size='m' strength='strong'>
+            {user.name}
+          </Text>
+          <UserBadges userId={user.user_id} badgeSize={iconSizes.m} inline />
+        </Flex>
+        <Text variant='body' size='m'>{`@${user.handle}`}</Text>
+      </Flex>
+    </Flex>
+  )
 }
 
 export const AccountListItem = ({
@@ -174,7 +205,7 @@ export const AccountListItem = ({
       ref={anchorRef}
       aria-label={messages.moreOptions}
       icon={IconKebabHorizontal}
-      color='default'
+      color='subdued'
       onClick={() => triggerPopup()}
     />
   )
@@ -185,11 +216,13 @@ export const AccountListItem = ({
     <Flex
       alignItems='stretch'
       justifyContent='space-between'
-      ph='xl'
+      pl='xl'
+      pr='l'
       pv='l'
+      gap='l'
       border='default'
     >
-      <ArtistChip user={user as any} showPopover={false} />
+      <ArtistInfo user={user as any} />
       <Flex direction='column' justifyContent='space-between' alignItems='end'>
         {!isPending || !isManagedAccount ? (
           <PopupMenu
