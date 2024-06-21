@@ -19,14 +19,15 @@ import {
   useTheme
 } from '@audius/harmony'
 
+import DynamicImage from 'components/dynamic-image/DynamicImage'
+import UserBadges from 'components/user-badges/UserBadges'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
+import { useProfilePicture } from 'hooks/useUserProfilePicture'
 import { useComposeChat } from 'pages/chat-page/components/useComposeChat'
 import { useSelector } from 'utils/reducer'
 import { profilePage } from 'utils/route'
 import zIndex from 'utils/zIndex'
-import { useProfilePicture } from 'hooks/useUserProfilePicture'
-import DynamicImage from 'components/dynamic-image/DynamicImage'
-import UserBadges from 'components/user-badges/UserBadges'
+
 import styles from './AccountListItem.module.css'
 
 const { getUserId } = accountSelectors
@@ -64,7 +65,7 @@ const ArtistInfo = ({ user }: { user: UserMetadata }) => {
     user.user_id,
     SquareSizes.SIZE_150_BY_150
   )
-  const { iconSizes, color } = useTheme()
+  const { iconSizes } = useTheme()
   return (
     <Flex gap='m' alignItems='center' justifyContent='flex-start'>
       <DynamicImage
