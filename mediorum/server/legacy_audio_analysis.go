@@ -74,7 +74,7 @@ func (ss *MediorumServer) startLegacyAudioAnalyzer() {
 
 	// poll periodically for analyses that slipped thru the cracks
 	for {
-		time.Sleep(time.Second * 30)
+		time.Sleep(time.Minute)
 		ss.findMissedLegacyAnalysisJobs(work, myHost)
 	}
 }
