@@ -44,7 +44,7 @@ const queryDiscprovForUserId = async (walletAddress, handle) => {
 }
 
 /**
- * queryDiscprovForUserId - Queries the discovery provider for the user w/ the walletaddress
+ * Queries for whether the wallet address has privilege to act as actingUserId
  * @param {number} managerWalletAddress
  * @param {number} actingUserId
  * @param {number} authHeaders authentication headers from the manager account
@@ -132,7 +132,7 @@ async function authMiddleware(req, res, next) {
         req.user = actingUser
       } catch (err) {
         const errorResponse = errorResponseForbidden(
-          `[Error]: The wallet address is not associated with a user id ${err}`
+          `[Error]: The wallet address is not permitted to act as user id ${err}`
         )
         return sendResponse(req, res, errorResponse)
       }
