@@ -42,7 +42,7 @@ def query_tracks(session: Session) -> List[Track]:
 def select_content_nodes(redis: Redis):
     content_nodes = get_all_nodes.get_all_healthy_content_nodes_cached(redis)
     endpoints = [re.sub("/$", "", node["endpoint"].lower()) for node in content_nodes]
-    return random.sample(endpoints, 5)
+    return random.sample(endpoints, min(5, len(endpoints)))
 
 
 def retrigger_audio_analysis(
