@@ -8,7 +8,6 @@ import {
   ModalSource
 } from '@audius/common/models'
 import type { Track } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import {
   accountSelectors,
   castSelectors,
@@ -39,7 +38,6 @@ import {
 } from '@audius/harmony-native'
 import { useAirplay } from 'app/components/audio/Airplay'
 import { Button } from 'app/components/core'
-import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { useToast } from 'app/hooks/useToast'
 import { makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
@@ -215,14 +213,7 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
         })
       )
     }
-  }, [
-    track,
-    isOwner,
-    isNewPodcastControlsEnabled,
-    albumInfo,
-    playbackPositionInfo?.status,
-    dispatch
-  ])
+  }, [track, isOwner, albumInfo, playbackPositionInfo?.status, dispatch])
 
   const { openAirplayDialog } = useAirplay()
   const castDevices = useDevices()
