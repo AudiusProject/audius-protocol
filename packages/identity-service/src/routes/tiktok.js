@@ -173,29 +173,36 @@ module.exports = function (app) {
         if (isUnassociated && handlesMatch) {
           tikTokObj.blockchainUserId = userId
 
-          // Update the user's social verification status along with the social app handle that verification came from.
-          // If the user is not verified, send the transaction to ensure that their linked social handle is updated.
-          const [encodedABI, contractAddress] =
-            await audiusLibsInstance.User.updateSocialVerification(
-              userId,
-              config.get('userVerifierPrivateKey'),
-              {
-                is_verified: tikTokObj.verified,
-                tiktok_handle: tikTokObj.profile.username
+          if (tikTokObj.verified) {
+            // Update the user's social verification status along with the social app handle that verification came from.
+            // If the user is not verified, send the transaction to ensure that their linked social handle is updated.
+            const [encodedABI, contractAddress] =
+              await audiusLibsInstance.User.updateSocialVerification(
+                userId,
+                config.get('userVerifierPrivateKey'),
+                {
+                  is_verified: tikTokObj.verified,
+                  tiktok_handle: tikTokObj.profile.username
+                }
+              )
+            const senderAddress = config.get('userVerifierPublicKey')
+            try {
+              const txProps = {
+                contractRegistryKey: 'EntityManager',
+                contractAddress: contractAddress,
+                encodedABI: encodedABI,
+                senderAddress: senderAddress,
+                gasLimit: null
               }
-            )
-          const senderAddress = config.get('userVerifierPublicKey')
-          try {
-            const txProps = {
-              contractRegistryKey: 'EntityManager',
-              contractAddress: contractAddress,
-              encodedABI: encodedABI,
-              senderAddress: senderAddress,
-              gasLimit: null
+              await txRelay.sendTransaction(
+                req,
+                false,
+                txProps,
+                'tikTokVerified'
+              )
+            } catch (e) {
+              return errorResponseBadRequest(e)
             }
-            await txRelay.sendTransaction(req, false, txProps, 'tikTokVerified')
-          } catch (e) {
-            return errorResponseBadRequest(e)
           }
 
           const socialHandle = await models.SocialHandles.findOne({
