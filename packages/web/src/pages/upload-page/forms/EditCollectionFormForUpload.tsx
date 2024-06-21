@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 
-import { CollectionValues } from '@audius/common/schemas'
-import { UploadType } from '@audius/common/store'
+import { CollectionEditFormValues } from '@audius/common/schemas'
+import { EditPlaylistValues, UploadType } from '@audius/common/store'
 import moment from 'moment'
 
 import { EditCollectionForm } from 'components/edit-collection/desktop/EditCollectionForm'
@@ -18,7 +18,7 @@ export const EditCollectionFormForUpload = (props: EditCollectionFormProps) => {
   const { tracks, uploadType, metadata } = formState
   const isAlbum = uploadType === UploadType.ALBUM
 
-  const initialValues: CollectionValues = {
+  const initialValues: CollectionEditFormValues = {
     ...metadata,
     is_album: isAlbum,
     is_downloadable: false,
@@ -36,12 +36,15 @@ export const EditCollectionFormForUpload = (props: EditCollectionFormProps) => {
   }
 
   const handleSubmit = useCallback(
-    (values: CollectionValues) => {
-      onContinue({
-        uploadType,
-        tracks: values.tracks,
-        metadata: values
-      })
+    (values: CollectionEditFormValues | EditPlaylistValues) => {
+      // trackDetails are only present in the upload form
+      if ('trackDetails' in values) {
+        onContinue({
+          uploadType,
+          tracks: values.tracks,
+          metadata: values
+        })
+      }
     },
     [onContinue, uploadType]
   )

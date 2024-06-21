@@ -272,7 +272,9 @@ export const createCollectionSchema = (collectionType: 'playlist' | 'album') =>
       }),
       is_private: z.optional(z.boolean()),
       is_album: z.literal(collectionType === 'album'),
-      tracks: z.array(z.object({ metadata: CollectionTrackMetadataSchema })),
+      tracks: z.optional(
+        z.array(z.object({ metadata: CollectionTrackMetadataSchema }))
+      ),
       ddex_release_ids: z.optional(z.record(z.string()).nullable()),
       artists: z.optional(z.array(DDEXResourceContributor).nullable()),
       copyrightLine: z.optional(DDEXCopyright.nullable()),
@@ -325,4 +327,4 @@ export type AlbumValues = z.input<typeof AlbumSchema> &
   UnvalidatedCollectionMetadata
 
 /** Values produced by the collection form. */
-export type CollectionValues = PlaylistValues | AlbumValues
+export type CollectionEditFormValues = PlaylistValues | AlbumValues

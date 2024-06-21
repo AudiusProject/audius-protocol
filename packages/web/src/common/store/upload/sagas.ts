@@ -8,7 +8,7 @@ import {
   isContentFollowGated,
   isContentUSDCPurchaseGated
 } from '@audius/common/models'
-import { CollectionValues } from '@audius/common/schemas'
+import { CollectionEditFormValues } from '@audius/common/schemas'
 import {
   TrackMetadataForUpload,
   LibraryCategory,
@@ -89,7 +89,7 @@ const toUploadTrackMetadata = (
  */
 function* combineMetadata(
   trackMetadata: TrackMetadataForUpload,
-  collectionMetadata: CollectionValues,
+  collectionMetadata: CollectionEditFormValues,
   albumTrackPrice?: number
 ) {
   const metadata = trackMetadata
@@ -736,7 +736,7 @@ export function* handleUploads({
  */
 export function* uploadCollection(
   tracks: TrackForUpload[],
-  collectionMetadata: CollectionValues,
+  collectionMetadata: CollectionEditFormValues,
   isAlbum: boolean
 ) {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')

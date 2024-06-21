@@ -133,6 +133,8 @@ import {
   PLAYLIST_PAGE,
   ALBUM_PAGE,
   TRACK_PAGE,
+  ALBUM_EDIT_PAGE,
+  PLAYLIST_EDIT_PAGE,
   TRACK_REMIXES_PAGE,
   PROFILE_PAGE,
   authenticatedRoutes,
@@ -870,6 +872,32 @@ class WebPlayer extends Component {
                     <CollectionPage key={location.pathname} type='album' />
                   )}
                 />
+                {isEditTrackRedesignEnabled ? (
+                  <DesktopRoute
+                    path={PLAYLIST_EDIT_PAGE}
+                    isMobile={isMobile}
+                    render={(props) => (
+                      <EditCollectionPage
+                        {...props}
+                        scrollToTop={this.scrollToTop}
+                      />
+                    )}
+                  />
+                ) : null}
+                {isEditTrackRedesignEnabled ? (
+                  <DesktopRoute
+                    path={ALBUM_EDIT_PAGE}
+                    isMobile={isMobile}
+                    render={(props) => (
+                      <EditCollectionPage
+                        {...props}
+                        scrollToTop={this.scrollToTop}
+                      />
+                    )}
+                  />
+                ) : null}
+
+
 
                 {/* Hash id routes */}
                 <Route

@@ -1,4 +1,4 @@
-import { CollectionValues } from '@audius/common/schemas'
+import { CollectionEditFormValues } from '@audius/common/schemas'
 import { UploadType, TrackForUpload } from '@audius/common/store'
 
 export type InitialFormState = {
@@ -15,7 +15,7 @@ export type TrackFormState = {
 export type CollectionFormState = {
   uploadType: UploadType.ALBUM | UploadType.PLAYLIST
   tracks: TrackForUpload[]
-  metadata: CollectionValues
+  metadata: CollectionEditFormValues
 }
 
 export type UploadFormState =

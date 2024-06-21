@@ -1,4 +1,4 @@
-import { CollectionValues } from '~/schemas'
+import { CollectionEditFormValues } from '~/schemas'
 
 import {
   Collection,
@@ -53,7 +53,7 @@ export interface TrackMetadataForUpload extends TrackMetadata {
  */
 export interface CollectionMetadataForUpload extends CollectionMetadata {
   artwork: {
-    file: Blob
+    file?: Blob
     url: string
   }
   trackDetails: {
@@ -97,7 +97,7 @@ export type ProgressState = {
 type UploadStateBase = {
   openMultiTrackNotification: boolean
   tracks: Nullable<TrackForUpload[]>
-  metadata: Nullable<CollectionValues>
+  metadata: Nullable<CollectionEditFormValues>
   uploading: boolean
   uploadProgress: Nullable<ProgressState[]>
   success: boolean

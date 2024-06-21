@@ -36,7 +36,6 @@ const collectionApi = createApi({
         schemaKey: 'collection'
       }
     },
-    // Note: Please do not use this endpoint yet as it depends on further changes on the DN side.
     getPlaylistByPermalink: {
       fetch: async (
         {

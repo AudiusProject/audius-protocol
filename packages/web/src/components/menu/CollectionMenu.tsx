@@ -18,6 +18,8 @@ import { Dispatch } from 'redux'
 import * as embedModalActions from 'components/embed-modal/store/actions'
 import { AppState } from 'store/types'
 import { collectionPage, profilePage } from 'utils/route'
+import { useFlag } from 'hooks/useRemoteConfig'
+import { FeatureFlags } from '@audius/common/services'
 const { getUser } = cacheUsersSelectors
 
 type PlaylistId = number
@@ -57,6 +59,9 @@ const messages = {
 
 const CollectionMenu = (props: CollectionMenuProps) => {
   const { onOpen } = useEditPlaylistModal()
+  const { isEnabled: isEditTrackRedesignEnabled } = useFlag(
+    FeatureFlags.EDIT_TRACK_REDESIGN
+  )
 
   const getMenu = () => {
     const {
@@ -139,7 +144,11 @@ const CollectionMenu = (props: CollectionMenuProps) => {
 
     const editCollectionMenuItem = {
       text: `Edit ${typeName}`,
-      onClick: () => onOpen({ collectionId: playlistId })
+      onClick: () => {
+        isEditTrackRedesignEnabled
+          ? permalink && goToRoute(`${permalink}/edit`)
+          : onOpen({ collectionId: playlistId })
+      }
     }
 
     const embedMenuItem = {

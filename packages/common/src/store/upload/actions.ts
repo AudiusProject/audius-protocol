@@ -1,4 +1,4 @@
-import { CollectionValues } from '~/schemas'
+import { CollectionEditFormValues } from '~/schemas'
 
 import { Collection, Track } from '../../models'
 
@@ -27,7 +27,7 @@ type UploadPayload =
   | {
       uploadType: UploadType.ALBUM | UploadType.PLAYLIST
       tracks: TrackForUpload[]
-      metadata: CollectionValues
+      metadata: CollectionEditFormValues
     }
 
 export const uploadTracks = (payload: UploadPayload) => {

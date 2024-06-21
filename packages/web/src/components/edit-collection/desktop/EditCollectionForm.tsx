@@ -1,7 +1,7 @@
 import { useFeatureFlag } from '@audius/common/hooks'
 import {
   AlbumSchema,
-  CollectionValues,
+  CollectionEditFormValues,
   PlaylistSchema
 } from '@audius/common/schemas'
 import { FeatureFlags } from '@audius/common/services'
@@ -27,6 +27,7 @@ import { Tile } from 'components/tile'
 import { AnchoredSubmitRow } from 'pages/upload-page/components/AnchoredSubmitRow'
 
 import styles from './EditCollectionForm.module.css'
+import { EditPlaylistValues } from '@audius/common/store'
 
 const messages = {
   name: 'Name',
@@ -40,8 +41,8 @@ const messages = {
 }
 
 type EditCollectionFormProps = {
-  initialValues: CollectionValues
-  onSubmit: (values: CollectionValues) => void
+  initialValues: EditPlaylistValues | CollectionEditFormValues
+  onSubmit: (values: EditPlaylistValues | CollectionEditFormValues) => void
   isAlbum: boolean
 }
 
