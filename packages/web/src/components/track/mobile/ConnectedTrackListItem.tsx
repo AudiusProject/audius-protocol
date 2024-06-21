@@ -1,6 +1,5 @@
 import { memo, useCallback } from 'react'
 
-import { useGetTrackById } from '@audius/common/api'
 import {
   RepostSource,
   FavoriteSource,
@@ -67,7 +66,6 @@ const ConnectedTrackListItem = (props: ConnectedTrackListItemProps) => {
     { trackId },
     { enabled: !!trackId }
   )
-  const { data: track } = useGetTrackById({ id: trackId })
   const dispatch = useDispatch()
   const { onOpen: openPremiumContentPurchaseModal } =
     usePremiumContentPurchaseModal()

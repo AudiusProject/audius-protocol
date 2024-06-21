@@ -1,8 +1,4 @@
-import { Collection, Track } from '~/models'
-import { UserTrackMetadata, isContentUSDCPurchaseGated } from '~/models/Track'
-import { Nullable } from '~/utils'
-
-import { useGatedContentAccess } from '../useGatedContent'
+import { isContentUSDCPurchaseGated } from '~/models/Track'
 
 import {
   PayExtraAmountPresetValues,
