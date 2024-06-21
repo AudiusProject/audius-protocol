@@ -254,7 +254,8 @@ const initializeApis = ({
     services.auth,
     services.logger,
     services.claimableTokensClient,
-    services.paymentRouterClient
+    services.paymentRouterClient,
+    services.solanaRelay
   )
   const users = new UsersApi(
     generatedApiClientConfig,
@@ -271,7 +272,8 @@ const initializeApis = ({
     services.auth,
     services.logger,
     services.claimableTokensClient,
-    services.paymentRouterClient
+    services.paymentRouterClient,
+    services.solanaRelay
   )
   const playlists = new PlaylistsApi(
     generatedApiClientConfig,
