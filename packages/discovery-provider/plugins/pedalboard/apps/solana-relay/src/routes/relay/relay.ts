@@ -22,7 +22,7 @@ import { assertRelayAllowedInstructions } from './assertRelayAllowedInstructions
  * @param feePayerPublicKey the fee payer to find
  * @returns the Keypair of the given fee payer or null if not found
  */
-const getFeePayerKeyPair = (feePayerPublicKey?: PublicKey) => {
+export const getFeePayerKeyPair = (feePayerPublicKey?: PublicKey) => {
   if (!feePayerPublicKey) {
     return null
   }
