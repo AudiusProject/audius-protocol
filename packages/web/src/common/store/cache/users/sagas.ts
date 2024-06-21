@@ -369,12 +369,11 @@ export function* fetchUserSocials({
       {
         id: user.user_id,
         metadata: {
-          twitter_handle: user.twitter_handle || socials.twitterHandle || null,
-          instagram_handle:
-            user.instagram_handle || socials.instagramHandle || null,
-          tiktok_handle: user.tiktok_handle || socials.tikTokHandle || null,
-          website: user.website || socials.website || null,
-          donation: user.donation || socials.donation || null
+          twitter_handle: socials.twitter_handle || null,
+          instagram_handle: socials.instagram_handle || null,
+          tiktok_handle: socials.tiktok_handle || null,
+          website: socials.website || null,
+          donation: socials.donation || null
         }
       }
     ])

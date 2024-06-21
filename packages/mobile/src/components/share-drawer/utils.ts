@@ -37,7 +37,7 @@ export const getContentUrl = (content: ShareContent) => {
 }
 
 const getTwitterShareHandle = async (user: User) => {
-  const { twitterHandle } = await audiusBackendInstance.getSocialHandles(user)
+  const { twitter_handle: twitterHandle } = await audiusBackendInstance.getSocialHandles(user)
   return twitterHandle ? `@${twitterHandle}` : user.handle
 }
 

@@ -743,22 +743,7 @@ export const audiusBackend = ({
       if (!account) return null
 
       const socialHandles = await getSocialHandles(account)
-      account.twitter_handle =
-        account.twitter_handle || socialHandles.twitterHandle || null
-      account.instagram_handle =
-        account.instagram_handle || socialHandles.instagramHandle || null
-      account.tiktok_handle =
-        account.tiktok_handle || socialHandles.tikTokHandle || null
-      account.website = account.website || socialHandles.website || null
-      account.donation = account.donation || socialHandles.donation || null
-      account.verified_with_twitter =
-        account.verified_with_twitter || socialHandles.twitterVerified || false
-      account.verified_with_instagram =
-        account.verified_with_instagram ||
-        socialHandles.instagramVerified ||
-        false
-      account.verified_with_tiktok =
-        account.verified_with_tiktok || socialHandles.tikTokVerified || false
+      Object.assign(account, socialHandles)
 
       try {
         const userBank = await audiusLibs.solanaWeb3Manager.deriveUserBank()
@@ -984,14 +969,23 @@ export const audiusBackend = ({
       user.verified_with_instagram ||
       user.verified_with_tiktok
     if (userHasSocials) {
-      return {}
+      return user
     }
     try {
       const res = await fetch(
         `${identityServiceUrl}/social_handles?handle=${user.handle}`
       )
       const json = await res.json()
-      return json
+      return ({
+        twitter_handle: json.twitterHandle || null,
+        instagram_handle: json.instagramHandle || null,
+        tiktok_handle: json.tikTokHandle || null,
+        website: json.website || null,
+        donation: json.donation || null,
+        verified_with_twitter: json.twitterVerified || false,
+        verified_with_instagram: json.instagramVerified || false,
+        verified_with_tiktok: json.tikTokVerified || false
+      })
     } catch (e) {
       console.error(e)
       return {}
