@@ -34,13 +34,12 @@ def format_genres(genres: list[str] | None):
     if not genres:
         return None
 
-    capitalized_genres = [
-        get_capitalized_genre(genre) for genre in genres if genre is not None
-    ]
+    capitalized_genres = [get_capitalized_genre(genre) for genre in genres]
+
     if "Electronic" in capitalized_genres:
         capitalized_genres += electronic_sub_genres
-    capitalized_genres = list(set(capitalized_genres))
-    return capitalized_genres
+
+    return list(set(capitalized_genres))
 
 
 lowercase_to_capitalized_mood = {mood.lower(): mood for mood in mood_allowlist}
