@@ -333,7 +333,6 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
     has_current_user_reposted,
     isDeleted,
     ddexApp,
-    isPlaylistAddable,
     isNewPodcastControlsEnabled,
     isLongFormContent,
     showViewAlbum,
