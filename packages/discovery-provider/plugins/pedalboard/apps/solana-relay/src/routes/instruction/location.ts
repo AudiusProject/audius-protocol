@@ -15,27 +15,29 @@ export const location = async (
     unknown,
     unknown,
     {
-      feePayer: string
+      signer?: string
     }
   >,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const feePayer = req.query.feePayer
-    if (!feePayer) {
-      res.status(400).send({ error: 'Missing feePayer parameter' })
+    const signer = req.query.signer
+    if (!signer) {
+      res.status(400).send({ error: 'Missing signer parameter' })
       next()
     }
     const location = await getRequestIpData(res.locals.logger, req)
     const instruction = new TransactionInstruction({
-      keys: [
-        {
-          pubkey: new PublicKey(feePayer),
-          isSigner: true,
-          isWritable: true
-        }
-      ],
+      keys: signer
+        ? [
+            {
+              pubkey: new PublicKey(signer),
+              isSigner: true,
+              isWritable: true
+            }
+          ]
+        : [],
       data: Buffer.from(
         `${GEO_MEMO_STRING}:${JSON.stringify(location)}`,
         'utf-8'
