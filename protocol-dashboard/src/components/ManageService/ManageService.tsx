@@ -21,6 +21,7 @@ import ConfirmTransactionModal, {
 import DelegateStakeModal from 'components/DelegateStakeModal'
 import DelegatorsModal from 'components/DelegatorsModal'
 import DisplayAudio from 'components/DisplayAudio'
+import { InfoBox } from 'components/InfoBox/InfoBox'
 import {
   AggregateContributionInfoTooltip,
   AppliedInfoTooltipProps,
@@ -58,12 +59,11 @@ import getActiveStake, { getTotalActiveDelegatedStake } from 'utils/activeStake'
 import { TICKER } from 'utils/consts'
 import { formatShortWallet } from 'utils/format'
 import { useModalControls } from 'utils/hooks'
+import { COOLDOWN_PERIOD_DOCS_URL } from 'utils/routes'
+import { sharedMessages } from 'utils/sharedMessages'
 
 import styles from './ManageService.module.css'
 import { RegisterNewServiceBtn } from './RegisterNewServiceBtn'
-import { InfoBox } from 'components/InfoBox/InfoBox'
-import { sharedMessages } from 'utils/sharedMessages'
-import { COOLDOWN_PERIOD_DOCS_URL } from 'utils/routes'
 
 const messages = {
   ownerTitle: 'Your Nodes',

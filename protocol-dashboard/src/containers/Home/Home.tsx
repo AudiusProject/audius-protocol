@@ -29,6 +29,7 @@ import { RewardsTimingCard } from 'components/RewardsTimingCard/RewardsTimingCar
 import { StatLabel } from 'components/StatLabel/StatLabel'
 import TopAddressesTable from 'components/TopAddressesTable'
 import TotalStakedStat from 'components/TotalStakedStat'
+import TransactionStatus from 'components/TransactionStatus'
 import UniqueUsersStat from 'components/UniqueUsersStat'
 import { useAccount } from 'store/account/hooks'
 import { useProposals } from 'store/cache/proposals/hooks'
@@ -46,7 +47,6 @@ import {
 import desktopStyles from './Home.module.css'
 import mobileStyles from './HomeMobile.module.css'
 import { InfoCard } from './InfoCard'
-import TransactionStatus from 'components/TransactionStatus'
 
 const styles = createStyles({ desktopStyles, mobileStyles })
 

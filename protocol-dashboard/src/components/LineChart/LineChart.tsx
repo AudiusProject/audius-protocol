@@ -282,6 +282,7 @@ const LineChart: React.FC<LineChartProps> = ({
     } else {
       setPastSecondDraw(true)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selection])
 
   if (!tooltipTitle) tooltipTitle = title
