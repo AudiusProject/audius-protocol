@@ -34,8 +34,13 @@ export const AccountsYouManageHomePage = ({
   const userId = currentUser?.user_id
   const { data: managedAccounts, status } = useGetManagedAccounts(
     { userId: userId! },
-    { disabled: userId == null }
+    // Always update managed accounts list when mounting this page
+    { disabled: userId == null, force: true }
   )
+  // Don't flash loading spinner if we are refreshing the cache
+  const isLoading =
+    status !== Status.SUCCESS &&
+    (!managedAccounts || managedAccounts.length === 0)
   const [approveManagedAccount, approveResult] = useApproveManagedAccount()
   const [rejectManagedAccount, rejectResult] = useRemoveManager()
   const { toast } = useContext(ToastContext)
@@ -95,7 +100,7 @@ export const AccountsYouManageHomePage = ({
       <Text variant='body' size='l'>
         {messages.takeControl}{' '}
       </Text>
-      {status !== Status.SUCCESS ? (
+      {isLoading ? (
         <Box pv='2xl'>
           <LoadingSpinner
             css={({ spacing }) => ({
