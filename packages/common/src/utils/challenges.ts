@@ -52,8 +52,10 @@ export const challengeRewardsConfig: Record<
   referred: {
     id: 'referred',
     title: 'You Accepted An Invite',
-    description: () => `You earned $AUDIO for being invited`,
-    fullDescription: () => `You earned $AUDIO for being invited`,
+    description: (challenge) =>
+      `You earned ${challenge?.totalAmount ?? ''} $AUDIO for being invited.`,
+    fullDescription: (challenge) =>
+      `You earned ${challenge?.totalAmount ?? ''} $AUDIO for being invited.`,
     progressLabel: '%0/%1 Invites',
     panelButtonText: 'More Info'
   },
