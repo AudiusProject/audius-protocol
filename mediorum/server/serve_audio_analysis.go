@@ -16,7 +16,7 @@ func (ss *MediorumServer) analyzeUpload(c echo.Context) error {
 		return echo.NewHTTPError(404, err.Error())
 	}
 
-	if upload.Template == "audio" && upload.Status == JobStatusDone && (upload.AudioAnalysisStatus == JobStatusTimeout || upload.AudioAnalysisStatus == JobStatusError) {
+	if upload.Template == "audio" && upload.Status == JobStatusDone && upload.AudioAnalysisStatus != JobStatusDone {
 		upload.AudioAnalyzedAt = time.Now().UTC()
 		upload.AudioAnalysisStatus = ""
 		upload.AudioAnalysisError = ""
