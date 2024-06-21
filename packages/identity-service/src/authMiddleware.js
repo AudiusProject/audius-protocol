@@ -1,6 +1,10 @@
 const axios = require('axios')
 const { recoverPersonalSignature } = require('eth-sig-util')
-const { sendResponse, errorResponseBadRequest } = require('./apiHelpers')
+const {
+  sendResponse,
+  errorResponseBadRequest,
+  errorResponseForbidden
+} = require('./apiHelpers')
 
 const models = require('./models')
 
@@ -120,11 +124,18 @@ async function authMiddleware(req, res, next) {
     })
     // We are managing someone else
     if (actingUserId && actingUserId !== user.blockchainUserId) {
-      const actingUser = await getManagedUser(walletAddress, actingUserId, {
-        'Encoded-Data-Message': encodedDataMessage,
-        'Encoded-Data-Signature': signature
-      })
-      req.user = actingUser
+      try {
+        const actingUser = await getManagedUser(walletAddress, actingUserId, {
+          'Encoded-Data-Message': encodedDataMessage,
+          'Encoded-Data-Signature': signature
+        })
+        req.user = actingUser
+      } catch (err) {
+        const errorResponse = errorResponseForbidden(
+          `[Error]: The wallet address is not associated with a user id ${err}`
+        )
+        return sendResponse(req, res, errorResponse)
+      }
       next()
     } else {
       if (!user)
