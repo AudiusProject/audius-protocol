@@ -36,7 +36,8 @@ import {
   TrackAddedToPurchasedAlbumNotification,
   RequestManagerNotification,
   ApproveManagerNotification,
-  ClaimableRewardNotification
+  ClaimableRewardNotification,
+  RewardInCooldownNotification
 } from '../../types/notifications'
 import { ApproveManagerRequest } from './approveManagerRequest'
 import { Follow } from './follow'
@@ -68,6 +69,7 @@ import { USDCWithdrawal } from './usdcWithdrawal'
 import { USDCTransfer } from './usdcTransfer'
 import { RequestManager } from './requestManager'
 import { TrackAddedToPurchasedAlbum } from './trackAddedToPurchasedAlbum'
+import { RewardInCooldown } from './rewardInCooldown'
 import { ClaimableReward } from './claimableReward'
 
 export const mapNotifications = (
@@ -259,10 +261,20 @@ const mapNotification = (
       approveManagerNotification
     )
   } else if (notification.type === 'claimable_reward') {
-    const claimableRewardNotification = notification as NotificationRow & {
-      data: ClaimableRewardNotification
+    const challengeCooldownCompleteNotification =
+      notification as NotificationRow & {
+        data: ClaimableRewardNotification
+      }
+    return new ClaimableReward(
+      dnDb,
+      identityDb,
+      challengeCooldownCompleteNotification
+    )
+  } else if (notification.type === 'reward_in_cooldown') {
+    const challengeCooldownNotification = notification as NotificationRow & {
+      data: RewardInCooldownNotification
     }
-    return new ClaimableReward(dnDb, identityDb, claimableRewardNotification)
+    return new RewardInCooldown(dnDb, identityDb, challengeCooldownNotification)
   } else if (
     notification.type == DMEntityType.Message ||
     notification.type == DMEntityType.Reaction
