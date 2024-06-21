@@ -51,7 +51,7 @@ const formatPlayCount = (playCount?: number) => {
 
 const messages = {
   artistPick: 'Artist Pick',
-  hiddenTrack: 'Hidden Track',
+  hidden: 'Hidden',
   releases: (date: string) =>
     `Releases ${formatReleaseDate({
       date,
@@ -242,7 +242,7 @@ export const LineupTileStats = ({
               width={spacing(4)}
             />
             <Text fontSize='xs' colorValue={neutralLight4}>
-              {messages.hiddenTrack}
+              {messages.hidden}
             </Text>
           </View>
         ) : null}

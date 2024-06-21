@@ -340,12 +340,6 @@ const TrackTile = (props: CombinedProps) => {
           size='xs'
           className={cn(styles.topRight, styles.statText)}
         >
-          {props.isUnlisted ? (
-            <div className={styles.topRightIcon}>
-              <IconVisibilityHidden />
-              {messages.hiddenTrack}
-            </div>
-          ) : null}
           <div className={cn(styles.duration, fadeIn)}>
             {duration
               ? formatLineupTileDuration(
