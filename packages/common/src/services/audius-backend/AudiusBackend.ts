@@ -976,7 +976,7 @@ export const audiusBackend = ({
         `${identityServiceUrl}/social_handles?handle=${user.handle}`
       )
       const json = await res.json()
-      return ({
+      return {
         twitter_handle: json.twitterHandle || null,
         instagram_handle: json.instagramHandle || null,
         tiktok_handle: json.tikTokHandle || null,
@@ -985,7 +985,7 @@ export const audiusBackend = ({
         verified_with_twitter: json.twitterVerified || false,
         verified_with_instagram: json.instagramVerified || false,
         verified_with_tiktok: json.tikTokVerified || false
-      })
+      }
     } catch (e) {
       console.error(e)
       return {}
