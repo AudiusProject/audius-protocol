@@ -8,7 +8,6 @@ import (
 	"log"
 	"os"
 	"os/exec"
-	"runtime"
 	"strconv"
 	"strings"
 	"sync"
@@ -24,11 +23,8 @@ func (ss *MediorumServer) startAudioAnalyzer() {
 	myHost := ss.Config.Self.Host
 	work := make(chan *Upload)
 
-	// use most cpus
-	numWorkers := runtime.NumCPU() - 2
-	if numWorkers < 2 {
-		numWorkers = 2
-	}
+	// use one cpu
+	numWorkers := 1
 
 	// on boot... reset any of my wip jobs
 	tx := ss.crud.DB.Model(Upload{}).
