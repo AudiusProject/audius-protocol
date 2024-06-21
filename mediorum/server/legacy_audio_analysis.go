@@ -7,7 +7,6 @@ import (
 	"io"
 	"log"
 	"os"
-	"runtime"
 	"strings"
 	"sync"
 	"time"
@@ -22,11 +21,8 @@ func (ss *MediorumServer) startLegacyAudioAnalyzer() {
 	myHost := ss.Config.Self.Host
 	work := make(chan *QmAudioAnalysis)
 
-	// use most cpus
-	numWorkers := runtime.NumCPU() - 2
-	if numWorkers < 2 {
-		numWorkers = 2
-	}
+	// use aone cpu
+	numWorkers := 1
 
 	// on boot... reset any of my wip jobs
 	tx := ss.crud.DB.Model(QmAudioAnalysis{}).
