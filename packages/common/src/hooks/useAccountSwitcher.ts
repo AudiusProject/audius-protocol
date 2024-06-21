@@ -30,9 +30,19 @@ export const useAccountSwitcher = () => {
     [currentWeb3User, localStorage]
   )
 
-  return { switchAccount }
+  /** Convenience method to switch out of Manager Mode and back to the current web3 user */
+  const switchToWeb3User = useCallback(async () => {
+    if (!currentWeb3User) {
+      console.error('No current web3 user')
+      return
+    }
+    switchAccount(currentWeb3User)
+  }, [switchAccount, currentWeb3User])
+
+  return { switchAccount, switchToWeb3User }
 }
 
+/** Determines if we are in Manager Mode, i.e. the current user is not the logged-in user */
 export const useIsManagedAccount = () => {
   const { data: currentWeb3User } = useGetCurrentWeb3User({})
   const { data: currentUserId } = useGetCurrentUserId({})

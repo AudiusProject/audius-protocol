@@ -12,9 +12,6 @@ import {
 } from '@audius/harmony'
 import cn from 'classnames'
 
-import Tooltip from 'components/tooltip/Tooltip'
-import HiddenTrackHeader from 'pages/track-page/components/HiddenTrackHeader'
-
 import styles from './GiantTrackTile.module.css'
 
 const messages = {
@@ -70,26 +67,15 @@ export const CardTitle = ({
       </div>
     )
   } else {
-    content =
-      isUnlisted && !isScheduledRelease ? (
-        <Tooltip
-          text={messages.hiddenTrackTooltip}
-          mouseEnterDelay={0}
-          shouldWrapContent={false}
-        >
-          <div>
-            <HiddenTrackHeader />
-          </div>
-        </Tooltip>
-      ) : (
-        <div className={styles.typeLabel}>
-          {isRemix
-            ? messages.remixTitle
-            : isPodcast
-            ? messages.podcastTitle
-            : messages.trackTitle}
-        </div>
-      )
+    content = (
+      <div className={styles.typeLabel}>
+        {isRemix
+          ? messages.remixTitle
+          : isPodcast
+          ? messages.podcastTitle
+          : messages.trackTitle}
+      </div>
+    )
   }
 
   return (

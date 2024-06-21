@@ -8,7 +8,6 @@ import (
 	"log"
 	"os"
 	"os/exec"
-	"runtime"
 	"strconv"
 	"strings"
 	"sync"
@@ -24,11 +23,8 @@ func (ss *MediorumServer) startAudioAnalyzer() {
 	myHost := ss.Config.Self.Host
 	work := make(chan *Upload)
 
-	// use most cpus
-	numWorkers := runtime.NumCPU() - 2
-	if numWorkers < 2 {
-		numWorkers = 2
-	}
+	// use one cpu
+	numWorkers := 1
 
 	// on boot... reset any of my wip jobs
 	tx := ss.crud.DB.Model(Upload{}).
@@ -155,10 +151,6 @@ func (ss *MediorumServer) findMissedAnalysisJobs(work chan *Upload, myHost strin
 func (ss *MediorumServer) startAudioAnalysisWorker(n int, work chan *Upload) {
 	for upload := range work {
 		logger := ss.logger.With("upload", upload.ID)
-		if time.Since(upload.AudioAnalyzedAt) > time.Minute {
-			logger.Info("audio analysis window has passed. skipping job")
-		}
-
 		logger.Debug("analyzing audio")
 		startTime := time.Now().UTC()
 		err := ss.analyzeAudio(upload)

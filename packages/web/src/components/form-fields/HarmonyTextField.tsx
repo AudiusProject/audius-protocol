@@ -54,6 +54,7 @@ export const HarmonyTextField = forwardRef(
       <TextInput
         ref={ref}
         {...field}
+        value={value ?? ''}
         error={hasError}
         helperText={helperText ?? (hasError ? error : undefined)}
         onChange={(e) => {

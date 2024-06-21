@@ -34,6 +34,32 @@ def get_capitalized_mood(mood):
     return lowercase_to_capitalized_mood.get(mood.lower())
 
 
+def sharp_to_flat(key):
+    sharp_to_flat_mapping = {
+        "C sharp": "D flat",
+        "D sharp": "E flat",
+        "F sharp": "G flat",
+        "G sharp": "A flat",
+        "A sharp": "B flat",
+    }
+
+    # Split the key into root and type (major/minor)
+    key_parts = key.split()
+
+    if len(key_parts) == 2:
+        key_root = key_parts[0]
+        key_type = key_parts[1]
+    if len(key_parts) == 3:
+        key_root = key_parts[0] + " " + key_parts[1]
+        key_type = key_parts[2]
+
+    # Convert sharp keys to flat keys
+    if key_root in sharp_to_flat_mapping:
+        key_root = sharp_to_flat_mapping[key_root]
+
+    return key_root + " " + key_type
+
+
 def search_es_full(args: dict):
     esclient = get_esclient()
     if not esclient:
@@ -49,7 +75,12 @@ def search_es_full(args: dict):
     include_purchaseable = args.get("include_purchaseable", False)
     genres = args.get("genres", [])
     moods = args.get("moods", [])
+    bpm_min = args.get("bpm_min")
+    bpm_max = args.get("bpm_max")
+    keys = args.get("keys", [])
     only_verified = args.get("only_verified", False)
+    only_with_downloads = args.get("only_with_downloads", False)
+    only_purchaseable = args.get("only_purchaseable", False)
     do_tracks = search_type == "all" or search_type == "tracks"
     do_users = search_type == "all" or search_type == "users"
     do_playlists = search_type == "all" or search_type == "playlists"
@@ -75,6 +106,11 @@ def search_es_full(args: dict):
                     include_purchaseable=include_purchaseable,
                     genres=genres,
                     moods=moods,
+                    bpm_min=bpm_min,
+                    bpm_max=bpm_max,
+                    keys=keys,
+                    only_with_downloads=only_with_downloads,
+                    only_purchaseable=only_purchaseable,
                 ),
             ]
         )
@@ -118,6 +154,8 @@ def search_es_full(args: dict):
                     current_user_id=current_user_id,
                     genres=genres,
                     moods=moods,
+                    only_with_downloads=only_with_downloads,
+                    only_purchaseable=only_purchaseable,
                 ),
             ]
         )
@@ -378,11 +416,16 @@ def default_function_score(dsl, ranking_field, factor=0.1):
 def track_dsl(
     search_str,
     current_user_id,
+    bpm_min,
+    bpm_max,
     must_saved=False,
     only_downloadable=False,
+    only_purchaseable=False,
     include_purchaseable=False,
     genres=[],
     moods=[],
+    keys=[],
+    only_with_downloads=False,
 ):
     dsl = {
         "must": [
@@ -473,8 +516,49 @@ def track_dsl(
         if capitalized_moods:
             dsl["filter"].append({"terms": {"mood": capitalized_moods}})
 
+    if bpm_min:
+        dsl["filter"].append({"range": {"bpm": {"gte": bpm_min}}})
+
+    if bpm_max:
+        dsl["filter"].append({"range": {"bpm": {"lte": bpm_max}}})
+
+    if keys:
+        mapped_keys = list(
+            filter(None, [sharp_to_flat(key) for key in keys if key is not None])
+        )
+
+        if mapped_keys:
+            dsl["filter"].append({"terms": {"musical_key": mapped_keys}})
+
+    # Only include the track if it is downloadable
     if only_downloadable:
         dsl["must"].append({"term": {"downloadable": {"value": True}}})
+
+    # Only include the track if it is downloadable OR has stems
+    if only_with_downloads:
+        dsl["must"].append(
+            {
+                "bool": {
+                    "should": [
+                        {"term": {"downloadable": {"value": True}}},
+                        {"term": {"has_stems": {"value": True}}},
+                    ]
+                }
+            }
+        )
+
+    # Only include the track if it is purchaseable or has purchaseable stems
+    if only_purchaseable:
+        dsl["must"].append(
+            {
+                "bool": {
+                    "should": [
+                        {"term": {"purchaseable": {"value": True}}},
+                        {"term": {"purchaseable_download": {"value": True}}},
+                    ]
+                }
+            }
+        )
 
     if not include_purchaseable:
         dsl["must_not"].append({"term": {"purchaseable": {"value": True}}})
@@ -666,7 +750,14 @@ def user_dsl(
 
 
 def base_playlist_dsl(
-    search_str, is_album, genres, moods, current_user_id, must_saved=False
+    search_str,
+    is_album,
+    genres,
+    moods,
+    only_with_downloads,
+    only_purchaseable,
+    current_user_id,
+    must_saved=False,
 ):
     dsl = {
         "must": [
@@ -782,6 +873,21 @@ def base_playlist_dsl(
                 }
             )
 
+    if only_with_downloads:
+        dsl["must"].append(
+            {
+                "bool": {
+                    "should": [
+                        {"term": {"tracks.downloadable": {"value": True}}},
+                        {"term": {"tracks.has_stems": {"value": True}}},
+                    ]
+                }
+            }
+        )
+
+    if only_purchaseable:
+        dsl["must"].append({"term": {"purchaseable": {"value": True}}})
+
     if moods:
         capitalized_moods = list(
             filter(
@@ -824,13 +930,28 @@ def base_playlist_dsl(
 
 def playlist_dsl(search_str, current_user_id, must_saved=False, genres=[], moods=[]):
     return base_playlist_dsl(
-        search_str, False, genres, moods, current_user_id, must_saved
+        search_str, False, genres, moods, False, False, current_user_id, must_saved
     )
 
 
-def album_dsl(search_str, current_user_id, must_saved=False, genres=[], moods=[]):
+def album_dsl(
+    search_str,
+    current_user_id,
+    only_with_downloads,
+    only_purchaseable,
+    must_saved=False,
+    genres=[],
+    moods=[],
+):
     return base_playlist_dsl(
-        search_str, True, genres, moods, current_user_id, must_saved
+        search_str,
+        True,
+        genres,
+        moods,
+        only_with_downloads,
+        only_purchaseable,
+        current_user_id,
+        must_saved,
     )
 
 

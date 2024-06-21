@@ -3,7 +3,6 @@ package server
 import (
 	"bytes"
 	"crypto/sha256"
-	"hash"
 	"io"
 	"sort"
 	"strings"
@@ -52,14 +51,12 @@ func NewRendezvousHasher(hosts []string) *RendezvousHasher {
 		}
 	}
 	return &RendezvousHasher{
-		sha256.New(),
 		liveHosts,
 		rendezvous.New(liveHosts...),
 	}
 }
 
 type RendezvousHasher struct {
-	hasher       hash.Hash
 	hosts        []string
 	legacyHasher *rendezvous.Hash
 }
@@ -84,7 +81,7 @@ func (rh *RendezvousHasher) Rank(key string) []string {
 func (rh *RendezvousHasher) rank(key string) []string {
 	tuples := make(HostTuples, len(rh.hosts))
 	keyBytes := []byte(key)
-	hasher := rh.hasher
+	hasher := sha256.New()
 	for idx, host := range rh.hosts {
 		hasher.Reset()
 		io.WriteString(hasher, host)

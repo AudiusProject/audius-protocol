@@ -106,6 +106,7 @@ from src.queries.get_managed_users import (
     GetUserManagersArgs,
     get_managed_users_with_grants,
     get_user_managers_with_grants,
+    is_active_manager,
 )
 from src.queries.get_related_artists import get_related_artists
 from src.queries.get_repost_feed_for_user import get_repost_feed_for_user
@@ -1998,14 +1999,19 @@ class GetTokenVerification(Resource):
             ns.abort(400, "JWT payload could not be decoded.")
 
         wallet_user_id = get_user_with_wallet(wallet)
-        if not wallet_user_id or (
-            wallet_user_id != payload["userId"]
-            and wallet_user_id != decode_string_id(payload["userId"])
-        ):
-            ns.abort(
-                404,
-                "The JWT signature is invalid - the wallet does not match the user.",
-            )
+        jwt_user_id = decode_string_id(payload["userId"])
+
+        if not wallet_user_id:
+            ns.abort(404, "The JWT signature is invalid - invalid wallet")
+
+        # If the user id found in the token does not match the signer of the token,
+        # check if the signing user is a manager of that user. Otherwise, reject.
+        if wallet_user_id != jwt_user_id:
+            if not is_active_manager(jwt_user_id, wallet_user_id):
+                ns.abort(
+                    403,
+                    "The JWT signature is invalid - the wallet does not match the user.",
+                )
 
         # 5. Send back the decoded payload
         return success_response(payload)

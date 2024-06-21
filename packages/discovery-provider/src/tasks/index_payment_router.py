@@ -896,6 +896,13 @@ def process_payment_router_txs() -> None:
                 for transaction_with_signature in transactions_array:
                     tx_sig = str(transaction_with_signature.signature)
                     tx_slot = transaction_with_signature.slot
+
+                    if transaction_with_signature.err is not None:
+                        logger.debug(
+                            f"index_payment_router.py | Skipping error transaction tx={tx_sig} err={transaction_with_signature.err}"
+                        )
+                        continue
+
                     logger.debug(
                         f"index_payment_router.py | Processing tx={tx_sig} | slot={tx_slot}"
                     )

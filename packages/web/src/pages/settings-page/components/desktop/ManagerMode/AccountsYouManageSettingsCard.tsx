@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from 'react'
 
 import { Button, IconUserArrowRotate } from '@audius/harmony'
+import { useLocation } from 'react-router-dom'
 
-import { useHistoryContext } from 'app/HistoryProvider'
 import { ACCOUNTS_YOU_MANAGE_SETTINGS_PAGE, doesMatchRoute } from 'utils/route'
 
 import SettingsCard from '../SettingsCard'
@@ -18,17 +18,14 @@ const messages = {
 
 export const AccountsYouManageSettingsCard = () => {
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const { history } = useHistoryContext()
+  const location = useLocation()
 
   useEffect(() => {
-    const match = doesMatchRoute(
-      history.location,
-      ACCOUNTS_YOU_MANAGE_SETTINGS_PAGE
-    )
+    const match = doesMatchRoute(location, ACCOUNTS_YOU_MANAGE_SETTINGS_PAGE)
     if (match) {
       setIsModalOpen(true)
     }
-  }, [history.location])
+  }, [location])
 
   const handleOpen = useCallback(() => {
     setIsModalOpen(true)

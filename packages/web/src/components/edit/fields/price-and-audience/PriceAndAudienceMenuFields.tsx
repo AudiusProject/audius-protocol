@@ -28,8 +28,6 @@ import { CollectibleGatedRadioField } from '../stream-availability/collectible-g
 import { UsdcPurchaseGatedRadioField } from '../stream-availability/usdc-purchase-gated/UsdcPurchaseGatedRadioField'
 import { STREAM_AVAILABILITY_TYPE, STREAM_CONDITIONS } from '../types'
 
-import styles from './PriceAndAudienceField.module.css'
-
 const messagesV1 = {
   title: 'Access & Sale',
   modalDescription:
@@ -59,8 +57,8 @@ const messagesV1 = {
 const messagesV2 = {
   title: 'Price & Audience',
   modalDescription: '',
-  public: 'Free for Everyone',
-  publicSubtitle: (contentType: 'album' | 'track') =>
+  free: 'Free for Everyone',
+  freeSubtitle: (contentType: 'album' | 'track') =>
     `Everyone can play your ${contentType} for free.`,
   specialAccessSubtitle: 'Only fans who meet certain criteria can listen.'
 }
@@ -103,9 +101,7 @@ export const PriceAndAudienceMenuFields = (
     ? isPremiumAlbumsEnabled && isUsdcFlagUploadEnabled
     : isUsdcFlagUploadEnabled
 
-  const [availabilityField] = useField({
-    name: STREAM_AVAILABILITY_TYPE
-  })
+  const [availabilityField] = useField({ name: STREAM_AVAILABILITY_TYPE })
 
   const messages = useMessages(
     messagesV1,
@@ -139,13 +135,22 @@ export const PriceAndAudienceMenuFields = (
       )}
       {isPublishDisabled ? <Hint>{messages.publishDisabled}</Hint> : null}
       <RadioGroup {...availabilityField} aria-label={messages.title}>
-        <ModalRadioItem
-          icon={<IconVisibilityPublic className={styles.icon} />}
-          label={messages.public}
-          description={messages.publicSubtitle(isAlbum ? 'album' : 'track')}
-          value={StreamTrackAvailabilityType.PUBLIC}
-          disabled={isPublishDisabled}
-        />
+        {isHiddenPaidScheduledEnabled ? (
+          <ModalRadioItem
+            label={messages.free}
+            description={messages.freeSubtitle(isAlbum ? 'album' : 'track')}
+            value={StreamTrackAvailabilityType.FREE}
+            disabled={isPublishDisabled}
+          />
+        ) : (
+          <ModalRadioItem
+            icon={<IconVisibilityPublic />}
+            label={messages.public}
+            description={messages.publicSubtitle(isAlbum ? 'album' : 'track')}
+            value={StreamTrackAvailabilityType.PUBLIC}
+            disabled={isPublishDisabled}
+          />
+        )}
         {isUsdcUploadEnabled ? (
           <UsdcPurchaseGatedRadioField
             isRemix={isRemix}

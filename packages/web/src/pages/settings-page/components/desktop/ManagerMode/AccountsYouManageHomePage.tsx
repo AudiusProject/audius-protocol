@@ -1,4 +1,4 @@
-import { useCallback, useContext, useEffect, useMemo, useState } from 'react'
+import { useCallback, useContext, useEffect } from 'react'
 
 import {
   useApproveManagedAccount,
@@ -8,8 +8,6 @@ import {
 import { Status, UserMetadata } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
 import { Box, Divider, Flex, Text } from '@audius/harmony'
-import queryString from 'query-string'
-import { useLocation } from 'react-router-dom'
 
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { ToastContext } from 'components/toast/ToastContext'
@@ -18,6 +16,7 @@ import { useSelector } from 'utils/reducer'
 import { AccountListItem } from './AccountListItem'
 import { sharedMessages } from './sharedMessages'
 import { AccountsYouManagePageProps, AccountsYouManagePages } from './types'
+import { usePendingInviteValidator } from './usePendingInviteValidator'
 const { getAccountUser } = accountSelectors
 
 const messages = {
@@ -31,45 +30,22 @@ const messages = {
 export const AccountsYouManageHomePage = ({
   setPage
 }: AccountsYouManagePageProps) => {
-  const { search } = useLocation()
-  const pending = useMemo(() => queryString.parse(search)?.pending, [search])
   const currentUser = useSelector(getAccountUser)
-  const [hasInviteParamToValidate, setHasInviteParamToValidate] = useState(
-    pending != null
-  )
   const userId = currentUser?.user_id
   const { data: managedAccounts, status } = useGetManagedAccounts(
     { userId: userId! },
-    { disabled: userId == null }
+    // Always update managed accounts list when mounting this page
+    { disabled: userId == null, force: true }
   )
+  // Don't flash loading spinner if we are refreshing the cache
+  const isLoading =
+    status !== Status.SUCCESS &&
+    (!managedAccounts || managedAccounts.length === 0)
   const [approveManagedAccount, approveResult] = useApproveManagedAccount()
   const [rejectManagedAccount, rejectResult] = useRemoveManager()
   const { toast } = useContext(ToastContext)
 
-  useEffect(() => {
-    if (managedAccounts == null || !hasInviteParamToValidate) {
-      return
-    }
-    if (
-      pending != null &&
-      typeof pending === 'string' &&
-      pending.trim() !== '' &&
-      !isNaN(Number(pending))
-    ) {
-      const pendingUserId = Number(pending)
-      const pendingManagedAccount = managedAccounts.find(
-        (m) => m.grant.user_id === pendingUserId
-      )
-      if (!pendingManagedAccount) {
-        toast(messages.invalidInvitation)
-        return
-      }
-      if (pendingManagedAccount.grant.is_approved) {
-        toast(messages.alreadyAcceptedInvitation)
-      }
-    }
-    setHasInviteParamToValidate(false)
-  }, [toast, managedAccounts, hasInviteParamToValidate, pending])
+  usePendingInviteValidator({ managedAccounts, userId })
 
   const handleStopManaging = useCallback(
     ({ userId }: { userId: number; managerUserId: number }) => {
@@ -124,7 +100,7 @@ export const AccountsYouManageHomePage = ({
       <Text variant='body' size='l'>
         {messages.takeControl}{' '}
       </Text>
-      {status !== Status.SUCCESS ? (
+      {isLoading ? (
         <Box pv='2xl'>
           <LoadingSpinner
             css={({ spacing }) => ({

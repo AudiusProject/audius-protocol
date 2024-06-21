@@ -5,6 +5,8 @@ import { take } from 'redux-saga/effects'
 
 import { env } from 'services/env'
 
+let prevPathname = ''
+
 function* trackLocation() {
   const analytics = yield* getContext('analytics')
   while (true) {
@@ -23,11 +25,14 @@ function* trackLocation() {
         ;(window as any).adroll.track('pageView')
       }
 
-      // Dispatch a track event and then resolve page/screen events with segment
-      analytics.track({
-        eventName: Name.PAGE_VIEW,
-        properties: { route: pathname }
-      })
+      if (pathname !== prevPathname) {
+        prevPathname = pathname
+        // Dispatch a track event and then resolve page/screen events with segment
+        analytics.track({
+          eventName: Name.PAGE_VIEW,
+          properties: { route: pathname }
+        })
+      }
     }
   }
 }

@@ -443,7 +443,8 @@ export class SolanaWeb3Manager {
         console.debug('Getting associated token account for', pubkey.toBase58())
         const tokenAccountAddress = splToken.getAssociatedTokenAddressSync(
           this.mints.audio,
-          pubkey
+          pubkey,
+          true
         )
         tokenAccount = await splToken.getAccount(
           this.getConnection(),

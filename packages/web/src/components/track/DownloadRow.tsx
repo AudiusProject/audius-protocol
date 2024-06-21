@@ -102,7 +102,7 @@ export const DownloadRow = ({
             css={{
               overflow: 'hidden',
               textOverflow: 'ellipsis',
-              'white-space': 'nowrap'
+              whiteSpace: 'nowrap'
             }}
           >
             {getDownloadFilename({
@@ -119,7 +119,7 @@ export const DownloadRow = ({
             size='s'
             color='subdued'
             css={{
-              'white-space': 'nowrap'
+              whiteSpace: 'nowrap'
             }}
           >
             {formatBytes(size)}

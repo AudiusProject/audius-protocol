@@ -51,6 +51,11 @@ jobs:
       service: crm
       notify_slack_on_failure: true
   - push-docker-image:
+      name: push-pedalboard-backfill-audio-analyses
+      context: [Vercel, dockerhub, slack-secrets]
+      service: backfill-audio-analyses
+      notify_slack_on_failure: true
+  - push-docker-image:
       name: push-pedalboard-mri
       context: [Vercel, dockerhub, slack-secrets]
       service: mri
@@ -135,6 +140,12 @@ jobs:
       requires:
         - push-pedalboard-crm
   - push-arm-image:
+      name: push-pedalboard-backfill-audio-analyses-arm
+      context: [Vercel, dockerhub]
+      service: backfill-audio-analyses
+      requires:
+        - push-pedalboard-backfill-audio-analyses
+  - push-arm-image:
       name: push-pedalboard-mri-arm
       context: [Vercel, dockerhub]
       service: mri
@@ -203,6 +214,7 @@ jobs:
         - push-pedalboard-solana-relay
         - push-pedalboard-sla-auditor
         - push-pedalboard-crm
+        - push-pedalboard-backfill-audio-analyses
         - push-pedalboard-mri
         - push-comms
         - push-trpc
@@ -218,8 +230,8 @@ jobs:
         # - push-pedalboard-trending-challenge-rewards-arm
         # - push-pedalboard-relay-arm
         # - push-pedalboard-sla-auditor-arm
-        # - push-pedalboard-crm
-        # - push-pedalboard-mri
+        # - push-pedalboard-crm-arm
+        # - push-pedalboard-mri-arm
         # - push-comms-arm
         # - push-trpc-arm
         # - push-healthz-arm
