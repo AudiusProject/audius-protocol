@@ -223,7 +223,7 @@ export const AccountListItem = ({
       gap='l'
       border='default'
     >
-      <ArtistInfo user={user as any} />
+      <ArtistInfo user={user} />
       <Flex direction='column' justifyContent='space-between' alignItems='end'>
         {!isPending || !isManagedAccount ? (
           <PopupMenu
