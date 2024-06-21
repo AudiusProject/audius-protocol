@@ -32,6 +32,7 @@ def query_tracks(session: Session) -> List[Track]:
             Track.audio_analysis_error_count < 3,
             Track.track_cid != None,
         )
+        .order_by(Track.track_id.asc())
         .limit(BATCH_SIZE)
         .all()
     )
