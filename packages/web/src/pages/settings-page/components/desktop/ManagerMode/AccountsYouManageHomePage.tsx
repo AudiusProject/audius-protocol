@@ -35,7 +35,6 @@ export const AccountsYouManageHomePage = ({
   const { data: managedAccounts, status } = useGetManagedAccounts(
     { userId: userId! },
     // Always update managed accounts list when mounting this page
-    // TODO: This pattern causes a flash on both modals, maybe update it to SWR-style
     { disabled: userId == null, force: true }
   )
   // Don't flash loading spinner if we are refreshing the cache
