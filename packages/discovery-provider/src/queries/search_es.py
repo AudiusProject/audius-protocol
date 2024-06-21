@@ -30,7 +30,10 @@ def get_capitalized_genre(genre):
     return lowercase_to_capitalized_genre.get(genre.lower())
 
 
-def format_genres(genres: list[str]):
+def format_genres(genres: list[str] | None):
+    if not genres:
+        return None
+
     capitalized_genres = [
         get_capitalized_genre(genre) for genre in genres if genre is not None
     ]
