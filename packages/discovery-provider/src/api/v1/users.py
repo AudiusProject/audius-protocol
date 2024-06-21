@@ -106,6 +106,7 @@ from src.queries.get_managed_users import (
     GetUserManagersArgs,
     get_managed_users_with_grants,
     get_user_managers_with_grants,
+    is_active_manager,
 )
 from src.queries.get_related_artists import get_related_artists
 from src.queries.get_repost_feed_for_user import get_repost_feed_for_user
@@ -2006,18 +2007,9 @@ class GetTokenVerification(Resource):
         # If the user id found in the token does not match the signer of the token,
         # check if the signing user is a manager of that user. Otherwise, reject.
         if wallet_user_id != jwt_user_id:
-            is_managed_user = False
-            managed_users = get_user_managers_with_grants(
-                GetUserManagersArgs(user_id=jwt_user_id, is_approved=True)
-            )
-            for m in managed_users:
-                if m["manager"]["user_id"] == wallet_user_id:
-                    is_managed_user = True
-
-            # Not authorized
-            if not is_managed_user:
+            if not is_active_manager(jwt_user_id, wallet_user_id):
                 ns.abort(
-                    404,
+                    403,
                     "The JWT signature is invalid - the wallet does not match the user.",
                 )
 
