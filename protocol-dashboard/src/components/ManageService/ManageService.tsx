@@ -61,6 +61,9 @@ import { useModalControls } from 'utils/hooks'
 
 import styles from './ManageService.module.css'
 import { RegisterNewServiceBtn } from './RegisterNewServiceBtn'
+import { InfoBox } from 'components/InfoBox/InfoBox'
+import { sharedMessages } from 'utils/sharedMessages'
+import { COOLDOWN_PERIOD_DOCS_URL } from 'utils/routes'
 
 const messages = {
   ownerTitle: 'Your Nodes',
@@ -179,11 +182,18 @@ const UndelegateSection = ({
   }, [undelegateStake, delegates, wallet])
 
   const bottomBox = (
-    <ToOperator
-      name={name || formatShortWallet(wallet ?? '')}
-      wallet={wallet}
-      isFrom
-    />
+    <Flex direction='column' gap='xl' mb='xl'>
+      <ToOperator
+        name={name || formatShortWallet(wallet ?? '')}
+        wallet={wallet}
+        isFrom
+      />
+      <InfoBox
+        description={sharedMessages.undelegateCooldown}
+        ctaHref={COOLDOWN_PERIOD_DOCS_URL}
+        ctaText={sharedMessages.unddelegateCooldownCta}
+      />
+    </Flex>
   )
   const undelegateBox = <Delegating isUndelegating amount={delegates} />
 

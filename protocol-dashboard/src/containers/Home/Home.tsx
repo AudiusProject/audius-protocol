@@ -46,6 +46,7 @@ import {
 import desktopStyles from './Home.module.css'
 import mobileStyles from './HomeMobile.module.css'
 import { InfoCard } from './InfoCard'
+import TransactionStatus from 'components/TransactionStatus'
 
 const styles = createStyles({ desktopStyles, mobileStyles })
 
@@ -179,7 +180,12 @@ const Home = () => {
           <EstimatedWeeklyStat />
           <EstimatedAnnualStat />
         </Card>
-        {isLoggedIn && wallet ? <ManageAccountCard wallet={wallet} /> : null}
+        {isLoggedIn && wallet ? (
+          <>
+            <TransactionStatus />
+            <ManageAccountCard wallet={wallet} />
+          </>
+        ) : null}
         <RewardsTimingCard />
         <Paper className={styles.proposals}>
           <Box p='xl'>

@@ -41,6 +41,8 @@ import { checkWeiNumber, parseWeiNumber } from 'utils/numeric'
 import { sharedMessages } from 'utils/sharedMessages'
 
 import styles from './UpdateDelegationModal.module.css'
+import { InfoBox } from 'components/InfoBox/InfoBox'
+import { COOLDOWN_PERIOD_DOCS_URL } from 'utils/routes'
 
 const messages = {
   manageDelegation: 'Manage Delegation',
@@ -382,6 +384,13 @@ const UpdateDelegationModal: React.FC<UpdateDelegationModalProps> = ({
                       text={messages.saveChanges}
                       type={ButtonType.PRIMARY}
                       onClick={onConfirm}
+                    />
+                  )}
+                  {isIncrease ? null : (
+                    <InfoBox
+                      description={sharedMessages.undelegateCooldown}
+                      ctaHref={COOLDOWN_PERIOD_DOCS_URL}
+                      ctaText={sharedMessages.unddelegateCooldownCta}
                     />
                   )}
                 </Flex>
