@@ -362,19 +362,16 @@ export function* fetchUserSocials({
   }
   user = yield* call(waitForValue, getUser, { handle })
   if (!user) return
-  const socials = yield* call(
-    audiusBackendInstance.getSocialHandles,
-    user.handle
-  )
+  const socials = yield* call(audiusBackendInstance.getSocialHandles, user)
 
   yield* put(
     cacheActions.update(Kind.USERS, [
       {
         id: user.user_id,
         metadata: {
-          twitter_handle: socials.twitterHandle || null,
-          instagram_handle: socials.instagramHandle || null,
-          tiktok_handle: socials.tikTokHandle || null,
+          twitter_handle: socials.twitter_handle || null,
+          instagram_handle: socials.instagram_handle || null,
+          tiktok_handle: socials.tiktok_handle || null,
           website: socials.website || null,
           donation: socials.donation || null
         }

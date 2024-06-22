@@ -10,6 +10,7 @@ import (
 	"github.com/erni27/imcache"
 	"github.com/labstack/echo/v4"
 	"github.com/oklog/ulid/v2"
+	"golang.org/x/exp/slog"
 )
 
 func apiPath(parts ...string) string {
@@ -17,7 +18,14 @@ func apiPath(parts ...string) string {
 	parts[0] = apiBasePath
 	u, err := url.Parse(host)
 	if err != nil {
-		panic(err)
+		// the host _should_ only come from registered nodes,
+		// so this is unexpected...
+		// it used to be a panic
+		// yet it seems that nodes have invalid hostnames
+		// so return empty string and let the http request fail for now.
+		// todo: this function should return an (string, error)
+		slog.Error("invalid host", "host", host)
+		return ""
 	}
 	u = u.JoinPath(parts...)
 	return u.String()

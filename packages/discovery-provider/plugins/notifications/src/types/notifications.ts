@@ -156,6 +156,12 @@ export type ApproveManagerNotification = {
   user_id: number
 }
 
+export type RewardInCooldownNotification = {
+  amount: number
+  specifier: string
+  challenge_id: ChallengeId
+}
+
 export type SupporterRankUpNotification = {
   rank: number
   sender_user_id: number
