@@ -81,9 +81,6 @@ def retrigger_audio_analysis(
             )
             resp = requests.post(endpoint, params=params, timeout=5)
             resp.raise_for_status()
-            logger.info(
-                f"repair_audio_analyses.py | re-triggered audio analysis for track {track_id} via {endpoint}"
-            )
             return
         except Exception:
             # Fallback to the next node
