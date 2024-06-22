@@ -1,9 +1,6 @@
 import { memo, MouseEvent } from 'react'
 
-import {
-  useGatedContentAccess,
-  useIsGatedContentPlaylistAddable
-} from '@audius/common/hooks'
+import { useGatedContentAccess } from '@audius/common/hooks'
 import {
   ShareSource,
   RepostSource,
@@ -137,7 +134,8 @@ const ConnectedTrackTile = ({
     is_scheduled_release: isScheduledRelease,
     release_date: releaseDate,
     duration,
-    preview_cid
+    preview_cid,
+    ddex_app: ddexApp
   } = trackWithFallback
 
   const { artist_pick_track_id, user_id, handle, name, is_verified } =
@@ -155,7 +153,6 @@ const ConnectedTrackTile = ({
   )
   const { isFetchingNFTAccess, hasStreamAccess } =
     useGatedContentAccess(trackWithFallback)
-  const isPlaylistAddable = useIsGatedContentPlaylistAddable(track)
   const loading = isLoading || isFetchingNFTAccess
 
   const toggleSave = (trackId: ID) => {
@@ -207,15 +204,13 @@ const ConnectedTrackTile = ({
           ? OverflowAction.UNFAVORITE
           : OverflowAction.FAVORITE
         : null
-    const addToAlbumAction = isOwner ? OverflowAction.ADD_TO_ALBUM : null
-    const addToPlaylistAction = isPlaylistAddable
-      ? OverflowAction.ADD_TO_PLAYLIST
-      : null
+    const addToAlbumAction =
+      isOwner && !ddexApp ? OverflowAction.ADD_TO_ALBUM : null
     const overflowActions = [
       repostAction,
       favoriteAction,
       addToAlbumAction,
-      addToPlaylistAction,
+      OverflowAction.ADD_TO_PLAYLIST,
       isNewPodcastControlsEnabled && isLongFormContent
         ? OverflowAction.VIEW_EPISODE_PAGE
         : OverflowAction.VIEW_TRACK_PAGE,

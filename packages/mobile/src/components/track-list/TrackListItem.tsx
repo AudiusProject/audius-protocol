@@ -1,10 +1,7 @@
 import type { ComponentType } from 'react'
 import { memo, useCallback, useMemo, useState } from 'react'
 
-import {
-  useGatedContentAccess,
-  useIsGatedContentPlaylistAddable
-} from '@audius/common/hooks'
+import { useGatedContentAccess } from '@audius/common/hooks'
 import {
   type Collection,
   type ID,
@@ -242,7 +239,6 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
   const isPlaying = useSelector((state) => {
     return isActive && getPlaying(state)
   })
-  const isPlaylistAddable = useIsGatedContentPlaylistAddable(track)
   // Unlike other gated tracks, USDC purchase gated tracks are playable because they have previews
   const isPlayable =
     !isDeleted && (!isLocked || isContentUSDCPurchaseGated(streamConditions))
@@ -307,7 +303,7 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
         ? OverflowAction.PURCHASE_TRACK
         : null,
       isTrackOwner && !ddexApp ? OverflowAction.ADD_TO_ALBUM : null,
-      isPlaylistAddable ? OverflowAction.ADD_TO_PLAYLIST : null,
+      OverflowAction.ADD_TO_PLAYLIST,
       isNewPodcastControlsEnabled && isLongFormContent
         ? OverflowAction.VIEW_EPISODE_PAGE
         : OverflowAction.VIEW_TRACK_PAGE,
@@ -337,7 +333,6 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
     has_current_user_reposted,
     isDeleted,
     ddexApp,
-    isPlaylistAddable,
     isNewPodcastControlsEnabled,
     isLongFormContent,
     showViewAlbum,
