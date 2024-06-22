@@ -63,17 +63,18 @@ export class SolanaRelay extends BaseAPI {
       {
         path: '/instruction/location',
         method: 'GET',
-        headers: headerParameters,
-        query: {
-          feePayer: (await this.getFeePayer()).toBase58()
-        }
+        headers: headerParameters
       },
       initOverrides
     )
     const { instruction } = await new runtime.JSONApiResponse(
       response,
       (json) => ({
-        instruction: json.instruction as TransactionInstruction
+        instruction: new TransactionInstruction({
+          keys: json.instruction.keys,
+          programId: new PublicKey(json.instruction.programId),
+          data: Buffer.from(json.instruction.data)
+        })
       })
     ).value()
     if (!instruction) {
