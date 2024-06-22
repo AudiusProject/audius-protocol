@@ -6,7 +6,7 @@ begin
     if exists (select * from "blocks" where "blockhash" = '0x8d5e6984014505e1e11bcbb1ca1a13bcc6ae85ac74014710a73271d82ca49f01') then
 
         -- check whether the data has already been backfilled and return early for idempotency
-        if exists (select 1 from users where website is not null) then
+        if exists (select 1 from users where handle_lc = 'rayjacobson' and donation is not null) then
             return;
         end if;
 
