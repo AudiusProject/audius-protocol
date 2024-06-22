@@ -440,6 +440,10 @@ def configure_celery(celery, test_config=None):
                 "task": "create_engagement_notifications",
                 "schedule": timedelta(minutes=10),
             },
+            "repair_audio_analyses": {
+                "task": "repair_audio_analyses",
+                "schedule": timedelta(minutes=2),
+            },
         },
         task_serializer="json",
         accept_content=["json"],
