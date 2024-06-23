@@ -86,7 +86,7 @@ def retrigger_audio_analysis(
             # Fallback to the next node
             continue
     logger.warning(
-        f"repair_audio_analyses.py | failed to trigger audio analysis for track {track_id} (track_cid: {track_cid}, upload_id: {upload_id}). tried {nodes}"
+        f"repair_audio_analyses.py | failed to trigger audio analysis for track {track_id} (track_cid: {track_cid}, audio_upload_id: {upload_id}). tried {nodes}"
     )
 
 
@@ -154,14 +154,14 @@ def repair(session: Session, redis: Redis):
                 )
             if error_count >= 3:
                 logger.warning(
-                    f"repair_audio_analyses.py | Track ID {track.track_id} failed audio analysis >= 3 times"
+                    f"repair_audio_analyses.py | Track ID {track.track_id} (track_cid: {track.track_cid}, audio_upload_id: {track.audio_upload_id}) failed audio analysis >= 3 times"
                 )
             success = True
             break
 
         if not success:
             logger.warning(
-                f"repair_audio_analyses.py | failed to query audio analysis for track {track.track_id} (track_cid: {track.track_cid}, upload_id: {track.audio_upload_id}). tried {nodes}"
+                f"repair_audio_analyses.py | failed to query audio analysis for track {track.track_id} (track_cid: {track.track_cid}, audio_upload_id: {track.audio_upload_id}). tried {nodes}"
             )
 
     logger.info(
@@ -196,7 +196,12 @@ def repair_audio_analyses(self) -> None:
             raise e
         finally:
             if have_lock:
-                update_lock.release()
+                try:
+                    update_lock.release()
+                except Exception as e:
+                    logger.warning(
+                        f"repair_audio_analyses.py | Error releasing lock: {e}"
+                    )
     else:
         logger.warning(
             "repair_audio_analyses.py | Lock not acquired",
