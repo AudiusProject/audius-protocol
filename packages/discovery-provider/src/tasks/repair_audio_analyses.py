@@ -122,6 +122,8 @@ def repair(session: Session, redis: Redis):
                 "error_count" if legacy_track else "audio_analysis_error_count"
             )
             results = data.get(results_key, {})
+            if not results:
+                results = {}
             error_count = data.get(error_count_key, 0)
             key = results.get("key", None) or results.get("Key", None)
             bpm = results.get("bpm", None) or results.get("BPM", None)
