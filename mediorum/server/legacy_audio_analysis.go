@@ -299,6 +299,7 @@ func (ss *MediorumServer) analyzeLegacyAudio(analysis *QmAudioAnalysis) error {
 	}()
 
 	var mu sync.Mutex
+	firstResult := true
 
 	for i := 0; i < 2; i++ {
 		select {
@@ -308,6 +309,10 @@ func (ss *MediorumServer) analyzeLegacyAudio(analysis *QmAudioAnalysis) error {
 				analysis.Results = &AudioAnalysisResult{}
 			}
 			analysis.Results.BPM = bpm
+			if firstResult {
+				ss.crud.Update(analysis)
+				firstResult = false
+			}
 			mu.Unlock()
 		case musicalKey := <-keyChan:
 			mu.Lock()
@@ -315,6 +320,10 @@ func (ss *MediorumServer) analyzeLegacyAudio(analysis *QmAudioAnalysis) error {
 				analysis.Results = &AudioAnalysisResult{}
 			}
 			analysis.Results.Key = musicalKey
+			if firstResult {
+				ss.crud.Update(analysis)
+				firstResult = false
+			}
 			mu.Unlock()
 		case err := <-errorChan:
 			return onError(err)
