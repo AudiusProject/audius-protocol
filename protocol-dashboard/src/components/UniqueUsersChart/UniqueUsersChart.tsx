@@ -16,11 +16,16 @@ type UniqueUsersBucket =
   | Bucket.ALL_TIME
   | Bucket.YEAR
 
+const messages = {
+  monthlyTitle: 'Monthly',
+  dailyTitle: 'Daily'
+}
+
 const BUCKET_TO_TOPLINE_LABEL = {
-  [Bucket.ALL_TIME]: 'Monthly',
-  [Bucket.YEAR]: 'Monthly',
-  [Bucket.MONTH]: 'Daily',
-  [Bucket.WEEK]: 'Daily'
+  [Bucket.ALL_TIME]: messages.monthlyTitle,
+  [Bucket.YEAR]: messages.monthlyTitle,
+  [Bucket.MONTH]: messages.dailyTitle,
+  [Bucket.WEEK]: messages.dailyTitle
 }
 
 const UniqueUsersChart: React.FC<UniqueUsersChartProps> = () => {
