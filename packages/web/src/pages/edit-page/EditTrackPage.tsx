@@ -17,6 +17,8 @@ import Header from 'components/header/desktop/Header'
 import LoadingSpinnerFullPage from 'components/loading-spinner-full-page/LoadingSpinnerFullPage'
 import Page from 'components/page/Page'
 import { useTrackCoverArt2 } from 'hooks/useTrackCoverArt'
+import { Button } from '@audius/harmony'
+import { HOME_PAGE, PROFILE_PAGE } from 'utils/route'
 
 const { deleteTrack, editTrack } = cacheTracksActions
 
@@ -60,6 +62,7 @@ export const EditTrackPage = (props: EditPageProps) => {
     if (!track) return
     dispatch(deleteTrack(track.track_id))
     setShowDeleteConfirmation(false)
+    dispatch(pushRoute(`/${track.user.handle}`))
   }
 
   const coverArtUrl = useTrackCoverArt2(
@@ -104,7 +107,11 @@ export const EditTrackPage = (props: EditPageProps) => {
         <LoadingSpinnerFullPage />
       ) : (
         <EditFormScrollContext.Provider value={scrollToTop}>
-          <EditTrackForm initialValues={initialValues} onSubmit={onSubmit} />
+          <EditTrackForm
+            initialValues={initialValues}
+            onSubmit={onSubmit}
+            onDeleteTrack={() => setShowDeleteConfirmation(true)}
+          />
         </EditFormScrollContext.Provider>
       )}
       <DeleteConfirmationModal
