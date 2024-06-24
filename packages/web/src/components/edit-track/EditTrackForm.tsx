@@ -54,7 +54,7 @@ const messages = {
 type EditTrackFormProps = {
   initialValues: TrackEditFormValues
   onSubmit: (values: TrackEditFormValues) => void
-  onDeleteTrack: () => void
+  onDeleteTrack?: () => void
   hideContainer?: boolean
 }
 
@@ -85,7 +85,7 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
 const TrackEditForm = (
   props: FormikProps<TrackEditFormValues> & {
     hideContainer?: boolean
-    onDeleteTrack: () => void
+    onDeleteTrack?: () => void
   }
 ) => {
   const {

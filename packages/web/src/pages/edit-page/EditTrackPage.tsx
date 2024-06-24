@@ -17,8 +17,6 @@ import Header from 'components/header/desktop/Header'
 import LoadingSpinnerFullPage from 'components/loading-spinner-full-page/LoadingSpinnerFullPage'
 import Page from 'components/page/Page'
 import { useTrackCoverArt2 } from 'hooks/useTrackCoverArt'
-import { Button } from '@audius/harmony'
-import { HOME_PAGE, PROFILE_PAGE } from 'utils/route'
 
 const { deleteTrack, editTrack } = cacheTracksActions
 
