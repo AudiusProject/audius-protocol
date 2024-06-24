@@ -49,10 +49,13 @@ export class TrackIndexer extends BaseIndexer<TrackDoc> {
         has_stems: { type: 'boolean' },
         bpm: { type: 'float' },
         musical_key: { type: 'keyword' },
+        play_count: { type: 'integer' },
 
         // saves
         saved_by: { type: 'keyword' },
         save_count: { type: 'integer' },
+        favorite_count: { type: 'integer' },
+
         // reposts
         reposted_by: { type: 'keyword' },
         repost_count: { type: 'integer' },

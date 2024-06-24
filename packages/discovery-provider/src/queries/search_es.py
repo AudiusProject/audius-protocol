@@ -575,6 +575,28 @@ def track_dsl(
 
     if sort_method == "recent":
         query["sort"] = [{"created_at": {"order": "desc"}}]
+    elif sort_method == "popular":
+        query["sort"] = [
+            {
+                "_script": {
+                    "type": "number",
+                    "script": {
+                        "lang": "painless",
+                        "source": """
+                            double playCount = doc['play_count'].value;
+                            double repostCount = doc['repost_count'].value;
+                            double saveCount = doc['favorite_count'].value;
+                            double followerCount = doc['user.follower_count'].value;
+                            double socialScore = followerCount;
+            
+                            // Calculate the trending score
+                            return (playCount * 0.4) + (repostCount * 0.3) + (saveCount * 0.2) + (socialScore * 0.1);
+                        """,
+                    },
+                    "order": "desc",
+                }
+            }
+        ]
 
     return query
 
