@@ -354,7 +354,7 @@ def parse_unix_epoch_param_non_utc(time, default=0):
     return datetime.fromtimestamp(time)
 
 
-def extend_track(track):
+def extend_track(track, session=None):
     track_id = encode_int_id(track["track_id"])
     owner_id = encode_int_id(track["owner_id"])
     if "user" in track:
@@ -395,11 +395,11 @@ def extend_track(track):
     # Transform new format of splits to legacy format for client compatibility
     if "stream_conditions" in track:
         track["stream_conditions"] = get_legacy_purchase_gate(
-            track["stream_conditions"]
+            track["stream_conditions"], session
         )
     if "download_conditions" in track:
         track["download_conditions"] = get_legacy_purchase_gate(
-            track["download_conditions"]
+            track["download_conditions"], session
         )
 
     return track
