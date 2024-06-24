@@ -1,8 +1,12 @@
 import { useGetTrackById } from '~/api/track'
 import { ID } from '~/models'
+import { FeatureFlags } from '~/services/remote-config/feature-flags'
+import { Nullable } from '~/utils/typeUtils'
 
 import { getCanonicalName } from '../utils/genres'
 import { formatDate, formatSecondsAsText } from '../utils/timeUtil'
+
+import { useFeatureFlag } from './useFeatureFlag'
 
 export enum TrackMetadataType {
   DURATION = 'duration',
@@ -22,13 +26,16 @@ type TrackMetadataProps = {
 type TrackMetadataInfo = {
   id: TrackMetadataType
   label: string
-  value: string
+  value?: Nullable<string | number>
 }
 
 export const useTrackMetadata = ({
   trackId
 }: TrackMetadataProps): TrackMetadataInfo[] => {
   const { data: track } = useGetTrackById({ id: trackId })
+  const { isEnabled: isSearchV2Enabled } = useFeatureFlag(
+    FeatureFlags.SEARCH_V2
+  )
   if (!track) return []
 
   const {
@@ -42,7 +49,7 @@ export const useTrackMetadata = ({
     bpm
   } = track
 
-  const labels: TrackMetadataInfo[] = [
+  const labels = [
     {
       id: TrackMetadataType.DURATION,
       label: 'Duration',
@@ -67,15 +74,19 @@ export const useTrackMetadata = ({
     {
       id: TrackMetadataType.BPM,
       label: 'BPM',
-      value: bpm
+      value: bpm,
+      isHidden: !isSearchV2Enabled
     },
     {
       id: TrackMetadataType.KEY,
       label: 'Key',
       // TODO: KJ - Might need a map for this to map to key options
-      value: musical_key
+      value: musical_key,
+      isHidden: !isSearchV2Enabled
     }
-  ].filter(({ isHidden, value }) => !isHidden && !!value)
+  ]
 
-  return labels
+  const ret = labels.filter(({ isHidden, value }) => !isHidden && !!value)
+
+  return ret
 }
