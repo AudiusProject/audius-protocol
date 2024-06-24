@@ -1,11 +1,9 @@
 import { useCallback } from 'react'
 
-import { Name } from '@audius/common/models'
 import { ClaimableRewardNotification as ClaimableRewardNotificationType } from '@audius/common/store'
 import { push } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
-import { make, useRecord } from 'common/store/analytics/actions'
 import { AUDIO_PAGE } from 'utils/route'
 
 import { NotificationBody } from './components/NotificationBody'

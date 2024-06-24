@@ -1,18 +1,14 @@
 import { useCallback } from 'react'
 
-import type { ClaimableRewardID } from '@audius/common/models'
 import type { ClaimableRewardNotification as ClaimableRewardNotificationType } from '@audius/common/store'
-import { Platform } from 'react-native'
 
-import { Button, IconAudiusLogo, IconTokenGold } from '@audius/harmony-native'
-import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
+import { Button, IconTokenGold } from '@audius/harmony-native'
 
 import {
   NotificationTile,
   NotificationHeader,
   NotificationText,
-  NotificationTitle,
-  NotificationTwitterButton
+  NotificationTitle
 } from '../Notification'
 import { makeStyles } from 'app/styles'
 import { useNavigation } from 'app/hooks/useNavigation'
