@@ -292,6 +292,7 @@ type GetSearchArgs = {
   isVerified?: boolean
   hasDownloads?: boolean
   isPremium?: boolean
+  sort?: string
 }
 
 type TrendingIdsResponse = {
@@ -1139,7 +1140,8 @@ export class AudiusAPIClient {
     key,
     isVerified,
     hasDownloads,
-    isPremium
+    isPremium,
+    sort
   }: GetSearchArgs) {
     this._assertInitialized()
     const encodedUserId = encodeHashId(currentUserId)
@@ -1157,7 +1159,8 @@ export class AudiusAPIClient {
       key,
       is_verified: isVerified,
       has_downloads: hasDownloads,
-      is_purchaseable: isPremium
+      is_purchaseable: isPremium,
+      sort_method: sort
     }
 
     const searchResponse =

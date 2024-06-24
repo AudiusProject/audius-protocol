@@ -63,7 +63,8 @@ export const SearchResults = () => {
           key: key || undefined,
           isVerified: isVerified === 'true',
           hasDownloads: hasDownloads === 'true',
-          isPremium: isPremium === 'true'
+          isPremium: isPremium === 'true',
+          sort: sort || undefined
         })
       )
     }

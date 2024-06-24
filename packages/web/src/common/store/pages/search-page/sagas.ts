@@ -113,6 +113,7 @@ type GetSearchResultsArgs = {
   isVerified?: boolean
   hasDownloads?: boolean
   isPremium?: boolean
+  sort?: string
 }
 
 export function* getSearchResults({
@@ -126,7 +127,8 @@ export function* getSearchResults({
   key,
   isVerified,
   hasDownloads,
-  isPremium
+  isPremium,
+  sort
 }: GetSearchResultsArgs) {
   yield* waitForRead()
   const getFeatureEnabled = yield* getContext('getFeatureEnabled')
@@ -163,7 +165,8 @@ export function* getSearchResults({
     key: formatKey(key),
     isVerified,
     hasDownloads,
-    isPremium
+    isPremium,
+    sort
   })
   const { tracks, albums, playlists, users } = results
 
@@ -185,8 +188,8 @@ function* fetchSearchPageResults(
 ) {
   yield* call(waitForRead)
 
-  const { type: ignoredType, ...rest } = action
-  const rawResults = yield* call(getSearchResults, rest)
+  const { type: ignoredType, ...params } = action
+  const rawResults = yield* call(getSearchResults, params)
   if (rawResults) {
     const results = {
       users:

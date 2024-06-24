@@ -53,6 +53,7 @@ class FullSearch(Resource):
         keys = args.get("key")
         bpm_min = args.get("bpm_min")
         bpm_max = args.get("bpm_max")
+        sort_method = args.get("sort_method")
 
         search_args = {
             "is_auto_complete": False,
@@ -72,6 +73,7 @@ class FullSearch(Resource):
             "keys": keys,
             "bpm_min": bpm_min,
             "bpm_max": bpm_max,
+            "sort_method": sort_method,
         }
         resp = search(search_args)
         return success_response(resp)
