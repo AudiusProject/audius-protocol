@@ -7,7 +7,7 @@ import {
   RadioGroup
 } from '@audius/harmony'
 import dayjs from 'dayjs'
-import { useField } from 'formik'
+import { useField, useFormikContext } from 'formik'
 import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
@@ -23,6 +23,9 @@ import { IS_PRIVATE, IS_SCHEDULED_RELEASE, IS_UNLISTED } from '../types'
 
 import { ReleaseDateField } from './ReleaseDateField'
 import { mergeReleaseDateValues } from './mergeReleaseDateValues'
+import { CollectionValues } from '@audius/common/schemas'
+import { EditPlaylistValues } from '@audius/common/store'
+import { TrackEditFormValues } from 'components/edit-track/types'
 
 const messages = {
   title: 'Visibility',
@@ -43,6 +46,7 @@ type VisibilityType = 'scheduled' | 'public' | 'hidden'
 
 type VisibilityFieldProps = {
   entityType: 'track' | 'album' | 'playlist'
+  isUpload: boolean
 }
 
 const visibilitySchema = z
@@ -59,7 +63,11 @@ const visibilitySchema = z
   )
 
 export const VisibilityField = (props: VisibilityFieldProps) => {
-  const { entityType } = props
+  const { entityType, isUpload } = props
+  const { initialValues: parentFormInitialValues } = useFormikContext<
+    EditPlaylistValues | CollectionValues | TrackEditFormValues
+  >()
+  const [{ value: index }] = useField('trackMetadatasIndex')
   const useEntityField = entityType === 'track' ? useTrackField : useField
   const [{ value: isHidden }, , { setValue: setIsUnlisted }] =
     useEntityField<boolean>(entityType === 'track' ? IS_UNLISTED : IS_PRIVATE)
@@ -75,6 +83,13 @@ export const VisibilityField = (props: VisibilityFieldProps) => {
     : isHidden
     ? 'hidden'
     : 'public'
+
+  const parentFormIsInitiallyUnlisted =
+    'is_unlisted' in parentFormInitialValues
+      ? parentFormInitialValues.is_unlisted
+      : 'trackMetadatas' in parentFormInitialValues
+      ? parentFormInitialValues.trackMetadatas[index].is_unlisted
+      : undefined
 
   const renderValue = useCallback(() => {
     switch (visibilityType) {
@@ -154,12 +169,23 @@ export const VisibilityField = (props: VisibilityFieldProps) => {
           }
         }
       }}
-      menuFields={<VisibilityMenuFields />}
+      menuFields={
+        <VisibilityMenuFields
+          isUpload={isUpload}
+          initiallyPublic={parentFormIsInitiallyUnlisted === false}
+        />
+      }
     />
   )
 }
 
-const VisibilityMenuFields = () => {
+type VisibilityMenuFieldsProps = {
+  initiallyPublic?: boolean
+  isUpload: boolean
+}
+
+const VisibilityMenuFields = (props: VisibilityMenuFieldsProps) => {
+  const { isUpload, initiallyPublic } = props
   const [field] = useField<VisibilityType>('visibilityType')
 
   return (
@@ -173,12 +199,14 @@ const VisibilityMenuFields = () => {
         value='hidden'
         label={messages.hidden}
         description={messages.hiddenDescription}
+        disabled={initiallyPublic && !isUpload}
       />
       <ModalRadioItem
         value='scheduled'
         label={messages.scheduledRelease}
         description={messages.scheduledReleaseDescription}
         checkedContent={<ReleaseDateField />}
+        disabled={initiallyPublic && !isUpload}
       />
     </RadioGroup>
   )
