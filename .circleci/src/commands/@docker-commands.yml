@@ -55,6 +55,7 @@ docker-tag-images:
             crm
             trpc
             uptime
+            backfill-audio-analyses
           )
           creator=(
             mediorum

@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { FeatureFlags } from '@audius/common/services'
+import { useIsManagedAccount } from '@audius/common/hooks'
 import {
   BrowserNotificationSetting,
   EmailFrequency,
@@ -14,7 +14,6 @@ import {
 } from '@audius/harmony'
 import cn from 'classnames'
 
-import { useFlag } from 'hooks/useRemoteConfig'
 import { Permission } from 'utils/browserNotifications'
 import { isElectron } from 'utils/clientUtil'
 
@@ -75,7 +74,7 @@ type NotificationSettingsProps = {
 }
 
 const NotificationSettings = (props: NotificationSettingsProps) => {
-  const { isEnabled: isChatEnabled } = useFlag(FeatureFlags.CHAT_ENABLED)
+  const isManagedAccount = useIsManagedAccount()
   const browserPushEnabled =
     props.settings[BrowserNotificationSetting.BrowserPush]
   const notificationToggles = [
@@ -115,15 +114,12 @@ const NotificationSettings = (props: NotificationSettingsProps) => {
       type: BrowserNotificationSetting.Remixes
     }
   ]
-  if (isChatEnabled) {
-    notificationToggles.push({
-      text: messages.messages,
-      isOn:
-        browserPushEnabled &&
-        props.settings[BrowserNotificationSetting.Messages],
-      type: BrowserNotificationSetting.Messages
-    })
-  }
+  notificationToggles.push({
+    text: messages.messages,
+    isOn:
+      browserPushEnabled && props.settings[BrowserNotificationSetting.Messages],
+    type: BrowserNotificationSetting.Messages
+  })
 
   const emailOptions = [
     { key: EmailFrequency.Live, text: 'Live' },
@@ -148,7 +144,7 @@ const NotificationSettings = (props: NotificationSettingsProps) => {
           <div className={styles.title}>{messages.title}</div>
         </div>
         <div className={styles.divider}></div>
-        {!isElectron() && (
+        {!isElectron() && !isManagedAccount ? (
           <>
             <div className={styles.description}>
               <ToggleNotification
@@ -174,7 +170,7 @@ const NotificationSettings = (props: NotificationSettingsProps) => {
             </div>
             <div className={styles.divider}></div>
           </>
-        )}
+        ) : null}
         <div className={styles.emailContainer}>
           <div className={cn(styles.bodyText, styles.email)}>
             {messages.emailFrequency}

@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useRef } from 'react'
 
 import { useCanSendMessage } from '@audius/common/hooks'
-import { FeatureFlags } from '@audius/common/services'
 import { chatActions, chatSelectors } from '@audius/common/store'
 import { ResizeObserver } from '@juggle/resize-observer'
 import { push as pushRoute } from 'connected-react-router'
@@ -9,7 +8,6 @@ import { useDispatch } from 'react-redux'
 import useMeasure from 'react-use-measure'
 
 import Page from 'components/page/Page'
-import { useFlag } from 'hooks/useRemoteConfig'
 import { useSelector } from 'utils/reducer'
 import { chatPage } from 'utils/route'
 
@@ -35,7 +33,6 @@ export const ChatPage = ({
   presetMessage?: string
 }) => {
   const dispatch = useDispatch()
-  const { isEnabled: isChatEnabled } = useFlag(FeatureFlags.CHAT_ENABLED)
   const { firstOtherUser, canSendMessage } = useCanSendMessage(currentChatId)
   const chat = useSelector((state) => getChat(state, currentChatId ?? ''))
 
@@ -78,9 +75,6 @@ export const ChatPage = ({
     }
   }, [dispatch, firstOtherUser])
 
-  if (!isChatEnabled) {
-    return null
-  }
   return (
     <Page
       title={`${firstOtherUser ? firstOtherUser.name + ' •' : ''} ${

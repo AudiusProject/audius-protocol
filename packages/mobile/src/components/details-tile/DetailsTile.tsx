@@ -2,7 +2,6 @@ import { useCallback } from 'react'
 
 import { useGatedContentAccessMap } from '@audius/common/hooks'
 import { isContentUSDCPurchaseGated } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import {
   accountSelectors,
   playerSelectors,
@@ -10,7 +9,7 @@ import {
   cacheCollectionsSelectors
 } from '@audius/common/store'
 import type { CommonState } from '@audius/common/store'
-import { dayjs, getDogEarType, Genre } from '@audius/common/utils'
+import { getDogEarType, Genre, getLocalTimezone } from '@audius/common/utils'
 import moment from 'moment'
 import { TouchableOpacity } from 'react-native'
 import { useSelector } from 'react-redux'
@@ -26,7 +25,9 @@ import {
   spacing,
   Button,
   Divider,
-  Box
+  Box,
+  MusicBadge,
+  IconVisibilityHidden
 } from '@audius/harmony-native'
 import CoSign from 'app/components/co-sign/CoSign'
 import { Size } from 'app/components/co-sign/types'
@@ -34,20 +35,19 @@ import { UserGeneratedText, DogEar, Tag } from 'app/components/core'
 import UserBadges from 'app/components/user-badges'
 import { light } from 'app/haptics'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { makeStyles } from 'app/styles'
 
 import { OfflineStatusRow } from '../offline-downloads'
 
+import { CollectionMetadataList } from './CollectionMetadataList'
 import { DeletedTile } from './DeletedTile'
 import { DetailsProgressInfo } from './DetailsProgressInfo'
 import { DetailsTileActionButtons } from './DetailsTileActionButtons'
 import { DetailsTileAiAttribution } from './DetailsTileAiAttribution'
 import { DetailsTileHasAccess } from './DetailsTileHasAccess'
-import { DetailsTileMetadata } from './DetailsTileMetadata'
 import { DetailsTileNoAccess } from './DetailsTileNoAccess'
 import { DetailsTileStats } from './DetailsTileStats'
-import { SecondaryStats } from './SecondaryStats'
+import { TrackMetadataList } from './TrackMetadataList'
 import type { DetailsTileProps } from './types'
 
 const { getTrackId } = playerSelectors
@@ -59,7 +59,12 @@ const messages = {
   pause: 'Pause',
   resume: 'Resume',
   replay: 'Replay',
-  preview: 'Preview'
+  preview: 'Preview',
+  hidden: 'Hidden',
+  releases: (releaseDate: string) =>
+    `Releases ${moment(releaseDate).format(
+      'M/D/YY [@] h:mm A'
+    )} ${getLocalTimezone()}`
 }
 
 const useStyles = makeStyles(({ palette, spacing }) => ({
@@ -111,8 +116,6 @@ export const DetailsTile = ({
   onPressSave,
   onPressShare,
   playCount,
-  duration,
-  trackCount,
   renderBottomContent,
   renderImage,
   repostCount,
@@ -122,17 +125,8 @@ export const DetailsTile = ({
   user,
   track,
   ddexApp,
-  releaseDate,
-  updatedAt
+  releaseDate
 }: DetailsTileProps) => {
-  const { isEnabled: isNewPodcastControlsEnabled } = useFeatureFlag(
-    FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
-    FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
-  )
-  const { isEnabled: isAiGeneratedTracksEnabled } = useFeatureFlag(
-    FeatureFlags.AI_ATTRIBUTION
-  )
-
   const styles = useStyles()
   const navigation = useNavigation()
 
@@ -158,7 +152,7 @@ export const DetailsTile = ({
   const isPlayingPreview = isPreviewing && isPlaying
   const isPlayingFullAccess = isPlaying && !isPreviewing
   const isUnpublishedScheduledRelease =
-    track?.is_scheduled_release && track?.is_unlisted
+    track?.is_scheduled_release && track?.is_unlisted && releaseDate
 
   // Show play if user has access to the collection or any of its contents.
   // Show preview only if the user is the owner on a track screen.
@@ -191,8 +185,7 @@ export const DetailsTile = ({
   const renderDogEar = () => {
     const dogEarType = getDogEarType({
       isOwner,
-      streamConditions,
-      isUnlisted: isUnlisted && !isUnpublishedScheduledRelease
+      streamConditions
     })
     return dogEarType ? <DogEar type={dogEarType} borderOffset={1} /> : null
   }
@@ -211,17 +204,14 @@ export const DetailsTile = ({
     getTrackPosition(state, { trackId: contentId, userId: currentUserId })
   )
 
-  const playText =
-    isNewPodcastControlsEnabled && playbackPositionInfo?.status
-      ? playbackPositionInfo?.status === 'IN_PROGRESS' || isCurrentTrack
-        ? messages.resume
-        : messages.replay
-      : messages.play
+  const playText = playbackPositionInfo?.status
+    ? playbackPositionInfo?.status === 'IN_PROGRESS' || isCurrentTrack
+      ? messages.resume
+      : messages.replay
+    : messages.play
 
   const PlayIcon =
-    isNewPodcastControlsEnabled &&
-    playbackPositionInfo?.status === 'COMPLETED' &&
-    !isCurrentTrack
+    playbackPositionInfo?.status === 'COMPLETED' && !isCurrentTrack
       ? IconRepeatOff
       : IconPlay
 
@@ -238,8 +228,15 @@ export const DetailsTile = ({
   )
 
   const badges = [
-    isAiGeneratedTracksEnabled && aiAttributionUserId ? (
+    aiAttributionUserId ? (
       <DetailsTileAiAttribution userId={aiAttributionUserId} />
+    ) : null,
+    isUnpublishedScheduledRelease ? (
+      <MusicBadge variant='accent' icon={IconCalendarMonth}>
+        {messages.releases(releaseDate)}
+      </MusicBadge>
+    ) : isUnlisted ? (
+      <MusicBadge icon={IconVisibilityHidden}>{messages.hidden}</MusicBadge>
     ) : null
   ].filter((badge) => badge !== null)
 
@@ -320,7 +317,7 @@ export const DetailsTile = ({
             </TouchableOpacity>
           ) : null}
         </Flex>
-        {isLongFormContent && isNewPodcastControlsEnabled && track ? (
+        {isLongFormContent && track ? (
           <DetailsProgressInfo track={track} />
         ) : null}
         {shouldShowPlay ? (
@@ -353,17 +350,6 @@ export const DetailsTile = ({
           onPressShare={onPressShare}
           onPressPublish={onPressPublish}
         />
-        {isUnpublishedScheduledRelease && track?.release_date ? (
-          <Flex gap='xs' direction='row' alignItems='center'>
-            <IconCalendarMonth color='accent' size='m' />
-            <Text variant='body' color='accent' strength='strong' size='m'>
-              Releases
-              {' ' +
-                moment(track.release_date).format('M/D/YY @ h:mm A ') +
-                dayjs().format('z')}
-            </Text>
-          </Flex>
-        ) : null}
       </Flex>
       <Flex
         p='l'
@@ -391,12 +377,14 @@ export const DetailsTile = ({
         ) : null}
         {!isPublished ? null : (
           <DetailsTileStats
+            playCount={playCount}
+            hidePlayCount={hidePlayCount}
             favoriteCount={saveCount}
             hideFavoriteCount={hideFavoriteCount}
+            repostCount={repostCount}
             hideRepostCount={hideRepostCount}
             onPressFavorites={onPressFavorites}
             onPressReposts={onPressReposts}
-            repostCount={repostCount}
           />
         )}
         {description ? (
@@ -410,20 +398,13 @@ export const DetailsTile = ({
             </UserGeneratedText>
           </Box>
         ) : null}
-        <DetailsTileMetadata
-          id={contentId}
-          genre={track?.genre}
-          mood={track?.mood}
-        />
-        <SecondaryStats
-          isCollection={isCollection}
-          playCount={playCount}
-          duration={duration}
-          trackCount={trackCount}
-          releaseDate={releaseDate}
-          updatedAt={updatedAt}
-          hidePlayCount={hidePlayCount}
-        />
+        {isCollection ? (
+          contentId ? (
+            <CollectionMetadataList collectionId={contentId} />
+          ) : null
+        ) : contentId ? (
+          <TrackMetadataList trackId={contentId} />
+        ) : null}
         {renderTags()}
         <OfflineStatusRow contentId={contentId} isCollection={isCollection} />
       </Flex>

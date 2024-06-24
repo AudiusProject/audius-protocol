@@ -81,6 +81,8 @@ full_playlist_without_tracks_model = ns.clone(
             allow_null=True,
             description="How to unlock stream access to the track",
         ),
+        "is_scheduled_release": fields.Boolean,
+        "release_date": fields.String,
     },
 )
 

@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from 'react'
 
-import { useAccountSwitcher } from '@audius/common/hooks'
-import { User, UserMetadata } from '@audius/common/models'
+import { useAccountSwitcher, useIsManagedAccount } from '@audius/common/hooks'
+import { SquareSizes, User, UserMetadata } from '@audius/common/models'
 import { accountSelectors, chatSelectors } from '@audius/common/store'
 import {
   Button,
@@ -15,15 +15,20 @@ import {
   IconUser,
   IconUserArrowRotate,
   PopupMenu,
-  Text
+  Text,
+  useTheme
 } from '@audius/harmony'
 
-import ArtistChip from 'components/artist/ArtistChip'
-import { useGoToRoute } from 'hooks/useGoToRoute'
+import DynamicImage from 'components/dynamic-image/DynamicImage'
+import UserBadges from 'components/user-badges/UserBadges'
+import { useNavigateToPage } from 'hooks/useNavigateToPage'
+import { useProfilePicture } from 'hooks/useUserProfilePicture'
 import { useComposeChat } from 'pages/chat-page/components/useComposeChat'
 import { useSelector } from 'utils/reducer'
 import { profilePage } from 'utils/route'
 import zIndex from 'utils/zIndex'
+
+import styles from './AccountListItem.module.css'
 
 const { getUserId } = accountSelectors
 const { getCanCreateChat } = chatSelectors
@@ -55,6 +60,33 @@ type AccountListItemProps = {
   }) => void
 }
 
+const ArtistInfo = ({ user }: { user: UserMetadata }) => {
+  const profilePicture = useProfilePicture(
+    user.user_id,
+    SquareSizes.SIZE_150_BY_150
+  )
+  const { iconSizes } = useTheme()
+  return (
+    <Flex gap='m' alignItems='center' justifyContent='flex-start'>
+      <DynamicImage
+        wrapperClassName={styles.profilePictureWrapper}
+        skeletonClassName={styles.profilePictureSkeleton}
+        className={styles.profilePicture}
+        image={profilePicture}
+      />
+      <Flex direction='column' gap='xs'>
+        <Flex gap='xs' alignItems='center' justifyContent='flex-start'>
+          <Text variant='body' size='m' strength='strong'>
+            {user.name}
+          </Text>
+          <UserBadges userId={user.user_id} badgeSize={iconSizes.m} inline />
+        </Flex>
+        <Text variant='body' size='m'>{`@${user.handle}`}</Text>
+      </Flex>
+    </Flex>
+  )
+}
+
 export const AccountListItem = ({
   isPending,
   user,
@@ -65,12 +97,13 @@ export const AccountListItem = ({
   onReject
 }: AccountListItemProps) => {
   const currentUserId = useSelector(getUserId)
+  const isManagerMode = useIsManagedAccount()
 
-  const goToRoute = useGoToRoute()
+  const navigate = useNavigateToPage()
   const goToProfile = useCallback(() => {
     if (!user) return
-    goToRoute(profilePage(user.handle))
-  }, [goToRoute, user])
+    navigate(profilePage(user.handle))
+  }, [navigate, user])
 
   const { switchAccount } = useAccountSwitcher()
 
@@ -122,7 +155,10 @@ export const AccountListItem = ({
       onClick: goToProfile
     })
 
-    if (canCreateChat) {
+    // Don't show DM/switch options if we're in manager mode as the
+    // logged in user won't have permission to do those things on behalf of a
+    // managed account.
+    if (canCreateChat && !isManagerMode) {
       items.push({
         icon: <IconMessage />,
         text: messages.sendMessage,
@@ -130,7 +166,7 @@ export const AccountListItem = ({
       })
     }
 
-    if (isManagedAccount) {
+    if (isManagedAccount && !isManagerMode) {
       items.push({
         icon: <IconUserArrowRotate />,
         text: messages.switchToUser,
@@ -143,6 +179,7 @@ export const AccountListItem = ({
     user,
     switchAccount,
     isManagedAccount,
+    isManagerMode,
     isPending,
     handleCancelInvite,
     handleRemoveManager,
@@ -169,8 +206,8 @@ export const AccountListItem = ({
       ref={anchorRef}
       aria-label={messages.moreOptions}
       icon={IconKebabHorizontal}
-      color='default'
-      onClick={triggerPopup}
+      color='subdued'
+      onClick={() => triggerPopup()}
     />
   )
 
@@ -180,11 +217,13 @@ export const AccountListItem = ({
     <Flex
       alignItems='stretch'
       justifyContent='space-between'
-      ph='xl'
+      pl='xl'
+      pr='l'
       pv='l'
+      gap='l'
       border='default'
     >
-      <ArtistChip user={user as any} showPopover={false} />
+      <ArtistInfo user={user} />
       <Flex direction='column' justifyContent='space-between' alignItems='end'>
         {!isPending || !isManagedAccount ? (
           <PopupMenu

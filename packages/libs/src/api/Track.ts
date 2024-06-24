@@ -653,6 +653,9 @@ export class Track extends Base {
       remix_of,
       ai_attribution_user_id,
       allowed_api_keys,
+      bpm,
+      musical_key,
+      audio_analysis_error_count,
       ...other
     } = trackMetadata
     if (typeof other !== 'undefined') {
@@ -706,7 +709,10 @@ export class Track extends Base {
       dateListened,
       remix_of,
       ai_attribution_user_id,
-      allowed_api_keys
+      allowed_api_keys,
+      bpm,
+      musical_key,
+      audio_analysis_error_count
     }
   }
 }

@@ -1,4 +1,4 @@
-import { forwardRef, useRef, useState, useCallback } from 'react'
+import { forwardRef, useRef, useState, useCallback, useEffect } from 'react'
 
 import { CSSObject, useTheme } from '@emotion/react'
 
@@ -16,6 +16,8 @@ export const FilterButton = forwardRef<HTMLButtonElement, FilterButtonProps>(
       label: labelProp,
       onChange,
       onClick,
+      onOpen,
+      onReset,
       disabled,
       variant = 'fillContainer',
       size = 'default',
@@ -78,6 +80,11 @@ export const FilterButton = forwardRef<HTMLButtonElement, FilterButtonProps>(
           }
         : {}
 
+    const hoverStyle = {
+      border: `1px solid ${color.neutral.n800}`,
+      transform: 'none'
+    }
+
     // Button Styles
     const buttonCss: CSSObject = {
       background: 'transparent',
@@ -93,10 +100,8 @@ export const FilterButton = forwardRef<HTMLButtonElement, FilterButtonProps>(
       lineHeight: typography.lineHeight.s,
       opacity: disabled ? 0.6 : 1,
 
-      '&:hover': {
-        border: `1px solid ${color.neutral.n800}`,
-        transform: 'none'
-      },
+      '&:hover': hoverStyle,
+      '&:focus': hoverStyle,
 
       '&:active': {
         ...activeStyle,
@@ -121,11 +126,27 @@ export const FilterButton = forwardRef<HTMLButtonElement, FilterButtonProps>(
           setLabel(null)
           // @ts-ignore
           onChange?.(null)
+          onReset?.()
         } else {
           setIsOpen((isOpen: boolean) => !isOpen)
         }
       }
-    }, [value, variant, setIsOpen, setValue, setLabel, onChange, onClick])
+    }, [
+      value,
+      variant,
+      setIsOpen,
+      setValue,
+      setLabel,
+      onChange,
+      onClick,
+      onReset
+    ])
+
+    useEffect(() => {
+      if (isOpen) {
+        onOpen?.()
+      }
+    }, [isOpen, onOpen])
 
     const handleChange = useCallback(
       (value: string, label: string) => {

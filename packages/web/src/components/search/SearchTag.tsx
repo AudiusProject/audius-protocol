@@ -5,7 +5,7 @@ import { Tag, TagProps } from '@audius/harmony'
 import { Link } from 'react-router-dom'
 
 import { make, useRecord } from 'common/store/analytics/actions'
-import { searchResultsPage } from 'utils/route'
+import { getSearchPageLocation } from 'utils/route'
 
 type TagClickingEvent = Extract<
   AllTrackingEvents,
@@ -30,7 +30,10 @@ export const SearchTag = (props: SearchTagProps) => {
   )
 
   return (
-    <Link to={searchResultsPage(`#${children}`)} onClick={handleClick}>
+    <Link
+      to={getSearchPageLocation({ query: `#${children}` })}
+      onClick={handleClick}
+    >
       <Tag {...other}>{children}</Tag>
     </Link>
   )

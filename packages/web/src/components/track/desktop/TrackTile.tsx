@@ -20,20 +20,18 @@ import {
   IconStar,
   IconCheck,
   IconCrown,
-  IconVisibilityHidden,
   Text,
   Flex,
   ProgressBar,
   Paper
 } from '@audius/harmony'
 import cn from 'classnames'
-import moment from 'moment'
 import { useSelector } from 'react-redux'
 
 import { DogEar } from 'components/dog-ear'
 import { TextLink } from 'components/link'
-import { ScheduledReleaseLabel } from 'components/scheduled-release-label/ScheduledReleaseLabel'
 import Skeleton from 'components/skeleton/Skeleton'
+import { VisibilityLabel } from 'components/visibility-label/VisibilityLabel'
 import { useAuthenticatedClickCallback } from 'hooks/useAuthenticatedCallback'
 import { useFlag } from 'hooks/useRemoteConfig'
 
@@ -169,9 +167,6 @@ const TrackTile = ({
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
   )
-  const { isEnabled: isScheduledReleasesEnabled } = useFlag(
-    FeatureFlags.SCHEDULED_RELEASES
-  )
 
   const currentUserId = useSelector(getUserId)
   const trackPositionInfo = useSelector((state: CommonState) =>
@@ -243,17 +238,12 @@ const TrackTile = ({
     ? undefined
     : getDogEarType({
         hasStreamAccess,
-        isArtistPick,
         isOwner,
-        isUnlisted:
-          isUnlisted &&
-          (!releaseDate || moment(releaseDate).isBefore(moment())),
         streamConditions
       })
 
   let specialContentLabel = null
-  let scheduledReleaseLabel = null
-  if (!isLoading) {
+  if (!isLoading && !isUnlisted) {
     if (isStreamGated) {
       specialContentLabel = (
         <GatedContentLabel
@@ -268,11 +258,6 @@ const TrackTile = ({
           <IconStar className={styles.artistPickIcon} />
           {messages.artistPick}
         </div>
-      )
-    }
-    if (isScheduledReleasesEnabled) {
-      scheduledReleaseLabel = (
-        <ScheduledReleaseLabel released={releaseDate} isUnlisted={isUnlisted} />
       )
     }
   }
@@ -355,18 +340,16 @@ const TrackTile = ({
             ) : (
               <>
                 {specialContentLabel}
-                {scheduledReleaseLabel}
+                <VisibilityLabel
+                  releaseDate={releaseDate}
+                  isUnlisted={isUnlisted}
+                  isScheduledRelease={isScheduledRelease}
+                />
                 {isUnlisted ? null : stats}
               </>
             )}
           </Text>
           <Text variant='body' size='xs' className={styles.topRight}>
-            {isUnlisted && !isScheduledRelease ? (
-              <div className={styles.topRightIconLabel}>
-                <IconVisibilityHidden className={styles.topRightIcon} />
-                {messages.hiddenTrack}
-              </div>
-            ) : null}
             {!isLoading && duration !== null && duration !== undefined ? (
               <div className={styles.duration}>{getDurationText()}</div>
             ) : null}

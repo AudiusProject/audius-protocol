@@ -1,6 +1,5 @@
 import { useCallback } from 'react'
 
-import { FeatureFlags } from '@audius/common/services'
 import { Image, Platform } from 'react-native'
 
 import {
@@ -12,9 +11,8 @@ import {
 } from '@audius/harmony-native'
 import audiusLogoHorizontal from 'app/assets/images/Horizontal-Logo-Full-Color.png'
 import { Screen, ScreenContent, ScrollView } from 'app/components/core'
-import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'
+import { useShowManagerModeNotAvailable } from 'app/components/manager-mode-drawer/useShowManagerModeNotAvailable'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { makeStyles } from 'app/styles'
 import { Theme } from 'app/utils/theme'
 
@@ -55,10 +53,9 @@ const IconProps = { height: 28, width: 28, style: { marginRight: 4 } }
 
 export const SettingsScreen = () => {
   const styles = useStyles()
-  const isOfflineDownloadEnabled = useIsOfflineModeEnabled()
-  const { isEnabled: isChatEnabled } = useFeatureFlag(FeatureFlags.CHAT_ENABLED)
-
   const navigation = useNavigation<ProfileTabScreenParamList>()
+
+  useShowManagerModeNotAvailable()
 
   const handlePressInbox = useCallback(() => {
     navigation.push('InboxSettingsScreen')
@@ -91,14 +88,12 @@ export const SettingsScreen = () => {
           <AccountSettingsRow />
           <Divider />
           <AppearanceSettingsRow />
-          {isChatEnabled ? (
-            <SettingsRow onPress={handlePressInbox}>
-              <SettingsRowLabel label={messages.inbox} icon={IconMessage} />
-              <SettingsRowDescription>
-                {messages.inboxDescription}
-              </SettingsRowDescription>
-            </SettingsRow>
-          ) : null}
+          <SettingsRow onPress={handlePressInbox}>
+            <SettingsRowLabel label={messages.inbox} icon={IconMessage} />
+            <SettingsRowDescription>
+              {messages.inboxDescription}
+            </SettingsRowDescription>
+          </SettingsRow>
           <SettingsRow onPress={handlePressNotifications}>
             <SettingsRowLabel
               label={messages.notifications}
@@ -109,14 +104,12 @@ export const SettingsScreen = () => {
             </SettingsRowDescription>
           </SettingsRow>
           {IS_IOS ? <CastSettingsRow /> : null}
-          {isOfflineDownloadEnabled ? (
-            <SettingsRow onPress={handlePressDownloads}>
-              <SettingsRowLabel
-                label={messages.downloads}
-                icon={IconCloudDownload}
-              />
-            </SettingsRow>
-          ) : null}
+          <SettingsRow onPress={handlePressDownloads}>
+            <SettingsRowLabel
+              label={messages.downloads}
+              icon={IconCloudDownload}
+            />
+          </SettingsRow>
           <Divider />
           <SettingsRow onPress={handlePressAbout}>
             <SettingsRowLabel label={messages.about} icon={IconInfo} />

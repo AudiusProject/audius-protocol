@@ -59,6 +59,7 @@ def test_usdc_purchase_notification(app):
             "amount": 1000,
             "extra_amount": 0,
             "content_id": 100,
+            "vendor": None,
         }
         assert seller_notifications[0].slot == 4
         assert buyer_notifications[0].user_ids == [1]
@@ -74,5 +75,6 @@ def test_usdc_purchase_notification(app):
             "amount": 1000,
             "extra_amount": 0,
             "content_id": 100,
+            "vendor": None,
         }
         assert buyer_notifications[0].slot == 4

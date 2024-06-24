@@ -1,9 +1,6 @@
 import { useCallback } from 'react'
 
-import {
-  useGatedContentAccess,
-  useIsGatedContentPlaylistAddable
-} from '@audius/common/hooks'
+import { useGatedContentAccess } from '@audius/common/hooks'
 import {
   Name,
   ShareSource,
@@ -68,7 +65,6 @@ const messages = {
   track: 'track',
   podcast: 'podcast',
   remix: 'remix',
-  hiddenTrack: 'hidden track',
   collectibleGated: 'collectible gated',
   specialAccess: 'special access',
   premiumTrack: 'premium track',
@@ -118,11 +114,10 @@ export const TrackScreenDetailsTile = ({
   const {
     _co_sign,
     description,
-    field_visibility,
     genre,
     has_current_user_reposted,
     has_current_user_saved,
-    is_unlisted,
+    is_unlisted: isUnlisted,
     is_stream_gated: isStreamGated,
     owner_id,
     play_count,
@@ -135,19 +130,19 @@ export const TrackScreenDetailsTile = ({
     ddex_app: ddexApp,
     is_delete,
     duration,
-    release_date
+    release_date: releaseDate,
+    is_scheduled_release: isScheduledRelease
   } = track
 
   const isOwner = owner_id === currentUserId
-  const hideFavorite = is_unlisted || !hasStreamAccess
-  const hideRepost = is_unlisted || !isReachable || !hasStreamAccess
+  const hideFavorite = isUnlisted || !hasStreamAccess
+  const hideRepost = isUnlisted || !isReachable || !hasStreamAccess
 
   const remixParentTrackId = remix_of?.tracks?.[0]?.parent_track_id
   const isRemix = !!remixParentTrackId
   const hasDownloadableAssets =
     (track as Track)?.is_downloadable ||
     ((track as Track)?._stems?.length ?? 0) > 0
-  const isPlaylistAddable = useIsGatedContentPlaylistAddable(track as Track)
 
   const { data: albumInfo } = trpc.tracks.getAlbumBacklink.useQuery(
     { trackId },
@@ -254,12 +249,9 @@ export const TrackScreenDetailsTile = ({
       genre === Genre.PODCASTS || genre === Genre.AUDIOBOOKS
     const addToAlbumAction =
       isOwner && !ddexApp ? OverflowAction.ADD_TO_ALBUM : null
-    const addToPlaylistAction = isPlaylistAddable
-      ? OverflowAction.ADD_TO_PLAYLIST
-      : null
     const overflowActions = [
       addToAlbumAction,
-      addToPlaylistAction,
+      OverflowAction.ADD_TO_PLAYLIST,
       isOwner
         ? null
         : user.does_current_user_follow
@@ -273,7 +265,7 @@ export const TrackScreenDetailsTile = ({
       albumInfo ? OverflowAction.VIEW_ALBUM_PAGE : null,
       OverflowAction.VIEW_ARTIST_PAGE,
       isOwner && !ddexApp ? OverflowAction.EDIT_TRACK : null,
-      isOwner && track?.is_scheduled_release && track?.is_unlisted
+      isOwner && isScheduledRelease && isUnlisted
         ? OverflowAction.RELEASE_NOW
         : null,
       isOwner && !ddexApp ? OverflowAction.DELETE_TRACK : null
@@ -312,17 +304,18 @@ export const TrackScreenDetailsTile = ({
       }
       hideFavorite={hideFavorite}
       hideRepost={hideRepost}
-      hideShare={(is_unlisted && !isOwner) || !field_visibility?.share}
-      hideOverflow={!isReachable}
-      hideFavoriteCount={is_unlisted}
+      hideShare={isUnlisted && !isOwner}
+      hideOverflow={!isReachable || (isUnlisted && !isOwner)}
+      hideFavoriteCount={isUnlisted || (!isOwner && (save_count ?? 0) <= 0)}
       hidePlayCount={
-        (!isOwner && is_unlisted && !field_visibility?.play_count) ||
-        isStreamGated
+        (!isOwner && isUnlisted) ||
+        isStreamGated ||
+        (!isOwner && (play_count ?? 0) <= 0)
       }
-      hideRepostCount={is_unlisted}
+      hideRepostCount={isUnlisted || (!isOwner && (repost_count ?? 0) <= 0)}
       isPlaying={isPlaying && isPlayingId}
       isPreviewing={isPreviewing}
-      isUnlisted={is_unlisted}
+      isUnlisted={isUnlisted}
       isDeleted={is_delete}
       onPressEdit={handlePressEdit}
       onPressFavorites={handlePressFavorites}
@@ -343,7 +336,7 @@ export const TrackScreenDetailsTile = ({
       contentType={PurchaseableContentType.TRACK}
       ddexApp={ddexApp}
       duration={duration}
-      releaseDate={release_date}
+      releaseDate={releaseDate}
     />
   )
 }

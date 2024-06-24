@@ -28,9 +28,9 @@ import { set, get } from 'lodash'
 import { useSelector } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
-import { AccessAndSaleFormSchema } from 'components/edit/fields/AccessAndSaleField'
-import { AccessAndSaleMenuFields } from 'components/edit/fields/AccessAndSaleMenuFields'
 import { getCombinedDefaultGatedConditionValues } from 'components/edit/fields/helpers'
+import { PriceAndAudienceMenuFields } from 'components/edit/fields/price-and-audience/PriceAndAudienceMenuFields'
+import { priceAndAudienceSchema } from 'components/edit/fields/price-and-audience/priceAndAudienceSchema'
 import {
   AccessAndSaleFormValues,
   DOWNLOAD_CONDITIONS,
@@ -353,10 +353,10 @@ export const AccessAndSaleTriggerLegacy = (
       initialValues={initialValues}
       onSubmit={onSubmit}
       validationSchema={toFormikValidationSchema(
-        AccessAndSaleFormSchema(trackLength, usdcPurchaseConfig)
+        priceAndAudienceSchema(trackLength, usdcPurchaseConfig)
       )}
       menuFields={
-        <AccessAndSaleMenuFields
+        <PriceAndAudienceMenuFields
           isRemix={isRemix}
           isUpload={isUpload}
           isInitiallyUnlisted={initialForm[IS_UNLISTED]}

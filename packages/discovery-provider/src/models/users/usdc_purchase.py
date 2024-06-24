@@ -17,6 +17,11 @@ class PurchaseAccessType(str, enum.Enum):
     download = "download"
 
 
+class PurchaseVendor(str, enum.Enum):
+    user_bank = "user_bank"
+    coinflow = "coinflow"
+
+
 class USDCPurchase(Base, RepresentableMixin):
     __tablename__ = "usdc_purchases"
 
@@ -32,6 +37,7 @@ class USDCPurchase(Base, RepresentableMixin):
     city = Column(String, nullable=True)
     region = Column(String, nullable=True)
     country = Column(String, nullable=True)
+    vendor = Column(Enum(PurchaseVendor), nullable=True)
 
     created_at = Column(
         DateTime, nullable=False, index=True, server_default=text("CURRENT_TIMESTAMP")

@@ -67,7 +67,9 @@ export const AccountSwitcherRow = ({
           <Text
             variant='title'
             size='m'
-            color={isSelected ? 'accent' : 'default'}
+            css={{
+              color: isSelected ? color.secondary.s500 : color.neutral.neutral
+            }}
           >
             {user.name}
           </Text>
@@ -76,7 +78,9 @@ export const AccountSwitcherRow = ({
         <Text
           variant='body'
           size='s'
-          color={isSelected ? 'accent' : 'default'}
+          css={{
+            color: isSelected ? color.secondary.s500 : color.neutral.neutral
+          }}
         >{`@${user.handle}`}</Text>
       </Flex>
     </Flex>

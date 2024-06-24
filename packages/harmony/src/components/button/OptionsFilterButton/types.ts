@@ -9,6 +9,7 @@ export type OptionsFilterButtonOption = {
    * The label to display. If not provided, uses the value.
    */
   label?: string
+  helperText?: string
   icon?: IconComponent
   leadingElement?: JSX.Element
 }
@@ -48,6 +49,11 @@ export type OptionsFilterButtonProps = {
    * e.g. { label: 'Option A', icon: IconRadar }
    */
   options: OptionsFilterButtonOption[]
+
+  /**
+   * Label to display above options
+   */
+  optionsLabel?: string
 
   /**
    * The selected value

@@ -27,6 +27,7 @@ from src.models.users.payment_router import PaymentRouterTx
 from src.models.users.usdc_purchase import (
     PurchaseAccessType,
     PurchaseType,
+    PurchaseVendor,
     USDCPurchase,
 )
 from src.models.users.usdc_transactions_history import (
@@ -77,6 +78,7 @@ logger = StructuredLogger(__name__)
 
 # Populate values used in indexing from config
 PAYMENT_ROUTER_ADDRESS = shared_config["solana"]["payment_router_program_address"]
+COINFLOW_PROGRAM_ADDRESS = shared_config["solana"]["coinflow_program_address"]
 WAUDIO_MINT = shared_config["solana"]["waudio_mint"]
 USDC_MINT = shared_config["solana"]["usdc_mint"]
 
@@ -431,6 +433,7 @@ def index_purchase(
     slot: int,
     timestamp: datetime,
     tx_sig: str,
+    vendor: PurchaseVendor,
 ):
     # Detect "pay extra" amount (difference between total balance change across
     # all recipients and the purchase price)
@@ -451,6 +454,7 @@ def index_purchase(
         city=geo_metadata.get("city") if geo_metadata else None,
         region=geo_metadata.get("region") if geo_metadata else None,
         country=geo_metadata.get("country") if geo_metadata else None,
+        vendor=vendor,
     )
     logger.debug(
         f"index_payment_router.py | tx: {tx_sig} | Creating usdc_purchase for purchase {usdc_purchase}"
@@ -567,6 +571,7 @@ def validate_and_index_usdc_transfers(
     slot: int,
     timestamp: datetime,
     tx_sig: str,
+    vendor: PurchaseVendor,
     challenge_event_bus: ChallengeEventBus,
 ):
     """Checks if the transaction is a valid purchase and if so creates the purchase record. Otherwise, indexes a transfer."""
@@ -589,6 +594,7 @@ def validate_and_index_usdc_transfers(
             slot=slot,
             timestamp=timestamp,
             tx_sig=tx_sig,
+            vendor=vendor,
         )
 
         # dispatch audio matching challenge events
@@ -660,6 +666,7 @@ def process_route_instruction(
     slot: int,
     challenge_event_bus: ChallengeEventBus,
     timestamp: datetime,
+    vendor: PurchaseVendor,
 ):
     # Route instructions have a varying number of receiver accounts but they are always
     # at the end
@@ -761,6 +768,7 @@ def process_route_instruction(
             slot=slot,
             timestamp=timestamp,
             tx_sig=tx_sig,
+            vendor=vendor,
             challenge_event_bus=challenge_event_bus,
         )
 
@@ -801,6 +809,9 @@ def process_payment_router_tx_details(
     has_route_instruction = has_log(meta, "Program log: Instruction: Route")
 
     instruction = get_valid_instruction(tx_message, meta, PAYMENT_ROUTER_ADDRESS)
+    contains_conflow_instruction = get_valid_instruction(
+        tx_message, meta, COINFLOW_PROGRAM_ADDRESS
+    )
     if instruction is None:
         logger.error(
             f"index_payment_router.py | tx: {tx_sig} |  No Valid instruction found"
@@ -818,6 +829,11 @@ def process_payment_router_tx_details(
             slot=result.slot,
             challenge_event_bus=challenge_event_bus,
             timestamp=timestamp,
+            vendor=(
+                PurchaseVendor.coinflow
+                if contains_conflow_instruction
+                else PurchaseVendor.user_bank
+            ),
         )
 
 
@@ -880,6 +896,13 @@ def process_payment_router_txs() -> None:
                 for transaction_with_signature in transactions_array:
                     tx_sig = str(transaction_with_signature.signature)
                     tx_slot = transaction_with_signature.slot
+
+                    if transaction_with_signature.err is not None:
+                        logger.debug(
+                            f"index_payment_router.py | Skipping error transaction tx={tx_sig} err={transaction_with_signature.err}"
+                        )
+                        continue
+
                     logger.debug(
                         f"index_payment_router.py | Processing tx={tx_sig} | slot={tx_slot}"
                     )

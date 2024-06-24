@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import {
   useGetCurrentUserId,
@@ -6,18 +6,25 @@ import {
   useGetManagedAccounts
 } from '@audius/common/api'
 import { useAccountSwitcher } from '@audius/common/hooks'
-import { UserMetadata } from '@audius/common/models'
+import { Status, UserMetadata } from '@audius/common/models'
+import { accountSelectors } from '@audius/common/store'
 import { Box, IconButton, IconCaretDown, Popup } from '@audius/harmony'
+import { useSelector } from 'react-redux'
 
 import { AccountListContent } from './AccountListContent'
 
 export const AccountSwitcher = () => {
   const [isExpanded, setIsExpanded] = useState(false)
+  const userId = useSelector(accountSelectors.getUserId)
+  const [checkedAccess, setCheckedAccess] = useState(false)
 
-  const { data: currentWeb3User } = useGetCurrentWeb3User({})
-  const { data: currentUserId } = useGetCurrentUserId({})
+  const { data: currentWeb3User } = useGetCurrentWeb3User(
+    {},
+    { disabled: !userId }
+  )
+  const { data: currentUserId } = useGetCurrentUserId({}, { disabled: !userId })
 
-  const { switchAccount } = useAccountSwitcher()
+  const { switchAccount, switchToWeb3User } = useAccountSwitcher()
 
   const onAccountSelected = useCallback(
     (user: UserMetadata) => {
@@ -28,10 +35,8 @@ export const AccountSwitcher = () => {
 
   const web3UserId = currentWeb3User?.user_id ?? null
 
-  const { data: managedAccounts = [] } = useGetManagedAccounts(
-    { userId: web3UserId! },
-    { disabled: !web3UserId }
-  )
+  const { data: managedAccounts = [], status: accountsStatus } =
+    useGetManagedAccounts({ userId: web3UserId! }, { disabled: !web3UserId })
 
   const parentElementRef = useRef<HTMLDivElement>(null)
   const onClickExpander = useCallback(
@@ -42,6 +47,34 @@ export const AccountSwitcher = () => {
   const accounts = useMemo(() => {
     return managedAccounts.filter(({ grant }) => grant.is_approved)
   }, [managedAccounts])
+
+  // Reset to the web3User if we detect that the current user is no longer in
+  // the managed accounts list
+  useEffect(() => {
+    if (
+      !currentUserId ||
+      !currentWeb3User ||
+      accountsStatus !== Status.SUCCESS ||
+      checkedAccess
+    ) {
+      return
+    }
+    // Check this only once per mount
+    setCheckedAccess(true)
+    if (
+      currentUserId !== currentWeb3User.user_id &&
+      !accounts.some(({ user: { user_id } }) => user_id === currentUserId)
+    ) {
+      switchToWeb3User()
+    }
+  }, [
+    accounts,
+    accountsStatus,
+    checkedAccess,
+    currentUserId,
+    currentWeb3User,
+    switchToWeb3User
+  ])
 
   return !currentWeb3User || !currentUserId || accounts.length === 0 ? null : (
     <Box ref={parentElementRef}>

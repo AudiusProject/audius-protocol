@@ -14,7 +14,6 @@ import { useDispatch, useSelector } from 'react-redux'
 import { IconArrowRight } from '@audius/harmony-native'
 import { Button, Screen, ScreenContent } from 'app/components/core'
 import { Lineup } from 'app/components/lineup'
-import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useRoute } from 'app/hooks/useRoute'
 import { makeStyles } from 'app/styles'
@@ -56,7 +55,6 @@ export const TrackScreen = () => {
   const navigation = useNavigation()
   const { params } = useRoute<'Track'>()
   const dispatch = useDispatch()
-  const isOfflineModeEnabled = useIsOfflineModeEnabled()
   const isReachable = useSelector(getIsReachable)
 
   const { searchTrack, id, canBeUnlisted = true, handle, slug } = params ?? {}
@@ -124,7 +122,7 @@ export const TrackScreen = () => {
 
   return (
     <Screen url={track?.permalink}>
-      <ScreenContent isOfflineCapable={isOfflineModeEnabled}>
+      <ScreenContent isOfflineCapable>
         <Lineup
           actions={tracksActions}
           // When offline, we don't want to render any tiles here and the

@@ -168,6 +168,9 @@ track_full = ns.clone(
         "allowed_api_keys": fields.List(fields.String, allow_null=True),
         "audio_upload_id": fields.String,
         "preview_start_seconds": fields.Float,
+        "bpm": fields.Float,
+        "musical_key": fields.String,
+        "audio_analysis_error_count": fields.Integer,
         # DDEX fields
         "ddex_release_ids": fields.Raw(allow_null=True),
         "artists": fields.Raw(allow_null=True),

@@ -328,7 +328,7 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(function Modal(
 
   return (
     <>
-      {modalRoot && isOpen
+      {modalRoot && (process.env.NODE_ENV === 'test' ? isOpenProp : isOpen)
         ? ReactDOM.createPortal(
             <>
               {transition.map(

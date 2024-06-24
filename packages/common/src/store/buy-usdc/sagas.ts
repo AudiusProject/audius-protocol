@@ -414,7 +414,6 @@ function* recoverPurchaseIfNecessary() {
   try {
     const feePayerString: string = yield* call(waitForValue, getFeePayer)
     const feePayerKey = new PublicKey(feePayerString)
-    const userBank = yield* getUSDCUserBank()
     const rootAccount = yield* call(getRootSolanaAccount, audiusBackendInstance)
 
     const usdcTokenAccount = yield* call(
@@ -435,6 +434,7 @@ function* recoverPurchaseIfNecessary() {
       return
     }
 
+    const userBank = yield* getUSDCUserBank()
     const userBankAccountInfo = yield* call(
       getTokenAccountInfo,
       audiusBackendInstance,

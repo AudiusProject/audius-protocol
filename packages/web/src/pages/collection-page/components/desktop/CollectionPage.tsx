@@ -2,7 +2,6 @@ import { ChangeEvent, useMemo } from 'react'
 
 import {
   Variant,
-  DogEarType,
   Status,
   Collection,
   SmartCollection,
@@ -229,8 +228,7 @@ const CollectionPage = ({
   const dogEarType =
     (!collectionLoading &&
       getDogEarType({
-        streamConditions,
-        isUnlisted: isPrivate
+        streamConditions
       })) ||
     undefined
 
@@ -328,13 +326,7 @@ const CollectionPage = ({
         className={styles.bodyWrapper}
         size='large'
         elevation='mid'
-        dogEar={
-          isPremiumAlbumsEnabled
-            ? dogEarType
-            : isPrivate
-            ? DogEarType.HIDDEN
-            : undefined
-        }
+        dogEar={isPremiumAlbumsEnabled ? dogEarType : undefined}
       >
         <div className={styles.topSectionWrapper}>{topSection}</div>
         {!collectionLoading && isEmpty ? (

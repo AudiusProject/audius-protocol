@@ -39,7 +39,7 @@ npm run dev --drop
 
 ## How it works
 
-Program attempts to avoid any gaps by doing a "catchup" on boot... when complete it swithces to processing "batches" which are events collected from postgres LISTEN / NOTIFY.
+Program attempts to avoid any gaps by doing a "catchup" on boot... when complete it switches to processing "batches" which are events collected from postgres LISTEN / NOTIFY.
 
 Any error or exception will cause the program to crash and be restarted by pm2. This is inspired by the erlang "let it crash" mantra, since the startup behavior is designed to get everything into a good state.
 

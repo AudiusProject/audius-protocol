@@ -18,7 +18,8 @@ begin
                 'seller_user_id', new.seller_user_id,
                 'amount', new.amount,
                 'extra_amount', new.extra_amount,
-                'content_id', new.content_id
+                'content_id', new.content_id,
+                'vendor', new.vendor
               )
           ),
           (
@@ -34,7 +35,8 @@ begin
                 'seller_user_id', new.seller_user_id,
                 'amount', new.amount,
                 'extra_amount', new.extra_amount,
-                'content_id', new.content_id
+                'content_id', new.content_id,
+                'vendor', new.vendor
             )
           )
         on conflict do nothing;

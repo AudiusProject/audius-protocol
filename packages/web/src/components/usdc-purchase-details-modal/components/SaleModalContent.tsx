@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
 
+import { useIsManagedAccount } from '@audius/common/hooks'
 import { USDCPurchaseDetails } from '@audius/common/models'
 import {
   chatActions,
@@ -64,6 +65,7 @@ export const SaleModalContent = ({
   onClose
 }: SaleModalContentProps) => {
   const dispatch = useDispatch()
+  const isManagedAccount = useIsManagedAccount()
 
   const { onOpen: openInboxUnavailableModal } = useInboxUnavailableModal()
   const { canCreateChat } = useSelector((state: CommonState) =>
@@ -115,14 +117,16 @@ export const SaleModalContent = ({
           <DetailSection
             label={messages.purchasedBy}
             actionButton={
-              <Button
-                iconLeft={IconMessage}
-                variant='secondary'
-                size='small'
-                onClick={handleClickMessageBuyer}
-              >
-                {messages.sayThanks}
-              </Button>
+              isManagedAccount ? undefined : (
+                <Button
+                  iconLeft={IconMessage}
+                  variant='secondary'
+                  size='small'
+                  onClick={handleClickMessageBuyer}
+                >
+                  {messages.sayThanks}
+                </Button>
+              )
             }
           >
             <UserLink userId={purchaseDetails.buyerUserId} popover size='l' />

@@ -1,7 +1,6 @@
 import time
 
 from src.api.v1.helpers import extend_playlist
-from src.queries.query_helpers import get_current_user_id
 from src.utils.elasticdsl import (
     ES_PLAYLISTS,
     ES_USERS,
@@ -12,7 +11,7 @@ from src.utils.elasticdsl import (
 
 def get_top_playlists_es(kind, args):
     esclient = get_esclient()
-    current_user_id = get_current_user_id(required=False)
+    current_user_id = args.get("current_user_id")
     limit = args.get("limit", 16)
     is_album = kind == "album"
 

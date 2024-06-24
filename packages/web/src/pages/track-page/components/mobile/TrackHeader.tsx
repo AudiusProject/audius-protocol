@@ -1,7 +1,6 @@
 import { Suspense, useCallback } from 'react'
 
 import { imageBlank as placeholderArt } from '@audius/common/assets'
-import { useIsGatedContentPlaylistAddable } from '@audius/common/hooks'
 import {
   SquareSizes,
   isContentCollectibleGated,
@@ -19,24 +18,26 @@ import {
   cacheTracksSelectors
 } from '@audius/common/store'
 import {
-  getCanonicalName,
-  formatSeconds,
-  formatDate,
   getDogEarType,
-  Nullable
+  Nullable,
+  formatReleaseDate
 } from '@audius/common/utils'
 import {
   Flex,
-  IconRobot,
   IconCollectible,
   IconPause,
   IconPlay,
   IconSpecialAccess,
   IconCart,
   Box,
-  Button
+  Button,
+  MusicBadge
 } from '@audius/harmony'
+import IconCalendarMonth from '@audius/harmony/src/assets/icons/CalendarMonth.svg'
+import IconRobot from '@audius/harmony/src/assets/icons/Robot.svg'
+import IconVisibilityHidden from '@audius/harmony/src/assets/icons/VisibilityHidden.svg'
 import cn from 'classnames'
+import dayjs from 'dayjs'
 import { shallowEqual, useSelector } from 'react-redux'
 
 import CoSign from 'components/co-sign/CoSign'
@@ -47,16 +48,13 @@ import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { UserLink } from 'components/link'
 import { SearchTag } from 'components/search/SearchTag'
 import { AiTrackSection } from 'components/track/AiTrackSection'
-import Badge from 'components/track/Badge'
 import { DownloadSection } from 'components/track/DownloadSection'
 import { GatedContentSection } from 'components/track/GatedContentSection'
+import { TrackMetadataList } from 'components/track/TrackMetadataList'
 import { UserGeneratedText } from 'components/user-generated-text'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
-import { moodMap } from 'utils/Moods'
 import { isDarkMode } from 'utils/theme/theme'
 import { trpc } from 'utils/trpcClientWeb'
-
-import HiddenTrackHeader from '../HiddenTrackHeader'
 
 import ActionButtonRow from './ActionButtonRow'
 import StatsButtonRow from './StatsButtonRow'
@@ -72,7 +70,10 @@ const messages = {
   premiumTrack: 'PREMIUM TRACK',
   specialAccess: 'SPECIAL ACCESS',
   generatedWithAi: 'Generated With AI',
-  artworkAltText: 'Track Artwork'
+  artworkAltText: 'Track Artwork',
+  hidden: 'Hidden',
+  releases: (releaseDate: string) =>
+    `Releases ${formatReleaseDate({ date: releaseDate, withHour: true })}`
 }
 
 type PlayButtonProps = {
@@ -121,7 +122,7 @@ type TrackHeaderProps = {
   userId: ID
   coverArtSizes: CoverArtSizes | null
   description: string
-  released: string
+  releaseDate: string
   genre: string
   mood: string
   credits: string
@@ -160,8 +161,7 @@ const TrackHeader = ({
   description,
   isOwner,
   isFollowing,
-  released,
-  duration,
+  releaseDate,
   isLoading,
   isPlaying,
   isPreviewing,
@@ -177,9 +177,6 @@ const TrackHeader = ({
   saveCount,
   repostCount,
   listenCount,
-  mood,
-  credits,
-  genre,
   tags,
   aiAttributedUserId,
   onPlay,
@@ -206,13 +203,13 @@ const TrackHeader = ({
   const showPreview = isUSDCPurchaseGated && (isOwner || !hasStreamAccess)
   // Play button is conditionally hidden for USDC-gated tracks when the user does not have access
   const showPlay = isUSDCPurchaseGated ? hasStreamAccess : true
-  const showListenCount =
-    isOwner || (!isStreamGated && (isUnlisted || fieldVisibility.play_count))
+  const showListenCount = isOwner || (!isStreamGated && !isUnlisted)
   const { data: albumInfo } = trpc.tracks.getAlbumBacklink.useQuery(
     { trackId },
     { enabled: !!trackId }
   )
-  const isPlaylistAddable = useIsGatedContentPlaylistAddable(track)
+  const shouldShowScheduledRelease =
+    track?.release_date && dayjs(track.release_date).isAfter(dayjs())
 
   const image = useTrackCoverArt(
     trackId,
@@ -224,26 +221,6 @@ const TrackHeader = ({
     if (!isOwner) onSave()
   }
   const filteredTags = (tags || '').split(',').filter(Boolean)
-
-  const trackLabels: { isHidden?: boolean; label: string; value: any }[] = [
-    {
-      label: 'Duration',
-      value: formatSeconds(duration)
-    },
-    {
-      label: 'Genre',
-      isHidden: isUnlisted && !fieldVisibility?.genre,
-      value: getCanonicalName(genre)
-    },
-    { value: formatDate(released), label: 'Released', isHidden: isUnlisted },
-    {
-      isHidden: isUnlisted && !fieldVisibility?.mood,
-      label: 'Mood',
-      // @ts-ignore
-      value: mood && mood in moodMap ? moodMap[mood] : mood
-    },
-    { label: 'Credit', value: credits }
-  ].filter(({ isHidden, value }) => !isHidden && !!value)
 
   const onClickOverflow = () => {
     const overflowActions = [
@@ -257,8 +234,8 @@ const TrackHeader = ({
         : isSaved
         ? OverflowAction.UNFAVORITE
         : OverflowAction.FAVORITE,
-      isOwner ? OverflowAction.ADD_TO_ALBUM : null,
-      isPlaylistAddable ? OverflowAction.ADD_TO_PLAYLIST : null,
+      isOwner && !track?.ddex_app ? OverflowAction.ADD_TO_ALBUM : null,
+      OverflowAction.ADD_TO_PLAYLIST,
       albumInfo ? OverflowAction.VIEW_ALBUM_PAGE : null,
       isFollowing
         ? OverflowAction.UNFOLLOW_ARTIST
@@ -288,17 +265,6 @@ const TrackHeader = ({
         ))}
       </Flex>
     )
-  }
-
-  const renderTrackLabels = () => {
-    return trackLabels.map((infoFact) => {
-      return (
-        <div key={infoFact.label} className={styles.infoFact}>
-          <div className={styles.infoLabel}>{infoFact.label}</div>
-          <div className={styles.infoValue}>{infoFact.value}</div>
-        </div>
-      )
-    })
   }
 
   const onClickFavorites = useCallback(() => {
@@ -334,7 +300,6 @@ const TrackHeader = ({
 
   const renderDogEar = () => {
     const DogEarType = getDogEarType({
-      isUnlisted,
       streamConditions,
       isOwner,
       hasStreamAccess
@@ -378,20 +343,23 @@ const TrackHeader = ({
   return (
     <div className={styles.trackHeader}>
       {renderDogEar()}
-      {isUnlisted ? (
-        <div className={styles.hiddenTrackHeaderWrapper}>
-          <HiddenTrackHeader />
-        </div>
-      ) : (
-        renderHeaderText()
-      )}
-      {aiAttributedUserId ? (
-        <Badge
-          icon={<IconRobot />}
-          className={styles.badgeAi}
-          textLabel={messages.generatedWithAi}
-        />
-      ) : null}
+      <Flex gap='s' direction='column'>
+        {renderHeaderText()}
+        {aiAttributedUserId ? (
+          <MusicBadge icon={IconRobot} color='lightGreen' size='s'>
+            {messages.generatedWithAi}
+          </MusicBadge>
+        ) : null}
+        {shouldShowScheduledRelease ? (
+          <MusicBadge variant='accent' icon={IconCalendarMonth} size='s'>
+            {messages.releases(releaseDate)}
+          </MusicBadge>
+        ) : isUnlisted ? (
+          <MusicBadge icon={IconVisibilityHidden} size='s'>
+            {messages.hidden}
+          </MusicBadge>
+        ) : null}
+      </Flex>
       {imageElement}
       <div className={styles.titleArtistSection}>
         <h1 className={styles.title}>{title}</h1>
@@ -427,8 +395,8 @@ const TrackHeader = ({
       <ActionButtonRow
         showRepost={showSocials}
         showFavorite={showSocials}
-        showShare={!isUnlisted || fieldVisibility.share || isOwner}
-        showOverflow
+        showShare={!isUnlisted || isOwner}
+        showOverflow={!isUnlisted || isOwner}
         shareToastDisabled
         isOwner={isOwner}
         isReposted={isReposted}
@@ -467,6 +435,7 @@ const TrackHeader = ({
           descriptionClassName={styles.aiSectionDescription}
         />
       ) : null}
+
       {description ? (
         <UserGeneratedText
           className={styles.description}
@@ -475,9 +444,7 @@ const TrackHeader = ({
           {description}
         </UserGeneratedText>
       ) : null}
-      <div className={cn(styles.infoSection, styles.withSectionDivider)}>
-        {renderTrackLabels()}
-      </div>
+      <TrackMetadataList trackId={trackId} />
       {renderTags()}
       {hasDownloadableAssets ? (
         <Box pt='l' w='100%'>

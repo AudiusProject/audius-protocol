@@ -10,8 +10,7 @@ import {
   Hint,
   IconCaretLeft,
   IconError,
-  Text,
-  TextLink
+  Text
 } from '@audius/harmony'
 
 import ArtistChip from 'components/artist/ArtistChip'
@@ -82,14 +81,7 @@ export const ConfirmAccountManagerPage = (
         <Box pv='l' ph='xl'>
           <ArtistChip user={manager} />
         </Box>
-        <Hint
-          icon={IconError}
-          actions={
-            <TextLink variant='visible' href='#' showUnderline>
-              {sharedMessages.learnMore}
-            </TextLink>
-          }
-        >
+        <Hint icon={IconError}>
           {sharedMessages.accountManagersExplanation}
         </Hint>
         <Flex gap='s'>

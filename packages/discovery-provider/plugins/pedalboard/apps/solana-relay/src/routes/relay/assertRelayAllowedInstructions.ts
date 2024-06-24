@@ -39,6 +39,7 @@ const TRACK_LISTEN_COUNT_PROGRAM_ID = config.trackListenCountProgramId
 const PAYMENT_ROUTER_PROGRAM_ID = config.paymentRouterProgramId
 const JUPITER_AGGREGATOR_V6_PROGRAM_ID =
   'JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4'
+const COINFLOW_PROGRAM_ID = 'FD1amxhTsDpwzoVX41dxp2ygAESURV2zdUACzxM1Dfw9'
 
 const waudioMintAddress = config.waudioMintAddress
 const usdcMintAddress = config.usdcMintAddress
@@ -446,6 +447,7 @@ export const assertRelayAllowedInstructions = async (
       case MEMO_V2_PROGRAM_ID:
       case TRACK_LISTEN_COUNT_PROGRAM_ID:
       case ComputeBudgetProgram.programId.toBase58():
+      case COINFLOW_PROGRAM_ID:
         // All instructions of these programs are allowed
         break
       default:

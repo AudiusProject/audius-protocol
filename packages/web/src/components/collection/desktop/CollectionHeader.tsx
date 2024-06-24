@@ -27,7 +27,8 @@ import {
   IconSearch,
   IconCart,
   useTheme,
-  IconComponent
+  IconComponent,
+  MusicBadge
 } from '@audius/harmony'
 import cn from 'classnames'
 
@@ -37,7 +38,7 @@ import { GatedContentSection } from 'components/track/GatedContentSection'
 import { UserGeneratedText } from 'components/user-generated-text'
 import { useFlag } from 'hooks/useRemoteConfig'
 
-import { AlbumDetailsText } from '../components/AlbumDetailsText'
+import { CollectionMetadataList } from '../CollectionMetadataList'
 import { RepostsFavoritesStats } from '../components/RepostsFavoritesStats'
 
 import { Artwork } from './Artwork'
@@ -49,7 +50,8 @@ const messages = {
   filterAlbum: 'Search in album...',
   premiumLabel: 'premium',
   hiddenPlaylistLabel: 'hidden playlist',
-  by: 'By '
+  by: 'By ',
+  hidden: 'Hidden'
 }
 
 type CollectionHeaderProps = {
@@ -100,11 +102,7 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
     coverArtSizes,
     description,
     isOwner,
-    releaseDate,
-    lastModifiedDate,
-    numTracks,
     isPlayable,
-    duration,
     isPublished,
     tracksLoading,
     loading,
@@ -129,11 +127,10 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
   const { isEnabled: isPremiumAlbumsEnabled } = useFlag(
     FeatureFlags.PREMIUM_ALBUMS_ENABLED
   )
+  const { data: currentUserId } = useGetCurrentUserId({})
   const [artworkLoading, setIsArtworkLoading] = useState(true)
   const [filterText, setFilterText] = useState('')
   const { spacing } = useTheme()
-
-  const { data: currentUserId } = useGetCurrentUserId({})
 
   const hasStreamAccess = access?.stream
 
@@ -195,9 +192,6 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
             <Skeleton height='24px' width='200px' />
           ) : (
             <Flex gap='s' mt='s' alignItems='center'>
-              {!isPublished ? (
-                <IconVisibilityHidden color='subdued' aria-label='hidden' />
-              ) : null}
               {isPremium ? <IconCart size='s' color='subdued' /> : null}
               <Text
                 variant='label'
@@ -271,15 +265,15 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
           />
         )}
       </Flex>
-      {onFilterChange ? (
-        <Flex
-          w='240px'
-          css={{
-            position: 'absolute',
-            top: spacing.l,
-            right: spacing.l
-          }}
-        >
+      <Flex
+        w='240px'
+        gap='s'
+        justifyContent='flex-end'
+        css={{ position: 'absolute', right: spacing.l, top: spacing.l }}
+      >
+        {!isPublished ? (
+          <MusicBadge icon={IconVisibilityHidden}>{messages.hidden}</MusicBadge>
+        ) : onFilterChange ? (
           <TextInput
             label={
               type === 'album' ? messages.filterAlbum : messages.filterPlaylist
@@ -293,8 +287,8 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
             size={TextInputSize.SMALL}
             className={styles.searchInput}
           />
-        </Flex>
-      ) : null}
+        ) : null}
+      </Flex>
     </Flex>
   )
 
@@ -333,12 +327,7 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
               {description}
             </UserGeneratedText>
           ) : null}
-          <AlbumDetailsText
-            duration={duration}
-            lastModifiedDate={lastModifiedDate}
-            numTracks={numTracks}
-            releaseDate={releaseDate}
-          />
+          <CollectionMetadataList collectionId={collectionId} />
         </Flex>
       )}
     </Flex>

@@ -14,7 +14,7 @@ import {
 } from '@audius/common/store'
 import cn from 'classnames'
 import { connect } from 'react-redux'
-import { matchPath } from 'react-router'
+import { generatePath, matchPath } from 'react-router'
 import { Switch, Route, Redirect, withRouter } from 'react-router-dom'
 import semver from 'semver'
 
@@ -129,7 +129,6 @@ import {
   SETTINGS_PAGE,
   HOME_PAGE,
   NOT_FOUND_PAGE,
-  SEARCH_CATEGORY_PAGE,
   SEARCH_PAGE,
   PLAYLIST_PAGE,
   ALBUM_PAGE,
@@ -180,7 +179,9 @@ import {
   AUTHORIZED_APPS_SETTINGS_PAGE,
   ACCOUNTS_MANAGING_YOU_SETTINGS_PAGE,
   ACCOUNTS_YOU_MANAGE_SETTINGS_PAGE,
-  TRACK_EDIT_PAGE
+  TRACK_EDIT_PAGE,
+  SEARCH_CATEGORY_PAGE_LEGACY,
+  SEARCH_BASE_ROUTE
 } from 'utils/route'
 
 import styles from './WebPlayer.module.css'
@@ -199,6 +200,14 @@ const ConnectedMusicConfetti = lazy(() =>
 const includeSearch = (search) => {
   return search.includes('oauth_token') || search.includes('code')
 }
+
+const validSearchCategories = [
+  'all',
+  'tracks',
+  'profiles',
+  'albums',
+  'playlists'
+]
 
 initializeSentry()
 
@@ -461,7 +470,7 @@ class WebPlayer extends Component {
             />
           ) : null}
         </AppBannerWrapper>
-        {this.props.isChatEnabled ? <ChatListener /> : null}
+        <ChatListener />
         <USDCBalanceFetcher />
         <div className={cn(styles.app, { [styles.mobileApp]: isMobile })}>
           {this.props.showCookieBanner ? <CookieBanner /> : null}
@@ -656,25 +665,38 @@ class WebPlayer extends Component {
                     />
                   )}
                 />
-
                 <Route
-                  path={SEARCH_CATEGORY_PAGE}
-                  render={(props) =>
-                    isSearchV2Enabled ? (
-                      <SearchPageV2 />
-                    ) : (
-                      <SearchPage
-                        {...props}
-                        scrollToTop={this.scrollToTop}
-                        containerRef={this.props.mainContentRef.current}
-                      />
-                    )
-                  }
+                  exact
+                  path={SEARCH_CATEGORY_PAGE_LEGACY}
+                  render={(props) => (
+                    <Redirect
+                      to={{
+                        pathname: generatePath(SEARCH_PAGE, {
+                          category: props.match.params.category
+                        }),
+                        search: new URLSearchParams({
+                          query: props.match.params.query
+                        }).toString()
+                      }}
+                    />
+                  )}
                 />
                 <Route
                   path={SEARCH_PAGE}
-                  render={(props) =>
-                    isSearchV2Enabled ? (
+                  render={(props) => {
+                    const { category } = props.match.params
+
+                    return category &&
+                      !validSearchCategories.includes(category) ? (
+                      <Redirect
+                        to={{
+                          pathname: SEARCH_BASE_ROUTE,
+                          search: new URLSearchParams({
+                            query: category
+                          }).toString()
+                        }}
+                      />
+                    ) : isSearchV2Enabled ? (
                       <SearchPageV2 />
                     ) : (
                       <SearchPage
@@ -683,7 +705,7 @@ class WebPlayer extends Component {
                         containerRef={this.props.mainContentRef.current}
                       />
                     )
-                  }
+                  }}
                 />
 
                 <DesktopRoute
@@ -1025,7 +1047,6 @@ const mapStateToProps = (state) => ({
   accountStatus: getAccountStatus(state),
   signOnStatus: getSignOnStatus(state),
   showCookieBanner: getShowCookieBanner(state),
-  isChatEnabled: getFeatureEnabled(FeatureFlags.CHAT_ENABLED),
   isSearchV2Enabled: getFeatureEnabled(FeatureFlags.SEARCH_V2),
   isEditTrackRedesignEnabled: getFeatureEnabled(
     FeatureFlags.EDIT_TRACK_REDESIGN

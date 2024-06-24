@@ -24,7 +24,7 @@ const { getUserId } = accountSelectors
 const messages = {
   followersOnly: 'Available to Followers Only',
   supportersOnly: 'Available to Supporters Only',
-  supportersInfo: 'Supporters are users who have sent you a tip.',
+  supportersInfo: 'Supporters are fans that have sent you a tip.',
   premiumDownloads:
     'Setting your track to Special Access will remove the availability you set on your premium downloads. Don’t worry, your stems are still saved!'
 }
@@ -98,7 +98,7 @@ export const SpecialAccessFields = (props: TrackAvailabilityFieldsProps) => {
             mount={'parent'}
             color='secondary'
           >
-            <IconInfo className={styles.icon} />
+            <IconInfo size='m' color='subdued' />
           </Tooltip>
         </label>
       </RadioGroup>

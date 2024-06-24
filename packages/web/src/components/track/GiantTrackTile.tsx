@@ -1,6 +1,5 @@
 import { Suspense, lazy, useCallback, useState } from 'react'
 
-import { useIsGatedContentPlaylistAddable } from '@audius/common/hooks'
 import {
   isContentUSDCPurchaseGated,
   ID,
@@ -9,7 +8,6 @@ import {
   Remix,
   AccessConditions
 } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import {
   cacheTracksSelectors,
   publishTrackConfirmationModalUIActions,
@@ -18,33 +16,33 @@ import {
 } from '@audius/common/store'
 import {
   Genre,
-  getCanonicalName,
-  formatSeconds,
-  formatDate,
   getDogEarType,
-  Nullable
+  Nullable,
+  formatReleaseDate
 } from '@audius/common/utils'
 import {
   Text,
   Box,
   Flex,
-  IconRobot,
   IconRepost,
   IconHeart,
   IconKebabHorizontal,
   IconShare,
   IconRocket,
-  Button
+  Button,
+  MusicBadge
 } from '@audius/harmony'
-import { Mood } from '@audius/sdk'
+import IconCalendarMonth from '@audius/harmony/src/assets/icons/CalendarMonth.svg'
+import IconRobot from '@audius/harmony/src/assets/icons/Robot.svg'
+import IconTrending from '@audius/harmony/src/assets/icons/Trending.svg'
+import IconVisibilityHidden from '@audius/harmony/src/assets/icons/VisibilityHidden.svg'
 import cn from 'classnames'
-import moment from 'moment'
+import dayjs from 'dayjs'
 import { useDispatch, shallowEqual, useSelector } from 'react-redux'
 
-import { TextLink, UserLink } from 'components/link'
+import { UserLink } from 'components/link'
 import Menu from 'components/menu/Menu'
 import RepostFavoritesStats from 'components/repost-favorites-stats/RepostFavoritesStats'
-import { ScheduledReleaseGiantLabel } from 'components/scheduled-release-label/ScheduledReleaseLabel'
 import { SearchTag } from 'components/search/SearchTag'
 import Skeleton from 'components/skeleton/Skeleton'
 import { Tile } from 'components/tile'
@@ -52,19 +50,15 @@ import Toast from 'components/toast/Toast'
 import Tooltip from 'components/tooltip/Tooltip'
 import { ComponentPlacement } from 'components/types'
 import { UserGeneratedText } from 'components/user-generated-text'
-import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
-import { moodMap } from 'utils/Moods'
-import { trpc } from 'utils/trpcClientWeb'
 
 import { AiTrackSection } from './AiTrackSection'
-import Badge from './Badge'
 import { CardTitle } from './CardTitle'
 import { GatedContentSection } from './GatedContentSection'
 import GiantArtwork from './GiantArtwork'
 import styles from './GiantTrackTile.module.css'
 import { GiantTrackTileProgressInfo } from './GiantTrackTileProgressInfo'
-import InfoLabel from './InfoLabel'
 import { PlayPauseButton } from './PlayPauseButton'
+import { TrackMetadataList } from './TrackMetadataList'
 
 const DownloadSection = lazy(() =>
   import('./DownloadSection').then((module) => ({
@@ -95,13 +89,16 @@ const messages = {
   timeLeft: 'left',
   played: 'Played',
   generatedWithAi: 'Generated With AI',
-  actionGroupLabel: 'track actions'
+  actionGroupLabel: 'track actions',
+  hidden: 'hidden',
+  releases: (releaseDate: string) =>
+    `Releases ${formatReleaseDate({ date: releaseDate, withHour: true })}`
 }
 
 export type GiantTrackTileProps = {
   aiAttributionUserId: Nullable<number>
   artistHandle: string
-  badge: Nullable<string>
+  trendingBadgeLabel: Nullable<string>
   coSign: Nullable<Remix>
   coverArtSizes: Nullable<CoverArtSizes>
   credits: string
@@ -139,7 +136,7 @@ export type GiantTrackTileProps = {
   previewing: boolean
   streamConditions: Nullable<AccessConditions>
   downloadConditions: Nullable<AccessConditions>
-  released: string
+  releaseDate: string
   repostCount: number
   saveCount: number
   tags: string
@@ -152,10 +149,9 @@ export type GiantTrackTileProps = {
 export const GiantTrackTile = ({
   aiAttributionUserId,
   artistHandle,
-  badge,
+  trendingBadgeLabel,
   coSign,
   coverArtSizes,
-  credits,
   description,
   hasStreamAccess,
   duration,
@@ -173,7 +169,6 @@ export const GiantTrackTile = ({
   isUnlisted,
   listenCount,
   loading,
-  mood,
   onClickFavorites,
   onClickReposts,
   onFollow,
@@ -184,7 +179,7 @@ export const GiantTrackTile = ({
   onShare,
   onRepost,
   onUnfollow,
-  released,
+  releaseDate,
   repostCount,
   saveCount,
   playing,
@@ -204,10 +199,6 @@ export const GiantTrackTile = ({
   )
   const isLongFormContent =
     genre === Genre.PODCASTS || genre === Genre.AUDIOBOOKS
-  const isNewPodcastControlsEnabled = getFeatureEnabled(
-    FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
-    FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
-  )
   const isUSDCPurchaseGated = isContentUSDCPurchaseGated(streamConditions)
   const track = useSelector(
     (state: CommonState) => getTrack(state, { id: trackId }),
@@ -220,12 +211,7 @@ export const GiantTrackTile = ({
   const showPreview = isUSDCPurchaseGated && (isOwner || !hasStreamAccess)
   // Play button is conditionally hidden for USDC-gated tracks when the user does not have access
   const showPlay = isUSDCPurchaseGated ? hasStreamAccess : true
-  const isPlaylistAddable = useIsGatedContentPlaylistAddable(track)
-  const { data: albumInfo } = trpc.tracks.getAlbumBacklink.useQuery(
-    { trackId },
-    { enabled: !!trackId }
-  )
-
+  const shouldShowScheduledRelease = dayjs(releaseDate).isAfter(dayjs())
   const renderCardTitle = (className: string) => {
     return (
       <CardTitle
@@ -353,37 +339,8 @@ export const GiantTrackTile = ({
     )
   }
 
-  const renderMood = () => {
-    const shouldShow = !isUnlisted || fieldVisibility.mood
-    return (
-      shouldShow &&
-      mood && (
-        <InfoLabel
-          className={styles.infoLabelPlacement}
-          labelName='mood'
-          labelValue={mood in moodMap ? moodMap[mood as Mood] : mood}
-        />
-      )
-    )
-  }
-
-  const renderGenre = () => {
-    const shouldShow = !isUnlisted || fieldVisibility.genre
-
-    return (
-      shouldShow && (
-        <InfoLabel
-          className={styles.infoLabelPlacement}
-          labelName='genre'
-          labelValue={getCanonicalName(genre)}
-        />
-      )
-    )
-  }
-
   const renderListenCount = () => {
-    const shouldShow =
-      isOwner || (!isStreamGated && (isUnlisted || fieldVisibility.play_count))
+    const shouldShow = isOwner || (!isStreamGated && !isUnlisted)
 
     if (!shouldShow) {
       return null
@@ -425,41 +382,9 @@ export const GiantTrackTile = ({
     )
   }
 
-  const renderAlbum = () => {
-    if (!albumInfo) return null
-    return (
-      <InfoLabel
-        className={styles.infoLabelPlacement}
-        labelName='album'
-        labelValue={
-          <TextLink to={albumInfo.permalink}>
-            {albumInfo.playlist_name}
-          </TextLink>
-        }
-      />
-    )
-  }
-
-  const renderReleased = () => {
-    return (
-      !isUnlisted &&
-      released && (
-        <InfoLabel
-          className={styles.infoLabelPlacement}
-          labelName='released'
-          labelValue={formatDate(released)}
-        />
-      )
-    )
-  }
-
   const renderStatsRow = () => {
     const isLongFormContent =
       genre === Genre.PODCASTS || genre === Genre.AUDIOBOOKS
-    const isNewPodcastControlsEnabled = getFeatureEnabled(
-      FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
-      FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
-    )
 
     return (
       <>
@@ -470,16 +395,8 @@ export const GiantTrackTile = ({
           onClickReposts={onClickReposts}
           onClickFavorites={onClickFavorites}
         />
-        {isLongFormContent && isNewPodcastControlsEnabled
-          ? renderListenCount()
-          : null}
+        {isLongFormContent ? renderListenCount() : null}
       </>
-    )
-  }
-
-  const renderScheduledReleaseRow = () => {
-    return (
-      <ScheduledReleaseGiantLabel released={released} isUnlisted={isUnlisted} />
     )
   }
 
@@ -488,9 +405,7 @@ export const GiantTrackTile = ({
   const dogEarType = isLoading
     ? undefined
     : getDogEarType({
-        streamConditions,
-        isUnlisted:
-          isUnlisted && (!released || moment(released).isBefore(moment()))
+        streamConditions
       })
 
   const overflowMenuExtraItems = []
@@ -519,8 +434,7 @@ export const GiantTrackTile = ({
       isUnlisted,
       includeEmbed: !(isUnlisted || isStreamGated),
       includeArtistPick: !isUnlisted,
-      includeAddToPlaylist: isPlaylistAddable,
-      includeAddToAlbum: isPlaylistAddable,
+      includeAddToAlbum: isOwner && !ddexApp,
       extraMenuItems: overflowMenuExtraItems
     }
   }
@@ -587,7 +501,7 @@ export const GiantTrackTile = ({
                   isPreview
                 />
               ) : null}
-              {isLongFormContent && isNewPodcastControlsEnabled ? (
+              {isLongFormContent ? (
                 <GiantTrackTileProgressInfo
                   duration={duration}
                   trackId={trackId}
@@ -599,48 +513,62 @@ export const GiantTrackTile = ({
 
             <div className={cn(styles.statsSection, fadeIn)}>
               {renderStatsRow()}
-              {renderScheduledReleaseRow()}
             </div>
 
-            <div
-              className={cn(styles.actionButtons, fadeIn)}
-              role='group'
-              aria-label={messages.actionGroupLabel}
-            >
-              {renderShareButton()}
-              {renderMakePublicButton()}
-              {hasStreamAccess && renderRepostButton()}
-              {hasStreamAccess && renderFavoriteButton()}
-              <span>
-                {/* prop types for overflow menu don't work correctly
+            {isUnlisted && !isOwner ? null : (
+              <div
+                className={cn(styles.actionButtons, fadeIn)}
+                role='group'
+                aria-label={messages.actionGroupLabel}
+              >
+                {renderShareButton()}
+                {renderMakePublicButton()}
+                {hasStreamAccess && renderRepostButton()}
+                {hasStreamAccess && renderFavoriteButton()}
+                <span>
+                  {/* prop types for overflow menu don't work correctly
               so we need to cast here */}
-                <Menu {...(overflowMenu as any)}>
-                  {(ref, triggerPopup) => (
-                    <div className={cn(styles.menuKebabContainer)} ref={ref}>
-                      <Button
-                        variant='secondary'
-                        aria-label='More options'
-                        iconLeft={IconKebabHorizontal}
-                        onClick={() => triggerPopup()}
-                      />
-                    </div>
-                  )}
-                </Menu>
-              </span>
-            </div>
+                  <Menu {...(overflowMenu as any)}>
+                    {(ref, triggerPopup) => (
+                      <div className={cn(styles.menuKebabContainer)} ref={ref}>
+                        <Button
+                          variant='secondary'
+                          aria-label='More options'
+                          iconLeft={IconKebabHorizontal}
+                          onClick={() => triggerPopup()}
+                        />
+                      </div>
+                    )}
+                  </Menu>
+                </span>
+              </div>
+            )}
           </div>
-          <div className={styles.badges}>
+          <Flex
+            gap='s'
+            justifyContent='flex-end'
+            css={{ position: 'absolute', right: 'var(--harmony-unit-6)' }}
+          >
             {aiAttributionUserId ? (
-              <Badge
-                icon={<IconRobot />}
-                className={styles.badgeAi}
-                textLabel={messages.generatedWithAi}
-              />
+              <MusicBadge icon={IconRobot} color='lightGreen'>
+                {messages.generatedWithAi}
+              </MusicBadge>
             ) : null}
-            {badge ? (
-              <Badge className={styles.badgePlacement} textLabel={badge} />
+            {trendingBadgeLabel ? (
+              <MusicBadge color='blue' icon={IconTrending}>
+                {trendingBadgeLabel}
+              </MusicBadge>
             ) : null}
-          </div>
+            {shouldShowScheduledRelease ? (
+              <MusicBadge variant='accent' icon={IconCalendarMonth}>
+                {messages.releases(releaseDate)}
+              </MusicBadge>
+            ) : isUnlisted ? (
+              <MusicBadge icon={IconVisibilityHidden}>
+                {messages.hidden}
+              </MusicBadge>
+            ) : null}
+          </Flex>
         </div>
 
         {isStreamGated && streamConditions ? (
@@ -662,24 +590,7 @@ export const GiantTrackTile = ({
         ) : null}
 
         <div className={cn(styles.bottomSection, fadeIn)}>
-          <div className={styles.infoLabelsSection}>
-            <InfoLabel
-              className={styles.infoLabelPlacement}
-              labelName='duration'
-              labelValue={`${formatSeconds(duration)}`}
-            />
-            {renderReleased()}
-            {renderGenre()}
-            {renderMood()}
-            {credits ? (
-              <InfoLabel
-                className={styles.infoLabelPlacement}
-                labelName='credit'
-                labelValue={credits}
-              />
-            ) : null}
-            {renderAlbum()}
-          </div>
+          <TrackMetadataList trackId={trackId} />
           {description ? (
             <UserGeneratedText tag='h3' size='s' className={styles.description}>
               {description}
