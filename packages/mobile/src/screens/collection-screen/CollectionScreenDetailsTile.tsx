@@ -189,12 +189,10 @@ export const CollectionScreenDetailsTile = ({
   trackCount: trackCountProp,
   isOwner = false,
   hideOverflow,
-  hideRepost,
-  hideFavorite,
+  hideActions,
   hasStreamAccess,
   streamConditions,
   ddexApp,
-  hideShare,
   playCount,
   hidePlayCount,
   hideFavoriteCount,
@@ -266,6 +264,7 @@ export const CollectionScreenDetailsTile = ({
     isScheduledRelease && isPrivate && releaseDate
   const shouldHideOverflow =
     hideOverflow || !isReachable || (isPrivate && !isOwner)
+  const shouldeHideActions = hideActions || (isPrivate && !isOwner)
   const isUSDCPurchaseGated = isContentUSDCPurchaseGated(streamConditions)
 
   const uids = isLineupLoading ? Array(Math.min(5, trackCount ?? 0)) : trackUids
@@ -454,10 +453,10 @@ export const CollectionScreenDetailsTile = ({
           ddexApp={ddexApp}
           hasReposted={!!hasReposted}
           hasSaved={!!hasSaved}
-          hideFavorite={hideFavorite}
+          hideFavorite={shouldeHideActions}
           hideOverflow={shouldHideOverflow}
-          hideRepost={hideRepost}
-          hideShare={hideShare}
+          hideRepost={shouldeHideActions}
+          hideShare={shouldeHideActions}
           isOwner={isOwner}
           isCollection
           collectionId={numericCollectionId}

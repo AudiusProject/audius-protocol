@@ -114,9 +114,8 @@ export const SmartCollectionScreen = (props: SmartCollectionScreenProps) => {
         hasSaved={isSaved}
         hideFavoriteCount
         hideOverflow
-        hideRepost
         hideRepostCount
-        hideShare
+        hideActions
         onPressSave={handlePressSave}
         renderImage={renderImage}
         title={playlistName}
