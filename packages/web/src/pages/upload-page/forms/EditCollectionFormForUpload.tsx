@@ -51,6 +51,7 @@ export const EditCollectionFormForUpload = (props: EditCollectionFormProps) => {
       isAlbum={isAlbum}
       initialValues={initialValues}
       onSubmit={handleSubmit}
+      isUpload
     />
   )
 }
