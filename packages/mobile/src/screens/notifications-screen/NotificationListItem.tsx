@@ -7,6 +7,7 @@ import {
   FollowNotification,
   RepostNotification,
   ChallengeRewardNotification,
+  ClaimableRewardNotification,
   RemixCreateNotification,
   UserSubscriptionNotification,
   RemixCosignNotification,
@@ -46,6 +47,8 @@ export const NotificationListItem = (props: NotificationListItemProps) => {
         return <AnnouncementNotification notification={notification} />
       case NotificationType.ChallengeReward:
         return <ChallengeRewardNotification notification={notification} />
+      case NotificationType.ClaimableReward:
+        return <ClaimableRewardNotification notification={notification} />
       case NotificationType.Favorite:
         return <FavoriteNotification notification={notification} />
       case NotificationType.Follow:

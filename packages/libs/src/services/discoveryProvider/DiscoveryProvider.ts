@@ -282,7 +282,9 @@ export class DiscoveryProvider {
   }
 
   setEndpoint(endpoint: string) {
-    this.discoveryProviderEndpoint = endpoint
+    console.log('asdf endpoint', endpoint)
+    this.discoveryProviderEndpoint =
+      'https://discoveryprovider.staging.audius.co'
   }
 
   setUnhealthyBlockDiff(updatedBlockDiff = DEFAULT_UNHEALTHY_BLOCK_DIFF) {

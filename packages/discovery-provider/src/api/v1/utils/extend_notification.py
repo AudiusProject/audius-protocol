@@ -6,6 +6,7 @@ from src.queries.get_notifications import (
     AnnouncementNotification,
     ApproveManagerNotification,
     ChallengeRewardNotification,
+    ClaimableRewardNotification,
     CosignRemixNotification,
     CreatePlaylistNotification,
     CreateTrackNotification,
@@ -342,6 +343,24 @@ def extend_challenge_reward(action: NotificationAction):
     }
 
 
+def extend_claimable_reward(action: NotificationAction):
+    data: ClaimableRewardNotification = action["data"]  # type: ignore
+    return {
+        "specifier": encode_int_id(int(action["specifier"])),
+        "type": action["type"],
+        "timestamp": (
+            datetime.timestamp(action["timestamp"])
+            if action["timestamp"]
+            else action["timestamp"]
+        ),
+        "data": {
+            "amount": to_wei_string(data["amount"]),
+            "specifier": data["specifier"],
+            "challenge_id": data["challenge_id"],
+        },
+    }
+
+
 def extend_reaction(action: NotificationAction):
     data: ReactionNotification = action["data"]  # type: ignore
     return {
@@ -661,6 +680,7 @@ notification_action_handler = {
     "supporter_rank_up": extend_supporter_rank_up,
     "supporter_dethroned": extend_supporter_dethroned,
     "challenge_reward": extend_challenge_reward,
+    "claimable_reward": extend_claimable_reward,
     "reaction": extend_reaction,
     "tastemaker": extend_tastemaker,
     "tier_change": extend_tier_change,

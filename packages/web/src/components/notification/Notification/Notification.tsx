@@ -33,6 +33,7 @@ import { TrendingUndergroundNotification } from './TrendingUndergroundNotificati
 import { USDCPurchaseBuyerNotification } from './USDCPurchaseBuyerNotification'
 import { USDCPurchaseSellerNotification } from './USDCPurchaseSellerNotification'
 import { UserSubscriptionNotification } from './UserSubscriptionNotification'
+import { ClaimableRewardNotification } from './ClaimableRewardNotification'
 
 type NotificationProps = {
   notification: Notifications
@@ -49,6 +50,10 @@ export const Notification = (props: NotificationProps) => {
       case NotificationType.ChallengeReward: {
         return <ChallengeRewardNotification notification={notification} />
       }
+      case NotificationType.ClaimableReward: {
+        return <ClaimableRewardNotification notification={notification} />
+      }
+
       case NotificationType.Favorite: {
         return <FavoriteNotification notification={notification} />
       }

@@ -26,6 +26,7 @@ export enum NotificationType {
   TrendingPlaylist = 'TrendingPlaylist',
   TrendingUnderground = 'TrendingUnderground',
   ChallengeReward = 'ChallengeReward',
+  ClaimableReward = 'ClaimableReward',
   TierChange = 'TierChange',
   Reaction = 'Reaction',
   TipReceive = 'TipReceive',
@@ -242,6 +243,13 @@ export type DiscoveryChallengeRewardNotificationAction = {
   specifier: string
   challenge_id: string
 }
+
+export type DiscoveryClaimableRewardNotificationAction = {
+  amount: string
+  specifier: string
+  challenge_id: string
+}
+
 export type DiscoveryTierChangeNotificationAction = {
   new_tier: string
   new_tier_value: number
@@ -351,6 +359,11 @@ export type DiscoveryChallengeRewardNotification = DiscoveryBaseNotification<
   'challenge_reward',
   DiscoveryChallengeRewardNotificationAction
 >
+export type DiscoveryClaimableRewardNotification = DiscoveryBaseNotification<
+  'claimable_reward',
+  DiscoveryClaimableRewardNotificationAction
+>
+
 export type DiscoveryTierChangeNotification = DiscoveryBaseNotification<
   'tier_change',
   DiscoveryTierChangeNotificationAction
@@ -430,6 +443,7 @@ export type DiscoveryNotification =
   | DiscoverySupporterDethronedNotification
   | DiscoveryReactionNotification
   | DiscoveryChallengeRewardNotification
+  | DiscoveryClaimableRewardNotification
   | DiscoveryTierChangeNotification
   | DiscoveryCreateNotification
   | DiscoveryTrendingPlaylistNotification
@@ -790,6 +804,12 @@ export type ChallengeRewardNotification = BaseNotification & {
   entityType: string
 }
 
+export type ClaimableRewardNotification = BaseNotification & {
+  type: NotificationType.ClaimableReward
+  challengeId: ChallengeRewardID
+  entityType: string
+}
+
 export type TierChangeNotification = BaseNotification & {
   type: NotificationType.TierChange
   userId: ID
@@ -992,6 +1012,7 @@ export type Notification =
   | TrendingTrackNotification
   | TrendingUndergroundNotification
   | ChallengeRewardNotification
+  | ClaimableRewardNotification
   | TierChangeNotification
   | ReactionNotification
   | TipReceiveNotification
