@@ -84,9 +84,7 @@ export const useTrackMetadata = ({
       value: musical_key,
       isHidden: !isSearchV2Enabled
     }
-  ]
+  ].filter(({ isHidden, value }) => !isHidden && !!value)
 
-  const ret = labels.filter(({ isHidden, value }) => !isHidden && !!value)
-
-  return ret
+  return labels
 }
