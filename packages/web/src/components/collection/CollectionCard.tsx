@@ -162,11 +162,11 @@ export const CollectionCard = forwardRef(
                   {formatCount(save_count)}
                 </Text>
               </Flex>
-              {isPurchase && !isOwner ? (
-                <LockedStatusPill variant='premium' locked={!access.stream} />
-              ) : null}
             </>
           )}
+          {isPurchase && !isOwner ? (
+            <LockedStatusPill variant='premium' locked={!access.stream} />
+          ) : null}
         </CardFooter>
       </Card>
     )

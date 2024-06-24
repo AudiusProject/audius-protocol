@@ -72,7 +72,7 @@ export const CollectionCard = (props: CollectionCardProps) => {
     playlist_owner_id,
     repost_count,
     save_count,
-    is_private,
+    is_private: isPrivate,
     access,
     stream_conditions,
     release_date: releaseDate,
@@ -108,7 +108,7 @@ export const CollectionCard = (props: CollectionCardProps) => {
         borderBottomLeftRadius='m'
         borderBottomRightRadius='m'
       >
-        {is_private ? (
+        {isPrivate ? (
           <Text
             variant='body'
             size='s'
@@ -135,11 +135,11 @@ export const CollectionCard = (props: CollectionCardProps) => {
                 {formatCount(save_count)}
               </Text>
             </Flex>
-            {isPurchase && !isOwner ? (
-              <LockedStatusBadge variant='purchase' locked={!access.stream} />
-            ) : null}
           </>
         )}
+        {isPurchase && !isOwner ? (
+          <LockedStatusBadge variant='purchase' locked={!access.stream} />
+        ) : null}
       </Flex>
     </Paper>
   )
