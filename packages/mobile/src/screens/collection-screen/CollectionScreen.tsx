@@ -28,7 +28,7 @@ import {
   favoritesUserListActions,
   RepostType
 } from '@audius/common/store'
-import { encodeUrlName, formatDate, removeNullable } from '@audius/common/utils'
+import { encodeUrlName, removeNullable } from '@audius/common/utils'
 import type { Nullable } from '@audius/common/utils'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -173,15 +173,6 @@ const CollectionScreenComponent = (props: CollectionScreenComponentProps) => {
 
   const currentUserId = useSelector(getUserId)
   const isOwner = currentUserId === playlist_owner_id
-  const extraDetails = useMemo(
-    () => [
-      {
-        label: 'Modified',
-        value: formatDate(updated_at || Date.now().toString())
-      }
-    ],
-    [updated_at]
-  )
 
   const isCollectionMarkedForDownload = useSelector(
     getIsCollectionMarkedForDownload(playlist_id.toString())
@@ -286,12 +277,10 @@ const CollectionScreenComponent = (props: CollectionScreenComponentProps) => {
           <>
             <CollectionScreenDetailsTile
               description={description ?? ''}
-              extraDetails={extraDetails}
               hasReposted={has_current_user_reposted}
               hasSaved={has_current_user_saved}
               isAlbum={is_album}
               collectionId={playlist_id}
-              isPrivate={is_private}
               isPublishing={_is_publishing ?? false}
               isDeleted={is_delete}
               onPressEdit={handlePressEdit}
