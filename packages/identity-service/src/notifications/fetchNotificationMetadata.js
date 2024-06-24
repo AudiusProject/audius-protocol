@@ -484,20 +484,10 @@ async function fetchNotificationMetadata(
     )
   }
 
-  // Fetch all the social handles and attach to the users - For twitter sharing
-  const socialHandles = await models.SocialHandles.findAll({
-    where: {
-      handle: users.map(({ handle }) => handle)
-    }
-  })
-  const twitterHandleMap = socialHandles.reduce(
-    (handleMapping, socialHandle) => {
-      if (socialHandle.twitterHandle)
-        handleMapping[socialHandle.handle] = socialHandle.twitterHandle
-      return handleMapping
-    },
-    {}
-  )
+  const twitterHandleMap = users.reduce((handleMapping, user) => {
+    if (user.twitter_handle) handleMapping[user.handle] = user.twitter_handle
+    return handleMapping
+  }, {})
 
   users = await Promise.all(
     users.map(async (user) => {
