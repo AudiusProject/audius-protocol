@@ -25,9 +25,22 @@ const useShowSearchResults = () => {
   const query = urlSearchParams.get('query')
   const genre = urlSearchParams.get('genre')
   const mood = urlSearchParams.get('mood')
+  const bpm = urlSearchParams.get('bpm')
+  const key = urlSearchParams.get('key')
   const isVerified = urlSearchParams.get('isVerified')
+  const hasDownloads = urlSearchParams.get('hasDownloads')
+  const isPremium = urlSearchParams.get('isPremium')
 
-  return query || genre || mood || isVerified
+  return (
+    query ||
+    genre ||
+    mood ||
+    isVerified ||
+    hasDownloads ||
+    bpm ||
+    key ||
+    isPremium
+  )
 }
 
 export const SearchPageV2 = () => {

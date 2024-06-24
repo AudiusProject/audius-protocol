@@ -1,9 +1,6 @@
 import { useCallback } from 'react'
 
-import {
-  useGatedContentAccess,
-  useIsGatedContentPlaylistAddable
-} from '@audius/common/hooks'
+import { useGatedContentAccess } from '@audius/common/hooks'
 import {
   Name,
   ShareSource,
@@ -68,7 +65,6 @@ const messages = {
   track: 'track',
   podcast: 'podcast',
   remix: 'remix',
-  hiddenTrack: 'hidden track',
   collectibleGated: 'collectible gated',
   specialAccess: 'special access',
   premiumTrack: 'premium track',
@@ -147,7 +143,6 @@ export const TrackScreenDetailsTile = ({
   const hasDownloadableAssets =
     (track as Track)?.is_downloadable ||
     ((track as Track)?._stems?.length ?? 0) > 0
-  const isPlaylistAddable = useIsGatedContentPlaylistAddable(track as Track)
 
   const { data: albumInfo } = trpc.tracks.getAlbumBacklink.useQuery(
     { trackId },
@@ -254,12 +249,9 @@ export const TrackScreenDetailsTile = ({
       genre === Genre.PODCASTS || genre === Genre.AUDIOBOOKS
     const addToAlbumAction =
       isOwner && !ddexApp ? OverflowAction.ADD_TO_ALBUM : null
-    const addToPlaylistAction = isPlaylistAddable
-      ? OverflowAction.ADD_TO_PLAYLIST
-      : null
     const overflowActions = [
       addToAlbumAction,
-      addToPlaylistAction,
+      OverflowAction.ADD_TO_PLAYLIST,
       isOwner
         ? null
         : user.does_current_user_follow

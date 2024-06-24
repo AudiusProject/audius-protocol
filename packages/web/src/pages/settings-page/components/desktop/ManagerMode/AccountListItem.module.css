@@ -1,0 +1,27 @@
+:root {
+  --profile-picture-size: var(--harmony-unit-18);
+}
+
+.profilePictureWrapper {
+  height: var(--profile-picture-size);
+  width: var(--profile-picture-size);
+  flex: 0 0 var(--profile-picture-size);
+}
+
+.profilePicture {
+  box-sizing: border-box;
+  height: var(--profile-picture-size);
+  width: var(--profile-picture-size);
+  flex: 0 0 var(--profile-picture-size);
+  border: 1px solid var(--harmony-n-100);
+  border-radius: 50%;
+
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-color: var(--default-profile-picture-background);
+}
+
+.profilePictureSkeleton {
+  border-radius: 50%;
+}

@@ -9,9 +9,9 @@ import type {
   PartialState
 } from '@react-navigation/native'
 import {
-  getStateFromPath,
   NavigationContainer as RNNavigationContainer,
-  createNavigationContainerRef
+  createNavigationContainerRef,
+  getStateFromPath
 } from '@react-navigation/native'
 import queryString from 'query-string'
 import { useSelector } from 'react-redux'
@@ -122,7 +122,10 @@ const NavigationContainer = (props: NavigationContainerProps) => {
                             Reposts: 'reposts',
                             Collectibles: 'collectibles'
                           }
-                        } as any // Nested navigator typing with own params is broken, see: https://github.com/react-navigation/react-navigation/issues/9897
+                        } as any, // Nested navigator typing with own params is broken, see: https://github.com/react-navigation/react-navigation/issues/9897
+                        SettingsScreen: {
+                          path: 'settings'
+                        }
                       }
                     },
                     trending: {
@@ -169,9 +172,6 @@ const NavigationContainer = (props: NavigationContainerProps) => {
                             Reposts: 'reposts',
                             Collectibles: 'collectibles'
                           }
-                        },
-                        SettingsScreen: {
-                          path: 'settings'
                         }
                       }
                     }
@@ -198,7 +198,11 @@ const NavigationContainer = (props: NavigationContainerProps) => {
     // TODO: This should be unit tested
     getStateFromPath: (path, options) => {
       const pathPart = (path: string) => (index: number) => {
-        return path.split('/')[index]
+        const rawResult = path.split('/')[index]
+        const queryIndex = rawResult?.indexOf('?') ?? -1
+        const trimmed =
+          queryIndex > -1 ? rawResult.slice(0, queryIndex) : rawResult
+        return trimmed
       }
 
       // Add leading slash if it is missing
@@ -274,7 +278,15 @@ const NavigationContainer = (props: NavigationContainerProps) => {
         path = queryString.stringifyUrl({ url: '/reset-password', query })
       }
 
-      if (path.match(`^/${account?.handle}(/|$)`)) {
+      const settingsPath = /^\/(settings)/
+      if (path.match(settingsPath)) {
+        const subpath = pathPart(path)(2)
+        const subpathParam = subpath != null ? `?path=${subpath}` : ''
+        const queryParamsStart = path.indexOf('?')
+        const queryParams =
+          queryParamsStart > -1 ? `&${path.slice(queryParamsStart + 1)}` : ''
+        path = `/settings${subpathParam}${queryParams}`
+      } else if (path.match(`^/${account?.handle}(/|$)`)) {
         // If the path is the current user and set path as `/profile`
         path = path.replace(`/${account?.handle}`, '/profile')
       } else {

@@ -11,6 +11,7 @@ import {
 } from '@audius/harmony-native'
 import audiusLogoHorizontal from 'app/assets/images/Horizontal-Logo-Full-Color.png'
 import { Screen, ScreenContent, ScrollView } from 'app/components/core'
+import { useShowManagerModeNotAvailable } from 'app/components/manager-mode-drawer/useShowManagerModeNotAvailable'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles } from 'app/styles'
 import { Theme } from 'app/utils/theme'
@@ -53,6 +54,8 @@ const IconProps = { height: 28, width: 28, style: { marginRight: 4 } }
 export const SettingsScreen = () => {
   const styles = useStyles()
   const navigation = useNavigation<ProfileTabScreenParamList>()
+
+  useShowManagerModeNotAvailable()
 
   const handlePressInbox = useCallback(() => {
     navigation.push('InboxSettingsScreen')

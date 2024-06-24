@@ -1,6 +1,7 @@
 import { useCallback, useEffect } from 'react'
 
-import { useRemoveManager } from '@audius/common/api'
+import { useGetCurrentWeb3User, useRemoveManager } from '@audius/common/api'
+import { useAccountSwitcher } from '@audius/common/hooks'
 import { Status } from '@audius/common/models'
 import { Button, Flex, Text } from '@audius/harmony'
 
@@ -26,6 +27,9 @@ export const RemoveManagerConfirmationContent = ({
   onCancel
 }: RemoveManagerConfirmationContentProps) => {
   const [removeManager, result] = useRemoveManager()
+  const { data: currentWeb3User } = useGetCurrentWeb3User({})
+  const managerIsCurrentWeb3User = currentWeb3User?.user_id === managerUserId
+  const { switchToWeb3User } = useAccountSwitcher()
   const { status } = result
 
   const handleDelete = useCallback(() => {
@@ -36,8 +40,9 @@ export const RemoveManagerConfirmationContent = ({
   useEffect(() => {
     if (status === Status.SUCCESS) {
       onSuccess()
+      if (managerIsCurrentWeb3User) switchToWeb3User()
     }
-  }, [status, onSuccess])
+  }, [status, managerIsCurrentWeb3User, switchToWeb3User, onSuccess])
 
   if (!managerUserId) return null
 

@@ -108,7 +108,11 @@ type GetSearchResultsArgs = {
   offset: number
   genre?: Genre
   mood?: Mood
+  bpm?: string
+  key?: string
   isVerified?: boolean
+  hasDownloads?: boolean
+  isPremium?: boolean
 }
 
 export function* getSearchResults({
@@ -118,7 +122,11 @@ export function* getSearchResults({
   offset,
   genre,
   mood,
-  isVerified
+  bpm,
+  key,
+  isVerified,
+  hasDownloads,
+  isPremium
 }: GetSearchResultsArgs) {
   yield* waitForRead()
   const getFeatureEnabled = yield* getContext('getFeatureEnabled')
@@ -129,6 +137,18 @@ export function* getSearchResults({
 
   const apiClient = yield* getContext('apiClient')
   const userId = yield* select(getUserId)
+  const bpmParts = bpm ? bpm.split('-') : [undefined, undefined]
+  const bpmMin = bpmParts[0] ? parseFloat(bpmParts[0]) : undefined
+  const bpmMax = bpmParts[1] ? parseFloat(bpmParts[1]) : bpmMin
+
+  const formatKey = (key?: string) => {
+    if (!key) return undefined
+    const keyParts = key.split(' ')
+    const pitch = keyParts[0].slice(0, 1)
+    const isFlat = keyParts[0].length > 1
+    return `${pitch}${isFlat ? ' flat' : ''} ${keyParts[1].toLowerCase()}`
+  }
+
   const results = yield* call([apiClient, 'getSearchFull'], {
     currentUserId: userId,
     query: searchText,
@@ -138,7 +158,12 @@ export function* getSearchResults({
     includePurchaseable: isUSDCEnabled,
     genre,
     mood,
-    isVerified
+    bpmMin,
+    bpmMax,
+    key: formatKey(key),
+    isVerified,
+    hasDownloads,
+    isPremium
   })
   const { tracks, albums, playlists, users } = results
 

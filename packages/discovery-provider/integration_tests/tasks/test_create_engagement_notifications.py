@@ -63,7 +63,7 @@ def test_create_challenge_claimable_notif(app):
         assert notification.user_ids == [TEST_USER_ID]
 
 
-def test_debounce_claimble_reward_notif(app):
+def test_debounce_claimable_reward_notif(app):
     with app.app_context():
         db = get_db()
 

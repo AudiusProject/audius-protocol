@@ -10,27 +10,17 @@ import { ID } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import { getCanonicalName } from '@audius/common/utils'
 import { Flex } from '@audius/harmony'
-import { Mood } from '@audius/sdk'
-import { generatePath } from 'react-router-dom'
+import { Genre, Mood } from '@audius/sdk'
 
 import { MetadataItem } from 'components/entity/MetadataItem'
 import { TextLink } from 'components/link'
 import { moodMap } from 'utils/Moods'
-import { SEARCH_PAGE } from 'utils/route'
+import { getSearchPageLocation } from 'utils/route'
 import { trpc } from 'utils/trpcClientWeb'
-
-type TrackMetadataListProps = {
-  trackId: ID
-}
 
 const renderMood = (mood: Mood) => {
   return (
-    <TextLink
-      to={{
-        pathname: generatePath(SEARCH_PAGE, { category: 'tracks' }),
-        search: new URLSearchParams({ mood }).toString()
-      }}
-    >
+    <TextLink to={getSearchPageLocation({ category: 'tracks', mood })}>
       {mood in moodMap ? moodMap[mood] : mood}
     </TextLink>
   )
@@ -40,15 +30,26 @@ const renderMoodLegacy = (mood: Mood) => {
   return mood in moodMap ? moodMap[mood] : mood
 }
 
-const renderGenre = (genre: string) => {
+const renderGenre = (genre: Genre) => {
   return (
-    <TextLink
-      to={{
-        pathname: generatePath(SEARCH_PAGE, { category: 'tracks' }),
-        search: new URLSearchParams({ genre }).toString()
-      }}
-    >
+    <TextLink to={getSearchPageLocation({ category: 'tracks', genre })}>
       {getCanonicalName(genre)}
+    </TextLink>
+  )
+}
+
+const renderBpm = (bpm: string) => {
+  return (
+    <TextLink to={getSearchPageLocation({ category: 'tracks', bpm })}>
+      {bpm}
+    </TextLink>
+  )
+}
+
+const renderMusicalKey = (key: string) => {
+  return (
+    <TextLink to={getSearchPageLocation({ category: 'tracks', key })}>
+      {key}
     </TextLink>
   )
 }
@@ -61,6 +62,13 @@ const renderAlbum = (albumInfo: AlbumInfo) => {
   )
 }
 
+type TrackMetadataListProps = {
+  trackId: ID
+}
+
+/**
+ * The additional metadata shown at the bottom of the Track Page Header
+ */
 export const TrackMetadataList = ({ trackId }: TrackMetadataListProps) => {
   const { isEnabled: isSearchV2Enabled } = useFeatureFlag(
     FeatureFlags.SEARCH_V2
@@ -77,11 +85,15 @@ export const TrackMetadataList = ({ trackId }: TrackMetadataListProps) => {
     (id: TrackMetadataType, value: string) => {
       switch (id) {
         case TrackMetadataType.GENRE:
-          return isSearchV2Enabled ? renderGenre(value) : undefined
+          return isSearchV2Enabled ? renderGenre(value as Genre) : undefined
         case TrackMetadataType.MOOD:
           return isSearchV2Enabled
             ? renderMood(value as Mood)
             : renderMoodLegacy(value as Mood)
+        case TrackMetadataType.BPM:
+          return isSearchV2Enabled ? renderBpm(value) : undefined
+        case TrackMetadataType.KEY:
+          return isSearchV2Enabled ? renderMusicalKey(value) : undefined
         default:
           return value
       }

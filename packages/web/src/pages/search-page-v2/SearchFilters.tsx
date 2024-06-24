@@ -1,4 +1,4 @@
-import { ReactElement, useState } from 'react'
+import { ReactElement, useMemo, useState } from 'react'
 
 import { GENRES, convertGenreLabelToValue } from '@audius/common/utils'
 import {
@@ -106,15 +106,24 @@ const KeyFilter = () => {
   const key = urlSearchParams.get('key')
   const updateSearchParams = useUpdateSearchParams('key')
   const [scale, setScale] = useState<'Major' | 'Minor'>('Major')
-  const keyOptions = keyArr.map((key) => ({
-    label: key,
-    value: key
-  }))
+  const keyOptions = keyArr.map((key) => {
+    const keyParts = key.split('/')
+    return {
+      label: key,
+      // If the key is an enharmonic equivalent (e.g. C# and Db), use the flat as the value
+      value: keyParts.length > 1 ? keyParts[1] : key
+    }
+  })
+
+  const label = useMemo(() => {
+    const pitch = key?.split(' ')[0]
+    return keyOptions.find((option) => option.value === pitch)?.label
+  }, [key, keyOptions])
 
   return (
     <FilterButton
       value={key}
-      label={key ?? messages.key}
+      label={label ? `${label} ${scale}` : messages.key}
       onChange={updateSearchParams}
       iconRight={IconCaretDown}
     >
@@ -153,7 +162,7 @@ const KeyFilter = () => {
                   onChange={(option) =>
                     handleChange(
                       `${option.value} ${scale}`,
-                      `${option.value} ${scale}`
+                      `${option.label} ${scale}`
                     )
                   }
                 />

@@ -1,7 +1,5 @@
 import { memo, useCallback } from 'react'
 
-import { useGetTrackById } from '@audius/common/api'
-import { useIsGatedContentPlaylistAddable } from '@audius/common/hooks'
 import {
   RepostSource,
   FavoriteSource,
@@ -68,7 +66,6 @@ const ConnectedTrackListItem = (props: ConnectedTrackListItemProps) => {
     { trackId },
     { enabled: !!trackId }
   )
-  const { data: track } = useGetTrackById({ id: trackId })
   const dispatch = useDispatch()
   const { onOpen: openPremiumContentPurchaseModal } =
     usePremiumContentPurchaseModal()
@@ -77,7 +74,6 @@ const ConnectedTrackListItem = (props: ConnectedTrackListItemProps) => {
     dispatch(setLockedContentId({ id: trackId }))
     setLockedContentVisibility(true)
   }, [dispatch, trackId, setLockedContentVisibility])
-  const isPlaylistAddable = useIsGatedContentPlaylistAddable(track)
 
   const onClickOverflow = () => {
     const overflowActions = [
@@ -97,7 +93,7 @@ const ConnectedTrackListItem = (props: ConnectedTrackListItemProps) => {
       user?.user_id === currentUserId && !ddexApp
         ? OverflowAction.ADD_TO_ALBUM
         : null,
-      isPlaylistAddable ? OverflowAction.ADD_TO_PLAYLIST : null,
+      OverflowAction.ADD_TO_PLAYLIST,
       OverflowAction.VIEW_TRACK_PAGE,
       albumInfo ? OverflowAction.VIEW_ALBUM_PAGE : null,
       OverflowAction.VIEW_ARTIST_PAGE

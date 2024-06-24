@@ -343,12 +343,16 @@ export const AudioPlayer = () => {
       let url: string
 
       // If we pre-fetched a stream url, prefer to use that
-      const trackStreamUrl = trackStreamUrls[trackId]
+      const prefetchedStreamUrl = trackStreamUrls[trackId]
       if (offlineTrackAvailable && isCollectionMarkedForDownload) {
         const audioFilePath = getLocalAudioPath(trackId)
         url = `file://${audioFilePath}`
-      } else if (trackStreamUrl && isStreamPrefetchEnabled && !noPrefetch) {
-        url = trackStreamUrl
+      } else if (
+        prefetchedStreamUrl &&
+        isStreamPrefetchEnabled &&
+        !noPrefetch
+      ) {
+        url = prefetchedStreamUrl
       } else {
         let queryParams = trackQueryParams.current[trackId]
 

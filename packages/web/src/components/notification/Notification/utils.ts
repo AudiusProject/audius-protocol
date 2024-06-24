@@ -1,3 +1,4 @@
+import { User } from '@audius/common/models'
 import { Entity, EntityType } from '@audius/common/store'
 
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
@@ -28,10 +29,9 @@ export const getRankSuffix = (rank: number) => {
   return 'th'
 }
 
-export const getTwitterHandleByUserHandle = async (userHandle: string) => {
-  const { twitterHandle } = await audiusBackendInstance.getSocialHandles(
-    userHandle
-  )
+export const getTwitterHandleByUserHandle = async (user: User) => {
+  const { twitter_handle: twitterHandle } =
+    await audiusBackendInstance.getSocialHandles(user)
   return twitterHandle || ''
 }
 

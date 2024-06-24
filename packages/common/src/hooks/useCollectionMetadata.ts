@@ -50,12 +50,7 @@ export const useCollectionMetadata = ({
   } = collection
   const numTracks = collection.playlist_contents?.track_ids?.length ?? 0
 
-  const metadataItems: {
-    id: CollectionMetadataType
-    isHidden?: boolean
-    label: string
-    value: any
-  }[] = [
+  const metadataItems = [
     {
       id: CollectionMetadataType.DURATION,
       label: 'Duration',

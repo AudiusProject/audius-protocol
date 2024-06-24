@@ -1,7 +1,9 @@
 import type { ID } from '@audius/common/models'
+import { Genre, Mood } from '@audius/sdk'
 import { push as pushRoute } from 'connected-react-router'
 import { Location } from 'history'
 import { matchPath } from 'react-router'
+import { generatePath } from 'react-router-dom'
 
 import { encodeUrlName } from './urlUtils'
 
@@ -540,4 +542,29 @@ export const pushUniqueRoute = (location: Location, route: string) => {
     return pushRoute(route)
   }
   return { type: '' }
+}
+
+export const getSearchPageLocation = ({
+  category,
+  ...searchParams
+}: {
+  category?: 'all' | 'tracks' | 'profiles' | 'albums' | 'playlists'
+  query?: string
+  genre?: Genre
+  mood?: Mood
+  bpm?: string
+  key?: string
+  isVerified?: boolean
+  isPremium?: boolean
+  hasDownloads?: boolean
+}) => {
+  const params = Object.entries(searchParams).reduce((acc, [key, val]) => {
+    acc[key] = String(val)
+    return acc
+  }, {})
+
+  return {
+    pathname: generatePath(SEARCH_PAGE, { category }),
+    search: new URLSearchParams(params).toString()
+  }
 }

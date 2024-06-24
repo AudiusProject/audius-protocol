@@ -57,7 +57,7 @@ export const GatedContentLabel = ({
     isOwner || !hasStreamAccess ? specialColor : color.icon.default
 
   return (
-    <Flex alignItems='center' gap='xs'>
+    <Flex alignItems='center' gap='xs' css={{ whiteSpace: 'nowrap' }}>
       <IconComponent size='s' fill={finalColor} />
       <Text variant='body' size='xs' css={{ color: finalColor }}>
         {message}

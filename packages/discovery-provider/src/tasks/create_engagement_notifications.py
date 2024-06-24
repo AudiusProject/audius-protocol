@@ -11,7 +11,7 @@ from src.utils.structured_logger import StructuredLogger, log_duration
 
 logger = StructuredLogger(__name__)
 BATCH_SIZE = 500
-CLAIMABLE_REWARD = "claimble_reward"
+CLAIMABLE_REWARD = "claimable_reward"
 START_DATETIME = datetime(2024, 6, 6)
 
 
@@ -66,7 +66,7 @@ def _create_engagement_notifications(session):
     )
     for user_challenge in user_challenges_cooldown_completed:
         time_threshold = user_challenge.completed_at - timedelta(hours=1)
-        # Query to check if there's already a notification within the last hour for this user
+        # Query to check if there's already a claimable reward notification for this user
         existing_notification = (
             session.query(Notification)
             .filter(
@@ -99,7 +99,7 @@ def _create_engagement_notifications(session):
             new_notifications.append(new_notification)
         else:
             logger.info(f"Debouncing notification for {user_challenge.user_id}")
-    logger.info(f"Inserting {len(new_notifications)} claimble reward notifications")
+    logger.info(f"Inserting {len(new_notifications)} claimable reward notifications")
     session.add_all(new_notifications)
     session.commit()
 

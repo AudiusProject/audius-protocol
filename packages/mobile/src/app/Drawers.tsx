@@ -27,6 +27,7 @@ import { GatedContentUploadPromptDrawer } from 'app/components/gated-content-upl
 import { InboxUnavailableDrawer } from 'app/components/inbox-unavailable-drawer/InboxUnavailableDrawer'
 import { LeavingAudiusDrawer } from 'app/components/leaving-audius-drawer'
 import { LockedContentDrawer } from 'app/components/locked-content-drawer'
+import { ManagerModeDrawer } from 'app/components/manager-mode-drawer/ManagerModeDrawer'
 import { OverflowMenuDrawer } from 'app/components/overflow-menu-drawer'
 import { PlaybackRateDrawer } from 'app/components/playback-rate-drawer'
 import { PremiumContentPurchaseDrawer } from 'app/components/premium-content-purchase-drawer'
@@ -47,12 +48,12 @@ import { TrendingFilterDrawer } from 'app/screens/trending-screen'
 
 import { useDrawerState } from '../components/drawer'
 import {
+  DeleteTrackConfirmationDrawer,
+  OfflineListeningDrawer,
   RemoveAllDownloadsDrawer,
   RemoveDownloadedCollectionDrawer,
   RemoveDownloadedFavoritesDrawer,
-  UnfavoriteDownloadedCollectionDrawer,
-  DeleteTrackConfirmationDrawer,
-  OfflineListeningDrawer
+  UnfavoriteDownloadedCollectionDrawer
 } from '../components/drawers'
 import { ShareToStoryProgressDrawer } from '../components/share-drawer/useShareToStory'
 import { VipDiscordDrawer } from '../components/vip-discord-drawer'
@@ -137,6 +138,7 @@ const nativeDrawersMap: { [DrawerName in Drawer]?: ComponentType } = {
   DeleteTrackConfirmation: DeleteTrackConfirmationDrawer,
   ReleaseNowConfirmation: ReleaseNowConfirmationDrawer,
   ShareToStoryProgress: ShareToStoryProgressDrawer,
+  ManagerMode: ManagerModeDrawer,
   RateCallToAction: RateCtaDrawer,
   RemoveAllDownloads: RemoveAllDownloadsDrawer,
   RemoveDownloadedCollection: RemoveDownloadedCollectionDrawer,
