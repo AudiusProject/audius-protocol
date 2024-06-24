@@ -1,10 +1,7 @@
 import { memo, MouseEvent, useRef } from 'react'
 
 import { useGetCurrentUserId } from '@audius/common/api'
-import {
-  useGatedContentAccess,
-  useIsGatedContentPlaylistAddable
-} from '@audius/common/hooks'
+import { useGatedContentAccess } from '@audius/common/hooks'
 import {
   ID,
   isContentUSDCPurchaseGated,
@@ -66,7 +63,6 @@ const TrackListItem = ({
   const menuRef = useRef<HTMLDivElement>(null)
   const { data: currentUserId } = useGetCurrentUserId({})
   const isOwner = track?.owner_id === currentUserId
-  const isPlaylistAddable = useIsGatedContentPlaylistAddable(track as Track)
   const isPremium = isContentUSDCPurchaseGated(track?.stream_conditions)
   const { hasStreamAccess } = useGatedContentAccess(track as Track)
 
@@ -126,8 +122,8 @@ const TrackListItem = ({
 
   const menu: Omit<TrackMenuProps, 'children'> = {
     handle: track.user.handle,
-    includeAddToPlaylist: isPlaylistAddable,
-    includeAddToAlbum: isOwner,
+    includeAddToPlaylist: true,
+    includeAddToAlbum: isOwner && !track?.ddex_app,
     includeArtistPick: false,
     includeEdit: false,
     includeFavorite: true,

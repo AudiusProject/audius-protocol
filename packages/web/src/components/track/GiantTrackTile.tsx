@@ -1,6 +1,5 @@
 import { Suspense, lazy, useCallback, useState } from 'react'
 
-import { useIsGatedContentPlaylistAddable } from '@audius/common/hooks'
 import {
   isContentUSDCPurchaseGated,
   ID,
@@ -212,7 +211,6 @@ export const GiantTrackTile = ({
   const showPreview = isUSDCPurchaseGated && (isOwner || !hasStreamAccess)
   // Play button is conditionally hidden for USDC-gated tracks when the user does not have access
   const showPlay = isUSDCPurchaseGated ? hasStreamAccess : true
-  const isPlaylistAddable = useIsGatedContentPlaylistAddable(track)
   const shouldShowScheduledRelease = dayjs(releaseDate).isAfter(dayjs())
   const renderCardTitle = (className: string) => {
     return (
@@ -436,8 +434,7 @@ export const GiantTrackTile = ({
       isUnlisted,
       includeEmbed: !(isUnlisted || isStreamGated),
       includeArtistPick: !isUnlisted,
-      includeAddToPlaylist: isPlaylistAddable,
-      includeAddToAlbum: isPlaylistAddable,
+      includeAddToAlbum: isOwner && !ddexApp,
       extraMenuItems: overflowMenuExtraItems
     }
   }

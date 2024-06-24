@@ -1,7 +1,6 @@
 import { Suspense, useCallback } from 'react'
 
 import { imageBlank as placeholderArt } from '@audius/common/assets'
-import { useIsGatedContentPlaylistAddable } from '@audius/common/hooks'
 import {
   SquareSizes,
   isContentCollectibleGated,
@@ -178,7 +177,6 @@ const TrackHeader = ({
   saveCount,
   repostCount,
   listenCount,
-  mood,
   tags,
   aiAttributedUserId,
   onPlay,
@@ -210,7 +208,6 @@ const TrackHeader = ({
     { trackId },
     { enabled: !!trackId }
   )
-  const isPlaylistAddable = useIsGatedContentPlaylistAddable(track)
   const shouldShowScheduledRelease =
     track?.release_date && dayjs(track.release_date).isAfter(dayjs())
 
@@ -237,8 +234,8 @@ const TrackHeader = ({
         : isSaved
         ? OverflowAction.UNFAVORITE
         : OverflowAction.FAVORITE,
-      isOwner ? OverflowAction.ADD_TO_ALBUM : null,
-      isPlaylistAddable ? OverflowAction.ADD_TO_PLAYLIST : null,
+      isOwner && !track?.ddex_app ? OverflowAction.ADD_TO_ALBUM : null,
+      OverflowAction.ADD_TO_PLAYLIST,
       albumInfo ? OverflowAction.VIEW_ALBUM_PAGE : null,
       isFollowing
         ? OverflowAction.UNFOLLOW_ARTIST

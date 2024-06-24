@@ -52,7 +52,7 @@ func (ss *MediorumServer) analyzeLegacyBlob(c echo.Context) error {
 		}
 		return c.JSON(200, newAnalysis)
 	}
-	if analysis.Status != JobStatusDone {
+	if analysis.Status == JobStatusError || analysis.Status == JobStatusTimeout {
 		if analysis.Error == "blob is not an audio file" {
 			return c.String(http.StatusBadRequest, "must specify a cid for an audio file")
 		}

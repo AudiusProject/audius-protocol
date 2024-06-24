@@ -46,7 +46,8 @@ export const getTrackWithFallback = (track: Track | null) => {
         '1000x1000': '',
         OVERRIDE: ''
       },
-      release_date: ''
+      release_date: '',
+      ddex_app: null
     }
   )
 }

@@ -72,37 +72,43 @@ def retrigger_audio_analysis(
             }
         )
     }
-    for endpoint in nodes:
+    for node in nodes:
         try:
             endpoint = (
-                f"{endpoint}/tracks/legacy/{track_cid}/analyze"
+                f"{node}/tracks/legacy/{track_cid}/analyze"
                 if legacy_track
-                else f"{endpoint}/uploads/{upload_id}/analyze"
+                else f"{node}/uploads/{upload_id}/analyze"
             )
             resp = requests.post(endpoint, params=params, timeout=5)
             resp.raise_for_status()
-            break
+            return
         except Exception:
             # Fallback to the next node
             continue
+    logger.warning(
+        f"repair_audio_analyses.py | failed to trigger audio analysis for track {track_id} (track_cid: {track_cid}, audio_upload_id: {upload_id}). tried {nodes}"
+    )
 
 
 def repair(session: Session, redis: Redis):
     # Query batch of tracks that are missing key or bpm and have err counts < 3 from db
     tracks = query_tracks(session)
     nodes = select_content_nodes(redis)
+    num_tracks_updated = 0
+    num_analyses_retriggered = 0
     for track in tracks:
         if not track.track_cid:
             # Only analyze streamable tracks
             continue
         legacy_track = not track.audio_upload_id
-        for endpoint in nodes:
+        success = False
+        for node in nodes:
             try:
                 # Query random content node for the audio upload id
                 endpoint = (
-                    f"${endpoint}/tracks/legacy/${track.track_cid}/analysis"
+                    f"{node}/tracks/legacy/{track.track_cid}/analysis"
                     if legacy_track
-                    else f"${endpoint}/uploads/${track.audio_upload_id}"
+                    else f"{node}/uploads/{track.audio_upload_id}"
                 )
                 resp = requests.get(endpoint, timeout=5)
                 resp.raise_for_status()
@@ -116,11 +122,19 @@ def repair(session: Session, redis: Redis):
                 "error_count" if legacy_track else "audio_analysis_error_count"
             )
             results = data.get(results_key, {})
+            if not results:
+                results = {}
             error_count = data.get(error_count_key, 0)
             key = results.get("key", None) or results.get("Key", None)
             bpm = results.get("bpm", None) or results.get("BPM", None)
 
             # Populate analysis results and err count if present
+            if (
+                key != track.musical_key
+                or bpm != track.bpm
+                or error_count != track.audio_analysis_error_count
+            ):
+                num_tracks_updated += 1
             if key:
                 track.musical_key = key
             if bpm:
@@ -130,6 +144,7 @@ def repair(session: Session, redis: Redis):
             # Failures get retried up to 3 times
             if (not key or not bpm) and error_count < 3:
                 # Trigger another audio analysis but don't bother polling for result. Will read it in next batch.
+                num_analyses_retriggered += 1
                 retrigger_audio_analysis(
                     nodes,
                     track.track_id,
@@ -139,9 +154,19 @@ def repair(session: Session, redis: Redis):
                 )
             if error_count >= 3:
                 logger.warning(
-                    f"repair_audio_analyses.py | Track ID {track.track_id} failed audio analysis >= 3 times"
+                    f"repair_audio_analyses.py | Track ID {track.track_id} (track_cid: {track.track_cid}, audio_upload_id: {track.audio_upload_id}) failed audio analysis >= 3 times"
                 )
+            success = True
             break
+
+        if not success:
+            logger.warning(
+                f"repair_audio_analyses.py | failed to query audio analysis for track {track.track_id} (track_cid: {track.track_cid}, audio_upload_id: {track.audio_upload_id}). tried {nodes}"
+            )
+
+    logger.info(
+        f"repair_audio_analyses.py | updated {num_tracks_updated} tracks, retriggered analyses for {num_analyses_retriggered} tracks. last track ID processed: {tracks[-1].track_id}"
+    )
 
 
 @celery.task(name="repair_audio_analyses", bind=True)
@@ -171,7 +196,12 @@ def repair_audio_analyses(self) -> None:
             raise e
         finally:
             if have_lock:
-                update_lock.release()
+                try:
+                    update_lock.release()
+                except Exception as e:
+                    logger.warning(
+                        f"repair_audio_analyses.py | Error releasing lock: {e}"
+                    )
     else:
         logger.warning(
             "repair_audio_analyses.py | Lock not acquired",
