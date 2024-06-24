@@ -59,9 +59,7 @@ const initialUploadState: ProgressState = {
   },
   stems: []
 }
-const getInitialProgress = (
-  upload: TrackForUpload | StemUploadWithFile | StemUploadWithFile
-) => {
+const getInitialProgress = (upload: TrackForUpload | StemUploadWithFile) => {
   const res = cloneDeep(initialUploadState)
   res.art.total =
     'artwork' in upload.metadata ? upload.metadata.artwork?.file?.size ?? 0 : 0
@@ -70,10 +68,7 @@ const getInitialProgress = (
     'stems' in upload.metadata
       ? upload.metadata.stems
           ?.filter((stem) => 'file' in stem)
-          .map(
-            // @ts-ignore we check stem.file above
-            getInitialProgress
-          ) ?? []
+          .map((stem) => getInitialProgress(stem as StemUploadWithFile)) ?? []
       : []
   return res
 }

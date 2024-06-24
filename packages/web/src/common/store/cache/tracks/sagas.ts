@@ -199,16 +199,16 @@ function* editTrackAsync(action: ReturnType<typeof trackActions.editTrack>) {
     FeatureFlags.EDIT_TRACK_REDESIGN
   )
   if (isEditTrackRedesignEnabled && track.stems) {
-    const currentStemUploads = yield* select(getCurrentUploads, track.track_id)
+    const inProgressStemUploads = yield* select(
+      getCurrentUploads,
+      track.track_id
+    )
     const existingStems = currentTrack._stems || []
 
     // upload net new stems
     const addedStems = track.stems.filter((stem) => {
       return !existingStems.find((existingStem) => {
-        return (
-          existingStem.track_id === stem.metadata.track_id &&
-          existingStem.category === stem.category
-        )
+        return existingStem.track_id === stem.metadata.track_id
       })
     })
 
@@ -230,16 +230,12 @@ function* editTrackAsync(action: ReturnType<typeof trackActions.editTrack>) {
     const removedStems = existingStems
       .filter((existingStem) => {
         return !track.stems?.find(
-          (stem) =>
-            stem.metadata.track_id === existingStem.track_id &&
-            stem.category === existingStem.category
+          (stem) => stem.metadata.track_id === existingStem.track_id
         )
       })
       .filter((existingStem) => {
-        return !currentStemUploads.find(
-          (upload) =>
-            upload.metadata.track_id === existingStem.track_id &&
-            upload.category === existingStem.category
+        return !inProgressStemUploads.find(
+          (upload) => upload.metadata.track_id === existingStem.track_id
         )
       })
 
