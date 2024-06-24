@@ -26,7 +26,7 @@ type TrackMetadataProps = {
 type TrackMetadataInfo = {
   id: TrackMetadataType
   label: string
-  value?: Nullable<string | number>
+  value: string
 }
 
 export const useTrackMetadata = ({
@@ -74,14 +74,14 @@ export const useTrackMetadata = ({
     {
       id: TrackMetadataType.BPM,
       label: 'BPM',
-      value: bpm,
+      value: Math.round(bpm ?? 0).toString(),
       isHidden: !isSearchV2Enabled
     },
     {
       id: TrackMetadataType.KEY,
       label: 'Key',
       // TODO: KJ - Might need a map for this to map to key options
-      value: musical_key,
+      value: musical_key ?? '',
       isHidden: !isSearchV2Enabled
     }
   ].filter(({ isHidden, value }) => !isHidden && !!value)

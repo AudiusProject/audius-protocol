@@ -10,7 +10,7 @@ type CollectionMetadataProps = {
 }
 
 /**
- * The additional metadata shown at the bottom of the Collection Screen Headers
+ * The additional metadata shown at the bottom of the Collection Screen Header
  */
 export const CollectionMetadataList = ({
   collectionId

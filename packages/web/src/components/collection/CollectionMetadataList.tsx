@@ -8,6 +8,9 @@ type CollectionMetadataListProps = {
   collectionId: ID
 }
 
+/**
+ * The additional metadata shown at the bottom of the Collection Page Header
+ */
 export const CollectionMetadataList = ({
   collectionId
 }: CollectionMetadataListProps) => {
