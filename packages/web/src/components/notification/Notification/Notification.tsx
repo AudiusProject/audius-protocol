@@ -9,6 +9,7 @@ import { AddTrackToPlaylistNotification } from './AddTrackToPlaylistNotification
 import { AnnouncementNotification } from './AnnouncementNotification'
 import { ApproveManagerNotification } from './ApproveManagerRequestNotification'
 import { ChallengeRewardNotification } from './ChallengeRewardNotification'
+import { ClaimableRewardNotification } from './ClaimableRewardNotification'
 import { FavoriteNotification } from './FavoriteNotification'
 import { FavoriteOfRepostNotification } from './FavoriteOfRepostNotification'
 import { FollowNotification } from './FollowNotification'
@@ -33,7 +34,6 @@ import { TrendingUndergroundNotification } from './TrendingUndergroundNotificati
 import { USDCPurchaseBuyerNotification } from './USDCPurchaseBuyerNotification'
 import { USDCPurchaseSellerNotification } from './USDCPurchaseSellerNotification'
 import { UserSubscriptionNotification } from './UserSubscriptionNotification'
-import { ClaimableRewardNotification } from './ClaimableRewardNotification'
 
 type NotificationProps = {
   notification: Notifications

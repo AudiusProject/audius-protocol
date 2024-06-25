@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 
 import { ClaimableRewardNotification as ClaimableRewardNotificationType } from '@audius/common/store'
+import { Button, Flex, IconTokenGold } from '@audius/harmony'
 import { push } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
@@ -11,7 +12,6 @@ import { NotificationFooter } from './components/NotificationFooter'
 import { NotificationHeader } from './components/NotificationHeader'
 import { NotificationTile } from './components/NotificationTile'
 import { NotificationTitle } from './components/NotificationTitle'
-import { Button, Flex, IconTokenGold } from '@audius/harmony'
 
 const messages = {
   title: 'Rewards Ready to Claim',
@@ -27,7 +27,7 @@ export const ClaimableRewardNotification = (
   props: ClaimableRewardNotificationProps
 ) => {
   const { notification } = props
-  const { timeLabel, isViewed, type } = notification
+  const { timeLabel, isViewed } = notification
   const dispatch = useDispatch()
 
   const handleClick = useCallback(() => {
