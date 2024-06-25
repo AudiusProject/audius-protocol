@@ -61,6 +61,9 @@ const setSentryUser = (sentry, user, traits) => {
   if (traits.isVerified) {
     sentry.setTag('isVerified', `${traits.isVerified}`)
   }
+  if (traits.managerUserId) {
+    sentry.setTag('isManagerMode', 'true')
+  }
   sentry.configureScope((currentScope) => {
     currentScope.setUser({
       id: `${user.user_id}`,
@@ -97,21 +100,32 @@ function* onSignedIn({ payload: { account } }) {
   const sentry = yield getContext('sentry')
   const analytics = yield getContext('analytics')
   if (account && account.handle) {
-    let solanaWallet = ''
-    try {
-      solanaWallet = (yield call(
-        getRootSolanaAccount,
-        audiusBackendInstance
-      )).publicKey.toBase58()
-    } catch (e) {
-      console.error('Failed to fetch Solana root wallet during identify()', e)
-    }
-    // Set analytics user context
+    const libs = yield call(audiusBackendInstance.getAudiusLibs)
+    const web3User = yield call([libs.Account, libs.Account.getWeb3User])
+
     const traits = {
       isVerified: account.is_verified,
-      trackCount: account.track_count,
-      solanaWallet
+      trackCount: account.track_count
     }
+
+    // If operating as a managed account, identify the manager user id
+    if (web3User && web3User.user_id !== account.user_id) {
+      traits.managerUserId = web3User.user_id
+      traits.managerHandle = web3User.handle
+    } else {
+      // If not a managed account, identify the Solana wallet associated with
+      // the hedgehog wallet
+      try {
+        const solanaWallet = (yield call(
+          getRootSolanaAccount,
+          audiusBackendInstance
+        )).publicKey.toBase58()
+        traits.solanaWallet = solanaWallet
+      } catch (e) {
+        console.error('Failed to fetch Solana root wallet during identify()', e)
+      }
+    }
+
     yield put(identify(account.handle, traits))
     setSentryUser(sentry, account, traits)
   }

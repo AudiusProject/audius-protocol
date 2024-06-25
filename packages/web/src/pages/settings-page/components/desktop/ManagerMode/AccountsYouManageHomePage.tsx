@@ -5,7 +5,7 @@ import {
   useGetManagedAccounts,
   useRemoveManager
 } from '@audius/common/api'
-import { Status, UserMetadata } from '@audius/common/models'
+import { Name, Status, UserMetadata } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
 import { Box, Divider, Flex, Text } from '@audius/harmony'
 
@@ -17,6 +17,7 @@ import { AccountListItem } from './AccountListItem'
 import { sharedMessages } from './sharedMessages'
 import { AccountsYouManagePageProps, AccountsYouManagePages } from './types'
 import { usePendingInviteValidator } from './usePendingInviteValidator'
+import { useAppContext } from '@audius/common/context'
 const { getAccountUser } = accountSelectors
 
 const messages = {
@@ -44,6 +45,9 @@ export const AccountsYouManageHomePage = ({
   const [approveManagedAccount, approveResult] = useApproveManagedAccount()
   const [rejectManagedAccount, rejectResult] = useRemoveManager()
   const { toast } = useContext(ToastContext)
+  const {
+    analytics: { track, make }
+  } = useAppContext()
 
   usePendingInviteValidator({ managedAccounts, userId })
 
@@ -57,6 +61,12 @@ export const AccountsYouManageHomePage = ({
   const handleApprove = useCallback(
     ({ grantorUser }: { grantorUser: UserMetadata }) => {
       if (currentUser) {
+        track(
+          make({
+            eventName: Name.MANAGER_MODE_ACCEPT_INVITE,
+            managedUserId: grantorUser.user_id
+          })
+        )
         approveManagedAccount({
           userId: currentUser.user_id,
           grantorUser,
@@ -75,6 +85,12 @@ export const AccountsYouManageHomePage = ({
       currentUserId: number
       grantorUser: UserMetadata
     }) => {
+      track(
+        make({
+          eventName: Name.MANAGER_MODE_REJECT_INVITE,
+          managedUserId: grantorUser.user_id
+        })
+      )
       rejectManagedAccount({
         userId: grantorUser.user_id,
         managerUserId: currentUserId

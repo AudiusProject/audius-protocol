@@ -2,11 +2,15 @@ import { useCallback } from 'react'
 
 import { useGetCurrentUserId, useGetCurrentWeb3User } from '~/api/account'
 import { useAppContext } from '~/context'
+import { Name } from '~/models/Analytics'
 import { UserMetadata } from '~/models/User'
 
 export const useAccountSwitcher = () => {
   const { localStorage } = useAppContext()
   const { data: currentWeb3User } = useGetCurrentWeb3User({})
+  const {
+    analytics: { make, track }
+  } = useAppContext()
 
   const switchAccount = useCallback(
     async (user: UserMetadata) => {
@@ -14,6 +18,12 @@ export const useAccountSwitcher = () => {
         console.error('User has no wallet address')
         return
       }
+      await track(
+        make({
+          eventName: Name.MANAGER_MODE_SWITCH_ACCOUNT,
+          managedUserId: user.user_id
+        })
+      )
 
       // Set an override if we aren't using the wallet of the "signed in" user
       if (currentWeb3User && currentWeb3User.wallet === user.wallet) {

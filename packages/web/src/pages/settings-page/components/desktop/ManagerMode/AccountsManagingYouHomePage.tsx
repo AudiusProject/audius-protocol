@@ -1,7 +1,7 @@
 import { useCallback, useContext, useEffect } from 'react'
 
 import { useGetManagers, useRemoveManager } from '@audius/common/api'
-import { Status } from '@audius/common/models'
+import { Name, Status } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
 import { Box, Button, Divider, Flex, IconPlus, Text } from '@audius/harmony'
 
@@ -12,6 +12,7 @@ import { useSelector } from 'utils/reducer'
 import { AccountListItem } from './AccountListItem'
 import { sharedMessages } from './sharedMessages'
 import { AccountsManagingYouPageProps, AccountsManagingYouPages } from './types'
+import { useAppContext } from '@audius/common/context'
 
 const { getUserId } = accountSelectors
 
@@ -29,6 +30,9 @@ export const AccountsManagingYouHomePage = (
   const { setPage } = props
   const userId = useSelector(getUserId) as number
   const { toast } = useContext(ToastContext)
+  const {
+    analytics: { track, make }
+  } = useAppContext()
 
   const [removeManager, removeResult] = useRemoveManager()
   // Always update manager list when mounting this page
@@ -49,6 +53,12 @@ export const AccountsManagingYouHomePage = (
 
   const handleCancelInvite = useCallback(
     (params: { userId: number; managerUserId: number }) => {
+      track(
+        make({
+          eventName: Name.MANAGER_MODE_CANCEL_INVITE,
+          managerId: params.managerUserId
+        })
+      )
       removeManager(params)
     },
     [removeManager]

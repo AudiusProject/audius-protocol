@@ -135,6 +135,8 @@ export enum Name {
   AUTHORIZED_APP_REMOVE_SUCCESS = 'Authorized Apps: Remove app success',
   AUTHORIZED_APP_REMOVE_ERROR = 'Authorized Apps: Remove app error',
 
+  // Manager Mode
+
   // Visualizer
   VISUALIZER_OPEN = 'Visualizer: Open',
   VISUALIZER_CLOSE = 'Visualizer: Close',
@@ -509,7 +511,15 @@ export enum Name {
   EXPORT_PRIVATE_KEY_PAGE_VIEWED = 'Export Private Key: Page Viewed',
   EXPORT_PRIVATE_KEY_MODAL_OPENED = 'Export Private Key: Modal Opened',
   EXPORT_PRIVATE_KEY_PUBLIC_ADDRESS_COPIED = 'Export Private Key: Public Address Copied',
-  EXPORT_PRIVATE_KEY_PRIVATE_KEY_COPIED = 'Export Private Key: Private Key Copied'
+  EXPORT_PRIVATE_KEY_PRIVATE_KEY_COPIED = 'Export Private Key: Private Key Copied',
+
+  // Manager Mode
+  MANAGER_MODE_SWITCH_ACCOUNT = 'Manager Mode: Switch Account',
+  MANAGER_MODE_INVITE_MANAGER = 'Manager Mode: Invite Manager',
+  MANAGER_MODE_ACCEPT_INVITE = 'Manager Mode: Accept Invite',
+  MANAGER_MODE_CANCEL_INVITE = 'Manager Mode: Cancel Invite',
+  MANAGER_MODE_REJECT_INVITE = 'Manager Mode: Reject Invite',
+  MANAGER_MODE_REMOVE_MANAGER = 'Manager Mode: Remove Manager'
 }
 
 type PageView = {
@@ -2396,6 +2406,36 @@ type ExportPrivateKeyPrivateKeyCopied = {
   userId: ID
 }
 
+type ManagerModeSwitchAccount = {
+  eventName: Name.MANAGER_MODE_SWITCH_ACCOUNT
+  managedUserId: ID
+}
+
+type ManagerModeInviteManager = {
+  eventName: Name.MANAGER_MODE_INVITE_MANAGER
+  managerId: ID
+}
+
+type ManagerModeAcceptInvite = {
+  eventName: Name.MANAGER_MODE_ACCEPT_INVITE
+  managedUserId: ID
+}
+
+type ManagerModeCancelInvite = {
+  eventName: Name.MANAGER_MODE_CANCEL_INVITE
+  managerId: ID
+}
+
+type ManagerModeRejectInvite = {
+  eventName: Name.MANAGER_MODE_REJECT_INVITE
+  managedUserId: ID
+}
+
+type ManagerModeRemoveManager = {
+  eventName: Name.MANAGER_MODE_REMOVE_MANAGER
+  managerId: ID
+}
+
 export type BaseAnalyticsEvent = { type: typeof ANALYTICS_TRACK_EVENT }
 
 export type AllTrackingEvents =
@@ -2710,3 +2750,9 @@ export type AllTrackingEvents =
   | ExportPrivateKeyModalOpened
   | ExportPrivateKeyPublicAddressCopied
   | ExportPrivateKeyPrivateKeyCopied
+  | ManagerModeSwitchAccount
+  | ManagerModeInviteManager
+  | ManagerModeAcceptInvite
+  | ManagerModeCancelInvite
+  | ManagerModeRejectInvite
+  | ManagerModeRemoveManager
