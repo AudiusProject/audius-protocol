@@ -6,7 +6,7 @@ import {
   useCoinflowOnrampModal
 } from '@audius/common/store'
 import { CoinflowPurchase } from '@coinflowlabs/react-native'
-import { Transaction } from '@solana/web3.js'
+import { VersionedTransaction } from '@solana/web3.js'
 import { TouchableOpacity, View } from 'react-native'
 import { useDispatch } from 'react-redux'
 
@@ -70,21 +70,17 @@ export const CoinflowOnrampDrawer = () => {
     onClose
   } = useCoinflowOnrampModal()
   const dispatch = useDispatch()
-  const [transaction, setTransaction] = useState<Transaction | undefined>(
-    undefined
-  )
-
-  const deviceId = getCoinflowDeviceId()
-
-  const adapter = useCoinflowAdapter()
+  const [transaction, setTransaction] = useState<
+    VersionedTransaction | undefined
+  >(undefined)
 
   useEffect(() => {
     if (serializedTransaction) {
       try {
-        const deserialized = Transaction.from(
+        const tx = VersionedTransaction.deserialize(
           Buffer.from(serializedTransaction, 'base64')
         )
-        setTransaction(deserialized)
+        setTransaction(tx)
       } catch (e) {
         console.error(e)
       }
@@ -101,6 +97,11 @@ export const CoinflowOnrampDrawer = () => {
     onClose()
   }, [dispatch, onClose])
 
+  const adapter = useCoinflowAdapter({
+    onSuccess: handleSuccess,
+    onFailure: handleClose
+  })
+  const deviceId = getCoinflowDeviceId()
   const showContent = isOpen && adapter
 
   return (

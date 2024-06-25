@@ -4,7 +4,10 @@ from typing import Any, Dict, Optional
 
 from src.api.v1.helpers import extend_playlist, extend_track, extend_user
 from src.queries.get_feed_es import fetch_followed_saves_and_reposts, item_key
-from src.queries.query_helpers import _populate_gated_content_metadata
+from src.queries.query_helpers import (
+    _populate_gated_content_metadata,
+    electronic_sub_genres,
+)
 from src.utils.db_session import get_db_read_replica
 from src.utils.elasticdsl import (
     ES_PLAYLISTS,
@@ -15,8 +18,61 @@ from src.utils.elasticdsl import (
     populate_track_or_playlist_metadata_es,
     populate_user_metadata_es,
 )
+from src.utils.hardcoded_data import genre_allowlist
+from src.utils.hardcoded_data import moods as mood_allowlist
 
 logger = logging.getLogger(__name__)
+
+lowercase_to_capitalized_genre = {genre.lower(): genre for genre in genre_allowlist}
+
+
+def get_capitalized_genre(genre):
+    return lowercase_to_capitalized_genre.get(genre.lower())
+
+
+def format_genres(genres: list[str] | None):
+    if not genres:
+        return None
+
+    capitalized_genres = [get_capitalized_genre(genre) for genre in genres]
+
+    if "Electronic" in capitalized_genres:
+        capitalized_genres += electronic_sub_genres
+
+    return list(set(capitalized_genres))
+
+
+lowercase_to_capitalized_mood = {mood.lower(): mood for mood in mood_allowlist}
+
+
+def get_capitalized_mood(mood):
+    return lowercase_to_capitalized_mood.get(mood.lower())
+
+
+def sharp_to_flat(key):
+    sharp_to_flat_mapping = {
+        "C sharp": "D flat",
+        "D sharp": "E flat",
+        "F sharp": "G flat",
+        "G sharp": "A flat",
+        "A sharp": "B flat",
+    }
+
+    # Split the key into root and type (major/minor)
+    key_parts = key.split()
+
+    if len(key_parts) == 2:
+        key_root = key_parts[0]
+        key_type = key_parts[1]
+    if len(key_parts) == 3:
+        key_root = key_parts[0] + " " + key_parts[1]
+        key_type = key_parts[2]
+
+    # Convert sharp keys to flat keys
+    if key_root in sharp_to_flat_mapping:
+        key_root = sharp_to_flat_mapping[key_root]
+
+    return key_root + " " + key_type
 
 
 def search_es_full(args: dict):
@@ -24,7 +80,7 @@ def search_es_full(args: dict):
     if not esclient:
         raise Exception("esclient is None")
 
-    search_str = args.get("query", "").strip()
+    search_str = (args.get("query", "") or "").strip()
     current_user_id = args.get("current_user_id")
     limit = args.get("limit", 10)
     offset = args.get("offset", 0)
@@ -32,6 +88,15 @@ def search_es_full(args: dict):
     only_downloadable = args.get("only_downloadable")
     is_auto_complete = args.get("is_auto_complete")
     include_purchaseable = args.get("include_purchaseable", False)
+    genres = format_genres(args.get("genres", []))
+    moods = args.get("moods", [])
+    bpm_min = args.get("bpm_min")
+    bpm_max = args.get("bpm_max")
+    keys = args.get("keys", [])
+    only_verified = args.get("only_verified", False)
+    only_with_downloads = args.get("only_with_downloads", False)
+    only_purchaseable = args.get("only_purchaseable", False)
+    sort_method = args.get("sort_method", "relevant")
     do_tracks = search_type == "all" or search_type == "tracks"
     do_users = search_type == "all" or search_type == "users"
     do_playlists = search_type == "all" or search_type == "playlists"
@@ -55,6 +120,14 @@ def search_es_full(args: dict):
                     must_saved=False,
                     only_downloadable=only_downloadable,
                     include_purchaseable=include_purchaseable,
+                    genres=genres,
+                    moods=moods,
+                    bpm_min=bpm_min,
+                    bpm_max=bpm_max,
+                    keys=keys,
+                    only_with_downloads=only_with_downloads,
+                    only_purchaseable=only_purchaseable,
+                    sort_method=sort_method,
                 ),
             ]
         )
@@ -64,7 +137,14 @@ def search_es_full(args: dict):
         mdsl.extend(
             [
                 {"index": ES_USERS},
-                user_dsl(search_str, current_user_id),
+                user_dsl(
+                    search_str=search_str,
+                    current_user_id=current_user_id,
+                    must_saved=False,
+                    only_verified=only_verified,
+                    genres=genres,
+                    sort_method=sort_method,
+                ),
             ]
         )
 
@@ -73,7 +153,13 @@ def search_es_full(args: dict):
         mdsl.extend(
             [
                 {"index": ES_PLAYLISTS},
-                playlist_dsl(search_str, current_user_id),
+                playlist_dsl(
+                    search_str=search_str,
+                    current_user_id=current_user_id,
+                    genres=genres,
+                    moods=moods,
+                    sort_method=sort_method,
+                ),
             ]
         )
 
@@ -82,7 +168,15 @@ def search_es_full(args: dict):
         mdsl.extend(
             [
                 {"index": ES_PLAYLISTS},
-                album_dsl(search_str, current_user_id),
+                album_dsl(
+                    search_str=search_str,
+                    current_user_id=current_user_id,
+                    genres=genres,
+                    moods=moods,
+                    only_with_downloads=only_with_downloads,
+                    only_purchaseable=only_purchaseable,
+                    sort_method=sort_method,
+                ),
             ]
         )
 
@@ -342,9 +436,17 @@ def default_function_score(dsl, ranking_field, factor=0.1):
 def track_dsl(
     search_str,
     current_user_id,
+    bpm_min,
+    bpm_max,
     must_saved=False,
     only_downloadable=False,
+    only_purchaseable=False,
     include_purchaseable=False,
+    genres=[],
+    moods=[],
+    keys=[],
+    only_with_downloads=False,
+    sort_method="relevant",
 ):
     dsl = {
         "must": [
@@ -412,19 +514,87 @@ def track_dsl(
             *base_match(search_str, operator="and", boost=len(search_str)),
             {"term": {"user.is_verified": {"value": True}}},
         ],
+        "filter": [],
     }
 
+    if genres:
+        dsl["filter"].append({"terms": {"genre": genres}})
+
+    if moods:
+        capitalized_moods = list(
+            filter(
+                None, [get_capitalized_mood(mood) for mood in moods if mood is not None]
+            )
+        )
+
+        if capitalized_moods:
+            dsl["filter"].append({"terms": {"mood": capitalized_moods}})
+
+    if bpm_min:
+        dsl["filter"].append({"range": {"bpm": {"gte": bpm_min}}})
+
+    if bpm_max:
+        dsl["filter"].append({"range": {"bpm": {"lte": bpm_max}}})
+
+    if keys:
+        mapped_keys = list(
+            filter(None, [sharp_to_flat(key) for key in keys if key is not None])
+        )
+
+        if mapped_keys:
+            dsl["filter"].append({"terms": {"musical_key": mapped_keys}})
+
+    # Only include the track if it is downloadable
     if only_downloadable:
         dsl["must"].append({"term": {"downloadable": {"value": True}}})
+
+    # Only include the track if it is downloadable OR has stems
+    if only_with_downloads:
+        dsl["must"].append(
+            {
+                "bool": {
+                    "should": [
+                        {"term": {"downloadable": {"value": True}}},
+                        {"term": {"has_stems": {"value": True}}},
+                    ]
+                }
+            }
+        )
+
+    # Only include the track if it is purchaseable or has purchaseable stems
+    if only_purchaseable:
+        dsl["must"].append(
+            {
+                "bool": {
+                    "should": [
+                        {"term": {"purchaseable": {"value": True}}},
+                        {"term": {"purchaseable_download": {"value": True}}},
+                    ]
+                }
+            }
+        )
 
     if not include_purchaseable:
         dsl["must_not"].append({"term": {"purchaseable": {"value": True}}})
 
     personalize_dsl(dsl, current_user_id, must_saved)
-    return default_function_score(dsl, "repost_count")
+
+    query = default_function_score(dsl, "repost_count")
+
+    if sort_method == "recent":
+        query["sort"] = [{"updated_at": {"order": "desc"}}]
+
+    return query
 
 
-def user_dsl(search_str, current_user_id, must_saved=False):
+def user_dsl(
+    search_str,
+    current_user_id,
+    only_verified,
+    must_saved=False,
+    genres=[],
+    sort_method="relevant",
+):
     # must_search_str = search_str + " " + search_str.replace(" ", "")
     dsl = {
         "must": [
@@ -529,13 +699,15 @@ def user_dsl(search_str, current_user_id, must_saved=False):
     if current_user_id and must_saved:
         dsl["must"].append(be_followed(current_user_id))
 
+    if only_verified:
+        dsl["must"].append({"term": {"is_verified": {"value": True}}})
+
     if current_user_id:
         dsl["should"].append(be_followed(current_user_id))
 
-    return {
+    query = {
         "query": {
             "function_score": {
-                "query": {"bool": dsl},
                 "functions": [
                     {
                         "filter": {"term": {"is_verified": True}},
@@ -559,9 +731,53 @@ def user_dsl(search_str, current_user_id, must_saved=False):
         }
     }
 
+    if genres:
+        # At least one track genre must match
+        dsl["must"].append({"terms": {"tracks.genre": genres}})
+        # Logarithmically boost profiles with multiple tracks matching genre
+        query["query"]["function_score"]["functions"].append(
+            {
+                "script_score": {
+                    "script": {
+                        "source": """
+                            double matchedTracks = 0;
+                            for (track in params['_source'].tracks) {
+                                if (params.genres.contains(track.genre)) {
+                                    matchedTracks++;
+                                }
+                            }
+                            return Math.log(1 + matchedTracks) * params.boost;
+                        """,
+                        "params": {
+                            "genres": genres,
+                            "boost": 2,
+                        },
+                    }
+                },
+            }
+        )
 
-def base_playlist_dsl(search_str, is_album):
-    return {
+    # Set the dsl on the query object
+    query["query"]["function_score"]["query"] = {"bool": dsl}
+
+    if sort_method == "recent":
+        query["sort"] = [{"created_at": {"order": "desc"}}]
+
+    return query
+
+
+def base_playlist_dsl(
+    search_str,
+    is_album,
+    genres,
+    moods,
+    only_with_downloads,
+    only_purchaseable,
+    current_user_id,
+    must_saved=False,
+    sort_method="relevant",
+):
+    dsl = {
         "must": [
             {
                 "bool": {
@@ -625,17 +841,150 @@ def base_playlist_dsl(search_str, is_album):
         ],
     }
 
+    query = {
+        "query": {
+            "function_score": {
+                "functions": [
+                    {
+                        "field_value_factor": {
+                            "field": "repost_count",
+                            "factor": 1000,
+                            "modifier": "ln2p",
+                        },
+                    }
+                ],
+                "boost_mode": "multiply",
+            }
+        }
+    }
 
-def playlist_dsl(search_str, current_user_id, must_saved=False):
-    dsl = base_playlist_dsl(search_str, False)
+    if genres:
+        # At least one track genre must match
+        dsl["must"].append({"terms": {"tracks.genre": genres}})
+        # Logarithmically boost profiles with multiple tracks matching genre
+        query["query"]["function_score"]["functions"].append(
+            {
+                "script_score": {
+                    "script": {
+                        "source": """
+                            double matchedTracks = 0;
+                            for (track in params['_source'].tracks) {
+                                if (params.genres.contains(track.genre)) {
+                                    matchedTracks++;
+                                }
+                            }
+                            return Math.log(1 + matchedTracks) * params.boost;
+                        """,
+                        "params": {
+                            "genres": genres,
+                            "boost": 2,
+                        },
+                    }
+                },
+            }
+        )
+
+    if only_with_downloads:
+        dsl["must"].append(
+            {
+                "bool": {
+                    "should": [
+                        {"term": {"tracks.downloadable": {"value": True}}},
+                        {"term": {"tracks.has_stems": {"value": True}}},
+                    ]
+                }
+            }
+        )
+
+    if only_purchaseable:
+        dsl["must"].append({"term": {"purchaseable": {"value": True}}})
+
+    if moods:
+        capitalized_moods = list(
+            filter(
+                None,
+                [get_capitalized_mood(mood) for mood in moods if mood is not None],
+            )
+        )
+        if capitalized_moods:
+            # At least one track moods must match
+            dsl["must"].append({"terms": {"tracks.mood": capitalized_moods}})
+            # Logarithmically boost profiles with multiple tracks matching mood
+            query["query"]["function_score"]["functions"].append(
+                {
+                    "script_score": {
+                        "script": {
+                            "source": """
+                                double matchedTracks = 0;
+                                for (track in params['_source'].tracks) {
+                                    if (params.moods.contains(track.mood)) {
+                                        matchedTracks++;
+                                    }
+                                }
+                                return Math.log(1 + matchedTracks) * params.boost;
+                            """,
+                            "params": {
+                                "moods": capitalized_moods,
+                                "boost": 2,
+                            },
+                        }
+                    },
+                }
+            )
+
     personalize_dsl(dsl, current_user_id, must_saved)
-    return default_function_score(dsl, "repost_count", factor=1000)
+
+    # Set the dsl on the query object
+    query["query"]["function_score"]["query"] = {"bool": dsl}
+
+    if sort_method == "recent":
+        query["sort"] = [{"updated_at": {"order": "desc"}}]
+
+    return query
 
 
-def album_dsl(search_str, current_user_id, must_saved=False):
-    dsl = base_playlist_dsl(search_str, True)
-    personalize_dsl(dsl, current_user_id, must_saved)
-    return default_function_score(dsl, "repost_count", factor=1000)
+def playlist_dsl(
+    search_str,
+    current_user_id,
+    must_saved=False,
+    genres=[],
+    moods=[],
+    sort_method="relevant",
+):
+    return base_playlist_dsl(
+        search_str,
+        False,
+        genres,
+        moods,
+        False,
+        False,
+        current_user_id,
+        must_saved,
+        sort_method,
+    )
+
+
+def album_dsl(
+    search_str,
+    current_user_id,
+    only_with_downloads,
+    only_purchaseable,
+    must_saved=False,
+    genres=[],
+    moods=[],
+    sort_method="relevant",
+):
+    return base_playlist_dsl(
+        search_str,
+        True,
+        genres,
+        moods,
+        only_with_downloads,
+        only_purchaseable,
+        current_user_id,
+        must_saved,
+        sort_method,
+    )
 
 
 def reorder_users(users):

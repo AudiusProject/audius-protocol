@@ -4,7 +4,6 @@ import { useDispatch, useSelector } from 'react-redux'
 import { createSelector } from 'reselect'
 
 import { Button } from '@audius/harmony-native'
-import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'
 import { setVisibility } from 'app/store/drawers/slice'
 import { getOfflineCollectionsStatus } from 'app/store/offline-downloads/selectors'
 import { makeStyles } from 'app/styles'
@@ -33,7 +32,6 @@ const getIsAnyCollectionDownloaded = createSelector(
 )
 
 export const RemoveAllDownloadsRow = () => {
-  const isOfflineDownloadEnabled = useIsOfflineModeEnabled()
   const dispatch = useDispatch()
   const styles = useStyles()
   const isAnyCollectionDownloaded = useSelector(getIsAnyCollectionDownloaded)
@@ -47,7 +45,6 @@ export const RemoveAllDownloadsRow = () => {
     )
   }, [dispatch])
 
-  if (!isOfflineDownloadEnabled) return null
   if (!isAnyCollectionDownloaded) return null
 
   return (

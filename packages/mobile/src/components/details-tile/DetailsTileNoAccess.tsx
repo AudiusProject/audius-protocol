@@ -200,9 +200,6 @@ export const DetailsTileNoAccess = ({
   const gatedTrackStatus = gatedTrackStatusMap[trackId] ?? null
   const { nftCollection, collectionLink, followee, tippedUser } =
     useStreamConditionsEntity(streamConditions)
-  const { isEnabled: isIosGatedContentEnabled } = useFeatureFlag(
-    FeatureFlags.IOS_GATED_CONTENT_ENABLED
-  )
   const { isEnabled: isUsdcPurchasesEnabled } = useFeatureFlag(
     FeatureFlags.USDC_PURCHASES
   )
@@ -356,11 +353,9 @@ export const DetailsTileNoAccess = ({
               {messages.lockedUSDCPurchase}
             </Text>
           </View>
-          {isIosGatedContentEnabled && (
-            <Button size='large' onPress={handlePurchasePress} fullWidth>
-              {messages.buy(formatPrice(streamConditions.usdc_purchase.price))}
-            </Button>
-          )}
+          <Button size='large' onPress={handlePurchasePress} fullWidth>
+            {messages.buy(formatPrice(streamConditions.usdc_purchase.price))}
+          </Button>
         </>
       )
     }
@@ -385,7 +380,6 @@ export const DetailsTileNoAccess = ({
     handleFollowArtist,
     tippedUser,
     handleSendTip,
-    isIosGatedContentEnabled,
     handlePurchasePress
   ])
 

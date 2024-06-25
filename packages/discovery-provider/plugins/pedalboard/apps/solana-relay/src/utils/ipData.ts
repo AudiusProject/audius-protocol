@@ -49,7 +49,7 @@ export const getRequestIpData = async (
 ): Promise<LocationData> => {
   try {
     const ip = getIP(req)
-    return getIpData(logger, ip)
+    return await getIpData(logger, ip)
   } catch (e) {
     logger.error({ e }, 'error requesting ip data')
     return null

@@ -1,7 +1,9 @@
 import type { ID } from '@audius/common/models'
+import { Genre, Mood } from '@audius/sdk'
 import { push as pushRoute } from 'connected-react-router'
 import { Location } from 'history'
 import { matchPath } from 'react-router'
+import { generatePath } from 'react-router-dom'
 
 import { encodeUrlName } from './urlUtils'
 
@@ -125,8 +127,8 @@ export const SIGN_UP_COMPLETED_REDIRECT = `/signup/${SignUpPath.completedRedirec
 
 // Param routes.
 export const NOTIFICATION_USERS_PAGE = '/notification/:notificationId/users'
-export const SEARCH_CATEGORY_PAGE = '/search/:query/:category'
-export const SEARCH_PAGE = '/search/:query?'
+export const SEARCH_CATEGORY_PAGE_LEGACY = '/search/:query/:category'
+export const SEARCH_PAGE = '/search/:category?'
 export const SEARCH_BASE_ROUTE = '/search'
 export const PLAYLIST_PAGE = '/:handle/playlist/:playlistName'
 export const PLAYLIST_BY_PERMALINK_PAGE = '/:handle/playlist/:slug'
@@ -254,7 +256,6 @@ export const orderedRoutes = [
   TRENDING_PAGE,
   EXPLORE_PAGE,
   EMPTY_PAGE,
-  SEARCH_CATEGORY_PAGE,
   SEARCH_PAGE,
   UPLOAD_ALBUM_PAGE,
   UPLOAD_PLAYLIST_PAGE,
@@ -272,6 +273,9 @@ export const orderedRoutes = [
   NOTIFICATION_SETTINGS_PAGE,
   ABOUT_SETTINGS_PAGE,
   PRIVATE_KEY_EXPORTER_SETTINGS_PAGE,
+  ACCOUNTS_MANAGING_YOU_SETTINGS_PAGE,
+  ACCOUNTS_YOU_MANAGE_SETTINGS_PAGE,
+  AUTHORIZED_APPS_SETTINGS_PAGE,
   PURCHASES_PAGE,
   SALES_PAGE,
   WITHDRAWALS_PAGE,
@@ -337,6 +341,9 @@ export const staticRoutes = new Set([
   NOTIFICATION_SETTINGS_PAGE,
   ABOUT_SETTINGS_PAGE,
   PRIVATE_KEY_EXPORTER_SETTINGS_PAGE,
+  ACCOUNTS_MANAGING_YOU_SETTINGS_PAGE,
+  ACCOUNTS_YOU_MANAGE_SETTINGS_PAGE,
+  AUTHORIZED_APPS_SETTINGS_PAGE,
   TRENDING_GENRES,
   PURCHASES_PAGE,
   SALES_PAGE,
@@ -535,4 +542,29 @@ export const pushUniqueRoute = (location: Location, route: string) => {
     return pushRoute(route)
   }
   return { type: '' }
+}
+
+export const getSearchPageLocation = ({
+  category,
+  ...searchParams
+}: {
+  category?: 'all' | 'tracks' | 'profiles' | 'albums' | 'playlists'
+  query?: string
+  genre?: Genre
+  mood?: Mood
+  bpm?: string
+  key?: string
+  isVerified?: boolean
+  isPremium?: boolean
+  hasDownloads?: boolean
+}) => {
+  const params = Object.entries(searchParams).reduce((acc, [key, val]) => {
+    acc[key] = String(val)
+    return acc
+  }, {})
+
+  return {
+    pathname: generatePath(SEARCH_PAGE, { category }),
+    search: new URLSearchParams(params).toString()
+  }
 }

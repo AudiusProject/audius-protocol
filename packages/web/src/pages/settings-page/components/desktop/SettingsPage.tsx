@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
+import { useIsManagedAccount } from '@audius/common/hooks'
 import { ID, Name, OS, ProfilePictureSizes, Theme } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import {
@@ -189,6 +190,7 @@ export const SettingsPage = (props: SettingsPageProps) => {
     updateEmailFrequency,
     emailFrequency
   } = props
+  const isManagedAccount = useIsManagedAccount()
 
   const [isSignOutModalVisible, setIsSignOutModalVisible] = useState(false)
   const [
@@ -327,34 +329,38 @@ export const SettingsPage = (props: SettingsPageProps) => {
       header={header}
     >
       <div className={styles.settings}>
-        <SettingsCard
-          icon={<IconAppearance />}
-          title={messages.appearanceCardTitle}
-          description={messages.appearanceCardDescription}
-        >
-          <SegmentedControl
-            fullWidth
-            label={messages.appearanceCardTitle}
-            options={appearanceOptions}
-            selected={theme || Theme.DEFAULT}
-            onSelectOption={(option) => toggleTheme(option)}
-            key={`tab-slider-${appearanceOptions.length}`}
-          />
-        </SettingsCard>
-        {isPayoutWalletEnabled ? <PayoutWalletSettingsCard /> : null}
-        <SettingsCard
-          icon={<IconMessage />}
-          title={messages.inboxSettingsCardTitle}
-          description={messages.inboxSettingsCardDescription}
-        >
-          <Button
-            variant='secondary'
-            onClick={openInboxSettingsModal}
-            fullWidth
+        {!isManagedAccount ? (
+          <SettingsCard
+            icon={<IconAppearance />}
+            title={messages.appearanceCardTitle}
+            description={messages.appearanceCardDescription}
           >
-            {messages.inboxSettingsButtonText}
-          </Button>
-        </SettingsCard>
+            <SegmentedControl
+              fullWidth
+              label={messages.appearanceCardTitle}
+              options={appearanceOptions}
+              selected={theme || Theme.DEFAULT}
+              onSelectOption={(option) => toggleTheme(option)}
+              key={`tab-slider-${appearanceOptions.length}`}
+            />
+          </SettingsCard>
+        ) : null}
+        {isPayoutWalletEnabled ? <PayoutWalletSettingsCard /> : null}
+        {!isManagedAccount ? (
+          <SettingsCard
+            icon={<IconMessage />}
+            title={messages.inboxSettingsCardTitle}
+            description={messages.inboxSettingsCardDescription}
+          >
+            <Button
+              variant='secondary'
+              onClick={openInboxSettingsModal}
+              fullWidth
+            >
+              {messages.inboxSettingsButtonText}
+            </Button>
+          </SettingsCard>
+        ) : null}
         <SettingsCard
           icon={<IconNotification />}
           title={messages.notificationsCardTitle}
@@ -368,45 +374,55 @@ export const SettingsPage = (props: SettingsPageProps) => {
             {messages.notificationsButtonText}
           </Button>
         </SettingsCard>
-        <SettingsCard
-          icon={<IconMail />}
-          title={messages.accountRecoveryCardTitle}
-          description={messages.accountRecoveryCardDescription}
-        >
-          <Toast
-            tooltipClassName={styles.cardToast}
-            text={emailToastText}
-            open={isEmailToastVisible}
-            placement={ComponentPlacement.BOTTOM}
-            fillParent={false}
+        {!isManagedAccount ? (
+          <SettingsCard
+            icon={<IconMail />}
+            title={messages.accountRecoveryCardTitle}
+            description={messages.accountRecoveryCardDescription}
           >
-            <Button onClick={showEmailToast} variant='secondary' fullWidth>
-              {messages.accountRecoveryButtonText}
+            <Toast
+              tooltipClassName={styles.cardToast}
+              text={emailToastText}
+              open={isEmailToastVisible}
+              placement={ComponentPlacement.BOTTOM}
+              fillParent={false}
+            >
+              <Button onClick={showEmailToast} variant='secondary' fullWidth>
+                {messages.accountRecoveryButtonText}
+              </Button>
+            </Toast>
+          </SettingsCard>
+        ) : null}
+        {!isManagedAccount ? (
+          <SettingsCard
+            icon={<IconEmailAddress />}
+            title={messages.changeEmailCardTitle}
+            description={messages.changeEmailCardDescription}
+          >
+            <Button
+              onClick={openChangeEmailModal}
+              variant='secondary'
+              fullWidth
+            >
+              {messages.changeEmailButtonText}
             </Button>
-          </Toast>
-        </SettingsCard>
-        <SettingsCard
-          icon={<IconEmailAddress />}
-          title={messages.changeEmailCardTitle}
-          description={messages.changeEmailCardDescription}
-        >
-          <Button onClick={openChangeEmailModal} variant='secondary' fullWidth>
-            {messages.changeEmailButtonText}
-          </Button>
-        </SettingsCard>
-        <SettingsCard
-          icon={<IconKey />}
-          title={messages.changePasswordCardTitle}
-          description={messages.changePasswordCardDescription}
-        >
-          <Button
-            onClick={openChangePasswordModal}
-            variant='secondary'
-            fullWidth
+          </SettingsCard>
+        ) : null}
+        {!isManagedAccount ? (
+          <SettingsCard
+            icon={<IconKey />}
+            title={messages.changePasswordCardTitle}
+            description={messages.changePasswordCardDescription}
           >
-            {messages.changePasswordButtonText}
-          </Button>
-        </SettingsCard>
+            <Button
+              onClick={openChangePasswordModal}
+              variant='secondary'
+              fullWidth
+            >
+              {messages.changePasswordButtonText}
+            </Button>
+          </SettingsCard>
+        ) : null}
         {isManagerModeEnabled ? (
           <>
             <AccountsManagingYouSettingsCard />
@@ -499,13 +515,15 @@ export const SettingsPage = (props: SettingsPageProps) => {
             {messages.privacy}
           </Link>
         </span>
-        <Link
-          className={cn(styles.link, styles.showPrivateKey)}
-          to={PRIVATE_KEY_EXPORTER_SETTINGS_PAGE}
-          onClick={recordExportPrivateKeyLinkClicked}
-        >
-          {messages.showPrivateKey}
-        </Link>
+        {!isManagedAccount ? (
+          <Link
+            className={cn(styles.link, styles.showPrivateKey)}
+            to={PRIVATE_KEY_EXPORTER_SETTINGS_PAGE}
+            onClick={recordExportPrivateKeyLinkClicked}
+          >
+            {messages.showPrivateKey}
+          </Link>
+        ) : null}
       </div>
       <Modal
         isOpen={isSignOutModalVisible}

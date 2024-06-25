@@ -340,6 +340,7 @@ func (ss *MediorumServer) transcodeFullAudio(upload *Upload, temp *os.File, logg
 		"-b:a", "320k", // set bitrate to 320k
 		"-ar", "48000", // set sample rate to 48000 Hz
 		"-f", "mp3", // force output to mp3
+		"-c:a", "libmp3lame", // specify the encoder
 		"-metadata", fmt.Sprintf(`fileName="%s"`, upload.OrigFileName),
 		"-metadata", fmt.Sprintf(`uuid="%s"`, upload.ID), // make each upload unique so artists can re-upload same file with different CID if it gets delisted
 		"-vn",           // no video

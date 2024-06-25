@@ -131,8 +131,6 @@ github.com/envoyproxy/go-control-plane v0.9.4/go.mod h1:6rpuAdCZL397s3pYoYcLgu1m
 github.com/envoyproxy/go-control-plane v0.9.9-0.20201210154907-fd9021fe5dad/go.mod h1:cXg6YxExXjJnVBQHBLXeUAgxn2UodCpnH306RInaBQk=
 github.com/envoyproxy/go-control-plane v0.9.10-0.20210907150352-cf90f659a021/go.mod h1:AFq3mo9L8Lqqiid3OhADV3RfLJnjiw63cSpi+fDTRC0=
 github.com/envoyproxy/protoc-gen-validate v0.1.0/go.mod h1:iSmxcyjqTsJpI2R4NaDN7+kN2VEUnK/pcBlmesArF7c=
-github.com/erni27/imcache v1.1.0 h1:Atak8HV/vsRtQXO0WajZtriT63gAII1qKHD8MgORH4I=
-github.com/erni27/imcache v1.1.0/go.mod h1:KNUCBr1U9nOFTyUEC9CsMKZE33NboYTPavsQsuEufoA=
 github.com/erni27/imcache v1.2.0 h1:EbHHhwzJPcAYK//cVDq0use9tep1z9/kenIQhMarGnk=
 github.com/erni27/imcache v1.2.0/go.mod h1:KNUCBr1U9nOFTyUEC9CsMKZE33NboYTPavsQsuEufoA=
 github.com/ethereum/go-ethereum v1.11.4 h1:KG81SnUHXWk8LJB3mBcHg/E2yLvXoiPmRMCIRxgx3cE=

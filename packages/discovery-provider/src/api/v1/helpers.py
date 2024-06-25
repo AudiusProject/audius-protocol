@@ -17,6 +17,7 @@ from src.queries.get_undisbursed_challenges import UndisbursedChallengeResponse
 from src.queries.query_helpers import (
     CollectionLibrarySortMethod,
     LibraryFilterType,
+    SearchSortMethod,
     SortDirection,
     SortMethod,
 )
@@ -816,7 +817,7 @@ user_tracks_route_parser.add_argument(
 )
 
 full_search_parser = pagination_with_current_user_parser.copy()
-full_search_parser.add_argument("query", required=True, description="The search query")
+full_search_parser.add_argument("query", required=False, description="The search query")
 full_search_parser.add_argument(
     "kind",
     required=False,
@@ -830,6 +831,64 @@ full_search_parser.add_argument(
     required=False,
     type=str,
     description="Whether or not to include purchaseable content",
+)
+full_search_parser.add_argument(
+    "genre",
+    action="append",
+    required=False,
+    type=str,
+    description="The genres to filter by",
+)
+full_search_parser.add_argument(
+    "mood",
+    action="append",
+    required=False,
+    type=str,
+    description="The moods to filter by",
+)
+full_search_parser.add_argument(
+    "is_verified",
+    required=False,
+    type=str,
+    description="Only include verified users in the user results",
+)
+full_search_parser.add_argument(
+    "has_downloads",
+    required=False,
+    type=str,
+    description="Only include tracks that have downloads in the track results",
+)
+full_search_parser.add_argument(
+    "is_purchaseable",
+    required=False,
+    type=str,
+    description="Only include purchaseable tracks and albums in the track and album results",
+)
+full_search_parser.add_argument(
+    "key",
+    action="append",
+    required=False,
+    type=str,
+    description="Only include tracks that match the musical key",
+)
+full_search_parser.add_argument(
+    "bpm_min",
+    required=False,
+    type=str,
+    description="Only include tracks that have a bpm greater than or equal to",
+)
+full_search_parser.add_argument(
+    "bpm_max",
+    required=False,
+    type=str,
+    description="Only include tracks that have a bpm less than or equal to",
+)
+full_search_parser.add_argument(
+    "sort_method",
+    required=False,
+    description="The sort method",
+    type=str,
+    choices=SearchSortMethod._member_names_,
 )
 
 verify_token_parser = reqparse.RequestParser(argument_class=DescriptiveArgument)

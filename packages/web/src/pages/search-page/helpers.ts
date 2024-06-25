@@ -3,7 +3,7 @@ import { Location } from 'history'
 import { matchPath } from 'react-router'
 
 import { env } from 'services/env'
-import { getPathname } from 'utils/route'
+import { SEARCH_PAGE, getPathname } from 'utils/route'
 
 const USE_HASH_ROUTING = env.USE_HASH_ROUTING
 
@@ -34,7 +34,7 @@ export const getCategory = (location: Location) => {
     category = location.hash.slice(1).split('/')[1]
   } else {
     const categoryMatch = matchPath(getPathname(location), {
-      path: '/search/:query/:category',
+      path: SEARCH_PAGE,
       exact: true
     }) as match
 
@@ -66,11 +66,8 @@ export const getSearchTag = (location: Location) => {
 }
 
 export const getSearchText = (location: Location) => {
-  const match = matchPath(getPathname(location), {
-    path: '/search/:query'
-  }) as match
-  if (!match) return ''
-  const query = match.params.query
+  const params = new URLSearchParams(location.search)
+  const query = params.get('query')
   if (!query) return ''
 
   // Need to decode the URI to convert %20 into spaces

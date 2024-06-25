@@ -596,6 +596,7 @@ def populate_mock_db(db, entities, block_offset=None):
                 ),
                 current_step_count=user_challenge_meta.get("current_step_count", None),
                 amount=user_challenge_meta.get("amount", None),
+                completed_at=user_challenge_meta.get("completed_at", datetime.now()),
             )
             session.add(user_challenge)
         for i, user_bank_account in enumerate(user_bank_accounts):

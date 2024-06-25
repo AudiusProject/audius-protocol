@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { useUSDCBalance } from '@audius/common/hooks'
+import { useIsManagedAccount, useUSDCBalance } from '@audius/common/hooks'
 import { Name, Status, BNUSDC } from '@audius/common/models'
 import {
   WithdrawUSDCModalPages,
@@ -42,6 +42,7 @@ const messages = {
 }
 
 export const USDCCard = () => {
+  const isManagedAccount = useIsManagedAccount()
   const { onOpen: openWithdrawUSDCModal } = useWithdrawUSDCModal()
   const { onOpen: openAddFundsModal } = useAddFundsModal()
   const { data: balance, status: balanceStatus } = useUSDCBalance()
@@ -123,28 +124,30 @@ export const USDCCard = () => {
           </PlainButton>
         </div>
       </div>
-      <div className={styles.withdrawContainer}>
-        <div className={styles.addFundsButton}>
-          <Button
-            variant='secondary'
-            fullWidth
-            onClick={handleAddFunds}
-            disabled={balanceStatus === Status.LOADING}
-          >
-            {messages.addFunds}
-          </Button>
+      {!isManagedAccount ? (
+        <div className={styles.withdrawContainer}>
+          <div className={styles.addFundsButton}>
+            <Button
+              variant='secondary'
+              fullWidth
+              onClick={handleAddFunds}
+              disabled={balanceStatus === Status.LOADING}
+            >
+              {messages.addFunds}
+            </Button>
+          </div>
+          <div className={styles.withdrawButton}>
+            <Button
+              variant='secondary'
+              fullWidth
+              onClick={handleWithdraw}
+              disabled={balanceStatus === Status.LOADING}
+            >
+              {messages.withdraw}
+            </Button>
+          </div>
         </div>
-        <div className={styles.withdrawButton}>
-          <Button
-            variant='secondary'
-            fullWidth
-            onClick={handleWithdraw}
-            disabled={balanceStatus === Status.LOADING}
-          >
-            {messages.withdraw}
-          </Button>
-        </div>
-      </div>
+      ) : null}
     </Paper>
   )
 }

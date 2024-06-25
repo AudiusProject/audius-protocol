@@ -5,7 +5,6 @@ export const messages = {
   coSign: 'Co-Sign',
   favorited: 'Favorited',
   getPlays: (listenCount: number) => ` ${pluralize('Play', listenCount)}`,
-  hiddenTrack: 'Hidden Track',
   played: 'Played',
   reposted: 'Reposted',
   repostedAndFavorited: 'Reposted & Favorited',

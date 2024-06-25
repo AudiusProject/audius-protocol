@@ -5,7 +5,6 @@ import { useSelector } from 'react-redux'
 
 import { IconNoWifi } from '@audius/harmony-native'
 import { Text, Tile } from 'app/components/core'
-import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 const { getIsReachable } = reachabilitySelectors
@@ -41,11 +40,10 @@ const useStyles = makeStyles(({ typography, spacing, palette }) => ({
 
 export const OfflineContentBanner = () => {
   const styles = useStyles()
-  const isOfflineModeEnabled = useIsOfflineModeEnabled()
   const isReachable = useSelector(getIsReachable)
   const { neutralLight4 } = useThemeColors()
 
-  if (!isOfflineModeEnabled || isReachable) return null
+  if (isReachable) return null
   return (
     <Animated.View exiting={SlideOutUp.duration(1000)}>
       <Tile style={styles.tile}>

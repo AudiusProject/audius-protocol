@@ -10,7 +10,7 @@ import {
   accountSelectors,
   cacheCollectionsSelectors
 } from '@audius/common/store'
-import { formatCount } from '@audius/common/utils'
+import { formatCount, formatReleaseDate } from '@audius/common/utils'
 import type { GestureResponderEvent } from 'react-native'
 import { useSelector } from 'react-redux'
 
@@ -34,7 +34,9 @@ const { getUserId } = accountSelectors
 const messages = {
   repost: 'Reposts',
   favorites: 'Favorites',
-  hidden: 'Hidden'
+  hidden: 'Hidden',
+  releases: (releaseDate: string) =>
+    `Releases ${formatReleaseDate({ date: releaseDate })}`
 }
 
 type CollectionCardProps = {
@@ -70,9 +72,11 @@ export const CollectionCard = (props: CollectionCardProps) => {
     playlist_owner_id,
     repost_count,
     save_count,
-    is_private,
+    is_private: isPrivate,
     access,
-    stream_conditions
+    stream_conditions,
+    release_date: releaseDate,
+    is_scheduled_release: isScheduledRelease
   } = collection
 
   const isOwner = accountId === playlist_owner_id
@@ -104,7 +108,7 @@ export const CollectionCard = (props: CollectionCardProps) => {
         borderBottomLeftRadius='m'
         borderBottomRightRadius='m'
       >
-        {is_private ? (
+        {isPrivate ? (
           <Text
             variant='body'
             size='s'
@@ -113,7 +117,9 @@ export const CollectionCard = (props: CollectionCardProps) => {
             // Ensures footer height is not affected
             style={{ lineHeight: 16 }}
           >
-            {messages.hidden}
+            {isScheduledRelease && releaseDate
+              ? messages.releases(releaseDate)
+              : messages.hidden}
           </Text>
         ) : (
           <>
@@ -129,11 +135,11 @@ export const CollectionCard = (props: CollectionCardProps) => {
                 {formatCount(save_count)}
               </Text>
             </Flex>
-            {isPurchase && !isOwner ? (
-              <LockedStatusBadge variant='purchase' locked={!access.stream} />
-            ) : null}
           </>
         )}
+        {isPurchase && !isOwner ? (
+          <LockedStatusBadge variant='purchase' locked={!access.stream} />
+        ) : null}
       </Flex>
     </Paper>
   )

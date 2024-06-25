@@ -12,12 +12,12 @@ import (
 )
 
 func NewGraphStaging() PeerProvider {
-	endpoint := `https://api.thegraph.com/subgraphs/name/audius-infra/audius-network-sepolia`
+	endpoint := `https://gateway-arbitrum.network.thegraph.com/api/7d7b938a80fe712cd8390bf42c88456a/subgraphs/id/Du8Zhnj3ap95TTusD6EnFNohfeVBtQftbqFgcruLCMA`
 	return &graphProvider{endpoint}
 }
 
 func NewGraphProd() PeerProvider {
-	endpoint := `https://api.thegraph.com/subgraphs/name/audius-infra/audius-network-mainnet`
+	endpoint := `https://gateway-arbitrum.network.thegraph.com/api/3e9ce54904ec5ee003de7785f0d24a21/subgraphs/id/F8TjrYuTLohz64J8uuDke9htSR1aY9TGCuEjJVVjUJaD`
 	return &graphProvider{endpoint}
 }
 

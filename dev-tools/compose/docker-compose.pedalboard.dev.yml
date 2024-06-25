@@ -68,3 +68,12 @@ services:
       dockerfile: ${PROJECT_ROOT}/packages/discovery-provider/plugins/pedalboard/docker/Dockerfile.dev
     volumes:
       - ${PROJECT_ROOT}:/app
+
+  backfill-audio-analyses:
+    extends:
+      file: docker-compose.pedalboard.prod.yml
+      service: backfill-audio-analyses
+    build:
+      dockerfile: ${PROJECT_ROOT}/packages/discovery-provider/plugins/pedalboard/docker/Dockerfile.dev
+    volumes:
+      - ${PROJECT_ROOT}:/app

@@ -47,12 +47,12 @@ export const useFetchTabResultsEffect = (searchKind: SearchKind) => {
       if (isTagSearch) {
         if (shouldFetch) {
           dispatch(
-            searchResultsPageActions.fetchSearchPageTags(
-              query,
+            searchResultsPageActions.fetchSearchPageTags({
+              tag: query,
               searchKind,
-              ALL_CATEGORY_RESULTS_LIMIT,
-              0
-            )
+              limit: ALL_CATEGORY_RESULTS_LIMIT,
+              offset: 0
+            })
           )
         }
         track(
@@ -65,12 +65,12 @@ export const useFetchTabResultsEffect = (searchKind: SearchKind) => {
       } else {
         if (shouldFetch) {
           dispatch(
-            searchResultsPageActions.fetchSearchPageResults(
-              query,
-              searchKind,
-              ALL_CATEGORY_RESULTS_LIMIT,
-              0
-            )
+            searchResultsPageActions.fetchSearchPageResults({
+              searchText: query,
+              kind: searchKind,
+              limit: ALL_CATEGORY_RESULTS_LIMIT,
+              offset: 0
+            })
           )
         }
         track(

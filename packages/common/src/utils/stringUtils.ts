@@ -41,3 +41,10 @@ export const parsePlaylistIdFromPermalink = (permalink: string) => {
 export const parseIntList = (str: string) => {
   return str.split(',').map((s) => Number.parseInt(s))
 }
+
+/** Attempts to parse a potentially empty string to a base 10 number. Returns `null` on failure. */
+export const attemptStringToNumber = (value?: string | null) => {
+  if (value == null) return null
+  const parsed = Number.parseInt(value, 10)
+  return Number.isNaN(parsed) ? null : parsed
+}

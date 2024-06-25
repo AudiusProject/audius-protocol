@@ -75,6 +75,7 @@ export const AccountDetails = () => {
                   alignItems='center'
                   justifyContent='space-between'
                   gap='s'
+                  h={20}
                 >
                   <UserLink
                     textVariant='title'
@@ -84,8 +85,8 @@ export const AccountDetails = () => {
                     css={{
                       flex: 1,
                       ...(isManagedAccount && {
-                        color: color.text.accent,
-                        '&:hover': { color: color.text.accent }
+                        color: color.secondary.s500,
+                        '&:hover': { color: color.secondary.s500 }
                       })
                     }}
                   />
@@ -96,8 +97,8 @@ export const AccountDetails = () => {
                   to={profileLink}
                   css={
                     isManagedAccount && {
-                      color: color.text.accent,
-                      '&:hover': { color: color.text.accent }
+                      color: color.secondary.s500,
+                      '&:hover': { color: color.secondary.s500 }
                     }
                   }
                 >{`@${account.handle}`}</TextLink>

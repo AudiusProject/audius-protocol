@@ -24,7 +24,6 @@ import {
   IconVolumeLevel2 as IconVolume,
   IconStar,
   IconCrown,
-  IconVisibilityHidden,
   IconTrending,
   Text,
   Flex
@@ -42,6 +41,7 @@ import Skeleton from 'components/skeleton/Skeleton'
 import { GatedContentLabel } from 'components/track/GatedContentLabel'
 import { TrackTileProps } from 'components/track/types'
 import UserBadges from 'components/user-badges/UserBadges'
+import { VisibilityLabel } from 'components/visibility-label/VisibilityLabel'
 import { useAuthenticatedClickCallback } from 'hooks/useAuthenticatedCallback'
 
 import { GatedConditionsPill } from '../GatedConditionsPill'
@@ -119,18 +119,10 @@ const renderLockedContentOrPlayCount = ({
     )
   }
 
-  const hidePlays = fieldVisibility
-    ? fieldVisibility.play_count === false
-    : false
-
   return (
     listenCount !== undefined &&
     listenCount > 0 && (
-      <div
-        className={cn(styles.plays, {
-          [styles.isHidden]: hidePlays
-        })}
-      >
+      <div className={styles.plays}>
         {formatCount(listenCount)}
         {messages.getPlays(listenCount)}
       </div>
@@ -195,6 +187,8 @@ const TrackTile = (props: CombinedProps) => {
     isMatrix,
     userId,
     isArtistPick,
+    isScheduledRelease,
+    releaseDate,
     isOwner,
     isUnlisted,
     isLoading,
@@ -234,8 +228,7 @@ const TrackTile = (props: CombinedProps) => {
     : getDogEarType({
         streamConditions,
         isOwner,
-        hasStreamAccess,
-        isArtistPick
+        hasStreamAccess
       })
 
   const onToggleSave = useCallback(() => toggleSave(id), [toggleSave, id])
@@ -308,7 +301,7 @@ const TrackTile = (props: CombinedProps) => {
 
   let specialContentLabel = null
 
-  if (!isLoading) {
+  if (!isLoading && !isUnlisted) {
     if (isStreamGated) {
       specialContentLabel = (
         <GatedContentLabel
@@ -346,12 +339,6 @@ const TrackTile = (props: CombinedProps) => {
           size='xs'
           className={cn(styles.topRight, styles.statText)}
         >
-          {props.isUnlisted ? (
-            <div className={styles.topRightIcon}>
-              <IconVisibilityHidden />
-              {messages.hiddenTrack}
-            </div>
-          ) : null}
           <div className={cn(styles.duration, fadeIn)}>
             {duration
               ? formatLineupTileDuration(
@@ -432,6 +419,11 @@ const TrackTile = (props: CombinedProps) => {
               className={styles.rankIconContainer}
             />
             {specialContentLabel}
+            <VisibilityLabel
+              releaseDate={releaseDate}
+              isUnlisted={isUnlisted}
+              isScheduledRelease={isScheduledRelease}
+            />
             {!(props.repostCount || props.saveCount) ? null : (
               <>
                 <div

@@ -98,6 +98,13 @@ class Track(Base, RepresentableMixin):
     ai_attribution_user_id = Column(Integer, nullable=True)
     placement_hosts = Column(String, nullable=True)
 
+    # Audio analysis
+    bpm = Column(Float)
+    musical_key = Column(String)
+    audio_analysis_error_count = Column(
+        Integer, nullable=False, server_default=text("0")
+    )
+
     # From DDEX
     ddex_release_ids = Column(JSONB())
     ddex_app = Column(String)

@@ -1,10 +1,6 @@
 import { memo, useCallback, useEffect, MouseEvent, useRef } from 'react'
 
-import { useGetCurrentUserId, useGetTrackStreamUrl } from '@audius/common/api'
-import {
-  useGatedContentAccess,
-  useIsGatedContentPlaylistAddable
-} from '@audius/common/hooks'
+import { useGatedContentAccess } from '@audius/common/hooks'
 import {
   ShareSource,
   RepostSource,
@@ -134,7 +130,8 @@ const ConnectedTrackTile = ({
     _cover_art_sizes,
     play_count,
     duration,
-    release_date: releaseDate
+    release_date: releaseDate,
+    ddex_app: ddexApp
   } = trackWithFallback
 
   const {
@@ -144,12 +141,6 @@ const ConnectedTrackTile = ({
     handle,
     is_deactivated: isOwnerDeactivated
   } = getUserWithFallback(user)
-
-  const currentUserId = useGetCurrentUserId({})
-  useGetTrackStreamUrl({
-    id: trackId,
-    currentUserId: currentUserId?.data
-  })
 
   const isActive = uid === playingUid
   const isTrackBuffering = isActive && isBuffering
@@ -161,7 +152,6 @@ const ConnectedTrackTile = ({
   const { isFetchingNFTAccess, hasStreamAccess } =
     useGatedContentAccess(trackWithFallback)
   const loading = isLoading || isFetchingNFTAccess
-  const isPlaylistAddable = useIsGatedContentPlaylistAddable(trackWithFallback)
 
   const dispatch = useDispatch()
   const [, setLockedContentVisibility] = useModalState('LockedContent')
@@ -204,8 +194,8 @@ const ConnectedTrackTile = ({
     const menu: Omit<TrackMenuProps, 'children'> = {
       extraMenuItems: [],
       handle,
-      includeAddToPlaylist: isPlaylistAddable,
-      includeAddToAlbum: isOwner,
+      includeAddToPlaylist: true,
+      includeAddToAlbum: isOwner && !ddexApp,
       includeArtistPick: handle === userHandle && !isUnlisted,
       includeEdit: handle === userHandle,
       ddexApp: track?.ddex_app,

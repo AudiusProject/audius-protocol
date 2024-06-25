@@ -353,6 +353,7 @@ export const Popup = forwardRef<HTMLDivElement, PopupProps>(function Popup(
       setPopupState('opening')
     } else if (popupState === 'open' && !isVisibleProp) {
       setPopupState('closing')
+      anchorRef.current?.focus()
     }
   }, [isVisibleProp, popupState])
 

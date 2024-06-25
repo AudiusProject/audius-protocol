@@ -1,9 +1,6 @@
 import { useCallback, useLayoutEffect } from 'react'
 
-import {
-  useGatedContentAccess,
-  useIsGatedContentPlaylistAddable
-} from '@audius/common/hooks'
+import { useGatedContentAccess } from '@audius/common/hooks'
 import {
   ShareSource,
   RepostSource,
@@ -11,7 +8,6 @@ import {
   ModalSource
 } from '@audius/common/models'
 import type { Track } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import {
   accountSelectors,
   castSelectors,
@@ -42,7 +38,6 @@ import {
   Button
 } from '@audius/harmony-native'
 import { useAirplay } from 'app/components/audio/Airplay'
-import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { useToast } from 'app/hooks/useToast'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
@@ -115,11 +110,6 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
   const { neutral, neutralLight6, primary } = useThemeColors()
   const dispatch = useDispatch()
   const isReachable = useSelector(getIsReachable)
-  const { isEnabled: isNewPodcastControlsEnabled } = useFeatureFlag(
-    FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
-    FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
-  )
-  const isPlaylistAddable = useIsGatedContentPlaylistAddable(track)
 
   const isOwner = track?.owner_id === accountUser?.user_id
   const { onOpen: openPremiumContentPurchaseModal } =
@@ -200,13 +190,13 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
       const isLongFormContent =
         track.genre === Genre.PODCASTS || track.genre === Genre.AUDIOBOOKS
       const overflowActions = [
-        isOwner ? OverflowAction.ADD_TO_ALBUM : null,
-        isPlaylistAddable ? OverflowAction.ADD_TO_PLAYLIST : null,
-        isNewPodcastControlsEnabled && isLongFormContent
+        isOwner && !track?.ddex_app ? OverflowAction.ADD_TO_ALBUM : null,
+        OverflowAction.ADD_TO_PLAYLIST,
+        isLongFormContent
           ? OverflowAction.VIEW_EPISODE_PAGE
           : OverflowAction.VIEW_TRACK_PAGE,
         albumInfo ? OverflowAction.VIEW_ALBUM_PAGE : null,
-        isNewPodcastControlsEnabled && isLongFormContent
+        isLongFormContent
           ? playbackPositionInfo?.status === 'COMPLETED'
             ? OverflowAction.MARK_AS_UNPLAYED
             : OverflowAction.MARK_AS_PLAYED
@@ -222,15 +212,7 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
         })
       )
     }
-  }, [
-    track,
-    isOwner,
-    isPlaylistAddable,
-    isNewPodcastControlsEnabled,
-    albumInfo,
-    playbackPositionInfo?.status,
-    dispatch
-  ])
+  }, [track, isOwner, albumInfo, playbackPositionInfo?.status, dispatch])
 
   const { openAirplayDialog } = useAirplay()
   const castDevices = useDevices()

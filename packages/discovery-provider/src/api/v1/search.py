@@ -45,6 +45,15 @@ class FullSearch(Resource):
         limit = format_limit(args)
         current_user_id = get_current_user_id(args)
         include_purchaseable = parse_bool_param(args.get("includePurchaseable"))
+        genres = args.get("genre")
+        moods = args.get("mood")
+        is_verified = parse_bool_param(args.get("is_verified"))
+        has_downloads = parse_bool_param(args.get("has_downloads"))
+        is_purchaseable = parse_bool_param(args.get("is_purchaseable"))
+        keys = args.get("key")
+        bpm_min = args.get("bpm_min")
+        bpm_max = args.get("bpm_max")
+        sort_method = args.get("sort_method")
 
         search_args = {
             "is_auto_complete": False,
@@ -56,6 +65,15 @@ class FullSearch(Resource):
             "offset": offset,
             "only_downloadable": False,
             "include_purchaseable": include_purchaseable,
+            "only_purchaseable": is_purchaseable,
+            "genres": genres,
+            "moods": moods,
+            "only_verified": is_verified,
+            "only_with_downloads": has_downloads,
+            "keys": keys,
+            "bpm_min": bpm_min,
+            "bpm_max": bpm_max,
+            "sort_method": sort_method,
         }
         resp = search(search_args)
         return success_response(resp)

@@ -13,7 +13,7 @@ fi
 export NVM_DIR=$HOME/.nvm;
 source $NVM_DIR/nvm.sh;
 
-printf "${GREEN}Confirming node, python, and ruby environents...\n${NC}"
+printf "${GREEN}Confirming node, python, and ruby environments...\n${NC}"
 {
   nvm install
   cp .python-version-dev .python-version

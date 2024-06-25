@@ -48,7 +48,9 @@ export const RequestManagerNotification = (
   if (!managedAccountUser) return null
   return (
     <NotificationTile notification={notification} onClick={handleClick}>
-      <NotificationHeader icon={<IconUserArrowRotate />}>
+      <NotificationHeader
+        icon={<IconUserArrowRotate color='accent' size='2xl' />}
+      >
         <NotificationTitle>{messages.title}</NotificationTitle>
       </NotificationHeader>
       <NotificationBody>

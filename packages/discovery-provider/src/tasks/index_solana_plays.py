@@ -636,6 +636,13 @@ def process_solana_plays(solana_client_manager: SolanaClientManager, redis: Redi
                 for tx in transactions_array:
                     tx_sig = str(tx.signature)
                     slot = tx.slot
+
+                    if tx.err is not None:
+                        logger.debug(
+                            f"index_user_bank.py | Skipping error transaction tx={tx_sig} err={tx.err}"
+                        )
+                        continue
+
                     if tx.slot > latest_processed_slot:
                         transaction_signature_batch.append(tx_sig)
                     elif tx.slot <= latest_processed_slot:

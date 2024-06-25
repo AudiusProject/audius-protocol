@@ -48,17 +48,10 @@ export function* fetchNotifications(config: FetchNotificationsParams) {
 
 function* fetchIdentityNotifications(limit: number, timeOffset: number) {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-  const getFeatureEnabled = yield* getContext('getFeatureEnabled')
-
-  const withDethroned = yield* call(
-    getFeatureEnabled,
-    FeatureFlags.SUPPORTER_DETHRONED_ENABLED
-  )
 
   return yield* call(audiusBackendInstance.getNotifications, {
     limit,
-    timeOffset,
-    withDethroned
+    timeOffset
   })
 }
 

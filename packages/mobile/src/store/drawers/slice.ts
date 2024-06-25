@@ -31,6 +31,7 @@ export type Drawer =
   | 'SupportersInfo'
   | 'OfflineListening'
   | 'Welcome'
+  | 'ManagerMode'
 
 export type DrawerData = {
   EnablePushNotifications: undefined
@@ -74,6 +75,7 @@ export type DrawerData = {
   SupportersInfo: undefined
   InboxUnavailable: { userId: number; shouldOpenChat: boolean }
   Welcome: undefined
+  ManagerMode: undefined
 }
 
 export type DrawersState = { [drawer in Drawer]: boolean | 'closing' } & {
@@ -106,6 +108,7 @@ const initialState: DrawersState = {
   DeleteChat: false,
   SupportersInfo: false,
   Welcome: false,
+  ManagerMode: false,
   data: {}
 }
 

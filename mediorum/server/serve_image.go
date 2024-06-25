@@ -27,6 +27,7 @@ func (ss *MediorumServer) serveImage(c echo.Context) error {
 	cacheKey := jobID + variant
 
 	serveSuccessWithBytes := func(blobData []byte, modTime time.Time) error {
+		setTimingHeader(c)
 		c.Response().Header().Set(echo.HeaderCacheControl, "public, max-age=2592000, immutable")
 		http.ServeContent(c.Response(), c.Request(), cacheKey, modTime, bytes.NewReader(blobData))
 		return nil

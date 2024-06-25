@@ -258,22 +258,6 @@
   border-top: 1px solid var(--harmony-n-100);
 }
 
-.infoLabelsSection {
-  display: flex;
-  flex-wrap: wrap;
-}
-
-.infoLabelsSection .infoLabelPlacement {
-  display: inline-block;
-  padding-right: var(--harmony-unit-6);
-}
-
-.infoLabelPlacement i {
-  width: 16px;
-  height: 16px;
-  margin-bottom: 4px;
-}
-
 .description {
   padding-top: var(--harmony-unit-3);
   line-height: 26px;

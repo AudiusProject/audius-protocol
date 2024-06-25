@@ -48,6 +48,7 @@ export const PurchaseSuccess = ({
   const title = isAlbum ? metadata.playlist_name : metadata.title
   const contentId = isAlbum ? metadata.playlist_id : metadata.track_id
   const contentType = isAlbum ? 'album' : 'track'
+  const isHidden = isAlbum ? metadata.is_private : metadata.is_unlisted
 
   const link = isAlbum
     ? getCollectionRoute(metadata)
@@ -101,23 +102,25 @@ export const PurchaseSuccess = ({
           {messages.success}
         </Text>
       </Flex>
-      <Flex gap='l'>
-        <EntityActionButton
-          onPress={onRepost}
-          iconLeft={IconRepost}
-          isActive={isReposted}
-        >
-          {isReposted ? messages.reposted : messages.repost}
-        </EntityActionButton>
-        <TwitterButton
-          fullWidth
-          type='dynamic'
-          url={link}
-          shareData={handleTwitterShare}
-          handle={handle}
-          size='large'
-        />
-      </Flex>
+      {isHidden ? null : (
+        <Flex gap='l'>
+          <EntityActionButton
+            onPress={onRepost}
+            iconLeft={IconRepost}
+            isActive={isReposted}
+          >
+            {isReposted ? messages.reposted : messages.repost}
+          </EntityActionButton>
+          <TwitterButton
+            fullWidth
+            type='dynamic'
+            url={link}
+            shareData={handleTwitterShare}
+            handle={handle}
+            size='large'
+          />
+        </Flex>
+      )}
       <PlainButton
         size='large'
         variant='subdued'

@@ -10,7 +10,7 @@ import {
   accountSelectors,
   cacheCollectionsSelectors
 } from '@audius/common/store'
-import { formatCount } from '@audius/common/utils'
+import { formatCount, formatReleaseDate } from '@audius/common/utils'
 import { Flex, Skeleton, Text } from '@audius/harmony'
 import IconHeart from '@audius/harmony/src/assets/icons/Heart.svg'
 import IconRepost from '@audius/harmony/src/assets/icons/Repost.svg'
@@ -30,7 +30,9 @@ const { getUserId } = accountSelectors
 const messages = {
   repost: 'Reposts',
   favorites: 'Favorites',
-  hidden: 'Hidden'
+  hidden: 'Hidden',
+  releases: (releaseDate: string) =>
+    `Releases ${formatReleaseDate({ date: releaseDate })}`
 }
 
 type CollectionCardProps = Omit<CardProps, 'id'> & {
@@ -89,9 +91,11 @@ export const CollectionCard = forwardRef(
       playlist_owner_id,
       repost_count,
       save_count,
-      is_private,
+      is_private: isPrivate,
       access,
-      stream_conditions
+      stream_conditions,
+      is_scheduled_release: isScheduledRelease,
+      release_date: releaseDate
     } = collection
 
     const isOwner = accountId === playlist_owner_id
@@ -128,7 +132,7 @@ export const CollectionCard = forwardRef(
           </CardContent>
         </Flex>
         <CardFooter>
-          {is_private ? (
+          {isPrivate ? (
             <Text
               variant='body'
               size='s'
@@ -136,7 +140,9 @@ export const CollectionCard = forwardRef(
               color='subdued'
               css={(theme) => ({ lineHeight: theme.typography.lineHeight.s })}
             >
-              {messages.hidden}
+              {isScheduledRelease && releaseDate
+                ? messages.releases(releaseDate)
+                : messages.hidden}
             </Text>
           ) : (
             <>
@@ -156,11 +162,11 @@ export const CollectionCard = forwardRef(
                   {formatCount(save_count)}
                 </Text>
               </Flex>
-              {isPurchase && !isOwner ? (
-                <LockedStatusPill variant='premium' locked={!access.stream} />
-              ) : null}
             </>
           )}
+          {isPurchase && !isOwner ? (
+            <LockedStatusPill variant='premium' locked={!access.stream} />
+          ) : null}
         </CardFooter>
       </Card>
     )

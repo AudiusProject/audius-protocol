@@ -207,6 +207,9 @@ export type TrackMetadata = {
   is_playlist_upload?: boolean
   ai_attribution_user_id?: Nullable<ID>
   allowed_api_keys?: Nullable<string[]>
+  bpm?: Nullable<number>
+  musical_key?: Nullable<string>
+  audio_analysis_error_count?: number
 }
 
 export type CollectionMetadata = {
@@ -259,4 +262,7 @@ export type UploadTrackMetadata = Omit<
   | 'audio_upload_id'
   | 'orig_file_cid'
   | 'orig_filename'
+  | 'bpm'
+  | 'musical_key'
+  | 'audio_analysis_error_count'
 >

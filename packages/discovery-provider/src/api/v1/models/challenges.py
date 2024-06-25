@@ -21,6 +21,7 @@ undisbursed_challenge = ns.model(
         "handle": fields.String(required=True),
         "wallet": fields.String(required=True),
         "created_at": fields.String(required=True),
+        "completed_at": fields.String(required=True),
         "cooldown_days": fields.Integer(required=False),
     },
 )

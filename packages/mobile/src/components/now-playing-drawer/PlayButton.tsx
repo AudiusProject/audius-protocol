@@ -3,14 +3,14 @@ import { useCallback, useEffect, useState } from 'react'
 import { playerActions, playerSelectors } from '@audius/common/store'
 import { MIN_BUFFERING_DELAY_MS } from '@audius/common/utils'
 import { useDispatch, useSelector } from 'react-redux'
-import { useFeatureFlag } from '~/hooks'
-import { FeatureFlags } from '~/services'
+import { Name } from '~/models'
 
 import IconPause from 'app/assets/animations/iconPause.json'
 import IconPlay from 'app/assets/animations/iconPlay.json'
 import IconLoadingSpinner from 'app/assets/animations/iconPlayLoadingSpinner.json'
 import type { AnimatedButtonProps } from 'app/components/core'
 import { AnimatedButton } from 'app/components/core'
+import { make, track } from 'app/services/analytics'
 import { makeAnimations } from 'app/styles'
 import { colorize } from 'app/utils/colorizeLottie'
 import { Theme } from 'app/utils/theme'
@@ -18,58 +18,42 @@ import { Theme } from 'app/utils/theme'
 const { pause, play } = playerActions
 const { getPlaying, getBuffering } = playerSelectors
 
-const useAnimatedIcons = (
-  useRNVideoPlayer?: boolean,
-  usePrefetchTrack?: boolean
-) =>
-  makeAnimations(({ palette, type }) => {
-    const iconColor =
-      type === Theme.MATRIX ? palette.background : palette.staticWhite
-    let primaryBG
-    if (useRNVideoPlayer) {
-      if (usePrefetchTrack) {
-        primaryBG = palette.accentOrange
-      } else {
-        primaryBG = palette.accentBlue
-      }
-    } else {
-      if (usePrefetchTrack) {
-        primaryBG = palette.accentGreen
-      } else {
-        primaryBG = palette.primary
-      }
-    }
+const useAnimatedIcons = makeAnimations(({ palette, type }) => {
+  const iconColor =
+    type === Theme.MATRIX ? palette.background : palette.staticWhite
 
-    const ColorizedPlayIcon = colorize(IconPlay, {
-      // #playpause1.Group 1.Fill 1
-      'layers.0.shapes.0.it.1.c.k': iconColor,
-      // #playpause2.Left.Fill 1
-      'layers.1.shapes.0.it.1.c.k': iconColor,
-      // #playpause2.Right.Fill 1
-      'layers.1.shapes.1.it.1.c.k': iconColor,
-      // #primaryBG.Group 2.Fill 1
-      'layers.2.shapes.0.it.1.c.k': primaryBG
-    })
+  const primaryBG = palette.primary
 
-    const ColorizedPauseIcon = colorize(IconPause, {
-      // #playpause1.Group 1.Fill 1
-      'layers.0.shapes.0.it.1.c.k': iconColor,
-      // #playpause2.Left.Fill 1
-      'layers.1.shapes.0.it.1.c.k': iconColor,
-      // #playpause2.Right.Fill 1
-      'layers.1.shapes.1.it.1.c.k': iconColor,
-      // #primaryBG.Group 2.Fill 1
-      'layers.2.shapes.0.it.1.c.k': primaryBG
-    })
-
-    const ColorizedSpinnerIcon = colorize(IconLoadingSpinner, {
-      // change color of the internal spinner
-      'layers.0.shapes.1.c.k': iconColor,
-      // change color of the background circle
-      'layers.1.shapes.0.it.2.c.k': primaryBG
-    })
-    return [ColorizedPlayIcon, ColorizedPauseIcon, ColorizedSpinnerIcon]
+  const ColorizedPlayIcon = colorize(IconPlay, {
+    // #playpause1.Group 1.Fill 1
+    'layers.0.shapes.0.it.1.c.k': iconColor,
+    // #playpause2.Left.Fill 1
+    'layers.1.shapes.0.it.1.c.k': iconColor,
+    // #playpause2.Right.Fill 1
+    'layers.1.shapes.1.it.1.c.k': iconColor,
+    // #primaryBG.Group 2.Fill 1
+    'layers.2.shapes.0.it.1.c.k': primaryBG
   })
+
+  const ColorizedPauseIcon = colorize(IconPause, {
+    // #playpause1.Group 1.Fill 1
+    'layers.0.shapes.0.it.1.c.k': iconColor,
+    // #playpause2.Left.Fill 1
+    'layers.1.shapes.0.it.1.c.k': iconColor,
+    // #playpause2.Right.Fill 1
+    'layers.1.shapes.1.it.1.c.k': iconColor,
+    // #primaryBG.Group 2.Fill 1
+    'layers.2.shapes.0.it.1.c.k': primaryBG
+  })
+
+  const ColorizedSpinnerIcon = colorize(IconLoadingSpinner, {
+    // change color of the internal spinner
+    'layers.0.shapes.1.c.k': iconColor,
+    // change color of the background circle
+    'layers.1.shapes.0.it.2.c.k': primaryBG
+  })
+  return [ColorizedPlayIcon, ColorizedPauseIcon, ColorizedSpinnerIcon]
+})
 
 type PlayButtonProps = Omit<AnimatedButtonProps, 'iconJSON' | 'iconIndex'>
 
@@ -85,6 +69,7 @@ export const PlayButton = ({ isActive, ...props }: PlayButtonProps) => {
     let timeout
     if (isBuffering) {
       timeout = setTimeout(() => {
+        track(make({ eventName: Name.BUFFER_SPINNER_SHOWN }))
         setShowBufferingState(true)
       }, MIN_BUFFERING_DELAY_MS)
     } else {
@@ -98,13 +83,7 @@ export const PlayButton = ({ isActive, ...props }: PlayButtonProps) => {
   }, [isBuffering])
 
   const dispatch = useDispatch()
-  const { isEnabled: useRNVideoPlayer } = useFeatureFlag(
-    FeatureFlags.USE_RN_VIDEO_PLAYER
-  )
-  const { isEnabled: usePrefetchTrack } = useFeatureFlag(
-    FeatureFlags.SKIP_STREAM_CHECK // TODO: this is not the correct flag have to wait for optimizely to fix their shit
-  )
-  const animatedIcons = useAnimatedIcons(useRNVideoPlayer, usePrefetchTrack)()
+  const animatedIcons = useAnimatedIcons()
 
   const handlePress = useCallback(() => {
     if (isPlaying) {

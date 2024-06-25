@@ -601,7 +601,9 @@ export function* handleUploads({
           trackIndex,
           stemIndex: null,
           trackId: tracks[trackIndex].metadata.track_id,
-          error: new Error('Stem failed to upload.'),
+          error: new Error(`Stem ${stemIndex} failed to upload.`, {
+            cause: payload.error
+          }),
           phase
         }
       })
@@ -617,7 +619,7 @@ export function* handleUploads({
     // Report to sentry
     const e = error instanceof Error ? error : new Error(String(error))
     yield* call(reportToSentry, {
-      name: `Upload: ${e.name}`,
+      name: `Upload Worker Failed: ${e.name}`,
       error: e,
       additionalInfo: {
         trackId,
@@ -698,7 +700,9 @@ export function* handleUploads({
     }
     // Errors were reported to sentry earlier in the upload process.
     // Throwing here so callers don't think they succeeded.
-    throw new Error('Failed to upload tracks for collection.')
+    throw new Error('Failed to upload tracks for collection.', {
+      cause: errored
+    })
   }
 
   const publishedTrackIds = published
@@ -710,7 +714,7 @@ export function* handleUploads({
   if (publishedTrackIds.length === 0) {
     // Errors were reported to sentry earlier in the upload process.
     // Throwing here so callers don't think they succeeded.
-    throw new Error('No tracks were successfully uploaded.')
+    throw new Error('No tracks were successfully uploaded.', { cause: errored })
   }
 
   console.debug('Finished uploads')

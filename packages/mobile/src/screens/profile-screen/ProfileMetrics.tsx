@@ -93,7 +93,7 @@ export const ProfileMetrics = () => {
       )}
       <Pressable style={styles.metric} onPress={handlePressFollowers}>
         <Text style={styles.value}>{formatCount(follower_count)}</Text>
-        <Text style={styles.label}>{messages.followers(track_count)}</Text>
+        <Text style={styles.label}>{messages.followers(follower_count)}</Text>
       </Pressable>
       <Pressable style={styles.metric} onPress={handlePressFollowing}>
         <Text style={styles.value}>{formatCount(followee_count)}</Text>

@@ -8,7 +8,6 @@ import { Kind, Name, SquareSizes } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import { getTierForUser, searchActions } from '@audius/common/store'
 import { push as pushRoute } from 'connected-react-router'
-import { has } from 'lodash'
 import { connect } from 'react-redux'
 import { matchPath } from 'react-router'
 import { generatePath, withRouter } from 'react-router-dom'
@@ -28,8 +27,7 @@ import {
   collectionPage,
   profilePage,
   getPathname,
-  SEARCH_PAGE,
-  SEARCH_CATEGORY_PAGE
+  SEARCH_PAGE
 } from 'utils/route'
 
 import styles from './ConnectedSearchBar.module.css'
@@ -47,20 +45,16 @@ class ConnectedSearchBar extends Component {
 
     // Clear search when navigating away from the search results page.
     history.listen((location, action) => {
-      const match = matchPath(getPathname(this.context.history.location), {
-        path: '/search/:query'
-      })
-      if (!match) {
+      const params = new URLSearchParams(this.context.history.location.search)
+      if (!params.has('query')) {
         this.onSearchChange('')
       }
     })
 
     // Set the initial search bar value if we loaded into a search page.
-    const match = matchPath(getPathname(this.context.history.location), {
-      path: '/search/:query'
-    })
-    if (has(match, 'params.query')) {
-      this.onSearchChange(match.params.query)
+    const params = new URLSearchParams(this.context.history.location.search)
+    if (params.has('query')) {
+      this.onSearchChange(params.get('query'))
     }
   }
 
@@ -89,49 +83,36 @@ class ConnectedSearchBar extends Component {
   }
 
   onSubmit = (value) => {
-    // Encode everything besides tag searches
     const pathname = '/search'
+    const locationSearchParams = new URLSearchParams(
+      this.props.history.location.search
+    )
 
-    let newPath = `${pathname}/${value}`
     if (value) {
-      const categoryMatch = matchPath(
-        getPathname(this.props.history.location),
-        {
-          path: SEARCH_CATEGORY_PAGE
-        }
-      )
+      locationSearchParams.set('query', value)
+    } else {
+      locationSearchParams.delete('query')
+    }
+
+    let newPath = pathname
+    if (this.props.isSearchV2Enabled) {
       const searchMatch = matchPath(getPathname(this.props.history.location), {
         path: SEARCH_PAGE
       })
 
-      if (categoryMatch) {
-        newPath = generatePath(SEARCH_CATEGORY_PAGE, {
-          ...categoryMatch.params,
-          query: value
-        })
-      } else if (searchMatch) {
+      if (searchMatch) {
         newPath = generatePath(SEARCH_PAGE, {
-          ...searchMatch.params,
-          query: value
+          ...searchMatch.params
         })
       }
     }
 
-    if (value.startsWith('#')) {
-      // perform tag search
-      this.props.history.push({
-        hash: value.split('#')[1],
-        pathname,
-        state: {}
-      })
-    } else {
-      value = encodeURIComponent(value)
-      this.props.history.push({
-        pathname: newPath,
-        search: this.props.history.location.search,
-        state: {}
-      })
-    }
+    value = encodeURIComponent(value)
+    this.props.history.push({
+      pathname: newPath,
+      search: locationSearchParams.toString(),
+      state: {}
+    })
   }
 
   onSelect = (value) => {

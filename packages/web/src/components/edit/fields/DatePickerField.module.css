@@ -14,6 +14,12 @@
   margin-bottom: var(--harmony-unit-1);
 }
 
+.noValue {
+  font-size: var(--harmony-font-l);
+  line-height: 18px;
+  margin-bottom: 0;
+}
+
 .iconCalendar {
   height: 20px;
   width: 20px;

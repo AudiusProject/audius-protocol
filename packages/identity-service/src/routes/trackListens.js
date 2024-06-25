@@ -17,6 +17,7 @@ const {
   createTrackListenInstructions,
   getFeePayerKeypair
 } = require('../solana-client')
+const { TransactionMessage, VersionedTransaction } = require('@solana/web3.js')
 const config = require('../config.js')
 
 function trimToHour(date) {
@@ -368,7 +369,9 @@ module.exports = function (app) {
     '/tracks/:id/listen',
     handleResponse(async (req, res) => {
       const libs = req.app.get('audiusLibs')
-      const connection = libs.solanaWeb3Manager.getConnection()
+      const connection = new libs.solanaWeb3Manager.solanaWeb3.Connection(
+        config.get('solanaEndpointListensProgram')
+      )
       const solanaWeb3 = libs.solanaWeb3Manager.solanaWeb3
       const redis = req.app.get('redis')
       const trackId = parseInt(req.params.id)
@@ -454,19 +457,29 @@ module.exports = function (app) {
         req.logger.info(
           `TrackListen tx submission, trackId=${trackId} userId=${userId} - sendRawTransaction`
         )
+        let solTxSignature
+        try {
+          const recentBlock = await connection.getLatestBlockhash('confirmed')
 
-        const transactionHandler = libs.solanaWeb3Manager.transactionHandler
-        const { res: solTxSignature, error } =
-          await transactionHandler.handleTransaction({
-            instructions,
-            skipPreflight: false, // TODO
-            feePayerOverride: feePayerAccount,
-            retry: true
+          const message = new TransactionMessage({
+            payerKey: feePayerAccount.publicKey,
+            recentBlockhash: recentBlock.blockhash,
+            instructions
           })
-
-        if (error) {
+          const versionedMessage = message.compileToV0Message()
+          const transaction = new VersionedTransaction(versionedMessage)
+          transaction.sign([feePayerAccount])
+          solTxSignature = await connection.sendRawTransaction(
+            transaction.serialize(),
+            {
+              skipPreflight: true,
+              preflightCommitment: 'processed',
+              maxRetries: 0
+            }
+          )
+        } catch (e) {
           return errorResponseServerError(
-            `TrackListens tx error, trackId=${trackId} userId=${userId} : ${error}`
+            `TrackListens tx error, trackId=${trackId} userId=${userId} : ${e}`
           )
         }
 
