@@ -64,6 +64,7 @@ export const notificationTypeMapping = {
   tip_receive: MappingVariable.PushTipRceive,
   tip_send: MappingVariable.PushTipSend,
   challenge_reward: MappingVariable.PushChallengeReward,
+  claimable_reward: MappingVariable.PushClaimableReward,
   track_added_to_playlist: MappingVariable.PushTrackAddedToPlaylist,
   create: MappingVariable.PushCreate,
   trending: MappingVariable.PushTrending,

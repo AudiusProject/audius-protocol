@@ -496,7 +496,7 @@ export interface RpcLogRow {
   from_wallet: string
   relayed_at: Date
   relayed_by: string
-  rpc: Object
+  rpc: object
   sig: string
 }
 export interface SaveRow {

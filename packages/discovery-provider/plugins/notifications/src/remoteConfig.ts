@@ -22,6 +22,7 @@ export enum MappingVariable {
   PushTipSend = 'push_tip_send',
   PushTastemaker = 'push_tastemaker',
   PushChallengeReward = 'push_challenge_reward',
+  PushClaimableReward = 'push_claimable_reward',
   PushTrackAddedToPlaylist = 'push_track_added_to_playlist',
   PushCreate = 'push_create',
   PushTrending = 'push_trending',
