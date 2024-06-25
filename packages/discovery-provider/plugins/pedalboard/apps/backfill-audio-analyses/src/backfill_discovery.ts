@@ -224,8 +224,8 @@ async function processBatches(db: any, batchSize: number): Promise<void> {
       break
     }
 
-    // sleep for 30 seconds
-    await new Promise((resolve) => setTimeout(resolve, 30000))
+    // sleep for 10 seconds
+    await new Promise((resolve) => setTimeout(resolve, 10000))
   }
 }
 
