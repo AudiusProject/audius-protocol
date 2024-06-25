@@ -6,7 +6,8 @@ import { sendPushNotification } from '../../sns'
 import { NotificationRow } from '../../types/dn'
 import { RequestManagerNotification } from '../../types/notifications'
 import { disableDeviceArns } from '../../utils/disableArnEndpoint'
-import { getContentNode, getHostname } from '../../utils/env'
+import { getHostname } from '../../utils/env'
+import { formatProfilePictureUrl } from '../../utils/format'
 import { sendBrowserNotification } from '../../web'
 import { BaseNotification } from './base'
 import {
@@ -109,18 +110,11 @@ export class RequestManager extends BaseNotification<RequestManagerRow> {
       html: email({
         managedAccountHandle: managedAccountUser.handle,
         managedAccountName: managedAccountName,
-        managedAccountProfilePicture: managedAccountUser.profile_picture_sizes
-          ? `${getContentNode()}/content/${
-              managedAccountUser.profile_picture_sizes
-            }/480x480.jpg`
-          : `${getContentNode()}/content/${managedAccountUser.profile_picture}`,
+        managedAccountProfilePicture:
+          formatProfilePictureUrl(managedAccountUser),
         managerHandle: managerUser.handle,
         managerName: managerUser.name,
-        managerProfilePicture: managerUser.profile_picture_sizes
-          ? `${getContentNode()}/content/${
-              managerUser.profile_picture_sizes
-            }/480x480.jpg`
-          : `${getContentNode()}/content/${managerUser.profile_picture}`,
+        managerProfilePicture: formatProfilePictureUrl(managerUser),
         link: `${getHostname()}/settings/accounts-you-manage?pending=${
           managedAccountUser.user_id
         }`
