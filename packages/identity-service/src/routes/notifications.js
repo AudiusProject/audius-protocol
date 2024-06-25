@@ -624,7 +624,7 @@ module.exports = function (app) {
       }
       try {
         if (notificationType === NotificationType.Announcement) {
-          const announcementMap = app.get('announcementMap')
+          const announcementMap = app.get('announcementMap') ?? {}
           const announcement = announcementMap[notificationId]
           if (!announcement)
             return errorResponseBadRequest('[Error] Invalid notification id')
@@ -703,7 +703,7 @@ module.exports = function (app) {
 
         await models.SolanaNotification.update(update, { where: { userId } })
 
-        const announcementMap = app.get('announcementMap')
+        const announcementMap = app.get('announcementMap') ?? {}
         const unreadAnnouncementIds = Object.keys(announcementMap).reduce(
           (acc, id) => {
             if (moment(announcementMap[id].datePublished).isAfter(createdDate))
@@ -742,6 +742,7 @@ module.exports = function (app) {
         }
         return successResponse({ message: 'success' })
       } catch (err) {
+        req.logger.error(err)
         return errorResponseBadRequest({
           message: `[Error] Unable to mark notification as read/hidden`
         })
