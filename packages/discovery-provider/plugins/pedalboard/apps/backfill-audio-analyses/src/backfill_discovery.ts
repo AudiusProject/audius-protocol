@@ -48,7 +48,8 @@ function formatErrorLog(
 async function getAudioAnalysis(contentNodes: string[], track: Track) {
   const audioUploadId = track.audio_upload_id || ''
   const trackCid = track.track_cid
-  if (!trackCid) return
+  // skip tracks that already have their audio analyses
+  if (!trackCid || track.musical_key || track.bpm || track.audio_analysis_error_count! > 0) return
   const isLegacyTrack = !audioUploadId
 
   const release = await semaphore.acquire() // acquire a semaphore permit
@@ -99,6 +100,15 @@ async function getAudioAnalysis(contentNodes: string[], track: Track) {
           bpm = results?.BPM
         }
 
+        if (
+          musicalKey == track.musical_key &&
+          bpm == track.bpm &&
+          errorCount == track.audio_analysis_error_count
+        ) {
+          // nothing to update
+          break
+        }
+
         result = {
           track_id: track.track_id,
           musical_key: musicalKey,
@@ -133,10 +143,6 @@ async function fetchTracks(
   db: Knex
 ): Promise<Track[]> {
   return await db<Track>('tracks')
-    .where(function () {
-      this.whereNull('musical_key').orWhereNull('bpm')
-    })
-    .andWhere('audio_analysis_error_count', '<', 3)
     .andWhere('track_cid', 'is not', null)
     .orderBy('track_id', 'asc')
     .offset(offset)
