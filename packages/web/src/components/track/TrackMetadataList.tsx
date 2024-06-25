@@ -8,7 +8,6 @@ import {
 } from '@audius/common/hooks'
 import { ID } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
-import { getCanonicalName } from '@audius/common/utils'
 import { Flex } from '@audius/harmony'
 import { Genre, Mood } from '@audius/sdk'
 
@@ -33,7 +32,7 @@ const renderMoodLegacy = (mood: Mood) => {
 const renderGenre = (genre: Genre) => {
   return (
     <TextLink to={getSearchPageLocation({ category: 'tracks', genre })}>
-      {getCanonicalName(genre)}
+      {genre}
     </TextLink>
   )
 }
@@ -85,7 +84,7 @@ export const TrackMetadataList = ({ trackId }: TrackMetadataListProps) => {
     (id: TrackMetadataType, value: string) => {
       switch (id) {
         case TrackMetadataType.GENRE:
-          return isSearchV2Enabled ? renderGenre(value as Genre) : undefined
+          return isSearchV2Enabled ? renderGenre(value as Genre) : value
         case TrackMetadataType.MOOD:
           return isSearchV2Enabled
             ? renderMood(value as Mood)
