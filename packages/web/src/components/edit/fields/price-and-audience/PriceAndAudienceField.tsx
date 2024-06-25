@@ -411,6 +411,7 @@ export const PriceAndAudienceField = (props: PriceAndAudienceFieldProps) => {
       setIsDownloadGated,
       setDownloadConditionsValue,
       setIsDownloadable,
+      isHiddenPaidScheduledEnabled,
       isDownloadable,
       setLastGateKeeper
     ]

@@ -5,6 +5,7 @@ import {
   useGetManagedAccounts,
   useRemoveManager
 } from '@audius/common/api'
+import { useAppContext } from '@audius/common/context'
 import { Name, Status, UserMetadata } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
 import { Box, Divider, Flex, Text } from '@audius/harmony'
@@ -17,7 +18,6 @@ import { AccountListItem } from './AccountListItem'
 import { sharedMessages } from './sharedMessages'
 import { AccountsYouManagePageProps, AccountsYouManagePages } from './types'
 import { usePendingInviteValidator } from './usePendingInviteValidator'
-import { useAppContext } from '@audius/common/context'
 const { getAccountUser } = accountSelectors
 
 const messages = {

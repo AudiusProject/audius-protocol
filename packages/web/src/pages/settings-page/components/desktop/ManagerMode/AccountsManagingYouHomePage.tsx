@@ -1,6 +1,7 @@
 import { useCallback, useContext, useEffect } from 'react'
 
 import { useGetManagers, useRemoveManager } from '@audius/common/api'
+import { useAppContext } from '@audius/common/context'
 import { Name, Status } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
 import { Box, Button, Divider, Flex, IconPlus, Text } from '@audius/harmony'
@@ -12,7 +13,6 @@ import { useSelector } from 'utils/reducer'
 import { AccountListItem } from './AccountListItem'
 import { sharedMessages } from './sharedMessages'
 import { AccountsManagingYouPageProps, AccountsManagingYouPages } from './types'
-import { useAppContext } from '@audius/common/context'
 
 const { getUserId } = accountSelectors
 

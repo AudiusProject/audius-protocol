@@ -1,10 +1,10 @@
 import { useCallback, useEffect } from 'react'
 
 import { useGetCurrentWeb3User, useRemoveManager } from '@audius/common/api'
+import { useAppContext } from '@audius/common/context'
 import { useAccountSwitcher } from '@audius/common/hooks'
 import { Name, Status } from '@audius/common/models'
 import { Button, Flex, Text } from '@audius/harmony'
-import { useAppContext } from '@audius/common/context'
 
 const messages = {
   cancel: 'Cancel',
@@ -45,7 +45,7 @@ export const RemoveManagerConfirmationContent = ({
       })
     )
     removeManager({ userId, managerUserId })
-  }, [userId, managerUserId, removeManager])
+  }, [userId, managerUserId, removeManager, make, track])
 
   useEffect(() => {
     if (status === Status.SUCCESS) {
