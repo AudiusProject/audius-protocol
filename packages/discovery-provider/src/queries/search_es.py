@@ -4,7 +4,10 @@ from typing import Any, Dict, Optional
 
 from src.api.v1.helpers import extend_playlist, extend_track, extend_user
 from src.queries.get_feed_es import fetch_followed_saves_and_reposts, item_key
-from src.queries.query_helpers import _populate_gated_content_metadata
+from src.queries.query_helpers import (
+    _populate_gated_content_metadata,
+    electronic_sub_genres,
+)
 from src.utils.db_session import get_db_read_replica
 from src.utils.elasticdsl import (
     ES_PLAYLISTS,
@@ -25,6 +28,18 @@ lowercase_to_capitalized_genre = {genre.lower(): genre for genre in genre_allowl
 
 def get_capitalized_genre(genre):
     return lowercase_to_capitalized_genre.get(genre.lower())
+
+
+def format_genres(genres: list[str] | None):
+    if not genres:
+        return None
+
+    capitalized_genres = [get_capitalized_genre(genre) for genre in genres]
+
+    if "Electronic" in capitalized_genres:
+        capitalized_genres += electronic_sub_genres
+
+    return list(set(capitalized_genres))
 
 
 lowercase_to_capitalized_mood = {mood.lower(): mood for mood in mood_allowlist}
@@ -73,7 +88,7 @@ def search_es_full(args: dict):
     only_downloadable = args.get("only_downloadable")
     is_auto_complete = args.get("is_auto_complete")
     include_purchaseable = args.get("include_purchaseable", False)
-    genres = args.get("genres", [])
+    genres = format_genres(args.get("genres", []))
     moods = args.get("moods", [])
     bpm_min = args.get("bpm_min")
     bpm_max = args.get("bpm_max")
@@ -497,14 +512,7 @@ def track_dsl(
     }
 
     if genres:
-        capitalized_genres = list(
-            filter(
-                None,
-                [get_capitalized_genre(genre) for genre in genres if genre is not None],
-            )
-        )
-        if capitalized_genres:
-            dsl["filter"].append({"terms": {"genre": capitalized_genres}})
+        dsl["filter"].append({"terms": {"genre": genres}})
 
     if moods:
         capitalized_moods = list(
@@ -712,37 +720,30 @@ def user_dsl(
     }
 
     if genres:
-        capitalized_genres = list(
-            filter(
-                None,
-                [get_capitalized_genre(genre) for genre in genres if genre is not None],
-            )
-        )
-        if capitalized_genres:
-            # At least one track genre must match
-            dsl["must"].append({"terms": {"tracks.genre": capitalized_genres}})
-            # Logarithmically boost profiles with multiple tracks matching genre
-            query["query"]["function_score"]["functions"].append(
-                {
-                    "script_score": {
-                        "script": {
-                            "source": """
-                                double matchedTracks = 0;
-                                for (track in params['_source'].tracks) {
-                                    if (params.genres.contains(track.genre)) {
-                                        matchedTracks++;
-                                    }
+        # At least one track genre must match
+        dsl["must"].append({"terms": {"tracks.genre": genres}})
+        # Logarithmically boost profiles with multiple tracks matching genre
+        query["query"]["function_score"]["functions"].append(
+            {
+                "script_score": {
+                    "script": {
+                        "source": """
+                            double matchedTracks = 0;
+                            for (track in params['_source'].tracks) {
+                                if (params.genres.contains(track.genre)) {
+                                    matchedTracks++;
                                 }
-                                return Math.log(1 + matchedTracks) * params.boost;
-                            """,
-                            "params": {
-                                "genres": capitalized_genres,
-                                "boost": 2,
-                            },
-                        }
-                    },
-                }
-            )
+                            }
+                            return Math.log(1 + matchedTracks) * params.boost;
+                        """,
+                        "params": {
+                            "genres": genres,
+                            "boost": 2,
+                        },
+                    }
+                },
+            }
+        )
 
     # Set the dsl on the query object
     query["query"]["function_score"]["query"] = {"bool": dsl}
@@ -841,37 +842,30 @@ def base_playlist_dsl(
     }
 
     if genres:
-        capitalized_genres = list(
-            filter(
-                None,
-                [get_capitalized_genre(genre) for genre in genres if genre is not None],
-            )
-        )
-        if capitalized_genres:
-            # At least one track genre must match
-            dsl["must"].append({"terms": {"tracks.genre": capitalized_genres}})
-            # Logarithmically boost profiles with multiple tracks matching genre
-            query["query"]["function_score"]["functions"].append(
-                {
-                    "script_score": {
-                        "script": {
-                            "source": """
-                                double matchedTracks = 0;
-                                for (track in params['_source'].tracks) {
-                                    if (params.genres.contains(track.genre)) {
-                                        matchedTracks++;
-                                    }
+        # At least one track genre must match
+        dsl["must"].append({"terms": {"tracks.genre": genres}})
+        # Logarithmically boost profiles with multiple tracks matching genre
+        query["query"]["function_score"]["functions"].append(
+            {
+                "script_score": {
+                    "script": {
+                        "source": """
+                            double matchedTracks = 0;
+                            for (track in params['_source'].tracks) {
+                                if (params.genres.contains(track.genre)) {
+                                    matchedTracks++;
                                 }
-                                return Math.log(1 + matchedTracks) * params.boost;
-                            """,
-                            "params": {
-                                "genres": capitalized_genres,
-                                "boost": 2,
-                            },
-                        }
-                    },
-                }
-            )
+                            }
+                            return Math.log(1 + matchedTracks) * params.boost;
+                        """,
+                        "params": {
+                            "genres": genres,
+                            "boost": 2,
+                        },
+                    }
+                },
+            }
+        )
 
     if only_with_downloads:
         dsl["must"].append(
