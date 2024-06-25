@@ -224,14 +224,14 @@ export const Button = (props: ButtonProps) => {
 
   const animatedButtonStyles = useAnimatedStyle(() => {
     return {
-      borderColor: disabled
+      borderColor: isDisabled
         ? buttonStyles.borderColor
         : interpolateColor(
             pressed.value,
             [0, 1],
             [dynamicStyles.default.border, dynamicStyles.press.border]
           ),
-      backgroundColor: disabled
+      backgroundColor: isDisabled
         ? buttonStyles.backgroundColor
         : interpolateColor(
             pressed.value,
@@ -239,7 +239,7 @@ export const Button = (props: ButtonProps) => {
             [dynamicStyles.default.background, dynamicStyles.press.background]
           )
     }
-  }, [disabled])
+  }, [isDisabled, variant])
 
   const textStyles =
     size === 'small'
@@ -256,7 +256,7 @@ export const Button = (props: ButtonProps) => {
         [dynamicStyles.default.text, dynamicStyles.press.text]
       )
     }
-  }, [disabled])
+  }, [variant])
 
   const textColor =
     (variant === 'secondary' && !isDisabled) || variant === 'tertiary'
