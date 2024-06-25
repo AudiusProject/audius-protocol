@@ -2160,8 +2160,9 @@ export const audiusBackend = ({
         withTrendingTrack: true
       }
 
+      // Passing user_id to support manager mode
       const getNotificationsUrl = queryString.stringifyUrl({
-        url: `${identityServiceUrl}/notifications`,
+        url: `${identityServiceUrl}/notifications?user_id=${account.user_id}`,
         query
       })
 
@@ -2214,15 +2215,19 @@ export const audiusBackend = ({
     let notificationsReadResponse
     try {
       const { data, signature } = await signData()
-      const response = await fetch(`${identityServiceUrl}/notifications/all`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          [AuthHeaders.Message]: data,
-          [AuthHeaders.Signature]: signature
-        },
-        body: JSON.stringify({ isViewed: true, clearBadges: !!nativeMobile })
-      })
+      // Passing `user_id` to support manager mode
+      const response = await fetch(
+        `${identityServiceUrl}/notifications/all?user_id=${account.user_id}`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            [AuthHeaders.Message]: data,
+            [AuthHeaders.Signature]: signature
+          },
+          body: JSON.stringify({ isViewed: true, clearBadges: !!nativeMobile })
+        }
+      )
       notificationsReadResponse = await response.json()
     } catch (e) {
       console.error(e)
