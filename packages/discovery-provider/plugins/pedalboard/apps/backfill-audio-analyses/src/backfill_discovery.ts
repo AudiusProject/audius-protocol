@@ -46,14 +46,23 @@ function formatErrorLog(
 }
 
 async function getAudioAnalysis(contentNodes: string[], track: Track) {
-  const audioUploadId = track.audio_upload_id || ''
+  let result = null
+
   const trackCid = track.track_cid
-  if (!trackCid) return
+  // skip tracks that already have their audio analyses
+  if (
+    !trackCid ||
+    track.musical_key ||
+    track.bpm ||
+    track.audio_analysis_error_count! > 0
+  )
+    return result
+
+  const audioUploadId = track.audio_upload_id || ''
   const isLegacyTrack = !audioUploadId
 
   const release = await semaphore.acquire() // acquire a semaphore permit
 
-  let result = null
   // allow up to 5 attempts to get audio analysis for this track
   for (let i = 0; i < 5; i++) {
     // choose a random content node
@@ -99,6 +108,15 @@ async function getAudioAnalysis(contentNodes: string[], track: Track) {
           bpm = results?.BPM
         }
 
+        if (
+          musicalKey == track.musical_key &&
+          bpm == track.bpm &&
+          errorCount == track.audio_analysis_error_count
+        ) {
+          // nothing to update
+          break
+        }
+
         result = {
           track_id: track.track_id,
           musical_key: musicalKey,
@@ -133,10 +151,14 @@ async function fetchTracks(
   db: Knex
 ): Promise<Track[]> {
   return await db<Track>('tracks')
-    .where(function () {
-      this.whereNull('musical_key').orWhereNull('bpm')
-    })
-    .andWhere('audio_analysis_error_count', '<', 3)
+    .select(
+      'track_id',
+      'track_cid',
+      'audio_upload_id',
+      'musical_key',
+      'bpm',
+      'audio_analysis_error_count'
+    )
     .andWhere('track_cid', 'is not', null)
     .orderBy('track_id', 'asc')
     .offset(offset)
@@ -202,8 +224,8 @@ async function processBatches(db: any, batchSize: number): Promise<void> {
       break
     }
 
-    // sleep for 30 seconds
-    await new Promise((resolve) => setTimeout(resolve, 30000))
+    // sleep for 10 seconds
+    await new Promise((resolve) => setTimeout(resolve, 10000))
   }
 }
 
@@ -213,7 +235,7 @@ export const backfillDiscovery = async (app: App<SharedData>) => {
     return
   }
   const db = app.getDnDb()
-  const BACKFILL_BATCH_SIZE = config.testRun ? 100 : 1000
+  const BACKFILL_BATCH_SIZE = config.testRun ? 100 : 3000
   await processBatches(db, BACKFILL_BATCH_SIZE)
 
   console.log('backfill_discovery.ts | No more tracks to backfill. Goodbye!')
