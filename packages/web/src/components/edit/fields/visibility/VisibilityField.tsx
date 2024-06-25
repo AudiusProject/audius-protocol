@@ -43,6 +43,7 @@ type VisibilityType = 'scheduled' | 'public' | 'hidden'
 
 type VisibilityFieldProps = {
   entityType: 'track' | 'album' | 'playlist'
+  isUpload: boolean
 }
 
 const visibilitySchema = z
@@ -59,13 +60,16 @@ const visibilitySchema = z
   )
 
 export const VisibilityField = (props: VisibilityFieldProps) => {
-  const { entityType } = props
+  const { entityType, isUpload } = props
   const useEntityField = entityType === 'track' ? useTrackField : useField
   const [{ value: isHidden }, , { setValue: setIsUnlisted }] =
     useEntityField<boolean>(entityType === 'track' ? IS_UNLISTED : IS_PRIVATE)
 
-  const [{ value: isScheduledRelease }, , { setValue: setIsScheduledRelease }] =
-    useEntityField<boolean>(IS_SCHEDULED_RELEASE)
+  const [
+    { value: isScheduledRelease },
+    { initialValue: initiallyHidden },
+    { setValue: setIsScheduledRelease }
+  ] = useEntityField<boolean>(IS_SCHEDULED_RELEASE)
 
   const [{ value: releaseDate }, , { setValue: setReleaseDate }] =
     useEntityField<string>('release_date')
@@ -154,12 +158,19 @@ export const VisibilityField = (props: VisibilityFieldProps) => {
           }
         }
       }}
-      menuFields={<VisibilityMenuFields />}
+      menuFields={
+        <VisibilityMenuFields initiallyPublic={!initiallyHidden && !isUpload} />
+      }
     />
   )
 }
 
-const VisibilityMenuFields = () => {
+type VisibilityMenuFieldsProps = {
+  initiallyPublic?: boolean
+}
+
+const VisibilityMenuFields = (props: VisibilityMenuFieldsProps) => {
+  const { initiallyPublic } = props
   const [field] = useField<VisibilityType>('visibilityType')
 
   return (
@@ -173,12 +184,14 @@ const VisibilityMenuFields = () => {
         value='hidden'
         label={messages.hidden}
         description={messages.hiddenDescription}
+        disabled={initiallyPublic}
       />
       <ModalRadioItem
         value='scheduled'
         label={messages.scheduledRelease}
         description={messages.scheduledReleaseDescription}
         checkedContent={<ReleaseDateField />}
+        disabled={initiallyPublic}
       />
     </RadioGroup>
   )

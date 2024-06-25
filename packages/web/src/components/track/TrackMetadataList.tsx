@@ -18,10 +18,6 @@ import { moodMap } from 'utils/Moods'
 import { getSearchPageLocation } from 'utils/route'
 import { trpc } from 'utils/trpcClientWeb'
 
-type TrackMetadataListProps = {
-  trackId: ID
-}
-
 const renderMood = (mood: Mood) => {
   return (
     <TextLink to={getSearchPageLocation({ category: 'tracks', mood })}>
@@ -66,6 +62,13 @@ const renderAlbum = (albumInfo: AlbumInfo) => {
   )
 }
 
+type TrackMetadataListProps = {
+  trackId: ID
+}
+
+/**
+ * The additional metadata shown at the bottom of the Track Page Header
+ */
 export const TrackMetadataList = ({ trackId }: TrackMetadataListProps) => {
   const { isEnabled: isSearchV2Enabled } = useFeatureFlag(
     FeatureFlags.SEARCH_V2

@@ -4,7 +4,11 @@ import {
   fetchSearchPageTags,
   fetchSearchPageResults
 } from '@audius/common/src/store/pages/search-results/actions'
-import { SearchKind, searchResultsPageSelectors } from '@audius/common/store'
+import {
+  SearchKind,
+  SearchSortMethod,
+  searchResultsPageSelectors
+} from '@audius/common/store'
 import { Flex } from '@audius/harmony/src/components/layout'
 import { Genre, Mood } from '@audius/sdk'
 import { useDispatch } from 'react-redux'
@@ -27,7 +31,7 @@ export const SearchResults = () => {
   const routeMatch = useRouteMatch<{ category: string }>(SEARCH_PAGE)
   const [urlSearchParams] = useSearchParams()
   const query = urlSearchParams.get('query')
-  const sort = urlSearchParams.get('sort')
+  const sortMethod = urlSearchParams.get('sortMethod') as SearchSortMethod
   const genre = urlSearchParams.get('genre')
   const mood = urlSearchParams.get('mood')
   const bpm = urlSearchParams.get('bpm')
@@ -64,14 +68,14 @@ export const SearchResults = () => {
           isVerified: isVerified === 'true',
           hasDownloads: hasDownloads === 'true',
           isPremium: isPremium === 'true',
-          sort: sort || undefined
+          sortMethod: sortMethod || undefined
         })
       )
     }
   }, [
     dispatch,
     query,
-    sort,
+    sortMethod,
     genre,
     mood,
     isVerified,

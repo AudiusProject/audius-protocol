@@ -36,7 +36,7 @@ const renderTrackVisibilityField = (options?: { initialValues: any }) => {
       onSubmit={submitSpy}
     >
       <Form>
-        <VisibilityField entityType='track' />
+        <VisibilityField entityType='track' isUpload={false} />
         <button type='submit'>Submit</button>
       </Form>
     </Formik>

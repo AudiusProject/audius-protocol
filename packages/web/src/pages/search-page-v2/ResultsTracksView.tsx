@@ -49,7 +49,7 @@ export const ResultsTracksView = () => {
   const buffering = useSelector(getBuffering)
   const tracksLineup = useSelector(getTracksLineup)
   const [urlSearchParams] = useSearchParams()
-  const updateSortParam = useUpdateSearchParams('sort')
+  const updateSortParam = useUpdateSearchParams('sortMethod')
   const routeMatch = useRouteMatch<{ category: string }>(SEARCH_PAGE)
   const isCategoryActive = useCallback(
     (category: CategoryView) => routeMatch?.category === category,
@@ -60,7 +60,7 @@ export const ResultsTracksView = () => {
     !isCategoryActive(CategoryView.TRACKS) || tracksLayout === 'grid'
   const isLoading = results.status === Status.LOADING
   const query = urlSearchParams.get('query')
-  const sort = urlSearchParams.get('sort')
+  const sortMethod = urlSearchParams.get('sortMethod')
   const trackLimit = isCategoryActive(CategoryView.TRACKS) ? 100 : 10
   const trackIds = results.trackIds?.slice(0, trackLimit) ?? []
   const tracksData = {
@@ -91,7 +91,7 @@ export const ResultsTracksView = () => {
         {isCategoryActive(CategoryView.TRACKS) ? (
           <Flex gap='s'>
             <OptionsFilterButton
-              selection={sort ?? 'relevant'}
+              selection={sortMethod ?? 'relevant'}
               variant='replaceLabel'
               optionsLabel={messages.sortOptionsLabel}
               onChange={updateSortParam}
