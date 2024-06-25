@@ -97,6 +97,7 @@ export const ResultsTracksView = () => {
               onChange={updateSortParam}
               options={[
                 { label: 'Most Relevant', value: 'relevant' },
+                { label: 'Most Popular', value: 'popular' },
                 { label: 'Most Recent', value: 'recent' }
               ]}
             />

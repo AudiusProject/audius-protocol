@@ -49,10 +49,12 @@ export class TrackIndexer extends BaseIndexer<TrackDoc> {
         has_stems: { type: 'boolean' },
         bpm: { type: 'float' },
         musical_key: { type: 'keyword' },
+        play_count: { type: 'integer' },
 
         // saves
         saved_by: { type: 'keyword' },
         save_count: { type: 'integer' },
+
         // reposts
         reposted_by: { type: 'keyword' },
         repost_count: { type: 'integer' },
@@ -185,6 +187,7 @@ export class TrackIndexer extends BaseIndexer<TrackDoc> {
       .join(' ')
     row.tag_list = splitTags(row.tags)
     row.repost_count = row.reposted_by.length
+    row.save_count = row.saved_by.length
     row.favorite_count = row.saved_by.length
 
     // get_feed_es uses `created_at` for tracks + playlists + reposts to sequence events
