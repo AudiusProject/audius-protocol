@@ -593,7 +593,7 @@ def track_dsl(
                         "source": """
                             double playCount = doc['play_count'].value;
                             double repostCount = doc['repost_count'].value;
-                            double saveCount = doc['favorite_count'].value;
+                            double saveCount = doc['save_count'].value;
                             double followerCount = doc['user.follower_count'].value;
                             double socialScore = followerCount;
                             // Get the current time and updated_at time in milliseconds
