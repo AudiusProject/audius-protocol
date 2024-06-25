@@ -101,7 +101,7 @@ def repair(session: Session, redis: Redis):
             # Only analyze streamable tracks
             continue
         legacy_track = not track.audio_upload_id
-        success = False
+        found = False
         for node in nodes:
             try:
                 # Query random content node for the audio upload id
@@ -156,10 +156,10 @@ def repair(session: Session, redis: Redis):
                 logger.warning(
                     f"repair_audio_analyses.py | Track ID {track.track_id} (track_cid: {track.track_cid}, audio_upload_id: {track.audio_upload_id}) failed audio analysis >= 3 times"
                 )
-            success = True
+            found = True
             break
 
-        if not success:
+        if not found:
             logger.warning(
                 f"repair_audio_analyses.py | failed to query audio analysis for track {track.track_id} (track_cid: {track.track_cid}, audio_upload_id: {track.audio_upload_id}). tried {nodes}. triggering analysis..."
             )
