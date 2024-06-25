@@ -46,15 +46,23 @@ function formatErrorLog(
 }
 
 async function getAudioAnalysis(contentNodes: string[], track: Track) {
-  const audioUploadId = track.audio_upload_id || ''
+  let result = null
+
   const trackCid = track.track_cid
   // skip tracks that already have their audio analyses
-  if (!trackCid || track.musical_key || track.bpm || track.audio_analysis_error_count! > 0) return
+  if (
+    !trackCid ||
+    track.musical_key ||
+    track.bpm ||
+    track.audio_analysis_error_count! > 0
+  )
+    return result
+
+  const audioUploadId = track.audio_upload_id || ''
   const isLegacyTrack = !audioUploadId
 
   const release = await semaphore.acquire() // acquire a semaphore permit
 
-  let result = null
   // allow up to 5 attempts to get audio analysis for this track
   for (let i = 0; i < 5; i++) {
     // choose a random content node
