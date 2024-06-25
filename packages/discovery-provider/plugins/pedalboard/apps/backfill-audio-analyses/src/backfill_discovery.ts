@@ -151,6 +151,14 @@ async function fetchTracks(
   db: Knex
 ): Promise<Track[]> {
   return await db<Track>('tracks')
+    .select(
+      'track_id',
+      'track_cid',
+      'audio_upload_id',
+      'musical_key',
+      'bpm',
+      'audio_analysis_error_count'
+    )
     .andWhere('track_cid', 'is not', null)
     .orderBy('track_id', 'asc')
     .offset(offset)
@@ -227,7 +235,7 @@ export const backfillDiscovery = async (app: App<SharedData>) => {
     return
   }
   const db = app.getDnDb()
-  const BACKFILL_BATCH_SIZE = config.testRun ? 100 : 1000
+  const BACKFILL_BATCH_SIZE = config.testRun ? 100 : 3000
   await processBatches(db, BACKFILL_BATCH_SIZE)
 
   console.log('backfill_discovery.ts | No more tracks to backfill. Goodbye!')
