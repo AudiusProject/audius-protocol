@@ -169,8 +169,6 @@ export const CHANGE_PASSWORD_SETTINGS_PAGE = '/settings/change-password'
 export const AUTHORIZED_APPS_SETTINGS_PAGE = '/settings/authorized-apps'
 export const ACCOUNTS_MANAGING_YOU_SETTINGS_PAGE = '/settings/managing-you'
 export const ACCOUNTS_YOU_MANAGE_SETTINGS_PAGE = '/settings/accounts-you-manage'
-export const accountManagerInvitePage = (pendingManagedAccountUserId: number) =>
-  `${ACCOUNTS_YOU_MANAGE_SETTINGS_PAGE}?pending=${pendingManagedAccountUserId}`
 export const TRENDING_GENRES = '/trending/genres'
 export const EMPTY_PAGE = '/empty_page'
 

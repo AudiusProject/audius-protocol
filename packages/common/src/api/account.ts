@@ -23,7 +23,6 @@ type RemoveManagerPayload = {
 
 type ApproveManagedAccountPayload = {
   userId: number
-  userWalletAddress: string
   grantorUser: UserMetadata | User
 }
 
@@ -225,38 +224,25 @@ const accountApi = createApi({
         return payload
       },
       options: {
-        idArgKey: 'grantorUser.user_id',
         type: 'mutation'
       },
       async onQueryStarted(
         payload: ApproveManagedAccountPayload,
         { dispatch }
       ) {
-        const { userId, grantorUser, userWalletAddress } = payload
+        const { userId, grantorUser } = payload
         dispatch(
           accountApi.util.updateQueryData(
             'getManagedAccounts',
             { userId },
             (state) => {
-              const currentTime = dayjs().format('YYYY-MM-DD HH:mm:ss')
               // TODO(C-4330) - The state type is incorrect - fix.
               // @ts-expect-error
               const foundIndex = state.managedUsers.findIndex(
                 (m: { user: number }) => m.user === grantorUser.user_id
               )
               // @ts-expect-error
-              state.managedUsers.splice(foundIndex, 1, {
-                grant: {
-                  created_at: currentTime,
-                  // TODO(nkang - C-4332) - Fill this in
-                  grantee_address: userWalletAddress,
-                  is_approved: true,
-                  is_revoked: false,
-                  updated_at: currentTime,
-                  user_id: userId
-                },
-                user: grantorUser
-              })
+              state.managedUsers[foundIndex].grant.is_approved = true
             }
           )
         )
