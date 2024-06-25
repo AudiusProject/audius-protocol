@@ -1,5 +1,7 @@
 import { Buffer } from 'buffer'
 
+import { sha256 } from '@noble/hashes/sha256'
+import { bytesToHex as toHex } from '@noble/hashes/utils'
 import CRC32C from 'crc-32/crc32c'
 
 class NodeScore {
@@ -28,27 +30,24 @@ export class RendezvousHash {
     }
   }
 
+  getNodes(): string[] {
+    return this.nodes.map((nodeScore) => nodeScore.node.toString())
+  }
+
   get(key: string): string {
-    let maxScore = 0
-    let maxNode: Buffer | null = null
-
-    const keyBytes = Buffer.from(key)
-
-    for (const node of this.nodes) {
-      const score = this.hash(node.node, keyBytes)
-      if (
-        score > maxScore ||
-        (score === maxScore && node.node.compare(maxNode!) < 0)
-      ) {
-        maxScore = score
-        maxNode = node.node
-      }
-    }
-
-    return maxNode?.toString() ?? ''
+    const first = this.getN(1, key)[0]
+    return first ?? ''
   }
 
   getN(n: number, key: string): string[] {
+    const legacy = this.getNcrc32(2, key)
+    const modern = this.rendezvous256(key).filter(
+      (h) => legacy.indexOf(h) === -1
+    )
+    return [...legacy, ...modern].slice(0, n)
+  }
+
+  getNcrc32(n: number, key: string): string[] {
     const keyBytes = Buffer.from(key)
     for (const node of this.nodes) {
       node.score = this.hash(node.node, keyBytes)
@@ -72,8 +71,20 @@ export class RendezvousHash {
     return nodes
   }
 
-  getNodes(): string[] {
-    return this.nodes.map((nodeScore) => nodeScore.node.toString())
+  rendezvous256(key: string) {
+    const tuples = this.nodes.map((n) => {
+      const hostName = n.node.toString()
+      return [hostName, toHex(sha256(`${hostName}${key}`))]
+    })
+    tuples.sort((t1, t2) => {
+      const [aHost, aScore] = t1
+      const [bHost, bScore] = t2
+      if (aScore === bScore) {
+        return aHost! < bHost! ? -1 : 1
+      }
+      return aScore! < bScore! ? -1 : 1
+    })
+    return tuples.map((t) => t[0]!)
   }
 
   private hash(node: Buffer, key: Buffer): number {
