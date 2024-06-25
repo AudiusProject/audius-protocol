@@ -113,7 +113,7 @@ const TrackEditForm = (
             <TrackMetadataFields />
             <div className={cn(layoutStyles.col, layoutStyles.gap4)}>
               {isHiddenPaidScheduledEnabled ? (
-                <VisibilityField entityType='track' />
+                <VisibilityField entityType='track' isUpload={isUpload} />
               ) : (
                 <ReleaseDateField />
               )}

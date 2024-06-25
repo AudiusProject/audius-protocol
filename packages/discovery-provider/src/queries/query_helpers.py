@@ -142,6 +142,12 @@ class TransactionSortMethod(str, enum.Enum):
     transaction_type = "transaction_type"
 
 
+class SearchSortMethod(str, enum.Enum):
+    relevant = "relevant"
+    popular = "popular"
+    recent = "recent"
+
+
 class SortDirection(str, enum.Enum):
     asc = "asc"
     desc = "desc"

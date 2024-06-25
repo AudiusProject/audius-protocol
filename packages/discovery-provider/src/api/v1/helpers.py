@@ -17,6 +17,7 @@ from src.queries.get_undisbursed_challenges import UndisbursedChallengeResponse
 from src.queries.query_helpers import (
     CollectionLibrarySortMethod,
     LibraryFilterType,
+    SearchSortMethod,
     SortDirection,
     SortMethod,
 )
@@ -881,6 +882,13 @@ full_search_parser.add_argument(
     required=False,
     type=str,
     description="Only include tracks that have a bpm less than or equal to",
+)
+full_search_parser.add_argument(
+    "sort_method",
+    required=False,
+    description="The sort method",
+    type=str,
+    choices=SearchSortMethod._member_names_,
 )
 
 verify_token_parser = reqparse.RequestParser(argument_class=DescriptiveArgument)
