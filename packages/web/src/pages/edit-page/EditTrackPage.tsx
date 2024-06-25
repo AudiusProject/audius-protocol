@@ -60,6 +60,7 @@ export const EditTrackPage = (props: EditPageProps) => {
     if (!track) return
     dispatch(deleteTrack(track.track_id))
     setShowDeleteConfirmation(false)
+    dispatch(pushRoute(`/${track.user.handle}`))
   }
 
   const coverArtUrl = useTrackCoverArt2(
@@ -104,7 +105,11 @@ export const EditTrackPage = (props: EditPageProps) => {
         <LoadingSpinnerFullPage />
       ) : (
         <EditFormScrollContext.Provider value={scrollToTop}>
-          <EditTrackForm initialValues={initialValues} onSubmit={onSubmit} />
+          <EditTrackForm
+            initialValues={initialValues}
+            onSubmit={onSubmit}
+            onDeleteTrack={() => setShowDeleteConfirmation(true)}
+          />
         </EditFormScrollContext.Provider>
       )}
       <DeleteConfirmationModal
