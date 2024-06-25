@@ -31,7 +31,8 @@ import {
   IconCart,
   Box,
   Button,
-  MusicBadge
+  MusicBadge,
+  Text
 } from '@audius/harmony'
 import IconCalendarMonth from '@audius/harmony/src/assets/icons/CalendarMonth.svg'
 import IconRobot from '@audius/harmony/src/assets/icons/Robot.svg'
@@ -326,17 +327,33 @@ const TrackHeader = ({
         titleMessage = messages.premiumTrack
       }
       return (
-        <div className={cn(styles.typeLabel, styles.gatedContentLabel)}>
-          <IconComponent />
-          <span>{titleMessage}</span>
-        </div>
+        <Flex gap='xs' justifyContent='center' alignItems='center'>
+          <IconComponent color='subdued' size='s' />
+          <Text
+            variant='label'
+            color='subdued'
+            css={{
+              letterSpacing: '2px'
+            }}
+          >
+            {titleMessage}
+          </Text>
+        </Flex>
       )
     }
 
     return (
-      <div className={styles.typeLabel}>
-        {isRemix ? messages.remix : messages.track}
-      </div>
+      <Flex justifyContent='center' alignItems='center'>
+        <Text
+          variant='label'
+          color='subdued'
+          css={{
+            letterSpacing: '2px'
+          }}
+        >
+          {isRemix ? messages.remix : messages.track}
+        </Text>
+      </Flex>
     )
   }
 
