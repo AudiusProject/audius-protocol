@@ -87,7 +87,7 @@ export const FilterButton = forwardRef<HTMLButtonElement, FilterButtonProps>(
 
     // Button Styles
     const buttonCss: CSSObject = {
-      background: 'transparent',
+      background: color.background.white,
       border: `1px solid ${color.border.strong}`,
       borderRadius: cornerRadius.s,
       color:
