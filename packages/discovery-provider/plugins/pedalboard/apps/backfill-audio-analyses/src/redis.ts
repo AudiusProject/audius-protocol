@@ -5,8 +5,6 @@ import { logger } from './logger'
 let redisClient: RedisClientType
 let isReady: boolean
 
-const DB_OFFSET_KEY = 'backfill_audio_analyses:offset'
-
 const parseArray = (json: string | null) => {
   try {
     const parsed = JSON.parse(json ?? '[]')
@@ -30,10 +28,10 @@ export const getRedisConnection = async () => {
   return redisClient
 }
 
-export const storeDbOffset = async (offset: number) => {
+export const storeDbOffset = async (key: string, offset: number) => {
   try {
     const redis = await getRedisConnection()
-    await redis.set(DB_OFFSET_KEY, offset.toString())
+    await redis.set(key, offset.toString())
   } catch (e) {
     logger.error({ error: e }, 'could not store db offset')
   }
@@ -41,10 +39,10 @@ export const storeDbOffset = async (offset: number) => {
 
 // reads the last recorded db offset from redis
 // returns null if not found
-export const readDbOffset = async (): Promise<number | null> => {
+export const readDbOffset = async (key: string): Promise<number | null> => {
   try {
     const redis = await getRedisConnection()
-    const cacheValue = await redis.get(DB_OFFSET_KEY)
+    const cacheValue = await redis.get(key)
     if (cacheValue == null) return null
     return parseInt(cacheValue, 10)
   } catch (e) {
