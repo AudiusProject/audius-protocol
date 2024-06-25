@@ -27,7 +27,7 @@ export const ResultsPlaylistsView = () => {
   // const [playlistsLayout, setPlaylistsLayout] = useState<ViewLayout>('grid')
   const results = useSelector(getSearchResults)
   const [urlSearchParams] = useSearchParams()
-  const updateSortParam = useUpdateSearchParams('sort')
+  const updateSortParam = useUpdateSearchParams('sortMethod')
   const routeMatch = useRouteMatch<{ category: string }>(SEARCH_PAGE)
   const isCategoryActive = useCallback(
     (category: CategoryView) => routeMatch?.category === category,
@@ -35,7 +35,7 @@ export const ResultsPlaylistsView = () => {
   )
 
   const isLoading = results.status === Status.LOADING
-  const sort = urlSearchParams.get('sort')
+  const sortMethod = urlSearchParams.get('sortMethod')
   const playlistLimit = isCategoryActive(CategoryView.PLAYLISTS) ? 100 : 5
   const playlistIds = results.playlistIds?.slice(0, playlistLimit) ?? []
 
@@ -57,7 +57,7 @@ export const ResultsPlaylistsView = () => {
         {isCategoryActive(CategoryView.PLAYLISTS) ? (
           <Flex gap='s'>
             <OptionsFilterButton
-              selection={sort ?? 'relevant'}
+              selection={sortMethod ?? 'relevant'}
               variant='replaceLabel'
               optionsLabel={messages.sortOptionsLabel}
               onChange={updateSortParam}

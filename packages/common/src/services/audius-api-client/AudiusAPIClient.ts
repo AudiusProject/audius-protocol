@@ -8,7 +8,10 @@ import {
   UserChallenge
 } from '../../models'
 import { UndisbursedUserChallenge } from '../../store'
-import { SearchKind } from '../../store/pages/search-results/types'
+import {
+  SearchKind,
+  SearchSortMethod
+} from '../../store/pages/search-results/types'
 import { decodeHashId, encodeHashId } from '../../utils/hashIds'
 import { Nullable, removeNullable } from '../../utils/typeUtils'
 import { AuthHeaders } from '../audius-backend'
@@ -292,6 +295,7 @@ type GetSearchArgs = {
   isVerified?: boolean
   hasDownloads?: boolean
   isPremium?: boolean
+  sortMethod?: SearchSortMethod
 }
 
 type TrendingIdsResponse = {
@@ -1139,7 +1143,8 @@ export class AudiusAPIClient {
     key,
     isVerified,
     hasDownloads,
-    isPremium
+    isPremium,
+    sortMethod
   }: GetSearchArgs) {
     this._assertInitialized()
     const encodedUserId = encodeHashId(currentUserId)
@@ -1157,7 +1162,8 @@ export class AudiusAPIClient {
       key,
       is_verified: isVerified,
       has_downloads: hasDownloads,
-      is_purchaseable: isPremium
+      is_purchaseable: isPremium,
+      sort_method: sortMethod
     }
 
     const searchResponse =

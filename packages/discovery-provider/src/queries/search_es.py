@@ -96,6 +96,7 @@ def search_es_full(args: dict):
     only_verified = args.get("only_verified", False)
     only_with_downloads = args.get("only_with_downloads", False)
     only_purchaseable = args.get("only_purchaseable", False)
+    sort_method = args.get("sort_method", "relevant")
     do_tracks = search_type == "all" or search_type == "tracks"
     do_users = search_type == "all" or search_type == "users"
     do_playlists = search_type == "all" or search_type == "playlists"
@@ -126,6 +127,7 @@ def search_es_full(args: dict):
                     keys=keys,
                     only_with_downloads=only_with_downloads,
                     only_purchaseable=only_purchaseable,
+                    sort_method=sort_method,
                 ),
             ]
         )
@@ -141,6 +143,7 @@ def search_es_full(args: dict):
                     must_saved=False,
                     only_verified=only_verified,
                     genres=genres,
+                    sort_method=sort_method,
                 ),
             ]
         )
@@ -155,6 +158,7 @@ def search_es_full(args: dict):
                     current_user_id=current_user_id,
                     genres=genres,
                     moods=moods,
+                    sort_method=sort_method,
                 ),
             ]
         )
@@ -171,6 +175,7 @@ def search_es_full(args: dict):
                     moods=moods,
                     only_with_downloads=only_with_downloads,
                     only_purchaseable=only_purchaseable,
+                    sort_method=sort_method,
                 ),
             ]
         )
@@ -441,6 +446,7 @@ def track_dsl(
     moods=[],
     keys=[],
     only_with_downloads=False,
+    sort_method="relevant",
 ):
     dsl = {
         "must": [
@@ -573,7 +579,12 @@ def track_dsl(
 
     personalize_dsl(dsl, current_user_id, must_saved)
 
-    return default_function_score(dsl, "repost_count")
+    query = default_function_score(dsl, "repost_count")
+
+    if sort_method == "recent":
+        query["sort"] = [{"updated_at": {"order": "desc"}}]
+
+    return query
 
 
 def user_dsl(
@@ -582,6 +593,7 @@ def user_dsl(
     only_verified,
     must_saved=False,
     genres=[],
+    sort_method="relevant",
 ):
     # must_search_str = search_str + " " + search_str.replace(" ", "")
     dsl = {
@@ -747,6 +759,10 @@ def user_dsl(
 
     # Set the dsl on the query object
     query["query"]["function_score"]["query"] = {"bool": dsl}
+
+    if sort_method == "recent":
+        query["sort"] = [{"created_at": {"order": "desc"}}]
+
     return query
 
 
@@ -759,6 +775,7 @@ def base_playlist_dsl(
     only_purchaseable,
     current_user_id,
     must_saved=False,
+    sort_method="relevant",
 ):
     dsl = {
         "must": [
@@ -919,12 +936,31 @@ def base_playlist_dsl(
 
     # Set the dsl on the query object
     query["query"]["function_score"]["query"] = {"bool": dsl}
+
+    if sort_method == "recent":
+        query["sort"] = [{"updated_at": {"order": "desc"}}]
+
     return query
 
 
-def playlist_dsl(search_str, current_user_id, must_saved=False, genres=[], moods=[]):
+def playlist_dsl(
+    search_str,
+    current_user_id,
+    must_saved=False,
+    genres=[],
+    moods=[],
+    sort_method="relevant",
+):
     return base_playlist_dsl(
-        search_str, False, genres, moods, False, False, current_user_id, must_saved
+        search_str,
+        False,
+        genres,
+        moods,
+        False,
+        False,
+        current_user_id,
+        must_saved,
+        sort_method,
     )
 
 
@@ -936,6 +972,7 @@ def album_dsl(
     must_saved=False,
     genres=[],
     moods=[],
+    sort_method="relevant",
 ):
     return base_playlist_dsl(
         search_str,
@@ -946,6 +983,7 @@ def album_dsl(
         only_purchaseable,
         current_user_id,
         must_saved,
+        sort_method,
     )
 
 
