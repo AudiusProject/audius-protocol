@@ -120,7 +120,6 @@ const getMessages = (
   emptyPublic: `This ${collectionType} is empty`,
   detailsPlaceholder: '---',
   collectionType: `${isPremium ? 'premium ' : ''}${collectionType}`,
-  hiddenType: `Hidden ${collectionType}`,
   play: 'Play',
   pause: 'Pause',
   resume: 'Resume',
@@ -258,7 +257,6 @@ export const CollectionScreenDetailsTile = ({
   const playingTrackId = playingTrack?.track_id
   const firstTrack = useSelector(selectFirstTrack)
   const messages = getMessages(isAlbum ? 'album' : 'playlist', isStreamGated)
-  const headerText = isPrivate ? messages.hiddenType : messages.collectionType
   const isPublished = !isPrivate || isPublishing
   const isUnpublishedScheduledRelease =
     isScheduledRelease && isPrivate && releaseDate
@@ -414,7 +412,7 @@ export const CollectionScreenDetailsTile = ({
           textTransform='uppercase'
           color='subdued'
         >
-          {headerText}
+          {messages.collectionType}
         </Text>
 
         {badges.length > 0 ? (
