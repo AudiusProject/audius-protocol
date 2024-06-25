@@ -574,7 +574,7 @@ def track_dsl(
     query = default_function_score(dsl, "repost_count")
 
     if sort_method == "recent":
-        query["sort"] = [{"created_at": {"order": "desc"}}]
+        query["sort"] = [{"updated_at": {"order": "desc"}}]
 
     return query
 
@@ -585,7 +585,7 @@ def user_dsl(
     only_verified,
     must_saved=False,
     genres=[],
-    sort_method="relevance",
+    sort_method="relevant",
 ):
     # must_search_str = search_str + " " + search_str.replace(" ", "")
     dsl = {
@@ -774,7 +774,7 @@ def base_playlist_dsl(
     only_purchaseable,
     current_user_id,
     must_saved=False,
-    sort_method="relevance",
+    sort_method="relevant",
 ):
     dsl = {
         "must": [
@@ -920,7 +920,7 @@ def base_playlist_dsl(
                 {
                     "script_score": {
                         "script": {
-                            "source": """ 
+                            "source": """
                                 double matchedTracks = 0;
                                 for (track in params['_source'].tracks) {
                                     if (params.moods.contains(track.mood)) {
@@ -944,7 +944,7 @@ def base_playlist_dsl(
     query["query"]["function_score"]["query"] = {"bool": dsl}
 
     if sort_method == "recent":
-        query["sort"] = [{"created_at": {"order": "desc"}}]
+        query["sort"] = [{"updated_at": {"order": "desc"}}]
 
     return query
 
@@ -955,7 +955,7 @@ def playlist_dsl(
     must_saved=False,
     genres=[],
     moods=[],
-    sort_method="relevance",
+    sort_method="relevant",
 ):
     return base_playlist_dsl(
         search_str,
@@ -978,7 +978,7 @@ def album_dsl(
     must_saved=False,
     genres=[],
     moods=[],
-    sort_method="relevance",
+    sort_method="relevant",
 ):
     return base_playlist_dsl(
         search_str,

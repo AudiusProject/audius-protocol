@@ -1,6 +1,6 @@
 import { Genre, Mood } from '@audius/sdk'
 
-import { SearchKind } from './types'
+import { SearchKind, SearchSortMethod } from './types'
 
 export const FETCH_SEARCH_PAGE_RESULTS = 'SEARCH/FETCH_SEARCH_PAGE_RESULTS'
 export const FETCH_SEARCH_PAGE_RESULTS_SUCCEEDED =
@@ -75,7 +75,7 @@ type FetchSearchPageResultsArgs = {
   isVerified?: boolean
   hasDownloads?: boolean
   isPremium?: boolean
-  sort?: string
+  sortMethod?: SearchSortMethod
 }
 
 export const fetchSearchPageResults = (

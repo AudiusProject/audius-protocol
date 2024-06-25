@@ -18,3 +18,5 @@ export enum SearchKind {
   ALBUMS = 'albums',
   ALL = 'all'
 }
+
+export type SearchSortMethod = 'relevant' | 'popular' | 'recent'

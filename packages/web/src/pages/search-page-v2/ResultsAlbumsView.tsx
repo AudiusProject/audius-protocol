@@ -25,7 +25,7 @@ const messages = {
 export const ResultsAlbumsView = () => {
   const results = useSelector(getSearchResults)
   const [urlSearchParams] = useSearchParams()
-  const updateSortParam = useUpdateSearchParams('sort')
+  const updateSortParam = useUpdateSearchParams('sortMethod')
   const routeMatch = useRouteMatch<{ category: string }>(SEARCH_PAGE)
   const isCategoryActive = useCallback(
     (category: CategoryView) => routeMatch?.category === category,
@@ -33,7 +33,7 @@ export const ResultsAlbumsView = () => {
   )
 
   const isLoading = results.status === Status.LOADING
-  const sort = urlSearchParams.get('sort')
+  const sortMethod = urlSearchParams.get('sortMethod')
   const albumLimit = isCategoryActive(CategoryView.ALBUMS) ? 100 : 5
   const albumIds = results.albumIds?.slice(0, albumLimit) ?? []
 
@@ -46,7 +46,7 @@ export const ResultsAlbumsView = () => {
         {isCategoryActive(CategoryView.ALBUMS) ? (
           <Flex gap='s'>
             <OptionsFilterButton
-              selection={sort ?? 'relevant'}
+              selection={sortMethod ?? 'relevant'}
               variant='replaceLabel'
               optionsLabel={messages.sortOptionsLabel}
               onChange={updateSortParam}
