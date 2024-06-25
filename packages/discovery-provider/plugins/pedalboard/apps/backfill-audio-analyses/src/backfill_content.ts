@@ -20,6 +20,8 @@ const semaphore = new Semaphore(MAX_CONCURRENT_REQUESTS)
 
 const REQUEST_TIMEOUT = 5000 // 5s
 
+const DB_OFFSET_KEY = 'backfill_audio_analyses:offset'
+
 interface Track {
   track_id: number
   track_cid: string
@@ -160,7 +162,7 @@ async function processBatches(db: any, batchSize: number): Promise<void> {
       console.error(`No healthy content nodes found. Please investigate`)
       return
     }
-    offset = await readDbOffset()
+    offset = await readDbOffset(DB_OFFSET_KEY)
     if (offset == null) {
       offset = 0
     }
@@ -178,7 +180,7 @@ async function processBatches(db: any, batchSize: number): Promise<void> {
     await Promise.all(analyzePromises)
 
     offset += batchSize
-    await storeDbOffset(offset)
+    await storeDbOffset(DB_OFFSET_KEY, offset)
     console.timeEnd('Batch processing time')
     console.log(`Processed ${tracks.length} tracks. New offset: ${offset}`)
 
@@ -197,7 +199,7 @@ async function processBatches(db: any, batchSize: number): Promise<void> {
   }
 }
 
-export const backfill = async (app: App<SharedData>) => {
+export const backfillContent = async (app: App<SharedData>) => {
   if (!config.delegatePrivateKey) {
     console.error('Missing required delegate private key. Terminating...')
     return
