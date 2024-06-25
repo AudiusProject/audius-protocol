@@ -48,10 +48,7 @@ function formatErrorLog(
   return errLog
 }
 
-async function getAudioAnalysis(
-  contentNodes: string[],
-  track: Track
-) {
+async function getAudioAnalysis(contentNodes: string[], track: Track) {
   const audioUploadId = track.audio_upload_id || ''
   const trackCid = track.track_cid
   if (!trackCid) return
@@ -71,10 +68,9 @@ async function getAudioAnalysis(
         analysisUrl = `${contentNode}/tracks/legacy/${trackCid}/analysis`
       }
 
-      const response = await axios.get(
-        analysisUrl,
-        { timeout: REQUEST_TIMEOUT }
-      )
+      const response = await axios.get(analysisUrl, {
+        timeout: REQUEST_TIMEOUT
+      })
       if (response.status == 200) {
         console.log(
           `Successfully retrieved audio analysis for track ID ${
@@ -84,7 +80,9 @@ async function getAudioAnalysis(
           } via ${contentNode}`
         )
         const resultsKey = isLegacyTrack ? 'results' : 'audio_analysis_results'
-        const errorCountKey = isLegacyTrack ? 'error_count' : 'audio_analysis_error_count'
+        const errorCountKey = isLegacyTrack
+          ? 'error_count'
+          : 'audio_analysis_error_count'
         const results = response.data[resultsKey]
         const errorCount = response.data[errorCountKey]
 
@@ -100,7 +98,7 @@ async function getAudioAnalysis(
         } else if (results?.BPM) {
           bpm = results?.BPM
         }
-        
+
         result = {
           track_id: track.track_id,
           musical_key: musicalKey,
@@ -171,7 +169,9 @@ async function processBatches(db: any, batchSize: number): Promise<void> {
         track
       )
     )
-    const updates = (await Promise.all(analyzePromises)).filter(u => u !== null)
+    const updates = (await Promise.all(analyzePromises)).filter(
+      (u) => u !== null
+    )
 
     await db.transaction(async (trx: any) => {
       for (const update of updates) {
