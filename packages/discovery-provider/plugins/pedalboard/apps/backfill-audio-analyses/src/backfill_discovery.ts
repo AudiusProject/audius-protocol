@@ -10,9 +10,6 @@ import {
   getCachedHealthyContentNodes
 } from './redis'
 
-const Web3 = require('web3')
-const web3 = new Web3()
-
 // concurrency control
 const MAX_CONCURRENT_REQUESTS = 10
 const semaphore = new Semaphore(MAX_CONCURRENT_REQUESTS)
@@ -173,7 +170,7 @@ async function processBatches(db: any, batchSize: number): Promise<void> {
       )
     )
     const updates = (await Promise.all(analyzePromises)).filter(
-      (u) => u !== null
+      (u) => u != null
     )
 
     console.log(`Updating ${updates.length} tracks`)
