@@ -207,7 +207,7 @@ const CollectionHeader = ({
     <Flex direction='column'>
       {renderDogEar()}
       <Flex direction='column' alignItems='center' p='l' gap='l'>
-        <Text variant='label' css={{ letterSpacing: '2px' }} color='subdued'>
+        <Text variant='label' color='subdued'>
           {type === 'playlist' && !isPublished
             ? isPublishing
               ? messages.publishing

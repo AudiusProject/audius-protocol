@@ -193,11 +193,7 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
           ) : (
             <Flex gap='s' mt='s' alignItems='center'>
               {isPremium ? <IconCart size='s' color='subdued' /> : null}
-              <Text
-                variant='label'
-                color='subdued'
-                css={{ letterSpacing: '2px' }}
-              >
+              <Text variant='label' color='subdued'>
                 {isPremium ? `${messages.premiumLabel} ` : ''}
                 {type === 'playlist' && !isPublished
                   ? messages.hiddenPlaylistLabel
