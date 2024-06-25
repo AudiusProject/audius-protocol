@@ -205,7 +205,7 @@ async function processBatches(db: any, batchSize: number): Promise<void> {
   }
 }
 
-export const backfill = async (app: App<SharedData>) => {
+export const backfillDiscovery = async (app: App<SharedData>) => {
   if (!config.delegatePrivateKey) {
     console.error('Missing required delegate private key. Terminating...')
     return
