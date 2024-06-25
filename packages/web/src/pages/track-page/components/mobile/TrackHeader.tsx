@@ -329,13 +329,7 @@ const TrackHeader = ({
       return (
         <Flex gap='xs' justifyContent='center' alignItems='center'>
           <IconComponent color='subdued' size='s' />
-          <Text
-            variant='label'
-            color='subdued'
-            css={{
-              letterSpacing: '2px'
-            }}
-          >
+          <Text variant='label' color='subdued'>
             {titleMessage}
           </Text>
         </Flex>
@@ -344,13 +338,7 @@ const TrackHeader = ({
 
     return (
       <Flex justifyContent='center' alignItems='center'>
-        <Text
-          variant='label'
-          color='subdued'
-          css={{
-            letterSpacing: '2px'
-          }}
-        >
+        <Text variant='label' color='subdued'>
           {isRemix ? messages.remix : messages.track}
         </Text>
       </Flex>

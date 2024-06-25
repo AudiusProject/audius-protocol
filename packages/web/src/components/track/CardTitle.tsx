@@ -62,14 +62,14 @@ export const CardTitle = ({
     content = (
       <Flex gap='s' alignItems='center' justifyContent='center'>
         {icon}
-        <Text variant='label' color='subdued' css={{ letterSpacing: '2px' }}>
+        <Text variant='label' color='subdued'>
           {message}
         </Text>
       </Flex>
     )
   } else {
     content = (
-      <Text variant='label' color='subdued' css={{ letterSpacing: '2px' }}>
+      <Text variant='label' color='subdued'>
         {isRemix
           ? messages.remixTitle
           : isPodcast
