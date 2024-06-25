@@ -85,6 +85,9 @@ async function getAudioAnalysis(contentNodes: string[], track: Track) {
           : 'audio_analysis_error_count'
         const results = response.data[resultsKey]
         const errorCount = response.data[errorCountKey]
+        if (!results) {
+          break
+        }
 
         let musicalKey = null
         let bpm = null
@@ -172,6 +175,8 @@ async function processBatches(db: any, batchSize: number): Promise<void> {
     const updates = (await Promise.all(analyzePromises)).filter(
       (u) => u !== null
     )
+
+    console.log(`Updating ${updates.length} tracks`)
 
     await db.transaction(async (trx: any) => {
       for (const update of updates) {
