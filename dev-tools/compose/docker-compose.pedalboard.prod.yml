@@ -92,7 +92,7 @@ services:
         ]
       interval: 5s
       timeout: 30s
-      retries: 15
+      retries: 5
       start_period: 5s
     depends_on:
       db:
