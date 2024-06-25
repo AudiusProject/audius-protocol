@@ -69,8 +69,7 @@ export const AccountsYouManageHomePage = ({
         )
         approveManagedAccount({
           userId: currentUser.user_id,
-          grantorUser,
-          userWalletAddress: currentUser.erc_wallet
+          grantorUser
         })
       }
     },

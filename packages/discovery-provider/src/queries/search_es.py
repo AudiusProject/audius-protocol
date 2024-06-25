@@ -583,6 +583,47 @@ def track_dsl(
 
     if sort_method == "recent":
         query["sort"] = [{"updated_at": {"order": "desc"}}]
+    elif sort_method == "popular":
+        query["sort"] = [
+            {
+                "_script": {
+                    "type": "number",
+                    "script": {
+                        "lang": "painless",
+                        "source": """
+                            double playCount = doc['play_count'].value;
+                            double repostCount = doc['repost_count'].value;
+                            double saveCount = doc['save_count'].value;
+                            double followerCount = doc['user.follower_count'].value;
+                            double socialScore = followerCount;
+                            // Get the current time and updated_at time in milliseconds
+                            long currentTime = new Date().getTime();
+                            long updatedAt = doc['updated_at'].value.toInstant().toEpochMilli();
+
+                            // Define time thresholds in milliseconds
+                            long oneWeek = 7L * 24L * 60L * 60L * 1000L;
+                            long oneMonth = 30L * 24L * 60L * 60L * 1000L;
+
+                            // Calculate recency factor based on time thresholds
+                            double recencyFactor;
+                            long timeDiff = currentTime - updatedAt;
+
+                            if (timeDiff <= oneWeek) {
+                                recencyFactor = 3.0;  // Most recent (week)
+                            } else if (timeDiff <= oneMonth) {
+                                recencyFactor = 2.0;  // Recent (month)
+                            } else {
+                                recencyFactor = 1.0;  // Older
+                            }
+
+                            // Calculate the trending score
+                            return ((playCount * 0.4) + (repostCount * 0.3) + (saveCount * 0.2) + (socialScore * 0.1)) * recencyFactor;
+                        """,
+                    },
+                    "order": "desc",
+                }
+            }
+        ]
 
     return query
 
@@ -914,7 +955,7 @@ def base_playlist_dsl(
                 {
                     "script_score": {
                         "script": {
-                            "source": """
+                            "source": """ 
                                 double matchedTracks = 0;
                                 for (track in params['_source'].tracks) {
                                     if (params.moods.contains(track.mood)) {

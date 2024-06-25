@@ -1,15 +1,25 @@
 import { createContext, useState } from 'react'
 
 import { useGetCurrentUserId, useGetTrackByPermalink } from '@audius/common/api'
-import { SquareSizes, Status, TrackMetadata } from '@audius/common/models'
+import {
+  SquareSizes,
+  Status,
+  Stem,
+  StemUpload,
+  Track,
+  TrackMetadata
+} from '@audius/common/models'
 import {
   TrackMetadataForUpload,
-  cacheTracksActions
+  cacheTracksActions,
+  cacheTracksSelectors
 } from '@audius/common/store'
+import { removeNullable } from '@audius/common/utils'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 import { useParams } from 'react-router'
 
+import { useSelector } from 'common/hooks/useSelector'
 import { DeleteConfirmationModal } from 'components/delete-confirmation'
 import { EditTrackForm } from 'components/edit-track/EditTrackForm'
 import { TrackEditFormValues } from 'components/edit-track/types'
@@ -19,6 +29,7 @@ import Page from 'components/page/Page'
 import { useTrackCoverArt2 } from 'hooks/useTrackCoverArt'
 
 const { deleteTrack, editTrack } = cacheTracksActions
+const { getStems } = cacheTracksSelectors
 
 const messages = {
   title: 'Edit Your Track',
@@ -68,12 +79,28 @@ export const EditTrackPage = (props: EditPageProps) => {
     SquareSizes.SIZE_1000_BY_1000
   )
 
+  const stemTracks = useSelector((state) => getStems(state, track?.track_id))
+  const stemsAsUploads: StemUpload[] = stemTracks
+    .map((stemTrack) => {
+      const stem = (track as unknown as Track)?._stems?.find(
+        (s: Stem) => s.track_id === stemTrack.track_id
+      )
+      if (!stem) return null
+      return {
+        metadata: stemTrack,
+        category: stem.category,
+        allowCategorySwitch: false,
+        allowDelete: true
+      }
+    })
+    .filter(removeNullable)
+
   const trackAsMetadataForUpload: TrackMetadataForUpload = {
     ...(track as TrackMetadata),
     artwork: {
       url: coverArtUrl || ''
-    }
-    // TODO: Add stems
+    },
+    stems: stemsAsUploads
   }
 
   const initialValues: TrackEditFormValues = {

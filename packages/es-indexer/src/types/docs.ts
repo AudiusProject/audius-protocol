@@ -48,6 +48,7 @@ export type TrackDoc = TrackRow & {
   permalink: string
   tag_list: string[]
   repost_count: number
+  save_count: number
   favorite_count: number
   play_count: any // todo: is it a string or number?  pg returns string
   downloadable: boolean

@@ -1,5 +1,6 @@
-import { TrackMetadataForUpload } from '~/store'
 import { Nullable } from '~/utils'
+
+import { TrackMetadata } from './Track'
 
 export enum StemCategory {
   INSTRUMENTAL = 'INSTRUMENTAL',
@@ -32,7 +33,7 @@ export const stemCategoryFriendlyNames = {
 }
 
 export type StemUpload = {
-  metadata: TrackMetadataForUpload
+  metadata: TrackMetadata
   category: Nullable<StemCategory>
   allowDelete: boolean
   allowCategorySwitch: boolean

@@ -64,7 +64,12 @@ const getInitialProgress = (upload: TrackForUpload | StemUploadWithFile) => {
   res.art.total =
     'artwork' in upload.metadata ? upload.metadata.artwork?.file?.size ?? 0 : 0
   res.audio.total = upload.file?.size ?? 0
-  res.stems = upload.metadata.stems?.map(getInitialProgress) ?? []
+  res.stems =
+    'stems' in upload.metadata
+      ? upload.metadata.stems
+          ?.filter((stem) => 'file' in stem)
+          .map((stem) => getInitialProgress(stem as StemUploadWithFile)) ?? []
+      : []
   return res
 }
 

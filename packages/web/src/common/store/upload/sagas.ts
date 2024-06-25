@@ -5,6 +5,7 @@ import {
   ID,
   Kind,
   Name,
+  StemUploadWithFile,
   isContentFollowGated,
   isContentUSDCPurchaseGated
 } from '@audius/common/models'
@@ -418,7 +419,7 @@ export function* handleUploads({
 
     // Process the track's stems
     const trackStems = prepareStemsForUpload(
-      track.metadata.stems ?? [],
+      (track.metadata.stems ?? []) as StemUploadWithFile[],
       track.metadata.track_id
     )
     const stemCount = track.metadata.stems?.length ?? 0
