@@ -103,27 +103,33 @@ function* onSignedIn({ payload: { account } }) {
     const libs = yield call(audiusBackendInstance.getAudiusLibs)
     const web3User = yield call([libs.Account, libs.Account.getWeb3User])
 
-    const traits = {
-      isVerified: account.is_verified,
-      trackCount: account.track_count
-    }
+    let solanaWallet
+    let managerUserId
+    let managerHandle
 
     // If operating as a managed account, identify the manager user id
     if (web3User && web3User.user_id !== account.user_id) {
-      traits.managerUserId = web3User.user_id
-      traits.managerHandle = web3User.handle
+      managerUserId = web3User.user_id
+      managerHandle = web3User.handle
     } else {
       // If not a managed account, identify the Solana wallet associated with
       // the hedgehog wallet
       try {
-        const solanaWallet = (yield call(
+        solanaWallet = (yield call(
           getRootSolanaAccount,
           audiusBackendInstance
         )).publicKey.toBase58()
-        traits.solanaWallet = solanaWallet
       } catch (e) {
         console.error('Failed to fetch Solana root wallet during identify()', e)
       }
+    }
+
+    const traits = {
+      isVerified: account.is_verified,
+      trackCount: account.track_count,
+      managerHandle,
+      managerUserId,
+      solanaWallet
     }
 
     yield put(identify(account.handle, traits))

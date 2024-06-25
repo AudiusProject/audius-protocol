@@ -135,8 +135,6 @@ export enum Name {
   AUTHORIZED_APP_REMOVE_SUCCESS = 'Authorized Apps: Remove app success',
   AUTHORIZED_APP_REMOVE_ERROR = 'Authorized Apps: Remove app error',
 
-  // Manager Mode
-
   // Visualizer
   VISUALIZER_OPEN = 'Visualizer: Open',
   VISUALIZER_CLOSE = 'Visualizer: Close',
