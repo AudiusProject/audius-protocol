@@ -1,5 +1,6 @@
 export * from './AnnouncementNotification'
 export * from './ChallengeRewardNotification'
+export * from './ClaimableRewardNotification'
 export * from './FavoriteNotification'
 export * from './FollowNotification'
 export * from './MilestoneNotification'

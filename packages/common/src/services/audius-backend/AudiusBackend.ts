@@ -1781,6 +1781,15 @@ export const audiusBackend = ({
         entityType: Entity.User,
         ...formatBaseNotification(notification)
       }
+    } else if (notification.type === 'claimable_reward') {
+      const data = notification.actions[0].data
+      const challengeId = data.challenge_id as ChallengeRewardID
+      return {
+        type: NotificationType.ClaimableReward,
+        challengeId,
+        entityType: Entity.User,
+        ...formatBaseNotification(notification)
+      }
     } else if (notification.type === 'tier_change') {
       const data = notification.actions[0].data
       const tier = data.new_tier as BadgeTier
