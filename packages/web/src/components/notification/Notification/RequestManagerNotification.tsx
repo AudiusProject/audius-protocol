@@ -9,7 +9,7 @@ import { push } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
 import { useSelector } from 'utils/reducer'
-import { accountManagerInvitePage } from 'utils/route'
+import { ACCOUNTS_YOU_MANAGE_SETTINGS_PAGE } from 'utils/route'
 
 import { NotificationBody } from './components/NotificationBody'
 import { NotificationFooter } from './components/NotificationFooter'
@@ -41,7 +41,7 @@ export const RequestManagerNotification = (
 
   const handleClick = useCallback(() => {
     if (managedAccountUser?.user_id) {
-      dispatch(push(accountManagerInvitePage(managedAccountUser?.user_id)))
+      dispatch(push(ACCOUNTS_YOU_MANAGE_SETTINGS_PAGE))
     }
   }, [dispatch, managedAccountUser?.user_id])
 
