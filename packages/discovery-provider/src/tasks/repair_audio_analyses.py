@@ -161,7 +161,15 @@ def repair(session: Session, redis: Redis):
 
         if not success:
             logger.warning(
-                f"repair_audio_analyses.py | failed to query audio analysis for track {track.track_id} (track_cid: {track.track_cid}, audio_upload_id: {track.audio_upload_id}). tried {nodes}"
+                f"repair_audio_analyses.py | failed to query audio analysis for track {track.track_id} (track_cid: {track.track_cid}, audio_upload_id: {track.audio_upload_id}). tried {nodes}. triggering analysis..."
+            )
+            num_analyses_retriggered += 1
+            retrigger_audio_analysis(
+                nodes,
+                track.track_id,
+                track.track_cid,
+                track.audio_upload_id,
+                legacy_track,
             )
 
     logger.info(
