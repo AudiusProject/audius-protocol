@@ -300,10 +300,12 @@ export const PriceAndAudienceField = (props: PriceAndAudienceFieldProps) => {
       setStreamConditionsValue(null)
       setPreviewValue(undefined)
 
-      if (availabilityType === StreamTrackAvailabilityType.HIDDEN) {
-        setIsUnlistedValue(true)
-      } else {
-        setIsUnlistedValue(false)
+      if (!isHiddenPaidScheduledEnabled) {
+        if (availabilityType === StreamTrackAvailabilityType.HIDDEN) {
+          setIsUnlistedValue(true)
+        } else {
+          setIsUnlistedValue(false)
+        }
       }
 
       // For gated options, extract the correct stream conditions based on the selected availability type
