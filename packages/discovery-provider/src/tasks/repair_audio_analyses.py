@@ -118,6 +118,10 @@ def repair(session: Session, redis: Redis):
                     else f"{node}/uploads/{track.audio_upload_id}"
                 )
                 resp = requests.get(endpoint, timeout=5)
+                if resp.status_code == 404 and not legacy_track:
+                    # Use legacy path for upload ids that are not found
+                    # (I think there are some edge cases from early storage v2 migration days)
+                    legacy_track = True
                 resp.raise_for_status()
                 data = resp.json()
             except Exception:
