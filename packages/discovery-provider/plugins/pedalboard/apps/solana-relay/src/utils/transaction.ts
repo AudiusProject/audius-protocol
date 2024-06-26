@@ -17,7 +17,6 @@ import { connections, getConnection } from './connections'
 import { delay } from './delay'
 
 const RETRY_DELAY_MS = 2 * 1000
-const RETRY_TIMEOUT_MS = 60 * 1000
 
 /**
  * Forwards the transaction response to other Solana Relays on other discovery
@@ -66,8 +65,7 @@ const forwardTransaction = async (logger: Logger, transaction: string) => {
 
 /**
  * Sends the transaction repeatedly to all configured RPCs until
- * it's been confirmed with the given commitment level, expires,
- * or times out.
+ * it's been confirmed with the given commitment level or the blockhash expires.
  */
 export const sendTransactionWithRetries = async ({
   transaction,
@@ -103,13 +101,6 @@ export const sendTransactionWithRetries = async ({
     }
   }
 
-  const createTimeoutPromise = async (signal: AbortSignal) => {
-    await delay(RETRY_TIMEOUT_MS)
-    if (!signal.aborted) {
-      logger.error('Timed out sending transaction')
-    }
-  }
-
   const start = Date.now()
   const connection = connections[0]
   const abortController = new AbortController()
@@ -130,12 +121,14 @@ export const sendTransactionWithRetries = async ({
       connection.confirmTransaction(
         { ...confirmationStrategy, abortSignal: abortController.signal },
         commitment
-      ),
-      createTimeoutPromise(abortController.signal)
+      )
     ])
 
-    if (!res || res.value.err) {
-      throw res?.value.err ?? 'Transaction polling timed out.'
+    if (!res) {
+      throw new Error('Failed to get transaction confirmation result')
+    }
+    if (res.value.err) {
+      throw new Error(JSON.stringify(res.value.err))
     }
     logger.info({ commitment }, 'Transaction sent successfully')
     return confirmationStrategy.signature

@@ -54,6 +54,7 @@ export const reportToSentry = async ({
         additionalInfo = {
           ...additionalInfo,
           response: error.response,
+          requestId: error.response.headers.get('X-Request-ID'),
           responseBody
         }
       }
