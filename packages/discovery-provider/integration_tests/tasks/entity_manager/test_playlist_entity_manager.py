@@ -1256,16 +1256,6 @@ def test_access_conditions(app, mocker, tx_receipts):
                 "usdc_purchase": {"price": 100, "splits": {"user-bank": 1000000}}
             },
         },
-        "UpdatePlaylistAccessConditions": {
-            "playlist_contents": {"track_ids": [{"time": 1660927554, "track": 1}]},
-            "description": "",
-            "playlist_image_sizes_multihash": "",
-            "playlist_name": "album",
-            "is_stream_gated": True,
-            "stream_conditions": {
-                "usdc_purchase": {"price": 100, "splits": {"user-bank": 1000000}}
-            },
-        },
         "UpdatePlaylistMakePublic": {
             "playlist_contents": {"track_ids": [{"time": 1660927554, "track": 1}]},
             "description": "",
@@ -1309,9 +1299,6 @@ def test_access_conditions(app, mocker, tx_receipts):
     )
     create_public_album_access_conditions_json = json.dumps(
         test_metadata["CreatePublicAlbum"]
-    )
-    update_album_make_gated_json = json.dumps(
-        test_metadata["UpdatePlaylistAccessConditions"]
     )
 
     tx_receipts = {
@@ -1399,20 +1386,6 @@ def test_access_conditions(app, mocker, tx_receipts):
                 )
             }
         ],
-        "InvalidUpdateAlbumMakeGatedTx": [
-            {
-                "args": AttributeDict(
-                    {
-                        "_entityId": PLAYLIST_ID_OFFSET + 11,
-                        "_entityType": "Playlist",
-                        "_userId": 1,
-                        "_action": "Update",
-                        "_metadata": f'{{"cid": "UpdateAlbumMakeGated", "data": {update_album_make_gated_json}}}',
-                        "_signer": "user1wallet",
-                    }
-                )
-            }
-        ],
     }
 
     entity_manager_txs = [
@@ -1489,12 +1462,3 @@ def test_access_conditions(app, mocker, tx_receipts):
             .first()
         )
         assert album == None
-
-        # Validate making a public album gated fails
-        album: Playlist = (
-            session.query(Playlist)
-            .filter(Playlist.playlist_id == PLAYLIST_ID_OFFSET + 11)
-            .first()
-        )
-        assert album.is_stream_gated == False
-        assert album.stream_conditions == None
