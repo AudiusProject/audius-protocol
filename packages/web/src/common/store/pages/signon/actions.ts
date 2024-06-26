@@ -234,8 +234,8 @@ export const signUpFailed = ({
  * @param password account password
  * @param? otp account otp
  */
-export function signIn(email: string, password: string, otp?: string) {
-  return { type: SIGN_IN, email, password, otp }
+export function signIn(email: string, password: string, visitorId: string, otp?: string) {
+  return { type: SIGN_IN, email, password, visitorId, otp }
 }
 
 export const signInSucceeded = () => ({ type: SIGN_IN_SUCCEEDED })

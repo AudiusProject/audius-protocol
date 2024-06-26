@@ -1,4 +1,6 @@
 const { getOtpEmail } = require('../notifications/emails/otp')
+const { Op } = require('sequelize')
+const models = require('../models')
 
 const OTP_CHARS = '0123456789'
 const OTP_REDIS_PREFIX = 'otp'
@@ -34,12 +36,26 @@ const validateOtp = async ({ email, otp, redis }) => {
   return otp === storedOtp
 }
 
-const shouldSendOtp = async ({ email, redis }) => {
+const shouldSendOtp = async ({ email, redis, visitorId }) => {
+  const { blockchainUserId: userId } = await models.User.findOne({
+    where: { email }
+  })
+  const sixMonthsAgo = new Date()
+  sixMonthsAgo.setDate(-180)
+  const verifiedFp = await models.Fingerprints.findOne({
+    where: {
+      userId,
+      visitorId,
+      updatedAt: {
+        [Op.gt]: sixMonthsAgo
+      }
+    }
+  })
   const storedOtp = await redis.get(`${OTP_REDIS_PREFIX}:${email}`)
   const otpCount = await redis.get(
     `${OTP_REDIS_PREFIX}:${email}:${OTP_COUNT_REDIS_POSTFIX}`
   )
-  return !storedOtp || Number(otpCount) < OTP_COUNT_LIMIT
+  return verifiedFp || !storedOtp || Number(otpCount) < OTP_COUNT_LIMIT
 }
 
 const updateOtpCount = async ({ email, redis }) => {
