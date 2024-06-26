@@ -257,7 +257,7 @@ func (ss *MediorumServer) analyzeLegacyAudio(analysis *QmAudioAnalysis) error {
 	defer temp.Close()
 	defer os.Remove(temp.Name())
 
-	// convert the file to WAV for audio processing
+	// convert the file to WAV for audio processing and truncate to the first 5 minutes
 	wavFile := temp.Name()
 	// should always be audio/mpeg after transcoding
 	if attrs.ContentType == "audio/mpeg" {
