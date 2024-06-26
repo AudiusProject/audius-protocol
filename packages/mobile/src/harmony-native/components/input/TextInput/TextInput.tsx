@@ -37,12 +37,12 @@ const inputAccessoryViewID = 'harmonyInputAccessoryView'
 const AnimatedText = Animated.createAnimatedComponent(Text)
 const AnimatedFlex = Animated.createAnimatedComponent(Flex)
 
-export type TextInputRef = Ref<RNTextInput>
+export type TextInputRef = RNTextInput
 export type TextInputChangeEvent =
   NativeSyntheticEvent<TextInputChangeEventData>
 
 export const TextInput = forwardRef(
-  (props: TextInputProps, ref: TextInputRef) => {
+  (props: TextInputProps, ref: Ref<TextInputRef>) => {
     const {
       'aria-label': ariaLabel,
       required,
@@ -258,12 +258,16 @@ export const TextInput = forwardRef(
                 border={disabled ? 'default' : 'strong'}
                 borderRadius='s'
                 backgroundColor='surface1'
-                ph='l'
+                ph={isSmall ? 'm' : 'l'}
                 gap={isSmall ? 's' : 'm'}
                 style={animatedRootStyles}
               >
                 {StartIcon ? (
-                  <StartIcon size='m' color='subdued' {...IconProps} />
+                  <StartIcon
+                    size={isSmall ? 's' : 'm'}
+                    color='subdued'
+                    {...IconProps}
+                  />
                 ) : null}
                 <Flex
                   direction='column'

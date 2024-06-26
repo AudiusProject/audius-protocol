@@ -1,3 +1,4 @@
+import type { Ref } from 'react'
 import { forwardRef } from 'react'
 
 import { useToggle } from 'react-use'
@@ -15,7 +16,7 @@ const messages = {
 }
 
 export const PasswordInput = forwardRef(
-  (props: PasswordInputProps, ref: TextInputRef) => {
+  (props: PasswordInputProps, ref: Ref<TextInputRef>) => {
     const {
       hideVisibilityToggle,
       textContentType = 'password',
