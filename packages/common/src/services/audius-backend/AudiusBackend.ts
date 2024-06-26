@@ -765,7 +765,17 @@ export const audiusBackend = ({
     userTagCount,
     kind,
     offset,
-    limit
+    limit,
+    genre,
+    mood,
+    bpmMin,
+    bpmMax,
+    key,
+    isVerified,
+    hasDownloads,
+    // @ts-ignore - isPremium -> is_purchasable
+    isPremium,
+    sortMethod
   }: DiscoveryAPIParams<typeof DiscoveryAPI.searchTags>) {
     try {
       const searchTags = await withEagerOption(
@@ -777,7 +787,16 @@ export const audiusBackend = ({
         userTagCount,
         kind,
         limit,
-        offset
+        offset,
+        genre,
+        mood,
+        bpmMin,
+        bpmMax,
+        key,
+        isVerified,
+        hasDownloads,
+        isPremium,
+        sortMethod
       )
 
       const {

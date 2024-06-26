@@ -1,8 +1,12 @@
-import copy
 import logging
 from typing import Any, Dict, Optional
 
-from src.api.v1.helpers import extend_playlist, extend_track, extend_user
+from src.api.v1.helpers import (
+    extend_playlist,
+    extend_track,
+    extend_user,
+    parse_bool_param,
+)
 from src.queries.get_feed_es import fetch_followed_saves_and_reposts, item_key
 from src.queries.query_helpers import (
     _populate_gated_content_metadata,
@@ -30,7 +34,10 @@ def get_capitalized_genre(genre):
     return lowercase_to_capitalized_genre.get(genre.lower())
 
 
-def format_genres(genres: list[str] | None):
+def format_genres(g: list[str] | str | None):
+    genres = g
+    if isinstance(g, str):
+        genres = [g]
     if not genres:
         return None
 
@@ -47,6 +54,18 @@ lowercase_to_capitalized_mood = {mood.lower(): mood for mood in mood_allowlist}
 
 def get_capitalized_mood(mood):
     return lowercase_to_capitalized_mood.get(mood.lower())
+
+
+def format_moods(m: list[str] | str | None):
+    moods = m
+    if isinstance(m, str):
+        moods = [m]
+    if not moods:
+        return None
+
+    capitalized_moods = [get_capitalized_mood(mood) for mood in moods]
+
+    return list(set(capitalized_moods))
 
 
 def sharp_to_flat(key):
@@ -85,11 +104,11 @@ def search_es_full(args: dict):
     limit = args.get("limit", 10)
     offset = args.get("offset", 0)
     search_type = args.get("kind", "all")
-    only_downloadable = args.get("only_downloadable")
     is_auto_complete = args.get("is_auto_complete")
+    only_downloadable = args.get("only_downloadable", False)
     include_purchaseable = args.get("include_purchaseable", False)
     genres = format_genres(args.get("genres", []))
-    moods = args.get("moods", [])
+    moods = format_moods(args.get("moods", []))
     bpm_min = args.get("bpm_min")
     bpm_max = args.get("bpm_max")
     keys = args.get("keys", [])
@@ -116,9 +135,11 @@ def search_es_full(args: dict):
                 {"index": ES_TRACKS},
                 track_dsl(
                     search_str=search_str,
+                    tag_search="",
                     current_user_id=current_user_id,
                     must_saved=False,
                     only_downloadable=only_downloadable,
+                    only_purchaseable=only_purchaseable,
                     include_purchaseable=include_purchaseable,
                     genres=genres,
                     moods=moods,
@@ -126,7 +147,6 @@ def search_es_full(args: dict):
                     bpm_max=bpm_max,
                     keys=keys,
                     only_with_downloads=only_with_downloads,
-                    only_purchaseable=only_purchaseable,
                     sort_method=sort_method,
                 ),
             ]
@@ -139,6 +159,7 @@ def search_es_full(args: dict):
                 {"index": ES_USERS},
                 user_dsl(
                     search_str=search_str,
+                    tag_search="",
                     current_user_id=current_user_id,
                     must_saved=False,
                     only_verified=only_verified,
@@ -211,42 +232,82 @@ def search_es_full(args: dict):
     return response
 
 
-def search_tags_es(q: str, kind="all", current_user_id=None, limit=10, offset=0):
+def format_keys(k: list[str] | str | None):
+    if not k:
+        return None
+    elif isinstance(k, str):
+        return [k]
+    else:
+        return k
+
+
+def search_tags_es(args: dict):
     esclient = get_esclient()
     if not esclient:
         raise Exception("esclient is None")
 
-    do_tracks = kind == "all" or kind == "tracks"
-    do_users = kind == "all" or kind == "users"
+    tag_search = (args.get("query", "") or "").strip()
+    current_user_id = args.get("current_user_id", None)
+    limit = args.get("limit", 10)
+    offset = args.get("offset", 0)
+    search_type = args.get("kind", "all")
+    sort_method = args.get("sort_method", "relevant")
+
+    genres = format_genres(args.get("genre"))
+    moods = format_moods(args.get("mood"))
+    bpm_min = args.get("bpm_min")
+    bpm_max = args.get("bpm_max")
+    keys = format_keys(args.get("key", []))
+
+    only_downloadable = False
+    include_purchaseable = (
+        parse_bool_param(args.get("include_purchaseable", False)) or False
+    )
+    only_verified = parse_bool_param(args.get("is_verified", False)) or False
+    only_with_downloads = parse_bool_param(args.get("has_downloads", False)) or False
+    only_purchaseable = parse_bool_param(args.get("is_purchasable", False)) or False
+
+    do_tracks = search_type == "all" or search_type == "tracks"
+    do_users = search_type == "all" or search_type == "users"
     mdsl: Any = []
 
-    def tag_match(fieldname, sort_by):
-        match = {
-            "query": {
-                "bool": {
-                    "must": [{"match": {fieldname: {"query": q}}}],
-                    "must_not": [{"term": {"purchaseable": {"value": True}}}],
-                    "should": [],
-                }
-            },
-            "sort": [{sort_by: "desc"}],
-        }
-        return match
-
     if do_tracks:
-        dsl = tag_match("tag_list", "repost_count")
-        mdsl.extend([{"index": ES_TRACKS}, dsl])
-        if current_user_id:
-            dsl = copy.deepcopy(dsl)
-            dsl["query"]["bool"]["must"].append(be_saved(current_user_id))
-            mdsl.extend([{"index": ES_TRACKS}, dsl])
+        mdsl.extend(
+            [
+                {"index": ES_TRACKS},
+                track_dsl(
+                    search_str="",
+                    tag_search=tag_search,
+                    current_user_id=current_user_id,
+                    genres=genres,
+                    moods=moods,
+                    bpm_min=bpm_min,
+                    bpm_max=bpm_max,
+                    keys=keys,
+                    only_downloadable=only_downloadable,
+                    only_with_downloads=only_with_downloads,
+                    only_purchaseable=only_purchaseable,
+                    include_purchaseable=include_purchaseable,
+                    sort_method=sort_method,
+                ),
+            ]
+        )
 
     if do_users:
-        mdsl.extend([{"index": ES_USERS}, tag_match("tracks.tags", "follower_count")])
-        if current_user_id:
-            dsl = tag_match("tracks.tags", "follower_count")
-            dsl["query"]["bool"]["must"].append(be_followed(current_user_id))
-            mdsl.extend([{"index": ES_USERS}, dsl])
+        mdsl.extend(
+            [
+                {"index": ES_USERS},
+                user_dsl(
+                    search_str="",
+                    tag_search=tag_search,
+                    current_user_id=current_user_id,
+                    must_saved=False,
+                    genres=genres,
+                    only_verified=only_verified,
+                    sort_method=sort_method,
+                ),
+            ]
+        )
 
     mdsl_limit_offset(mdsl, limit, offset)
     mfound = esclient.msearch(searches=mdsl)
@@ -260,13 +321,9 @@ def search_tags_es(q: str, kind="all", current_user_id=None, limit=10, offset=0)
 
     if do_tracks:
         response["tracks"] = pluck_hits(mfound["responses"].pop(0))
-        if current_user_id:
-            response["saved_tracks"] = pluck_hits(mfound["responses"].pop(0))
 
     if do_users:
         response["users"] = pluck_hits(mfound["responses"].pop(0))
-        if current_user_id:
-            response["followed_users"] = pluck_hits(mfound["responses"].pop(0))
 
     finalize_response(response, limit, current_user_id)
     return response
@@ -435,18 +492,19 @@ def default_function_score(dsl, ranking_field, factor=0.1):
 
 def track_dsl(
     search_str,
+    tag_search,
     current_user_id,
-    bpm_min,
-    bpm_max,
     must_saved=False,
-    only_downloadable=False,
-    only_purchaseable=False,
-    include_purchaseable=False,
     genres=[],
     moods=[],
+    bpm_min=None,
+    bpm_max=None,
     keys=[],
-    only_with_downloads=False,
     sort_method="relevant",
+    only_downloadable=False,
+    only_with_downloads=False,
+    only_purchaseable=False,
+    include_purchaseable=False,
 ):
     dsl = {
         "must": [
@@ -517,18 +575,28 @@ def track_dsl(
         "filter": [],
     }
 
+    if tag_search:
+        dsl["must"].append(
+            {
+                "bool": {
+                    "should": [
+                        {
+                            "match": {
+                                "tag_list": {
+                                    "query": tag_search,
+                                }
+                            }
+                        },
+                    ],
+                }
+            }
+        )
+
     if genres:
         dsl["filter"].append({"terms": {"genre": genres}})
 
     if moods:
-        capitalized_moods = list(
-            filter(
-                None, [get_capitalized_mood(mood) for mood in moods if mood is not None]
-            )
-        )
-
-        if capitalized_moods:
-            dsl["filter"].append({"terms": {"mood": capitalized_moods}})
+        dsl["filter"].append({"terms": {"mood": moods}})
 
     if bpm_min:
         dsl["filter"].append({"range": {"bpm": {"gte": bpm_min}}})
@@ -630,6 +698,7 @@ def track_dsl(
 
 def user_dsl(
     search_str,
+    tag_search,
     current_user_id,
     only_verified,
     must_saved=False,
@@ -736,6 +805,23 @@ def user_dsl(
             {"term": {"is_verified": {"value": True, "boost": 5}}},
         ],
     }
+
+    if tag_search:
+        dsl["must"].append(
+            {
+                "bool": {
+                    "should": [
+                        {
+                            "match": {
+                                "tracks.tags": {
+                                    "query": tag_search,
+                                }
+                            }
+                        },
+                    ],
+                }
+            }
+        )
 
     if current_user_id and must_saved:
         dsl["must"].append(be_followed(current_user_id))
