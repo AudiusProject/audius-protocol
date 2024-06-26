@@ -181,7 +181,12 @@ func (ss *MediorumServer) analyzeLegacyAudio(analysis *QmAudioAnalysis) error {
 
 	onError := func(err error) error {
 		analysis.Error = err.Error()
-		analysis.ErrorCount = analysis.ErrorCount + 1
+		if analysis.Error == "blob is not an audio file" {
+			// set ErrorCount to 3 so discovery repairer stops retrying this cid
+			analysis.ErrorCount = 3
+		} else {
+			analysis.ErrorCount = analysis.ErrorCount + 1
+		}
 		analysis.AnalyzedAt = time.Now().UTC()
 		analysis.Status = JobStatusError
 		ss.crud.Update(analysis)
