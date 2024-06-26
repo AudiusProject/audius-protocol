@@ -223,7 +223,7 @@ func (ss *MediorumServer) analyzeAudio(upload *Upload) error {
 	defer temp.Close()
 	defer os.Remove(temp.Name())
 
-	// convert the file to WAV for audio processing
+	// convert the file to WAV for audio processing and truncate to the first 5 minutes
 	wavFile := temp.Name()
 	// should always be audio/mpeg after transcoding
 	if attrs.ContentType == "audio/mpeg" {
@@ -367,7 +367,7 @@ func (ss *MediorumServer) analyzeBPM(filename string) (float64, error) {
 
 // converts an MP3 file to WAV format using ffmpeg
 func convertToWav(inputFile, outputFile string) error {
-	cmd := exec.Command("ffmpeg", "-i", inputFile, outputFile)
+	cmd := exec.Command("ffmpeg", "-i", inputFile, "-f", "wav", "-t", "300", outputFile)
 	if output, err := cmd.CombinedOutput(); err != nil {
 		return fmt.Errorf("failed to convert to WAV: %v, output: %s", err, string(output))
 	}
