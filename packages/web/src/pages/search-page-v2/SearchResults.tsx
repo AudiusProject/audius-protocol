@@ -42,16 +42,25 @@ export const SearchResults = () => {
 
   const dispatch = useDispatch()
   useEffect(() => {
+    const queryParams = {
+      limit: 50,
+      offset: 0,
+      genre: (genre || undefined) as Genre,
+      mood: (mood || undefined) as Mood,
+      bpm: bpm || undefined,
+      key: key || undefined,
+      isVerified: isVerified === 'true',
+      hasDownloads: hasDownloads === 'true',
+      isPremium: isPremium === 'true',
+      sortMethod: sortMethod || undefined
+    }
+
     if (query?.[0] === '#') {
       dispatch(
         fetchSearchPageTags({
           tag: query || '',
           searchKind: SearchKind.ALL,
-          limit: 50,
-          offset: 0
-          // genre: (genre || undefined) as Genre,
-          // mood: (mood || undefined) as Mood,
-          // isVerified: isVerified === 'true'
+          ...queryParams
         })
       )
     } else {
@@ -59,16 +68,7 @@ export const SearchResults = () => {
         fetchSearchPageResults({
           searchText: query || '',
           kind: SearchKind.ALL,
-          limit: 50,
-          offset: 0,
-          genre: (genre || undefined) as Genre,
-          mood: (mood || undefined) as Mood,
-          bpm: bpm || undefined,
-          key: key || undefined,
-          isVerified: isVerified === 'true',
-          hasDownloads: hasDownloads === 'true',
-          isPremium: isPremium === 'true',
-          sortMethod: sortMethod || undefined
+          ...queryParams
         })
       )
     }

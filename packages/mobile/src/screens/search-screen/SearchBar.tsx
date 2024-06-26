@@ -13,12 +13,21 @@ import {
 import { useDispatch, useSelector } from 'react-redux'
 import { useTimeoutFn } from 'react-use'
 
-import { IconButton, IconClose } from '@audius/harmony-native'
-import type { TextInputProps, TextInputRef } from 'app/components/core'
-import { TextInput } from 'app/components/core'
+import type { TextInputProps, TextInputRef } from '@audius/harmony-native'
+import {
+  IconButton,
+  IconClose,
+  IconSearch,
+  TextInput,
+  TextInputSize
+} from '@audius/harmony-native'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles } from 'app/styles'
+
+const messages = {
+  label: 'Search'
+}
 
 const useStyles = makeStyles(({ spacing }) => ({
   loadingSpinner: {
@@ -31,7 +40,7 @@ const useStyles = makeStyles(({ spacing }) => ({
 // after the SearchBar renders
 const TEXT_INPUT_FOCUS_DELAY = 350
 
-type SearchBarProps = TextInputProps
+type SearchBarProps = Partial<TextInputProps>
 
 export const SearchBar = (props: SearchBarProps) => {
   const searchQuery = useSelector(getSearchBarText)
@@ -102,6 +111,10 @@ export const SearchBar = (props: SearchBarProps) => {
   return (
     <TextInput
       {...props}
+      startIcon={IconSearch}
+      size={TextInputSize.SMALL}
+      label={messages.label}
+      placeholder={messages.label}
       ref={inputRef}
       value={searchInput}
       onChangeText={handleChangeText}

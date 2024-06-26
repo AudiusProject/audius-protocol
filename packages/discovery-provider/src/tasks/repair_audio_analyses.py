@@ -31,6 +31,9 @@ def query_tracks(session: Session) -> List[Track]:
             or_(Track.musical_key == None, Track.bpm == None),
             Track.audio_analysis_error_count < 3,
             Track.track_cid != None,
+            Track.genre != "Podcasts",
+            Track.genre != "Podcast",
+            Track.genre != "Audiobooks",
         )
         .order_by(Track.track_id.asc())
         .limit(BATCH_SIZE)
@@ -80,6 +83,13 @@ def retrigger_audio_analysis(
                 else f"{node}/uploads/{upload_id}/analyze"
             )
             resp = requests.post(endpoint, params=params, timeout=5)
+            if resp.status_code == 400:
+                # Should only return a 400 if content found the track_cid to not be an audio file, therefore unable to be analyzed.
+                # Quit early because all CNs will 400 for this cid.
+                logger.warning(
+                    f"repair_audio_analyses.py | attempt to trigger audio analysis for track {track_id} (track_cid: {track_cid}, audio_upload_id: {upload_id}) failed with status code {resp.status_code}: {resp.text}"
+                )
+                return
             resp.raise_for_status()
             return
         except Exception:
@@ -111,6 +121,10 @@ def repair(session: Session, redis: Redis):
                     else f"{node}/uploads/{track.audio_upload_id}"
                 )
                 resp = requests.get(endpoint, timeout=5)
+                if resp.status_code == 404 and not legacy_track:
+                    # Use legacy path for upload ids that are not found
+                    # (I think there are some edge cases from early storage v2 migration days)
+                    legacy_track = True
                 resp.raise_for_status()
                 data = resp.json()
             except Exception:
@@ -128,18 +142,19 @@ def repair(session: Session, redis: Redis):
             key = results.get("key", None) or results.get("Key", None)
             bpm = results.get("bpm", None) or results.get("BPM", None)
 
-            # Populate analysis results and err count if present
-            if (
-                key != track.musical_key
-                or bpm != track.bpm
-                or error_count != track.audio_analysis_error_count
-            ):
-                num_tracks_updated += 1
-            if key:
+            # Fill in missing analysis results and err count if present
+            track_updated = False
+            if key and not track.musical_key:
+                track_updated = True
                 track.musical_key = key
-            if bpm:
+            if bpm and not track.bpm:
+                track_updated = True
                 track.bpm = bpm
-            track.audio_analysis_error_count = error_count
+            if error_count != track.audio_analysis_error_count:
+                track_updated = True
+                track.audio_analysis_error_count = error_count
+            if track_updated:
+                num_tracks_updated += 1
 
             # Failures get retried up to 3 times
             if (not key or not bpm) and error_count < 3:

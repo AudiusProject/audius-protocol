@@ -1,11 +1,7 @@
+import { searchCatalogTileMessages as messages } from '@audius/common/messages'
 import { IconSearch, Paper, Text } from '@audius/harmony'
 
 import { useMedia } from 'hooks/useMedia'
-const messages = {
-  cta: 'Search the Catalog',
-  description:
-    'Apply filters or search to discover tracks, profile, playlists, and albums.'
-}
 
 export const SearchCatalogTile = () => {
   const { isMobile } = useMedia()

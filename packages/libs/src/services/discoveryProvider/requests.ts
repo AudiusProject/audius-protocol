@@ -2,6 +2,7 @@
 
 import type { ResponseType } from 'axios'
 
+import { Genre, Mood } from '../../sdk'
 import type { Nullable } from '../../utils'
 
 export const getUsers = (
@@ -433,7 +434,16 @@ export const searchTags = (
   userTagCount = 2,
   kind = 'all',
   limit = 100,
-  offset = 0
+  offset = 0,
+  genre?: Genre,
+  mood?: Mood,
+  bpmMin?: string,
+  bpmMax?: string,
+  key?: string,
+  isVerified?: boolean,
+  hasDownloads?: boolean,
+  isPurchasable?: boolean,
+  sortMethod?: 'recent' | 'relevant' | 'popular'
 ) => {
   return {
     endpoint: 'search/tags',
@@ -442,7 +452,16 @@ export const searchTags = (
       user_tag_count: userTagCount,
       kind,
       limit,
-      offset
+      offset,
+      genre,
+      mood,
+      bpm_min: bpmMin,
+      bpm_max: bpmMax,
+      key,
+      is_verified: isVerified,
+      has_downloads: hasDownloads,
+      is_purchasable: isPurchasable,
+      sort_method: sortMethod
     }
   }
 }

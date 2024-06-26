@@ -19,6 +19,7 @@ import { push as pushRoute } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 import { useParams } from 'react-router'
 
+import { useHistoryContext } from 'app/HistoryProvider'
 import { useSelector } from 'common/hooks/useSelector'
 import { DeleteConfirmationModal } from 'components/delete-confirmation'
 import { EditTrackForm } from 'components/edit-track/EditTrackForm'
@@ -45,10 +46,9 @@ export const EditFormScrollContext = createContext(() => {})
 // This component is in development, only used behind the EDIT_TRACK_REDESIGN feature flag
 export const EditTrackPage = (props: EditPageProps) => {
   const { scrollToTop } = props
-  //   const dispatch = useDispatch()
-  //   const [formState, setFormState] = useState<UploadFormState>(initialFormState)
   const { handle, slug } = useParams<{ handle: string; slug: string }>()
   const dispatch = useDispatch()
+  const { history } = useHistoryContext()
 
   const { data: currentUserId } = useGetCurrentUserId({})
   const permalink = `/${handle}/${slug}`
@@ -126,7 +126,13 @@ export const EditTrackPage = (props: EditPageProps) => {
   return (
     <Page
       title={messages.title}
-      header={<Header primary={messages.title} showBackButton />}
+      header={
+        <Header
+          primary={messages.title}
+          showBackButton
+          onClickBack={history.goBack}
+        />
+      }
     >
       {trackStatus !== Status.SUCCESS || !coverArtUrl ? (
         <LoadingSpinnerFullPage />

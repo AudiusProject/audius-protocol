@@ -83,14 +83,6 @@ func (ss *MediorumServer) findMissedAnalysisJobs(work chan *Upload, myHost strin
 	ss.crud.DB.Where("status in ?", []string{JobStatusAudioAnalysis, JobStatusBusyAudioAnalysis}).Find(&uploads)
 
 	for _, upload := range uploads {
-		myIdx := slices.Index(upload.TranscodedMirrors, myHost)
-		if myIdx == -1 {
-			continue
-		}
-		myRank := myIdx + 1
-
-		logger := ss.logger.With("upload", upload.ID, "upload_status", upload.Status, "my_rank", myRank)
-
 		// allow a 1 minute timeout period for audio analysis.
 		// upload.AudioAnalyzedAt is set in transcode.go after successfully transcoding a new audio upload,
 		// or by the /uploads/:id/analyze endpoint when triggering a re-analysis.
@@ -104,6 +96,14 @@ func (ss *MediorumServer) findMissedAnalysisJobs(work chan *Upload, myHost strin
 			ss.crud.Update(upload)
 			continue
 		}
+
+		myIdx := slices.Index(upload.TranscodedMirrors, myHost)
+		if myIdx == -1 {
+			continue
+		}
+		myRank := myIdx + 1
+
+		logger := ss.logger.With("upload", upload.ID, "upload_status", upload.Status, "my_rank", myRank)
 
 		// this is already handled by a callback and there's a chance this job gets enqueued twice
 		if myRank == 1 && upload.Status == JobStatusAudioAnalysis {
@@ -223,7 +223,7 @@ func (ss *MediorumServer) analyzeAudio(upload *Upload) error {
 	defer temp.Close()
 	defer os.Remove(temp.Name())
 
-	// convert the file to WAV for audio processing
+	// convert the file to WAV for audio processing and truncate to the first 5 minutes
 	wavFile := temp.Name()
 	// should always be audio/mpeg after transcoding
 	if attrs.ContentType == "audio/mpeg" {
@@ -367,7 +367,7 @@ func (ss *MediorumServer) analyzeBPM(filename string) (float64, error) {
 
 // converts an MP3 file to WAV format using ffmpeg
 func convertToWav(inputFile, outputFile string) error {
-	cmd := exec.Command("ffmpeg", "-i", inputFile, outputFile)
+	cmd := exec.Command("ffmpeg", "-i", inputFile, "-f", "wav", "-t", "300", outputFile)
 	if output, err := cmd.CombinedOutput(); err != nil {
 		return fmt.Errorf("failed to convert to WAV: %v, output: %s", err, string(output))
 	}

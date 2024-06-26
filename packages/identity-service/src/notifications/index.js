@@ -57,38 +57,6 @@ const bullSettings = {
 
 class NotificationProcessor {
   constructor({ errorHandler }) {
-    this.notifQueue = new Bull(`notification-queue-${Date.now()}`, {
-      redis: {
-        port: config.get('redisPort'),
-        host: config.get('redisHost')
-      },
-      defaultJobOptions,
-      bullSettings
-    })
-    this.solanaNotifQueue = new Bull(
-      `solana-notification-queue-${Date.now()}`,
-      {
-        redis: {
-          port: config.get('redisPort'),
-          host: config.get('redisHost')
-        },
-        defaultJobOptions
-      }
-    )
-    this.emailQueue = new Bull(`email-queue-${Date.now()}`, {
-      redis: {
-        port: config.get('redisPort'),
-        host: config.get('redisHost')
-      },
-      defaultJobOptions
-    })
-    this.announcementQueue = new Bull(`announcement-queue-${Date.now()}`, {
-      redis: {
-        port: config.get('redisPort'),
-        host: config.get('redisHost')
-      },
-      defaultJobOptions
-    })
     this.downloadEmailQueue = new Bull(`download-email-queue-${Date.now()}`, {
       redis: {
         port: config.get('redisPort'),
@@ -115,184 +83,12 @@ class NotificationProcessor {
    */
   async init(audiusLibs, expressApp, redis) {
     // Clear any pending notif jobs
-    await this.notifQueue.empty()
-    await this.emailQueue.empty()
     await this.downloadEmailQueue.empty()
     this.redis = redis
     this.mg = expressApp.get('sendgrid')
 
     // Index all blockchain ids
     this.idUpdateTask = updateBlockchainIds()
-
-    // Notification processing job
-    // Indexes network notifications
-    this.notifQueue.process(async (job) => {
-      let error = null
-      const minBlock = job.data.minBlock
-
-      try {
-        if (!minBlock && minBlock !== 0) throw new Error('no min block')
-
-        // Re-enable for development as needed
-        // this.emailQueue.add({ type: 'unreadEmailJob' })
-
-        const oldMaxBlockNumber = await this.redis.get('maxBlockNumber')
-        let maxBlockNumber = null
-        // Index notifications and milestones
-        if (minBlock < oldMaxBlockNumber) {
-          logger.debug(
-            'notification queue processing error - tried to process a minBlock < oldMaxBlockNumber',
-            minBlock,
-            oldMaxBlockNumber
-          )
-          maxBlockNumber = oldMaxBlockNumber
-        } else {
-          const optimizelyClient = expressApp.get('optimizelyClient')
-          maxBlockNumber = await this.indexAll(
-            audiusLibs,
-            optimizelyClient,
-            minBlock,
-            oldMaxBlockNumber
-          )
-        }
-
-        // Update cached max block number
-        await this.redis.set('maxBlockNumber', maxBlockNumber)
-
-        // Record success
-        await this.redis.set(
-          NOTIFICATION_JOB_LAST_SUCCESS_KEY,
-          new Date().toISOString()
-        )
-
-        // Restart job with updated startBlock
-        await this.notifQueue.add(
-          {
-            type: notificationJobType,
-            minBlock: maxBlockNumber
-          },
-          {
-            jobId: `${notificationJobType}:${Date.now()}`
-          }
-        )
-      } catch (e) {
-        error = e
-        logger.error(`Restarting due to error indexing notifications : ${e}`)
-        this.errorHandler(e)
-        // Restart job with same startBlock
-        await this.notifQueue.add(
-          {
-            type: notificationJobType,
-            minBlock: minBlock
-          },
-          {
-            jobId: `${notificationJobType}:${Date.now()}`
-          }
-        )
-      }
-    })
-
-    // Solana notification processing job
-    // Indexes solana notifications
-    this.solanaNotifQueue.process(async (job) => {
-      let error = null
-      const MIN_SOLANA_SLOT = config.get('minSolanaNotificationSlot')
-      const minSlot = Math.max(MIN_SOLANA_SLOT, job.data.minSlot)
-
-      try {
-        if (!minSlot && minSlot !== 0) throw new Error('no min slot')
-
-        const oldMaxSlot = await this.redis.get('maxSlot')
-        let maxSlot = null
-
-        // Index notifications
-        if (minSlot < oldMaxSlot) {
-          logger.error(
-            'solana notification queue processing error - tried to process a minSlot < oldMaxSlot',
-            minSlot,
-            oldMaxSlot
-          )
-          maxSlot = oldMaxSlot
-        } else {
-          const optimizelyClient = expressApp.get('optimizelyClient')
-          maxSlot = await this.indexAllSolanaNotifications(
-            audiusLibs,
-            optimizelyClient,
-            minSlot,
-            oldMaxSlot
-          )
-
-          // If we got an unexpectedly low maxSlot, use min as max
-          if (maxSlot < minSlot) {
-            logger.error(
-              'solana notification queue processing error - unexpectedly got maxSlot < minSlot from Discovery, using old minSlot as max',
-              minSlot,
-              oldMaxSlot
-            )
-            maxSlot = minSlot
-          }
-        }
-
-        // Update cached max slot number
-        await this.redis.set('maxSlot', maxSlot)
-
-        // Record success
-        await this.redis.set(
-          NOTIFICATION_SOLANA_JOB_LAST_SUCCESS_KEY,
-          new Date().toISOString()
-        )
-
-        // Restart job with updated starting slot
-        await this.solanaNotifQueue.add(
-          {
-            type: solanaNotificationJobType,
-            minSlot: maxSlot
-          },
-          {
-            jobId: `${solanaNotificationJobType}:${Date.now()}`
-          }
-        )
-      } catch (e) {
-        error = e
-        logger.error(
-          `Restarting due to error indexing solana notifications : ${e}`
-        )
-        this.errorHandler(e)
-        // Restart job with same starting slot
-        await this.solanaNotifQueue.add(
-          {
-            type: solanaNotificationJobType,
-            minSlot: minSlot
-          },
-          {
-            jobId: `${solanaNotificationJobType}:${Date.now()}`
-          }
-        )
-      }
-    })
-
-    // Email notification queue
-    this.emailQueue.process(async (job) => {
-      logger.info('processEmailNotifications')
-      let error = null
-      try {
-        await processEmailNotifications(expressApp, audiusLibs)
-        await this.redis.set(
-          NOTIFICATION_EMAILS_JOB_LAST_SUCCESS_KEY,
-          new Date().toISOString()
-        )
-      } catch (e) {
-        error = e
-        logger.error(
-          `processEmailNotifications - Problem with processing emails: ${e}`
-        )
-        this.errorHandler(e)
-      }
-      await this.emailQueue.add(
-        { type: unreadEmailJobType },
-        { jobId: `${unreadEmailJobType}:${Date.now()}` }
-      )
-    })
 
     // Download Email notification queue
     this.downloadEmailQueue.process(async (job) => {
@@ -317,70 +113,10 @@ class NotificationProcessor {
       )
     })
 
-    // Announcement push notifications queue
-    this.announcementQueue.process(async (job) => {
-      logger.info('pushAnnouncementNotifications')
-      let error = null
-      try {
-        await pushAnnouncementNotifications()
-        await this.redis.set(
-          NOTIFICATION_ANNOUNCEMENTS_JOB_LAST_SUCCESS_KEY,
-          new Date().toISOString()
-        )
-      } catch (e) {
-        error = e
-        logger.error(
-          `pushAnnouncementNotifications - Problem with processing announcements: ${e}`
-        )
-        this.errorHandler(e)
-      }
-      // Delay 30s
-      await new Promise((resolve) =>
-        setTimeout(resolve, NOTIFICATION_ANNOUNCEMENTS_INTERVAL_SEC)
-      )
-      await this.announcementQueue.add(
-        { type: announcementJobType },
-        { jobId: `${announcementJobType}:${Date.now()}` }
-      )
-    })
-
     // Add initial jobs to the queue
     if (!fs.existsSync(emailCachePath)) {
       fs.mkdirSync(emailCachePath)
     }
-
-    const startBlock = await getHighestBlockNumber()
-    logger.info(`Starting with block ${startBlock}`)
-    await this.notifQueue.add(
-      {
-        minBlock: startBlock,
-        type: notificationJobType
-      },
-      {
-        jobId: `${notificationJobType}:${Date.now()}`
-      }
-    )
-
-    const startSlot = await getHighestSlot()
-    logger.info(`Starting with slot ${startSlot}`)
-    await this.solanaNotifQueue.add(
-      {
-        minSlot: startSlot,
-        type: solanaNotificationJobType
-      },
-      {
-        jobId: `${solanaNotificationJobType}:${Date.now()}`
-      }
-    )
-
-    await this.emailQueue.add(
-      { type: unreadEmailJobType },
-      { jobId: `${unreadEmailJobType}:${Date.now()}` }
-    )
-    await this.announcementQueue.add(
-      { type: announcementJobType },
-      { jobId: `${announcementJobType}:${Date.now()}` }
-    )
     await this.downloadEmailQueue.add(
       { type: downloadEmailJobType },
       { jobId: `${downloadEmailJobType}:${Date.now()}` }
