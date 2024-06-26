@@ -54,6 +54,9 @@ func (ss *MediorumServer) analyzeLegacyBlob(c echo.Context) error {
 	}
 	if analysis.Status == JobStatusError || analysis.Status == JobStatusTimeout {
 		if analysis.Error == "blob is not an audio file" {
+			// set ErrorCount to 3 so discovery repairer stops retrying this cid
+			analysis.ErrorCount = 3
+			ss.crud.Update(analysis)
 			return c.String(http.StatusBadRequest, "must specify a cid for an audio file")
 		}
 		analysis.Status = JobStatusAudioAnalysis
