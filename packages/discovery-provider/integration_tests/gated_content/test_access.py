@@ -5,6 +5,7 @@ from integration_tests.utils import populate_mock_db
 from src.gated_content.content_access_checker import ContentAccessChecker
 from src.models.playlists.playlist import Playlist
 from src.models.tracks.track import Track
+from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
 
 # Data for tests
@@ -223,6 +224,12 @@ usdc_purchases = [
         "buyer_user_id": 5,
         "content_id": 2,
         "content_type": "album",
+        "created_at": datetime.utcfromtimestamp(1711485200),
+    },
+    {
+        "buyer_user_id": 6,
+        "content_id": usdc_stream_gated_track["track_id"],
+        "content_type": "track",
         "created_at": datetime.utcfromtimestamp(1711485200),
     },
 ]
@@ -847,3 +854,55 @@ def test_batch_access(app):
             assert not user_2_usdc_stream_gated_album_access_result[
                 "has_download_access"
             ]
+
+
+def test_previous_purchase_access(app):
+    db = setup_db(app)
+    content_access_checker = ContentAccessChecker()
+    with app.app_context():
+        with db.scoped_session() as session:
+            # update stream gated track to be follow gated
+            new_access_conditions = {
+                "follow_user_id": usdc_stream_gated_track["owner_id"]
+            }
+            session.query(Track).filter(
+                Track.track_id == usdc_stream_gated_track["track_id"]
+            ).update(
+                {
+                    "stream_conditions": new_access_conditions,
+                    "download_conditions": new_access_conditions,
+                }
+            )
+            track_entity = (
+                session.query(Track)
+                .filter(Track.track_id == usdc_stream_gated_track["track_id"])
+                .first()
+            )
+            track = helpers.model_to_dictionary(track_entity)
+
+            # user 6 previously purchased the usdc stream gated track
+            # now that the access conditions for that track has changed
+            # to be follow gated, and that user 6 does not follow the track's owner,
+            # test that user 6 still has access because of its past purchase.
+            result = content_access_checker.check_access(
+                session=session,
+                user_id=6,
+                content_type="track",
+                content_entity=Track(
+                    blockhash=hex(0),
+                    blocknumber=0,
+                    txhash=str(0),
+                    track_id=track["track_id"],
+                    owner_id=track["owner_id"],
+                    is_stream_gated=track["is_stream_gated"],
+                    stream_conditions=track["stream_conditions"],
+                    is_download_gated=track["is_download_gated"],
+                    download_conditions=track["download_conditions"],
+                    stem_of=track["stem_of"],
+                    playlists_containing_track=track["playlists_containing_track"],
+                    is_current=True,
+                    is_delete=False,
+                ),
+            )
+            assert result["has_stream_access"]
+            assert result["has_download_access"]
