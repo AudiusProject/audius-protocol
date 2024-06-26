@@ -111,10 +111,12 @@ export const relay = async (
         feePayer: feePayerKey.toBase58()
       })
     } catch (e) {
-      res.locals.logger.error({
-        error: e instanceof InvalidRelayInstructionError ? e.toString() : ''
-      })
-      throw new BadRequestError('Invalid relay instructions')
+      if (e instanceof InvalidRelayInstructionError) {
+        res.locals.logger.error(e.toString())
+        throw new BadRequestError('Invalid relay instructions')
+      } else {
+        throw e
+      }
     }
 
     if (feePayerKeyPair) {
