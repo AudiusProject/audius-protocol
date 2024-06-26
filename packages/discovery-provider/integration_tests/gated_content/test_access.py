@@ -5,7 +5,6 @@ from integration_tests.utils import populate_mock_db
 from src.gated_content.content_access_checker import ContentAccessChecker
 from src.models.playlists.playlist import Playlist
 from src.models.tracks.track import Track
-from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
 
 # Data for tests
@@ -856,11 +855,12 @@ def test_batch_access(app):
             ]
 
 
-def test_previous_purchase_access(app):
+def test_access_conditions_update(app):
     db = setup_db(app)
     content_access_checker = ContentAccessChecker()
     with app.app_context():
         with db.scoped_session() as session:
+            # PURCHASE GATED TO FOLLOW GATED
             # update stream gated track to be follow gated
             new_access_conditions = {
                 "follow_user_id": usdc_stream_gated_track["owner_id"]
@@ -873,12 +873,6 @@ def test_previous_purchase_access(app):
                     "download_conditions": new_access_conditions,
                 }
             )
-            track_entity = (
-                session.query(Track)
-                .filter(Track.track_id == usdc_stream_gated_track["track_id"])
-                .first()
-            )
-            track = helpers.model_to_dictionary(track_entity)
 
             # user 6 previously purchased the usdc stream gated track
             # now that the access conditions for that track has changed
@@ -888,21 +882,51 @@ def test_previous_purchase_access(app):
                 session=session,
                 user_id=6,
                 content_type="track",
-                content_entity=Track(
-                    blockhash=hex(0),
-                    blocknumber=0,
-                    txhash=str(0),
-                    track_id=track["track_id"],
-                    owner_id=track["owner_id"],
-                    is_stream_gated=track["is_stream_gated"],
-                    stream_conditions=track["stream_conditions"],
-                    is_download_gated=track["is_download_gated"],
-                    download_conditions=track["download_conditions"],
-                    stem_of=track["stem_of"],
-                    playlists_containing_track=track["playlists_containing_track"],
-                    is_current=True,
-                    is_delete=False,
+                content_entity=(
+                    session.query(Track)
+                    .filter(Track.track_id == usdc_stream_gated_track["track_id"])
+                    .first()
                 ),
             )
             assert result["has_stream_access"]
             assert result["has_download_access"]
+
+            # FOLLOW GATED TO TIP GATED
+            # user 2 currently has access to the following follow-gated track
+            result = content_access_checker.check_access(
+                session=session,
+                user_id=2,
+                content_type="track",
+                content_entity=(
+                    session.query(Track)
+                    .filter(Track.track_id == stream_gated_track_3["track_id"])
+                    .first()
+                ),
+            )
+            assert result["has_stream_access"]
+            assert result["has_download_access"]
+
+            # update track to be tip gated
+            new_access_conditions = {"tip_user_id": stream_gated_track_3["owner_id"]}
+            session.query(Track).filter(
+                Track.track_id == stream_gated_track_3["track_id"]
+            ).update(
+                {
+                    "stream_conditions": new_access_conditions,
+                    "download_conditions": new_access_conditions,
+                }
+            )
+
+            # user 2 should no longer have access to the track
+            result = content_access_checker.check_access(
+                session=session,
+                user_id=2,
+                content_type="track",
+                content_entity=(
+                    session.query(Track)
+                    .filter(Track.track_id == stream_gated_track_3["track_id"])
+                    .first()
+                ),
+            )
+            assert not result["has_stream_access"]
+            assert not result["has_download_access"]
