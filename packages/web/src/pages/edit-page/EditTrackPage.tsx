@@ -19,6 +19,7 @@ import { push as pushRoute } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 import { useParams } from 'react-router'
 
+import { useHistoryContext } from 'app/HistoryProvider'
 import { useSelector } from 'common/hooks/useSelector'
 import { DeleteConfirmationModal } from 'components/delete-confirmation'
 import { EditTrackForm } from 'components/edit-track/EditTrackForm'
@@ -27,7 +28,6 @@ import Header from 'components/header/desktop/Header'
 import LoadingSpinnerFullPage from 'components/loading-spinner-full-page/LoadingSpinnerFullPage'
 import Page from 'components/page/Page'
 import { useTrackCoverArt2 } from 'hooks/useTrackCoverArt'
-import { useHistoryContext } from 'app/HistoryProvider'
 
 const { deleteTrack, editTrack } = cacheTracksActions
 const { getStems } = cacheTracksSelectors
