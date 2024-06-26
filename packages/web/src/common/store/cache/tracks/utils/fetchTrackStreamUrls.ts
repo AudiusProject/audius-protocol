@@ -9,16 +9,7 @@ import {
   calculatePlayerBehavior
 } from '@audius/common/store'
 import { getQueryParams } from '@audius/common/utils'
-import {
-  all,
-  call,
-  select,
-  put,
-  race,
-  delay,
-  fork,
-  cancel
-} from 'typed-redux-saga'
+import { all, call, select, put, delay, fork, cancel } from 'typed-redux-saga'
 const { getUserId } = accountSelectors
 const { getTrackStreamUrl, getTrack } = cacheTracksSelectors
 const { setStreamUrls } = cacheTracksActions
@@ -39,7 +30,7 @@ export function* fetchTrackStreamUrls({
   const currentUserId = yield* select(getUserId)
 
   try {
-    let partialResults: { [id: number]: string | undefined }[] = []
+    const partialResults: { [id: number]: string | undefined }[] = []
     // TODO: Long term it probably makes more sense to batch these fetches (needs a backend change to support)
     const streamUrlCallEffects = trackIds.map((id) =>
       call(function* () {
