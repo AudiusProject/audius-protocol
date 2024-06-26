@@ -73,7 +73,7 @@ export const AccountsYouManageHomePage = ({
         })
       }
     },
-    [approveManagedAccount, currentUser]
+    [approveManagedAccount, currentUser, make, track]
   )
 
   const handleReject = useCallback(
@@ -95,7 +95,7 @@ export const AccountsYouManageHomePage = ({
         managerUserId: currentUserId
       })
     },
-    [rejectManagedAccount]
+    [rejectManagedAccount, make, track]
   )
 
   useEffect(() => {
