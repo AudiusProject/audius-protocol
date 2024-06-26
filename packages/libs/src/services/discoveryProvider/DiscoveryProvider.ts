@@ -11,7 +11,13 @@ import { cloneDeep } from 'lodash'
 import urlJoin, { PathArg } from 'proper-url-join/es/index.js'
 import type { TransactionReceipt } from 'web3-core'
 
-import { DiscoveryNodeSelector, FetchError, Middleware } from '../../sdk'
+import {
+  DiscoveryNodeSelector,
+  FetchError,
+  Genre,
+  Middleware,
+  Mood
+} from '../../sdk'
 import type { CurrentUser, UserStateManager } from '../../userStateManager'
 import { CollectionMetadata, Nullable, User, Utils } from '../../utils'
 import type { LocalStorage } from '../../utils/localStorage'
@@ -824,9 +830,33 @@ export class DiscoveryProvider {
     userTagCount = 2,
     kind = 'all',
     limit = 100,
-    offset = 0
+    offset = 0,
+    genre?: Genre,
+    mood?: Mood,
+    bpmMin?: string,
+    bpmMax?: string,
+    key?: string,
+    isVerified?: boolean,
+    hasDownloads?: boolean,
+    isPremium?: boolean,
+    sortMethod?: 'recent' | 'relevant' | 'popular'
   ) {
-    const req = Requests.searchTags(text, userTagCount, kind, limit, offset)
+    const req = Requests.searchTags(
+      text,
+      userTagCount,
+      kind,
+      limit,
+      offset,
+      genre,
+      mood,
+      bpmMin,
+      bpmMax,
+      key,
+      isVerified,
+      hasDownloads,
+      isPremium,
+      sortMethod
+    )
     return await this._makeRequest(req)
   }
 

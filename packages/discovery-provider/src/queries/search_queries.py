@@ -27,17 +27,13 @@ class SearchKind(Enum):
 
 @bp.route("/search/tags", methods=("GET",))
 def search_tags():
+    validSearchKinds = [SearchKind.all, SearchKind.tracks, SearchKind.users]
     search_str = request.args.get("query", type=str)
     current_user_id = get_current_user_id(required=False)
+    kind = request.args.get("kind", type=str, default="all")
     if not search_str:
         raise exceptions.ArgumentError("Invalid value for parameter 'query'")
 
-    user_tag_count = request.args.get("user_tag_count", type=str)
-    if not user_tag_count:
-        user_tag_count = "2"
-
-    kind = request.args.get("kind", type=str, default="all")
-    validSearchKinds = [SearchKind.all, SearchKind.tracks, SearchKind.users]
     try:
         searchKind = SearchKind[kind]
         if searchKind not in validSearchKinds:
@@ -50,13 +46,14 @@ def search_tags():
 
     (limit, offset) = get_pagination_vars()
 
-    hits = search_tags_es(
-        q=search_str,
-        kind=kind,
-        current_user_id=current_user_id,
-        limit=limit,
-        offset=offset,
-    )
+    hits = search_tags_es({
+        **request.args,
+        "query": search_str,
+        "kind": kind,
+        "current_user_id": current_user_id,
+        "limit": limit,
+        "offset": offset,
+    })
     return api_helpers.success_response(hits)
 
 

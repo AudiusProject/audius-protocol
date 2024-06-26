@@ -24,15 +24,45 @@ export function* getTagSearchResults(
   tag: string,
   kind: SearchKind,
   limit: number,
-  offset: number
+  offset: number,
+  genre?: Genre,
+  mood?: Mood,
+  bpm?: string,
+  key?: string,
+  isVerified?: boolean,
+  hasDownloads?: boolean,
+  isPremium?: boolean,
+  sortMethod?: SearchSortMethod
 ) {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+
+  const bpmParts = bpm ? bpm.split('-') : [undefined, undefined]
+  const bpmMin = bpmParts[0] ? parseFloat(bpmParts[0]) : undefined
+  const bpmMax = bpmParts[1] ? parseFloat(bpmParts[1]) : bpmMin
+
+  const formatKey = (key?: string) => {
+    if (!key) return undefined
+    const keyParts = key.split(' ')
+    const pitch = keyParts[0].slice(0, 1)
+    const isFlat = keyParts[0].length > 1
+    return `${pitch}${isFlat ? ' flat' : ''} ${keyParts[1].toLowerCase()}`
+  }
+
   const results = yield* call(audiusBackendInstance.searchTags, {
     query: tag.toLowerCase(),
     userTagCount: 1,
     kind,
     limit,
-    offset
+    offset,
+    genre,
+    mood,
+    bpmMin,
+    bpmMax,
+    key: formatKey(key),
+    isVerified,
+    hasDownloads,
+    isPremium,
+    sortMethod
   })
   const { users, tracks } = results
 
@@ -64,7 +94,15 @@ export function* fetchSearchPageTags(
     query,
     action.searchKind,
     action.limit,
-    action.offset
+    action.offset,
+    action.genre,
+    action.mood,
+    action.bpm,
+    action.key,
+    action.isVerified,
+    action.hasDownloads,
+    action.isPremium,
+    action.sortMethod
   )
   if (rawResults) {
     const results = {
