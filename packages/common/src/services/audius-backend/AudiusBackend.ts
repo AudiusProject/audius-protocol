@@ -742,9 +742,6 @@ export const audiusBackend = ({
       const account = audiusLibs.Account.getCurrentUser()
       if (!account) return null
 
-      const socialHandles = await getSocialHandles(account)
-      Object.assign(account, socialHandles)
-
       try {
         const userBank = await audiusLibs.solanaWeb3Manager.deriveUserBank()
         account.userBank = userBank.toString()
@@ -956,42 +953,6 @@ export const audiusBackend = ({
     }
   }
 
-  async function getSocialHandles(user: User) {
-    // Fetch the socials from identity service if we didn't get anything back from discovery node.
-    // Before the final production migration runs, identity may have more up to date data.
-    const userHasSocials =
-      user.twitter_handle ||
-      user.instagram_handle ||
-      user.tiktok_handle ||
-      user.website ||
-      user.donation ||
-      user.verified_with_twitter ||
-      user.verified_with_instagram ||
-      user.verified_with_tiktok
-    if (userHasSocials) {
-      return user
-    }
-    try {
-      const res = await fetch(
-        `${identityServiceUrl}/social_handles?handle=${user.handle}`
-      )
-      const json = await res.json()
-      return {
-        twitter_handle: json.twitterHandle || null,
-        instagram_handle: json.instagramHandle || null,
-        tiktok_handle: json.tikTokHandle || null,
-        website: json.website || null,
-        donation: json.donation || null,
-        verified_with_twitter: json.twitterVerified || false,
-        verified_with_instagram: json.instagramVerified || false,
-        verified_with_tiktok: json.tikTokVerified || false
-      }
-    } catch (e) {
-      console.error(e)
-      return {}
-    }
-  }
-
   /**
    * Retrieves the user's eth associated wallets from IPFS using the user's metadata CID and creator node endpoints
    * @param user The user metadata which contains the CID for the metadata multihash
@@ -1066,39 +1027,6 @@ export const audiusBackend = ({
           newMetadata.updatedCoverPhoto.file
         )
         newMetadata.cover_photo_sizes = resp.id
-      }
-
-      // Leave this here for now, but this should be removed once we believe
-      // that old clients have caught up and are updating socials via entity manager to DN.
-      try {
-        if (
-          typeof newMetadata.twitter_handle === 'string' ||
-          typeof newMetadata.instagram_handle === 'string' ||
-          typeof newMetadata.tiktok_handle === 'string' ||
-          typeof newMetadata.website === 'string' ||
-          typeof newMetadata.donation === 'string'
-        ) {
-          const { data, signature } = await signData()
-          await fetch(`${identityServiceUrl}/social_handles`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              [AuthHeaders.Message]: data,
-              [AuthHeaders.Signature]: signature
-            },
-            body: JSON.stringify({
-              twitterHandle: newMetadata.twitter_handle,
-              instagramHandle: newMetadata.instagram_handle,
-              tikTokHandle: newMetadata.tiktok_handle,
-              website: newMetadata.website,
-              donation: newMetadata.donation
-            })
-          })
-        }
-      } catch (e) {
-        console.error(
-          `Could not update socials in identity, but they should still be updated in DN with code below. Error: ${e}`
-        )
       }
 
       newMetadata = schemas.newUserMetadata(newMetadata, true)
@@ -3095,7 +3023,6 @@ export const audiusBackend = ({
     getBrowserPushSubscription,
     getCollectionImages,
     getCreators,
-    getSocialHandles,
     getEmailNotificationSettings,
     getFolloweeFollows,
     getImageUrl,

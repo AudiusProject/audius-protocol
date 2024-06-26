@@ -142,17 +142,6 @@ export interface RewardAttesterValueRow {
 export interface SequelizeMetaRow {
   name: string
 }
-export interface SocialHandleRow {
-  createdAt: Date
-  donation?: string | null
-  handle: string
-  instagramHandle?: string | null
-  pinnedTrackId?: number | null
-  tikTokHandle?: string | null
-  twitterHandle?: string | null
-  updatedAt: Date
-  website?: string | null
-}
 export interface SolanaNotificationActionRow {
   actionEntityId: number
   actionEntityType: string
