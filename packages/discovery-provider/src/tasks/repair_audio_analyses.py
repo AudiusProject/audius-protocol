@@ -80,6 +80,12 @@ def retrigger_audio_analysis(
                 else f"{node}/uploads/{upload_id}/analyze"
             )
             resp = requests.post(endpoint, params=params, timeout=5)
+            if resp.status_code == 400:
+                # should only return a 400 if content found the specified ID to not be an audio file, therefore unable to be analyzed
+                logger.warning(
+                    f"repair_audio_analyses.py | attempt to trigger audio analysis for track {track_id} (track_cid: {track_cid}, audio_upload_id: {upload_id}) failed with status code {resp.status_code}: {resp.text}"
+                )
+                return
             resp.raise_for_status()
             return
         except Exception:
