@@ -46,14 +46,16 @@ def search_tags():
 
     (limit, offset) = get_pagination_vars()
 
-    hits = search_tags_es({
-        **request.args,
-        "query": search_str,
-        "kind": kind,
-        "current_user_id": current_user_id,
-        "limit": limit,
-        "offset": offset,
-    })
+    hits = search_tags_es(
+        {
+            **request.args,
+            "query": search_str,
+            "kind": kind,
+            "current_user_id": current_user_id,
+            "limit": limit,
+            "offset": offset,
+        }
+    )
     return api_helpers.success_response(hits)
 
 

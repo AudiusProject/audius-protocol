@@ -135,7 +135,7 @@ def search_es_full(args: dict):
                 {"index": ES_TRACKS},
                 track_dsl(
                     search_str=search_str,
-                    tag_search='',
+                    tag_search="",
                     current_user_id=current_user_id,
                     must_saved=False,
                     only_downloadable=only_downloadable,
@@ -159,7 +159,7 @@ def search_es_full(args: dict):
                 {"index": ES_USERS},
                 user_dsl(
                     search_str=search_str,
-                    tag_search='',
+                    tag_search="",
                     current_user_id=current_user_id,
                     must_saved=False,
                     only_verified=only_verified,
@@ -260,7 +260,9 @@ def search_tags_es(args: dict):
     keys = format_keys(args.get("key", []))
 
     only_downloadable = False
-    include_purchaseable = parse_bool_param(args.get("include_purchaseable", False)) or False
+    include_purchaseable = (
+        parse_bool_param(args.get("include_purchaseable", False)) or False
+    )
     only_verified = parse_bool_param(args.get("is_verified", False)) or False
     only_with_downloads = parse_bool_param(args.get("has_downloads", False)) or False
     only_purchaseable = parse_bool_param(args.get("is_purchasable", False)) or False
@@ -270,38 +272,42 @@ def search_tags_es(args: dict):
     mdsl: Any = []
 
     if do_tracks:
-        mdsl.extend([
-            {"index": ES_TRACKS},
-            track_dsl(
-                search_str="",
-                tag_search=tag_search,
-                current_user_id=current_user_id,
-                genres=genres,
-                moods=moods,
-                bpm_min=bpm_min,
-                bpm_max=bpm_max,
-                keys=keys,
-                only_downloadable=only_downloadable,
-                only_with_downloads=only_with_downloads,
-                only_purchaseable=only_purchaseable,
-                include_purchaseable=include_purchaseable,
-                sort_method=sort_method
-            )
-        ])
+        mdsl.extend(
+            [
+                {"index": ES_TRACKS},
+                track_dsl(
+                    search_str="",
+                    tag_search=tag_search,
+                    current_user_id=current_user_id,
+                    genres=genres,
+                    moods=moods,
+                    bpm_min=bpm_min,
+                    bpm_max=bpm_max,
+                    keys=keys,
+                    only_downloadable=only_downloadable,
+                    only_with_downloads=only_with_downloads,
+                    only_purchaseable=only_purchaseable,
+                    include_purchaseable=include_purchaseable,
+                    sort_method=sort_method,
+                ),
+            ]
+        )
 
     if do_users:
-        mdsl.extend([
-            {"index": ES_USERS},
-            user_dsl(
-                search_str="",
-                tag_search=tag_search,
-                current_user_id=current_user_id,
-                must_saved=False,
-                genres=genres,
-                only_verified=only_verified,
-                sort_method=sort_method
-            )
-        ])
+        mdsl.extend(
+            [
+                {"index": ES_USERS},
+                user_dsl(
+                    search_str="",
+                    tag_search=tag_search,
+                    current_user_id=current_user_id,
+                    must_saved=False,
+                    genres=genres,
+                    only_verified=only_verified,
+                    sort_method=sort_method,
+                ),
+            ]
+        )
 
     mdsl_limit_offset(mdsl, limit, offset)
     mfound = esclient.msearch(searches=mdsl)
@@ -570,19 +576,21 @@ def track_dsl(
     }
 
     if tag_search:
-        dsl["must"].append({
-            "bool": {
-                "should": [
-                    {
-                        "match": {
-                            "tag_list": {
-                                "query": tag_search,
+        dsl["must"].append(
+            {
+                "bool": {
+                    "should": [
+                        {
+                            "match": {
+                                "tag_list": {
+                                    "query": tag_search,
+                                }
                             }
-                        }
-                    },
-                ],
+                        },
+                    ],
+                }
             }
-        })
+        )
 
     if genres:
         dsl["filter"].append({"terms": {"genre": genres}})
@@ -799,19 +807,21 @@ def user_dsl(
     }
 
     if tag_search:
-        dsl["must"].append({
-            "bool": {
-                "should": [
-                    {
-                        "match": {
-                            "tracks.tags": {
-                                "query": tag_search,
+        dsl["must"].append(
+            {
+                "bool": {
+                    "should": [
+                        {
+                            "match": {
+                                "tracks.tags": {
+                                    "query": tag_search,
+                                }
                             }
-                        }
-                    },
-                ],
+                        },
+                    ],
+                }
             }
-        })
+        )
 
     if current_user_id and must_saved:
         dsl["must"].append(be_followed(current_user_id))
