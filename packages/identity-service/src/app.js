@@ -6,7 +6,7 @@ const { redisClient, Lock } = require('./redis')
 const optimizelySDK = require('@optimizely/optimizely-sdk')
 const Sentry = require('@sentry/node')
 const cluster = require('cluster')
-
+const NotificationProcessor = require('./notifications/index.js')
 const config = require('./config.js')
 const txRelay = require('./relay/txRelay')
 const ethTxRelay = require('./relay/ethTxRelay')
@@ -43,6 +43,16 @@ class App {
     this.optimizelyPromise = null
     this.optimizelyClientInstance = this.configureOptimizely()
 
+    // Async job configuration
+    this.notificationProcessor = new NotificationProcessor({
+      errorHandler: (error) => {
+        try {
+          return Sentry.captureException(error)
+        } catch (sentryError) {
+          logger.error(`Received error from Sentry ${sentryError}`)
+        }
+      }
+    })
     // Note: The order of the following functions is IMPORTANT, as it sets the functions
     // that process a request in the order applied
     this.expressSettings()
@@ -96,6 +106,7 @@ class App {
         })
 
         const audiusInstance = await this.configureAudiusInstance()
+        cluster.fork({ WORKER_TYPE: 'notifications' })
 
         await this.configureDiscoveryNodeRegistration(audiusInstance)
         await this.configureReporter()
@@ -130,19 +141,29 @@ class App {
     } else {
       // if it's not the master worker in the cluster
       const audiusInstance = await this.configureAudiusInstance()
+
       await this.configureReporter()
-      await new Promise((resolve) => {
-        server = this.express.listen(this.port, resolve)
-      })
-      server.setTimeout(config.get('setTimeout'))
-      server.timeout = config.get('timeout')
-      server.keepAliveTimeout = config.get('keepAliveTimeout')
-      server.headersTimeout = config.get('headersTimeout')
 
-      this.express.set('redis', this.redisClient)
+      if (process.env.WORKER_TYPE === 'notifications') {
+        await this.notificationProcessor.init(
+          audiusInstance,
+          this.express,
+          this.redisClient
+        )
+      } else {
+        await new Promise((resolve) => {
+          server = this.express.listen(this.port, resolve)
+        })
+        server.setTimeout(config.get('setTimeout'))
+        server.timeout = config.get('timeout')
+        server.keepAliveTimeout = config.get('keepAliveTimeout')
+        server.headersTimeout = config.get('headersTimeout')
 
-      logger.info(`Listening on port ${this.port}...`)
-      return { app: this.express, server }
+        this.express.set('redis', this.redisClient)
+
+        logger.info(`Listening on port ${this.port}...`)
+        return { app: this.express, server }
+      }
     }
   }
 

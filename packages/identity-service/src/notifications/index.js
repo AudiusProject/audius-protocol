@@ -57,13 +57,6 @@ const bullSettings = {
 
 class NotificationProcessor {
   constructor({ errorHandler }) {
-    this.announcementQueue = new Bull(`announcement-queue-${Date.now()}`, {
-      redis: {
-        port: config.get('redisPort'),
-        host: config.get('redisHost')
-      },
-      defaultJobOptions
-    })
     this.downloadEmailQueue = new Bull(`download-email-queue-${Date.now()}`, {
       redis: {
         port: config.get('redisPort'),
@@ -90,8 +83,6 @@ class NotificationProcessor {
    */
   async init(audiusLibs, expressApp, redis) {
     // Clear any pending notif jobs
-    await this.notifQueue.empty()
-    await this.emailQueue.empty()
     await this.downloadEmailQueue.empty()
     this.redis = redis
     this.mg = expressApp.get('sendgrid')
@@ -122,42 +113,10 @@ class NotificationProcessor {
       )
     })
 
-    // Announcement push notifications queue
-    this.announcementQueue.process(async (job) => {
-      logger.info('pushAnnouncementNotifications')
-      let error = null
-      try {
-        await pushAnnouncementNotifications()
-        await this.redis.set(
-          NOTIFICATION_ANNOUNCEMENTS_JOB_LAST_SUCCESS_KEY,
-          new Date().toISOString()
-        )
-      } catch (e) {
-        error = e
-        logger.error(
-          `pushAnnouncementNotifications - Problem with processing announcements: ${e}`
-        )
-        this.errorHandler(e)
-      }
-      // Delay 30s
-      await new Promise((resolve) =>
-        setTimeout(resolve, NOTIFICATION_ANNOUNCEMENTS_INTERVAL_SEC)
-      )
-      await this.announcementQueue.add(
-        { type: announcementJobType },
-        { jobId: `${announcementJobType}:${Date.now()}` }
-      )
-    })
-
     // Add initial jobs to the queue
     if (!fs.existsSync(emailCachePath)) {
       fs.mkdirSync(emailCachePath)
     }
-
-    await this.announcementQueue.add(
-      { type: announcementJobType },
-      { jobId: `${announcementJobType}:${Date.now()}` }
-    )
     await this.downloadEmailQueue.add(
       { type: downloadEmailJobType },
       { jobId: `${downloadEmailJobType}:${Date.now()}` }
