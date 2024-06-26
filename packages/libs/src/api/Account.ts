@@ -164,14 +164,12 @@ export class Account extends Base {
         this.REQUIRES(Services.HEDGEHOG)
         // If an owner wallet already exists, don't try to recreate it
         if (!hasWallet) {
-          console.info({ wallet: this.web3Manager.getWalletAddress() }, "initial wallet")
           phase = phases.HEDGEHOG_SIGNUP
           const ownerWallet = await this.hedgehog.signUp({
             username: email,
             password
           })
           this.web3Manager.setOwnerWallet(ownerWallet)
-          console.info({ wallet: this.web3Manager.getWalletAddress() }, "after saving")
           if (generateRecoveryLink) {
             await this.generateRecoveryLink({ handle: metadata.handle, host })
           }
