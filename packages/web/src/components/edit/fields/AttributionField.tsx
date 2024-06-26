@@ -1,10 +1,13 @@
 import { useCallback, useMemo } from 'react'
 
-import { creativeCommons } from '@audius/common/utils'
+import { MUSICAL_KEYS, creativeCommons } from '@audius/common/utils'
 import {
+  Box,
+  Flex,
   IconCcBy as IconCreativeCommons,
   IconRobot,
-  Text
+  Text,
+  TextInput
 } from '@audius/harmony'
 import cn from 'classnames'
 import { useField } from 'formik'
@@ -22,13 +25,14 @@ import { Divider } from 'components/divider'
 import { useTrackField } from 'components/edit-track/hooks'
 import { SingleTrackEditValues } from 'components/edit-track/types'
 import { computeLicenseIcons } from 'components/edit-track/utils/computeLicenseIcons'
-import { TextField } from 'components/form-fields'
+import { DropdownField, TextField } from 'components/form-fields'
 import { SegmentedControlField } from 'components/form-fields/SegmentedControlField'
 import layoutStyles from 'components/layout/layout.module.css'
 import { env } from 'services/env'
 
 import styles from './AttributionField.module.css'
 import { SwitchRowField } from './SwitchRowField'
+import { MOODS } from 'pages/search-page-v2/utils'
 
 const { computeLicense, ALL_RIGHTS_RESERVED_TYPE } = creativeCommons
 
@@ -37,6 +41,12 @@ const messages = {
   description:
     'Customize attribution settings for licenses, collaborators, and AI-inspired sources.',
   isAiGenerated: 'AI-Generated',
+  bpm: {
+    header: 'Tempo',
+    label: 'BPM',
+    validError: 'Must be a valid decimal number'
+  },
+  musicalKey: 'Key',
   aiGenerated: {
     header: 'Mark this track as AI generated',
     description:
@@ -99,6 +109,8 @@ const COMMERCIAL_USE_BASE = 'commercialUse'
 const COMMERCIAL_USE = 'licenseType.commercialUse'
 const DERIVATIVE_WORKS_BASE = 'derivativeWorks'
 const DERIVATIVE_WORKS = 'licenseType.derivativeWorks'
+const BPM = 'bpm'
+const MUSICAL_KEY = 'musical_key'
 
 const allowAttributionValues = [
   { key: false, text: messages.allowAttribution.options.false },
@@ -132,7 +144,9 @@ const AttributionFormSchema = z
     [ISWC]: z.optional(z.string().nullable()),
     [ALLOW_ATTRIBUTION]: z.optional(z.boolean()),
     [COMMERCIAL_USE]: z.optional(z.boolean()),
-    [DERIVATIVE_WORKS]: z.optional(z.boolean().nullable())
+    [DERIVATIVE_WORKS]: z.optional(z.boolean().nullable()),
+    [BPM]: z.optional(z.number().nullable()),
+    [MUSICAL_KEY]: z.optional(z.string().nullable())
   })
   .refine((form) => !form[IS_AI_ATTRIBUTED] || form[AI_USER_ID], {
     message: messages.aiGenerated.requiredError,
@@ -172,6 +186,10 @@ export const AttributionField = () => {
     useTrackField<SingleTrackEditValues[typeof ALLOWED_API_KEYS]>(
       ALLOWED_API_KEYS
     )
+  const [{ value: bpm }, , { setValue: setBpm }] =
+    useTrackField<SingleTrackEditValues[typeof BPM]>(BPM)
+  const [{ value: musicalKey }, , { setValue: setMusicalKey }] =
+    useTrackField<SingleTrackEditValues[typeof MUSICAL_KEY]>(MUSICAL_KEY)
   const initialValues = useMemo(() => {
     const initialValues = {}
     set(initialValues, AI_USER_ID, aiUserId)
@@ -184,6 +202,8 @@ export const AttributionField = () => {
     set(initialValues, ALLOWED_API_KEYS, allowedApiKeys)
     set(initialValues, COMMERCIAL_USE, commercialUse)
     set(initialValues, DERIVATIVE_WORKS, derivativeWorks)
+    set(initialValues, BPM, bpm)
+    set(initialValues, MUSICAL_KEY, musicalKey)
     return initialValues as AttributionFormValues
   }, [
     aiUserId,
@@ -192,7 +212,9 @@ export const AttributionField = () => {
     derivativeWorks,
     isrcValue,
     iswcValue,
-    allowedApiKeys
+    allowedApiKeys,
+    bpm,
+    musicalKey
   ])
 
   const onSubmit = useCallback(
@@ -217,6 +239,8 @@ export const AttributionField = () => {
         setCommercialUse(false)
         setDerivateWorks(false)
       }
+      setBpm(get(values, BPM) ?? bpm)
+      setMusicalKey(get(values, MUSICAL_KEY) ?? musicalKey)
     },
     [
       aiUserId,
@@ -225,13 +249,17 @@ export const AttributionField = () => {
       derivativeWorks,
       isrcValue,
       iswcValue,
+      bpm,
+      musicalKey,
       setAiUserId,
       setAllowAttribution,
       setCommercialUse,
       setDerivateWorks,
       setIsrc,
       setIswc,
-      setAllowedApiKeys
+      setAllowedApiKeys,
+      setBpm,
+      setMusicalKey
     ]
   )
 
@@ -277,6 +305,17 @@ export const AttributionField = () => {
         <SelectedValue label={messages.isAiGenerated} icon={IconRobot} />
       )
     }
+    if (bpm) {
+      value.push(
+        <SelectedValue
+          key={messages.bpm.header}
+          label={`${bpm} ${messages.bpm.label}`}
+        />
+      )
+    }
+    if (musicalKey) {
+      value.push(<SelectedValue key={messages.musicalKey} label={musicalKey} />)
+    }
     return <SelectedValues key={messages.isAiGenerated}>{value}</SelectedValues>
   }, [
     aiUserId,
@@ -284,7 +323,9 @@ export const AttributionField = () => {
     commercialUse,
     derivativeWorks,
     isrcValue,
-    iswcValue
+    iswcValue,
+    bpm,
+    musicalKey
   ])
 
   return (
@@ -328,28 +369,6 @@ const AttributionModalFields = () => {
 
   return (
     <div className={cn(layoutStyles.col, layoutStyles.gap4)}>
-      <div className={cn(layoutStyles.col, layoutStyles.gap4)}>
-        <Text variant='title' size='l' tag='h3'>
-          {`${messages.isrc.header} / ${messages.iswc.header}`}
-        </Text>
-        <span className={cn(layoutStyles.row, layoutStyles.gap6)}>
-          <div className={styles.textFieldContainer}>
-            <TextField
-              name={ISRC}
-              label={messages.isrc.header}
-              placeholder={messages.isrc.placeholder}
-            />
-          </div>
-          <div className={styles.textFieldContainer}>
-            <TextField
-              name={ISWC}
-              label={messages.iswc.header}
-              placeholder={messages.iswc.placeholder}
-            />
-          </div>
-        </span>
-      </div>
-      <Divider />
       <div className={cn(layoutStyles.col, layoutStyles.gap6)}>
         <Text variant='title' size='l' tag='h3'>
           {messages.licenseType}
@@ -428,6 +447,60 @@ const AttributionModalFields = () => {
           </Text>
         </div>
         {licenseDescription ? <Text size='s'>{licenseDescription}</Text> : null}
+      </div>
+      <Divider />
+      <div className={cn(layoutStyles.col, layoutStyles.gap4)}>
+        <Text variant='title' size='l' tag='h3'>
+          {`${messages.isrc.header} / ${messages.iswc.header}`}
+        </Text>
+        <span className={cn(layoutStyles.row, layoutStyles.gap6)}>
+          <div className={styles.textFieldContainer}>
+            <TextField
+              name={ISRC}
+              label={messages.isrc.header}
+              placeholder={messages.isrc.placeholder}
+            />
+          </div>
+          <div className={styles.textFieldContainer}>
+            <TextField
+              name={ISWC}
+              label={messages.iswc.header}
+              placeholder={messages.iswc.placeholder}
+            />
+          </div>
+        </span>
+        <span className={cn(layoutStyles.row, layoutStyles.gap6)}>
+          <Flex direction='column' w='100%'>
+            <Box mb='m'>
+              <Text variant='title' size='l' tag='h3'>
+                {messages.bpm.header}
+              </Text>
+            </Box>
+
+            <TextField
+              name={BPM}
+              type='number'
+              label={messages.bpm.header}
+              placeholder={messages.bpm.label}
+            />
+          </Flex>
+          <Flex direction='column' w='100%'>
+            <Box mb='m'>
+              <Text variant='title' size='l' tag='h3'>
+                Key
+              </Text>
+            </Box>
+
+            <DropdownField
+              aria-label={messages.musicalKey}
+              placeholder={messages.musicalKey}
+              mount='parent'
+              menu={{ items: MUSICAL_KEYS }}
+              size='large'
+              name={MUSICAL_KEY}
+            />
+          </Flex>
+        </span>
       </div>
       <Divider />
       <SwitchRowField

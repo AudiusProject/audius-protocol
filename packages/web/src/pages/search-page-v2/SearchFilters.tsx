@@ -1,6 +1,10 @@
 import { ReactElement, useMemo, useState } from 'react'
 
-import { GENRES, convertGenreLabelToValue } from '@audius/common/utils'
+import {
+  GENRES,
+  MUSICAL_KEYS,
+  convertGenreLabelToValue
+} from '@audius/common/utils'
 import {
   OptionsFilterButton,
   Flex,
@@ -86,27 +90,12 @@ const MoodFilter = () => {
   )
 }
 
-const keyArr = [
-  'C',
-  'C#/Db',
-  'D',
-  'D#/Eb',
-  'E',
-  'F',
-  'F#/Gb',
-  'G',
-  'G#/Ab',
-  'A',
-  'A#/Bb',
-  'B'
-]
-
 const KeyFilter = () => {
   const [urlSearchParams] = useSearchParams()
   const key = urlSearchParams.get('key')
   const updateSearchParams = useUpdateSearchParams('key')
   const [scale, setScale] = useState<'Major' | 'Minor'>('Major')
-  const keyOptions = keyArr.map((key) => {
+  const keyOptions = MUSICAL_KEYS.map((key) => {
     const keyParts = key.split('/')
     return {
       label: key,
