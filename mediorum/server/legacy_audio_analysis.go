@@ -82,14 +82,6 @@ func (ss *MediorumServer) findMissedLegacyAnalysisJobs(work chan *QmAudioAnalysi
 	ss.crud.DB.Where("status in ?", []string{JobStatusAudioAnalysis, JobStatusBusyAudioAnalysis}).Find(&analyses)
 
 	for _, analysis := range analyses {
-		myIdx := slices.Index(analysis.Mirrors, myHost)
-		if myIdx == -1 {
-			continue
-		}
-		myRank := myIdx + 1
-
-		logger := ss.logger.With("analysis_cid", analysis.CID, "analysis_status", analysis.Status, "my_rank", myRank)
-
 		// mark job as timed out after 45 mins.
 		// AnalyzedAt is set by the /tracks/legacy/:cid/analyze endpoint when triggering an analysis.
 		if time.Since(analysis.AnalyzedAt) > time.Minute*45 {
@@ -101,6 +93,14 @@ func (ss *MediorumServer) findMissedLegacyAnalysisJobs(work chan *QmAudioAnalysi
 			ss.crud.Update(analysis)
 			continue
 		}
+
+		myIdx := slices.Index(analysis.Mirrors, myHost)
+		if myIdx == -1 {
+			continue
+		}
+		myRank := myIdx + 1
+
+		logger := ss.logger.With("analysis_cid", analysis.CID, "analysis_status", analysis.Status, "my_rank", myRank)
 
 		// this is already handled by a callback and there's a chance this job gets enqueued twice
 		if myRank == 1 && analysis.Status == JobStatusAudioAnalysis {
