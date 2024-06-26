@@ -43,7 +43,8 @@ describe('Challenge Reward Notification', () => {
         challenge_id: 'profile-completion',
         user_id: 1,
         specifier: '1',
-        amount: '100000000'
+        amount: '100000000',
+        created_at: new Date(1589373217)
       }
     ])
     await insertMobileSettings(processor.identityDB, [{ userId: 1 }])
