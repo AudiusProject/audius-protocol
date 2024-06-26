@@ -46,7 +46,6 @@ module.exports = function (app) {
           if (!existingRecord) {
             // default to null
             let walletAddress = null
-            req.logger.info({ headers }, "request headers")
             if (headers && headers[EncodedDataMessageHeader] && headers[EncodedDataSignatureHeader]) {
               const encodedDataMessage = headers[EncodedDataMessageHeader]
               const encodedDataSignature = headers[EncodedDataSignatureHeader]
