@@ -61,7 +61,7 @@ export const AccountsManagingYouHomePage = (
       )
       removeManager(params)
     },
-    [removeManager]
+    [removeManager, make, track]
   )
 
   useEffect(() => {
