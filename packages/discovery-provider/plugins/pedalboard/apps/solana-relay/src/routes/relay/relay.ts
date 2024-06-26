@@ -15,6 +15,7 @@ import {
   sendTransactionWithRetries
 } from '../../utils/transaction'
 
+import { InvalidRelayInstructionError } from './InvalidRelayInstructionError'
 import { assertRelayAllowedInstructions } from './assertRelayAllowedInstructions'
 
 /**
@@ -103,10 +104,18 @@ export const relay = async (
 
     const feePayerKey = decompiled.payerKey
     const feePayerKeyPair = getFeePayerKeyPair(feePayerKey)
-    await assertRelayAllowedInstructions(decompiled.instructions, {
-      user: res.locals.signerUser,
-      feePayer: feePayerKey.toBase58()
-    })
+
+    try {
+      await assertRelayAllowedInstructions(decompiled.instructions, {
+        user: res.locals.signerUser,
+        feePayer: feePayerKey.toBase58()
+      })
+    } catch (e) {
+      res.locals.logger.error({
+        error: e instanceof InvalidRelayInstructionError ? e.toString() : ''
+      })
+      throw new BadRequestError('Invalid relay instructions')
+    }
 
     if (feePayerKeyPair) {
       res.locals.logger.info(
