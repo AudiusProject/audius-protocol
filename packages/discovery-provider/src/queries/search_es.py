@@ -1,7 +1,12 @@
 import logging
 from typing import Any, Dict, Optional
 
-from src.api.v1.helpers import extend_playlist, extend_track, extend_user, parse_bool_param
+from src.api.v1.helpers import (
+    extend_playlist,
+    extend_track,
+    extend_user,
+    parse_bool_param,
+)
 from src.queries.get_feed_es import fetch_followed_saves_and_reposts, item_key
 from src.queries.query_helpers import (
     _populate_gated_content_metadata,

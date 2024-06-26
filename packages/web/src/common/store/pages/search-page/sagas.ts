@@ -20,6 +20,21 @@ import { waitForRead } from 'utils/sagaHelpers'
 
 const getUserId = accountSelectors.getUserId
 
+const getMinMaxFromBpm = (bpm?: string) => {
+  const bpmParts = bpm ? bpm.split('-') : [undefined, undefined]
+  const bpmMin = bpmParts[0] ? parseFloat(bpmParts[0]) : undefined
+  const bpmMax = bpmParts[1] ? parseFloat(bpmParts[1]) : bpmMin
+  return [bpmMin, bpmMax]
+}
+
+const formatKey = (key?: string) => {
+  if (!key) return undefined
+  const keyParts = key.split(' ')
+  const pitch = keyParts[0].slice(0, 1)
+  const isFlat = keyParts[0].length > 1
+  return `${pitch}${isFlat ? ' flat' : ''} ${keyParts[1].toLowerCase()}`
+}
+
 export function* getTagSearchResults(
   tag: string,
   kind: SearchKind,
@@ -35,19 +50,9 @@ export function* getTagSearchResults(
   sortMethod?: SearchSortMethod
 ) {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const [bpmMin, bpmMax] = getMinMaxFromBpm(bpm)
 
-  const bpmParts = bpm ? bpm.split('-') : [undefined, undefined]
-  const bpmMin = bpmParts[0] ? parseFloat(bpmParts[0]) : undefined
-  const bpmMax = bpmParts[1] ? parseFloat(bpmParts[1]) : bpmMin
-
-  const formatKey = (key?: string) => {
-    if (!key) return undefined
-    const keyParts = key.split(' ')
-    const pitch = keyParts[0].slice(0, 1)
-    const isFlat = keyParts[0].length > 1
-    return `${pitch}${isFlat ? ' flat' : ''} ${keyParts[1].toLowerCase()}`
-  }
-
+  // @ts-ignore
   const results = yield* call(audiusBackendInstance.searchTags, {
     query: tag.toLowerCase(),
     userTagCount: 1,
@@ -178,17 +183,7 @@ export function* getSearchResults({
 
   const apiClient = yield* getContext('apiClient')
   const userId = yield* select(getUserId)
-  const bpmParts = bpm ? bpm.split('-') : [undefined, undefined]
-  const bpmMin = bpmParts[0] ? parseFloat(bpmParts[0]) : undefined
-  const bpmMax = bpmParts[1] ? parseFloat(bpmParts[1]) : bpmMin
-
-  const formatKey = (key?: string) => {
-    if (!key) return undefined
-    const keyParts = key.split(' ')
-    const pitch = keyParts[0].slice(0, 1)
-    const isFlat = keyParts[0].length > 1
-    return `${pitch}${isFlat ? ' flat' : ''} ${keyParts[1].toLowerCase()}`
-  }
+  const [bpmMin, bpmMax] = getMinMaxFromBpm(bpm)
 
   const results = yield* call([apiClient, 'getSearchFull'], {
     currentUserId: userId,
