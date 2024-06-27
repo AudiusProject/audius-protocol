@@ -14,6 +14,7 @@ from src.api.v1.helpers import (
     extend_playlist,
     extend_track,
     extend_user,
+    filter_hidden_tracks,
     full_trending_parser,
     get_current_user_id,
     get_default_max,
@@ -50,7 +51,7 @@ from src.trending_strategies.trending_strategy_factory import (
 )
 from src.trending_strategies.trending_type_and_version import TrendingType
 from src.utils.db_session import get_db_read_replica
-from src.utils.helpers import decode_string_id
+from src.utils.helpers import decode_string_id, encode_int_id
 from src.utils.redis_cache import cache
 from src.utils.redis_metrics import record_metrics
 
@@ -175,6 +176,8 @@ class Playlist(Resource):
             current_user_id=current_user_id,
             playlist_id=playlist_id,
         )
+        if playlist:
+            filter_hidden_tracks(playlist, current_user_id)
         response = success_response([playlist] if playlist else [])
         return response
 
@@ -200,6 +203,7 @@ class FullPlaylist(Resource):
         if playlist:
             tracks = get_tracks_for_playlist(playlist_id, current_user_id)
             playlist["tracks"] = tracks
+            filter_hidden_tracks(playlist, current_user_id)
         response = success_response([playlist] if playlist else [])
         return response
 
@@ -231,6 +235,10 @@ class BulkPlaylists(Resource):
         )
         if not playlists:
             abort_not_found(ids, ns)
+
+        for playlist in playlists:
+            filter_hidden_tracks(playlist, current_user_id)
+
         response = success_response(playlists)
         return response
 
@@ -264,6 +272,8 @@ class BulkPlaylistsFull(Resource):
             return playlist
 
         playlists = list(map(add_playlist_tracks, playlists))
+        for playlist in playlists:
+            filter_hidden_tracks(playlist, current_user_id)
         response = success_response(playlists)
         return response
 
@@ -292,6 +302,7 @@ class PlaylistByHandleAndSlug(Resource):
         if playlist:
             tracks = get_tracks_for_playlist(playlist["playlist_id"], current_user_id)
             playlist["tracks"] = tracks
+            filter_hidden_tracks(playlist, current_user_id)
             return_response = [playlist]
 
         return success_response(return_response)
@@ -321,6 +332,7 @@ class FullPlaylistByHandleAndSlug(Resource):
         if playlist:
             tracks = get_tracks_for_playlist(playlist["playlist_id"], current_user_id)
             playlist["tracks"] = tracks
+            filter_hidden_tracks(playlist, current_user_id)
             return_response = [playlist]
 
         return success_response(return_response)
