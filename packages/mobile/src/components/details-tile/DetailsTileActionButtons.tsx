@@ -16,6 +16,8 @@ import { FavoriteButton } from 'app/components/favorite-button'
 import { RepostButton } from 'app/components/repost-button'
 import { makeStyles } from 'app/styles'
 import type { GestureResponderHandler } from 'app/types/gesture'
+import { useFeatureFlag } from '@audius/common/hooks'
+import { FeatureFlags } from '@audius/common/services'
 
 const { getCollectionHasHiddenTracks, getIsCollectionEmpty } =
   cacheCollectionsSelectors
@@ -79,6 +81,10 @@ export const DetailsTileActionButtons = ({
   onPressSave,
   onPressShare
 }: DetailsTileActionButtonsProps) => {
+  const { isEnabled: isHiddenPaidScheduledEnabled } = useFeatureFlag(
+    FeatureFlags.HIDDEN_PAID_SCHEDULED
+  )
+
   const styles = useStyles()
   const isCollectionEmpty = useSelector((state: CommonState) =>
     getIsCollectionEmpty(state, { id: collectionId })
@@ -155,7 +161,10 @@ export const DetailsTileActionButtons = ({
     <IconButton
       color='subdued'
       icon={IconRocket}
-      disabled={isCollectionEmpty || collectionHasHiddenTracks}
+      disabled={
+        isCollectionEmpty ||
+        (collectionHasHiddenTracks && !isHiddenPaidScheduledEnabled)
+      }
       disabledHint={
         collectionHasHiddenTracks
           ? messages.publishButtonHiddenDisabledContent
