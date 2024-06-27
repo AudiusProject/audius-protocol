@@ -13,7 +13,7 @@ from src.queries import response_name_constants
 from src.queries.get_feed_es import get_feed_es
 from src.queries.get_unpopulated_tracks import get_unpopulated_tracks
 from src.queries.query_helpers import (
-    filter_hidden_tracks_sql,
+    filter_hidden_tracks,
     get_pagination_vars,
     get_users_by_id,
     get_users_ids,
@@ -317,7 +317,7 @@ def get_feed_sql(args):
                 .filter(Track.track_id.in_(playlist_tracks_list))
                 .all()
             )
-            filter_hidden_tracks_sql(
+            filter_hidden_tracks(
                 playlist, helpers.query_result_to_list(playlist_tracks), current_user_id
             )
 
