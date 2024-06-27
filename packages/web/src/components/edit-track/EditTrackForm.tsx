@@ -7,7 +7,9 @@ import {
   IconCaretLeft,
   IconCaretRight,
   Text,
-  PlainButton
+  PlainButton,
+  Button,
+  IconTrash
 } from '@audius/harmony'
 import cn from 'classnames'
 import { Form, Formik, FormikProps, useField } from 'formik'
@@ -40,6 +42,7 @@ const messages = {
   prev: 'Prev',
   next: 'Next Track',
   preview: 'Preview',
+  deleteTrack: 'DELETE TRACK',
   navigationPrompt: {
     title: 'Discard upload?',
     body: "Are you sure you want to leave this page?\nAny changes you've made will be lost.",
@@ -51,6 +54,7 @@ const messages = {
 type EditTrackFormProps = {
   initialValues: TrackEditFormValues
   onSubmit: (values: TrackEditFormValues) => void
+  onDeleteTrack?: () => void
   hideContainer?: boolean
 }
 
@@ -59,7 +63,7 @@ const EditFormValidationSchema = z.object({
 })
 
 export const EditTrackForm = (props: EditTrackFormProps) => {
-  const { initialValues, onSubmit, hideContainer } = props
+  const { initialValues, onSubmit, onDeleteTrack, hideContainer } = props
 
   return (
     <Formik<TrackEditFormValues>
@@ -67,15 +71,30 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
       onSubmit={onSubmit}
       validationSchema={toFormikValidationSchema(EditFormValidationSchema)}
     >
-      {(props) => <TrackEditForm {...props} hideContainer={hideContainer} />}
+      {(props) => (
+        <TrackEditForm
+          {...props}
+          hideContainer={hideContainer}
+          onDeleteTrack={onDeleteTrack}
+        />
+      )}
     </Formik>
   )
 }
 
 const TrackEditForm = (
-  props: FormikProps<TrackEditFormValues> & { hideContainer?: boolean }
+  props: FormikProps<TrackEditFormValues> & {
+    hideContainer?: boolean
+    onDeleteTrack?: () => void
+  }
 ) => {
-  const { values, dirty, isSubmitting, hideContainer = false } = props
+  const {
+    values,
+    dirty,
+    isSubmitting,
+    onDeleteTrack,
+    hideContainer = false
+  } = props
   const isMultiTrack = values.trackMetadatas.length > 1
   const isUpload = values.trackMetadatas[0].track_id === undefined
   const trackIdx = values.trackMetadatasIndex
@@ -113,7 +132,7 @@ const TrackEditForm = (
             <TrackMetadataFields />
             <div className={cn(layoutStyles.col, layoutStyles.gap4)}>
               {isHiddenPaidScheduledEnabled ? (
-                <VisibilityField entityType='track' />
+                <VisibilityField entityType='track' isUpload={isUpload} />
               ) : (
                 <ReleaseDateField />
               )}
@@ -139,6 +158,17 @@ const TrackEditForm = (
               className={styles.previewButton}
               index={trackIdx}
             />
+            {!isUpload ? (
+              <Button
+                variant='destructive'
+                size='small'
+                onClick={onDeleteTrack}
+                iconLeft={IconTrash}
+                css={{ alignSelf: 'flex-start' }}
+              >
+                {messages.deleteTrack}
+              </Button>
+            ) : null}
           </div>
           {isMultiTrack ? <MultiTrackFooter /> : null}
         </div>

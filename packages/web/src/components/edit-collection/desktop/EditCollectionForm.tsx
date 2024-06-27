@@ -43,10 +43,11 @@ type EditCollectionFormProps = {
   initialValues: CollectionValues
   onSubmit: (values: CollectionValues) => void
   isAlbum: boolean
+  isUpload: boolean
 }
 
 export const EditCollectionForm = (props: EditCollectionFormProps) => {
-  const { initialValues, onSubmit, isAlbum } = props
+  const { initialValues, onSubmit, isAlbum, isUpload } = props
   const { isEnabled: isPremiumAlbumsEnabled } = useFeatureFlag(
     FeatureFlags.PREMIUM_ALBUMS_ENABLED
   )
@@ -95,7 +96,10 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
             </div>
           </div>
           {isHiddenPaidScheduledEnabled ? (
-            <VisibilityField entityType={isAlbum ? 'album' : 'playlist'} />
+            <VisibilityField
+              entityType={isAlbum ? 'album' : 'playlist'}
+              isUpload={isUpload}
+            />
           ) : (
             <ReleaseDateFieldLegacy />
           )}

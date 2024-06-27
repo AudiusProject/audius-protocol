@@ -1,13 +1,19 @@
 import { useCallback, useEffect } from 'react'
 
 import { useGetCurrentUserId, useGetPlaylistById } from '@audius/common/api'
-import { Name, PlaybackSource, Status } from '@audius/common/models'
+import {
+  Name,
+  PlaybackSource,
+  Status,
+  isContentUSDCPurchaseGated
+} from '@audius/common/models'
 import type {
   SmartCollectionVariant,
   ID,
   UID,
   AccessConditions
 } from '@audius/common/models'
+import type { CommonState } from '@audius/common/store'
 import {
   cacheCollectionsSelectors,
   collectionPageLineupActions as tracksActions,
@@ -18,20 +24,40 @@ import {
   PurchaseableContentType,
   queueActions
 } from '@audius/common/store'
-import { removeNullable } from '@audius/common/utils'
+import { getDogEarType, getLocalTimezone } from '@audius/common/utils'
 import type { Maybe, Nullable } from '@audius/common/utils'
+import dayjs from 'dayjs'
+import { TouchableOpacity } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 import { usePrevious } from 'react-use'
 import { createSelector } from 'reselect'
+import { useGatedContentAccessMap } from '~/hooks'
 
-import { Box } from '@audius/harmony-native'
-import { Text } from 'app/components/core'
-import { DetailsTile } from 'app/components/details-tile'
-import type {
-  DetailsTileDetail,
-  DetailsTileProps
-} from 'app/components/details-tile/types'
+import {
+  Box,
+  Button,
+  Divider,
+  Flex,
+  IconCalendarMonth,
+  IconPause,
+  IconPlay,
+  IconVisibilityHidden,
+  MusicBadge,
+  Paper,
+  Text,
+  spacing
+} from '@audius/harmony-native'
+import { DogEar, UserGeneratedText } from 'app/components/core'
+import { CollectionMetadataList } from 'app/components/details-tile/CollectionMetadataList'
+import { DetailsTileActionButtons } from 'app/components/details-tile/DetailsTileActionButtons'
+import { DetailsTileHasAccess } from 'app/components/details-tile/DetailsTileHasAccess'
+import { DetailsTileNoAccess } from 'app/components/details-tile/DetailsTileNoAccess'
+import { DetailsTileStats } from 'app/components/details-tile/DetailsTileStats'
+import type { DetailsTileProps } from 'app/components/details-tile/types'
+import { OfflineStatusRow } from 'app/components/offline-downloads'
 import { TrackList } from 'app/components/track-list'
+import UserBadges from 'app/components/user-badges'
+import { useNavigation } from 'app/hooks/useNavigation'
 import { make, track } from 'app/services/analytics'
 import type { AppState } from 'app/store'
 import { makeStyles } from 'app/styles'
@@ -39,7 +65,7 @@ import { makeStyles } from 'app/styles'
 const { getPlaying, getPreviewing, getUid, getCurrentTrack } = playerSelectors
 const { getIsReachable } = reachabilitySelectors
 const { getCollectionTracksLineup } = collectionPageSelectors
-const { getCollection } = cacheCollectionsSelectors
+const { getCollection, getCollectionTracks } = cacheCollectionsSelectors
 const { getTracks } = cacheTracksSelectors
 
 const selectTrackUids = createSelector(
@@ -57,19 +83,6 @@ const selectTrackCount = (state: AppState) => {
 const selectIsLineupLoading = (state: AppState) => {
   return getCollectionTracksLineup(state).status !== Status.SUCCESS
 }
-
-const selectCollectionDuration = createSelector(
-  (state: AppState) => getCollectionTracksLineup(state).entries,
-  (state: AppState) => state.tracks.entries,
-  (entries, tracks) => {
-    return entries
-      .map((entry) => tracks[entry.id]?.metadata.duration)
-      .filter(removeNullable)
-      .reduce((totalDuration, trackDuration) => {
-        return totalDuration + trackDuration
-      }, 0)
-  }
-)
 
 const selectIsQueued = createSelector(
   selectTrackUids,
@@ -107,7 +120,17 @@ const getMessages = (
   emptyPublic: `This ${collectionType} is empty`,
   detailsPlaceholder: '---',
   collectionType: `${isPremium ? 'premium ' : ''}${collectionType}`,
-  hiddenType: `Hidden ${collectionType}`
+  hiddenType: `Hidden ${collectionType}`,
+  play: 'Play',
+  pause: 'Pause',
+  resume: 'Resume',
+  replay: 'Replay',
+  preview: 'Preview',
+  hidden: 'Hidden',
+  releases: (releaseDate: string) =>
+    `Releases ${dayjs(releaseDate).format(
+      'M/D/YY [@] h:mm A'
+    )} ${getLocalTimezone()}`
 })
 
 const useStyles = makeStyles(({ palette, spacing }) => ({
@@ -117,16 +140,22 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
     marginBottom: spacing(8),
     textAlign: 'center',
     lineHeight: 20
+  },
+  coverArt: {
+    borderWidth: 1,
+    borderColor: palette.neutralLight8,
+    borderRadius: spacing(2),
+    height: 224,
+    width: 224,
+    alignSelf: 'center'
   }
 }))
 
 type CollectionScreenDetailsTileProps = {
   isAlbum?: boolean
-  isPrivate?: boolean
   isOwner?: boolean
   isPublishing?: boolean
   isDeleted?: boolean
-  extraDetails?: DetailsTileDetail[]
   collectionId: number | SmartCollectionVariant
   hasStreamAccess?: boolean
   streamConditions?: Nullable<AccessConditions>
@@ -153,25 +182,42 @@ const recordPlay = (id: Maybe<number>, play = true) => {
 
 export const CollectionScreenDetailsTile = ({
   description,
-  extraDetails = [],
   collectionId,
   isAlbum,
-  isPrivate,
   isPublishing,
   renderImage,
   trackCount: trackCountProp,
-  isOwner,
+  isOwner = false,
   hideOverflow,
   hideRepost,
   hideFavorite,
   hasStreamAccess,
   streamConditions,
   ddexApp,
-  isDeleted,
-  ...detailsTileProps
+  hideShare,
+  playCount,
+  hidePlayCount,
+  hideFavoriteCount,
+  hideRepostCount,
+  repostCount,
+  saveCount,
+  hasSaved,
+  title,
+  hasReposted,
+  onPressEdit,
+  onPressFavorites,
+  onPressOverflow,
+  onPressPublish,
+  onPressRepost,
+  onPressReposts,
+  onPressSave,
+  onPressShare,
+  user,
+  releaseDate
 }: CollectionScreenDetailsTileProps) => {
   const styles = useStyles()
   const dispatch = useDispatch()
+  const navigation = useNavigation()
 
   const isReachable = useSelector(getIsReachable)
 
@@ -186,22 +232,72 @@ export const CollectionScreenDetailsTile = ({
     },
     { disabled: typeof collectionId !== 'number' }
   )
-  const isStreamGated = collection?.is_stream_gated
+  const {
+    is_stream_gated: isStreamGated,
+    is_scheduled_release: isScheduledRelease,
+    is_private: isPrivate
+  } = collection ?? {}
 
+  const numericCollectionId =
+    typeof collectionId === 'number' ? collectionId : undefined
+  const collectionTracks = useSelector((state: CommonState) =>
+    getCollectionTracks(state, { id: numericCollectionId })
+  )
+  const trackAccessMap = useGatedContentAccessMap(collectionTracks ?? [])
+  const doesUserHaveAccessToAnyTrack = Object.values(trackAccessMap).some(
+    ({ hasStreamAccess }) => hasStreamAccess
+  )
   const trackUids = useSelector(selectTrackUids)
   const collectionTrackCount = useSelector(selectTrackCount)
   const trackCount = trackCountProp ?? collectionTrackCount
   const isLineupLoading = useSelector(selectIsLineupLoading)
-  const collectionDuration = useSelector(selectCollectionDuration)
   const playingUid = useSelector(getUid)
   const isQueued = useSelector(selectIsQueued)
   const isPlaying = useSelector(getPlaying)
   const isPreviewing = useSelector(getPreviewing)
+  const isPlayingPreview = isPreviewing && isPlaying
   const playingTrack = useSelector(getCurrentTrack)
   const playingTrackId = playingTrack?.track_id
   const firstTrack = useSelector(selectFirstTrack)
   const messages = getMessages(isAlbum ? 'album' : 'playlist', isStreamGated)
+  const headerText = isPrivate ? messages.hiddenType : messages.collectionType
+  const isPublished = !isPrivate || isPublishing
+  const isUnpublishedScheduledRelease =
+    isScheduledRelease && isPrivate && releaseDate
+  const shouldHideOverflow =
+    hideOverflow || !isReachable || (isPrivate && !isOwner)
+  const isUSDCPurchaseGated = isContentUSDCPurchaseGated(streamConditions)
+
+  const uids = isLineupLoading ? Array(Math.min(5, trackCount ?? 0)) : trackUids
+  const tracks = useSelector((state) => getTracks(state, { uids }))
+  const areAllTracksDeleted = Object.values(tracks).every(
+    (track) => track.is_delete
+  )
+  const isPlayable =
+    Object.values(tracks).length === 0
+      ? true
+      : !areAllTracksDeleted && (isQueued || (trackCount > 0 && !!firstTrack))
+
+  const shouldShowPlay =
+    (isPlayable && hasStreamAccess) || doesUserHaveAccessToAnyTrack
+  const shouldShowPreview =
+    isUSDCPurchaseGated && !hasStreamAccess && !shouldShowPlay
+
   useRefetchLineupOnTrackAdd(collectionId)
+
+  const badges = [
+    isUnpublishedScheduledRelease ? (
+      <MusicBadge variant='accent' icon={IconCalendarMonth}>
+        {messages.releases(releaseDate)}
+      </MusicBadge>
+    ) : isPrivate ? (
+      <MusicBadge icon={IconVisibilityHidden}>{messages.hidden}</MusicBadge>
+    ) : null
+  ].filter((badge) => badge !== null)
+
+  const imageElement = renderImage({
+    style: styles.coverArt
+  })
 
   const play = useCallback(
     ({ isPreview = false }: { isPreview?: boolean } = {}) => {
@@ -250,19 +346,6 @@ export const CollectionScreenDetailsTile = ({
     [dispatch, isPlaying, playingUid]
   )
 
-  const numericCollectionId =
-    typeof collectionId === 'number' ? collectionId : undefined
-
-  const uids = isLineupLoading ? Array(Math.min(5, trackCount ?? 0)) : trackUids
-  const tracks = useSelector((state) => getTracks(state, { uids }))
-  const areAllTracksDeleted = Object.values(tracks).every(
-    (track) => track.is_delete
-  )
-  const isPlayable =
-    Object.values(tracks).length === 0
-      ? true
-      : !areAllTracksDeleted && (isQueued || (trackCount > 0 && !!firstTrack))
-
   const renderTrackList = useCallback(() => {
     return (
       <TrackList
@@ -275,7 +358,7 @@ export const CollectionScreenDetailsTile = ({
         ListEmptyComponent={
           isLineupLoading ? null : (
             <Box mt='m'>
-              <Text fontSize='medium' weight='medium' style={styles.empty}>
+              <Text variant='body' style={styles.empty}>
                 {isOwner ? messages.empty : messages.emptyPublic}
               </Text>
             </Box>
@@ -294,33 +377,156 @@ export const CollectionScreenDetailsTile = ({
     messages
   ])
 
+  const renderDogEar = () => {
+    const dogEarType = getDogEarType({
+      isOwner,
+      streamConditions
+    })
+    return dogEarType ? <DogEar type={dogEarType} borderOffset={1} /> : null
+  }
+
+  const handlePressArtistName = useCallback(() => {
+    if (!user) {
+      return
+    }
+    navigation.push('Profile', { handle: user.handle })
+  }, [navigation, user])
+
+  const PreviewButton = () => (
+    <Button
+      variant='tertiary'
+      iconLeft={isPlayingPreview ? IconPause : IconPlay}
+      onPress={handlePressPreview}
+      disabled={!isPlayable}
+      fullWidth
+    >
+      {isPlayingPreview ? messages.pause : messages.preview}
+    </Button>
+  )
+
   return (
-    <DetailsTile
-      {...detailsTileProps}
-      contentId={numericCollectionId}
-      contentType={PurchaseableContentType.ALBUM}
-      ddexApp={ddexApp}
-      description={description}
-      descriptionLinkPressSource='collection page'
-      duration={collectionDuration}
-      hideOverflow={hideOverflow || !isReachable || (isPrivate && !isOwner)}
-      hidePlayCount={true}
-      hasStreamAccess={hasStreamAccess}
-      streamConditions={streamConditions}
-      hideFavorite={hideFavorite || !hasStreamAccess}
-      hideRepost={hideRepost || !isReachable || !hasStreamAccess}
-      isPlaying={isPlaying && isQueued}
-      isPreviewing={isPreviewing && isQueued}
-      isPublished={!isPrivate || isPublishing}
-      isDeleted={isDeleted}
-      isCollection={true}
-      renderBottomContent={renderTrackList}
-      headerText={isPrivate ? messages.hiddenType : messages.collectionType}
-      renderImage={renderImage}
-      onPressPlay={handlePressPlay}
-      onPressPreview={handlePressPreview}
-      isPlayable={isPlayable}
-      trackCount={trackCount}
-    />
+    <Paper mb='2xl' style={{ overflow: 'hidden' }}>
+      {renderDogEar()}
+      <Flex p='l' gap='l' alignItems='center' w='100%'>
+        <Text
+          variant='label'
+          size='m'
+          strength='default'
+          textTransform='uppercase'
+          color='subdued'
+        >
+          {headerText}
+        </Text>
+
+        {badges.length > 0 ? (
+          <Flex direction='row' gap='s'>
+            {badges.map((badge) => badge)}
+          </Flex>
+        ) : null}
+        {imageElement}
+        <Flex gap='xs' alignItems='center'>
+          <Text variant='heading' size='s'>
+            {title}
+          </Text>
+          {user ? (
+            <TouchableOpacity onPress={handlePressArtistName}>
+              <Flex direction='row' gap='xs'>
+                <Text variant='body' color='accent' size='l'>
+                  {user.name}
+                </Text>
+                <UserBadges badgeSize={spacing.l} user={user} hideName />
+              </Flex>
+            </TouchableOpacity>
+          ) : null}
+        </Flex>
+        {shouldShowPlay ? (
+          <Button
+            iconLeft={isPlaying ? IconPause : IconPlay}
+            onPress={handlePressPlay}
+            disabled={!isPlayable}
+            fullWidth
+          >
+            {isPlaying ? messages.pause : messages.play}
+          </Button>
+        ) : null}
+        {shouldShowPreview ? <PreviewButton /> : null}
+        <DetailsTileActionButtons
+          ddexApp={ddexApp}
+          hasReposted={!!hasReposted}
+          hasSaved={!!hasSaved}
+          hideFavorite={hideFavorite}
+          hideOverflow={shouldHideOverflow}
+          hideRepost={hideRepost}
+          hideShare={hideShare}
+          isOwner={isOwner}
+          isCollection
+          collectionId={numericCollectionId}
+          isPublished={isPublished}
+          onPressEdit={onPressEdit}
+          onPressOverflow={onPressOverflow}
+          onPressRepost={onPressRepost}
+          onPressSave={onPressSave}
+          onPressShare={onPressShare}
+          onPressPublish={onPressPublish}
+        />
+      </Flex>
+      <Flex
+        p='l'
+        gap='l'
+        alignItems='center'
+        borderTop='default'
+        backgroundColor='surface1'
+        borderBottomLeftRadius='m'
+        borderBottomRightRadius='m'
+      >
+        {!hasStreamAccess &&
+        !isOwner &&
+        streamConditions &&
+        numericCollectionId ? (
+          <DetailsTileNoAccess
+            trackId={numericCollectionId}
+            contentType={PurchaseableContentType.ALBUM}
+            streamConditions={streamConditions}
+          />
+        ) : null}
+        {(hasStreamAccess || isOwner) && streamConditions ? (
+          <DetailsTileHasAccess
+            streamConditions={streamConditions}
+            isOwner={isOwner}
+            trackArtist={user}
+            contentType={PurchaseableContentType.ALBUM}
+          />
+        ) : null}
+        {!isPublished ? null : (
+          <DetailsTileStats
+            playCount={playCount}
+            hidePlayCount={hidePlayCount}
+            favoriteCount={saveCount}
+            hideFavoriteCount={hideFavoriteCount}
+            repostCount={repostCount}
+            hideRepostCount={hideRepostCount}
+            onPressFavorites={onPressFavorites}
+            onPressReposts={onPressReposts}
+          />
+        )}
+        {description ? (
+          <Box w='100%'>
+            <UserGeneratedText
+              source={'collection page'}
+              variant='body'
+              size='s'
+            >
+              {description}
+            </UserGeneratedText>
+          </Box>
+        ) : null}
+        {numericCollectionId ? (
+          <CollectionMetadataList collectionId={numericCollectionId} />
+        ) : null}
+        <OfflineStatusRow contentId={numericCollectionId} isCollection />
+      </Flex>
+      <Divider />
+      {renderTrackList()}
+    </Paper>
   )
 }

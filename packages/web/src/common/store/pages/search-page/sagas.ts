@@ -5,7 +5,8 @@ import {
   searchResultsPageTracksLineupActions as tracksLineupActions,
   searchResultsPageActions as searchPageActions,
   SearchKind,
-  getContext
+  getContext,
+  SearchSortMethod
 } from '@audius/common/store'
 import { Genre, trimToAlphaNumeric } from '@audius/common/utils'
 import { Mood } from '@audius/sdk'
@@ -113,6 +114,7 @@ type GetSearchResultsArgs = {
   isVerified?: boolean
   hasDownloads?: boolean
   isPremium?: boolean
+  sortMethod?: SearchSortMethod
 }
 
 export function* getSearchResults({
@@ -126,7 +128,8 @@ export function* getSearchResults({
   key,
   isVerified,
   hasDownloads,
-  isPremium
+  isPremium,
+  sortMethod
 }: GetSearchResultsArgs) {
   yield* waitForRead()
   const getFeatureEnabled = yield* getContext('getFeatureEnabled')
@@ -163,7 +166,8 @@ export function* getSearchResults({
     key: formatKey(key),
     isVerified,
     hasDownloads,
-    isPremium
+    isPremium,
+    sortMethod
   })
   const { tracks, albums, playlists, users } = results
 
@@ -185,8 +189,8 @@ function* fetchSearchPageResults(
 ) {
   yield* call(waitForRead)
 
-  const { type: ignoredType, ...rest } = action
-  const rawResults = yield* call(getSearchResults, rest)
+  const { type: ignoredType, ...params } = action
+  const rawResults = yield* call(getSearchResults, params)
   if (rawResults) {
     const results = {
       users:
