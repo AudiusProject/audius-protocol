@@ -462,7 +462,7 @@ def extend_playlist(playlist):
 
 
 # Filter out hidden tracks if a non-owner is requesting a public playlist
-# See also: queries/query_helpers.py::filter_hidden_tracks_es
+# See also: queries/query_helpers.py::filter_hidden_tracks
 def filter_hidden_tracks(playlist, current_user_id):
     is_owner = (
         current_user_id and playlist.get("playlist_owner_id", None) == current_user_id
