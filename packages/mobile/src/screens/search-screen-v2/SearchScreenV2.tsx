@@ -16,7 +16,7 @@ import { SearchCategoriesAndFilters } from './SearchCategoriesAndFilters'
 import { SearchContext } from './searchState'
 
 export const SearchScreenV2 = () => {
-  const { params } = useRoute<'Search'>()
+  const { params = {} } = useRoute<'Search'>()
   const [query, setQuery] = useState(params.query ?? '')
   const [category, setCategory] = useState<SearchCategory>(
     params.category ?? 'all'
