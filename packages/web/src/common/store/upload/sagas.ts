@@ -100,8 +100,11 @@ function* combineMetadata(
   if (!metadata.genre)
     metadata.genre = collectionMetadata.trackDetails.genre ?? ''
   if (!metadata.mood) metadata.mood = collectionMetadata.trackDetails.mood ?? ''
-  if (!metadata.release_date)
+  if (!metadata.release_date) {
     metadata.release_date = collectionMetadata.release_date ?? null
+    metadata.is_scheduled_release =
+      collectionMetadata.is_scheduled_release ?? false
+  }
 
   if (metadata.tags === null && collectionMetadata.trackDetails.tags) {
     // Take collection tags
