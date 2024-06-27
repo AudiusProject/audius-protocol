@@ -126,7 +126,7 @@ export class IdentityService {
 
   async setAuthFn(obj: Data) {
     // get wallet from hedgehog and set as owner wallet
-    const ownerWallet = obj['wallet'] as Wallet
+    const ownerWallet = obj.wallet as Wallet
     this.web3Manager?.setOwnerWallet(ownerWallet)
 
     // sign headers with new wallet so auth server can derive address
@@ -134,9 +134,9 @@ export class IdentityService {
 
     // construct data obj per hedgehog docs
     const data = {
-      cipherText: obj['cipherText'],
-      iv: obj['iv'],
-      lookupKey: obj['lookupKey']
+      cipherText: obj.cipherText,
+      iv: obj.iv,
+      lookupKey: obj.lookupKey
     }
 
     return await this._makeRequest({
