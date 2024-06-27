@@ -1,7 +1,7 @@
 import { IconComponent } from 'components/icon'
 import { Origin } from 'components/popup/types'
 
-import { SelectInputProps } from './SelectInput.types'
+import { SelectInputProps } from '../SelectInput/types'
 
 export type SelectOption = {
   value: string
@@ -45,15 +45,14 @@ export type SelectPopupProps = {
 
 export type SelectProps = {
   /**
-   * Selection options
-   * e.g. { label: 'Option A', icon: IconRadar }
-   */
-
-  /**
    * Placeholder text for the filter input
    */
   filterInputPlaceholder?: string
 
+  /**
+   * Selection options
+   * e.g. { label: 'Option A', icon: IconRadar }
+   */
   options: SelectOption[]
 
   /**

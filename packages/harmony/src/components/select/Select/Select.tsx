@@ -15,9 +15,10 @@ import { Popup } from 'components/popup'
 import { Text } from 'components/text'
 import { useControlled } from 'hooks/useControlled'
 
-import { SelectOption, SelectProps } from './Select.types'
-import { SelectInput } from './SelectInput'
-import { SelectPopupKeyHandler } from './SelectPopupKeyHandler'
+import { SelectInput } from '../SelectInput'
+import { SelectPopupKeyHandler } from '../SelectPopupKeyHandler'
+
+import { SelectOption, SelectProps } from './types'
 
 const messages = {
   noMatches: 'No matches'
@@ -138,6 +139,8 @@ export const Select = forwardRef<HTMLInputElement, SelectProps>(function Select(
   })
 
   // TODO: implement filtering
+  // The state management is already done because this was copied from OptionsFilterButton
+  // but I would like to support filtering the options by typing in the SelectInput
   const [filterInputValue, setFilterInputValue] = useState('')
   const selectedOption = options.find((option) => option.value === selection)
   const selectedLabel = selectedOption?.label ?? selectedOption?.value

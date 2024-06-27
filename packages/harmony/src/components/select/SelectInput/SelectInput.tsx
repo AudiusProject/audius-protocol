@@ -7,13 +7,12 @@ import {
   MouseEventHandler
 } from 'react'
 
+import { TextInput } from 'components/input/TextInput'
 import { Flex } from 'components/layout'
 import { useControlled } from 'hooks/useControlled'
 import { IconCaretDown, IconCloseAlt } from 'icons'
 
-import { TextInput } from '../input/TextInput'
-
-import { SelectInputProps } from './SelectInput.types'
+import { SelectInputProps } from './types'
 
 export const SelectInput = forwardRef<HTMLInputElement, SelectInputProps>(
   function Select(props, ref) {
@@ -24,11 +23,7 @@ export const SelectInput = forwardRef<HTMLInputElement, SelectInputProps>(
       onClick,
       onOpen,
       onReset,
-      // TODO: spread these?
-      label,
-      disabled,
-      error,
-      helperText
+      ...inputProps
     } = props
 
     const [value, setValue] = useControlled({
@@ -84,16 +79,13 @@ export const SelectInput = forwardRef<HTMLInputElement, SelectInputProps>(
     return (
       <Flex ref={ref || anchorRef}>
         <TextInput
+          {...inputProps}
           onClick={handleClick}
           endIcon={value !== null ? IconCloseAlt : IconCaretDown || undefined}
           IconProps={{ onClick: handleClickIcon }}
-          disabled={disabled}
           aria-haspopup='listbox'
           aria-expanded={isOpen}
-          label={label}
           autoComplete='off'
-          error={error}
-          helperText={helperText}
           value={value || ''}
         />
         {children?.({

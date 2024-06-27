@@ -1,6 +1,6 @@
 import { RefObject, useState, ReactNode, useEffect } from 'react'
 
-import { SelectOption } from './Select.types'
+import { SelectOption } from './Select/types'
 
 type SelectPopupKeyHandlerProps = {
   children: (activeValue: string | null) => ReactNode
