@@ -139,7 +139,7 @@ export class IdentityService {
       url: '/authentication',
       method: 'post',
       headers,
-      data: obj,
+      data: obj
     })
   }
 
