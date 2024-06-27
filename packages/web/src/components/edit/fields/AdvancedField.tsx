@@ -488,6 +488,7 @@ const AdvancedModalFields = () => {
               type='number'
               label={messages.bpm.header}
               placeholder={messages.bpm.label}
+              autoComplete='off'
             />
           </Flex>
           <Flex direction='column' w='100%'>
