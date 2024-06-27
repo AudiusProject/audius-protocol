@@ -112,6 +112,7 @@ export class USDCPurchaseBuyer extends BaseNotification<USDCPurchaseBuyerRow> {
     const purchaserUsername = users[this.notificationReceiverUserId]?.name
     const purchaserProfilePictureSizes =
       users[this.notificationReceiverUserId]?.profile_picture_sizes
+    logger.info(`asdf users ${JSON.stringify(users)}`)
     const purchaserHandle = users[this.notificationReceiverUserId]?.handle
 
     const title = 'Purchase Successful'

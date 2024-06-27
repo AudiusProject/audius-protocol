@@ -637,7 +637,7 @@ export const email = ({
   </tr>
   <tr>
   <td>
-  <div style="line-height:24px;text-align:left;"><span style="color:#3a3843;font-family:Inter,Arial,sans-serif;font-size:16px;line-height:24px;text-align:left;">You’ve earned $AUDIO tokens for completing the Spend to Earn challenge!</span></div>
+  <div style="line-height:24px;text-align:left;"><span style="color:#3a3843;font-family:Inter,Arial,sans-serif;font-size:16px;line-height:24px;text-align:left;">You’ve earned $AUDIO tokens for completing the Sell to Earn challenge!</span></div>
   </td>
   </tr>
   </table>
