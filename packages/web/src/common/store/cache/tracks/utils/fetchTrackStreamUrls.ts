@@ -30,7 +30,7 @@ export function* fetchTrackStreamUrls({
   const currentUserId = yield* select(getUserId)
 
   try {
-    const partialResults: { [id: number]: string | undefined }[] = []
+    const earlyResultsArr: { [id: number]: string | undefined }[] = []
     // TODO: Long term it probably makes more sense to batch these fetches (needs a backend change to support)
     const streamUrlCallEffects = trackIds.map((id) =>
       call(function* () {
@@ -66,7 +66,7 @@ export function* fetchTrackStreamUrls({
             queryParams,
             abortOnUnreachable: true
           })
-          partialResults.push({ [id]: streamUrl })
+          earlyResultsArr.push({ [id]: streamUrl })
           return streamUrl !== undefined ? { [id]: streamUrl } : undefined
         } catch (e) {
           reportToSentry({
@@ -80,16 +80,16 @@ export function* fetchTrackStreamUrls({
     // Intentionally don't use yield* so we don't block here
     const streamUrlResults = all(streamUrlCallEffects)
 
-    let earlyResults: { [id: number]: string | undefined } = {}
+    let earlyResultsObj: { [id: number]: string | undefined } = {}
 
-    // This early results handler is an optimization to make sure that if any particular network request is taking longer than 1s,
-    // we don't hold up the rest of the requests. This code waits for 1s and puts whatever
+    // This early results handler is an optimization to make sure that if any particular network request is taking longer than 1.5s,
+    // we don't hold up the rest of the requests. This code waits for 1.5s and puts whatever is ready at the time
     // @ts-ignore
     function* earlyResultsHandler() {
       yield* delay(1500)
-      if (partialResults.length > 0) {
+      if (earlyResultsArr.length > 0) {
         // Convert array to obj and remove undefined values
-        earlyResults = partialResults.reduce((acc, curr) => {
+        earlyResultsObj = earlyResultsArr.reduce((acc, curr) => {
           if (Object.values(curr)[0] === undefined) {
             return acc
           }
@@ -97,7 +97,7 @@ export function* fetchTrackStreamUrls({
           return { ...acc, ...curr }
         }, {})
         // Put the early results in the store
-        yield* put(setStreamUrls(earlyResults))
+        yield* put(setStreamUrls(earlyResultsObj))
       }
     }
 
@@ -109,7 +109,8 @@ export function* fetchTrackStreamUrls({
     // Filter out the results that we already put earlier
     const slowerResultsArr = yieldedResults.filter(
       (track) =>
-        track !== undefined && earlyResults[Object.keys(track)[0]] === undefined
+        track !== undefined &&
+        earlyResultsObj[Object.keys(track)[0]] === undefined
     )
     if (slowerResultsArr.length > 0) {
       const slowerResultsObj = slowerResultsArr.reduce((acc, curr) => {
