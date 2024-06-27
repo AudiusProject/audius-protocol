@@ -1,5 +1,7 @@
 import { useGetPlaylistById, useGetCurrentUserId } from '@audius/common/api'
+import { useFeatureFlag } from '@audius/common/hooks'
 import type { ID } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import { cacheCollectionsSelectors } from '@audius/common/store'
 import type { CommonState } from '@audius/common/store'
 import { useSelector } from 'react-redux'
@@ -16,8 +18,6 @@ import { FavoriteButton } from 'app/components/favorite-button'
 import { RepostButton } from 'app/components/repost-button'
 import { makeStyles } from 'app/styles'
 import type { GestureResponderHandler } from 'app/types/gesture'
-import { useFeatureFlag } from '@audius/common/hooks'
-import { FeatureFlags } from '@audius/common/services'
 
 const { getCollectionHasHiddenTracks, getIsCollectionEmpty } =
   cacheCollectionsSelectors
