@@ -473,6 +473,8 @@ const AdvancedModalFields = () => {
             />
           </div>
         </span>
+
+        <Divider />
         <span className={cn(layoutStyles.row, layoutStyles.gap6)}>
           <Flex direction='column' w='100%'>
             <Box mb='m'>
@@ -496,14 +498,6 @@ const AdvancedModalFields = () => {
             </Box>
 
             <KeySelectField name={MUSICAL_KEY} />
-            {/* <DropdownField
-              aria-label={messages.musicalKey}
-              placeholder={messages.musicalKey}
-              mount='parent'
-              menu={{ items: MUSICAL_KEYS }}
-              size='large'
-              name={MUSICAL_KEY}
-            /> */}
           </Flex>
         </span>
       </div>
