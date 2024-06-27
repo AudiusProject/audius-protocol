@@ -13,6 +13,7 @@ from src.queries import response_name_constants
 from src.queries.get_feed_es import get_feed_es
 from src.queries.get_unpopulated_tracks import get_unpopulated_tracks
 from src.queries.query_helpers import (
+    filter_hidden_tracks,
     get_pagination_vars,
     get_users_by_id,
     get_users_ids,
@@ -303,6 +304,15 @@ def get_feed_sql(args):
             [SaveType.playlist, SaveType.album],
             current_user_id,
         )
+
+        for playlist in playlists:
+            playlist_tracks = playlist.get("playlist_contents", {}).get("track_ids", [])
+            tracks = session.query(Track).filter(
+                Track.is_current == True,
+                Track.track_id.in_(playlist_tracks),
+            )
+
+            filter_hidden_tracks(playlist, playlist_tracks, current_user_id)
 
         # build combined feed of tracks and playlists
         unsorted_feed = tracks + playlists

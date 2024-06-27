@@ -1,4 +1,8 @@
-from src.queries.query_helpers import _populate_gated_content_metadata, get_users_ids
+from src.queries.query_helpers import (
+    _populate_gated_content_metadata,
+    filter_hidden_tracks,
+    get_users_ids,
+)
 from src.utils.db_session import get_db_read_replica
 from src.utils.elasticdsl import (
     ES_PLAYLISTS,
@@ -15,7 +19,7 @@ from src.utils.elasticdsl import (
 
 def get_feed_es(args, limit=10, offset=0):
     esclient = get_esclient()
-    current_user_id = str(args.get("user_id"))
+    current_user_id = str(args.get("user_id", None))
     feed_filter = args.get("filter", "all")
     load_reposts = feed_filter in ["repost", "all"]
     load_orig = feed_filter in ["original", "all"]
@@ -123,10 +127,11 @@ def get_feed_es(args, limit=10, offset=0):
         playlist["item_key"] = item_key(playlist)
         seen.add(playlist["item_key"])
         unsorted_feed.append(playlist)
+        filter_hidden_tracks(playlist, current_user_id)
 
         # add playlist track_ids to seen
         # if a user uploads an orig playlist or album
-        # surpress individual tracks from said album appearing in feed
+        # supress individual tracks from said album appearing in feed
         for track in playlist["tracks"]:
             seen.add(item_key(track))
 

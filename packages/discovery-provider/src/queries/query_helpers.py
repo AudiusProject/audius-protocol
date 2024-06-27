@@ -29,6 +29,7 @@ from src.queries.get_balances import get_balances
 from src.queries.get_unpopulated_users import get_unpopulated_users
 from src.trending_strategies.trending_type_and_version import TrendingVersion
 from src.utils import helpers, redis_connection
+from src.utils.helpers import decode_string_id, encode_int_id
 
 logger = logging.getLogger(__name__)
 
@@ -339,24 +340,24 @@ def populate_user_metadata(
             user_id, {}
         ).get(response_name_constants.supporting_count, 0)
         # current user specific
-        user[
-            response_name_constants.does_current_user_follow
-        ] = current_user_followed_user_ids.get(user_id, False)
-        user[
-            response_name_constants.does_current_user_subscribe
-        ] = current_user_subscribed_user_ids.get(user_id, False)
-        user[
-            response_name_constants.current_user_followee_follow_count
-        ] = current_user_followee_follow_count_dict.get(user_id, 0)
+        user[response_name_constants.does_current_user_follow] = (
+            current_user_followed_user_ids.get(user_id, False)
+        )
+        user[response_name_constants.does_current_user_subscribe] = (
+            current_user_subscribed_user_ids.get(user_id, False)
+        )
+        user[response_name_constants.current_user_followee_follow_count] = (
+            current_user_followee_follow_count_dict.get(user_id, 0)
+        )
         user[response_name_constants.balance] = user_balance.get(
             "owner_wallet_balance", "0"
         )
         user[response_name_constants.total_balance] = user_balance.get(
             "total_balance", "0"
         )
-        user[
-            response_name_constants.total_audio_balance
-        ] = helpers.format_total_audio_balance(user_balance.get("total_balance", "0"))
+        user[response_name_constants.total_audio_balance] = (
+            helpers.format_total_audio_balance(user_balance.get("total_balance", "0"))
+        )
         user[response_name_constants.associated_wallets_balance] = user_balance.get(
             "associated_wallets_balance", "0"
         )
@@ -531,18 +532,18 @@ def populate_track_metadata(
             ).get(response_name_constants.save_count, 0)
             track[response_name_constants.play_count] = play_count_dict.get(track_id, 0)
         # current user specific
-        track[
-            response_name_constants.followee_reposts
-        ] = followee_track_repost_dict.get(track_id, [])
+        track[response_name_constants.followee_reposts] = (
+            followee_track_repost_dict.get(track_id, [])
+        )
         track[response_name_constants.followee_saves] = followee_track_save_dict.get(
             track_id, []
         )
-        track[
-            response_name_constants.has_current_user_reposted
-        ] = user_reposted_track_dict.get(track_id, False)
-        track[
-            response_name_constants.has_current_user_saved
-        ] = user_saved_track_dict.get(track["track_id"], False)
+        track[response_name_constants.has_current_user_reposted] = (
+            user_reposted_track_dict.get(track_id, False)
+        )
+        track[response_name_constants.has_current_user_saved] = (
+            user_saved_track_dict.get(track["track_id"], False)
+        )
 
         # Populate the remix_of tracks w/ the parent track's user and if that user saved/reposted the child
         if (
@@ -962,18 +963,18 @@ def populate_playlist_metadata(
         playlist[response_name_constants.total_play_count] = total_play_count
 
         # current user specific
-        playlist[
-            response_name_constants.followee_reposts
-        ] = followee_playlist_repost_dict.get(playlist_id, [])
-        playlist[
-            response_name_constants.followee_saves
-        ] = followee_playlist_save_dict.get(playlist_id, [])
-        playlist[
-            response_name_constants.has_current_user_reposted
-        ] = user_reposted_playlist_dict.get(playlist_id, False)
-        playlist[
-            response_name_constants.has_current_user_saved
-        ] = user_saved_playlist_dict.get(playlist_id, False)
+        playlist[response_name_constants.followee_reposts] = (
+            followee_playlist_repost_dict.get(playlist_id, [])
+        )
+        playlist[response_name_constants.followee_saves] = (
+            followee_playlist_save_dict.get(playlist_id, [])
+        )
+        playlist[response_name_constants.has_current_user_reposted] = (
+            user_reposted_playlist_dict.get(playlist_id, False)
+        )
+        playlist[response_name_constants.has_current_user_saved] = (
+            user_saved_playlist_dict.get(playlist_id, False)
+        )
 
     return playlists
 
@@ -1425,3 +1426,27 @@ def add_users_to_tracks(session, tracks, current_user_id=None):
             track["user"] = {}
 
     return tracks
+
+
+# Filter out hidden tracks if a non-owner is requesting a public playlist
+# See also: api/v1/helpers.py::filter_hidden_tracks
+def filter_hidden_tracks(playlist, current_user_id):
+    is_owner = (
+        current_user_id and playlist.get("playlist_owner_id", None) == current_user_id
+    )
+
+    if not playlist.get("is_private", False) and not is_owner:
+        tracks_map = {
+            track.get("track_id"): track for track in playlist.get("tracks", [])
+        }
+        playlist_contents_list = playlist.get("playlist_contents", {}).get(
+            "track_ids", []
+        )
+        playlist["playlist_contents"] = {
+            "track_ids": [
+                track
+                for track in playlist_contents_list
+                if (track_id := track.get("track")) in tracks_map
+                and not tracks_map.get(track_id, {}).get("is_unlisted", False)
+            ]
+        }

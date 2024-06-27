@@ -461,27 +461,32 @@ def extend_playlist(playlist):
     return playlist
 
 
-def filter_hidden_tracks(playlist, current_user_id):
-    is_owner = playlist["user"]["user_id"] == current_user_id
+# Filter out hidden tracks if a non-owner is requesting a public playlist
+# See also: queries/query_helpers.py::filter_hidden_tracks
+def filter_hidden_tracks(playlist, tracks, current_user_id):
+    is_owner = (
+        current_user_id and playlist.get("playlist_owner_id", None) == current_user_id
+    )
 
     # Filter out hidden tracks if a non-owner is requesting a public playlist
-    if not playlist["is_private"] and not is_owner:
+    if not playlist.get("is_private", False) and not is_owner:
         tracks_map = {
-            encode_int_id(track["track_id"]): track for track in playlist["tracks"]
+            encode_int_id(track.get("track_id")): track
+            for track in tracks
         }
-        playlist_contents_list = playlist["playlist_contents"]
-        added_timestamps_list = playlist["added_timestamps"]
+        playlist_contents_list = playlist.get("playlist_contents", [])
         playlist["playlist_contents"] = [
             track
             for track in playlist_contents_list
-            if track["track_id"] in tracks_map
-            and not tracks_map[track["track_id"]]["is_unlisted"]
+            if (track_id := track.get("track_id")) in tracks_map
+            and not tracks_map.get(track_id, {}).get("is_unlisted", False)
         ]
+        added_timestamps_list = playlist.get("added_timestamps", [])
         playlist["added_timestamps"] = [
             track
             for track in added_timestamps_list
-            if track["track_id"] in tracks_map
-            and not tracks_map[track["track_id"]]["is_unlisted"]
+            if (track_id := track.get("track_id")) in tracks_map
+            and not tracks_map.get(track_id, {}).get("is_unlisted", False)
         ]
 
 
