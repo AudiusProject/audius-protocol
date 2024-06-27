@@ -1,36 +1,26 @@
 import { useCallback, useState } from 'react'
 
-import { ScrollView } from 'react-native'
-
-import { Button, Flex, IconPlus, SelectablePill } from '@audius/harmony-native'
+import type { SearchCategory, SearchFilter } from '@audius/common/api'
+import { Button, Flex, IconClose, SelectablePill } from '@audius/harmony-native'
 import { useNavigation } from 'app/hooks/useNavigation'
+import { ScrollView } from 'react-native'
 
 // TODO:
 // - Need to update filters to use FilterButton when the component is created
 // - Need to sort the filters to put filters with an active value first
+// - IconClose looks thicker than the designs
 
-type SearchCategory = 'all' | 'tracks' | 'profiles' | 'albums' | 'playlists'
-type CategoryFilter =
-  | 'genre'
-  | 'mood'
-  | 'key'
-  | 'bpm'
-  | 'isVerified'
-  | 'isPremium'
-  | 'hasDownloads'
+const filterInfoMap: Record<SearchFilter, { label: string; screen: string }> = {
+  genre: { label: 'Genre', screen: 'SearchGenre' },
+  mood: { label: 'Mood', screen: 'SearchMood' },
+  key: { label: 'Key', screen: 'SearchKey' },
+  bpm: { label: 'BPM', screen: 'SearchBpm' },
+  isVerified: { label: 'Verified', screen: '' },
+  isPremium: { label: 'Premium', screen: '' },
+  hasDownloads: { label: 'Downloadable', screen: '' }
+}
 
-const filterInfoMap: Record<CategoryFilter, { label: string; screen: string }> =
-  {
-    genre: { label: 'Genre', screen: 'SearchGenre' },
-    mood: { label: 'Mood', screen: 'SearchMood' },
-    key: { label: 'Key', screen: 'SearchKey' },
-    bpm: { label: 'BPM', screen: 'SearchBpm' },
-    isVerified: { label: 'Verified', screen: '' },
-    isPremium: { label: 'Premium', screen: '' },
-    hasDownloads: { label: 'Downloadable', screen: '' }
-  }
-
-const categoryFilters: Record<SearchCategory, CategoryFilter[]> = {
+const filtersByCategory: Record<SearchCategory, SearchFilter[]> = {
   all: [],
   profiles: ['genre', 'isVerified'],
   tracks: ['genre', 'mood', 'key', 'bpm', 'isPremium', 'hasDownloads'],
@@ -65,32 +55,32 @@ export const SearchCategoriesAndFilters = () => {
     [isCategoryActive]
   )
 
-  const categoryArr = ['Tracks', 'Profiles', 'Albums', 'Playlists']
+  const categoryArray = ['Tracks', 'Profiles', 'Albums', 'Playlists']
 
   return (
     <Flex backgroundColor='white'>
       <ScrollView horizontal>
         <Flex direction='row' alignItems='center' gap='s' p='l' pt='s'>
           <Flex direction='row' alignItems='center' gap='s'>
-            {categoryArr.map((cat: string) =>
-              isCategoryVisible(cat.toLowerCase() as SearchCategory) ? (
+            {categoryArray.map((category: string) =>
+              isCategoryVisible(category.toLowerCase() as SearchCategory) ? (
                 <SelectablePill
                   type='radio'
                   size='large'
                   icon={
-                    isCategoryActive(cat.toLowerCase() as SearchCategory)
-                      ? IconPlus
+                    isCategoryActive(category.toLowerCase() as SearchCategory)
+                      ? IconClose
                       : null
                   }
-                  label={cat}
-                  value={cat.toLowerCase()}
+                  label={category}
+                  value={category.toLowerCase()}
                   onChange={handleCategoryChange}
                 />
               ) : null
             )}
           </Flex>
           <Flex direction='row' alignItems='center' gap='s'>
-            {categoryFilters[category].map((filter) => (
+            {filtersByCategory[category].map((filter) => (
               <Button
                 key={filter}
                 variant='tertiary'
