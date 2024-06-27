@@ -7,15 +7,6 @@ export type FilterButtonSize = 'default' | 'small'
 // TODO: is replaceLabel still needed?
 export type FilterButtonVariant = 'fillContainer' | 'replaceLabel'
 
-export type FilterButtonOption = {
-  value: string
-  /**
-   * The label to display. If not provided, uses the value.
-   */
-  label?: string
-  icon?: IconComponent
-}
-
 type ChildrenProps = {
   /**
    * State representing whether the FilterButton is open.
