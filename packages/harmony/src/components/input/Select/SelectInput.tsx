@@ -74,6 +74,7 @@ export const SelectInput = forwardRef<HTMLInputElement, SelectInputProps>(
       (value: string) => {
         setValue(value)
         onChange?.(value)
+        setIsOpen(false)
       },
       [onChange, setValue]
     )

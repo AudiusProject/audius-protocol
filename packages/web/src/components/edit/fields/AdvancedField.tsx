@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react'
 
-import { creativeCommons } from '@audius/common/utils'
+import { creativeCommons, parseMusicalKey } from '@audius/common/utils'
 import {
   Box,
   Flex,
@@ -38,7 +38,7 @@ const { computeLicense, ALL_RIGHTS_RESERVED_TYPE } = creativeCommons
 const messages = {
   title: 'Advanced',
   description:
-    'Customize attribution settings for licenses, collaborators, and AI-inspired sources.',
+    'Provide detailed metadata to help identify and manage your music.',
   isAiGenerated: 'AI-Generated',
   bpm: {
     header: 'Tempo',
@@ -202,7 +202,7 @@ export const AdvancedField = () => {
     set(initialValues, COMMERCIAL_USE, commercialUse)
     set(initialValues, DERIVATIVE_WORKS, derivativeWorks)
     set(initialValues, BPM, bpm)
-    set(initialValues, MUSICAL_KEY, musicalKey)
+    set(initialValues, MUSICAL_KEY, parseMusicalKey(musicalKey ?? ''))
     return initialValues as AdvancedFormValues
   }, [
     aiUserId,
@@ -313,7 +313,12 @@ export const AdvancedField = () => {
       )
     }
     if (musicalKey) {
-      value.push(<SelectedValue key={messages.musicalKey} label={musicalKey} />)
+      value.push(
+        <SelectedValue
+          key={messages.musicalKey}
+          label={parseMusicalKey(musicalKey)}
+        />
+      )
     }
     return <SelectedValues key={messages.isAiGenerated}>{value}</SelectedValues>
   }, [
