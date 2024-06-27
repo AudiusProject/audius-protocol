@@ -94,4 +94,9 @@ export type PopupProps = {
   portalLocation?: HTMLElement
   shadow?: ShadowOptions
   fixed?: boolean
+
+  /**
+   * Whether to take the width of the anchor element
+   */
+  takeWidthOfAnchor?: boolean
 }

@@ -27,6 +27,7 @@ import {
   stemsUploadSelectors
 } from '@audius/common/store'
 import {
+  formatMusicalKey,
   formatUrlName,
   makeKindId,
   squashNewLines,
@@ -174,6 +175,11 @@ function* editTrackAsync(action: ReturnType<typeof trackActions.editTrack>) {
   }
 
   const trackForEdit = yield* addPremiumMetadata(action.formFields)
+
+  // Format musical key
+  trackForEdit.musical_key = formatMusicalKey(
+    trackForEdit.musical_key || undefined
+  )
 
   yield* call(
     confirmEditTrack,

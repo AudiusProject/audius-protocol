@@ -5,7 +5,8 @@ import {
   accountSelectors,
   cacheCollectionsActions,
   addToCollectionUISelectors,
-  addToCollectionUIActions
+  addToCollectionUIActions,
+  modalsActions
 } from '@audius/common/store'
 import { capitalize } from 'lodash'
 import { connect } from 'react-redux'
@@ -28,6 +29,7 @@ const { getTrackId, getTrackTitle, getCollectionType } =
 const { close } = addToCollectionUIActions
 const { addTrackToPlaylist, createPlaylist, createAlbum } =
   cacheCollectionsActions
+const { setVisibility } = modalsActions
 
 const { getAccountWithNameSortedPlaylistsAndAlbums } = accountSelectors
 
@@ -151,7 +153,10 @@ function mapDispatchToProps(dispatch: Dispatch) {
       ),
     createAlbum: (metadata: Partial<Collection>, trackId: ID) =>
       dispatch(createAlbum(metadata, CreatePlaylistSource.FROM_TRACK, trackId)),
-    close: () => dispatch(close())
+    close: () => {
+      dispatch(close())
+      dispatch(setVisibility({ modal: 'AddToCollection', visible: false }))
+    }
   }
 }
 

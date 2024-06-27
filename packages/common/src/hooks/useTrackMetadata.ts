@@ -1,6 +1,7 @@
 import { useGetTrackById } from '~/api/track'
 import { ID } from '~/models'
 import { FeatureFlags } from '~/services/remote-config/feature-flags'
+import { parseMusicalKey } from '~/utils/musicalKeys'
 
 import { getCanonicalName } from '../utils/genres'
 import { formatDate, formatSecondsAsText } from '../utils/timeUtil'
@@ -79,8 +80,7 @@ export const useTrackMetadata = ({
     {
       id: TrackMetadataType.KEY,
       label: 'Key',
-      // TODO: KJ - Might need a map for this to map to key options
-      value: musical_key ?? '',
+      value: musical_key ? parseMusicalKey(musical_key) ?? '' : '',
       isHidden: !isSearchV2Enabled
     }
   ].filter(({ isHidden, value }) => !isHidden && !!value)

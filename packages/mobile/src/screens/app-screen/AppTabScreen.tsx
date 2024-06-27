@@ -16,6 +16,7 @@ import type {
 import type { EventArg, NavigationState } from '@react-navigation/native'
 import type { createNativeStackNavigator } from '@react-navigation/native-stack'
 
+import { Text } from '@audius/harmony-native'
 import { useDrawer } from 'app/hooks/useDrawer'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { AiGeneratedTracksScreen } from 'app/screens/ai-generated-tracks-screen'
@@ -34,7 +35,11 @@ import {
 } from 'app/screens/search-results-screen'
 import { SearchScreen } from 'app/screens/search-screen'
 import type { SearchParams } from 'app/screens/search-screen-v2'
-import { SearchScreenV2 } from 'app/screens/search-screen-v2'
+import {
+  SelectMoodScreen,
+  SelectGenreScreen,
+  SearchScreenV2
+} from 'app/screens/search-screen-v2'
 import {
   AboutScreen,
   AccountSettingsScreen,
@@ -221,26 +226,42 @@ export const AppTabScreen = ({ baseScreen, Stack }: AppTabScreenProps) => {
         component={ProfileScreen}
         options={screenOptions}
       />
-      <Stack.Group>
-        <Stack.Screen
-          name='Search'
-          component={isSearchV2Enabled ? SearchScreenV2 : SearchScreen}
-          options={(props) => ({
-            ...screenOptions(props),
-            cardStyleInterpolator: forFade
-          })}
-        />
-        <Stack.Screen
-          name='SearchResults'
-          component={SearchResultsScreen}
-          options={screenOptions}
-        />
-        <Stack.Screen
-          name='TagSearch'
-          component={TagSearchScreen}
-          options={screenOptions}
-        />
-      </Stack.Group>
+      {isSearchV2Enabled ? (
+        <Stack.Group>
+          <Stack.Screen name='Search' component={SearchScreenV2} />
+          <Stack.Screen name='SearchGenre' component={SelectGenreScreen} />
+          <Stack.Screen name='SearchMood' component={SelectMoodScreen} />
+          <Stack.Screen
+            name='SearchBpm'
+            component={() => <Text>BPM Filter Here</Text>}
+          />
+          <Stack.Screen
+            name='SearchKey'
+            component={() => <Text>Key Filter Here</Text>}
+          />
+        </Stack.Group>
+      ) : (
+        <Stack.Group>
+          <Stack.Screen
+            name='Search'
+            component={SearchScreen}
+            options={(props) => ({
+              ...screenOptions(props),
+              cardStyleInterpolator: forFade
+            })}
+          />
+          <Stack.Screen
+            name='SearchResults'
+            component={SearchResultsScreen}
+            options={screenOptions}
+          />
+          <Stack.Screen
+            name='TagSearch'
+            component={TagSearchScreen}
+            options={screenOptions}
+          />
+        </Stack.Group>
+      )}
       <Stack.Group>
         <Stack.Screen
           name='Followers'

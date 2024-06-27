@@ -208,7 +208,8 @@ export const Popup = forwardRef<HTMLDivElement, PopupProps>(function Popup(
     containerRef,
     portalLocation = document.body,
     shadow = 'mid',
-    fixed
+    fixed,
+    takeWidthOfAnchor
   } = props
   const { spring, shadows } = useTheme()
   const [popupState, setPopupState] = useState<ModalState>('closed')
@@ -377,7 +378,11 @@ export const Popup = forwardRef<HTMLDivElement, PopupProps>(function Popup(
     }
   })
 
-  const rootStyle = { zIndex, position: fixed ? ('fixed' as const) : undefined }
+  const rootStyle = {
+    zIndex,
+    position: fixed ? ('fixed' as const) : undefined,
+    width: takeWidthOfAnchor ? anchorRef.current?.clientWidth : undefined
+  }
 
   const handleMouseLeave = useCallback(() => {
     if (dismissOnMouseLeave) {

@@ -256,7 +256,7 @@ def _get_underground_trending_with_session(
         user = users[track["owner_id"]]
         if user:
             track["user"] = user
-    sorted_tracks = list(map(extend_track, sorted_tracks))
+    sorted_tracks = list(map(lambda track: extend_track(track, session), sorted_tracks))
     return sorted_tracks
 
 

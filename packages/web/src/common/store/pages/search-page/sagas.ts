@@ -8,7 +8,11 @@ import {
   getContext,
   SearchSortMethod
 } from '@audius/common/store'
-import { Genre, trimToAlphaNumeric } from '@audius/common/utils'
+import {
+  Genre,
+  formatMusicalKey,
+  trimToAlphaNumeric
+} from '@audius/common/utils'
 import { Mood } from '@audius/sdk'
 import { select, call, takeLatest, put } from 'typed-redux-saga'
 
@@ -25,14 +29,6 @@ const getMinMaxFromBpm = (bpm?: string) => {
   const bpmMin = bpmParts[0] ? parseFloat(bpmParts[0]) : undefined
   const bpmMax = bpmParts[1] ? parseFloat(bpmParts[1]) : bpmMin
   return [bpmMin, bpmMax]
-}
-
-const formatKey = (key?: string) => {
-  if (!key) return undefined
-  const keyParts = key.split(' ')
-  const pitch = keyParts[0].slice(0, 1)
-  const isFlat = keyParts[0].length > 1
-  return `${pitch}${isFlat ? ' flat' : ''} ${keyParts[1].toLowerCase()}`
 }
 
 export function* getTagSearchResults(
@@ -63,7 +59,7 @@ export function* getTagSearchResults(
     mood,
     bpmMin,
     bpmMax,
-    key: formatKey(key),
+    key: formatMusicalKey(key),
     isVerified,
     hasDownloads,
     isPremium,
@@ -196,7 +192,7 @@ export function* getSearchResults({
     mood,
     bpmMin,
     bpmMax,
-    key: formatKey(key),
+    key: formatMusicalKey(key),
     isVerified,
     hasDownloads,
     isPremium,

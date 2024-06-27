@@ -355,7 +355,7 @@ def parse_unix_epoch_param_non_utc(time, default=0):
     return datetime.fromtimestamp(time)
 
 
-def extend_track(track):
+def extend_track(track, session=None):
     track_id = encode_int_id(track["track_id"])
     owner_id = encode_int_id(track["owner_id"])
     if "user" in track:
@@ -396,11 +396,11 @@ def extend_track(track):
     # Transform new format of splits to legacy format for client compatibility
     if "stream_conditions" in track:
         track["stream_conditions"] = get_legacy_purchase_gate(
-            track["stream_conditions"]
+            track["stream_conditions"], session
         )
     if "download_conditions" in track:
         track["download_conditions"] = get_legacy_purchase_gate(
-            track["download_conditions"]
+            track["download_conditions"], session
         )
 
     return track
@@ -707,7 +707,103 @@ pagination_with_current_user_parser.add_argument(
 )
 
 search_parser = reqparse.RequestParser(argument_class=DescriptiveArgument)
-search_parser.add_argument("query", required=True, description="The search query")
+search_parser.add_argument("query", required=False, description="The search query")
+search_parser.add_argument(
+    "genre",
+    action="append",
+    required=False,
+    type=str,
+    description="The genres to filter by",
+)
+search_parser.add_argument(
+    "sort_method",
+    required=False,
+    description="The sort method",
+    type=str,
+    choices=SearchSortMethod._member_names_,
+)
+
+user_search_parser = search_parser.copy()
+user_search_parser.add_argument(
+    "is_verified",
+    required=False,
+    type=str,
+    description="Only include verified users in the user results",
+)
+
+playlist_search_parser = search_parser.copy()
+playlist_search_parser.add_argument(
+    "mood",
+    action="append",
+    required=False,
+    type=str,
+    description="The moods to filter by",
+)
+playlist_search_parser.add_argument(
+    "includePurchaseable",
+    required=False,
+    type=str,
+    description="Whether or not to include purchaseable content",
+)
+playlist_search_parser.add_argument(
+    "has_downloads",
+    required=False,
+    type=str,
+    description="Only include tracks that have downloads in the track results",
+)
+
+track_search_parser = search_parser.copy()
+track_search_parser.add_argument(
+    "mood",
+    action="append",
+    required=False,
+    type=str,
+    description="The moods to filter by",
+)
+track_search_parser.add_argument(
+    "only_downloadable",
+    required=False,
+    default=False,
+    description="Return only downloadable tracks",
+)
+track_search_parser.add_argument(
+    "includePurchaseable",
+    required=False,
+    type=str,
+    description="Whether or not to include purchaseable content",
+)
+track_search_parser.add_argument(
+    "is_purchaseable",
+    required=False,
+    type=str,
+    description="Only include purchaseable tracks and albums in the track and album results",
+)
+track_search_parser.add_argument(
+    "has_downloads",
+    required=False,
+    type=str,
+    description="Only include tracks that have downloads in the track results",
+)
+track_search_parser.add_argument(
+    "key",
+    action="append",
+    required=False,
+    type=str,
+    description="Only include tracks that match the musical key",
+)
+track_search_parser.add_argument(
+    "bpm_min",
+    required=False,
+    type=str,
+    description="Only include tracks that have a bpm greater than or equal to",
+)
+track_search_parser.add_argument(
+    "bpm_max",
+    required=False,
+    type=str,
+    description="Only include tracks that have a bpm less than or equal to",
+)
+
 
 track_history_parser = pagination_parser.copy()
 track_history_parser.add_argument(
