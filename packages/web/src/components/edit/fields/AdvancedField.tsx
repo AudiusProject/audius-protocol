@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react'
 
-import { MUSICAL_KEYS, creativeCommons } from '@audius/common/utils'
+import { creativeCommons } from '@audius/common/utils'
 import {
   Box,
   Flex,
@@ -26,11 +26,11 @@ import { SingleTrackEditValues } from 'components/edit-track/types'
 import { computeLicenseIcons } from 'components/edit-track/utils/computeLicenseIcons'
 import { TextField } from 'components/form-fields'
 import { SegmentedControlField } from 'components/form-fields/SegmentedControlField'
-import { SelectField } from 'components/form-fields/SelectField'
 import layoutStyles from 'components/layout/layout.module.css'
 import { env } from 'services/env'
 
 import styles from './AdvancedField.module.css'
+import { KeySelectField } from './KeySelectField'
 import { SwitchRowField } from './SwitchRowField'
 
 const { computeLicense, ALL_RIGHTS_RESERVED_TYPE } = creativeCommons
@@ -490,11 +490,7 @@ const AdvancedModalFields = () => {
               </Text>
             </Box>
 
-            <SelectField
-              name={MUSICAL_KEY}
-              label={messages.musicalKey}
-              options={MUSICAL_KEYS.map((k) => ({ value: k, label: k }))}
-            />
+            <KeySelectField name={MUSICAL_KEY} />
             {/* <DropdownField
               aria-label={messages.musicalKey}
               placeholder={messages.musicalKey}

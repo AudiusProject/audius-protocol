@@ -137,6 +137,7 @@ export const Select = forwardRef<HTMLInputElement, SelectProps>(function Select(
     componentName: 'FilterButton'
   })
 
+  // TODO: implement filtering
   const [filterInputValue, setFilterInputValue] = useState('')
   const selectedOption = options.find((option) => option.value === selection)
   const selectedLabel = selectedOption?.label ?? selectedOption?.value
