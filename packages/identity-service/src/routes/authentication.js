@@ -126,7 +126,7 @@ module.exports = function (app) {
     '/authentication',
     handleResponse(async (req, res, next) => {
       const { lookupKey, email: emailParam, username, otp } = req.query
-      const email = emailParam ?? username
+      let email = emailParam ?? username
       if (!lookupKey) {
         return errorResponseBadRequest('Missing lookupKey')
       }
@@ -152,7 +152,31 @@ module.exports = function (app) {
         req.logger.error('Missing sendgrid api key')
       }
 
+      const hasWalletAddressAssociated = existingUser.walletAddress != null
+
       if (!otp) {
+        // use email from registered address if available
+        try {
+          if (hasWalletAddressAssociated) {
+            const userRecord = await models.User.findOne({
+              where: { walletAddress: existingUser.walletAddress }
+            })
+
+            if (userRecord.email === undefined || userRecord.email === null) {
+              throw new Error(`existing user without email association ${JSON.stringify(userRecord)} ${lookupKey}`)
+            }
+
+            if (email !== userRecord.email) {
+              req.logger.error({ reqEmail: email, registeredEmail: userRecord.email, lookupKey }, 'user email and auth param mismatch')
+              return errorResponseBadRequest('Invalid credentials')
+            }
+
+            email = userRecord.email
+          }
+        } catch (e) {
+          req.logger.error({ lookupKey, error: e }, `error getting user record from existing user '${e}'`)
+        }
+
         if (await shouldSendOtp({ email, redis })) {
           await sendOtp({ email, redis, sendgrid })
         }
@@ -160,8 +184,25 @@ module.exports = function (app) {
       }
 
       const isOtpValid = await validateOtp({ email, otp, redis })
+
       if (!isOtpValid) {
         return errorResponseBadRequest('Invalid credentials')
+      }
+
+      if (isOtpValid && !hasWalletAddressAssociated) {
+        try {
+          const userRecord = await models.User.findOne({
+            where: { email }
+          })
+          const walletAddress = userRecord.walletAddress
+          await models.Authentication.update({
+            walletAddress
+          }, {
+            where: { lookupKey }
+          })
+        } catch (e) {
+          req.logger.error({ email, lookupKey, error: e }, `error associating wallet address '${e}'`)
+        }
       }
 
       return successResponse(existingUser)
