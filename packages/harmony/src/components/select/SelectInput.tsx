@@ -11,7 +11,7 @@ import { Flex } from 'components/layout'
 import { useControlled } from 'hooks/useControlled'
 import { IconCaretDown, IconCloseAlt } from 'icons'
 
-import { TextInput } from '../TextInput'
+import { TextInput } from '../input/TextInput'
 
 import { SelectInputProps } from './SelectInput.types'
 

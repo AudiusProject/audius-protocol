@@ -1,6 +1,6 @@
 import { ReactNode } from 'react'
 
-import { TextInputProps } from '../TextInput'
+import { TextInputProps } from '../input/TextInput'
 
 type ChildrenProps = {
   /**
