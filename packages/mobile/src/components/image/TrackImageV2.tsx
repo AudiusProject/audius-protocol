@@ -1,37 +1,26 @@
-import type { SquareSizes, ID, SearchTrack, Track } from '@audius/common/models'
-import { reachabilitySelectors } from '@audius/common/store'
-import type { Nullable, Maybe } from '@audius/common/utils'
+import type { SquareSizes, ID } from '@audius/common/models'
+import {
+  cacheTracksSelectors,
+  reachabilitySelectors
+} from '@audius/common/store'
+import type { Maybe } from '@audius/common/utils'
 import { useSelector } from 'react-redux'
 
 import type { FastImageProps } from '@audius/harmony-native'
-import { FastImage } from '@audius/harmony-native'
+import { FastImage, useTheme } from '@audius/harmony-native'
 import imageEmpty from 'app/assets/images/imageBlank2x.png'
 import { useContentNodeImage } from 'app/hooks/useContentNodeImage'
 import { getLocalTrackCoverArtPath } from 'app/services/offline-downloader'
 import { getTrackDownloadStatus } from 'app/store/offline-downloads/selectors'
 import { OfflineDownloadStatus } from 'app/store/offline-downloads/slice'
-import { useThemeColors } from 'app/utils/theme'
 
 import { primitiveToImageSource } from './primitiveToImageSource'
 
 export const DEFAULT_IMAGE_URL =
   'https://download.audius.co/static-resources/preview-image.jpg'
 
+const { getTrack } = cacheTracksSelectors
 const { getIsReachable } = reachabilitySelectors
-
-type UseTrackImageOptions = {
-  track: Nullable<
-    Pick<
-      Track | SearchTrack,
-      | 'track_id'
-      | 'cover_art_sizes'
-      | 'cover_art_cids'
-      | 'cover_art'
-      | '_cover_art_sizes'
-    >
-  >
-  size: SquareSizes
-}
 
 const useLocalTrackImageUri = (trackId: Maybe<ID>) => {
   const trackImageUri = useSelector((state) => {
@@ -47,20 +36,22 @@ const useLocalTrackImageUri = (trackId: Maybe<ID>) => {
     return `file://${getLocalTrackCoverArtPath(trackId.toString())}`
   })
 
-  return trackImageUri
+  return primitiveToImageSource(trackImageUri)
 }
 
-/**
- * @deprecated Use TrackImageV2 instead.
- */
-export const useTrackImage = ({ track, size }: UseTrackImageOptions) => {
-  const cid = track ? track.cover_art_sizes || track.cover_art : null
+export const useTrackImage = (id: ID, size: SquareSizes) => {
+  const cid = useSelector((state) => {
+    const track = getTrack(state, { id })
+    return track?.cover_art_sizes ?? track?.cover_art ?? null
+  })
 
-  const optimisticCoverArt = primitiveToImageSource(
-    track?._cover_art_sizes?.OVERRIDE
+  const cidMap = useSelector((state) => getTrack(state, { id })?.cover_art_cids)
+
+  const optimisticCoverArt = useSelector((state) =>
+    primitiveToImageSource(getTrack(state, { id })?._cover_art_sizes?.OVERRIDE)
   )
-  const localTrackImageUri = useLocalTrackImageUri(track?.track_id)
-  const localTrackImageSource = primitiveToImageSource(localTrackImageUri)
+
+  const localTrackImageSource = useLocalTrackImageUri(id)
   const localSource = optimisticCoverArt ?? localTrackImageSource
 
   const contentNodeSource = useContentNodeImage({
@@ -68,22 +59,23 @@ export const useTrackImage = ({ track, size }: UseTrackImageOptions) => {
     size,
     fallbackImageSource: imageEmpty,
     localSource,
-    cidMap: track?.cover_art_cids
+    cidMap
   })
 
   return contentNodeSource
 }
 
-type TrackImageProps = UseTrackImageOptions & Partial<FastImageProps>
+type TrackImageProps = {
+  trackId: ID
+  size: SquareSizes
+  style?: FastImageProps['style']
+}
 
-/**
- * @deprecated Use TrackImageV2 instead.
- */
-export const TrackImage = (props: TrackImageProps) => {
-  const { track, size, style, ...other } = props
+export const TrackImageV2 = (props: TrackImageProps) => {
+  const { trackId, size, style, ...other } = props
 
-  const trackImageSource = useTrackImage({ track, size })
-  const { neutralLight8 } = useThemeColors()
+  const trackImageSource = useTrackImage(trackId, size)
+  const { color, cornerRadius } = useTheme()
 
   if (!trackImageSource) return null
 
@@ -92,7 +84,11 @@ export const TrackImage = (props: TrackImageProps) => {
   return (
     <FastImage
       {...other}
-      style={[style, isFallbackImage && { backgroundColor: neutralLight8 }]}
+      style={[
+        { aspectRatio: 1, borderRadius: cornerRadius.s },
+        isFallbackImage && { backgroundColor: color.background.surface2 },
+        style
+      ]}
       source={source}
       onError={handleError}
     />

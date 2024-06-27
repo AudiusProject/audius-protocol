@@ -21,7 +21,7 @@ export const SearchScreenV2 = () => {
     >
       <SearchFilters />
       {!showSearchResults ? (
-        <Flex direction='column' alignItems='center' gap='xl'>
+        <Flex direction='column' alignItems='center'>
           <SearchCatalogTile />
           <RecentSearches />
         </Flex>
