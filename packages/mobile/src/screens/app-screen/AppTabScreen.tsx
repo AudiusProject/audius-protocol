@@ -33,6 +33,7 @@ import {
   TagSearchScreen
 } from 'app/screens/search-results-screen'
 import { SearchScreen } from 'app/screens/search-screen'
+import type { SearchParams } from 'app/screens/search-screen-v2'
 import { SearchScreenV2 } from 'app/screens/search-screen-v2'
 import {
   AboutScreen,
@@ -85,7 +86,7 @@ export type AppTabScreenParamList = {
   Mutuals: { userId: ID }
   AiGeneratedTracks: { userId: ID }
   RelatedArtists: { userId: ID }
-  Search: undefined
+  Search: SearchParams
   SearchResults: { query: string }
   SupportingUsers: { userId: ID }
   TagSearch: { query: string }

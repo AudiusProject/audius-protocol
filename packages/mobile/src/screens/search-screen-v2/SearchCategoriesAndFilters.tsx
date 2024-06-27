@@ -2,7 +2,7 @@ import { ScrollView } from 'react-native'
 
 import { Flex, SelectablePill } from '@audius/harmony-native'
 
-export const SearchFilters = () => {
+export const SearchCategoriesAndFilters = () => {
   return (
     <Flex backgroundColor='white'>
       <ScrollView horizontal>
