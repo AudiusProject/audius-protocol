@@ -1,8 +1,8 @@
+import { SetAuthFn } from '@audius/hedgehog'
 import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios'
 import type BN from 'bn.js'
 import type Wallet from 'ethereumjs-wallet'
 import type { TransactionReceipt } from 'web3-core'
-import { SetAuthFn } from '@audius/hedgehog'
 
 import { AuthHeaders } from '../../constants'
 import type { Nullable } from '../../utils'
