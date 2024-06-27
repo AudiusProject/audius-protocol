@@ -54,7 +54,7 @@ export const KeySelectField = (props: KeySelectFieldProps) => {
           onClose={() => setIsOpen(false)}
           takeWidthOfAnchor
         >
-          <Paper mt='s' border='strong' shadow='far' css={{ minWidth: 200 }}>
+          <Paper mv='s' border='strong' shadow='far' css={{ minWidth: 200 }}>
             <Flex
               w='100%'
               gap='s'

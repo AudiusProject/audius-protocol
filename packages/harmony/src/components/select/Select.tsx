@@ -204,7 +204,7 @@ export const Select = forwardRef<HTMLInputElement, SelectProps>(function Select(
               takeWidthOfAnchor
             >
               <Paper
-                mt='s'
+                mv='s'
                 w='100%'
                 border='strong'
                 shadow='far'
