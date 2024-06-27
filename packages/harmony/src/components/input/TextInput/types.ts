@@ -1,4 +1,8 @@
-import type { ComponentPropsWithoutRef, ReactNode } from 'react'
+import type {
+  ComponentPropsWithoutRef,
+  MouseEventHandler,
+  ReactNode
+} from 'react'
 
 import type { IconComponent, IconProps } from '../../icon'
 
@@ -85,6 +89,10 @@ export type TextInputProps = Omit<
    * Floating icon on the righthand side of the input
    */
   endIcon?: IconComponent
+  /**
+   * Callback when the end icon is clicked
+   */
+  onClickEndIcon?: MouseEventHandler<HTMLElement>
   /**
    * Override props to supply the start or end Icon
    */

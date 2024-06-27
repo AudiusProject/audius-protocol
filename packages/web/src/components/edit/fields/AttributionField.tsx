@@ -6,8 +6,7 @@ import {
   Flex,
   IconCcBy as IconCreativeCommons,
   IconRobot,
-  Text,
-  TextInput
+  Text
 } from '@audius/harmony'
 import cn from 'classnames'
 import { useField } from 'formik'
@@ -25,14 +24,14 @@ import { Divider } from 'components/divider'
 import { useTrackField } from 'components/edit-track/hooks'
 import { SingleTrackEditValues } from 'components/edit-track/types'
 import { computeLicenseIcons } from 'components/edit-track/utils/computeLicenseIcons'
-import { DropdownField, TextField } from 'components/form-fields'
+import { TextField } from 'components/form-fields'
 import { SegmentedControlField } from 'components/form-fields/SegmentedControlField'
+import { SelectField } from 'components/form-fields/SelectField'
 import layoutStyles from 'components/layout/layout.module.css'
 import { env } from 'services/env'
 
 import styles from './AttributionField.module.css'
 import { SwitchRowField } from './SwitchRowField'
-import { MOODS } from 'pages/search-page-v2/utils'
 
 const { computeLicense, ALL_RIGHTS_RESERVED_TYPE } = creativeCommons
 
@@ -491,14 +490,19 @@ const AttributionModalFields = () => {
               </Text>
             </Box>
 
-            <DropdownField
+            <SelectField
+              name={MUSICAL_KEY}
+              label={messages.musicalKey}
+              options={MUSICAL_KEYS.map((k) => ({ value: k, label: k }))}
+            />
+            {/* <DropdownField
               aria-label={messages.musicalKey}
               placeholder={messages.musicalKey}
               mount='parent'
               menu={{ items: MUSICAL_KEYS }}
               size='large'
               name={MUSICAL_KEY}
-            />
+            /> */}
           </Flex>
         </span>
       </div>

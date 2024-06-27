@@ -10,30 +10,27 @@ import {
 import { CSSObject, useTheme } from '@emotion/react'
 
 import { BaseButton } from 'components/button/BaseButton/BaseButton'
-import { TextInput, TextInputSize } from 'components/input'
 import { Box, Flex, Paper } from 'components/layout'
 import { Popup } from 'components/popup'
 import { Text } from 'components/text'
 import { useControlled } from 'hooks/useControlled'
-import { IconCaretDown, IconSearch } from 'icons'
 
-import { FilterButton } from '../FilterButton/FilterButton'
-
-import { OptionsFilterButtonPopupKeyHandler } from './OptionsFilterButtonPopupKeyHandler'
-import { OptionsFilterButtonProps, OptionsFilterButtonOption } from './types'
+import { SelectOption, SelectProps } from './Select.types'
+import { SelectInput } from './SelectInput'
+import { SelectPopupKeyHandler } from './SelectPopupKeyHandler'
 
 const messages = {
   noMatches: 'No matches'
 }
 
-type FilterButtonOptionsProps = {
+type SelectOptionsProps = {
   activeValue?: string | null
-  options: OptionsFilterButtonOption[]
+  options: SelectOption[]
   optionRefs?: RefObject<HTMLButtonElement[]>
-  onChange: (option: OptionsFilterButtonOption) => void
+  onChange: (option: SelectOption) => void
 }
 
-export const FilterButtonOptions = (props: FilterButtonOptionsProps) => {
+export const SelectOptions = (props: SelectOptionsProps) => {
   const { activeValue, options, onChange, optionRefs } = props
   const { color, cornerRadius, spacing, typography } = useTheme()
 
@@ -117,22 +114,20 @@ export const FilterButtonOptions = (props: FilterButtonOptionsProps) => {
   )
 }
 
-export const OptionsFilterButton = forwardRef<
-  HTMLButtonElement,
-  OptionsFilterButtonProps
->(function OptionsFilterButton(props, ref) {
+export const Select = forwardRef<HTMLInputElement, SelectProps>(function Select(
+  props,
+  ref
+) {
   const {
     selection: selectionProp,
     options,
     optionsLabel,
-    showFilterInput,
-    filterInputPlaceholder = 'Search',
-    popupAnchorOrigin,
+    popupAnchorOrigin = { horizontal: 'left', vertical: 'bottom' },
     popupMaxHeight,
-    popupTransformOrigin,
+    popupTransformOrigin = { horizontal: 'left', vertical: 'top' },
     popupPortalLocation,
     popupZIndex,
-    ...filterButtonProps
+    ...selectInputProps
   } = props
 
   const [selection, setSelection] = useControlled({
@@ -154,7 +149,7 @@ export const OptionsFilterButton = forwardRef<
         handleChange: (value: string, label: string) => void,
         setIsOpen: (isOpen: boolean) => void
       ) =>
-      (option: OptionsFilterButtonOption) => {
+      (option: SelectOption) => {
         setSelection(option.value)
         handleChange(option.value, option.label ?? '')
         setIsOpen(false)
@@ -181,16 +176,14 @@ export const OptionsFilterButton = forwardRef<
   )
 
   return (
-    <FilterButton
-      iconRight={IconCaretDown}
-      {...filterButtonProps}
+    <SelectInput
+      {...selectInputProps}
       value={selection}
       onOpen={handleOpen}
       onReset={() => setFilterInputValue('')}
-      label={selectedLabel ?? filterButtonProps.label}
     >
       {({ isOpen, setIsOpen, handleChange, anchorRef }) => (
-        <OptionsFilterButtonPopupKeyHandler
+        <SelectPopupKeyHandler
           options={filteredOptions}
           disabled={!isOpen}
           onOptionSelect={handleOptionSelect(handleChange, setIsOpen)}
@@ -207,9 +200,11 @@ export const OptionsFilterButton = forwardRef<
               portalLocation={popupPortalLocation}
               zIndex={popupZIndex}
               onAfterClose={() => setFilterInputValue('')}
+              takeWidthOfAnchor
             >
               <Paper
                 mt='s'
+                w='100%'
                 border='strong'
                 shadow='far'
                 onClick={(e) => e.stopPropagation()}
@@ -219,32 +214,16 @@ export const OptionsFilterButton = forwardRef<
                   direction='column'
                   alignItems='flex-start'
                   role='listbox'
-                  aria-label={
-                    selectedLabel ??
-                    filterButtonProps.label ??
-                    props['aria-label']
-                  }
+                  aria-label={selectedLabel ?? props['aria-label']}
                   aria-activedescendant={selectedLabel}
-                  css={{ maxHeight: popupMaxHeight, overflowY: 'auto' }}
+                  w='100%'
+                  css={{
+                    maxHeight: popupMaxHeight,
+                    overflowY: 'auto'
+                  }}
                   ref={scrollRef}
                 >
                   <Flex direction='column' w='100%' gap='s'>
-                    {showFilterInput ? (
-                      <TextInput
-                        ref={inputRef}
-                        placeholder={filterInputPlaceholder}
-                        label={filterInputPlaceholder}
-                        size={TextInputSize.SMALL}
-                        startIcon={IconSearch}
-                        onClick={(e) => {
-                          e.stopPropagation()
-                        }}
-                        onChange={(e) => {
-                          setFilterInputValue(e.target.value)
-                        }}
-                        autoComplete='off'
-                      />
-                    ) : null}
                     {optionsLabel ? (
                       <Box pt='s' ph='m'>
                         <Text variant='label' size='xs'>
@@ -252,7 +231,7 @@ export const OptionsFilterButton = forwardRef<
                         </Text>
                       </Box>
                     ) : null}
-                    <FilterButtonOptions
+                    <SelectOptions
                       activeValue={activeValue}
                       options={filteredOptions}
                       optionRefs={optionRefs}
@@ -263,8 +242,8 @@ export const OptionsFilterButton = forwardRef<
               </Paper>
             </Popup>
           )}
-        </OptionsFilterButtonPopupKeyHandler>
+        </SelectPopupKeyHandler>
       )}
-    </FilterButton>
+    </SelectInput>
   )
 })
