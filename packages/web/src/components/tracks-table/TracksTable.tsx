@@ -497,7 +497,7 @@ export const TracksTable = ({
       }
 
       if (isContentUSDCPurchaseGated(track.stream_conditions)) {
-        // Format the price with 2 digit decimal cents
+        // Format the price as $$ with 2 digit decimal cents
         const formattedPrice = (
           track.stream_conditions.usdc_purchase.price / 100
         ).toLocaleString('en-US', {
