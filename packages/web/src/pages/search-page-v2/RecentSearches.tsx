@@ -246,7 +246,6 @@ export const RecentSearches = () => {
       <Button
         variant='secondary'
         size='small'
-        fullWidth={false}
         css={{ alignSelf: 'center' }}
         onClick={handleClickClear}
       >
