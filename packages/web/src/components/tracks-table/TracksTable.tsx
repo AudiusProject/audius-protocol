@@ -495,7 +495,15 @@ export const TracksTable = ({
       if (!isLocked || deleted || isOwner || !isPremiumEnabled) {
         return null
       }
+
       if (isContentUSDCPurchaseGated(track.stream_conditions)) {
+        // Format the price with 2 digit decimal cents
+        const formattedPrice = (
+          track.stream_conditions.usdc_purchase.price / 100
+        ).toLocaleString('en-US', {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2
+        })
         return (
           <Button
             size='small'
@@ -506,7 +514,7 @@ export const TracksTable = ({
               onClickPurchase?.(track)
             }}
           >
-            ${track.stream_conditions.usdc_purchase.price / 100}.00
+            ${formattedPrice}
           </Button>
         )
       }
