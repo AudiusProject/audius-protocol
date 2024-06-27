@@ -10,8 +10,8 @@ import {
   PublicKey,
   LAMPORTS_PER_SOL,
   TransactionInstruction,
-  Transaction
-  // ComputeBudgetProgram
+  Transaction,
+  ComputeBudgetProgram
 } from '@solana/web3.js'
 import * as solanaWeb3 from '@solana/web3.js'
 import BN from 'bn.js'
@@ -638,10 +638,10 @@ export class SolanaWeb3Manager {
     return await this.transactionHandler.handleTransaction({
       instructions: [
         ...instructions,
-        memoInstruction
-        // ComputeBudgetProgram.setComputeUnitPrice({
-        //   microLamports: 100000
-        // })
+        memoInstruction,
+        ComputeBudgetProgram.setComputeUnitPrice({
+          microLamports: 100000
+        })
       ],
       skipPreflight: true,
       feePayerOverride: this.feePayerKey
@@ -770,10 +770,10 @@ export class SolanaWeb3Manager {
     const instructions = [
       transferInstruction,
       paymentRouterInstruction,
-      memoInstruction
-      // ComputeBudgetProgram.setComputeUnitPrice({
-      //   microLamports: 100000
-      // })
+      memoInstruction,
+      ComputeBudgetProgram.setComputeUnitPrice({
+        microLamports: 100000
+      })
     ]
     return instructions
   }
@@ -1074,10 +1074,10 @@ export class SolanaWeb3Manager {
       instructionIndex
     })
     return [
-      ...instructions
-      // ComputeBudgetProgram.setComputeUnitPrice({
-      //   microLamports: 100000
-      // })
+      ...instructions,
+      ComputeBudgetProgram.setComputeUnitPrice({
+        microLamports: 100000
+      })
     ]
   }
 }
