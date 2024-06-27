@@ -287,11 +287,7 @@ const useCacheData = <Args, Data>(
       endpoint.options.kind,
       hookOptions?.shallow
     )
-    return (
-      endpoint.options.schemaKey
-        ? denormalize(nonNormalizedData, apiResponseSchema, entityMap)
-        : nonNormalizedData
-    ) as Data
+    return denormalize(nonNormalizedData, apiResponseSchema, entityMap) as Data
   }, isEqual)
 }
 
@@ -341,32 +337,30 @@ const fetchData = async <Args, Data>(
       throw new RemoteDataNotFoundError('Remote data not found')
     }
 
-    let data: Data
-    if (endpoint.options.schemaKey) {
-      const { entities, result } = normalize(
-        { [endpoint.options.schemaKey]: apiData },
-        apiResponseSchema
-      )
-      data = result
+    const { entities, result } = normalize(
+      endpoint.options.schemaKey
+        ? { [endpoint.options.schemaKey]: apiData }
+        : apiData,
+      apiResponseSchema
+    )
 
-      // Format entities before adding to cache
-      entities[Kind.USERS] = mapValues(
-        entities[Kind.USERS] ?? [],
-        (user: UserMetadata) => reformatUser(user, audiusBackend)
-      )
-      entities[Kind.COLLECTIONS] = mapValues(
-        entities[Kind.COLLECTIONS] ?? [],
-        (collection: CollectionMetadata | UserCollectionMetadata) =>
-          reformatCollection({
-            collection,
-            audiusBackendInstance: audiusBackend,
-            omitUser: false
-          })
-      )
-      dispatch(addEntries(entities))
-    } else {
-      data = apiData
-    }
+    const data: Data = result
+
+    // Format entities before adding to cache
+    entities[Kind.USERS] = mapValues(
+      entities[Kind.USERS] ?? [],
+      (user: UserMetadata) => reformatUser(user, audiusBackend)
+    )
+    entities[Kind.COLLECTIONS] = mapValues(
+      entities[Kind.COLLECTIONS] ?? [],
+      (collection: CollectionMetadata | UserCollectionMetadata) =>
+        reformatCollection({
+          collection,
+          audiusBackendInstance: audiusBackend,
+          omitUser: false
+        })
+    )
+    dispatch(addEntries(entities))
 
     dispatch(
       // @ts-ignore
