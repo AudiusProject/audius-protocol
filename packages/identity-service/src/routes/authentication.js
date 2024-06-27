@@ -1,4 +1,4 @@
-const sigUtil = require("eth-sig-util")
+const sigUtil = require('eth-sig-util')
 const models = require('../models')
 const {
   handleResponse,
@@ -6,7 +6,7 @@ const {
   errorResponseBadRequest,
   errorResponseForbidden,
   errorResponseUnauthorized
-  } = require('../apiHelpers')
+} = require('../apiHelpers')
 const {
   validateOtp,
   shouldSendOtp,
@@ -46,11 +46,18 @@ module.exports = function (app) {
           if (!existingRecord) {
             // default to null
             let walletAddress = null
-            if (headers && headers[EncodedDataMessageHeader] && headers[EncodedDataSignatureHeader]) {
+            if (
+              headers &&
+              headers[EncodedDataMessageHeader] &&
+              headers[EncodedDataSignatureHeader]
+            ) {
               const encodedDataMessage = headers[EncodedDataMessageHeader]
               const encodedDataSignature = headers[EncodedDataSignatureHeader]
               try {
-                walletAddress = sigUtil.recoverPersonalSignature({ data: encodedDataMessage, sig: encodedDataSignature })
+                walletAddress = sigUtil.recoverPersonalSignature({
+                  data: encodedDataMessage,
+                  sig: encodedDataSignature
+                })
               } catch (err) {
                 // keep address as null for future user recovery
                 req.logger.error('Error recovering users signed address', err)
@@ -163,18 +170,32 @@ module.exports = function (app) {
             })
 
             if (userRecord.email === undefined || userRecord.email === null) {
-              throw new Error(`existing user without email association ${JSON.stringify(userRecord)} ${lookupKey}`)
+              throw new Error(
+                `existing user without email association ${JSON.stringify(
+                  userRecord
+                )} ${lookupKey}`
+              )
             }
 
             if (email !== userRecord.email) {
-              req.logger.error({ reqEmail: email, registeredEmail: userRecord.email, lookupKey }, 'user email and auth param mismatch')
+              req.logger.error(
+                {
+                  reqEmail: email,
+                  registeredEmail: userRecord.email,
+                  lookupKey
+                },
+                'user email and auth param mismatch'
+              )
               return errorResponseBadRequest('Invalid credentials')
             }
 
             email = userRecord.email
           }
         } catch (e) {
-          req.logger.error({ lookupKey, error: e }, `error getting user record from existing user '${e}'`)
+          req.logger.error(
+            { lookupKey, error: e },
+            `error getting user record from existing user '${e}'`
+          )
         }
 
         if (await shouldSendOtp({ email, redis })) {
@@ -195,13 +216,19 @@ module.exports = function (app) {
             where: { email }
           })
           const walletAddress = userRecord.walletAddress
-          await models.Authentication.update({
-            walletAddress
-          }, {
-            where: { lookupKey }
-          })
+          await models.Authentication.update(
+            {
+              walletAddress
+            },
+            {
+              where: { lookupKey }
+            }
+          )
         } catch (e) {
-          req.logger.error({ email, lookupKey, error: e }, `error associating wallet address '${e}'`)
+          req.logger.error(
+            { email, lookupKey, error: e },
+            `error associating wallet address '${e}'`
+          )
         }
       }
 
