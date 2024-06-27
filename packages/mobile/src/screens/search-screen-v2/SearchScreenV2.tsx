@@ -7,6 +7,7 @@ import type {
 
 import { Flex } from '@audius/harmony-native'
 import { Screen } from 'app/components/core'
+import { useRoute } from 'app/hooks/useRoute'
 
 import { RecentSearches } from './RecentSearches'
 import { SearchBarV2 } from './SearchBarV2'
@@ -15,9 +16,14 @@ import { SearchCategoriesAndFilters } from './SearchCategoriesAndFilters'
 import { SearchContext } from './searchState'
 
 export const SearchScreenV2 = () => {
-  const [query, setQuery] = useState('')
-  const [category, setCategory] = useState<SearchCategory>('all')
-  const [filters, setFilters] = useState<SearchFiltersType>({})
+  const { params } = useRoute<'Search'>()
+  const [query, setQuery] = useState(params.query ?? '')
+  const [category, setCategory] = useState<SearchCategory>(
+    params.category ?? 'all'
+  )
+  const [filters, setFilters] = useState<SearchFiltersType>(
+    params.filters ?? {}
+  )
 
   const showSearchResults =
     query || Object.values(filters).some((filter) => filter)
