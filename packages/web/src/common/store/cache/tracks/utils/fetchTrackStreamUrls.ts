@@ -86,7 +86,7 @@ export function* fetchTrackStreamUrls({
     // we don't hold up the rest of the requests. This code waits for 1s and puts whatever
     // @ts-ignore
     function* earlyResultsHandler() {
-      yield* delay(1000)
+      yield* delay(1500)
       if (partialResults.length > 0) {
         // Convert array to obj and remove undefined values
         earlyResults = partialResults.reduce((acc, curr) => {
