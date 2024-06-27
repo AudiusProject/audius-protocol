@@ -216,26 +216,28 @@ export const RecentSearches = () => {
   if (history.length === 0) return null
 
   return (
-    <FlatList
-      ListHeaderComponent={<Text variant='title'>{messages.title}</Text>}
-      data={history}
-      renderItem={({ item }) => {
-        const { kind, id } = item
-        const RecentSearchItemComponent = itemComponentByKind[kind]
-        return <RecentSearchItemComponent key={id} searchItem={item} />
-      }}
-      ListFooterComponent={
-        <Flex pt='l'>
-          <Button
-            variant='secondary'
-            size='small'
-            style={{ alignSelf: 'center' }}
-            onPress={handleClearSearchHistory}
-          >
-            {messages.clear}
-          </Button>
-        </Flex>
-      }
-    />
+    <Flex p='l'>
+      <FlatList
+        ListHeaderComponent={<Text variant='title'>{messages.title}</Text>}
+        data={history}
+        renderItem={({ item }) => {
+          const { kind, id } = item
+          const RecentSearchItemComponent = itemComponentByKind[kind]
+          return <RecentSearchItemComponent key={id} searchItem={item} />
+        }}
+        ListFooterComponent={
+          <Flex pt='l'>
+            <Button
+              variant='secondary'
+              size='small'
+              style={{ alignSelf: 'center' }}
+              onPress={handleClearSearchHistory}
+            >
+              {messages.clear}
+            </Button>
+          </Flex>
+        }
+      />
+    </Flex>
   )
 }
