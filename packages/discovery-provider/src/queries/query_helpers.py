@@ -1430,7 +1430,7 @@ def add_users_to_tracks(session, tracks, current_user_id=None):
 
 # Filter out hidden tracks if a non-owner is requesting a public playlist
 # See also: api/v1/helpers.py::filter_hidden_tracks
-def filter_hidden_tracks(playlist, current_user_id):
+def filter_hidden_tracks_es(playlist, current_user_id):
     is_owner = (
         current_user_id and playlist.get("playlist_owner_id", None) == current_user_id
     )
@@ -1440,6 +1440,28 @@ def filter_hidden_tracks(playlist, current_user_id):
             track.get("track_id"): track for track in playlist.get("tracks", [])
         }
         playlist_contents_list = playlist.get("playlist_contents", {}).get(
+            "track_ids", []
+        )
+        playlist["playlist_contents"] = {
+            "track_ids": [
+                track
+                for track in playlist_contents_list
+                if (track_id := track.get("track")) in tracks_map
+                and not tracks_map.get(track_id, {}).get("is_unlisted", False)
+            ]
+        }
+
+
+# Filter out hidden tracks if a non-owner is requesting a public playlist
+# See also: api/v1/helpers.py::filter_hidden_tracks
+def filter_hidden_tracks_sql(playlist, tracks, current_user_id):
+    is_owner = (
+        current_user_id and playlist.get("playlist_owner_id", None) == current_user_id
+    )
+
+    if not playlist.get("is_private", False) and not is_owner:
+        tracks_map = {track.get("track_id"): track for track in tracks}
+        playlist_contents_list = playlist.get("playlist_contents", []).get(
             "track_ids", []
         )
         playlist["playlist_contents"] = {

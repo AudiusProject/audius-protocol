@@ -1,6 +1,6 @@
 from src.queries.query_helpers import (
     _populate_gated_content_metadata,
-    filter_hidden_tracks,
+    filter_hidden_tracks_es,
     get_users_ids,
 )
 from src.utils.db_session import get_db_read_replica
@@ -127,7 +127,7 @@ def get_feed_es(args, limit=10, offset=0):
         playlist["item_key"] = item_key(playlist)
         seen.add(playlist["item_key"])
         unsorted_feed.append(playlist)
-        filter_hidden_tracks(playlist, current_user_id)
+        filter_hidden_tracks_es(playlist, current_user_id)
 
         # add playlist track_ids to seen
         # if a user uploads an orig playlist or album
