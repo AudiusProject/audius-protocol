@@ -27,7 +27,7 @@ const { publishPlaylist } = cacheCollectionsActions
 const messages = {
   title: 'Make Public',
   description: (collectionType: 'album' | 'playlist') =>
-    `Are you sure you want to make this ${collectionType} public? It will be shared to your feed and your subscribed followers will be notified.`,
+    `Are you sure you want to make this ${collectionType} public? Any hidden tracks in your ${collectionType} will become public and your followers will be notified.`,
   cancel: 'Cancel',
   publish: 'Make Public'
 }
