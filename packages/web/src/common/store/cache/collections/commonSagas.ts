@@ -30,7 +30,8 @@ import {
   confirmerActions,
   confirmTransaction,
   SubscriptionInfo,
-  Entry
+  Entry,
+  trackPageActions
 } from '@audius/common/store'
 import {
   squashNewLines,
@@ -481,6 +482,12 @@ function* publishPlaylistAsync(
     playlist,
     action.dismissToastKey
   )
+
+  for (const track of playlist.tracks ?? []) {
+    if (track.is_unlisted) {
+      yield* put(trackPageActions.makeTrackPublic(track.track_id))
+    }
+  }
 }
 
 function* confirmPublishPlaylist(
