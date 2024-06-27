@@ -109,10 +109,7 @@ export const SelectablePill = (props: SelectablePillProps) => {
         onPressIn={handlePressIn}
         onPress={handlePress}
         style={[
-          css({
-            alignSelf: 'flex-start',
-            borderRadius: cornerRadius['2xl']
-          }),
+          css({ alignSelf: 'flex-start', borderRadius: cornerRadius['2xl'] }),
           styleProp
         ]}
       >
@@ -124,7 +121,7 @@ export const SelectablePill = (props: SelectablePillProps) => {
             disabled: !!disabled
           }}
           direction='row'
-          gap='xs'
+          gap='s'
           alignItems='center'
           justifyContent='center'
           alignSelf='flex-start'
@@ -135,22 +132,14 @@ export const SelectablePill = (props: SelectablePillProps) => {
           shadow={size === 'large' ? (isSelected ? 'flat' : 'near') : undefined}
           style={[
             animatedRootStyles,
-            fullWidth
-              ? {
-                  width: '100%'
-                }
-              : undefined
+            fullWidth ? { width: '100%' } : undefined
           ]}
           {...other}
         >
-          {Icon ? (
+          {size !== 'small' && Icon ? (
             <Icon
-              size='xs'
-              fill={
-                isSelected || isPressing
-                  ? color.text.staticWhite
-                  : color.text.default
-              }
+              size='s'
+              color={isSelected || isPressing ? 'staticWhite' : 'default'}
             />
           ) : null}
           <AnimatedText

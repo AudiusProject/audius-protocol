@@ -1,11 +1,16 @@
 import type { Dispatch, SetStateAction } from 'react'
-import { createContext, useCallback, useContext } from 'react'
+import { createContext, useCallback, useContext, useEffect } from 'react'
 
-import type {
-  SearchCategory,
-  SearchFilter,
-  SearchFilters
+import {
+  useGetSearchResults as useGetSearchResultsApi,
+  type SearchCategory,
+  type SearchFilter,
+  type SearchFilters
 } from '@audius/common/api'
+import { useSelector } from 'react-redux'
+import { accountSelectors } from '@audius/common/store'
+
+const { getUserId } = accountSelectors
 
 type SearchContextType = {
   query: string
@@ -52,4 +57,35 @@ export const useSearchFilter = <F extends SearchFilter>(filterKey: F) => {
   }, [filterKey, setFilters])
 
   return [filter, setFilter, clearFilter] as const
+}
+
+type SearchResultsApiType = ReturnType<typeof useGetSearchResultsApi>
+
+type SearchResultsType<C extends SearchCategory> = {
+  status: SearchResultsApiType['status']
+  data: C extends 'all'
+    ? SearchResultsApiType['data']
+    : SearchResultsApiType['data'][Exclude<C, 'all'>]
+}
+
+export const useGetSearchResults = <C extends SearchCategory>(
+  category: C
+): SearchResultsType<C> => {
+  const { filters, query } = useContext(SearchContext)
+  const currentUserId = useSelector(getUserId)
+  const { data, status } = useGetSearchResultsApi({
+    query,
+    ...filters,
+    category,
+    currentUserId
+  })
+
+  if (category === 'all') {
+    return { data, status } as SearchResultsType<C>
+  } else {
+    return {
+      data: data?.[category as Exclude<C, 'all'>],
+      status
+    } as SearchResultsType<C>
+  }
 }

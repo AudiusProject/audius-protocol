@@ -14,6 +14,7 @@ import { SearchBarV2 } from './SearchBarV2'
 import { SearchCatalogTile } from './SearchCatalogTile'
 import { SearchCategoriesAndFilters } from './SearchCategoriesAndFilters'
 import { SearchContext } from './searchState'
+import { SearchResults } from './SearchResults'
 
 export const SearchScreenV2 = () => {
   const { params = {} } = useRoute<'Search'>()
@@ -26,7 +27,7 @@ export const SearchScreenV2 = () => {
   )
 
   const showSearchResults =
-    query || Object.values(filters).some((filter) => filter)
+    query || category || Object.values(filters).some((filter) => filter)
 
   return (
     <Screen topbarRight={<SearchBarV2 />} headerTitle={null} variant='white'>
@@ -39,7 +40,9 @@ export const SearchScreenV2 = () => {
             <SearchCatalogTile />
             <RecentSearches />
           </Flex>
-        ) : null}
+        ) : (
+          <SearchResults />
+        )}
       </SearchContext.Provider>
     </Screen>
   )
