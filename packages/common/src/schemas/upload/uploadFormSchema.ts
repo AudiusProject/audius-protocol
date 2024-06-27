@@ -265,6 +265,7 @@ export const createCollectionSchema = (collectionType: 'playlist' | 'album') =>
       }),
       description: z.optional(z.string().max(1000)),
       release_date: z.optional(z.string()).nullable(),
+      is_scheduled_release: z.optional(z.boolean()),
       trackDetails: z.object({
         genre: GenreSchema,
         mood: MoodSchema,
