@@ -51,7 +51,7 @@ from src.trending_strategies.trending_strategy_factory import (
 )
 from src.trending_strategies.trending_type_and_version import TrendingType
 from src.utils.db_session import get_db_read_replica
-from src.utils.helpers import decode_string_id, encode_int_id
+from src.utils.helpers import decode_string_id
 from src.utils.redis_cache import cache
 from src.utils.redis_metrics import record_metrics
 

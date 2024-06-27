@@ -29,7 +29,6 @@ from src.queries.get_balances import get_balances
 from src.queries.get_unpopulated_users import get_unpopulated_users
 from src.trending_strategies.trending_type_and_version import TrendingVersion
 from src.utils import helpers, redis_connection
-from src.utils.helpers import decode_string_id, encode_int_id
 
 logger = logging.getLogger(__name__)
 
