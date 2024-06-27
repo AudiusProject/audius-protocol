@@ -91,9 +91,9 @@ export const CollectionImageV2 = (props: CollectionImageProps) => {
     <FastImage
       {...other}
       style={[
-        style,
-        { flex: 1, aspectRatio: 1, borderRadius: cornerRadius.s },
-        isFallbackImage && { backgroundColor: color.background.surface2 }
+        { aspectRatio: 1, borderRadius: cornerRadius.s },
+        isFallbackImage && { backgroundColor: color.background.surface2 },
+        style
       ]}
       source={source}
       onError={handleError}
