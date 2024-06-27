@@ -15,7 +15,7 @@ export type IconProps = {
   width?: number
   shadow?: ShadowOptions
   title?: string
-  onClick?: MouseEventHandler<HTMLElement>
+  onClick?: MouseEventHandler<SVGSVGElement>
 }
 
 type SVGIconProps = SVGBaseProps & IconProps

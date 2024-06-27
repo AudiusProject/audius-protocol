@@ -48,7 +48,7 @@ export const SelectInput = forwardRef<HTMLInputElement, SelectInputProps>(
       }
     }, [setIsOpen, onClick])
 
-    const handleClickIcon = useCallback<MouseEventHandler<HTMLElement>>(
+    const handleClickIcon = useCallback<MouseEventHandler<SVGSVGElement>>(
       (e) => {
         e.stopPropagation()
         e.preventDefault()

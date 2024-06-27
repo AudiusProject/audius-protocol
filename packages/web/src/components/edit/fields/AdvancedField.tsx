@@ -30,13 +30,13 @@ import { SelectField } from 'components/form-fields/SelectField'
 import layoutStyles from 'components/layout/layout.module.css'
 import { env } from 'services/env'
 
-import styles from './AttributionField.module.css'
+import styles from './AdvancedField.module.css'
 import { SwitchRowField } from './SwitchRowField'
 
 const { computeLicense, ALL_RIGHTS_RESERVED_TYPE } = creativeCommons
 
 const messages = {
-  title: 'Attribution',
+  title: 'Advanced',
   description:
     'Customize attribution settings for licenses, collaborators, and AI-inspired sources.',
   isAiGenerated: 'AI-Generated',
@@ -133,7 +133,7 @@ const derivativeWorksValues = [
 const isrcRegex = /^[A-Z]{2}-?[A-Z\d]{3}-?\d{2}-?\d{5}$/i
 const iswcRegex = /^T-?\d{3}.?\d{3}.?\d{3}.?-?\d$/i
 
-const AttributionFormSchema = z
+const AdvancedFormSchema = z
   .object({
     [IS_AI_ATTRIBUTED]: z.optional(z.boolean()),
     [BLOCK_THIRD_PARTY_STREAMING]: z.optional(z.boolean()),
@@ -160,9 +160,9 @@ const AttributionFormSchema = z
     path: [ISWC]
   })
 
-export type AttributionFormValues = z.input<typeof AttributionFormSchema>
+export type AdvancedFormValues = z.input<typeof AdvancedFormSchema>
 
-export const AttributionField = () => {
+export const AdvancedField = () => {
   const [{ value: aiUserId }, , { setValue: setAiUserId }] =
     useTrackField<SingleTrackEditValues[typeof AI_USER_ID]>(AI_USER_ID)
   const [{ value: isrcValue }, , { setValue: setIsrc }] =
@@ -203,7 +203,7 @@ export const AttributionField = () => {
     set(initialValues, DERIVATIVE_WORKS, derivativeWorks)
     set(initialValues, BPM, bpm)
     set(initialValues, MUSICAL_KEY, musicalKey)
-    return initialValues as AttributionFormValues
+    return initialValues as AdvancedFormValues
   }, [
     aiUserId,
     allowAttribution,
@@ -217,7 +217,7 @@ export const AttributionField = () => {
   ])
 
   const onSubmit = useCallback(
-    (values: AttributionFormValues) => {
+    (values: AdvancedFormValues) => {
       if (get(values, IS_AI_ATTRIBUTED)) {
         setAiUserId(get(values, AI_USER_ID) ?? aiUserId)
       } else {
@@ -334,14 +334,14 @@ export const AttributionField = () => {
       icon={<IconCreativeCommons />}
       initialValues={initialValues}
       onSubmit={onSubmit}
-      validationSchema={toFormikValidationSchema(AttributionFormSchema)}
-      menuFields={<AttributionModalFields />}
+      validationSchema={toFormikValidationSchema(AdvancedFormSchema)}
+      menuFields={<AdvancedModalFields />}
       renderValue={renderValue}
     />
   )
 }
 
-const AttributionModalFields = () => {
+const AdvancedModalFields = () => {
   const [aiUserIdField, aiUserHelperFields, { setValue: setAiUserId }] =
     useField({
       name: AI_USER_ID,
