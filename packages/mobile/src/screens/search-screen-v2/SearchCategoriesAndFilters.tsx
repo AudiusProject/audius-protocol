@@ -1,9 +1,10 @@
 import { useCallback, useState } from 'react'
 
 import type { SearchCategory, SearchFilter } from '@audius/common/api'
+import { ScrollView } from 'react-native'
+
 import { Button, Flex, IconClose, SelectablePill } from '@audius/harmony-native'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { ScrollView } from 'react-native'
 
 // TODO:
 // - Need to update filters to use FilterButton when the component is created
