@@ -1,7 +1,12 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useContext, useEffect, useMemo } from 'react'
 
+import { useAppContext } from '@audius/common/context'
 import { useAccountSwitcher, useIsManagedAccount } from '@audius/common/hooks'
-import { SquareSizes, User, UserMetadata } from '@audius/common/models'
+import { ManagedUserMetadata, Name, Status } from '@audius/common/models'
+import {
+  useApproveManagedAccount,
+  useRemoveManager
+} from '@audius/common/src/api/account'
 import { accountSelectors, chatSelectors } from '@audius/common/store'
 import {
   Button,
@@ -15,93 +20,48 @@ import {
   IconUser,
   IconUserArrowRotate,
   PopupMenu,
-  Text,
-  useTheme
+  Text
 } from '@audius/harmony'
 
-import DynamicImage from 'components/dynamic-image/DynamicImage'
-import UserBadges from 'components/user-badges/UserBadges'
+import { ToastContext } from 'components/toast/ToastContext'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
-import { useProfilePicture } from 'hooks/useUserProfilePicture'
 import { useComposeChat } from 'pages/chat-page/components/useComposeChat'
 import { useSelector } from 'utils/reducer'
 import { profilePage } from 'utils/route'
 import zIndex from 'utils/zIndex'
 
-import styles from './AccountListItem.module.css'
+import { sharedMessages } from '../sharedMessages'
+
+import { ArtistInfo } from './ArtistInfo'
 
 const { getUserId } = accountSelectors
 const { getCanCreateChat } = chatSelectors
 
 const messages = {
   moreOptions: 'more options',
-  removeManager: 'Remove Manager',
   stopManaging: 'Stop Managing',
   visitProfile: 'Visit Profile',
   sendMessage: 'Send Message',
   invitePending: 'Invite Pending',
-  cancelInvite: 'Cancel Invite',
-  switchToUser: 'Switch to User'
+  switchToUser: 'Switch to User',
+  invitationAccepted: 'Invitation Accepted!',
+  invitationRejected: 'Invitation Refused'
 }
 
-type AccountListItemProps = {
-  isPending: boolean
-  user: User | UserMetadata
-  isManagedAccount?: boolean
+type ManagedAccountListItemProps = {
+  data: ManagedUserMetadata
   onRemoveManager: (params: { userId: number; managerUserId: number }) => void
-  onCancelInvite?: (params: { userId: number; managerUserId: number }) => void
-  onApprove?: (params: {
-    currentUserId: number
-    grantorUser: User | UserMetadata
-  }) => void
-  onReject?: (params: {
-    currentUserId: number
-    grantorUser: User | UserMetadata
-  }) => void
 }
 
-const ArtistInfo = ({ user }: { user: UserMetadata }) => {
-  const profilePicture = useProfilePicture(
-    user.user_id,
-    SquareSizes.SIZE_150_BY_150
-  )
-  const { iconSizes } = useTheme()
-  return (
-    <Flex gap='m' alignItems='center' justifyContent='flex-start'>
-      <DynamicImage
-        wrapperClassName={styles.profilePictureWrapper}
-        skeletonClassName={styles.profilePictureSkeleton}
-        className={styles.profilePicture}
-        image={profilePicture}
-      />
-      <Flex direction='column' gap='xs'>
-        <Flex gap='xs' alignItems='center' justifyContent='flex-start'>
-          <Text variant='body' size='m' strength='strong'>
-            {user.name}
-          </Text>
-          <UserBadges userId={user.user_id} badgeSize={iconSizes.m} inline />
-        </Flex>
-        <Text variant='body' size='m'>{`@${user.handle}`}</Text>
-      </Flex>
-    </Flex>
-  )
-}
-
-export const AccountListItem = ({
-  isPending,
-  user,
-  isManagedAccount,
-  onRemoveManager,
-  onCancelInvite,
-  onApprove,
-  onReject
-}: AccountListItemProps) => {
+export const ManagedAccountListItem = ({
+  data: { user, grant },
+  onRemoveManager
+}: ManagedAccountListItemProps) => {
   const currentUserId = useSelector(getUserId)
   const isManagerMode = useIsManagedAccount()
 
   const navigate = useNavigateToPage()
   const goToProfile = useCallback(() => {
-    if (!user) return
     navigate(profilePage(user.handle))
   }, [navigate, user])
 
@@ -119,34 +79,74 @@ export const AccountListItem = ({
   const handleRemoveManager = useCallback(() => {
     if (!currentUserId) return
     onRemoveManager({
-      userId: isManagedAccount ? user.user_id : currentUserId,
-      managerUserId: isManagedAccount ? currentUserId : user.user_id
+      userId: user.user_id,
+      managerUserId: currentUserId
     })
-  }, [currentUserId, isManagedAccount, user.user_id, onRemoveManager])
+  }, [currentUserId, user.user_id, onRemoveManager])
 
-  const handleCancelInvite = useCallback(() => {
+  const [approveManagedAccount, { status: approveStatus }] =
+    useApproveManagedAccount()
+  const [rejectManagedAccount, { status: rejectStatus }] = useRemoveManager()
+  const isPending =
+    grant?.is_approved == null ||
+    approveStatus === Status.LOADING ||
+    rejectStatus === Status.LOADING
+  const { toast } = useContext(ToastContext)
+  const {
+    analytics: { track, make }
+  } = useAppContext()
+
+  const handleApprove = useCallback(() => {
     if (!currentUserId) return
-    onCancelInvite?.({
+
+    track(
+      make({
+        eventName: Name.MANAGER_MODE_ACCEPT_INVITE,
+        managedUserId: user.user_id
+      })
+    )
+    approveManagedAccount({
       userId: currentUserId,
-      managerUserId: user.user_id
+      grantorUser: user
     })
-  }, [currentUserId, user.user_id, onCancelInvite])
+  }, [approveManagedAccount, currentUserId, user, make, track])
+
+  const handleReject = useCallback(() => {
+    if (!currentUserId) return
+    track(
+      make({
+        eventName: Name.MANAGER_MODE_REJECT_INVITE,
+        managedUserId: user.user_id
+      })
+    )
+    rejectManagedAccount({
+      userId: user.user_id,
+      managerUserId: currentUserId
+    })
+    toast(messages.invitationRejected)
+  }, [rejectManagedAccount, currentUserId, user.user_id, toast, make, track])
+
+  useEffect(() => {
+    if (approveStatus === Status.SUCCESS) {
+      toast(messages.invitationAccepted)
+    } else if (approveStatus === Status.ERROR) {
+      toast(sharedMessages.somethingWentWrong)
+    }
+  }, [toast, approveStatus])
+
+  useEffect(() => {
+    if (rejectStatus === Status.ERROR) {
+      toast(sharedMessages.somethingWentWrong)
+    }
+  }, [toast, rejectStatus])
 
   const popupMenuItems = useMemo(() => {
     const items = []
-    if (isManagedAccount) {
-      if (!isPending) {
-        items.push({
-          icon: <IconTrash />,
-          text: messages.stopManaging,
-          onClick: handleRemoveManager
-        })
-      }
-    } else {
+    if (!isPending) {
       items.push({
         icon: <IconTrash />,
-        text: isPending ? messages.cancelInvite : messages.removeManager,
-        onClick: isPending ? handleCancelInvite : handleRemoveManager
+        text: messages.stopManaging,
+        onClick: handleRemoveManager
       })
     }
     items.push({
@@ -166,7 +166,7 @@ export const AccountListItem = ({
       })
     }
 
-    if (isManagedAccount && !isManagerMode) {
+    if (!isManagerMode) {
       items.push({
         icon: <IconUserArrowRotate />,
         text: messages.switchToUser,
@@ -178,25 +178,13 @@ export const AccountListItem = ({
   }, [
     user,
     switchAccount,
-    isManagedAccount,
     isManagerMode,
     isPending,
-    handleCancelInvite,
     handleRemoveManager,
     goToProfile,
     composeChat,
     canCreateChat
   ])
-
-  const handleApprove = useCallback(() => {
-    if (!currentUserId) return
-    onApprove?.({ currentUserId, grantorUser: user })
-  }, [user, onApprove, currentUserId])
-
-  const handleReject = useCallback(() => {
-    if (!currentUserId) return
-    onReject?.({ currentUserId, grantorUser: user })
-  }, [user, onReject, currentUserId])
 
   const renderTrigger = (
     anchorRef: React.MutableRefObject<any>,
@@ -225,7 +213,7 @@ export const AccountListItem = ({
     >
       <ArtistInfo user={user} />
       <Flex direction='column' justifyContent='space-between' alignItems='end'>
-        {!isPending || !isManagedAccount ? (
+        {!isPending ? (
           <PopupMenu
             renderTrigger={renderTrigger}
             items={popupMenuItems}
@@ -234,19 +222,16 @@ export const AccountListItem = ({
             transformOrigin={{ horizontal: 'right', vertical: 'top' }}
           />
         ) : null}
-        {isPending && !isManagedAccount ? (
-          <Text variant='label' size='s' color='subdued'>
-            {messages.invitePending}
-          </Text>
-        ) : null}
       </Flex>
-      {isManagedAccount && isPending ? (
+      {isPending ? (
         <Flex direction='column' gap='s'>
           <Text variant='label' size='s' color='subdued'>
             {messages.invitePending}
           </Text>
           <Flex gap='s' alignSelf='end'>
             <Button
+              disabled={rejectStatus === Status.LOADING}
+              isLoading={approveStatus === Status.LOADING}
               size='small'
               variant='secondary'
               aria-label='approve'
@@ -254,6 +239,8 @@ export const AccountListItem = ({
               onClick={handleApprove}
             />
             <Button
+              disabled={approveStatus === Status.LOADING}
+              isLoading={rejectStatus === Status.LOADING}
               size='small'
               variant='destructive'
               aria-label='reject'
