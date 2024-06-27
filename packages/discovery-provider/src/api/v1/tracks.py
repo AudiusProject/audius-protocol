@@ -31,9 +31,10 @@ from src.api.v1.helpers import (
     make_response,
     pagination_parser,
     pagination_with_current_user_parser,
-    search_parser,
+    parse_bool_param,
     stem_from_track,
     success_response,
+    track_search_parser,
     trending_parser,
     trending_parser_paginated,
 )
@@ -779,14 +780,6 @@ track_search_result = make_response(
     "track_search", ns, fields.List(fields.Nested(track))
 )
 
-track_search_parser = search_parser.copy()
-track_search_parser.add_argument(
-    "only_downloadable",
-    required=False,
-    default=False,
-    description="Return only downloadable tracks",
-)
-
 
 @ns.route("/search")
 class TrackSearchResult(Resource):
@@ -801,9 +794,17 @@ class TrackSearchResult(Resource):
     @cache(ttl_sec=600)
     def get(self):
         args = track_search_parser.parse_args()
-        query = args["query"]
-        if not query:
-            abort_bad_request_param("query", ns)
+        query = args.get("query")
+        include_purchaseable = parse_bool_param(args.get("includePurchaseable"))
+        genres = args.get("genre")
+        moods = args.get("mood")
+        has_downloads = parse_bool_param(args.get("has_downloads"))
+        is_purchaseable = parse_bool_param(args.get("is_purchaseable"))
+        keys = args.get("key")
+        bpm_min = args.get("bpm_min")
+        bpm_max = args.get("bpm_max")
+        sort_method = args.get("sort_method")
+        only_downloadable = args.get("only_downloadable")
         search_args = {
             "query": query,
             "kind": SearchKind.tracks.name,
@@ -812,7 +813,16 @@ class TrackSearchResult(Resource):
             "with_users": True,
             "limit": 10,
             "offset": 0,
-            "only_downloadable": args["only_downloadable"],
+            "only_downloadable": only_downloadable,
+            "include_purchaseable": include_purchaseable,
+            "only_purchaseable": is_purchaseable,
+            "genres": genres,
+            "moods": moods,
+            "only_with_downloads": has_downloads,
+            "keys": keys,
+            "bpm_min": bpm_min,
+            "bpm_max": bpm_max,
+            "sort_method": sort_method,
         }
         response = search(search_args)
         return success_response(response["tracks"])

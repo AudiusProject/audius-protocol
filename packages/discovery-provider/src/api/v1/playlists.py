@@ -20,7 +20,8 @@ from src.api.v1.helpers import (
     make_full_response,
     make_response,
     pagination_with_current_user_parser,
-    search_parser,
+    parse_bool_param,
+    playlist_search_parser,
     success_response,
     trending_parser,
 )
@@ -381,14 +382,17 @@ class PlaylistSearchResult(Resource):
         description="""Search for a playlist""",
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
-    @ns.expect(search_parser)
+    @ns.expect(playlist_search_parser)
     @ns.marshal_with(playlist_search_result)
     @cache(ttl_sec=600)
     def get(self):
-        args = search_parser.parse_args()
-        query = args["query"]
-        if not query:
-            abort_bad_request_param("query", ns)
+        args = playlist_search_parser.parse_args()
+        query = args.get("query")
+        genres = args.get("genre")
+        moods = args.get("mood")
+        include_purchaseable = parse_bool_param(args.get("includePurchaseable"))
+        has_downloads = parse_bool_param(args.get("has_downloads"))
+        sort_method = args.get("sort_method")
         search_args = {
             "query": query,
             "kind": SearchKind.playlists.name,
@@ -397,6 +401,11 @@ class PlaylistSearchResult(Resource):
             "with_users": True,
             "limit": 10,
             "offset": 0,
+            "genres": genres,
+            "moods": moods,
+            "include_purchaseable": include_purchaseable,
+            "only_with_downloads": has_downloads,
+            "sort_method": sort_method,
         }
         response = search(search_args)
         return success_response(response["playlists"])

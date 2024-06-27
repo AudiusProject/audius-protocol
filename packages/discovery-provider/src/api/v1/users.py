@@ -38,11 +38,12 @@ from src.api.v1.helpers import (
     make_response,
     pagination_parser,
     pagination_with_current_user_parser,
-    search_parser,
+    parse_bool_param,
     success_response,
     track_history_parser,
     user_collections_library_parser,
     user_favorited_tracks_parser,
+    user_search_parser,
     user_track_listen_count_route_parser,
     user_tracks_library_parser,
     user_tracks_route_parser,
@@ -1144,14 +1145,15 @@ class UserSearchResult(Resource):
         description="""Search for users that match the given query""",
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
-    @ns.expect(search_parser)
+    @ns.expect(user_search_parser)
     @ns.marshal_with(user_search_result)
     @cache(ttl_sec=600)
     def get(self):
-        args = search_parser.parse_args()
-        query = args["query"]
-        if not query:
-            abort_bad_request_param("query", ns)
+        args = user_search_parser.parse_args()
+        query = args.get("query")
+        genres = args.get("genre")
+        is_verified = parse_bool_param(args.get("is_verified"))
+        sort_method = args.get("sort_method")
         search_args = {
             "query": query,
             "kind": SearchKind.users.name,
@@ -1160,6 +1162,9 @@ class UserSearchResult(Resource):
             "with_users": True,
             "limit": 10,
             "offset": 0,
+            "only_verified": is_verified,
+            "genres": genres,
+            "sort_method": sort_method,
         }
         response = search(search_args)
         return success_response(response["users"])
