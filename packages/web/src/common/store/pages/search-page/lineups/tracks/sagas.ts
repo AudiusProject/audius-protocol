@@ -29,7 +29,6 @@ function* getSearchPageResultsTracks({
   limit: number
   payload?: any
 }) {
-  console.log('hello??', category)
   const isNativeMobile = yield* getContext('isNativeMobile')
   if (category === SearchKind.TRACKS || isNativeMobile || isMobileWeb()) {
     // If we are on the tracks sub-page of search or mobile, which we should paginate on
@@ -44,7 +43,6 @@ function* getSearchPageResultsTracks({
       )
       results = tracks
     } else {
-      console.log('hi there')
       const { tracks } = yield* call(getSearchResults, {
         searchText: query,
         kind: category,
