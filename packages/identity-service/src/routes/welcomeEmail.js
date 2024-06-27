@@ -10,7 +10,7 @@ const fs = require('fs')
 const path = require('path')
 const authMiddleware = require('../authMiddleware')
 const { getWelcomeEmail } = require('../notifications/emails/welcome')
-const { libs } = require('@audius/sdk')
+require('@audius/sdk')
 const axios = require('axios')
 const audiusLibsWrapper = require('../audiusLibsInstance')
 
@@ -66,7 +66,7 @@ module.exports = function (app) {
         await axios.get(
           `${discoveryProvider.discoveryProviderEndpoint}/v1/full/tracks/trending?limit=3&offset=0&time=month`
         )
-      ).data.data
+      )?.data?.data
 
       const welcomeHtml = getWelcomeEmail({
         name,
