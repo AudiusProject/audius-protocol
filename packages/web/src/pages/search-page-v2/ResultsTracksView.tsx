@@ -10,11 +10,13 @@ import {
 } from '@audius/common/store'
 import { Flex, OptionsFilterButton, Text } from '@audius/harmony'
 import { css } from '@emotion/css'
+import { range } from 'lodash'
 import { useDispatch, useSelector } from 'react-redux'
 import { useSearchParams } from 'react-router-dom-v5-compat'
 
 import { make } from 'common/store/analytics/actions'
 import Lineup from 'components/lineup/Lineup'
+import { LineupTileSkeleton } from 'components/lineup/LineupTileSkeleton'
 import { LineupVariant } from 'components/lineup/types'
 import { useRouteMatch } from 'hooks/useRouteMatch'
 import { SEARCH_PAGE } from 'utils/route'
@@ -59,6 +61,7 @@ export const ResultsTracksView = () => {
   const isTrackGridLayout =
     !isCategoryActive(CategoryView.TRACKS) || tracksLayout === 'grid'
   const isLoading = results.status === Status.LOADING
+  // const isLoading = true
   const query = urlSearchParams.get('query')
   const sortMethod = urlSearchParams.get('sortMethod')
   const trackLimit = isCategoryActive(CategoryView.TRACKS) ? 100 : 10
@@ -151,7 +154,13 @@ export const ResultsTracksView = () => {
                 onClickTrackTile(trackId)
               }}
             />
-          ) : null}
+          ) : (
+            <Flex direction='column' gap='l' w='100%'>
+              {range(5).map((_, i) => (
+                <LineupTileSkeleton key={`lineup-tile-skeleton-${i}`} />
+              ))}
+            </Flex>
+          )}
         </Flex>
       )}
     </Flex>
