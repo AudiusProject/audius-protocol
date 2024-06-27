@@ -132,18 +132,14 @@ export class IdentityService {
     // sign headers with new wallet so auth server can derive address
     const headers = await this._signData()
 
-    // construct data obj per hedgehog docs
-    const data = {
-      cipherText: obj.cipherText,
-      iv: obj.iv,
-      lookupKey: obj.lookupKey
-    }
+    // delete wallet object so it's not passed to identity
+    delete obj.wallet
 
     return await this._makeRequest({
       url: '/authentication',
       method: 'post',
       headers,
-      data
+      data: obj,
     })
   }
 
