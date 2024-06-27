@@ -61,7 +61,6 @@ export const ResultsTracksView = () => {
   const isTrackGridLayout =
     !isCategoryActive(CategoryView.TRACKS) || tracksLayout === 'grid'
   const isLoading = results.status === Status.LOADING
-  // const isLoading = true
   const query = urlSearchParams.get('query')
   const sortMethod = urlSearchParams.get('sortMethod')
   const trackLimit = isCategoryActive(CategoryView.TRACKS) ? 100 : 10
