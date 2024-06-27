@@ -36,7 +36,7 @@ const searchApi = createApi({
         const kind = category as SearchKind
         return await apiClient.getSearchFull({ kind, ...rest })
       },
-      options: { schemaKey: 'root' }
+      options: {}
     }
   }
 })

@@ -33,7 +33,6 @@ export const UserCard = (props: UserCardProps) => {
   const { userId, onPress, noNavigation, ...other } = props
 
   const user = useSelector((state) => getUser(state, { id: userId }))
-  console.log('user', !!user)
   const navigation = useNavigation()
 
   const handlePress = useCallback(

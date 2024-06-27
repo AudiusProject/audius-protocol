@@ -30,10 +30,10 @@ export const SearchScreenV2 = () => {
     query || category || Object.values(filters).some((filter) => filter)
 
   return (
-    <Screen topbarRight={<SearchBarV2 />} headerTitle={null} variant='white'>
-      <SearchContext.Provider
-        value={{ query, setQuery, category, setCategory, filters, setFilters }}
-      >
+    <SearchContext.Provider
+      value={{ query, setQuery, category, setCategory, filters, setFilters }}
+    >
+      <Screen topbarRight={<SearchBarV2 />} headerTitle={null} variant='white'>
         <SearchCategoriesAndFilters />
         {!showSearchResults ? (
           <Flex direction='column' alignItems='center' gap='xl'>
@@ -43,7 +43,7 @@ export const SearchScreenV2 = () => {
         ) : (
           <SearchResults />
         )}
-      </SearchContext.Provider>
-    </Screen>
+      </Screen>
+    </SearchContext.Provider>
   )
 }

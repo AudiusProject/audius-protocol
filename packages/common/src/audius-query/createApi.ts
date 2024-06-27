@@ -258,7 +258,7 @@ const useQueryState = <Args, Data>(
       // cache hit
       if (cachedData) {
         const { result } = normalize(
-          { [schemaKey]: cachedData },
+          schemaKey === 'root' ? cachedData : { [schemaKey]: cachedData },
           apiResponseSchema
         )
         return {
@@ -344,7 +344,9 @@ const fetchData = async <Args, Data>(
     let data: Data
     if (endpoint.options.schemaKey) {
       const { entities, result } = normalize(
-        { [endpoint.options.schemaKey]: apiData },
+        endpoint.options.schemaKey === 'root'
+          ? apiData
+          : { [endpoint.options.schemaKey]: apiData },
         apiResponseSchema
       )
       data = result
@@ -468,7 +470,10 @@ const buildEndpointHooks = <
     }, [isInitialValue, dispatch, fetchArgs, nonNormalizedData, fetchWrapped])
 
     if (endpoint.options?.schemaKey) {
-      cachedData = cachedData?.[endpoint.options?.schemaKey]
+      cachedData =
+        endpoint.options.schemaKey === 'root'
+          ? cachedData
+          : cachedData?.[endpoint.options?.schemaKey]
     }
 
     return {
