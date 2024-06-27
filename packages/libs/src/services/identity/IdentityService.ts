@@ -2,6 +2,7 @@ import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios'
 import type BN from 'bn.js'
 import type Wallet from 'ethereumjs-wallet'
 import type { TransactionReceipt } from 'web3-core'
+import { SetAuthFn } from '@audius/hedgehog'
 
 import { AuthHeaders } from '../../constants'
 import type { Nullable } from '../../utils'
@@ -11,6 +12,7 @@ import type { Web3Manager } from '../web3Manager'
 import { getTrackListens, TimeFrame } from './requests'
 
 type Data = Record<string, unknown>
+type SetAuthFnParams = Parameters<SetAuthFn>[0]
 
 type RelayTransactionInstruction = {
   programId: string
@@ -124,15 +126,16 @@ export class IdentityService {
     })
   }
 
-  async setAuthFn(obj: Data) {
+  async setAuthFn(obj: SetAuthFnParams) {
     // get wallet from hedgehog and set as owner wallet
-    const ownerWallet = obj.wallet as Wallet
+    const ownerWallet = obj.wallet
     this.web3Manager?.setOwnerWallet(ownerWallet)
 
     // sign headers with new wallet so auth server can derive address
     const headers = await this._signData()
 
     // delete wallet object so it's not passed to identity
+    // @ts-ignore
     delete obj.wallet
 
     return await this._makeRequest({

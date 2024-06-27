@@ -6,13 +6,19 @@ module.exports = {
       await queryInterface.addColumn('Authentications', 'walletAddress', {
         type: Sequelize.STRING,
         allowNull: true
-      }, { transaction })
-    })
+      }, { transaction });
+
+      await queryInterface.addIndex('Authentications', ['walletAddress'], {
+        transaction,
+        name: 'idx_authentications_walletAddress'
+      });
+    });
   },
 
   down: (queryInterface, Sequelize) => {
     return queryInterface.sequelize.transaction(async (transaction) => {
-      queryInterface.removeColumn('Authentications', 'walletAddress')
-    })
+      await queryInterface.removeIndex('Authentications', 'idx_authentications_walletAddress', { transaction });
+      await queryInterface.removeColumn('Authentications', 'walletAddress', { transaction });
+    });
   }
 };

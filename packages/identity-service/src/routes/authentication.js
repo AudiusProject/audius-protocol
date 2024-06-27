@@ -69,7 +69,7 @@ module.exports = function (app) {
                 iv: body.iv,
                 cipherText: body.cipherText,
                 lookupKey: body.lookupKey,
-                walletAddress: walletAddress
+                walletAddress
               },
               { transaction }
             )
