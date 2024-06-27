@@ -19,7 +19,7 @@ const messages = {
 
 export const AnchoredSubmitRowEdit = () => {
   const scrollToTop = useContext(EditFormScrollContext)
-  const { isValid, errors } = useFormikContext()
+  const { isValid } = useFormikContext()
   const [showError, setShowError] = useState(false)
 
   // Whenever the error stops showing, reset our error state until they break the form again AND try to submit again
@@ -28,8 +28,6 @@ export const AnchoredSubmitRowEdit = () => {
       setShowError(false)
     }
   }, [isValid])
-
-  console.log(errors)
 
   const { history } = useHistoryContext()
   const navigate = useNavigateToPage()
