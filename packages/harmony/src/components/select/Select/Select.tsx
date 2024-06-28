@@ -44,7 +44,7 @@ export const SelectOptions = (props: SelectOptionsProps) => {
   const activeOptionCss: CSSObject = {
     transform: 'none',
     backgroundColor: color.secondary.s300,
-    color: color.special.white
+    color: color.static.white
   }
 
   const optionCss: CSSObject = {
