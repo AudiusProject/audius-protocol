@@ -36,7 +36,9 @@ const messages = {
   scheduled: (date: string) => `Scheduled for ${formatCalendarTime(date)}`,
   scheduledRelease: 'Scheduled Release',
   scheduledReleaseDescription:
-    'Select the date and time this will become public.'
+    'Select the date and time this will become public.',
+  hiddenHint: (entityType: 'track' | 'album' | 'playlist') =>
+    `You can’t make a public ${entityType} hidden`
 }
 
 type VisibilityType = 'scheduled' | 'public' | 'hidden'
@@ -62,14 +64,14 @@ const visibilitySchema = z
 export const VisibilityField = (props: VisibilityFieldProps) => {
   const { entityType, isUpload } = props
   const useEntityField = entityType === 'track' ? useTrackField : useField
-  const [{ value: isHidden }, , { setValue: setIsUnlisted }] =
-    useEntityField<boolean>(entityType === 'track' ? IS_UNLISTED : IS_PRIVATE)
-
   const [
-    { value: isScheduledRelease },
+    { value: isHidden },
     { initialValue: initiallyHidden },
-    { setValue: setIsScheduledRelease }
-  ] = useEntityField<boolean>(IS_SCHEDULED_RELEASE)
+    { setValue: setIsUnlisted }
+  ] = useEntityField<boolean>(entityType === 'track' ? IS_UNLISTED : IS_PRIVATE)
+
+  const [{ value: isScheduledRelease }, , { setValue: setIsScheduledRelease }] =
+    useEntityField<boolean>(IS_SCHEDULED_RELEASE)
 
   const [{ value: releaseDate }, , { setValue: setReleaseDate }] =
     useEntityField<string>('release_date')
@@ -159,18 +161,22 @@ export const VisibilityField = (props: VisibilityFieldProps) => {
         }
       }}
       menuFields={
-        <VisibilityMenuFields initiallyPublic={!initiallyHidden && !isUpload} />
+        <VisibilityMenuFields
+          entityType={entityType}
+          initiallyPublic={!initiallyHidden && !isUpload}
+        />
       }
     />
   )
 }
 
 type VisibilityMenuFieldsProps = {
+  entityType: 'track' | 'album' | 'playlist'
   initiallyPublic?: boolean
 }
 
 const VisibilityMenuFields = (props: VisibilityMenuFieldsProps) => {
-  const { initiallyPublic } = props
+  const { initiallyPublic, entityType } = props
   const [field] = useField<VisibilityType>('visibilityType')
 
   return (
@@ -185,14 +191,19 @@ const VisibilityMenuFields = (props: VisibilityMenuFieldsProps) => {
         label={messages.hidden}
         description={messages.hiddenDescription}
         disabled={initiallyPublic}
+        hintContent={
+          initiallyPublic ? messages.hiddenHint(entityType) : undefined
+        }
       />
-      <ModalRadioItem
-        value='scheduled'
-        label={messages.scheduledRelease}
-        description={messages.scheduledReleaseDescription}
-        checkedContent={<ReleaseDateField />}
-        disabled={initiallyPublic}
-      />
+      {!initiallyPublic ? (
+        <ModalRadioItem
+          value='scheduled'
+          label={messages.scheduledRelease}
+          description={messages.scheduledReleaseDescription}
+          checkedContent={<ReleaseDateField />}
+          disabled={initiallyPublic}
+        />
+      ) : null}
     </RadioGroup>
   )
 }
