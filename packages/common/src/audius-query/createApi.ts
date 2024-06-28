@@ -287,7 +287,14 @@ const useCacheData = <Args, Data>(
       endpoint.options.kind,
       hookOptions?.shallow
     )
-    return denormalize(nonNormalizedData, apiResponseSchema, entityMap) as Data
+    if (typeof nonNormalizedData === 'object') {
+      return denormalize(
+        nonNormalizedData,
+        apiResponseSchema,
+        entityMap
+      ) as Data
+    }
+    return nonNormalizedData
   }, isEqual)
 }
 
@@ -337,30 +344,35 @@ const fetchData = async <Args, Data>(
       throw new RemoteDataNotFoundError('Remote data not found')
     }
 
-    const { entities, result } = normalize(
-      endpoint.options.schemaKey
-        ? { [endpoint.options.schemaKey]: apiData }
-        : apiData,
-      apiResponseSchema
-    )
+    let data: Data
 
-    const data: Data = result
+    if (typeof apiData === 'object') {
+      const { entities, result } = normalize(
+        endpoint.options.schemaKey
+          ? { [endpoint.options.schemaKey]: apiData }
+          : apiData,
+        apiResponseSchema
+      )
 
-    // Format entities before adding to cache
-    entities[Kind.USERS] = mapValues(
-      entities[Kind.USERS] ?? [],
-      (user: UserMetadata) => reformatUser(user, audiusBackend)
-    )
-    entities[Kind.COLLECTIONS] = mapValues(
-      entities[Kind.COLLECTIONS] ?? [],
-      (collection: CollectionMetadata | UserCollectionMetadata) =>
-        reformatCollection({
-          collection,
-          audiusBackendInstance: audiusBackend,
-          omitUser: false
-        })
-    )
-    dispatch(addEntries(entities))
+      // Format entities before adding to cache
+      entities[Kind.USERS] = mapValues(
+        entities[Kind.USERS] ?? [],
+        (user: UserMetadata) => reformatUser(user, audiusBackend)
+      )
+      entities[Kind.COLLECTIONS] = mapValues(
+        entities[Kind.COLLECTIONS] ?? [],
+        (collection: CollectionMetadata | UserCollectionMetadata) =>
+          reformatCollection({
+            collection,
+            audiusBackendInstance: audiusBackend,
+            omitUser: false
+          })
+      )
+      dispatch(addEntries(entities))
+      data = result
+    } else {
+      data = apiData
+    }
 
     dispatch(
       // @ts-ignore
