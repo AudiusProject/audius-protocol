@@ -24,6 +24,8 @@ import { CollectionList } from '../collection-list'
 import { AddCollectionCard } from '../collection-list/AddCollectionCard'
 import { CollectionCard } from '../collection-list/CollectionCard'
 import { FilterInput } from '../filter-input'
+import { useFeatureFlag } from '@audius/common/hooks'
+import { FeatureFlags } from '@audius/common/services'
 
 const { addTrackToPlaylist, createAlbum, createPlaylist } =
   cacheCollectionsActions
@@ -71,6 +73,9 @@ export const AddToCollectionDrawer = () => {
   const trackTitle = useSelector(getTrackTitle)
   const isTrackUnlisted = useSelector(getTrackIsUnlisted)
   const [filter, setFilter] = useState('')
+  const { isEnabled: isHiddenPaidScheduledEnabled } = useFeatureFlag(
+    FeatureFlags.HIDDEN_PAID_SCHEDULED
+  )
 
   const messages = getMessages(collectionType)
 
@@ -131,7 +136,11 @@ export const AddToCollectionDrawer = () => {
             if (!trackId) return
 
             // Don't add if the track is hidden, but collection is public
-            if (isTrackUnlisted && !item.is_private) {
+            if (
+              !isHiddenPaidScheduledEnabled &&
+              !isTrackUnlisted &&
+              !item.is_private
+            ) {
               toast({ content: messages.hiddenAdd })
               return
             }

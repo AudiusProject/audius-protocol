@@ -25,6 +25,8 @@ import { useCollectionCoverArt } from 'hooks/useCollectionCoverArt'
 import { collectionPage } from 'utils/route'
 
 import styles from './AddToCollectionModal.module.css'
+import { useFlag } from 'hooks/useRemoteConfig'
+import { FeatureFlags } from '@audius/common/services'
 const { getCollectionType, getTrackId, getTrackTitle, getTrackIsUnlisted } =
   addToCollectionUISelectors
 const { addTrackToPlaylist, createAlbum, createPlaylist } =
@@ -55,6 +57,9 @@ const AddToCollectionModal = () => {
   const isAlbumType = collectionType === 'album'
   const account = useSelector(getAccountWithNameSortedPlaylistsAndAlbums)
   const [searchValue, setSearchValue] = useState('')
+  const { isEnabled: isHiddenPaidScheduledEnabled } = useFlag(
+    FeatureFlags.HIDDEN_PAID_SCHEDULED
+  )
 
   const messages = getMessages(collectionType)
 
@@ -168,7 +173,11 @@ const AddToCollectionModal = () => {
               <div key={`${collection.playlist_id}`}>
                 <CollectionItem
                   collectionType={collectionType}
-                  disabled={isTrackUnlisted && !collection.is_private}
+                  disabled={
+                    !isHiddenPaidScheduledEnabled &&
+                    isTrackUnlisted &&
+                    !collection.is_private
+                  }
                   collection={collection}
                   handleClick={
                     isTrackUnlisted && !collection.is_private
