@@ -288,11 +288,7 @@ const useCacheData = <Args, Data>(
       hookOptions?.shallow
     )
     if (typeof normalizedData === 'object') {
-      return denormalize(
-        normalizedData,
-        apiResponseSchema,
-        entityMap
-      ) as Data
+      return denormalize(normalizedData, apiResponseSchema, entityMap) as Data
     }
     return normalizedData
   }, isEqual)
@@ -440,11 +436,10 @@ const buildEndpointHooks = <
         ? null
         : queryState
 
-    const { normalizedData, status, errorMessage, isInitialValue } =
-      state ?? {
-        normalizedData: null,
-        status: Status.IDLE
-      }
+    const { normalizedData, status, errorMessage, isInitialValue } = state ?? {
+      normalizedData: null,
+      status: Status.IDLE
+    }
 
     let cachedData = useCacheData(endpoint, normalizedData, hookOptions)
 
