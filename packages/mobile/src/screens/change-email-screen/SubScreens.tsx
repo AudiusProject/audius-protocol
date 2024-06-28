@@ -10,6 +10,8 @@ import { audiusBackendInstance } from 'app/services/audius-backend-instance'
 
 import { SubScreen } from '../change-password-screen/SubScreen'
 import { SubScreenHeader } from '../change-password-screen/SubScreenHeader'
+import { formatOtp } from '~/schemas/sign-on/confirmEmailSchema'
+import { ResendCodeLink } from '../change-password-screen/ResendCodeLink'
 
 const messages = {
   changeYourEmail: 'Change Your Email',
@@ -17,7 +19,11 @@ const messages = {
   currentEmail: 'Current Email',
   currentPassword: 'Current Password',
   newEmailHelp: 'Enter the new email you would like to use on Audius.',
-  newEmail: 'New email'
+  newEmail: 'New email',
+  verifyEmailDescription: 'Enter the verification code sent to your email.',
+  code: 'Code',
+  otpPlaceholder: '123 456',
+  resendHelp: 'Didn’t get an email? '
 }
 
 export const CurrentEmail = () => {
@@ -92,3 +98,22 @@ export const NewEmailSubScreen = () => {
     </SubScreen>
   )
 }
+
+export const VerifyEmailSubScreen = () => (
+  <SubScreen>
+    <SubScreenHeader
+      title={messages.changeYourEmail}
+      description={messages.verifyEmailDescription}
+    />
+    <HarmonyTextField
+      name='otp'
+      label={messages.code}
+      keyboardType='number-pad'
+      placeholder={messages.otpPlaceholder}
+      transformValueOnChange={formatOtp}
+    />
+    <Text variant='body'>
+      {messages.resendHelp} <ResendCodeLink />
+    </Text>
+  </SubScreen>
+)
