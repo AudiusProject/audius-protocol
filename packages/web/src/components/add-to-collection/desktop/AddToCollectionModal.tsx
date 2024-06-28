@@ -5,6 +5,7 @@ import {
   SquareSizes,
   Collection
 } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import {
   accountSelectors,
   cacheCollectionsActions,
@@ -22,11 +23,10 @@ import DynamicImage from 'components/dynamic-image/DynamicImage'
 import SearchBar from 'components/search-bar/SearchBar'
 import { Tooltip } from 'components/tooltip'
 import { useCollectionCoverArt } from 'hooks/useCollectionCoverArt'
+import { useFlag } from 'hooks/useRemoteConfig'
 import { collectionPage } from 'utils/route'
 
 import styles from './AddToCollectionModal.module.css'
-import { useFlag } from 'hooks/useRemoteConfig'
-import { FeatureFlags } from '@audius/common/services'
 const { getCollectionType, getTrackId, getTrackTitle, getTrackIsUnlisted } =
   addToCollectionUISelectors
 const { addTrackToPlaylist, createAlbum, createPlaylist } =

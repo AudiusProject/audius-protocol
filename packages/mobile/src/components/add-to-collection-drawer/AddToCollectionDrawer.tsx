@@ -1,7 +1,9 @@
 import { useCallback, useMemo, useState } from 'react'
 
+import { useFeatureFlag } from '@audius/common/hooks'
 import type { Collection } from '@audius/common/models'
 import { CreatePlaylistSource } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import type { CommonState } from '@audius/common/store'
 import {
   accountSelectors,
@@ -24,8 +26,6 @@ import { CollectionList } from '../collection-list'
 import { AddCollectionCard } from '../collection-list/AddCollectionCard'
 import { CollectionCard } from '../collection-list/CollectionCard'
 import { FilterInput } from '../filter-input'
-import { useFeatureFlag } from '@audius/common/hooks'
-import { FeatureFlags } from '@audius/common/services'
 
 const { addTrackToPlaylist, createAlbum, createPlaylist } =
   cacheCollectionsActions
@@ -171,6 +171,7 @@ export const AddToCollectionDrawer = () => {
       collectionType,
       isTrackUnlisted,
       messages,
+      isHiddenPaidScheduledEnabled,
       onClose,
       toast,
       dispatch
