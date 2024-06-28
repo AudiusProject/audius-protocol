@@ -35,7 +35,8 @@ _genre_based_sql = text(
     genre_rank
   from
     aggregate_user au
-  join inp on dominant_genre = inp.genre and au.follower_count < (select follower_count * 3 from aggregate_user where user_id = :user_id)   
+  join inp on dominant_genre = inp.genre and au.follower_count < (select follower_count * 3 from aggregate_user where user_id = :user_id)
+  where user_id != :user_id
   order by genre_rank asc, follower_count desc
 
   limit :limit
