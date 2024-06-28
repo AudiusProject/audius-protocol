@@ -85,7 +85,7 @@ services:
   es-indexer:
     build:
       context: ${PROJECT_ROOT}/packages/es-indexer
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.prod
       args:
         TURBO_TEAM: '${TURBO_TEAM}'
         TURBO_TOKEN: '${TURBO_TOKEN}'
