@@ -8,8 +8,8 @@ import { useField } from 'formik'
 import { View, Image } from 'react-native'
 import { useSelector } from 'react-redux'
 
-import { IconImage } from '@audius/harmony-native'
-import { Button, Text } from 'app/components/core'
+import { IconImage, Button } from '@audius/harmony-native'
+import { Text } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles, typography } from 'app/styles'
 
@@ -164,10 +164,11 @@ export const NFTCollectionsScreen = () => {
           variant='primary'
           size='large'
           fullWidth
-          title={messages.done}
           onPress={handleSubmit}
           disabled={!isContentCollectibleGated(streamConditions)}
-        />
+        >
+          {messages.done}
+        </Button>
       }
     />
   )

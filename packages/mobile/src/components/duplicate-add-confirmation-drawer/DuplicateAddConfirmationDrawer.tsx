@@ -10,7 +10,8 @@ import { capitalize } from 'lodash'
 import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { Text, Button } from 'app/components/core'
+import { Button } from '@audius/harmony-native'
+import { Text } from 'app/components/core'
 import { useToast } from 'app/hooks/useToast'
 import { makeStyles } from 'app/styles'
 
@@ -96,20 +97,17 @@ export const DuplicateAddConfirmationDrawer = () => {
           )}
         </Text>
         <View style={styles.buttonContainer}>
+          <Button variant='primary' size='large' fullWidth onPress={onClose}>
+            {messages.buttonCancelText}
+          </Button>
           <Button
-            title={messages.buttonCancelText}
-            variant='primary'
-            size='large'
-            fullWidth
-            onPress={onClose}
-          />
-          <Button
-            title={messages.buttonAddText}
-            variant='common'
+            variant='secondary'
             size='large'
             fullWidth
             onPress={handleAdd}
-          />
+          >
+            {messages.buttonAddText}
+          </Button>
         </View>
       </View>
     </Drawer>

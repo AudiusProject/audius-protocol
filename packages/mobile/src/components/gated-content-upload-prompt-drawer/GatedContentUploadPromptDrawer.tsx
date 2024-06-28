@@ -6,9 +6,10 @@ import { useDispatch } from 'react-redux'
 import {
   IconArrowRight,
   IconExternalLink,
-  IconRocket
+  IconRocket,
+  Button
 } from '@audius/harmony-native'
-import { Button, Text, useLink } from 'app/components/core'
+import { Text, useLink } from 'app/components/core'
 import { NativeDrawer } from 'app/components/drawer'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { setVisibility } from 'app/store/drawers/slice'
@@ -59,12 +60,6 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     fontFamily: typography.fontByWeight.medium,
     fontSize: typography.fontSize.large,
     lineHeight: spacing(7)
-  },
-  button: {
-    marginBottom: spacing(6)
-  },
-  buttonText: {
-    fontSize: typography.fontSize.large
   },
   learnMore: {
     ...flexRowCentered(),
@@ -122,27 +117,21 @@ export const GatedContentUploadPromptDrawer = ({
           />
         </TouchableOpacity>
         <Button
-          title={messages.gotIt}
           onPress={handleClose}
-          variant='commonAlt'
+          variant='secondary'
           size='large'
-          styles={{
-            root: styles.button,
-            text: styles.buttonText
-          }}
           fullWidth
-        />
+        >
+          {messages.gotIt}
+        </Button>
         <Button
-          title={messages.checkItOut}
           onPress={handleSubmit}
-          styles={{
-            root: styles.button,
-            text: styles.buttonText
-          }}
           size='large'
-          icon={IconArrowRight}
+          iconRight={IconArrowRight}
           fullWidth
-        />
+        >
+          {messages.checkItOut}
+        </Button>
       </View>
     </NativeDrawer>
   )

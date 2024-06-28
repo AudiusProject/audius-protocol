@@ -8,8 +8,8 @@ import type { FlatList as RNFlatList } from 'react-native'
 import { View, Text } from 'react-native'
 import { useSelector } from 'react-redux'
 
-import { IconShare } from '@audius/harmony-native'
-import { Tile, GradientText, FlatList, Button } from 'app/components/core'
+import { IconShare, Button } from '@audius/harmony-native'
+import { Tile, GradientText, FlatList } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
 import UserBadges from 'app/components/user-badges'
 import { useScrollToTop } from 'app/hooks/useScrollToTop'
@@ -60,9 +60,6 @@ const useStyles = makeStyles(({ typography, palette, spacing }) => ({
     color: palette.neutral,
     textAlign: 'center',
     marginBottom: spacing(4)
-  },
-  shareButtonIcon: {
-    marginRight: spacing(2)
   },
   collectibleListItem: {
     marginHorizontal: spacing(4),
@@ -160,15 +157,13 @@ export const CollectiblesTab = () => {
           </Text>
           <Button
             fullWidth
-            variant='commonAlt'
+            variant='secondary'
             size='small'
-            title={messages.share}
-            icon={IconShare}
-            iconPosition='left'
-            IconProps={{ height: 15, width: 15 }}
-            styles={{ icon: styles.shareButtonIcon }}
+            iconLeft={IconShare}
             onPress={handlePressShare}
-          />
+          >
+            {messages.share}
+          </Button>
         </Tile>
       }
       data={collectibles}

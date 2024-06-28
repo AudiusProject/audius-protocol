@@ -34,13 +34,12 @@ import {
   IconCastAirplay,
   IconCastChromecast,
   IconKebabHorizontal,
-  IconShare
+  IconShare,
+  Button
 } from '@audius/harmony-native'
 import { useAirplay } from 'app/components/audio/Airplay'
-import { Button } from 'app/components/core'
 import { useToast } from 'app/hooks/useToast'
 import { makeStyles } from 'app/styles'
-import { spacing } from 'app/styles/spacing'
 import { useThemeColors } from 'app/utils/theme'
 
 import { FavoriteButton } from './FavoriteButton'
@@ -227,11 +226,11 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
       return (
         <Button
           style={styles.buyButton}
-          styles={{ icon: { width: spacing(4), height: spacing(4) } }}
-          title={`$${formatPrice(price)}`}
           size='large'
           onPress={handlePurchasePress}
-        />
+        >
+          {formatPrice(price)}
+        </Button>
       )
     }
   }

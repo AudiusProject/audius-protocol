@@ -6,8 +6,14 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 import { View } from 'react-native'
 import InAppReview from 'react-native-in-app-review'
 
-import { IconHeart, IconThumbsDown, IconThumbsUp } from '@audius/harmony-native'
-import { Button, Text } from 'app/components/core'
+import {
+  IconHeart,
+  IconThumbsDown,
+  IconThumbsUp,
+  Button,
+  Flex
+} from '@audius/harmony-native'
+import { Text } from 'app/components/core'
 import { NativeDrawer } from 'app/components/drawer'
 import { RATE_CTA_STORAGE_KEY } from 'app/constants/storage-keys'
 import { make, track } from 'app/services/analytics'
@@ -45,17 +51,6 @@ const useStyles = makeStyles(({ palette, typography, spacing }) => ({
   titleText: {
     textTransform: 'uppercase',
     marginTop: spacing(4)
-  },
-  buttonRoot: {
-    marginTop: spacing(4)
-  },
-  buttonIcon: {
-    height: 18,
-    width: 18,
-    marginRight: spacing(2)
-  },
-  buttonText: {
-    fontSize: typography.fontSize.large
   },
   text: {
     textAlign: 'center',
@@ -116,37 +111,27 @@ export const RateCtaDrawer = () => {
             {messages.thankYouText}
           </Text>
         ) : (
-          <>
+          <Flex gap='l'>
             <Text variant='body' style={styles.text}>
               {messages.enjoyingText}
             </Text>
             <Button
-              title={messages.confirmText}
-              icon={IconThumbsUp}
-              iconPosition='left'
+              iconLeft={IconThumbsUp}
               fullWidth
-              styles={{
-                root: styles.buttonRoot,
-                icon: styles.buttonIcon,
-                text: styles.buttonText
-              }}
-              variant='commonAlt'
+              variant='secondary'
               onPress={handleReviewConfirm}
-            />
+            >
+              {messages.confirmText}
+            </Button>
             <Button
-              title={messages.cancelText}
-              icon={IconThumbsDown}
-              iconPosition='left'
+              iconLeft={IconThumbsDown}
               fullWidth
-              styles={{
-                root: styles.buttonRoot,
-                icon: styles.buttonIcon,
-                text: styles.buttonText
-              }}
-              variant='commonAlt'
+              variant='secondary'
               onPress={handleReviewDeny}
-            />
-          </>
+            >
+              {messages.cancelText}
+            </Button>
+          </Flex>
         )}
       </View>
     </NativeDrawer>

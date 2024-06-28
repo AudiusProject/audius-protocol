@@ -8,8 +8,8 @@ import {
 import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { IconMessageBlock, IconInfo } from '@audius/harmony-native'
-import { Text, Button } from 'app/components/core'
+import { IconMessageBlock, IconInfo, Button } from '@audius/harmony-native'
+import { Text } from 'app/components/core'
 import { NativeDrawer } from 'app/components/drawer'
 import { useDrawer } from 'app/hooks/useDrawer'
 import { track, make } from 'app/services/analytics'
@@ -96,16 +96,6 @@ const useStyles = makeStyles(({ spacing, typography, palette }) => ({
     width: spacing(5),
     height: spacing(5),
     color: palette.neutral
-  },
-  button: {
-    padding: spacing(4),
-    height: spacing(12)
-  },
-  blockButton: {
-    borderColor: palette.accentRed
-  },
-  blockText: {
-    fontSize: typography.fontSize.large
   }
 }))
 
@@ -188,31 +178,23 @@ export const BlockMessagesDrawer = () => {
           </View>
         )}
         <Button
-          title={
-            isReportAbuse
-              ? messages.reportUser
-              : doesBlockUser
-              ? messages.unblockUser
-              : messages.blockUser
-          }
           onPress={handleConfirmPress}
           variant={doesBlockUser ? 'primary' : 'destructive'}
-          styles={{
-            root: styles.button,
-            text: styles.blockText
-          }}
           fullWidth
-        />
+        >
+          {isReportAbuse
+            ? messages.reportUser
+            : doesBlockUser
+            ? messages.unblockUser
+            : messages.blockUser}
+        </Button>
         <Button
-          title={messages.cancel}
           onPress={handleCancelPress}
-          variant={doesBlockUser ? 'common' : 'primary'}
-          styles={{
-            root: styles.button,
-            text: styles.blockText
-          }}
+          variant={doesBlockUser ? 'secondary' : 'primary'}
           fullWidth
-        />
+        >
+          {messages.cancel}
+        </Button>
       </View>
     </NativeDrawer>
   )

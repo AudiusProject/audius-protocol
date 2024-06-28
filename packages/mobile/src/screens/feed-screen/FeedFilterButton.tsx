@@ -25,6 +25,6 @@ export const FeedFilterButton = () => {
   }, [dispatch])
 
   return (
-    <ScreenHeaderButton onPress={handlePress} title={messageMap[feedFilter]} />
+    <ScreenHeaderButton onPress={handlePress} label={messageMap[feedFilter]} />
   )
 }

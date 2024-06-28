@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 
 import type { ReactNativeStyle } from '@emotion/native'
 import Color from 'color'
@@ -42,7 +42,7 @@ export const Button = (props: ButtonProps) => {
   // - Size Styles -
   const smallStyles: ReactNativeStyle = {
     gap: spacing.xs,
-    height: spacing.unit8,
+    height: size === 'xs' ? spacing.unit7 : spacing.unit8,
     paddingHorizontal: spacing.m
   }
   // title-s-default
@@ -213,7 +213,7 @@ export const Button = (props: ButtonProps) => {
       ? destructiveStyles
       : primaryStyles),
 
-    ...(size === 'small'
+    ...(size === 'small' || size === 'xs'
       ? smallStyles
       : size === 'large'
       ? largeStyles
@@ -224,14 +224,14 @@ export const Button = (props: ButtonProps) => {
 
   const animatedButtonStyles = useAnimatedStyle(() => {
     return {
-      borderColor: disabled
+      borderColor: isDisabled
         ? buttonStyles.borderColor
         : interpolateColor(
             pressed.value,
             [0, 1],
             [dynamicStyles.default.border, dynamicStyles.press.border]
           ),
-      backgroundColor: disabled
+      backgroundColor: isDisabled
         ? buttonStyles.backgroundColor
         : interpolateColor(
             pressed.value,
@@ -239,7 +239,7 @@ export const Button = (props: ButtonProps) => {
             [dynamicStyles.default.background, dynamicStyles.press.background]
           )
     }
-  }, [disabled])
+  }, [isDisabled, variant])
 
   const textStyles =
     size === 'small'
@@ -256,7 +256,7 @@ export const Button = (props: ButtonProps) => {
         [dynamicStyles.default.text, dynamicStyles.press.text]
       )
     }
-  }, [disabled])
+  }, [variant])
 
   const textColor =
     (variant === 'secondary' && !isDisabled) || variant === 'tertiary'
@@ -279,21 +279,12 @@ export const Button = (props: ButtonProps) => {
     setIsPressing(false)
   }
 
-  const iconColor = useMemo(() => {
-    if (isDisabled && variant === 'secondary') {
-      return 'staticWhite'
-    }
-
-    return isPressing && !isDisabled
+  const iconColor =
+    isDisabled && variant === 'secondary'
+      ? 'staticWhite'
+      : isPressing && !isDisabled
       ? dynamicStyles.press.icon
       : dynamicStyles.default.icon
-  }, [
-    dynamicStyles.default.icon,
-    dynamicStyles.press.icon,
-    isDisabled,
-    isPressing,
-    variant
-  ])
 
   return (
     <BaseButton

@@ -4,8 +4,7 @@ import { getSearchBarText } from '@audius/web/src/common/store/search-bar/select
 import { View } from 'react-native'
 import { useSelector } from 'react-redux'
 
-import { IconArrowRight } from '@audius/harmony-native'
-import { Button } from 'app/components/core'
+import { IconArrowRight, Button } from '@audius/harmony-native'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles } from 'app/styles'
 
@@ -35,10 +34,11 @@ export const SeeMoreResultsButton = () => {
         variant='primary'
         size='small'
         fullWidth
-        title={messages.more}
         onPress={handlePress}
-        icon={IconArrowRight}
-      />
+        iconRight={IconArrowRight}
+      >
+        {messages.more}
+      </Button>
     </View>
   )
 }

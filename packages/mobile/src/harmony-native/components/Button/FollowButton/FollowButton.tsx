@@ -10,9 +10,16 @@ import {
   useTheme
 } from '@audius/harmony-native'
 
+import * as haptics from '../../../../haptics'
+import { Text } from '../../Text/Text'
 import { Flex } from '../../layout'
 
 import type { FollowButtonProps } from './types'
+
+const messages = {
+  follow: 'Follow',
+  following: 'Following'
+}
 
 export const FollowButton = (props: FollowButtonProps) => {
   const {
@@ -40,6 +47,7 @@ export const FollowButton = (props: FollowButtonProps) => {
     if (following) {
       onUnfollow?.()
     } else {
+      haptics.medium()
       onFollow?.()
     }
     onChange?.({
@@ -66,6 +74,7 @@ export const FollowButton = (props: FollowButtonProps) => {
         justifyContent='center'
         gap='xs'
         pv='s'
+        ph='l'
         border='default'
         style={css({
           opacity: disabled ? 0.45 : 1,
@@ -82,6 +91,17 @@ export const FollowButton = (props: FollowButtonProps) => {
           width={18}
           fill={following ? color.icon.staticWhite : color.primary.primary}
         />
+
+        <Text
+          variant='label'
+          size={size === 'small' ? 's' : 'l'}
+          strength='default'
+          style={{
+            color: following ? color.icon.staticWhite : color.primary.primary
+          }}
+        >
+          {following ? messages.following : messages.follow}
+        </Text>
       </Flex>
     </Pressable>
   )

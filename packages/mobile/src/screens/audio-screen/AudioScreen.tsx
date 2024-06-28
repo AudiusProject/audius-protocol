@@ -25,7 +25,8 @@ import {
   IconInfo,
   IconReceive,
   IconSend,
-  IconWallet
+  IconWallet,
+  Button
 } from '@audius/harmony-native'
 import Bronze from 'app/assets/images/tokenBadgeBronze108.png'
 import Gold from 'app/assets/images/tokenBadgeGold108.png'
@@ -35,7 +36,6 @@ import TokenStill from 'app/assets/images/tokenSpinStill.png'
 import {
   ScrollView,
   Screen,
-  Button,
   GradientText,
   Text,
   Tile,
@@ -151,19 +151,6 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     textShadowRadius: 15,
     textTransform: 'uppercase',
     marginRight: spacing(1)
-  },
-  buttonRoot: {
-    marginTop: spacing(2),
-    marginBottom: spacing(2),
-    height: spacing(12),
-    width: 260
-  },
-  button: {
-    paddingHorizontal: spacing(2)
-  },
-  buttonText: {
-    padding: 0,
-    textTransform: 'uppercase'
   },
   token: {
     width: 200,
@@ -303,44 +290,26 @@ export const AudioScreen = () => {
         }}
       >
         <Button
-          title={messages.send}
-          styles={{
-            root: styles.buttonRoot,
-            text: styles.buttonText,
-            button: styles.button
-          }}
-          variant='commonAlt'
-          iconPosition='left'
-          size='medium'
-          icon={IconSend}
+          variant='secondary'
+          iconLeft={IconSend}
           onPress={handlePressSend}
-        />
+        >
+          {messages.send}
+        </Button>
         <Button
-          title={messages.receive}
-          styles={{
-            root: styles.buttonRoot,
-            text: styles.buttonText,
-            button: styles.button
-          }}
-          variant='commonAlt'
-          iconPosition='left'
-          size='medium'
-          icon={IconReceive}
+          variant='secondary'
+          iconLeft={IconReceive}
           onPress={handlePressReceive}
-        />
+        >
+          {messages.receive}
+        </Button>
         <Button
-          title={messages.externalWallets}
-          styles={{
-            root: styles.buttonRoot,
-            text: styles.buttonText,
-            button: styles.button
-          }}
-          variant='commonAlt'
-          iconPosition='left'
-          size='medium'
-          icon={IconWallet}
+          variant='secondary'
+          iconLeft={IconWallet}
           onPress={handlePressManageWallets}
-        />
+        >
+          {messages.externalWallets}
+        </Button>
       </Tile>
     )
   }
@@ -434,30 +403,19 @@ export const AudioScreen = () => {
           unlocks={['matrix']}
         />
         <Button
-          title={messages.learnMore}
-          styles={{
-            root: styles.buttonRoot,
-            text: styles.buttonText,
-            button: styles.button
-          }}
-          variant='commonAlt'
-          size='medium'
+          variant='secondary'
           onPress={() => Linking.openURL(LEARN_MORE_LINK)}
           fullWidth
-        />
+        >
+          {messages.learnMore}
+        </Button>
         <Button
-          title={messages.launchDiscord}
-          styles={{
-            root: styles.buttonRoot,
-            text: styles.buttonText,
-            button: styles.button
-          }}
-          variant='commonAlt'
-          size='medium'
-          iconPosition='left'
-          icon={IconDiscord}
+          variant='secondary'
+          iconLeft={IconDiscord}
           onPress={onPressLaunchDiscord}
-        />
+        >
+          {messages.launchDiscord}
+        </Button>
       </Tile>
     )
   }
