@@ -132,7 +132,13 @@ const KeyFilter = () => {
           anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
           transformOrigin={{ vertical: 'top', horizontal: 'left' }}
         >
-          <Paper mt='s' border='strong' shadow='far' css={{ minWidth: 200 }}>
+          <Paper
+            mt='s'
+            border='strong'
+            shadow='far'
+            css={{ minWidth: 200 }}
+            onClick={(e) => e.stopPropagation()}
+          >
             <Flex
               w='100%'
               gap='s'
