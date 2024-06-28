@@ -21,6 +21,10 @@ services:
     extends:
       file: docker-compose.discovery.prod.yml
       service: es-indexer
+    build:
+      dockerfile: ${PROJECT_ROOT}/packages/es-indexer/Dockerfile.dev
+    volumes:
+      - ${PROJECT_ROOT}:/app
 
   trpc:
     extends:
