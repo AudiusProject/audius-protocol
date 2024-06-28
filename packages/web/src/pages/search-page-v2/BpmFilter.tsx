@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 
+import { useStateDebounced } from '@audius/common/hooks'
 import {
   Button,
   Divider,
@@ -14,14 +15,12 @@ import {
   useTheme
 } from '@audius/harmony'
 import { css } from '@emotion/css'
-import { debounce } from 'lodash'
 import { useSearchParams } from 'react-router-dom-v5-compat'
 
 import { useUpdateSearchParams } from './utils'
 
 const MIN_BPM = 1
 const MAX_BPM = 999
-const DEBOUNCE_TIME = 500
 
 type BpmTargetType = 'exact' | 'range5' | 'range10'
 const targetOptions: { label: string; value: BpmTargetType }[] = [
@@ -82,15 +81,6 @@ const messages = {
 
 type ViewProps = {
   handleChange: (value: string, label: string) => void
-}
-
-function useStateDebounced<T>(initialValue: T) {
-  const [value, setValue] = useState(initialValue)
-  const setValueDebounced = useMemo(
-    () => debounce(setValue, DEBOUNCE_TIME),
-    [setValue]
-  )
-  return [value, setValueDebounced] as const
 }
 
 const BpmRangeView = ({ handleChange }: ViewProps) => {
