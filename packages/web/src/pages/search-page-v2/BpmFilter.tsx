@@ -14,12 +14,14 @@ import {
   useTheme
 } from '@audius/harmony'
 import { css } from '@emotion/css'
+import { debounce } from 'lodash'
 import { useSearchParams } from 'react-router-dom-v5-compat'
 
 import { useUpdateSearchParams } from './utils'
 
 const MIN_BPM = 1
 const MAX_BPM = 999
+const DEBOUNCE_TIME = 500
 
 type BpmTargetType = 'exact' | 'range5' | 'range10'
 const targetOptions: { label: string; value: BpmTargetType }[] = [
@@ -82,9 +84,18 @@ type ViewProps = {
   handleChange: (value: string, label: string) => void
 }
 
+function useStateDebounced<T>(initialValue: T) {
+  const [value, setValue] = useState(initialValue)
+  const setValueDebounced = useMemo(
+    () => debounce(setValue, DEBOUNCE_TIME),
+    [setValue]
+  )
+  return [value, setValueDebounced] as const
+}
+
 const BpmRangeView = ({ handleChange }: ViewProps) => {
-  const [minBpm, setMinBpm] = useState('')
-  const [maxBpm, setMaxBpm] = useState('')
+  const [minBpm, setMinBpm] = useStateDebounced('')
+  const [maxBpm, setMaxBpm] = useStateDebounced('')
   const [minError, setMinError] = useState<string | null>(null)
   const [maxError, setMaxError] = useState<string | null>(null)
   // NOTE: Memo to avoid the constantly changing function instance from triggering the effect
@@ -188,7 +199,7 @@ const BpmRangeView = ({ handleChange }: ViewProps) => {
 
 const BpmTargetView = ({ handleChange }: ViewProps) => {
   const { color } = useTheme()
-  const [bpmTarget, setBpmTarget] = useState('')
+  const [bpmTarget, setBpmTarget] = useStateDebounced('')
   const [bpmTargetType, setBpmTargetType] = useState<BpmTargetType>('exact')
   const [error, setError] = useState<string | null>(null)
   // NOTE: Memo to avoid the constantly changing function instance from triggering the effect
