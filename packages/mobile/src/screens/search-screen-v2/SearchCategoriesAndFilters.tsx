@@ -25,23 +25,25 @@ const SearchCategory = (props: SearchCategoryProps) => {
   const [currentCategory, setCategory] = useSearchCategory()
   const isSelected = currentCategory === category
 
-  const categoryLabelMap = {
+  const labelByCategory = {
     tracks: 'Tracks',
     users: 'Profiles',
     albums: 'Albums',
     playlists: 'Playlists'
   }
 
-  if (currentCategory && !isSelected) return null
+  if (currentCategory !== 'all' && !isSelected) return null
 
   return (
     <SelectablePill
       type='radio'
       size='large'
       value={category}
-      label={categoryLabelMap[category]}
+      label={labelByCategory[category]}
       isSelected={isSelected}
-      onChange={(value) => setCategory(value as SearchCategoryType)}
+      onChange={(value, isSelected) =>
+        setCategory(isSelected ? (value as SearchCategoryType) : 'all')
+      }
       icon={isSelected ? IconCloseAlt : undefined}
     />
   )

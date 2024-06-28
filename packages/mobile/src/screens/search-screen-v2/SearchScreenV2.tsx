@@ -33,7 +33,11 @@ export const SearchScreenV2 = () => {
     <SearchContext.Provider
       value={{ query, setQuery, category, setCategory, filters, setFilters }}
     >
-      <Screen topbarRight={<SearchBarV2 />} headerTitle={null} variant='white'>
+      <Screen
+        topbarRight={<SearchBarV2 value={query} onChangeText={setQuery} />}
+        headerTitle={null}
+        variant='white'
+      >
         <SearchCategoriesAndFilters />
         {!showSearchResults ? (
           <Flex direction='column' alignItems='center' gap='xl'>

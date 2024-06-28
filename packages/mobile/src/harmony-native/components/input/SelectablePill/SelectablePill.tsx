@@ -50,12 +50,12 @@ export const SelectablePill = (props: SelectablePillProps) => {
     (e: GestureResponderEvent) => {
       onPress?.(e)
       if (value) {
-        onChange?.(value)
+        onChange?.(value, !isSelected)
       }
       setIsPressing(false)
-      setIsSelected((isSelected) => !isSelected)
+      setIsSelected(!isSelected)
     },
-    [onChange, onPress, value]
+    [onChange, onPress, value, isSelected]
   )
 
   const tap = Gesture.Tap()
