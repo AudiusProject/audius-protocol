@@ -178,7 +178,7 @@ const getWelcomeEmail = ({ name, copyrightYear, featuredContent }) => {
   <tr>
   <td style="vertical-align: middle;" width="224"><img src="https://download.audius.co/welcome-email/Uz1cn9ptGz0zHqqougR9jczjWIzEi2.jpeg" width="224" border="0" style="max-width:224px; width: 100%;
            height: auto; display: block;"></td>
-  <td> </td>
+  <td></td>
   <td style="vertical-align: middle;" width="120">
   <table cellspacing="0" cellpadding="0" border="0">
   <tr>
@@ -657,7 +657,7 @@ const getWelcomeEmail = ({ name, copyrightYear, featuredContent }) => {
   </tr>
   </table>
   </td>
-  <td class="stack-column-center" height="24" style="width:24px; min-width:24px; height:24px; min-height:24px;" width="24"> </td>
+  <td class="stack-column-center" height="24" style="width:24px; min-width:24px; height:24px; min-height:24px;" width="24"></td>
   <td align="center" width="30.43%" class="stack-column-center">
   <table width="100%" cellspacing="0" cellpadding="0" border="0">
   <tr>
@@ -706,7 +706,7 @@ const getWelcomeEmail = ({ name, copyrightYear, featuredContent }) => {
   </tr>
   </table>
   </td>
-  <td class="stack-column-center" height="24" style="width:24px; min-width:24px; height:24px; min-height:24px;" width="24"> </td>
+  <td class="stack-column-center" height="24" style="width:24px; min-width:24px; height:24px; min-height:24px;" width="24"></td>
   <td align="center" width="30.43%" class="stack-column-center">
   <table width="100%" cellspacing="0" cellpadding="0" border="0">
   <tr>
@@ -906,7 +906,7 @@ const getWelcomeEmail = ({ name, copyrightYear, featuredContent }) => {
   <tr>
   <td style="vertical-align: middle;" class="stack-column-center" align="center"><a target="_blank" href="https://apps.apple.com/us/app/audius-music/id1491270519"><img src="https://download.audius.co/welcome-email/k4TOOjAR7VuPP0nueaLRqEgGVORdm0.png" width="142" border="0" style="min-width:142px; width:142px;
            height: auto; display: block;"></a></td>
-  <td class="stack-column-center" height="12" style="width:12px; min-width:12px; height:12px; min-height:12px;" width="12"> </td>
+  <td class="stack-column-center" height="12" style="width:12px; min-width:12px; height:12px; min-height:12px;" width="12"></td>
   <td style="vertical-align: middle;" class="stack-column-center" align="center"><a target="_blank" href="https://play.google.com/store/apps/details?id=co.audius.app&hl=en_US&gl=US"><img src="https://download.audius.co/welcome-email/8qZWjB40ILUL2qHxBLKct5TmRFr8ii.png" width="166" border="0" style="min-width:166px; width:166px;
            height: auto; display: block;"></a></td>
   </tr>
@@ -974,9 +974,9 @@ const getWelcomeEmail = ({ name, copyrightYear, featuredContent }) => {
   <tr>
   <td style="vertical-align: middle;" class="stack-column-center" align="center"><a target="_blank" href="https://www.audius.co"><img src="https://download.audius.co/welcome-email/cBesqDAb5hRDxoQksHZUXPMGv5h9bm.png" width="168" border="0" style="min-width:168px; width:168px;
           border-radius:2px; height: auto; display: block;"></a></td>
-  <td class="stack-column-center" height="12" style="width:12px; min-width:12px; height:12px; min-height:12px;" width="12"> </td>
-  <td class="stack-column-center" style="width:168px;"> </td>
-  <td class="stack-column-center" height="12" style="width:12px; min-width:12px; height:12px; min-height:12px;" width="12"> </td>
+  <td class="stack-column-center" height="12" style="width:12px; min-width:12px; height:12px; min-height:12px;" width="12"></td>
+  <td class="stack-column-center" style="width:168px;"></td>
+  <td class="stack-column-center" height="12" style="width:12px; min-width:12px; height:12px; min-height:12px;" width="12"></td>
   <td style="vertical-align: middle;" align="center" class="stack-column-center">
   <table width="100%" cellspacing="0" cellpadding="0" border="0">
   <tr>
@@ -1100,7 +1100,7 @@ const getWelcomeEmail = ({ name, copyrightYear, featuredContent }) => {
   </tr>
   </table>
   </td>
-  <td class="stack-column-center" height="8" style="width:8px; min-width:8px; height:8px; min-height:8px;" width="8"> </td>
+  <td class="stack-column-center" height="8" style="width:8px; min-width:8px; height:8px; min-height:8px;" width="8"></td>
   <td style="vertical-align: middle;" align="center" width="32.32%" class="stack-column-center">
   <table width="100%" cellspacing="0" cellpadding="0" border="0">
   <tr>
@@ -1136,7 +1136,7 @@ const getWelcomeEmail = ({ name, copyrightYear, featuredContent }) => {
   </tr>
   </table>
   </td>
-  <td class="stack-column-center" height="8" style="width:8px; min-width:8px; height:8px; min-height:8px;" width="8"> </td>
+  <td class="stack-column-center" height="8" style="width:8px; min-width:8px; height:8px; min-height:8px;" width="8"></td>
   <td style="vertical-align: middle;" align="center" width="32.32%" class="stack-column-center">
   <table width="100%" cellspacing="0" cellpadding="0" border="0">
   <tr>
