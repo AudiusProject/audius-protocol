@@ -94,9 +94,6 @@ export const SelectablePill = (props: SelectablePillProps) => {
   }
 
   const iconCss = {
-    width: spacing.l,
-    height: spacing.l,
-
     '& path': {
       fill: 'currentColor'
     }
@@ -109,7 +106,7 @@ export const SelectablePill = (props: SelectablePillProps) => {
 
   const pillContent = (
     <>
-      {Icon ? <Icon css={iconCss} /> : null}
+      {size !== 'small' && Icon ? <Icon size='s' css={iconCss} /> : null}
       {'label' in other ? (
         <Text
           variant={size === 'oversized' ? 'heading' : 'body'}
