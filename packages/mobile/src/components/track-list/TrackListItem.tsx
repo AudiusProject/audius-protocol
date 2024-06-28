@@ -329,6 +329,7 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
   }, [
     isTrackOwner,
     isLocked,
+    isUnlisted,
     has_current_user_saved,
     has_current_user_reposted,
     isDeleted,
