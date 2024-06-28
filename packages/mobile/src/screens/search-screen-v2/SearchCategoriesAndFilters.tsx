@@ -7,7 +7,7 @@ import type {
 import { ScrollView } from 'react-native'
 
 import {
-  Button,
+  FilterButton,
   Flex,
   IconCloseAlt,
   SelectablePill
@@ -50,7 +50,6 @@ const SearchCategory = (props: SearchCategoryProps) => {
 }
 
 // TODO:
-// - Need to update filters to use FilterButton when the component is created
 // - Need to sort the filters to put filters with an active value first
 // - IconClose looks thicker than the designs
 
@@ -92,16 +91,15 @@ export const SearchCategoriesAndFilters = () => {
           <SearchCategory category='albums' />
           <SearchCategory category='playlists' />
           {filtersByCategory[category].map((filter) => (
-            <Button
+            <FilterButton
               key={filter}
-              variant='tertiary'
               size='small'
-              onPress={() =>
+              // value={value}
+              label={filterInfoMap[filter].label}
+              onPress={() => {
                 handleFilterPress(filterInfoMap[filter].screen || 'Search')
-              }
-            >
-              {filterInfoMap[filter].label}
-            </Button>
+              }}
+            />
           ))}
         </Flex>
       </ScrollView>
