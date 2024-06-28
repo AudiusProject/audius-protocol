@@ -151,12 +151,12 @@ export const OptionsFilterButton = forwardRef<
 
   const handleOptionSelect = useCallback(
     (
-        handleChange: (value: string, label: string) => void,
+        handleChange: (value: string) => void,
         setIsOpen: (isOpen: boolean) => void
       ) =>
       (option: OptionsFilterButtonOption) => {
         setSelection(option.value)
-        handleChange(option.value, option.label ?? '')
+        handleChange(option.value)
         setIsOpen(false)
       },
     [setSelection]
@@ -188,6 +188,7 @@ export const OptionsFilterButton = forwardRef<
       onOpen={handleOpen}
       onReset={() => setFilterInputValue('')}
       label={selectedLabel ?? filterButtonProps.label}
+      leadingElement={selectedOption?.labelLeadingElement}
     >
       {({ isOpen, setIsOpen, handleChange, anchorRef }) => (
         <OptionsFilterButtonPopupKeyHandler

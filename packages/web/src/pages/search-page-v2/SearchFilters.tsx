@@ -68,11 +68,19 @@ const MoodFilter = () => {
       marginBottom: 0
     }
   }
+  const moodLabelCss = {
+    '& .emoji': {
+      marginBottom: 0,
+      height: 16,
+      width: 16
+    }
+  }
 
   const moodOptions = sortedKeys.map((mood) => ({
     label: MOODS[mood].label,
     value: MOODS[mood].value,
-    leadingElement: <Box css={moodCss}>{MOODS[mood].icon}</Box>
+    leadingElement: <Box css={moodCss}>{MOODS[mood].icon}</Box>,
+    labelLeadingElement: <Flex css={moodLabelCss}>{MOODS[mood].icon}</Flex>
   }))
 
   return (
@@ -149,10 +157,7 @@ const KeyFilter = () => {
                 <FilterButtonOptions
                   options={keyOptions}
                   onChange={(option) =>
-                    handleChange(
-                      `${option.value} ${scale}`,
-                      `${option.label} ${scale}`
-                    )
+                    handleChange(`${option.value} ${scale}`)
                   }
                 />
               </Flex>
