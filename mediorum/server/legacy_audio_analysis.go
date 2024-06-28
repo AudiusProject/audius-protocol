@@ -79,6 +79,7 @@ func (ss *MediorumServer) startLegacyAudioAnalyzer() {
 			select {
 			case <-ticker.C:
 				// find missed legacy analysis jobs every minute
+				// mark analyses as timed out
 				ss.findMissedLegacyAnalysisJobs(work, myHost)
 
 			case <-retryTicker.C:
@@ -88,7 +89,7 @@ func (ss *MediorumServer) startLegacyAudioAnalyzer() {
 		}
 	}()
 
-	// Block to keep running
+	// block to keep running
 	select {}
 }
 
@@ -185,7 +186,7 @@ func (ss *MediorumServer) retryLegacyAnalysisJobs(work chan *QmAudioAnalysis, my
 			logger.Info("retrying my errored legacy audio analysis")
 		}
 		if analysis.Status == JobStatusTimeout {
-			logger.Info("retrying my timed out legacy audio analysis... starting")
+			logger.Info("retrying my timed out legacy audio analysis")
 		}
 		analysis.AnalyzedAt = time.Now().UTC()
 		// op callback will enqueue the job

@@ -70,12 +70,29 @@ func (ss *MediorumServer) startAudioAnalyzer() {
 	}
 
 	// poll periodically for uploads that slipped thru the cracks.
-	// mark uploads with timed out analyses as done
-	for {
-		time.Sleep(time.Second * 10)
-		ss.findMissedAnalysisJobs(work, myHost)
-		ss.retryAnalysisJobs(work, myHost)
-	}
+	go func() {
+		ticker := time.NewTicker(10 * time.Second)
+		defer ticker.Stop()
+
+		retryTicker := time.NewTicker(30 * time.Second)
+		defer retryTicker.Stop()
+
+		for {
+			select {
+			case <-ticker.C:
+				// find missed legacy analysis jobs every 10 seconds
+				// mark uploads with timed out analyses as done
+				ss.findMissedAnalysisJobs(work, myHost)
+
+			case <-retryTicker.C:
+				// retry analysis jobs every 30 seconds
+				ss.retryAnalysisJobs(work, myHost)
+			}
+		}
+	}()
+
+	// block to keep running
+	select {}
 }
 
 func (ss *MediorumServer) findMissedAnalysisJobs(work chan *Upload, myHost string) {
@@ -163,7 +180,7 @@ func (ss *MediorumServer) retryAnalysisJobs(work chan *Upload, myHost string) {
 			logger.Info("retrying my errored audio analysis")
 		}
 		if upload.AudioAnalysisStatus == JobStatusTimeout {
-			logger.Info("retrying my timed out audio analysis... starting")
+			logger.Info("retrying my timed out audio analysis")
 		}
 		upload.AudioAnalyzedAt = time.Now().UTC()
 		// op callback will enqueue the job
