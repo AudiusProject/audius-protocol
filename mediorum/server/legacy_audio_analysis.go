@@ -21,8 +21,7 @@ func (ss *MediorumServer) startLegacyAudioAnalyzer() {
 	myHost := ss.Config.Self.Host
 	work := make(chan *QmAudioAnalysis)
 
-	// use aone cpu
-	numWorkers := 1
+	numWorkers := 2
 
 	// on boot... reset any of my wip jobs
 	tx := ss.crud.DB.Model(QmAudioAnalysis{}).
