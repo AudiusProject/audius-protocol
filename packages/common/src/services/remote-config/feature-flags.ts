@@ -61,7 +61,8 @@ export enum FeatureFlags {
   EDIT_TRACK_REDESIGN = 'edit_track_redesign',
   SKIP_STREAM_CHECK = 'skip_stream_check',
   PREFETCH_STREAM_URLS = 'prefetch_stream_urls',
-  HIDDEN_PAID_SCHEDULED = 'hidden_paid_scheduled'
+  HIDDEN_PAID_SCHEDULED = 'hidden_paid_scheduled',
+  EDITABLE_ACCESS_ENABLED = 'editable_access_enabled'
 }
 
 type FlagDefaults = Record<FeatureFlags, boolean>
@@ -138,5 +139,6 @@ export const flagDefaults: FlagDefaults = {
   [FeatureFlags.EDIT_TRACK_REDESIGN]: false,
   [FeatureFlags.SKIP_STREAM_CHECK]: false,
   [FeatureFlags.PREFETCH_STREAM_URLS]: false,
-  [FeatureFlags.HIDDEN_PAID_SCHEDULED]: false
+  [FeatureFlags.HIDDEN_PAID_SCHEDULED]: false,
+  [FeatureFlags.EDITABLE_ACCESS_ENABLED]: false
 }
