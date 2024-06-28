@@ -65,6 +65,7 @@ const HistoryPage = ({
     return {
       isLoading: loading,
       isStreamGated: track.is_stream_gated,
+      isUnlisted: track.is_unlisted,
       isReposted: track.has_current_user_reposted,
       isSaved: track.has_current_user_saved,
       isActive,

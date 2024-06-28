@@ -360,6 +360,7 @@ const EditPlaylistPage = g(
           time: playlistTrack?.time,
           isStreamGated: t.is_stream_gated,
           isDeleted: t.is_delete || !!t.user.is_deactivated,
+          isUnlisted: t.is_unlisted,
           isLocked,
           isRemoveActive
         }
