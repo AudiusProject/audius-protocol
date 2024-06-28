@@ -287,7 +287,11 @@ const useCacheData = <Args, Data>(
       endpoint.options.kind,
       hookOptions?.shallow
     )
-    return denormalize(nonNormalizedData, apiResponseSchema, entityMap) as Data
+    return (
+      endpoint.options.schemaKey
+        ? denormalize(nonNormalizedData, apiResponseSchema, entityMap)
+        : nonNormalizedData
+    ) as Data
   }, isEqual)
 }
 
@@ -337,30 +341,32 @@ const fetchData = async <Args, Data>(
       throw new RemoteDataNotFoundError('Remote data not found')
     }
 
-    const { entities, result } = normalize(
-      endpoint.options.schemaKey
-        ? { [endpoint.options.schemaKey]: apiData }
-        : apiData,
-      apiResponseSchema
-    )
+    let data: Data
+    if (endpoint.options.schemaKey) {
+      const { entities, result } = normalize(
+        { [endpoint.options.schemaKey]: apiData },
+        apiResponseSchema
+      )
+      data = result
 
-    const data: Data = result
-
-    // Format entities before adding to cache
-    entities[Kind.USERS] = mapValues(
-      entities[Kind.USERS] ?? [],
-      (user: UserMetadata) => reformatUser(user, audiusBackend)
-    )
-    entities[Kind.COLLECTIONS] = mapValues(
-      entities[Kind.COLLECTIONS] ?? [],
-      (collection: CollectionMetadata | UserCollectionMetadata) =>
-        reformatCollection({
-          collection,
-          audiusBackendInstance: audiusBackend,
-          omitUser: false
-        })
-    )
-    dispatch(addEntries(entities))
+      // Format entities before adding to cache
+      entities[Kind.USERS] = mapValues(
+        entities[Kind.USERS] ?? [],
+        (user: UserMetadata) => reformatUser(user, audiusBackend)
+      )
+      entities[Kind.COLLECTIONS] = mapValues(
+        entities[Kind.COLLECTIONS] ?? [],
+        (collection: CollectionMetadata | UserCollectionMetadata) =>
+          reformatCollection({
+            collection,
+            audiusBackendInstance: audiusBackend,
+            omitUser: false
+          })
+      )
+      dispatch(addEntries(entities))
+    } else {
+      data = apiData
+    }
 
     dispatch(
       // @ts-ignore
