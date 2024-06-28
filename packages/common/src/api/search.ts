@@ -4,12 +4,7 @@ import { ID } from '~/models/Identifiers'
 import { SearchKind } from '~/store'
 import { Genre } from '~/utils'
 
-export type SearchCategory =
-  | 'all'
-  | 'tracks'
-  | 'albums'
-  | 'playlists'
-  | 'profiles'
+export type SearchCategory = 'all' | 'tracks' | 'albums' | 'playlists' | 'users'
 
 export type SearchFilters = {
   genre?: Genre

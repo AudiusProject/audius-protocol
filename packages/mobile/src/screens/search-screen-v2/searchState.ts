@@ -1,5 +1,5 @@
 import type { Dispatch, SetStateAction } from 'react'
-import { createContext, useCallback, useContext, useEffect } from 'react'
+import { createContext, useCallback, useContext } from 'react'
 
 import {
   useGetSearchResults as useGetSearchResultsApi,
@@ -7,8 +7,8 @@ import {
   type SearchFilter,
   type SearchFilters
 } from '@audius/common/api'
-import { useSelector } from 'react-redux'
 import { accountSelectors } from '@audius/common/store'
+import { useSelector } from 'react-redux'
 
 const { getUserId } = accountSelectors
 

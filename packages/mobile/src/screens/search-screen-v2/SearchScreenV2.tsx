@@ -13,8 +13,8 @@ import { RecentSearches } from './RecentSearches'
 import { SearchBarV2 } from './SearchBarV2'
 import { SearchCatalogTile } from './SearchCatalogTile'
 import { SearchCategoriesAndFilters } from './SearchCategoriesAndFilters'
-import { SearchContext } from './searchState'
 import { SearchResults } from './SearchResults'
+import { SearchContext } from './searchState'
 
 export const SearchScreenV2 = () => {
   const { params = {} } = useRoute<'Search'>()
