@@ -16,12 +16,15 @@ import { CollectibleGatedFields } from './CollectibleGatedFields'
 const messages = {
   collectibleGated: 'Collectible Gated',
   noCollectibles:
-    'No Collectibles found. To enable this option, link a wallet containing a collectible.'
+    'No Collectibles found. To enable this option, link a wallet containing a collectible.',
+  fromFreeHint: (contentType: 'album' | 'track') =>
+    `You can't make a free ${contentType} premium.`
 }
 
 type CollectibleGatedRadioFieldProps = {
   isRemix: boolean
   isUpload?: boolean
+  isAlbum?: boolean
   initialStreamConditions?: AccessConditions
   isInitiallyUnlisted?: boolean
 }
@@ -29,8 +32,13 @@ type CollectibleGatedRadioFieldProps = {
 export const CollectibleGatedRadioField = (
   props: CollectibleGatedRadioFieldProps
 ) => {
-  const { isRemix, isUpload, initialStreamConditions, isInitiallyUnlisted } =
-    props
+  const {
+    isRemix,
+    isUpload,
+    isAlbum,
+    initialStreamConditions,
+    isInitiallyUnlisted
+  } = props
 
   const hasNoCollectibles = useHasNoCollectibles()
   const {
@@ -49,7 +57,6 @@ export const CollectibleGatedRadioField = (
       label={messages.collectibleGated}
       value={StreamTrackAvailabilityType.COLLECTIBLE_GATED}
       disabled={disabled}
-      hintContent={disabled ? messages.noCollectibles : undefined}
       description={
         <CollectibleGatedDescription
           hasCollectibles={!hasNoCollectibles}
@@ -57,6 +64,13 @@ export const CollectibleGatedRadioField = (
         />
       }
       checkedContent={<CollectibleGatedFields disabled={fieldsDisabled} />}
+      tooltipText={
+        disabled
+          ? messages.fromFreeHint(isAlbum ? 'album' : 'track')
+          : hasNoCollectibles
+          ? messages.noCollectibles
+          : undefined
+      }
     />
   )
 }

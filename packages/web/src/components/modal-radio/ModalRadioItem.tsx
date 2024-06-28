@@ -16,6 +16,7 @@ import useMeasure from 'react-use-measure'
 import layoutStyles from 'components/layout/layout.module.css'
 
 import styles from './ModalRadioItem.module.css'
+import { Tooltip } from 'components/tooltip'
 
 type ModalRadioItemProps = {
   label: string
@@ -28,6 +29,7 @@ type ModalRadioItemProps = {
   disabled?: boolean
   icon?: ReactNode
   checkedContent?: ReactNode
+  tooltipText?: string
 }
 
 export const ModalRadioItem = (props: ModalRadioItemProps) => {
@@ -41,7 +43,8 @@ export const ModalRadioItem = (props: ModalRadioItemProps) => {
     description,
     value,
     disabled,
-    checkedContent
+    checkedContent,
+    tooltipText
   } = props
   const [isCollapsed, setIsCollapsed] = useState(true)
   const radioGroup = useContext(RadioGroupContext)
@@ -73,11 +76,13 @@ export const ModalRadioItem = (props: ModalRadioItemProps) => {
           disabled={disabled}
           inputClassName={styles.input}
         />
-        <Text className={styles.optionTitle} variant='title' size='l'>
-          {icon}
-          <span>{title ?? label}</span>
-        </Text>
-        {tag ? <Tag className={styles.tag}>{tag}</Tag> : null}
+        <Tooltip text={tooltipText} disabled={!tooltipText}>
+          <Text className={styles.optionTitle} variant='title' size='l'>
+            {icon}
+            <span>{title ?? label}</span>
+          </Text>
+          {tag ? <Tag className={styles.tag}>{tag}</Tag> : null}
+        </Tooltip>
       </div>
       {hintContent ? <Hint icon={hintIcon}>{hintContent}</Hint> : null}
       {checkedContent || description ? (

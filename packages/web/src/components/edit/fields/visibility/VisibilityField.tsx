@@ -191,7 +191,7 @@ const VisibilityMenuFields = (props: VisibilityMenuFieldsProps) => {
         label={messages.hidden}
         description={messages.hiddenDescription}
         disabled={initiallyPublic}
-        hintContent={
+        tooltipText={
           initiallyPublic ? messages.hiddenHint(entityType) : undefined
         }
       />
