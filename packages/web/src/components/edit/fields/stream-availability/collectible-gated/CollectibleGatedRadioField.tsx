@@ -16,7 +16,7 @@ import { CollectibleGatedFields } from './CollectibleGatedFields'
 const messages = {
   collectibleGated: 'Collectible Gated',
   noCollectibles:
-    'No Collectibles found. To enable this option, link a wallet containing a collectible.',
+    'No collectibles found. Link a wallet containing a digital collectible to enable this option.',
   fromFreeHint: (contentType: 'album' | 'track') =>
     `You can't make a free ${contentType} premium.`
 }
@@ -65,10 +65,10 @@ export const CollectibleGatedRadioField = (
       }
       checkedContent={<CollectibleGatedFields disabled={fieldsDisabled} />}
       tooltipText={
-        disabled
-          ? messages.fromFreeHint(isAlbum ? 'album' : 'track')
-          : hasNoCollectibles
+        hasNoCollectibles
           ? messages.noCollectibles
+          : disabled
+          ? messages.fromFreeHint(isAlbum ? 'album' : 'track')
           : undefined
       }
     />

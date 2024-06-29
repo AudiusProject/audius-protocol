@@ -201,7 +201,6 @@ const VisibilityMenuFields = (props: VisibilityMenuFieldsProps) => {
           label={messages.scheduledRelease}
           description={messages.scheduledReleaseDescription}
           checkedContent={<ReleaseDateField />}
-          disabled={initiallyPublic}
         />
       ) : null}
     </RadioGroup>

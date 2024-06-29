@@ -4,17 +4,26 @@ import { Switch, Text } from '@audius/harmony'
 import { useField } from 'formik'
 
 import styles from './SwitchRowField.module.css'
+import { Tooltip } from 'components/tooltip'
 
 type ToggleFieldProps = PropsWithChildren & {
   name: string
   header: string
-  description: string
+  description?: string
   inverted?: boolean
+  tooltipText?: string
 } & Partial<ComponentProps<'input'>>
 
 export const SwitchRowField = (props: ToggleFieldProps) => {
-  const { name, header, description, inverted, children, ...inputOverrides } =
-    props
+  const {
+    name,
+    header,
+    description,
+    inverted,
+    tooltipText,
+    children,
+    ...inputOverrides
+  } = props
 
   const [field] = useField({ name, type: 'checkbox' })
 
@@ -34,12 +43,16 @@ export const SwitchRowField = (props: ToggleFieldProps) => {
   return (
     <div className={styles.root}>
       <div className={styles.content}>
-        <Text tag='label' htmlFor={inputId} variant='title' size='l'>
-          {header}
-        </Text>
-        <Text id={descriptionId} variant='body'>
-          {description}
-        </Text>
+        <Tooltip text={tooltipText} disabled={!tooltipText}>
+          <Text tag='label' htmlFor={inputId} variant='title' size='l'>
+            {header}
+          </Text>
+        </Tooltip>
+        {description ? (
+          <Text id={descriptionId} variant='body'>
+            {description}
+          </Text>
+        ) : null}
         {(inverted ? !field.checked : field.checked) ? children : null}
       </div>
       <Switch
