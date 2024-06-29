@@ -7,11 +7,12 @@ import { FlatList, View } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'
 import type { SvgProps } from 'react-native-svg'
 
+import { Flex } from '@audius/harmony-native'
 import { TextInput, Text, RadioButton, Divider } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
+import type { FormScreenProps } from 'app/screens/form-screen'
+import { FormScreen } from 'app/screens/form-screen'
 import { makeStyles } from 'app/styles'
-import { FormScreen, FormScreenProps } from 'app/screens/form-screen'
-import { Flex } from '@audius/harmony-native'
 
 export type ListSelectionData = {
   label: string
@@ -105,8 +106,8 @@ export const ListSelectionScreen = (props: ListSelectionProps) => {
     itemContentStyles,
     topbarLeft,
     header,
-    bottomSection,
-    footer
+    footer,
+    ...other
   } = props
 
   const styles = useStyles()
@@ -198,7 +199,7 @@ export const ListSelectionScreen = (props: ListSelectionProps) => {
       variant='white'
       style={styles.root}
       topbarLeft={topbarLeft}
-      bottomSection={bottomSection}
+      {...other}
     >
       <View style={[styles.content, footer ? styles.noFlex : undefined]}>
         <Flex p='l'>{header}</Flex>

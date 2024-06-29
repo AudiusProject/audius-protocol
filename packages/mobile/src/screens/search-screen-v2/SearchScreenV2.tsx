@@ -16,12 +16,12 @@ import { RecentSearches } from './RecentSearches'
 import { SearchBarV2 } from './SearchBarV2'
 import { SearchCatalogTile } from './SearchCatalogTile'
 import { SearchCategoriesAndFilters } from './SearchCategoriesAndFilters'
-import { SearchResults } from './search-results/SearchResults'
 import {
   FilterGenreScreen,
   FilterMoodScreen,
   FilterMusicalKeyScreen
 } from './screens'
+import { SearchResults } from './search-results/SearchResults'
 import {
   SearchContext,
   useSearchCategory,

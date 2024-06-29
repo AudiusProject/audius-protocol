@@ -2,9 +2,8 @@ import { View } from 'react-native'
 
 import { IconInfo } from '@audius/harmony-native'
 import { TextField } from 'app/components/fields'
+import { FormScreen } from 'app/screens/form-screen'
 import { makeStyles } from 'app/styles'
-
-import { FormScreen } from '../components'
 
 const messages = {
   title: 'ISRC/ISWC',

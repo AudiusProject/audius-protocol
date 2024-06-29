@@ -11,9 +11,8 @@ import { useSelector } from 'react-redux'
 import { IconImage } from '@audius/harmony-native'
 import { Button, Text } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { makeStyles, typography } from 'app/styles'
-
 import { ListSelectionScreen } from 'app/screens/list-selection-screen'
+import { makeStyles, typography } from 'app/styles'
 
 const messages = {
   collections: 'COLLECTIONS',

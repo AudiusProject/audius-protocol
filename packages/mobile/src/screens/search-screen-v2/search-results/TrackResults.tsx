@@ -1,4 +1,5 @@
 import { Flex, Text } from '@audius/harmony-native'
+
 import { useGetSearchResults } from '../searchState'
 
 export const TrackResults = () => {
@@ -6,7 +7,7 @@ export const TrackResults = () => {
   return (
     <Flex>
       {data?.map((track) => (
-        <Text>{track.title}</Text>
+        <Text key={track.track_id}>{track.title}</Text>
       ))}
     </Flex>
   )

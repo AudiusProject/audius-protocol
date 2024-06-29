@@ -185,7 +185,7 @@ const addEndpointToSlice = <NormalizedData>(
 }
 
 const useQueryState = <Args, Data>(
-  fetchArgs: Nullable<Argsrch>,
+  fetchArgs: Nullable<Args>,
   reducerPath: string,
   endpointName: string,
   endpoint: EndpointConfig<Args, Data>

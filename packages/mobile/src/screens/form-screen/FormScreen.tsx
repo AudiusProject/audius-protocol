@@ -1,14 +1,15 @@
 import { useCallback, type ReactNode } from 'react'
 
-import { View } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
+import { Button, Flex } from '@audius/harmony-native'
 import type { ScreenProps } from 'app/components/core'
-import { ScreenContent, Button, Screen } from 'app/components/core'
+import { Screen } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { makeStyles } from 'app/styles'
 
 const messages = {
-  done: 'Done'
+  done: 'Done',
+  clear: 'Clear'
 }
 
 export type FormScreenProps = ScreenProps & {
@@ -17,62 +18,43 @@ export type FormScreenProps = ScreenProps & {
   onClear?: () => void
 }
 
-const useStyles = makeStyles(({ spacing, palette }) => ({
-  root: { justifyContent: 'space-between' },
-  bottomSection: {
-    paddingHorizontal: spacing(4),
-    paddingTop: spacing(6),
-    paddingBottom: spacing(12),
-    backgroundColor: palette.white,
-    borderTopWidth: 1,
-    borderTopColor: palette.neutralLight6
-  }
-}))
-
 export const FormScreen = (props: FormScreenProps) => {
-  const {
-    children,
-    style: styleProp,
-    bottomSection,
-    onClear,
-    onSubmit,
-    ...other
-  } = props
-  const styles = useStyles()
+  const { children, style, bottomSection, onClear, onSubmit, ...other } = props
   const navigation = useNavigation()
+  const insets = useSafeAreaInsets()
 
   const handleSubmit = useCallback(() => {
     navigation.goBack()
     onSubmit?.()
-  }, [])
+  }, [navigation, onSubmit])
 
   return (
-    <Screen variant='secondary' style={[styles.root, styleProp]} {...other}>
-      <ScreenContent>
-        {children}
-        <View style={styles.bottomSection}>
-          {bottomSection ?? (
-            <>
-              <Button
-                variant='primary'
-                size='large'
-                fullWidth
-                title={messages.done}
-                onPress={handleSubmit}
-              />
-              {onClear ? (
-                <Button
-                  variant='primary'
-                  size='large'
-                  fullWidth
-                  title={messages.done}
-                  onPress={onClear}
-                />
-              ) : null}
-            </>
-          )}
-        </View>
-      </ScreenContent>
+    <Screen
+      variant='secondary'
+      style={[{ justifyContent: 'space-between' }, style]}
+      {...other}
+    >
+      {children}
+      <Flex
+        p='l'
+        pb={insets.bottom}
+        backgroundColor='white'
+        borderTop='default'
+        gap='m'
+      >
+        {bottomSection ?? (
+          <>
+            <Button variant='primary' fullWidth onPress={handleSubmit}>
+              {messages.done}
+            </Button>
+            {onClear ? (
+              <Button variant='secondary' fullWidth onPress={onClear}>
+                {messages.clear}
+              </Button>
+            ) : null}
+          </>
+        )}
+      </Flex>
     </Screen>
   )
 }

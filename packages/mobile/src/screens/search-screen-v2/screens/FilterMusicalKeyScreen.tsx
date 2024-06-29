@@ -1,9 +1,11 @@
+import { useCallback, useState } from 'react'
+
+import { MUSICAL_KEYS } from '@audius/common/utils'
+
 import { SegmentedControl } from 'app/components/core'
 import { ListSelectionScreen } from 'app/screens/list-selection-screen/ListSelectionScreen'
-import { useCallback, useState } from 'react'
+
 import { useSearchFilter } from '../searchState'
-import { MUSICAL_KEYS } from '@audius/common/utils'
-import { Flex } from '@audius/harmony-native'
 
 const messages = {
   title: 'Key',
@@ -14,7 +16,7 @@ const messages = {
 const musicalKeys = MUSICAL_KEYS.map((key) => {
   const keys = key.split('/')
   const isEnharmonic = keys.length > 1
-  const [_sharp, flat] = keys
+  const [sharpIgnored, flat] = keys
 
   return {
     label: key,
@@ -34,7 +36,7 @@ export const FilterMusicalKeyScreen = () => {
     } else {
       clearMusicalKey()
     }
-  }, [])
+  }, [key, scale, setMusicalKey, clearMusicalKey])
 
   const handleClear = useCallback(() => {
     setScale('Major')
@@ -45,18 +47,16 @@ export const FilterMusicalKeyScreen = () => {
     <ListSelectionScreen
       screenTitle={messages.title}
       header={
-        <Flex p='l'>
-          <SegmentedControl
-            options={[
-              { key: 'Major', text: messages.major },
-              { key: 'Minor', text: messages.minor }
-            ]}
-            selected={scale}
-            onSelectOption={setScale}
-            fullWidth
-            equalWidth
-          />
-        </Flex>
+        <SegmentedControl
+          options={[
+            { key: 'Major', text: messages.major },
+            { key: 'Minor', text: messages.minor }
+          ]}
+          selected={scale}
+          onSelectOption={setScale}
+          fullWidth
+          equalWidth
+        />
       }
       disableSearch
       data={musicalKeys}

@@ -1,6 +1,7 @@
+import { useSearchCategory } from '../searchState'
+
 import { ProfileResults } from './ProfileResults'
 import { TrackResults } from './TrackResults'
-import { useSearchCategory } from '../searchState'
 
 export const SearchResults = () => {
   const [category] = useSearchCategory()

@@ -1,8 +1,8 @@
 import { View } from 'react-native'
 
 import { IconIndent } from '@audius/harmony-native'
+import { FormScreen } from 'app/screens/form-screen'
 
-import { FormScreen } from '../components'
 import {
   IsrcField,
   LicenseTypeField,
