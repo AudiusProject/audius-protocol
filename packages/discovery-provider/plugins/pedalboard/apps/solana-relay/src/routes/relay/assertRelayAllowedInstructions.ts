@@ -367,13 +367,8 @@ const assertValidSecp256k1ProgramInstruction = (
   instructionIndex: number,
   instruction: TransactionInstruction
 ) => {
-  try {
-    if (
-      !Secp256k1Program.verifySignature(Secp256k1Program.decode(instruction))
-    ) {
-      throw new Error('Signer does not match')
-    }
-  } catch (e) {
+  const decoded = Secp256k1Program.decode(instruction)
+  if (!Secp256k1Program.verifySignature(decoded)) {
     throw new InvalidRelayInstructionError(
       instructionIndex,
       'Invalid Secp256k1Program instruction'
