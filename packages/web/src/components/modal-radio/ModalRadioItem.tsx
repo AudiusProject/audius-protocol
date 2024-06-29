@@ -14,9 +14,9 @@ import cn from 'classnames'
 import useMeasure from 'react-use-measure'
 
 import layoutStyles from 'components/layout/layout.module.css'
+import { Tooltip } from 'components/tooltip'
 
 import styles from './ModalRadioItem.module.css'
-import { Tooltip } from 'components/tooltip'
 
 type ModalRadioItemProps = {
   label: string

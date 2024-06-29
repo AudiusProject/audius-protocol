@@ -3,8 +3,9 @@ import { ChangeEvent, ComponentProps, PropsWithChildren } from 'react'
 import { Switch, Text } from '@audius/harmony'
 import { useField } from 'formik'
 
-import styles from './SwitchRowField.module.css'
 import { Tooltip } from 'components/tooltip'
+
+import styles from './SwitchRowField.module.css'
 
 type ToggleFieldProps = PropsWithChildren & {
   name: string

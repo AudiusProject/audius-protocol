@@ -28,12 +28,12 @@ import { computeLicenseIcons } from 'components/edit-track/utils/computeLicenseI
 import { TextField } from 'components/form-fields'
 import { SegmentedControlField } from 'components/form-fields/SegmentedControlField'
 import layoutStyles from 'components/layout/layout.module.css'
+import { Tooltip } from 'components/tooltip'
 import { env } from 'services/env'
 
 import styles from './AdvancedField.module.css'
 import { KeySelectField } from './KeySelectField'
 import { SwitchRowField } from './SwitchRowField'
-import { Tooltip } from 'components/tooltip'
 
 const { computeLicense, ALL_RIGHTS_RESERVED_TYPE } = creativeCommons
 
