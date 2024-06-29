@@ -15,11 +15,11 @@ import {
 } from '@audius/harmony'
 import { Form, Formik, useFormikContext } from 'formik'
 
-import { VerifyEmailPage } from 'components/change-email/ChangeEmailModal'
 import {
-  ConfirmCredentialsPage,
-  NewPasswordPage
-} from 'components/change-password/ChangePasswordModal'
+  ConfirmPasswordPage,
+  VerifyEmailPage
+} from 'components/change-email/ChangeEmailModal'
+import { NewPasswordPage } from 'components/change-password/ChangePasswordModal'
 import NavContext, { LeftPreset } from 'components/nav/mobile/NavContext'
 import { ToastContext } from 'components/toast/ToastContext'
 
@@ -47,7 +47,7 @@ const ChangePasswordMobileForm = ({ page }: { page: ChangePasswordPage }) => {
           {messages.changeYourPassword}
         </Text>
         <SlidingPages currentPage={page}>
-          <ConfirmCredentialsPage />
+          <ConfirmPasswordPage />
           <VerifyEmailPage />
           <NewPasswordPage />
         </SlidingPages>

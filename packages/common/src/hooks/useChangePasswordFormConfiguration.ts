@@ -4,16 +4,18 @@ import { FormikHelpers } from 'formik'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { useAppContext } from '../context'
-import { confirmEmailSchema, passwordSchema, signInSchema } from '../schemas'
+import { confirmEmailSchema, passwordSchema } from '../schemas'
+import { z } from 'zod'
 
 const messages = {
   invalidCredentials: 'Invalid credentials.',
+  passwordRequired: 'Please enter a password.',
   accountMatchError: "Account doesn't match the currently signed in user.",
   passwordUpdated: 'Password updated!'
 }
 
 export enum ChangePasswordPage {
-  ConfirmCredentials = 0,
+  ConfirmPassword = 0,
   VerifyEmail = 1,
   NewPassword = 2
 }
@@ -32,11 +34,17 @@ export const isOtpMissingError = (e: unknown) => {
 }
 
 const passwordFormikSchema = toFormikValidationSchema(passwordSchema)
-const confirmCredentialsFormikSchema = toFormikValidationSchema(signInSchema)
+const confirmPasswordFormikSchema = toFormikValidationSchema(
+  z.object({
+    password: z.string({
+      required_error: messages.passwordRequired
+    })
+  })
+)
 const verifyEmailFormikSchema = toFormikValidationSchema(confirmEmailSchema)
 
 export type ChangePasswordFormValues = {
-  email: string
+  oldEmail: string
   oldPassword: string
   password: string
   confirmPassword: string
@@ -44,7 +52,7 @@ export type ChangePasswordFormValues = {
 }
 
 const initialValues: ChangePasswordFormValues = {
-  email: '',
+  oldEmail: '',
   oldPassword: '',
   password: '',
   confirmPassword: '',
@@ -53,13 +61,13 @@ const initialValues: ChangePasswordFormValues = {
 
 export const useChangePasswordFormConfiguration = (onComplete: () => void) => {
   const { audiusBackend } = useAppContext()
-  const [page, setPage] = useState(ChangePasswordPage.ConfirmCredentials)
+  const [page, setPage] = useState(ChangePasswordPage.ConfirmPassword)
 
   const validationSchema =
     page === ChangePasswordPage.NewPassword
       ? passwordFormikSchema
-      : page === ChangePasswordPage.ConfirmCredentials
-      ? confirmCredentialsFormikSchema
+      : page === ChangePasswordPage.ConfirmPassword
+      ? confirmPasswordFormikSchema
       : page === ChangePasswordPage.VerifyEmail
       ? verifyEmailFormikSchema
       : undefined
@@ -69,7 +77,7 @@ export const useChangePasswordFormConfiguration = (onComplete: () => void) => {
       values: ChangePasswordFormValues,
       helpers: FormikHelpers<ChangePasswordFormValues>
     ) => {
-      const { email, password, otp } = values
+      const { oldEmail: email, password, otp } = values
       const sanitizedOtp = otp.replace(/\s/g, '')
       const libs = await audiusBackend.getAudiusLibsTyped()
       try {
@@ -92,7 +100,7 @@ export const useChangePasswordFormConfiguration = (onComplete: () => void) => {
         if (isOtpMissingError(e)) {
           helpers.resetForm({ values })
           setPage(ChangePasswordPage.VerifyEmail)
-        } else if (page === ChangePasswordPage.ConfirmCredentials) {
+        } else if (page === ChangePasswordPage.ConfirmPassword) {
           helpers.setFieldError('password', messages.invalidCredentials)
         } else if (page === ChangePasswordPage.VerifyEmail) {
           helpers.setFieldError('otp', messages.invalidCredentials)
@@ -104,7 +112,7 @@ export const useChangePasswordFormConfiguration = (onComplete: () => void) => {
 
   const changeCredentials = useCallback(
     async (values: ChangePasswordFormValues) => {
-      const { email, oldPassword, password } = values
+      const { oldEmail: email, oldPassword, password } = values
       const libs = await audiusBackend.getAudiusLibsTyped()
       await libs.Account?.changeCredentials({
         newUsername: email,
