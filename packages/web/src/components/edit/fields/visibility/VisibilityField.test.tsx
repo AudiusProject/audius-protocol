@@ -24,7 +24,7 @@ const renderTrackVisibilityField = (options?: { initialValues: any }) => {
     trackMetadatasIndex: 0,
     trackMetadatas: [
       {
-        is_unlisted: false,
+        is_unlisted: true,
         is_scheduled_release: false
       }
     ]
@@ -54,7 +54,9 @@ describe('VisibilityField', () => {
   })
 
   it('renders visibility field with "public" initial value', () => {
-    renderTrackVisibilityField()
+    renderTrackVisibilityField({
+      initialValues: { trackMetadatas: [{ is_unlisted: false }] }
+    })
 
     expect(
       screen.getByRole('heading', { name: 'Visibility' })
