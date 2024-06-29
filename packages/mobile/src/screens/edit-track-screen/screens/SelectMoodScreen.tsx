@@ -6,7 +6,7 @@ import { Text } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 import { moodMap } from 'app/utils/moods'
 
-import { ListSelectionScreen } from './ListSelectionScreen'
+import { ListSelectionScreen } from 'app/screens/list-selection-screen'
 
 const messages = {
   screenTitle: 'Select Mood',

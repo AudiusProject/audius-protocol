@@ -16,9 +16,12 @@ import { RecentSearches } from './RecentSearches'
 import { SearchBarV2 } from './SearchBarV2'
 import { SearchCatalogTile } from './SearchCatalogTile'
 import { SearchCategoriesAndFilters } from './SearchCategoriesAndFilters'
-import { SearchResults } from './SearchResults'
-import { SelectGenreScreen } from './components'
-import { SelectMoodScreen } from './components/SelectMoodScreen'
+import { SearchResults } from './search-results/SearchResults'
+import {
+  FilterGenreScreen,
+  FilterMoodScreen,
+  FilterMusicalKeyScreen
+} from './screens'
 import {
   SearchContext,
   useSearchCategory,
@@ -92,8 +95,9 @@ export const SearchScreenStack = () => {
       <Stack.Navigator screenOptions={screenOptions}>
         <Stack.Screen name='SearchResults' component={SearchScreenV2} />
         <Stack.Group screenOptions={{ presentation: 'fullScreenModal' }}>
-          <Stack.Screen name='FilterMood' component={SelectMoodScreen} />
-          <Stack.Screen name='FilterGenre' component={SelectGenreScreen} />
+          <Stack.Screen name='FilterMood' component={FilterMoodScreen} />
+          <Stack.Screen name='FilterGenre' component={FilterGenreScreen} />
+          <Stack.Screen name='FilterKey' component={FilterMusicalKeyScreen} />
         </Stack.Group>
       </Stack.Navigator>
     </SearchContext.Provider>

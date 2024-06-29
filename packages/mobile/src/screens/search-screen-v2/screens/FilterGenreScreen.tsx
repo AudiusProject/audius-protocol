@@ -4,7 +4,7 @@ import { GENRES, convertGenreLabelToValue } from '@audius/common/utils'
 
 import { Text } from '@audius/harmony-native'
 import IconGenre from 'app/assets/images/iconGenre.svg'
-import { ListSelectionScreen } from 'app/screens/edit-track-screen/screens/ListSelectionScreen'
+import { ListSelectionScreen } from 'app/screens/list-selection-screen'
 
 const messages = {
   screenTitle: 'Genre',
@@ -16,7 +16,7 @@ const genres = GENRES.map((genre) => ({
   label: genre
 }))
 
-export const SelectGenreScreen = () => {
+export const FilterGenreScreen = () => {
   const [value, setValue] = useState('')
 
   return (

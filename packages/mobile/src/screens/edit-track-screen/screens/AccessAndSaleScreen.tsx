@@ -29,8 +29,8 @@ import { TRACK_PRICE } from '../fields/AccessAndSaleField/PremiumRadioField/Trac
 import { PublicAvailabilityRadioField } from '../fields/AccessAndSaleField/PublicAvailabilityRadioField'
 import type { FormValues, RemixOfField } from '../types'
 
-import type { ListSelectionData } from './ListSelectionScreen'
-import { ListSelectionScreen } from './ListSelectionScreen'
+import type { ListSelectionData } from 'app/screens/list-selection-screen'
+import { ListSelectionScreen } from 'app/screens/list-selection-screen'
 
 const messages = {
   title: 'Access & Sale',

@@ -10,8 +10,8 @@ import type { SvgProps } from 'react-native-svg'
 import { TextInput, Text, RadioButton, Divider } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { makeStyles } from 'app/styles'
-
-import { FormScreen } from '../components'
+import { FormScreen, FormScreenProps } from 'app/screens/form-screen'
+import { Flex } from '@audius/harmony-native'
 
 export type ListSelectionData = {
   label: string
@@ -19,11 +19,11 @@ export type ListSelectionData = {
   disabled?: boolean
 }
 
-export type ListSelectionProps = {
+export type ListSelectionProps = Partial<Omit<FormScreenProps, 'header'>> & {
   screenTitle: string
-  icon: ComponentType<SvgProps>
+  icon?: ComponentType<SvgProps>
   data: ListSelectionData[]
-  renderItem: ListRenderItem<ListSelectionData>
+  renderItem?: ListRenderItem<ListSelectionData>
   onChange: (value: any) => void
   value: string
   searchText?: string
@@ -35,7 +35,6 @@ export type ListSelectionProps = {
   itemContentStyles?: ViewStyle
   topbarLeft?: Nullable<ReactElement>
   header?: ReactNode
-  bottomSection?: ReactNode
   footer?: ReactNode
 }
 
@@ -51,16 +50,9 @@ const useStyles = makeStyles(({ spacing, typography, palette }) => ({
   },
   content: { flex: 1 },
   noFlex: { flex: undefined },
-  search: {
-    marginHorizontal: spacing(2),
-    marginTop: spacing(6)
-  },
   searchInput: {
     paddingVertical: spacing(3),
     fontSize: typography.fontSize.large
-  },
-  listHeader: {
-    height: spacing(6)
   },
   listItem: {
     flexDirection: 'row',
@@ -92,11 +84,15 @@ const useStyles = makeStyles(({ spacing, typography, palette }) => ({
   }
 }))
 
+const defaultRenderItem: ListRenderItem<ListSelectionData> = ({ item }) => (
+  <Text>{item.label}</Text>
+)
+
 export const ListSelectionScreen = (props: ListSelectionProps) => {
   const {
     screenTitle,
     icon,
-    renderItem: renderItemProp,
+    renderItem: renderItemProp = defaultRenderItem,
     data,
     onChange,
     value,
@@ -205,14 +201,16 @@ export const ListSelectionScreen = (props: ListSelectionProps) => {
       bottomSection={bottomSection}
     >
       <View style={[styles.content, footer ? styles.noFlex : undefined]}>
-        {header}
-        {!disableSearch && (
-          <TextInput
-            placeholder={searchText}
-            styles={{ root: styles.search, input: styles.searchInput }}
-            onChangeText={setFilterInput}
-            returnKeyType='search'
-          />
+        <Flex p='l'>{header}</Flex>
+        {disableSearch ? null : (
+          <Flex p='l'>
+            <TextInput
+              placeholder={searchText}
+              styles={{ input: styles.searchInput }}
+              onChangeText={setFilterInput}
+              returnKeyType='search'
+            />
+          </Flex>
         )}
         {isLoading ? (
           <View style={styles.listItem}>
@@ -231,7 +229,6 @@ export const ListSelectionScreen = (props: ListSelectionProps) => {
         ) : (
           <FlatList
             renderItem={renderItem}
-            ListHeaderComponent={<View style={styles.listHeader} />}
             ItemSeparatorComponent={Divider}
             data={filteredData}
           />

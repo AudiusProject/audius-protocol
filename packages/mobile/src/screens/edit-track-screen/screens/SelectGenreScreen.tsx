@@ -4,7 +4,7 @@ import { useField } from 'formik'
 import IconGenre from 'app/assets/images/iconGenre.svg'
 import { Text } from 'app/components/core'
 
-import { ListSelectionScreen } from './ListSelectionScreen'
+import { ListSelectionScreen } from 'app/screens/list-selection-screen'
 
 const messages = {
   screenTitle: 'Select Genre',

@@ -1,4 +1,4 @@
-import type { ReactElement, ReactNode } from 'react'
+import { useCallback, type ReactNode } from 'react'
 
 import { View } from 'react-native'
 
@@ -11,9 +11,10 @@ const messages = {
   done: 'Done'
 }
 
-type FormScreenProps = Omit<ScreenProps, 'children'> & {
+export type FormScreenProps = ScreenProps & {
   bottomSection?: ReactNode
-  children: ReactElement
+  onSubmit?: () => void
+  onClear?: () => void
 }
 
 const useStyles = makeStyles(({ spacing, palette }) => ({
@@ -29,26 +30,47 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
 }))
 
 export const FormScreen = (props: FormScreenProps) => {
-  const { children, bottomSection, style: styleProp, ...other } = props
+  const {
+    children,
+    style: styleProp,
+    bottomSection,
+    onClear,
+    onSubmit,
+    ...other
+  } = props
   const styles = useStyles()
   const navigation = useNavigation()
 
-  const defaultBottomSection = (
-    <Button
-      variant='primary'
-      size='large'
-      fullWidth
-      title={messages.done}
-      onPress={navigation.goBack}
-    />
-  )
+  const handleSubmit = useCallback(() => {
+    navigation.goBack()
+    onSubmit?.()
+  }, [])
 
   return (
     <Screen variant='secondary' style={[styles.root, styleProp]} {...other}>
       <ScreenContent>
         {children}
         <View style={styles.bottomSection}>
-          {bottomSection ?? defaultBottomSection}
+          {bottomSection ?? (
+            <>
+              <Button
+                variant='primary'
+                size='large'
+                fullWidth
+                title={messages.done}
+                onPress={handleSubmit}
+              />
+              {onClear ? (
+                <Button
+                  variant='primary'
+                  size='large'
+                  fullWidth
+                  title={messages.done}
+                  onPress={onClear}
+                />
+              ) : null}
+            </>
+          )}
         </View>
       </ScreenContent>
     </Screen>

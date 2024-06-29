@@ -17,8 +17,8 @@ import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles } from 'app/styles'
 import { useThemeColors, useThemeVariant } from 'app/utils/theme'
 
-import type { ListSelectionData } from './ListSelectionScreen'
-import { ListSelectionScreen } from './ListSelectionScreen'
+import type { ListSelectionData } from 'app/screens/list-selection-screen'
+import { ListSelectionScreen } from 'app/screens/list-selection-screen'
 
 export enum ReleaseDateType {
   RELEASE_NOW = 'RELEASE_NOW',
