@@ -114,11 +114,11 @@ export const createApi = <
         const key = getKeyFromFetchArgs(fetchArgs)
         const endpointState = getState().api[reducerPath][endpointName][key]
         if (!endpointState) return
-        const newState = produce(endpointState.nonNormalizedData, updateRecipe)
+        const newState = produce(endpointState.normalizedData, updateRecipe)
         const updateAction =
           slice.actions[`fetch${capitalize(endpointName as string)}Succeeded`]
         if (updateAction) {
-          dispatch(updateAction({ fetchArgs, nonNormalizedData: newState }))
+          dispatch(updateAction({ fetchArgs, normalizedData: newState }))
         }
       },
     reset: (endpointName) => (dispatch: Dispatch) => {
@@ -168,11 +168,11 @@ const addEndpointToSlice = <NormalizedData>(
       state: ApiState,
       action: FetchSucceededAction
     ) => {
-      const { fetchArgs, nonNormalizedData } = action.payload
+      const { fetchArgs, normalizedData } = action.payload
       const key = getKeyFromFetchArgs(fetchArgs)
       const scopedState = { ...initState, ...state[endpointName][key] }
       scopedState.status = Status.SUCCESS
-      scopedState.nonNormalizedData = nonNormalizedData
+      scopedState.normalizedData = normalizedData
       state[endpointName][key] = scopedState
     },
     [`reset${capitalize(endpointName)}`]: (
@@ -258,11 +258,11 @@ const useQueryState = <Args, Data>(
       // cache hit
       if (cachedData) {
         const { result } = normalize(
-          { [schemaKey]: cachedData },
+          schemaKey === 'root' ? cachedData : { [schemaKey]: cachedData },
           apiResponseSchema
         )
         return {
-          nonNormalizedData: result,
+          normalizedData: result,
           status: Status.SUCCESS,
           isInitialValue: true,
           errorMessage: undefined
@@ -274,20 +274,23 @@ const useQueryState = <Args, Data>(
   }, isEqual)
 }
 
-// Rehydrate local nonNormalizedData using entities from global normalized cache
+// Rehydrate local normalizedData using entities from global normalized cache
 const useCacheData = <Args, Data>(
   endpoint: EndpointConfig<Args, Data>,
-  nonNormalizedData: any,
+  normalizedData: any,
   hookOptions?: QueryHookOptions
 ) => {
   return useSelector((state: CommonState) => {
-    if (hookOptions?.shallow && !endpoint.options.kind) return nonNormalizedData
+    if (hookOptions?.shallow && !endpoint.options.kind) return normalizedData
     const entityMap = selectCommonEntityMap(
       state,
       endpoint.options.kind,
       hookOptions?.shallow
     )
-    return denormalize(nonNormalizedData, apiResponseSchema, entityMap) as Data
+    if (typeof normalizedData === 'object') {
+      return denormalize(normalizedData, apiResponseSchema, entityMap) as Data
+    }
+    return normalizedData
   }, isEqual)
 }
 
@@ -337,36 +340,41 @@ const fetchData = async <Args, Data>(
       throw new RemoteDataNotFoundError('Remote data not found')
     }
 
-    const { entities, result } = normalize(
-      endpoint.options.schemaKey
-        ? { [endpoint.options.schemaKey]: apiData }
-        : apiData,
-      apiResponseSchema
-    )
+    let data: Data
 
-    const data: Data = result
+    if (typeof apiData === 'object') {
+      const { entities, result } = normalize(
+        endpoint.options.schemaKey
+          ? { [endpoint.options.schemaKey]: apiData }
+          : apiData,
+        apiResponseSchema
+      )
 
-    // Format entities before adding to cache
-    entities[Kind.USERS] = mapValues(
-      entities[Kind.USERS] ?? [],
-      (user: UserMetadata) => reformatUser(user, audiusBackend)
-    )
-    entities[Kind.COLLECTIONS] = mapValues(
-      entities[Kind.COLLECTIONS] ?? [],
-      (collection: CollectionMetadata | UserCollectionMetadata) =>
-        reformatCollection({
-          collection,
-          audiusBackendInstance: audiusBackend,
-          omitUser: false
-        })
-    )
-    dispatch(addEntries(entities))
+      // Format entities before adding to cache
+      entities[Kind.USERS] = mapValues(
+        entities[Kind.USERS] ?? [],
+        (user: UserMetadata) => reformatUser(user, audiusBackend)
+      )
+      entities[Kind.COLLECTIONS] = mapValues(
+        entities[Kind.COLLECTIONS] ?? [],
+        (collection: CollectionMetadata | UserCollectionMetadata) =>
+          reformatCollection({
+            collection,
+            audiusBackendInstance: audiusBackend,
+            omitUser: false
+          })
+      )
+      dispatch(addEntries(entities))
+      data = result
+    } else {
+      data = apiData
+    }
 
     dispatch(
       // @ts-ignore
       actions[`fetch${capitalize(endpointName)}Succeeded`]({
         fetchArgs,
-        nonNormalizedData: data
+        normalizedData: data
       }) as FetchSucceededAction
     )
 
@@ -428,13 +436,12 @@ const buildEndpointHooks = <
         ? null
         : queryState
 
-    const { nonNormalizedData, status, errorMessage, isInitialValue } =
-      state ?? {
-        nonNormalizedData: null,
-        status: Status.IDLE
-      }
+    const { normalizedData, status, errorMessage, isInitialValue } = state ?? {
+      normalizedData: null,
+      status: Status.IDLE
+    }
 
-    let cachedData = useCacheData(endpoint, nonNormalizedData, hookOptions)
+    let cachedData = useCacheData(endpoint, normalizedData, hookOptions)
 
     const context = useContext(AudiusQueryContext)
 
@@ -453,16 +460,19 @@ const buildEndpointHooks = <
           // @ts-ignore
           actions[`fetch${capitalize(endpointName)}Succeeded`]({
             fetchArgs,
-            nonNormalizedData
+            normalizedData
           }) as FetchSucceededAction
         )
       }
 
       fetchWrapped()
-    }, [isInitialValue, dispatch, fetchArgs, nonNormalizedData, fetchWrapped])
+    }, [isInitialValue, dispatch, fetchArgs, normalizedData, fetchWrapped])
 
     if (endpoint.options?.schemaKey) {
-      cachedData = cachedData?.[endpoint.options?.schemaKey]
+      cachedData =
+        endpoint.options.schemaKey === 'root'
+          ? cachedData
+          : cachedData?.[endpoint.options?.schemaKey]
     }
 
     return {
@@ -486,12 +496,12 @@ const buildEndpointHooks = <
       endpoint
     )
 
-    const { nonNormalizedData, status, errorMessage } = queryState ?? {
-      nonNormalizedData: null,
+    const { normalizedData, status, errorMessage } = queryState ?? {
+      normalizedData: null,
       status: Status.IDLE
     }
 
-    let cachedData = useCacheData(endpoint, nonNormalizedData, hookOptions)
+    let cachedData = useCacheData(endpoint, normalizedData, hookOptions)
     const context = useContext(AudiusQueryContext)
 
     const fetchWrapped = useCallback(

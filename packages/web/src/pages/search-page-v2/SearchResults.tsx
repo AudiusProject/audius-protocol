@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef } from 'react'
 
+import { Status } from '@audius/common/models'
 import {
   fetchSearchPageTags,
   fetchSearchPageResults
@@ -119,13 +120,15 @@ export const SearchResults = () => {
     results.trackIds?.length === 0
 
   const showNoResultsTile =
-    isResultsEmpty ||
-    (isCategoryActive(CategoryView.ALBUMS) && results.albumIds?.length === 0) ||
-    (isCategoryActive(CategoryView.PROFILES) &&
-      results.artistIds?.length === 0) ||
-    (isCategoryActive(CategoryView.PLAYLISTS) &&
-      results.playlistIds?.length === 0) ||
-    (isCategoryActive(CategoryView.TRACKS) && results.trackIds?.length === 0)
+    results.status !== Status.LOADING &&
+    (isResultsEmpty ||
+      (isCategoryActive(CategoryView.ALBUMS) &&
+        results.albumIds?.length === 0) ||
+      (isCategoryActive(CategoryView.PROFILES) &&
+        results.artistIds?.length === 0) ||
+      (isCategoryActive(CategoryView.PLAYLISTS) &&
+        results.playlistIds?.length === 0) ||
+      (isCategoryActive(CategoryView.TRACKS) && results.trackIds?.length === 0))
 
   if (showNoResultsTile) return <NoResultsTile />
 

@@ -14,8 +14,18 @@ import {
   PurchaseableContentType,
   useEditPlaylistModal
 } from '@audius/common/store'
-import { getDogEarType } from '@audius/common/utils'
-import { Box, Button, Flex, IconPause, IconPlay, Text } from '@audius/harmony'
+import { formatReleaseDate, getDogEarType } from '@audius/common/utils'
+import {
+  Box,
+  Button,
+  Flex,
+  IconCalendarMonth,
+  IconPause,
+  IconPlay,
+  IconVisibilityHidden,
+  MusicBadge,
+  Text
+} from '@audius/harmony'
 import cn from 'classnames'
 import { useSelector } from 'react-redux'
 
@@ -45,7 +55,10 @@ const messages = {
   play: 'PLAY',
   pause: 'PAUSE',
   preview: 'PREVIEW',
-  coverArtAltText: 'Collection Cover Art'
+  coverArtAltText: 'Collection Cover Art',
+  hidden: 'Hidden',
+  releases: (releaseDate: string) =>
+    `Releases ${formatReleaseDate({ date: releaseDate, withHour: true })}`
 }
 
 type MobileCollectionHeaderProps = CollectionHeaderProps & {
@@ -108,7 +121,12 @@ const CollectionHeader = ({
     currentUserId
   })
   const { hasStreamAccess } = useGatedContentAccess(collection)
-  const { is_private: isPrivate, is_stream_gated: isPremium } = collection ?? {}
+  const {
+    is_private: isPrivate,
+    is_stream_gated: isPremium,
+    is_scheduled_release: isScheduledRelease,
+    release_date: releaseDate
+  } = collection ?? {}
 
   const tracks = useSelector((state: CommonState) =>
     getCollectionTracks(state, { id: collectionId })
@@ -207,13 +225,17 @@ const CollectionHeader = ({
     <Flex direction='column'>
       {renderDogEar()}
       <Flex direction='column' alignItems='center' p='l' gap='l'>
-        <Text variant='label' color='subdued'>
-          {type === 'playlist' && !isPublished
-            ? isPublishing
-              ? messages.publishing
-              : messages.hiddenPlaylist
-            : type}
-        </Text>
+        {!isPublished ? (
+          isScheduledRelease && releaseDate ? (
+            <MusicBadge variant='accent' icon={IconCalendarMonth} size='s'>
+              {messages.releases(releaseDate)}
+            </MusicBadge>
+          ) : (
+            <MusicBadge icon={IconVisibilityHidden} size='s'>
+              {messages.hidden}
+            </MusicBadge>
+          )
+        ) : null}
         <DynamicImage
           alt={messages.coverArtAltText}
           wrapperClassName={styles.coverArt}

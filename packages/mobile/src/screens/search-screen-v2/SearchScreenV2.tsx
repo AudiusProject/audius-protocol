@@ -13,6 +13,7 @@ import { RecentSearches } from './RecentSearches'
 import { SearchBarV2 } from './SearchBarV2'
 import { SearchCatalogTile } from './SearchCatalogTile'
 import { SearchCategoriesAndFilters } from './SearchCategoriesAndFilters'
+import { SearchResults } from './SearchResults'
 import { SearchContext } from './searchState'
 
 export const SearchScreenV2 = () => {
@@ -26,12 +27,16 @@ export const SearchScreenV2 = () => {
   )
 
   const showSearchResults =
-    query || Object.values(filters).some((filter) => filter)
+    query || category || Object.values(filters).some((filter) => filter)
 
   return (
-    <Screen topbarRight={<SearchBarV2 />} headerTitle={null} variant='white'>
-      <SearchContext.Provider
-        value={{ query, setQuery, category, setCategory, filters, setFilters }}
+    <SearchContext.Provider
+      value={{ query, setQuery, category, setCategory, filters, setFilters }}
+    >
+      <Screen
+        topbarRight={<SearchBarV2 value={query} onChangeText={setQuery} />}
+        headerTitle={null}
+        variant='white'
       >
         <SearchCategoriesAndFilters />
         {!showSearchResults ? (
@@ -39,8 +44,10 @@ export const SearchScreenV2 = () => {
             <SearchCatalogTile />
             <RecentSearches />
           </Flex>
-        ) : null}
-      </SearchContext.Provider>
-    </Screen>
+        ) : (
+          <SearchResults />
+        )}
+      </Screen>
+    </SearchContext.Provider>
   )
 }

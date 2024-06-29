@@ -5,6 +5,7 @@ import {
   Box,
   Flex,
   IconCcBy as IconCreativeCommons,
+  IconInfo,
   IconRobot,
   Text
 } from '@audius/harmony'
@@ -27,6 +28,7 @@ import { computeLicenseIcons } from 'components/edit-track/utils/computeLicenseI
 import { TextField } from 'components/form-fields'
 import { SegmentedControlField } from 'components/form-fields/SegmentedControlField'
 import layoutStyles from 'components/layout/layout.module.css'
+import { Tooltip } from 'components/tooltip'
 import { env } from 'services/env'
 
 import styles from './AdvancedField.module.css'
@@ -48,8 +50,8 @@ const messages = {
   musicalKey: 'Key',
   aiGenerated: {
     header: 'Mark this track as AI generated',
-    description:
-      'If your AI generated track was trained on an existing Audius artist, you can give them credit here. Only users who have opted-in will appear in this list.',
+    tooltip:
+      'If your AI-generated track was trained on an existing Audius artist, you can give them credit here. Only users who have opted-in will appear in this list.',
     placeholder: 'Search for Users',
     requiredError: 'Valid user must be selected.'
   },
@@ -58,7 +60,7 @@ const messages = {
     description:
       'Keep your track from being streamed on third-party apps or services that utilize the Audius API.'
   },
-
+  isrcTooltip: `ISRC is used to identify individual sound recordings and music videos. ISWC is used to identify the underlying musical composition – the music and lyrics`,
   isrc: {
     header: 'ISRC',
     placeholder: 'CC-XXX-YY-NNNNN',
@@ -455,7 +457,12 @@ const AdvancedModalFields = () => {
       <Divider />
       <div className={cn(layoutStyles.col, layoutStyles.gap4)}>
         <Text variant='title' size='l' tag='h3'>
-          {`${messages.isrc.header} / ${messages.iswc.header}`}
+          <Flex alignItems='center' gap='xs'>
+            {`${messages.isrc.header} / ${messages.iswc.header}`}
+            <Tooltip text={messages.isrcTooltip}>
+              <IconInfo size='m' color='subdued' />
+            </Tooltip>
+          </Flex>
         </Text>
         <span className={cn(layoutStyles.row, layoutStyles.gap6)}>
           <div className={styles.textFieldContainer}>
@@ -512,7 +519,7 @@ const AdvancedModalFields = () => {
       <SwitchRowField
         name={IS_AI_ATTRIBUTED}
         header={messages.aiGenerated.header}
-        description={messages.aiGenerated.description}
+        tooltipText={messages.aiGenerated.tooltip}
       >
         <AiAttributionDropdown
           {...aiUserIdField}

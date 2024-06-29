@@ -115,7 +115,7 @@ export type FetchErrorAction = PayloadAction<
 >
 export type FetchSucceededAction = PayloadAction<
   FetchBaseAction & {
-    nonNormalizedData: any
+    normalizedData: any
   }
 >
 export type FetchResetAction = PayloadAction<FetchBaseAction & {}>
@@ -128,7 +128,7 @@ export type PerEndpointState<NormalizedData> = {
 }
 export type PerKeyState<NormalizedData> = {
   status: Status
-  nonNormalizedData?: NormalizedData
+  normalizedData?: NormalizedData
   errorMessage?: string
 }
 

@@ -18,8 +18,7 @@ import { DOWNLOAD_PRICE } from '../types'
 const messages = {
   price: {
     title: 'Set a Price',
-    description:
-      'Set the price fans must pay to access your stem files (minimum price of $1.00)',
+    description: 'The price to unlock your stem files (min $1)',
     label: 'Cost to download',
     placeholder: '1.00'
   },
