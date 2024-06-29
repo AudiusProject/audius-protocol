@@ -6,7 +6,7 @@ const messages = {
 }
 
 const AUDIO_FILE_FORMATS_LINK =
-  'https://support.audius.co/help/What-Audio-File-Formats-Can-I-Upload-to-Audius-ab4c8'
+  'https://help.audius.co/help/What-Audio-File-Formats-Can-I-Upload-to-Audius-ab4c8'
 
 export const AudioQuality = () => {
   return (
