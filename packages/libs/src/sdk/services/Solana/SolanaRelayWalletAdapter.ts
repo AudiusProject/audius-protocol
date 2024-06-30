@@ -1,10 +1,11 @@
 import type {
+  SendTransactionOptions,
   SupportedTransactionVersions,
   TransactionOrVersionedTransaction,
   WalletName,
   WalletReadyState
 } from '@solana/wallet-adapter-base'
-import type { PublicKey } from '@solana/web3.js'
+import type { Connection, PublicKey } from '@solana/web3.js'
 
 import type { SolanaRelay } from './SolanaRelay'
 import type { SolanaWalletAdapter } from './types'
@@ -83,9 +84,14 @@ export class SolanaRelayWalletAdapter implements SolanaWalletAdapter {
   public async sendTransaction(
     transaction: TransactionOrVersionedTransaction<
       this['supportedTransactionVersions']
-    >
+    >,
+    _connection?: Connection,
+    sendOptions?: SendTransactionOptions
   ) {
-    const { signature } = await this.solanaRelay.relay({ transaction })
+    const { signature } = await this.solanaRelay.relay({
+      transaction,
+      sendOptions
+    })
     return signature
   }
 }
