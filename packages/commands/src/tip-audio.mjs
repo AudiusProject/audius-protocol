@@ -29,10 +29,12 @@ program.command("tip-audio")
     try {
       const res = await audiusSdk.users.sendTip({ senderUserId, receiverUserId: Utils.encodeHashId(userId), amount });
       console.log(chalk.green("Successfully tipped audio"));
-      console.log(chalk.yellow("Transaction Signature:"), tx);
+      console.log(chalk.yellow("Transaction Signature:"), res);
     } catch (err) {
-      console.log(chalk.red("Request ID:"), err.response.headers.get('x-request-id'))
-      console.log(chalk.red("Response JSON:"), await err.response.json())
+      if ('response' in err) {
+        console.log(chalk.red("Request ID:"), err.response.headers.get('x-request-id'))
+        console.log(chalk.red("Response JSON:"), await err.response.json())
+      }
       program.error(err.message);
     }
 

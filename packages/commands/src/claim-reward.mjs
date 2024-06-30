@@ -34,9 +34,9 @@ program.command("claim-reward")
             console.log(chalk.yellow("Transaction Signature:"), res);
         } catch (err) {
             if ('response' in err) {
-                console.log(chalk.red('Request ID'), err.response.headers.get('X-Request-ID'))
-                console.log(chalk.red('Request URL'), err.response.url)
-                console.log(chalk.red('Response Body'), await err.response.text())
+                console.log(chalk.red('Request ID:'), err.response.headers.get('X-Request-ID'))
+                console.log(chalk.red('Request URL:'), err.response.url)
+                console.log(chalk.red('Response Body:'), await err.response.text())
             }
             program.error(err.message);
         }
