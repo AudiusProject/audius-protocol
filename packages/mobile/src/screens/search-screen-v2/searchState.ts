@@ -40,6 +40,11 @@ export const useSearchCategory = () => {
   return [category, setCategory] as const
 }
 
+export const useSearchFilters = () => {
+  const { filters, setFilters } = useContext(SearchContext)
+  return [filters, setFilters] as const
+}
+
 export const useSearchFilter = <F extends SearchFilter>(filterKey: F) => {
   const { filters, setFilters } = useContext(SearchContext)
 

@@ -1,7 +1,8 @@
 import { Dimensions } from 'react-native'
 
 import { IconSearch, TextInput, TextInputSize } from '@audius/harmony-native'
-import type { TextInputProps } from '@audius/harmony-native'
+
+import { useSearchQuery } from './searchState'
 
 const searchBarWidth = Dimensions.get('window').width - 80
 
@@ -9,9 +10,8 @@ const messages = {
   label: 'Search'
 }
 
-type SeacrhBarV2Props = Partial<TextInputProps>
-
-export const SearchBarV2 = (props: SeacrhBarV2Props) => {
+export const SearchBarV2 = () => {
+  const [query, setQuery] = useSearchQuery()
   return (
     <TextInput
       startIcon={IconSearch}
@@ -19,7 +19,8 @@ export const SearchBarV2 = (props: SeacrhBarV2Props) => {
       label={messages.label}
       placeholder={messages.label}
       style={{ width: searchBarWidth }}
-      {...props}
+      value={query}
+      onChangeText={setQuery}
     />
   )
 }

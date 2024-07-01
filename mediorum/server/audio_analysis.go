@@ -70,11 +70,29 @@ func (ss *MediorumServer) startAudioAnalyzer() {
 	}
 
 	// poll periodically for uploads that slipped thru the cracks.
-	// mark uploads with timed out analyses as done
-	for {
-		time.Sleep(time.Second * 10)
-		ss.findMissedAnalysisJobs(work, myHost)
-	}
+	go func() {
+		ticker := time.NewTicker(10 * time.Second)
+		defer ticker.Stop()
+
+		retryTicker := time.NewTicker(30 * time.Second)
+		defer retryTicker.Stop()
+
+		for {
+			select {
+			case <-ticker.C:
+				// find missed legacy analysis jobs every 10 seconds
+				// mark uploads with timed out analyses as done
+				ss.findMissedAnalysisJobs(work, myHost)
+
+			case <-retryTicker.C:
+				// retry analysis jobs every 30 seconds
+				ss.retryAnalysisJobs(work, myHost)
+			}
+		}
+	}()
+
+	// block to keep running
+	select {}
 }
 
 func (ss *MediorumServer) findMissedAnalysisJobs(work chan *Upload, myHost string) {
@@ -103,13 +121,6 @@ func (ss *MediorumServer) findMissedAnalysisJobs(work chan *Upload, myHost strin
 		myRank := myIdx + 1
 
 		logger := ss.logger.With("upload", upload.ID, "upload_status", upload.Status, "my_rank", myRank)
-
-		// this is already handled by a callback and there's a chance this job gets enqueued twice
-		if myRank == 1 && upload.Status == JobStatusAudioAnalysis {
-			logger.Info("my upload's audio analysis not started")
-			work <- upload
-			continue
-		}
 
 		// determine if #1 rank worker dropped ball
 		timedOut := false
@@ -144,6 +155,37 @@ func (ss *MediorumServer) findMissedAnalysisJobs(work chan *Upload, myHost strin
 			logger.Info("audio analysis never started")
 			work <- upload
 		}
+	}
+}
+
+func (ss *MediorumServer) retryAnalysisJobs(work chan *Upload, myHost string) {
+	uploads := []*Upload{}
+	ss.crud.DB.Where("audio_analysis_status = ? OR (audio_analysis_status = ? AND audio_analysis_error_count < ?)", JobStatusTimeout, JobStatusError, 3).
+		Where("status = ?", JobStatusDone).
+		Where("CAST(transcoded_mirrors AS jsonb)->>0 = ?", myHost).
+		Order("audio_analyzed_at ASC").
+		Limit(2).
+		Find(&uploads)
+
+	for _, upload := range uploads {
+		myIdx := slices.Index(upload.TranscodedMirrors, myHost)
+		if myIdx != 0 {
+			continue
+		}
+		myRank := myIdx + 1
+
+		logger := ss.logger.With("upload", upload.ID, "audio_analysis_status", upload.AudioAnalysisStatus, "my_rank", myRank)
+
+		if upload.AudioAnalysisStatus == JobStatusError {
+			logger.Info("retrying my errored audio analysis")
+		}
+		if upload.AudioAnalysisStatus == JobStatusTimeout {
+			logger.Info("retrying my timed out audio analysis")
+		}
+		upload.AudioAnalyzedAt = time.Now().UTC()
+		// op callback will enqueue the job
+		upload.Status = JobStatusAudioAnalysis
+		ss.crud.Update(upload)
 	}
 }
 
