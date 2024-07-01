@@ -1,10 +1,14 @@
-import { useCallback, useEffect } from 'react'
+import { useCallback, useContext, useEffect } from 'react'
 
 import { useGetCurrentWeb3User, useRemoveManager } from '@audius/common/api'
 import { useAppContext } from '@audius/common/context'
 import { useAccountSwitcher } from '@audius/common/hooks'
 import { Name, Status } from '@audius/common/models'
 import { Button, Flex, Text } from '@audius/harmony'
+
+import { ToastContext } from 'components/toast/ToastContext'
+
+import { sharedMessages } from './sharedMessages'
 
 const messages = {
   cancel: 'Cancel',
@@ -31,6 +35,7 @@ export const RemoveManagerConfirmationContent = ({
   const { data: currentWeb3User } = useGetCurrentWeb3User({})
   const managerIsCurrentWeb3User = currentWeb3User?.user_id === managerUserId
   const { switchToWeb3User } = useAccountSwitcher()
+  const { toast } = useContext(ToastContext)
   const {
     analytics: { track, make }
   } = useAppContext()
@@ -51,8 +56,10 @@ export const RemoveManagerConfirmationContent = ({
     if (status === Status.SUCCESS) {
       onSuccess()
       if (managerIsCurrentWeb3User) switchToWeb3User()
+    } else if (status === Status.ERROR) {
+      toast(sharedMessages.somethingWentWrong)
     }
-  }, [status, managerIsCurrentWeb3User, switchToWeb3User, onSuccess])
+  }, [status, managerIsCurrentWeb3User, toast, switchToWeb3User, onSuccess])
 
   if (!managerUserId) return null
 
