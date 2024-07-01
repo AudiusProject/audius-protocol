@@ -174,8 +174,7 @@ export class ChallengesApi extends BaseAPI {
 
     logger.debug('Confirming all attestation submissions...')
     await this.rewardManager.confirmAllTransactions(
-      attestationTransactionSignatures,
-      'finalized' // for some reason, only works when finalized...
+      attestationTransactionSignatures
     )
 
     logger.debug('Disbursing claim...')
@@ -350,6 +349,10 @@ export class ChallengesApi extends BaseAPI {
     const transaction = await this.rewardManager.buildTransaction({
       instructions: [instruction]
     })
-    return await this.rewardManager.sendTransaction(transaction)
+    // Skip preflight since we likely just submitted the attestations and
+    // the chosen RPC's state might not yet reflect that
+    return await this.rewardManager.sendTransaction(transaction, {
+      skipPreflight: true
+    })
   }
 }
