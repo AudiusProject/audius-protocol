@@ -4,7 +4,8 @@ import {
   StringAudio,
   ChallengeRewardID,
   StringWei,
-  SpecifierWithAmount
+  SpecifierWithAmount,
+  Name
 } from '@audius/common/models'
 import {
   IntKeys,
@@ -25,7 +26,8 @@ import {
   walletActions,
   modalsActions,
   getContext,
-  musicConfettiActions
+  musicConfettiActions,
+  CommonStoreContext
 } from '@audius/common/store'
 import {
   encodeHashId,
@@ -232,28 +234,73 @@ async function claimRewardsForChallenge({
   sdk,
   userId,
   challengeId,
-  specifiers
+  specifiers,
+  track,
+  make
 }: {
   sdk: AudiusSdk
   userId: string
   challengeId: ChallengeId
   specifiers: SpecifierWithAmount[]
+  track: CommonStoreContext['analytics']['track']
+  make: CommonStoreContext['analytics']['make']
 }): Promise<(SpecifierWithAmount | ErrorResult)[]> {
   return await Promise.all(
     specifiers.map(async (specifierWithAmount) =>
-      sdk.challenges
-        .claimReward({
+      track(
+        make({
+          eventName: Name.REWARDS_CLAIM_REQUEST,
           challengeId,
           specifier: specifierWithAmount.specifier,
-          amount: specifierWithAmount.amount,
-          userId
+          amount: specifierWithAmount.amount
         })
+      )
+        .then(() =>
+          sdk.challenges.claimReward({
+            challengeId,
+            specifier: specifierWithAmount.specifier,
+            amount: specifierWithAmount.amount,
+            userId
+          })
+        )
+        .then(() =>
+          track(
+            make({
+              eventName: Name.REWARDS_CLAIM_SUCCESS,
+              challengeId,
+              specifier: specifierWithAmount.specifier,
+              amount: specifierWithAmount.amount
+            })
+          )
+        )
         .then(() => {
           return specifierWithAmount
         })
         // Handle the individual specifier failures here to let the other
         // ones continue to claim and not reject the all() call.
-        .catch((error: unknown) => {
+        .catch(async (error: unknown) => {
+          if (error instanceof Errors.AntiAbuseAttestionError) {
+            await track(
+              make({
+                eventName: Name.REWARDS_CLAIM_BLOCKED,
+                challengeId,
+                specifier: specifierWithAmount.specifier,
+                amount: specifierWithAmount.amount,
+                code: error.code,
+                error: error.message
+              })
+            )
+          } else {
+            await track(
+              make({
+                eventName: Name.REWARDS_CLAIM_ALL_FAILURE,
+                challengeId,
+                specifier: specifierWithAmount.specifier,
+                amount: specifierWithAmount.amount,
+                error
+              })
+            )
+          }
           return {
             ...specifierWithAmount,
             error
@@ -270,6 +317,7 @@ function* claimSingleChallengeRewardAsync(
   const env = yield* getContext('env')
   const audiusSdk = yield* getContext('audiusSdk')
   const sdk = yield* call(audiusSdk)
+  const { track, make } = yield* getContext('analytics')
 
   const { claim } = action.payload
   const { specifiers, challengeId } = claim
@@ -296,7 +344,9 @@ function* claimSingleChallengeRewardAsync(
       sdk,
       userId,
       challengeId: challengeId as ChallengeId,
-      specifiers
+      specifiers,
+      track,
+      make
     })
     const claimed = results.filter((r) => !('error' in r))
     const claimedAmount = claimed.reduce((sum, { amount }) => {
@@ -563,6 +613,8 @@ function* claimAllChallengeRewardsAsync(
   const { claims } = action.payload
   let hasError = false
   let aaoErrorCode: undefined | number
+  const { track, make } = yield* getContext('analytics')
+  yield* call(track, make({ eventName: Name.REWARDS_CLAIM_ALL_REQUEST }))
   yield* all(
     claims.map((claim) =>
       call(function* () {
@@ -583,10 +635,16 @@ function* claimAllChallengeRewardsAsync(
   )
   if (aaoErrorCode) {
     yield* put(claimChallengeRewardFailed({ aaoErrorCode }))
+    yield* call(
+      track,
+      make({ eventName: Name.REWARDS_CLAIM_ALL_BLOCKED, code: aaoErrorCode })
+    )
   } else if (hasError) {
     yield* put(claimChallengeRewardFailed())
+    yield* call(track, make({ eventName: Name.REWARDS_CLAIM_ALL_FAILURE }))
   } else {
     yield* put(claimAllChallengeRewardsSucceeded())
+    yield* call(track, make({ eventName: Name.REwARDS_CLAIM_ALL_SUCCESS }))
   }
 }
 
