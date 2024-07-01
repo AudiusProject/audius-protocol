@@ -115,7 +115,6 @@ const DERIVATIVE_WORKS_BASE = 'derivativeWorks'
 const DERIVATIVE_WORKS = 'licenseType.derivativeWorks'
 const BPM = 'bpm'
 const MUSICAL_KEY = 'musical_key'
-const IS_UNLISTED = 'is_unlisted'
 
 const allowAttributionValues = [
   { key: false, text: messages.allowAttribution.options.false },
@@ -224,7 +223,8 @@ export const AdvancedField = ({ isHidden }: AdvancedFieldProps) => {
     iswcValue,
     allowedApiKeys,
     bpm,
-    musicalKey
+    musicalKey,
+    releaseDate
   ])
 
   const onSubmit = useCallback(
@@ -262,6 +262,7 @@ export const AdvancedField = ({ isHidden }: AdvancedFieldProps) => {
       iswcValue,
       bpm,
       musicalKey,
+      releaseDate,
       setAiUserId,
       setAllowAttribution,
       setCommercialUse,
@@ -270,7 +271,8 @@ export const AdvancedField = ({ isHidden }: AdvancedFieldProps) => {
       setIswc,
       setAllowedApiKeys,
       setBpm,
-      setMusicalKey
+      setMusicalKey,
+      setReleaseDate
     ]
   )
 

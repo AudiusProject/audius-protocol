@@ -3,7 +3,7 @@ import 'react-dates/lib/css/_datepicker.css'
 
 import { useEffect, useRef, useState } from 'react'
 
-import { Flex, IconCalendarMonth, Popup, useTheme } from '@audius/harmony'
+import { Flex, IconCalendarMonth, Popup } from '@audius/harmony'
 import cn from 'classnames'
 import { useField } from 'formik'
 import moment from 'moment'
