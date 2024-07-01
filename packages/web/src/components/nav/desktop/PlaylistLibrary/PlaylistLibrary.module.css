@@ -8,11 +8,3 @@
 .droppableHover {
   background-color: rgba(152, 73, 214, 0.15);
 }
-
-.header {
-  gap: var(--harmony-unit-2);
-}
-
-.droppableLink {
-  color: var(--harmony-secondary);
-}

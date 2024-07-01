@@ -5,7 +5,7 @@ import {
   accountSelectors,
   collectionsSocialActions
 } from '@audius/common/store'
-import cn from 'classnames'
+import { Flex } from '@audius/harmony'
 import { isEmpty } from 'lodash'
 import { useDispatch } from 'react-redux'
 
@@ -61,13 +61,11 @@ export const PlaylistLibrary = (props: PlaylistLibraryProps) => {
       onDrop={handleDrop}
       acceptedKinds={acceptedKinds}
     >
-      <GroupHeader
-        className={cn(styles.header, {
-          [styles.droppableLink]: draggingKind === 'playlist'
-        })}
-      >
-        {messages.header}
-        <CreatePlaylistLibraryItemButton scrollbarRef={scrollbarRef} />
+      <GroupHeader color={draggingKind === 'playlist' ? 'accent' : 'subdued'}>
+        <Flex wrap='nowrap' gap='s'>
+          {messages.header}
+          <CreatePlaylistLibraryItemButton scrollbarRef={scrollbarRef} />
+        </Flex>
       </GroupHeader>
       {!library || isEmpty(library?.contents) ? (
         <EmptyLibraryNavLink />

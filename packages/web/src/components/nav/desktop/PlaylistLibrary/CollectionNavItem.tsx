@@ -15,8 +15,7 @@ import {
   shareModalUIActions,
   useEditPlaylistModal
 } from '@audius/common/store'
-import { PopupMenuItem } from '@audius/harmony'
-import cn from 'classnames'
+import { Flex, PopupMenuItem, spacing, Text } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 import { useRouteMatch } from 'react-router-dom'
 import { useToggle } from 'react-use'
@@ -192,21 +191,27 @@ export const CollectionNavItem = (props: CollectionNavItemProps) => {
             onDragLeave={handleDragLeave}
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
+            css={{
+              maxHeight: `${spacing.xl}px`
+            }}
             className={styles.root}
           >
-            <span
-              className={cn(styles.content, {
-                [styles.level1]: level === 1
-              })}
+            <Flex
+              alignItems='center'
+              pl={level * spacing.l}
+              w='100%'
+              css={{ position: 'relative' }}
             >
               {hasUpdate ? <PlaylistUpdateDot /> : null}
-              <span className={styles.collectionName}>{name}</span>
+              <Text size='s' ellipses>
+                {name}
+              </Text>
               <NavItemKebabButton
                 visible={isOwned && isHovering && !isDraggingOver}
                 aria-label={messages.editPlaylistLabel}
                 items={kebabItems}
               />
-            </span>
+            </Flex>
           </LeftNavLink>
         </Draggable>
       </LeftNavDroppable>

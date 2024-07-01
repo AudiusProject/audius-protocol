@@ -1,19 +1,6 @@
 .root {
   display: flex;
   align-items: center;
-  line-height: normal;
-}
-
-.content {
-  position: relative;
-  display: flex;
-  align-items: center;
-  line-height: normal;
-  width: 100%;
-}
-
-.level1 {
-  margin-left: var(--harmony-unit-2);
 }
 
 .collectionName {

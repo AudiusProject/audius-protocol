@@ -1,14 +1,12 @@
 .link {
   font-size: var(--harmony-font-s);
   font-weight: var(--harmony-font-medium);
+  line-height: var(--harmony-spacing-xl);
   position: relative;
   display: table;
   min-width: 100px;
 
-  /* negative margin so the link hover chip shows up. */
-  margin-left: -16px;
-  /* left padding is visibly (32px + -16px margin =) 16px to match the left padding of .groupHeader */
-  padding: 5px 0 5px 32px;
+  padding-left: var(--harmony-spacing-l);
   color: var(--harmony-neutral);
   transition: color 0.07s ease-in-out;
 

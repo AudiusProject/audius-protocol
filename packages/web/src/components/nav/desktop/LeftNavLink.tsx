@@ -1,5 +1,6 @@
 import { ComponentProps } from 'react'
 
+import { Text } from '@audius/harmony'
 import cn from 'classnames'
 import { NavLink, NavLinkProps } from 'react-router-dom'
 import { SetOptional } from 'type-fest'
@@ -11,21 +12,28 @@ import { useSelector } from 'utils/reducer'
 import styles from './LeftNavLink.module.css'
 
 export type LeftNavLinkProps =
-  | { disabled?: boolean } & (
-      | Omit<NavLinkProps, 'onDrop'>
-      | Omit<ComponentProps<'div'>, 'onDrop'>
-    )
+  | { disabled?: boolean } & Omit<NavLinkProps, 'onDrop'>
 
 export const LeftNavLink = (props: LeftNavLinkProps) => {
-  const { disabled, className: classNameProp, ...other } = props
+  const { disabled, children, className: classNameProp, ...other } = props
   const className = cn(classNameProp, styles.link, {
     [styles.disabledLink]: disabled
   })
 
   if ('to' in other) {
-    return <NavLink {...other} activeClassName='active' className={className} />
+    return (
+      <NavLink {...other} activeClassName='active' className={className}>
+        <Text tag='span' size='s'>
+          {children}
+        </Text>
+      </NavLink>
+    )
   }
-  return <div {...other} className={className} />
+  return (
+    <Text tag='div' {...other} className={className}>
+      {children}
+    </Text>
+  )
 }
 
 type LeftNavDroppableProps = SetOptional<
