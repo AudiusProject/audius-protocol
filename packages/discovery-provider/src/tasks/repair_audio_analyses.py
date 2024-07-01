@@ -157,16 +157,16 @@ def repair(session: Session, redis: Redis):
                 num_tracks_updated += 1
 
             # Failures get retried up to 3 times
-            if (not key or not bpm) and error_count < 3:
-                # Trigger another audio analysis but don't bother polling for result. Will read it in next batch.
-                num_analyses_retriggered += 1
-                retrigger_audio_analysis(
-                    nodes,
-                    track.track_id,
-                    track.track_cid,
-                    track.audio_upload_id,
-                    legacy_track,
-                )
+            # if (not key or not bpm) and error_count < 3:
+            #     # Trigger another audio analysis but don't bother polling for result. Will read it in next batch.
+            #     num_analyses_retriggered += 1
+            #     retrigger_audio_analysis(
+            #         nodes,
+            #         track.track_id,
+            #         track.track_cid,
+            #         track.audio_upload_id,
+            #         legacy_track,
+            #     )
             if error_count >= 3:
                 logger.warning(
                     f"repair_audio_analyses.py | Track ID {track.track_id} (track_cid: {track.track_cid}, audio_upload_id: {track.audio_upload_id}) failed audio analysis >= 3 times"
