@@ -274,7 +274,7 @@ describe('test authentication routes', function () {
       .expect(403)
 
     const redis = app.get('redis')
-    const otp = await redis.get(`otp:${username}`)
+    let otp = await redis.get(`otp:${username}`)
 
     await request(app)
       .get('/authentication')
@@ -298,6 +298,25 @@ describe('test authentication routes', function () {
         username: "wrongemail@audius.co"
       })
       .expect(400)
+
+    await request(app)
+      .get('/authentication')
+      .query({
+        lookupKey,
+        username,
+      })
+      .expect(403)
+
+    otp = await redis.get(`otp:${username}`)
+
+    await request(app)
+      .get('/authentication')
+      .query({
+        lookupKey,
+        username,
+        otp,
+      })
+      .expect(200)
 
     await updatedAuthRecord.destroy()
     await userRecord.destroy()
