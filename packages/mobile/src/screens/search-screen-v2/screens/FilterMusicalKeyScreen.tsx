@@ -39,7 +39,7 @@ export const FilterMusicalKeyScreen = () => {
   }, [key, scale, setMusicalKey, clearMusicalKey])
 
   const handleClear = useCallback(() => {
-    setScale('Major')
+    setScale('')
     setKey('')
   }, [])
 
