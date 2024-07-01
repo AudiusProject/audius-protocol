@@ -8,6 +8,7 @@ import { useSelector } from 'react-redux'
 import { useSearchParams } from 'react-router-dom-v5-compat'
 
 import { CollectionCard } from 'components/collection'
+import { useIsMobile } from 'hooks/useIsMobile'
 import { useRouteMatch } from 'hooks/useRouteMatch'
 import { SEARCH_PAGE } from 'utils/route'
 
@@ -23,6 +24,7 @@ const messages = {
 }
 
 export const ResultsAlbumsView = () => {
+  const isMobile = useIsMobile()
   const results = useSelector(getSearchResults)
   const [urlSearchParams] = useSearchParams()
   const updateSortParam = useUpdateSearchParams('sortMethod')
@@ -39,32 +41,36 @@ export const ResultsAlbumsView = () => {
 
   return (
     <Flex direction='column' gap='xl'>
-      <Flex justifyContent='space-between' alignItems='center'>
-        <Text variant='heading' textAlign='left'>
-          {messages.albums}
-        </Text>
-        {isCategoryActive(CategoryView.ALBUMS) ? (
-          <Flex gap='s'>
-            <OptionsFilterButton
-              selection={sortMethod ?? 'relevant'}
-              variant='replaceLabel'
-              optionsLabel={messages.sortOptionsLabel}
-              onChange={updateSortParam}
-              options={[
-                { label: 'Most Relevant', value: 'relevant' },
-                { label: 'Most Recent', value: 'recent' }
-              ]}
-            />
-          </Flex>
-        ) : null}
-      </Flex>
+      {!isMobile ? (
+        <Flex justifyContent='space-between' alignItems='center'>
+          <Text variant='heading' textAlign='left'>
+            {messages.albums}
+          </Text>
+          {isCategoryActive(CategoryView.ALBUMS) ? (
+            <Flex gap='s'>
+              <OptionsFilterButton
+                selection={sortMethod ?? 'relevant'}
+                variant='replaceLabel'
+                optionsLabel={messages.sortOptionsLabel}
+                onChange={updateSortParam}
+                options={[
+                  { label: 'Most Relevant', value: 'relevant' },
+                  { label: 'Most Recent', value: 'recent' }
+                ]}
+              />
+            </Flex>
+          ) : null}
+        </Flex>
+      ) : null}
       {!isLoading && (!albumIds || albumIds.length === 0) ? (
         <NoResultsTile />
       ) : (
         <Box
           css={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, 200px)',
+            gridTemplateColumns: isMobile
+              ? 'repeat(auto-fill, minmax(150px, 1fr))'
+              : 'repeat(auto-fill, 200px)',
             justifyContent: 'space-between',
             gap: 16
           }}
@@ -74,12 +80,12 @@ export const ResultsAlbumsView = () => {
                 <CollectionCard
                   key={`user_card_sekeleton_${i}`}
                   id={0}
-                  size='s'
+                  size={isMobile ? 'xs' : 's'}
                   loading={true}
                 />
               ))
             : albumIds.map((id) => (
-                <CollectionCard key={id} id={id} size='s' />
+                <CollectionCard key={id} id={id} size={isMobile ? 'xs' : 's'} />
               ))}
         </Box>
       )}

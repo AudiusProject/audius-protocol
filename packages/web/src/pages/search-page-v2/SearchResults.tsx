@@ -15,6 +15,7 @@ import { Genre, Mood } from '@audius/sdk'
 import { useDispatch } from 'react-redux'
 import { useSearchParams } from 'react-router-dom-v5-compat'
 
+import { useIsMobile } from 'hooks/useIsMobile'
 import { useRouteMatch } from 'hooks/useRouteMatch'
 import { useSelector } from 'utils/reducer'
 import { SEARCH_PAGE } from 'utils/route'
@@ -27,6 +28,7 @@ import { ResultsTracksView } from './ResultsTracksView'
 import { CategoryView } from './types'
 
 export const SearchResults = () => {
+  const isMobile = useIsMobile()
   const containerRef = useRef<HTMLDivElement>(null)
   const results = useSelector(searchResultsPageSelectors.getSearchResults)
   const routeMatch = useRouteMatch<{ category: string }>(SEARCH_PAGE)
@@ -143,7 +145,12 @@ export const SearchResults = () => {
   if (showNoResultsTile) return <NoResultsTile />
 
   return (
-    <Flex direction='column' gap='unit10' ref={containerRef}>
+    <Flex
+      direction='column'
+      gap='unit10'
+      p={isMobile ? 'm' : undefined}
+      ref={containerRef}
+    >
       {isProfilesVisible ? <ResultsProfilesView /> : null}
       {isTracksVisible ? <ResultsTracksView /> : null}
       {isAlbumsVisible ? <ResultsAlbumsView /> : null}

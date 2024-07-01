@@ -5,6 +5,7 @@ import { generatePath, useParams } from 'react-router-dom'
 import { useSearchParams } from 'react-router-dom-v5-compat'
 
 import { useHistoryContext } from 'app/HistoryProvider'
+import { RouterContext } from 'components/animated-switch/RouterContextProvider'
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
 import NavContext, {
   CenterPreset,
@@ -13,7 +14,7 @@ import NavContext, {
 } from 'components/nav/mobile/NavContext'
 import Page from 'components/page/Page'
 import { useMedia } from 'hooks/useMedia'
-import { SEARCH_PAGE } from 'utils/route'
+import { SEARCH_PAGE, fullSearchResultsPage } from 'utils/route'
 
 import { RecentSearches } from './RecentSearches'
 import { SearchCatalogTile } from './SearchCatalogTile'
@@ -50,6 +51,7 @@ export const SearchPageV2 = () => {
   const [urlSearchParams] = useSearchParams()
   const query = urlSearchParams.get('query')
   const showSearchResults = useShowSearchResults()
+  const { setStackReset } = useContext(RouterContext)
 
   // Set nav header
   const { setLeft, setCenter, setRight } = useContext(NavContext)!
@@ -61,13 +63,16 @@ export const SearchPageV2 = () => {
 
   const setCategory = useCallback(
     (category: CategoryKey) => {
+      // Do not animate on mobile
+      setStackReset(true)
+
       history.push({
         pathname: generatePath(SEARCH_PAGE, { category }),
         search: query ? new URLSearchParams({ query }).toString() : undefined,
         state: {}
       })
     },
-    [history, query]
+    [history, query, setStackReset]
   )
 
   const header = (
@@ -85,7 +90,7 @@ export const SearchPageV2 = () => {
     <PageComponent
       title={query ?? 'Search'}
       description={`Search results for ${query}`}
-      // canonicalUrl={fullSearchResultsPage(query)}
+      canonicalUrl={fullSearchResultsPage(query ?? '')}
       header={header}
     >
       <Flex direction='column' w='100%'>

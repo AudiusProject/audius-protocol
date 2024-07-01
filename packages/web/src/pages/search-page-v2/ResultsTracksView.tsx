@@ -18,6 +18,7 @@ import { make } from 'common/store/analytics/actions'
 import Lineup from 'components/lineup/Lineup'
 import { LineupTileSkeleton } from 'components/lineup/LineupTileSkeleton'
 import { LineupVariant } from 'components/lineup/types'
+import { useIsMobile } from 'hooks/useIsMobile'
 import { useRouteMatch } from 'hooks/useRouteMatch'
 import { SEARCH_PAGE } from 'utils/route'
 
@@ -43,6 +44,7 @@ const getCurrentQueueItem = makeGetCurrent()
 const getTracksLineup = makeGetLineupMetadatas(getSearchTracksLineup)
 
 export const ResultsTracksView = () => {
+  const isMobile = useIsMobile()
   const dispatch = useDispatch()
   const [tracksLayout, setTracksLayout] = useState<ViewLayout>('list')
   const results = useSelector(getSearchResults)
@@ -86,35 +88,37 @@ export const ResultsTracksView = () => {
 
   return (
     <Flex direction='column' gap='xl' wrap='wrap'>
-      <Flex justifyContent='space-between' alignItems='center'>
-        <Text variant='heading' textAlign='left'>
-          {messages.tracks}
-        </Text>
-        {isCategoryActive(CategoryView.TRACKS) ? (
-          <Flex gap='s'>
-            <OptionsFilterButton
-              selection={sortMethod ?? 'relevant'}
-              variant='replaceLabel'
-              optionsLabel={messages.sortOptionsLabel}
-              onChange={updateSortParam}
-              options={[
-                { label: 'Most Relevant', value: 'relevant' },
-                { label: 'Most Popular', value: 'popular' },
-                { label: 'Most Recent', value: 'recent' }
-              ]}
-            />
-            <OptionsFilterButton
-              selection={tracksLayout}
-              variant='replaceLabel'
-              optionsLabel={messages.layoutOptionsLabel}
-              onChange={(value) => {
-                setTracksLayout(value as ViewLayout)
-              }}
-              options={viewLayoutOptions}
-            />
-          </Flex>
-        ) : null}
-      </Flex>
+      {!isMobile ? (
+        <Flex justifyContent='space-between' alignItems='center'>
+          <Text variant='heading' textAlign='left'>
+            {messages.tracks}
+          </Text>
+          {isCategoryActive(CategoryView.TRACKS) ? (
+            <Flex gap='s'>
+              <OptionsFilterButton
+                selection={sortMethod ?? 'relevant'}
+                variant='replaceLabel'
+                optionsLabel={messages.sortOptionsLabel}
+                onChange={updateSortParam}
+                options={[
+                  { label: 'Most Relevant', value: 'relevant' },
+                  { label: 'Most Popular', value: 'popular' },
+                  { label: 'Most Recent', value: 'recent' }
+                ]}
+              />
+              <OptionsFilterButton
+                selection={tracksLayout}
+                variant='replaceLabel'
+                optionsLabel={messages.layoutOptionsLabel}
+                onChange={(value) => {
+                  setTracksLayout(value as ViewLayout)
+                }}
+                options={viewLayoutOptions}
+              />
+            </Flex>
+          ) : null}
+        </Flex>
+      ) : null}
       {!isLoading && (!trackIds || trackIds.length === 0) ? (
         <NoResultsTile />
       ) : (
