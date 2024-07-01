@@ -55,27 +55,6 @@ export const SearchScreenV2 = () => {
   )
 }
 
-type SearchScreenProps = {
-  Stack: any
-}
-
-export const SearchScreen = (props: SearchScreenProps) => {
-  const { Stack } = props
-  return (
-    <Stack.Group>
-      <Stack.Screen name='Search' component={SearchScreenV2} />
-    </Stack.Group>
-  )
-}
-
-export const searchScreenStack = (Stack: any) => {
-  return (
-    <Stack.Group>
-      <Stack.Screen name='Search' component={SearchScreenV2} />
-    </Stack.Group>
-  )
-}
-
 export const SearchScreenStack = () => {
   const { params = {} } = useRoute<'Search'>()
   const [query, setQuery] = useState(params.query ?? '')

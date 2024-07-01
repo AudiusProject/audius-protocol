@@ -36,7 +36,9 @@ const messagesV1 = {
 const messagesV2 = {
   usdcPurchase: 'Premium',
   usdcPurchaseSubtitle: (contentType: 'album' | 'track') =>
-    `Only fans who make a purchase can play your ${contentType}.`
+    `Only fans who make a purchase can play your ${contentType}.`,
+  fromFreeHint: (contentType: 'album' | 'track') =>
+    `You can't make a free ${contentType} premium.`
 }
 
 type UsdcPurchaseGatedRadioFieldProps = {
@@ -115,6 +117,11 @@ export const UsdcPurchaseGatedRadioField = (
           isAlbum={isAlbum}
           isUpload={isUpload}
         />
+      }
+      tooltipText={
+        disableUsdcGate
+          ? messages.fromFreeHint(isAlbum ? 'album' : 'track')
+          : undefined
       }
     />
   )
