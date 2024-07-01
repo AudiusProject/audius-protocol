@@ -2,7 +2,7 @@ import { useCallback, type ReactNode } from 'react'
 
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
-import { Button, Flex } from '@audius/harmony-native'
+import { Button, Flex, PlainButton } from '@audius/harmony-native'
 import type { ScreenProps } from 'app/components/core'
 import { Screen } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
@@ -16,10 +16,19 @@ export type FormScreenProps = ScreenProps & {
   bottomSection?: ReactNode
   onSubmit?: () => void
   onClear?: () => void
+  clearable?: boolean
 }
 
 export const FormScreen = (props: FormScreenProps) => {
-  const { children, style, bottomSection, onClear, onSubmit, ...other } = props
+  const {
+    children,
+    style,
+    bottomSection,
+    onClear,
+    clearable,
+    onSubmit,
+    ...other
+  } = props
   const navigation = useNavigation()
   const insets = useSafeAreaInsets()
 
@@ -48,9 +57,9 @@ export const FormScreen = (props: FormScreenProps) => {
               {messages.done}
             </Button>
             {onClear ? (
-              <Button variant='secondary' fullWidth onPress={onClear}>
+              <PlainButton size='large' disabled={!clearable} onPress={onClear}>
                 {messages.clear}
-              </Button>
+              </PlainButton>
             ) : null}
           </>
         )}

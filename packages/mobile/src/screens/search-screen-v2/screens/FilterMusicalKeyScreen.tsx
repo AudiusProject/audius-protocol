@@ -26,7 +26,7 @@ const musicalKeys = MUSICAL_KEYS.map((key) => {
 
 export const FilterMusicalKeyScreen = () => {
   const [musicalKey, setMusicalKey, clearMusicalKey] = useSearchFilter('key')
-  const [initialKey, initialScale] = musicalKey?.split(' ') ?? []
+  const [initialKey, initialScale = 'Major'] = musicalKey?.split(' ') ?? []
   const [key, setKey] = useState(initialKey)
   const [scale, setScale] = useState(initialScale)
 
@@ -39,7 +39,7 @@ export const FilterMusicalKeyScreen = () => {
   }, [key, scale, setMusicalKey, clearMusicalKey])
 
   const handleClear = useCallback(() => {
-    setScale('')
+    setScale('Major')
     setKey('')
   }, [])
 
@@ -64,6 +64,7 @@ export const FilterMusicalKeyScreen = () => {
       onChange={setKey}
       onSubmit={handleSubmit}
       onClear={handleClear}
+      clearable={Boolean(key && scale)}
     />
   )
 }
