@@ -55,10 +55,10 @@ const SearchCategory = (props: SearchCategoryProps) => {
 // - IconClose looks thicker than the designs
 
 const filterInfoMap: Record<SearchFilter, { label: string; screen: string }> = {
-  genre: { label: 'Genre', screen: 'SearchGenre' },
-  mood: { label: 'Mood', screen: 'SearchMood' },
-  key: { label: 'Key', screen: 'SearchKey' },
-  bpm: { label: 'BPM', screen: 'SearchBpm' },
+  genre: { label: 'Genre', screen: 'FilterGenre' },
+  mood: { label: 'Mood', screen: 'FilterMood' },
+  key: { label: 'Key', screen: 'FilterKey' },
+  bpm: { label: 'BPM', screen: 'FilterBpm' },
   isVerified: { label: 'Verified', screen: '' },
   isPremium: { label: 'Premium', screen: '' },
   hasDownloads: { label: 'Downloadable', screen: '' }
