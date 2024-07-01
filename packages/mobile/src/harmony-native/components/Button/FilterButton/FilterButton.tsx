@@ -13,7 +13,7 @@ import type { FilterButtonProps } from './types'
 export const FilterButton = (props: FilterButtonProps) => {
   const {
     value: valueProp,
-    label: labelProp,
+    label,
     onPress,
     onOpen,
     onReset,
@@ -30,13 +30,6 @@ export const FilterButton = (props: FilterButtonProps) => {
     controlledProp: valueProp,
     defaultValue: null,
     stateName: 'value',
-    componentName: 'FilterButton'
-  })
-
-  const [label, setLabel] = useControlled({
-    controlledProp: labelProp,
-    defaultValue: null,
-    stateName: 'label',
     componentName: 'FilterButton'
   })
 
@@ -116,13 +109,12 @@ export const FilterButton = (props: FilterButtonProps) => {
     } else {
       if (variant === 'fillContainer' && value !== null) {
         setValue(null)
-        setLabel(null)
         onReset?.()
       } else {
         setIsOpen((isOpen: boolean) => !isOpen)
       }
     }
-  }, [onPress, onReset, setLabel, setValue, value, variant])
+  }, [onPress, onReset, setValue, value, variant])
 
   const iconSize = size === 'small' ? 's' : 'm'
   const textColor =
