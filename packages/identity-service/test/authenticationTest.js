@@ -228,6 +228,9 @@ describe('test authentication routes', function () {
     const authRecord = await models.Authentication.findOne({ where: { lookupKey } })
     assert.strictEqual(authRecord.walletAddress, expectedWalletAddress)
 
+    const userRecord = await models.User.findOne({ where: { walletAddress: expectedWalletAddress } })
+    assert.strictEqual(userRecord.email, username)
+
     await request(app)
       .get('/authentication')
       .query({
@@ -235,6 +238,9 @@ describe('test authentication routes', function () {
         username: "wrongemail@audius.co"
       })
       .expect(400)
+
+    await authRecord.destroy()
+    await userRecord.destroy()
   })
 
   it('associates user record on sign in', async function () {
@@ -282,6 +288,9 @@ describe('test authentication routes', function () {
     const updatedAuthRecord = await models.Authentication.findOne({ where: { lookupKey } })
     assert.strictEqual(updatedAuthRecord.walletAddress, walletAddress)
 
+    const userRecord = await models.User.findOne({ where: { walletAddress } })
+    assert.strictEqual(userRecord.email, username)
+
     await request(app)
       .get('/authentication')
       .query({
@@ -289,5 +298,8 @@ describe('test authentication routes', function () {
         username: "wrongemail@audius.co"
       })
       .expect(400)
+
+    await updatedAuthRecord.destroy()
+    await userRecord.destroy()
   })
 })
