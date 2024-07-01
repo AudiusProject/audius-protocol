@@ -90,14 +90,20 @@ export const PlainButton = (props: PlainButtonProps) => {
       ? invertedStyles
       : defaultVariantStyles
 
-  const buttonCss: ReactNativeStyle = useAnimatedStyle(() => ({
-    ...(!isDisabled &&
-      variant === 'inverted' && {
-        opacity: interpolate(pressed.value, [0, 1], [1, 0.5])
-      }),
-
+  const buttonStyles = {
+    ...(isDisabled && { opacity: 0.2 }),
     ...(size === 'large' ? largeStyles : defaultStyles)
-  }))
+  }
+
+  const animatedButtonStyles = useAnimatedStyle(
+    () => ({
+      ...(!isDisabled &&
+        variant === 'inverted' && {
+          opacity: interpolate(pressed.value, [0, 1], [1, 0.5])
+        })
+    }),
+    [variant, isDisabled]
+  )
 
   const textCss: TextStyle = useAnimatedStyle(() => ({
     ...(!isDisabled && {
@@ -119,7 +125,7 @@ export const PlainButton = (props: PlainButtonProps) => {
   return (
     <BaseButton
       sharedValue={pressed}
-      style={buttonCss}
+      style={[animatedButtonStyles, buttonStyles]}
       styles={{ text: textCss }}
       innerProps={{
         icon: {

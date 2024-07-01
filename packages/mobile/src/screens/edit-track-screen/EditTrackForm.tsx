@@ -17,12 +17,13 @@ import { PickArtworkField, TextField } from 'app/components/fields'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useOneTimeDrawer } from 'app/hooks/useOneTimeDrawer'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
+import { FormScreen } from 'app/screens/form-screen'
 import { setVisibility } from 'app/store/drawers/slice'
 import { makeStyles } from 'app/styles'
 
 import { TopBarIconButton } from '../app-screen'
 
-import { CancelEditTrackDrawer, FormScreen } from './components'
+import { CancelEditTrackDrawer } from './components'
 import {
   SelectGenreField,
   DescriptionField,

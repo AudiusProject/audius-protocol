@@ -1,5 +1,7 @@
+import { useSearchCategory } from '../searchState'
+
 import { ProfileResults } from './ProfileResults'
-import { useSearchCategory } from './searchState'
+import { TrackResults } from './TrackResults'
 
 export const SearchResults = () => {
   const [category] = useSearchCategory()
@@ -7,6 +9,8 @@ export const SearchResults = () => {
   switch (category) {
     case 'users':
       return <ProfileResults />
+    case 'tracks':
+      return <TrackResults />
   }
 
   return null

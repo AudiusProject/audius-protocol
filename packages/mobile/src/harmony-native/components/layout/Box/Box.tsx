@@ -94,10 +94,10 @@ export const Box = styled(View, {
         // Using white as a default here, but can be overridden
         backgroundColor: color.background.white
       }),
-      paddingTop: padT && spacing[padT],
-      paddingLeft: padL && spacing[padL],
-      paddingRight: padR && spacing[padR],
-      paddingBottom: padB && spacing[padB],
+      paddingTop: padT && (spacing[padT] ?? padT),
+      paddingLeft: padL && (spacing[padL] ?? padL),
+      paddingRight: padR && (spacing[padR] ?? padR),
+      paddingBottom: padB && (spacing[padB] ?? padB),
       marginTop: marginT && spacing[marginT],
       marginLeft: marginL && spacing[marginL],
       marginRight: marginR && spacing[marginR],

@@ -2,7 +2,7 @@ import { Status } from '@audius/common/models'
 
 import { UserList } from 'app/components/user-list'
 
-import { useGetSearchResults } from './searchState'
+import { useGetSearchResults } from '../searchState'
 
 export const ProfileResults = () => {
   const { data, status } = useGetSearchResults('users')

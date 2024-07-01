@@ -8,11 +8,11 @@ import { ScrollView, View } from 'react-native'
 import { IconCcCC } from '@audius/harmony-native'
 import type { TextProps } from 'app/components/core'
 import { Divider, SegmentedControl, Text } from 'app/components/core'
+import { FormScreen } from 'app/screens/form-screen'
 import { makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
 import { useThemeColors } from 'app/utils/theme'
 
-import { FormScreen } from '../components'
 import { computeLicenseIcons } from '../utils/computeLicenseIcons'
 const { computeLicense } = creativeCommons
 
