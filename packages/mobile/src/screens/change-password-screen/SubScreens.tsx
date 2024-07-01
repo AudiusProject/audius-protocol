@@ -1,9 +1,10 @@
 import { formatOtp } from '@audius/common/schemas'
 
-import { Text } from '@audius/harmony-native'
+import { Box, Text } from '@audius/harmony-native'
 import { HarmonyTextField } from 'app/components/fields/HarmonyTextField'
 import { PasswordField } from 'app/components/fields/PasswordField'
 
+import { CurrentEmail } from '../change-email-screen/SubScreens'
 import { PasswordCompletionChecklist } from '../sign-on-screen/components/PasswordCompletionChecklist'
 
 import { ResendCodeLink } from './ResendCodeLink'
@@ -14,6 +15,7 @@ const messages = {
   changeYourPassword: 'Change Your Password',
 
   confirmPasswordDescription: 'Please enter your current email and password.',
+  currentEmail: 'Current Email',
   currentPassword: 'Current Password',
 
   verifyEmailDescription: 'Enter the verification code sent to your email.',
@@ -31,22 +33,25 @@ const messages = {
   successDescription: 'Your password was successfully changed!'
 }
 
-export const ConfirmCredentialsSubScreen = () => (
+export const ConfirmPasswordSubScreen = () => (
   <SubScreen>
     <SubScreenHeader
       title={messages.changeYourPassword}
       description={messages.confirmPasswordDescription}
     />
-    <HarmonyTextField
-      name='email'
-      autoComplete='email'
-      label={messages.email}
-      autoFocus
-      keyboardType='email-address'
-      autoCorrect={false}
-      autoCapitalize='none'
+    <Box>
+      <Text variant='label' size={'xs'}>
+        {messages.currentEmail}
+      </Text>
+      <CurrentEmail />
+    </Box>
+    <PasswordField
+      name='password'
+      label={messages.currentPassword}
+      autoComplete={'password'}
+      clearErrorOnChange={false}
+      helperText={undefined}
     />
-    <PasswordField name='password' label={messages.currentPassword} />
   </SubScreen>
 )
 

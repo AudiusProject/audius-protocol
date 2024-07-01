@@ -29,7 +29,7 @@ import { makeStyles } from 'app/styles'
 import { useAppScreenOptions } from '../app-screen/useAppScreenOptions'
 
 import {
-  ConfirmCredentialsSubScreen,
+  ConfirmPasswordSubScreen,
   VerifyEmailSubScreen,
   NewPasswordSubScreen
 } from './SubScreens'
@@ -121,8 +121,8 @@ const ChangePasswordNavigator = ({
           }}
         >
           <Stack.Screen
-            name={ChangePasswordPage[ChangePasswordPage.ConfirmCredentials]}
-            component={ConfirmCredentialsSubScreen}
+            name={ChangePasswordPage[ChangePasswordPage.ConfirmPassword]}
+            component={ConfirmPasswordSubScreen}
           />
           <Stack.Screen
             name={ChangePasswordPage[ChangePasswordPage.VerifyEmail]}
