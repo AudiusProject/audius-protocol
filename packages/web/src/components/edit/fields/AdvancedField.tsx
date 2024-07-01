@@ -32,9 +32,9 @@ import { Tooltip } from 'components/tooltip'
 import { env } from 'services/env'
 
 import styles from './AdvancedField.module.css'
+import { DatePickerField } from './DatePickerField'
 import { KeySelectField } from './KeySelectField'
 import { SwitchRowField } from './SwitchRowField'
-import { DatePickerField } from './DatePickerField'
 
 const { computeLicense, ALL_RIGHTS_RESERVED_TYPE } = creativeCommons
 
@@ -115,6 +115,7 @@ const DERIVATIVE_WORKS_BASE = 'derivativeWorks'
 const DERIVATIVE_WORKS = 'licenseType.derivativeWorks'
 const BPM = 'bpm'
 const MUSICAL_KEY = 'musical_key'
+const IS_UNLISTED = 'is_unlisted'
 
 const allowAttributionValues = [
   { key: false, text: messages.allowAttribution.options.false },
@@ -167,7 +168,8 @@ const AdvancedFormSchema = z
 
 export type AdvancedFormValues = z.input<typeof AdvancedFormSchema>
 
-export const AdvancedField = () => {
+export type AdvancedFieldProps = { isHidden?: boolean }
+export const AdvancedField = ({ isHidden }: AdvancedFieldProps) => {
   const [{ value: aiUserId }, , { setValue: setAiUserId }] =
     useTrackField<SingleTrackEditValues[typeof AI_USER_ID]>(AI_USER_ID)
   const [{ value: isrcValue }, , { setValue: setIsrc }] =
@@ -196,6 +198,7 @@ export const AdvancedField = () => {
     useTrackField<SingleTrackEditValues[typeof BPM]>(BPM)
   const [{ value: musicalKey }, , { setValue: setMusicalKey }] =
     useTrackField<SingleTrackEditValues[typeof MUSICAL_KEY]>(MUSICAL_KEY)
+
   const initialValues = useMemo(() => {
     const initialValues = {}
     set(initialValues, AI_USER_ID, aiUserId)
@@ -349,13 +352,13 @@ export const AdvancedField = () => {
       initialValues={initialValues}
       onSubmit={onSubmit}
       validationSchema={toFormikValidationSchema(AdvancedFormSchema)}
-      menuFields={<AdvancedModalFields />}
+      menuFields={<AdvancedModalFields isHidden={isHidden} />}
       renderValue={renderValue}
     />
   )
 }
 
-const AdvancedModalFields = () => {
+const AdvancedModalFields = ({ isHidden }: AdvancedFieldProps) => {
   const [aiUserIdField, aiUserHelperFields, { setValue: setAiUserId }] =
     useField({
       name: AI_USER_ID,
@@ -487,14 +490,20 @@ const AdvancedModalFields = () => {
             />
           </div>
         </span>
-        <Divider />
-
-        <Flex gap='m' direction='column'>
-          <Text variant='title' size='l' tag='h3'>
-            Release Date
-          </Text>
-          <DatePickerField name={RELEASE_DATE} label={messages.releaseDate} />
-        </Flex>
+        {!isHidden && (
+          <>
+            <Divider />
+            <Flex gap='m' direction='column'>
+              <Text variant='title' size='l' tag='h3'>
+                Release Date
+              </Text>
+              <DatePickerField
+                name={RELEASE_DATE}
+                label={messages.releaseDate}
+              />
+            </Flex>
+          </>
+        )}
         <Divider />
         <span className={cn(layoutStyles.row, layoutStyles.gap6)}>
           <Flex direction='column' w='100%'>

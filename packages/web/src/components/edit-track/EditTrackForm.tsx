@@ -97,6 +97,7 @@ const TrackEditForm = (
   } = props
   const isMultiTrack = values.trackMetadatas.length > 1
   const isUpload = values.trackMetadatas[0].track_id === undefined
+  const isHidden = values.trackMetadatas[0].is_unlisted
   const trackIdx = values.trackMetadatasIndex
   const [, , { setValue: setIndex }] = useField('trackMetadatasIndex')
   useUnmount(() => {
@@ -141,7 +142,7 @@ const TrackEditForm = (
                 forceOpen={forceOpenAccessAndSale}
                 setForceOpen={setForceOpenAccessAndSale}
               />
-              <AdvancedField />
+              <AdvancedField isHidden={isHidden} />
               <StemsAndDownloadsField
                 isUpload={isUpload}
                 closeMenuCallback={(data) => {
