@@ -519,7 +519,7 @@ export const useIndividualNodeUptime = (
       setDoOnce(bucket)
       dispatch(fetchIndividualNodeUptime(nodeType, node, bucket))
     }
-  }, [dispatch, uptime, bucket, node, doOnce])
+  }, [dispatch, uptime, bucket, node, doOnce, nodeType])
 
   useEffect(() => {
     if (uptime) {

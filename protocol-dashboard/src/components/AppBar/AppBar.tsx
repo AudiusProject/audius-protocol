@@ -129,7 +129,7 @@ const DisconnectButton = () => {
   const handleDisconnect = useCallback(async () => {
     setIsDisconnecting(true)
     await disconnect()
-  }, [])
+  }, [disconnect])
 
   return (
     <PlainButton
@@ -237,7 +237,7 @@ const AppBar: React.FC<AppBarProps> = () => {
     if (isConnected) {
       resolveAccountConnected(walletProvider)
     }
-  }, [isConnected])
+  }, [isConnected, walletProvider])
 
   const waitForSetup = async () => {
     await window.aud.walletAccountLoadedPromise

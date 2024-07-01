@@ -41,7 +41,7 @@ const DescriptiveTooltipText: React.FC<{
     if (targetRef.current) {
       onDimensionsKnown(targetRef.current.clientHeight)
     }
-  }, [])
+  }, [onDimensionsKnown])
   return (
     <div className={clsx(className, styles.tooltipContent)} style={style}>
       <div className={styles.tooltipContainer}>
@@ -185,7 +185,7 @@ const BaseTooltip: React.FC<TooltipProps> = ({
       const tooltipPosition = getPosition()
       setPosition(tooltipPosition)
     }
-  }, [isHover, height])
+  }, [isHover, height, isBasic])
 
   useEffect(() => {
     if (!isHover) {

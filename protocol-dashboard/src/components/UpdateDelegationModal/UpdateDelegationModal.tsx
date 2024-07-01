@@ -15,6 +15,7 @@ import BN from 'bn.js'
 import Button, { ButtonType } from 'components/Button'
 import DisplayAudio from 'components/DisplayAudio'
 import ErrorModal from 'components/ErrorModal'
+import { InfoBox } from 'components/InfoBox/InfoBox'
 import {
   DelegatedAudioInfoTooltip,
   NodeOperatorInfoTooltip,
@@ -38,6 +39,7 @@ import { TICKER } from 'utils/consts'
 import { formatWeiNumber } from 'utils/format'
 import { useModalControls } from 'utils/hooks'
 import { checkWeiNumber, parseWeiNumber } from 'utils/numeric'
+import { COOLDOWN_PERIOD_DOCS_URL } from 'utils/routes'
 import { sharedMessages } from 'utils/sharedMessages'
 
 import styles from './UpdateDelegationModal.module.css'
@@ -125,7 +127,7 @@ const UpdateDelegationModal: React.FC<UpdateDelegationModalProps> = ({
     if (error) {
       openErrorModal()
     }
-  }, [error])
+  }, [error, openErrorModal])
 
   const newDelegationAmount = useMemo(() => {
     if (isIncrease) {
@@ -133,11 +135,11 @@ const UpdateDelegationModal: React.FC<UpdateDelegationModalProps> = ({
     } else {
       return delegates.sub(inputNumberValue)
     }
-  }, [delegates, isIncrease, inputValue])
+  }, [delegates, isIncrease, inputNumberValue])
 
   const onConfirm = useCallback(() => {
     updateDelegation(wallet, inputNumberValue)
-  }, [isIncrease, updateDelegation, wallet, delegates, inputNumberValue])
+  }, [updateDelegation, wallet, inputNumberValue])
 
   // Close All modals on success status
   useEffect(() => {
@@ -146,7 +148,7 @@ const UpdateDelegationModal: React.FC<UpdateDelegationModalProps> = ({
       onClose()
       onCloseErrorModal()
     }
-  }, [status, onClose])
+  }, [status, onClose, onCloseErrorModal])
 
   const hasError =
     (isIncrease && inputNumberValue.gt(maxIncrease)) ||
@@ -382,6 +384,13 @@ const UpdateDelegationModal: React.FC<UpdateDelegationModalProps> = ({
                       text={messages.saveChanges}
                       type={ButtonType.PRIMARY}
                       onClick={onConfirm}
+                    />
+                  )}
+                  {isIncrease ? null : (
+                    <InfoBox
+                      description={sharedMessages.undelegateCooldown}
+                      ctaHref={COOLDOWN_PERIOD_DOCS_URL}
+                      ctaText={sharedMessages.unddelegateCooldownCta}
                     />
                   )}
                 </Flex>

@@ -93,14 +93,14 @@ const App = () => {
       setWillReload(true)
       window.location.reload()
     }
-  }, [address, chainId, selectedNetworkId])
+  }, [address, chainId, selectedNetworkId, willReload])
 
   useEffect(() => {
     if (!isConnected && window.aud.hasValidAccount && !willReload) {
       setWillReload(true)
       window.location.reload()
     }
-  }, [isConnected])
+  }, [isConnected, willReload])
 
   return (
     <ApolloProvider client={apolloClient}>
