@@ -1038,7 +1038,7 @@ def test_index_social_feature_playlist_type(app, mocker):
 
 
 def test_index_social_feature_hidden_item(app, mocker):
-    # create an unlisted playlist and unlisted track, see if faving does anything
+    # ensure that favoriting/reposting a track/playlist works
     "Tests a playlist update and repost in the same block"
     bus_mock = mocker.patch(
         "src.challenges.challenge_event_bus.ChallengeEventBus", autospec=True
@@ -1059,7 +1059,7 @@ def test_index_social_feature_hidden_item(app, mocker):
                         "_entityType": "Playlist",
                         "_userId": 11,
                         # metadata is formatted invalid, should be string
-                        "_metadata": 1,
+                        "_metadata": "",
                         "_action": "Repost",
                         "_signer": "user11wallet",
                     }
@@ -1070,11 +1070,11 @@ def test_index_social_feature_hidden_item(app, mocker):
             {
                 "args": AttributeDict(
                     {
-                        "_entityId": 2,
+                        "_entityId": 1,
                         "_entityType": "Track",
                         "_userId": 11,
                         # metadata is formatted invalid, should be string
-                        "_metadata": 1,
+                        "_metadata": "",
                         "_action": "Save",
                         "_signer": "user11wallet",
                     }
@@ -1103,7 +1103,7 @@ def test_index_social_feature_hidden_item(app, mocker):
             for i in range(1, 13)
         ],
         "playlists": [{"playlist_id": 1, "playlist_owner_id": 10, "is_private": True}],
-        "tracks": [{"track_id": 1, "owner_id": 10, "is_private": True}],
+        "tracks": [{"track_id": 1, "owner_id": 10, "is_unlisted": True}],
     }
     populate_mock_db(db, entities)
 
@@ -1119,5 +1119,5 @@ def test_index_social_feature_hidden_item(app, mocker):
         )
         all_reposts: List[Repost] = session.query(Repost).all()
         all_favorites: List[Save] = session.query(Save).all()
-        assert len(all_reposts) == 0
-        assert len(all_favorites) == 0
+        assert len(all_reposts) == 1
+        assert len(all_favorites) == 1
