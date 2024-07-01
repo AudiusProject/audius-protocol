@@ -115,6 +115,7 @@ const DERIVATIVE_WORKS_BASE = 'derivativeWorks'
 const DERIVATIVE_WORKS = 'licenseType.derivativeWorks'
 const BPM = 'bpm'
 const MUSICAL_KEY = 'musical_key'
+const IS_UNLISTED = 'is_unlisted'
 
 const allowAttributionValues = [
   { key: false, text: messages.allowAttribution.options.false },
@@ -168,7 +169,7 @@ const AdvancedFormSchema = z
 export type AdvancedFormValues = z.input<typeof AdvancedFormSchema>
 
 export type AdvancedFieldProps = { isHidden?: boolean }
-export const AdvancedField = ({ isHidden }: AdvancedFieldProps) => {
+export const AdvancedField = () => {
   const [{ value: aiUserId }, , { setValue: setAiUserId }] =
     useTrackField<SingleTrackEditValues[typeof AI_USER_ID]>(AI_USER_ID)
   const [{ value: isrcValue }, , { setValue: setIsrc }] =
@@ -197,6 +198,7 @@ export const AdvancedField = ({ isHidden }: AdvancedFieldProps) => {
     useTrackField<SingleTrackEditValues[typeof BPM]>(BPM)
   const [{ value: musicalKey }, , { setValue: setMusicalKey }] =
     useTrackField<SingleTrackEditValues[typeof MUSICAL_KEY]>(MUSICAL_KEY)
+  const [{ value: isHidden }] = useTrackField<boolean>(IS_UNLISTED)
 
   const initialValues = useMemo(() => {
     const initialValues = {}
@@ -213,6 +215,7 @@ export const AdvancedField = ({ isHidden }: AdvancedFieldProps) => {
     set(initialValues, BPM, bpm)
     set(initialValues, MUSICAL_KEY, parseMusicalKey(musicalKey ?? ''))
     set(initialValues, RELEASE_DATE, releaseDate)
+    set(initialValues, IS_UNLISTED, isHidden)
     return initialValues as AdvancedFormValues
   }, [
     aiUserId,
@@ -224,7 +227,8 @@ export const AdvancedField = ({ isHidden }: AdvancedFieldProps) => {
     allowedApiKeys,
     bpm,
     musicalKey,
-    releaseDate
+    releaseDate,
+    isHidden
   ])
 
   const onSubmit = useCallback(
@@ -354,13 +358,13 @@ export const AdvancedField = ({ isHidden }: AdvancedFieldProps) => {
       initialValues={initialValues}
       onSubmit={onSubmit}
       validationSchema={toFormikValidationSchema(AdvancedFormSchema)}
-      menuFields={<AdvancedModalFields isHidden={isHidden} />}
+      menuFields={<AdvancedModalFields />}
       renderValue={renderValue}
     />
   )
 }
 
-const AdvancedModalFields = ({ isHidden }: AdvancedFieldProps) => {
+const AdvancedModalFields = () => {
   const [aiUserIdField, aiUserHelperFields, { setValue: setAiUserId }] =
     useField({
       name: AI_USER_ID,
@@ -369,6 +373,7 @@ const AdvancedModalFields = ({ isHidden }: AdvancedFieldProps) => {
   const [{ value: allowAttribution }] = useField<boolean>(ALLOW_ATTRIBUTION)
   const [{ value: commercialUse }] = useField<boolean>(COMMERCIAL_USE)
   const [{ value: derivativeWorks }] = useField<boolean>(DERIVATIVE_WORKS)
+  const [{ value: isHidden }] = useField<boolean>(IS_UNLISTED)
 
   const { licenseType, licenseDescription } = computeLicense(
     allowAttribution,
@@ -492,7 +497,7 @@ const AdvancedModalFields = ({ isHidden }: AdvancedFieldProps) => {
             />
           </div>
         </span>
-        {!isHidden && (
+        {!isHidden ? (
           <>
             <Divider />
             <Flex gap='m' direction='column'>
@@ -505,7 +510,7 @@ const AdvancedModalFields = ({ isHidden }: AdvancedFieldProps) => {
               />
             </Flex>
           </>
-        )}
+        ) : null}
         <Divider />
         <span className={cn(layoutStyles.row, layoutStyles.gap6)}>
           <Flex direction='column' w='100%'>
