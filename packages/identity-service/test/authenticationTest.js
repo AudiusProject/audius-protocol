@@ -235,8 +235,6 @@ describe('test authentication routes', function () {
         username: "wrongemail@audius.co"
       })
       .expect(400)
-
-    await authRecord.destroy()
   })
 
   it('associates user record on sign in', async function () {
@@ -291,7 +289,5 @@ describe('test authentication routes', function () {
         username: "wrongemail@audius.co"
       })
       .expect(400)
-
-    await updatedAuthRecord.destroy()
   })
 })
