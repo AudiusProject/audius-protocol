@@ -51,7 +51,11 @@ const messagesV1 = {
     'Hidden albums remain invisible to your followers, visible only to you on your profile. They can be shared and listened to via direct link.',
   hiddenHint: 'Scheduled tracks are hidden by default until release.',
   publishDisabled:
-    'Publishing is disabled for empty albums and albums containing hidden tracks.'
+    'Publishing is disabled for empty albums and albums containing hidden tracks.',
+  fromFreeHint: (
+    contentType: 'album' | 'track',
+    gatedType: 'gated' | 'premium'
+  ) => `You can't make a free ${contentType} ${gatedType}.`
 }
 
 const messagesV2 = {
@@ -172,6 +176,10 @@ export const PriceAndAudienceMenuFields = (
             checkedContent={
               <SpecialAccessFields disabled={disableSpecialAccessGateFields} />
             }
+            tooltipText={messages.fromFreeHint(
+              isAlbum ? 'album' : 'track',
+              'gated'
+            )}
           />
         ) : null}
         {!isAlbum ? (

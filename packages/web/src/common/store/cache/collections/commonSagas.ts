@@ -30,7 +30,8 @@ import {
   confirmerActions,
   confirmTransaction,
   SubscriptionInfo,
-  Entry
+  Entry,
+  trackPageActions
 } from '@audius/common/store'
 import {
   squashNewLines,
@@ -167,6 +168,7 @@ function* confirmEditPlaylist(
   formFields: Collection
 ) {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const playlistBeforeEdit = yield* select(getCollection, { id: playlistId })
   yield* put(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.COLLECTIONS, playlistId),
@@ -209,6 +211,14 @@ function* confirmEditPlaylist(
             }
           ])
         )
+
+        if (playlistBeforeEdit?.is_private && !confirmedPlaylist.is_private) {
+          for (const track of confirmedPlaylist.tracks ?? []) {
+            if (track.is_unlisted) {
+              yield* put(trackPageActions.makeTrackPublic(track.track_id))
+            }
+          }
+        }
       },
       function* ({ error, timeout, message }) {
         yield* put(
@@ -525,6 +535,13 @@ function* confirmPublishPlaylist(
             }
           ])
         )
+
+        for (const track of confirmedPlaylist.tracks ?? []) {
+          if (track.is_unlisted) {
+            yield* put(trackPageActions.makeTrackPublic(track.track_id))
+          }
+        }
+
         if (dismissToastKey) {
           yield* put(manualClearToast({ key: dismissToastKey }))
         }

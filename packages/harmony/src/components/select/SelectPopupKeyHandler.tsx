@@ -1,13 +1,13 @@
 import { RefObject, useState, ReactNode, useEffect } from 'react'
 
-import { FilterButtonOption } from '../FilterButton/types'
+import { SelectOption } from './Select/types'
 
 type SelectPopupKeyHandlerProps = {
   children: (activeValue: string | null) => ReactNode
   disabled?: boolean
-  onOptionSelect: (option: FilterButtonOption) => void
+  onOptionSelect: (option: SelectOption) => void
   optionRefs: RefObject<HTMLButtonElement[]>
-  options: FilterButtonOption[]
+  options: SelectOption[]
   scrollRef: RefObject<HTMLDivElement>
 }
 
@@ -95,7 +95,7 @@ export const SelectPopupKeyHandler = (props: SelectPopupKeyHandlerProps) => {
     return () => {
       window.removeEventListener('keydown', handleKeyDown)
     }
-  }, [disabled, options, activeIndex, scrollRef, optionRefs])
+  }, [disabled, options, activeIndex, scrollRef, optionRefs, onOptionSelect])
 
   return <>{children(activeValue)}</>
 }

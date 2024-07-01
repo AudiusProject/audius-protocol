@@ -41,21 +41,21 @@ const WAITLIST_TYPEFORM = 'https://link.audius.co/waitlist'
 
 const getMessages = (props: DownloadAvailabilityProps) => ({
   downloadAvailability: 'Download Availability',
-  customize: 'Customize who has access to download your files.',
+  customize: 'Specify who has access to download your files.',
   public: 'Public',
   followers: 'Followers',
   premium: 'Premium',
   callout: {
     premium: `You're ${
       props.isUpload ? 'uploading' : 'editing'
-    } a Premium track. By default, purchasers will be able to download your available files. If you'd like to only sell your files, set your track to Public or Hidden in the`,
+    } a Premium track. By default, purchasers will be able to download your available files. If you'd like to sell your files, set your track to Public or Hidden in the`,
     specialAccess: `You're ${
       props.isUpload ? 'uploading' : 'editing'
-    } a Special Access track. By default, users who unlock your track will be able to download your available files. If you'd like to only sell your files, set your track to Public or Hidden in the`,
+    } a Special Access track. By default, users who unlock your track will be able to download your available files. If you'd like to sell your files, set your track to Public or Hidden in the`,
     collectibleGated: `You're ${
       props.isUpload ? 'uploading' : 'editing'
-    } a Collectible Gated track. By default, users who unlock your track will be able to download your available files. If you'd like to only sell your files, set your track to Public or Hidden in the`,
-    accessAndSale: 'Access & Sale Settings'
+    } a Collectible Gated track. By default, users who unlock your track will be able to download your available files. If you'd like to sell your files, set your track to Public or Hidden in the`,
+    priceAndAudience: 'Price & Audience Settings'
   },
   waitlist:
     'Start selling your music on Audius today! Limited access beta now available.',
@@ -209,7 +209,7 @@ export const DownloadAvailability = (props: DownloadAvailabilityProps) => {
           icon={IconError}
           actions={
             <TextLink onClick={handleCalloutClick} variant='visible'>
-              {messages.callout.accessAndSale}
+              {messages.callout.priceAndAudience}
             </TextLink>
           }
         >

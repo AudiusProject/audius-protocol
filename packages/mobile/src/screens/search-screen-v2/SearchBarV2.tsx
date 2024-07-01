@@ -12,7 +12,6 @@ const messages = {
 
 export const SearchBarV2 = () => {
   const [query, setQuery] = useSearchQuery()
-
   return (
     <TextInput
       startIcon={IconSearch}

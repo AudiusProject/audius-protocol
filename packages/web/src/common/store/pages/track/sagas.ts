@@ -232,6 +232,7 @@ function* watchTrackPageMakePublic() {
         ...track,
         is_unlisted: false,
         release_date: moment().toString(),
+        is_scheduled_release: false,
         field_visibility: {
           genre: true,
           mood: true,

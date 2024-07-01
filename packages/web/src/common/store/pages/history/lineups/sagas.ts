@@ -1,5 +1,6 @@
 import {
   Id,
+  Kind,
   LineupEntry,
   Track,
   UserTrackMetadata
@@ -69,7 +70,7 @@ function* getHistoryTracks() {
 
 const keepTrackIdAndDateListened = (entry: LineupEntry<Track>) => ({
   uid: entry.uid,
-  kind: entry.kind,
+  kind: entry.kind ?? ('track_id' in entry ? Kind.TRACKS : Kind.COLLECTIONS),
   id: entry.track_id,
   dateListened: entry.dateListened
 })

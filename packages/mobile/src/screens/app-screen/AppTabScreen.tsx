@@ -34,7 +34,7 @@ import {
 } from 'app/screens/search-results-screen'
 import { SearchScreen } from 'app/screens/search-screen'
 import type { SearchParams } from 'app/screens/search-screen-v2'
-import { SearchScreenV2 } from 'app/screens/search-screen-v2'
+import { SearchScreenStack } from 'app/screens/search-screen-v2'
 import {
   AboutScreen,
   AccountSettingsScreen,
@@ -221,26 +221,34 @@ export const AppTabScreen = ({ baseScreen, Stack }: AppTabScreenProps) => {
         component={ProfileScreen}
         options={screenOptions}
       />
-      <Stack.Group>
+      {isSearchV2Enabled ? (
         <Stack.Screen
           name='Search'
-          component={isSearchV2Enabled ? SearchScreenV2 : SearchScreen}
-          options={(props) => ({
-            ...screenOptions(props),
-            cardStyleInterpolator: forFade
-          })}
+          component={SearchScreenStack}
+          options={{ ...screenOptions, headerShown: false }}
         />
-        <Stack.Screen
-          name='SearchResults'
-          component={SearchResultsScreen}
-          options={screenOptions}
-        />
-        <Stack.Screen
-          name='TagSearch'
-          component={TagSearchScreen}
-          options={screenOptions}
-        />
-      </Stack.Group>
+      ) : (
+        <Stack.Group>
+          <Stack.Screen
+            name='Search'
+            component={SearchScreen}
+            options={(props) => ({
+              ...screenOptions(props),
+              cardStyleInterpolator: forFade
+            })}
+          />
+          <Stack.Screen
+            name='SearchResults'
+            component={SearchResultsScreen}
+            options={screenOptions}
+          />
+          <Stack.Screen
+            name='TagSearch'
+            component={TagSearchScreen}
+            options={screenOptions}
+          />
+        </Stack.Group>
+      )}
       <Stack.Group>
         <Stack.Screen
           name='Followers'

@@ -7,15 +7,6 @@ export type FilterButtonSize = 'default' | 'small'
 // TODO: is replaceLabel still needed?
 export type FilterButtonVariant = 'fillContainer' | 'replaceLabel'
 
-export type FilterButtonOption = {
-  value: string
-  /**
-   * The label to display. If not provided, uses the value.
-   */
-  label?: string
-  icon?: IconComponent
-}
-
 type ChildrenProps = {
   /**
    * State representing whether the FilterButton is open.
@@ -29,7 +20,7 @@ type ChildrenProps = {
   /**
    * A function to handle when the value is changed
    */
-  handleChange: (value: string, label: string) => void
+  handleChange: (value: string) => void
   /**
    * A ref to the anchor element (button)
    */
@@ -107,4 +98,9 @@ export type FilterButtonProps = {
    * Whether interaction is disabled
    */
   disabled?: boolean
+
+  /**
+   * Optional leading element to include on the left side of the button
+   */
+  leadingElement?: ReactNode
 }

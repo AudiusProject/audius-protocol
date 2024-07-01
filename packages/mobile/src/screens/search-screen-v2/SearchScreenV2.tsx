@@ -4,19 +4,56 @@ import type {
   SearchCategory,
   SearchFilters as SearchFiltersType
 } from '@audius/common/api'
+import { createNativeStackNavigator } from '@react-navigation/native-stack'
 
 import { Flex } from '@audius/harmony-native'
 import { Screen } from 'app/components/core'
 import { useRoute } from 'app/hooks/useRoute'
 
+import { useAppScreenOptions } from '../app-screen/useAppScreenOptions'
+
 import { RecentSearches } from './RecentSearches'
 import { SearchBarV2 } from './SearchBarV2'
 import { SearchCatalogTile } from './SearchCatalogTile'
 import { SearchCategoriesAndFilters } from './SearchCategoriesAndFilters'
-import { SearchContext } from './searchState'
+import { SearchResults } from './SearchResults'
+import { SelectGenreScreen } from './components'
+import { SelectMoodScreen } from './components/SelectMoodScreen'
+import {
+  SearchContext,
+  useSearchCategory,
+  useSearchFilters,
+  useSearchQuery
+} from './searchState'
+
+const Stack = createNativeStackNavigator()
 
 export const SearchScreenV2 = () => {
-  const { params } = useRoute<'Search'>()
+  const [query] = useSearchQuery()
+  const [category] = useSearchCategory()
+  const [filters] = useSearchFilters()
+  const showSearchResults =
+    query ||
+    category !== 'all' ||
+    Object.values(filters).some((filter) => filter)
+
+  return (
+    <Screen topbarRight={<SearchBarV2 />} headerTitle={null} variant='white'>
+      <SearchCategoriesAndFilters />
+      {!showSearchResults ? (
+        <Flex direction='column' alignItems='center' gap='xl'>
+          <SearchCatalogTile />
+          <RecentSearches />
+        </Flex>
+      ) : (
+        <SearchResults />
+      )}
+    </Screen>
+  )
+}
+
+export const SearchScreenStack = () => {
+  const { params = {} } = useRoute<'Search'>()
   const [query, setQuery] = useState(params.query ?? '')
   const [category, setCategory] = useState<SearchCategory>(
     params.category ?? 'all'
@@ -25,22 +62,19 @@ export const SearchScreenV2 = () => {
     params.filters ?? {}
   )
 
-  const showSearchResults =
-    query || Object.values(filters).some((filter) => filter)
+  const screenOptions = useAppScreenOptions()
 
   return (
-    <Screen topbarRight={<SearchBarV2 />} headerTitle={null} variant='white'>
-      <SearchContext.Provider
-        value={{ query, setQuery, category, setCategory, filters, setFilters }}
-      >
-        <SearchCategoriesAndFilters />
-        {!showSearchResults ? (
-          <Flex direction='column' alignItems='center' gap='xl'>
-            <SearchCatalogTile />
-            <RecentSearches />
-          </Flex>
-        ) : null}
-      </SearchContext.Provider>
-    </Screen>
+    <SearchContext.Provider
+      value={{ query, setQuery, category, setCategory, filters, setFilters }}
+    >
+      <Stack.Navigator screenOptions={screenOptions}>
+        <Stack.Screen name='SearchResults' component={SearchScreenV2} />
+        <Stack.Group screenOptions={{ presentation: 'fullScreenModal' }}>
+          <Stack.Screen name='FilterMood' component={SelectMoodScreen} />
+          <Stack.Screen name='FilterGenre' component={SelectGenreScreen} />
+        </Stack.Group>
+      </Stack.Navigator>
+    </SearchContext.Provider>
   )
 }

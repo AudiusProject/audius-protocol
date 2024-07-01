@@ -15,6 +15,7 @@ type TrackListProps = {
   tracks: Array<{
     isLoading: boolean
     isStreamGated?: boolean
+    isUnlisted?: boolean
     isSaved?: boolean
     isReposted?: boolean
     isActive?: boolean
@@ -92,6 +93,7 @@ const TrackList = ({
           trackId={track.trackId}
           className={itemClassName}
           isLoading={track.isLoading}
+          isUnlisted={track.isUnlisted}
           isSaved={track.isSaved}
           isReposted={track.isReposted}
           isActive={track.isActive}

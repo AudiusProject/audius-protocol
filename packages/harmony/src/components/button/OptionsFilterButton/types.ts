@@ -11,7 +11,14 @@ export type OptionsFilterButtonOption = {
   label?: string
   helperText?: string
   icon?: IconComponent
+  /**
+   * A leading element to display before the option label. Useful for icons/emojis
+   */
   leadingElement?: JSX.Element
+  /**
+   * A leading element to display before the filter button label
+   */
+  labelLeadingElement?: JSX.Element
 }
 
 export type FilterButtonPopupProps = {

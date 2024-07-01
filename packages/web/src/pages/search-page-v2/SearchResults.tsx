@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef } from 'react'
 
+import { Status } from '@audius/common/models'
 import {
   fetchSearchPageTags,
   fetchSearchPageResults
@@ -94,22 +95,32 @@ export const SearchResults = () => {
     routeMatch.category === undefined ||
     routeMatch.category === CategoryView.ALL
 
+  const isLoading = results.status === Status.LOADING
+
   const isTracksVisible =
     isCategoryActive(CategoryView.TRACKS) ||
-    (isAllCategoriesVisible && results.trackIds && results.trackIds.length > 0)
+    (isAllCategoriesVisible &&
+      results.trackIds &&
+      results.trackIds.length > 0) ||
+    isLoading
   const isProfilesVisible =
     isCategoryActive(CategoryView.PROFILES) ||
     (isAllCategoriesVisible &&
       results.artistIds &&
-      results.artistIds.length > 0)
+      results.artistIds.length > 0) ||
+    isLoading
   const isAlbumsVisible =
     isCategoryActive(CategoryView.ALBUMS) ||
-    (isAllCategoriesVisible && results.albumIds && results.albumIds.length > 0)
+    (isAllCategoriesVisible &&
+      results.albumIds &&
+      results.albumIds.length > 0) ||
+    isLoading
   const isPlaylistsVisible =
     isCategoryActive(CategoryView.PLAYLISTS) ||
     (isAllCategoriesVisible &&
       results.playlistIds &&
-      results.playlistIds.length > 0)
+      results.playlistIds.length > 0) ||
+    isLoading
 
   // Check if there are no results
   const isResultsEmpty =
@@ -119,13 +130,15 @@ export const SearchResults = () => {
     results.trackIds?.length === 0
 
   const showNoResultsTile =
-    isResultsEmpty ||
-    (isCategoryActive(CategoryView.ALBUMS) && results.albumIds?.length === 0) ||
-    (isCategoryActive(CategoryView.PROFILES) &&
-      results.artistIds?.length === 0) ||
-    (isCategoryActive(CategoryView.PLAYLISTS) &&
-      results.playlistIds?.length === 0) ||
-    (isCategoryActive(CategoryView.TRACKS) && results.trackIds?.length === 0)
+    results.status !== Status.LOADING &&
+    (isResultsEmpty ||
+      (isCategoryActive(CategoryView.ALBUMS) &&
+        results.albumIds?.length === 0) ||
+      (isCategoryActive(CategoryView.PROFILES) &&
+        results.artistIds?.length === 0) ||
+      (isCategoryActive(CategoryView.PLAYLISTS) &&
+        results.playlistIds?.length === 0) ||
+      (isCategoryActive(CategoryView.TRACKS) && results.trackIds?.length === 0))
 
   if (showNoResultsTile) return <NoResultsTile />
 
