@@ -13,7 +13,7 @@ export const FilterButton = forwardRef<HTMLButtonElement, FilterButtonProps>(
     const {
       value: valueProp,
       children,
-      label: labelProp,
+      label,
       onChange,
       onClick,
       onOpen,
@@ -21,20 +21,14 @@ export const FilterButton = forwardRef<HTMLButtonElement, FilterButtonProps>(
       disabled,
       variant = 'fillContainer',
       size = 'default',
-      iconRight
+      iconRight,
+      leadingElement
     } = props
     const { color, cornerRadius, spacing, typography } = useTheme()
     const [value, setValue] = useControlled({
       controlledProp: valueProp,
       defaultValue: null,
       stateName: 'value',
-      componentName: 'FilterButton'
-    })
-
-    const [label, setLabel] = useControlled({
-      controlledProp: labelProp,
-      defaultValue: null,
-      stateName: 'label',
       componentName: 'FilterButton'
     })
 
@@ -123,7 +117,6 @@ export const FilterButton = forwardRef<HTMLButtonElement, FilterButtonProps>(
       } else {
         if (variant === 'fillContainer' && value !== null) {
           setValue(null)
-          setLabel(null)
           // @ts-ignore
           onChange?.(null)
           onReset?.()
@@ -131,16 +124,7 @@ export const FilterButton = forwardRef<HTMLButtonElement, FilterButtonProps>(
           setIsOpen((isOpen: boolean) => !isOpen)
         }
       }
-    }, [
-      value,
-      variant,
-      setIsOpen,
-      setValue,
-      setLabel,
-      onChange,
-      onClick,
-      onReset
-    ])
+    }, [value, variant, setIsOpen, setValue, onChange, onClick, onReset])
 
     useEffect(() => {
       if (isOpen) {
@@ -149,12 +133,11 @@ export const FilterButton = forwardRef<HTMLButtonElement, FilterButtonProps>(
     }, [isOpen, onOpen])
 
     const handleChange = useCallback(
-      (value: string, label: string) => {
+      (value: string) => {
         setValue(value)
-        setLabel(label)
         onChange?.(value)
       },
-      [onChange, setValue, setLabel]
+      [onChange, setValue]
     )
 
     const anchorRef = useRef<HTMLButtonElement>(null)
@@ -176,6 +159,7 @@ export const FilterButton = forwardRef<HTMLButtonElement, FilterButtonProps>(
         aria-haspopup='listbox'
         aria-expanded={isOpen}
       >
+        {leadingElement}
         {label}
         {children?.({
           isOpen,

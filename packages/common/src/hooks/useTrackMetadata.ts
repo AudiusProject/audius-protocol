@@ -74,7 +74,7 @@ export const useTrackMetadata = ({
     {
       id: TrackMetadataType.BPM,
       label: 'BPM',
-      value: Math.round(bpm ?? 0).toString(),
+      value: bpm ? Math.round(bpm ?? 0).toString() : '',
       isHidden: !isSearchV2Enabled
     },
     {
