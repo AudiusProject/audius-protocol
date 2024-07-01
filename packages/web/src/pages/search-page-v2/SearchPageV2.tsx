@@ -14,7 +14,11 @@ import NavContext, {
 } from 'components/nav/mobile/NavContext'
 import Page from 'components/page/Page'
 import { useMedia } from 'hooks/useMedia'
-import { SEARCH_PAGE, fullSearchResultsPage } from 'utils/route'
+import {
+  SEARCH_PAGE,
+  fullSearchResultsPage,
+  fullSearchResultsPageV2
+} from 'utils/route'
 
 import { RecentSearches } from './RecentSearches'
 import { SearchCatalogTile } from './SearchCatalogTile'
@@ -90,7 +94,7 @@ export const SearchPageV2 = () => {
     <PageComponent
       title={query ?? 'Search'}
       description={`Search results for ${query}`}
-      canonicalUrl={fullSearchResultsPage(query ?? '')}
+      canonicalUrl={fullSearchResultsPageV2(category, query ?? '')}
       header={header}
     >
       <Flex direction='column' w='100%'>
