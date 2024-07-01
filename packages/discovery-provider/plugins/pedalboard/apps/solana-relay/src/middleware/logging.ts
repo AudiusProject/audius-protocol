@@ -12,6 +12,7 @@ export const incomingRequestLogger = (
   response.locals.requestStartTime = startTime
   const requestId = uuidv4()
   const { path, method } = request
+  response.locals.requestId = requestId
   response.locals.logger = logger.child({
     requestId,
     path,

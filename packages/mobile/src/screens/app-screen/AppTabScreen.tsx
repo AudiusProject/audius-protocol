@@ -7,6 +7,7 @@ import type {
   SearchTrack,
   SearchPlaylist
 } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import type {
   NotificationType,
   RepostType,
@@ -15,18 +16,42 @@ import type {
 import type { EventArg, NavigationState } from '@react-navigation/native'
 import type { createNativeStackNavigator } from '@react-navigation/native-stack'
 
+import { Text } from '@audius/harmony-native'
 import { useDrawer } from 'app/hooks/useDrawer'
+import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
+import { AiGeneratedTracksScreen } from 'app/screens/ai-generated-tracks-screen'
+import { AppDrawerContext } from 'app/screens/app-drawer-screen'
+import { AudioScreen } from 'app/screens/audio-screen'
 import { ChatListScreen } from 'app/screens/chat-screen/ChatListScreen'
 import { ChatScreen } from 'app/screens/chat-screen/ChatScreen'
 import { ChatUserListScreen } from 'app/screens/chat-screen/ChatUserListScreen'
 import { CollectionScreen } from 'app/screens/collection-screen/CollectionScreen'
+import { EditProfileScreen } from 'app/screens/edit-profile-screen'
+import { PayAndEarnScreen } from 'app/screens/pay-and-earn-screen'
 import { ProfileScreen } from 'app/screens/profile-screen'
 import {
   SearchResultsScreen,
   TagSearchScreen
 } from 'app/screens/search-results-screen'
 import { SearchScreen } from 'app/screens/search-screen'
+import type { SearchParams } from 'app/screens/search-screen-v2'
+import {
+  SelectMoodScreen,
+  SelectGenreScreen,
+  SearchScreenV2
+} from 'app/screens/search-screen-v2'
+import {
+  AboutScreen,
+  AccountSettingsScreen,
+  AccountVerificationScreen,
+  ListeningHistoryScreen,
+  DownloadSettingsScreen,
+  InboxSettingsScreen,
+  NotificationSettingsScreen,
+  SettingsScreen
+} from 'app/screens/settings-screen'
 import { TrackScreen } from 'app/screens/track-screen'
+import { TrackRemixesScreen } from 'app/screens/track-screen/TrackRemixesScreen'
 import {
   FavoritedScreen,
   FollowersScreen,
@@ -38,23 +63,6 @@ import {
   TopSupportersScreen,
   SupportingUsersScreen
 } from 'app/screens/user-list-screen'
-
-import { AiGeneratedTracksScreen } from '../ai-generated-tracks-screen'
-import { AppDrawerContext } from '../app-drawer-screen'
-import { AudioScreen } from '../audio-screen'
-import { EditProfileScreen } from '../edit-profile-screen'
-import { PayAndEarnScreen } from '../pay-and-earn-screen'
-import {
-  AboutScreen,
-  AccountSettingsScreen,
-  AccountVerificationScreen,
-  ListeningHistoryScreen,
-  DownloadSettingsScreen,
-  InboxSettingsScreen,
-  NotificationSettingsScreen,
-  SettingsScreen
-} from '../settings-screen'
-import { TrackRemixesScreen } from '../track-screen/TrackRemixesScreen'
 
 import { useAppScreenOptions } from './useAppScreenOptions'
 
@@ -83,7 +91,7 @@ export type AppTabScreenParamList = {
   Mutuals: { userId: ID }
   AiGeneratedTracks: { userId: ID }
   RelatedArtists: { userId: ID }
-  Search: undefined
+  Search: SearchParams
   SearchResults: { query: string }
   SupportingUsers: { userId: ID }
   TagSearch: { query: string }
@@ -155,6 +163,9 @@ export const AppTabScreen = ({ baseScreen, Stack }: AppTabScreenProps) => {
   const screenOptions = useAppScreenOptions()
   const { drawerNavigation } = useContext(AppDrawerContext)
   const { isOpen: isNowPlayingDrawerOpen } = useDrawer('NowPlaying')
+  const { isEnabled: isSearchV2Enabled } = useFeatureFlag(
+    FeatureFlags.SEARCH_V2
+  )
 
   const handleChangeState = useCallback(
     (event: NavigationStateEvent) => {
@@ -215,26 +226,42 @@ export const AppTabScreen = ({ baseScreen, Stack }: AppTabScreenProps) => {
         component={ProfileScreen}
         options={screenOptions}
       />
-      <Stack.Group>
-        <Stack.Screen
-          name='Search'
-          component={SearchScreen}
-          options={(props) => ({
-            ...screenOptions(props),
-            cardStyleInterpolator: forFade
-          })}
-        />
-        <Stack.Screen
-          name='SearchResults'
-          component={SearchResultsScreen}
-          options={screenOptions}
-        />
-        <Stack.Screen
-          name='TagSearch'
-          component={TagSearchScreen}
-          options={screenOptions}
-        />
-      </Stack.Group>
+      {isSearchV2Enabled ? (
+        <Stack.Group>
+          <Stack.Screen name='Search' component={SearchScreenV2} />
+          <Stack.Screen name='SearchGenre' component={SelectGenreScreen} />
+          <Stack.Screen name='SearchMood' component={SelectMoodScreen} />
+          <Stack.Screen
+            name='SearchBpm'
+            component={() => <Text>BPM Filter Here</Text>}
+          />
+          <Stack.Screen
+            name='SearchKey'
+            component={() => <Text>Key Filter Here</Text>}
+          />
+        </Stack.Group>
+      ) : (
+        <Stack.Group>
+          <Stack.Screen
+            name='Search'
+            component={SearchScreen}
+            options={(props) => ({
+              ...screenOptions(props),
+              cardStyleInterpolator: forFade
+            })}
+          />
+          <Stack.Screen
+            name='SearchResults'
+            component={SearchResultsScreen}
+            options={screenOptions}
+          />
+          <Stack.Screen
+            name='TagSearch'
+            component={TagSearchScreen}
+            options={screenOptions}
+          />
+        </Stack.Group>
+      )}
       <Stack.Group>
         <Stack.Screen
           name='Followers'

@@ -108,7 +108,7 @@ const CollectionHeader = ({
     currentUserId
   })
   const { hasStreamAccess } = useGatedContentAccess(collection)
-  const isPremium = collection?.is_stream_gated
+  const { is_private: isPrivate, is_stream_gated: isPremium } = collection ?? {}
 
   const tracks = useSelector((state: CommonState) =>
     getCollectionTracks(state, { id: collectionId })
@@ -207,7 +207,7 @@ const CollectionHeader = ({
     <Flex direction='column'>
       {renderDogEar()}
       <Flex direction='column' alignItems='center' p='l' gap='l'>
-        <Text variant='label' css={{ letterSpacing: '2px' }} color='subdued'>
+        <Text variant='label' color='subdued'>
           {type === 'playlist' && !isPublished
             ? isPublishing
               ? messages.publishing
@@ -273,10 +273,18 @@ const CollectionHeader = ({
           onRepost={onRepost}
           onClickOverflow={onClickOverflow}
           onClickEdit={handleClickEdit}
-          showFavorite={!!onSave && !isOwner && hasStreamAccess}
-          showRepost={variant !== Variant.SMART && !isOwner && hasStreamAccess}
-          showShare={variant !== Variant.SMART || type === 'Audio NFT Playlist'}
-          showOverflow={variant !== Variant.SMART}
+          showFavorite={!!onSave && !isOwner && hasStreamAccess && !isPrivate}
+          showRepost={
+            variant !== Variant.SMART &&
+            !isOwner &&
+            hasStreamAccess &&
+            !isPrivate
+          }
+          showShare={
+            (variant !== Variant.SMART || type === 'Audio NFT Playlist') &&
+            !isPrivate
+          }
+          showOverflow={variant !== Variant.SMART && !isPrivate}
           darkMode={isDarkMode()}
           showEdit={variant !== Variant.SMART && isOwner}
         />

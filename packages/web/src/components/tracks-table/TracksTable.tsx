@@ -8,7 +8,7 @@ import {
   isContentFollowGated,
   isContentUSDCPurchaseGated
 } from '@audius/common/models'
-import { formatCount, formatSeconds } from '@audius/common/utils'
+import { formatCount, formatPrice, formatSeconds } from '@audius/common/utils'
 import {
   IconVisibilityHidden,
   IconLock,
@@ -495,7 +495,12 @@ export const TracksTable = ({
       if (!isLocked || deleted || isOwner || !isPremiumEnabled) {
         return null
       }
+
       if (isContentUSDCPurchaseGated(track.stream_conditions)) {
+        // Format the price as $$ with 2 digit decimal cents
+        const formattedPrice = formatPrice(
+          track.stream_conditions.usdc_purchase.price
+        )
         return (
           <Button
             size='small'
@@ -506,7 +511,7 @@ export const TracksTable = ({
               onClickPurchase?.(track)
             }}
           >
-            ${track.stream_conditions.usdc_purchase.price / 100}.00
+            ${formattedPrice}
           </Button>
         )
       }

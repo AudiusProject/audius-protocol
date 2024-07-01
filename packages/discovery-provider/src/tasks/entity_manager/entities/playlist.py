@@ -365,9 +365,6 @@ def validate_playlist_tx(params: ManageEntityParameters):
                     f"Playlist {playlist_id} exceeds track limit {PLAYLIST_TRACK_LIMIT}"
                 )
 
-        if params.action == Action.UPDATE:
-            validate_update_access_conditions(params)
-
         if (
             params.action == Action.UPDATE
             and not existing_playlist.is_private
@@ -393,54 +390,6 @@ def validate_access_conditions(params: ManageEntityParameters):
         if len(stream_conditions) != 1:
             raise IndexingValidationError(
                 f"Playlist {params.entity_id} has an invalid number of stream conditions"
-            )
-
-
-# Make sure that access conditions do not incorrectly change during playlist update.
-# Rule of thumb is that access can only be modified to decrease strictness.
-def validate_update_access_conditions(params: ManageEntityParameters):
-    playlist_id = params.entity_id
-    if playlist_id not in params.existing_records["Playlist"]:
-        raise IndexingValidationError(
-            f"Playlist {playlist_id} is not in existing records"
-        )
-
-    existing_playlist = helpers.model_to_dictionary(
-        params.existing_records["Playlist"][playlist_id]
-    )
-
-    updated_playlist = params.metadata
-    existing_conditions = existing_playlist.get("stream_conditions")
-    updated_conditions = updated_playlist.get("stream_conditions")
-
-    if existing_playlist.get("is_private"):
-        # private playlist can be changed to gated or public
-        return
-
-    if not existing_conditions:
-        # non gated playlist cannot be updated to be gated
-        if updated_conditions:
-            raise IndexingValidationError(
-                f"Playlist {playlist_id} cannot increase strictness of stream access conditions"
-            )
-    else:
-        # note that usdc purchase may be edited to change price (and maybe splits?)
-        is_existing_usdc_purchase = USDC_PURCHASE_KEY in existing_conditions
-        is_updated_usdc_purchase = (
-            updated_conditions and USDC_PURCHASE_KEY in updated_conditions
-        )
-        is_valid_usdc_purchase = is_existing_usdc_purchase and is_updated_usdc_purchase
-        # the updated stream conditions must be:
-        # - public (None),
-        # - equal to the existing stream conditions,
-        # - or a valid usdc purchase
-        if (
-            updated_conditions
-            and existing_conditions != updated_conditions
-            and not is_valid_usdc_purchase
-        ):
-            raise IndexingValidationError(
-                f"Playlist {playlist_id} cannot change access conditions"
             )
 
 

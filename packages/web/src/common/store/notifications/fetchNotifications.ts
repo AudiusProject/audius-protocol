@@ -107,7 +107,8 @@ function* fetchDiscoveryNotifications(params: FetchNotificationsParams) {
     isUSDCPurchasesEnabled ? 'usdc_purchase_seller' : null,
     isPurchaseableAlbumsEnabled ? 'track_added_to_purchased_album' : null,
     isManagerModeEnabled ? 'request_manager' : null,
-    isManagerModeEnabled ? 'approve_manager_request' : null
+    isManagerModeEnabled ? 'approve_manager_request' : null,
+    'claimable_reward'
   ].filter(removeNullable)
 
   const discoveryNotifications = yield* call(

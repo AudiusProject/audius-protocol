@@ -1,10 +1,10 @@
 import { App } from '@pedalboard/basekit'
 import { Knex } from 'knex'
 import { SharedData } from './config'
-import { discoveryDb, identityDb, intoResult } from './utils'
+import { discoveryDb, identityDb } from './utils'
 import { WebClient } from '@slack/web-api'
 import moment from 'moment'
-import { Table, TrendingResults } from '@pedalboard/storage'
+import { Table, TrendingResults, Users } from '@pedalboard/storage'
 
 enum TrendingTypes {
   Tracks = 'TrendingType.TRACKS',
@@ -31,9 +31,9 @@ export const announceTopFiveTrending = async (
     week
   )
 
-  const trackHandles = await queryHandles(identityDb, tracks)
-  const playlistHandles = await queryHandles(identityDb, playlists)
-  const undergroundHandles = await queryHandles(identityDb, undergroundTracks)
+  const trackHandles = await queryHandles(discoveryDb, identityDb, tracks)
+  const playlistHandles = await queryHandles(discoveryDb, identityDb, playlists)
+  const undergroundHandles = await queryHandles(discoveryDb, identityDb, undergroundTracks)
 
   const trackEntries = assembleEntries(trackHandles, tracks)
   const playlistEntries = assembleEntries(playlistHandles, playlists)
@@ -99,6 +99,7 @@ export const queryTopFiveTrending = async (
 }
 
 export const queryHandles = async (
+  discoveryDb: Knex,
   identityDb: Knex,
   trendingResults: TrendingResults[]
 ): Promise<Map<number, string>> => {
@@ -107,9 +108,10 @@ export const queryHandles = async (
     .select('handle', 'blockchainUserId')
     .whereIn('blockchainUserId', blockchainUserIds)
   const handles = userHandles.map((handle) => handle.handle)
-  const twitterHandles = await identityDb('SocialHandles')
-    .select('handle', 'twitterHandle')
+  const twitterHandles = await discoveryDb<Users>(Table.Users)
+    .select('handle', 'twitter_handle')
     .whereIn('handle', handles)
+    .andWhere('is_current', true)
   const handleMap = new Map<number, string>()
   for (const userId of blockchainUserIds) {
     const userHandle = userHandles.find(
@@ -117,12 +119,12 @@ export const queryHandles = async (
     )
     const twitterHandle = twitterHandles.find(
       (handle) =>
-        handle.handle === userHandle.handle && handle.twitterHandle !== null
+        handle.handle === userHandle.handle && handle.twitter_handle !== null
     )
     if (twitterHandle === undefined)
       handleMap.set(userId, `@/${userHandle.handle}`)
     else {
-      handleMap.set(userId, `@${twitterHandle.twitterHandle}`)
+      handleMap.set(userId, `@${twitterHandle.twitter_handle}`)
     }
   }
   return handleMap

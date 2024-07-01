@@ -19,7 +19,7 @@ import { IconCaretDown, IconSearch } from 'icons'
 
 import { FilterButton } from '../FilterButton/FilterButton'
 
-import { SelectPopupKeyHandler } from './SelectPopupKeyHandler'
+import { OptionsFilterButtonPopupKeyHandler } from './OptionsFilterButtonPopupKeyHandler'
 import { OptionsFilterButtonProps, OptionsFilterButtonOption } from './types'
 
 const messages = {
@@ -190,7 +190,7 @@ export const OptionsFilterButton = forwardRef<
       label={selectedLabel ?? filterButtonProps.label}
     >
       {({ isOpen, setIsOpen, handleChange, anchorRef }) => (
-        <SelectPopupKeyHandler
+        <OptionsFilterButtonPopupKeyHandler
           options={filteredOptions}
           disabled={!isOpen}
           onOptionSelect={handleOptionSelect(handleChange, setIsOpen)}
@@ -263,7 +263,7 @@ export const OptionsFilterButton = forwardRef<
               </Paper>
             </Popup>
           )}
-        </SelectPopupKeyHandler>
+        </OptionsFilterButtonPopupKeyHandler>
       )}
     </FilterButton>
   )

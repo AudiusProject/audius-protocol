@@ -120,7 +120,6 @@ const getMessages = (
   emptyPublic: `This ${collectionType} is empty`,
   detailsPlaceholder: '---',
   collectionType: `${isPremium ? 'premium ' : ''}${collectionType}`,
-  hiddenType: `Hidden ${collectionType}`,
   play: 'Play',
   pause: 'Pause',
   resume: 'Resume',
@@ -189,12 +188,10 @@ export const CollectionScreenDetailsTile = ({
   trackCount: trackCountProp,
   isOwner = false,
   hideOverflow,
-  hideRepost,
-  hideFavorite,
+  hideActions,
   hasStreamAccess,
   streamConditions,
   ddexApp,
-  hideShare,
   playCount,
   hidePlayCount,
   hideFavoriteCount,
@@ -260,12 +257,12 @@ export const CollectionScreenDetailsTile = ({
   const playingTrackId = playingTrack?.track_id
   const firstTrack = useSelector(selectFirstTrack)
   const messages = getMessages(isAlbum ? 'album' : 'playlist', isStreamGated)
-  const headerText = isPrivate ? messages.hiddenType : messages.collectionType
   const isPublished = !isPrivate || isPublishing
   const isUnpublishedScheduledRelease =
     isScheduledRelease && isPrivate && releaseDate
   const shouldHideOverflow =
     hideOverflow || !isReachable || (isPrivate && !isOwner)
+  const shouldHideActions = hideActions || (isPrivate && !isOwner)
   const isUSDCPurchaseGated = isContentUSDCPurchaseGated(streamConditions)
 
   const uids = isLineupLoading ? Array(Math.min(5, trackCount ?? 0)) : trackUids
@@ -415,7 +412,7 @@ export const CollectionScreenDetailsTile = ({
           textTransform='uppercase'
           color='subdued'
         >
-          {headerText}
+          {messages.collectionType}
         </Text>
 
         {badges.length > 0 ? (
@@ -454,10 +451,10 @@ export const CollectionScreenDetailsTile = ({
           ddexApp={ddexApp}
           hasReposted={!!hasReposted}
           hasSaved={!!hasSaved}
-          hideFavorite={hideFavorite}
+          hideFavorite={shouldHideActions}
           hideOverflow={shouldHideOverflow}
-          hideRepost={hideRepost}
-          hideShare={hideShare}
+          hideRepost={shouldHideActions}
+          hideShare={shouldHideActions}
           isOwner={isOwner}
           isCollection
           collectionId={numericCollectionId}

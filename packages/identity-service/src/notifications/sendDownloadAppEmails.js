@@ -16,8 +16,6 @@ const downloadAppTemplate = getEmailTemplate(downloadAppTemplatePath)
 
 async function processDownloadAppEmail(expressApp, audiusLibs) {
   try {
-    logger.info(`${new Date()} - processDownloadAppEmail`)
-
     const sg = expressApp.get('sendgrid')
     if (sg === null) {
       logger.error('sendgrid not configured')
@@ -44,10 +42,6 @@ async function processDownloadAppEmail(expressApp, audiusLibs) {
       attributes: ['handle', 'walletAddress', 'email', 'isEmailDeliverable'],
       where: { walletAddress: emailUsersWalletAddress }
     })
-
-    logger.debug(
-      `processDownloadAppEmail - ${emailUsers.length} 2 day old users who have not signed in mobile`
-    )
 
     for (const userToEmail of emailUsers) {
       if (!userToEmail.isEmailDeliverable) {
@@ -99,7 +93,7 @@ async function renderAndSendDownloadAppEmail(sg, userEmail) {
       to: userEmail,
       bcc: ['forrest@audius.co'],
       html: downloadAppHtml,
-      subject: 'Audius Is Better On The Go 📱',
+      subject: 'Have You Tried Our App?',
       asm: {
         groupId: 19141 // id of unsubscribe group at https://mc.sendgrid.com/unsubscribe-groups
       }

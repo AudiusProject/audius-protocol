@@ -1154,6 +1154,14 @@ export type Users = {
   creator_node_endpoint: string | null;
   blocknumber: number | null;
   is_verified: boolean;
+  twitter_handle: string | null;
+  instagram_handle: string | null;
+  tiktok_handle: string | null;
+  verified_with_twitter: boolean;
+  verified_with_instagram: boolean;
+  verified_with_tiktok: boolean;
+  website: string | null;
+  donation: string | null;
   created_at: Date;
   updated_at: Date;
   handle_lc: string | null;

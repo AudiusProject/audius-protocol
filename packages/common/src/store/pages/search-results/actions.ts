@@ -51,6 +51,14 @@ export type FetchSearchPageTagsAction = {
   searchKind: SearchKind
   limit: number
   offset: number
+  genre?: Genre
+  mood?: Mood
+  bpm?: string
+  key?: string
+  isVerified?: boolean
+  hasDownloads?: boolean
+  isPremium?: boolean
+  sortMethod?: SearchSortMethod
 }
 
 export type SearchPageActions =
@@ -101,12 +109,20 @@ export const fetchSearchPageResultsFailed = (): SearchPageActions => ({
   type: FETCH_SEARCH_PAGE_RESULTS_FAILED
 })
 
-// Tag-based searcxh
+// Tag-based search
 type FetchSearchPageTagsArgs = {
   tag: string
   searchKind: SearchKind
   limit: number
   offset: number
+  genre?: Genre
+  mood?: Mood
+  bpm?: string
+  key?: string
+  isVerified?: boolean
+  hasDownloads?: boolean
+  isPremium?: boolean
+  sortMethod?: SearchSortMethod
 }
 
 export const fetchSearchPageTags = (

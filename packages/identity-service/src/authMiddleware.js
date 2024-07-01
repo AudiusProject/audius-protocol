@@ -102,7 +102,7 @@ async function authMiddleware(req, res, next) {
     const encodedDataMessage = req.get('Encoded-Data-Message')
     const signature = req.get('Encoded-Data-Signature')
     const handle = req.query.handle
-    const actingUserId = req.query.user_id
+    const actingUserId = Number.parseInt(req.query.user_id, 10)
 
     if (!encodedDataMessage) throw new Error('[Error]: Encoded data missing')
     if (!signature) throw new Error('[Error]: Encoded data signature missing')

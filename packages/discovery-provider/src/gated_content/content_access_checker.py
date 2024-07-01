@@ -367,7 +367,20 @@ class ContentAccessChecker:
                 condition_options=condition_options,
             )
             if not has_access:
-                return False
+                # perhaps content was previously (not currently) purchase gated
+                # so we check if user had previously purchased content
+                if condition != "usdc_purchase":
+                    user_purchased_content = does_user_have_usdc_access(
+                        session=session,
+                        user_id=user_id,
+                        content_id=content_id,
+                        content_type=content_type,
+                        condition_options=condition_options,
+                    )
+                    if not user_purchased_content:
+                        return False
+                else:
+                    return False
         return True
 
     def _check_stem_access(

@@ -1,4 +1,5 @@
 import { Collection } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/src/services'
 import {
   cacheCollectionsSelectors,
   collectionPageSelectors,
@@ -9,6 +10,7 @@ import { useSelector } from 'react-redux'
 import { useToggle } from 'react-use'
 
 import { Tooltip } from 'components/tooltip'
+import { useFlag } from 'hooks/useRemoteConfig'
 
 import { PublishConfirmationModal } from './PublishConfirmationModal'
 
@@ -38,10 +40,17 @@ export const PublishButton = (props: PublishButtonProps) => {
     getCollectionHasHiddenTracks(state, { id: collectionId })
   )
 
+  const { isEnabled: isHiddenPaidScheduledEnabled } = useFlag(
+    FeatureFlags.HIDDEN_PAID_SCHEDULED
+  )
+
   const [isConfirming, toggleIsConfirming] = useToggle(false)
 
   const isDisabled =
-    !track_count || track_count === 0 || hasHiddenTracks || !cover_art_sizes
+    !track_count ||
+    track_count === 0 ||
+    (hasHiddenTracks && !isHiddenPaidScheduledEnabled) ||
+    !cover_art_sizes
 
   const publishButtonElement = (
     <IconButton

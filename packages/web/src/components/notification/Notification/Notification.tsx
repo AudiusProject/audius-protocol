@@ -9,6 +9,7 @@ import { AddTrackToPlaylistNotification } from './AddTrackToPlaylistNotification
 import { AnnouncementNotification } from './AnnouncementNotification'
 import { ApproveManagerNotification } from './ApproveManagerRequestNotification'
 import { ChallengeRewardNotification } from './ChallengeRewardNotification'
+import { ClaimableRewardNotification } from './ClaimableRewardNotification'
 import { FavoriteNotification } from './FavoriteNotification'
 import { FavoriteOfRepostNotification } from './FavoriteOfRepostNotification'
 import { FollowNotification } from './FollowNotification'
@@ -49,6 +50,10 @@ export const Notification = (props: NotificationProps) => {
       case NotificationType.ChallengeReward: {
         return <ChallengeRewardNotification notification={notification} />
       }
+      case NotificationType.ClaimableReward: {
+        return <ClaimableRewardNotification notification={notification} />
+      }
+
       case NotificationType.Favorite: {
         return <FavoriteNotification notification={notification} />
       }

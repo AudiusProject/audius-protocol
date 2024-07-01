@@ -18,7 +18,7 @@ import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { MenuFormCallbackStatus } from 'components/data-entry/ContextualMenu'
-import { AttributionField } from 'components/edit/fields/AttributionField'
+import { AdvancedField } from 'components/edit/fields/AdvancedField'
 import { MultiTrackSidebar } from 'components/edit/fields/MultiTrackSidebar'
 import { ReleaseDateField } from 'components/edit/fields/ReleaseDateField'
 import { RemixSettingsField } from 'components/edit/fields/RemixSettingsField'
@@ -141,7 +141,7 @@ const TrackEditForm = (
                 forceOpen={forceOpenAccessAndSale}
                 setForceOpen={setForceOpenAccessAndSale}
               />
-              <AttributionField />
+              <AdvancedField />
               <StemsAndDownloadsField
                 isUpload={isUpload}
                 closeMenuCallback={(data) => {

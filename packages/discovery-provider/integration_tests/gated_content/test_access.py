@@ -225,6 +225,12 @@ usdc_purchases = [
         "content_type": "album",
         "created_at": datetime.utcfromtimestamp(1711485200),
     },
+    {
+        "buyer_user_id": 6,
+        "content_id": usdc_stream_gated_track["track_id"],
+        "content_type": "track",
+        "created_at": datetime.utcfromtimestamp(1711485200),
+    },
 ]
 user_1 = {"user_id": 1}
 user_2 = {"user_id": 2}
@@ -847,3 +853,80 @@ def test_batch_access(app):
             assert not user_2_usdc_stream_gated_album_access_result[
                 "has_download_access"
             ]
+
+
+def test_access_conditions_update(app):
+    db = setup_db(app)
+    content_access_checker = ContentAccessChecker()
+    with app.app_context():
+        with db.scoped_session() as session:
+            # PURCHASE GATED TO FOLLOW GATED
+            # update stream gated track to be follow gated
+            new_access_conditions = {
+                "follow_user_id": usdc_stream_gated_track["owner_id"]
+            }
+            session.query(Track).filter(
+                Track.track_id == usdc_stream_gated_track["track_id"]
+            ).update(
+                {
+                    "stream_conditions": new_access_conditions,
+                    "download_conditions": new_access_conditions,
+                }
+            )
+
+            # user 6 previously purchased the usdc stream gated track
+            # now that the access conditions for that track has changed
+            # to be follow gated, and that user 6 does not follow the track's owner,
+            # test that user 6 still has access because of its past purchase.
+            result = content_access_checker.check_access(
+                session=session,
+                user_id=6,
+                content_type="track",
+                content_entity=(
+                    session.query(Track)
+                    .filter(Track.track_id == usdc_stream_gated_track["track_id"])
+                    .first()
+                ),
+            )
+            assert result["has_stream_access"]
+            assert result["has_download_access"]
+
+            # FOLLOW GATED TO TIP GATED
+            # user 2 currently has access to the following follow-gated track
+            result = content_access_checker.check_access(
+                session=session,
+                user_id=2,
+                content_type="track",
+                content_entity=(
+                    session.query(Track)
+                    .filter(Track.track_id == stream_gated_track_3["track_id"])
+                    .first()
+                ),
+            )
+            assert result["has_stream_access"]
+            assert result["has_download_access"]
+
+            # update track to be tip gated
+            new_access_conditions = {"tip_user_id": stream_gated_track_3["owner_id"]}
+            session.query(Track).filter(
+                Track.track_id == stream_gated_track_3["track_id"]
+            ).update(
+                {
+                    "stream_conditions": new_access_conditions,
+                    "download_conditions": new_access_conditions,
+                }
+            )
+
+            # user 2 should no longer have access to the track
+            result = content_access_checker.check_access(
+                session=session,
+                user_id=2,
+                content_type="track",
+                content_entity=(
+                    session.query(Track)
+                    .filter(Track.track_id == stream_gated_track_3["track_id"])
+                    .first()
+                ),
+            )
+            assert not result["has_stream_access"]
+            assert not result["has_download_access"]
