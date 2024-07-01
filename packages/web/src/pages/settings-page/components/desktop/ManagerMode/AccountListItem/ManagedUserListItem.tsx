@@ -48,15 +48,15 @@ const messages = {
   invitationRejected: 'Invitation Refused'
 }
 
-type ManagedAccountListItemProps = {
-  data: ManagedUserMetadata
+type ManagedUserListItemProps = {
+  userData: ManagedUserMetadata
   onRemoveManager: (params: { userId: number; managerUserId: number }) => void
 }
 
-export const ManagedAccountListItem = ({
-  data: { user, grant },
+export const ManagedUserListItem = ({
+  userData: { user, grant },
   onRemoveManager
-}: ManagedAccountListItemProps) => {
+}: ManagedUserListItemProps) => {
   const currentUserId = useSelector(getUserId)
   const isManagerMode = useIsManagedAccount()
 

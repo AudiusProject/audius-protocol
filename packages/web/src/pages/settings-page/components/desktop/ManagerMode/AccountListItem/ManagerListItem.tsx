@@ -37,12 +37,12 @@ const messages = {
 }
 
 type ManagerListItemProps = {
-  data: UserManagerMetadata
+  managerData: UserManagerMetadata
   onRemoveManager: (params: { userId: number; managerUserId: number }) => void
 }
 
 export const ManagerListItem = ({
-  data: { manager, grant },
+  managerData: { manager, grant },
   onRemoveManager
 }: ManagerListItemProps) => {
   const currentUserId = useSelector(getUserId)

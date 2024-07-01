@@ -84,7 +84,7 @@ export const AccountsManagingYouHomePage = (
             <ManagerListItem
               onRemoveManager={handleRemoveManager}
               key={data.manager.user_id}
-              data={data}
+              managerData={data}
             />
           )
         })}

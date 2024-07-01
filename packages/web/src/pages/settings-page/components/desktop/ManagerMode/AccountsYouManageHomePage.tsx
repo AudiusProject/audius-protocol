@@ -8,7 +8,7 @@ import { Box, Divider, Flex, Text } from '@audius/harmony'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { useSelector } from 'utils/reducer'
 
-import { ManagedAccountListItem } from './AccountListItem/ManagedAccountListItem'
+import { ManagedUserListItem } from './AccountListItem/ManagedUserListItem'
 import { AccountsYouManagePageProps, AccountsYouManagePages } from './types'
 import { usePendingInviteValidator } from './usePendingInviteValidator'
 const { getAccountUser } = accountSelectors
@@ -71,9 +71,9 @@ export const AccountsYouManageHomePage = ({
       ) : null}
       {managedAccounts?.map((data) => {
         return (
-          <ManagedAccountListItem
+          <ManagedUserListItem
             key={data.user.user_id}
-            data={data}
+            userData={data}
             onRemoveManager={handleStopManaging}
           />
         )
