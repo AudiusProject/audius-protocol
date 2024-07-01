@@ -1,6 +1,6 @@
-import { Flex, Hint, Text } from '@audius/harmony'
+import { Flex, Hint } from '@audius/harmony'
 import { css } from '@emotion/css'
-import { useField, useFormikContext } from 'formik'
+import { useField } from 'formik'
 
 import { DropdownField } from 'components/form-fields'
 import { HarmonyTextField } from 'components/form-fields/HarmonyTextField'
@@ -18,15 +18,8 @@ const messages = {
     `This will be released at the selected date/time in your local timezone (${timezone}).`
 }
 
-type ReleaseDateValues = {
-  releaseDate: string
-  releaseDateTime: string
-  releaseDateMeridian: string
-}
-
 export const ReleaseDateField = () => {
-  const { submitCount } = useFormikContext<ReleaseDateValues>()
-  const [{ value: releaseDate }, { touched, error }] = useField('releaseDate')
+  const [{ value: releaseDate }, { touched }] = useField('releaseDate')
 
   return (
     <Flex direction='column' gap='l'>
@@ -36,9 +29,6 @@ export const ReleaseDateField = () => {
           label={messages.dateLabel}
           futureDatesOnly
         />
-        {error && (touched || submitCount > 0) ? (
-          <Text color='danger'>{error}</Text>
-        ) : null}
         <HarmonyTextField
           name='releaseDateTime'
           label={messages.timeLabel}
