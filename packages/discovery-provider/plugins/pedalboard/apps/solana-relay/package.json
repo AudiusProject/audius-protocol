@@ -3,8 +3,8 @@
   "version": "0.0.23",
   "private": true,
   "scripts": {
-    "start": "npx tsx ./src/index.ts",
-    "dev": "npx tsx watch ./src/index.ts",
+    "start": "npx tsx@4.16.0 ./src/index.ts",
+    "dev": "npx tsx@4.16.0 watch ./src/index.ts",
     "test": "vitest",
     "lint": "tsc --noEmit && eslint \"src/**/*.ts*\""
   },
