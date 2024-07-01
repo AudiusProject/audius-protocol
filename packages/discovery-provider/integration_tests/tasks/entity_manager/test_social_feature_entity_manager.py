@@ -1038,7 +1038,7 @@ def test_index_social_feature_playlist_type(app, mocker):
 
 
 def test_index_social_feature_hidden_item(app, mocker):
-    # ensure that favoriting/reposting a track/playlist works
+    # ensure that favoriting/reposting a hidden track/playlist works
     "Tests a playlist update and repost in the same block"
     bus_mock = mocker.patch(
         "src.challenges.challenge_event_bus.ChallengeEventBus", autospec=True
