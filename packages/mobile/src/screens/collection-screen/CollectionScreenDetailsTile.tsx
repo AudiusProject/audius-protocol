@@ -278,7 +278,9 @@ export const CollectionScreenDetailsTile = ({
       : !areAllTracksDeleted && (isQueued || (trackCount > 0 && !!firstTrack))
 
   const shouldShowPlay =
-    (isPlayable && hasStreamAccess) || doesUserHaveAccessToAnyTrack
+    !numericCollectionId ||
+    (isPlayable && hasStreamAccess) ||
+    doesUserHaveAccessToAnyTrack
   const shouldShowPreview =
     isUSDCPurchaseGated && !hasStreamAccess && !shouldShowPlay
 
@@ -496,7 +498,7 @@ export const CollectionScreenDetailsTile = ({
             contentType={PurchaseableContentType.ALBUM}
           />
         ) : null}
-        {!isPublished ? null : (
+        {isPublished && numericCollectionId ? (
           <DetailsTileStats
             playCount={playCount}
             hidePlayCount={hidePlayCount}
@@ -507,7 +509,7 @@ export const CollectionScreenDetailsTile = ({
             onPressFavorites={onPressFavorites}
             onPressReposts={onPressReposts}
           />
-        )}
+        ) : null}
         {description ? (
           <Box w='100%'>
             <UserGeneratedText
