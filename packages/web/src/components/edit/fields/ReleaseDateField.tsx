@@ -274,13 +274,13 @@ export const SelectReleaseDate = (props: ReleaseDateRadioProps) => {
             styles.releaseDateTimePicker
           )}
         >
-          <div className={styles.datePicker}>
+          <Flex w='100%'>
             <DatePickerField
               isInitiallyUnlisted={isInitiallyUnlisted}
               name={RELEASE_DATE}
               label={messages.title}
             />
-          </div>
+          </Flex>
           {timePeriod !== TimePeriodType.PAST && isInitiallyUnlisted && (
             <>
               <HarmonyTextField

@@ -31,29 +31,14 @@ export const ReleaseDateField = () => {
   return (
     <Flex direction='column' gap='l'>
       <Flex gap='l'>
-        <Flex direction='column' gap='s'>
-          <Flex
-            backgroundColor='surface1'
-            border='default'
-            borderRadius='s'
-            ph='l'
-            pv='m'
-            css={(theme) => ({
-              '&:hover': {
-                borderColor: theme.color.border.strong
-              }
-            })}
-          >
-            <DatePickerField
-              name='releaseDate'
-              label={messages.dateLabel}
-              futureDatesOnly
-            />
-          </Flex>
-          {error && (touched || submitCount > 0) ? (
-            <Text color='danger'>{error}</Text>
-          ) : null}
-        </Flex>
+        <DatePickerField
+          name='releaseDate'
+          label={messages.dateLabel}
+          futureDatesOnly
+        />
+        {error && (touched || submitCount > 0) ? (
+          <Text color='danger'>{error}</Text>
+        ) : null}
         <HarmonyTextField
           name='releaseDateTime'
           label={messages.timeLabel}

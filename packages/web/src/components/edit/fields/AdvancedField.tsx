@@ -34,6 +34,7 @@ import { env } from 'services/env'
 import styles from './AdvancedField.module.css'
 import { KeySelectField } from './KeySelectField'
 import { SwitchRowField } from './SwitchRowField'
+import { DatePickerField } from './DatePickerField'
 
 const { computeLicense, ALL_RIGHTS_RESERVED_TYPE } = creativeCommons
 
@@ -94,7 +95,8 @@ const messages = {
       null: 'Allowed'
     }
   },
-  noLicense: 'All Rights Reserved'
+  noLicense: 'All Rights Reserved',
+  releaseDate: 'Release Date'
 }
 
 const IS_AI_ATTRIBUTED = 'isAiAttribution'
@@ -103,6 +105,7 @@ const ALLOWED_API_KEYS = 'allowed_api_keys'
 const AI_USER_ID = 'ai_attribution_user_id'
 const ISRC = 'isrc'
 const ISWC = 'iswc'
+const RELEASE_DATE = 'release_date'
 const LICENSE_TYPE = 'licenseType'
 const ALLOW_ATTRIBUTION_BASE = 'allowAttribution'
 const ALLOW_ATTRIBUTION = 'licenseType.allowAttribution'
@@ -169,6 +172,8 @@ export const AdvancedField = () => {
     useTrackField<SingleTrackEditValues[typeof AI_USER_ID]>(AI_USER_ID)
   const [{ value: isrcValue }, , { setValue: setIsrc }] =
     useTrackField<SingleTrackEditValues[typeof ISRC]>(ISRC)
+  const [{ value: releaseDate }, , { setValue: setReleaseDate }] =
+    useTrackField<SingleTrackEditValues[typeof RELEASE_DATE]>(RELEASE_DATE)
   const [{ value: iswcValue }, , { setValue: setIswc }] =
     useTrackField<SingleTrackEditValues[typeof ISWC]>(ISWC)
   const [{ value: allowAttribution }, , { setValue: setAllowAttribution }] =
@@ -205,6 +210,7 @@ export const AdvancedField = () => {
     set(initialValues, DERIVATIVE_WORKS, derivativeWorks)
     set(initialValues, BPM, bpm)
     set(initialValues, MUSICAL_KEY, parseMusicalKey(musicalKey ?? ''))
+    set(initialValues, RELEASE_DATE, releaseDate)
     return initialValues as AdvancedFormValues
   }, [
     aiUserId,
@@ -242,6 +248,7 @@ export const AdvancedField = () => {
       }
       setBpm(get(values, BPM) ?? bpm)
       setMusicalKey(get(values, MUSICAL_KEY) ?? musicalKey)
+      setReleaseDate(get(values, RELEASE_DATE) ?? releaseDate)
     },
     [
       aiUserId,
@@ -480,7 +487,14 @@ const AdvancedModalFields = () => {
             />
           </div>
         </span>
+        <Divider />
 
+        <Flex gap='m' direction='column'>
+          <Text variant='title' size='l' tag='h3'>
+            Release Date
+          </Text>
+          <DatePickerField name={RELEASE_DATE} label={messages.releaseDate} />
+        </Flex>
         <Divider />
         <span className={cn(layoutStyles.row, layoutStyles.gap6)}>
           <Flex direction='column' w='100%'>

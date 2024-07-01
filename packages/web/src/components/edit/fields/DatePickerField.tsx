@@ -3,7 +3,7 @@ import 'react-dates/lib/css/_datepicker.css'
 
 import { useEffect, useRef, useState } from 'react'
 
-import { IconCalendarMonth, Popup } from '@audius/harmony'
+import { Flex, IconCalendarMonth, Popup, useTheme } from '@audius/harmony'
 import cn from 'classnames'
 import { useField } from 'formik'
 import moment from 'moment'
@@ -40,7 +40,19 @@ export const DatePickerField = (props: DatePickerFieldProps) => {
   useEffect(() => setIsFocused(shouldFocus ?? false), [shouldFocus])
 
   return (
-    <>
+    <Flex
+      backgroundColor='surface1'
+      border='default'
+      borderRadius='s'
+      ph='l'
+      pv='m'
+      w='100%'
+      css={(theme) => ({
+        '&:hover': {
+          borderColor: theme.color.border.strong
+        }
+      })}
+    >
       <div
         ref={anchorRef}
         aria-haspopup
@@ -101,6 +113,6 @@ export const DatePickerField = (props: DatePickerFieldProps) => {
           />
         </div>
       </Popup>
-    </>
+    </Flex>
   )
 }

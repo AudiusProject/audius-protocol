@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react'
 
-import { IconCalendarMonth, Text } from '@audius/harmony'
+import { Box, IconCalendarMonth, Text } from '@audius/harmony'
 import cn from 'classnames'
 import moment from 'moment'
 
@@ -81,9 +81,9 @@ export const ReleaseDateFieldLegacy = () => {
             {messages.title}
           </Text>
           <Text variant='body'>{messages.description}</Text>
-          <div className={styles.datePicker}>
+          <Box mt='m'>
             <DatePickerField name={RELEASE_DATE} label={messages.title} />
-          </div>
+          </Box>
         </>
       }
       renderValue={renderValue}
