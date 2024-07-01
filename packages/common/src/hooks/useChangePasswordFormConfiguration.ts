@@ -1,11 +1,11 @@
 import { useState, useCallback } from 'react'
 
 import { FormikHelpers } from 'formik'
+import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { useAppContext } from '../context'
 import { confirmEmailSchema, passwordSchema } from '../schemas'
-import { z } from 'zod'
 
 const messages = {
   invalidCredentials: 'Invalid credentials.',

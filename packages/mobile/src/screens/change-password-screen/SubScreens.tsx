@@ -4,12 +4,12 @@ import { Box, Text } from '@audius/harmony-native'
 import { HarmonyTextField } from 'app/components/fields/HarmonyTextField'
 import { PasswordField } from 'app/components/fields/PasswordField'
 
+import { CurrentEmail } from '../change-email-screen/SubScreens'
 import { PasswordCompletionChecklist } from '../sign-on-screen/components/PasswordCompletionChecklist'
 
 import { ResendCodeLink } from './ResendCodeLink'
 import { SubScreen } from './SubScreen'
 import { SubScreenHeader } from './SubScreenHeader'
-import { CurrentEmail } from '../change-email-screen/SubScreens'
 
 const messages = {
   changeYourPassword: 'Change Your Password',

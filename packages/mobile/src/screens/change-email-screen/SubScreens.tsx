@@ -2,16 +2,16 @@ import { useEffect } from 'react'
 
 import { useField } from 'formik'
 import { useAsync } from 'react-use'
+import { formatOtp } from '~/schemas/sign-on/confirmEmailSchema'
 
 import { Box, Text } from '@audius/harmony-native'
 import { HarmonyTextField, PasswordField } from 'app/components/fields'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { audiusBackendInstance } from 'app/services/audius-backend-instance'
 
+import { ResendCodeLink } from '../change-password-screen/ResendCodeLink'
 import { SubScreen } from '../change-password-screen/SubScreen'
 import { SubScreenHeader } from '../change-password-screen/SubScreenHeader'
-import { formatOtp } from '~/schemas/sign-on/confirmEmailSchema'
-import { ResendCodeLink } from '../change-password-screen/ResendCodeLink'
 
 const messages = {
   changeYourEmail: 'Change Your Email',
