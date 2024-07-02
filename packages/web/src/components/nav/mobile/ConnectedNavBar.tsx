@@ -1,6 +1,8 @@
 import { useCallback, useContext } from 'react'
 
+import { useFeatureFlag } from '@audius/common/hooks'
 import { Name, Status } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import {
   accountSelectors,
   notificationsSelectors,
@@ -39,12 +41,22 @@ const ConnectedNavBar = ({
   goBack
 }: ConnectedNavBarProps) => {
   const { setStackReset, setSlideDirection } = useContext(RouterContext)
+  const { isEnabled: isSearchV2Enabled } = useFeatureFlag(
+    FeatureFlags.SEARCH_V2
+  )
 
   const search = (query: string) => {
-    history.push({
-      pathname: `/search/${query}`,
-      state: {}
-    })
+    if (isSearchV2Enabled) {
+      history.push({
+        pathname: history.location.pathname,
+        search: query ? new URLSearchParams({ query }).toString() : undefined,
+        state: {}
+      })
+    } else {
+      history.push({
+        pathname: `/search/${query}`
+      })
+    }
   }
 
   const record = useRecord()
