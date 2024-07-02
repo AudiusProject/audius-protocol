@@ -33,6 +33,7 @@ import {
 import { Text, IconKebabHorizontal } from '@audius/harmony'
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
+import { LocationState } from 'history'
 import { range } from 'lodash'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
@@ -65,7 +66,6 @@ import PlaylistTile from './PlaylistTile'
 import TrackListItem from './TrackListItem'
 import Stats from './stats/Stats'
 import { Flavor } from './stats/StatsText'
-import { LocationState } from 'history'
 const { getUid, getBuffering, getPlaying } = playerSelectors
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const { getUserFromCollection } = cacheUsersSelectors
