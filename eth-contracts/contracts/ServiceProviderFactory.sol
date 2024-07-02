@@ -351,9 +351,9 @@ contract ServiceProviderFactory is InitializableV2 {
         for (uint256 i = 0; i < spTypeLength; i ++) {
             if (serviceProviderAddressToId[msg.sender][_serviceType][i] == deregisteredID) {
                 // Overwrite element to be deleted with last element in array
-                serviceProviderAddressToId[msg.sender][_serviceType][i] = serviceProviderAddressToId[msg.sender][_serviceType][spTypeLength - 1];
+                serviceProviderAddressToId[msg.sender][_serviceType][i] = serviceProviderAddressToId[msg.sender][_serviceType][spTypeLength.sub(1)];
                 // Reduce array size, exit loop
-                serviceProviderAddressToId[msg.sender][_serviceType].length--;
+                serviceProviderAddressToId[msg.sender][_serviceType].pop();
                 // Confirm this ID has been found for the service provider
                 break;
             }
@@ -665,7 +665,7 @@ contract ServiceProviderFactory is InitializableV2 {
             "ServiceProviderFactory: Service Provider cut cannot exceed base value"
         );
 
-        uint256 expiryBlock = block.number + deployerCutLockupDuration;
+        uint256 expiryBlock = block.number.add(deployerCutLockupDuration);
         updateDeployerCutRequests[_serviceProvider] = UpdateDeployerCutRequest({
             lockupExpiryBlock: expiryBlock,
             newDeployerCut: _cut
@@ -1084,7 +1084,7 @@ contract ServiceProviderFactory is InitializableV2 {
     {
         Governance governance = Governance(governanceAddress);
         require(
-            _duration > governance.getVotingPeriod() + governance.getExecutionDelay(),
+            _duration > (governance.getVotingPeriod().add(governance.getExecutionDelay())),
             "ServiceProviderFactory: decreaseStakeLockupDuration duration must be greater than governance votingPeriod + executionDelay"
         );
         decreaseStakeLockupDuration = _duration;
