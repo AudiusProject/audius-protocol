@@ -14,11 +14,7 @@ import NavContext, {
 } from 'components/nav/mobile/NavContext'
 import Page from 'components/page/Page'
 import { useMedia } from 'hooks/useMedia'
-import {
-  SEARCH_PAGE,
-  fullSearchResultsPage,
-  fullSearchResultsPageV2
-} from 'utils/route'
+import { SEARCH_PAGE, fullSearchResultsPageV2 } from 'utils/route'
 
 import { RecentSearches } from './RecentSearches'
 import { SearchCatalogTile } from './SearchCatalogTile'
