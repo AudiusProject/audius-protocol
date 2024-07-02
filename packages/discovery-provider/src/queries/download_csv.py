@@ -61,6 +61,7 @@ def get_purchases_or_sales(user_id: int, is_purchases: bool):
                     USDCPurchase.created_at.label("created_at"),
                     USDCPurchase.amount.label("amount"),
                     USDCPurchase.extra_amount.label("extra_amount"),
+                    USDCPurchase.country.label("country"),
                     User.name.label("buyer_name"),
                 )
                 .join(User, User.user_id == USDCPurchase.buyer_user_id)
@@ -179,6 +180,7 @@ def download_sales(args: DownloadSalesArgs):
                 "date": result.created_at,
                 "value": get_dollar_amount(result.amount),
                 "pay extra": get_dollar_amount(result.extra_amount),
+                "country": result.country,
             },
             results,
         )
