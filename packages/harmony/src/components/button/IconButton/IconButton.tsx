@@ -1,6 +1,7 @@
 import { forwardRef } from 'react'
 
 import { useTheme, type CSSObject } from '@emotion/react'
+import { Slottable } from '@radix-ui/react-slot'
 
 import type { IconComponent, IconProps } from '../../icon'
 import { BaseButton } from '../BaseButton/BaseButton'
@@ -12,10 +13,18 @@ export type IconButtonProps = {
   'aria-label': string
   iconCss?: CSSObject
 } & Pick<IconProps, 'color' | 'size' | 'shadow' | 'height' | 'width'> &
-  Pick<
-    BaseButtonProps,
-    'onClick' | 'disabled' | 'className' | 'type' | 'children' | 'isLoading'
-  >
+  BaseButtonProps
+
+// Pick<
+//   BaseButtonProps,
+//   | 'onClick'
+//   | 'disabled'
+//   | 'className'
+//   | 'type'
+//   | 'children'
+//   | 'isLoading'
+//   | 'asChild'
+// >
 
 /**
  * The icon component allows you to pass in an icon and
@@ -35,7 +44,7 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
       children,
       ...other
     } = props
-    const { disabled, isLoading } = other
+    const { disabled, isLoading, asChild } = other
     const { color, cornerRadius, spacing, motion, iconSizes } = useTheme()
 
     const buttonCss: CSSObject = {
@@ -87,10 +96,11 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
     return (
       <BaseButton
         ref={ref}
-        type='button'
+        type={asChild ? undefined : 'button'}
         {...other}
         css={[buttonCss, ripple && rippleCss]}
         styles={{ icon: loadingIconCss }}
+        slotted
       >
         {isLoading ? null : (
           <Icon
@@ -103,7 +113,7 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
             css={iconCss}
           />
         )}
-        {children}
+        <Slottable>{children}</Slottable>
       </BaseButton>
     )
   }

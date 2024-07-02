@@ -109,16 +109,26 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
             </Flex>
           ) : null}
           {isAlbum ? <AdvancedAlbumField /> : null}
-          <div className={styles.trackDetails}>
-            <Text variant='label'>{messages.trackDetails.title}</Text>
-            <Text variant='body'>{messages.trackDetails.description}</Text>
-            <div className={styles.row}>
-              <SelectGenreField name='trackDetails.genre' />
-              <SelectMoodField name='trackDetails.mood' />
-            </div>
-            <TagField name='trackDetails.tags' />
-            {isAlbum && <StemsAndDownloadsCollectionField />}
-          </div>
+          {isUpload ? (
+            <Flex
+              direction='column'
+              gap='l'
+              ph='xl'
+              pv='l'
+              alignItems='flex-start'
+            >
+              <Text variant='title' size='l'>
+                {messages.trackDetails.title}
+              </Text>
+              <Text variant='body'>{messages.trackDetails.description}</Text>
+              <Flex w='100%' gap='s'>
+                <SelectGenreField name='trackDetails.genre' />
+                <SelectMoodField name='trackDetails.mood' />
+              </Flex>
+              <TagField name='trackDetails.tags' />
+              {isAlbum && <StemsAndDownloadsCollectionField />}
+            </Flex>
+          ) : null}
         </Tile>
         <CollectionTrackFieldArray />
         <AnchoredSubmitRow />
