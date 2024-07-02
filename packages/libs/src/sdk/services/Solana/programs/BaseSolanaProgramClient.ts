@@ -1,5 +1,6 @@
 import {
   Commitment,
+  ComputeBudgetProgram,
   Connection,
   PublicKey,
   TransactionMessage,
@@ -90,12 +91,27 @@ export class BaseSolanaProgramClient {
       instructions,
       feePayer,
       recentBlockhash,
-      addressLookupTables = []
+      addressLookupTables = [],
+      priorityPercentile
     } = await parseParams('buildTransaction', BuildTransactionSchema)(params)
 
     if (!recentBlockhash) {
       const res = await this.connection.getLatestBlockhash()
       recentBlockhash = res.blockhash
+    }
+
+    if (priorityPercentile) {
+      const res = await this.connection.getRecentPrioritizationFees()
+      const orderedFees = res.map((r) => r.prioritizationFee).sort()
+      const priorityFee =
+        orderedFees[Math.round(priorityPercentile * orderedFees.length)]
+      if (priorityFee) {
+        instructions.push(
+          ComputeBudgetProgram.setComputeUnitPrice({
+            microLamports: priorityFee
+          })
+        )
+      }
     }
 
     const addressLookupTableAccounts = !isPublicKeyArray(addressLookupTables)

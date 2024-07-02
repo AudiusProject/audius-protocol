@@ -39,7 +39,8 @@ export const BuildTransactionSchema = z
           )
           .default([])
       ])
-      .optional()
+      .optional(),
+    priorityPercentile: z.number().min(0).max(100).optional()
   })
   .strict()
 
