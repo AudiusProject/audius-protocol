@@ -366,6 +366,7 @@ export enum Name {
   CREATE_USER_BANK_FAILURE = 'Create User Bank: Failure',
 
   // Rewards
+  REWARDS_CLAIM_DETAILS_OPENED = 'Rewards Claim: Opened',
   REWARDS_CLAIM_ALL_REQUEST = 'Rewards Claim All: Request',
   REwARDS_CLAIM_ALL_SUCCESS = 'Rewards Claim All: Success',
   REWARDS_CLAIM_ALL_FAILURE = 'Rewards Claim All: Failure',
@@ -1680,6 +1681,11 @@ type CreateUserBankFailure = {
   errorMessage: string
 }
 
+type RewardsClaimDetailsOpened = {
+  eventName: Name.REWARDS_CLAIM_DETAILS_OPENED
+  challengeId: string
+}
+
 type RewardsClaimRequest = {
   eventName: Name.REWARDS_CLAIM_REQUEST
   challengeId: string
@@ -2610,6 +2616,7 @@ export type AllTrackingEvents =
   | CreateUserBankRequest
   | CreateUserBankSuccess
   | CreateUserBankFailure
+  | RewardsClaimDetailsOpened
   | RewardsClaimRequest
   | RewardsClaimSuccess
   | RewardsClaimFailure
