@@ -8,7 +8,7 @@ import {
   EditPlaylistValues,
   cacheCollectionsActions
 } from '@audius/common/store'
-import { push as pushRoute } from 'connected-react-router'
+import { replace } from 'connected-react-router'
 import { isEqual } from 'lodash'
 import { useDispatch } from 'react-redux'
 import { useParams } from 'react-router'
@@ -97,7 +97,7 @@ export const EditCollectionPage = () => {
 
     dispatch(editPlaylist(playlist_id, collection as EditPlaylistValues))
 
-    dispatch(pushRoute(permalink))
+    dispatch(replace(permalink))
   }
 
   return (

@@ -1,22 +1,26 @@
 import { useEffect, useState, useCallback } from 'react'
 
+import {
+  useGetCurrentUserId,
+  useGetPlaylistByPermalink
+} from '@audius/common/api'
 import { imageBlank as placeholderCoverArt } from '@audius/common/assets'
 import { useGatedContentAccessMap } from '@audius/common/hooks'
 import { SquareSizes, Collection, ID, Name } from '@audius/common/models'
 import { newCollectionMetadata } from '@audius/common/schemas'
 import { RandomImage } from '@audius/common/services'
 import {
+  EditPlaylistValues,
   accountSelectors,
   cacheCollectionsActions,
-  cacheCollectionsSelectors,
-  collectionPageLineupActions as tracksActions,
-  useEditPlaylistModal,
-  EditPlaylistValues
+  collectionPageLineupActions as tracksActions
 } from '@audius/common/store'
 import { Nullable } from '@audius/common/utils'
 import { IconCamera } from '@audius/harmony'
+import { replace } from 'connected-react-router'
 import { capitalize } from 'lodash'
-import { connect } from 'react-redux'
+import { connect, useDispatch } from 'react-redux'
+import { useHistory, useParams, useRouteMatch } from 'react-router-dom'
 import { Dispatch } from 'redux'
 
 import DynamicImage from 'components/dynamic-image/DynamicImage'
@@ -26,21 +30,18 @@ import Grouping from 'components/groupable-list/Grouping'
 import { useTemporaryNavContext } from 'components/nav/mobile/NavContext'
 import TextElement, { Type } from 'components/nav/mobile/TextElement'
 import TrackList from 'components/track/mobile/TrackList'
-import { useCollectionCoverArt } from 'hooks/useCollectionCoverArt'
-import useHasChangedRoute from 'hooks/useHasChangedRoute'
+import { useCollectionCoverArt2 } from 'hooks/useCollectionCoverArt'
 import UploadStub from 'pages/profile-page/components/mobile/UploadStub'
 import { track } from 'services/analytics'
 import { AppState } from 'store/types'
 import { resizeImage } from 'utils/imageProcessingUtil'
-import { useSelector } from 'utils/reducer'
 import { withNullGuard } from 'utils/withNullGuard'
 
 import styles from './EditPlaylistPage.module.css'
 import RemovePlaylistTrackDrawer from './RemovePlaylistTrackDrawer'
+
 const { editPlaylist, orderPlaylist, removeTrackFromPlaylist } =
   cacheCollectionsActions
-const { getCollection, getCollectionTracksWithUsers } =
-  cacheCollectionsSelectors
 const getAccountUser = accountSelectors.getAccountUser
 
 const getMessages = (collectionType: 'album' | 'playlist') => ({
@@ -55,6 +56,11 @@ const initialFormFields = {
   ...newCollectionMetadata()
 }
 
+type EditCollectionPageParams = {
+  handle: string
+  slug: string
+}
+
 type EditPlaylistPageProps = ReturnType<typeof mapStateToProps> &
   ReturnType<typeof mapDispatchToProps>
 
@@ -65,22 +71,27 @@ const g = withNullGuard((props: EditPlaylistPageProps) => {
 
 const EditPlaylistPage = g(
   ({ removeTrack, editPlaylist, orderPlaylist, refreshLineup }) => {
-    const { data, onClose } = useEditPlaylistModal()
-    const { collectionId } = data
+    const { handle, slug } = useParams<EditCollectionPageParams>()
+    const isAlbum = Boolean(useRouteMatch('/:handle/album/:slug/edit'))
+    const permalink = `/${handle}/${isAlbum ? 'album' : 'playlist'}/${slug}`
+    const dispatch = useDispatch()
+    const history = useHistory()
 
-    const metadata = useSelector((state) =>
-      getCollection(state, { id: collectionId })
+    const { data: currentUserId } = useGetCurrentUserId({})
+    const { data: collection } = useGetPlaylistByPermalink(
+      {
+        permalink,
+        currentUserId
+      },
+      { disabled: !currentUserId }
     )
-    const tracks = useSelector((state) =>
-      getCollectionTracksWithUsers(state, { id: collectionId ?? undefined })
-    )
-    const messages = getMessages(metadata?.is_album ? 'album' : 'playlist')
 
-    // Close the page if the route was changed
-    useHasChangedRoute(onClose)
+    const { playlist_id, tracks } = collection ?? {}
+
+    const messages = getMessages(collection?.is_album ? 'album' : 'playlist')
 
     const initialMetadata = {
-      ...(metadata as Collection),
+      ...(collection as unknown as Collection),
       artwork: { url: '' }
     }
 
@@ -111,12 +122,11 @@ const EditPlaylistPage = g(
       }
     }, [setReorderedTracks, reorderedTracks, tracks])
 
-    const existingImage = useCollectionCoverArt(
-      formFields.playlist_id,
-      formFields._cover_art_sizes,
-      SquareSizes.SIZE_1000_BY_1000,
-      '' // default
+    const artworkUrl = useCollectionCoverArt2(
+      playlist_id,
+      SquareSizes.SIZE_1000_BY_1000
     )
+
     const [isProcessingImage, setIsProcessingImage] = useState(false)
     const [didChangeArtwork, setDidChangeArtwork] = useState(false)
 
@@ -204,21 +214,21 @@ const EditPlaylistPage = g(
       // Copy the metadata playlist contents so that a reference is not changed between
       // removing tracks, updating track order, and edit playlist
       const playlistTrackIds = [
-        ...(metadata?.playlist_contents?.track_ids ?? [])
+        ...(collection?.playlist_contents?.track_ids ?? [])
       ]
 
       for (const removedTrack of removedTracks) {
-        const { playlist_id } = metadata!
+        const { playlist_id } = collection!
         removeTrack(removedTrack.trackId, playlist_id, removedTrack.timestamp)
       }
 
-      if (metadata && formFields.playlist_id) {
+      if (collection && formFields.playlist_id) {
         // Edit playlist
         if (hasReordered) {
           // Reorder the playlist and refresh the lineup just in case it's
           // in the view behind the edit playlist page.
           orderPlaylist(
-            metadata.playlist_id,
+            collection.playlist_id,
             formatReorder(playlistTrackIds, reorderedTracks)
           )
           // Update the playlist content track_ids so that the editPlaylist
@@ -229,28 +239,29 @@ const EditPlaylistPage = g(
         }
         refreshLineup()
 
-        editPlaylist(metadata.playlist_id, formFields as EditPlaylistValues)
+        editPlaylist(collection.playlist_id, formFields as EditPlaylistValues)
 
         track({
           eventName: Name.COLLECTION_EDIT,
           properties: {
-            id: metadata.playlist_id
+            id: collection.playlist_id
           }
         })
 
-        onClose()
+        dispatch(replace(permalink))
       }
     }, [
       formFields,
-      onClose,
-      metadata,
+      collection,
       editPlaylist,
       hasReordered,
       reorderedTracks,
       orderPlaylist,
       refreshLineup,
       removeTrack,
-      removedTracks
+      removedTracks,
+      dispatch,
+      permalink
     ])
 
     /**
@@ -259,10 +270,10 @@ const EditPlaylistPage = g(
      */
     const onRemoveTrack = useCallback(
       (index: number) => {
-        if ((metadata?.playlist_contents?.track_ids.length ?? 0) <= index)
+        if ((collection?.playlist_contents?.track_ids.length ?? 0) <= index)
           return
         const reorderedIndex = reorderedTracks[index]
-        const { playlist_contents } = metadata!
+        const { playlist_contents } = collection!
         const { track: trackId, time } =
           playlist_contents.track_ids[reorderedIndex]
         const trackMetadata = tracks?.find(
@@ -279,7 +290,7 @@ const EditPlaylistPage = g(
       [
         reorderedTracks,
         setShowRemoveTrackDrawer,
-        metadata,
+        collection,
         tracks,
         setConfirmRemoveTrack
       ]
@@ -291,7 +302,7 @@ const EditPlaylistPage = g(
      */
     const onConfirmRemove = useCallback(() => {
       if (!confirmRemoveTrack) return
-      const removeIdx = metadata?.playlist_contents.track_ids.findIndex(
+      const removeIdx = collection?.playlist_contents.track_ids.findIndex(
         (t) =>
           t.track === confirmRemoveTrack.trackId &&
           t.time === confirmRemoveTrack.timestamp
@@ -309,14 +320,18 @@ const EditPlaylistPage = g(
       onDrawerClose()
     }, [
       confirmRemoveTrack,
-      metadata?.playlist_contents.track_ids,
+      collection?.playlist_contents.track_ids,
       onDrawerClose
     ])
 
     const setters = useCallback(
       () => ({
         left: (
-          <TextElement text='Cancel' type={Type.SECONDARY} onClick={onClose} />
+          <TextElement
+            text='Cancel'
+            type={Type.SECONDARY}
+            onClick={history.goBack}
+          />
         ),
         center: messages.editPlaylist,
         right: (
@@ -328,7 +343,7 @@ const EditPlaylistPage = g(
           />
         )
       }),
-      [formFields.playlist_name, messages.editPlaylist, onClose, onSave]
+      [formFields.playlist_name, messages.editPlaylist, history, onSave]
     )
 
     useTemporaryNavContext(setters)
@@ -340,7 +355,7 @@ const EditPlaylistPage = g(
     if (tracks && reorderedTracks.length > 0) {
       trackList = reorderedTracks.map((i) => {
         const t = tracks[i]
-        const playlistTrack = metadata?.playlist_contents.track_ids[i]
+        const playlistTrack = collection?.playlist_contents.track_ids[i]
         const isRemoveActive =
           showRemoveTrackDrawer &&
           t.track_id === confirmRemoveTrack?.trackId &&
@@ -374,7 +389,7 @@ const EditPlaylistPage = g(
             image={
               didChangeArtwork
                 ? formFields.artwork.url
-                : existingImage || formFields.artwork.url || placeholderCoverArt
+                : artworkUrl || formFields.artwork.url || placeholderCoverArt
             }
             className={styles.image}
             wrapperClassName={styles.imageWrapper}

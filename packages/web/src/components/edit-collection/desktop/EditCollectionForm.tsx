@@ -9,7 +9,6 @@ import {
 import { FeatureFlags } from '@audius/common/services'
 import { Button, Flex, IconTrash, Text } from '@audius/harmony'
 import { Form, Formik } from 'formik'
-import { useHistory } from 'react-router-dom'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { AnchoredSubmitRow } from 'components/edit/AnchoredSubmitRow'
@@ -55,7 +54,6 @@ type EditCollectionFormProps = {
 export const EditCollectionForm = (props: EditCollectionFormProps) => {
   const { initialValues, onSubmit, isAlbum, isUpload } = props
   const { playlist_id } = initialValues
-  const history = useHistory()
   const [isDeleteConfirmationOpen, setIsDeleteConfirmationOpen] =
     useState(false)
   const { isEnabled: isPremiumAlbumsEnabled } = useFeatureFlag(
@@ -158,7 +156,7 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
             collectionId={playlist_id}
             entity={collectionTypeName}
             onCancel={() => setIsDeleteConfirmationOpen(false)}
-            onDelete={history.goBack}
+            onDelete={() => setIsDeleteConfirmationOpen(false)}
           />
         ) : null}
       </Form>
