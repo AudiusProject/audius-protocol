@@ -277,7 +277,7 @@ async function claimRewardsForChallenge({
                 specifier: specifierWithAmount.specifier,
                 amount: specifierWithAmount.amount,
                 url: error.response.url,
-                error: await error.response.text()
+                error: await error.response.clone().text()
               })
             )
           } else {
