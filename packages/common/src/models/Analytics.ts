@@ -1713,15 +1713,19 @@ type RewardsClaimBlocked = {
 
 type RewardsClaimAllRequest = {
   eventName: Name.REWARDS_CLAIM_ALL_REQUEST
+  count: number
 }
 type RewardsClaimAllSuccess = {
   eventName: Name.REwARDS_CLAIM_ALL_SUCCESS
+  count: number
 }
 type RewardsClaimAllFailure = {
   eventName: Name.REWARDS_CLAIM_ALL_FAILURE
+  count: number
 }
 type RewardsClaimAllBlocked = {
   eventName: Name.REWARDS_CLAIM_ALL_BLOCKED
+  count: number
   code: number
 }
 

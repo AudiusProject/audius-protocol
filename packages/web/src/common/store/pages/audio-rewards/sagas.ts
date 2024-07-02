@@ -273,7 +273,7 @@ async function claimRewardsForChallenge({
           } else {
             await track(
               make({
-                eventName: Name.REWARDS_CLAIM_ALL_FAILURE,
+                eventName: Name.REWARDS_CLAIM_FAILURE,
                 challengeId,
                 specifier: specifierWithAmount.specifier,
                 amount: specifierWithAmount.amount,
@@ -397,7 +397,10 @@ function* claimAllChallengeRewardsAsync(
   let hasError = false
   let aaoErrorCode: undefined | number
   const { track, make } = yield* getContext('analytics')
-  yield* call(track, make({ eventName: Name.REWARDS_CLAIM_ALL_REQUEST }))
+  yield* call(
+    track,
+    make({ eventName: Name.REWARDS_CLAIM_ALL_REQUEST, count: claims.length })
+  )
   yield* all(
     claims.map((claim) =>
       call(function* () {
@@ -420,14 +423,24 @@ function* claimAllChallengeRewardsAsync(
     yield* put(claimChallengeRewardFailed({ aaoErrorCode }))
     yield* call(
       track,
-      make({ eventName: Name.REWARDS_CLAIM_ALL_BLOCKED, code: aaoErrorCode })
+      make({
+        eventName: Name.REWARDS_CLAIM_ALL_BLOCKED,
+        count: claims.length,
+        code: aaoErrorCode
+      })
     )
   } else if (hasError) {
     yield* put(claimChallengeRewardFailed())
-    yield* call(track, make({ eventName: Name.REWARDS_CLAIM_ALL_FAILURE }))
+    yield* call(
+      track,
+      make({ eventName: Name.REWARDS_CLAIM_ALL_FAILURE, count: claims.length })
+    )
   } else {
     yield* put(claimAllChallengeRewardsSucceeded())
-    yield* call(track, make({ eventName: Name.REwARDS_CLAIM_ALL_SUCCESS }))
+    yield* call(
+      track,
+      make({ eventName: Name.REwARDS_CLAIM_ALL_SUCCESS, count: claims.length })
+    )
   }
 }
 
