@@ -32,10 +32,3 @@
 .description {
   flex-grow: 1;
 }
-
-.trackDetails {
-  display: flex;
-  padding: var(--harmony-unit-4) var(--harmony-unit-6);
-  flex-direction: column;
-  gap: var(--harmony-unit-4);
-}

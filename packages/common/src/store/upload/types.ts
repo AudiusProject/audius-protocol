@@ -35,6 +35,10 @@ export interface TrackForUpload {
   metadata: TrackMetadataForUpload
 }
 
+export interface TrackForEdit {
+  metadata: TrackMetadataForUpload
+}
+
 /**
  * Unlike normal Track metadata, TrackMetadataForUpload includes additional
  * files: artwork and a stems field with StemsForUpload.
@@ -53,7 +57,7 @@ export interface TrackMetadataForUpload extends TrackMetadata {
  */
 export interface CollectionMetadataForUpload extends CollectionMetadata {
   artwork: {
-    file: Blob
+    file?: Blob
     url: string
   }
   trackDetails: {

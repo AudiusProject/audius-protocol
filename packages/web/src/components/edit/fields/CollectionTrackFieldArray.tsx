@@ -31,28 +31,28 @@ export const CollectionTrackFieldArray = () => {
                 role='list'
                 aria-label={messages.trackList}
               >
-                {tracks.map((track, index) => (
-                  <Draggable
-                    key={track.file?.name ?? track.metadata.track_id}
-                    draggableId={track.file.name!} // Safe: Not on native mobile so file.name is non-null
-                    index={index}
-                  >
-                    {(provided) => (
-                      <div
-                        ref={provided.innerRef}
-                        {...provided.draggableProps}
-                        {...provided.dragHandleProps}
-                        role='listitem'
-                      >
-                        <CollectionTrackField
-                          index={index}
-                          remove={remove}
-                          disableDelete={tracks.length === 1}
-                        />
-                      </div>
-                    )}
-                  </Draggable>
-                ))}
+                {tracks.map((track, index) => {
+                  const id = track.file?.name ?? track.metadata.track_id
+
+                  return (
+                    <Draggable key={id} draggableId={String(id)} index={index}>
+                      {(provided) => (
+                        <div
+                          ref={provided.innerRef}
+                          {...provided.draggableProps}
+                          {...provided.dragHandleProps}
+                          role='listitem'
+                        >
+                          <CollectionTrackField
+                            index={index}
+                            remove={remove}
+                            disableDelete={tracks.length === 1}
+                          />
+                        </div>
+                      )}
+                    </Draggable>
+                  )
+                })}
                 {provided.placeholder}
               </div>
             )}

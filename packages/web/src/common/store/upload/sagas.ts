@@ -98,17 +98,18 @@ function* combineMetadata(
   metadata.artwork = collectionMetadata.artwork
 
   if (!metadata.genre)
-    metadata.genre = collectionMetadata.trackDetails.genre ?? ''
-  if (!metadata.mood) metadata.mood = collectionMetadata.trackDetails.mood ?? ''
+    metadata.genre = collectionMetadata.trackDetails?.genre ?? ''
+  if (!metadata.mood)
+    metadata.mood = collectionMetadata.trackDetails?.mood ?? ''
   if (!metadata.release_date) {
     metadata.release_date = collectionMetadata.release_date ?? null
     metadata.is_scheduled_release =
       collectionMetadata.is_scheduled_release ?? false
   }
 
-  if (metadata.tags === null && collectionMetadata.trackDetails.tags) {
+  if (metadata.tags === null && collectionMetadata.trackDetails?.tags) {
     // Take collection tags
-    metadata.tags = collectionMetadata.trackDetails.tags
+    metadata.tags = collectionMetadata.trackDetails?.tags
   }
 
   // Set download & hidden status
@@ -766,10 +767,10 @@ export function* uploadCollection(
   }
 
   // First upload album art
-  yield* call(
-    audiusBackendInstance.uploadImage,
-    collectionMetadata.artwork?.file as File
-  )
+  const { artwork } = collectionMetadata
+  if (artwork && 'file' in artwork) {
+    yield* call(audiusBackendInstance.uploadImage, artwork.file as File)
+  }
 
   // Propagate the collection metadata to the tracks
   for (const track of tracks) {

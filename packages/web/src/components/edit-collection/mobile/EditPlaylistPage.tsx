@@ -229,7 +229,7 @@ const EditPlaylistPage = g(
         }
         refreshLineup()
 
-        editPlaylist(metadata.playlist_id, formFields)
+        editPlaylist(metadata.playlist_id, formFields as EditPlaylistValues)
 
         track({
           eventName: Name.COLLECTION_EDIT,
