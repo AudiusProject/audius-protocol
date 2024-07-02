@@ -3,6 +3,7 @@ import { keccak_256 } from '@noble/hashes/sha3'
 import * as secp from '@noble/secp256k1'
 import fetch from 'cross-fetch'
 import { EIP712TypedData, MessageData, signTypedData } from 'eth-sig-util'
+import type Wallet from 'ethereumjs-wallet'
 
 import { productionConfig } from '../../config/production'
 import { MissingOtpUserAuthError } from '../../utils/errors'
@@ -73,7 +74,13 @@ export class UserAuth implements AuthService {
     this.config.localStorage.then((ls) => (this.hedgehog.localStorage = ls))
   }
 
-  signUp = async ({ email, password }: { email: string; password: string }) => {
+  signUp = async ({
+    email,
+    password
+  }: {
+    email: string
+    password: string
+  }): Promise<Wallet> => {
     await this.hedgehog.waitUntilReady()
     const wallet = await this.hedgehog.signUp({ username: email, password })
     return wallet
@@ -87,7 +94,7 @@ export class UserAuth implements AuthService {
     email: string
     password: string
     otp?: string
-  }) => {
+  }): Promise<Wallet> => {
     await this.hedgehog.waitUntilReady()
     const wallet = await this.hedgehog.login({
       username: email,
