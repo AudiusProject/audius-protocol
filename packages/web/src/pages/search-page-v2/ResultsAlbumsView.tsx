@@ -81,11 +81,17 @@ export const ResultsAlbumsView = () => {
                   key={`user_card_sekeleton_${i}`}
                   id={0}
                   size={isMobile ? 'xs' : 's'}
+                  css={isMobile ? { maxWidth: 320 } : undefined}
                   loading={true}
                 />
               ))
             : albumIds.map((id) => (
-                <CollectionCard key={id} id={id} size={isMobile ? 'xs' : 's'} />
+                <CollectionCard
+                  key={id}
+                  id={id}
+                  size={isMobile ? 'xs' : 's'}
+                  css={isMobile ? { maxWidth: 320 } : undefined}
+                />
               ))}
         </Box>
       )}

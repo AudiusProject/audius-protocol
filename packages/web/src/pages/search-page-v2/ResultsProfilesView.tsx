@@ -81,11 +81,17 @@ export const ResultsProfilesView = () => {
                   key={`user_card_sekeleton_${i}`}
                   id={0}
                   size={isMobile ? 'xs' : 's'}
+                  css={isMobile ? { maxWidth: 320 } : undefined}
                   loading={true}
                 />
               ))
             : profileIds.map((id) => (
-                <UserCard key={id} id={id} size={isMobile ? 'xs' : 's'} />
+                <UserCard
+                  key={id}
+                  id={id}
+                  size={isMobile ? 'xs' : 's'}
+                  css={isMobile ? { maxWidth: 320 } : undefined}
+                />
               ))}
         </Box>
       )}
