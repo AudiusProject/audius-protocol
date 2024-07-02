@@ -64,9 +64,7 @@ const disabledCss: CSSInterpolation = {
 
 export const LeftNavLink = (props: LeftNavLinkProps) => {
   const { disabled, children, ...other } = props
-  const className = disabled ? styles.disabled : undefined
 
-  // Migrated from a CSS module
   const css: Interpolation<Theme> = [
     {
       position: 'relative',
@@ -76,6 +74,7 @@ export const LeftNavLink = (props: LeftNavLinkProps) => {
       gap: `${spacing.s}px`,
       minWidth: '100px',
       paddingLeft: `${spacing.l}px`,
+      paddingRight: `${spacing.l}px`,
       color: 'var(--harmony-neutral)',
       border: 0,
       background: 'none',
@@ -96,12 +95,7 @@ export const LeftNavLink = (props: LeftNavLinkProps) => {
 
   if ('to' in other) {
     return (
-      <NavLink
-        {...other}
-        activeClassName='active'
-        className={className}
-        css={css}
-      >
+      <NavLink {...other} activeClassName='active' css={css}>
         <Text tag='span' css={textLayoutProps} {...textProps}>
           {children}
         </Text>
@@ -109,7 +103,7 @@ export const LeftNavLink = (props: LeftNavLinkProps) => {
     )
   }
   return (
-    <div {...other} className={className} css={css}>
+    <div {...other} css={css}>
       <Text tag='span' css={textLayoutProps} {...textProps}>
         {children}
       </Text>

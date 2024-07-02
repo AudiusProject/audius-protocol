@@ -168,7 +168,7 @@ export const CollectionNavItem = (props: CollectionNavItemProps) => {
 
   if (!name || !url) return null
 
-  // TODO: Drag/Drop styles aren't working
+  // TODO: Drag styles aren't working
   return (
     <>
       <LeftNavDroppable

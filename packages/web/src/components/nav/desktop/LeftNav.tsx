@@ -172,7 +172,7 @@ const LeftNav = (props: NavColumnProps) => {
               flex='1 1 auto'
               css={{ overflow: 'hidden' }}
             >
-              {account?.handle !== 'fbtest' ? (
+              {account?.handle === 'fbtest' ? (
                 <Box>
                   <LeftNavLink to={'/fb/share'}>
                     Share Profile to Facebook
