@@ -65,6 +65,7 @@ import PlaylistTile from './PlaylistTile'
 import TrackListItem from './TrackListItem'
 import Stats from './stats/Stats'
 import { Flavor } from './stats/StatsText'
+import { LocationState } from 'history'
 const { getUid, getBuffering, getPlaying } = playerSelectors
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const { getUserFromCollection } = cacheUsersSelectors
@@ -245,7 +246,7 @@ const ConnectedPlaylistTile = ({
   const onClickTitle = useCallback(
     (e: MouseEvent) => {
       e.stopPropagation()
-      goToRoute(href)
+      goToRoute(href, { forceFetch: true })
     },
     [goToRoute, href]
   )
@@ -556,7 +557,8 @@ function mapStateToProps(state: AppState, ownProps: OwnProps) {
 
 function mapDispatchToProps(dispatch: Dispatch) {
   return {
-    goToRoute: (route: string) => dispatch(pushRoute(route)),
+    goToRoute: (route: string, state?: LocationState) =>
+      dispatch(pushRoute(route, state)),
     record: (event: TrackEvent) => dispatch(event),
     shareCollection: (id: ID) =>
       dispatch(
