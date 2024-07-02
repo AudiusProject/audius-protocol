@@ -530,7 +530,6 @@ export const audiusBackend = ({
     BackendUtils = libsModule.Utils
     SanityChecks = libsModule.SanityChecks
     SolanaUtils = libsModule.SolanaUtils
-    RewardsAttester = libsModule.RewardsAttester
     // initialize libs
     let libsError: Nullable<string> = null
     const { web3Config } = await getWeb3Config(
