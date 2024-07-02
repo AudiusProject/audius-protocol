@@ -279,23 +279,7 @@
 }
 
 /* Bottom Row Track TIle */
-.bottomRow {
-  display: inline-flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-}
-
-.bottomRow .iconButtons {
-  display: flex;
-  gap: var(--harmony-unit-8);
-}
-
-.bottomRow .iconButtonContainer {
-  position: relative;
-}
-
-.bottomRow .iconButton {
+.iconButton {
   display: flex;
   height: var(--harmony-unit-6);
   width: var(--harmony-unit-6);
@@ -304,19 +288,19 @@
   transition: all 0.12s ease-in-out !important;
 }
 
-.bottomRow .iconButton:hover {
+.iconButton:hover {
   transform: scale3d(1.18, 1.18, 1.18);
 }
 
-.bottomRow .iconButtonContainer.isDisabled .iconButton:hover {
+.iconButtonContainer.isDisabled .iconButton:hover {
   transform: scale3d(1, 1, 1);
 }
 
-.bottomRow .iconButton:active {
+.iconButton:active {
   transform: scale3d(0.95, 0.95, 0.95);
 }
 
-.bottomRow .iconButtonContainer.isDisabled .iconButton:active {
+.iconButtonContainer.isDisabled .iconButton:active {
   transform: scale3d(1, 1, 1);
 }
 
@@ -326,7 +310,7 @@
 }
 
 /* Make the icon buttons a larger click target */
-.bottomRow .iconButton:after {
+.iconButton:after {
   content: '';
   padding: var(--harmony-unit-4);
   position: absolute;
@@ -336,20 +320,4 @@
 
 .iconKebabHorizontal path {
   fill: var(--harmony-n-400);
-}
-
-.menuContainer {
-  transform: scale3d(1, 1, 1);
-  transition: all 0.07s ease-in-out !important;
-  display: flex;
-  align-items: center;
-  height: var(--harmony-unit-6);
-}
-
-.menuContainer:hover {
-  transform: scale3d(1.1, 1.1, 1.1);
-}
-
-.menuContainer:active {
-  transform: scale3d(0.95, 0.95, 0.95);
 }
