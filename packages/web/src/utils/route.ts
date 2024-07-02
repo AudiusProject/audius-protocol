@@ -468,6 +468,14 @@ export const fullSearchResultsPage = (query: string) => {
   return `${BASE_URL}${searchResultsPage(query)}`
 }
 
+export const searchResultsPageV2 = (category: string, query: string) => {
+  return `/search/${category}/?query=${query}`
+}
+
+export const fullSearchResultsPageV2 = (category: string, query: string) => {
+  return `${BASE_URL}${searchResultsPageV2(category, query)}`
+}
+
 export const exploreMoodPlaylistsPage = (mood: string) => {
   return `/explore/${mood}`
 }

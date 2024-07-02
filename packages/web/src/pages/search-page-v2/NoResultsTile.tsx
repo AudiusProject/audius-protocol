@@ -13,7 +13,8 @@ export const NoResultsTile = () => {
     <Paper
       pv={isMobile ? '2xl' : '3xl'}
       ph={isMobile ? 'l' : '3xl'}
-      mv='s'
+      mv={isMobile ? 'm' : 's'}
+      mh={isMobile ? 'm' : undefined}
       direction='column'
       gap={isMobile ? 's' : 'l'}
       alignItems='center'
