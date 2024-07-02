@@ -1,8 +1,3 @@
-.root {
-  display: flex;
-  align-items: center;
-}
-
 .collectionName {
   white-space: nowrap;
   overflow: hidden;

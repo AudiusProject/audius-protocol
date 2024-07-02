@@ -32,7 +32,6 @@ import { BASE_URL } from 'utils/route'
 
 import { LeftNavDroppable, LeftNavLink } from '../LeftNavLink'
 
-import styles from './CollectionNavItem.module.css'
 import { DeleteCollectionConfirmationModal } from './DeleteCollectionConfirmationModal'
 import { NavItemKebabButton } from './NavItemKebabButton'
 import { PlaylistUpdateDot } from './PlaylistUpdateDot'
@@ -169,6 +168,7 @@ export const CollectionNavItem = (props: CollectionNavItemProps) => {
 
   if (!name || !url) return null
 
+  // TODO: Drag/Drop styles aren't working
   return (
     <>
       <LeftNavDroppable
@@ -191,10 +191,6 @@ export const CollectionNavItem = (props: CollectionNavItemProps) => {
             onDragLeave={handleDragLeave}
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
-            css={{
-              maxHeight: `${spacing.xl}px`
-            }}
-            className={styles.root}
           >
             <Flex
               alignItems='center'
@@ -203,7 +199,7 @@ export const CollectionNavItem = (props: CollectionNavItemProps) => {
               css={{ position: 'relative' }}
             >
               {hasUpdate ? <PlaylistUpdateDot /> : null}
-              <Text size='s' ellipses>
+              <Text tag='span' size='s' ellipses>
                 {name}
               </Text>
               <NavItemKebabButton
