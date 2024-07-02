@@ -78,7 +78,7 @@ export const PillAsMenu: Story = {
 }
 
 export const LeadingIcon: Story = {
-  render: (props) => <SelectablePill icon={IconHeart} {...props} />
+  render: (props) => <SelectablePill size='large' icon={IconHeart} {...props} />
 }
 
 export const PillAsInput: Story = {

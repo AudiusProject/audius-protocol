@@ -2,7 +2,7 @@ import type { ID } from '@audius/common/models'
 import { cacheUsersSelectors } from '@audius/common/store'
 import { useSelector } from 'react-redux'
 
-import type { TextLinkProps } from '@audius/harmony-native'
+import type { IconSize, TextLinkProps } from '@audius/harmony-native'
 import { TextLink, Flex } from '@audius/harmony-native'
 import type { AppTabScreenParamList } from 'app/screens/app-screen'
 
@@ -14,10 +14,11 @@ type ParamList = Pick<AppTabScreenParamList, 'Profile'>
 
 type UserLinkProps = Omit<TextLinkProps<ParamList>, 'to' | 'children'> & {
   userId: ID
+  badgeSize?: IconSize
 }
 
 export const UserLink = (props: UserLinkProps) => {
-  const { userId, ...other } = props
+  const { userId, badgeSize = 's', ...other } = props
   const userName = useSelector((state) => getUser(state, { id: userId })?.name)
 
   return (
@@ -30,7 +31,7 @@ export const UserLink = (props: UserLinkProps) => {
       >
         {userName}
       </TextLink>
-      <UserBadgesV2 userId={userId} />
+      <UserBadgesV2 userId={userId} badgeSize={badgeSize} />
     </Flex>
   )
 }

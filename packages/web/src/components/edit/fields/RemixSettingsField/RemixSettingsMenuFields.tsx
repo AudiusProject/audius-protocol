@@ -28,13 +28,13 @@ const messages = {
   hideRemix: {
     header: 'Hide Remixes of This Track',
     description:
-      'Enable this option if you want to prevent remixes of your track by other artists from appearing on your track page.'
+      'Prevent remixes of your track by other artists from appearing on your track page. '
   },
   remixOf: {
     header: 'Identify as Remix',
     description:
-      "Paste the original Audius track link if yours is a remix. Your remix will typically appear on the original track's page.",
-    linkLabel: 'Link to Remix'
+      'Link your remix to the original track to increase visibility and credit the original artist.',
+    linkLabel: 'Enter an Audius Link'
   },
   changeAvailabilityPrefix: 'Availablity is set to ',
   changeAvailabilitySuffix:

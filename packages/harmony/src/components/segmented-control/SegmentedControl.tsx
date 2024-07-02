@@ -127,12 +127,12 @@ export const SegmentedControl = <T extends string>(
                 disabled={isOptionDisabled}
               />
               <Text
+                variant='body'
+                strength='strong'
+                css={(theme) => ({ lineHeight: theme.typography.lineHeight.s })}
                 color={
                   option.variant ?? (isOptionDisabled ? 'subdued' : 'default')
                 }
-                css={{
-                  cursor: isOptionDisabled ? 'auto' : 'pointer'
-                }}
               >
                 {option.text}
               </Text>

@@ -23,7 +23,7 @@ import {
 } from 'app/components/lineup-tile'
 import { TwitterButton } from 'app/components/twitter-button'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { FormScreen } from 'app/screens/edit-track-screen/components'
+import { FormScreen } from 'app/screens/form-screen'
 import { makeStyles } from 'app/styles'
 import { getTrackRoute } from 'app/utils/routes'
 

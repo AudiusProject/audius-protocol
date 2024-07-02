@@ -5,6 +5,7 @@ import {
   SquareSizes,
   Collection
 } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import {
   accountSelectors,
   cacheCollectionsActions,
@@ -22,6 +23,7 @@ import DynamicImage from 'components/dynamic-image/DynamicImage'
 import SearchBar from 'components/search-bar/SearchBar'
 import { Tooltip } from 'components/tooltip'
 import { useCollectionCoverArt } from 'hooks/useCollectionCoverArt'
+import { useFlag } from 'hooks/useRemoteConfig'
 import { collectionPage } from 'utils/route'
 
 import styles from './AddToCollectionModal.module.css'
@@ -55,6 +57,9 @@ const AddToCollectionModal = () => {
   const isAlbumType = collectionType === 'album'
   const account = useSelector(getAccountWithNameSortedPlaylistsAndAlbums)
   const [searchValue, setSearchValue] = useState('')
+  const { isEnabled: isHiddenPaidScheduledEnabled } = useFlag(
+    FeatureFlags.HIDDEN_PAID_SCHEDULED
+  )
 
   const messages = getMessages(collectionType)
 
@@ -168,7 +173,11 @@ const AddToCollectionModal = () => {
               <div key={`${collection.playlist_id}`}>
                 <CollectionItem
                   collectionType={collectionType}
-                  disabled={isTrackUnlisted && !collection.is_private}
+                  disabled={
+                    !isHiddenPaidScheduledEnabled &&
+                    isTrackUnlisted &&
+                    !collection.is_private
+                  }
                   collection={collection}
                   handleClick={
                     isTrackUnlisted && !collection.is_private

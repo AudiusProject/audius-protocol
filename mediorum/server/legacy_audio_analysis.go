@@ -21,8 +21,7 @@ func (ss *MediorumServer) startLegacyAudioAnalyzer() {
 	myHost := ss.Config.Self.Host
 	work := make(chan *QmAudioAnalysis)
 
-	// use aone cpu
-	numWorkers := 1
+	numWorkers := 2
 
 	// on boot... reset any of my wip jobs
 	tx := ss.crud.DB.Model(QmAudioAnalysis{}).
@@ -69,27 +68,36 @@ func (ss *MediorumServer) startLegacyAudioAnalyzer() {
 	}
 
 	// poll periodically for analyses that slipped thru the cracks
-	for {
-		time.Sleep(time.Minute)
-		ss.findMissedLegacyAnalysisJobs(work, myHost)
-	}
+	go func() {
+		ticker := time.NewTicker(1 * time.Minute)
+		defer ticker.Stop()
+
+		retryTicker := time.NewTicker(30 * time.Minute)
+		defer retryTicker.Stop()
+
+		for {
+			select {
+			case <-ticker.C:
+				// find missed legacy analysis jobs every minute
+				// mark analyses as timed out
+				ss.findMissedLegacyAnalysisJobs(work, myHost)
+
+			case <-retryTicker.C:
+				// retry legacy analysis jobs every 30 minutes
+				ss.retryLegacyAnalysisJobs(work, myHost)
+			}
+		}
+	}()
+
+	// block to keep running
+	select {}
 }
 
-// do not bother setting a timeout like in findMissedAnalysisJobs. this is not triggered
-// by the client during the upload flow so it can afford to take > 1 minute
 func (ss *MediorumServer) findMissedLegacyAnalysisJobs(work chan *QmAudioAnalysis, myHost string) {
 	analyses := []*QmAudioAnalysis{}
 	ss.crud.DB.Where("status in ?", []string{JobStatusAudioAnalysis, JobStatusBusyAudioAnalysis}).Find(&analyses)
 
 	for _, analysis := range analyses {
-		myIdx := slices.Index(analysis.Mirrors, myHost)
-		if myIdx == -1 {
-			continue
-		}
-		myRank := myIdx + 1
-
-		logger := ss.logger.With("analysis_cid", analysis.CID, "analysis_status", analysis.Status, "my_rank", myRank)
-
 		// mark job as timed out after 45 mins.
 		// AnalyzedAt is set by the /tracks/legacy/:cid/analyze endpoint when triggering an analysis.
 		if time.Since(analysis.AnalyzedAt) > time.Minute*45 {
@@ -102,12 +110,13 @@ func (ss *MediorumServer) findMissedLegacyAnalysisJobs(work chan *QmAudioAnalysi
 			continue
 		}
 
-		// this is already handled by a callback and there's a chance this job gets enqueued twice
-		if myRank == 1 && analysis.Status == JobStatusAudioAnalysis {
-			logger.Info("my legacy cid's audio analysis not started")
-			work <- analysis
+		myIdx := slices.Index(analysis.Mirrors, myHost)
+		if myIdx == -1 {
 			continue
 		}
+		myRank := myIdx + 1
+
+		logger := ss.logger.With("analysis_cid", analysis.CID, "analysis_status", analysis.Status, "my_rank", myRank)
 
 		// determine if #1 rank worker dropped ball
 		timedOut := false
@@ -156,6 +165,36 @@ func (ss *MediorumServer) findMissedLegacyAnalysisJobs(work chan *QmAudioAnalysi
 	}
 }
 
+func (ss *MediorumServer) retryLegacyAnalysisJobs(work chan *QmAudioAnalysis, myHost string) {
+	analyses := []*QmAudioAnalysis{}
+	ss.crud.DB.Where("status = ? OR (status = ? AND error_count < ?)", JobStatusTimeout, JobStatusError, 3).
+		Where("CAST(mirrors AS jsonb)->>0 ?", myHost).
+		Order("analyzed_at ASC").
+		Limit(100).
+		Find(&analyses)
+
+	for _, analysis := range analyses {
+		myIdx := slices.Index(analysis.Mirrors, myHost)
+		if myIdx != 0 {
+			continue
+		}
+		myRank := myIdx + 1
+
+		logger := ss.logger.With("analysis_cid", analysis.CID, "analysis_status", analysis.Status, "my_rank", myRank)
+
+		if analysis.Status == JobStatusError {
+			logger.Info("retrying my errored legacy audio analysis")
+		}
+		if analysis.Status == JobStatusTimeout {
+			logger.Info("retrying my timed out legacy audio analysis")
+		}
+		analysis.AnalyzedAt = time.Now().UTC()
+		// op callback will enqueue the job
+		analysis.Status = JobStatusAudioAnalysis
+		ss.crud.Update(analysis)
+	}
+}
+
 func (ss *MediorumServer) startLegacyAudioAnalysisWorker(n int, work chan *QmAudioAnalysis) {
 	for analysis := range work {
 		logger := ss.logger.With("analysis_cid", analysis.CID)
@@ -181,7 +220,12 @@ func (ss *MediorumServer) analyzeLegacyAudio(analysis *QmAudioAnalysis) error {
 
 	onError := func(err error) error {
 		analysis.Error = err.Error()
-		analysis.ErrorCount = analysis.ErrorCount + 1
+		if analysis.Error == "blob is not an audio file" {
+			// set ErrorCount to 3 so discovery repairer stops retrying this cid
+			analysis.ErrorCount = 3
+		} else {
+			analysis.ErrorCount = analysis.ErrorCount + 1
+		}
 		analysis.AnalyzedAt = time.Now().UTC()
 		analysis.Status = JobStatusError
 		ss.crud.Update(analysis)
@@ -252,7 +296,7 @@ func (ss *MediorumServer) analyzeLegacyAudio(analysis *QmAudioAnalysis) error {
 	defer temp.Close()
 	defer os.Remove(temp.Name())
 
-	// convert the file to WAV for audio processing
+	// convert the file to WAV for audio processing and truncate to the first 5 minutes
 	wavFile := temp.Name()
 	// should always be audio/mpeg after transcoding
 	if attrs.ContentType == "audio/mpeg" {

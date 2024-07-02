@@ -10,7 +10,7 @@ export type SelectablePillProps = {
   label: string
   value?: string
   icon?: IconComponent
-  onChange?: (value: string) => void
+  onChange?: (value: string, isSelected?: boolean) => void
   fullWidth?: boolean
 } & Pick<PressableProps, 'disabled' | 'onPress'> &
   ViewProps

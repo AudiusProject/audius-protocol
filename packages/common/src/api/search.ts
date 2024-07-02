@@ -1,11 +1,27 @@
 import { createApi } from '~/audius-query'
+import { ModalSource } from '~/models'
 import { ID } from '~/models/Identifiers'
-import { SearchKind } from '~/store/pages/search-results/types'
+import { SearchKind } from '~/store'
+import { Genre } from '~/utils'
+
+export type SearchCategory = 'all' | 'tracks' | 'albums' | 'playlists' | 'users'
+
+export type SearchFilters = {
+  genre?: Genre
+  mood?: ModalSource
+  bpm?: string
+  key?: string
+  isVerified?: boolean
+  hasDownloads?: boolean
+  isPremium?: boolean
+}
+
+export type SearchFilter = keyof SearchFilters
 
 type getSearchArgs = {
   currentUserId: ID | null
   query: string
-  kind?: SearchKind
+  category?: SearchCategory
   limit?: number
   offset?: number
   includePurchaseable?: boolean
@@ -14,13 +30,16 @@ type getSearchArgs = {
 const searchApi = createApi({
   reducerPath: 'searchApi',
   endpoints: {
-    getSearchFull: {
-      fetch: async (args: getSearchArgs, { apiClient }) =>
-        await apiClient.getSearchFull(args),
+    getSearchResults: {
+      fetch: async (args: getSearchArgs, { apiClient }) => {
+        const { category, ...rest } = args
+        const kind = category as SearchKind
+        return await apiClient.getSearchFull({ kind, ...rest })
+      },
       options: {}
     }
   }
 })
 
-export const { useGetSearchFull } = searchApi.hooks
+export const { useGetSearchResults } = searchApi.hooks
 export const searchApiReducer = searchApi.reducer

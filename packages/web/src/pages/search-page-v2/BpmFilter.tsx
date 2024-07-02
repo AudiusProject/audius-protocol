@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 
+import { useStateDebounced } from '@audius/common/hooks'
 import {
   Button,
   Divider,
@@ -83,8 +84,8 @@ type ViewProps = {
 }
 
 const BpmRangeView = ({ handleChange }: ViewProps) => {
-  const [minBpm, setMinBpm] = useState('')
-  const [maxBpm, setMaxBpm] = useState('')
+  const [minBpm, setMinBpm] = useStateDebounced('')
+  const [maxBpm, setMaxBpm] = useStateDebounced('')
   const [minError, setMinError] = useState<string | null>(null)
   const [maxError, setMaxError] = useState<string | null>(null)
   // NOTE: Memo to avoid the constantly changing function instance from triggering the effect
@@ -188,7 +189,7 @@ const BpmRangeView = ({ handleChange }: ViewProps) => {
 
 const BpmTargetView = ({ handleChange }: ViewProps) => {
   const { color } = useTheme()
-  const [bpmTarget, setBpmTarget] = useState('')
+  const [bpmTarget, setBpmTarget] = useStateDebounced('')
   const [bpmTargetType, setBpmTargetType] = useState<BpmTargetType>('exact')
   const [error, setError] = useState<string | null>(null)
   // NOTE: Memo to avoid the constantly changing function instance from triggering the effect

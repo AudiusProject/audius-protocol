@@ -50,6 +50,9 @@ const useLocalTrackImageUri = (trackId: Maybe<ID>) => {
   return trackImageUri
 }
 
+/**
+ * @deprecated Use TrackImageV2 instead.
+ */
 export const useTrackImage = ({ track, size }: UseTrackImageOptions) => {
   const cid = track ? track.cover_art_sizes || track.cover_art : null
 
@@ -73,6 +76,9 @@ export const useTrackImage = ({ track, size }: UseTrackImageOptions) => {
 
 type TrackImageProps = UseTrackImageOptions & Partial<FastImageProps>
 
+/**
+ * @deprecated Use TrackImageV2 instead.
+ */
 export const TrackImage = (props: TrackImageProps) => {
   const { track, size, style, ...other } = props
 

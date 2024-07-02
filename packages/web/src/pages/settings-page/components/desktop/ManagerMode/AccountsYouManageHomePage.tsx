@@ -1,20 +1,14 @@
-import { useCallback, useContext, useEffect } from 'react'
+import { useCallback } from 'react'
 
-import {
-  useApproveManagedAccount,
-  useGetManagedAccounts,
-  useRemoveManager
-} from '@audius/common/api'
-import { Status, UserMetadata } from '@audius/common/models'
+import { useGetManagedAccounts } from '@audius/common/api'
+import { Status } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
 import { Box, Divider, Flex, Text } from '@audius/harmony'
 
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
-import { ToastContext } from 'components/toast/ToastContext'
 import { useSelector } from 'utils/reducer'
 
-import { AccountListItem } from './AccountListItem'
-import { sharedMessages } from './sharedMessages'
+import { ManagedUserListItem } from './AccountListItem/ManagedUserListItem'
 import { AccountsYouManagePageProps, AccountsYouManagePages } from './types'
 import { usePendingInviteValidator } from './usePendingInviteValidator'
 const { getAccountUser } = accountSelectors
@@ -41,9 +35,6 @@ export const AccountsYouManageHomePage = ({
   const isLoading =
     status !== Status.SUCCESS &&
     (!managedAccounts || managedAccounts.length === 0)
-  const [approveManagedAccount, approveResult] = useApproveManagedAccount()
-  const [rejectManagedAccount, rejectResult] = useRemoveManager()
-  const { toast } = useContext(ToastContext)
 
   usePendingInviteValidator({ managedAccounts, userId })
 
@@ -53,47 +44,6 @@ export const AccountsYouManageHomePage = ({
     },
     [setPage]
   )
-
-  const handleApprove = useCallback(
-    ({ grantorUser }: { grantorUser: UserMetadata }) => {
-      if (currentUser) {
-        approveManagedAccount({
-          userId: currentUser.user_id,
-          grantorUser,
-          userWalletAddress: currentUser.erc_wallet
-        })
-      }
-    },
-    [approveManagedAccount, currentUser]
-  )
-
-  const handleReject = useCallback(
-    ({
-      currentUserId,
-      grantorUser
-    }: {
-      currentUserId: number
-      grantorUser: UserMetadata
-    }) => {
-      rejectManagedAccount({
-        userId: grantorUser.user_id,
-        managerUserId: currentUserId
-      })
-    },
-    [rejectManagedAccount]
-  )
-
-  useEffect(() => {
-    if (approveResult.status === Status.ERROR) {
-      toast(sharedMessages.somethingWentWrong)
-    }
-  }, [toast, approveResult.status])
-
-  useEffect(() => {
-    if (rejectResult.status === Status.ERROR) {
-      toast(sharedMessages.somethingWentWrong)
-    }
-  }, [toast, rejectResult.status])
 
   return (
     <Flex direction='column' gap='xl'>
@@ -119,16 +69,12 @@ export const AccountsYouManageHomePage = ({
           </Text>
         </>
       ) : null}
-      {managedAccounts?.map((m) => {
+      {managedAccounts?.map((data) => {
         return (
-          <AccountListItem
-            key={m.user.user_id}
-            user={m.user}
+          <ManagedUserListItem
+            key={data.user.user_id}
+            userData={data}
             onRemoveManager={handleStopManaging}
-            onApprove={handleApprove}
-            onReject={handleReject}
-            isManagedAccount
-            isPending={m.grant.is_approved == null}
           />
         )
       })}

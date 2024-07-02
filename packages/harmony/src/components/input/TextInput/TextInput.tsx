@@ -144,6 +144,7 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
           aria-label={ariaLabel ?? shouldShowLabel ? labelText : undefined}
           aria-required={required}
           id={id}
+          autoComplete='off'
           {...other}
         />
         {endAdornmentText && shouldShowAdornments ? (

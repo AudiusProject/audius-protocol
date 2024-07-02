@@ -19,7 +19,7 @@ import { IconCaretDown, IconSearch } from 'icons'
 
 import { FilterButton } from '../FilterButton/FilterButton'
 
-import { SelectPopupKeyHandler } from './SelectPopupKeyHandler'
+import { OptionsFilterButtonPopupKeyHandler } from './OptionsFilterButtonPopupKeyHandler'
 import { OptionsFilterButtonProps, OptionsFilterButtonOption } from './types'
 
 const messages = {
@@ -46,7 +46,7 @@ export const FilterButtonOptions = (props: FilterButtonOptionsProps) => {
   const activeOptionCss: CSSObject = {
     transform: 'none',
     backgroundColor: color.secondary.s300,
-    color: color.special.white
+    color: color.static.white
   }
 
   const optionCss: CSSObject = {
@@ -151,12 +151,12 @@ export const OptionsFilterButton = forwardRef<
 
   const handleOptionSelect = useCallback(
     (
-        handleChange: (value: string, label: string) => void,
+        handleChange: (value: string) => void,
         setIsOpen: (isOpen: boolean) => void
       ) =>
       (option: OptionsFilterButtonOption) => {
         setSelection(option.value)
-        handleChange(option.value, option.label ?? '')
+        handleChange(option.value)
         setIsOpen(false)
       },
     [setSelection]
@@ -188,9 +188,10 @@ export const OptionsFilterButton = forwardRef<
       onOpen={handleOpen}
       onReset={() => setFilterInputValue('')}
       label={selectedLabel ?? filterButtonProps.label}
+      leadingElement={selectedOption?.labelLeadingElement}
     >
       {({ isOpen, setIsOpen, handleChange, anchorRef }) => (
-        <SelectPopupKeyHandler
+        <OptionsFilterButtonPopupKeyHandler
           options={filteredOptions}
           disabled={!isOpen}
           onOptionSelect={handleOptionSelect(handleChange, setIsOpen)}
@@ -263,7 +264,7 @@ export const OptionsFilterButton = forwardRef<
               </Paper>
             </Popup>
           )}
-        </SelectPopupKeyHandler>
+        </OptionsFilterButtonPopupKeyHandler>
       )}
     </FilterButton>
   )

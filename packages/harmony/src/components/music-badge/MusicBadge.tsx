@@ -80,7 +80,11 @@ export const MusicBadge = (props: MusicBadgeProps) => {
       }}
     >
       {Icon ? <Icon size={size} fill={iconColor} /> : null}
-      <Text variant='label' size={size} css={{ color: textColor }}>
+      <Text
+        variant='label'
+        size={size}
+        css={{ color: textColor, whiteSpace: 'nowrap' }}
+      >
         {children}
       </Text>
     </Flex>

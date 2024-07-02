@@ -220,6 +220,7 @@ const CollectionPage = ({
     const isLocked = !isFetchingNFTAccess && !hasStreamAccess
     return {
       isLoading: false,
+      isUnlisted: entry.is_unlisted,
       isSaved: entry.has_current_user_saved,
       isReposted: entry.has_current_user_reposted,
       isActive: playingUid === entry.uid,

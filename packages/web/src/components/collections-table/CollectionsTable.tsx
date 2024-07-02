@@ -120,17 +120,8 @@ export const CollectionsTable = ({
 
   const renderReleaseDateCell = useCallback((cellInfo: CollectionCell) => {
     const collection = cellInfo.row.original
-    let suffix = ''
-    if (
-      collection.release_date &&
-      moment(collection.release_date).isAfter(moment.now())
-    ) {
-      suffix = ' (Scheduled)'
-    }
-    return (
-      moment(collection.release_date ?? collection.created_at).format(
-        'M/D/YY'
-      ) + suffix
+    return moment(collection.release_date ?? collection.created_at).format(
+      'M/D/YY'
     )
   }, [])
 

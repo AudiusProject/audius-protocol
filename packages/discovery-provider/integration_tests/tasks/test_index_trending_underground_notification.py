@@ -57,11 +57,13 @@ def test_index_trending_underground_notification(app):
     with app.app_context():
         db = get_db()
         # Add some users to the db so we have blocks
+        # Add a stream condition to all to exercise that code path
         entities = {
             "tracks": [
                 {
                     "track_id": i,
                     "owner_id": i % 2 + 1,
+                    "stream_conditions": {"follow_user_id": i % 2 + 1},
                 }
                 for i in range(100)
             ],

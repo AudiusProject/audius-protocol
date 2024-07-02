@@ -1,15 +1,11 @@
-import retry from 'async-retry'
 import { dp_db } from '../db.js'
 import { slack } from '../slack.js'
 import dotenv from 'dotenv'
-import axios from 'axios'
 import { getPreviousState } from './utils.js'
 
 dotenv.config()
-const { audius_discprov_identity_service_url, USERS_SLACK_CHANNEL } =
+const { USERS_SLACK_CHANNEL } =
   process.env
-const social_handle_url = (handle) =>
-  `${audius_discprov_identity_service_url}/social_handles?handle=${handle}`
 
 // TODO: send blocknumber through pg trigger
 export default async ({ user_id, blocknumber }) => {

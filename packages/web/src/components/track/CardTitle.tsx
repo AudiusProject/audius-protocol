@@ -8,7 +8,8 @@ import {
   Text,
   IconCart,
   IconCollectible,
-  IconSpecialAccess
+  IconSpecialAccess,
+  Flex
 } from '@audius/harmony'
 import cn from 'classnames'
 
@@ -36,8 +37,6 @@ type CardTitleProps = {
 
 export const CardTitle = ({
   className,
-  isScheduledRelease,
-  isUnlisted,
   isRemix,
   isStreamGated,
   isPodcast,
@@ -51,30 +50,32 @@ export const CardTitle = ({
     let icon
     let message
     if (isContentCollectibleGated(streamConditions)) {
-      icon = <IconCollectible />
+      icon = <IconCollectible size='s' color='subdued' />
       message = messages.collectibleGated
     } else if (isContentUSDCPurchaseGated(streamConditions)) {
-      icon = <IconCart />
+      icon = <IconCart size='s' color='subdued' />
       message = messages.premiumTrack
     } else {
-      icon = <IconSpecialAccess />
+      icon = <IconSpecialAccess size='s' color='subdued' />
       message = messages.specialAccess
     }
     content = (
-      <div className={cn(styles.typeLabel, styles.gatedContentLabel)}>
+      <Flex gap='s' alignItems='center' justifyContent='center'>
         {icon}
-        {message}
-      </div>
+        <Text variant='label' color='subdued'>
+          {message}
+        </Text>
+      </Flex>
     )
   } else {
     content = (
-      <div className={styles.typeLabel}>
+      <Text variant='label' color='subdued'>
         {isRemix
           ? messages.remixTitle
           : isPodcast
           ? messages.podcastTitle
           : messages.trackTitle}
-      </div>
+      </Text>
     )
   }
 

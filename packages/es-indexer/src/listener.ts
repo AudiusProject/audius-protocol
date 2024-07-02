@@ -53,52 +53,6 @@ export function takePending() {
   return p
 }
 
-const handlers = {
-  aggregate_user: (row: AggregateUserRow) => {
-    pending.userIds.add(row.user_id)
-  },
-  aggregate_plays: (row: AggregatePlayRow) => {
-    if (!row.play_item_id) return // when could this happen?
-    pending.trackIds.add(row.play_item_id)
-  },
-  // TODO: can we do trigger on agg playlist matview?
-  saves: (save: SaveRow) => {
-    pending.saves.push(save)
-    if (save.save_type == 'track') {
-      pending.trackIds.add(save.save_item_id)
-    } else {
-      pending.playlistIds.add(save.save_item_id)
-    }
-  },
-  reposts: (repost: RepostRow) => {
-    pending.reposts.push(repost)
-    if (repost.repost_type == 'track') {
-      pending.trackIds.add(repost.repost_item_id)
-    } else {
-      pending.playlistIds.add(repost.repost_item_id)
-    }
-  },
-  follows: (follow: FollowRow) => {
-    pending.follows.push(follow)
-    // followee follower_count comes from aggregate_user
-    // which is update async...
-    // marking followee_user_id stale here is likely to result in a noop
-    // as aggregate_user hasn't been updated yet...
-    // so instead we listen for update on that table to ensure follower_count gets updated.
-    // pending.userIds.add(follow.followee_user_id)
-    pending.userIds.add(follow.follower_user_id)
-  },
-  users: (user: UserRow) => {
-    pending.userIds.add(user.user_id)
-  },
-  tracks: (track: TrackRow) => {
-    pending.trackIds.add(track.track_id)
-  },
-  playlists: (playlist: PlaylistRow) => {
-    pending.playlistIds.add(playlist.playlist_id)
-  },
-}
-
 export async function startListener() {
   const connectionString = process.env.audius_db_url
   const client = new Client({ connectionString, application_name: 'es-listen' })
@@ -106,11 +60,64 @@ export async function startListener() {
   const tables = LISTEN_TABLES
   const sql = tables.map((t) => `LISTEN ${t}; `).join(' ')
 
-  client.on('notification', (msg) => {
+  const handlers = {
+    aggregate_user: (row: AggregateUserRow) => {
+      pending.userIds.add(row.user_id)
+    },
+    aggregate_plays: (row: AggregatePlayRow) => {
+      if (!row.play_item_id) return // when could this happen?
+      pending.trackIds.add(row.play_item_id)
+    },
+    // TODO: can we do trigger on agg playlist matview?
+    saves: (save: SaveRow) => {
+      pending.saves.push(save)
+      if (save.save_type == 'track') {
+        pending.trackIds.add(save.save_item_id)
+      } else {
+        pending.playlistIds.add(save.save_item_id)
+      }
+    },
+    reposts: (repost: RepostRow) => {
+      pending.reposts.push(repost)
+      if (repost.repost_type == 'track') {
+        pending.trackIds.add(repost.repost_item_id)
+      } else {
+        pending.playlistIds.add(repost.repost_item_id)
+      }
+    },
+    follows: (follow: FollowRow) => {
+      pending.follows.push(follow)
+      // followee follower_count comes from aggregate_user
+      // which is update async...
+      // marking followee_user_id stale here is likely to result in a noop
+      // as aggregate_user hasn't been updated yet...
+      // so instead we listen for update on that table to ensure follower_count gets updated.
+      // pending.userIds.add(follow.followee_user_id)
+      pending.userIds.add(follow.follower_user_id)
+    },
+    users: (user: UserRow) => {
+      pending.userIds.add(user.user_id)
+    },
+    tracks: async (track: TrackRow) => {
+      pending.trackIds.add(track.track_id)
+      // re-index any playlists containing this track
+      const playlists = await client.query(
+        `select playlist_id from playlist_tracks where track_id = ${track.track_id}`
+      )
+      for (const r of playlists.rows) {
+        pending.playlistIds.add(r.playlist_id)
+      }
+    },
+    playlists: (playlist: PlaylistRow) => {
+      pending.playlistIds.add(playlist.playlist_id)
+    },
+  }
+
+  client.on('notification', async (msg) => {
     const body = JSON.parse(msg.payload)
     const handler = handlers[msg.channel]
     if (handler) {
-      handler(body)
+      await handler(body)
     } else {
       logger.warn(`no handler for ${msg.channel}`)
     }

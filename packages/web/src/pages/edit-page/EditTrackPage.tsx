@@ -1,15 +1,26 @@
 import { createContext, useState } from 'react'
 
 import { useGetCurrentUserId, useGetTrackByPermalink } from '@audius/common/api'
-import { SquareSizes, Status, TrackMetadata } from '@audius/common/models'
+import {
+  SquareSizes,
+  Status,
+  Stem,
+  StemUpload,
+  Track,
+  TrackMetadata
+} from '@audius/common/models'
 import {
   TrackMetadataForUpload,
-  cacheTracksActions
+  cacheTracksActions,
+  cacheTracksSelectors
 } from '@audius/common/store'
+import { removeNullable } from '@audius/common/utils'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 import { useParams } from 'react-router'
 
+import { useHistoryContext } from 'app/HistoryProvider'
+import { useSelector } from 'common/hooks/useSelector'
 import { DeleteConfirmationModal } from 'components/delete-confirmation'
 import { EditTrackForm } from 'components/edit-track/EditTrackForm'
 import { TrackEditFormValues } from 'components/edit-track/types'
@@ -19,6 +30,7 @@ import Page from 'components/page/Page'
 import { useTrackCoverArt2 } from 'hooks/useTrackCoverArt'
 
 const { deleteTrack, editTrack } = cacheTracksActions
+const { getStems } = cacheTracksSelectors
 
 const messages = {
   title: 'Edit Your Track',
@@ -34,10 +46,9 @@ export const EditFormScrollContext = createContext(() => {})
 // This component is in development, only used behind the EDIT_TRACK_REDESIGN feature flag
 export const EditTrackPage = (props: EditPageProps) => {
   const { scrollToTop } = props
-  //   const dispatch = useDispatch()
-  //   const [formState, setFormState] = useState<UploadFormState>(initialFormState)
   const { handle, slug } = useParams<{ handle: string; slug: string }>()
   const dispatch = useDispatch()
+  const { history } = useHistoryContext()
 
   const { data: currentUserId } = useGetCurrentUserId({})
   const permalink = `/${handle}/${slug}`
@@ -60,6 +71,7 @@ export const EditTrackPage = (props: EditPageProps) => {
     if (!track) return
     dispatch(deleteTrack(track.track_id))
     setShowDeleteConfirmation(false)
+    dispatch(pushRoute(`/${track.user.handle}`))
   }
 
   const coverArtUrl = useTrackCoverArt2(
@@ -67,12 +79,28 @@ export const EditTrackPage = (props: EditPageProps) => {
     SquareSizes.SIZE_1000_BY_1000
   )
 
+  const stemTracks = useSelector((state) => getStems(state, track?.track_id))
+  const stemsAsUploads: StemUpload[] = stemTracks
+    .map((stemTrack) => {
+      const stem = (track as unknown as Track)?._stems?.find(
+        (s: Stem) => s.track_id === stemTrack.track_id
+      )
+      if (!stem) return null
+      return {
+        metadata: stemTrack,
+        category: stem.category,
+        allowCategorySwitch: false,
+        allowDelete: true
+      }
+    })
+    .filter(removeNullable)
+
   const trackAsMetadataForUpload: TrackMetadataForUpload = {
     ...(track as TrackMetadata),
     artwork: {
       url: coverArtUrl || ''
-    }
-    // TODO: Add stems
+    },
+    stems: stemsAsUploads
   }
 
   const initialValues: TrackEditFormValues = {
@@ -98,13 +126,23 @@ export const EditTrackPage = (props: EditPageProps) => {
   return (
     <Page
       title={messages.title}
-      header={<Header primary={messages.title} showBackButton />}
+      header={
+        <Header
+          primary={messages.title}
+          showBackButton
+          onClickBack={history.goBack}
+        />
+      }
     >
       {trackStatus !== Status.SUCCESS || !coverArtUrl ? (
         <LoadingSpinnerFullPage />
       ) : (
         <EditFormScrollContext.Provider value={scrollToTop}>
-          <EditTrackForm initialValues={initialValues} onSubmit={onSubmit} />
+          <EditTrackForm
+            initialValues={initialValues}
+            onSubmit={onSubmit}
+            onDeleteTrack={() => setShowDeleteConfirmation(true)}
+          />
         </EditFormScrollContext.Provider>
       )}
       <DeleteConfirmationModal

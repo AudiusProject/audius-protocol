@@ -1,6 +1,10 @@
 import { ReactElement, useMemo, useState } from 'react'
 
-import { GENRES, convertGenreLabelToValue } from '@audius/common/utils'
+import {
+  GENRES,
+  MUSICAL_KEYS,
+  convertGenreLabelToValue
+} from '@audius/common/utils'
 import {
   OptionsFilterButton,
   Flex,
@@ -64,11 +68,19 @@ const MoodFilter = () => {
       marginBottom: 0
     }
   }
+  const moodLabelCss = {
+    '& .emoji': {
+      marginBottom: 0,
+      height: 16,
+      width: 16
+    }
+  }
 
   const moodOptions = sortedKeys.map((mood) => ({
     label: MOODS[mood].label,
     value: MOODS[mood].value,
-    leadingElement: <Box css={moodCss}>{MOODS[mood].icon}</Box>
+    leadingElement: <Box css={moodCss}>{MOODS[mood].icon}</Box>,
+    labelLeadingElement: <Flex css={moodLabelCss}>{MOODS[mood].icon}</Flex>
   }))
 
   return (
@@ -86,32 +98,17 @@ const MoodFilter = () => {
   )
 }
 
-const keyArr = [
-  'C',
-  'C#/Db',
-  'D',
-  'D#/Eb',
-  'E',
-  'F',
-  'F#/Gb',
-  'G',
-  'G#/Ab',
-  'A',
-  'A#/Bb',
-  'B'
-]
-
 const KeyFilter = () => {
   const [urlSearchParams] = useSearchParams()
   const key = urlSearchParams.get('key')
   const updateSearchParams = useUpdateSearchParams('key')
-  const [scale, setScale] = useState<'Major' | 'Minor'>('Major')
-  const keyOptions = keyArr.map((key) => {
-    const keyParts = key.split('/')
+  const [scale, setScale] = useState(key?.split(' ')[1] ?? 'Major')
+  const keyOptions = MUSICAL_KEYS.map((k) => {
+    const keyParts = k.split('/')
     return {
-      label: key,
+      label: k,
       // If the key is an enharmonic equivalent (e.g. C# and Db), use the flat as the value
-      value: keyParts.length > 1 ? keyParts[1] : key
+      value: keyParts.length > 1 ? keyParts[1] : k
     }
   })
 
@@ -135,7 +132,13 @@ const KeyFilter = () => {
           anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
           transformOrigin={{ vertical: 'top', horizontal: 'left' }}
         >
-          <Paper mt='s' border='strong' shadow='far' css={{ minWidth: 200 }}>
+          <Paper
+            mt='s'
+            border='strong'
+            shadow='far'
+            css={{ minWidth: 200 }}
+            onClick={(e) => e.stopPropagation()}
+          >
             <Flex
               w='100%'
               gap='s'
@@ -159,12 +162,10 @@ const KeyFilter = () => {
               <Flex direction='column' w='100%' ph='s'>
                 <FilterButtonOptions
                   options={keyOptions}
-                  onChange={(option) =>
-                    handleChange(
-                      `${option.value} ${scale}`,
-                      `${option.label} ${scale}`
-                    )
-                  }
+                  onChange={(option) => {
+                    handleChange(`${option.value} ${scale}`)
+                    setIsOpen(false)
+                  }}
                 />
               </Flex>
             </Flex>

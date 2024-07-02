@@ -7,7 +7,9 @@ import {
   IconCaretLeft,
   IconCaretRight,
   Text,
-  PlainButton
+  PlainButton,
+  Button,
+  IconTrash
 } from '@audius/harmony'
 import cn from 'classnames'
 import { Form, Formik, FormikProps, useField } from 'formik'
@@ -16,7 +18,7 @@ import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { MenuFormCallbackStatus } from 'components/data-entry/ContextualMenu'
-import { AttributionField } from 'components/edit/fields/AttributionField'
+import { AdvancedField } from 'components/edit/fields/AdvancedField'
 import { MultiTrackSidebar } from 'components/edit/fields/MultiTrackSidebar'
 import { ReleaseDateField } from 'components/edit/fields/ReleaseDateField'
 import { RemixSettingsField } from 'components/edit/fields/RemixSettingsField'
@@ -40,6 +42,7 @@ const messages = {
   prev: 'Prev',
   next: 'Next Track',
   preview: 'Preview',
+  deleteTrack: 'DELETE TRACK',
   navigationPrompt: {
     title: 'Discard upload?',
     body: "Are you sure you want to leave this page?\nAny changes you've made will be lost.",
@@ -51,6 +54,7 @@ const messages = {
 type EditTrackFormProps = {
   initialValues: TrackEditFormValues
   onSubmit: (values: TrackEditFormValues) => void
+  onDeleteTrack?: () => void
   hideContainer?: boolean
 }
 
@@ -59,7 +63,7 @@ const EditFormValidationSchema = z.object({
 })
 
 export const EditTrackForm = (props: EditTrackFormProps) => {
-  const { initialValues, onSubmit, hideContainer } = props
+  const { initialValues, onSubmit, onDeleteTrack, hideContainer } = props
 
   return (
     <Formik<TrackEditFormValues>
@@ -67,15 +71,30 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
       onSubmit={onSubmit}
       validationSchema={toFormikValidationSchema(EditFormValidationSchema)}
     >
-      {(props) => <TrackEditForm {...props} hideContainer={hideContainer} />}
+      {(props) => (
+        <TrackEditForm
+          {...props}
+          hideContainer={hideContainer}
+          onDeleteTrack={onDeleteTrack}
+        />
+      )}
     </Formik>
   )
 }
 
 const TrackEditForm = (
-  props: FormikProps<TrackEditFormValues> & { hideContainer?: boolean }
+  props: FormikProps<TrackEditFormValues> & {
+    hideContainer?: boolean
+    onDeleteTrack?: () => void
+  }
 ) => {
-  const { values, dirty, isSubmitting, hideContainer = false } = props
+  const {
+    values,
+    dirty,
+    isSubmitting,
+    onDeleteTrack,
+    hideContainer = false
+  } = props
   const isMultiTrack = values.trackMetadatas.length > 1
   const isUpload = values.trackMetadatas[0].track_id === undefined
   const trackIdx = values.trackMetadatasIndex
@@ -122,7 +141,7 @@ const TrackEditForm = (
                 forceOpen={forceOpenAccessAndSale}
                 setForceOpen={setForceOpenAccessAndSale}
               />
-              <AttributionField />
+              <AdvancedField />
               <StemsAndDownloadsField
                 isUpload={isUpload}
                 closeMenuCallback={(data) => {
@@ -139,6 +158,17 @@ const TrackEditForm = (
               className={styles.previewButton}
               index={trackIdx}
             />
+            {!isUpload ? (
+              <Button
+                variant='destructive'
+                size='small'
+                onClick={onDeleteTrack}
+                iconLeft={IconTrash}
+                css={{ alignSelf: 'flex-start' }}
+              >
+                {messages.deleteTrack}
+              </Button>
+            ) : null}
           </div>
           {isMultiTrack ? <MultiTrackFooter /> : null}
         </div>

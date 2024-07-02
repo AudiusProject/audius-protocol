@@ -5,6 +5,7 @@ import {
   useGetTrackById,
   useGetUserById
 } from '@audius/common/api'
+import { recentSearchMessages as messages } from '@audius/common/messages'
 import { Kind, SquareSizes, Status } from '@audius/common/models'
 import {
   SearchItem,
@@ -37,17 +38,6 @@ const MAX_RECENT_SEARCHES = 12
 
 const { removeItem, clearHistory } = searchActions
 const { getSearchHistory } = searchSelectors
-
-const messages = {
-  album: 'Album',
-  clear: 'Clear Recent Searches',
-  goTo: 'Go to: ',
-  playlist: 'Playlist',
-  profile: 'Profile',
-  remove: 'Remove recent search',
-  title: 'Recent searches',
-  track: 'Track'
-}
 
 const RecentSearchSkeleton = () => (
   <Flex w='100%' pv='s' ph='xl' justifyContent='space-between'>
@@ -207,9 +197,7 @@ const RecentSearchUser = (props: { searchItem: SearchItem }) => {
     >
       <Avatar userId={id} w={40} borderWidth='thin' />
       <Flex direction='column' alignItems='flex-start'>
-        <Text variant='body' size='s'>
-          <UserLink userId={user.user_id} size='s' badgeSize='xs' />
-        </Text>
+        <UserLink userId={user.user_id} size='s' badgeSize='xs' />
         <Text variant='body' size='xs' color='subdued'>
           Profile
         </Text>
@@ -258,7 +246,6 @@ export const RecentSearches = () => {
       <Button
         variant='secondary'
         size='small'
-        fullWidth={false}
         css={{ alignSelf: 'center' }}
         onClick={handleClickClear}
       >

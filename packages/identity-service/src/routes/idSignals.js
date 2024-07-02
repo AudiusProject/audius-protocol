@@ -28,10 +28,6 @@ module.exports = function (app) {
       const [
         captchaScores,
         cognitoFlowScores,
-        socialHandles,
-        twitterUser,
-        instagramUser,
-        tikTokUser,
         deviceUserCount,
         userIPRecord,
         handleSimilarity
@@ -58,30 +54,6 @@ module.exports = function (app) {
             type: QueryTypes.SELECT
           }
         ),
-        models.SocialHandles.findOne({
-          where: { handle }
-        }),
-        models.TwitterUser.findOne({
-          where: {
-            // Twitter stores case sensitive screen names
-            'twitterProfile.screen_name': handle,
-            verified: true
-          }
-        }),
-        models.InstagramUser.findOne({
-          where: {
-            // Instagram does not store case sensitive screen names
-            'profile.username': handle.toLowerCase(),
-            verified: true
-          }
-        }),
-        models.TikTokUser.findOne({
-          where: {
-            // TikTok does not store case sensitive screen names
-            'profile.display_name': handle.toLowerCase(),
-            verified: true
-          }
-        }),
         getDeviceIDCountForUserId(req.user.blockchainUserId),
         models.UserIPs.findOne({ where: { handle } }),
         models.sequelize.query(
@@ -105,14 +77,6 @@ module.exports = function (app) {
         handleSimilarity: handleSimilarity[0]?.count ?? 0
       }
 
-      if (socialHandles) {
-        response.socialSignals = {
-          ...socialHandles.dataValues,
-          twitterVerified: !!twitterUser,
-          instagramVerified: !!instagramUser,
-          tikTokVerified: !!tikTokUser
-        }
-      }
       return successResponse(response)
     })
   )

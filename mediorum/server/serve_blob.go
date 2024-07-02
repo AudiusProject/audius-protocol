@@ -190,7 +190,11 @@ func (ss *MediorumServer) serveBlob(c echo.Context) error {
 		return err
 	}
 
-	defer blob.Close()
+	defer func() {
+		if blob != nil {
+			blob.Close()
+		}
+	}()
 
 	if c.Request().Method == "HEAD" {
 		return c.NoContent(200)

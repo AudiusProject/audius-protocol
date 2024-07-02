@@ -3,7 +3,7 @@ import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
 import { PlaylistRow, TrackRow, UserRow } from '../../types/dn'
 import { EntityType } from '../../email/notifications/types'
 
-type UserBasicInfo = {
+export type UserBasicInfo = {
   user_id: number
   name: string
   handle: string

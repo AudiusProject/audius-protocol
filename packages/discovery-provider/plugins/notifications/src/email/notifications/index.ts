@@ -335,6 +335,7 @@ export async function processEmailNotifications(
     const timeoutMillis = 14400000
     const timeout = time + timeoutMillis
 
+    /* eslint-disable no-constant-condition */
     while (true) {
       const now = Date.now()
       if (now > timeout) return

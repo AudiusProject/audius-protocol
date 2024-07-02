@@ -1,6 +1,6 @@
 import { ChangeEvent, useCallback, useState } from 'react'
 
-import { useGetCurrentUserId } from '@audius/common/api'
+import { useGetCurrentUserId, useGetPlaylistById } from '@audius/common/api'
 import {
   AccessConditions,
   AccessPermissions,
@@ -16,7 +16,7 @@ import {
   PurchaseableContentType,
   useEditPlaylistModal
 } from '@audius/common/store'
-import { Nullable } from '@audius/common/utils'
+import { Nullable, formatReleaseDate } from '@audius/common/utils'
 import {
   Text,
   IconVisibilityHidden,
@@ -28,7 +28,8 @@ import {
   IconCart,
   useTheme,
   IconComponent,
-  MusicBadge
+  MusicBadge,
+  IconCalendarMonth
 } from '@audius/harmony'
 import cn from 'classnames'
 
@@ -51,7 +52,9 @@ const messages = {
   premiumLabel: 'premium',
   hiddenPlaylistLabel: 'hidden playlist',
   by: 'By ',
-  hidden: 'Hidden'
+  hidden: 'Hidden',
+  releases: (releaseDate: string) =>
+    `Releases ${formatReleaseDate({ date: releaseDate, withHour: true })}`
 }
 
 type CollectionHeaderProps = {
@@ -128,6 +131,14 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
     FeatureFlags.PREMIUM_ALBUMS_ENABLED
   )
   const { data: currentUserId } = useGetCurrentUserId({})
+  const { data: collection } = useGetPlaylistById({
+    playlistId: collectionId,
+    currentUserId
+  })
+  const {
+    is_scheduled_release: isScheduledRelease,
+    release_date: releaseDate
+  } = collection ?? {}
   const [artworkLoading, setIsArtworkLoading] = useState(true)
   const [filterText, setFilterText] = useState('')
   const { spacing } = useTheme()
@@ -193,11 +204,7 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
           ) : (
             <Flex gap='s' mt='s' alignItems='center'>
               {isPremium ? <IconCart size='s' color='subdued' /> : null}
-              <Text
-                variant='label'
-                color='subdued'
-                css={{ letterSpacing: '2px' }}
-              >
+              <Text variant='label' color='subdued'>
                 {isPremium ? `${messages.premiumLabel} ` : ''}
                 {type === 'playlist' && !isPublished
                   ? messages.hiddenPlaylistLabel
@@ -272,7 +279,15 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
         css={{ position: 'absolute', right: spacing.l, top: spacing.l }}
       >
         {!isPublished ? (
-          <MusicBadge icon={IconVisibilityHidden}>{messages.hidden}</MusicBadge>
+          isScheduledRelease && releaseDate ? (
+            <MusicBadge variant='accent' icon={IconCalendarMonth}>
+              {messages.releases(releaseDate)}
+            </MusicBadge>
+          ) : (
+            <MusicBadge icon={IconVisibilityHidden}>
+              {messages.hidden}
+            </MusicBadge>
+          )
         ) : onFilterChange ? (
           <TextInput
             label={

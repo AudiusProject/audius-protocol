@@ -8,7 +8,11 @@ import {
   getContext,
   SearchSortMethod
 } from '@audius/common/store'
-import { Genre, trimToAlphaNumeric } from '@audius/common/utils'
+import {
+  Genre,
+  formatMusicalKey,
+  trimToAlphaNumeric
+} from '@audius/common/utils'
 import { Mood } from '@audius/sdk'
 import { select, call, takeLatest, put } from 'typed-redux-saga'
 
@@ -20,19 +24,46 @@ import { waitForRead } from 'utils/sagaHelpers'
 
 const getUserId = accountSelectors.getUserId
 
+const getMinMaxFromBpm = (bpm?: string) => {
+  const bpmParts = bpm ? bpm.split('-') : [undefined, undefined]
+  const bpmMin = bpmParts[0] ? parseFloat(bpmParts[0]) : undefined
+  const bpmMax = bpmParts[1] ? parseFloat(bpmParts[1]) : bpmMin
+  return [bpmMin, bpmMax]
+}
+
 export function* getTagSearchResults(
   tag: string,
   kind: SearchKind,
   limit: number,
-  offset: number
+  offset: number,
+  genre?: Genre,
+  mood?: Mood,
+  bpm?: string,
+  key?: string,
+  isVerified?: boolean,
+  hasDownloads?: boolean,
+  isPremium?: boolean,
+  sortMethod?: SearchSortMethod
 ) {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const [bpmMin, bpmMax] = getMinMaxFromBpm(bpm)
+
+  // @ts-ignore
   const results = yield* call(audiusBackendInstance.searchTags, {
     query: tag.toLowerCase(),
     userTagCount: 1,
     kind,
     limit,
-    offset
+    offset,
+    genre,
+    mood,
+    bpmMin,
+    bpmMax,
+    key: formatMusicalKey(key),
+    isVerified,
+    hasDownloads,
+    isPremium,
+    sortMethod
   })
   const { users, tracks } = results
 
@@ -64,7 +95,15 @@ export function* fetchSearchPageTags(
     query,
     action.searchKind,
     action.limit,
-    action.offset
+    action.offset,
+    action.genre,
+    action.mood,
+    action.bpm,
+    action.key,
+    action.isVerified,
+    action.hasDownloads,
+    action.isPremium,
+    action.sortMethod
   )
   if (rawResults) {
     const results = {
@@ -140,17 +179,7 @@ export function* getSearchResults({
 
   const apiClient = yield* getContext('apiClient')
   const userId = yield* select(getUserId)
-  const bpmParts = bpm ? bpm.split('-') : [undefined, undefined]
-  const bpmMin = bpmParts[0] ? parseFloat(bpmParts[0]) : undefined
-  const bpmMax = bpmParts[1] ? parseFloat(bpmParts[1]) : bpmMin
-
-  const formatKey = (key?: string) => {
-    if (!key) return undefined
-    const keyParts = key.split(' ')
-    const pitch = keyParts[0].slice(0, 1)
-    const isFlat = keyParts[0].length > 1
-    return `${pitch}${isFlat ? ' flat' : ''} ${keyParts[1].toLowerCase()}`
-  }
+  const [bpmMin, bpmMax] = getMinMaxFromBpm(bpm)
 
   const results = yield* call([apiClient, 'getSearchFull'], {
     currentUserId: userId,
@@ -163,7 +192,7 @@ export function* getSearchResults({
     mood,
     bpmMin,
     bpmMax,
-    key: formatKey(key),
+    key: formatMusicalKey(key),
     isVerified,
     hasDownloads,
     isPremium,

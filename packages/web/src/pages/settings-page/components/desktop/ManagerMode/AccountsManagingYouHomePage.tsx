@@ -1,15 +1,14 @@
-import { useCallback, useContext, useEffect } from 'react'
+import { useCallback } from 'react'
 
-import { useGetManagers, useRemoveManager } from '@audius/common/api'
+import { useGetManagers } from '@audius/common/api'
 import { Status } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
 import { Box, Button, Divider, Flex, IconPlus, Text } from '@audius/harmony'
 
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
-import { ToastContext } from 'components/toast/ToastContext'
 import { useSelector } from 'utils/reducer'
 
-import { AccountListItem } from './AccountListItem'
+import { ManagerListItem } from './AccountListItem/ManagerListItem'
 import { sharedMessages } from './sharedMessages'
 import { AccountsManagingYouPageProps, AccountsManagingYouPages } from './types'
 
@@ -28,9 +27,7 @@ export const AccountsManagingYouHomePage = (
 ) => {
   const { setPage } = props
   const userId = useSelector(getUserId) as number
-  const { toast } = useContext(ToastContext)
 
-  const [removeManager, removeResult] = useRemoveManager()
   // Always update manager list when mounting this page
   const { data: managers, status: managersStatus } = useGetManagers(
     { userId },
@@ -46,19 +43,6 @@ export const AccountsManagingYouHomePage = (
     },
     [setPage]
   )
-
-  const handleCancelInvite = useCallback(
-    (params: { userId: number; managerUserId: number }) => {
-      removeManager(params)
-    },
-    [removeManager]
-  )
-
-  useEffect(() => {
-    if (removeResult.status === Status.ERROR) {
-      toast(sharedMessages.somethingWentWrong)
-    }
-  }, [toast, removeResult.status])
 
   return (
     <Flex direction='column' gap='xl' ph='xl'>
@@ -95,14 +79,12 @@ export const AccountsManagingYouHomePage = (
             {messages.noManagers}
           </Text>
         ) : null}
-        {managers?.map(({ grant, manager }) => {
+        {managers?.map((data) => {
           return (
-            <AccountListItem
+            <ManagerListItem
               onRemoveManager={handleRemoveManager}
-              onCancelInvite={handleCancelInvite}
-              key={manager.user_id}
-              user={manager}
-              isPending={!grant.is_approved}
+              key={data.manager.user_id}
+              managerData={data}
             />
           )
         })}

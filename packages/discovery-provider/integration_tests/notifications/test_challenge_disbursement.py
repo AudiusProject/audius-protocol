@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime
 from typing import List
 
 from sqlalchemy import desc
@@ -23,10 +24,7 @@ def test_challenge_disbursement_notification(app):
     populate_mock_db(db, entities)
     entities = {
         "challenge_disbursements": [
-            {
-                "challenge_id": i,
-                "user_id": 1,
-            }
+            {"challenge_id": i, "user_id": 1, "created_at": datetime(2023, 1, i + 1)}
             for i in range(3)
         ],
     }

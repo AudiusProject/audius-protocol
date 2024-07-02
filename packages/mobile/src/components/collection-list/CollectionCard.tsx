@@ -92,6 +92,7 @@ export const CollectionCard = (props: CollectionCardProps) => {
         <CollectionImageV2
           collectionId={playlist_id}
           size={SquareSizes.SIZE_480_BY_480}
+          style={{ flex: 1 }}
         />
         <Text variant='title' textAlign='center' numberOfLines={1}>
           {playlist_name}

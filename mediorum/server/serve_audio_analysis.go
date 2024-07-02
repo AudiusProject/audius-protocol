@@ -1,7 +1,6 @@
 package server
 
 import (
-	"net/http"
 	"time"
 
 	"github.com/labstack/echo/v4"
@@ -16,17 +15,17 @@ func (ss *MediorumServer) analyzeUpload(c echo.Context) error {
 		return echo.NewHTTPError(404, err.Error())
 	}
 
-	if upload.Template == "audio" && upload.Status == JobStatusDone && upload.AudioAnalysisStatus != JobStatusDone {
-		upload.AudioAnalyzedAt = time.Now().UTC()
-		upload.AudioAnalysisStatus = ""
-		upload.AudioAnalysisError = ""
-		upload.Status = JobStatusAudioAnalysis
-		err = ss.crud.Update(upload)
-		if err != nil {
-			ss.logger.Warn("update upload failed", "err", err)
-			return c.String(500, "failed to trigger audio analysis")
-		}
-	}
+	// if upload.Template == "audio" && upload.Status == JobStatusDone && upload.AudioAnalysisStatus != JobStatusDone {
+	// 	upload.AudioAnalyzedAt = time.Now().UTC()
+	// 	upload.AudioAnalysisStatus = ""
+	// 	upload.AudioAnalysisError = ""
+	// 	upload.Status = JobStatusAudioAnalysis
+	// 	err = ss.crud.Update(upload)
+	// 	if err != nil {
+	// 		ss.logger.Warn("update upload failed", "err", err)
+	// 		return c.String(500, "failed to trigger audio analysis")
+	// 	}
+	// }
 
 	return c.JSON(200, upload)
 }
@@ -52,19 +51,22 @@ func (ss *MediorumServer) analyzeLegacyBlob(c echo.Context) error {
 		}
 		return c.JSON(200, newAnalysis)
 	}
-	if analysis.Status == JobStatusError || analysis.Status == JobStatusTimeout {
-		if analysis.Error == "blob is not an audio file" {
-			return c.String(http.StatusBadRequest, "must specify a cid for an audio file")
-		}
-		analysis.Status = JobStatusAudioAnalysis
-		analysis.AnalyzedAt = time.Now().UTC()
-		analysis.Error = ""
-		err = ss.crud.Update(analysis)
-		if err != nil {
-			ss.logger.Warn("update legacy audio analysis failed", "err", err)
-			return c.String(500, "failed to trigger audio analysis")
-		}
-	}
+	// if analysis.Status == JobStatusError || analysis.Status == JobStatusTimeout {
+	// 	if analysis.Error == "blob is not an audio file" {
+	// 		// set ErrorCount to 3 so discovery repairer stops retrying this cid
+	// 		analysis.ErrorCount = 3
+	// 		ss.crud.Update(analysis)
+	// 		return c.String(http.StatusBadRequest, "must specify a cid for an audio file")
+	// 	}
+	// 	analysis.Status = JobStatusAudioAnalysis
+	// 	analysis.AnalyzedAt = time.Now().UTC()
+	// 	analysis.Error = ""
+	// 	err = ss.crud.Update(analysis)
+	// 	if err != nil {
+	// 		ss.logger.Warn("update legacy audio analysis failed", "err", err)
+	// 		return c.String(500, "failed to trigger audio analysis")
+	// 	}
+	// }
 	return c.JSON(200, analysis)
 }
 

@@ -7,7 +7,8 @@ import {
   Collection,
   ID,
   Remix,
-  TrackMetadata
+  TrackMetadata,
+  StemUploadWithFile
 } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import {
@@ -21,12 +22,16 @@ import {
   cacheActions,
   confirmerActions,
   confirmTransaction,
-  TrackMetadataForUpload
+  TrackMetadataForUpload,
+  stemsUploadActions,
+  stemsUploadSelectors
 } from '@audius/common/store'
 import {
+  formatMusicalKey,
   formatUrlName,
   makeKindId,
   squashNewLines,
+  uuid,
   waitForAccount,
   waitForValue
 } from '@audius/common/utils'
@@ -43,6 +48,8 @@ import { waitForWrite } from 'utils/sagaHelpers'
 import { recordEditTrackAnalytics } from './sagaHelpers'
 import { fetchTrackStreamUrls } from './utils/fetchTrackStreamUrls'
 
+const { startStemUploads } = stemsUploadActions
+const { getCurrentUploads } = stemsUploadSelectors
 const { getUser } = cacheUsersSelectors
 const { getTrack } = cacheTracksSelectors
 const setDominantColors = averageColorActions.setDominantColors
@@ -169,6 +176,11 @@ function* editTrackAsync(action: ReturnType<typeof trackActions.editTrack>) {
 
   const trackForEdit = yield* addPremiumMetadata(action.formFields)
 
+  // Format musical key
+  trackForEdit.musical_key = formatMusicalKey(
+    trackForEdit.musical_key || undefined
+  )
+
   yield* call(
     confirmEditTrack,
     action.trackId,
@@ -184,6 +196,57 @@ function* editTrackAsync(action: ReturnType<typeof trackActions.editTrack>) {
     track._cover_art_sizes = {
       ...track._cover_art_sizes,
       [DefaultSizes.OVERRIDE]: track.artwork.url
+    }
+  }
+
+  const getFeatureEnabled = yield* getContext('getFeatureEnabled')
+  const isEditTrackRedesignEnabled = yield* call(
+    getFeatureEnabled,
+    FeatureFlags.EDIT_TRACK_REDESIGN
+  )
+  if (isEditTrackRedesignEnabled && track.stems) {
+    const inProgressStemUploads = yield* select(
+      getCurrentUploads,
+      track.track_id
+    )
+    const existingStems = currentTrack._stems || []
+
+    // upload net new stems
+    const addedStems = track.stems.filter((stem) => {
+      return !existingStems.find((existingStem) => {
+        return existingStem.track_id === stem.metadata.track_id
+      })
+    })
+
+    const addedStemsWithFiles = addedStems.filter(
+      (stem) => 'file' in stem
+    ) as StemUploadWithFile[]
+
+    if (addedStemsWithFiles.length > 0) {
+      yield* put(
+        startStemUploads({
+          parentId: track.track_id,
+          uploads: addedStemsWithFiles,
+          batchUID: uuid()
+        })
+      )
+    }
+
+    // delete removed stems
+    const removedStems = existingStems
+      .filter((existingStem) => {
+        return !track.stems?.find(
+          (stem) => stem.metadata.track_id === existingStem.track_id
+        )
+      })
+      .filter((existingStem) => {
+        return !inProgressStemUploads.find(
+          (upload) => upload.metadata.track_id === existingStem.track_id
+        )
+      })
+
+    for (const stem of removedStems) {
+      yield* put(trackActions.deleteTrack(stem.track_id))
     }
   }
 
