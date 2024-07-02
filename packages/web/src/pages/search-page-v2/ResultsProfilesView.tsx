@@ -1,10 +1,10 @@
 import { useCallback } from 'react'
 
-import { Status } from '@audius/common/models'
-import { searchResultsPageSelectors } from '@audius/common/store'
+import { Kind, Status } from '@audius/common/models'
+import { searchActions, searchResultsPageSelectors } from '@audius/common/store'
 import { Box, Flex, OptionsFilterButton, Text } from '@audius/harmony'
 import { range } from 'lodash'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { useSearchParams } from 'react-router-dom-v5-compat'
 
 import { UserCard } from 'components/user-card'
@@ -17,6 +17,7 @@ import { CategoryView } from './types'
 import { useUpdateSearchParams } from './utils'
 
 const { getSearchResults } = searchResultsPageSelectors
+const { addItem: addRecentSearch } = searchActions
 
 const messages = {
   profiles: 'Profiles',
@@ -25,6 +26,7 @@ const messages = {
 
 export const ResultsProfilesView = () => {
   const isMobile = useIsMobile()
+  const dispatch = useDispatch()
   const results = useSelector(getSearchResults)
   const [urlSearchParams] = useSearchParams()
   const updateSortParam = useUpdateSearchParams('sortMethod')
@@ -38,6 +40,22 @@ export const ResultsProfilesView = () => {
   const sortMethod = urlSearchParams.get('sortMethod')
   const profileLimit = isCategoryActive(CategoryView.PROFILES) ? 100 : 5
   const profileIds = results.artistIds?.slice(0, profileLimit) ?? []
+
+  const handleClick = useCallback(
+    (id?: number) => {
+      if (id) {
+        dispatch(
+          addRecentSearch({
+            searchItem: {
+              kind: Kind.USERS,
+              id
+            }
+          })
+        )
+      }
+    },
+    [dispatch]
+  )
 
   return (
     <Flex direction='column' gap='xl'>
@@ -91,6 +109,8 @@ export const ResultsProfilesView = () => {
                   id={id}
                   size={isMobile ? 'xs' : 's'}
                   css={isMobile ? { maxWidth: 320 } : undefined}
+                  onClick={() => handleClick(id)}
+                  onUserLinkClick={() => handleClick(id)}
                 />
               ))}
         </Box>

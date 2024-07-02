@@ -1,10 +1,10 @@
 import { useCallback } from 'react'
 
-import { Status } from '@audius/common/models'
-import { searchResultsPageSelectors } from '@audius/common/store'
+import { Kind, Status } from '@audius/common/models'
+import { searchActions, searchResultsPageSelectors } from '@audius/common/store'
 import { Box, Flex, OptionsFilterButton, Text } from '@audius/harmony'
 import { range } from 'lodash'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { useSearchParams } from 'react-router-dom-v5-compat'
 
 import { CollectionCard } from 'components/collection'
@@ -17,6 +17,7 @@ import { CategoryView } from './types'
 import { useUpdateSearchParams } from './utils'
 
 const { getSearchResults } = searchResultsPageSelectors
+const { addItem: addRecentSearch } = searchActions
 
 const messages = {
   albums: 'Albums',
@@ -25,6 +26,7 @@ const messages = {
 
 export const ResultsAlbumsView = () => {
   const isMobile = useIsMobile()
+  const dispatch = useDispatch()
   const results = useSelector(getSearchResults)
   const [urlSearchParams] = useSearchParams()
   const updateSortParam = useUpdateSearchParams('sortMethod')
@@ -38,6 +40,22 @@ export const ResultsAlbumsView = () => {
   const sortMethod = urlSearchParams.get('sortMethod')
   const albumLimit = isCategoryActive(CategoryView.ALBUMS) ? 100 : 5
   const albumIds = results.albumIds?.slice(0, albumLimit) ?? []
+
+  const handleClick = useCallback(
+    (id?: number) => {
+      if (id) {
+        dispatch(
+          addRecentSearch({
+            searchItem: {
+              kind: Kind.COLLECTIONS,
+              id
+            }
+          })
+        )
+      }
+    },
+    [dispatch]
+  )
 
   return (
     <Flex direction='column' gap='xl'>
@@ -91,6 +109,8 @@ export const ResultsAlbumsView = () => {
                   id={id}
                   size={isMobile ? 'xs' : 's'}
                   css={isMobile ? { maxWidth: 320 } : undefined}
+                  onClick={() => handleClick(id)}
+                  onCollectionLinkClick={() => handleClick(id)}
                 />
               ))}
         </Box>

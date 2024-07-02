@@ -1,12 +1,13 @@
 import { useCallback, useState } from 'react'
 
-import { Name, Status } from '@audius/common/models'
+import { Kind, Name, Status } from '@audius/common/models'
 import {
   lineupSelectors,
   playerSelectors,
   queueSelectors,
   searchResultsPageSelectors,
-  searchResultsPageTracksLineupActions
+  searchResultsPageTracksLineupActions,
+  searchActions
 } from '@audius/common/store'
 import { Flex, OptionsFilterButton, Text } from '@audius/harmony'
 import { css } from '@emotion/css'
@@ -30,6 +31,7 @@ const { makeGetLineupMetadatas } = lineupSelectors
 const { getBuffering, getPlaying } = playerSelectors
 const { getSearchResults, getSearchTracksLineup } = searchResultsPageSelectors
 const { makeGetCurrent } = queueSelectors
+const { addItem: addRecentSearch } = searchActions
 
 const PAGE_WIDTH = 1080
 const HALF_TILE_WIDTH = (PAGE_WIDTH - 16) / 2
@@ -72,8 +74,18 @@ export const ResultsTracksView = () => {
     entries: tracksLineup.entries.slice(0, trackLimit)
   }
 
-  const onClickTrackTile = useCallback(
+  const handleClickTrackTile = useCallback(
     (id?: number) => {
+      if (id) {
+        dispatch(
+          addRecentSearch({
+            searchItem: {
+              kind: Kind.TRACKS,
+              id
+            }
+          })
+        )
+      }
       dispatch(
         make(Name.SEARCH_RESULT_SELECT, {
           searchText: query,
@@ -146,16 +158,14 @@ export const ResultsTracksView = () => {
               playing={playing}
               buffering={buffering}
               playTrack={(uid, trackId) => {
-                onClickTrackTile(trackId)
+                handleClickTrackTile(trackId)
                 dispatch(searchResultsPageTracksLineupActions.play(uid))
               }}
               pauseTrack={() =>
                 dispatch(searchResultsPageTracksLineupActions.pause())
               }
               actions={searchResultsPageTracksLineupActions}
-              onClickTile={(trackId) => {
-                onClickTrackTile(trackId)
-              }}
+              onClickTile={handleClickTrackTile}
             />
           ) : (
             <Flex direction='column' gap='l' w='100%'>
