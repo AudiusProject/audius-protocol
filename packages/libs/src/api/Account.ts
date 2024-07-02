@@ -86,7 +86,7 @@ export class Account extends Base {
           password,
           otp
         })
-        await this.web3Manager.setOwnerWallet(ownerWallet)
+        this.web3Manager.setOwnerWallet(ownerWallet)
       } catch (e) {
         return { error: (e as Error).message, phase }
       }

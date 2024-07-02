@@ -112,8 +112,7 @@ export const relay = async (
       })
     } catch (e) {
       if (e instanceof InvalidRelayInstructionError) {
-        res.locals.logger.error(e.toString())
-        throw new BadRequestError('Invalid relay instructions')
+        throw new BadRequestError('Invalid relay instructions', { cause: e })
       } else {
         throw e
       }
