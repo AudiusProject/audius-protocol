@@ -1699,7 +1699,8 @@ type RewardsClaimFailure = {
   challengeId: string
   specifier: string
   amount: number
-  error: unknown
+  url?: string
+  error: string
 }
 
 type RewardsClaimBlocked = {
@@ -1707,7 +1708,6 @@ type RewardsClaimBlocked = {
   challengeId: string
   specifier: string
   amount: number
-  error: unknown
   code: number
 }
 

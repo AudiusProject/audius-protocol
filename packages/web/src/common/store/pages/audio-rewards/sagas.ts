@@ -40,7 +40,7 @@ import {
   all
 } from 'typed-redux-saga'
 
-import { reportToSentry } from 'store/errors/reportToSentry'
+import { isResponseError, reportToSentry } from 'store/errors/reportToSentry'
 import { AUDIO_PAGE } from 'utils/route'
 import { waitForRead } from 'utils/sagaHelpers'
 import {
@@ -259,15 +259,25 @@ async function claimRewardsForChallenge({
         // Handle the individual specifier failures here to let the other
         // ones continue to claim and not reject the all() call.
         .catch(async (error: unknown) => {
-          if (error instanceof Errors.AntiAbuseAttestionError) {
+          if (error instanceof Errors.AntiAbuseOracleAttestationError) {
             await track(
               make({
                 eventName: Name.REWARDS_CLAIM_BLOCKED,
                 challengeId,
                 specifier: specifierWithAmount.specifier,
                 amount: specifierWithAmount.amount,
-                code: error.code,
-                error: error.message
+                code: error.code as number
+              })
+            )
+          } else if (isResponseError(error)) {
+            await track(
+              make({
+                eventName: Name.REWARDS_CLAIM_FAILURE,
+                challengeId,
+                specifier: specifierWithAmount.specifier,
+                amount: specifierWithAmount.amount,
+                url: error.response.url,
+                error: await error.response.text()
               })
             )
           } else {
@@ -277,7 +287,7 @@ async function claimRewardsForChallenge({
                 challengeId,
                 specifier: specifierWithAmount.specifier,
                 amount: specifierWithAmount.amount,
-                error
+                error: (error as any).toString()
               })
             )
           }
@@ -319,40 +329,39 @@ function* claimSingleChallengeRewardAsync(
   }
   const userId = encodeHashId(decodedUserId)
 
-  try {
-    const results = yield* call(claimRewardsForChallenge, {
-      sdk,
-      userId,
-      challengeId: challengeId as ChallengeId,
-      specifiers,
-      track,
-      make
+  const results = yield* call(claimRewardsForChallenge, {
+    sdk,
+    userId,
+    challengeId: challengeId as ChallengeId,
+    specifiers,
+    track,
+    make
+  })
+  const claimed = results.filter((r) => !('error' in r))
+  const claimedAmount = claimed.reduce((sum, { amount }) => {
+    return sum + amount
+  }, 0)
+  yield* put(
+    increaseBalance({
+      amount: AUDIO(claimedAmount).value.toString() as StringWei
     })
-    const claimed = results.filter((r) => !('error' in r))
-    const claimedAmount = claimed.reduce((sum, { amount }) => {
-      return sum + amount
-    }, 0)
-    yield* put(
-      increaseBalance({
-        amount: AUDIO(claimedAmount).value.toString() as StringWei
-      })
-    )
-    yield* put(setUserChallengesDisbursed({ challengeId, specifiers: claimed }))
+  )
+  yield* put(setUserChallengesDisbursed({ challengeId, specifiers: claimed }))
 
-    const errors = results.filter((r): r is ErrorResult => 'error' in r)
-    let aaoError: Errors.AntiAbuseAttestionError | undefined
-    if (errors.length > 0) {
-      // Log and report errors for each specifier that failed to claim
-      for (const res of errors) {
-        if (!aaoError && res.error instanceof Errors.AntiAbuseAttestionError) {
-          aaoError = res.error
-        }
-        const error =
-          res.error instanceof Error ? res.error : new Error(String(res.error))
-        console.error(
-          `Failed to claim challenge: ${challengeId} specifier: ${res.specifier} for amount: ${res.amount} with error:`,
-          error
-        )
+  const errors = results.filter((r): r is ErrorResult => 'error' in r)
+  let aaoError: Errors.AntiAbuseOracleAttestationError | undefined
+  if (errors.length > 0) {
+    // Log and report errors for each specifier that failed to claim
+    for (const res of errors) {
+      const error =
+        res.error instanceof Error ? res.error : new Error(String(res.error))
+      console.error(
+        `Failed to claim challenge: ${challengeId} specifier: ${res.specifier} for amount: ${res.amount} with error:`,
+        error
+      )
+      if (res.error instanceof Errors.AntiAbuseOracleAttestationError) {
+        aaoError = res.error
+      } else {
         yield* call(reportToSentry, {
           error,
           name: `ClaimRewards: ${error.name}`,
@@ -363,15 +372,15 @@ function* claimSingleChallengeRewardAsync(
           }
         })
       }
-      const errorMessage = 'Some specifiers failed to claim'
-      if (aaoError) {
-        throw new Errors.AntiAbuseAttestionError(aaoError.code, errorMessage)
-      }
-      throw new Error(errorMessage)
     }
-  } catch (e) {
-    console.error(e)
-    throw new Error('Failed to claim for challenge')
+    const errorMessage = 'Some specifiers failed to claim'
+    if (aaoError) {
+      throw new Errors.AntiAbuseOracleAttestationError(
+        aaoError.code,
+        errorMessage
+      )
+    }
+    throw new Error(errorMessage)
   }
 }
 
@@ -382,7 +391,7 @@ function* claimChallengeRewardAsync(
     yield* call(claimSingleChallengeRewardAsync, action)
     yield* put(claimChallengeRewardSucceeded())
   } catch (e) {
-    if (e instanceof Errors.AntiAbuseAttestionError) {
+    if (e instanceof Errors.AntiAbuseOracleAttestationError) {
       yield* put(claimChallengeRewardFailed({ aaoErrorCode: e.code }))
     } else {
       yield* put(claimChallengeRewardFailed())
@@ -410,16 +419,15 @@ function* claimAllChallengeRewardsAsync(
             payload: { claim, retryOnFailure: false }
           })
         } catch (e) {
-          console.error(e)
           hasError = true
-          if (e instanceof Errors.AntiAbuseAttestionError) {
+          if (e instanceof Errors.AntiAbuseOracleAttestationError) {
             aaoErrorCode = e.code
           }
         }
       })
     )
   )
-  if (aaoErrorCode) {
+  if (aaoErrorCode !== undefined) {
     yield* put(claimChallengeRewardFailed({ aaoErrorCode }))
     yield* call(
       track,
