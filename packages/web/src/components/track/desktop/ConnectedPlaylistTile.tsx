@@ -33,6 +33,7 @@ import {
 import { Text, IconKebabHorizontal } from '@audius/harmony'
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
+import { LocationState } from 'history'
 import { range } from 'lodash'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
@@ -245,7 +246,7 @@ const ConnectedPlaylistTile = ({
   const onClickTitle = useCallback(
     (e: MouseEvent) => {
       e.stopPropagation()
-      goToRoute(href)
+      goToRoute(href, { forceFetch: true })
     },
     [goToRoute, href]
   )
@@ -556,7 +557,8 @@ function mapStateToProps(state: AppState, ownProps: OwnProps) {
 
 function mapDispatchToProps(dispatch: Dispatch) {
   return {
-    goToRoute: (route: string) => dispatch(pushRoute(route)),
+    goToRoute: (route: string, state?: LocationState) =>
+      dispatch(pushRoute(route, state)),
     record: (event: TrackEvent) => dispatch(event),
     shareCollection: (id: ID) =>
       dispatch(
