@@ -1,5 +1,14 @@
 # @audius/sdk
 
+## 4.2.1
+
+### Patch Changes
+
+- f75b571: fix stale signatures when auth address changes
+- 9a50c42: Fix instanceof check for version mismatches of @solana/web3.js and skip preflight on evaluateAttestations
+- Updated dependencies [9a50c42]
+  - @audius/spl@1.0.1
+
 ## 4.2.0
 
 ### Minor Changes

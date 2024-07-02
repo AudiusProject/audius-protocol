@@ -1,5 +1,13 @@
 # @audius/sp-actions
 
+## 1.0.2
+
+### Patch Changes
+
+- Updated dependencies [f75b571]
+- Updated dependencies [9a50c42]
+  - @audius/sdk@4.2.1
+
 ## 1.0.1
 
 ### Patch Changes
