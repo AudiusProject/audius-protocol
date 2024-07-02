@@ -57,9 +57,9 @@ function* fetchHeavyRotation() {
   const activityData = activity.data
   if (!activityData) return { ...HEAVY_ROTATION }
 
-  const mostListenedTracks = activityData
-    .map(makeActivity)
-    .filter(removeNullable) as UserTrackMetadata[]
+  const mostListenedTracks = (
+    activityData.map(makeActivity).filter(removeNullable) as UserTrackMetadata[]
+  ).filter((track) => !track.is_unlisted)
 
   const users = yield* call(
     retrieveUsers,
