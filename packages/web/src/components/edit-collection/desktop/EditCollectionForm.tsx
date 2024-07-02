@@ -1,3 +1,5 @@
+import { useState } from 'react'
+
 import { useFeatureFlag } from '@audius/common/hooks'
 import {
   AlbumSchema,
@@ -5,10 +7,13 @@ import {
   PlaylistSchema
 } from '@audius/common/schemas'
 import { FeatureFlags } from '@audius/common/services'
-import { Flex, Text } from '@audius/harmony'
+import { Button, Flex, IconTrash, Text } from '@audius/harmony'
 import { Form, Formik } from 'formik'
+import { useHistory } from 'react-router-dom'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
+import { AnchoredSubmitRow } from 'components/edit/AnchoredSubmitRow'
+import { AnchoredSubmitRowEdit } from 'components/edit/AnchoredSubmitRowEdit'
 import { AdvancedAlbumField } from 'components/edit/fields/AdvancedAlbumField'
 import { CollectionTrackFieldArray } from 'components/edit/fields/CollectionTrackFieldArray'
 import { ReleaseDateFieldLegacy } from 'components/edit/fields/ReleaseDateFieldLegacy'
@@ -23,8 +28,8 @@ import {
   TextAreaField,
   TextField
 } from 'components/form-fields'
+import { DeleteCollectionConfirmationModal } from 'components/nav/desktop/PlaylistLibrary/DeleteCollectionConfirmationModal'
 import { Tile } from 'components/tile'
-import { AnchoredSubmitRow } from 'pages/upload-page/components/AnchoredSubmitRow'
 
 import styles from './EditCollectionForm.module.css'
 
@@ -36,7 +41,8 @@ const messages = {
     description:
       'Set defaults for all tracks in this collection. You can edit your track details after upload.'
   },
-  completeButton: 'Complete Upload'
+  completeButton: 'Complete Upload',
+  deleteCollection: (collectionName: string) => `Delete ${collectionName}`
 }
 
 type EditCollectionFormProps = {
@@ -48,6 +54,10 @@ type EditCollectionFormProps = {
 
 export const EditCollectionForm = (props: EditCollectionFormProps) => {
   const { initialValues, onSubmit, isAlbum, isUpload } = props
+  const { playlist_id } = initialValues
+  const history = useHistory()
+  const [isDeleteConfirmationOpen, setIsDeleteConfirmationOpen] =
+    useState(false)
   const { isEnabled: isPremiumAlbumsEnabled } = useFeatureFlag(
     FeatureFlags.PREMIUM_ALBUMS_ENABLED
   )
@@ -104,9 +114,7 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
             <ReleaseDateFieldLegacy />
           )}
           {isAlbum && showPremiumAlbums ? (
-            <Flex w='100%' css={{ flexGrow: 1 }}>
-              <PriceAndAudienceField isAlbum isUpload />
-            </Flex>
+            <PriceAndAudienceField isAlbum={isAlbum} isUpload={isUpload} />
           ) : null}
           {isAlbum ? <AdvancedAlbumField /> : null}
           {isUpload ? (
@@ -129,9 +137,30 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
               {isAlbum && <StemsAndDownloadsCollectionField />}
             </Flex>
           ) : null}
+          {!isUpload ? (
+            <Flex>
+              <Button
+                variant='destructive'
+                size='small'
+                iconLeft={IconTrash}
+                onClick={() => setIsDeleteConfirmationOpen(true)}
+              >
+                {messages.deleteCollection(collectionTypeName)}
+              </Button>
+            </Flex>
+          ) : null}
         </Tile>
         <CollectionTrackFieldArray />
-        <AnchoredSubmitRow />
+        {isUpload ? <AnchoredSubmitRow /> : <AnchoredSubmitRowEdit />}
+        {playlist_id ? (
+          <DeleteCollectionConfirmationModal
+            visible={isDeleteConfirmationOpen}
+            collectionId={playlist_id}
+            entity={collectionTypeName}
+            onCancel={() => setIsDeleteConfirmationOpen(false)}
+            onDelete={history.goBack}
+          />
+        ) : null}
       </Form>
     </Formik>
   )
