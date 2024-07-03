@@ -27,7 +27,7 @@ export const Button = (props: ButtonProps) => {
     style,
     ...baseProps
   } = props
-  const { isLoading } = baseProps
+  const { isLoading, children } = baseProps
   const pressed = useSharedValue(0)
 
   const isDisabled = disabled || isLoading
@@ -39,23 +39,25 @@ export const Button = (props: ButtonProps) => {
     typography
   } = useTheme()
 
+  const smallHeight = size === 'xs' ? spacing.unit7 : spacing.unit8
   // - Size Styles -
   const smallStyles: ReactNativeStyle = {
     gap: spacing.xs,
-    height: size === 'xs' ? spacing.unit7 : spacing.unit8,
+    height: smallHeight,
+    width: !children ? smallHeight : undefined,
     paddingHorizontal: spacing.m
   }
   // title-s-default
   const smallTextStyles: TextStyle = {
     fontFamily: typography.fontByWeight.bold,
     fontSize: typography.size.s,
-    lineHeight: typography.lineHeight.s,
-    textTransform: 'capitalize'
+    lineHeight: typography.lineHeight.s
   }
 
   const defaultStyles: ReactNativeStyle = {
     gap: spacing.s,
     height: spacing.unit12,
+    width: !children ? spacing.unit12 : undefined,
     paddingHorizontal: spacing.xl
   }
 

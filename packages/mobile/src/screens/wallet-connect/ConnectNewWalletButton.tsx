@@ -52,7 +52,6 @@ export const ConnectNewWalletButton = () => {
     <View style={styles.root}>
       <Button
         variant='primary'
-        size='large'
         fullWidth
         onPress={handleConnectWallet}
         disabled={!canConnectNewWallet}

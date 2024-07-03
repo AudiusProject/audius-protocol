@@ -420,12 +420,7 @@ const RenderForm = ({
         <View style={styles.formActions}>
           {error ? <RenderError error={error} /> : null}
           {page === PurchaseContentPage.TRANSFER ? (
-            <Button
-              onPress={handleGoBackPress}
-              variant='secondary'
-              size='large'
-              fullWidth
-            >
+            <Button onPress={handleGoBackPress} variant='secondary' fullWidth>
               {messages.goBack}
             </Button>
           ) : null}
@@ -433,7 +428,6 @@ const RenderForm = ({
             onPress={submitForm}
             disabled={isUnlocking}
             variant='primary'
-            size='large'
             color='lightGreen'
             isLoading={isUnlocking}
             fullWidth

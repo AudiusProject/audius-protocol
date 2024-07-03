@@ -87,7 +87,6 @@ export const FormScreen = (props: FormScreenProps) => {
         <>
           <Button
             variant='secondary'
-            size='large'
             style={styles.bottomButton}
             onPress={handleCancel}
           >
@@ -95,7 +94,6 @@ export const FormScreen = (props: FormScreenProps) => {
           </Button>
           <Button
             variant='primary'
-            size='large'
             style={styles.bottomButton}
             onPress={handleSubmit}
           >
@@ -103,12 +101,7 @@ export const FormScreen = (props: FormScreenProps) => {
           </Button>
         </>
       ) : (
-        <Button
-          variant='primary'
-          size='large'
-          fullWidth
-          onPress={navigation.goBack}
-        >
+        <Button variant='primary' fullWidth onPress={navigation.goBack}>
           {doneText ?? messages.done}
         </Button>
       )}

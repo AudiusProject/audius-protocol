@@ -37,6 +37,7 @@ export const TipAudioButton = () => {
         Platform.OS === 'ios' ? messages.labelAlt : messages.label
       }
       iconLeft={IconTokenGold}
+      size='small'
       fullWidth
       onPress={handlePress}
     >

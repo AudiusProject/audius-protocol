@@ -95,7 +95,6 @@ export const ConfirmSendTipScreen = ({
       <SendTipStatusText />
       <Button
         variant='primary'
-        size='large'
         onPress={handleConfirm}
         isLoading={inProgress}
         iconRight={IconCheck}

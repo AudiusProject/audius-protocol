@@ -168,7 +168,7 @@ export const EnablePushNotificationsDrawer = () => {
             </View>
           ))}
         </View>
-        <Button onPress={enablePushNotifications} size='large' fullWidth>
+        <Button onPress={enablePushNotifications} fullWidth>
           {messages.enable}
         </Button>
       </View>

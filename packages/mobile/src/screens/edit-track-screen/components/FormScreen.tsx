@@ -35,12 +35,7 @@ export const FormScreen = (props: FormScreenProps) => {
   const navigation = useNavigation()
 
   const defaultBottomSection = (
-    <Button
-      variant='primary'
-      size='large'
-      fullWidth
-      onPress={navigation.goBack}
-    >
+    <Button variant='primary' fullWidth onPress={navigation.goBack}>
       {messages.done}
     </Button>
   )

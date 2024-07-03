@@ -66,7 +66,6 @@ export const ApiRewardsDrawer = () => {
         </Text>
         <Button
           variant='primary'
-          size='large'
           iconRight={IconArrowRight}
           onPress={onPress}
           fullWidth

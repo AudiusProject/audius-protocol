@@ -138,7 +138,6 @@ export const SendTipScreen = () => {
       <AvailableAudio />
       <Button
         variant='primary'
-        size='large'
         onPress={handleSendTip}
         iconRight={IconArrowRight}
         fullWidth

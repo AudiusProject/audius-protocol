@@ -123,7 +123,7 @@ export const UploadCompleteScreen = () => {
       topbarLeft={null}
       url='/upload-complete'
       bottomSection={
-        <Button variant='primary' size='large' fullWidth onPress={handleDone}>
+        <Button variant='primary' fullWidth onPress={handleDone}>
           {messages.close}
         </Button>
       }
@@ -148,7 +148,6 @@ export const UploadCompleteScreen = () => {
               </Text>
               <TwitterButton
                 type='static'
-                size='large'
                 fullWidth
                 url={getTrackRoute(track!, true)}
                 shareText={messages.twitterShareText(title)}

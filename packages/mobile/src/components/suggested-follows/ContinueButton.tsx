@@ -46,7 +46,6 @@ export const ContinueButton = (props: ContinueButtonProps) => {
       <Button
         {...props}
         style={styles.button}
-        size='large'
         fullWidth
         disabled={!hasFollowedEnoughArtists}
         iconRight={IconArrowRight}

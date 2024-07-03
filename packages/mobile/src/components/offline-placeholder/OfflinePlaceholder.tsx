@@ -64,7 +64,6 @@ export const OfflinePlaceholder = (props: OfflinePlaceholderProps) => {
         fullWidth
         iconLeft={IconRefresh}
         onPress={handleRefresh}
-        size='large'
       >
         {messages.reloading(isRefreshing)}
       </Button>

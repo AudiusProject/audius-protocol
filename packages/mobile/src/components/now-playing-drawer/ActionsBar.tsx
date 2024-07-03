@@ -224,11 +224,7 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
     ) {
       const price = track.stream_conditions.usdc_purchase.price
       return (
-        <Button
-          style={styles.buyButton}
-          size='large'
-          onPress={handlePurchasePress}
-        >
+        <Button style={styles.buyButton} onPress={handlePurchasePress}>
           {formatPrice(price)}
         </Button>
       )

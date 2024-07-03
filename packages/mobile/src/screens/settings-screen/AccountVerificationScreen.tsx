@@ -324,7 +324,7 @@ export const AccountVerificationScreen = () => {
         {messages.verified}
       </Text>
       <View style={styles.profileContainer}>
-        <ProfilePicture userId={accountUser.user_id} mb='xs' size='large' />
+        <ProfilePicture userId={accountUser.user_id} mb='xs' />
         <Text style={styles.profileName} variant='h1'>
           {accountName}
           <UserBadges user={accountUser} badgeSize={12} hideName />
@@ -333,7 +333,6 @@ export const AccountVerificationScreen = () => {
       </View>
       <Button
         variant='secondary'
-        size='large'
         onPress={goBacktoProfile}
         iconRight={IconNote}
       >

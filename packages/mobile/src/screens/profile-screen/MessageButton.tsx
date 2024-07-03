@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import type { User } from '@audius/common/models'
+import type { ID } from '@audius/common/models'
 import { Name } from '@audius/common/models'
 import { chatActions } from '@audius/common/store'
 import { useDispatch } from 'react-redux'
@@ -15,18 +15,17 @@ const messages = {
 }
 
 type MessageButtonProps = {
-  profile: Pick<User, 'user_id'>
+  userId: ID
 }
 
 export const MessageButton = (props: MessageButtonProps) => {
-  const { profile } = props
-  const { user_id } = profile
+  const { userId } = props
   const dispatch = useDispatch()
 
   const handlePress = useCallback(() => {
-    dispatch(createChat({ userIds: [user_id] }))
+    dispatch(createChat({ userIds: [userId] }))
     track(make({ eventName: Name.CHAT_ENTRY_POINT, source: 'profile' }))
-  }, [dispatch, user_id])
+  }, [dispatch, userId])
 
   return (
     <Button

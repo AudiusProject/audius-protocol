@@ -120,14 +120,13 @@ export const PublishPlaylistDrawer = () => {
         <View style={styles.buttonContainer}>
           <Button
             variant='primary'
-            size='large'
             iconLeft={IconRocket}
             fullWidth
             onPress={handlePublish}
           >
             {messages.buttonConfirmText}
           </Button>
-          <Button variant='secondary' size='large' fullWidth onPress={onClose}>
+          <Button variant='secondary' fullWidth onPress={onClose}>
             {messages.buttonCancelText}
           </Button>
         </View>

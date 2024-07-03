@@ -263,7 +263,6 @@ export const AccessAndSaleScreen = () => {
       bottomSection={
         <Button
           variant='primary'
-          size='large'
           fullWidth
           onPress={goBack}
           disabled={isFormInvalid}

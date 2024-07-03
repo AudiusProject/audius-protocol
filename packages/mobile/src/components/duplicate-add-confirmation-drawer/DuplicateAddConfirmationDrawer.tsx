@@ -97,15 +97,10 @@ export const DuplicateAddConfirmationDrawer = () => {
           )}
         </Text>
         <View style={styles.buttonContainer}>
-          <Button variant='primary' size='large' fullWidth onPress={onClose}>
+          <Button variant='primary' fullWidth onPress={onClose}>
             {messages.buttonCancelText}
           </Button>
-          <Button
-            variant='secondary'
-            size='large'
-            fullWidth
-            onPress={handleAdd}
-          >
+          <Button variant='secondary' fullWidth onPress={handleAdd}>
             {messages.buttonAddText}
           </Button>
         </View>

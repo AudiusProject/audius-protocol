@@ -23,7 +23,7 @@ export const EmptyTileCTA = (props: EmptyTabProps) => {
 
   return (
     <EmptyTile message={message} secondaryMessage={messages.afterSaved}>
-      <Button variant='primary' size='large' onPress={onPress}>
+      <Button variant='primary' onPress={onPress}>
         {messages.goToTrending}
       </Button>
     </EmptyTile>

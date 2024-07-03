@@ -330,7 +330,6 @@ export const ReleaseDateScreen = (props) => {
       bottomSection={
         <Button
           variant='primary'
-          size='large'
           fullWidth
           onPress={handleSubmit}
           disabled={false}

@@ -161,7 +161,6 @@ export const NFTCollectionsScreen = () => {
       bottomSection={
         <Button
           variant='primary'
-          size='large'
           fullWidth
           onPress={handleSubmit}
           disabled={!isContentCollectibleGated(streamConditions)}

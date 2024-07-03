@@ -222,7 +222,6 @@ export const RemixSettingsScreen = () => {
       bottomSection={
         <Button
           variant='primary'
-          size='large'
           fullWidth
           onPress={handleSubmit}
           disabled={hasErrors}

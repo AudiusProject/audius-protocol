@@ -121,7 +121,6 @@ export const SelectTrackScreen = () => {
           <Button
             fullWidth
             variant='primary'
-            size='large'
             isLoading={!!isLoading}
             onPress={handleSelectTrack}
           >

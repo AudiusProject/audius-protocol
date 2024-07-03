@@ -116,20 +116,10 @@ export const GatedContentUploadPromptDrawer = ({
             fill={neutralLight4}
           />
         </TouchableOpacity>
-        <Button
-          onPress={handleClose}
-          variant='secondary'
-          size='large'
-          fullWidth
-        >
+        <Button onPress={handleClose} variant='secondary' fullWidth>
           {messages.gotIt}
         </Button>
-        <Button
-          onPress={handleSubmit}
-          size='large'
-          iconRight={IconArrowRight}
-          fullWidth
-        >
+        <Button onPress={handleSubmit} iconRight={IconArrowRight} fullWidth>
           {messages.checkItOut}
         </Button>
       </View>

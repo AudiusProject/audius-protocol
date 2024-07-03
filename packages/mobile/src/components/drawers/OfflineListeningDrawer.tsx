@@ -175,12 +175,7 @@ export const OfflineListeningDrawer = () => {
             disabled
           />
         ) : null}
-        <Button
-          fullWidth
-          size='large'
-          variant='primary'
-          onPress={handleSaveChanges}
-        >
+        <Button fullWidth variant='primary' onPress={handleSaveChanges}>
           {messages.saveChanges}
         </Button>
       </View>

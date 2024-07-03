@@ -296,7 +296,6 @@ export const DetailsTileNoAccess = ({
             </View>
           </View>
           <Button
-            size='large'
             iconRight={IconExternalLink}
             onPress={handlePressCollection}
             fullWidth
@@ -315,7 +314,6 @@ export const DetailsTileNoAccess = ({
             prefix: messages.lockedFollowGatedPrefix
           })}
           <Button
-            size='large'
             iconLeft={IconUserFollow}
             onPress={handleFollowArtist}
             fullWidth
@@ -334,12 +332,7 @@ export const DetailsTileNoAccess = ({
             prefix: messages.lockedTipGatedPrefix,
             suffix: messages.lockedTipGatedSuffix
           })}
-          <Button
-            size='large'
-            iconRight={IconTipping}
-            onPress={handleSendTip}
-            fullWidth
-          >
+          <Button iconRight={IconTipping} onPress={handleSendTip} fullWidth>
             {messages.sendTip}
           </Button>
         </>
@@ -353,7 +346,7 @@ export const DetailsTileNoAccess = ({
               {messages.lockedUSDCPurchase}
             </Text>
           </View>
-          <Button size='large' onPress={handlePurchasePress} fullWidth>
+          <Button onPress={handlePurchasePress} fullWidth>
             {messages.buy(formatPrice(streamConditions.usdc_purchase.price))}
           </Button>
         </>
