@@ -96,7 +96,7 @@ const NavBar = ({
 
   const handleOpenSearch = useCallback(() => {
     if (isSearchV2Enabled) {
-      history.push(`/search`)
+      history.push(`/search/tracks`)
     } else {
       setIsSearching(true)
     }
@@ -213,7 +213,11 @@ const NavBar = ({
   const { isEnabled: isEarlyAccess } = useFlag(FeatureFlags.EARLY_ACCESS)
 
   return (
-    <div className={styles.container}>
+    <div
+      className={cn(styles.container, {
+        [styles.containerNoBorder]: isSearchV2Enabled && isSearching
+      })}
+    >
       <div
         className={cn(styles.leftElement, {
           [styles.isLoading]: isLoading

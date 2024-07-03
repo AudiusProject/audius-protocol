@@ -28,6 +28,7 @@ import './purchase-content.mjs'
 import './route-tokens-to-user-bank.mjs'
 import './withdraw-tokens.mjs'
 import './add-manager.mjs'
+import './claim-reward.mjs'
 
 async function main() {
   program.parseAsync(process.argv)

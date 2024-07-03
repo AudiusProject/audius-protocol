@@ -27,9 +27,12 @@ import { useToast } from 'app/hooks/useToast'
 import { makeStyles } from 'app/styles'
 
 import { useAppScreenOptions } from '../app-screen/useAppScreenOptions'
-import { VerifyEmailSubScreen } from '../change-password-screen/SubScreens'
 
-import { ConfirmPasswordSubScreen, NewEmailSubScreen } from './SubScreens'
+import {
+  ConfirmPasswordSubScreen,
+  NewEmailSubScreen,
+  VerifyEmailSubScreen
+} from './SubScreens'
 
 const messages = {
   change: 'Change Email',

@@ -296,16 +296,7 @@ export const TracksTable = ({
 
   const renderReleaseDateCell = useCallback((cellInfo: TrackCell) => {
     const track = cellInfo.row.original
-    let suffix = ''
-    if (
-      track.release_date &&
-      moment(track.release_date).isAfter(moment.now())
-    ) {
-      suffix = ' (Scheduled)'
-    }
-    return (
-      moment(track.release_date ?? track.created_at).format('M/D/YY') + suffix
-    )
+    return moment(track.release_date ?? track.created_at).format('M/D/YY')
   }, [])
 
   const renderListenDateCell = useCallback((cellInfo: TrackCell) => {
@@ -325,7 +316,8 @@ export const TracksTable = ({
         track.is_delete || track._marked_deleted || !!track.user?.is_deactivated
       const isOwner = track.owner_id === userId
       const isUnlisted = track.is_unlisted
-      if (isLocked || deleted || isOwner || isUnlisted) {
+      const isFavorited = track.has_current_user_saved
+      if (isLocked || deleted || isOwner || (isUnlisted && !isFavorited)) {
         return null
       }
 
@@ -360,8 +352,9 @@ export const TracksTable = ({
       const deleted =
         track.is_delete || track._marked_deleted || !!track.user?.is_deactivated
       const isUnlisted = track.is_unlisted
+      const isReposted = track.has_current_user_reposted
       const isOwner = track.owner_id === userId
-      if (isLocked || deleted || isOwner || isUnlisted) {
+      if (isLocked || deleted || isOwner || (isUnlisted && !isReposted)) {
         return null
       }
 

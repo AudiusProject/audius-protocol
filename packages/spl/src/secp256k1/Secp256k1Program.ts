@@ -53,9 +53,7 @@ export class Secp256k1Program extends BaseSecp256k1Program {
    */
   static decode(instructionOrData: TransactionInstruction | Uint8Array) {
     const data =
-      instructionOrData instanceof TransactionInstruction
-        ? instructionOrData.data
-        : instructionOrData
+      'data' in instructionOrData ? instructionOrData.data : instructionOrData
     const decoded = SECP256K1_INSTRUCTION_LAYOUT.decode(data)
     const message = data.subarray(
       decoded.messageDataOffset,

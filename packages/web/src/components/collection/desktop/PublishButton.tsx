@@ -1,3 +1,4 @@
+import { useGetCurrentUserId, useGetPlaylistById } from '@audius/common/api'
 import { Collection } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/src/services'
 import {
@@ -32,10 +33,16 @@ type PublishButtonProps = Partial<IconButtonProps> & {
 
 export const PublishButton = (props: PublishButtonProps) => {
   const { collectionId, ...other } = props
-  const { _is_publishing, track_count, is_album, cover_art_sizes } =
-    useSelector((state: CommonState) =>
-      getCollection(state, { id: collectionId })
-    ) as Collection
+  const { _is_publishing } = useSelector((state: CommonState) =>
+    getCollection(state, { id: collectionId })
+  ) as Collection
+  const { data: currentUserId } = useGetCurrentUserId({})
+  const { data: collection } = useGetPlaylistById({
+    playlistId: collectionId,
+    currentUserId
+  })
+  const { track_count, is_album, cover_art_sizes } = collection ?? {}
+
   const hasHiddenTracks = useSelector((state: CommonState) =>
     getCollectionHasHiddenTracks(state, { id: collectionId })
   )
@@ -49,19 +56,21 @@ export const PublishButton = (props: PublishButtonProps) => {
   const isDisabled =
     !track_count ||
     track_count === 0 ||
-    (hasHiddenTracks && !isHiddenPaidScheduledEnabled) ||
+    (!isHiddenPaidScheduledEnabled && hasHiddenTracks) ||
     !cover_art_sizes
 
   const publishButtonElement = (
-    <IconButton
-      icon={IconRocket}
-      onClick={toggleIsConfirming}
-      aria-label='Publish Collection'
-      color='subdued'
-      disabled={isDisabled}
-      isLoading={_is_publishing}
-      {...other}
-    />
+    <Tooltip text={messages.publish}>
+      <IconButton
+        icon={IconRocket}
+        onClick={toggleIsConfirming}
+        aria-label='Publish Collection'
+        color='subdued'
+        disabled={isDisabled}
+        isLoading={_is_publishing}
+        {...other}
+      />
+    </Tooltip>
   )
 
   return (
@@ -69,7 +78,7 @@ export const PublishButton = (props: PublishButtonProps) => {
       {isDisabled ? (
         <Tooltip
           text={
-            hasHiddenTracks
+            !isHiddenPaidScheduledEnabled && hasHiddenTracks
               ? messages.hiddenTracksTooltipText(
                   is_album ? 'album' : 'playlist'
                 )

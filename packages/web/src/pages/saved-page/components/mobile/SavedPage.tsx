@@ -195,6 +195,7 @@ const TracksLineup = ({
       return {
         isLoading: false,
         isStreamGated: entry.is_stream_gated,
+        isUnlisted: entry.is_unlisted,
         isSaved: entry.has_current_user_saved,
         isReposted: entry.has_current_user_reposted,
         isActive: playingUid === entry.uid,

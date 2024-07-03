@@ -19,6 +19,10 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
         unique: true,
         primaryKey: true
+      },
+      walletAddress: {
+        type: DataTypes.STRING,
+        allowNull: true
       }
     },
     {

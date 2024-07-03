@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { View, Image } from 'react-native'
 
 import { IconMood, Text } from '@audius/harmony-native'
-import { ListSelectionScreen } from 'app/screens/edit-track-screen/screens/ListSelectionScreen'
+import { ListSelectionScreen } from 'app/screens/list-selection-screen'
 import { makeStyles } from 'app/styles'
 import { moodMap } from 'app/utils/moods'
 
@@ -31,7 +31,7 @@ const useStyles = makeStyles(({ spacing }) => ({
   }
 }))
 
-export const SelectMoodScreen = () => {
+export const FilterMoodScreen = () => {
   const styles = useStyles()
   const [value, setValue] = useState('')
 

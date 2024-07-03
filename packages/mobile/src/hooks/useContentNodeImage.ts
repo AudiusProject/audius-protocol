@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react'
+import { useState, useMemo, useCallback, useEffect } from 'react'
 
 import { useAppContext } from '@audius/common/context'
 import type { SquareSizes, WidthSizes, CID } from '@audius/common/models'
@@ -159,6 +159,14 @@ export const useContentNodeImage = (
       setFailedToLoad(true)
     }
   }, [imageSourceIndex, imageSources])
+
+  useEffect(() => {
+    // Any time a new image loads reset our failure states
+    if (failedToLoad) {
+      setFailedToLoad(false)
+      setImageSourceIndex(0)
+    }
+  }, [cid])
 
   // when localSource is a number, it's a placeholder image, so we should show fallback image
   const showFallbackImage =

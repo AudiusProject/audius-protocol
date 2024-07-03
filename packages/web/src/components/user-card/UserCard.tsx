@@ -28,10 +28,11 @@ const avatarSizeMap = {
 export type UserCardProps = Omit<CardProps, 'id'> & {
   id: ID
   loading?: boolean
+  onUserLinkClick?: (e: MouseEvent<HTMLAnchorElement>) => void
 }
 
 export const UserCard = (props: UserCardProps) => {
-  const { id, loading, size, onClick, ...other } = props
+  const { id, loading, size, onClick, onUserLinkClick, ...other } = props
 
   const user = useSelector((state) => getUser(state, { id }))
 
@@ -85,6 +86,7 @@ export const UserCard = (props: UserCardProps) => {
           textVariant='title'
           size='l'
           css={{ justifyContent: 'center' }}
+          onClick={onUserLinkClick}
         />
         <Text variant='body' ellipses>
           @{handle}
