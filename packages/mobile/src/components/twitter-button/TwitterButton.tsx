@@ -6,12 +6,10 @@ import { makeTwitterShareUrl } from '@audius/common/utils'
 import type { Nullable } from '@audius/common/utils'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { IconTwitter } from '@audius/harmony-native'
-import type { ButtonProps } from 'app/components/core'
-import { Button, useOnOpenLink } from 'app/components/core'
+import type { ButtonProps } from '@audius/harmony-native'
+import { IconTwitter, Button } from '@audius/harmony-native'
+import { useLink, useOnOpenLink } from 'app/components/core'
 import { make, track } from 'app/services/analytics'
-import { makeStyles } from 'app/styles'
-import { spacing } from 'app/styles/spacing'
 import type { AllEvents } from 'app/types/analytics'
 const { getUser } = cacheUsersSelectors
 const { fetchUserSocials } = cacheUsersActions
@@ -19,12 +17,6 @@ const { fetchUserSocials } = cacheUsersActions
 const messages = {
   share: 'Share to Twitter'
 }
-
-const useStyles = makeStyles(({ palette }) => ({
-  root: {
-    backgroundColor: palette.staticTwitterBlue
-  }
-}))
 
 type StaticTwitterProps = {
   type: 'static'
@@ -45,13 +37,13 @@ type DynamicTwitterProps = {
   }>
 }
 
-export type TwitterButtonProps = Partial<ButtonProps> &
-  (StaticTwitterProps | DynamicTwitterProps)
+export type TwitterButtonProps = Partial<ButtonProps> & { url?: string } & (
+    | StaticTwitterProps
+    | DynamicTwitterProps
+  )
 
 export const TwitterButton = (props: TwitterButtonProps) => {
-  const { url = null, style, IconProps, ...other } = props
-  const { size } = other
-  const styles = useStyles()
+  const { url = null, children = messages.share, ...other } = props
   const openLink = useOnOpenLink()
   const dispatch = useDispatch()
 
@@ -75,7 +67,12 @@ export const TwitterButton = (props: TwitterButtonProps) => {
     setIdle
   } = useTwitterButtonStatus(user, additionalUser)
 
+  const { onPress: onPressLink } = useLink(
+    other.type === 'static' ? makeTwitterShareUrl(url, other.shareText) : ''
+  )
+
   const handlePress = useCallback(() => {
+    onPressLink()
     if (other.type === 'static' && other.analytics) {
       track(make(other.analytics))
     }
@@ -86,7 +83,7 @@ export const TwitterButton = (props: TwitterButtonProps) => {
       }
       setLoading()
     }
-  }, [other, dispatch, setLoading])
+  }, [onPressLink, other, dispatch, setLoading])
 
   if (other.type === 'dynamic' && shareTwitterStatus === 'success') {
     const handle = twitterHandle ? `@${twitterHandle}` : userName
@@ -108,23 +105,12 @@ export const TwitterButton = (props: TwitterButtonProps) => {
 
   return (
     <Button
-      title={messages.share}
-      style={[styles.root, style]}
-      icon={IconTwitter}
-      iconPosition='left'
-      url={
-        other.type === 'static'
-          ? makeTwitterShareUrl(url, other.shareText)
-          : undefined
-      }
+      color='blue'
+      iconLeft={IconTwitter}
       onPress={handlePress}
-      IconProps={{
-        ...(size === 'large'
-          ? { height: spacing(6), width: spacing(6) }
-          : null),
-        ...IconProps
-      }}
       {...other}
-    />
+    >
+      {children}
+    </Button>
   )
 }

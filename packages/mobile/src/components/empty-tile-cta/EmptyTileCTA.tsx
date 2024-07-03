@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 
-import { Button, EmptyTile } from 'app/components/core'
+import { Button } from '@audius/harmony-native'
+import { EmptyTile } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
 
 const messages = {
@@ -22,12 +23,9 @@ export const EmptyTileCTA = (props: EmptyTabProps) => {
 
   return (
     <EmptyTile message={message} secondaryMessage={messages.afterSaved}>
-      <Button
-        variant='primary'
-        size='large'
-        title={messages.goToTrending}
-        onPress={onPress}
-      />
+      <Button variant='primary' onPress={onPress}>
+        {messages.goToTrending}
+      </Button>
     </EmptyTile>
   )
 }

@@ -5,8 +5,7 @@ import { chatActions, chatSelectors } from '@audius/common/store'
 import { View, TouchableOpacity } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { IconCompose, IconMessage } from '@audius/harmony-native'
-import Button, { ButtonType } from 'app/components/button'
+import { Button, IconCompose, IconMessage } from '@audius/harmony-native'
 import {
   Text,
   Screen,
@@ -18,7 +17,7 @@ import { useNavigation } from 'app/hooks/useNavigation'
 import type { AppTabScreenParamList } from 'app/screens/app-screen'
 import { makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
-import { useThemePalette, useColor } from 'app/utils/theme'
+import { useThemePalette } from 'app/utils/theme'
 
 import { ChatListItem } from './ChatListItem'
 import { ChatListItemSkeleton } from './ChatListItemSkeleton'
@@ -79,7 +78,6 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
 }))
 
 const ChatsEmpty = ({ onPress }: { onPress: () => void }) => {
-  const white = useColor('white')
   const styles = useStyles()
   return (
     <View style={styles.startConversationContainer}>
@@ -90,13 +88,13 @@ const ChatsEmpty = ({ onPress }: { onPress: () => void }) => {
         {messages.connect}
       </Text>
       <Button
-        title={messages.writeMessage}
-        renderIcon={() => <IconCompose fill={white} />}
-        iconPosition='left'
+        variant='primary'
+        iconLeft={IconCompose}
         onPress={onPress}
-        containerStyle={styles.writeMessageButton}
-        type={ButtonType.PRIMARY}
-      />
+        style={styles.writeMessageButton}
+      >
+        {messages.writeMessage}
+      </Button>
     </View>
   )
 }

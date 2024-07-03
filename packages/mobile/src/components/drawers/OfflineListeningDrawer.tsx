@@ -9,9 +9,10 @@ import {
   IconCart,
   IconCloudDownload,
   IconHeart,
-  IconRepost
+  IconRepost,
+  Button
 } from '@audius/harmony-native'
-import { Button, Switch, Text } from 'app/components/core'
+import { Switch, Text } from 'app/components/core'
 import { useDrawer } from 'app/hooks/useDrawer'
 import { useIsUSDCEnabled } from 'app/hooks/useIsUSDCEnabled'
 import { setVisibility } from 'app/store/drawers/slice'
@@ -174,13 +175,9 @@ export const OfflineListeningDrawer = () => {
             disabled
           />
         ) : null}
-        <Button
-          title={messages.saveChanges}
-          fullWidth
-          size='large'
-          variant='primary'
-          onPress={handleSaveChanges}
-        />
+        <Button fullWidth variant='primary' onPress={handleSaveChanges}>
+          {messages.saveChanges}
+        </Button>
       </View>
     </NativeDrawer>
   )

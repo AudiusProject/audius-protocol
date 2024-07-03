@@ -8,6 +8,7 @@ import { challengeRewardsConfig } from '@audius/common/utils'
 import type { ImageSourcePropType } from 'react-native'
 import { Platform } from 'react-native'
 
+import type { IconComponent } from '@audius/harmony-native'
 import {
   Text,
   IconArrowRight,
@@ -66,8 +67,8 @@ export type MobileChallengeConfig = {
       screen: keyof ChallengesParamList
       params?: ChallengesParamList[keyof ChallengesParamList]
     }
-    renderIcon?: (color: string) => React.ReactElement
-    iconPosition?: 'left' | 'right'
+    iconLeft?: IconComponent
+    iconRight?: IconComponent
   }
 }
 
@@ -79,8 +80,7 @@ const mobileChallengeConfig: Record<ChallengeRewardID, MobileChallengeConfig> =
         navigation: {
           screen: 'AccountVerificationScreen'
         },
-        renderIcon: (color) => <IconCheck fill={color} />,
-        iconPosition: 'right'
+        iconRight: IconCheck
       }
     },
     'listen-streak': {
@@ -89,8 +89,7 @@ const mobileChallengeConfig: Record<ChallengeRewardID, MobileChallengeConfig> =
         navigation: {
           screen: 'trending'
         },
-        renderIcon: (color) => <IconArrowRight fill={color} />,
-        iconPosition: 'right'
+        iconRight: IconArrowRight
       }
     },
     'mobile-install': {
@@ -111,8 +110,7 @@ const mobileChallengeConfig: Record<ChallengeRewardID, MobileChallengeConfig> =
     'track-upload': {
       icon: MultipleMusicalNotes,
       buttonInfo: {
-        renderIcon: (color) => <IconCloudUpload fill={color} />,
-        iconPosition: 'right'
+        iconRight: IconCloudUpload
       }
     },
     'send-first-tip': {
@@ -151,37 +149,32 @@ const mobileChallengeConfig: Record<ChallengeRewardID, MobileChallengeConfig> =
     'trending-playlist': {
       icon: ArrowUp,
       buttonInfo: {
-        renderIcon: (color) => <IconCheck fill={color} />,
-        iconPosition: 'right'
+        iconRight: IconCheck
       }
     },
     'trending-track': {
       icon: ChartIncreasing,
       buttonInfo: {
-        renderIcon: (color) => <IconCheck fill={color} />,
-        iconPosition: 'right'
+        iconRight: IconCheck
       }
     },
     'top-api': {
       icon: Gear,
       buttonInfo: {
-        renderIcon: (color) => <IconCheck fill={color} />,
-        iconPosition: 'right'
+        iconRight: IconCheck
       }
     },
     'verified-upload': {
       title: 'First Upload With Your Verified Account',
       icon: ChartIncreasing,
       buttonInfo: {
-        renderIcon: (color) => <IconCheck fill={color} />,
-        iconPosition: 'right'
+        iconRight: IconCheck
       }
     },
     'trending-underground': {
       icon: BarChart,
       buttonInfo: {
-        renderIcon: (color) => <IconCheck fill={color} />,
-        iconPosition: 'right'
+        iconRight: IconCheck
       }
     },
     [ChallengeName.AudioMatchingBuy]: {
@@ -191,8 +184,7 @@ const mobileChallengeConfig: Record<ChallengeRewardID, MobileChallengeConfig> =
           screen: 'explore',
           params: { screen: 'PremiumTracks' }
         },
-        renderIcon: (color) => <IconArrowRight fill={color} />,
-        iconPosition: 'right'
+        iconRight: IconArrowRight
       }
     },
     [ChallengeName.AudioMatchingSell]: {
@@ -201,8 +193,7 @@ const mobileChallengeConfig: Record<ChallengeRewardID, MobileChallengeConfig> =
         navigation: {
           screen: 'Upload'
         },
-        renderIcon: (color) => <IconArrowRight fill={color} />,
-        iconPosition: 'right'
+        iconRight: IconArrowRight
       }
     }
   }
