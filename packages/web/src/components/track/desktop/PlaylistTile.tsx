@@ -13,6 +13,9 @@ import {
   DesktopPlaylistTileProps as PlaylistTileProps
 } from 'components/track/types'
 
+import { OwnerActionButtons } from '../OwnerActionButtons'
+import { ViewerActionButtons } from '../ViewerActionButtons'
+
 import { BottomRow } from './BottomRow'
 import styles from './PlaylistTile.module.css'
 import TrackTile from './TrackTile'
@@ -34,7 +37,6 @@ const PlaylistTile = ({
   isLoading,
   isActive,
   isDisabled,
-  isUnlisted,
   isDarkMode,
   isMatrixMode,
   isPlaying,
@@ -64,7 +66,8 @@ const PlaylistTile = ({
   hasStreamAccess,
   streamConditions,
   TileTrackContainer = DefaultTileContainer,
-  source
+  source,
+  playlistId
 }: PlaylistTileProps) => {
   const renderTracks = useCallback(
     () => (
@@ -153,25 +156,37 @@ const PlaylistTile = ({
         borderBottomLeftRadius='m'
         borderBottomRightRadius='m'
       >
-        <BottomRow
-          hasStreamAccess={hasStreamAccess}
-          isDisabled={isDisabled}
-          isLoading={isLoading}
-          isFavorited={isFavorited}
-          isReposted={isReposted}
-          rightActions={rightActions}
-          bottomBar={bottomBar}
-          isUnlisted={isUnlisted}
-          isOwner={isOwner}
-          isDarkMode={isDarkMode}
-          isMatrixMode={isMatrixMode}
-          showIconButtons={showIconButtons}
-          onClickRepost={onClickRepost}
-          onClickFavorite={onClickFavorite}
-          onClickShare={onClickShare}
-          onClickGatedUnlockPill={onClickGatedUnlockPill}
-          streamConditions={streamConditions}
-        />
+        {isOwner ? (
+          <OwnerActionButtons
+            contentId={playlistId}
+            contentType='collection'
+            isDisabled={isDisabled}
+            isLoading={isLoading}
+            rightActions={rightActions}
+            bottomBar={bottomBar}
+            isDarkMode={isDarkMode}
+            isMatrixMode={isMatrixMode}
+            showIconButtons={showIconButtons}
+            onClickShare={onClickShare}
+          />
+        ) : (
+          <ViewerActionButtons
+            contentId={playlistId}
+            contentType='collection'
+            hasStreamAccess={hasStreamAccess}
+            isDisabled={isDisabled}
+            isLoading={isLoading}
+            rightActions={rightActions}
+            bottomBar={bottomBar}
+            isDarkMode={isDarkMode}
+            isMatrixMode={isMatrixMode}
+            showIconButtons={showIconButtons}
+            onClickFavorite={onClickFavorite}
+            onClickRepost={onClickRepost}
+            onClickShare={onClickShare}
+            onClickGatedUnlockPill={onClickGatedUnlockPill}
+          />
+        )}
       </Box>
     </Paper>
   )

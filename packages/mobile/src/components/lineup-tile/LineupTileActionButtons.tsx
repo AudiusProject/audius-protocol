@@ -7,8 +7,10 @@ import type { Nullable } from '@audius/common/utils'
 import { View } from 'react-native'
 
 import {
+  Flex,
   IconButton,
   IconKebabHorizontal,
+  IconRocket,
   IconShare
 } from '@audius/harmony-native'
 import { FavoriteButton } from 'app/components/favorite-button'
@@ -44,6 +46,7 @@ type Props = {
   onPressRepost?: GestureResponderHandler
   onPressSave?: GestureResponderHandler
   onPressShare?: GestureResponderHandler
+  onPressPublish?: GestureResponderHandler
 }
 
 const useStyles = makeStyles(({ spacing, palette }) => ({
@@ -64,10 +67,6 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
   },
   buttonMargin: {
     marginRight: spacing(6)
-  },
-  leftButtons: {
-    ...flexRowCentered(),
-    marginVertical: spacing(1)
   }
 }))
 
@@ -87,19 +86,21 @@ export const LineupTileActionButtons = ({
   onPressOverflow,
   onPressRepost,
   onPressSave,
-  onPressShare
+  onPressShare,
+  onPressPublish
 }: Props) => {
   const styles = useStyles()
   const isUSDCEnabled = useIsUSDCEnabled()
   const isUSDCPurchase =
     isUSDCEnabled && isContentUSDCPurchaseGated(streamConditions)
+  const showPublishButton = isOwner && isUnlisted
 
   const repostButton = (
     <View style={[styles.button, styles.buttonMargin]}>
       <RepostButton
         onPress={onPressRepost}
         isActive={hasReposted}
-        isDisabled={disabled || isOwner}
+        isDisabled={disabled}
       />
     </View>
   )
@@ -109,7 +110,7 @@ export const LineupTileActionButtons = ({
       <FavoriteButton
         onPress={onPressSave}
         isActive={hasSaved}
-        isDisabled={disabled || isOwner}
+        isDisabled={disabled}
       />
     </View>
   )
@@ -136,14 +137,25 @@ export const LineupTileActionButtons = ({
     />
   )
 
+  const publishButton = (
+    <IconButton
+      color='subdued'
+      icon={IconRocket}
+      disabled={disabled}
+      onPress={onPressPublish}
+      aria-label={messages.publishButtonLabel}
+      size='l'
+    />
+  )
+
   const showGatedAccessStatus = contentId && !hasStreamAccess
-  const showLeftButtons = !showGatedAccessStatus && !isUnlisted
+  const showLeftButtons = !showGatedAccessStatus
 
   let content: ReactElement | null = null
   if (readonly) {
     if (isUSDCPurchase && showGatedAccessStatus && contentType) {
       content = (
-        <View style={styles.leftButtons}>
+        <View>
           <LineupTileAccessStatus
             contentId={contentId}
             contentType={contentType}
@@ -156,8 +168,8 @@ export const LineupTileActionButtons = ({
     }
   } else {
     content = (
-      <>
-        <View style={styles.leftButtons}>
+      <Flex direction='row' justifyContent='space-between' w='100%' mt='s'>
+        <Flex gap='2xl' direction='row'>
           {showGatedAccessStatus && contentType && streamConditions != null ? (
             <LineupTileAccessStatus
               contentId={contentId}
@@ -169,14 +181,15 @@ export const LineupTileActionButtons = ({
           ) : null}
           {showLeftButtons && (
             <>
-              {repostButton}
-              {favoriteButton}
-              {!isShareHidden && shareButton}
+              {!isOwner ? repostButton : null}
+              {!isOwner ? favoriteButton : null}
+              {!isShareHidden ? shareButton : null}
+              {showPublishButton ? publishButton : null}
             </>
           )}
-        </View>
+        </Flex>
         {moreButton}
-      </>
+      </Flex>
     )
   }
 

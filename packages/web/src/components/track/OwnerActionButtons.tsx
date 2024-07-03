@@ -1,19 +1,23 @@
 import { ReactNode, useCallback } from 'react'
 
-import { useGetTrackById } from '@audius/common/api'
+import { useGetPlaylistById, useGetTrackById } from '@audius/common/api'
 import { ID } from '@audius/common/models'
 import {
   publishTrackConfirmationModalUIActions,
   trackPageActions,
   useEditTrackModal
 } from '@audius/common/store'
-import { Flex, IconButton, IconPencil, IconRocket } from '@audius/harmony'
+import {
+  Flex,
+  IconButton,
+  IconPencil,
+  IconRocket,
+  IconShare
+} from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 
-import ShareButton from 'components/alt-button/ShareButton'
 import Tooltip from 'components/tooltip/Tooltip'
 
-import styles from './desktop/TrackTile.module.css'
 const { requestOpen: openPublishTrackConfirmationModal } =
   publishTrackConfirmationModalUIActions
 const { makeTrackPublic } = trackPageActions
@@ -24,8 +28,9 @@ const messages = {
   publish: 'Make Public'
 }
 
-type BottomRowProps = {
-  trackId: ID
+type OwnerActionButtonProps = {
+  contentId: ID
+  contentType: 'track' | 'collection'
   isDisabled?: boolean
   isLoading?: boolean
   rightActions?: ReactNode
@@ -37,36 +42,39 @@ type BottomRowProps = {
 }
 
 export const OwnerActionButtons = ({
-  trackId,
+  contentId,
+  contentType,
   isDisabled,
   isLoading,
   rightActions,
   bottomBar,
-  isDarkMode,
-  isMatrixMode,
   showIconButtons,
   onClickShare
-}: BottomRowProps) => {
+}: OwnerActionButtonProps) => {
   const dispatch = useDispatch()
-  const { data: track } = useGetTrackById({ id: trackId })
-  const { is_unlisted: isUnlisted } = track ?? {}
+  const { data: track } = useGetTrackById({ id: contentId })
+  const { data: collection } = useGetPlaylistById({ playlistId: contentId })
+  const isUnlisted =
+    contentType === 'track' ? track?.is_unlisted : collection?.is_private
   const { onOpen: onEditTrackOpen } = useEditTrackModal()
 
   const onStopPropagation = useCallback((e: any) => e.stopPropagation(), [])
 
+  // TODO: move this up a level
   const handleEdit = useCallback(() => {
-    onEditTrackOpen({ trackId })
-  }, [onEditTrackOpen, trackId])
+    onEditTrackOpen({ trackId: contentId })
+  }, [onEditTrackOpen, contentId])
 
+  // TODO: move this up a level
   const handlePublishClick = useCallback(() => {
     dispatch(
       openPublishTrackConfirmationModal({
         confirmCallback: () => {
-          dispatch(makeTrackPublic(trackId))
+          dispatch(makeTrackPublic(contentId))
         }
       })
     )
-  }, [dispatch, trackId])
+  }, [dispatch, contentId])
 
   return (
     <Flex justifyContent='space-between' w='100%' alignItems='center'>
@@ -80,12 +88,12 @@ export const OwnerActionButtons = ({
             mount='page'
           >
             <Flex css={{ position: 'relative' }} onClick={onStopPropagation}>
-              <ShareButton
+              <IconButton
+                size='m'
+                icon={IconShare}
                 onClick={onClickShare}
-                isDarkMode={!!isDarkMode}
-                className={styles.iconButton}
-                stopPropagation={false}
-                isMatrixMode={isMatrixMode}
+                aria-label={messages.share}
+                color='subdued'
               />
             </Flex>
           </Tooltip>

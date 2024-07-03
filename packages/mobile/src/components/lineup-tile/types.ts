@@ -107,17 +107,20 @@ export type LineupTileProps = Omit<LineupItemProps, 'togglePlay'> & {
   /** Function to call when the overflow menu button is pressed */
   onPressOverflow?: GestureResponderHandler
 
-  /** Function to call when repost is pressed */
+  /** Function to call when repost button is pressed */
   onPressRepost?: GestureResponderHandler
 
-  /** Function to call when save is pressed */
+  /** Function to call when save button is pressed */
   onPressSave?: GestureResponderHandler
 
-  /** Function to call when share is pressed */
+  /** Function to call when share button is pressed */
   onPressShare?: GestureResponderHandler
 
-  /** Function to call when the title is pressed */
+  /** Function to call when the title text is pressed */
   onPressTitle?: GestureResponderHandler
+
+  /** Function to call when the publish button is pressed */
+  onPressPublish?: GestureResponderHandler
 
   /** Amount of plays on this item */
   playCount?: number

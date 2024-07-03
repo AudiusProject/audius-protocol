@@ -1,6 +1,6 @@
 import { MouseEvent, ReactNode, useCallback } from 'react'
 
-import { useGetTrackById } from '@audius/common/api'
+import { useGetPlaylistById, useGetTrackById } from '@audius/common/api'
 import { ID } from '@audius/common/models'
 import { gatedContentSelectors } from '@audius/common/store'
 import { Flex, Text } from '@audius/harmony'
@@ -24,8 +24,9 @@ const messages = {
   unfavorite: 'Unfavorite'
 }
 
-type BottomRowProps = {
-  trackId: ID
+type ViewerActionButtonProps = {
+  contentId: ID // Collection or Track ID
+  contentType: 'track' | 'collection'
   hasStreamAccess?: boolean
   isDisabled?: boolean
   isLoading?: boolean
@@ -40,8 +41,29 @@ type BottomRowProps = {
   onClickGatedUnlockPill?: (e: MouseEvent) => void
 }
 
+const useEntityDetails = (contentId: ID, type: 'track' | 'collection') => {
+  const { data: track } = useGetTrackById({ id: contentId })
+  const { data: collection } = useGetPlaylistById({ playlistId: contentId })
+
+  const {
+    stream_conditions: streamConditions,
+    has_current_user_saved: isFavorited,
+    has_current_user_reposted: isReposted
+  } = (type === 'track' ? track : collection) ?? {}
+
+  const isUnlisted =
+    type === 'track' ? track?.is_unlisted : collection?.is_private
+  return {
+    streamConditions,
+    isUnlisted,
+    isFavorited,
+    isReposted
+  }
+}
+
 export const ViewerActionButtons = ({
-  trackId,
+  contentId,
+  contentType,
   hasStreamAccess,
   isDisabled,
   isLoading,
@@ -54,17 +76,12 @@ export const ViewerActionButtons = ({
   onClickFavorite,
   onClickShare,
   onClickGatedUnlockPill
-}: BottomRowProps) => {
-  const { data: track } = useGetTrackById({ id: trackId })
-  const {
-    stream_conditions: streamConditions,
-    is_unlisted: isUnlisted,
-    has_current_user_saved: isFavorited,
-    has_current_user_reposted: isReposted
-  } = track ?? {}
+}: ViewerActionButtonProps) => {
+  const { streamConditions, isUnlisted, isFavorited, isReposted } =
+    useEntityDetails(contentId, contentType)
 
-  const gatedTrackStatusMap = useSelector(getGatedContentStatusMap)
-  const gatedTrackStatus = trackId && gatedTrackStatusMap[trackId]
+  const gatedStatusMap = useSelector(getGatedContentStatusMap)
+  const gatedStatus = contentId && gatedStatusMap[contentId]
 
   const repostLabel = isReposted ? messages.unrepost : messages.repost
 
@@ -76,7 +93,7 @@ export const ViewerActionButtons = ({
         <Text variant='title' size='s'>
           <GatedConditionsPill
             streamConditions={streamConditions}
-            unlocking={gatedTrackStatus === 'UNLOCKING'}
+            unlocking={gatedStatus === 'UNLOCKING'}
             onClick={onClickGatedUnlockPill}
           />
         </Text>

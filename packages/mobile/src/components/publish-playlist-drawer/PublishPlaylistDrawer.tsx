@@ -2,10 +2,10 @@ import { useCallback } from 'react'
 
 import {
   cacheCollectionsActions,
-  publishPlaylistConfirmationModalUISelectors
+  usePublishContentModal
 } from '@audius/common/store'
 import { View } from 'react-native'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 
 import { IconRocket } from '@audius/harmony-native'
 import { Text, Button } from 'app/components/core'
@@ -13,17 +13,14 @@ import { useManualToast } from 'app/hooks/useManualToast'
 import { makeStyles } from 'app/styles'
 import { useColor } from 'app/utils/theme'
 
-import { useDrawerState } from '../drawer'
 import Drawer from '../drawer/Drawer'
 import LoadingSpinner from '../loading-spinner/LoadingSpinner'
 
 const { publishPlaylist } = cacheCollectionsActions
-const { getPlaylistId } = publishPlaylistConfirmationModalUISelectors
-
 const messages = {
   drawerTitle: 'Make Public',
-  drawerBody:
-    'Are you sure you want to make this playlist public? It will be shared to your feed and your followers will be notified.',
+  drawerBody: (type: 'playlist' | 'album' | 'track') =>
+    `Are you sure you want to make this ${type} public? It will be shared to your feed and your followers will be notified.`,
   buttonConfirmText: 'Make Public',
   buttonCancelText: 'Cancel',
   publishingPlaylistText: 'Making public...'
@@ -73,11 +70,14 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
 
 export const PublishPlaylistDrawer = () => {
   const dispatch = useDispatch()
-  const playlistId = useSelector(getPlaylistId)
   const neutral = useColor('neutral')
   const { toast } = useManualToast()
   const styles = useStyles()
-  const { isOpen, onClose } = useDrawerState('PublishPlaylistConfirmation')
+  const {
+    isOpen,
+    onClose,
+    data: { contentId: playlistId, contentType }
+  } = usePublishContentModal()
 
   const displayPublishToast = useCallback(() => {
     const publishingPlaylistToastContent = (
@@ -90,7 +90,7 @@ export const PublishPlaylistDrawer = () => {
     )
 
     return toast({ content: publishingPlaylistToastContent })
-  }, [toast, styles])
+  }, [styles.toastContainer, styles.spinner, toast])
 
   const handlePublish = useCallback(() => {
     if (playlistId) {
@@ -115,7 +115,8 @@ export const PublishPlaylistDrawer = () => {
           </Text>
         </View>
         <Text style={styles.body} fontSize='large' weight='medium'>
-          {messages.drawerBody}
+          {/* TODO: what to do about undefined here */}
+          {messages.drawerBody(contentType ?? 'track')}
         </Text>
         <View style={styles.buttonContainer}>
           <Button

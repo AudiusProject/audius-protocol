@@ -375,6 +375,9 @@ export type DesktopPlaylistTileProps = {
 
   /** Additional context for analytics to know which area of the app the track tile is being used */
   source?: ModalSource
+
+  /** ID for the playlist */
+  playlistId: ID
 }
 
 export type SkeletonTileProps = {

@@ -360,7 +360,8 @@ const TrackTile = ({
             <div className={styles.divider} />
             {isOwner ? (
               <OwnerActionButtons
-                trackId={trackId}
+                contentId={trackId}
+                contentType='track'
                 isDisabled={isDisabled}
                 isLoading={isLoading}
                 rightActions={rightActions}
@@ -372,7 +373,8 @@ const TrackTile = ({
               />
             ) : (
               <ViewerActionButtons
-                trackId={trackId}
+                contentId={trackId}
+                contentType='track'
                 hasStreamAccess={hasStreamAccess}
                 isDisabled={isDisabled}
                 isLoading={isLoading}

@@ -3,25 +3,16 @@ import { MouseEvent, ReactNode, useCallback } from 'react'
 import { ID, FieldVisibility, AccessConditions } from '@audius/common/models'
 import { gatedContentSelectors } from '@audius/common/store'
 import { Nullable } from '@audius/common/utils'
-import { Text } from '@audius/harmony'
-import cn from 'classnames'
+import { Flex, Text } from '@audius/harmony'
 import { useSelector } from 'react-redux'
-
-import FavoriteButton from 'components/alt-button/FavoriteButton'
-import RepostButton from 'components/alt-button/RepostButton'
-import ShareButton from 'components/alt-button/ShareButton'
-import Tooltip from 'components/tooltip/Tooltip'
 
 import { GatedConditionsPill } from '../GatedConditionsPill'
 
 import styles from './TrackTile.module.css'
+import { ViewerActionButtons } from '../ViewerActionButtons'
+import { OwnerActionButtons } from '../OwnerActionButtons'
 
 const { getGatedContentStatusMap } = gatedContentSelectors
-
-const messages = {
-  repostLabel: 'Repost',
-  unrepostLabel: 'Unrepost'
-}
 
 type BottomRowProps = {
   hasStreamAccess?: boolean
@@ -49,12 +40,9 @@ export const BottomRow = ({
   hasStreamAccess,
   isDisabled,
   isLoading,
-  isFavorited,
-  isReposted,
   rightActions,
   bottomBar,
   isUnlisted,
-  fieldVisibility,
   isOwner,
   isDarkMode,
   isMatrixMode,
@@ -69,45 +57,9 @@ export const BottomRow = ({
   const gatedTrackStatusMap = useSelector(getGatedContentStatusMap)
   const gatedTrackStatus = trackId && gatedTrackStatusMap[trackId]
 
-  const repostLabel = isReposted ? messages.unrepostLabel : messages.repostLabel
-
-  const hideShare: boolean = isOwner
-    ? false
-    : fieldVisibility
-    ? fieldVisibility.share === false
-    : false
-
-  const onStopPropagation = useCallback((e: any) => e.stopPropagation(), [])
-
-  const renderShareButton = () => {
-    return (
-      <Tooltip
-        text={'Share'}
-        disabled={isDisabled || hideShare}
-        placement='top'
-        mount='page'
-      >
-        <div
-          className={cn(styles.iconButtonContainer, {
-            [styles.isHidden]: hideShare
-          })}
-          onClick={onStopPropagation}
-        >
-          <ShareButton
-            onClick={onClickShare}
-            isDarkMode={!!isDarkMode}
-            className={styles.iconButton}
-            stopPropagation={false}
-            isMatrixMode={isMatrixMode}
-          />
-        </div>
-      </Tooltip>
-    )
-  }
-
   if (streamConditions && !isLoading && !hasStreamAccess) {
     return (
-      <Text variant='title' size='s' className={styles.bottomRow}>
+      <Text variant='title' size='s'>
         <GatedConditionsPill
           streamConditions={streamConditions}
           unlocking={gatedTrackStatus === 'UNLOCKING'}
@@ -119,62 +71,34 @@ export const BottomRow = ({
   }
 
   return (
-    <div className={styles.bottomRow}>
+    <Flex justifyContent='space-between'>
       {bottomBar}
-      {!isLoading && showIconButtons && isUnlisted && (
-        <div className={styles.iconButtons}>{renderShareButton()}</div>
-      )}
       {!isLoading && showIconButtons && !isUnlisted && (
-        <div className={styles.iconButtons}>
-          <Tooltip
-            text={repostLabel}
-            disabled={isDisabled || isOwner}
-            placement='top'
-            mount='page'
-          >
-            <div
-              className={cn(styles.iconButtonContainer, {
-                [styles.isDisabled]: isOwner,
-                [styles.isHidden]: isUnlisted
-              })}
-            >
-              <RepostButton
-                aria-label={repostLabel}
-                onClick={onClickRepost}
-                isActive={isReposted}
-                isDisabled={isOwner}
-                isDarkMode={!!isDarkMode}
-                isMatrixMode={isMatrixMode}
-                wrapperClassName={styles.iconButton}
-              />
-            </div>
-          </Tooltip>
-          <Tooltip
-            text={isFavorited ? 'Unfavorite' : 'Favorite'}
-            disabled={isDisabled || isOwner}
-            placement='top'
-            mount='page'
-          >
-            <div
-              className={cn(styles.iconButtonContainer, {
-                [styles.isDisabled]: isOwner,
-                [styles.isHidden]: isUnlisted
-              })}
-            >
-              <FavoriteButton
-                onClick={onClickFavorite}
-                isActive={isFavorited}
-                isDisabled={isOwner}
-                isDarkMode={!!isDarkMode}
-                isMatrixMode={isMatrixMode}
-                wrapperClassName={styles.iconButton}
-              />
-            </div>
-          </Tooltip>
-          {renderShareButton()}
-        </div>
+        <Flex>
+          {isOwner ? (
+            <OwnerActionButtons
+              trackId={trackId}
+              onClickFavorite={onClickFavorite}
+              onClickRepost={onClickRepost}
+              onClickShare={onClickShare}
+              isDisabled={isDisabled}
+              isMatrixMode={isMatrixMode}
+              isDarkMode={isDarkMode}
+            />
+          ) : (
+            <ViewerActionButtons
+              trackId={trackId}
+              onClickFavorite={onClickFavorite}
+              onClickRepost={onClickRepost}
+              onClickShare={onClickShare}
+              isDisabled={isDisabled}
+              isMatrixMode={isMatrixMode}
+              isDarkMode={isDarkMode}
+            />
+          )}
+        </Flex>
       )}
-      {!isLoading ? <div>{rightActions}</div> : null}
-    </div>
+      {!isLoading ? rightActions : null}
+    </Flex>
   )
 }
