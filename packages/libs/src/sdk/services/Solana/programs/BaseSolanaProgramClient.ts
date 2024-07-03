@@ -6,6 +6,7 @@ import {
   TransactionMessage,
   VersionedTransaction
 } from '@solana/web3.js'
+import { z } from 'zod'
 
 import { parseParams } from '../../../utils/parseParams'
 import type { SolanaWalletAdapter } from '../types'
@@ -13,11 +14,24 @@ import type { SolanaWalletAdapter } from '../types'
 import {
   BuildTransactionRequest,
   BuildTransactionSchema,
+  PrioritySchema,
   type BaseSolanaProgramConfigInternal
 } from './types'
 
 const isPublicKeyArray = (arr: any[]): arr is PublicKey[] =>
   arr.every((a) => a instanceof PublicKey)
+
+const priorityToPercentileMap: Record<
+  z.infer<typeof PrioritySchema>,
+  number
+> = {
+  MIN: 0,
+  LOW: 25,
+  MEDIUM: 50,
+  HIGH: 75,
+  VERY_HIGH: 95,
+  UNSAFE_MAX: 100
+}
 
 /**
  * Abstract class for initializing individual program clients.
@@ -92,7 +106,7 @@ export class BaseSolanaProgramClient {
       feePayer,
       recentBlockhash,
       addressLookupTables = [],
-      priorityPercentile
+      priorityFee
     } = await parseParams('buildTransaction', BuildTransactionSchema)(params)
 
     if (!recentBlockhash) {
@@ -100,17 +114,29 @@ export class BaseSolanaProgramClient {
       recentBlockhash = res.blockhash
     }
 
-    if (priorityPercentile) {
-      const res = await this.connection.getRecentPrioritizationFees()
-      const orderedFees = res.map((r) => r.prioritizationFee).sort()
-      const priorityFee =
-        orderedFees[Math.round(priorityPercentile * orderedFees.length)]
-      if (priorityFee) {
+    if (priorityFee !== undefined) {
+      if ('microLamports' in priorityFee) {
         instructions.push(
           ComputeBudgetProgram.setComputeUnitPrice({
-            microLamports: priorityFee
+            microLamports: priorityFee.microLamports
           })
         )
+      } else {
+        const res = await this.connection.getRecentPrioritizationFees()
+        const orderedFees = res.map((r) => r.prioritizationFee).sort()
+        const percentile =
+          'percentile' in priorityFee
+            ? priorityFee.percentile
+            : priorityToPercentileMap[priorityFee.priority]
+        const microLamports =
+          orderedFees[Math.round((percentile / 100.0) * orderedFees.length)]
+        if (microLamports !== undefined) {
+          instructions.push(
+            ComputeBudgetProgram.setComputeUnitPrice({
+              microLamports
+            })
+          )
+        }
       }
     }
 
