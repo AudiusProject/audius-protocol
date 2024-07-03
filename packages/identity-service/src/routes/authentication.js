@@ -81,8 +81,6 @@ module.exports = function (app) {
             const userRecord = await models.User.findOne({ where: { walletAddress }, transaction })
 
             await userRecord.update({ email }, { transaction })
-
-            req.logger.info({ authRecord, userRecord })
           }
 
           // Check if an existing record exists but is soft deleted (since the Authentication model is 'paranoid'
