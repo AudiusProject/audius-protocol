@@ -26,7 +26,8 @@ import {
   IconReceive,
   IconSend,
   IconWallet,
-  Button
+  Button,
+  Flex
 } from '@audius/harmony-native'
 import Bronze from 'app/assets/images/tokenBadgeBronze108.png'
 import Gold from 'app/assets/images/tokenBadgeGold108.png'
@@ -289,27 +290,32 @@ export const AudioScreen = () => {
           content: styles.tileContent
         }}
       >
-        <Button
-          variant='secondary'
-          iconLeft={IconSend}
-          onPress={handlePressSend}
-        >
-          {messages.send}
-        </Button>
-        <Button
-          variant='secondary'
-          iconLeft={IconReceive}
-          onPress={handlePressReceive}
-        >
-          {messages.receive}
-        </Button>
-        <Button
-          variant='secondary'
-          iconLeft={IconWallet}
-          onPress={handlePressManageWallets}
-        >
-          {messages.externalWallets}
-        </Button>
+        <Flex gap='l' w='100%'>
+          <Button
+            variant='secondary'
+            iconLeft={IconSend}
+            onPress={handlePressSend}
+            fullWidth
+          >
+            {messages.send}
+          </Button>
+          <Button
+            variant='secondary'
+            iconLeft={IconReceive}
+            onPress={handlePressReceive}
+            fullWidth
+          >
+            {messages.receive}
+          </Button>
+          <Button
+            variant='secondary'
+            iconLeft={IconWallet}
+            onPress={handlePressManageWallets}
+            fullWidth
+          >
+            {messages.externalWallets}
+          </Button>
+        </Flex>
       </Tile>
     )
   }
@@ -402,20 +408,22 @@ export const AudioScreen = () => {
           isCurrentTier={tierNumber === 4}
           unlocks={['matrix']}
         />
-        <Button
-          variant='secondary'
-          onPress={() => Linking.openURL(LEARN_MORE_LINK)}
-          fullWidth
-        >
-          {messages.learnMore}
-        </Button>
-        <Button
-          variant='secondary'
-          iconLeft={IconDiscord}
-          onPress={onPressLaunchDiscord}
-        >
-          {messages.launchDiscord}
-        </Button>
+        <Flex gap='l' w='100%'>
+          <Button
+            variant='secondary'
+            onPress={() => Linking.openURL(LEARN_MORE_LINK)}
+            fullWidth
+          >
+            {messages.learnMore}
+          </Button>
+          <Button
+            variant='secondary'
+            iconLeft={IconDiscord}
+            onPress={onPressLaunchDiscord}
+          >
+            {messages.launchDiscord}
+          </Button>
+        </Flex>
       </Tile>
     )
   }

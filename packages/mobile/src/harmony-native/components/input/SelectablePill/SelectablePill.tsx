@@ -38,7 +38,7 @@ export const SelectablePill = (props: SelectablePillProps) => {
     isControlled,
     ...other
   } = props
-  const { color, motion, cornerRadius } = useTheme()
+  const { color, motion, cornerRadius, typography } = useTheme()
   const [isPressing, setIsPressing] = useState(false)
   const [isSelected, setIsSelected] = useControlled({
     controlledProp: isSelectedProp,
@@ -153,7 +153,10 @@ export const SelectablePill = (props: SelectablePillProps) => {
           <AnimatedText
             numberOfLines={1}
             variant='body'
-            style={animatedTextStyles}
+            style={[
+              animatedTextStyles,
+              { lineHeight: typography.lineHeight.m }
+            ]}
           >
             {label}
           </AnimatedText>

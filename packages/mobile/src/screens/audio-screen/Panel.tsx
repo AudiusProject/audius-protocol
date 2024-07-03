@@ -214,7 +214,8 @@ export const Panel = ({
             variant='secondary'
             iconRight={hasDisbursed ? undefined : IconArrowRight}
             onPress={onPress}
-            style={[styles.button, hasDisbursed ? styles.disbursed : null]}
+            style={styles.button}
+            size='small'
           >
             {buttonMessage}
           </Button>
