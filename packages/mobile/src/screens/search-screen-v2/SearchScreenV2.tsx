@@ -4,7 +4,6 @@ import type {
   SearchCategory,
   SearchFilters as SearchFiltersType
 } from '@audius/common/api'
-import { useStateDebounced } from '@audius/common/hooks'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 
 import { Flex } from '@audius/harmony-native'
