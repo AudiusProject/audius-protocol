@@ -1,5 +1,7 @@
+import { searchApiFetch } from '@audius/common/api'
 import { Track } from '@audius/common/models'
 import {
+  accountSelectors,
   cacheTracksSelectors,
   getContext,
   searchResultsPageTracksLineupActions as tracksActions,
@@ -10,20 +12,18 @@ import { trimToAlphaNumeric } from '@audius/common/utils'
 import { select, all, call } from 'typed-redux-saga'
 
 import { LineupSagas } from 'common/store/lineup/sagas'
-import {
-  getSearchResults,
-  getTagSearchResults
-} from 'common/store/pages/search-page/sagas'
+import { getTagSearchResults } from 'common/store/pages/search-page/sagas'
 import { isMobileWeb } from 'common/utils/isMobileWeb'
 
 const { getSearchTracksLineup, getSearchResultsPageTracks } =
   searchResultsPageSelectors
 const { getTracks } = cacheTracksSelectors
+const { getUserId } = accountSelectors
 
 function* getSearchPageResultsTracks({
   offset,
   limit,
-  payload: { category, query, isTagSearch }
+  payload: { category, query, isTagSearch, filters, dispatch }
 }: {
   offset: number
   limit: number
@@ -43,12 +43,28 @@ function* getSearchPageResultsTracks({
       )
       results = tracks
     } else {
-      const { tracks } = yield* call(getSearchResults, {
-        searchText: query,
-        kind: category,
-        limit,
-        offset
-      })
+      const audiusBackend = yield* getContext('audiusBackendInstance')
+      const apiClient = yield* getContext('apiClient')
+      const reportToSentry = yield* getContext('reportToSentry')
+      const currentUserId = yield* select(getUserId)
+
+      const { tracks } = yield* call(
+        searchApiFetch.getSearchResults,
+        {
+          currentUserId,
+          query,
+          category,
+          limit,
+          offset,
+          ...filters
+        },
+        {
+          audiusBackend,
+          apiClient,
+          reportToSentry,
+          dispatch
+        } as any
+      )
       results = tracks as unknown as Track[]
     }
     if (results) return results
