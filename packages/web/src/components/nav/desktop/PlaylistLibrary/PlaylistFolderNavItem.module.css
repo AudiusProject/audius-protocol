@@ -3,12 +3,6 @@
   align-items: center;
 }
 
-.folderName {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
 .iconCaret {
   flex-shrink: 0;
   margin-left: 10px;

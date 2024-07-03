@@ -61,12 +61,12 @@ export const PlaylistLibrary = (props: PlaylistLibraryProps) => {
       onDrop={handleDrop}
       acceptedKinds={acceptedKinds}
     >
-      <GroupHeader color={draggingKind === 'playlist' ? 'accent' : 'subdued'}>
-        <Flex wrap='nowrap' gap='s'>
+      <Flex wrap='nowrap' alignItems='center' gap='s'>
+        <GroupHeader color={draggingKind === 'playlist' ? 'accent' : 'subdued'}>
           {messages.header}
-          <CreatePlaylistLibraryItemButton scrollbarRef={scrollbarRef} />
-        </Flex>
-      </GroupHeader>
+        </GroupHeader>
+        <CreatePlaylistLibraryItemButton scrollbarRef={scrollbarRef} />
+      </Flex>
       {!library || isEmpty(library?.contents) ? (
         <EmptyLibraryNavLink />
       ) : (

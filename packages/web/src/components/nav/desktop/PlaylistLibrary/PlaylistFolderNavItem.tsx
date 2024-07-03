@@ -15,7 +15,9 @@ import {
   IconFolder,
   IconCaretRight,
   PopupMenuItem,
-  useTheme
+  useTheme,
+  Flex,
+  Text
 } from '@audius/harmony'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
@@ -142,6 +144,7 @@ export const PlaylistFolderNavItem = (props: PlaylistFolderNavItemProps) => {
     >
       <Draggable id={id} text={name} kind='playlist-folder'>
         <LeftNavLink
+          asChild
           className={cn(styles.root, { [styles.dragging]: isDraggingOver })}
           onClick={toggleIsExpanded}
           onDragEnter={handleDragEnter}
@@ -150,33 +153,37 @@ export const PlaylistFolderNavItem = (props: PlaylistFolderNavItemProps) => {
           onMouseLeave={handleMouseLeave}
           disabled={isDisabled}
         >
-          <IconFolder
-            size='xs'
-            css={{ marginRight: spacing.s }}
-            fill={
-              folderHasUpdate ? color.secondary.secondary : color.neutral.n950
-            }
-          />
-          <span className={styles.folderName}>{name}</span>
-          <IconCaretRight
-            height={11}
-            width={11}
-            color='default'
-            className={cn(styles.iconCaret, {
-              [styles.iconCaretDown]: isExpanded
-            })}
-          />
-          <NavItemKebabButton
-            visible={isHovering && !isDraggingOver}
-            aria-label={messages.editFolderLabel}
-            onClick={handleClickEdit}
-            items={kebabItems}
-          />
-          <DeleteFolderConfirmationModal
-            folderId={id}
-            visible={isDeleteConfirmationOpen}
-            onCancel={toggleDeleteConfirmationOpen}
-          />
+          <Flex alignItems='center' w='100%'>
+            <IconFolder
+              size='xs'
+              css={{ marginRight: spacing.s }}
+              fill={
+                folderHasUpdate ? color.secondary.secondary : color.neutral.n950
+              }
+            />
+            <Text size='s' css={{ flex: 1 }} ellipses>
+              {name}
+            </Text>
+            <IconCaretRight
+              height={11}
+              width={11}
+              color='default'
+              className={cn(styles.iconCaret, {
+                [styles.iconCaretDown]: isExpanded
+              })}
+            />
+            <NavItemKebabButton
+              visible={isHovering && !isDraggingOver}
+              aria-label={messages.editFolderLabel}
+              onClick={handleClickEdit}
+              items={kebabItems}
+            />
+            <DeleteFolderConfirmationModal
+              folderId={id}
+              visible={isDeleteConfirmationOpen}
+              onCancel={toggleDeleteConfirmationOpen}
+            />
+          </Flex>
         </LeftNavLink>
         {isExpanded ? (
           <ul>

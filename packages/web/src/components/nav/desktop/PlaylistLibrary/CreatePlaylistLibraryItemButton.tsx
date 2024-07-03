@@ -106,18 +106,11 @@ export const CreatePlaylistLibraryItemButton = (props: Props) => {
             ref={anchorRef}
             iconLeft={IconSave}
             onClick={() => handleClickPill(onClick)}
+            css={{ height: '18px' }}
             {...triggerProps}
           >
             {messages.new}
           </Pill>
-          {/* <Pill
-            // @ts-ignore
-            ref={anchorRef}
-            text={messages.new}
-            icon='save'
-            onClick={() => handleClickPill(onClick)}
-            {...triggerProps}
-          /> */}
         </Tooltip>
       )}
     />
