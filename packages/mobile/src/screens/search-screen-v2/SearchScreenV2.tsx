@@ -58,7 +58,7 @@ export const SearchScreenV2 = () => {
 
 export const SearchScreenStack = () => {
   const { params = {} } = useRoute<'Search'>()
-  const [query, setQuery] = useStateDebounced(params.query ?? '')
+  const [query, setQuery] = useState(params.query ?? '')
   const [category, setCategory] = useState<SearchCategory>(
     params.category ?? 'all'
   )

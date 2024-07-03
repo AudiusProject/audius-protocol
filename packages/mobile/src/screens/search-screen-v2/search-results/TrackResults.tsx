@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react'
+import { useCallback } from 'react'
 
 import {
   lineupSelectors,
@@ -7,11 +7,12 @@ import {
   SearchKind
 } from '@audius/common/store'
 import { useDispatch, useSelector } from 'react-redux'
+import { useDebounce } from 'react-use'
 
 import { Flex } from '@audius/harmony-native'
 import { Lineup } from 'app/components/lineup'
 
-import { useSearchQuery } from '../searchState'
+import { useSearchFilters, useSearchQuery } from '../searchState'
 
 const { getSearchTracksLineup } = searchResultsPageSelectors
 const { makeGetLineupMetadatas } = lineupSelectors
@@ -21,35 +22,40 @@ const getSearchTracksLineupMetadatas = makeGetLineupMetadatas(
 
 export const TrackResults = () => {
   const [query] = useSearchQuery()
+  const filters = useSearchFilters()
   const dispatch = useDispatch()
 
   const lineup = useSelector(getSearchTracksLineupMetadatas)
 
-  useEffect(() => {
-    dispatch(
-      tracksActions.fetchLineupMetadatas(0, 10, true, {
-        category: SearchKind.TRACKS,
-        query,
-        // TODO: implement tag search
-        isTagSearch: false,
-        dispatch
-      })
-    )
-  }, [dispatch, query])
-
-  const loadMore = useCallback(
-    (offset: number, limit: number) => {
+  const getResults = useCallback(
+    (offset: number, limit: number, overwrite: boolean) => {
       dispatch(
-        tracksActions.fetchLineupMetadatas(offset, limit, false, {
+        tracksActions.fetchLineupMetadatas(offset, limit, overwrite, {
           category: SearchKind.TRACKS,
           query,
+          filters,
+          dispatch,
           // TODO: implement tag search
-          isTagSearch: false,
-          dispatch
+          isTagSearch: false
         })
       )
     },
-    [dispatch, query]
+    [dispatch, query, filters]
+  )
+
+  useDebounce(
+    () => {
+      getResults(0, 10, true)
+    },
+    500,
+    [getResults]
+  )
+
+  const loadMore = useCallback(
+    (offset: number, limit: number) => {
+      getResults(offset, limit, false)
+    },
+    [getResults]
   )
 
   return (

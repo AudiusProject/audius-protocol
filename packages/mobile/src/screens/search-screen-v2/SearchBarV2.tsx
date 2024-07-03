@@ -19,10 +19,7 @@ export const SearchBarV2 = () => {
       label={messages.label}
       placeholder={messages.label}
       style={{ width: searchBarWidth }}
-      // Note: making this uncontrolled for now so debouncing works
-      // we may need to change this to support deep linking
-      defaultValue={query}
-      // value={query}
+      value={query}
       onChangeText={setQuery}
     />
   )

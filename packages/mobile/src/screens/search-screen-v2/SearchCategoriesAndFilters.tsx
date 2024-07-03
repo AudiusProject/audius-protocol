@@ -84,7 +84,7 @@ export const SearchCategoriesAndFilters = () => {
 
   return (
     <Flex backgroundColor='white'>
-      <ScrollView horizontal>
+      <ScrollView horizontal keyboardShouldPersistTaps='handled'>
         <Flex direction='row' alignItems='center' gap='s' p='l' pt='s'>
           <SearchCategory category='tracks' />
           <SearchCategory category='users' />

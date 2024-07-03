@@ -27,7 +27,7 @@ const { getUserId } = accountSelectors
 function* getSearchPageResultsTracks({
   offset,
   limit,
-  payload: { category, query, isTagSearch, dispatch }
+  payload: { category, query, isTagSearch, filters, dispatch }
 }: {
   offset: number
   limit: number
@@ -60,14 +60,15 @@ function* getSearchPageResultsTracks({
         const reportToSentry = yield* getContext('reportToSentry')
         const currentUserId = yield* select(getUserId)
 
-        // TODO: this should be passing the filters in
         const { tracks } = yield* call(
           searchApiFetch.getSearchResults,
           {
             currentUserId,
             query,
             category,
-            limit
+            limit,
+            offset,
+            ...filters
           },
           {
             audiusBackend,
