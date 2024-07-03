@@ -4,6 +4,7 @@ import type {
   SearchCategory,
   SearchFilters as SearchFiltersType
 } from '@audius/common/api'
+import { useStateDebounced } from '@audius/common/hooks'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 
 import { Flex } from '@audius/harmony-native'
@@ -57,7 +58,7 @@ export const SearchScreenV2 = () => {
 
 export const SearchScreenStack = () => {
   const { params = {} } = useRoute<'Search'>()
-  const [query, setQuery] = useState(params.query ?? '')
+  const [query, setQuery] = useStateDebounced(params.query ?? '')
   const [category, setCategory] = useState<SearchCategory>(
     params.category ?? 'all'
   )

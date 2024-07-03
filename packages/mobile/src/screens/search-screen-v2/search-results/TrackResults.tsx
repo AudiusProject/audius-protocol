@@ -1,4 +1,4 @@
-import { Flex, Text, useTheme } from '@audius/harmony-native'
+import { useCallback, useEffect } from 'react'
 
 import {
   lineupSelectors,
@@ -6,12 +6,12 @@ import {
   searchResultsPageSelectors,
   SearchKind
 } from '@audius/common/store'
-import { useSearchQuery } from '../searchState'
+import { useDispatch, useSelector } from 'react-redux'
+
+import { Flex } from '@audius/harmony-native'
 import { Lineup } from 'app/components/lineup'
-import { useSelector } from 'react-redux'
-import { useCallback, useEffect } from 'react'
-import { dispatch } from 'app/store'
-import { useFocusEffect } from '@react-navigation/native'
+
+import { useSearchQuery } from '../searchState'
 
 const { getSearchTracksLineup } = searchResultsPageSelectors
 const { makeGetLineupMetadatas } = lineupSelectors
@@ -21,21 +21,21 @@ const getSearchTracksLineupMetadatas = makeGetLineupMetadatas(
 
 export const TrackResults = () => {
   const [query] = useSearchQuery()
+  const dispatch = useDispatch()
 
   const lineup = useSelector(getSearchTracksLineupMetadatas)
 
-  useFocusEffect(
-    useCallback(() => {
-      dispatch(
-        tracksActions.fetchLineupMetadatas(0, 10, true, {
-          category: SearchKind.TRACKS,
-          query,
-          // TODO: implement tag search
-          isTagSearch: false
-        })
-      )
-    }, [dispatch, query])
-  )
+  useEffect(() => {
+    dispatch(
+      tracksActions.fetchLineupMetadatas(0, 10, true, {
+        category: SearchKind.TRACKS,
+        query,
+        // TODO: implement tag search
+        isTagSearch: false,
+        dispatch
+      })
+    )
+  }, [dispatch, query])
 
   const loadMore = useCallback(
     (offset: number, limit: number) => {
@@ -44,7 +44,8 @@ export const TrackResults = () => {
           category: SearchKind.TRACKS,
           query,
           // TODO: implement tag search
-          isTagSearch: false
+          isTagSearch: false,
+          dispatch
         })
       )
     },
@@ -53,12 +54,7 @@ export const TrackResults = () => {
 
   return (
     <Flex h='100%' backgroundColor='default'>
-      <Lineup
-        selfLoad
-        actions={tracksActions}
-        lineup={lineup}
-        loadMore={loadMore}
-      />
+      <Lineup actions={tracksActions} lineup={lineup} loadMore={loadMore} />
     </Flex>
   )
 }

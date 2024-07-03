@@ -1,5 +1,8 @@
+import { searchApiFetch } from '@audius/common/api'
 import { Track } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import {
+  accountSelectors,
   cacheTracksSelectors,
   getContext,
   searchResultsPageTracksLineupActions as tracksActions,
@@ -7,7 +10,7 @@ import {
   SearchKind
 } from '@audius/common/store'
 import { trimToAlphaNumeric } from '@audius/common/utils'
-import { select, all, call, put } from 'typed-redux-saga'
+import { select, all, call } from 'typed-redux-saga'
 
 import { LineupSagas } from 'common/store/lineup/sagas'
 import {
@@ -15,18 +18,16 @@ import {
   getTagSearchResults
 } from 'common/store/pages/search-page/sagas'
 import { isMobileWeb } from 'common/utils/isMobileWeb'
-import { searchApiFetch } from '@audius/common/api'
-import { reportToSentry } from 'store/errors/reportToSentry'
-import { FeatureFlags } from '@audius/common/services'
 
 const { getSearchTracksLineup, getSearchResultsPageTracks } =
   searchResultsPageSelectors
 const { getTracks } = cacheTracksSelectors
+const { getUserId } = accountSelectors
 
 function* getSearchPageResultsTracks({
   offset,
   limit,
-  payload: { category, query, isTagSearch }
+  payload: { category, query, isTagSearch, dispatch }
 }: {
   offset: number
   limit: number
@@ -57,17 +58,23 @@ function* getSearchPageResultsTracks({
         const audiusBackend = yield* getContext('audiusBackendInstance')
         const apiClient = yield* getContext('apiClient')
         const reportToSentry = yield* getContext('reportToSentry')
+        const currentUserId = yield* select(getUserId)
 
         // TODO: this should be passing the filters in
         const { tracks } = yield* call(
           searchApiFetch.getSearchResults,
           {
-            currentUserId: null,
+            currentUserId,
             query,
             category,
             limit
           },
-          { audiusBackend, apiClient, reportToSentry, dispatch: put } as any
+          {
+            audiusBackend,
+            apiClient,
+            reportToSentry,
+            dispatch
+          } as any
         )
         results = tracks as unknown as Track[]
       } else {
