@@ -7,7 +7,7 @@ import {
   SearchKind
 } from '@audius/common/store'
 import { trimToAlphaNumeric } from '@audius/common/utils'
-import { select, all, call } from 'typed-redux-saga'
+import { select, all, call, put } from 'typed-redux-saga'
 
 import { LineupSagas } from 'common/store/lineup/sagas'
 import {
@@ -15,6 +15,9 @@ import {
   getTagSearchResults
 } from 'common/store/pages/search-page/sagas'
 import { isMobileWeb } from 'common/utils/isMobileWeb'
+import { searchApiFetch } from '@audius/common/api'
+import { reportToSentry } from 'store/errors/reportToSentry'
+import { FeatureFlags } from '@audius/common/services'
 
 const { getSearchTracksLineup, getSearchResultsPageTracks } =
   searchResultsPageSelectors
@@ -43,13 +46,39 @@ function* getSearchPageResultsTracks({
       )
       results = tracks
     } else {
-      const { tracks } = yield* call(getSearchResults, {
-        searchText: query,
-        kind: category,
-        limit,
-        offset
-      })
-      results = tracks as unknown as Track[]
+      const getFeatureEnabled = yield* getContext('getFeatureEnabled')
+
+      const isSearchV2Enabled = yield* call(
+        getFeatureEnabled,
+        FeatureFlags.SEARCH_V2
+      )
+
+      if (isSearchV2Enabled) {
+        const audiusBackend = yield* getContext('audiusBackendInstance')
+        const apiClient = yield* getContext('apiClient')
+        const reportToSentry = yield* getContext('reportToSentry')
+
+        // TODO: this should be passing the filters in
+        const { tracks } = yield* call(
+          searchApiFetch.getSearchResults,
+          {
+            currentUserId: null,
+            query,
+            category,
+            limit
+          },
+          { audiusBackend, apiClient, reportToSentry, dispatch: put } as any
+        )
+        results = tracks as unknown as Track[]
+      } else {
+        const { tracks } = yield* call(getSearchResults, {
+          searchText: query,
+          kind: category,
+          limit,
+          offset
+        })
+        results = tracks as unknown as Track[]
+      }
     }
     if (results) return results
     return [] as Track[]
