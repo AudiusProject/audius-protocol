@@ -14,14 +14,14 @@ import { useDispatch } from 'react-redux'
 import { useParams } from 'react-router'
 import { useRouteMatch } from 'react-router-dom'
 
-import { EditCollectionForm } from 'components/edit-collection/desktop/EditCollectionForm'
+import { EditCollectionForm } from 'components/edit-collection/EditCollectionForm'
 import Header from 'components/header/desktop/Header'
 import LoadingSpinnerFullPage from 'components/loading-spinner-full-page/LoadingSpinnerFullPage'
 import Page from 'components/page/Page'
 import { useCollectionCoverArt2 } from 'hooks/useCollectionCoverArt'
 import { track } from 'services/analytics'
 
-import { updatePlaylistContents } from './utils'
+import { updatePlaylistContents } from '../utils'
 
 const { editPlaylist } = cacheCollectionsActions
 

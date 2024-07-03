@@ -22,7 +22,7 @@ import { useToggle } from 'react-use'
 
 import { make, useRecord } from 'common/store/analytics/actions'
 import { Draggable } from 'components/dragndrop'
-import { DeleteCollectionConfirmationModal } from 'components/edit-collection/desktop/DeleteCollectionConfirmationModal'
+import { DeleteCollectionConfirmationModal } from 'components/edit-collection/DeleteCollectionConfirmationModal'
 import {
   DragDropKind,
   selectDraggingKind,

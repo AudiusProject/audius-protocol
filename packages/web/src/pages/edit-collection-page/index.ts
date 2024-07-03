@@ -1,1 +1,0 @@
-export { EditCollectionPage } from './EditCollectionPage'

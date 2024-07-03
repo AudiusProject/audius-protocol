@@ -56,7 +56,7 @@ type EditCollectionFormProps = {
 
 export const EditCollectionForm = (props: EditCollectionFormProps) => {
   const { initialValues, onSubmit, isAlbum, isUpload } = props
-  const { playlist_id, is_album, is_private } = initialValues
+  const { playlist_id, is_private, is_scheduled_release } = initialValues
   const [isDeleteConfirmationOpen, setIsDeleteConfirmationOpen] =
     useState(false)
   const [isReleaseConfirmationOpen, setIsReleaseConfirmationOpen] =
@@ -78,19 +78,14 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
 
   const handleSubmit = useCallback(
     (values: CollectionValues) => {
-      if (
-        !is_album &&
-        is_private &&
-        !values.is_private &&
-        !isReleaseConfirmationOpen
-      ) {
+      if (is_private && !values.is_private && !isReleaseConfirmationOpen) {
         setIsReleaseConfirmationOpen(true)
       } else {
         setIsReleaseConfirmationOpen(false)
         onSubmit(values)
       }
     },
-    [is_album, is_private, isReleaseConfirmationOpen, onSubmit]
+    [is_private, isReleaseConfirmationOpen, onSubmit]
   )
 
   return (
@@ -185,6 +180,8 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
               <ReleaseCollectionConfirmationModal
                 isOpen={isReleaseConfirmationOpen}
                 onClose={() => setIsReleaseConfirmationOpen(false)}
+                collectionType={isAlbum ? 'album' : 'playlist'}
+                releaseType={!is_scheduled_release ? 'scheduled' : 'hidden'}
                 formId={formId}
               />
             )}

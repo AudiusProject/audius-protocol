@@ -35,7 +35,6 @@ import { Web3ErrorBanner } from 'components/banner/Web3ErrorBanner'
 import { ChatListener } from 'components/chat-listener/ChatListener'
 import CookieBanner from 'components/cookie-banner/CookieBanner'
 import { DevModeMananger } from 'components/dev-mode-manager/DevModeManager'
-import EditPlaylistPage from 'components/edit-collection/mobile/EditPlaylistPage'
 import { HeaderContextConsumer } from 'components/header/mobile/HeaderContextProvider'
 import Navigator from 'components/nav/Navigator'
 import TopLevelPage from 'components/nav/mobile/TopLevelPage'
@@ -871,7 +870,7 @@ class WebPlayer extends Component {
                 <Route
                   exact
                   path={[EDIT_PLAYLIST_PAGE, EDIT_ALBUM_PAGE]}
-                  component={isMobile ? EditPlaylistPage : EditCollectionPage}
+                  component={EditCollectionPage}
                 />
 
                 <Route

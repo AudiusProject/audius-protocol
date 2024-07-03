@@ -37,8 +37,8 @@ import { AppState } from 'store/types'
 import { resizeImage } from 'utils/imageProcessingUtil'
 import { withNullGuard } from 'utils/withNullGuard'
 
-import styles from './EditPlaylistPage.module.css'
-import RemovePlaylistTrackDrawer from './RemovePlaylistTrackDrawer'
+import styles from './EditCollectionPage.module.css'
+import RemovePlaylistTrackDrawer from './RemoveCollectionTrackDrawer'
 
 const { editPlaylist, orderPlaylist, removeTrackFromPlaylist } =
   cacheCollectionsActions
@@ -61,15 +61,15 @@ type EditCollectionPageParams = {
   slug: string
 }
 
-type EditPlaylistPageProps = ReturnType<typeof mapStateToProps> &
+type EditCollectionPageProps = ReturnType<typeof mapStateToProps> &
   ReturnType<typeof mapDispatchToProps>
 
-const g = withNullGuard((props: EditPlaylistPageProps) => {
+const g = withNullGuard((props: EditCollectionPageProps) => {
   const { account } = props
   if (account) return { ...props, account }
 })
 
-const EditPlaylistPage = g(
+const EditCollectionPage = g(
   ({ removeTrack, editPlaylist, orderPlaylist, refreshLineup }) => {
     const { handle, slug } = useParams<EditCollectionPageParams>()
     const isAlbum = Boolean(useRouteMatch('/:handle/album/:slug/edit'))
@@ -471,4 +471,4 @@ function mapDispatchToProps(dispatch: Dispatch) {
   }
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(EditPlaylistPage)
+export default connect(mapStateToProps, mapDispatchToProps)(EditCollectionPage)
