@@ -61,7 +61,10 @@ module.exports = function (app) {
             }
           }
 
-          const isChangingEmail = body.email !== undefined && body.email !== null && typeof body.email === "string"
+          const isChangingEmail =
+            body.email !== undefined &&
+            body.email !== null &&
+            typeof body.email === 'string'
           const email = body.email
           if (isChangingEmail) {
             const otp = body.otp
@@ -77,8 +80,14 @@ module.exports = function (app) {
             }
 
             // change email of user who's signature was passed in the call
-            const authRecord = await models.Authentication.findOne({ where: { walletAddress }, transaction })
-            const userRecord = await models.User.findOne({ where: { walletAddress }, transaction })
+            const authRecord = await models.Authentication.findOne({
+              where: { walletAddress },
+              transaction
+            })
+            const userRecord = await models.User.findOne({
+              where: { walletAddress },
+              transaction
+            })
 
             await userRecord.update({ email }, { transaction })
           }
