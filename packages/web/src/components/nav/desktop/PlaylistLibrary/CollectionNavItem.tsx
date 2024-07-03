@@ -15,7 +15,7 @@ import {
   shareModalUIActions,
   useEditPlaylistModal
 } from '@audius/common/store'
-import { PopupMenuItem, spacing } from '@audius/harmony'
+import { Flex, PopupMenuItem, spacing, Text } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 import { useRouteMatch } from 'react-router-dom'
 import { useToggle } from 'react-use'
@@ -168,7 +168,6 @@ export const CollectionNavItem = (props: CollectionNavItemProps) => {
 
   if (!name || !url) return null
 
-  // TODO: Drag styles aren't working
   return (
     <>
       <LeftNavDroppable
@@ -184,6 +183,7 @@ export const CollectionNavItem = (props: CollectionNavItemProps) => {
           kind='library-playlist'
         >
           <LeftNavLink
+            asChild
             to={url}
             onClick={onClick}
             disabled={isDisabled}
@@ -192,34 +192,36 @@ export const CollectionNavItem = (props: CollectionNavItemProps) => {
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
           >
-            <span
+            <Flex
+              alignItems='center'
+              w='100%'
+              pl={level * spacing.l}
               css={{
-                display: 'flex',
-                alignItems: 'center',
-                width: '100%',
-                position: 'relative',
-                paddingLeft: `${level * spacing.l}px`
+                position: 'relative'
               }}
             >
-              {hasUpdate ? <PlaylistUpdateDot /> : null}
-              <span
+              {!hasUpdate ? (
+                <div css={{ position: 'absolute', left: '-12px' }}>
+                  <PlaylistUpdateDot />
+                </div>
+              ) : null}
+              <Text
+                size='s'
                 css={{
-                  whiteSpace: 'nowrap',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
                   '.droppableLinkActive &': {
                     color: 'var(--harmony-secondary)'
                   }
                 }}
+                ellipses
               >
                 {name}
-              </span>
+              </Text>
               <NavItemKebabButton
                 visible={isOwned && isHovering && !isDraggingOver}
                 aria-label={messages.editPlaylistLabel}
                 items={kebabItems}
               />
-            </span>
+            </Flex>
           </LeftNavLink>
         </Draggable>
       </LeftNavDroppable>

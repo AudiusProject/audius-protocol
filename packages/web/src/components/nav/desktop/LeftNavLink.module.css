@@ -31,7 +31,6 @@
   color: var(--harmony-secondary);
 }
 
-.disabledLink,
 .droppableLinkInactive > * {
   opacity: 0.6;
   cursor: not-allowed;

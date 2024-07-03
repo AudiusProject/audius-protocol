@@ -3,6 +3,7 @@ import { ComponentProps } from 'react'
 import { Text, TextProps, spacing } from '@audius/harmony'
 import { CSSInterpolation } from '@emotion/css'
 import { Interpolation, Theme } from '@emotion/react'
+import { Slot } from '@radix-ui/react-slot'
 import cn from 'classnames'
 import { NavLink, NavLinkProps } from 'react-router-dom'
 import { SetOptional } from 'type-fest'
@@ -14,7 +15,7 @@ import { useSelector } from 'utils/reducer'
 import styles from './LeftNavLink.module.css'
 
 export type LeftNavLinkProps =
-  | { disabled?: boolean } & (
+  | { disabled?: boolean; asChild?: boolean } & (
       | Omit<NavLinkProps, 'onDrop'>
       | Omit<ComponentProps<'div'>, 'onDrop'>
     )
@@ -32,7 +33,7 @@ const indicatorCss: CSSInterpolation = {
   borderRadius: '4px'
 }
 
-const enabledCss: CSSInterpolation = {
+const linkInteractionCss: CSSInterpolation = {
   '&:hover': {
     cursor: 'pointer',
     color: 'var(--harmony-n-950)'
@@ -55,15 +56,15 @@ const enabledCss: CSSInterpolation = {
   ]
 }
 
-const disabledCss: CSSInterpolation = {
-  '&,:hover': {
-    color: 'var(--harmony-n-400)',
-    pointerEvents: 'none'
-  }
+const disabledDropCss: CSSInterpolation = {
+  opacity: 0.6,
+  cursor: 'not-allowed'
 }
 
+Text<'span'>
+
 export const LeftNavLink = (props: LeftNavLinkProps) => {
-  const { disabled, children, ...other } = props
+  const { asChild, disabled, children, ...other } = props
 
   const css: Interpolation<Theme> = [
     {
@@ -73,40 +74,37 @@ export const LeftNavLink = (props: LeftNavLinkProps) => {
       alignItems: 'center',
       gap: `${spacing.s}px`,
       minWidth: '100px',
-      paddingLeft: `${spacing.l}px`,
+      // Leaves space for the hover indicator
+      paddingLeft: `${spacing.unit5}px`,
       paddingRight: `${spacing.l}px`,
       color: 'var(--harmony-neutral)',
       border: 0,
       background: 'none',
       textAlign: 'inherit'
     },
-    disabled ? disabledCss : enabledCss
+    linkInteractionCss,
+    disabled && disabledDropCss
   ]
 
-  const textProps: TextProps = {
-    ellipses: true,
-    size: 's'
-  }
-
-  const textLayoutProps: Interpolation<Theme> = {
-    display: 'flex',
-    alignItems: 'center'
-  }
+  const TextComp = asChild ? Slot : Text
+  const textProps = asChild
+    ? undefined
+    : ({
+        tag: 'span',
+        size: 's',
+        css: { display: 'flex', alignItems: 'center' }
+      } as TextProps<'span'>)
 
   if ('to' in other) {
     return (
       <NavLink {...other} activeClassName='active' css={css}>
-        <Text tag='span' css={textLayoutProps} {...textProps}>
-          {children}
-        </Text>
+        <TextComp {...textProps}>{children}</TextComp>
       </NavLink>
     )
   }
   return (
     <div {...other} css={css}>
-      <Text tag='span' css={textLayoutProps} {...textProps}>
-        {children}
-      </Text>
+      <TextComp {...textProps}>{children}</TextComp>
     </div>
   )
 }
