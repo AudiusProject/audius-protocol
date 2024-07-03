@@ -39,6 +39,7 @@ type CollectionCardProps = Omit<CardProps, 'id'> & {
   id: ID
   loading?: boolean
   noNavigation?: boolean
+  onCollectionLinkClick?: (e: MouseEvent<HTMLAnchorElement>) => void
 }
 
 const cardSizeToCoverArtSizeMap = {
@@ -50,7 +51,15 @@ const cardSizeToCoverArtSizeMap = {
 
 export const CollectionCard = forwardRef(
   (props: CollectionCardProps, ref: Ref<HTMLDivElement>) => {
-    const { id, loading, size, onClick, noNavigation, ...other } = props
+    const {
+      id,
+      loading,
+      size,
+      onClick,
+      onCollectionLinkClick,
+      noNavigation,
+      ...other
+    } = props
 
     const collection = useSelector((state) => getCollection(state, { id }))
     const accountId = useSelector(getUserId)
@@ -122,6 +131,7 @@ export const CollectionCard = forwardRef(
               to={permalink}
               textVariant='title'
               css={{ justifyContent: 'center' }}
+              onClick={onCollectionLinkClick}
             >
               <Text ellipses>{playlist_name}</Text>
             </TextLink>

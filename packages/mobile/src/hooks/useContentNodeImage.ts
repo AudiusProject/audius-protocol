@@ -166,7 +166,7 @@ export const useContentNodeImage = (
       setFailedToLoad(false)
       setImageSourceIndex(0)
     }
-  }, [cid])
+  }, [cid, failedToLoad])
 
   // when localSource is a number, it's a placeholder image, so we should show fallback image
   const showFallbackImage =

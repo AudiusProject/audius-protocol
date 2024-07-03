@@ -51,9 +51,7 @@ export const Sizes: Story = {
         </PlainButton>
       </Box>
       <Box p='xl'>
-        <PlainButton {...props} size='large'>
-          Button
-        </PlainButton>
+        <PlainButton {...props}>Button</PlainButton>
       </Box>
     </Flex>
   )

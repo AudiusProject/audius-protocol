@@ -15,8 +15,8 @@ import BN from 'bn.js'
 import { Platform } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { IconArrowRight, IconClose } from '@audius/harmony-native'
-import { Button, ErrorText } from 'app/components/core'
+import { IconArrowRight, IconClose, Button } from '@audius/harmony-native'
+import { ErrorText } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles } from 'app/styles'
 
@@ -138,17 +138,16 @@ export const SendTipScreen = () => {
       <AvailableAudio />
       <Button
         variant='primary'
-        size='large'
-        title={Platform.OS === 'ios' ? messages.sendAudio : messages.sendTip}
         onPress={handleSendTip}
-        icon={IconArrowRight}
-        iconPosition='right'
+        iconRight={IconArrowRight}
         fullWidth
         disabled={
           !tipAmount || tipAmountWei.lte(zeroWei) || hasInsufficientBalance
         }
         style={styles.sendButton}
-      />
+      >
+        {Platform.OS === 'ios' ? messages.sendAudio : messages.sendTip}
+      </Button>
       {hasInsufficientBalance ? (
         <ErrorText>{messages.insufficientBalance}</ErrorText>
       ) : null}

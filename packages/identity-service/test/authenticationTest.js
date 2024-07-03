@@ -2,6 +2,7 @@ const request = require('supertest')
 const assert = require('assert')
 
 const { getApp } = require('./lib/app')
+const models = require('../src/models')
 
 describe('test authentication routes', function () {
   let app, server
@@ -201,5 +202,123 @@ describe('test authentication routes', function () {
     await requestSignUp()
     const otp3 = await redis.get('otp:dheeraj@audius.co')
     assert.strictEqual(otp2, otp3)
+  })
+
+  it('associates user record on sign up', async function () {
+    const expectedWalletAddress = '0x1ea101eccdc55a2db6196eff5440ece24ecb55af'
+    const iv = 'ebc1d6a0f87fdf108fb42ec6a5bee016'
+    const cipherText = '771d5472aa8cb0e29626d55939bc7c3a56dd2c9bf5fa279b411a0cc52d8ddbb1052ff4564ee14171c406224bfaf2116304e4c4c46f9e183332c343e4dcf27284'
+    const lookupKey = '397ae50c24d10abd257dafc5e3b75b78c425ad4a3901bc753acec5aa11cd6536'
+    const username = "test@audius.co"
+
+    await request(app).post('/authentication')
+      .set('Encoded-Data-Message', 'Click sign to authenticate with identity service: 1719845800')
+      .set('Encoded-Data-Signature', '0x60029425041bdabf5f1805a5c41d889df480670a9db1a69f18e74f83650a490b6b36b17cc36cc9c71c915a451e24dde3657e96e198b29991361fdb8d2d46a4c11c')
+      .send({
+        iv,
+        cipherText,
+        lookupKey
+      })
+
+    await request(app).post('/user').send({
+      username,
+      walletAddress: expectedWalletAddress
+    })
+
+    const authRecord = await models.Authentication.findOne({ where: { lookupKey } })
+    assert.strictEqual(authRecord.walletAddress, expectedWalletAddress)
+
+    const userRecord = await models.User.findOne({ where: { walletAddress: expectedWalletAddress } })
+    assert.strictEqual(userRecord.email, username)
+
+    await request(app)
+      .get('/authentication')
+      .query({
+        lookupKey,
+        username: "wrongemail@audius.co"
+      })
+      .expect(400)
+
+    await authRecord.destroy()
+    await userRecord.destroy()
+  })
+
+  it('associates user record on sign in', async function () {
+    const walletAddress = '0x1ea101eccdc55a2db6196eff5440ece24ecb55af'
+    const iv = 'ebc1d6a0f87fdf108fb42ec6a5bee016'
+    const cipherText = '771d5472aa8cb0e29626d55939bc7c3a56dd2c9bf5fa279b411a0cc52d8ddbb1052ff4564ee14171c406224bfaf2116304e4c4c46f9e183332c343e4dcf27284'
+    const lookupKey = '397ae50c24d10abd257dafc5e3b75b78c425ad4a3901bc753acec5aa11cd6536'
+    const username = "test@audius.co"
+
+    await request(app).post('/authentication')
+      .send({
+        iv,
+        cipherText,
+        lookupKey
+      })
+
+    const authRecord = await models.Authentication.findOne({ where: { lookupKey } })
+    assert.strictEqual(authRecord.walletAddress, null)
+
+    await request(app).post('/user').send({
+      username,
+      walletAddress
+    })
+
+    await request(app)
+      .get('/authentication')
+      .query({
+        lookupKey,
+        username
+      })
+      .expect(403)
+
+    const redis = app.get('redis')
+    let otp = await redis.get(`otp:${username}`)
+
+    await request(app)
+      .get('/authentication')
+      .query({
+        lookupKey,
+        username,
+        otp,
+      })
+      .expect(200)
+
+    const updatedAuthRecord = await models.Authentication.findOne({ where: { lookupKey } })
+    assert.strictEqual(updatedAuthRecord.walletAddress, walletAddress)
+
+    const userRecord = await models.User.findOne({ where: { walletAddress } })
+    assert.strictEqual(userRecord.email, username)
+
+    await request(app)
+      .get('/authentication')
+      .query({
+        lookupKey,
+        username: "wrongemail@audius.co"
+      })
+      .expect(400)
+
+    await request(app)
+      .get('/authentication')
+      .query({
+        lookupKey,
+        username,
+      })
+      .expect(403)
+
+    otp = await redis.get(`otp:${username}`)
+
+    await request(app)
+      .get('/authentication')
+      .query({
+        lookupKey,
+        username,
+        otp,
+      })
+      .expect(200)
+
+    await updatedAuthRecord.destroy()
+    await userRecord.destroy()
   })
 })

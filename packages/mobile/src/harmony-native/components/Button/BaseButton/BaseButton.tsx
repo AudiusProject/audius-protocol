@@ -1,6 +1,11 @@
 import { useCallback, useState } from 'react'
 
-import { Pressable, type LayoutChangeEvent, type ViewStyle } from 'react-native'
+import { Pressable } from 'react-native'
+import type {
+  GestureResponderEvent,
+  LayoutChangeEvent,
+  ViewStyle
+} from 'react-native'
 import { Gesture, GestureDetector } from 'react-native-gesture-handler'
 import Animated, {
   interpolate,
@@ -8,6 +13,8 @@ import Animated, {
   useSharedValue,
   withTiming
 } from 'react-native-reanimated'
+
+import * as haptic from 'app/haptics'
 
 import { useTheme } from '../../../foundations/theme'
 import { LoadingSpinner } from '../../LoadingSpinner/LoadingSpinner'
@@ -33,6 +40,8 @@ export const BaseButton = (props: BaseButtonProps) => {
     minWidth,
     fullWidth,
     pressScale = 0.97,
+    onPress,
+    haptics,
     ...other
   } = props
   const pressedInternal = useSharedValue(0)
@@ -91,11 +100,22 @@ export const BaseButton = (props: BaseButtonProps) => {
     setButtonWidth(width)
   }, [])
 
+  const handlePress = useCallback(
+    (e: GestureResponderEvent) => {
+      onPress?.(e)
+      if (haptics) {
+        haptic.medium()
+      }
+    },
+    [onPress, haptics]
+  )
+
   return (
     <GestureDetector gesture={tap}>
       <AnimatedPressable
         style={[rootStyles, animatedStyles, style]}
         onLayout={handleLayoutChange}
+        onPress={handlePress}
         {...other}
       >
         {isLoading ? (

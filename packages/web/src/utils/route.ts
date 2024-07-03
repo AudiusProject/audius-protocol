@@ -299,6 +299,7 @@ export const staticRoutes = new Set([
   FEED_PAGE,
   TRENDING_PAGE,
   EXPLORE_PAGE,
+  SEARCH_BASE_ROUTE,
   SAVED_PAGE,
   LIBRARY_PAGE,
   FAVORITES_PAGE,
@@ -468,6 +469,14 @@ export const searchResultsPage = (query: string) => {
 
 export const fullSearchResultsPage = (query: string) => {
   return `${BASE_URL}${searchResultsPage(query)}`
+}
+
+export const searchResultsPageV2 = (category: string, query: string) => {
+  return `/search/${category}/?query=${query}`
+}
+
+export const fullSearchResultsPageV2 = (category: string, query: string) => {
+  return `${BASE_URL}${searchResultsPageV2(category, query)}`
 }
 
 export const exploreMoodPlaylistsPage = (mood: string) => {

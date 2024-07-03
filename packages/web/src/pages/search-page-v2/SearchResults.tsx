@@ -15,6 +15,7 @@ import { Genre, Mood } from '@audius/sdk'
 import { useDispatch } from 'react-redux'
 import { useSearchParams } from 'react-router-dom-v5-compat'
 
+import { useIsMobile } from 'hooks/useIsMobile'
 import { useRouteMatch } from 'hooks/useRouteMatch'
 import { useSelector } from 'utils/reducer'
 import { SEARCH_PAGE } from 'utils/route'
@@ -27,6 +28,7 @@ import { ResultsTracksView } from './ResultsTracksView'
 import { CategoryView } from './types'
 
 export const SearchResults = () => {
+  const isMobile = useIsMobile()
   const containerRef = useRef<HTMLDivElement>(null)
   const results = useSelector(searchResultsPageSelectors.getSearchResults)
   const routeMatch = useRouteMatch<{ category: string }>(SEARCH_PAGE)
@@ -100,27 +102,19 @@ export const SearchResults = () => {
   const isTracksVisible =
     isCategoryActive(CategoryView.TRACKS) ||
     (isAllCategoriesVisible &&
-      results.trackIds &&
-      results.trackIds.length > 0) ||
-    isLoading
+      ((results.trackIds && results.trackIds.length > 0) || isLoading))
   const isProfilesVisible =
     isCategoryActive(CategoryView.PROFILES) ||
     (isAllCategoriesVisible &&
-      results.artistIds &&
-      results.artistIds.length > 0) ||
-    isLoading
+      ((results.artistIds && results.artistIds.length > 0) || isLoading))
   const isAlbumsVisible =
     isCategoryActive(CategoryView.ALBUMS) ||
     (isAllCategoriesVisible &&
-      results.albumIds &&
-      results.albumIds.length > 0) ||
-    isLoading
+      ((results.albumIds && results.albumIds.length > 0) || isLoading))
   const isPlaylistsVisible =
     isCategoryActive(CategoryView.PLAYLISTS) ||
     (isAllCategoriesVisible &&
-      results.playlistIds &&
-      results.playlistIds.length > 0) ||
-    isLoading
+      ((results.playlistIds && results.playlistIds.length > 0) || isLoading))
 
   // Check if there are no results
   const isResultsEmpty =
@@ -143,7 +137,12 @@ export const SearchResults = () => {
   if (showNoResultsTile) return <NoResultsTile />
 
   return (
-    <Flex direction='column' gap='unit10' ref={containerRef}>
+    <Flex
+      direction='column'
+      gap='unit10'
+      p={isMobile ? 'm' : undefined}
+      ref={containerRef}
+    >
       {isProfilesVisible ? <ResultsProfilesView /> : null}
       {isTracksVisible ? <ResultsTracksView /> : null}
       {isAlbumsVisible ? <ResultsAlbumsView /> : null}

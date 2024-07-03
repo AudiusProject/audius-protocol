@@ -7,11 +7,10 @@ import {
 import { ScrollView, View } from 'react-native'
 import { useSelector } from 'react-redux'
 
-import { IconShare } from '@audius/harmony-native'
-import { Button, ChainLogo, Text } from 'app/components/core'
+import { IconShare, Button } from '@audius/harmony-native'
+import { ChainLogo, Text } from 'app/components/core'
 import { AppDrawer } from 'app/components/drawer'
 import { makeStyles } from 'app/styles'
-import { spacing } from 'app/styles/spacing'
 import { getCollectiblesRoute } from 'app/utils/routes'
 import share from 'app/utils/share'
 
@@ -150,18 +149,13 @@ export const CollectibleDetailsDrawer = () => {
             )}
             <Button
               style={styles.shareButton}
-              variant='commonAlt'
-              title={messages.share}
-              size='large'
+              variant='secondary'
               fullWidth
               onPress={handleShare}
-              iconPosition='left'
-              icon={IconShare}
-              IconProps={{
-                height: spacing(6),
-                width: spacing(6)
-              }}
-            />
+              iconLeft={IconShare}
+            >
+              {messages.share}
+            </Button>
           </View>
         </ScrollView>
       ) : null}
