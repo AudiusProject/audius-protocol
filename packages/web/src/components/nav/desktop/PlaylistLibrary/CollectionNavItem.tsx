@@ -22,6 +22,7 @@ import { useToggle } from 'react-use'
 
 import { make, useRecord } from 'common/store/analytics/actions'
 import { Draggable } from 'components/dragndrop'
+import { DeleteCollectionConfirmationModal } from 'components/edit-collection/desktop/DeleteCollectionConfirmationModal'
 import {
   DragDropKind,
   selectDraggingKind,
@@ -33,7 +34,6 @@ import { BASE_URL } from 'utils/route'
 import { LeftNavDroppable, LeftNavLink } from '../LeftNavLink'
 
 import styles from './CollectionNavItem.module.css'
-import { DeleteCollectionConfirmationModal } from './DeleteCollectionConfirmationModal'
 import { NavItemKebabButton } from './NavItemKebabButton'
 import { PlaylistUpdateDot } from './PlaylistUpdateDot'
 

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 
 import { useFeatureFlag } from '@audius/common/hooks'
 import {
@@ -27,10 +27,11 @@ import {
   TextAreaField,
   TextField
 } from 'components/form-fields'
-import { DeleteCollectionConfirmationModal } from 'components/nav/desktop/PlaylistLibrary/DeleteCollectionConfirmationModal'
 import { Tile } from 'components/tile'
 
+import { DeleteCollectionConfirmationModal } from './DeleteCollectionConfirmationModal'
 import styles from './EditCollectionForm.module.css'
+import { ReleaseCollectionConfirmationModal } from './ReleaseCollectionConfirmationModal'
 
 const messages = {
   name: 'Name',
@@ -44,6 +45,8 @@ const messages = {
   deleteCollection: (collectionName: string) => `Delete ${collectionName}`
 }
 
+const formId = 'edit-collection-form'
+
 type EditCollectionFormProps = {
   initialValues: CollectionValues
   onSubmit: (values: CollectionValues) => void
@@ -53,8 +56,10 @@ type EditCollectionFormProps = {
 
 export const EditCollectionForm = (props: EditCollectionFormProps) => {
   const { initialValues, onSubmit, isAlbum, isUpload } = props
-  const { playlist_id } = initialValues
+  const { playlist_id, is_album, is_private } = initialValues
   const [isDeleteConfirmationOpen, setIsDeleteConfirmationOpen] =
+    useState(false)
+  const [isReleaseConfirmationOpen, setIsReleaseConfirmationOpen] =
     useState(false)
   const { isEnabled: isPremiumAlbumsEnabled } = useFeatureFlag(
     FeatureFlags.PREMIUM_ALBUMS_ENABLED
@@ -71,13 +76,30 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
   const collectionTypeName = isAlbum ? 'Album' : 'Playlist'
   const validationSchema = isAlbum ? AlbumSchema : PlaylistSchema
 
+  const handleSubmit = useCallback(
+    (values: CollectionValues) => {
+      if (
+        !is_album &&
+        is_private &&
+        !values.is_private &&
+        !isReleaseConfirmationOpen
+      ) {
+        setIsReleaseConfirmationOpen(true)
+      } else {
+        setIsReleaseConfirmationOpen(false)
+        onSubmit(values)
+      }
+    },
+    [is_album, is_private, isReleaseConfirmationOpen, onSubmit]
+  )
+
   return (
     <Formik
       initialValues={initialValues}
-      onSubmit={onSubmit}
+      onSubmit={handleSubmit}
       validationSchema={toFormikValidationSchema(validationSchema)}
     >
-      <Form className={styles.root}>
+      <Form className={styles.root} id={formId}>
         <Tile className={styles.collectionFields} elevation='mid'>
           <div className={styles.row}>
             <ArtworkField
@@ -151,13 +173,22 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
         <CollectionTrackFieldArray />
         {isUpload ? <AnchoredSubmitRow /> : <AnchoredSubmitRowEdit />}
         {playlist_id ? (
-          <DeleteCollectionConfirmationModal
-            visible={isDeleteConfirmationOpen}
-            collectionId={playlist_id}
-            entity={collectionTypeName}
-            onCancel={() => setIsDeleteConfirmationOpen(false)}
-            onDelete={() => setIsDeleteConfirmationOpen(false)}
-          />
+          <>
+            <DeleteCollectionConfirmationModal
+              visible={isDeleteConfirmationOpen}
+              collectionId={playlist_id}
+              entity={collectionTypeName}
+              onCancel={() => setIsDeleteConfirmationOpen(false)}
+              onDelete={() => setIsDeleteConfirmationOpen(false)}
+            />
+            {isAlbum ? null : (
+              <ReleaseCollectionConfirmationModal
+                isOpen={isReleaseConfirmationOpen}
+                onClose={() => setIsReleaseConfirmationOpen(false)}
+                formId={formId}
+              />
+            )}
+          </>
         ) : null}
       </Form>
     </Formik>

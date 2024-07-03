@@ -50,7 +50,6 @@ const messages = {
   filterPlaylist: 'Search in playlist...',
   filterAlbum: 'Search in album...',
   premiumLabel: 'premium',
-  hiddenPlaylistLabel: 'hidden playlist',
   by: 'By ',
   hidden: 'Hidden',
   releases: (releaseDate: string) =>
@@ -201,9 +200,7 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
               {isPremium ? <IconCart size='s' color='subdued' /> : null}
               <Text variant='label' color='subdued'>
                 {isPremium ? `${messages.premiumLabel} ` : ''}
-                {type === 'playlist' && !isPublished
-                  ? messages.hiddenPlaylistLabel
-                  : type}
+                {type}
               </Text>
             </Flex>
           )}
