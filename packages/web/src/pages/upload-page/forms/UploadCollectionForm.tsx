@@ -32,7 +32,8 @@ export const UploadCollectionForm = (props: UploadCollectionFormProps) => {
       mood: null,
       tags: ''
     },
-    tracks: tracks.map((track) => ({ ...track, override: false }))
+    tracks: tracks.map((track) => ({ ...track, override: false })),
+    isUpload: true
   }
 
   const handleSubmit = useCallback(

@@ -60,7 +60,8 @@ export const EditCollectionPage = () => {
     ...collection,
     description: description ?? undefined,
     artwork: { url: artworkUrl! },
-    tracks: tracks?.map((track) => ({ metadata: track })) ?? []
+    tracks: tracks?.map((track) => ({ metadata: track })) ?? [],
+    isUpload: false
   } as CollectionValues
 
   const handleSubmit = (values: CollectionValues) => {

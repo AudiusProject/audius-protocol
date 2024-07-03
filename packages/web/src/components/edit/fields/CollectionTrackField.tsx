@@ -1,6 +1,6 @@
 import { useCallback, useContext, useEffect } from 'react'
 
-import { IconDrag, IconTrash, Text, IconButton } from '@audius/harmony'
+import { IconDrag, IconTrash, Text, IconButton, Flex } from '@audius/harmony'
 import { useField } from 'formik'
 
 import { UploadPreviewContext } from 'components/edit-track/utils/uploadPreviewContext'
@@ -28,6 +28,7 @@ export const CollectionTrackField = (props: CollectionTrackFieldProps) => {
   >(`tracks.${index}.metadata`)
 
   const [{ value }] = useField('trackDetails')
+  const [{ value: isUpload }] = useField<boolean>('isUpload')
 
   // Override is currently unavailable thru the UI but the code is still here. We will revisit this with a new expandable edit UI
   const { override } = track
@@ -54,7 +55,13 @@ export const CollectionTrackField = (props: CollectionTrackFieldProps) => {
           <IconDrag color='default' />
         </span>
         <Text size='s'>{index + 1}</Text>
-        <TrackNameField name={`tracks.${index}.metadata.title`} />
+        {isUpload ? (
+          <TrackNameField name={`tracks.${index}.metadata.title`} />
+        ) : (
+          <Flex w='100%' ml='s'>
+            <Text size='l'>{track.metadata.title}</Text>
+          </Flex>
+        )}
         <IconButton
           size='m'
           color='subdued'

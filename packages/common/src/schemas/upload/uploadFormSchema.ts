@@ -286,7 +286,8 @@ export const createCollectionSchema = (collectionType: 'playlist' | 'album') =>
       copyrightLine: z.optional(DDEXCopyright.nullable()),
       producerCopyrightLine: z.optional(DDEXCopyright.nullable()),
       parentalWarningType: z.optional(z.string().nullable()),
-      is_downloadable: z.optional(z.boolean())
+      is_downloadable: z.optional(z.boolean()),
+      isUpload: z.optional(z.boolean())
     })
     .merge(
       premiumMetadataSchema.extend({
