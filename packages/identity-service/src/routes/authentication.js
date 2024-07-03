@@ -27,13 +27,71 @@ module.exports = function (app) {
   app.post(
     '/authentication',
     handleResponse(async (req, res, next) => {
+      const redis = req.app.get('redis')
+      const sendgrid = req.app.get('sendgrid')
+      if (!sendgrid) {
+        req.logger.error('Missing sendgrid api key')
+      }
+
       // body should contain {iv, cipherText, lookupKey}
       const body = req.body
       const headers = req.headers
 
+      req.logger.info({ body, headers }, "GOT REQUEST")
+
       if (body && body.iv && body.cipherText && body.lookupKey) {
         try {
           const transaction = await models.sequelize.transaction()
+
+          // default to null
+          let walletAddress = null
+          if (
+            headers &&
+            headers[EncodedDataMessageHeader] &&
+            headers[EncodedDataSignatureHeader]
+          ) {
+            const encodedDataMessage = headers[EncodedDataMessageHeader]
+            const encodedDataSignature = headers[EncodedDataSignatureHeader]
+            try {
+              walletAddress = sigUtil.recoverPersonalSignature({
+                data: encodedDataMessage,
+                sig: encodedDataSignature
+              })
+            } catch (err) {
+              // keep address as null for future user recovery
+              req.logger.error('Error recovering users signed address', err)
+            }
+          }
+
+          req.logger.info({ walletAddress }, "got wallet addr")
+
+          const isChangingEmail = body.email !== undefined && body.email !== null && typeof body.email === "string"
+          const email = body.email
+          req.logger.info({ email, isChangingEmail }, "is changing email")
+          if (isChangingEmail) {
+            const otp = body.otp
+
+            if (!otp) {
+              req.logger.info("sending otp")
+              await sendOtp({ email, redis, sendgrid })
+              return errorResponseForbidden('Missing otp')
+            }
+
+            req.logger.info("validating otp")
+            const isOtpValid = await validateOtp({ email, otp, redis })
+            if (!isOtpValid) {
+              return errorResponseBadRequest('Invalid credentials')
+            }
+            req.logger.info("passed otp")
+
+            // change email of user who's signature was passed in the call
+            const authRecord = await models.Authentication.findOne({ where: { walletAddress }, transaction })
+            const userRecord = await models.User.findOne({ where: { walletAddress }, transaction })
+
+            await userRecord.update({ email }, { transaction })
+
+            req.logger.info({ authRecord, userRecord })
+          }
 
           // Check if an existing record exists but is soft deleted (since the Authentication model is 'paranoid'
           // Setting the option paranoid to true searches both soft-deleted and non-deleted objects
@@ -44,26 +102,6 @@ module.exports = function (app) {
             paranoid: false
           })
           if (!existingRecord) {
-            // default to null
-            let walletAddress = null
-            if (
-              headers &&
-              headers[EncodedDataMessageHeader] &&
-              headers[EncodedDataSignatureHeader]
-            ) {
-              const encodedDataMessage = headers[EncodedDataMessageHeader]
-              const encodedDataSignature = headers[EncodedDataSignatureHeader]
-              try {
-                walletAddress = sigUtil.recoverPersonalSignature({
-                  data: encodedDataMessage,
-                  sig: encodedDataSignature
-                })
-              } catch (err) {
-                // keep address as null for future user recovery
-                req.logger.error('Error recovering users signed address', err)
-              }
-            }
-
             await models.Authentication.create(
               {
                 iv: body.iv,
@@ -85,6 +123,8 @@ module.exports = function (app) {
             })
           }
 
+          req.logger.info({ existingRecord }, "got existing record")
+
           const oldLookupKey = body.oldLookupKey
           if (oldLookupKey && oldLookupKey !== body.lookupKey) {
             await models.Authentication.destroy(
@@ -92,6 +132,7 @@ module.exports = function (app) {
               { transaction }
             )
           }
+
           await transaction.commit()
           return successResponse()
         } catch (err) {

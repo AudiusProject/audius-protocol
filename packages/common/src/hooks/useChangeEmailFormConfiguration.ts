@@ -101,15 +101,17 @@ export const useChangeEmailFormConfiguration = (onComplete: () => void) => {
 
       try {
         // Try to change email
-        await libs.identityService!.changeEmail({
-          email,
-          otp: sanitizedOtp
-        })
+        // await libs.identityService!.changeEmail({
+        //   email,
+        //   otp: sanitizedOtp
+        // })
         await libs.Account!.changeCredentials({
           newUsername: email,
           newPassword: password,
           oldUsername: oldEmail,
-          oldPassword: password
+          oldPassword: password,
+          otp: sanitizedOtp,
+          email
         })
         onComplete()
       } catch (e) {
