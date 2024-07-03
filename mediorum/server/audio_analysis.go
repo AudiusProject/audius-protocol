@@ -5,187 +5,46 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"os"
 	"os/exec"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/AudiusProject/audius-protocol/mediorum/cidutil"
-	"github.com/AudiusProject/audius-protocol/mediorum/crudr"
 	"gocloud.dev/gcerrors"
-	"golang.org/x/exp/slices"
+	"golang.org/x/sync/errgroup"
 )
 
 func (ss *MediorumServer) startAudioAnalyzer() {
-	myHost := ss.Config.Self.Host
 	work := make(chan *Upload)
 
 	numWorkers := 2
-
-	// on boot... reset any of my wip jobs
-	tx := ss.crud.DB.Model(Upload{}).
-		Where(Upload{
-			AudioAnalyzedBy: myHost,
-			Status:          JobStatusBusyAudioAnalysis,
-		}).
-		Updates(Upload{Status: JobStatusAudioAnalysis})
-	if tx.Error != nil {
-		ss.logger.Warn("reset stuck audio analyses error" + tx.Error.Error())
-	} else if tx.RowsAffected > 0 {
-		ss.logger.Info("reset stuck audio analyses", "count", tx.RowsAffected)
-	}
-
-	// add a callback to crudr so we can consider audio analyses
-	ss.crud.AddOpCallback(func(op *crudr.Op, records interface{}) {
-		if op.Table != "uploads" || op.Action != crudr.ActionUpdate {
-			return
-		}
-
-		uploads, ok := records.(*[]*Upload)
-		if !ok {
-			log.Printf("unexpected type in audio analysis callback %T", records)
-			return
-		}
-		for _, upload := range *uploads {
-			if upload.Status == JobStatusAudioAnalysis && upload.Template == "audio" {
-				if upload.TranscodedMirrors == nil {
-					ss.logger.Warn("missing full transcoded mp3 data in audio analysis job. skipping", "upload", upload.ID)
-					continue
-				}
-				// only the first mirror transcodes
-				if slices.Index(upload.TranscodedMirrors, myHost) == 0 {
-					ss.logger.Info("got audio analysis job", "upload", upload.ID)
-					work <- upload
-				}
-			}
-		}
-	})
 
 	// start workers
 	for i := 0; i < numWorkers; i++ {
 		go ss.startAudioAnalysisWorker(i, work)
 	}
 
-	// poll periodically for uploads that slipped thru the cracks.
-	go func() {
-		ticker := time.NewTicker(10 * time.Second)
-		defer ticker.Stop()
+	time.Sleep(time.Minute)
 
-		retryTicker := time.NewTicker(30 * time.Second)
-		defer retryTicker.Stop()
-
-		for {
-			select {
-			case <-ticker.C:
-				// find missed legacy analysis jobs every 10 seconds
-				// mark uploads with timed out analyses as done
-				ss.findMissedAnalysisJobs(work, myHost)
-
-			case <-retryTicker.C:
-				// retry analysis jobs every 30 seconds
-				ss.retryAnalysisJobs(work, myHost)
-			}
-		}
-	}()
-
-	// block to keep running
-	select {}
-}
-
-func (ss *MediorumServer) findMissedAnalysisJobs(work chan *Upload, myHost string) {
+	// find old work from backlog
 	uploads := []*Upload{}
-	ss.crud.DB.Where("status in ?", []string{JobStatusAudioAnalysis, JobStatusBusyAudioAnalysis}).Find(&uploads)
+	err := ss.crud.DB.Where("template = ? and audio_analysis_status != ?", JobTemplateAudio, JobStatusDone).
+		Order("random()").
+		Find(&uploads).
+		Error
 
-	for _, upload := range uploads {
-		// allow a 1 minute timeout period for audio analysis.
-		// upload.AudioAnalyzedAt is set in transcode.go after successfully transcoding a new audio upload,
-		// or by the /uploads/:id/analyze endpoint when triggering a re-analysis.
-		if time.Since(upload.AudioAnalyzedAt) > time.Minute {
-			// mark analysis as timed out and the upload as done.
-			// failed or timed out analyses do not block uploads.
-			ss.logger.Warn("audio analysis timed out", "upload", upload.ID, "upload_debug", upload)
-
-			upload.AudioAnalysisStatus = JobStatusTimeout
-			upload.Status = JobStatusDone
-			ss.crud.Update(upload)
-			continue
-		}
-
-		myIdx := slices.Index(upload.TranscodedMirrors, myHost)
-		if myIdx == -1 {
-			continue
-		}
-		myRank := myIdx + 1
-
-		logger := ss.logger.With("upload", upload.ID, "upload_status", upload.Status, "my_rank", myRank)
-
-		// determine if #1 rank worker dropped ball
-		timedOut := false
-		neverStarted := false
-
-		// for #2 rank worker:
-		if myRank == 2 {
-			// no recent update?
-			timedOut = upload.Status == JobStatusBusyAudioAnalysis &&
-				time.Since(upload.AudioAnalyzedAt) > time.Second*20
-
-			// never started?
-			neverStarted = upload.Status == JobStatusAudioAnalysis &&
-				time.Since(upload.AudioAnalyzedAt) > time.Second*20
-		}
-
-		// for #3 rank worker:
-		if myRank == 3 {
-			// no recent update?
-			timedOut = upload.Status == JobStatusBusyAudioAnalysis &&
-				time.Since(upload.AudioAnalyzedAt) > time.Second*40
-
-			// never started?
-			neverStarted = upload.Status == JobStatusAudioAnalysis &&
-				time.Since(upload.AudioAnalyzedAt) > time.Second*40
-		}
-
-		if timedOut {
-			logger.Info("audio analysis timed out... starting")
-			work <- upload
-		} else if neverStarted {
-			logger.Info("audio analysis never started")
-			work <- upload
-		}
+	if err != nil {
+		ss.logger.Warn("failed to find backlog work", "err", err)
 	}
-}
-
-func (ss *MediorumServer) retryAnalysisJobs(work chan *Upload, myHost string) {
-	uploads := []*Upload{}
-	ss.crud.DB.Where("audio_analysis_status = ? OR (audio_analysis_status = ? AND audio_analysis_error_count < ?)", JobStatusTimeout, JobStatusError, 3).
-		Where("status = ?", JobStatusDone).
-		Where("CAST(transcoded_mirrors AS jsonb)->>0 = ?", myHost).
-		Order("audio_analyzed_at ASC").
-		Limit(2).
-		Find(&uploads)
 
 	for _, upload := range uploads {
-		myIdx := slices.Index(upload.TranscodedMirrors, myHost)
-		if myIdx != 0 {
-			continue
+		cid := upload.TranscodeResults["320"]
+		_, isMine := ss.rendezvousAllHosts(cid)
+		if isMine && upload.AudioAnalysisErrorCount < MAX_TRIES {
+			work <- upload
 		}
-		myRank := myIdx + 1
-
-		logger := ss.logger.With("upload", upload.ID, "audio_analysis_status", upload.AudioAnalysisStatus, "my_rank", myRank)
-
-		if upload.AudioAnalysisStatus == JobStatusError {
-			logger.Info("retrying my errored audio analysis")
-		}
-		if upload.AudioAnalysisStatus == JobStatusTimeout {
-			logger.Info("retrying my timed out audio analysis")
-		}
-		upload.AudioAnalyzedAt = time.Now().UTC()
-		// op callback will enqueue the job
-		upload.Status = JobStatusAudioAnalysis
-		ss.crud.Update(upload)
 	}
 }
 
@@ -194,9 +53,9 @@ func (ss *MediorumServer) startAudioAnalysisWorker(n int, work chan *Upload) {
 		logger := ss.logger.With("upload", upload.ID)
 		logger.Debug("analyzing audio")
 		startTime := time.Now().UTC()
-		err := ss.analyzeAudio(upload)
+		err := ss.analyzeAudio(upload, time.Minute*10)
 		elapsedTime := time.Since(startTime)
-		logger = logger.With("duration", elapsedTime, "start_time", startTime)
+		logger = logger.With("duration", elapsedTime.String(), "start_time", startTime)
 
 		if err != nil {
 			logger.Warn("audio analysis failed", "err", err)
@@ -206,11 +65,15 @@ func (ss *MediorumServer) startAudioAnalysisWorker(n int, work chan *Upload) {
 	}
 }
 
-func (ss *MediorumServer) analyzeAudio(upload *Upload) error {
+func (ss *MediorumServer) analyzeAudio(upload *Upload, deadline time.Duration) error {
+	upload.AudioAnalyzedAt = time.Now().UTC()
 	upload.AudioAnalyzedBy = ss.Config.Self.Host
 	upload.Status = JobStatusBusyAudioAnalysis
-	ss.crud.Update(upload)
-	ctx := context.Background()
+	ss.crud.Update(upload) // maybe remove?
+
+	ctx, cancel := context.WithTimeout(context.Background(), deadline)
+	g, ctx := errgroup.WithContext(ctx)
+	defer cancel()
 
 	onError := func(err error) error {
 		upload.AudioAnalysisError = err.Error()
@@ -278,71 +141,39 @@ func (ss *MediorumServer) analyzeAudio(upload *Upload) error {
 		}
 	}
 
-	bpmChan := make(chan float64)
-	keyChan := make(chan string)
-	errorChan := make(chan error)
+	var bpm float64
+	var musicalKey string
 
 	// goroutine to analyze BPM
-	go func() {
-		bpm, err := ss.analyzeBPM(wavFile)
-		if err != nil {
-			logger.Error("failed to analyze BPM", "err", err)
-			errorChan <- fmt.Errorf("failed to analyze BPM: %w", err)
-			return
-		}
-		bpmChan <- bpm
-	}()
+	g.Go(func() error {
+		var err error
+		bpm, err = ss.analyzeBPM(wavFile)
+		return err
+	})
 
-	// goroutine to analyze musical key
-	go func() {
-		musicalKey, err := ss.analyzeKey(wavFile)
+	g.Go(func() error {
+		var err error
+		musicalKey, err = ss.analyzeKey(wavFile)
 		if err != nil {
-			logger.Error("failed to analyze key", "err", err)
-			errorChan <- fmt.Errorf("failed to analyze key: %w", err)
-			return
+			return err
 		}
 		if musicalKey == "" || musicalKey == "Unknown" {
 			err := fmt.Errorf("unexpected output: %s", musicalKey)
-			logger.Error("failed to analyze key", "err", err)
-			errorChan <- fmt.Errorf("failed to analyze key: %w", err)
-			return
+			return err
 		}
-		keyChan <- musicalKey
-	}()
+		return nil
+	})
 
-	var mu sync.Mutex
-	firstResult := true
-
-	for i := 0; i < 2; i++ {
-		select {
-		case bpm := <-bpmChan:
-			mu.Lock()
-			if upload.AudioAnalysisResults == nil {
-				upload.AudioAnalysisResults = &AudioAnalysisResult{}
-			}
-			upload.AudioAnalysisResults.BPM = bpm
-			if firstResult {
-				ss.crud.Update(upload)
-				firstResult = false
-			}
-			mu.Unlock()
-		case musicalKey := <-keyChan:
-			mu.Lock()
-			if upload.AudioAnalysisResults == nil {
-				upload.AudioAnalysisResults = &AudioAnalysisResult{}
-			}
-			upload.AudioAnalysisResults.Key = musicalKey
-			if firstResult {
-				ss.crud.Update(upload)
-				firstResult = false
-			}
-			mu.Unlock()
-		case err := <-errorChan:
-			return onError(err)
-		}
+	err = g.Wait()
+	if err != nil {
+		return onError(err)
 	}
 
 	// all analyses complete
+	upload.AudioAnalysisResults = &AudioAnalysisResult{
+		BPM: bpm,
+		Key: musicalKey,
+	}
 	upload.AudioAnalysisError = ""
 	upload.AudioAnalyzedAt = time.Now().UTC()
 	upload.AudioAnalysisStatus = JobStatusDone

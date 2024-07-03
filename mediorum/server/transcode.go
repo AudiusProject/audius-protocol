@@ -371,6 +371,9 @@ func (ss *MediorumServer) transcodeFullAudio(upload *Upload, temp *os.File, logg
 		return onError(err, upload.Status, "replicateFile")
 	}
 
+	// transcode server will retain transcode result for analysis
+	ss.replicateToMyBucket(resultHash, dest)
+
 	upload.TranscodeResults["320"] = resultKey
 
 	logger.Info("audio transcode done", "mirrors", upload.TranscodedMirrors)
@@ -520,8 +523,6 @@ func (ss *MediorumServer) transcode(upload *Upload) error {
 	defer temp.Close()
 	defer os.Remove(temp.Name())
 
-	nextJobStatus := JobStatusDone
-
 	switch JobTemplate(upload.Template) {
 	case JobTemplateImgSquare:
 		// 150x150, 480x480, 1000x1000
@@ -581,14 +582,13 @@ func (ss *MediorumServer) transcode(upload *Upload) error {
 				return err
 			}
 			// analyze audio for new full audio uploads
-			nextJobStatus = JobStatusAudioAnalysis
-			upload.AudioAnalyzedAt = time.Now().UTC()
+			ss.analyzeAudio(upload, time.Minute)
 		}
 	}
 
 	upload.TranscodeProgress = 1
 	upload.TranscodedAt = time.Now().UTC()
-	upload.Status = nextJobStatus
+	upload.Status = JobStatusDone
 	upload.Error = ""
 	ss.crud.Update(upload)
 
