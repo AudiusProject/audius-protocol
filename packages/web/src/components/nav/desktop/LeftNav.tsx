@@ -11,7 +11,7 @@ import {
   collectionsSocialActions,
   tracksSocialActions
 } from '@audius/common/store'
-import { Box, Flex, Scrollbar } from '@audius/harmony'
+import { Box, Flex, Scrollbar, spacing } from '@audius/harmony'
 import { ResizeObserver } from '@juggle/resize-observer'
 import { connect } from 'react-redux'
 import { RouteComponentProps, withRouter } from 'react-router-dom'
@@ -35,7 +35,6 @@ import {
 import { AccountDetails } from './AccountDetails'
 import { ConnectInstagram } from './ConnectInstagram'
 import { GroupHeader } from './GroupHeader'
-import styles from './LeftNav.module.css'
 import { LeftNavCTA } from './LeftNavCTA'
 import { LeftNavDroppable, LeftNavLink } from './LeftNavLink'
 import { NavHeader } from './NavHeader'
@@ -114,9 +113,9 @@ const LeftNav = (props: NavColumnProps) => {
   }, [])
 
   const profileCompletionMeter = (
-    <div className={styles.profileCompletionContainer}>
+    <Flex justifyContent='center'>
       <ConnectedProfileCompletionPane />
-    </div>
+    </Flex>
   )
 
   const navLoaded =
@@ -148,7 +147,9 @@ const LeftNav = (props: NavColumnProps) => {
           boxShadow:
             dragScrollingDirection === 'up'
               ? 'inset 0px 8px 5px -5px var(--tile-shadow-3)'
-              : 'inset 0px -8px 5px -5px var(--tile-shadow-3)',
+              : dragScrollingDirection === 'down'
+              ? 'inset 0px -8px 5px -5px var(--tile-shadow-3)'
+              : undefined,
           opacity: navLoaded ? 1 : 0,
           overflow: 'hidden',
           transition: 'opacity 0.3s ease-in-out, box-shadow 0.2s ease'
@@ -226,11 +227,16 @@ const LeftNav = (props: NavColumnProps) => {
           </DragAutoscroller>
         </Scrollbar>
       </Flex>
-      <div className={styles.navAnchor}>
+      <Flex
+        direction='column'
+        alignItems='center'
+        pt={spacing.l}
+        borderTop='default'
+      >
         {profileCompletionMeter}
         <LeftNavCTA />
         <NowPlayingArtworkTile />
-      </div>
+      </Flex>
     </Flex>
   )
 }

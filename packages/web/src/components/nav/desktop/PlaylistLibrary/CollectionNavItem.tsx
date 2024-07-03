@@ -200,7 +200,7 @@ export const CollectionNavItem = (props: CollectionNavItemProps) => {
                 position: 'relative'
               }}
             >
-              {!hasUpdate ? (
+              {hasUpdate ? (
                 <div css={{ position: 'absolute', left: '-12px' }}>
                   <PlaylistUpdateDot />
                 </div>
