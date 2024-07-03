@@ -1,6 +1,5 @@
 import { searchApiFetch } from '@audius/common/api'
 import { Track } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import {
   accountSelectors,
   cacheTracksSelectors,
@@ -13,10 +12,7 @@ import { trimToAlphaNumeric } from '@audius/common/utils'
 import { select, all, call } from 'typed-redux-saga'
 
 import { LineupSagas } from 'common/store/lineup/sagas'
-import {
-  getSearchResults,
-  getTagSearchResults
-} from 'common/store/pages/search-page/sagas'
+import { getTagSearchResults } from 'common/store/pages/search-page/sagas'
 import { isMobileWeb } from 'common/utils/isMobileWeb'
 
 const { getSearchTracksLineup, getSearchResultsPageTracks } =
@@ -47,46 +43,29 @@ function* getSearchPageResultsTracks({
       )
       results = tracks
     } else {
-      const getFeatureEnabled = yield* getContext('getFeatureEnabled')
+      const audiusBackend = yield* getContext('audiusBackendInstance')
+      const apiClient = yield* getContext('apiClient')
+      const reportToSentry = yield* getContext('reportToSentry')
+      const currentUserId = yield* select(getUserId)
 
-      const isSearchV2Enabled = yield* call(
-        getFeatureEnabled,
-        FeatureFlags.SEARCH_V2
-      )
-
-      if (isSearchV2Enabled) {
-        const audiusBackend = yield* getContext('audiusBackendInstance')
-        const apiClient = yield* getContext('apiClient')
-        const reportToSentry = yield* getContext('reportToSentry')
-        const currentUserId = yield* select(getUserId)
-
-        const { tracks } = yield* call(
-          searchApiFetch.getSearchResults,
-          {
-            currentUserId,
-            query,
-            category,
-            limit,
-            offset,
-            ...filters
-          },
-          {
-            audiusBackend,
-            apiClient,
-            reportToSentry,
-            dispatch
-          } as any
-        )
-        results = tracks as unknown as Track[]
-      } else {
-        const { tracks } = yield* call(getSearchResults, {
-          searchText: query,
-          kind: category,
+      const { tracks } = yield* call(
+        searchApiFetch.getSearchResults,
+        {
+          currentUserId,
+          query,
+          category,
           limit,
-          offset
-        })
-        results = tracks as unknown as Track[]
-      }
+          offset,
+          ...filters
+        },
+        {
+          audiusBackend,
+          apiClient,
+          reportToSentry,
+          dispatch
+        } as any
+      )
+      results = tracks as unknown as Track[]
     }
     if (results) return results
     return [] as Track[]
