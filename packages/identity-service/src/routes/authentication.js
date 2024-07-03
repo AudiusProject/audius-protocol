@@ -37,8 +37,6 @@ module.exports = function (app) {
       const body = req.body
       const headers = req.headers
 
-      req.logger.info({ body, headers }, "GOT REQUEST")
-
       if (body && body.iv && body.cipherText && body.lookupKey) {
         try {
           const transaction = await models.sequelize.transaction()
@@ -63,26 +61,20 @@ module.exports = function (app) {
             }
           }
 
-          req.logger.info({ walletAddress }, "got wallet addr")
-
           const isChangingEmail = body.email !== undefined && body.email !== null && typeof body.email === "string"
           const email = body.email
-          req.logger.info({ email, isChangingEmail }, "is changing email")
           if (isChangingEmail) {
             const otp = body.otp
 
             if (!otp) {
-              req.logger.info("sending otp")
               await sendOtp({ email, redis, sendgrid })
               return errorResponseForbidden('Missing otp')
             }
 
-            req.logger.info("validating otp")
             const isOtpValid = await validateOtp({ email, otp, redis })
             if (!isOtpValid) {
               return errorResponseBadRequest('Invalid credentials')
             }
-            req.logger.info("passed otp")
 
             // change email of user who's signature was passed in the call
             const authRecord = await models.Authentication.findOne({ where: { walletAddress }, transaction })
@@ -122,8 +114,6 @@ module.exports = function (app) {
               updatedAt: Date.now()
             })
           }
-
-          req.logger.info({ existingRecord }, "got existing record")
 
           const oldLookupKey = body.oldLookupKey
           if (oldLookupKey && oldLookupKey !== body.lookupKey) {
