@@ -100,11 +100,6 @@ export const useChangeEmailFormConfiguration = (onComplete: () => void) => {
       const libs = await audiusBackend.getAudiusLibsTyped()
 
       try {
-        // Try to change email
-        // await libs.identityService!.changeEmail({
-        //   email,
-        //   otp: sanitizedOtp
-        // })
         await libs.Account!.changeCredentials({
           newUsername: email,
           newPassword: password,
