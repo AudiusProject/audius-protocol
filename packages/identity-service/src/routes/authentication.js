@@ -73,6 +73,7 @@ module.exports = function (app) {
               )
             }
 
+            const oldLookupKey = body.oldLookupKey
             // if user has wallet connected to auth artifacts, compare old lookupkey with wallet address
             const oldArtifacts = await models.Authentication.findOne({
               where: { lookupKey: oldLookupKey }
