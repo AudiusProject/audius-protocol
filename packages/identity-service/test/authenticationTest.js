@@ -341,6 +341,8 @@ describe('test authentication routes', function () {
   })
 
   it('changes emails for the user', async function () {
+    const redis = app.get('redis')
+
     const iv = 'dbc1d6a0f87fdf108fb42ec6a5bee016'
     const cipherText = '371d5472aa8cb0e29626d55939bc7c3a56dd2c9bf5fa279b411a0cc52d8ddbb1052ff4564ee14171c406224bfaf2116304e4c4c46f9e183332c343e4dcf27284'
     const lookupKey = '937ae50c24d10abd257dafc5e3b75b78c425ad4a3901bc753acec5aa11cd6536'
@@ -362,6 +364,56 @@ describe('test authentication routes', function () {
     const newLookupKey = `${cipherText}-2`
     const newUsername = 'test+2@audius.co'
 
+    // attempt to trigger OTP with malformed request
+
+    // no signed headers
+    await request(app)
+      .post('/authentication')
+      .send({
+        iv: newIv,
+        cipherText: newCipherText,
+        lookupKey: newLookupKey,
+        oldLookupKey: lookupKey,
+        email: newUsername
+      })
+      .expect(400)
+
+    // no old lookup key
+    await request(app)
+      .post('/authentication')
+      .set('Encoded-Data-Message', 'Click sign to authenticate with identity service: 1719845800')
+      .set('Encoded-Data-Signature', '0x60029425041bdabf5f1805a5c41d889df480670a9db1a69f18e74f83650a490b6b36b17cc36cc9c71c915a451e24dde3657e96e198b29991361fdb8d2d46a4c11c')
+      .send({
+        iv: newIv,
+        cipherText: newCipherText,
+        lookupKey: newLookupKey,
+        email: newUsername
+      })
+      .expect(400)
+
+    // no new auth artifacts with signed headers
+    await request(app)
+      .post('/authentication')
+      .set('Encoded-Data-Message', 'Click sign to authenticate with identity service: 1719845800')
+      .set('Encoded-Data-Signature', '0x60029425041bdabf5f1805a5c41d889df480670a9db1a69f18e74f83650a490b6b36b17cc36cc9c71c915a451e24dde3657e96e198b29991361fdb8d2d46a4c11c')
+      .send({
+        email: newUsername
+      })
+      .expect(400)
+
+    // just email
+    await request(app)
+      .post('/authentication')
+      .send({
+        email: newUsername
+      })
+      .expect(400)
+
+    // expect otp not populated
+    let otp = await redis.get(`otp:${newUsername}`)
+    assert.strictEqual(otp, null)
+
+
     // trigger OTP from first POST
     await request(app)
       .post('/authentication')
@@ -376,8 +428,10 @@ describe('test authentication routes', function () {
       })
       .expect(403)
 
-    const redis = app.get('redis')
-    let otp = await redis.get(`otp:${newUsername}`)
+
+    otp = await redis.get(`otp:${newUsername}`)
+
+    // attempt to change email with OTP and malformed request
 
     await request(app)
       .post('/authentication')

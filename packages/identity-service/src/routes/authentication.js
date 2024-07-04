@@ -73,6 +73,11 @@ module.exports = function (app) {
               )
             }
 
+            // require signed headers for changing email
+            if (walletAddress === null) {
+              return errorResponseBadRequest('Invalid credentials')
+            }
+
             const oldLookupKey = body.oldLookupKey
             // if user has wallet connected to auth artifacts, compare old lookupkey with wallet address
             const oldArtifacts = await models.Authentication.findOne({
