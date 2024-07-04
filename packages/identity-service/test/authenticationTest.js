@@ -21,7 +21,8 @@ describe('test authentication routes', function () {
     cipherText = '00b1684fe58f95ef7bca1442681a61b8aa817a136d3c932dcee2bdcb59454205b73174e71b39fa1d532ee915b6d4ba24e8487603fa63e738de35d3505085a142',
     lookupKey = '9bdc91e1bb7ef60177131690b18349625778c14656dc17814945b52a3f07ac77',
     username = 'dheeraj@audius.co',
-    walletAddress = '0xaaaaaaaaaaaaaaaaaaaaaaaaa'
+    walletAddress = '0xaaaaaaaaaaaaaaaaaaaaaaaaa',
+    associateWallet = false
   } = {}) {
     await request(app).post('/authentication').send({
       iv,
@@ -36,6 +37,38 @@ describe('test authentication routes', function () {
 
     const authModel = await models.Authentication.findOne({ where: { lookupKey } })
     const userModel = await models.User.findOne({ where: { walletAddress } })
+
+    assert.strictEqual(authModel.walletAddress, null)
+
+    if (associateWallet) {
+      await request(app)
+        .get('/authentication')
+        .query({
+          lookupKey,
+          username
+        })
+        .expect(403)
+
+      const redis = app.get('redis')
+      let otp = await redis.get(`otp:${username}`)
+
+      await request(app)
+        .get('/authentication')
+        .query({
+          lookupKey,
+          username,
+          otp,
+        })
+        .expect(200)
+
+      const updatedAuthRecord = await models.Authentication.findOne({ where: { lookupKey } })
+      assert.strictEqual(updatedAuthRecord.walletAddress, walletAddress)
+
+      const updatedUserRecord = await models.User.findOne({ where: { walletAddress } })
+      assert.strictEqual(updatedUserRecord.email, username)
+
+      return [updatedAuthRecord, updatedUserRecord]
+    }
 
     return [authModel, userModel]
   }
@@ -350,13 +383,16 @@ describe('test authentication routes', function () {
     const walletAddress = '0x1ea101eccdc55a2db6196eff5440ece24ecb55af'
 
     // create user
-    await signUpUser({
+    const [authRecord, userRecord] = await signUpUser({
       iv,
       cipherText,
       lookupKey,
       username,
-      walletAddress
+      walletAddress,
+      associateWallet: true
     })
+
+    assert.strictEqual(authRecord.walletAddress, userRecord.walletAddress)
 
     // change email
     const newIv = `${iv}-2`
