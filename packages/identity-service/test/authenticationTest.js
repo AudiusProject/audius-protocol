@@ -515,6 +515,21 @@ describe('test authentication routes', function () {
       })
       .expect(400)
 
+    // right otp, correct signature that is derived from wrong wallet
+    await request(app)
+      .post('/authentication')
+      .set('Encoded-Data-Message', 'Click sign to authenticate with identity service: 1720116743')
+      .set('Encoded-Data-Signature', '0x4ccd14dce4bdf27c50cb81a29da33f4961c5e2a534275cd1a914304256c9412e481d99d553e457ba72a0bb9e92be8a84c1e6f39dfb70d01efe21e467a741cf4c1c')
+      .send({
+        iv: newIv,
+        cipherText: newCipherText,
+        lookupKey: newLookupKey,
+        oldLookupKey: lookupKey,
+        email: newUsername,
+        otp
+      })
+      .expect(400)
+
     await request(app)
       .post('/authentication')
       .set('Encoded-Data-Message', 'Click sign to authenticate with identity service: 1719845800')
