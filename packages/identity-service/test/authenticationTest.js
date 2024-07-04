@@ -498,10 +498,6 @@ describe('test authentication routes', function () {
     assert.strictEqual(newAuthModel.lookupKey, newLookupKey)
     assert.strictEqual(newUserModel.email, newUsername)
     assert.strictEqual(newUserModel.walletAddress, walletAddress)
-
-    // attempt to change email as nefarious user
-
-    // change email as good user again
   })
 
   // TODO: remove this test when old endpoint is taken out
