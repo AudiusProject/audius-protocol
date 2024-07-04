@@ -433,6 +433,52 @@ describe('test authentication routes', function () {
 
     // attempt to change email with OTP and malformed request
 
+    // no signed headers
+    await request(app)
+      .post('/authentication')
+      .send({
+        iv: newIv,
+        cipherText: newCipherText,
+        lookupKey: newLookupKey,
+        oldLookupKey: lookupKey,
+        email: newUsername,
+        otp
+      })
+      .expect(400)
+
+    // no old lookup key
+    await request(app)
+      .post('/authentication')
+      .set('Encoded-Data-Message', 'Click sign to authenticate with identity service: 1719845800')
+      .set('Encoded-Data-Signature', '0x60029425041bdabf5f1805a5c41d889df480670a9db1a69f18e74f83650a490b6b36b17cc36cc9c71c915a451e24dde3657e96e198b29991361fdb8d2d46a4c11c')
+      .send({
+        iv: newIv,
+        cipherText: newCipherText,
+        lookupKey: newLookupKey,
+        email: newUsername
+      })
+      .expect(400)
+
+    // no new auth artifacts with signed headers
+    await request(app)
+      .post('/authentication')
+      .set('Encoded-Data-Message', 'Click sign to authenticate with identity service: 1719845800')
+      .set('Encoded-Data-Signature', '0x60029425041bdabf5f1805a5c41d889df480670a9db1a69f18e74f83650a490b6b36b17cc36cc9c71c915a451e24dde3657e96e198b29991361fdb8d2d46a4c11c')
+      .send({
+        email: newUsername,
+        otp
+      })
+      .expect(400)
+
+    // just email
+    await request(app)
+      .post('/authentication')
+      .send({
+        email: newUsername,
+        otp
+      })
+      .expect(400)
+
     await request(app)
       .post('/authentication')
       .set('Encoded-Data-Message', 'Click sign to authenticate with identity service: 1719845800')
