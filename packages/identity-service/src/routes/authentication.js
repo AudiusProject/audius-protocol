@@ -67,6 +67,30 @@ module.exports = function (app) {
             typeof body.email === 'string'
           const email = body.email
           if (isChangingEmail) {
+            if (!body.oldLookupKey) {
+              return errorResponseBadRequest(
+                'Missing one of the required fields: oldLookupKey'
+              )
+            }
+
+            // if user has wallet connected to auth artifacts, compare old lookupkey with wallet address
+            const oldArtifacts = await models.Authentication.findOne({
+              where: { lookupKey: oldLookupKey }
+            })
+            if (!oldArtifacts) {
+              return errorResponseBadRequest('Invalid credentials')
+            }
+
+            if (
+              oldArtifacts.walletAddress !== undefined &&
+              oldArtifacts.walletAddress !== null
+            ) {
+              // if signature doesn't match old artifacts
+              if (walletAddress !== oldArtifacts.walletAddress) {
+                return errorResponseBadRequest('Invalid credentials')
+              }
+            }
+
             const otp = body.otp
 
             if (!otp) {
@@ -80,16 +104,15 @@ module.exports = function (app) {
             }
 
             // change email of user who's signature was passed in the call
-            const authRecord = await models.Authentication.findOne({
-              where: { walletAddress },
-              transaction
-            })
-            const userRecord = await models.User.findOne({
-              where: { walletAddress },
-              transaction
-            })
+            // require wallet address from signature when updating email
+            if (walletAddress !== null) {
+              const userRecord = await models.User.findOne({
+                where: { walletAddress },
+                transaction
+              })
 
-            await userRecord.update({ email }, { transaction })
+              await userRecord.update({ email }, { transaction })
+            }
           }
 
           // Check if an existing record exists but is soft deleted (since the Authentication model is 'paranoid'
@@ -129,7 +152,6 @@ module.exports = function (app) {
               { transaction }
             )
           }
-
           await transaction.commit()
           return successResponse()
         } catch (err) {

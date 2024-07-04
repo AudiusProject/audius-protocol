@@ -16,18 +16,22 @@ describe('test authentication routes', function () {
     await server.close()
   })
 
-  async function signUpUser() {
+  async function signUpUser({
+    iv = 'a7407b91ccb1a09a270e79296c88a990',
+    cipherText = '00b1684fe58f95ef7bca1442681a61b8aa817a136d3c932dcee2bdcb59454205b73174e71b39fa1d532ee915b6d4ba24e8487603fa63e738de35d3505085a142',
+    lookupKey = '9bdc91e1bb7ef60177131690b18349625778c14656dc17814945b52a3f07ac77',
+    username = 'dheeraj@audius.co',
+    walletAddress = '0xaaaaaaaaaaaaaaaaaaaaaaaaa'
+  } = {}) {
     await request(app).post('/authentication').send({
-      iv: 'a7407b91ccb1a09a270e79296c88a990',
-      cipherText:
-        '00b1684fe58f95ef7bca1442681a61b8aa817a136d3c932dcee2bdcb59454205b73174e71b39fa1d532ee915b6d4ba24e8487603fa63e738de35d3505085a142',
-      lookupKey:
-        '9bdc91e1bb7ef60177131690b18349625778c14656dc17814945b52a3f07ac77'
+      iv,
+      cipherText,
+      lookupKey
     })
 
     await request(app).post('/user').send({
-      username: 'dheeraj@audius.co',
-      walletAddress: '0xaaaaaaaaaaaaaaaaaaaaaaaaa'
+      username,
+      walletAddress
     })
   }
 
@@ -320,5 +324,33 @@ describe('test authentication routes', function () {
 
     await updatedAuthRecord.destroy()
     await userRecord.destroy()
+  })
+
+  it('changes emails for the user', async function () {
+    const iv = 'dbc1d6a0f87fdf108fb42ec6a5bee016'
+    const cipherText = '371d5472aa8cb0e29626d55939bc7c3a56dd2c9bf5fa279b411a0cc52d8ddbb1052ff4564ee14171c406224bfaf2116304e4c4c46f9e183332c343e4dcf27284'
+    const lookupKey = '937ae50c24d10abd257dafc5e3b75b78c425ad4a3901bc753acec5aa11cd6536'
+    const username = "test+1@audius.co"
+    const walletAddress = '0x1ea101eccdc55a2db6196eff5440ece24ecb55af'
+
+    // create user
+    await signUpUser({
+      iv,
+      cipherText,
+      lookupKey,
+      username,
+      walletAddress
+    })
+
+    // change email
+
+    // attempt to change email as nefarious user
+
+    // change email as good user again
+  })
+
+  // TODO: remove this test when old endpoint is taken out
+  it('changes email for the user, backwards compat', async function () {
+
   })
 })
