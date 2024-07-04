@@ -550,9 +550,4 @@ describe('test authentication routes', function () {
     assert.strictEqual(newUserModel.email, newUsername)
     assert.strictEqual(newUserModel.walletAddress, walletAddress)
   })
-
-  // TODO: remove this test when old endpoint is taken out
-  it('changes email for the user, backwards compat', async function () {
-
-  })
 })
