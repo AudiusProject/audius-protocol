@@ -17,6 +17,7 @@ import { SearchBarV2 } from './SearchBarV2'
 import { SearchCatalogTile } from './SearchCatalogTile'
 import { SearchCategoriesAndFilters } from './SearchCategoriesAndFilters'
 import {
+  FilterBpmScreen,
   FilterGenreScreen,
   FilterMoodScreen,
   FilterMusicalKeyScreen
@@ -77,6 +78,7 @@ export const SearchScreenStack = () => {
           <Stack.Screen name='FilterMood' component={FilterMoodScreen} />
           <Stack.Screen name='FilterGenre' component={FilterGenreScreen} />
           <Stack.Screen name='FilterKey' component={FilterMusicalKeyScreen} />
+          <Stack.Screen name='FilterBpm' component={FilterBpmScreen} />
         </Stack.Group>
       </Stack.Navigator>
     </SearchContext.Provider>
