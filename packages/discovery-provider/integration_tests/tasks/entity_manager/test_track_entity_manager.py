@@ -1437,6 +1437,181 @@ def test_access_conditions(app, mocker):
         assert track.track_id == TRACK_ID_OFFSET + len(metadatas) - 1
 
 
+def test_update_access_conditions(app, mocker):
+    "Tests that update track transactions modifying access conditions will pass"
+    with app.app_context():
+        db = get_db()
+        web3 = Web3()
+        challenge_event_bus: ChallengeEventBus = setup_challenge_bus()
+        update_task = UpdateTask(web3, challenge_event_bus)
+
+    collectible_gate = {
+        "nft_collection": {
+            "chain": "eth",
+            "standard": "ERC721",
+            "address": "some-nft-collection-address",
+            "name": "some nft collection name",
+            "slug": "some-nft-collection",
+            "imageUrl": "some-nft-collection-image-url",
+            "externalLink": "some-nft-collection-external-link",
+        }
+    }
+    follow_gate = {"follow_user_id": 1}
+    usdc_gate_1 = {
+        "usdc_purchase": {"price": 100, "splits": [{"percentage": 100.0, "user_id": 1}]}
+    }
+
+    metadatas = {
+        "UpdateToFollowGated": {
+            "track_id": TRACK_ID_OFFSET,
+            "is_stream_gated": True,
+            "stream_conditions": follow_gate,
+            "is_download_gated": True,
+            "download_conditions": follow_gate,
+        },
+        "UpdateToUSDCGated": {
+            "track_id": TRACK_ID_OFFSET + 1,
+            "owner_id": 1,
+            "is_stream_gated": True,
+            "stream_conditions": usdc_gate_1,
+            "is_download_gated": True,
+            "download_conditions": usdc_gate_1,
+        },
+        "FollowGatedToFree": {
+            "track_id": TRACK_ID_OFFSET + 2,
+            "is_stream_gated": False,
+            "stream_conditions": None,
+            "is_download_gated": False,
+            "download_conditions": None,
+        },
+        "HiddenUpdateToFollowGated": {
+            "track_id": TRACK_ID_OFFSET + 3,
+            "is_stream_gated": True,
+            "stream_conditions": collectible_gate,
+            "is_download_gated": True,
+            "download_conditions": collectible_gate,
+        },
+    }
+
+    metadata_keys = list(metadatas.keys())
+    tx_receipts = {
+        (key): [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": TRACK_ID_OFFSET + metadata_keys.index(key),
+                        "_entityType": "Track",
+                        "_userId": 1,
+                        "_action": "Update",
+                        "_metadata": f'{{"cid": "", "data": {json.dumps(value)}}}',
+                        "_signer": "user1wallet",
+                    }
+                )
+            }
+        ]
+        for key, value in metadatas.items()
+    }
+
+    entity_manager_txs = [
+        AttributeDict({"transactionHash": update_task.web3.to_bytes(text=tx_receipt)})
+        for tx_receipt in tx_receipts
+    ]
+
+    def get_events_side_effect(_, tx_receipt):
+        return tx_receipts[tx_receipt["transactionHash"].decode("utf-8")]
+
+    mocker.patch(
+        "src.tasks.entity_manager.entity_manager.get_entity_manager_events_tx",
+        side_effect=get_events_side_effect,
+        autospec=True,
+    )
+
+    entities = {
+        "users": [
+            {"user_id": 1, "handle": "user-1", "wallet": "user1wallet"},
+        ],
+        "tracks": [
+            {  # non-gated
+                "track_id": TRACK_ID_OFFSET,
+                "owner_id": 1,
+                "is_stream_gated": False,
+                "stream_conditions": None,
+                "is_download_gated": False,
+                "download_conditions": None,
+            },
+            {  # follow-gated
+                "track_id": TRACK_ID_OFFSET + 1,
+                "owner_id": 1,
+                "is_stream_gated": True,
+                "stream_conditions": follow_gate,
+                "is_download_gated": True,
+                "download_conditions": follow_gate,
+            },
+            {  # follow-gated (to be changed to free)
+                "track_id": TRACK_ID_OFFSET + 2,
+                "owner_id": 1,
+                "is_stream_gated": True,
+                "stream_conditions": follow_gate,
+                "is_download_gated": True,
+                "download_conditions": follow_gate,
+            },
+            {  # hidden non-gated
+                "track_id": TRACK_ID_OFFSET + 3,
+                "owner_id": 1,
+                "is_unlisted": True,
+                "is_stream_gated": False,
+                "stream_conditions": None,
+                "is_download_gated": False,
+                "download_conditions": None,
+            },
+        ],
+    }
+    populate_mock_db(db, entities)
+
+    with db.scoped_session() as session:
+        entity_manager_update(
+            update_task,
+            session,
+            entity_manager_txs,
+            block_number=0,
+            block_timestamp=1585336422,
+            block_hash=hex(0),
+        )
+
+        follow_gated: Track = (
+            session.query(Track).filter(Track.track_id == TRACK_ID_OFFSET).first()
+        )
+        assert follow_gated.is_stream_gated == True
+        assert follow_gated.stream_conditions == follow_gate
+        assert follow_gated.is_download_gated == True
+        assert follow_gated.download_conditions == follow_gate
+
+        usdc_gated: Track = (
+            session.query(Track).filter(Track.track_id == TRACK_ID_OFFSET + 1).first()
+        )
+        assert usdc_gated.is_stream_gated == True
+        assert usdc_gated.stream_conditions == usdc_gate_1
+        assert usdc_gated.is_download_gated == True
+        assert usdc_gated.download_conditions == usdc_gate_1
+
+        free: Track = (
+            session.query(Track).filter(Track.track_id == TRACK_ID_OFFSET + 2).first()
+        )
+        assert free.is_stream_gated == False
+        assert free.stream_conditions == None
+        assert free.is_download_gated == False
+        assert free.download_conditions == None
+
+        hidden_follow_gated: Track = (
+            session.query(Track).filter(Track.track_id == TRACK_ID_OFFSET + 3).first()
+        )
+        assert hidden_follow_gated.is_unlisted == True
+        assert hidden_follow_gated.is_stream_gated == True
+        assert hidden_follow_gated.stream_conditions == collectible_gate
+        assert hidden_follow_gated.is_download_gated == True
+        assert hidden_follow_gated.download_conditions == collectible_gate
+
+
 def test_remixability(app, mocker):
     "Tests that tracks cannot have invalid access stream/download conditions"
     with app.app_context():
