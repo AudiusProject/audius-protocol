@@ -30,7 +30,7 @@ export const ReleaseDateField = () => {
           futureDatesOnly
         />
         <Flex gap='l'>
-          <Box flex={1}>
+          <Box>
             <HarmonyTextField
               name='releaseDateTime'
               label={messages.timeLabel}
@@ -47,7 +47,7 @@ export const ReleaseDateField = () => {
               }}
             />
           </Box>
-          <Box flex={1}>
+          <Box>
             <SelectField
               label={messages.meridianLabel}
               placeholder={messages.meridianPlaceholder}
