@@ -1487,9 +1487,9 @@ def test_update_access_conditions(app, mocker):
         "HiddenUpdateToFollowGated": {
             "track_id": TRACK_ID_OFFSET + 3,
             "is_stream_gated": True,
-            "stream_conditions": follow_gate,
+            "stream_conditions": collectible_gate,
             "is_download_gated": True,
-            "download_conditions": follow_gate,
+            "download_conditions": collectible_gate,
         },
     }
 
@@ -1607,9 +1607,9 @@ def test_update_access_conditions(app, mocker):
         )
         assert hidden_follow_gated.is_unlisted == True
         assert hidden_follow_gated.is_stream_gated == True
-        assert hidden_follow_gated.stream_conditions == follow_gate
+        assert hidden_follow_gated.stream_conditions == collectible_gate
         assert hidden_follow_gated.is_download_gated == True
-        assert hidden_follow_gated.download_conditions == follow_gate
+        assert hidden_follow_gated.download_conditions == collectible_gate
 
 
 def test_remixability(app, mocker):
