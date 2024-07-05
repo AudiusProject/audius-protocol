@@ -44,14 +44,16 @@ export const SearchScreenV2 = () => {
   return (
     <Screen topbarRight={<SearchBarV2 />} headerTitle={null} variant='white'>
       <SearchCategoriesAndFilters />
-      {!showSearchResults ? (
-        <Flex direction='column' alignItems='center' gap='xl'>
-          <SearchCatalogTile />
-          <RecentSearches />
-        </Flex>
-      ) : (
-        <SearchResults />
-      )}
+      <Flex flex={1}>
+        {!showSearchResults ? (
+          <Flex direction='column' alignItems='center' gap='xl'>
+            <SearchCatalogTile />
+            <RecentSearches />
+          </Flex>
+        ) : (
+          <SearchResults />
+        )}
+      </Flex>
     </Screen>
   )
 }
