@@ -40,7 +40,7 @@ type SearchItemContainerProps = {
 } & SearchItemProps
 
 const SearchItemContainer = (props: SearchItemContainerProps) => {
-  const { children, to, icon = IconCaretRight, onPressIcon } = props
+  const { children, to, icon: Icon = IconCaretRight, onPressIcon } = props
   const linkProps = useLinkProps({ to })
 
   return (
@@ -54,13 +54,16 @@ const SearchItemContainer = (props: SearchItemContainerProps) => {
         gap='m'
       >
         {children}
-        <IconButton
-          aria-label={messages.remove}
-          icon={icon}
-          color='subdued'
-          size='s'
-          onPress={onPressIcon}
-        />
+        {onPressIcon ? (
+          <IconButton
+            icon={Icon}
+            color='subdued'
+            size='s'
+            onPress={onPressIcon}
+          />
+        ) : (
+          <Icon size='s' color='subdued' />
+        )}
       </Flex>
     </TouchableOpacity>
   )
