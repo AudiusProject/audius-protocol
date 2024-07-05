@@ -68,8 +68,9 @@ export const AllResults = () => {
     [data]
   )
 
+  // TODO: we should add a better loading state here
   return (
-    <Flex onTouchStart={Keyboard.dismiss} pt='l'>
+    <Flex onTouchStart={Keyboard.dismiss}>
       <WithLoader loading={status === Status.LOADING}>
         <SectionList<SearchItemType>
           keyboardShouldPersistTaps='always'
@@ -82,7 +83,7 @@ export const AllResults = () => {
             </Flex>
           )}
           renderSectionHeader={({ section: { title } }) => (
-            <Flex ph='l'>
+            <Flex ph='l' mt='l'>
               <SearchSectionHeader title={title} />
             </Flex>
           )}
