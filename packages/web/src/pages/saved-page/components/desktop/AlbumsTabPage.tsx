@@ -67,7 +67,7 @@ export const AlbumsTabPage = () => {
       ?.map(({ playlist_id }) => {
         return <CollectionCard key={playlist_id} id={playlist_id} size='m' />
       })
-  }, [albums])
+  }, [albums, selectedCategory])
 
   if (isLoadingInitial) {
     return <LoadingSpinner className={styles.spinner} />

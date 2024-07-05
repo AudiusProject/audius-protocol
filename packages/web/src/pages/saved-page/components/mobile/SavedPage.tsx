@@ -11,14 +11,7 @@ import {
   useGatedContentAccessMap,
   useDebouncedCallback
 } from '@audius/common/hooks'
-import {
-  statusIsNotFinalized,
-  ID,
-  UID,
-  Lineup,
-  Collection,
-  UserCollectionMetadata
-} from '@audius/common/models'
+import { statusIsNotFinalized, ID, UID, Lineup } from '@audius/common/models'
 import {
   savedPageSelectors,
   LibraryCategory,

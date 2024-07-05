@@ -54,6 +54,7 @@ const ConnectedTrackListItem = (props: ConnectedTrackListItemProps) => {
     currentUserId,
     ddexApp,
     hasStreamAccess,
+    isUnlisted,
     isLocked,
     isReposted,
     isSaved,
@@ -80,12 +81,12 @@ const ConnectedTrackListItem = (props: ConnectedTrackListItemProps) => {
       isPurchase && !hasStreamAccess && !isDeleted
         ? OverflowAction.PURCHASE_TRACK
         : null,
-      isLocked
+      isLocked || isUnlisted
         ? null
         : isReposted
         ? OverflowAction.UNREPOST
         : OverflowAction.REPOST,
-      isLocked
+      isLocked || isUnlisted
         ? null
         : isSaved
         ? OverflowAction.UNFAVORITE
