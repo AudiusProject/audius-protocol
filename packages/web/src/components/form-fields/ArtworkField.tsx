@@ -1,5 +1,6 @@
 import { useState } from 'react'
 
+import { EditPlaylistValues } from '@audius/common/store'
 import { getErrorMessage } from '@audius/common/utils'
 import { useField, useFormikContext } from 'formik'
 
@@ -9,7 +10,6 @@ import UploadArtwork, {
   UploadArtworkProps
 } from 'components/upload/UploadArtwork'
 import { resizeImage } from 'utils/imageProcessingUtil'
-import { EditPlaylistValues } from '@audius/common/store'
 
 type ArtworkFieldProps = Partial<UploadArtworkProps> & {
   name: string
