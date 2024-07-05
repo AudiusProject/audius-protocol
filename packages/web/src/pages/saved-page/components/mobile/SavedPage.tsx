@@ -322,7 +322,7 @@ const AlbumCardLineup = () => {
       // Hide private albums unless category is purchase.
       (a) => selectedCategory === LibraryCategory.Purchase || !a.is_private
     )
-    .map((a) => a.playlist_id)
+    ?.map((a) => a.playlist_id)
 
   const emptyAlbumsHeader = useSelector((state: CommonState) => {
     if (selectedCategory === LibraryCategory.All) {
@@ -462,7 +462,7 @@ const PlaylistCardLineup = ({
       // Hide private playlists.
       (a) => !a.is_private
     )
-    .map((p) => p.playlist_id)
+    ?.map((p) => p.playlist_id)
 
   const emptyPlaylistsHeader = useSelector((state: CommonState) => {
     if (selectedCategory === LibraryCategory.All) {

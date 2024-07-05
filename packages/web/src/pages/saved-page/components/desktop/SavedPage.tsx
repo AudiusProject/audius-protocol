@@ -122,10 +122,12 @@ const SavedPage = ({
 }: SavedPageProps) => {
   const { mainContentRef } = useContext(MainContentContext)
   const initFetch = useSelector(getInitialFetchStatus)
-  const emptyTracksHeader = useSelector((state: CommonState) => {
-    const selectedCategory = getCategory(state, {
+  const selectedCategory = useSelector((state: CommonState) => {
+    return getCategory(state, {
       currentTab: SavedPageTabs.TRACKS
     })
+  })
+  const emptyTracksHeader = useSelector((state: CommonState) => {
     if (selectedCategory === LibraryCategory.All) {
       return emptyStateMessages.emptyTrackAllHeader
     } else if (selectedCategory === LibraryCategory.Favorite) {
@@ -143,6 +145,11 @@ const SavedPage = ({
       // Add in some empty rows to show user that more are loading in
       data = data.concat(new Array(5).fill({ kind: Kind.EMPTY }))
     }
+    data = data.filter(
+      (entry) =>
+        // Hide unlisted tracks unless category is purchase.
+        selectedCategory === LibraryCategory.Purchase || !entry.is_unlisted
+    )
     return [data, playingIndex]
   }
 
