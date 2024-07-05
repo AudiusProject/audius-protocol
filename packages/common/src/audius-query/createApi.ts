@@ -7,6 +7,7 @@ import { produce } from 'immer'
 import { isEqual, mapValues } from 'lodash'
 import { denormalize, normalize } from 'normalizr'
 import { useDispatch, useSelector } from 'react-redux'
+import { useDebounce } from 'react-use'
 import { Dispatch } from 'redux'
 
 import { useBooleanOnce } from '~/hooks/useBooleanOnce'
@@ -454,19 +455,23 @@ const buildEndpointHooks = <
       fetchData(fetchArgs, endpointName, endpoint, actions, context)
     }, [context, fetchArgs, hookOptions?.disabled, status])
 
-    useEffect(() => {
-      if (isInitialValue) {
-        dispatch(
-          // @ts-ignore
-          actions[`fetch${capitalize(endpointName)}Succeeded`]({
-            fetchArgs,
-            normalizedData
-          }) as FetchSucceededAction
-        )
-      }
+    useDebounce(
+      () => {
+        if (isInitialValue) {
+          dispatch(
+            // @ts-ignore
+            actions[`fetch${capitalize(endpointName)}Succeeded`]({
+              fetchArgs,
+              normalizedData
+            }) as FetchSucceededAction
+          )
+        }
 
-      fetchWrapped()
-    }, [isInitialValue, dispatch, fetchArgs, normalizedData, fetchWrapped])
+        fetchWrapped()
+      },
+      hookOptions?.debounce ?? 0,
+      [isInitialValue, dispatch, fetchArgs, normalizedData, fetchWrapped]
+    )
 
     if (endpoint.options?.schemaKey) {
       cachedData = cachedData?.[endpoint.options?.schemaKey]

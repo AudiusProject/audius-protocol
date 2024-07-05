@@ -138,6 +138,7 @@ export type QueryHookOptions = {
   debug?: boolean
   /** Force a fetch on first render of this hook instance (if a fetch is not already in progress) */
   force?: boolean
+  debounce?: number
 }
 
 export type QueryHookResults<Data> = {
