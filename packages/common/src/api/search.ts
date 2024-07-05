@@ -1,5 +1,6 @@
+import { Mood } from '@audius/sdk'
+
 import { createApi } from '~/audius-query'
-import { ModalSource } from '~/models'
 import { ID } from '~/models/Identifiers'
 import { SearchKind } from '~/store'
 import { Genre } from '~/utils'
@@ -8,7 +9,7 @@ export type SearchCategory = 'all' | 'tracks' | 'albums' | 'playlists' | 'users'
 
 export type SearchFilters = {
   genre?: Genre
-  mood?: ModalSource
+  mood?: Mood
   bpm?: string
   key?: string
   isVerified?: boolean
