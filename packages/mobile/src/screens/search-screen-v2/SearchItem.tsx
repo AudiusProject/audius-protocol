@@ -51,10 +51,9 @@ const SearchItemContainer = (props: SearchItemContainerProps) => {
         justifyContent='space-between'
         alignItems='center'
         pv='s'
+        gap='m'
       >
-        <Flex direction='row' gap='m'>
-          {children}
-        </Flex>
+        {children}
         <IconButton
           aria-label={messages.remove}
           icon={icon}
@@ -104,8 +103,8 @@ export const SearchItemTrack = (props: SearchItemProps) => {
           width: spacing.unit10
         }}
       />
-      <Flex direction='column' alignItems='flex-start'>
-        <Text variant='body' size='s'>
+      <Flex direction='column' alignItems='flex-start' flex={1}>
+        <Text variant='body' size='s' numberOfLines={1}>
           {title}
         </Text>
         <Flex direction='row' alignItems='baseline'>
@@ -150,8 +149,8 @@ export const SearchItemCollection = (props: SearchItemProps) => {
         size={SquareSizes.SIZE_150_BY_150}
         style={{ height: spacing.unit10, width: spacing.unit10 }}
       />
-      <Flex direction='column' alignItems='flex-start'>
-        <Text variant='body' size='s'>
+      <Flex direction='column' alignItems='flex-start' flex={1}>
+        <Text variant='body' size='s' numberOfLines={1}>
           {playlist_name}
         </Text>
         <Flex direction='row' alignItems='baseline'>
@@ -184,7 +183,7 @@ const SearchItemUser = (props: SearchItemProps) => {
   return (
     <SearchItemContainer to={profilePage(handle)} {...props}>
       <ProfilePicture userId={id} w={40} />
-      <Flex direction='column' alignItems='flex-start'>
+      <Flex direction='column' alignItems='flex-start' flex={1}>
         <UserLink userId={user.user_id} size='s' badgeSize='xs' />
         <Text variant='body' size='xs' color='subdued'>
           Profile
