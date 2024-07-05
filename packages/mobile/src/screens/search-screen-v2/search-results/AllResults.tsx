@@ -69,7 +69,7 @@ export const AllResults = () => {
   )
 
   return (
-    <Flex onTouchStart={Keyboard.dismiss}>
+    <Flex onTouchStart={Keyboard.dismiss} pt='l'>
       <WithLoader loading={status === Status.LOADING}>
         <SectionList<SearchItemType>
           keyboardShouldPersistTaps='always'
