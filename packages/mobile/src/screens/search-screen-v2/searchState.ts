@@ -83,7 +83,8 @@ export const useGetSearchResults = <C extends SearchCategory>(
       query,
       ...filters,
       category,
-      currentUserId
+      currentUserId,
+      limit: category === 'all' ? 5 : undefined
     },
     { debounce: 500 }
   )
