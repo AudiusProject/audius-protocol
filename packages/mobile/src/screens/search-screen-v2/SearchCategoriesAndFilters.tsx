@@ -82,8 +82,12 @@ export const SearchCategoriesAndFilters = () => {
         const newFilters = { ...filters }
         delete newFilters[filter]
         setFilters(newFilters)
+      } else if (filterInfoMap[filter].screen) {
+        navigation.navigate(filterInfoMap[filter].screen)
       } else {
-        navigation.navigate(filterInfoMap[filter].screen || 'Search')
+        const newFilters = { ...filters }
+        newFilters[filter] = true
+        setFilters(newFilters)
       }
     },
     [filters, navigation, setFilters]
