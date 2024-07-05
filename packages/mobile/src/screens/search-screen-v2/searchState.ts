@@ -78,12 +78,15 @@ export const useGetSearchResults = <C extends SearchCategory>(
 ): SearchResultsType<C> => {
   const { filters, query } = useContext(SearchContext)
   const currentUserId = useSelector(getUserId)
-  const { data, status } = useGetSearchResultsApi({
-    query,
-    ...filters,
-    category,
-    currentUserId
-  })
+  const { data, status } = useGetSearchResultsApi(
+    {
+      query,
+      ...filters,
+      category,
+      currentUserId
+    },
+    { debounce: 500 }
+  )
 
   if (category === 'all') {
     return { data, status } as SearchResultsType<C>

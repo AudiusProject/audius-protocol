@@ -39,7 +39,9 @@ export const schemas = {
   collection: collectionSchema,
   users: new schema.Array(userSchema),
   tracks: new schema.Array(trackSchema),
-  collections: new schema.Array(collectionSchema)
+  collections: new schema.Array(collectionSchema),
+  albums: new schema.Array(collectionSchema),
+  playlists: new schema.Array(collectionSchema)
 }
 
 export const apiResponseSchema = new schema.Object(schemas)
