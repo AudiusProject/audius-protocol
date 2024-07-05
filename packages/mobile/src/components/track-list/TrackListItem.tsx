@@ -289,12 +289,12 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
   const handleOpenOverflowMenu = useCallback(() => {
     const overflowActions = [
       OverflowAction.SHARE,
-      !isTrackOwner && !isLocked && (!isUnlisted || has_current_user_saved)
+      !isTrackOwner && !isLocked
         ? has_current_user_saved
           ? OverflowAction.UNFAVORITE
           : OverflowAction.FAVORITE
         : null,
-      !isTrackOwner && !isLocked && (!isUnlisted || has_current_user_reposted)
+      !isTrackOwner && !isLocked
         ? has_current_user_reposted
           ? OverflowAction.UNREPOST
           : OverflowAction.REPOST
@@ -329,7 +329,6 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
   }, [
     isTrackOwner,
     isLocked,
-    isUnlisted,
     has_current_user_saved,
     has_current_user_reposted,
     isDeleted,

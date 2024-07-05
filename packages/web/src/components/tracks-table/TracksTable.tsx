@@ -316,8 +316,7 @@ export const TracksTable = ({
         track.is_delete || track._marked_deleted || !!track.user?.is_deactivated
       const isOwner = track.owner_id === userId
       const isUnlisted = track.is_unlisted
-      const isFavorited = track.has_current_user_saved
-      if (isLocked || deleted || isOwner || (isUnlisted && !isFavorited)) {
+      if (isLocked || deleted || isOwner || isUnlisted) {
         return null
       }
 
@@ -352,9 +351,8 @@ export const TracksTable = ({
       const deleted =
         track.is_delete || track._marked_deleted || !!track.user?.is_deactivated
       const isUnlisted = track.is_unlisted
-      const isReposted = track.has_current_user_reposted
       const isOwner = track.owner_id === userId
-      if (isLocked || deleted || isOwner || (isUnlisted && !isReposted)) {
+      if (isLocked || deleted || isOwner || isUnlisted) {
         return null
       }
 
