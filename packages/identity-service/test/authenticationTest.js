@@ -357,7 +357,40 @@ describe('test authentication routes', function () {
 
     // validateFingerprint is called asynchronously and not awaited.
     // This should be plenty of time since the dependency is mocked in test/lib/app.js
-    await new Promise(r => setTimeout(r, 200));
+    await new Promise(r => setTimeout(r, 100));
+
+    await request(app)
+      .get('/authentication')
+      .query({
+        lookupKey:
+          '9bdc91e1bb7ef60177131690b18349625778c14656dc17814945b52a3f07ac77',
+        username: 'dheeraj@audius.co',
+        visitorId
+      })
+      .expect(200)
+
+    // a valid visitorId should not allow login with an invalid email
+    await request(app)
+      .get('/authentication')
+      .query({
+        lookupKey:
+          '9bdc91e1bb7ef60177131690b18349625778c14656dc17814945b52a3f07ac77',
+        username: 'wrongemail@audius.co',
+        visitorId
+      })
+      .expect(400)
+
+    // a valid visitorId should not allow login with an invalid email, even with otp present
+    await request(app)
+      .get('/authentication')
+      .query({
+        lookupKey:
+          '9bdc91e1bb7ef60177131690b18349625778c14656dc17814945b52a3f07ac77',
+        username: 'wrongemail@audius.co',
+        visitorId,
+        otp
+      })
+      .expect(400)
 
     fpRecord = await models.Fingerprints.findOne({ where: { visitorId } })
     assert.ok(fpRecord)

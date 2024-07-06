@@ -30,7 +30,7 @@ async function getApp () {
       return {
         visitorId,
         visits: [{
-          confidence: { score: 0.8 },
+          confidence: { score: 0.8 }, // arbitrary non-perfect score
           timestamp: Date.now(),
           tag: {
             origin: 'web'

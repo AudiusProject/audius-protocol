@@ -232,6 +232,7 @@ export const signUpFailed = ({
  * Attemp sign-in to the account
  * @param email account email
  * @param password account password
+ * @param? visitorId fingerprint ID
  * @param? otp account otp
  */
 export function signIn(

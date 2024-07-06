@@ -13,8 +13,31 @@ const OTP_BYPASS_EMAILS = new Set([
   'fb@audius.co'
 ])
 
-const bypassOtp = (email) => {
-  return OTP_BYPASS_EMAILS.has(email)
+const requiresOtp = async ({ email, visitorId }) => {
+  if (OTP_BYPASS_EMAILS.has(email)) {
+    return false
+  } else if (!visitorId) {
+    return true
+  } else {
+    const userRecord = await models.User.findOne({
+      where: { email }
+    })
+    if (!userRecord || userRecord.blockchainUserId === null) {
+      return true
+    }
+    const sixMonthsAgo = new Date()
+    sixMonthsAgo.setDate(-180)
+    const verifiedFp = await models.Fingerprints.findOne({
+      where: {
+        userId: userRecord.blockchainUserId,
+        visitorId,
+        updatedAt: {
+          [Op.gt]: sixMonthsAgo
+        }
+      }
+    })
+    return !verifiedFp
+  }
 }
 
 const generateOtp = () => {
@@ -36,26 +59,12 @@ const validateOtp = async ({ email, otp, redis }) => {
   return otp === storedOtp
 }
 
-const shouldSendOtp = async ({ email, redis, visitorId }) => {
-  const { blockchainUserId: userId } = await models.User.findOne({
-    where: { email }
-  })
-  const sixMonthsAgo = new Date()
-  sixMonthsAgo.setDate(-180)
-  const verifiedFp = await models.Fingerprints.findOne({
-    where: {
-      userId,
-      visitorId,
-      updatedAt: {
-        [Op.gt]: sixMonthsAgo
-      }
-    }
-  })
+const shouldSendOtp = async ({ email, redis }) => {
   const storedOtp = await redis.get(`${OTP_REDIS_PREFIX}:${email}`)
   const otpCount = await redis.get(
     `${OTP_REDIS_PREFIX}:${email}:${OTP_COUNT_REDIS_POSTFIX}`
   )
-  return verifiedFp || !storedOtp || Number(otpCount) < OTP_COUNT_LIMIT
+  return !storedOtp || Number(otpCount) < OTP_COUNT_LIMIT
 }
 
 const updateOtpCount = async ({ email, redis }) => {
@@ -101,7 +110,7 @@ const sendOtp = async ({ email, redis, sendgrid }) => {
 }
 
 module.exports = {
-  bypassOtp,
+  requiresOtp,
   validateOtp,
   shouldSendOtp,
   sendOtp
