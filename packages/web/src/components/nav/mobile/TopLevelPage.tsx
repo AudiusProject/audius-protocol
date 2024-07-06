@@ -17,8 +17,7 @@ const rootElement =
   typeof document !== 'undefined' ? document.querySelector('#root') : null
 
 const TopLevelPage = ({ showAddToCollection }: TopLevelPageProps) => {
-  const showPage = showAddToCollection
-  const isLocked = !!(showPage && rootElement)
+  const isLocked = !!(showAddToCollection && rootElement)
   useScrollLock(isLocked)
 
   let page = null
@@ -29,7 +28,7 @@ const TopLevelPage = ({ showAddToCollection }: TopLevelPageProps) => {
   return (
     <div
       className={cn(styles.topLevelPage, {
-        [styles.show]: showPage,
+        [styles.show]: showAddToCollection,
         [styles.darkerBackground]: showAddToCollection
       })}
     >

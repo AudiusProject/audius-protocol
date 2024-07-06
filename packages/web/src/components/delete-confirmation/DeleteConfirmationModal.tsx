@@ -1,4 +1,3 @@
-import { Nullable } from '@audius/common/utils'
 import {
   Modal,
   ModalContent,
@@ -19,8 +18,8 @@ const messages = {
 
 export type DeleteConfirmationModalProps = {
   title: string
-  header?: Nullable<string>
-  description?: Nullable<string>
+  header?: string
+  description?: string
   visible: boolean
   entity: string
   onDelete: () => void

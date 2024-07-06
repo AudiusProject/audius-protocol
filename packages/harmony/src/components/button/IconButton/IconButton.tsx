@@ -15,17 +15,6 @@ export type IconButtonProps = {
 } & Pick<IconProps, 'color' | 'size' | 'shadow' | 'height' | 'width'> &
   BaseButtonProps
 
-// Pick<
-//   BaseButtonProps,
-//   | 'onClick'
-//   | 'disabled'
-//   | 'className'
-//   | 'type'
-//   | 'children'
-//   | 'isLoading'
-//   | 'asChild'
-// >
-
 /**
  * The icon component allows you to pass in an icon and
  * apply color and sizing properties.

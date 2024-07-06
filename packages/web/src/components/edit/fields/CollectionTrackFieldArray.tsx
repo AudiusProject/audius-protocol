@@ -32,7 +32,8 @@ export const CollectionTrackFieldArray = () => {
                 aria-label={messages.trackList}
               >
                 {tracks.map((track, index) => {
-                  const id = track.file?.name ?? track.metadata.track_id
+                  const id =
+                    track.metadata.track_id ?? `${track.file?.name}--${index}`
 
                   return (
                     <Draggable key={id} draggableId={String(id)} index={index}>

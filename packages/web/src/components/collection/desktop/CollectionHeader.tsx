@@ -213,7 +213,7 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
               className={cn({
                 [styles.editableTitle]: isOwner
               })}
-              // @ts-ignore
+              // @ts-ignore -- Flex Link doesn't type `to` correctly
               to={
                 isOwner
                   ? { pathname: `${permalink}/edit`, search: '?focus=name' }
