@@ -46,7 +46,7 @@ export const ConfirmEmailPage = () => {
       const { otp } = values
       const sanitizedOtp = otp.replace(/\s/g, '')
       dispatch(setValueField('otp', sanitizedOtp))
-      dispatch(signIn(email, password, sanitizedOtp))
+      dispatch(signIn(email, password, undefined, sanitizedOtp))
     },
     [dispatch, email, password]
   )

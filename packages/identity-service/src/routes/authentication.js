@@ -11,8 +11,13 @@ const {
   validateOtp,
   shouldSendOtp,
   sendOtp,
-  bypassOtp
+  requiresOtp
 } = require('../utils/otp')
+const {
+  getWalletAssociatedEmail,
+  associateWalletAddressWithUser
+} = require('../utils/walletAssociation')
+const { validateFingerprint } = require('../utils/fpHelpers')
 const authMiddleware = require('../authMiddleware')
 
 const EncodedDataMessageHeader = 'encoded-data-message'
@@ -132,7 +137,13 @@ module.exports = function (app) {
   app.get(
     '/authentication',
     handleResponse(async (req, res, next) => {
-      const { lookupKey, email: emailParam, username, otp } = req.query
+      const {
+        lookupKey,
+        email: emailParam,
+        username,
+        visitorId,
+        otp
+      } = req.query
       let email = emailParam ?? username
       if (!lookupKey) {
         return errorResponseBadRequest('Missing lookupKey')
@@ -149,90 +160,59 @@ module.exports = function (app) {
         return errorResponseBadRequest('Invalid credentials')
       }
 
-      if (bypassOtp(email)) {
-        return successResponse(existingUser)
-      }
-
       const redis = req.app.get('redis')
       const sendgrid = req.app.get('sendgrid')
       if (!sendgrid) {
         req.logger.error('Missing sendgrid api key')
       }
 
-      const hasWalletAddressAssociated = existingUser.walletAddress != null
-
-      if (!otp) {
+      const otpRequired = await requiresOtp({ email, visitorId })
+      if (!otpRequired) {
+        return successResponse(existingUser)
+      } else if (!otp) {
         // use email from registered address if available
-        try {
-          if (hasWalletAddressAssociated) {
-            const userRecord = await models.User.findOne({
-              where: { walletAddress: existingUser.walletAddress }
-            })
-
-            if (userRecord.email === undefined || userRecord.email === null) {
-              throw new Error(
-                `existing user without email association ${JSON.stringify(
-                  userRecord
-                )} ${lookupKey}`
-              )
-            }
-
-            if (email !== userRecord.email) {
-              req.logger.error(
-                {
-                  reqEmail: email,
-                  registeredEmail: userRecord.email,
-                  lookupKey
-                },
-                'user email and auth param mismatch'
-              )
-              return errorResponseBadRequest('Invalid credentials')
-            }
-
-            email = userRecord.email
-          }
-        } catch (e) {
+        const associatedEmail = await getWalletAssociatedEmail({
+          req,
+          authUser: existingUser
+        })
+        if (associatedEmail && email !== associatedEmail) {
           req.logger.error(
-            { lookupKey, error: e },
-            `error getting user record from existing user '${e}'`
+            {
+              reqEmail: email,
+              registeredEmail: associatedEmail,
+              lookupKey: existingUser.lookupKey
+            },
+            'error getting user record from existing user: user email and auth param mismatch'
           )
+          return errorResponseBadRequest('Invalid credentials')
+        } else {
+          email = associatedEmail || email
         }
 
-        if (await shouldSendOtp({ email, redis })) {
+        if (await shouldSendOtp({ req, email, redis })) {
           await sendOtp({ email, redis, sendgrid })
         }
         return errorResponseForbidden('Missing otp')
-      }
-
-      const isOtpValid = await validateOtp({ email, otp, redis })
-
-      if (!isOtpValid) {
-        return errorResponseBadRequest('Invalid credentials')
-      }
-
-      if (isOtpValid && !hasWalletAddressAssociated) {
-        try {
-          const userRecord = await models.User.findOne({
-            where: { email }
-          })
-          const walletAddress = userRecord.walletAddress
-          await models.Authentication.update(
-            {
-              walletAddress
-            },
-            {
-              where: { lookupKey }
-            }
-          )
-        } catch (e) {
-          req.logger.error(
-            { email, lookupKey, error: e },
-            `error associating wallet address '${e}'`
-          )
+      } else {
+        // otp was included in request
+        const isOtpValid = await validateOtp({ email, otp, redis })
+        if (!isOtpValid) {
+          return errorResponseBadRequest('Invalid credentials')
         }
-      }
 
-      return successResponse(existingUser)
+        // async
+        validateFingerprint({ req, email, visitorId })
+
+        if (existingUser.walletAddress === null) {
+          await associateWalletAddressWithUser({
+            req,
+            authUser: existingUser,
+            email
+          })
+        }
+
+        return successResponse(existingUser)
+      }
     })
   )
 }

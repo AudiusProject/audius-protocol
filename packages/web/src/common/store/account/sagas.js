@@ -165,8 +165,6 @@ export function* fetchAccountAsync({ isSignUp = false }) {
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
   const remoteConfigInstance = yield getContext('remoteConfigInstance')
   const isNativeMobile = yield getContext('isNativeMobile')
-  const isElectron = yield getContext('isElectron')
-  const fingerprintClient = yield getContext('fingerprintClient')
 
   yield put(accountActions.fetchAccountRequested())
 
@@ -194,14 +192,6 @@ export function* fetchAccountAsync({ isSignUp = false }) {
 
   // Set the userId in the remoteConfigInstance
   remoteConfigInstance.setUserId(account.user_id)
-
-  // Fire-and-forget fp identify
-  const clientOrigin = isNativeMobile
-    ? 'mobile'
-    : isElectron
-    ? 'desktop'
-    : 'web'
-  fingerprintClient.identify(account.user_id, clientOrigin)
 
   yield call(recordIPIfNotRecent, account.handle)
 
