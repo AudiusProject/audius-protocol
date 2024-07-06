@@ -159,7 +159,6 @@ module.exports = function (app) {
       if (!existingUser) {
         return errorResponseBadRequest('Invalid credentials')
       }
-      const hasWalletAddressAssociated = existingUser.walletAddress != null
 
       const redis = req.app.get('redis')
       const sendgrid = req.app.get('sendgrid')
