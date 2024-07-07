@@ -1,4 +1,11 @@
-import { Collection, Kind, LineupEntry, UID, User } from '@audius/common/models'
+import {
+  Collection,
+  Kind,
+  LineupEntry,
+  UID,
+  User,
+  isContentUSDCPurchaseGated
+} from '@audius/common/models'
 import {
   cacheTracksSelectors,
   savedPageTracksLineupActions as savedTracksActions,
@@ -97,18 +104,24 @@ function* getTracks({ offset, limit }: { offset: number; limit: number }) {
     const tracks = yield* call(retrieveTracks, {
       trackIds: allSavedTrackIds.filter((id) => id !== null)
     })
-    const tracksMap = tracks.reduce((map, track) => {
-      const save = {
-        ...track,
-        dateSaved: allSavedTrackTimestamps[track.track_id]
-      }
 
-      map[track.track_id] = save
-      return map
-    }, {})
-    return allSavedTrackIds.map((id) =>
-      id ? tracksMap[id] : { kind: Kind.EMPTY }
-    )
+    const tracksMap = tracks
+      .filter(
+        (track) =>
+          !track.is_unlisted ||
+          isContentUSDCPurchaseGated(track.stream_conditions)
+      )
+      .reduce((map, track) => {
+        const save = {
+          ...track,
+          dateSaved: allSavedTrackTimestamps[track.track_id]
+        }
+        map[track.track_id] = save
+        return map
+      }, {})
+    return allSavedTrackIds
+      .filter((id) => tracksMap[id])
+      .map((id) => (id ? tracksMap[id] : { kind: Kind.EMPTY }))
   }
   return []
 }
