@@ -61,13 +61,9 @@ module.exports = function (app) {
             }
           }
 
-          const isChangingEmail =
-            body.email !== undefined &&
-            body.email !== null &&
-            typeof body.email === 'string'
-          const email = body.email
-          if (isChangingEmail) {
-            if (!body.oldLookupKey) {
+          const { email, oldLookupKey } = body
+          if (!!email) {
+            if (!oldLookupKey) {
               return errorResponseBadRequest(
                 'Missing one of the required fields: oldLookupKey'
               )
@@ -78,7 +74,19 @@ module.exports = function (app) {
               return errorResponseBadRequest('Invalid credentials')
             }
 
-            const oldLookupKey = body.oldLookupKey
+            // check if new artifacts already exist and are deleted
+            const newArtifacts = await models.Authentication.findOne({
+              where: { lookupKey: body.lookupKey },
+              paranoid: false
+            })
+
+            // if artifacts exist or they were previously deleted
+            if (newArtifacts) {
+              // artifacts passed already exist
+              return errorResponseBadRequest('Invalid credentials')
+            }
+
+
             // if user has wallet connected to auth artifacts, compare old lookupkey with wallet address
             const oldArtifacts = await models.Authentication.findOne({
               where: { lookupKey: oldLookupKey }
@@ -109,7 +117,7 @@ module.exports = function (app) {
               return errorResponseBadRequest('Invalid credentials')
             }
 
-            // change email of user who's signature was passed in the call
+            // change email of user whose signature was passed in the call
             // require wallet address from signature when updating email
             if (walletAddress !== null) {
               const userRecord = await models.User.findOne({
@@ -151,7 +159,6 @@ module.exports = function (app) {
             })
           }
 
-          const oldLookupKey = body.oldLookupKey
           if (oldLookupKey && oldLookupKey !== body.lookupKey) {
             await models.Authentication.destroy(
               { where: { lookupKey: oldLookupKey } },

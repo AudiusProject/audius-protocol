@@ -549,5 +549,21 @@ describe('test authentication routes', function () {
     assert.strictEqual(newAuthModel.lookupKey, newLookupKey)
     assert.strictEqual(newUserModel.email, newUsername)
     assert.strictEqual(newUserModel.walletAddress, walletAddress)
+
+
+    // check old auth model no longer works
+    await request(app)
+      .post('/authentication')
+      .set('Encoded-Data-Message', 'Click sign to authenticate with identity service: 1719845800')
+      .set('Encoded-Data-Signature', '0x60029425041bdabf5f1805a5c41d889df480670a9db1a69f18e74f83650a490b6b36b17cc36cc9c71c915a451e24dde3657e96e198b29991361fdb8d2d46a4c11c')
+      .send({
+        iv,
+        cipherText,
+        lookupKey,
+        oldLookupKey: newLookupKey,
+        email: newUsername,
+        otp
+      })
+      .expect(400)
   })
 })
