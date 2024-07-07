@@ -336,10 +336,7 @@ const makeMapStateToProps = () => {
 
     const output = {
       userId: getUserId(state),
-      tracks: {
-        ...tracksRef,
-        entries: tracksRef.entries.filter((entry) => !entry.is_unlisted)
-      },
+      tracks: tracksRef,
       currentQueueItem: getCurrentQueueItem(state),
       playing: getPlaying(state),
       buffering: getBuffering(state)
