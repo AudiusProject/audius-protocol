@@ -3,7 +3,8 @@ import {
   Kind,
   LineupEntry,
   Track,
-  UserTrackMetadata
+  UserTrackMetadata,
+  isContentUSDCPurchaseGated
 } from '@audius/common/models'
 import { makeActivity } from '@audius/common/services'
 import {
@@ -54,7 +55,11 @@ function* getHistoryTracks() {
         ? processedTracksMap[decodeHashId(activity.item.id)!]
         : null
       // Prevent history for invalid tracks from getting into the lineup.
-      if (trackMetadata) {
+      if (
+        trackMetadata &&
+        (!trackMetadata.is_unlisted ||
+          isContentUSDCPurchaseGated(trackMetadata.stream_conditions))
+      ) {
         lineupTracks.push({
           ...trackMetadata,
           dateListened: activity.timestamp
