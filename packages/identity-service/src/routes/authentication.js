@@ -62,7 +62,7 @@ module.exports = function (app) {
           }
 
           const { email, oldLookupKey } = body
-          if (!!email) {
+          if (!email) {
             if (!oldLookupKey) {
               return errorResponseBadRequest(
                 'Missing one of the required fields: oldLookupKey'
@@ -85,7 +85,6 @@ module.exports = function (app) {
               // artifacts passed already exist
               return errorResponseBadRequest('Invalid credentials')
             }
-
 
             // if user has wallet connected to auth artifacts, compare old lookupkey with wallet address
             const oldArtifacts = await models.Authentication.findOne({
