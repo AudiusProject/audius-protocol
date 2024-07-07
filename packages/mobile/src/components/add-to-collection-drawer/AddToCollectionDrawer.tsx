@@ -138,7 +138,7 @@ export const AddToCollectionDrawer = () => {
             // Don't add if the track is hidden, but collection is public
             if (
               !isHiddenPaidScheduledEnabled &&
-              !isTrackUnlisted &&
+              isTrackUnlisted &&
               !item.is_private
             ) {
               toast({ content: messages.hiddenAdd })

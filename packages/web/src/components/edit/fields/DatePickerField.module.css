@@ -3,8 +3,12 @@
   flex-direction: row;
   justify-content: flex-start;
   align-items: center;
-  height: 34px;
+  height: 38px;
   width: 300px;
+}
+
+.datePicker {
+  height: 296px;
 }
 
 .label {

@@ -1,11 +1,14 @@
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 
+import type { Mood } from '@audius/sdk'
 import { View, Image } from 'react-native'
 
 import { IconMood, Text } from '@audius/harmony-native'
 import { ListSelectionScreen } from 'app/screens/list-selection-screen'
 import { makeStyles } from 'app/styles'
 import { moodMap } from 'app/utils/moods'
+
+import { useSearchFilter } from '../searchState'
 
 const messages = {
   screenTitle: 'Mood',
@@ -33,7 +36,20 @@ const useStyles = makeStyles(({ spacing }) => ({
 
 export const FilterMoodScreen = () => {
   const styles = useStyles()
+  const [, setMood, clearMood] = useSearchFilter('mood')
   const [value, setValue] = useState('')
+
+  const handleSubmit = useCallback(() => {
+    if (value) {
+      setMood(value as Mood)
+    } else {
+      clearMood()
+    }
+  }, [clearMood, setMood, value])
+
+  const handleClear = useCallback(() => {
+    setValue('')
+  }, [])
 
   return (
     <ListSelectionScreen
@@ -49,6 +65,9 @@ export const FilterMoodScreen = () => {
       searchText={messages.searchText}
       value={value}
       onChange={setValue}
+      onClear={handleClear}
+      onSubmit={handleSubmit}
+      clearable={Boolean(value)}
     />
   )
 }

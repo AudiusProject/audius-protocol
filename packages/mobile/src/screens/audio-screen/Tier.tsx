@@ -139,8 +139,8 @@ export const Tier = (props: TierProps) => {
           >{`${minAmount}+ ${messages.minAmount}`}</Text>
           <View style={styles.separator} />
           <Image source={imageSource} style={{ height: 108, width: 108 }} />
-          <Flex mt='xl' gap='l' alignItems='center'>
-            <Text variant='label' size='l' color='subdued'>
+          <Flex mt='xl' gap='l'>
+            <Text variant='label' size='l' color='subdued' textAlign='center'>
               {messages.unlocks}
             </Text>
             <Unlock images={[Checkmark]}>{title} Badge</Unlock>

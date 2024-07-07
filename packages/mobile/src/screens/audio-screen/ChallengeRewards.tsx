@@ -240,7 +240,11 @@ export const ChallengeRewards = () => {
                     )}
               </Text>
               {claimableAmount > 0 ? (
-                <Button onPress={openClaimAllModal} iconRight={IconArrowRight}>
+                <Button
+                  onPress={openClaimAllModal}
+                  iconRight={IconArrowRight}
+                  size='small'
+                >
                   {messages.claimAllRewards}
                 </Button>
               ) : cooldownAmount > 0 ? (
@@ -248,6 +252,7 @@ export const ChallengeRewards = () => {
                   variant='secondary'
                   onPress={openClaimAllModal}
                   iconRight={IconArrowRight}
+                  size='small'
                 >
                   {messages.moreInfo}
                 </Button>

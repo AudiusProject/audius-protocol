@@ -898,6 +898,12 @@ const config = convict({
     format: String,
     env: 'solanaUSDCMintAddress',
     default: ''
+  },
+  fpServerApiKey: {
+    doc: 'API key for requesting visitorId information',
+    format: String,
+    env: 'fpServerApiKey',
+    default: ''
   }
 })
 

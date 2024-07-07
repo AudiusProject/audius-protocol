@@ -17,6 +17,7 @@ import { SearchBarV2 } from './SearchBarV2'
 import { SearchCatalogTile } from './SearchCatalogTile'
 import { SearchCategoriesAndFilters } from './SearchCategoriesAndFilters'
 import {
+  FilterBpmScreen,
   FilterGenreScreen,
   FilterMoodScreen,
   FilterMusicalKeyScreen
@@ -43,14 +44,16 @@ export const SearchScreenV2 = () => {
   return (
     <Screen topbarRight={<SearchBarV2 />} headerTitle={null} variant='white'>
       <SearchCategoriesAndFilters />
-      {!showSearchResults ? (
-        <Flex direction='column' alignItems='center' gap='xl'>
-          <SearchCatalogTile />
-          <RecentSearches />
-        </Flex>
-      ) : (
-        <SearchResults />
-      )}
+      <Flex flex={1}>
+        {!showSearchResults ? (
+          <Flex direction='column' alignItems='center' gap='xl'>
+            <SearchCatalogTile />
+            <RecentSearches />
+          </Flex>
+        ) : (
+          <SearchResults />
+        )}
+      </Flex>
     </Screen>
   )
 }
@@ -77,6 +80,7 @@ export const SearchScreenStack = () => {
           <Stack.Screen name='FilterMood' component={FilterMoodScreen} />
           <Stack.Screen name='FilterGenre' component={FilterGenreScreen} />
           <Stack.Screen name='FilterKey' component={FilterMusicalKeyScreen} />
+          <Stack.Screen name='FilterBpm' component={FilterBpmScreen} />
         </Stack.Group>
       </Stack.Navigator>
     </SearchContext.Provider>

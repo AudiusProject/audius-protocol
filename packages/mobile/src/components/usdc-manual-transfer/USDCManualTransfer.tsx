@@ -9,9 +9,9 @@ import { View } from 'react-native'
 import QRCode from 'react-qr-code'
 import { useAsync } from 'react-use'
 
-import { IconError } from '@audius/harmony-native'
+import { IconError, Button } from '@audius/harmony-native'
 import LogoUSDC from 'app/assets/images/logoUSDC.svg'
-import { Button, Text, useLink } from 'app/components/core'
+import { Text, useLink } from 'app/components/core'
 import { useToast } from 'app/hooks/useToast'
 import { make, track, track as trackEvent } from 'app/services/analytics'
 import { audiusBackendInstance } from 'app/services/audius-backend-instance'
@@ -169,20 +169,12 @@ export const USDCManualTransfer = ({
       <View style={styles.buttonContainer}>
         {amountInCents === undefined ? (
           <>
-            <Button
-              title={messages.copy}
-              onPress={handleConfirmPress}
-              variant='primary'
-              size='large'
-              fullWidth
-            />
-            <Button
-              title={messages.goBack}
-              onPress={onClose}
-              variant='common'
-              size='large'
-              fullWidth
-            />
+            <Button onPress={handleConfirmPress} variant='primary' fullWidth>
+              {messages.copy}
+            </Button>
+            <Button onPress={onClose} variant='secondary' fullWidth>
+              {messages.goBack}
+            </Button>
           </>
         ) : null}
       </View>

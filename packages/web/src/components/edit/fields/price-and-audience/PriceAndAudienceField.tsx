@@ -130,11 +130,13 @@ export const PriceAndAudienceField = (props: PriceAndAudienceFieldProps) => {
   const isHiddenFieldName = isAlbum ? IS_PRIVATE : IS_UNLISTED
 
   const [{ value: index }] = useField('trackMetadatasIndex')
-  const [{ value: trackLength }] = useIndexedField<number>(
+  const [{ value: previewTrackLength }] = useIndexedField<number>(
     'tracks',
     index,
     'preview.duration'
   )
+  const [{ value: trackDuration }] = useTrackField<number>('duration')
+  const trackLength = isUpload ? previewTrackLength : trackDuration
 
   const usdcPurchaseConfig = useUSDCPurchaseConfig()
 

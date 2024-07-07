@@ -52,32 +52,14 @@ export class FingerprintClient<TFingerprintClient> {
     }
   }
 
-  async identify(userId: number, clientOrigin: 'desktop' | 'mobile' | 'web') {
+  async identify(email: string, clientOrigin: 'desktop' | 'mobile' | 'web') {
     if (!this.fingerprint) {
       console.warn('Fingerprint client not yet initted')
       return
     }
     try {
-      // First, see if we've fingerprinted this user before
-      const response = await fetch(
-        `${this.identityService}/fp?userId=${userId}&origin=${clientOrigin}`
-      )
-
-      if (response.status !== 200) {
-        console.error(
-          `Got status code ${response.status} from identity during fingerprint`
-        )
-        return
-      }
-      const { count } = await response.json()
-
-      if (count >= 1) {
-        return
-      }
-
-      // If we haven't, fingerprint 'em
-      await this.getFingerprint(this.fingerprint, {
-        linkedId: userId.toString(),
+      return await this.getFingerprint(this.fingerprint, {
+        linkedId: email,
         tag: { origin: clientOrigin }
       })
     } catch (e) {

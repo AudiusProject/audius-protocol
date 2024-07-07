@@ -356,7 +356,7 @@ export const Popup = forwardRef<HTMLDivElement, PopupProps>(function Popup(
       setPopupState('closing')
       anchorRef.current?.focus()
     }
-  }, [isVisibleProp, popupState])
+  }, [anchorRef, isVisibleProp, popupState])
 
   const transitions = useTransition(isVisibleProp, null, {
     from: {

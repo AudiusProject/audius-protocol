@@ -14,9 +14,9 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useEffectOnce } from 'react-use'
 import { parseTrackRoute } from 'utils/route/trackRouteParser'
 
-import { IconShare, IconCloudUpload } from '@audius/harmony-native'
+import { IconShare, IconCloudUpload, Button } from '@audius/harmony-native'
 import EmojiRaisedHands from 'app/assets/images/emojis/person-raising-both-hands-in-celebration.png'
-import { Text, TextButton, Tile, Button } from 'app/components/core'
+import { Text, TextButton, Tile } from 'app/components/core'
 import {
   LineupTileSkeleton,
   TrackTileComponent
@@ -123,13 +123,9 @@ export const UploadCompleteScreen = () => {
       topbarLeft={null}
       url='/upload-complete'
       bottomSection={
-        <Button
-          variant='primary'
-          size='large'
-          title={messages.close}
-          fullWidth
-          onPress={handleDone}
-        />
+        <Button variant='primary' fullWidth onPress={handleDone}>
+          {messages.close}
+        </Button>
       }
     >
       <View style={styles.content}>
@@ -152,7 +148,6 @@ export const UploadCompleteScreen = () => {
               </Text>
               <TwitterButton
                 type='static'
-                size='large'
                 fullWidth
                 url={getTrackRoute(track!, true)}
                 shareText={messages.twitterShareText(title)}

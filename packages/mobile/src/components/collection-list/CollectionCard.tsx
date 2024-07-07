@@ -63,6 +63,7 @@ export const CollectionCard = (props: CollectionCardProps) => {
   )
 
   if (!collection) {
+    console.warn('Collection missing for CollectionCard, preventing render')
     return null
   }
 

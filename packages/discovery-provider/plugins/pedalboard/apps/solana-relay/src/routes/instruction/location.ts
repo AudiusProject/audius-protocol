@@ -23,10 +23,6 @@ export const location = async (
 ) => {
   try {
     const signer = req.query.signer
-    if (!signer) {
-      res.status(400).send({ error: 'Missing signer parameter' })
-      next()
-    }
     const location = await getRequestIpData(res.locals.logger, req)
     const instruction = new TransactionInstruction({
       keys: signer

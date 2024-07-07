@@ -10,8 +10,7 @@ import { Dimensions, View } from 'react-native'
 import DateTimePickerModal from 'react-native-modal-datetime-picker'
 import { useDispatch } from 'react-redux'
 
-import { Hint, IconCalendarMonth, Text } from '@audius/harmony-native'
-import { Button } from 'app/components/core'
+import { Hint, IconCalendarMonth, Text, Button } from '@audius/harmony-native'
 import { TextField } from 'app/components/fields'
 import { useNavigation } from 'app/hooks/useNavigation'
 import type { ListSelectionData } from 'app/screens/list-selection-screen'
@@ -331,12 +330,12 @@ export const ReleaseDateScreen = (props) => {
       bottomSection={
         <Button
           variant='primary'
-          size='large'
           fullWidth
-          title={messages.done}
           onPress={handleSubmit}
           disabled={false}
-        />
+        >
+          {messages.done}
+        </Button>
       }
     />
   )

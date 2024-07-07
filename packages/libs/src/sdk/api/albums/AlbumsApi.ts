@@ -4,6 +4,7 @@ import type {
   AuthService,
   ClaimableTokensClient,
   PaymentRouterClient,
+  SolanaRelayService,
   StorageService
 } from '../../services'
 import type {
@@ -53,7 +54,8 @@ export class AlbumsApi {
     private auth: AuthService,
     private logger: LoggerService,
     private claimableTokensClient: ClaimableTokensClient,
-    private paymentRouterClient: PaymentRouterClient
+    private paymentRouterClient: PaymentRouterClient,
+    private solanaRelay: SolanaRelayService
   ) {
     this.playlistsApi = new PlaylistsApi(
       configuration,
@@ -333,6 +335,8 @@ export class AlbumsApi {
         buyerUserId: userId,
         accessType
       })
+    const locationMemoInstruction =
+      await this.solanaRelay.getLocationInstruction()
 
     if (wallet) {
       this.logger.debug('Using provided wallet to purchase...', {
@@ -347,7 +351,12 @@ export class AlbumsApi {
         })
       const transaction = await this.paymentRouterClient.buildTransaction({
         feePayer: wallet,
-        instructions: [transferInstruction, routeInstruction, memoInstruction]
+        instructions: [
+          transferInstruction,
+          routeInstruction,
+          memoInstruction,
+          locationMemoInstruction
+        ]
       })
       return transaction
     } else {
@@ -383,7 +392,8 @@ export class AlbumsApi {
           transferSecpInstruction,
           transferInstruction,
           routeInstruction,
-          memoInstruction
+          memoInstruction,
+          locationMemoInstruction
         ]
       })
       return transaction

@@ -1,6 +1,7 @@
 import cn from 'classnames'
 import PropTypes from 'prop-types'
 
+import { useHistoryContext } from 'app/HistoryProvider'
 import { BackButton } from 'components/back-button/BackButton'
 import { HeaderGutter } from 'components/header/desktop/HeaderGutter'
 
@@ -24,6 +25,8 @@ const Header = (props) => {
     scrollBarWidth,
     headerContainerRef
   } = props
+
+  const { history } = useHistoryContext()
 
   const variantStyle = {
     [styles.main]: variant === 'main',
@@ -57,7 +60,9 @@ const Header = (props) => {
             style={overrideWidth !== null ? { maxWidth: overrideWidth } : null}
           >
             <div className={cn(styles.headerWrapper, wrapperClassName)}>
-              {showBackButton ? <BackButton onClick={onClickBack} /> : null}
+              {showBackButton ? (
+                <BackButton onClick={onClickBack ?? history.goBack} />
+              ) : null}
               <h1 className={cn(styles.header, variantStyle)}>{primary}</h1>
               <h2 className={styles.secondary}>{secondary}</h2>
             </div>
@@ -95,8 +100,7 @@ Header.propTypes = {
 Header.defaultProps = {
   variant: 'main',
   containerStyles: '',
-  showBackButton: false,
-  onClickBack: () => {}
+  showBackButton: false
 }
 
 export default Header

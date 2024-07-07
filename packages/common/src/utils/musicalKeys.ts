@@ -3,7 +3,6 @@ export const MUSICAL_KEYS = [
   'C#/D♭',
   'D',
   'D#/E♭',
-  'D',
   'E',
   'F',
   'F#/G♭',

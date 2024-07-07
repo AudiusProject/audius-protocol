@@ -2,197 +2,71 @@ package server
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"io"
-	"log"
 	"os"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/AudiusProject/audius-protocol/mediorum/cidutil"
-	"github.com/AudiusProject/audius-protocol/mediorum/crudr"
+	"github.com/jackc/pgx/v5"
 	"gocloud.dev/gcerrors"
-	"golang.org/x/exp/slices"
 )
 
+const MAX_TRIES = 5
+
+// scroll qm cids
 func (ss *MediorumServer) startLegacyAudioAnalyzer() {
-	myHost := ss.Config.Self.Host
+	ctx := context.Background()
+	logger := ss.logger
+
 	work := make(chan *QmAudioAnalysis)
 
 	numWorkers := 2
-
-	// on boot... reset any of my wip jobs
-	tx := ss.crud.DB.Model(QmAudioAnalysis{}).
-		Where(QmAudioAnalysis{
-			AnalyzedBy: myHost,
-			Status:     JobStatusBusyAudioAnalysis,
-		}).
-		Updates(QmAudioAnalysis{Status: JobStatusAudioAnalysis})
-	if tx.Error != nil {
-		ss.logger.Warn("reset stuck legacy audio analyses error" + tx.Error.Error())
-	} else if tx.RowsAffected > 0 {
-		ss.logger.Info("reset stuck legacy audio analyses", "count", tx.RowsAffected)
-	}
-
-	// add a callback to crudr so we can consider audio analyses
-	ss.crud.AddOpCallback(func(op *crudr.Op, records interface{}) {
-		if op.Table != "qm_audio_analyses" {
-			return
-		}
-
-		analyses, ok := records.(*[]*QmAudioAnalysis)
-		if !ok {
-			log.Printf("unexpected type in legacy audio analysis callback %T", records)
-			return
-		}
-		for _, analysis := range *analyses {
-			if analysis.Status == JobStatusAudioAnalysis {
-				if analysis.Mirrors == nil {
-					ss.logger.Warn("missing preferred host info in legacy audio analysis job. skipping", "analysis_cid", analysis.CID)
-					continue
-				}
-				// only the first mirror transcodes
-				if slices.Index(analysis.Mirrors, myHost) == 0 {
-					ss.logger.Info("got legacy audio analysis job", "analysis_cid", analysis.CID)
-					work <- analysis
-				}
-			}
-		}
-	})
 
 	// start workers
 	for i := 0; i < numWorkers; i++ {
 		go ss.startLegacyAudioAnalysisWorker(i, work)
 	}
 
-	// poll periodically for analyses that slipped thru the cracks
-	go func() {
-		ticker := time.NewTicker(1 * time.Minute)
-		defer ticker.Stop()
+	time.Sleep(time.Minute)
 
-		retryTicker := time.NewTicker(30 * time.Minute)
-		defer retryTicker.Stop()
+	// find work
+	var cid string
+	rows, _ := ss.pgPool.Query(ctx, "select key from qm_cids order by random()")
+	_, err := pgx.ForEachRow(rows, []any{&cid}, func() error {
 
-		for {
-			select {
-			case <-ticker.C:
-				// find missed legacy analysis jobs every minute
-				// mark analyses as timed out
-				ss.findMissedLegacyAnalysisJobs(work, myHost)
+		if strings.HasSuffix(cid, ".jpg") {
+			return nil
+		}
 
-			case <-retryTicker.C:
-				// retry legacy analysis jobs every 30 minutes
-				ss.retryLegacyAnalysisJobs(work, myHost)
+		preferredHosts, isMine := ss.rendezvousAllHosts(cid)
+		if !isMine {
+			return nil
+		}
+
+		var analysis *QmAudioAnalysis
+		err := ss.crud.DB.First(&analysis, "cid = ?", cid).Error
+		if err != nil {
+			analysis = &QmAudioAnalysis{
+				CID:        cid,
+				Mirrors:    preferredHosts[0:MAX_TRIES],
+				Status:     JobStatusAudioAnalysis,
+				AnalyzedAt: time.Now().UTC(),
 			}
-		}
-	}()
-
-	// block to keep running
-	select {}
-}
-
-func (ss *MediorumServer) findMissedLegacyAnalysisJobs(work chan *QmAudioAnalysis, myHost string) {
-	analyses := []*QmAudioAnalysis{}
-	ss.crud.DB.Where("status in ?", []string{JobStatusAudioAnalysis, JobStatusBusyAudioAnalysis}).Find(&analyses)
-
-	for _, analysis := range analyses {
-		// mark job as timed out after 45 mins.
-		// AnalyzedAt is set by the /tracks/legacy/:cid/analyze endpoint when triggering an analysis.
-		if time.Since(analysis.AnalyzedAt) > time.Minute*45 {
-			// mark analysis as timed out and the upload as done.
-			// failed or timed out analyses do not block uploads.
-			ss.logger.Warn("legacy audio analysis timed out", "analysis_cid", analysis.CID, "analysis", analysis)
-
-			analysis.Status = JobStatusTimeout
-			ss.crud.Update(analysis)
-			continue
+			ss.crud.Create(analysis)
 		}
 
-		myIdx := slices.Index(analysis.Mirrors, myHost)
-		if myIdx == -1 {
-			continue
-		}
-		myRank := myIdx + 1
-
-		logger := ss.logger.With("analysis_cid", analysis.CID, "analysis_status", analysis.Status, "my_rank", myRank)
-
-		// determine if #1 rank worker dropped ball
-		timedOut := false
-		neverStarted := false
-
-		// for #2 rank worker:
-		if myRank == 2 {
-			// no recent update?
-			timedOut = analysis.Status == JobStatusBusyAudioAnalysis &&
-				time.Since(analysis.AnalyzedAt) > time.Minute*3
-
-			// never started?
-			neverStarted = analysis.Status == JobStatusAudioAnalysis &&
-				time.Since(analysis.AnalyzedAt) > time.Minute*6
-		}
-
-		// for #3 rank worker:
-		if myRank == 3 {
-			// no recent update?
-			timedOut = analysis.Status == JobStatusBusyAudioAnalysis &&
-				time.Since(analysis.AnalyzedAt) > time.Minute*7
-
-			// never started?
-			neverStarted = analysis.Status == JobStatusAudioAnalysis &&
-				time.Since(analysis.AnalyzedAt) > time.Minute*14
-		}
-
-		// for #4 rank worker:
-		if myRank == 4 {
-			// no recent update?
-			timedOut = analysis.Status == JobStatusBusyAudioAnalysis &&
-				time.Since(analysis.AnalyzedAt) > time.Minute*15
-
-			// never started?
-			neverStarted = analysis.Status == JobStatusAudioAnalysis &&
-				time.Since(analysis.AnalyzedAt) > time.Minute*30
-		}
-
-		if timedOut {
-			logger.Info("legacy audio analysis timed out... starting")
-			work <- analysis
-		} else if neverStarted {
-			logger.Info("legacy audio analysis never started")
+		if analysis.Status != JobStatusDone && analysis.ErrorCount < MAX_TRIES {
 			work <- analysis
 		}
+
+		return nil
+	})
+	if err != nil {
+		logger.Error("failed to find qm rows", "err", err)
 	}
-}
 
-func (ss *MediorumServer) retryLegacyAnalysisJobs(work chan *QmAudioAnalysis, myHost string) {
-	analyses := []*QmAudioAnalysis{}
-	ss.crud.DB.Where("status = ? OR (status = ? AND error_count < ?)", JobStatusTimeout, JobStatusError, 3).
-		Where("CAST(mirrors AS jsonb)->>0 ?", myHost).
-		Order("analyzed_at ASC").
-		Limit(100).
-		Find(&analyses)
-
-	for _, analysis := range analyses {
-		myIdx := slices.Index(analysis.Mirrors, myHost)
-		if myIdx != 0 {
-			continue
-		}
-		myRank := myIdx + 1
-
-		logger := ss.logger.With("analysis_cid", analysis.CID, "analysis_status", analysis.Status, "my_rank", myRank)
-
-		if analysis.Status == JobStatusError {
-			logger.Info("retrying my errored legacy audio analysis")
-		}
-		if analysis.Status == JobStatusTimeout {
-			logger.Info("retrying my timed out legacy audio analysis")
-		}
-		analysis.AnalyzedAt = time.Now().UTC()
-		// op callback will enqueue the job
-		analysis.Status = JobStatusAudioAnalysis
-		ss.crud.Update(analysis)
-	}
 }
 
 func (ss *MediorumServer) startLegacyAudioAnalysisWorker(n int, work chan *QmAudioAnalysis) {
@@ -202,7 +76,7 @@ func (ss *MediorumServer) startLegacyAudioAnalysisWorker(n int, work chan *QmAud
 		startTime := time.Now().UTC()
 		err := ss.analyzeLegacyAudio(analysis)
 		elapsedTime := time.Since(startTime)
-		logger = logger.With("duration", elapsedTime, "start_time", startTime)
+		logger = logger.With("duration", elapsedTime.String(), "start_time", startTime)
 
 		if err != nil {
 			logger.Warn("legacy audio analysis failed", "err", err)
@@ -222,7 +96,7 @@ func (ss *MediorumServer) analyzeLegacyAudio(analysis *QmAudioAnalysis) error {
 		analysis.Error = err.Error()
 		if analysis.Error == "blob is not an audio file" {
 			// set ErrorCount to 3 so discovery repairer stops retrying this cid
-			analysis.ErrorCount = 3
+			analysis.ErrorCount = MAX_TRIES
 		} else {
 			analysis.ErrorCount = analysis.ErrorCount + 1
 		}
@@ -234,9 +108,6 @@ func (ss *MediorumServer) analyzeLegacyAudio(analysis *QmAudioAnalysis) error {
 
 	logger := ss.logger.With("analysis_cid", analysis.CID)
 
-	myIdx := slices.Index(analysis.Mirrors, ss.Config.Self.Host)
-	myRank := myIdx + 1
-
 	// pull file from bucket
 
 	// as long as this is not the last mirror, do not mark the audio analysis job
@@ -246,18 +117,7 @@ func (ss *MediorumServer) analyzeLegacyAudio(analysis *QmAudioAnalysis) error {
 	attrs, err := ss.bucket.Attributes(ctx, key)
 	if err != nil {
 		if gcerrors.Code(err) == gcerrors.NotFound {
-			err = errors.New("failed to find legacy audio file on node")
-			if myRank == len(analysis.Mirrors) {
-				// mark job as failed if the job has reached the last mirror
-				return onError(err)
-			}
-			return err
-		} else {
-			if myRank == len(analysis.Mirrors) {
-				// mark job as failed if the job has reached the last mirror
-				return onError(err)
-			}
-			return err
+			return onError(err)
 		}
 	}
 	// blob must be an audio file
@@ -267,30 +127,18 @@ func (ss *MediorumServer) analyzeLegacyAudio(analysis *QmAudioAnalysis) error {
 	temp, err := os.CreateTemp("", "legacyAudioAnalysisTemp")
 	if err != nil {
 		logger.Error("failed to create temp file", "err", err)
-		if myRank == len(analysis.Mirrors) {
-			// mark job as failed if the job has reached the last mirror
-			return onError(err)
-		}
-		return err
+		return onError(err)
 	}
 	r, err := ss.bucket.NewReader(ctx, key, nil)
 	if err != nil {
 		logger.Error("failed to read blob", "err", err)
-		if myRank == len(analysis.Mirrors) {
-			// mark job as failed if the job has reached the last mirror
-			return onError(err)
-		}
-		return err
+		return onError(err)
 	}
 	defer r.Close()
 	_, err = io.Copy(temp, r)
 	if err != nil {
 		logger.Error("failed to read blob content", "err", err)
-		if myRank == len(analysis.Mirrors) {
-			// mark job as failed if the job has reached the last mirror
-			return onError(err)
-		}
-		return err
+		return onError(err)
 	}
 	temp.Sync()
 	defer temp.Close()
@@ -310,75 +158,31 @@ func (ss *MediorumServer) analyzeLegacyAudio(analysis *QmAudioAnalysis) error {
 		}
 	}
 
-	bpmChan := make(chan float64)
-	keyChan := make(chan string)
-	errorChan := make(chan error)
+	// analyze BPM
+	bpm, err := ss.analyzeBPM(wavFile)
+	if err != nil {
+		return onError(err)
+	}
 
-	// goroutine to analyze BPM
-	go func() {
-		bpm, err := ss.analyzeBPM(wavFile)
-		if err != nil {
-			logger.Error("failed to analyze BPM", "err", err)
-			errorChan <- fmt.Errorf("failed to analyze BPM: %w", err)
-			return
-		}
-		bpmChan <- bpm
-	}()
+	// analyze musical key
+	musicalKey, err := ss.analyzeKey(wavFile)
+	if err != nil {
+		return onError(err)
+	}
+	if musicalKey == "" || musicalKey == "Unknown" {
+		err := fmt.Errorf("unexpected output: %s", musicalKey)
+		return onError(err)
+	}
 
-	// goroutine to analyze musical key
-	go func() {
-		musicalKey, err := ss.analyzeKey(wavFile)
-		if err != nil {
-			logger.Error("failed to analyze key", "err", err)
-			errorChan <- fmt.Errorf("failed to analyze key: %w", err)
-			return
-		}
-		if musicalKey == "" || musicalKey == "Unknown" {
-			err := fmt.Errorf("unexpected output: %s", musicalKey)
-			logger.Error("failed to analyze key", "err", err)
-			errorChan <- fmt.Errorf("failed to analyze key: %w", err)
-			return
-		}
-		keyChan <- musicalKey
-	}()
-
-	var mu sync.Mutex
-	firstResult := true
-
-	for i := 0; i < 2; i++ {
-		select {
-		case bpm := <-bpmChan:
-			mu.Lock()
-			if analysis.Results == nil {
-				analysis.Results = &AudioAnalysisResult{}
-			}
-			analysis.Results.BPM = bpm
-			if firstResult {
-				ss.crud.Update(analysis)
-				firstResult = false
-			}
-			mu.Unlock()
-		case musicalKey := <-keyChan:
-			mu.Lock()
-			if analysis.Results == nil {
-				analysis.Results = &AudioAnalysisResult{}
-			}
-			analysis.Results.Key = musicalKey
-			if firstResult {
-				ss.crud.Update(analysis)
-				firstResult = false
-			}
-			mu.Unlock()
-		case err := <-errorChan:
-			return onError(err)
-		}
+	analysis.Results = &AudioAnalysisResult{
+		BPM: bpm,
+		Key: key,
 	}
 
 	// all analyses complete
 	analysis.Error = ""
 	analysis.AnalyzedAt = time.Now().UTC()
 	analysis.Status = JobStatusDone
-	ss.crud.Update(analysis)
+	return ss.crud.Update(analysis)
 
-	return nil
 }

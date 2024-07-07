@@ -125,7 +125,7 @@ export const SelectedValue = (props: SelectedValueProps) => {
       <HiddenInput value={label} />
       {Icon ? <Icon size='s' color='default' /> : null}
       {label ? (
-        <Text variant='body' strength='strong'>
+        <Text variant='body' size='s'>
           {label}
         </Text>
       ) : null}

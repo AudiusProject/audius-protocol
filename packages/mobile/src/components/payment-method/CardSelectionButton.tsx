@@ -5,10 +5,7 @@ import { modalsActions } from '@audius/common/store'
 import { TouchableOpacity } from 'react-native'
 import { useDispatch } from 'react-redux'
 
-import { IconCaretDown } from '@audius/harmony-native'
-import { Button } from 'app/components/core'
-import { typography } from 'app/styles'
-import { spacing } from 'app/styles/spacing'
+import { IconCaretDown, Button } from '@audius/harmony-native'
 
 const { setVisibility } = modalsActions
 
@@ -28,21 +25,14 @@ export const CardSelectionButton = ({
   return (
     <TouchableOpacity onPress={handlePress}>
       <Button
-        title={selectedVendor}
-        variant='commonAlt'
-        icon={IconCaretDown}
+        variant='secondary'
+        iconRight={IconCaretDown}
         size='small'
-        IconProps={{ width: spacing(4), height: spacing(4) }}
-        styles={{
-          text: {
-            fontWeight: '600',
-            fontSize: typography.fontSize.small,
-            textTransform: 'none'
-          }
-        }}
         fullWidth
         onPress={handlePress}
-      />
+      >
+        {selectedVendor}
+      </Button>
     </TouchableOpacity>
   )
 }

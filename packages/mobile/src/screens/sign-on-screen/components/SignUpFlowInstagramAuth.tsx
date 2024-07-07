@@ -7,6 +7,7 @@ import { pickHandleSchema } from '@audius/common/schemas'
 import * as signOnActions from 'common/store/pages/signon/actions'
 import { useDispatch } from 'react-redux'
 
+import type { SocialButtonProps } from '@audius/harmony-native'
 import { SocialButton } from '@audius/harmony-native'
 import { env } from 'app/env'
 import { restrictedHandles } from 'app/screens/sign-on-screen/utils/restrictedHandles'
@@ -17,7 +18,6 @@ import type { InstagramCredentials } from 'app/store/oauth/types'
 import { EventNames } from 'app/types/analytics'
 
 import OAuthWebView from '../../../components/oauth/OAuthWebView'
-import type { SocialButtonProps } from '../../../components/social-button/SocialButton'
 
 type SignUpFlowInstagramAuthProps = Partial<SocialButtonProps> & {
   onSuccess: (info: {

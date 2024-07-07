@@ -47,7 +47,7 @@ export const AddCollectionCard = ({
 
   return (
     <Paper
-      h={266}
+      h={276}
       alignItems='center'
       justifyContent='center'
       gap='xs'
