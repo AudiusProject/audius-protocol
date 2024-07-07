@@ -71,9 +71,9 @@ export const RemixSettingsMenuFields = () => {
     setCanRemixParent(canRemixParent)
   }, [trackId, setParentTrackId, canRemixParent, setCanRemixParent])
 
-  const renderGatedContentCallout = () => {
-    if (isStreamGated && !isUSDCPurchaseGated) {
-      return (
+  return (
+    <div className={styles.fields}>
+      {isStreamGated && !isUSDCPurchaseGated ? (
         <Hint icon={IconQuestionCircle}>{`${
           messages.changeAvailabilityPrefix
         } ${
@@ -81,51 +81,24 @@ export const RemixSettingsMenuFields = () => {
             ? messages.collectibleGated
             : messages.specialAccess
         }${messages.changeAvailabilitySuffix}`}</Hint>
-      )
-    }
-    return null
-  }
-
-  const renderUsdcPurchaseGatedContentCallout = () => {
-    if (isUSDCPurchaseGated) {
-      return (
-        <Hint icon={IconQuestionCircle}>
-          {`${messages.changeAvailabilityPrefix} ${messages.premium}${messages.changeAvailabilitySuffix}`}
-        </Hint>
-      )
-    }
-    return null
-  }
-
-  const renderHideRemixesField = () => {
-    if (isStreamGated && !isUSDCPurchaseGated) {
-      return (
-        <SwitchRowField
-          name={SHOW_REMIXES}
-          header={messages.hideRemix.header}
-          description={messages.hideRemix.description}
-          inverted
-          checked
-          disabled
-        />
-      )
-    }
-    return (
+      ) : null}
       <SwitchRowField
         name={SHOW_REMIXES}
         header={messages.hideRemix.header}
         description={messages.hideRemix.description}
         inverted
+        {...(isStreamGated && !isUSDCPurchaseGated
+          ? { checked: true, disabled: true }
+          : {})}
       />
-    )
-  }
 
-  return (
-    <div className={styles.fields}>
-      {renderGatedContentCallout()}
-      {renderHideRemixesField()}
       <Divider />
-      {renderUsdcPurchaseGatedContentCallout()}
+
+      {isUSDCPurchaseGated ? (
+        <Hint icon={IconQuestionCircle}>
+          {`${messages.changeAvailabilityPrefix} ${messages.premium}${messages.changeAvailabilitySuffix}`}
+        </Hint>
+      ) : null}
       <SwitchRowField
         name={IS_REMIX}
         header={messages.remixOf.header}
