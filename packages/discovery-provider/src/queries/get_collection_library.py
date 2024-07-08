@@ -9,7 +9,6 @@ from src.models.playlists.aggregate_playlist import AggregatePlaylist
 from src.models.playlists.playlist import Playlist
 from src.models.social.repost import Repost, RepostType
 from src.models.social.save import Save, SaveType
-from src.models.tracks.track import Track
 from src.models.users.usdc_purchase import PurchaseType, USDCPurchase
 from src.models.users.user import User
 from src.queries import response_name_constants
@@ -19,6 +18,7 @@ from src.queries.query_helpers import (
     LibraryFilterType,
     SortDirection,
     add_query_pagination,
+    filter_playlists_with_only_hidden_tracks,
     populate_playlist_metadata,
 )
 from src.utils import helpers
@@ -242,9 +242,7 @@ def _get_collection_library(args: GetCollectionLibraryArgs, session):
         )
     )
 
-    # exclude playlists with only hidden tracks and empty playlists
     playlist_track_ids = set()
-    exclude_playlist_ids = set()
     for playlist in playlists:
         track_ids = set(
             map(
@@ -254,25 +252,10 @@ def _get_collection_library(args: GetCollectionLibraryArgs, session):
         )
         playlist_track_ids = playlist_track_ids.union(track_ids)
 
-    hidden_playlist_track_ids = (
-        session.query(Track.track_id)
-        .filter(Track.track_id.in_(list(playlist_track_ids)))
-        .filter(Track.is_unlisted == True)
-        .all()
+    # exclude playlists with only hidden tracks and empty playlists
+    playlists = filter_playlists_with_only_hidden_tracks(
+        session, playlists, playlist_track_ids
     )
-    hidden_playlist_track_ids = [t[0] for t in hidden_playlist_track_ids]
-
-    for playlist in playlists:
-        track_ids = set(
-            map(
-                lambda t: t["track"],
-                playlist.get("playlist_contents", {}).get("track_ids", []),
-            )
-        )
-        if all([t in hidden_playlist_track_ids for t in track_ids]):
-            exclude_playlist_ids.add(playlist["playlist_id"])
-
-    playlists = [p for p in playlists if p["playlist_id"] not in exclude_playlist_ids]
 
     # attach users
     playlists = add_users_to_playlists(playlists, session, user_id)

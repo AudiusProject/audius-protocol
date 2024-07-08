@@ -1,7 +1,7 @@
 import time
 
 from src.api.v1.helpers import extend_playlist
-from src.models.tracks.track import Track
+from src.queries.query_helpers import filter_playlists_with_only_hidden_tracks
 from src.utils.db_session import get_db_read_replica
 from src.utils.elasticdsl import (
     ES_PLAYLISTS,
@@ -72,7 +72,6 @@ def get_top_playlists_es(kind, args):
     )
 
     playlist_track_ids = set()
-    exclude_playlist_ids = set()
     playlists = []
     for hit in found["hits"]["hits"]:
         p = hit["_source"]
@@ -88,27 +87,10 @@ def get_top_playlists_es(kind, args):
 
     # exclude playlists with only hidden tracks and empty playlists
     db = get_db_read_replica()
-    if playlists:
-        with db.scoped_session() as session:
-            hidden_playlist_track_ids = (
-                session.query(Track.track_id)
-                .filter(Track.track_id.in_(list(playlist_track_ids)))
-                .filter(Track.is_unlisted == True)
-                .all()
-            )
-            hidden_playlist_track_ids = [t[0] for t in hidden_playlist_track_ids]
-
-    for playlist in playlists:
-        track_ids = set(
-            map(
-                lambda t: t["track"],
-                playlist.get("playlist_contents", {}).get("track_ids", []),
-            )
+    with db.scoped_session() as session:
+        playlists = filter_playlists_with_only_hidden_tracks(
+            session, playlists, playlist_track_ids
         )
-        if all([t in hidden_playlist_track_ids for t in track_ids]):
-            exclude_playlist_ids.add(playlist["playlist_id"])
-
-    playlists = [p for p in playlists if p["playlist_id"] not in exclude_playlist_ids]
 
     # with users behavior
     user_id_set = set([str(p["playlist_owner_id"]) for p in playlists])

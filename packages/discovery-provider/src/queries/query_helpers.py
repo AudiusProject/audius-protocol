@@ -1447,3 +1447,27 @@ def filter_hidden_tracks(playlist, tracks, current_user_id):
                 and not tracks_map.get(track_id, {}).get("is_unlisted", False)
             ]
         }
+
+
+# Filter out playlists with only hidden tracks and empty playlists
+def filter_playlists_with_only_hidden_tracks(session, playlists, track_ids):
+    hidden_track_ids = (
+        session.query(Track.track_id)
+        .filter(Track.track_id.in_(list(track_ids)))
+        .filter(Track.is_unlisted == True)
+        .all()
+    )
+    hidden_track_ids = [t[0] for t in hidden_track_ids]
+
+    results = []
+    for playlist in playlists:
+        playlist_track_ids = set(
+            map(
+                lambda t: t["track"],
+                playlist.get("playlist_contents", {}).get("track_ids", []),
+            )
+        )
+        if not all([t in hidden_track_ids for t in playlist_track_ids]):
+            results.append(playlist)
+
+    return results
