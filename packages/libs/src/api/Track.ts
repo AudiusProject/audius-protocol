@@ -25,7 +25,8 @@ const TRACK_PROPS = [
   'is_original_available',
   'is_downloadable',
   'ai_attribution_user_id',
-  'allowed_api_keys'
+  'allowed_api_keys',
+  'field_visibility'
 ]
 const TRACK_REQUIRED_PROPS = ['owner_id', 'title']
 
@@ -656,6 +657,7 @@ export class Track extends Base {
       bpm,
       musical_key,
       audio_analysis_error_count,
+      field_visibility,
       ...other
     } = trackMetadata
     if (typeof other !== 'undefined') {
@@ -712,7 +714,8 @@ export class Track extends Base {
       allowed_api_keys,
       bpm,
       musical_key,
-      audio_analysis_error_count
+      audio_analysis_error_count,
+      field_visibility
     }
   }
 }
