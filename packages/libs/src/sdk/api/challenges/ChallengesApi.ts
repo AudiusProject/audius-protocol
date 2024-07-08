@@ -8,7 +8,7 @@ import type {
 } from '../../services'
 import { AntiAbuseOracleService } from '../../services/AntiAbuseOracle/types'
 import type { RewardManagerClient } from '../../services/Solana/programs/RewardManagerClient/RewardManagerClient'
-import { AntiAbuseAttestionError } from '../../utils/errors'
+import { AntiAbuseOracleAttestationError } from '../../utils/errors'
 import { parseParams } from '../../utils/parseParams'
 import { BaseAPI, Configuration } from '../generated/default'
 import {
@@ -113,6 +113,7 @@ export class ChallengesApi extends BaseAPI {
       challengeId,
       specifier
     })
+    logger.debug('Existing attestations:', submissions)
 
     const attestationPromises = []
     const hasSubmittedAntiAbuseOracle = submissions?.messages.find(
@@ -137,8 +138,11 @@ export class ChallengesApi extends BaseAPI {
         .map((m) => m.operator) ?? []
 
     const state = await this.rewardManager.getRewardManagerState()
-    if (existingSenderOwners.length < state.minVotes) {
-      logger.debug('Submitting discovery node attestations...')
+    const outstandingAttestations = state.minVotes - existingSenderOwners.length
+    if (outstandingAttestations > 0) {
+      logger.debug(
+        `Submitting ${outstandingAttestations} discovery node attestations...`
+      )
       attestationPromises.push(
         this.submitDiscoveryAttestations({
           userId,
@@ -147,7 +151,7 @@ export class ChallengesApi extends BaseAPI {
           specifier,
           amount,
           recipientEthAddress,
-          numberOfNodes: state.minVotes - existingSenderOwners.length,
+          numberOfNodes: outstandingAttestations,
           excludeOwners: existingSenderOwners,
           logger
         })
@@ -215,8 +219,8 @@ export class ChallengesApi extends BaseAPI {
       await this.antiAbuseOracle.getWalletAddress()
     if (!antiAbuseOracleAttestation.result) {
       const errorMessage = 'Failed to get AAO attestation'
-      if (antiAbuseOracleAttestation.errorCode) {
-        throw new AntiAbuseAttestionError(
+      if (antiAbuseOracleAttestation.errorCode !== undefined) {
+        throw new AntiAbuseOracleAttestationError(
           antiAbuseOracleAttestation.errorCode,
           errorMessage
         )
