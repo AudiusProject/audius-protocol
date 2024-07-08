@@ -34,7 +34,7 @@ const TWITTER_POLLER = `
 
           const oauthToken = query.get('oauth_token')
           const oauthVerifier = query.get('oauth_verifier')
-          if (!oauthToken || !oauthVerifier) exit()
+          if (!oauthToken || !oauthVerifier) return
 
           window.ReactNativeWebView.postMessage(
             JSON.stringify({
@@ -75,7 +75,7 @@ const INSTAGRAM_POLLER = `
           const query = new URLSearchParams(window.location.search)
 
           const instagramCode = query.get('code')
-          if (!instagramCode) exit()
+          if (!instagramCode) return
 
           window.ReactNativeWebView.postMessage(
             JSON.stringify({ 
