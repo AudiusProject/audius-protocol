@@ -44,8 +44,6 @@ type FadeInUpProps = {
   style: CSSProperties
 }
 
-const BORDER_WIDTH = 1
-
 const FadeInUp = (props: FadeInUpProps) => {
   const { children, style } = props
 

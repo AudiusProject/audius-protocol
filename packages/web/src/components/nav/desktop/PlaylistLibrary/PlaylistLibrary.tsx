@@ -6,6 +6,7 @@ import {
   collectionsSocialActions
 } from '@audius/common/store'
 import { Flex, motion } from '@audius/harmony'
+import { ClassNames } from '@emotion/react'
 import { isEmpty } from 'lodash'
 import { useDispatch } from 'react-redux'
 
@@ -20,7 +21,6 @@ import { EmptyLibraryNavLink } from './EmptyLibraryNavLink'
 import { PlaylistLibraryNavItem, keyExtractor } from './PlaylistLibraryNavItem'
 import { useAddAudioNftPlaylistToLibrary } from './useAddAudioNftPlaylistToLibrary'
 import { useSanitizePlaylistLibrary } from './useSanitizePlaylistLibrary'
-import { ClassNames } from '@emotion/react'
 
 const { getPlaylistLibrary } = accountSelectors
 const { saveCollection } = collectionsSocialActions

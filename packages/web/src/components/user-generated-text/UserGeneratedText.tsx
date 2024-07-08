@@ -81,7 +81,7 @@ export const UserGeneratedText = forwardRef(function <T extends ElementType>(
         strength
       }
     }),
-    [linkSource, onClickLink]
+    [linkSource, size, strength, variant, onClickLink]
   )
 
   const children =

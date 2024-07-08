@@ -20,6 +20,7 @@ import {
   Text,
   motion
 } from '@audius/harmony'
+import { ClassNames } from '@emotion/react'
 import { useDispatch } from 'react-redux'
 import { useToggle } from 'react-use'
 
@@ -34,7 +35,6 @@ import { LeftNavLink } from '../LeftNavLink'
 import { DeleteFolderConfirmationModal } from './DeleteFolderConfirmationModal'
 import { NavItemKebabButton } from './NavItemKebabButton'
 import { PlaylistLibraryNavItem, keyExtractor } from './PlaylistLibraryNavItem'
-import { ClassNames } from '@emotion/react'
 const { setVisibility } = modalsActions
 const { addToFolder } = playlistLibraryActions
 const { selectPlaylistUpdateById } = playlistUpdatesSelectors
@@ -57,7 +57,7 @@ const messages = {
 export const PlaylistFolderNavItem = (props: PlaylistFolderNavItemProps) => {
   const { folder, level } = props
   const { name, contents, id } = folder
-  const { color, spacing } = useTheme()
+  const { color } = useTheme()
   const folderHasUpdate = useSelector((state) => {
     return folder.contents.some(
       (content) =>
