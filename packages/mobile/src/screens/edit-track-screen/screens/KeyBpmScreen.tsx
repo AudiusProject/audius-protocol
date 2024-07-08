@@ -8,6 +8,8 @@ import { FormScreen } from 'app/screens/form-screen'
 import { ContextualMenuField } from '../fields/ContextualMenuField'
 import { SubmenuList } from '../fields/SubmenuList'
 
+export const BPM = 'bpm'
+
 const messages = {
   title: 'KEY & TEMPO',
   key: 'Key',
@@ -16,7 +18,7 @@ const messages = {
 }
 
 export const KeyBpmScreen = () => {
-  const [bpmField] = useField<string>('bpm')
+  const [bpmField] = useField<number>(BPM)
 
   return (
     <FormScreen title={messages.title} icon={IconInfo} variant='white'>
@@ -38,8 +40,7 @@ export const KeyBpmScreen = () => {
             {...bpmField}
             value={String(bpmField.value)}
             keyboardType='numeric'
-            label={messages.tempo}
-            placeholder={messages.bpm}
+            label={messages.bpm}
           />
         </Flex>
       </View>

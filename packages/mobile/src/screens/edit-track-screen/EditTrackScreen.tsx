@@ -15,8 +15,12 @@ import { toFormikValidationSchema } from 'zod-formik-adapter'
 import { EditTrackNavigator } from './EditTrackNavigator'
 import { TRACK_PREVIEW } from './fields/AccessAndSaleField/PremiumRadioField/TrackPreviewField'
 import { TRACK_PRICE } from './fields/AccessAndSaleField/PremiumRadioField/TrackPriceField'
+import { BPM } from './screens/KeyBpmScreen'
 import type { FormValues, EditTrackScreenProps } from './types'
 const { computeLicenseVariables, ALL_RIGHTS_RESERVED_TYPE } = creativeCommons
+
+const MIN_BPM = 1
+const MAX_BPM = 999
 
 const errorMessages = {
   title: 'Your track must have a name',
@@ -26,7 +30,9 @@ const errorMessages = {
   previewStartThirtyBeforeEnd:
     'Preview must start at least 30 seconds before the end of the track.',
   previewStartZero:
-    'Preview must start at 0 since the track is less than 30 seconds.'
+    'Preview must start at 0 since the track is less than 30 seconds.',
+  bpmTooLow: `BPM less than ${MIN_BPM}`,
+  bpmTooHigh: `BPM greater than ${MAX_BPM}`
 }
 
 const useEditTrackSchema = () => {
@@ -54,7 +60,8 @@ const useEditTrackSchema = () => {
           description: z.string().nullish(),
           stream_conditions: z.any(),
           duration: z.number().nullable(),
-          preview_start_seconds: z.any()
+          preview_start_seconds: z.any(),
+          bpm: z.string().nullable()
         })
         .refine(
           (values) => {
@@ -167,6 +174,26 @@ const useEditTrackSchema = () => {
           {
             message: errorMessages.previewStartZero,
             path: [TRACK_PREVIEW]
+          }
+        )
+        .refine(
+          (values) => {
+            const { bpm } = values
+            return bpm === null || Number(bpm) >= MIN_BPM
+          },
+          {
+            message: errorMessages.bpmTooLow,
+            path: [BPM]
+          }
+        )
+        .refine(
+          (values) => {
+            const { bpm } = values
+            return bpm == null || Number(bpm) <= MAX_BPM
+          },
+          {
+            message: errorMessages.bpmTooHigh,
+            path: [BPM]
           }
         ),
     [minContentPriceCents, maxContentPriceCents]
