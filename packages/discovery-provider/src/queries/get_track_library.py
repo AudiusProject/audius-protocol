@@ -214,14 +214,23 @@ def _get_track_library(args: GetTrackLibraryArgs, session):
     )
 
     # exclude hidden tracks which were not previously purchase by current user
+    track_purchases = set()
+    if track_ids:
+        track_purchases = (
+            session.query(USDCPurchase.content_id)
+            .filter(
+                USDCPurchase.buyer_user_id == user_id,
+                USDCPurchase.content_id.in_(track_ids),
+                USDCPurchase.content_type == "track",
+            )
+            .all()
+        )
+        track_purchases = set([t[0] for t in track_purchases])
+
     tracks = list(
         filter(
             lambda track: not track["is_unlisted"]
-            or (
-                track["stream_conditions"]
-                and "usdc_purchase" in track["stream_conditions"]
-                and track["access"]["stream"]
-            ),
+            or track["track_id"] in track_purchases,
             tracks,
         )
     )

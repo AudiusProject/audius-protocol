@@ -216,15 +216,28 @@ def _get_collection_library(args: GetCollectionLibraryArgs, session):
     )
 
     # exclude hidden playlists and hidden albums which were not previously purchase by current user
+    album_purchases = set()
+    album_ids = (
+        [p["playlist_id"] for p in playlists]
+        if collection_type == CollectionType.album
+        else []
+    )
+    if album_ids:
+        album_purchases = (
+            session.query(USDCPurchase.content_id)
+            .filter(
+                USDCPurchase.buyer_user_id == user_id,
+                USDCPurchase.content_id.in_(album_ids),
+                USDCPurchase.content_type == "album",
+            )
+            .all()
+        )
+        album_purchases = set([p[0] for p in album_purchases])
+
     playlists = list(
         filter(
             lambda playlist: not playlist["is_private"]
-            or (
-                collection_type == CollectionType.album
-                and playlist["stream_conditions"]
-                and "usdc_purchase" in playlist["stream_conditions"]
-                and playlist["access"]["stream"]
-            ),
+            or playlist["playlist_id"] in album_purchases,
             playlists,
         )
     )
