@@ -136,6 +136,7 @@ export const useClaimMetadata = () => {
     if (notLoaded) {
       dispatch(setClaimMetadata())
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     dispatch,
     fundsPerRound,

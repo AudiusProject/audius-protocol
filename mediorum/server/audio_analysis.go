@@ -40,7 +40,10 @@ func (ss *MediorumServer) startAudioAnalyzer() {
 	}
 
 	for _, upload := range uploads {
-		cid := upload.TranscodeResults["320"]
+		cid, ok := upload.TranscodeResults["320"]
+		if !ok {
+			continue
+		}
 		_, isMine := ss.rendezvousAllHosts(cid)
 		if isMine && upload.AudioAnalysisErrorCount < MAX_TRIES {
 			work <- upload
