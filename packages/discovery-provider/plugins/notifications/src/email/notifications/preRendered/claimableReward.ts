@@ -1054,7 +1054,14 @@ export const email = ({
   </tr>
   <tr>
   <td style="vertical-align: middle;" align="center">
-  <div style="line-height:14px;text-align:center;"><span style="color:#6a677a;font-family:Inter,Arial,sans-serif;font-size:12px;line-height:14px;text-align:center;">No longer want to receive these emails? </span><span style="color:#7e1bcc;font-family:Inter,Arial,sans-serif;font-size:12px;line-height:14px;text-align:center;">Unsubscribe </span><span style="color:#6a677a;font-family:Inter,Arial,sans-serif;font-size:12px;line-height:14px;text-align:center;">or</span><span style="color:#7e1bcc;font-family:Inter,Arial,sans-serif;font-size:12px;line-height:14px;text-align:center;"> Manage Email Preferences</span></div>
+  <div style="line-height:14px;text-align:center;"><span
+      style="color:#6a677a;font-family:Inter,Arial,sans-serif;font-size:12px;line-height:14px;text-align:center;">No
+      longer want to receive these emails? </span><a href="<%asm_group_unsubscribe_raw_url%>"><span
+      style="color:#7e1bcc;font-family:Inter,Arial,sans-serif;font-size:12px;line-height:14px;text-align:center;">Unsubscribe
+      </span></a><span
+      style="color:#6a677a;font-family:Inter,Arial,sans-serif;font-size:12px;line-height:14px;text-align:center;">or</span><a href="<%asm_preferences_raw_url%>"><span
+      style="color:#7e1bcc;font-family:Inter,Arial,sans-serif;font-size:12px;line-height:14px;text-align:center;"> Manage
+      Email Preferences</span></a></div>
   </td>
   </tr>
   </table>

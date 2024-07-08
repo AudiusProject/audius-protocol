@@ -5,7 +5,8 @@ export const email = ({
   profileLink,
   amount,
   challengeTitle,
-  challengeDescription
+  challengeDescription,
+  challengeImage
 }: {
   name: string
   handle: string
@@ -14,6 +15,7 @@ export const email = ({
   amount: number
   challengeTitle: string
   challengeDescription: string
+  challengeImage: string
 }) => {
   const copyrightYear = new Date().getFullYear().toString()
 
@@ -42,6 +44,7 @@ export const email = ({
   <link href="https://download.audius.co/emails/reward-in-cooldown/css(3)" rel="stylesheet" type="text/css">
   <link href="https://download.audius.co/emails/reward-in-cooldown/css(4)" rel="stylesheet" type="text/css">
   <style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
   html {
       margin: 0 !important;
       padding: 0 !important;
@@ -77,7 +80,6 @@ export const email = ({
           min-width: 414px !important;
       }
   }
-  
   </style>
   <!--[if gte mso 9]>
           <xml>
@@ -334,7 +336,7 @@ export const email = ({
   <td width="552" align="center" style="vertical-align: middle;  ">
   <table class="table-w-full-mobile" width="100%" border="0" cellpadding="0" cellspacing="0">
   <tbody><tr>
-  <td style="vertical-align: middle;" width="156" class="stack-column-center" align="center"><img src="https://download.audius.co/emails/reward-in-cooldown/vPcgae71HXCYuWxXBDYqIBDQzJw75y.png" width="156" border="0" style="min-width:156px; width:156px;
+  <td style="vertical-align: middle;" width="156" class="stack-column-center" align="center"><img src="https://download.audius.co/emails/reward-in-cooldown/${challengeImage}" width="156" border="0" style="min-width:156px; width:156px;
           border-radius:8px; height: auto; display: block;"></td>
   <td class="stack-column-center" height="16" style="width:16px; min-width:16px; height:16px; min-height:16px;" width="16">&nbsp;</td>
   <td style="vertical-align: middle;" align="center" class="stack-column-center">
@@ -1255,7 +1257,14 @@ export const email = ({
   </tr>
   <tr>
   <td style="vertical-align: middle;" align="center">
-  <div style="line-height:14px;text-align:center;"><span style="color:#6a677a;font-family:Inter,Arial,sans-serif;font-size:12px;line-height:14px;text-align:center;">No longer want to receive these emails? </span><span style="color:#7e1bcc;font-family:Inter,Arial,sans-serif;font-size:12px;line-height:14px;text-align:center;">Unsubscribe </span><span style="color:#6a677a;font-family:Inter,Arial,sans-serif;font-size:12px;line-height:14px;text-align:center;">or</span><span style="color:#7e1bcc;font-family:Inter,Arial,sans-serif;font-size:12px;line-height:14px;text-align:center;"> Manage Email Preferences</span></div>
+  <div style="line-height:14px;text-align:center;"><span
+    style="color:#6a677a;font-family:Inter,Arial,sans-serif;font-size:12px;line-height:14px;text-align:center;">No
+    longer want to receive these emails? </span><a href="<%asm_group_unsubscribe_raw_url%>"><span
+    style="color:#7e1bcc;font-family:Inter,Arial,sans-serif;font-size:12px;line-height:14px;text-align:center;">Unsubscribe
+  </span></a><span
+    style="color:#6a677a;font-family:Inter,Arial,sans-serif;font-size:12px;line-height:14px;text-align:center;">or</span><a href="<%asm_preferences_raw_url%>"><span
+    style="color:#7e1bcc;font-family:Inter,Arial,sans-serif;font-size:12px;line-height:14px;text-align:center;"> Manage
+    Email Preferences</span></a></div>
   </td>
   </tr>
   </tbody></table>
@@ -1295,5 +1304,6 @@ export const email = ({
   </div>
   
   
-  </body></html>`
+  </body></html>
+  `
 }

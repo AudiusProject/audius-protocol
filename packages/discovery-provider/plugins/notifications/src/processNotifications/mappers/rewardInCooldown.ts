@@ -16,36 +16,66 @@ type RewardInCooldownRow = Omit<NotificationRow, 'data'> & {
 const challengeMessages = {
   'send-first-tip': {
     title: 'Send Your First Tip',
-    description: 'Show some love to your favorite artist by sending them a tip.'
+    description:
+      'Show some love to your favorite artist by sending them a tip.',
+    imageUrl: 'Ky4Qr1byW9wnawVFUbRlpTaLf8d4n0.png'
   },
   'track-upload': {
     title: 'Upload 3 Tracks',
-    description: 'Earn 1 $AUDIO for uploading 3 tracks.'
+    description: 'Earn 1 $AUDIO for uploading 3 tracks.',
+    imageUrl: '72WyVN4Vds7CvNZr5yQA912GLFhDOs.png'
   },
   'first-playlist': {
     title: 'Create a Playlist',
-    description: 'Create a playlist and add a track.'
-  },
-  'mobile-install': {
-    title: 'Get the Mobile App',
-    description:
-      'Download the Audius app for iOS or Android and sign in to Earn 1 $AUDIO.'
+    description: 'Create a playlist and add a track.',
+    imageUrl: 'PH1vcT5H8RRADIqSZwaKvNztiiKIDm.png'
   },
   'ref-v': {
     title: 'Link Verified Accounts',
-    description: 'Link your verified social media accounts to get 5 $AUDIO.'
+    description: 'Link your verified social media accounts to get 5 $AUDIO.',
+    imageUrl: 'XFmTX9RIkyTzsEEsQopzDdGXeGnxXA.png'
   },
   referrals: {
     title: 'Invite Your Friends!',
-    description: 'Earn 1 $AUDIO for you and your friend.'
+    description: 'Earn 1 $AUDIO for you and your friend.',
+    imageUrl: 'XFmTX9RIkyTzsEEsQopzDdGXeGnxXA.png'
   },
   referred: {
     title: 'You Accepted An Invite!',
-    description: 'You earned 1 $AUDIO for being invited.'
+    description: 'You earned 1 $AUDIO for being invited.',
+    imageUrl: 'XFmTX9RIkyTzsEEsQopzDdGXeGnxXA.png'
+  },
+  'connect-verified': {
+    title: 'Link Verified Accounts',
+    description: 'Link your verified social media accounts to earn 5 $AUDIO.',
+    imageUrl: 'bpwwTf7HiZxlMd1PkX82qw45tiEpXX.png'
   },
   'profile-completion': {
     title: 'Complete Your Profile',
-    description: 'Complete your Audius profile to earn 1 $AUDIO.'
+    description: 'Complete your Audius profile to earn 1 $AUDIO.',
+    imageUrl: '8JCdZg2rcQdqovWtNYfUA3RZDAiyX3.png'
+  },
+  'listen-streak': {
+    title: 'Listening Streak: 7 Days',
+    description: 'Complete your Audius profile to earn 1 $AUDIO.',
+    imageUrl: '8JCdZg2rcQdqovWtNYfUA3RZDAiyX3.png'
+  },
+  'mobile-install': {
+    title: 'Get the Audius Mobile App',
+    description:
+      'Download the Audius app for iOS or Android and sign in to Earn 1 $AUDIO.',
+    imageUrl: 'uVztPmheWeIzdv2C4vnvgBgnH221sU.png'
+  },
+  s: {
+    title: 'Sell to Earn',
+    description:
+      'Receive 1 additional $AUDIO for each dollar earned from sales',
+    imageUrl: 'AXu4i3Zj3QCGifxQ5ug5z8Pp8am9mS.png'
+  },
+  b: {
+    title: 'Spend to Earn',
+    description: 'Earn 1 $AUDIO for each dollar you spend on Audius.',
+    imageUrl: 'AXu4i3Zj3QCGifxQ5ug5z8Pp8am9mS.png'
   }
 }
 
@@ -67,7 +97,6 @@ export class RewardInCooldown extends BaseNotification<RewardInCooldownRow> {
   }
 
   async processNotification() {
-    logger.info(`asdf processNotification`)
     const users = await this.getUsersBasicInfo([this.userId])
     const user = users[this.userId]
     if (!user) {
@@ -89,7 +118,8 @@ export class RewardInCooldown extends BaseNotification<RewardInCooldownRow> {
         profileLink: formatProfileUrl(user.handle),
         amount: this.amount,
         challengeTitle: challengeMessage.title,
-        challengeDescription: challengeMessage.description
+        challengeDescription: challengeMessage.description,
+        challengeImage: challengeMessage.imageUrl
       }),
       subject: 'Congratulations! 🏆 You’ve earned a reward! 🎉'
     })
