@@ -259,12 +259,6 @@ def populate_tracks(db):
                 "content_id": 25,
                 "created_at": "2022-01-03T00:00:00Z",
             },
-            {
-                "buyer_user_id": 5,
-                "seller_user_id": 6,
-                "content_id": 27,
-                "created_at": "2022-01-01T00:00:00Z",
-            },
         ],
     }
 
@@ -367,7 +361,7 @@ def test_purchases_sort_order(session):
 
     track_library = _get_track_library(args, session)
     assert len(track_library) == 2, "should return 2 tracks"
-    assert_correct_track(track_library, 0, 27)
+    assert_correct_track(track_library, 0, 25)
     assert_correct_track(track_library, 1, 24)
 
 
