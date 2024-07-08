@@ -215,6 +215,17 @@ def _get_collection_library(args: GetCollectionLibraryArgs, session):
         user_id,
     )
 
+    # exclude hidden playlists and hidden albums which were not previously purchase by current user
+    playlists = list(
+        filter(
+            lambda playlist: not playlist["is_private"]
+            or (
+                collection_type == CollectionType.album and playlist["access"]["stream"]
+            ),
+            playlists,
+        )
+    )
+
     # attach users
     playlists = add_users_to_playlists(playlists, session, user_id)
 
