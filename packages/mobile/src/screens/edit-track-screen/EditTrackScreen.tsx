@@ -3,7 +3,11 @@ import { useCallback, useMemo } from 'react'
 import { useUSDCPurchaseConfig } from '@audius/common/hooks'
 import { isContentUSDCPurchaseGated } from '@audius/common/models'
 import type { TrackForUpload } from '@audius/common/store'
-import { creativeCommons, formatPrice } from '@audius/common/utils'
+import {
+  creativeCommons,
+  formatPrice,
+  parseMusicalKey
+} from '@audius/common/utils'
 import { Formik } from 'formik'
 import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
@@ -197,7 +201,11 @@ export const EditTrackScreen = (props: EditTrackScreenProps) => {
     stream_conditions: streamConditionsOverride,
     licenseType: computeLicenseVariables(
       initialValuesProp.license || ALL_RIGHTS_RESERVED_TYPE
-    )
+    ),
+    musical_key: initialValuesProp.musical_key
+      ? parseMusicalKey(initialValuesProp.musical_key)
+      : undefined,
+    bpm: initialValuesProp.bpm ? String(initialValuesProp.bpm) : undefined
   }
 
   const handleSubmit = useCallback(
