@@ -1,10 +1,14 @@
 import { useCallback } from 'react'
 
-import { IconCaretRight } from '@audius/harmony'
+import {
+  Flex,
+  IconButton,
+  IconCaretLeft,
+  IconCaretRight,
+  spacing
+} from '@audius/harmony'
 import { goBack, goForward } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
-
-import styles from './RouteNav.module.css'
 
 export const RouteNav = () => {
   const dispatch = useDispatch()
@@ -18,12 +22,31 @@ export const RouteNav = () => {
   }, [dispatch])
 
   return (
-    <div className={styles.wrapper}>
-      <IconCaretRight className={styles.backButton} onClick={handleGoBack} />
-      <IconCaretRight
-        className={styles.forwardButton}
-        onClick={handleGoForward}
+    <Flex
+      alignItems='center'
+      gap='xl'
+      ph={spacing.l}
+      justifyContent='flex-end'
+      borderBottom='default'
+      backgroundColor='surface1'
+      css={{ minHeight: `${spacing.unit10}px`, '-webkit-app-region': 'drag' }}
+    >
+      <IconButton
+        aria-label='Go Back'
+        icon={IconCaretLeft}
+        size='m'
+        color='subdued'
+        onClick={handleGoBack}
+        css={{ '-webkit-app-region': 'no-drag' }}
       />
-    </div>
+      <IconButton
+        aria-label='Go Forward'
+        icon={IconCaretRight}
+        size='m'
+        color='subdued'
+        onClick={handleGoForward}
+        css={{ '-webkit-app-region': 'no-drag' }}
+      />
+    </Flex>
   )
 }
