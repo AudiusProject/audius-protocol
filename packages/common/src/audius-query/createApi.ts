@@ -287,7 +287,7 @@ const useCacheData = <Args, Data>(
       endpoint.options.kind,
       hookOptions?.shallow
     )
-    if (typeof normalizedData === 'object') {
+    if (typeof normalizedData === 'object' && !Array.isArray(normalizedData)) {
       return denormalize(normalizedData, apiResponseSchema, entityMap) as Data
     }
     return normalizedData
@@ -342,7 +342,7 @@ const fetchData = async <Args, Data>(
 
     let data: Data
 
-    if (typeof apiData === 'object') {
+    if (typeof apiData === 'object' && !Array.isArray(apiData)) {
       const { entities, result } = normalize(
         endpoint.options.schemaKey
           ? { [endpoint.options.schemaKey]: apiData }
