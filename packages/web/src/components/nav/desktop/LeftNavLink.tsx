@@ -4,15 +4,7 @@ import { Text, TextProps, spacing } from '@audius/harmony'
 import { CSSInterpolation } from '@emotion/css'
 import { Interpolation, Theme } from '@emotion/react'
 import { Slot } from '@radix-ui/react-slot'
-import cn from 'classnames'
 import { NavLink, NavLinkProps } from 'react-router-dom'
-import { SetOptional } from 'type-fest'
-
-import { Droppable, DroppableProps } from 'components/dragndrop'
-import { selectDragnDropState } from 'store/dragndrop/slice'
-import { useSelector } from 'utils/reducer'
-
-import styles from './LeftNavLink.module.css'
 
 export type LeftNavLinkProps =
   | { disabled?: boolean; asChild?: boolean } & (
@@ -106,34 +98,5 @@ export const LeftNavLink = (props: LeftNavLinkProps) => {
     <div {...other} css={css}>
       <TextComp {...textProps}>{children}</TextComp>
     </div>
-  )
-}
-
-type LeftNavDroppableProps = SetOptional<
-  DroppableProps,
-  'hoverClassName' | 'activeClassName' | 'inactiveClassName'
->
-
-export const LeftNavDroppable = (props: LeftNavDroppableProps) => {
-  const { kind } = useSelector(selectDragnDropState)
-
-  const hoverClassName =
-    kind === 'track'
-      ? styles.droppableLinkHoverTrack
-      : styles.droppableLinkHoverPlaylist
-
-  const activeClassName =
-    kind === 'track'
-      ? cn(styles.droppableLinkActive, 'droppableLinkActive')
-      : undefined
-
-  return (
-    <Droppable
-      className={styles.droppableLink}
-      hoverClassName={hoverClassName}
-      activeClassName={activeClassName}
-      inactiveClassName={styles.droppableLinkInactive}
-      {...props}
-    />
   )
 }

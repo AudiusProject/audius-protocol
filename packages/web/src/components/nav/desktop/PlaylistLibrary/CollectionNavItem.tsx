@@ -30,7 +30,8 @@ import {
 import { useSelector } from 'utils/reducer'
 import { BASE_URL } from 'utils/route'
 
-import { LeftNavDroppable, LeftNavLink } from '../LeftNavLink'
+import { LeftNavDroppable } from '../LeftNavDroppable'
+import { LeftNavLink } from '../LeftNavLink'
 
 import { DeleteCollectionConfirmationModal } from './DeleteCollectionConfirmationModal'
 import { NavItemKebabButton } from './NavItemKebabButton'
