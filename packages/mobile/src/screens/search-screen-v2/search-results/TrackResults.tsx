@@ -18,6 +18,7 @@ import { NoResultsTile } from '../NoResultsTile'
 import { SearchCatalogTile } from '../SearchCatalogTile'
 import {
   useGetSearchResults,
+  useIsEmptySearch,
   useSearchFilters,
   useSearchQuery
 } from '../searchState'
@@ -33,7 +34,7 @@ export const TrackResults = () => {
   const [query] = useSearchQuery()
   const [filters] = useSearchFilters()
   const dispatch = useDispatch()
-  const isNoSearch = !query && isEmpty(filters)
+  const isEmptySearch = useIsEmptySearch()
 
   const lineup = useSelector(getSearchTracksLineupMetadatas)
 
@@ -68,7 +69,7 @@ export const TrackResults = () => {
     [getResults]
   )
 
-  if (isNoSearch) return <SearchCatalogTile />
+  if (isEmptySearch) return <SearchCatalogTile />
   if ((!lineup || lineup.entries.length === 0) && status === Status.SUCCESS) {
     return <NoResultsTile />
   }
