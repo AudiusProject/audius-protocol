@@ -59,7 +59,7 @@ export class USDCWithdrawal extends BaseNotification<USDCWithdrawalRow> {
         profileLink: formatProfileUrl(user.handle),
         amount: this.amount
       }),
-      subject: 'Your Withdrawal Has Been Started'
+      subject: 'Your USDC Transfer is Complete!'
     })
   }
 }

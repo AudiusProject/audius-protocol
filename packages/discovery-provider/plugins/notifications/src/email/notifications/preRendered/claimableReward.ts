@@ -37,6 +37,7 @@ export const email = ({
   <link href="https://fonts.googleapis.com/css?family=Inter:900" rel="stylesheet" type="text/css">
   <link href="https://fonts.googleapis.com/css?family=Inter:500" rel="stylesheet" type="text/css">
   <style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
   html {
       margin: 0 !important;
       padding: 0 !important;
@@ -274,8 +275,8 @@ export const email = ({
   <td align="center">
   <table cellspacing="0" cellpadding="0" border="0">
   <tr>
-  <td style="vertical-align: middle;" width="200" align="center"><img src="https://download.audius.co/emails/claimable-reward/H6iLdtDPafmBTBzLVTEm2ybTV6lF0F.gif" width="200" border="0" style="min-width:200px; width:200px;
-          border-radius:8px; height: auto; display: block;"></td>
+  <td style="vertical-align: middle;" width="200" align="center"><a href="https://audius.co/audio"><img src="https://download.audius.co/emails/claimable-reward/H6iLdtDPafmBTBzLVTEm2ybTV6lF0F.gif" width="200" border="0" style="min-width:200px; width:200px;
+          border-radius:8px; height: auto; display: block;"></a></td>
   </tr>
   </table>
   </td>

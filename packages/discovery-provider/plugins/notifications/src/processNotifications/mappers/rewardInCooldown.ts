@@ -121,7 +121,7 @@ export class RewardInCooldown extends BaseNotification<RewardInCooldownRow> {
         challengeDescription: challengeMessage.description,
         challengeImage: challengeMessage.imageUrl
       }),
-      subject: 'Congratulations! 🏆 You’ve earned a reward! 🎉'
+      subject: 'Congratulations! 🏆 You’ve earned a reward!'
     })
   }
 }
