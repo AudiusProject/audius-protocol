@@ -76,11 +76,12 @@ export const VisibilityField = (props: VisibilityFieldProps) => {
   const [{ value: releaseDate }, , { setValue: setReleaseDate }] =
     useEntityField<string>('release_date')
 
-  const visibilityType = isScheduledRelease
-    ? 'scheduled'
-    : isHidden
-    ? 'hidden'
-    : 'public'
+  const visibilityType =
+    isScheduledRelease && isHidden
+      ? 'scheduled'
+      : isHidden
+      ? 'hidden'
+      : 'public'
 
   const renderValue = useCallback(() => {
     switch (visibilityType) {
