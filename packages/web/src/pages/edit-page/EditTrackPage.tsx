@@ -110,11 +110,6 @@ export const EditTrackPage = (props: EditPageProps) => {
     trackMetadatas: [
       {
         ...trackAsMetadataForUpload,
-        licenseType: {
-          allowAttribution: false,
-          commercialUse: false,
-          derivativeWorks: false
-        },
         remix_of: null
       }
     ],
