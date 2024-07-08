@@ -216,7 +216,12 @@ def _get_track_library(args: GetTrackLibraryArgs, session):
     # exclude hidden tracks which were not previously purchase by current user
     tracks = list(
         filter(
-            lambda track: not track["is_unlisted"] or track["access"]["stream"],
+            lambda track: not track["is_unlisted"]
+            or (
+                track["stream_conditions"]
+                and "usdc_purchase" in track["stream_conditions"]
+                and track["access"]["stream"]
+            ),
             tracks,
         )
     )

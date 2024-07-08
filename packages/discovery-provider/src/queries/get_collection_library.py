@@ -220,7 +220,10 @@ def _get_collection_library(args: GetCollectionLibraryArgs, session):
         filter(
             lambda playlist: not playlist["is_private"]
             or (
-                collection_type == CollectionType.album and playlist["access"]["stream"]
+                collection_type == CollectionType.album
+                and playlist["stream_conditions"]
+                and "usdc_purchase" in playlist["stream_conditions"]
+                and playlist["access"]["stream"]
             ),
             playlists,
         )
