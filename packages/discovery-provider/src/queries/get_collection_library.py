@@ -229,7 +229,7 @@ def _get_collection_library(args: GetCollectionLibraryArgs, session):
         )
     )
 
-    # exclude playlists with only hidden tracks
+    # exclude playlists with only hidden tracks and empty playlists
     playlist_track_ids = set()
     exclude_playlist_ids = set()
     for playlist in playlists:

@@ -138,10 +138,6 @@ def test_get_feed_es(app):
     # test feed
     with app.app_context():
         feed_results = get_feed_es({"user_id": "1"})
-        print(f"len feed_results: {len(feed_results)}")
-        print(f"type: {[z.get('track_id') for z in feed_results]}")
-        # print(f"type: {[z.get('playlist_id', z.get('track_id')) for z in feed_results]}")
-        print(f"feed_results: {feed_results}")
         assert len(feed_results) == 4
         assert feed_results[0]["playlist_id"] == 1
         assert feed_results[0]["save_count"] == 1

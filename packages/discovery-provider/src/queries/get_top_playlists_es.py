@@ -86,7 +86,7 @@ def get_top_playlists_es(kind, args):
         )
         playlist_track_ids = playlist_track_ids.union(track_ids)
 
-    # exclude playlists with only hidden tracks
+    # exclude playlists with only hidden tracks and empty playlists
     db = get_db_read_replica()
     if playlists:
         with db.scoped_session() as session:

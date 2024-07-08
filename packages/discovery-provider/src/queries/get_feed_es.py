@@ -243,7 +243,7 @@ def get_feed_es(args, limit=10, offset=0):
                 continue
             item = keyed_reposts[k]
 
-            # exclude reposted playlists with only hidden tracks
+            # exclude reposted playlists with only hidden tracks and empty reposted playlists
             if "playlist_id" in item:
                 track_ids = set(
                     map(
