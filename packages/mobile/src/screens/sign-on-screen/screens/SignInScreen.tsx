@@ -58,8 +58,7 @@ export const SignInScreen = () => {
   const handleSubmit = useCallback(
     async (values: SignInValues) => {
       const { email, password } = values
-      const fpResponse = await fingerprintClient.identify(email, 'mobile')
-      const visitorId = fpResponse?.visitorId
+      const visitorId = await fingerprintClient.identify(email, 'mobile')
       dispatch(setValueField('email', email))
       dispatch(setValueField('password', password))
       dispatch(signIn(email, password, visitorId))

@@ -19,6 +19,7 @@ import { toFormikValidationSchema } from 'zod-formik-adapter'
 import { Text, TextLink } from '@audius/harmony-native'
 import { HarmonyTextField } from 'app/components/fields'
 import { useToast } from 'app/hooks/useToast'
+import { fingerprintClient } from 'app/services/fingerprint'
 
 import { Heading, Page, PageFooter } from '../components/layout'
 import { useTrackScreen } from '../utils/useTrackScreen'
@@ -43,11 +44,12 @@ export const ConfirmEmailScreen = () => {
   useTrackScreen('ConfirmEmail')
 
   const handleSubmit = useCallback(
-    (values: ConfirmEmailValues) => {
+    async (values: ConfirmEmailValues) => {
       const { otp } = values
       const sanitizedOtp = otp.replace(/\s/g, '')
       dispatch(setValueField('otp', sanitizedOtp))
-      dispatch(signIn(email, password, undefined, sanitizedOtp))
+      const visitorId = await fingerprintClient.identify(email, 'mobile')
+      dispatch(signIn(email, password, visitorId, sanitizedOtp))
     },
     [dispatch, email, password]
   )
