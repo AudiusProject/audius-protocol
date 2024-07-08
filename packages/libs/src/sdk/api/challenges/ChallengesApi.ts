@@ -113,6 +113,7 @@ export class ChallengesApi extends BaseAPI {
       challengeId,
       specifier
     })
+    logger.debug('Existing attestations:', submissions)
 
     const attestationPromises = []
     const hasSubmittedAntiAbuseOracle = submissions?.messages.find(
@@ -137,8 +138,11 @@ export class ChallengesApi extends BaseAPI {
         .map((m) => m.operator) ?? []
 
     const state = await this.rewardManager.getRewardManagerState()
-    if (existingSenderOwners.length < state.minVotes) {
-      logger.debug('Submitting discovery node attestations...')
+    const outstandingAttestations = state.minVotes - existingSenderOwners.length
+    if (outstandingAttestations > 0) {
+      logger.debug(
+        `Submitting ${outstandingAttestations} discovery node attestations...`
+      )
       attestationPromises.push(
         this.submitDiscoveryAttestations({
           userId,
@@ -147,7 +151,7 @@ export class ChallengesApi extends BaseAPI {
           specifier,
           amount,
           recipientEthAddress,
-          numberOfNodes: state.minVotes - existingSenderOwners.length,
+          numberOfNodes: outstandingAttestations,
           excludeOwners: existingSenderOwners,
           logger
         })
