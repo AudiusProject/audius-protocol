@@ -12,6 +12,7 @@ import { EditTrackModalState } from './edit-track-modal'
 import { InboxUnavailableModalState } from './inbox-unavailable-modal'
 import { LeavingAudiusModalState } from './leaving-audius-modal'
 import { PremiumContentPurchaseModalState } from './premium-content-purchase-modal'
+import { PublishContentModalState } from './publish-content-modal'
 import { USDCManualTransferModalState } from './usdc-manual-transfer-modal'
 import { USDCPurchaseDetailsModalState } from './usdc-purchase-details-modal'
 import { USDCTransactionDetailsModalState } from './usdc-transaction-details-modal'
@@ -109,6 +110,7 @@ export type StatefulModalsState = {
   WaitForDownloadModal: WaitForDownloadModalState
   ArtistPick: ArtistPickModalState
   AlbumTrackRemoveConfirmation: AlbumTrackRemoveConfirmationModalState
+  PublishContentModal: PublishContentModalState
 }
 
 export type ModalsState = BasicModalsState & StatefulModalsState

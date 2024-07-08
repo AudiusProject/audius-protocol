@@ -3,12 +3,12 @@ import { Nullable } from '~/utils/typeUtils'
 
 import { createModal } from './createModal'
 
-export type PublishContentModalData = {
+export type PublishContentModalState = {
   contentId: Nullable<ID>
   contentType: Nullable<'playlist' | 'album' | 'track'>
 }
 
-const publishContentModal = createModal<PublishContentModalData>({
+const publishContentModal = createModal<PublishContentModalState>({
   reducerPath: 'PublishContentModal',
   initialState: {
     isOpen: false,

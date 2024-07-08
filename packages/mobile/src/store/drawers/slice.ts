@@ -1,5 +1,5 @@
 import type { ID } from '@audius/common/models'
-import type { PublishContentModalData } from '@audius/common/store'
+import type { PublishContentModalState } from '@audius/common/store'
 import type { Nullable } from '@audius/common/utils'
 import type { PayloadAction } from '@reduxjs/toolkit'
 import { createSlice } from '@reduxjs/toolkit'
@@ -73,7 +73,7 @@ export type DrawerData = {
   InboxUnavailable: { userId: number; shouldOpenChat: boolean }
   Welcome: undefined
   ManagerMode: undefined
-  PublishContentDrawer: PublishContentModalData
+  PublishContentDrawer: PublishContentModalState
 }
 
 export type DrawersState = { [drawer in Drawer]: boolean | 'closing' } & {

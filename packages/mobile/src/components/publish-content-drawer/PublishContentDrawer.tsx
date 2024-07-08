@@ -93,16 +93,15 @@ export const PublishContentDrawer = () => {
 
   const previousIsPublishingTrack = usePrevious(currentTrack?._is_publishing)
 
+  // (Tracks only) - Check for changes to is_publishing to dismiss the toast
   useEffect(() => {
     if (
+      dismissToastKey &&
       contentType === 'track' &&
       previousIsPublishingTrack === true &&
       currentTrack?._is_publishing === false
     ) {
-      console.log('DONE PUBLISHING', currentTrack._is_publishing)
-      if (dismissToastKey) {
-        dispatch(manualClearToast({ key: dismissToastKey }))
-      }
+      dispatch(manualClearToast({ key: dismissToastKey }))
     }
   }, [
     contentType,
