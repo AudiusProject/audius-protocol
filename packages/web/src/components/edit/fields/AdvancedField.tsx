@@ -199,6 +199,7 @@ export const AdvancedField = () => {
     set(initialValues, ISWC, iswcValue)
     set(initialValues, ALLOWED_API_KEYS, allowedApiKeys)
     set(initialValues, LICENSE_TYPE, computeLicenseVariables(license))
+    set(initialValues, BLOCK_THIRD_PARTY_STREAMING, !!allowedApiKeys)
     set(initialValues, BPM, bpm)
     set(initialValues, MUSICAL_KEY, parseMusicalKey(musicalKey ?? ''))
     set(initialValues, RELEASE_DATE, releaseDate)

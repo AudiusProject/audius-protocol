@@ -32,6 +32,12 @@ module.exports = function (app) {
   app.post(
     '/authentication',
     handleResponse(async (req, res, next) => {
+      const redis = req.app.get('redis')
+      const sendgrid = req.app.get('sendgrid')
+      if (!sendgrid) {
+        req.logger.error('Missing sendgrid api key')
+      }
+
       // body should contain {iv, cipherText, lookupKey}
       const body = req.body
       const headers = req.headers
@@ -39,6 +45,93 @@ module.exports = function (app) {
       if (body && body.iv && body.cipherText && body.lookupKey) {
         try {
           const transaction = await models.sequelize.transaction()
+
+          // default to null
+          let walletAddress = null
+          if (
+            headers &&
+            headers[EncodedDataMessageHeader] &&
+            headers[EncodedDataSignatureHeader]
+          ) {
+            const encodedDataMessage = headers[EncodedDataMessageHeader]
+            const encodedDataSignature = headers[EncodedDataSignatureHeader]
+            try {
+              walletAddress = sigUtil.recoverPersonalSignature({
+                data: encodedDataMessage,
+                sig: encodedDataSignature
+              })
+            } catch (err) {
+              // keep address as null for future user recovery
+              req.logger.error('Error recovering users signed address', err)
+            }
+          }
+
+          const { email, oldLookupKey } = body
+          if (email) {
+            if (!oldLookupKey) {
+              return errorResponseBadRequest(
+                'Missing one of the required fields: oldLookupKey'
+              )
+            }
+
+            // require signed headers for changing email
+            if (walletAddress === null) {
+              return errorResponseBadRequest('Invalid credentials')
+            }
+
+            // check if new artifacts already exist and are deleted
+            const newArtifacts = await models.Authentication.findOne({
+              where: { lookupKey: body.lookupKey },
+              paranoid: false
+            })
+
+            // if artifacts exist or they were previously deleted
+            if (newArtifacts) {
+              // artifacts passed already exist
+              return errorResponseBadRequest('Invalid credentials')
+            }
+
+            // if user has wallet connected to auth artifacts, compare old lookupkey with wallet address
+            const oldArtifacts = await models.Authentication.findOne({
+              where: { lookupKey: oldLookupKey }
+            })
+            if (!oldArtifacts) {
+              return errorResponseBadRequest('Invalid credentials')
+            }
+
+            if (
+              oldArtifacts.walletAddress !== undefined &&
+              oldArtifacts.walletAddress !== null
+            ) {
+              // if signature doesn't match old artifacts
+              if (walletAddress !== oldArtifacts.walletAddress) {
+                return errorResponseBadRequest('Invalid credentials')
+              }
+            }
+
+            const otp = body.otp
+
+            if (!otp) {
+              await sendOtp({ email, redis, sendgrid })
+              return errorResponseForbidden('Missing otp')
+            }
+
+            const isOtpValid = await validateOtp({ email, otp, redis })
+            if (!isOtpValid) {
+              return errorResponseBadRequest('Invalid credentials')
+            }
+
+            // change email of user whose signature was passed in the call
+            // require wallet address from signature when updating email
+            if (walletAddress !== null) {
+              const userRecord = await models.User.findOne({
+                where: { walletAddress },
+                transaction
+              })
+
+              await userRecord.update({ email }, { transaction })
+            }
+          }
 
           // Check if an existing record exists but is soft deleted (since the Authentication model is 'paranoid'
           // Setting the option paranoid to true searches both soft-deleted and non-deleted objects
@@ -49,26 +142,6 @@ module.exports = function (app) {
             paranoid: false
           })
           if (!existingRecord) {
-            // default to null
-            let walletAddress = null
-            if (
-              headers &&
-              headers[EncodedDataMessageHeader] &&
-              headers[EncodedDataSignatureHeader]
-            ) {
-              const encodedDataMessage = headers[EncodedDataMessageHeader]
-              const encodedDataSignature = headers[EncodedDataSignatureHeader]
-              try {
-                walletAddress = sigUtil.recoverPersonalSignature({
-                  data: encodedDataMessage,
-                  sig: encodedDataSignature
-                })
-              } catch (err) {
-                // keep address as null for future user recovery
-                req.logger.error('Error recovering users signed address', err)
-              }
-            }
-
             await models.Authentication.create(
               {
                 iv: body.iv,
@@ -90,7 +163,6 @@ module.exports = function (app) {
             })
           }
 
-          const oldLookupKey = body.oldLookupKey
           if (oldLookupKey && oldLookupKey !== body.lookupKey) {
             await models.Authentication.destroy(
               { where: { lookupKey: oldLookupKey } },

@@ -358,6 +358,8 @@ export const useUser = ({ wallet }: UseUserProps): UseUserResponse => {
     if (userStatus !== Status.Loading) {
       setUserStatus(Status.Loading)
     }
+    // Only want to run this effect when wallet changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [wallet])
 
   const { error } = useGraphUser(wallet, setUserStatus, !!user)
