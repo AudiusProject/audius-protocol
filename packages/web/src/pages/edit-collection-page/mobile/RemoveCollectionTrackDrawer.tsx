@@ -2,7 +2,7 @@ import { Button } from '@audius/harmony'
 
 import Drawer from 'components/drawer/Drawer'
 
-import styles from './RemovePlaylistTrackDrawer.module.css'
+import styles from './RemoveCollectionTrackDrawer.module.css'
 
 const messages = {
   title: `Are You Sure?`,

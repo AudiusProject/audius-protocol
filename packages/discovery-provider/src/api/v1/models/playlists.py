@@ -49,6 +49,7 @@ playlist_model = ns.model(
         "ddex_app": fields.String(allow_null=True),
         "access": fields.Nested(access),
         "upc": fields.String(allow_null=True),
+        "track_count": fields.Integer(required=True),
     },
 )
 

@@ -29,6 +29,7 @@ import { RewardsTimingCard } from 'components/RewardsTimingCard/RewardsTimingCar
 import { StatLabel } from 'components/StatLabel/StatLabel'
 import TopAddressesTable from 'components/TopAddressesTable'
 import TotalStakedStat from 'components/TotalStakedStat'
+import TransactionStatus from 'components/TransactionStatus'
 import UniqueUsersStat from 'components/UniqueUsersStat'
 import { useAccount } from 'store/account/hooks'
 import { useProposals } from 'store/cache/proposals/hooks'
@@ -179,7 +180,12 @@ const Home = () => {
           <EstimatedWeeklyStat />
           <EstimatedAnnualStat />
         </Card>
-        {isLoggedIn && wallet ? <ManageAccountCard wallet={wallet} /> : null}
+        {isLoggedIn && wallet ? (
+          <>
+            <TransactionStatus />
+            <ManageAccountCard wallet={wallet} />
+          </>
+        ) : null}
         <RewardsTimingCard />
         <Paper className={styles.proposals}>
           <Box p='xl'>

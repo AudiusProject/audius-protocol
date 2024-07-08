@@ -308,7 +308,7 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 
 	// legacy blob audio analysis
 	routes.GET("/tracks/legacy/:cid/analysis", ss.serveLegacyBlobAnalysis, ss.requireHealthy)
-	routes.POST("/tracks/legacy/:cid/analyze", ss.analyzeLegacyBlob, ss.requireHealthy, ss.requireRegisteredSignature)
+	routes.POST("/tracks/legacy/:cid/analyze", ss.serveLegacyBlobAnalysis, ss.requireHealthy)
 
 	// serve blob (audio)
 	routes.HEAD("/ipfs/:cid", ss.serveBlob, ss.requireHealthy, ss.ensureNotDelisted)

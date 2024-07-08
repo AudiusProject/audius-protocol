@@ -33,11 +33,14 @@ export class UserAuth implements AuthService {
       getDefaultUserAuthConfig(productionConfig)
     )
 
-    const get: GetFn = async ({ lookupKey, email, otp }) => {
+    const get: GetFn = async ({ lookupKey, email, visitorId, otp }) => {
       const params = new URLSearchParams({
         lookupKey,
         username: email as string
       })
+      if (visitorId) {
+        params.append('visitorId', visitorId as string)
+      }
       if (otp) {
         params.append('otp', otp as string)
       }
@@ -89,10 +92,12 @@ export class UserAuth implements AuthService {
   signIn = async ({
     email,
     password,
+    visitorId,
     otp
   }: {
     email: string
     password: string
+    visitorId?: string
     otp?: string
   }): Promise<Wallet> => {
     await this.hedgehog.waitUntilReady()
@@ -100,6 +105,7 @@ export class UserAuth implements AuthService {
       username: email,
       password,
       email,
+      visitorId,
       otp
     })
     return wallet

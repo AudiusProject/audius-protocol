@@ -1,5 +1,6 @@
 import { useCallback, useMemo } from 'react'
 
+import { TrackForUpload } from '@audius/common/store'
 import moment from 'moment'
 
 import { defaultHiddenFields } from 'components/edit/fields/stream-availability/HiddenAvailabilityFields'
@@ -8,19 +9,19 @@ import { TrackEditFormValues } from 'components/edit-track/types'
 
 import { TrackFormState } from '../types'
 
-type EditTrackFormProps = {
+type UploadTrackFormProps = {
   formState: TrackFormState
   onContinue: (formState: TrackFormState) => void
 }
 
-export const EditTrackFormForUpload = (props: EditTrackFormProps) => {
+export const UploadTrackForm = (props: UploadTrackFormProps) => {
   const { formState, onContinue } = props
   const { tracks } = formState
 
   const initialValues: TrackEditFormValues = useMemo(
     () => ({
       trackMetadatasIndex: 0,
-      tracks,
+      tracks: tracks as TrackForUpload[],
       trackMetadatas: tracks.map((track) => ({
         ...track.metadata,
         description: '',
@@ -29,11 +30,6 @@ export const EditTrackFormForUpload = (props: EditTrackFormProps) => {
         field_visibility: {
           ...defaultHiddenFields,
           remixes: true
-        },
-        licenseType: {
-          allowAttribution: null,
-          commercialUse: null,
-          derivativeWorks: null
         },
         stems: [],
         isrc: '',
@@ -47,13 +43,7 @@ export const EditTrackFormForUpload = (props: EditTrackFormProps) => {
     (values: TrackEditFormValues) => {
       const tracksForUpload = tracks.map((track, i) => {
         const metadata = values.trackMetadatas[i]
-        const { licenseType: ignoredLicenseType, ...restMetadata } = metadata
-        return {
-          ...track,
-          metadata: {
-            ...restMetadata
-          }
-        }
+        return { ...track, metadata }
       })
       onContinue({ ...formState, tracks: tracksForUpload })
     },

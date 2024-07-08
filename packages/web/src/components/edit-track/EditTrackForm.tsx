@@ -18,6 +18,8 @@ import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { MenuFormCallbackStatus } from 'components/data-entry/ContextualMenu'
+import { AnchoredSubmitRow } from 'components/edit/AnchoredSubmitRow'
+import { AnchoredSubmitRowEdit } from 'components/edit/AnchoredSubmitRowEdit'
 import { AdvancedField } from 'components/edit/fields/AdvancedField'
 import { MultiTrackSidebar } from 'components/edit/fields/MultiTrackSidebar'
 import { ReleaseDateField } from 'components/edit/fields/ReleaseDateField'
@@ -29,8 +31,6 @@ import { VisibilityField } from 'components/edit/fields/visibility/VisibilityFie
 import layoutStyles from 'components/layout/layout.module.css'
 import { NavigationPrompt } from 'components/navigation-prompt/NavigationPrompt'
 import { EditFormScrollContext } from 'pages/edit-page/EditTrackPage'
-import { AnchoredSubmitRowEdit } from 'pages/edit-page/components/AnchoredSubmitRowEdit'
-import { AnchoredSubmitRow } from 'pages/upload-page/components/AnchoredSubmitRow'
 
 import styles from './EditTrackForm.module.css'
 import { PreviewButton } from './components/PreviewButton'
@@ -150,7 +150,7 @@ const TrackEditForm = (
                   }
                 }}
               />
-              <RemixSettingsField />
+              <RemixSettingsField isUpload={isUpload} />
             </div>
             <PreviewButton
               // Since edit form is a single component, render a different preview for each track

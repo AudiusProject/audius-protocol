@@ -218,6 +218,9 @@ func (ss *MediorumServer) postUpload(c echo.Context) error {
 
 			if template == JobTemplateImgSquare || template == JobTemplateImgBackdrop {
 				upload.TranscodeResults["original.jpg"] = formFileCID
+				upload.TranscodeProgress = 1
+				upload.TranscodedAt = time.Now().UTC()
+				upload.Status = JobStatusDone
 			}
 
 			return ss.crud.Create(upload)

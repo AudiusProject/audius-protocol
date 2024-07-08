@@ -13,10 +13,9 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import { Formik, useFormikContext } from 'formik'
 import { TouchableOpacity } from 'react-native'
 
-import { IconArrowRight, IconClose } from '@audius/harmony-native'
+import { IconArrowRight, IconClose, Button } from '@audius/harmony-native'
 import { BackButton } from 'app/app/navigation/BackButton'
 import {
-  Button,
   KeyboardAvoidingView,
   ModalScreen,
   Screen,
@@ -141,20 +140,18 @@ const ChangeEmailNavigator = ({
             fullWidth
             variant='primary'
             size='large'
-            icon={
+            iconRight={
               page === ChangeEmailPage.NewEmail ? undefined : IconArrowRight
-            }
-            iconPosition='right'
-            title={
-              page === ChangeEmailPage.NewEmail
-                ? messages.change
-                : messages.continue
             }
             disabled={isSubmitting}
             onPress={() => {
               handleSubmit()
             }}
-          />
+          >
+            {page === ChangeEmailPage.NewEmail
+              ? messages.change
+              : messages.continue}
+          </Button>
         </KeyboardAvoidingView>
       </ScreenContent>
     </Screen>

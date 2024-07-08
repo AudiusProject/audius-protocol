@@ -142,8 +142,8 @@ export const priceAndAudienceSchema = (
             formValues[PREVIEW] === undefined ||
             isNaN(trackLength) ||
             (formValues[PREVIEW] >= 0 &&
-              formValues[PREVIEW] < trackLength - 30) ||
-            (trackLength <= 30 && formValues[PREVIEW] < trackLength)
+              (formValues[PREVIEW] < trackLength - 30 ||
+                (trackLength <= 30 && formValues[PREVIEW] < trackLength)))
           )
         }
         return true

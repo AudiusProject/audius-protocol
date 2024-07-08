@@ -25,14 +25,6 @@ module.exports = (sequelize, DataTypes) => {
           values: ['web', 'mobile', 'desktop'],
           allowNull: false
         })
-      },
-      createdAt: {
-        allowNull: false,
-        type: DataTypes.DATE
-      },
-      updatedAt: {
-        allowNull: false,
-        type: DataTypes.DATE
       }
     },
     {}

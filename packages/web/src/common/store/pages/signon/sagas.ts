@@ -732,15 +732,30 @@ function* repairSignUp() {
 }
 
 function* signIn(action: ReturnType<typeof signOnActions.signIn>) {
-  const { email, password, otp } = action
+  const { email, password, visitorId, otp } = action
+  const fingerprintClient = yield* getContext('fingerprintClient')
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const isNativeMobile = yield* getContext('isNativeMobile')
+  const isElectron = yield* getContext('isElectron')
+  const clientOrigin = isNativeMobile
+    ? 'mobile'
+    : isElectron
+    ? 'desktop'
+    : 'web'
+
   yield* call(waitForRead)
   try {
     const signOn = yield* select(getSignOn)
+    const fpResponse = yield* call(
+      [fingerprintClient, fingerprintClient.identify],
+      email ?? signOn.email.value,
+      clientOrigin
+    )
     const signInResponse = yield* call(
       audiusBackendInstance.signIn,
       email ?? signOn.email.value,
       password ?? signOn.password.value,
+      visitorId ?? fpResponse?.visitorId,
       otp ?? signOn.otp.value
     )
     if (

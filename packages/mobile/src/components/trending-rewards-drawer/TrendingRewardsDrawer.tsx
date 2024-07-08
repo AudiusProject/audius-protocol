@@ -11,17 +11,11 @@ import type { ImageStyle } from 'react-native'
 import { Image, ScrollView, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { IconArrowRight } from '@audius/harmony-native'
+import { IconArrowRight, Button } from '@audius/harmony-native'
 import BarChart from 'app/assets/images/emojis/chart-bar.png'
 import ChartIncreasing from 'app/assets/images/emojis/chart-increasing.png'
 import ArrowUp from 'app/assets/images/emojis/right-arrow-curving-up.png'
-import {
-  SegmentedControl,
-  Text,
-  GradientText,
-  Button,
-  Link
-} from 'app/components/core'
+import { SegmentedControl, Text, GradientText, Link } from 'app/components/core'
 import TweetEmbed from 'app/components/tweet-embed'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useRemoteVar } from 'app/hooks/useRemoteConfig'
@@ -122,7 +116,6 @@ const useStyles = makeStyles(({ spacing, typography }) => ({
     marginHorizontal: spacing(4),
     marginBottom: spacing(2)
   },
-  button: { paddingHorizontal: 0 },
   terms: {
     marginBottom: spacing(4),
     textAlign: 'center',
@@ -263,14 +256,12 @@ export const TrendingRewardsDrawer = (titleIcon) => {
           <View style={styles.buttonContainer}>
             <Button
               variant='primary'
-              size='large'
-              icon={IconArrowRight}
-              iconPosition='right'
+              iconRight={IconArrowRight}
               fullWidth
-              title={textMap[modalType].button}
               onPress={handleGoToTrending}
-              styles={{ button: styles.button }}
-            />
+            >
+              {textMap[modalType].button}
+            </Button>
           </View>
           <Link url={TOS_URL}>
             <Text style={styles.terms} variant='body2'>

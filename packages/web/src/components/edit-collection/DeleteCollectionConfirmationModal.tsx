@@ -6,11 +6,14 @@ import {
   cacheCollectionsSelectors
 } from '@audius/common/store'
 import { useDispatch } from 'react-redux'
+import { useHistory } from 'react-router-dom'
+import { useLastLocation } from 'react-router-last-location'
 import { SetRequired } from 'type-fest'
 
 import { useSelector } from 'common/hooks/useSelector'
 import { DeleteConfirmationModal } from 'components/delete-confirmation'
 import { DeleteConfirmationModalProps } from 'components/delete-confirmation/DeleteConfirmationModal'
+import { FEED_PAGE } from 'utils/route'
 
 const { getCollection } = cacheCollectionsSelectors
 const { deletePlaylist } = cacheCollectionsActions
@@ -38,23 +41,31 @@ type DeleteCollectionConfirmationModalProps = SetRequired<
 export const DeleteCollectionConfirmationModal = (
   props: DeleteCollectionConfirmationModalProps
 ) => {
+  const history = useHistory()
+  const lastLocation = useLastLocation()
   const { collectionId, visible, onCancel, onDelete } = props
-  const isAlbum = useSelector(
-    (state) => getCollection(state, { id: collectionId })?.is_album
+  const collection = useSelector((state) =>
+    getCollection(state, { id: collectionId })
   )
+  const { is_album, permalink } = collection ?? {}
   const dispatch = useDispatch()
 
   const handleDelete = useCallback(() => {
     dispatch(deletePlaylist(collectionId))
     onDelete?.()
-  }, [dispatch, collectionId, onDelete])
+    if (!lastLocation || lastLocation.pathname === permalink) {
+      history.replace(FEED_PAGE)
+    } else {
+      history.goBack()
+    }
+  }, [dispatch, collectionId, onDelete, lastLocation, permalink, history])
 
   return (
     <DeleteConfirmationModal
       title={`${messages.delete} ${
-        isAlbum ? messages.title.album : messages.title.playlist
+        is_album ? messages.title.album : messages.title.playlist
       }`}
-      entity={isAlbum ? messages.type.album : messages.type.playlist}
+      entity={is_album ? messages.type.album : messages.type.playlist}
       visible={visible}
       onCancel={onCancel}
       onDelete={handleDelete}

@@ -14,7 +14,7 @@ import {
 } from '@audius/harmony-native'
 import { useNavigation } from 'app/hooks/useNavigation'
 
-import { useSearchCategory } from './searchState'
+import { useSearchCategory, useSearchFilters } from './searchState'
 
 type SearchCategoryProps = {
   category: SearchCategoryType
@@ -37,7 +37,6 @@ const SearchCategory = (props: SearchCategoryProps) => {
   return (
     <SelectablePill
       type='radio'
-      size='large'
       value={category}
       label={labelByCategory[category]}
       isSelected={isSelected}
@@ -74,17 +73,29 @@ const filtersByCategory: Record<SearchCategoryType, SearchFilter[]> = {
 export const SearchCategoriesAndFilters = () => {
   const navigation = useNavigation()
   const [category] = useSearchCategory()
+  const [filters, setFilters] = useSearchFilters()
 
   const handleFilterPress = useCallback(
-    (screenName: string) => {
-      navigation.navigate(screenName)
+    (filter: string) => {
+      if (filters[filter]) {
+        // Clear filter value
+        const newFilters = { ...filters }
+        delete newFilters[filter]
+        setFilters(newFilters)
+      } else if (filterInfoMap[filter].screen) {
+        navigation.navigate(filterInfoMap[filter].screen)
+      } else {
+        const newFilters = { ...filters }
+        newFilters[filter] = true
+        setFilters(newFilters)
+      }
     },
-    [navigation]
+    [filters, navigation, setFilters]
   )
 
   return (
     <Flex backgroundColor='white'>
-      <ScrollView horizontal>
+      <ScrollView horizontal keyboardShouldPersistTaps='handled'>
         <Flex direction='row' alignItems='center' gap='s' p='l' pt='s'>
           <SearchCategory category='tracks' />
           <SearchCategory category='users' />
@@ -94,10 +105,18 @@ export const SearchCategoriesAndFilters = () => {
             <FilterButton
               key={filter}
               size='small'
-              // value={value}
-              label={filterInfoMap[filter].label}
+              value={
+                filters[filter] !== undefined
+                  ? String(filters[filter])
+                  : undefined
+              }
+              label={
+                typeof filters[filter] === 'string'
+                  ? String(filters[filter])
+                  : filterInfoMap[filter].label
+              }
               onPress={() => {
-                handleFilterPress(filterInfoMap[filter].screen || 'Search')
+                handleFilterPress(filter)
               }}
             />
           ))}

@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react'
 
-import { creativeCommons, parseMusicalKey } from '@audius/common/utils'
+import { creativeCommons, parseMusicalKey, License } from '@audius/common/utils'
 import {
   Box,
   Flex,
@@ -36,7 +36,8 @@ import { DatePickerField } from './DatePickerField'
 import { KeySelectField } from './KeySelectField'
 import { SwitchRowField } from './SwitchRowField'
 
-const { computeLicense, ALL_RIGHTS_RESERVED_TYPE } = creativeCommons
+const { computeLicense, ALL_RIGHTS_RESERVED_TYPE, computeLicenseVariables } =
+  creativeCommons
 
 const messages = {
   title: 'Advanced',
@@ -106,12 +107,10 @@ const AI_USER_ID = 'ai_attribution_user_id'
 const ISRC = 'isrc'
 const ISWC = 'iswc'
 const RELEASE_DATE = 'release_date'
+const LICENSE = 'license'
 const LICENSE_TYPE = 'licenseType'
-const ALLOW_ATTRIBUTION_BASE = 'allowAttribution'
 const ALLOW_ATTRIBUTION = 'licenseType.allowAttribution'
-const COMMERCIAL_USE_BASE = 'commercialUse'
 const COMMERCIAL_USE = 'licenseType.commercialUse'
-const DERIVATIVE_WORKS_BASE = 'derivativeWorks'
 const DERIVATIVE_WORKS = 'licenseType.derivativeWorks'
 const BPM = 'bpm'
 const MUSICAL_KEY = 'musical_key'
@@ -178,18 +177,8 @@ export const AdvancedField = () => {
     useTrackField<SingleTrackEditValues[typeof RELEASE_DATE]>(RELEASE_DATE)
   const [{ value: iswcValue }, , { setValue: setIswc }] =
     useTrackField<SingleTrackEditValues[typeof ISWC]>(ISWC)
-  const [{ value: allowAttribution }, , { setValue: setAllowAttribution }] =
-    useTrackField<
-      SingleTrackEditValues[typeof LICENSE_TYPE][typeof ALLOW_ATTRIBUTION_BASE]
-    >(ALLOW_ATTRIBUTION)
-  const [{ value: commercialUse }, , { setValue: setCommercialUse }] =
-    useTrackField<
-      SingleTrackEditValues[typeof LICENSE_TYPE][typeof COMMERCIAL_USE_BASE]
-    >(COMMERCIAL_USE)
-  const [{ value: derivativeWorks }, , { setValue: setDerivateWorks }] =
-    useTrackField<
-      SingleTrackEditValues[typeof LICENSE_TYPE][typeof DERIVATIVE_WORKS_BASE]
-    >(DERIVATIVE_WORKS)
+  const [{ value: license }, , { setValue: setLicense }] =
+    useTrackField<License>(LICENSE)
   const [{ value: allowedApiKeys }, , { setValue: setAllowedApiKeys }] =
     useTrackField<SingleTrackEditValues[typeof ALLOWED_API_KEYS]>(
       ALLOWED_API_KEYS
@@ -208,10 +197,9 @@ export const AdvancedField = () => {
     }
     set(initialValues, ISRC, isrcValue)
     set(initialValues, ISWC, iswcValue)
-    set(initialValues, ALLOW_ATTRIBUTION, allowAttribution)
     set(initialValues, ALLOWED_API_KEYS, allowedApiKeys)
-    set(initialValues, COMMERCIAL_USE, commercialUse)
-    set(initialValues, DERIVATIVE_WORKS, derivativeWorks)
+    set(initialValues, LICENSE_TYPE, computeLicenseVariables(license))
+    set(initialValues, BLOCK_THIRD_PARTY_STREAMING, !!allowedApiKeys)
     set(initialValues, BPM, bpm)
     set(initialValues, MUSICAL_KEY, parseMusicalKey(musicalKey ?? ''))
     set(initialValues, RELEASE_DATE, releaseDate)
@@ -219,12 +207,10 @@ export const AdvancedField = () => {
     return initialValues as AdvancedFormValues
   }, [
     aiUserId,
-    allowAttribution,
-    commercialUse,
-    derivativeWorks,
     isrcValue,
     iswcValue,
     allowedApiKeys,
+    license,
     bpm,
     musicalKey,
     releaseDate,
@@ -245,61 +231,45 @@ export const AdvancedField = () => {
       }
       setIsrc(get(values, ISRC) ?? isrcValue)
       setIswc(get(values, ISWC) ?? iswcValue)
-      setAllowAttribution(get(values, ALLOW_ATTRIBUTION) ?? allowAttribution)
-      if (get(values, ALLOW_ATTRIBUTION)) {
-        setCommercialUse(get(values, COMMERCIAL_USE) ?? commercialUse)
-        setDerivateWorks(get(values, DERIVATIVE_WORKS) ?? derivativeWorks)
-      } else {
-        setCommercialUse(false)
-        setDerivateWorks(false)
-      }
+      setLicense(
+        computeLicense(
+          get(values, ALLOW_ATTRIBUTION) ?? false,
+          get(values, COMMERCIAL_USE) ?? false,
+          get(values, DERIVATIVE_WORKS)
+        ).licenseType
+      )
       setBpm(get(values, BPM) ?? bpm)
       setMusicalKey(get(values, MUSICAL_KEY) ?? musicalKey)
       setReleaseDate(get(values, RELEASE_DATE) ?? releaseDate)
     },
     [
-      aiUserId,
-      allowAttribution,
-      commercialUse,
-      derivativeWorks,
+      setIsrc,
       isrcValue,
+      setIswc,
       iswcValue,
+      setLicense,
+      setBpm,
       bpm,
+      setMusicalKey,
       musicalKey,
+      setReleaseDate,
       releaseDate,
       setAiUserId,
-      setAllowAttribution,
-      setCommercialUse,
-      setDerivateWorks,
-      setIsrc,
-      setIswc,
-      setAllowedApiKeys,
-      setBpm,
-      setMusicalKey,
-      setReleaseDate
+      aiUserId,
+      setAllowedApiKeys
     ]
   )
 
   const renderValue = useCallback(() => {
     const value = []
 
-    const { licenseType } = computeLicense(
-      !!allowAttribution,
-      !!commercialUse,
-      derivativeWorks
-    )
-
-    if (!licenseType || licenseType === ALL_RIGHTS_RESERVED_TYPE) {
+    if (!license || license === ALL_RIGHTS_RESERVED_TYPE) {
       value.push(
         <SelectedValue key={messages.noLicense} label={messages.noLicense} />
       )
     }
 
-    const licenseIcons = computeLicenseIcons(
-      !!allowAttribution,
-      !!commercialUse,
-      derivativeWorks
-    )
+    const licenseIcons = computeLicenseIcons(license)
 
     if (licenseIcons) {
       value.push(
@@ -339,16 +309,7 @@ export const AdvancedField = () => {
       )
     }
     return <SelectedValues key={messages.isAiGenerated}>{value}</SelectedValues>
-  }, [
-    aiUserId,
-    allowAttribution,
-    commercialUse,
-    derivativeWorks,
-    isrcValue,
-    iswcValue,
-    bpm,
-    musicalKey
-  ])
+  }, [license, isrcValue, iswcValue, aiUserId, bpm, musicalKey])
 
   return (
     <ContextualMenu
@@ -381,11 +342,7 @@ const AdvancedModalFields = () => {
     derivativeWorks
   )
 
-  const licenseIcons = computeLicenseIcons(
-    allowAttribution,
-    commercialUse,
-    derivativeWorks
-  )
+  const licenseIcons = computeLicenseIcons(licenseType)
 
   const dropdownHasError =
     aiUserHelperFields.touched && aiUserHelperFields.error
