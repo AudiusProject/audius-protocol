@@ -1,18 +1,26 @@
 import { useCallback } from 'react'
 
+import { Status } from '@audius/common/models'
 import {
   lineupSelectors,
   searchResultsPageTracksLineupActions as tracksActions,
   searchResultsPageSelectors,
   SearchKind
 } from '@audius/common/store'
+import { isEmpty } from 'lodash'
 import { useDispatch, useSelector } from 'react-redux'
 import { useDebounce } from 'react-use'
 
 import { Flex } from '@audius/harmony-native'
 import { Lineup } from 'app/components/lineup'
 
-import { useSearchFilters, useSearchQuery } from '../searchState'
+import { NoResultsTile } from '../NoResultsTile'
+import { SearchCatalogTile } from '../SearchCatalogTile'
+import {
+  useGetSearchResults,
+  useSearchFilters,
+  useSearchQuery
+} from '../searchState'
 
 const { getSearchTracksLineup } = searchResultsPageSelectors
 const { makeGetLineupMetadatas } = lineupSelectors
@@ -21,9 +29,11 @@ const getSearchTracksLineupMetadatas = makeGetLineupMetadatas(
 )
 
 export const TrackResults = () => {
+  const { status } = useGetSearchResults('tracks')
   const [query] = useSearchQuery()
-  const filters = useSearchFilters()
+  const [filters] = useSearchFilters()
   const dispatch = useDispatch()
+  const isNoSearch = !query && isEmpty(filters)
 
   const lineup = useSelector(getSearchTracksLineupMetadatas)
 
@@ -57,6 +67,11 @@ export const TrackResults = () => {
     },
     [getResults]
   )
+
+  if (isNoSearch) return <SearchCatalogTile />
+  if ((!lineup || lineup.entries.length === 0) && status === Status.SUCCESS) {
+    return <NoResultsTile />
+  }
 
   return (
     <Flex h='100%' backgroundColor='default'>
