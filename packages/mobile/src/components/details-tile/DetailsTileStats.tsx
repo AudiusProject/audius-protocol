@@ -34,6 +34,13 @@ export const DetailsTileStats = ({
   onPressFavorites,
   onPressReposts
 }: DetailsTileStatsProps) => {
+  const shouldHidePlayCount = hidePlayCount || playCount <= 0
+  const shouldHideRepostCount = hideRepostCount || repostCount <= 0
+  const shouldHideFavoriteCount = hideFavoriteCount || favoriteCount <= 0
+  if (shouldHideFavoriteCount && shouldHideRepostCount && shouldHidePlayCount) {
+    return null
+  }
+
   return (
     <Flex
       w='100%'
@@ -42,10 +49,10 @@ export const DetailsTileStats = ({
       alignItems='center'
       justifyContent='flex-start'
     >
-      {hidePlayCount ? null : (
+      {shouldHidePlayCount ? null : (
         <DetailsTileStat count={playCount} icon={IconPlay} />
       )}
-      {hideRepostCount ? null : (
+      {shouldHideRepostCount ? null : (
         <DetailsTileStat
           count={repostCount}
           onPress={onPressReposts}
@@ -53,7 +60,7 @@ export const DetailsTileStats = ({
           label={messages.reposts(repostCount)}
         />
       )}
-      {hideFavoriteCount ? null : (
+      {shouldHideFavoriteCount ? null : (
         <DetailsTileStat
           count={favoriteCount}
           onPress={onPressFavorites}
