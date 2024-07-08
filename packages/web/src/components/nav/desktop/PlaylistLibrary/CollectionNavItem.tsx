@@ -197,6 +197,7 @@ export const CollectionNavItem = (props: CollectionNavItemProps) => {
               alignItems='center'
               w='100%'
               pl={level * spacing.l}
+              gap='xs'
               css={{
                 position: 'relative'
               }}

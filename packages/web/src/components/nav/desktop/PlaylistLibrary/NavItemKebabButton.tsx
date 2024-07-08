@@ -7,9 +7,6 @@ import {
   IconButton,
   IconButtonProps
 } from '@audius/harmony'
-import cn from 'classnames'
-
-import styles from './NavItemKebabButton.module.css'
 
 type EditNavItemButtonProps = Omit<IconButtonProps, 'icon'> & {
   visible: boolean
@@ -36,9 +33,18 @@ export const NavItemKebabButton = (props: EditNavItemButtonProps) => {
             {...triggerProps}
             ref={ref}
             onClick={handleClick}
-            className={cn(styles.root, className, {
-              [styles.visible]: visible
-            })}
+            css={{
+              visibility: visible ? 'visible' : 'hidden',
+              flexShrink: 0,
+              pointerEvents: visible ? 'all' : 'none',
+              '& path': {
+                fill: 'var(--harmony-n-700)'
+              },
+              ':hover,:active,:focus,:hover path, :active path, :focus path': {
+                color: 'var(--harmony-neutral)',
+                fill: 'var(--harmony-n-950)'
+              }
+            }}
             icon={IconKebabHorizontal}
             size='xs'
             color='default'

@@ -5,7 +5,7 @@ import {
   accountSelectors,
   collectionsSocialActions
 } from '@audius/common/store'
-import { Flex } from '@audius/harmony'
+import { Flex, motion } from '@audius/harmony'
 import { isEmpty } from 'lodash'
 import { useDispatch } from 'react-redux'
 
@@ -17,10 +17,10 @@ import { GroupHeader } from '../GroupHeader'
 
 import { CreatePlaylistLibraryItemButton } from './CreatePlaylistLibraryItemButton'
 import { EmptyLibraryNavLink } from './EmptyLibraryNavLink'
-import styles from './PlaylistLibrary.module.css'
 import { PlaylistLibraryNavItem, keyExtractor } from './PlaylistLibraryNavItem'
 import { useAddAudioNftPlaylistToLibrary } from './useAddAudioNftPlaylistToLibrary'
 import { useSanitizePlaylistLibrary } from './useSanitizePlaylistLibrary'
+import { ClassNames } from '@emotion/react'
 
 const { getPlaylistLibrary } = accountSelectors
 const { saveCollection } = collectionsSocialActions
@@ -55,29 +55,40 @@ export const PlaylistLibrary = (props: PlaylistLibraryProps) => {
   )
 
   return (
-    <Droppable
-      className={styles.droppable}
-      hoverClassName={styles.droppableHover}
-      onDrop={handleDrop}
-      acceptedKinds={acceptedKinds}
-    >
-      <Flex wrap='nowrap' alignItems='center' gap='s'>
-        <GroupHeader color={draggingKind === 'playlist' ? 'accent' : 'subdued'}>
-          {messages.header}
-        </GroupHeader>
-        <CreatePlaylistLibraryItemButton scrollbarRef={scrollbarRef} />
-      </Flex>
-      {!library || isEmpty(library?.contents) ? (
-        <EmptyLibraryNavLink />
-      ) : (
-        library.contents.map((content) => (
-          <PlaylistLibraryNavItem
-            key={keyExtractor(content)}
-            item={content}
-            level={0}
-          />
-        ))
+    <ClassNames>
+      {({ css }) => (
+        <Droppable
+          className={css({
+            borderRadius: 6,
+            paddingTop: -10,
+            marginTop: -10,
+            transition: `background ${motion.quick}`
+          })}
+          hoverClassName={css({ backgroundColor: 'rgba(152, 73, 214, 0.15)' })}
+          onDrop={handleDrop}
+          acceptedKinds={acceptedKinds}
+        >
+          <Flex wrap='nowrap' alignItems='center' gap='s'>
+            <GroupHeader
+              color={draggingKind === 'playlist' ? 'accent' : 'subdued'}
+            >
+              {messages.header}
+            </GroupHeader>
+            <CreatePlaylistLibraryItemButton scrollbarRef={scrollbarRef} />
+          </Flex>
+          {!library || isEmpty(library?.contents) ? (
+            <EmptyLibraryNavLink />
+          ) : (
+            library.contents.map((content) => (
+              <PlaylistLibraryNavItem
+                key={keyExtractor(content)}
+                item={content}
+                level={0}
+              />
+            ))
+          )}
+        </Droppable>
       )}
-    </Droppable>
+    </ClassNames>
   )
 }

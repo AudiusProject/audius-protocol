@@ -17,9 +17,9 @@ import {
   PopupMenuItem,
   useTheme,
   Flex,
-  Text
+  Text,
+  motion
 } from '@audius/harmony'
-import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 import { useToggle } from 'react-use'
 
@@ -33,8 +33,8 @@ import { LeftNavLink } from '../LeftNavLink'
 
 import { DeleteFolderConfirmationModal } from './DeleteFolderConfirmationModal'
 import { NavItemKebabButton } from './NavItemKebabButton'
-import styles from './PlaylistFolderNavItem.module.css'
 import { PlaylistLibraryNavItem, keyExtractor } from './PlaylistLibraryNavItem'
+import { ClassNames } from '@emotion/react'
 const { setVisibility } = modalsActions
 const { addToFolder } = playlistLibraryActions
 const { selectPlaylistUpdateById } = playlistUpdatesSelectors
@@ -135,68 +135,83 @@ export const PlaylistFolderNavItem = (props: PlaylistFolderNavItemProps) => {
   }, [isDraggingOver, isExpanded, toggleIsExpanded])
 
   return (
-    <Droppable
-      acceptedKinds={acceptedKinds}
-      onDrop={handleDrop}
-      className={styles.droppable}
-      hoverClassName={styles.droppableHover}
-      disabled={isDisabled}
-    >
-      <Draggable id={id} text={name} kind='playlist-folder'>
-        <LeftNavLink
-          asChild
-          className={cn(styles.root, { [styles.dragging]: isDraggingOver })}
-          onClick={toggleIsExpanded}
-          onDragEnter={handleDragEnter}
-          onDragLeave={handleDragLeave}
-          onMouseEnter={handleMouseEnter}
-          onMouseLeave={handleMouseLeave}
+    <ClassNames>
+      {({ css }) => (
+        <Droppable
+          acceptedKinds={acceptedKinds}
+          onDrop={handleDrop}
+          css={{
+            transition: `background ${motion.quick}`,
+            borderRadius: 6
+          }}
+          hoverClassName={css({
+            backgroundColor: 'rgba(152, 73, 214, 0.15)'
+          })}
           disabled={isDisabled}
         >
-          <Flex alignItems='center' w='100%'>
-            <IconFolder
-              size='xs'
-              css={{ marginRight: spacing.s }}
-              fill={
-                folderHasUpdate ? color.secondary.secondary : color.neutral.n950
-              }
-            />
-            <Text size='s' css={{ flex: 1 }} ellipses>
-              {name}
-            </Text>
-            <IconCaretRight
-              height={11}
-              width={11}
-              color='default'
-              className={cn(styles.iconCaret, {
-                [styles.iconCaretDown]: isExpanded
-              })}
-            />
-            <NavItemKebabButton
-              visible={isHovering && !isDraggingOver}
-              aria-label={messages.editFolderLabel}
-              onClick={handleClickEdit}
-              items={kebabItems}
-            />
-            <DeleteFolderConfirmationModal
-              folderId={id}
-              visible={isDeleteConfirmationOpen}
-              onCancel={toggleDeleteConfirmationOpen}
-            />
-          </Flex>
-        </LeftNavLink>
-        {isExpanded ? (
-          <ul>
-            {contents.map((content) => (
-              <PlaylistLibraryNavItem
-                key={keyExtractor(content)}
-                item={content}
-                level={level + 1}
-              />
-            ))}
-          </ul>
-        ) : null}
-      </Draggable>
-    </Droppable>
+          <Draggable id={id} text={name} kind='playlist-folder'>
+            <LeftNavLink
+              asChild
+              css={[
+                { display: 'flex', alignItems: 'center' },
+                isDraggingOver && { '& > *': { pointerEvents: 'none' } }
+              ]}
+              onClick={toggleIsExpanded}
+              onDragEnter={handleDragEnter}
+              onDragLeave={handleDragLeave}
+              onMouseEnter={handleMouseEnter}
+              onMouseLeave={handleMouseLeave}
+              disabled={isDisabled}
+            >
+              <Flex alignItems='center' w='100%' gap='xs'>
+                <IconFolder
+                  size='xs'
+                  fill={
+                    folderHasUpdate
+                      ? color.secondary.secondary
+                      : color.neutral.n950
+                  }
+                />
+                <Text size='s' css={{ flex: 1 }} ellipses>
+                  {name}
+                </Text>
+                <IconCaretRight
+                  height={11}
+                  width={11}
+                  color='default'
+                  css={{
+                    flexShrink: 0,
+                    transition: `transform 0.15s ease`,
+                    transform: isExpanded ? `rotate(90deg)` : undefined
+                  }}
+                />
+                <NavItemKebabButton
+                  visible={isHovering && !isDraggingOver}
+                  aria-label={messages.editFolderLabel}
+                  onClick={handleClickEdit}
+                  items={kebabItems}
+                />
+                <DeleteFolderConfirmationModal
+                  folderId={id}
+                  visible={isDeleteConfirmationOpen}
+                  onCancel={toggleDeleteConfirmationOpen}
+                />
+              </Flex>
+            </LeftNavLink>
+            {isExpanded ? (
+              <ul>
+                {contents.map((content) => (
+                  <PlaylistLibraryNavItem
+                    key={keyExtractor(content)}
+                    item={content}
+                    level={level + 1}
+                  />
+                ))}
+              </ul>
+            ) : null}
+          </Draggable>
+        </Droppable>
+      )}
+    </ClassNames>
   )
 }
