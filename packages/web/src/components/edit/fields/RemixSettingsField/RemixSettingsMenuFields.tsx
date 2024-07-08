@@ -34,7 +34,7 @@ const messages = {
     header: 'Identify as Remix',
     description:
       'Link your remix to the original track to increase visibility and credit the original artist.',
-    linkLabel: 'Enter an Audius Link'
+    linkLabel: 'Link to original track'
   },
   changeAvailabilityPrefix: 'Availablity is set to ',
   changeAvailabilitySuffix:
@@ -73,6 +73,23 @@ export const RemixSettingsMenuFields = () => {
 
   return (
     <div className={styles.fields}>
+      {isUSDCPurchaseGated ? (
+        <Hint icon={IconQuestionCircle}>
+          {`${messages.changeAvailabilityPrefix} ${messages.premium}${messages.changeAvailabilitySuffix}`}
+        </Hint>
+      ) : null}
+      <SwitchRowField
+        name={IS_REMIX}
+        header={messages.remixOf.header}
+        description={messages.remixOf.description}
+        disabled={isStreamGated}
+      >
+        <TextField name={REMIX_LINK} label={messages.remixOf.linkLabel} />
+        {track ? <TrackInfo trackId={track.track_id} /> : null}
+      </SwitchRowField>
+
+      <Divider />
+
       {isStreamGated && !isUSDCPurchaseGated ? (
         <Hint icon={IconQuestionCircle}>{`${
           messages.changeAvailabilityPrefix
@@ -91,23 +108,6 @@ export const RemixSettingsMenuFields = () => {
           ? { checked: true, disabled: true }
           : {})}
       />
-
-      <Divider />
-
-      {isUSDCPurchaseGated ? (
-        <Hint icon={IconQuestionCircle}>
-          {`${messages.changeAvailabilityPrefix} ${messages.premium}${messages.changeAvailabilitySuffix}`}
-        </Hint>
-      ) : null}
-      <SwitchRowField
-        name={IS_REMIX}
-        header={messages.remixOf.header}
-        description={messages.remixOf.description}
-        disabled={isStreamGated}
-      >
-        <TextField name={REMIX_LINK} label={messages.remixOf.linkLabel} />
-        {track ? <TrackInfo trackId={track.track_id} /> : null}
-      </SwitchRowField>
     </div>
   )
 }
