@@ -37,7 +37,7 @@ export const KeyBpmScreen = () => {
             </Text>
           </Flex>
           <TextField
-            {...bpmField}
+            name={BPM}
             value={String(bpmField.value)}
             keyboardType='numeric'
             label={messages.bpm}

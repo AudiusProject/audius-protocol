@@ -2,7 +2,10 @@ import { useCallback, useMemo } from 'react'
 
 import { useUSDCPurchaseConfig } from '@audius/common/hooks'
 import { isContentUSDCPurchaseGated } from '@audius/common/models'
-import type { TrackForUpload } from '@audius/common/store'
+import type {
+  TrackForUpload,
+  TrackMetadataForUpload
+} from '@audius/common/store'
 import {
   creativeCommons,
   formatPrice,
@@ -231,7 +234,8 @@ export const EditTrackScreen = (props: EditTrackScreenProps) => {
     ),
     musical_key: initialValuesProp.musical_key
       ? parseMusicalKey(initialValuesProp.musical_key)
-      : undefined
+      : undefined,
+    bpm: initialValuesProp.bpm ? initialValuesProp.bpm.toString() : undefined
   }
 
   const handleSubmit = useCallback(
@@ -239,8 +243,13 @@ export const EditTrackScreen = (props: EditTrackScreenProps) => {
       const {
         licenseType: ignoredLicenseType,
         trackArtwork: ignoredTrackArtwork,
-        ...metadata
+        ...formValues
       } = values
+
+      const metadata: TrackMetadataForUpload = {
+        ...formValues,
+        bpm: formValues.bpm ? Number(formValues.bpm) : null
+      }
 
       // If track is not unlisted and one of the unlisted visibility fields is false, set to true.
       // We shouldn't have to do this if we set the default for 'share' and 'play_count' to true
