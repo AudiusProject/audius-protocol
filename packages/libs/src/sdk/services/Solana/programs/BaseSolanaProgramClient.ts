@@ -129,7 +129,12 @@ export class BaseSolanaProgramClient {
             ? priorityFee.percentile
             : priorityToPercentileMap[priorityFee.priority]
         const microLamports =
-          orderedFees[Math.round((percentile / 100.0) * orderedFees.length)]
+          orderedFees[
+            Math.max(
+              Math.round((percentile / 100.0) * orderedFees.length - 1),
+              0
+            )
+          ]
         if (microLamports !== undefined) {
           instructions.push(
             ComputeBudgetProgram.setComputeUnitPrice({
