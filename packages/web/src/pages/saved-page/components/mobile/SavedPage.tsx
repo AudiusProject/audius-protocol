@@ -185,17 +185,8 @@ const TracksLineup = ({
 }) => {
   const [trackEntries] = getFilteredData(tracks.entries)
   const trackAccessMap = useGatedContentAccessMap(trackEntries)
-  const selectedCategory = useSelector((state: CommonState) => {
-    return getCategory(state, {
-      currentTab: SavedPageTabs.TRACKS
-    })
-  })
   const trackList = trackEntries
     .filter((t) => t.track_id)
-    .filter(
-      // Hide unlisted tracks unless category is purchase.
-      (t) => selectedCategory === LibraryCategory.Purchase || !t.is_unlisted
-    )
     .map((entry) => {
       const { isFetchingNFTAccess, hasStreamAccess } = trackAccessMap[
         entry.track_id
@@ -221,6 +212,9 @@ const TracksLineup = ({
     })
 
   const emptyTracksHeader = useSelector((state: CommonState) => {
+    const selectedCategory = getCategory(state, {
+      currentTab: SavedPageTabs.TRACKS
+    })
     if (selectedCategory === LibraryCategory.All) {
       return emptyStateMessages.emptyTrackAllHeader
     } else if (selectedCategory === LibraryCategory.Favorite) {
@@ -305,19 +299,12 @@ const AlbumCardLineup = () => {
     collectionType: 'album',
     filterValue: filterText || undefined
   })
-  const selectedCategory = useSelector((state: CommonState) => {
-    return getCategory(state, {
-      currentTab: SavedPageTabs.ALBUMS
-    })
-  })
-  const albumIds = albums
-    ?.filter(
-      // Hide private albums unless category is purchase.
-      (a) => selectedCategory === LibraryCategory.Purchase || !a.is_private
-    )
-    ?.map((a) => a.playlist_id)
+  const albumIds = albums?.map((a) => a.playlist_id)
 
   const emptyAlbumsHeader = useSelector((state: CommonState) => {
+    const selectedCategory = getCategory(state, {
+      currentTab: SavedPageTabs.ALBUMS
+    })
     if (selectedCategory === LibraryCategory.All) {
       return emptyStateMessages.emptyAlbumAllHeader
     } else if (selectedCategory === LibraryCategory.Favorite) {
@@ -445,19 +432,12 @@ const PlaylistCardLineup = ({
     debouncedSetFilter(value)
   }
 
-  const selectedCategory = useSelector((state: CommonState) => {
-    return getCategory(state, {
-      currentTab: SavedPageTabs.ALBUMS
-    })
-  })
-  const playlistIds = playlists
-    ?.filter(
-      // Hide private playlists.
-      (a) => !a.is_private
-    )
-    ?.map((p) => p.playlist_id)
+  const playlistIds = playlists?.map((p) => p.playlist_id)
 
   const emptyPlaylistsHeader = useSelector((state: CommonState) => {
+    const selectedCategory = getCategory(state, {
+      currentTab: SavedPageTabs.PLAYLISTS
+    })
     if (selectedCategory === LibraryCategory.All) {
       return emptyStateMessages.emptyPlaylistAllHeader
     } else if (selectedCategory === LibraryCategory.Favorite) {

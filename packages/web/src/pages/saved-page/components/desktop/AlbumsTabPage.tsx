@@ -37,12 +37,10 @@ export const AlbumsTabPage = () => {
     collections: albums
   } = useCollectionsData({ collectionType: 'album' })
 
-  const selectedCategory = useSelector((state: CommonState) => {
-    return getCategory(state, {
+  const emptyAlbumsHeader = useSelector((state: CommonState) => {
+    const selectedCategory = getCategory(state, {
       currentTab: SavedPageTabs.ALBUMS
     })
-  })
-  const emptyAlbumsHeader = useSelector((state: CommonState) => {
     if (selectedCategory === LibraryCategory.All) {
       return emptyStateMessages.emptyAlbumAllHeader
     } else if (selectedCategory === LibraryCategory.Favorite) {
@@ -59,15 +57,10 @@ export const AlbumsTabPage = () => {
   const isLoadingInitial = statusIsNotFinalized(status) && albums?.length === 0
 
   const cards = useMemo(() => {
-    return albums
-      ?.filter(
-        // Hide private albums unless category is purchase.
-        (a) => selectedCategory === LibraryCategory.Purchase || !a.is_private
-      )
-      ?.map(({ playlist_id }) => {
-        return <CollectionCard key={playlist_id} id={playlist_id} size='m' />
-      })
-  }, [albums, selectedCategory])
+    return albums?.map(({ playlist_id }) => {
+      return <CollectionCard key={playlist_id} id={playlist_id} size='m' />
+    })
+  }, [albums])
 
   if (isLoadingInitial) {
     return <LoadingSpinner className={styles.spinner} />

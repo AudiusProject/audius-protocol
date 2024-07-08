@@ -39,12 +39,10 @@ export const PlaylistsTabPage = () => {
   const { status, hasMore, fetchMore, collections } = useCollectionsData({
     collectionType: 'playlist'
   })
-  const selectedCategory = useSelector((state: CommonState) => {
-    return getCategory(state, {
+  const emptyPlaylistsHeader = useSelector((state: CommonState) => {
+    const selectedCategory = getCategory(state, {
       currentTab: SavedPageTabs.PLAYLISTS
     })
-  })
-  const emptyPlaylistsHeader = useSelector((state: CommonState) => {
     if (selectedCategory === LibraryCategory.All) {
       return emptyStateMessages.emptyPlaylistAllHeader
     } else if (selectedCategory === LibraryCategory.Favorite) {
@@ -77,14 +75,9 @@ export const PlaylistsTabPage = () => {
     )
     return [
       createPlaylistCard,
-      ...collections
-        ?.filter(
-          // Hide private playlists unless category is purchase.
-          (c) => !c.is_private
-        )
-        ?.map(({ playlist_id: id }) => {
-          return <CollectionCard key={id} id={id} size='m' />
-        })
+      ...collections?.map(({ playlist_id: id }) => {
+        return <CollectionCard key={id} id={id} size='m' />
+      })
     ]
   }, [collections])
 
