@@ -25,15 +25,13 @@ const { getTrack } = cacheTracksSelectors
  *
  * @param trackId the parent track for which to fetch stems
  */
-export function* fetchAndProcessStems(trackId: ID) {
+export function* fetchAndProcessStems(trackId: ID, stemIds?: ID[]) {
   yield* waitForRead()
   const apiClient = yield* getContext('apiClient')
 
   const stems: StemTrackMetadata[] = yield call(
-    (args) => apiClient.getStems(args),
-    {
-      trackId
-    }
+    [apiClient, apiClient.getStems],
+    { trackId, stemIds }
   )
 
   if (stems.length) {
