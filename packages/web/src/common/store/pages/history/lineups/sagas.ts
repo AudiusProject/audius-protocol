@@ -3,8 +3,7 @@ import {
   Kind,
   LineupEntry,
   Track,
-  UserTrackMetadata,
-  isContentUSDCPurchaseGated
+  UserTrackMetadata
 } from '@audius/common/models'
 import { makeActivity } from '@audius/common/services'
 import {

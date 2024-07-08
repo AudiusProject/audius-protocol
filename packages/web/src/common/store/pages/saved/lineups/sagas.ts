@@ -1,11 +1,4 @@
-import {
-  Collection,
-  Kind,
-  LineupEntry,
-  UID,
-  User,
-  isContentUSDCPurchaseGated
-} from '@audius/common/models'
+import { Collection, Kind, LineupEntry, UID, User } from '@audius/common/models'
 import {
   cacheTracksSelectors,
   savedPageTracksLineupActions as savedTracksActions,
