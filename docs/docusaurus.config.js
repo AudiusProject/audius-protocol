@@ -93,12 +93,12 @@ const config = {
                 to: '/developers/introduction/overview',
               },
               {
-                label: 'Javascript SDK',
-                to: '/developers/sdk/overview',
+                label: 'SDK',
+                to: '/sdk',
               },
               {
-                label: 'REST API',
-                to: '/developers/api/rest-api',
+                label: 'API',
+                to: '/api',
               },
             ],
           },

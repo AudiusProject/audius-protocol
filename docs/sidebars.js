@@ -163,12 +163,13 @@ module.exports = {
   ],
 
   api: [
-    {
-      type: 'category',
-      label: 'Overview',
-      items: ['developers/api/rest-api'],
-      collapsed: false,
-    },
+    ['developers/api/rest-api'],
+    // {
+    //   type: 'category',
+    //   label: 'Overview',
+    //   items: ['developers/api/rest-api'],
+    //   collapsed: false,
+    // },
     {
       type: 'category',
       label: 'Users',
@@ -196,7 +197,7 @@ module.exports = {
         // 'developers/api/download-sales-as-csv',
         // 'developers/api/download-usdc-withdrawals-as-csv',
       ],
-      collapsed: false,
+      collapsed: true,
     },
     {
       type: 'category',
@@ -214,7 +215,7 @@ module.exports = {
         // 'developers/api/stream-url',
         'developers/api/get-track-top-listeners',
       ],
-      collapsed: false,
+      collapsed: true,
     },
     {
       type: 'category',
@@ -228,19 +229,19 @@ module.exports = {
         'developers/api/get-playlist-access-info',
         'developers/api/get-playlist-tracks',
       ],
-      collapsed: false,
+      collapsed: true,
     },
     {
       type: 'category',
       label: 'Tips',
       items: ['developers/api/get-tips'],
-      collapsed: false,
+      collapsed: true,
     },
     {
       type: 'category',
       label: 'Developer Apps',
       items: ['developers/api/get-developer-app', 'developers/api/get-developer-apps'],
-      collapsed: false,
+      collapsed: true,
     },
     // {
     //   type: 'category',
@@ -252,7 +253,7 @@ module.exports = {
       type: 'category',
       label: 'Resolve',
       items: ['developers/api/resolve'],
-      collapsed: false,
+      collapsed: true,
     },
   ],
 }

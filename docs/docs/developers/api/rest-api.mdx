@@ -1,38 +1,33 @@
 ---
-id: rest-api
-title: REST API
-pagination_label: REST API
-sidebar_label: Overview
+id: api
+title: REST API Quick Start
+pagination_label: API Quick Start
+sidebar_label: Quick Start
 description: Audius Protocol Documentation
+toc_max_heading_level: 2
+slug: /api
 ---
 
-import Tabs from '@theme/Tabs'
-import TabItem from '@theme/TabItem'
 import useBaseUrl from '@docusaurus/useBaseUrl'
 
 The Audius API is entirely free to use. We ask that you adhere to the guidelines in this
 documentation and always credit artists.
+
+The Audius REST API lets you query, stream, and search for tracks, users and playlists across the
+network.
 
 ## Selecting a Host
 
 Audius is a decentralized music streaming service. To use the API, you first select an API endpoint
 from the list of endpoints returned by:
 
-<Tabs
-  block={true}
-  defaultValue="request"
-  values={[{"label":"Request","value":"request"},{"label":"Response","value":"response"}]}
->
-<TabItem value="request">
+### Request
 
 ```bash
 GET https://api.audius.co HTTP/1.1
 ```
 
-</TabItem>
-<TabItem value="response">
-
-`200: OK`
+### Response
 
 ```json
 {
@@ -49,12 +44,6 @@ GET https://api.audius.co HTTP/1.1
   ]
 }
 ```
-
-</TabItem>
-</Tabs>
-
-The Audius REST API lets you query, stream, and search for tracks, users & playlists across the
-network.
 
 Once you've selected a host, all API requests can be sent directly to it. We recommend selecting a
 host each time your application starts up as availability may change over time.
