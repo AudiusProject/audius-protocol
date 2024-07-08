@@ -213,6 +213,7 @@ export const ChatUserListItem = ({
         <View style={styles.userContainer}>
           <ProfilePicture
             userId={user.user_id}
+            size='large'
             style={!canCreateChat ? styles.dim : null}
           />
           <View style={styles.userDetailsContainer}>

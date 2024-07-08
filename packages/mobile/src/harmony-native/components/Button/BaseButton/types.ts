@@ -83,8 +83,4 @@ export type BaseButtonProps = {
    * The percentage to scale the button when pressed
    */
   pressScale?: number
-  /**
-   * When true, apply a medium haptic feedback
-   */
-  haptics?: boolean
 } & PressableProps

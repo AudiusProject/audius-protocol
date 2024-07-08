@@ -4,8 +4,7 @@ import { signOutActions } from '@audius/common/store'
 import { View } from 'react-native'
 import { useDispatch } from 'react-redux'
 
-import { Button } from '@audius/harmony-native'
-import { Text } from 'app/components/core'
+import { Button, Text } from 'app/components/core'
 import { AppDrawer, useDrawerState } from 'app/components/drawer/AppDrawer'
 import { makeStyles } from 'app/styles'
 
@@ -26,6 +25,9 @@ const useStyles = makeStyles(({ spacing }) => ({
   contentContainer: {
     paddingHorizontal: spacing(6),
     paddingBottom: spacing(4)
+  },
+  buttonRoot: {
+    marginTop: spacing(4)
   },
   text: {
     textAlign: 'center',
@@ -53,12 +55,25 @@ export const SignOutConfirmationDrawer = () => {
         <Text variant='body' style={styles.text}>
           {messages.doubleCheckText}
         </Text>
-        <Button fullWidth onPress={onClose}>
-          {messages.cancelText}
-        </Button>
-        <Button fullWidth variant='secondary' onPress={handleSignOut}>
-          {messages.confirmText}
-        </Button>
+        <Button
+          title={messages.cancelText}
+          fullWidth
+          styles={{
+            root: styles.buttonRoot,
+            text: { textTransform: 'uppercase' }
+          }}
+          onPress={onClose}
+        />
+        <Button
+          title={messages.confirmText}
+          fullWidth
+          styles={{
+            root: styles.buttonRoot,
+            text: { textTransform: 'uppercase' }
+          }}
+          variant='common'
+          onPress={handleSignOut}
+        />
       </View>
     </AppDrawer>
   )

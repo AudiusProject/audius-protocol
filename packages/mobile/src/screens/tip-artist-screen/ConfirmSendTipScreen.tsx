@@ -6,8 +6,9 @@ import { useKeepAwake } from '@sayem314/react-native-keep-awake'
 import { Platform } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { Button, IconCaretLeft, IconCheck } from '@audius/harmony-native'
-import { TextButton } from 'app/components/core'
+import { IconCaretLeft, IconCheck } from '@audius/harmony-native'
+import { Button, TextButton } from 'app/components/core'
+import LoadingSpinner from 'app/components/loading-spinner'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles } from 'app/styles'
 
@@ -95,15 +96,15 @@ export const ConfirmSendTipScreen = ({
       <SendTipStatusText />
       <Button
         variant='primary'
+        size='large'
+        title={Platform.OS === 'ios' ? messages.confirmAlt : messages.confirm}
         onPress={handleConfirm}
-        isLoading={inProgress}
-        iconRight={IconCheck}
+        icon={inProgress ? LoadingSpinner : IconCheck}
         disabled={inProgress}
+        iconPosition='right'
         fullWidth
         style={styles.confirmButton}
-      >
-        {Platform.OS === 'ios' ? messages.confirmAlt : messages.confirm}
-      </Button>
+      />
       {inProgress ? null : (
         <TextButton
           variant='neutralLight4'

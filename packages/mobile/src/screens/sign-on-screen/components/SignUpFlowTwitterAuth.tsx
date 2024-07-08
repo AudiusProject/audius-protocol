@@ -5,7 +5,6 @@ import { socialMediaMessages } from '@audius/common/messages'
 import { pickHandleSchema } from '@audius/common/schemas'
 import { formatTwitterProfile } from '@audius/common/services'
 
-import type { SocialButtonProps } from '@audius/harmony-native'
 import { SocialButton } from '@audius/harmony-native'
 import { env } from 'app/env'
 import { restrictedHandles } from 'app/screens/sign-on-screen/utils/restrictedHandles'
@@ -15,6 +14,7 @@ import { Provider } from 'app/store/oauth/reducer'
 import { EventNames } from 'app/types/analytics'
 
 import OAuthWebView from '../../../components/oauth/OAuthWebView'
+import type { SocialButtonProps } from '../../../components/social-button/SocialButton'
 
 type SignUpFlowTwitterAuthProps = Partial<SocialButtonProps> & {
   onSuccess: (info: {

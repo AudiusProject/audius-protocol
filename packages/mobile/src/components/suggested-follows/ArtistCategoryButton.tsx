@@ -4,8 +4,8 @@ import { setFollowAristsCategory } from 'common/store/pages/signon/actions'
 import type { FollowArtistsCategory } from 'common/store/pages/signon/types'
 import { useDispatch } from 'react-redux'
 
-import type { ButtonProps } from '@audius/harmony-native'
-import { Button } from '@audius/harmony-native'
+import type { ButtonProps } from 'app/components/core'
+import { Button } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 
 const useStyles = makeStyles(({ spacing }) => ({
@@ -15,7 +15,7 @@ const useStyles = makeStyles(({ spacing }) => ({
   }
 }))
 
-type ArtistCategoryButtonProps = Omit<ButtonProps, 'children'> & {
+type ArtistCategoryButtonProps = Omit<ButtonProps, 'title'> & {
   isSelected: boolean
   category: FollowArtistsCategory
 }
@@ -32,12 +32,11 @@ export const ArtistCategoryButton = (props: ArtistCategoryButtonProps) => {
   return (
     <Button
       style={styles.root}
-      variant={isSelected ? 'primary' : 'secondary'}
+      variant={isSelected ? 'secondary' : 'commonAlt'}
       size='xs'
+      title={category}
       onPress={handlePress}
       {...other}
-    >
-      {category}
-    </Button>
+    />
   )
 }

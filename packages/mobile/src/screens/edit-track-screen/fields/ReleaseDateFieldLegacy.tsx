@@ -11,8 +11,7 @@ import type {
 } from 'react-native-modal-datetime-picker'
 import DateTimePickerModal from 'react-native-modal-datetime-picker'
 
-import { Button } from '@audius/harmony-native'
-import { Pill, Text } from 'app/components/core'
+import { Button, Pill, Text } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 import { useThemeColors, useThemeVariant } from 'app/utils/theme'
 
@@ -46,21 +45,25 @@ const ConfirmDateButton = (props: CustomConfirmButtonPropTypes) => {
     <Button
       style={{ borderRadius: 0 }}
       variant='primary'
+      size='large'
+      title={label}
       fullWidth
       onPress={onPress}
       pressScale={1}
-    >
-      {label}
-    </Button>
+    />
   )
 }
 
 const CancelDateButton = (props: CustomCancelButtonPropTypes) => {
   const { label, onPress } = props
   return (
-    <Button variant='secondary' fullWidth onPress={onPress}>
-      {label}
-    </Button>
+    <Button
+      variant='commonAlt'
+      size='large'
+      title={label}
+      fullWidth
+      onPress={onPress}
+    />
   )
 }
 

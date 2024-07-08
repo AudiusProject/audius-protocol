@@ -2,9 +2,9 @@ import { AUDIUS_API_LINK } from '@audius/web/src/utils/route'
 import type { ImageStyle } from 'react-native'
 import { Image, View } from 'react-native'
 
-import { IconArrowRight, Button } from '@audius/harmony-native'
+import { IconArrowRight } from '@audius/harmony-native'
 import AudiusAPI from 'app/assets/images/audiusAPI.png'
-import { GradientText, useLink } from 'app/components/core'
+import { Button, GradientText } from 'app/components/core'
 import { AppDrawer } from 'app/components/drawer'
 import Text from 'app/components/text'
 import { makeStyles } from 'app/styles'
@@ -43,13 +43,17 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
   subtitle: {
     color: palette.neutralLight4,
     marginBottom: spacing(6)
+  },
+  button: {
+    paddingHorizontal: spacing(2)
+  },
+  buttonText: {
+    fontSize: typography.fontSize.medium
   }
 }))
 
 export const ApiRewardsDrawer = () => {
   const styles = useStyles()
-
-  const { onPress } = useLink(AUDIUS_API_LINK)
 
   return (
     <AppDrawer modalName={MODAL_NAME}>
@@ -66,12 +70,13 @@ export const ApiRewardsDrawer = () => {
         </Text>
         <Button
           variant='primary'
-          iconRight={IconArrowRight}
-          onPress={onPress}
+          size='large'
+          icon={IconArrowRight}
+          title={messages.button}
+          url={AUDIUS_API_LINK}
+          styles={{ button: styles.button, text: styles.buttonText }}
           fullWidth
-        >
-          {messages.button}
-        </Button>
+        />
       </View>
     </AppDrawer>
   )

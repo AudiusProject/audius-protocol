@@ -7,8 +7,8 @@ import {
 import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { IconRocket, Button } from '@audius/harmony-native'
-import { Text } from 'app/components/core'
+import { IconRocket } from '@audius/harmony-native'
+import { Text, Button } from 'app/components/core'
 import { useManualToast } from 'app/hooks/useManualToast'
 import { makeStyles } from 'app/styles'
 import { useColor } from 'app/utils/theme'
@@ -119,16 +119,22 @@ export const PublishPlaylistDrawer = () => {
         </Text>
         <View style={styles.buttonContainer}>
           <Button
+            title={messages.buttonConfirmText}
             variant='primary'
-            iconLeft={IconRocket}
+            size='large'
+            iconPosition='left'
+            icon={IconRocket}
+            styles={{ icon: { height: 24, width: 24 } }}
             fullWidth
             onPress={handlePublish}
-          >
-            {messages.buttonConfirmText}
-          </Button>
-          <Button variant='secondary' fullWidth onPress={onClose}>
-            {messages.buttonCancelText}
-          </Button>
+          />
+          <Button
+            title={messages.buttonCancelText}
+            variant='common'
+            size='large'
+            fullWidth
+            onPress={onClose}
+          />
         </View>
       </View>
     </Drawer>

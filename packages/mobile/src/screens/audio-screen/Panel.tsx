@@ -6,8 +6,8 @@ import { View, Image } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'
 import LinearGradient from 'react-native-linear-gradient'
 
-import { IconArrowRight, IconCheck, Button } from '@audius/harmony-native'
-import { Text } from 'app/components/core'
+import { IconArrowRight, IconCheck } from '@audius/harmony-native'
+import { Button, Text } from 'app/components/core'
 import { ProgressBar } from 'app/components/progress-bar'
 import { makeStyles } from 'app/styles'
 import type { MobileChallengeConfig } from 'app/utils/challenges'
@@ -211,14 +211,14 @@ export const Panel = ({
         {
           <Button
             fullWidth
-            variant='secondary'
-            iconRight={hasDisbursed ? undefined : IconArrowRight}
+            title={buttonMessage}
+            variant='common'
+            iconPosition='right'
+            size='medium'
+            icon={hasDisbursed ? undefined : IconArrowRight}
             onPress={onPress}
-            style={styles.button}
-            size='small'
-          >
-            {buttonMessage}
-          </Button>
+            style={[styles.button, hasDisbursed ? styles.disbursed : null]}
+          />
         }
       </View>
     </TouchableOpacity>

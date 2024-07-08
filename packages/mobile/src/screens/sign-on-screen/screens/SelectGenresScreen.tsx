@@ -76,6 +76,7 @@ const SelectGenresFieldArray = () => {
             onPress={() => {
               handlePress(genre.value)
             }}
+            size='large'
             key={genre.value}
           />
         ))}

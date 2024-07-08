@@ -4,7 +4,7 @@ import { tokenDashboardPageSelectors } from '@audius/common/store'
 import { View } from 'react-native'
 import { useSelector } from 'react-redux'
 
-import { Button } from '@audius/harmony-native'
+import { Button } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 
 import { useCanConnectNewWallet } from './useCanConnectNewWallet'
@@ -51,13 +51,13 @@ export const ConnectNewWalletButton = () => {
   return (
     <View style={styles.root}>
       <Button
+        title={title}
         variant='primary'
+        size='large'
         fullWidth
         onPress={handleConnectWallet}
         disabled={!canConnectNewWallet}
-      >
-        {title}
-      </Button>
+      />
     </View>
   )
 }

@@ -11,8 +11,8 @@ import { useFocusEffect } from '@react-navigation/native'
 import { Text, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { IconArrowRight, Button } from '@audius/harmony-native'
-import { Screen, ScreenContent } from 'app/components/core'
+import { IconArrowRight } from '@audius/harmony-native'
+import { Button, Screen, ScreenContent } from 'app/components/core'
 import { Lineup } from 'app/components/lineup'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useRoute } from 'app/hooks/useRoute'
@@ -41,6 +41,9 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
   },
   buttonContainer: {
     padding: spacing(6)
+  },
+  button: {
+    backgroundColor: palette.secondary
   }
 }))
 
@@ -143,14 +146,16 @@ export const TrackScreen = () => {
             <>
               <View style={styles.buttonContainer}>
                 <Button
-                  iconRight={IconArrowRight}
+                  title={messages.viewOtherRemixes}
+                  icon={IconArrowRight}
                   variant='primary'
                   size='small'
                   onPress={handlePressGoToRemixes}
                   fullWidth
-                >
-                  {messages.viewOtherRemixes}
-                </Button>
+                  styles={{
+                    root: styles.button
+                  }}
+                />
               </View>
               {moreByArtistTitle}
             </>

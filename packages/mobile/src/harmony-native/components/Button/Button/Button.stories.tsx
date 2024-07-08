@@ -97,7 +97,9 @@ export const Sizes: Story = {
       <Button {...props} size='default'>
         Default
       </Button>
-      <Button {...props}>Large</Button>
+      <Button {...props} size='large'>
+        Large
+      </Button>
     </Flex>
   )
 }

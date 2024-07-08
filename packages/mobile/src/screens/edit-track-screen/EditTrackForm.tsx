@@ -9,10 +9,9 @@ import { useDispatch } from 'react-redux'
 import {
   IconArrowRight,
   IconCaretLeft,
-  IconCloudUpload,
-  Button
+  IconCloudUpload
 } from '@audius/harmony-native'
-import { Tile } from 'app/components/core'
+import { Button, Tile } from 'app/components/core'
 import { InputErrorMessage } from 'app/components/core/InputErrorMessage'
 import { PickArtworkField, TextField } from 'app/components/fields'
 import { useNavigation } from 'app/hooks/useNavigation'
@@ -126,15 +125,14 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
             <Button
               variant='primary'
               size='large'
-              iconRight={IconArrowRight}
+              icon={IconArrowRight}
               fullWidth
+              title={doneText}
               onPress={() => {
                 handleSubmit()
               }}
               disabled={isSubmitting || hasErrors}
-            >
-              {doneText}
-            </Button>
+            />
           </>
         }
       >

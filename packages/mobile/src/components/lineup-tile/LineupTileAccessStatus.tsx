@@ -36,7 +36,7 @@ const messages = {
   price: (price: string) => `$${price}`
 }
 
-const useStyles = makeStyles(({ spacing }) => ({
+const useStyles = makeStyles(({ palette, spacing, typography }) => ({
   loadingSpinner: {
     width: spacing(4),
     height: spacing(4)

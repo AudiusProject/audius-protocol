@@ -4,8 +4,8 @@ import { chatActions } from '@audius/common/store'
 import { View } from 'react-native'
 import { useDispatch } from 'react-redux'
 
-import { IconTrash, Button } from '@audius/harmony-native'
-import { Text } from 'app/components/core'
+import { IconTrash } from '@audius/harmony-native'
+import { Text, Button } from 'app/components/core'
 import { NativeDrawer } from 'app/components/drawer'
 import { useDrawer } from 'app/hooks/useDrawer'
 import { setVisibility } from 'app/store/drawers/slice'
@@ -48,6 +48,16 @@ const useStyles = makeStyles(({ spacing, typography, palette }) => ({
     fontSize: typography.fontSize.large,
     lineHeight: typography.fontSize.large * 1.3,
     color: palette.neutral
+  },
+  button: {
+    padding: spacing(4),
+    height: spacing(12)
+  },
+  blockButton: {
+    borderColor: palette.accentRed
+  },
+  blockText: {
+    fontSize: typography.fontSize.large
   }
 }))
 
@@ -84,12 +94,26 @@ export const DeleteChatDrawer = () => {
         <Text style={styles.confirm} allowNewline>
           {messages.description}
         </Text>
-        <Button onPress={handleConfirmPress} variant={'destructive'} fullWidth>
-          {messages.deleteButton}
-        </Button>
-        <Button onPress={closeDrawer} variant={'secondary'} fullWidth>
-          {messages.cancel}
-        </Button>
+        <Button
+          title={messages.deleteButton}
+          onPress={handleConfirmPress}
+          variant={'destructive'}
+          styles={{
+            root: styles.button,
+            text: styles.blockText
+          }}
+          fullWidth
+        />
+        <Button
+          title={messages.cancel}
+          onPress={closeDrawer}
+          variant={'common'}
+          styles={{
+            root: styles.button,
+            text: styles.blockText
+          }}
+          fullWidth
+        />
       </View>
     </NativeDrawer>
   )

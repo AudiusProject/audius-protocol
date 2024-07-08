@@ -2,7 +2,7 @@ import type { ComponentType } from 'react'
 
 import type { SvgProps } from 'react-native-svg'
 
-import { Button } from '@audius/harmony-native'
+import { Button } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 
 import { SettingsRowLabel } from './SettingRowLabel'
@@ -33,13 +33,12 @@ export const AccountSettingsItem = (props: AccountSettingsItemProps) => {
       <SettingsRowDescription>{description}</SettingsRowDescription>
       <Button
         style={styles.button}
-        variant='secondary'
-        size='small'
+        title={buttonTitle}
+        iconPosition='left'
+        variant='commonAlt'
         fullWidth
         onPress={onPress}
-      >
-        {buttonTitle}
-      </Button>
+      />
     </SettingsRow>
   )
 }

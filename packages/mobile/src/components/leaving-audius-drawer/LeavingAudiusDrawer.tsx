@@ -3,13 +3,8 @@ import React from 'react'
 import { useLeavingAudiusModal } from '@audius/common/store'
 import { View } from 'react-native'
 
-import {
-  Hint,
-  IconExternalLink,
-  IconInfo,
-  Button
-} from '@audius/harmony-native'
-import { Text, useLink } from 'app/components/core'
+import { Hint, IconExternalLink, IconInfo } from '@audius/harmony-native'
+import { Button, Text, useLink } from 'app/components/core'
 import Drawer from 'app/components/drawer/Drawer'
 import { makeStyles } from 'app/styles'
 
@@ -44,12 +39,13 @@ export const LeavingAudiusDrawer = () => {
       <View style={styles.root}>
         <Text>{messages.content}</Text>
         <Hint icon={IconExternalLink}>{link}</Hint>
-        <Button onPress={onLinkPress} fullWidth>
-          {messages.visit}
-        </Button>
-        <Button variant='secondary' onPress={onClose} fullWidth>
-          {messages.back}
-        </Button>
+        <Button title={messages.visit} onPress={onLinkPress} fullWidth />
+        <Button
+          variant='common'
+          title={messages.back}
+          onPress={onClose}
+          fullWidth
+        />
       </View>
     </Drawer>
   )

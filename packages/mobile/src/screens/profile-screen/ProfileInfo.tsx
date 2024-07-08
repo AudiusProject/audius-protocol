@@ -11,7 +11,6 @@ import {
 import { View, Text } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { Flex } from '@audius/harmony-native'
 import { FollowButton, FollowsYouChip } from 'app/components/user'
 import UserBadges from 'app/components/user-badges'
 import { useRoute } from 'app/hooks/useRoute'
@@ -74,6 +73,16 @@ const useStyles = makeStyles(({ typography, palette, spacing }) => ({
   text: {
     marginTop: spacing(2),
     flexShrink: 1
+  },
+  actionButtons: {
+    flexDirection: 'row',
+    position: 'relative',
+    justifyContent: 'flex-end',
+    height: spacing(7)
+  },
+  followButton: {
+    width: 110,
+    height: spacing(7)
   }
 }))
 
@@ -125,20 +134,21 @@ export const ProfileInfo = (props: ProfileInfoProps) => {
 
   const actionButtons =
     isOwner && handle ? (
-      <EditProfileButton />
+      <EditProfileButton style={styles.followButton} />
     ) : (
       <>
         {!isOwner ? (
           canCreateChat ? (
-            <MessageButton userId={user_id} />
+            <MessageButton profile={profile} />
           ) : (
-            <MessageLockedButton userId={user_id} />
+            <MessageLockedButton userId={profile.user_id} />
           )
         ) : null}
         {does_current_user_follow ? (
           <SubscribeButton profile={profile} />
         ) : null}
         <FollowButton
+          style={styles.followButton}
           userId={user_id}
           onPress={onFollow}
           followSource={FollowSource.PROFILE_PAGE}
@@ -148,14 +158,9 @@ export const ProfileInfo = (props: ProfileInfoProps) => {
 
   return (
     <View pointerEvents='box-none' style={styles.info}>
-      <Flex
-        direction='row'
-        justifyContent='flex-end'
-        gap='xs'
-        pointerEvents='box-none'
-      >
+      <View pointerEvents='box-none' style={styles.actionButtons}>
         {isReachable ? actionButtons : null}
-      </Flex>
+      </View>
       <View pointerEvents='none' style={styles.text}>
         <View style={styles.name}>
           <Text

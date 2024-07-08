@@ -4,16 +4,13 @@ import { accountSelectors, challengesSelectors } from '@audius/common/store'
 import { View } from 'react-native'
 import { useSelector } from 'react-redux'
 
-import {
-  Button,
-  IconArrowRight,
-  IconValidationCheck
-} from '@audius/harmony-native'
+import { IconArrowRight, IconValidationCheck } from '@audius/harmony-native'
 import Text from 'app/components/text'
 import { useNavigation } from 'app/hooks/useNavigation'
 import type { ProfileTabScreenParamList } from 'app/screens/app-screen/ProfileTabScreen'
 import { makeStyles } from 'app/styles'
 
+import Button, { ButtonType } from '../button'
 const { getCompletionStages } = challengesSelectors
 const { getAccountUser } = accountSelectors
 
@@ -55,6 +52,8 @@ const useStyles = makeStyles(({ palette }) => ({
     borderColor: palette.neutralLight4
   }
 }))
+
+const renderArrowIcon = (color) => <IconArrowRight fill={color} />
 
 export const ProfileCompletionChecks = ({
   isComplete,
@@ -110,12 +109,12 @@ export const ProfileCompletionChecks = ({
         ))}
       </View>
       <Button
-        variant={isComplete ? 'secondary' : 'primary'}
-        iconRight={IconArrowRight}
+        title={messages.profileCompletionButton}
+        renderIcon={renderArrowIcon}
+        iconPosition='right'
         onPress={goToProfile}
-      >
-        {messages.profileCompletionButton}
-      </Button>
+        type={isComplete ? ButtonType.COMMON : ButtonType.PRIMARY}
+      />
     </View>
   )
 }

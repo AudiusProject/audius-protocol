@@ -15,10 +15,9 @@ import {
   IconMessage,
   IconStars,
   IconRemix,
-  IconRepost,
-  Button
+  IconRepost
 } from '@audius/harmony-native'
-import { GradientText } from 'app/components/core'
+import { Button, GradientText } from 'app/components/core'
 import { NativeDrawer } from 'app/components/drawer'
 import Text from 'app/components/text'
 import { useDrawer } from 'app/hooks/useDrawer'
@@ -168,9 +167,12 @@ export const EnablePushNotificationsDrawer = () => {
             </View>
           ))}
         </View>
-        <Button onPress={enablePushNotifications} fullWidth>
-          {messages.enable}
-        </Button>
+        <Button
+          title={messages.enable}
+          onPress={enablePushNotifications}
+          size='large'
+          fullWidth
+        />
       </View>
     </NativeDrawer>
   )

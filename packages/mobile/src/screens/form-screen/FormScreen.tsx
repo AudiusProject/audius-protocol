@@ -57,7 +57,7 @@ export const FormScreen = (props: FormScreenProps) => {
               {messages.done}
             </Button>
             {onClear ? (
-              <PlainButton disabled={!clearable} onPress={onClear}>
+              <PlainButton size='large' disabled={!clearable} onPress={onClear}>
                 {messages.clear}
               </PlainButton>
             ) : null}

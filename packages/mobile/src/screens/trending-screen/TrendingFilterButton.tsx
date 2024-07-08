@@ -18,5 +18,5 @@ export const TrendingFilterButton = () => {
     dispatchWeb(setVisibility({ modal: MODAL_NAME, visible: true }))
   }, [dispatchWeb])
 
-  return <ScreenHeaderButton onPress={handlePress} label={trendingGenre} />
+  return <ScreenHeaderButton title={trendingGenre} onPress={handlePress} />
 }

@@ -1,9 +1,7 @@
-import { useCallback } from 'react'
-
 import { View } from 'react-native'
 
-import { IconCloudDownload, Button } from '@audius/harmony-native'
-import { GradientText, Text, useLink } from 'app/components/core'
+import { IconCloudDownload } from '@audius/harmony-native'
+import { Button, GradientText, Text } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 
 const useStyles = makeStyles(({ spacing }) => ({
@@ -42,18 +40,9 @@ export const NewVersionPrompt = ({
   contentText,
   buttonText,
   url,
-  onPress: onPressProp
+  onPress
 }: NewVersionPromptProps) => {
   const styles = useStyles()
-
-  const { onPress: onPressLink } = useLink(url ?? '')
-
-  const handlePress = useCallback(() => {
-    onPressProp?.()
-    if (url) {
-      onPressLink()
-    }
-  }, [onPressProp, url, onPressLink])
 
   return (
     <View style={styles.contentContainer}>
@@ -63,10 +52,15 @@ export const NewVersionPrompt = ({
       <Text variant='h1' style={styles.text}>
         {contentText}
       </Text>
-      {!url && !onPressProp ? null : (
-        <Button iconLeft={IconCloudDownload} onPress={handlePress}>
-          {buttonText}
-        </Button>
+      {!url && !onPress ? null : (
+        <Button
+          title={buttonText}
+          size='large'
+          icon={IconCloudDownload}
+          iconPosition='left'
+          url={url}
+          onPress={onPress}
+        />
       )}
     </View>
   )

@@ -3,8 +3,8 @@ import { useCallback, useMemo, useState } from 'react'
 import { useField } from 'formik'
 import { View } from 'react-native'
 
-import { IconImage, IconPencil, Button } from '@audius/harmony-native'
-import { DynamicImage } from 'app/components/core'
+import { IconImage, IconPencil } from '@audius/harmony-native'
+import { Button, DynamicImage } from 'app/components/core'
 import { InputErrorMessage } from 'app/components/core/InputErrorMessage'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { makeStyles } from 'app/styles'
@@ -107,13 +107,16 @@ export const PickArtworkField = (props: PickArtworkFieldProps) => {
         </View>
         <View style={styles.button}>
           <Button
-            variant='secondary'
-            iconLeft={IconPencil}
+            variant='secondaryAlt'
+            size='large'
+            title={
+              buttonTitle ||
+              (trackArtworkUrl ? messages.changeArtwork : messages.addArtwork)
+            }
+            icon={IconPencil}
+            iconPosition='left'
             onPress={onPress ?? handleChangeArtwork}
-          >
-            {buttonTitle ||
-              (trackArtworkUrl ? messages.changeArtwork : messages.addArtwork)}
-          </Button>
+          />
         </View>
       </DynamicImage>
       {error && touched ? <InputErrorMessage message={error} /> : null}

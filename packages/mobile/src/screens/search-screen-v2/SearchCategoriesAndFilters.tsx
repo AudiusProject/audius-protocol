@@ -37,6 +37,7 @@ const SearchCategory = (props: SearchCategoryProps) => {
   return (
     <SelectablePill
       type='radio'
+      size='large'
       value={category}
       label={labelByCategory[category]}
       isSelected={isSelected}

@@ -4,8 +4,10 @@ import { cacheUsersSelectors, tippingActions } from '@audius/common/store'
 import { Platform } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { IconTokenGold, Button } from '@audius/harmony-native'
+import { IconTokenGold } from '@audius/harmony-native'
+import { Button } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
+import { makeStyles } from 'app/styles'
 
 import { useSelectProfile } from './selectors'
 const { beginTip } = tippingActions
@@ -19,6 +21,12 @@ const messages = {
   labelAlt: 'Send Audio tokens' // iOS only
 }
 
+const useStyles = makeStyles(() => ({
+  text: {
+    fontSize: 16
+  }
+}))
+
 export const TipAudioButton = () => {
   const navigation = useNavigation()
   const { user_id } = useSelectProfile(['user_id'])
@@ -30,18 +38,22 @@ export const TipAudioButton = () => {
     navigation.navigate('TipArtist')
   }, [dispatch, user, navigation])
 
+  const styles = useStyles()
+
   return (
     <Button
       variant='primary'
       accessibilityLabel={
         Platform.OS === 'ios' ? messages.labelAlt : messages.label
       }
-      iconLeft={IconTokenGold}
-      size='small'
+      title={Platform.OS === 'ios' ? messages.titleAlt : messages.title}
+      icon={IconTokenGold}
+      iconPosition='left'
       fullWidth
       onPress={handlePress}
-    >
-      {Platform.OS === 'ios' ? messages.titleAlt : messages.title}
-    </Button>
+      styles={{
+        text: styles.text
+      }}
+    />
   )
 }

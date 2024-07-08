@@ -117,10 +117,12 @@ export const PurchaseSuccess = ({
             url={link}
             shareData={handleTwitterShare}
             handle={handle}
+            size='large'
           />
         </Flex>
       )}
       <PlainButton
+        size='large'
         variant='subdued'
         onPress={onPressViewTrack}
         iconRight={IconCaretRight}

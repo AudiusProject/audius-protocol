@@ -15,13 +15,13 @@ import {
 import type { Maybe } from '@audius/common/utils'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { Button } from '@audius/harmony-native'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useRemoteVar } from 'app/hooks/useRemoteConfig'
 import { useToast } from 'app/hooks/useToast'
 import type { ChallengesParamList } from 'app/utils/challenges'
 import { getChallengeConfig } from 'app/utils/challenges'
 
+import Button, { ButtonType } from '../button'
 import { AppDrawer, useDrawerState } from '../drawer/AppDrawer'
 
 import { AudioMatchingChallengeDrawerContent } from './AudioMatchingChallengeDrawerContent'
@@ -44,6 +44,12 @@ const messages = {
 }
 
 const MODAL_NAME = 'ChallengeRewardsExplainer'
+
+const styles = {
+  button: {
+    width: '100%' as const
+  }
+}
 
 export const ChallengeRewardsDrawerProvider = () => {
   const dispatch = useDispatch()
@@ -148,14 +154,17 @@ export const ChallengeRewardsDrawerProvider = () => {
       case 'track-upload':
         contents = config?.buttonInfo && (
           <Button
-            iconRight={config.buttonInfo.iconRight}
-            iconLeft={config.buttonInfo.iconLeft}
-            variant={challenge?.state === 'disbursed' ? 'secondary' : 'primary'}
+            containerStyle={styles.button}
+            title={config.panelButtonText}
+            renderIcon={config.buttonInfo.renderIcon}
+            iconPosition='right'
+            type={
+              challenge?.state === 'disbursed'
+                ? ButtonType.COMMON
+                : ButtonType.PRIMARY
+            }
             onPress={openUploadModal}
-            fullWidth
-          >
-            {config.panelButtonText}
-          </Button>
+          />
         )
         break
       case 'profile-completion':
@@ -169,14 +178,15 @@ export const ChallengeRewardsDrawerProvider = () => {
       default:
         contents = config?.buttonInfo && (
           <Button
-            iconRight={config.buttonInfo.iconRight}
-            iconLeft={config.buttonInfo.iconLeft}
-            variant={hasChallengeCompleted ? 'secondary' : 'primary'}
+            containerStyle={styles.button}
+            title={config.panelButtonText}
+            renderIcon={config.buttonInfo.renderIcon}
+            iconPosition={config.buttonInfo.iconPosition}
+            type={
+              hasChallengeCompleted ? ButtonType.COMMON : ButtonType.PRIMARY
+            }
             onPress={handleNavigation}
-            fullWidth
-          >
-            {config.panelButtonText}
-          </Button>
+          />
         )
     }
   }

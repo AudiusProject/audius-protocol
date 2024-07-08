@@ -14,8 +14,7 @@ import {
 import { FlatList, Keyboard, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { Button } from '@audius/harmony-native'
-import { TextInput } from 'app/components/core'
+import { TextInput, Button } from 'app/components/core'
 import { AppDrawer, useDrawerState } from 'app/components/drawer'
 import { makeStyles } from 'app/styles'
 const { setTrendingGenre } = trendingPageActions
@@ -107,12 +106,11 @@ export const TrendingFilterDrawer = () => {
             return (
               <Button
                 fullWidth
-                variant={isSelected ? 'primary' : 'secondary'}
+                variant={isSelected ? 'primary' : 'commonAlt'}
+                title={genre}
                 style={styles.genreButton}
                 onPress={handleSelect(genre)}
-              >
-                {genre}
-              </Button>
+              />
             )
           }}
         />

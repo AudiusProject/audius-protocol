@@ -6,7 +6,6 @@ export type SelectablePillProps = {
   type: 'button' | 'checkbox' | 'radio'
   size?: 'small' | 'large'
   isSelected?: boolean
-  isControlled?: boolean
   label: string
   value?: string
   icon?: IconComponent

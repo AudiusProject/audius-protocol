@@ -49,13 +49,8 @@ import {
 import { useDispatch, useSelector } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
-import {
-  IconCart,
-  IconCloseAlt,
-  IconError,
-  Button
-} from '@audius/harmony-native'
-import { LockedStatusBadge, Text } from 'app/components/core'
+import { IconCart, IconCloseAlt, IconError } from '@audius/harmony-native'
+import { Button, LockedStatusBadge, Text } from 'app/components/core'
 import Drawer from 'app/components/drawer'
 import { useIsUSDCEnabled } from 'app/hooks/useIsUSDCEnabled'
 import { useNavigation } from 'app/hooks/useNavigation'
@@ -255,7 +250,7 @@ const RenderForm = ({
   const navigation = useNavigation()
   const styles = useStyles()
   const dispatch = useDispatch()
-  const { primary } = useThemeColors()
+  const { specialLightGreen, primary } = useThemeColors()
   const presetValues = usePayExtraPresets()
   const { isEnabled: isIOSUSDCPurchaseEnabled } = useFeatureFlag(
     FeatureFlags.IOS_USDC_PURCHASE_ENABLED
@@ -420,20 +415,25 @@ const RenderForm = ({
         <View style={styles.formActions}>
           {error ? <RenderError error={error} /> : null}
           {page === PurchaseContentPage.TRANSFER ? (
-            <Button onPress={handleGoBackPress} variant='secondary' fullWidth>
-              {messages.goBack}
-            </Button>
+            <Button
+              title={messages.goBack}
+              onPress={handleGoBackPress}
+              variant='common'
+              size='large'
+              fullWidth
+            />
           ) : null}
           <Button
             onPress={submitForm}
             disabled={isUnlocking}
-            variant='primary'
-            color='lightGreen'
-            isLoading={isUnlocking}
+            title={getButtonText(isUnlocking, totalPriceInCents)}
+            variant={'primary'}
+            size='large'
+            color={specialLightGreen}
+            iconPosition='left'
+            icon={isUnlocking ? LoadingSpinner : undefined}
             fullWidth
-          >
-            {getButtonText(isUnlocking, totalPriceInCents)}
-          </Button>
+          />
         </View>
       )}
     </View>

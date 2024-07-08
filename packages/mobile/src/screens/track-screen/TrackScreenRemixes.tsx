@@ -1,8 +1,8 @@
 import type { ID } from '@audius/common/models'
 import { View } from 'react-native'
 
-import { Button, IconArrowRight, IconRemix } from '@audius/harmony-native'
-import { Tile, GradientText } from 'app/components/core'
+import { IconArrowRight, IconRemix } from '@audius/harmony-native'
+import { Button, Tile, GradientText } from 'app/components/core'
 import { flexRowCentered, makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 
@@ -55,6 +55,10 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
   track: {
     marginHorizontal: spacing(3),
     marginBottom: spacing(5)
+  },
+
+  button: {
+    backgroundColor: palette.secondary
   }
 }))
 
@@ -77,12 +81,15 @@ export const TrackScreenRemixes = ({
         })}
       </View>
       <Button
-        iconRight={IconArrowRight}
+        title={messages.viewAll(count)}
+        icon={IconArrowRight}
         variant='primary'
+        size='medium'
         onPress={onPressGoToRemixes}
-      >
-        {messages.viewAll(count)}
-      </Button>
+        styles={{
+          root: styles.button
+        }}
+      />
     </Tile>
   )
 }

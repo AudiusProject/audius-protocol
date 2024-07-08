@@ -29,12 +29,11 @@ import {
   IconExternalLink,
   IconUserFollow,
   IconTipping,
-  Flex,
-  Button
+  Flex
 } from '@audius/harmony-native'
 import LogoEth from 'app/assets/images/logoEth.svg'
 import LogoSol from 'app/assets/images/logoSol.svg'
-import { LockedStatusBadge, useLink } from 'app/components/core'
+import { Button, LockedStatusBadge, useLink } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
 import UserBadges from 'app/components/user-badges'
 import { useDrawer } from 'app/hooks/useDrawer'
@@ -120,6 +119,13 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
   collectionChainImage: {
     top: -spacing(0.25),
     left: -spacing(1.25)
+  },
+  mainButton: {
+    marginTop: spacing(2),
+    backgroundColor: palette.accentBlue
+  },
+  buyButton: {
+    backgroundColor: palette.specialLightGreen
   },
   loadingSpinner: {
     width: spacing(5),
@@ -296,12 +302,15 @@ export const DetailsTileNoAccess = ({
             </View>
           </View>
           <Button
-            iconRight={IconExternalLink}
+            style={styles.mainButton}
+            styles={{ icon: { width: spacing(4), height: spacing(4) } }}
+            title={messages.goToCollection}
+            size='large'
+            iconPosition='right'
+            icon={IconExternalLink}
             onPress={handlePressCollection}
             fullWidth
-          >
-            {messages.goToCollection}
-          </Button>
+          />
         </>
       )
     }
@@ -314,12 +323,15 @@ export const DetailsTileNoAccess = ({
             prefix: messages.lockedFollowGatedPrefix
           })}
           <Button
-            iconLeft={IconUserFollow}
+            style={styles.mainButton}
+            styles={{ icon: { width: spacing(4), height: spacing(4) } }}
+            title={messages.followArtist}
+            size='large'
+            iconPosition='left'
+            icon={IconUserFollow}
             onPress={handleFollowArtist}
             fullWidth
-          >
-            {messages.followArtist}
-          </Button>
+          />
         </>
       )
     }
@@ -332,9 +344,16 @@ export const DetailsTileNoAccess = ({
             prefix: messages.lockedTipGatedPrefix,
             suffix: messages.lockedTipGatedSuffix
           })}
-          <Button iconRight={IconTipping} onPress={handleSendTip} fullWidth>
-            {messages.sendTip}
-          </Button>
+          <Button
+            style={styles.mainButton}
+            styles={{ icon: { width: spacing(4), height: spacing(4) } }}
+            title={messages.sendTip}
+            size='large'
+            iconPosition='right'
+            icon={IconTipping}
+            onPress={handleSendTip}
+            fullWidth
+          />
         </>
       )
     }
@@ -346,9 +365,16 @@ export const DetailsTileNoAccess = ({
               {messages.lockedUSDCPurchase}
             </Text>
           </View>
-          <Button onPress={handlePurchasePress} fullWidth>
-            {messages.buy(formatPrice(streamConditions.usdc_purchase.price))}
-          </Button>
+          <Button
+            style={[styles.mainButton, styles.buyButton]}
+            styles={{ icon: { width: spacing(4), height: spacing(4) } }}
+            title={messages.buy(
+              formatPrice(streamConditions.usdc_purchase.price)
+            )}
+            size='large'
+            onPress={handlePurchasePress}
+            fullWidth
+          />
         </>
       )
     }
@@ -367,6 +393,8 @@ export const DetailsTileNoAccess = ({
     styles.collectionImage,
     styles.collectionChainImageContainer,
     styles.collectionChainImage,
+    styles.mainButton,
+    styles.buyButton,
     handlePressCollection,
     followee,
     renderLockedSpecialAccessDescription,

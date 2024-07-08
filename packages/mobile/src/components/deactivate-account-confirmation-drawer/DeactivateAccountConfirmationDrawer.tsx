@@ -8,10 +8,10 @@ import {
 import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { Button } from '@audius/harmony-native'
-import { Text } from 'app/components/core'
+import LoadingSpinner from 'app/components/loading-spinner'
 import { makeStyles } from 'app/styles'
 
+import { Button, Text } from '../core'
 import { AppDrawer, useDrawerState } from '../drawer'
 const { deactivateAccount } = deactivateAccountActions
 const { getDeactivateAccountStatus } = deactivateAccountSelectors
@@ -30,6 +30,9 @@ const useStyles = makeStyles(({ spacing }) => ({
   contentContainer: {
     paddingHorizontal: spacing(6),
     paddingBottom: spacing(4)
+  },
+  buttonRoot: {
+    marginTop: spacing(4)
   },
   text: {
     textAlign: 'center',
@@ -63,18 +66,28 @@ export const DeactivateAccountConfirmationDrawer = () => {
         <Text variant='body' style={styles.text}>
           {messages.doubleCheckText}
         </Text>
-        <Button fullWidth onPress={onClose} disabled={status !== Status.IDLE}>
-          {messages.cancelText}
-        </Button>
         <Button
+          title={messages.cancelText}
           fullWidth
+          styles={{
+            root: styles.buttonRoot,
+            text: { textTransform: 'uppercase' }
+          }}
+          onPress={onClose}
+          disabled={status !== Status.IDLE}
+        />
+        <Button
+          title={messages.confirmText}
+          fullWidth
+          styles={{
+            root: styles.buttonRoot,
+            text: { textTransform: 'uppercase' }
+          }}
           variant='destructive'
           onPress={handleConfirmation}
-          isLoading={status === Status.LOADING}
+          icon={status === Status.LOADING ? LoadingSpinner : undefined}
           disabled={status !== Status.IDLE}
-        >
-          {messages.confirmText}
-        </Button>
+        />
       </View>
     </AppDrawer>
   )

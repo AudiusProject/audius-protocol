@@ -3,9 +3,8 @@ import { useCallback } from 'react'
 
 import { View } from 'react-native'
 
-import { Button } from '@audius/harmony-native'
 import type { ScreenProps } from 'app/components/core'
-import { ScreenContent, Screen } from 'app/components/core'
+import { ScreenContent, Button, Screen } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles } from 'app/styles'
 
@@ -86,24 +85,28 @@ export const FormScreen = (props: FormScreenProps) => {
       {onSubmit ? (
         <>
           <Button
-            variant='secondary'
+            variant='commonAlt'
+            size='large'
             style={styles.bottomButton}
+            title={cancelText ?? messages.cancel}
             onPress={handleCancel}
-          >
-            {cancelText ?? messages.cancel}
-          </Button>
+          />
           <Button
             variant='primary'
+            size='large'
             style={styles.bottomButton}
+            title={submitText ?? messages.submit}
             onPress={handleSubmit}
-          >
-            {submitText ?? messages.submit}
-          </Button>
+          />
         </>
       ) : (
-        <Button variant='primary' fullWidth onPress={navigation.goBack}>
-          {doneText ?? messages.done}
-        </Button>
+        <Button
+          variant='primary'
+          size='large'
+          fullWidth
+          title={doneText ?? messages.done}
+          onPress={navigation.goBack}
+        />
       )}
     </View>
   )

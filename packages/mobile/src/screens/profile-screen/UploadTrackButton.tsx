@@ -1,13 +1,24 @@
 import { useCallback } from 'react'
 
-import { IconCloudUpload, Button, Flex } from '@audius/harmony-native'
+import { View } from 'react-native'
+
+import { IconCloudUpload } from '@audius/harmony-native'
+import { Button } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
+import { makeStyles } from 'app/styles'
 
 const messages = {
   uploadTrack: 'Upload a Track'
 }
 
+const useStyles = makeStyles(({ spacing }) => ({
+  root: {
+    marginTop: spacing(4)
+  }
+}))
+
 export const UploadTrackButton = () => {
+  const styles = useStyles()
   const navigation = useNavigation()
 
   const handlePress = useCallback(() => {
@@ -15,16 +26,15 @@ export const UploadTrackButton = () => {
   }, [navigation])
 
   return (
-    <Flex pointerEvents='box-none' mt='xs'>
+    <View pointerEvents='box-none' style={styles.root}>
       <Button
-        variant='secondary'
-        iconLeft={IconCloudUpload}
-        size='small'
+        variant='common'
+        title={messages.uploadTrack}
+        icon={IconCloudUpload}
+        iconPosition='left'
         fullWidth
         onPress={handlePress}
-      >
-        {messages.uploadTrack}
-      </Button>
-    </Flex>
+      />
+    </View>
   )
 }

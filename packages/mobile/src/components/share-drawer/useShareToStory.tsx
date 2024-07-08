@@ -28,8 +28,8 @@ import {
 import type ViewShot from 'react-native-view-shot'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { IconWaveform, Button } from '@audius/harmony-native'
-import { LinearProgress, Text } from 'app/components/core'
+import { IconWaveform } from '@audius/harmony-native'
+import { Button, LinearProgress, Text } from 'app/components/core'
 import { env } from 'app/env'
 import { isImageUriSource } from 'app/hooks/useContentNodeImage'
 import { useToast } from 'app/hooks/useToast'
@@ -596,13 +596,12 @@ export const ShareToStoryProgressDrawer = () => {
           {subtitle}
         </Text>
         <Button
+          title={messages.cancel}
           fullWidth
-          variant='secondary'
+          variant='common'
           onPress={handleCancel}
           style={styles.button}
-        >
-          {messages.cancel}
-        </Button>
+        />
       </View>
     </NativeDrawer>
   )

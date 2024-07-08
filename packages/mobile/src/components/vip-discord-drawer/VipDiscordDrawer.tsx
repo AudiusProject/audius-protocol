@@ -3,9 +3,9 @@ import { AUDIUS_DISCORD_LINK } from '@audius/web/src/utils/route'
 import { View } from 'react-native'
 import { useSelector } from 'react-redux'
 
-import { IconDiscord, Button } from '@audius/harmony-native'
+import { IconDiscord } from '@audius/harmony-native'
 import { CopyTextTile } from 'app/components/copy-text-tile'
-import { Text, useLink } from 'app/components/core'
+import { Text, Button } from 'app/components/core'
 import Drawer, { useDrawerState } from 'app/components/drawer'
 import { makeStyles } from 'app/styles'
 const { getDiscordCode } = vipDiscordModalSelectors
@@ -41,8 +41,6 @@ export const VipDiscordDrawer = () => {
 
   const discordCode = useSelector(getDiscordCode)
 
-  const { onPress } = useLink(AUDIUS_DISCORD_LINK)
-
   return (
     <Drawer
       isOpen={isOpen}
@@ -58,12 +56,13 @@ export const VipDiscordDrawer = () => {
         ) : null}
         <Button
           style={styles.launchDiscord}
+          title={messages.launchDiscord}
           variant='primary'
-          iconLeft={IconDiscord}
-          onPress={onPress}
-        >
-          {messages.launchDiscord}
-        </Button>
+          size='medium'
+          iconPosition='left'
+          icon={IconDiscord}
+          url={AUDIUS_DISCORD_LINK}
+        />
       </View>
     </Drawer>
   )
