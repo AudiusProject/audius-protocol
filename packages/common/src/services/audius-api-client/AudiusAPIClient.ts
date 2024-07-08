@@ -90,7 +90,10 @@ const FULL_ENDPOINT_MAP = {
   getTrackStreamUrl: (trackId: OpaqueID) => `/tracks/${trackId}/stream`,
   getTracks: () => `/tracks`,
   getTrackByHandleAndSlug: `/tracks`,
-  getStems: (trackId: OpaqueID) => `/tracks/${trackId}/stems`,
+  getStems: (trackId: OpaqueID, stemIds?: ID[]) =>
+    `/tracks/${trackId}/stems${
+      stemIds ? `?stemIds=${stemIds?.join(',')}` : ''
+    }`,
   getRemixes: (trackId: OpaqueID) => `/tracks/${trackId}/remixes`,
   getRemixing: (trackId: OpaqueID) => `/tracks/${trackId}/remixing`,
   searchFull: `/search/full`,
@@ -259,6 +262,7 @@ type GetPlaylistByPermalinkArgs = {
 
 type GetStemsArgs = {
   trackId: ID
+  stemIds?: ID[]
 }
 
 type GetRemixesArgs = {
@@ -753,11 +757,14 @@ export class AudiusAPIClient {
     return adapter.makeTrack(trackResponse.data)
   }
 
-  async getStems({ trackId }: GetStemsArgs): Promise<StemTrackMetadata[]> {
+  async getStems({
+    trackId,
+    stemIds
+  }: GetStemsArgs): Promise<StemTrackMetadata[]> {
     this._assertInitialized()
     const encodedTrackId = this._encodeOrThrow(trackId)
     const response = await this._getResponse<APIResponse<APIStem[]>>(
-      FULL_ENDPOINT_MAP.getStems(encodedTrackId)
+      FULL_ENDPOINT_MAP.getStems(encodedTrackId, stemIds)
     )
 
     if (!response) return []
