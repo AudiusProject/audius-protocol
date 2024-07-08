@@ -140,6 +140,12 @@ export const PublishContentDrawer = () => {
     onClose()
   }, [contentId, contentType, displayPublishToast, dispatch, onClose])
 
+  // Content type should never be null but would cause issues if we continued with it null
+  // The types allow null solely for the default store state use case
+  if (contentType === null) {
+    return null
+  }
+
   return (
     <Drawer isOpen={isOpen} onClose={onClose}>
       <View style={styles.container}>
@@ -155,8 +161,7 @@ export const PublishContentDrawer = () => {
           </Text>
         </View>
         <Text style={styles.body} fontSize='large' weight='medium'>
-          {/* TODO: what to do about undefined here */}
-          {messages.drawerBody(contentType ?? 'track')}
+          {messages.drawerBody(contentType)}
         </Text>
         <View style={styles.buttonContainer}>
           <Button
