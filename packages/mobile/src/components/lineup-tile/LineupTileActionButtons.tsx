@@ -10,6 +10,7 @@ import {
   Flex,
   IconButton,
   IconKebabHorizontal,
+  IconPencil,
   IconRocket,
   IconShare
 } from '@audius/harmony-native'
@@ -47,6 +48,7 @@ type Props = {
   onPressSave?: GestureResponderHandler
   onPressShare?: GestureResponderHandler
   onPressPublish?: GestureResponderHandler
+  onPressEdit?: GestureResponderHandler
 }
 
 const useStyles = makeStyles(({ spacing, palette }) => ({
@@ -87,7 +89,8 @@ export const LineupTileActionButtons = ({
   onPressRepost,
   onPressSave,
   onPressShare,
-  onPressPublish
+  onPressPublish,
+  onPressEdit
 }: Props) => {
   const styles = useStyles()
   const isUSDCEnabled = useIsUSDCEnabled()
@@ -133,6 +136,17 @@ export const LineupTileActionButtons = ({
       disabled={disabled}
       onPress={onPressOverflow}
       aria-label={messages.overflowButtonLabel}
+      size='l'
+    />
+  )
+
+  const editButton = (
+    <IconButton
+      color='subdued'
+      icon={IconPencil}
+      disabled={disabled}
+      onPress={onPressEdit}
+      aria-label={messages.editButtonLabel}
       size='l'
     />
   )
@@ -184,6 +198,7 @@ export const LineupTileActionButtons = ({
               {!isOwner ? repostButton : null}
               {!isOwner ? favoriteButton : null}
               {!isShareHidden ? shareButton : null}
+              {isOwner ? editButton : null}
               {showPublishButton ? publishButton : null}
             </>
           )}

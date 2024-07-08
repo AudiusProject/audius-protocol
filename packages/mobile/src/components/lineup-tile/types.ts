@@ -122,6 +122,9 @@ export type LineupTileProps = Omit<LineupItemProps, 'togglePlay'> & {
   /** Function to call when the publish button is pressed */
   onPressPublish?: GestureResponderHandler
 
+  /** Function to call when the edit button is pressed */
+  onPressEdit?: GestureResponderHandler
+
   /** Amount of plays on this item */
   playCount?: number
 

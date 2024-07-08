@@ -44,6 +44,7 @@ export const LineupTile = ({
   onPressShare,
   onPressTitle,
   onPressPublish,
+  onPressEdit,
   playCount,
   renderImage,
   repostType,
@@ -168,6 +169,7 @@ export const LineupTile = ({
           onPressSave={onPressSave}
           onPressShare={onPressShare}
           onPressPublish={onPressPublish}
+          onPressEdit={onPressEdit}
         />
       )}
     </LineupTileRoot>

@@ -12,6 +12,7 @@ import { inboxUnavailableModalReducer } from './inbox-unavailable-modal'
 import { leavingAudiusModalReducer } from './leaving-audius-modal'
 import parentReducer, { initialState } from './parentSlice'
 import { premiumContentPurchaseModalReducer } from './premium-content-purchase-modal'
+import { publishContentModalReducer } from './publish-content-modal'
 import { BaseModalState, Modals, ModalsState } from './types'
 import { usdcManualTransferModalReducer } from './usdc-manual-transfer-modal'
 import { usdcPurchaseDetailsModalReducer } from './usdc-purchase-details-modal'
@@ -49,7 +50,8 @@ const combinedReducers = combineReducers({
   CoinflowWithdraw: coinflowWithdrawModalReducer,
   WaitForDownloadModal: waitForDownloadModalReducer,
   ArtistPick: artistPickModalReducer,
-  AlbumTrackRemoveConfirmation: albumTrackRemoveConfirmationModalReducer
+  AlbumTrackRemoveConfirmation: albumTrackRemoveConfirmationModalReducer,
+  PublishContentModal: publishContentModalReducer
 })
 
 /**

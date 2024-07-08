@@ -67,7 +67,7 @@ export type Modals =
   | 'LockedContent'
   | 'PlaybackRate'
   | 'ProfileActions'
-  | 'PublishPlaylistConfirmation'
+  | 'PublishContentModal'
   | 'AiAttributionSettings'
   | 'DuplicateAddConfirmation'
   | 'PremiumContentPurchaseModal'

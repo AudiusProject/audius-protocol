@@ -235,6 +235,10 @@ export const TrackTileComponent = ({
     openPublishModal({ contentId: track_id, contentType: 'track' })
   }, [openPublishModal, track_id])
 
+  const onPressEdit = useCallback(() => {
+    navigation?.push('EditTrack', { id: track_id })
+  }, [navigation, track_id])
+
   const hideShare = !isOwner && field_visibility?.share === false
   const hidePlays = !isOwner && field_visibility?.play_count === false
 
@@ -258,6 +262,7 @@ export const TrackTileComponent = ({
       onPressShare={handlePressShare}
       onPressTitle={handlePressTitle}
       onPressPublish={handlePressPublish}
+      onPressEdit={onPressEdit}
       playCount={play_count}
       title={title}
       item={track}

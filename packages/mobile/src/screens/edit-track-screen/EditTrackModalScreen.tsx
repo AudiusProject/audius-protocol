@@ -40,13 +40,11 @@ export const EditTrackModalScreen = () => {
       if (track?.is_unlisted === true && metadata.is_unlisted === false) {
         dispatch(
           setVisibility({
-            drawer: 'ReleaseNowConfirmation',
+            drawer: 'PublishContentDrawer',
             visible: true,
             data: {
-              trackId: id,
-              handleConfirm: () => {
-                dispatch(editTrack(id, metadata))
-              }
+              contentId: id,
+              contentType: 'track'
             }
           })
         )

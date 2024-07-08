@@ -1,11 +1,15 @@
-import { useCallback } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import {
   cacheCollectionsActions,
+  trackPageActions,
+  cacheTracksSelectors,
+  toastActions,
   usePublishContentModal
 } from '@audius/common/store'
 import { View } from 'react-native'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
+import { usePrevious } from 'react-use'
 
 import { IconRocket } from '@audius/harmony-native'
 import { Text, Button } from 'app/components/core'
@@ -17,10 +21,14 @@ import Drawer from '../drawer/Drawer'
 import LoadingSpinner from '../loading-spinner/LoadingSpinner'
 
 const { publishPlaylist } = cacheCollectionsActions
+const { makeTrackPublic } = trackPageActions
+const { getTrack } = cacheTracksSelectors
+const { manualClearToast } = toastActions
+
 const messages = {
   drawerTitle: 'Make Public',
   drawerBody: (type: 'playlist' | 'album' | 'track') =>
-    `Are you sure you want to make this ${type} public? It will be shared to your feed and your followers will be notified.`,
+    `Ready to release your new ${type}? Your followers will be notified and your ${type} will be released to the public.`,
   buttonConfirmText: 'Make Public',
   buttonCancelText: 'Cancel',
   publishingPlaylistText: 'Making public...'
@@ -68,7 +76,7 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
   }
 }))
 
-export const PublishPlaylistDrawer = () => {
+export const PublishContentDrawer = () => {
   const dispatch = useDispatch()
   const neutral = useColor('neutral')
   const { toast } = useManualToast()
@@ -76,8 +84,34 @@ export const PublishPlaylistDrawer = () => {
   const {
     isOpen,
     onClose,
-    data: { contentId: playlistId, contentType }
+    data: { contentId, contentType }
   } = usePublishContentModal()
+  const [dismissToastKey, setDismissToastKey] = useState<string | undefined>()
+  const currentTrack = useSelector((state) =>
+    getTrack(state, { id: contentId })
+  )
+
+  const previousIsPublishingTrack = usePrevious(currentTrack?._is_publishing)
+
+  useEffect(() => {
+    if (
+      contentType === 'track' &&
+      previousIsPublishingTrack === true &&
+      currentTrack?._is_publishing === false
+    ) {
+      console.log('DONE PUBLISHING', currentTrack._is_publishing)
+      if (dismissToastKey) {
+        dispatch(manualClearToast({ key: dismissToastKey }))
+      }
+    }
+  }, [
+    contentType,
+    currentTrack,
+    currentTrack?._is_publishing,
+    dismissToastKey,
+    dispatch,
+    previousIsPublishingTrack
+  ])
 
   const displayPublishToast = useCallback(() => {
     const publishingPlaylistToastContent = (
@@ -93,12 +127,19 @@ export const PublishPlaylistDrawer = () => {
   }, [styles.toastContainer, styles.spinner, toast])
 
   const handlePublish = useCallback(() => {
-    if (playlistId) {
-      const { key: dismissToastKey } = displayPublishToast()
-      dispatch(publishPlaylist(playlistId, dismissToastKey))
-      onClose()
+    // Publish playlist
+    const { key: dismissToastKey } = displayPublishToast()
+    setDismissToastKey(dismissToastKey)
+
+    if (contentId && contentType === 'playlist') {
+      dispatch(publishPlaylist(contentId, dismissToastKey))
     }
-  }, [dispatch, onClose, playlistId, displayPublishToast])
+    // Publish track
+    if (contentId && contentType === 'track') {
+      dispatch(makeTrackPublic(contentId))
+    }
+    onClose()
+  }, [contentId, contentType, displayPublishToast, dispatch, onClose])
 
   return (
     <Drawer isOpen={isOpen} onClose={onClose}>
