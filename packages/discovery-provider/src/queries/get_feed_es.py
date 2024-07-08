@@ -245,16 +245,13 @@ def get_feed_es(args, limit=10, offset=0):
 
             # exclude reposted playlists with only hidden tracks
             if "playlist_id" in item:
-                track_ids = list(
+                track_ids = set(
                     map(
                         lambda t: t["track"],
                         item.get("playlist_contents", {}).get("track_ids", []),
                     )
                 )
-                all_hidden_tracks = all(
-                    [t in hidden_playlist_track_ids for t in track_ids]
-                )
-                if all_hidden_tracks:
+                if all([t in hidden_playlist_track_ids for t in track_ids]):
                     continue
 
             item["activity_timestamp"] = x["min_created_at"]["value_as_string"]

@@ -99,7 +99,7 @@ def get_top_playlists_es(kind, args):
             hidden_playlist_track_ids = [t[0] for t in hidden_playlist_track_ids]
 
     for playlist in playlists:
-        track_ids = list(
+        track_ids = set(
             map(
                 lambda t: t["track"],
                 playlist.get("playlist_contents", {}).get("track_ids", []),
