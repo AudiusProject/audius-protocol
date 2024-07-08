@@ -25,8 +25,7 @@ const TRACK_PROPS = [
   'is_original_available',
   'is_downloadable',
   'ai_attribution_user_id',
-  'allowed_api_keys',
-  'field_visibility'
+  'allowed_api_keys'
 ]
 const TRACK_REQUIRED_PROPS = ['owner_id', 'title']
 
