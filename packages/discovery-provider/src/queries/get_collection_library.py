@@ -254,7 +254,7 @@ def _get_collection_library(args: GetCollectionLibraryArgs, session):
 
     # exclude playlists with only hidden tracks and empty playlists
     playlists = filter_playlists_with_only_hidden_tracks(
-        session, playlists, playlist_track_ids
+        session, playlists, playlist_track_ids, ignore_ids=list(album_purchases)
     )
 
     # attach users

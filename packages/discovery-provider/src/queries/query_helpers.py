@@ -1450,7 +1450,9 @@ def filter_hidden_tracks(playlist, tracks, current_user_id):
 
 
 # Filter out playlists with only hidden tracks and empty playlists
-def filter_playlists_with_only_hidden_tracks(session, playlists, track_ids):
+def filter_playlists_with_only_hidden_tracks(
+    session, playlists, track_ids, ignore_ids=[]
+):
     hidden_track_ids = (
         session.query(Track.track_id)
         .filter(Track.track_id.in_(list(track_ids)))
@@ -1467,7 +1469,9 @@ def filter_playlists_with_only_hidden_tracks(session, playlists, track_ids):
                 playlist.get("playlist_contents", {}).get("track_ids", []),
             )
         )
-        if not all([t in hidden_track_ids for t in playlist_track_ids]):
+        if (playlist.get("playlist_id") in ignore_ids) or (
+            not all([t in hidden_track_ids for t in playlist_track_ids])
+        ):
             results.append(playlist)
 
     return results
