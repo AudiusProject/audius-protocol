@@ -215,6 +215,7 @@ const TracksLineup = ({
     const selectedCategory = getCategory(state, {
       currentTab: SavedPageTabs.TRACKS
     })
+
     if (selectedCategory === LibraryCategory.All) {
       return emptyStateMessages.emptyTrackAllHeader
     } else if (selectedCategory === LibraryCategory.Favorite) {
@@ -305,6 +306,7 @@ const AlbumCardLineup = () => {
     const selectedCategory = getCategory(state, {
       currentTab: SavedPageTabs.ALBUMS
     })
+
     if (selectedCategory === LibraryCategory.All) {
       return emptyStateMessages.emptyAlbumAllHeader
     } else if (selectedCategory === LibraryCategory.Favorite) {
@@ -438,6 +440,7 @@ const PlaylistCardLineup = ({
     const selectedCategory = getCategory(state, {
       currentTab: SavedPageTabs.PLAYLISTS
     })
+
     if (selectedCategory === LibraryCategory.All) {
       return emptyStateMessages.emptyPlaylistAllHeader
     } else if (selectedCategory === LibraryCategory.Favorite) {
