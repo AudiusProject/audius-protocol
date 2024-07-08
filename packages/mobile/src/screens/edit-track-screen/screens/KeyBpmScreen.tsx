@@ -1,3 +1,4 @@
+import { useField } from 'formik'
 import { View } from 'react-native'
 
 import { Flex, IconInfo, Text } from '@audius/harmony-native'
@@ -15,6 +16,8 @@ const messages = {
 }
 
 export const KeyBpmScreen = () => {
+  const [bpmField] = useField<string>('bpm')
+
   return (
     <FormScreen title={messages.title} icon={IconInfo} variant='white'>
       <View>
@@ -32,7 +35,8 @@ export const KeyBpmScreen = () => {
             </Text>
           </Flex>
           <TextField
-            name='bpm'
+            {...bpmField}
+            value={String(bpmField.value)}
             keyboardType='numeric'
             label={messages.tempo}
             placeholder={messages.bpm}

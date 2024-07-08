@@ -204,8 +204,7 @@ export const EditTrackScreen = (props: EditTrackScreenProps) => {
     ),
     musical_key: initialValuesProp.musical_key
       ? parseMusicalKey(initialValuesProp.musical_key)
-      : undefined,
-    bpm: initialValuesProp.bpm ? String(initialValuesProp.bpm) : undefined
+      : undefined
   }
 
   const handleSubmit = useCallback(
