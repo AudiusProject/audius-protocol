@@ -615,7 +615,7 @@ const getWelcomeEmail = ({ name, copyrightYear, featuredContent }) => {
   <td align="center">
   <table width="100%" border="0" cellpadding="0" cellspacing="0">
   <tr>
-  <td width="168" align="center"><a href="${featuredContent?.[0]?.route_id}"><img src=${featuredContent?.[0]?.artwork?.['480x480']} width="168" border="0" style="width: 100%;
+  <td width="168" align="center"><a href="https://audius.co${featuredContent?.[0]?.permalink}"><img src=${featuredContent?.[0]?.artwork?.['480x480']} width="168" border="0" style="width: 100%;
           border-radius:8px; height: auto; display: block;"></td>
   </tr>
   <tr>
@@ -664,7 +664,7 @@ const getWelcomeEmail = ({ name, copyrightYear, featuredContent }) => {
   <td align="center">
   <table width="100%" border="0" cellpadding="0" cellspacing="0">
   <tr>
-  <td width="168" align="center"><a href="${featuredContent?.[1]?.route_id}"><img src=${featuredContent?.[1]?.artwork?.['480x480']} width="168" border="0" style="width: 100%;
+  <td width="168" align="center"><a href="https://audius.co${featuredContent?.[1]?.permalink}"><img src=${featuredContent?.[1]?.artwork?.['480x480']} width="168" border="0" style="width: 100%;
           border-radius:8px; height: auto; display: block;"></a></td>
   </tr>
   <tr>
@@ -713,7 +713,7 @@ const getWelcomeEmail = ({ name, copyrightYear, featuredContent }) => {
   <td align="center">
   <table width="100%" border="0" cellpadding="0" cellspacing="0">
   <tr>
-  <td width="168" align="center"><a href="${featuredContent?.[2]?.route_id}"><img src=${featuredContent?.[2]?.artwork?.['480x480']} width="168" border="0" style="width: 100%;
+  <td width="168" align="center"><a href="https://audius.co${featuredContent?.[2]?.permalink}"><img src=${featuredContent?.[2]?.artwork?.['480x480']} width="168" border="0" style="width: 100%;
           border-radius:8px; height: auto; display: block;"></td>
   </tr>
   <tr>
