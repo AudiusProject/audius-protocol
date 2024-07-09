@@ -106,7 +106,9 @@ def repair(session: Session, redis: Redis):
                 )
             break
 
-    logger.info(f"repair_audio_analyses.py | updated {num_tracks_updated} tracks")
+    logger.info(
+        f"repair_audio_analyses.py | updated {num_tracks_updated} tracks. last track ID processed: {tracks[-1].track_id}"
+    )
 
 
 @celery.task(name="repair_audio_analyses", bind=True)
