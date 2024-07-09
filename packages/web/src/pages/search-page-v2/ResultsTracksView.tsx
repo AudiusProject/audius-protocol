@@ -1,12 +1,13 @@
 import { useCallback, useState } from 'react'
 
-import { Name, Status } from '@audius/common/models'
+import { Kind, Name, Status } from '@audius/common/models'
 import {
   lineupSelectors,
   playerSelectors,
   queueSelectors,
   searchResultsPageSelectors,
-  searchResultsPageTracksLineupActions
+  searchResultsPageTracksLineupActions,
+  searchActions
 } from '@audius/common/store'
 import { Flex, OptionsFilterButton, Text } from '@audius/harmony'
 import { css } from '@emotion/css'
@@ -18,6 +19,7 @@ import { make } from 'common/store/analytics/actions'
 import Lineup from 'components/lineup/Lineup'
 import { LineupTileSkeleton } from 'components/lineup/LineupTileSkeleton'
 import { LineupVariant } from 'components/lineup/types'
+import { useIsMobile } from 'hooks/useIsMobile'
 import { useRouteMatch } from 'hooks/useRouteMatch'
 import { SEARCH_PAGE } from 'utils/route'
 
@@ -29,6 +31,7 @@ const { makeGetLineupMetadatas } = lineupSelectors
 const { getBuffering, getPlaying } = playerSelectors
 const { getSearchResults, getSearchTracksLineup } = searchResultsPageSelectors
 const { makeGetCurrent } = queueSelectors
+const { addItem: addRecentSearch } = searchActions
 
 const PAGE_WIDTH = 1080
 const HALF_TILE_WIDTH = (PAGE_WIDTH - 16) / 2
@@ -43,6 +46,7 @@ const getCurrentQueueItem = makeGetCurrent()
 const getTracksLineup = makeGetLineupMetadatas(getSearchTracksLineup)
 
 export const ResultsTracksView = () => {
+  const isMobile = useIsMobile()
   const dispatch = useDispatch()
   const [tracksLayout, setTracksLayout] = useState<ViewLayout>('list')
   const results = useSelector(getSearchResults)
@@ -70,8 +74,18 @@ export const ResultsTracksView = () => {
     entries: tracksLineup.entries.slice(0, trackLimit)
   }
 
-  const onClickTrackTile = useCallback(
+  const handleClickTrackTile = useCallback(
     (id?: number) => {
+      if (id) {
+        dispatch(
+          addRecentSearch({
+            searchItem: {
+              kind: Kind.TRACKS,
+              id
+            }
+          })
+        )
+      }
       dispatch(
         make(Name.SEARCH_RESULT_SELECT, {
           searchText: query,
@@ -86,35 +100,37 @@ export const ResultsTracksView = () => {
 
   return (
     <Flex direction='column' gap='xl' wrap='wrap'>
-      <Flex justifyContent='space-between' alignItems='center'>
-        <Text variant='heading' textAlign='left'>
-          {messages.tracks}
-        </Text>
-        {isCategoryActive(CategoryView.TRACKS) ? (
-          <Flex gap='s'>
-            <OptionsFilterButton
-              selection={sortMethod ?? 'relevant'}
-              variant='replaceLabel'
-              optionsLabel={messages.sortOptionsLabel}
-              onChange={updateSortParam}
-              options={[
-                { label: 'Most Relevant', value: 'relevant' },
-                { label: 'Most Popular', value: 'popular' },
-                { label: 'Most Recent', value: 'recent' }
-              ]}
-            />
-            <OptionsFilterButton
-              selection={tracksLayout}
-              variant='replaceLabel'
-              optionsLabel={messages.layoutOptionsLabel}
-              onChange={(value) => {
-                setTracksLayout(value as ViewLayout)
-              }}
-              options={viewLayoutOptions}
-            />
-          </Flex>
-        ) : null}
-      </Flex>
+      {!isMobile ? (
+        <Flex justifyContent='space-between' alignItems='center'>
+          <Text variant='heading' textAlign='left'>
+            {messages.tracks}
+          </Text>
+          {isCategoryActive(CategoryView.TRACKS) ? (
+            <Flex gap='s'>
+              <OptionsFilterButton
+                selection={sortMethod ?? 'relevant'}
+                variant='replaceLabel'
+                optionsLabel={messages.sortOptionsLabel}
+                onChange={updateSortParam}
+                options={[
+                  { label: 'Most Relevant', value: 'relevant' },
+                  { label: 'Most Popular', value: 'popular' },
+                  { label: 'Most Recent', value: 'recent' }
+                ]}
+              />
+              <OptionsFilterButton
+                selection={tracksLayout}
+                variant='replaceLabel'
+                optionsLabel={messages.layoutOptionsLabel}
+                onChange={(value) => {
+                  setTracksLayout(value as ViewLayout)
+                }}
+                options={viewLayoutOptions}
+              />
+            </Flex>
+          ) : null}
+        </Flex>
+      ) : null}
       {!isLoading && (!trackIds || trackIds.length === 0) ? (
         <NoResultsTile />
       ) : (
@@ -142,16 +158,14 @@ export const ResultsTracksView = () => {
               playing={playing}
               buffering={buffering}
               playTrack={(uid, trackId) => {
-                onClickTrackTile(trackId)
+                handleClickTrackTile(trackId)
                 dispatch(searchResultsPageTracksLineupActions.play(uid))
               }}
               pauseTrack={() =>
                 dispatch(searchResultsPageTracksLineupActions.pause())
               }
               actions={searchResultsPageTracksLineupActions}
-              onClickTile={(trackId) => {
-                onClickTrackTile(trackId)
-              }}
+              onClickTile={handleClickTrackTile}
             />
           ) : (
             <Flex direction='column' gap='l' w='100%'>

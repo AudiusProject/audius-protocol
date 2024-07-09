@@ -1,10 +1,14 @@
-import type { ButtonProps } from 'app/components/core'
-import { Button } from 'app/components/core'
+import { View } from 'react-native'
 
-type ScreenHeaderButtonProps = ButtonProps & {
-  title: string
-}
+import { SelectablePill } from '@audius/harmony-native'
+import type { SelectablePillProps } from 'app/harmony-native/components/input/SelectablePill/types'
+
+type ScreenHeaderButtonProps = Omit<SelectablePillProps, 'type'>
 
 export const ScreenHeaderButton = (props: ScreenHeaderButtonProps) => {
-  return <Button key={props.title} variant='secondary' size='xs' {...props} />
+  return (
+    <View>
+      <SelectablePill type='button' isSelected isControlled {...props} />
+    </View>
+  )
 }

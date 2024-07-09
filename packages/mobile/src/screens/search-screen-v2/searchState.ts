@@ -8,6 +8,7 @@ import {
   type SearchFilters
 } from '@audius/common/api'
 import { accountSelectors } from '@audius/common/store'
+import { isEmpty } from 'lodash'
 import { useSelector } from 'react-redux'
 
 const { getUserId } = accountSelectors
@@ -30,6 +31,11 @@ export const SearchContext = createContext<SearchContextType>({
   setFilters: (_) => {}
 })
 
+export const useIsEmptySearch = () => {
+  const { query, filters } = useContext(SearchContext)
+  return !query && isEmpty(filters)
+}
+
 export const useSearchQuery = () => {
   const { query, setQuery } = useContext(SearchContext)
   return [query, setQuery] as const
@@ -38,6 +44,11 @@ export const useSearchQuery = () => {
 export const useSearchCategory = () => {
   const { category, setCategory } = useContext(SearchContext)
   return [category, setCategory] as const
+}
+
+export const useSearchFilters = () => {
+  const { filters, setFilters } = useContext(SearchContext)
+  return [filters, setFilters] as const
 }
 
 export const useSearchFilter = <F extends SearchFilter>(filterKey: F) => {
@@ -73,12 +84,16 @@ export const useGetSearchResults = <C extends SearchCategory>(
 ): SearchResultsType<C> => {
   const { filters, query } = useContext(SearchContext)
   const currentUserId = useSelector(getUserId)
-  const { data, status } = useGetSearchResultsApi({
-    query,
-    ...filters,
-    category,
-    currentUserId
-  })
+  const { data, status } = useGetSearchResultsApi(
+    {
+      query,
+      ...filters,
+      category,
+      currentUserId,
+      limit: category === 'all' ? 5 : undefined
+    },
+    { debounce: 500 }
+  )
 
   if (category === 'all') {
     return { data, status } as SearchResultsType<C>

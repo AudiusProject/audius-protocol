@@ -1,10 +1,11 @@
 import { useCallback, useMemo } from 'react'
 
-import { creativeCommons, parseMusicalKey } from '@audius/common/utils'
+import { creativeCommons, parseMusicalKey, License } from '@audius/common/utils'
 import {
   Box,
   Flex,
   IconCcBy as IconCreativeCommons,
+  IconInfo,
   IconRobot,
   Text
 } from '@audius/harmony'
@@ -27,13 +28,16 @@ import { computeLicenseIcons } from 'components/edit-track/utils/computeLicenseI
 import { TextField } from 'components/form-fields'
 import { SegmentedControlField } from 'components/form-fields/SegmentedControlField'
 import layoutStyles from 'components/layout/layout.module.css'
+import { Tooltip } from 'components/tooltip'
 import { env } from 'services/env'
 
 import styles from './AdvancedField.module.css'
+import { DatePickerField } from './DatePickerField'
 import { KeySelectField } from './KeySelectField'
 import { SwitchRowField } from './SwitchRowField'
 
-const { computeLicense, ALL_RIGHTS_RESERVED_TYPE } = creativeCommons
+const { computeLicense, ALL_RIGHTS_RESERVED_TYPE, computeLicenseVariables } =
+  creativeCommons
 
 const messages = {
   title: 'Advanced',
@@ -48,8 +52,8 @@ const messages = {
   musicalKey: 'Key',
   aiGenerated: {
     header: 'Mark this track as AI generated',
-    description:
-      'If your AI generated track was trained on an existing Audius artist, you can give them credit here. Only users who have opted-in will appear in this list.',
+    tooltip:
+      'If your AI-generated track was trained on an existing Audius artist, you can give them credit here. Only users who have opted-in will appear in this list.',
     placeholder: 'Search for Users',
     requiredError: 'Valid user must be selected.'
   },
@@ -58,7 +62,7 @@ const messages = {
     description:
       'Keep your track from being streamed on third-party apps or services that utilize the Audius API.'
   },
-
+  isrcTooltip: `ISRC is used to identify individual sound recordings and music videos. ISWC is used to identify the underlying musical composition – the music and lyrics`,
   isrc: {
     header: 'ISRC',
     placeholder: 'CC-XXX-YY-NNNNN',
@@ -92,7 +96,8 @@ const messages = {
       null: 'Allowed'
     }
   },
-  noLicense: 'All Rights Reserved'
+  noLicense: 'All Rights Reserved',
+  releaseDate: 'Release Date'
 }
 
 const IS_AI_ATTRIBUTED = 'isAiAttribution'
@@ -101,15 +106,15 @@ const ALLOWED_API_KEYS = 'allowed_api_keys'
 const AI_USER_ID = 'ai_attribution_user_id'
 const ISRC = 'isrc'
 const ISWC = 'iswc'
+const RELEASE_DATE = 'release_date'
+const LICENSE = 'license'
 const LICENSE_TYPE = 'licenseType'
-const ALLOW_ATTRIBUTION_BASE = 'allowAttribution'
 const ALLOW_ATTRIBUTION = 'licenseType.allowAttribution'
-const COMMERCIAL_USE_BASE = 'commercialUse'
 const COMMERCIAL_USE = 'licenseType.commercialUse'
-const DERIVATIVE_WORKS_BASE = 'derivativeWorks'
 const DERIVATIVE_WORKS = 'licenseType.derivativeWorks'
 const BPM = 'bpm'
 const MUSICAL_KEY = 'musical_key'
+const IS_UNLISTED = 'is_unlisted'
 
 const allowAttributionValues = [
   { key: false, text: messages.allowAttribution.options.false },
@@ -162,25 +167,18 @@ const AdvancedFormSchema = z
 
 export type AdvancedFormValues = z.input<typeof AdvancedFormSchema>
 
+export type AdvancedFieldProps = { isHidden?: boolean }
 export const AdvancedField = () => {
   const [{ value: aiUserId }, , { setValue: setAiUserId }] =
     useTrackField<SingleTrackEditValues[typeof AI_USER_ID]>(AI_USER_ID)
   const [{ value: isrcValue }, , { setValue: setIsrc }] =
     useTrackField<SingleTrackEditValues[typeof ISRC]>(ISRC)
+  const [{ value: releaseDate }, , { setValue: setReleaseDate }] =
+    useTrackField<SingleTrackEditValues[typeof RELEASE_DATE]>(RELEASE_DATE)
   const [{ value: iswcValue }, , { setValue: setIswc }] =
     useTrackField<SingleTrackEditValues[typeof ISWC]>(ISWC)
-  const [{ value: allowAttribution }, , { setValue: setAllowAttribution }] =
-    useTrackField<
-      SingleTrackEditValues[typeof LICENSE_TYPE][typeof ALLOW_ATTRIBUTION_BASE]
-    >(ALLOW_ATTRIBUTION)
-  const [{ value: commercialUse }, , { setValue: setCommercialUse }] =
-    useTrackField<
-      SingleTrackEditValues[typeof LICENSE_TYPE][typeof COMMERCIAL_USE_BASE]
-    >(COMMERCIAL_USE)
-  const [{ value: derivativeWorks }, , { setValue: setDerivateWorks }] =
-    useTrackField<
-      SingleTrackEditValues[typeof LICENSE_TYPE][typeof DERIVATIVE_WORKS_BASE]
-    >(DERIVATIVE_WORKS)
+  const [{ value: license }, , { setValue: setLicense }] =
+    useTrackField<License>(LICENSE)
   const [{ value: allowedApiKeys }, , { setValue: setAllowedApiKeys }] =
     useTrackField<SingleTrackEditValues[typeof ALLOWED_API_KEYS]>(
       ALLOWED_API_KEYS
@@ -189,6 +187,8 @@ export const AdvancedField = () => {
     useTrackField<SingleTrackEditValues[typeof BPM]>(BPM)
   const [{ value: musicalKey }, , { setValue: setMusicalKey }] =
     useTrackField<SingleTrackEditValues[typeof MUSICAL_KEY]>(MUSICAL_KEY)
+  const [{ value: isHidden }] = useTrackField<boolean>(IS_UNLISTED)
+
   const initialValues = useMemo(() => {
     const initialValues = {}
     set(initialValues, AI_USER_ID, aiUserId)
@@ -197,23 +197,24 @@ export const AdvancedField = () => {
     }
     set(initialValues, ISRC, isrcValue)
     set(initialValues, ISWC, iswcValue)
-    set(initialValues, ALLOW_ATTRIBUTION, allowAttribution)
     set(initialValues, ALLOWED_API_KEYS, allowedApiKeys)
-    set(initialValues, COMMERCIAL_USE, commercialUse)
-    set(initialValues, DERIVATIVE_WORKS, derivativeWorks)
+    set(initialValues, LICENSE_TYPE, computeLicenseVariables(license))
+    set(initialValues, BLOCK_THIRD_PARTY_STREAMING, !!allowedApiKeys)
     set(initialValues, BPM, bpm)
     set(initialValues, MUSICAL_KEY, parseMusicalKey(musicalKey ?? ''))
+    set(initialValues, RELEASE_DATE, releaseDate)
+    set(initialValues, IS_UNLISTED, isHidden)
     return initialValues as AdvancedFormValues
   }, [
     aiUserId,
-    allowAttribution,
-    commercialUse,
-    derivativeWorks,
     isrcValue,
     iswcValue,
     allowedApiKeys,
+    license,
     bpm,
-    musicalKey
+    musicalKey,
+    releaseDate,
+    isHidden
   ])
 
   const onSubmit = useCallback(
@@ -230,58 +231,45 @@ export const AdvancedField = () => {
       }
       setIsrc(get(values, ISRC) ?? isrcValue)
       setIswc(get(values, ISWC) ?? iswcValue)
-      setAllowAttribution(get(values, ALLOW_ATTRIBUTION) ?? allowAttribution)
-      if (get(values, ALLOW_ATTRIBUTION)) {
-        setCommercialUse(get(values, COMMERCIAL_USE) ?? commercialUse)
-        setDerivateWorks(get(values, DERIVATIVE_WORKS) ?? derivativeWorks)
-      } else {
-        setCommercialUse(false)
-        setDerivateWorks(false)
-      }
+      setLicense(
+        computeLicense(
+          get(values, ALLOW_ATTRIBUTION) ?? false,
+          get(values, COMMERCIAL_USE) ?? false,
+          get(values, DERIVATIVE_WORKS)
+        ).licenseType
+      )
       setBpm(get(values, BPM) ?? bpm)
       setMusicalKey(get(values, MUSICAL_KEY) ?? musicalKey)
+      setReleaseDate(get(values, RELEASE_DATE) ?? releaseDate)
     },
     [
-      aiUserId,
-      allowAttribution,
-      commercialUse,
-      derivativeWorks,
-      isrcValue,
-      iswcValue,
-      bpm,
-      musicalKey,
-      setAiUserId,
-      setAllowAttribution,
-      setCommercialUse,
-      setDerivateWorks,
       setIsrc,
+      isrcValue,
       setIswc,
-      setAllowedApiKeys,
+      iswcValue,
+      setLicense,
       setBpm,
-      setMusicalKey
+      bpm,
+      setMusicalKey,
+      musicalKey,
+      setReleaseDate,
+      releaseDate,
+      setAiUserId,
+      aiUserId,
+      setAllowedApiKeys
     ]
   )
 
   const renderValue = useCallback(() => {
     const value = []
 
-    const { licenseType } = computeLicense(
-      !!allowAttribution,
-      !!commercialUse,
-      derivativeWorks
-    )
-
-    if (!licenseType || licenseType === ALL_RIGHTS_RESERVED_TYPE) {
+    if (!license || license === ALL_RIGHTS_RESERVED_TYPE) {
       value.push(
         <SelectedValue key={messages.noLicense} label={messages.noLicense} />
       )
     }
 
-    const licenseIcons = computeLicenseIcons(
-      !!allowAttribution,
-      !!commercialUse,
-      derivativeWorks
-    )
+    const licenseIcons = computeLicenseIcons(license)
 
     if (licenseIcons) {
       value.push(
@@ -321,16 +309,7 @@ export const AdvancedField = () => {
       )
     }
     return <SelectedValues key={messages.isAiGenerated}>{value}</SelectedValues>
-  }, [
-    aiUserId,
-    allowAttribution,
-    commercialUse,
-    derivativeWorks,
-    isrcValue,
-    iswcValue,
-    bpm,
-    musicalKey
-  ])
+  }, [license, isrcValue, iswcValue, aiUserId, bpm, musicalKey])
 
   return (
     <ContextualMenu
@@ -355,6 +334,7 @@ const AdvancedModalFields = () => {
   const [{ value: allowAttribution }] = useField<boolean>(ALLOW_ATTRIBUTION)
   const [{ value: commercialUse }] = useField<boolean>(COMMERCIAL_USE)
   const [{ value: derivativeWorks }] = useField<boolean>(DERIVATIVE_WORKS)
+  const [{ value: isHidden }] = useField<boolean>(IS_UNLISTED)
 
   const { licenseType, licenseDescription } = computeLicense(
     allowAttribution,
@@ -362,11 +342,7 @@ const AdvancedModalFields = () => {
     derivativeWorks
   )
 
-  const licenseIcons = computeLicenseIcons(
-    allowAttribution,
-    commercialUse,
-    derivativeWorks
-  )
+  const licenseIcons = computeLicenseIcons(licenseType)
 
   const dropdownHasError =
     aiUserHelperFields.touched && aiUserHelperFields.error
@@ -455,7 +431,12 @@ const AdvancedModalFields = () => {
       <Divider />
       <div className={cn(layoutStyles.col, layoutStyles.gap4)}>
         <Text variant='title' size='l' tag='h3'>
-          {`${messages.isrc.header} / ${messages.iswc.header}`}
+          <Flex alignItems='center' gap='xs'>
+            {`${messages.isrc.header} / ${messages.iswc.header}`}
+            <Tooltip text={messages.isrcTooltip}>
+              <IconInfo size='m' color='subdued' />
+            </Tooltip>
+          </Flex>
         </Text>
         <span className={cn(layoutStyles.row, layoutStyles.gap6)}>
           <div className={styles.textFieldContainer}>
@@ -473,7 +454,20 @@ const AdvancedModalFields = () => {
             />
           </div>
         </span>
-
+        {!isHidden ? (
+          <>
+            <Divider />
+            <Flex gap='m' direction='column'>
+              <Text variant='title' size='l' tag='h3'>
+                Release Date
+              </Text>
+              <DatePickerField
+                name={RELEASE_DATE}
+                label={messages.releaseDate}
+              />
+            </Flex>
+          </>
+        ) : null}
         <Divider />
         <span className={cn(layoutStyles.row, layoutStyles.gap6)}>
           <Flex direction='column' w='100%'>
@@ -512,7 +506,7 @@ const AdvancedModalFields = () => {
       <SwitchRowField
         name={IS_AI_ATTRIBUTED}
         header={messages.aiGenerated.header}
-        description={messages.aiGenerated.description}
+        tooltipText={messages.aiGenerated.tooltip}
       >
         <AiAttributionDropdown
           {...aiUserIdField}

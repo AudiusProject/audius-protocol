@@ -1,4 +1,6 @@
 const { getOtpEmail } = require('../notifications/emails/otp')
+const { Op } = require('sequelize')
+const models = require('../models')
 
 const OTP_CHARS = '0123456789'
 const OTP_REDIS_PREFIX = 'otp'
@@ -11,8 +13,31 @@ const OTP_BYPASS_EMAILS = new Set([
   'fb@audius.co'
 ])
 
-const bypassOtp = (email) => {
-  return OTP_BYPASS_EMAILS.has(email)
+const requiresOtp = async ({ email, visitorId }) => {
+  if (OTP_BYPASS_EMAILS.has(email)) {
+    return false
+  } else if (!visitorId) {
+    return true
+  } else {
+    const userRecord = await models.User.findOne({
+      where: { email }
+    })
+    if (!userRecord || userRecord.blockchainUserId === null) {
+      return true
+    }
+    const sixMonthsAgo = new Date()
+    sixMonthsAgo.setDate(-180)
+    const verifiedFp = await models.Fingerprints.findOne({
+      where: {
+        userId: userRecord.blockchainUserId,
+        visitorId,
+        updatedAt: {
+          [Op.gt]: sixMonthsAgo
+        }
+      }
+    })
+    return !verifiedFp
+  }
 }
 
 const generateOtp = () => {
@@ -66,7 +91,7 @@ const sendOtp = async ({ email, redis, sendgrid }) => {
     subject: 'Your Audius Verification Code',
     html,
     asm: {
-      groupId: 26666 // id of unsubscribe group at https://mc.sendgrid.com/unsubscribe-groups
+      groupId: 26666 // group exempt from unsubscribing
     }
   }
 
@@ -85,7 +110,7 @@ const sendOtp = async ({ email, redis, sendgrid }) => {
 }
 
 module.exports = {
-  bypassOtp,
+  requiresOtp,
   validateOtp,
   shouldSendOtp,
   sendOtp

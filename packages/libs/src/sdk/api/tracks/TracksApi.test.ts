@@ -120,7 +120,12 @@ describe('TracksApi', () => {
       new PaymentRouterClient({
         ...getDefaultPaymentRouterClientConfig(developmentConfig),
         solanaWalletAdapter
-      })
+      }),
+      new SolanaRelay(
+        new Configuration({
+          middleware: [discoveryNodeSelector.createMiddleware()]
+        })
+      )
     )
     jest.spyOn(console, 'warn').mockImplementation(() => {})
     jest.spyOn(console, 'info').mockImplementation(() => {})

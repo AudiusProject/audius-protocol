@@ -25,7 +25,9 @@ import {
   IconInfo,
   IconReceive,
   IconSend,
-  IconWallet
+  IconWallet,
+  Button,
+  Flex
 } from '@audius/harmony-native'
 import Bronze from 'app/assets/images/tokenBadgeBronze108.png'
 import Gold from 'app/assets/images/tokenBadgeGold108.png'
@@ -35,7 +37,6 @@ import TokenStill from 'app/assets/images/tokenSpinStill.png'
 import {
   ScrollView,
   Screen,
-  Button,
   GradientText,
   Text,
   Tile,
@@ -151,19 +152,6 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     textShadowRadius: 15,
     textTransform: 'uppercase',
     marginRight: spacing(1)
-  },
-  buttonRoot: {
-    marginTop: spacing(2),
-    marginBottom: spacing(2),
-    height: spacing(12),
-    width: 260
-  },
-  button: {
-    paddingHorizontal: spacing(2)
-  },
-  buttonText: {
-    padding: 0,
-    textTransform: 'uppercase'
   },
   token: {
     width: 200,
@@ -302,45 +290,32 @@ export const AudioScreen = () => {
           content: styles.tileContent
         }}
       >
-        <Button
-          title={messages.send}
-          styles={{
-            root: styles.buttonRoot,
-            text: styles.buttonText,
-            button: styles.button
-          }}
-          variant='commonAlt'
-          iconPosition='left'
-          size='medium'
-          icon={IconSend}
-          onPress={handlePressSend}
-        />
-        <Button
-          title={messages.receive}
-          styles={{
-            root: styles.buttonRoot,
-            text: styles.buttonText,
-            button: styles.button
-          }}
-          variant='commonAlt'
-          iconPosition='left'
-          size='medium'
-          icon={IconReceive}
-          onPress={handlePressReceive}
-        />
-        <Button
-          title={messages.externalWallets}
-          styles={{
-            root: styles.buttonRoot,
-            text: styles.buttonText,
-            button: styles.button
-          }}
-          variant='commonAlt'
-          iconPosition='left'
-          size='medium'
-          icon={IconWallet}
-          onPress={handlePressManageWallets}
-        />
+        <Flex gap='l' w='100%'>
+          <Button
+            variant='secondary'
+            iconLeft={IconSend}
+            onPress={handlePressSend}
+            fullWidth
+          >
+            {messages.send}
+          </Button>
+          <Button
+            variant='secondary'
+            iconLeft={IconReceive}
+            onPress={handlePressReceive}
+            fullWidth
+          >
+            {messages.receive}
+          </Button>
+          <Button
+            variant='secondary'
+            iconLeft={IconWallet}
+            onPress={handlePressManageWallets}
+            fullWidth
+          >
+            {messages.externalWallets}
+          </Button>
+        </Flex>
       </Tile>
     )
   }
@@ -433,31 +408,22 @@ export const AudioScreen = () => {
           isCurrentTier={tierNumber === 4}
           unlocks={['matrix']}
         />
-        <Button
-          title={messages.learnMore}
-          styles={{
-            root: styles.buttonRoot,
-            text: styles.buttonText,
-            button: styles.button
-          }}
-          variant='commonAlt'
-          size='medium'
-          onPress={() => Linking.openURL(LEARN_MORE_LINK)}
-          fullWidth
-        />
-        <Button
-          title={messages.launchDiscord}
-          styles={{
-            root: styles.buttonRoot,
-            text: styles.buttonText,
-            button: styles.button
-          }}
-          variant='commonAlt'
-          size='medium'
-          iconPosition='left'
-          icon={IconDiscord}
-          onPress={onPressLaunchDiscord}
-        />
+        <Flex gap='l' w='100%'>
+          <Button
+            variant='secondary'
+            onPress={() => Linking.openURL(LEARN_MORE_LINK)}
+            fullWidth
+          >
+            {messages.learnMore}
+          </Button>
+          <Button
+            variant='secondary'
+            iconLeft={IconDiscord}
+            onPress={onPressLaunchDiscord}
+          >
+            {messages.launchDiscord}
+          </Button>
+        </Flex>
       </Tile>
     )
   }

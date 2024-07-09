@@ -15,8 +15,8 @@ import { CHAT_BLOG_POST_URL } from '@audius/common/utils'
 import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { IconMessageLocked, IconTipping } from '@audius/harmony-native'
-import { Text, Button, useLink } from 'app/components/core'
+import { IconMessageLocked, IconTipping, Button } from '@audius/harmony-native'
+import { Text, useLink } from 'app/components/core'
 import Drawer from 'app/components/drawer'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles, flexRowCentered } from 'app/styles'
@@ -83,14 +83,6 @@ const useStyles = makeStyles(({ spacing, typography, palette }) => ({
     fontFamily: typography.fontByWeight.medium,
     lineHeight: typography.fontSize.large * 1.3,
     textAlign: 'center'
-  },
-  button: {
-    padding: spacing(4),
-    height: spacing(12)
-  },
-  buttonText: {
-    fontSize: typography.fontSize.large,
-    fontFamily: typography.fontByWeight.bold
   },
   border: {
     borderBottomWidth: 1,
@@ -181,15 +173,12 @@ const DrawerContent = ({ data, onClose }: DrawerContentProps) => {
           </Text>
           <Button
             key={messages.learnMore}
-            title={messages.learnMore}
             onPress={handleLearnMorePress}
-            variant={'common'}
-            styles={{
-              root: styles.button,
-              text: styles.buttonText
-            }}
+            variant='secondary'
             fullWidth
-          />
+          >
+            {messages.learnMore}
+          </Button>
         </>
       )
     case ChatPermissionAction.TIP:
@@ -208,17 +197,13 @@ const DrawerContent = ({ data, onClose }: DrawerContentProps) => {
           </Text>
           <Button
             key={messages.sendAudio}
-            title={messages.sendAudio}
             onPress={handleTipPress}
-            variant={'primary'}
-            icon={IconTipping}
-            iconPosition='left'
-            styles={{
-              root: styles.button,
-              text: styles.buttonText
-            }}
+            variant='primary'
+            iconLeft={IconTipping}
             fullWidth
-          />
+          >
+            {messages.sendAudio}
+          </Button>
         </>
       )
     case ChatPermissionAction.UNBLOCK:
@@ -227,26 +212,20 @@ const DrawerContent = ({ data, onClose }: DrawerContentProps) => {
           <Text style={styles.callToActionText}>{messages.blockee}</Text>
           <Button
             key={messages.unblockUser}
-            title={messages.unblockUser}
             onPress={handleUnblockPress}
-            variant={'primary'}
-            styles={{
-              root: styles.button,
-              text: styles.buttonText
-            }}
+            variant='primary'
             fullWidth
-          />
+          >
+            {messages.unblockUser}
+          </Button>
           <Button
             key={messages.cancel}
-            title={messages.cancel}
             onPress={onClose}
-            variant={'common'}
-            styles={{
-              root: styles.button,
-              text: styles.buttonText
-            }}
+            variant='secondary'
             fullWidth
-          />
+          >
+            {messages.cancel}
+          </Button>
         </>
       )
     default:

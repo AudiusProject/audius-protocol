@@ -6,10 +6,9 @@ import { ClaimStatus } from '@audius/common/store'
 import { formatNumberCommas } from '@audius/common/utils'
 import { ScrollView, View } from 'react-native'
 
-import { IconArrowRight, IconCloudUpload } from '@audius/harmony-native'
-import type { ButtonProps } from 'app/components/core'
-import { Button, Text } from 'app/components/core'
-import LoadingSpinner from 'app/components/loading-spinner'
+import type { ButtonProps } from '@audius/harmony-native'
+import { IconArrowRight, IconCloudUpload, Button } from '@audius/harmony-native'
+import { Text } from 'app/components/core'
 import { getChallengeConfig } from 'app/utils/challenges'
 
 import { ChallengeDescription } from './ChallengeDescription'
@@ -54,18 +53,16 @@ type AudioMatchingChallengeDrawerContentProps = {
 const ctaButtonProps: {
   [k in AudioMatchingChallengeName]: Pick<
     ButtonProps,
-    'icon' | 'iconPosition' | 'title'
+    'iconRight' | 'iconLeft' | 'children'
   >
 } = {
   [ChallengeName.AudioMatchingBuy]: {
-    icon: IconArrowRight,
-    iconPosition: 'right',
-    title: messages.viewPremiumTracks
+    iconRight: IconArrowRight,
+    children: messages.viewPremiumTracks
   },
   [ChallengeName.AudioMatchingSell]: {
-    icon: IconCloudUpload,
-    iconPosition: 'left',
-    title: messages.uploadTrack
+    iconLeft: IconCloudUpload,
+    children: messages.uploadTrack
   }
 }
 
@@ -140,15 +137,16 @@ export const AudioMatchingChallengeDrawerContent = ({
             disabled={claimInProgress}
             variant='primary'
             onPress={onClaim}
-            title={messages.claimAudio(formatNumberCommas(claimableAmount))}
-            icon={claimInProgress ? LoadingSpinner : IconArrowRight}
-            iconPosition='right'
+            isLoading={claimInProgress}
+            iconRight={IconArrowRight}
             fullWidth
-          />
+          >
+            {messages.claimAudio(formatNumberCommas(claimableAmount))}
+          </Button>
         ) : (
           <Button
             {...ctaButtonProps[challengeName]}
-            variant='commonAlt'
+            variant='secondary'
             onPress={onNavigate}
             fullWidth
           />

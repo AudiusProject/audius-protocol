@@ -7,14 +7,14 @@ import type {
 import { ScrollView } from 'react-native'
 
 import {
-  Button,
+  FilterButton,
   Flex,
   IconCloseAlt,
   SelectablePill
 } from '@audius/harmony-native'
 import { useNavigation } from 'app/hooks/useNavigation'
 
-import { useSearchCategory } from './searchState'
+import { useSearchCategory, useSearchFilters } from './searchState'
 
 type SearchCategoryProps = {
   category: SearchCategoryType
@@ -37,7 +37,6 @@ const SearchCategory = (props: SearchCategoryProps) => {
   return (
     <SelectablePill
       type='radio'
-      size='large'
       value={category}
       label={labelByCategory[category]}
       isSelected={isSelected}
@@ -50,15 +49,14 @@ const SearchCategory = (props: SearchCategoryProps) => {
 }
 
 // TODO:
-// - Need to update filters to use FilterButton when the component is created
 // - Need to sort the filters to put filters with an active value first
 // - IconClose looks thicker than the designs
 
 const filterInfoMap: Record<SearchFilter, { label: string; screen: string }> = {
-  genre: { label: 'Genre', screen: 'SearchGenre' },
-  mood: { label: 'Mood', screen: 'SearchMood' },
-  key: { label: 'Key', screen: 'SearchKey' },
-  bpm: { label: 'BPM', screen: 'SearchBpm' },
+  genre: { label: 'Genre', screen: 'FilterGenre' },
+  mood: { label: 'Mood', screen: 'FilterMood' },
+  key: { label: 'Key', screen: 'FilterKey' },
+  bpm: { label: 'BPM', screen: 'FilterBpm' },
   isVerified: { label: 'Verified', screen: '' },
   isPremium: { label: 'Premium', screen: '' },
   hasDownloads: { label: 'Downloadable', screen: '' }
@@ -75,33 +73,52 @@ const filtersByCategory: Record<SearchCategoryType, SearchFilter[]> = {
 export const SearchCategoriesAndFilters = () => {
   const navigation = useNavigation()
   const [category] = useSearchCategory()
+  const [filters, setFilters] = useSearchFilters()
 
   const handleFilterPress = useCallback(
-    (screenName: string) => {
-      navigation.navigate(screenName)
+    (filter: string) => {
+      if (filters[filter]) {
+        // Clear filter value
+        const newFilters = { ...filters }
+        delete newFilters[filter]
+        setFilters(newFilters)
+      } else if (filterInfoMap[filter].screen) {
+        navigation.navigate(filterInfoMap[filter].screen)
+      } else {
+        const newFilters = { ...filters }
+        newFilters[filter] = true
+        setFilters(newFilters)
+      }
     },
-    [navigation]
+    [filters, navigation, setFilters]
   )
 
   return (
     <Flex backgroundColor='white'>
-      <ScrollView horizontal>
+      <ScrollView horizontal keyboardShouldPersistTaps='handled'>
         <Flex direction='row' alignItems='center' gap='s' p='l' pt='s'>
           <SearchCategory category='tracks' />
           <SearchCategory category='users' />
           <SearchCategory category='albums' />
           <SearchCategory category='playlists' />
           {filtersByCategory[category].map((filter) => (
-            <Button
+            <FilterButton
               key={filter}
-              variant='tertiary'
               size='small'
-              onPress={() =>
-                handleFilterPress(filterInfoMap[filter].screen || 'Search')
+              value={
+                filters[filter] !== undefined
+                  ? String(filters[filter])
+                  : undefined
               }
-            >
-              {filterInfoMap[filter].label}
-            </Button>
+              label={
+                typeof filters[filter] === 'string'
+                  ? String(filters[filter])
+                  : filterInfoMap[filter].label
+              }
+              onPress={() => {
+                handleFilterPress(filter)
+              }}
+            />
           ))}
         </Flex>
       </ScrollView>

@@ -38,9 +38,10 @@
 }
 
 .selectedValue {
+  height: 28px;
   display: inline-flex;
   align-self: flex-start;
-  padding: var(--harmony-unit-2);
+  padding: var(--harmony-unit-1) var(--harmony-unit-2);
   align-items: center;
   gap: var(--harmony-unit-1);
   border-radius: 2px;

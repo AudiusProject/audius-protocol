@@ -1,15 +1,15 @@
 export const MUSICAL_KEYS = [
   'C',
-  'C#/Db',
+  'C#/D♭',
   'D',
-  'D#/Eb',
+  'D#/E♭',
   'E',
   'F',
-  'F#/Gb',
+  'F#/G♭',
   'G',
-  'G#/Ab',
+  'G#/A♭',
   'A',
-  'A#/Bb',
+  'A#/B♭',
   'B'
 ]
 
@@ -39,7 +39,7 @@ export const parseMusicalKey = (key?: string) => {
   const pitch = keyParts[0]
   const isFlat = keyParts[1] === 'flat'
   const scale = keyParts[isFlat ? 2 : 1] ?? 'major'
-  return `${pitch}${isFlat ? 'b' : ''} ${
+  return `${pitch}${isFlat ? '♭' : ''} ${
     scale.charAt(0).toUpperCase() + scale.slice(1)
   }`
 }

@@ -26,6 +26,7 @@ export const BaseButton = forwardRef<HTMLButtonElement, BaseButtonProps>(
       fullWidth,
       styles,
       children,
+      slotted,
       'aria-label': ariaLabelProp,
       asChild,
       _isHovered,
@@ -115,7 +116,13 @@ export const BaseButton = forwardRef<HTMLButtonElement, BaseButtonProps>(
         ) : LeftIconComponent ? (
           <LeftIconComponent css={[iconCss, styles?.icon]} />
         ) : null}
-        {!isTextHidden ? <Slottable>{children}</Slottable> : null}
+        {!isTextHidden ? (
+          slotted ? (
+            children
+          ) : (
+            <Slottable>{children}</Slottable>
+          )
+        ) : null}
         {RightIconComponent ? (
           <RightIconComponent css={[iconCss, styles?.icon]} />
         ) : null}

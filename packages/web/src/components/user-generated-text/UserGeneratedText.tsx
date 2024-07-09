@@ -60,7 +60,7 @@ export const UserGeneratedText = forwardRef(function <T extends ElementType>(
 ) {
   const {
     children: childrenProp,
-    variant = 'body',
+    variant,
     color,
     size,
     strength,
@@ -73,9 +73,15 @@ export const UserGeneratedText = forwardRef(function <T extends ElementType>(
   const options: Opts = useMemo(
     () => ({
       render: renderLink,
-      attributes: { source: linkSource, onClick: onClickLink }
+      attributes: {
+        source: linkSource,
+        onClick: onClickLink,
+        textVariant: variant,
+        size,
+        strength
+      }
     }),
-    [linkSource, onClickLink]
+    [linkSource, onClickLink, variant, size, strength]
   )
 
   const children =
@@ -89,7 +95,6 @@ export const UserGeneratedText = forwardRef(function <T extends ElementType>(
       as={LinkifyText}
       innerRef={ref}
       tag={tag}
-      variant={variant}
       color={color}
       size={size}
       strength={strength}

@@ -615,7 +615,7 @@ const getWelcomeEmail = ({ name, copyrightYear, featuredContent }) => {
   <td align="center">
   <table width="100%" border="0" cellpadding="0" cellspacing="0">
   <tr>
-  <td width="168" align="center"><img src=${featuredContent?.[0]?.artwork?.['150x150']} width="168" border="0" style="width: 100%;
+  <td width="168" align="center"><a href="https://audius.co${featuredContent?.[0]?.permalink}"><img src=${featuredContent?.[0]?.artwork?.['480x480']} width="168" border="0" style="width: 100%;
           border-radius:8px; height: auto; display: block;"></td>
   </tr>
   <tr>
@@ -664,8 +664,8 @@ const getWelcomeEmail = ({ name, copyrightYear, featuredContent }) => {
   <td align="center">
   <table width="100%" border="0" cellpadding="0" cellspacing="0">
   <tr>
-  <td width="168" align="center"><img src=${featuredContent?.[1]?.artwork?.['150x150']} width="168" border="0" style="width: 100%;
-          border-radius:8px; height: auto; display: block;"></td>
+  <td width="168" align="center"><a href="https://audius.co${featuredContent?.[1]?.permalink}"><img src=${featuredContent?.[1]?.artwork?.['480x480']} width="168" border="0" style="width: 100%;
+          border-radius:8px; height: auto; display: block;"></a></td>
   </tr>
   <tr>
   <td height="16" style="height:16px; min-height:16px; line-height:16px;"></td>
@@ -713,7 +713,7 @@ const getWelcomeEmail = ({ name, copyrightYear, featuredContent }) => {
   <td align="center">
   <table width="100%" border="0" cellpadding="0" cellspacing="0">
   <tr>
-  <td width="168" align="center"><img src=${featuredContent?.[2]?.artwork?.['150x150']} width="168" border="0" style="width: 100%;
+  <td width="168" align="center"><a href="https://audius.co${featuredContent?.[2]?.permalink}"><img src=${featuredContent?.[2]?.artwork?.['480x480']} width="168" border="0" style="width: 100%;
           border-radius:8px; height: auto; display: block;"></td>
   </tr>
   <tr>
@@ -1210,7 +1210,14 @@ const getWelcomeEmail = ({ name, copyrightYear, featuredContent }) => {
   </tr>
   <tr>
   <td style="vertical-align: middle;" align="center">
-  <div style="line-height:14px;text-align:center;"><span style="color:#a5a4ad;font-family:Inter,Arial,sans-serif;font-size:12px;line-height:14px;text-align:center;">No longer want to receive these emails? </span><span style="color:#7e1bcc;font-family:Inter,Arial,sans-serif;font-size:12px;line-height:14px;text-align:center;">Unsubscribe</span></div>
+  <div style="line-height:14px;text-align:center;"><span
+    style="color:#6a677a;font-family:Inter,Arial,sans-serif;font-size:12px;line-height:14px;text-align:center;">No
+    longer want to receive these emails? </span><a href="<%asm_group_unsubscribe_raw_url%>"><span
+    style="color:#7e1bcc;font-family:Inter,Arial,sans-serif;font-size:12px;line-height:14px;text-align:center;">Unsubscribe
+  </span></a><span
+    style="color:#6a677a;font-family:Inter,Arial,sans-serif;font-size:12px;line-height:14px;text-align:center;">or</span><a href="<%asm_preferences_raw_url%>"><span
+    style="color:#7e1bcc;font-family:Inter,Arial,sans-serif;font-size:12px;line-height:14px;text-align:center;"> Manage
+    Email Preferences</span></a></div>
   </td>
   </tr>
   </table>

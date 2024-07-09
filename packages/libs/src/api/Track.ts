@@ -656,6 +656,7 @@ export class Track extends Base {
       bpm,
       musical_key,
       audio_analysis_error_count,
+      field_visibility,
       ...other
     } = trackMetadata
     if (typeof other !== 'undefined') {
@@ -712,7 +713,8 @@ export class Track extends Base {
       allowed_api_keys,
       bpm,
       musical_key,
-      audio_analysis_error_count
+      audio_analysis_error_count,
+      field_visibility
     }
   }
 }

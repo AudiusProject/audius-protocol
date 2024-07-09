@@ -3,8 +3,8 @@ import { useCallback } from 'react'
 import type { Modals } from '@audius/common/store'
 import { View } from 'react-native'
 
-import { IconInfo } from '@audius/harmony-native'
-import { Button, Text } from 'app/components/core'
+import { IconInfo, Button } from '@audius/harmony-native'
+import { Text } from 'app/components/core'
 import { AppDrawer, NativeDrawer, useDrawerState } from 'app/components/drawer'
 import { useDrawer } from 'app/hooks/useDrawer'
 import type { Drawer } from 'app/store/drawers/slice'
@@ -107,19 +107,15 @@ const ConfirmationDrawerContent = (props: DrawerContentProps) => {
       </Text>
       <Button
         variant='destructive'
-        size='large'
-        title={messages.confirm}
         style={styles.confirmButton}
         fullWidth
         onPress={handleConfirm}
-      />
-      <Button
-        variant='commonAlt'
-        size='large'
-        title={messages.cancel}
-        fullWidth
-        onPress={handleCancel}
-      />
+      >
+        {messages.confirm}
+      </Button>
+      <Button variant='secondary' fullWidth onPress={handleCancel}>
+        {messages.cancel}
+      </Button>
       <View style={{ height: bottomChinHeight }} />
     </>
   )

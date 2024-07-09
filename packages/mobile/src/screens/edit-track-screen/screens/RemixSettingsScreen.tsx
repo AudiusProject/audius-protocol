@@ -19,16 +19,17 @@ import { debounce } from 'lodash'
 import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { Hint, IconCaretLeft, IconRemix } from '@audius/harmony-native'
+import { Hint, IconCaretLeft, IconRemix, Button } from '@audius/harmony-native'
 import type { TextProps } from 'app/components/core'
-import { TextInput, Divider, Button, Switch, Text } from 'app/components/core'
+import { TextInput, Divider, Switch, Text } from 'app/components/core'
 import { InputErrorMessage } from 'app/components/core/InputErrorMessage'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { TopBarIconButton } from 'app/screens/app-screen'
+import { FormScreen } from 'app/screens/form-screen'
 import { makeStyles } from 'app/styles'
 import { getTrackRoute } from 'app/utils/routes'
 
-import { FormScreen, RemixTrackPill } from '../components'
+import { RemixTrackPill } from '../components'
 import type { RemixOfField } from '../types'
 
 const { getTrack, getUser, getStatus } = remixSettingsSelectors
@@ -221,12 +222,12 @@ export const RemixSettingsScreen = () => {
       bottomSection={
         <Button
           variant='primary'
-          size='large'
           fullWidth
-          title={messages.done}
           onPress={handleSubmit}
           disabled={hasErrors}
-        />
+        >
+          {messages.done}
+        </Button>
       }
     >
       <View>

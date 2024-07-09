@@ -1,4 +1,4 @@
-import { PublicKey } from '@solana/web3.js'
+import { PublicKey, TransactionInstruction } from '@solana/web3.js'
 
 import { BaseAPI } from '../../api/generated/default'
 import * as runtime from '../../api/generated/default/runtime'
@@ -50,6 +50,37 @@ export class SolanaRelay extends BaseAPI {
     }
     this.feePayer = feePayer
     return this.feePayer
+  }
+
+  /**
+   * Gets a location instruction to be sent along with a transaction.
+   */
+  public async getLocationInstruction(
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
+  ) {
+    const headerParameters: runtime.HTTPHeaders = {}
+    const response = await this.request(
+      {
+        path: '/instruction/location',
+        method: 'GET',
+        headers: headerParameters
+      },
+      initOverrides
+    )
+    const { instruction } = await new runtime.JSONApiResponse(
+      response,
+      (json) => ({
+        instruction: new TransactionInstruction({
+          keys: json.instruction.keys,
+          programId: new PublicKey(json.instruction.programId),
+          data: Buffer.from(json.instruction.data)
+        })
+      })
+    ).value()
+    if (!instruction) {
+      throw new Error('Failed to get instruction!')
+    }
+    return instruction
   }
 
   /**

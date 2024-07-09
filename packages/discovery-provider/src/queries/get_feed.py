@@ -321,6 +321,17 @@ def get_feed_sql(args):
                 playlist, helpers.query_result_to_list(playlist_tracks), current_user_id
             )
 
+        # after having removed hidden tracks from playlists,
+        # exclude playlists with no tracks
+        playlists = list(
+            filter(
+                lambda playlist: playlist.get("playlist_contents", {}).get(
+                    "track_ids", []
+                ),
+                playlists,
+            )
+        )
+
         # build combined feed of tracks and playlists
         unsorted_feed = tracks + playlists
 

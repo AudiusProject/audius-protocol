@@ -28,13 +28,13 @@ const messages = {
   hideRemix: {
     header: 'Hide Remixes of This Track',
     description:
-      'Enable this option if you want to prevent remixes of your track by other artists from appearing on your track page.'
+      'Prevent remixes of your track by other artists from appearing on your track page. '
   },
   remixOf: {
     header: 'Identify as Remix',
     description:
-      "Paste the original Audius track link if yours is a remix. Your remix will typically appear on the original track's page.",
-    linkLabel: 'Link to Remix'
+      'Link your remix to the original track to increase visibility and credit the original artist.',
+    linkLabel: 'Link to original track'
   },
   changeAvailabilityPrefix: 'Availablity is set to ',
   changeAvailabilitySuffix:
@@ -71,61 +71,13 @@ export const RemixSettingsMenuFields = () => {
     setCanRemixParent(canRemixParent)
   }, [trackId, setParentTrackId, canRemixParent, setCanRemixParent])
 
-  const renderGatedContentCallout = () => {
-    if (isStreamGated && !isUSDCPurchaseGated) {
-      return (
-        <Hint icon={IconQuestionCircle}>{`${
-          messages.changeAvailabilityPrefix
-        } ${
-          isContentCollectibleGated(streamConditions)
-            ? messages.collectibleGated
-            : messages.specialAccess
-        }${messages.changeAvailabilitySuffix}`}</Hint>
-      )
-    }
-    return null
-  }
-
-  const renderUsdcPurchaseGatedContentCallout = () => {
-    if (isUSDCPurchaseGated) {
-      return (
+  return (
+    <div className={styles.fields}>
+      {isUSDCPurchaseGated ? (
         <Hint icon={IconQuestionCircle}>
           {`${messages.changeAvailabilityPrefix} ${messages.premium}${messages.changeAvailabilitySuffix}`}
         </Hint>
-      )
-    }
-    return null
-  }
-
-  const renderHideRemixesField = () => {
-    if (isStreamGated && !isUSDCPurchaseGated) {
-      return (
-        <SwitchRowField
-          name={SHOW_REMIXES}
-          header={messages.hideRemix.header}
-          description={messages.hideRemix.description}
-          inverted
-          checked
-          disabled
-        />
-      )
-    }
-    return (
-      <SwitchRowField
-        name={SHOW_REMIXES}
-        header={messages.hideRemix.header}
-        description={messages.hideRemix.description}
-        inverted
-      />
-    )
-  }
-
-  return (
-    <div className={styles.fields}>
-      {renderGatedContentCallout()}
-      {renderHideRemixesField()}
-      <Divider />
-      {renderUsdcPurchaseGatedContentCallout()}
+      ) : null}
       <SwitchRowField
         name={IS_REMIX}
         header={messages.remixOf.header}
@@ -135,6 +87,27 @@ export const RemixSettingsMenuFields = () => {
         <TextField name={REMIX_LINK} label={messages.remixOf.linkLabel} />
         {track ? <TrackInfo trackId={track.track_id} /> : null}
       </SwitchRowField>
+
+      <Divider />
+
+      {isStreamGated && !isUSDCPurchaseGated ? (
+        <Hint icon={IconQuestionCircle}>{`${
+          messages.changeAvailabilityPrefix
+        } ${
+          isContentCollectibleGated(streamConditions)
+            ? messages.collectibleGated
+            : messages.specialAccess
+        }${messages.changeAvailabilitySuffix}`}</Hint>
+      ) : null}
+      <SwitchRowField
+        name={SHOW_REMIXES}
+        header={messages.hideRemix.header}
+        description={messages.hideRemix.description}
+        inverted
+        {...(isStreamGated && !isUSDCPurchaseGated
+          ? { checked: true, disabled: true }
+          : {})}
+      />
     </div>
   )
 }

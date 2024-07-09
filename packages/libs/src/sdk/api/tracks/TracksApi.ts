@@ -5,7 +5,8 @@ import type {
   EntityManagerService,
   AuthService,
   ClaimableTokensClient,
-  PaymentRouterClient
+  PaymentRouterClient,
+  SolanaRelayService
 } from '../../services'
 import type { DiscoveryNodeSelectorService } from '../../services/DiscoveryNodeSelector'
 import {
@@ -62,7 +63,8 @@ export class TracksApi extends GeneratedTracksApi {
     private readonly auth: AuthService,
     private readonly logger: LoggerService,
     private readonly claimableTokensClient: ClaimableTokensClient,
-    private readonly paymentRouterClient: PaymentRouterClient
+    private readonly paymentRouterClient: PaymentRouterClient,
+    private readonly solanaRelay: SolanaRelayService
   ) {
     super(configuration)
     this.trackUploadHelper = new TrackUploadHelper(configuration)
@@ -489,6 +491,8 @@ export class TracksApi extends GeneratedTracksApi {
         buyerUserId: userId,
         accessType
       })
+    const locationMemoInstruction =
+      await this.solanaRelay.getLocationInstruction()
 
     if (wallet) {
       this.logger.debug('Using provided wallet to purchase...', {
@@ -503,7 +507,12 @@ export class TracksApi extends GeneratedTracksApi {
         })
       const transaction = await this.paymentRouterClient.buildTransaction({
         feePayer: wallet,
-        instructions: [transferInstruction, routeInstruction, memoInstruction]
+        instructions: [
+          transferInstruction,
+          routeInstruction,
+          memoInstruction,
+          locationMemoInstruction
+        ]
       })
       return transaction
     } else {
@@ -539,7 +548,8 @@ export class TracksApi extends GeneratedTracksApi {
           transferSecpInstruction,
           transferInstruction,
           routeInstruction,
-          memoInstruction
+          memoInstruction,
+          locationMemoInstruction
         ]
       })
       return transaction

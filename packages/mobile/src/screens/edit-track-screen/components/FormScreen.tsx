@@ -2,8 +2,9 @@ import type { ReactElement, ReactNode } from 'react'
 
 import { View } from 'react-native'
 
+import { Button } from '@audius/harmony-native'
 import type { ScreenProps } from 'app/components/core'
-import { ScreenContent, Button, Screen } from 'app/components/core'
+import { ScreenContent, Screen } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles } from 'app/styles'
 
@@ -34,13 +35,9 @@ export const FormScreen = (props: FormScreenProps) => {
   const navigation = useNavigation()
 
   const defaultBottomSection = (
-    <Button
-      variant='primary'
-      size='large'
-      fullWidth
-      title={messages.done}
-      onPress={navigation.goBack}
-    />
+    <Button variant='primary' fullWidth onPress={navigation.goBack}>
+      {messages.done}
+    </Button>
   )
 
   return (

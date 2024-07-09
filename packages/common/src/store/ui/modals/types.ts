@@ -7,7 +7,6 @@ import { AlbumTrackRemoveConfirmationModalState } from './album-track-remove-con
 import { ArtistPickModalState } from './artist-pick-modal'
 import { CoinflowOnrampModalState } from './coinflow-onramp-modal'
 import { CoinflowWithdrawModalState } from './coinflow-withdraw-modal'
-import { EditPlaylistModalState } from './edit-playlist-modal'
 import { EditTrackModalState } from './edit-track-modal'
 import { InboxUnavailableModalState } from './inbox-unavailable-modal'
 import { LeavingAudiusModalState } from './leaving-audius-modal'
@@ -50,7 +49,6 @@ export type Modals =
   | 'TrendingGenreSelection'
   | 'SocialProof'
   | 'EditFolder'
-  | 'EditPlaylist'
   | 'EditTrack'
   | 'SignOutConfirmation'
   | 'Overflow'
@@ -96,7 +94,6 @@ export type BasicModalsState = {
 export type StatefulModalsState = {
   CoinflowOnramp: CoinflowOnrampModalState
   CreateChatModal: CreateChatModalState
-  EditPlaylist: EditPlaylistModalState
   EditTrack: EditTrackModalState
   InboxUnavailableModal: InboxUnavailableModalState
   LeavingAudiusModal: LeavingAudiusModalState

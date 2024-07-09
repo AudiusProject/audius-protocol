@@ -1,18 +1,15 @@
 import {
-  FailureReason,
   UserChallenge,
-  StringAudio,
   ChallengeRewardID,
   StringWei,
-  SpecifierWithAmount
+  SpecifierWithAmount,
+  Name
 } from '@audius/common/models'
 import {
   IntKeys,
   StringKeys,
-  createUserBankIfNeeded,
   Env,
-  RemoteConfigInstance,
-  FeatureFlags
+  RemoteConfigInstance
 } from '@audius/common/services'
 import {
   accountActions,
@@ -21,17 +18,13 @@ import {
   audioRewardsPageActions,
   HCaptchaStatus,
   ClaimStatus,
-  solanaSelectors,
   walletActions,
   modalsActions,
   getContext,
-  musicConfettiActions
+  musicConfettiActions,
+  CommonStoreContext
 } from '@audius/common/store'
-import {
-  encodeHashId,
-  stringAudioToStringWei,
-  waitForValue
-} from '@audius/common/utils'
+import { encodeHashId, waitForValue } from '@audius/common/utils'
 import { AUDIO } from '@audius/fixed-decimal'
 import { AudiusSdk, ChallengeId, Errors } from '@audius/sdk'
 import {
@@ -47,8 +40,7 @@ import {
   all
 } from 'typed-redux-saga'
 
-import { reportToSentry } from 'store/errors/reportToSentry'
-import { isElectron } from 'utils/clientUtil'
+import { isResponseError, reportToSentry } from 'store/errors/reportToSentry'
 import { AUDIO_PAGE } from 'utils/route'
 import { waitForRead } from 'utils/sagaHelpers'
 import {
@@ -59,7 +51,6 @@ import {
 const { show: showMusicConfetti } = musicConfettiActions
 const { setVisibility } = modalsActions
 const { getBalance, increaseBalance } = walletActions
-const { getFeePayer } = solanaSelectors
 const {
   getClaimStatus,
   getClaimToRetry,
@@ -74,7 +65,6 @@ const {
   claimChallengeRewardFailed,
   claimChallengeRewardSucceeded,
   claimAllChallengeRewardsSucceeded,
-  claimChallengeRewardWaitForRetry,
   fetchUserChallenges,
   fetchUserChallengesFailed,
   fetchUserChallengesSucceeded,
@@ -82,7 +72,6 @@ const {
   setUserChallengesDisbursed,
   updateHCaptchaScore,
   showRewardClaimedToast,
-  claimChallengeRewardAlreadyClaimed,
   setUserChallengeCurrentStepCount,
   resetUserChallengeCurrentStepCount,
   updateOptimisticListenStreak,
@@ -90,9 +79,8 @@ const {
 } = audioRewardsPageActions
 const fetchAccountSucceeded = accountActions.fetchAccountSucceeded
 
-const { getAccountUser, getUserId } = accountSelectors
+const { getUserId } = accountSelectors
 
-const HCAPTCHA_MODAL_NAME = 'HCaptcha'
 const CHALLENGE_REWARDS_MODAL_NAME = 'ChallengeRewardsExplainer'
 
 function getOracleConfig(remoteConfigInstance: RemoteConfigInstance, env: Env) {
@@ -137,12 +125,6 @@ function* retryClaimChallengeReward({
       yield* put(claimChallengeRewardFailed())
     }
   }
-}
-
-// Returns the number of ms to wait before next retry using exponential backoff
-// ie. 400 ms, 800 ms, 1.6 sec, 3.2 sec, 6.4 sec
-export const getBackoff = (retryCount: number) => {
-  return 200 * 2 ** (retryCount + 1)
 }
 
 const getClaimingConfig = (
@@ -232,28 +214,83 @@ async function claimRewardsForChallenge({
   sdk,
   userId,
   challengeId,
-  specifiers
+  specifiers,
+  track,
+  make
 }: {
   sdk: AudiusSdk
   userId: string
   challengeId: ChallengeId
   specifiers: SpecifierWithAmount[]
+  track: CommonStoreContext['analytics']['track']
+  make: CommonStoreContext['analytics']['make']
 }): Promise<(SpecifierWithAmount | ErrorResult)[]> {
   return await Promise.all(
     specifiers.map(async (specifierWithAmount) =>
-      sdk.challenges
-        .claimReward({
+      track(
+        make({
+          eventName: Name.REWARDS_CLAIM_REQUEST,
           challengeId,
           specifier: specifierWithAmount.specifier,
-          amount: specifierWithAmount.amount,
-          userId
+          amount: specifierWithAmount.amount
         })
+      )
+        .then(() =>
+          sdk.challenges.claimReward({
+            challengeId,
+            specifier: specifierWithAmount.specifier,
+            amount: specifierWithAmount.amount,
+            userId
+          })
+        )
+        .then(() =>
+          track(
+            make({
+              eventName: Name.REWARDS_CLAIM_SUCCESS,
+              challengeId,
+              specifier: specifierWithAmount.specifier,
+              amount: specifierWithAmount.amount
+            })
+          )
+        )
         .then(() => {
           return specifierWithAmount
         })
         // Handle the individual specifier failures here to let the other
         // ones continue to claim and not reject the all() call.
-        .catch((error: unknown) => {
+        .catch(async (error: unknown) => {
+          if (error instanceof Errors.AntiAbuseOracleAttestationError) {
+            await track(
+              make({
+                eventName: Name.REWARDS_CLAIM_BLOCKED,
+                challengeId,
+                specifier: specifierWithAmount.specifier,
+                amount: specifierWithAmount.amount,
+                code: error.code as number
+              })
+            )
+          } else if (isResponseError(error)) {
+            await track(
+              make({
+                eventName: Name.REWARDS_CLAIM_FAILURE,
+                challengeId,
+                specifier: specifierWithAmount.specifier,
+                amount: specifierWithAmount.amount,
+                url: error.response.url,
+                error: await error.response.clone().text()
+              })
+            )
+          } else {
+            await track(
+              make({
+                eventName: Name.REWARDS_CLAIM_FAILURE,
+                challengeId,
+                specifier: specifierWithAmount.specifier,
+                amount: specifierWithAmount.amount,
+                error: (error as any).toString()
+              })
+            )
+          }
           return {
             ...specifierWithAmount,
             error
@@ -270,6 +307,7 @@ function* claimSingleChallengeRewardAsync(
   const env = yield* getContext('env')
   const audiusSdk = yield* getContext('audiusSdk')
   const sdk = yield* call(audiusSdk)
+  const { track, make } = yield* getContext('analytics')
 
   const { claim } = action.payload
   const { specifiers, challengeId } = claim
@@ -291,38 +329,39 @@ function* claimSingleChallengeRewardAsync(
   }
   const userId = encodeHashId(decodedUserId)
 
-  try {
-    const results = yield* call(claimRewardsForChallenge, {
-      sdk,
-      userId,
-      challengeId: challengeId as ChallengeId,
-      specifiers
+  const results = yield* call(claimRewardsForChallenge, {
+    sdk,
+    userId,
+    challengeId: challengeId as ChallengeId,
+    specifiers,
+    track,
+    make
+  })
+  const claimed = results.filter((r) => !('error' in r))
+  const claimedAmount = claimed.reduce((sum, { amount }) => {
+    return sum + amount
+  }, 0)
+  yield* put(
+    increaseBalance({
+      amount: AUDIO(claimedAmount).value.toString() as StringWei
     })
-    const claimed = results.filter((r) => !('error' in r))
-    const claimedAmount = claimed.reduce((sum, { amount }) => {
-      return sum + amount
-    }, 0)
-    yield* put(
-      increaseBalance({
-        amount: AUDIO(claimedAmount).value.toString() as StringWei
-      })
-    )
-    yield* put(setUserChallengesDisbursed({ challengeId, specifiers: claimed }))
+  )
+  yield* put(setUserChallengesDisbursed({ challengeId, specifiers: claimed }))
 
-    const errors = results.filter((r): r is ErrorResult => 'error' in r)
-    let aaoError: Errors.AntiAbuseAttestionError | undefined
-    if (errors.length > 0) {
-      // Log and report errors for each specifier that failed to claim
-      for (const res of errors) {
-        if (!aaoError && res.error instanceof Errors.AntiAbuseAttestionError) {
-          aaoError = res.error
-        }
-        const error =
-          res.error instanceof Error ? res.error : new Error(String(res.error))
-        console.error(
-          `Failed to claim challenge: ${challengeId} specifier: ${res.specifier} for amount: ${res.amount} with error:`,
-          error
-        )
+  const errors = results.filter((r): r is ErrorResult => 'error' in r)
+  let aaoError: Errors.AntiAbuseOracleAttestationError | undefined
+  if (errors.length > 0) {
+    // Log and report errors for each specifier that failed to claim
+    for (const res of errors) {
+      const error =
+        res.error instanceof Error ? res.error : new Error(String(res.error))
+      console.error(
+        `Failed to claim challenge: ${challengeId} specifier: ${res.specifier} for amount: ${res.amount} with error:`,
+        error
+      )
+      if (res.error instanceof Errors.AntiAbuseOracleAttestationError) {
+        aaoError = res.error
+      } else {
         yield* call(reportToSentry, {
           error,
           name: `ClaimRewards: ${error.name}`,
@@ -333,212 +372,15 @@ function* claimSingleChallengeRewardAsync(
           }
         })
       }
-      const errorMessage = 'Some specifiers failed to claim'
-      if (aaoError) {
-        throw new Errors.AntiAbuseAttestionError(aaoError.code, errorMessage)
-      }
-      throw new Error(errorMessage)
     }
-  } catch (e) {
-    console.error(e)
-    throw new Error('Failed to claim for challenge')
-  }
-}
-
-function* claimChallengeRewardAsyncOld(
-  action: ReturnType<typeof claimChallengeReward>
-) {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-  const remoteConfigInstance = yield* getContext('remoteConfigInstance')
-  const env = yield* getContext('env')
-  const { track } = yield* getContext('analytics')
-  const { claim, retryOnFailure, retryCount = 0 } = action.payload
-  const { specifiers, challengeId, amount } = claim
-
-  const {
-    quorumSize,
-    maxClaimRetries,
-    oracleEthAddress,
-    AAOEndpoint,
-    rewardsAttestationEndpoints,
-    parallelization,
-    completionPollFrequency,
-    completionPollTimeout
-  } = getClaimingConfig(remoteConfigInstance, env)
-
-  // Do not proceed to claim if challenge is not complete from a DN perspective.
-  // This is possible because the client may optimistically set a challenge as complete
-  // even though the DN has not yet indexed the change that would mark the challenge as complete.
-  // In this case, we wait until the challenge is complete in the DN before claiming
-  const challenge = yield* select(getUserChallenge, {
-    challengeId
-  })
-  if (challenge.challenge_type !== 'aggregate' && !challenge.is_complete) {
-    console.info('Waiting for challenge completion...')
-    const raceResult: { isComplete?: boolean } = yield* race({
-      isComplete: call(
-        waitForValue,
-        getUserChallenge,
-        { challengeId },
-        (challenge: UserChallenge) => challenge.is_complete
-      ),
-      poll: call(pollUserChallenges, completionPollFrequency || 1000),
-      timeout: delay(completionPollTimeout || 10000)
-    })
-    if (!raceResult.isComplete) {
-      console.warn(
-        'Challenge still not marked as completed on DN. Attempting attestations anyway, but may fail...'
+    const errorMessage = 'Some specifiers failed to claim'
+    if (aaoError) {
+      throw new Errors.AntiAbuseOracleAttestationError(
+        aaoError.code,
+        errorMessage
       )
     }
-  }
-
-  const currentUser = yield* select(getAccountUser)
-  const feePayerOverride = yield* select(getFeePayer)
-
-  if (!currentUser || !currentUser.wallet) return
-
-  // Make userbank if necessary
-  if (!feePayerOverride) {
-    console.error(
-      `claimChallengeRewardAsync: unexpectedly no fee payper override`
-    )
-    return
-  }
-  yield* call(createUserBankIfNeeded, audiusBackendInstance, {
-    recordAnalytics: track,
-    feePayerOverride
-  })
-
-  // When endpoints is unset, `submitAndEvaluateAttestations` picks for us
-  const endpoints =
-    rewardsAttestationEndpoints && rewardsAttestationEndpoints !== ''
-      ? rewardsAttestationEndpoints.split(',')
-      : []
-  const hasConfig =
-    oracleEthAddress &&
-    AAOEndpoint &&
-    quorumSize &&
-    quorumSize > 0 &&
-    maxClaimRetries &&
-    !isNaN(maxClaimRetries) &&
-    parallelization !== null
-
-  if (!hasConfig) {
-    console.error('Error claiming rewards: Config is missing')
-    return
-  }
-  let aaoErrorCode
-  try {
-    const challenges = specifiers
-      .map(({ specifier, amount }) => ({
-        challenge_id: challengeId,
-        specifier,
-        amount
-      }))
-      .filter(({ amount }) => amount > 0) // We shouldn't have any 0 amount challenges, but just in case.
-
-    const isMobile = yield* getContext('isMobile')
-    const response: { error?: string; aaoErrorCode?: number } = yield* call(
-      audiusBackendInstance.submitAndEvaluateAttestations,
-      {
-        challenges,
-        userId: currentUser.user_id,
-        handle: currentUser.handle,
-        recipientEthAddress: currentUser.wallet,
-        oracleEthAddress,
-        quorumSize,
-        endpoints,
-        AAOEndpoint,
-        parallelization,
-        feePayerOverride,
-        isFinalAttempt: !retryOnFailure,
-        source: isMobile ? 'mobile' : isElectron() ? 'electron' : 'web'
-      }
-    )
-    if (response.error) {
-      if (retryOnFailure && retryCount < maxClaimRetries!) {
-        switch (response.error) {
-          case FailureReason.HCAPTCHA:
-            // Hide the Challenge Rewards Modal because the HCaptcha modal doesn't look good on top of it.
-            // Will be restored on close of the HCaptcha modal.
-            yield* put(
-              setVisibility({
-                modal: CHALLENGE_REWARDS_MODAL_NAME,
-                visible: false
-              })
-            )
-            yield* put(
-              setVisibility({ modal: HCAPTCHA_MODAL_NAME, visible: true })
-            )
-            yield* put(claimChallengeRewardWaitForRetry(claim))
-            break
-
-          case FailureReason.ALREADY_DISBURSED:
-          case FailureReason.ALREADY_SENT:
-            yield* put(claimChallengeRewardAlreadyClaimed())
-            break
-          case FailureReason.BLOCKED:
-            aaoErrorCode = response.aaoErrorCode
-            throw new Error('User is blocked from claiming')
-          // For these 'attestation aggregation errors',
-          // we've already retried in libs so unlikely to succeed here.
-          case FailureReason.AAO_ATTESTATION_UNKNOWN_RESPONSE:
-          case FailureReason.MISSING_CHALLENGES:
-          case FailureReason.CHALLENGE_INCOMPLETE:
-            yield* put(claimChallengeRewardFailed())
-            break
-          case FailureReason.WAIT_FOR_COOLDOWN:
-            yield* put(claimChallengeRewardFailed())
-            break
-          case FailureReason.UNKNOWN_ERROR:
-          default:
-            // If there is an AAO error code, then the AAO must have
-            // rejected this user so don't retry.
-            aaoErrorCode = response.aaoErrorCode
-            if (aaoErrorCode !== undefined) {
-              yield* put(claimChallengeRewardFailed({ aaoErrorCode }))
-              break
-            }
-
-            // If this was an aggregate challenges with multiple specifiers,
-            // then libs handles the retries and we shouldn't retry here.
-            if (specifiers.length > 1) {
-              yield* put(claimChallengeRewardFailed())
-              break
-            }
-            yield* call(delay, getBackoff(retryCount))
-            yield* put(
-              claimChallengeReward({
-                claim,
-                retryOnFailure: true,
-                retryCount: retryCount + 1
-              })
-            )
-        }
-      } else {
-        aaoErrorCode = response.aaoErrorCode
-        if (aaoErrorCode !== undefined) {
-          yield* put(claimChallengeRewardFailed({ aaoErrorCode }))
-        } else {
-          yield* put(claimChallengeRewardFailed())
-        }
-      }
-    } else {
-      yield* put(
-        increaseBalance({
-          amount: stringAudioToStringWei(amount.toString() as StringAudio)
-        })
-      )
-      yield* put(setUserChallengesDisbursed({ challengeId, specifiers }))
-      yield* put(claimChallengeRewardSucceeded())
-    }
-  } catch (e) {
-    console.error('Error claiming rewards:', e)
-    if (aaoErrorCode !== undefined) {
-      yield* put(claimChallengeRewardFailed({ aaoErrorCode }))
-    } else {
-      yield* put(claimChallengeRewardFailed())
-    }
+    throw new Error(errorMessage)
   }
 }
 
@@ -549,7 +391,7 @@ function* claimChallengeRewardAsync(
     yield* call(claimSingleChallengeRewardAsync, action)
     yield* put(claimChallengeRewardSucceeded())
   } catch (e) {
-    if (e instanceof Errors.AntiAbuseAttestionError) {
+    if (e instanceof Errors.AntiAbuseOracleAttestationError) {
       yield* put(claimChallengeRewardFailed({ aaoErrorCode: e.code }))
     } else {
       yield* put(claimChallengeRewardFailed())
@@ -563,6 +405,11 @@ function* claimAllChallengeRewardsAsync(
   const { claims } = action.payload
   let hasError = false
   let aaoErrorCode: undefined | number
+  const { track, make } = yield* getContext('analytics')
+  yield* call(
+    track,
+    make({ eventName: Name.REWARDS_CLAIM_ALL_REQUEST, count: claims.length })
+  )
   yield* all(
     claims.map((claim) =>
       call(function* () {
@@ -572,21 +419,36 @@ function* claimAllChallengeRewardsAsync(
             payload: { claim, retryOnFailure: false }
           })
         } catch (e) {
-          console.error(e)
           hasError = true
-          if (e instanceof Errors.AntiAbuseAttestionError) {
+          if (e instanceof Errors.AntiAbuseOracleAttestationError) {
             aaoErrorCode = e.code
           }
         }
       })
     )
   )
-  if (aaoErrorCode) {
+  if (aaoErrorCode !== undefined) {
     yield* put(claimChallengeRewardFailed({ aaoErrorCode }))
+    yield* call(
+      track,
+      make({
+        eventName: Name.REWARDS_CLAIM_ALL_BLOCKED,
+        count: claims.length,
+        code: aaoErrorCode
+      })
+    )
   } else if (hasError) {
     yield* put(claimChallengeRewardFailed())
+    yield* call(
+      track,
+      make({ eventName: Name.REWARDS_CLAIM_ALL_FAILURE, count: claims.length })
+    )
   } else {
     yield* put(claimAllChallengeRewardsSucceeded())
+    yield* call(
+      track,
+      make({ eventName: Name.REwARDS_CLAIM_ALL_SUCCESS, count: claims.length })
+    )
   }
 }
 
@@ -607,24 +469,12 @@ function* watchClaimChallengeReward() {
   yield* takeLatest(
     claimChallengeReward.type,
     function* (args: ReturnType<typeof claimChallengeReward>) {
-      const getFeatureEnabled = yield* getContext('getFeatureEnabled')
-      const isUseSDKRewardsEnabled = yield* call(
-        getFeatureEnabled,
-        FeatureFlags.USE_SDK_REWARDS
-      )
       // Race the claim against the user clicking "close" on the modal,
       // so that the claim saga gets canceled if the modal is closed
-      if (isUseSDKRewardsEnabled) {
-        yield* race({
-          task: call(claimChallengeRewardAsync, args),
-          cancel: take(resetAndCancelClaimReward.type)
-        })
-      } else {
-        yield* race({
-          task: call(claimChallengeRewardAsyncOld, args),
-          cancel: take(resetAndCancelClaimReward.type)
-        })
-      }
+      yield* race({
+        task: call(claimChallengeRewardAsync, args),
+        cancel: take(resetAndCancelClaimReward.type)
+      })
     }
   )
 }

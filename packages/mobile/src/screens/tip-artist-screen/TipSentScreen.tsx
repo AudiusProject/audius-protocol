@@ -105,9 +105,8 @@ export const TipSentScreen = () => {
       <DescriptionText>{messages.description}</DescriptionText>
       <TwitterButton
         type='static'
-        size='large'
         fullWidth
-        styles={{ root: styles.twitter }}
+        style={styles.twitter}
         shareText={getTwitterShareText()}
         url={recipient ? `${env.AUDIUS_URL}/${recipient.handle}` : undefined}
         analytics={

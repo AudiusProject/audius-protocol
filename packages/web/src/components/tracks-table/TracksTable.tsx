@@ -418,7 +418,7 @@ export const TracksTable = ({
         className: styles.tableActionButton,
         isDeleted: deleted,
         includeAlbumPage: !isAlbumPage,
-        includeFavorite: !isLocked,
+        includeFavorite: !isLocked && !track.is_unlisted,
         handle: track.handle,
         trackId: track.track_id,
         uid: track.uid,
