@@ -132,19 +132,6 @@ export const AuthHeaders = Object.freeze({
   Signature: 'Encoded-Data-Signature'
 })
 
-type SnakeToCamel<S extends string> = S extends `${infer T}_${infer U}`
-  ? `${T}${Capitalize<SnakeToCamel<U>>}`
-  : S
-
-type SnakeKeysToCamel<T> = {
-  [K in keyof T as SnakeToCamel<Extract<K, string>>]: T[K]
-}
-
-type DiscoveryEndpoint = (...args: any) => { queryParams: Record<string, any> }
-type DiscoveryAPIParams<Endpoint extends DiscoveryEndpoint> = SnakeKeysToCamel<
-  ReturnType<Endpoint>['queryParams']
->
-
 // TODO: type these once libs types are improved
 let AudiusLibs: any = null
 export let BackendUtils: any = null
@@ -766,8 +753,8 @@ export const audiusBackend = ({
     offset?: number
     genre?: Genre
     mood?: Mood
-    bpmMin?: string
-    bpmMax?: string
+    bpmMin?: number
+    bpmMax?: number
     key?: string
     isVerified?: boolean
     hasDownloads?: boolean
@@ -836,13 +823,17 @@ export const audiusBackend = ({
 
       return {
         tracks: combinedTracks,
-        users: combinedUsers
+        users: combinedUsers,
+        playlists: [],
+        albums: []
       }
     } catch (e) {
       console.error(e)
       return {
         tracks: [],
-        users: []
+        users: [],
+        playlists: [],
+        albums: []
       }
     }
   }

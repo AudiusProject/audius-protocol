@@ -58,13 +58,14 @@ const searchApi = createApi({
 
         if (query?.[0] === '#') {
           return await audiusBackend.searchTags({
+            userTagCount: 1,
             kind,
             query: query.toLowerCase().slice(1),
             limit: limit || 50,
             offset: offset || 0,
             ...filters,
-            bpmMin: String(bpmMin),
-            bpmMax: String(bpmMin),
+            bpmMin,
+            bpmMax,
             key: formatMusicalKey(filters.key)
           })
         } else {
