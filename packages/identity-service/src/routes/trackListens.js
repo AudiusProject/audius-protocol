@@ -87,20 +87,22 @@ export const sortKeys = (x) => {
 const getDiscoveryListensEndpoint = () => {
   const env = config.get('environment')
   switch (env) {
-    case "staging":
-      return "https://discoveryprovider.staging.audius.co"
-    case "production":
-      return "https://discoveryprovider.audius.co"
-    case "development":
+    case 'staging':
+      return 'https://discoveryprovider.staging.audius.co'
+    case 'production':
+      return 'https://discoveryprovider.audius.co'
+    case 'development':
     default:
-      return "http://audius-protocol-discovery-provider-1"
+      return 'http://audius-protocol-discovery-provider-1'
   }
 }
 
 const sign = (data) => {
   const privateKey = config.get('relayerPrivateKey')
   const msgHash = keccak256(data)
-  const signature = ethSigUtil.personalSign(Buffer.from(privateKey, 'hex'), { data: msgHash })
+  const signature = ethSigUtil.personalSign(Buffer.from(privateKey, 'hex'), {
+    data: msgHash
+  })
   return signature
 }
 
@@ -472,10 +474,14 @@ module.exports = function (app) {
           const endpoint = `${getDiscoveryListensEndpoint()}/solana/tracks/${trackId}/listen`
           const res = await axios.post(endpoint, body, { headers })
           if (res === null) {
-            throw new Error("failed to forward listen to discovery, sending to solana")
+            throw new Error(
+              'failed to forward listen to discovery, sending to solana'
+            )
           }
 
-          req.logger.info(`TrackListen discovery res=${JSON.stringify(res.data)}`)
+          req.logger.info(
+            `TrackListen discovery res=${JSON.stringify(res.data)}`
+          )
 
           const { solTxSignature } = res.data
 
@@ -483,7 +489,9 @@ module.exports = function (app) {
             solTxSignature
           })
         } catch (e) {
-          req.logger.error(`TrackListen discovery error, trackId=${trackId} userId=${userId} : ${e}`)
+          req.logger.error(
+            `TrackListen discovery error, trackId=${trackId} userId=${userId} : ${e}`
+          )
         }
       }
 
