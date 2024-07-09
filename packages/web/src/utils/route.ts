@@ -1,5 +1,5 @@
+import { SearchCategory } from '@audius/common/api'
 import type { ID } from '@audius/common/models'
-import { SearchCategory } from '@audius/common/src/api/search'
 import { Genre, Mood } from '@audius/sdk'
 import { push as pushRoute } from 'connected-react-router'
 import { Location } from 'history'
