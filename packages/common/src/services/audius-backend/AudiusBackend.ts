@@ -1,4 +1,6 @@
 import {
+  Genre,
+  Mood,
   type AudiusLibs as AudiusLibsType,
   type DiscoveryNodeSelector,
   type StorageNodeSelectorService
@@ -68,7 +70,8 @@ import {
   Notification,
   IdentityNotification,
   PushNotifications,
-  TrackMetadataForUpload
+  TrackMetadataForUpload,
+  SearchKind
 } from '../../store'
 import {
   getErrorMessage,
@@ -128,19 +131,6 @@ export const AuthHeaders = Object.freeze({
   Message: 'Encoded-Data-Message',
   Signature: 'Encoded-Data-Signature'
 })
-
-type SnakeToCamel<S extends string> = S extends `${infer T}_${infer U}`
-  ? `${T}${Capitalize<SnakeToCamel<U>>}`
-  : S
-
-type SnakeKeysToCamel<T> = {
-  [K in keyof T as SnakeToCamel<Extract<K, string>>]: T[K]
-}
-
-type DiscoveryEndpoint = (...args: any) => { queryParams: Record<string, any> }
-type DiscoveryAPIParams<Endpoint extends DiscoveryEndpoint> = SnakeKeysToCamel<
-  ReturnType<Endpoint>['queryParams']
->
 
 // TODO: type these once libs types are improved
 let AudiusLibs: any = null
@@ -755,7 +745,23 @@ export const audiusBackend = ({
     }
   }
 
-  // TODO(C-2719)
+  type SearchTagsArgs = {
+    query: string
+    userTagCount?: number
+    kind?: SearchKind
+    limit?: number
+    offset?: number
+    genre?: Genre
+    mood?: Mood
+    bpmMin?: number
+    bpmMax?: number
+    key?: string
+    isVerified?: boolean
+    hasDownloads?: boolean
+    isPremium?: boolean
+    sortMethod?: 'recent' | 'relevant' | 'popular'
+  }
+
   async function searchTags({
     query,
     userTagCount,
@@ -769,10 +775,9 @@ export const audiusBackend = ({
     key,
     isVerified,
     hasDownloads,
-    // @ts-ignore - isPremium -> is_purchasable
     isPremium,
     sortMethod
-  }: DiscoveryAPIParams<typeof DiscoveryAPI.searchTags>) {
+  }: SearchTagsArgs) {
     try {
       const searchTags = await withEagerOption(
         {
@@ -818,13 +823,17 @@ export const audiusBackend = ({
 
       return {
         tracks: combinedTracks,
-        users: combinedUsers
+        users: combinedUsers,
+        playlists: [],
+        albums: []
       }
     } catch (e) {
       console.error(e)
       return {
         tracks: [],
-        users: []
+        users: [],
+        playlists: [],
+        albums: []
       }
     }
   }
