@@ -3,13 +3,12 @@ import { useCallback } from 'react'
 import type { SearchFilters } from '@audius/common/api'
 import { TrackMetadataType, useTrackMetadata } from '@audius/common/hooks'
 import type { ID } from '@audius/common/models'
+import { Flex, Text, TextLink, spacing } from '@audius/harmony-native'
 import type { Mood } from '@audius/sdk'
 import { trpc } from '@audius/web/src/utils/trpcClientWeb'
-import { Image } from 'react-native'
-
-import { Flex, Text, TextLink, spacing } from '@audius/harmony-native'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { moodMap } from 'app/utils/moods'
+import { Image } from 'react-native'
 
 import { MetadataItem } from './MetadataItem'
 
@@ -56,6 +55,7 @@ const renderMetadataValue = (
     // TODO: BPM and Key might need to be transformed to fit the search page's expected format
     case TrackMetadataType.GENRE:
     case TrackMetadataType.BPM:
+    case TrackMetadataType.KEY:
       return renderFilterLink(value, () => {
         handleFilterLinkPress({ [id]: value })
       })
