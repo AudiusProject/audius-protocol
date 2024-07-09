@@ -909,7 +909,7 @@ const config = convict({
     doc: 'Forward listen requests to discovery',
     format: Boolean,
     env: 'useDiscoveryListens',
-    default: false
+    default: true
   }
 })
 

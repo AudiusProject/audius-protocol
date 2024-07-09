@@ -5,6 +5,7 @@ const uuidv4 = require('uuid/v4')
 const axios = require('axios')
 const ethSigUtil = require('eth-sig-util')
 const ethUtil = require('ethereumjs-util')
+const keccak256 = require('keccak256')
 const { getIP } = require('../rateLimiter')
 const models = require('../models')
 const {
@@ -71,6 +72,18 @@ const parseTimeframe = (inputTime) => {
   return inputTime
 }
 
+export const sortKeys = (x) => {
+  if (typeof x !== 'object' || !x) {
+    return x
+  }
+  if (Array.isArray(x)) {
+    return x.map(sortKeys)
+  }
+  return Object.keys(x)
+    .sort()
+    .reduce((o, k) => ({ ...o, [k]: sortKeys(x[k]) }), {})
+}
+
 const getDiscoveryListensEndpoint = () => {
   const env = config.get('environment')
   switch (env) {
@@ -86,7 +99,7 @@ const getDiscoveryListensEndpoint = () => {
 
 const sign = (data) => {
   const privateKey = config.get('relayerPrivateKey')
-  const msgHash = ethUtil.hashPersonalMessage(Buffer.from(data))
+  const msgHash = keccak256(data)
   const signature = ethSigUtil.personalSign(Buffer.from(privateKey, 'hex'), { data: msgHash })
   return signature
 }
@@ -102,9 +115,9 @@ const basicAuthNonce = () => {
 
 const generateListenTimestampAndSignature = () => {
   const timestamp = new Date().toISOString()
-  const data = JSON.stringify({ data: 'listen', timestamp })
+  const data = JSON.stringify(sortKeys({ data: 'listen', timestamp }))
   const sig = sign(data)
-  const signature = `0x${sig.toString('hex')}`
+  const signature = sig.toString('hex')
   return {
     signature,
     timestamp
@@ -438,17 +451,17 @@ module.exports = function (app) {
         // if it fails, submit to solana like normal
         try {
           req.logger.info(
-            `TrackListen userId=${userId} ip=${ip} isWhitelisted=${isWhitelisted} useDiscoveryListens=${useDiscoveryListens}`
+            `TrackListen discovery userId=${userId} ip=${ip} isWhitelisted=${isWhitelisted} useDiscoveryListens=${useDiscoveryListens}`
           )
 
           // sign
           const { signature, timestamp } = generateListenTimestampAndSignature()
 
           const body = {
-            userId,
+            userId: userId.toString(),
             timestamp,
             signature,
-            solanaListen: false,
+            solanaListen: false
           }
 
           const headers = {
@@ -457,7 +470,14 @@ module.exports = function (app) {
           }
 
           const endpoint = `${getDiscoveryListensEndpoint()}/solana/tracks/${trackId}/listen`
-          const { solTxSignature } = (await axios.post(endpoint, body, { headers })).data
+          const res = await axios.post(endpoint, body, { headers })
+          if (res === null) {
+            throw new Error("failed to forward listen to discovery, sending to solana")
+          }
+
+          req.logger.info(`TrackListen discovery res=${JSON.stringify(res.data)}`)
+
+          const { solTxSignature } = res.data
 
           return successResponse({
             solTxSignature
