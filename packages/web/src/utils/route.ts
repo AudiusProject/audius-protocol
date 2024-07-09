@@ -1,3 +1,4 @@
+import { SearchCategory } from '@audius/common/api'
 import type { ID } from '@audius/common/models'
 import { Genre, Mood } from '@audius/sdk'
 import { push as pushRoute } from 'connected-react-router'
@@ -471,11 +472,17 @@ export const fullSearchResultsPage = (query: string) => {
   return `${BASE_URL}${searchResultsPage(query)}`
 }
 
-export const searchResultsPageV2 = (category: string, query: string) => {
+export const searchResultsPageV2 = (
+  category: SearchCategory,
+  query: string
+) => {
   return `/search/${category}/?query=${query}`
 }
 
-export const fullSearchResultsPageV2 = (category: string, query: string) => {
+export const fullSearchResultsPageV2 = (
+  category: SearchCategory,
+  query: string
+) => {
   return `${BASE_URL}${searchResultsPageV2(category, query)}`
 }
 
