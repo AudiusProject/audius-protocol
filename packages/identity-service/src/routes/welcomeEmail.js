@@ -78,7 +78,7 @@ module.exports = function (app) {
         from: 'The Audius Team <team@audius.co>',
         to: existingUser.email,
         bcc: ['forrest@audius.co'],
-        subject: 'Welcome to Audius!',
+        subject: 'Welcome to Audius! 👋',
         html: welcomeHtml,
         asm: {
           groupId: 19141 // id of unsubscribe group at https://mc.sendgrid.com/unsubscribe-groups

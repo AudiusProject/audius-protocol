@@ -103,7 +103,7 @@ module.exports = function (app) {
         subject: 'Save This Email: Audius Password Recovery',
         html: recoveryHtml,
         asm: {
-          groupId: 19141 // id of unsubscribe group at https://mc.sendgrid.com/unsubscribe-groups
+          groupId: 26666 // same group as otp, exempt from unsubscribing
         }
       }
       try {
