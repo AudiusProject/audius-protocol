@@ -148,6 +148,13 @@ export const validateListenSignature = async (
   const hashedData = keccak256(data)
   const recoveredWallet = recover(hashedData, signature)
   const contentNodes = await getCachedContentNodes()
+
+  // if from identity service
+  if (recoveredWallet === config.identityRelayerPublicKey) {
+    return true
+  }
+
+  // if from registered content node
   for (const { delegateOwnerWallet } of contentNodes) {
     if (recoveredWallet === delegateOwnerWallet) return true
   }
