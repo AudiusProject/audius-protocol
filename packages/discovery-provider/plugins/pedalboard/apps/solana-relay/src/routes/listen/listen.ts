@@ -149,8 +149,6 @@ export const validateListenSignature = async (
   const recoveredWallet = recover(hashedData, signature)
   const contentNodes = await getCachedContentNodes()
 
-  console.log({ recoveredWallet, timestamp, signature, identity: config.identityRelayerPublicKey, contentNodes })
-
   // if from identity service
   if (recoveredWallet === config.identityRelayerPublicKey) {
     return true
@@ -206,8 +204,6 @@ export const listen = async (req: Request, res: Response, next: NextFunction) =>
       return
     }
 
-    console.log("passed validation")
-
     // check rate limit on forwarded IP and track
     const allowed = await listenRouteRateLimiter({ ip, trackId, logger })
     if (!allowed) {
@@ -223,7 +219,7 @@ export const listen = async (req: Request, res: Response, next: NextFunction) =>
     if (e instanceof z.ZodError) {
       logger?.error({ error: String(e) }, "validation error")
       return res
-        .status(404)
+        .status(400)
         .json({ message: 'Validation Error', errors: e.errors })
     }
     if (e instanceof Error) {
