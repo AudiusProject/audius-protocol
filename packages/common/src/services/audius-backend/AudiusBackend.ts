@@ -1,4 +1,6 @@
 import {
+  Genre,
+  Mood,
   type AudiusLibs as AudiusLibsType,
   type DiscoveryNodeSelector,
   type StorageNodeSelectorService
@@ -68,7 +70,8 @@ import {
   Notification,
   IdentityNotification,
   PushNotifications,
-  TrackMetadataForUpload
+  TrackMetadataForUpload,
+  SearchKind
 } from '../../store'
 import {
   getErrorMessage,
@@ -755,7 +758,23 @@ export const audiusBackend = ({
     }
   }
 
-  // TODO(C-2719)
+  type SearchTagsArgs = {
+    query: string
+    userTagCount?: number
+    kind?: SearchKind
+    limit?: number
+    offset?: number
+    genre?: Genre
+    mood?: Mood
+    bpmMin?: string
+    bpmMax?: string
+    key?: string
+    isVerified?: boolean
+    hasDownloads?: boolean
+    isPremium?: boolean
+    sortMethod?: 'recent' | 'relevant' | 'popular'
+  }
+
   async function searchTags({
     query,
     userTagCount,
@@ -769,10 +788,9 @@ export const audiusBackend = ({
     key,
     isVerified,
     hasDownloads,
-    // @ts-ignore - isPremium -> is_purchasable
     isPremium,
     sortMethod
-  }: DiscoveryAPIParams<typeof DiscoveryAPI.searchTags>) {
+  }: SearchTagsArgs) {
     try {
       const searchTags = await withEagerOption(
         {

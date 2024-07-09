@@ -63,10 +63,8 @@ const searchApi = createApi({
             limit: limit || 50,
             offset: offset || 0,
             ...filters,
-            // @ts-ignore
-            bpmMin,
-            // @ts-ignore
-            bpmMax,
+            bpmMin: String(bpmMin),
+            bpmMax: String(bpmMin),
             key: formatMusicalKey(filters.key)
           })
         } else {
