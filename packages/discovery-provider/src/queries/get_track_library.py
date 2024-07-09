@@ -212,6 +212,29 @@ def _get_track_library(args: GetTrackLibraryArgs, session):
     tracks = populate_track_metadata(
         session, track_ids, tracks, current_user_id, track_has_aggregates=True
     )
+
+    # exclude hidden tracks which were not previously purchase by current user
+    track_purchases = set()
+    if track_ids:
+        track_purchases = (
+            session.query(USDCPurchase.content_id)
+            .filter(
+                USDCPurchase.buyer_user_id == user_id,
+                USDCPurchase.content_id.in_(track_ids),
+                USDCPurchase.content_type == "track",
+            )
+            .all()
+        )
+        track_purchases = set([t[0] for t in track_purchases])
+
+    tracks = list(
+        filter(
+            lambda track: not track["is_unlisted"]
+            or track["track_id"] in track_purchases,
+            tracks,
+        )
+    )
+
     tracks = add_users_to_tracks(session, tracks, current_user_id)
 
     for idx, track in enumerate(tracks):
