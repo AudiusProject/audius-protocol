@@ -414,17 +414,29 @@ function* validateEmail(
 }
 
 function* signUp() {
+  const signOn = yield* select(getSignOn)
+  const email = signOn.email.value
+  const password = signOn.password.value
+  const localStorage = yield* getContext('localStorage')
+  const useMetamask = yield* call(
+    [localStorage, localStorage.getItem],
+    'useMetaMask'
+  )
+
+  if (email && password && useMetamask) {
+    yield* call([localStorage, localStorage.removeItem], 'useMetaMask')
+    yield* put(backendActions.setupBackend())
+  }
+
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const { waitForRemoteConfig } = yield* getContext('remoteConfigInstance')
   const getFeatureEnabled = yield* getContext('getFeatureEnabled')
 
   yield* call(waitForWrite)
 
-  const signOn = yield* select(getSignOn)
   const location = yield* call(getCityAndRegion)
   const name = signOn.name.value.trim()
-  const email = signOn.email.value
-  const password = signOn.password.value
+
   const handle = signOn.handle.value
   const alreadyExisted = signOn.accountAlreadyExisted
   const referrer = signOn.referrer
@@ -733,6 +745,17 @@ function* repairSignUp() {
 
 function* signIn(action: ReturnType<typeof signOnActions.signIn>) {
   const { email, password, visitorId, otp } = action
+  const localStorage = yield* getContext('localStorage')
+  const useMetamask = yield* call(
+    [localStorage, localStorage.getItem],
+    'useMetaMask'
+  )
+
+  if (email && password && useMetamask) {
+    yield* call([localStorage, localStorage.removeItem], 'useMetaMask')
+    yield* put(backendActions.setupBackend())
+  }
+
   const fingerprintClient = yield* getContext('fingerprintClient')
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const isNativeMobile = yield* getContext('isNativeMobile')
