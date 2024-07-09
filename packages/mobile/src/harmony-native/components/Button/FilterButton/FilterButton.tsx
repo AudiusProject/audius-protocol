@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import { useControlled } from '@audius/harmony/src/hooks/useControlled'
 import type { ReactNativeStyle } from '@emotion/native'
 import { useTheme } from '@emotion/react'
+import { isNil } from 'lodash'
 
 import { IconCloseAlt, Text } from '@audius/harmony-native'
 
@@ -12,7 +12,7 @@ import type { FilterButtonProps } from './types'
 
 export const FilterButton = (props: FilterButtonProps) => {
   const {
-    value: valueProp,
+    value,
     label,
     onPress,
     onOpen,
@@ -25,13 +25,6 @@ export const FilterButton = (props: FilterButtonProps) => {
 
   const { color, cornerRadius, spacing, typography } = useTheme()
   const [isOpen, setIsOpen] = useState(false)
-
-  const [value, setValue] = useControlled({
-    controlledProp: valueProp,
-    defaultValue: null,
-    stateName: 'value',
-    componentName: 'FilterButton'
-  })
 
   // Size Styles
   const defaultStyles: ReactNativeStyle = {
@@ -62,7 +55,7 @@ export const FilterButton = (props: FilterButtonProps) => {
   }
 
   const activeStyle: ReactNativeStyle =
-    variant !== 'fillContainer' || value === null
+    variant !== 'fillContainer' || isNil(value)
       ? {
           backgroundColor: color.background.surface2,
           borderWidth: 1,
@@ -79,7 +72,7 @@ export const FilterButton = (props: FilterButtonProps) => {
     borderColor: color.border.strong,
     borderRadius: cornerRadius.s,
     color:
-      variant === 'fillContainer' && value !== null
+      variant === 'fillContainer' && !isNil(value)
         ? color.static.white
         : color.text.default,
     gap: spacing.xs,
@@ -90,9 +83,7 @@ export const FilterButton = (props: FilterButtonProps) => {
 
     ...(size === 'small' ? smallStyles : defaultStyles),
     ...(isOpen ? activeStyle : {}),
-    ...(variant === 'fillContainer' && value !== null
-      ? fillContainerStyles
-      : {})
+    ...(variant === 'fillContainer' && !isNil(value) ? fillContainerStyles : {})
   }
 
   const iconStyles = size === 'small' ? smallIconStyles : defaultIconStyles
@@ -107,18 +98,17 @@ export const FilterButton = (props: FilterButtonProps) => {
     if (onPress) {
       onPress()
     } else {
-      if (variant === 'fillContainer' && value !== null) {
-        setValue(null)
+      if (variant === 'fillContainer' && !isNil(value)) {
         onReset?.()
       } else {
         setIsOpen((isOpen: boolean) => !isOpen)
       }
     }
-  }, [onPress, onReset, setValue, value, variant])
+  }, [onPress, onReset, value, variant])
 
   const iconSize = size === 'small' ? 's' : 'm'
   const textColor =
-    value !== null && variant === 'fillContainer' ? 'staticWhite' : 'default'
+    !isNil(value) && variant === 'fillContainer' ? 'staticWhite' : 'default'
 
   return (
     <BaseButton
@@ -132,7 +122,7 @@ export const FilterButton = (props: FilterButtonProps) => {
       }}
       onPress={handlePress}
       iconRight={
-        variant === 'fillContainer' && value !== null ? IconCloseAlt : iconRight
+        variant === 'fillContainer' && !isNil(value) ? IconCloseAlt : iconRight
       }
       disabled={disabled}
       aria-haspopup='listbox'
