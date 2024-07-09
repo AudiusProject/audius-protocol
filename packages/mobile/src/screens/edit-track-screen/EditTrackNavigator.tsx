@@ -16,9 +16,11 @@ import {
   RemixSettingsScreen,
   SelectGenreScreen,
   SelectMoodScreen,
-  ReleaseDateScreen
+  ReleaseDateScreen,
+  KeyBpmScreen
 } from './screens'
 import { NFTCollectionsScreen } from './screens/NFTCollectionsScreen'
+import { SelectKeyScreen } from './screens/SelectKeyScreen'
 import type { EditTrackFormProps } from './types'
 
 const Stack = createNativeStackNavigator()
@@ -38,6 +40,7 @@ export const EditTrackNavigator = (props: EditTrackNavigatorProps) => {
         </Stack.Screen>
         <Stack.Screen name='SelectGenre' component={SelectGenreScreen} />
         <Stack.Screen name='SelectMood' component={SelectMoodScreen} />
+        <Stack.Screen name='SelectKey' component={SelectKeyScreen} />
         <Stack.Screen name='RemixSettings' component={RemixSettingsScreen} />
         <Stack.Screen
           name='ReleaseDate'
@@ -60,6 +63,7 @@ export const EditTrackNavigator = (props: EditTrackNavigatorProps) => {
         <Stack.Screen name='NFTCollections' component={NFTCollectionsScreen} />
         <Stack.Screen name='IsrcIswc' component={IsrcIswcScreen} />
         <Stack.Screen name='LicenseType' component={LicenseTypeScreen} />
+        <Stack.Screen name='KeyBpm' component={KeyBpmScreen} />
       </Stack.Navigator>
       <GatedContentUploadPromptDrawer
         isUpload={!props.initialValues.track_id}
