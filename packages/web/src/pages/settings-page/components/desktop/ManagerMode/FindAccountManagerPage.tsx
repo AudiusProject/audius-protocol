@@ -22,7 +22,7 @@ const messages = {
 }
 
 export const FindAccountManagerPage = (props: FindAccountManagerPageProps) => {
-  const { setPage, params } = props
+  const { setPageState, params } = props
   const [query, setQuery] = useState(params?.query ?? '')
   const userId = useSelector(getUserId)
   const { data: managers } = useGetManagers(
@@ -70,16 +70,19 @@ export const FindAccountManagerPage = (props: FindAccountManagerPageProps) => {
             user={user as any}
             showPopover={false}
             onClickArtistName={() => {
-              setPage(AccountsManagingYouPages.CONFIRM_NEW_MANAGER, {
-                user,
-                query
+              setPageState({
+                page: AccountsManagingYouPages.CONFIRM_NEW_MANAGER,
+                params: {
+                  user,
+                  query
+                }
               })
             }}
           />
         </Box>
       )
     },
-    [query, setPage]
+    [query, setPageState]
   )
 
   return (

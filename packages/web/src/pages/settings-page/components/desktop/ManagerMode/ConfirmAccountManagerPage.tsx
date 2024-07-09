@@ -36,7 +36,7 @@ const messages = {
 export const ConfirmAccountManagerPage = (
   props: ConfirmAccountManagerPageProps
 ) => {
-  const { setPage, params } = props
+  const { setPageState, params } = props
   const userId = useSelector(getUserId)
   const [submitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -46,9 +46,12 @@ export const ConfirmAccountManagerPage = (
   const manager = params?.user
   useEffect(() => {
     if (status === Status.SUCCESS) {
-      setPage(AccountsManagingYouPages.HOME)
+      setPageState({
+        page: AccountsManagingYouPages.HOME,
+        transitionDirection: 'forward'
+      })
     }
-  }, [setPage, status])
+  }, [setPageState, status])
 
   useEffect(() => {
     if (status === Status.ERROR) {
@@ -91,8 +94,11 @@ export const ConfirmAccountManagerPage = (
             iconLeft={IconCaretLeft}
             disabled={submitting}
             onClick={() =>
-              setPage(AccountsManagingYouPages.FIND_ACCOUNT_MANAGER, {
-                query: params?.query
+              setPageState({
+                page: AccountsManagingYouPages.FIND_ACCOUNT_MANAGER,
+                params: {
+                  query: params?.query
+                }
               })
             }
           >

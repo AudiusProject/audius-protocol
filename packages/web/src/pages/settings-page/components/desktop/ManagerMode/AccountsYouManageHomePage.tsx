@@ -22,7 +22,7 @@ const messages = {
 }
 
 export const AccountsYouManageHomePage = ({
-  setPage
+  setPageState
 }: AccountsYouManagePageProps) => {
   const currentUser = useSelector(getAccountUser)
   const userId = currentUser?.user_id
@@ -40,9 +40,12 @@ export const AccountsYouManageHomePage = ({
 
   const handleStopManaging = useCallback(
     ({ userId }: { userId: number; managerUserId: number }) => {
-      setPage(AccountsYouManagePages.STOP_MANAGING, { user_id: userId })
+      setPageState({
+        page: AccountsYouManagePages.STOP_MANAGING,
+        params: { user_id: userId }
+      })
     },
-    [setPage]
+    [setPageState]
   )
 
   return (
