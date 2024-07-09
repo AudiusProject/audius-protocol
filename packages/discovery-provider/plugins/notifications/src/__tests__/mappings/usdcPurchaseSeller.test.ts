@@ -114,7 +114,7 @@ describe('USDC Purchase Seller', () => {
     expect(sendTransactionalEmailSpy).toHaveBeenCalledWith({
       email: 'user_1@gmail.com',
       html: expect.anything(),
-      subject: 'Your Track Has Been Purchased'
+      subject: "Congrats! You've made a sale on Audius!"
     })
   })
 

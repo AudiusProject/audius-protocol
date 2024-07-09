@@ -56,7 +56,7 @@ describe('USDC Withdrawal', () => {
     expect(sendTransactionalEmailSpy).toHaveBeenCalledWith({
       email: 'user_1@gmail.com',
       html: expect.anything(),
-      subject: 'Your Withdrawal Has Been Started'
+      subject: 'Your USDC Transfer is Complete!'
     })
   })
 })
