@@ -257,6 +257,9 @@ const RenderForm = ({
   const dispatch = useDispatch()
   const { primary } = useThemeColors()
   const presetValues = usePayExtraPresets()
+  const { isEnabled: isCoinflowEnabled } = useFeatureFlag(
+    FeatureFlags.BUY_WITH_COINFLOW
+  )
   const { isEnabled: isIOSUSDCPurchaseEnabled } = useFeatureFlag(
     FeatureFlags.IOS_USDC_PURCHASE_ENABLED
   )
@@ -284,9 +287,6 @@ const RenderForm = ({
     price,
     currentBalance: balance
   })
-  const { isEnabled: isCoinflowEnabled } = useFeatureFlag(
-    FeatureFlags.BUY_WITH_COINFLOW
-  )
   const coinflowMaximumCents = useRemoteVar(IntKeys.COINFLOW_MAXIMUM_CENTS)
 
   const { isExistingBalanceDisabled, totalPriceInCents } = usePurchaseMethod({
