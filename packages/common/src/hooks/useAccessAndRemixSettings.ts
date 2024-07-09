@@ -11,6 +11,7 @@ import { getSupportedUserCollections } from '~/store/collectibles/selectors'
 import { Nullable } from '~/utils/typeUtils'
 
 type UseAccessAndRemixSettingsProps = {
+  isEditableAccessEnabled: boolean
   isUpload: boolean
   isRemix: boolean
   isAlbum?: boolean
@@ -43,6 +44,7 @@ export const useHasNoCollectibles = () => {
  * NOTE: this logic is different from the logic using feature flags. to determine whether options should render or not; just whether or not they should be disabled
  */
 export const useAccessAndRemixSettings = ({
+  isEditableAccessEnabled,
   isUpload,
   isRemix,
   isAlbum = false,
@@ -114,6 +116,17 @@ export const useAccessAndRemixSettings = ({
 
   const disableHidden =
     isAlbum || isScheduledRelease || (!isUpload && !isInitiallyUnlisted)
+
+  if (isEditableAccessEnabled) {
+    return {
+      disableUsdcGate: isRemix || shouldDisablePublish,
+      disableSpecialAccessGate: isAlbum || isRemix || shouldDisablePublish,
+      disableSpecialAccessGateFields: isAlbum || isRemix || shouldDisablePublish,
+      disableCollectibleGate: isAlbum || isRemix || shouldDisablePublish,
+      disableCollectibleGateFields: isAlbum || isRemix || shouldDisablePublish,
+      disableHidden: isAlbum || isScheduledRelease
+    }
+  }
 
   return {
     disableUsdcGate,

@@ -1,5 +1,6 @@
 import {
   useAccessAndRemixSettings,
+  useFeatureFlag,
   useHasNoCollectibles
 } from '@audius/common/hooks'
 import {
@@ -12,6 +13,7 @@ import { ModalRadioItem } from 'components/modal-radio/ModalRadioItem'
 
 import { CollectibleGatedDescription } from './CollectibleGatedDescription'
 import { CollectibleGatedFields } from './CollectibleGatedFields'
+import { FeatureFlags } from '@audius/common/services'
 
 const messages = {
   collectibleGated: 'Collectible Gated',
@@ -40,11 +42,15 @@ export const CollectibleGatedRadioField = (
     isInitiallyUnlisted
   } = props
 
+  const { isEnabled: isEditableAccessEnabled } = useFeatureFlag(
+    FeatureFlags.EDITABLE_ACCESS_ENABLED
+  )
   const hasNoCollectibles = useHasNoCollectibles()
   const {
     disableCollectibleGate: disabled,
     disableCollectibleGateFields: fieldsDisabled
   } = useAccessAndRemixSettings({
+    isEditableAccessEnabled: !!isEditableAccessEnabled,
     isUpload: !!isUpload,
     isRemix,
     initialStreamConditions: initialStreamConditions ?? null,
