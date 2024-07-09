@@ -35,9 +35,9 @@ type ViewerActionButtonProps = {
   isDarkMode?: boolean
   isMatrixMode: boolean
   showIconButtons?: boolean
-  onClickRepost: (e?: any) => void
-  onClickFavorite: (e?: any) => void
-  onClickShare: (e?: any) => void
+  onClickRepost: (e: MouseEvent) => void
+  onClickFavorite: (e?: MouseEvent) => void
+  onClickShare: (e?: MouseEvent) => void
   onClickGatedUnlockPill?: (e: MouseEvent) => void
 }
 

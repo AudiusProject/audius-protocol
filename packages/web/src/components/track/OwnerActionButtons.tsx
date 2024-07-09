@@ -1,4 +1,4 @@
-import { ReactNode, useCallback } from 'react'
+import { MouseEventHandler, ReactNode, useCallback } from 'react'
 
 import { useGetPlaylistById, useGetTrackById } from '@audius/common/api'
 import { ID } from '@audius/common/models'
@@ -38,7 +38,7 @@ type OwnerActionButtonProps = {
   isDarkMode?: boolean
   isMatrixMode: boolean
   showIconButtons?: boolean
-  onClickShare: (e?: any) => void
+  onClickShare: MouseEventHandler<HTMLButtonElement>
 }
 
 export const OwnerActionButtons = ({
@@ -60,12 +60,10 @@ export const OwnerActionButtons = ({
 
   const onStopPropagation = useCallback((e: any) => e.stopPropagation(), [])
 
-  // TODO: move this up a level
   const handleEdit = useCallback(() => {
     onEditTrackOpen({ trackId: contentId })
   }, [onEditTrackOpen, contentId])
 
-  // TODO: move this up a level
   const handlePublishClick = useCallback(() => {
     dispatch(
       openPublishTrackConfirmationModal({
