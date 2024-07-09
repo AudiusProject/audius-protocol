@@ -23,6 +23,7 @@ type SearchCategoryProps = {
 const SearchCategory = (props: SearchCategoryProps) => {
   const { category } = props
   const [currentCategory, setCategory] = useSearchCategory()
+  const [, setFilters] = useSearchFilters()
   const isSelected = currentCategory === category
 
   const labelByCategory = {
@@ -40,9 +41,11 @@ const SearchCategory = (props: SearchCategoryProps) => {
       value={category}
       label={labelByCategory[category]}
       isSelected={isSelected}
-      onChange={(value, isSelected) =>
+      onChange={(value, isSelected) => {
+        // Clear Filters and change category
+        setFilters({})
         setCategory(isSelected ? (value as SearchCategoryType) : 'all')
-      }
+      }}
       icon={isSelected ? IconCloseAlt : undefined}
     />
   )
