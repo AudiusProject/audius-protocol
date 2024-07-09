@@ -45,7 +45,7 @@ export const initialState: BasicModalsState = {
   LockedContent: { isOpen: false },
   PlaybackRate: { isOpen: false },
   ProfileActions: { isOpen: false },
-  PublishPlaylistConfirmation: { isOpen: false },
+  PublishContentModal: { isOpen: false },
   AlbumTrackRemoveConfirmation: { isOpen: false },
   AiAttributionSettings: { isOpen: false },
   PremiumContentPurchaseModal: { isOpen: false },

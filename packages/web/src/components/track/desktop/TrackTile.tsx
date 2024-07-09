@@ -1,7 +1,6 @@
 import { memo } from 'react'
 
 import { ModalSource, isContentUSDCPurchaseGated } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import {
   accountSelectors,
   usePremiumContentPurchaseModal,
@@ -33,20 +32,20 @@ import { TextLink } from 'components/link'
 import Skeleton from 'components/skeleton/Skeleton'
 import { VisibilityLabel } from 'components/visibility-label/VisibilityLabel'
 import { useAuthenticatedClickCallback } from 'hooks/useAuthenticatedCallback'
-import { useFlag } from 'hooks/useRemoteConfig'
 
 import {
   LockedStatusPill,
   LockedStatusPillProps
 } from '../../locked-status-pill'
 import { GatedContentLabel } from '../GatedContentLabel'
+import { OwnerActionButtons } from '../OwnerActionButtons'
+import { ViewerActionButtons } from '../ViewerActionButtons'
 import { messages } from '../trackTileMessages'
 import {
   TrackTileSize,
   DesktopTrackTileProps as TrackTileProps
 } from '../types'
 
-import { BottomRow } from './BottomRow'
 import styles from './TrackTile.module.css'
 
 const { getUserId } = accountSelectors
@@ -122,8 +121,6 @@ const TrackTile = ({
   size,
   order,
   standalone,
-  isFavorited,
-  isReposted,
   isOwner,
   isUnlisted,
   isScheduledRelease,
@@ -163,11 +160,6 @@ const TrackTile = ({
   releaseDate,
   source
 }: TrackTileProps) => {
-  const { isEnabled: isNewPodcastControlsEnabled } = useFlag(
-    FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
-    FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
-  )
-
   const currentUserId = useSelector(getUserId)
   const trackPositionInfo = useSelector((state: CommonState) =>
     getTrackPosition(state, { trackId, userId: currentUserId })
@@ -201,11 +193,7 @@ const TrackTile = ({
   const getDurationText = () => {
     if (duration === null || duration === undefined) {
       return ''
-    } else if (
-      isLongFormContent &&
-      isNewPodcastControlsEnabled &&
-      trackPositionInfo
-    ) {
+    } else if (isLongFormContent && trackPositionInfo) {
       if (trackPositionInfo.status === 'IN_PROGRESS') {
         const remainingTime = duration - trackPositionInfo.playbackPosition
         return (
@@ -367,30 +355,40 @@ const TrackTile = ({
               : null}
           </Text>
         </Flex>
-        {isTrack ? (
+        {isTrack && trackId ? (
           <>
             <div className={styles.divider} />
-            <BottomRow
-              hasStreamAccess={hasStreamAccess}
-              isDisabled={isDisabled}
-              isLoading={isLoading}
-              isFavorited={isFavorited}
-              isReposted={isReposted}
-              rightActions={rightActions}
-              bottomBar={bottomBar}
-              isUnlisted={isUnlisted}
-              fieldVisibility={fieldVisibility}
-              isOwner={isOwner}
-              isDarkMode={isDarkMode}
-              isMatrixMode={isMatrixMode}
-              showIconButtons={showIconButtons}
-              onClickRepost={onClickRepost}
-              onClickFavorite={onClickFavorite}
-              onClickShare={onClickShare}
-              onClickGatedUnlockPill={onClickGatedUnlockPill}
-              streamConditions={streamConditions}
-              trackId={trackId}
-            />
+            {isOwner ? (
+              <OwnerActionButtons
+                contentId={trackId}
+                contentType='track'
+                isDisabled={isDisabled}
+                isLoading={isLoading}
+                rightActions={rightActions}
+                bottomBar={bottomBar}
+                isDarkMode={isDarkMode}
+                isMatrixMode={isMatrixMode}
+                showIconButtons={showIconButtons}
+                onClickShare={onClickShare}
+              />
+            ) : (
+              <ViewerActionButtons
+                contentId={trackId}
+                contentType='track'
+                hasStreamAccess={hasStreamAccess}
+                isDisabled={isDisabled}
+                isLoading={isLoading}
+                rightActions={rightActions}
+                bottomBar={bottomBar}
+                isDarkMode={isDarkMode}
+                isMatrixMode={isMatrixMode}
+                showIconButtons={showIconButtons}
+                onClickRepost={onClickRepost}
+                onClickFavorite={onClickFavorite}
+                onClickShare={onClickShare}
+                onClickGatedUnlockPill={onClickGatedUnlockPill}
+              />
+            )}
           </>
         ) : null}
       </div>

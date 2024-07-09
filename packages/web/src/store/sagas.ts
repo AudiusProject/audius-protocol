@@ -10,7 +10,6 @@ import {
   deletePlaylistConfirmationModalUISagas as deletePlaylistConfirmationModalSagas,
   duplicateAddConfirmationModalUISagas as duplicateAddConfirmationModalSagas,
   mobileOverflowMenuUISagas as overflowMenuSagas,
-  publishPlaylistConfirmationModalUISagas as publishPlaylistConfirmationModalSagas,
   shareModalUISagas as shareModalSagas,
   stripeModalUISagas as stripeModalSagas,
   vipDiscordModalSagas,
@@ -208,7 +207,6 @@ export default function* rootSaga() {
     userListModalSagas(),
     vipDiscordModalSagas(),
     commonReachabilitySagas(),
-    publishPlaylistConfirmationModalSagas(),
 
     // Remote config
     remoteConfigSagas(),

@@ -1,11 +1,15 @@
-import { useCallback } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import {
   cacheCollectionsActions,
-  publishPlaylistConfirmationModalUISelectors
+  trackPageActions,
+  cacheTracksSelectors,
+  toastActions,
+  usePublishContentModal
 } from '@audius/common/store'
 import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
+import { usePrevious } from 'react-use'
 
 import { IconRocket, Button } from '@audius/harmony-native'
 import { Text } from 'app/components/core'
@@ -13,17 +17,18 @@ import { useManualToast } from 'app/hooks/useManualToast'
 import { makeStyles } from 'app/styles'
 import { useColor } from 'app/utils/theme'
 
-import { useDrawerState } from '../drawer'
 import Drawer from '../drawer/Drawer'
 import LoadingSpinner from '../loading-spinner/LoadingSpinner'
 
 const { publishPlaylist } = cacheCollectionsActions
-const { getPlaylistId } = publishPlaylistConfirmationModalUISelectors
+const { makeTrackPublic } = trackPageActions
+const { getTrack } = cacheTracksSelectors
+const { manualClearToast } = toastActions
 
 const messages = {
   drawerTitle: 'Make Public',
-  drawerBody:
-    'Are you sure you want to make this playlist public? It will be shared to your feed and your followers will be notified.',
+  drawerBody: (type: 'playlist' | 'album' | 'track') =>
+    `Ready to release your new ${type}? Your followers will be notified and your ${type} will be released to the public.`,
   buttonConfirmText: 'Make Public',
   buttonCancelText: 'Cancel',
   publishingPlaylistText: 'Making public...'
@@ -71,13 +76,41 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
   }
 }))
 
-export const PublishPlaylistDrawer = () => {
+export const PublishContentDrawer = () => {
   const dispatch = useDispatch()
-  const playlistId = useSelector(getPlaylistId)
   const neutral = useColor('neutral')
   const { toast } = useManualToast()
   const styles = useStyles()
-  const { isOpen, onClose } = useDrawerState('PublishPlaylistConfirmation')
+  const {
+    isOpen,
+    onClose,
+    data: { contentId, contentType }
+  } = usePublishContentModal()
+  const [dismissToastKey, setDismissToastKey] = useState<string | undefined>()
+  const currentTrack = useSelector((state) =>
+    getTrack(state, { id: contentId })
+  )
+
+  const previousIsPublishingTrack = usePrevious(currentTrack?._is_publishing)
+
+  // (Tracks only) - Check for changes to is_publishing to dismiss the toast
+  useEffect(() => {
+    if (
+      dismissToastKey &&
+      contentType === 'track' &&
+      previousIsPublishingTrack === true &&
+      currentTrack?._is_publishing === false
+    ) {
+      dispatch(manualClearToast({ key: dismissToastKey }))
+    }
+  }, [
+    contentType,
+    currentTrack,
+    currentTrack?._is_publishing,
+    dismissToastKey,
+    dispatch,
+    previousIsPublishingTrack
+  ])
 
   const displayPublishToast = useCallback(() => {
     const publishingPlaylistToastContent = (
@@ -90,15 +123,28 @@ export const PublishPlaylistDrawer = () => {
     )
 
     return toast({ content: publishingPlaylistToastContent })
-  }, [toast, styles])
+  }, [styles.toastContainer, styles.spinner, toast])
 
   const handlePublish = useCallback(() => {
-    if (playlistId) {
-      const { key: dismissToastKey } = displayPublishToast()
-      dispatch(publishPlaylist(playlistId, dismissToastKey))
-      onClose()
+    // Publish playlist
+    const { key: dismissToastKey } = displayPublishToast()
+    setDismissToastKey(dismissToastKey)
+
+    if (contentId && contentType === 'playlist') {
+      dispatch(publishPlaylist(contentId, dismissToastKey))
     }
-  }, [dispatch, onClose, playlistId, displayPublishToast])
+    // Publish track
+    if (contentId && contentType === 'track') {
+      dispatch(makeTrackPublic(contentId))
+    }
+    onClose()
+  }, [contentId, contentType, displayPublishToast, dispatch, onClose])
+
+  // Content type should never be null but would cause issues if we continued with it null
+  // The types allow null solely for the default store state use case
+  if (contentType === null) {
+    return null
+  }
 
   return (
     <Drawer isOpen={isOpen} onClose={onClose}>
@@ -115,7 +161,7 @@ export const PublishPlaylistDrawer = () => {
           </Text>
         </View>
         <Text style={styles.body} fontSize='large' weight='medium'>
-          {messages.drawerBody}
+          {messages.drawerBody(contentType)}
         </Text>
         <View style={styles.buttonContainer}>
           <Button
