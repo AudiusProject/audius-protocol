@@ -2,7 +2,7 @@ const getOtpEmail = ({ otp, copyrightYear }) => {
   return `
   <!doctype html>
   <html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
-  
+
   <head>
   <meta charset="utf-8" />
   <meta content="width=device-width" name="viewport" />
@@ -28,7 +28,7 @@ const getOtpEmail = ({ otp, copyrightYear }) => {
       margin: 0 !important;
       padding: 0 !important;
   }
-  
+
   * {
       -ms-text-size-adjust: 100%;
       -webkit-text-size-adjust: 100%;
@@ -59,7 +59,7 @@ const getOtpEmail = ({ otp, copyrightYear }) => {
           min-width: 414px !important;
       }
   }
-  
+
   </style>
   <!--[if gte mso 9]>
           <xml>
@@ -71,7 +71,7 @@ const getOtpEmail = ({ otp, copyrightYear }) => {
           <![endif]-->
   <style>
   @media only screen and (max-device-width: 599px), only screen and (max-width: 599px) {
-  
+
       .eh {
           height:auto !important;
       }
@@ -105,46 +105,46 @@ const getOtpEmail = ({ otp, copyrightYear }) => {
       .wid-auto {
           width:auto !important;
       }
-  
+
       .table-w-full-mobile {
           width: 100%;
       }
-  
+
       
       
-  
+
       .mobile-center {
           text-align: center;
       }
-  
+
       .mobile-center > table {
           display: inline-block;
           vertical-align: inherit;
       }
-  
+
       .mobile-left {
           text-align: left;
       }
-  
+
       .mobile-left > table {
           display: inline-block;
           vertical-align: inherit;
       }
-  
+
       .mobile-right {
           text-align: right;
       }
-  
+
       .mobile-right > table {
           display: inline-block;
           vertical-align: inherit;
       }
-  
+
   }
-  
+
   </style>
   </head>
-  
+
   <body width="100%" style="background-color:#e9e9eb;margin:0;padding:0!important;mso-line-height-rule:exactly;">
   <div style="background-color:#e9e9eb">
   <!--[if gte mso 9]>
@@ -176,7 +176,7 @@ const getOtpEmail = ({ otp, copyrightYear }) => {
   <table cellspacing="0" cellpadding="0" border="0">
   <tr>
   <td style="vertical-align: middle;" width="224" align="center"><img src="https://download.audius.co/otp-email/qIQFWyjCV3zgmD1szUv72xc3ksmpzo.jpeg" width="224" border="0" style="max-width:224px; width: 100%;
-           height: auto; display: block;"></td>
+          height: auto; display: block;"></td>
   </tr>
   </table>
   </td>
@@ -279,7 +279,7 @@ const getOtpEmail = ({ otp, copyrightYear }) => {
   <table cellspacing="0" cellpadding="0" border="0">
   <tr>
   <td style="vertical-align: middle;" align="center">
-  <div style="line-height:14px;text-align:left;"><span style="color:#52505f;font-family:Inter,Arial,sans-serif;font-size:12px;line-height:14px;text-align:left;">This code will expire in 10 minutes.</span></div>
+  <div style="line-height:14px;text-align:center;"><span style="color:#52505f;font-family:Inter,Arial,sans-serif;font-size:12px;line-height:14px;text-align:center;">This code will expire in 10 minutes. <br><br>If you didn’t make this request, please change your password.</span></div>
   </td>
   </tr>
   </table>
@@ -356,7 +356,7 @@ const getOtpEmail = ({ otp, copyrightYear }) => {
   </tr>
   <tr>
   <td width="24"><img src="https://download.audius.co/otp-email/lG9OMpWZZ229WdHzcggAJwqpl1rt7D.png" width="24" border="0" style="min-width:24px; width:24px;
-           height: auto; display: block;"></td>
+          height: auto; display: block;"></td>
   </tr>
   <tr>
   <td height="16" style="height:16px; min-height:16px; line-height:16px;"></td>
@@ -403,7 +403,7 @@ const getOtpEmail = ({ otp, copyrightYear }) => {
   </tr>
   <tr>
   <td style="vertical-align: middle;" align="center">
-  <div style="line-height:20px;text-align:center;"><span style="color:#cc0fe0;font-family:Inter,Arial,sans-serif;font-size:15px;line-height:20px;text-align:center;text-decoration:underline;">Visit Audius Support</span></div>
+  <div style="line-height:20px;text-align:center;"><a href="https://help.audius.co"><span style="color:#cc0fe0;font-family:Inter,Arial,sans-serif;font-size:15px;line-height:20px;text-align:center;text-decoration:underline;">Visit Audius Support</span></a></div>
   </td>
   </tr>
   </table>
@@ -431,7 +431,7 @@ const getOtpEmail = ({ otp, copyrightYear }) => {
   <td height="24" style="height:24px; min-height:24px; line-height:24px;"></td>
   </tr>
   <tr>
-  <td width="100%" align="center" class="Z4mhke0ZNGrkz2iorzyhsjsPJGeLbL invert-bg" style="vertical-align: middle; background-repeat:no-repeat !important; background-position: center center !important; background-size: cover !important;border-radius:12px; border-collapse:separate !important; padding-left:24px; padding-right:24px;" background="https://download.audius.co/otp-email/Z4mhke0ZNGrkz2iorzyhsjsPJGeLbL.png">
+  <td width="100%" align="center" class="Oiu4JCYLgxzifKn2u1Ao8jKSMSZZgR invert-bg" style="vertical-align: middle; background-repeat:no-repeat !important; background-position: center center !important; background-size: cover !important;border-radius:12px; border-collapse:separate !important; padding-left:24px; padding-right:24px;" background="https://download.audius.co/otp-email/Z4mhke0ZNGrkz2iorzyhsjsPJGeLbL.png">
   <!--[if gte mso 9]>
                   <v:image xmlns:v="urn:schemas-microsoft-com:vml" fill="true" stroke="false" style=" border: 0;display: inline-block; width: 552px; height:182px;"
                   src="https://download.audius.co/otp-email/Z4mhke0ZNGrkz2iorzyhsjsPJGeLbL.png"
@@ -476,10 +476,10 @@ const getOtpEmail = ({ otp, copyrightYear }) => {
   <table class="table-w-full-mobile" border="0" cellpadding="0" cellspacing="0">
   <tr>
   <td style="vertical-align: middle;" class="stack-column-center" align="center"><a href="https://apps.apple.com/us/app/audius-music/id1491270519"><img src="https://download.audius.co/otp-email/8iTgTOaaiwRWb8uRr4oZdK5L1QGrG4.png" width="142" border="0" style="min-width:142px; width:142px;
-           height: auto; display: block;"></a></td>
+          height: auto; display: block;"></a></td>
   <td class="stack-column-center" height="12" style="width:12px; min-width:12px; height:12px; min-height:12px;" width="12"></td>
   <td style="vertical-align: middle;" class="stack-column-center" align="center"><a href="https://play.google.com/store/apps/details?id=co.audius.app&hl=en_US&gl=US"><img src="https://download.audius.co/otp-email/NGijEbnPxazoCCBikLQCvcF8Z0q2C5.png" width="166" border="0" style="min-width:166px; width:166px;
-           height: auto; display: block;"></a></td>
+          height: auto; display: block;"></a></td>
   </tr>
   </table>
   </td>
@@ -576,16 +576,16 @@ const getOtpEmail = ({ otp, copyrightYear }) => {
   <table width="100%" border="0" cellpadding="0" cellspacing="0">
   <tr>
   <td style="vertical-align: middle;"><a href="https://twitter.com/audius"><img src="https://download.audius.co/otp-email/1m7EkfYSkLovQaAoa7vTgx23UexqJ1.png" width="24" border="0" style="min-width:24px; width:24px;
-           height: auto; display: block;"></a></td>
+          height: auto; display: block;"></a></td>
   <td style="width:16px; min-width:16px;" width="16"></td>
   <td style="vertical-align: middle;"><a href="https://www.instagram.com/audius/"><img src="https://download.audius.co/otp-email/7UFlMNIXrXJgupPPV4ZxeIv0iuAzeL.png" width="24" border="0" style="min-width:24px; width:24px;
-           height: auto; display: block;"></a></td>
+          height: auto; display: block;"></a></td>
   <td style="width:16px; min-width:16px;" width="16"></td>
   <td style="vertical-align: middle;"><a href="https://tiktok.com/@audius"><img src="https://download.audius.co/otp-email/kREPF5mLWgYcrf2QbtuNPWS24I6FJK.png" width="24" border="0" style="min-width:24px; width:24px;
-           height: auto; display: block;"></a></td>
+          height: auto; display: block;"></a></td>
   <td style="width:16px; min-width:16px;" width="16"></td>
   <td style="vertical-align: middle;"><a href="https://www.youtube.com/@AudiusMusic"><img src="https://download.audius.co/otp-email/wR9Fi09CPhxJRLkeTxWd2W1l2Hs2QM.png" width="24" border="0" style="min-width:24px; width:24px;
-           height: auto; display: block;"></a></td>
+          height: auto; display: block;"></a></td>
   </tr>
   </table>
   </td>
@@ -812,7 +812,6 @@ const getOtpEmail = ({ otp, copyrightYear }) => {
   </table>
   </div>
   </body>
-  
   </html>
 `
 }

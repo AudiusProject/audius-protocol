@@ -1,6 +1,8 @@
 import time
 
 from src.api.v1.helpers import extend_playlist
+from src.queries.query_helpers import filter_playlists_with_only_hidden_tracks
+from src.utils.db_session import get_db_read_replica
 from src.utils.elasticdsl import (
     ES_PLAYLISTS,
     ES_USERS,
@@ -69,11 +71,26 @@ def get_top_playlists_es(kind, args):
         source_excludes=["saved_by", "reposted_by", "tracks"],
     )
 
+    playlist_track_ids = set()
     playlists = []
     for hit in found["hits"]["hits"]:
         p = hit["_source"]
         p["score"] = hit["_score"]
         playlists.append(p)
+        track_ids = set(
+            map(
+                lambda t: t["track"],
+                p.get("playlist_contents", {}).get("track_ids", []),
+            )
+        )
+        playlist_track_ids = playlist_track_ids.union(track_ids)
+
+    # exclude playlists with only hidden tracks and empty playlists
+    db = get_db_read_replica()
+    with db.scoped_session() as session:
+        playlists = filter_playlists_with_only_hidden_tracks(
+            session, playlists, playlist_track_ids
+        )
 
     # with users behavior
     user_id_set = set([str(p["playlist_owner_id"]) for p in playlists])

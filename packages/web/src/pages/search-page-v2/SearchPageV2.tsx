@@ -1,5 +1,6 @@
 import { useCallback, useContext, useEffect } from 'react'
 
+import { SearchCategory } from '@audius/common/src/api/search'
 import { Flex } from '@audius/harmony'
 import { generatePath, useParams } from 'react-router-dom'
 import { useSearchParams } from 'react-router-dom-v5-compat'
@@ -90,7 +91,10 @@ export const SearchPageV2 = () => {
     <PageComponent
       title={query ?? 'Search'}
       description={`Search results for ${query}`}
-      canonicalUrl={fullSearchResultsPageV2(category, query ?? '')}
+      canonicalUrl={fullSearchResultsPageV2(
+        category as SearchCategory,
+        query ?? ''
+      )}
       header={header}
     >
       <Flex direction='column' w='100%'>

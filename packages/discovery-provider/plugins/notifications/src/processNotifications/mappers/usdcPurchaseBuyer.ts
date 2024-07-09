@@ -185,7 +185,7 @@ export class USDCPurchaseBuyer extends BaseNotification<USDCPurchaseBuyerRow> {
         total: this.totalAmount,
         vendor: this.vendor
       }),
-      subject: 'Thank You For Your Support'
+      subject: 'Thank you for your purchase!'
     })
   }
 

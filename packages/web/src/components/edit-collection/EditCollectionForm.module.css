@@ -1,5 +1,5 @@
 .root {
-  display: inline-flex;
+  display: flex;
   flex-direction: column;
   gap: var(--harmony-unit-2);
   min-width: 640px;

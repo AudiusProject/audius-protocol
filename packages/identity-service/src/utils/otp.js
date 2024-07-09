@@ -91,7 +91,7 @@ const sendOtp = async ({ email, redis, sendgrid }) => {
     subject: 'Your Audius Verification Code',
     html,
     asm: {
-      groupId: 26666 // id of unsubscribe group at https://mc.sendgrid.com/unsubscribe-groups
+      groupId: 26666 // group exempt from unsubscribing
     }
   }
 

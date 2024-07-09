@@ -18,6 +18,7 @@ from src.queries.query_helpers import (
     LibraryFilterType,
     SortDirection,
     add_query_pagination,
+    filter_playlists_with_only_hidden_tracks,
     populate_playlist_metadata,
 )
 from src.utils import helpers
@@ -146,7 +147,6 @@ def _get_collection_library(args: GetCollectionLibraryArgs, session):
         .join(Playlist, Playlist.playlist_id == subquery.c.item_id)
         .filter(
             Playlist.is_current == True,
-            or_(Playlist.is_private == False, Playlist.playlist_owner_id == user_id),
             Playlist.is_album == (collection_type == CollectionType.album),
         )
     )
@@ -213,6 +213,48 @@ def _get_collection_library(args: GetCollectionLibraryArgs, session):
             )
         ],
         user_id,
+    )
+
+    # exclude hidden playlists and hidden albums which were not previously purchase by current user
+    album_purchases = set()
+    album_ids = (
+        [p["playlist_id"] for p in playlists]
+        if collection_type == CollectionType.album
+        else []
+    )
+    if album_ids:
+        album_purchases = (
+            session.query(USDCPurchase.content_id)
+            .filter(
+                USDCPurchase.buyer_user_id == user_id,
+                USDCPurchase.content_id.in_(album_ids),
+                USDCPurchase.content_type == "album",
+            )
+            .all()
+        )
+        album_purchases = set([p[0] for p in album_purchases])
+
+    playlists = list(
+        filter(
+            lambda playlist: not playlist["is_private"]
+            or playlist["playlist_id"] in album_purchases,
+            playlists,
+        )
+    )
+
+    playlist_track_ids = set()
+    for playlist in playlists:
+        track_ids = set(
+            map(
+                lambda t: t["track"],
+                playlist.get("playlist_contents", {}).get("track_ids", []),
+            )
+        )
+        playlist_track_ids = playlist_track_ids.union(track_ids)
+
+    # exclude playlists with only hidden tracks and empty playlists
+    playlists = filter_playlists_with_only_hidden_tracks(
+        session, playlists, playlist_track_ids, ignore_ids=list(album_purchases)
     )
 
     # attach users

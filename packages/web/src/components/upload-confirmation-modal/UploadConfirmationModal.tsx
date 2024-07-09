@@ -4,12 +4,13 @@ import { uploadConfirmationModalUISelectors } from '@audius/common/store'
 import {
   Modal,
   ModalContent,
-  ModalContentText,
   ModalHeader,
   ModalTitle,
   ModalFooter,
   IconCloudUpload as IconUpload,
-  Button
+  Button,
+  Text,
+  Flex
 } from '@audius/harmony'
 
 import { useModalState } from 'common/hooks/useModalState'
@@ -47,11 +48,13 @@ export const UploadConfirmationModal = () => {
         <ModalTitle icon={<IconUpload />} title={messages.title} />
       </ModalHeader>
       <ModalContent>
-        <ModalContentText>
-          {hasPublicTracks
-            ? messages.publicDescription
-            : messages.hiddenDescription}
-        </ModalContentText>
+        <Flex justifyContent='center'>
+          <Text variant='body' size='l' textAlign='center'>
+            {hasPublicTracks
+              ? messages.publicDescription
+              : messages.hiddenDescription}
+          </Text>
+        </Flex>
       </ModalContent>
       <ModalFooter>
         <Button variant='secondary' fullWidth onClick={onClose}>

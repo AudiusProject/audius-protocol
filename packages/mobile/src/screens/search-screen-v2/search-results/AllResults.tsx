@@ -8,6 +8,7 @@ import { Divider, Flex, Text } from '@audius/harmony-native'
 import { SectionList } from 'app/components/core'
 import { WithLoader } from 'app/components/with-loader/WithLoader'
 
+import { NoResultsTile } from '../NoResultsTile'
 import { SearchItem } from '../SearchItem'
 import { useGetSearchResults } from '../searchState'
 
@@ -68,26 +69,33 @@ export const AllResults = () => {
     [data]
   )
 
+  const hasNoResults =
+    (!data || sections.length === 0) && status === Status.SUCCESS
+
   // TODO: we should add a better loading state here
   return (
     <Flex onTouchStart={Keyboard.dismiss}>
       <WithLoader loading={status === Status.LOADING}>
-        <SectionList<SearchItemType>
-          keyboardShouldPersistTaps='always'
-          stickySectionHeadersEnabled={false}
-          sections={sections}
-          keyExtractor={({ id, kind }) => `${kind}-${id}`}
-          renderItem={({ item }) => (
-            <Flex ph='l'>
-              <SearchItem searchItem={item} />
-            </Flex>
-          )}
-          renderSectionHeader={({ section: { title } }) => (
-            <Flex ph='l' mt='l'>
-              <SearchSectionHeader title={title} />
-            </Flex>
-          )}
-        />
+        {hasNoResults ? (
+          <NoResultsTile />
+        ) : (
+          <SectionList<SearchItemType>
+            keyboardShouldPersistTaps='always'
+            stickySectionHeadersEnabled={false}
+            sections={sections}
+            keyExtractor={({ id, kind }) => `${kind}-${id}`}
+            renderItem={({ item }) => (
+              <Flex ph='l'>
+                <SearchItem searchItem={item} />
+              </Flex>
+            )}
+            renderSectionHeader={({ section: { title } }) => (
+              <Flex ph='l' mt='l'>
+                <SearchSectionHeader title={title} />
+              </Flex>
+            )}
+          />
+        )}
       </WithLoader>
     </Flex>
   )

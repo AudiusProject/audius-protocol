@@ -61,7 +61,7 @@ export class USDCTransfer extends BaseNotification<USDCTransferRow> {
         wallet: this.receiverAccount,
         signature: this.signature
       }),
-      subject: 'Your Transfer Has Been Started'
+      subject: 'Your USDC Transfer is Complete!'
     })
   }
 }

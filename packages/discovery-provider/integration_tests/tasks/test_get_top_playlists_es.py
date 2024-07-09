@@ -14,13 +14,14 @@ logger = logging.getLogger(__name__)
 esclient = Elasticsearch(os.environ["audius_elasticsearch_url"])
 
 entities = {
-    "users": [{"user_id": 1}, {"user_id": 2}, {"user_id": 3}],
+    "users": [{"user_id": 1}, {"user_id": 2}, {"user_id": 3}, {"user_id": 4}],
     "follows": [
         {"follower_user_id": 1, "followee_user_id": 2},
     ],
     "tracks": [
         {"track_id": 1, "owner_id": 2, "genre": "Electronic"},
         {"track_id": 2, "owner_id": 3, "genre": "Electronic"},
+        {"track_id": 3, "owner_id": 4, "genre": "Electronic", "is_unlisted": True},
     ],
     "playlists": [
         {
@@ -32,6 +33,11 @@ entities = {
             "playlist_id": 2,
             "playlist_owner_id": 3,
             "playlist_contents": {"track_ids": [{"track": 2, "time": 2}]},
+        },
+        {
+            "playlist_id": 3,
+            "playlist_owner_id": 4,
+            "playlist_contents": {"track_ids": [{"track": 3, "time": 3}]},
         },
     ],
 }
@@ -55,7 +61,7 @@ def setup_db(app):
     logging.info(logs)
     esclient.indices.refresh(index="*")
     search_res = esclient.search(index="*", query={"match_all": {}})["hits"]["hits"]
-    assert len(search_res) == 7
+    assert len(search_res) == 10
 
 
 def test_get_top_playlists(app):
@@ -66,6 +72,7 @@ def test_get_top_playlists(app):
             "playlist", {"current_user_id": 1, "limit": 10}
         )
         # user 1 should see all top playlists
+        # playlist 3 only has unlisted tracks so it should be excluded
         assert len(playlists) == 2
         assert playlists[0]["playlist_id"] == 1
         assert playlists[1]["playlist_id"] == 2

@@ -366,14 +366,15 @@ export enum Name {
   CREATE_USER_BANK_FAILURE = 'Create User Bank: Failure',
 
   // Rewards
-  REWARDS_CLAIM_START = 'Rewards Claim: Start Claim',
+  REWARDS_CLAIM_DETAILS_OPENED = 'Rewards Claim: Opened',
+  REWARDS_CLAIM_ALL_REQUEST = 'Rewards Claim All: Request',
+  REwARDS_CLAIM_ALL_SUCCESS = 'Rewards Claim All: Success',
+  REWARDS_CLAIM_ALL_FAILURE = 'Rewards Claim All: Failure',
+  REWARDS_CLAIM_ALL_BLOCKED = 'Rewards Claim All: Blocked',
+  REWARDS_CLAIM_REQUEST = 'Rewards Claim: Request',
   REWARDS_CLAIM_SUCCESS = 'Rewards Claim: Success',
-  REWARDS_CLAIM_RETRY = 'Rewards Claim: Retry',
   REWARDS_CLAIM_FAILURE = 'Rewards Claim: Failure',
-  REWARDS_CLAIM_HCAPTCHA = 'Rewards Claim: Hcaptcha',
-  REWARDS_CLAIM_REJECTION = 'Rewards Claim: Rejection',
-  REWARDS_CLAIM_UNKNOWN = 'Rewards Claim: Unknown',
-  REWARDS_CLAIM_DETAILS_OPENED = 'Rewards Claim: Details Opened',
+  REWARDS_CLAIM_BLOCKED = 'Rewards Claim: Blocked',
 
   // Tipping
   TIP_AUDIO_REQUEST = 'Tip Audio: Request',
@@ -1680,69 +1681,58 @@ type CreateUserBankFailure = {
   errorMessage: string
 }
 
-type RewardsClaimStart = {
-  eventName: Name.REWARDS_CLAIM_START
-  userId: string
+type RewardsClaimDetailsOpened = {
+  eventName: Name.REWARDS_CLAIM_DETAILS_OPENED
+  challengeId: string
+}
+
+type RewardsClaimRequest = {
+  eventName: Name.REWARDS_CLAIM_REQUEST
   challengeId: string
   specifier: string
   amount: number
-  source: string
 }
 
 type RewardsClaimSuccess = {
   eventName: Name.REWARDS_CLAIM_SUCCESS
-  userId: string
   challengeId: string
   specifier: string
   amount: number
-  source: string
-}
-
-type RewardsClaimRetry = {
-  eventName: Name.REWARDS_CLAIM_RETRY
-  userId: string
-  challengeId: string
-  specifier: string
-  amount: number
-  source: string
-  error: string
-  phase: string
 }
 
 type RewardsClaimFailure = {
   eventName: Name.REWARDS_CLAIM_FAILURE
-  userId: string
   challengeId: string
   specifier: string
   amount: number
-  source: string
+  url?: string
   error: string
-  phase: string
 }
 
-type RewardsClaimRejection = {
-  eventName: Name.REWARDS_CLAIM_REJECTION
-  userId: string
+type RewardsClaimBlocked = {
+  eventName: Name.REWARDS_CLAIM_BLOCKED
   challengeId: string
   specifier: string
   amount: number
-  source: string
-  error: string
+  code: number
 }
 
-type RewardsClaimUnknown = {
-  eventName: Name.REWARDS_CLAIM_UNKNOWN
-  userId: string
-  challengeId: string
-  specifier: string
-  amount: number
-  source: string
-  error: string
+type RewardsClaimAllRequest = {
+  eventName: Name.REWARDS_CLAIM_ALL_REQUEST
+  count: number
 }
-
-type RewardsClaimDetailsOpened = {
-  eventName: Name.REWARDS_CLAIM_DETAILS_OPENED
-  challengeId: string
+type RewardsClaimAllSuccess = {
+  eventName: Name.REwARDS_CLAIM_ALL_SUCCESS
+  count: number
+}
+type RewardsClaimAllFailure = {
+  eventName: Name.REWARDS_CLAIM_ALL_FAILURE
+  count: number
+}
+type RewardsClaimAllBlocked = {
+  eventName: Name.REWARDS_CLAIM_ALL_BLOCKED
+  count: number
+  code: number
 }
 
 export type TipSource =
@@ -2626,13 +2616,15 @@ export type AllTrackingEvents =
   | CreateUserBankRequest
   | CreateUserBankSuccess
   | CreateUserBankFailure
-  | RewardsClaimStart
-  | RewardsClaimSuccess
-  | RewardsClaimRetry
-  | RewardsClaimFailure
-  | RewardsClaimRejection
-  | RewardsClaimUnknown
   | RewardsClaimDetailsOpened
+  | RewardsClaimRequest
+  | RewardsClaimSuccess
+  | RewardsClaimFailure
+  | RewardsClaimBlocked
+  | RewardsClaimAllRequest
+  | RewardsClaimAllSuccess
+  | RewardsClaimAllFailure
+  | RewardsClaimAllBlocked
   | TipAudioRequest
   | TipAudioSuccess
   | TipAudioFailure
