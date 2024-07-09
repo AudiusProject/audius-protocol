@@ -8,6 +8,7 @@ import {
   type SearchFilters
 } from '@audius/common/api'
 import { accountSelectors } from '@audius/common/store'
+import { isEmpty } from 'lodash'
 import { useSelector } from 'react-redux'
 
 const { getUserId } = accountSelectors
@@ -29,6 +30,11 @@ export const SearchContext = createContext<SearchContextType>({
   filters: {},
   setFilters: (_) => {}
 })
+
+export const useIsEmptySearch = () => {
+  const { query, filters } = useContext(SearchContext)
+  return !query && isEmpty(filters)
+}
 
 export const useSearchQuery = () => {
   const { query, setQuery } = useContext(SearchContext)

@@ -85,6 +85,13 @@ def populate_tracks(db):
                 "created_at": datetime(2019, 6, 21),
                 "is_delete": True,
             },
+            {
+                "track_id": 27,
+                "title": "track 27",
+                "owner_id": 6,
+                "release_date": datetime(2019, 6, 18),
+                "created_at": datetime(2019, 6, 22),
+            },
         ],
         "track_routes": [
             {"slug": "track-17", "owner_id": 1287290},

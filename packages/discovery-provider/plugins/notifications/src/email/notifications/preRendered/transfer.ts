@@ -20,7 +20,7 @@ export const email = ({
   return `
   <!doctype html>
   <html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
-  
+
   <head>
   <meta charset="utf-8" />
   <meta content="width=device-width" name="viewport" />
@@ -29,12 +29,12 @@ export const email = ({
   <meta content="telephone=no,address=no,email=no,date=no,url=no" name="format-detection" />
   <title>Your USDC Transfer is Complete!</title>
   <!--[if mso]>
-			  <style>
-				  * {
-					  font-family: sans-serif !important;
-				  }
-			  </style>
-		  <![endif]-->
+              <style>
+                  * {
+                      font-family: sans-serif !important;
+                  }
+              </style>
+          <![endif]-->
   <!--[if !mso]><!-->
   <!-- <![endif]-->
   <link href="https://fonts.googleapis.com/css?family=Inter:700" rel="stylesheet" type="text/css">
@@ -42,133 +42,133 @@ export const email = ({
   <link href="https://fonts.googleapis.com/css?family=Inter:500" rel="stylesheet" type="text/css">
   <style>
   html {
-	  margin: 0 !important;
-	  padding: 0 !important;
+      margin: 0 !important;
+      padding: 0 !important;
   }
-  
+
   * {
-	  -ms-text-size-adjust: 100%;
-	  -webkit-text-size-adjust: 100%;
+      -ms-text-size-adjust: 100%;
+      -webkit-text-size-adjust: 100%;
   }
   td {
-	  vertical-align: top;
-	  mso-table-lspace: 0pt !important;
-	  mso-table-rspace: 0pt !important;
+      vertical-align: top;
+      mso-table-lspace: 0pt !important;
+      mso-table-rspace: 0pt !important;
   }
   a {
-	  text-decoration: none;
+      text-decoration: none;
   }
   img {
-	  -ms-interpolation-mode:bicubic;
+      -ms-interpolation-mode:bicubic;
   }
   @media only screen and (min-device-width: 320px) and (max-device-width: 374px) {
-	  u ~ div .email-container {
-		  min-width: 320px !important;
-	  }
+      u ~ div .email-container {
+          min-width: 320px !important;
+      }
   }
   @media only screen and (min-device-width: 375px) and (max-device-width: 413px) {
-	  u ~ div .email-container {
-		  min-width: 375px !important;
-	  }
+      u ~ div .email-container {
+          min-width: 375px !important;
+      }
   }
   @media only screen and (min-device-width: 414px) {
-	  u ~ div .email-container {
-		  min-width: 414px !important;
-	  }
+      u ~ div .email-container {
+          min-width: 414px !important;
+      }
   }
-  
+
   </style>
   <!--[if gte mso 9]>
-		  <xml>
-			  <o:OfficeDocumentSettings>
-				  <o:AllowPNG/>
-				  <o:PixelsPerInch>96</o:PixelsPerInch>
-			  </o:OfficeDocumentSettings>
-		  </xml>
-		  <![endif]-->
+          <xml>
+              <o:OfficeDocumentSettings>
+                  <o:AllowPNG/>
+                  <o:PixelsPerInch>96</o:PixelsPerInch>
+              </o:OfficeDocumentSettings>
+          </xml>
+          <![endif]-->
   <style>
   @media only screen and (max-device-width: 599px), only screen and (max-width: 599px) {
-  
-	  .eh {
-		  height:auto !important;
-	  }
-	  .desktop {
-		  display: none !important;
-		  height: 0 !important;
-		  margin: 0 !important;
-		  max-height: 0 !important;
-		  overflow: hidden !important;
-		  padding: 0 !important;
-		  visibility: hidden !important;
-		  width: 0 !important;
-	  }
-	  .mobile {
-		  display: block !important;
-		  width: auto !important;
-		  height: auto !important;
-		  float: none !important;
-	  }
-	  .email-container {
-		  width: 100% !important;
-		  margin: auto !important;
-	  }
-	  .stack-column,
-	  .stack-column-center {
-		  display: block !important;
-		  width: 100% !important;
-		  max-width: 100% !important;
-		  direction: ltr !important;
-	  }
-	  .wid-auto {
-		  width:auto !important;
-	  }
-  
-	  .table-w-full-mobile {
-		  width: 100%;
-	  }
-  
-	  
-	  
-  
-	  .mobile-center {
-		  text-align: center;
-	  }
-  
-	  .mobile-center > table {
-		  display: inline-block;
-		  vertical-align: inherit;
-	  }
-  
-	  .mobile-left {
-		  text-align: left;
-	  }
-  
-	  .mobile-left > table {
-		  display: inline-block;
-		  vertical-align: inherit;
-	  }
-  
-	  .mobile-right {
-		  text-align: right;
-	  }
-  
-	  .mobile-right > table {
-		  display: inline-block;
-		  vertical-align: inherit;
-	  }
-  
+
+      .eh {
+          height:auto !important;
+      }
+      .desktop {
+          display: none !important;
+          height: 0 !important;
+          margin: 0 !important;
+          max-height: 0 !important;
+          overflow: hidden !important;
+          padding: 0 !important;
+          visibility: hidden !important;
+          width: 0 !important;
+      }
+      .mobile {
+          display: block !important;
+          width: auto !important;
+          height: auto !important;
+          float: none !important;
+      }
+      .email-container {
+          width: 100% !important;
+          margin: auto !important;
+      }
+      .stack-column,
+      .stack-column-center {
+          display: block !important;
+          width: 100% !important;
+          max-width: 100% !important;
+          direction: ltr !important;
+      }
+      .wid-auto {
+          width:auto !important;
+      }
+
+      .table-w-full-mobile {
+          width: 100%;
+      }
+
+      
+      
+
+      .mobile-center {
+          text-align: center;
+      }
+
+      .mobile-center > table {
+          display: inline-block;
+          vertical-align: inherit;
+      }
+
+      .mobile-left {
+          text-align: left;
+      }
+
+      .mobile-left > table {
+          display: inline-block;
+          vertical-align: inherit;
+      }
+
+      .mobile-right {
+          text-align: right;
+      }
+
+      .mobile-right > table {
+          display: inline-block;
+          vertical-align: inherit;
+      }
+
   }
-  
+
   </style>
   </head>
-  
+
   <body width="100%" style="background-color:#e9e9eb;margin:0;padding:0!important;mso-line-height-rule:exactly;">
   <div style="background-color:#e9e9eb">
   <!--[if gte mso 9]>
-											  <v:background xmlns:v="urn:schemas-microsoft-com:vml" fill="t">
-											  <v:fill type="tile" color="#e9e9eb"/>
-											  </v:background>
-											  <![endif]-->
+                                              <v:background xmlns:v="urn:schemas-microsoft-com:vml" fill="t">
+                                              <v:fill type="tile" color="#e9e9eb"/>
+                                              </v:background>
+                                              <![endif]-->
   <table width="100%" cellpadding="0" cellspacing="0" border="0">
   <tr>
   <td valign="top" align="center">
@@ -196,7 +196,7 @@ export const email = ({
   <table border="0" cellpadding="0" cellspacing="0">
   <tr>
   <td style="vertical-align: middle;" width="60"><img src="${profilePicture}" width="60" border="0" style="min-width:60px; width:60px;
-		  border-radius:64px; height: auto; display: block;"></td>
+          border-radius:64px; height: auto; display: block;"></td>
   <td style="width:16px; min-width:16px;" width="16"></td>
   <td style="vertical-align: middle;">
   <table cellspacing="0" cellpadding="0" border="0">
@@ -205,7 +205,7 @@ export const email = ({
   <table width="100%" border="0" cellpadding="0" cellspacing="0">
   <tr>
   <td style="vertical-align: middle;">
-  <div style="line-height:24px;text-align:left;"><a target="_blank" href="${profileLink}"><span style="color:#52505f;font-weight:700;font-family:Inter,Arial,sans-serif;font-size:16px;letter-spacing:-0.02em;line-height:24px;text-align:left;">${name}</span></a></div>
+  <div style="line-height:24px;text-align:left;"><a href="${profileLink}"><span style="color:#52505f;font-weight:700;font-family:Inter,Arial,sans-serif;font-size:16px;letter-spacing:-0.02em;line-height:24px;text-align:left;">${name}</span></a></div>
   </td>
   </tr>
   <tr>
@@ -216,7 +216,7 @@ export const email = ({
   <table cellspacing="0" cellpadding="0" border="0">
   <tr>
   <td style="vertical-align: middle;">
-  <div style="line-height:24px;text-align:left;"><a target="_blank" href="${profileLink}"><span style="color:#52505f;font-family:Inter,Arial,sans-serif;font-size:16px;line-height:24px;text-align:left;">@${handle}</span></a></div>
+  <div style="line-height:24px;text-align:left;"><a href="${profileLink}"><span style="color:#52505f;font-family:Inter,Arial,sans-serif;font-size:16px;line-height:24px;text-align:left;">@${handle}</span></a></div>
   </td>
   </tr>
   </table>
@@ -235,7 +235,7 @@ export const email = ({
   </td>
   <td style="width:8px; min-width:8px;" width="8"></td>
   <td style="vertical-align: middle;" width="72" align="center"><img src="https://download.audius.co/emails/transfer/1KOBjANaTfYUAtJMAIAXnyXOEEi8x2.jpeg" width="72" border="0" style="min-width:72px; width:72px;
-		   height: auto; display: block;"></td>
+      height: auto; display: block;"></td>
   </tr>
   <tr>
   <td height="8" style="height:8px; min-height:8px; line-height:8px;"></td>
@@ -314,7 +314,7 @@ export const email = ({
   </tr>
   <tr>
   <td>
-  <div style="line-height:24px;text-align:left;"><span style="color:#52505f;font-family:Inter,Arial,sans-serif;font-size:16px;line-height:24px;text-align:left;">Transfer Amount: ${amount} USDC<br>Transfer To: ${wallet}</span></div>
+  <div style="line-height:24px;text-align:left;"><span style="color:#52505f;font-family:Inter,Arial,sans-serif;font-size:16px;line-height:24px;text-align:left;">Transfer Amount: $${amount} USDC<br>Transfer To: ${wallet}</span></div>
   </td>
   </tr>
   <tr>
@@ -347,15 +347,15 @@ export const email = ({
   <td height="24" style="height:24px; min-height:24px; line-height:24px;"></td>
   </tr>
   <tr>
-  <td width="100%" align="center" class="B31OswCc82HjbYK8nl2C5LpXpBSCg1 invert-bg" style="vertical-align: middle; background-repeat:no-repeat !important; background-position: center center !important; background-size: cover !important;border-radius:12px; border-collapse:separate !important; padding-left:24px; padding-right:24px;" background="https://download.audius.co/emails/transfer/B31OswCc82HjbYK8nl2C5LpXpBSCg1.png">
+  <td width="100%" align="center" class="qGhZIzDXR5RmuaAmA3enPpUgSAPdO2 invert-bg" style="vertical-align: middle; background-repeat:no-repeat !important; background-position: center center !important; background-size: cover !important;border-radius:12px; border-collapse:separate !important; padding-left:24px; padding-right:24px;" background="https://download.audius.co/emails/transfer/B31OswCc82HjbYK8nl2C5LpXpBSCg1.png">
   <!--[if gte mso 9]>
-				  <v:image xmlns:v="urn:schemas-microsoft-com:vml" fill="true" stroke="false" style=" border: 0;display: inline-block; width: 552px; height:182px;"
-				  src="https://download.audius.co/emails/transfer/B31OswCc82HjbYK8nl2C5LpXpBSCg1.png"
-				  />
-				  <v:rect xmlns:v="urn:schemas-microsoft-com:vml" fill="true" stroke="false" style=" border: 0;display: inline-block;position: absolute; width: 552px; height:182px;">
-				  <v:fill opacity="0%" color="#000" />
-				  <v:textbox inset="0,0,0,0">
-				  <![endif]-->
+                  <v:image xmlns:v="urn:schemas-microsoft-com:vml" fill="true" stroke="false" style=" border: 0;display: inline-block; width: 552px; height:182px;"
+                  src="https://download.audius.co/emails/transfer/B31OswCc82HjbYK8nl2C5LpXpBSCg1.png"
+                  />
+                  <v:rect xmlns:v="urn:schemas-microsoft-com:vml" fill="true" stroke="false" style=" border: 0;display: inline-block;position: absolute; width: 552px; height:182px;">
+                  <v:fill opacity="0%" color="#000" />
+                  <v:textbox inset="0,0,0,0">
+                  <![endif]-->
   <div>
   <table width="100%" border="0" cellpadding="0" cellspacing="0">
   <tr>
@@ -391,11 +391,11 @@ export const email = ({
   <td width="504" align="center" style="vertical-align: middle;  ">
   <table class="table-w-full-mobile" border="0" cellpadding="0" cellspacing="0">
   <tr>
-  <td style="vertical-align: middle;" class="stack-column-center" align="center"><a target="_blank" href="https://apps.apple.com/us/app/audius-music/id1491270519"><img src="https://download.audius.co/emails/transfer/XSShP2c68DczmwiHpr5mUv4t7Od1dL.png" width="142" border="0" style="min-width:142px; width:142px;
-		   height: auto; display: block;"></a></td>
+  <td style="vertical-align: middle;" class="stack-column-center" align="center"><a href="https://apps.apple.com/us/app/audius-music/id1491270519"><img src="https://download.audius.co/emails/transfer/XSShP2c68DczmwiHpr5mUv4t7Od1dL.png" width="142" border="0" style="min-width:142px; width:142px;
+          height: auto; display: block;"></a></td>
   <td class="stack-column-center" height="12" style="width:12px; min-width:12px; height:12px; min-height:12px;" width="12"></td>
-  <td style="vertical-align: middle;" class="stack-column-center" align="center"><a target="_blank" href="https://play.google.com/store/apps/details?id=co.audius.app&hl=en_US&gl=US"><img src="https://download.audius.co/emails/transfer/RIExgLjh8wZIVtsUv8Chbcskqwizaw.png" width="166" border="0" style="min-width:166px; width:166px;
-		   height: auto; display: block;"></a></td>
+  <td style="vertical-align: middle;" class="stack-column-center" align="center"><a href="https://play.google.com/store/apps/details?id=co.audius.app&hl=en_US&gl=US"><img src="https://download.audius.co/emails/transfer/RIExgLjh8wZIVtsUv8Chbcskqwizaw.png" width="166" border="0" style="min-width:166px; width:166px;
+          height: auto; display: block;"></a></td>
   </tr>
   </table>
   </td>
@@ -412,11 +412,11 @@ export const email = ({
   </table>
   </div>
   <!--[if gte mso 9]>
-				  </v:textbox>
-				  </v:fill>
-				  </v:rect>
-				  </v:image>
-				  <![endif]-->
+                  </v:textbox>
+                  </v:fill>
+                  </v:rect>
+                  </v:image>
+                  <![endif]-->
   </td>
   </tr>
   <tr>
@@ -459,8 +459,8 @@ export const email = ({
   <td width="528" align="center" style="vertical-align: middle;  ">
   <table class="table-w-full-mobile" width="100%" border="0" cellpadding="0" cellspacing="0">
   <tr>
-  <td style="vertical-align: middle;" class="stack-column-center" align="center"><a target="_blank" href="https://www.audius.co"><img src="https://download.audius.co/emails/transfer/HQsDwSXBDcUHH0nmUGTFHNFbYr01wI.png" width="168" border="0" style="min-width:168px; width:168px;
-		  border-radius:2px; height: auto; display: block;"></a></td>
+  <td style="vertical-align: middle;" class="stack-column-center" align="center"><a href="https://www.audius.co"><img src="https://download.audius.co/emails/transfer/HQsDwSXBDcUHH0nmUGTFHNFbYr01wI.png" width="168" border="0" style="min-width:168px; width:168px;
+          border-radius:2px; height: auto; display: block;"></a></td>
   <td class="stack-column-center" height="12" style="width:12px; min-width:12px; height:12px; min-height:12px;" width="12"></td>
   <td class="stack-column-center" style="width:168px;"></td>
   <td class="stack-column-center" height="12" style="width:12px; min-width:12px; height:12px; min-height:12px;" width="12"></td>
@@ -491,17 +491,17 @@ export const email = ({
   <td width="144" style="vertical-align: middle;  ">
   <table width="100%" border="0" cellpadding="0" cellspacing="0">
   <tr>
-  <td style="vertical-align: middle;"><a target="_blank" href="https://twitter.com/audius"><img src="https://download.audius.co/emails/transfer/GG3zzuqXbGVjlaJellblYLs9wA8DC4.png" width="24" border="0" style="min-width:24px; width:24px;
-		   height: auto; display: block;"></a></td>
+  <td style="vertical-align: middle;"><a href="https://twitter.com/audius"><img src="images/9knFl6CO4CbZKY4Tw9zEHHHIjwv298.png" width="24" border="0" style="min-width:24px; width:24px;
+          height: auto; display: block;"></a></td>
   <td style="width:16px; min-width:16px;" width="16"></td>
-  <td style="vertical-align: middle;"><a target="_blank" href="https://www.instagram.com/audius/"><img src="https://download.audius.co/emails/transfer/4lMfEeqODhCbbN7MIfwMWsQQQgx46v.png" width="24" border="0" style="min-width:24px; width:24px;
-		   height: auto; display: block;"></a></td>
+  <td style="vertical-align: middle;"><a href="https://www.instagram.com/audius/"><img src="images/HDsIb0SnpER1RYjmy5KGnKd5WWFI8l.png" width="24" border="0" style="min-width:24px; width:24px;
+          height: auto; display: block;"></a></td>
   <td style="width:16px; min-width:16px;" width="16"></td>
-  <td style="vertical-align: middle;"><a target="_blank" href="https://tiktok.com/@audius"><img src="https://download.audius.co/emails/transfer/3HBoSDXYIpzfT0khm6zYK1pKsspHvI.png" width="24" border="0" style="min-width:24px; width:24px;
-		   height: auto; display: block;"></a></td>
+  <td style="vertical-align: middle;"><a href="https://tiktok.com/@audius"><img src="images/mJ5ZrzSdU7iJ6egPcWiLSMladg16zH.png" width="24" border="0" style="min-width:24px; width:24px;
+          height: auto; display: block;"></a></td>
   <td style="width:16px; min-width:16px;" width="16"></td>
-  <td style="vertical-align: middle;"><a target="_blank" href="https://www.youtube.com/@AudiusMusic"><img src="https://download.audius.co/emails/transfer/9EXVUKaX5lZHaXoehmLfDP7S2EjFZa.png" width="24" border="0" style="min-width:24px; width:24px;
-		   height: auto; display: block;"></a></td>
+  <td style="vertical-align: middle;"><a href="https://www.youtube.com/@AudiusMusic"><img src="images/OhoBO4IHsyCwPLYSX7KbIvCAnyMEVT.png" width="24" border="0" style="min-width:24px; width:24px;
+          height: auto; display: block;"></a></td>
   </tr>
   </table>
   </td>
@@ -568,7 +568,7 @@ export const email = ({
   <table cellspacing="0" cellpadding="0" border="0">
   <tr>
   <td style="vertical-align: middle;" align="center">
-  <div style="line-height:14px;text-align:center;"><a target="_blank" href="https://www.audius.co"><span style="color:#6a677a;font-weight:500;font-family:Inter,Arial,sans-serif;font-size:14px;line-height:14px;text-align:center;">Audius Music</span></a></div>
+  <div style="line-height:14px;text-align:center;"><a href="https://www.audius.co"><span style="color:#6a677a;font-weight:500;font-family:Inter,Arial,sans-serif;font-size:14px;line-height:14px;text-align:center;">Audius Music</span></a></div>
   </td>
   </tr>
   </table>
@@ -579,7 +579,7 @@ export const email = ({
   </tr>
   <tr>
   <td style="vertical-align: middle;" align="center">
-  <div style="line-height:14px;text-align:center;"><a target="_blank" href="https://help.audius.co"><span style="color:#6a677a;font-weight:500;font-family:Inter,Arial,sans-serif;font-size:14px;line-height:14px;text-align:center;">Help & Support</span></a></div>
+  <div style="line-height:14px;text-align:center;"><a href="https://help.audius.co"><span style="color:#6a677a;font-weight:500;font-family:Inter,Arial,sans-serif;font-size:14px;line-height:14px;text-align:center;">Help & Support</span></a></div>
   </td>
   </tr>
   </table>
@@ -598,7 +598,7 @@ export const email = ({
   <table cellspacing="0" cellpadding="0" border="0">
   <tr>
   <td style="vertical-align: middle;" align="center">
-  <div style="line-height:14px;text-align:center;"><a target="_blank" href="https://blog.audius.co"><span style="color:#6a677a;font-weight:500;font-family:Inter,Arial,sans-serif;font-size:14px;line-height:14px;text-align:center;">The Blog</span></a></div>
+  <div style="line-height:14px;text-align:center;"><a href="https://blog.audius.co"><span style="color:#6a677a;font-weight:500;font-family:Inter,Arial,sans-serif;font-size:14px;line-height:14px;text-align:center;">The Blog</span></a></div>
   </td>
   </tr>
   </table>
@@ -612,7 +612,7 @@ export const email = ({
   <table cellspacing="0" cellpadding="0" border="0">
   <tr>
   <td style="vertical-align: middle;" align="center">
-  <div style="line-height:14px;text-align:center;"><a target="_blank" href="https://www.audius.events"><span style="color:#6a677a;font-weight:500;font-family:Inter,Arial,sans-serif;font-size:14px;line-height:14px;text-align:center;">Events</span></a></div>
+  <div style="line-height:14px;text-align:center;"><a href="https://www.audius.events"><span style="color:#6a677a;font-weight:500;font-family:Inter,Arial,sans-serif;font-size:14px;line-height:14px;text-align:center;">Events</span></a></div>
   </td>
   </tr>
   </table>
@@ -634,7 +634,7 @@ export const email = ({
   <table cellspacing="0" cellpadding="0" border="0">
   <tr>
   <td style="vertical-align: middle;" align="center">
-  <div style="line-height:14px;text-align:center;"><a target="_blank" href="https://brand.audius.co"><span style="color:#6a677a;font-weight:500;font-family:Inter,Arial,sans-serif;font-size:14px;line-height:14px;text-align:center;">Brand / Press</span></a></div>
+  <div style="line-height:14px;text-align:center;"><a href="https://brand.audius.co"><span style="color:#6a677a;font-weight:500;font-family:Inter,Arial,sans-serif;font-size:14px;line-height:14px;text-align:center;">Brand / Press</span></a></div>
   </td>
   </tr>
   </table>
@@ -648,7 +648,7 @@ export const email = ({
   <table cellspacing="0" cellpadding="0" border="0">
   <tr>
   <td style="vertical-align: middle;" align="center">
-  <div style="line-height:14px;text-align:center;"><a target="_blank" href="https://merch.audius.co"><span style="color:#6a677a;font-weight:500;font-family:Inter,Arial,sans-serif;font-size:14px;line-height:14px;text-align:center;">Merch Store</span></a></div>
+  <div style="line-height:14px;text-align:center;"><a href="https://merch.audius.co"><span style="color:#6a677a;font-weight:500;font-family:Inter,Arial,sans-serif;font-size:14px;line-height:14px;text-align:center;">Merch Store</span></a></div>
   </td>
   </tr>
   </table>
@@ -692,6 +692,14 @@ export const email = ({
   </table>
   </td>
   </tr>
+  <tr>
+  <td height="8" style="height:8px; min-height:8px; line-height:8px;"></td>
+  </tr>
+  <tr>
+  <td style="vertical-align: middle;" align="center">
+  <div style="line-height:14px;text-align:center;"><span style="color:#6a677a;font-family:Inter,Arial,sans-serif;font-size:12px;line-height:14px;text-align:center;">No longer want to receive these emails? </span><span style="color:#7e1bcc;font-family:Inter,Arial,sans-serif;font-size:12px;line-height:14px;text-align:center;">Unsubscribe </span><span style="color:#6a677a;font-family:Inter,Arial,sans-serif;font-size:12px;line-height:14px;text-align:center;">or</span><span style="color:#7e1bcc;font-family:Inter,Arial,sans-serif;font-size:12px;line-height:14px;text-align:center;"> Manage Email Preferences</span></div>
+  </td>
+  </tr>
   </table>
   </td>
   </tr>
@@ -728,6 +736,7 @@ export const email = ({
   </table>
   </div>
   </body>
+
   </html>
 `
 }

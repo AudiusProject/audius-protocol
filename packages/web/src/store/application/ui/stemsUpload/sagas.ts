@@ -48,7 +48,8 @@ function* watchUploadStems() {
       // Retrieve the parent track to refresh stems
       yield* call(retrieveTracks, {
         trackIds: [parentId],
-        withStems: true
+        withStems: true,
+        stemIds: trackIds
       })
     }
   )

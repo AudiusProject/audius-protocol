@@ -193,7 +193,7 @@ export class USDCPurchaseSeller extends BaseNotification<USDCPurchaseSellerRow> 
         payExtra: this.extraAmount,
         total: this.totalAmount
       }),
-      subject: `Your ${capitalize(this.contentType)} Has Been Purchased`
+      subject: `Congrats! You've made a sale on Audius!`
     })
   }
 

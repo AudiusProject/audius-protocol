@@ -101,11 +101,13 @@ export const UploadPage = (props: UploadPageProps) => {
             formState={formState}
             onContinue={(formState: UploadFormState) => {
               setFormState(formState)
+              const isPrivateCollection =
+                'metadata' in formState && formState.metadata?.is_private
               const hasPublicTracks =
                 formState.tracks?.some(
                   (track) => !track.metadata.is_unlisted
                 ) ?? true
-              openUploadConfirmation(hasPublicTracks)
+              openUploadConfirmation(hasPublicTracks && !isPrivateCollection)
             }}
           />
         )

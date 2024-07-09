@@ -78,7 +78,8 @@ export const notificationTypeMapping = {
   request_manager: MappingVariable.PushRequestManager,
   approve_manager_request: MappingVariable.PushApproveManagerRequest,
   announcement: MappingVariable.PushAnnouncement,
-  reaction: MappingVariable.PushReaction
+  reaction: MappingVariable.PushReaction,
+  reward_in_cooldown: MappingVariable.PushRewardInCooldown
 }
 
 export class AppNotificationsProcessor {
