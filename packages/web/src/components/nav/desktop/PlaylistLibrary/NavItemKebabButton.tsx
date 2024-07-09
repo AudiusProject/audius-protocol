@@ -14,7 +14,7 @@ type EditNavItemButtonProps = Omit<IconButtonProps, 'icon'> & {
 }
 
 export const NavItemKebabButton = (props: EditNavItemButtonProps) => {
-  const { className, visible, items, ...other } = props
+  const { visible, items, ...other } = props
 
   return (
     <PopupMenu
