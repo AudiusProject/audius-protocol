@@ -461,13 +461,6 @@ def validate_track_tx(params: ManageEntityParameters):
                 f"Existing track {track_id} does not match user"
             )
 
-        if (
-            params.action == Action.UPDATE
-            and not existing_track.is_unlisted
-            and params.metadata.get("is_unlisted")
-        ):
-            raise IndexingValidationError(f"Cannot unlist track {track_id}")
-
     if params.action != Action.DELETE:
         ai_attribution_user_id = params.metadata.get("ai_attribution_user_id")
         if ai_attribution_user_id:
