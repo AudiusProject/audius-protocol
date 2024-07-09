@@ -7,7 +7,6 @@ import {
   searchResultsPageSelectors,
   SearchKind
 } from '@audius/common/store'
-import { isEmpty } from 'lodash'
 import { useDispatch, useSelector } from 'react-redux'
 import { useDebounce } from 'react-use'
 

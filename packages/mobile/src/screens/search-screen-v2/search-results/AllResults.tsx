@@ -69,7 +69,8 @@ export const AllResults = () => {
     [data]
   )
 
-  const hasNoResults = (!data || sections.length === 0) && status === Status.SUCCESS
+  const hasNoResults =
+    (!data || sections.length === 0) && status === Status.SUCCESS
 
   // TODO: we should add a better loading state here
   return (
