@@ -25,7 +25,7 @@ type AccountsManagingYouHomePageProps = AccountsManagingYouPageProps
 export const AccountsManagingYouHomePage = (
   props: AccountsManagingYouHomePageProps
 ) => {
-  const { setPage } = props
+  const { setPageState } = props
   const userId = useSelector(getUserId) as number
 
   // Always update manager list when mounting this page
@@ -39,9 +39,12 @@ export const AccountsManagingYouHomePage = (
 
   const handleRemoveManager = useCallback(
     (params: { userId: number; managerUserId: number }) => {
-      setPage(AccountsManagingYouPages.CONFIRM_REMOVE_MANAGER, params)
+      setPageState({
+        page: AccountsManagingYouPages.CONFIRM_REMOVE_MANAGER,
+        params
+      })
     },
-    [setPage]
+    [setPageState]
   )
 
   return (
@@ -57,7 +60,11 @@ export const AccountsManagingYouHomePage = (
         <Button
           variant='secondary'
           iconLeft={IconPlus}
-          onClick={() => setPage(AccountsManagingYouPages.FIND_ACCOUNT_MANAGER)}
+          onClick={() =>
+            setPageState({
+              page: AccountsManagingYouPages.FIND_ACCOUNT_MANAGER
+            })
+          }
         >
           {messages.inviteButton}
         </Button>
