@@ -121,9 +121,12 @@ export const useAccessAndRemixSettings = ({
     return {
       disableUsdcGate: isRemix || shouldDisablePublish,
       disableSpecialAccessGate: isAlbum || isRemix || shouldDisablePublish,
-      disableSpecialAccessGateFields: isAlbum || isRemix || shouldDisablePublish,
-      disableCollectibleGate: isAlbum || isRemix || shouldDisablePublish,
-      disableCollectibleGateFields: isAlbum || isRemix || shouldDisablePublish,
+      disableSpecialAccessGateFields:
+        isAlbum || isRemix || shouldDisablePublish,
+      disableCollectibleGate:
+        isAlbum || isRemix || hasNoCollectibles || shouldDisablePublish,
+      disableCollectibleGateFields:
+        isAlbum || isRemix || hasNoCollectibles || shouldDisablePublish,
       disableHidden: isAlbum || isScheduledRelease
     }
   }
