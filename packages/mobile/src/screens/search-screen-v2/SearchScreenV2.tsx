@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import type {
   SearchCategory,
@@ -67,6 +67,12 @@ export const SearchScreenStack = () => {
   const [filters, setFilters] = useState<SearchFiltersType>(
     params.filters ?? {}
   )
+
+  useEffect(() => {
+    setQuery(params.query ?? '')
+    setCategory(params.category ?? 'all')
+    setFilters(params.filters ?? {})
+  }, [params])
 
   const screenOptions = useAppScreenOptions()
 
