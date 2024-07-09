@@ -80,6 +80,9 @@ export const AccessAndSaleScreen = () => {
   const [{ value: remixOf }] = useField<RemixOfField>('remix_of')
   const isRemix = !!remixOf
 
+  const { isEnabled: isEditableAccessEnabled } = useFeatureFlag(
+    FeatureFlags.EDITABLE_ACCESS_ENABLED
+  )
   const { isEnabled: isUsdcEnabled } = useFeatureFlag(
     FeatureFlags.USDC_PURCHASES
   )
@@ -118,6 +121,7 @@ export const AccessAndSaleScreen = () => {
     disableCollectibleGateFields,
     disableHidden
   } = useAccessAndRemixSettings({
+    isEditableAccessEnabled: !!isEditableAccessEnabled,
     isUpload,
     isRemix,
     initialStreamConditions,
