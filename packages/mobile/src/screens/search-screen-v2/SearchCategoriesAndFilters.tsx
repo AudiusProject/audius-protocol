@@ -100,8 +100,8 @@ export const SearchCategoriesAndFilters = () => {
     <Flex backgroundColor='white'>
       <ScrollView horizontal keyboardShouldPersistTaps='handled'>
         <Flex direction='row' alignItems='center' gap='s' p='l' pt='s'>
-          <SearchCategory category='tracks' />
           <SearchCategory category='users' />
+          <SearchCategory category='tracks' />
           <SearchCategory category='albums' />
           <SearchCategory category='playlists' />
           {filtersByCategory[category].map((filter) => (
