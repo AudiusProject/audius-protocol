@@ -114,7 +114,7 @@ export class BaseSolanaProgramClient {
       recentBlockhash = res.blockhash
     }
 
-    if (priorityFee !== undefined) {
+    if (priorityFee) {
       if ('microLamports' in priorityFee) {
         instructions.push(
           ComputeBudgetProgram.setComputeUnitPrice({
