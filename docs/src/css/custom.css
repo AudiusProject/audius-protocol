@@ -356,3 +356,10 @@ html[data-theme='dark'] .navbar__items > a:nth-child(1):hover {
 .markdown li {
   margin-bottom: 12px;
 }
+
+/* API Doc overrides */
+
+.openapi-tabs__mime-container {
+  visibility: hidden;
+  height: 0;
+}

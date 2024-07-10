@@ -163,7 +163,7 @@ module.exports = {
   ],
 
   api: [
-    ['developers/api/rest-api'],
+    ['developers/api/api'],
     // {
     //   type: 'category',
     //   label: 'Overview',
