@@ -1,8 +1,12 @@
-import { useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 
 import { Kind, Status } from '@audius/common/models'
-import type { SearchItem as SearchItemType } from '@audius/common/store'
+import {
+  searchActions,
+  type SearchItem as SearchItemType
+} from '@audius/common/store'
 import { Keyboard } from 'react-native'
+import { useDispatch } from 'react-redux'
 
 import { Divider, Flex, Text } from '@audius/harmony-native'
 import { SectionList } from 'app/components/core'
@@ -11,6 +15,8 @@ import { WithLoader } from 'app/components/with-loader/WithLoader'
 import { NoResultsTile } from '../NoResultsTile'
 import { SearchItem } from '../SearchItem'
 import { useGetSearchResults } from '../searchState'
+
+const { addItem: addRecentSearch } = searchActions
 
 type SearchSectionHeaderProps = { title: string }
 
@@ -27,6 +33,16 @@ export const SearchSectionHeader = (props: SearchSectionHeaderProps) => {
       </Flex>
     </Flex>
   )
+}
+
+const AllResultsItem = ({ item }: { item: SearchItemType }) => {
+  const dispatch = useDispatch()
+
+  const handlePress = useCallback(() => {
+    dispatch(addRecentSearch({ searchItem: item }))
+  }, [item, dispatch])
+
+  return <SearchItem searchItem={item} onPress={handlePress} />
 }
 
 export const AllResults = () => {
@@ -84,11 +100,7 @@ export const AllResults = () => {
             stickySectionHeadersEnabled={false}
             sections={sections}
             keyExtractor={({ id, kind }) => `${kind}-${id}`}
-            renderItem={({ item }) => (
-              <Flex ph='l'>
-                <SearchItem searchItem={item} />
-              </Flex>
-            )}
+            renderItem={({ item }) => <AllResultsItem item={item} />}
             renderSectionHeader={({ section: { title } }) => (
               <Flex ph='l' mt='l'>
                 <SearchSectionHeader title={title} />

@@ -4,7 +4,9 @@ import type {
   SearchCategory,
   SearchFilters as SearchFiltersType
 } from '@audius/common/api'
+import { searchSelectors } from '@audius/common/store'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
+import { useSelector } from 'react-redux'
 
 import { Flex } from '@audius/harmony-native'
 import { Screen } from 'app/components/core'
@@ -30,12 +32,17 @@ import {
   useSearchQuery
 } from './searchState'
 
+const { getV2SearchHistory } = searchSelectors
 const Stack = createNativeStackNavigator()
 
 export const SearchScreenV2 = () => {
   const [query] = useSearchQuery()
   const [category] = useSearchCategory()
   const [filters] = useSearchFilters()
+
+  const history = useSelector(getV2SearchHistory)
+  const showRecentSearches = history.length > 0
+
   const showSearchResults =
     query ||
     category !== 'all' ||
@@ -47,8 +54,11 @@ export const SearchScreenV2 = () => {
       <Flex flex={1}>
         {!showSearchResults ? (
           <Flex direction='column' alignItems='center' gap='xl'>
-            <SearchCatalogTile />
-            <RecentSearches />
+            {showRecentSearches ? (
+              <RecentSearches ListHeaderComponent={<SearchCatalogTile />} />
+            ) : (
+              <SearchCatalogTile />
+            )}
           </Flex>
         ) : (
           <SearchResults />

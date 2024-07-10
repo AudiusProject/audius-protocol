@@ -1,12 +1,14 @@
 import { useCallback } from 'react'
 
-import { Status } from '@audius/common/models'
+import { Kind, Status } from '@audius/common/models'
 import {
   lineupSelectors,
   searchResultsPageTracksLineupActions as tracksActions,
   searchResultsPageSelectors,
-  SearchKind
+  SearchKind,
+  searchActions
 } from '@audius/common/store'
+import { Keyboard } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 import { useDebounce } from 'react-use'
 
@@ -27,6 +29,7 @@ const { makeGetLineupMetadatas } = lineupSelectors
 const getSearchTracksLineupMetadatas = makeGetLineupMetadatas(
   getSearchTracksLineup
 )
+const { addItem: addRecentSearch } = searchActions
 
 export const TrackResults = () => {
   const { status } = useGetSearchResults('tracks')
@@ -73,7 +76,23 @@ export const TrackResults = () => {
 
   return (
     <Flex h='100%' backgroundColor='default'>
-      <Lineup actions={tracksActions} lineup={lineup} loadMore={loadMore} />
+      <Lineup
+        actions={tracksActions}
+        lineup={lineup}
+        loadMore={loadMore}
+        keyboardShouldPersistTaps='handled'
+        onPressItem={(id) => {
+          Keyboard.dismiss()
+          dispatch(
+            addRecentSearch({
+              searchItem: {
+                kind: Kind.TRACKS,
+                id
+              }
+            })
+          )
+        }}
+      />
     </Flex>
   )
 }
