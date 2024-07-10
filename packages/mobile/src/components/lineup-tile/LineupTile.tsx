@@ -43,6 +43,8 @@ export const LineupTile = ({
   onPressSave,
   onPressShare,
   onPressTitle,
+  onPressPublish,
+  onPressEdit,
   playCount,
   renderImage,
   repostType,
@@ -145,7 +147,6 @@ export const LineupTile = ({
         />
       </View>
       {children}
-
       {isReadonly ? null : (
         <LineupTileActionButtons
           hasReposted={has_current_user_reposted}
@@ -167,6 +168,8 @@ export const LineupTile = ({
           onPressRepost={onPressRepost}
           onPressSave={onPressSave}
           onPressShare={onPressShare}
+          onPressPublish={onPressPublish}
+          onPressEdit={onPressEdit}
         />
       )}
     </LineupTileRoot>

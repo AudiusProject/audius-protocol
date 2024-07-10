@@ -44,9 +44,7 @@ export const TrackResults = () => {
           category: SearchKind.TRACKS,
           query,
           filters,
-          dispatch,
-          // TODO: implement tag search
-          isTagSearch: false
+          dispatch
         })
       )
     },

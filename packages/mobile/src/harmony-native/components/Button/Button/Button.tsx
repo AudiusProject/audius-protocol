@@ -44,9 +44,13 @@ export const Button = (props: ButtonProps) => {
   const smallStyles: ReactNativeStyle = {
     gap: spacing.xs,
     height: smallHeight,
-    width: !children ? smallHeight : undefined,
     paddingHorizontal: spacing.m
   }
+
+  if (!children) {
+    smallStyles.width = smallHeight
+  }
+
   // title-s-default
   const smallTextStyles: TextStyle = {
     fontFamily: typography.fontByWeight.bold,
@@ -57,8 +61,11 @@ export const Button = (props: ButtonProps) => {
   const defaultStyles: ReactNativeStyle = {
     gap: spacing.s,
     height: spacing.unit12,
-    width: !children ? spacing.unit12 : undefined,
     paddingHorizontal: spacing.xl
+  }
+
+  if (!children) {
+    defaultStyles.width = spacing.unit12
   }
 
   // title-l-default
@@ -66,20 +73,6 @@ export const Button = (props: ButtonProps) => {
     fontFamily: typography.fontByWeight.bold,
     fontSize: typography.size.l,
     lineHeight: typography.lineHeight.l
-  }
-
-  const largeStyles: ReactNativeStyle = {
-    gap: spacing.s,
-    height: spacing.unit16,
-    paddingHorizontal: spacing.xl
-  }
-
-  const largeTextStyles: TextStyle = {
-    fontFamily: typography.fontByWeight.bold,
-    fontSize: typography.size.xl,
-    lineHeight: typography.lineHeight.l,
-    letterSpacing: 0.25,
-    textTransform: 'uppercase'
   }
 
   // - Variant Styles -
@@ -215,11 +208,7 @@ export const Button = (props: ButtonProps) => {
       ? destructiveStyles
       : primaryStyles),
 
-    ...(size === 'small' || size === 'xs'
-      ? smallStyles
-      : size === 'large'
-      ? largeStyles
-      : defaultStyles),
+    ...(size === 'small' || size === 'xs' ? smallStyles : defaultStyles),
 
     ...(isDisabled && { shadowColor: 'transparent' })
   }
@@ -241,14 +230,9 @@ export const Button = (props: ButtonProps) => {
             [dynamicStyles.default.background, dynamicStyles.press.background]
           )
     }
-  }, [isDisabled, variant])
+  }, [isDisabled, variant, color])
 
-  const textStyles =
-    size === 'small'
-      ? smallTextStyles
-      : size === 'large'
-      ? largeTextStyles
-      : defaultTextStyles
+  const textStyles = size === 'small' ? smallTextStyles : defaultTextStyles
 
   const animatedTextStyles = useAnimatedStyle(() => {
     return {
@@ -267,10 +251,9 @@ export const Button = (props: ButtonProps) => {
       ? 'danger'
       : 'staticWhite'
 
-  const iconSize: IconProps['size'] =
-    size === 'small' ? 's' : size === 'large' ? 'l' : 'm'
+  const iconSize: IconProps['size'] = size === 'small' ? 's' : 'm'
 
-  const loaderSize = size === 'small' ? 16 : size === 'large' ? 24 : 20
+  const loaderSize = size === 'small' ? 16 : 20
 
   const [isPressing, setIsPressing] = useState(false)
 

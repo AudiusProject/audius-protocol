@@ -21,7 +21,8 @@ import {
   OverflowSource,
   RepostType,
   playerSelectors,
-  playbackPositionSelectors
+  playbackPositionSelectors,
+  usePublishContentModal
 } from '@audius/common/store'
 import type { CommonState } from '@audius/common/store'
 import { Genre, removeNullable } from '@audius/common/utils'
@@ -95,6 +96,7 @@ export const TrackTileComponent = ({
   )
 
   const currentUserId = useSelector(getUserId)
+  const { onOpen: openPublishModal } = usePublishContentModal()
 
   const isOwner = currentUserId === track.owner_id
 
@@ -229,6 +231,14 @@ export const TrackTileComponent = ({
     }
   }, [track_id, dispatch, has_current_user_reposted])
 
+  const handlePressPublish = useCallback(() => {
+    openPublishModal({ contentId: track_id, contentType: 'track' })
+  }, [openPublishModal, track_id])
+
+  const onPressEdit = useCallback(() => {
+    navigation?.push('EditTrack', { id: track_id })
+  }, [navigation, track_id])
+
   const hideShare = !isOwner && field_visibility?.share === false
   const hidePlays = !isOwner && field_visibility?.play_count === false
 
@@ -251,6 +261,8 @@ export const TrackTileComponent = ({
       onPressSave={handlePressSave}
       onPressShare={handlePressShare}
       onPressTitle={handlePressTitle}
+      onPressPublish={handlePressPublish}
+      onPressEdit={onPressEdit}
       playCount={play_count}
       title={title}
       item={track}

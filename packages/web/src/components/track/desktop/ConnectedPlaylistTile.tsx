@@ -539,6 +539,7 @@ const ConnectedPlaylistTile = ({
       hasStreamAccess={hasStreamAccess}
       streamConditions={isStreamGated ? streamConditions : null}
       source={source}
+      playlistId={id}
     />
   )
 }
