@@ -346,7 +346,12 @@ export const DetailsTileNoAccess = ({
               {messages.lockedUSDCPurchase}
             </Text>
           </View>
-          <Button onPress={handlePurchasePress} fullWidth>
+          <Button
+            variant='primary'
+            onPress={handlePurchasePress}
+            fullWidth
+            color='lightGreen'
+          >
             {messages.buy(formatPrice(streamConditions.usdc_purchase.price))}
           </Button>
         </>
