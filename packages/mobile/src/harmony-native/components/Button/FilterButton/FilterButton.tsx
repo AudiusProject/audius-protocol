@@ -20,7 +20,8 @@ export const FilterButton = (props: FilterButtonProps) => {
     disabled,
     variant = 'fillContainer',
     size = 'default',
-    iconRight
+    iconRight,
+    leadingElement
   } = props
 
   const { color, cornerRadius, spacing, typography } = useTheme()
@@ -128,6 +129,7 @@ export const FilterButton = (props: FilterButtonProps) => {
       aria-haspopup='listbox'
       aria-expanded={isOpen}
     >
+      {leadingElement}
       <Text color={textColor}>{label}</Text>
     </BaseButton>
   )

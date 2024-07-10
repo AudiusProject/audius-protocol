@@ -10,9 +10,13 @@ import {
   FilterButton,
   Flex,
   IconCloseAlt,
-  SelectablePill
+  SelectablePill,
+  spacing
 } from '@audius/harmony-native'
 import { useNavigation } from 'app/hooks/useNavigation'
+import { Image } from 'react-native'
+
+import { moodMap } from 'app/utils/moods'
 
 import { useSearchCategory, useSearchFilters } from './searchState'
 
@@ -97,6 +101,31 @@ export const SearchCategoriesAndFilters = () => {
     [filters, navigation, setFilters]
   )
 
+  const getFilterLabel = (filter: string) => {
+    if (filter === 'bpm') {
+      return filters[filter] ? `${filters[filter]} BPM` : 'BPM'
+    }
+
+    return typeof filters[filter] === 'string'
+      ? String(filters[filter])
+      : filterInfoMap[filter].label
+  }
+
+  const getLeadingElement = (filter: string) => {
+    if (filter === 'mood') {
+      const mood = filters[filter]
+      if (mood) {
+        return (
+          <Image
+            source={moodMap[mood]}
+            style={{ height: spacing.l, width: spacing.l }}
+          />
+        )
+      }
+    }
+    return undefined
+  }
+
   return (
     <Flex backgroundColor='white'>
       <ScrollView horizontal keyboardShouldPersistTaps='handled'>
@@ -114,14 +143,11 @@ export const SearchCategoriesAndFilters = () => {
                   ? String(filters[filter])
                   : undefined
               }
-              label={
-                typeof filters[filter] === 'string'
-                  ? String(filters[filter])
-                  : filterInfoMap[filter].label
-              }
+              label={getFilterLabel(filter)}
               onPress={() => {
                 handleFilterPress(filter)
               }}
+              leadingElement={getLeadingElement(filter)}
             />
           ))}
         </Flex>
