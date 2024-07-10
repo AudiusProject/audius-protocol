@@ -1,16 +1,10 @@
 import { Knex } from 'knex'
 import { NotificationRow } from '../../types/dn'
-import {
-  USDCPurchaseSellerNotification,
-  AppEmailNotification
-} from '../../types/notifications'
+import { USDCPurchaseSellerNotification } from '../../types/notifications'
 import { BaseNotification } from './base'
 import { sendPushNotification } from '../../sns'
 import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
-import {
-  sendNotificationEmail,
-  sendTransactionalEmail
-} from '../../email/notifications/sendEmail'
+import { sendTransactionalEmail } from '../../email/notifications/sendEmail'
 import {
   buildUserNotificationSettings,
   Device
@@ -19,10 +13,14 @@ import { disableDeviceArns } from '../../utils/disableArnEndpoint'
 import { capitalize } from 'lodash'
 import { sendBrowserNotification } from '../../web'
 import { EntityType } from '../../email/notifications/types'
-import { formatUSDCWeiToUSDString } from '../../utils/format'
+import {
+  formatContentUrl,
+  formatImageUrl,
+  formatProfileUrl,
+  formatUSDCWeiToUSDString
+} from '../../utils/format'
 import { email } from '../../email/notifications/preRendered/sale'
 import { logger } from '../../logger'
-import { getContentNode, getHostname } from '../../utils/env'
 
 type USDCPurchaseSellerRow = Omit<NotificationRow, 'data'> & {
   data: USDCPurchaseSellerNotification
@@ -70,10 +68,8 @@ export class USDCPurchaseSeller extends BaseNotification<USDCPurchaseSellerRow> 
   }
 
   async processNotification({
-    isLiveEmailEnabled,
     isBrowserPushEnabled
   }: {
-    isLiveEmailEnabled: boolean
     isBrowserPushEnabled: boolean
   }) {
     const users = await this.getUsersBasicInfo([
@@ -124,6 +120,8 @@ export class USDCPurchaseSeller extends BaseNotification<USDCPurchaseSellerRow> 
     const buyerHandle = users[this.buyerUserId]?.handle
     const sellerUsername = users[this.notificationReceiverUserId]?.name
     const sellerHandle = users[this.notificationReceiverUserId]?.handle
+    const sellerProfilePictureSizes =
+      users[this.notificationReceiverUserId]?.profile_picture_sizes
     const price = this.totalAmount
 
     await sendBrowserNotification(
@@ -176,47 +174,26 @@ export class USDCPurchaseSeller extends BaseNotification<USDCPurchaseSellerRow> 
       await this.incrementBadgeCount(this.notificationReceiverUserId)
     }
 
-    if (
-      isLiveEmailEnabled &&
-      userNotificationSettings.shouldSendEmailAtFrequency({
-        initiatorUserId: this.buyerUserId,
-        receiverUserId: this.notificationReceiverUserId,
-        frequency: 'live'
-      })
-    ) {
-      const notification: AppEmailNotification = {
-        receiver_user_id: this.notificationReceiverUserId,
-        ...this.notification
-      }
-      await sendNotificationEmail({
-        userId: this.notificationReceiverUserId,
-        email: userNotificationSettings.getUserEmail(
-          this.notificationReceiverUserId
-        ),
-        frequency: 'live',
-        notifications: [notification],
-        dnDb: this.dnDB,
-        identityDb: this.identityDB
-      })
-    }
-
     await sendTransactionalEmail({
       email: userNotificationSettings.getUserEmail(
         this.notificationReceiverUserId
       ),
       html: email({
         purchaserName: buyerUsername,
-        purchaserLink: `${getHostname()}/${buyerHandle}`,
+        purchaserLink: formatProfileUrl(buyerHandle),
         artistName: sellerUsername,
+        artistHandle: sellerHandle,
         contentType: this.contentType,
         contentTitle: purchasedContentName,
-        contentLink: `${getHostname()}/${sellerHandle}/${slug}`,
-        contentImage: `${getContentNode()}/content/${cover_art_sizes}/480x480.jpg`,
+        contentLink: formatContentUrl(sellerHandle, slug),
+        contentImage: formatImageUrl(cover_art_sizes, 480),
+        artistImage: formatImageUrl(sellerProfilePictureSizes, 150),
+        artistLink: formatProfileUrl(sellerHandle),
         price: this.amount,
         payExtra: this.extraAmount,
         total: this.totalAmount
       }),
-      subject: `Your ${capitalize(this.contentType)} Has Been Purchased`
+      subject: `Congrats! You've made a sale on Audius!`
     })
   }
 

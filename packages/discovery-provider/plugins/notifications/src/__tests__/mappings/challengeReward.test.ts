@@ -43,7 +43,8 @@ describe('Challenge Reward Notification', () => {
         challenge_id: 'profile-completion',
         user_id: 1,
         specifier: '1',
-        amount: '100000000'
+        amount: '100000000',
+        created_at: new Date(1589373217)
       }
     ])
     await insertMobileSettings(processor.identityDB, [{ userId: 1 }])
@@ -68,7 +69,7 @@ describe('Challenge Reward Notification', () => {
         title: `✅️ Complete your Profile`,
         body: `You’ve earned 1 $AUDIO for completing this challenge!`,
         data: {
-          id: 'timestamp:1589373217:group_id:challenge_reward:1:challenge:profile-completion:specifier:1',
+          id: 'timestamp:1589373:group_id:challenge_reward:1:challenge:profile-completion:specifier:1',
           type: 'ChallengeReward'
         }
       }

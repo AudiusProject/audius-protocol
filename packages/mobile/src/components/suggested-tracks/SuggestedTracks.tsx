@@ -9,8 +9,8 @@ import { TouchableOpacity } from 'react-native-gesture-handler'
 import { useSelector } from 'react-redux'
 import { useToggle } from 'react-use'
 
-import { IconCaretDown, IconRefresh } from '@audius/harmony-native'
-import { Button, Divider, Text, TextButton, Tile } from 'app/components/core'
+import { IconCaretDown, IconRefresh, Button } from '@audius/harmony-native'
+import { Divider, Text, TextButton, Tile } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 
 import { TrackImage } from '../image/TrackImage'
@@ -66,8 +66,7 @@ const useStyles = makeStyles(({ spacing, typography, palette }) => ({
   refreshButton: {
     marginVertical: spacing(4),
     alignSelf: 'center'
-  },
-  buttonText: { textTransform: 'none', marginHorizontal: spacing(1) }
+  }
 }))
 
 type SuggestedTrackProps = {
@@ -107,12 +106,12 @@ const SuggestedTrackRow = (props: SuggestedTrackProps) => {
       </View>
       <View>
         <Button
-          variant='common'
-          title={messages.addTrack}
+          variant='secondary'
           size='small'
-          styles={{ text: styles.buttonText }}
           onPress={() => onAddTrack(track_id)}
-        />
+        >
+          {messages.addTrack}
+        </Button>
       </View>
     </View>
   )

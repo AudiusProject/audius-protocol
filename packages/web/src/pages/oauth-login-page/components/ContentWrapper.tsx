@@ -15,14 +15,12 @@ export const ContentWrapper = ({
 }) => (
   <div className={cn(styles.wrapper, { [styles.popup]: display === 'popup' })}>
     {display === 'popup' ? (
-      <div className={styles.container}>{children}</div>
+      children
     ) : (
       <Paper
         shadow='mid'
         w='375px'
         direction='column'
-        pv='3xl'
-        ph='xl'
         mv='3xl'
         alignSelf='flex-start'
         borderRadius='xl'

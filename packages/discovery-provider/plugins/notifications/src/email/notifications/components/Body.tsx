@@ -1,9 +1,8 @@
 import React from 'react'
 
+import { DMEntityType, EntityType } from '../types'
 import Footer from './Footer'
 import Notification from './notifications/Notification'
-import { getNumberSuffix } from './utils'
-import { DMEntityType, EntityType } from '../types'
 
 const AudiusImage = () => {
   return (
@@ -114,6 +113,14 @@ const snippetMap = {
   ['usdc_purchase_buyer'](notification) {
     const { entity, users } = notification
     return `You just purchased ${entity.name} from ${users[0].name}!`
+  },
+  ['request_manager'](notification) {
+    const { users } = notification
+    return `${users[0].name} has invited you to manage their account.`
+  },
+  ['approve_manager_request'](notification) {
+    const { users } = notification
+    return `${users[0].name} has been added as a manager on your account.`
   },
   ['create'](notification) {
     const [user] = notification.users

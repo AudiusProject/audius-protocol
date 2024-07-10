@@ -49,8 +49,13 @@ import {
 import { useDispatch, useSelector } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
-import { IconCart, IconCloseAlt, IconError } from '@audius/harmony-native'
-import { Button, LockedStatusBadge, Text } from 'app/components/core'
+import {
+  IconCart,
+  IconCloseAlt,
+  IconError,
+  Button
+} from '@audius/harmony-native'
+import { LockedStatusBadge, Text } from 'app/components/core'
 import Drawer from 'app/components/drawer'
 import { useIsUSDCEnabled } from 'app/hooks/useIsUSDCEnabled'
 import { useNavigation } from 'app/hooks/useNavigation'
@@ -250,8 +255,11 @@ const RenderForm = ({
   const navigation = useNavigation()
   const styles = useStyles()
   const dispatch = useDispatch()
-  const { specialLightGreen, primary } = useThemeColors()
+  const { primary } = useThemeColors()
   const presetValues = usePayExtraPresets()
+  const { isEnabled: isCoinflowEnabled } = useFeatureFlag(
+    FeatureFlags.BUY_WITH_COINFLOW
+  )
   const { isEnabled: isIOSUSDCPurchaseEnabled } = useFeatureFlag(
     FeatureFlags.IOS_USDC_PURCHASE_ENABLED
   )
@@ -279,9 +287,6 @@ const RenderForm = ({
     price,
     currentBalance: balance
   })
-  const { isEnabled: isCoinflowEnabled } = useFeatureFlag(
-    FeatureFlags.BUY_WITH_COINFLOW
-  )
   const coinflowMaximumCents = useRemoteVar(IntKeys.COINFLOW_MAXIMUM_CENTS)
 
   const { isExistingBalanceDisabled, totalPriceInCents } = usePurchaseMethod({
@@ -415,25 +420,20 @@ const RenderForm = ({
         <View style={styles.formActions}>
           {error ? <RenderError error={error} /> : null}
           {page === PurchaseContentPage.TRANSFER ? (
-            <Button
-              title={messages.goBack}
-              onPress={handleGoBackPress}
-              variant='common'
-              size='large'
-              fullWidth
-            />
+            <Button onPress={handleGoBackPress} variant='secondary' fullWidth>
+              {messages.goBack}
+            </Button>
           ) : null}
           <Button
             onPress={submitForm}
             disabled={isUnlocking}
-            title={getButtonText(isUnlocking, totalPriceInCents)}
-            variant={'primary'}
-            size='large'
-            color={specialLightGreen}
-            iconPosition='left'
-            icon={isUnlocking ? LoadingSpinner : undefined}
+            variant='primary'
+            color='lightGreen'
+            isLoading={isUnlocking}
             fullWidth
-          />
+          >
+            {getButtonText(isUnlocking, totalPriceInCents)}
+          </Button>
         </View>
       )}
     </View>

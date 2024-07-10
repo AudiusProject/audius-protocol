@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react'
 
+import { useControlled } from '@audius/harmony/src/hooks/useControlled'
 import { css } from '@emotion/native'
 import { Pressable } from 'react-native'
 import type { GestureResponderEvent } from 'react-native'
@@ -34,13 +35,19 @@ export const SelectablePill = (props: SelectablePillProps) => {
     value,
     style: styleProp,
     fullWidth,
+    isControlled,
     ...other
   } = props
-  const { color, motion, cornerRadius } = useTheme()
-  const pressed = useSharedValue(0)
-  const selected = useSharedValue(0)
+  const { color, motion, cornerRadius, typography } = useTheme()
   const [isPressing, setIsPressing] = useState(false)
-  const [isSelected, setIsSelected] = useState(isSelectedProp)
+  const [isSelected, setIsSelected] = useControlled({
+    controlledProp: isSelectedProp,
+    defaultValue: false,
+    componentName: 'SelectablePill'
+  })
+
+  const pressed = useSharedValue(0)
+  const selected = useSharedValue(isSelected ? 1 : 0)
 
   const handlePressIn = useCallback(() => {
     setIsPressing(true)
@@ -50,12 +57,12 @@ export const SelectablePill = (props: SelectablePillProps) => {
     (e: GestureResponderEvent) => {
       onPress?.(e)
       if (value) {
-        onChange?.(value)
+        onChange?.(value, !isSelected)
       }
       setIsPressing(false)
-      setIsSelected((isSelected) => !isSelected)
+      setIsSelected(!isSelected)
     },
-    [onChange, onPress, value]
+    [onChange, onPress, value, isSelected, setIsSelected]
   )
 
   const tap = Gesture.Tap()
@@ -68,7 +75,8 @@ export const SelectablePill = (props: SelectablePillProps) => {
     })
     .onFinalize((event) => {
       pressed.value = withTiming(0, motion.press)
-      const isDeselect = event.state === State.END && isSelected
+      const isDeselect =
+        event.state === State.END && isSelected && !isControlled
       const isCancel = event.state !== State.END && !isSelected
       if (isDeselect || isCancel) {
         selected.value = withTiming(0, motion.press)
@@ -78,7 +86,7 @@ export const SelectablePill = (props: SelectablePillProps) => {
   useEffect(() => {
     setIsSelected(isSelectedProp)
     selected.value = withTiming(isSelectedProp ? 1 : 0, motion.press)
-  }, [isSelectedProp, motion.press, selected])
+  }, [isSelectedProp, motion.press, selected, setIsSelected])
 
   const animatedRootStyles = useAnimatedStyle(() => ({
     opacity: withTiming(disabled ? 0.45 : 1, motion.press),
@@ -109,10 +117,7 @@ export const SelectablePill = (props: SelectablePillProps) => {
         onPressIn={handlePressIn}
         onPress={handlePress}
         style={[
-          css({
-            alignSelf: 'flex-start',
-            borderRadius: cornerRadius['2xl']
-          }),
+          css({ alignSelf: 'flex-start', borderRadius: cornerRadius['2xl'] }),
           styleProp
         ]}
       >
@@ -124,7 +129,7 @@ export const SelectablePill = (props: SelectablePillProps) => {
             disabled: !!disabled
           }}
           direction='row'
-          gap='xs'
+          gap='s'
           alignItems='center'
           justifyContent='center'
           alignSelf='flex-start'
@@ -135,28 +140,23 @@ export const SelectablePill = (props: SelectablePillProps) => {
           shadow={size === 'large' ? (isSelected ? 'flat' : 'near') : undefined}
           style={[
             animatedRootStyles,
-            fullWidth
-              ? {
-                  width: '100%'
-                }
-              : undefined
+            fullWidth ? { width: '100%' } : undefined
           ]}
           {...other}
         >
-          {Icon ? (
+          {size !== 'small' && Icon ? (
             <Icon
-              size='xs'
-              fill={
-                isSelected || isPressing
-                  ? color.text.staticWhite
-                  : color.text.default
-              }
+              size='s'
+              color={isSelected || isPressing ? 'staticWhite' : 'default'}
             />
           ) : null}
           <AnimatedText
             numberOfLines={1}
             variant='body'
-            style={animatedTextStyles}
+            style={[
+              animatedTextStyles,
+              { lineHeight: typography.lineHeight.m }
+            ]}
           >
             {label}
           </AnimatedText>

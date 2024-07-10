@@ -510,6 +510,13 @@ def get_transaction_signatures(
                 for tx_info in transactions_array:
                     tx_sig = str(tx_info.signature)
                     tx_slot = tx_info.slot
+
+                    if tx_info.err is not None:
+                        logger.debug(
+                            f"index_rewards_manager.py | Skipping error transaction tx={tx_sig} err={tx_info.err}"
+                        )
+                        continue
+
                     logger.debug(
                         f"index_rewards_manager.py | Processing tx={tx_sig} | slot={tx_slot}"
                     )

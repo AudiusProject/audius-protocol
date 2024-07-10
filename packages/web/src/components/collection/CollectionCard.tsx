@@ -10,8 +10,8 @@ import {
   accountSelectors,
   cacheCollectionsSelectors
 } from '@audius/common/store'
-import { formatCount } from '@audius/common/utils'
-import { Flex, Text } from '@audius/harmony'
+import { formatCount, formatReleaseDate } from '@audius/common/utils'
+import { Flex, Skeleton, Text } from '@audius/harmony'
 import IconHeart from '@audius/harmony/src/assets/icons/Heart.svg'
 import IconRepost from '@audius/harmony/src/assets/icons/Repost.svg'
 import { useLinkClickHandler } from 'react-router-dom-v5-compat'
@@ -30,12 +30,16 @@ const { getUserId } = accountSelectors
 const messages = {
   repost: 'Reposts',
   favorites: 'Favorites',
-  hidden: 'Hidden'
+  hidden: 'Hidden',
+  releases: (releaseDate: string) =>
+    `Releases ${formatReleaseDate({ date: releaseDate })}`
 }
 
 type CollectionCardProps = Omit<CardProps, 'id'> & {
   id: ID
+  loading?: boolean
   noNavigation?: boolean
+  onCollectionLinkClick?: (e: MouseEvent<HTMLAnchorElement>) => void
 }
 
 const cardSizeToCoverArtSizeMap = {
@@ -47,7 +51,15 @@ const cardSizeToCoverArtSizeMap = {
 
 export const CollectionCard = forwardRef(
   (props: CollectionCardProps, ref: Ref<HTMLDivElement>) => {
-    const { id, size, onClick, noNavigation, ...other } = props
+    const {
+      id,
+      loading,
+      size,
+      onClick,
+      onCollectionLinkClick,
+      noNavigation,
+      ...other
+    } = props
 
     const collection = useSelector((state) => getCollection(state, { id }))
     const accountId = useSelector(getUserId)
@@ -65,7 +77,22 @@ export const CollectionCard = forwardRef(
       [noNavigation, handleNavigate, onClick]
     )
 
-    if (!collection) return null
+    if (!collection || loading) {
+      return (
+        <Card size={size} {...other}>
+          <Flex direction='column' p='s' gap='s'>
+            <Skeleton border='default' css={{ aspectRatio: 1 }} />
+            <CardContent gap='xs'>
+              <Skeleton h={24} w='80%' alignSelf='center' />
+              <Skeleton h={20} w='50%' alignSelf='center' />
+            </CardContent>
+          </Flex>
+          <CardFooter>
+            <Skeleton h={16} w='60%' alignSelf='center' />
+          </CardFooter>
+        </Card>
+      )
+    }
 
     const {
       playlist_name,
@@ -73,19 +100,20 @@ export const CollectionCard = forwardRef(
       playlist_owner_id,
       repost_count,
       save_count,
-      is_private,
+      is_private: isPrivate,
       access,
-      stream_conditions
+      stream_conditions,
+      is_scheduled_release: isScheduledRelease,
+      release_date: releaseDate
     } = collection
 
     const isOwner = accountId === playlist_owner_id
     const isPurchase = isContentUSDCPurchaseGated(stream_conditions)
 
-    const dogEarType = is_private
-      ? DogEarType.HIDDEN
-      : isPurchase && (!access.stream || isOwner)
-      ? DogEarType.USDC_PURCHASE
-      : null
+    const dogEarType =
+      isPurchase && (!access.stream || isOwner)
+        ? DogEarType.USDC_PURCHASE
+        : null
 
     return (
       <Card ref={ref} onClick={handleClick} size={size} {...other}>
@@ -103,6 +131,7 @@ export const CollectionCard = forwardRef(
               to={permalink}
               textVariant='title'
               css={{ justifyContent: 'center' }}
+              onClick={onCollectionLinkClick}
             >
               <Text ellipses>{playlist_name}</Text>
             </TextLink>
@@ -113,7 +142,7 @@ export const CollectionCard = forwardRef(
           </CardContent>
         </Flex>
         <CardFooter>
-          {is_private ? (
+          {isPrivate ? (
             <Text
               variant='body'
               size='s'
@@ -121,7 +150,9 @@ export const CollectionCard = forwardRef(
               color='subdued'
               css={(theme) => ({ lineHeight: theme.typography.lineHeight.s })}
             >
-              {messages.hidden}
+              {isScheduledRelease && releaseDate
+                ? messages.releases(releaseDate)
+                : messages.hidden}
             </Text>
           ) : (
             <>
@@ -141,11 +172,11 @@ export const CollectionCard = forwardRef(
                   {formatCount(save_count)}
                 </Text>
               </Flex>
-              {isPurchase && !isOwner ? (
-                <LockedStatusPill variant='premium' locked={!access.stream} />
-              ) : null}
             </>
           )}
+          {isPurchase && !isOwner ? (
+            <LockedStatusPill variant='premium' locked={!access.stream} />
+          ) : null}
         </CardFooter>
       </Card>
     )

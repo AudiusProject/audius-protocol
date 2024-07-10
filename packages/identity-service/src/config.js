@@ -635,6 +635,12 @@ const config = convict({
     env: 'solanaEndpoint',
     default: null
   },
+  solanaEndpointListensProgram: {
+    doc: 'The Solana RPC endpoint to make requests against for the listens program',
+    format: String,
+    env: 'solanaEndpointListensProgram',
+    default: null
+  },
   solanaTrackListenCountAddress: {
     doc: 'solanaTrackListenCountAddress',
     format: String,
@@ -892,6 +898,18 @@ const config = convict({
     format: String,
     env: 'solanaUSDCMintAddress',
     default: ''
+  },
+  fpServerApiKey: {
+    doc: 'API key for requesting visitorId information',
+    format: String,
+    env: 'fpServerApiKey',
+    default: ''
+  },
+  useDiscoveryListens: {
+    doc: 'Forward listen requests to discovery',
+    format: Boolean,
+    env: 'useDiscoveryListens',
+    default: true
   }
 })
 

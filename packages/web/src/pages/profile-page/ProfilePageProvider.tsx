@@ -791,9 +791,9 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
     const userId = profile ? profile.user_id : null
     const handle = profile ? `@${profile.handle}` : ''
     const verified = profile ? profile.is_verified : false
-    const twitterVerified = profile ? profile.twitterVerified : false
-    const instagramVerified = profile ? profile.instagramVerified : false
-    const tikTokVerified = profile ? profile.tikTokVerified : false
+    const twitterVerified = !!profile?.verified_with_twitter
+    const instagramVerified = !!profile?.verified_with_instagram
+    const tikTokVerified = !!profile?.verified_with_tiktok
     const created = profile
       ? moment(profile.created_at).format('YYYY')
       : moment().format('YYYY')
@@ -812,21 +812,21 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
     const twitterHandle = profile
       ? updatedTwitterHandle !== null
         ? updatedTwitterHandle
-        : profile.twitterVerified && !verifiedHandleWhitelist.has(handle)
+        : twitterVerified && !verifiedHandleWhitelist.has(handle)
         ? profile.handle
         : profile.twitter_handle || ''
       : ''
     const instagramHandle = profile
       ? updatedInstagramHandle !== null
         ? updatedInstagramHandle
-        : profile.instagramVerified
+        : instagramVerified
         ? profile.handle
         : profile.instagram_handle || ''
       : ''
     const tikTokHandle = profile
       ? updatedTikTokHandle !== null
         ? updatedTikTokHandle
-        : profile.tikTokVerified
+        : tikTokVerified
         ? profile.handle
         : profile.tiktok_handle || ''
       : ''

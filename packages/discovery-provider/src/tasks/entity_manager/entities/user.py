@@ -328,6 +328,7 @@ def update_user_metadata(
     challenge_event_bus = params.challenge_bus
     # Iterate over the user_record keys
     user_record_attributes = user_record.get_attributes_dict()
+
     for key, _ in user_record_attributes.items():
         # Update the user_record when the corresponding field exists
         # in metadata
@@ -335,6 +336,15 @@ def update_user_metadata(
             if key in immutable_user_fields:
                 continue
             setattr(user_record, key, metadata[key])
+
+    # Ensure verified social handle is same as audius handle
+    if user_record.is_verified:
+        if user_record.verified_with_twitter:
+            user_record.twitter_handle = user_record.handle
+        if user_record.verified_with_instagram:
+            user_record.instagram_handle = user_record.handle
+        if user_record.verified_with_tiktok:
+            user_record.tiktok_handle = user_record.handle
 
     if "collectibles" in metadata:
         if (
@@ -611,7 +621,31 @@ def verify_user(params: ManageEntityParameters):
     )
 
     user_record = validate_user_record(user_record)
-    user_record.is_verified = True
+
+    metadata = params.metadata
+    is_verified = metadata.get("is_verified", False)
+    twitter_handle = metadata.get("twitter_handle")
+    instagram_handle = metadata.get("instagram_handle")
+    tiktok_handle = metadata.get("tiktok_handle")
+
+    # Update user record with verification information.
+    # Only update the social handle field provided in the metadata.
+    # If verified was already set to True, keep it as True so that we prevent
+    # unverifying a user who was previously verified with a different social platform.
+    user_record.is_verified = user_record.is_verified or is_verified
+    if twitter_handle:
+        user_record.twitter_handle = twitter_handle
+        if is_verified:
+            user_record.verified_with_twitter = True
+    elif instagram_handle:
+        user_record.instagram_handle = instagram_handle
+        if is_verified:
+            user_record.verified_with_instagram = True
+    elif tiktok_handle:
+        user_record.tiktok_handle = tiktok_handle
+        if is_verified:
+            user_record.verified_with_tiktok = True
+
     params.add_record(user_id, user_record)
     params.challenge_bus.dispatch(
         ChallengeEvent.connect_verified,

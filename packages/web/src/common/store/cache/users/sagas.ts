@@ -355,28 +355,23 @@ function* watchFetchCoverPhoto() {
 export function* fetchUserSocials({
   handle
 }: ReturnType<typeof userActions.fetchUserSocials>) {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   let user = yield* select(getUser, { handle })
   if (!user) {
     yield* call(fetchUserByHandle, handle, new Set())
   }
   user = yield* call(waitForValue, getUser, { handle })
   if (!user) return
-  const socials = yield* call(
-    audiusBackendInstance.getSocialHandles,
-    user.handle
-  )
 
   yield* put(
     cacheActions.update(Kind.USERS, [
       {
         id: user.user_id,
         metadata: {
-          twitter_handle: socials.twitterHandle || null,
-          instagram_handle: socials.instagramHandle || null,
-          tiktok_handle: socials.tikTokHandle || null,
-          website: socials.website || null,
-          donation: socials.donation || null
+          twitter_handle: user.twitter_handle || null,
+          instagram_handle: user.instagram_handle || null,
+          tiktok_handle: user.tiktok_handle || null,
+          website: user.website || null,
+          donation: user.donation || null
         }
       }
     ])

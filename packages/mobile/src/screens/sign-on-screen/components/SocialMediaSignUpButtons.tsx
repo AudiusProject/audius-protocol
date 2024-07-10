@@ -1,5 +1,6 @@
 import { useRemoteVar } from '@audius/common/hooks'
 import { socialMediaMessages } from '@audius/common/messages'
+import type { SocialPlatform } from '@audius/common/models'
 import { ErrorLevel } from '@audius/common/models'
 import { BooleanKeys } from '@audius/common/services'
 
@@ -15,7 +16,7 @@ type SocialMediaLoginOptionsProps = {
   onCompleteSocialMediaLogin: (info: {
     requiresReview: boolean
     handle: string
-    platform: 'twitter' | 'instagram' | 'tiktok'
+    platform: SocialPlatform
   }) => void
   onError: (e: unknown) => void
   onStart: () => void
@@ -33,7 +34,7 @@ export const SocialMediaSignUpButtons = ({
 }: SocialMediaLoginOptionsProps) => {
   const { toast } = useToast()
   const handleFailure =
-    (platform: 'twitter' | 'instagram' | 'tiktok') =>
+    (platform: SocialPlatform) =>
     (e: unknown, additionalInfo?: Record<any, any>) => {
       onError(e)
       reportToSentry({
@@ -52,7 +53,7 @@ export const SocialMediaSignUpButtons = ({
   }: {
     requiresReview: boolean
     handle: string
-    platform: 'twitter' | 'instagram' | 'tiktok'
+    platform: SocialPlatform
   }) => {
     toast({
       content: socialMediaMessages.socialMediaLoginSucess(platform),

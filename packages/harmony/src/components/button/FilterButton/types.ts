@@ -1,25 +1,38 @@
+import { ReactNode } from 'react'
+
 import { IconComponent } from 'components/icon'
-import { Origin } from 'components/popup/types'
 
 export type FilterButtonSize = 'default' | 'small'
 
+// TODO: is replaceLabel still needed?
 export type FilterButtonVariant = 'fillContainer' | 'replaceLabel'
 
-export type FilterButtonOption = {
-  value: string
+type ChildrenProps = {
   /**
-   * The label to display. If not provided, uses the value.
+   * State representing whether the FilterButton is open.
+   * This can be used to implement a popup via `children`
    */
-  label?: string
-  icon?: IconComponent
+  isOpen: boolean
+  /**
+   * Set open state
+   */
+  setIsOpen: (isOpen: boolean) => void
+  /**
+   * A function to handle when the value is changed
+   */
+  handleChange: (value: string) => void
+  /**
+   * A ref to the anchor element (button)
+   */
+  anchorRef: React.RefObject<HTMLButtonElement>
 }
 
 export type FilterButtonProps = {
   /**
-   * Selection options
-   * e.g. { label: 'Option A', icon: IconRadar }
+   * Children render prop. This can be used to render a dropdown component
+   * for example
    */
-  options: FilterButtonOption[]
+  children?: (props: ChildrenProps) => ReactNode
 
   /**
    * The text that appears on the button component.
@@ -34,9 +47,9 @@ export type FilterButtonProps = {
   'aria-label'?: string
 
   /**
-   * The selected value
+   * The value
    */
-  selection?: string | null
+  value?: string | null
 
   /**
    * The button size
@@ -58,12 +71,28 @@ export type FilterButtonProps = {
   /**
    * Optional icon element to include on the right side of the button
    */
-  iconRight?: IconComponent
+  iconRight?: IconComponent | null
 
   /**
-   * What to do when an option is selected
+   * What to do when the value is changed
    */
-  onSelect?: (label: string) => void
+  onChange?: (value: string) => void
+
+  /**
+   * What to do when the filter button is opened
+   */
+  onOpen?: () => void
+
+  /**
+   * If provided, will be called when the selected value is reset
+   */
+  onReset?: () => void
+
+  /**
+   * What to do when the button is clicked
+   * This will override the default behavior of toggling isOpen
+   */
+  onClick?: () => void
 
   /**
    * Whether interaction is disabled
@@ -71,39 +100,7 @@ export type FilterButtonProps = {
   disabled?: boolean
 
   /**
-   * Popup anchor origin
-   * @default { horizontal: 'center', vertical: 'bottom' }
+   * Optional leading element to include on the left side of the button
    */
-  popupAnchorOrigin?: Origin
-
-  /**
-   * Popup max height
-   */
-  popupMaxHeight?: number
-
-  /**
-   * Popup transform origin
-   * @default { horizontal: 'center', vertical: 'top' }
-   */
-  popupTransformOrigin?: Origin
-
-  /**
-   * Popup portal location passed to the inner popup
-   */
-  popupPortalLocation?: HTMLElement
-
-  /**
-   * zIndex applied to the inner Popup component
-   */
-  popupZIndex?: number
-
-  /**
-   * Show a text input to filter the options
-   */
-  showFilterInput?: boolean
-
-  /**
-   * Placeholder text for the filter input
-   */
-  filterInputPlaceholder?: string
+  leadingElement?: ReactNode
 }

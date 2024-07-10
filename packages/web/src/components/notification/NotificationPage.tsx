@@ -6,6 +6,7 @@ import {
   notificationsSelectors,
   Notification as Notifications
 } from '@audius/common/store'
+import { Flex } from '@audius/harmony'
 import InfiniteScroll from 'react-infinite-scroller'
 import Lottie from 'react-lottie'
 import { useDispatch, useSelector } from 'react-redux'
@@ -16,7 +17,6 @@ import NavContext, { LeftPreset } from 'components/nav/mobile/NavContext'
 
 import { EmptyNotifications } from './EmptyNotifications'
 import { Notification } from './Notification'
-import styles from './NotificationPage.module.css'
 const { fetchNotifications, markAllAsViewed } = notificationsActions
 const {
   getNotificationHasMore,
@@ -68,47 +68,50 @@ export const NotificationPage = () => {
     <MobilePageContainer
       title={messages.documentTitle}
       description={messages.description}
-      backgroundClassName={styles.background}
       fullHeight
     >
-      <div className={styles.notificationContainer}>
-        {notifications.length > 0 ? (
-          <InfiniteScroll
-            pageStart={0}
-            loadMore={loadMore}
-            hasMore={true}
-            useWindow={true}
-            initialLoad={false}
-            threshold={SCROLL_THRESHOLD}
-          >
-            <div className={styles.content}>
-              {notifications
-                .filter(({ isHidden }: any) => !isHidden)
-                .map((notification: Notifications) => {
-                  return (
-                    <Notification
-                      key={notification.id}
-                      notification={notification}
-                    />
-                  )
-                })}
-              {status === Status.LOADING && (
-                <div className={styles.spinnerContainer} key={'loading'}>
-                  <Lottie
-                    options={{
-                      loop: true,
-                      autoplay: true,
-                      animationData: loadingSpinner
-                    }}
-                  />
-                </div>
-              )}
-            </div>
-          </InfiniteScroll>
-        ) : (
-          <EmptyNotifications />
-        )}
-      </div>
+      {notifications.length > 0 ? (
+        <Flex
+          as={InfiniteScroll}
+          direction='column'
+          p='l'
+          backgroundColor='default'
+          gap='s'
+          // @ts-ignore
+          pageStart={0}
+          loadMore={loadMore}
+          hasMore={true}
+          useWindow={true}
+          initialLoad={false}
+          threshold={SCROLL_THRESHOLD}
+          element='ul'
+          css={{ listStyleType: 'none', textAlign: 'left' }}
+        >
+          {notifications
+            .filter(({ isHidden }: any) => !isHidden)
+            .map((notification: Notifications) => {
+              return (
+                <Notification
+                  key={notification.id}
+                  notification={notification}
+                />
+              )
+            })}
+          {status === Status.LOADING && (
+            <Flex alignItems='center' justifyContent='center' pt='l'>
+              <Lottie
+                options={{
+                  loop: true,
+                  autoplay: true,
+                  animationData: loadingSpinner
+                }}
+              />
+            </Flex>
+          )}
+        </Flex>
+      ) : (
+        <EmptyNotifications />
+      )}
     </MobilePageContainer>
   )
 }

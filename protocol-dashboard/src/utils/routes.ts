@@ -84,6 +84,8 @@ export const AUDIUS_DAPP_URL =
 export const DOCS_URL = 'https://docs.audius.org/'
 export const REGISTER_NODE_DOCS_URL =
   'https://docs.audius.org/node-operator/setup/overview'
+export const COOLDOWN_PERIOD_DOCS_URL =
+  'https://docs.audius.org/node-operator/staking/delegate#cooldown-period'
 
 // Get Routes
 export const accountPage = (address: string) => {

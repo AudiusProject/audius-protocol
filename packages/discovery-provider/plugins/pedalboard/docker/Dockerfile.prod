@@ -19,7 +19,7 @@ RUN apk add --no-cache libc6-compat
 RUN apk update
 
 WORKDIR /app
-RUN npm install turbo --global
+RUN npm install turbo@1.10.14 --global
 
 COPY . .
 RUN turbo prune "--scope=@pedalboard/${APP_NAME}" --docker
@@ -29,7 +29,7 @@ FROM base AS installer
 
 WORKDIR /app
 
-RUN npm install turbo --global
+RUN npm install turbo@1.10.14 --global
 RUN apk add --no-cache libc6-compat git
 RUN apk update
 RUN apk add --no-cache python3 py3-pip make g++ bash

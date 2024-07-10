@@ -10,6 +10,9 @@ const fs = require('fs')
 const path = require('path')
 const authMiddleware = require('../authMiddleware')
 const { getWelcomeEmail } = require('../notifications/emails/welcome')
+require('@audius/sdk')
+const axios = require('axios')
+const audiusLibsWrapper = require('../audiusLibsInstance')
 
 module.exports = function (app) {
   /**
@@ -58,16 +61,24 @@ module.exports = function (app) {
 
       const walletAddress = existingUser.walletAddress
       const copyrightYear = new Date().getFullYear().toString()
+      const { discoveryProvider } = audiusLibsWrapper.getAudiusLibs()
+      const featuredContent = (
+        await axios.get(
+          `${discoveryProvider.discoveryProviderEndpoint}/v1/full/tracks/trending?limit=3&offset=0&time=month`
+        )
+      )?.data?.data
+
       const welcomeHtml = getWelcomeEmail({
         name,
-        copyrightYear
+        copyrightYear,
+        featuredContent
       })
 
       const emailParams = {
         from: 'The Audius Team <team@audius.co>',
         to: existingUser.email,
         bcc: ['forrest@audius.co'],
-        subject: 'Welcome to Audius!',
+        subject: 'Welcome to Audius! 👋',
         html: welcomeHtml,
         asm: {
           groupId: 19141 // id of unsubscribe group at https://mc.sendgrid.com/unsubscribe-groups

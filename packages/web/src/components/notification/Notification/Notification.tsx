@@ -7,7 +7,9 @@ import ErrorWrapper from 'components/error-wrapper/ErrorWrapper'
 
 import { AddTrackToPlaylistNotification } from './AddTrackToPlaylistNotification'
 import { AnnouncementNotification } from './AnnouncementNotification'
+import { ApproveManagerNotification } from './ApproveManagerRequestNotification'
 import { ChallengeRewardNotification } from './ChallengeRewardNotification'
+import { ClaimableRewardNotification } from './ClaimableRewardNotification'
 import { FavoriteNotification } from './FavoriteNotification'
 import { FavoriteOfRepostNotification } from './FavoriteOfRepostNotification'
 import { FollowNotification } from './FollowNotification'
@@ -16,6 +18,7 @@ import { RemixCosignNotification } from './RemixCosignNotification'
 import { RemixCreateNotification } from './RemixCreateNotification'
 import { RepostNotification } from './RepostNotification'
 import { RepostOfRepostNotification } from './RepostOfRepostNotification'
+import { RequestManagerNotification } from './RequestManagerNotification'
 import { SupporterDethronedNotification } from './SupporterDethronedNotification'
 import { TastemakerNotification } from './TastemakerNotification'
 import { TierChangeNotification } from './TierChangeNotification'
@@ -47,6 +50,10 @@ export const Notification = (props: NotificationProps) => {
       case NotificationType.ChallengeReward: {
         return <ChallengeRewardNotification notification={notification} />
       }
+      case NotificationType.ClaimableReward: {
+        return <ClaimableRewardNotification notification={notification} />
+      }
+
       case NotificationType.Favorite: {
         return <FavoriteNotification notification={notification} />
       }
@@ -109,6 +116,12 @@ export const Notification = (props: NotificationProps) => {
       }
       case NotificationType.USDCPurchaseBuyer: {
         return <USDCPurchaseBuyerNotification notification={notification} />
+      }
+      case NotificationType.RequestManager: {
+        return <RequestManagerNotification notification={notification} />
+      }
+      case NotificationType.ApproveManagerRequest: {
+        return <ApproveManagerNotification notification={notification} />
       }
       case NotificationType.AddTrackToPlaylist: {
         return <AddTrackToPlaylistNotification notification={notification} />

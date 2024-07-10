@@ -5,17 +5,20 @@ const ALL_RIGHTS_RESERVED_DESC = ''
 const ALL_RIGHTS_RESERVED = {
   licenseType: ALL_RIGHTS_RESERVED_TYPE,
   licenseDescription: ALL_RIGHTS_RESERVED_DESC
-}
+} as const
 
 export const BY_TYPE = 'Attribution CC BY'
 const BY_DESC =
   'This license lets others distribute, remix, tweak, and build upon your work, even commercially, as long as they credit you for the original creation. This is the most accommodating of licenses offered. Recommended for maximum dissemination and use of licensed materials.'
-const BY = { licenseType: BY_TYPE, licenseDescription: BY_DESC }
+const BY = { licenseType: BY_TYPE, licenseDescription: BY_DESC } as const
 
 export const BY_NC_TYPE = 'Attribution-NonCommercial CC BY-NC'
 const BY_NC_DESC =
   'This license lets others remix, tweak, and build upon your work non-commercially, and although their new works must also acknowledge you and be non-commercial, they don’t have to license their derivative works on the same terms.'
-const BY_NC = { licenseType: BY_NC_TYPE, licenseDescription: BY_NC_DESC }
+const BY_NC = {
+  licenseType: BY_NC_TYPE,
+  licenseDescription: BY_NC_DESC
+} as const
 
 export const BY_NC_ND_TYPE = 'Attribution-NonCommercial-NoDerivs CC BY-NC-ND'
 const BY_NC_ND_DESC =
@@ -23,7 +26,7 @@ const BY_NC_ND_DESC =
 const BY_NC_ND = {
   licenseType: BY_NC_ND_TYPE,
   licenseDescription: BY_NC_ND_DESC
-}
+} as const
 
 export const BY_NC_SA_TYPE = 'Attribution-NonCommercial-ShareAlike CC BY-NC-SA'
 const BY_NC_SA_DESC =
@@ -31,17 +34,23 @@ const BY_NC_SA_DESC =
 const BY_NC_SA = {
   licenseType: BY_NC_SA_TYPE,
   licenseDescription: BY_NC_SA_DESC
-}
+} as const
 
 export const BY_ND_TYPE = 'Attribution-NoDerivs CC BY-ND'
 const BY_ND_DESC =
   'This license allows for redistribution, commercial and non-commercial, as long as it is passed along unchanged and in whole, with credit to you.'
-const BY_ND = { licenseType: BY_ND_TYPE, licenseDescription: BY_ND_DESC }
+const BY_ND = {
+  licenseType: BY_ND_TYPE,
+  licenseDescription: BY_ND_DESC
+} as const
 
 export const BY_SA_TYPE = 'Attribution ShareAlike CC BY-SA'
 const BY_SA_DESC =
   'This license lets others remix, tweak, and build upon your work even for commercial purposes, as long as they credit you and license their new creations under the identical terms. This license is often compared to “copyleft” free and open source software licenses. All new works based on yours will carry the same license, so any derivatives will also allow commercial use. This is the license used by Wikipedia, and is recommended for materials that would benefit from incorporating content from Wikipedia and similarly licensed projects.'
-const BY_SA = { licenseType: BY_SA_TYPE, licenseDescription: BY_SA_DESC }
+const BY_SA = {
+  licenseType: BY_SA_TYPE,
+  licenseDescription: BY_SA_DESC
+} as const
 
 const ALL_LICENSES = {
   [ALL_RIGHTS_RESERVED_TYPE]: ALL_RIGHTS_RESERVED_DESC,

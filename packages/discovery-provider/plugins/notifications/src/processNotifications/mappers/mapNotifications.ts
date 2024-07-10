@@ -33,8 +33,13 @@ import {
   USDCPurchaseBuyerNotification,
   USDCWithdrawalNotification,
   USDCTransferNotification,
-  TrackAddedToPurchasedAlbumNotification
+  TrackAddedToPurchasedAlbumNotification,
+  RequestManagerNotification,
+  ApproveManagerNotification,
+  ClaimableRewardNotification,
+  RewardInCooldownNotification
 } from '../../types/notifications'
+import { ApproveManagerRequest } from './approveManagerRequest'
 import { Follow } from './follow'
 import { Repost } from './repost'
 import { RepostOfRepost } from './repostOfRepost'
@@ -62,7 +67,10 @@ import { USDCPurchaseSeller } from './usdcPurchaseSeller'
 import { USDCPurchaseBuyer } from './usdcPurchaseBuyer'
 import { USDCWithdrawal } from './usdcWithdrawal'
 import { USDCTransfer } from './usdcTransfer'
+import { RequestManager } from './requestManager'
 import { TrackAddedToPurchasedAlbum } from './trackAddedToPurchasedAlbum'
+import { RewardInCooldown } from './rewardInCooldown'
+import { ClaimableReward } from './claimableReward'
 
 export const mapNotifications = (
   notifications: (NotificationRow | EmailNotification)[],
@@ -238,6 +246,35 @@ const mapNotification = (
       data: ReactionNotification
     }
     return new Reaction(dnDb, identityDb, reactionNotification)
+  } else if (notification.type == 'request_manager') {
+    const requestManagerNotification = notification as NotificationRow & {
+      data: RequestManagerNotification
+    }
+    return new RequestManager(dnDb, identityDb, requestManagerNotification)
+  } else if (notification.type === 'approve_manager_request') {
+    const approveManagerNotification = notification as NotificationRow & {
+      data: ApproveManagerNotification
+    }
+    return new ApproveManagerRequest(
+      dnDb,
+      identityDb,
+      approveManagerNotification
+    )
+  } else if (notification.type === 'claimable_reward') {
+    const challengeCooldownCompleteNotification =
+      notification as NotificationRow & {
+        data: ClaimableRewardNotification
+      }
+    return new ClaimableReward(
+      dnDb,
+      identityDb,
+      challengeCooldownCompleteNotification
+    )
+  } else if (notification.type === 'reward_in_cooldown') {
+    const challengeCooldownNotification = notification as NotificationRow & {
+      data: RewardInCooldownNotification
+    }
+    return new RewardInCooldown(dnDb, identityDb, challengeCooldownNotification)
   } else if (
     notification.type == DMEntityType.Message ||
     notification.type == DMEntityType.Reaction

@@ -29,11 +29,12 @@ import {
   IconExternalLink,
   IconUserFollow,
   IconTipping,
-  Flex
+  Flex,
+  Button
 } from '@audius/harmony-native'
 import LogoEth from 'app/assets/images/logoEth.svg'
 import LogoSol from 'app/assets/images/logoSol.svg'
-import { Button, LockedStatusBadge, useLink } from 'app/components/core'
+import { LockedStatusBadge, useLink } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
 import UserBadges from 'app/components/user-badges'
 import { useDrawer } from 'app/hooks/useDrawer'
@@ -120,13 +121,6 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
     top: -spacing(0.25),
     left: -spacing(1.25)
   },
-  mainButton: {
-    marginTop: spacing(2),
-    backgroundColor: palette.accentBlue
-  },
-  buyButton: {
-    backgroundColor: palette.specialLightGreen
-  },
   loadingSpinner: {
     width: spacing(5),
     height: spacing(5)
@@ -155,6 +149,7 @@ const DetailsTileNoAccessSection = ({
       backgroundColor='white'
       border='strong'
       borderRadius='m'
+      w='100%'
       style={style}
     >
       <View style={styles.titleContainer}>
@@ -186,12 +181,8 @@ type DetailsTileNoAccessProps = {
   style?: ViewStyle
 }
 
-export const DetailsTileNoAccess = ({
-  trackId,
-  contentType,
-  streamConditions,
-  style
-}: DetailsTileNoAccessProps) => {
+export const DetailsTileNoAccess = (props: DetailsTileNoAccessProps) => {
+  const { trackId, contentType, streamConditions, style } = props
   const styles = useStyles()
   const dispatch = useDispatch()
   const navigation = useNavigation()
@@ -206,9 +197,6 @@ export const DetailsTileNoAccess = ({
   const gatedTrackStatus = gatedTrackStatusMap[trackId] ?? null
   const { nftCollection, collectionLink, followee, tippedUser } =
     useStreamConditionsEntity(streamConditions)
-  const { isEnabled: isIosGatedContentEnabled } = useFeatureFlag(
-    FeatureFlags.IOS_GATED_CONTENT_ENABLED
-  )
   const { isEnabled: isUsdcPurchasesEnabled } = useFeatureFlag(
     FeatureFlags.USDC_PURCHASES
   )
@@ -305,15 +293,13 @@ export const DetailsTileNoAccess = ({
             </View>
           </View>
           <Button
-            style={styles.mainButton}
-            styles={{ icon: { width: spacing(4), height: spacing(4) } }}
-            title={messages.goToCollection}
-            size='large'
-            iconPosition='right'
-            icon={IconExternalLink}
+            color='blue'
+            iconRight={IconExternalLink}
             onPress={handlePressCollection}
             fullWidth
-          />
+          >
+            {messages.goToCollection}
+          </Button>
         </>
       )
     }
@@ -326,15 +312,13 @@ export const DetailsTileNoAccess = ({
             prefix: messages.lockedFollowGatedPrefix
           })}
           <Button
-            style={styles.mainButton}
-            styles={{ icon: { width: spacing(4), height: spacing(4) } }}
-            title={messages.followArtist}
-            size='large'
-            iconPosition='left'
-            icon={IconUserFollow}
+            color='blue'
+            iconLeft={IconUserFollow}
             onPress={handleFollowArtist}
             fullWidth
-          />
+          >
+            {messages.followArtist}
+          </Button>
         </>
       )
     }
@@ -347,16 +331,9 @@ export const DetailsTileNoAccess = ({
             prefix: messages.lockedTipGatedPrefix,
             suffix: messages.lockedTipGatedSuffix
           })}
-          <Button
-            style={styles.mainButton}
-            styles={{ icon: { width: spacing(4), height: spacing(4) } }}
-            title={messages.sendTip}
-            size='large'
-            iconPosition='right'
-            icon={IconTipping}
-            onPress={handleSendTip}
-            fullWidth
-          />
+          <Button iconRight={IconTipping} onPress={handleSendTip} fullWidth>
+            {messages.sendTip}
+          </Button>
         </>
       )
     }
@@ -368,18 +345,9 @@ export const DetailsTileNoAccess = ({
               {messages.lockedUSDCPurchase}
             </Text>
           </View>
-          {isIosGatedContentEnabled && (
-            <Button
-              style={[styles.mainButton, styles.buyButton]}
-              styles={{ icon: { width: spacing(4), height: spacing(4) } }}
-              title={messages.buy(
-                formatPrice(streamConditions.usdc_purchase.price)
-              )}
-              size='large'
-              onPress={handlePurchasePress}
-              fullWidth
-            />
-          )}
+          <Button color='lightGreen' onPress={handlePurchasePress} fullWidth>
+            {messages.buy(formatPrice(streamConditions.usdc_purchase.price))}
+          </Button>
         </>
       )
     }
@@ -398,15 +366,12 @@ export const DetailsTileNoAccess = ({
     styles.collectionImage,
     styles.collectionChainImageContainer,
     styles.collectionChainImage,
-    styles.mainButton,
-    styles.buyButton,
     handlePressCollection,
     followee,
     renderLockedSpecialAccessDescription,
     handleFollowArtist,
     tippedUser,
     handleSendTip,
-    isIosGatedContentEnabled,
     handlePurchasePress
   ])
 

@@ -331,12 +331,12 @@ mobile-release-saga-dapp-store:
         name: Publish APK
         command: |
           cd packages/mobile/dapp-store
-          npx dapp-store create release -k app-keypair.json -b $ANDROID_HOME/build-tools/34.0.0-rc3 -u https://solana-mainnet.g.alchemy.com/v2/9j3Y1hc042MCH0_TqunwotlaFLHF6K4l
+          npx dapp-store create release -k app-keypair.json -b $ANDROID_HOME/build-tools/34.0.0-rc3 -u $SOLANA_RPC_URL
     - run:
         name: Issue update to dapp store
         command: |
           cd packages/mobile/dapp-store
-          npx dapp-store publish update -k app-keypair.json -u https://solana-mainnet.g.alchemy.com/v2/9j3Y1hc042MCH0_TqunwotlaFLHF6K4l --requestor-is-authorized --complies-with-solana-dapp-store-policies
+          npx dapp-store publish update -k app-keypair.json -u $SOLANA_RPC_URL --requestor-is-authorized --complies-with-solana-dapp-store-policies
     - run:
         name: Commit changes
         command: |

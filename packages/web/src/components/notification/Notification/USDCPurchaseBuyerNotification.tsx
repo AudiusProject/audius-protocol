@@ -41,7 +41,7 @@ const messages = {
   ) =>
     `I bought the ${lowerCase(
       type
-    )} ${title} by ${sellerUsername} on @Audius! #AudiusPremium`
+    )} ${title} by ${sellerUsername} on @Audius! $AUDIO #AudiusPremium`
 }
 
 type USDCPurchaseBuyerNotificationProps = {

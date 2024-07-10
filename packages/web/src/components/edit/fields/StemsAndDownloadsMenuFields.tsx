@@ -17,11 +17,11 @@ import { Divider } from 'components/divider'
 import { processFiles } from 'pages/upload-page/store/utils/processFiles'
 import { stemDropdownRows } from 'utils/stems'
 
-import { USDCPurchaseRemoteConfig } from './AccessAndSaleField'
 import { StemFilesView } from './StemFilesView'
 import styles from './StemsAndDownloadsField.module.css'
 import { SwitchRowField } from './SwitchRowField'
 import { DownloadAvailability } from './download-availability/DownloadAvailability'
+import { USDCPurchaseRemoteConfig } from './price-and-audience/priceAndAudienceSchema'
 import {
   IS_DOWNLOAD_GATED,
   DOWNLOAD_CONDITIONS,
@@ -39,7 +39,8 @@ const messages = {
     'Upload your stems and source files to allow fans to remix your track. This does not affect users ability to listen offline.',
   [IS_DOWNLOADABLE]: {
     header: 'Allow Full Track Download',
-    description: 'Allow your fans to download a copy of your full track.'
+    description:
+      'Allow your fans to download a lossless copy of your full track.'
   },
   priceTooLow: (minPrice: number) =>
     `Price must be at least $${formatPrice(minPrice)}.`,

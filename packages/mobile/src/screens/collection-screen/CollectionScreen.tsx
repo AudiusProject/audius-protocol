@@ -20,15 +20,15 @@ import {
   collectionPageActions,
   collectionsSocialActions,
   mobileOverflowMenuUIActions,
-  publishPlaylistConfirmationModalUIActions,
   shareModalUIActions,
   OverflowAction,
   OverflowSource,
   repostsUserListActions,
   favoritesUserListActions,
-  RepostType
+  RepostType,
+  usePublishContentModal
 } from '@audius/common/store'
-import { encodeUrlName, formatDate, removeNullable } from '@audius/common/utils'
+import { encodeUrlName, removeNullable } from '@audius/common/utils'
 import type { Nullable } from '@audius/common/utils'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -65,8 +65,6 @@ const {
 const { resetCollection, fetchCollection } = collectionPageActions
 const { getCollection, getUser } = collectionPageSelectors
 const getUserId = accountSelectors.getUserId
-const { requestOpen: openPublishConfirmation } =
-  publishPlaylistConfirmationModalUIActions
 
 const useStyles = makeStyles(({ spacing }) => ({
   root: {
@@ -150,6 +148,8 @@ const CollectionScreenComponent = (props: CollectionScreenComponentProps) => {
     is_delete
   } = collection
 
+  const { onOpen: openPublishConfirmation } = usePublishContentModal()
+
   const { neutralLight5 } = useThemePalette()
 
   const releaseDate =
@@ -173,15 +173,6 @@ const CollectionScreenComponent = (props: CollectionScreenComponentProps) => {
 
   const currentUserId = useSelector(getUserId)
   const isOwner = currentUserId === playlist_owner_id
-  const extraDetails = useMemo(
-    () => [
-      {
-        label: 'Modified',
-        value: formatDate(updated_at || Date.now().toString())
-      }
-    ],
-    [updated_at]
-  )
 
   const isCollectionMarkedForDownload = useSelector(
     getIsCollectionMarkedForDownload(playlist_id.toString())
@@ -219,8 +210,13 @@ const CollectionScreenComponent = (props: CollectionScreenComponentProps) => {
   }, [navigation, playlist_id])
 
   const handlePressPublish = useCallback(() => {
-    dispatch(openPublishConfirmation({ playlistId: playlist_id }))
-  }, [dispatch, playlist_id])
+    dispatch(
+      openPublishConfirmation({
+        contentId: playlist_id,
+        contentType: is_album ? 'album' : 'playlist'
+      })
+    )
+  }, [dispatch, is_album, openPublishConfirmation, playlist_id])
 
   const handlePressSave = useCallback(() => {
     if (has_current_user_saved) {
@@ -286,12 +282,10 @@ const CollectionScreenComponent = (props: CollectionScreenComponentProps) => {
           <>
             <CollectionScreenDetailsTile
               description={description ?? ''}
-              extraDetails={extraDetails}
               hasReposted={has_current_user_reposted}
               hasSaved={has_current_user_saved}
               isAlbum={is_album}
               collectionId={playlist_id}
-              isPrivate={is_private}
               isPublishing={_is_publishing ?? false}
               isDeleted={is_delete}
               onPressEdit={handlePressEdit}

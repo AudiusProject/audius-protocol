@@ -10,6 +10,11 @@ import { Base, BaseConstructorArgs, Services } from './base'
 // null or non-null values
 const USER_PROPS = [
   'is_verified',
+  'twitter_handle',
+  'instagram_handle',
+  'tiktok_handle',
+  'website',
+  'donation',
   'is_deactivated',
   'name',
   'handle',
@@ -59,7 +64,7 @@ export class Users extends Base {
     this.getUserRepostFeed = this.getUserRepostFeed.bind(this)
     this.getSocialFeed = this.getSocialFeed.bind(this)
     this.getTopCreatorsByGenres = this.getTopCreatorsByGenres.bind(this)
-    this.updateIsVerified = this.updateIsVerified.bind(this)
+    this.updateSocialVerification = this.updateSocialVerification.bind(this)
     this.getUserListenCountsMonthly = this.getUserListenCountsMonthly.bind(this)
     this.getUserSubscribers = this.getUserSubscribers.bind(this)
     this.bulkGetUserSubscribers = this.bulkGetUserSubscribers.bind(this)
@@ -444,15 +449,35 @@ export class Users extends Base {
   }
 
   /**
-   * Updates a user on whether they are verified on Audius
+   * Updates a user on whether they are verified on Audius and what social account they verified with
    */
-  async updateIsVerified(userId: number, privateKey: string) {
+  async updateSocialVerification(
+    userId: number,
+    privateKey: string,
+    metadata:
+      | {
+          is_verified: boolean
+          twitter_handle: string
+        }
+      | {
+          is_verified: boolean
+          instagram_handle: string
+        }
+      | {
+          is_verified: boolean
+          tiktok_handle: string
+        }
+  ) {
+    const cid = await Utils.fileHasher.generateMetadataCidV1(metadata)
     return await this.contracts.EntityManagerClient!.getManageEntityParams(
       userId,
       EntityManagerClient.EntityType.USER,
       userId,
       EntityManagerClient.Action.VERIFY,
-      '',
+      JSON.stringify({
+        cid: cid.toString(),
+        data: metadata
+      }),
       privateKey
     )
   }

@@ -180,8 +180,7 @@ const DynamicImage = (props: DynamicImageProps) => {
                 zIndex: 3
               }
             : undefined)
-        },
-        overflow: 'hidden'
+        }
       }}
     >
       {useSkeleton && displayImage === placeholder ? (

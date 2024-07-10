@@ -1,4 +1,6 @@
 import {
+  Genre,
+  Mood,
   type AudiusLibs as AudiusLibsType,
   type DiscoveryNodeSelector,
   type StorageNodeSelectorService
@@ -33,7 +35,6 @@ import {
   CoverArtSizes,
   CoverPhotoSizes,
   DefaultSizes,
-  FailureReason,
   ID,
   InstagramUser,
   Name,
@@ -52,7 +53,6 @@ import {
 import { AnalyticsEvent } from '../../models/Analytics'
 import { ReportToSentryArgs } from '../../models/ErrorReporting'
 import * as schemas from '../../schemas'
-import { ClientRewardsReporter } from '../../services/audius-backend/Rewards'
 import {
   FeatureFlags,
   BooleanKeys,
@@ -70,7 +70,8 @@ import {
   Notification,
   IdentityNotification,
   PushNotifications,
-  TrackMetadataForUpload
+  TrackMetadataForUpload,
+  SearchKind
 } from '../../store'
 import {
   getErrorMessage,
@@ -131,24 +132,10 @@ export const AuthHeaders = Object.freeze({
   Signature: 'Encoded-Data-Signature'
 })
 
-type SnakeToCamel<S extends string> = S extends `${infer T}_${infer U}`
-  ? `${T}${Capitalize<SnakeToCamel<U>>}`
-  : S
-
-type SnakeKeysToCamel<T> = {
-  [K in keyof T as SnakeToCamel<Extract<K, string>>]: T[K]
-}
-
-type DiscoveryEndpoint = (...args: any) => { queryParams: Record<string, any> }
-type DiscoveryAPIParams<Endpoint extends DiscoveryEndpoint> = SnakeKeysToCamel<
-  ReturnType<Endpoint>['queryParams']
->
-
 // TODO: type these once libs types are improved
 let AudiusLibs: any = null
 export let BackendUtils: any = null
 let SanityChecks: any = null
-let RewardsAttester: any = null
 let SolanaUtils: any = null
 
 let audiusLibs: any = null
@@ -533,7 +520,6 @@ export const audiusBackend = ({
     BackendUtils = libsModule.Utils
     SanityChecks = libsModule.SanityChecks
     SolanaUtils = libsModule.SolanaUtils
-    RewardsAttester = libsModule.RewardsAttester
     // initialize libs
     let libsError: Nullable<string> = null
     const { web3Config } = await getWeb3Config(
@@ -743,19 +729,6 @@ export const audiusBackend = ({
       if (!account) return null
 
       try {
-        const body = await getSocialHandles(account.handle)
-        account.twitter_handle = body.twitterHandle || null
-        account.instagram_handle = body.instagramHandle || null
-        account.tiktok_handle = body.tikTokHandle || null
-        account.website = body.website || null
-        account.donation = body.donation || null
-        account.twitterVerified = body.twitterVerified || false
-        account.instagramVerified = body.instagramVerified || false
-        account.tikTokVerified = body.tikTokVerified || false
-      } catch (e) {
-        console.error(e)
-      }
-      try {
         const userBank = await audiusLibs.solanaWeb3Manager.deriveUserBank()
         account.userBank = userBank.toString()
         return getUserImages(account)
@@ -772,14 +745,39 @@ export const audiusBackend = ({
     }
   }
 
-  // TODO(C-2719)
+  type SearchTagsArgs = {
+    query: string
+    userTagCount?: number
+    kind?: SearchKind
+    limit?: number
+    offset?: number
+    genre?: Genre
+    mood?: Mood
+    bpmMin?: number
+    bpmMax?: number
+    key?: string
+    isVerified?: boolean
+    hasDownloads?: boolean
+    isPremium?: boolean
+    sortMethod?: 'recent' | 'relevant' | 'popular'
+  }
+
   async function searchTags({
     query,
     userTagCount,
     kind,
     offset,
-    limit
-  }: DiscoveryAPIParams<typeof DiscoveryAPI.searchTags>) {
+    limit,
+    genre,
+    mood,
+    bpmMin,
+    bpmMax,
+    key,
+    isVerified,
+    hasDownloads,
+    isPremium,
+    sortMethod
+  }: SearchTagsArgs) {
     try {
       const searchTags = await withEagerOption(
         {
@@ -790,7 +788,16 @@ export const audiusBackend = ({
         userTagCount,
         kind,
         limit,
-        offset
+        offset,
+        genre,
+        mood,
+        bpmMin,
+        bpmMax,
+        key,
+        isVerified,
+        hasDownloads,
+        isPremium,
+        sortMethod
       )
 
       const {
@@ -816,13 +823,17 @@ export const audiusBackend = ({
 
       return {
         tracks: combinedTracks,
-        users: combinedUsers
+        users: combinedUsers,
+        playlists: [],
+        albums: []
       }
     } catch (e) {
       console.error(e)
       return {
         tracks: [],
-        users: []
+        users: [],
+        playlists: [],
+        albums: []
       }
     }
   }
@@ -966,19 +977,6 @@ export const audiusBackend = ({
     }
   }
 
-  async function getSocialHandles(handle: string) {
-    try {
-      const res = await fetch(
-        `${identityServiceUrl}/social_handles?handle=${handle}`
-      )
-      const json = await res.json()
-      return json
-    } catch (e) {
-      console.error(e)
-      return {}
-    }
-  }
-
   /**
    * Retrieves the user's eth associated wallets from IPFS using the user's metadata CID and creator node endpoints
    * @param user The user metadata which contains the CID for the metadata multihash
@@ -1053,31 +1051,6 @@ export const audiusBackend = ({
           newMetadata.updatedCoverPhoto.file
         )
         newMetadata.cover_photo_sizes = resp.id
-      }
-
-      if (
-        typeof newMetadata.twitter_handle === 'string' ||
-        typeof newMetadata.instagram_handle === 'string' ||
-        typeof newMetadata.tiktok_handle === 'string' ||
-        typeof newMetadata.website === 'string' ||
-        typeof newMetadata.donation === 'string'
-      ) {
-        const { data, signature } = await signData()
-        await fetch(`${identityServiceUrl}/social_handles`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            [AuthHeaders.Message]: data,
-            [AuthHeaders.Signature]: signature
-          },
-          body: JSON.stringify({
-            twitterHandle: newMetadata.twitter_handle,
-            instagramHandle: newMetadata.instagram_handle,
-            tikTokHandle: newMetadata.tiktok_handle,
-            website: newMetadata.website,
-            donation: newMetadata.donation
-          })
-        })
       }
 
       newMetadata = schemas.newUserMetadata(newMetadata, true)
@@ -1359,9 +1332,14 @@ export const audiusBackend = ({
     }
   }
 
-  async function signIn(email: string, password: string, otp?: string) {
+  async function signIn(
+    email: string,
+    password: string,
+    visitorId?: string,
+    otp?: string
+  ) {
     await waitForLibsInit()
-    return audiusLibs.Account.login(email, password, otp)
+    return audiusLibs.Account.login(email, password, visitorId, otp)
   }
 
   async function signOut() {
@@ -1760,6 +1738,15 @@ export const audiusBackend = ({
         entityType: Entity.User,
         ...formatBaseNotification(notification)
       }
+    } else if (notification.type === 'claimable_reward') {
+      const data = notification.actions[0].data
+      const challengeId = data.challenge_id as ChallengeRewardID
+      return {
+        type: NotificationType.ClaimableReward,
+        challengeId,
+        entityType: Entity.User,
+        ...formatBaseNotification(notification)
+      }
     } else if (notification.type === 'tier_change') {
       const data = notification.actions[0].data
       const tier = data.new_tier as BadgeTier
@@ -2023,6 +2010,22 @@ export const audiusBackend = ({
         entityType,
         ...formatBaseNotification(notification)
       }
+    } else if (notification.type === 'request_manager') {
+      const data = notification.actions[0].data
+
+      return {
+        type: NotificationType.RequestManager,
+        userId: decodeHashId(data.user_id)!,
+        ...formatBaseNotification(notification)
+      }
+    } else if (notification.type === 'approve_manager_request') {
+      const data = notification.actions[0].data
+
+      return {
+        type: NotificationType.ApproveManagerRequest,
+        userId: decodeHashId(data.grantee_user_id)!,
+        ...formatBaseNotification(notification)
+      }
     } else {
       console.error('Notification does not match an expected type.')
     }
@@ -2084,13 +2087,11 @@ export const audiusBackend = ({
 
   async function getNotifications({
     limit,
-    timeOffset,
-    withDethroned
+    timeOffset
   }: {
     limit: number
     // unix timestamp
     timeOffset?: number
-    withDethroned: boolean
   }) {
     await waitForLibsInit()
     const account = audiusLibs.Account.getCurrentUser()
@@ -2109,15 +2110,16 @@ export const audiusBackend = ({
           : undefined,
         limit,
         handle,
-        withSupporterDethroned: withDethroned,
+        withDethroned: true,
         withTips: true,
         withRewards: true,
         withRemix: true,
         withTrendingTrack: true
       }
 
+      // Passing user_id to support manager mode
       const getNotificationsUrl = queryString.stringifyUrl({
-        url: `${identityServiceUrl}/notifications`,
+        url: `${identityServiceUrl}/notifications?user_id=${account.user_id}`,
         query
       })
 
@@ -2170,15 +2172,19 @@ export const audiusBackend = ({
     let notificationsReadResponse
     try {
       const { data, signature } = await signData()
-      const response = await fetch(`${identityServiceUrl}/notifications/all`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          [AuthHeaders.Message]: data,
-          [AuthHeaders.Signature]: signature
-        },
-        body: JSON.stringify({ isViewed: true, clearBadges: !!nativeMobile })
-      })
+      // Passing `user_id` to support manager mode
+      const response = await fetch(
+        `${identityServiceUrl}/notifications/all?user_id=${account.user_id}`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            [AuthHeaders.Message]: data,
+            [AuthHeaders.Signature]: signature
+          },
+          body: JSON.stringify({ isViewed: true, clearBadges: !!nativeMobile })
+        }
+      )
       notificationsReadResponse = await response.json()
     } catch (e) {
       console.error(e)
@@ -2236,15 +2242,18 @@ export const audiusBackend = ({
     if (!account) return
     try {
       const { data, signature } = await signData()
-      const res = await fetch(`${identityServiceUrl}/notifications/settings`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          [AuthHeaders.Message]: data,
-          [AuthHeaders.Signature]: signature
-        },
-        body: JSON.stringify({ settings: { emailFrequency } })
-      }).then((res) => res.json())
+      const res = await fetch(
+        `${identityServiceUrl}/notifications/settings?user_id=${account.user_id}`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            [AuthHeaders.Message]: data,
+            [AuthHeaders.Signature]: signature
+          },
+          body: JSON.stringify({ settings: { emailFrequency } })
+        }
+      ).then((res) => res.json())
       return res
     } catch (e) {
       console.error(e)
@@ -2673,11 +2682,22 @@ export const audiusBackend = ({
   /**
    * Make a request to fetch the eth AUDIO balance of the the user
    * @params {bool} bustCache
+   * @params {string} ethAddress - Optional ETH wallet address. Defaults to hedgehog wallet
    * @returns {Promise<BN | null>} balance or null if failed to fetch balance
    */
-  async function getBalance(bustCache = false) {
+  async function getBalance({
+    ethAddress,
+    bustCache = false
+  }: {
+    ethAddress?: string
+    bustCache?: boolean
+  } = {}): Promise<BN | null> {
     await waitForLibsInit()
-    const wallet = audiusLibs.web3Manager.getWalletAddress()
+
+    const wallet =
+      ethAddress !== undefined
+        ? ethAddress
+        : audiusLibs.web3Manager.getWalletAddress()
     if (!wallet) return null
 
     try {
@@ -2699,13 +2719,16 @@ export const audiusBackend = ({
 
   /**
    * Make a request to fetch the sol wrapped audio balance of the the user
-   * @returns {Promise<BN>} balance
+   * @params {string} ethAddress - Optional ETH wallet address to derive user bank. Defaults to hedgehog wallet
+   * @returns {Promise<BN>} balance or null if failed to fetch balance
    */
-  async function getWAudioBalance() {
+  async function getWAudioBalance(ethAddress?: string): Promise<BN | null> {
     await waitForLibsInit()
 
     try {
-      const userBank = await audiusLibs.solanaWeb3Manager.deriveUserBank()
+      const userBank = await audiusLibs.solanaWeb3Manager.deriveUserBank({
+        ethAddress
+      })
       const ownerWAudioBalance =
         await audiusLibs.solanaWeb3Manager.getWAudioBalance(userBank)
       if (isNullOrUndefined(ownerWAudioBalance)) {
@@ -2854,7 +2877,7 @@ export const audiusBackend = ({
    *   logs: Array<string>
    * }
    */
-  async function transferAudioToWAudio(balance: number) {
+  async function transferAudioToWAudio(balance: BN) {
     await waitForLibsInit()
     const userBank = await audiusLibs.solanaWeb3Manager.deriveUserBank()
     return audiusLibs.Account.proxySendTokensFromEthToSol(
@@ -2882,95 +2905,6 @@ export const audiusBackend = ({
       return null
     }
     return new BN(waudioBalance.toString())
-  }
-
-  /**
-   * Aggregate, submit, and evaluate attestations for a given challenge for a user
-   */
-  async function submitAndEvaluateAttestations({
-    challenges,
-    userId,
-    handle,
-    recipientEthAddress,
-    oracleEthAddress,
-    quorumSize,
-    endpoints,
-    AAOEndpoint,
-    parallelization,
-    feePayerOverride,
-    source
-  }: {
-    challenges: {
-      challenge_id: ChallengeRewardID
-      specifier: string
-      amount: number
-    }[]
-    userId: ID
-    handle: string
-    recipientEthAddress: string
-    oracleEthAddress: string
-    quorumSize: number
-    endpoints: string[]
-    AAOEndpoint: string
-    parallelization: number
-    feePayerOverride: Nullable<string>
-    isFinalAttempt: boolean
-    source: 'mobile' | 'electron' | 'web'
-  }) {
-    await waitForLibsInit()
-    try {
-      if (!challenges.length) return
-
-      const reporter = new ClientRewardsReporter({
-        libs: audiusLibs,
-        recordAnalytics,
-        source,
-        reportError
-      })
-
-      const encodedUserId = encodeHashId(userId)
-      const attester = new RewardsAttester({
-        libs: audiusLibs,
-        parallelization,
-        quorumSize,
-        aaoEndpoint: AAOEndpoint,
-        aaoAddress: oracleEthAddress,
-        endpoints,
-        feePayerOverride,
-        reporter
-      })
-
-      const res = await attester.processChallenges(
-        challenges.map(({ specifier, challenge_id: challengeId, amount }) => ({
-          specifier,
-          challengeId,
-          userId: encodedUserId,
-          amount,
-          handle,
-          wallet: recipientEthAddress
-        }))
-      )
-      if (res.errors) {
-        console.error(
-          `Got errors in processChallenges: ${JSON.stringify(res.errors)}`
-        )
-        const hcaptcha = res.errors.find(
-          ({ error }: { error: FailureReason }) =>
-            error === FailureReason.HCAPTCHA
-        )
-
-        // If any of the errors are HCAPTCHA, return that one
-        // Otherwise, just return the first error we saw
-        const error = hcaptcha ? hcaptcha.error : res.errors[0].error
-        const aaoErrorCode = res.errors[0].aaoErrorCode
-
-        return { error, aaoErrorCode }
-      }
-      return res
-    } catch (e) {
-      console.error(`Failed in libs call to claim reward ${e}`)
-      return { error: true }
-    }
   }
 
   async function getAudiusLibs() {
@@ -3029,7 +2963,6 @@ export const audiusBackend = ({
     getBrowserPushSubscription,
     getCollectionImages,
     getCreators,
-    getSocialHandles,
     getEmailNotificationSettings,
     getFolloweeFollows,
     getImageUrl,
@@ -3072,7 +3005,6 @@ export const audiusBackend = ({
     signIn,
     signOut,
     signUp,
-    submitAndEvaluateAttestations,
     transferAudioToWAudio,
     twitterHandle,
     instagramHandle,

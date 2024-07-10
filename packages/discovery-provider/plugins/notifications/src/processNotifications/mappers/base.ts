@@ -3,11 +3,13 @@ import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
 import { PlaylistRow, TrackRow, UserRow } from '../../types/dn'
 import { EntityType } from '../../email/notifications/types'
 
-type UserBasicInfo = {
+export type UserBasicInfo = {
   user_id: number
   name: string
   handle: string
   is_deactivated: boolean
+  profile_picture_sizes?: string | null
+  profile_picture?: string | null
 }
 
 type PlaylistInfo = {
@@ -110,8 +112,17 @@ export abstract class BaseNotification<Type> {
       name: string
       handle: string
       is_deactivated: boolean
+      profile_picture?: string | null
+      profile_picture_sizes?: string | null
     }> = await this.dnDB
-      .select('user_id', 'name', 'handle', 'is_deactivated')
+      .select(
+        'user_id',
+        'name',
+        'handle',
+        'is_deactivated',
+        'profile_picture',
+        'profile_picture_sizes'
+      )
       .from<UserRow>('users')
       .where('is_current', true)
       .whereIn(

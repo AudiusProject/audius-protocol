@@ -27,7 +27,7 @@ const messages = {
   is: 'is',
   trending: 'on Trending right now!',
   twitterShareText: (entityTitle: string) =>
-    `My track ${entityTitle} is trending on @audius! Check it out! #Audius #AudiusTrending`
+    `My track ${entityTitle} is trending on @audius! Check it out! #Audius #AudiusTrending $AUDIO`
 }
 
 type TrendingTrackNotificationProps = {

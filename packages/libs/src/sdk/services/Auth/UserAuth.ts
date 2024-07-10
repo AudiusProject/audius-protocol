@@ -3,6 +3,7 @@ import { keccak_256 } from '@noble/hashes/sha3'
 import * as secp from '@noble/secp256k1'
 import fetch from 'cross-fetch'
 import { EIP712TypedData, MessageData, signTypedData } from 'eth-sig-util'
+import type Wallet from 'ethereumjs-wallet'
 
 import { productionConfig } from '../../config/production'
 import { MissingOtpUserAuthError } from '../../utils/errors'
@@ -32,11 +33,14 @@ export class UserAuth implements AuthService {
       getDefaultUserAuthConfig(productionConfig)
     )
 
-    const get: GetFn = async ({ lookupKey, email, otp }) => {
+    const get: GetFn = async ({ lookupKey, email, visitorId, otp }) => {
       const params = new URLSearchParams({
         lookupKey,
         username: email as string
       })
+      if (visitorId) {
+        params.append('visitorId', visitorId as string)
+      }
       if (otp) {
         params.append('otp', otp as string)
       }
@@ -73,7 +77,13 @@ export class UserAuth implements AuthService {
     this.config.localStorage.then((ls) => (this.hedgehog.localStorage = ls))
   }
 
-  signUp = async ({ email, password }: { email: string; password: string }) => {
+  signUp = async ({
+    email,
+    password
+  }: {
+    email: string
+    password: string
+  }): Promise<Wallet> => {
     await this.hedgehog.waitUntilReady()
     const wallet = await this.hedgehog.signUp({ username: email, password })
     return wallet
@@ -82,17 +92,20 @@ export class UserAuth implements AuthService {
   signIn = async ({
     email,
     password,
+    visitorId,
     otp
   }: {
     email: string
     password: string
+    visitorId?: string
     otp?: string
-  }) => {
+  }): Promise<Wallet> => {
     await this.hedgehog.waitUntilReady()
     const wallet = await this.hedgehog.login({
       username: email,
       password,
       email,
+      visitorId,
       otp
     })
     return wallet

@@ -128,6 +128,12 @@ export type ChallengeRewardNotification = {
   challenge_id: ChallengeId
 }
 
+export type ClaimableRewardNotification = {
+  amount: number
+  specifier: string
+  challenge_id: ChallengeId
+}
+
 export type ReactionNotification = {
   reacted_to: string
   reaction_type: string
@@ -136,6 +142,24 @@ export type ReactionNotification = {
   receiver_user_id: number
   sender_user_id: number
   tip_amount: string
+}
+
+export type RequestManagerNotification = {
+  grantee_user_id: number
+  grantee_address: string
+  user_id: number
+}
+
+export type ApproveManagerNotification = {
+  grantee_user_id: number
+  grantee_address: string
+  user_id: number
+}
+
+export type RewardInCooldownNotification = {
+  amount: number
+  specifier: string
+  challenge_id: ChallengeId
 }
 
 export type SupporterRankUpNotification = {
@@ -244,6 +268,7 @@ export type USDCPurchaseBuyerNotification = {
   amount: number
   extra_amount: number
   content_id: number
+  vendor: string
 }
 
 export type USDCPurchaseSellerNotification = {

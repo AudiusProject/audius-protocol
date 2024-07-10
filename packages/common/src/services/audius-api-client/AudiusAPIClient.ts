@@ -1,4 +1,4 @@
-import type { AudiusLibs } from '@audius/sdk'
+import type { AudiusLibs, Genre, Mood } from '@audius/sdk'
 
 import {
   ID,
@@ -8,7 +8,10 @@ import {
   UserChallenge
 } from '../../models'
 import { UndisbursedUserChallenge } from '../../store'
-import { SearchKind } from '../../store/pages/search-results/types'
+import {
+  SearchKind,
+  SearchSortMethod
+} from '../../store/pages/search-results/types'
 import { decodeHashId, encodeHashId } from '../../utils/hashIds'
 import { Nullable, removeNullable } from '../../utils/typeUtils'
 import { AuthHeaders } from '../audius-backend'
@@ -84,9 +87,13 @@ const FULL_ENDPOINT_MAP = {
   topGenreUsers: '/users/genre/top',
   topArtists: '/users/top',
   getTrack: (trackId: OpaqueID) => `/tracks/${trackId}`,
+  getTrackStreamUrl: (trackId: OpaqueID) => `/tracks/${trackId}/stream`,
   getTracks: () => `/tracks`,
   getTrackByHandleAndSlug: `/tracks`,
-  getStems: (trackId: OpaqueID) => `/tracks/${trackId}/stems`,
+  getStems: (trackId: OpaqueID, stemIds?: ID[]) =>
+    `/tracks/${trackId}/stems${
+      stemIds ? `?stemIds=${stemIds?.join(',')}` : ''
+    }`,
   getRemixes: (trackId: OpaqueID) => `/tracks/${trackId}/remixes`,
   getRemixing: (trackId: OpaqueID) => `/tracks/${trackId}/remixing`,
   searchFull: `/search/full`,
@@ -116,6 +123,17 @@ export type QueryParams = {
 type GetTrackArgs = {
   id: ID
   currentUserId?: Nullable<ID>
+  unlistedArgs?: {
+    urlTitle: string
+    handle: string
+  }
+  abortOnUnreachable?: boolean
+}
+
+type GetTrackStreamUrlArgs = {
+  id: ID
+  currentUserId?: Nullable<ID>
+  queryParams: QueryParams
   unlistedArgs?: {
     urlTitle: string
     handle: string
@@ -244,6 +262,7 @@ type GetPlaylistByPermalinkArgs = {
 
 type GetStemsArgs = {
   trackId: ID
+  stemIds?: ID[]
 }
 
 type GetRemixesArgs = {
@@ -272,6 +291,15 @@ type GetSearchArgs = {
   limit?: number
   offset?: number
   includePurchaseable?: boolean
+  genre?: Genre
+  mood?: Mood
+  bpmMin?: number
+  bpmMax?: number
+  key?: string
+  isVerified?: boolean
+  hasDownloads?: boolean
+  isPremium?: boolean
+  sortMethod?: SearchSortMethod
 }
 
 type TrendingIdsResponse = {
@@ -650,6 +678,37 @@ export class AudiusAPIClient {
     return adapted
   }
 
+  async getTrackStreamUrl(
+    {
+      id,
+      currentUserId,
+      queryParams,
+      abortOnUnreachable
+    }: GetTrackStreamUrlArgs,
+    retry = true
+  ) {
+    const encodedTrackId = this._encodeOrThrow(id)
+    const encodedCurrentUserId =
+      encodeHashId(currentUserId ?? null) || undefined
+
+    this._assertInitialized()
+
+    const trackUrl = await this._getResponse<APIResponse<string>>(
+      FULL_ENDPOINT_MAP.getTrackStreamUrl(encodedTrackId),
+      {
+        ...queryParams,
+        no_redirect: true,
+        user_id: encodedCurrentUserId
+      },
+      retry,
+      PathType.VersionPath,
+      undefined,
+      abortOnUnreachable
+    )
+
+    return trackUrl?.data
+  }
+
   async getTracks({ ids, currentUserId }: GetTracksArgs) {
     this._assertInitialized()
     const encodedTrackIds = ids.map((id) => this._encodeOrThrow(id))
@@ -698,11 +757,14 @@ export class AudiusAPIClient {
     return adapter.makeTrack(trackResponse.data)
   }
 
-  async getStems({ trackId }: GetStemsArgs): Promise<StemTrackMetadata[]> {
+  async getStems({
+    trackId,
+    stemIds
+  }: GetStemsArgs): Promise<StemTrackMetadata[]> {
     this._assertInitialized()
     const encodedTrackId = this._encodeOrThrow(trackId)
     const response = await this._getResponse<APIResponse<APIStem[]>>(
-      FULL_ENDPOINT_MAP.getStems(encodedTrackId)
+      FULL_ENDPOINT_MAP.getStems(encodedTrackId, stemIds)
     )
 
     if (!response) return []
@@ -1080,7 +1142,16 @@ export class AudiusAPIClient {
     kind,
     offset,
     limit,
-    includePurchaseable
+    includePurchaseable,
+    genre,
+    mood,
+    bpmMin,
+    bpmMax,
+    key,
+    isVerified,
+    hasDownloads,
+    isPremium,
+    sortMethod
   }: GetSearchArgs) {
     this._assertInitialized()
     const encodedUserId = encodeHashId(currentUserId)
@@ -1090,7 +1161,16 @@ export class AudiusAPIClient {
       kind,
       offset,
       limit,
-      includePurchaseable
+      includePurchaseable,
+      genre,
+      mood,
+      bpm_min: bpmMin,
+      bpm_max: bpmMax,
+      key,
+      is_verified: isVerified,
+      has_downloads: hasDownloads,
+      is_purchaseable: isPremium,
+      sort_method: sortMethod
     }
 
     const searchResponse =

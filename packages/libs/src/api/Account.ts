@@ -3,6 +3,7 @@ import { PublicKey } from '@solana/web3.js'
 import type { BN } from 'ethereumjs-util'
 
 import { AuthHeaders } from '../constants'
+import { Genre, Mood } from '../sdk'
 import { Nullable, UserMetadata, Utils } from '../utils'
 import { getPermitDigest, sign } from '../utils/signatures'
 
@@ -67,7 +68,12 @@ export class Account extends Base {
   /**
    * Logs a user into Audius
    */
-  async login(email: string, password: string, otp?: string) {
+  async login(
+    email: string,
+    password: string,
+    visitorId?: string,
+    otp?: string
+  ) {
     const phases = {
       FIND_WALLET: 'FIND_WALLET',
       FIND_USER: 'FIND_USER'
@@ -83,9 +89,10 @@ export class Account extends Base {
           email,
           username: email,
           password,
+          visitorId,
           otp
         })
-        await this.web3Manager.setOwnerWallet(ownerWallet)
+        this.web3Manager.setOwnerWallet(ownerWallet)
       } catch (e) {
         return { error: (e as Error).message, phase }
       }
@@ -97,6 +104,7 @@ export class Account extends Base {
     )
     if (userAccount) {
       this.userStateManager.setCurrentUser(userAccount)
+      this.userStateManager.setWeb3User(userAccount)
       const randomNodes = await this.ServiceProvider.autoSelectStorageV2Nodes(
         1,
         userAccount.wallet
@@ -386,7 +394,16 @@ export class Account extends Base {
     userTagCount = 2,
     kind: string,
     limit = 100,
-    offset = 0
+    offset = 0,
+    genre?: Genre,
+    mood?: Mood,
+    bpmMin?: string,
+    bpmMax?: string,
+    key?: string,
+    isVerified?: boolean,
+    hasDownloads?: boolean,
+    isPremium?: boolean,
+    sortMethod?: 'recent' | 'relevant' | 'popular'
   ) {
     this.REQUIRES(Services.DISCOVERY_PROVIDER)
     return await this.discoveryProvider.searchTags(
@@ -394,7 +411,16 @@ export class Account extends Base {
       userTagCount,
       kind,
       limit,
-      offset
+      offset,
+      genre,
+      mood,
+      bpmMin,
+      bpmMax,
+      key,
+      isVerified,
+      hasDownloads,
+      isPremium,
+      sortMethod
     )
   }
 

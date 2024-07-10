@@ -28,7 +28,7 @@ const isEmailDeliverable = async (email, logger) => {
     )
     return res?.data?.status === 'deliverable'
   } catch (err) {
-    // Couldn't figure out if delivable, so say it was
+    // Couldn't figure out if deliverable, so say it was
     logger.error(`Unable to validate email for ${email}`, err)
     return true
   }

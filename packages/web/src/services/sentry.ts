@@ -1,5 +1,4 @@
-import { init } from '@sentry/browser'
-import { CaptureConsole } from '@sentry/integrations'
+import * as Sentry from '@sentry/browser'
 
 import { env } from './env'
 
@@ -15,8 +14,9 @@ const analyticsBlacklist = [
 const MAX_BREADCRUMBS = 300
 
 export const initializeSentry = () => {
-  init({
+  Sentry.init({
     dsn: env.SENTRY_DSN,
+    transport: Sentry.makeBrowserOfflineTransport(Sentry.makeFetchTransport),
     ignoreErrors:
       process.env.VITE_SENTRY_DISABLED === 'true' ? [/.*/] : undefined,
 
@@ -24,11 +24,13 @@ export const initializeSentry = () => {
     // associate stacktraces with sourcemaps
     release: process.env.VITE_CURRENT_GIT_SHA,
 
-    // Capture console.errors in sentry
     integrations: [
-      new CaptureConsole({
-        levels: ['error']
-      })
+      // Pull extra fields off error objects
+      Sentry.extraErrorDataIntegration(),
+      // Catch failed network requests
+      Sentry.httpClientIntegration(),
+      // Capture console.errors in sentry
+      Sentry.captureConsoleIntegration({ levels: ['error'] })
     ],
 
     normalizeDepth: 5,
@@ -43,7 +45,7 @@ export const initializeSentry = () => {
       }
       // filter out analytics events
       if (hint && hint.xhr) {
-        const url = hint.xhr.__sentry_xhr__.url
+        const url = hint.xhr.__sentry_xhr_v3__.url
         const isAnalyticsRequest = analyticsBlacklist.some(
           (term) => url.search(term) !== -1
         )

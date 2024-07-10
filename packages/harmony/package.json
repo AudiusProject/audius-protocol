@@ -1,6 +1,6 @@
 {
   "name": "@audius/harmony",
-  "version": "0.0.34",
+  "version": "0.1.0",
   "description": "The Audius Design System",
   "license": "ISC",
   "author": "Audius",
@@ -47,6 +47,7 @@
     "@storybook/testing-library": "0.2.2",
     "@svgr/rollup": "8.1.0",
     "@svgr/webpack": "8.1.0",
+    "@types/color": "3.0.6",
     "@types/react": "18.2.0",
     "@types/react-dom": "18.2.0",
     "@types/react-lottie": "1.2.3",
@@ -87,6 +88,7 @@
     "@radix-ui/react-slot": "^1.0.2",
     "@react-spring/web": "^9.7.2",
     "classnames": "^2.5.1",
+    "color": "4.2.3",
     "lodash": "^4.17.21",
     "react-lottie": "^1.2.3",
     "react-merge-refs": "^2.0.1",

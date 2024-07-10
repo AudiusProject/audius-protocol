@@ -59,11 +59,9 @@ export const ShareButton = (props: ShareButtonProps) => {
     />
   )
 
-  return tooltipText ? (
-    <Tooltip text={tooltipText}>
+  return (
+    <Tooltip text={tooltipText ?? messages.share}>
       <span>{buttonRender}</span>
     </Tooltip>
-  ) : (
-    buttonRender
   )
 }

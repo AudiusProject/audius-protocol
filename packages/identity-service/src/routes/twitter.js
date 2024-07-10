@@ -190,32 +190,34 @@ module.exports = function (app) {
         if (isUnassociated && handlesMatch) {
           twitterObj.blockchainUserId = userId
 
-          // if the user is verified, write to chain, otherwise skip to next step
-          if (twitterObj.verified) {
-            const [encodedABI, contractAddress] =
-              await audiusLibsInstance.User.updateIsVerified(
-                userId,
-                config.get('userVerifierPrivateKey')
-              )
-            const senderAddress = config.get('userVerifierPublicKey')
-
-            try {
-              const txProps = {
-                contractRegistryKey: 'EntityManager',
-                contractAddress: contractAddress,
-                encodedABI: encodedABI,
-                senderAddress: senderAddress,
-                gasLimit: null
+          // Update the user's social verification status along with the social app handle that verification came from.
+          // If the user is not verified, send the transaction to ensure that their linked social handle is updated.
+          const [encodedABI, contractAddress] =
+            await audiusLibsInstance.User.updateSocialVerification(
+              userId,
+              config.get('userVerifierPrivateKey'),
+              {
+                is_verified: twitterObj.verified,
+                twitter_handle: twitterObj.twitterProfile.screen_name
               }
-              await txRelay.sendTransaction(
-                req,
-                false,
-                txProps,
-                'twitterVerified'
-              )
-            } catch (e) {
-              return errorResponseBadRequest(e)
+            )
+          const senderAddress = config.get('userVerifierPublicKey')
+          try {
+            const txProps = {
+              contractRegistryKey: 'EntityManager',
+              contractAddress: contractAddress,
+              encodedABI: encodedABI,
+              senderAddress: senderAddress,
+              gasLimit: null
             }
+            await txRelay.sendTransaction(
+              req,
+              false,
+              txProps,
+              'twitterVerified'
+            )
+          } catch (e) {
+            return errorResponseBadRequest(e)
           }
 
           const socialHandle = await models.SocialHandles.findOne({

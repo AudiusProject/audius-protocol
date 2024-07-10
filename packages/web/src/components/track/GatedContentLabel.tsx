@@ -1,13 +1,19 @@
 import {
   isContentCollectibleGated,
   isContentUSDCPurchaseGated,
-  AccessConditions
+  AccessConditions,
+  isContentFollowGated,
+  isContentTipGated
 } from '@audius/common/models'
 import { Nullable } from '@audius/common/utils'
-import { IconCart, IconCollectible, IconSpecialAccess } from '@audius/harmony'
-import cn from 'classnames'
-
-import styles from './GatedContentLabel.module.css'
+import {
+  Flex,
+  Text,
+  IconCart,
+  IconCollectible,
+  IconSpecialAccess,
+  useTheme
+} from '@audius/harmony'
 
 const messages = {
   collectibleGated: 'Collectible Gated',
@@ -27,25 +33,35 @@ export const GatedContentLabel = ({
   hasStreamAccess: boolean
   isOwner: boolean
 }) => {
-  const showColor = isOwner || !hasStreamAccess
+  const { color } = useTheme()
   let message = messages.specialAccess
   let IconComponent = IconSpecialAccess
-  let colorStyle = styles.gatedContent
+  let specialColor = color.icon.default
 
-  if (isContentCollectibleGated(streamConditions)) {
+  if (
+    isContentFollowGated(streamConditions) ||
+    isContentTipGated(streamConditions)
+  ) {
+    specialColor = color.special.blue
+  } else if (isContentCollectibleGated(streamConditions)) {
     message = messages.collectibleGated
     IconComponent = IconCollectible
-  }
-  if (isContentUSDCPurchaseGated(streamConditions)) {
+    specialColor = color.special.blue
+  } else if (isContentUSDCPurchaseGated(streamConditions)) {
     message = messages.premium
     IconComponent = IconCart
-    colorStyle = styles.premiumContent
+    specialColor = color.special.lightGreen
   }
 
+  const finalColor =
+    isOwner || !hasStreamAccess ? specialColor : color.icon.subdued
+
   return (
-    <div className={cn(styles.labelContainer, { [colorStyle]: showColor })}>
-      <IconComponent className={styles.icon} />
-      {message}
-    </div>
+    <Flex alignItems='center' gap='xs' css={{ whiteSpace: 'nowrap' }}>
+      <IconComponent size='s' fill={finalColor} />
+      <Text variant='body' size='xs' css={{ color: finalColor }}>
+        {message}
+      </Text>
+    </Flex>
   )
 }

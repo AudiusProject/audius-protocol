@@ -1,15 +1,11 @@
-import retry from 'async-retry'
 import { dp_db } from '../db.js'
 import { slack } from '../slack.js'
 import dotenv from 'dotenv'
-import axios from 'axios'
 import { getPreviousState } from './utils.js'
 
 dotenv.config()
-const { audius_discprov_identity_service_url, USERS_SLACK_CHANNEL } =
+const { USERS_SLACK_CHANNEL } =
   process.env
-const social_handle_url = (handle) =>
-  `${audius_discprov_identity_service_url}/social_handles?handle=${handle}`
 
 // TODO: send blocknumber through pg trigger
 export default async ({ user_id, blocknumber }) => {
@@ -39,21 +35,13 @@ export default async ({ user_id, blocknumber }) => {
     return
   }
 
-  const is_new_user = old === undefined
-  const new_user_is_verified = is_new_user && current.is_verified
-  const is_existing_user = !is_new_user
-  const existing_user_previously_unverified =
-    is_existing_user && old.is_verified === false
-  const user_currently_verified = current.is_verified === true
-  const existing_user_became_verified =
-    user_currently_verified && existing_user_previously_unverified
+  const new_user_is_verified = !old && current.is_verified
+  const existing_user_became_verified = !old?.is_verified && current.is_verified
 
   console.log({
     user_id,
     existing_user_became_verified,
-    new_user_is_verified,
-    is_new_user,
-    is_existing_user
+    new_user_is_verified
   })
 
   if (existing_user_became_verified || new_user_is_verified) {
@@ -61,39 +49,18 @@ export default async ({ user_id, blocknumber }) => {
     const handle = current.handle
 
     let source
-    try {
-      const data = await retry(
-        async (_) => {
-          const { data } = await axios
-            .get(social_handle_url(handle))
-            .catch(console.error)
-
-          if (Object.keys(data).length === 0) {
-            throw new Error('social handles not in identity yet')
-          }
-
-          return data
-        },
-      )
-      const { twitterVerified, instagramVerified, tikTokVerified } = data
-
-      if (twitterVerified) {
-        source = 'twitter'
-      }
-      if (instagramVerified) {
-        source = 'instagram'
-      }
-      if (tikTokVerified) {
-        source = 'tiktok'
-      }
-    } catch (e) {
-      source = 'could not figure out source!'
-      console.error(e)
+    if (current.verified_with_twitter) {
+      source = 'twitter'
+    } else if (current.verified_with_instagram) {
+      source = 'instagram'
+    } else if (current.verified_with_tiktok) {
+      source = 'tiktok'
+    } else {
+      source = 'manual'
     }
 
-    const header = `User *${handle}* ${
-      is_verified ? 'is now' : 'is no longer'
-    } verified via ${source}!`
+    const header = `User *${handle}* ${is_verified ? 'is now' : 'is no longer'
+      } verified via ${source}!`
 
     const body = {
       userId: user_id,

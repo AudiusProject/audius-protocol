@@ -5,6 +5,7 @@ import {
   pickHandlePageMessages,
   socialMediaMessages
 } from '@audius/common/messages'
+import { SocialPlatform } from '@audius/common/models'
 import { pickHandleSchema } from '@audius/common/schemas'
 import { Divider, Flex, IconVerified, Paper, Text } from '@audius/harmony'
 import { Form, Formik } from 'formik'
@@ -33,10 +34,7 @@ import {
 import { HandleField } from '../components/HandleField'
 import { OutOfText } from '../components/OutOfText'
 import { SocialMediaLoading } from '../components/SocialMediaLoading'
-import {
-  SocialMediaLoginOptions,
-  SocialPlatform
-} from '../components/SocialMediaLoginOptions'
+import { SocialMediaLoginOptions } from '../components/SocialMediaLoginOptions'
 import { Heading, Page, PageFooter } from '../components/layout'
 import { useSocialMediaLoader } from '../hooks/useSocialMediaLoader'
 
@@ -48,7 +46,7 @@ type SocialMediaSectionProps = {
   onCompleteSocialMediaLogin: (info: {
     requiresReview: boolean
     handle: string
-    platform: 'twitter' | 'instagram' | 'tiktok'
+    platform: SocialPlatform
   }) => void
   onStart: (platform: SocialPlatform) => void
   onError: (error: Error, platform: SocialPlatform) => void
@@ -139,7 +137,7 @@ export const PickHandlePage = () => {
     }: {
       requiresReview: boolean
       handle: string
-      platform: 'twitter' | 'instagram' | 'tiktok'
+      platform: SocialPlatform
     }) => {
       dispatch(setValueField('handle', handle))
       if (!requiresReview) {

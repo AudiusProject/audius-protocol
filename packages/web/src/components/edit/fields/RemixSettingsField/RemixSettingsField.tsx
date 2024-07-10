@@ -46,7 +46,12 @@ const messages = {
 
 export type RemixOfField = Nullable<{ tracks: { parent_track_id: ID }[] }>
 
-export const RemixSettingsField = () => {
+type RemixSettingsFieldProps = {
+  isUpload: boolean
+}
+
+export const RemixSettingsField = (props: RemixSettingsFieldProps) => {
+  const { isUpload } = props
   // These refer to the field in the outer EditForm
   const [{ value: showRemixes }, , { setValue: setShowRemixes }] =
     useTrackField<FieldVisibility[typeof SHOW_REMIXES_BASE]>(SHOW_REMIXES)
@@ -95,15 +100,16 @@ export const RemixSettingsField = () => {
 
   const isUSDCPurchaseGated = isContentUSDCPurchaseGated(streamConditions)
 
-  // If the track is public or usdc purchase gated, default to showing remixes.
+  // When uploading, if the track is public or usdc purchase gated, default to showing remixes.
   // Otherwise, default to hiding remixes.
   useEffect(() => {
+    if (!isUpload) return
     if (!isStreamGated || isUSDCPurchaseGated) {
       setShowRemixes(true)
     } else if (isStreamGated) {
       setShowRemixes(false)
     }
-  }, [isStreamGated, isUSDCPurchaseGated, setShowRemixes])
+  }, [isUpload, isStreamGated, isUSDCPurchaseGated, setShowRemixes])
 
   const handleSubmit = useCallback(
     (values: RemixSettingsFormValues) => {

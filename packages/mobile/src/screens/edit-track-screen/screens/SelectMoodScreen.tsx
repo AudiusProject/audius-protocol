@@ -3,10 +3,9 @@ import { View, Image } from 'react-native'
 
 import { IconMood } from '@audius/harmony-native'
 import { Text } from 'app/components/core'
+import { ListSelectionScreen } from 'app/screens/list-selection-screen'
 import { makeStyles } from 'app/styles'
 import { moodMap } from 'app/utils/moods'
-
-import { ListSelectionScreen } from './ListSelectionScreen'
 
 const messages = {
   screenTitle: 'Select Mood',

@@ -76,6 +76,9 @@ export type DetailsTileProps = {
   /** Hide the share button */
   hideShare?: boolean
 
+  /** Hide all action buttons */
+  hideActions?: boolean
+
   /** Is the item playing */
   isPlaying?: boolean
 

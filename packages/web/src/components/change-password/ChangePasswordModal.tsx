@@ -8,7 +8,6 @@ import {
 } from '@audius/common/hooks'
 import {
   PasswordInput,
-  TextInput,
   Modal,
   ModalContentPages,
   ModalHeader,
@@ -22,7 +21,10 @@ import {
 } from '@audius/harmony'
 import { Formik, useFormikContext } from 'formik'
 
-import { VerifyEmailPage } from 'components/change-email/ChangeEmailModal'
+import {
+  ConfirmPasswordPage,
+  VerifyEmailPage
+} from 'components/change-email/ChangeEmailModal'
 import { ModalForm } from 'components/modal-form/ModalForm'
 import { ToastContext } from 'components/toast/ToastContext'
 import { PasswordCompletionChecklist } from 'pages/sign-up-page/components/PasswordCompletionChecklist'
@@ -41,27 +43,6 @@ const messages = {
   success: 'Password updated!',
   password: 'Password',
   confirmPassword: 'Confirm Password'
-}
-
-export const ConfirmCredentialsPage = () => {
-  const [emailField] = useHarmonyField('email')
-  const [passwordField] = useHarmonyField('password')
-  return (
-    <Flex direction='column' gap='xl'>
-      <Text variant='body'>{messages.confirmPasswordHelp}</Text>
-      <TextInput
-        {...emailField}
-        label={messages.email}
-        autoComplete='email'
-        autoFocus
-      />
-      <PasswordInput
-        {...passwordField}
-        label={messages.currentPassword}
-        autoComplete='current-password'
-      />
-    </Flex>
-  )
 }
 
 export const NewPasswordPage = () => {
@@ -98,7 +79,7 @@ export const ChangePasswordModalForm = ({
   return (
     <ModalForm>
       <ModalContentPages currentPage={page}>
-        <ConfirmCredentialsPage />
+        <ConfirmPasswordPage />
         <VerifyEmailPage />
         <NewPasswordPage />
       </ModalContentPages>
@@ -139,7 +120,7 @@ export const ChangePasswordModal = (props: ChangePasswordModalProps) => {
     useChangePasswordFormConfiguration(onComplete)
 
   const handleClosed = useCallback(() => {
-    setPage(ChangePasswordPage.ConfirmCredentials)
+    setPage(ChangePasswordPage.ConfirmPassword)
   }, [setPage])
 
   return (

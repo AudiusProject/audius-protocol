@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { ReactNode, useCallback, useMemo } from 'react'
 
 import { ID, ManagedUserMetadata, UserMetadata } from '@audius/common/models'
 import {
@@ -22,13 +22,17 @@ export type AccountListContentProps = {
   managerAccount: UserMetadata
   currentUserId: ID
   onAccountSelected: (user: UserMetadata) => void
+  navBackElement?: ReactNode
+  fullWidth?: boolean
 }
 
 export const AccountListContent = ({
   accounts: accountsProp,
   managerAccount,
   currentUserId,
-  onAccountSelected
+  onAccountSelected,
+  navBackElement,
+  fullWidth
 }: AccountListContentProps) => {
   const { spacing } = useTheme()
   // If the current user is one of the managed account, sort it to the top of
@@ -54,7 +58,7 @@ export const AccountListContent = ({
   return (
     <Flex
       direction='column'
-      w={360}
+      w={fullWidth ? '100%' : 360}
       backgroundColor='white'
       css={{
         // Make sure the popup has at least 24 unites of space from the
@@ -67,15 +71,22 @@ export const AccountListContent = ({
         backgroundColor='white'
         borderBottom='default'
         alignItems='center'
-        justifyContent='flex-start'
+        justifyContent='space-between'
         ph='l'
-        pv='s'
+        pv={navBackElement ? 'l' : 's'}
         gap='s'
       >
-        <IconUserArrowRotate size='s' color='default' />
-        <Text variant='title' size='m' color='default'>
-          {messages.switchAccount}
-        </Text>
+        {navBackElement}
+        <Flex alignItems='center' gap='s'>
+          <IconUserArrowRotate size='s' color='default' />
+          <Text
+            variant='title'
+            size={navBackElement ? 'l' : 'm'}
+            color='default'
+          >
+            {messages.switchAccount}
+          </Text>
+        </Flex>
       </Flex>
       <Flex
         as='ul'

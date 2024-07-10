@@ -61,6 +61,9 @@ const setSentryUser = (sentry, user, traits) => {
   if (traits.isVerified) {
     sentry.setTag('isVerified', `${traits.isVerified}`)
   }
+  if (traits.managerUserId) {
+    sentry.setTag('isManagerMode', 'true')
+  }
   sentry.configureScope((currentScope) => {
     currentScope.setUser({
       id: `${user.user_id}`,
@@ -97,21 +100,38 @@ function* onSignedIn({ payload: { account } }) {
   const sentry = yield getContext('sentry')
   const analytics = yield getContext('analytics')
   if (account && account.handle) {
-    let solanaWallet = ''
-    try {
-      solanaWallet = (yield call(
-        getRootSolanaAccount,
-        audiusBackendInstance
-      )).publicKey.toBase58()
-    } catch (e) {
-      console.error('Failed to fetch Solana root wallet during identify()', e)
+    const libs = yield call(audiusBackendInstance.getAudiusLibs)
+    const web3User = yield call([libs.Account, libs.Account.getWeb3User])
+
+    let solanaWallet
+    let managerUserId
+    let managerHandle
+
+    // If operating as a managed account, identify the manager user id
+    if (web3User && web3User.user_id !== account.user_id) {
+      managerUserId = web3User.user_id
+      managerHandle = web3User.handle
+    } else {
+      // If not a managed account, identify the Solana wallet associated with
+      // the hedgehog wallet
+      try {
+        solanaWallet = (yield call(
+          getRootSolanaAccount,
+          audiusBackendInstance
+        )).publicKey.toBase58()
+      } catch (e) {
+        console.error('Failed to fetch Solana root wallet during identify()', e)
+      }
     }
-    // Set analytics user context
+
     const traits = {
       isVerified: account.is_verified,
       trackCount: account.track_count,
+      managerHandle,
+      managerUserId,
       solanaWallet
     }
+
     yield put(identify(account.handle, traits))
     setSentryUser(sentry, account, traits)
   }
@@ -144,9 +164,6 @@ function* onSignedIn({ payload: { account } }) {
 export function* fetchAccountAsync({ isSignUp = false }) {
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
   const remoteConfigInstance = yield getContext('remoteConfigInstance')
-  const isNativeMobile = yield getContext('isNativeMobile')
-  const isElectron = yield getContext('isElectron')
-  const fingerprintClient = yield getContext('fingerprintClient')
 
   yield put(accountActions.fetchAccountRequested())
 
@@ -157,10 +174,6 @@ export function* fetchAccountAsync({ isSignUp = false }) {
         reason: 'ACCOUNT_NOT_FOUND'
       })
     )
-    if (!isNativeMobile) {
-      const localStorage = yield getContext('localStorage')
-      yield call([localStorage, 'removeItem'], 'useMetaMask')
-    }
     return
   }
   if (account.is_deactivated) {
@@ -174,14 +187,6 @@ export function* fetchAccountAsync({ isSignUp = false }) {
 
   // Set the userId in the remoteConfigInstance
   remoteConfigInstance.setUserId(account.user_id)
-
-  // Fire-and-forget fp identify
-  const clientOrigin = isNativeMobile
-    ? 'mobile'
-    : isElectron
-    ? 'desktop'
-    : 'web'
-  fingerprintClient.identify(account.user_id, clientOrigin)
 
   yield call(recordIPIfNotRecent, account.handle)
 
@@ -229,8 +234,6 @@ export function* fetchLocalAccountAsync() {
 
 function* cacheAccount(account) {
   const localStorage = yield getContext('localStorage')
-  const getFeatureEnabled = yield getContext('getFeatureEnabled')
-  const isChatEnabled = yield call(getFeatureEnabled, FeatureFlags.CHAT_ENABLED)
   const collections = account.playlists || []
 
   yield put(
@@ -250,10 +253,8 @@ function* cacheAccount(account) {
   yield put(fetchAccountSucceeded(formattedAccount))
 
   // Fetch user's chat blockee and blocker list after fetching their account
-  if (isChatEnabled) {
-    yield put(fetchBlockees())
-    yield put(fetchBlockers())
-  }
+  yield put(fetchBlockees())
+  yield put(fetchBlockers())
 }
 
 // Pull from redux cache and persist to local storage cache

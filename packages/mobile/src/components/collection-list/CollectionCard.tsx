@@ -10,7 +10,7 @@ import {
   accountSelectors,
   cacheCollectionsSelectors
 } from '@audius/common/store'
-import { formatCount } from '@audius/common/utils'
+import { formatCount, formatReleaseDate } from '@audius/common/utils'
 import type { GestureResponderEvent } from 'react-native'
 import { useSelector } from 'react-redux'
 
@@ -34,7 +34,9 @@ const { getUserId } = accountSelectors
 const messages = {
   repost: 'Reposts',
   favorites: 'Favorites',
-  hidden: 'Hidden'
+  hidden: 'Hidden',
+  releases: (releaseDate: string) =>
+    `Releases ${formatReleaseDate({ date: releaseDate })}`
 }
 
 type CollectionCardProps = {
@@ -61,6 +63,7 @@ export const CollectionCard = (props: CollectionCardProps) => {
   )
 
   if (!collection) {
+    console.warn('Collection missing for CollectionCard, preventing render')
     return null
   }
 
@@ -70,19 +73,18 @@ export const CollectionCard = (props: CollectionCardProps) => {
     playlist_owner_id,
     repost_count,
     save_count,
-    is_private,
+    is_private: isPrivate,
     access,
-    stream_conditions
+    stream_conditions,
+    release_date: releaseDate,
+    is_scheduled_release: isScheduledRelease
   } = collection
 
   const isOwner = accountId === playlist_owner_id
   const isPurchase = isContentUSDCPurchaseGated(stream_conditions)
 
-  const dogEarType = is_private
-    ? DogEarType.HIDDEN
-    : isPurchase && (!access.stream || isOwner)
-    ? DogEarType.USDC_PURCHASE
-    : null
+  const dogEarType =
+    isPurchase && (!access.stream || isOwner) ? DogEarType.USDC_PURCHASE : null
 
   return (
     <Paper border='default' onPress={handlePress}>
@@ -91,6 +93,7 @@ export const CollectionCard = (props: CollectionCardProps) => {
         <CollectionImageV2
           collectionId={playlist_id}
           size={SquareSizes.SIZE_480_BY_480}
+          style={{ flex: 1 }}
         />
         <Text variant='title' textAlign='center' numberOfLines={1}>
           {playlist_name}
@@ -107,7 +110,7 @@ export const CollectionCard = (props: CollectionCardProps) => {
         borderBottomLeftRadius='m'
         borderBottomRightRadius='m'
       >
-        {is_private ? (
+        {isPrivate ? (
           <Text
             variant='body'
             size='s'
@@ -116,7 +119,9 @@ export const CollectionCard = (props: CollectionCardProps) => {
             // Ensures footer height is not affected
             style={{ lineHeight: 16 }}
           >
-            {messages.hidden}
+            {isScheduledRelease && releaseDate
+              ? messages.releases(releaseDate)
+              : messages.hidden}
           </Text>
         ) : (
           <>
@@ -132,11 +137,11 @@ export const CollectionCard = (props: CollectionCardProps) => {
                 {formatCount(save_count)}
               </Text>
             </Flex>
-            {isPurchase && !isOwner ? (
-              <LockedStatusBadge variant='purchase' locked={!access.stream} />
-            ) : null}
           </>
         )}
+        {isPurchase && !isOwner ? (
+          <LockedStatusBadge variant='purchase' locked={!access.stream} />
+        ) : null}
       </Flex>
     </Paper>
   )

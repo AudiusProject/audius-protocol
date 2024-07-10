@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { ShareSource, Status } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import {
   profilePageActions,
   profilePageSelectors,
@@ -23,7 +22,6 @@ import {
 } from '@audius/harmony-native'
 import { Screen, ScreenContent } from 'app/components/core'
 import { OfflinePlaceholder } from 'app/components/offline-placeholder'
-import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { useRoute } from 'app/hooks/useRoute'
 import { makeStyles } from 'app/styles'
 
@@ -64,7 +62,6 @@ export const ProfileScreen = () => {
   const status = useSelector((state) => getProfileStatus(state, handleLower))
   const [isRefreshing, setIsRefreshing] = useState(false)
   const isNotReachable = useSelector(getIsReachable) === false
-  const { isEnabled: isChatEnabled } = useFeatureFlag(FeatureFlags.CHAT_ENABLED)
 
   const setCurrentUser = useCallback(() => {
     dispatch(setCurrentUserAction(handleLower))
@@ -100,7 +97,7 @@ export const ProfileScreen = () => {
 
   const handlePressTopRight = useCallback(() => {
     if (profile) {
-      if (isChatEnabled && !isOwner) {
+      if (!isOwner) {
         dispatch(
           setVisibility({
             modal: 'ProfileActions',
@@ -117,12 +114,12 @@ export const ProfileScreen = () => {
         )
       }
     }
-  }, [profile, dispatch, isChatEnabled, isOwner])
+  }, [profile, dispatch, isOwner])
 
   const topbarRight = (
     <IconButton
       color='subdued'
-      icon={isChatEnabled && !isOwner ? IconKebabHorizontal : IconShare}
+      icon={!isOwner ? IconKebabHorizontal : IconShare}
       onPress={handlePressTopRight}
     />
   )

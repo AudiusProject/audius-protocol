@@ -9,12 +9,15 @@ export const messages = {
   disconnectDashboardWalletAccess:
     'Permission to unlink this wallet from your account',
   writeAccountAccess: 'Read/Write Access',
-  emailLoading: 'Email loading',
-  emailAddressAccess: 'Your Email Address',
+  yourAccountData: 'Your Audius Account Data',
+  yourAccountDataAccess:
+    'Account activity, and identifying information, including the email address',
+  yourAccountDataAccessNoEmail: 'Account activity and identifying information.',
   writeAccessGrants:
     'Grant this app permission to make changes to your account on your behalf.',
   signOut: 'Sign Out',
   signUp: `Don't have an account? Sign up`,
+  switchAccount: 'Switch Account',
   authorizeButton: 'Authorize App',
   continueButton: 'Continue',
   signInButton: 'Sign In & Authorize App',
@@ -49,5 +52,6 @@ export const messages = {
   missingApiKeyError: 'Whoops, this is an invalid link (app API Key missing)',
   invalidApiKeyError: 'Whoops, this is an invalid link (app API Key invalid)',
   approveTxToConnectProfile:
-    'Approve the pending transaction in your wallet to finish connecting your Audius profile.'
+    'Approve the pending transaction in your wallet to finish connecting your Audius profile.',
+  back: 'Back'
 }

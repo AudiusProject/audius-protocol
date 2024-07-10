@@ -149,7 +149,7 @@ function* downloadTrackAsync(
   try {
     yield* all([
       call(downloadTrackCoverArt, track),
-      call(downloadTrackAudio, track),
+      call(downloadTrackAudio, track, currentUserId),
       call(writeTrackMetadata, track)
     ])
   } catch (e) {
@@ -159,7 +159,7 @@ function* downloadTrackAsync(
   return OfflineDownloadStatus.SUCCESS
 }
 
-function* downloadTrackAudio(track: UserTrackMetadata) {
+function* downloadTrackAudio(track: UserTrackMetadata, userId: ID) {
   const { track_id, title } = track
 
   const trackFilePath = getLocalAudioPath(track_id)
@@ -172,7 +172,8 @@ function* downloadTrackAudio(track: UserTrackMetadata) {
   let queryParams: QueryParams = {}
   queryParams = yield* call(getQueryParams, {
     audiusBackendInstance,
-    nftAccessSignature
+    nftAccessSignature,
+    userId
   })
   // todo: pass in correct filename and whether to download original or mp3
   queryParams.filename = `${title}.mp3`

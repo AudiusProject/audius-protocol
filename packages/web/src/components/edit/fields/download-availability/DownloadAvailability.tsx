@@ -39,25 +39,28 @@ import { DownloadPriceField } from './DownloadPriceField'
 
 const WAITLIST_TYPEFORM = 'https://link.audius.co/waitlist'
 
-const messages = {
+const getMessages = (props: DownloadAvailabilityProps) => ({
   downloadAvailability: 'Download Availability',
-  customize: 'Customize who has access to download your files.',
+  customize: 'Specify who has access to download your files.',
   public: 'Public',
   followers: 'Followers',
   premium: 'Premium',
   callout: {
-    premium:
-      "You're uploading a Premium track. By default, purchasers will be able to download your available files. If you'd like to only sell your files, set your track to Public or Hidden in the",
-    specialAccess:
-      "You're uploading a Special Access track. By default, users who unlock your track will be able to download your available files. If you'd like to only sell your files, set your track to Public or Hidden in the",
-    collectibleGated:
-      "You're uploading a Collectible Gated track. By default, users who unlock your track will be able to download your available files. If you'd like to only sell your files, set your track to Public or Hidden in the",
-    accessAndSale: 'Access & Sale Settings'
+    premium: `You're ${
+      props.isUpload ? 'uploading' : 'editing'
+    } a Premium track. By default, purchasers will be able to download your available files. If you'd like to sell your files, set your track to Public or Hidden in the`,
+    specialAccess: `You're ${
+      props.isUpload ? 'uploading' : 'editing'
+    } a Special Access track. By default, users who unlock your track will be able to download your available files. If you'd like to sell your files, set your track to Public or Hidden in the`,
+    collectibleGated: `You're ${
+      props.isUpload ? 'uploading' : 'editing'
+    } a Collectible Gated track. By default, users who unlock your track will be able to download your available files. If you'd like to sell your files, set your track to Public or Hidden in the`,
+    priceAndAudience: 'Price & Audience Settings'
   },
   waitlist:
     'Start selling your music on Audius today! Limited access beta now available.',
   join: 'Join the Waitlist'
-}
+})
 
 type DownloadAvailabilityProps = {
   isUpload: boolean
@@ -66,12 +69,9 @@ type DownloadAvailabilityProps = {
   setValue: (value: DownloadTrackAvailabilityType) => void
 }
 
-export const DownloadAvailability = ({
-  isUpload,
-  initialDownloadConditions,
-  value,
-  setValue
-}: DownloadAvailabilityProps) => {
+export const DownloadAvailability = (props: DownloadAvailabilityProps) => {
+  const { isUpload, initialDownloadConditions, value, setValue } = props
+  const messages = getMessages(props)
   const { isEnabled: isUsdcUploadEnabled } = useFeatureFlag(
     FeatureFlags.USDC_PURCHASES_UPLOAD
   )
@@ -97,7 +97,14 @@ export const DownloadAvailability = ({
       return messages.callout.collectibleGated
     }
     return ''
-  }, [isCollectibleGated, isSpecialAccess, isUsdcGated])
+  }, [
+    isCollectibleGated,
+    isSpecialAccess,
+    isUsdcGated,
+    messages.callout.premium,
+    messages.callout.specialAccess,
+    messages.callout.collectibleGated
+  ])
 
   const handleCalloutClick = useCallback(() => {
     setStatus(MenuFormCallbackStatus.OPEN_ACCESS_AND_SALE)
@@ -202,7 +209,7 @@ export const DownloadAvailability = ({
           icon={IconError}
           actions={
             <TextLink onClick={handleCalloutClick} variant='visible'>
-              {messages.callout.accessAndSale}
+              {messages.callout.priceAndAudience}
             </TextLink>
           }
         >

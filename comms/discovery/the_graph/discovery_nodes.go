@@ -17,9 +17,9 @@ type Peer struct {
 
 func Query(isStaging, isContent bool) ([]Peer, error) {
 
-	endpoint := `https://api.thegraph.com/subgraphs/name/audius-infra/audius-network-mainnet`
+	endpoint := `https://gateway-arbitrum.network.thegraph.com/api/3e9ce54904ec5ee003de7785f0d24a21/subgraphs/id/F8TjrYuTLohz64J8uuDke9htSR1aY9TGCuEjJVVjUJaD`
 	if isStaging {
-		endpoint = `https://api.thegraph.com/subgraphs/name/audius-infra/audius-network-sepolia`
+		endpoint = `https://gateway-arbitrum.network.thegraph.com/api/7d7b938a80fe712cd8390bf42c88456a/subgraphs/id/Du8Zhnj3ap95TTusD6EnFNohfeVBtQftbqFgcruLCMA`
 	}
 
 	nodeType := "discovery-node"

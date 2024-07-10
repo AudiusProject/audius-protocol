@@ -414,17 +414,29 @@ function* validateEmail(
 }
 
 function* signUp() {
+  const signOn = yield* select(getSignOn)
+  const email = signOn.email.value
+  const password = signOn.password.value
+  const localStorage = yield* getContext('localStorage')
+  const useMetamask = yield* call(
+    [localStorage, localStorage.getItem],
+    'useMetaMask'
+  )
+
+  if (email && password && useMetamask) {
+    yield* call([localStorage, localStorage.removeItem], 'useMetaMask')
+    yield* put(backendActions.setupBackend())
+  }
+
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const { waitForRemoteConfig } = yield* getContext('remoteConfigInstance')
   const getFeatureEnabled = yield* getContext('getFeatureEnabled')
 
   yield* call(waitForWrite)
 
-  const signOn = yield* select(getSignOn)
   const location = yield* call(getCityAndRegion)
   const name = signOn.name.value.trim()
-  const email = signOn.email.value
-  const password = signOn.password.value
+
   const handle = signOn.handle.value
   const alreadyExisted = signOn.accountAlreadyExisted
   const referrer = signOn.referrer
@@ -732,15 +744,41 @@ function* repairSignUp() {
 }
 
 function* signIn(action: ReturnType<typeof signOnActions.signIn>) {
-  const { email, password, otp } = action
+  const { email, password, visitorId, otp } = action
+  const localStorage = yield* getContext('localStorage')
+  const useMetamask = yield* call(
+    [localStorage, localStorage.getItem],
+    'useMetaMask'
+  )
+
+  if (email && password && useMetamask) {
+    yield* call([localStorage, localStorage.removeItem], 'useMetaMask')
+    yield* put(backendActions.setupBackend())
+  }
+
+  const fingerprintClient = yield* getContext('fingerprintClient')
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const isNativeMobile = yield* getContext('isNativeMobile')
+  const isElectron = yield* getContext('isElectron')
+  const clientOrigin = isNativeMobile
+    ? 'mobile'
+    : isElectron
+    ? 'desktop'
+    : 'web'
+
   yield* call(waitForRead)
   try {
     const signOn = yield* select(getSignOn)
+    const fpResponse = yield* call(
+      [fingerprintClient, fingerprintClient.identify],
+      email ?? signOn.email.value,
+      clientOrigin
+    )
     const signInResponse = yield* call(
       audiusBackendInstance.signIn,
       email ?? signOn.email.value,
       password ?? signOn.password.value,
+      visitorId ?? fpResponse?.visitorId,
       otp ?? signOn.otp.value
     )
     if (

@@ -1,45 +1,36 @@
-import { forwardRef, RefObject, useRef, useState, useCallback } from 'react'
+import { forwardRef, useRef, useState, useCallback, useEffect } from 'react'
 
 import { CSSObject, useTheme } from '@emotion/react'
 
 import { BaseButton } from 'components/button/BaseButton/BaseButton'
-import { TextInput, TextInputSize } from 'components/input'
-import { Flex, Paper } from 'components/layout'
-import { Popup } from 'components/popup'
 import { useControlled } from 'hooks/useControlled'
-import { IconCaretDown, IconCloseAlt, IconSearch } from 'icons'
+import { IconCloseAlt } from 'icons'
 
-import { FilterButtonOption, FilterButtonProps } from './types'
+import { FilterButtonProps } from './types'
 
 export const FilterButton = forwardRef<HTMLButtonElement, FilterButtonProps>(
   function FilterButton(props, ref) {
     const {
-      selection: selectionProp,
+      value: valueProp,
+      children,
       label,
-      options,
-      onSelect,
+      onChange,
+      onClick,
+      onOpen,
+      onReset,
       disabled,
-      showFilterInput,
-      filterInputPlaceholder = 'Search',
       variant = 'fillContainer',
       size = 'default',
-      iconRight = IconCaretDown,
-      popupAnchorOrigin,
-      popupMaxHeight,
-      popupTransformOrigin,
-      popupPortalLocation,
-      popupZIndex
+      iconRight,
+      leadingElement
     } = props
     const { color, cornerRadius, spacing, typography } = useTheme()
-    const [selection, setSelection] = useControlled({
-      controlledProp: selectionProp,
+    const [value, setValue] = useControlled({
+      controlledProp: valueProp,
       defaultValue: null,
-      stateName: 'selection',
+      stateName: 'value',
       componentName: 'FilterButton'
     })
-    const [filterInputValue, setFilterInputValue] = useState('')
-    const selectedOption = options.find((option) => option.value === selection)
-    const selectedLabel = selectedOption?.label ?? selectedOption?.value
 
     const [isOpen, setIsOpen] = useState(false)
 
@@ -76,20 +67,25 @@ export const FilterButton = forwardRef<HTMLButtonElement, FilterButtonProps>(
     }
 
     const activeStyle =
-      variant !== 'fillContainer' || selection === null
+      variant !== 'fillContainer' || value === null
         ? {
             border: `1px solid ${color.border.strong}`,
             background: color.background.surface2
           }
         : {}
 
+    const hoverStyle = {
+      border: `1px solid ${color.neutral.n800}`,
+      transform: 'none'
+    }
+
     // Button Styles
     const buttonCss: CSSObject = {
-      background: 'transparent',
+      background: color.background.white,
       border: `1px solid ${color.border.strong}`,
       borderRadius: cornerRadius.s,
       color:
-        variant === 'fillContainer' && selection !== null
+        variant === 'fillContainer' && value !== null
           ? color.static.white
           : color.text.default,
       gap: spacing.xs,
@@ -98,10 +94,8 @@ export const FilterButton = forwardRef<HTMLButtonElement, FilterButtonProps>(
       lineHeight: typography.lineHeight.s,
       opacity: disabled ? 0.6 : 1,
 
-      '&:hover': {
-        border: `1px solid ${color.neutral.n800}`,
-        transform: 'none'
-      },
+      '&:hover': hoverStyle,
+      '&:focus': hoverStyle,
 
       '&:active': {
         ...activeStyle,
@@ -110,60 +104,40 @@ export const FilterButton = forwardRef<HTMLButtonElement, FilterButtonProps>(
 
       ...(size === 'small' ? smallStyles : defaultStyles),
       ...(isOpen ? activeStyle : {}),
-      ...(variant === 'fillContainer' && selection !== null
+      ...(variant === 'fillContainer' && value !== null
         ? fillContainerStyles
         : {})
     }
 
     const iconCss = size === 'small' ? smallIconStyles : defaultIconStyles
 
-    // Popup Styles
-    const optionCss: CSSObject = {
-      background: 'transparent',
-      border: 'none',
-      color: color.text.default,
-      fontWeight: typography.weight.medium,
-      gap: spacing.s,
-      paddingLeft: spacing.m,
-      paddingRight: spacing.m,
-      paddingTop: spacing.s,
-      paddingBottom: spacing.s,
-      width: '100%',
-      borderRadius: cornerRadius.s,
-      justifyContent: 'flex-start',
-
-      '&:hover': {
-        transform: 'none',
-        backgroundColor: color.secondary.s300,
-        color: color.special.white
-      },
-
-      '&:active': {
-        transform: 'none'
-      }
-    }
-    const optionIconCss: CSSObject = {
-      width: spacing.unit4,
-      height: spacing.unit4
-    }
-
     const handleButtonClick = useCallback(() => {
-      setFilterInputValue('')
-      if (variant === 'fillContainer' && selection !== null) {
-        setSelection(null)
-        // @ts-ignore
-        onSelect?.(null)
+      if (onClick) {
+        onClick()
       } else {
-        setIsOpen((isOpen: boolean) => !isOpen)
+        if (variant === 'fillContainer' && value !== null) {
+          setValue(null)
+          // @ts-ignore
+          onChange?.(null)
+          onReset?.()
+        } else {
+          setIsOpen((isOpen: boolean) => !isOpen)
+        }
       }
-    }, [selection, variant, setIsOpen, setSelection, onSelect])
+    }, [value, variant, setIsOpen, setValue, onChange, onClick, onReset])
 
-    const handleOptionSelect = useCallback(
-      (option: FilterButtonOption) => {
-        setSelection(option.value)
-        onSelect?.(option.value)
+    useEffect(() => {
+      if (isOpen) {
+        onOpen?.()
+      }
+    }, [isOpen, onOpen])
+
+    const handleChange = useCallback(
+      (value: string) => {
+        setValue(value)
+        onChange?.(value)
       },
-      [onSelect, setSelection]
+      [onChange, setValue]
     )
 
     const anchorRef = useRef<HTMLButtonElement>(null)
@@ -177,7 +151,7 @@ export const FilterButton = forwardRef<HTMLButtonElement, FilterButtonProps>(
         }}
         onClick={handleButtonClick}
         iconRight={
-          variant === 'fillContainer' && selection !== null
+          variant === 'fillContainer' && value !== null
             ? IconCloseAlt
             : iconRight
         }
@@ -185,69 +159,14 @@ export const FilterButton = forwardRef<HTMLButtonElement, FilterButtonProps>(
         aria-haspopup='listbox'
         aria-expanded={isOpen}
       >
-        {selectedLabel ?? label}
-        <Popup
-          anchorRef={(ref as RefObject<HTMLElement>) || anchorRef}
-          isVisible={isOpen}
-          onClose={() => setIsOpen(false)}
-          anchorOrigin={popupAnchorOrigin}
-          transformOrigin={popupTransformOrigin}
-          portalLocation={popupPortalLocation}
-          zIndex={popupZIndex}
-        >
-          <Paper mt='s' border='strong' shadow='far'>
-            <Flex
-              p='s'
-              direction='column'
-              alignItems='flex-start'
-              role='listbox'
-              aria-label={selectedLabel ?? label ?? props['aria-label']}
-              aria-activedescendant={selectedLabel}
-              css={{ maxHeight: popupMaxHeight, overflowY: 'auto' }}
-            >
-              <Flex direction='column' w='100%' gap='s'>
-                {showFilterInput ? (
-                  <TextInput
-                    placeholder={filterInputPlaceholder}
-                    label={filterInputPlaceholder}
-                    size={TextInputSize.SMALL}
-                    startIcon={IconSearch}
-                    onClick={(e) => {
-                      e.stopPropagation()
-                    }}
-                    onChange={(e) => {
-                      setFilterInputValue(e.target.value)
-                    }}
-                  />
-                ) : null}
-                {options
-                  .filter(({ label }) => {
-                    return (
-                      !filterInputValue ||
-                      label
-                        ?.toLowerCase()
-                        .includes(filterInputValue.toLowerCase())
-                    )
-                  })
-                  .map((option) => (
-                    <BaseButton
-                      key={option.value}
-                      iconLeft={option.icon}
-                      styles={{
-                        button: optionCss,
-                        icon: optionIconCss
-                      }}
-                      onClick={() => handleOptionSelect(option)}
-                      aria-label={option.label ?? option.value}
-                      role='option'
-                    >
-                      {option.label ?? option.value}
-                    </BaseButton>
-                  ))}
-              </Flex>
-            </Flex>
-          </Paper>
-        </Popup>
+        {leadingElement}
+        {label}
+        {children?.({
+          isOpen,
+          setIsOpen,
+          handleChange,
+          anchorRef
+        })}
       </BaseButton>
     )
   }

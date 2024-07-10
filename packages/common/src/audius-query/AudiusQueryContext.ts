@@ -4,7 +4,12 @@ import type { AudiusSdk } from '@audius/sdk'
 import type { Dispatch } from 'redux'
 
 import type { AudiusAPIClient } from '~/services/audius-api-client'
-import { AudiusBackend, Env, RemoteConfigInstance } from '~/services/index'
+import {
+  AudiusBackend,
+  Env,
+  FeatureFlags,
+  RemoteConfigInstance
+} from '~/services/index'
 import { SDKMigrationChecker } from '~/utils/sdkMigrationUtils'
 
 import { ReportToSentryArgs } from '../models'
@@ -19,6 +24,10 @@ export type AudiusQueryContextType = {
   env: Env
   fetch: typeof fetch
   remoteConfigInstance: RemoteConfigInstance
+  getFeatureEnabled: (
+    flag: FeatureFlags,
+    fallbackFlag?: FeatureFlags
+  ) => Promise<boolean> | boolean
 }
 
 export const AudiusQueryContext = createContext<AudiusQueryContextType>(

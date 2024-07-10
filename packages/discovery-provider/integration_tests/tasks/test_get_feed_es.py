@@ -18,6 +18,9 @@ basic_entities = {
         {"user_id": 1, "handle": "user1"},
         {"user_id": 2, "handle": "user2"},
         {"user_id": 3, "handle": "user3"},
+        {"user_id": 4, "handle": "user4"},
+        {"user_id": 5, "handle": "user5"},
+        {"user_id": 6, "handle": "user6"},
     ],
     "tracks": [
         {"track_id": 1, "owner_id": 1},
@@ -26,6 +29,12 @@ basic_entities = {
         {"track_id": 3, "owner_id": 3},
         # user3 has 1 track that's NOT in the playlist
         {"track_id": 4, "owner_id": 3},
+        # user4 has 1 track that's NOT in a playlist
+        {"track_id": 5, "owner_id": 4},
+        # user4 has 1 track that is in a playlist
+        {"track_id": 6, "owner_id": 4},
+        # user5 has 1 hidden track that is in a playlist
+        {"track_id": 7, "owner_id": 5, "is_unlisted": True},
     ],
     "playlists": [
         {
@@ -47,6 +56,24 @@ basic_entities = {
                 ]
             },
         },
+        {
+            "playlist_id": 3,
+            "playlist_owner_id": 4,
+            "playlist_contents": {
+                "track_ids": [
+                    {"track": 6, "time": 4},
+                ]
+            },
+        },
+        {
+            "playlist_id": 4,
+            "playlist_owner_id": 5,
+            "playlist_contents": {
+                "track_ids": [
+                    {"track": 7, "time": 5},
+                ]
+            },
+        },
     ],
     "follows": [
         # user 1 follows user 2
@@ -59,10 +86,21 @@ basic_entities = {
             "follower_user_id": 2,
             "followee_user_id": 3,
         },
+        # user 1 follows user 4
+        {
+            "follower_user_id": 1,
+            "followee_user_id": 4,
+        },
+        # user 1 follows user 5
+        {
+            "follower_user_id": 1,
+            "followee_user_id": 5,
+        },
     ],
     "reposts": [
         {"repost_item_id": 1, "repost_type": "track", "user_id": 2},
         {"repost_item_id": 1, "repost_type": "playlist", "user_id": 2},
+        {"repost_item_id": 4, "repost_type": "playlist", "user_id": 2},
     ],
     "saves": [
         {"save_item_id": 1, "save_type": "track", "user_id": 2},
@@ -100,7 +138,7 @@ def test_get_feed_es(app):
     # test feed
     with app.app_context():
         feed_results = get_feed_es({"user_id": "1"})
-        assert len(feed_results) == 2
+        assert len(feed_results) == 4
         assert feed_results[0]["playlist_id"] == 1
         assert feed_results[0]["save_count"] == 1
         assert len(feed_results[0]["followee_reposts"]) == 1
@@ -108,11 +146,17 @@ def test_get_feed_es(app):
         assert feed_results[1]["track_id"] == 1
         assert feed_results[1]["save_count"] == 1
 
+        assert feed_results[2]["playlist_id"] == 3
+        assert feed_results[3]["track_id"] == 5
+
         # Test offset works
         feed_results = get_feed_es({"user_id": "1"}, offset=1)
-        assert len(feed_results) == 1
+        assert len(feed_results) == 3
         assert feed_results[0]["track_id"] == 1
         assert feed_results[0]["save_count"] == 1
+
+        assert feed_results[1]["playlist_id"] == 3
+        assert feed_results[2]["track_id"] == 5
 
         # playlist <> track dedupe:
         # user2 follows user3

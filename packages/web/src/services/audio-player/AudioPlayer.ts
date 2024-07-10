@@ -1,5 +1,8 @@
+import { Name } from '@audius/common/models'
 import { playbackRateValueMap, PlaybackRate } from '@audius/common/store'
 import { MIN_BUFFERING_DELAY_MS } from '@audius/common/utils'
+
+import { make, track } from 'services/analytics'
 
 declare global {
   interface Window {
@@ -174,6 +177,7 @@ export class AudioPlayer {
       this.bufferingTimeout = setTimeout(() => {
         this.buffering = true
         this.onBufferingChange(this.buffering)
+        track(make({ eventName: Name.BUFFER_SPINNER_SHOWN }))
       }, MIN_BUFFERING_DELAY_MS)
     }
     this.audio.addEventListener('waiting', this.waitingListener)

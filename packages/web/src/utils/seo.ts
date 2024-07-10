@@ -164,3 +164,13 @@ export const getCollectionPageSEOFields = ({
     structuredData
   }
 }
+
+export const getDefaultSEOFields = () => ({
+  title: 'Audius - Empowering Creators',
+  description:
+    'Audius is a music streaming and sharing platform that puts power back into the hands of content creators.',
+  ogDescription:
+    'Audius is a music streaming and sharing platform that puts power back into the hands of content creators.',
+  image: 'https://audius.co/ogImage.jpg',
+  imageAlt: 'The Audius Platform'
+})

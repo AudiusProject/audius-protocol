@@ -42,6 +42,7 @@ type RetrieveTracksArgs = {
   trackIds: ID[] | UnlistedTrackRequest[]
   canBeUnlisted?: boolean
   withStems?: boolean
+  stemIds?: ID[]
   withRemixes?: boolean
   withRemixParents?: boolean
   forceRetrieveFromSource?: boolean
@@ -157,6 +158,7 @@ export function* retrieveTracks({
   trackIds,
   canBeUnlisted = false,
   withStems = false,
+  stemIds,
   withRemixes = false,
   withRemixParents = false
 }: RetrieveTracksArgs) {
@@ -189,12 +191,14 @@ export function* retrieveTracks({
       yield* waitForRead()
       const apiClient = yield* getContext('apiClient')
       let fetched: UserTrackMetadata | UserTrackMetadata[] | null | undefined
+
       if (canBeUnlisted) {
         const ids = trackIds as UnlistedTrackRequest[]
         if (ids.length > 1) {
           throw new Error('Can only query for single unlisted track')
         } else {
           const { id, url_title, handle } = ids[0]
+
           fetched = yield* call([apiClient, 'getTrack'], {
             id,
             currentUserId,
@@ -244,7 +248,7 @@ export function* retrieveTracks({
         console.error('Stems endpoint only supports fetching single tracks')
         return
       }
-      yield* call(fetchAndProcessStems, trackId)
+      yield* call(fetchAndProcessStems, trackId, stemIds)
     })
   }
 

@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 
-import type { ButtonProps } from 'app/components/core'
-import { Button } from 'app/components/core'
+import type { ButtonProps } from '@audius/harmony-native'
+import { Button, IconPencil } from '@audius/harmony-native'
 import { OnlineOnly } from 'app/components/offline-placeholder/OnlineOnly'
 import { useNavigation } from 'app/hooks/useNavigation'
 
@@ -19,12 +19,14 @@ export const EditProfileButton = (props: EditProfileButtonProps) => {
   return (
     <OnlineOnly>
       <Button
-        title='Edit Profile'
-        variant='primaryAlt'
+        variant='secondary'
         onPress={handlePress}
         size='small'
+        iconLeft={IconPencil}
         {...props}
-      />
+      >
+        Edit Profile
+      </Button>
     </OnlineOnly>
   )
 }

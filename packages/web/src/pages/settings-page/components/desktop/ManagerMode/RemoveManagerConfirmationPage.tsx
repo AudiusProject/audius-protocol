@@ -23,13 +23,23 @@ const messages = {
 export const RemoveManagerConfirmationPage = (
   props: RemoveManagerConfirmationPageProps
 ) => {
-  const { params, setPage } = props
+  const { params, setPageState } = props
   const userId = useSelector(getUserId)
   const managerUserId = params?.managerUserId
 
-  const navigateToHome = useCallback(() => {
-    setPage(AccountsManagingYouPages.HOME)
-  }, [setPage])
+  const handleSuccess = useCallback(() => {
+    setPageState({
+      page: AccountsManagingYouPages.HOME,
+      transitionDirection: 'forward'
+    })
+  }, [setPageState])
+
+  const handleCancel = useCallback(() => {
+    setPageState({
+      page: AccountsManagingYouPages.HOME,
+      transitionDirection: 'back'
+    })
+  }, [setPageState])
 
   if (!managerUserId || !userId) return null
 
@@ -37,8 +47,8 @@ export const RemoveManagerConfirmationPage = (
     <Box ph='xl'>
       <RemoveManagerConfirmationContent
         confirmationMessage={messages.removeManagerConfirmation}
-        onCancel={navigateToHome}
-        onSuccess={navigateToHome}
+        onCancel={handleCancel}
+        onSuccess={handleSuccess}
         userId={userId}
         managerUserId={managerUserId}
       />

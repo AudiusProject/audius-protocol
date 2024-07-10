@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react'
 
+import type { Nullable } from '@audius/common/utils'
 import type { StyleProp, ViewStyle } from 'react-native'
-import { View } from 'react-native'
 
 import type { IconButtonProps } from '@audius/harmony-native'
 import {
@@ -12,7 +12,6 @@ import {
 } from '@audius/harmony-native'
 import type { LinkProps } from 'app/components/core'
 import { Link, UserGeneratedText } from 'app/components/core'
-import Skeleton from 'app/components/skeleton'
 import { make } from 'app/services/analytics'
 import { makeStyles } from 'app/styles'
 import { EventNames } from 'app/types/analytics'
@@ -40,7 +39,7 @@ const useStyles = makeStyles(({ spacing }) => ({
 export type SocialLinkProps = LinkProps &
   Pick<IconButtonProps, 'icon'> & {
     style?: StyleProp<ViewStyle>
-    text?: string
+    text: Nullable<string>
     showText?: boolean
     hyperlink?: boolean
   }
@@ -57,23 +56,6 @@ export const SocialLink = (props: SocialLinkProps) => {
   const handlePressOut = useCallback(() => {
     setIsActive(false)
   }, [])
-
-  // undefined equates to "LOADING" from backend
-  if (text === undefined) {
-    if (showText) {
-      return (
-        <View style={[styles.withText, style]}>
-          <Skeleton style={styles.iconSkeleton} />
-          <Skeleton style={styles.linkSkeleton} />
-        </View>
-      )
-    }
-    return (
-      <Skeleton
-        style={[styles.iconSkeleton, showText && styles.withText, style]}
-      />
-    )
-  }
 
   if (text === null || text === '') return null
 

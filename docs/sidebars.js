@@ -72,6 +72,15 @@ module.exports = {
       ],
       collapsed: false,
     },
+    {
+      type: 'category',
+      label: 'Community Projects',
+      items: [
+        'developers/community-projects/unreal-engine-plugin',
+        'developers/community-projects/go-sdk',
+      ],
+      collapsed: false,
+    },
   ],
 
   distributors: [

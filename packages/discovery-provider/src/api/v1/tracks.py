@@ -31,9 +31,10 @@ from src.api.v1.helpers import (
     make_response,
     pagination_parser,
     pagination_with_current_user_parser,
-    search_parser,
+    parse_bool_param,
     stem_from_track,
     success_response,
+    track_search_parser,
     trending_parser,
     trending_parser_paginated,
 )
@@ -353,10 +354,16 @@ class FullBulkTracks(Resource):
             return marshal(response, full_tracks_response), status
 
 
-def get_stream_url_from_content_node(content_node: str, path: str):
+def get_stream_url_from_content_node(
+    content_node: str, path: str, skip_check: bool = False
+):
     # Add additional query parameters
     joined_url = urljoin(content_node, path)
     parsed_url = urlparse(joined_url)
+
+    # Performance improvement POC to skip node status check
+    if skip_check:
+        return parsed_url.geturl()
     query_params = parse_qs(parsed_url.query)
     query_params["skip_play_count"] = ["true"]
     stream_url = parsed_url._replace(query=urlencode(query_params, doseq=True)).geturl()
@@ -456,8 +463,7 @@ class TrackInspect(Resource):
 
 
 # Stream
-
-stream_parser = reqparse.RequestParser(argument_class=DescriptiveArgument)
+stream_parser = current_user_parser.copy()
 stream_parser.add_argument(
     "preview",
     description="""Optional - true if streaming track preview""",
@@ -496,6 +502,20 @@ stream_parser.add_argument(
     required=False,
     default=None,
 )
+stream_parser.add_argument(
+    "skip_check",
+    description="""Optional - POC to skip node 'double dip' health check""",
+    type=bool,
+    required=False,
+    default=None,
+)
+stream_parser.add_argument(
+    "no_redirect",
+    description="""Optional - If true will not return a 302 and instead will return the stream url in JSON""",
+    type=bool,
+    required=False,
+    default=None,
+)
 
 
 @ns.route("/<string:track_id>/stream")
@@ -524,10 +544,13 @@ class TrackStream(Resource):
         """
         request_args = stream_parser.parse_args()
         is_preview = request_args.get("preview")
+        user_id = get_current_user_id(request_args)
         user_data = request_args.get("user_data")
         user_signature = request_args.get("user_signature")
         nft_access_signature = request_args.get("nft_access_signature")
         api_key = request_args.get("api_key")
+        skip_check = request_args.get("skip_check")
+        no_redirect = request_args.get("no_redirect")
 
         decoded_id = decode_with_abort(track_id, ns)
 
@@ -555,6 +578,7 @@ class TrackStream(Resource):
             {
                 "track": track,
                 "is_preview": is_preview,
+                "user_id": user_id,
                 "user_data": user_data,
                 "user_signature": user_signature,
                 "nft_access_signature": nft_access_signature,
@@ -582,9 +606,14 @@ class TrackStream(Resource):
         stream_url = None
         if cached_content_node:
             cached_content_node = cached_content_node.decode("utf-8")
-            stream_url = get_stream_url_from_content_node(cached_content_node, path)
+            stream_url = get_stream_url_from_content_node(
+                cached_content_node, path, skip_check
+            )
             if stream_url:
-                return stream_url
+                if no_redirect:
+                    return success_response(stream_url)
+                else:
+                    return stream_url
 
         healthy_nodes = get_all_healthy_content_nodes_cached(redis)
         if not healthy_nodes:
@@ -605,11 +634,16 @@ class TrackStream(Resource):
 
         for content_node in content_nodes:
             try:
-                stream_url = get_stream_url_from_content_node(content_node, path)
+                stream_url = get_stream_url_from_content_node(
+                    content_node, path, skip_check
+                )
                 if stream_url:
                     redis.set(redis_key, content_node)
                     redis.expire(redis_key, 60 * 30)  # 30 min ttl
-                    return stream_url
+                    if no_redirect:
+                        return success_response(stream_url)
+                    else:
+                        return stream_url
             except Exception as e:
                 logger.error(f"Could not locate cid {cid} on {content_node}: {e}")
         abort_not_found(track_id, ns)
@@ -617,7 +651,7 @@ class TrackStream(Resource):
 
 # Download
 
-download_parser = reqparse.RequestParser(argument_class=DescriptiveArgument)
+download_parser = current_user_parser.copy()
 download_parser.add_argument(
     "user_signature",
     description="""Optional - signature from the requesting user's wallet.
@@ -671,6 +705,7 @@ class TrackDownload(Resource):
         Download the original or MP3 file of a track.
         """
         request_args = download_parser.parse_args()
+        user_id = get_current_user_id(request_args)
         decoded_id = decode_with_abort(track_id, ns)
         info = get_track_access_info(decoded_id)
         track = info.get("track")
@@ -688,6 +723,7 @@ class TrackDownload(Resource):
                 "track": track,
                 "is_original": request_args.get("original"),
                 "filename": request_args.get("filename"),
+                "user_id": user_id,
                 "user_data": request_args.get("user_data"),
                 "user_signature": request_args.get("user_signature"),
                 "nft_access_signature": request_args.get("nft_access_signature"),
@@ -744,14 +780,6 @@ track_search_result = make_response(
     "track_search", ns, fields.List(fields.Nested(track))
 )
 
-track_search_parser = search_parser.copy()
-track_search_parser.add_argument(
-    "only_downloadable",
-    required=False,
-    default=False,
-    description="Return only downloadable tracks",
-)
-
 
 @ns.route("/search")
 class TrackSearchResult(Resource):
@@ -766,9 +794,17 @@ class TrackSearchResult(Resource):
     @cache(ttl_sec=600)
     def get(self):
         args = track_search_parser.parse_args()
-        query = args["query"]
-        if not query:
-            abort_bad_request_param("query", ns)
+        query = args.get("query")
+        include_purchaseable = parse_bool_param(args.get("includePurchaseable"))
+        genres = args.get("genre")
+        moods = args.get("mood")
+        has_downloads = parse_bool_param(args.get("has_downloads"))
+        is_purchaseable = parse_bool_param(args.get("is_purchaseable"))
+        keys = args.get("key")
+        bpm_min = args.get("bpm_min")
+        bpm_max = args.get("bpm_max")
+        sort_method = args.get("sort_method")
+        only_downloadable = args.get("only_downloadable")
         search_args = {
             "query": query,
             "kind": SearchKind.tracks.name,
@@ -777,7 +813,16 @@ class TrackSearchResult(Resource):
             "with_users": True,
             "limit": 10,
             "offset": 0,
-            "only_downloadable": args["only_downloadable"],
+            "only_downloadable": only_downloadable,
+            "include_purchaseable": include_purchaseable,
+            "only_purchaseable": is_purchaseable,
+            "genres": genres,
+            "moods": moods,
+            "only_with_downloads": has_downloads,
+            "keys": keys,
+            "bpm_min": bpm_min,
+            "bpm_max": bpm_max,
+            "sort_method": sort_method,
         }
         response = search(search_args)
         return success_response(response["tracks"])

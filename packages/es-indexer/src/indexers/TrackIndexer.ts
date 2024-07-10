@@ -45,10 +45,16 @@ export class TrackIndexer extends BaseIndexer<TrackDoc> {
         is_unlisted: { type: 'boolean' },
         downloadable: { type: 'boolean' },
         purchaseable: { type: 'boolean' },
+        purchaseable_download: { type: 'boolean' },
+        has_stems: { type: 'boolean' },
+        bpm: { type: 'float' },
+        musical_key: { type: 'keyword' },
+        play_count: { type: 'integer' },
 
         // saves
         saved_by: { type: 'keyword' },
         save_count: { type: 'integer' },
+
         // reposts
         reposted_by: { type: 'keyword' },
         repost_count: { type: 'integer' },
@@ -99,6 +105,10 @@ export class TrackIndexer extends BaseIndexer<TrackDoc> {
         is not null then true
         else false
       end as purchaseable,
+      case when tracks.download_conditions->>'usdc_purchase'
+        is not null then true
+        else false
+      end as purchaseable_download,
       tracks.is_downloadable as downloadable,
       coalesce(aggregate_plays.count, 0) as play_count,
   
@@ -138,8 +148,17 @@ export class TrackIndexer extends BaseIndexer<TrackDoc> {
           and save_type = 'track' 
           and save_item_id = track_id
         order by created_at desc
-      ) as saved_by
-    
+      ) as saved_by,
+
+      array(
+        select stems.child_track_id
+        from stems
+        left join tracks as stem_track on stems.child_track_id = stem_track.track_id
+        where
+          stem_track.is_delete = false
+          and stems.parent_track_id = tracks.track_id
+      ) as stem_ids
+
     from tracks
       join users on owner_id = user_id 
       left join aggregate_user on users.user_id = aggregate_user.user_id
@@ -168,6 +187,7 @@ export class TrackIndexer extends BaseIndexer<TrackDoc> {
       .join(' ')
     row.tag_list = splitTags(row.tags)
     row.repost_count = row.reposted_by.length
+    row.save_count = row.saved_by.length
     row.favorite_count = row.saved_by.length
 
     // get_feed_es uses `created_at` for tracks + playlists + reposts to sequence events
@@ -183,5 +203,7 @@ export class TrackIndexer extends BaseIndexer<TrackDoc> {
     // permalink
     const currentRoute = row.routes[row.routes.length - 1]
     row.permalink = `/${row.user.handle}/${currentRoute}`
+
+    row.has_stems = row.stem_ids.length > 0
   }
 }

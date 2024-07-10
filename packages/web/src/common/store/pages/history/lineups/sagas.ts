@@ -1,5 +1,6 @@
 import {
   Id,
+  Kind,
   LineupEntry,
   Track,
   UserTrackMetadata
@@ -53,7 +54,7 @@ function* getHistoryTracks() {
         ? processedTracksMap[decodeHashId(activity.item.id)!]
         : null
       // Prevent history for invalid tracks from getting into the lineup.
-      if (trackMetadata) {
+      if (trackMetadata && !trackMetadata.is_unlisted) {
         lineupTracks.push({
           ...trackMetadata,
           dateListened: activity.timestamp
@@ -69,7 +70,7 @@ function* getHistoryTracks() {
 
 const keepTrackIdAndDateListened = (entry: LineupEntry<Track>) => ({
   uid: entry.uid,
-  kind: entry.kind,
+  kind: entry.kind ?? ('track_id' in entry ? Kind.TRACKS : Kind.COLLECTIONS),
   id: entry.track_id,
   dateListened: entry.dateListened
 })

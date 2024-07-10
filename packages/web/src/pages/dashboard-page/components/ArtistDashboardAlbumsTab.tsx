@@ -8,7 +8,7 @@ import {
   CollectionsTable,
   CollectionsTableColumn
 } from 'components/collections-table'
-import { useGoToRoute } from 'hooks/useGoToRoute'
+import { useNavigateToPage } from 'hooks/useNavigateToPage'
 
 import styles from '../DashboardPage.module.css'
 import { makeGetDashboard } from '../store/selectors'
@@ -37,7 +37,7 @@ export const ArtistDashboardAlbumsTab = ({
   selectedFilter,
   filterText
 }: ArtistDashboardAlbumsTabProps) => {
-  const goToRoute = useGoToRoute()
+  const navigate = useNavigateToPage()
   const { account } = useSelector(makeGetDashboard())
   const filteredData = useFilteredAlbumData({
     selectedFilter,
@@ -47,9 +47,9 @@ export const ArtistDashboardAlbumsTab = ({
   const onClickRow = useCallback(
     (collection: any) => {
       if (!account) return
-      goToRoute(collection.permalink)
+      navigate(collection.permalink)
     },
-    [account, goToRoute]
+    [account, navigate]
   )
 
   return !filteredData.length || !account ? (

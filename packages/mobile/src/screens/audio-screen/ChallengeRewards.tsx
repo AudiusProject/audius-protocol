@@ -141,9 +141,6 @@ const useStyles = makeStyles(({ spacing, typography, palette }) => ({
 export const ChallengeRewards = () => {
   const styles = useStyles()
   const dispatch = useDispatch()
-  const { isEnabled: isAudioMatchingChallengesEnabled } = useFeatureFlag(
-    FeatureFlags.AUDIO_MATCHING_CHALLENGES
-  )
   const { cooldownChallenges, cooldownAmount, claimableAmount, isEmpty } =
     useChallengeCooldownSchedule({ multiple: true })
   const { isEnabled: isRewardsCooldownEnabled } = useFeatureFlag(
@@ -160,9 +157,7 @@ export const ChallengeRewards = () => {
   // The referred challenge only needs a tile if the user was referred
   const hideReferredTile = !userChallenges.referred?.is_complete
   const rewardIds = useRewardIds({
-    referred: hideReferredTile,
-    b: !isAudioMatchingChallengesEnabled,
-    s: !isAudioMatchingChallengesEnabled
+    referred: hideReferredTile
   })
 
   useEffect(() => {
@@ -245,7 +240,11 @@ export const ChallengeRewards = () => {
                     )}
               </Text>
               {claimableAmount > 0 ? (
-                <Button onPress={openClaimAllModal} iconRight={IconArrowRight}>
+                <Button
+                  onPress={openClaimAllModal}
+                  iconRight={IconArrowRight}
+                  size='small'
+                >
                   {messages.claimAllRewards}
                 </Button>
               ) : cooldownAmount > 0 ? (
@@ -253,6 +252,7 @@ export const ChallengeRewards = () => {
                   variant='secondary'
                   onPress={openClaimAllModal}
                   iconRight={IconArrowRight}
+                  size='small'
                 >
                   {messages.moreInfo}
                 </Button>

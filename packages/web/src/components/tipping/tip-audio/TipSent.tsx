@@ -10,6 +10,7 @@ import cn from 'classnames'
 import { useSelector } from 'common/hooks/useSelector'
 import { useRecord, make } from 'common/store/analytics/actions'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
+import { env } from 'services/env'
 import { openTwitterLink } from 'utils/tweet'
 
 import { ProfileInfo } from '../../profile-info/ProfileInfo'
@@ -41,7 +42,7 @@ export const TipSent = () => {
         recipientAndAmount = `@${recipient.twitter_handle} ${formattedSendAmount}`
       }
       const message = `${messages.twitterCopyPrefix}${recipientAndAmount}${messages.twitterCopySuffix}`
-      openTwitterLink(null, message)
+      openTwitterLink(`${env.AUDIUS_URL}/${recipient.handle}`, message)
 
       const [senderWallet, recipientWallet] = await Promise.all([
         deriveUserBankAddress(audiusBackendInstance, {

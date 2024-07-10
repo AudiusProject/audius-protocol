@@ -10,17 +10,15 @@ import { EditingStatus } from 'common/store/pages/signon/types'
 import { Image, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { IconInstagram, IconNote, IconTwitter } from '@audius/harmony-native'
+import { IconNote, SocialButton, Button } from '@audius/harmony-native'
 import PartyFace from 'app/assets/images/emojis/face-with-party-horn-and-party-hat.png'
 import {
-  Button,
   Screen,
   ScreenContent,
   Text,
   ProfilePicture
 } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
-import { SocialButton } from 'app/components/social-button'
 import { StatusMessage } from 'app/components/status-message'
 import { TikTokAuthButton } from 'app/components/tiktok-auth'
 import UserBadges from 'app/components/user-badges'
@@ -73,9 +71,6 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
     textAlign: 'center',
     fontFamily: typography.fontByWeight.heavy
   },
-  socialButtonContainer: {
-    marginBottom: spacing(2)
-  },
   profileContainer: {
     marginTop: spacing(12),
     marginBottom: spacing(21),
@@ -92,24 +87,6 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
     width: 48,
     alignSelf: 'center',
     marginBottom: spacing(2)
-  },
-  buttonContainer: {
-    marginTop: spacing(3),
-    marginBottom: spacing(3),
-    height: 64,
-    minWidth: 300
-  },
-  twitterButton: {
-    backgroundColor: palette.staticTwitterBlue
-  },
-  button: {
-    paddingHorizontal: spacing(4)
-  },
-  buttonText: {
-    fontSize: 18
-  },
-  buttonIcon: {
-    marginRight: spacing(3)
   }
 }))
 
@@ -307,31 +284,26 @@ export const AccountVerificationScreen = () => {
 
       {isTwitterEnabled ? (
         <SocialButton
-          color={'#1BA1F1'}
+          socialType='twitter'
           fullWidth
-          icon={IconTwitter}
           onPress={handleTwitterPress}
-          styles={{ root: styles.socialButtonContainer }}
-          title={messages.verifyTwitter}
+          aria-label={messages.verifyTwitter}
         />
       ) : null}
 
       {isInstagramEnabled ? (
         <SocialButton
+          socialType='instagram'
           fullWidth
-          icon={IconInstagram}
           onPress={handleInstagramPress}
-          styles={{ root: styles.socialButtonContainer }}
-          title={messages.verifyInstagram}
+          aria-label={messages.verifyInstagram}
         />
       ) : null}
 
       {isTikTokEnabled ? (
-        <TikTokAuthButton
-          onPress={handleTikTokPress}
-          styles={{ root: styles.socialButtonContainer }}
-          title={messages.verifyTikTok}
-        />
+        <TikTokAuthButton onPress={handleTikTokPress}>
+          {messages.verifyTikTok}
+        </TikTokAuthButton>
       ) : null}
       {error ? (
         <StatusMessage
@@ -352,7 +324,7 @@ export const AccountVerificationScreen = () => {
         {messages.verified}
       </Text>
       <View style={styles.profileContainer}>
-        <ProfilePicture userId={accountUser.user_id} mb='xs' size='large' />
+        <ProfilePicture userId={accountUser.user_id} mb='xs' />
         <Text style={styles.profileName} variant='h1'>
           {accountName}
           <UserBadges user={accountUser} badgeSize={12} hideName />
@@ -360,18 +332,12 @@ export const AccountVerificationScreen = () => {
         <Text style={styles.profileHandle}>@{accountHandle}</Text>
       </View>
       <Button
-        variant='commonAlt'
-        title={messages.backButtonText}
-        size='large'
-        styles={{
-          root: [styles.buttonContainer],
-          text: styles.buttonText,
-          button: styles.button
-        }}
+        variant='secondary'
         onPress={goBacktoProfile}
-        icon={IconNote}
-        iconPosition='right'
-      />
+        iconRight={IconNote}
+      >
+        {messages.backButtonText}
+      </Button>
     </View>
   )
 

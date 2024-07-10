@@ -1,0 +1,21 @@
+.placeholder {
+  height: var(--play-bar-height);
+}
+
+.buttonRow {
+  position: fixed;
+  bottom: var(--play-bar-height);
+  left: var(--nav-width);
+
+  width: calc(100% - var(--nav-width));
+
+  padding: var(--harmony-unit-3);
+  background: var(--harmony-bg-surface-1);
+  border-top: 1px solid var(--harmony-border-strong);
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  z-index: 50;
+}

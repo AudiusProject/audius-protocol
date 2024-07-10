@@ -1,4 +1,4 @@
-import type { ComponentType, SVGProps } from 'react'
+import type { ComponentType, MouseEventHandler, SVGProps } from 'react'
 
 import type { IconColors } from '../foundations/color/semantic'
 import type { ShadowOptions } from '../foundations/shadows'
@@ -15,6 +15,7 @@ export type IconProps = {
   width?: number
   shadow?: ShadowOptions
   title?: string
+  onClick?: MouseEventHandler<SVGSVGElement>
 }
 
 type SVGIconProps = SVGBaseProps & IconProps

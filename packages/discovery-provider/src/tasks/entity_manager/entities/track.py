@@ -237,6 +237,7 @@ def is_valid_json_field(metadata, field):
 def populate_track_record_metadata(track_record: Track, track_metadata, handle, action):
     # Iterate over the track_record keys
     # Update track_record values for which keys exist in track_metadata
+    # Note: order matters - the order follows the order of the keys in the Track model
     track_record_attributes = track_record.get_attributes_dict()
     for key, _ in track_record_attributes.items():
         # For certain fields, update track_record under certain conditions
@@ -447,9 +448,6 @@ def validate_track_tx(params: ManageEntityParameters):
                 f"Track {track_id} description exceeds character limit {CHARACTER_LIMIT_DESCRIPTION}"
             )
 
-        if params.action == Action.UPDATE:
-            validate_update_access_conditions(params)
-
         validate_remixability(params)
         validate_access_conditions(params)
 
@@ -462,13 +460,6 @@ def validate_track_tx(params: ManageEntityParameters):
             raise IndexingValidationError(
                 f"Existing track {track_id} does not match user"
             )
-
-        if (
-            params.action == Action.UPDATE
-            and not existing_track.is_unlisted
-            and params.metadata.get("is_unlisted")
-        ):
-            raise IndexingValidationError(f"Cannot unlist track {track_id}")
 
     if params.action != Action.DELETE:
         ai_attribution_user_id = params.metadata.get("ai_attribution_user_id")
@@ -738,58 +729,3 @@ def validate_access_conditions(params: ManageEntityParameters):
             raise IndexingValidationError(
                 f"Track {params.entity_id} has an invalid number of download conditions"
             )
-
-
-# Make sure that access conditions do not incorrectly change during track update.
-# Rule of thumb is that access can only be modified to decrease strictness.
-def validate_update_access_conditions(params: ManageEntityParameters):
-    track_id = params.entity_id
-    if track_id not in params.existing_records["Track"]:
-        raise IndexingValidationError(f"Track {track_id} is not in existing records")
-
-    existing_track = helpers.model_to_dictionary(
-        params.existing_records["Track"][track_id]
-    )
-    # scheduled release tracks are not restricted on how they can be updated
-    if existing_track.get("is_scheduled_release"):
-        return
-
-    updated_track = params.metadata
-
-    # validate changes to conditions for stream/download access
-    def validate_update(existing_conditions, updated_conditions):
-        if not existing_conditions:
-            # non gated track cannot be updated to be gated
-            if updated_conditions:
-                raise IndexingValidationError(
-                    f"Track {track_id} cannot increase strictness of stream access conditions"
-                )
-        else:
-            # note that usdc purchase may be edited to change price (and maybe splits?)
-            is_existing_usdc_purchase = USDC_PURCHASE_KEY in existing_conditions
-            is_updated_usdc_purchase = (
-                updated_conditions and USDC_PURCHASE_KEY in updated_conditions
-            )
-            is_valid_usdc_purchase = (
-                is_existing_usdc_purchase and is_updated_usdc_purchase
-            )
-            # the updated stream conditions must be:
-            # - public (None),
-            # - equal to the existing stream conditions,
-            # - or a valid usdc purchase
-            if (
-                updated_conditions
-                and existing_conditions != updated_conditions
-                and not is_valid_usdc_purchase
-            ):
-                raise IndexingValidationError(
-                    f"Track {track_id} cannot change access conditions"
-                )
-
-    validate_update(
-        existing_track.get("stream_conditions"), updated_track.get("stream_conditions")
-    )
-    validate_update(
-        existing_track.get("download_conditions"),
-        updated_track.get("download_conditions"),
-    )

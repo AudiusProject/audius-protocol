@@ -92,7 +92,10 @@ export const useAllPaginatedQuery = <
         return
       }
       if (result.status === Status.SUCCESS) {
-        setAllData((allData) => [...allData, ...result.data])
+        setAllData((allData) => [
+          ...allData,
+          ...(Array.isArray(result.data) ? result.data : [])
+        ])
         setLoadingMore(false)
       }
     },

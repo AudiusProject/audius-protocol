@@ -19,9 +19,9 @@ type EditProfileProps = {
   twitterHandle: string
   instagramHandle: string
   tikTokHandle: string
-  twitterVerified?: boolean
-  instagramVerified?: boolean
-  tikTokVerified?: boolean
+  twitterVerified: boolean
+  instagramVerified: boolean
+  tikTokVerified: boolean
   website: string
   donation: string
 

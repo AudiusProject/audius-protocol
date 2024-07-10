@@ -45,6 +45,14 @@ export type UserMetadata = {
   handle_lc: string
   is_deactivated: boolean
   is_verified: boolean
+  twitter_handle: Nullable<string>
+  instagram_handle: Nullable<string>
+  tiktok_handle: Nullable<string>
+  verified_with_twitter: boolean
+  verified_with_instagram: boolean
+  verified_with_tiktok: boolean
+  website: Nullable<string>
+  donation: Nullable<string>
   is_storage_v2: boolean
   location: Nullable<string>
   // this should be removed
@@ -64,15 +72,7 @@ export type UserMetadata = {
 
   // Only present on the "current" account
   track_save_count?: number
-  twitter_handle?: string
-  instagram_handle?: string
-  tiktok_handle?: string
-  website?: string
   wallet?: string
-  donation?: string
-  twitterVerified?: boolean
-  instagramVerified?: boolean
-  tikTokVerified?: boolean
 }
 
 export type User = UserMetadata
@@ -128,6 +128,15 @@ type RightsController = {
 type Copyright = {
   year: string
   text: string
+}
+
+type FieldVisibility = {
+  mood?: boolean
+  tags?: boolean
+  genre?: boolean
+  share?: boolean
+  playCount?: boolean
+  remixes?: boolean
 }
 
 export type GatedConditions = {
@@ -207,6 +216,10 @@ export type TrackMetadata = {
   is_playlist_upload?: boolean
   ai_attribution_user_id?: Nullable<ID>
   allowed_api_keys?: Nullable<string[]>
+  bpm?: Nullable<number>
+  musical_key?: Nullable<string>
+  audio_analysis_error_count?: number
+  field_visibility?: FieldVisibility
 }
 
 export type CollectionMetadata = {
@@ -217,6 +230,8 @@ export type CollectionMetadata = {
   is_album: boolean
   is_delete: boolean
   is_private: boolean
+  is_scheduled_release: boolean
+  release_date: Nullable<string>
   playlist_contents: {
     track_ids: Array<{
       metadata_time: number
@@ -257,4 +272,7 @@ export type UploadTrackMetadata = Omit<
   | 'audio_upload_id'
   | 'orig_file_cid'
   | 'orig_filename'
+  | 'bpm'
+  | 'musical_key'
+  | 'audio_analysis_error_count'
 >

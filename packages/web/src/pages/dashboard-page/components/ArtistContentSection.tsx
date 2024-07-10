@@ -6,9 +6,9 @@ import {
   IconSearch,
   Paper,
   Flex,
-  FilterButton,
   TextInput,
-  TextInputSize
+  TextInputSize,
+  OptionsFilterButton
 } from '@audius/harmony'
 
 import { ArtistDashboardAlbumsTab } from './ArtistDashboardAlbumsTab'
@@ -109,8 +109,8 @@ export const ArtistContentSection = () => {
               onClick={() => onClickPill(Pills.ALBUMS)}
             />
           </Flex>
-          <FilterButton
-            onSelect={handleSelectFilter}
+          <OptionsFilterButton
+            onChange={handleSelectFilter}
             selection={isTracks ? selectedTrackFilter : selectedAlbumFilter}
             label={messages.allReleases}
             options={filterButtonOptions}

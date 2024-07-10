@@ -1,7 +1,7 @@
 import type { ShareContent } from '@audius/common/store'
 import { makeTwitterShareUrl } from '@audius/common/utils'
+import type { User } from '~/models'
 
-import { audiusBackendInstance } from 'app/services/audius-backend-instance'
 import {
   getCollectionRoute,
   getTrackRoute,
@@ -35,9 +35,9 @@ export const getContentUrl = (content: ShareContent) => {
   }
 }
 
-const getShareHandle = async (handle: string) => {
-  const { twitterHandle } = await audiusBackendInstance.getSocialHandles(handle)
-  return twitterHandle ? `@${twitterHandle}` : handle
+const getTwitterShareHandle = (user: User) => {
+  const twitterHandle = user.twitter_handle
+  return twitterHandle ? `@${twitterHandle}` : user.handle
 }
 
 export const getTwitterShareText = async (content: ShareContent) => {
@@ -45,34 +45,32 @@ export const getTwitterShareText = async (content: ShareContent) => {
     case 'track': {
       const {
         track: { title },
-        artist: { handle }
+        artist
       } = content
-      return messages.trackShareText(title, await getShareHandle(handle))
+      return messages.trackShareText(title, getTwitterShareHandle(artist))
     }
     case 'profile': {
-      const {
-        profile: { handle }
-      } = content
-      return messages.profileShareText(await getShareHandle(handle))
+      const { profile } = content
+      return messages.profileShareText(getTwitterShareHandle(profile))
     }
     case 'album': {
       const {
         album: { playlist_name },
-        artist: { handle }
+        artist
       } = content
       return messages.albumShareText(
         playlist_name,
-        await getShareHandle(handle)
+        getTwitterShareHandle(artist)
       )
     }
     case 'playlist': {
       const {
         playlist: { playlist_name },
-        creator: { handle }
+        creator
       } = content
       return messages.playlistShareText(
         playlist_name,
-        await getShareHandle(handle)
+        getTwitterShareHandle(creator)
       )
     }
     case 'audioNftPlaylist': {

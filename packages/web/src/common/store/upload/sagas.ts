@@ -5,6 +5,7 @@ import {
   ID,
   Kind,
   Name,
+  StemUploadWithFile,
   isContentFollowGated,
   isContentUSDCPurchaseGated
 } from '@audius/common/models'
@@ -97,14 +98,18 @@ function* combineMetadata(
   metadata.artwork = collectionMetadata.artwork
 
   if (!metadata.genre)
-    metadata.genre = collectionMetadata.trackDetails.genre ?? ''
-  if (!metadata.mood) metadata.mood = collectionMetadata.trackDetails.mood ?? ''
-  if (!metadata.release_date)
+    metadata.genre = collectionMetadata.trackDetails?.genre ?? ''
+  if (!metadata.mood)
+    metadata.mood = collectionMetadata.trackDetails?.mood ?? ''
+  if (!metadata.release_date) {
     metadata.release_date = collectionMetadata.release_date ?? null
+    metadata.is_scheduled_release =
+      collectionMetadata.is_scheduled_release ?? false
+  }
 
-  if (metadata.tags === null && collectionMetadata.trackDetails.tags) {
+  if (metadata.tags === null && collectionMetadata.trackDetails?.tags) {
     // Take collection tags
-    metadata.tags = collectionMetadata.trackDetails.tags
+    metadata.tags = collectionMetadata.trackDetails?.tags
   }
 
   // Set download & hidden status
@@ -418,7 +423,7 @@ export function* handleUploads({
 
     // Process the track's stems
     const trackStems = prepareStemsForUpload(
-      track.metadata.stems ?? [],
+      (track.metadata.stems ?? []) as StemUploadWithFile[],
       track.metadata.track_id
     )
     const stemCount = track.metadata.stems?.length ?? 0
@@ -601,7 +606,9 @@ export function* handleUploads({
           trackIndex,
           stemIndex: null,
           trackId: tracks[trackIndex].metadata.track_id,
-          error: new Error('Stem failed to upload.'),
+          error: new Error(`Stem ${stemIndex} failed to upload.`, {
+            cause: payload.error
+          }),
           phase
         }
       })
@@ -617,7 +624,7 @@ export function* handleUploads({
     // Report to sentry
     const e = error instanceof Error ? error : new Error(String(error))
     yield* call(reportToSentry, {
-      name: `Upload: ${e.name}`,
+      name: `Upload Worker Failed: ${e.name}`,
       error: e,
       additionalInfo: {
         trackId,
@@ -698,7 +705,9 @@ export function* handleUploads({
     }
     // Errors were reported to sentry earlier in the upload process.
     // Throwing here so callers don't think they succeeded.
-    throw new Error('Failed to upload tracks for collection.')
+    throw new Error('Failed to upload tracks for collection.', {
+      cause: errored
+    })
   }
 
   const publishedTrackIds = published
@@ -710,7 +719,7 @@ export function* handleUploads({
   if (publishedTrackIds.length === 0) {
     // Errors were reported to sentry earlier in the upload process.
     // Throwing here so callers don't think they succeeded.
-    throw new Error('No tracks were successfully uploaded.')
+    throw new Error('No tracks were successfully uploaded.', { cause: errored })
   }
 
   console.debug('Finished uploads')
@@ -758,10 +767,10 @@ export function* uploadCollection(
   }
 
   // First upload album art
-  yield* call(
-    audiusBackendInstance.uploadImage,
-    collectionMetadata.artwork?.file as File
-  )
+  const { artwork } = collectionMetadata
+  if (artwork && 'file' in artwork) {
+    yield* call(audiusBackendInstance.uploadImage, artwork.file as File)
+  }
 
   // Propagate the collection metadata to the tracks
   for (const track of tracks) {

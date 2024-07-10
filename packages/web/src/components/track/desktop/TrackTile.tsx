@@ -1,7 +1,6 @@
 import { memo } from 'react'
 
 import { ModalSource, isContentUSDCPurchaseGated } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import {
   accountSelectors,
   usePremiumContentPurchaseModal,
@@ -20,35 +19,33 @@ import {
   IconStar,
   IconCheck,
   IconCrown,
-  IconVisibilityHidden,
   Text,
   Flex,
   ProgressBar,
   Paper
 } from '@audius/harmony'
 import cn from 'classnames'
-import moment from 'moment'
 import { useSelector } from 'react-redux'
 
 import { DogEar } from 'components/dog-ear'
 import { TextLink } from 'components/link'
-import { ScheduledReleaseLabel } from 'components/scheduled-release-label/ScheduledReleaseLabel'
 import Skeleton from 'components/skeleton/Skeleton'
+import { VisibilityLabel } from 'components/visibility-label/VisibilityLabel'
 import { useAuthenticatedClickCallback } from 'hooks/useAuthenticatedCallback'
-import { useFlag } from 'hooks/useRemoteConfig'
 
 import {
   LockedStatusPill,
   LockedStatusPillProps
 } from '../../locked-status-pill'
 import { GatedContentLabel } from '../GatedContentLabel'
+import { OwnerActionButtons } from '../OwnerActionButtons'
+import { ViewerActionButtons } from '../ViewerActionButtons'
 import { messages } from '../trackTileMessages'
 import {
   TrackTileSize,
   DesktopTrackTileProps as TrackTileProps
 } from '../types'
 
-import { BottomRow } from './BottomRow'
 import styles from './TrackTile.module.css'
 
 const { getUserId } = accountSelectors
@@ -124,8 +121,6 @@ const TrackTile = ({
   size,
   order,
   standalone,
-  isFavorited,
-  isReposted,
   isOwner,
   isUnlisted,
   isScheduledRelease,
@@ -165,14 +160,6 @@ const TrackTile = ({
   releaseDate,
   source
 }: TrackTileProps) => {
-  const { isEnabled: isNewPodcastControlsEnabled } = useFlag(
-    FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
-    FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
-  )
-  const { isEnabled: isScheduledReleasesEnabled } = useFlag(
-    FeatureFlags.SCHEDULED_RELEASES
-  )
-
   const currentUserId = useSelector(getUserId)
   const trackPositionInfo = useSelector((state: CommonState) =>
     getTrackPosition(state, { trackId, userId: currentUserId })
@@ -206,11 +193,7 @@ const TrackTile = ({
   const getDurationText = () => {
     if (duration === null || duration === undefined) {
       return ''
-    } else if (
-      isLongFormContent &&
-      isNewPodcastControlsEnabled &&
-      trackPositionInfo
-    ) {
+    } else if (isLongFormContent && trackPositionInfo) {
       if (trackPositionInfo.status === 'IN_PROGRESS') {
         const remainingTime = duration - trackPositionInfo.playbackPosition
         return (
@@ -243,17 +226,12 @@ const TrackTile = ({
     ? undefined
     : getDogEarType({
         hasStreamAccess,
-        isArtistPick,
         isOwner,
-        isUnlisted:
-          isUnlisted &&
-          (!releaseDate || moment(releaseDate).isBefore(moment())),
         streamConditions
       })
 
   let specialContentLabel = null
-  let scheduledReleaseLabel = null
-  if (!isLoading) {
+  if (!isLoading && !isUnlisted) {
     if (isStreamGated) {
       specialContentLabel = (
         <GatedContentLabel
@@ -268,11 +246,6 @@ const TrackTile = ({
           <IconStar className={styles.artistPickIcon} />
           {messages.artistPick}
         </div>
-      )
-    }
-    if (isScheduledReleasesEnabled) {
-      scheduledReleaseLabel = (
-        <ScheduledReleaseLabel released={releaseDate} isUnlisted={isUnlisted} />
       )
     }
   }
@@ -355,18 +328,16 @@ const TrackTile = ({
             ) : (
               <>
                 {specialContentLabel}
-                {scheduledReleaseLabel}
+                <VisibilityLabel
+                  releaseDate={releaseDate}
+                  isUnlisted={isUnlisted}
+                  isScheduledRelease={isScheduledRelease}
+                />
                 {isUnlisted ? null : stats}
               </>
             )}
           </Text>
           <Text variant='body' size='xs' className={styles.topRight}>
-            {isUnlisted && !isScheduledRelease ? (
-              <div className={styles.topRightIconLabel}>
-                <IconVisibilityHidden className={styles.topRightIcon} />
-                {messages.hiddenTrack}
-              </div>
-            ) : null}
             {!isLoading && duration !== null && duration !== undefined ? (
               <div className={styles.duration}>{getDurationText()}</div>
             ) : null}
@@ -384,30 +355,40 @@ const TrackTile = ({
               : null}
           </Text>
         </Flex>
-        {isTrack ? (
+        {isTrack && trackId ? (
           <>
             <div className={styles.divider} />
-            <BottomRow
-              hasStreamAccess={hasStreamAccess}
-              isDisabled={isDisabled}
-              isLoading={isLoading}
-              isFavorited={isFavorited}
-              isReposted={isReposted}
-              rightActions={rightActions}
-              bottomBar={bottomBar}
-              isUnlisted={isUnlisted}
-              fieldVisibility={fieldVisibility}
-              isOwner={isOwner}
-              isDarkMode={isDarkMode}
-              isMatrixMode={isMatrixMode}
-              showIconButtons={showIconButtons}
-              onClickRepost={onClickRepost}
-              onClickFavorite={onClickFavorite}
-              onClickShare={onClickShare}
-              onClickGatedUnlockPill={onClickGatedUnlockPill}
-              streamConditions={streamConditions}
-              trackId={trackId}
-            />
+            {isOwner ? (
+              <OwnerActionButtons
+                contentId={trackId}
+                contentType='track'
+                isDisabled={isDisabled}
+                isLoading={isLoading}
+                rightActions={rightActions}
+                bottomBar={bottomBar}
+                isDarkMode={isDarkMode}
+                isMatrixMode={isMatrixMode}
+                showIconButtons={showIconButtons}
+                onClickShare={onClickShare}
+              />
+            ) : (
+              <ViewerActionButtons
+                contentId={trackId}
+                contentType='track'
+                hasStreamAccess={hasStreamAccess}
+                isDisabled={isDisabled}
+                isLoading={isLoading}
+                rightActions={rightActions}
+                bottomBar={bottomBar}
+                isDarkMode={isDarkMode}
+                isMatrixMode={isMatrixMode}
+                showIconButtons={showIconButtons}
+                onClickRepost={onClickRepost}
+                onClickFavorite={onClickFavorite}
+                onClickShare={onClickShare}
+                onClickGatedUnlockPill={onClickGatedUnlockPill}
+              />
+            )}
           </>
         ) : null}
       </div>

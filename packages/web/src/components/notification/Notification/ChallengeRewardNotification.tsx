@@ -11,6 +11,7 @@ import { useDispatch } from 'react-redux'
 import { useSelector } from 'common/hooks/useSelector'
 import { make, useRecord } from 'common/store/analytics/actions'
 import { getChallengeConfig } from 'pages/audio-rewards-page/config'
+import { env } from 'services/env'
 import { AUDIO_PAGE } from 'utils/route'
 
 import { NotificationBody } from './components/NotificationBody'
@@ -31,7 +32,7 @@ const messages = {
   body: (amount: number) =>
     `You've earned ${amount} $AUDIO for completing this challenge!`,
   twitterShareText:
-    'I earned $AUDIO for completing challenges on @audius #AudioRewards'
+    'I earned $AUDIO for completing challenges on @audius #Audius #AudioRewards'
 }
 
 type ChallengeRewardNotificationProps = {
@@ -69,7 +70,11 @@ export const ChallengeRewardNotification = (
           ? messages.referredText
           : messages.challengeCompleteText}
       </NotificationBody>
-      <TwitterShareButton type='static' shareText={messages.twitterShareText} />
+      <TwitterShareButton
+        type='static'
+        url={env.AUDIUS_URL}
+        shareText={messages.twitterShareText}
+      />
       <NotificationFooter timeLabel={timeLabel} isViewed={isViewed} />
     </NotificationTile>
   )

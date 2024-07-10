@@ -3,10 +3,11 @@ const bodyParser = require('body-parser')
 const cookieParser = require('cookie-parser')
 const sgMail = require('@sendgrid/mail')
 const { redisClient, Lock } = require('./redis')
+const { createFpClient } = require('./fpClient')
 const optimizelySDK = require('@optimizely/optimizely-sdk')
 const Sentry = require('@sentry/node')
 const cluster = require('cluster')
-
+const NotificationProcessor = require('./notifications/index.js')
 const config = require('./config.js')
 const txRelay = require('./relay/txRelay')
 const ethTxRelay = require('./relay/ethTxRelay')
@@ -37,12 +38,23 @@ class App {
     this.port = port
     this.express = express()
     this.redisClient = redisClient
+    this.fpClient = createFpClient(config.get('fpServerApiKey'))
     this.configureSentry()
     this.configureSendGrid()
 
     this.optimizelyPromise = null
     this.optimizelyClientInstance = this.configureOptimizely()
 
+    // Async job configuration
+    this.notificationProcessor = new NotificationProcessor({
+      errorHandler: (error) => {
+        try {
+          return Sentry.captureException(error)
+        } catch (sentryError) {
+          logger.error(`Received error from Sentry ${sentryError}`)
+        }
+      }
+    })
     // Note: The order of the following functions is IMPORTANT, as it sets the functions
     // that process a request in the order applied
     this.expressSettings()
@@ -96,6 +108,7 @@ class App {
         })
 
         const audiusInstance = await this.configureAudiusInstance()
+        cluster.fork({ WORKER_TYPE: 'notifications' })
 
         await this.configureDiscoveryNodeRegistration(audiusInstance)
         await this.configureReporter()
@@ -130,19 +143,30 @@ class App {
     } else {
       // if it's not the master worker in the cluster
       const audiusInstance = await this.configureAudiusInstance()
+
       await this.configureReporter()
-      await new Promise((resolve) => {
-        server = this.express.listen(this.port, resolve)
-      })
-      server.setTimeout(config.get('setTimeout'))
-      server.timeout = config.get('timeout')
-      server.keepAliveTimeout = config.get('keepAliveTimeout')
-      server.headersTimeout = config.get('headersTimeout')
 
-      this.express.set('redis', this.redisClient)
+      if (process.env.WORKER_TYPE === 'notifications') {
+        await this.notificationProcessor.init(
+          audiusInstance,
+          this.express,
+          this.redisClient
+        )
+      } else {
+        await new Promise((resolve) => {
+          server = this.express.listen(this.port, resolve)
+        })
+        server.setTimeout(config.get('setTimeout'))
+        server.timeout = config.get('timeout')
+        server.keepAliveTimeout = config.get('keepAliveTimeout')
+        server.headersTimeout = config.get('headersTimeout')
 
-      logger.info(`Listening on port ${this.port}...`)
-      return { app: this.express, server }
+        this.express.set('redis', this.redisClient)
+        this.express.set('fpClient', this.fpClient)
+
+        logger.info(`Listening on port ${this.port}...`)
+        return { app: this.express, server }
+      }
     }
   }
 
@@ -248,6 +272,10 @@ class App {
       prefix: `listenCountLimiter:::${interval}-ip-track:::`,
       expiry: timeInSeconds,
       max: config.get(`rateLimitingListensPerIPTrackPer${interval}`), // max requests per interval
+      skip: function (req) {
+        const { ip } = getIP(req)
+        return isIPWhitelisted(ip, req)
+      },
       keyGenerator: function (req) {
         const trackId = req.params.id
         const { ip } = getIP(req)
@@ -260,6 +288,10 @@ class App {
       prefix: `listenCountLimiter:::${interval}-ip-exclusive:::`,
       expiry: timeInSeconds,
       max: config.get(`rateLimitingListensPerIPPer${interval}`), // max requests per interval
+      skip: function (req) {
+        const { ip } = getIP(req)
+        return isIPWhitelisted(ip, req)
+      },
       keyGenerator: function (req) {
         const { ip } = getIP(req)
         return `${ip}`
@@ -296,29 +328,37 @@ class App {
     this.express.use('/tiktok/', tikTokRequestRateLimiter)
 
     const ONE_HOUR_IN_SECONDS = 60 * 60
-    const [listenCountHourlyLimiter, listenCountHourlyIPTrackLimiter] =
-      this._createRateLimitsForListenCounts('Hour', ONE_HOUR_IN_SECONDS)
     const [
-      listenCountDailyLimiter,
+      listenCountHourlyTrackLimiter,
+      listenCountHourlyIPTrackLimiter,
+      listenCountHourlyIPLimiter
+    ] = this._createRateLimitsForListenCounts('Hour', ONE_HOUR_IN_SECONDS)
+    const [
+      listenCountDailyTrackLimiter,
       listenCountDailyIPTrackLimiter,
       listenCountDailyIPLimiter
     ] = this._createRateLimitsForListenCounts('Day', ONE_HOUR_IN_SECONDS * 24)
-    const [listenCountWeeklyLimiter, listenCountWeeklyIPTrackLimiter] =
-      this._createRateLimitsForListenCounts(
-        'Week',
-        ONE_HOUR_IN_SECONDS * 24 * 7
-      )
+    const [
+      listenCountWeeklyTrackLimiter,
+      listenCountWeeklyIPTrackLimiter,
+      listenCountWeeklyIPLimiter
+    ] = this._createRateLimitsForListenCounts(
+      'Week',
+      ONE_HOUR_IN_SECONDS * 24 * 7
+    )
 
     // This limiter double dips with the reqLimiter. The 5 requests every hour are also counted here
     this.express.use(
       '/tracks/:id/listen',
-      listenCountWeeklyIPTrackLimiter,
-      listenCountWeeklyLimiter,
-      listenCountDailyIPTrackLimiter,
-      listenCountDailyLimiter,
+      listenCountHourlyTrackLimiter,
       listenCountHourlyIPTrackLimiter,
-      listenCountHourlyLimiter,
-      listenCountDailyIPLimiter
+      listenCountHourlyIPLimiter,
+      listenCountDailyTrackLimiter,
+      listenCountDailyIPTrackLimiter,
+      listenCountDailyIPLimiter,
+      listenCountWeeklyTrackLimiter,
+      listenCountWeeklyIPTrackLimiter,
+      listenCountWeeklyIPLimiter
     )
 
     // Eth relay rate limits

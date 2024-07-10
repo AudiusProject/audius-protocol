@@ -16,6 +16,7 @@ import {
 import { cache } from './routes/cache'
 import { feePayer } from './routes/feePayer'
 import { health } from './routes/health/health'
+import { location } from './routes/instruction/location'
 import { listen } from './routes/listen/listen'
 import { relay } from './routes/relay/relay'
 
@@ -32,6 +33,7 @@ const main = async () => {
   app.post('/solana/relay', relay)
   app.post('/solana/cache', cache)
   app.get('/solana/feePayer', feePayer)
+  app.get('/solana/instruction/location', location)
   app.use(outgoingRequestLogger)
   app.use(errorHandlerMiddleware)
 

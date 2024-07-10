@@ -153,12 +153,20 @@ def populate_tracks(db):
         ],
         "users": [
             {"user_id": 1287289, "handle": "some-test-user"},
-            {"user_id": 4, "handle": "some-other-user"},
+            {"user_id": 4, "wallet": "0xuser4wallet", "handle": "some-other-user"},
             {
                 "user_id": 5,
                 "handle": "test-user-5",
                 "artist_pick_track_id": 12,
                 "allow_ai_attribution": True,
+            },
+        ],
+        "grants": [
+            {
+                "user_id": 1287289,
+                "grantee_address": "0xuser4wallet",
+                "is_approved": True,
+                "is_revoked": False,
             },
         ],
     }
@@ -221,27 +229,49 @@ def test_get_tracks_by_date_authed(app):
     with app.app_context():
         db = get_db()
 
-    populate_tracks(db)
+        populate_tracks(db)
 
-    with db.scoped_session() as session:
-        tracks = _get_tracks(
-            session,
-            {
-                "user_id": 1287289,
-                "authed_user_id": 1287289,
-                "offset": 0,
-                "limit": 10,
-                "sort": "date",
-            },
-        )
+        with db.scoped_session() as session:
+            # test as authed user matching owner
+            tracks = _get_tracks(
+                session,
+                {
+                    "user_id": 1287289,
+                    "authed_user_id": 1287289,
+                    "offset": 0,
+                    "limit": 10,
+                    "sort": "date",
+                },
+            )
 
-        assert len(tracks) == 8
-        assert tracks[0]["track_id"] == 1
-        assert tracks[1]["track_id"] == 11
-        assert tracks[2]["track_id"] == 3
-        assert tracks[3]["track_id"] == 5
-        assert tracks[4]["track_id"] == 4
-        assert tracks[5]["track_id"] == 2
+            assert len(tracks) == 8
+            assert tracks[0]["track_id"] == 1
+            assert tracks[1]["track_id"] == 11
+            assert tracks[2]["track_id"] == 3
+            assert tracks[3]["track_id"] == 5
+            assert tracks[4]["track_id"] == 4
+            assert tracks[5]["track_id"] == 2
+
+            # test as authed user managing owner
+            tracks = _get_tracks(
+                session,
+                {
+                    "user_id": 1287289,
+                    "current_user_id": 1287289,
+                    "authed_user_id": 4,
+                    "offset": 0,
+                    "limit": 10,
+                    "sort": "date",
+                },
+            )
+
+            assert len(tracks) == 8
+            assert tracks[0]["track_id"] == 1
+            assert tracks[1]["track_id"] == 11
+            assert tracks[2]["track_id"] == 3
+            assert tracks[3]["track_id"] == 5
+            assert tracks[4]["track_id"] == 4
+            assert tracks[5]["track_id"] == 2
 
 
 def test_get_tracks_with_pinned_track(app):

@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 
 import { UniqueUsersInfoTooltip } from 'components/InfoTooltip/InfoTooltips'
 import LineChart from 'components/LineChart'
-import { useApiCalls, useTrailingApiCalls } from 'store/cache/analytics/hooks'
+import { useApiCalls } from 'store/cache/analytics/hooks'
 import { Bucket, MetricError } from 'store/cache/analytics/slice'
 import { datesToSkip } from 'utils/consts'
 
@@ -16,17 +16,20 @@ type UniqueUsersBucket =
   | Bucket.ALL_TIME
   | Bucket.YEAR
 
+const messages = {
+  monthlyTitle: 'Monthly',
+  dailyTitle: 'Daily'
+}
+
+const BUCKET_TO_TOPLINE_LABEL = {
+  [Bucket.ALL_TIME]: messages.monthlyTitle,
+  [Bucket.YEAR]: messages.monthlyTitle,
+  [Bucket.MONTH]: messages.dailyTitle,
+  [Bucket.WEEK]: messages.dailyTitle
+}
+
 const UniqueUsersChart: React.FC<UniqueUsersChartProps> = () => {
   const [bucket, setBucket] = useState<UniqueUsersBucket>(Bucket.ALL_TIME)
-  const { apiCalls: trailingApiCalls } = useTrailingApiCalls(
-    bucket === Bucket.ALL_TIME ? Bucket.MONTH : bucket
-  )
-  let topNumber: number
-  if (trailingApiCalls === MetricError.ERROR) {
-    topNumber = null
-  } else {
-    topNumber = trailingApiCalls?.summed_unique_count ?? null
-  }
 
   const { apiCalls } = useApiCalls(bucket)
   let error, labels, data
@@ -47,8 +50,8 @@ const UniqueUsersChart: React.FC<UniqueUsersChartProps> = () => {
   return (
     <LineChart
       titleTooltipComponent={UniqueUsersInfoTooltip}
-      topNumber={topNumber}
-      title='Unique Users'
+      title={`Unique ${BUCKET_TO_TOPLINE_LABEL[bucket]} Users`}
+      topNumber={data ? data[data.length - 1] : undefined}
       tooltipTitle='Users'
       data={data}
       labels={labels}

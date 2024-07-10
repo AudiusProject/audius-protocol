@@ -1,12 +1,11 @@
 import { PropsWithChildren } from 'react'
 
+import { SocialPlatform } from '@audius/common/models'
 import { TwitterProfile } from '@audius/common/store'
 
 import TwitterAuth from 'components/twitter-auth/TwitterAuth'
 
 import { useSetProfileFromTwitter } from '../hooks/socialMediaLogin'
-
-import { SocialPlatform } from './SocialMediaLoginOptions'
 
 type SignupFlowTwitterAuthProps = PropsWithChildren<{
   className?: string

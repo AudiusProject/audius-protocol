@@ -128,9 +128,19 @@ This command does a few things:
    2. If not found, runs the installer
    3. Starts the Audius Node
 
+:::tip monitoring nodes
+
+Verify Nodes are up and properly configured by using the `audius-ctl status` command.
+
+Read more about the status command at the [bottom of this page](#status-command).
+
+:::
+
 ---
 
-## Additional Commands
+## Useful Commands
+
+### `help` command
 
 Get help, and view all of the available commands by running the following command:
 
@@ -169,3 +179,41 @@ Use "audius-ctl [command] --help" for more information about a command.
 ```
 
 > checkout the [code on GitHub](https://github.com/AudiusProject/audius-d)
+
+### `status` command
+
+Check the status of all Audius Nodes from the command line
+
+```bash
+audius-ctl status
+```
+
+> The example below shows a healthy `content` node and an unhealthy `discovery` node.
+
+```bash
+ NODE                     TYPE       UP     HEALTHY  CHAIN  WEBSOCKET  CLIENT IP  DB    DISK          UPTIME      COMMENT
+ audius-cn1.example.com   content    true   true     n/a    n/a        matched    6 GB  1553/1938 GB  120h45m46s  <nil>
+ audius-dn1.example.com   discovery  false  n/a      n/a    n/a        n/a        n/a   n/a           n/a         Unreachable after 2 retries
+Error: One or more health checks failed
+```
+
+<details>
+<summary>Status Field Descriptions</summary>
+<div>
+
+| Field       | Description                                                                      | Example Values                |
+| :---------- | :------------------------------------------------------------------------------- | :---------------------------- |
+| `NODE`      | name of the node                                                                 |
+| `TYPE`      | node type                                                                        | `content` or `discovery`      |
+| `UP`        | is the node up                                                                   | `true` or `false`             |
+| `HEALTHY`   | is the node healthy                                                              | `true` or `false`             |
+| `CHAIN`     | is chain in sync _and_ is port `30300` accessible on Discovery Nodes             | `healthy`, `unhealthy`        |
+| `WEBSOCKET` | are [required ports](/node-operator/setup/hardware-requirements#open-ports) open | `healthy`, `unreachable`      |
+| `CLIENT IP` | compare IP to what node sees                                                     | `matched`, `unmatched/error`  |
+| `DB`        | size of the database                                                             | `90 GB`                       |
+| `DISK`      | storage disk usage and capacity                                                  | `1553/1938 GB`                |
+| `UPTIME`    | node uptime                                                                      | `120h45m46s`                  |
+| `COMMENT`   | additional information                                                           | `<nil>` indicates all is well |
+
+</div>
+</details>

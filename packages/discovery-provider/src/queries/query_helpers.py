@@ -142,6 +142,12 @@ class TransactionSortMethod(str, enum.Enum):
     transaction_type = "transaction_type"
 
 
+class SearchSortMethod(str, enum.Enum):
+    relevant = "relevant"
+    popular = "popular"
+    recent = "recent"
+
+
 class SortDirection(str, enum.Enum):
     asc = "asc"
     desc = "desc"
@@ -1419,3 +1425,53 @@ def add_users_to_tracks(session, tracks, current_user_id=None):
             track["user"] = {}
 
     return tracks
+
+
+# Filter out hidden tracks if a non-owner is requesting a public playlist
+# See also: api/v1/helpers.py::filter_hidden_tracks
+def filter_hidden_tracks(playlist, tracks, current_user_id):
+    is_owner = (
+        current_user_id and playlist.get("playlist_owner_id", None) == current_user_id
+    )
+
+    if not playlist.get("is_private", False) and not is_owner:
+        tracks_map = {track.get("track_id"): track for track in tracks}
+        playlist_contents_list = playlist.get("playlist_contents", {}).get(
+            "track_ids", []
+        )
+        playlist["playlist_contents"] = {
+            "track_ids": [
+                track
+                for track in playlist_contents_list
+                if (track_id := track.get("track")) in tracks_map
+                and not tracks_map.get(track_id, {}).get("is_unlisted", False)
+            ]
+        }
+
+
+# Filter out playlists with only hidden tracks and empty playlists
+def filter_playlists_with_only_hidden_tracks(
+    session, playlists, track_ids, ignore_ids=[]
+):
+    hidden_track_ids = (
+        session.query(Track.track_id)
+        .filter(Track.track_id.in_(list(track_ids)))
+        .filter(Track.is_unlisted == True)
+        .all()
+    )
+    hidden_track_ids = [t[0] for t in hidden_track_ids]
+
+    results = []
+    for playlist in playlists:
+        playlist_track_ids = set(
+            map(
+                lambda t: t["track"],
+                playlist.get("playlist_contents", {}).get("track_ids", []),
+            )
+        )
+        if (playlist.get("playlist_id") in ignore_ids) or (
+            not all([t in hidden_track_ids for t in playlist_track_ids])
+        ):
+            results.append(playlist)
+
+    return results

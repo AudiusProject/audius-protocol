@@ -1,4 +1,9 @@
-from src.queries.query_helpers import _populate_gated_content_metadata, get_users_ids
+from src.models.tracks.track import Track
+from src.queries.query_helpers import (
+    _populate_gated_content_metadata,
+    filter_hidden_tracks,
+    get_users_ids,
+)
 from src.utils.db_session import get_db_read_replica
 from src.utils.elasticdsl import (
     ES_PLAYLISTS,
@@ -15,7 +20,7 @@ from src.utils.elasticdsl import (
 
 def get_feed_es(args, limit=10, offset=0):
     esclient = get_esclient()
-    current_user_id = str(args.get("user_id"))
+    current_user_id = str(args.get("user_id", None))
     feed_filter = args.get("filter", "all")
     load_reposts = feed_filter in ["repost", "all"]
     load_orig = feed_filter in ["original", "all"]
@@ -122,11 +127,18 @@ def get_feed_es(args, limit=10, offset=0):
         #    instead of doing it dynamically here?
         playlist["item_key"] = item_key(playlist)
         seen.add(playlist["item_key"])
+        filter_hidden_tracks(playlist, playlist.get("tracks", []), current_user_id)
+
+        # after having removed hidden tracks from playlists,
+        # exclude playlists with no tracks
+        if not playlist.get("playlist_contents", {}).get("track_ids", []):
+            continue
+
         unsorted_feed.append(playlist)
 
         # add playlist track_ids to seen
         # if a user uploads an orig playlist or album
-        # surpress individual tracks from said album appearing in feed
+        # supress individual tracks from said album appearing in feed
         for track in playlist["tracks"]:
             seen.add(item_key(track))
 
@@ -172,6 +184,8 @@ def get_feed_es(args, limit=10, offset=0):
         else:
             mget_reposts.append({"_index": ES_PLAYLISTS, "_id": id})
 
+    repost_playlist_track_ids = set()
+
     if mget_reposts:
         reposted_docs = esclient.mget(docs=mget_reposts)
         for doc in reposted_docs["docs"]:
@@ -194,6 +208,28 @@ def get_feed_es(args, limit=10, offset=0):
                 continue
             keyed_reposts[s["item_key"]] = s
 
+            if "playlist_id" in s:
+                track_ids = set(
+                    map(
+                        lambda t: t["track"],
+                        s.get("playlist_contents", {}).get("track_ids", []),
+                    )
+                )
+                repost_playlist_track_ids = repost_playlist_track_ids.union(track_ids)
+
+    # get hidden track ids in reposted playlists
+    hidden_playlist_track_ids = []
+    db = get_db_read_replica()
+    if repost_playlist_track_ids:
+        with db.scoped_session() as session:
+            hidden_playlist_track_ids = (
+                session.query(Track.track_id)
+                .filter(Track.track_id.in_(list(repost_playlist_track_ids)))
+                .filter(Track.is_unlisted == True)
+                .all()
+            )
+            hidden_playlist_track_ids = [t[0] for t in hidden_playlist_track_ids]
+
     # replace repost with underlying items
     sorted_feed = []
     for x in sorted_with_reposts:
@@ -206,6 +242,18 @@ def get_feed_es(args, limit=10, offset=0):
                 # MISSING: see above
                 continue
             item = keyed_reposts[k]
+
+            # exclude reposted playlists with only hidden tracks and empty reposted playlists
+            if "playlist_id" in item:
+                track_ids = set(
+                    map(
+                        lambda t: t["track"],
+                        item.get("playlist_contents", {}).get("track_ids", []),
+                    )
+                )
+                if all([t in hidden_playlist_track_ids for t in track_ids]):
+                    continue
+
             item["activity_timestamp"] = x["min_created_at"]["value_as_string"]
             sorted_feed.append(item)
 
@@ -253,7 +301,6 @@ def get_feed_es(args, limit=10, offset=0):
     )
 
     # batch populate gated track and collection metadata
-    db = get_db_read_replica()
     with db.scoped_session() as session:
         _populate_gated_content_metadata(session, sorted_feed, current_user["user_id"])
 

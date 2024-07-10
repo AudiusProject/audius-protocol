@@ -9,7 +9,7 @@ ENV TURBO_TOKEN=$TURBO_TOKEN
 # First stage: Set up a minimal monorepo
 FROM base AS turbo-builder
 WORKDIR /app
-RUN npm install turbo --global
+RUN npm install turbo@1.10.14 --global
 COPY . .
 RUN turbo prune --scope=audius-protocol-dashboard --docker
 

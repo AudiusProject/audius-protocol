@@ -8,7 +8,7 @@ import {
   isContentFollowGated,
   isContentUSDCPurchaseGated
 } from '@audius/common/models'
-import { formatCount, formatSeconds } from '@audius/common/utils'
+import { formatCount, formatPrice, formatSeconds } from '@audius/common/utils'
 import {
   IconVisibilityHidden,
   IconLock,
@@ -173,7 +173,6 @@ export const TracksTable = ({
       const index = cellInfo.row.index
       const active = index === playingIndex
       const track = cellInfo.row.original
-      const isTrackUnlisted = track.is_unlisted
       const isTrackPremium = isContentUSDCPurchaseGated(track.stream_conditions)
       const { isFetchingNFTAccess, hasStreamAccess } = trackAccessMap[
         track.track_id
@@ -181,21 +180,14 @@ export const TracksTable = ({
       const isLocked = !isFetchingNFTAccess && !hasStreamAccess
 
       return (
-        <>
-          <TablePlayButton
-            className={cn(styles.tablePlayButton, { [styles.active]: active })}
-            paused={!playing}
-            playing={active}
-            hideDefault={false}
-            isTrackPremium={isTrackPremium && isPremiumEnabled}
-            isLocked={isLocked}
-          />
-          {isTrackUnlisted ? (
-            <IconVisibilityHidden
-              className={cn(styles.hiddenIcon, { [styles.hidden]: active })}
-            />
-          ) : null}
-        </>
+        <TablePlayButton
+          className={cn(styles.tablePlayButton, { [styles.active]: active })}
+          paused={!playing}
+          playing={active}
+          hideDefault={false}
+          isTrackPremium={isTrackPremium && isPremiumEnabled}
+          isLocked={isLocked}
+        />
       )
     },
     [isPremiumEnabled, playing, playingIndex, trackAccessMap]
@@ -304,16 +296,7 @@ export const TracksTable = ({
 
   const renderReleaseDateCell = useCallback((cellInfo: TrackCell) => {
     const track = cellInfo.row.original
-    let suffix = ''
-    if (
-      track.release_date &&
-      moment(track.release_date).isAfter(moment.now())
-    ) {
-      suffix = ' (Scheduled)'
-    }
-    return (
-      moment(track.release_date ?? track.created_at).format('M/D/YY') + suffix
-    )
+    return moment(track.release_date ?? track.created_at).format('M/D/YY')
   }, [])
 
   const renderListenDateCell = useCallback((cellInfo: TrackCell) => {
@@ -332,7 +315,8 @@ export const TracksTable = ({
       const deleted =
         track.is_delete || track._marked_deleted || !!track.user?.is_deactivated
       const isOwner = track.owner_id === userId
-      if (isLocked || deleted || isOwner) {
+      const isUnlisted = track.is_unlisted
+      if (isLocked || deleted || isOwner || isUnlisted) {
         return null
       }
 
@@ -366,8 +350,9 @@ export const TracksTable = ({
       const isLocked = !isFetchingNFTAccess && !hasStreamAccess
       const deleted =
         track.is_delete || track._marked_deleted || !!track.user?.is_deactivated
+      const isUnlisted = track.is_unlisted
       const isOwner = track.owner_id === userId
-      if (isLocked || deleted || isOwner) {
+      if (isLocked || deleted || isOwner || isUnlisted) {
         return null
       }
 
@@ -433,7 +418,7 @@ export const TracksTable = ({
         className: styles.tableActionButton,
         isDeleted: deleted,
         includeAlbumPage: !isAlbumPage,
-        includeFavorite: !isLocked,
+        includeFavorite: !isLocked && !track.is_unlisted,
         handle: track.handle,
         trackId: track.track_id,
         uid: track.uid,
@@ -501,7 +486,12 @@ export const TracksTable = ({
       if (!isLocked || deleted || isOwner || !isPremiumEnabled) {
         return null
       }
+
       if (isContentUSDCPurchaseGated(track.stream_conditions)) {
+        // Format the price as $$ with 2 digit decimal cents
+        const formattedPrice = formatPrice(
+          track.stream_conditions.usdc_purchase.price
+        )
         return (
           <Button
             size='small'
@@ -512,7 +502,7 @@ export const TracksTable = ({
               onClickPurchase?.(track)
             }}
           >
-            ${track.stream_conditions.usdc_purchase.price / 100}.00
+            ${formattedPrice}
           </Button>
         )
       }

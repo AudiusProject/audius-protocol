@@ -8,6 +8,7 @@ import {
 import { IconTrending } from '@audius/harmony'
 
 import { make } from 'common/store/analytics/actions'
+import { env } from 'services/env'
 import { useSelector } from 'utils/reducer'
 
 import styles from './TopSupporterNotification.module.css'
@@ -85,6 +86,7 @@ export const TopSupporterNotification = (
       <TwitterShareButton
         type='dynamic'
         handle={user.handle}
+        url={`${env.AUDIUS_URL}/${user.handle}`}
         shareData={handleTwitterShare}
       />
       <NotificationFooter timeLabel={timeLabel} isViewed={isViewed} />

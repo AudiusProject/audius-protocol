@@ -16,6 +16,10 @@
   touch-action: none;
 }
 
+.containerNoBorder {
+  border-bottom: none;
+}
+
 .leftElement {
   display: flex;
   justify-content: flex-start;

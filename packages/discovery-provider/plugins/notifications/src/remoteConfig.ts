@@ -22,6 +22,7 @@ export enum MappingVariable {
   PushTipSend = 'push_tip_send',
   PushTastemaker = 'push_tastemaker',
   PushChallengeReward = 'push_challenge_reward',
+  PushClaimableReward = 'push_claimable_reward',
   PushTrackAddedToPlaylist = 'push_track_added_to_playlist',
   PushCreate = 'push_create',
   PushTrending = 'push_trending',
@@ -32,7 +33,10 @@ export enum MappingVariable {
   PushAnnouncement = 'push_announcement',
   PushReaction = 'push_reaction',
   PushUSDCTransfer = 'push_usdc_transfer',
-  PushUSDCWithdrawal = 'push_usdc_withdrawal'
+  PushUSDCWithdrawal = 'push_usdc_withdrawal',
+  PushRequestManager = 'push_request_manager',
+  PushApproveManagerRequest = 'push_approve_manager_request',
+  PushRewardInCooldown = 'push_reward_in_cooldown'
 }
 
 export const NotificationsEmailPlugin = 'notification_email_plugin'
@@ -74,7 +78,9 @@ const defaultMappingVariable = {
   [MappingVariable.PushAnnouncement]: false,
   [MappingVariable.PushReaction]: false,
   [MappingVariable.PushUSDCTransfer]: false,
-  [MappingVariable.PushUSDCWithdrawal]: false
+  [MappingVariable.PushUSDCWithdrawal]: false,
+  [MappingVariable.PushRequestManager]: false,
+  [MappingVariable.PushApproveManagerRequest]: false
 }
 
 export const BrowserPushPlugin = 'browser_push_plugin'

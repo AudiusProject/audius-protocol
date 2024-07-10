@@ -11,13 +11,23 @@ import {
   CommonState,
   cacheCollectionsSelectors,
   OverflowAction,
-  PurchaseableContentType,
-  useEditPlaylistModal
+  PurchaseableContentType
 } from '@audius/common/store'
-import { getDogEarType } from '@audius/common/utils'
-import { Box, Button, Flex, IconPause, IconPlay, Text } from '@audius/harmony'
+import { formatReleaseDate, getDogEarType } from '@audius/common/utils'
+import {
+  Box,
+  Button,
+  Flex,
+  IconCalendarMonth,
+  IconPause,
+  IconPlay,
+  IconVisibilityHidden,
+  MusicBadge,
+  Text
+} from '@audius/harmony'
 import cn from 'classnames'
 import { useSelector } from 'react-redux'
+import { useNavigate } from 'react-router-dom-v5-compat'
 
 import { DogEar } from 'components/dog-ear'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
@@ -31,7 +41,7 @@ import ActionButtonRow from 'pages/track-page/components/mobile/ActionButtonRow'
 import { isShareToastDisabled } from 'utils/clipboardUtil'
 import { isDarkMode } from 'utils/theme/theme'
 
-import { AlbumDetailsText } from '../components/AlbumDetailsText'
+import { CollectionMetadataList } from '../CollectionMetadataList'
 import { RepostsFavoritesStats } from '../components/RepostsFavoritesStats'
 import { CollectionHeaderProps } from '../types'
 
@@ -45,7 +55,10 @@ const messages = {
   play: 'PLAY',
   pause: 'PAUSE',
   preview: 'PREVIEW',
-  coverArtAltText: 'Collection Cover Art'
+  coverArtAltText: 'Collection Cover Art',
+  hidden: 'Hidden',
+  releases: (releaseDate: string) =>
+    `Releases ${formatReleaseDate({ date: releaseDate, withHour: true })}`
 }
 
 type MobileCollectionHeaderProps = CollectionHeaderProps & {
@@ -74,13 +87,9 @@ const CollectionHeader = ({
   isOwner = false,
   isReposted = false,
   isSaved = false,
-  releaseDate,
-  lastModifiedDate,
-  numTracks,
   isPlayable,
   streamConditions,
   access,
-  duration,
   isPublished = false,
   isPublishing = false,
   isAlbum = false,
@@ -102,6 +111,8 @@ const CollectionHeader = ({
   imageOverride,
   icon: Icon
 }: MobileCollectionHeaderProps) => {
+  const navigate = useNavigate()
+
   const { isEnabled: isPremiumAlbumsEnabled } = useFlag(
     FeatureFlags.PREMIUM_ALBUMS_ENABLED
   )
@@ -112,8 +123,13 @@ const CollectionHeader = ({
     currentUserId
   })
   const { hasStreamAccess } = useGatedContentAccess(collection)
-  const isPremium = collection?.is_stream_gated
-  const isUnlisted = collection?.is_private
+  const {
+    is_private: isPrivate,
+    is_stream_gated: isPremium,
+    is_scheduled_release: isScheduledRelease,
+    release_date: releaseDate,
+    permalink
+  } = collection ?? {}
 
   const tracks = useSelector((state: CommonState) =>
     getCollectionTracks(state, { id: collectionId })
@@ -166,10 +182,9 @@ const CollectionHeader = ({
     SquareSizes.SIZE_1000_BY_1000
   )
 
-  const { onOpen } = useEditPlaylistModal()
   const handleClickEdit = useCallback(() => {
-    onOpen({ collectionId, initialFocusedField: 'name' })
-  }, [onOpen, collectionId])
+    navigate({ pathname: `${permalink}/edit`, search: `?focus=artwork` })
+  }, [navigate, permalink])
 
   if (loading) {
     return (
@@ -194,7 +209,6 @@ const CollectionHeader = ({
 
   const renderDogEar = () => {
     const DogEarType = getDogEarType({
-      isUnlisted,
       streamConditions,
       isOwner,
       hasStreamAccess
@@ -213,13 +227,17 @@ const CollectionHeader = ({
     <Flex direction='column'>
       {renderDogEar()}
       <Flex direction='column' alignItems='center' p='l' gap='l'>
-        <Text variant='label' css={{ letterSpacing: '2px' }} color='subdued'>
-          {type === 'playlist' && !isPublished
-            ? isPublishing
-              ? messages.publishing
-              : messages.hiddenPlaylist
-            : type}
-        </Text>
+        {!isPublished ? (
+          isScheduledRelease && releaseDate ? (
+            <MusicBadge variant='accent' icon={IconCalendarMonth} size='s'>
+              {messages.releases(releaseDate)}
+            </MusicBadge>
+          ) : (
+            <MusicBadge icon={IconVisibilityHidden} size='s'>
+              {messages.hidden}
+            </MusicBadge>
+          )
+        ) : null}
         <DynamicImage
           alt={messages.coverArtAltText}
           wrapperClassName={styles.coverArt}
@@ -279,10 +297,18 @@ const CollectionHeader = ({
           onRepost={onRepost}
           onClickOverflow={onClickOverflow}
           onClickEdit={handleClickEdit}
-          showFavorite={!!onSave && !isOwner && hasStreamAccess}
-          showRepost={variant !== Variant.SMART && !isOwner && hasStreamAccess}
-          showShare={variant !== Variant.SMART || type === 'Audio NFT Playlist'}
-          showOverflow={variant !== Variant.SMART}
+          showFavorite={!!onSave && !isOwner && hasStreamAccess && !isPrivate}
+          showRepost={
+            variant !== Variant.SMART &&
+            !isOwner &&
+            hasStreamAccess &&
+            !isPrivate
+          }
+          showShare={
+            (variant !== Variant.SMART || type === 'Audio NFT Playlist') &&
+            !isPrivate
+          }
+          showOverflow={variant !== Variant.SMART && !isPrivate}
           darkMode={isDarkMode()}
           showEdit={variant !== Variant.SMART && isOwner}
         />
@@ -329,12 +355,7 @@ const CollectionHeader = ({
             {description}
           </UserGeneratedText>
         ) : null}
-        <AlbumDetailsText
-          duration={duration}
-          lastModifiedDate={lastModifiedDate}
-          numTracks={numTracks}
-          releaseDate={releaseDate}
-        />
+        <CollectionMetadataList collectionId={collectionId} />
       </Flex>
     </Flex>
   )

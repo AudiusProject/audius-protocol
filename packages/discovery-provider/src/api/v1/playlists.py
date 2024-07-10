@@ -14,13 +14,15 @@ from src.api.v1.helpers import (
     extend_playlist,
     extend_track,
     extend_user,
+    filter_hidden_tracks,
     full_trending_parser,
     get_current_user_id,
     get_default_max,
     make_full_response,
     make_response,
     pagination_with_current_user_parser,
-    search_parser,
+    parse_bool_param,
+    playlist_search_parser,
     success_response,
     trending_parser,
 )
@@ -175,6 +177,8 @@ class Playlist(Resource):
             current_user_id=current_user_id,
             playlist_id=playlist_id,
         )
+        if playlist:
+            filter_hidden_tracks(playlist, current_user_id)
         response = success_response([playlist] if playlist else [])
         return response
 
@@ -200,6 +204,7 @@ class FullPlaylist(Resource):
         if playlist:
             tracks = get_tracks_for_playlist(playlist_id, current_user_id)
             playlist["tracks"] = tracks
+            filter_hidden_tracks(playlist, current_user_id)
         response = success_response([playlist] if playlist else [])
         return response
 
@@ -231,6 +236,10 @@ class BulkPlaylists(Resource):
         )
         if not playlists:
             abort_not_found(ids, ns)
+
+        for playlist in playlists:
+            filter_hidden_tracks(playlist, current_user_id)
+
         response = success_response(playlists)
         return response
 
@@ -264,6 +273,8 @@ class BulkPlaylistsFull(Resource):
             return playlist
 
         playlists = list(map(add_playlist_tracks, playlists))
+        for playlist in playlists:
+            filter_hidden_tracks(playlist, current_user_id)
         response = success_response(playlists)
         return response
 
@@ -292,6 +303,7 @@ class PlaylistByHandleAndSlug(Resource):
         if playlist:
             tracks = get_tracks_for_playlist(playlist["playlist_id"], current_user_id)
             playlist["tracks"] = tracks
+            filter_hidden_tracks(playlist, current_user_id)
             return_response = [playlist]
 
         return success_response(return_response)
@@ -321,6 +333,7 @@ class FullPlaylistByHandleAndSlug(Resource):
         if playlist:
             tracks = get_tracks_for_playlist(playlist["playlist_id"], current_user_id)
             playlist["tracks"] = tracks
+            filter_hidden_tracks(playlist, current_user_id)
             return_response = [playlist]
 
         return success_response(return_response)
@@ -381,14 +394,17 @@ class PlaylistSearchResult(Resource):
         description="""Search for a playlist""",
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
-    @ns.expect(search_parser)
+    @ns.expect(playlist_search_parser)
     @ns.marshal_with(playlist_search_result)
     @cache(ttl_sec=600)
     def get(self):
-        args = search_parser.parse_args()
-        query = args["query"]
-        if not query:
-            abort_bad_request_param("query", ns)
+        args = playlist_search_parser.parse_args()
+        query = args.get("query")
+        genres = args.get("genre")
+        moods = args.get("mood")
+        include_purchaseable = parse_bool_param(args.get("includePurchaseable"))
+        has_downloads = parse_bool_param(args.get("has_downloads"))
+        sort_method = args.get("sort_method")
         search_args = {
             "query": query,
             "kind": SearchKind.playlists.name,
@@ -397,6 +413,11 @@ class PlaylistSearchResult(Resource):
             "with_users": True,
             "limit": 10,
             "offset": 0,
+            "genres": genres,
+            "moods": moods,
+            "include_purchaseable": include_purchaseable,
+            "only_with_downloads": has_downloads,
+            "sort_method": sort_method,
         }
         response = search(search_args)
         return success_response(response["playlists"])

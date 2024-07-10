@@ -17,8 +17,7 @@ import {
   IconRecoveryEmail,
   IconSignOut,
   IconSkull,
-  IconUser,
-  IconVerified
+  IconUser
 } from '@audius/harmony-native'
 import {
   ScrollView,
@@ -98,9 +97,9 @@ export const AccountSettingsScreen = () => {
     }
   }, [recoveryEmailStatus, toast])
 
-  const handlePressVerification = useCallback(() => {
-    navigation.push('AccountVerificationScreen')
-  }, [navigation])
+  // const handlePressVerification = useCallback(() => {
+  //   navigation.push('AccountVerificationScreen')
+  // }, [navigation])
 
   const handlePressChangeEmail = useCallback(() => {
     navigation.push('ChangeEmail')
@@ -148,13 +147,13 @@ export const AccountSettingsScreen = () => {
             buttonTitle={messages.recoveryButtonTitle}
             onPress={handlePressRecoveryEmail}
           />
-          <AccountSettingsItem
+          {/* <AccountSettingsItem
             title={messages.verifyTitle}
             titleIcon={IconVerified}
             description={messages.verifyDescription}
             buttonTitle={messages.verifyButtonTitle}
             onPress={handlePressVerification}
-          />
+          /> */}
           <AccountSettingsItem
             title={messages.emailTitle}
             titleIcon={IconEmailAddress}

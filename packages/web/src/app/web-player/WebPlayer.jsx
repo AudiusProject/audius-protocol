@@ -14,7 +14,7 @@ import {
 } from '@audius/common/store'
 import cn from 'classnames'
 import { connect } from 'react-redux'
-import { matchPath } from 'react-router'
+import { generatePath, matchPath } from 'react-router'
 import { Switch, Route, Redirect, withRouter } from 'react-router-dom'
 import semver from 'semver'
 
@@ -60,6 +60,7 @@ import { CollectiblesPlaylistPage } from 'pages/collectibles-playlist-page'
 import CollectionPage from 'pages/collection-page/CollectionPage'
 import { DashboardPage } from 'pages/dashboard-page/DashboardPage'
 import { DeactivateAccountPage } from 'pages/deactivate-account-page/DeactivateAccountPage'
+import { EditCollectionPage } from 'pages/edit-collection-page'
 import EmptyPage from 'pages/empty-page/EmptyPage'
 import ExploreCollectionsPage from 'pages/explore-page/ExploreCollectionsPage'
 import ExplorePage from 'pages/explore-page/ExplorePage'
@@ -129,7 +130,6 @@ import {
   SETTINGS_PAGE,
   HOME_PAGE,
   NOT_FOUND_PAGE,
-  SEARCH_CATEGORY_PAGE,
   SEARCH_PAGE,
   PLAYLIST_PAGE,
   ALBUM_PAGE,
@@ -179,7 +179,12 @@ import {
   SALES_PAGE,
   AUTHORIZED_APPS_SETTINGS_PAGE,
   ACCOUNTS_MANAGING_YOU_SETTINGS_PAGE,
-  ACCOUNTS_YOU_MANAGE_SETTINGS_PAGE
+  ACCOUNTS_YOU_MANAGE_SETTINGS_PAGE,
+  TRACK_EDIT_PAGE,
+  SEARCH_CATEGORY_PAGE_LEGACY,
+  SEARCH_BASE_ROUTE,
+  EDIT_PLAYLIST_PAGE,
+  EDIT_ALBUM_PAGE
 } from 'utils/route'
 
 import styles from './WebPlayer.module.css'
@@ -187,6 +192,8 @@ import styles from './WebPlayer.module.css'
 const { getHasAccount, getAccountStatus, getUserId, getUserHandle } =
   accountSelectors
 
+// TODO: do we need to lazy load edit?
+const EditTrackPage = lazy(() => import('pages/edit-page'))
 const UploadPage = lazy(() => import('pages/upload-page'))
 const Modals = lazy(() => import('pages/modals/Modals'))
 const ConnectedMusicConfetti = lazy(() =>
@@ -196,6 +203,14 @@ const ConnectedMusicConfetti = lazy(() =>
 const includeSearch = (search) => {
   return search.includes('oauth_token') || search.includes('code')
 }
+
+const validSearchCategories = [
+  'all',
+  'tracks',
+  'profiles',
+  'albums',
+  'playlists'
+]
 
 initializeSentry()
 
@@ -401,8 +416,13 @@ class WebPlayer extends Component {
   }
 
   render() {
-    const { incrementScroll, decrementScroll, userHandle, isSearchV2Enabled } =
-      this.props
+    const {
+      incrementScroll,
+      decrementScroll,
+      userHandle,
+      isSearchV2Enabled,
+      isEditTrackRedesignEnabled
+    } = this.props
 
     const {
       showWebUpdateBanner,
@@ -453,7 +473,7 @@ class WebPlayer extends Component {
             />
           ) : null}
         </AppBannerWrapper>
-        {this.props.isChatEnabled ? <ChatListener /> : null}
+        <ChatListener />
         <USDCBalanceFetcher />
         <div className={cn(styles.app, { [styles.mobileApp]: isMobile })}>
           {this.props.showCookieBanner ? <CookieBanner /> : null}
@@ -648,25 +668,38 @@ class WebPlayer extends Component {
                     />
                   )}
                 />
-
                 <Route
-                  path={SEARCH_CATEGORY_PAGE}
-                  render={(props) =>
-                    isSearchV2Enabled ? (
-                      <SearchPageV2 />
-                    ) : (
-                      <SearchPage
-                        {...props}
-                        scrollToTop={this.scrollToTop}
-                        containerRef={this.props.mainContentRef.current}
-                      />
-                    )
-                  }
+                  exact
+                  path={SEARCH_CATEGORY_PAGE_LEGACY}
+                  render={(props) => (
+                    <Redirect
+                      to={{
+                        pathname: generatePath(SEARCH_PAGE, {
+                          category: props.match.params.category
+                        }),
+                        search: new URLSearchParams({
+                          query: props.match.params.query
+                        }).toString()
+                      }}
+                    />
+                  )}
                 />
                 <Route
                   path={SEARCH_PAGE}
-                  render={(props) =>
-                    isSearchV2Enabled ? (
+                  render={(props) => {
+                    const { category } = props.match.params
+
+                    return category &&
+                      !validSearchCategories.includes(category) ? (
+                      <Redirect
+                        to={{
+                          pathname: SEARCH_BASE_ROUTE,
+                          search: new URLSearchParams({
+                            query: category
+                          }).toString()
+                        }}
+                      />
+                    ) : isSearchV2Enabled ? (
                       <SearchPageV2 />
                     ) : (
                       <SearchPage
@@ -675,7 +708,7 @@ class WebPlayer extends Component {
                         containerRef={this.props.mainContentRef.current}
                       />
                     )
-                  }
+                  }}
                 />
 
                 <DesktopRoute
@@ -833,6 +866,13 @@ class WebPlayer extends Component {
                     )
                   }}
                 />
+
+                <Route
+                  exact
+                  path={[EDIT_PLAYLIST_PAGE, EDIT_ALBUM_PAGE]}
+                  component={EditCollectionPage}
+                />
+
                 <Route
                   exact
                   path={ALBUM_PAGE}
@@ -888,6 +928,19 @@ class WebPlayer extends Component {
                 />
 
                 <Route exact path={TRACK_PAGE} component={TrackPage} />
+
+                {isEditTrackRedesignEnabled ? (
+                  <DesktopRoute
+                    path={TRACK_EDIT_PAGE}
+                    isMobile={isMobile}
+                    render={(props) => (
+                      <EditTrackPage
+                        {...props}
+                        scrollToTop={this.scrollToTop}
+                      />
+                    )}
+                  />
+                ) : null}
 
                 <Route
                   exact
@@ -1004,8 +1057,10 @@ const mapStateToProps = (state) => ({
   accountStatus: getAccountStatus(state),
   signOnStatus: getSignOnStatus(state),
   showCookieBanner: getShowCookieBanner(state),
-  isChatEnabled: getFeatureEnabled(FeatureFlags.CHAT_ENABLED),
-  isSearchV2Enabled: getFeatureEnabled(FeatureFlags.SEARCH_V2)
+  isSearchV2Enabled: getFeatureEnabled(FeatureFlags.SEARCH_V2),
+  isEditTrackRedesignEnabled: getFeatureEnabled(
+    FeatureFlags.EDIT_TRACK_REDESIGN
+  )
 })
 
 const mapDispatchToProps = (dispatch) => ({

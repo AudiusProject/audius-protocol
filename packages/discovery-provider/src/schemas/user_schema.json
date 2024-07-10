@@ -26,6 +26,38 @@
                     "type": ["string", "null"],
                     "default": null
                 },
+                "twitter_handle": {
+                    "type": ["string", "null"],
+                    "default": null
+                },
+                "instagram_handle": {
+                    "type": ["string", "null"],
+                    "default": null
+                },
+                "tiktok_handle": {
+                    "type": ["string", "null"],
+                    "default": null
+                },
+                "verified_with_twitter": {
+                    "type": "boolean",
+                    "default": false
+                },
+                "verified_with_instagram": {
+                    "type": "boolean",
+                    "default": false
+                },
+                "verified_with_tiktok": {
+                    "type": "boolean",
+                    "default": false
+                },
+                "website": {
+                    "type": ["string", "null"],
+                    "default": null
+                },
+                "donation": {
+                    "type": ["string", "null"],
+                    "default": null
+                },
                 "bio": {
                     "type": ["string", "null"],
                     "default": null

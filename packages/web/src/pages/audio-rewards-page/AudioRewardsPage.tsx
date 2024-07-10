@@ -1,6 +1,6 @@
 import { ReactNode, useContext, useEffect } from 'react'
 
-import { StringKeys, FeatureFlags } from '@audius/common/services'
+import { StringKeys } from '@audius/common/services'
 import { tokenDashboardPageActions, walletActions } from '@audius/common/store'
 import { useDispatch } from 'react-redux'
 
@@ -13,7 +13,7 @@ import NavContext, {
 } from 'components/nav/mobile/NavContext'
 import Page from 'components/page/Page'
 import { useIsMobile } from 'hooks/useIsMobile'
-import { useFlag, useRemoteVar } from 'hooks/useRemoteConfig'
+import { useRemoteVar } from 'hooks/useRemoteConfig'
 import { useRequiresAccount } from 'hooks/useRequiresAccount'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
 import { AUDIO_PAGE, BASE_URL, TRENDING_PAGE } from 'utils/route'
@@ -36,10 +36,6 @@ const messages = {
 const RewardsContent = () => {
   const wm = useWithMobileStyle(styles.mobile)
 
-  const { isEnabled: isChallengeRewardsEnabled } = useFlag(
-    FeatureFlags.CHALLENGE_REWARDS_UI
-  )
-
   const audioFeaturesDegradedText = useRemoteVar(
     StringKeys.AUDIO_FEATURES_DEGRADED_TEXT
   )
@@ -57,9 +53,7 @@ const RewardsContent = () => {
         </div>
       ) : null}
       <WalletManagementTile />
-      {isChallengeRewardsEnabled && (
-        <ChallengeRewardsTile className={styles.mobile} />
-      )}
+      <ChallengeRewardsTile className={styles.mobile} />
       <TrendingRewardsTile className={styles.mobile} />
       <Tiers />
       <ExplainerTile className={wm(styles.explainerTile)} />

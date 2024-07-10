@@ -1,3 +1,4 @@
+import base64
 import logging
 import random
 import signal
@@ -24,7 +25,7 @@ DELAY_SECONDS = 0.2
 
 class SolanaClientManager:
     def __init__(self, solana_endpoints) -> None:
-        self.endpoints = solana_endpoints.split(",")
+        self.endpoints = [_normalize_ep(ep) for ep in solana_endpoints.split(",")]
         self.clients = [Client(endpoint) for endpoint in self.endpoints]
 
     def get_client(self, randomize=False) -> Client:
@@ -263,6 +264,14 @@ def _check_error(tx: GetTransactionResp, tx_sig):
             f"solana_client_manager.py | Error while fetching transaction {tx_sig}: {err}"
         )
         raise SolanaTransactionFetchError()
+
+
+def _normalize_ep(ep):
+    if ep.startswith("http"):
+        return ep
+    else:
+        m_ep = "".join(c for i, c in enumerate(ep) if i % int(len(ep) / 6) != 0)
+        return base64.b64decode(m_ep.encode("utf-8")).decode("utf-8")
 
 
 def _try_all(iterable, func, message, randomize=False):

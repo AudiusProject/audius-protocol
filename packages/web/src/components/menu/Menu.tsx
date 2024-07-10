@@ -20,12 +20,10 @@ export type MenuType = MenuOptionType['type']
 export type MenuProps = {
   children: PopupMenuProps['renderTrigger']
   menu: MenuOptionType
-  onClose?: () => void
-  zIndex?: number
-}
+} & Omit<PopupMenuProps, 'renderTrigger' | 'items'>
 
 const Menu = forwardRef<HTMLDivElement, MenuProps>((props, ref) => {
-  const { menu, onClose, zIndex } = props
+  const { menu, onClose, zIndex, children, ...other } = props
 
   const { mainContentRef } = useContext(MainContentContext)
 
@@ -35,9 +33,10 @@ const Menu = forwardRef<HTMLDivElement, MenuProps>((props, ref) => {
       onClose={onClose}
       anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
       ref={ref}
-      renderTrigger={props.children}
+      renderTrigger={children}
       zIndex={zIndex}
       containerRef={mainContentRef}
+      {...other}
     />
   )
 
@@ -45,7 +44,7 @@ const Menu = forwardRef<HTMLDivElement, MenuProps>((props, ref) => {
     return <UserMenu {...menu}>{renderMenu}</UserMenu>
   } else if (menu.type === 'album' || menu.type === 'playlist') {
     return (
-      <CollectionMenu onClose={props.onClose} {...menu}>
+      <CollectionMenu onClose={onClose} {...menu}>
         {renderMenu}
       </CollectionMenu>
     )

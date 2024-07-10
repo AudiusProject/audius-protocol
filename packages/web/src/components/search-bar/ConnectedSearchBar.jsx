@@ -8,10 +8,9 @@ import { Kind, Name, SquareSizes } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import { getTierForUser, searchActions } from '@audius/common/store'
 import { push as pushRoute } from 'connected-react-router'
-import { has } from 'lodash'
 import { connect } from 'react-redux'
 import { matchPath } from 'react-router'
-import { withRouter } from 'react-router-dom'
+import { generatePath, withRouter } from 'react-router-dom'
 
 import { HistoryContext } from 'app/HistoryProvider'
 import { make } from 'common/store/analytics/actions'
@@ -24,7 +23,12 @@ import { getSearch } from 'common/store/search-bar/selectors'
 import SearchBar from 'components/search/SearchBar'
 import SearchBarV2 from 'components/search/SearchBarV2'
 import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
-import { collectionPage, profilePage, getPathname } from 'utils/route'
+import {
+  collectionPage,
+  profilePage,
+  getPathname,
+  SEARCH_PAGE
+} from 'utils/route'
 
 import styles from './ConnectedSearchBar.module.css'
 
@@ -41,20 +45,16 @@ class ConnectedSearchBar extends Component {
 
     // Clear search when navigating away from the search results page.
     history.listen((location, action) => {
-      const match = matchPath(getPathname(this.context.history.location), {
-        path: '/search/:query'
-      })
-      if (!match) {
+      const params = new URLSearchParams(this.context.history.location.search)
+      if (!params.has('query')) {
         this.onSearchChange('')
       }
     })
 
     // Set the initial search bar value if we loaded into a search page.
-    const match = matchPath(getPathname(this.context.history.location), {
-      path: '/search/:query'
-    })
-    if (has(match, 'params.query')) {
-      this.onSearchChange(match.params.query)
+    const params = new URLSearchParams(this.context.history.location.search)
+    if (params.has('query')) {
+      this.onSearchChange(params.get('query'))
     }
   }
 
@@ -83,9 +83,31 @@ class ConnectedSearchBar extends Component {
   }
 
   onSubmit = (value) => {
-    // Encode everything besides tag searches
     const pathname = '/search'
-    if (value.startsWith('#')) {
+    const locationSearchParams = new URLSearchParams(
+      this.props.history.location.search
+    )
+
+    if (value) {
+      locationSearchParams.set('query', value)
+    } else {
+      locationSearchParams.delete('query')
+    }
+
+    let newPath = pathname
+    if (this.props.isSearchV2Enabled) {
+      const searchMatch = matchPath(getPathname(this.props.history.location), {
+        path: SEARCH_PAGE
+      })
+
+      if (searchMatch) {
+        newPath = generatePath(SEARCH_PAGE, {
+          ...searchMatch.params
+        })
+      }
+    }
+
+    if (!this.props.isSearchV2Enabled && value.startsWith('#')) {
       // perform tag search
       this.props.history.push({
         hash: value.split('#')[1],
@@ -95,7 +117,8 @@ class ConnectedSearchBar extends Component {
     } else {
       value = encodeURIComponent(value)
       this.props.history.push({
-        pathname: pathname + '/' + value,
+        pathname: newPath,
+        search: locationSearchParams.toString(),
         state: {}
       })
     }
@@ -273,6 +296,7 @@ class ConnectedSearchBar extends Component {
         <SearchBarComponent
           value={this.state.value}
           isTagSearch={this.isTagSearch()}
+          isViewingSearchPage={this.props.isViewingSearchPage}
           status={status}
           searchText={searchText}
           dataSource={dataSource}
@@ -291,7 +315,10 @@ class ConnectedSearchBar extends Component {
 
 const mapStateToProps = (state, props) => ({
   search: getSearch(state, props),
-  isSearchV2Enabled: getFeatureEnabled(FeatureFlags.SEARCH_V2)
+  isSearchV2Enabled: getFeatureEnabled(FeatureFlags.SEARCH_V2),
+  isViewingSearchPage: !!matchPath(state.router.location.pathname, {
+    path: SEARCH_PAGE
+  })
 })
 const mapDispatchToProps = (dispatch) => ({
   fetchSearch: (value) => dispatch(fetchSearch(value)),

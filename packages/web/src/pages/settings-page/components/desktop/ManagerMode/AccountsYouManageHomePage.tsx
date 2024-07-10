@@ -1,99 +1,59 @@
-import { useCallback, useContext, useEffect } from 'react'
+import { useCallback } from 'react'
 
-import {
-  useApproveManagedAccount,
-  useGetManagedAccounts,
-  useRemoveManager
-} from '@audius/common/api'
-import { Status, UserMetadata } from '@audius/common/models'
+import { useGetManagedAccounts } from '@audius/common/api'
+import { Status } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
-import { Box, Divider, Flex, Text, TextLink } from '@audius/harmony'
+import { Box, Divider, Flex, Text } from '@audius/harmony'
 
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
-import { ToastContext } from 'components/toast/ToastContext'
 import { useSelector } from 'utils/reducer'
 
-import { AccountListItem } from './AccountListItem'
-import { sharedMessages } from './sharedMessages'
+import { ManagedUserListItem } from './AccountListItem/ManagedUserListItem'
 import { AccountsYouManagePageProps, AccountsYouManagePages } from './types'
+import { usePendingInviteValidator } from './usePendingInviteValidator'
 const { getAccountUser } = accountSelectors
 
 const messages = {
   takeControl:
     'Take control of your managed accounts by making changes to their profiles, preferences, and content.',
-  noAccounts: 'You don’t manage any accounts.'
+  noAccounts: 'You don’t manage any accounts.',
+  invalidInvitation: 'This invitation is no longer valid',
+  alreadyAcceptedInvitation: 'You already accepted this invitation'
 }
 
 export const AccountsYouManageHomePage = ({
-  setPage
+  setPageState
 }: AccountsYouManagePageProps) => {
   const currentUser = useSelector(getAccountUser)
   const userId = currentUser?.user_id
   const { data: managedAccounts, status } = useGetManagedAccounts(
     { userId: userId! },
-    { disabled: userId == null }
+    // Always update managed accounts list when mounting this page
+    { disabled: userId == null, force: true }
   )
-  const [approveManagedAccount, approveResult] = useApproveManagedAccount()
-  const [rejectManagedAccount, rejectResult] = useRemoveManager()
-  const { toast } = useContext(ToastContext)
+  // Don't flash loading spinner if we are refreshing the cache
+  const isLoading =
+    status !== Status.SUCCESS &&
+    (!managedAccounts || managedAccounts.length === 0)
+
+  usePendingInviteValidator({ managedAccounts, userId })
 
   const handleStopManaging = useCallback(
     ({ userId }: { userId: number; managerUserId: number }) => {
-      setPage(AccountsYouManagePages.STOP_MANAGING, { user_id: userId })
-    },
-    [setPage]
-  )
-
-  const handleApprove = useCallback(
-    ({ grantorUser }: { grantorUser: UserMetadata }) => {
-      if (currentUser) {
-        approveManagedAccount({
-          userId: currentUser.user_id,
-          grantorUser,
-          userWalletAddress: currentUser.erc_wallet
-        })
-      }
-    },
-    [approveManagedAccount, currentUser]
-  )
-
-  const handleReject = useCallback(
-    ({
-      currentUserId,
-      grantorUser
-    }: {
-      currentUserId: number
-      grantorUser: UserMetadata
-    }) => {
-      rejectManagedAccount({
-        userId: grantorUser.user_id,
-        managerUserId: currentUserId
+      setPageState({
+        page: AccountsYouManagePages.STOP_MANAGING,
+        params: { user_id: userId }
       })
     },
-    [rejectManagedAccount]
+    [setPageState]
   )
-
-  useEffect(() => {
-    if (approveResult.status === Status.ERROR) {
-      toast(sharedMessages.somethingWentWrong)
-    }
-  }, [toast, approveResult.status])
-
-  useEffect(() => {
-    if (rejectResult.status === Status.ERROR) {
-      toast(sharedMessages.somethingWentWrong)
-    }
-  }, [toast, rejectResult.status])
 
   return (
     <Flex direction='column' gap='xl'>
       <Text variant='body' size='l'>
         {messages.takeControl}{' '}
-        <TextLink isExternal href='#' variant='visible'>
-          {sharedMessages.learnMore}
-        </TextLink>
       </Text>
-      {status !== Status.SUCCESS ? (
+      {isLoading ? (
         <Box pv='2xl'>
           <LoadingSpinner
             css={({ spacing }) => ({
@@ -112,16 +72,12 @@ export const AccountsYouManageHomePage = ({
           </Text>
         </>
       ) : null}
-      {managedAccounts?.map((m) => {
+      {managedAccounts?.map((data) => {
         return (
-          <AccountListItem
-            key={m.user.user_id}
-            user={m.user}
+          <ManagedUserListItem
+            key={data.user.user_id}
+            userData={data}
             onRemoveManager={handleStopManaging}
-            onApprove={handleApprove}
-            onReject={handleReject}
-            isManagedAccount
-            isPending={m.grant.is_approved == null}
           />
         )
       })}

@@ -893,6 +893,11 @@ def test_index_verify_users(app, mocker):
             challenge_event_bus=bus_mock,
         )
 
+        metadata = {
+            "is_verified": True,
+            "twitter_handle": "twitter handle",
+        }
+
         tx_receipts = {
             "VerifyUser": [
                 {
@@ -902,7 +907,7 @@ def test_index_verify_users(app, mocker):
                             "_entityType": "User",
                             "_userId": 1,
                             "_action": "Verify",
-                            "_metadata": "",
+                            "_metadata": f'{{"cid": "VerifyUserCid", "data": {json.dumps(metadata)}}}',
                             "_signer": "0x",
                         }
                     )
@@ -916,7 +921,7 @@ def test_index_verify_users(app, mocker):
                             "_entityType": "User",
                             "_userId": 2,
                             "_action": "Verify",
-                            "_metadata": "",
+                            "_metadata": f'{{"cid": "InvalidVerifyUserCid", "data": {json.dumps(metadata)}}}',
                             "_signer": "user1wallet",
                         }
                     )
@@ -942,7 +947,7 @@ def test_index_verify_users(app, mocker):
         entities = {
             "users": [
                 {"user_id": 1, "handle": "user-1", "wallet": "user1wallet"},
-                {"user_id": 2, "handle": "user-1", "wallet": "user2wallet"},
+                {"user_id": 2, "handle": "user-2", "wallet": "user2wallet"},
             ]
         }
         populate_mock_db(db, entities)

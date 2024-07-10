@@ -57,6 +57,13 @@ jobs:
         branches:
           only: main
   - push-docker-image:
+      name: push-pedalboard-backfill-audio-analyses
+      context: [Vercel, dockerhub]
+      service: backfill-audio-analyses
+      filters:
+        branches:
+          only: main
+  - push-docker-image:
       name: push-pedalboard-mri
       context: [Vercel, dockerhub]
       service: mri
@@ -193,6 +200,16 @@ jobs:
         - push-pedalboard-crm
 
   - push-arm-image:
+      name: push-pedalboard-backfill-audio-analyses-arm
+      context: [Vercel, dockerhub]
+      service: backfill-audio-analyses
+      filters:
+        branches:
+          only: main
+      requires:
+        - push-pedalboard-backfill-audio-analyses
+
+  - push-arm-image:
       name: push-pedalboard-mri-arm
       context: [Vercel, dockerhub]
       service: mri
@@ -267,6 +284,7 @@ jobs:
         - push-pedalboard-solana-relay
         - push-pedalboard-sla-auditor
         - push-pedalboard-crm
+        - push-pedalboard-backfill-audio-analyses
         - push-pedalboard-mri
         - push-comms
         - push-trpc

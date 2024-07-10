@@ -1,7 +1,9 @@
+import type { SocialPlatform } from '@audius/common/models'
+
 export const socialMediaMessages = {
   verificationError:
     'Something went wrong. Please try again or verify with another account.',
-  socialMediaLoginSucess: (platform: 'twitter' | 'instagram' | 'tiktok') => {
+  socialMediaLoginSucess: (platform: SocialPlatform) => {
     const platformName = {
       twitter: 'Twitter',
       instagram: 'Instagram',

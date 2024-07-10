@@ -1,671 +1,1007 @@
-<!DOCTYPE html
-  PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml"
+<!doctype html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml"
   xmlns:o="urn:schemas-microsoft-com:office:office">
 
 <head>
-  <!-- This is a simple example template that you can edit to create your own custom templates -->
-  <!--[if gte mso 15]>
-    <xml>
-      <o:OfficeDocumentSettings>
-        <o:AllowPNG />
-        <o:PixelsPerInch>96</o:PixelsPerInch>
-      </o:OfficeDocumentSettings>
-    </xml>
-    <![endif]-->
-  <meta charset="UTF-8">
-  <meta http-equiv="x-ua-compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="x-apple-disable-message-reformatting">
-  <title>Password Reset</title>
-
-  <style type="text/css">
-    @font-face {
-      font-family: 'Avenir Next LT Pro';
-      font-style: normal;
-      font-weight: 100;
-      src: url(https://download.audius.co/fonts/AvenirNextLTPro-UltLt.ttf) format("truetype"), url(https://download.audius.co/fonts/AvenirNextLTPro-UltLt.otf) format("opentype");
-    }
-
-    @font-face {
-      font-family: 'Avenir Next LT Pro';
-      font-style: normal;
-      font-weight: 400;
-      src: url(https://download.audius.co/fonts/AvenirNextLTPro-Regular.ttf) format("truetype"), url(https://download.audius.co/fonts/AvenirNextLTPro-Regular.otf) format("opentype");
-    }
-
-    @font-face {
-      font-family: 'Avenir Next LT Pro';
-      font-style: normal;
-      font-weight: 500;
-      src: url(https://download.audius.co/fonts/AvenirNextLTPro-Medium.ttf) format("truetype"), url(https://download.audius.co/fonts/AvenirNextLTPro-Medium.otf) format("opentype");
-    }
-
-    @font-face {
-      font-family: 'Avenir Next LT Pro';
-      font-style: normal;
-      font-weight: 600;
-      src: url(https://download.audius.co/fonts/AvenirNextLTPro-Demi-Bold.ttf) format("truetype"), url(https://download.audius.co/fonts/AvenirNextLTPro-Demi-Bold.otf) format("opentype");
-    }
-
-    @font-face {
-      font-family: 'Avenir Next LT Pro';
-      font-style: normal;
-      font-weight: 700;
-      src: url(https://download.audius.co/fonts/AvenirNextLTPro-Bold.ttf) format("truetype"), url(https://download.audius.co/fonts/AvenirNextLTPro-Bold.otf) format("opentype");
-    }
-
-    @font-face {
-      font-family: 'Avenir Next LT Pro';
-      font-style: normal;
-      font-weight: 900;
-      src: url(https://download.audius.co/fonts/AvenirNextLTPro-Heavy.ttf) format("truetype"), url(https://download.audius.co/fonts/AvenirNextLTPro-Heavy.otf) format("opentype");
-    }
-
-    @font-face {
-      font-family: 'Gilroy';
-      font-style: normal;
-      font-weight: 950;
-      src: url(https://download.audius.co/fonts/Gilroy-Black.ttf) format('truetype'), url(https://download.audius.co/fonts/Gilroy-Black.otf) format('opentype')
-    }
-
-    @font-face {
-      font-family: 'Gilroy';
-      font-style: normal;
-      font-weight: 900;
-      src: url(https://download.audius.co/fonts/Gilroy-Heavy.ttf) format('truetype'), url(https://download.audius.co/fonts/Gilroy-Heavy.otf) format('opentype')
-    }
-
-    @font-face {
-      font-family: 'Gilroy';
-      font-style: normal;
-      font-weight: 800;
-      src: url(https://download.audius.co/fonts/Gilroy-ExtraBold.ttf) format('truetype'), url(https://download.audius.co/fonts/Gilroy-ExtraBold.otf) format('opentype')
-    }
-
-    @font-face {
-      font-family: 'Gilroy';
-      font-style: normal;
-      font-weight: 700;
-      src: url(https://download.audius.co/fonts/Gilroy-Bold.ttf) format('truetype'), url(https://download.audius.co/fonts/Gilroy-Bold.otf) format('opentype')
-    }
-
-    @font-face {
-      font-family: 'Gilroy';
-      font-style: normal;
-      font-weight: 600;
-      src: url(https://download.audius.co/fonts/Gilroy-SemiBold.ttf) format('truetype'), url(https://download.audius.co/fonts/Gilroy-SemiBold.otf) format('opentype')
-    }
-
-    @font-face {
-      font-family: 'Gilroy';
-      font-style: normal;
-      font-weight: 500;
-      src: url(https://download.audius.co/fonts/Gilroy-Medium.ttf) format('truetype'), url(https://download.audius.co/fonts/Gilroy-Medium.otf) format('opentype')
-    }
-
-    @font-face {
-      font-family: 'Gilroy';
-      font-style: normal;
-      font-weight: 400;
-      src: url(https://download.audius.co/fonts/Gilroy-Regular.ttf) format('truetype'), url(https://download.audius.co/fonts/Gilroy-Regular.otf) format('opentype')
-    }
-
-    @font-face {
-      font-family: 'Gilroy';
-      font-style: normal;
-      font-weight: 300;
-      src: url(https://download.audius.co/fonts/Gilroy-Light.ttf) format('truetype'), url(https://download.audius.co/fonts/Gilroy-Light.otf) format('opentype')
-    }
-
-    @font-face {
-      font-family: 'Gilroy';
-      font-style: normal;
-      font-weight: 200;
-      src: url(https://download.audius.co/fonts/Gilroy-UltraLight.ttf) format('truetype'), url(https://download.audius.co/fonts/Gilroy-UltraLight.otf) format('opentype')
-    }
-
-    @font-face {
-      font-family: 'Gilroy';
-      font-style: normal;
-      font-weight: 100;
-      src: url(https://download.audius.co/fonts/Gilroy-Thin.ttf) format('truetype'), url(https://download.audius.co/fonts/Gilroy-Thin.otf) format('opentype')
-    }
-  </style>
-  <style type="text/css">
+  <meta charset="utf-8" />
+  <meta content="width=device-width" name="viewport" />
+  <meta content="IE=edge" http-equiv="X-UA-Compatible" />
+  <meta name="x-apple-disable-message-reformatting" />
+  <meta content="telephone=no,address=no,email=no,date=no,url=no" name="format-detection" />
+  <title>Save This Email: Audius Password Recovery</title>
+  <!--[if mso]>
+            <style>
+                * {
+                    font-family: sans-serif !important;
+                }
+            </style>
+        <![endif]-->
+  <!--[if !mso]><!-->
+  <!-- <![endif]-->
+  <link href="https://fonts.googleapis.com/css?family=Inter:400" rel="stylesheet" type="text/css">
+  <link href="https://fonts.googleapis.com/css?family=Inter:700" rel="stylesheet" type="text/css">
+  <link href="https://fonts.googleapis.com/css?family=Inter:600" rel="stylesheet" type="text/css">
+  <link href="https://fonts.googleapis.com/css?family=Inter:500" rel="stylesheet" type="text/css">
+  <style>
     html {
-      margin: 0;
-      padding: 0;
+      margin: 0 !important;
+      padding: 0 !important;
     }
 
-    body {
-      margin: 0;
-      padding: 0;
+    * {
+      -ms-text-size-adjust: 100%;
+      -webkit-text-size-adjust: 100%;
     }
 
-    p {
-      margin: 1em 0;
-      padding: 0;
+    td {
+      vertical-align: top;
+      mso-table-lspace: 0pt !important;
+      mso-table-rspace: 0pt !important;
     }
 
     a {
-      color: #8F2CE8;
-    }
-
-    table {
-      border-collapse: collapse;
-    }
-
-    h1,
-    h2,
-    h3,
-    h4,
-    h5,
-    h6 {
-      display: block;
-      margin: 0;
-      padding: 0;
-    }
-
-    img,
-    a img {
-      border: 0;
-      height: auto;
-      outline: none;
       text-decoration: none;
-    }
-
-    h2 {
-      color: #858199;
-      font-size: 32px;
-      font-weight: bold;
-      letter-spacing: .02px;
-      text-align: center;
-      margin: 0 auto;
-    }
-
-    h3 {
-      color: #C3C0CC;
-      font-size: 16px;
-      font-weight: bold;
-      letter-spacing: .02px;
-      line-height: 25px;
-      text-align: center;
-      margin-bottom: 10px;
-    }
-
-    .pink {
-      color: #E000DB;
-    }
-
-    .purple {
-      color: #7E1BCC;
-    }
-
-    body,
-    #bodyTable,
-    #bodyCell {
-      height: 100%;
-      margin: 0;
-      padding: 0;
-      width: 100%;
-      background: #F3F0F7;
-      font-family: "Avenir Next LT Pro", Helvetica, Arial, sans-serif;
-    }
-
-    #outlook a {
-      padding: 0;
     }
 
     img {
       -ms-interpolation-mode: bicubic;
     }
 
-    table {
-      mso-table-lspace: 0;
-      mso-table-rspace: 0;
-    }
-
-    .ReadMsgBody {
-      width: 100%;
-    }
-
-    .ExternalClass {
-      width: 100%;
-    }
-
-    p,
-    a,
-    li,
-    td,
-    blockquote {
-      mso-line-height-rule: exactly;
-    }
-
-    p,
-    a,
-    li,
-    td,
-    body,
-    table,
-    blockquote {
-      -ms-text-size-adjust: 100%;
-      -webkit-text-size-adjust: 100%;
-    }
-
-    .button {
-      background: #E000DB;
-      font-size: 24px !important;
-      color: #FFFFFF !important;
-      font-weight: 700 !important;
-      letter-spacing: 0.03px !important;
-      text-decoration: none !important;
-      user-select: none;
-      cursor: pointer;
-      line-height: 29px;
-      border-radius: 8px;
-      text-align: center;
-      display: inline-block;
-      padding: 16px 32px;
-    }
-
-    .ExternalClass,
-    .ExternalClass p,
-    .ExternalClass td,
-    .ExternalClass div,
-    .ExternalClass span,
-    .ExternalClass font {
-      line-height: 100%;
-    }
-
-    .templateImage {
-      height: auto;
-      max-width: 564px;
-    }
-
-    #footerContent {
-      padding-top: 27px;
-      padding-bottom: 18px;
-    }
-
-    #templateBody {
-      padding-right: 94px;
-      padding-left: 94px;
-    }
-
-    #logo {
-      margin-top: 50px;
-      margin-bottom: 44px;
-      margin-left: auto;
-      margin-right: auto;
-    }
-
-    .templateContainer {
-      max-width: 720px;
-      margin-bottom: 40px;
-    }
-
-    .footerContainer {
-      width: 100%;
-    }
-
-    .footerContainer table {
-      table-layout: fixed;
-    }
-
-    #templateHeader {
-      background-color: #FFFFFF;
-      background-image: none;
-      background-repeat: no-repeat;
-      background-position: center;
-      background-size: cover;
-      border-top: 0;
-      border-bottom: 0;
-      padding-bottom: 0;
-      border-radius: 8px 8px 0px 0px;
-    }
-
-    #templateHeader a,
-    #templateHeader p a {
-      color: #237A91;
-      font-weight: normal;
-      text-decoration: underline;
-    }
-
-    #templateBody {
-      background-color: #FFFFFF;
-      margin-bottom: 44px;
-      padding-bottom: 36px;
-      height: 100%;
-      width: 100%;
-      max-width: 720px;
-      border-radius: 0 0 8px 8px;
-      box-shadow: 0 16px 20px 0 rgba(232, 228, 234, 0.5);
-    }
-
-    #templateBody,
-    #templateBody p {
-      color: #858199;
-      font-size: 18px;
-      letter-spacing: .02px;
-      line-height: 25px;
-      text-align: center;
-    }
-
-    #templateBody a,
-    #templateBody p a {
-      color: #7E1BCC;
-      font-weight: normal;
-      text-decoration: underline;
-    }
-
-    #templateFooter {
-      width: 100%;
-      padding: 0;
-      height: 114px;
-      background-color: #fbfbfc;
-    }
-
-    #socialBar img {
-      height: 24px;
-      width: 24px;
-      padding: 0 20px;
-    }
-
-    #socialBar a:first-child img {
-      padding: 0 20px 0 0;
-    }
-
-    #socialBar,
-    #socialBar p {
-      color: #C2C0CC;
-      font-size: 16px;
-      font-weight: bold;
-      letter-spacing: .2px;
-      line-height: 25px;
-      margin-top: 25px;
-      text-align: center;
-    }
-
-    #templateFooter,
-    #templateFooter p {
-      color: #858199;
-      font-family: "Gilroy", "Avenir Next LT Pro", Helvetica, Arial, sans-serif;
-      font-size: 14px;
-      line-height: 20px;
-      text-align: center;
-    }
-
-    #templateFooter a,
-    #templateFooter p a {
-      vertical-align: bottom;
-      color: #656565;
-      font-weight: normal;
-      text-decoration: underline;
-    }
-
-    #utilityBar {
-      border: 0;
-      padding-top: 9px;
-      padding-bottom: 9px;
-    }
-
-    #utilityBar,
-    #utilityBar p {
-      color: #C2C0CC;
-      font-size: 12px;
-      line-height: 150%;
-      text-align: center;
-    }
-
-    #utilityBar a,
-    #utilityBar p a {
-      color: #C2C0CC;
-      font-weight: normal;
-      text-decoration: underline;
-    }
-
-    @media (max-width: 720px) {
-
-      body,
-      table,
-      td,
-      p,
-      a,
-      li,
-      blockquote {
-        -webkit-text-size-adjust: none !important;
+    @media only screen and (min-device-width: 320px) and (max-device-width: 374px) {
+      u~div .email-container {
+        min-width: 320px !important;
       }
     }
 
-    @media (max-width: 720px) {
-      .button {
-        padding: 16px 24px;
+    @media only screen and (min-device-width: 375px) and (max-device-width: 413px) {
+      u~div .email-container {
+        min-width: 375px !important;
       }
     }
 
-    @media (max-width: 720px) {
-      body {
+    @media only screen and (min-device-width: 414px) {
+      u~div .email-container {
+        min-width: 414px !important;
+      }
+    }
+  </style>
+  <!--[if gte mso 9]>
+        <xml>
+            <o:OfficeDocumentSettings>
+                <o:AllowPNG/>
+                <o:PixelsPerInch>96</o:PixelsPerInch>
+            </o:OfficeDocumentSettings>
+        </xml>
+        <![endif]-->
+  <style>
+    @media only screen and (max-device-width: 599px),
+    only screen and (max-width: 599px) {
+
+      .eh {
+        height: auto !important;
+      }
+
+      .desktop {
+        display: none !important;
+        height: 0 !important;
+        margin: 0 !important;
+        max-height: 0 !important;
+        overflow: hidden !important;
+        padding: 0 !important;
+        visibility: hidden !important;
+        width: 0 !important;
+      }
+
+      .mobile {
+        display: block !important;
+        width: auto !important;
+        height: auto !important;
+        float: none !important;
+      }
+
+      .email-container {
         width: 100% !important;
-        min-width: 100% !important;
+        margin: auto !important;
       }
-    }
 
-    @media (max-width: 720px) {
-      .templateImage {
+      .stack-column,
+      .stack-column-center {
+        display: block !important;
         width: 100% !important;
-      }
-    }
-
-    @media (max-width: 720px) {
-      .columnContainer {
         max-width: 100% !important;
-        width: 100% !important;
+        direction: ltr !important;
       }
-    }
 
-    @media (max-width: 720px) {
-      .mobileHide {
-        display: none;
+      .wid-auto {
+        width: auto !important;
       }
-    }
 
-    @media (max-width: 720px) {
-      .utilityLink {
-        display: block;
-        padding: 9px 0;
+      .table-w-full-mobile {
+        width: 100%;
       }
-    }
 
-    @media (max-width: 720px) {
-      h1 {
-        font-size: 22px !important;
-        line-height: 175% !important;
-      }
-    }
 
-    @media (max-width: 720px) {
-      h4 {
-        font-size: 16px !important;
-        line-height: 175% !important;
-      }
-    }
 
-    @media (max-width: 720px) {
-      p {
-        font-size: 16px !important;
-      }
-    }
 
-    @media (max-width: 720px) {
-
-      #templateHeader,
-      #templateHeader p {
-        font-size: 16px !important;
-        line-height: 150% !important;
-      }
-    }
-
-    @media (max-width: 720px) {
-      #bodyCell {
+      .mobile-center {
         text-align: center;
       }
-    }
 
-    @media (max-width: 720px) {
-      .templateContainer {
-        display: table !important;
-        max-width: 384px !important;
-        width: 80% !important;
-        margin-left: auto !important;
-        margin-right: auto !important;
+      .mobile-center>table {
+        display: inline-block;
+        vertical-align: inherit;
       }
-    }
 
-    @media (max-width: 720px) {
-      #templateBody {
-        padding-right: 13px !important;
-        padding-left: 13px !important;
+      .mobile-left {
+        text-align: left;
       }
-    }
 
-    @media (max-width: 720px) {
-
-      #templateBody,
-      #templateBody p {
-        font-size: 16px !important;
-        line-height: 150% !important;
+      .mobile-left>table {
+        display: inline-block;
+        vertical-align: inherit;
       }
-    }
 
-    @media (max-width: 720px) {
-      .footerContainer table td {
-        display: block;
+      .mobile-right {
+        text-align: right;
       }
-    }
 
-    @media (max-width: 720px) {
-
-      #templateFooter,
-      #templateFooter p {
-        font-size: 14px !important;
-        line-height: 150% !important;
+      .mobile-right>table {
+        display: inline-block;
+        vertical-align: inherit;
       }
-    }
 
-    @media (max-width: 720px) {
-
-      #socialBar,
-      #socialBar p {
-        font-size: 14px !important;
-        line-height: 150% !important;
-      }
-    }
-
-    @media (max-width: 720px) {
-
-      #utilityBar,
-      #utilityBar p {
-        font-size: 14px !important;
-        line-height: 150% !important;
-      }
     }
   </style>
 </head>
 
-<body bgcolor="#F3F0F7">
-  <center>
-    <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" id="bodyTable" style="height:100%;">
+<body width="100%" style="background-color:#e9e9eb;margin:0;padding:0!important;mso-line-height-rule:exactly;">
+  <div style="background-color:#e9e9eb">
+    <!--[if gte mso 9]>
+                                            <v:background xmlns:v="urn:schemas-microsoft-com:vml" fill="t">
+                                            <v:fill type="tile" color="#e9e9eb"/>
+                                            </v:background>
+                                            <![endif]-->
+    <table width="100%" cellpadding="0" cellspacing="0" border="0">
       <tr>
-        <td align="center" valign="top" id="bodyCell">
-          <!-- BEGIN TEMPLATE // -->
-          <!--[if gte mso 9]>
-            <table align="center" border="0" cellspacing="0" cellpadding="0" width="600" style="width:600px;">
-              <tr>
-                <td align="center" valign="top" width="600" style="width:600px;">
-                  <![endif]-->
-          <img id="logo"
-            src="https://gallery.mailchimp.com/f351897a27ff0a641b8acd9ab/images/b1070e55-9487-4acb-abce-e755484cce46.png"
-            style="max-width:288px;" alt="b1070e55-9487-4acb-abce-e755484cce46.png">
-          <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" class="templateContainer">
-            <!-- BEGIN HEADER // -->
+        <td valign="top" align="center">
+          <div id="preview_text"
+            style="display: none; font-size: 1px; line-height: 1px; max-height: 0px; max-width: 0px; opacity: 0; overflow: hidden; mso-hide: all; font-family: sans-serif;">
+            This email is the only way to recover your account if you forget your password. </div>
+          <!-- Visually Hidden Preheader Text : END -->
+          <!-- Preview Text Spacing Hack : BEGIN -->
+          <div
+            style="display: none; font-size: 1px; line-height: 1px; max-height: 0px; max-width: 0px; opacity: 0; overflow: hidden; mso-hide: all; font-family: sans-serif;">
+            &zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;
+          </div>
+          <table bgcolor="#ffffff" style="margin:0 auto;" align="center" id="brick_container" cellspacing="0"
+            cellpadding="0" border="0" width="600" class="email-container">
             <tr>
-              <td valign="top" id="templateHeader" bgcolor="#FFFFFF" height="100%" width="100%">
-                <!-- BEGIN MODULE: HEADER IMAGE // -->
-                <img src="https://download.audius.co/static-resources/email/recoveryEmailHeader@2x.png"
-                  style="max-width:720px; width:100%;" class="templateImage" mc:label="header_image" mc:allowdesigner=""
-                  mc:allowtext="" alt="32db45f5-7cff-47e4-942b-6b3712c8c4b0.png">
-                <!-- // END MODULE: HEADER IMAGE -->
-              </td>
-            </tr>
-            <!-- // END HEADER -->
-            <!-- BEGIN BODY // -->
-            <tr>
-              <td valign="top" id="templateBody" bgcolor="#FFFFFF" height="100%" width="100%">
-                <!-- BEGIN MODULE: BODY CONTENT // -->
-                <div>
-                  <p>Hey @{{handle}},</p>
-                  <p>Keep this email safe and don’t share it with anyone.<br />
-                    Audius cannot reset your password any other way.
-                  </p>
-                  <p><strong class='pink'>
-                      Please save this email forever.
-                    </strong></p>
-                  <a href='{{recovery_link}}' class="button">
-                    Reset My Password
-                  </a>
-                </div>
-                <!-- // END MODULE: BODY CONTENT -->
-              </td>
-            </tr>
-            <!-- // END BODY -->
-          </table>
-          <table border="0" cellpadding="0" cellspacing="0" width="100%" class="footerContainer">
-            <!-- BEGIN FOOTER // -->
-            <tr>
-              <td valign="bottom" id="templateFooter">
-                <!-- BEGIN MODULE: STANDARD FOOTER // -->
-                <table border="0" cellpadding="0" cellspacing="0" width="100%">
+              <td width="600">
+                <table cellspacing="0" cellpadding="0" border="0">
                   <tr>
-                    <td valign="center" id="socialBar">
-                      <a href="https://www.instagram.com/audiusmusic/"><img
-                          src="https://download.audius.co/static-resources/email/iconInsta.png" alt="instagram"></a>
-                      <a href="https://twitter.com/audius"><img
-                          src="https://download.audius.co/static-resources/email/iconTwitter.png" alt="twitter"></a>
-                      <a href="https://discordapp.com/invite/yNUg2e2"><img
-                          src="https://download.audius.co/static-resources/email/iconDiscord.png" alt="discord"></a>
-                    </td>
-                    <td>
-                      <p>Made with <span class='purple'>♥︎</span> in SF & LA</p>
-                    </td>
-                    <td>
-                      <p>&copy; {{copyright_year}} Audius, Inc. All Rights Reserved.</p>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td valign="top" id="utilityBar" colspan="3">
-                      <div>
-                        <a href="<%asm_group_unsubscribe_raw_url%>" class="utilityLink">unsubscribe from this
-                          list</a><span class="mobileHide">
-                      </div>
+                    <td width="600" style="background-color:#ffffff;  " bgcolor="#ffffff">
+                      <table width="100%" border="0" cellpadding="0" cellspacing="0">
+                        <tr>
+                          <td width="600">
+                            <table cellspacing="0" cellpadding="0" border="0">
+                              <tr>
+                                <td width="584" align="center"
+                                  style="vertical-align: middle; background-color:#ffffff;  border-width: 0px 0px 1px 0px; border-color:#e9e9eb; border-style:solid; padding-left:8px; padding-right:8px;"
+                                  bgcolor="#ffffff">
+                                  <table width="100%" border="0" cellpadding="0" cellspacing="0">
+                                    <tr>
+                                      <td height="8" style="height:8px; min-height:8px; line-height:8px;"></td>
+                                    </tr>
+                                    <tr>
+                                      <td align="center">
+                                        <table cellspacing="0" cellpadding="0" border="0">
+                                          <tr>
+                                            <td style="vertical-align: middle;" width="224" align="center"><img
+                                                src="https://download.audius.co/emails/recovery/f6vpNmx4NSrKaYlxQaATCZLedKOtnE.jpeg"
+                                                width="224" border="0" style="max-width:224px; width: 100%;
+         height: auto; display: block;"></td>
+                                          </tr>
+                                        </table>
+                                      </td>
+                                    </tr>
+                                    <tr>
+                                      <td height="8" style="height:8px; min-height:8px; line-height:8px;"></td>
+                                    </tr>
+                                  </table>
+                                </td>
+                              </tr>
+                            </table>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td width="600">
+                            <table cellspacing="0" cellpadding="0" border="0">
+                              <tr>
+                                <td width="552"
+                                  style="background-color:#ffffff;   padding-left:24px; padding-right:24px;"
+                                  bgcolor="#ffffff">
+                                  <table width="100%" border="0" cellpadding="0" cellspacing="0">
+                                    <tr>
+                                      <td height="24" style="height:24px; min-height:24px; line-height:24px;"></td>
+                                    </tr>
+                                    <tr>
+                                      <td width="100%">
+                                        <table width="100%" cellspacing="0" cellpadding="0" border="0">
+                                          <tr>
+                                            <td width="100%"
+                                              style="vertical-align: middle; background-color:#fbf7f7; border-radius:4px; border:1px solid #e6c6c6; padding-left:24px; padding-right:24px;"
+                                              bgcolor="#fbf7f7">
+                                              <table width="100%" border="0" cellpadding="0" cellspacing="0">
+                                                <tr>
+                                                  <td height="8" style="height:8px; min-height:8px; line-height:8px;">
+                                                  </td>
+                                                </tr>
+                                                <tr>
+                                                  <td style="vertical-align: middle;" width="24"><img
+                                                      src="https://download.audius.co/emails/recovery/Gbs09GE9BscDuUJ72rUzDs60TDgQQC.png"
+                                                      width="24" border="0" style="min-width:24px; width:24px;
+         height: auto; display: block;"></td>
+                                                  <td style="width:8px; min-width:8px;" width="8"></td>
+                                                  <td style="vertical-align: middle;">
+                                                    <div style="line-height:24px;text-align:left;"><span
+                                                        style="color:#a70215;font-family:Inter,Arial,sans-serif;font-size:16px;line-height:24px;text-align:left;">Keep
+                                                        this email and store it in a safe place!</span></div>
+                                                  </td>
+                                                </tr>
+                                                <tr>
+                                                  <td height="8" style="height:8px; min-height:8px; line-height:8px;">
+                                                  </td>
+                                                </tr>
+                                              </table>
+                                            </td>
+                                          </tr>
+                                        </table>
+                                      </td>
+                                    </tr>
+                                    <tr>
+                                      <td height="24" style="height:24px; min-height:24px; line-height:24px;"></td>
+                                    </tr>
+                                  </table>
+                                </td>
+                              </tr>
+                            </table>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td width="600">
+                            <table cellspacing="0" cellpadding="0" border="0">
+                              <tr>
+                                <td width="552"
+                                  style="vertical-align: middle; background-color:#ffffff;   padding-left:24px; padding-right:24px;"
+                                  bgcolor="#ffffff">
+                                  <table width="100%" border="0" cellpadding="0" cellspacing="0">
+                                    <tr>
+                                      <td height="12" style="height:12px; min-height:12px; line-height:12px;"></td>
+                                    </tr>
+                                    <tr>
+                                      <td style="vertical-align: middle;">
+                                        <div style="line-height:36px;text-align:left;"><span
+                                            style="color:#3a3843;font-weight:700;font-family:Inter,Arial,sans-serif;font-size:27px;letter-spacing:-0.02em;line-height:36px;text-align:left;">Account
+                                            Recovery</span></div>
+                                      </td>
+                                    </tr>
+                                    <tr>
+                                      <td height="8" style="height:8px; min-height:8px; line-height:8px;"></td>
+                                    </tr>
+                                    <tr>
+                                      <td style="vertical-align: middle;">
+                                        <div style="line-height:24px;text-align:left;"><span
+                                            style="color:#52505f;font-family:Inter,Arial,sans-serif;font-size:16px;line-height:24px;text-align:left;">Keep
+                                            this email somewhere safe, and never share it with anyone.<br>Clicking the
+                                            link in this email is the only way to recover your account if you forget
+                                            your password.<br><br>Audius cannot reset your password for you.</span>
+                                        </div>
+                                      </td>
+                                    </tr>
+                                    <tr>
+                                      <td height="12" style="height:12px; min-height:12px; line-height:12px;"></td>
+                                    </tr>
+                                  </table>
+                                </td>
+                              </tr>
+                            </table>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td width="600">
+                            <table cellspacing="0" cellpadding="0" border="0">
+                              <tr>
+                                <td width="552" align="center"
+                                  style="vertical-align: middle; background-color:#ffffff;   padding-left:24px; padding-right:24px;"
+                                  bgcolor="#ffffff">
+                                  <table width="100%" border="0" cellpadding="0" cellspacing="0">
+                                    <tr>
+                                      <td height="24" style="height:24px; min-height:24px; line-height:24px;"></td>
+                                    </tr>
+                                    <tr>
+                                      <td align="center">
+                                        <table cellspacing="0" cellpadding="0" border="0">
+                                          <tr>
+                                            <td style="vertical-align: middle;" width="420">
+                                              <table cellspacing="0" cellpadding="0" border="0">
+                                                <tr>
+                                                  <td width="420" align="center">
+                                                    <table class="table-w-full-mobile" width="100%" border="0"
+                                                      cellpadding="0" cellspacing="0">
+                                                      <tr>
+                                                        <td class="stack-column-center" align="center">
+                                                          <div>
+                                                            <!--[if mso]>
+                        <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="#" style="height:48px;v-text-anchor:middle;width:420px;" fillcolor="#7e1bcc"  stroke="f" arcsize="17%">
+                        <w:anchorlock/>
+                        <center style="white-space:nowrap;display:inline-block;text-align:center;color:#ffffff;font-weight:600;font-family:Inter,Arial,sans-serif;font-size:18px;">Reset My Password</center>
+                        </v:roundrect>
+                    <![endif]-->
+                                                            <a target="_blank" href="{{recovery_link}}"
+                                                              style="white-space:nowrap;background-color:#7e1bcc;border-radius:8px; display:inline-block;text-align:center;color:#ffffff;font-weight:600;font-family:Inter,Arial,sans-serif;font-size:18px;line-height:48px;width:100%; -webkit-text-size-adjust:none;mso-hide:all;box-shadow: 0px 2px 0px 0px rgba(0, 0, 0, 0.0430000014603138);">Reset
+                                                              My Password</a>
+                                                          </div>
+                                                        </td>
+                                                      </tr>
+                                                    </table>
+                                                  </td>
+                                                </tr>
+                                              </table>
+                                            </td>
+                                          </tr>
+                                        </table>
+                                      </td>
+                                    </tr>
+                                    <tr>
+                                      <td height="24" style="height:24px; min-height:24px; line-height:24px;"></td>
+                                    </tr>
+                                  </table>
+                                </td>
+                              </tr>
+                            </table>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td width="600">
+                            <table cellspacing="0" cellpadding="0" border="0">
+                              <tr>
+                                <td width="552"
+                                  style="vertical-align: middle; height:8px; background-color:#ffffff;   padding-left:24px; padding-right:24px;"
+                                  bgcolor="#ffffff">
+                                  <table width="100%" border="0" cellpadding="0" cellspacing="0">
+                                    <tr>
+                                      <td height="12" style="height:12px; min-height:12px; line-height:12px;"></td>
+                                    </tr>
+                                    <tr>
+                                      <td style="vertical-align: middle;" width="552">
+                                        <table cellspacing="0" cellpadding="0" border="0">
+                                          <tr>
+                                            <td width="552">
+                                              <table cellpadding="0" cellspacing="0" height="1" width="100%"
+                                                style="line-height:1px;height:1px!important; border:1px solid #e9e9eb; border-collapse:separate !important;margin:0 auto;text-align:center;">
+                                                <tr>
+                                                  <td> </td>
+                                                </tr>
+                                              </table>
+                                            </td>
+                                          </tr>
+                                        </table>
+                                      </td>
+                                    </tr>
+                                    <tr>
+                                      <td height="12" style="height:12px; min-height:12px; line-height:12px;"></td>
+                                    </tr>
+                                  </table>
+                                </td>
+                              </tr>
+                            </table>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td width="100%">
+                            <table width="100%" cellspacing="0" cellpadding="0" border="0">
+                              <tr>
+                                <td width="100%" align="center"
+                                  style="vertical-align: middle; background-color:#ffffff;   padding-left:24px; padding-right:24px;"
+                                  bgcolor="#ffffff">
+                                  <table width="100%" border="0" cellpadding="0" cellspacing="0">
+                                    <tr>
+                                      <td height="24" style="height:24px; min-height:24px; line-height:24px;"></td>
+                                    </tr>
+                                    <tr>
+                                      <td style="vertical-align: middle;" width="100%">
+                                        <table width="100%" cellspacing="0" cellpadding="0" border="0">
+                                          <tr>
+                                            <td width="100%" align="center" style="vertical-align: middle;  ">
+                                              <table width="100%" border="0" cellpadding="0" cellspacing="0">
+                                                <tr>
+                                                  <td style="vertical-align: middle;">
+                                                    <table cellspacing="0" cellpadding="0" border="0">
+                                                      <tr>
+                                                        <td
+                                                          style="background-color:#f9f7fc; border-radius:88px; border:1px solid #ebe4f6; padding-left:16px; padding-right:16px;"
+                                                          bgcolor="#f9f7fc">
+                                                          <table width="100%" border="0" cellpadding="0"
+                                                            cellspacing="0">
+                                                            <tr>
+                                                              <td height="16"
+                                                                style="height:16px; min-height:16px; line-height:16px;">
+                                                              </td>
+                                                            </tr>
+                                                            <tr>
+                                                              <td width="24"><img
+                                                                  src="https://download.audius.co/emails/recovery/ytiS3MwqZvxPtEmyCWUfanWQF4Ds5V.png"
+                                                                  width="24" border="0" style="min-width:24px; width:24px;
+         height: auto; display: block;"></td>
+                                                            </tr>
+                                                            <tr>
+                                                              <td height="16"
+                                                                style="height:16px; min-height:16px; line-height:16px;">
+                                                              </td>
+                                                            </tr>
+                                                          </table>
+                                                        </td>
+                                                      </tr>
+                                                    </table>
+                                                  </td>
+                                                  <td style="width:24px; min-width:24px;" width="24"></td>
+                                                  <td style="vertical-align: middle;">
+                                                    <table width="100%" cellspacing="0" cellpadding="0" border="0">
+                                                      <tr>
+                                                        <td style="vertical-align: middle;  ">
+                                                          <table width="100%" border="0" cellpadding="0"
+                                                            cellspacing="0">
+                                                            <tr>
+                                                              <td style="vertical-align: middle;" width="100%">
+                                                                <table width="100%" cellspacing="0" cellpadding="0"
+                                                                  border="0">
+                                                                  <tr>
+                                                                    <td width="100%">
+                                                                      <table width="100%" border="0" cellpadding="0"
+                                                                        cellspacing="0">
+                                                                        <tr>
+                                                                          <td>
+                                                                            <div
+                                                                              style="line-height:36px;text-align:left;">
+                                                                              <span
+                                                                                style="color:#3a3843;font-weight:700;font-family:Inter,Arial,sans-serif;font-size:27px;letter-spacing:-0.02em;line-height:36px;text-align:left;">Audius
+                                                                                Support</span>
+                                                                            </div>
+                                                                          </td>
+                                                                        </tr>
+                                                                        <tr>
+                                                                          <td height="8"
+                                                                            style="height:8px; min-height:8px; line-height:8px;">
+                                                                          </td>
+                                                                        </tr>
+                                                                        <tr>
+                                                                          <td>
+                                                                            <div
+                                                                              style="line-height:24px;text-align:left;">
+                                                                              <span
+                                                                                style="color:#52505f;font-family:Inter,Arial,sans-serif;font-size:16px;line-height:24px;text-align:left;">Questions?
+                                                                                Audius Support can help!</span>
+                                                                            </div>
+                                                                          </td>
+                                                                        </tr>
+                                                                      </table>
+                                                                    </td>
+                                                                  </tr>
+                                                                </table>
+                                                              </td>
+                                                            </tr>
+                                                            <tr>
+                                                              <td height="16"
+                                                                style="height:16px; min-height:16px; line-height:16px;">
+                                                              </td>
+                                                            </tr>
+                                                            <tr>
+                                                              <td style="vertical-align: middle;">
+                                                                <div style="line-height:20px;text-align:left;"><a
+                                                                    href="https://help.audius.co"><span
+                                                                      style="color:#cc0fe0;font-family:Inter,Arial,sans-serif;font-size:15px;line-height:20px;text-align:left;text-decoration:underline;">Visit
+                                                                      Audius Support</span></a></div>
+                                                              </td>
+                                                            </tr>
+                                                          </table>
+                                                        </td>
+                                                      </tr>
+                                                    </table>
+                                                  </td>
+                                                </tr>
+                                              </table>
+                                            </td>
+                                          </tr>
+                                        </table>
+                                      </td>
+                                    </tr>
+                                    <tr>
+                                      <td height="24" style="height:24px; min-height:24px; line-height:24px;"></td>
+                                    </tr>
+                                  </table>
+                                </td>
+                              </tr>
+                            </table>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td width="600">
+                            <table cellspacing="0" cellpadding="0" border="0">
+                              <tr>
+                                <td width="552" align="center"
+                                  style="vertical-align: middle; background-color:#f9f9f9;  border-width: 1px 0px 0px 0px; border-color:#e9e9eb; border-style:solid; padding-left:24px; padding-right:24px;"
+                                  bgcolor="#f9f9f9">
+                                  <table width="100%" border="0" cellpadding="0" cellspacing="0">
+                                    <tr>
+                                      <td height="48" style="height:48px; min-height:48px; line-height:48px;"></td>
+                                    </tr>
+                                    <tr>
+                                      <td style="vertical-align: middle;" width="100%">
+                                        <table width="100%" cellspacing="0" cellpadding="0" border="0">
+                                          <tr>
+                                            <td width="100%" align="center"
+                                              style="vertical-align: middle; border-radius:8px; ">
+                                              <table width="100%" border="0" cellpadding="0" cellspacing="0">
+                                                <tr>
+                                                  <td height="24"
+                                                    style="height:24px; min-height:24px; line-height:24px;"></td>
+                                                </tr>
+                                                <tr>
+                                                  <td style="vertical-align: middle;" width="100%">
+                                                    <table width="100%" cellspacing="0" cellpadding="0" border="0">
+                                                      <tr>
+                                                        <td width="100%"
+                                                          style="  padding-left:12px; padding-right:12px;">
+                                                          <table width="100%" border="0" cellpadding="0"
+                                                            cellspacing="0">
+                                                            <tr>
+                                                              <td height="12"
+                                                                style="height:12px; min-height:12px; line-height:12px;">
+                                                              </td>
+                                                            </tr>
+                                                            <tr>
+                                                              <td width="528" align="center"
+                                                                style="vertical-align: middle;  ">
+                                                                <table class="table-w-full-mobile" width="100%"
+                                                                  border="0" cellpadding="0" cellspacing="0">
+                                                                  <tr>
+                                                                    <td style="vertical-align: middle;"
+                                                                      class="stack-column-center" align="center"><a
+                                                                        href="https://www.audius.co"><img
+                                                                          src="https://download.audius.co/emails/recovery/cUGLGRM2L9m8cjgCtFCEP6HIIJ9nPP.png"
+                                                                          width="168" border="0" style="min-width:168px; width:168px;
+        border-radius:2px; height: auto; display: block;"></a></td>
+                                                                    <td class="stack-column-center" height="12"
+                                                                      style="width:12px; min-width:12px; height:12px; min-height:12px;"
+                                                                      width="12"> </td>
+                                                                    <td class="stack-column-center"
+                                                                      style="width:168px;"> </td>
+                                                                    <td class="stack-column-center" height="12"
+                                                                      style="width:12px; min-width:12px; height:12px; min-height:12px;"
+                                                                      width="12"> </td>
+                                                                    <td style="vertical-align: middle;" align="center"
+                                                                      class="stack-column-center">
+                                                                      <table width="100%" cellspacing="0"
+                                                                        cellpadding="0" border="0">
+                                                                        <tr>
+                                                                          <td align="center"
+                                                                            style="vertical-align: middle; border-radius:2px;  padding-left:4px; padding-right:4px;">
+                                                                            <table width="100%" border="0"
+                                                                              cellpadding="0" cellspacing="0">
+                                                                              <tr>
+                                                                                <td height="4"
+                                                                                  style="height:4px; min-height:4px; line-height:4px;">
+                                                                                </td>
+                                                                              </tr>
+                                                                              <tr>
+                                                                                <td align="center">
+                                                                                  <table cellspacing="0" cellpadding="0"
+                                                                                    border="0">
+                                                                                    <tr>
+                                                                                      <td
+                                                                                        style="vertical-align: middle;">
+                                                                                        <table cellspacing="0"
+                                                                                          cellpadding="0" border="0">
+                                                                                          <tr>
+                                                                                            <td align="right"
+                                                                                              style="vertical-align: middle; height:32px; border-radius:2px;  padding-left:4px; padding-right:4px;">
+                                                                                              <table width="100%"
+                                                                                                border="0"
+                                                                                                cellpadding="0"
+                                                                                                cellspacing="0">
+                                                                                                <tr>
+                                                                                                  <td height="4"
+                                                                                                    style="height:4px; min-height:4px; line-height:4px;">
+                                                                                                  </td>
+                                                                                                </tr>
+                                                                                                <tr>
+                                                                                                  <td
+                                                                                                    style="vertical-align: middle;"
+                                                                                                    width="144">
+                                                                                                    <table
+                                                                                                      cellspacing="0"
+                                                                                                      cellpadding="0"
+                                                                                                      border="0">
+                                                                                                      <tr>
+                                                                                                        <td width="144"
+                                                                                                          style="vertical-align: middle;  ">
+                                                                                                          <table
+                                                                                                            width="100%"
+                                                                                                            border="0"
+                                                                                                            cellpadding="0"
+                                                                                                            cellspacing="0">
+                                                                                                            <tr>
+                                                                                                              <td
+                                                                                                                style="vertical-align: middle;">
+                                                                                                                <a
+                                                                                                                  href="https://twitter.com/audius"><img
+                                                                                                                    src="https://download.audius.co/emails/recovery/uSNy6HzJES0DRzLJbFQ0DLG2oqhXiC.png"
+                                                                                                                    width="24"
+                                                                                                                    border="0"
+                                                                                                                    style="min-width:24px; width:24px;
+         height: auto; display: block;"></a>
+                                                                                                              </td>
+                                                                                                              <td
+                                                                                                                style="width:16px; min-width:16px;"
+                                                                                                                width="16">
+                                                                                                              </td>
+                                                                                                              <td
+                                                                                                                style="vertical-align: middle;">
+                                                                                                                <a
+                                                                                                                  href="https://www.instagram.com/audius/"><img
+                                                                                                                    src="https://download.audius.co/emails/recovery/tdaGHFX0vGnfZlvdp8chCwaWeLZZM4.png"
+                                                                                                                    width="24"
+                                                                                                                    border="0"
+                                                                                                                    style="min-width:24px; width:24px;
+         height: auto; display: block;"></a>
+                                                                                                              </td>
+                                                                                                              <td
+                                                                                                                style="width:16px; min-width:16px;"
+                                                                                                                width="16">
+                                                                                                              </td>
+                                                                                                              <td
+                                                                                                                style="vertical-align: middle;">
+                                                                                                                <a
+                                                                                                                  href="https://tiktok.com/@audius"><img
+                                                                                                                    src="https://download.audius.co/emails/recovery/vUHpwWJMcxoI1F8cHGez9C08pN1nFp.png"
+                                                                                                                    width="24"
+                                                                                                                    border="0"
+                                                                                                                    style="min-width:24px; width:24px;
+         height: auto; display: block;"></a>
+                                                                                                              </td>
+                                                                                                              <td
+                                                                                                                style="width:16px; min-width:16px;"
+                                                                                                                width="16">
+                                                                                                              </td>
+                                                                                                              <td
+                                                                                                                style="vertical-align: middle;">
+                                                                                                                <a
+                                                                                                                  href="https://www.youtube.com/@AudiusMusic"><img
+                                                                                                                    src="https://download.audius.co/emails/recovery/j3x5ePKwUXqPajwFXpIZX8fe5quxqH.png"
+                                                                                                                    width="24"
+                                                                                                                    border="0"
+                                                                                                                    style="min-width:24px; width:24px;
+         height: auto; display: block;"></a>
+                                                                                                              </td>
+                                                                                                            </tr>
+                                                                                                          </table>
+                                                                                                        </td>
+                                                                                                      </tr>
+                                                                                                    </table>
+                                                                                                  </td>
+                                                                                                </tr>
+                                                                                                <tr>
+                                                                                                  <td height="4"
+                                                                                                    style="height:4px; min-height:4px; line-height:4px;">
+                                                                                                  </td>
+                                                                                                </tr>
+                                                                                              </table>
+                                                                                            </td>
+                                                                                          </tr>
+                                                                                        </table>
+                                                                                      </td>
+                                                                                    </tr>
+                                                                                  </table>
+                                                                                </td>
+                                                                              </tr>
+                                                                              <tr>
+                                                                                <td height="4"
+                                                                                  style="height:4px; min-height:4px; line-height:4px;">
+                                                                                </td>
+                                                                              </tr>
+                                                                            </table>
+                                                                          </td>
+                                                                        </tr>
+                                                                      </table>
+                                                                    </td>
+                                                                  </tr>
+                                                                </table>
+                                                              </td>
+                                                            </tr>
+                                                            <tr>
+                                                              <td height="12"
+                                                                style="height:12px; min-height:12px; line-height:12px;">
+                                                              </td>
+                                                            </tr>
+                                                          </table>
+                                                        </td>
+                                                      </tr>
+                                                    </table>
+                                                  </td>
+                                                </tr>
+                                                <tr>
+                                                  <td height="16"
+                                                    style="height:16px; min-height:16px; line-height:16px;"></td>
+                                                </tr>
+                                                <tr>
+                                                  <td align="center">
+                                                    <table cellspacing="0" cellpadding="0" border="0">
+                                                      <tr>
+                                                        <td style="vertical-align: middle;" width="528">
+                                                          <table cellspacing="0" cellpadding="0" border="0">
+                                                            <tr>
+                                                              <td width="528" align="center"
+                                                                style="vertical-align: middle;  ">
+                                                                <table class="table-w-full-mobile" border="0"
+                                                                  cellpadding="0" cellspacing="0">
+                                                                  <tr>
+                                                                    <td height="16"
+                                                                      style="height:16px; min-height:16px; line-height:16px;">
+                                                                    </td>
+                                                                  </tr>
+                                                                  <tr>
+                                                                    <td style="vertical-align: middle;" align="center"
+                                                                      width="32.32%" class="stack-column-center">
+                                                                      <table width="100%" cellspacing="0"
+                                                                        cellpadding="0" border="0">
+                                                                        <tr>
+                                                                          <td align="center"
+                                                                            style="vertical-align: middle; border-radius:2px;  padding-left:16px; padding-right:16px;">
+                                                                            <table width="100%" border="0"
+                                                                              cellpadding="0" cellspacing="0">
+                                                                              <tr>
+                                                                                <td align="center">
+                                                                                  <table cellspacing="0" cellpadding="0"
+                                                                                    border="0">
+                                                                                    <tr>
+                                                                                      <td
+                                                                                        style="vertical-align: middle;"
+                                                                                        align="center">
+                                                                                        <div
+                                                                                          style="line-height:14px;text-align:center;">
+                                                                                          <a
+                                                                                            href="https://www.audius.co"><span
+                                                                                              style="color:#6a677a;font-weight:500;font-family:Inter,Arial,sans-serif;font-size:14px;line-height:14px;text-align:center;">Audius
+                                                                                              Music</span></a>
+                                                                                        </div>
+                                                                                      </td>
+                                                                                    </tr>
+                                                                                  </table>
+                                                                                </td>
+                                                                              </tr>
+                                                                              <tr>
+                                                                                <td height="8"
+                                                                                  style="height:8px; min-height:8px; line-height:8px;">
+                                                                                </td>
+                                                                              </tr>
+                                                                              <tr>
+                                                                                <td style="vertical-align: middle;"
+                                                                                  align="center">
+                                                                                  <div
+                                                                                    style="line-height:14px;text-align:center;">
+                                                                                    <a target="_blank" href="https://help.audius.co"><span
+                                                                                        style="color:#6a677a;font-weight:500;font-family:Inter,Arial,sans-serif;font-size:14px;line-height:14px;text-align:center;">Help
+                                                                                        & Support</span></a>
+                                                                                  </div>
+                                                                                </td>
+                                                                              </tr>
+                                                                            </table>
+                                                                          </td>
+                                                                        </tr>
+                                                                      </table>
+                                                                    </td>
+                                                                    <td class="stack-column-center" height="8"
+                                                                      style="width:8px; min-width:8px; height:8px; min-height:8px;"
+                                                                      width="8"> </td>
+                                                                    <td style="vertical-align: middle;" align="center"
+                                                                      width="32.32%" class="stack-column-center">
+                                                                      <table width="100%" cellspacing="0"
+                                                                        cellpadding="0" border="0">
+                                                                        <tr>
+                                                                          <td align="center"
+                                                                            style="vertical-align: middle; border-radius:2px;  padding-left:16px; padding-right:16px;">
+                                                                            <table width="100%" border="0"
+                                                                              cellpadding="0" cellspacing="0">
+                                                                              <tr>
+                                                                                <td align="center">
+                                                                                  <table cellspacing="0" cellpadding="0"
+                                                                                    border="0">
+                                                                                    <tr>
+                                                                                      <td
+                                                                                        style="vertical-align: middle;"
+                                                                                        align="center">
+                                                                                        <div
+                                                                                          style="line-height:14px;text-align:center;">
+                                                                                          <a
+                                                                                            href="https://blog.audius.co"><span
+                                                                                              style="color:#6a677a;font-weight:500;font-family:Inter,Arial,sans-serif;font-size:14px;line-height:14px;text-align:center;">The
+                                                                                              Blog</span></a>
+                                                                                        </div>
+                                                                                      </td>
+                                                                                    </tr>
+                                                                                  </table>
+                                                                                </td>
+                                                                              </tr>
+                                                                              <tr>
+                                                                                <td height="8"
+                                                                                  style="height:8px; min-height:8px; line-height:8px;">
+                                                                                </td>
+                                                                              </tr>
+                                                                              <tr>
+                                                                                <td align="center">
+                                                                                  <table cellspacing="0" cellpadding="0"
+                                                                                    border="0">
+                                                                                    <tr>
+                                                                                      <td
+                                                                                        style="vertical-align: middle;"
+                                                                                        align="center">
+                                                                                        <div
+                                                                                          style="line-height:14px;text-align:center;">
+                                                                                          <a
+                                                                                            href="https://www.audius.events"><span
+                                                                                              style="color:#6a677a;font-weight:500;font-family:Inter,Arial,sans-serif;font-size:14px;line-height:14px;text-align:center;">Events</span></a>
+                                                                                        </div>
+                                                                                      </td>
+                                                                                    </tr>
+                                                                                  </table>
+                                                                                </td>
+                                                                              </tr>
+                                                                            </table>
+                                                                          </td>
+                                                                        </tr>
+                                                                      </table>
+                                                                    </td>
+                                                                    <td class="stack-column-center" height="8"
+                                                                      style="width:8px; min-width:8px; height:8px; min-height:8px;"
+                                                                      width="8"> </td>
+                                                                    <td style="vertical-align: middle;" align="center"
+                                                                      width="32.32%" class="stack-column-center">
+                                                                      <table width="100%" cellspacing="0"
+                                                                        cellpadding="0" border="0">
+                                                                        <tr>
+                                                                          <td align="center"
+                                                                            style="vertical-align: middle; border-radius:2px;  padding-left:16px; padding-right:16px;">
+                                                                            <table width="100%" border="0"
+                                                                              cellpadding="0" cellspacing="0">
+                                                                              <tr>
+                                                                                <td align="center">
+                                                                                  <table cellspacing="0" cellpadding="0"
+                                                                                    border="0">
+                                                                                    <tr>
+                                                                                      <td
+                                                                                        style="vertical-align: middle;"
+                                                                                        align="center">
+                                                                                        <div
+                                                                                          style="line-height:14px;text-align:center;">
+                                                                                          <a
+                                                                                            href="https://brand.audius.co"><span
+                                                                                              style="color:#6a677a;font-weight:500;font-family:Inter,Arial,sans-serif;font-size:14px;line-height:14px;text-align:center;">Brand
+                                                                                              / Press</span></a>
+                                                                                        </div>
+                                                                                      </td>
+                                                                                    </tr>
+                                                                                  </table>
+                                                                                </td>
+                                                                              </tr>
+                                                                              <tr>
+                                                                                <td height="8"
+                                                                                  style="height:8px; min-height:8px; line-height:8px;">
+                                                                                </td>
+                                                                              </tr>
+                                                                              <tr>
+                                                                                <td align="center">
+                                                                                  <table cellspacing="0" cellpadding="0"
+                                                                                    border="0">
+                                                                                    <tr>
+                                                                                      <td
+                                                                                        style="vertical-align: middle;"
+                                                                                        align="center">
+                                                                                        <div
+                                                                                          style="line-height:14px;text-align:center;">
+                                                                                          <a
+                                                                                            href="https://merch.audius.co"><span
+                                                                                              style="color:#6a677a;font-weight:500;font-family:Inter,Arial,sans-serif;font-size:14px;line-height:14px;text-align:center;">Merch
+                                                                                              Store</span></a>
+                                                                                        </div>
+                                                                                      </td>
+                                                                                    </tr>
+                                                                                  </table>
+                                                                                </td>
+                                                                              </tr>
+                                                                            </table>
+                                                                          </td>
+                                                                        </tr>
+                                                                      </table>
+                                                                    </td>
+                                                                  </tr>
+                                                                  <tr>
+                                                                    <td height="16"
+                                                                      style="height:16px; min-height:16px; line-height:16px;">
+                                                                    </td>
+                                                                  </tr>
+                                                                </table>
+                                                              </td>
+                                                            </tr>
+                                                          </table>
+                                                        </td>
+                                                      </tr>
+                                                    </table>
+                                                  </td>
+                                                </tr>
+                                                <tr>
+                                                  <td height="16"
+                                                    style="height:16px; min-height:16px; line-height:16px;"></td>
+                                                </tr>
+                                                <tr>
+                                                  <td style="vertical-align: middle;" width="100%">
+                                                    <table width="100%" cellspacing="0" cellpadding="0" border="0">
+                                                      <tr>
+                                                        <td width="100%" align="center"
+                                                          style="vertical-align: middle;  ">
+                                                          <table width="100%" border="0" cellpadding="0"
+                                                            cellspacing="0">
+                                                            <tr>
+                                                              <td align="center">
+                                                                <table cellspacing="0" cellpadding="0" border="0">
+                                                                  <tr>
+                                                                    <td style="vertical-align: middle;" align="center">
+                                                                      <div style="line-height:14px;text-align:center;">
+                                                                        <span
+                                                                          style="color:#6a677a;font-family:Inter,Arial,sans-serif;font-size:12px;line-height:14px;text-align:center;">©
+                                                                          {{copyright_year}} Audius, Inc. All Rights
+                                                                          Reserved.</span>
+                                                                      </div>
+                                                                    </td>
+                                                                  </tr>
+                                                                </table>
+                                                              </td>
+                                                            </tr>
+                                                          </table>
+                                                        </td>
+                                                      </tr>
+                                                    </table>
+                                                  </td>
+                                                </tr>
+                                                <tr>
+                                                  <td height="24"
+                                                    style="height:24px; min-height:24px; line-height:24px;"></td>
+                                                </tr>
+                                              </table>
+                                            </td>
+                                          </tr>
+                                        </table>
+                                      </td>
+                                    </tr>
+                                    <tr>
+                                      <td height="48" style="height:48px; min-height:48px; line-height:48px;"></td>
+                                    </tr>
+                                  </table>
+                                </td>
+                              </tr>
+                            </table>
+                          </td>
+                        </tr>
+                      </table>
                     </td>
                   </tr>
                 </table>
-                <!-- // BEGIN MODULE: STANDARD FOOTER -->
               </td>
             </tr>
-            <!-- // END FOOTER -->
           </table>
-          <!--[if gte mso 9]>
         </td>
       </tr>
     </table>
-    <![endif]-->
-          <!-- // END TEMPLATE -->
-        </td>
-      </tr>
-    </table>
-  </center>
+  </div>
 </body>
 
 </html>

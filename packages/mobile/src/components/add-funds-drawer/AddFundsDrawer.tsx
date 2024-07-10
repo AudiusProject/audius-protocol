@@ -10,7 +10,8 @@ import {
 import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { Button, Text } from 'app/components/core'
+import { Button } from '@audius/harmony-native'
+import { Text } from 'app/components/core'
 import Drawer from 'app/components/drawer'
 import { getPurchaseVendor } from 'app/store/purchase-vendor/selectors'
 import { reset as resetPurchaseMethod } from 'app/store/purchase-vendor/slice'
@@ -93,12 +94,9 @@ export const AddFundsDrawer = () => {
           setSelectedMethod={setSelectedPurchaseMethod}
           showVendorChoice
         />
-        <Button
-          title={messages.continue}
-          onPress={onContinuePress}
-          size='large'
-          fullWidth
-        />
+        <Button onPress={onContinuePress} fullWidth>
+          {messages.continue}
+        </Button>
       </View>
     </Drawer>
   )

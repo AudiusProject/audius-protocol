@@ -4,9 +4,8 @@ import { css } from '@emotion/native'
 import { View } from 'react-native'
 import type { SetRequired } from 'type-fest'
 
-import { useTheme } from '@audius/harmony-native'
-import type { MarginProps } from 'app/harmony-native/utils/styleProps'
-import { useMargin } from 'app/harmony-native/utils/styleProps'
+import type { BoxProps } from '@audius/harmony-native'
+import { Box, useTheme } from '@audius/harmony-native'
 
 import type { FastImageProps } from '../FastImage/FastImage'
 import { FastImage } from '../FastImage/FastImage'
@@ -16,11 +15,14 @@ type TweakedFastImageProps = Omit<FastImageProps, 'priority'> &
   Partial<PickRename<FastImageProps, 'priority', 'imagePriority'>>
 
 export type AvatarProps = Omit<HarmonyAvatarProps, 'src'> &
-  SetRequired<TweakedFastImageProps, 'accessibilityLabel'> &
-  MarginProps
+  (
+    | SetRequired<TweakedFastImageProps, 'accessibilityLabel'>
+    | (TweakedFastImageProps & { 'aria-hidden'?: true })
+  ) &
+  BoxProps
 
 const sizeMap = {
-  auto: '100%' as const,
+  auto: undefined,
   small: 24,
   medium: 40,
   large: 72,
@@ -40,7 +42,7 @@ export const Avatar = (props: AvatarProps) => {
   const {
     children,
     source,
-    size = 'medium',
+    size = 'auto',
     strokeWidth = 'default',
     variant = 'default',
     style,
@@ -48,8 +50,6 @@ export const Avatar = (props: AvatarProps) => {
   } = props
 
   const { color, shadows } = useTheme()
-
-  const margin = useMargin(other)
 
   const borderRadius = 9999
 
@@ -65,7 +65,8 @@ export const Avatar = (props: AvatarProps) => {
   })
 
   const imageCss = css({
-    flex: 1,
+    width: '100%',
+    aspectRatio: 1,
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
@@ -73,16 +74,16 @@ export const Avatar = (props: AvatarProps) => {
   })
 
   return (
-    <View style={[rootCss, margin, style]}>
-      {source !== undefined ? (
-        <FastImage style={imageCss} source={source} {...other}>
-          {children}
-        </FastImage>
-      ) : (
-        <View style={imageCss} {...other}>
-          {children}
-        </View>
-      )}
-    </View>
+    <Box {...other}>
+      <Box style={[rootCss, style]}>
+        {source !== undefined ? (
+          <FastImage style={imageCss} source={source}>
+            {children}
+          </FastImage>
+        ) : (
+          <View style={imageCss}>{children}</View>
+        )}
+      </Box>
+    </Box>
   )
 }

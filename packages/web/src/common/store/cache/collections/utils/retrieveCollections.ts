@@ -152,7 +152,6 @@ export function* retrieveCollectionByPermalink(
 ) {
   const {
     fetchTracks = false,
-    requiresAllTracks = false,
     forceRetrieveFromSource = false,
     deleteExistingEntry
   } = config ?? {}
@@ -160,25 +159,9 @@ export function* retrieveCollectionByPermalink(
   const { entries, uids } = yield* call(retrieve, {
     ids: [permalink],
     selectFromCache: function* (permalinks: string[]) {
-      const cachedCollections = yield* select(
-        cacheCollectionsSelectors.getCollections,
-        {
-          permalinks
-        }
-      )
-      if (requiresAllTracks) {
-        const keys = Object.keys(cachedCollections) as unknown as number[]
-        keys.forEach((collectionId) => {
-          const fullTrackCount = cachedCollections[collectionId].track_count
-          const currentTrackCount =
-            cachedCollections[collectionId].tracks?.length ?? 0
-          if (currentTrackCount < fullTrackCount) {
-            // Remove the collection from the res so retrieve knows to get it from source
-            delete cachedCollections[collectionId]
-          }
-        })
-      }
-      return cachedCollections
+      return yield* select(cacheCollectionsSelectors.getCollections, {
+        permalinks
+      })
     },
     getEntriesTimestamp: selectEntriesTimestamp,
     retrieveFromSource: function* (permalinks: string[]) {
@@ -228,10 +211,6 @@ export type RetrieveCollectionsConfig = {
   fetchTracks?: boolean
   // optional owner of collections to fetch (TODO: to be removed)
   userId?: ID | null
-  /**  whether or not fetching this collection requires it to have all its tracks.
-   * In the case where a collection is already cached with partial tracks, use this flag to refetch from source.
-   */
-  requiresAllTracks?: boolean
   forceRetrieveFromSource?: boolean
   deleteExistingEntry?: boolean
 }
@@ -246,7 +225,6 @@ export function* retrieveCollections(
   const {
     userId = null,
     fetchTracks = false,
-    requiresAllTracks = false,
     forceRetrieveFromSource = false,
     deleteExistingEntry
   } = config ?? {}
@@ -254,21 +232,7 @@ export function* retrieveCollections(
   const { entries, uids } = yield* call(retrieve<Collection>, {
     ids: collectionIds,
     selectFromCache: function* (ids: ID[]) {
-      const res: {
-        [id: number]: Collection
-      } = yield* select(getCollections, { ids })
-      if (requiresAllTracks) {
-        const keys = Object.keys(res) as any
-        keys.forEach((collectionId: number) => {
-          const fullTrackCount = res[collectionId].track_count
-          const currentTrackCount = res[collectionId].tracks?.length ?? 0
-          if (currentTrackCount < fullTrackCount) {
-            // Remove the collection from the res so retrieve knows to get it from source
-            delete res[collectionId]
-          }
-        })
-      }
-      return res
+      return yield* select(getCollections, { ids })
     },
     getEntriesTimestamp: selectEntriesTimestamp,
     retrieveFromSource: function* (ids: ID[]) {

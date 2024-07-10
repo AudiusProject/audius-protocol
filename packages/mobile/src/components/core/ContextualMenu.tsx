@@ -52,9 +52,6 @@ const useStyles = makeStyles(({ spacing }) => ({
   pill: {
     marginTop: spacing(2),
     marginRight: spacing(2)
-  },
-  optionPillText: {
-    textTransform: 'uppercase'
   }
 }))
 
@@ -86,11 +83,7 @@ export const ContextualMenu = (props: ContextualMenuProps) => {
       <View style={styles.optionPills}>
         {values.map((value, i) => (
           <Pill key={`${value}-${i}`} style={styles.pill}>
-            <Text
-              fontSize='small'
-              weight='demiBold'
-              style={styles.optionPillText}
-            >
+            <Text fontSize='small' weight='demiBold'>
               {value}
             </Text>
           </Pill>

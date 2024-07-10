@@ -14,10 +14,11 @@ import { removeNullable } from '@audius/common/utils'
 import type { Nullable } from '@audius/common/utils'
 import { useField, useFormikContext } from 'formik'
 
-import { Hint, IconCaretLeft, IconCart } from '@audius/harmony-native'
-import { Button } from 'app/components/core'
+import { Hint, IconCaretLeft, IconCart, Button } from '@audius/harmony-native'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { TopBarIconButton } from 'app/screens/app-screen'
+import type { ListSelectionData } from 'app/screens/list-selection-screen'
+import { ListSelectionScreen } from 'app/screens/list-selection-screen'
 import { makeStyles } from 'app/styles'
 
 import { CollectibleGatedAvailability } from '../components/CollectibleGatedAvailability'
@@ -28,9 +29,6 @@ import { TRACK_PREVIEW } from '../fields/AccessAndSaleField/PremiumRadioField/Tr
 import { TRACK_PRICE } from '../fields/AccessAndSaleField/PremiumRadioField/TrackPriceField'
 import { PublicAvailabilityRadioField } from '../fields/AccessAndSaleField/PublicAvailabilityRadioField'
 import type { FormValues, RemixOfField } from '../types'
-
-import type { ListSelectionData } from './ListSelectionScreen'
-import { ListSelectionScreen } from './ListSelectionScreen'
 
 const messages = {
   title: 'Access & Sale',
@@ -265,12 +263,12 @@ export const AccessAndSaleScreen = () => {
       bottomSection={
         <Button
           variant='primary'
-          size='large'
           fullWidth
-          title={messages.done}
           onPress={goBack}
           disabled={isFormInvalid}
-        />
+        >
+          {messages.done}
+        </Button>
       }
     />
   )

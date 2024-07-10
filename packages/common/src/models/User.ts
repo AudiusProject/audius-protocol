@@ -15,6 +15,8 @@ import { Grant } from './Grant'
 import { Timestamped } from './Timestamped'
 import { UserEvent } from './UserEvent'
 
+export type SocialPlatform = 'twitter' | 'instagram' | 'tiktok'
+
 export type UserMetadata = {
   album_count: number
   allow_ai_attribution?: boolean
@@ -39,6 +41,14 @@ export type UserMetadata = {
   has_collectibles: boolean
   is_deactivated: boolean
   is_verified: boolean
+  twitter_handle: Nullable<string>
+  instagram_handle: Nullable<string>
+  tiktok_handle: Nullable<string>
+  verified_with_twitter: boolean
+  verified_with_instagram: boolean
+  verified_with_tiktok: boolean
+  website: Nullable<string>
+  donation: Nullable<string>
   location: Nullable<string>
   metadata_multihash: Nullable<CID>
   name: string
@@ -57,15 +67,7 @@ export type UserMetadata = {
   // Only present on the "current" account
   track_save_count?: number
   user_id: number
-  twitter_handle?: string
-  instagram_handle?: string
-  tiktok_handle?: string
-  website?: string
   wallet?: string
-  donation?: string
-  twitterVerified?: boolean
-  instagramVerified?: boolean
-  tikTokVerified?: boolean
   balance?: Nullable<StringWei>
   total_balance?: Nullable<StringWei>
   associated_wallets?: Nullable<string[]>

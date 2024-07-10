@@ -1,6 +1,5 @@
 import { useCallback } from 'react'
 
-import { useIsGatedContentPlaylistAddable } from '@audius/common/hooks'
 import {
   ShareSource,
   RepostSource,
@@ -11,7 +10,6 @@ import {
   isContentUSDCPurchaseGated
 } from '@audius/common/models'
 import type { Track, User } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import {
   accountSelectors,
   cacheTracksSelectors,
@@ -23,7 +21,8 @@ import {
   OverflowSource,
   RepostType,
   playerSelectors,
-  playbackPositionSelectors
+  playbackPositionSelectors,
+  usePublishContentModal
 } from '@audius/common/store'
 import type { CommonState } from '@audius/common/store'
 import { Genre, removeNullable } from '@audius/common/utils'
@@ -36,7 +35,6 @@ import { TrackImage } from 'app/components/image/TrackImage'
 import type { LineupItemProps } from 'app/components/lineup-tile/types'
 import { useIsUSDCEnabled } from 'app/hooks/useIsUSDCEnabled'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 
 import type { TileProps } from '../core'
 
@@ -85,10 +83,6 @@ export const TrackTileComponent = ({
   variant,
   ...lineupTileProps
 }: TrackTileProps) => {
-  const { isEnabled: isNewPodcastControlsEnabled } = useFeatureFlag(
-    FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
-    FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
-  )
   const isUSDCEnabled = useIsUSDCEnabled()
   const dispatch = useDispatch()
   const navigation = useNavigation()
@@ -102,6 +96,8 @@ export const TrackTileComponent = ({
   )
 
   const currentUserId = useSelector(getUserId)
+  const { onOpen: openPublishModal } = usePublishContentModal()
+
   const isOwner = currentUserId === track.owner_id
 
   const {
@@ -123,7 +119,6 @@ export const TrackTileComponent = ({
     isUSDCEnabled &&
     isContentUSDCPurchaseGated(streamConditions) &&
     !!preview_cid
-  const isPlaylistAddable = useIsGatedContentPlaylistAddable(track)
 
   const renderImage = useCallback(
     (props: ImageProps) => (
@@ -163,12 +158,12 @@ export const TrackTileComponent = ({
 
     const overflowActions = [
       isOwner && !ddexApp ? OverflowAction.ADD_TO_ALBUM : null,
-      isPlaylistAddable ? OverflowAction.ADD_TO_PLAYLIST : null,
-      isNewPodcastControlsEnabled && isLongFormContent
+      OverflowAction.ADD_TO_PLAYLIST,
+      isLongFormContent
         ? OverflowAction.VIEW_EPISODE_PAGE
         : OverflowAction.VIEW_TRACK_PAGE,
       albumInfo ? OverflowAction.VIEW_ALBUM_PAGE : null,
-      isNewPodcastControlsEnabled && isLongFormContent
+      isLongFormContent
         ? playbackPositionInfo?.status === 'COMPLETED'
           ? OverflowAction.MARK_AS_UNPLAYED
           : OverflowAction.MARK_AS_PLAYED
@@ -193,8 +188,6 @@ export const TrackTileComponent = ({
     genre,
     isOwner,
     ddexApp,
-    isPlaylistAddable,
-    isNewPodcastControlsEnabled,
     albumInfo,
     playbackPositionInfo?.status,
     isOnArtistsTracksTab,
@@ -238,6 +231,14 @@ export const TrackTileComponent = ({
     }
   }, [track_id, dispatch, has_current_user_reposted])
 
+  const handlePressPublish = useCallback(() => {
+    openPublishModal({ contentId: track_id, contentType: 'track' })
+  }, [openPublishModal, track_id])
+
+  const onPressEdit = useCallback(() => {
+    navigation?.push('EditTrack', { id: track_id })
+  }, [navigation, track_id])
+
   const hideShare = !isOwner && field_visibility?.share === false
   const hidePlays = !isOwner && field_visibility?.play_count === false
 
@@ -260,6 +261,8 @@ export const TrackTileComponent = ({
       onPressSave={handlePressSave}
       onPressShare={handlePressShare}
       onPressTitle={handlePressTitle}
+      onPressPublish={handlePressPublish}
+      onPressEdit={onPressEdit}
       playCount={play_count}
       title={title}
       item={track}

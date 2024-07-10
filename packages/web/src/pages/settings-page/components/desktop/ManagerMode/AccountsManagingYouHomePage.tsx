@@ -1,23 +1,14 @@
-import { useCallback, useContext, useEffect } from 'react'
+import { useCallback } from 'react'
 
-import { useGetManagers, useRemoveManager } from '@audius/common/api'
+import { useGetManagers } from '@audius/common/api'
 import { Status } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
-import {
-  Box,
-  Button,
-  Divider,
-  Flex,
-  IconPlus,
-  Text,
-  TextLink
-} from '@audius/harmony'
+import { Box, Button, Divider, Flex, IconPlus, Text } from '@audius/harmony'
 
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
-import { ToastContext } from 'components/toast/ToastContext'
 import { useSelector } from 'utils/reducer'
 
-import { AccountListItem } from './AccountListItem'
+import { ManagerListItem } from './AccountListItem/ManagerListItem'
 import { sharedMessages } from './sharedMessages'
 import { AccountsManagingYouPageProps, AccountsManagingYouPages } from './types'
 
@@ -34,40 +25,32 @@ type AccountsManagingYouHomePageProps = AccountsManagingYouPageProps
 export const AccountsManagingYouHomePage = (
   props: AccountsManagingYouHomePageProps
 ) => {
-  const { setPage } = props
+  const { setPageState } = props
   const userId = useSelector(getUserId) as number
-  const { toast } = useContext(ToastContext)
 
-  const [removeManager, removeResult] = useRemoveManager()
-  const { data: managers, status: managersStatus } = useGetManagers({ userId })
+  // Always update manager list when mounting this page
+  const { data: managers, status: managersStatus } = useGetManagers(
+    { userId },
+    { force: true }
+  )
+  // Don't flash loading spinner if we are refreshing the cache
+  const isLoading =
+    managersStatus !== Status.SUCCESS && (!managers || managers.length === 0)
 
   const handleRemoveManager = useCallback(
     (params: { userId: number; managerUserId: number }) => {
-      setPage(AccountsManagingYouPages.CONFIRM_REMOVE_MANAGER, params)
+      setPageState({
+        page: AccountsManagingYouPages.CONFIRM_REMOVE_MANAGER,
+        params
+      })
     },
-    [setPage]
+    [setPageState]
   )
-
-  const handleCancelInvite = useCallback(
-    (params: { userId: number; managerUserId: number }) => {
-      removeManager(params)
-    },
-    [removeManager]
-  )
-
-  useEffect(() => {
-    if (removeResult.status === Status.ERROR) {
-      toast(sharedMessages.somethingWentWrong)
-    }
-  }, [toast, removeResult.status])
 
   return (
     <Flex direction='column' gap='xl' ph='xl'>
       <Text variant='body' size='l'>
-        {sharedMessages.accountManagersExplanation}{' '}
-        <TextLink href='#' variant='visible'>
-          {sharedMessages.learnMore}
-        </TextLink>
+        {sharedMessages.accountManagersExplanation}
       </Text>
       <Divider />
       <Flex justifyContent='space-between' alignItems='center'>
@@ -77,13 +60,17 @@ export const AccountsManagingYouHomePage = (
         <Button
           variant='secondary'
           iconLeft={IconPlus}
-          onClick={() => setPage(AccountsManagingYouPages.FIND_ACCOUNT_MANAGER)}
+          onClick={() =>
+            setPageState({
+              page: AccountsManagingYouPages.FIND_ACCOUNT_MANAGER
+            })
+          }
         >
           {messages.inviteButton}
         </Button>
       </Flex>
       <Flex direction='column' gap='s'>
-        {managersStatus !== Status.SUCCESS ? (
+        {isLoading ? (
           <Box pv='2xl'>
             <LoadingSpinner
               css={({ spacing }) => ({
@@ -99,14 +86,12 @@ export const AccountsManagingYouHomePage = (
             {messages.noManagers}
           </Text>
         ) : null}
-        {managers?.map(({ grant, manager }) => {
+        {managers?.map((data) => {
           return (
-            <AccountListItem
+            <ManagerListItem
               onRemoveManager={handleRemoveManager}
-              onCancelInvite={handleCancelInvite}
-              key={manager.user_id}
-              user={manager}
-              isPending={!grant.is_approved}
+              key={data.manager.user_id}
+              managerData={data}
             />
           )
         })}

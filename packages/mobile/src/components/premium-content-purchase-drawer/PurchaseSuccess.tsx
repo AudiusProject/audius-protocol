@@ -29,7 +29,7 @@ import { TwitterButton } from '../twitter-button'
 const messages = {
   success: 'Your Purchase Was Successful!',
   shareTwitterText: (contentType: string, trackTitle: string, handle: string) =>
-    `I bought the ${contentType} ${trackTitle} by ${handle} on @Audius! #AudiusPremium`,
+    `I bought the ${contentType} ${trackTitle} by ${handle} on @Audius! $AUDIO #AudiusPremium`,
   view: (contentType: string) => `View ${capitalize(contentType)}`,
   repost: 'Repost',
   reposted: 'Reposted'
@@ -48,6 +48,7 @@ export const PurchaseSuccess = ({
   const title = isAlbum ? metadata.playlist_name : metadata.title
   const contentId = isAlbum ? metadata.playlist_id : metadata.track_id
   const contentType = isAlbum ? 'album' : 'track'
+  const isHidden = isAlbum ? metadata.is_private : metadata.is_unlisted
 
   const link = isAlbum
     ? getCollectionRoute(metadata)
@@ -101,28 +102,29 @@ export const PurchaseSuccess = ({
           {messages.success}
         </Text>
       </Flex>
-      <Flex gap='l'>
-        <EntityActionButton
-          onPress={onRepost}
-          iconLeft={IconRepost}
-          isActive={isReposted}
-        >
-          {isReposted ? messages.reposted : messages.repost}
-        </EntityActionButton>
-        <TwitterButton
-          fullWidth
-          type='dynamic'
-          url={link}
-          shareData={handleTwitterShare}
-          handle={handle}
-          size='large'
-        />
-      </Flex>
+      {isHidden ? null : (
+        <Flex gap='l'>
+          <EntityActionButton
+            onPress={onRepost}
+            iconLeft={IconRepost}
+            isActive={isReposted}
+          >
+            {isReposted ? messages.reposted : messages.repost}
+          </EntityActionButton>
+          <TwitterButton
+            fullWidth
+            type='dynamic'
+            url={link}
+            shareData={handleTwitterShare}
+            handle={handle}
+          />
+        </Flex>
+      )}
       <PlainButton
-        size='large'
         variant='subdued'
         onPress={onPressViewTrack}
         iconRight={IconCaretRight}
+        size='large'
       >
         {messages.view(contentType)}
       </PlainButton>

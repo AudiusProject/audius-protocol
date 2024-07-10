@@ -1,12 +1,10 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import { Name } from '@audius/common/models'
+import { Name, SocialPlatform } from '@audius/common/models'
 import { useDispatch } from 'react-redux'
 import { AnyAction } from 'redux'
 
 import { make } from 'common/store/analytics/actions'
-
-import { SocialPlatform } from '../components/SocialMediaLoginOptions'
 
 export const useSocialMediaLoader = ({
   linkedSocialOnThisPagePreviously,

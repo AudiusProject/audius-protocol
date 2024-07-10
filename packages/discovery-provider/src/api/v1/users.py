@@ -38,11 +38,12 @@ from src.api.v1.helpers import (
     make_response,
     pagination_parser,
     pagination_with_current_user_parser,
-    search_parser,
+    parse_bool_param,
     success_response,
     track_history_parser,
     user_collections_library_parser,
     user_favorited_tracks_parser,
+    user_search_parser,
     user_track_listen_count_route_parser,
     user_tracks_library_parser,
     user_tracks_route_parser,
@@ -106,6 +107,7 @@ from src.queries.get_managed_users import (
     GetUserManagersArgs,
     get_managed_users_with_grants,
     get_user_managers_with_grants,
+    is_active_manager,
 )
 from src.queries.get_related_artists import get_related_artists
 from src.queries.get_repost_feed_for_user import get_repost_feed_for_user
@@ -1143,14 +1145,15 @@ class UserSearchResult(Resource):
         description="""Search for users that match the given query""",
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
-    @ns.expect(search_parser)
+    @ns.expect(user_search_parser)
     @ns.marshal_with(user_search_result)
     @cache(ttl_sec=600)
     def get(self):
-        args = search_parser.parse_args()
-        query = args["query"]
-        if not query:
-            abort_bad_request_param("query", ns)
+        args = user_search_parser.parse_args()
+        query = args.get("query")
+        genres = args.get("genre")
+        is_verified = parse_bool_param(args.get("is_verified"))
+        sort_method = args.get("sort_method")
         search_args = {
             "query": query,
             "kind": SearchKind.users.name,
@@ -1159,6 +1162,9 @@ class UserSearchResult(Resource):
             "with_users": True,
             "limit": 10,
             "offset": 0,
+            "only_verified": is_verified,
+            "genres": genres,
+            "sort_method": sort_method,
         }
         response = search(search_args)
         return success_response(response["users"])
@@ -1998,14 +2004,19 @@ class GetTokenVerification(Resource):
             ns.abort(400, "JWT payload could not be decoded.")
 
         wallet_user_id = get_user_with_wallet(wallet)
-        if not wallet_user_id or (
-            wallet_user_id != payload["userId"]
-            and wallet_user_id != decode_string_id(payload["userId"])
-        ):
-            ns.abort(
-                404,
-                "The JWT signature is invalid - the wallet does not match the user.",
-            )
+        jwt_user_id = decode_string_id(payload["userId"])
+
+        if not wallet_user_id:
+            ns.abort(404, "The JWT signature is invalid - invalid wallet")
+
+        # If the user id found in the token does not match the signer of the token,
+        # check if the signing user is a manager of that user. Otherwise, reject.
+        if wallet_user_id != jwt_user_id:
+            if not is_active_manager(jwt_user_id, wallet_user_id):
+                ns.abort(
+                    403,
+                    "The JWT signature is invalid - the wallet does not match the user.",
+                )
 
         # 5. Send back the decoded payload
         return success_response(payload)

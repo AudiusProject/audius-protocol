@@ -7,8 +7,10 @@ import {
   Collection,
   ID,
   Remix,
-  TrackMetadata
+  TrackMetadata,
+  StemUploadWithFile
 } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import {
   Entry,
   getContext,
@@ -20,12 +22,16 @@ import {
   cacheActions,
   confirmerActions,
   confirmTransaction,
-  TrackMetadataForUpload
+  TrackMetadataForUpload,
+  stemsUploadActions,
+  stemsUploadSelectors
 } from '@audius/common/store'
 import {
+  formatMusicalKey,
   formatUrlName,
   makeKindId,
   squashNewLines,
+  uuid,
   waitForAccount,
   waitForValue
 } from '@audius/common/utils'
@@ -40,7 +46,10 @@ import { dominantColor } from 'utils/imageProcessingUtil'
 import { waitForWrite } from 'utils/sagaHelpers'
 
 import { recordEditTrackAnalytics } from './sagaHelpers'
+import { fetchTrackStreamUrls } from './utils/fetchTrackStreamUrls'
 
+const { startStemUploads } = stemsUploadActions
+const { getCurrentUploads } = stemsUploadSelectors
 const { getUser } = cacheUsersSelectors
 const { getTrack } = cacheTracksSelectors
 const setDominantColors = averageColorActions.setDominantColors
@@ -65,10 +74,52 @@ function* watchAdd() {
   yield* takeEvery(
     cacheActions.ADD_SUCCEEDED,
     function* (action: ReturnType<typeof cacheActions.addSucceeded>) {
+      // This code only applies to tracks
+      if (action.kind !== Kind.TRACKS) return
+
+      // Fetch repost data
+      const isNativeMobile = yield* getContext('isNativeMobile')
+      if (!isNativeMobile) {
+        yield* fork(fetchRepostInfo, action.entries as Entry<Collection>[])
+      }
+
+      // Prefetch stream urls
+      const getFeatureEnabled = yield* getContext('getFeatureEnabled')
+      const isPrefetchEnabled = yield* call(
+        getFeatureEnabled,
+        FeatureFlags.PREFETCH_STREAM_URLS
+      )
+      if (isPrefetchEnabled) {
+        yield* fork(fetchTrackStreamUrls, {
+          trackIds: action.entries.map((e) => e.id)
+        })
+      }
+    }
+  )
+}
+
+function* watchCacheUpdate() {
+  yield* takeEvery(
+    cacheActions.UPDATE,
+    function* (action: ReturnType<typeof cacheActions.update>) {
+      const getFeatureEnabled = yield* getContext('getFeatureEnabled')
+      const isStreamPrefetchEnabled = yield* call(
+        getFeatureEnabled,
+        FeatureFlags.PREFETCH_STREAM_URLS
+      )
+      if (!isStreamPrefetchEnabled) return
+
       if (action.kind === Kind.TRACKS) {
-        const isNativeMobile = yield* getContext('isNativeMobile')
-        if (!isNativeMobile) {
-          yield* fork(fetchRepostInfo, action.entries as Entry<Collection>[])
+        // Check for tracks with any changed access. If so we need to update the prefetched stream url
+        const tracksWithChangedAccess = action.entries
+          .filter((track) => track?.metadata?.access?.stream !== undefined)
+          .map((track) => track.id)
+        // Re-trigger prefetching stream urls for any changed tracks
+        if (tracksWithChangedAccess.length > 0) {
+          yield* fork(fetchTrackStreamUrls, {
+            trackIds: tracksWithChangedAccess,
+            isUpdate: true
+          })
         }
       }
     }
@@ -125,6 +176,11 @@ function* editTrackAsync(action: ReturnType<typeof trackActions.editTrack>) {
 
   const trackForEdit = yield* addPremiumMetadata(action.formFields)
 
+  // Format musical key
+  trackForEdit.musical_key = formatMusicalKey(
+    trackForEdit.musical_key || undefined
+  )
+
   yield* call(
     confirmEditTrack,
     action.trackId,
@@ -140,6 +196,57 @@ function* editTrackAsync(action: ReturnType<typeof trackActions.editTrack>) {
     track._cover_art_sizes = {
       ...track._cover_art_sizes,
       [DefaultSizes.OVERRIDE]: track.artwork.url
+    }
+  }
+
+  const getFeatureEnabled = yield* getContext('getFeatureEnabled')
+  const isEditTrackRedesignEnabled = yield* call(
+    getFeatureEnabled,
+    FeatureFlags.EDIT_TRACK_REDESIGN
+  )
+  if (isEditTrackRedesignEnabled && track.stems) {
+    const inProgressStemUploads = yield* select(
+      getCurrentUploads,
+      track.track_id
+    )
+    const existingStems = currentTrack._stems || []
+
+    // upload net new stems
+    const addedStems = track.stems.filter((stem) => {
+      return !existingStems.find((existingStem) => {
+        return existingStem.track_id === stem.metadata.track_id
+      })
+    })
+
+    const addedStemsWithFiles = addedStems.filter(
+      (stem) => 'file' in stem
+    ) as StemUploadWithFile[]
+
+    if (addedStemsWithFiles.length > 0) {
+      yield* put(
+        startStemUploads({
+          parentId: track.track_id,
+          uploads: addedStemsWithFiles,
+          batchUID: uuid()
+        })
+      )
+    }
+
+    // delete removed stems
+    const removedStems = existingStems
+      .filter((existingStem) => {
+        return !track.stems?.find(
+          (stem) => stem.metadata.track_id === existingStem.track_id
+        )
+      })
+      .filter((existingStem) => {
+        return !inProgressStemUploads.find(
+          (upload) => upload.metadata.track_id === existingStem.track_id
+        )
+      })
+
+    for (const stem of removedStems) {
+      yield* put(trackActions.deleteTrack(stem.track_id))
     }
   }
 
@@ -170,7 +277,7 @@ function* confirmEditTrack(
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const apiClient = yield* getContext('apiClient')
   const transcodePreview =
-    formFields.preview_start_seconds !== null &&
+    !!formFields.preview_start_seconds &&
     currentTrack.preview_start_seconds !== formFields.preview_start_seconds
   yield* put(
     confirmerActions.requestConfirmation(
@@ -245,18 +352,19 @@ function* watchEditTrack() {
 function* deleteTrackAsync(
   action: ReturnType<typeof trackActions.deleteTrack>
 ) {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   yield* waitForWrite()
-  const userId = yield* select(getUserId)
-  if (!userId) {
+  const user = yield* select(getAccountUser)
+  if (!user) {
     yield* put(signOnActions.openSignOn(false))
     return
   }
-  const handle = yield* select(getUserHandle)
+  const userId = user.user_id
+
+  const track = yield* select(getTrack, { id: action.trackId })
+  if (!track) return
 
   // Before deleting, check if the track is set as the artist pick & delete if so
-  const socials = yield* call(audiusBackendInstance.getSocialHandles, handle!)
-  if (socials.pinnedTrackId === action.trackId) {
+  if (user.artist_pick_track_id === action.trackId) {
     yield* put(
       cacheActions.update(Kind.USERS, [
         {
@@ -271,8 +379,6 @@ function* deleteTrackAsync(
     yield* fork(updateProfileAsync, { metadata: user })
   }
 
-  const track = yield* select(getTrack, { id: action.trackId })
-  if (!track) return
   yield* put(
     cacheActions.update(Kind.TRACKS, [
       { id: track.track_id, metadata: { _marked_deleted: true } }
@@ -433,7 +539,13 @@ function* watchFetchCoverArt() {
 }
 
 const sagas = () => {
-  return [watchAdd, watchEditTrack, watchDeleteTrack, watchFetchCoverArt]
+  return [
+    watchAdd,
+    watchEditTrack,
+    watchDeleteTrack,
+    watchFetchCoverArt,
+    watchCacheUpdate
+  ]
 }
 
 export default sagas

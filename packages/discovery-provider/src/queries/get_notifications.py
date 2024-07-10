@@ -315,6 +315,12 @@ class ChallengeRewardNotification(TypedDict):
     challenge_id: str
 
 
+class ClaimableRewardNotification(TypedDict):
+    amount: int
+    specifier: str
+    challenge_id: str
+
+
 class ReactionNotification(TypedDict):
     reacted_to: str
     reaction_type: str

@@ -41,7 +41,7 @@ const topArtistsApi = createApi({
           endpointName: 'getTopArtistsInGenre'
         })
       },
-      options: { idArgKey: 'genre', kind: Kind.USERS, schemaKey: 'users' }
+      options: { kind: Kind.USERS, schemaKey: 'users' }
     },
     getFeaturedArtists: {
       async fetch(_, context) {
@@ -57,7 +57,7 @@ const topArtistsApi = createApi({
           context
         )
       },
-      options: {}
+      options: { kind: Kind.USERS, schemaKey: 'users' }
     }
   }
 })

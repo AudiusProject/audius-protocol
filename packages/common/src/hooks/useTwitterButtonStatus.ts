@@ -14,12 +14,10 @@ export const useTwitterButtonStatus = (
     useState<ShareStatus>('idle')
 
   const userName = user?.name
-  const twitterHandle = user ? user.twitter_handle : null
+  const twitterHandle = user?.twitter_handle
 
   const additionalUserName = additionalUser?.name
-  const additionalTwitterHandle = additionalUser
-    ? additionalUser.twitter_handle
-    : null
+  const additionalTwitterHandle = additionalUser?.twitter_handle
 
   // Initially twitter handle is undefined; after fetch it's
   // set to either null or a value in `fetchUserSocials` sagas

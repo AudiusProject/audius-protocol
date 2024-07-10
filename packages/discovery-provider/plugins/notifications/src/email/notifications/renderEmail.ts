@@ -130,6 +130,9 @@ export const fetchResources = async (
     .select(
       'users.user_id',
       'users.handle',
+      'users.twitter_handle as twitterHandle',
+      'users.instagram_handle as instagramHandle',
+      'users.tiktok_handle as tikTokHandle',
       'users.name',
       'users.profile_picture_sizes',
       'users.profile_picture',
@@ -139,20 +142,8 @@ export const fetchResources = async (
     .whereIn('user_id', Array.from(ids.users))
     .andWhere('is_current', true)
 
-  const userHandles = userRows.map((row) => row.handle)
-  const identityUserRows = await identityDb
-    .select('handle', 'twitterHandle', 'instagramHandle', 'tikTokHandle')
-    .from('SocialHandles')
-    .whereIn('handle', userHandles)
-  const userSocialHandles = identityUserRows.reduce((acc, user) => {
-    acc[user.handle] = user
-    return acc
-  }, {} as { [handle: string]: { twitterHandle: string; instagramHandle: string; tikTokHandle: string } })
-
   const users = userRows.reduce((acc, user) => {
-    const userSocial = userSocialHandles[user.handle] || {}
     acc[user.user_id] = {
-      ...userSocial,
       ...user,
       imageUrl: getUserProfileUrl(user)
     }

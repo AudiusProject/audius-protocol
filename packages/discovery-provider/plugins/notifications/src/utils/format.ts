@@ -1,4 +1,6 @@
 import BN from 'bn.js'
+import { UserBasicInfo } from '../processNotifications/mappers/base'
+import { getContentNode, getHostname } from './env'
 
 export const formatNumberCommas = (num) => {
   const parts = num.toString().split('.')
@@ -75,4 +77,29 @@ export const getNumberSuffix = (num) => {
   else if (num === 2) return 'nd'
   else if (num === 3) return 'rd'
   return 'th'
+}
+
+export const formatImageUrl = (profilePictureSizes: string, size: number) => {
+  return `${getContentNode()}/content/${profilePictureSizes}/${size}x${size}.jpg`
+}
+
+const PROFILE_PICTURE_PLACEHOLDER_URL =
+  'https://download.audius.co/static-resources/email/imageProfilePicEmpty.png'
+
+export const formatProfilePictureUrl = (user: UserBasicInfo) => {
+  if (user.profile_picture_sizes) {
+    return formatImageUrl(user.profile_picture_sizes, 480)
+  } else if (user.profile_picture) {
+    return `${getContentNode()}/content/${user.profile_picture}`
+  } else {
+    return PROFILE_PICTURE_PLACEHOLDER_URL
+  }
+}
+
+export const formatProfileUrl = (handle: string) => {
+  return `${getHostname()}/${handle}`
+}
+
+export const formatContentUrl = (handle: string, slug: string) => {
+  return `${getHostname()}/${handle}/${slug}`
 }

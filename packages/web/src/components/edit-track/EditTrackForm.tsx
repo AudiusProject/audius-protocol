@@ -1,12 +1,15 @@
 import { useCallback, useContext, useState } from 'react'
 
+import { useFeatureFlag } from '@audius/common/hooks'
 import { TrackMetadataFormSchema } from '@audius/common/schemas'
 import { FeatureFlags } from '@audius/common/services'
 import {
   IconCaretLeft,
   IconCaretRight,
   Text,
-  PlainButton
+  PlainButton,
+  Button,
+  IconTrash
 } from '@audius/harmony'
 import cn from 'classnames'
 import { Form, Formik, FormikProps, useField } from 'formik'
@@ -15,19 +18,19 @@ import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { MenuFormCallbackStatus } from 'components/data-entry/ContextualMenu'
-import { AccessAndSaleField } from 'components/edit/fields/AccessAndSaleField'
-import { AttributionField } from 'components/edit/fields/AttributionField'
+import { AnchoredSubmitRow } from 'components/edit/AnchoredSubmitRow'
+import { AnchoredSubmitRowEdit } from 'components/edit/AnchoredSubmitRowEdit'
+import { AdvancedField } from 'components/edit/fields/AdvancedField'
 import { MultiTrackSidebar } from 'components/edit/fields/MultiTrackSidebar'
 import { ReleaseDateField } from 'components/edit/fields/ReleaseDateField'
-import { ReleaseDateFieldLegacy } from 'components/edit/fields/ReleaseDateFieldLegacy'
 import { RemixSettingsField } from 'components/edit/fields/RemixSettingsField'
 import { StemsAndDownloadsField } from 'components/edit/fields/StemsAndDownloadsField'
 import { TrackMetadataFields } from 'components/edit/fields/TrackMetadataFields'
+import { PriceAndAudienceField } from 'components/edit/fields/price-and-audience/PriceAndAudienceField'
+import { VisibilityField } from 'components/edit/fields/visibility/VisibilityField'
 import layoutStyles from 'components/layout/layout.module.css'
 import { NavigationPrompt } from 'components/navigation-prompt/NavigationPrompt'
-import { useFlag } from 'hooks/useRemoteConfig'
-import { UploadFormScrollContext } from 'pages/upload-page/UploadPage'
-import { AnchoredSubmitRow } from 'pages/upload-page/components/AnchoredSubmitRow'
+import { EditFormScrollContext } from 'pages/edit-page/EditTrackPage'
 
 import styles from './EditTrackForm.module.css'
 import { PreviewButton } from './components/PreviewButton'
@@ -39,6 +42,7 @@ const messages = {
   prev: 'Prev',
   next: 'Next Track',
   preview: 'Preview',
+  deleteTrack: 'DELETE TRACK',
   navigationPrompt: {
     title: 'Discard upload?',
     body: "Are you sure you want to leave this page?\nAny changes you've made will be lost.",
@@ -50,6 +54,8 @@ const messages = {
 type EditTrackFormProps = {
   initialValues: TrackEditFormValues
   onSubmit: (values: TrackEditFormValues) => void
+  onDeleteTrack?: () => void
+  hideContainer?: boolean
 }
 
 const EditFormValidationSchema = z.object({
@@ -57,7 +63,7 @@ const EditFormValidationSchema = z.object({
 })
 
 export const EditTrackForm = (props: EditTrackFormProps) => {
-  const { initialValues, onSubmit } = props
+  const { initialValues, onSubmit, onDeleteTrack, hideContainer } = props
 
   return (
     <Formik<TrackEditFormValues>
@@ -65,58 +71,86 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
       onSubmit={onSubmit}
       validationSchema={toFormikValidationSchema(EditFormValidationSchema)}
     >
-      {(props) => <TrackEditForm {...props} />}
+      {(props) => (
+        <TrackEditForm
+          {...props}
+          hideContainer={hideContainer}
+          onDeleteTrack={onDeleteTrack}
+        />
+      )}
     </Formik>
   )
 }
 
-const TrackEditForm = (props: FormikProps<TrackEditFormValues>) => {
-  const { values, dirty } = props
+const TrackEditForm = (
+  props: FormikProps<TrackEditFormValues> & {
+    hideContainer?: boolean
+    onDeleteTrack?: () => void
+  }
+) => {
+  const {
+    values,
+    dirty,
+    isSubmitting,
+    onDeleteTrack,
+    hideContainer = false
+  } = props
   const isMultiTrack = values.trackMetadatas.length > 1
+  const isUpload = values.trackMetadatas[0].track_id === undefined
   const trackIdx = values.trackMetadatasIndex
   const [, , { setValue: setIndex }] = useField('trackMetadatasIndex')
   useUnmount(() => {
     setIndex(0)
   })
-  const { isEnabled: isScheduledReleasesEnabled } = useFlag(
-    FeatureFlags.SCHEDULED_RELEASES
-  )
   const [forceOpenAccessAndSale, setForceOpenAccessAndSale] = useState(false)
+
+  const { isEnabled: isHiddenPaidScheduledEnabled } = useFeatureFlag(
+    FeatureFlags.HIDDEN_PAID_SCHEDULED
+  )
 
   return (
     <Form>
-      <NavigationPrompt when={dirty} messages={messages.navigationPrompt} />
+      <NavigationPrompt
+        when={dirty && !isSubmitting}
+        messages={messages.navigationPrompt}
+      />
       <div className={cn(layoutStyles.row, layoutStyles.gap2)}>
-        <div className={cn(styles.formContainer, layoutStyles.col)}>
+        <div
+          className={cn(
+            { [styles.formContainer]: !hideContainer },
+            layoutStyles.col
+          )}
+        >
           {isMultiTrack ? <MultiTrackHeader /> : null}
           <div
             className={cn(
-              styles.trackEditForm,
+              { [styles.trackEditForm]: !hideContainer },
               layoutStyles.col,
               layoutStyles.gap4
             )}
           >
             <TrackMetadataFields />
             <div className={cn(layoutStyles.col, layoutStyles.gap4)}>
-              {isScheduledReleasesEnabled ? (
-                <ReleaseDateField />
+              {isHiddenPaidScheduledEnabled ? (
+                <VisibilityField entityType='track' isUpload={isUpload} />
               ) : (
-                <ReleaseDateFieldLegacy />
+                <ReleaseDateField />
               )}
-              <AccessAndSaleField
-                isUpload
+              <PriceAndAudienceField
+                isUpload={isUpload}
                 forceOpen={forceOpenAccessAndSale}
                 setForceOpen={setForceOpenAccessAndSale}
               />
-              <AttributionField />
+              <AdvancedField />
               <StemsAndDownloadsField
+                isUpload={isUpload}
                 closeMenuCallback={(data) => {
                   if (data === MenuFormCallbackStatus.OPEN_ACCESS_AND_SALE) {
                     setForceOpenAccessAndSale(true)
                   }
                 }}
               />
-              <RemixSettingsField />
+              <RemixSettingsField isUpload={isUpload} />
             </div>
             <PreviewButton
               // Since edit form is a single component, render a different preview for each track
@@ -124,12 +158,29 @@ const TrackEditForm = (props: FormikProps<TrackEditFormValues>) => {
               className={styles.previewButton}
               index={trackIdx}
             />
+            {!isUpload ? (
+              <Button
+                variant='destructive'
+                size='small'
+                onClick={onDeleteTrack}
+                iconLeft={IconTrash}
+                css={{ alignSelf: 'flex-start' }}
+              >
+                {messages.deleteTrack}
+              </Button>
+            ) : null}
           </div>
           {isMultiTrack ? <MultiTrackFooter /> : null}
         </div>
         {isMultiTrack ? <MultiTrackSidebar /> : null}
       </div>
-      {!isMultiTrack ? <AnchoredSubmitRow /> : null}
+      {isUpload ? (
+        !isMultiTrack ? (
+          <AnchoredSubmitRow />
+        ) : null
+      ) : (
+        <AnchoredSubmitRowEdit />
+      )}
     </Form>
   )
 }
@@ -148,7 +199,7 @@ const MultiTrackHeader = () => {
 }
 
 const MultiTrackFooter = () => {
-  const scrollToTop = useContext(UploadFormScrollContext)
+  const scrollToTop = useContext(EditFormScrollContext)
   const [{ value: index }, , { setValue: setIndex }] = useField(
     'trackMetadatasIndex'
   )

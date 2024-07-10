@@ -8,6 +8,7 @@ import { apiClient } from 'services/audius-api-client'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { audiusSdk } from 'services/audius-sdk'
 import { env } from 'services/env'
+import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import { reportToSentry } from 'store/errors/reportToSentry'
 
@@ -34,7 +35,8 @@ export const AudiusQueryProvider = (props: AudiusQueryProviderProps) => {
         reportToSentry,
         env,
         fetch,
-        remoteConfigInstance
+        remoteConfigInstance,
+        getFeatureEnabled
       }}
     >
       {children}

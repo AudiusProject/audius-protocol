@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import {
   IconShieldUser,
@@ -14,10 +14,7 @@ import styles from './AccountsManagingYouSettingsModal.module.css'
 import { ConfirmAccountManagerPage } from './ConfirmAccountManagerPage'
 import { FindAccountManagerPage } from './FindAccountManagerPage'
 import { RemoveManagerConfirmationPage } from './RemoveManagerConfirmationPage'
-import {
-  AccountsManagingYouPages,
-  AccountsManagingYouPagesParams
-} from './types'
+import { AccountsManagingYouPageState, AccountsManagingYouPages } from './types'
 
 const messages = {
   accountsManagingYou: 'Accounts Managing You',
@@ -52,29 +49,14 @@ export const AccountsManagingYouSettingsModal = (
   props: AccountsManagingYouSettingsModalProps
 ) => {
   const { isOpen } = props
-  const [currentPage, setCurrentPage] = useState(AccountsManagingYouPages.HOME)
-
-  const [currentPageParams, setCurrentPageParams] = useState<
-    AccountsManagingYouPagesParams | undefined
-  >()
-
-  const handleSetPage = useCallback(
-    (
-      page: AccountsManagingYouPages,
-      params?: AccountsManagingYouPagesParams
-    ) => {
-      setCurrentPage(page)
-      if (params) {
-        setCurrentPageParams(params)
-      }
-    },
-    []
-  )
+  const [{ page, params, transitionDirection }, setPageState] =
+    useState<AccountsManagingYouPageState>({
+      page: AccountsManagingYouPages.HOME
+    })
 
   useEffect(() => {
     if (!isOpen) {
-      setCurrentPage(AccountsManagingYouPages.HOME)
-      setCurrentPageParams(undefined)
+      setPageState({ page: AccountsManagingYouPages.HOME })
     }
   }, [isOpen])
 
@@ -83,9 +65,9 @@ export const AccountsManagingYouSettingsModal = (
       <Modal {...props} size='small'>
         <ModalHeader>
           <ModalTitle
-            title={PAGE_TO_TITLE[currentPage]}
+            title={PAGE_TO_TITLE[page]}
             icon={
-              currentPage ===
+              page ===
               AccountsManagingYouPages.CONFIRM_REMOVE_MANAGER ? null : (
                 <IconShieldUser />
               )
@@ -94,20 +76,18 @@ export const AccountsManagingYouSettingsModal = (
         </ModalHeader>
         <ModalContentPages
           className={styles.noPaddingH}
-          currentPage={getCurrentPage(currentPage)}
+          currentPage={getCurrentPage(page)}
+          transitionDirection={transitionDirection}
         >
-          <AccountsManagingYouHomePage setPage={handleSetPage} />
-          <FindAccountManagerPage
-            setPage={handleSetPage}
-            params={currentPageParams}
-          />
+          <AccountsManagingYouHomePage setPageState={setPageState} />
+          <FindAccountManagerPage setPageState={setPageState} params={params} />
           <ConfirmAccountManagerPage
-            setPage={handleSetPage}
-            params={currentPageParams}
+            setPageState={setPageState}
+            params={params}
           />
           <RemoveManagerConfirmationPage
-            setPage={handleSetPage}
-            params={currentPageParams}
+            setPageState={setPageState}
+            params={params}
           />
         </ModalContentPages>
       </Modal>

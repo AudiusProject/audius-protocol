@@ -66,6 +66,16 @@ def tx_receipts():
             "playlist_name": "album",
             "is_album": True,
         },
+        "QmCreateAlbum5": {  # scheduled release
+            "playlist_contents": {"track_ids": [{"time": 1660927554, "track": 1}]},
+            "description": "",
+            "playlist_image_sizes_multihash": "",
+            "playlist_name": "scheduled_album",
+            "is_album": True,
+            "is_private": False,  # Should be overwritten by is_scheduled_release
+            "is_scheduled_release": True,
+            "release_date": "2050-11-30T08:00:00.00Z",
+        },
     }
 
     create_playlist1_json = json.dumps(test_metadata["QmCreatePlaylist1"])
@@ -74,6 +84,7 @@ def tx_receipts():
     update_playlist1_json = json.dumps(test_metadata["QmUpdatePlaylist1"])
     update_playlist3_json = json.dumps(test_metadata["QmUpdatePlaylist3"])
     create_album4_json = json.dumps(test_metadata["QmCreateAlbum4"])
+    create_album5_json = json.dumps(test_metadata["QmCreateAlbum5"])
 
     return {
         "CreatePlaylist1Tx": [
@@ -146,7 +157,7 @@ def tx_receipts():
                 )
             },
         ],
-        "CreateAlbumTx": [
+        "CreateAlbum4Tx": [
             {
                 "args": AttributeDict(
                     {
@@ -184,6 +195,20 @@ def tx_receipts():
                         "_action": "Create",
                         "_metadata": f'{{"cid": "QmCreatePlaylist5", "data": {create_playlist4_json}}}',
                         "_signer": "0x3a388671bb4D6E1Ea08D79Ee191b40FB45A8F4C4",
+                    }
+                )
+            },
+        ],
+        "CreateAlbum6Tx": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": PLAYLIST_ID_OFFSET + 6,
+                        "_entityType": "Playlist",
+                        "_userId": 1,
+                        "_action": "Create",
+                        "_metadata": f'{{"cid": "QmCreateAlbum5", "data": {create_album5_json}}}',
+                        "_signer": "user1wallet",
                     }
                 )
             },
@@ -583,7 +608,7 @@ def test_index_valid_playlists(app, mocker, tx_receipts):
 
         # validate db records
         all_playlists: List[Playlist] = session.query(Playlist).all()
-        assert len(all_playlists) == 6
+        assert len(all_playlists) == 7
 
         playlists_1: List[Playlist] = (
             session.query(Playlist)
@@ -662,12 +687,20 @@ def test_index_valid_playlists(app, mocker, tx_receipts):
             .filter(Playlist.is_current == True, Playlist.is_album == True)
             .all()
         )
-        assert len(albums) == 1
+        assert len(albums) == 2
         album = albums[0]
         assert datetime.timestamp(album.last_added_to) == 1585336422
         assert album.playlist_name == "album"
         assert album.is_delete == False
         assert album.is_current == True
+
+        scheduled_album = albums[1]
+        assert datetime.timestamp(scheduled_album.last_added_to) == 1585336422
+        assert scheduled_album.playlist_name == "scheduled_album"
+        assert scheduled_album.is_delete == False
+        assert scheduled_album.is_current == True
+        assert scheduled_album.is_private == True
+        assert scheduled_album.is_scheduled_release == True
 
 
 def test_index_invalid_playlists(app, mocker):
@@ -682,17 +715,21 @@ def test_index_invalid_playlists(app, mocker):
 
     test_metadata = {
         "UpdatePlaylistInvalidPrivate": {"is_private": True},
-        "AlbumTracklistUpdate": {
-            "playlist_contents": {"track_ids": [{"track": 1, "time": 1}]}
-        },
         "UpdatePlaylistInvalidAlbum": {"is_album": True},
+        "UpdatePlaylistInvalidReleaseDate": {"release_date": "invalid"},
         "CreatePlaylistInvalidTracks": {
             "playlist_contents": {"track_ids": [{"track": 1}]}
         },
+        "UpdatePlaylistInvalidPlaylistId": {"playlist_id": 1234},
     }
     private_metadata = json.dumps(test_metadata["UpdatePlaylistInvalidPrivate"])
     album_metadata = json.dumps(test_metadata["UpdatePlaylistInvalidAlbum"])
-    album_tracklist_update_json = json.dumps(test_metadata["AlbumTracklistUpdate"])
+    invalid_release_date_metadata = json.dumps(
+        test_metadata["UpdatePlaylistInvalidReleaseDate"]
+    )
+    invalid_playlist_id_metadata = json.dumps(
+        test_metadata["UpdatePlaylistInvalidPlaylistId"]
+    )
     playlist_metadata = json.dumps(test_metadata["CreatePlaylistInvalidTracks"])
 
     tx_receipts = {
@@ -824,20 +861,6 @@ def test_index_invalid_playlists(app, mocker):
                 )
             },
         ],
-        "UpdateAlbumTracklistUpdate": [
-            {
-                "args": AttributeDict(
-                    {
-                        "_entityId": PLAYLIST_ID_OFFSET + 1,
-                        "_entityType": "Playlist",
-                        "_userId": 1,
-                        "_action": "Update",
-                        "_metadata": f'{{"cid": "AlbumTracklistUpdate", "data": {album_tracklist_update_json}}}',
-                        "_signer": "user1wallet",
-                    }
-                )
-            }
-        ],
         "UpdatePlaylistInvalidAlbum": [
             {
                 "args": AttributeDict(
@@ -891,6 +914,34 @@ def test_index_invalid_playlists(app, mocker):
                         "_action": "Update",
                         "_metadata": "",
                         "_signer": "User2Wallet",
+                    }
+                )
+            },
+        ],
+        "UpdatePlaylistInvalidReleaseDate": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": PLAYLIST_ID_OFFSET,
+                        "_entityType": "Playlist",
+                        "_userId": 1,
+                        "_action": "Update",
+                        "_metadata": f'{{"cid": "UpdatePlaylistInvalidReleaseDate", "data": {invalid_release_date_metadata}}}',
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
+        "UpdatePlaylistInvalidPlaylistId": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": PLAYLIST_ID_OFFSET,
+                        "_entityType": "Playlist",
+                        "_userId": 1,
+                        "_action": "Update",
+                        "_metadata": f'{{"cid": "UpdatePlaylistInvalidPlaylistId", "data": {invalid_playlist_id_metadata}}}',
+                        "_signer": "user1wallet",
                     }
                 )
             },
@@ -949,7 +1000,7 @@ def test_index_invalid_playlists(app, mocker):
             .first()
         )
         assert current_playlist.is_current == True
-        assert current_playlist.is_private == False
+        assert current_playlist.is_private == True
         assert current_playlist.is_album == False
 
         current_album: Playlist = (
@@ -962,7 +1013,6 @@ def test_index_invalid_playlists(app, mocker):
         )
         assert current_album.is_current == True
         assert current_album.is_album == True
-        assert current_album.playlist_contents == {"track_ids": []}
 
 
 def test_invalid_playlist_description(app, mocker):
@@ -1206,16 +1256,6 @@ def test_access_conditions(app, mocker, tx_receipts):
                 "usdc_purchase": {"price": 100, "splits": {"user-bank": 1000000}}
             },
         },
-        "UpdatePlaylistAccessConditions": {
-            "playlist_contents": {"track_ids": [{"time": 1660927554, "track": 1}]},
-            "description": "",
-            "playlist_image_sizes_multihash": "",
-            "playlist_name": "album",
-            "is_stream_gated": True,
-            "stream_conditions": {
-                "usdc_purchase": {"price": 100, "splits": {"user-bank": 1000000}}
-            },
-        },
         "UpdatePlaylistMakePublic": {
             "playlist_contents": {"track_ids": [{"time": 1660927554, "track": 1}]},
             "description": "",
@@ -1259,9 +1299,6 @@ def test_access_conditions(app, mocker, tx_receipts):
     )
     create_public_album_access_conditions_json = json.dumps(
         test_metadata["CreatePublicAlbum"]
-    )
-    update_album_make_gated_json = json.dumps(
-        test_metadata["UpdatePlaylistAccessConditions"]
     )
 
     tx_receipts = {
@@ -1349,20 +1386,6 @@ def test_access_conditions(app, mocker, tx_receipts):
                 )
             }
         ],
-        "InvalidUpdateAlbumMakeGatedTx": [
-            {
-                "args": AttributeDict(
-                    {
-                        "_entityId": PLAYLIST_ID_OFFSET + 11,
-                        "_entityType": "Playlist",
-                        "_userId": 1,
-                        "_action": "Update",
-                        "_metadata": f'{{"cid": "UpdateAlbumMakeGated", "data": {update_album_make_gated_json}}}',
-                        "_signer": "user1wallet",
-                    }
-                )
-            }
-        ],
     }
 
     entity_manager_txs = [
@@ -1439,12 +1462,3 @@ def test_access_conditions(app, mocker, tx_receipts):
             .first()
         )
         assert album == None
-
-        # Validate making a public album gated fails
-        album: Playlist = (
-            session.query(Playlist)
-            .filter(Playlist.playlist_id == PLAYLIST_ID_OFFSET + 11)
-            .first()
-        )
-        assert album.is_stream_gated == False
-        assert album.stream_conditions == None

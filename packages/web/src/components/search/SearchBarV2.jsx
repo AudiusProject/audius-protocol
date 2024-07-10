@@ -95,15 +95,19 @@ class SearchBar extends Component {
 
   onSearch = (value, action) => {
     const trimmedValue = value.slice(0, maxLength)
+    if (trimmedValue === this.state.value) return
     this.setState({ value: trimmedValue, valueFromParent: false })
 
     // Set the search state but don't actually call search
     this.props.onSearch(trimmedValue, false)
-    // Set a debounce timer for 100ms to actually send the search
+    // Set a debounce timer for 400ms to actually send the search
     this.setState({
       debounce: setTimeout(() => {
-        this.props.onSearch(trimmedValue, true)
-      }, 100)
+        this.props.onSearch(trimmedValue, !this.props.isViewingSearchPage)
+        if (this.props.isViewingSearchPage) {
+          this.props.onSubmit(this.state.value)
+        }
+      }, 400)
     })
   }
 
@@ -375,7 +379,8 @@ class SearchBar extends Component {
     // If we're searching for a tag,
     // don't open the autocomplete popup, and instead show our
     // own custom component below.
-    const showAutocomplete = !isTagSearch && this.state.open
+    const showAutocomplete =
+      !isTagSearch && this.state.open && !this.props.isViewingSearchPage
     const showTagPopup =
       isTagSearch && this.state.open && !this.state.shouldDismissTagPopup
     return (

@@ -5,7 +5,8 @@ import { tippingActions } from '@audius/common/store'
 import { View, Platform } from 'react-native'
 import { useDispatch } from 'react-redux'
 
-import { Text, Button } from 'app/components/core'
+import { Button } from '@audius/harmony-native'
+import { Text } from 'app/components/core'
 import UserBadges from 'app/components/user-badges'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles } from 'app/styles'
@@ -70,7 +71,14 @@ export const SendTipButton = (props: SendTipButtonProps) => {
   return (
     <View style={styles.sendTipButton}>
       <Button
-        title={
+        onPress={handlePress}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        size='small'
+        variant='secondary'
+        fullWidth
+      >
+        {
           <View style={styles.sendTipButtonTitleContainer}>
             <Text
               style={[styles.sendTipButtonTitle, isActive && styles.textWhite]}
@@ -89,14 +97,7 @@ export const SendTipButton = (props: SendTipButtonProps) => {
             <UserBadges user={receiver} badgeSize={12} hideName />
           </View>
         }
-        onPress={handlePress}
-        onPressIn={handlePressIn}
-        onPressOut={handlePressOut}
-        size='small'
-        variant='common'
-        corners='pill'
-        fullWidth
-      />
+      </Button>
     </View>
   )
 }

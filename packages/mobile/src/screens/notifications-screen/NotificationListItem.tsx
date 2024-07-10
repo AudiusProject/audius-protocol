@@ -7,6 +7,7 @@ import {
   FollowNotification,
   RepostNotification,
   ChallengeRewardNotification,
+  ClaimableRewardNotification,
   RemixCreateNotification,
   UserSubscriptionNotification,
   RemixCosignNotification,
@@ -27,7 +28,9 @@ import {
   FavoriteOfRepostNotification,
   TastemakerNotification,
   USDCPurchaseSellerNotification,
-  USDCPurchaseBuyerNotification
+  USDCPurchaseBuyerNotification,
+  ApproveManagerRequestNotification,
+  RequestManagerNotification
 } from './Notifications'
 import { TrackAddedToPurchasedAlbumNotification } from './Notifications/TrackAddedToPurchasedAlbumNotification'
 
@@ -44,6 +47,8 @@ export const NotificationListItem = (props: NotificationListItemProps) => {
         return <AnnouncementNotification notification={notification} />
       case NotificationType.ChallengeReward:
         return <ChallengeRewardNotification notification={notification} />
+      case NotificationType.ClaimableReward:
+        return <ClaimableRewardNotification notification={notification} />
       case NotificationType.Favorite:
         return <FavoriteNotification notification={notification} />
       case NotificationType.Follow:
@@ -104,6 +109,10 @@ export const NotificationListItem = (props: NotificationListItemProps) => {
         return <USDCPurchaseSellerNotification notification={notification} />
       case NotificationType.USDCPurchaseBuyer:
         return <USDCPurchaseBuyerNotification notification={notification} />
+      case NotificationType.RequestManager:
+        return <RequestManagerNotification notification={notification} />
+      case NotificationType.ApproveManagerRequest:
+        return <ApproveManagerRequestNotification notification={notification} />
       default:
         return null
     }

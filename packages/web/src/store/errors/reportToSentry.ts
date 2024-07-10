@@ -27,8 +27,8 @@ const jsLoggerMapping: { [level in ErrorLevel]: ConsoleLoggingMethod } = {
   Log: 'log'
 }
 
-const isResponseError = (error: Error): error is ResponseError =>
-  'response' in error && error.response instanceof Response
+export const isResponseError = (error: unknown): error is ResponseError =>
+  error instanceof Error && error.name === 'ResponseError'
 
 /**
  * Helper fn that reports to sentry while creating a localized scope to contain additional data
@@ -54,6 +54,7 @@ export const reportToSentry = async ({
         additionalInfo = {
           ...additionalInfo,
           response: error.response,
+          requestId: error.response.headers.get('X-Request-ID'),
           responseBody
         }
       }

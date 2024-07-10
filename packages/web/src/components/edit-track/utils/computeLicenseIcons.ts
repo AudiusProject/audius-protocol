@@ -1,4 +1,4 @@
-import { Nullable } from '@audius/common/utils'
+import { creativeCommons, License } from '@audius/common/utils'
 import {
   IconCcBy as IconAllowAttribution,
   IconCcCC as IconCreativeCommons,
@@ -8,11 +8,12 @@ import {
   IconComponent
 } from '@audius/harmony'
 
-export const computeLicenseIcons = (
-  allowAttribution: boolean,
-  commercialUse: boolean,
-  derivativeWorks: Nullable<boolean>
-) => {
+const { computeLicenseVariables } = creativeCommons
+
+export const computeLicenseIcons = (license: License) => {
+  const { allowAttribution, commercialUse, derivativeWorks } =
+    computeLicenseVariables(license)
+
   if (!allowAttribution) return null
   const icons: [Icon: IconComponent, key: string][] = [
     [IconCreativeCommons, 'cc'],

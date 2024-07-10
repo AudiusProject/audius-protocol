@@ -5,6 +5,7 @@ import {
   useGetTrackById,
   useGetUserById
 } from '@audius/common/api'
+import { recentSearchMessages as messages } from '@audius/common/messages'
 import { Kind, SquareSizes, Status } from '@audius/common/models'
 import {
   SearchItem,
@@ -37,17 +38,6 @@ const MAX_RECENT_SEARCHES = 12
 
 const { removeItem, clearHistory } = searchActions
 const { getSearchHistory } = searchSelectors
-
-const messages = {
-  album: 'Album',
-  clear: 'Clear Recent Searches',
-  goTo: 'Go to: ',
-  playlist: 'Playlist',
-  profile: 'Profile',
-  remove: 'Remove recent search',
-  title: 'Recent searches',
-  track: 'Track'
-}
 
 const RecentSearchSkeleton = () => (
   <Flex w='100%' pv='s' ph='xl' justifyContent='space-between'>
@@ -89,7 +79,9 @@ const RecentSearch = (props: RecentSearchProps) => {
         w='100%'
         pv='s'
         ph='xl'
+        gap='m'
         justifyContent='space-between'
+        alignItems='center'
         css={{
           cursor: 'pointer',
           ':hover': {
@@ -99,7 +91,7 @@ const RecentSearch = (props: RecentSearchProps) => {
         role='button'
         aria-label={`${messages.goTo} ${title}`}
       >
-        <Flex gap='m'>{children}</Flex>
+        {children}
         <IconButton
           aria-label={messages.remove}
           icon={IconClose}
@@ -128,9 +120,24 @@ const RecentSearchTrack = (props: { searchItem: SearchItem }) => {
 
   return (
     <RecentSearch searchItem={searchItem} title={title} linkTo={permalink}>
-      <Artwork src={image} w='40px' borderRadius='xs' />
-      <Flex direction='column' alignItems='flex-start'>
-        <Text variant='body' size='s'>
+      <Artwork src={image} w='40px' borderRadius='xs' flex='0 0 auto' />
+      <Flex
+        direction='column'
+        alignItems='flex-start'
+        w='100%'
+        css={{ overflow: 'hidden' }}
+      >
+        <Text
+          variant='body'
+          size='s'
+          css={{
+            width: '100%',
+            overflow: 'hidden',
+            whiteSpace: 'nowrap',
+            textOverflow: 'ellipsis',
+            textAlign: 'left'
+          }}
+        >
           {title}
         </Text>
         <Flex alignItems='baseline'>
@@ -171,9 +178,24 @@ const RecentSearchCollection = (props: { searchItem: SearchItem }) => {
       title={playlist_name}
       linkTo={permalink}
     >
-      <Artwork src={image} w={40} borderRadius='xs' />
-      <Flex direction='column' alignItems='flex-start'>
-        <Text variant='body' size='s'>
+      <Artwork src={image} w={40} borderRadius='xs' flex='0 0 auto' />
+      <Flex
+        direction='column'
+        alignItems='flex-start'
+        w='100%'
+        css={{ overflow: 'hidden' }}
+      >
+        <Text
+          variant='body'
+          size='s'
+          css={{
+            width: '100%',
+            overflow: 'hidden',
+            whiteSpace: 'nowrap',
+            textOverflow: 'ellipsis',
+            textAlign: 'left'
+          }}
+        >
           {playlist_name}
         </Text>
         <Flex alignItems='baseline'>
@@ -189,11 +211,7 @@ const RecentSearchCollection = (props: { searchItem: SearchItem }) => {
   )
 }
 
-type RecentSearchUserProps = {
-  searchItem: SearchItem
-}
-
-const RecentSearchUser = (props: RecentSearchUserProps) => {
+const RecentSearchUser = (props: { searchItem: SearchItem }) => {
   const { searchItem } = props
   const { id } = searchItem
   const { data: user, status } = useGetUserById({ id })
@@ -210,10 +228,8 @@ const RecentSearchUser = (props: RecentSearchUserProps) => {
       linkTo={profilePage(handle)}
     >
       <Avatar userId={id} w={40} borderWidth='thin' />
-      <Flex direction='column' alignItems='flex-start'>
-        <Text variant='body' size='s'>
-          <UserLink userId={user.user_id} size='s' badgeSize='xs' />
-        </Text>
+      <Flex direction='column' alignItems='flex-start' w='100%'>
+        <UserLink userId={user.user_id} size='s' badgeSize='xs' />
         <Text variant='body' size='xs' color='subdued'>
           Profile
         </Text>
@@ -262,7 +278,6 @@ export const RecentSearches = () => {
       <Button
         variant='secondary'
         size='small'
-        fullWidth={false}
         css={{ alignSelf: 'center' }}
         onClick={handleClickClear}
       >

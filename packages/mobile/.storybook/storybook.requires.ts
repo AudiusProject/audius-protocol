@@ -59,6 +59,7 @@ const getStories = () => {
     '../src/harmony-native/Paper.stories.tsx': require('../src/harmony-native/components/layout/Paper/Paper.stories.tsx'),
     '../src/harmony-native/Avatar.stories.tsx': require('../src/harmony-native/components/Avatar/Avatar.stories.tsx'),
     '../src/harmony-native/Hint.stories.tsx': require('../src/harmony-native/components/Hint/Hint.stories.tsx'),
+    '../src/harmony-native/MusicBadge.stories.tsx': require('../src/harmony-native/components/MusicBadge/MusicBadge.stories.tsx'),
     '../src/harmony-native/SelectablePill.stories.tsx': require('../src/harmony-native/components/input/SelectablePill/SelectablePill.stories.tsx'),
     '../src/harmony-native/TextInput.stories.tsx': require('../src/harmony-native/components/input/TextInput/TextInput.stories.tsx'),
     '../src/harmony-native/PasswordInput.stories.tsx': require('../src/harmony-native/components/input/PasswordInput/PasswordInput.stories.tsx'),

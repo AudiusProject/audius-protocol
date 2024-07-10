@@ -6,7 +6,11 @@ import { logger } from './../../logger'
 import { sendTransactionalEmail } from '../../email/notifications/sendEmail'
 import { buildUserNotificationSettings } from './userNotificationSettings'
 import { email } from '../../email/notifications/preRendered/withdrawal'
-import { formatUSDCWeiToUSDString } from '../../utils/format'
+import {
+  formatImageUrl,
+  formatProfileUrl,
+  formatUSDCWeiToUSDString
+} from '../../utils/format'
 
 type USDCWithdrawalRow = Omit<NotificationRow, 'data'> & {
   data: USDCWithdrawalNotification
@@ -50,9 +54,12 @@ export class USDCWithdrawal extends BaseNotification<USDCWithdrawalRow> {
       email: userNotificationSettings.getUserEmail(user.user_id),
       html: email({
         name: user.name,
+        handle: user.handle,
+        profilePicture: formatImageUrl(user.profile_picture_sizes, 150),
+        profileLink: formatProfileUrl(user.handle),
         amount: this.amount
       }),
-      subject: 'Your Withdrawal Has Been Started'
+      subject: 'Your USDC Transfer is Complete!'
     })
   }
 }

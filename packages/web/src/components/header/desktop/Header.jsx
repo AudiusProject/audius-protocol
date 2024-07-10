@@ -1,9 +1,9 @@
 import cn from 'classnames'
 import PropTypes from 'prop-types'
 
+import { useHistoryContext } from 'app/HistoryProvider'
 import { BackButton } from 'components/back-button/BackButton'
 import { HeaderGutter } from 'components/header/desktop/HeaderGutter'
-import { useMedia } from 'hooks/useMedia'
 
 import styles from './Header.module.css'
 
@@ -26,14 +26,14 @@ const Header = (props) => {
     headerContainerRef
   } = props
 
+  const { history } = useHistoryContext()
+
   const variantStyle = {
     [styles.main]: variant === 'main',
     [styles.mini]: variant === 'mini',
     [styles.section]: variant === 'section',
     [styles.page]: variant === 'page'
   }
-
-  const { isMobile } = useMedia()
 
   return (
     <>
@@ -43,16 +43,12 @@ const Header = (props) => {
         scrollBarWidth={scrollBarWidth}
       />
       <div
-        className={
-          !isMobile
-            ? cn(
-                styles.container,
-                variantStyle,
-                { [containerStyles]: !!containerStyles },
-                { [styles.containerWithBar]: !!bottomBar }
-              )
-            : undefined
-        }
+        className={cn(
+          styles.container,
+          variantStyle,
+          { [containerStyles]: !!containerStyles },
+          { [styles.containerWithBar]: !!bottomBar }
+        )}
       >
         <div
           className={cn(styles.maxWidthWrapper, {
@@ -64,7 +60,9 @@ const Header = (props) => {
             style={overrideWidth !== null ? { maxWidth: overrideWidth } : null}
           >
             <div className={cn(styles.headerWrapper, wrapperClassName)}>
-              {showBackButton ? <BackButton onClick={onClickBack} /> : null}
+              {showBackButton ? (
+                <BackButton onClick={onClickBack ?? history.goBack} />
+              ) : null}
               <h1 className={cn(styles.header, variantStyle)}>{primary}</h1>
               <h2 className={styles.secondary}>{secondary}</h2>
             </div>
@@ -102,8 +100,7 @@ Header.propTypes = {
 Header.defaultProps = {
   variant: 'main',
   containerStyles: '',
-  showBackButton: false,
-  onClickBack: () => {}
+  showBackButton: false
 }
 
 export default Header

@@ -48,17 +48,10 @@ export function* fetchNotifications(config: FetchNotificationsParams) {
 
 function* fetchIdentityNotifications(limit: number, timeOffset: number) {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-  const getFeatureEnabled = yield* getContext('getFeatureEnabled')
-
-  const withDethroned = yield* call(
-    getFeatureEnabled,
-    FeatureFlags.SUPPORTER_DETHRONED_ENABLED
-  )
 
   return yield* call(audiusBackendInstance.getNotifications, {
     limit,
-    timeOffset,
-    withDethroned
+    timeOffset
   })
 }
 
@@ -99,6 +92,11 @@ function* fetchDiscoveryNotifications(params: FetchNotificationsParams) {
     FeatureFlags.PREMIUM_ALBUMS_ENABLED
   )
 
+  const isManagerModeEnabled = yield* call(
+    getFeatureEnabled,
+    FeatureFlags.MANAGER_MODE
+  )
+
   const validTypes = [
     isRepostOfRepostEnabled ? 'repost_of_repost' : null,
     isSaveOfRepostEnabled ? 'save_of_repost' : null,
@@ -107,7 +105,10 @@ function* fetchDiscoveryNotifications(params: FetchNotificationsParams) {
     isTastemakerEnabled ? 'tastemaker' : null,
     isUSDCPurchasesEnabled ? 'usdc_purchase_buyer' : null,
     isUSDCPurchasesEnabled ? 'usdc_purchase_seller' : null,
-    isPurchaseableAlbumsEnabled ? 'track_added_to_purchased_album' : null
+    isPurchaseableAlbumsEnabled ? 'track_added_to_purchased_album' : null,
+    isManagerModeEnabled ? 'request_manager' : null,
+    isManagerModeEnabled ? 'approve_manager_request' : null,
+    'claimable_reward'
   ].filter(removeNullable)
 
   const discoveryNotifications = yield* call(

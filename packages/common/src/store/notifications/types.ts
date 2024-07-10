@@ -26,6 +26,7 @@ export enum NotificationType {
   TrendingPlaylist = 'TrendingPlaylist',
   TrendingUnderground = 'TrendingUnderground',
   ChallengeReward = 'ChallengeReward',
+  ClaimableReward = 'ClaimableReward',
   TierChange = 'TierChange',
   Reaction = 'Reaction',
   TipReceive = 'TipReceive',
@@ -36,7 +37,9 @@ export enum NotificationType {
   TrackAddedToPurchasedAlbum = 'TrackAddedToPurchasedAlbum',
   SupporterDethroned = 'SupporterDethroned',
   USDCPurchaseSeller = 'USDCPurchaseSeller',
-  USDCPurchaseBuyer = 'USDCPurchaseBuyer'
+  USDCPurchaseBuyer = 'USDCPurchaseBuyer',
+  RequestManager = 'RequestManager',
+  ApproveManagerRequest = 'ApproveManagerRequest'
 }
 
 export enum PushNotificationType {
@@ -78,7 +81,9 @@ export enum PushNotificationType {
   AddTrackToPlaylist = 'AddTrackToPlaylist',
   TrackAddedToPurchasedAlbum = 'TrackAddedToPurchasedAlbum',
   Message = 'Message',
-  MessageReaction = 'MessageReaction'
+  MessageReaction = 'MessageReaction',
+  RequestManager = 'RequestManager',
+  ApproveManagerRequest = 'ApproveManagerRequest'
 }
 
 export enum Entity {
@@ -238,6 +243,13 @@ export type DiscoveryChallengeRewardNotificationAction = {
   specifier: string
   challenge_id: string
 }
+
+export type DiscoveryClaimableRewardNotificationAction = {
+  amount: string
+  specifier: string
+  challenge_id: string
+}
+
 export type DiscoveryTierChangeNotificationAction = {
   new_tier: string
   new_tier_value: number
@@ -258,6 +270,18 @@ export type DiscoveryUSDCPurchaseNotificationAction = {
   buyer_user_id: string
   amount: StringUSDC
   extra_amount: StringUSDC
+}
+
+export type DiscoveryRequestManagerNotificationAction = {
+  user_id: string
+  grantee_user_id: string
+  grantee_address: string
+}
+
+export type DiscoveryApproveManagerRequestNotificationAction = {
+  user_id: string
+  grantee_user_id: string
+  grantee_address: string
 }
 
 export type TrendingRange = 'week' | 'month' | 'year'
@@ -335,6 +359,11 @@ export type DiscoveryChallengeRewardNotification = DiscoveryBaseNotification<
   'challenge_reward',
   DiscoveryChallengeRewardNotificationAction
 >
+export type DiscoveryClaimableRewardNotification = DiscoveryBaseNotification<
+  'claimable_reward',
+  DiscoveryClaimableRewardNotificationAction
+>
+
 export type DiscoveryTierChangeNotification = DiscoveryBaseNotification<
   'tier_change',
   DiscoveryTierChangeNotificationAction
@@ -352,6 +381,18 @@ export type DiscoveryUSDCPurchaseSellerNotification = DiscoveryBaseNotification<
   'usdc_purchase_seller',
   DiscoveryUSDCPurchaseNotificationAction
 >
+
+export type DiscoveryRequestManagerNotification = DiscoveryBaseNotification<
+  'request_manager',
+  DiscoveryRequestManagerNotificationAction
+>
+
+export type DiscoveryApproveManagerRequestNotification =
+  DiscoveryBaseNotification<
+    'approve_manager_request',
+    DiscoveryApproveManagerRequestNotificationAction
+  >
+
 export type DiscoveryTrendingPlaylistNotification = DiscoveryBaseNotification<
   'trending_playlist',
   {
@@ -402,6 +443,7 @@ export type DiscoveryNotification =
   | DiscoverySupporterDethronedNotification
   | DiscoveryReactionNotification
   | DiscoveryChallengeRewardNotification
+  | DiscoveryClaimableRewardNotification
   | DiscoveryTierChangeNotification
   | DiscoveryCreateNotification
   | DiscoveryTrendingPlaylistNotification
@@ -414,6 +456,8 @@ export type DiscoveryNotification =
   | DiscoveryTastemakerNotification
   | DiscoveryUSDCPurchaseBuyerNotification
   | DiscoveryUSDCPurchaseSellerNotification
+  | DiscoveryRequestManagerNotification
+  | DiscoveryApproveManagerRequestNotification
 
 export type AnnouncementNotification = BaseNotification & {
   type: NotificationType.Announcement
@@ -760,6 +804,12 @@ export type ChallengeRewardNotification = BaseNotification & {
   entityType: string
 }
 
+export type ClaimableRewardNotification = BaseNotification & {
+  type: NotificationType.ClaimableReward
+  challengeId: ChallengeRewardID
+  entityType: string
+}
+
 export type TierChangeNotification = BaseNotification & {
   type: NotificationType.TierChange
   userId: ID
@@ -936,6 +986,16 @@ export type USDCPurchaseBuyerNotification = BaseNotification & {
   entityType: Entity.Track | Entity.Album
 }
 
+export type RequestManagerNotification = BaseNotification & {
+  type: NotificationType.RequestManager
+  userId: ID
+}
+
+export type ApproveManagerRequestNotification = BaseNotification & {
+  type: NotificationType.ApproveManagerRequest
+  userId: ID
+}
+
 export type Notification =
   | AnnouncementNotification
   | UserSubscriptionNotification
@@ -952,6 +1012,7 @@ export type Notification =
   | TrendingTrackNotification
   | TrendingUndergroundNotification
   | ChallengeRewardNotification
+  | ClaimableRewardNotification
   | TierChangeNotification
   | ReactionNotification
   | TipReceiveNotification
@@ -963,6 +1024,8 @@ export type Notification =
   | TrackAddedToPurchasedAlbumNotification
   | USDCPurchaseSellerNotification
   | USDCPurchaseBuyerNotification
+  | RequestManagerNotification
+  | ApproveManagerRequestNotification
 
 export type IdentityNotification = Omit<Notification, 'timestamp'> & {
   timestamp: string

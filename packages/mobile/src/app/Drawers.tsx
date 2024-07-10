@@ -17,7 +17,6 @@ import { CreateChatActionsDrawer } from 'app/components/create-chat-actions-draw
 import { DeactivateAccountConfirmationDrawer } from 'app/components/deactivate-account-confirmation-drawer'
 import { DeleteChatDrawer } from 'app/components/delete-chat-drawer'
 import { DeletePlaylistConfirmationDrawer } from 'app/components/delete-playlist-confirmation-drawer'
-import { ReleaseNowConfirmationDrawer } from 'app/components/drawers/ReleaseNowConfirmationDrawer'
 import { DuplicateAddConfirmationDrawer } from 'app/components/duplicate-add-confirmation-drawer'
 import { EditCollectiblesDrawer } from 'app/components/edit-collectibles-drawer'
 import { EnablePushNotificationsDrawer } from 'app/components/enable-push-notifications-drawer'
@@ -27,11 +26,12 @@ import { GatedContentUploadPromptDrawer } from 'app/components/gated-content-upl
 import { InboxUnavailableDrawer } from 'app/components/inbox-unavailable-drawer/InboxUnavailableDrawer'
 import { LeavingAudiusDrawer } from 'app/components/leaving-audius-drawer'
 import { LockedContentDrawer } from 'app/components/locked-content-drawer'
+import { ManagerModeDrawer } from 'app/components/manager-mode-drawer/ManagerModeDrawer'
 import { OverflowMenuDrawer } from 'app/components/overflow-menu-drawer'
 import { PlaybackRateDrawer } from 'app/components/playback-rate-drawer'
 import { PremiumContentPurchaseDrawer } from 'app/components/premium-content-purchase-drawer'
 import { ProfileActionsDrawer } from 'app/components/profile-actions-drawer'
-import { PublishPlaylistDrawer } from 'app/components/publish-playlist-drawer'
+import { PublishContentDrawer } from 'app/components/publish-content-drawer'
 import { PurchaseVendorDrawer } from 'app/components/purchase-vendor-drawer/PurchaseVendorDrawer'
 import { RateCtaDrawer } from 'app/components/rate-cta-drawer'
 import { ShareDrawer } from 'app/components/share-drawer'
@@ -47,12 +47,12 @@ import { TrendingFilterDrawer } from 'app/screens/trending-screen'
 
 import { useDrawerState } from '../components/drawer'
 import {
+  DeleteTrackConfirmationDrawer,
+  OfflineListeningDrawer,
   RemoveAllDownloadsDrawer,
   RemoveDownloadedCollectionDrawer,
   RemoveDownloadedFavoritesDrawer,
-  UnfavoriteDownloadedCollectionDrawer,
-  DeleteTrackConfirmationDrawer,
-  OfflineListeningDrawer
+  UnfavoriteDownloadedCollectionDrawer
 } from '../components/drawers'
 import { ShareToStoryProgressDrawer } from '../components/share-drawer/useShareToStory'
 import { VipDiscordDrawer } from '../components/vip-discord-drawer'
@@ -115,8 +115,7 @@ const commonDrawersMap: { [Modal in Modals]?: ComponentType } = {
   VipDiscord: VipDiscordDrawer,
   ProfileActions: ProfileActionsDrawer,
   PlaybackRate: PlaybackRateDrawer,
-  PublishPlaylistConfirmation: PublishPlaylistDrawer,
-  PublishTrackConfirmation: ReleaseNowConfirmationDrawer,
+  PublishContentModal: PublishContentDrawer,
   // PremiumContent, AddFunds, PurchaseVendor, USDCManualTransfer, and StripOnRamp *must* be in this order
   // to avoid zIndex issues.
   PremiumContentPurchaseModal: PremiumContentPurchaseDrawer,
@@ -135,8 +134,8 @@ const nativeDrawersMap: { [DrawerName in Drawer]?: ComponentType } = {
   OfflineListening: OfflineListeningDrawer,
   ForgotPassword: ForgotPasswordDrawer,
   DeleteTrackConfirmation: DeleteTrackConfirmationDrawer,
-  ReleaseNowConfirmation: ReleaseNowConfirmationDrawer,
   ShareToStoryProgress: ShareToStoryProgressDrawer,
+  ManagerMode: ManagerModeDrawer,
   RateCallToAction: RateCtaDrawer,
   RemoveAllDownloads: RemoveAllDownloadsDrawer,
   RemoveDownloadedCollection: RemoveDownloadedCollectionDrawer,

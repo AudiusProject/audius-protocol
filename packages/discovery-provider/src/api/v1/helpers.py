@@ -17,6 +17,7 @@ from src.queries.get_undisbursed_challenges import UndisbursedChallengeResponse
 from src.queries.query_helpers import (
     CollectionLibrarySortMethod,
     LibraryFilterType,
+    SearchSortMethod,
     SortDirection,
     SortMethod,
 )
@@ -354,7 +355,7 @@ def parse_unix_epoch_param_non_utc(time, default=0):
     return datetime.fromtimestamp(time)
 
 
-def extend_track(track):
+def extend_track(track, session=None):
     track_id = encode_int_id(track["track_id"])
     owner_id = encode_int_id(track["owner_id"])
     if "user" in track:
@@ -395,11 +396,11 @@ def extend_track(track):
     # Transform new format of splits to legacy format for client compatibility
     if "stream_conditions" in track:
         track["stream_conditions"] = get_legacy_purchase_gate(
-            track["stream_conditions"]
+            track["stream_conditions"], session
         )
     if "download_conditions" in track:
         track["download_conditions"] = get_legacy_purchase_gate(
-            track["download_conditions"]
+            track["download_conditions"], session
         )
 
     return track
@@ -458,6 +459,34 @@ def extend_playlist(playlist):
         playlist.get("stream_conditions", None)
     )
     return playlist
+
+
+# Filter out hidden tracks if a non-owner is requesting a public playlist
+# See also: queries/query_helpers.py::filter_hidden_tracks
+def filter_hidden_tracks(playlist, current_user_id):
+    is_owner = (
+        current_user_id and playlist.get("playlist_owner_id", None) == current_user_id
+    )
+
+    if not playlist.get("is_private", False) and not is_owner:
+        tracks_map = {
+            encode_int_id(track.get("track_id")): track
+            for track in playlist.get("tracks", [])
+        }
+        playlist_contents_list = playlist.get("playlist_contents", [])
+        playlist["playlist_contents"] = [
+            track
+            for track in playlist_contents_list
+            if (track_id := track.get("track_id")) in tracks_map
+            and not tracks_map.get(track_id, {}).get("is_unlisted", False)
+        ]
+        added_timestamps_list = playlist.get("added_timestamps", [])
+        playlist["added_timestamps"] = [
+            track
+            for track in added_timestamps_list
+            if (track_id := track.get("track_id")) in tracks_map
+            and not tracks_map.get(track_id, {}).get("is_unlisted", False)
+        ]
 
 
 def extend_activity(item):
@@ -706,7 +735,103 @@ pagination_with_current_user_parser.add_argument(
 )
 
 search_parser = reqparse.RequestParser(argument_class=DescriptiveArgument)
-search_parser.add_argument("query", required=True, description="The search query")
+search_parser.add_argument("query", required=False, description="The search query")
+search_parser.add_argument(
+    "genre",
+    action="append",
+    required=False,
+    type=str,
+    description="The genres to filter by",
+)
+search_parser.add_argument(
+    "sort_method",
+    required=False,
+    description="The sort method",
+    type=str,
+    choices=SearchSortMethod._member_names_,
+)
+
+user_search_parser = search_parser.copy()
+user_search_parser.add_argument(
+    "is_verified",
+    required=False,
+    type=str,
+    description="Only include verified users in the user results",
+)
+
+playlist_search_parser = search_parser.copy()
+playlist_search_parser.add_argument(
+    "mood",
+    action="append",
+    required=False,
+    type=str,
+    description="The moods to filter by",
+)
+playlist_search_parser.add_argument(
+    "includePurchaseable",
+    required=False,
+    type=str,
+    description="Whether or not to include purchaseable content",
+)
+playlist_search_parser.add_argument(
+    "has_downloads",
+    required=False,
+    type=str,
+    description="Only include tracks that have downloads in the track results",
+)
+
+track_search_parser = search_parser.copy()
+track_search_parser.add_argument(
+    "mood",
+    action="append",
+    required=False,
+    type=str,
+    description="The moods to filter by",
+)
+track_search_parser.add_argument(
+    "only_downloadable",
+    required=False,
+    default=False,
+    description="Return only downloadable tracks",
+)
+track_search_parser.add_argument(
+    "includePurchaseable",
+    required=False,
+    type=str,
+    description="Whether or not to include purchaseable content",
+)
+track_search_parser.add_argument(
+    "is_purchaseable",
+    required=False,
+    type=str,
+    description="Only include purchaseable tracks and albums in the track and album results",
+)
+track_search_parser.add_argument(
+    "has_downloads",
+    required=False,
+    type=str,
+    description="Only include tracks that have downloads in the track results",
+)
+track_search_parser.add_argument(
+    "key",
+    action="append",
+    required=False,
+    type=str,
+    description="Only include tracks that match the musical key",
+)
+track_search_parser.add_argument(
+    "bpm_min",
+    required=False,
+    type=str,
+    description="Only include tracks that have a bpm greater than or equal to",
+)
+track_search_parser.add_argument(
+    "bpm_max",
+    required=False,
+    type=str,
+    description="Only include tracks that have a bpm less than or equal to",
+)
+
 
 track_history_parser = pagination_parser.copy()
 track_history_parser.add_argument(
@@ -816,7 +941,7 @@ user_tracks_route_parser.add_argument(
 )
 
 full_search_parser = pagination_with_current_user_parser.copy()
-full_search_parser.add_argument("query", required=True, description="The search query")
+full_search_parser.add_argument("query", required=False, description="The search query")
 full_search_parser.add_argument(
     "kind",
     required=False,
@@ -830,6 +955,64 @@ full_search_parser.add_argument(
     required=False,
     type=str,
     description="Whether or not to include purchaseable content",
+)
+full_search_parser.add_argument(
+    "genre",
+    action="append",
+    required=False,
+    type=str,
+    description="The genres to filter by",
+)
+full_search_parser.add_argument(
+    "mood",
+    action="append",
+    required=False,
+    type=str,
+    description="The moods to filter by",
+)
+full_search_parser.add_argument(
+    "is_verified",
+    required=False,
+    type=str,
+    description="Only include verified users in the user results",
+)
+full_search_parser.add_argument(
+    "has_downloads",
+    required=False,
+    type=str,
+    description="Only include tracks that have downloads in the track results",
+)
+full_search_parser.add_argument(
+    "is_purchaseable",
+    required=False,
+    type=str,
+    description="Only include purchaseable tracks and albums in the track and album results",
+)
+full_search_parser.add_argument(
+    "key",
+    action="append",
+    required=False,
+    type=str,
+    description="Only include tracks that match the musical key",
+)
+full_search_parser.add_argument(
+    "bpm_min",
+    required=False,
+    type=str,
+    description="Only include tracks that have a bpm greater than or equal to",
+)
+full_search_parser.add_argument(
+    "bpm_max",
+    required=False,
+    type=str,
+    description="Only include tracks that have a bpm less than or equal to",
+)
+full_search_parser.add_argument(
+    "sort_method",
+    required=False,
+    description="The sort method",
+    type=str,
+    choices=SearchSortMethod._member_names_,
 )
 
 verify_token_parser = reqparse.RequestParser(argument_class=DescriptiveArgument)

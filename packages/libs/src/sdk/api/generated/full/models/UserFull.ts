@@ -98,6 +98,54 @@ export interface UserFull {
      * @type {string}
      * @memberof UserFull
      */
+    twitterHandle?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof UserFull
+     */
+    instagramHandle?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof UserFull
+     */
+    tiktokHandle?: string;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof UserFull
+     */
+    verifiedWithTwitter: boolean;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof UserFull
+     */
+    verifiedWithInstagram: boolean;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof UserFull
+     */
+    verifiedWithTiktok: boolean;
+    /**
+     * 
+     * @type {string}
+     * @memberof UserFull
+     */
+    website?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof UserFull
+     */
+    donation?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof UserFull
+     */
     location?: string;
     /**
      * 
@@ -334,6 +382,9 @@ export function instanceOfUserFull(value: object): value is UserFull {
     isInstance = isInstance && "handle" in value && value["handle"] !== undefined;
     isInstance = isInstance && "id" in value && value["id"] !== undefined;
     isInstance = isInstance && "isVerified" in value && value["isVerified"] !== undefined;
+    isInstance = isInstance && "verifiedWithTwitter" in value && value["verifiedWithTwitter"] !== undefined;
+    isInstance = isInstance && "verifiedWithInstagram" in value && value["verifiedWithInstagram"] !== undefined;
+    isInstance = isInstance && "verifiedWithTiktok" in value && value["verifiedWithTiktok"] !== undefined;
     isInstance = isInstance && "name" in value && value["name"] !== undefined;
     isInstance = isInstance && "playlistCount" in value && value["playlistCount"] !== undefined;
     isInstance = isInstance && "repostCount" in value && value["repostCount"] !== undefined;
@@ -384,6 +435,14 @@ export function UserFullFromJSONTyped(json: any, ignoreDiscriminator: boolean): 
         'handle': json['handle'],
         'id': json['id'],
         'isVerified': json['is_verified'],
+        'twitterHandle': !exists(json, 'twitter_handle') ? undefined : json['twitter_handle'],
+        'instagramHandle': !exists(json, 'instagram_handle') ? undefined : json['instagram_handle'],
+        'tiktokHandle': !exists(json, 'tiktok_handle') ? undefined : json['tiktok_handle'],
+        'verifiedWithTwitter': json['verified_with_twitter'],
+        'verifiedWithInstagram': json['verified_with_instagram'],
+        'verifiedWithTiktok': json['verified_with_tiktok'],
+        'website': !exists(json, 'website') ? undefined : json['website'],
+        'donation': !exists(json, 'donation') ? undefined : json['donation'],
         'location': !exists(json, 'location') ? undefined : json['location'],
         'name': json['name'],
         'playlistCount': json['playlist_count'],
@@ -443,6 +502,14 @@ export function UserFullToJSON(value?: UserFull | null): any {
         'handle': value.handle,
         'id': value.id,
         'is_verified': value.isVerified,
+        'twitter_handle': value.twitterHandle,
+        'instagram_handle': value.instagramHandle,
+        'tiktok_handle': value.tiktokHandle,
+        'verified_with_twitter': value.verifiedWithTwitter,
+        'verified_with_instagram': value.verifiedWithInstagram,
+        'verified_with_tiktok': value.verifiedWithTiktok,
+        'website': value.website,
+        'donation': value.donation,
         'location': value.location,
         'name': value.name,
         'playlist_count': value.playlistCount,

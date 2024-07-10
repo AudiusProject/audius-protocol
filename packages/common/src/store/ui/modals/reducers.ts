@@ -6,12 +6,12 @@ import { artistPickModalReducer } from './artist-pick-modal'
 import { coinflowOnrampModalReducer } from './coinflow-onramp-modal'
 import { coinflowWithdrawModalReducer } from './coinflow-withdraw-modal'
 import { createChatModalReducer } from './create-chat-modal'
-import { editPlaylistModalReducer } from './edit-playlist-modal'
 import { editTrackModalReducer } from './edit-track-modal'
 import { inboxUnavailableModalReducer } from './inbox-unavailable-modal'
 import { leavingAudiusModalReducer } from './leaving-audius-modal'
 import parentReducer, { initialState } from './parentSlice'
 import { premiumContentPurchaseModalReducer } from './premium-content-purchase-modal'
+import { publishContentModalReducer } from './publish-content-modal'
 import { BaseModalState, Modals, ModalsState } from './types'
 import { usdcManualTransferModalReducer } from './usdc-manual-transfer-modal'
 import { usdcPurchaseDetailsModalReducer } from './usdc-purchase-details-modal'
@@ -34,7 +34,6 @@ const noOpReducers = Object.keys(initialState).reduce((prev, curr) => {
  */
 const combinedReducers = combineReducers({
   ...noOpReducers,
-  EditPlaylist: editPlaylistModalReducer,
   EditTrack: editTrackModalReducer,
   CreateChatModal: createChatModalReducer,
   InboxUnavailableModal: inboxUnavailableModalReducer,
@@ -49,7 +48,8 @@ const combinedReducers = combineReducers({
   CoinflowWithdraw: coinflowWithdrawModalReducer,
   WaitForDownloadModal: waitForDownloadModalReducer,
   ArtistPick: artistPickModalReducer,
-  AlbumTrackRemoveConfirmation: albumTrackRemoveConfirmationModalReducer
+  AlbumTrackRemoveConfirmation: albumTrackRemoveConfirmationModalReducer,
+  PublishContentModal: publishContentModalReducer
 })
 
 /**

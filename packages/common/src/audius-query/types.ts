@@ -115,7 +115,7 @@ export type FetchErrorAction = PayloadAction<
 >
 export type FetchSucceededAction = PayloadAction<
   FetchBaseAction & {
-    nonNormalizedData: any
+    normalizedData: any
   }
 >
 export type FetchResetAction = PayloadAction<FetchBaseAction & {}>
@@ -128,7 +128,7 @@ export type PerEndpointState<NormalizedData> = {
 }
 export type PerKeyState<NormalizedData> = {
   status: Status
-  nonNormalizedData?: NormalizedData
+  normalizedData?: NormalizedData
   errorMessage?: string
 }
 
@@ -138,6 +138,7 @@ export type QueryHookOptions = {
   debug?: boolean
   /** Force a fetch on first render of this hook instance (if a fetch is not already in progress) */
   force?: boolean
+  debounce?: number
 }
 
 export type QueryHookResults<Data> = {

@@ -88,7 +88,7 @@ describe('USDC Purchase Buyer', () => {
       }
     )
 
-    expect(sendEmailNotificationSpy).toHaveBeenCalledWith({
+    expect(sendEmailNotificationSpy).not.toHaveBeenCalledWith({
       userId: 2,
       email: 'user_2@gmail.com',
       frequency: 'live',
@@ -113,7 +113,7 @@ describe('USDC Purchase Buyer', () => {
     expect(sendTransactionalEmailSpy).toHaveBeenCalledWith({
       email: 'user_2@gmail.com',
       html: expect.anything(),
-      subject: 'Thank You For Your Support'
+      subject: 'Thank you for your purchase!'
     })
   })
 

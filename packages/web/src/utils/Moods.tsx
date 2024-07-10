@@ -2,119 +2,119 @@ import { Mood } from '@audius/sdk'
 
 export const moodMap: Record<Mood, JSX.Element> = {
   Peaceful: (
-    <div>
+    <span>
       Peaceful <i className='emoji dove-of-peace' />
-    </div>
+    </span>
   ),
   Romantic: (
-    <div>
+    <span>
       Romantic <i className='emoji heart-with-arrow' />
-    </div>
+    </span>
   ),
   Sentimental: (
-    <div>
+    <span>
       Sentimental <i className='emoji crying-face' />
-    </div>
+    </span>
   ),
   Tender: (
-    <div>
+    <span>
       Tender <i className='emoji relieved-face' />
-    </div>
+    </span>
   ),
   Easygoing: (
-    <div>
+    <span>
       Easygoing <i className='emoji slightly-smiling-face' />
-    </div>
+    </span>
   ),
   Yearning: (
-    <div>
+    <span>
       Yearning <i className='emoji eyes' />
-    </div>
+    </span>
   ),
   Sophisticated: (
-    <div>
+    <span>
       Sophisticated <i className='emoji face-with-monocle' />
-    </div>
+    </span>
   ),
   Sensual: (
-    <div>
+    <span>
       Sensual <i className='emoji face-throwing-a-kiss' />
-    </div>
+    </span>
   ),
   Cool: (
-    <div>
+    <span>
       Cool <i className='emoji smiling-face-with-sunglasses' />
-    </div>
+    </span>
   ),
   Gritty: (
-    <div>
+    <span>
       Gritty <i className='emoji pouting-face' />
-    </div>
+    </span>
   ),
   Melancholy: (
-    <div>
+    <span>
       Melancholy <i className='emoji cloud-with-rain' />
-    </div>
+    </span>
   ),
   Serious: (
-    <div>
+    <span>
       Serious <i className='emoji neutral-face' />
-    </div>
+    </span>
   ),
   Brooding: (
-    <div>
+    <span>
       Brooding <i className='emoji thinking-face' />
-    </div>
+    </span>
   ),
   Fiery: (
-    <div>
+    <span>
       Fiery <i className='emoji fire' />
-    </div>
+    </span>
   ),
   Defiant: (
-    <div>
+    <span>
       Defiant <i className='emoji smiling-face-with-horns' />
-    </div>
+    </span>
   ),
   Aggressive: (
-    <div>
+    <span>
       Aggressive{' '}
       <i className='emoji serious-face-with-symbols-covering-mouth' />
-    </div>
+    </span>
   ),
   Rowdy: (
-    <div>
+    <span>
       Rowdy <i className='emoji face-with-cowboy-hat' />
-    </div>
+    </span>
   ),
   Excited: (
-    <div>
+    <span>
       Excited <i className='emoji party-popper' />
-    </div>
+    </span>
   ),
   Energizing: (
-    <div>
+    <span>
       Energizing <i className='emoji grinning-face-with-star-eyes' />
-    </div>
+    </span>
   ),
   Empowering: (
-    <div>
+    <span>
       Empowering <i className='emoji flexed-biceps' />
-    </div>
+    </span>
   ),
   Stirring: (
-    <div>
+    <span>
       Stirring <i className='emoji astonished-face' />
-    </div>
+    </span>
   ),
   Upbeat: (
-    <div>
+    <span>
       Upbeat <i className='emoji person-raising-both-hands-in-celebration' />
-    </div>
+    </span>
   ),
   Other: (
-    <div>
+    <span>
       Other <i className='emoji shrug' />
-    </div>
+    </span>
   )
 }

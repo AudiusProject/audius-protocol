@@ -3,7 +3,7 @@ import { useCallback, useMemo, useState } from 'react'
 import { useGetManagers } from '@audius/common/api'
 import { User } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
-import { Box, Flex, IconShieldUser, Text, TextLink } from '@audius/harmony'
+import { Box, Flex, IconShieldUser, Text } from '@audius/harmony'
 
 import ArtistChip from 'components/artist/ArtistChip'
 import { UsersSearch } from 'components/search-users-modal/SearchUsersModal'
@@ -22,7 +22,7 @@ const messages = {
 }
 
 export const FindAccountManagerPage = (props: FindAccountManagerPageProps) => {
-  const { setPage, params } = props
+  const { setPageState, params } = props
   const [query, setQuery] = useState(params?.query ?? '')
   const userId = useSelector(getUserId)
   const { data: managers } = useGetManagers(
@@ -70,16 +70,19 @@ export const FindAccountManagerPage = (props: FindAccountManagerPageProps) => {
             user={user as any}
             showPopover={false}
             onClickArtistName={() => {
-              setPage(AccountsManagingYouPages.CONFIRM_NEW_MANAGER, {
-                user,
-                query
+              setPageState({
+                page: AccountsManagingYouPages.CONFIRM_NEW_MANAGER,
+                params: {
+                  user,
+                  query
+                }
               })
             }}
           />
         </Box>
       )
     },
-    [query, setPage]
+    [query, setPageState]
   )
 
   return (
@@ -87,9 +90,6 @@ export const FindAccountManagerPage = (props: FindAccountManagerPageProps) => {
       <Box ph='xl'>
         <Text variant='body' size='l'>
           {messages.description} {sharedMessages.accountManagersExplanation}{' '}
-          <TextLink href='#' variant='visible'>
-            {sharedMessages.learnMore}
-          </TextLink>
         </Text>
       </Box>
       <UsersSearch

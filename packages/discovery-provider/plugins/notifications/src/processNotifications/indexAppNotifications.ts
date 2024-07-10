@@ -64,6 +64,7 @@ export const notificationTypeMapping = {
   tip_receive: MappingVariable.PushTipRceive,
   tip_send: MappingVariable.PushTipSend,
   challenge_reward: MappingVariable.PushChallengeReward,
+  claimable_reward: MappingVariable.PushClaimableReward,
   track_added_to_playlist: MappingVariable.PushTrackAddedToPlaylist,
   create: MappingVariable.PushCreate,
   trending: MappingVariable.PushTrending,
@@ -74,8 +75,11 @@ export const notificationTypeMapping = {
   usdc_purchase_buyer: MappingVariable.PushUSDCPurchaseBuyer,
   usdc_transfer: MappingVariable.PushUSDCTransfer,
   usdc_withdrawal: MappingVariable.PushUSDCWithdrawal,
+  request_manager: MappingVariable.PushRequestManager,
+  approve_manager_request: MappingVariable.PushApproveManagerRequest,
   announcement: MappingVariable.PushAnnouncement,
-  reaction: MappingVariable.PushReaction
+  reaction: MappingVariable.PushReaction,
+  reward_in_cooldown: MappingVariable.PushRewardInCooldown
 }
 
 export class AppNotificationsProcessor {

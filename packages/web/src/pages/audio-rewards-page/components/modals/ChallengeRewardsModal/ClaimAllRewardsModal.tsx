@@ -16,7 +16,10 @@ import {
   Button,
   Flex,
   IconArrowRight,
+  Modal,
   ModalContent,
+  ModalHeader,
+  ModalTitle,
   ProgressBar,
   Text
 } from '@audius/harmony'
@@ -26,12 +29,7 @@ import { useModalState } from 'common/hooks/useModalState'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { SummaryTable } from 'components/summary-table'
 import { ToastContext } from 'components/toast/ToastContext'
-import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
 import { CLAIM_REWARD_TOAST_TIMEOUT_MILLIS } from 'utils/constants'
-
-import ModalDrawer from '../ModalDrawer'
-
-import styles from './styles.module.css'
 
 const messages = {
   upcomingRewards: 'Upcoming Rewards',
@@ -52,7 +50,6 @@ const { getClaimStatus } = audioRewardsPageSelectors
 export const ClaimAllRewardsModal = () => {
   const dispatch = useDispatch()
   const { toast } = useContext(ToastContext)
-  const wm = useWithMobileStyle(styles.mobile)
   const [isOpen, setOpen] = useModalState('ClaimAllRewards')
   const claimStatus = useSelector(getClaimStatus)
   const { claimableAmount, claimableChallenges, cooldownChallenges, summary } =
@@ -121,16 +118,10 @@ export const ClaimAllRewardsModal = () => {
   }, [])
 
   return (
-    <ModalDrawer
-      title={messages.rewards}
-      showTitleHeader
-      isOpen={isOpen}
-      onClose={handleClose}
-      isFullscreen={true}
-      useGradientTitle={false}
-      titleClassName={wm(styles.title)}
-      headerContainerClassName={styles.header}
-    >
+    <Modal size='medium' isOpen={isOpen} onClose={handleClose}>
+      <ModalHeader onClose={handleClose}>
+        <ModalTitle title={messages.rewards} />
+      </ModalHeader>
       <ModalContent>
         <Flex direction='column' gap='2xl' mt='s'>
           <Text variant='body' textAlign='left'>
@@ -196,6 +187,6 @@ export const ClaimAllRewardsModal = () => {
           )}
         </Flex>
       </ModalContent>
-    </ModalDrawer>
+    </Modal>
   )
 }

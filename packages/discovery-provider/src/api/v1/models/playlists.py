@@ -49,6 +49,7 @@ playlist_model = ns.model(
         "ddex_app": fields.String(allow_null=True),
         "access": fields.Nested(access),
         "upc": fields.String(allow_null=True),
+        "track_count": fields.Integer(required=True),
     },
 )
 
@@ -81,6 +82,8 @@ full_playlist_without_tracks_model = ns.clone(
             allow_null=True,
             description="How to unlock stream access to the track",
         ),
+        "is_scheduled_release": fields.Boolean,
+        "release_date": fields.String,
     },
 )
 

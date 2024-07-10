@@ -421,64 +421,62 @@ export class SolanaWeb3Manager {
     }
   }
 
-  async getRawTokenAccountInfo(solanaAddress: string) {
-    const connection = this.getConnection()
-    return await connection.getAccountInfo(
-      new PublicKey(solanaAddress),
-      'processed'
-    )
-  }
-
-  // We call this because we want to throw an error if the token account exists.
-  // The caller passes in the error message as it has context about why it expects
-  // the token account to exist.
-  async assertRawTokenAccountInfoDoesNotExist(
-    solanaAddress: string,
-    errorMsg: string
-  ) {
-    const rawAccount = await this.getRawTokenAccountInfo(solanaAddress)
-    if (rawAccount) {
-      throw new Error(errorMsg)
-    }
-  }
-
   /**
    * Gets the SPL waudio balance for a solana address in wei with 18 decimals
    */
-  async getWAudioBalance(solanaAddress: string) {
+  async getWAudioBalance(solanaAddress: string | PublicKey) {
+    const pubkey = new PublicKey(solanaAddress)
     try {
-      let tokenAccount = await this.getTokenAccountInfo(solanaAddress)
-      if (!tokenAccount) {
-        // tokenAccount may be null because the token account doesn't exist,
-        // or because an error was thrown while unpacking the account.
-        // In the latter scenario, we throw an error.
-        await this.assertRawTokenAccountInfoDoesNotExist(
-          solanaAddress,
-          'Error unpacking token account'
+      // Get the account info
+      const account = await this.getConnection().getAccountInfo(pubkey)
+      let tokenAccount = null
+      if (account && account.owner.equals(TOKEN_PROGRAM_ID)) {
+        // If owned by the token program, it's a token account
+        console.debug('Found token account', pubkey.toBase58())
+        tokenAccount = splToken.unpackAccount(pubkey, account)
+      } else if (
+        !account ||
+        account.owner.equals(solanaWeb3.SystemProgram.programId)
+      ) {
+        // If owned by the system program, assume root wallet and derive
+        // canonical associated token account
+        console.debug('Getting associated token account for', pubkey.toBase58())
+        const tokenAccountAddress = splToken.getAssociatedTokenAddressSync(
+          this.mints.audio,
+          pubkey,
+          true
         )
-
-        // Token account does not exist.
-        // Check if solanaAddress is a root account.
-        // If so, derive the associated token account & check that balance
-        const associatedTokenAccount = await this.findAssociatedTokenAddress(
-          solanaAddress
+        tokenAccount = await splToken.getAccount(
+          this.getConnection(),
+          tokenAccountAddress
         )
-        tokenAccount = await this.getTokenAccountInfo(
-          associatedTokenAccount.toString()
-        )
-        if (!tokenAccount) {
-          await this.assertRawTokenAccountInfoDoesNotExist(
-            solanaAddress,
-            'Error unpacking token account'
-          )
-          return BigInt(0)
-        }
       }
 
-      // Multiply by 10^10 to maintain same decimals as eth $AUDIO
-      const decimals = AUDIO_DECIMALS - WAUDIO_DECIMALS
-      return tokenAccount.amount * BigInt('1'.padEnd(decimals + 1, '0'))
+      if (tokenAccount) {
+        // Check the mint is correct
+        if (!tokenAccount.mint.equals(this.mints.audio)) {
+          throw new Error(
+            `Invalid mint for wAudio token account for ${pubkey.toBase58()}: Expected ${this.mints.audio.toBase58()} found ${tokenAccount.mint.toBase58()}`
+          )
+        }
+        // Multiply by 10^10 to maintain same decimals as eth $AUDIO
+        const decimals = AUDIO_DECIMALS - WAUDIO_DECIMALS
+        return tokenAccount.amount * BigInt('1'.padEnd(decimals + 1, '0'))
+      } else {
+        // If not owned by either of those, there's no token account
+        // which means no AUDIO in this account.
+        console.debug('No token accounts found for', solanaAddress)
+        return BigInt(0)
+      }
     } catch (e) {
+      if (e instanceof splToken.TokenAccountNotFoundError) {
+        // If the call to splToken.getAccount() fails because the token account
+        // doesn't exist on this wallet, that's the same as having 0 AUDIO
+        console.debug('Token account does not exist', pubkey.toBase58(), e)
+        return BigInt(0)
+      }
+      // Something weird happened if we get here
+      console.error('getWAudioBalance Error:', e)
       return null
     }
   }

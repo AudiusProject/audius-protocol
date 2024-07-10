@@ -3,7 +3,6 @@ import { useCallback, useState } from 'react'
 import { newCollectionMetadata } from '@audius/common/schemas'
 import { UploadType } from '@audius/common/store'
 import { removeNullable, Nullable } from '@audius/common/utils'
-import { Box } from '@audius/harmony'
 import cn from 'classnames'
 
 import { AudioQuality } from 'components/upload/AudioQuality'
@@ -23,7 +22,7 @@ type SelectPageProps = {
   onContinue: (formState: UploadFormState) => void
 }
 
-export const SelectPageNew = (props: SelectPageProps) => {
+export const SelectPage = (props: SelectPageProps) => {
   const { formState, onContinue } = props
 
   const [tracks, setTracks] = useState(formState.tracks ?? [])
@@ -36,7 +35,7 @@ export const SelectPageNew = (props: SelectPageProps) => {
   const onSelectTracks = useCallback(
     async (selectedFiles: File[]) => {
       const existing = new Set(
-        tracks.map(({ file }) => `${file.name}-${(file as File).lastModified}`)
+        tracks.map(({ file }) => `${file!.name}-${(file as File).lastModified}`)
       )
       selectedFiles = selectedFiles.filter(({ name, lastModified }) => {
         const id = `${name}-${lastModified}`
@@ -101,10 +100,9 @@ export const SelectPageNew = (props: SelectPageProps) => {
             textAboveIcon={textAboveIcon}
             onDropAccepted={onSelectTracks}
             onDropRejected={onSelectTracks}
-          />
-          <Box css={{ top: '-68px' }}>
+          >
             <AudioQuality />
-          </Box>
+          </Dropzone>
           {uploadTrackError ? (
             <InvalidFileType
               reason={uploadTrackError.reason}
@@ -132,4 +130,4 @@ export const SelectPageNew = (props: SelectPageProps) => {
   )
 }
 
-export default SelectPageNew
+export default SelectPage

@@ -1,8 +1,7 @@
-import { ChangeEvent, ReactElement, useCallback } from 'react'
+import { ChangeEvent, useCallback } from 'react'
 
-import { GENRES, Maybe, convertGenreLabelToValue } from '@audius/common/utils'
+import { Maybe } from '@audius/common/utils'
 import {
-  FilterButton,
   Flex,
   IconAlbum,
   IconNote,
@@ -12,13 +11,14 @@ import {
   SelectablePill,
   Text
 } from '@audius/harmony'
+import { CSSObject, useTheme } from '@emotion/react'
 import { capitalize } from 'lodash'
-import { useSearchParams } from 'react-router-dom-v5-compat'
 
 import Header from 'components/header/desktop/Header'
 import { useMedia } from 'hooks/useMedia'
 
-import { Category, Filter } from './types'
+import { filters } from './SearchFilters'
+import { Category } from './types'
 
 export const categories = {
   all: { filters: [] },
@@ -27,7 +27,10 @@ export const categories = {
     icon: IconNote,
     filters: ['genre', 'mood', 'key', 'bpm', 'isPremium', 'hasDownloads']
   },
-  albums: { icon: IconAlbum, filters: ['genre', 'mood'] },
+  albums: {
+    icon: IconAlbum,
+    filters: ['genre', 'mood', 'isPremium', 'hasDownloads']
+  },
   playlists: { icon: IconPlaylists, filters: ['genre', 'mood'] }
 } satisfies Record<string, Category>
 
@@ -40,104 +43,27 @@ type SearchHeaderProps = {
   query: Maybe<string>
 }
 
-const GenreFilter = () => {
-  const [urlSearchParams, setUrlSearchParams] = useSearchParams()
-  const genre = urlSearchParams.get('genre')
-
-  return (
-    <FilterButton
-      label='Genre'
-      popupAnchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
-      popupMaxHeight={400}
-      popupTransformOrigin={{ vertical: 'top', horizontal: 'left' }}
-      selection={genre}
-      onSelect={(value) => {
-        if (value) {
-          setUrlSearchParams((params) => ({ ...params, genre: value }))
-        } else {
-          setUrlSearchParams(({ genre, ...params }: any) => params)
-        }
-      }}
-      options={GENRES.map((genre) => ({
-        label: genre,
-        value: convertGenreLabelToValue(genre)
-      }))}
-      showFilterInput
-      filterInputPlaceholder='Search genre'
-    />
-  )
-}
-
-const filters: Record<Filter, () => ReactElement> = {
-  genre: GenreFilter,
-  mood: () => (
-    <FilterButton
-      label='Mood'
-      options={[
-        {
-          value: 'Filter'
-        }
-      ]}
-    />
-  ),
-  key: () => (
-    <FilterButton
-      label='Key'
-      options={[
-        {
-          value: 'Filter'
-        }
-      ]}
-    />
-  ),
-  bpm: () => (
-    <FilterButton
-      label='BPM'
-      options={[
-        {
-          value: 'Filter'
-        }
-      ]}
-    />
-  ),
-  isPremium: () => (
-    <FilterButton
-      label='Premium'
-      options={[
-        {
-          value: 'Filter'
-        }
-      ]}
-    />
-  ),
-  hasDownloads: () => (
-    <FilterButton
-      label='Downloads Available'
-      options={[
-        {
-          value: 'Filter'
-        }
-      ]}
-    />
-  ),
-  isVerified: () => (
-    <FilterButton
-      label='Verified'
-      options={[
-        {
-          value: 'Filter'
-        }
-      ]}
-    />
-  )
-}
-
 export const SearchHeader = (props: SearchHeaderProps) => {
   const { category: categoryKey = 'all', setCategory, query, title } = props
 
   const { isMobile } = useMedia()
+  const { color } = useTheme()
 
-  const handleChange = useCallback(
+  const mobileHeaderCss: CSSObject = {
+    overflow: 'scroll',
+    /* Hide scrollbar for Chrome, Safari and Opera */
+    '::-webkit-scrollbar': {
+      display: 'none'
+    },
+
+    '-ms-overflow-style': 'none' /* IE and Edge */,
+    'scrollbar-width': 'none' /* Firefox */,
+
+    backgroundColor: color.background.white,
+    borderBottom: `1px solid ${color.border.default}`
+  }
+
+  const handleCategoryChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
       const value = e.target.value
       setCategory(value as CategoryKey)
@@ -154,7 +80,7 @@ export const SearchHeader = (props: SearchHeaderProps) => {
       aria-label={'Select search category'}
       name='searchcategory'
       value={categoryKey}
-      onChange={handleChange}
+      onChange={handleCategoryChange}
     >
       {Object.entries(categories)
         .filter(([key]) => !isMobile || key !== 'all')
@@ -174,7 +100,7 @@ export const SearchHeader = (props: SearchHeaderProps) => {
   )
 
   return isMobile ? (
-    <Flex p='s' css={{ overflow: 'scroll' }}>
+    <Flex p='s' css={mobileHeaderCss}>
       {categoryRadioGroup}
     </Flex>
   ) : (

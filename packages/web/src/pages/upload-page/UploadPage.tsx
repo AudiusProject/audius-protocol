@@ -1,4 +1,4 @@
-import { createContext, useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import {
   uploadConfirmationModalUIActions,
@@ -11,11 +11,12 @@ import { useDispatch, useSelector } from 'react-redux'
 import { UploadPreviewContextProvider } from 'components/edit-track/utils/uploadPreviewContext'
 import Header from 'components/header/desktop/Header'
 import Page from 'components/page/Page'
+import { EditFormScrollContext } from 'pages/edit-page/EditTrackPage'
 
 import styles from './UploadPage.module.css'
 import { EditPage } from './pages/EditPage'
 import { FinishPage } from './pages/FinishPage'
-import SelectPageNew from './pages/SelectPage'
+import SelectPage from './pages/SelectPage'
 import { UploadFormState } from './types'
 
 const { uploadTracks, undoResetState } = uploadActions
@@ -52,8 +53,6 @@ type UploadPageProps = {
   scrollToTop: () => void
 }
 
-export const UploadFormScrollContext = createContext(() => {})
-
 export const UploadPage = (props: UploadPageProps) => {
   const { scrollToTop } = props
   const dispatch = useDispatch()
@@ -62,30 +61,6 @@ export const UploadPage = (props: UploadPageProps) => {
   const shouldResetState = useSelector(getShouldReset)
 
   const { tracks, uploadType } = formState
-
-  // Pretty print json just for testing
-  useEffect(() => {
-    if (phase !== Phase.FINISH) return
-    const stylizePreElements = function () {
-      const preElements = document.getElementsByTagName('pre')
-      for (let i = 0; i < preElements.length; ++i) {
-        const preElement = preElements[i]
-        preElement.className += 'prettyprint'
-      }
-    }
-
-    const injectPrettifyScript = function () {
-      const scriptElement = document.createElement('script')
-      scriptElement.setAttribute(
-        'src',
-        'https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js'
-      )
-      document.head.appendChild(scriptElement)
-    }
-
-    stylizePreElements()
-    injectPrettifyScript()
-  }, [phase])
 
   const pageTitleUploadType =
     !uploadType ||
@@ -110,7 +85,7 @@ export const UploadPage = (props: UploadPageProps) => {
   switch (phase) {
     case Phase.SELECT:
       page = (
-        <SelectPageNew
+        <SelectPage
           formState={formState}
           onContinue={(formState: UploadFormState) => {
             setFormState(formState)
@@ -126,11 +101,13 @@ export const UploadPage = (props: UploadPageProps) => {
             formState={formState}
             onContinue={(formState: UploadFormState) => {
               setFormState(formState)
+              const isPrivateCollection =
+                'metadata' in formState && formState.metadata?.is_private
               const hasPublicTracks =
                 formState.tracks?.some(
                   (track) => !track.metadata.is_unlisted
                 ) ?? true
-              openUploadConfirmation(hasPublicTracks)
+              openUploadConfirmation(hasPublicTracks && !isPrivateCollection)
             }}
           />
         )
@@ -201,9 +178,9 @@ export const UploadPage = (props: UploadPageProps) => {
       }
     >
       <UploadPreviewContextProvider>
-        <UploadFormScrollContext.Provider value={scrollToTop}>
+        <EditFormScrollContext.Provider value={scrollToTop}>
           {page}
-        </UploadFormScrollContext.Provider>
+        </EditFormScrollContext.Provider>
       </UploadPreviewContextProvider>
     </Page>
   )

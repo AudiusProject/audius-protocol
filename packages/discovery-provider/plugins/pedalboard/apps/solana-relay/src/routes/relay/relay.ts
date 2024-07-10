@@ -10,16 +10,20 @@ import { Request, Response, NextFunction } from 'express'
 import { config } from '../../config'
 import { BadRequestError } from '../../errors'
 import { connections } from '../../utils/connections'
-import { getRequestIpData } from '../../utils/ipData'
 import {
   broadcastTransaction,
   sendTransactionWithRetries
 } from '../../utils/transaction'
 
+import { InvalidRelayInstructionError } from './InvalidRelayInstructionError'
 import { assertRelayAllowedInstructions } from './assertRelayAllowedInstructions'
-import { attachLocationData, isPaymentTransaction } from './attachLocationData'
 
-const getFeePayerKeyPair = (feePayerPublicKey?: PublicKey) => {
+/**
+ * Gets the specified fee payer's key pair from the config.
+ * @param feePayerPublicKey the fee payer to find
+ * @returns the Keypair of the given fee payer or null if not found
+ */
+export const getFeePayerKeyPair = (feePayerPublicKey?: PublicKey) => {
   if (!feePayerPublicKey) {
     return null
   }
@@ -30,6 +34,49 @@ const getFeePayerKeyPair = (feePayerPublicKey?: PublicKey) => {
   )
 }
 
+/**
+ * Gets the lookup table account datas for the addresses given.
+ * @param lookupTableKeys the addresses of the lookup tables
+ * @returns the lookup table account data for each address
+ */
+const getLookupTableAccounts = async (lookupTableKeys: PublicKey[]) => {
+  return await Promise.all(
+    lookupTableKeys.map(async (accountKey) => {
+      const res = await connections[0].getAddressLookupTable(accountKey)
+      if (res.value === null) {
+        throw new Error(`Lookup table not found: ${accountKey.toBase58()}`)
+      }
+      return res.value
+    })
+  )
+}
+
+/**
+ * Checks that the transaction is signed
+ *
+ * TODO PAY-3106: Verify the signature is correct as well as non-empty.
+ * @see {@link https://github.com/solana-labs/solana-web3.js/blob/9344bbfa5dd68f3e15918ff606284373ae18911f/packages/library-legacy/src/transaction/legacy.ts#L767 verifySignatures} for Transaction in @solana/web3.js
+ * @param transaction the versioned transaction to check
+ * @returns false if missing a signature, true if all signatures are present.
+ */
+const verifySignatures = (transaction: VersionedTransaction) => {
+  for (const signature of transaction.signatures) {
+    if (signature === null || signature.every((b) => b === 0)) {
+      return false
+    }
+    // TODO PAY-3106: Use ed25519 to verify signature
+  }
+  return true
+}
+
+/**
+ * The core Solana relay route, /solana/relay.
+ *
+ * This endpoint takes a transaction and some options in the POST body,
+ * and signs the transaction (if necessary) and sends it (with retry logic).
+ * If successful, it broadcasts the resulting transaction metadata to the
+ * other discovery nodes to help them save on RPC calls when indexing.
+ */
 export const relay = async (
   req: Request<unknown, unknown, RelayRequestBody>,
   res: Response,
@@ -46,34 +93,45 @@ export const relay = async (
     const strategy =
       confirmationOptions?.strategy ?? (await connection.getLatestBlockhash())
     const decoded = Buffer.from(encodedTransaction, 'base64')
-    let transaction = VersionedTransaction.deserialize(decoded)
+    const transaction = VersionedTransaction.deserialize(decoded)
 
-    const decompiled = TransactionMessage.decompile(transaction.message)
-    const feePayerKey = transaction.message.getAccountKeys().get(0)
-    const feePayerKeyPair = getFeePayerKeyPair(feePayerKey)
-    if (!feePayerKey || !feePayerKeyPair) {
-      throw new BadRequestError(
-        `No fee payer for address '${feePayerKey?.toBase58()}'`
-      )
-    }
-    await assertRelayAllowedInstructions(decompiled.instructions, {
-      user: res.locals.signerUser,
-      feePayer: feePayerKey.toBase58()
+    const lookupTableAccounts = await getLookupTableAccounts(
+      transaction.message.addressTableLookups.map((k) => k.accountKey)
+    )
+    const decompiled = TransactionMessage.decompile(transaction.message, {
+      addressLookupTableAccounts: lookupTableAccounts
     })
 
-    if (isPaymentTransaction(decompiled.instructions)) {
-      const location = await getRequestIpData(res.locals.logger, req)
-      if (location) {
-        transaction = new VersionedTransaction(
-          attachLocationData({
-            transactionMessage: decompiled,
-            location
-          }).compileToV0Message()
-        )
+    const feePayerKey = decompiled.payerKey
+    const feePayerKeyPair = getFeePayerKeyPair(feePayerKey)
+
+    try {
+      await assertRelayAllowedInstructions(decompiled.instructions, {
+        user: res.locals.signerUser,
+        feePayer: feePayerKey.toBase58()
+      })
+    } catch (e) {
+      if (e instanceof InvalidRelayInstructionError) {
+        throw new BadRequestError('Invalid relay instructions', { cause: e })
+      } else {
+        throw e
       }
     }
 
-    transaction.sign([feePayerKeyPair])
+    if (feePayerKeyPair) {
+      res.locals.logger.info(
+        `Signing with fee payer '${feePayerKey.toBase58()}'`
+      )
+      transaction.sign([feePayerKeyPair])
+    } else if (verifySignatures(transaction)) {
+      res.locals.logger.info(
+        `Transaction already signed by '${feePayerKey.toBase58()}'`
+      )
+    } else {
+      throw new BadRequestError(
+        `No fee payer for address '${feePayerKey?.toBase58()}' and signature missing or invalid`
+      )
+    }
     const signature = bs58.encode(transaction.signatures[0])
 
     const logger = res.locals.logger.child({ signature })

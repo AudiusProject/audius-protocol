@@ -62,7 +62,10 @@ const trackMetadataSchema = {
   copyright_line: null,
   producer_copyright_line: null,
   parental_warning_type: null,
-  allowed_api_keys: null
+  allowed_api_keys: null,
+  bpm: null,
+  musical_key: null,
+  audio_analysis_error_count: 0
 }
 
 export const newTrackMetadata = (fields, validate = false): TrackMetadata => {
@@ -134,6 +137,11 @@ const userMetadataSchema = {
   bio: null,
   location: null,
   is_verified: false,
+  twitter_handle: null,
+  instagram_handle: null,
+  tiktok_handle: null,
+  website: null,
+  donation: null,
   creator_node_endpoint: null,
   updated_at: null,
   associated_wallets: null,

@@ -7,7 +7,8 @@ import {
 import { z } from 'zod'
 
 import { imageBlank } from '~/assets'
-import { NativeFile, TrackForUpload } from '~/store/upload/types'
+import { Collection } from '~/models'
+import { NativeFile, TrackForEdit, TrackForUpload } from '~/store/upload/types'
 
 const messages = {
   artworkRequiredError: 'Artwork is required.',
@@ -149,9 +150,10 @@ const hiddenMetadataSchema = z.object({
 const createSdkSchema = () =>
   z
     .object({
+      track_id: z.optional(z.number()).nullable(),
       ai_attribution_user_id: z.optional(z.number()).nullable(),
       allowed_api_keys: z.optional(z.array(z.string())).nullable(),
-      description: z.optional(z.string().max(1000)),
+      description: z.optional(z.string().max(1000)).nullable(),
 
       genre: GenreSchema,
       isrc: z.optional(z.string().nullable()),
@@ -174,7 +176,7 @@ const createSdkSchema = () =>
           .strict()
           .nullable()
       ),
-      tags: z.optional(z.string()),
+      tags: z.optional(z.string()).nullable(),
       title: z.string({
         required_error: messages.track.titleRequiredError
       }),
@@ -191,7 +193,9 @@ const createSdkSchema = () =>
       rightsController: z.optional(DDEXRightsController).nullable(),
       copyrightLine: z.optional(DDEXCopyright.nullable()),
       producerCopyrightLine: z.optional(DDEXCopyright.nullable()),
-      parentalWarningType: z.optional(z.string().nullable())
+      parentalWarningType: z.optional(z.string().nullable()),
+      bpm: z.optional(z.number().nullable()),
+      musicalKey: z.optional(z.string().nullable())
     })
     .merge(premiumMetadataSchema)
     .merge(hiddenMetadataSchema)
@@ -228,7 +232,10 @@ export const TrackMetadataFormSchema = TrackMetadataSchema.refine(
   }
 )
 
-const CollectionTrackMetadataSchema = TrackMetadataSchema.pick({ title: true })
+const CollectionTrackMetadataSchema = TrackMetadataSchema.pick({
+  title: true,
+  track_id: true
+})
 
 /**
  * Produces a schema that validates a collection metadata for upload.
@@ -263,11 +270,14 @@ export const createCollectionSchema = (collectionType: 'playlist' | 'album') =>
       }),
       description: z.optional(z.string().max(1000)),
       release_date: z.optional(z.string()).nullable(),
-      trackDetails: z.object({
-        genre: GenreSchema,
-        mood: MoodSchema,
-        tags: z.optional(z.string())
-      }),
+      is_scheduled_release: z.optional(z.boolean()),
+      trackDetails: z.optional(
+        z.object({
+          genre: z.optional(GenreSchema),
+          mood: MoodSchema,
+          tags: z.optional(z.string())
+        })
+      ),
       is_private: z.optional(z.boolean()),
       is_album: z.literal(collectionType === 'album'),
       tracks: z.array(z.object({ metadata: CollectionTrackMetadataSchema })),
@@ -276,7 +286,8 @@ export const createCollectionSchema = (collectionType: 'playlist' | 'album') =>
       copyrightLine: z.optional(DDEXCopyright.nullable()),
       producerCopyrightLine: z.optional(DDEXCopyright.nullable()),
       parentalWarningType: z.optional(z.string().nullable()),
-      is_downloadable: z.optional(z.boolean())
+      is_downloadable: z.optional(z.boolean()),
+      isUpload: z.optional(z.boolean())
     })
     .merge(
       premiumMetadataSchema.extend({
@@ -307,11 +318,15 @@ export const createCollectionSchema = (collectionType: 'playlist' | 'album') =>
  */
 type UnvalidatedCollectionMetadata = {
   playlist_id?: number
-  artwork: {
-    file: File | NativeFile
-    source?: string
-  } | null
-  tracks: TrackForUpload[]
+  artwork:
+    | {
+        file: File | NativeFile
+        source?: string
+      }
+    | { url: string }
+    | null
+  tracks: (TrackForUpload | TrackForEdit)[]
+  playlist_contents?: Collection['playlist_contents']
 }
 
 export const PlaylistSchema = createCollectionSchema('playlist')

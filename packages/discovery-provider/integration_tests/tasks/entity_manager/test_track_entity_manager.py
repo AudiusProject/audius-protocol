@@ -1438,279 +1438,78 @@ def test_access_conditions(app, mocker):
 
 
 def test_update_access_conditions(app, mocker):
-    "Tests that tracks cannot have invalid access stream/download conditions"
+    "Tests that update track transactions modifying access conditions will pass"
     with app.app_context():
         db = get_db()
         web3 = Web3()
         challenge_event_bus: ChallengeEventBus = setup_challenge_bus()
         update_task = UpdateTask(web3, challenge_event_bus)
 
+    collectible_gate = {
+        "nft_collection": {
+            "chain": "eth",
+            "standard": "ERC721",
+            "address": "some-nft-collection-address",
+            "name": "some nft collection name",
+            "slug": "some-nft-collection",
+            "imageUrl": "some-nft-collection-image-url",
+            "externalLink": "some-nft-collection-external-link",
+        }
+    }
+    follow_gate = {"follow_user_id": 1}
+    usdc_gate_1 = {
+        "usdc_purchase": {"price": 100, "splits": [{"percentage": 100.0, "user_id": 1}]}
+    }
+
     metadatas = {
-        "CreateTrack1NotGated": {
-            **default_metadata,
+        "UpdateToFollowGated": {
             "track_id": TRACK_ID_OFFSET,
-            "owner_id": 1,
-            "track_cid": "some-track-cid",
-            "title": "track 1",
-            "is_stream_gated": False,
-            "stream_conditions": None,
-            "is_download_gated": False,
-            "download_conditions": None,
-            "is_downloadable": True,
+            "is_stream_gated": True,
+            "stream_conditions": follow_gate,
+            "is_download_gated": True,
+            "download_conditions": follow_gate,
         },
-        "CreateTrack2Gated": {
-            **default_metadata,
+        "UpdateToUSDCGated": {
             "track_id": TRACK_ID_OFFSET + 1,
             "owner_id": 1,
-            "track_cid": "some-track-cid",
-            "title": "track 2",
             "is_stream_gated": True,
-            "stream_conditions": {"tip_user_id": 1},
+            "stream_conditions": usdc_gate_1,
             "is_download_gated": True,
-            "download_conditions": {"tip_user_id": 1},
-            "is_downloadable": True,
+            "download_conditions": usdc_gate_1,
         },
-        "CreateTrack3PurchaseGated": {
-            **default_metadata,
+        "FollowGatedToFree": {
             "track_id": TRACK_ID_OFFSET + 2,
-            "owner_id": 1,
-            "track_cid": "some-track-cid",
-            "title": "track 3",
-            "is_stream_gated": True,
-            "stream_conditions": {
-                "usdc_purchase": {"price": 100, "splits": {"user-bank": 1000000}}
-            },
-            "is_download_gated": True,
-            "download_conditions": {
-                "usdc_purchase": {"price": 100, "splits": {"user-bank": 1000000}}
-            },
-            "is_downloadable": True,
-        },
-        "InvalidUpdateTrack1StreamGated": {
-            **default_metadata,
-            "track_id": TRACK_ID_OFFSET,
-            "owner_id": 1,
-            "track_cid": "some-track-cid",
-            "title": "track 1 updated",
-            "is_stream_gated": True,
-            "stream_conditions": {"tip_user_id": 1},
-            "is_download_gated": False,
-            "download_conditions": None,
-            "is_downloadable": True,
-        },
-        "InvalidUpdateTrack1DownloadGated": {
-            **default_metadata,
-            "track_id": TRACK_ID_OFFSET,
-            "owner_id": 1,
-            "track_cid": "some-track-cid",
-            "title": "track 1 updated",
-            "is_stream_gated": False,
-            "stream_conditions": None,
-            "is_download_gated": True,
-            "download_conditions": {"tip_user_id": 1},
-            "is_downloadable": True,
-        },
-        "InvalidUpdateTrack2DifferentStreamConditionsNotPurchaseGated": {
-            **default_metadata,
-            "track_id": TRACK_ID_OFFSET + 1,
-            "owner_id": 1,
-            "track_cid": "some-track-cid",
-            "title": "track 2 updated",
-            "is_stream_gated": True,
-            "stream_conditions": {"follow_user_id": 1},
-            "is_download_gated": False,
-            "download_conditions": None,
-            "is_downloadable": True,
-        },
-        "InvalidUpdateTrack2DifferentDownloadConditionsNotPurchaseGated": {
-            **default_metadata,
-            "track_id": TRACK_ID_OFFSET + 1,
-            "owner_id": 1,
-            "track_cid": "some-track-cid",
-            "title": "track 2 updated",
-            "is_stream_gated": False,
-            "stream_conditions": None,
-            "is_download_gated": True,
-            "download_conditions": {"follow_user_id": 1},
-            "is_downloadable": True,
-        },
-        "ValidUpdateTrack2NotGated": {
-            **default_metadata,
-            "track_id": TRACK_ID_OFFSET + 1,
-            "owner_id": 1,
-            "track_cid": "some-track-cid",
-            "title": "track 4",
             "is_stream_gated": False,
             "stream_conditions": None,
             "is_download_gated": False,
             "download_conditions": None,
-            "is_downloadable": False,
         },
-        "ValidUpdateTrack3DifferentConditionsPurchaseGated": {
-            **default_metadata,
-            "track_id": TRACK_ID_OFFSET + 2,
-            "owner_id": 1,
-            "track_cid": "some-track-cid",
-            "title": "track 3 updated",
-            "is_stream_gated": False,
-            "stream_conditions": {
-                "usdc_purchase": {"price": 200, "splits": {"user-bank": 2000000}}
-            },
+        "HiddenUpdateToFollowGated": {
+            "track_id": TRACK_ID_OFFSET + 3,
+            "is_stream_gated": True,
+            "stream_conditions": collectible_gate,
             "is_download_gated": True,
-            "download_conditions": {
-                "usdc_purchase": {"price": 200, "splits": {"user-bank": 2000000}}
-            },
-            "is_downloadable": True,
+            "download_conditions": collectible_gate,
         },
     }
 
-    create_track1_json = json.dumps(metadatas["CreateTrack1NotGated"])
-    create_track2_json = json.dumps(metadatas["CreateTrack2Gated"])
-    create_track3_json = json.dumps(metadatas["CreateTrack3PurchaseGated"])
-    invalid_update_track1_json_1 = json.dumps(
-        metadatas["InvalidUpdateTrack1StreamGated"]
-    )
-    invalid_update_track1_json_2 = json.dumps(
-        metadatas["InvalidUpdateTrack1DownloadGated"]
-    )
-    invalid_update_track2_json_1 = json.dumps(
-        metadatas["InvalidUpdateTrack2DifferentStreamConditionsNotPurchaseGated"]
-    )
-    invalid_update_track2_json_2 = json.dumps(
-        metadatas["InvalidUpdateTrack2DifferentDownloadConditionsNotPurchaseGated"]
-    )
-    valid_update_track2_json = json.dumps(metadatas["ValidUpdateTrack2NotGated"])
-    valid_update_track3_json = json.dumps(
-        metadatas["ValidUpdateTrack3DifferentConditionsPurchaseGated"]
-    )
-
+    metadata_keys = list(metadatas.keys())
     tx_receipts = {
-        "CreateTrack1": [
+        (key): [
             {
                 "args": AttributeDict(
                     {
-                        "_entityId": TRACK_ID_OFFSET,
-                        "_entityType": "Track",
-                        "_userId": 1,
-                        "_action": "Create",
-                        "_metadata": f'{{"cid": "", "data": {create_track1_json}}}',
-                        "_signer": "user1wallet",
-                    }
-                )
-            }
-        ],
-        "CreateTrack2": [
-            {
-                "args": AttributeDict(
-                    {
-                        "_entityId": TRACK_ID_OFFSET + 1,
-                        "_entityType": "Track",
-                        "_userId": 1,
-                        "_action": "Create",
-                        "_metadata": f'{{"cid": "", "data": {create_track2_json}}}',
-                        "_signer": "user1wallet",
-                    }
-                )
-            }
-        ],
-        "CreateTrack3": [
-            {
-                "args": AttributeDict(
-                    {
-                        "_entityId": TRACK_ID_OFFSET + 2,
-                        "_entityType": "Track",
-                        "_userId": 1,
-                        "_action": "Create",
-                        "_metadata": f'{{"cid": "", "data": {create_track3_json}}}',
-                        "_signer": "user1wallet",
-                    }
-                )
-            }
-        ],
-        "InvalidUpdateTrack1_1": [
-            {
-                "args": AttributeDict(
-                    {
-                        "_entityId": TRACK_ID_OFFSET,
+                        "_entityId": TRACK_ID_OFFSET + metadata_keys.index(key),
                         "_entityType": "Track",
                         "_userId": 1,
                         "_action": "Update",
-                        "_metadata": f'{{"cid": "", "data": {invalid_update_track1_json_1}}}',
+                        "_metadata": f'{{"cid": "", "data": {json.dumps(value)}}}',
                         "_signer": "user1wallet",
                     }
                 )
             }
-        ],
-        "InvalidUpdateTrack1_2": [
-            {
-                "args": AttributeDict(
-                    {
-                        "_entityId": TRACK_ID_OFFSET,
-                        "_entityType": "Track",
-                        "_userId": 1,
-                        "_action": "Update",
-                        "_metadata": f'{{"cid": "", "data": {invalid_update_track1_json_2}}}',
-                        "_signer": "user1wallet",
-                    }
-                )
-            }
-        ],
-        "InvalidUpdateTrack2_1": [
-            {
-                "args": AttributeDict(
-                    {
-                        "_entityId": TRACK_ID_OFFSET + 1,
-                        "_entityType": "Track",
-                        "_userId": 1,
-                        "_action": "Update",
-                        "_metadata": f'{{"cid": "", "data": {invalid_update_track2_json_1}}}',
-                        "_signer": "user1wallet",
-                    }
-                )
-            }
-        ],
-        "InvalidUpdateTrack2_2": [
-            {
-                "args": AttributeDict(
-                    {
-                        "_entityId": TRACK_ID_OFFSET + 1,
-                        "_entityType": "Track",
-                        "_userId": 1,
-                        "_action": "Update",
-                        "_metadata": f'{{"cid": "", "data": {invalid_update_track2_json_2}}}',
-                        "_signer": "user1wallet",
-                    }
-                )
-            }
-        ],
-        "ValidUpdateTrack2": [
-            {
-                "args": AttributeDict(
-                    {
-                        "_entityId": TRACK_ID_OFFSET + 1,
-                        "_entityType": "Track",
-                        "_userId": 1,
-                        "_action": "Update",
-                        "_metadata": f'{{"cid": "", "data": {valid_update_track2_json}}}',
-                        "_signer": "user1wallet",
-                    }
-                )
-            }
-        ],
-        "ValidUpdateTrack3": [
-            {
-                "args": AttributeDict(
-                    {
-                        "_entityId": TRACK_ID_OFFSET + 2,
-                        "_entityType": "Track",
-                        "_userId": 1,
-                        "_action": "Update",
-                        "_metadata": f'{{"cid": "", "data": {valid_update_track3_json}}}',
-                        "_signer": "user1wallet",
-                    }
-                )
-            }
-        ],
+        ]
+        for key, value in metadatas.items()
     }
 
     entity_manager_txs = [
@@ -1731,6 +1530,41 @@ def test_update_access_conditions(app, mocker):
         "users": [
             {"user_id": 1, "handle": "user-1", "wallet": "user1wallet"},
         ],
+        "tracks": [
+            {  # non-gated
+                "track_id": TRACK_ID_OFFSET,
+                "owner_id": 1,
+                "is_stream_gated": False,
+                "stream_conditions": None,
+                "is_download_gated": False,
+                "download_conditions": None,
+            },
+            {  # follow-gated
+                "track_id": TRACK_ID_OFFSET + 1,
+                "owner_id": 1,
+                "is_stream_gated": True,
+                "stream_conditions": follow_gate,
+                "is_download_gated": True,
+                "download_conditions": follow_gate,
+            },
+            {  # follow-gated (to be changed to free)
+                "track_id": TRACK_ID_OFFSET + 2,
+                "owner_id": 1,
+                "is_stream_gated": True,
+                "stream_conditions": follow_gate,
+                "is_download_gated": True,
+                "download_conditions": follow_gate,
+            },
+            {  # hidden non-gated
+                "track_id": TRACK_ID_OFFSET + 3,
+                "owner_id": 1,
+                "is_unlisted": True,
+                "is_stream_gated": False,
+                "stream_conditions": None,
+                "is_download_gated": False,
+                "download_conditions": None,
+            },
+        ],
     }
     populate_mock_db(db, entities)
 
@@ -1744,35 +1578,38 @@ def test_update_access_conditions(app, mocker):
             block_hash=hex(0),
         )
 
-        all_tracks: List[Track] = (
-            session.query(Track).filter(Track.is_current == True).all()
+        follow_gated: Track = (
+            session.query(Track).filter(Track.track_id == TRACK_ID_OFFSET).first()
         )
-        assert len(all_tracks) == 3
+        assert follow_gated.is_stream_gated == True
+        assert follow_gated.stream_conditions == follow_gate
+        assert follow_gated.is_download_gated == True
+        assert follow_gated.download_conditions == follow_gate
 
-        track1 = all_tracks[0]
-        assert track1.is_downloadable == True
-        assert track1.stream_conditions == None
-        assert track1.download_conditions == None
+        usdc_gated: Track = (
+            session.query(Track).filter(Track.track_id == TRACK_ID_OFFSET + 1).first()
+        )
+        assert usdc_gated.is_stream_gated == True
+        assert usdc_gated.stream_conditions == usdc_gate_1
+        assert usdc_gated.is_download_gated == True
+        assert usdc_gated.download_conditions == usdc_gate_1
 
-        track2 = all_tracks[1]
-        assert track2.is_downloadable == False
-        assert track2.stream_conditions == None
-        assert track2.download_conditions == None
+        free: Track = (
+            session.query(Track).filter(Track.track_id == TRACK_ID_OFFSET + 2).first()
+        )
+        assert free.is_stream_gated == False
+        assert free.stream_conditions == None
+        assert free.is_download_gated == False
+        assert free.download_conditions == None
 
-        track3 = all_tracks[2]
-        assert track3.is_downloadable == True
-        assert track3.stream_conditions == {
-            "usdc_purchase": {
-                "price": 200,
-                "splits": [{"user_id": 1, "percentage": 100}],
-            }
-        }
-        assert track3.download_conditions == {
-            "usdc_purchase": {
-                "price": 200,
-                "splits": [{"user_id": 1, "percentage": 100}],
-            }
-        }
+        hidden_follow_gated: Track = (
+            session.query(Track).filter(Track.track_id == TRACK_ID_OFFSET + 3).first()
+        )
+        assert hidden_follow_gated.is_unlisted == True
+        assert hidden_follow_gated.is_stream_gated == True
+        assert hidden_follow_gated.stream_conditions == collectible_gate
+        assert hidden_follow_gated.is_download_gated == True
+        assert hidden_follow_gated.download_conditions == collectible_gate
 
 
 def test_remixability(app, mocker):

@@ -54,6 +54,7 @@ export type ScreenProps = {
   url?: string
   variant?: ScreenVariant
   as?: ComponentType<ViewProps>
+  header?: () => ReactElement
 }
 
 export const Screen = (props: ScreenProps) => {
@@ -70,7 +71,8 @@ export const Screen = (props: ScreenProps) => {
     url,
     variant = 'primary',
     style,
-    as: RootComponent = View
+    as: RootComponent = View,
+    header
   } = props
   const palette = useThemePalette()
   const styles = useStyles()
@@ -88,6 +90,7 @@ export const Screen = (props: ScreenProps) => {
   useLayoutEffect(() => {
     navigation.setOptions(
       removeUndefined({
+        header,
         headerLeft: topbarLeft === undefined ? undefined : () => topbarLeft,
         headerRight: topbarRight
           ? () => topbarRight
@@ -116,7 +119,8 @@ export const Screen = (props: ScreenProps) => {
     isSecondary,
     headerTitleProp,
     icon,
-    IconProps
+    IconProps,
+    header
   ])
 
   return (

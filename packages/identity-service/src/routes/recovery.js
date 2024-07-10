@@ -49,16 +49,13 @@ module.exports = function (app) {
         })
       }
 
-      const { login, data, signature, handle } = req.body
+      const { login, data, signature } = req.body
 
       if (!login) {
         return errorResponseBadRequest('Please provide valid login information')
       }
       if (!data || !signature) {
         return errorResponseBadRequest('Please provide data and signature')
-      }
-      if (!handle) {
-        return errorResponseBadRequest('Please provide a handle')
       }
 
       const walletFromSignature = recoverPersonalSignature({
@@ -78,7 +75,7 @@ module.exports = function (app) {
       }
       if (!existingUser.isEmailDeliverable) {
         req.logger.info(
-          `Unable to deliver recovery email to ${existingUser.handle} ${existingUser.email}`
+          `Unable to deliver recovery email to ${existingUser.email}`
         )
         return successResponse({
           msg: 'Recovery email forbidden',
@@ -96,7 +93,6 @@ module.exports = function (app) {
       const copyrightYear = new Date().getFullYear().toString()
       const context = {
         recovery_link: recoveryLink,
-        handle: handle,
         copyright_year: copyrightYear
       }
       const recoveryHtml = recoveryTemplate(context)
@@ -107,7 +103,7 @@ module.exports = function (app) {
         subject: 'Save This Email: Audius Password Recovery',
         html: recoveryHtml,
         asm: {
-          groupId: 19141 // id of unsubscribe group at https://mc.sendgrid.com/unsubscribe-groups
+          groupId: 26666 // same group as otp, exempt from unsubscribing
         }
       }
       try {

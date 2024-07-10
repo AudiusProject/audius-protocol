@@ -4,7 +4,7 @@ import {
   VersionedTransaction
 } from '@solana/web3.js'
 import bs58 from 'bs58'
-import { Request, Response } from 'express'
+import { NextFunction, Request, Response } from 'express'
 import { Logger } from 'pino'
 import { recover } from 'web3-eth-accounts'
 import { keccak256 } from 'web3-utils'
@@ -23,6 +23,8 @@ import {
   createTrackListenInstructions,
   getFeePayerKeyPair
 } from './trackListenInstructions'
+import { RateLimiter } from '../../middleware/rateLimiter'
+import { LISTENS_RATE_LIMIT_IP_PREFIX, LISTENS_RATE_LIMIT_TRACK_PREFIX, config } from '../../config'
 
 export type LocationData = {
   city: string
@@ -62,6 +64,10 @@ export type RecordListenParams = {
 export type RecordListenResponse = {
   solTxSignature: string | null
 }
+
+export const listensIpRateLimiter = new RateLimiter({ prefix: LISTENS_RATE_LIMIT_IP_PREFIX, hourlyLimit: config.listensIpHourlyRateLimit, dailyLimit: config.listensIpDailyRateLimit, weeklyLimit: config.listensIpWeeklyRateLimit })
+export const listensIpTrackRateLimiter = new RateLimiter({ prefix: LISTENS_RATE_LIMIT_TRACK_PREFIX, hourlyLimit: config.listensTrackHourlyRateLimit, dailyLimit: config.listensTrackDailyRateLimit, weeklyLimit: config.listensTrackWeeklyRateLimit })
+
 
 export const recordListen = async (
   params: RecordListenParams
@@ -142,29 +148,68 @@ export const validateListenSignature = async (
   const hashedData = keccak256(data)
   const recoveredWallet = recover(hashedData, signature)
   const contentNodes = await getCachedContentNodes()
+
+  // if from identity service
+  if (recoveredWallet === config.identityRelayerPublicKey) {
+    return true
+  }
+
+  // if from registered content node
   for (const { delegateOwnerWallet } of contentNodes) {
     if (recoveredWallet === delegateOwnerWallet) return true
   }
   return false
 }
 
-export const listen = async (req: Request, res: Response) => {
+// rate limiter for after request validation
+export const listenRouteRateLimiter = async (params: { ip: string, trackId: string, logger?: Logger }): Promise<{ allowed: boolean }> => {
+  const { ip, trackId, logger } = params
+  const ipTrackConcatKey = `${ip}:${trackId}`
+
+  // consume and check rate limits
+  const ipLimit = await listensIpRateLimiter.checkLimit(ip)
+  const ipTrackLimit = await listensIpTrackRateLimiter.checkLimit(ipTrackConcatKey)
+
+  // merge limits and check if both allow passage
+  const allowed = ipLimit.allowed && ipTrackLimit.allowed
+
+  if (!allowed) {
+    logger?.info({ ipLimit, ipTrackLimit, ip }, "rate limit hit")
+  }
+
+  return { allowed }
+}
+
+export const listen = async (req: Request, res: Response, next: NextFunction) => {
   let logger
   try {
     // validation
+    logger = res.locals.logger
     const { userId, timestamp, signature } = recordListenBodySchema.parse(
       req.body
     )
     const { trackId } = recordListenParamsSchema.parse(req.params)
-    logger = res.locals.logger.child({ userId, trackId })
+    const host = req.hostname
+    logger = res.locals.logger.child({ userId, trackId, host })
     const ip = getIP(req)
 
+    // require request came from content
     if (!(await validateListenSignature(timestamp, signature))) {
       logger.info(
         { userId, trackId, ip, timestamp, signature },
         'unauthorized request'
       )
-      return res.status(401).json({ message: 'Unauthorized Error' })
+      res.status(401).json({ message: 'Unauthorized Error' })
+      next()
+      return
+    }
+
+    // check rate limit on forwarded IP and track
+    const allowed = await listenRouteRateLimiter({ ip, trackId, logger })
+    if (!allowed) {
+      res.send(429).json({ message: "Too Many Requests" })
+      next()
+      return
     }
 
     // record listen after validation
@@ -172,6 +217,7 @@ export const listen = async (req: Request, res: Response) => {
     return res.status(200).json(record)
   } catch (e: unknown) {
     if (e instanceof z.ZodError) {
+      logger?.error({ error: String(e) }, "validation error")
       return res
         .status(400)
         .json({ message: 'Validation Error', errors: e.errors })
@@ -186,6 +232,8 @@ export const listen = async (req: Request, res: Response) => {
     } else {
       logger?.error({ error: String(e) }, 'listen error')
     }
-    return res.status(500).json({ message: 'Internal Server Error' })
+    res.status(500).json({ message: 'Internal Server Error' })
+    next(e)
+    return
   }
 }

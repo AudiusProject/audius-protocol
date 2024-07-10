@@ -1,5 +1,4 @@
 export * from './AnimatedButton'
-export * from './Button'
 export * from './CardList'
 export * from './DynamicImage'
 export * from './EmptyTile'

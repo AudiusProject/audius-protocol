@@ -1,10 +1,12 @@
-import { SearchKind } from './types'
+import { Genre, Mood } from '@audius/sdk'
+
+import { SearchKind, SearchSortMethod } from './types'
 
 export const FETCH_SEARCH_PAGE_RESULTS = 'SEARCH/FETCH_SEARCH_PAGE_RESULTS'
 export const FETCH_SEARCH_PAGE_RESULTS_SUCCEEDED =
   'SEARCH/FETCH_SEARCH_PAGE_RESULTS_SUCCEEDED'
 export const FETCH_SEARCH_PAGE_RESULTS_FAILED =
-  'SEARCH/FETCH_SEARCH_PAGE_TRACKS_FAILED'
+  'SEARCH/FETCH_SEARCH_PAGE_RESULTS_FAILED'
 
 export const FETCH_SEARCH_PAGE_TAGS = 'SEARCH/FETCH_SEARCH_PAGE_TAGS'
 export const FETCH_SEARCH_PAGE_TAGS_SUCCEEDED =
@@ -15,9 +17,12 @@ export const FETCH_SEARCH_PAGE_TAGS_FAILED =
 export type FetchSearchPageResultsAction = {
   type: typeof FETCH_SEARCH_PAGE_RESULTS
   searchText: string
-  searchKind: SearchKind
+  kind: SearchKind
   limit: number
   offset: number
+  genre?: Genre
+  mood?: Mood
+  is_verified?: boolean
 }
 
 export type FetchSearchPageResultsSuceededAction = {
@@ -46,6 +51,14 @@ export type FetchSearchPageTagsAction = {
   searchKind: SearchKind
   limit: number
   offset: number
+  genre?: Genre
+  mood?: Mood
+  bpm?: string
+  key?: string
+  isVerified?: boolean
+  hasDownloads?: boolean
+  isPremium?: boolean
+  sortMethod?: SearchSortMethod
 }
 
 export type SearchPageActions =
@@ -58,54 +71,77 @@ export type SearchPageActions =
 
 // Query-based search
 
-export const fetchSearchPageResults = (
-  searchText: string,
-  searchKind: SearchKind,
-  limit: number,
+type FetchSearchPageResultsArgs = {
+  searchText: string
+  kind: SearchKind
+  limit: number
   offset: number
+  genre?: Genre
+  mood?: Mood
+  bpm?: string
+  key?: string
+  isVerified?: boolean
+  hasDownloads?: boolean
+  isPremium?: boolean
+  sortMethod?: SearchSortMethod
+}
+
+export const fetchSearchPageResults = (
+  args: FetchSearchPageResultsArgs
 ): SearchPageActions => ({
   type: FETCH_SEARCH_PAGE_RESULTS,
-  searchText,
-  searchKind,
-  limit,
-  offset
+  ...args
 })
 
-export const fetchSearchPageResultsSucceeded = (
-  results: any,
+type fetchSearchPageResultsSucceededArgs = {
+  results: any
   searchText: string
+}
+
+export const fetchSearchPageResultsSucceeded = (
+  args: fetchSearchPageResultsSucceededArgs
 ): SearchPageActions => ({
   type: FETCH_SEARCH_PAGE_RESULTS_SUCCEEDED,
-  results,
-  searchText
+  ...args
 })
 
 export const fetchSearchPageResultsFailed = (): SearchPageActions => ({
   type: FETCH_SEARCH_PAGE_RESULTS_FAILED
 })
 
-// Tag-based searcxh
+// Tag-based search
+type FetchSearchPageTagsArgs = {
+  tag: string
+  searchKind: SearchKind
+  limit: number
+  offset: number
+  genre?: Genre
+  mood?: Mood
+  bpm?: string
+  key?: string
+  isVerified?: boolean
+  hasDownloads?: boolean
+  isPremium?: boolean
+  sortMethod?: SearchSortMethod
+}
 
 export const fetchSearchPageTags = (
-  tag: string,
-  searchKind: SearchKind,
-  limit: number,
-  offset: number
+  args: FetchSearchPageTagsArgs
 ): SearchPageActions => ({
   type: FETCH_SEARCH_PAGE_TAGS,
-  tag,
-  searchKind,
-  limit,
-  offset
+  ...args
 })
 
-export const fetchSearchPageTagsSucceeded = (
-  results: any,
+type FetchSearchPageTagsSucceededArgs = {
+  results: any
   tag: string
+}
+
+export const fetchSearchPageTagsSucceeded = (
+  args: FetchSearchPageTagsSucceededArgs
 ): SearchPageActions => ({
   type: FETCH_SEARCH_PAGE_TAGS_SUCCEEDED,
-  results,
-  tag
+  ...args
 })
 
 export const fetchSearchPageTagsFailed = (): SearchPageActions => ({

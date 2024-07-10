@@ -34,7 +34,6 @@ import {
   shareModalUIActions,
   OverflowAction,
   OverflowSource,
-  editPlaylistModalActions,
   repostsUserListActions,
   favoritesUserListActions,
   RepostType,
@@ -659,11 +658,6 @@ class CollectionPage extends Component<
     this.props.shareCollection(playlistId)
   }
 
-  onHeroTrackEdit = () => {
-    if (this.props.playlistId)
-      this.props.onEditCollection(this.props.playlistId)
-  }
-
   onHeroTrackShare = () => {
     const { playlistId } = this.props
     this.onSharePlaylist(playlistId!)
@@ -792,7 +786,6 @@ class CollectionPage extends Component<
       onFilterChange: this.onFilterChange,
       onPlay: this.onPlay,
       onPreview: this.onPreview,
-      onHeroTrackEdit: this.onHeroTrackEdit,
       onPublish: this.onPublish,
       onHeroTrackShare: this.onHeroTrackShare,
       onHeroTrackSave: this.onHeroTrackSave,
@@ -1050,13 +1043,6 @@ function mapDispatchToProps(dispatch: Dispatch) {
     setModalVisibility: () => dispatch(setVisibility(true)),
     openConfirmationModal: (args: AlbumTrackRemoveConfirmationModalState) =>
       dispatch(albumTrackRemoveConfirmationModalActions.open(args)),
-    onEditCollection: (collectionId: ID) =>
-      dispatch(
-        editPlaylistModalActions.open({
-          collectionId,
-          isCollectionViewed: true
-        })
-      ),
     updatePlaylistLastViewedAt: (playlistId: ID) =>
       dispatch(updatedPlaylistViewed({ playlistId })),
     openPremiumContentPurchaseModal: (

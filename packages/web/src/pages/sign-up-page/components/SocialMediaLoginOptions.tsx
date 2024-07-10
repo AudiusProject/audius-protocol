@@ -1,6 +1,7 @@
 import { useContext } from 'react'
 
 import { socialMediaMessages } from '@audius/common/messages'
+import { SocialPlatform } from '@audius/common/models'
 import { BooleanKeys } from '@audius/common/services'
 import { Box, Flex, SocialButton } from '@audius/harmony'
 
@@ -10,8 +11,6 @@ import { useRemoteVar } from 'hooks/useRemoteConfig'
 import { SignupFlowInstagramAuth } from './SignupFlowInstagramAuth'
 import { SignupFlowTikTokAuth } from './SignupFlowTikTokAuth'
 import { SignupFlowTwitterAuth } from './SignupFlowTwitterAuth'
-
-export type SocialPlatform = 'twitter' | 'instagram' | 'tiktok'
 
 type SocialMediaLoginOptionsProps = {
   onCompleteSocialMediaLogin: (info: {

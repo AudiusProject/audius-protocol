@@ -1,5 +1,5 @@
 import { createObjectCsvStringifier } from 'csv-writer';
-import { ClientLabelMetadataHeader } from './clm';
+import { ClientLabelMetadataHeader } from './queries/clm';
 
 export const toCsvString = (rows: any[]): string => {
   const csvStringifier = createObjectCsvStringifier({

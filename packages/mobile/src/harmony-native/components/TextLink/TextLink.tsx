@@ -64,9 +64,13 @@ export const TextLink = <ParamList extends ReactNavigation.RootParamList>(
     active: color.primary.primary
   }
 
-  const tap = Gesture.Tap().onBegin(() => {
-    pressed.value = withTiming(1, motion.press)
-  })
+  const tap = Gesture.Tap()
+    .onBegin(() => {
+      pressed.value = withTiming(1, motion.press)
+    })
+    .onFinalize(() => {
+      pressed.value = withTiming(0, motion.press)
+    })
 
   const animatedLinkStyles = useAnimatedStyle(() => ({
     color: interpolateColor(

@@ -1,9 +1,9 @@
 import { View } from 'react-native'
 import { useSelector } from 'react-redux'
 
-import { IconArrowRight } from '@audius/harmony-native'
-import type { ButtonProps } from 'app/components/core'
-import { Button, Text } from 'app/components/core'
+import type { ButtonProps } from '@audius/harmony-native'
+import { IconArrowRight, Button } from '@audius/harmony-native'
+import { Text } from 'app/components/core'
 import type { AppState } from 'app/store'
 import { makeStyles } from 'app/styles'
 
@@ -45,13 +45,13 @@ export const ContinueButton = (props: ContinueButtonProps) => {
     <View style={styles.root}>
       <Button
         {...props}
-        title={messages.continue}
         style={styles.button}
-        size='large'
         fullWidth
         disabled={!hasFollowedEnoughArtists}
-        icon={IconArrowRight}
-      />
+        iconRight={IconArrowRight}
+      >
+        {messages.continue}
+      </Button>
       <Text fontSize='small' style={styles.followCounter}>
         {messages.following}{' '}
         {hasFollowedEnoughArtists

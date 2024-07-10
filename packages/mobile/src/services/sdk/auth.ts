@@ -15,9 +15,17 @@ export const auth = {
       }
     )
   },
-  signTransaction: async (_data) => {
-    // TODO(nkang): Can probably just use eth-sig-util signTransaction like in the web audiusSdk service, but need to test it thoroughly in a mobile env. So saving that for later.
-    return 'Not implemented'
+  signTransaction: async (data: any) => {
+    const { signTypedData, SignTypedDataVersion } = await import(
+      '@metamask/eth-sig-util'
+    )
+
+    await waitForLibsInit()
+    return await signTypedData({
+      privateKey: audiusLibs!.hedgehog!.getWallet()!.getPrivateKey(),
+      data,
+      version: SignTypedDataVersion.V3
+    })
   },
   getSharedSecret: async (publicKey: string | Uint8Array) => {
     await waitForLibsInit()

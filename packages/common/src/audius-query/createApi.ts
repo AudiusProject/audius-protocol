@@ -1,4 +1,4 @@
-import { useCallback, useContext, useEffect, useState } from 'react'
+import { useCallback, useContext, useState } from 'react'
 
 import { ResponseError } from '@audius/sdk'
 import { CaseReducerActions, createSlice } from '@reduxjs/toolkit'
@@ -7,6 +7,7 @@ import { produce } from 'immer'
 import { isEqual, mapValues } from 'lodash'
 import { denormalize, normalize } from 'normalizr'
 import { useDispatch, useSelector } from 'react-redux'
+import { useDebounce } from 'react-use'
 import { Dispatch } from 'redux'
 
 import { useBooleanOnce } from '~/hooks/useBooleanOnce'
@@ -114,11 +115,11 @@ export const createApi = <
         const key = getKeyFromFetchArgs(fetchArgs)
         const endpointState = getState().api[reducerPath][endpointName][key]
         if (!endpointState) return
-        const newState = produce(endpointState.nonNormalizedData, updateRecipe)
+        const newState = produce(endpointState.normalizedData, updateRecipe)
         const updateAction =
           slice.actions[`fetch${capitalize(endpointName as string)}Succeeded`]
         if (updateAction) {
-          dispatch(updateAction({ fetchArgs, nonNormalizedData: newState }))
+          dispatch(updateAction({ fetchArgs, normalizedData: newState }))
         }
       },
     reset: (endpointName) => (dispatch: Dispatch) => {
@@ -168,11 +169,11 @@ const addEndpointToSlice = <NormalizedData>(
       state: ApiState,
       action: FetchSucceededAction
     ) => {
-      const { fetchArgs, nonNormalizedData } = action.payload
+      const { fetchArgs, normalizedData } = action.payload
       const key = getKeyFromFetchArgs(fetchArgs)
       const scopedState = { ...initState, ...state[endpointName][key] }
       scopedState.status = Status.SUCCESS
-      scopedState.nonNormalizedData = nonNormalizedData
+      scopedState.normalizedData = normalizedData
       state[endpointName][key] = scopedState
     },
     [`reset${capitalize(endpointName)}`]: (
@@ -258,11 +259,11 @@ const useQueryState = <Args, Data>(
       // cache hit
       if (cachedData) {
         const { result } = normalize(
-          { [schemaKey]: cachedData },
+          schemaKey ? { [schemaKey]: cachedData } : cachedData,
           apiResponseSchema
         )
         return {
-          nonNormalizedData: result,
+          normalizedData: result,
           status: Status.SUCCESS,
           isInitialValue: true,
           errorMessage: undefined
@@ -274,24 +275,26 @@ const useQueryState = <Args, Data>(
   }, isEqual)
 }
 
-// Rehydrate local nonNormalizedData using entities from global normalized cache
+// Rehydrate local normalizedData using entities from global normalized cache
 const useCacheData = <Args, Data>(
   endpoint: EndpointConfig<Args, Data>,
-  nonNormalizedData: any,
+  normalizedData: any,
   hookOptions?: QueryHookOptions
 ) => {
   return useSelector((state: CommonState) => {
-    if (hookOptions?.shallow && !endpoint.options.kind) return nonNormalizedData
+    if (hookOptions?.shallow && !endpoint.options.kind) return normalizedData
     const entityMap = selectCommonEntityMap(
       state,
       endpoint.options.kind,
       hookOptions?.shallow
     )
-    return (
-      endpoint.options.schemaKey
-        ? denormalize(nonNormalizedData, apiResponseSchema, entityMap)
-        : nonNormalizedData
-    ) as Data
+    if (
+      endpoint.options.schemaKey ||
+      (typeof normalizedData === 'object' && !Array.isArray(normalizedData))
+    ) {
+      return denormalize(normalizedData, apiResponseSchema, entityMap) as Data
+    }
+    return normalizedData
   }, isEqual)
 }
 
@@ -342,12 +345,17 @@ const fetchData = async <Args, Data>(
     }
 
     let data: Data
-    if (endpoint.options.schemaKey) {
+
+    if (
+      endpoint.options.schemaKey ||
+      (typeof apiData === 'object' && !Array.isArray(apiData))
+    ) {
       const { entities, result } = normalize(
-        { [endpoint.options.schemaKey]: apiData },
+        endpoint.options.schemaKey
+          ? { [endpoint.options.schemaKey]: apiData }
+          : apiData,
         apiResponseSchema
       )
-      data = result
 
       // Format entities before adding to cache
       entities[Kind.USERS] = mapValues(
@@ -364,6 +372,7 @@ const fetchData = async <Args, Data>(
           })
       )
       dispatch(addEntries(entities))
+      data = result
     } else {
       data = apiData
     }
@@ -372,7 +381,7 @@ const fetchData = async <Args, Data>(
       // @ts-ignore
       actions[`fetch${capitalize(endpointName)}Succeeded`]({
         fetchArgs,
-        nonNormalizedData: data
+        normalizedData: data
       }) as FetchSucceededAction
     )
 
@@ -434,13 +443,12 @@ const buildEndpointHooks = <
         ? null
         : queryState
 
-    const { nonNormalizedData, status, errorMessage, isInitialValue } =
-      state ?? {
-        nonNormalizedData: null,
-        status: Status.IDLE
-      }
+    const { normalizedData, status, errorMessage, isInitialValue } = state ?? {
+      normalizedData: null,
+      status: Status.IDLE
+    }
 
-    let cachedData = useCacheData(endpoint, nonNormalizedData, hookOptions)
+    let cachedData = useCacheData(endpoint, normalizedData, hookOptions)
 
     const context = useContext(AudiusQueryContext)
 
@@ -453,19 +461,23 @@ const buildEndpointHooks = <
       fetchData(fetchArgs, endpointName, endpoint, actions, context)
     }, [context, fetchArgs, hookOptions?.disabled, status])
 
-    useEffect(() => {
-      if (isInitialValue) {
-        dispatch(
-          // @ts-ignore
-          actions[`fetch${capitalize(endpointName)}Succeeded`]({
-            fetchArgs,
-            nonNormalizedData
-          }) as FetchSucceededAction
-        )
-      }
+    useDebounce(
+      () => {
+        if (isInitialValue) {
+          dispatch(
+            // @ts-ignore
+            actions[`fetch${capitalize(endpointName)}Succeeded`]({
+              fetchArgs,
+              normalizedData
+            }) as FetchSucceededAction
+          )
+        }
 
-      fetchWrapped()
-    }, [isInitialValue, dispatch, fetchArgs, nonNormalizedData, fetchWrapped])
+        fetchWrapped()
+      },
+      hookOptions?.debounce ?? 0,
+      [isInitialValue, dispatch, fetchArgs, normalizedData, fetchWrapped]
+    )
 
     if (endpoint.options?.schemaKey) {
       cachedData = cachedData?.[endpoint.options?.schemaKey]
@@ -492,12 +504,12 @@ const buildEndpointHooks = <
       endpoint
     )
 
-    const { nonNormalizedData, status, errorMessage } = queryState ?? {
-      nonNormalizedData: null,
+    const { normalizedData, status, errorMessage } = queryState ?? {
+      normalizedData: null,
       status: Status.IDLE
     }
 
-    let cachedData = useCacheData(endpoint, nonNormalizedData, hookOptions)
+    let cachedData = useCacheData(endpoint, normalizedData, hookOptions)
     const context = useContext(AudiusQueryContext)
 
     const fetchWrapped = useCallback(

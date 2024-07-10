@@ -10,6 +10,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { IconCheck, IconClose } from '@audius/harmony-native'
 import { TextButton } from 'app/components/core'
 import { TwitterButton } from 'app/components/twitter-button'
+import { env } from 'app/env'
 import { makeStyles } from 'app/styles'
 import { EventNames } from 'app/types/analytics'
 
@@ -104,10 +105,10 @@ export const TipSentScreen = () => {
       <DescriptionText>{messages.description}</DescriptionText>
       <TwitterButton
         type='static'
-        size='large'
         fullWidth
-        styles={{ root: styles.twitter }}
+        style={styles.twitter}
         shareText={getTwitterShareText()}
+        url={recipient ? `${env.AUDIUS_URL}/${recipient.handle}` : undefined}
         analytics={
           account && recipient
             ? {

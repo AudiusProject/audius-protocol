@@ -1,6 +1,6 @@
 import { ChangeEvent, useCallback, useState } from 'react'
 
-import { useGetCurrentUserId } from '@audius/common/api'
+import { useGetCurrentUserId, useGetPlaylistById } from '@audius/common/api'
 import {
   AccessConditions,
   AccessPermissions,
@@ -13,10 +13,9 @@ import {
 import { FeatureFlags } from '@audius/common/services'
 import {
   CollectionsPageType,
-  PurchaseableContentType,
-  useEditPlaylistModal
+  PurchaseableContentType
 } from '@audius/common/store'
-import { Nullable } from '@audius/common/utils'
+import { Nullable, formatReleaseDate } from '@audius/common/utils'
 import {
   Text,
   IconVisibilityHidden,
@@ -27,9 +26,12 @@ import {
   IconSearch,
   IconCart,
   useTheme,
-  IconComponent
+  IconComponent,
+  MusicBadge,
+  IconCalendarMonth
 } from '@audius/harmony'
 import cn from 'classnames'
+import { Link } from 'react-router-dom'
 
 import { UserLink } from 'components/link'
 import Skeleton from 'components/skeleton/Skeleton'
@@ -37,7 +39,7 @@ import { GatedContentSection } from 'components/track/GatedContentSection'
 import { UserGeneratedText } from 'components/user-generated-text'
 import { useFlag } from 'hooks/useRemoteConfig'
 
-import { AlbumDetailsText } from '../components/AlbumDetailsText'
+import { CollectionMetadataList } from '../CollectionMetadataList'
 import { RepostsFavoritesStats } from '../components/RepostsFavoritesStats'
 
 import { Artwork } from './Artwork'
@@ -48,8 +50,10 @@ const messages = {
   filterPlaylist: 'Search in playlist...',
   filterAlbum: 'Search in album...',
   premiumLabel: 'premium',
-  hiddenPlaylistLabel: 'hidden playlist',
-  by: 'By '
+  by: 'By ',
+  hidden: 'Hidden',
+  releases: (releaseDate: string) =>
+    `Releases ${formatReleaseDate({ date: releaseDate, withHour: true })}`
 }
 
 type CollectionHeaderProps = {
@@ -100,11 +104,7 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
     coverArtSizes,
     description,
     isOwner,
-    releaseDate,
-    lastModifiedDate,
-    numTracks,
     isPlayable,
-    duration,
     isPublished,
     tracksLoading,
     loading,
@@ -129,11 +129,19 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
   const { isEnabled: isPremiumAlbumsEnabled } = useFlag(
     FeatureFlags.PREMIUM_ALBUMS_ENABLED
   )
+  const { data: currentUserId } = useGetCurrentUserId({})
+  const { data: collection } = useGetPlaylistById({
+    playlistId: collectionId,
+    currentUserId
+  })
+  const {
+    is_scheduled_release: isScheduledRelease,
+    release_date: releaseDate,
+    permalink
+  } = collection ?? {}
   const [artworkLoading, setIsArtworkLoading] = useState(true)
   const [filterText, setFilterText] = useState('')
   const { spacing } = useTheme()
-
-  const { data: currentUserId } = useGetCurrentUserId({})
 
   const hasStreamAccess = access?.stream
 
@@ -149,12 +157,6 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
   const handleLoadArtwork = useCallback(() => {
     setIsArtworkLoading(false)
   }, [])
-
-  const { onOpen } = useEditPlaylistModal()
-
-  const handleClickEditTitle = useCallback(() => {
-    onOpen({ collectionId, initialFocusedField: 'name' })
-  }, [onOpen, collectionId])
 
   const renderStatsRow = (isLoading: boolean) => {
     if (isLoading) return <Skeleton height='20px' width='120px' />
@@ -195,32 +197,28 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
             <Skeleton height='24px' width='200px' />
           ) : (
             <Flex gap='s' mt='s' alignItems='center'>
-              {!isPublished ? (
-                <IconVisibilityHidden color='subdued' aria-label='hidden' />
-              ) : null}
               {isPremium ? <IconCart size='s' color='subdued' /> : null}
-              <Text
-                variant='label'
-                color='subdued'
-                css={{ letterSpacing: '2px' }}
-              >
+              <Text variant='label' color='subdued'>
                 {isPremium ? `${messages.premiumLabel} ` : ''}
-                {type === 'playlist' && !isPublished
-                  ? messages.hiddenPlaylistLabel
-                  : type}
+                {type}
               </Text>
             </Flex>
           )}
           <Flex direction='column' gap='s'>
             <Flex
-              as={isOwner ? 'button' : 'span'}
+              as={isOwner ? Link : 'span'}
               css={{ background: 0, border: 0, padding: 0, margin: 0 }}
               gap='s'
               alignItems='center'
               className={cn({
                 [styles.editableTitle]: isOwner
               })}
-              onClick={isOwner ? handleClickEditTitle : undefined}
+              // @ts-ignore -- Flex Link doesn't type `to` correctly
+              to={
+                isOwner
+                  ? { pathname: `${permalink}/edit`, search: '?focus=name' }
+                  : undefined
+              }
             >
               {isLoading ? (
                 <Skeleton height='48px' width='300px' />
@@ -271,15 +269,23 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
           />
         )}
       </Flex>
-      {onFilterChange ? (
-        <Flex
-          w='240px'
-          css={{
-            position: 'absolute',
-            top: spacing.l,
-            right: spacing.l
-          }}
-        >
+      <Flex
+        w='240px'
+        gap='s'
+        justifyContent='flex-end'
+        css={{ position: 'absolute', right: spacing.l, top: spacing.l }}
+      >
+        {!isPublished ? (
+          isScheduledRelease && releaseDate ? (
+            <MusicBadge variant='accent' icon={IconCalendarMonth}>
+              {messages.releases(releaseDate)}
+            </MusicBadge>
+          ) : (
+            <MusicBadge icon={IconVisibilityHidden}>
+              {messages.hidden}
+            </MusicBadge>
+          )
+        ) : onFilterChange ? (
           <TextInput
             label={
               type === 'album' ? messages.filterAlbum : messages.filterPlaylist
@@ -293,8 +299,8 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
             size={TextInputSize.SMALL}
             className={styles.searchInput}
           />
-        </Flex>
-      ) : null}
+        ) : null}
+      </Flex>
     </Flex>
   )
 
@@ -333,12 +339,7 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
               {description}
             </UserGeneratedText>
           ) : null}
-          <AlbumDetailsText
-            duration={duration}
-            lastModifiedDate={lastModifiedDate}
-            numTracks={numTracks}
-            releaseDate={releaseDate}
-          />
+          <CollectionMetadataList collectionId={collectionId} />
         </Flex>
       )}
     </Flex>

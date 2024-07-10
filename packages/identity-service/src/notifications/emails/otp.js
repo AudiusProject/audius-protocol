@@ -1,363 +1,819 @@
-const getOtpEmail = ({ title, otp, expire, copyrightYear }) => {
-  return `<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd"> 
-  <html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office"> 
-  <head> 
-    <!--[if gte mso 9]>
-    <xml>
-    <o:OfficeDocumentSettings>
-    <o:AllowPNG/>
-    <o:PixelsPerInch>96</o:PixelsPerInch>
-    </o:OfficeDocumentSettings>
-    </xml>
-    <![endif]--> 
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
-    <meta name="viewport" content="width=device-width,initial-scale=1"> 
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge"/> 
-    <meta name="x-apple-disable-message-reformatting"> 
-    <meta name="color-scheme" content="light only">
-    <title></title> 
-    <style>html{-webkit-text-size-adjust:none;-ms-text-size-adjust:none}@media only screen and (max-device-width:600px),only screen and (max-width:600px){.mob_100{width:100%!important;max-width:100%!important}.mob_full{width:auto!important;display:block!important;padding:0 10px!important}.mob_center{text-align:center!important}.mob_center_bl{margin-left:auto;margin-right:auto}.mob_hidden{display:none!important}.only_mob{display:block!important}}@media only screen and (max-width:600px){.mob_100{width:100%!important;max-width:100%!important}.mob_100 img,.mob_100 table{max-width:100%!important}.mob_full{width:auto!important;display:block!important;padding:0 10px!important}.mob_center{text-align:center!important}.mob_center_bl{margin-left:auto;margin-right:auto}.mob_hidden{display:none!important}.only_mob{display:block!important}}.creative{width:100%!important;max-width:100%!important}.mail_preheader{display:none!important}form input, form textarea{font-family: Arial, sans-serif;width: 100%;box-sizing: border-box;font-size: 13px;color:#000000;outline:none;padding: 0px 15px;}form textarea{resize:vertical;line-height: normal;padding: 10px 15px;}form button{border: 0px none;cursor:pointer;}</style> 
-    <style>@media only screen and (max-width:480px){u+.body .full-wrap{width:100%!important;width:100vw!important}}</style> 
-    <style>@-ms-viewport{width:device-width}</style> 
-    <!--[if (gte mso 9)|(IE)]>
-    <style type="text/css">table {border-collapse: collapse !important;}.outf14{font-size:14px !important;}    .w520px{ width: 520px !important;} .w520px{ width: 520px !important;} .not_for_outlook{mso-hide: all !important;display: none !important;font-size:0;max-height:0;line-height: 0;mso-hide: all;}.outpadding{padding-left: 0 !important;padding-right: 0 !important;}</style>
-    <![endif]--> 
-    </head> 
-    <body class="body" style="padding:0;margin:0"> 
-    <div class="full-wrap"> 
-    <table width="100%" border="0" cellspacing="0" cellpadding="0" class="full-wrap">
-    <tr><td align="center" bgcolor="#f5f5f5" style="line-height: normal; hyphens: none;">
-    <div>
-    <!--[if !mso]>
-    <!-->
-    <div class="mail_preheader" style="font-size: 0px; color: transparent; opacity: 0;">
-      <span style="font-family: Arial, Helvetica, sans-serif; font-size: 0px; color: transparent; line-height: 0px;"></span>
-    </div>
-    <!--
-    <![endif]-->
-  </div>  
+const getOtpEmail = ({ otp, copyrightYear }) => {
+  return `
+  <!doctype html>
+  <html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+
+  <head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width" name="viewport" />
+  <meta content="IE=edge" http-equiv="X-UA-Compatible" />
+  <meta name="x-apple-disable-message-reformatting" />
+  <meta content="telephone=no,address=no,email=no,date=no,url=no" name="format-detection" />
+  <title>Your Audius Verification Code</title>
+  <!--[if mso]>
+              <style>
+                  * {
+                      font-family: sans-serif !important;
+                  }
+              </style>
+          <![endif]-->
+  <!--[if !mso]><!-->
+  <!-- <![endif]-->
+  <link href="https://fonts.googleapis.com/css?family=Inter:700" rel="stylesheet" type="text/css">
+  <link href="https://fonts.googleapis.com/css?family=Inter:400" rel="stylesheet" type="text/css">
+  <link href="https://fonts.googleapis.com/css?family=Inter:600" rel="stylesheet" type="text/css">
+  <link href="https://fonts.googleapis.com/css?family=Inter:500" rel="stylesheet" type="text/css">
+  <style>
+  html {
+      margin: 0 !important;
+      padding: 0 !important;
+  }
+
+  * {
+      -ms-text-size-adjust: 100%;
+      -webkit-text-size-adjust: 100%;
+  }
+  td {
+      vertical-align: top;
+      mso-table-lspace: 0pt !important;
+      mso-table-rspace: 0pt !important;
+  }
+  a {
+      text-decoration: none;
+  }
+  img {
+      -ms-interpolation-mode:bicubic;
+  }
+  @media only screen and (min-device-width: 320px) and (max-device-width: 374px) {
+      u ~ div .email-container {
+          min-width: 320px !important;
+      }
+  }
+  @media only screen and (min-device-width: 375px) and (max-device-width: 413px) {
+      u ~ div .email-container {
+          min-width: 375px !important;
+      }
+  }
+  @media only screen and (min-device-width: 414px) {
+      u ~ div .email-container {
+          min-width: 414px !important;
+      }
+  }
+
+  </style>
+  <!--[if gte mso 9]>
+          <xml>
+              <o:OfficeDocumentSettings>
+                  <o:AllowPNG/>
+                  <o:PixelsPerInch>96</o:PixelsPerInch>
+              </o:OfficeDocumentSettings>
+          </xml>
+          <![endif]-->
+  <style>
+  @media only screen and (max-device-width: 599px), only screen and (max-width: 599px) {
+
+      .eh {
+          height:auto !important;
+      }
+      .desktop {
+          display: none !important;
+          height: 0 !important;
+          margin: 0 !important;
+          max-height: 0 !important;
+          overflow: hidden !important;
+          padding: 0 !important;
+          visibility: hidden !important;
+          width: 0 !important;
+      }
+      .mobile {
+          display: block !important;
+          width: auto !important;
+          height: auto !important;
+          float: none !important;
+      }
+      .email-container {
+          width: 100% !important;
+          margin: auto !important;
+      }
+      .stack-column,
+      .stack-column-center {
+          display: block !important;
+          width: 100% !important;
+          max-width: 100% !important;
+          direction: ltr !important;
+      }
+      .wid-auto {
+          width:auto !important;
+      }
+
+      .table-w-full-mobile {
+          width: 100%;
+      }
+
+      
+      
+
+      .mobile-center {
+          text-align: center;
+      }
+
+      .mobile-center > table {
+          display: inline-block;
+          vertical-align: inherit;
+      }
+
+      .mobile-left {
+          text-align: left;
+      }
+
+      .mobile-left > table {
+          display: inline-block;
+          vertical-align: inherit;
+      }
+
+      .mobile-right {
+          text-align: right;
+      }
+
+      .mobile-right > table {
+          display: inline-block;
+          vertical-align: inherit;
+      }
+
+  }
+
+  </style>
+  </head>
+
+  <body width="100%" style="background-color:#e9e9eb;margin:0;padding:0!important;mso-line-height-rule:exactly;">
+  <div style="background-color:#e9e9eb">
+  <!--[if gte mso 9]>
+                                              <v:background xmlns:v="urn:schemas-microsoft-com:vml" fill="t">
+                                              <v:fill type="tile" color="#e9e9eb"/>
+                                              </v:background>
+                                              <![endif]-->
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr>
+  <td valign="top" align="center">
+  <table bgcolor="#ffffff" style="margin:0 auto;" align="center" id="brick_container" cellspacing="0" cellpadding="0" border="0" width="600" class="email-container">
+  <tr>
+  <td width="600">
+  <table cellspacing="0" cellpadding="0" border="0">
+  <tr>
+  <td width="600" style="background-color:#ffffff;  " bgcolor="#ffffff">
+  <table width="100%" border="0" cellpadding="0" cellspacing="0">
+  <tr>
+  <td width="100%">
+  <table width="100%" cellspacing="0" cellpadding="0" border="0">
+  <tr>
+  <td width="100%" align="center" style="vertical-align: middle; background-color:#ffffff;  border-width: 0px 0px 1px 0px; border-color:#e9e9eb; border-style:solid; padding-left:8px; padding-right:8px;" bgcolor="#ffffff">
+  <table width="100%" border="0" cellpadding="0" cellspacing="0">
+  <tr>
+  <td height="8" style="height:8px; min-height:8px; line-height:8px;"></td>
+  </tr>
+  <tr>
+  <td align="center">
+  <table cellspacing="0" cellpadding="0" border="0">
+  <tr>
+  <td style="vertical-align: middle;" width="224" align="center"><img src="https://download.audius.co/otp-email/qIQFWyjCV3zgmD1szUv72xc3ksmpzo.jpeg" width="224" border="0" style="max-width:224px; width: 100%;
+          height: auto; display: block;"></td>
+  </tr>
+  </table>
+  </td>
+  </tr>
+  <tr>
+  <td height="8" style="height:8px; min-height:8px; line-height:8px;"></td>
+  </tr>
+  </table>
+  </td>
+  </tr>
+  </table>
+  </td>
+  </tr>
+  <tr>
+  <td width="600">
+  <table cellspacing="0" cellpadding="0" border="0">
+  <tr>
+  <td width="600">
+  <table cellpadding="0" cellspacing="0" bgcolor="#ffffff" height="16" width="100%" style="line-height:16px;height:16px!important;background-color:#ffffff;  border-collapse:separate !important;margin:0 auto;text-align:center;">
+  <tr>
+  <td> </td>
+  </tr>
+  </table>
+  </td>
+  </tr>
+  </table>
+  </td>
+  </tr>
+  <tr>
+  <td width="100%">
+  <table width="100%" cellspacing="0" cellpadding="0" border="0">
+  <tr>
+  <td width="100%" align="center" style="vertical-align: middle; background-color:#ffffff;   padding-left:24px; padding-right:24px;" bgcolor="#ffffff">
+  <table width="100%" border="0" cellpadding="0" cellspacing="0">
+  <tr>
+  <td height="24" style="height:24px; min-height:24px; line-height:24px;"></td>
+  </tr>
+  <tr>
+  <td style="vertical-align: middle;" width="100%">
+  <table width="100%" cellspacing="0" cellpadding="0" border="0">
+  <tr>
+  <td width="100%" align="center" style="vertical-align: middle; background-color:#ffffff;  " bgcolor="#ffffff">
+  <table width="100%" border="0" cellpadding="0" cellspacing="0">
+  <tr>
+  <td style="vertical-align: middle;" align="center">
+  <div style="line-height:36px;text-align:center;"><span style="color:#3a3843;font-weight:700;font-family:Inter,Arial,sans-serif;font-size:27px;letter-spacing:-0.02em;line-height:36px;text-align:center;">Your Verification Code</span></div>
+  </td>
+  </tr>
+  <tr>
+  <td height="8" style="height:8px; min-height:8px; line-height:8px;"></td>
+  </tr>
+  <tr>
+  <td style="vertical-align: middle;" align="center">
+  <div style="line-height:24px;text-align:center;"><span style="color:#52505f;font-family:Inter,Arial,sans-serif;font-size:16px;line-height:24px;text-align:center;">Your Audius Verification code is:</span></div>
+  </td>
+  </tr>
+  </table>
+  </td>
+  </tr>
+  </table>
+  </td>
+  </tr>
+  <tr>
+  <td height="16" style="height:16px; min-height:16px; line-height:16px;"></td>
+  </tr>
+  <tr>
+  <td align="center">
+  <table cellspacing="0" cellpadding="0" border="0">
+  <tr>
+  <td style="vertical-align: middle;">
+  <table cellspacing="0" cellpadding="0" border="0">
+  <tr>
+  <td style="vertical-align: middle; background-color:#f9f7fc; border-radius:8px; border:1px solid #ebe4f6; padding-left:16px; padding-right:16px;" bgcolor="#f9f7fc">
+  <table width="100%" border="0" cellpadding="0" cellspacing="0">
+  <tr>
+  <td height="16" style="height:16px; min-height:16px; line-height:16px;"></td>
+  </tr>
+  <tr>
+  <td style="vertical-align: middle;">
+  <div style="line-height:48px;text-align:left;"><span style="color:#7e1bcc;font-weight:600;font-family:Inter,Arial,sans-serif;font-size:43px;letter-spacing:-0.02em;line-height:48px;text-align:left;">${otp}</span></div>
+  </td>
+  </tr>
+  <tr>
+  <td height="16" style="height:16px; min-height:16px; line-height:16px;"></td>
+  </tr>
+  </table>
+  </td>
+  </tr>
+  </table>
+  </td>
+  </tr>
+  </table>
+  </td>
+  </tr>
+  <tr>
+  <td height="16" style="height:16px; min-height:16px; line-height:16px;"></td>
+  </tr>
+  <tr>
+  <td align="center">
+  <table cellspacing="0" cellpadding="0" border="0">
+  <tr>
+  <td style="vertical-align: middle;" align="center">
+  <div style="line-height:14px;text-align:center;"><span style="color:#52505f;font-family:Inter,Arial,sans-serif;font-size:12px;line-height:14px;text-align:center;">This code will expire in 10 minutes. <br><br>If you didn’t make this request, please change your password.</span></div>
+  </td>
+  </tr>
+  </table>
+  </td>
+  </tr>
+  <tr>
+  <td height="16" style="height:16px; min-height:16px; line-height:16px;"></td>
+  </tr>
+  </table>
+  </td>
+  </tr>
+  </table>
+  </td>
+  </tr>
+  <tr>
+  <td width="600">
+  <table cellspacing="0" cellpadding="0" border="0">
+  <tr>
+  <td width="552" style="vertical-align: middle; height:16px; background-color:#ffffff;   padding-left:24px; padding-right:24px;" bgcolor="#ffffff">
+  <table width="100%" border="0" cellpadding="0" cellspacing="0">
+  <tr>
+  <td height="12" style="height:12px; min-height:12px; line-height:12px;"></td>
+  </tr>
+  <tr>
+  <td style="vertical-align: middle;" width="552">
+  <table cellspacing="0" cellpadding="0" border="0">
+  <tr>
+  <td width="552">
+  <table cellpadding="0" cellspacing="0" height="1" width="100%" style="line-height:1px;height:1px!important; border:1px solid #e9e9eb; border-collapse:separate !important;margin:0 auto;text-align:center;">
+  <tr>
+  <td> </td>
+  </tr>
+  </table>
+  </td>
+  </tr>
+  </table>
+  </td>
+  </tr>
+  <tr>
+  <td height="12" style="height:12px; min-height:12px; line-height:12px;"></td>
+  </tr>
+  </table>
+  </td>
+  </tr>
+  </table>
+  </td>
+  </tr>
+  <tr>
+  <td width="100%">
+  <table width="100%" cellspacing="0" cellpadding="0" border="0">
+  <tr>
+  <td width="100%" align="center" style="vertical-align: middle; background-color:#ffffff;   padding-left:24px; padding-right:24px;" bgcolor="#ffffff">
+  <table width="100%" border="0" cellpadding="0" cellspacing="0">
+  <tr>
+  <td height="24" style="height:24px; min-height:24px; line-height:24px;"></td>
+  </tr>
+  <tr>
+  <td style="vertical-align: middle;" width="100%">
+  <table width="100%" cellspacing="0" cellpadding="0" border="0">
+  <tr>
+  <td width="100%" align="center" style="vertical-align: middle;  ">
+  <table width="100%" border="0" cellpadding="0" cellspacing="0">
+  <tr>
+  <td align="center">
+  <table cellspacing="0" cellpadding="0" border="0">
+  <tr>
+  <td style="vertical-align: middle;">
+  <table cellspacing="0" cellpadding="0" border="0">
+  <tr>
+  <td style="background-color:#f9f7fc; border-radius:88px; border:1px solid #ebe4f6; padding-left:16px; padding-right:16px;" bgcolor="#f9f7fc">
+  <table width="100%" border="0" cellpadding="0" cellspacing="0">
+  <tr>
+  <td height="16" style="height:16px; min-height:16px; line-height:16px;"></td>
+  </tr>
+  <tr>
+  <td width="24"><img src="https://download.audius.co/otp-email/lG9OMpWZZ229WdHzcggAJwqpl1rt7D.png" width="24" border="0" style="min-width:24px; width:24px;
+          height: auto; display: block;"></td>
+  </tr>
+  <tr>
+  <td height="16" style="height:16px; min-height:16px; line-height:16px;"></td>
+  </tr>
+  </table>
+  </td>
+  </tr>
+  </table>
+  </td>
+  </tr>
+  </table>
+  </td>
+  </tr>
+  <tr>
+  <td height="16" style="height:16px; min-height:16px; line-height:16px;"></td>
+  </tr>
+  <tr>
+  <td style="vertical-align: middle;" width="100%">
+  <table width="100%" cellspacing="0" cellpadding="0" border="0">
+  <tr>
+  <td width="100%">
+  <table width="100%" border="0" cellpadding="0" cellspacing="0">
+  <tr>
+  <td>
+  <div style="line-height:36px;text-align:center;"><span style="color:#3a3843;font-weight:700;font-family:Inter,Arial,sans-serif;font-size:27px;letter-spacing:-0.02em;line-height:36px;text-align:center;">Audius Support</span></div>
+  </td>
+  </tr>
+  <tr>
+  <td height="4" style="height:4px; min-height:4px; line-height:4px;"></td>
+  </tr>
+  <tr>
+  <td>
+  <div style="line-height:24px;text-align:center;"><span style="color:#52505f;font-family:Inter,Arial,sans-serif;font-size:16px;line-height:24px;text-align:center;">Questions? Audius Support can help!</span></div>
+  </td>
+  </tr>
+  </table>
+  </td>
+  </tr>
+  </table>
+  </td>
+  </tr>
+  <tr>
+  <td height="16" style="height:16px; min-height:16px; line-height:16px;"></td>
+  </tr>
+  <tr>
+  <td style="vertical-align: middle;" align="center">
+  <div style="line-height:20px;text-align:center;"><a href="https://help.audius.co"><span style="color:#cc0fe0;font-family:Inter,Arial,sans-serif;font-size:15px;line-height:20px;text-align:center;text-decoration:underline;">Visit Audius Support</span></a></div>
+  </td>
+  </tr>
+  </table>
+  </td>
+  </tr>
+  </table>
+  </td>
+  </tr>
+  <tr>
+  <td height="24" style="height:24px; min-height:24px; line-height:24px;"></td>
+  </tr>
+  </table>
+  </td>
+  </tr>
+  </table>
+  </td>
+  </tr>
+  <tr>
+  <td width="100%">
+  <table width="100%" cellspacing="0" cellpadding="0" border="0">
+  <tr>
+  <td width="100%" align="center" style="background-color:#ffffff;   padding-left:24px; padding-right:24px;" bgcolor="#ffffff">
+  <table width="100%" border="0" cellpadding="0" cellspacing="0">
+  <tr>
+  <td height="24" style="height:24px; min-height:24px; line-height:24px;"></td>
+  </tr>
+  <tr>
+  <td width="100%" align="center" class="Oiu4JCYLgxzifKn2u1Ao8jKSMSZZgR invert-bg" style="vertical-align: middle; background-repeat:no-repeat !important; background-position: center center !important; background-size: cover !important;border-radius:12px; border-collapse:separate !important; padding-left:24px; padding-right:24px;" background="https://download.audius.co/otp-email/Z4mhke0ZNGrkz2iorzyhsjsPJGeLbL.png">
+  <!--[if gte mso 9]>
+                  <v:image xmlns:v="urn:schemas-microsoft-com:vml" fill="true" stroke="false" style=" border: 0;display: inline-block; width: 552px; height:182px;"
+                  src="https://download.audius.co/otp-email/Z4mhke0ZNGrkz2iorzyhsjsPJGeLbL.png"
+                  />
+                  <v:rect xmlns:v="urn:schemas-microsoft-com:vml" fill="true" stroke="false" style=" border: 0;display: inline-block;position: absolute; width: 552px; height:182px;">
+                  <v:fill opacity="0%" color="#000" />
+                  <v:textbox inset="0,0,0,0">
+                  <![endif]-->
   <div>
-    <!--[if (gte mso 9)|(IE)]>
-    <table width="700" border="0" cellspacing="0" cellpadding="0" style="width: 700px;">
-    <tr><td>
-    <![endif]-->
-    <table border="0" cellspacing="0" cellpadding="0" width="100%" style="max-width: 700px;">
-    <tr><td align="center" valign="top" bgcolor="#f3f0f7" style="padding: 40px 10px;">
-      <div>
-        <!--[if (gte mso 9)|(IE)]>
-        <table width="250" border="0" cellspacing="0" cellpadding="0" style="width: 250px;">
-        <tr><td>
-        <![endif]-->
-        <table border="0" cellspacing="0" cellpadding="0" width="100%" style="max-width: 250px;">
-        <tr><td align="left" valign="top" style="padding: 4px;">
-          <img src="https://download.audius.co/welcome-email/i1867840199.png" width="240" height="64" alt="" border="0" style="display: block;">
-        </td></tr>
-        </table>
-        <!--[if (gte mso 9)|(IE)]>
-        </td></tr>
-        </table>
-        <![endif]-->
-      </div> 
-      <div style="height: 40px; line-height: 40px; font-size: 38px;">&nbsp;</div>
-      <div>
-        <!--[if (gte mso 9)|(IE)]>
-        <table width="600" border="0" cellspacing="0" cellpadding="0" style="width: 600px;">
-        <tr><td>
-        <![endif]-->
-        <table border="0" cellspacing="0" cellpadding="0" width="100%" style="max-width: 600px;">
-        <tr><td align="left" valign="top" bgcolor="#ffffff" style="border-radius: 12px; box-shadow: rgba(0, 0, 0, 0.07) 0px 8px 16px;">
-          <div>
-            <table border="0" cellspacing="0" cellpadding="0" width="100%">
-            <tr><td align="left" valign="top" style="padding: 40px;">
-              <div>
-                <table border="0" cellspacing="0" cellpadding="0" width="100%">
-                <tr><td align="center" valign="top">
-                  <table width="100%" border="0" cellspacing="0" cellpadding="0">
-                  <tr><td align="center" valign="top" style="font-size: 0px;">
-                    <div style="display: inline-block; vertical-align: top; width: 100%">
-                      <table width="100%" border="0" cellspacing="0" cellpadding="0" style="border-collapse: collapse;">
-                      <tr><td align="left" valign="top" class="outf14" style="font-size: large;">
-                        <div>
-                          <!--[if (gte mso 9)|(IE)]>
-                          <table width="359" border="0" cellspacing="0" cellpadding="0" style="width: 359px;">
-                          <tr><td>
-                          <![endif]-->
-                          <table border="0" cellspacing="0" cellpadding="0" width="100%">
-                          <tr><td align="left" valign="top">
-                            <div>
-                              <table border="0" cellspacing="0" cellpadding="0" width="100%">
-                              <tr><td align="left" valign="top">
-                                <div style="line-height: 20px;">
-                                  <span style="font-family: Inter, sans-serif; font-weight: bold; font-size: 16px; color: #858199;">Hello,</span>
-                                </div> 
-                                <div style="height: 16px; line-height: 16px; font-size: 14px;">&nbsp;</div>
-                                <div style="line-height: 24px;">
-                                  <span style="font-family: Inter, sans-serif; font-size: 16px; color: #858199;">${title}</span>
-                                </div>
-                              </td></tr>
-                              </table>
-                              <table border="0" cellspacing="0" cellpadding="0" width="100%">
-                                <tr><td align="left" valign="middle">
-                                  <div style="height: 16px; line-height: 16px; font-size: 14px;">&nbsp;</div>
-                                  <div style="line-height: 43px;">
-                                    <span style="font-family: Inter, sans-serif; font-weight: bold; font-size: 36px; color: #858199;">${otp}</span>
-                                  </div> 
-                                  <div style="height: 16px; line-height: 16px; font-size: 14px;">&nbsp;</div>
-                                </td></tr>
-                              </table>
-                              <table border="0" cellspacing="0" cellpadding="0" width="100%">
-                              <tr><td align="left" valign="top">
-                                <div style="height: 16px; line-height: 16px; font-size: 14px;">&nbsp;</div>
-                                <div style="line-height: 24px;">
-                                  <span style="font-family: Inter, sans-serif; font-size: 16px; color: #858199;">${expire}</span>
-                                </div>
-                              </td></tr>
-                              </table>
-                            </div>
-                          </td></tr>
-                          </table>
-                          <!--[if (gte mso 9)|(IE)]>
-                          </td></tr>
-                          </table>
-                          <![endif]-->
-                        </div>
-                      </td></tr>
-                      </table>
-                    </div>
-                  </td></tr>
-                  </table> 
-                  <div style="height: 32px; line-height: 32px; font-size: 30px;">&nbsp;</div>
-                </td></tr>
-                </table>
-              </div> 
-            </td></tr>
-            </table>
-          </div> 
-        </td></tr>
-        </table>
-        <!--[if (gte mso 9)|(IE)]>
-        </td></tr>
-        </table>
-        <![endif]-->
-      </div> 
-      <div style="height: 40px; line-height: 40px; font-size: 38px;">&nbsp;</div>
-      <div>
-        <!--[if (gte mso 9)|(IE)]>
-        <table width="600" border="0" cellspacing="0" cellpadding="0" style="width: 600px;">
-        <tr><td>
-        <![endif]-->
-        <table border="0" cellspacing="0" cellpadding="0" width="100%" style="max-width: 600px;">
-        <tr><td align="center" valign="top" style="padding: 40px;">
-          <div>
-            <table border="0" cellspacing="0" cellpadding="0" width="100%">
-            <tr><td align="center" valign="top">
-              <table width="100%" border="0" cellspacing="0" cellpadding="0">
-              <tr><td align="center" valign="top" style="font-size: 0px;">
-                <div style="display: inline-block; vertical-align: top; width: 108px;">
-                  <table width="100%" border="0" cellspacing="0" cellpadding="0" style="border-collapse: collapse;">
-                  <tr><td align="left" valign="top" class="outf14" style="font-size: large;">
-                    <div>
-                      <!--[if (gte mso 9)|(IE)]>
-                      <table width="108" border="0" cellspacing="0" cellpadding="0" style="width: 108px;">
-                      <tr><td>
-                      <![endif]-->
-                      <a style="text-decoration: none;" href="https://apps.apple.com/us/app/audius-music/id1491270519" target="_blank">
-                        <table border="0" cellspacing="0" cellpadding="0" width="100%" style="max-width: 108px;">
-                        <tr><td align="left" valign="top" style="padding: 4px;">
-                          <img src="https://download.audius.co/welcome-email/i1955410215.png" width="96" height="32" alt="" border="0" style="display: block;">
-                        </td></tr>
-                        </table>
-                      </a>
-                      <!--[if (gte mso 9)|(IE)]>
-                      </td></tr>
-                      </table>
-                      <![endif]-->
-                    </div>
-                  </td></tr>
-                  </table>
-                </div>
-                <!--[if (gte mso 9)|(IE)]>
-                </td>
-                <td valign="top" width="118" style="width: 118px">
-                <![endif]-->
-                <div style="display: inline-block; vertical-align: top; width: 118px;">
-                  <table width="100%" border="0" cellspacing="0" cellpadding="0" style="border-collapse: collapse;">
-                  <tr><td align="left" valign="top" class="outf14" style="font-size: large;">
-                    <div>
-                      <!--[if (gte mso 9)|(IE)]>
-                      <table width="118" border="0" cellspacing="0" cellpadding="0" style="width: 118px;">
-                      <tr><td>
-                      <![endif]-->
-                      <a style="text-decoration: none;" href="https://play.google.com/store/apps/details?id=co.audius.app" target="_blank">
-                        <table border="0" cellspacing="0" cellpadding="0" width="100%" style="max-width: 118px;">
-                        <tr><td align="left" valign="top" style="padding: 4px;">
-                          <img src="https://download.audius.co/welcome-email/i-2061029840.png" width="106" height="32" alt="" border="0" style="display: block;">
-                        </td></tr>
-                        </table>
-                      </a>
-                      <!--[if (gte mso 9)|(IE)]>
-                      </td></tr>
-                      </table>
-                      <![endif]-->
-                    </div>
-                  </td></tr>
-                  </table>
-                </div>
-              </td></tr>
-              </table> 
-              <div style="height: 16px; line-height: 16px; font-size: 14px;">&nbsp;</div>
-            </td></tr>
-            </table>
-          </div> 
-          <div>
-            <table border="0" cellspacing="0" cellpadding="0" width="100%">
-            <tr><td align="center" valign="middle" height="24" style="height: 24px;">
-              <table width="100%" border="0" cellspacing="0" cellpadding="0">
-              <tr><td align="center" valign="middle" style="font-size: 0px;">
-                <div style="display: inline-block; vertical-align: middle; width: 42px;">
-                  <table width="100%" border="0" cellspacing="0" cellpadding="0" style="border-collapse: collapse;">
-                  <tr><td align="left" valign="top" class="outf14" style="font-size: large;">
-                    <div>
-                      <!--[if (gte mso 9)|(IE)]>
-                      <table width="42" border="0" cellspacing="0" cellpadding="0" style="width: 42px;">
-                      <tr><td>
-                      <![endif]-->
-                      <a style="text-decoration: none;" href="https://www.instagram.com/audiusmusic" target="_blank">
-                        <table border="0" cellspacing="0" cellpadding="0" width="100%" style="max-width: 42px;">
-                        <tr><td align="left" valign="top" style="padding: 2px;">
-                          <img src="https://download.audius.co/welcome-email/i-1960495855.png" width="20" height="20" alt="" border="0" style="display: block;">
-                        </td></tr>
-                        </table>
-                        <!--[if (gte mso 9)|(IE)]>
-                        </td></tr>
-                        </table>
-                      </a>
-                      <![endif]-->
-                    </div>
-                  </td></tr>
-                  </table>
-                </div>
-                <!--[if (gte mso 9)|(IE)]>
-                </td>
-                <td valign="middle" width="41" style="width: 41px">
-                <![endif]-->
-                <div style="display: inline-block; vertical-align: middle; width: 41px;">
-                  <table width="100%" border="0" cellspacing="0" cellpadding="0" style="border-collapse: collapse;">
-                  <tr><td align="left" valign="top" class="outf14" style="font-size: large;">
-                    <div>
-                      <a style="text-decoration: none;" href="https://twitter.com/audius" target="_blank">
-                        <!--[if (gte mso 9)|(IE)]>
-                        <table width="41" border="0" cellspacing="0" cellpadding="0" style="width: 41px;">
-                        <tr><td>
-                        <![endif]-->
-                        <table border="0" cellspacing="0" cellpadding="0" width="100%" style="max-width: 41px;">
-                        <tr><td align="left" valign="top" style="padding: 4px 1px;">
-                          <img src="https://download.audius.co/welcome-email/i710565130.png" width="21" height="16" alt="" border="0" style="display: block;">
-                        </td></tr>
-                        </table>
-                        <!--[if (gte mso 9)|(IE)]>
-                        </td></tr>
-                        </table>
-                        <![endif]-->
-                      </a>
-                    </div>
-                  </td></tr>
-                  </table>
-                </div>
-                <!--[if (gte mso 9)|(IE)]>
-                </td>
-                <td valign="middle" width="42" style="width: 42px">
-                <![endif]-->
-                <div style="display: inline-block; vertical-align: middle; width: 42px;">
-                  <table width="100%" border="0" cellspacing="0" cellpadding="0" style="border-collapse: collapse;">
-                  <tr><td align="left" valign="top" class="outf14" style="font-size: large;">
-                    <div>
-                      <!--[if (gte mso 9)|(IE)]>
-                      <table width="42" border="0" cellspacing="0" cellpadding="0" style="width: 42px;">
-                      <tr><td>
-                      <![endif]-->
-                      <a style="text-decoration: none;" href="https://t.me/Audius" target="_blank">
-                        <table border="0" cellspacing="0" cellpadding="0" width="100%" style="max-width: 42px;">
-                        <tr><td align="left" valign="top" style="padding: 2px;">
-                          <img src="https://download.audius.co/welcome-email/i1847246536.png" width="20" height="20" alt="" border="0" style="display: block;">
-                        </td></tr>
-                        </table>
-                      </a>
-                      <!--[if (gte mso 9)|(IE)]>
-                      </td></tr>
-                      </table>
-                      <![endif]-->
-                    </div>
-                  </td></tr>
-                  </table>
-                </div>
-                <!--[if (gte mso 9)|(IE)]>
-                </td>
-                <td valign="middle" width="42" style="width: 42px">
-                <![endif]-->
-                <div style="display: inline-block; vertical-align: middle; width: 42px;">
-                  <table width="100%" border="0" cellspacing="0" cellpadding="0" style="border-collapse: collapse;">
-                  <tr><td align="left" valign="top" class="outf14" style="font-size: large;">
-                    <div>
-                      <!--[if (gte mso 9)|(IE)]>
-                      <table width="42" border="0" cellspacing="0" cellpadding="0" style="width: 42px;">
-                      <tr><td>
-                      <![endif]-->
-                      <a style="text-decoration: none;" href="https://discord.com/invite/audius" target="_blank">
-                        <table border="0" cellspacing="0" cellpadding="0" width="100%" style="max-width: 42px;">
-                        <tr><td align="left" valign="top" style="padding: 5px 2px;">
-                          <img src="https://download.audius.co/welcome-email/i1847810965.png" width="20" height="14" alt="" border="0" style="display: block;">
-                        </td></tr>
-                        </table>
-                      </a>
-                      <!--[if (gte mso 9)|(IE)]>
-                      </td></tr>
-                      </table>
-                      <![endif]-->
-                    </div>
-                  </td></tr>
-                  </table>
-                </div>
-              </td></tr>
-              </table> 
-              <div style="height: 16px; line-height: 16px; font-size: 14px;">&nbsp;</div>
-            </td></tr>
-            </table>
-          </div> 
-          <div>
-            <table border="0" cellspacing="0" cellpadding="0" width="100%">
-            <tr><td align="center" valign="top">
-              <div style="line-height: 20px;">
-                <span style="font-family: 'Avenir Next LT Pro', sans-serif; font-size: 12px; color: #858199;">© ${copyrightYear} Audius, Inc. All Rights Reserved.</span>
-              </div> 
-              <div style="height: 8px; line-height: 8px; font-size: 6px;">&nbsp;</div>
-              <div style="line-height: 20px;">
-                <a href="<%asm_group_unsubscribe_raw_url%>">
-                  <span style="font-family: 'Avenir Next LT Pro'; font-size: 12px; color: #7e1bcc; text-decoration: underline; line-height: 16px;">Unsubscribe</span></span>
-                </a>
-              </div>
-            </td></tr>
-            </table>
-          </div>
-        </td></tr>
-        </table>
-        <!--[if (gte mso 9)|(IE)]>
-        </td></tr>
-        </table>
-        <![endif]-->
-      </div>
-    </td></tr>
-    </table>
-    <!--[if (gte mso 9)|(IE)]>
-    </td></tr>
-    </table>
-    <![endif]-->
+  <table width="100%" border="0" cellpadding="0" cellspacing="0">
+  <tr>
+  <td height="36" style="height:36px; min-height:36px; line-height:36px;"></td>
+  </tr>
+  <tr>
+  <td style="vertical-align: middle;" width="100%">
+  <table width="100%" cellspacing="0" cellpadding="0" border="0">
+  <tr>
+  <td width="100%" align="center" style="vertical-align: middle;  ">
+  <table width="100%" border="0" cellpadding="0" cellspacing="0">
+  <tr>
+  <td style="vertical-align: middle;" align="center">
+  <div style="line-height:36px;text-align:center;"><span style="color:#3a3843;font-weight:700;font-family:Inter,Arial,sans-serif;font-size:27px;letter-spacing:-0.02em;line-height:36px;text-align:center;">Download The App!</span></div>
+  </td>
+  </tr>
+  </table>
+  </td>
+  </tr>
+  </table>
+  </td>
+  </tr>
+  <tr>
+  <td height="24" style="height:24px; min-height:24px; line-height:24px;"></td>
+  </tr>
+  <tr>
+  <td style="vertical-align: middle;" width="100%">
+  <table width="100%" cellspacing="0" cellpadding="0" border="0">
+  <tr>
+  <td width="100%" align="center">
+  <table width="100%" border="0" cellpadding="0" cellspacing="0">
+  <tr>
+  <td width="504" align="center" style="vertical-align: middle;  ">
+  <table class="table-w-full-mobile" border="0" cellpadding="0" cellspacing="0">
+  <tr>
+  <td style="vertical-align: middle;" class="stack-column-center" align="center"><a href="https://apps.apple.com/us/app/audius-music/id1491270519"><img src="https://download.audius.co/otp-email/8iTgTOaaiwRWb8uRr4oZdK5L1QGrG4.png" width="142" border="0" style="min-width:142px; width:142px;
+          height: auto; display: block;"></a></td>
+  <td class="stack-column-center" height="12" style="width:12px; min-width:12px; height:12px; min-height:12px;" width="12"></td>
+  <td style="vertical-align: middle;" class="stack-column-center" align="center"><a href="https://play.google.com/store/apps/details?id=co.audius.app&hl=en_US&gl=US"><img src="https://download.audius.co/otp-email/NGijEbnPxazoCCBikLQCvcF8Z0q2C5.png" width="166" border="0" style="min-width:166px; width:166px;
+          height: auto; display: block;"></a></td>
+  </tr>
+  </table>
+  </td>
+  </tr>
+  </table>
+  </td>
+  </tr>
+  </table>
+  </td>
+  </tr>
+  <tr>
+  <td height="36" style="height:36px; min-height:36px; line-height:36px;"></td>
+  </tr>
+  </table>
   </div>
-  </td></tr>
-  </table> 
-  </div> 
-  </body> 
-  </html>`
+  <!--[if gte mso 9]>
+                  </v:textbox>
+                  </v:fill>
+                  </v:rect>
+                  </v:image>
+                  <![endif]-->
+  </td>
+  </tr>
+  <tr>
+  <td height="24" style="height:24px; min-height:24px; line-height:24px;"></td>
+  </tr>
+  </table>
+  </td>
+  </tr>
+  </table>
+  </td>
+  </tr>
+  <tr>
+  <td width="600">
+  <table cellspacing="0" cellpadding="0" border="0">
+  <tr>
+  <td width="552" align="center" style="vertical-align: middle; background-color:#f9f9f9;  border-width: 1px 0px 0px 0px; border-color:#e9e9eb; border-style:solid; padding-left:24px; padding-right:24px;" bgcolor="#f9f9f9">
+  <table width="100%" border="0" cellpadding="0" cellspacing="0">
+  <tr>
+  <td height="48" style="height:48px; min-height:48px; line-height:48px;"></td>
+  </tr>
+  <tr>
+  <td style="vertical-align: middle;" width="100%">
+  <table width="100%" cellspacing="0" cellpadding="0" border="0">
+  <tr>
+  <td width="100%" align="center" style="vertical-align: middle; border-radius:8px; ">
+  <table width="100%" border="0" cellpadding="0" cellspacing="0">
+  <tr>
+  <td height="24" style="height:24px; min-height:24px; line-height:24px;"></td>
+  </tr>
+  <tr>
+  <td style="vertical-align: middle;" width="100%">
+  <table width="100%" cellspacing="0" cellpadding="0" border="0">
+  <tr>
+  <td width="100%" style="  padding-left:12px; padding-right:12px;">
+  <table width="100%" border="0" cellpadding="0" cellspacing="0">
+  <tr>
+  <td height="12" style="height:12px; min-height:12px; line-height:12px;"></td>
+  </tr>
+  <tr>
+  <td width="528" align="center" style="vertical-align: middle;  ">
+  <table class="table-w-full-mobile" width="100%" border="0" cellpadding="0" cellspacing="0">
+  <tr>
+  <td style="vertical-align: middle;" class="stack-column-center" align="center"><a href="https://www.audius.co"><img src="https://download.audius.co/otp-email/VV5pnpI62JtxXoX7l9uhu8MJ4XHoXS.png" width="168" border="0" style="min-width:168px; width:168px;
+          border-radius:2px; height: auto; display: block;"></a></td>
+  <td class="stack-column-center" height="12" style="width:12px; min-width:12px; height:12px; min-height:12px;" width="12"></td>
+  <td class="stack-column-center" style="width:168px;"></td>
+  <td class="stack-column-center" height="12" style="width:12px; min-width:12px; height:12px; min-height:12px;" width="12"></td>
+  <td style="vertical-align: middle;" align="center" class="stack-column-center">
+  <table width="100%" cellspacing="0" cellpadding="0" border="0">
+  <tr>
+  <td align="center" style="vertical-align: middle; border-radius:2px;  padding-left:4px; padding-right:4px;">
+  <table width="100%" border="0" cellpadding="0" cellspacing="0">
+  <tr>
+  <td height="4" style="height:4px; min-height:4px; line-height:4px;"></td>
+  </tr>
+  <tr>
+  <td align="center">
+  <table cellspacing="0" cellpadding="0" border="0">
+  <tr>
+  <td style="vertical-align: middle;">
+  <table cellspacing="0" cellpadding="0" border="0">
+  <tr>
+  <td align="right" style="vertical-align: middle; height:32px; border-radius:2px;  padding-left:4px; padding-right:4px;">
+  <table width="100%" border="0" cellpadding="0" cellspacing="0">
+  <tr>
+  <td height="4" style="height:4px; min-height:4px; line-height:4px;"></td>
+  </tr>
+  <tr>
+  <td style="vertical-align: middle;" width="144">
+  <table cellspacing="0" cellpadding="0" border="0">
+  <tr>
+  <td width="144" style="vertical-align: middle;  ">
+  <table width="100%" border="0" cellpadding="0" cellspacing="0">
+  <tr>
+  <td style="vertical-align: middle;"><a href="https://twitter.com/audius"><img src="https://download.audius.co/otp-email/1m7EkfYSkLovQaAoa7vTgx23UexqJ1.png" width="24" border="0" style="min-width:24px; width:24px;
+          height: auto; display: block;"></a></td>
+  <td style="width:16px; min-width:16px;" width="16"></td>
+  <td style="vertical-align: middle;"><a href="https://www.instagram.com/audius/"><img src="https://download.audius.co/otp-email/7UFlMNIXrXJgupPPV4ZxeIv0iuAzeL.png" width="24" border="0" style="min-width:24px; width:24px;
+          height: auto; display: block;"></a></td>
+  <td style="width:16px; min-width:16px;" width="16"></td>
+  <td style="vertical-align: middle;"><a href="https://tiktok.com/@audius"><img src="https://download.audius.co/otp-email/kREPF5mLWgYcrf2QbtuNPWS24I6FJK.png" width="24" border="0" style="min-width:24px; width:24px;
+          height: auto; display: block;"></a></td>
+  <td style="width:16px; min-width:16px;" width="16"></td>
+  <td style="vertical-align: middle;"><a href="https://www.youtube.com/@AudiusMusic"><img src="https://download.audius.co/otp-email/wR9Fi09CPhxJRLkeTxWd2W1l2Hs2QM.png" width="24" border="0" style="min-width:24px; width:24px;
+          height: auto; display: block;"></a></td>
+  </tr>
+  </table>
+  </td>
+  </tr>
+  </table>
+  </td>
+  </tr>
+  <tr>
+  <td height="4" style="height:4px; min-height:4px; line-height:4px;"></td>
+  </tr>
+  </table>
+  </td>
+  </tr>
+  </table>
+  </td>
+  </tr>
+  </table>
+  </td>
+  </tr>
+  <tr>
+  <td height="4" style="height:4px; min-height:4px; line-height:4px;"></td>
+  </tr>
+  </table>
+  </td>
+  </tr>
+  </table>
+  </td>
+  </tr>
+  </table>
+  </td>
+  </tr>
+  <tr>
+  <td height="12" style="height:12px; min-height:12px; line-height:12px;"></td>
+  </tr>
+  </table>
+  </td>
+  </tr>
+  </table>
+  </td>
+  </tr>
+  <tr>
+  <td height="16" style="height:16px; min-height:16px; line-height:16px;"></td>
+  </tr>
+  <tr>
+  <td align="center">
+  <table cellspacing="0" cellpadding="0" border="0">
+  <tr>
+  <td style="vertical-align: middle;" width="528">
+  <table cellspacing="0" cellpadding="0" border="0">
+  <tr>
+  <td width="528" align="center" style="vertical-align: middle;  ">
+  <table class="table-w-full-mobile" border="0" cellpadding="0" cellspacing="0">
+  <tr>
+  <td height="16" style="height:16px; min-height:16px; line-height:16px;"></td>
+  </tr>
+  <tr>
+  <td style="vertical-align: middle;" align="center" width="32.32%" class="stack-column-center">
+  <table width="100%" cellspacing="0" cellpadding="0" border="0">
+  <tr>
+  <td align="center" style="vertical-align: middle; border-radius:2px;  padding-left:16px; padding-right:16px;">
+  <table width="100%" border="0" cellpadding="0" cellspacing="0">
+  <tr>
+  <td align="center">
+  <table cellspacing="0" cellpadding="0" border="0">
+  <tr>
+  <td style="vertical-align: middle;" align="center">
+  <div style="line-height:14px;text-align:center;"><a href="https://www.audius.co"><span style="color:#6a677a;font-weight:500;font-family:Inter,Arial,sans-serif;font-size:14px;line-height:14px;text-align:center;">Audius Music</span></a></div>
+  </td>
+  </tr>
+  </table>
+  </td>
+  </tr>
+  <tr>
+  <td height="8" style="height:8px; min-height:8px; line-height:8px;"></td>
+  </tr>
+  <tr>
+  <td style="vertical-align: middle;" align="center">
+  <div style="line-height:14px;text-align:center;"><a href="https://help.audius.co"><span style="color:#6a677a;font-weight:500;font-family:Inter,Arial,sans-serif;font-size:14px;line-height:14px;text-align:center;">Help & Support</span></a></div>
+  </td>
+  </tr>
+  </table>
+  </td>
+  </tr>
+  </table>
+  </td>
+  <td class="stack-column-center" height="8" style="width:8px; min-width:8px; height:8px; min-height:8px;" width="8"></td>
+  <td style="vertical-align: middle;" align="center" width="32.32%" class="stack-column-center">
+  <table width="100%" cellspacing="0" cellpadding="0" border="0">
+  <tr>
+  <td align="center" style="vertical-align: middle; border-radius:2px;  padding-left:16px; padding-right:16px;">
+  <table width="100%" border="0" cellpadding="0" cellspacing="0">
+  <tr>
+  <td align="center">
+  <table cellspacing="0" cellpadding="0" border="0">
+  <tr>
+  <td style="vertical-align: middle;" align="center">
+  <div style="line-height:14px;text-align:center;"><a href="https://blog.audius.co"><span style="color:#6a677a;font-weight:500;font-family:Inter,Arial,sans-serif;font-size:14px;line-height:14px;text-align:center;">The Blog</span></a></div>
+  </td>
+  </tr>
+  </table>
+  </td>
+  </tr>
+  <tr>
+  <td height="8" style="height:8px; min-height:8px; line-height:8px;"></td>
+  </tr>
+  <tr>
+  <td align="center">
+  <table cellspacing="0" cellpadding="0" border="0">
+  <tr>
+  <td style="vertical-align: middle;" align="center">
+  <div style="line-height:14px;text-align:center;"><a href="https://www.audius.events"><span style="color:#6a677a;font-weight:500;font-family:Inter,Arial,sans-serif;font-size:14px;line-height:14px;text-align:center;">Events</span></a></div>
+  </td>
+  </tr>
+  </table>
+  </td>
+  </tr>
+  </table>
+  </td>
+  </tr>
+  </table>
+  </td>
+  <td class="stack-column-center" height="8" style="width:8px; min-width:8px; height:8px; min-height:8px;" width="8"></td>
+  <td style="vertical-align: middle;" align="center" width="32.32%" class="stack-column-center">
+  <table width="100%" cellspacing="0" cellpadding="0" border="0">
+  <tr>
+  <td align="center" style="vertical-align: middle; border-radius:2px;  padding-left:16px; padding-right:16px;">
+  <table width="100%" border="0" cellpadding="0" cellspacing="0">
+  <tr>
+  <td align="center">
+  <table cellspacing="0" cellpadding="0" border="0">
+  <tr>
+  <td style="vertical-align: middle;" align="center">
+  <div style="line-height:14px;text-align:center;"><a href="https://brand.audius.co"><span style="color:#6a677a;font-weight:500;font-family:Inter,Arial,sans-serif;font-size:14px;line-height:14px;text-align:center;">Brand / Press</span></a></div>
+  </td>
+  </tr>
+  </table>
+  </td>
+  </tr>
+  <tr>
+  <td height="8" style="height:8px; min-height:8px; line-height:8px;"></td>
+  </tr>
+  <tr>
+  <td align="center">
+  <table cellspacing="0" cellpadding="0" border="0">
+  <tr>
+  <td style="vertical-align: middle;" align="center">
+  <div style="line-height:14px;text-align:center;"><a href="https://merch.audius.co"><span style="color:#6a677a;font-weight:500;font-family:Inter,Arial,sans-serif;font-size:14px;line-height:14px;text-align:center;">Merch Store</span></a></div>
+  </td>
+  </tr>
+  </table>
+  </td>
+  </tr>
+  </table>
+  </td>
+  </tr>
+  </table>
+  </td>
+  </tr>
+  <tr>
+  <td height="16" style="height:16px; min-height:16px; line-height:16px;"></td>
+  </tr>
+  </table>
+  </td>
+  </tr>
+  </table>
+  </td>
+  </tr>
+  </table>
+  </td>
+  </tr>
+  <tr>
+  <td height="16" style="height:16px; min-height:16px; line-height:16px;"></td>
+  </tr>
+  <tr>
+  <td style="vertical-align: middle;" width="100%">
+  <table width="100%" cellspacing="0" cellpadding="0" border="0">
+  <tr>
+  <td width="100%" align="center" style="vertical-align: middle;  ">
+  <table width="100%" border="0" cellpadding="0" cellspacing="0">
+  <tr>
+  <td align="center">
+  <table cellspacing="0" cellpadding="0" border="0">
+  <tr>
+  <td style="vertical-align: middle;" align="center">
+  <div style="line-height:14px;text-align:center;"><span style="color:#6a677a;font-family:Inter,Arial,sans-serif;font-size:12px;line-height:14px;text-align:center;">© ${copyrightYear} Audius, Inc. All Rights Reserved.</span></div>
+  </td>
+  </tr>
+  </table>
+  </td>
+  </tr>
+  </table>
+  </td>
+  </tr>
+  </table>
+  </td>
+  </tr>
+  <tr>
+  <td height="24" style="height:24px; min-height:24px; line-height:24px;"></td>
+  </tr>
+  </table>
+  </td>
+  </tr>
+  </table>
+  </td>
+  </tr>
+  <tr>
+  <td height="48" style="height:48px; min-height:48px; line-height:48px;"></td>
+  </tr>
+  </table>
+  </td>
+  </tr>
+  </table>
+  </td>
+  </tr>
+  </table>
+  </td>
+  </tr>
+  </table>
+  </td>
+  </tr>
+  </table>
+  </td>
+  </tr>
+  </table>
+  </div>
+  </body>
+  </html>
+`
 }
 
 module.exports = { getOtpEmail }
