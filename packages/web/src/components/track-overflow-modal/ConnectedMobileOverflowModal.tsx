@@ -22,13 +22,13 @@ import {
   OverflowSource,
   modalsSelectors,
   modalsActions,
+  useEditPlaylistModal,
   Notification,
   PurchaseableContentType,
   usePremiumContentPurchaseModal
 } from '@audius/common/store'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
-import { useNavigate } from 'react-router-dom-v5-compat'
 import { Dispatch } from 'redux'
 
 import { useAuthenticatedCallback } from 'hooks/useAuthenticatedCallback'
@@ -113,8 +113,8 @@ const ConnectedMobileOverflowModal = ({
       openPremiumContentModal(...args),
     [openPremiumContentModal]
   )
-  const navigate = useNavigate()
   // Create callbacks
+  const { onOpen: onOpenEditPlaylist } = useEditPlaylistModal()
   const {
     onRepost,
     onUnrepost,
@@ -202,7 +202,7 @@ const ConnectedMobileOverflowModal = ({
             ),
           onVisitCollectiblePage: () =>
             visitCollectiblePage(handle, id as string),
-          onEditPlaylist: () => navigate(`${permalink}/edit`),
+          onEditPlaylist: () => onOpenEditPlaylist({ collectionId: id as ID }),
           onDeletePlaylist: isAlbum ? () => {} : () => deletePlaylist(id as ID),
           onPublishPlaylist: isAlbum
             ? () => {}

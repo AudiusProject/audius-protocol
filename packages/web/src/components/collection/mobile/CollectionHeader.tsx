@@ -11,7 +11,8 @@ import {
   CommonState,
   cacheCollectionsSelectors,
   OverflowAction,
-  PurchaseableContentType
+  PurchaseableContentType,
+  useEditPlaylistModal
 } from '@audius/common/store'
 import { formatReleaseDate, getDogEarType } from '@audius/common/utils'
 import {
@@ -27,7 +28,6 @@ import {
 } from '@audius/harmony'
 import cn from 'classnames'
 import { useSelector } from 'react-redux'
-import { useNavigate } from 'react-router-dom-v5-compat'
 
 import { DogEar } from 'components/dog-ear'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
@@ -111,8 +111,6 @@ const CollectionHeader = ({
   imageOverride,
   icon: Icon
 }: MobileCollectionHeaderProps) => {
-  const navigate = useNavigate()
-
   const { isEnabled: isPremiumAlbumsEnabled } = useFlag(
     FeatureFlags.PREMIUM_ALBUMS_ENABLED
   )
@@ -127,8 +125,7 @@ const CollectionHeader = ({
     is_private: isPrivate,
     is_stream_gated: isPremium,
     is_scheduled_release: isScheduledRelease,
-    release_date: releaseDate,
-    permalink
+    release_date: releaseDate
   } = collection ?? {}
 
   const tracks = useSelector((state: CommonState) =>
@@ -182,9 +179,10 @@ const CollectionHeader = ({
     SquareSizes.SIZE_1000_BY_1000
   )
 
+  const { onOpen } = useEditPlaylistModal()
   const handleClickEdit = useCallback(() => {
-    navigate({ pathname: `${permalink}/edit`, search: `?focus=artwork` })
-  }, [navigate, permalink])
+    onOpen({ collectionId, initialFocusedField: 'name' })
+  }, [onOpen, collectionId])
 
   if (loading) {
     return (

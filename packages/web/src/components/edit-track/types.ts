@@ -1,8 +1,4 @@
-import {
-  TrackMetadataForUpload,
-  TrackForUpload,
-  TrackForEdit
-} from '@audius/common/store'
+import { TrackMetadataForUpload, TrackForUpload } from '@audius/common/store'
 
 export type SingleTrackEditValues = Omit<TrackMetadataForUpload, 'remixOf'> & {
   remix_of: {
@@ -13,6 +9,10 @@ export type SingleTrackEditValues = Omit<TrackMetadataForUpload, 'remixOf'> & {
 /**
  * Represents a track file, its metadata prior to upload, and a preview.
  */
+export interface TrackForEdit {
+  metadata: TrackMetadataForUpload
+}
+
 export type TrackEditFormValues = {
   tracks: (TrackForUpload | TrackForEdit)[]
   trackMetadatas: SingleTrackEditValues[]

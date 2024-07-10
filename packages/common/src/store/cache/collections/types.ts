@@ -24,5 +24,4 @@ export type Image = {
 
 export type EditPlaylistValues = Collection & {
   artwork: Image
-  tracks?: { metadata: Track }[]
 }

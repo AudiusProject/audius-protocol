@@ -7,7 +7,7 @@ import { useHistoryContext } from 'app/HistoryProvider'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { FEED_PAGE } from 'utils/route'
 
-import { EditFormScrollContext } from '../../pages/edit-page/EditTrackPage'
+import { EditFormScrollContext } from '../EditTrackPage'
 
 import styles from './AnchoredSubmitRowEdit.module.css'
 

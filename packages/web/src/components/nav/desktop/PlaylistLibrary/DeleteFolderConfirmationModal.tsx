@@ -56,8 +56,8 @@ export const DeleteFolderConfirmationModal = (
 
   return (
     <DeleteConfirmationModal
-      header={messages.confirmDeleteFolderModalHeader}
-      description={messages.confirmDeleteFolderModalDescription}
+      customHeader={messages.confirmDeleteFolderModalHeader}
+      customDescription={messages.confirmDeleteFolderModalDescription}
       title={messages.confirmDeleteFolderModalTitle}
       entity={messages.folderEntity}
       onDelete={handleDelete}

@@ -13,7 +13,8 @@ import {
 import { FeatureFlags } from '@audius/common/services'
 import {
   CollectionsPageType,
-  PurchaseableContentType
+  PurchaseableContentType,
+  useEditPlaylistModal
 } from '@audius/common/store'
 import { Nullable, formatReleaseDate } from '@audius/common/utils'
 import {
@@ -31,7 +32,6 @@ import {
   IconCalendarMonth
 } from '@audius/harmony'
 import cn from 'classnames'
-import { Link } from 'react-router-dom'
 
 import { UserLink } from 'components/link'
 import Skeleton from 'components/skeleton/Skeleton'
@@ -50,6 +50,7 @@ const messages = {
   filterPlaylist: 'Search in playlist...',
   filterAlbum: 'Search in album...',
   premiumLabel: 'premium',
+  hiddenPlaylistLabel: 'hidden playlist',
   by: 'By ',
   hidden: 'Hidden',
   releases: (releaseDate: string) =>
@@ -136,8 +137,7 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
   })
   const {
     is_scheduled_release: isScheduledRelease,
-    release_date: releaseDate,
-    permalink
+    release_date: releaseDate
   } = collection ?? {}
   const [artworkLoading, setIsArtworkLoading] = useState(true)
   const [filterText, setFilterText] = useState('')
@@ -157,6 +157,12 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
   const handleLoadArtwork = useCallback(() => {
     setIsArtworkLoading(false)
   }, [])
+
+  const { onOpen } = useEditPlaylistModal()
+
+  const handleClickEditTitle = useCallback(() => {
+    onOpen({ collectionId, initialFocusedField: 'name' })
+  }, [onOpen, collectionId])
 
   const renderStatsRow = (isLoading: boolean) => {
     if (isLoading) return <Skeleton height='20px' width='120px' />
@@ -200,25 +206,22 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
               {isPremium ? <IconCart size='s' color='subdued' /> : null}
               <Text variant='label' color='subdued'>
                 {isPremium ? `${messages.premiumLabel} ` : ''}
-                {type}
+                {type === 'playlist' && !isPublished
+                  ? messages.hiddenPlaylistLabel
+                  : type}
               </Text>
             </Flex>
           )}
           <Flex direction='column' gap='s'>
             <Flex
-              as={isOwner ? Link : 'span'}
+              as={isOwner ? 'button' : 'span'}
               css={{ background: 0, border: 0, padding: 0, margin: 0 }}
               gap='s'
               alignItems='center'
               className={cn({
                 [styles.editableTitle]: isOwner
               })}
-              // @ts-ignore -- Flex Link doesn't type `to` correctly
-              to={
-                isOwner
-                  ? { pathname: `${permalink}/edit`, search: '?focus=name' }
-                  : undefined
-              }
+              onClick={isOwner ? handleClickEditTitle : undefined}
             >
               {isLoading ? (
                 <Skeleton height='48px' width='300px' />

@@ -7,12 +7,12 @@ import {
 } from '@audius/common/models'
 import {
   cacheUsersSelectors,
-  collectionsSocialActions as socialActions
+  collectionsSocialActions as socialActions,
+  useEditPlaylistModal
 } from '@audius/common/store'
 import { PopupMenuItem } from '@audius/harmony'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
-import { useNavigate } from 'react-router-dom-v5-compat'
 import { Dispatch } from 'redux'
 
 import * as embedModalActions from 'components/embed-modal/store/actions'
@@ -56,40 +56,40 @@ const messages = {
 }
 
 const CollectionMenu = (props: CollectionMenuProps) => {
-  const {
-    type,
-    handle,
-    playlistName,
-    ddexApp,
-    playlistId,
-    isOwner,
-    isFavorited,
-    isReposted,
-    includeEdit,
-    includeShare,
-    includeRepost,
-    includeFavorite,
-    includeEmbed,
-    includeVisitPage,
-    includeVisitArtistPage = true,
-    isPublic,
-    isArtist,
-    onShare,
-    goToRoute,
-    openEmbedModal,
-    permalink,
-    shareCollection,
-    saveCollection,
-    unsaveCollection,
-    repostCollection,
-    undoRepostCollection,
-    onRepost,
-    extraMenuItems
-  } = props
-
-  const navigate = useNavigate()
+  const { onOpen } = useEditPlaylistModal()
 
   const getMenu = () => {
+    const {
+      type,
+      handle,
+      playlistName,
+      ddexApp,
+      playlistId,
+      isOwner,
+      isFavorited,
+      isReposted,
+      includeEdit,
+      includeShare,
+      includeRepost,
+      includeFavorite,
+      includeEmbed,
+      includeVisitPage,
+      includeVisitArtistPage = true,
+      isPublic,
+      isArtist,
+      onShare,
+      goToRoute,
+      openEmbedModal,
+      permalink,
+      shareCollection,
+      saveCollection,
+      unsaveCollection,
+      repostCollection,
+      undoRepostCollection,
+      onRepost,
+      extraMenuItems
+    } = props
+
     const routePage = collectionPage
     const shareMenuItem = {
       text: 'Share',
@@ -139,7 +139,7 @@ const CollectionMenu = (props: CollectionMenuProps) => {
 
     const editCollectionMenuItem = {
       text: `Edit ${typeName}`,
-      onClick: () => navigate(`${permalink}/edit`)
+      onClick: () => onOpen({ collectionId: playlistId })
     }
 
     const embedMenuItem = {

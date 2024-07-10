@@ -42,10 +42,8 @@ export const EditPlaylistModalScreen = () => {
 
   if (!playlist) return null
 
-  const { tracks: tracksIgnored, ...restPlaylist } = playlist
-
   const initialValues: EditPlaylistValues = {
-    ...restPlaylist,
+    ...playlist,
     artwork: {
       url:
         trackImage && isImageUriSource(trackImage.source)

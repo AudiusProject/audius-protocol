@@ -1,19 +1,19 @@
 import { useCallback } from 'react'
 
 import { CollectionValues } from '@audius/common/schemas'
-import { TrackForUpload, UploadType } from '@audius/common/store'
+import { UploadType } from '@audius/common/store'
 import moment from 'moment'
 
-import { EditCollectionForm } from 'components/edit-collection/EditCollectionForm'
+import { EditCollectionForm } from 'components/edit-collection/desktop/EditCollectionForm'
 
 import { CollectionFormState } from '../types'
 
-type UploadCollectionFormProps = {
+type EditCollectionFormProps = {
   formState: CollectionFormState
   onContinue: (formState: CollectionFormState) => void
 }
 
-export const UploadCollectionForm = (props: UploadCollectionFormProps) => {
+export const EditCollectionFormForUpload = (props: EditCollectionFormProps) => {
   const { formState, onContinue } = props
   const { tracks, uploadType, metadata } = formState
   const isAlbum = uploadType === UploadType.ALBUM
@@ -32,15 +32,14 @@ export const UploadCollectionForm = (props: UploadCollectionFormProps) => {
       mood: null,
       tags: ''
     },
-    tracks: tracks.map((track) => ({ ...track, override: false })),
-    isUpload: true
+    tracks: tracks.map((track) => ({ ...track, override: false }))
   }
 
   const handleSubmit = useCallback(
     (values: CollectionValues) => {
       onContinue({
         uploadType,
-        tracks: values.tracks as TrackForUpload[],
+        tracks: values.tracks,
         metadata: values
       })
     },

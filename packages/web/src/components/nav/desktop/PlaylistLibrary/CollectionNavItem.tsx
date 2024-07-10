@@ -12,17 +12,17 @@ import {
   cacheCollectionsSelectors,
   cacheTracksSelectors,
   playlistLibraryActions,
-  shareModalUIActions
+  shareModalUIActions,
+  useEditPlaylistModal
 } from '@audius/common/store'
 import { PopupMenuItem } from '@audius/harmony'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
-import { useNavigate } from 'react-router-dom-v5-compat'
+import { useRouteMatch } from 'react-router-dom'
 import { useToggle } from 'react-use'
 
 import { make, useRecord } from 'common/store/analytics/actions'
 import { Draggable } from 'components/dragndrop'
-import { DeleteCollectionConfirmationModal } from 'components/edit-collection/DeleteCollectionConfirmationModal'
 import {
   DragDropKind,
   selectDraggingKind,
@@ -34,6 +34,7 @@ import { BASE_URL } from 'utils/route'
 import { LeftNavDroppable, LeftNavLink } from '../LeftNavLink'
 
 import styles from './CollectionNavItem.module.css'
+import { DeleteCollectionConfirmationModal } from './DeleteCollectionConfirmationModal'
 import { NavItemKebabButton } from './NavItemKebabButton'
 import { PlaylistUpdateDot } from './PlaylistUpdateDot'
 
@@ -73,14 +74,7 @@ export const CollectionNavItem = (props: CollectionNavItemProps) => {
   const [isHovering, setIsHovering] = useState(false)
   const dispatch = useDispatch()
   const record = useRecord()
-  const navigate = useNavigate()
-
-  const collection = useSelector((state) =>
-    getCollection(state, { id: typeof id === 'string' ? null : id })
-  )
-
-  const { permalink } = collection ?? {}
-
+  const isCollectionViewed = useRouteMatch(url)
   const [isDeleteConfirmationOpen, toggleDeleteConfirmationOpen] =
     useToggle(false)
 
@@ -100,12 +94,17 @@ export const CollectionNavItem = (props: CollectionNavItemProps) => {
     setIsHovering(false)
   }, [])
 
+  const { onOpen } = useEditPlaylistModal()
+
   const handleEdit = useCallback(() => {
     if (typeof id === 'number') {
-      navigate(`${permalink}/edit`)
+      onOpen({
+        collectionId: id,
+        isCollectionViewed: isCollectionViewed?.isExact ?? false
+      })
       record(make(Name.PLAYLIST_OPEN_EDIT_FROM_LIBRARY, {}))
     }
-  }, [id, navigate, permalink, record])
+  }, [id, onOpen, isCollectionViewed?.isExact, record])
 
   const handleShare = useCallback(() => {
     if (typeof id === 'number') {
@@ -156,6 +155,10 @@ export const CollectionNavItem = (props: CollectionNavItemProps) => {
   const track = useSelector((state) =>
     getTrack(state, { id: typeof draggingId === 'string' ? null : draggingId })
   )
+  const collection = useSelector((state) =>
+    getCollection(state, { id: typeof id === 'string' ? null : id })
+  )
+
   const hiddenTrackCheck =
     !!track && !!collection && track?.is_unlisted && !collection?.is_private
 

@@ -77,6 +77,5 @@ export type BaseButtonProps = {
    *  merging their props and behavior.
    */
   asChild?: boolean
-  slotted?: boolean
 } & HTMLButtonProps &
   InternalProps

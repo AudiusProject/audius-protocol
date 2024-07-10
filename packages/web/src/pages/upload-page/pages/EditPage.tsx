@@ -5,8 +5,8 @@ import { useUnmount } from 'react-use'
 
 import { UploadPreviewContext } from 'components/edit-track/utils/uploadPreviewContext'
 
-import { UploadCollectionForm } from '../forms/UploadCollectionForm'
-import { UploadTrackForm } from '../forms/UploadTrackForm'
+import { EditCollectionFormForUpload } from '../forms/EditCollectionFormForUpload'
+import { EditTrackFormForUpload } from '../forms/EditTrackFormForUpload'
 import { CollectionFormState, TrackFormState, UploadFormState } from '../types'
 
 type EditPageProps = {
@@ -22,11 +22,16 @@ export const EditPage = (props: EditPageProps) => {
   switch (formState.uploadType) {
     case UploadType.INDIVIDUAL_TRACK:
     case UploadType.INDIVIDUAL_TRACKS:
-      return <UploadTrackForm formState={formState} onContinue={onContinue} />
+      return (
+        <EditTrackFormForUpload formState={formState} onContinue={onContinue} />
+      )
     case UploadType.ALBUM:
     case UploadType.PLAYLIST:
       return (
-        <UploadCollectionForm formState={formState} onContinue={onContinue} />
+        <EditCollectionFormForUpload
+          formState={formState}
+          onContinue={onContinue}
+        />
       )
   }
 }

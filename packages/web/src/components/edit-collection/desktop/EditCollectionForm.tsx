@@ -1,5 +1,3 @@
-import { useCallback, useState } from 'react'
-
 import { useFeatureFlag } from '@audius/common/hooks'
 import {
   AlbumSchema,
@@ -7,12 +5,10 @@ import {
   PlaylistSchema
 } from '@audius/common/schemas'
 import { FeatureFlags } from '@audius/common/services'
-import { Button, Flex, IconTrash, Text } from '@audius/harmony'
+import { Flex, Text } from '@audius/harmony'
 import { Form, Formik } from 'formik'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
-import { AnchoredSubmitRow } from 'components/edit/AnchoredSubmitRow'
-import { AnchoredSubmitRowEdit } from 'components/edit/AnchoredSubmitRowEdit'
 import { AdvancedAlbumField } from 'components/edit/fields/AdvancedAlbumField'
 import { CollectionTrackFieldArray } from 'components/edit/fields/CollectionTrackFieldArray'
 import { ReleaseDateFieldLegacy } from 'components/edit/fields/ReleaseDateFieldLegacy'
@@ -28,10 +24,9 @@ import {
   TextField
 } from 'components/form-fields'
 import { Tile } from 'components/tile'
+import { AnchoredSubmitRow } from 'pages/upload-page/components/AnchoredSubmitRow'
 
-import { DeleteCollectionConfirmationModal } from './DeleteCollectionConfirmationModal'
 import styles from './EditCollectionForm.module.css'
-import { ReleaseCollectionConfirmationModal } from './ReleaseCollectionConfirmationModal'
 
 const messages = {
   name: 'Name',
@@ -41,11 +36,8 @@ const messages = {
     description:
       'Set defaults for all tracks in this collection. You can edit your track details after upload.'
   },
-  completeButton: 'Complete Upload',
-  deleteCollection: (collectionName: string) => `Delete ${collectionName}`
+  completeButton: 'Complete Upload'
 }
-
-const formId = 'edit-collection-form'
 
 type EditCollectionFormProps = {
   initialValues: CollectionValues
@@ -56,11 +48,6 @@ type EditCollectionFormProps = {
 
 export const EditCollectionForm = (props: EditCollectionFormProps) => {
   const { initialValues, onSubmit, isAlbum, isUpload } = props
-  const { playlist_id, is_private, is_scheduled_release } = initialValues
-  const [isDeleteConfirmationOpen, setIsDeleteConfirmationOpen] =
-    useState(false)
-  const [isReleaseConfirmationOpen, setIsReleaseConfirmationOpen] =
-    useState(false)
   const { isEnabled: isPremiumAlbumsEnabled } = useFeatureFlag(
     FeatureFlags.PREMIUM_ALBUMS_ENABLED
   )
@@ -76,25 +63,13 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
   const collectionTypeName = isAlbum ? 'Album' : 'Playlist'
   const validationSchema = isAlbum ? AlbumSchema : PlaylistSchema
 
-  const handleSubmit = useCallback(
-    (values: CollectionValues) => {
-      if (is_private && !values.is_private && !isReleaseConfirmationOpen) {
-        setIsReleaseConfirmationOpen(true)
-      } else {
-        setIsReleaseConfirmationOpen(false)
-        onSubmit(values)
-      }
-    },
-    [is_private, isReleaseConfirmationOpen, onSubmit]
-  )
-
   return (
     <Formik
       initialValues={initialValues}
-      onSubmit={handleSubmit}
+      onSubmit={onSubmit}
       validationSchema={toFormikValidationSchema(validationSchema)}
     >
-      <Form className={styles.root} id={formId}>
+      <Form className={styles.root}>
         <Tile className={styles.collectionFields} elevation='mid'>
           <div className={styles.row}>
             <ArtworkField
@@ -129,64 +104,24 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
             <ReleaseDateFieldLegacy />
           )}
           {isAlbum && showPremiumAlbums ? (
-            <PriceAndAudienceField isAlbum={isAlbum} isUpload={isUpload} />
+            <Flex w='100%' css={{ flexGrow: 1 }}>
+              <PriceAndAudienceField isAlbum isUpload />
+            </Flex>
           ) : null}
           {isAlbum ? <AdvancedAlbumField /> : null}
-          {isUpload ? (
-            <Flex
-              direction='column'
-              gap='l'
-              ph='xl'
-              pv='l'
-              alignItems='flex-start'
-            >
-              <Text variant='title' size='l'>
-                {messages.trackDetails.title}
-              </Text>
-              <Text variant='body'>{messages.trackDetails.description}</Text>
-              <Flex w='100%' gap='s'>
-                <SelectGenreField name='trackDetails.genre' />
-                <SelectMoodField name='trackDetails.mood' />
-              </Flex>
-              <TagField name='trackDetails.tags' />
-              {isAlbum && <StemsAndDownloadsCollectionField />}
-            </Flex>
-          ) : null}
-          {!isUpload ? (
-            <Flex>
-              <Button
-                variant='destructive'
-                size='small'
-                iconLeft={IconTrash}
-                onClick={() => setIsDeleteConfirmationOpen(true)}
-              >
-                {messages.deleteCollection(collectionTypeName)}
-              </Button>
-            </Flex>
-          ) : null}
+          <div className={styles.trackDetails}>
+            <Text variant='label'>{messages.trackDetails.title}</Text>
+            <Text variant='body'>{messages.trackDetails.description}</Text>
+            <div className={styles.row}>
+              <SelectGenreField name='trackDetails.genre' />
+              <SelectMoodField name='trackDetails.mood' />
+            </div>
+            <TagField name='trackDetails.tags' />
+            {isAlbum && <StemsAndDownloadsCollectionField />}
+          </div>
         </Tile>
         <CollectionTrackFieldArray />
-        {isUpload ? <AnchoredSubmitRow /> : <AnchoredSubmitRowEdit />}
-        {playlist_id ? (
-          <>
-            <DeleteCollectionConfirmationModal
-              visible={isDeleteConfirmationOpen}
-              collectionId={playlist_id}
-              entity={collectionTypeName}
-              onCancel={() => setIsDeleteConfirmationOpen(false)}
-              onDelete={() => setIsDeleteConfirmationOpen(false)}
-            />
-            {isAlbum ? null : (
-              <ReleaseCollectionConfirmationModal
-                isOpen={isReleaseConfirmationOpen}
-                onClose={() => setIsReleaseConfirmationOpen(false)}
-                collectionType={isAlbum ? 'album' : 'playlist'}
-                releaseType={!is_scheduled_release ? 'scheduled' : 'hidden'}
-                formId={formId}
-              />
-            )}
-          </>
-        ) : null}
+        <AnchoredSubmitRow />
       </Form>
     </Formik>
   )

@@ -1,3 +1,4 @@
+import { Nullable } from '@audius/common/utils'
 import {
   Modal,
   ModalContent,
@@ -9,17 +10,10 @@ import {
   Text
 } from '@audius/harmony'
 
-const messages = {
-  description: (entity: string) =>
-    `Are you sure you want to delete this ${entity.toLowerCase()}?`,
-  cancel: 'Cancel',
-  delete: (entity: string) => `Delete ${entity}`
-}
-
 export type DeleteConfirmationModalProps = {
   title: string
-  header?: string
-  description?: string
+  customHeader?: Nullable<string>
+  customDescription?: Nullable<string>
   visible: boolean
   entity: string
   onDelete: () => void
@@ -27,33 +21,34 @@ export type DeleteConfirmationModalProps = {
 }
 
 const DeleteConfirmationModal = (props: DeleteConfirmationModalProps) => {
-  const {
-    title,
-    header,
-    entity,
-    description = messages.description(entity),
-    visible,
-    onDelete,
-    onCancel
-  } = props
+  const header =
+    props.customHeader == null
+      ? `This ${props.entity} Will Disappear For Everyone`
+      : props.customHeader
+  const description =
+    props.customDescription == null
+      ? `Are you sure you want to delete this ${props.entity.toLowerCase()}?`
+      : props.customDescription
 
   return (
-    <Modal isOpen={visible} onClose={onCancel} size='small'>
+    <Modal isOpen={props.visible} onClose={props.onCancel}>
       <ModalHeader>
-        <ModalTitle title={title} />
+        <ModalTitle title={props.title} />
       </ModalHeader>
       <ModalContent>
         <div css={{ textAlign: 'center' }}>
-          {header ? <Text variant='title'>{header}</Text> : null}
+          <Text variant='title'>{header}</Text>
           <ModalContentText>{description}</ModalContentText>
         </div>
       </ModalContent>
       <ModalFooter>
-        <Button variant='secondary' onClick={onCancel} fullWidth>
-          {messages.cancel}
-        </Button>
-        <Button variant='destructive' onClick={onDelete} fullWidth>
-          {messages.delete(entity)}
+        <Button
+          variant='destructive'
+          onClick={props.onDelete}
+          fullWidth
+        >{`Delete ${props.entity}`}</Button>
+        <Button variant='secondary' onClick={props.onCancel} fullWidth>
+          Nevermind
         </Button>
       </ModalFooter>
     </Modal>

@@ -1,11 +1,14 @@
+import { useCallback } from 'react'
+
 import { useGetCurrentUserId, useGetPlaylistById } from '@audius/common/api'
+import { useEditPlaylistModal } from '@audius/common/store'
 import { IconPencil, IconButton, IconButtonProps } from '@audius/harmony'
-import { Link } from 'react-router-dom'
+import { capitalize } from 'lodash'
 
 import { Tooltip } from 'components/tooltip'
 
 const messages = {
-  edit: (isAlbum: boolean) => `Edit ${isAlbum ? 'Album' : 'Playlist'}`
+  edit: (type?: 'album' | 'playlist') => `Edit ${capitalize(type) ?? ''}`
 }
 
 type EditButtonProps = Partial<IconButtonProps> & {
@@ -19,22 +22,27 @@ export const EditButton = (props: EditButtonProps) => {
     playlistId: collectionId,
     currentUserId
   })
+  const collectionType = collection
+    ? collection?.is_album
+      ? 'album'
+      : 'playlist'
+    : undefined
 
-  if (!collection) return null
+  const { onOpen } = useEditPlaylistModal()
 
-  const { is_album, permalink } = collection
+  const handleEdit = useCallback(() => {
+    onOpen({ collectionId, isCollectionViewed: true })
+  }, [collectionId, onOpen])
 
   return (
-    <Tooltip text={messages.edit(is_album)}>
+    <Tooltip text={messages.edit(collectionType)}>
       <IconButton
-        color='subdued'
         icon={IconPencil}
-        aria-label={messages.edit(is_album)}
-        asChild
+        onClick={handleEdit}
+        aria-label='Edit Collection'
+        color='subdued'
         {...other}
-      >
-        <Link to={`${permalink}/edit`} />
-      </IconButton>
+      />
     </Tooltip>
   )
 }

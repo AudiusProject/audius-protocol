@@ -60,7 +60,6 @@ import { CollectiblesPlaylistPage } from 'pages/collectibles-playlist-page'
 import CollectionPage from 'pages/collection-page/CollectionPage'
 import { DashboardPage } from 'pages/dashboard-page/DashboardPage'
 import { DeactivateAccountPage } from 'pages/deactivate-account-page/DeactivateAccountPage'
-import { EditCollectionPage } from 'pages/edit-collection-page'
 import EmptyPage from 'pages/empty-page/EmptyPage'
 import ExploreCollectionsPage from 'pages/explore-page/ExploreCollectionsPage'
 import ExplorePage from 'pages/explore-page/ExplorePage'
@@ -182,9 +181,7 @@ import {
   ACCOUNTS_YOU_MANAGE_SETTINGS_PAGE,
   TRACK_EDIT_PAGE,
   SEARCH_CATEGORY_PAGE_LEGACY,
-  SEARCH_BASE_ROUTE,
-  EDIT_PLAYLIST_PAGE,
-  EDIT_ALBUM_PAGE
+  SEARCH_BASE_ROUTE
 } from 'utils/route'
 
 import styles from './WebPlayer.module.css'
@@ -866,13 +863,6 @@ class WebPlayer extends Component {
                     )
                   }}
                 />
-
-                <Route
-                  exact
-                  path={[EDIT_PLAYLIST_PAGE, EDIT_ALBUM_PAGE]}
-                  component={EditCollectionPage}
-                />
-
                 <Route
                   exact
                   path={ALBUM_PAGE}

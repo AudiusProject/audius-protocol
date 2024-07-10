@@ -1,9 +1,10 @@
-import { modalsSelectors } from '@audius/common/store'
+import { modalsSelectors, useEditPlaylistModal } from '@audius/common/store'
 import cn from 'classnames'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
 import AddToCollectionPage from 'components/add-to-collection/mobile/AddToCollection'
+import EditPlaylistPage from 'components/edit-collection/mobile/EditPlaylistPage'
 import useScrollLock from 'hooks/useScrollLock'
 import { AppState } from 'store/types'
 
@@ -17,18 +18,22 @@ const rootElement =
   typeof document !== 'undefined' ? document.querySelector('#root') : null
 
 const TopLevelPage = ({ showAddToCollection }: TopLevelPageProps) => {
-  const isLocked = !!(showAddToCollection && rootElement)
+  const { isOpen } = useEditPlaylistModal()
+  const showPage = isOpen || showAddToCollection
+  const isLocked = !!(showPage && rootElement)
   useScrollLock(isLocked)
 
   let page = null
-  if (showAddToCollection) {
+  if (isOpen) {
+    page = <EditPlaylistPage />
+  } else if (showAddToCollection) {
     page = <AddToCollectionPage />
   }
 
   return (
     <div
       className={cn(styles.topLevelPage, {
-        [styles.show]: showAddToCollection,
+        [styles.show]: showPage,
         [styles.darkerBackground]: showAddToCollection
       })}
     >
