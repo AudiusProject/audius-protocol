@@ -904,6 +904,12 @@ const config = convict({
     format: String,
     env: 'fpServerApiKey',
     default: ''
+  },
+  useDiscoveryListens: {
+    doc: 'Forward listen requests to discovery',
+    format: Boolean,
+    env: 'useDiscoveryListens',
+    default: true
   }
 })
 

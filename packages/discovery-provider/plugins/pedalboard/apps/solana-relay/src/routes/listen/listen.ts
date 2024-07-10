@@ -4,7 +4,7 @@ import {
   VersionedTransaction
 } from '@solana/web3.js'
 import bs58 from 'bs58'
-import { Request, Response } from 'express'
+import { NextFunction, Request, Response } from 'express'
 import { Logger } from 'pino'
 import { recover } from 'web3-eth-accounts'
 import { keccak256 } from 'web3-utils'
@@ -148,6 +148,13 @@ export const validateListenSignature = async (
   const hashedData = keccak256(data)
   const recoveredWallet = recover(hashedData, signature)
   const contentNodes = await getCachedContentNodes()
+
+  // if from identity service
+  if (recoveredWallet === config.identityRelayerPublicKey) {
+    return true
+  }
+
+  // if from registered content node
   for (const { delegateOwnerWallet } of contentNodes) {
     if (recoveredWallet === delegateOwnerWallet) return true
   }
@@ -173,10 +180,11 @@ export const listenRouteRateLimiter = async (params: { ip: string, trackId: stri
   return { allowed }
 }
 
-export const listen = async (req: Request, res: Response) => {
+export const listen = async (req: Request, res: Response, next: NextFunction) => {
   let logger
   try {
     // validation
+    logger = res.locals.logger
     const { userId, timestamp, signature } = recordListenBodySchema.parse(
       req.body
     )
@@ -191,13 +199,17 @@ export const listen = async (req: Request, res: Response) => {
         { userId, trackId, ip, timestamp, signature },
         'unauthorized request'
       )
-      return res.status(401).json({ message: 'Unauthorized Error' })
+      res.status(401).json({ message: 'Unauthorized Error' })
+      next()
+      return
     }
 
     // check rate limit on forwarded IP and track
     const allowed = await listenRouteRateLimiter({ ip, trackId, logger })
     if (!allowed) {
-      return res.send(429).json({ message: "Too Many Requests" })
+      res.send(429).json({ message: "Too Many Requests" })
+      next()
+      return
     }
 
     // record listen after validation
@@ -205,6 +217,7 @@ export const listen = async (req: Request, res: Response) => {
     return res.status(200).json(record)
   } catch (e: unknown) {
     if (e instanceof z.ZodError) {
+      logger?.error({ error: String(e) }, "validation error")
       return res
         .status(400)
         .json({ message: 'Validation Error', errors: e.errors })
@@ -219,6 +232,8 @@ export const listen = async (req: Request, res: Response) => {
     } else {
       logger?.error({ error: String(e) }, 'listen error')
     }
-    return res.status(500).json({ message: 'Internal Server Error' })
+    res.status(500).json({ message: 'Internal Server Error' })
+    next(e)
+    return
   }
 }

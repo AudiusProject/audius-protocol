@@ -47,6 +47,7 @@ type Config = {
   ipdataApiKey: string | null
   listensValidSigner: string
   solanaSignerPrivateKey: string
+  identityRelayerPublicKey: string
   listensIpHourlyRateLimit: number
   listensIpDailyRateLimit: number
   listensIpWeeklyRateLimit: number
@@ -127,6 +128,9 @@ const readConfig = (): Config => {
       default:
         'd242765e718801781440d77572b9dafcdc9baadf0269eff24cf61510ddbf1003'
     }),
+    audius_identity_relayer_public_key: str({
+      default: "0xaaaa90Fc2bfa70028D6b444BB9754066d9E2703b"
+    }),
     audius_solana_listens_ip_hourly_rate_limit: num({ default: 120 }),
     audius_solana_listens_ip_daily_rate_limit: num({ default: 50000 }),
     audius_solana_listens_ip_weekly_rate_limit: num({ default: 50000000 }),
@@ -166,6 +170,7 @@ const readConfig = (): Config => {
     listensValidSigner: env.audius_solana_listens_valid_signer,
     ethRegistryProgramId: env.audius_solana_eth_registry_program,
     solanaSignerPrivateKey: env.audius_solana_signer_private_key,
+    identityRelayerPublicKey: env.audius_identity_relayer_public_key,
     listensIpHourlyRateLimit: env.audius_solana_listens_ip_hourly_rate_limit,
     listensIpDailyRateLimit: env.audius_solana_listens_ip_daily_rate_limit,
     listensIpWeeklyRateLimit: env.audius_solana_listens_ip_weekly_rate_limit,
