@@ -72,7 +72,6 @@ func (ss *MediorumServer) analyzeAudio(upload *Upload, deadline time.Duration) e
 	upload.AudioAnalyzedAt = time.Now().UTC()
 	upload.AudioAnalyzedBy = ss.Config.Self.Host
 	upload.Status = JobStatusBusyAudioAnalysis
-	ss.crud.Update(upload) // maybe remove?
 
 	ctx, cancel := context.WithTimeout(context.Background(), deadline)
 	g, ctx := errgroup.WithContext(ctx)

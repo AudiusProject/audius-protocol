@@ -33,7 +33,7 @@ func (ss *MediorumServer) startLegacyAudioAnalyzer() {
 
 	// find work
 	var cid string
-	rows, _ := ss.pgPool.Query(ctx, "select key from qm_cids order by random()")
+	rows, _ := ss.pgPool.Query(ctx, "select key from qm_cids where key not like '%.jpg' order by random()")
 	_, err := pgx.ForEachRow(rows, []any{&cid}, func() error {
 
 		if strings.HasSuffix(cid, ".jpg") {
@@ -54,7 +54,6 @@ func (ss *MediorumServer) startLegacyAudioAnalyzer() {
 				Status:     JobStatusAudioAnalysis,
 				AnalyzedAt: time.Now().UTC(),
 			}
-			ss.crud.Create(analysis)
 		}
 
 		if analysis.Status != JobStatusDone && analysis.ErrorCount < MAX_TRIES {
@@ -89,7 +88,6 @@ func (ss *MediorumServer) startLegacyAudioAnalysisWorker(n int, work chan *QmAud
 func (ss *MediorumServer) analyzeLegacyAudio(analysis *QmAudioAnalysis) error {
 	analysis.AnalyzedBy = ss.Config.Self.Host
 	analysis.Status = JobStatusBusyAudioAnalysis
-	ss.crud.Update(analysis)
 	ctx := context.Background()
 
 	onError := func(err error) error {
@@ -117,7 +115,9 @@ func (ss *MediorumServer) analyzeLegacyAudio(analysis *QmAudioAnalysis) error {
 	attrs, err := ss.bucket.Attributes(ctx, key)
 	if err != nil {
 		if gcerrors.Code(err) == gcerrors.NotFound {
-			return onError(err)
+			// if blob not found, don't increment error count
+			// just move on
+			return err
 		}
 	}
 	// blob must be an audio file

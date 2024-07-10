@@ -12,8 +12,8 @@ import {
   collectionsSocialActions,
   deletePlaylistConfirmationModalUIActions,
   mobileOverflowMenuUISelectors,
-  publishPlaylistConfirmationModalUIActions,
-  OverflowAction
+  OverflowAction,
+  usePublishContentModal
 } from '@audius/common/store'
 import type { OverflowActionCallbacks } from '@audius/common/store'
 import { useDispatch, useSelector } from 'react-redux'
@@ -35,8 +35,6 @@ const {
 } = collectionsSocialActions
 const { getUser } = cacheUsersSelectors
 const { getCollection } = cacheCollectionsSelectors
-const { requestOpen: openPublishConfirmation } =
-  publishPlaylistConfirmationModalUIActions
 
 type Props = {
   render: (callbacks: OverflowActionCallbacks) => JSX.Element
@@ -53,6 +51,7 @@ const CollectionOverflowMenuDrawer = ({ render }: Props) => {
   const isCollectionMarkedForDownload = useSelector(
     getIsCollectionMarkedForDownload(id)
   )
+  const { onOpen } = usePublishContentModal()
 
   const user = useSelector((state) =>
     getUser(state, { id: playlist?.playlist_owner_id })
@@ -109,9 +108,8 @@ const CollectionOverflowMenuDrawer = ({ render }: Props) => {
       dispatch(openDeletePlaylist({ playlistId: id })),
     [OverflowAction.DELETE_PLAYLIST]: () =>
       dispatch(openDeletePlaylist({ playlistId: id })),
-    [OverflowAction.PUBLISH_PLAYLIST]: () => {
-      return dispatch(openPublishConfirmation({ playlistId: Number(id) }))
-    }
+    [OverflowAction.PUBLISH_PLAYLIST]: () =>
+      onOpen({ contentId: Number(id), contentType: 'playlist' })
   }
 
   return render(callbacks)

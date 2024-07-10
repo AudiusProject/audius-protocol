@@ -14,6 +14,15 @@ export type BaseSolanaProgramConfigInternal = {
   rpcConfig?: ConnectionConfig
 }
 
+export const PrioritySchema = z.enum([
+  'MIN',
+  'LOW',
+  'MEDIUM',
+  'HIGH',
+  'VERY_HIGH',
+  'UNSAFE_MAX'
+])
+
 export const BuildTransactionSchema = z
   .object({
     instructions: z
@@ -38,6 +47,19 @@ export const BuildTransactionSchema = z
             )
           )
           .default([])
+      ])
+      .optional(),
+    priorityFee: z
+      .union([
+        z.object({
+          microLamports: z.number()
+        }),
+        z.object({
+          percentile: z.number().min(0).max(100)
+        }),
+        z.object({
+          priority: PrioritySchema
+        })
       ])
       .optional()
   })

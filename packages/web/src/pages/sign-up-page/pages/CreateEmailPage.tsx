@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 
 import { useAudiusQueryContext } from '@audius/common/audius-query'
 import { createEmailPageMessages } from '@audius/common/messages'
@@ -10,10 +10,11 @@ import {
   Flex,
   IconArrowRight,
   IconAudiusLogoHorizontalColor,
+  IconMetamask,
   Text,
   TextLink
 } from '@audius/harmony'
-import { Form, Formik } from 'formik'
+import { Formik } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
 import { Link } from 'react-router-dom'
 import { useWindowSize } from 'react-use'
@@ -37,12 +38,13 @@ import { SocialMediaLoginOptions } from 'pages/sign-up-page/components/SocialMed
 import {
   SIGN_IN_PAGE,
   SIGN_UP_CREATE_LOGIN_DETAILS,
+  SIGN_UP_HANDLE_PAGE,
   SIGN_UP_PASSWORD_PAGE,
   SIGN_UP_REVIEW_HANDLE_PAGE
 } from 'utils/route'
 
+import ConnectedMetaMaskModal from '../components/ConnectedMetaMaskModal'
 import { NewEmailField } from '../components/EmailField'
-import { SignUpWithMetaMaskButton } from '../components/SignUpWithMetaMaskButton'
 import { SocialMediaLoading } from '../components/SocialMediaLoading'
 import { Heading, Page } from '../components/layout'
 import { useSocialMediaLoader } from '../hooks/useSocialMediaLoader'
@@ -51,6 +53,7 @@ const smallDesktopWindowHeight = 900
 
 export type SignUpEmailValues = {
   email: string
+  withMetaMask?: boolean
 }
 
 export const CreateEmailPage = () => {
@@ -59,6 +62,7 @@ export const CreateEmailPage = () => {
   const isSmallDesktop = windowHeight < smallDesktopWindowHeight
   const dispatch = useDispatch()
   const navigate = useNavigateToPage()
+  const [isMetaMaskModalOpen, setIsMetaMaskModalOpen] = useState(false)
   const existingEmailValue = useSelector(getEmailField)
   const alreadyLinkedSocial = useSelector(getLinkedSocialOnFirstPage)
   const audiusQueryContext = useAudiusQueryContext()
@@ -98,9 +102,13 @@ export const CreateEmailPage = () => {
 
   const handleSubmit = useCallback(
     async (values: SignUpEmailValues) => {
-      const { email } = values
+      const { email, withMetaMask } = values
       dispatch(setValueField('email', email))
-      navigate(SIGN_UP_PASSWORD_PAGE)
+      if (withMetaMask) {
+        setIsMetaMaskModalOpen(true)
+      } else {
+        navigate(SIGN_UP_PASSWORD_PAGE)
+      }
     },
     [dispatch, navigate]
   )
@@ -120,8 +128,8 @@ export const CreateEmailPage = () => {
       validationSchema={EmailSchema}
       validateOnChange={false}
     >
-      {({ isSubmitting }) => (
-        <Page as={Form} pt={isMobile ? 'xl' : 'unit13'}>
+      {({ isSubmitting, setFieldValue, submitForm }) => (
+        <Page pt={isMobile ? 'xl' : 'unit13'}>
           <Box alignSelf={isSmallDesktop ? 'flex-start' : 'center'}>
             {isMobile || isSmallDesktop ? (
               <IconAudiusLogoHorizontalColor />
@@ -162,6 +170,10 @@ export const CreateEmailPage = () => {
               fullWidth
               iconRight={IconArrowRight}
               isLoading={isSubmitting}
+              onClick={() => {
+                setFieldValue('withMetaMask', false)
+                submitForm()
+              }}
             >
               {createEmailPageMessages.signUp}
             </Button>
@@ -176,7 +188,24 @@ export const CreateEmailPage = () => {
           </Flex>
           {!isMobile && window.ethereum ? (
             <Flex direction='column' gap='s'>
-              <SignUpWithMetaMaskButton />
+              <Button
+                variant='secondary'
+                iconRight={IconMetamask}
+                isStaticIcon
+                fullWidth
+                type='submit'
+                onClick={() => {
+                  setFieldValue('withMetaMask', true)
+                  submitForm()
+                }}
+              >
+                {createEmailPageMessages.signUpMetamask}
+              </Button>
+              <ConnectedMetaMaskModal
+                open={isMetaMaskModalOpen}
+                onBack={() => setIsMetaMaskModalOpen(false)}
+                onSuccess={() => navigate(SIGN_UP_HANDLE_PAGE)}
+              />
               <Text size='s' variant='body'>
                 {createEmailPageMessages.metaMaskNotRecommended}{' '}
                 <TextLink variant='visible'>

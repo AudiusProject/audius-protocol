@@ -48,6 +48,8 @@ function* getSearchPageResultsTracks({
       const reportToSentry = yield* getContext('reportToSentry')
       const currentUserId = yield* select(getUserId)
 
+      // searchApiFetch.getSearchResults already handles tag search,
+      // so we don't need to specify isTagSearch necessarily
       const { tracks } = yield* call(
         searchApiFetch.getSearchResults,
         {

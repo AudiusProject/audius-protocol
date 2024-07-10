@@ -167,9 +167,9 @@ const TrackOverflowMenuDrawer = ({ render }: Props) => {
     [OverflowAction.RELEASE_NOW]: () => {
       dispatch(
         setVisibility({
-          drawer: 'ReleaseNowConfirmation',
+          drawer: 'PublishContentDrawer',
           visible: true,
-          data: { trackId: id }
+          data: { contentId: id, contentType: 'track' }
         })
       )
     },

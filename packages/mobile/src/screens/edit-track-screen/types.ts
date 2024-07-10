@@ -4,13 +4,14 @@ import type { FormikProps } from 'formik'
 
 import type { ScreenProps } from 'app/components/core'
 
-export type FormValues = TrackMetadataForUpload & {
+export type FormValues = Omit<TrackMetadataForUpload, 'bpm'> & {
   licenseType: {
     allowAttribution: Nullable<boolean>
     commercialUse: Nullable<boolean>
     derivativeWorks: Nullable<boolean>
   }
   trackArtwork?: string
+  bpm?: string
 }
 
 export type EditTrackScreenProps = {

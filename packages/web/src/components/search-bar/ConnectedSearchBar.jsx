@@ -107,12 +107,21 @@ class ConnectedSearchBar extends Component {
       }
     }
 
-    value = encodeURIComponent(value)
-    this.props.history.push({
-      pathname: newPath,
-      search: locationSearchParams.toString(),
-      state: {}
-    })
+    if (!this.props.isSearchV2Enabled && value.startsWith('#')) {
+      // perform tag search
+      this.props.history.push({
+        hash: value.split('#')[1],
+        pathname,
+        state: {}
+      })
+    } else {
+      value = encodeURIComponent(value)
+      this.props.history.push({
+        pathname: newPath,
+        search: locationSearchParams.toString(),
+        state: {}
+      })
+    }
   }
 
   onSelect = (value) => {

@@ -1000,7 +1000,7 @@ def test_index_invalid_playlists(app, mocker):
             .first()
         )
         assert current_playlist.is_current == True
-        assert current_playlist.is_private == False
+        assert current_playlist.is_private == True
         assert current_playlist.is_album == False
 
         current_album: Playlist = (

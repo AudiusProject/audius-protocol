@@ -3,6 +3,9 @@ const moment = require('moment-timezone')
 const retry = require('async-retry')
 const uuidv4 = require('uuid/v4')
 const axios = require('axios')
+const ethSigUtil = require('eth-sig-util')
+const ethUtil = require('ethereumjs-util')
+const keccak256 = require('keccak256')
 const { getIP } = require('../rateLimiter')
 const models = require('../models')
 const {
@@ -67,6 +70,60 @@ const parseTimeframe = (inputTime) => {
     inputTime = 'millennium'
   }
   return inputTime
+}
+
+const sortKeys = (x) => {
+  if (typeof x !== 'object' || !x) {
+    return x
+  }
+  if (Array.isArray(x)) {
+    return x.map(sortKeys)
+  }
+  return Object.keys(x)
+    .sort()
+    .reduce((o, k) => ({ ...o, [k]: sortKeys(x[k]) }), {})
+}
+
+const getDiscoveryListensEndpoint = () => {
+  const env = config.get('environment')
+  switch (env) {
+    case 'staging':
+      return 'https://discoveryprovider.staging.audius.co'
+    case 'production':
+      return 'https://discoveryprovider.audius.co'
+    case 'development':
+    default:
+      return 'http://audius-protocol-discovery-provider-1'
+  }
+}
+
+const sign = (data) => {
+  const privateKey = config.get('relayerPrivateKey')
+  const msgHash = keccak256(data)
+  const signature = ethSigUtil.personalSign(Buffer.from(privateKey, 'hex'), {
+    data: msgHash
+  })
+  return signature
+}
+
+const basicAuthNonce = () => {
+  const ts = Date.now().toString()
+  const sig = sign(ts)
+  const signatureHex = '0x' + sig.toString('hex')
+  const basic = `${ts}:${signatureHex}`
+  const signature = 'Basic ' + Buffer.from(basic).toString('base64')
+  return signature
+}
+
+const generateListenTimestampAndSignature = () => {
+  const timestamp = new Date().toISOString()
+  const data = JSON.stringify(sortKeys({ data: 'listen', timestamp }))
+  const sig = sign(data)
+  const signature = sig.toString('hex')
+  return {
+    signature,
+    timestamp
+  }
 }
 
 const getTrackListens = async (
@@ -389,6 +446,55 @@ module.exports = function (app) {
       const suffix = currentHour.toISOString()
       const entropy = uuidv4()
       const { ip, isWhitelisted } = getIP(req)
+
+      const useDiscoveryListens = config.get('useDiscoveryListens')
+      if (useDiscoveryListens) {
+        // attempt to forward listen to discovery
+        // if it fails, submit to solana like normal
+        try {
+          req.logger.info(
+            `TrackListen discovery userId=${userId} ip=${ip} isWhitelisted=${isWhitelisted} useDiscoveryListens=${useDiscoveryListens}`
+          )
+
+          // sign
+          const { signature, timestamp } = generateListenTimestampAndSignature()
+
+          const body = {
+            userId: userId.toString(),
+            timestamp,
+            signature,
+            solanaListen: false
+          }
+
+          const headers = {
+            Authorization: basicAuthNonce(),
+            'x-forwarded-for': ip
+          }
+
+          const endpoint = `${getDiscoveryListensEndpoint()}/solana/tracks/${trackId}/listen`
+          const res = await axios.post(endpoint, body, { headers })
+          if (res === null) {
+            throw new Error(
+              'failed to forward listen to discovery, sending to solana'
+            )
+          }
+
+          req.logger.info(
+            `TrackListen discovery res=${JSON.stringify(res.data)}`
+          )
+
+          const { solTxSignature } = res.data
+
+          return successResponse({
+            solTxSignature
+          })
+        } catch (e) {
+          req.logger.error(
+            `TrackListen discovery error, trackId=${trackId} userId=${userId} : ${e}`
+          )
+        }
+      }
+
       req.logger.info(
         `TrackListen userId=${userId} ip=${ip} isWhitelisted=${isWhitelisted}`
       )

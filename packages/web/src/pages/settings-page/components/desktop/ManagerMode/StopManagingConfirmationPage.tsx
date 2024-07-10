@@ -19,20 +19,30 @@ const messages = {
 export const StopManagingConfirmationPage = (
   props: StopManagingConfirmationPageProps
 ) => {
-  const { params, setPage } = props
+  const { params, setPageState } = props
   const managerUserId = useSelector(getUserId)
   const userId = params?.user_id
 
-  const navigateToHome = useCallback(() => {
-    setPage(AccountsYouManagePages.HOME)
-  }, [setPage])
+  const handleCancel = useCallback(() => {
+    setPageState({
+      page: AccountsYouManagePages.HOME,
+      transitionDirection: 'back'
+    })
+  }, [setPageState])
+
+  const handleSuccess = useCallback(() => {
+    setPageState({
+      page: AccountsYouManagePages.HOME,
+      transitionDirection: 'forward'
+    })
+  }, [setPageState])
 
   if (!managerUserId || !userId) return null
 
   return (
     <RemoveManagerConfirmationContent
-      onCancel={navigateToHome}
-      onSuccess={navigateToHome}
+      onCancel={handleCancel}
+      onSuccess={handleSuccess}
       userId={userId}
       managerUserId={managerUserId}
       confirmationMessage={messages.stopManagingConfirmation}

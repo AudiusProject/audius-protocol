@@ -56,7 +56,7 @@ export const UserCard = (props: UserCardProps) => {
   return (
     <Paper border='default' onPress={handlePress} {...other}>
       <Avatar source={source} onError={handleError} aria-hidden p='m' pb='s' />
-      <Flex ph='l' pb='s' gap='xs'>
+      <Flex ph='l' pb='s' gap='xs' pointerEvents='none'>
         <UserLink userId={userId} textVariant='title' />
         <Text ellipses textAlign='center'>
           @{handle}

@@ -1,15 +1,22 @@
-import { useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 
 import { Kind, Status } from '@audius/common/models'
-import type { SearchItem as SearchItemType } from '@audius/common/store'
+import {
+  searchActions,
+  type SearchItem as SearchItemType
+} from '@audius/common/store'
 import { Keyboard } from 'react-native'
+import { useDispatch } from 'react-redux'
 
 import { Divider, Flex, Text } from '@audius/harmony-native'
 import { SectionList } from 'app/components/core'
 import { WithLoader } from 'app/components/with-loader/WithLoader'
 
+import { NoResultsTile } from '../NoResultsTile'
 import { SearchItem } from '../SearchItem'
 import { useGetSearchResults } from '../searchState'
+
+const { addItem: addRecentSearch } = searchActions
 
 type SearchSectionHeaderProps = { title: string }
 
@@ -21,11 +28,21 @@ export const SearchSectionHeader = (props: SearchSectionHeaderProps) => {
       <Text variant='label' size='s' textTransform='uppercase'>
         {title}
       </Text>
-      <Flex w='100%' h='1px'>
+      <Flex flex={1}>
         <Divider />
       </Flex>
     </Flex>
   )
+}
+
+const AllResultsItem = ({ item }: { item: SearchItemType }) => {
+  const dispatch = useDispatch()
+
+  const handlePress = useCallback(() => {
+    dispatch(addRecentSearch({ searchItem: item }))
+  }, [item, dispatch])
+
+  return <SearchItem searchItem={item} onPress={handlePress} />
 }
 
 export const AllResults = () => {
@@ -36,7 +53,7 @@ export const AllResults = () => {
       data
         ? [
             {
-              title: 'users',
+              title: 'profiles',
               data: data.users.map(({ user_id }) => ({
                 id: user_id,
                 kind: Kind.USERS
@@ -68,26 +85,29 @@ export const AllResults = () => {
     [data]
   )
 
+  const hasNoResults =
+    (!data || sections.length === 0) && status === Status.SUCCESS
+
   // TODO: we should add a better loading state here
   return (
     <Flex onTouchStart={Keyboard.dismiss}>
       <WithLoader loading={status === Status.LOADING}>
-        <SectionList<SearchItemType>
-          keyboardShouldPersistTaps='always'
-          stickySectionHeadersEnabled={false}
-          sections={sections}
-          keyExtractor={({ id, kind }) => `${kind}-${id}`}
-          renderItem={({ item }) => (
-            <Flex ph='l'>
-              <SearchItem searchItem={item} />
-            </Flex>
-          )}
-          renderSectionHeader={({ section: { title } }) => (
-            <Flex ph='l' mt='l'>
-              <SearchSectionHeader title={title} />
-            </Flex>
-          )}
-        />
+        {hasNoResults ? (
+          <NoResultsTile />
+        ) : (
+          <SectionList<SearchItemType>
+            keyboardShouldPersistTaps='always'
+            stickySectionHeadersEnabled={false}
+            sections={sections}
+            keyExtractor={({ id, kind }) => `${kind}-${id}`}
+            renderItem={({ item }) => <AllResultsItem item={item} />}
+            renderSectionHeader={({ section: { title } }) => (
+              <Flex ph='l' mt='l'>
+                <SearchSectionHeader title={title} />
+              </Flex>
+            )}
+          />
+        )}
       </WithLoader>
     </Flex>
   )

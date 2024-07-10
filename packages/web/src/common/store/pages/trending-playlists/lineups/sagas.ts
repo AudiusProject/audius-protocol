@@ -15,6 +15,8 @@ import { waitForRead } from 'utils/sagaHelpers'
 const { getLineup } = trendingPlaylistsPageLineupSelectors
 const getUserId = accountSelectors.getUserId
 
+let numberOfFilteredPlaylists = 0
+
 function* getPlaylists({ limit, offset }: { limit: number; offset: number }) {
   yield* waitForRead()
   const apiClient = yield* getContext('apiClient')
@@ -40,7 +42,7 @@ function* getPlaylists({ limit, offset }: { limit: number; offset: number }) {
     {
       currentUserId,
       limit: TMP_LIMIT,
-      offset,
+      offset: offset + numberOfFilteredPlaylists,
       time
     }
   )
@@ -63,6 +65,7 @@ function* getPlaylists({ limit, offset }: { limit: number; offset: number }) {
   const trendingPlaylists = playlists.filter(
     (playlist) => !userIdsToOmit.has(`${playlist.playlist_owner_id}`)
   )
+  numberOfFilteredPlaylists += playlists.length - trendingPlaylists.length
 
   const processed = yield* processAndCacheCollections(trendingPlaylists, false)
 

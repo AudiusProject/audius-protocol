@@ -150,7 +150,7 @@ const TrackEditForm = (
                   }
                 }}
               />
-              <RemixSettingsField />
+              <RemixSettingsField isUpload={isUpload} />
             </div>
             <PreviewButton
               // Since edit form is a single component, render a different preview for each track

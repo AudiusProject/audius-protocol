@@ -130,6 +130,15 @@ type Copyright = {
   text: string
 }
 
+type FieldVisibility = {
+  mood?: boolean
+  tags?: boolean
+  genre?: boolean
+  share?: boolean
+  playCount?: boolean
+  remixes?: boolean
+}
+
 export type GatedConditions = {
   nft_collection?: EthCollectibleGatedConditions | SolCollectibleGatedConditions
   follow_user_id?: number
@@ -210,6 +219,7 @@ export type TrackMetadata = {
   bpm?: Nullable<number>
   musical_key?: Nullable<string>
   audio_analysis_error_count?: number
+  field_visibility?: FieldVisibility
 }
 
 export type CollectionMetadata = {

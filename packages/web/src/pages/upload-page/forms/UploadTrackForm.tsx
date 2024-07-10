@@ -31,11 +31,6 @@ export const UploadTrackForm = (props: UploadTrackFormProps) => {
           ...defaultHiddenFields,
           remixes: true
         },
-        licenseType: {
-          allowAttribution: null,
-          commercialUse: null,
-          derivativeWorks: null
-        },
         stems: [],
         isrc: '',
         iswc: ''
@@ -48,13 +43,7 @@ export const UploadTrackForm = (props: UploadTrackFormProps) => {
     (values: TrackEditFormValues) => {
       const tracksForUpload = tracks.map((track, i) => {
         const metadata = values.trackMetadatas[i]
-        const { licenseType: ignoredLicenseType, ...restMetadata } = metadata
-        return {
-          ...track,
-          metadata: {
-            ...restMetadata
-          }
-        }
+        return { ...track, metadata }
       })
       onContinue({ ...formState, tracks: tracksForUpload })
     },

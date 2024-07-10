@@ -1,4 +1,6 @@
 import {
+  Genre,
+  Mood,
   type AudiusLibs as AudiusLibsType,
   type DiscoveryNodeSelector,
   type StorageNodeSelectorService
@@ -33,7 +35,6 @@ import {
   CoverArtSizes,
   CoverPhotoSizes,
   DefaultSizes,
-  FailureReason,
   ID,
   InstagramUser,
   Name,
@@ -52,7 +53,6 @@ import {
 import { AnalyticsEvent } from '../../models/Analytics'
 import { ReportToSentryArgs } from '../../models/ErrorReporting'
 import * as schemas from '../../schemas'
-import { ClientRewardsReporter } from '../../services/audius-backend/Rewards'
 import {
   FeatureFlags,
   BooleanKeys,
@@ -70,7 +70,8 @@ import {
   Notification,
   IdentityNotification,
   PushNotifications,
-  TrackMetadataForUpload
+  TrackMetadataForUpload,
+  SearchKind
 } from '../../store'
 import {
   getErrorMessage,
@@ -131,24 +132,10 @@ export const AuthHeaders = Object.freeze({
   Signature: 'Encoded-Data-Signature'
 })
 
-type SnakeToCamel<S extends string> = S extends `${infer T}_${infer U}`
-  ? `${T}${Capitalize<SnakeToCamel<U>>}`
-  : S
-
-type SnakeKeysToCamel<T> = {
-  [K in keyof T as SnakeToCamel<Extract<K, string>>]: T[K]
-}
-
-type DiscoveryEndpoint = (...args: any) => { queryParams: Record<string, any> }
-type DiscoveryAPIParams<Endpoint extends DiscoveryEndpoint> = SnakeKeysToCamel<
-  ReturnType<Endpoint>['queryParams']
->
-
 // TODO: type these once libs types are improved
 let AudiusLibs: any = null
 export let BackendUtils: any = null
 let SanityChecks: any = null
-let RewardsAttester: any = null
 let SolanaUtils: any = null
 
 let audiusLibs: any = null
@@ -533,7 +520,6 @@ export const audiusBackend = ({
     BackendUtils = libsModule.Utils
     SanityChecks = libsModule.SanityChecks
     SolanaUtils = libsModule.SolanaUtils
-    RewardsAttester = libsModule.RewardsAttester
     // initialize libs
     let libsError: Nullable<string> = null
     const { web3Config } = await getWeb3Config(
@@ -759,7 +745,23 @@ export const audiusBackend = ({
     }
   }
 
-  // TODO(C-2719)
+  type SearchTagsArgs = {
+    query: string
+    userTagCount?: number
+    kind?: SearchKind
+    limit?: number
+    offset?: number
+    genre?: Genre
+    mood?: Mood
+    bpmMin?: number
+    bpmMax?: number
+    key?: string
+    isVerified?: boolean
+    hasDownloads?: boolean
+    isPremium?: boolean
+    sortMethod?: 'recent' | 'relevant' | 'popular'
+  }
+
   async function searchTags({
     query,
     userTagCount,
@@ -773,10 +775,9 @@ export const audiusBackend = ({
     key,
     isVerified,
     hasDownloads,
-    // @ts-ignore - isPremium -> is_purchasable
     isPremium,
     sortMethod
-  }: DiscoveryAPIParams<typeof DiscoveryAPI.searchTags>) {
+  }: SearchTagsArgs) {
     try {
       const searchTags = await withEagerOption(
         {
@@ -822,13 +823,17 @@ export const audiusBackend = ({
 
       return {
         tracks: combinedTracks,
-        users: combinedUsers
+        users: combinedUsers,
+        playlists: [],
+        albums: []
       }
     } catch (e) {
       console.error(e)
       return {
         tracks: [],
-        users: []
+        users: [],
+        playlists: [],
+        albums: []
       }
     }
   }
@@ -2902,95 +2907,6 @@ export const audiusBackend = ({
     return new BN(waudioBalance.toString())
   }
 
-  /**
-   * Aggregate, submit, and evaluate attestations for a given challenge for a user
-   */
-  async function submitAndEvaluateAttestations({
-    challenges,
-    userId,
-    handle,
-    recipientEthAddress,
-    oracleEthAddress,
-    quorumSize,
-    endpoints,
-    AAOEndpoint,
-    parallelization,
-    feePayerOverride,
-    source
-  }: {
-    challenges: {
-      challenge_id: ChallengeRewardID
-      specifier: string
-      amount: number
-    }[]
-    userId: ID
-    handle: string
-    recipientEthAddress: string
-    oracleEthAddress: string
-    quorumSize: number
-    endpoints: string[]
-    AAOEndpoint: string
-    parallelization: number
-    feePayerOverride: Nullable<string>
-    isFinalAttempt: boolean
-    source: 'mobile' | 'electron' | 'web'
-  }) {
-    await waitForLibsInit()
-    try {
-      if (!challenges.length) return
-
-      const reporter = new ClientRewardsReporter({
-        libs: audiusLibs,
-        recordAnalytics,
-        source,
-        reportError
-      })
-
-      const encodedUserId = encodeHashId(userId)
-      const attester = new RewardsAttester({
-        libs: audiusLibs,
-        parallelization,
-        quorumSize,
-        aaoEndpoint: AAOEndpoint,
-        aaoAddress: oracleEthAddress,
-        endpoints,
-        feePayerOverride,
-        reporter
-      })
-
-      const res = await attester.processChallenges(
-        challenges.map(({ specifier, challenge_id: challengeId, amount }) => ({
-          specifier,
-          challengeId,
-          userId: encodedUserId,
-          amount,
-          handle,
-          wallet: recipientEthAddress
-        }))
-      )
-      if (res.errors) {
-        console.error(
-          `Got errors in processChallenges: ${JSON.stringify(res.errors)}`
-        )
-        const hcaptcha = res.errors.find(
-          ({ error }: { error: FailureReason }) =>
-            error === FailureReason.HCAPTCHA
-        )
-
-        // If any of the errors are HCAPTCHA, return that one
-        // Otherwise, just return the first error we saw
-        const error = hcaptcha ? hcaptcha.error : res.errors[0].error
-        const aaoErrorCode = res.errors[0].aaoErrorCode
-
-        return { error, aaoErrorCode }
-      }
-      return res
-    } catch (e) {
-      console.error(`Failed in libs call to claim reward ${e}`)
-      return { error: true }
-    }
-  }
-
   async function getAudiusLibs() {
     await waitForLibsInit()
     return audiusLibs
@@ -3089,7 +3005,6 @@ export const audiusBackend = ({
     signIn,
     signOut,
     signUp,
-    submitAndEvaluateAttestations,
     transferAudioToWAudio,
     twitterHandle,
     instagramHandle,

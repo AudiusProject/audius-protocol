@@ -13,6 +13,29 @@ from src.utils.db_session import get_db
 
 def populate_entries(db):
     test_entities = {
+        "tracks": [
+            {
+                "track_id": 1,
+                "title": "track 1",
+                "owner_id": 1,
+                "release_date": datetime(2019, 6, 17),
+                "created_at": datetime(2019, 6, 17),
+            },
+            {
+                "track_id": 2,
+                "title": "track 2",
+                "owner_id": 2,
+                "release_date": datetime(2019, 6, 15),
+                "created_at": datetime(2019, 6, 15),
+            },
+            {
+                "track_id": 3,
+                "title": "track 3",
+                "owner_id": 2,
+                "release_date": datetime(2019, 6, 15),
+                "created_at": datetime(2019, 6, 15),
+            },
+        ],
         "playlists": [
             # playlists -----
             {
@@ -20,6 +43,7 @@ def populate_entries(db):
                 "playlist_owner_id": 1,
                 "is_album": False,
                 "created_at": datetime(2019, 6, 17),
+                "playlist_contents": {"track_ids": [{"track": 1}]},
             },
             # reposted
             {
@@ -27,6 +51,7 @@ def populate_entries(db):
                 "playlist_owner_id": 2,
                 "is_album": False,
                 "created_at": datetime(2019, 6, 15),
+                "playlist_contents": {"track_ids": [{"track": 3}]},
             },
             # albums -------
             {
@@ -35,6 +60,7 @@ def populate_entries(db):
                 "is_album": True,
                 "created_at": datetime(2019, 6, 17),
                 "playlist_name": "asdf",
+                "playlist_contents": {"track_ids": [{"track": 1}]},
             },
             # saved
             {
@@ -43,6 +69,7 @@ def populate_entries(db):
                 "is_album": True,
                 "created_at": datetime(2019, 6, 15),
                 "playlist_name": "xyz",
+                "playlist_contents": {"track_ids": [{"track": 2}]},
             },
         ],
         "users": [

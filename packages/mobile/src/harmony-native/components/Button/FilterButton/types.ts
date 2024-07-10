@@ -105,4 +105,9 @@ export type FilterButtonProps = {
    * Whether interaction is disabled
    */
   disabled?: boolean
+
+  /**
+   * Optional leading element to include on the left side of the button
+   */
+  leadingElement?: ReactNode
 }
