@@ -27,10 +27,12 @@ import Skeleton from 'app/components/skeleton'
 import { UserLink } from 'app/components/user-link'
 
 import type { AppTabScreenParamList } from '../app-screen'
+import { GestureResponderEvent } from 'react-native'
 
 type SearchItemProps = {
   icon?: IconComponent
   onPressIcon?: () => void
+  onPress?: () => void
   searchItem: SearchItemType
 }
 
@@ -40,11 +42,22 @@ type SearchItemContainerProps = {
 } & SearchItemProps
 
 const SearchItemContainer = (props: SearchItemContainerProps) => {
-  const { children, to, icon: Icon = IconCaretRight, onPressIcon } = props
+  const {
+    children,
+    to,
+    icon: Icon = IconCaretRight,
+    onPressIcon,
+    onPress
+  } = props
   const linkProps = useLinkProps({ to })
 
+  const onLinkPress = (e?: GestureResponderEvent) => {
+    if (onPress) onPress()
+    linkProps.onPress(e)
+  }
+
   return (
-    <TouchableOpacity {...linkProps}>
+    <TouchableOpacity {...linkProps} onPress={onLinkPress}>
       <Flex
         direction='row'
         w='100%'
@@ -186,7 +199,12 @@ const SearchItemUser = (props: SearchItemProps) => {
   return (
     <SearchItemContainer to={profilePage(handle)} {...props}>
       <ProfilePicture userId={id} w={40} />
-      <Flex direction='column' alignItems='flex-start' flex={1}>
+      <Flex
+        direction='column'
+        alignItems='flex-start'
+        flex={1}
+        pointerEvents='none'
+      >
         <UserLink userId={user.user_id} size='s' badgeSize='xs' />
         <Text variant='body' size='xs' color='subdued'>
           Profile
