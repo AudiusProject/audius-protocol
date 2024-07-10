@@ -139,7 +139,6 @@ const ChangeEmailNavigator = ({
           <Button
             fullWidth
             variant='primary'
-            size='large'
             iconRight={
               page === ChangeEmailPage.NewEmail ? undefined : IconArrowRight
             }
