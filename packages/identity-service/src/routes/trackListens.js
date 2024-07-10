@@ -72,7 +72,7 @@ const parseTimeframe = (inputTime) => {
   return inputTime
 }
 
-export const sortKeys = (x) => {
+const sortKeys = (x) => {
   if (typeof x !== 'object' || !x) {
     return x
   }
