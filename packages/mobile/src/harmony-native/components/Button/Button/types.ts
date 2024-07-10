@@ -6,7 +6,7 @@ import type { BaseButtonProps } from '../BaseButton/types'
 
 export type ButtonVariant = 'primary' | 'secondary' | 'tertiary' | 'destructive'
 
-export type ButtonSize = 'xs' | 'small' | 'default' | 'large'
+export type ButtonSize = 'xs' | 'small' | 'default'
 export type HexColor = `#${string}`
 
 export type ButtonProps = {

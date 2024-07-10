@@ -125,7 +125,6 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
             ) : null}
             <Button
               variant='primary'
-              size='large'
               iconRight={IconArrowRight}
               fullWidth
               onPress={() => {
