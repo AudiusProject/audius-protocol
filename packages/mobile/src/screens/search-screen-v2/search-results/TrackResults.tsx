@@ -8,6 +8,7 @@ import {
   SearchKind,
   searchActions
 } from '@audius/common/store'
+import { Keyboard } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 import { useDebounce } from 'react-use'
 
@@ -22,7 +23,6 @@ import {
   useSearchFilters,
   useSearchQuery
 } from '../searchState'
-import { Keyboard } from 'react-native'
 
 const { getSearchTracksLineup } = searchResultsPageSelectors
 const { makeGetLineupMetadatas } = lineupSelectors

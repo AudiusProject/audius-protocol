@@ -1,4 +1,6 @@
 import { Kind, Status } from '@audius/common/models'
+import { searchActions } from '@audius/common/store'
+import { useDispatch } from 'react-redux'
 
 import { Flex } from '@audius/harmony-native'
 import { CollectionList } from 'app/components/collection-list/CollectionList'
@@ -6,8 +8,6 @@ import { CollectionList } from 'app/components/collection-list/CollectionList'
 import { NoResultsTile } from '../NoResultsTile'
 import { SearchCatalogTile } from '../SearchCatalogTile'
 import { useGetSearchResults, useIsEmptySearch } from '../searchState'
-import { searchActions } from '@audius/common/store'
-import { useDispatch } from 'react-redux'
 
 const { addItem: addRecentSearch } = searchActions
 

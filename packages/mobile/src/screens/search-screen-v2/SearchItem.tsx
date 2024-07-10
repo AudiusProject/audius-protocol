@@ -9,6 +9,7 @@ import type { SearchItem as SearchItemType } from '@audius/common/store'
 import { profilePage } from '@audius/web/src/utils/route'
 import { useLinkProps } from '@react-navigation/native'
 import type { To } from '@react-navigation/native/lib/typescript/src/useLinkTo'
+import type { GestureResponderEvent } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'
 
 import type { IconComponent } from '@audius/harmony-native'
@@ -27,7 +28,6 @@ import Skeleton from 'app/components/skeleton'
 import { UserLink } from 'app/components/user-link'
 
 import type { AppTabScreenParamList } from '../app-screen'
-import { GestureResponderEvent } from 'react-native'
 
 type SearchItemProps = {
   icon?: IconComponent

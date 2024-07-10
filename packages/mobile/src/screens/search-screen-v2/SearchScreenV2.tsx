@@ -4,7 +4,9 @@ import type {
   SearchCategory,
   SearchFilters as SearchFiltersType
 } from '@audius/common/api'
+import { searchSelectors } from '@audius/common/store'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
+import { useSelector } from 'react-redux'
 
 import { Flex } from '@audius/harmony-native'
 import { Screen } from 'app/components/core'
@@ -29,8 +31,6 @@ import {
   useSearchFilters,
   useSearchQuery
 } from './searchState'
-import { useSelector } from 'react-redux'
-import { searchSelectors } from '@audius/common/store'
 
 const { getV2SearchHistory } = searchSelectors
 const Stack = createNativeStackNavigator()

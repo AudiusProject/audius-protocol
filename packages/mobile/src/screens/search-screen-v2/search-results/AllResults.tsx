@@ -6,6 +6,7 @@ import {
   type SearchItem as SearchItemType
 } from '@audius/common/store'
 import { Keyboard } from 'react-native'
+import { useDispatch } from 'react-redux'
 
 import { Divider, Flex, Text } from '@audius/harmony-native'
 import { SectionList } from 'app/components/core'
@@ -14,7 +15,6 @@ import { WithLoader } from 'app/components/with-loader/WithLoader'
 import { NoResultsTile } from '../NoResultsTile'
 import { SearchItem } from '../SearchItem'
 import { useGetSearchResults } from '../searchState'
-import { useDispatch } from 'react-redux'
 
 const { addItem: addRecentSearch } = searchActions
 

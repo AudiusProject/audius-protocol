@@ -1,16 +1,18 @@
 import { Kind, Status } from '@audius/common/models'
+import { searchActions } from '@audius/common/store'
+import { useDispatch } from 'react-redux'
 
 import { UserList } from 'app/components/user-list'
 
 import { NoResultsTile } from '../NoResultsTile'
 import { SearchCatalogTile } from '../SearchCatalogTile'
 import { useGetSearchResults, useIsEmptySearch } from '../searchState'
-import { useDispatch } from 'react-redux'
-import { searchActions } from '@audius/common/store'
+
 const { addItem: addRecentSearch } = searchActions
 
 export const ProfileResults = () => {
   const dispatch = useDispatch()
+
   const { data, status } = useGetSearchResults('users')
   const isEmptySearch = useIsEmptySearch()
   const hasNoResults = (!data || data.length === 0) && status === Status.SUCCESS
