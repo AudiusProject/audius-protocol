@@ -366,6 +366,28 @@ def test_purchases_sort_order(session):
 
 
 @with_tracks_library_setup
+def test_all_hidden_purchase(session):
+    """Tests purchases with a manual sort order"""
+    args = GetTrackLibraryArgs(
+        user_id=5,
+        current_user_id=5,
+        limit=10,
+        offset=0,
+        filter_type=LibraryFilterType.all,
+        filter_deleted=False,
+    )
+
+    track_library = _get_track_library(args, session)
+    # one save, two reposts, two purchases
+    assert len(track_library) == 5, "should return 5 tracks"
+    assert_correct_track(track_library, 4, 19)
+    assert_correct_track(track_library, 3, 20)
+    assert_correct_track(track_library, 2, 25)
+    assert_correct_track(track_library, 1, 24)
+    assert_correct_track(track_library, 0, 22)
+
+
+@with_tracks_library_setup
 def test_reposts(session):
     """Extremely basic test that reposts work. Returns one repost this is also a favorite, and two that are just reposts.
     Should return them in desc order of repost creation time because no sort method is specified.
