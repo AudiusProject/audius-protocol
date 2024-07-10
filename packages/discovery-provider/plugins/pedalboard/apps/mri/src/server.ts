@@ -1,10 +1,11 @@
 import express, { Application } from "express"
 import { Knex } from "knex"
 import { logger } from "./logger"
-import { clm } from "./clm"
-import { ClmS3Config } from "./s3"
+import { clm } from "./queries/clm"
+import { S3Config } from "./s3"
+import { udr } from "./queries/udr"
 
-export const webServer = (db: Knex, s3s: ClmS3Config[]): Application => {
+export const webServer = (db: Knex, s3s: { clmS3s: S3Config[], udrS3s: S3Config[] }): Application => {
     const app = express()
     
     app.get("/health_check", (_, res) => {
@@ -13,7 +14,7 @@ export const webServer = (db: Knex, s3s: ClmS3Config[]): Application => {
         })
     })
 
-    app.post("/record", async (req, res) => {
+    app.post("/clm/record", async (req, res) => {
         try {
             const dateParam = req.query.date
 
@@ -35,7 +36,7 @@ export const webServer = (db: Knex, s3s: ClmS3Config[]): Application => {
                 return res.status(400).send('invalid date format');
             }
 
-            await clm(db, s3s, parsedDate)
+            await clm(db, s3s.clmS3s, parsedDate)
 
         } catch (e) {
             logger.error({ e }, "error in record request")
@@ -44,11 +45,22 @@ export const webServer = (db: Knex, s3s: ClmS3Config[]): Application => {
         return res.status(200).send()
     })
 
-    app.post("/record_now", async (_, res) => {
+    app.post("/clm/record_now", async (_, res) => {
         try {
             const yesterday = new Date();
             yesterday.setDate(yesterday.getDate() - 1)
-            await clm(db, s3s, yesterday)
+            await clm(db, s3s.clmS3s, yesterday)
+        } catch (e) {
+            logger.error({ e }, "error in record request")
+            return res.status(500).send()
+        }
+        return res.status(200).send()
+    })
+
+    app.post("/udr/record", async (_, res) => {
+        try {
+            const today = new Date();
+            await udr(db, s3s.udrS3s, today)
         } catch (e) {
             logger.error({ e }, "error in record request")
             return res.status(500).send()
