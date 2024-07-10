@@ -22,7 +22,7 @@ export const SearchSectionHeader = (props: SearchSectionHeaderProps) => {
       <Text variant='label' size='s' textTransform='uppercase'>
         {title}
       </Text>
-      <Flex w='100%' h='1px'>
+      <Flex flex={1}>
         <Divider />
       </Flex>
     </Flex>
@@ -37,7 +37,7 @@ export const AllResults = () => {
       data
         ? [
             {
-              title: 'users',
+              title: 'profiles',
               data: data.users.map(({ user_id }) => ({
                 id: user_id,
                 kind: Kind.USERS
