@@ -211,6 +211,7 @@ def create_grant(params: ManageEntityParameters):
         ),  # cast to assert non null (since we validated above)
         is_current=True,
         is_approved=None if grantee_type == "user" else True,
+        is_revoked=False,
         txhash=params.txhash,
         blockhash=params.event_blockhash,
         blocknumber=params.block_number,
