@@ -7,13 +7,13 @@ import {
   StreamTrackAvailabilityType,
   AccessConditions
 } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import { IconCollectible } from '@audius/harmony'
 
 import { ModalRadioItem } from 'components/modal-radio/ModalRadioItem'
 
 import { CollectibleGatedDescription } from './CollectibleGatedDescription'
 import { CollectibleGatedFields } from './CollectibleGatedFields'
-import { FeatureFlags } from '@audius/common/services'
 
 const messages = {
   collectibleGated: 'Collectible Gated',
