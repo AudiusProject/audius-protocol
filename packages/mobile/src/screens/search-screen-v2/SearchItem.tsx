@@ -83,7 +83,7 @@ const SearchItemContainer = (props: SearchItemContainerProps) => {
   )
 }
 
-const SearchItemSkeleton = () => (
+export const SearchItemSkeleton = () => (
   <Flex direction='row' w='100%' pv='s' justifyContent='space-between'>
     <Flex direction='row' w='100%' gap='m'>
       <Skeleton width={40} height={40} />
