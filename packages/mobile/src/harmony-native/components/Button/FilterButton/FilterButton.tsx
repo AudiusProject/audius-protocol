@@ -39,7 +39,7 @@ export const FilterButton = (props: FilterButtonProps) => {
 
   const smallStyles: ReactNativeStyle = {
     paddingHorizontal: spacing.m,
-    paddingVertical: spacing.xs
+    height: spacing.unit8
   }
   const smallIconStyles: ReactNativeStyle = {
     width: spacing.unit3,
