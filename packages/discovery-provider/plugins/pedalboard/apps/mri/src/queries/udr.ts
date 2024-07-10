@@ -13,8 +13,8 @@ const isDev = config.env === 'dev'
 
 export type UsageDetailReporting = {
   ServiceName: 'AUDIUS'
-  ReportPeriodType: '1' | '2' | '3' | '4'
-  ReportingPeriod: number // MMDDYYYY
+  ReportPeriodType: 'Q'
+  ReportingPeriod: string // MMDDYYYY
   ServiceType: 'I'
   SongTitle: string
   Artist: string
@@ -67,9 +67,9 @@ export const udr = async (
       )
       select
         'AUDIUS' as "ServiceName",
-        'Q' as "ReportPeriodType", -- should it be 1 or Q?
+        'Q' as "ReportPeriodType",
         :reportingPeriod as "ReportingPeriod",
-        'I' as "ServiceType", -- are we Interactive or NonInteractive?
+        'I' as "ServiceType",
         t.title as "SongTitle",
         u.name as "Artist",
         (
