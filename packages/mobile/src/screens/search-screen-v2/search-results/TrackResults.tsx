@@ -14,6 +14,7 @@ import { useDebounce } from 'react-use'
 
 import { Flex } from '@audius/harmony-native'
 import { Lineup } from 'app/components/lineup'
+import { LineupTileSkeleton } from 'app/components/lineup-tile'
 
 import { NoResultsTile } from '../NoResultsTile'
 import { SearchCatalogTile } from '../SearchCatalogTile'
@@ -76,23 +77,33 @@ export const TrackResults = () => {
 
   return (
     <Flex h='100%' backgroundColor='default'>
-      <Lineup
-        actions={tracksActions}
-        lineup={lineup}
-        loadMore={loadMore}
-        keyboardShouldPersistTaps='handled'
-        onPressItem={(id) => {
-          Keyboard.dismiss()
-          dispatch(
-            addRecentSearch({
-              searchItem: {
-                kind: Kind.TRACKS,
-                id
-              }
-            })
-          )
-        }}
-      />
+      {status === Status.LOADING ? (
+        <Flex p='m' gap='m'>
+          <LineupTileSkeleton />
+          <LineupTileSkeleton />
+          <LineupTileSkeleton />
+          <LineupTileSkeleton />
+          <LineupTileSkeleton />
+        </Flex>
+      ) : (
+        <Lineup
+          actions={tracksActions}
+          lineup={lineup}
+          loadMore={loadMore}
+          keyboardShouldPersistTaps='handled'
+          onPressItem={(id) => {
+            Keyboard.dismiss()
+            dispatch(
+              addRecentSearch({
+                searchItem: {
+                  kind: Kind.TRACKS,
+                  id
+                }
+              })
+            )
+          }}
+        />
+      )}
     </Flex>
   )
 }
