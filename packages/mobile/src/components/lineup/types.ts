@@ -170,7 +170,10 @@ export type LineupProps = {
   EndOfLineupComponent?: ComponentType<any> | ReactElement
 } & Pick<
   SectionListProps<unknown>,
-  'showsVerticalScrollIndicator' | 'ListEmptyComponent' | 'ListFooterComponent'
+  | 'showsVerticalScrollIndicator'
+  | 'ListEmptyComponent'
+  | 'ListFooterComponent'
+  | 'keyboardShouldPersistTaps'
 >
 
 export type TogglePlayConfig = {

@@ -42,11 +42,7 @@ const AllResultsItem = ({ item }: { item: SearchItemType }) => {
     dispatch(addRecentSearch({ searchItem: item }))
   }, [item, dispatch])
 
-  return (
-    <Flex ph='l'>
-      <SearchItem searchItem={item} onPress={handlePress} />
-    </Flex>
-  )
+  return <SearchItem searchItem={item} onPress={handlePress} />
 }
 
 export const AllResults = () => {

@@ -64,6 +64,7 @@ const SearchItemContainer = (props: SearchItemContainerProps) => {
         justifyContent='space-between'
         alignItems='center'
         pv='s'
+        ph='l'
         gap='m'
       >
         {children}
