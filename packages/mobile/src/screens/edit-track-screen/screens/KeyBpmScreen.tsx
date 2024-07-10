@@ -38,7 +38,11 @@ export const KeyBpmScreen = () => {
           </Flex>
           <TextField
             name={BPM}
-            value={String(bpmField.value)}
+            value={
+              typeof bpmField.value !== 'undefined'
+                ? String(bpmField.value)
+                : undefined
+            }
             keyboardType='numeric'
             label={messages.bpm}
           />
