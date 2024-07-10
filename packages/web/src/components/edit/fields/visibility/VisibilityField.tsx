@@ -1,5 +1,7 @@
 import { useCallback } from 'react'
 
+import { useFeatureFlag } from '@audius/common/hooks'
+import { FeatureFlags } from '@audius/common/services'
 import {
   IconCalendarMonth,
   IconVisibilityHidden,
@@ -177,6 +179,9 @@ type VisibilityMenuFieldsProps = {
 }
 
 const VisibilityMenuFields = (props: VisibilityMenuFieldsProps) => {
+  const { isEnabled: isEditableAccessEnabled } = useFeatureFlag(
+    FeatureFlags.EDITABLE_ACCESS_ENABLED
+  )
   const { initiallyPublic, entityType } = props
   const [field] = useField<VisibilityType>('visibilityType')
 
@@ -191,9 +196,11 @@ const VisibilityMenuFields = (props: VisibilityMenuFieldsProps) => {
         value='hidden'
         label={messages.hidden}
         description={messages.hiddenDescription}
-        disabled={initiallyPublic}
+        disabled={!isEditableAccessEnabled && initiallyPublic}
         tooltipText={
-          initiallyPublic ? messages.hiddenHint(entityType) : undefined
+          !isEditableAccessEnabled && initiallyPublic
+            ? messages.hiddenHint(entityType)
+            : undefined
         }
       />
       {!initiallyPublic ? (
