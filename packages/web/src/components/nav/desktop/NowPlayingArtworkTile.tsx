@@ -13,8 +13,6 @@ import {
   IconWaveForm as IconVisualizer,
   IconButton,
   useTheme,
-  spacing,
-  motion,
   Box
 } from '@audius/harmony'
 import { animated, useSpring } from '@react-spring/web'
@@ -44,8 +42,11 @@ type FadeInUpProps = {
   style: CSSProperties
 }
 
+const AnimatedBox = animated(Box)
+
 const FadeInUp = (props: FadeInUpProps) => {
   const { children, style } = props
+  const { motion } = useTheme()
 
   const slideInProps = useSpring({
     from: { opacity: 0, height: 0 },
@@ -53,15 +54,14 @@ const FadeInUp = (props: FadeInUpProps) => {
   })
 
   return (
-    <animated.div
+    <AnimatedBox
+      border='default'
+      borderRadius='m'
       css={{
-        border: '1px solid var(--currently-playing-border)',
         boxShadow: '0 1px 20px -3px var(--currently-playing-default-shadow)',
-        borderRadius: `${spacing.unit2}px`,
         overflow: 'hidden',
         transition: `opacity ${motion.quick}`,
         cursor: 'pointer',
-        boxSizing: 'border-box',
         ':hover': {
           opacity: 0.96
         }
@@ -69,7 +69,7 @@ const FadeInUp = (props: FadeInUpProps) => {
       style={{ ...slideInProps, ...style }}
     >
       {children}
-    </animated.div>
+    </AnimatedBox>
   )
 }
 
@@ -182,7 +182,10 @@ export const NowPlayingArtworkTile = () => {
 
   const content = (
     <Box
-      css={{ position: 'relative', margin: `${spacing.unit5}px auto 0` }}
+      mt='unit5'
+      mh='auto'
+      mb={0}
+      css={{ position: 'relative' }}
       h={208}
       w={208}
     >

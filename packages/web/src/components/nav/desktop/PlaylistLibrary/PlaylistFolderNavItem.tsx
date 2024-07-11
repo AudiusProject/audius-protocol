@@ -15,12 +15,10 @@ import {
   IconFolder,
   IconCaretRight,
   PopupMenuItem,
-  useTheme,
   Flex,
-  Text,
-  motion
+  Text
 } from '@audius/harmony'
-import { ClassNames } from '@emotion/react'
+import { ClassNames, useTheme } from '@emotion/react'
 import { useDispatch } from 'react-redux'
 import { useToggle } from 'react-use'
 
@@ -57,7 +55,6 @@ const messages = {
 export const PlaylistFolderNavItem = (props: PlaylistFolderNavItemProps) => {
   const { folder, level } = props
   const { name, contents, id } = folder
-  const { color } = useTheme()
   const folderHasUpdate = useSelector((state) => {
     return folder.contents.some(
       (content) =>
@@ -65,6 +62,7 @@ export const PlaylistFolderNavItem = (props: PlaylistFolderNavItemProps) => {
         selectPlaylistUpdateById(state, content.playlist_id)
     )
   })
+  const theme = useTheme()
   const draggingKind = useSelector(selectDraggingKind)
   const [isExpanded, toggleIsExpanded] = useToggle(false)
   const [isDraggingOver, setIsDraggingOver] = useState(false)
@@ -140,13 +138,25 @@ export const PlaylistFolderNavItem = (props: PlaylistFolderNavItemProps) => {
         <Droppable
           acceptedKinds={acceptedKinds}
           onDrop={handleDrop}
-          css={{
-            transition: `background ${motion.quick}`,
-            borderRadius: 6
-          }}
-          hoverClassName={css({
-            backgroundColor: 'rgba(152, 73, 214, 0.15)'
+          className={css({
+            position: 'relative',
+            // Drop Background
+            '::before': {
+              content: '""',
+              position: 'absolute',
+              top: 0,
+              bottom: 0,
+              left: 0,
+              right: 0,
+              backgroundColor: theme.color.background.accent,
+              transition: `opacity ${theme.motion.quick}`,
+              opacity: 0
+            },
+            '&.droppableLinkHover::before': {
+              opacity: 0.15
+            }
           })}
+          hoverClassName='droppableLinkHover'
           disabled={isDisabled}
         >
           <Draggable id={id} text={name} kind='playlist-folder'>
@@ -166,30 +176,33 @@ export const PlaylistFolderNavItem = (props: PlaylistFolderNavItemProps) => {
               <Flex alignItems='center' w='100%' gap='xs'>
                 <IconFolder
                   size='xs'
-                  fill={
-                    folderHasUpdate
-                      ? color.secondary.secondary
-                      : color.neutral.n950
-                  }
+                  color={folderHasUpdate ? 'accent' : 'default'}
                 />
-                <Text size='s' css={{ flex: 1 }} ellipses>
-                  {name}
-                </Text>
+                <Flex
+                  flex={1}
+                  gap='xs'
+                  alignItems='center'
+                  justifyContent='flex-start'
+                  css={{ overflow: 'hidden' }}
+                >
+                  <Text size='s' ellipses>
+                    {name}
+                  </Text>
+                  <NavItemKebabButton
+                    visible={isHovering && !isDraggingOver}
+                    aria-label={messages.editFolderLabel}
+                    onClick={handleClickEdit}
+                    items={kebabItems}
+                  />
+                </Flex>
                 <IconCaretRight
-                  height={11}
-                  width={11}
+                  size='2xs'
                   color='default'
                   css={{
                     flexShrink: 0,
                     transition: `transform 0.15s ease`,
                     transform: isExpanded ? `rotate(90deg)` : undefined
                   }}
-                />
-                <NavItemKebabButton
-                  visible={isHovering && !isDraggingOver}
-                  aria-label={messages.editFolderLabel}
-                  onClick={handleClickEdit}
-                  items={kebabItems}
                 />
                 <DeleteFolderConfirmationModal
                   folderId={id}

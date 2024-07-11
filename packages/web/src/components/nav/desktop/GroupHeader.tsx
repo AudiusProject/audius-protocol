@@ -9,7 +9,7 @@ export const GroupHeader = (props: TextProps) => {
       size='l'
       strength='strong'
       css={{
-        paddingLeft: `${spacing.l}px`,
+        paddingLeft: spacing.unit7,
         transition: `color ${motion.quick}`
       }}
       {...props}

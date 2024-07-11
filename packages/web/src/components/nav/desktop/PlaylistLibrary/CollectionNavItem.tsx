@@ -14,7 +14,7 @@ import {
   playlistLibraryActions,
   shareModalUIActions
 } from '@audius/common/store'
-import { Flex, PopupMenuItem, spacing, Text } from '@audius/harmony'
+import { Flex, PopupMenuItem, spacing, Text, useTheme } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 import { useNavigate } from 'react-router-dom-v5-compat'
 import { useToggle } from 'react-use'
@@ -73,6 +73,8 @@ export const CollectionNavItem = (props: CollectionNavItemProps) => {
   const dispatch = useDispatch()
   const record = useRecord()
   const navigate = useNavigate()
+
+  const { color } = useTheme()
 
   const collection = useSelector((state) =>
     getCollection(state, { id: typeof id === 'string' ? null : id })
@@ -166,6 +168,8 @@ export const CollectionNavItem = (props: CollectionNavItemProps) => {
 
   if (!name || !url) return null
 
+  const indentAmount = level * spacing.l
+
   return (
     <>
       <LeftNavDroppable
@@ -193,14 +197,17 @@ export const CollectionNavItem = (props: CollectionNavItemProps) => {
             <Flex
               alignItems='center'
               w='100%'
-              pl={level * spacing.l}
+              pl={indentAmount}
               gap='xs'
-              css={{
-                position: 'relative'
-              }}
+              css={{ position: 'relative' }}
             >
               {hasUpdate ? (
-                <div css={{ position: 'absolute', left: '-12px' }}>
+                <div
+                  css={{
+                    position: 'absolute',
+                    left: -spacing.m + indentAmount
+                  }}
+                >
                   <PlaylistUpdateDot />
                 </div>
               ) : null}
@@ -208,7 +215,7 @@ export const CollectionNavItem = (props: CollectionNavItemProps) => {
                 size='s'
                 css={{
                   '.droppableLinkActive &': {
-                    color: 'var(--harmony-secondary)'
+                    color: color.text.accent
                   }
                 }}
                 ellipses

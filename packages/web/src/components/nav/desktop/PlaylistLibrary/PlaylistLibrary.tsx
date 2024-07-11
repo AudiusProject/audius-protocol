@@ -5,8 +5,8 @@ import {
   accountSelectors,
   collectionsSocialActions
 } from '@audius/common/store'
-import { Flex, motion } from '@audius/harmony'
-import { ClassNames } from '@emotion/react'
+import { Flex } from '@audius/harmony'
+import { ClassNames, useTheme } from '@emotion/react'
 import { isEmpty } from 'lodash'
 import { useDispatch } from 'react-redux'
 
@@ -43,6 +43,7 @@ export const PlaylistLibrary = (props: PlaylistLibraryProps) => {
   const library = useSelector(getPlaylistLibrary)
   const dispatch = useDispatch()
   const draggingKind = useSelector(selectDraggingKind)
+  const theme = useTheme()
 
   useAddAudioNftPlaylistToLibrary()
   useSanitizePlaylistLibrary()
@@ -59,12 +60,26 @@ export const PlaylistLibrary = (props: PlaylistLibraryProps) => {
       {({ css }) => (
         <Droppable
           className={css({
-            borderRadius: 6,
             paddingTop: -10,
             marginTop: -10,
-            transition: `background ${motion.quick}`
+            position: 'relative',
+            // Drop Background
+            '::before': {
+              content: '""',
+              position: 'absolute',
+              top: 0,
+              bottom: 0,
+              left: 0,
+              right: 0,
+              backgroundColor: theme.color.background.accent,
+              transition: `opacity ${theme.motion.quick}`,
+              opacity: 0
+            },
+            '&.droppableLinkHover::before': {
+              opacity: 0.15
+            }
           })}
-          hoverClassName={css({ backgroundColor: 'rgba(152, 73, 214, 0.15)' })}
+          hoverClassName='droppableLinkHover'
           onDrop={handleDrop}
           acceptedKinds={acceptedKinds}
         >

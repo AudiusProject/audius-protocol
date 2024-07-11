@@ -1,8 +1,8 @@
-import { ComponentProps } from 'react'
+import { ComponentProps, useMemo } from 'react'
 
-import { Text, TextProps, spacing } from '@audius/harmony'
+import { Text, TextProps } from '@audius/harmony'
 import { CSSInterpolation } from '@emotion/css'
-import { Interpolation, Theme } from '@emotion/react'
+import { Interpolation, Theme, useTheme } from '@emotion/react'
 import { Slot } from '@radix-ui/react-slot'
 import { NavLink, NavLinkProps } from 'react-router-dom'
 
@@ -12,71 +12,78 @@ export type LeftNavLinkProps =
       | Omit<ComponentProps<'div'>, 'onDrop'>
     )
 
-const indicatorCss: CSSInterpolation = {
-  content: '""',
-  display: 'block',
-  width: '20px',
-  height: '20px',
-  position: 'absolute',
-  top: 0,
-  bottom: 0,
-  margin: 'auto 0',
-  left: '-16px',
-  borderRadius: '4px'
-}
-
-const linkInteractionCss: CSSInterpolation = {
-  '&:hover': {
-    cursor: 'pointer',
-    color: 'var(--harmony-n-950)'
-  },
-  '&:hover:before': [
-    indicatorCss,
-    {
-      borderRight: '4px solid var(--harmony-n-400)'
-    }
-  ],
-  '&.active': {
-    color: 'var(--harmony-primary)',
-    fontWeight: 'var(--harmony-font-medium)'
-  },
-  '&.active:before': [
-    indicatorCss,
-    {
-      borderRight: '4px solid var(--harmony-primary)'
-    }
-  ]
-}
-
-const disabledDropCss: CSSInterpolation = {
-  opacity: 0.6,
-  cursor: 'not-allowed'
-}
-
-Text<'span'>
-
 export const LeftNavLink = (props: LeftNavLinkProps) => {
   const { asChild, disabled, children, ...other } = props
 
-  const css: Interpolation<Theme> = [
-    {
-      position: 'relative',
-      height: `${spacing.xl}px`,
-      display: 'flex',
-      alignItems: 'center',
-      gap: `${spacing.s}px`,
-      minWidth: '100px',
-      // Leaves space for the hover indicator
-      paddingLeft: `${spacing.unit5}px`,
-      paddingRight: `${spacing.l}px`,
-      color: 'var(--harmony-neutral)',
-      border: 0,
-      background: 'none',
-      textAlign: 'inherit'
-    },
-    linkInteractionCss,
-    disabled && disabledDropCss
-  ]
+  const theme = useTheme()
+
+  const css = useMemo(() => {
+    const { color, spacing, typography, cornerRadius } = theme
+    const indicatorCss: CSSInterpolation = {
+      content: '""',
+      display: 'block',
+      width: spacing.unit5,
+      height: spacing.unit5,
+      position: 'absolute',
+      top: 0,
+      bottom: 0,
+      margin: 'auto 0',
+      left: -spacing.l,
+      borderRadius: cornerRadius.s,
+      borderRightWidth: cornerRadius.s,
+      borderRightStyle: 'solid',
+      borderRightColor: 'transparent'
+    }
+
+    const linkInteractionCss: CSSInterpolation = {
+      '&:hover': {
+        cursor: 'pointer',
+        color: color.neutral.n950
+      },
+      '&:hover:before': [
+        indicatorCss,
+        {
+          borderRightColor: color.neutral.n400
+        }
+      ],
+      '&.active': {
+        color: color.text.active,
+        fontWeight: typography.weight.medium
+      },
+      '&.active:before': [
+        indicatorCss,
+        {
+          borderRightColor: color.primary.primary
+        }
+      ]
+    }
+
+    const disabledDropCss: CSSInterpolation = {
+      opacity: 0.6,
+      cursor: 'not-allowed'
+    }
+
+    const combined: Interpolation<Theme> = [
+      {
+        position: 'relative',
+        height: spacing.xl,
+        display: 'flex',
+        alignItems: 'center',
+        gap: spacing.s,
+        minWidth: 100,
+        // Leaves space for the hover indicator
+        paddingLeft: spacing.unit7,
+        paddingRight: spacing.l,
+        color: color.text.default,
+        border: 0,
+        background: 'none',
+        textAlign: 'inherit'
+      },
+      linkInteractionCss,
+      disabled && disabledDropCss
+    ]
+    return combined
+  }, [disabled, theme])
 
   const TextComp = asChild ? Slot : Text
   const textProps = asChild

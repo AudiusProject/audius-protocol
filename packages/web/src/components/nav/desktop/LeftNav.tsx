@@ -11,7 +11,7 @@ import {
   collectionsSocialActions,
   tracksSocialActions
 } from '@audius/common/store'
-import { Box, Flex, Scrollbar, spacing } from '@audius/harmony'
+import { Box, Flex, Scrollbar } from '@audius/harmony'
 import { ResizeObserver } from '@juggle/resize-observer'
 import { connect } from 'react-redux'
 import { RouteComponentProps, withRouter } from 'react-router-dom'
@@ -228,12 +228,7 @@ const LeftNav = (props: NavColumnProps) => {
           </DragAutoscroller>
         </Scrollbar>
       </Flex>
-      <Flex
-        direction='column'
-        alignItems='center'
-        pt={spacing.l}
-        borderTop='default'
-      >
+      <Flex direction='column' alignItems='center' pt='l' borderTop='default'>
         {profileCompletionMeter}
         <LeftNavCTA />
         <NowPlayingArtworkTile />

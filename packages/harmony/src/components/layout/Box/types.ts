@@ -28,19 +28,19 @@ export type BaseBoxProps = {
   pb?: SpacingOptions | CSSProperties['paddingBottom']
 
   /** Margin */
-  m?: SpacingOptions
+  m?: SpacingOptions | CSSProperties['margin']
   /** Margin Horizontal */
-  mh?: SpacingOptions
+  mh?: SpacingOptions | CSSProperties['marginInline']
   /** Margin Vertical */
-  mv?: SpacingOptions
+  mv?: SpacingOptions | CSSProperties['marginBlock']
   /** Margin Top */
   mt?: SpacingOptions | CSSProperties['marginTop']
   /** Margin Left */
-  ml?: SpacingOptions
+  ml?: SpacingOptions | CSSProperties['marginLeft']
   /** Margin Right */
-  mr?: SpacingOptions
+  mr?: SpacingOptions | CSSProperties['marginRight']
   /** Margin Bottom */
-  mb?: SpacingOptions
+  mb?: SpacingOptions | CSSProperties['marginBottom']
   /** Background Color */
   backgroundColor?: BackgroundColors
   /** Border */

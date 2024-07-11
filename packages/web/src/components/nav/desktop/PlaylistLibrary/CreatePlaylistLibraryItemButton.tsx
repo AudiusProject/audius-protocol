@@ -106,7 +106,7 @@ export const CreatePlaylistLibraryItemButton = (props: Props) => {
             ref={anchorRef}
             iconLeft={IconSave}
             onClick={() => handleClickPill(onClick)}
-            css={{ height: '18px' }}
+            css={{ height: 18 }}
             {...triggerProps}
           >
             {messages.new}
