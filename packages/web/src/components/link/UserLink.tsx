@@ -1,9 +1,10 @@
 import { ID } from '@audius/common/models'
 import { cacheUsersSelectors } from '@audius/common/store'
 import { IconSize, Text, useTheme } from '@audius/harmony'
+import UserBadges from 'components/user-badges/UserBadges'
 
 import { ArtistPopover } from 'components/artist/ArtistPopover'
-import UserBadges from 'components/user-badges/UserBadges'
+import { MountPlacement } from 'components/types'
 import { useSelector } from 'utils/reducer'
 import { profilePage } from 'utils/route'
 
@@ -15,10 +16,18 @@ type UserLinkProps = Omit<TextLinkProps, 'to'> & {
   userId: ID
   badgeSize?: IconSize
   popover?: boolean
+  popoverMount?: MountPlacement
 }
 
 export const UserLink = (props: UserLinkProps) => {
-  const { userId, badgeSize = 's', popover, children, ...other } = props
+  const {
+    userId,
+    badgeSize = 's',
+    popover,
+    popoverMount,
+    children,
+    ...other
+  } = props
   const { iconSizes, spacing } = useTheme()
 
   const url = useSelector((state) => {
@@ -55,6 +64,7 @@ export const UserLink = (props: UserLinkProps) => {
       css={{ display: 'inline-flex', overflow: 'hidden' }}
       handle={handle}
       component='span'
+      mount={popoverMount}
     >
       {linkElement}
     </ArtistPopover>

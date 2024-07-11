@@ -7,6 +7,7 @@ import {
 } from '@audius/common/api'
 import { recentSearchMessages as messages } from '@audius/common/messages'
 import { Kind, SquareSizes, Status } from '@audius/common/models'
+import { makeGetOptimisticUserIdsIfNeeded } from '@audius/common/src/store/user-list/selectors'
 import {
   SearchItem,
   isSearchItem,
@@ -18,7 +19,7 @@ import {
   Button,
   Flex,
   IconButton,
-  IconClose,
+  IconCloseAlt,
   Paper,
   Skeleton,
   Text,
@@ -29,6 +30,7 @@ import { Link } from 'react-router-dom'
 
 import { Avatar } from 'components/avatar'
 import { UserLink } from 'components/link'
+import { MountPlacement } from 'components/types'
 import { useCollectionCoverArt2 } from 'hooks/useCollectionCoverArt'
 import { useMedia } from 'hooks/useMedia'
 import { useTrackCoverArt2 } from 'hooks/useTrackCoverArt'
@@ -94,7 +96,7 @@ const RecentSearch = (props: RecentSearchProps) => {
         {children}
         <IconButton
           aria-label={messages.remove}
-          icon={IconClose}
+          icon={IconCloseAlt}
           color='subdued'
           size='s'
           onClick={handleClickRemove}
@@ -229,7 +231,13 @@ const RecentSearchUser = (props: { searchItem: SearchItem }) => {
     >
       <Avatar userId={id} w={40} borderWidth='thin' />
       <Flex direction='column' alignItems='flex-start' w='100%'>
-        <UserLink userId={user.user_id} size='s' badgeSize='xs' />
+        <UserLink
+          popover
+          popoverMount={MountPlacement.PAGE}
+          userId={user.user_id}
+          size='s'
+          badgeSize='xs'
+        />
         <Text variant='body' size='xs' color='subdued'>
           Profile
         </Text>
