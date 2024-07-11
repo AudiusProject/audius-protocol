@@ -16,6 +16,7 @@ from src.gated_content.content_access_checker import (
 from src.models.tracks.remix import Remix
 from src.models.tracks.stem import Stem
 from src.models.tracks.track import Track
+from src.models.tracks.track_download import TrackDownload
 from src.models.tracks.track_price_history import TrackPriceHistory
 from src.models.tracks.track_route import TrackRoute
 from src.models.users.usdc_purchase import PurchaseAccessType
@@ -461,7 +462,7 @@ def validate_track_tx(params: ManageEntityParameters):
                 f"Existing track {track_id} does not match user"
             )
 
-    if params.action != Action.DELETE:
+    if params.action != Action.DELETE and params.action != Action.DOWNLOAD:
         ai_attribution_user_id = params.metadata.get("ai_attribution_user_id")
         if ai_attribution_user_id:
             ai_attribution_user = params.existing_records["User"][
@@ -618,6 +619,38 @@ def delete_track(params: ManageEntityParameters):
     params.session.query(Stem).filter_by(child_track_id=track_id).delete()
 
     params.add_record(track_id, deleted_track)
+
+
+def download_track(params: ManageEntityParameters):
+    validate_track_tx(params)
+
+    track_id = params.entity_id
+    existing_track = params.existing_records["Track"][track_id]
+    if (
+        track_id in params.new_records["Track"]
+    ):  # override with last updated track is in this block
+        existing_track = params.new_records["Track"][track_id][-1]
+
+    if not existing_track:
+        raise IndexingValidationError(f"Track {track_id} does not exist")
+
+    stem_of = existing_track.stem_of
+    parent_track_id = (
+        stem_of.get("parent_track_id", track_id)
+        if isinstance(stem_of, dict)
+        else track_id
+    )
+
+    session = params.session
+
+    record = TrackDownload(
+        txhash=params.txhash,
+        blocknumber=params.block_number,
+        parent_track_id=parent_track_id,
+        track_id=track_id,
+        user_id=params.user_id,
+    )
+    session.add(record)
 
 
 # Make sure that the user has access to remix parent tracks

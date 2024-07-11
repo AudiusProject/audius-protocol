@@ -69,6 +69,7 @@ class Action(str, Enum):
     VIEW_PLAYLIST = "ViewPlaylist"
     APPROVE = "Approve"
     REJECT = "Reject"
+    DOWNLOAD = "Download"
 
     def __str__(self) -> str:
         return str.__str__(self)
