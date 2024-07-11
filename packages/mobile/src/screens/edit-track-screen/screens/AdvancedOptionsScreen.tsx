@@ -1,3 +1,4 @@
+import { useField } from 'formik'
 import { View } from 'react-native'
 
 import { IconIndent } from '@audius/harmony-native'
@@ -11,6 +12,8 @@ const messages = {
 }
 
 export const AdvancedOptionsScreen = () => {
+  const [{ value: trackId }] = useField('track_id')
+
   return (
     <FormScreen
       title={messages.screenTitle}
@@ -22,7 +25,8 @@ export const AdvancedOptionsScreen = () => {
         <SubmenuList>
           <IsrcField />
           <LicenseTypeField />
-          <KeyBpmField />
+          {/* Only show key and bpm field if we are in edit flow */}
+          {trackId ? <KeyBpmField /> : <></>}
         </SubmenuList>
       </View>
     </FormScreen>
