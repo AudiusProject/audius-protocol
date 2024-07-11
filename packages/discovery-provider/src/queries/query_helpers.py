@@ -961,6 +961,10 @@ def populate_playlist_metadata(
             total_play_count += play_count_dict.get(track["track"], 0)
         playlist[response_name_constants.total_play_count] = total_play_count
 
+        playlist[response_name_constants.track_count] = len(
+            playlist["playlist_contents"]["track_ids"]
+        )
+
         # current user specific
         playlist[
             response_name_constants.followee_reposts
