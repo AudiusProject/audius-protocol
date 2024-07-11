@@ -73,8 +73,8 @@ export const SearchPageV2 = () => {
       setStackReset(true)
 
       const commonFilters = intersection(
-        categories[category].filters,
-        categories[newCategory].filters
+        categories[category]?.filters ?? [],
+        categories[newCategory]?.filters ?? []
       )
       const commonFilterParams = {
         ...(query && { query }),
