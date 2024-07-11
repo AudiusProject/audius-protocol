@@ -64,10 +64,11 @@ const actionsMap = {
   },
   [ADD_ENTRIES](
     state: CollectionsCacheState,
-    action: AddEntriesAction<Collection>
+    action: AddEntriesAction<Collection>,
+    kind: Kind
   ) {
     const { entriesByKind } = action
-    const matchingEntries = entriesByKind[Kind.COLLECTIONS]
+    const matchingEntries = entriesByKind[kind]
 
     if (!matchingEntries) return state
     const cacheableEntries: Entry[] = Object.entries(matchingEntries).map(
