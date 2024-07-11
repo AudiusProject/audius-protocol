@@ -23,6 +23,10 @@ import { useUpdateSearchParams } from './utils'
 const MIN_BPM = 1
 const MAX_BPM = 999
 
+const stripLeadingZeros = (string: string) => {
+  return Number(string).toString()
+}
+
 type BpmTargetType = 'exact' | 'range5' | 'range10'
 const targetOptions: { label: string; value: BpmTargetType }[] = [
   {
@@ -173,7 +177,7 @@ const BpmRangeView = ({ handleChange }: ViewProps) => {
             const input = e.nativeEvent.target as HTMLInputElement
             input.value = input.value.slice(0, input.maxLength)
           }}
-          onChange={(e) => setMinBpm(Number(e.target.value).toString())}
+          onChange={(e) => setMinBpm(stripLeadingZeros(e.target.value))}
           inputRootClassName={css({ height: '48px !important' })}
         />
         <Box pv='l'>-</Box>
@@ -190,7 +194,7 @@ const BpmRangeView = ({ handleChange }: ViewProps) => {
             const input = e.nativeEvent.target as HTMLInputElement
             input.value = input.value.slice(0, input.maxLength)
           }}
-          onChange={(e) => setMaxBpm(Number(e.target.value).toString())}
+          onChange={(e) => setMaxBpm(stripLeadingZeros(e.target.value))}
           inputRootClassName={css({ height: '48px !important' })}
         />
       </Flex>
@@ -268,7 +272,7 @@ const BpmTargetView = ({ handleChange }: ViewProps) => {
           const input = e.nativeEvent.target as HTMLInputElement
           input.value = input.value.slice(0, input.maxLength)
         }}
-        onChange={(e) => setBpmTarget(Number(e.target.value).toString())}
+        onChange={(e) => setBpmTarget(stripLeadingZeros(e.target.value))}
         inputRootClassName={css({ height: '48px !important' })}
       />
       <Flex justifyContent='center' alignItems='center' gap='xs'>
