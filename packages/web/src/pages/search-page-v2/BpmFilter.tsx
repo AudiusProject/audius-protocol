@@ -162,24 +162,34 @@ const BpmRangeView = ({ handleChange }: ViewProps) => {
         <TextInput
           label={messages.minBpm}
           type='number'
+          maxLength={3}
           error={!!minError}
           helperText={minError}
           aria-errormessage={minError ?? undefined}
           placeholder={messages.minBpm}
           hideLabel
-          onChange={(e) => setMinBpm(e.target.value)}
+          onInput={(e) => {
+            const input = e.nativeEvent.target as HTMLInputElement
+            input.value = input.value.slice(0, input.maxLength)
+          }}
+          onChange={(e) => setMinBpm(Number(e.target.value).toString())}
           inputRootClassName={css({ height: '48px !important' })}
         />
         -
         <TextInput
           label={messages.maxBpm}
           type='number'
+          maxLength={3}
           error={!!maxError}
           helperText={maxError}
           aria-errormessage={maxError ?? undefined}
           placeholder={messages.maxBpm}
           hideLabel
-          onChange={(e) => setMaxBpm(e.target.value)}
+          onInput={(e) => {
+            const input = e.nativeEvent.target as HTMLInputElement
+            input.value = input.value.slice(0, input.maxLength)
+          }}
+          onChange={(e) => setMaxBpm(Number(e.target.value).toString())}
           inputRootClassName={css({ height: '48px !important' })}
         />
       </Flex>
@@ -247,12 +257,17 @@ const BpmTargetView = ({ handleChange }: ViewProps) => {
       <TextInput
         label={messages.bpm}
         type='number'
+        maxLength={3}
         error={!!error}
         helperText={error}
         aria-errormessage={error ?? undefined}
         placeholder={messages.bpm}
         hideLabel
-        onChange={(e) => setBpmTarget(e.target.value)}
+        onInput={(e) => {
+          const input = e.nativeEvent.target as HTMLInputElement
+          input.value = input.value.slice(0, input.maxLength)
+        }}
+        onChange={(e) => setBpmTarget(Number(e.target.value).toString())}
         inputRootClassName={css({ height: '48px !important' })}
       />
       <Flex justifyContent='center' alignItems='center' gap='xs'>
