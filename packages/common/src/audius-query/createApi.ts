@@ -1,4 +1,10 @@
-import { useCallback, useContext, useState } from 'react'
+import {
+  MutableRefObject,
+  useCallback,
+  useContext,
+  useRef,
+  useState
+} from 'react'
 
 import { ResponseError } from '@audius/sdk'
 import { CaseReducerActions, createSlice } from '@reduxjs/toolkit'
@@ -10,7 +16,6 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useDebounce } from 'react-use'
 import { Dispatch } from 'redux'
 
-import { useBooleanOnce } from '~/hooks/useBooleanOnce'
 import {
   Collection,
   CollectionMetadata,
@@ -18,7 +23,7 @@ import {
 } from '~/models/Collection'
 import { ErrorLevel } from '~/models/ErrorReporting'
 import { Kind } from '~/models/Kind'
-import { Status, statusIsNotFinalized } from '~/models/Status'
+import { Status } from '~/models/Status'
 import { User, UserMetadata } from '~/models/User'
 import { getCollection } from '~/store/cache/collections/selectors'
 import { reformatCollection } from '~/store/cache/collections/utils/reformatCollection'
@@ -305,7 +310,8 @@ const fetchData = async <Args, Data>(
   endpointName: string,
   endpoint: EndpointConfig<Args, Data>,
   actions: CaseReducerActions<any>,
-  context: AudiusQueryContextType
+  context: AudiusQueryContextType,
+  force?: MutableRefObject<boolean>
 ) => {
   const { audiusBackend, dispatch } = context
   try {
@@ -371,7 +377,10 @@ const fetchData = async <Args, Data>(
             omitUser: false
           })
       )
-      dispatch(addEntries(entities))
+      dispatch(addEntries(entities, !!force?.current))
+      if (force?.current) {
+        force.current = false
+      }
       data = result
     } else {
       data = apiData
@@ -426,10 +435,7 @@ const buildEndpointHooks = <
     hookOptions?: QueryHookOptions
   ): QueryHookResults<Data> => {
     const dispatch = useDispatch()
-    const force = useBooleanOnce({
-      initialValue: hookOptions?.force,
-      defaultValue: false
-    })
+    const force = useRef(!!hookOptions?.force)
     const queryState = useQueryState(
       fetchArgs,
       reducerPath,
@@ -437,11 +443,8 @@ const buildEndpointHooks = <
       endpoint
     )
 
-    // If `force` and we aren't already idle/loading, ignore queryState and force a fetch
-    const state =
-      force && queryState?.status && !statusIsNotFinalized(queryState.status)
-        ? null
-        : queryState
+    // If `force`, ignore queryState and force a fetch
+    const state = force.current ? null : queryState
 
     const { normalizedData, status, errorMessage, isInitialValue } = state ?? {
       normalizedData: null,
@@ -458,7 +461,7 @@ const buildEndpointHooks = <
         return
       if (hookOptions?.disabled) return
 
-      fetchData(fetchArgs, endpointName, endpoint, actions, context)
+      fetchData(fetchArgs, endpointName, endpoint, actions, context, force)
     }, [context, fetchArgs, hookOptions?.disabled, status])
 
     useDebounce(
