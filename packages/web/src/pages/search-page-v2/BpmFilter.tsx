@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 
 import { useStateDebounced } from '@audius/common/hooks'
 import {
+  Box,
   Button,
   Divider,
   FilterButton,
@@ -155,7 +156,7 @@ const BpmRangeView = ({ handleChange }: ViewProps) => {
         ph='s'
         gap='xs'
         w={240}
-        alignItems='center'
+        alignItems='flex-start'
         // NOTE: Adds a little flexibility so the user doesn't close the popup by accident
         onClick={(e) => e.stopPropagation()}
       >
@@ -175,7 +176,7 @@ const BpmRangeView = ({ handleChange }: ViewProps) => {
           onChange={(e) => setMinBpm(Number(e.target.value).toString())}
           inputRootClassName={css({ height: '48px !important' })}
         />
-        -
+        <Box pv='l'>-</Box>
         <TextInput
           label={messages.maxBpm}
           type='number'
