@@ -141,7 +141,7 @@ const TrackEditForm = (
                 forceOpen={forceOpenAccessAndSale}
                 setForceOpen={setForceOpenAccessAndSale}
               />
-              <AdvancedField />
+              <AdvancedField isUpload={isUpload} />
               <StemsAndDownloadsField
                 isUpload={isUpload}
                 closeMenuCallback={(data) => {
