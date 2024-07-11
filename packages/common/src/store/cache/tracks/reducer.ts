@@ -10,6 +10,7 @@ import {
   ADD_ENTRIES,
   ADD_SUCCEEDED
 } from '../actions'
+import { Entry } from '../types'
 
 import {
   SET_PERMALINK,
@@ -18,7 +19,6 @@ import {
   setStreamUrls
 } from './actions'
 import { TracksCacheState } from './types'
-import { Entry } from '../types'
 
 const initialState: TracksCacheState = {
   ...(initialCacheState as unknown as Cache<Track>),

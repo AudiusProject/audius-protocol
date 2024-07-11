@@ -8,10 +8,10 @@ import {
   ADD_ENTRIES,
   ADD_SUCCEEDED
 } from '../actions'
+import { Entry } from '../types'
 
 import { SET_PERMALINK, setPermalink } from './actions'
 import { CollectionsCacheState } from './types'
-import { Entry } from '../types'
 
 const initialState = {
   ...initialCacheState,
