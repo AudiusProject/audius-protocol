@@ -11,7 +11,6 @@ import {
 import { useIsMobile } from 'hooks/useIsMobile'
 
 type RepostsFavoritesStatsProps = {
-  isUnlisted: boolean
   repostCount: number
   saveCount: number
   onClickReposts?: () => void
@@ -27,7 +26,6 @@ const messages = {
 // NOTE: this is a newer version of the other RepostsFavoritesStats component;
 // unclear if designers want to deprecate the old one just yet so this is a standalone component for CollectionHeader
 export const RepostsFavoritesStats = ({
-  isUnlisted,
   repostCount,
   saveCount,
   onClickReposts,
@@ -51,7 +49,6 @@ export const RepostsFavoritesStats = ({
     [onClickFavorites]
   )
 
-  if (isUnlisted) return null
   return !!repostCount || !!saveCount ? (
     <Flex alignItems='center' gap={isMobile ? 'xl' : 'l'}>
       {!!repostCount && (
