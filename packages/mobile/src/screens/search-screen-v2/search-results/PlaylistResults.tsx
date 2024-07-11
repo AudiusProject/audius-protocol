@@ -2,7 +2,7 @@ import { Kind, Status } from '@audius/common/models'
 import { searchActions } from '@audius/common/store'
 import { useDispatch } from 'react-redux'
 
-import { Flex } from '@audius/harmony-native'
+import { Flex, useTheme } from '@audius/harmony-native'
 import { CollectionList } from 'app/components/collection-list/CollectionList'
 
 import { NoResultsTile } from '../NoResultsTile'
@@ -13,6 +13,7 @@ const { addItem: addRecentSearch } = searchActions
 
 export const PlaylistResults = () => {
   const dispatch = useDispatch()
+  const { spacing } = useTheme()
   const { data, status } = useGetSearchResults('playlists')
   const isEmptySearch = useIsEmptySearch()
   const hasNoResults = (!data || data.length === 0) && status === Status.SUCCESS
@@ -20,11 +21,15 @@ export const PlaylistResults = () => {
   if (isEmptySearch) return <SearchCatalogTile />
 
   return (
-    <Flex h='100%' backgroundColor='default' pt='m'>
+    <Flex h='100%' backgroundColor='default'>
       {hasNoResults ? (
         <NoResultsTile />
       ) : (
         <CollectionList
+          style={{
+            height: '100%',
+            paddingVertical: spacing.m
+          }}
           keyboardShouldPersistTaps='handled'
           isLoading={status === Status.LOADING}
           collection={data as any[]}
