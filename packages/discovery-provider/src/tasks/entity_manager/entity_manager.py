@@ -354,7 +354,9 @@ def entity_manager_update(
                         txhash,
                         str(e),
                     )
-                    logger.error(f"entity_manager.py | Indexing error {e}", exc_info=True)
+                    logger.error(
+                        f"entity_manager.py | Indexing error {e}", exc_info=True
+                    )
                     create_and_raise_indexing_error(
                         indexing_error, update_task.redis, session
                     )
