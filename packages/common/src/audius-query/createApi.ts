@@ -435,7 +435,7 @@ const buildEndpointHooks = <
     hookOptions?: QueryHookOptions
   ): QueryHookResults<Data> => {
     const dispatch = useDispatch()
-    const force = useRef<boolean>(!!hookOptions?.force)
+    const force = useRef(!!hookOptions?.force)
     const queryState = useQueryState(
       fetchArgs,
       reducerPath,
@@ -443,7 +443,7 @@ const buildEndpointHooks = <
       endpoint
     )
 
-    // If `force` and we aren't already idle/loading, ignore queryState and force a fetch
+    // If `force`, ignore queryState and force a fetch
     const state = force.current ? null : queryState
 
     const { normalizedData, status, errorMessage, isInitialValue } = state ?? {
