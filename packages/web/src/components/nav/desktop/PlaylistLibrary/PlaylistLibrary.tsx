@@ -43,7 +43,7 @@ export const PlaylistLibrary = (props: PlaylistLibraryProps) => {
   const library = useSelector(getPlaylistLibrary)
   const dispatch = useDispatch()
   const draggingKind = useSelector(selectDraggingKind)
-  const { color, motion } = useTheme()
+  const { color, motion, spacing } = useTheme()
 
   useAddAudioNftPlaylistToLibrary()
   useSanitizePlaylistLibrary()
@@ -60,15 +60,13 @@ export const PlaylistLibrary = (props: PlaylistLibraryProps) => {
       {({ css }) => (
         <Droppable
           className={css({
-            paddingTop: -10,
-            marginTop: -10,
             position: 'relative',
             // Drop Background
             '::before': {
               content: '""',
               position: 'absolute',
-              top: 0,
-              bottom: 0,
+              top: -spacing.s,
+              bottom: -spacing.s,
               left: 0,
               right: 0,
               backgroundColor: color.background.accent,
