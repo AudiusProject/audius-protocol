@@ -13,11 +13,14 @@ export type AccountsManagingYouPagesParams = {
   managerUserId?: number
 }
 
+export type AccountsManagingYouPageState = {
+  page: AccountsManagingYouPages
+  params?: AccountsManagingYouPagesParams
+  transitionDirection?: 'back' | 'forward'
+}
+
 export type AccountsManagingYouPageProps = {
-  setPage: (
-    page: AccountsManagingYouPages,
-    params?: AccountsManagingYouPagesParams
-  ) => void
+  setPageState: (newState: AccountsManagingYouPageState) => void
 }
 
 type AccountsManagingYouPagePropsWithParams = AccountsManagingYouPageProps & {
@@ -41,10 +44,13 @@ export type AccountsYouManagePagesParams = {
   user_id?: number
 }
 
+export type AccountsYouManagePageState = {
+  page: AccountsYouManagePages
+  params?: AccountsYouManagePagesParams
+  transitionDirection?: 'back' | 'forward'
+}
+
 export type AccountsYouManagePageProps = {
-  setPage: (
-    page: AccountsYouManagePages,
-    params?: AccountsYouManagePagesParams
-  ) => void
+  setPageState: (newState: AccountsYouManagePageState) => void
   params?: AccountsYouManagePagesParams
 }

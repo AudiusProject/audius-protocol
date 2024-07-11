@@ -4,15 +4,17 @@ import type {
   SearchFilter,
   SearchCategory as SearchCategoryType
 } from '@audius/common/api'
-import { ScrollView } from 'react-native'
+import { Image, ScrollView } from 'react-native'
 
 import {
   FilterButton,
   Flex,
   IconCloseAlt,
-  SelectablePill
+  SelectablePill,
+  spacing
 } from '@audius/harmony-native'
 import { useNavigation } from 'app/hooks/useNavigation'
+import { moodMap } from 'app/utils/moods'
 
 import { useSearchCategory, useSearchFilters } from './searchState'
 
@@ -23,6 +25,7 @@ type SearchCategoryProps = {
 const SearchCategory = (props: SearchCategoryProps) => {
   const { category } = props
   const [currentCategory, setCategory] = useSearchCategory()
+  const [, setFilters] = useSearchFilters()
   const isSelected = currentCategory === category
 
   const labelByCategory = {
@@ -37,12 +40,15 @@ const SearchCategory = (props: SearchCategoryProps) => {
   return (
     <SelectablePill
       type='radio'
+      size='large'
       value={category}
       label={labelByCategory[category]}
       isSelected={isSelected}
-      onChange={(value, isSelected) =>
+      onChange={(value, isSelected) => {
+        // Clear Filters and change category
+        setFilters({})
         setCategory(isSelected ? (value as SearchCategoryType) : 'all')
-      }
+      }}
       icon={isSelected ? IconCloseAlt : undefined}
     />
   )
@@ -93,12 +99,37 @@ export const SearchCategoriesAndFilters = () => {
     [filters, navigation, setFilters]
   )
 
+  const getFilterLabel = (filter: string) => {
+    if (filter === 'bpm') {
+      return filters[filter] ? `${filters[filter]} BPM` : 'BPM'
+    }
+
+    return typeof filters[filter] === 'string'
+      ? String(filters[filter])
+      : filterInfoMap[filter].label
+  }
+
+  const getLeadingElement = (filter: string) => {
+    if (filter === 'mood') {
+      const mood = filters[filter]
+      if (mood) {
+        return (
+          <Image
+            source={moodMap[mood]}
+            style={{ height: spacing.l, width: spacing.l }}
+          />
+        )
+      }
+    }
+    return undefined
+  }
+
   return (
     <Flex backgroundColor='white'>
       <ScrollView horizontal keyboardShouldPersistTaps='handled'>
         <Flex direction='row' alignItems='center' gap='s' p='l' pt='s'>
-          <SearchCategory category='tracks' />
           <SearchCategory category='users' />
+          <SearchCategory category='tracks' />
           <SearchCategory category='albums' />
           <SearchCategory category='playlists' />
           {filtersByCategory[category].map((filter) => (
@@ -110,14 +141,11 @@ export const SearchCategoriesAndFilters = () => {
                   ? String(filters[filter])
                   : undefined
               }
-              label={
-                typeof filters[filter] === 'string'
-                  ? String(filters[filter])
-                  : filterInfoMap[filter].label
-              }
+              label={getFilterLabel(filter)}
               onPress={() => {
                 handleFilterPress(filter)
               }}
+              leadingElement={getLeadingElement(filter)}
             />
           ))}
         </Flex>

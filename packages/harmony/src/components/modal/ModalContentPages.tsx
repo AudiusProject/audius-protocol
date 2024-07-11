@@ -1,4 +1,4 @@
-import { Children, ReactChild, useState } from 'react'
+import { Children, ReactNode, useState } from 'react'
 
 import { ResizeObserver } from '@juggle/resize-observer'
 import cn from 'classnames'
@@ -33,19 +33,24 @@ const getSwipeTransitions = (direction: 'back' | 'forward') =>
         leave: { opacity: 0, transform: 'translate3d(100%, 0, 0)' }
       }
 
+export type ModalContentPagesProps = {
+  currentPage: number
+  width?: number
+  contentClassName?: string
+  verticalPadding?: number
+  children: ReactNode | ReactNode[]
+  /** Allows override of transition direction for next page change */
+  transitionDirection?: 'back' | 'forward'
+} & ModalContentProps
+
 export const ModalContentPages = ({
   currentPage,
   width,
   contentClassName,
   children,
+  transitionDirection,
   ...modalContentProps
-}: {
-  currentPage: number
-  width?: number
-  contentClassName?: string
-  verticalPadding?: number
-  children: ReactChild | ReactChild[]
-} & ModalContentProps) => {
+}: ModalContentPagesProps) => {
   const [lastPage, setLastPage] = useState(0)
   const [transitions, setTransitions] = useState<
     ReturnType<typeof getSwipeTransitions>
@@ -65,7 +70,9 @@ export const ModalContentPages = ({
 
   if (lastPage !== currentPage) {
     setTransitions(
-      getSwipeTransitions(currentPage > lastPage ? 'forward' : 'back')
+      getSwipeTransitions(
+        transitionDirection ?? (currentPage > lastPage ? 'forward' : 'back')
+      )
     )
     setLastPage(currentPage)
   }

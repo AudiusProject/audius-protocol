@@ -94,15 +94,17 @@ export const ResultsProfilesView = () => {
           }}
         >
           {isLoading
-            ? range(5).map((_, i) => (
-                <UserCard
-                  key={`user_card_sekeleton_${i}`}
-                  id={0}
-                  size={isMobile ? 'xs' : 's'}
-                  css={isMobile ? { maxWidth: 320 } : undefined}
-                  loading={true}
-                />
-              ))
+            ? range(isCategoryActive(CategoryView.PROFILES) ? 10 : 5).map(
+                (_, i) => (
+                  <UserCard
+                    key={`user_card_sekeleton_${i}`}
+                    id={0}
+                    size={isMobile ? 'xs' : 's'}
+                    css={isMobile ? { maxWidth: 320 } : undefined}
+                    loading={true}
+                  />
+                )
+              )
             : profileIds.map((id) => (
                 <UserCard
                   key={id}

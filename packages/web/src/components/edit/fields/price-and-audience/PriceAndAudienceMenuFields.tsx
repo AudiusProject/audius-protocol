@@ -91,6 +91,9 @@ export const PriceAndAudienceMenuFields = (
     isPublishDisabled = false
   } = props
 
+  const { isEnabled: isEditableAccessEnabled } = useFeatureFlag(
+    FeatureFlags.EDITABLE_ACCESS_ENABLED
+  )
   const { isEnabled: isUsdcFlagUploadEnabled } = useFeatureFlag(
     FeatureFlags.USDC_PURCHASES
   )
@@ -118,6 +121,7 @@ export const PriceAndAudienceMenuFields = (
     disableSpecialAccessGateFields,
     disableHidden
   } = useAccessAndRemixSettings({
+    isEditableAccessEnabled: !!isEditableAccessEnabled,
     isUpload: !!isUpload,
     isRemix,
     isAlbum,

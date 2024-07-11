@@ -93,7 +93,7 @@ async function renderAndSendDownloadAppEmail(sg, userEmail) {
       to: userEmail,
       bcc: ['forrest@audius.co'],
       html: downloadAppHtml,
-      subject: 'Have You Tried Our App?',
+      subject: 'Have you tried the Audius app?',
       asm: {
         groupId: 19141 // id of unsubscribe group at https://mc.sendgrid.com/unsubscribe-groups
       }

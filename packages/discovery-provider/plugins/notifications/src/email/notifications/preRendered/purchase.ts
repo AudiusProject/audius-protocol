@@ -52,6 +52,7 @@ export const email = ({
   <link href="https://fonts.googleapis.com/css?family=Inter:600" rel="stylesheet" type="text/css">
   <link href="https://fonts.googleapis.com/css?family=Inter:500" rel="stylesheet" type="text/css">
   <style>
+	@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
   html {
       margin: 0 !important;
       padding: 0 !important;
@@ -340,8 +341,8 @@ export const email = ({
   <td align="center">
   <table cellspacing="0" cellpadding="0" border="0">
   <tr>
-  <td style="vertical-align: middle;" width="180" class="stack-column-center" align="center"><img src="${contentImage}" width="180" border="0" style="min-width:180px; width:180px;
-          border-radius:8px; height: auto; display: block;"></td>
+  <td style="vertical-align: middle;" width="180" class="stack-column-center" align="center"><a href="${contentLink}"><img src="${contentImage}" width="180" border="0" style="min-width:180px; width:180px;
+          border-radius:8px; height: auto; display: block;"></a></td>
   </tr>
   </table>
   </td>
@@ -475,7 +476,7 @@ export const email = ({
   <div style="line-height:24px;text-align:left;"><span style="color:#52505f;font-family:Inter,Arial,sans-serif;font-size:16px;line-height:24px;text-align:left;">${contentTitle} by ${artistName}</span></div>
   </td>
   <td width="126">
-  <div style="line-height:24px;text-align:right;"><span style="color:#3a3843;font-family:Inter,Arial,sans-serif;font-size:16px;line-height:24px;text-align:right;">${price}</span></div>
+  <div style="line-height:24px;text-align:right;"><span style="color:#3a3843;font-family:Inter,Arial,sans-serif;font-size:16px;line-height:24px;text-align:right;">$${price}</span></div>
   </td>
   </tr>
   <tr>
@@ -484,18 +485,21 @@ export const email = ({
   </table>
   </td>
   </tr>
+	${
+    payExtra !== '0.00'
+      ? `
   <tr>
   <td width="100%" style=" border-width: 0px 0px 1px 0px; border-color:#e9e9eb; border-style:solid;">
   <table width="100%" border="0" cellpadding="0" cellspacing="0">
   <tr>
   <td height="16" style="height:16px; min-height:16px; line-height:16px;"></td>
   </tr>
-  <tr>
+	<tr>
   <td>
   <div style="line-height:24px;text-align:left;"><span style="color:#52505f;font-family:Inter,Arial,sans-serif;font-size:16px;line-height:24px;text-align:left;">Pay Extra</span></div>
   </td>
   <td width="126">
-  <div style="line-height:24px;text-align:right;"><span style="color:#3a3843;font-family:Inter,Arial,sans-serif;font-size:16px;line-height:24px;text-align:right;">${payExtra}</span></div>
+  <div style="line-height:24px;text-align:right;"><span style="color:#3a3843;font-family:Inter,Arial,sans-serif;font-size:16px;line-height:24px;text-align:right;">$${payExtra}</span></div>
   </td>
   </tr>
   <tr>
@@ -503,8 +507,10 @@ export const email = ({
   </tr>
   </table>
   </td>
-  </tr>
-  <tr>
+  </tr>`
+      : ''
+  }
+	<tr>
   <td width="100%">
   <table width="100%" border="0" cellpadding="0" cellspacing="0">
   <tr>
@@ -515,7 +521,7 @@ export const email = ({
   <div style="line-height:24px;text-align:left;"><span style="color:#52505f;font-weight:600;font-family:Inter,Arial,sans-serif;font-size:16px;line-height:24px;text-align:left;">Total</span></div>
   </td>
   <td width="126">
-  <div style="line-height:24px;text-align:right;"><span style="color:#3a3843;font-weight:600;font-family:Inter,Arial,sans-serif;font-size:16px;line-height:24px;text-align:right;">${total}</span></div>
+  <div style="line-height:24px;text-align:right;"><span style="color:#3a3843;font-weight:600;font-family:Inter,Arial,sans-serif;font-size:16px;line-height:24px;text-align:right;">$${total}</span></div>
   </td>
   </tr>
   <tr>
@@ -579,6 +585,9 @@ export const email = ({
   </table>
   </td>
   </tr>
+			`
+      : ``
+  }
   <tr>
   <td width="600">
   <table cellspacing="0" cellpadding="0" border="0">
@@ -640,8 +649,8 @@ export const email = ({
   <td width="552" align="center" style="vertical-align: middle;  ">
   <table class="table-w-full-mobile" width="100%" border="0" cellpadding="0" cellspacing="0">
   <tr>
-  <td style="vertical-align: middle;" width="156" class="stack-column-center" align="center"><img src="https://download.audius.co/emails/buyer-purchase/guB0eiO4uponvKRUonMnRIFuICSoqM.png" width="156" border="0" style="min-width:156px; width:156px;
-          border-radius:8px; height: auto; display: block;"></td>
+  <td style="vertical-align: middle;" width="156" class="stack-column-center" align="center"><a href="https://audius.co/audio"><img src="https://download.audius.co/emails/buyer-purchase/guB0eiO4uponvKRUonMnRIFuICSoqM.png" width="156" border="0" style="min-width:156px; width:156px;
+          border-radius:8px; height: auto; display: block;"></a></td>
   <td class="stack-column-center" height="16" style="width:16px; min-width:16px; height:16px; min-height:16px;" width="16"></td>
   <td style="vertical-align: middle;" align="center" class="stack-column-center">
   <table width="100%" cellspacing="0" cellpadding="0" border="0">
@@ -789,9 +798,7 @@ export const email = ({
   </table>
   </td>
   </tr>
-`
-      : ``
-  }
+
   <tr>
   <td width="100%">
   <table width="100%" cellspacing="0" cellpadding="0" border="0">
@@ -1152,7 +1159,14 @@ export const email = ({
   </tr>
   <tr>
   <td style="vertical-align: middle;" align="center">
-  <div style="line-height:14px;text-align:center;"><span style="color:#6a677a;font-family:Inter,Arial,sans-serif;font-size:12px;line-height:14px;text-align:center;">No longer want to receive these emails? </span><span style="color:#7e1bcc;font-family:Inter,Arial,sans-serif;font-size:12px;line-height:14px;text-align:center;">Unsubscribe </span><span style="color:#6a677a;font-family:Inter,Arial,sans-serif;font-size:12px;line-height:14px;text-align:center;">or</span><span style="color:#7e1bcc;font-family:Inter,Arial,sans-serif;font-size:12px;line-height:14px;text-align:center;"> Manage Email Preferences</span></div>
+	<div style="line-height:14px;text-align:center;"><span
+			style="color:#6a677a;font-family:Inter,Arial,sans-serif;font-size:12px;line-height:14px;text-align:center;">No
+			longer want to receive these emails? </span><a href="<%asm_group_unsubscribe_raw_url%>"><span
+			style="color:#7e1bcc;font-family:Inter,Arial,sans-serif;font-size:12px;line-height:14px;text-align:center;">Unsubscribe
+			</span></a><span
+			style="color:#6a677a;font-family:Inter,Arial,sans-serif;font-size:12px;line-height:14px;text-align:center;">or</span><a href="<%asm_preferences_raw_url%>"><span
+			style="color:#7e1bcc;font-family:Inter,Arial,sans-serif;font-size:12px;line-height:14px;text-align:center;"> Manage
+			Email Preferences</span></a></div>
   </td>
   </tr>
   </table>

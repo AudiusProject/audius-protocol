@@ -9,6 +9,7 @@ import type { SearchItem as SearchItemType } from '@audius/common/store'
 import { profilePage } from '@audius/web/src/utils/route'
 import { useLinkProps } from '@react-navigation/native'
 import type { To } from '@react-navigation/native/lib/typescript/src/useLinkTo'
+import type { GestureResponderEvent } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'
 
 import type { IconComponent } from '@audius/harmony-native'
@@ -31,6 +32,7 @@ import type { AppTabScreenParamList } from '../app-screen'
 type SearchItemProps = {
   icon?: IconComponent
   onPressIcon?: () => void
+  onPress?: () => void
   searchItem: SearchItemType
 }
 
@@ -40,17 +42,29 @@ type SearchItemContainerProps = {
 } & SearchItemProps
 
 const SearchItemContainer = (props: SearchItemContainerProps) => {
-  const { children, to, icon: Icon = IconCaretRight, onPressIcon } = props
+  const {
+    children,
+    to,
+    icon: Icon = IconCaretRight,
+    onPressIcon,
+    onPress
+  } = props
   const linkProps = useLinkProps({ to })
 
+  const onLinkPress = (e?: GestureResponderEvent) => {
+    if (onPress) onPress()
+    linkProps.onPress(e)
+  }
+
   return (
-    <TouchableOpacity {...linkProps}>
+    <TouchableOpacity {...linkProps} onPress={onLinkPress}>
       <Flex
         direction='row'
         w='100%'
         justifyContent='space-between'
         alignItems='center'
         pv='s'
+        ph='l'
         gap='m'
       >
         {children}
@@ -69,7 +83,7 @@ const SearchItemContainer = (props: SearchItemContainerProps) => {
   )
 }
 
-const SearchItemSkeleton = () => (
+export const SearchItemSkeleton = () => (
   <Flex direction='row' w='100%' pv='s' justifyContent='space-between'>
     <Flex direction='row' w='100%' gap='m'>
       <Skeleton width={40} height={40} />
@@ -186,7 +200,12 @@ const SearchItemUser = (props: SearchItemProps) => {
   return (
     <SearchItemContainer to={profilePage(handle)} {...props}>
       <ProfilePicture userId={id} w={40} />
-      <Flex direction='column' alignItems='flex-start' flex={1}>
+      <Flex
+        direction='column'
+        alignItems='flex-start'
+        flex={1}
+        pointerEvents='none'
+      >
         <UserLink userId={user.user_id} size='s' badgeSize='xs' />
         <Text variant='body' size='xs' color='subdued'>
           Profile

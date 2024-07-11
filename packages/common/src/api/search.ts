@@ -1,9 +1,10 @@
 import { Mood } from '@audius/sdk'
+import { isEmpty } from 'lodash'
 
 import { createApi } from '~/audius-query'
 import { ID } from '~/models/Identifiers'
 import { SearchKind } from '~/store'
-import { Genre } from '~/utils'
+import { Genre, formatMusicalKey } from '~/utils'
 
 export type SearchCategory = 'all' | 'tracks' | 'albums' | 'playlists' | 'users'
 
@@ -26,16 +27,60 @@ type getSearchArgs = {
   limit?: number
   offset?: number
   includePurchaseable?: boolean
+} & SearchFilters
+
+const getMinMaxFromBpm = (bpm?: string) => {
+  const bpmParts = bpm ? bpm.split('-') : [undefined, undefined]
+  const bpmMin = bpmParts[0] ? parseFloat(bpmParts[0]) : undefined
+  const bpmMax = bpmParts[1] ? parseFloat(bpmParts[1]) : bpmMin
+  return [bpmMin, bpmMax]
 }
 
 const searchApi = createApi({
   reducerPath: 'searchApi',
   endpoints: {
     getSearchResults: {
-      fetch: async (args: getSearchArgs, { apiClient }) => {
-        const { category, ...rest } = args
+      fetch: async (args: getSearchArgs, { apiClient, audiusBackend }) => {
+        const { category, currentUserId, query, limit, offset, ...filters } =
+          args
+
         const kind = category as SearchKind
-        return await apiClient.getSearchFull({ kind, ...rest })
+        if (!query && isEmpty(filters)) {
+          return {
+            tracks: [],
+            users: [],
+            albums: [],
+            playlists: []
+          }
+        }
+
+        const [bpmMin, bpmMax] = getMinMaxFromBpm(filters.bpm)
+
+        if (query?.[0] === '#') {
+          return await audiusBackend.searchTags({
+            userTagCount: 1,
+            kind,
+            query: query.toLowerCase().slice(1),
+            limit: limit || 50,
+            offset: offset || 0,
+            ...filters,
+            bpmMin,
+            bpmMax,
+            key: formatMusicalKey(filters.key)
+          })
+        } else {
+          return await apiClient.getSearchFull({
+            kind,
+            currentUserId,
+            query,
+            limit,
+            offset,
+            ...filters,
+            bpmMin,
+            bpmMax,
+            key: formatMusicalKey(filters.key)
+          })
+        }
       },
       options: {}
     }

@@ -1,8 +1,8 @@
 import { Knex } from "knex";
-import { logger as plogger } from "./logger";
-import { toCsvString } from "./csv";
-import { ClmS3Config, publishToS3 } from "./s3";
-import { readConfig } from "./config";
+import { logger as plogger } from "../logger";
+import { toCsvString } from "../csv";
+import { S3Config, publishToS3 } from "../s3";
+import { readConfig } from "../config";
 
 const config = readConfig()
 const isDev = config.env === "dev"
@@ -38,9 +38,9 @@ export const ClientLabelMetadataHeader: (keyof ClientLabelMetadata)[] = [
 // gathers data from a 24 hour period between "YYYY-MM-DDT00:00:00.000Z" to "YYYY-MM-DDT23:59:59.999Z"
 // formats it into csv format compatible with the mri spec
 // publishes it to all the provided s3 configs
-export const clm = async (db: Knex, s3s: ClmS3Config[], date: Date): Promise<void> => {
+export const clm = async (db: Knex, s3s: S3Config[], date: Date): Promise<void> => {
     const logger = plogger.child({ date: date.toISOString() })
-    logger.info("beginning report processing")
+    logger.info("beginning client label metadata processing")
 
     // Gather data from "YYYY-MM-DDT00:00:00.000Z" to "YYYY-MM-DDT23:59:59.999Z"
     const start = new Date(date);

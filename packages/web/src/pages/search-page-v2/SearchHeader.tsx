@@ -22,11 +22,11 @@ import { Category } from './types'
 
 export const categories = {
   all: { filters: [] },
+  profiles: { icon: IconUser, filters: ['genre', 'isVerified'] },
   tracks: {
     icon: IconNote,
     filters: ['genre', 'mood', 'key', 'bpm', 'isPremium', 'hasDownloads']
   },
-  profiles: { icon: IconUser, filters: ['genre', 'isVerified'] },
   albums: {
     icon: IconAlbum,
     filters: ['genre', 'mood', 'isPremium', 'hasDownloads']

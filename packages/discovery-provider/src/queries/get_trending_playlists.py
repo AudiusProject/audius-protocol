@@ -222,6 +222,8 @@ def make_get_unpopulated_playlists(session, time_range, strategy):
         for playlist in playlists:
             playlist["tracks"] = playlist_tracks_map.get(playlist["playlist_id"], [])
 
+        playlists = [p for p in playlists if p["tracks"]]
+
         results = []
         for playlist in playlists:
             playlist_owner_id = playlist["playlist_owner_id"]

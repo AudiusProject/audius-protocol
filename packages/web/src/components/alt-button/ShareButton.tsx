@@ -8,6 +8,10 @@ import shareLight from 'assets/img/iconShareLight@2x.png'
 
 import styles from './ShareButton.module.css'
 
+const messages = {
+  share: 'Share'
+}
+
 type ShareButtonProps = {
   onClick: (e: MouseEvent) => void
   isMatrixMode: boolean
@@ -40,6 +44,7 @@ const ShareButton = ({
       className={cn(wrapperClassName, {
         [styles.isHidden]: isShareHidden
       })}
+      aria-label={messages.share}
       onClick={(e) => {
         onClick(e)
         stopPropagation && e.stopPropagation()

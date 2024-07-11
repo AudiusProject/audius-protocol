@@ -155,19 +155,18 @@ export const ManagerListItem = ({
     >
       <ArtistInfo user={manager} />
       <Flex direction='column' justifyContent='space-between' alignItems='end'>
+        <PopupMenu
+          renderTrigger={renderTrigger}
+          items={popupMenuItems}
+          zIndex={zIndex.MODAL_OVERFLOW_MENU_POPUP}
+          anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+          transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+        />
         {isPending ? (
           <Text variant='label' size='s' color='subdued'>
             {messages.invitePending}
           </Text>
-        ) : (
-          <PopupMenu
-            renderTrigger={renderTrigger}
-            items={popupMenuItems}
-            zIndex={zIndex.MODAL_OVERFLOW_MENU_POPUP}
-            anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
-            transformOrigin={{ horizontal: 'right', vertical: 'top' }}
-          />
-        )}
+        ) : null}
       </Flex>
     </Flex>
   )

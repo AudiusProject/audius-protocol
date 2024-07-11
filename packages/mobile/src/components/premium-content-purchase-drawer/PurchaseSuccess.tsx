@@ -124,6 +124,7 @@ export const PurchaseSuccess = ({
         variant='subdued'
         onPress={onPressViewTrack}
         iconRight={IconCaretRight}
+        size='large'
       >
         {messages.view(contentType)}
       </PlainButton>

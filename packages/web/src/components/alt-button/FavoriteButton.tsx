@@ -13,6 +13,10 @@ import heartLightAlt from 'assets/img/iconHeartLightAlt@2x.png'
 
 import styles from './FavoriteButton.module.css'
 
+const messages = {
+  favorite: 'Favorite',
+  unfavorite: 'Unfavorite'
+}
 type FavoriteButtonProps = {
   isDarkMode: boolean
   isMatrixMode: boolean
@@ -103,6 +107,7 @@ const FavoriteButton = ({
         setYAnim(true)
         onClick(e)
       }}
+      aria-label={isActive ? messages.unfavorite : messages.favorite}
     >
       <div
         className={cn(

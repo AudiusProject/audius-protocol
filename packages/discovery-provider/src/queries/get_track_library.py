@@ -1,6 +1,6 @@
 from typing import Optional, TypedDict
 
-from sqlalchemy import asc, desc, or_
+from sqlalchemy import Boolean, Integer, asc, desc, literal, or_
 from sqlalchemy.orm import contains_eager
 from sqlalchemy.sql.functions import coalesce, max
 
@@ -88,7 +88,9 @@ def _get_track_library(args: GetTrackLibraryArgs, session):
     # we have to use contains_eager when including the user for the query filter so that it doesn't get joined twice
 
     favorites_base = session.query(
-        Save.save_item_id.label("item_id"), Save.created_at.label("item_created_at")
+        Save.save_item_id.label("item_id"),
+        Save.created_at.label("item_created_at"),
+        literal(False).label("is_purchase"),
     ).filter(
         Save.user_id == user_id,
         Save.is_current == True,
@@ -98,15 +100,19 @@ def _get_track_library(args: GetTrackLibraryArgs, session):
     reposts_base = session.query(
         Repost.repost_item_id.label("item_id"),
         Repost.created_at.label("item_created_at"),
+        literal(False).label("is_purchase"),
     ).filter(
         Repost.user_id == user_id,
         Repost.is_current == True,
         Repost.is_delete == False,
         Repost.repost_type == RepostType.track,
     )
+    # We always include purchases in the purchase tab even if hidden, so keep
+    # the context of this around for the later filter
     purchase_base = session.query(
         USDCPurchase.content_id.label("item_id"),
         USDCPurchase.created_at.label("item_created_at"),
+        literal(True).label("is_purchase"),
     ).filter(
         USDCPurchase.content_type == PurchaseType.track,
         USDCPurchase.buyer_user_id == user_id,
@@ -121,6 +127,9 @@ def _get_track_library(args: GetTrackLibraryArgs, session):
     all_base = (
         session.query(
             union_subquery.c.item_id,
+            max(union_subquery.c.is_purchase.cast(Integer))
+            .cast(Boolean)
+            .label("is_purchase"),
             max(union_subquery.c.item_created_at).label("item_created_at"),
         )
         .select_from(union_subquery)
@@ -144,6 +153,13 @@ def _get_track_library(args: GetTrackLibraryArgs, session):
             TrackWithAggregates.track_id == subquery.c.item_id,
         )
         .filter(TrackWithAggregates.is_current == True)
+        # Hide hidden tracks from library unless viewing purchases (or all)
+        .filter(
+            or_(
+                TrackWithAggregates.is_unlisted == False,
+                subquery.c.is_purchase == True,
+            )
+        )
     )
 
     # Allow filtering of deletes
@@ -212,6 +228,7 @@ def _get_track_library(args: GetTrackLibraryArgs, session):
     tracks = populate_track_metadata(
         session, track_ids, tracks, current_user_id, track_has_aggregates=True
     )
+
     tracks = add_users_to_tracks(session, tracks, current_user_id)
 
     for idx, track in enumerate(tracks):

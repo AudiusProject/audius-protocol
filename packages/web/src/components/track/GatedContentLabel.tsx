@@ -54,7 +54,7 @@ export const GatedContentLabel = ({
   }
 
   const finalColor =
-    isOwner || !hasStreamAccess ? specialColor : color.icon.default
+    isOwner || !hasStreamAccess ? specialColor : color.icon.subdued
 
   return (
     <Flex alignItems='center' gap='xs' css={{ whiteSpace: 'nowrap' }}>

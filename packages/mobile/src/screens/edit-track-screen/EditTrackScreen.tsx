@@ -2,8 +2,15 @@ import { useCallback, useMemo } from 'react'
 
 import { useUSDCPurchaseConfig } from '@audius/common/hooks'
 import { isContentUSDCPurchaseGated } from '@audius/common/models'
-import type { TrackForUpload } from '@audius/common/store'
-import { creativeCommons, formatPrice } from '@audius/common/utils'
+import type {
+  TrackForUpload,
+  TrackMetadataForUpload
+} from '@audius/common/store'
+import {
+  creativeCommons,
+  formatPrice,
+  parseMusicalKey
+} from '@audius/common/utils'
 import { Formik } from 'formik'
 import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
@@ -11,8 +18,12 @@ import { toFormikValidationSchema } from 'zod-formik-adapter'
 import { EditTrackNavigator } from './EditTrackNavigator'
 import { TRACK_PREVIEW } from './fields/AccessAndSaleField/PremiumRadioField/TrackPreviewField'
 import { TRACK_PRICE } from './fields/AccessAndSaleField/PremiumRadioField/TrackPriceField'
+import { BPM } from './screens/KeyBpmScreen'
 import type { FormValues, EditTrackScreenProps } from './types'
 const { computeLicenseVariables, ALL_RIGHTS_RESERVED_TYPE } = creativeCommons
+
+const MIN_BPM = 1
+const MAX_BPM = 999
 
 const errorMessages = {
   title: 'Your track must have a name',
@@ -22,7 +33,9 @@ const errorMessages = {
   previewStartThirtyBeforeEnd:
     'Preview must start at least 30 seconds before the end of the track.',
   previewStartZero:
-    'Preview must start at 0 since the track is less than 30 seconds.'
+    'Preview must start at 0 since the track is less than 30 seconds.',
+  bpmTooLow: `BPM less than ${MIN_BPM}`,
+  bpmTooHigh: `BPM greater than ${MAX_BPM}`
 }
 
 const useEditTrackSchema = () => {
@@ -50,7 +63,8 @@ const useEditTrackSchema = () => {
           description: z.string().nullish(),
           stream_conditions: z.any(),
           duration: z.number().nullable(),
-          preview_start_seconds: z.any()
+          preview_start_seconds: z.any(),
+          bpm: z.string().nullable()
         })
         .refine(
           (values) => {
@@ -164,6 +178,26 @@ const useEditTrackSchema = () => {
             message: errorMessages.previewStartZero,
             path: [TRACK_PREVIEW]
           }
+        )
+        .refine(
+          (values) => {
+            const { bpm } = values
+            return bpm === null || Number(bpm) >= MIN_BPM
+          },
+          {
+            message: errorMessages.bpmTooLow,
+            path: [BPM]
+          }
+        )
+        .refine(
+          (values) => {
+            const { bpm } = values
+            return bpm == null || Number(bpm) <= MAX_BPM
+          },
+          {
+            message: errorMessages.bpmTooHigh,
+            path: [BPM]
+          }
         ),
     [minContentPriceCents, maxContentPriceCents]
   )
@@ -197,7 +231,11 @@ export const EditTrackScreen = (props: EditTrackScreenProps) => {
     stream_conditions: streamConditionsOverride,
     licenseType: computeLicenseVariables(
       initialValuesProp.license || ALL_RIGHTS_RESERVED_TYPE
-    )
+    ),
+    musical_key: initialValuesProp.musical_key
+      ? parseMusicalKey(initialValuesProp.musical_key)
+      : undefined,
+    bpm: initialValuesProp.bpm ? initialValuesProp.bpm.toString() : undefined
   }
 
   const handleSubmit = useCallback(
@@ -205,8 +243,13 @@ export const EditTrackScreen = (props: EditTrackScreenProps) => {
       const {
         licenseType: ignoredLicenseType,
         trackArtwork: ignoredTrackArtwork,
-        ...metadata
+        ...formValues
       } = values
+
+      const metadata: TrackMetadataForUpload = {
+        ...formValues,
+        bpm: formValues.bpm ? Number(formValues.bpm) : null
+      }
 
       // If track is not unlisted and one of the unlisted visibility fields is false, set to true.
       // We shouldn't have to do this if we set the default for 'share' and 'play_count' to true

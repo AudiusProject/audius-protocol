@@ -1,10 +1,12 @@
 import {
   Commitment,
+  ComputeBudgetProgram,
   Connection,
   PublicKey,
   TransactionMessage,
   VersionedTransaction
 } from '@solana/web3.js'
+import { z } from 'zod'
 
 import { parseParams } from '../../../utils/parseParams'
 import type { SolanaWalletAdapter } from '../types'
@@ -12,11 +14,24 @@ import type { SolanaWalletAdapter } from '../types'
 import {
   BuildTransactionRequest,
   BuildTransactionSchema,
+  PrioritySchema,
   type BaseSolanaProgramConfigInternal
 } from './types'
 
 const isPublicKeyArray = (arr: any[]): arr is PublicKey[] =>
   arr.every((a) => a instanceof PublicKey)
+
+const priorityToPercentileMap: Record<
+  z.infer<typeof PrioritySchema>,
+  number
+> = {
+  MIN: 0,
+  LOW: 25,
+  MEDIUM: 50,
+  HIGH: 75,
+  VERY_HIGH: 95,
+  UNSAFE_MAX: 100
+}
 
 /**
  * Abstract class for initializing individual program clients.
@@ -90,12 +105,44 @@ export class BaseSolanaProgramClient {
       instructions,
       feePayer,
       recentBlockhash,
-      addressLookupTables = []
+      addressLookupTables = [],
+      priorityFee
     } = await parseParams('buildTransaction', BuildTransactionSchema)(params)
 
     if (!recentBlockhash) {
       const res = await this.connection.getLatestBlockhash()
       recentBlockhash = res.blockhash
+    }
+
+    if (priorityFee) {
+      if ('microLamports' in priorityFee) {
+        instructions.push(
+          ComputeBudgetProgram.setComputeUnitPrice({
+            microLamports: priorityFee.microLamports
+          })
+        )
+      } else {
+        const res = await this.connection.getRecentPrioritizationFees()
+        const orderedFees = res.map((r) => r.prioritizationFee).sort()
+        const percentile =
+          'percentile' in priorityFee
+            ? priorityFee.percentile
+            : priorityToPercentileMap[priorityFee.priority]
+        const microLamports =
+          orderedFees[
+            Math.max(
+              Math.round((percentile / 100.0) * orderedFees.length - 1),
+              0
+            )
+          ]
+        if (microLamports !== undefined) {
+          instructions.push(
+            ComputeBudgetProgram.setComputeUnitPrice({
+              microLamports
+            })
+          )
+        }
+      }
     }
 
     const addressLookupTableAccounts = !isPublicKeyArray(addressLookupTables)

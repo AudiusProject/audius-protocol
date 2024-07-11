@@ -85,6 +85,13 @@ def populate_tracks(db):
                 "created_at": datetime(2019, 6, 21),
                 "is_delete": True,
             },
+            {
+                "track_id": 27,
+                "title": "track 27",
+                "owner_id": 6,
+                "release_date": datetime(2019, 6, 18),
+                "created_at": datetime(2019, 6, 22),
+            },
         ],
         "track_routes": [
             {"slug": "track-17", "owner_id": 1287290},
@@ -356,6 +363,28 @@ def test_purchases_sort_order(session):
     assert len(track_library) == 2, "should return 2 tracks"
     assert_correct_track(track_library, 0, 25)
     assert_correct_track(track_library, 1, 24)
+
+
+@with_tracks_library_setup
+def test_all_hidden_purchase(session):
+    """Tests purchases with a manual sort order"""
+    args = GetTrackLibraryArgs(
+        user_id=5,
+        current_user_id=5,
+        limit=10,
+        offset=0,
+        filter_type=LibraryFilterType.all,
+        filter_deleted=False,
+    )
+
+    track_library = _get_track_library(args, session)
+    # one save, two reposts, two purchases
+    assert len(track_library) == 5, "should return 5 tracks"
+    assert_correct_track(track_library, 4, 19)
+    assert_correct_track(track_library, 3, 20)
+    assert_correct_track(track_library, 2, 25)
+    assert_correct_track(track_library, 1, 24)
+    assert_correct_track(track_library, 0, 22)
 
 
 @with_tracks_library_setup

@@ -72,11 +72,15 @@ export const UsdcPurchaseGatedRadioField = (
     track(make({ eventName: Name.TRACK_UPLOAD_CLICK_USDC_WAITLIST_LINK }))
   }, [])
 
+  const { isEnabled: isEditableAccessEnabled } = useFeatureFlag(
+    FeatureFlags.EDITABLE_ACCESS_ENABLED
+  )
   const { isEnabled: isUsdcUploadEnabled } = useFeatureFlag(
     FeatureFlags.USDC_PURCHASES_UPLOAD
   )
 
   const { disableUsdcGate } = useAccessAndRemixSettings({
+    isEditableAccessEnabled: !!isEditableAccessEnabled,
     isUpload: !!isUpload,
     isRemix,
     isAlbum,

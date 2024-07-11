@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import {
   IconUserArrowRotate,
@@ -11,7 +11,7 @@ import {
 
 import { AccountsYouManageHomePage } from './AccountsYouManageHomePage'
 import { StopManagingConfirmationPage } from './StopManagingConfirmationPage'
-import { AccountsYouManagePages, AccountsYouManagePagesParams } from './types'
+import { AccountsYouManagePageState, AccountsYouManagePages } from './types'
 
 const messages = {
   accountsYouManage: 'Accounts You Manage',
@@ -38,25 +38,14 @@ export const AccountsYouManageSettingsModal = (
   props: AccountsYouManageSettingsModalProps
 ) => {
   const { isOpen } = props
-  const [currentPage, setCurrentPage] = useState(AccountsYouManagePages.HOME)
-
-  const [currentPageParams, setCurrentPageParams] =
-    useState<AccountsYouManagePagesParams>()
-
-  const handleSetPage = useCallback(
-    (page: AccountsYouManagePages, params?: AccountsYouManagePagesParams) => {
-      setCurrentPage(page)
-      if (params) {
-        setCurrentPageParams(params)
-      }
-    },
-    []
-  )
+  const [{ page, params, transitionDirection }, setPageState] =
+    useState<AccountsYouManagePageState>({
+      page: AccountsYouManagePages.HOME
+    })
 
   useEffect(() => {
     if (!isOpen) {
-      setCurrentPage(AccountsYouManagePages.HOME)
-      setCurrentPageParams(undefined)
+      setPageState({ page: AccountsYouManagePages.HOME })
     }
   }, [isOpen])
 
@@ -65,16 +54,19 @@ export const AccountsYouManageSettingsModal = (
       <Modal {...props} size='small'>
         <ModalHeader>
           <ModalTitle
-            title={PAGE_TO_TITLE[currentPage]}
+            title={PAGE_TO_TITLE[page]}
             icon={<IconUserArrowRotate />}
           />
         </ModalHeader>
-        <ModalContentPages currentPage={getCurrentPage(currentPage)}>
-          <AccountsYouManageHomePage setPage={handleSetPage} />
+        <ModalContentPages
+          transitionDirection={transitionDirection}
+          currentPage={getCurrentPage(page)}
+        >
+          <AccountsYouManageHomePage setPageState={setPageState} />
 
           <StopManagingConfirmationPage
-            setPage={handleSetPage}
-            params={currentPageParams}
+            setPageState={setPageState}
+            params={params}
           />
         </ModalContentPages>
       </Modal>

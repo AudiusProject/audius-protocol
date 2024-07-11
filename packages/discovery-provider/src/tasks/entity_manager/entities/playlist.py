@@ -365,12 +365,6 @@ def validate_playlist_tx(params: ManageEntityParameters):
                     f"Playlist {playlist_id} exceeds track limit {PLAYLIST_TRACK_LIMIT}"
                 )
 
-        if (
-            params.action == Action.UPDATE
-            and not existing_playlist.is_private
-            and params.metadata.get("is_private")
-        ):
-            raise IndexingValidationError(f"Cannot unlist playlist {playlist_id}")
         validate_access_conditions(params)
 
 

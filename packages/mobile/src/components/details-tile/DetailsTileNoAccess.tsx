@@ -149,6 +149,7 @@ const DetailsTileNoAccessSection = ({
       backgroundColor='white'
       border='strong'
       borderRadius='m'
+      w='100%'
       style={style}
     >
       <View style={styles.titleContainer}>
@@ -180,12 +181,8 @@ type DetailsTileNoAccessProps = {
   style?: ViewStyle
 }
 
-export const DetailsTileNoAccess = ({
-  trackId,
-  contentType,
-  streamConditions,
-  style
-}: DetailsTileNoAccessProps) => {
+export const DetailsTileNoAccess = (props: DetailsTileNoAccessProps) => {
+  const { trackId, contentType, streamConditions, style } = props
   const styles = useStyles()
   const dispatch = useDispatch()
   const navigation = useNavigation()
@@ -296,6 +293,7 @@ export const DetailsTileNoAccess = ({
             </View>
           </View>
           <Button
+            color='blue'
             iconRight={IconExternalLink}
             onPress={handlePressCollection}
             fullWidth
@@ -314,6 +312,7 @@ export const DetailsTileNoAccess = ({
             prefix: messages.lockedFollowGatedPrefix
           })}
           <Button
+            color='blue'
             iconLeft={IconUserFollow}
             onPress={handleFollowArtist}
             fullWidth
@@ -346,7 +345,7 @@ export const DetailsTileNoAccess = ({
               {messages.lockedUSDCPurchase}
             </Text>
           </View>
-          <Button onPress={handlePurchasePress} fullWidth>
+          <Button color='lightGreen' onPress={handlePurchasePress} fullWidth>
             {messages.buy(formatPrice(streamConditions.usdc_purchase.price))}
           </Button>
         </>
