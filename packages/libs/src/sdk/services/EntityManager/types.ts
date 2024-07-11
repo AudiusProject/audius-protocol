@@ -62,7 +62,8 @@ export enum Action {
   VIEW = 'View',
   VIEW_PLAYLIST = 'ViewPlaylist',
   APPROVE = 'Approve',
-  REJECT = 'Reject'
+  REJECT = 'Reject',
+  DOWNLOAD = 'Download'
 }
 
 export enum EntityType {
@@ -92,7 +93,7 @@ export type ManageEntityOptions = {
   /**
    * The numeric user id
    */
-  userId: number
+  userId?: number
   /**
    * The type of entity being modified
    */
