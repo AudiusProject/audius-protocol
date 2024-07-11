@@ -462,6 +462,10 @@ def validate_track_tx(params: ManageEntityParameters):
                 f"Existing track {track_id} does not match user"
             )
 
+    if params.action == Action.DOWNLOAD:
+        if track_id not in params.existing_records["Track"]:
+            raise IndexingValidationError(f"Track {track_id} does not exist")
+
     if params.action != Action.DELETE and params.action != Action.DOWNLOAD:
         ai_attribution_user_id = params.metadata.get("ai_attribution_user_id")
         if ai_attribution_user_id:
