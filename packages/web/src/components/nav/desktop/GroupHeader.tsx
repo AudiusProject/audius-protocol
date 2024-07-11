@@ -1,6 +1,7 @@
-import { Text, TextProps, motion, spacing } from '@audius/harmony'
+import { Text, TextProps, useTheme } from '@audius/harmony'
 
 export const GroupHeader = (props: TextProps) => {
+  const { spacing, motion } = useTheme()
   return (
     <Text
       tag='h3'

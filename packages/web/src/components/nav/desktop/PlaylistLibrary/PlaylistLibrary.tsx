@@ -5,8 +5,8 @@ import {
   accountSelectors,
   collectionsSocialActions
 } from '@audius/common/store'
-import { Flex } from '@audius/harmony'
-import { ClassNames, useTheme } from '@emotion/react'
+import { Flex, useTheme } from '@audius/harmony'
+import { ClassNames } from '@emotion/react'
 import { isEmpty } from 'lodash'
 import { useDispatch } from 'react-redux'
 
@@ -43,7 +43,7 @@ export const PlaylistLibrary = (props: PlaylistLibraryProps) => {
   const library = useSelector(getPlaylistLibrary)
   const dispatch = useDispatch()
   const draggingKind = useSelector(selectDraggingKind)
-  const theme = useTheme()
+  const { color, motion } = useTheme()
 
   useAddAudioNftPlaylistToLibrary()
   useSanitizePlaylistLibrary()
@@ -71,8 +71,8 @@ export const PlaylistLibrary = (props: PlaylistLibraryProps) => {
               bottom: 0,
               left: 0,
               right: 0,
-              backgroundColor: theme.color.background.accent,
-              transition: `opacity ${theme.motion.quick}`,
+              backgroundColor: color.background.accent,
+              transition: `opacity ${motion.quick}`,
               opacity: 0
             },
             '&.droppableLinkHover::before': {

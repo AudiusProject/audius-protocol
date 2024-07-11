@@ -16,9 +16,10 @@ import {
   IconCaretRight,
   PopupMenuItem,
   Flex,
-  Text
+  Text,
+  useTheme
 } from '@audius/harmony'
-import { ClassNames, useTheme } from '@emotion/react'
+import { ClassNames } from '@emotion/react'
 import { useDispatch } from 'react-redux'
 import { useToggle } from 'react-use'
 
@@ -62,7 +63,7 @@ export const PlaylistFolderNavItem = (props: PlaylistFolderNavItemProps) => {
         selectPlaylistUpdateById(state, content.playlist_id)
     )
   })
-  const theme = useTheme()
+  const { color, motion } = useTheme()
   const draggingKind = useSelector(selectDraggingKind)
   const [isExpanded, toggleIsExpanded] = useToggle(false)
   const [isDraggingOver, setIsDraggingOver] = useState(false)
@@ -148,8 +149,8 @@ export const PlaylistFolderNavItem = (props: PlaylistFolderNavItemProps) => {
               bottom: 0,
               left: 0,
               right: 0,
-              backgroundColor: theme.color.background.accent,
-              transition: `opacity ${theme.motion.quick}`,
+              backgroundColor: color.background.accent,
+              transition: `opacity ${motion.quick}`,
               opacity: 0
             },
             '&.droppableLinkHover::before': {

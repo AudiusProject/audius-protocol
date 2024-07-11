@@ -5,14 +5,14 @@ import {
   IconButton,
   IconCaretLeft,
   IconCaretRight,
-  spacing
+  useTheme
 } from '@audius/harmony'
 import { goBack, goForward } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
 export const RouteNav = () => {
   const dispatch = useDispatch()
-
+  const { spacing } = useTheme()
   const handleGoBack = useCallback(() => {
     dispatch(goBack())
   }, [dispatch])

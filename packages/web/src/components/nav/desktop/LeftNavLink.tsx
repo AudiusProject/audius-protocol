@@ -1,8 +1,8 @@
 import { ComponentProps, useMemo } from 'react'
 
-import { Text, TextProps } from '@audius/harmony'
+import { Text, TextProps, useTheme } from '@audius/harmony'
 import { CSSInterpolation } from '@emotion/css'
-import { Interpolation, Theme, useTheme } from '@emotion/react'
+import { Interpolation, Theme } from '@emotion/react'
 import { Slot } from '@radix-ui/react-slot'
 import { NavLink, NavLinkProps } from 'react-router-dom'
 

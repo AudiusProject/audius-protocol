@@ -1,4 +1,5 @@
-import { ClassNames, useTheme } from '@emotion/react'
+import { useTheme } from '@audius/harmony'
+import { ClassNames } from '@emotion/react'
 import { SetOptional } from 'type-fest'
 
 import { Droppable, DroppableProps } from 'components/dragndrop'

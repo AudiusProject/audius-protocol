@@ -14,7 +14,7 @@ import {
   playlistLibraryActions,
   shareModalUIActions
 } from '@audius/common/store'
-import { Flex, PopupMenuItem, spacing, Text, useTheme } from '@audius/harmony'
+import { Flex, PopupMenuItem, Text, useTheme } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 import { useNavigate } from 'react-router-dom-v5-compat'
 import { useToggle } from 'react-use'
@@ -74,7 +74,7 @@ export const CollectionNavItem = (props: CollectionNavItemProps) => {
   const record = useRecord()
   const navigate = useNavigate()
 
-  const { color } = useTheme()
+  const { spacing, color } = useTheme()
 
   const collection = useSelector((state) =>
     getCollection(state, { id: typeof id === 'string' ? null : id })
