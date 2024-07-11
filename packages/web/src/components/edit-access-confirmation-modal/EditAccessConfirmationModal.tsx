@@ -14,7 +14,6 @@ import {
   Text,
   Flex
 } from '@audius/harmony'
-import { capitalize } from 'lodash'
 
 import { useModalState } from 'common/hooks/useModalState'
 import { useSelector } from 'common/hooks/useSelector'
@@ -23,12 +22,16 @@ const { getType, getConfirmCallback, getCancelCallback } =
   editAccessConfirmationModalUISelectors
 
 const messages = {
-  title: (type: EditAccessType) => {
-    return `Confirm ${capitalize(type)}`
+  title: 'Confirm Update',
+  description: (type: EditAccessType) => {
+    return type === 'visibility'
+      ? ''
+      : "You're about to change the audience for your content.  This update may cause others to lose the ability to listen and share."
   },
-  description: 'Some users may lose access.',
-  cancel: 'Go Back',
-  upload: 'Confirm'
+  cancel: 'Cancel',
+  upload: (type: EditAccessType) => {
+    return type === 'visibility' ? 'Change Visibility' : 'Update Audience'
+  }
 }
 
 export const EditAccessConfirmationModal = () => {
@@ -56,12 +59,12 @@ export const EditAccessConfirmationModal = () => {
   return (
     <Modal isOpen={isOpen} onClose={onClose} size='small'>
       <ModalHeader>
-        <ModalTitle title={messages.title(type)} />
+        <ModalTitle title={messages.title} />
       </ModalHeader>
       <ModalContent>
         <Flex justifyContent='center'>
           <Text variant='body' size='l' textAlign='center'>
-            {messages.description}
+            {messages.description(type)}
           </Text>
         </Flex>
       </ModalContent>
@@ -70,7 +73,7 @@ export const EditAccessConfirmationModal = () => {
           {messages.cancel}
         </Button>
         <Button variant='primary' fullWidth onClick={handleConfirm}>
-          {messages.upload}
+          {messages.upload(type)}
         </Button>
       </ModalFooter>
     </Modal>
