@@ -1,6 +1,8 @@
 import { useCallback } from 'react'
 
+import { useFeatureFlag } from '@audius/common/hooks'
 import { Kind, Status } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import {
   lineupSelectors,
   searchResultsPageTracksLineupActions as tracksActions,
@@ -38,6 +40,9 @@ export const TrackResults = () => {
   const [filters] = useSearchFilters()
   const dispatch = useDispatch()
   const isEmptySearch = useIsEmptySearch()
+  const { isEnabled: isUSDCEnabled } = useFeatureFlag(
+    FeatureFlags.USDC_PURCHASES
+  )
 
   const lineup = useSelector(getSearchTracksLineupMetadatas)
 
@@ -48,11 +53,12 @@ export const TrackResults = () => {
           category: SearchKind.TRACKS,
           query,
           filters,
+          includePurchaseable: isUSDCEnabled,
           dispatch
         })
       )
     },
-    [dispatch, query, filters]
+    [dispatch, query, filters, isUSDCEnabled]
   )
 
   useDebounce(
