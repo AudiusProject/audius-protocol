@@ -24,6 +24,7 @@ import {
   shareModalUISagas,
   stripeModalUISagas,
   uploadConfirmationModalUISagas,
+  editAccessConfirmationModalUISagas,
   publishTrackConfirmationModalUISagas,
   modalsSagas
 } from '~/store/ui'
@@ -62,6 +63,7 @@ export const sagas = (_ctx: CommonStoreContext) => ({
   deletePlaylistConfirmationModalUI: deletePlaylistConfirmationModalUISagas,
   duplidateAddConfirmationModalUI: duplicateAddConfirmationModalUISagas,
   uploadConfirmationModalUI: uploadConfirmationModalUISagas,
+  editAceessConfirmationModalUI: editAccessConfirmationModalUISagas,
   publishTrackConfirmationModalUI: publishTrackConfirmationModalUISagas,
   player: playerSagas,
   playbackPosition: playbackPositionSagas,
