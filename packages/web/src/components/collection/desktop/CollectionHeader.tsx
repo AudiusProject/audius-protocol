@@ -10,7 +10,6 @@ import {
   Variant,
   isContentUSDCPurchaseGated
 } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import {
   CollectionsPageType,
   PurchaseableContentType
@@ -37,7 +36,6 @@ import { UserLink } from 'components/link'
 import Skeleton from 'components/skeleton/Skeleton'
 import { GatedContentSection } from 'components/track/GatedContentSection'
 import { UserGeneratedText } from 'components/user-generated-text'
-import { useFlag } from 'hooks/useRemoteConfig'
 
 import { CollectionMetadataList } from '../CollectionMetadataList'
 import { RepostsFavoritesStats } from '../components/RepostsFavoritesStats'
