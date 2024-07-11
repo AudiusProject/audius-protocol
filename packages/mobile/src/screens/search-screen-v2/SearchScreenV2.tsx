@@ -71,7 +71,10 @@ export const SearchScreenV2 = () => {
         {!showSearchResults ? (
           <Flex direction='column' alignItems='center' gap='xl'>
             {showRecentSearches ? (
-              <RecentSearches ListHeaderComponent={<SearchCatalogTile />} />
+              <RecentSearches
+                ListHeaderComponent={<SearchCatalogTile />}
+                searchItems={filteredSearchItems}
+              />
             ) : (
               <SearchCatalogTile />
             )}
