@@ -65,6 +65,7 @@ function* getSearchPageResultsTracks({
           category,
           limit,
           offset,
+          includePurchaseable,
           ...filters
         },
         {
