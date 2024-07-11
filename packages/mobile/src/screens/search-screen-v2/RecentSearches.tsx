@@ -5,7 +5,7 @@ import { recentSearchMessages as messages } from '@audius/common/messages'
 import { searchActions, searchSelectors } from '@audius/common/store'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { Button, Flex, IconClose, Text } from '@audius/harmony-native'
+import { Button, Flex, IconCloseAlt, Text } from '@audius/harmony-native'
 import { FlatList } from 'app/components/core'
 
 import { SearchItem } from './SearchItem'
@@ -50,7 +50,7 @@ export const RecentSearches = (props: RecentSearchesProps) => {
       renderItem={({ item }) => (
         <SearchItem
           searchItem={item}
-          icon={IconClose}
+          icon={IconCloseAlt}
           onPressIcon={() => dispatch(removeItem({ searchItem: item }))}
         />
       )}
