@@ -18,6 +18,7 @@ import {
   setStreamUrls
 } from './actions'
 import { TracksCacheState } from './types'
+import { Entry } from '../types'
 
 const initialState: TracksCacheState = {
   ...(initialCacheState as unknown as Cache<Track>),
@@ -25,7 +26,7 @@ const initialState: TracksCacheState = {
   streamUrls: {}
 }
 
-const addEntries = (state: TracksCacheState, entries: any[]) => {
+const addEntries = (state: TracksCacheState, entries: Entry[]) => {
   const newPermalinks: Record<string, ID> = {}
 
   for (const entry of entries) {
@@ -62,7 +63,13 @@ const actionsMap = {
     const matchingEntries = entriesByKind[kind]
 
     if (!matchingEntries) return state
-    return addEntries(state, matchingEntries)
+    const cacheableEntries: Entry[] = Object.entries(matchingEntries).map(
+      ([id, entry]) => ({
+        id: parseInt(id, 10),
+        metadata: entry
+      })
+    )
+    return addEntries(state, cacheableEntries)
   },
   [SET_PERMALINK](
     state: TracksCacheState,
@@ -92,11 +99,12 @@ const actionsMap = {
 
 const reducer = (
   state: TracksCacheState = initialState,
-  action: AddSuccededAction<Track>
+  action: any,
+  kind: Kind
 ) => {
   const matchingReduceFunction = actionsMap[action.type]
   if (!matchingReduceFunction) return state
-  return matchingReduceFunction(state, action)
+  return matchingReduceFunction(state, action, kind)
 }
 
 export default reducer

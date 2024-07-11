@@ -11,6 +11,7 @@ import {
 
 import { SET_PERMALINK, setPermalink } from './actions'
 import { CollectionsCacheState } from './types'
+import { Entry } from '../types'
 
 const initialState = {
   ...initialCacheState,
@@ -63,14 +64,19 @@ const actionsMap = {
   },
   [ADD_ENTRIES](
     state: CollectionsCacheState,
-    action: AddEntriesAction<Collection>,
-    kind: Kind
+    action: AddEntriesAction<Collection>
   ) {
     const { entriesByKind } = action
-    const matchingEntries = entriesByKind[kind]
+    const matchingEntries = entriesByKind[Kind.COLLECTIONS]
 
     if (!matchingEntries) return state
-    return addEntries(state, matchingEntries)
+    const cacheableEntries: Entry[] = Object.entries(matchingEntries).map(
+      ([id, entry]) => ({
+        id: parseInt(id, 10),
+        metadata: entry
+      })
+    )
+    return addEntries(state, cacheableEntries)
   },
   [SET_PERMALINK](
     state: CollectionsCacheState,
@@ -89,10 +95,10 @@ const actionsMap = {
   }
 }
 
-const reducer = (state = initialState, action: any) => {
+const reducer = (state = initialState, action: any, kind: Kind) => {
   const matchingReduceFunction = actionsMap[action.type]
   if (!matchingReduceFunction) return state
-  return matchingReduceFunction(state, action)
+  return matchingReduceFunction(state, action, kind)
 }
 
 export default reducer

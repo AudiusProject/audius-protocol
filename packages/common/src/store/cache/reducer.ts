@@ -21,7 +21,7 @@ import {
   SetCacheConfigAction,
   SET_CACHE_CONFIG
 } from './actions'
-import { CacheType, Metadata, SubscriptionInfo } from './types'
+import { CacheType, Entry, Metadata, SubscriptionInfo } from './types'
 
 type CacheState = {
   entries: Record<ID, { _timestamp: number; metadata: Metadata }>
@@ -177,7 +177,7 @@ const updateImageCache = (existing: Metadata, next: Metadata, merged: any) => {
   return merged
 }
 
-const addEntries = (state: CacheState, entries: any[], replace?: boolean) => {
+const addEntries = (state: CacheState, entries: Entry[], replace?: boolean) => {
   const { cacheType, simple, entryTTL } = state
   const newEntries = { ...state.entries }
   const newUids = { ...state.uids }
@@ -228,13 +228,14 @@ const addEntries = (state: CacheState, entries: any[], replace?: boolean) => {
     }
 
     if (!simple) {
-      newUids[entity.uid] = entity.id
-      if (entity.id in newSubscribers) {
-        newSubscribers[entity.id].add(entity.uid)
-      } else {
-        newSubscribers[entity.id] = new Set([entity.uid])
+      if (entity.uid) {
+        newUids[entity.uid] = entity.id
+        if (entity.id in newSubscribers) {
+          newSubscribers[entity.id].add(entity.uid)
+        } else {
+          newSubscribers[entity.id] = new Set([entity.uid])
+        }
       }
-
       newIdsToPrune.delete(entity.id)
     }
   }
@@ -273,9 +274,9 @@ const actionsMap = {
   [ADD_ENTRIES](state: CacheState, action: AddEntriesAction, kind: Kind) {
     const { entriesByKind, replace } = action
     const matchingEntries = entriesByKind[kind] ?? {}
-    const cacheableEntries = Object.entries(matchingEntries).map(
+    const cacheableEntries: Entry[] = Object.entries(matchingEntries).map(
       ([id, entry]) => ({
-        id,
+        id: parseInt(id, 10),
         metadata: entry
       })
     )
@@ -453,7 +454,7 @@ const actionsMap = {
 export const asCache =
   (
     reducer: {
-      (state: CacheState | undefined, action: any): {
+      (state: CacheState | undefined, action: any, kind: Kind): {
         // id => entry
         entries: {}
         // id => status
@@ -488,5 +489,5 @@ export const asCache =
       updatedState = matchingReduceFunction(state, action, kind)
     }
 
-    return reducer(updatedState, action)
+    return reducer(updatedState, action, kind)
   }

@@ -10,8 +10,12 @@ export type Entry<EntryT extends Metadata = Metadata> = {
   timestamp?: number
 }
 
+export type EntryMap<EntryT extends Metadata = Metadata> = {
+  [id: string]: Entry<EntryT>
+}
+
 export type EntriesByKind<EntryT extends Metadata = Metadata> = {
-  [key in Kind]?: Entry<EntryT>[]
+  [key in Kind]?: EntryMap<EntryT>
 }
 
 export type Metadata = {
