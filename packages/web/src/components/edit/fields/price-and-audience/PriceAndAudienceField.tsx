@@ -584,21 +584,35 @@ export const PriceAndAudienceField = (props: PriceAndAudienceFieldProps) => {
       icon={<IconHidden />}
       initialValues={initialValues}
       onSubmit={(values) => {
+        const isInitiallyUsdcGated = isContentUSDCPurchaseGated(
+          parentFormInitialStreamConditions
+        )
+        const isInitiallyTipGated = isContentTipGated(
+          parentFormInitialStreamConditions
+        )
+        const isInitiallyFollowGated = isContentFollowGated(
+          parentFormInitialStreamConditions
+        )
+        const isInitiallyCollectibleGated = isContentCollectibleGated(
+          parentFormInitialStreamConditions
+        )
+
         const availabilityType = get(values, STREAM_AVAILABILITY_TYPE)
         const specialAccessType = get(values, SPECIAL_ACCESS_TYPE)
+
         const stillUsdcGated =
-          isUsdcGated &&
+          isInitiallyUsdcGated &&
           availabilityType === StreamTrackAvailabilityType.USDC_PURCHASE
         const stillFollowGated =
-          isFollowGated &&
+          isInitiallyFollowGated &&
           availabilityType === StreamTrackAvailabilityType.SPECIAL_ACCESS &&
           specialAccessType === SpecialAccessType.FOLLOW
         const stillTipGated =
-          isTipGated &&
+          isInitiallyTipGated &&
           availabilityType === StreamTrackAvailabilityType.SPECIAL_ACCESS &&
           specialAccessType === SpecialAccessType.TIP
         const stillCollectibleGated =
-          isCollectibleGated &&
+          isInitiallyCollectibleGated &&
           availabilityType === StreamTrackAvailabilityType.COLLECTIBLE_GATED
         const stillSameGate =
           stillUsdcGated ||

@@ -192,7 +192,7 @@ export const VisibilityField = (props: VisibilityFieldProps) => {
         }
 
         const usersMayLoseAccess =
-          !isHidden && values.visibilityType !== 'public'
+          !initiallyHidden && values.visibilityType !== 'public'
         if (usersMayLoseAccess) {
           openEditAccessConfirmation({
             confirmCallback: submit,
