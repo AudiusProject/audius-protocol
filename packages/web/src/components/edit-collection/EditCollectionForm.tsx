@@ -30,6 +30,7 @@ import {
 } from 'components/form-fields'
 import { Tile } from 'components/tile'
 
+import { CollectionNavigationPrompt } from './CollectionNavigationPrompt'
 import { DeleteCollectionConfirmationModal } from './DeleteCollectionConfirmationModal'
 import styles from './EditCollectionForm.module.css'
 import { ReleaseCollectionConfirmationModal } from './ReleaseCollectionConfirmationModal'
@@ -97,6 +98,7 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
       validationSchema={toFormikValidationSchema(validationSchema)}
     >
       <Form className={styles.root} id={formId}>
+        <CollectionNavigationPrompt />
         <Tile className={styles.collectionFields} elevation='mid'>
           <div className={styles.row}>
             <ArtworkField
