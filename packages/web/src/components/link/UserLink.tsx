@@ -1,10 +1,10 @@
 import { ID } from '@audius/common/models'
 import { cacheUsersSelectors } from '@audius/common/store'
 import { IconSize, Text, useTheme } from '@audius/harmony'
-import UserBadges from 'components/user-badges/UserBadges'
 
 import { ArtistPopover } from 'components/artist/ArtistPopover'
 import { MountPlacement } from 'components/types'
+import UserBadges from 'components/user-badges/UserBadges'
 import { useSelector } from 'utils/reducer'
 import { profilePage } from 'utils/route'
 

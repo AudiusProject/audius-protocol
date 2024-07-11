@@ -7,7 +7,6 @@ import {
 } from '@audius/common/api'
 import { recentSearchMessages as messages } from '@audius/common/messages'
 import { Kind, SquareSizes, Status } from '@audius/common/models'
-import { makeGetOptimisticUserIdsIfNeeded } from '@audius/common/src/store/user-list/selectors'
 import {
   SearchItem,
   isSearchItem,
