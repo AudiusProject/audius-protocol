@@ -25,14 +25,16 @@ import {
   useTheme
 } from '@audius/harmony'
 import { useDispatch, useSelector } from 'react-redux'
-import { Link } from 'react-router-dom'
+import { Link, useRouteMatch } from 'react-router-dom'
 
 import { Avatar } from 'components/avatar'
 import { UserLink } from 'components/link'
 import { useCollectionCoverArt2 } from 'hooks/useCollectionCoverArt'
 import { useMedia } from 'hooks/useMedia'
 import { useTrackCoverArt2 } from 'hooks/useTrackCoverArt'
-import { profilePage } from 'utils/route'
+import { SEARCH_PAGE, profilePage } from 'utils/route'
+
+import { CategoryView } from './types'
 
 const MAX_RECENT_SEARCHES = 12
 
@@ -244,14 +246,38 @@ const itemComponentByKind = {
   [Kind.COLLECTIONS]: RecentSearchCollection
 }
 
+const itemKindByCategory = {
+  [CategoryView.ALL]: null,
+  [CategoryView.PROFILES]: Kind.USERS,
+  [CategoryView.TRACKS]: Kind.TRACKS,
+  [CategoryView.PLAYLISTS]: Kind.COLLECTIONS,
+  [CategoryView.ALBUMS]: Kind.COLLECTIONS
+}
+
 export const RecentSearches = () => {
   const searchItems = useSelector(getSearchHistory)
   const dispatch = useDispatch()
   const { isMobile } = useMedia()
+  const routeMatch = useRouteMatch<{ category: string }>(SEARCH_PAGE)
+  const category = routeMatch?.params.category
+
+  const categoryKind: Kind | null = category
+    ? itemKindByCategory[category]
+    : null
+
+  const filteredSearchItems = useMemo(() => {
+    return categoryKind
+      ? searchItems.filter(
+          (item) =>
+            // @ts-ignore
+            item.kind === categoryKind
+        )
+      : searchItems
+  }, [categoryKind, searchItems])
 
   const truncatedSearchItems = useMemo(
-    () => searchItems.slice(0, MAX_RECENT_SEARCHES),
-    [searchItems]
+    () => filteredSearchItems.slice(0, MAX_RECENT_SEARCHES),
+    [filteredSearchItems]
   )
 
   const handleClickClear = useCallback(() => {
