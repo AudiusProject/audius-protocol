@@ -13,6 +13,7 @@ import { isEqual } from 'lodash'
 import { useDispatch } from 'react-redux'
 import { useParams } from 'react-router'
 import { useRouteMatch } from 'react-router-dom'
+import { useSearchParams } from 'react-router-dom-v5-compat'
 
 import { EditCollectionForm } from 'components/edit-collection/EditCollectionForm'
 import Header from 'components/header/desktop/Header'
@@ -37,6 +38,8 @@ const messages = {
 export const EditCollectionPage = () => {
   const { handle, slug } = useParams<EditCollectionPageParams>()
   const isAlbum = Boolean(useRouteMatch('/:handle/album/:slug/edit'))
+  const [searchParams] = useSearchParams()
+  const focus = searchParams.get('focus')
   const permalink = `/${handle}/${isAlbum ? 'album' : 'playlist'}/${slug}`
   const dispatch = useDispatch()
 
@@ -46,7 +49,7 @@ export const EditCollectionPage = () => {
       permalink,
       currentUserId
     },
-    { disabled: !currentUserId }
+    { disabled: !currentUserId, force: true }
   )
 
   const { playlist_id, tracks, description } = collection ?? {}
@@ -111,6 +114,7 @@ export const EditCollectionPage = () => {
           initialValues={initialValues}
           onSubmit={handleSubmit}
           isUpload={false}
+          autoFocus={focus}
         />
       )}
     </Page>

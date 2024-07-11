@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from 'react'
+import { useContext } from 'react'
 
 import { Button, Flex, IconError, Text } from '@audius/harmony'
 import { useFormikContext } from 'formik'
@@ -20,14 +20,6 @@ const messages = {
 export const AnchoredSubmitRowEdit = () => {
   const scrollToTop = useContext(EditFormScrollContext)
   const { isValid } = useFormikContext()
-  const [showError, setShowError] = useState(false)
-
-  // Whenever the error stops showing, reset our error state until they break the form again AND try to submit again
-  useEffect(() => {
-    if (isValid) {
-      setShowError(false)
-    }
-  }, [isValid])
 
   const { history } = useHistoryContext()
   const navigate = useNavigateToPage()
@@ -50,14 +42,13 @@ export const AnchoredSubmitRowEdit = () => {
             size='default'
             onClick={() => {
               scrollToTop()
-              setShowError(true)
             }}
             type='submit'
           >
             {messages.save}
           </Button>
         </Flex>
-        {showError && !isValid ? (
+        {!isValid ? (
           <Flex alignItems='center' gap='xs'>
             <IconError color='danger' size='s' />
             <Text color='danger' size='s' variant='body'>

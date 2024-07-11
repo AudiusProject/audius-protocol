@@ -7,6 +7,7 @@ import {
   PlaylistSchema
 } from '@audius/common/schemas'
 import { FeatureFlags } from '@audius/common/services'
+import { Nullable } from '@audius/common/utils'
 import { Button, Flex, IconTrash, Text } from '@audius/harmony'
 import { Form, Formik } from 'formik'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
@@ -52,10 +53,11 @@ type EditCollectionFormProps = {
   onSubmit: (values: CollectionValues) => void
   isAlbum: boolean
   isUpload: boolean
+  autoFocus?: Nullable<string>
 }
 
 export const EditCollectionForm = (props: EditCollectionFormProps) => {
-  const { initialValues, onSubmit, isAlbum, isUpload } = props
+  const { initialValues, onSubmit, isAlbum, isUpload, autoFocus } = props
   const { playlist_id, is_private, is_scheduled_release } = initialValues
   const [isDeleteConfirmationOpen, setIsDeleteConfirmationOpen] =
     useState(false)
@@ -101,6 +103,7 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
               name='artwork'
               className={styles.artwork}
               size='small'
+              autoFocus={autoFocus === 'artwork'}
             />
             <div className={styles.collectionInfo}>
               <TextField
@@ -108,6 +111,7 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
                 label={`${collectionTypeName} ${messages.name}`}
                 maxLength={64}
                 required
+                autoFocus={autoFocus === 'name'}
               />
               <TextAreaField
                 name='description'
