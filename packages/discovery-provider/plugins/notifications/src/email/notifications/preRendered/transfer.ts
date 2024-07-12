@@ -491,16 +491,16 @@ export const email = ({
   <td width="144" style="vertical-align: middle;  ">
   <table width="100%" border="0" cellpadding="0" cellspacing="0">
   <tr>
-  <td style="vertical-align: middle;"><a href="https://twitter.com/audius"><img src="images/9knFl6CO4CbZKY4Tw9zEHHHIjwv298.png" width="24" border="0" style="min-width:24px; width:24px;
+  <td style="vertical-align: middle;"><a href="https://twitter.com/audius"><img src="https://download.audius.co/emails/transfer/9knFl6CO4CbZKY4Tw9zEHHHIjwv298.png" width="24" border="0" style="min-width:24px; width:24px;
           height: auto; display: block;"></a></td>
   <td style="width:16px; min-width:16px;" width="16"></td>
-  <td style="vertical-align: middle;"><a href="https://www.instagram.com/audius/"><img src="images/HDsIb0SnpER1RYjmy5KGnKd5WWFI8l.png" width="24" border="0" style="min-width:24px; width:24px;
+  <td style="vertical-align: middle;"><a href="https://www.instagram.com/audius/"><img src="https://download.audius.co/emails/transfer/HDsIb0SnpER1RYjmy5KGnKd5WWFI8l.png" width="24" border="0" style="min-width:24px; width:24px;
           height: auto; display: block;"></a></td>
   <td style="width:16px; min-width:16px;" width="16"></td>
-  <td style="vertical-align: middle;"><a href="https://tiktok.com/@audius"><img src="images/mJ5ZrzSdU7iJ6egPcWiLSMladg16zH.png" width="24" border="0" style="min-width:24px; width:24px;
+  <td style="vertical-align: middle;"><a href="https://tiktok.com/@audius"><img src="https://download.audius.co/emails/transfer/mJ5ZrzSdU7iJ6egPcWiLSMladg16zH.png" width="24" border="0" style="min-width:24px; width:24px;
           height: auto; display: block;"></a></td>
   <td style="width:16px; min-width:16px;" width="16"></td>
-  <td style="vertical-align: middle;"><a href="https://www.youtube.com/@AudiusMusic"><img src="images/OhoBO4IHsyCwPLYSX7KbIvCAnyMEVT.png" width="24" border="0" style="min-width:24px; width:24px;
+  <td style="vertical-align: middle;"><a href="https://www.youtube.com/@AudiusMusic"><img src="https://download.audius.co/emails/transfer/OhoBO4IHsyCwPLYSX7KbIvCAnyMEVT.png" width="24" border="0" style="min-width:24px; width:24px;
           height: auto; display: block;"></a></td>
   </tr>
   </table>
@@ -697,7 +697,14 @@ export const email = ({
   </tr>
   <tr>
   <td style="vertical-align: middle;" align="center">
-  <div style="line-height:14px;text-align:center;"><span style="color:#6a677a;font-family:Inter,Arial,sans-serif;font-size:12px;line-height:14px;text-align:center;">No longer want to receive these emails? </span><span style="color:#7e1bcc;font-family:Inter,Arial,sans-serif;font-size:12px;line-height:14px;text-align:center;">Unsubscribe </span><span style="color:#6a677a;font-family:Inter,Arial,sans-serif;font-size:12px;line-height:14px;text-align:center;">or</span><span style="color:#7e1bcc;font-family:Inter,Arial,sans-serif;font-size:12px;line-height:14px;text-align:center;"> Manage Email Preferences</span></div>
+	<div style="line-height:14px;text-align:center;"><span
+			style="color:#6a677a;font-family:Inter,Arial,sans-serif;font-size:12px;line-height:14px;text-align:center;">No
+			longer want to receive these emails? </span><a href="<%asm_group_unsubscribe_raw_url%>"><span
+			style="color:#7e1bcc;font-family:Inter,Arial,sans-serif;font-size:12px;line-height:14px;text-align:center;">Unsubscribe
+			</span></a><span
+			style="color:#6a677a;font-family:Inter,Arial,sans-serif;font-size:12px;line-height:14px;text-align:center;">or</span><a href="<%asm_preferences_raw_url%>"><span
+			style="color:#7e1bcc;font-family:Inter,Arial,sans-serif;font-size:12px;line-height:14px;text-align:center;"> Manage
+			Email Preferences</span></a></div>
   </td>
   </tr>
   </table>
