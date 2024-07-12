@@ -54,11 +54,11 @@ type EditCollectionFormProps = {
   onSubmit: (values: CollectionValues) => void
   isAlbum: boolean
   isUpload: boolean
-  autoFocus?: Nullable<string>
+  focus?: Nullable<string>
 }
 
 export const EditCollectionForm = (props: EditCollectionFormProps) => {
-  const { initialValues, onSubmit, isAlbum, isUpload, autoFocus } = props
+  const { initialValues, onSubmit, isAlbum, isUpload, focus } = props
   const { playlist_id, is_private, is_scheduled_release } = initialValues
   const [isDeleteConfirmationOpen, setIsDeleteConfirmationOpen] =
     useState(false)
@@ -105,7 +105,7 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
               name='artwork'
               className={styles.artwork}
               size='small'
-              autoFocus={autoFocus === 'artwork'}
+              autoFocus={focus === 'artwork'}
             />
             <div className={styles.collectionInfo}>
               <TextField
@@ -113,7 +113,7 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
                 label={`${collectionTypeName} ${messages.name}`}
                 maxLength={64}
                 required
-                autoFocus={autoFocus === 'name'}
+                autoFocus={focus === 'name'}
               />
               <TextAreaField
                 name='description'

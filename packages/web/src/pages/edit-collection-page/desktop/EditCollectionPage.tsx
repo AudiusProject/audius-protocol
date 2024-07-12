@@ -114,7 +114,7 @@ export const EditCollectionPage = () => {
           initialValues={initialValues}
           onSubmit={handleSubmit}
           isUpload={false}
-          autoFocus={focus}
+          focus={focus}
         />
       )}
     </Page>
