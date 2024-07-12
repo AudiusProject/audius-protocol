@@ -147,6 +147,8 @@ const CollectionHeader = ({
 
   const showPremiumSection =
     isPremiumAlbumsEnabled && isAlbum && streamConditions && collectionId
+  const shouldShowStats =
+    isPublished && variant !== Variant.SMART && (!isPrivate || isOwner)
 
   const onSaveCollection = () => {
     if (!isOwner) onSave?.()
@@ -338,9 +340,8 @@ const CollectionHeader = ({
             />
           </Box>
         ) : null}
-        {isPublished && variant !== Variant.SMART ? (
+        {shouldShowStats ? (
           <RepostsFavoritesStats
-            isUnlisted={false}
             repostCount={reposts}
             saveCount={saves}
             onClickReposts={onClickReposts}
