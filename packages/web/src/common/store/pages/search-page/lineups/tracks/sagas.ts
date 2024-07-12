@@ -1,5 +1,6 @@
 import { searchApiFetch } from '@audius/common/api'
 import { Track } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import {
   accountSelectors,
   cacheTracksSelectors,
@@ -12,7 +13,10 @@ import { trimToAlphaNumeric } from '@audius/common/utils'
 import { select, all, call } from 'typed-redux-saga'
 
 import { LineupSagas } from 'common/store/lineup/sagas'
-import { getTagSearchResults } from 'common/store/pages/search-page/sagas'
+import {
+  getSearchResults,
+  getTagSearchResults
+} from 'common/store/pages/search-page/sagas'
 import { isMobileWeb } from 'common/utils/isMobileWeb'
 
 const { getSearchTracksLineup, getSearchResultsPageTracks } =
@@ -46,28 +50,45 @@ function* getSearchPageResultsTracks({
       const audiusBackend = yield* getContext('audiusBackendInstance')
       const apiClient = yield* getContext('apiClient')
       const reportToSentry = yield* getContext('reportToSentry')
+      const getFeatureEnabled = yield* getContext('getFeatureEnabled')
       const currentUserId = yield* select(getUserId)
 
-      const { tracks } = yield* call(
-        searchApiFetch.getSearchResults,
-        {
-          currentUserId,
-          query,
-          category,
+      const isSearchV2Enabled = getFeatureEnabled(FeatureFlags.SEARCH_V2)
+
+      if (!isSearchV2Enabled) {
+        const { tracks } = yield* call(getSearchResults, {
+          searchText: query,
+          kind: category,
           limit,
-          offset,
-          ...filters
-        },
-        {
-          audiusBackend,
-          apiClient,
-          reportToSentry,
-          dispatch
-        } as any
-      )
-      results = tracks as unknown as Track[]
+          offset
+        })
+        results = tracks as unknown as Track[]
+        if (results) return results
+      } else {
+        // searchApiFetch.getSearchResults already handles tag search,
+        // so we don't need to specify isTagSearch necessarily
+        const { tracks } = yield* call(
+          searchApiFetch.getSearchResults,
+          {
+            currentUserId,
+            query,
+            category,
+            limit,
+            offset,
+            ...filters
+          },
+          {
+            audiusBackend,
+            apiClient,
+            reportToSentry,
+            dispatch
+          } as any
+        )
+        results = tracks as unknown as Track[]
+
+        if (results) return results
+      }
     }
-    if (results) return results
     return [] as Track[]
   } else {
     // If we are part of the all results search page
