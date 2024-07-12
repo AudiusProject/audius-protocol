@@ -522,6 +522,7 @@ def test_index_grant(app, mocker):
         assert len(found_matches) == 2
         for match in found_matches:
             assert match.is_approved == False
+            assert match.is_revoked == True
 
     # Invalid reject grant
     tx_receipts = {
