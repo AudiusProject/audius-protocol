@@ -45,7 +45,7 @@ program
   })
 
 program
-  .command('approve-manager')
+  .command('approve-manager-request')
   .description('Approve a pending manager request')
   .argument('[handle]', 'The handle of the user to be managed')
   .option('-f, --from <from>', 'The manager account handle')
@@ -82,7 +82,7 @@ program
   })
 
 program
-  .command('reject-manager')
+  .command('reject-manager-request')
   .description('Reject a pending manager request')
   .argument('[handle]', 'The handle of the user to be managed')
   .option('-f, --from <from>', 'The manager account handle')
@@ -104,10 +104,10 @@ program
     try {
       const {
         data: { id: userId }
-      } = await audiusSdk.users.getUserByHandle({ handle: from })
+      } = await audiusSdk.users.getUserByHandle({ handle })
       const {
         data: { id: managerUserId }
-      } = await audiusSdk.users.getUserByHandle({ handle })
+      } = await audiusSdk.users.getUserByHandle({ handle: from })
 
       await audiusSdk.grants.removeManager({ userId, managerUserId })
       console.log(chalk.green(`Manager request rejected.`))

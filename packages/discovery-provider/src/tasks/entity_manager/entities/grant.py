@@ -296,6 +296,7 @@ def reject_grant(params: ManageEntityParameters):
     )
 
     rejected_grant.is_approved = False
+    rejected_grant.is_revoked = True
 
     validate_grant_record(rejected_grant)
     params.add_record(grant_key, rejected_grant)
