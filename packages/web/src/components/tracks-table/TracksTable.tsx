@@ -391,6 +391,7 @@ export const TracksTable = ({
       const { isFetchingNFTAccess, hasStreamAccess } = trackAccessMap[
         track.track_id
       ] ?? { isFetchingNFTAccess: false, hasStreamAccess: true }
+      const isOwner = track.owner_id === userId
       const isLocked = !isFetchingNFTAccess && !hasStreamAccess
       const isDdex = !!track.ddex_app
       const deleted =
@@ -425,7 +426,7 @@ export const TracksTable = ({
         uid: track.uid,
         date: track.date,
         isFavorited: track.has_current_user_saved,
-        isOwner: track.owner_id === userId,
+        isOwner,
         isOwnerDeactivated: !!track.user?.is_deactivated,
         isArtistPick: track.user?.artist_pick_track_id === track.track_id,
         index: cellInfo.row.index,
@@ -439,7 +440,7 @@ export const TracksTable = ({
             includeAddToAlbum: false
           }
         : {
-            includeShare: !isUnlisted,
+            includeShare: !isUnlisted || isOwner,
             includeEmbed: !isUnlisted,
             includeEdit: !disabledTrackEdit,
             includeAddToPlaylist:
