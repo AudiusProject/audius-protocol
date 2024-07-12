@@ -650,7 +650,7 @@ def track_dsl(
     query = default_function_score(dsl, "repost_count")
 
     if sort_method == "recent":
-        query["sort"] = [{"updated_at": {"order": "desc"}}]
+        query["sort"] = [{"created_at": {"order": "desc"}}]
     elif sort_method == "popular":
         query["sort"] = [
             {
