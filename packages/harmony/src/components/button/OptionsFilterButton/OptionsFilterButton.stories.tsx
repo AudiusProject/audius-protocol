@@ -9,7 +9,7 @@ import { OptionsFilterButton } from './OptionsFilterButton'
 import { OptionsFilterButtonProps } from './types'
 
 const meta: Meta<typeof OptionsFilterButton> = {
-  title: 'Buttons/FilterButton [beta]',
+  title: 'Buttons/FilterButton',
   component: OptionsFilterButton,
   args: {
     options: [

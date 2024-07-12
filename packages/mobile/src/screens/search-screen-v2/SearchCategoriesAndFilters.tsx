@@ -81,14 +81,9 @@ export const SearchCategoriesAndFilters = () => {
   const [category] = useSearchCategory()
   const [filters, setFilters] = useSearchFilters()
 
-  const handleFilterPress = useCallback(
+  const handlePressFilter = useCallback(
     (filter: string) => {
-      if (filters[filter]) {
-        // Clear filter value
-        const newFilters = { ...filters }
-        delete newFilters[filter]
-        setFilters(newFilters)
-      } else if (filterInfoMap[filter].screen) {
+      if (filterInfoMap[filter].screen) {
         navigation.navigate(filterInfoMap[filter].screen)
       } else {
         const newFilters = { ...filters }
@@ -97,6 +92,17 @@ export const SearchCategoriesAndFilters = () => {
       }
     },
     [filters, navigation, setFilters]
+  )
+
+  const handleResetFilter = useCallback(
+    (filter: string) => {
+      setFilters((filters) => {
+        const newFilters = { ...filters }
+        delete newFilters[filter]
+        return newFilters
+      })
+    },
+    [setFilters]
   )
 
   const getFilterLabel = (filter: string) => {
@@ -142,9 +148,11 @@ export const SearchCategoriesAndFilters = () => {
                   : undefined
               }
               label={getFilterLabel(filter)}
+              onChange={handlePressFilter}
               onPress={() => {
-                handleFilterPress(filter)
+                handlePressFilter(filter)
               }}
+              onReset={() => handleResetFilter(filter)}
               leadingElement={getLeadingElement(filter)}
             />
           ))}
