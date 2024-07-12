@@ -140,7 +140,7 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
   const [filterText, setFilterText] = useState('')
 
   const hasStreamAccess = access?.stream
-  const shouldShowStats = !isPrivate || isOwner
+  const shouldShowStats = variant !== Variant.SMART && (!isPrivate || isOwner)
 
   const handleFilterChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
