@@ -79,6 +79,9 @@ export const VisibilityField = (props: VisibilityFieldProps) => {
     { setValue: setIsUnlisted }
   ] = useEntityField<boolean>(entityType === 'track' ? IS_UNLISTED : IS_PRIVATE)
 
+  const { isEnabled: isEditableAccessEnabled } = useFeatureFlag(
+    FeatureFlags.EDITABLE_ACCESS_ENABLED
+  )
   const [{ value: isScheduledRelease }, , { setValue: setIsScheduledRelease }] =
     useEntityField<boolean>(IS_SCHEDULED_RELEASE)
 
@@ -193,7 +196,7 @@ export const VisibilityField = (props: VisibilityFieldProps) => {
 
         const usersMayLoseAccess =
           !initiallyHidden && values.visibilityType !== 'public'
-        if (usersMayLoseAccess) {
+        if (isEditableAccessEnabled && usersMayLoseAccess) {
           openEditAccessConfirmation({
             confirmCallback: submit,
             cancelCallback: () => {
@@ -210,8 +213,10 @@ export const VisibilityField = (props: VisibilityFieldProps) => {
           initiallyPublic={!initiallyHidden && !isUpload}
         />
       }
-      forceOpen={isConfirmationCancelled}
-      setForceOpen={setIsConfirmationCancelled}
+      forceOpen={isEditableAccessEnabled ? isConfirmationCancelled : undefined}
+      setForceOpen={
+        isEditableAccessEnabled ? setIsConfirmationCancelled : undefined
+      }
     />
   )
 }

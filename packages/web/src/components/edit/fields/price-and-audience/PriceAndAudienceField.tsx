@@ -150,6 +150,9 @@ export const PriceAndAudienceField = (props: PriceAndAudienceFieldProps) => {
 
   const usdcPurchaseConfig = useUSDCPurchaseConfig()
 
+  const { isEnabled: isEditableAccessEnabled } = useFeatureFlag(
+    FeatureFlags.EDITABLE_ACCESS_ENABLED
+  )
   const { isEnabled: isHiddenPaidScheduledEnabled } = useFeatureFlag(
     FeatureFlags.HIDDEN_PAID_SCHEDULED
   )
@@ -623,7 +626,7 @@ export const PriceAndAudienceField = (props: PriceAndAudienceFieldProps) => {
           !stillSameGate &&
           availabilityType !== StreamTrackAvailabilityType.FREE
 
-        if (usersMayLoseAccess) {
+        if (isEditableAccessEnabled && usersMayLoseAccess) {
           openEditAccessConfirmation({
             confirmCallback: () => handleSubmit(values),
             cancelCallback: () => {
@@ -657,9 +660,15 @@ export const PriceAndAudienceField = (props: PriceAndAudienceFieldProps) => {
           isPublishDisabled={isPublishDisabled}
         />
       }
-      forceOpen={isConfirmationCancelled || forceOpen}
+      forceOpen={
+        isEditableAccessEnabled && isConfirmationCancelled
+          ? isConfirmationCancelled
+          : forceOpen
+      }
       setForceOpen={
-        isConfirmationCancelled ? setIsConfirmationCancelled : setForceOpen
+        isEditableAccessEnabled && isConfirmationCancelled
+          ? setIsConfirmationCancelled
+          : setForceOpen
       }
     />
   )
