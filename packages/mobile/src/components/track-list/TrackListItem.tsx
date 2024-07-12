@@ -216,7 +216,7 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
     has_current_user_saved,
     has_current_user_reposted,
     is_delete,
-    is_unlisted,
+    is_unlisted: isUnlisted,
     title,
     track_id,
     owner_id,
@@ -226,7 +226,6 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
   const { is_deactivated, name } = user
 
   const isDeleted = is_delete || !!is_deactivated
-  const isUnlisted = is_unlisted
 
   const { isFetchingNFTAccess, hasStreamAccess } = useGatedContentAccess(track)
   const isLocked = !isFetchingNFTAccess && !hasStreamAccess
@@ -288,7 +287,7 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
 
   const handleOpenOverflowMenu = useCallback(() => {
     const overflowActions = [
-      OverflowAction.SHARE,
+      !isUnlisted || isTrackOwner ? OverflowAction.SHARE : null,
       !isTrackOwner && !isLocked && !isUnlisted
         ? has_current_user_saved
           ? OverflowAction.UNFAVORITE
@@ -303,7 +302,7 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
         ? OverflowAction.PURCHASE_TRACK
         : null,
       isTrackOwner && !ddexApp ? OverflowAction.ADD_TO_ALBUM : null,
-      OverflowAction.ADD_TO_PLAYLIST,
+      !isUnlisted || isTrackOwner ? OverflowAction.ADD_TO_PLAYLIST : null,
       isNewPodcastControlsEnabled && isLongFormContent
         ? OverflowAction.VIEW_EPISODE_PAGE
         : OverflowAction.VIEW_TRACK_PAGE,

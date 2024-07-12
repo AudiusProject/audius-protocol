@@ -385,7 +385,8 @@ export const TracksTable = ({
       const track = cellInfo.row.original
       const {
         stream_conditions: streamConditions,
-        is_stream_gated: isStreamGated
+        is_stream_gated: isStreamGated,
+        is_unlisted: isUnlisted
       } = track
       const { isFetchingNFTAccess, hasStreamAccess } = trackAccessMap[
         track.track_id
@@ -418,7 +419,7 @@ export const TracksTable = ({
         className: styles.tableActionButton,
         isDeleted: deleted,
         includeAlbumPage: !isAlbumPage,
-        includeFavorite: !isLocked && !track.is_unlisted,
+        includeFavorite: !isLocked && !isUnlisted,
         handle: track.handle,
         trackId: track.track_id,
         uid: track.uid,
@@ -438,10 +439,14 @@ export const TracksTable = ({
             includeAddToAlbum: false
           }
         : {
+            includeShare: !isUnlisted,
+            includeEmbed: !isUnlisted,
             includeEdit: !disabledTrackEdit,
             includeAddToPlaylist:
-              !isStreamGated ||
-              (isContentUSDCPurchaseGated(streamConditions) && hasStreamAccess),
+              !isUnlisted &&
+              (!isStreamGated ||
+                (isContentUSDCPurchaseGated(streamConditions) &&
+                  hasStreamAccess)),
             onRemove: onClickRemove,
             removeText
           }
