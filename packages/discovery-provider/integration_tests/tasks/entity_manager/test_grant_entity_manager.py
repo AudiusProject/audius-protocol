@@ -11,39 +11,53 @@ from src.tasks.entity_manager.utils import Action, EntityType
 from src.utils.db_session import get_db
 
 new_grants_data = [
+    # Grant from user 1 -> dev app F4C4
     {
         "user_id": 1,
         "grantee_address": "0x3a388671bb4D6E1Ea08D79Ee191b40FB45A8F4C4",
         "is_user_grant": False,
     },
+    # Grant from user 1 -> dev app 2e0d
     {
         "user_id": 1,
         "grantee_address": "0x04c9fc3784120f50932436f84c59aebebb12e0d",
         "is_user_grant": False,
     },
+    # Grant from user 1 -> user 3
     {
         "user_id": 1,
         "grantee_address": "user3Wallet",
         "is_user_grant": True,
     },
+    # Grant from user 2 -> user 3
     {
         "user_id": 2,
         "grantee_address": "user3Wallet",
         "is_user_grant": True,
     },
+    # Grant from user 3 -> user 4
     {"user_id": 3, "grantee_address": "user4Wallet", "is_user_grant": True},
+    # Grant from user 1 -> user 4
     {
         "user_id": 1,
         "grantee_address": "user4Wallet",
         "is_user_grant": True,
     },
+    # Grant from user 5 -> user 1
     {
         "user_id": 5,
         "grantee_address": "user1Wallet",
         "is_user_grant": True,
     },
+    # Grant from user 4 -> user 5
     {
         "user_id": 4,
+        "grantee_address": "user5wallet",
+        "is_user_grant": True,
+    },
+    # Grant from user 3 -> user 5
+    {
+        "user_id": 3,
         "grantee_address": "user5wallet",
         "is_user_grant": True,
     },
@@ -170,6 +184,20 @@ def test_index_grant(app, mocker):
                         "_metadata": f"""{{"grantee_address": "{new_grants_data[7]["grantee_address"]}"}}""",
                         "_action": Action.CREATE,
                         "_signer": f"user{new_grants_data[7]['user_id']}wallet",
+                    }
+                )
+            },
+        ],
+        "CreateGrantTx9": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 0,
+                        "_entityType": EntityType.GRANT,
+                        "_userId": new_grants_data[8]["user_id"],
+                        "_metadata": f"""{{"grantee_address": "{new_grants_data[8]["grantee_address"]}"}}""",
+                        "_action": Action.CREATE,
+                        "_signer": f"user{new_grants_data[8]['user_id']}wallet",
                     }
                 )
             },
@@ -723,8 +751,8 @@ def test_index_grant(app, mocker):
                     {
                         "_entityId": 0,
                         "_entityType": EntityType.GRANT,
-                        "_userId": new_grants_data[7]["user_id"],
-                        "_metadata": f"""{{"grantee_address": "{new_grants_data[7]["grantee_address"]}"}}""",
+                        "_userId": new_grants_data[8]["user_id"],
+                        "_metadata": f"""{{"grantee_address": "{new_grants_data[8]["grantee_address"]}"}}""",
                         "_action": Action.DELETE,
                         "_signer": "user1wallet",
                     }
@@ -752,7 +780,7 @@ def test_index_grant(app, mocker):
         # validate db records
         all_grants: List[Grant] = session.query(Grant).all()
         assert len(all_grants) == NUM_VALID_GRANTS
-        deleted_grants_indices = [0, 1, 2, 5, 7]
+        deleted_grants_indices = [0, 1, 2, 5, 8]
         for index in deleted_grants_indices:
             expected_grant = new_grants_data[index]
             found_matches = [
