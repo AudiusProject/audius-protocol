@@ -65,7 +65,12 @@ export interface GetTrendingPlaylistsRequest {
 }
 
 export interface SearchPlaylistsRequest {
-    query: string;
+    query?: string;
+    genre?: Array<string>;
+    sortMethod?: SearchPlaylistsSortMethodEnum;
+    mood?: Array<string>;
+    includePurchaseable?: string;
+    hasDownloads?: string;
 }
 
 /**
@@ -284,14 +289,30 @@ export class PlaylistsApi extends runtime.BaseAPI {
      * Search for a playlist
      */
     async searchPlaylistsRaw(params: SearchPlaylistsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PlaylistSearchResult>> {
-        if (params.query === null || params.query === undefined) {
-            throw new runtime.RequiredError('query','Required parameter params.query was null or undefined when calling searchPlaylists.');
-        }
-
         const queryParameters: any = {};
 
         if (params.query !== undefined) {
             queryParameters['query'] = params.query;
+        }
+
+        if (params.genre) {
+            queryParameters['genre'] = params.genre;
+        }
+
+        if (params.sortMethod !== undefined) {
+            queryParameters['sort_method'] = params.sortMethod;
+        }
+
+        if (params.mood) {
+            queryParameters['mood'] = params.mood;
+        }
+
+        if (params.includePurchaseable !== undefined) {
+            queryParameters['includePurchaseable'] = params.includePurchaseable;
+        }
+
+        if (params.hasDownloads !== undefined) {
+            queryParameters['has_downloads'] = params.hasDownloads;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -309,7 +330,7 @@ export class PlaylistsApi extends runtime.BaseAPI {
     /**
      * Search for a playlist
      */
-    async searchPlaylists(params: SearchPlaylistsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PlaylistSearchResult> {
+    async searchPlaylists(params: SearchPlaylistsRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PlaylistSearchResult> {
         const response = await this.searchPlaylistsRaw(params, initOverrides);
         return await response.value();
     }
@@ -326,3 +347,12 @@ export const GetTrendingPlaylistsTimeEnum = {
     AllTime: 'allTime'
 } as const;
 export type GetTrendingPlaylistsTimeEnum = typeof GetTrendingPlaylistsTimeEnum[keyof typeof GetTrendingPlaylistsTimeEnum];
+/**
+ * @export
+ */
+export const SearchPlaylistsSortMethodEnum = {
+    Relevant: 'relevant',
+    Popular: 'popular',
+    Recent: 'recent'
+} as const;
+export type SearchPlaylistsSortMethodEnum = typeof SearchPlaylistsSortMethodEnum[keyof typeof SearchPlaylistsSortMethodEnum];

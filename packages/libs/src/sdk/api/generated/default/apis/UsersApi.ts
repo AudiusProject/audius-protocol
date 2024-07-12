@@ -211,7 +211,10 @@ export interface GetUserIDFromWalletRequest {
 }
 
 export interface SearchUsersRequest {
-    query: string;
+    query?: string;
+    genre?: Array<string>;
+    sortMethod?: SearchUsersSortMethodEnum;
+    isVerified?: string;
 }
 
 export interface VerifyIDTokenRequest {
@@ -1090,14 +1093,22 @@ export class UsersApi extends runtime.BaseAPI {
      * Search for users that match the given query
      */
     async searchUsersRaw(params: SearchUsersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<UserSearch>> {
-        if (params.query === null || params.query === undefined) {
-            throw new runtime.RequiredError('query','Required parameter params.query was null or undefined when calling searchUsers.');
-        }
-
         const queryParameters: any = {};
 
         if (params.query !== undefined) {
             queryParameters['query'] = params.query;
+        }
+
+        if (params.genre) {
+            queryParameters['genre'] = params.genre;
+        }
+
+        if (params.sortMethod !== undefined) {
+            queryParameters['sort_method'] = params.sortMethod;
+        }
+
+        if (params.isVerified !== undefined) {
+            queryParameters['is_verified'] = params.isVerified;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -1115,7 +1126,7 @@ export class UsersApi extends runtime.BaseAPI {
     /**
      * Search for users that match the given query
      */
-    async searchUsers(params: SearchUsersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<UserSearch> {
+    async searchUsers(params: SearchUsersRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<UserSearch> {
         const response = await this.searchUsersRaw(params, initOverrides);
         return await response.value();
     }
@@ -1237,3 +1248,12 @@ export const GetTracksByUserFilterTracksEnum = {
     Unlisted: 'unlisted'
 } as const;
 export type GetTracksByUserFilterTracksEnum = typeof GetTracksByUserFilterTracksEnum[keyof typeof GetTracksByUserFilterTracksEnum];
+/**
+ * @export
+ */
+export const SearchUsersSortMethodEnum = {
+    Relevant: 'relevant',
+    Popular: 'popular',
+    Recent: 'recent'
+} as const;
+export type SearchUsersSortMethodEnum = typeof SearchUsersSortMethodEnum[keyof typeof SearchUsersSortMethodEnum];

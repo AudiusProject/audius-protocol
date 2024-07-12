@@ -158,10 +158,18 @@ export interface GetFollowingRequest {
 
 export interface GetManagedUsersRequest {
     id: string;
+    isApproved?: boolean;
+    isRevoked?: boolean;
+    encodedDataMessage?: string;
+    encodedDataSignature?: string;
 }
 
 export interface GetManagersRequest {
     id: string;
+    isApproved?: boolean;
+    isRevoked?: boolean;
+    encodedDataMessage?: string;
+    encodedDataSignature?: string;
 }
 
 export interface GetPurchasesRequest {
@@ -803,7 +811,23 @@ export class UsersApi extends runtime.BaseAPI {
 
         const queryParameters: any = {};
 
+        if (params.isApproved !== undefined) {
+            queryParameters['is_approved'] = params.isApproved;
+        }
+
+        if (params.isRevoked !== undefined) {
+            queryParameters['is_revoked'] = params.isRevoked;
+        }
+
         const headerParameters: runtime.HTTPHeaders = {};
+
+        if (params.encodedDataMessage !== undefined && params.encodedDataMessage !== null) {
+            headerParameters['Encoded-Data-Message'] = String(params.encodedDataMessage);
+        }
+
+        if (params.encodedDataSignature !== undefined && params.encodedDataSignature !== null) {
+            headerParameters['Encoded-Data-Signature'] = String(params.encodedDataSignature);
+        }
 
         const response = await this.request({
             path: `/users/{id}/managed_users`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
@@ -834,7 +858,23 @@ export class UsersApi extends runtime.BaseAPI {
 
         const queryParameters: any = {};
 
+        if (params.isApproved !== undefined) {
+            queryParameters['is_approved'] = params.isApproved;
+        }
+
+        if (params.isRevoked !== undefined) {
+            queryParameters['is_revoked'] = params.isRevoked;
+        }
+
         const headerParameters: runtime.HTTPHeaders = {};
+
+        if (params.encodedDataMessage !== undefined && params.encodedDataMessage !== null) {
+            headerParameters['Encoded-Data-Message'] = String(params.encodedDataMessage);
+        }
+
+        if (params.encodedDataSignature !== undefined && params.encodedDataSignature !== null) {
+            headerParameters['Encoded-Data-Signature'] = String(params.encodedDataSignature);
+        }
 
         const response = await this.request({
             path: `/users/{id}/managers`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),

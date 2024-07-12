@@ -164,6 +164,12 @@ export interface PlaylistFullWithoutTracks {
      * @type {number}
      * @memberof PlaylistFullWithoutTracks
      */
+    trackCount: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof PlaylistFullWithoutTracks
+     */
     blocknumber: number;
     /**
      * 
@@ -251,12 +257,6 @@ export interface PlaylistFullWithoutTracks {
     coverArtCids?: PlaylistArtwork;
     /**
      * 
-     * @type {number}
-     * @memberof PlaylistFullWithoutTracks
-     */
-    trackCount: number;
-    /**
-     * 
      * @type {boolean}
      * @memberof PlaylistFullWithoutTracks
      */
@@ -295,6 +295,7 @@ export function instanceOfPlaylistFullWithoutTracks(value: object): value is Pla
     isInstance = isInstance && "favoriteCount" in value && value["favoriteCount"] !== undefined;
     isInstance = isInstance && "totalPlayCount" in value && value["totalPlayCount"] !== undefined;
     isInstance = isInstance && "user" in value && value["user"] !== undefined;
+    isInstance = isInstance && "trackCount" in value && value["trackCount"] !== undefined;
     isInstance = isInstance && "blocknumber" in value && value["blocknumber"] !== undefined;
     isInstance = isInstance && "followeeReposts" in value && value["followeeReposts"] !== undefined;
     isInstance = isInstance && "followeeFavorites" in value && value["followeeFavorites"] !== undefined;
@@ -304,7 +305,6 @@ export function instanceOfPlaylistFullWithoutTracks(value: object): value is Pla
     isInstance = isInstance && "isPrivate" in value && value["isPrivate"] !== undefined;
     isInstance = isInstance && "addedTimestamps" in value && value["addedTimestamps"] !== undefined;
     isInstance = isInstance && "userId" in value && value["userId"] !== undefined;
-    isInstance = isInstance && "trackCount" in value && value["trackCount"] !== undefined;
     isInstance = isInstance && "isStreamGated" in value && value["isStreamGated"] !== undefined;
 
     return isInstance;
@@ -335,6 +335,7 @@ export function PlaylistFullWithoutTracksFromJSONTyped(json: any, ignoreDiscrimi
         'ddexApp': !exists(json, 'ddex_app') ? undefined : json['ddex_app'],
         'access': !exists(json, 'access') ? undefined : AccessFromJSON(json['access']),
         'upc': !exists(json, 'upc') ? undefined : json['upc'],
+        'trackCount': json['track_count'],
         'blocknumber': json['blocknumber'],
         'createdAt': !exists(json, 'created_at') ? undefined : json['created_at'],
         'followeeReposts': ((json['followee_reposts'] as Array<any>).map(RepostFromJSON)),
@@ -350,7 +351,6 @@ export function PlaylistFullWithoutTracksFromJSONTyped(json: any, ignoreDiscrimi
         'coverArt': !exists(json, 'cover_art') ? undefined : json['cover_art'],
         'coverArtSizes': !exists(json, 'cover_art_sizes') ? undefined : json['cover_art_sizes'],
         'coverArtCids': !exists(json, 'cover_art_cids') ? undefined : PlaylistArtworkFromJSON(json['cover_art_cids']),
-        'trackCount': json['track_count'],
         'isStreamGated': json['is_stream_gated'],
         'streamConditions': !exists(json, 'stream_conditions') ? undefined : AccessGateFromJSON(json['stream_conditions']),
         'isScheduledRelease': !exists(json, 'is_scheduled_release') ? undefined : json['is_scheduled_release'],
@@ -382,6 +382,7 @@ export function PlaylistFullWithoutTracksToJSON(value?: PlaylistFullWithoutTrack
         'ddex_app': value.ddexApp,
         'access': AccessToJSON(value.access),
         'upc': value.upc,
+        'track_count': value.trackCount,
         'blocknumber': value.blocknumber,
         'created_at': value.createdAt,
         'followee_reposts': ((value.followeeReposts as Array<any>).map(RepostToJSON)),
@@ -397,7 +398,6 @@ export function PlaylistFullWithoutTracksToJSON(value?: PlaylistFullWithoutTrack
         'cover_art': value.coverArt,
         'cover_art_sizes': value.coverArtSizes,
         'cover_art_cids': PlaylistArtworkToJSON(value.coverArtCids),
-        'track_count': value.trackCount,
         'is_stream_gated': value.isStreamGated,
         'stream_conditions': AccessGateToJSON(value.streamConditions),
         'is_scheduled_release': value.isScheduledRelease,

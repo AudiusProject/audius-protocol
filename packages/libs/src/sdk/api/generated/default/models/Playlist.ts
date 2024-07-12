@@ -135,6 +135,12 @@ export interface Playlist {
      * @memberof Playlist
      */
     upc?: string;
+    /**
+     * 
+     * @type {number}
+     * @memberof Playlist
+     */
+    trackCount: number;
 }
 
 /**
@@ -151,6 +157,7 @@ export function instanceOfPlaylist(value: object): value is Playlist {
     isInstance = isInstance && "favoriteCount" in value && value["favoriteCount"] !== undefined;
     isInstance = isInstance && "totalPlayCount" in value && value["totalPlayCount"] !== undefined;
     isInstance = isInstance && "user" in value && value["user"] !== undefined;
+    isInstance = isInstance && "trackCount" in value && value["trackCount"] !== undefined;
 
     return isInstance;
 }
@@ -180,6 +187,7 @@ export function PlaylistFromJSONTyped(json: any, ignoreDiscriminator: boolean): 
         'ddexApp': !exists(json, 'ddex_app') ? undefined : json['ddex_app'],
         'access': !exists(json, 'access') ? undefined : AccessFromJSON(json['access']),
         'upc': !exists(json, 'upc') ? undefined : json['upc'],
+        'trackCount': json['track_count'],
     };
 }
 
@@ -207,6 +215,7 @@ export function PlaylistToJSON(value?: Playlist | null): any {
         'ddex_app': value.ddexApp,
         'access': AccessToJSON(value.access),
         'upc': value.upc,
+        'track_count': value.trackCount,
     };
 }
 
