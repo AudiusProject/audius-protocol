@@ -39,6 +39,8 @@ footer {
   --ifm-color-danger-contrast-foreground: var(--static-white);
   --ifm-color-success-contrast-background: var(--accent-green);
   --ifm-color-success-contrast-foreground: var(--static-white);
+  --ifm-tabs-padding-horizontal: 20px;
+  --ifm-tabs-padding-vertical: 10px;
 }
 
 html[data-theme='dark'] {
@@ -327,16 +329,37 @@ html[data-theme='dark'] .navbar__items > a:nth-child(1):hover {
 }
 
 /* tab container */
-.tabs__item--active {
-  background-color: #0000000d;
+.tabs--block .tabs__item {
+  background: var(--ifm-menu-color-background-active);
+  margin-right: 10px;
+  flex-grow: 0;
 }
 
-html[data-theme='dark'] .tabs__item--active {
-  background-color: #00000080;
+.tabs--block .tabs__item.tabs__item--active {
+  background: var(--ifm-menu-color-active);
+  color: white;
+  border-bottom-left-radius: var(--ifm-global-radius);
+  border-bottom-right-radius: var(--ifm-global-radius);
+}
+
+.tabs__item--active:hover {
+  background: var(--ifm-menu-color-active);
+  color: white;
+}
+
+.tabs--block {
+  margin-bottom: 30px;
 }
 
 /* list elements */
 
 .markdown li {
   margin-bottom: 12px;
+}
+
+/* API Doc overrides */
+
+.openapi-tabs__mime-container {
+  visibility: hidden;
+  height: 0;
 }

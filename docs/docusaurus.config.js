@@ -45,6 +45,7 @@ const config = {
           routeBasePath: '/',
           sidebarPath: './sidebars.js',
           editUrl: 'https://github.com/AudiusProject/audius-protocol/tree/main/docs',
+          docItemComponent: '@theme/ApiItem', // add @theme/ApiItem here
         },
         theme: {
           customCss: './src/css/custom.css',
@@ -61,9 +62,15 @@ const config = {
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
       // Replace with your project's social card
-      // image: 'img/docusaurus-social-card.jpg',
+      image: 'img/dev.jpg',
+      docs: {
+        sidebar: {
+          hideable: true,
+        },
+      },
       navbar: {
         title: 'Audius',
+        hideOnScroll: true,
         logo: {
           alt: 'Audius Logo',
           src: 'img/logo.png',
@@ -74,31 +81,44 @@ const config = {
             label: 'Learn',
             to: '/',
             position: 'right',
-            activeBasePath: 'learn'
+            activeBasePath: 'learn',
           },
           {
             label: 'Developers',
-            to: '/developers/introduction/overview',
             position: 'right',
-            activeBasePath: 'developers'
+            activeBasePath: 'developers',
+            items: [
+              {
+                label: 'Getting Started',
+                to: '/developers/introduction/overview',
+              },
+              {
+                label: 'SDK',
+                to: '/sdk',
+              },
+              {
+                label: 'API',
+                to: '/api',
+              },
+            ],
           },
           {
             label: 'Staking',
             to: '/node-operator/overview',
             position: 'right',
-            activeBasePath: 'staking'
+            activeBasePath: 'staking',
           },
           {
             label: 'Distributors',
             to: '/distributors/introduction/overview',
             position: 'right',
-            activeBasePath: 'distributors'
+            activeBasePath: 'distributors',
           },
           {
             label: 'Reference',
             to: '/reference/overview',
             position: 'right',
-            activeBasePath: 'reference'
+            activeBasePath: 'reference',
           },
           {
             'aria-label': 'Discord',
@@ -124,12 +144,61 @@ const config = {
       prism: {
         theme: prismThemes.github,
         darkTheme: prismThemes.dracula,
+        // additionalLanguages: ['ruby', 'csharp', 'php', 'java', 'powershell'],
       },
+      languageTabs: [
+        {
+          highlight: 'bash',
+          language: 'curl',
+          logoClass: 'bash',
+          variant: 'cURL',
+        },
+        {
+          highlight: 'python',
+          language: 'python',
+          logoClass: 'python',
+          variant: 'requests',
+          variants: ['requests', 'http.client'],
+        },
+        {
+          highlight: 'go',
+          language: 'go',
+          logoClass: 'go',
+          variant: 'native',
+          variants: ['native'],
+        },
+        {
+          highlight: 'javascript',
+          language: 'nodejs',
+          logoClass: 'nodejs',
+          variant: 'axios',
+          variants: ['native', 'axios', 'request'],
+        },
+      ],
     }),
   markdown: {
     mermaid: true,
   },
-  themes: ['@docusaurus/theme-mermaid'],
+  plugins: [
+    [
+      'docusaurus-plugin-openapi-docs',
+      {
+        id: 'openapi',
+        docsPluginId: 'classic', // e.g. "classic" or the plugin-content-docs id
+        config: {
+          api: {
+            specPath: 'docs/developers/swagger.json', // path or URL to the OpenAPI spec
+            // specPath: 'https://discoveryprovider.audius.co/v1/swagger.json', // path or URL to the OpenAPI spec
+            outputDir: 'docs/developers/api', // output directory for generated *.mdx and sidebar.js files
+            sidebarOptions: {
+              groupPathsBy: 'tag', // generate a sidebar.js slice that groups operations by tag
+            },
+          },
+        },
+      },
+    ],
+  ],
+  themes: ['@docusaurus/theme-mermaid', 'docusaurus-theme-openapi-docs'],
 }
 
 export default config

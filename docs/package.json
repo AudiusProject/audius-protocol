@@ -23,6 +23,8 @@
     "@docusaurus/theme-mermaid": "^3.3.2",
     "@mdx-js/react": "3.0.0",
     "clsx": "2.0.0",
+    "docusaurus-plugin-openapi-docs": "^3.0.0-beta.10",
+    "docusaurus-theme-openapi-docs": "^3.0.0-beta.10",
     "prism-react-renderer": "2.3.0",
     "react": "18.0.0",
     "react-dom": "18.0.0"
