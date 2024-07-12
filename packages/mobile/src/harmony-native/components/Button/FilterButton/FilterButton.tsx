@@ -1,9 +1,11 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import type { ReactNativeStyle } from '@emotion/native'
 import { useTheme } from '@emotion/react'
 import { isNil } from 'lodash'
+import type { GestureResponderEvent } from 'react-native'
 
+import type { IconProps } from '@audius/harmony-native'
 import { IconCloseAlt, Text } from '@audius/harmony-native'
 
 import { BaseButton } from '../BaseButton/BaseButton'
@@ -99,17 +101,30 @@ export const FilterButton = (props: FilterButtonProps) => {
     if (onPress) {
       onPress()
     } else {
-      if (variant === 'fillContainer' && !isNil(value)) {
-        onReset?.()
-      } else {
+      if (variant === 'fillContainer') {
         setIsOpen((isOpen: boolean) => !isOpen)
       }
     }
-  }, [onPress, onReset, value, variant])
+  }, [onPress, variant])
 
   const iconSize = size === 'small' ? 's' : 'm'
   const textColor =
     !isNil(value) && variant === 'fillContainer' ? 'staticWhite' : 'default'
+
+  const Icon = useMemo(() => {
+    return variant === 'fillContainer' && !isNil(value)
+      ? (props: IconProps) => (
+          <IconCloseAlt
+            aria-label='cancel'
+            onPress={(e: GestureResponderEvent) => {
+              e.stopPropagation()
+              onReset?.()
+            }}
+            {...props}
+          />
+        )
+      : iconRight ?? undefined
+  }, [variant, value, onReset, iconRight])
 
   return (
     <BaseButton
@@ -122,9 +137,7 @@ export const FilterButton = (props: FilterButtonProps) => {
         }
       }}
       onPress={handlePress}
-      iconRight={
-        variant === 'fillContainer' && !isNil(value) ? IconCloseAlt : iconRight
-      }
+      iconRight={Icon}
       disabled={disabled}
       aria-haspopup='listbox'
       aria-expanded={isOpen}
