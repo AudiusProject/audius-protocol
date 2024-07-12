@@ -108,12 +108,15 @@ module.exports = function (app) {
       }
       try {
         await sg.send(emailParams)
-        await models.UserEvents.update(
-          { needsRecoveryEmail: false },
+        await models.UserEvents.upsert(
           {
-            where: {
-              walletAddress: walletFromSignature
-            }
+            walletAddress: walletFromSignature,
+            needsRecoveryEmail: false,
+            createdAt: new Date(),
+            updatedAt: new Date()
+          },
+          {
+            where: { walletAddress: walletFromSignature }
           }
         )
         return successResponse({ status: true })

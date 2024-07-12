@@ -2,6 +2,7 @@ const express = require('express')
 const bodyParser = require('body-parser')
 const cookieParser = require('cookie-parser')
 const sgMail = require('@sendgrid/mail')
+const sgClient = require('@sendgrid/client')
 const { redisClient, Lock } = require('./redis')
 const { createFpClient } = require('./fpClient')
 const optimizelySDK = require('@optimizely/optimizely-sdk')
@@ -174,8 +175,13 @@ class App {
     // Configure sendgrid instance
     if (config.get('sendgridApiKey')) {
       sgMail.setApiKey(config.get('sendgridApiKey'))
+      sgClient.setApiKey(config.get('sendgridApiKey'))
     }
     this.express.set('sendgrid', config.get('sendgridApiKey') ? sgMail : null)
+    this.express.set(
+      'sendgridClient',
+      config.get('sendgridApiKey') ? sgClient : null
+    )
   }
 
   configureSentry() {
