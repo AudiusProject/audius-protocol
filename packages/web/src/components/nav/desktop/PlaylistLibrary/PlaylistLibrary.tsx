@@ -5,7 +5,8 @@ import {
   accountSelectors,
   collectionsSocialActions
 } from '@audius/common/store'
-import cn from 'classnames'
+import { Flex, useTheme } from '@audius/harmony'
+import { ClassNames } from '@emotion/react'
 import { isEmpty } from 'lodash'
 import { useDispatch } from 'react-redux'
 
@@ -17,7 +18,6 @@ import { GroupHeader } from '../GroupHeader'
 
 import { CreatePlaylistLibraryItemButton } from './CreatePlaylistLibraryItemButton'
 import { EmptyLibraryNavLink } from './EmptyLibraryNavLink'
-import styles from './PlaylistLibrary.module.css'
 import { PlaylistLibraryNavItem, keyExtractor } from './PlaylistLibraryNavItem'
 import { useAddAudioNftPlaylistToLibrary } from './useAddAudioNftPlaylistToLibrary'
 import { useSanitizePlaylistLibrary } from './useSanitizePlaylistLibrary'
@@ -43,6 +43,7 @@ export const PlaylistLibrary = (props: PlaylistLibraryProps) => {
   const library = useSelector(getPlaylistLibrary)
   const dispatch = useDispatch()
   const draggingKind = useSelector(selectDraggingKind)
+  const { color, motion, spacing } = useTheme()
 
   useAddAudioNftPlaylistToLibrary()
   useSanitizePlaylistLibrary()
@@ -55,31 +56,52 @@ export const PlaylistLibrary = (props: PlaylistLibraryProps) => {
   )
 
   return (
-    <Droppable
-      className={styles.droppable}
-      hoverClassName={styles.droppableHover}
-      onDrop={handleDrop}
-      acceptedKinds={acceptedKinds}
-    >
-      <GroupHeader
-        className={cn(styles.header, {
-          [styles.droppableLink]: draggingKind === 'playlist'
-        })}
-      >
-        {messages.header}
-        <CreatePlaylistLibraryItemButton scrollbarRef={scrollbarRef} />
-      </GroupHeader>
-      {!library || isEmpty(library?.contents) ? (
-        <EmptyLibraryNavLink />
-      ) : (
-        library.contents.map((content) => (
-          <PlaylistLibraryNavItem
-            key={keyExtractor(content)}
-            item={content}
-            level={0}
-          />
-        ))
+    <ClassNames>
+      {({ css }) => (
+        <Droppable
+          className={css({
+            position: 'relative',
+            // Drop Background
+            '::before': {
+              content: '""',
+              position: 'absolute',
+              top: -spacing.s,
+              bottom: -spacing.s,
+              left: 0,
+              right: 0,
+              backgroundColor: color.background.accent,
+              transition: `opacity ${motion.quick}`,
+              opacity: 0
+            },
+            '&.droppableLinkHover::before': {
+              opacity: 0.15
+            }
+          })}
+          hoverClassName='droppableLinkHover'
+          onDrop={handleDrop}
+          acceptedKinds={acceptedKinds}
+        >
+          <Flex wrap='nowrap' alignItems='center' gap='s'>
+            <GroupHeader
+              color={draggingKind === 'playlist' ? 'accent' : 'subdued'}
+            >
+              {messages.header}
+            </GroupHeader>
+            <CreatePlaylistLibraryItemButton scrollbarRef={scrollbarRef} />
+          </Flex>
+          {!library || isEmpty(library?.contents) ? (
+            <EmptyLibraryNavLink />
+          ) : (
+            library.contents.map((content) => (
+              <PlaylistLibraryNavItem
+                key={keyExtractor(content)}
+                item={content}
+                level={0}
+              />
+            ))
+          )}
+        </Droppable>
       )}
-    </Droppable>
+    </ClassNames>
   )
 }

@@ -12,7 +12,8 @@ import {
 import {
   IconWaveForm as IconVisualizer,
   IconButton,
-  useTheme
+  useTheme,
+  Box
 } from '@audius/harmony'
 import { animated, useSpring } from '@react-spring/web'
 import { useDispatch, useSelector } from 'react-redux'
@@ -25,8 +26,6 @@ import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 import { NO_VISUALIZER_ROUTES } from 'pages/visualizer/Visualizer'
 import { openVisualizer } from 'pages/visualizer/store/slice'
 import { fullTrackPage } from 'utils/route'
-
-import styles from './NowPlayingArtworkTile.module.css'
 
 const { getTrackId, getCollectible, getPreviewing } = playerSelectors
 const { getTrack } = cacheTracksSelectors
@@ -43,8 +42,11 @@ type FadeInUpProps = {
   style: CSSProperties
 }
 
+const AnimatedBox = animated(Box)
+
 const FadeInUp = (props: FadeInUpProps) => {
   const { children, style } = props
+  const { motion } = useTheme()
 
   const slideInProps = useSpring({
     from: { opacity: 0, height: 0 },
@@ -52,12 +54,22 @@ const FadeInUp = (props: FadeInUpProps) => {
   })
 
   return (
-    <animated.div
-      className={styles.fadeIn}
+    <AnimatedBox
+      border='default'
+      borderRadius='m'
+      css={{
+        boxShadow: '0 1px 20px -3px var(--currently-playing-default-shadow)',
+        overflow: 'hidden',
+        transition: `opacity ${motion.quick}`,
+        cursor: 'pointer',
+        ':hover': {
+          opacity: 0.96
+        }
+      }}
       style={{ ...slideInProps, ...style }}
     >
       {children}
-    </animated.div>
+    </AnimatedBox>
   )
 }
 
@@ -135,9 +147,7 @@ export const NowPlayingArtworkTile = () => {
 
   const renderDogEar = () => {
     return shouldShowPurchaseDogEar ? (
-      <div className={styles.borderOffset}>
-        <DogEar type={DogEarType.USDC_PURCHASE} className={styles.dogEar} />
-      </div>
+      <DogEar type={DogEarType.USDC_PURCHASE} />
     ) : null
   }
 
@@ -170,26 +180,32 @@ export const NowPlayingArtworkTile = () => {
     )
   }
 
-  if (isStreamGated) {
-    return (
-      <div className={styles.root}>
-        {renderDogEar()}
-        {renderCoverArt()}
-      </div>
-    )
-  }
+  const content = (
+    <Box
+      mt='unit5'
+      mh='auto'
+      mb={0}
+      css={{ position: 'relative' }}
+      h={208}
+      w={208}
+    >
+      {renderDogEar()}
+      {renderCoverArt()}
+    </Box>
+  )
 
-  return (
+  return isStreamGated ? (
+    content
+  ) : (
     <Draggable
       text={track?.title}
       kind='track'
       id={trackId}
       isOwner={isOwner}
       link={fullTrackPage(permalink)}
-      className={styles.root}
+      asChild
     >
-      {renderDogEar()}
-      {renderCoverArt()}
+      {content}
     </Draggable>
   )
 }

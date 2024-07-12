@@ -1,12 +1,19 @@
-import { ComponentProps } from 'react'
+import { Text, TextProps, useTheme } from '@audius/harmony'
 
-import cn from 'classnames'
-
-import styles from './GroupHeader.module.css'
-
-type GroupHeaderProps = ComponentProps<'h3'>
-
-export const GroupHeader = (props: GroupHeaderProps) => {
-  const { className, ...other } = props
-  return <h3 className={cn(styles.root, className)} {...other} />
+export const GroupHeader = (props: TextProps) => {
+  const { spacing, motion } = useTheme()
+  return (
+    <Text
+      tag='h3'
+      variant='label'
+      color='subdued'
+      size='l'
+      strength='strong'
+      css={{
+        paddingLeft: spacing.unit7,
+        transition: `color ${motion.quick}`
+      }}
+      {...props}
+    />
+  )
 }
