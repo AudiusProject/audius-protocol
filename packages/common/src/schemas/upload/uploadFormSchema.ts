@@ -299,7 +299,7 @@ export const createCollectionSchema = (collectionType: 'playlist' | 'album') =>
                 // Album uploads set a price for all tracks.
                 // Note: this is made "required" via validation logic, set to optional here to avoid TS conflicts
                 // but is also prefilled in the form component (USDCPurchaseFields)
-                albumTrackPrice: z.number().optional()
+                albumTrackPrice: z.optional(z.number().nullable())
               })
             })
           )

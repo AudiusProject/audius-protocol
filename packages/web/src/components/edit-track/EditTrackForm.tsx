@@ -43,8 +43,14 @@ const messages = {
   next: 'Next Track',
   preview: 'Preview',
   deleteTrack: 'DELETE TRACK',
-  navigationPrompt: {
+  uploadNavigationPrompt: {
     title: 'Discard upload?',
+    body: "Are you sure you want to leave this page?\nAny changes you've made will be lost.",
+    cancel: 'Cancel',
+    proceed: 'Discard'
+  },
+  editNavigationPrompt: {
+    title: 'Discard Edit?',
     body: "Are you sure you want to leave this page?\nAny changes you've made will be lost.",
     cancel: 'Cancel',
     proceed: 'Discard'
@@ -112,7 +118,11 @@ const TrackEditForm = (
     <Form>
       <NavigationPrompt
         when={dirty && !isSubmitting}
-        messages={messages.navigationPrompt}
+        messages={
+          isUpload
+            ? messages.uploadNavigationPrompt
+            : messages.editNavigationPrompt
+        }
       />
       <div className={cn(layoutStyles.row, layoutStyles.gap2)}>
         <div

@@ -7,6 +7,7 @@ import {
   PlaylistSchema
 } from '@audius/common/schemas'
 import { FeatureFlags } from '@audius/common/services'
+import { Nullable } from '@audius/common/utils'
 import { Button, Flex, IconTrash, Text } from '@audius/harmony'
 import { Form, Formik } from 'formik'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
@@ -29,6 +30,7 @@ import {
 } from 'components/form-fields'
 import { Tile } from 'components/tile'
 
+import { CollectionNavigationPrompt } from './CollectionNavigationPrompt'
 import { DeleteCollectionConfirmationModal } from './DeleteCollectionConfirmationModal'
 import styles from './EditCollectionForm.module.css'
 import { ReleaseCollectionConfirmationModal } from './ReleaseCollectionConfirmationModal'
@@ -52,10 +54,11 @@ type EditCollectionFormProps = {
   onSubmit: (values: CollectionValues) => void
   isAlbum: boolean
   isUpload: boolean
+  focus?: Nullable<string>
 }
 
 export const EditCollectionForm = (props: EditCollectionFormProps) => {
-  const { initialValues, onSubmit, isAlbum, isUpload } = props
+  const { initialValues, onSubmit, isAlbum, isUpload, focus } = props
   const { playlist_id, is_private, is_scheduled_release } = initialValues
   const [isDeleteConfirmationOpen, setIsDeleteConfirmationOpen] =
     useState(false)
@@ -95,12 +98,14 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
       validationSchema={toFormikValidationSchema(validationSchema)}
     >
       <Form className={styles.root} id={formId}>
+        <CollectionNavigationPrompt />
         <Tile className={styles.collectionFields} elevation='mid'>
           <div className={styles.row}>
             <ArtworkField
               name='artwork'
               className={styles.artwork}
               size='small'
+              autoFocus={focus === 'artwork'}
             />
             <div className={styles.collectionInfo}>
               <TextField
@@ -108,6 +113,7 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
                 label={`${collectionTypeName} ${messages.name}`}
                 maxLength={64}
                 required
+                autoFocus={focus === 'name'}
               />
               <TextAreaField
                 name='description'
