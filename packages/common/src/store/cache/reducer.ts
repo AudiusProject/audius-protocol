@@ -124,6 +124,10 @@ export const mergeCustomizer = (objValue: any, srcValue: any, key: string) => {
     return srcValue || objValue
   }
 
+  if (key === 'stream_conditions' || key === 'download_conditions') {
+    return srcValue || objValue
+  }
+
   // For playlist_contents, this is trickier.
   // We want to never merge because playlists can have
   // tracks be deleted since last time, but
