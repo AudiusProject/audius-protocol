@@ -45,6 +45,7 @@ type OwnerActionButtonProps = {
 
 type EntityDetails = {
   isUnlisted: boolean
+  permalink?: string
 }
 
 export const OwnerActionButtons = ({
@@ -66,6 +67,7 @@ const TrackOwnerActionButtons = ({
   return (
     <BaseOwnerActionButtons
       isUnlisted={track?.is_unlisted ?? false}
+      permalink={track?.permalink}
       contentId={contentId}
       {...rest}
     />
@@ -80,6 +82,7 @@ const CollectionOwnerActionButtons = ({
   return (
     <BaseOwnerActionButtons
       isUnlisted={collection?.is_private ?? false}
+      permalink={collection?.permalink}
       contentId={contentId}
       {...rest}
     />
@@ -88,6 +91,7 @@ const CollectionOwnerActionButtons = ({
 
 const BaseOwnerActionButtons = ({
   isUnlisted,
+  permalink,
   contentId,
   isDisabled,
   isLoading,
@@ -105,14 +109,13 @@ const BaseOwnerActionButtons = ({
   const onStopPropagation = useCallback((e: any) => e.stopPropagation(), [])
 
   const handleEdit = useCallback(() => {
-    const permalink = track?.permalink
     isEditTrackRedesignEnabled
       ? dispatch(pushRoute(`${permalink}/edit`))
       : onEditTrackOpen({ trackId: contentId })
   }, [
     onEditTrackOpen,
     contentId,
-    track?.permalink,
+    permalink,
     isEditTrackRedesignEnabled,
     dispatch
   ])
