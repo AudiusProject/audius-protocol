@@ -264,11 +264,6 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
     }
   }
 
-  const { isEnabled: isNewPodcastControlsEnabled } = useFeatureFlag(
-    FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
-    FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
-  )
-
   const currentUserId = useSelector(getUserId)
   const isTrackOwner = currentUserId && currentUserId === owner_id
   const isContextPlaylistOwner =
@@ -303,11 +298,11 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
         : null,
       isTrackOwner && !ddexApp ? OverflowAction.ADD_TO_ALBUM : null,
       !isUnlisted || isTrackOwner ? OverflowAction.ADD_TO_PLAYLIST : null,
-      isNewPodcastControlsEnabled && isLongFormContent
+      isLongFormContent
         ? OverflowAction.VIEW_EPISODE_PAGE
         : OverflowAction.VIEW_TRACK_PAGE,
       !showViewAlbum && albumInfo ? OverflowAction.VIEW_ALBUM_PAGE : null,
-      isNewPodcastControlsEnabled && isLongFormContent
+      isLongFormContent
         ? playbackPositionInfo?.status === 'COMPLETED'
           ? OverflowAction.MARK_AS_UNPLAYED
           : OverflowAction.MARK_AS_PLAYED
@@ -333,7 +328,6 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
     has_current_user_reposted,
     isDeleted,
     ddexApp,
-    isNewPodcastControlsEnabled,
     isLongFormContent,
     showViewAlbum,
     albumInfo,

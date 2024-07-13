@@ -443,11 +443,7 @@ export const TracksTable = ({
             includeShare: !isUnlisted || isOwner,
             includeEmbed: !isUnlisted,
             includeEdit: !disabledTrackEdit,
-            includeAddToPlaylist:
-              !isUnlisted &&
-              (!isStreamGated ||
-                (isContentUSDCPurchaseGated(streamConditions) &&
-                  hasStreamAccess)),
+            includeAddToPlaylist: !isUnlisted || isOwner,
             onRemove: onClickRemove,
             removeText
           }
