@@ -94,6 +94,10 @@ const PlaylistTile = ({
     )
   }, [trackCount, trackList, onClickTitle, isLoading])
 
+  if (!playlistId) {
+    return null
+  }
+
   return (
     <Paper
       direction='column'
