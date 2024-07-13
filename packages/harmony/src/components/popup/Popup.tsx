@@ -191,16 +191,17 @@ export const Popup = forwardRef<HTMLDivElement, PopupProps>(function Popup(
   props: PopupProps,
   ref: Ref<HTMLDivElement>
 ) {
+  const { isVisible: isVisibleProp } = props
   const [popupState, setPopupState] = useState<ModalState>('closed')
 
   const isVisible = popupState !== 'closed'
   useEffect(() => {
-    if (popupState === 'closed' && props.isVisible) {
+    if (popupState === 'closed' && isVisibleProp) {
       setPopupState('opening')
-    } else if (popupState === 'open' && !props.isVisible) {
+    } else if (popupState === 'open' && !isVisibleProp) {
       setPopupState('closing')
     }
-  }, [props.isVisible, popupState])
+  }, [isVisibleProp, popupState])
 
   return isVisible ? (
     <PopupInternal
