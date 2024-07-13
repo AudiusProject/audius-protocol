@@ -325,17 +325,7 @@ export const PopupInternal = forwardRef<
 
       originalTopPosition.current = top
     }
-  }, [
-    isVisible,
-    wrapperRef,
-    anchorRef,
-    anchorOrigin,
-    transformOrigin,
-    setComputedTransformOrigin,
-    originalTopPosition,
-    portalLocation,
-    containerRef
-  ])
+  }, [isVisible, wrapperRef, anchorRef, anchorOrigin, transformOrigin, setComputedTransformOrigin, originalTopPosition, portalLocation, containerRef])
 
   // Callback invoked on each scroll. Uses original top position to scroll with content.
   // Takes scrollParent to get the current scroll position as well as the intitial scroll position

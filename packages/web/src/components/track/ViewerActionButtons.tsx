@@ -3,6 +3,7 @@ import { MouseEvent, ReactNode, useCallback } from 'react'
 import { useGetPlaylistById, useGetTrackById } from '@audius/common/api'
 import { AccessConditions, ID } from '@audius/common/models'
 import { gatedContentSelectors } from '@audius/common/store'
+import { Nullable } from '@audius/common/utils'
 import { Flex, Text } from '@audius/harmony'
 import { useSelector } from 'react-redux'
 
@@ -13,7 +14,6 @@ import Tooltip from 'components/tooltip/Tooltip'
 
 import { GatedConditionsPill } from './GatedConditionsPill'
 import styles from './desktop/TrackTile.module.css'
-import { Nullable } from '@audius/common/utils'
 
 const { getGatedContentStatusMap } = gatedContentSelectors
 
