@@ -32,8 +32,7 @@ const messages = {
 }
 
 type OwnerActionButtonProps = {
-  contentId: ID
-  contentType: 'track' | 'collection'
+  contentId: ID // Collection or Track ID
   isDisabled?: boolean
   isLoading?: boolean
   rightActions?: ReactNode
@@ -44,21 +43,60 @@ type OwnerActionButtonProps = {
   onClickShare: MouseEventHandler<HTMLButtonElement>
 }
 
+type EntityDetails = {
+  isUnlisted: boolean
+}
+
 export const OwnerActionButtons = ({
-  contentId,
   contentType,
+  ...rest
+}: OwnerActionButtonProps & { contentType: 'track' | 'collection' }) => {
+  return contentType === 'track' ? (
+    <TrackOwnerActionButtons {...rest} />
+  ) : (
+    <CollectionOwnerActionButtons {...rest} />
+  )
+}
+
+const TrackOwnerActionButtons = ({
+  contentId,
+  ...rest
+}: OwnerActionButtonProps) => {
+  const { data: track } = useGetTrackById({ id: contentId })
+  return (
+    <BaseOwnerActionButtons
+      isUnlisted={track?.is_unlisted ?? false}
+      contentId={contentId}
+      {...rest}
+    />
+  )
+}
+
+const CollectionOwnerActionButtons = ({
+  contentId,
+  ...rest
+}: OwnerActionButtonProps) => {
+  const { data: collection } = useGetPlaylistById({ playlistId: contentId })
+  return (
+    <BaseOwnerActionButtons
+      isUnlisted={collection?.is_private ?? false}
+      contentId={contentId}
+      {...rest}
+    />
+  )
+}
+
+const BaseOwnerActionButtons = ({
+  isUnlisted,
+  contentId,
   isDisabled,
   isLoading,
   rightActions,
   bottomBar,
   showIconButtons,
   onClickShare
-}: OwnerActionButtonProps) => {
+}: OwnerActionButtonProps & EntityDetails) => {
   const dispatch = useDispatch()
-  const { data: track } = useGetTrackById({ id: contentId })
-  const { data: collection } = useGetPlaylistById({ playlistId: contentId })
-  const isUnlisted =
-    contentType === 'track' ? track?.is_unlisted : collection?.is_private
   const { onOpen: onEditTrackOpen } = useEditTrackModal()
   const { isEnabled: isEditTrackRedesignEnabled } = useFlag(
     FeatureFlags.EDIT_TRACK_REDESIGN
