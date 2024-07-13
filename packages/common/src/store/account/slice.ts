@@ -51,8 +51,10 @@ const slice = createSlice({
   name: 'account',
   initialState,
   reducers: {
-    fetchAccount: () => {},
-    fetchLocalAccount: () => {},
+    fetchAccount: () => {
+    },
+    fetchLocalAccount: () => {
+    },
     fetchAccountRequested: (state) => {
       state.status = Status.LOADING
     },
