@@ -155,37 +155,39 @@ const PlaylistTile = ({
         borderBottomLeftRadius='m'
         borderBottomRightRadius='m'
       >
-        {isOwner ? (
-          <OwnerActionButtons
-            contentId={playlistId}
-            contentType='collection'
-            isDisabled={isDisabled}
-            isLoading={isLoading}
-            rightActions={rightActions}
-            bottomBar={bottomBar}
-            isDarkMode={isDarkMode}
-            isMatrixMode={isMatrixMode}
-            showIconButtons={showIconButtons}
-            onClickShare={onClickShare}
-          />
-        ) : (
-          <ViewerActionButtons
-            contentId={playlistId}
-            contentType='collection'
-            hasStreamAccess={hasStreamAccess}
-            isDisabled={isDisabled}
-            isLoading={isLoading}
-            rightActions={rightActions}
-            bottomBar={bottomBar}
-            isDarkMode={isDarkMode}
-            isMatrixMode={isMatrixMode}
-            showIconButtons={showIconButtons}
-            onClickFavorite={onClickFavorite}
-            onClickRepost={onClickRepost}
-            onClickShare={onClickShare}
-            onClickGatedUnlockPill={onClickGatedUnlockPill}
-          />
-        )}
+        {playlistId ? (
+          isOwner ? (
+            <OwnerActionButtons
+              contentId={playlistId}
+              contentType='collection'
+              isDisabled={isDisabled}
+              isLoading={isLoading}
+              rightActions={rightActions}
+              bottomBar={bottomBar}
+              isDarkMode={isDarkMode}
+              isMatrixMode={isMatrixMode}
+              showIconButtons={showIconButtons}
+              onClickShare={onClickShare}
+            />
+          ) : (
+            <ViewerActionButtons
+              contentId={playlistId}
+              contentType='collection'
+              hasStreamAccess={hasStreamAccess}
+              isDisabled={isDisabled}
+              isLoading={isLoading}
+              rightActions={rightActions}
+              bottomBar={bottomBar}
+              isDarkMode={isDarkMode}
+              isMatrixMode={isMatrixMode}
+              showIconButtons={showIconButtons}
+              onClickFavorite={onClickFavorite}
+              onClickRepost={onClickRepost}
+              onClickShare={onClickShare}
+              onClickGatedUnlockPill={onClickGatedUnlockPill}
+            />
+          )
+        ) : null}
       </Box>
     </Paper>
   )

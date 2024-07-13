@@ -1,7 +1,7 @@
 import { MouseEvent, ReactNode, useCallback } from 'react'
 
 import { useGetPlaylistById, useGetTrackById } from '@audius/common/api'
-import { ID } from '@audius/common/models'
+import { AccessConditions, ID } from '@audius/common/models'
 import { gatedContentSelectors } from '@audius/common/store'
 import { Flex, Text } from '@audius/harmony'
 import { useSelector } from 'react-redux'
@@ -13,6 +13,7 @@ import Tooltip from 'components/tooltip/Tooltip'
 
 import { GatedConditionsPill } from './GatedConditionsPill'
 import styles from './desktop/TrackTile.module.css'
+import { Nullable } from '@audius/common/utils'
 
 const { getGatedContentStatusMap } = gatedContentSelectors
 
@@ -26,7 +27,6 @@ const messages = {
 
 type ViewerActionButtonProps = {
   contentId: ID // Collection or Track ID
-  contentType: 'track' | 'collection'
   hasStreamAccess?: boolean
   isDisabled?: boolean
   isLoading?: boolean
@@ -41,29 +41,102 @@ type ViewerActionButtonProps = {
   onClickGatedUnlockPill?: (e: MouseEvent) => void
 }
 
-const useEntityDetails = (contentId: ID, type: 'track' | 'collection') => {
-  const { data: track } = useGetTrackById({ id: contentId })
-  const { data: collection } = useGetPlaylistById({ playlistId: contentId })
+type EntityDetails = {
+  streamConditions: Nullable<AccessConditions>
+  isUnlisted: boolean
+  isFavorited: boolean
+  isReposted: boolean
+}
+
+const useTrackEntityDetails = (id: ID): EntityDetails => {
+  const { data: track } = useGetTrackById({ id })
 
   const {
     stream_conditions: streamConditions,
     has_current_user_saved: isFavorited,
     has_current_user_reposted: isReposted
-  } = (type === 'track' ? track : collection) ?? {}
+  } = track ?? {}
 
-  const isUnlisted =
-    type === 'track' ? track?.is_unlisted : collection?.is_private
+  const isUnlisted = track?.is_unlisted
   return {
-    streamConditions,
-    isUnlisted,
-    isFavorited,
-    isReposted
+    streamConditions: streamConditions ?? null,
+    isUnlisted: isUnlisted ?? false,
+    isFavorited: isFavorited ?? false,
+    isReposted: isReposted ?? false
+  }
+}
+
+const useCollectionEntityDetails = (id: ID): EntityDetails => {
+  const { data: collection } = useGetPlaylistById({ playlistId: id })
+
+  const {
+    stream_conditions: streamConditions,
+    has_current_user_saved: isFavorited,
+    has_current_user_reposted: isReposted
+  } = collection ?? {}
+
+  const isUnlisted = collection?.is_private
+  return {
+    streamConditions: streamConditions ?? null,
+    isUnlisted: isUnlisted ?? false,
+    isFavorited: isFavorited ?? false,
+    isReposted: isReposted ?? false
   }
 }
 
 export const ViewerActionButtons = ({
-  contentId,
   contentType,
+  ...rest
+}: ViewerActionButtonProps & { contentType: 'track' | 'collection' }) => {
+  return contentType === 'track' ? (
+    <TrackViewerActionButtons {...rest} />
+  ) : (
+    <CollectionViewerActionButtons {...rest} />
+  )
+}
+
+const TrackViewerActionButtons = ({
+  contentId,
+  ...rest
+}: ViewerActionButtonProps) => {
+  const { streamConditions, isUnlisted, isFavorited, isReposted } =
+    useTrackEntityDetails(contentId)
+  return (
+    <BaseViewerActionButtons
+      streamConditions={streamConditions}
+      isUnlisted={isUnlisted}
+      isFavorited={isFavorited}
+      isReposted={isReposted}
+      contentId={contentId}
+      {...rest}
+    />
+  )
+}
+
+const CollectionViewerActionButtons = ({
+  contentId,
+  ...rest
+}: ViewerActionButtonProps) => {
+  const { streamConditions, isUnlisted, isFavorited, isReposted } =
+    useCollectionEntityDetails(contentId)
+  return (
+    <BaseViewerActionButtons
+      streamConditions={streamConditions}
+      isUnlisted={isUnlisted}
+      isFavorited={isFavorited}
+      isReposted={isReposted}
+      contentId={contentId}
+      {...rest}
+    />
+  )
+}
+
+const BaseViewerActionButtons = ({
+  streamConditions,
+  isUnlisted,
+  isFavorited,
+  isReposted,
+  contentId,
   hasStreamAccess,
   isDisabled,
   isLoading,
@@ -76,10 +149,7 @@ export const ViewerActionButtons = ({
   onClickFavorite,
   onClickShare,
   onClickGatedUnlockPill
-}: ViewerActionButtonProps) => {
-  const { streamConditions, isUnlisted, isFavorited, isReposted } =
-    useEntityDetails(contentId, contentType)
-
+}: ViewerActionButtonProps & EntityDetails) => {
   const gatedStatusMap = useSelector(getGatedContentStatusMap)
   const gatedStatus = contentId && gatedStatusMap[contentId]
 
