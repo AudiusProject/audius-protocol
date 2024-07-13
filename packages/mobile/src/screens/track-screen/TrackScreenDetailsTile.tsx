@@ -379,7 +379,7 @@ export const TrackScreenDetailsTile = ({
       isOwner && !ddexApp ? OverflowAction.ADD_TO_ALBUM : null
     const overflowActions = [
       addToAlbumAction,
-      OverflowAction.ADD_TO_PLAYLIST,
+      !isUnlisted || isOwner ? OverflowAction.ADD_TO_PLAYLIST : null,
       isOwner
         ? null
         : user.does_current_user_follow

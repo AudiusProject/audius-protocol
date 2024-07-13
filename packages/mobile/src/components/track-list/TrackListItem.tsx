@@ -10,7 +10,6 @@ import {
   type User,
   isContentUSDCPurchaseGated
 } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import {
   accountSelectors,
   cacheCollectionsSelectors,
@@ -43,7 +42,6 @@ import {
   IconRemove
 } from '@audius/harmony-native'
 import UserBadges from 'app/components/user-badges'
-import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { flexRowCentered, font, makeStyles } from 'app/styles'
 
 import { TrackDownloadStatusIndicator } from '../offline-downloads/TrackDownloadStatusIndicator'

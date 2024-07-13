@@ -112,7 +112,8 @@ export const TrackTileComponent = ({
     genre,
     stream_conditions: streamConditions,
     preview_cid,
-    ddex_app: ddexApp
+    ddex_app: ddexApp,
+    is_unlisted: isUnlisted
   } = track
 
   const hasPreview =
@@ -158,7 +159,7 @@ export const TrackTileComponent = ({
 
     const overflowActions = [
       isOwner && !ddexApp ? OverflowAction.ADD_TO_ALBUM : null,
-      OverflowAction.ADD_TO_PLAYLIST,
+      !isUnlisted || isOwner ? OverflowAction.ADD_TO_PLAYLIST : null,
       isLongFormContent
         ? OverflowAction.VIEW_EPISODE_PAGE
         : OverflowAction.VIEW_TRACK_PAGE,
