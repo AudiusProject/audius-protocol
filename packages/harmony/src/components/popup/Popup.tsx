@@ -2,6 +2,7 @@ import {
   forwardRef,
   MutableRefObject,
   Ref,
+  SetStateAction,
   useCallback,
   useEffect,
   useRef,
@@ -190,7 +191,43 @@ export const Popup = forwardRef<HTMLDivElement, PopupProps>(function Popup(
   props: PopupProps,
   ref: Ref<HTMLDivElement>
 ) {
+  const [popupState, setPopupState] = useState<ModalState>('closed')
+
+  const isVisible = popupState !== 'closed'
+  useEffect(() => {
+    if (popupState === 'closed' && props.isVisible) {
+      setPopupState('opening')
+    } else if (popupState === 'open' && !props.isVisible) {
+      setPopupState('closing')
+    }
+  }, [props.isVisible, popupState])
+
+  return isVisible ? (
+    <PopupInternal
+      ref={ref}
+      popupState={popupState}
+      setPopupState={setPopupState}
+      {...props}
+    />
+  ) : null
+})
+
+export const PopupInternal = forwardRef<
+  HTMLDivElement,
+  PopupProps & {
+    popupState: ModalState
+    setPopupState: (value: SetStateAction<ModalState>) => void
+  }
+>(function Popup(
+  props: PopupProps & {
+    popupState: ModalState
+    setPopupState: (value: SetStateAction<ModalState>) => void
+  },
+  ref: Ref<HTMLDivElement>
+) {
   const {
+    popupState,
+    setPopupState,
     anchorRef,
     checkIfClickInside,
     children,
@@ -212,7 +249,6 @@ export const Popup = forwardRef<HTMLDivElement, PopupProps>(function Popup(
     takeWidthOfAnchor
   } = props
   const { spring, shadows } = useTheme()
-  const [popupState, setPopupState] = useState<ModalState>('closed')
 
   const isVisible = popupState !== 'closed'
 
@@ -351,9 +387,7 @@ export const Popup = forwardRef<HTMLDivElement, PopupProps>(function Popup(
 
   useEffect(() => {
     if (popupState === 'closed' && isVisibleProp) {
-      setPopupState('opening')
     } else if (popupState === 'open' && !isVisibleProp) {
-      setPopupState('closing')
       anchorRef.current?.focus()
     }
   }, [anchorRef, isVisibleProp, popupState])
