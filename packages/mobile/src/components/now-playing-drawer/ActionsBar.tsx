@@ -112,6 +112,7 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
   const isReachable = useSelector(getIsReachable)
 
   const isOwner = track?.owner_id === accountUser?.user_id
+  const isUnlisted = track?.is_unlisted
   const { onOpen: openPremiumContentPurchaseModal } =
     usePremiumContentPurchaseModal()
 
@@ -191,7 +192,7 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
         track.genre === Genre.PODCASTS || track.genre === Genre.AUDIOBOOKS
       const overflowActions = [
         isOwner && !track?.ddex_app ? OverflowAction.ADD_TO_ALBUM : null,
-        OverflowAction.ADD_TO_PLAYLIST,
+        !isUnlisted || isOwner ? OverflowAction.ADD_TO_PLAYLIST : null,
         isLongFormContent
           ? OverflowAction.VIEW_EPISODE_PAGE
           : OverflowAction.VIEW_TRACK_PAGE,

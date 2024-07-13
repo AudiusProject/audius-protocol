@@ -63,6 +63,7 @@ const TrackListItem = ({
   const menuRef = useRef<HTMLDivElement>(null)
   const { data: currentUserId } = useGetCurrentUserId({})
   const isOwner = track?.owner_id === currentUserId
+  const isPrivate = track?.is_unlisted
   const isPremium = isContentUSDCPurchaseGated(track?.stream_conditions)
   const { hasStreamAccess } = useGatedContentAccess(track as Track)
 
@@ -122,7 +123,7 @@ const TrackListItem = ({
 
   const menu: Omit<TrackMenuProps, 'children'> = {
     handle: track.user.handle,
-    includeAddToPlaylist: true,
+    includeAddToPlaylist: !isPrivate || isOwner,
     includeAddToAlbum: isOwner && !track?.ddex_app,
     includeArtistPick: false,
     includeEdit: false,

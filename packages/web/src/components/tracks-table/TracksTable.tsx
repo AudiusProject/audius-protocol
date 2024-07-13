@@ -383,11 +383,8 @@ export const TracksTable = ({
   const renderOverflowMenuCell = useCallback(
     (cellInfo: TrackCell) => {
       const track = cellInfo.row.original
-      const {
-        stream_conditions: streamConditions,
-        is_stream_gated: isStreamGated,
-        is_unlisted: isUnlisted
-      } = track
+      const { stream_conditions: streamConditions, is_unlisted: isUnlisted } =
+        track
       const { isFetchingNFTAccess, hasStreamAccess } = trackAccessMap[
         track.track_id
       ] ?? { isFetchingNFTAccess: false, hasStreamAccess: true }
@@ -443,11 +440,7 @@ export const TracksTable = ({
             includeShare: !isUnlisted || isOwner,
             includeEmbed: !isUnlisted,
             includeEdit: !disabledTrackEdit,
-            includeAddToPlaylist:
-              !isUnlisted &&
-              (!isStreamGated ||
-                (isContentUSDCPurchaseGated(streamConditions) &&
-                  hasStreamAccess)),
+            includeAddToPlaylist: !isUnlisted || isOwner,
             onRemove: onClickRemove,
             removeText
           }
