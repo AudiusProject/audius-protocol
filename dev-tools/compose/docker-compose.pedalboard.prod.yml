@@ -162,3 +162,4 @@ services:
         app_name: verified-notifications
     restart: on-failure
     profiles:
+      - pedalboard
