@@ -82,6 +82,8 @@ function* getSearchPageResultsTracks({
             category,
             limit,
             offset,
+            // TODO: could push `includePurchaseable` into search api
+            includePurchaseable,
             ...filters
           },
           {

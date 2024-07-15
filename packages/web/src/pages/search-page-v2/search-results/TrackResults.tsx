@@ -49,72 +49,59 @@ const getSearchTracksLineupMetadatas = makeGetLineupMetadatas(
   getSearchTracksLineup
 )
 
-// type SearchResultsApiType = ReturnType<typeof useGetSearchResultsApi>
-
-// type SearchResultsType<C extends SearchCategory> = {
-//   status: SearchResultsApiType['status']
-//   data: C extends 'all'
-//     ? SearchResultsApiType['data']
-//     : SearchResultsApiType['data'][Exclude<C, 'all'>]
-// }
-
-// export const useGetSearchResults = <C extends SearchCategory>(
-//   category: C
-// ): SearchResultsType<C> => {
-//   const { query, category: ignoredCategory, ...filters } = useSearchParams()
-
-//   const currentUserId = useSelector(getUserId)
-//   const { isEnabled: isUSDCEnabled } = useFeatureFlag(
-//     FeatureFlags.USDC_PURCHASES
-//   )
-//   const { data, status } = useGetSearchResultsApi(
-//     {
-//       query: query || '',
-//       ...filters,
-//       category,
-//       currentUserId,
-//       limit: category === 'all' ? 5 : undefined,
-//       includePurchaseable: isUSDCEnabled
-//     },
-//     { debounce: 500 }
-//   )
-
-//   if (category === 'all') {
-//     return { data, status } as SearchResultsType<C>
-//   } else {
-//     return {
-//       data: data?.[category as Exclude<C, 'all'>],
-//       status
-//     } as SearchResultsType<C>
-//   }
-// }
-
 type TrackResultsProps = {
-  loadMore: (offset: number, limit: number, overwrite: boolean) => void
+  viewLayout?: ViewLayout
+  category?: SearchKind
 }
 
-const TrackResults = (props: TrackResultsProps) => {
-  const { loadMore } = props
+export const TrackResults = (props: TrackResultsProps) => {
+  const { category = 'tracks', viewLayout = 'list' } = props
   const mainContentRef = useMainContentRef()
 
   const dispatch = useDispatch()
-  const [tracksLayout, setTracksLayout] = useState<ViewLayout>('list')
   const currentQueueItem = useSelector(getCurrentQueueItem)
   const playing = useSelector(getPlaying)
   const buffering = useSelector(getBuffering)
-  const routeMatch = useRouteMatch<{ category: string }>(SEARCH_PAGE)
-  const isCategoryActive = useCallback(
-    (category: CategoryView) => routeMatch?.category === category,
-    [routeMatch]
-  )
 
-  const isTrackGridLayout =
-    !isCategoryActive(CategoryView.TRACKS) || tracksLayout === 'grid'
+  const isTrackGridLayout = viewLayout === 'grid'
 
   const lineup = useSelector(getSearchTracksLineupMetadatas)
   const isLoading = lineup.status === Status.LOADING
 
   const searchParams = useSearchParams()
+
+  const { isEnabled: isUSDCEnabled } = useFeatureFlag(
+    FeatureFlags.USDC_PURCHASES
+  )
+
+  const getResults = useCallback(
+    (offset: number, limit: number, overwrite: boolean) => {
+      const { query, ...filters } = searchParams
+
+      dispatch(
+        searchResultsPageTracksLineupActions.fetchLineupMetadatas(
+          offset,
+          limit,
+          overwrite,
+          {
+            category,
+            query,
+            filters,
+            includePurchaseable: isUSDCEnabled,
+            dispatch
+          }
+        )
+      )
+    },
+    [dispatch, searchParams, isUSDCEnabled]
+  )
+
+  const loadMore = useCallback(
+    (offset: number, limit: number) => {
+      getResults(offset, limit, false)
+    },
+    [getResults]
+  )
   const handleClickTrackTile = useCallback(
     (id?: number) => {
       if (id) {
@@ -194,46 +181,11 @@ const TrackResults = (props: TrackResultsProps) => {
 
 export const TrackResultsPage = () => {
   const isMobile = useIsMobile()
-  const dispatch = useDispatch()
   const [tracksLayout, setTracksLayout] = useState<ViewLayout>('list')
   const updateSortParam = useUpdateSearchParams('sortMethod')
-  const routeMatch = useRouteMatch<{ category: string }>(SEARCH_PAGE)
-
-  const { isEnabled: isUSDCEnabled } = useFeatureFlag(
-    FeatureFlags.USDC_PURCHASES
-  )
 
   const searchParams = useSearchParams()
   const { sortMethod } = searchParams
-
-  const getResults = useCallback(
-    (offset: number, limit: number, overwrite: boolean) => {
-      const { query, ...filters } = searchParams
-
-      dispatch(
-        searchResultsPageTracksLineupActions.fetchLineupMetadatas(
-          offset,
-          limit,
-          overwrite,
-          {
-            category: SearchKind.TRACKS,
-            query,
-            filters,
-            includePurchaseable: isUSDCEnabled,
-            dispatch
-          }
-        )
-      )
-    },
-    [dispatch, searchParams, isUSDCEnabled]
-  )
-
-  const loadMore = useCallback(
-    (offset: number, limit: number) => {
-      getResults(offset, limit, false)
-    },
-    [getResults]
-  )
 
   return (
     <Flex direction='column' gap='xl' wrap='wrap'>
@@ -266,7 +218,7 @@ export const TrackResultsPage = () => {
           </Flex>
         </Flex>
       ) : null}
-      <TrackResults loadMore={loadMore} />
+      <TrackResults />
     </Flex>
   )
 }

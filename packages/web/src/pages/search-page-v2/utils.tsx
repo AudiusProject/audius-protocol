@@ -1,13 +1,87 @@
 import { useMemo } from 'react'
 
-import { SearchSortMethod } from '@audius/common/store'
+import {
+  SearchCategory,
+  useGetSearchResults as useGetSearchResultsApi
+} from '@audius/common/api'
+import { useFeatureFlag } from '@audius/common/hooks'
+import { Status } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
+import {
+  SearchSortMethod,
+  accountSelectors,
+  searchResultsPageActions
+} from '@audius/common/store'
 import { Genre, Mood } from '@audius/sdk'
+import { useDispatch, useSelector } from 'react-redux'
 import { useRouteMatch } from 'react-router-dom'
 import { useSearchParams as useParams } from 'react-router-dom-v5-compat'
 
 import { SEARCH_PAGE } from 'utils/route'
 
 import { CategoryView } from './types'
+
+const { getUserId } = accountSelectors
+const { fetchSearchPageResultsSucceeded } = searchResultsPageActions
+
+type SearchResultsApiType = ReturnType<typeof useGetSearchResultsApi>
+
+type SearchResultsType<C extends SearchCategory> = {
+  status: SearchResultsApiType['status']
+  data: C extends 'all'
+    ? SearchResultsApiType['data']
+    : SearchResultsApiType['data'][Exclude<C, 'all'>]
+}
+
+export const useGetSearchResults = <C extends SearchCategory>(
+  category: C
+): SearchResultsType<C> => {
+  const { query, category: ignoredCategory, ...filters } = useSearchParams()
+  const dispatch = useDispatch()
+
+  const currentUserId = useSelector(getUserId)
+  const { isEnabled: isUSDCEnabled } = useFeatureFlag(
+    FeatureFlags.USDC_PURCHASES
+  )
+  const { data, status } = useGetSearchResultsApi(
+    {
+      query: query || '',
+      ...filters,
+      category,
+      currentUserId,
+      limit: category === 'all' ? 12 : undefined,
+      includePurchaseable: isUSDCEnabled
+    },
+    { debounce: 500 }
+  )
+
+  if (category === 'all') {
+    if (status === Status.SUCCESS) {
+      // We need to populate the legacy search store so the tracks lineup
+      // can be populated
+      const results = {
+        users: data.users.map(({ user_id: id }) => id),
+        tracks: data.tracks.map(({ track_id: id }) => id),
+        albums: data.albums.map(({ playlist_id: id }) => id),
+        playlists: data.playlists.map(({ playlist_id: id }) => id)
+      }
+
+      dispatch(
+        fetchSearchPageResultsSucceeded({
+          results,
+          searchText: query ?? ''
+        })
+      )
+    }
+
+    return { data, status } as SearchResultsType<C>
+  } else {
+    return {
+      data: data?.[category as Exclude<C, 'all'>],
+      status
+    } as SearchResultsType<C>
+  }
+}
 
 export const useSearchParams = () => {
   const [urlSearchParams] = useParams()
