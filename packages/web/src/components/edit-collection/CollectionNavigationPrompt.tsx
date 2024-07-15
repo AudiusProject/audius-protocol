@@ -25,10 +25,10 @@ export const CollectionNavigationPrompt = (
   props: CollectionNavigationPromptProps
 ) => {
   const { isUpload } = props
-  const { dirty } = useFormikContext()
+  const { dirty, isSubmitting } = useFormikContext()
   return (
     <NavigationPrompt
-      when={dirty}
+      when={dirty && !isSubmitting}
       messages={
         isUpload
           ? messages.uploadNavigationPrompt
