@@ -6,6 +6,8 @@ import { ID } from '~/models/Identifiers'
 import { SearchKind } from '~/store'
 import { Genre, formatMusicalKey } from '~/utils'
 
+import { userApiActions } from './user'
+
 export type SearchCategory = 'all' | 'tracks' | 'albums' | 'playlists' | 'users'
 
 export type SearchFilters = {
@@ -56,7 +58,7 @@ const searchApi = createApi({
 
         const [bpmMin, bpmMax] = getMinMaxFromBpm(filters.bpm)
 
-        if (query?.[0] === '#') {
+        const searchTags = async () => {
           return await audiusBackend.searchTags({
             userTagCount: 1,
             kind,
@@ -68,7 +70,9 @@ const searchApi = createApi({
             bpmMax,
             key: formatMusicalKey(filters.key)
           })
-        } else {
+        }
+
+        const search = async () => {
           return await apiClient.getSearchFull({
             kind,
             currentUserId,
@@ -81,6 +85,24 @@ const searchApi = createApi({
             key: formatMusicalKey(filters.key)
           })
         }
+
+        const results = query?.[0] === '#' ? await searchTags() : await search()
+
+        const formattedResults = {
+          ...results,
+          tracks: results.tracks.map((track) => {
+            return {
+              ...track,
+              user: {
+                ...track.user,
+                user_id: track.owner_id
+              },
+              _cover_art_sizes: {}
+            }
+          })
+        }
+
+        return formattedResults
       },
       options: {}
     }

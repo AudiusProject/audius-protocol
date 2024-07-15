@@ -1,0 +1,272 @@
+import { useCallback, useState } from 'react'
+
+import { useFeatureFlag } from '@audius/common/hooks'
+import { Kind, Name, Status } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
+import {
+  lineupSelectors,
+  playerSelectors,
+  queueSelectors,
+  searchResultsPageSelectors,
+  searchResultsPageTracksLineupActions,
+  searchActions,
+  SearchKind
+} from '@audius/common/store'
+import { Flex, OptionsFilterButton, Text } from '@audius/harmony'
+import { css } from '@emotion/css'
+import { range } from 'lodash'
+import { useDispatch, useSelector } from 'react-redux'
+
+import { make } from 'common/store/analytics/actions'
+import Lineup from 'components/lineup/Lineup'
+import { LineupTileSkeleton } from 'components/lineup/LineupTileSkeleton'
+import { useIsMobile } from 'hooks/useIsMobile'
+import { useRouteMatch } from 'hooks/useRouteMatch'
+import { useMainContentRef } from 'pages/MainContentContext'
+import { SEARCH_PAGE } from 'utils/route'
+
+import { NoResultsTile } from '../NoResultsTile'
+import { CategoryView, ViewLayout, viewLayoutOptions } from '../types'
+import { useSearchParams, useUpdateSearchParams } from '../utils'
+
+const { makeGetLineupMetadatas } = lineupSelectors
+const { getBuffering, getPlaying } = playerSelectors
+const { getSearchTracksLineup } = searchResultsPageSelectors
+const { makeGetCurrent } = queueSelectors
+const { addItem: addRecentSearch } = searchActions
+
+const PAGE_WIDTH = 1080
+const HALF_TILE_WIDTH = (PAGE_WIDTH - 16) / 2
+
+const messages = {
+  tracks: 'Tracks',
+  layoutOptionsLabel: 'View As',
+  sortOptionsLabel: 'Sort By'
+}
+
+const getCurrentQueueItem = makeGetCurrent()
+const getSearchTracksLineupMetadatas = makeGetLineupMetadatas(
+  getSearchTracksLineup
+)
+
+// type SearchResultsApiType = ReturnType<typeof useGetSearchResultsApi>
+
+// type SearchResultsType<C extends SearchCategory> = {
+//   status: SearchResultsApiType['status']
+//   data: C extends 'all'
+//     ? SearchResultsApiType['data']
+//     : SearchResultsApiType['data'][Exclude<C, 'all'>]
+// }
+
+// export const useGetSearchResults = <C extends SearchCategory>(
+//   category: C
+// ): SearchResultsType<C> => {
+//   const { query, category: ignoredCategory, ...filters } = useSearchParams()
+
+//   const currentUserId = useSelector(getUserId)
+//   const { isEnabled: isUSDCEnabled } = useFeatureFlag(
+//     FeatureFlags.USDC_PURCHASES
+//   )
+//   const { data, status } = useGetSearchResultsApi(
+//     {
+//       query: query || '',
+//       ...filters,
+//       category,
+//       currentUserId,
+//       limit: category === 'all' ? 5 : undefined,
+//       includePurchaseable: isUSDCEnabled
+//     },
+//     { debounce: 500 }
+//   )
+
+//   if (category === 'all') {
+//     return { data, status } as SearchResultsType<C>
+//   } else {
+//     return {
+//       data: data?.[category as Exclude<C, 'all'>],
+//       status
+//     } as SearchResultsType<C>
+//   }
+// }
+
+type TrackResultsProps = {
+  loadMore: (offset: number, limit: number, overwrite: boolean) => void
+}
+
+const TrackResults = (props: TrackResultsProps) => {
+  const { loadMore } = props
+  const mainContentRef = useMainContentRef()
+
+  const dispatch = useDispatch()
+  const [tracksLayout, setTracksLayout] = useState<ViewLayout>('list')
+  const currentQueueItem = useSelector(getCurrentQueueItem)
+  const playing = useSelector(getPlaying)
+  const buffering = useSelector(getBuffering)
+  const routeMatch = useRouteMatch<{ category: string }>(SEARCH_PAGE)
+  const isCategoryActive = useCallback(
+    (category: CategoryView) => routeMatch?.category === category,
+    [routeMatch]
+  )
+
+  const isTrackGridLayout =
+    !isCategoryActive(CategoryView.TRACKS) || tracksLayout === 'grid'
+
+  const lineup = useSelector(getSearchTracksLineupMetadatas)
+  const isLoading = lineup.status === Status.LOADING
+
+  const searchParams = useSearchParams()
+  const handleClickTrackTile = useCallback(
+    (id?: number) => {
+      if (id) {
+        dispatch(
+          addRecentSearch({
+            searchItem: {
+              kind: Kind.TRACKS,
+              id
+            }
+          })
+        )
+      }
+      dispatch(
+        make(Name.SEARCH_RESULT_SELECT, {
+          searchText: searchParams.query,
+          kind: 'track',
+          id,
+          source: 'search results page'
+        })
+      )
+    },
+    [dispatch, searchParams]
+  )
+
+  if (
+    (!lineup || lineup.entries.length === 0) &&
+    lineup.status === Status.SUCCESS
+  ) {
+    return <NoResultsTile />
+  }
+
+  return (
+    <Flex gap='l'>
+      {!isLoading ? (
+        <Lineup
+          loadMore={loadMore}
+          scrollParent={mainContentRef.current}
+          lineupContainerStyles={css({ width: '100%' })}
+          tileContainerStyles={css({
+            display: 'grid',
+            gridTemplateColumns: isTrackGridLayout ? '1fr 1fr' : '1fr',
+            gap: '4px 16px',
+            justifyContent: 'space-between'
+          })}
+          tileStyles={css({
+            maxWidth: isTrackGridLayout ? HALF_TILE_WIDTH : PAGE_WIDTH
+          })}
+          key='searchTracks'
+          lineup={lineup}
+          playingSource={currentQueueItem.source}
+          playingUid={currentQueueItem.uid}
+          playingTrackId={
+            currentQueueItem.track && currentQueueItem.track.track_id
+          }
+          playing={playing}
+          buffering={buffering}
+          playTrack={(uid, trackId) => {
+            handleClickTrackTile(trackId)
+            dispatch(searchResultsPageTracksLineupActions.play(uid))
+          }}
+          pauseTrack={() =>
+            dispatch(searchResultsPageTracksLineupActions.pause())
+          }
+          actions={searchResultsPageTracksLineupActions}
+          onClickTile={handleClickTrackTile}
+        />
+      ) : (
+        <Flex direction='column' gap='l' w='100%'>
+          {range(5).map((_, i) => (
+            <LineupTileSkeleton key={`lineup-tile-skeleton-${i}`} />
+          ))}
+        </Flex>
+      )}
+    </Flex>
+  )
+}
+
+export const TrackResultsPage = () => {
+  const isMobile = useIsMobile()
+  const dispatch = useDispatch()
+  const [tracksLayout, setTracksLayout] = useState<ViewLayout>('list')
+  const updateSortParam = useUpdateSearchParams('sortMethod')
+  const routeMatch = useRouteMatch<{ category: string }>(SEARCH_PAGE)
+
+  const { isEnabled: isUSDCEnabled } = useFeatureFlag(
+    FeatureFlags.USDC_PURCHASES
+  )
+
+  const searchParams = useSearchParams()
+  const { sortMethod } = searchParams
+
+  const getResults = useCallback(
+    (offset: number, limit: number, overwrite: boolean) => {
+      const { query, ...filters } = searchParams
+
+      dispatch(
+        searchResultsPageTracksLineupActions.fetchLineupMetadatas(
+          offset,
+          limit,
+          overwrite,
+          {
+            category: SearchKind.TRACKS,
+            query,
+            filters,
+            includePurchaseable: isUSDCEnabled,
+            dispatch
+          }
+        )
+      )
+    },
+    [dispatch, searchParams, isUSDCEnabled]
+  )
+
+  const loadMore = useCallback(
+    (offset: number, limit: number) => {
+      getResults(offset, limit, false)
+    },
+    [getResults]
+  )
+
+  return (
+    <Flex direction='column' gap='xl' wrap='wrap'>
+      {!isMobile ? (
+        <Flex justifyContent='space-between' alignItems='center'>
+          <Text variant='heading' textAlign='left'>
+            {messages.tracks}
+          </Text>
+          <Flex gap='s'>
+            <OptionsFilterButton
+              selection={sortMethod ?? 'relevant'}
+              variant='replaceLabel'
+              optionsLabel={messages.sortOptionsLabel}
+              onChange={updateSortParam}
+              options={[
+                { label: 'Most Relevant', value: 'relevant' },
+                { label: 'Most Popular', value: 'popular' },
+                { label: 'Most Recent', value: 'recent' }
+              ]}
+            />
+            <OptionsFilterButton
+              selection={tracksLayout}
+              variant='replaceLabel'
+              optionsLabel={messages.layoutOptionsLabel}
+              onChange={(value) => {
+                setTracksLayout(value as ViewLayout)
+              }}
+              options={viewLayoutOptions}
+            />
+          </Flex>
+        </Flex>
+      ) : null}
+      <TrackResults loadMore={loadMore} />
+    </Flex>
+  )
+}

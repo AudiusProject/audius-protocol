@@ -120,6 +120,7 @@ export const SearchPageV2 = () => {
     <PageComponent
       title={query ?? 'Search'}
       description={`Search results for ${query}`}
+      // TODO: does this handle the `all` category
       canonicalUrl={fullSearchResultsPageV2(
         category as SearchCategory,
         query ?? ''

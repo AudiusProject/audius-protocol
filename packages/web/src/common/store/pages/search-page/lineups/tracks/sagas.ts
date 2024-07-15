@@ -104,11 +104,9 @@ function* getSearchPageResultsTracks({
 
       // getTracks returns an unsorted map of ID to track metadata.
       // We sort this object by trackIds, which is returned sorted by discprov.
-      const [tracks, sortedIds] = yield* all([
-        select(getTracks, { ids: trackIds }),
-        select(getSearchResultsPageTracks)
-      ])
-      const sortedTracks = (sortedIds as number[]).map((id) => tracks[id])
+      const tracks = yield* select(getTracks, { ids: trackIds })
+
+      const sortedTracks = trackIds.map((id) => tracks[id])
       return sortedTracks as Track[]
     } catch (e) {
       console.error(e)

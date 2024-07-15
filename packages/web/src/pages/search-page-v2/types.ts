@@ -6,6 +6,7 @@ export const viewLayoutOptions: { label: string; value: ViewLayout }[] = [
   { label: 'List', value: 'list' }
 ]
 
+// TODO: replace with SearchKind
 export enum CategoryView {
   ALL = 'all',
   PROFILES = 'profiles',

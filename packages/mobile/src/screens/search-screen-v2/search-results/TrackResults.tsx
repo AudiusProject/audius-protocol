@@ -35,6 +35,7 @@ const getSearchTracksLineupMetadatas = makeGetLineupMetadatas(
 const { addItem: addRecentSearch } = searchActions
 
 export const TrackResults = () => {
+  // TODO: why did I need this again?
   const { status } = useGetSearchResults('tracks')
   const [query] = useSearchQuery()
   const [filters] = useSearchFilters()

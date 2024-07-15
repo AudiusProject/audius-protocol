@@ -1,5 +1,59 @@
-import { Mood } from '@audius/sdk'
-import { useSearchParams } from 'react-router-dom-v5-compat'
+import { useMemo } from 'react'
+
+import { SearchSortMethod } from '@audius/common/store'
+import { Genre, Mood } from '@audius/sdk'
+import { useRouteMatch } from 'react-router-dom'
+import { useSearchParams as useParams } from 'react-router-dom-v5-compat'
+
+import { SEARCH_PAGE } from 'utils/route'
+
+import { CategoryView } from './types'
+
+export const useSearchParams = () => {
+  const [urlSearchParams] = useParams()
+
+  // TODO: maybe useParams?
+  const routeMatch = useRouteMatch<{ category: string }>(SEARCH_PAGE)
+  const category =
+    (routeMatch?.params.category as CategoryView) || CategoryView.ALL
+  const query = urlSearchParams.get('query')
+  const sortMethod = urlSearchParams.get('sortMethod') as SearchSortMethod
+  const genre = urlSearchParams.get('genre')
+  const mood = urlSearchParams.get('mood')
+  const bpm = urlSearchParams.get('bpm')
+  const key = urlSearchParams.get('key')
+  const isVerified = urlSearchParams.get('isVerified')
+  const hasDownloads = urlSearchParams.get('hasDownloads')
+  const isPremium = urlSearchParams.get('isPremium')
+
+  const searchParams = useMemo(
+    () => ({
+      query,
+      category,
+      genre: (genre || undefined) as Genre,
+      mood: (mood || undefined) as Mood,
+      bpm: bpm || undefined,
+      key: key || undefined,
+      isVerified: isVerified === 'true',
+      hasDownloads: hasDownloads === 'true',
+      isPremium: isPremium === 'true',
+      sortMethod: sortMethod || undefined
+    }),
+    [
+      query,
+      category,
+      genre,
+      mood,
+      bpm,
+      key,
+      isVerified,
+      hasDownloads,
+      isPremium,
+      sortMethod
+    ]
+  )
+  return searchParams
+}
 
 const urlSearchParamsToObject = (
   searchParams: URLSearchParams
@@ -13,7 +67,7 @@ const urlSearchParamsToObject = (
   )
 
 export const useUpdateSearchParams = (key: string) => {
-  const [searchParams, setUrlSearchParams] = useSearchParams()
+  const [searchParams, setUrlSearchParams] = useParams()
   return (value: string) => {
     if (value) {
       // TODO: This is causing an amplitude page view every time
