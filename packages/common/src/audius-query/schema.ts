@@ -31,7 +31,6 @@ export const userManagerSchema = new schema.Object({
 })
 
 export const schemas = {
-  currentWeb3User: userSchema,
   managedUsers: new schema.Array(managedUserSchema),
   user: userSchema,
   userManagers: new schema.Array(userManagerSchema),
