@@ -49,6 +49,8 @@ const accountApi = createApi({
       },
       options: {
         type: 'query',
+        // Note that this schema key is used to prevent caching of the
+        // web3 user as it does not match the standard user schema.
         schemaKey: 'currentWeb3User'
       }
     },
