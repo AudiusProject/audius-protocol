@@ -71,6 +71,13 @@ jobs:
         branches:
           only: main
   - push-docker-image:
+      name: push-pedalboard-verified-notifications
+      context: [Vercel, dockerhub]
+      service: verified-notifications
+      filters:
+        branches:
+          only: as/proto-1781-verified-notifs-ci
+  - push-docker-image:
       name: push-comms
       context: [Vercel, dockerhub]
       service: comms
@@ -218,6 +225,16 @@ jobs:
           only: main
       requires:
         - push-pedalboard-mri
+
+  - push-arm-image:
+      name: push-pedalboard-verified-notifications-arm
+      context: [Vercel, dockerhub]
+      service: verified-notifications
+      filters:
+        branches:
+          only: main
+      requires:
+        - push-pedalboard-verified-notifications
 
   - push-arm-image:
       name: push-comms-arm
