@@ -8,11 +8,11 @@ import {
   Modal,
   ModalContent,
   ModalHeader,
-  ModalTitle,
   ModalFooter,
   Button,
   Text,
-  Flex
+  Flex,
+  IconRocket
 } from '@audius/harmony'
 
 import { useModalState } from 'common/hooks/useModalState'
@@ -21,24 +21,36 @@ import { useSelector } from 'common/hooks/useSelector'
 const { getType, getConfirmCallback, getCancelCallback } =
   editAccessConfirmationModalUISelectors
 
-const messages = {
-  title: 'Confirm Update',
-  description: (type: EditAccessType) => {
-    return type === 'visibility'
-      ? ''
-      : "You're about to change the audience for your content.  This update may cause others to lose the ability to listen and share."
-  },
+const getMessages = (type: EditAccessType | null) => ({
+  title:
+    type === 'audience' || type === 'hidden'
+      ? 'Confirm Update'
+      : type === 'early_release'
+      ? 'Confirm Early Release'
+      : 'Confirm Release',
+  description:
+    type === 'audience'
+      ? "You're about to change the audience for your content.  This update may cause others to lose the ability to listen and share."
+      : type === 'hidden'
+      ? "You're about to make your content hidden.  This update may cause others to lose the ability to listen and share."
+      : type === 'early_release'
+      ? 'Do you want to release your track now? Your followers will be notified.'
+      : 'Are you sure you want to make this track public? Your followers will be notified.',
   cancel: 'Cancel',
-  upload: (type: EditAccessType) => {
-    return type === 'visibility' ? 'Change Visibility' : 'Update Audience'
-  }
-}
+  upload:
+    type === 'audience'
+      ? 'Update Audience'
+      : type === 'release' || type === 'early_release'
+      ? 'Release Now'
+      : 'Hide Track'
+})
 
 export const EditAccessConfirmationModal = () => {
   const type = useSelector(getType)
   const confirmCallback = useSelector(getConfirmCallback)
   const cancelCallback = useSelector(getCancelCallback)
   const [isOpen, setIsOpen] = useModalState('EditAccessConfirmation')
+  const messages = getMessages(type)
 
   const onClose = useCallback(() => {
     setIsOpen(false)
@@ -59,12 +71,19 @@ export const EditAccessConfirmationModal = () => {
   return (
     <Modal isOpen={isOpen} onClose={onClose} size='small'>
       <ModalHeader>
-        <ModalTitle title={messages.title} />
+        <Flex alignSelf='center' gap='s'>
+          {type === 'release' || type === 'early_release' ? (
+            <IconRocket color='default' size='l' />
+          ) : null}
+          <Text variant='label' size='xl' strength='strong'>
+            {messages.title}
+          </Text>
+        </Flex>
       </ModalHeader>
       <ModalContent>
         <Flex justifyContent='center'>
           <Text variant='body' size='l' textAlign='center'>
-            {messages.description(type)}
+            {messages.description}
           </Text>
         </Flex>
       </ModalContent>
@@ -73,7 +92,7 @@ export const EditAccessConfirmationModal = () => {
           {messages.cancel}
         </Button>
         <Button variant='primary' fullWidth onClick={handleConfirm}>
-          {messages.upload(type)}
+          {messages.upload}
         </Button>
       </ModalFooter>
     </Modal>

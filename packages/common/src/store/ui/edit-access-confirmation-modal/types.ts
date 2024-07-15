@@ -1,6 +1,6 @@
 import { Nullable } from '~/utils'
 
-export type EditAccessType = 'visibility' | 'audience'
+export type EditAccessType = 'audience' | 'release' | 'early_release' | 'hidden'
 
 export type EditAccessConfirmationState = {
   type: Nullable<EditAccessType>
