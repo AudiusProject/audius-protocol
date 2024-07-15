@@ -1,6 +1,7 @@
 type FingerprintClientConfig<TFingerprintClient> = {
   apiKey: string
   endpoint: string
+  identityService: string
   initFingerprint: (
     apiKey: string,
     endpoint: string
@@ -15,6 +16,7 @@ export class FingerprintClient<TFingerprintClient> {
   private apiKey: string
   private fingerprint: TFingerprintClient | null
   private endpoint: string
+  private identityService: string
   private initFingerprint: (
     apiKey: string,
     endpoint: string
@@ -29,12 +31,14 @@ export class FingerprintClient<TFingerprintClient> {
     const {
       apiKey,
       endpoint,
+      identityService,
       initFingerprint,
       getFingerprint
     } = config
     this.apiKey = apiKey
     this.fingerprint = null
     this.endpoint = endpoint
+    this.identityService = identityService
     this.initFingerprint = initFingerprint
     this.getFingerprint = getFingerprint
   }
