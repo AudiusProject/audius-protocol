@@ -62,7 +62,7 @@ export const readConfig = (): Config => {
     audius_mri_udr_external_endpoint: str({ default: 'http://localhost:4566' }),
     audius_mri_udr_external_access_key_id: str({ default: 'test' }),
     audius_mri_udr_external_secret_access_key: str({ default: 'test' }),
-    audius_mri_udr_external_bucket: str({ default: 'audius-clm-data' }),
+    audius_mri_udr_external_bucket: str({ default: 'audius-udr-data' }),
     audius_mri_udr_external_key_prefix: str({ default: 'Audius_UDR_' })
   })
 
