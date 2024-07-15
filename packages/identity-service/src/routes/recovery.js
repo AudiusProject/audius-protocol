@@ -101,19 +101,19 @@ module.exports = function (app) {
         from: 'Audius Recovery <recovery@audius.co>',
         to: `${email}`,
         subject: 'Save This Email: Audius Password Recovery',
-        html: recoveryHtml,
-        asm: {
-          groupId: 26666 // same group as otp, exempt from unsubscribing
-        }
+        html: recoveryHtml
       }
       try {
         await sg.send(emailParams)
-        await models.UserEvents.update(
-          { needsRecoveryEmail: false },
+        await models.UserEvents.upsert(
           {
-            where: {
-              walletAddress: walletFromSignature
-            }
+            walletAddress: walletFromSignature,
+            needsRecoveryEmail: false,
+            createdAt: new Date(),
+            updatedAt: new Date()
+          },
+          {
+            where: { walletAddress: walletFromSignature }
           }
         )
         return successResponse({ status: true })

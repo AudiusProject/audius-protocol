@@ -46,7 +46,6 @@ export const OverflowMenuButton = (props: OverflowMenuButtonProps) => {
     type: 'track' as const,
     mount: 'page',
     includeEdit,
-    includeShare: true,
     extraMenuItems: onRemove ? [removeMenuItem] : []
   }
 

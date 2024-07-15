@@ -13,6 +13,7 @@ const { getWelcomeEmail } = require('../notifications/emails/welcome')
 require('@audius/sdk')
 const axios = require('axios')
 const audiusLibsWrapper = require('../audiusLibsInstance')
+const config = require('../config.js')
 
 module.exports = function (app) {
   /**
@@ -101,6 +102,19 @@ module.exports = function (app) {
             }
           }
         )
+        if (config.get('environment') === 'production') {
+          // Add email to SendGrid contacts
+          const sgClient = req.app.get('sendgridClient')
+          const addContactRequest = {
+            method: 'PUT',
+            url: '/v3/marketing/contacts',
+            body: {
+              contacts: [{ email: existingUser.email }]
+            }
+          }
+
+          await sgClient.request(addContactRequest)
+        }
 
         return successResponse({ status: true })
       } catch (e) {

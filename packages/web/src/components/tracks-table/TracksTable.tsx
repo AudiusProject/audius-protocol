@@ -385,11 +385,13 @@ export const TracksTable = ({
       const track = cellInfo.row.original
       const {
         stream_conditions: streamConditions,
-        is_stream_gated: isStreamGated
+        is_stream_gated: isStreamGated,
+        is_unlisted: isUnlisted
       } = track
       const { isFetchingNFTAccess, hasStreamAccess } = trackAccessMap[
         track.track_id
       ] ?? { isFetchingNFTAccess: false, hasStreamAccess: true }
+      const isOwner = track.owner_id === userId
       const isLocked = !isFetchingNFTAccess && !hasStreamAccess
       const isDdex = !!track.ddex_app
       const deleted =
@@ -418,13 +420,13 @@ export const TracksTable = ({
         className: styles.tableActionButton,
         isDeleted: deleted,
         includeAlbumPage: !isAlbumPage,
-        includeFavorite: !isLocked && !track.is_unlisted,
+        includeFavorite: !isLocked && !isUnlisted,
         handle: track.handle,
         trackId: track.track_id,
         uid: track.uid,
         date: track.date,
         isFavorited: track.has_current_user_saved,
-        isOwner: track.owner_id === userId,
+        isOwner,
         isOwnerDeactivated: !!track.user?.is_deactivated,
         isArtistPick: track.user?.artist_pick_track_id === track.track_id,
         index: cellInfo.row.index,
@@ -438,10 +440,14 @@ export const TracksTable = ({
             includeAddToAlbum: false
           }
         : {
+            includeShare: !isUnlisted || isOwner,
+            includeEmbed: !isUnlisted,
             includeEdit: !disabledTrackEdit,
             includeAddToPlaylist:
-              !isStreamGated ||
-              (isContentUSDCPurchaseGated(streamConditions) && hasStreamAccess),
+              !isUnlisted &&
+              (!isStreamGated ||
+                (isContentUSDCPurchaseGated(streamConditions) &&
+                  hasStreamAccess)),
             onRemove: onClickRemove,
             removeText
           }

@@ -649,7 +649,7 @@ export const email = ({
   <td width="552" align="center" style="vertical-align: middle;  ">
   <table class="table-w-full-mobile" width="100%" border="0" cellpadding="0" cellspacing="0">
   <tr>
-  <td style="vertical-align: middle;" width="156" class="stack-column-center" align="center"><a href="https://audius.co/audio"><img src="https://download.audius.co/emails/buyer-purchase/guB0eiO4uponvKRUonMnRIFuICSoqM.png" width="156" border="0" style="min-width:156px; width:156px;
+  <td style="vertical-align: middle;" width="156" class="stack-column-center" align="center"><a href="https://audius.co/audio"><img src="https://download.audius.co/emails/buyer-purchase/1MA5IDkoWCTLRQCQD0vMGCkeg4zaKa.png" width="156" border="0" style="min-width:156px; width:156px;
           border-radius:8px; height: auto; display: block;"></a></td>
   <td class="stack-column-center" height="16" style="width:16px; min-width:16px; height:16px; min-height:16px;" width="16"></td>
   <td style="vertical-align: middle;" align="center" class="stack-column-center">

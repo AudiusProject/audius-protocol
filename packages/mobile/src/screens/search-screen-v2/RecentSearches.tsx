@@ -2,26 +2,26 @@ import type { ReactNode } from 'react'
 import { useCallback, useMemo } from 'react'
 
 import { recentSearchMessages as messages } from '@audius/common/messages'
-import { searchActions, searchSelectors } from '@audius/common/store'
-import { useDispatch, useSelector } from 'react-redux'
+import type { SearchItem as SearchItemType } from '@audius/common/store'
+import { searchActions } from '@audius/common/store'
+import { useDispatch } from 'react-redux'
 
-import { Button, Flex, IconClose, Text } from '@audius/harmony-native'
+import { Button, Flex, IconCloseAlt, Text } from '@audius/harmony-native'
 import { FlatList } from 'app/components/core'
 
 import { SearchItem } from './SearchItem'
 
-const { getV2SearchHistory } = searchSelectors
 const { removeItem, clearHistory } = searchActions
 
 const MAX_RECENT_SEARCHES = 12
 
 type RecentSearchesProps = {
   ListHeaderComponent?: ReactNode
+  searchItems?: SearchItemType[]
 }
 
 export const RecentSearches = (props: RecentSearchesProps) => {
-  const { ListHeaderComponent } = props
-  const history = useSelector(getV2SearchHistory)
+  const { ListHeaderComponent, searchItems = [] } = props
   const dispatch = useDispatch()
 
   const handleClearSearchHistory = useCallback(() => {
@@ -29,8 +29,8 @@ export const RecentSearches = (props: RecentSearchesProps) => {
   }, [dispatch])
 
   const truncatedSearchItems = useMemo(
-    () => history.slice(0, MAX_RECENT_SEARCHES),
-    [history]
+    () => searchItems.slice(0, MAX_RECENT_SEARCHES),
+    [searchItems]
   )
 
   if (truncatedSearchItems.length === 0) return null
@@ -50,7 +50,7 @@ export const RecentSearches = (props: RecentSearchesProps) => {
       renderItem={({ item }) => (
         <SearchItem
           searchItem={item}
-          icon={IconClose}
+          icon={IconCloseAlt}
           onPressIcon={() => dispatch(removeItem({ searchItem: item }))}
         />
       )}

@@ -89,10 +89,7 @@ const sendOtp = async ({ email, redis, sendgrid }) => {
     from: 'The Audius Team <team@audius.co>',
     to: email,
     subject: 'Your Audius Verification Code',
-    html,
-    asm: {
-      groupId: 26666 // group exempt from unsubscribing
-    }
+    html
   }
 
   await redis.set(

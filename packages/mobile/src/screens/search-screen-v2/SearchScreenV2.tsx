@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import type {
   SearchCategory,
   SearchFilters as SearchFiltersType
 } from '@audius/common/api'
+import { Kind } from '@audius/common/models'
 import { searchSelectors } from '@audius/common/store'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import { useSelector } from 'react-redux'
@@ -35,18 +36,33 @@ import {
 const { getV2SearchHistory } = searchSelectors
 const Stack = createNativeStackNavigator()
 
+const itemKindByCategory: Record<SearchCategory, Kind | null> = {
+  all: null,
+  users: Kind.USERS,
+  tracks: Kind.TRACKS,
+  playlists: Kind.COLLECTIONS,
+  albums: Kind.COLLECTIONS
+}
+
 export const SearchScreenV2 = () => {
   const [query] = useSearchQuery()
   const [category] = useSearchCategory()
   const [filters] = useSearchFilters()
-
   const history = useSelector(getV2SearchHistory)
-  const showRecentSearches = history.length > 0
+  const categoryKind: Kind | null = category
+    ? itemKindByCategory[category]
+    : null
+
+  const filteredSearchItems = useMemo(() => {
+    return categoryKind
+      ? history.filter((item) => item.kind === categoryKind)
+      : history
+  }, [categoryKind, history])
+
+  const showRecentSearches = filteredSearchItems.length > 0
 
   const showSearchResults =
-    query ||
-    category !== 'all' ||
-    Object.values(filters).some((filter) => filter)
+    query || Object.values(filters).some((filter) => filter)
 
   return (
     <Screen topbarRight={<SearchBarV2 />} headerTitle={null} variant='white'>
@@ -55,7 +71,10 @@ export const SearchScreenV2 = () => {
         {!showSearchResults ? (
           <Flex direction='column' alignItems='center' gap='xl'>
             {showRecentSearches ? (
-              <RecentSearches ListHeaderComponent={<SearchCatalogTile />} />
+              <RecentSearches
+                ListHeaderComponent={<SearchCatalogTile />}
+                searchItems={filteredSearchItems}
+              />
             ) : (
               <SearchCatalogTile />
             )}

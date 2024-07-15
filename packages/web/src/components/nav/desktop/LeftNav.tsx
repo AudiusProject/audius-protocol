@@ -11,9 +11,8 @@ import {
   collectionsSocialActions,
   tracksSocialActions
 } from '@audius/common/store'
-import { Scrollbar } from '@audius/harmony'
+import { Box, Flex, Scrollbar } from '@audius/harmony'
 import { ResizeObserver } from '@juggle/resize-observer'
-import cn from 'classnames'
 import { connect } from 'react-redux'
 import { RouteComponentProps, withRouter } from 'react-router-dom'
 import useMeasure from 'react-use-measure'
@@ -36,9 +35,9 @@ import {
 import { AccountDetails } from './AccountDetails'
 import { ConnectInstagram } from './ConnectInstagram'
 import { GroupHeader } from './GroupHeader'
-import styles from './LeftNav.module.css'
 import { LeftNavCTA } from './LeftNavCTA'
-import { LeftNavDroppable, LeftNavLink } from './LeftNavLink'
+import { LeftNavDroppable } from './LeftNavDroppable'
+import { LeftNavLink } from './LeftNavLink'
 import { NavHeader } from './NavHeader'
 import { NowPlayingArtworkTile } from './NowPlayingArtworkTile'
 import { PlaylistLibrary } from './PlaylistLibrary'
@@ -115,26 +114,47 @@ const LeftNav = (props: NavColumnProps) => {
   }, [])
 
   const profileCompletionMeter = (
-    <div className={styles.profileCompletionContainer}>
+    <Flex justifyContent='center'>
       <ConnectedProfileCompletionPane />
-    </div>
+    </Flex>
   )
 
   const navLoaded =
     accountStatus === Status.SUCCESS || accountStatus === Status.ERROR
 
   return (
-    <nav id='leftNav' className={styles.leftNav}>
+    <Flex
+      backgroundColor='surface1'
+      borderRight='default'
+      as='nav'
+      id='leftNav'
+      direction='column'
+      h='100%'
+      w='100%'
+      css={{
+        userSelect: 'none',
+        overflow: 'visible'
+      }}
+    >
       {isElectron ? <RouteNav /> : null}
       <NavHeader />
 
-      <div
+      <Flex
+        direction='column'
+        w='100%'
+        flex={1}
         ref={navBodyContainerMeasureRef}
-        className={cn(styles.leftNavContent, {
-          [styles.show]: navLoaded,
-          [styles.dragScrollingUp]: dragScrollingDirection === 'up',
-          [styles.dragScrollingDown]: dragScrollingDirection === 'down'
-        })}
+        css={{
+          boxShadow:
+            dragScrollingDirection === 'up'
+              ? 'inset 0px 8px 5px -5px var(--tile-shadow-3)'
+              : dragScrollingDirection === 'down'
+              ? 'inset 0px -8px 5px -5px var(--tile-shadow-3)'
+              : undefined,
+          opacity: navLoaded ? 1 : 0,
+          overflow: 'hidden',
+          transition: 'opacity 0.3s ease-in-out, box-shadow 0.2s ease'
+        }}
       >
         <Scrollbar
           containerRef={(el: HTMLElement) => {
@@ -148,18 +168,23 @@ const LeftNav = (props: NavColumnProps) => {
           >
             <AccountDetails />
 
-            <div className={styles.links}>
+            <Flex
+              direction='column'
+              gap='unit5'
+              flex='1 1 auto'
+              css={{ overflow: 'hidden' }}
+            >
               {account?.handle === 'fbtest' ? (
-                <div className={styles.linkGroup}>
+                <Box>
                   <LeftNavLink to={'/fb/share'}>
                     Share Profile to Facebook
                   </LeftNavLink>
                   <LeftNavLink>
                     <ConnectInstagram />
                   </LeftNavLink>
-                </div>
+                </Box>
               ) : null}
-              <div className={styles.linkGroup}>
+              <Box>
                 <GroupHeader>{messages.discover}</GroupHeader>
                 <LeftNavLink
                   to={FEED_PAGE}
@@ -172,8 +197,8 @@ const LeftNav = (props: NavColumnProps) => {
                 <LeftNavLink to={EXPLORE_PAGE} exact>
                   Explore
                 </LeftNavLink>
-              </div>
-              <div className={styles.linkGroup}>
+              </Box>
+              <Box>
                 <GroupHeader>{messages.library}</GroupHeader>
                 <LeftNavDroppable
                   disabled={!account}
@@ -195,20 +220,20 @@ const LeftNav = (props: NavColumnProps) => {
                 >
                   History
                 </LeftNavLink>
-              </div>
-              <div className={styles.linkGroup}>
+              </Box>
+              <Box>
                 <PlaylistLibrary scrollbarRef={scrollbarRef} />
-              </div>
-            </div>
+              </Box>
+            </Flex>
           </DragAutoscroller>
         </Scrollbar>
-      </div>
-      <div className={styles.navAnchor}>
+      </Flex>
+      <Flex direction='column' alignItems='center' pt='l' borderTop='default'>
         {profileCompletionMeter}
         <LeftNavCTA />
         <NowPlayingArtworkTile />
-      </div>
-    </nav>
+      </Flex>
+    </Flex>
   )
 }
 

@@ -54,7 +54,7 @@ export const udr = async (
     'time range'
   )
 
-  const udrRows: UsageDetailReporting[] = await db.raw(
+  const queryResult = await db.raw(
     `
       with play_counts as (
         select
@@ -87,6 +87,7 @@ export const udr = async (
     { start, end, reportingPeriod }
   )
 
+  const udrRows: UsageDetailReporting[] = queryResult.rows
   const csv = toCsvString(udrRows)
   if (isDev) {
     logger.info(csv)

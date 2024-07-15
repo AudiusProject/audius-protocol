@@ -9,7 +9,7 @@ description: Audius Protocol Documentation
 An Audius Discovery Node is a service that indexes the metadata and availability of data across the
 protocol for Audius users to query. The indexed content includes user, track, and album/playlist
 information along with social features. The data is stored for quick access, updated on a regular
-interval, and made available for clients via a [RESTful API](/developers/guides/rest-api).
+interval, and made available for clients via a [RESTful API](/api).
 
 The Discovery Node source code is hosted on
 [GitHub](https://github.com/AudiusProject/audius-docker-compose/tree/main/discovery-provider) and
@@ -137,9 +137,9 @@ A [Redis client](https://redis.io/) is used for several things in the Discovery 
 
 ## Elastic Search
 
-Elastic Search is used to denormalize data and supports certain queries (Feed, Search, Related Artists,
-etc.). Elastic Search data is populated and kept up to date by database triggers that live on the
-Postgres database.
+Elastic Search is used to denormalize data and supports certain queries (Feed, Search, Related
+Artists, etc.). Elastic Search data is populated and kept up to date by database triggers that live
+on the Postgres database.
 
 ETL code for the Elastic Search layer is found in the
 [es-indexer](https://github.com/AudiusProject/audius-protocol/tree/main/packages/discovery-provider/es-indexer).

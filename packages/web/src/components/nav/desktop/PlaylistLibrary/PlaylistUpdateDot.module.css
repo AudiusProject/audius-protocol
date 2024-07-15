@@ -1,4 +1,0 @@
-.root {
-  position: absolute;
-  left: calc(var(--harmony-unit-3) * -1);
-}

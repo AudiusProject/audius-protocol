@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 
 import { useStateDebounced } from '@audius/common/hooks'
 import {
+  Box,
   Button,
   Divider,
   FilterButton,
@@ -21,6 +22,10 @@ import { useUpdateSearchParams } from './utils'
 
 const MIN_BPM = 1
 const MAX_BPM = 999
+
+const stripLeadingZeros = (string: string) => {
+  return Number(string).toString()
+}
 
 type BpmTargetType = 'exact' | 'range5' | 'range10'
 const targetOptions: { label: string; value: BpmTargetType }[] = [
@@ -155,31 +160,41 @@ const BpmRangeView = ({ handleChange }: ViewProps) => {
         ph='s'
         gap='xs'
         w={240}
-        alignItems='center'
+        alignItems='flex-start'
         // NOTE: Adds a little flexibility so the user doesn't close the popup by accident
         onClick={(e) => e.stopPropagation()}
       >
         <TextInput
           label={messages.minBpm}
           type='number'
+          maxLength={3}
           error={!!minError}
           helperText={minError}
           aria-errormessage={minError ?? undefined}
           placeholder={messages.minBpm}
           hideLabel
-          onChange={(e) => setMinBpm(e.target.value)}
+          onInput={(e) => {
+            const input = e.nativeEvent.target as HTMLInputElement
+            input.value = input.value.slice(0, input.maxLength)
+          }}
+          onChange={(e) => setMinBpm(stripLeadingZeros(e.target.value))}
           inputRootClassName={css({ height: '48px !important' })}
         />
-        -
+        <Box pv='l'>-</Box>
         <TextInput
           label={messages.maxBpm}
           type='number'
+          maxLength={3}
           error={!!maxError}
           helperText={maxError}
           aria-errormessage={maxError ?? undefined}
           placeholder={messages.maxBpm}
           hideLabel
-          onChange={(e) => setMaxBpm(e.target.value)}
+          onInput={(e) => {
+            const input = e.nativeEvent.target as HTMLInputElement
+            input.value = input.value.slice(0, input.maxLength)
+          }}
+          onChange={(e) => setMaxBpm(stripLeadingZeros(e.target.value))}
           inputRootClassName={css({ height: '48px !important' })}
         />
       </Flex>
@@ -247,12 +262,17 @@ const BpmTargetView = ({ handleChange }: ViewProps) => {
       <TextInput
         label={messages.bpm}
         type='number'
+        maxLength={3}
         error={!!error}
         helperText={error}
         aria-errormessage={error ?? undefined}
         placeholder={messages.bpm}
         hideLabel
-        onChange={(e) => setBpmTarget(e.target.value)}
+        onInput={(e) => {
+          const input = e.nativeEvent.target as HTMLInputElement
+          input.value = input.value.slice(0, input.maxLength)
+        }}
+        onChange={(e) => setBpmTarget(stripLeadingZeros(e.target.value))}
         inputRootClassName={css({ height: '48px !important' })}
       />
       <Flex justifyContent='center' alignItems='center' gap='xs'>

@@ -256,7 +256,7 @@ const getOtpEmail = ({ otp, copyrightYear }) => {
   </tr>
   <tr>
   <td style="vertical-align: middle;">
-  <div style="line-height:48px;text-align:left;"><span style="color:#7e1bcc;font-weight:600;font-family:Inter,Arial,sans-serif;font-size:43px;letter-spacing:-0.02em;line-height:48px;text-align:left;">${otp}</span></div>
+  <div style="text-align:left;"><span style="color:#7e1bcc;font-weight:600;font-family:Inter,Arial,sans-serif;font-size:43px;letter-spacing:-0.02em;line-height:48px;text-align:left;">${otp}</span></div>
   </td>
   </tr>
   <tr>

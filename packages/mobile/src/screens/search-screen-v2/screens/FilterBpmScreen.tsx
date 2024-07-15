@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { Button, Flex, Text, TextInput, useTheme } from '@audius/harmony-native'
-import { SegmentedControl } from 'app/components/core'
+import { KeyboardAvoidingView, SegmentedControl } from 'app/components/core'
 import { FormScreen } from 'app/screens/form-screen'
 import { SelectionItemList } from 'app/screens/list-selection-screen/SelectionItemList'
 
@@ -144,7 +144,7 @@ const BpmRangeView = ({ value, setValue }: ViewProps) => {
     let value = ''
 
     if (minBpm || maxBpm) {
-      value = `${minBpm || MIN_BPM}-${maxBpm || MAX_BPM}`
+      value = `${Number(minBpm || MIN_BPM)}-${Number(maxBpm || MAX_BPM)}`
     }
 
     onChange(value)
@@ -178,7 +178,10 @@ const BpmRangeView = ({ value, setValue }: ViewProps) => {
               helperText={minError}
               aria-errormessage={minError ?? undefined}
               placeholder={messages.minBpm}
-              onChangeText={setMinBpm}
+              onChangeText={(text) => {
+                const validated = text.match(/^(\d{0,3}$)/)
+                if (validated) setMinBpm(text)
+              }}
             />
             <Text style={{ alignSelf: 'flex-start', paddingVertical: 20 }}>
               -
@@ -192,7 +195,10 @@ const BpmRangeView = ({ value, setValue }: ViewProps) => {
               helperText={maxError}
               aria-errormessage={maxError ?? undefined}
               placeholder={messages.maxBpm}
-              onChangeText={setMaxBpm}
+              onChangeText={(text) => {
+                const validated = text.match(/^(\d{0,3}$)/)
+                if (validated) setMaxBpm(text)
+              }}
             />
           </>
         ) : null}
@@ -243,7 +249,8 @@ const BpmTargetView = ({ value, setValue }: ViewProps) => {
 
     if (bpmTarget) {
       if (bpmTargetType === 'exact') {
-        value = bpmTarget
+        // Strip leading 0's
+        value = Number(bpmTarget).toString()
       } else {
         const mod = bpmTargetType === 'range5' ? 5 : 10
         value = `${Math.max(Number(bpmTarget) - mod, MIN_BPM)}-${Math.min(
@@ -266,7 +273,10 @@ const BpmTargetView = ({ value, setValue }: ViewProps) => {
         aria-errormessage={error ?? undefined}
         placeholder={messages.bpm}
         value={bpmTarget}
-        onChangeText={setBpmTarget}
+        onChangeText={(text) => {
+          const validated = text.match(/^(\d{0,3}$)/)
+          if (validated) setBpmTarget(text)
+        }}
       />
       <Flex direction='row' gap='s'>
         {targetOptions.map((option) => (
@@ -314,19 +324,24 @@ export const FilterBpmScreen = () => {
       variant='white'
       clearable={Boolean(bpmValue)}
     >
-      <Flex p='l'>
-        <SegmentedControl
-          options={[
-            { key: 'range', text: messages.range },
-            { key: 'target', text: messages.target }
-          ]}
-          selected={bpmType}
-          onSelectOption={setBpmType}
-          fullWidth
-          equalWidth
-        />
-      </Flex>
-      <InputView value={bpmValue} setValue={setBpmValue} />
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        keyboardShowingOffset={bpmType === 'range' ? 160 : 337}
+      >
+        <Flex p='l'>
+          <SegmentedControl
+            options={[
+              { key: 'range', text: messages.range },
+              { key: 'target', text: messages.target }
+            ]}
+            selected={bpmType}
+            onSelectOption={setBpmType}
+            fullWidth
+            equalWidth
+          />
+        </Flex>
+        <InputView value={bpmValue} setValue={setBpmValue} />
+      </KeyboardAvoidingView>
     </FormScreen>
   )
 }

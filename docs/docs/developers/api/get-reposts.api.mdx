@@ -1,0 +1,212 @@
+---
+id: get-reposts
+title: 'Get Reposts'
+description: "Gets the given user's reposts"
+sidebar_label: 'Get Reposts'
+hide_title: true
+hide_table_of_contents: true
+api: eJytVcFu2zAM/RVBl7VDEbfDdsktw4ait6FrdxmKQrHpWK1taRQdLDD87yPlOHFSr+vWnSyJFN/jIym3GiF4VwcIet7qd+fn8skgpGg9WVfruf7apCmEoM906mqCmsTFeF/a1IhL8hDEr9UhLaAysvLoPCDZPmpmKJ7SxgPHM4hmw9EsQRWeepOtIJCp/OhKILT1Snf9pfv+dGd1ywdIabBOGNhyfDJ1xGfvpwT4aDKF8KNhWgLyYVIkwDWgAkSHEfDQfAkUFBWgVnYNtWoC4JvAQb0LJMqKAFHMq6z3Vtc7mzdoKiBAlud7q2vesI/NREKJ7Q0VvBaGFoHvEzZwTGChbhlTXX1iz32djuTtznbhXZ4HoAGCc0cp2WHMG86nbqolx3W5iuVU5FR4tH4mcHlTqtyh8mZl65idOuH17tJbVdrK0ukUJcudtgI84BS9/4lSDpQWL4WR4tzv5f09UNMrKkg0bCvzyFLG/dAyzwl+x21oVlLYCBs0H3CtCydtsIoFiOWd6yTak9ZmXbLvmxDbrm+MBkv2K4h8mCdJZkPq2Lbh6VrbDHBmmsw2YZa6ZH2hBdnWuesnjkphtfhyxSElXp/jxez8Sd6LGER9u1DizX0uTCoT53+r32H3Hlxv90/IH0diKxXBT0p8abgWjBZzbLeaDJqd6Xks13CXUyt4IQ5tuzQBbrHsOjnuaylisTxmWcq05KYMx+My5vkfu3wypUfYjOdtbcpGnLR05KtZDo3/DPIwVa8AfvEgPENjP3V7IneyQStM/rJoJ9fb1/BUjV++Sfzht1RvxuADL6bU3bFXAYaHKNLoDQv+K/qxcE9+id14mC8/3/C8/wJprYeg
+sidebar_class_name: 'get api-method'
+info_path: developers/api/api
+custom_edit_url: null
+---
+
+import ApiTabs from '@theme/ApiTabs'
+import DiscriminatorTabs from '@theme/DiscriminatorTabs'
+import MethodEndpoint from '@theme/ApiExplorer/MethodEndpoint'
+import SecuritySchemes from '@theme/ApiExplorer/SecuritySchemes'
+import MimeTabs from '@theme/MimeTabs'
+import ParamsItem from '@theme/ParamsItem'
+import ResponseSamples from '@theme/ResponseSamples'
+import SchemaItem from '@theme/SchemaItem'
+import SchemaTabs from '@theme/SchemaTabs'
+import Markdown from '@theme/Markdown'
+import Heading from '@theme/Heading'
+import OperationTabs from '@theme/OperationTabs'
+import TabItem from '@theme/TabItem'
+
+<Heading as={'h1'} className={'openapi__heading'} children={'Get Reposts'}></Heading>
+
+<MethodEndpoint method={'get'} path={'/users/{id}/reposts'}></MethodEndpoint>
+
+Gets the given user's reposts
+
+<Heading
+  id={'request'}
+  as={'h2'}
+  className={'openapi-tabs__heading'}
+  children={'Request'}
+></Heading>
+
+<details
+  style={{ marginBottom: '1rem' }}
+  className={'openapi-markdown__details'}
+  data-collapsed={false}
+  open={true}
+>
+  <summary style={{}}>
+    <h3 className={'openapi-markdown__details-summary-header-params'}>Path Parameters</h3>
+  </summary>
+  <div>
+    <ul>
+      <ParamsItem
+        className={'paramsItem'}
+        param={{
+          name: 'id',
+          in: 'path',
+          required: true,
+          description: 'A User ID',
+          schema: { type: 'string' },
+        }}
+      ></ParamsItem>
+    </ul>
+  </div>
+</details>
+<details
+  style={{ marginBottom: '1rem' }}
+  className={'openapi-markdown__details'}
+  data-collapsed={false}
+  open={true}
+>
+  <summary style={{}}>
+    <h3 className={'openapi-markdown__details-summary-header-params'}>Query Parameters</h3>
+  </summary>
+  <div>
+    <ul>
+      <ParamsItem
+        className={'paramsItem'}
+        param={{
+          name: 'offset',
+          in: 'query',
+          description: 'The number of items to skip. Useful for pagination (page number * limit)',
+          schema: { type: 'integer' },
+        }}
+      ></ParamsItem>
+      <ParamsItem
+        className={'paramsItem'}
+        param={{
+          name: 'limit',
+          in: 'query',
+          description: 'The number of items to fetch',
+          schema: { type: 'integer' },
+        }}
+      ></ParamsItem>
+      <ParamsItem
+        className={'paramsItem'}
+        param={{
+          name: 'user_id',
+          in: 'query',
+          description: 'The user ID of the user making the request',
+          schema: { type: 'string' },
+        }}
+      ></ParamsItem>
+    </ul>
+  </div>
+</details>
+<div>
+  <div>
+    <ApiTabs label={undefined} id={undefined}>
+      <TabItem label={'200'} value={'200'}>
+        <div>Success</div>
+        <div>
+          <MimeTabs className={'openapi-tabs__mime'} schemaType={'response'}>
+            <TabItem label={'application/json'} value={'application/json'}>
+              <SchemaTabs className={'openapi-tabs__schema'}>
+                <TabItem label={'Schema'} value={'Schema'}>
+                  <details
+                    style={{}}
+                    className={'openapi-markdown__details response'}
+                    data-collapsed={false}
+                    open={true}
+                  >
+                    <summary style={{}} className={'openapi-markdown__details-summary-response'}>
+                      <strong>Schema</strong>
+                    </summary>
+                    <div style={{ textAlign: 'left', marginLeft: '1rem' }}></div>
+                    <ul style={{ marginLeft: '1rem' }}>
+                      <SchemaItem collapsible={true} className={'schemaItem'}>
+                        <details style={{}} className={'openapi-markdown__details'}>
+                          <summary style={{}}>
+                            <span className={'openapi-schema__container'}>
+                              <strong className={'openapi-schema__property'}>data</strong>
+                              <span className={'openapi-schema__name'}>object[]</span>
+                            </span>
+                          </summary>
+                          <div style={{ marginLeft: '1rem' }}>
+                            <li>
+                              <div
+                                style={{
+                                  fontSize: 'var(--ifm-code-font-size)',
+                                  opacity: '0.6',
+                                  marginLeft: '-.5rem',
+                                  paddingBottom: '.5rem',
+                                }}
+                              >
+                                Array [
+                              </div>
+                            </li>
+                            <SchemaItem
+                              collapsible={false}
+                              name={'timestamp'}
+                              required={false}
+                              schemaName={'string'}
+                              qualifierMessage={undefined}
+                              schema={{ type: 'string' }}
+                            ></SchemaItem>
+                            <SchemaItem
+                              collapsible={false}
+                              name={'item_type'}
+                              required={false}
+                              schemaName={'object'}
+                              qualifierMessage={undefined}
+                              schema={{ type: 'object' }}
+                            ></SchemaItem>
+                            <SchemaItem
+                              collapsible={false}
+                              name={'item'}
+                              required={false}
+                              schemaName={'object'}
+                              qualifierMessage={undefined}
+                              schema={{ type: 'object' }}
+                            ></SchemaItem>
+                            <li>
+                              <div
+                                style={{
+                                  fontSize: 'var(--ifm-code-font-size)',
+                                  opacity: '0.6',
+                                  marginLeft: '-.5rem',
+                                }}
+                              >
+                                ]
+                              </div>
+                            </li>
+                          </div>
+                        </details>
+                      </SchemaItem>
+                    </ul>
+                  </details>
+                </TabItem>
+                <TabItem label={'Example'} value={'Example'}>
+                  <ResponseSamples
+                    responseExample={
+                      '{\n  "data": [\n    {\n      "timestamp": "string",\n      "item_type": {},\n      "item": {}\n    }\n  ]\n}'
+                    }
+                    language={'json'}
+                  ></ResponseSamples>
+                </TabItem>
+              </SchemaTabs>
+            </TabItem>
+          </MimeTabs>
+        </div>
+      </TabItem>
+      <TabItem label={'400'} value={'400'}>
+        <div>Bad request</div>
+        <div></div>
+      </TabItem>
+      <TabItem label={'500'} value={'500'}>
+        <div>Server error</div>
+        <div></div>
+      </TabItem>
+    </ApiTabs>
+  </div>
+</div>

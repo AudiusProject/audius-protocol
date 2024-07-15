@@ -167,8 +167,12 @@ const AdvancedFormSchema = z
 
 export type AdvancedFormValues = z.input<typeof AdvancedFormSchema>
 
-export type AdvancedFieldProps = { isHidden?: boolean }
-export const AdvancedField = () => {
+export type AdvancedFieldProps = {
+  isHidden?: boolean
+  isUpload?: boolean
+}
+
+export const AdvancedField = ({ isUpload }: AdvancedFieldProps) => {
   const [{ value: aiUserId }, , { setValue: setAiUserId }] =
     useTrackField<SingleTrackEditValues[typeof AI_USER_ID]>(AI_USER_ID)
   const [{ value: isrcValue }, , { setValue: setIsrc }] =
@@ -319,13 +323,13 @@ export const AdvancedField = () => {
       initialValues={initialValues}
       onSubmit={onSubmit}
       validationSchema={toFormikValidationSchema(AdvancedFormSchema)}
-      menuFields={<AdvancedModalFields />}
+      menuFields={<AdvancedModalFields isUpload={isUpload} />}
       renderValue={renderValue}
     />
   )
 }
 
-const AdvancedModalFields = () => {
+const AdvancedModalFields = ({ isUpload }: { isUpload?: boolean }) => {
   const [aiUserIdField, aiUserHelperFields, { setValue: setAiUserId }] =
     useField({
       name: AI_USER_ID,
@@ -468,33 +472,42 @@ const AdvancedModalFields = () => {
             </Flex>
           </>
         ) : null}
-        <Divider />
-        <span className={cn(layoutStyles.row, layoutStyles.gap6)}>
-          <Flex direction='column' w='100%'>
-            <Box mb='m'>
-              <Text variant='title' size='l' tag='h3'>
-                {messages.bpm.header}
-              </Text>
-            </Box>
+        {!isUpload ? (
+          <>
+            <Divider />
+            <span className={cn(layoutStyles.row, layoutStyles.gap6)}>
+              <Flex direction='column' w='100%'>
+                <Box mb='m'>
+                  <Text variant='title' size='l' tag='h3'>
+                    {messages.bpm.header}
+                  </Text>
+                </Box>
 
-            <TextField
-              name={BPM}
-              type='number'
-              label={messages.bpm.header}
-              placeholder={messages.bpm.label}
-              autoComplete='off'
-            />
-          </Flex>
-          <Flex direction='column' w='100%'>
-            <Box mb='m'>
-              <Text variant='title' size='l' tag='h3'>
-                Key
-              </Text>
-            </Box>
+                <TextField
+                  name={BPM}
+                  type='number'
+                  maxLength={3}
+                  onInput={(e) => {
+                    const input = e.nativeEvent.target as HTMLInputElement
+                    input.value = input.value.slice(0, input.maxLength)
+                  }}
+                  label={messages.bpm.header}
+                  placeholder={messages.bpm.label}
+                  autoComplete='off'
+                />
+              </Flex>
+              <Flex direction='column' w='100%'>
+                <Box mb='m'>
+                  <Text variant='title' size='l' tag='h3'>
+                    Key
+                  </Text>
+                </Box>
 
-            <KeySelectField name={MUSICAL_KEY} />
-          </Flex>
-        </span>
+                <KeySelectField name={MUSICAL_KEY} />
+              </Flex>
+            </span>
+          </>
+        ) : null}
       </div>
       <Divider />
       <SwitchRowField

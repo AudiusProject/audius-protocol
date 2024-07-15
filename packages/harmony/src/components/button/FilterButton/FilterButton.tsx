@@ -1,8 +1,16 @@
-import { forwardRef, useRef, useState, useCallback, useEffect } from 'react'
+import {
+  forwardRef,
+  useRef,
+  useState,
+  useCallback,
+  useEffect,
+  useMemo
+} from 'react'
 
 import { CSSObject, useTheme } from '@emotion/react'
 
 import { BaseButton } from 'components/button/BaseButton/BaseButton'
+import { IconComponent, IconProps } from 'components/icon'
 import { useControlled } from 'hooks/useControlled'
 import { IconCloseAlt } from 'icons'
 
@@ -111,20 +119,32 @@ export const FilterButton = forwardRef<HTMLButtonElement, FilterButtonProps>(
 
     const iconCss = size === 'small' ? smallIconStyles : defaultIconStyles
 
-    const handleButtonClick = useCallback(() => {
+    const handleClick = useCallback(() => {
       if (onClick) {
         onClick()
       } else {
-        if (variant === 'fillContainer' && value !== null) {
-          setValue(null)
-          // @ts-ignore
-          onChange?.(null)
-          onReset?.()
-        } else {
+        if (variant === 'fillContainer') {
           setIsOpen((isOpen: boolean) => !isOpen)
         }
       }
-    }, [value, variant, setIsOpen, setValue, onChange, onClick, onReset])
+    }, [variant, setIsOpen, onClick])
+
+    const Icon = useMemo(() => {
+      return variant === 'fillContainer' && value !== null
+        ? (((props: IconProps) => (
+            <IconCloseAlt
+              aria-label='cancel'
+              onClick={(e) => {
+                e.stopPropagation()
+                // @ts-ignore
+                onChange?.(null)
+                onReset?.()
+              }}
+              {...props}
+            />
+          )) as IconComponent)
+        : iconRight ?? undefined
+    }, [variant, value, onChange, onReset, iconRight])
 
     useEffect(() => {
       if (isOpen) {
@@ -149,12 +169,8 @@ export const FilterButton = forwardRef<HTMLButtonElement, FilterButtonProps>(
           button: buttonCss,
           icon: iconCss
         }}
-        onClick={handleButtonClick}
-        iconRight={
-          variant === 'fillContainer' && value !== null
-            ? IconCloseAlt
-            : iconRight
-        }
+        onClick={handleClick}
+        iconRight={Icon}
         disabled={disabled}
         aria-haspopup='listbox'
         aria-expanded={isOpen}
