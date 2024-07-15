@@ -19,17 +19,18 @@ import {
 const { addItem: addRecentSearch } = searchActions
 
 const messages = {
-  albums: 'Albums',
+  playlists: 'Playlists',
+  // layoutOptionsLabel: 'View As',
   sortOptionsLabel: 'Sort By'
 }
 
-type AlbumResultsProps = {
+type PlaylistResultsProps = {
   ids: ID[]
   limit?: number
   skeletonCount?: number
 }
 
-export const AlbumResults = (props: AlbumResultsProps) => {
+export const PlaylistResults = (props: PlaylistResultsProps) => {
   const { limit = 100, ids, skeletonCount = 10 } = props
 
   const isMobile = useIsMobile()
@@ -88,10 +89,12 @@ export const AlbumResults = (props: AlbumResultsProps) => {
   )
 }
 
-export const AlbumResultsPage = () => {
+export const PlaylistResultsPage = () => {
+  // const [playlistsLayout, setPlaylistsLayout] = useState<ViewLayout>('grid')
+
   const isMobile = useIsMobile()
 
-  const { data, status } = useGetSearchResults('albums')
+  const { data, status } = useGetSearchResults('playlists')
   const isLoading = status === Status.LOADING
 
   const searchParams = useSearchParams()
@@ -103,12 +106,21 @@ export const AlbumResultsPage = () => {
 
   const ids = data?.map(({ playlist_id: id }) => id)
 
+  // const playlistsLineupProps = useLineupProps({
+  //   actions: searchResultsPagePlaylistsLineupActions,
+  //   getLineupSelector: getSearchPlaylistsLineup,
+  //   variant: LineupVariant.PLAYLIST,
+  //   numPlaylistSkeletonRows: 5,
+  //   scrollParent: containerRef.current!,
+  //   isOrdered: true
+  // })
+
   return (
     <Flex direction='column' gap='xl'>
       {!isMobile ? (
         <Flex justifyContent='space-between' alignItems='center'>
           <Text variant='heading' textAlign='left'>
-            {messages.albums}
+            {messages.playlists}
           </Text>
           <Flex gap='s'>
             <OptionsFilterButton
@@ -121,10 +133,19 @@ export const AlbumResultsPage = () => {
                 { label: 'Most Recent', value: 'recent' }
               ]}
             />
+            {/* <OptionsFilterButton */}
+            {/*   selection={playlistsLayout} */}
+            {/*   variant='replaceLabel' */}
+            {/*   optionsLabel={messages.layoutOptionsLabel} */}
+            {/*   onChange={(value) => { */}
+            {/*     setPlaylistsLayout(value as ViewLayout) */}
+            {/*   }} */}
+            {/*   options={viewLayoutOptions} */}
+            {/* /> */}
           </Flex>
         </Flex>
       ) : null}
-      {showNoResultsTile ? <NoResultsTile /> : <AlbumResults ids={ids} />}
+      {showNoResultsTile ? <NoResultsTile /> : <PlaylistResults ids={ids} />}
     </Flex>
   )
 }

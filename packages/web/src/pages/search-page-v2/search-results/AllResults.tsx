@@ -10,6 +10,7 @@ import { NoResultsTile } from '../NoResultsTile'
 import { useGetSearchResults } from '../utils'
 
 import { AlbumResults } from './AlbumResults'
+import { PlaylistResults } from './PlaylistResults'
 import { ProfileResults } from './ProfileResults'
 import { TrackResults } from './TrackResults'
 
@@ -33,6 +34,7 @@ export const AllResults = () => {
 
   const userIds = data?.users.map(({ user_id: id }) => id)
   const albumIds = data?.albums.map(({ playlist_id: id }) => id)
+  const playlistIds = data?.playlists.map(({ playlist_id: id }) => id)
 
   return (
     <Flex
@@ -44,6 +46,7 @@ export const AllResults = () => {
       <ProfileResults skeletonCount={5} ids={userIds} limit={5} />
       <TrackResults viewLayout='grid' category={SearchKind.ALL} />
       <AlbumResults skeletonCount={5} ids={albumIds} limit={5} />
+      <PlaylistResults skeletonCount={5} ids={playlistIds} limit={5} />
     </Flex>
   )
 }
