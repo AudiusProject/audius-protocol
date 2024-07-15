@@ -17,6 +17,7 @@ import ConfirmerPreview from 'components/confirmer-preview/ConfirmerPreview'
 import DeletePlaylistConfirmationModal from 'components/delete-playlist-confirmation-modal/DeletePlaylistConfirmationModal'
 import DiscoveryNodeSelection from 'components/discovery-node-selection/DiscoveryNodeSelection'
 import { DuplicateAddConfirmationModal } from 'components/duplicate-add-confirmation-modal'
+import { EditAccessConfirmationModal } from 'components/edit-access-confirmation-modal'
 import EditFolderModal from 'components/edit-folder-modal/EditFolderModal'
 import EmbedModal from 'components/embed-modal/EmbedModal'
 import { FeatureFlagOverrideModal } from 'components/feature-flag-override-modal'
@@ -85,6 +86,7 @@ const commonModalsMap: { [Modal in ModalTypes]?: ComponentType } = {
   DuplicateAddConfirmation: DuplicateAddConfirmationModal,
   AudioBreakdown: AudioBreakdownModal,
   UploadConfirmation: UploadConfirmationModal,
+  EditAccessConfirmation: EditAccessConfirmationModal,
   PublishTrackConfirmation: PublishTrackConfirmationModal,
   AlbumTrackRemoveConfirmation: AlbumTrackRemoveConfirmationModal,
   BuyAudio: BuyAudioModal,

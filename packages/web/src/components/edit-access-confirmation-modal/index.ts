@@ -1,0 +1,1 @@
+export { EditAccessConfirmationModal } from './EditAccessConfirmationModal'
