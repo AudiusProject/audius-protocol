@@ -109,6 +109,14 @@ export {
 export { default as uploadConfirmationModalUISagas } from './upload-confirmation-modal/sagas'
 export * from './upload-confirmation-modal/types'
 
+export * as editAccessConfirmationModalUISelectors from './edit-access-confirmation-modal/selectors'
+export {
+  default as editAccessConfirmationModalUIReducer,
+  actions as editAccessConfirmationModalUIActions
+} from './edit-access-confirmation-modal/slice'
+export { default as editAccessConfirmationModalUISagas } from './edit-access-confirmation-modal/sagas'
+export * from './edit-access-confirmation-modal/types'
+
 export * as publishTrackConfirmationModalUISelectors from './publish-track-confirmation-modal/selectors'
 export {
   default as publishTrackConfirmationModalUIReducer,

@@ -74,6 +74,7 @@ export type Modals =
   | 'InboxUnavailableModal'
   | 'LeavingAudiusModal'
   | 'UploadConfirmation'
+  | 'EditAccessConfirmation'
   | 'PublishTrackConfirmation'
   | 'WithdrawUSDCModal'
   | 'USDCPurchaseDetailsModal'

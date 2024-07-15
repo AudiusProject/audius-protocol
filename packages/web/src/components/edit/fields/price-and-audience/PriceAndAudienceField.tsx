@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 
 import { useFeatureFlag, useUSDCPurchaseConfig } from '@audius/common/hooks'
 import {
@@ -16,7 +16,11 @@ import {
 } from '@audius/common/models'
 import { CollectionValues } from '@audius/common/schemas'
 import { FeatureFlags } from '@audius/common/services'
-import { accountSelectors, EditPlaylistValues } from '@audius/common/store'
+import {
+  accountSelectors,
+  EditPlaylistValues,
+  editAccessConfirmationModalUIActions
+} from '@audius/common/store'
 import {
   IconCart,
   IconCollectible,
@@ -28,7 +32,7 @@ import {
 } from '@audius/harmony'
 import { useField, useFormikContext } from 'formik'
 import { get, isEmpty, set } from 'lodash'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import {
@@ -69,6 +73,9 @@ import {
 import styles from './PriceAndAudienceField.module.css'
 import { PriceAndAudienceMenuFields } from './PriceAndAudienceMenuFields'
 import { priceAndAudienceSchema } from './priceAndAudienceSchema'
+
+const { requestOpen: openEditAccessConfirmationModal } =
+  editAccessConfirmationModalUIActions
 
 const { getUserId } = accountSelectors
 
@@ -127,6 +134,9 @@ export const PriceAndAudienceField = (props: PriceAndAudienceFieldProps) => {
     isPublishDisabled = false
   } = props
 
+  const dispatch = useDispatch()
+  const [isConfirmationCancelled, setIsConfirmationCancelled] = useState(false)
+
   const isHiddenFieldName = isAlbum ? IS_PRIVATE : IS_UNLISTED
 
   const [{ value: index }] = useField('trackMetadatasIndex')
@@ -140,6 +150,9 @@ export const PriceAndAudienceField = (props: PriceAndAudienceFieldProps) => {
 
   const usdcPurchaseConfig = useUSDCPurchaseConfig()
 
+  const { isEnabled: isEditableAccessEnabled } = useFeatureFlag(
+    FeatureFlags.EDITABLE_ACCESS_ENABLED
+  )
   const { isEnabled: isHiddenPaidScheduledEnabled } = useFeatureFlag(
     FeatureFlags.HIDDEN_PAID_SCHEDULED
   )
@@ -284,6 +297,25 @@ export const PriceAndAudienceField = (props: PriceAndAudienceFieldProps) => {
     fieldVisibility,
     preview
   ])
+
+  const openEditAccessConfirmation = useCallback(
+    ({
+      confirmCallback,
+      cancelCallback
+    }: {
+      confirmCallback: () => void
+      cancelCallback: () => void
+    }) => {
+      dispatch(
+        openEditAccessConfirmationModal({
+          type: 'audience',
+          confirmCallback,
+          cancelCallback
+        })
+      )
+    },
+    [dispatch]
+  )
 
   const handleSubmit = useCallback(
     (values: AccessAndSaleFormValues) => {
@@ -554,7 +586,57 @@ export const PriceAndAudienceField = (props: PriceAndAudienceFieldProps) => {
       }
       icon={<IconHidden />}
       initialValues={initialValues}
-      onSubmit={handleSubmit}
+      onSubmit={(values) => {
+        const isInitiallyUsdcGated = isContentUSDCPurchaseGated(
+          parentFormInitialStreamConditions
+        )
+        const isInitiallyTipGated = isContentTipGated(
+          parentFormInitialStreamConditions
+        )
+        const isInitiallyFollowGated = isContentFollowGated(
+          parentFormInitialStreamConditions
+        )
+        const isInitiallyCollectibleGated = isContentCollectibleGated(
+          parentFormInitialStreamConditions
+        )
+
+        const availabilityType = get(values, STREAM_AVAILABILITY_TYPE)
+        const specialAccessType = get(values, SPECIAL_ACCESS_TYPE)
+
+        const stillUsdcGated =
+          isInitiallyUsdcGated &&
+          availabilityType === StreamTrackAvailabilityType.USDC_PURCHASE
+        const stillFollowGated =
+          isInitiallyFollowGated &&
+          availabilityType === StreamTrackAvailabilityType.SPECIAL_ACCESS &&
+          specialAccessType === SpecialAccessType.FOLLOW
+        const stillTipGated =
+          isInitiallyTipGated &&
+          availabilityType === StreamTrackAvailabilityType.SPECIAL_ACCESS &&
+          specialAccessType === SpecialAccessType.TIP
+        const stillCollectibleGated =
+          isInitiallyCollectibleGated &&
+          availabilityType === StreamTrackAvailabilityType.COLLECTIBLE_GATED
+        const stillSameGate =
+          stillUsdcGated ||
+          stillFollowGated ||
+          stillTipGated ||
+          stillCollectibleGated
+        const usersMayLoseAccess =
+          !stillSameGate &&
+          availabilityType !== StreamTrackAvailabilityType.FREE
+
+        if (isEditableAccessEnabled && usersMayLoseAccess) {
+          openEditAccessConfirmation({
+            confirmCallback: () => handleSubmit(values),
+            cancelCallback: () => {
+              setIsConfirmationCancelled(true)
+            }
+          })
+        } else {
+          handleSubmit(values)
+        }
+      }}
       renderValue={renderValue}
       validationSchema={toFormikValidationSchema(
         priceAndAudienceSchema(
@@ -578,8 +660,16 @@ export const PriceAndAudienceField = (props: PriceAndAudienceFieldProps) => {
           isPublishDisabled={isPublishDisabled}
         />
       }
-      forceOpen={forceOpen}
-      setForceOpen={setForceOpen}
+      forceOpen={
+        isEditableAccessEnabled && isConfirmationCancelled
+          ? isConfirmationCancelled
+          : forceOpen
+      }
+      setForceOpen={
+        isEditableAccessEnabled && isConfirmationCancelled
+          ? setIsConfirmationCancelled
+          : setForceOpen
+      }
     />
   )
 }
