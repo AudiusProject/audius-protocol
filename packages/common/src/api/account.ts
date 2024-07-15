@@ -42,16 +42,13 @@ const accountApi = createApi({
     getCurrentWeb3User: {
       async fetch(_, { audiusBackend }) {
         const libs = await audiusBackend.getAudiusLibsTyped()
-        // TODO: https://linear.app/audius/issue/PAY-2838/separate-walletentropy-user-and-current-user-in-state
-        // What happens in the cache if something here is null?
-
         return libs.Account?.getWeb3User() as UserMetadata | null
       },
       options: {
-        type: 'query'
-        // TODO: Cannot cache the response from this unless we fully decorate it
-        // https://linear.app/audius/issue/PAY-3066/getcurrentweb3user-breaks-decorated-account-info
-        // schemaKey: 'currentWeb3User'
+        type: 'query',
+        // Note that this schema key is used to prevent caching of the
+        // web3 user as it does not match the standard user schema.
+        schemaKey: 'currentWeb3User'
       }
     },
     resetPassword: {
