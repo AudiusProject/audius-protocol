@@ -4,6 +4,7 @@ import { EditAccessConfirmationState, EditAccessType } from './types'
 
 export type OpenPayload = PayloadAction<{
   type: EditAccessType
+  isEarlyRelease?: boolean
   confirmCallback: () => void
   cancelCallback: () => void
 }>
