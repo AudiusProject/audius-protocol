@@ -19,6 +19,9 @@ var addDelistReasonsDDL string
 //go:embed drop_blobs.sql
 var dropBlobs string
 
+//go:embed drop_audio_analysis_ops.sql
+var dropAnalysisOpsDDL string
+
 var mediorumMigrationTable = `
 	create table if not exists mediorum_migrations (
 		"hash" text primary key,
@@ -39,6 +42,8 @@ func Migrate(db *sql.DB, myHost string) {
 	runMigration(db, addDelistReasonsDDL)
 
 	runMigration(db, dropBlobs)
+
+	runMigration(db, dropAnalysisOpsDDL)
 
 	runMigration(db, `create index if not exists uploads_ts_idx on uploads(created_at, transcoded_at)`)
 
