@@ -2,7 +2,7 @@ import { useRef } from 'react'
 
 import { Status } from '@audius/common/models'
 import { SearchKind } from '@audius/common/store'
-import { Flex } from '@audius/harmony/src/components/layout'
+import { Flex, Text } from '@audius/harmony'
 
 import { useIsMobile } from 'hooks/useIsMobile'
 
@@ -13,6 +13,13 @@ import { AlbumResults } from './AlbumResults'
 import { PlaylistResults } from './PlaylistResults'
 import { ProfileResults } from './ProfileResults'
 import { TrackResults } from './TrackResults'
+
+const messages = {
+  profiles: 'Profiles',
+  tracks: 'Tracks',
+  albums: 'Albums',
+  playlists: 'Playlists'
+}
 
 export const AllResults = () => {
   const isMobile = useIsMobile()
@@ -43,10 +50,33 @@ export const AllResults = () => {
       p={isMobile ? 'm' : undefined}
       ref={containerRef}
     >
-      <ProfileResults skeletonCount={5} ids={userIds} limit={5} />
-      <TrackResults viewLayout='grid' category={SearchKind.ALL} />
-      <AlbumResults skeletonCount={5} ids={albumIds} limit={5} />
-      <PlaylistResults skeletonCount={5} ids={playlistIds} limit={5} />
+      <Flex gap='xl' direction='column'>
+        <Text variant='heading' textAlign='left'>
+          {messages.profiles}
+        </Text>
+        <ProfileResults skeletonCount={5} ids={userIds} limit={5} />
+      </Flex>
+
+      <Flex gap='xl' direction='column'>
+        <Text variant='heading' textAlign='left'>
+          {messages.tracks}
+        </Text>
+        <TrackResults viewLayout='grid' category={SearchKind.ALL} />
+      </Flex>
+
+      <Flex gap='xl' direction='column'>
+        <Text variant='heading' textAlign='left'>
+          {messages.albums}
+        </Text>
+        <AlbumResults skeletonCount={5} ids={albumIds} limit={5} />
+      </Flex>
+
+      <Flex gap='xl' direction='column'>
+        <Text variant='heading' textAlign='left'>
+          {messages.playlists}
+        </Text>
+        <PlaylistResults skeletonCount={5} ids={playlistIds} limit={5} />
+      </Flex>
     </Flex>
   )
 }
