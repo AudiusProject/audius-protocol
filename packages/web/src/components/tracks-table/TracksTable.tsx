@@ -249,14 +249,12 @@ export const TracksTable = ({
   const renderPlaysCell = useCallback(
     (cellInfo: TrackCell) => {
       const track = cellInfo.row.original
-      const { plays } = track
       const isOwner = track.owner_id === userId
-      // negative plays indicates the track is hidden
-      if (plays === -1) return '-'
       if (
-        track.is_stream_gated &&
-        isContentUSDCPurchaseGated(track.stream_conditions) &&
-        !isOwner
+        !isOwner &&
+        ((track.is_stream_gated &&
+          isContentUSDCPurchaseGated(track.stream_conditions)) ||
+          track.is_unlisted)
       )
         return null
       return formatCount(track.plays)
@@ -266,6 +264,9 @@ export const TracksTable = ({
 
   const renderRepostsCell = useCallback((cellInfo: TrackCell) => {
     const track = cellInfo.row.original
+    const { is_unlisted: isUnlisted, owner_id: ownerId } = track
+    const isOwner = ownerId === userId
+    if (isUnlisted && !isOwner) return null
     return formatCount(track.repost_count)
   }, [])
 
@@ -291,6 +292,9 @@ export const TracksTable = ({
 
   const renderSavesCell = useCallback((cellInfo: TrackCell) => {
     const track = cellInfo.row.original
+    const { is_unlisted: isUnlisted, owner_id: ownerId } = track
+    const isOwner = ownerId === userId
+    if (isUnlisted && !isOwner) return null
     return formatCount(track.save_count)
   }, [])
 
