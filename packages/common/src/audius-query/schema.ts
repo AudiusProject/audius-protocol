@@ -10,8 +10,6 @@ export const userSchema = new schema.Entity(
   { idAttribute: 'user_id' }
 )
 
-// export const web3UserSchema = new schema.Object({})
-
 export const trackSchema = new schema.Entity(
   Kind.TRACKS,
   { user: userSchema },
@@ -33,7 +31,6 @@ export const userManagerSchema = new schema.Object({
 })
 
 export const schemas = {
-  // currentWeb3User: web3UserSchema,
   managedUsers: new schema.Array(managedUserSchema),
   user: userSchema,
   userManagers: new schema.Array(userManagerSchema),
