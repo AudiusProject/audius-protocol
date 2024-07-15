@@ -82,8 +82,11 @@ export const VisibilityField = (props: VisibilityFieldProps) => {
   const { isEnabled: isEditableAccessEnabled } = useFeatureFlag(
     FeatureFlags.EDITABLE_ACCESS_ENABLED
   )
-  const [{ value: isScheduledRelease }, , { setValue: setIsScheduledRelease }] =
-    useEntityField<boolean>(IS_SCHEDULED_RELEASE)
+  const [
+    { value: isScheduledRelease },
+    { initialValue: isInitiallyScheduled },
+    { setValue: setIsScheduledRelease }
+  ] = useEntityField<boolean>(IS_SCHEDULED_RELEASE)
 
   const [{ value: releaseDate }, , { setValue: setReleaseDate }] =
     useEntityField<string>('release_date')
@@ -131,25 +134,6 @@ export const VisibilityField = (props: VisibilityFieldProps) => {
     ...scheduledReleaseValues
   }
 
-  const openEditAccessConfirmation = useCallback(
-    ({
-      confirmCallback,
-      cancelCallback
-    }: {
-      confirmCallback: () => void
-      cancelCallback: () => void
-    }) => {
-      dispatch(
-        openEditAccessConfirmationModal({
-          type: 'visibility',
-          confirmCallback,
-          cancelCallback
-        })
-      )
-    },
-    [dispatch]
-  )
-
   return (
     <ContextualMenu
       label={messages.title}
@@ -196,13 +180,22 @@ export const VisibilityField = (props: VisibilityFieldProps) => {
 
         const usersMayLoseAccess =
           !initiallyHidden && values.visibilityType !== 'public'
-        if (isEditableAccessEnabled && usersMayLoseAccess) {
-          openEditAccessConfirmation({
-            confirmCallback: submit,
-            cancelCallback: () => {
-              setIsConfirmationCancelled(true)
-            }
-          })
+        const isToBePublished =
+          initiallyHidden && values.visibilityType === 'public'
+        if (!isUpload && (usersMayLoseAccess || isToBePublished)) {
+          dispatch(
+            openEditAccessConfirmationModal({
+              type: usersMayLoseAccess
+                ? 'hidden'
+                : isInitiallyScheduled
+                ? 'early_release'
+                : 'release',
+              confirmCallback: submit,
+              cancelCallback: () => {
+                setIsConfirmationCancelled(true)
+              }
+            })
+          )
         } else {
           submit()
         }
