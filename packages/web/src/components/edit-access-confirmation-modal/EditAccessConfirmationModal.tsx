@@ -8,7 +8,6 @@ import {
   Modal,
   ModalContent,
   ModalHeader,
-  ModalTitle,
   ModalFooter,
   Button,
   Text,
@@ -26,6 +25,8 @@ const getMessages = (type: EditAccessType | null) => ({
   title:
     type === 'audience' || type === 'hidden'
       ? 'Confirm Update'
+      : type === 'early_release'
+      ? 'Confirm Early Release'
       : 'Confirm Release',
   description:
     type === 'audience'

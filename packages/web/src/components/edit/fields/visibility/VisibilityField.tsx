@@ -180,9 +180,9 @@ export const VisibilityField = (props: VisibilityFieldProps) => {
 
         const usersMayLoseAccess =
           !initiallyHidden && values.visibilityType !== 'public'
-        const willPublish =
+        const isToBePublished =
           initiallyHidden && values.visibilityType === 'public'
-        if (!isUpload && (usersMayLoseAccess || willPublish)) {
+        if (!isUpload && (usersMayLoseAccess || isToBePublished)) {
           dispatch(
             openEditAccessConfirmationModal({
               type: usersMayLoseAccess
