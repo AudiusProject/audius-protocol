@@ -10,7 +10,7 @@ import {
   SearchKind
 } from '@audius/common/store'
 import { trimToAlphaNumeric } from '@audius/common/utils'
-import { select, all, call } from 'typed-redux-saga'
+import { select, call } from 'typed-redux-saga'
 
 import { LineupSagas } from 'common/store/lineup/sagas'
 import {

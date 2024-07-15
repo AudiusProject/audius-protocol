@@ -6,8 +6,6 @@ import { ID } from '~/models/Identifiers'
 import { SearchKind } from '~/store'
 import { Genre, formatMusicalKey } from '~/utils'
 
-import { userApiActions } from './user'
-
 export type SearchCategory = 'all' | 'tracks' | 'albums' | 'playlists' | 'users'
 
 export type SearchFilters = {
