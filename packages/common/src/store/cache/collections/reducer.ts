@@ -24,17 +24,20 @@ const addEntries = (state: CollectionsCacheState, entries: any[]) => {
   // Add uids to track info in playlist_contents
   // This allows collection tiles to be played when uid would not normally be present
   entries.forEach((entry) => {
-    entry.metadata.playlist_contents.track_ids.forEach(
-      (track: PlaylistTrackId) => {
-        if (!track.uid) {
-          track.uid = makeUid(
-            Kind.TRACKS,
-            track.track,
-            `collection:${entry.metadata.playlist_id}`
-          )
+    console.log('collection fetch', entry.metadata, entry.metadata.playlist_name, entry.metadata.playlist_contents)
+    // if (entry.metadata.playlist_contents) {
+      entry.metadata.playlist_contents.track_ids.forEach(
+        (track: PlaylistTrackId) => {
+          if (!track.uid) {
+            track.uid = makeUid(
+              Kind.TRACKS,
+              track.track,
+              `collection:${entry.metadata.playlist_id}`
+            )
+          }
         }
-      }
-    )
+      )
+    // }
   })
 
   for (const entry of entries) {
