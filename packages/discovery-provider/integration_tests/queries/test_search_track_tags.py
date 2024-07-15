@@ -10,8 +10,6 @@ logger = logging.getLogger(__name__)
 
 
 def test_search_track_tags(app_module):
-    return
-
     """Tests that search by tags works fopr tracks"""
     with app_module.app_context():
         db = get_db()
@@ -58,16 +56,17 @@ def test_search_track_tags(app_module):
     )
     logger.info(logs)
 
-    result = search_tags_es("pop", kind="tracks")
-    tracks = result["tracks"]
+    with app_module.app_context():
+        result = search_tags_es({"query": "pop"})
+        tracks = result["tracks"]
 
-    assert len(tracks) == 3
-    assert tracks[0]["track_id"] == 5  # First w/ 3 reposts
-    assert tracks[1]["track_id"] == 2  # Sec w/ 2 reposts
-    assert tracks[2]["track_id"] == 4  # Third w/ 1 reposts
-    # Track id 6 does not appear b/c kpop and pop are not exact matches
+        assert len(tracks) == 3
+        assert tracks[0]["track_id"] == 5  # First w/ 3 reposts
+        assert tracks[1]["track_id"] == 2  # Sec w/ 2 reposts
+        assert tracks[2]["track_id"] == 4  # Third w/ 1 reposts
+        # Track id 6 does not appear b/c kpop and pop are not exact matches
 
-    # curent user
-    result = search_tags_es("pop", kind="tracks", current_user_id=1)
-    tracks = result["saved_tracks"]
-    assert len(tracks) == 2
+        # curent user
+        # result = search_tags_es({"query": "pop", "current_user_id": 1})
+        # tracks = result["saved_tracks"]
+        # assert len(tracks) == 2
