@@ -9,6 +9,7 @@ import { useIsMobile } from 'hooks/useIsMobile'
 import { NoResultsTile } from '../NoResultsTile'
 import { useGetSearchResults } from '../utils'
 
+import { AlbumResults } from './AlbumResults'
 import { ProfileResults } from './ProfileResults'
 import { TrackResults } from './TrackResults'
 
@@ -30,7 +31,8 @@ export const AllResults = () => {
 
   if (showNoResultsTile) return <NoResultsTile />
 
-  const userIds = data.users.map(({ user_id: id }) => id)
+  const userIds = data?.users.map(({ user_id: id }) => id)
+  const albumIds = data?.albums.map(({ playlist_id: id }) => id)
 
   return (
     <Flex
@@ -41,6 +43,7 @@ export const AllResults = () => {
     >
       <ProfileResults skeletonCount={5} ids={userIds} limit={5} />
       <TrackResults viewLayout='grid' category={SearchKind.ALL} />
+      <AlbumResults skeletonCount={5} ids={albumIds} limit={5} />
     </Flex>
   )
 }

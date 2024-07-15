@@ -6,7 +6,7 @@ import { Box, Flex, OptionsFilterButton, Text } from '@audius/harmony'
 import { range } from 'lodash'
 import { useDispatch } from 'react-redux'
 
-import { UserCard } from 'components/user-card'
+import { CollectionCard } from 'components/collection'
 import { useIsMobile } from 'hooks/useIsMobile'
 
 import { NoResultsTile } from '../NoResultsTile'
@@ -19,17 +19,17 @@ import {
 const { addItem: addRecentSearch } = searchActions
 
 const messages = {
-  profiles: 'Profiles',
+  albums: 'Albums',
   sortOptionsLabel: 'Sort By'
 }
 
-type ProfileResultsProps = {
+type AlbumResultsProps = {
   ids: ID[]
   limit?: number
   skeletonCount?: number
 }
 
-export const ProfileResults = (props: ProfileResultsProps) => {
+export const AlbumResults = (props: AlbumResultsProps) => {
   const { limit = 100, ids, skeletonCount = 10 } = props
 
   const isMobile = useIsMobile()
@@ -43,7 +43,7 @@ export const ProfileResults = (props: ProfileResultsProps) => {
         dispatch(
           addRecentSearch({
             searchItem: {
-              kind: Kind.USERS,
+              kind: Kind.COLLECTIONS,
               id
             }
           })
@@ -66,7 +66,7 @@ export const ProfileResults = (props: ProfileResultsProps) => {
     >
       {!truncatedIds.length
         ? range(skeletonCount).map((_, i) => (
-            <UserCard
+            <CollectionCard
               key={`user_card_sekeleton_${i}`}
               id={0}
               size={isMobile ? 'xs' : 's'}
@@ -75,38 +75,39 @@ export const ProfileResults = (props: ProfileResultsProps) => {
             />
           ))
         : truncatedIds.map((id) => (
-            <UserCard
+            <CollectionCard
               key={id}
               id={id}
               size={isMobile ? 'xs' : 's'}
               css={isMobile ? { maxWidth: 320 } : undefined}
               onClick={() => handleClick(id)}
-              onUserLinkClick={() => handleClick(id)}
+              onCollectionLinkClick={() => handleClick(id)}
             />
           ))}
     </Box>
   )
 }
 
-export const ProfileResultsPage = () => {
+export const AlbumResultsPage = () => {
   const isMobile = useIsMobile()
-  const { data, status } = useGetSearchResults('users')
-  const isLoading = status === Status.LOADING
+  const { data, status } = useGetSearchResults('albums')
 
+  const isLoading = status === Status.LOADING
   const updateSortParam = useUpdateSearchParams('sortMethod')
+
   const searchParams = useSearchParams()
   const { sortMethod } = searchParams
   const isResultsEmpty = data?.length === 0
   const showNoResultsTile = !isLoading && isResultsEmpty
 
-  const ids = data?.map(({ user_id: id }) => id)
+  const ids = data?.map(({ playlist_id: id }) => id)
 
   return (
     <Flex direction='column' gap='xl'>
       {!isMobile ? (
         <Flex justifyContent='space-between' alignItems='center'>
           <Text variant='heading' textAlign='left'>
-            {messages.profiles}
+            {messages.albums}
           </Text>
           <Flex gap='s'>
             <OptionsFilterButton
@@ -122,7 +123,7 @@ export const ProfileResultsPage = () => {
           </Flex>
         </Flex>
       ) : null}
-      {showNoResultsTile ? <NoResultsTile /> : <ProfileResults ids={ids} />}
+      {showNoResultsTile ? <NoResultsTile /> : <AlbumResults ids={ids} />}
     </Flex>
   )
 }
