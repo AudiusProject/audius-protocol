@@ -9,6 +9,7 @@ import { useIsMobile } from 'hooks/useIsMobile'
 import { NoResultsTile } from '../NoResultsTile'
 import { useGetSearchResults } from '../utils'
 
+import { ProfileResults } from './ProfileResults'
 import { TrackResults } from './TrackResults'
 
 export const AllResults = () => {
@@ -29,6 +30,8 @@ export const AllResults = () => {
 
   if (showNoResultsTile) return <NoResultsTile />
 
+  const userIds = data.users.map(({ user_id: id }) => id)
+
   return (
     <Flex
       direction='column'
@@ -36,6 +39,7 @@ export const AllResults = () => {
       p={isMobile ? 'm' : undefined}
       ref={containerRef}
     >
+      <ProfileResults skeletonCount={5} ids={userIds} limit={5} />
       <TrackResults viewLayout='grid' category={SearchKind.ALL} />
     </Flex>
   )

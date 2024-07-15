@@ -21,12 +21,10 @@ import { make } from 'common/store/analytics/actions'
 import Lineup from 'components/lineup/Lineup'
 import { LineupTileSkeleton } from 'components/lineup/LineupTileSkeleton'
 import { useIsMobile } from 'hooks/useIsMobile'
-import { useRouteMatch } from 'hooks/useRouteMatch'
 import { useMainContentRef } from 'pages/MainContentContext'
-import { SEARCH_PAGE } from 'utils/route'
 
 import { NoResultsTile } from '../NoResultsTile'
-import { CategoryView, ViewLayout, viewLayoutOptions } from '../types'
+import { ViewLayout, viewLayoutOptions } from '../types'
 import { useSearchParams, useUpdateSearchParams } from '../utils'
 
 const { makeGetLineupMetadatas } = lineupSelectors
