@@ -86,7 +86,6 @@ export const useGetSearchResults = <C extends SearchCategory>(
 export const useSearchParams = () => {
   const [urlSearchParams] = useParams()
 
-  // TODO: maybe useParams?
   const routeMatch = useRouteMatch<{ category: string }>(SEARCH_PAGE)
   const category =
     (routeMatch?.params.category as CategoryView) || CategoryView.ALL
@@ -144,8 +143,6 @@ export const useUpdateSearchParams = (key: string) => {
   const [searchParams, setUrlSearchParams] = useParams()
   return (value: string) => {
     if (value) {
-      // TODO: This is causing an amplitude page view every time
-      // let's fix this
       setUrlSearchParams({
         ...urlSearchParamsToObject(searchParams),
         [key]: value
