@@ -48,10 +48,8 @@ const accountApi = createApi({
         return libs.Account?.getWeb3User() as UserMetadata | null
       },
       options: {
-        type: 'query'
-        // TODO: Cannot cache the response from this unless we fully decorate it
-        // https://linear.app/audius/issue/PAY-3066/getcurrentweb3user-breaks-decorated-account-info
-        // schemaKey: 'currentWeb3User'
+        type: 'query',
+        schemaKey: 'currentWeb3User'
       }
     },
     resetPassword: {
