@@ -97,7 +97,6 @@ func RecoverUserPublicKeyBase64(ctx context.Context, userId int) (string, error)
 	if err != nil {
 		return "", err
 	}
-	defer rows.Close()
 
 	var wallet string
 	var blocknumber int64
@@ -138,6 +137,61 @@ func RecoverUserPublicKeyBase64(ctx context.Context, userId int) (string, error)
 			}
 		}
 
+	}
+
+	rows.Close()
+
+	// success
+	if err == nil && pubkeyBase64 != "" {
+		err = setPubkey(userId, pubkeyBase64)
+		if err != nil {
+			logger.Warn("setPubkey failed", "err", err)
+		}
+
+		return pubkeyBase64, nil
+	}
+
+	// users table txhash could come from setting `is_verified` (or similar)
+	// which might not be signed by user key.
+	// In past is_current=false rows would still contain older versions of user row.
+	// but now only latest row is retained.
+	// So in that case we must query other tables for a txhash that was signed by user.
+	{
+		query := `
+		with txhashes as (
+			select distinct txhash from tracks where owner_id = $1
+			union
+			select distinct txhash from playlists where playlist_owner_id = $1
+			union
+			select distinct txhash from saves where user_id = $1
+			union
+			select distinct txhash from reposts where user_id = $1
+			union
+			select distinct txhash from follows where follower_user_id = $1
+		)
+		select txhash from txhashes where txhash like '0x%'
+		;
+		`
+
+		rows, err = conn.QueryContext(ctx, query, userId)
+		if err != nil {
+			logger.Error("query failed", "err", err)
+			return "", err
+		}
+
+		for rows.Next() {
+			err = rows.Scan(&txhash)
+			if err != nil {
+				continue
+			}
+
+			pubkeyBase64, err = recoverEntityManagerPubkey(acdcClient, txhash, wallet)
+			if err == nil {
+				break
+			}
+		}
+
+		rows.Close()
 	}
 
 	// success
