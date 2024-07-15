@@ -47,7 +47,8 @@ const {
   instagramLogin,
   tikTokLogin,
   fetchSavedPlaylists,
-  addAccountPlaylist
+  addAccountPlaylist,
+  resetAccount
 } = accountActions
 
 const IP_STORAGE_KEY = 'user-ip-timestamp'
@@ -169,6 +170,7 @@ export function* fetchAccountAsync({ isSignUp = false }) {
 
   const account = yield call(audiusBackendInstance.getAccount)
   if (!account) {
+    yield put(accountActions.resetAccount())
     yield put(
       fetchAccountFailed({
         reason: 'ACCOUNT_NOT_FOUND'
@@ -177,6 +179,7 @@ export function* fetchAccountAsync({ isSignUp = false }) {
     return
   }
   if (account.is_deactivated) {
+    yield put(accountActions.resetAccount())
     yield put(
       fetchAccountFailed({
         reason: 'ACCOUNT_DEACTIVATED'
@@ -197,31 +200,14 @@ export function* fetchAccountAsync({ isSignUp = false }) {
 
 export function* fetchLocalAccountAsync() {
   const localStorage = yield getContext('localStorage')
-  const audiusBackendInstance = yield getContext('audiusBackendInstance')
 
   yield put(accountActions.fetchAccountRequested())
 
-  const audiusLibs = yield call([
-    audiusBackendInstance,
-    audiusBackendInstance.getAudiusLibs
-  ])
-  const wallet = yield call([
-    audiusLibs.web3Manager,
-    audiusLibs.web3Manager.getWalletAddress
-  ])
   const cachedAccount = yield call([localStorage, 'getAudiusAccount'])
   const cachedAccountUser = yield call([localStorage, 'getAudiusAccountUser'])
   const currentUserExists = yield call([localStorage, 'getCurrentUserExists'])
 
-  const walletMatches =
-    wallet?.toLowerCase() === cachedAccountUser?.wallet?.toLowerCase()
-
-  if (
-    cachedAccount &&
-    cachedAccountUser &&
-    !cachedAccountUser.is_deactivated &&
-    walletMatches
-  ) {
+  if (cachedAccount && cachedAccountUser && !cachedAccountUser.is_deactivated) {
     yield call(
       cacheAccount,
       { ...cachedAccountUser, local: true },
@@ -414,6 +400,17 @@ function* watchAddAccountPlaylist() {
   yield takeEvery(addAccountPlaylist.type, reCacheAccount)
 }
 
+function* watchResetAccount() {
+  yield takeEvery(resetAccount.type, function* (action) {
+    const audiusBackendInstance = yield getContext('audiusBackendInstance')
+    const localStorage = yield getContext('localStorage')
+    const libs = yield call(audiusBackendInstance.getAudiusLibs)
+    yield call([libs.userStateManager, 'clearUser'])
+    yield call([localStorage, 'clearAudiusAccount'])
+    yield call([localStorage, 'clearAudiusAccountUser'])
+  })
+}
+
 export default function sagas() {
   return [
     watchFetchAccount,
@@ -424,6 +421,7 @@ export default function sagas() {
     watchInstagramLogin,
     watchTikTokLogin,
     watchFetchSavedPlaylists,
-    watchAddAccountPlaylist
+    watchAddAccountPlaylist,
+    watchResetAccount
   ]
 }

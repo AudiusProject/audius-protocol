@@ -65,6 +65,7 @@ export class UserStateManager {
 
   async clearUser() {
     this.currentUser = null
+    this.web3User = null
     if (this.localStorage) {
       await this.localStorage.removeItem(CURRENT_USER_EXISTS_LOCAL_STORAGE_KEY)
     }
