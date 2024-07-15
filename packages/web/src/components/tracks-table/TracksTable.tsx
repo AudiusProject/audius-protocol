@@ -266,6 +266,8 @@ export const TracksTable = ({
 
   const renderRepostsCell = useCallback((cellInfo: TrackCell) => {
     const track = cellInfo.row.original
+    const { is_unlisted: isUnlisted } = track
+    if (isUnlisted) return null
     return formatCount(track.repost_count)
   }, [])
 
