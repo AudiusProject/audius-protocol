@@ -131,6 +131,9 @@ const Modals = () => {
       <FirstUploadModal />
       <UnloadDialog />
       <CollectibleDetailsModal />
+      {commonModals.map(([modalName, Modal]) => {
+        return <AppModal key={modalName} name={modalName} modal={Modal} />
+      })}
       {isMobile ? (
         <>
           <ConnectedMobileOverflowModal />
@@ -138,9 +141,6 @@ const Modals = () => {
         </>
       ) : (
         <>
-          {commonModals.map(([modalName, Modal]) => {
-            return <AppModal key={modalName} name={modalName} modal={Modal} />
-          })}
           <EmbedModal />
           <ConnectedUserListModal />
           <AppCTAModal />
