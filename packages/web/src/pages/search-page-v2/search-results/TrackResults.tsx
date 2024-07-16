@@ -16,13 +16,13 @@ import { useDispatch, useSelector } from 'react-redux'
 
 import { make } from 'common/store/analytics/actions'
 import Lineup from 'components/lineup/Lineup'
+import { LineupVariant } from 'components/lineup/types'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { useMainContentRef } from 'pages/MainContentContext'
 
 import { NoResultsTile } from '../NoResultsTile'
 import { ViewLayout, viewLayoutOptions } from '../types'
 import { useSearchParams, useUpdateSearchParams } from '../utils'
-import { LineupVariant } from 'components/lineup/types'
 
 const { makeGetLineupMetadatas } = lineupSelectors
 const { getBuffering, getPlaying } = playerSelectors
