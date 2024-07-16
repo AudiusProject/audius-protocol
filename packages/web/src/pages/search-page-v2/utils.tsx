@@ -4,9 +4,7 @@ import {
   SearchCategory,
   useGetSearchResults as useGetSearchResultsApi
 } from '@audius/common/api'
-import { useFeatureFlag } from '@audius/common/hooks'
 import { Status } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import {
   SearchSortMethod,
   accountSelectors,
@@ -40,17 +38,13 @@ export const useGetSearchResults = <C extends SearchCategory>(
   const dispatch = useDispatch()
 
   const currentUserId = useSelector(getUserId)
-  const { isEnabled: isUSDCEnabled } = useFeatureFlag(
-    FeatureFlags.USDC_PURCHASES
-  )
   const { data, status } = useGetSearchResultsApi(
     {
       query: query || '',
       ...filters,
       category,
       currentUserId,
-      limit: category === 'all' ? 12 : undefined,
-      includePurchaseable: isUSDCEnabled
+      limit: category === 'all' ? 12 : undefined
     },
     { debounce: 500 }
   )

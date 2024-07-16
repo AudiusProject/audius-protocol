@@ -27,14 +27,7 @@ const { getUserId } = accountSelectors
 function* getSearchPageResultsTracks({
   offset,
   limit,
-  payload: {
-    category,
-    query,
-    isTagSearch,
-    includePurchaseable,
-    filters,
-    dispatch
-  }
+  payload: { category, query, isTagSearch, filters, dispatch }
 }: {
   offset: number
   limit: number
@@ -82,15 +75,14 @@ function* getSearchPageResultsTracks({
             category,
             limit,
             offset,
-            // TODO: could push `includePurchaseable` into search api
-            includePurchaseable,
             ...filters
           },
           {
             audiusBackend,
             apiClient,
             reportToSentry,
-            dispatch
+            dispatch,
+            getFeatureEnabled
           } as any
         )
         results = tracks as unknown as Track[]

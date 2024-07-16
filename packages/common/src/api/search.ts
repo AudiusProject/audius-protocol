@@ -3,6 +3,7 @@ import { isEmpty } from 'lodash'
 
 import { createApi } from '~/audius-query'
 import { ID } from '~/models/Identifiers'
+import { FeatureFlags } from '~/services'
 import { SearchKind } from '~/store'
 import { Genre, formatMusicalKey } from '~/utils'
 
@@ -26,7 +27,6 @@ type getSearchArgs = {
   category?: SearchCategory
   limit?: number
   offset?: number
-  includePurchaseable?: boolean
 } & SearchFilters
 
 const getMinMaxFromBpm = (bpm?: string) => {
@@ -40,9 +40,16 @@ const searchApi = createApi({
   reducerPath: 'searchApi',
   endpoints: {
     getSearchResults: {
-      fetch: async (args: getSearchArgs, { apiClient, audiusBackend }) => {
+      fetch: async (
+        args: getSearchArgs,
+        { apiClient, audiusBackend, getFeatureEnabled }
+      ) => {
         const { category, currentUserId, query, limit, offset, ...filters } =
           args
+
+        const isUSDCEnabled = await getFeatureEnabled(
+          FeatureFlags.USDC_PURCHASES
+        )
 
         const kind = category as SearchKind
         if (!query && isEmpty(filters)) {
@@ -77,6 +84,7 @@ const searchApi = createApi({
             query,
             limit,
             offset,
+            includePurchaseable: isUSDCEnabled,
             ...filters,
             bpmMin,
             bpmMax,

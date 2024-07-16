@@ -1,8 +1,6 @@
 import { useCallback, useState } from 'react'
 
-import { useFeatureFlag } from '@audius/common/hooks'
 import { Kind, Name, Status } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import {
   lineupSelectors,
   playerSelectors,
@@ -68,10 +66,6 @@ export const TrackResults = (props: TrackResultsProps) => {
 
   const searchParams = useSearchParams()
 
-  const { isEnabled: isUSDCEnabled } = useFeatureFlag(
-    FeatureFlags.USDC_PURCHASES
-  )
-
   const getResults = useCallback(
     (offset: number, limit: number, overwrite: boolean) => {
       const { query, ...filters } = searchParams
@@ -85,13 +79,12 @@ export const TrackResults = (props: TrackResultsProps) => {
             category,
             query,
             filters,
-            includePurchaseable: isUSDCEnabled,
             dispatch
           }
         )
       )
     },
-    [dispatch, searchParams, isUSDCEnabled]
+    [dispatch, searchParams]
   )
 
   const loadMore = useCallback(

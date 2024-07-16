@@ -7,8 +7,6 @@ import {
   type SearchFilter,
   type SearchFilters
 } from '@audius/common/api'
-import { useFeatureFlag } from '@audius/common/hooks'
-import { FeatureFlags } from '@audius/common/services'
 import { accountSelectors } from '@audius/common/store'
 import { isEmpty } from 'lodash'
 import { useSelector } from 'react-redux'
@@ -86,17 +84,13 @@ export const useGetSearchResults = <C extends SearchCategory>(
 ): SearchResultsType<C> => {
   const { filters, query } = useContext(SearchContext)
   const currentUserId = useSelector(getUserId)
-  const { isEnabled: isUSDCEnabled } = useFeatureFlag(
-    FeatureFlags.USDC_PURCHASES
-  )
   const { data, status } = useGetSearchResultsApi(
     {
       query,
       ...filters,
       category,
       currentUserId,
-      limit: category === 'all' ? 5 : undefined,
-      includePurchaseable: isUSDCEnabled
+      limit: category === 'all' ? 5 : undefined
     },
     { debounce: 500 }
   )

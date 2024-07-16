@@ -11,8 +11,6 @@ export const SearchResults = () => {
   const { category } = useParams<{ category: CategoryView }>()
 
   switch (category) {
-    case 'all':
-      return <AllResults />
     case 'profiles':
       return <ProfileResultsPage />
     case 'tracks':
@@ -21,5 +19,7 @@ export const SearchResults = () => {
       return <AlbumResultsPage />
     case 'playlists':
       return <PlaylistResultsPage />
+    default:
+      return <AllResults />
   }
 }
