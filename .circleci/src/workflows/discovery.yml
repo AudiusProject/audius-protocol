@@ -76,7 +76,7 @@ jobs:
       service: verified-notifications
       filters:
         branches:
-          only: as/proto-1781-verified-notifs-ci
+          only: main
   - push-docker-image:
       name: push-comms
       context: [Vercel, dockerhub]
