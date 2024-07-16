@@ -33,6 +33,7 @@
   flex: 0 0 52px;
   border: 1px solid var(--harmony-n-100);
   border-radius: 50%;
+  overflow: hidden;
 
   background-size: cover;
   background-position: center;
