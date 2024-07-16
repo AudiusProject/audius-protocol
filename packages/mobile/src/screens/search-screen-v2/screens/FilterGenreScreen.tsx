@@ -20,8 +20,8 @@ const genres = GENRES.map((genre) => ({
 }))
 
 export const FilterGenreScreen = () => {
-  const [, setGenre, clearGenre] = useSearchFilter('genre')
-  const [value, setValue] = useState('')
+  const [genre, setGenre, clearGenre] = useSearchFilter('genre')
+  const [value, setValue] = useState(genre ?? '')
 
   const handleSubmit = useCallback(() => {
     if (value) {

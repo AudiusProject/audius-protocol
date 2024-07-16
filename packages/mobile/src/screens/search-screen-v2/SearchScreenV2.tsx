@@ -96,6 +96,7 @@ export const SearchScreenStack = () => {
   const [filters, setFilters] = useState<SearchFiltersType>(
     params.filters ?? {}
   )
+  const [bpmType, setBpmType] = useState<'range' | 'target'>('range')
 
   useEffect(() => {
     setQuery(params.query ?? '')
@@ -107,7 +108,16 @@ export const SearchScreenStack = () => {
 
   return (
     <SearchContext.Provider
-      value={{ query, setQuery, category, setCategory, filters, setFilters }}
+      value={{
+        query,
+        setQuery,
+        category,
+        setCategory,
+        filters,
+        setFilters,
+        bpmType,
+        setBpmType
+      }}
     >
       <Stack.Navigator screenOptions={screenOptions}>
         <Stack.Screen name='SearchResults' component={SearchScreenV2} />

@@ -36,8 +36,8 @@ const useStyles = makeStyles(({ spacing }) => ({
 
 export const FilterMoodScreen = () => {
   const styles = useStyles()
-  const [, setMood, clearMood] = useSearchFilter('mood')
-  const [value, setValue] = useState('')
+  const [mood, setMood, clearMood] = useSearchFilter('mood')
+  const [value, setValue] = useState<string>(mood ?? '')
 
   const handleSubmit = useCallback(() => {
     if (value) {
