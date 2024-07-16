@@ -2002,7 +2002,7 @@ def test_release_date(app, mocker):
 
 
 def test_publish_track(app, mocker):
-    "Tests publishing a track should generate a notification"
+    "Tests publishing a track should generate a notification and update track fields"
     with app.app_context():
         db = get_db()
         web3 = Web3()

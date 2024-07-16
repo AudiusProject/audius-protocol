@@ -76,6 +76,20 @@ def tx_receipts():
             "is_scheduled_release": True,
             "release_date": "2050-11-30T08:00:00.00Z",
         },
+        "QmCreateAlbum6": {  # scheduled release to be published
+            "playlist_contents": {"track_ids": [{"time": 1660927554, "track": 1}]},
+            "description": "",
+            "playlist_image_sizes_multihash": "",
+            "playlist_name": "scheduled album to be published",
+            "is_album": True,
+            "is_private": True,
+            "is_scheduled_release": True,
+            "release_date": "Fri Jan 26 2100 00:00:00 GMT+0000",
+        },
+        "QmUpdateAlbum6": {
+            "playlist_name": "scheduled album is now published",
+            "is_private": False,
+        },
     }
 
     create_playlist1_json = json.dumps(test_metadata["QmCreatePlaylist1"])
@@ -85,6 +99,8 @@ def tx_receipts():
     update_playlist3_json = json.dumps(test_metadata["QmUpdatePlaylist3"])
     create_album4_json = json.dumps(test_metadata["QmCreateAlbum4"])
     create_album5_json = json.dumps(test_metadata["QmCreateAlbum5"])
+    create_album6_json = json.dumps(test_metadata["QmCreateAlbum6"])
+    update_album6_json = json.dumps(test_metadata["QmUpdateAlbum6"])
 
     return {
         "CreatePlaylist1Tx": [
@@ -199,7 +215,7 @@ def tx_receipts():
                 )
             },
         ],
-        "CreateAlbum6Tx": [
+        "CreateAlbum5Tx": [
             {
                 "args": AttributeDict(
                     {
@@ -208,6 +224,34 @@ def tx_receipts():
                         "_userId": 1,
                         "_action": "Create",
                         "_metadata": f'{{"cid": "QmCreateAlbum5", "data": {create_album5_json}}}',
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
+        "CreateAlbum6Tx": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": PLAYLIST_ID_OFFSET + 7,
+                        "_entityType": "Playlist",
+                        "_userId": 1,
+                        "_action": "Create",
+                        "_metadata": f'{{"cid": "QmCreateAlbum6", "data": {create_album6_json}}}',
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
+        "UpdateAlbum6Tx": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": PLAYLIST_ID_OFFSET + 7,
+                        "_entityType": "Playlist",
+                        "_userId": 1,
+                        "_action": "Update",
+                        "_metadata": f'{{"cid": "QmCreateAlbum6", "data": {update_album6_json}}}',
                         "_signer": "user1wallet",
                     }
                 )
@@ -608,7 +652,7 @@ def test_index_valid_playlists(app, mocker, tx_receipts):
 
         # validate db records
         all_playlists: List[Playlist] = session.query(Playlist).all()
-        assert len(all_playlists) == 7
+        assert len(all_playlists) == 8
 
         playlists_1: List[Playlist] = (
             session.query(Playlist)
@@ -687,7 +731,7 @@ def test_index_valid_playlists(app, mocker, tx_receipts):
             .filter(Playlist.is_current == True, Playlist.is_album == True)
             .all()
         )
-        assert len(albums) == 2
+        assert len(albums) == 3
         album = albums[0]
         assert datetime.timestamp(album.last_added_to) == 1585336422
         assert album.playlist_name == "album"
@@ -701,6 +745,13 @@ def test_index_valid_playlists(app, mocker, tx_receipts):
         assert scheduled_album.is_current == True
         assert scheduled_album.is_private == True
         assert scheduled_album.is_scheduled_release == True
+
+        published_album = albums[2]
+        assert datetime.timestamp(published_album.last_added_to) == 1585336422
+        assert published_album.playlist_name == "scheduled album is now published"
+        assert published_album.is_private == False
+        assert published_album.is_scheduled_release == False
+        assert scheduled_album.release_date != datetime(2100, 1, 26, 0, 0)
 
 
 def test_index_invalid_playlists(app, mocker):
@@ -1462,3 +1513,4 @@ def test_access_conditions(app, mocker, tx_receipts):
             .first()
         )
         assert album == None
+
