@@ -735,7 +735,7 @@ function* downloadTracks({
             })
             console.debug('Recorded download for track', trackId)
           } catch (e) {
-            console.warn('Failed to record download for track', trackId, e)
+            console.error('Failed to record download for track', trackId, e)
           }
         })
       )
