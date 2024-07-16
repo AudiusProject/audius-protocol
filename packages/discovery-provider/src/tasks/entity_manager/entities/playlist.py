@@ -665,7 +665,8 @@ def populate_playlist_record_metadata(
             # override release_date and is_scheduled_release.
             if (
                 playlist_record.is_private
-                and not playlist_metadata["is_private"]
+                # default to true so this statement doesn't trigger if is_private is missing
+                and not playlist_metadata.get("is_private", True)
                 and action == Action.UPDATE
             ):
                 playlist_record.is_scheduled_release = False

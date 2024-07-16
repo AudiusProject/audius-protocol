@@ -308,7 +308,8 @@ def populate_track_record_metadata(track_record: Track, track_metadata, handle, 
             # override release_date and is_scheduled_release.
             if (
                 track_record.is_unlisted
-                and not track_metadata["is_unlisted"]
+                # default to true so this statement doesn't trigger if is_private is missing
+                and not track_metadata.get("is_unlisted", True)
                 and action == Action.UPDATE
             ):
                 track_record.is_scheduled_release = False
