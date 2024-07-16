@@ -3,8 +3,14 @@ import NetInfo from '@react-native-community/netinfo'
 import { View } from 'react-native'
 import { useAsyncFn } from 'react-use'
 
-import { IconNoWifi, IconRefresh, Button } from '@audius/harmony-native'
-import { Text, Tile } from 'app/components/core'
+import {
+  IconNoWifi,
+  Text,
+  IconRefresh,
+  Button,
+  Flex
+} from '@audius/harmony-native'
+import { Tile } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 
@@ -16,24 +22,10 @@ const messages = {
 }
 
 const useStyles = makeStyles(({ typography, spacing }) => ({
-  container: {
-    justifyContent: 'center',
-    alignItems: 'center'
-  },
-  header: {
-    fontSize: typography.fontSize.xxl,
-    fontFamily: typography.fontByWeight.bold,
-    marginVertical: spacing(4)
-  },
   root: {
     padding: spacing(4),
     paddingBottom: spacing(0),
     margin: spacing(3)
-  },
-  subHeading: {
-    fontSize: typography.fontSize.small,
-    textAlign: 'center',
-    lineHeight: 21
   }
 }))
 
@@ -53,10 +45,12 @@ export const OfflinePlaceholder = (props: OfflinePlaceholderProps) => {
   const { neutralLight4 } = useThemeColors()
 
   const body = (
-    <View style={styles.container}>
-      <IconNoWifi fill={neutralLight4} />
-      <Text style={styles.header}>{messages.title}</Text>
-      <Text style={styles.subHeading} allowNewline>
+    <Flex justifyContent='center' alignItems='center' gap='l' pv='l'>
+      <IconNoWifi height={80} width={80} fill={neutralLight4} />
+      <Text variant='heading' size='l'>
+        {messages.title}
+      </Text>
+      <Text variant='body' size='m' textAlign='center'>
         {messages.subtitle}
       </Text>
       <Button
@@ -67,7 +61,7 @@ export const OfflinePlaceholder = (props: OfflinePlaceholderProps) => {
       >
         {messages.reloading(isRefreshing)}
       </Button>
-    </View>
+    </Flex>
   )
 
   return unboxed ? (

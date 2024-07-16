@@ -67,8 +67,7 @@ export function* setupBackend() {
   apiClient.init()
 
   const establishedReachability = yield* call(awaitReachability)
-  // If we couldn't connect, show the error page
-  // and just sit here waiting for reachability.
+  // If we couldn't connect, just sit here waiting for reachability.
   if (!establishedReachability) {
     console.warn('No internet connectivity')
     yield* put(accountActions.fetchAccountNoInternet())
