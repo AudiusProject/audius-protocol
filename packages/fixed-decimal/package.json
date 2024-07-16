@@ -30,7 +30,7 @@
   "devDependencies": {
     "@types/bn.js": "5.1.0",
     "bn.js": "5.1.0",
-    "eslint": "8.19.0",
+    "eslint": "8.56.0",
     "vitest": "0.34.6"
   }
 }
