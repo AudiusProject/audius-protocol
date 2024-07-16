@@ -304,7 +304,8 @@ def populate_track_record_metadata(track_record: Track, track_metadata, handle, 
                 if parsed_release_date:
                     track_record.release_date = str(parsed_release_date)  # type: ignore
         elif key == "is_unlisted":
-            # if track is being published, set release date to now.
+            # if track is being published (changing from private to public),
+            # override release_date and is_scheduled_release.
             if (
                 track_record.is_unlisted
                 and not track_metadata["is_unlisted"]

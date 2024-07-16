@@ -661,7 +661,8 @@ def populate_playlist_record_metadata(
                         parsed_release_date
                     )
         elif key == "is_private":
-            # if playlist is being published, set release date to now.
+            # if playlist is being published (changing from private to public),
+            # override release_date and is_scheduled_release.
             if (
                 playlist_record.is_private
                 and not playlist_metadata["is_private"]
