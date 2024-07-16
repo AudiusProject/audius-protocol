@@ -75,13 +75,13 @@ const rangeOptions = [
 ]
 
 const BpmRangeView = ({ value, setValue }: ViewProps) => {
-  const isValueRangeOption =
-    value?.includes('-') &&
-    Boolean(rangeOptions.find((opt) => opt.value === value))
   const minMaxValue = value?.includes('-') ? value.split('-') : null
+  const isValueRangeOption = Boolean(
+    rangeOptions.find((opt) => opt.value === value)
+  )
 
-  const [bpmRange, setBpmRange] = useState<string>(
-    isValueRangeOption ? (value as string) : minMaxValue ? 'custom' : ''
+  const [bpmRange, setBpmRange] = useState(
+    minMaxValue && !isValueRangeOption ? 'custom' : value
   )
   const [minBpm, setMinBpm] = useState(minMaxValue?.[0] ?? '')
   const [maxBpm, setMaxBpm] = useState(minMaxValue?.[1] ?? '')
