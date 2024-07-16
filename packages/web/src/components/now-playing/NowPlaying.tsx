@@ -232,7 +232,8 @@ const NowPlaying = g(
       _cover_art_sizes,
       has_current_user_saved,
       has_current_user_reposted,
-      _co_sign
+      _co_sign,
+      is_unlisted: isUnlisted
     } = displayInfo
 
     const { name, handle } = user
@@ -565,9 +566,7 @@ const NowPlaying = g(
             />
           ) : null}
           <ActionsBar
-            isOwner={currentUserId === owner_id}
-            hasReposted={has_current_user_reposted}
-            hasFavorited={has_current_user_saved}
+            trackId={track_id as ID}
             isCollectible={!!collectible}
             onToggleRepost={toggleRepost}
             onToggleFavorite={toggleFavorite}
@@ -575,8 +574,6 @@ const NowPlaying = g(
             onClickOverflow={onClickOverflow}
             isDarkMode={isDarkMode()}
             isMatrixMode={matrix}
-            showRepost={!shouldShowPurchasePreview}
-            showFavorite={!shouldShowPurchasePreview}
           />
         </div>
       </div>

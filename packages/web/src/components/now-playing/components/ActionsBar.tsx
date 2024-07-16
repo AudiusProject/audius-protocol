@@ -1,6 +1,14 @@
 import { memo, MouseEvent } from 'react'
 
-import { IconShare, IconKebabHorizontal, IconButton } from '@audius/harmony'
+import { useGetCurrentUserId, useGetTrackById } from '@audius/common/api'
+import { useGatedContentAccess } from '@audius/common/hooks'
+import { ID } from '@audius/common/models'
+import {
+  IconShare,
+  IconKebabHorizontal,
+  IconButton,
+  Flex
+} from '@audius/harmony'
 
 import FavoriteButton from 'components/alt-button/FavoriteButton'
 import RepostButton from 'components/alt-button/RepostButton'
@@ -8,60 +16,62 @@ import RepostButton from 'components/alt-button/RepostButton'
 import styles from './ActionsBar.module.css'
 
 type ActionsBarProps = {
-  hasReposted: boolean
-  hasFavorited: boolean
+  trackId: ID
   isCollectible: boolean
-  isOwner: boolean
   onToggleRepost: () => void
   onToggleFavorite: () => void
   onShare: () => void
   onClickOverflow: () => void
   isDarkMode: boolean
   isMatrixMode: boolean
-  showRepost?: boolean
-  showFavorite?: boolean
 }
 
 const ActionsBar = ({
-  hasReposted,
-  hasFavorited,
+  trackId,
   isCollectible = false,
-  isOwner,
   onToggleRepost,
   onToggleFavorite,
   onShare,
   onClickOverflow,
   isDarkMode,
-  isMatrixMode,
-  showRepost = true,
-  showFavorite = true
+  isMatrixMode
 }: ActionsBarProps) => {
+  const { data: track } = useGetTrackById({ id: trackId })
+  const { data: currentUserId } = useGetCurrentUserId({})
+  const {
+    is_unlisted: isUnlisted,
+    owner_id: ownerId,
+    has_current_user_reposted: hasReposted,
+    has_current_user_saved: hasSaved
+  } = track ?? {}
+  const isOwner = ownerId === currentUserId
+  const { hasStreamAccess } = useGatedContentAccess(track ?? {})
+  const shouldShowActions = hasStreamAccess && !isUnlisted
+
+  if (!shouldShowActions) return null
+
   return (
-    <div className={styles.actionsBar}>
-      {showRepost ? (
-        <RepostButton
-          isDarkMode={isDarkMode}
-          isMatrixMode={isMatrixMode}
-          isActive={hasReposted}
-          isDisabled={isOwner || isCollectible}
-          onClick={onToggleRepost}
-          wrapperClassName={styles.icon}
-          className={styles.repostButton}
-          altVariant
-        />
-      ) : null}
-      {showFavorite ? (
-        <FavoriteButton
-          isActive={hasFavorited}
-          isDisabled={isOwner || isCollectible}
-          isDarkMode={isDarkMode}
-          isMatrixMode={isMatrixMode}
-          onClick={onToggleFavorite}
-          wrapperClassName={styles.icon}
-          className={styles.favoriteButton}
-          altVariant
-        />
-      ) : null}
+    <Flex className={styles.actionsBar}>
+      <RepostButton
+        isDarkMode={isDarkMode}
+        isMatrixMode={isMatrixMode}
+        isActive={hasReposted}
+        isDisabled={isOwner || isCollectible}
+        onClick={onToggleRepost}
+        wrapperClassName={styles.icon}
+        className={styles.repostButton}
+        altVariant
+      />
+      <FavoriteButton
+        isActive={hasSaved}
+        isDisabled={isOwner || isCollectible}
+        isDarkMode={isDarkMode}
+        isMatrixMode={isMatrixMode}
+        onClick={onToggleFavorite}
+        wrapperClassName={styles.icon}
+        className={styles.favoriteButton}
+        altVariant
+      />
       <IconButton
         aria-label='share'
         size='xl'
@@ -80,7 +90,7 @@ const ActionsBar = ({
           onClickOverflow()
         }}
       />
-    </div>
+    </Flex>
   )
 }
 
