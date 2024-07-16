@@ -170,7 +170,6 @@ export function* fetchAccountAsync({ isSignUp = false }) {
 
   const account = yield call(audiusBackendInstance.getAccount)
   if (!account) {
-    yield put(accountActions.resetAccount())
     yield put(
       fetchAccountFailed({
         reason: 'ACCOUNT_NOT_FOUND'
