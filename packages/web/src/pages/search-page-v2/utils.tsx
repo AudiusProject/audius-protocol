@@ -44,7 +44,6 @@ export const useGetSearchResults = <C extends SearchCategory>(
 
   const { data, status } = useGetSearchResultsApi(params, {
     debounce: 500,
-    // TODO: do we need this on mobile too
     // Only search when the account has finished loading,
     // or if the user is not logged in
     disabled: accountStatus === Status.LOADING || accountStatus === Status.IDLE
