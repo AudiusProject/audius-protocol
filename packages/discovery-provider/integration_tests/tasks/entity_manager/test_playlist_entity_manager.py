@@ -1513,4 +1513,3 @@ def test_access_conditions(app, mocker, tx_receipts):
             .first()
         )
         assert album == None
-
