@@ -328,7 +328,7 @@ def extend_supporter_dethroned(action: NotificationAction):
 def extend_challenge_reward(action: NotificationAction):
     data: ChallengeRewardNotification = action["data"]  # type: ignore
     return {
-        "specifier": encode_int_id(int(action["specifier"])),
+        "specifier": action["specifier"],
         "type": action["type"],
         "timestamp": (
             datetime.timestamp(action["timestamp"])
@@ -346,7 +346,7 @@ def extend_challenge_reward(action: NotificationAction):
 def extend_claimable_reward(action: NotificationAction):
     data: ClaimableRewardNotification = action["data"]  # type: ignore
     return {
-        "specifier": encode_int_id(int(action["specifier"])),
+        "specifier": action["specifier"],
         "type": action["type"],
         "timestamp": (
             datetime.timestamp(action["timestamp"])
