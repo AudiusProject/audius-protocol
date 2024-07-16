@@ -211,7 +211,8 @@ export const GiantTrackTile = ({
   const showPreview = isUSDCPurchaseGated && (isOwner || !hasStreamAccess)
   // Play button is conditionally hidden for USDC-gated tracks when the user does not have access
   const showPlay = isUSDCPurchaseGated ? hasStreamAccess : true
-  const shouldShowScheduledRelease = dayjs(releaseDate).isAfter(dayjs())
+  const shouldShowScheduledRelease =
+    isScheduledRelease && dayjs(releaseDate).isAfter(dayjs())
   const renderCardTitle = (className: string) => {
     return (
       <CardTitle
