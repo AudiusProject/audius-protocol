@@ -200,6 +200,12 @@ services:
       service: backfill-audio-analyses
     <<: *common
 
+  verified-notifications:
+    extends:
+      file: docker-compose.pedalboard.${DOCKERCOMPOSE_ENV_TYPE:-dev}.yml
+      service: verified-notifications
+    <<: *common
+
   # DDEX
 
   ddex-mongo:

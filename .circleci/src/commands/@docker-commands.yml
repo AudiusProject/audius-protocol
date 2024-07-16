@@ -56,6 +56,7 @@ docker-tag-images:
             trpc
             uptime
             backfill-audio-analyses
+            verified-notifications
           )
           creator=(
             mediorum

@@ -61,6 +61,11 @@ jobs:
       service: mri
       notify_slack_on_failure: true
   - push-docker-image:
+      name: push-pedalboard-verified-notifications
+      context: [Vercel, dockerhub, slack-secrets]
+      service: verified-notifications
+      notify_slack_on_failure: true
+  - push-docker-image:
       name: push-comms
       context: [Vercel, dockerhub, slack-secrets]
       service: comms
@@ -151,6 +156,12 @@ jobs:
       service: mri
       requires:
         - push-pedalboard-mri
+  - push-arm-image:
+      name: push-pedalboard-verified-notifications-arm
+      context: [Vercel, dockerhub]
+      service: verified-notifications
+      requires:
+        - push-pedalboard-verified-notifications
   - push-arm-image:
       name: push-comms-arm
       context: [Vercel, dockerhub]

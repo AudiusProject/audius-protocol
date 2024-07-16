@@ -1,0 +1,18 @@
+import dotenv from "dotenv";
+
+import listenOn from "./db.js";
+import tracksHandler from "./handlers/tracks.js";
+import usersHandler from "./handlers/users.js";
+import { Server } from "./server/index.js";
+
+const main = async () => {
+  const server = new Server();
+  await server.init();
+
+  console.log("verified uploads bot starting");
+  const tracks = listenOn("tracks", tracksHandler).catch(console.error);
+  const users = listenOn("users", usersHandler).catch(console.error);
+  await Promise.allSettled([tracks, users]);
+};
+
+main();
