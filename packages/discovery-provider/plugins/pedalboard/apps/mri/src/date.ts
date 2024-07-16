@@ -19,6 +19,22 @@ export const formatDate = (date: Date): string => {
 }
 
 /**
+ * Formats date to YYYYMMDDhhmmss
+ * @returns string date
+ */
+export const formatDateISO = (date: Date): string => {
+  const year = date.getFullYear()
+  const month = padToTwoDigits(date.getMonth() + 1)
+  const day = padToTwoDigits(date.getDate())
+  const hours = padToTwoDigits(date.getHours())
+  const minutes = padToTwoDigits(date.getMinutes())
+  const seconds = padToTwoDigits(date.getSeconds())
+
+  // Concatenate all components in the specified format
+  return `${year}${month}${day}T${hours}${minutes}${seconds}`
+}
+
+/**
  * Gets YYYYMM from a given date
  * @returns string date
  */
