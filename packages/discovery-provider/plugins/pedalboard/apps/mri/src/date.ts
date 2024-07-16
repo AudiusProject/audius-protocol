@@ -17,3 +17,13 @@ export const formatDate = (date: Date): string => {
   // Concatenate all components in the specified format
   return `${year}${month}${day}${hours}${minutes}${seconds}`
 }
+
+/**
+ * Gets YYYYMM from a given date
+ * @returns string date
+ */
+export const getYearMonth = (date: Date): string => {
+  const year = date.getFullYear()
+  const month = padToTwoDigits(date.getMonth() + 1)
+  return `${year}${month}`
+}

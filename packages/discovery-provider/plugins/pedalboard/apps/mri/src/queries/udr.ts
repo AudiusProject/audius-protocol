@@ -5,6 +5,7 @@ import { S3Config, publishToS3 } from '../s3'
 import { readConfig } from '../config'
 import dayjs from 'dayjs'
 import quarterOfYear from 'dayjs/plugin/quarterOfYear'
+import { formatDate, getYearMonth } from '../date'
 
 dayjs.extend(quarterOfYear)
 
@@ -23,7 +24,7 @@ export type UsageDetailReporting = {
   NumberOfPerformances: number
 }
 
-export const ClientLabelMetadataHeader: (keyof UsageDetailReporting)[] = [
+export const UsageDetailReportingHeader: (keyof UsageDetailReporting)[] = [
   'ServiceName',
   'ReportPeriodType',
   'ReportingPeriod',
@@ -88,13 +89,15 @@ export const udr = async (
   )
 
   const udrRows: UsageDetailReporting[] = queryResult.rows
-  const csv = toCsvString(udrRows)
+  const csv = toCsvString(udrRows, UsageDetailReportingHeader)
   if (isDev) {
     logger.info(csv)
   }
+  // YYYYMM_Service_Territory_yyyymmddThhmmss_detail_<DistributionType>
+  const fileName = `${getYearMonth(date)}_AUDIUS_${formatDate(date)}`
 
   const uploads = s3s.map((s3config) =>
-    publishToS3(logger, s3config, date, csv)
+    publishToS3(logger, s3config, csv, fileName)
   )
   const results = await Promise.allSettled(uploads)
   results.forEach((objUrl) =>
