@@ -14,7 +14,7 @@ import {
   CollectionsPageType,
   PurchaseableContentType
 } from '@audius/common/store'
-import { Nullable, formatReleaseDate } from '@audius/common/utils'
+import { Nullable, dayjs, formatReleaseDate } from '@audius/common/utils'
 import {
   Text,
   IconVisibilityHidden,
@@ -141,6 +141,8 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
 
   const hasStreamAccess = access?.stream
   const shouldShowStats = variant !== Variant.SMART && (!isPrivate || isOwner)
+  const shouldShowScheduledRelease =
+    isScheduledRelease && releaseDate && dayjs(releaseDate).isAfter(dayjs())
 
   const handleFilterChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
@@ -272,7 +274,7 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
         css={{ position: 'absolute', right: spacing.l, top: spacing.l }}
       >
         {!isPublished ? (
-          isScheduledRelease && releaseDate ? (
+          shouldShowScheduledRelease ? (
             <MusicBadge variant='accent' icon={IconCalendarMonth}>
               {messages.releases(releaseDate)}
             </MusicBadge>

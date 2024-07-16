@@ -215,8 +215,11 @@ export const TrackScreenDetailsTile = ({
 
   const isPlayingPreview = isPreviewing && isPlaying
   const isPlayingFullAccess = isPlaying && !isPreviewing
-  const isUnpublishedScheduledRelease =
-    track?.is_scheduled_release && track?.is_unlisted && releaseDate
+  const shouldShowScheduledRelease =
+    isScheduledRelease &&
+    isUnlisted &&
+    releaseDate &&
+    dayjs(releaseDate).isAfter(dayjs())
   const shouldShowPreview = isUSDCPurchaseGated && (isOwner || !hasStreamAccess)
   const shouldHideFavoriteCount =
     isUnlisted || (!isOwner && (saveCount ?? 0) <= 0)
@@ -242,7 +245,7 @@ export const TrackScreenDetailsTile = ({
     aiAttributionUserId ? (
       <DetailsTileAiAttribution userId={aiAttributionUserId} />
     ) : null,
-    isUnpublishedScheduledRelease ? (
+    shouldShowScheduledRelease ? (
       <MusicBadge variant='accent' icon={IconCalendarMonth}>
         {messages.releases(releaseDate)}
       </MusicBadge>

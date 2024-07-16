@@ -258,8 +258,11 @@ export const CollectionScreenDetailsTile = ({
   const firstTrack = useSelector(selectFirstTrack)
   const messages = getMessages(isAlbum ? 'album' : 'playlist', isStreamGated)
   const isPublished = !isPrivate || isPublishing
-  const isUnpublishedScheduledRelease =
-    isScheduledRelease && isPrivate && releaseDate
+  const shouldShowScheduledRelease =
+    isScheduledRelease &&
+    isPrivate &&
+    releaseDate &&
+    dayjs(releaseDate).isAfter(dayjs())
   const shouldHideOverflow =
     hideOverflow || !isReachable || (isPrivate && !isOwner)
   const shouldHideActions = hideActions || (isPrivate && !isOwner)
@@ -285,7 +288,7 @@ export const CollectionScreenDetailsTile = ({
   useRefetchLineupOnTrackAdd(collectionId)
 
   const badges = [
-    isUnpublishedScheduledRelease ? (
+    shouldShowScheduledRelease ? (
       <MusicBadge variant='accent' icon={IconCalendarMonth}>
         {messages.releases(releaseDate)}
       </MusicBadge>
