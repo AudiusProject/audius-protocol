@@ -3,7 +3,6 @@ import {
   CreateBucketCommand,
   PutObjectCommand
 } from '@aws-sdk/client-s3'
-import { formatDate } from './date'
 import { readConfig } from './config'
 import { logger } from './logger'
 import { Logger } from 'pino'
@@ -103,12 +102,12 @@ export const createS3Instances = async (): Promise<{
 export const publishToS3 = async (
   logger: Logger,
   config: S3Config,
-  date: Date,
-  csv: string
+  csv: string,
+  fileName: string
 ): Promise<string> => {
   const { s3, keyPrefix, bucket } = config
 
-  const key = `${keyPrefix}${formatDate(date)}.csv`
+  const key = `${keyPrefix}${fileName}.csv`
   const contentLength = Buffer.byteLength(csv, 'utf8')
 
   logger.info({ contentLength, key, bucket }, 'uploading')
