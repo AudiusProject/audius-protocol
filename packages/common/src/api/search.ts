@@ -3,6 +3,7 @@ import { isEmpty } from 'lodash'
 
 import { createApi } from '~/audius-query'
 import { ID } from '~/models/Identifiers'
+import { FeatureFlags } from '~/services'
 import { SearchKind } from '~/store'
 import { Genre, formatMusicalKey } from '~/utils'
 
@@ -26,7 +27,6 @@ type getSearchArgs = {
   category?: SearchCategory
   limit?: number
   offset?: number
-  includePurchaseable?: boolean
 } & SearchFilters
 
 const getMinMaxFromBpm = (bpm?: string) => {
@@ -40,9 +40,16 @@ const searchApi = createApi({
   reducerPath: 'searchApi',
   endpoints: {
     getSearchResults: {
-      fetch: async (args: getSearchArgs, { apiClient, audiusBackend }) => {
+      fetch: async (
+        args: getSearchArgs,
+        { apiClient, audiusBackend, getFeatureEnabled }
+      ) => {
         const { category, currentUserId, query, limit, offset, ...filters } =
           args
+
+        const isUSDCEnabled = await getFeatureEnabled(
+          FeatureFlags.USDC_PURCHASES
+        )
 
         const kind = category as SearchKind
         if (!query && isEmpty(filters)) {
@@ -56,7 +63,7 @@ const searchApi = createApi({
 
         const [bpmMin, bpmMax] = getMinMaxFromBpm(filters.bpm)
 
-        if (query?.[0] === '#') {
+        const searchTags = async () => {
           return await audiusBackend.searchTags({
             userTagCount: 1,
             kind,
@@ -68,19 +75,40 @@ const searchApi = createApi({
             bpmMax,
             key: formatMusicalKey(filters.key)
           })
-        } else {
+        }
+
+        const search = async () => {
           return await apiClient.getSearchFull({
             kind,
             currentUserId,
             query,
-            limit,
-            offset,
+            limit: limit || 50,
+            offset: offset || 0,
+            includePurchaseable: isUSDCEnabled,
             ...filters,
             bpmMin,
             bpmMax,
             key: formatMusicalKey(filters.key)
           })
         }
+
+        const results = query?.[0] === '#' ? await searchTags() : await search()
+
+        const formattedResults = {
+          ...results,
+          tracks: results.tracks.map((track) => {
+            return {
+              ...track,
+              user: {
+                ...track.user,
+                user_id: track.owner_id
+              },
+              _cover_art_sizes: {}
+            }
+          })
+        }
+
+        return formattedResults
       },
       options: {}
     }

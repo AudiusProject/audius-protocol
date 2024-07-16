@@ -16,7 +16,11 @@ import NavContext, {
 } from 'components/nav/mobile/NavContext'
 import Page from 'components/page/Page'
 import { useMedia } from 'hooks/useMedia'
-import { SEARCH_PAGE, fullSearchResultsPageV2 } from 'utils/route'
+import {
+  SEARCH_BASE_ROUTE,
+  SEARCH_PAGE,
+  fullSearchResultsPageV2
+} from 'utils/route'
 
 import { RecentSearches } from './RecentSearches'
 import { SearchCatalogTile } from './SearchCatalogTile'
@@ -85,8 +89,13 @@ export const SearchPageV2 = () => {
           commonFilters.includes('hasDownloads') && { hasDownloads })
       }
 
+      const pathname =
+        newCategory === 'all'
+          ? generatePath(SEARCH_BASE_ROUTE)
+          : generatePath(SEARCH_PAGE, { category: newCategory })
+
       history.push({
-        pathname: generatePath(SEARCH_PAGE, { category: newCategory }),
+        pathname,
         search: !isEmpty(commonFilterParams)
           ? new URLSearchParams(commonFilterParams).toString()
           : undefined,

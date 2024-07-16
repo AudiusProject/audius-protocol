@@ -1,5 +1,108 @@
-import { Mood } from '@audius/sdk'
-import { useSearchParams } from 'react-router-dom-v5-compat'
+import { useMemo } from 'react'
+
+import {
+  SearchCategory,
+  useGetSearchResults as useGetSearchResultsApi
+} from '@audius/common/api'
+import { Status } from '@audius/common/models'
+import { SearchSortMethod, accountSelectors } from '@audius/common/store'
+import { Genre, Mood } from '@audius/sdk'
+import { useSelector } from 'react-redux'
+import { useRouteMatch } from 'react-router-dom'
+import { useSearchParams as useParams } from 'react-router-dom-v5-compat'
+
+import { SEARCH_PAGE } from 'utils/route'
+
+import { CategoryView } from './types'
+
+const { getAccountStatus, getUserId } = accountSelectors
+
+type SearchResultsApiType = ReturnType<typeof useGetSearchResultsApi>
+
+type SearchResultsType<C extends SearchCategory> = {
+  status: SearchResultsApiType['status']
+  data: C extends 'all'
+    ? SearchResultsApiType['data']
+    : SearchResultsApiType['data'][Exclude<C, 'all'>]
+}
+
+export const useGetSearchResults = <C extends SearchCategory>(
+  category: C
+): SearchResultsType<C> => {
+  const { query, category: ignoredCategory, ...filters } = useSearchParams()
+
+  const accountStatus = useSelector(getAccountStatus)
+  const currentUserId = useSelector(getUserId)
+
+  const params = {
+    query: query || '',
+    ...filters,
+    category,
+    currentUserId,
+    limit: category === 'all' ? 12 : undefined
+  }
+
+  const { data, status } = useGetSearchResultsApi(params, {
+    debounce: 500,
+    // Only search when the account has finished loading,
+    // or if the user is not logged in
+    disabled: accountStatus === Status.LOADING || accountStatus === Status.IDLE
+  })
+
+  if (category === 'all') {
+    return { data, status } as SearchResultsType<C>
+  } else {
+    return {
+      data: data?.[category as Exclude<C, 'all'>],
+      status
+    } as SearchResultsType<C>
+  }
+}
+
+export const useSearchParams = () => {
+  const [urlSearchParams] = useParams()
+
+  const routeMatch = useRouteMatch<{ category: string }>(SEARCH_PAGE)
+  const category =
+    (routeMatch?.params.category as CategoryView) || CategoryView.ALL
+  const query = urlSearchParams.get('query')
+  const sortMethod = urlSearchParams.get('sortMethod') as SearchSortMethod
+  const genre = urlSearchParams.get('genre')
+  const mood = urlSearchParams.get('mood')
+  const bpm = urlSearchParams.get('bpm')
+  const key = urlSearchParams.get('key')
+  const isVerified = urlSearchParams.get('isVerified')
+  const hasDownloads = urlSearchParams.get('hasDownloads')
+  const isPremium = urlSearchParams.get('isPremium')
+
+  const searchParams = useMemo(
+    () => ({
+      query,
+      category,
+      genre: (genre || undefined) as Genre,
+      mood: (mood || undefined) as Mood,
+      bpm: bpm || undefined,
+      key: key || undefined,
+      isVerified: isVerified === 'true',
+      hasDownloads: hasDownloads === 'true',
+      isPremium: isPremium === 'true',
+      sortMethod: sortMethod || undefined
+    }),
+    [
+      query,
+      category,
+      genre,
+      mood,
+      bpm,
+      key,
+      isVerified,
+      hasDownloads,
+      isPremium,
+      sortMethod
+    ]
+  )
+  return searchParams
+}
 
 const urlSearchParamsToObject = (
   searchParams: URLSearchParams
@@ -13,11 +116,9 @@ const urlSearchParamsToObject = (
   )
 
 export const useUpdateSearchParams = (key: string) => {
-  const [searchParams, setUrlSearchParams] = useSearchParams()
+  const [searchParams, setUrlSearchParams] = useParams()
   return (value: string) => {
     if (value) {
-      // TODO: This is causing an amplitude page view every time
-      // let's fix this
       setUrlSearchParams({
         ...urlSearchParamsToObject(searchParams),
         [key]: value

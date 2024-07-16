@@ -476,6 +476,9 @@ export const searchResultsPageV2 = (
   category: SearchCategory,
   query: string
 ) => {
+  if (category === 'all') {
+    return `/search?query=${query}`
+  }
   return `/search/${category}/?query=${query}`
 }
 
