@@ -11,7 +11,7 @@ import { Logger } from 'pino'
 import secp256k1 from 'secp256k1'
 
 import { ClockProgram, InstructionsProgram, config } from '../../config'
-import { connections } from '../../utils/connections'
+import { getConnection } from '../../utils/connections'
 import { LocationData } from '../../utils/ipData'
 
 class TrackData {
@@ -172,7 +172,7 @@ export async function createTrackListenInstructions({
     'ids and keys'
   )
 
-  const connection = connections[0]
+  const connection = getConnection()
   const source = 'relay'
 
   const accInfo = await connection.getAccountInfo(validSignerPubK)

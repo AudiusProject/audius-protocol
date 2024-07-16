@@ -103,7 +103,7 @@ export const sendTransactionWithRetries = async ({
   }
 
   const start = Date.now()
-  const connection = connections[0]
+  const connection = getConnection()
   const abortController = new AbortController()
   let success = false
   try {
