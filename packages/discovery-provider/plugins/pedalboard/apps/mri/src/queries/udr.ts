@@ -5,7 +5,7 @@ import { S3Config, publishToS3 } from '../s3'
 import { readConfig } from '../config'
 import dayjs from 'dayjs'
 import quarterOfYear from 'dayjs/plugin/quarterOfYear'
-import { formatDate, getYearMonth } from '../date'
+import { formatDateISO, getYearMonth } from '../date'
 
 dayjs.extend(quarterOfYear)
 
@@ -46,9 +46,14 @@ export const udr = async (
 ): Promise<void> => {
   const logger = plogger.child({ date: date.toISOString() })
   logger.info('beginning usage detail report processing')
-  const start = dayjs(date).startOf('quarter').toDate()
-  const end = dayjs(date).startOf('quarter').add(1, 'quarter').toDate()
-  const reportingPeriod = dayjs(end).format('MMDDYYYY')
+  const startOfThisQuarter = dayjs(date).startOf('quarter')
+  const endOfLastQuarter = startOfThisQuarter.subtract(1, 'day')
+  const startOfPreviousQuarter = endOfLastQuarter.startOf('quarter')
+  const endOfPreviousQuarter = startOfPreviousQuarter.add(1, 'quarter').subtract(1, 'day')
+
+  const start = startOfPreviousQuarter.toDate()
+  const end = endOfPreviousQuarter.toDate()
+  const reportingPeriod = endOfPreviousQuarter.format('MMDDYYYY')
 
   logger.info(
     { start: start.toISOString(), end: end.toISOString() },
@@ -94,7 +99,7 @@ export const udr = async (
     logger.info(csv)
   }
   // YYYYMM_Service_Territory_yyyymmddThhmmss_detail_<DistributionType>
-  const fileName = `${getYearMonth(date)}_AUDIUS_${formatDate(date)}`
+  const fileName = `${getYearMonth(start)}_AUDIUS_${formatDateISO(date)}`
 
   const uploads = s3s.map((s3config) =>
     publishToS3(logger, s3config, csv, fileName)
