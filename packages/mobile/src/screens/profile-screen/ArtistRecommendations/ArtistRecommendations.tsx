@@ -102,7 +102,7 @@ export const ArtistRecommendations = (props: ArtistRecommendationsProps) => {
 
   const [idsToFollow, setIdsToFollow] = useState<ID[] | null>(null)
   const artistsToFollow = useSelector<CommonState, User[]>((state) =>
-    Object.values(getUsers(state, { ids: idsToFollow }))
+    Object.values(getUsers(state, { ids: idsToFollow || [] }))
   )
   const suggestedArtists = useSelector((state) =>
     selectSuggestedFollowsUsers(state, { id: user_id })
