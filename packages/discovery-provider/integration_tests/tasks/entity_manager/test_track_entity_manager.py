@@ -2017,6 +2017,8 @@ def test_publish_track(app, mocker):
             "owner_id": 1,
             "is_unlisted": True,
             "is_playlist_upload": False,
+            "is_scheduled_release": True,
+            "release_date": "Fri Jan 26 2100 00:00:00 GMT+0000",
         },
         "PublishTrack": {
             **default_metadata,
@@ -2099,6 +2101,12 @@ def test_publish_track(app, mocker):
             block_timestamp=1585336000,
             block_hash=hex(0),
         )
+        all_tracks: List[Track] = session.query(Track).all()
+        track = all_tracks[0]
+        assert track.is_unlisted == True
+        assert track.is_scheduled_release == True
+        assert track.release_date == datetime(2100, 1, 26, 0, 0)
+
     with db.scoped_session() as session:
         entity_manager_update(
             update_task,
@@ -2116,7 +2124,12 @@ def test_publish_track(app, mocker):
 
         all_tracks: List[Track] = session.query(Track).all()
         assert len(all_tracks) == 1
-        assert all_tracks[0].is_unlisted == False
+        track = all_tracks[0]
+        assert track.is_unlisted == False
+
+        # Protocol should update these fields when publishing track
+        assert track.is_scheduled_release == False
+        assert track.release_date != datetime(2100, 1, 26, 0, 0)
 
         all_notifications: List[Notification] = session.query(Notification).all()
         assert len(all_notifications) == 1
