@@ -12,18 +12,17 @@ import {
 } from '@audius/common/store'
 import { Flex, OptionsFilterButton, Text } from '@audius/harmony'
 import { css } from '@emotion/css'
-import { range } from 'lodash'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { make } from 'common/store/analytics/actions'
 import Lineup from 'components/lineup/Lineup'
-import { LineupTileSkeleton } from 'components/lineup/LineupTileSkeleton'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { useMainContentRef } from 'pages/MainContentContext'
 
 import { NoResultsTile } from '../NoResultsTile'
 import { ViewLayout, viewLayoutOptions } from '../types'
 import { useSearchParams, useUpdateSearchParams } from '../utils'
+import { LineupVariant } from 'components/lineup/types'
 
 const { makeGetLineupMetadatas } = lineupSelectors
 const { getBuffering, getPlaying } = playerSelectors
@@ -48,10 +47,11 @@ const getSearchTracksLineupMetadatas = makeGetLineupMetadatas(
 type TrackResultsProps = {
   viewLayout?: ViewLayout
   category?: SearchKind
+  count?: number
 }
 
 export const TrackResults = (props: TrackResultsProps) => {
-  const { category = 'tracks', viewLayout = 'list' } = props
+  const { category = 'tracks', viewLayout = 'list', count } = props
   const mainContentRef = useMainContentRef()
 
   const dispatch = useDispatch()
@@ -62,7 +62,6 @@ export const TrackResults = (props: TrackResultsProps) => {
   const isTrackGridLayout = viewLayout === 'grid'
 
   const lineup = useSelector(getSearchTracksLineupMetadatas)
-  const isLoading = lineup.status === Status.LOADING
 
   const searchParams = useSearchParams()
 
@@ -125,48 +124,36 @@ export const TrackResults = (props: TrackResultsProps) => {
   }
 
   return (
-    <Flex gap='l'>
-      {!isLoading ? (
-        <Lineup
-          loadMore={loadMore}
-          scrollParent={mainContentRef.current}
-          lineupContainerStyles={css({ width: '100%' })}
-          tileContainerStyles={css({
-            display: 'grid',
-            gridTemplateColumns: isTrackGridLayout ? '1fr 1fr' : '1fr',
-            gap: '4px 16px',
-            justifyContent: 'space-between'
-          })}
-          tileStyles={css({
-            maxWidth: isTrackGridLayout ? HALF_TILE_WIDTH : PAGE_WIDTH
-          })}
-          key='searchTracks'
-          lineup={lineup}
-          playingSource={currentQueueItem.source}
-          playingUid={currentQueueItem.uid}
-          playingTrackId={
-            currentQueueItem.track && currentQueueItem.track.track_id
-          }
-          playing={playing}
-          buffering={buffering}
-          playTrack={(uid, trackId) => {
-            handleClickTrackTile(trackId)
-            dispatch(searchResultsPageTracksLineupActions.play(uid))
-          }}
-          pauseTrack={() =>
-            dispatch(searchResultsPageTracksLineupActions.pause())
-          }
-          actions={searchResultsPageTracksLineupActions}
-          onClickTile={handleClickTrackTile}
-        />
-      ) : (
-        <Flex direction='column' gap='l' w='100%'>
-          {range(5).map((_, i) => (
-            <LineupTileSkeleton key={`lineup-tile-skeleton-${i}`} />
-          ))}
-        </Flex>
-      )}
-    </Flex>
+    <Lineup
+      variant={LineupVariant.SECTION}
+      count={count}
+      loadMore={loadMore}
+      scrollParent={mainContentRef.current}
+      lineupContainerStyles={css({ width: '100%' })}
+      tileContainerStyles={css({
+        display: 'grid',
+        gridTemplateColumns: isTrackGridLayout ? '1fr 1fr' : '1fr',
+        gap: '4px 16px',
+        justifyContent: 'space-between'
+      })}
+      tileStyles={css({
+        maxWidth: isTrackGridLayout ? HALF_TILE_WIDTH : PAGE_WIDTH
+      })}
+      key='searchTracks'
+      lineup={lineup}
+      playingSource={currentQueueItem.source}
+      playingUid={currentQueueItem.uid}
+      playingTrackId={currentQueueItem.track && currentQueueItem.track.track_id}
+      playing={playing}
+      buffering={buffering}
+      playTrack={(uid, trackId) => {
+        handleClickTrackTile(trackId)
+        dispatch(searchResultsPageTracksLineupActions.play(uid))
+      }}
+      pauseTrack={() => dispatch(searchResultsPageTracksLineupActions.pause())}
+      actions={searchResultsPageTracksLineupActions}
+      onClickTile={handleClickTrackTile}
+    />
   )
 }
 

@@ -10,7 +10,7 @@ import {
   SearchKind
 } from '@audius/common/store'
 import { trimToAlphaNumeric } from '@audius/common/utils'
-import { select, call } from 'typed-redux-saga'
+import { select, call, all } from 'typed-redux-saga'
 
 import { LineupSagas } from 'common/store/lineup/sagas'
 import {
@@ -34,7 +34,15 @@ function* getSearchPageResultsTracks({
   payload?: any
 }) {
   const isNativeMobile = yield* getContext('isNativeMobile')
-  if (category === SearchKind.TRACKS || isNativeMobile || isMobileWeb()) {
+  const getFeatureEnabled = yield* getContext('getFeatureEnabled')
+  const isSearchV2Enabled = getFeatureEnabled(FeatureFlags.SEARCH_V2)
+
+  if (
+    category === SearchKind.TRACKS ||
+    isNativeMobile ||
+    isMobileWeb() ||
+    (category === SearchKind.ALL && isSearchV2Enabled)
+  ) {
     // If we are on the tracks sub-page of search or mobile, which we should paginate on
     let results: Track[]
     if (isTagSearch) {
@@ -50,10 +58,7 @@ function* getSearchPageResultsTracks({
       const audiusBackend = yield* getContext('audiusBackendInstance')
       const apiClient = yield* getContext('apiClient')
       const reportToSentry = yield* getContext('reportToSentry')
-      const getFeatureEnabled = yield* getContext('getFeatureEnabled')
       const currentUserId = yield* select(getUserId)
-
-      const isSearchV2Enabled = getFeatureEnabled(FeatureFlags.SEARCH_V2)
 
       if (!isSearchV2Enabled) {
         const { tracks } = yield* call(getSearchResults, {

@@ -61,7 +61,7 @@ export const AllResults = () => {
         <Text variant='heading' textAlign='left'>
           {messages.tracks}
         </Text>
-        <TrackResults viewLayout='grid' category={SearchKind.ALL} />
+        <TrackResults count={12} viewLayout='grid' category={SearchKind.ALL} />
       </Flex>
 
       <Flex gap='xl' direction='column'>
