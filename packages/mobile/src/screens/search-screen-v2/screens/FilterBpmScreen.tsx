@@ -5,7 +5,7 @@ import { KeyboardAvoidingView, SegmentedControl } from 'app/components/core'
 import { FormScreen } from 'app/screens/form-screen'
 import { SelectionItemList } from 'app/screens/list-selection-screen/SelectionItemList'
 
-import { useSearchFilter } from '../searchState'
+import { useSearchBpmType, useSearchFilter } from '../searchState'
 
 const MIN_BPM = 1
 const MAX_BPM = 999
@@ -75,9 +75,16 @@ const rangeOptions = [
 ]
 
 const BpmRangeView = ({ value, setValue }: ViewProps) => {
-  const [bpmRange, setBpmRange] = useState<string>()
-  const [minBpm, setMinBpm] = useState('')
-  const [maxBpm, setMaxBpm] = useState('')
+  const isValueRangeOption =
+    value?.includes('-') &&
+    Boolean(rangeOptions.find((opt) => opt.value === value))
+  const minMaxValue = value?.includes('-') ? value.split('-') : null
+
+  const [bpmRange, setBpmRange] = useState<string>(
+    isValueRangeOption ? (value as string) : minMaxValue ? 'custom' : ''
+  )
+  const [minBpm, setMinBpm] = useState(minMaxValue?.[0] ?? '')
+  const [maxBpm, setMaxBpm] = useState(minMaxValue?.[1] ?? '')
   const [minError, setMinError] = useState<string | null>(null)
   const [maxError, setMaxError] = useState<string | null>(null)
   // NOTE: Memo to avoid the constantly changing function instance from triggering the effect
@@ -85,12 +92,10 @@ const BpmRangeView = ({ value, setValue }: ViewProps) => {
   const onChange = useMemo(() => setValue, [])
 
   useEffect(() => {
-    if (bpmRange === 'custom') {
-      setValue('')
-    } else if (bpmRange) {
+    if (bpmRange && bpmRange !== 'custom') {
       onChange(bpmRange)
     }
-  }, [bpmRange, onChange, setValue])
+  }, [bpmRange, onChange])
 
   useEffect(() => {
     if (!value && (bpmRange || minBpm || maxBpm)) {
@@ -208,9 +213,23 @@ const BpmRangeView = ({ value, setValue }: ViewProps) => {
 }
 
 const BpmTargetView = ({ value, setValue }: ViewProps) => {
+  const minMaxValue = value?.includes('-') ? value.split('-') : null
+  const minMaxDiff = minMaxValue
+    ? Number(minMaxValue[1]) - Number(minMaxValue[0])
+    : null
+  const isValidDiff = minMaxDiff === 20 || minMaxDiff === 10
+
   const { color } = useTheme()
-  const [bpmTarget, setBpmTarget] = useState('')
-  const [bpmTargetType, setBpmTargetType] = useState<BpmTargetType>('exact')
+  const [bpmTarget, setBpmTarget] = useState(
+    isValidDiff && minMaxValue
+      ? String(Number(minMaxValue[0]) + minMaxDiff / 2)
+      : minMaxValue // If range is not valid for target view
+      ? ''
+      : value
+  )
+  const [bpmTargetType, setBpmTargetType] = useState<BpmTargetType>(
+    minMaxDiff === 20 ? 'range10' : minMaxDiff === 10 ? 'range5' : 'exact'
+  )
   const [error, setError] = useState<string | null>(null)
   // NOTE: Memo to avoid the constantly changing function instance from triggering the effect
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -224,6 +243,7 @@ const BpmTargetView = ({ value, setValue }: ViewProps) => {
   }, [value])
 
   useEffect(() => {
+    if (minMaxValue && !isValidDiff) return
     // Validation
     const val = Number(bpmTarget)
     let hasError = false
@@ -261,7 +281,7 @@ const BpmTargetView = ({ value, setValue }: ViewProps) => {
     }
 
     onChange(value)
-  }, [bpmTarget, bpmTargetType, error, onChange])
+  }, [bpmTarget, bpmTargetType, error, isValidDiff, minMaxValue, onChange])
 
   return (
     <Flex flex={1} ph='l' gap='l'>
@@ -298,9 +318,9 @@ const BpmTargetView = ({ value, setValue }: ViewProps) => {
 }
 
 export const FilterBpmScreen = () => {
-  const [, setBpm, clearBpm] = useSearchFilter('bpm')
-  const [bpmValue, setBpmValue] = useState<string>()
-  const [bpmType, setBpmType] = useState('range')
+  const [bpm, setBpm, clearBpm] = useSearchFilter('bpm')
+  const [bpmType, setBpmType] = useSearchBpmType()
+  const [bpmValue, setBpmValue] = useState(bpm)
 
   const handleSubmit = useCallback(() => {
     if (bpmValue) {

@@ -20,6 +20,8 @@ type SearchContextType = {
   setCategory: Dispatch<SetStateAction<SearchCategory>>
   filters: SearchFilters
   setFilters: Dispatch<SetStateAction<SearchFilters>>
+  bpmType: string
+  setBpmType: Dispatch<SetStateAction<string>>
 }
 
 export const SearchContext = createContext<SearchContextType>({
@@ -28,7 +30,10 @@ export const SearchContext = createContext<SearchContextType>({
   category: 'all',
   setCategory: (_) => {},
   filters: {},
-  setFilters: (_) => {}
+  setFilters: (_) => {},
+  // Special state to track how bpm is being set
+  bpmType: 'range',
+  setBpmType: (_) => {}
 })
 
 export const useIsEmptySearch = () => {
@@ -39,6 +44,11 @@ export const useIsEmptySearch = () => {
 export const useSearchQuery = () => {
   const { query, setQuery } = useContext(SearchContext)
   return [query, setQuery] as const
+}
+
+export const useSearchBpmType = () => {
+  const { bpmType, setBpmType } = useContext(SearchContext)
+  return [bpmType, setBpmType] as const
 }
 
 export const useSearchCategory = () => {
