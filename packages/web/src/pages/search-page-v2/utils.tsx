@@ -4,6 +4,7 @@ import {
   SearchCategory,
   useGetSearchResults as useGetSearchResultsApi
 } from '@audius/common/api'
+import { Status } from '@audius/common/models'
 import { SearchSortMethod, accountSelectors } from '@audius/common/store'
 import { Genre, Mood } from '@audius/sdk'
 import { useSelector } from 'react-redux'
@@ -14,7 +15,7 @@ import { SEARCH_PAGE } from 'utils/route'
 
 import { CategoryView } from './types'
 
-const { getUserId } = accountSelectors
+const { getAccountStatus, getUserId } = accountSelectors
 
 type SearchResultsApiType = ReturnType<typeof useGetSearchResultsApi>
 
@@ -30,17 +31,24 @@ export const useGetSearchResults = <C extends SearchCategory>(
 ): SearchResultsType<C> => {
   const { query, category: ignoredCategory, ...filters } = useSearchParams()
 
+  const accountStatus = useSelector(getAccountStatus)
   const currentUserId = useSelector(getUserId)
-  const { data, status } = useGetSearchResultsApi(
-    {
-      query: query || '',
-      ...filters,
-      category,
-      currentUserId,
-      limit: category === 'all' ? 12 : undefined
-    },
-    { debounce: 500 }
-  )
+
+  const params = {
+    query: query || '',
+    ...filters,
+    category,
+    currentUserId,
+    limit: category === 'all' ? 12 : undefined
+  }
+
+  const { data, status } = useGetSearchResultsApi(params, {
+    debounce: 500,
+    // TODO: do we need this on mobile too
+    // Only search when the account has finished loading,
+    // or if the user is not logged in
+    disabled: accountStatus === Status.LOADING || accountStatus === Status.IDLE
+  })
 
   if (category === 'all') {
     return { data, status } as SearchResultsType<C>
