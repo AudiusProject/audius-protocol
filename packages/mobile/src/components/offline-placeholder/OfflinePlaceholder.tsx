@@ -22,24 +22,10 @@ const messages = {
 }
 
 const useStyles = makeStyles(({ typography, spacing }) => ({
-  container: {
-    justifyContent: 'center',
-    alignItems: 'center'
-  },
-  header: {
-    fontSize: typography.fontSize.xxl,
-    fontFamily: typography.fontByWeight.bold,
-    marginVertical: spacing(4)
-  },
   root: {
     padding: spacing(4),
     paddingBottom: spacing(0),
     margin: spacing(3)
-  },
-  subHeading: {
-    fontSize: typography.fontSize.small,
-    textAlign: 'center',
-    lineHeight: 21
   }
 }))
 
