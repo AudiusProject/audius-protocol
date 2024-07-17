@@ -83,7 +83,7 @@ export const TrackResults = (props: TrackResultsProps) => {
         )
       )
     },
-    [dispatch, searchParams]
+    [category, dispatch, searchParams]
   )
 
   const loadMore = useCallback(
