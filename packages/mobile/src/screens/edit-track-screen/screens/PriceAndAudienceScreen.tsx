@@ -24,10 +24,10 @@ import { makeStyles } from 'app/styles'
 import { CollectibleGatedAvailability } from '../components/CollectibleGatedAvailability'
 import { HiddenAvailability } from '../components/HiddenAvailability'
 import { SpecialAccessAvailability } from '../components/SpecialAccessAvailability'
-import { PremiumRadioField } from '../fields/AccessAndSaleField/PremiumRadioField/PremiumRadioField'
-import { TRACK_PREVIEW } from '../fields/AccessAndSaleField/PremiumRadioField/TrackPreviewField'
-import { TRACK_PRICE } from '../fields/AccessAndSaleField/PremiumRadioField/TrackPriceField'
-import { PublicAvailabilityRadioField } from '../fields/AccessAndSaleField/PublicAvailabilityRadioField'
+import { PremiumRadioField } from '../fields/PriceAndAudienceField/PremiumRadioField/PremiumRadioField'
+import { TRACK_PREVIEW } from '../fields/PriceAndAudienceField/PremiumRadioField/TrackPreviewField'
+import { TRACK_PRICE } from '../fields/PriceAndAudienceField/PremiumRadioField/TrackPriceField'
+import { PublicAvailabilityRadioField } from '../fields/PriceAndAudienceField/PublicAvailabilityRadioField'
 import type { FormValues, RemixOfField } from '../types'
 
 const messages = {
@@ -67,7 +67,7 @@ const MarkedAsRemix = () => {
   return remixOf ? <Hint m='l'>{messages.markedAsRemix}</Hint> : null
 }
 
-export const AccessAndSaleScreen = () => {
+export const PriceAndAudienceScreen = () => {
   const styles = useStyles()
   const navigation = useNavigation()
   const { initialValues } = useFormikContext<FormValues>()

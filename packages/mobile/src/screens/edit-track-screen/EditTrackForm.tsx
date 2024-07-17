@@ -36,7 +36,7 @@ import {
   RemixSettingsField,
   ReleaseDateField,
   AdvancedOptionsField,
-  AccessAndSaleField
+  PriceAndAudienceField
 } from './fields'
 import { VisibilityField } from './fields/VisibilityField'
 import type { EditTrackFormProps } from './types'
@@ -175,7 +175,7 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
                 ) : (
                   <ReleaseDateField />
                 )}
-                <AccessAndSaleField />
+                <PriceAndAudienceField />
                 <RemixSettingsField />
                 <AdvancedOptionsField />
               </SubmenuList>

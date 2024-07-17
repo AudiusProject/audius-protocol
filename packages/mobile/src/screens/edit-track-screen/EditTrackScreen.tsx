@@ -16,8 +16,8 @@ import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { EditTrackNavigator } from './EditTrackNavigator'
-import { TRACK_PREVIEW } from './fields/AccessAndSaleField/PremiumRadioField/TrackPreviewField'
-import { TRACK_PRICE } from './fields/AccessAndSaleField/PremiumRadioField/TrackPriceField'
+import { TRACK_PREVIEW } from './fields/PriceAndAudienceField/PremiumRadioField/TrackPreviewField'
+import { TRACK_PRICE } from './fields/PriceAndAudienceField/PremiumRadioField/TrackPriceField'
 import { BPM } from './screens/KeyBpmScreen'
 import type { FormValues, EditTrackScreenProps } from './types'
 const { computeLicenseVariables, ALL_RIGHTS_RESERVED_TYPE } = creativeCommons
