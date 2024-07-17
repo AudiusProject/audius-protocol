@@ -7,6 +7,7 @@ import {
   useState
 } from 'react'
 
+import { useGatedContentAccessMap } from '@audius/common/hooks'
 import { Kind, ID, TrackMetadata } from '@audius/common/models'
 import {
   IconCaretDown,
@@ -139,6 +140,8 @@ export const Table = ({
   useLocalSort = false,
   wrapperClassName
 }: TableProps) => {
+  const trackAccessMap = useGatedContentAccessMap(isTracksTable ? data : [])
+
   useEffect(() => {
     if (totalRowCount == null && isPaginated) {
       console.error(
@@ -356,6 +359,11 @@ export const Table = ({
 
       const Row = isVirtualized ? 'div' : 'tr'
 
+      const { isFetchingNFTAccess, hasStreamAccess } = trackAccessMap[
+        (row.original as any).track_id
+      ] ?? { isFetchingNFTAccess: false, hasStreamAccess: true }
+      const isLocked = !isFetchingNFTAccess && !hasStreamAccess
+
       return (
         <Row
           className={cn(
@@ -363,13 +371,17 @@ export const Table = ({
             getRowClassName?.(row.index),
             className,
             {
-              [styles.active]: row.index === activeIndex
+              [styles.active]: row.index === activeIndex,
+              [styles.disabled]: isLocked
             }
           )}
           {...props}
           key={key}
-          onClick={(e: MouseEvent<HTMLTableRowElement>) =>
-            onClickRow?.(e, row, row.index)
+          onClick={
+            isLocked
+              ? undefined
+              : (e: MouseEvent<HTMLTableRowElement>) =>
+                  onClickRow?.(e, row, row.index)
           }
         >
           {cells.map((cell) => renderCell(cell))}
@@ -379,7 +391,14 @@ export const Table = ({
         </Row>
       )
     },
-    [activeIndex, getRowClassName, onClickRow, renderCell, isVirtualized]
+    [
+      trackAccessMap,
+      activeIndex,
+      getRowClassName,
+      onClickRow,
+      renderCell,
+      isVirtualized
+    ]
   )
 
   const renderSkeletonRow = useCallback(
