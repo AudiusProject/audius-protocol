@@ -192,7 +192,7 @@ const useEditTrackSchema = () => {
         .refine(
           (values) => {
             const { bpm } = values
-            return bpm == undefined || Number(bpm) <= MAX_BPM
+            return bpm === undefined || Number(bpm) <= MAX_BPM
           },
           {
             message: errorMessages.bpmTooHigh,
