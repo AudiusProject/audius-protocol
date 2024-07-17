@@ -117,7 +117,7 @@ export const SearchHeader = (props: SearchHeaderProps) => {
         ) : null
       }
       bottomBar={
-        <Flex direction='row' gap='s' mv='m'>
+        <Flex direction='row' gap='s' mv={filterKeys.length ? 'm' : undefined}>
           {filterKeys.map((filterKey) => {
             const FilterComponent = filters[filterKey]
             return <FilterComponent key={filterKey} />
