@@ -2,6 +2,7 @@ import { Mood } from '@audius/sdk'
 import { isEmpty } from 'lodash'
 
 import { createApi } from '~/audius-query'
+import { UserTrackMetadata } from '~/models'
 import { ID } from '~/models/Identifiers'
 import { FeatureFlags } from '~/services'
 import { SearchKind } from '~/store'
@@ -100,7 +101,7 @@ const searchApi = createApi({
             return {
               ...track,
               user: {
-                ...track.user,
+                ...((track as UserTrackMetadata).user ?? {}),
                 user_id: track.owner_id
               },
               _cover_art_sizes: {}
