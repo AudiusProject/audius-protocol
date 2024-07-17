@@ -171,7 +171,7 @@ export const FollowArtistCard = (props: FollowArtistCardProps) => {
         })}
       >
         <Pressable onPress={handlePress}>
-          <ProfilePicture userId={user_id} variant='strong'>
+          <ProfilePicture userId={user_id} variant='strong' size='large'>
             {renderPreviewElement()}
           </ProfilePicture>
         </Pressable>
