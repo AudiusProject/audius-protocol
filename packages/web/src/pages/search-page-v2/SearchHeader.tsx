@@ -109,8 +109,8 @@ export const SearchHeader = (props: SearchHeaderProps) => {
       primary={title}
       secondary={
         query ? (
-          <Flex ml='l'>
-            <Text variant='heading' strength='weak'>
+          <Flex ml='l' css={{ maxWidth: 200 }}>
+            <Text variant='heading' strength='weak' ellipses>
               &#8220;{query}&#8221;
             </Text>
           </Flex>
