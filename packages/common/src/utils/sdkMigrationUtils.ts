@@ -1,9 +1,6 @@
 import { detailedDiff } from 'deep-object-diff'
 import { isEmpty } from 'lodash'
 
-import { ErrorLevel, ReportToSentryArgs } from '~/models/ErrorReporting'
-import { FeatureFlags, RemoteConfigInstance } from '~/services/remote-config'
-
 export type CheckSDKMigrationArgs<T> = {
   legacy: T
   migrated?: T | Error
@@ -101,70 +98,37 @@ export type SDKMigrationChecker = <T extends object>(config: {
   endpointName: string
 }) => Promise<T>
 
-export const createMigrationChecker = ({
-  remoteConfigInstance,
-  reportToSentry
+export const checkSDKMigration = async <T extends object>({
+  legacy: legacyCall,
+  migrated: migratedCall,
+  endpointName
 }: {
-  remoteConfigInstance: RemoteConfigInstance
-  reportToSentry: (args: ReportToSentryArgs) => void
-}): SDKMigrationChecker => {
-  /** This helper is used to shadow a migration without affecting the return value.
-   * It will run two calls in parallel to fetch the legacy and migrated responses,
-   * compare the results, log the diff, and then return the legacy value. Errors thrown
-   * by the call for the migrated response will be caught to avoid bugs in the migrated
-   * code from causing errors.
-   */
-  const checkSDKMigration = async <T extends object>({
-    legacy: legacyCall,
-    migrated: migratedCall,
-    endpointName
-  }: {
-    legacy: Promise<T> | (() => Promise<T>)
-    migrated: Promise<T> | (() => Promise<T>)
-    endpointName: string
-  }) => {
-    const legacyPromise =
-      typeof legacyCall === 'function' ? legacyCall() : legacyCall
-    if (
-      !remoteConfigInstance.getFeatureEnabled(
-        FeatureFlags.SDK_MIGRATION_SHADOWING
-      )
-    ) {
-      return legacyPromise
-    }
+  legacy: Promise<T> | (() => Promise<T>)
+  migrated: Promise<T> | (() => Promise<T>)
+  endpointName: string
+}) => {
+  const legacyPromise =
+    typeof legacyCall === 'function' ? legacyCall() : legacyCall
 
-    const [legacy, migrated] = await Promise.all([
-      legacyPromise,
-      safeAwait(migratedCall)
-    ])
+  const [legacy, migrated] = await Promise.all([
+    legacyPromise,
+    safeAwait(migratedCall)
+  ])
 
-    try {
-      compareSDKResponse({ legacy, migrated }, endpointName)
-    } catch (e) {
-      const error =
-        e instanceof SDKMigrationFailedError
-          ? e
-          : new SDKMigrationFailedError({
-              endpointName,
-              innerMessage: `Unknown error: ${e}`,
-              legacyValue: legacy,
-              migratedValue: migrated
-            })
-      console.warn('SDK Migration failed', error)
-      reportToSentry({
-        error,
-        level: ErrorLevel.Warning,
-        additionalInfo: {
-          diff: JSON.stringify(error.diff, null, 2),
-          legacyValue: JSON.stringify(error.legacyValue, null, 2),
-          migratedValue: JSON.stringify(error.migratedValue, null, 2)
-        },
-        tags: { endpointName: error.endpointName }
-      })
-    }
-
-    return legacy
+  try {
+    compareSDKResponse({ legacy, migrated }, endpointName)
+  } catch (e) {
+    const error =
+      e instanceof SDKMigrationFailedError
+        ? e
+        : new SDKMigrationFailedError({
+            endpointName,
+            innerMessage: `Unknown error: ${e}`,
+            legacyValue: legacy,
+            migratedValue: migrated
+          })
+    console.warn('SDK Migration failed', error)
   }
 
-  return checkSDKMigration
+  return legacy
 }
