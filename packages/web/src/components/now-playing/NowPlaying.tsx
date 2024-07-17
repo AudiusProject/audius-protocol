@@ -232,8 +232,7 @@ const NowPlaying = g(
       _cover_art_sizes,
       has_current_user_saved,
       has_current_user_reposted,
-      _co_sign,
-      is_unlisted: isUnlisted
+      _co_sign
     } = displayInfo
 
     const { name, handle } = user
