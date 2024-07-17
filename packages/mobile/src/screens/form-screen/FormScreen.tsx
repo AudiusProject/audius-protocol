@@ -17,6 +17,7 @@ export type FormScreenProps = ScreenProps & {
   onSubmit?: () => void
   onClear?: () => void
   clearable?: boolean
+  stopNavigation?: boolean
 }
 
 export const FormScreen = (props: FormScreenProps) => {
@@ -27,15 +28,18 @@ export const FormScreen = (props: FormScreenProps) => {
     onClear,
     clearable,
     onSubmit,
+    stopNavigation,
     ...other
   } = props
   const navigation = useNavigation()
   const insets = useSafeAreaInsets()
 
   const handleSubmit = useCallback(() => {
-    navigation.goBack()
+    if (!stopNavigation) {
+      navigation.goBack()
+    }
     onSubmit?.()
-  }, [navigation, onSubmit])
+  }, [stopNavigation, navigation, onSubmit])
 
   return (
     <Screen

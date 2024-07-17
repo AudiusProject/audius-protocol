@@ -8,6 +8,7 @@ import { messages as completeMessages } from '../upload-screen/screens/CompleteT
 
 import { EditTrackForm } from './EditTrackForm'
 import { accessAndSaleScreenName } from './fields'
+import { VisibilityScreen } from './fields/VisibilityField'
 import {
   AccessAndSaleScreen,
   AdvancedOptionsScreen,
@@ -30,6 +31,7 @@ const screenOptionOverrides = { headerRight: () => null }
 type EditTrackNavigatorProps = EditTrackFormProps
 
 export const EditTrackNavigator = (props: EditTrackNavigatorProps) => {
+  const { doneText, initialValues } = props
   const screenOptions = useAppScreenOptions(screenOptionOverrides)
 
   return (
@@ -47,11 +49,12 @@ export const EditTrackNavigator = (props: EditTrackNavigatorProps) => {
           component={ReleaseDateScreen}
           initialParams={{
             isInitiallyUnlisted:
-              props.doneText === completeMessages.done
+              doneText === completeMessages.done
                 ? true
-                : props.initialValues.is_unlisted
+                : initialValues.is_unlisted
           }}
         />
+        <Stack.Screen name='Visibility' component={VisibilityScreen} />
         <Stack.Screen
           name='AdvancedOptions'
           component={AdvancedOptionsScreen}
@@ -65,9 +68,7 @@ export const EditTrackNavigator = (props: EditTrackNavigatorProps) => {
         <Stack.Screen name='LicenseType' component={LicenseTypeScreen} />
         <Stack.Screen name='KeyBpm' component={KeyBpmScreen} />
       </Stack.Navigator>
-      <GatedContentUploadPromptDrawer
-        isUpload={!props.initialValues.track_id}
-      />
+      <GatedContentUploadPromptDrawer isUpload={!initialValues.track_id} />
       <SupportersInfoDrawer />
     </>
   )

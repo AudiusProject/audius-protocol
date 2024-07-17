@@ -3,7 +3,8 @@ import { useCallback } from 'react'
 import type { ListRenderItem, ViewStyle } from 'react-native'
 import { TouchableOpacity, View, FlatList } from 'react-native'
 
-import { Text } from '@audius/harmony-native'
+import type { IconComponent } from '@audius/harmony-native'
+import { Flex, Text } from '@audius/harmony-native'
 import { Divider, RadioButton } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { makeStyles } from 'app/styles'
@@ -11,6 +12,7 @@ import { makeStyles } from 'app/styles'
 type ListItemData = {
   label: string
   value: string
+  icon?: IconComponent
   disabled?: boolean
 }
 
@@ -26,9 +28,22 @@ type SelectionItemListProps = {
   renderItem?: ListRenderItem<ListItemData>
 }
 
-const defaultRenderItem: ListRenderItem<ListItemData> = ({ item }) => (
-  <Text>{item.label}</Text>
-)
+const defaultRenderItem: ListRenderItem<ListItemData> = ({ item }) => {
+  const { label, icon: Icon } = item
+
+  const title = <Text>{label}</Text>
+
+  if (Icon) {
+    return (
+      <Flex direction='row' alignItems='center'>
+        <Icon />
+        {title}
+      </Flex>
+    )
+  }
+
+  return title
+}
 
 const messages = {
   loading: 'Loading...',

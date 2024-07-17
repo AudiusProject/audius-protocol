@@ -34,7 +34,7 @@ export const CompleteTrackScreen = () => {
 
   return (
     <EditTrackScreen
-      initialValues={metadata}
+      initialValues={{ ...metadata, isUpload: true }}
       onSubmit={handleSubmit}
       title={messages.title}
       url='/complete-track'

@@ -102,6 +102,7 @@
     "bn.js": "5.2.0",
     "bs58": "5.0.0",
     "color": "4.2.3",
+    "dayjs": "1.10.7",
     "deprecated-react-native-prop-types": "5.0.0",
     "expo-crypto": "9.2.0",
     "ffmpeg-kit-react-native": "6.0.2",
