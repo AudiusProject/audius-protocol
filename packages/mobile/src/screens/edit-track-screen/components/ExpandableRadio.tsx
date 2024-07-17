@@ -21,7 +21,7 @@ export const ExpandableRadio = (props: ExpandableRadioProps) => {
       {checked ? (
         <>
           {description ? <Text>{description}</Text> : null}
-          {checkedContent ? checkedContent : null}
+          {checkedContent || null}
         </>
       ) : null}
     </Radio>
