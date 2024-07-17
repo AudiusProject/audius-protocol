@@ -173,6 +173,35 @@ class ConnectedSearchBar extends Component {
     })
   }
 
+  onClear = () => {
+    this.props.clearSearch()
+    this.setState({ value: '' })
+
+    const locationSearchParams = new URLSearchParams(
+      this.props.history.location.search
+    )
+
+    locationSearchParams.delete('query')
+
+    let newPath = '/search'
+
+    const searchMatch = matchPath(getPathname(this.props.history.location), {
+      path: SEARCH_PAGE
+    })
+
+    if (searchMatch) {
+      newPath = generatePath(SEARCH_PAGE, {
+        ...searchMatch.params
+      })
+    }
+
+    this.props.history.push({
+      pathname: newPath,
+      search: locationSearchParams.toString(),
+      state: {}
+    })
+  }
+
   render() {
     if (!this.props.search.tracks) {
       this.props.search.tracks = []
@@ -307,6 +336,7 @@ class ConnectedSearchBar extends Component {
           onSubmit={this.onSubmit}
           goToRoute={this.props.goToRoute}
           addRecentSearch={this.props.addRecentSearch}
+          onClear={this.onClear}
         />
       </div>
     )
