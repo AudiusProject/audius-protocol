@@ -565,9 +565,7 @@ const NowPlaying = g(
             />
           ) : null}
           <ActionsBar
-            isOwner={currentUserId === owner_id}
-            hasReposted={has_current_user_reposted}
-            hasFavorited={has_current_user_saved}
+            trackId={track_id as ID}
             isCollectible={!!collectible}
             onToggleRepost={toggleRepost}
             onToggleFavorite={toggleFavorite}
@@ -575,8 +573,6 @@ const NowPlaying = g(
             onClickOverflow={onClickOverflow}
             isDarkMode={isDarkMode()}
             isMatrixMode={matrix}
-            showRepost={!shouldShowPurchasePreview}
-            showFavorite={!shouldShowPurchasePreview}
           />
         </div>
       </div>
