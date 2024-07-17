@@ -99,11 +99,6 @@ export const PriceAndAudienceScreen = () => {
     []
   )
 
-  /**
-   * Do not navigate back if:
-   * - track is collectible gated and user has not selected an nft collection, or
-   * - track is usdc purchase gated and user has not selected a valid price or preview
-   */
   const [{ value: price }, { error: priceError }] = useField(TRACK_PRICE)
   const [{ value: preview }, { error: previewError }] = useField(TRACK_PREVIEW)
 
@@ -123,6 +118,12 @@ export const PriceAndAudienceScreen = () => {
       !streamConditions.nft_collection,
     [streamConditions]
   )
+
+  /**
+   * Do not navigate back if:
+   * - track is collectible gated and user has not selected an nft collection, or
+   * - track is usdc purchase gated and user has not selected a valid price or preview
+   */
   const isFormInvalid =
     usdcGateIsInvalid || collectibleGateHasNoSelectedCollection
 
