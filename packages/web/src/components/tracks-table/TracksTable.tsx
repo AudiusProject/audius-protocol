@@ -2,6 +2,7 @@ import { MouseEvent, useCallback, useMemo, useRef } from 'react'
 
 import { useGatedContentAccessMap } from '@audius/common/hooks'
 import {
+  ModalSource,
   UID,
   UserTrack,
   isContentCollectibleGated,
@@ -37,6 +38,22 @@ import Tooltip from 'components/tooltip/Tooltip'
 import { isDescendantElementOf } from 'utils/domUtils'
 
 import styles from './TracksTable.module.css'
+import {
+  PurchaseableContentType,
+  gatedContentActions,
+  gatedContentSelectors,
+  usePremiumContentPurchaseModal
+} from '@audius/common/store'
+import { useDispatch, useSelector } from 'react-redux'
+import { GatedConditionsPill } from 'components/track/GatedConditionsPill'
+import { useModalState } from 'common/hooks/useModalState'
+
+const { setLockedContentId } = gatedContentActions
+const { getGatedContentStatusMap } = gatedContentSelectors
+
+const messages = {
+  locked: 'LOCKED'
+}
 
 type RowInfo = UserTrack & {
   name: string
@@ -515,6 +532,35 @@ export const TracksTable = ({
 
   const renderTrackActions = useCallback(
     (cellInfo: TrackCell) => {
+      const dispatch = useDispatch()
+      const track = cellInfo.row.original
+      const { isFetchingNFTAccess, hasStreamAccess } = trackAccessMap[
+        track.track_id
+      ] ?? { isFetchingNFTAccess: false, hasStreamAccess: true }
+      const isLocked = !isFetchingNFTAccess && !hasStreamAccess
+      const isLockedPremium =
+        isLocked && isContentUSDCPurchaseGated(track.stream_conditions)
+      const gatedTrackStatusMap = useSelector(getGatedContentStatusMap)
+      const gatedTrackStatus = gatedTrackStatusMap[track.track_id]
+      const { onOpen: openPremiumContentPurchaseModal } =
+        usePremiumContentPurchaseModal()
+      const [, setGatedModalVisibility] = useModalState('LockedContent')
+
+      const onClickPremiumPill = useCallback(() => {
+        openPremiumContentPurchaseModal(
+          {
+            contentId: track.track_id,
+            contentType: PurchaseableContentType.TRACK
+          },
+          { source: ModalSource.TrackLibrary }
+        )
+      }, [track, openPremiumContentPurchaseModal])
+
+      const onClickGatedPill = useCallback(() => {
+        dispatch(setLockedContentId({ id: track.track_id }))
+        setGatedModalVisibility(true)
+      }, [track, dispatch, setGatedModalVisibility])
+
       return (
         <Flex
           inline
@@ -525,8 +571,17 @@ export const TracksTable = ({
           mh='l'
           className={styles.trackActionsContainer}
         >
-          {renderRepostButtonCell(cellInfo)}
-          {renderFavoriteButtonCell(cellInfo)}
+          {isLocked ? (
+            <GatedConditionsPill
+              streamConditions={track.stream_conditions!}
+              unlocking={gatedTrackStatus === 'UNLOCKING'}
+              onClick={isLockedPremium ? onClickPremiumPill : onClickGatedPill}
+              buttonSize='small'
+              showIcon={false}
+            />
+          ) : null}
+          {!isLocked ? renderRepostButtonCell(cellInfo) : null}
+          {!isLocked ? renderFavoriteButtonCell(cellInfo) : null}
           {renderPurchaseButton(cellInfo)}
           {renderOverflowMenuCell(cellInfo)}
         </Flex>

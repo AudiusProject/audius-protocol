@@ -39,6 +39,7 @@ import Tooltip from 'components/tooltip/Tooltip'
 
 import styles from './Table.module.css'
 import { TableLoadingSpinner } from './components/TableLoadingSpinner'
+import { useGatedContentAccessMap } from '@audius/common/hooks'
 
 // - Infinite scroll constants -
 // Fetch the next group of rows when the user scroll within X rows of the bottom
@@ -342,6 +343,8 @@ export const Table = ({
     []
   )
 
+  const trackAccessMap = useGatedContentAccessMap(data)
+
   const renderTableRow = useCallback(
     (row: Row, key: string, props: TableRowProps, className = '') => {
       const cells = row.cells.filter(
@@ -356,6 +359,11 @@ export const Table = ({
 
       const Row = isVirtualized ? 'div' : 'tr'
 
+      const { isFetchingNFTAccess, hasStreamAccess } = trackAccessMap[
+        (row.original as any).track_id
+      ] ?? { isFetchingNFTAccess: false, hasStreamAccess: true }
+      const isLocked = !isFetchingNFTAccess && !hasStreamAccess
+
       return (
         <Row
           className={cn(
@@ -363,13 +371,17 @@ export const Table = ({
             getRowClassName?.(row.index),
             className,
             {
-              [styles.active]: row.index === activeIndex
+              [styles.active]: row.index === activeIndex,
+              [styles.disabled]: isLocked
             }
           )}
           {...props}
           key={key}
-          onClick={(e: MouseEvent<HTMLTableRowElement>) =>
-            onClickRow?.(e, row, row.index)
+          onClick={
+            isLocked
+              ? undefined
+              : (e: MouseEvent<HTMLTableRowElement>) =>
+                  onClickRow?.(e, row, row.index)
           }
         >
           {cells.map((cell) => renderCell(cell))}
