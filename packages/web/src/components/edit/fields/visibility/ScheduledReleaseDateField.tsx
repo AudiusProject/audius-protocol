@@ -1,3 +1,4 @@
+import { visibilityMessages } from '@audius/common/messages'
 import { Box, Flex, Hint } from '@audius/harmony'
 import { useField } from 'formik'
 
@@ -6,7 +7,6 @@ import { SelectField } from 'components/form-fields/SelectField'
 import { getLocalTimezone } from 'utils/dateUtils'
 
 import { DatePickerField } from '../DatePickerField'
-import { visibilityMessages } from '@audius/common/messages'
 
 const messages = {
   ...visibilityMessages,
