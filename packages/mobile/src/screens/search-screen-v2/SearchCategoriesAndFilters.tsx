@@ -133,6 +133,13 @@ export const SearchCategoriesAndFilters = () => {
     return undefined
   }
 
+  const categoryFilters = filtersByCategory[category]
+  const activeFilterKeys = categoryFilters.filter((key) =>
+    Boolean(filters[key])
+  )
+  const inactiveFilterKeys = categoryFilters.filter((key) => !filters[key])
+  const sortedFilterKeys = [...activeFilterKeys, ...inactiveFilterKeys]
+
   return (
     <Flex backgroundColor='white'>
       <ScrollView horizontal keyboardShouldPersistTaps='handled'>
@@ -141,7 +148,7 @@ export const SearchCategoriesAndFilters = () => {
           <SearchCategory category='tracks' />
           <SearchCategory category='albums' />
           <SearchCategory category='playlists' />
-          {filtersByCategory[category].map((filter) => (
+          {sortedFilterKeys.map((filter) => (
             <FilterButton
               key={filter}
               size='small'
