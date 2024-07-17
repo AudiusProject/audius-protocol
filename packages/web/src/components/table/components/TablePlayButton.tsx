@@ -28,6 +28,7 @@ export const TablePlayButton = ({
 }: TablePlayButtonProps) => {
   const {
     color: {
+      neutral: { n150 },
       special: { lightGreen },
       primary: { p300 }
     }
@@ -45,7 +46,7 @@ export const TablePlayButton = ({
           className={cn(styles.icon, {
             [styles.hideDefault]: hideDefault && !playing
           })}
-          fill={shouldShowPremiumColor ? lightGreen : p300}
+          fill={isLocked ? n150 : shouldShowPremiumColor ? lightGreen : p300}
         />
       )}
     </div>
