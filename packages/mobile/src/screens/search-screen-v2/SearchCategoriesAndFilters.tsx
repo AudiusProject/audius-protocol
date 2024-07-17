@@ -4,6 +4,8 @@ import type {
   SearchFilter,
   SearchCategory as SearchCategoryType
 } from '@audius/common/api'
+import { Image, ScrollView } from 'react-native'
+
 import {
   FilterButton,
   Flex,
@@ -13,7 +15,6 @@ import {
 } from '@audius/harmony-native'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { moodMap } from 'app/utils/moods'
-import { Image, ScrollView } from 'react-native'
 
 import { useSearchCategory, useSearchFilters } from './searchState'
 
