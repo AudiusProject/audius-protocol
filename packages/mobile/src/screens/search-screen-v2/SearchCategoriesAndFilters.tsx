@@ -50,6 +50,9 @@ const SearchCategory = (props: SearchCategoryProps) => {
         setCategory(isSelected ? (value as SearchCategoryType) : 'all')
       }}
       icon={isSelected ? IconCloseAlt : undefined}
+      // Disable unselect animation when the category is selected
+      // to avoid a flash of purple as the pills rearrange
+      disableUnselectAnimation
     />
   )
 }
