@@ -4,7 +4,7 @@ from typing import Optional
 
 from eth_account.messages import encode_defunct
 from flask import Response, request
-from flask_restx import Namespace, Resource, fields, reqparse
+from flask_restx import Namespace, Resource, fields, inputs, reqparse
 
 from src.api.v1.helpers import (
     DescriptiveArgument,
@@ -2081,6 +2081,22 @@ managed_users_response = make_response(
     "managed_users_response", full_ns, fields.List(fields.Nested(managed_user))
 )
 
+managed_users_route_parser = reqparse.RequestParser(argument_class=DescriptiveArgument)
+managed_users_route_parser.add_argument(
+    "is_approved",
+    required=False,
+    type=inputs.boolean,
+    default=None,
+    description="If true, only show users where the management request has been accepted. If false, only show those where the request was rejected. If omitted, shows all users regardless of approval status.",
+)
+managed_users_route_parser.add_argument(
+    "is_revoked",
+    required=False,
+    type=inputs.boolean,
+    default=False,
+    description="If true, only show users where the management request has been revoked. If false, only show those with a pending or accepted request. Defaults to false.",
+)
+
 
 @full_ns.route("/<string:id>/managed_users")
 class ManagedUsers(Resource):
@@ -2097,12 +2113,20 @@ class ManagedUsers(Resource):
             500: "Server error",
         },
     )
-    @auth_middleware(require_auth=True)
+    @full_ns.expect(managed_users_route_parser)
+    @auth_middleware(managed_users_route_parser, require_auth=True)
     @full_ns.marshal_with(managed_users_response)
     def get(self, id, authed_user_id):
         user_id = decode_with_abort(id, full_ns)
         check_authorized(user_id, authed_user_id)
-        users = get_managed_users_with_grants(GetManagedUsersArgs(user_id=user_id))
+        args = managed_users_route_parser.parse_args()
+        is_approved = args.get("is_approved", None)
+        is_revoked = args.get("is_revoked", False)
+        users = get_managed_users_with_grants(
+            GetManagedUsersArgs(
+                user_id=user_id, is_approved=is_approved, is_revoked=is_revoked
+            )
+        )
         users = list(map(format_managed_user, users))
 
         return success_response(users)
@@ -2128,14 +2152,22 @@ class Managers(Resource):
             500: "Server error",
         },
     )
-    @auth_middleware(require_auth=True)
+    @full_ns.expect(managed_users_route_parser)
+    @auth_middleware(managed_users_route_parser, require_auth=True)
     @full_ns.marshal_with(managers_response)
     def get(self, id, authed_user_id):
         user_id = decode_with_abort(id, full_ns)
         check_authorized(user_id, authed_user_id)
 
-        args = GetUserManagersArgs(user_id=user_id)
-        managers = get_user_managers_with_grants(args)
+        args = managed_users_route_parser.parse_args()
+        logger.info(f"DEBUG::args: {args}")
+        is_approved = args.get("is_approved", None)
+        is_revoked = args.get("is_revoked", False)
+        managers = get_user_managers_with_grants(
+            GetUserManagersArgs(
+                user_id=user_id, is_approved=is_approved, is_revoked=is_revoked
+            )
+        )
         managers = list(map(format_user_manager, managers))
 
         return success_response(managers)

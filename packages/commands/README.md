@@ -121,3 +121,19 @@ audius-cmd mint-tokens --from freddie_mercury --mint usdc 10000000
 
 audius-cmd purchase-content <track-id> --type track --from freddie_mercury
 ```
+
+**Managed accounts**
+
+```
+# Add a manager
+audius-cmd add-manager --from freddie_mercury jim_beach
+
+# Accept request from manager's account
+audius-cmd approve-manager-request --from jim_beach freddie_mercury
+
+# (OR) Reject request from manager's account
+audius-cmd reject-manager-request --from jim_beach freddie_mercury
+
+# Remove manager
+audius-cmd remove-manager --from freddie_mercury jim_beach
+```

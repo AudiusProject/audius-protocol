@@ -27,23 +27,39 @@ import {
 } from '../models';
 
 export interface SearchRequest {
-    query: string;
     offset?: number;
     limit?: number;
     userId?: string;
+    query?: string;
     kind?: SearchKindEnum;
     includePurchaseable?: string;
     genre?: Array<string>;
+    mood?: Array<string>;
+    isVerified?: string;
+    hasDownloads?: string;
+    isPurchaseable?: string;
+    key?: Array<string>;
+    bpmMin?: string;
+    bpmMax?: string;
+    sortMethod?: SearchSortMethodEnum;
 }
 
 export interface SearchAutocompleteRequest {
-    query: string;
     offset?: number;
     limit?: number;
     userId?: string;
+    query?: string;
     kind?: SearchAutocompleteKindEnum;
     includePurchaseable?: string;
     genre?: Array<string>;
+    mood?: Array<string>;
+    isVerified?: string;
+    hasDownloads?: string;
+    isPurchaseable?: string;
+    key?: Array<string>;
+    bpmMin?: string;
+    bpmMax?: string;
+    sortMethod?: SearchAutocompleteSortMethodEnum;
 }
 
 /**
@@ -56,10 +72,6 @@ export class SearchApi extends runtime.BaseAPI {
      * Get Users/Tracks/Playlists/Albums that best match the search query
      */
     async searchRaw(params: SearchRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SearchFullResponse>> {
-        if (params.query === null || params.query === undefined) {
-            throw new runtime.RequiredError('query','Required parameter params.query was null or undefined when calling search.');
-        }
-
         const queryParameters: any = {};
 
         if (params.offset !== undefined) {
@@ -88,6 +100,38 @@ export class SearchApi extends runtime.BaseAPI {
 
         if (params.genre) {
             queryParameters['genre'] = params.genre;
+        }
+
+        if (params.mood) {
+            queryParameters['mood'] = params.mood;
+        }
+
+        if (params.isVerified !== undefined) {
+            queryParameters['is_verified'] = params.isVerified;
+        }
+
+        if (params.hasDownloads !== undefined) {
+            queryParameters['has_downloads'] = params.hasDownloads;
+        }
+
+        if (params.isPurchaseable !== undefined) {
+            queryParameters['is_purchaseable'] = params.isPurchaseable;
+        }
+
+        if (params.key) {
+            queryParameters['key'] = params.key;
+        }
+
+        if (params.bpmMin !== undefined) {
+            queryParameters['bpm_min'] = params.bpmMin;
+        }
+
+        if (params.bpmMax !== undefined) {
+            queryParameters['bpm_max'] = params.bpmMax;
+        }
+
+        if (params.sortMethod !== undefined) {
+            queryParameters['sort_method'] = params.sortMethod;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -105,7 +149,7 @@ export class SearchApi extends runtime.BaseAPI {
     /**
      * Get Users/Tracks/Playlists/Albums that best match the search query
      */
-    async search(params: SearchRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchFullResponse> {
+    async search(params: SearchRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchFullResponse> {
         const response = await this.searchRaw(params, initOverrides);
         return await response.value();
     }
@@ -116,10 +160,6 @@ export class SearchApi extends runtime.BaseAPI {
      * Get Users/Tracks/Playlists/Albums that best match the search query
      */
     async searchAutocompleteRaw(params: SearchAutocompleteRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SearchAutocompleteResponse>> {
-        if (params.query === null || params.query === undefined) {
-            throw new runtime.RequiredError('query','Required parameter params.query was null or undefined when calling searchAutocomplete.');
-        }
-
         const queryParameters: any = {};
 
         if (params.offset !== undefined) {
@@ -148,6 +188,38 @@ export class SearchApi extends runtime.BaseAPI {
 
         if (params.genre) {
             queryParameters['genre'] = params.genre;
+        }
+
+        if (params.mood) {
+            queryParameters['mood'] = params.mood;
+        }
+
+        if (params.isVerified !== undefined) {
+            queryParameters['is_verified'] = params.isVerified;
+        }
+
+        if (params.hasDownloads !== undefined) {
+            queryParameters['has_downloads'] = params.hasDownloads;
+        }
+
+        if (params.isPurchaseable !== undefined) {
+            queryParameters['is_purchaseable'] = params.isPurchaseable;
+        }
+
+        if (params.key) {
+            queryParameters['key'] = params.key;
+        }
+
+        if (params.bpmMin !== undefined) {
+            queryParameters['bpm_min'] = params.bpmMin;
+        }
+
+        if (params.bpmMax !== undefined) {
+            queryParameters['bpm_max'] = params.bpmMax;
+        }
+
+        if (params.sortMethod !== undefined) {
+            queryParameters['sort_method'] = params.sortMethod;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -166,7 +238,7 @@ export class SearchApi extends runtime.BaseAPI {
      * Same as search but optimized for quicker response at the cost of some entity information.
      * Get Users/Tracks/Playlists/Albums that best match the search query
      */
-    async searchAutocomplete(params: SearchAutocompleteRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchAutocompleteResponse> {
+    async searchAutocomplete(params: SearchAutocompleteRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchAutocompleteResponse> {
         const response = await this.searchAutocompleteRaw(params, initOverrides);
         return await response.value();
     }
@@ -187,6 +259,15 @@ export type SearchKindEnum = typeof SearchKindEnum[keyof typeof SearchKindEnum];
 /**
  * @export
  */
+export const SearchSortMethodEnum = {
+    Relevant: 'relevant',
+    Popular: 'popular',
+    Recent: 'recent'
+} as const;
+export type SearchSortMethodEnum = typeof SearchSortMethodEnum[keyof typeof SearchSortMethodEnum];
+/**
+ * @export
+ */
 export const SearchAutocompleteKindEnum = {
     All: 'all',
     Users: 'users',
@@ -195,3 +276,12 @@ export const SearchAutocompleteKindEnum = {
     Albums: 'albums'
 } as const;
 export type SearchAutocompleteKindEnum = typeof SearchAutocompleteKindEnum[keyof typeof SearchAutocompleteKindEnum];
+/**
+ * @export
+ */
+export const SearchAutocompleteSortMethodEnum = {
+    Relevant: 'relevant',
+    Popular: 'popular',
+    Recent: 'recent'
+} as const;
+export type SearchAutocompleteSortMethodEnum = typeof SearchAutocompleteSortMethodEnum[keyof typeof SearchAutocompleteSortMethodEnum];
