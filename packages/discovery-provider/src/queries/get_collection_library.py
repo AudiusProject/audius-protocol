@@ -198,20 +198,8 @@ def _get_collection_library(args: GetCollectionLibraryArgs, session):
         session,
         playlist_ids,
         playlists,
-        [
-            (
-                RepostType.playlist
-                if collection_type == CollectionType.playlist
-                else RepostType.album
-            )
-        ],
-        [
-            (
-                SaveType.playlist
-                if collection_type == CollectionType.playlist
-                else SaveType.album
-            )
-        ],
+        [RepostType.playlist, RepostType.album],
+        [SaveType.playlist, SaveType.album],
         user_id,
     )
 
