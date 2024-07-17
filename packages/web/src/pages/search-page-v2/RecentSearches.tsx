@@ -40,7 +40,7 @@ import { CategoryView } from './types'
 const MAX_RECENT_SEARCHES = 12
 
 const { removeItem, clearHistory } = searchActions
-const { getSearchHistory } = searchSelectors
+const { getV2SearchHistory: getSearchHistory } = searchSelectors
 
 const RecentSearchSkeleton = () => (
   <Flex w='100%' pv='s' ph='xl' justifyContent='space-between'>
@@ -269,7 +269,7 @@ export const RecentSearches = () => {
   const category = routeMatch?.params.category
 
   const categoryKind: Kind | null = category
-    ? itemKindByCategory[category]
+    ? itemKindByCategory[category as CategoryView]
     : null
 
   const filteredSearchItems = useMemo(() => {
@@ -302,7 +302,8 @@ export const RecentSearches = () => {
         {(truncatedSearchItems || []).map((searchItem) => {
           if (isSearchItem(searchItem)) {
             const { kind, id } = searchItem
-            const ItemComponent = itemComponentByKind[kind]
+            const ItemComponent =
+              itemComponentByKind[kind as keyof typeof itemComponentByKind]
             return <ItemComponent searchItem={searchItem} key={id} />
           }
           return null
