@@ -42,7 +42,7 @@
     "chai": "^4.3.4",
     "chai-as-promised": "^7.1.1",
     "commander": "^8.3.0",
-    "eslint": "^8.10.0",
+    "eslint": "8.56.0",
     "eslint-config-prettier": "^8.4.0",
     "eslint-config-prettier-standard": "^4.0.1",
     "eslint-config-standard": "^16.0.3",
