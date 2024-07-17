@@ -12,11 +12,15 @@ export type FormValues = Omit<TrackMetadataForUpload, 'bpm'> & {
   }
   trackArtwork?: string
   bpm?: string
+  isUpload?: boolean
 }
 
 export type EditTrackScreenProps = {
   onSubmit: (values: TrackMetadataForUpload) => void
-  initialValues: TrackMetadataForUpload & { trackArtwork?: string }
+  initialValues: TrackMetadataForUpload & {
+    trackArtwork?: string
+    isUpload?: boolean
+  }
   doneText?: string
 } & Partial<ScreenProps>
 

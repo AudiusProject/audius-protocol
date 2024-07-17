@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react'
 
 import { useFeatureFlag } from '@audius/common/hooks'
 import { FeatureFlags } from '@audius/common/services'
+import { visibilityMessages } from '@audius/common/messages'
 import { editAccessConfirmationModalUIActions } from '@audius/common/store'
 import {
   IconCalendarMonth,
@@ -25,27 +26,15 @@ import { formatCalendarTime } from 'utils/dateUtils'
 
 import { IS_PRIVATE, IS_SCHEDULED_RELEASE, IS_UNLISTED } from '../types'
 
-import { ReleaseDateField } from './ReleaseDateField'
+import { ScheduledReleaseDateField } from './ScheduledReleaseDateField'
 import { mergeReleaseDateValues } from './mergeReleaseDateValues'
 
 const { requestOpen: openEditAccessConfirmationModal } =
   editAccessConfirmationModalUIActions
 
 const messages = {
-  title: 'Visibility',
-  description:
-    'Change the visibility of this release or schedule it to release in the future.',
-  public: 'Public',
-  publicDescription: 'Visible to everyone on Audius.',
-  hidden: 'Hidden',
-  hiddenDescription:
-    'Only you and people you share a direct link with will be able to listen.',
-  scheduled: (date: string) => `Scheduled for ${formatCalendarTime(date)}`,
-  scheduledRelease: 'Scheduled Release',
-  scheduledReleaseDescription:
-    'Select the date and time this will become public.',
-  hiddenHint: (entityType: 'track' | 'album' | 'playlist') =>
-    `You can’t make a public ${entityType} hidden`
+  ...visibilityMessages,
+  scheduled: (date: string) => `Scheduled for ${formatCalendarTime(date)}`
 }
 
 type VisibilityType = 'scheduled' | 'public' | 'hidden'
@@ -249,7 +238,7 @@ const VisibilityMenuFields = (props: VisibilityMenuFieldsProps) => {
           value='scheduled'
           label={messages.scheduledRelease}
           description={messages.scheduledReleaseDescription}
-          checkedContent={<ReleaseDateField />}
+          checkedContent={<ScheduledReleaseDateField />}
         />
       ) : null}
     </RadioGroup>

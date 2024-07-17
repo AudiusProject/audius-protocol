@@ -188,8 +188,9 @@ export const TrackScreenDetailsTile = ({
     ddex_app: ddexApp,
     is_delete: isDeleted,
     release_date: releaseDate,
-    is_scheduled_release: isScheduledRelease
-  } = track
+    is_scheduled_release: isScheduledRelease,
+    _is_publishing
+  } = track as Track
 
   const isOwner = ownerId === currentUserId
   const hideFavorite = isUnlisted || !hasStreamAccess
@@ -526,6 +527,7 @@ export const TrackScreenDetailsTile = ({
           hideShare={hideShare}
           isOwner={isOwner}
           isCollection={false}
+          isPublished={!isUnlisted || _is_publishing}
           onPressEdit={handlePressEdit}
           onPressOverflow={handlePressOverflow}
           onPressRepost={handlePressRepost}
