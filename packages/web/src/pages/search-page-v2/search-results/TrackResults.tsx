@@ -13,6 +13,7 @@ import {
 import { Flex, OptionsFilterButton, Text } from '@audius/harmony'
 import { css } from '@emotion/css'
 import { useDispatch, useSelector } from 'react-redux'
+import { useDebounce } from 'react-use'
 
 import { make } from 'common/store/analytics/actions'
 import Lineup from 'components/lineup/Lineup'
@@ -83,7 +84,16 @@ export const TrackResults = (props: TrackResultsProps) => {
         )
       )
     },
-    [dispatch, searchParams]
+    [dispatch, searchParams, category]
+  )
+
+  useDebounce(
+    () => {
+      dispatch(searchResultsPageTracksLineupActions.reset())
+      getResults(0, 10, true)
+    },
+    500,
+    [dispatch, getResults]
   )
 
   const loadMore = useCallback(
@@ -92,6 +102,7 @@ export const TrackResults = (props: TrackResultsProps) => {
     },
     [getResults]
   )
+
   const handleClickTrackTile = useCallback(
     (id?: number) => {
       if (id) {
