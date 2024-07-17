@@ -4,8 +4,9 @@ import { IconComponent } from 'components/icon'
 
 export type FilterButtonSize = 'default' | 'small'
 
-// TODO: is replaceLabel still needed?
-export type FilterButtonVariant = 'fillContainer' | 'replaceLabel'
+export type FilterButtonVariant =
+  | 'fillContainer' // When a value is present, the button will be in an active state and have a remove icon (default)
+  | 'replaceLabel' // Shows the value as the label of the button, but doesn't show an active state
 
 type ChildrenProps = {
   /**
