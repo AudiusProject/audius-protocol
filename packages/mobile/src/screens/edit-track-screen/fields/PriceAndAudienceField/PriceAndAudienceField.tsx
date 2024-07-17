@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 
-import type { FieldVisibility, AccessConditions } from '@audius/common/models'
+import { priceAndAudienceMessages as messages } from '@audius/common/messages'
+import type { AccessConditions } from '@audius/common/models'
 import {
   isContentCollectibleGated,
   isContentFollowGated,
@@ -15,48 +16,11 @@ import { ContextualMenu } from 'app/components/core'
 
 export const priceAndAudienceScreenName = 'PriceAndAudience'
 
-const messages = {
-  accessAndSale: 'Access & Sale',
-  public: 'Public',
-  premium: 'Premium',
-  collectibleGated: 'Collectible Gated',
-  specialAccess: 'Special Access',
-  followersOnly: 'Followers Only',
-  supportersOnly: 'Supporters Only',
-  hidden: 'Hidden',
-  showGenre: 'Show Genre',
-  showMood: 'Show Mood',
-  showTags: 'Show Tags',
-  showShareButton: 'Show Share Button',
-  showPlayCount: 'Show Play Count'
-}
-
-const fieldVisibilityLabelMap = {
-  genre: messages.showGenre,
-  mood: messages.showMood,
-  tags: messages.showTags,
-  share: messages.showShareButton,
-  play_count: messages.showPlayCount
-}
-
-const fieldVisibilityKeys = Object.keys(fieldVisibilityLabelMap)
-
 type PriceAndAudienceFieldProps = Partial<ContextualMenuProps>
 
 export const PriceAndAudienceField = (props: PriceAndAudienceFieldProps) => {
   const [{ value: streamConditions }] =
     useField<Nullable<AccessConditions>>('stream_conditions')
-  const [{ value: isUnlisted }] = useField<boolean>('is_unlisted')
-  const [{ value: isScheduledRelease }] = useField<boolean>(
-    'is_scheduled_release'
-  )
-
-  const [{ value: fieldVisibility }] =
-    useField<FieldVisibility>('field_visibility')
-
-  const fieldVisibilityLabels = fieldVisibilityKeys
-    .filter((visibilityKey) => fieldVisibility[visibilityKey])
-    .map((visibilityKey) => fieldVisibilityLabelMap[visibilityKey])
 
   const trackAvailabilityLabels = useMemo(() => {
     if (isContentUSDCPurchaseGated(streamConditions)) {
@@ -72,15 +36,12 @@ export const PriceAndAudienceField = (props: PriceAndAudienceFieldProps) => {
     if (isContentTipGated(streamConditions)) {
       return [messages.specialAccess, messages.supportersOnly]
     }
-    if (isUnlisted && !isScheduledRelease) {
-      return [messages.hidden, ...fieldVisibilityLabels]
-    }
-    return [messages.public]
-  }, [streamConditions, isUnlisted, fieldVisibilityLabels, isScheduledRelease])
+    return [messages.free]
+  }, [streamConditions])
 
   return (
     <ContextualMenu
-      label={messages.accessAndSale}
+      label={messages.title}
       menuScreenName={priceAndAudienceScreenName}
       value={trackAvailabilityLabels}
       {...props}
