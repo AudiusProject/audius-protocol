@@ -3,8 +3,6 @@ import { iterator as isIterator } from '@redux-saga/is'
 import { AllEffect, CallEffect } from 'redux-saga/effects'
 import { SagaGenerator, all, call, getContext } from 'typed-redux-saga'
 
-import { ErrorLevel, ReportToSentryArgs } from '~/models/ErrorReporting'
-import { FeatureFlags } from '~/services/remote-config/feature-flags'
 import {
   SDKMigrationFailedError,
   compareSDKResponse
@@ -13,11 +11,6 @@ import {
 // These are defined explicitly here to avoid including the entire `storeContext` module
 // as that creates some nasty circular dependencies.
 type AudiusSDKContext = () => Promise<AudiusSdk>
-type GetFeatureEnabledContext = (
-  flag: FeatureFlags,
-  fallbackFlag?: FeatureFlags
-) => Promise<boolean>
-type ReportToSentryContext = (args: ReportToSentryArgs) => void
 
 /** Helper generator that returns a fully-awaited AudiusSDK instance */
 export function* getSDK() {
@@ -41,19 +34,6 @@ export function* checkSDKMigration<T extends object>({
   migrated: SagaGenerator<T, CallEffect<T>> | CallEffect<T>
   endpointName: string
 }): SagaGenerator<T> {
-  const getFeatureEnabled = yield* getContext<GetFeatureEnabledContext>(
-    'getFeatureEnabled'
-  )
-  const reportToSentry = yield* getContext<ReportToSentryContext>(
-    'reportToSentry'
-  )
-
-  if (!getFeatureEnabled(FeatureFlags.SDK_MIGRATION_SHADOWING)) {
-    // Yield control if it's a generator, otherwise let middleware handle it
-    // @ts-ignore
-    return isIterator(legacyCall) ? yield* legacyCall : yield legacyCall
-  }
-
   const [legacy, migrated] = yield* all([
     legacyCall,
     call(function* settle() {
@@ -82,16 +62,6 @@ export function* checkSDKMigration<T extends object>({
             migratedValue: migrated
           })
     console.warn('SDK Migration failed', error)
-    yield* call(reportToSentry, {
-      error,
-      level: ErrorLevel.Warning,
-      additionalInfo: {
-        diff: JSON.stringify(error.diff, null, 2),
-        legacyValue: JSON.stringify(error.legacyValue, null, 2),
-        migratedValue: JSON.stringify(error.migratedValue, null, 2)
-      },
-      tags: { endpointName: error.endpointName }
-    })
   }
   return legacy
 }

@@ -64,7 +64,7 @@ const useEditTrackSchema = () => {
           stream_conditions: z.any(),
           duration: z.number().nullable(),
           preview_start_seconds: z.any(),
-          bpm: z.string().nullable()
+          bpm: z.optional(z.string().nullable())
         })
         .refine(
           (values) => {
@@ -182,7 +182,7 @@ const useEditTrackSchema = () => {
         .refine(
           (values) => {
             const { bpm } = values
-            return bpm === null || Number(bpm) >= MIN_BPM
+            return bpm === undefined || Number(bpm) >= MIN_BPM
           },
           {
             message: errorMessages.bpmTooLow,
@@ -192,7 +192,7 @@ const useEditTrackSchema = () => {
         .refine(
           (values) => {
             const { bpm } = values
-            return bpm == null || Number(bpm) <= MAX_BPM
+            return bpm === undefined || Number(bpm) <= MAX_BPM
           },
           {
             message: errorMessages.bpmTooHigh,

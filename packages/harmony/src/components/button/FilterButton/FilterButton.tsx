@@ -123,11 +123,9 @@ export const FilterButton = forwardRef<HTMLButtonElement, FilterButtonProps>(
       if (onClick) {
         onClick()
       } else {
-        if (variant === 'fillContainer') {
-          setIsOpen((isOpen: boolean) => !isOpen)
-        }
+        setIsOpen((isOpen: boolean) => !isOpen)
       }
-    }, [variant, setIsOpen, onClick])
+    }, [setIsOpen, onClick])
 
     const Icon = useMemo(() => {
       return variant === 'fillContainer' && value !== null
@@ -136,15 +134,19 @@ export const FilterButton = forwardRef<HTMLButtonElement, FilterButtonProps>(
               aria-label='cancel'
               onClick={(e) => {
                 e.stopPropagation()
-                // @ts-ignore
-                onChange?.(null)
-                onReset?.()
+                if (onClick) {
+                  onClick()
+                } else {
+                  // @ts-ignore
+                  onChange?.(null)
+                  onReset?.()
+                }
               }}
               {...props}
             />
           )) as IconComponent)
         : iconRight ?? undefined
-    }, [variant, value, onChange, onReset, iconRight])
+    }, [variant, value, iconRight, onClick, onChange, onReset])
 
     useEffect(() => {
       if (isOpen) {

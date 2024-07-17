@@ -9,8 +9,6 @@ import {
   ApproveGrantRequest,
   AddManagerRequest,
   AddManagerSchema,
-  RejectGrantRequest,
-  RejectGrantSchema,
   CreateGrantRequest,
   CreateGrantSchema,
   RevokeGrantRequest,
@@ -157,27 +155,6 @@ export class GrantsApi {
       entityType: EntityType.GRANT,
       entityId: 0,
       action: Action.APPROVE,
-      metadata: JSON.stringify({
-        grantor_user_id: grantorUserId
-      }),
-      auth: this.auth
-    })
-  }
-
-  /**
-   * Reject manager request
-   */
-  async rejectGrant(params: RejectGrantRequest) {
-    const { userId, grantorUserId } = await parseParams(
-      'rejectGrant',
-      RejectGrantSchema
-    )(params)
-
-    return await this.entityManager.manageEntity({
-      userId,
-      entityType: EntityType.GRANT,
-      entityId: 0,
-      action: Action.REJECT,
       metadata: JSON.stringify({
         grantor_user_id: grantorUserId
       }),

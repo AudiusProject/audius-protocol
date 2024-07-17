@@ -10,7 +10,7 @@ import { Platform, Text as TextBase } from 'react-native'
 import { useTheme } from '../../foundations/theme'
 
 export type TextProps = NativeTextProps &
-  Omit<BaseTextProps, 'textAlign'> & {
+  Omit<BaseTextProps, 'textAlign' | 'ellipsis'> & {
     textAlign?: TextStyle['textAlign']
     textTransform?: TextStyle['textTransform']
     // Needed for proper text wrapping

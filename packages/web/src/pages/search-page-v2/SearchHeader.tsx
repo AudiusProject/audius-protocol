@@ -13,6 +13,7 @@ import {
 } from '@audius/harmony'
 import { CSSObject, useTheme } from '@emotion/react'
 import { capitalize } from 'lodash'
+import { useSearchParams } from 'react-router-dom-v5-compat'
 
 import Header from 'components/header/desktop/Header'
 import { useMedia } from 'hooks/useMedia'
@@ -45,6 +46,7 @@ type SearchHeaderProps = {
 
 export const SearchHeader = (props: SearchHeaderProps) => {
   const { category: categoryKey = 'all', setCategory, query, title } = props
+  const [urlSearchParams] = useSearchParams()
 
   const { isMobile } = useMedia()
   const { color } = useTheme()
@@ -71,7 +73,12 @@ export const SearchHeader = (props: SearchHeaderProps) => {
     [setCategory]
   )
 
-  const filterKeys = categories[categoryKey].filters
+  const filterKeys: string[] = categories[categoryKey].filters
+  const activeFilterKeys = filterKeys.filter((key) => urlSearchParams.get(key))
+  const inactiveFilterKeys = filterKeys.filter(
+    (key) => !urlSearchParams.get(key)
+  )
+  const sortedFilterKeys = [...activeFilterKeys, ...inactiveFilterKeys]
 
   const categoryRadioGroup = (
     <RadioGroup
@@ -109,16 +116,16 @@ export const SearchHeader = (props: SearchHeaderProps) => {
       primary={title}
       secondary={
         query ? (
-          <Flex ml='l'>
-            <Text variant='heading' strength='weak'>
+          <Flex ml='l' css={{ maxWidth: 200 }}>
+            <Text variant='heading' strength='weak' ellipses>
               &#8220;{query}&#8221;
             </Text>
           </Flex>
         ) : null
       }
       bottomBar={
-        <Flex direction='row' gap='s' mv='m'>
-          {filterKeys.map((filterKey) => {
+        <Flex direction='row' gap='s' mv={filterKeys.length ? 'm' : undefined}>
+          {sortedFilterKeys.map((filterKey) => {
             const FilterComponent = filters[filterKey]
             return <FilterComponent key={filterKey} />
           })}

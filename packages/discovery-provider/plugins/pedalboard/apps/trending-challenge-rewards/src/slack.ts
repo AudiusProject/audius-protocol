@@ -9,6 +9,7 @@ import { SharedData } from './config'
 import { onDisburse } from './app'
 import { ChallengeDisbursementUserbankFriendly } from './queries'
 import { announceTopFiveTrending } from './trending'
+import { isValidDate } from './utils'
 
 export const establishSlackConnection = async (app: App<SharedData>) => {
   const slack = initSlack(app).unwrap()
@@ -64,7 +65,15 @@ const disburse = async (
 ): Promise<void> => {
   const { command, ack, respond } = args
   await ack()
-  await onDisburse(app, dryRun)
+
+  // parse out command date if exists
+  const cmdText = command.text
+  const isValidSpecifier = isValidDate(cmdText)
+  if (!isValidSpecifier) {
+    await respond(`${cmdText} not a valid date, please format in YYYY-MM-DD`)
+    return
+  }
+  await onDisburse(app, dryRun, cmdText)
 }
 
 const trending = async (

@@ -23,7 +23,14 @@ export const init = async (isMobile: boolean) => {
       amplitude
         .getInstance()
         // Note: https is prepended to the apiEndpoint url specified
-        .init(AMP_API_KEY, undefined, { apiEndpoint: AMPLITUDE_PROXY })
+        .init(AMP_API_KEY, undefined, {
+          apiEndpoint: AMPLITUDE_PROXY,
+          includeUtm: true,
+          includeReferrer: true,
+          includeFbclid: true,
+          includeGclid: true,
+          saveParamsReferrerOncePerSession: false
+        })
       amp = amplitude
       const source = getSource(isMobile)
       amp.getInstance().logEvent(Name.SESSION_START, { source })
