@@ -10,7 +10,6 @@ import {
   FeatureFlags,
   RemoteConfigInstance
 } from '~/services/index'
-import { SDKMigrationChecker } from '~/utils/sdkMigrationUtils'
 
 import { ReportToSentryArgs } from '../models'
 
@@ -20,7 +19,6 @@ export type AudiusQueryContextType = {
   audiusBackend: AudiusBackend
   dispatch: Dispatch
   reportToSentry: (args: ReportToSentryArgs) => void
-  checkSDKMigration: SDKMigrationChecker
   env: Env
   fetch: typeof fetch
   remoteConfigInstance: RemoteConfigInstance
