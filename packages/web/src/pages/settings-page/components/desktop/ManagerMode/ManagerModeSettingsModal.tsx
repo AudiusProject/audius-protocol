@@ -79,9 +79,9 @@ const useManagerModeState = () => {
             })
             break
           case 'reject':
-            result = await sdk.grants.rejectGrant({
-              userId: currentUserId,
-              grantorUserId: targetUserId
+            result = await sdk.grants.removeManager({
+              userId: targetUserId,
+              managerUserId: currentUserId
             })
             break
           case 'revoke':
