@@ -61,7 +61,9 @@ export enum FeatureFlags {
   SKIP_STREAM_CHECK = 'skip_stream_check',
   PREFETCH_STREAM_URLS = 'prefetch_stream_urls',
   HIDDEN_PAID_SCHEDULED = 'hidden_paid_scheduled',
-  EDITABLE_ACCESS_ENABLED = 'editable_access_enabled'
+  EDITABLE_ACCESS_ENABLED = 'editable_access_enabled',
+  COMMENTS_ENABLED = 'comments_enabled',
+  COMMENT_POSTING_ENABLED = 'comment_posting_enabled'
 }
 
 type FlagDefaults = Record<FeatureFlags, boolean>

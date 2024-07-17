@@ -1,4 +1,4 @@
-import { useGatedContentAccess } from '@audius/common/hooks'
+import { useFeatureFlag, useGatedContentAccess } from '@audius/common/hooks'
 import { ID, LineupState, Track, User } from '@audius/common/models'
 import { trackPageLineupActions, QueueItem } from '@audius/common/store'
 import cn from 'classnames'
@@ -16,6 +16,9 @@ import { getTrackDefaults, emptyStringGuard } from 'pages/track-page/utils'
 
 import Remixes from './Remixes'
 import styles from './TrackPage.module.css'
+import { FeatureFlags } from '@audius/common/services'
+import { IconButton, IconSend, Paper, TextInput } from '@audius/harmony'
+import { useState } from 'react'
 
 const { tracksActions } = trackPageLineupActions
 
@@ -106,6 +109,10 @@ const TrackPage = ({
 
   const { isFetchingNFTAccess, hasStreamAccess } =
     useGatedContentAccess(heroTrack)
+
+  const { isEnabled: isCommentingEnabled } = useFeatureFlag(
+    FeatureFlags.COMMENTS_ENABLED
+  )
   const loading = !heroTrack || isFetchingNFTAccess
 
   const onPlay = () => onHeroPlay({ isPlaying: heroPlaying })
@@ -193,6 +200,29 @@ const TrackPage = ({
       >{`${messages.moreBy} ${user?.name}`}</div>
     ) : null
 
+  // TODO: This will become formik
+  const [comment, setComment] = useState('')
+  const onSubmitComment = () => {
+    console.log({ comment })
+  }
+
+  // TODO: this will become its own component
+  const renderCommentSection = () => (
+    <Paper m='l' p='l'>
+      <TextInput
+        label='Add a comment'
+        onChange={(e) => setComment(e.target.value)}
+        value={comment}
+      />
+      <IconButton
+        aria-label='Post comment'
+        icon={IconSend}
+        color='accent'
+        onClick={onSubmitComment}
+      />
+    </Paper>
+  )
+
   return (
     <Page
       title={title}
@@ -222,6 +252,7 @@ const TrackPage = ({
             />
           </div>
         )}
+      {isCommentingEnabled ? renderCommentSection() : null}
       <div className={styles.moreByArtistLineupWrapper}>
         {hasValidRemixParent ? renderOriginalTrackTitle() : renderMoreByTitle()}
         <Lineup
