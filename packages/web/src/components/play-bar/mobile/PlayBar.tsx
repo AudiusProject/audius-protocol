@@ -110,11 +110,18 @@ const PlayBar = ({
       title: collectible?.name,
       track_id: collectible?.id,
       has_current_user_saved: false,
-      _co_sign: null
+      _co_sign: null,
+      is_unlisted: false
     }
   }
 
-  const { title, track_id, has_current_user_saved, _co_sign } = getDisplayInfo()
+  const {
+    title,
+    track_id,
+    has_current_user_saved,
+    _co_sign,
+    is_unlisted: isUnlisted
+  } = getDisplayInfo()
 
   const { name } = user
 
@@ -158,7 +165,7 @@ const PlayBar = ({
       <div className={styles.playBar}>
         <TrackingBar percentComplete={percentComplete} />
         <div className={styles.controls}>
-          {shouldShowPreviewLock ? null : (
+          {shouldShowPreviewLock || isUnlisted ? null : (
             <FavoriteButton
               isDisabled={track?.is_unlisted}
               onClick={toggleFavorite}
