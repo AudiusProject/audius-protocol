@@ -6,7 +6,8 @@ import {
   IconSearch,
   setupHotkeys,
   removeHotkeys,
-  IconCloseAlt
+  IconCloseAlt,
+  Flex
 } from '@audius/harmony'
 import AutoComplete from 'antd/lib/auto-complete'
 import Input from 'antd/lib/input'
@@ -435,11 +436,9 @@ class SearchBar extends Component {
               />
             }
             suffix={
-              <IconCloseAlt
-                size='2xs'
-                color='subdued'
-                onClick={() => this.props.onClear()}
-              />
+              <Flex onClick={() => this.props.onClear()}>
+                <IconCloseAlt size='2xs' color='subdued' />
+              </Flex>
             }
             onKeyDown={this.onKeyDown}
             spellCheck={false}
