@@ -46,7 +46,7 @@ export const DateTimeInput = (props: DateTimeModalProps) => {
       : dayjs(date).format('h:mm A')
     : ''
 
-  const inlineProps: Partial<ReactNativeModalDateTimePickerProps> = {
+  const dateProps: Partial<ReactNativeModalDateTimePickerProps> = {
     display: 'inline',
     accentColor: color.primary.primary,
     themeVariant: type === 'day' ? 'light' : 'dark',
@@ -70,7 +70,7 @@ export const DateTimeInput = (props: DateTimeModalProps) => {
         isVisible={isDateTimeOpen}
         onConfirm={handleChange}
         onCancel={toggleDateTimeOpen}
-        {...(mode === 'date' ? inlineProps : {})}
+        {...(mode === 'date' ? dateProps : {})}
       />
     </>
   )
