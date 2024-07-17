@@ -491,8 +491,7 @@ const AdvancedModalFields = ({ isUpload }: { isUpload?: boolean }) => {
                     const input = e.nativeEvent.target as HTMLInputElement
                     input.value = input.value.slice(0, input.maxLength)
                   }}
-                  label={messages.bpm.header}
-                  placeholder={messages.bpm.label}
+                  label={messages.bpm.label}
                   autoComplete='off'
                 />
               </Flex>
