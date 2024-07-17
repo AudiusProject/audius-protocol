@@ -123,11 +123,9 @@ export const FilterButton = forwardRef<HTMLButtonElement, FilterButtonProps>(
       if (onClick) {
         onClick()
       } else {
-        if (variant === 'fillContainer') {
-          setIsOpen((isOpen: boolean) => !isOpen)
-        }
+        setIsOpen((isOpen: boolean) => !isOpen)
       }
-    }, [variant, setIsOpen, onClick])
+    }, [setIsOpen, onClick])
 
     const Icon = useMemo(() => {
       return variant === 'fillContainer' && value !== null

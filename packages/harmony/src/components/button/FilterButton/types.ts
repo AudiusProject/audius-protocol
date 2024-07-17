@@ -59,7 +59,7 @@ export type FilterButtonProps = {
 
   /**
    * The type of filter button
-   * @default FilterButtonType.FILL_CONTAINER
+   * @default 'fillContainer'
    */
   variant?: FilterButtonVariant
 
