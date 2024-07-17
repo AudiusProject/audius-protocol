@@ -98,19 +98,26 @@ const MoodFilter = () => {
   )
 }
 
+const getValueFromKey = (key: string) =>
+  // If the key is an enharmonic equivalent (e.g. C# and Db), use the flat as the value
+  key.includes('/') ? key.split('/')[1] : key
+
 const KeyFilter = () => {
   const [urlSearchParams] = useSearchParams()
   const key = urlSearchParams.get('key')
   const updateSearchParams = useUpdateSearchParams('key')
   const [scale, setScale] = useState(key?.split(' ')[1] ?? 'Major')
-  const keyOptions = MUSICAL_KEYS.map((k) => {
-    const keyParts = k.split('/')
-    return {
-      label: k,
-      // If the key is an enharmonic equivalent (e.g. C# and Db), use the flat as the value
-      value: keyParts.length > 1 ? keyParts[1] : k
-    }
-  })
+  const keyOptions = MUSICAL_KEYS.map((k) => ({
+    label: k,
+    value: getValueFromKey(k)
+  }))
+
+  const activeValue = useMemo(() => {
+    if (!key) return null
+    const keyRegex = /(.+) (Major|Minor)/
+    const keyRes = keyRegex.exec(key)?.[1]
+    return keyRes ? getValueFromKey(keyRes) : null
+  }, [key])
 
   const label = useMemo(() => {
     const pitch = key?.split(' ')[0]
@@ -161,6 +168,7 @@ const KeyFilter = () => {
               <Divider css={{ width: '100%' }} />
               <Flex direction='column' w='100%' ph='s'>
                 <FilterButtonOptions
+                  activeValue={activeValue}
                   options={keyOptions}
                   onChange={(option) => {
                     handleChange(`${option.value} ${scale}`)
