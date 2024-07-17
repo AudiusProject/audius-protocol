@@ -7,6 +7,7 @@ import {
   useState
 } from 'react'
 
+import { useGatedContentAccessMap } from '@audius/common/hooks'
 import { Kind, ID, TrackMetadata } from '@audius/common/models'
 import {
   IconCaretDown,
@@ -39,7 +40,6 @@ import Tooltip from 'components/tooltip/Tooltip'
 
 import styles from './Table.module.css'
 import { TableLoadingSpinner } from './components/TableLoadingSpinner'
-import { useGatedContentAccessMap } from '@audius/common/hooks'
 
 // - Infinite scroll constants -
 // Fetch the next group of rows when the user scroll within X rows of the bottom
@@ -140,6 +140,8 @@ export const Table = ({
   useLocalSort = false,
   wrapperClassName
 }: TableProps) => {
+  const trackAccessMap = useGatedContentAccessMap(isTracksTable ? data : [])
+
   useEffect(() => {
     if (totalRowCount == null && isPaginated) {
       console.error(
@@ -343,8 +345,6 @@ export const Table = ({
     []
   )
 
-  const trackAccessMap = useGatedContentAccessMap(data)
-
   const renderTableRow = useCallback(
     (row: Row, key: string, props: TableRowProps, className = '') => {
       const cells = row.cells.filter(
@@ -391,7 +391,14 @@ export const Table = ({
         </Row>
       )
     },
-    [activeIndex, getRowClassName, onClickRow, renderCell, isVirtualized]
+    [
+      trackAccessMap,
+      activeIndex,
+      getRowClassName,
+      onClickRow,
+      renderCell,
+      isVirtualized
+    ]
   )
 
   const renderSkeletonRow = useCallback(

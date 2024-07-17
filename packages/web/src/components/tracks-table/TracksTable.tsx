@@ -9,6 +9,12 @@ import {
   isContentFollowGated,
   isContentUSDCPurchaseGated
 } from '@audius/common/models'
+import {
+  PurchaseableContentType,
+  gatedContentActions,
+  gatedContentSelectors,
+  usePremiumContentPurchaseModal
+} from '@audius/common/store'
 import { formatCount, formatPrice, formatSeconds } from '@audius/common/utils'
 import {
   IconVisibilityHidden,
@@ -21,8 +27,10 @@ import {
 } from '@audius/harmony'
 import cn from 'classnames'
 import moment from 'moment'
+import { useDispatch, useSelector } from 'react-redux'
 import { Cell, Row } from 'react-table'
 
+import { useModalState } from 'common/hooks/useModalState'
 import { TextLink, UserLink } from 'components/link'
 import {
   Table,
@@ -35,25 +43,13 @@ import {
   numericSorter
 } from 'components/table'
 import Tooltip from 'components/tooltip/Tooltip'
+import { GatedConditionsPill } from 'components/track/GatedConditionsPill'
 import { isDescendantElementOf } from 'utils/domUtils'
 
 import styles from './TracksTable.module.css'
-import {
-  PurchaseableContentType,
-  gatedContentActions,
-  gatedContentSelectors,
-  usePremiumContentPurchaseModal
-} from '@audius/common/store'
-import { useDispatch, useSelector } from 'react-redux'
-import { GatedConditionsPill } from 'components/track/GatedConditionsPill'
-import { useModalState } from 'common/hooks/useModalState'
 
 const { setLockedContentId } = gatedContentActions
 const { getGatedContentStatusMap } = gatedContentSelectors
-
-const messages = {
-  locked: 'LOCKED'
-}
 
 type RowInfo = UserTrack & {
   name: string
@@ -182,7 +178,12 @@ export const TracksTable = ({
   userId,
   wrapperClassName
 }: TracksTableProps) => {
+  const dispatch = useDispatch()
+  const gatedTrackStatusMap = useSelector(getGatedContentStatusMap)
   const trackAccessMap = useGatedContentAccessMap(data)
+  const { onOpen: openPremiumContentPurchaseModal } =
+    usePremiumContentPurchaseModal()
+  const [, setGatedModalVisibility] = useModalState('LockedContent')
 
   // Cell Render Functions
   const renderPlayButtonCell = useCallback(
@@ -279,13 +280,16 @@ export const TracksTable = ({
     [userId]
   )
 
-  const renderRepostsCell = useCallback((cellInfo: TrackCell) => {
-    const track = cellInfo.row.original
-    const { is_unlisted: isUnlisted, owner_id: ownerId } = track
-    const isOwner = ownerId === userId
-    if (isUnlisted && !isOwner) return null
-    return formatCount(track.repost_count)
-  }, [])
+  const renderRepostsCell = useCallback(
+    (cellInfo: TrackCell) => {
+      const track = cellInfo.row.original
+      const { is_unlisted: isUnlisted, owner_id: ownerId } = track
+      const isOwner = ownerId === userId
+      if (isUnlisted && !isOwner) return null
+      return formatCount(track.repost_count)
+    },
+    [userId]
+  )
 
   const renderLengthCell = useCallback((cellInfo: TrackCell) => {
     const track = cellInfo.row.original
@@ -307,13 +311,16 @@ export const TracksTable = ({
     return moment(track.dateSaved).format('M/D/YY')
   }, [])
 
-  const renderSavesCell = useCallback((cellInfo: TrackCell) => {
-    const track = cellInfo.row.original
-    const { is_unlisted: isUnlisted, owner_id: ownerId } = track
-    const isOwner = ownerId === userId
-    if (isUnlisted && !isOwner) return null
-    return formatCount(track.save_count)
-  }, [])
+  const renderSavesCell = useCallback(
+    (cellInfo: TrackCell) => {
+      const track = cellInfo.row.original
+      const { is_unlisted: isUnlisted, owner_id: ownerId } = track
+      const isOwner = ownerId === userId
+      if (isUnlisted && !isOwner) return null
+      return formatCount(track.save_count)
+    },
+    [userId]
+  )
 
   const renderReleaseDateCell = useCallback((cellInfo: TrackCell) => {
     const track = cellInfo.row.original
@@ -530,9 +537,29 @@ export const TracksTable = ({
     [isAlbumPremium, isPremiumEnabled, onClickPurchase, trackAccessMap, userId]
   )
 
+  const onClickPremiumPill = useCallback(
+    (trackId: number) => {
+      openPremiumContentPurchaseModal(
+        {
+          contentId: trackId,
+          contentType: PurchaseableContentType.TRACK
+        },
+        { source: ModalSource.TrackLibrary }
+      )
+    },
+    [openPremiumContentPurchaseModal]
+  )
+
+  const onClickGatedPill = useCallback(
+    (trackId: number) => {
+      dispatch(setLockedContentId({ id: trackId }))
+      setGatedModalVisibility(true)
+    },
+    [dispatch, setGatedModalVisibility]
+  )
+
   const renderTrackActions = useCallback(
     (cellInfo: TrackCell) => {
-      const dispatch = useDispatch()
       const track = cellInfo.row.original
       const { isFetchingNFTAccess, hasStreamAccess } = trackAccessMap[
         track.track_id
@@ -540,26 +567,7 @@ export const TracksTable = ({
       const isLocked = !isFetchingNFTAccess && !hasStreamAccess
       const isLockedPremium =
         isLocked && isContentUSDCPurchaseGated(track.stream_conditions)
-      const gatedTrackStatusMap = useSelector(getGatedContentStatusMap)
       const gatedTrackStatus = gatedTrackStatusMap[track.track_id]
-      const { onOpen: openPremiumContentPurchaseModal } =
-        usePremiumContentPurchaseModal()
-      const [, setGatedModalVisibility] = useModalState('LockedContent')
-
-      const onClickPremiumPill = useCallback(() => {
-        openPremiumContentPurchaseModal(
-          {
-            contentId: track.track_id,
-            contentType: PurchaseableContentType.TRACK
-          },
-          { source: ModalSource.TrackLibrary }
-        )
-      }, [track, openPremiumContentPurchaseModal])
-
-      const onClickGatedPill = useCallback(() => {
-        dispatch(setLockedContentId({ id: track.track_id }))
-        setGatedModalVisibility(true)
-      }, [track, dispatch, setGatedModalVisibility])
 
       return (
         <Flex
@@ -575,7 +583,11 @@ export const TracksTable = ({
             <GatedConditionsPill
               streamConditions={track.stream_conditions!}
               unlocking={gatedTrackStatus === 'UNLOCKING'}
-              onClick={isLockedPremium ? onClickPremiumPill : onClickGatedPill}
+              onClick={() => {
+                isLockedPremium
+                  ? onClickPremiumPill(track.track_id)
+                  : onClickGatedPill(track.track_id)
+              }}
               buttonSize='small'
               showIcon={false}
             />
@@ -588,6 +600,10 @@ export const TracksTable = ({
       )
     },
     [
+      trackAccessMap,
+      gatedTrackStatusMap,
+      onClickPremiumPill,
+      onClickGatedPill,
       renderFavoriteButtonCell,
       renderOverflowMenuCell,
       renderPurchaseButton,
