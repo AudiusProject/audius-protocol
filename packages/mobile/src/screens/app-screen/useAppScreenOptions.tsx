@@ -152,6 +152,7 @@ export const useAppScreenOptions = (
                 <IconButton
                   icon={IconSearch}
                   onPress={handlePressSearch}
+                  hitSlop={10}
                   color='subdued'
                   size='m'
                 />

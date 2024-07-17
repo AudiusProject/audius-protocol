@@ -116,15 +116,15 @@ export const SearchHeader = (props: SearchHeaderProps) => {
       primary={title}
       secondary={
         query ? (
-          <Flex ml='l'>
-            <Text variant='heading' strength='weak'>
+          <Flex ml='l' css={{ maxWidth: 200 }}>
+            <Text variant='heading' strength='weak' ellipses>
               &#8220;{query}&#8221;
             </Text>
           </Flex>
         ) : null
       }
       bottomBar={
-        <Flex direction='row' gap='s' mv='m'>
+        <Flex direction='row' gap='s' mv={filterKeys.length ? 'm' : undefined}>
           {sortedFilterKeys.map((filterKey) => {
             const FilterComponent = filters[filterKey]
             return <FilterComponent key={filterKey} />
