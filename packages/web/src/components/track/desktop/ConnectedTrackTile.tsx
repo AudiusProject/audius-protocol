@@ -246,7 +246,7 @@ const ConnectedTrackTile = ({
 
   const renderStats = () => {
     const contentTitle = 'track' // undefined,  playlist or album -  undefined is track
-    const statSize = 'large'
+    const statSize = size === TrackTileSize.SMALL ? 'small' : 'large'
     return (
       <div className={cn(styles.socialInfo)}>
         <Stats
