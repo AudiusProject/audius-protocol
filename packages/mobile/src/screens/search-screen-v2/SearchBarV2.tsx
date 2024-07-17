@@ -25,11 +25,13 @@ export const SearchBarV2 = () => {
   return (
     <TextInput
       startIcon={IconSearch}
-      endIcon={() => (
-        <Pressable onPress={clearQuery} hitSlop={10}>
-          <IconCloseAlt size='s' color='subdued' />
-        </Pressable>
-      )}
+      endIcon={() =>
+        query ? (
+          <Pressable onPress={clearQuery} hitSlop={10}>
+            <IconCloseAlt size='s' color='subdued' />
+          </Pressable>
+        ) : null
+      }
       size={TextInputSize.SMALL}
       label={messages.label}
       placeholder={messages.label}

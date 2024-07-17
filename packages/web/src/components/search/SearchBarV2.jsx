@@ -436,9 +436,11 @@ class SearchBar extends Component {
               />
             }
             suffix={
-              <Flex onClick={() => this.props.onClear()}>
-                <IconCloseAlt size='2xs' color='subdued' />
-              </Flex>
+              this.state.value ? (
+                <Flex onClick={() => this.props.onClear()}>
+                  <IconCloseAlt size='2xs' color='subdued' />
+                </Flex>
+              ) : null
             }
             onKeyDown={this.onKeyDown}
             spellCheck={false}
