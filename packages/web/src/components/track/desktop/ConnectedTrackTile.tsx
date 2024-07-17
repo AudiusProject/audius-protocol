@@ -64,6 +64,7 @@ type OwnProps = {
   order: number
   containerClassName?: string
   size: TrackTileSize
+  statSize: 'small' | 'large'
   showArtistPick: boolean
   ordered: boolean
   togglePlay: (uid: UID, id: ID) => void
@@ -106,7 +107,8 @@ const ConnectedTrackTile = ({
   isTrending,
   isFeed = false,
   showRankIcon,
-  onClick
+  onClick,
+  statSize = 'large'
 }: ConnectedTrackTileProps) => {
   const trackWithFallback = getTrackWithFallback(track)
   const {
@@ -246,7 +248,6 @@ const ConnectedTrackTile = ({
 
   const renderStats = () => {
     const contentTitle = 'track' // undefined,  playlist or album -  undefined is track
-    const statSize = 'large'
     return (
       <div className={cn(styles.socialInfo)}>
         <Stats
