@@ -624,7 +624,12 @@ export const PriceAndAudienceField = (props: PriceAndAudienceFieldProps) => {
           stillCollectibleGated
         const usersMayLoseAccess =
           !stillSameGate &&
-          availabilityType !== StreamTrackAvailabilityType.FREE
+          // why do we have both FREE and PUBLIC types
+          // and when is one used over the other?
+          ![
+            StreamTrackAvailabilityType.FREE,
+            StreamTrackAvailabilityType.PUBLIC
+          ].includes(availabilityType)
 
         if (isEditableAccessEnabled && usersMayLoseAccess) {
           openEditAccessConfirmation({

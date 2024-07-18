@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { useFeatureFlag, useAccessAndRemixSettings } from '@audius/common/hooks'
 import { priceAndAudienceMessages as messages } from '@audius/common/messages'
@@ -11,12 +11,16 @@ import {
 } from '@audius/common/models'
 import type { AccessConditions } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
+import { modalsActions } from '@audius/common/store'
 import type { Nullable } from '@audius/common/utils'
 import { useField, useFormikContext } from 'formik'
+import { useDispatch } from 'react-redux'
 
 import { Hint, IconCart } from '@audius/harmony-native'
+import { useNavigation } from 'app/hooks/useNavigation'
 import { FormScreen } from 'app/screens/form-screen'
 
+import { EditPriceAndAudienceConfirmationDrawer } from '../components/EditPriceAndAudienceConfirmationDrawer'
 import { ExpandableRadio } from '../components/ExpandableRadio'
 import { ExpandableRadioGroup } from '../components/ExpandableRadioGroup'
 import { CollectibleGatedRadioField } from '../fields/GollectibleGatedRadioField'
@@ -127,12 +131,92 @@ export const PriceAndAudienceScreen = () => {
   const isFormInvalid =
     usdcGateIsInvalid || collectibleGateHasNoSelectedCollection
 
+  const dispatch = useDispatch()
+  const navigation = useNavigation()
+  const [usersMayLoseAccess, setUsersMayLoseAccess] = useState(false)
+  const [specialAccessType, setSpecialAccessType] =
+    useState<Nullable<'follow' | 'tip'>>(null)
+  const isInitiallyUsdcGated = isContentUSDCPurchaseGated(
+    initialStreamConditions
+  )
+  const isInitiallyTipGated = isContentTipGated(initialStreamConditions)
+  const isInitiallyFollowGated = isContentFollowGated(initialStreamConditions)
+  const isInitiallyCollectibleGated = isContentCollectibleGated(
+    initialStreamConditions
+  )
+
+  useEffect(() => {
+    if (isContentFollowGated(streamConditions)) {
+      setSpecialAccessType('follow')
+    } else if (isContentTipGated(streamConditions)) {
+      setSpecialAccessType('tip')
+    }
+    const stillUsdcGated =
+      isInitiallyUsdcGated &&
+      availability === StreamTrackAvailabilityType.USDC_PURCHASE
+    const stillFollowGated =
+      isInitiallyFollowGated &&
+      availability === StreamTrackAvailabilityType.SPECIAL_ACCESS &&
+      specialAccessType === 'follow'
+    const stillTipGated =
+      isInitiallyTipGated &&
+      availability === StreamTrackAvailabilityType.SPECIAL_ACCESS &&
+      specialAccessType === 'tip'
+    const stillCollectibleGated =
+      isInitiallyCollectibleGated &&
+      availability === StreamTrackAvailabilityType.COLLECTIBLE_GATED
+    const stillSameGate =
+      stillUsdcGated ||
+      stillFollowGated ||
+      stillTipGated ||
+      stillCollectibleGated
+    setUsersMayLoseAccess(
+      !stillSameGate &&
+        // why do we have both FREE and PUBLIC types
+        // and when is one used over the other?
+        ![
+          StreamTrackAvailabilityType.FREE,
+          StreamTrackAvailabilityType.PUBLIC
+        ].includes(availability)
+    )
+  }, [
+    availability,
+    isInitiallyCollectibleGated,
+    isInitiallyFollowGated,
+    isInitiallyTipGated,
+    isInitiallyUsdcGated,
+    specialAccessType,
+    streamConditions
+  ])
+
+  const handleSubmit = useCallback(() => {
+    if (isEditableAccessEnabled && usersMayLoseAccess) {
+      dispatch(
+        modalsActions.setVisibility({
+          modal: 'EditPriceAndAudienceConfirmation',
+          visible: true
+        })
+      )
+    }
+  }, [dispatch, isEditableAccessEnabled, usersMayLoseAccess])
+
+  const handleCancel = useCallback(() => {
+    dispatch(
+      modalsActions.setVisibility({
+        modal: 'EditPriceAndAudienceConfirmation',
+        visible: false
+      })
+    )
+  }, [dispatch])
+
   return (
     <FormScreen
       title={messages.title}
       icon={IconCart}
       variant='white'
       disableSubmit={isFormInvalid}
+      stopNavigation={usersMayLoseAccess}
+      onSubmit={handleSubmit}
     >
       {isRemix ? <Hint m='l'>{messages.markedAsRemix}</Hint> : null}
       <ExpandableRadioGroup
@@ -157,6 +241,10 @@ export const PriceAndAudienceScreen = () => {
           previousStreamConditions={previousStreamConditions}
         />
       </ExpandableRadioGroup>
+      <EditPriceAndAudienceConfirmationDrawer
+        onConfirm={navigation.goBack}
+        onCancel={handleCancel}
+      />
     </FormScreen>
   )
 }
