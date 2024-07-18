@@ -48,6 +48,7 @@ import {
   TwitterUser,
   User,
   UserMetadata,
+  UserCollection,
   WidthSizes
 } from '../../models'
 import { AnalyticsEvent } from '../../models/Analytics'
@@ -826,8 +827,8 @@ export const audiusBackend = ({
       return {
         tracks: combinedTracks,
         users: combinedUsers,
-        playlists,
-        albums
+        playlists: playlists as UserCollection[],
+        albums: albums as UserCollection[]
       }
     } catch (e) {
       console.error(e)
