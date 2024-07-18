@@ -33,8 +33,11 @@ import { NavigationPrompt } from 'components/navigation-prompt/NavigationPrompt'
 import { EditFormScrollContext } from 'pages/edit-page/EditTrackPage'
 
 import styles from './EditTrackForm.module.css'
+import { ReleaseTrackConfirmationModal } from './ReleaseTrackConfirmationModal'
 import { PreviewButton } from './components/PreviewButton'
 import { TrackEditFormValues } from './types'
+
+const formId = 'edit-track-form'
 
 const messages = {
   multiTrackCount: (index: number, total: number) =>
@@ -70,19 +73,48 @@ const EditFormValidationSchema = z.object({
 
 export const EditTrackForm = (props: EditTrackFormProps) => {
   const { initialValues, onSubmit, onDeleteTrack, hideContainer } = props
+  const [isReleaseConfirmationOpen, setIsReleaseConfirmationOpen] =
+    useState(false)
+
+  const { is_unlisted, is_scheduled_release } =
+    initialValues.trackMetadatas[0] ?? {}
+
+  const handleSubmit = useCallback(
+    (values: TrackEditFormValues) => {
+      if (
+        is_unlisted &&
+        !values.trackMetadatas[0].is_unlisted &&
+        !isReleaseConfirmationOpen
+      ) {
+        setIsReleaseConfirmationOpen(true)
+      } else {
+        setIsReleaseConfirmationOpen(false)
+        onSubmit(values)
+      }
+    },
+    [is_unlisted, isReleaseConfirmationOpen, onSubmit]
+  )
 
   return (
     <Formik<TrackEditFormValues>
       initialValues={initialValues}
-      onSubmit={onSubmit}
+      onSubmit={handleSubmit}
       validationSchema={toFormikValidationSchema(EditFormValidationSchema)}
     >
       {(props) => (
-        <TrackEditForm
-          {...props}
-          hideContainer={hideContainer}
-          onDeleteTrack={onDeleteTrack}
-        />
+        <>
+          <TrackEditForm
+            {...props}
+            hideContainer={hideContainer}
+            onDeleteTrack={onDeleteTrack}
+          />
+          <ReleaseTrackConfirmationModal
+            isOpen={isReleaseConfirmationOpen}
+            onClose={() => setIsReleaseConfirmationOpen(false)}
+            releaseType={!is_scheduled_release ? 'scheduled' : 'hidden'}
+            formId={formId}
+          />
+        </>
       )}
     </Formik>
   )
