@@ -47,6 +47,7 @@ export const getUsersMayLoseAccess = ({
 
   return (
     !stillSameGate &&
+    !isInitiallyUsdcGated &&
     // why do we have both FREE and PUBLIC types
     // and when is one used over the other?
     ![
