@@ -12,7 +12,7 @@ import {
 import type { AccessConditions } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import { modalsActions } from '@audius/common/store'
-import type { Nullable } from '@audius/common/utils'
+import { getUsersMayLoseAccess, type Nullable } from '@audius/common/utils'
 import { useField, useFormikContext } from 'formik'
 import { useDispatch } from 'react-redux'
 
@@ -134,60 +134,30 @@ export const PriceAndAudienceScreen = () => {
   const dispatch = useDispatch()
   const navigation = useNavigation()
   const [usersMayLoseAccess, setUsersMayLoseAccess] = useState(false)
-  const [specialAccessType, setSpecialAccessType] =
-    useState<Nullable<'follow' | 'tip'>>(null)
-  const isInitiallyUsdcGated = isContentUSDCPurchaseGated(
-    initialStreamConditions
-  )
-  const isInitiallyTipGated = isContentTipGated(initialStreamConditions)
-  const isInitiallyFollowGated = isContentFollowGated(initialStreamConditions)
-  const isInitiallyCollectibleGated = isContentCollectibleGated(
-    initialStreamConditions
-  )
+  const [specialAccessType, setSpecialAccessType] = useState<
+    'follow' | 'tip' | undefined
+  >(undefined)
 
+  // We do not know whether or not the special access is of type follow or tip.
+  // So we do that check here.
   useEffect(() => {
     if (isContentFollowGated(streamConditions)) {
       setSpecialAccessType('follow')
     } else if (isContentTipGated(streamConditions)) {
       setSpecialAccessType('tip')
     }
-    const stillUsdcGated =
-      isInitiallyUsdcGated &&
-      availability === StreamTrackAvailabilityType.USDC_PURCHASE
-    const stillFollowGated =
-      isInitiallyFollowGated &&
-      availability === StreamTrackAvailabilityType.SPECIAL_ACCESS &&
-      specialAccessType === 'follow'
-    const stillTipGated =
-      isInitiallyTipGated &&
-      availability === StreamTrackAvailabilityType.SPECIAL_ACCESS &&
-      specialAccessType === 'tip'
-    const stillCollectibleGated =
-      isInitiallyCollectibleGated &&
-      availability === StreamTrackAvailabilityType.COLLECTIBLE_GATED
-    const stillSameGate =
-      stillUsdcGated ||
-      stillFollowGated ||
-      stillTipGated ||
-      stillCollectibleGated
+  }, [streamConditions])
+
+  // Check if users may lose access based on the new audience.
+  useEffect(() => {
     setUsersMayLoseAccess(
-      !stillSameGate &&
-        // why do we have both FREE and PUBLIC types
-        // and when is one used over the other?
-        ![
-          StreamTrackAvailabilityType.FREE,
-          StreamTrackAvailabilityType.PUBLIC
-        ].includes(availability)
+      getUsersMayLoseAccess({
+        availability,
+        initialStreamConditions,
+        specialAccessType
+      })
     )
-  }, [
-    availability,
-    isInitiallyCollectibleGated,
-    isInitiallyFollowGated,
-    isInitiallyTipGated,
-    isInitiallyUsdcGated,
-    specialAccessType,
-    streamConditions
-  ])
+  }, [availability, initialStreamConditions, specialAccessType])
 
   const handleSubmit = useCallback(() => {
     if (isEditableAccessEnabled && usersMayLoseAccess) {
