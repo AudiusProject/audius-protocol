@@ -1,8 +1,4 @@
-import { useFormikContext } from 'formik'
-
 import { ConfirmationDrawer } from 'app/components/drawers'
-
-import type { FormValues } from '../types'
 
 const messages = {
   header: 'Confirm Update',
@@ -20,16 +16,12 @@ type EditPriceAndAudienceConfirmationDrawerProps = {
 export const EditPriceAndAudienceConfirmationDrawer = (
   props: EditPriceAndAudienceConfirmationDrawerProps
 ) => {
-  const { onConfirm, onCancel } = props
-  const { initialValues } = useFormikContext<FormValues>()
-  const wasScheduledRelease = initialValues.is_scheduled_release
-
   return (
     <ConfirmationDrawer
       variant='affirmative'
       modalName='EditPriceAndAudienceConfirmation'
-      onConfirm={onConfirm}
-      onCancel={onCancel}
+      onConfirm={props.onConfirm}
+      onCancel={props.onCancel}
       messages={messages}
     />
   )
