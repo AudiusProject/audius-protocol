@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import { Kind, Status } from '@audius/common/models'
 import {
@@ -38,6 +38,8 @@ export const TrackResults = () => {
   const [filters] = useSearchFilters()
   const dispatch = useDispatch()
   const isEmptySearch = useIsEmptySearch()
+  const [isLoading, setIsLoading] = useState(false)
+  const [isResultsRequested, setIsResultsRequested] = useState(false)
 
   const lineup = useSelector(getSearchTracksLineupMetadatas)
 
@@ -55,13 +57,26 @@ export const TrackResults = () => {
     [dispatch, query, filters]
   )
 
+  useEffect(() => {
+    setIsLoading(true)
+  }, [query, filters])
+
   useDebounce(
     () => {
+      dispatch(tracksActions.reset())
       getResults(0, 10, true)
+      setIsResultsRequested(true)
     },
     500,
     [getResults]
   )
+
+  useEffect(() => {
+    if (isLoading && isResultsRequested && lineup.status === Status.SUCCESS) {
+      setIsLoading(false)
+      setIsResultsRequested(false)
+    }
+  }, [isLoading, isResultsRequested, lineup])
 
   const loadMore = useCallback(
     (offset: number, limit: number) => {
@@ -77,7 +92,7 @@ export const TrackResults = () => {
 
   return (
     <Flex h='100%' backgroundColor='default'>
-      {status === Status.LOADING ? (
+      {status === Status.LOADING || isLoading ? (
         <Flex p='m' gap='m'>
           <LineupTileSkeleton />
           <LineupTileSkeleton />
