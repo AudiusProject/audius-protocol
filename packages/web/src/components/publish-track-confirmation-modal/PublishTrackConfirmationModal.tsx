@@ -20,9 +20,9 @@ const { getConfirmCallback } = publishTrackConfirmationModalUISelectors
 const messages = {
   title: 'Confirm Release',
   description:
-    'Ready to release your new track? Your followers will be notified and your track will be released to the public.',
+    'Are you sure you want to make this track public? Your followers will be notified.',
   cancel: 'Go Back',
-  release: 'Release Now '
+  release: 'Release Now'
 }
 
 export const PublishTrackConfirmationModal = () => {
@@ -44,7 +44,9 @@ export const PublishTrackConfirmationModal = () => {
         <ModalTitle icon={<IconRocket />} title={messages.title} />
       </ModalHeader>
       <ModalContent>
-        <ModalContentText>{messages.description}</ModalContentText>
+        <ModalContentText css={{ textAlign: 'center' }}>
+          {messages.description}
+        </ModalContentText>
       </ModalContent>
       <ModalFooter>
         <Button fullWidth variant='secondary' onClick={onClose}>

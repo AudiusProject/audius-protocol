@@ -213,8 +213,23 @@ function* confirmEditPlaylist(
         )
 
         if (playlistBeforeEdit?.is_private && !confirmedPlaylist.is_private) {
-          for (const track of confirmedPlaylist.tracks ?? []) {
-            if (track.is_unlisted) {
+          const playlistTracks = yield* select(getCollectionTracks, {
+            id: playlistId
+          })
+
+          // Publish all hidden tracks
+          // If the playlist is a scheduled release
+          //    AND all tracks are scheduled releases, publish them all
+          const isEachTrackScheduled = playlistTracks?.every(
+            (track) => track.is_unlisted && track.is_scheduled_release
+          )
+          const isEarlyRelease =
+            playlistBeforeEdit.is_scheduled_release && isEachTrackScheduled
+          for (const track of playlistTracks ?? []) {
+            if (
+              track.is_unlisted &&
+              (!track.is_scheduled_release || isEarlyRelease)
+            ) {
               yield* put(trackPageActions.makeTrackPublic(track.track_id))
             }
           }
@@ -536,8 +551,22 @@ function* confirmPublishPlaylist(
           ])
         )
 
-        for (const track of confirmedPlaylist.tracks ?? []) {
-          if (track.is_unlisted) {
+        const playlistTracks = yield* select(getCollectionTracks, {
+          id: playlistId
+        })
+        // Publish all hidden tracks
+        // If the playlist is a scheduled release
+        //    AND all tracks are scheduled releases, publish them all
+        const isEachTrackScheduled = playlistTracks?.every(
+          (track) => track.is_unlisted && track.is_scheduled_release
+        )
+        const isEarlyRelease =
+          playlist.is_scheduled_release && isEachTrackScheduled
+        for (const track of playlistTracks ?? []) {
+          if (
+            track.is_unlisted &&
+            (!track.is_scheduled_release || isEarlyRelease)
+          ) {
             yield* put(trackPageActions.makeTrackPublic(track.track_id))
           }
         }

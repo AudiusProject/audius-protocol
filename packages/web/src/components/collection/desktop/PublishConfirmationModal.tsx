@@ -1,5 +1,6 @@
-import { useCallback } from 'react'
+import { useCallback, useMemo } from 'react'
 
+import { useGetCurrentUserId, useGetTracksByIds } from '@audius/common/api'
 import { Collection } from '@audius/common/models'
 import {
   cacheCollectionsActions,
@@ -9,13 +10,14 @@ import {
 import {
   Modal,
   ModalContent,
-  ModalContentText,
   ModalHeader,
   ModalTitle,
   ModalProps,
   ModalFooter,
   IconRocket,
-  Button
+  Button,
+  Text,
+  Flex
 } from '@audius/harmony'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -24,13 +26,16 @@ const { getCollection } = collectionPageSelectors
 
 const { publishPlaylist } = cacheCollectionsActions
 
-const messages = {
-  title: 'Make Public',
-  description: (collectionType: 'album' | 'playlist') =>
-    `Are you sure you want to make this ${collectionType} public? Any hidden tracks in your ${collectionType} will become public and your followers will be notified.`,
-  cancel: 'Cancel',
-  publish: 'Make Public'
-}
+const getMessages = (isAlbum: boolean, isEarlyRelease: boolean) => ({
+  title: isEarlyRelease ? 'Confirm Early Release' : 'Confirm Release',
+  description: isAlbum
+    ? isEarlyRelease
+      ? `Do you want to release your album now? All scheduled tracks will become public, and your followers will be notified.`
+      : `Are you sure you want to release this album? All hidden tracks will go public, and your followers will be notified.`
+    : `Do you want to release your playlist now? Your followers will be notified.`,
+  cancel: 'Go Back',
+  publish: `Release My ${isAlbum ? 'Album' : 'Playlist'}`
+})
 
 type PublishConfirmationModalProps = Omit<ModalProps, 'children'> & {
   collectionId: number
@@ -43,14 +48,29 @@ export const PublishConfirmationModal = (
   const { onClose } = other
   const dispatch = useDispatch()
 
-  const { is_album } = useSelector((state: CommonState) =>
-    getCollection(state, { id: collectionId })
+  const { is_album, is_scheduled_release, playlist_contents } = useSelector(
+    (state: CommonState) => getCollection(state, { id: collectionId })
   ) as Collection
+
+  const { data: currentUserId } = useGetCurrentUserId({})
+  const { data: tracks } = useGetTracksByIds({
+    ids: playlist_contents.track_ids.map((track) => track.track),
+    currentUserId
+  })
+
+  const isEarlyRelease = useMemo(() => {
+    const isEachTrackScheduled = tracks?.every(
+      (track) => track.is_unlisted && track.is_scheduled_release
+    )
+    return !!(is_scheduled_release && isEachTrackScheduled)
+  }, [is_scheduled_release, tracks])
 
   const handlePublish = useCallback(() => {
     dispatch(publishPlaylist(collectionId))
     onClose()
   }, [dispatch, collectionId, onClose])
+
+  const messages = getMessages(is_album, isEarlyRelease)
 
   return (
     <Modal {...other} size='small'>
@@ -58,9 +78,11 @@ export const PublishConfirmationModal = (
         <ModalTitle title={messages.title} icon={<IconRocket />} />
       </ModalHeader>
       <ModalContent>
-        <ModalContentText>
-          {messages.description(is_album ? 'album' : 'playlist')}
-        </ModalContentText>
+        <Flex justifyContent='center'>
+          <Text size='l' textAlign='center'>
+            {messages.description}
+          </Text>
+        </Flex>
       </ModalContent>
       <ModalFooter className={styles.footer}>
         <Button variant='secondary' onClick={onClose} fullWidth>
