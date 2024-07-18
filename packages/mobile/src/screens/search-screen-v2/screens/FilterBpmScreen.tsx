@@ -155,60 +155,49 @@ const BpmRangeView = ({ value, setValue }: ViewProps) => {
     onChange(value)
   }, [maxBpm, minBpm, minError, maxError, onChange])
 
+  const customInputFooter = (
+    <Flex direction='row' p='l' gap='xs' w='100%' alignItems='flex-start'>
+      <TextInput
+        style={{ flex: 1, alignSelf: 'flex-start' }}
+        value={minBpm}
+        label={messages.minBpm}
+        keyboardType='numeric'
+        error={!!minError}
+        helperText={minError}
+        aria-errormessage={minError ?? undefined}
+        placeholder={messages.minBpm}
+        onChangeText={(text) => {
+          const validated = text.match(/^(\d{0,3}$)/)
+          if (validated) setMinBpm(text)
+        }}
+      />
+      <Text style={{ alignSelf: 'flex-start', paddingVertical: 20 }}>-</Text>
+      <TextInput
+        style={{ flex: 1, alignSelf: 'flex-start' }}
+        value={maxBpm}
+        label={messages.maxBpm}
+        keyboardType='numeric'
+        error={!!maxError}
+        helperText={maxError}
+        aria-errormessage={maxError ?? undefined}
+        placeholder={messages.maxBpm}
+        onChangeText={(text) => {
+          const validated = text.match(/^(\d{0,3}$)/)
+          if (validated) setMaxBpm(text)
+        }}
+      />
+    </Flex>
+  )
+
   return (
-    <>
-      <Flex>
-        <SelectionItemList
-          data={rangeOptions}
-          value={bpmRange}
-          onChange={setBpmRange}
-        />
-      </Flex>
-      <Flex
-        flex={1}
-        direction='row'
-        p='l'
-        gap='xs'
-        w='100%'
-        alignItems='flex-start'
-      >
-        {bpmRange === 'custom' ? (
-          <>
-            <TextInput
-              style={{ flex: 1, alignSelf: 'flex-start' }}
-              value={minBpm}
-              label={messages.minBpm}
-              keyboardType='numeric'
-              error={!!minError}
-              helperText={minError}
-              aria-errormessage={minError ?? undefined}
-              placeholder={messages.minBpm}
-              onChangeText={(text) => {
-                const validated = text.match(/^(\d{0,3}$)/)
-                if (validated) setMinBpm(text)
-              }}
-            />
-            <Text style={{ alignSelf: 'flex-start', paddingVertical: 20 }}>
-              -
-            </Text>
-            <TextInput
-              style={{ flex: 1, alignSelf: 'flex-start' }}
-              value={maxBpm}
-              label={messages.maxBpm}
-              keyboardType='numeric'
-              error={!!maxError}
-              helperText={maxError}
-              aria-errormessage={maxError ?? undefined}
-              placeholder={messages.maxBpm}
-              onChangeText={(text) => {
-                const validated = text.match(/^(\d{0,3}$)/)
-                if (validated) setMaxBpm(text)
-              }}
-            />
-          </>
-        ) : null}
-      </Flex>
-    </>
+    <Flex flex={1}>
+      <SelectionItemList
+        data={rangeOptions}
+        value={bpmRange}
+        onChange={setBpmRange}
+        footerComponent={bpmRange === 'custom' ? customInputFooter : undefined}
+      />
+    </Flex>
   )
 }
 

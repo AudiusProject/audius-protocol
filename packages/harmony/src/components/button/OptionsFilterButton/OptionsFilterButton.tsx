@@ -107,7 +107,11 @@ export const FilterButtonOptions = (props: FilterButtonOptionsProps) => {
             {option.label ?? option.value}
           </Text>
           {option.helperText ? (
-            <Text variant='body' strength='strong' color='subdued'>
+            <Text
+              variant='body'
+              strength='strong'
+              color={option.value === activeValue ? 'staticWhite' : 'subdued'}
+            >
               {option.helperText}
             </Text>
           ) : null}
