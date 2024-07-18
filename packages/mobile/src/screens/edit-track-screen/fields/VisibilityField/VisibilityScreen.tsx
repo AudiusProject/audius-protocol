@@ -97,6 +97,7 @@ export const VisibilityScreen = () => {
       title={messages.title}
       icon={IconVisibilityPublic}
       onSubmit={handleSubmit}
+      variant='white'
       stopNavigation
     >
       <ExpandableRadioGroup

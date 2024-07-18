@@ -18,6 +18,7 @@ export type FormScreenProps = ScreenProps & {
   onClear?: () => void
   clearable?: boolean
   stopNavigation?: boolean
+  disableSubmit?: boolean
 }
 
 export const FormScreen = (props: FormScreenProps) => {
@@ -29,6 +30,7 @@ export const FormScreen = (props: FormScreenProps) => {
     clearable,
     onSubmit,
     stopNavigation,
+    disableSubmit,
     ...other
   } = props
   const navigation = useNavigation()
@@ -57,7 +59,12 @@ export const FormScreen = (props: FormScreenProps) => {
       >
         {bottomSection ?? (
           <>
-            <Button variant='primary' fullWidth onPress={handleSubmit}>
+            <Button
+              variant='primary'
+              fullWidth
+              disabled={disableSubmit}
+              onPress={handleSubmit}
+            >
               {messages.done}
             </Button>
             {onClear ? (

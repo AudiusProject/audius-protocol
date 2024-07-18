@@ -1,16 +1,14 @@
 import { useCallback } from 'react'
 
 import type { Modals } from '@audius/common/store'
-import { View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import type { IconComponent } from '@audius/harmony-native'
-import { Text, IconInfo, Button, Flex } from '@audius/harmony-native'
+import { Text, IconInfo, Button, Flex, useTheme } from '@audius/harmony-native'
 import { AppDrawer, NativeDrawer, useDrawerState } from 'app/components/drawer'
 import { useDrawer } from 'app/hooks/useDrawer'
 import type { Drawer } from 'app/store/drawers/slice'
 import { makeStyles } from 'app/styles'
-import { spacing } from 'app/styles/spacing'
 
 const defaultMessages = {
   cancel: 'Nevermind'
@@ -34,7 +32,6 @@ type BaseConfirmationDrawerProps = {
   }
   onConfirm: () => void
   onCancel?: () => void
-  bottomChinHeight?: number
   variant?: 'destructive' | 'affirmative'
   icon?: IconComponent
 }
@@ -60,7 +57,6 @@ const ConfirmationDrawerContent = (props: DrawerContentProps) => {
     messages: messagesProp,
     onConfirm,
     onCancel,
-    bottomChinHeight = spacing(6),
     onClose,
     variant = 'destructive',
     icon: Icon = IconInfo
@@ -68,6 +64,7 @@ const ConfirmationDrawerContent = (props: DrawerContentProps) => {
   const styles = useStyles()
   const messages = { ...defaultMessages, ...messagesProp }
   const insets = useSafeAreaInsets()
+  const { spacing } = useTheme()
 
   const handleConfirm = useCallback(() => {
     onClose()
@@ -107,7 +104,7 @@ const ConfirmationDrawerContent = (props: DrawerContentProps) => {
           {messages.cancel}
         </Button>
       </Flex>
-      <View style={{ height: bottomChinHeight, marginBottom: insets.bottom }} />
+      <Flex h={insets.bottom + spacing.xl} />
     </Flex>
   )
 }

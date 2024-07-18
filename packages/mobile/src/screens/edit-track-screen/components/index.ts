@@ -1,5 +1,5 @@
 export * from './CancelEditTrackDrawer'
 export * from './RemixTrackPill'
-export * from './SpecialAccessAvailability'
-export * from './CollectibleGatedAvailability'
+export * from '../fields/SpecialAccessRadioField'
+export * from '../fields/GollectibleGatedRadioField'
 export * from './HiddenAvailability'

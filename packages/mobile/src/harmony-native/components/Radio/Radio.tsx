@@ -18,6 +18,7 @@ export type RadioProps = FlexProps & {
   label?: string
   icon?: IconComponent
   disabled?: boolean
+  size?: 'default' | 'large'
   children?: ReactNode
 }
 
@@ -31,6 +32,7 @@ export const Radio = (props: RadioProps) => {
     disabled,
     children,
     style,
+    size,
     ...flexProps
   } = props
   const { cornerRadius, spacing, color } = useTheme()
@@ -91,7 +93,7 @@ export const Radio = (props: RadioProps) => {
               {Icon ? <Icon color={checked ? 'accent' : 'default'} /> : null}
               <Text
                 variant='title'
-                size='l'
+                size={size === 'large' ? 'l' : 'm'}
                 color={checked ? 'accent' : 'default'}
               >
                 {label}
