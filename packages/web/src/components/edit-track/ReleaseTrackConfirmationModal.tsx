@@ -12,20 +12,24 @@ import {
 
 const messages = {
   title: {
-    hidden: 'Confirm Release',
-    scheduled: 'Confirm Early Release'
+    release: 'Confirm Release',
+    early_release: 'Confirm Early Release',
+    hidden: 'Confirm Update'
   },
   description: {
-    hidden: `Are you sure you want to make this track public? Your followers will be notified.`,
-    scheduled: `Do you want to release your track now? Your followers will be notified.`
+    release: `Are you sure you want to make this track public? Your followers will be notified.`,
+    early_release: `Do you want to release your track now? Your followers will be notified.`,
+    hidden:
+      "You're about to change your content from public to hidden. It will be hidden from the public and your followers will lose access."
   },
   goBack: 'Go Back',
-  release: `Release Now`
+  release: `Release Now`,
+  makeHidden: `Make Hidden`
 }
 
 type Props = Omit<ModalProps, 'children'> & {
   formId: string
-  releaseType: 'hidden' | 'scheduled'
+  releaseType: 'release' | 'early_release' | 'hidden'
 }
 
 export const ReleaseTrackConfirmationModal = (props: Props) => {
@@ -46,7 +50,7 @@ export const ReleaseTrackConfirmationModal = (props: Props) => {
           {messages.goBack}
         </Button>
         <Button variant='primary' type='submit' form={formId} fullWidth>
-          {messages.release}
+          {releaseType === 'hidden' ? messages.makeHidden : messages.release}
         </Button>
       </ModalFooter>
     </Modal>

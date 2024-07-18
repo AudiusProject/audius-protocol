@@ -75,6 +75,7 @@ export type Modals =
   | 'LeavingAudiusModal'
   | 'UploadConfirmation'
   | 'EditAccessConfirmation'
+  | 'EditPriceAndAudienceConfirmation'
   | 'PublishTrackConfirmation'
   | 'WithdrawUSDCModal'
   | 'USDCPurchaseDetailsModal'

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { useFeatureFlag, useAccessAndRemixSettings } from '@audius/common/hooks'
 import { priceAndAudienceMessages as messages } from '@audius/common/messages'
@@ -11,12 +11,16 @@ import {
 } from '@audius/common/models'
 import type { AccessConditions } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
-import type { Nullable } from '@audius/common/utils'
+import { modalsActions } from '@audius/common/store'
+import { getUsersMayLoseAccess, type Nullable } from '@audius/common/utils'
 import { useField, useFormikContext } from 'formik'
+import { useDispatch } from 'react-redux'
 
 import { Hint, IconCart } from '@audius/harmony-native'
+import { useNavigation } from 'app/hooks/useNavigation'
 import { FormScreen } from 'app/screens/form-screen'
 
+import { EditPriceAndAudienceConfirmationDrawer } from '../components/EditPriceAndAudienceConfirmationDrawer'
 import { ExpandableRadio } from '../components/ExpandableRadio'
 import { ExpandableRadioGroup } from '../components/ExpandableRadioGroup'
 import { CollectibleGatedRadioField } from '../fields/GollectibleGatedRadioField'
@@ -30,7 +34,9 @@ const publicAvailability = StreamTrackAvailabilityType.PUBLIC
 
 export const PriceAndAudienceScreen = () => {
   const { initialValues } = useFormikContext<FormValues>()
-  const [{ value: streamConditions }] =
+  const [, , { setValue: setIsStreamGated }] =
+    useField<boolean>('is_stream_gated')
+  const [{ value: streamConditions }, , { setValue: setStreamConditions }] =
     useField<Nullable<AccessConditions>>('stream_conditions')
   const [{ value: isUnlisted }] = useField<boolean>('is_unlisted')
   const [{ value: isScheduledRelease }] = useField<boolean>(
@@ -127,12 +133,62 @@ export const PriceAndAudienceScreen = () => {
   const isFormInvalid =
     usdcGateIsInvalid || collectibleGateHasNoSelectedCollection
 
+  const dispatch = useDispatch()
+  const navigation = useNavigation()
+  const [usersMayLoseAccess, setUsersMayLoseAccess] = useState(false)
+  const [specialAccessType, setSpecialAccessType] = useState<
+    'follow' | 'tip' | undefined
+  >(undefined)
+
+  // We do not know whether or not the special access is of type follow or tip.
+  // So we do that check here.
+  useEffect(() => {
+    if (isContentFollowGated(streamConditions)) {
+      setSpecialAccessType('follow')
+    } else if (isContentTipGated(streamConditions)) {
+      setSpecialAccessType('tip')
+    }
+  }, [streamConditions])
+
+  // Check if users may lose access based on the new audience.
+  useEffect(() => {
+    setUsersMayLoseAccess(
+      getUsersMayLoseAccess({
+        availability,
+        initialStreamConditions,
+        specialAccessType
+      })
+    )
+  }, [availability, initialStreamConditions, specialAccessType])
+
+  const handleSubmit = useCallback(() => {
+    if (isEditableAccessEnabled && usersMayLoseAccess) {
+      dispatch(
+        modalsActions.setVisibility({
+          modal: 'EditPriceAndAudienceConfirmation',
+          visible: true
+        })
+      )
+    }
+  }, [dispatch, isEditableAccessEnabled, usersMayLoseAccess])
+
+  const handleCancel = useCallback(() => {
+    dispatch(
+      modalsActions.setVisibility({
+        modal: 'EditPriceAndAudienceConfirmation',
+        visible: false
+      })
+    )
+  }, [dispatch])
+
   return (
     <FormScreen
       title={messages.title}
       icon={IconCart}
       variant='white'
       disableSubmit={isFormInvalid}
+      stopNavigation={usersMayLoseAccess}
+      onSubmit={handleSubmit}
     >
       {isRemix ? <Hint m='l'>{messages.markedAsRemix}</Hint> : null}
       <ExpandableRadioGroup
@@ -143,6 +199,10 @@ export const PriceAndAudienceScreen = () => {
           value={publicAvailability}
           label={messages.freeRadio.title}
           description={messages.freeRadio.description('track')}
+          onValueChange={() => {
+            setIsStreamGated(false)
+            setStreamConditions(null)
+          }}
         />
         <PremiumRadioField
           disabled={disableUsdcGate}
@@ -157,6 +217,10 @@ export const PriceAndAudienceScreen = () => {
           previousStreamConditions={previousStreamConditions}
         />
       </ExpandableRadioGroup>
+      <EditPriceAndAudienceConfirmationDrawer
+        onConfirm={navigation.goBack}
+        onCancel={handleCancel}
+      />
     </FormScreen>
   )
 }

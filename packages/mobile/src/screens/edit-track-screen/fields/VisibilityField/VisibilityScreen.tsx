@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 
 import { visibilityMessages } from '@audius/common/messages'
+import { FeatureFlags } from '@audius/common/services'
 import { getLocalTimezone } from '@audius/common/utils'
 import dayjs from 'dayjs'
 import { useFormikContext } from 'formik'
@@ -15,6 +16,7 @@ import {
 } from '@audius/harmony-native'
 import { DateTimeInput } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
+import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { FormScreen } from 'app/screens/form-screen'
 
 import { ExpandableRadio } from '../../components/ExpandableRadio'
@@ -29,6 +31,9 @@ const messages = {
 }
 
 export const VisibilityScreen = () => {
+  const { isEnabled: isEditableAccessEnabled } = useFeatureFlag(
+    FeatureFlags.EDITABLE_ACCESS_ENABLED
+  )
   const { values, initialValues, setValues } = useFormikContext<FormValues>()
   const { is_unlisted, is_scheduled_release, release_date, isUpload } = values
   const isAlreadyPublic = !isUpload && !initialValues.is_unlisted
@@ -114,13 +119,13 @@ export const VisibilityScreen = () => {
           label={messages.hidden}
           icon={IconVisibilityHidden}
           description={messages.hiddenDescription}
-          disabled={isAlreadyPublic}
+          disabled={!isEditableAccessEnabled && isAlreadyPublic}
         />
         <ExpandableRadio
           value='scheduled'
           label={messages.scheduledRelease}
           description={messages.scheduledReleaseDescription}
-          disabled={isAlreadyPublic}
+          disabled={!isEditableAccessEnabled && isAlreadyPublic}
           checkedContent={
             <Flex direction='column' gap='l'>
               <Flex gap='l'>

@@ -21,6 +21,7 @@ import {
   EditPlaylistValues,
   editAccessConfirmationModalUIActions
 } from '@audius/common/store'
+import { getUsersMayLoseAccess } from '@audius/common/utils'
 import {
   IconCart,
   IconCollectible,
@@ -587,44 +588,14 @@ export const PriceAndAudienceField = (props: PriceAndAudienceFieldProps) => {
       icon={<IconHidden />}
       initialValues={initialValues}
       onSubmit={(values) => {
-        const isInitiallyUsdcGated = isContentUSDCPurchaseGated(
-          parentFormInitialStreamConditions
-        )
-        const isInitiallyTipGated = isContentTipGated(
-          parentFormInitialStreamConditions
-        )
-        const isInitiallyFollowGated = isContentFollowGated(
-          parentFormInitialStreamConditions
-        )
-        const isInitiallyCollectibleGated = isContentCollectibleGated(
-          parentFormInitialStreamConditions
-        )
-
         const availabilityType = get(values, STREAM_AVAILABILITY_TYPE)
         const specialAccessType = get(values, SPECIAL_ACCESS_TYPE)
-
-        const stillUsdcGated =
-          isInitiallyUsdcGated &&
-          availabilityType === StreamTrackAvailabilityType.USDC_PURCHASE
-        const stillFollowGated =
-          isInitiallyFollowGated &&
-          availabilityType === StreamTrackAvailabilityType.SPECIAL_ACCESS &&
-          specialAccessType === SpecialAccessType.FOLLOW
-        const stillTipGated =
-          isInitiallyTipGated &&
-          availabilityType === StreamTrackAvailabilityType.SPECIAL_ACCESS &&
-          specialAccessType === SpecialAccessType.TIP
-        const stillCollectibleGated =
-          isInitiallyCollectibleGated &&
-          availabilityType === StreamTrackAvailabilityType.COLLECTIBLE_GATED
-        const stillSameGate =
-          stillUsdcGated ||
-          stillFollowGated ||
-          stillTipGated ||
-          stillCollectibleGated
-        const usersMayLoseAccess =
-          !stillSameGate &&
-          availabilityType !== StreamTrackAvailabilityType.FREE
+        const usersMayLoseAccess = getUsersMayLoseAccess({
+          availability: availabilityType,
+          initialStreamConditions: parentFormInitialStreamConditions,
+          specialAccessType:
+            specialAccessType === SpecialAccessType.FOLLOW ? 'follow' : 'tip'
+        })
 
         if (isEditableAccessEnabled && usersMayLoseAccess) {
           openEditAccessConfirmation({
