@@ -92,7 +92,7 @@ export const TrackResults = (props: TrackResultsProps) => {
   useDebounce(
     () => {
       // Reuse the existing lineup if the search params haven't changed
-      if (searchParams === prevSearchParams && lineup.entries.length > 0) {
+      if (searchParams === prevSearchParams) {
         return
       }
       dispatch(searchResultsPageTracksLineupActions.reset())
@@ -104,12 +104,9 @@ export const TrackResults = (props: TrackResultsProps) => {
 
   const loadMore = useCallback(
     (offset: number, limit: number) => {
-      // Only load more if the initial fetch has already happened,
-      // see useDebounce above
-      if (lineup.entries.length === 0) return
       getResults(offset, limit, false)
     },
-    [getResults, lineup]
+    [getResults]
   )
 
   const handleClickTrackTile = useCallback(
