@@ -215,7 +215,7 @@ export const TrackResultsPage = () => {
           </Flex>
         </Flex>
       ) : null}
-      <TrackResults />
+      <TrackResults viewLayout={tracksLayout} />
     </Flex>
   )
 }
