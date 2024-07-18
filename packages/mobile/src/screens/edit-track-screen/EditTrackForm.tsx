@@ -85,8 +85,10 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
   const styles = useStyles()
   const navigation = useNavigation()
   const dispatch = useDispatch()
-  const isToBePublished =
-    !isUpload && initialValues.is_unlisted && !values.is_unlisted
+  const initiallyHidden = initialValues.is_unlisted
+  const isInitiallyScheduled = initialValues.is_scheduled_release
+  const usersMayLoseAccess = !initiallyHidden && values.is_unlisted
+  const isToBePublished = !isUpload && initiallyHidden && !values.is_unlisted
 
   useOneTimeDrawer({
     key: GATED_CONTENT_UPLOAD_PROMPT_DRAWER_SEEN_KEY,
@@ -108,17 +110,42 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
   }, [dirty, navigation, dispatch])
 
   const handleSubmit = useCallback(() => {
-    if (isToBePublished) {
+    if (usersMayLoseAccess) {
       dispatch(
         modalsActions.setVisibility({
           modal: 'EditAccessConfirmation',
           visible: true
+          // hidden
         })
       )
+    } else if (isToBePublished) {
+      if (isInitiallyScheduled) {
+        dispatch(
+          modalsActions.setVisibility({
+            modal: 'EditAccessConfirmation',
+            visible: true
+            // early_release
+          })
+        )
+      } else {
+        dispatch(
+          modalsActions.setVisibility({
+            modal: 'EditAccessConfirmation',
+            visible: true
+            // release
+          })
+        )
+      }
     } else {
       handleSubmitProp()
     }
-  }, [isToBePublished, dispatch, handleSubmitProp])
+  }, [
+    usersMayLoseAccess,
+    isToBePublished,
+    dispatch,
+    isInitiallyScheduled,
+    handleSubmitProp
+  ])
 
   const { isEnabled: isHiddenPaidScheduledEnabled } = useFeatureFlag(
     FeatureFlags.HIDDEN_PAID_SCHEDULED
