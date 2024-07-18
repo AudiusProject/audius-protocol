@@ -90,7 +90,7 @@ export const TrackResults = (props: TrackResultsProps) => {
   useDebounce(
     () => {
       dispatch(searchResultsPageTracksLineupActions.reset())
-      getResults(0, 10, true)
+      getResults(0, 12, true)
     },
     500,
     [dispatch, searchParams, category]

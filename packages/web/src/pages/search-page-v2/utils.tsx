@@ -39,7 +39,8 @@ export const useGetSearchResults = <C extends SearchCategory>(
     ...filters,
     category,
     currentUserId,
-    limit: category === 'all' ? 12 : undefined
+    limit: category === 'all' ? 12 : undefined,
+    offset: 0
   }
 
   const { data, status } = useGetSearchResultsApi(params, {
