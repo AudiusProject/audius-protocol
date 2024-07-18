@@ -1,3 +1,4 @@
+import type { ReactElement } from 'react'
 import { useCallback } from 'react'
 
 import type { ListRenderItem, ViewStyle } from 'react-native'
@@ -26,6 +27,7 @@ type SelectionItemListProps = {
   itemStyles?: ViewStyle
   itemContentStyles?: ViewStyle
   renderItem?: ListRenderItem<ListItemData>
+  footerComponent?: ReactElement
 }
 
 const defaultRenderItem: ListRenderItem<ListItemData> = ({ item }) => {
@@ -90,7 +92,8 @@ export const SelectionItemList = ({
   hideSelectionLabel,
   itemStyles,
   itemContentStyles,
-  isLoading
+  isLoading,
+  footerComponent
 }: SelectionItemListProps) => {
   const styles = useStyles()
 
@@ -186,6 +189,7 @@ export const SelectionItemList = ({
       renderItem={renderItem}
       ItemSeparatorComponent={Divider}
       data={data}
+      ListFooterComponent={footerComponent}
     />
   )
 }
