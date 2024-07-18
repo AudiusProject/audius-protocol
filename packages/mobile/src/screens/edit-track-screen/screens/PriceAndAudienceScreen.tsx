@@ -34,7 +34,9 @@ const publicAvailability = StreamTrackAvailabilityType.PUBLIC
 
 export const PriceAndAudienceScreen = () => {
   const { initialValues } = useFormikContext<FormValues>()
-  const [{ value: streamConditions }] =
+  const [, , { setValue: setIsStreamGated }] =
+    useField<boolean>('is_stream_gated')
+  const [{ value: streamConditions }, , { setValue: setStreamConditions }] =
     useField<Nullable<AccessConditions>>('stream_conditions')
   const [{ value: isUnlisted }] = useField<boolean>('is_unlisted')
   const [{ value: isScheduledRelease }] = useField<boolean>(
@@ -197,6 +199,10 @@ export const PriceAndAudienceScreen = () => {
           value={publicAvailability}
           label={messages.freeRadio.title}
           description={messages.freeRadio.description('track')}
+          onValueChange={() => {
+            setIsStreamGated(false)
+            setStreamConditions(null)
+          }}
         />
         <PremiumRadioField
           disabled={disableUsdcGate}
