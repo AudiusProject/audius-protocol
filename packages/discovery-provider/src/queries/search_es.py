@@ -176,6 +176,7 @@ def search_es_full(args: dict):
                 {"index": ES_PLAYLISTS},
                 playlist_dsl(
                     search_str=search_str,
+                    tag_search="",
                     current_user_id=current_user_id,
                     genres=genres,
                     moods=moods,
@@ -191,6 +192,7 @@ def search_es_full(args: dict):
                 {"index": ES_PLAYLISTS},
                 album_dsl(
                     search_str=search_str,
+                    tag_search="",
                     current_user_id=current_user_id,
                     genres=genres,
                     moods=moods,
@@ -269,6 +271,9 @@ def search_tags_es(args: dict):
 
     do_tracks = search_type == "all" or search_type == "tracks"
     do_users = search_type == "all" or search_type == "users"
+    do_playlists = search_type == "all" or search_type == "playlists"
+    do_albums = search_type == "all" or search_type == "albums"
+
     mdsl: Any = []
 
     if do_tracks:
@@ -309,6 +314,40 @@ def search_tags_es(args: dict):
             ]
         )
 
+    # playlists
+    if do_playlists:
+        mdsl.extend(
+            [
+                {"index": ES_PLAYLISTS},
+                playlist_dsl(
+                    search_str="",
+                    tag_search=tag_search,
+                    current_user_id=current_user_id,
+                    genres=genres,
+                    moods=moods,
+                    sort_method=sort_method,
+                ),
+            ]
+        )
+
+    # albums
+    if do_albums:
+        mdsl.extend(
+            [
+                {"index": ES_PLAYLISTS},
+                album_dsl(
+                    search_str="",
+                    tag_search=tag_search,
+                    current_user_id=current_user_id,
+                    genres=genres,
+                    moods=moods,
+                    only_with_downloads=only_with_downloads,
+                    only_purchaseable=only_purchaseable,
+                    sort_method=sort_method,
+                ),
+            ]
+        )
+
     mdsl_limit_offset(mdsl, limit, offset)
     mfound = esclient.msearch(searches=mdsl)
 
@@ -317,6 +356,10 @@ def search_tags_es(args: dict):
         "saved_tracks": [],
         "users": [],
         "followed_users": [],
+        "playlists": [],
+        "saved_playlists": [],
+        "albums": [],
+        "saved_albums": [],
     }
 
     if do_tracks:
@@ -324,6 +367,12 @@ def search_tags_es(args: dict):
 
     if do_users:
         response["users"] = pluck_hits(mfound["responses"].pop(0))
+
+    if do_playlists:
+        response["playlists"] = pluck_hits(mfound["responses"].pop(0))
+
+    if do_albums:
+        response["albums"] = pluck_hits(mfound["responses"].pop(0))
 
     finalize_response(response, limit, current_user_id)
     return response
@@ -895,6 +944,7 @@ def user_dsl(
 
 def base_playlist_dsl(
     search_str,
+    tag_search,
     is_album,
     genres,
     moods,
@@ -985,6 +1035,24 @@ def base_playlist_dsl(
         }
     }
 
+    if tag_search:
+        print("sebastian tag search appending", tag_search)
+        dsl["must"].append(
+            {
+                "bool": {
+                    "should": [
+                        {
+                            "match": {
+                                "tracks.tags": {
+                                    "query": tag_search.replace(" ", ""),
+                                }
+                            }
+                        },
+                    ],
+                }
+            }
+        )
+
     if genres:
         # At least one track genre must match
         dsl["must"].append({"terms": {"tracks.genre": genres}})
@@ -1072,6 +1140,7 @@ def base_playlist_dsl(
 
 def playlist_dsl(
     search_str,
+    tag_search,
     current_user_id,
     must_saved=False,
     genres=[],
@@ -1080,6 +1149,7 @@ def playlist_dsl(
 ):
     return base_playlist_dsl(
         search_str,
+        tag_search,
         False,
         genres,
         moods,
@@ -1093,6 +1163,7 @@ def playlist_dsl(
 
 def album_dsl(
     search_str,
+    tag_search,
     current_user_id,
     only_with_downloads,
     only_purchaseable,
@@ -1103,6 +1174,7 @@ def album_dsl(
 ):
     return base_playlist_dsl(
         search_str,
+        tag_search,
         True,
         genres,
         moods,

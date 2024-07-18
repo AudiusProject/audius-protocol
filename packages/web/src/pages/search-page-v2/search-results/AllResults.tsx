@@ -42,6 +42,7 @@ export const AllResults = () => {
   const userIds = data?.users.map(({ user_id: id }) => id)
   const albumIds = data?.albums.map(({ playlist_id: id }) => id)
   const playlistIds = data?.playlists.map(({ playlist_id: id }) => id)
+  const trackIds = data?.tracks.map(({ track_id: id }) => id)
 
   return (
     <Flex
@@ -50,33 +51,45 @@ export const AllResults = () => {
       p={isMobile ? 'm' : undefined}
       ref={containerRef}
     >
-      <Flex gap='xl' direction='column'>
-        <Text variant='heading' textAlign='left'>
-          {messages.profiles}
-        </Text>
-        <ProfileResults skeletonCount={5} ids={userIds} limit={5} />
-      </Flex>
+      {isLoading || userIds?.length ? (
+        <Flex gap='xl' direction='column'>
+          <Text variant='heading' textAlign='left'>
+            {messages.profiles}
+          </Text>
+          <ProfileResults skeletonCount={5} ids={userIds} limit={5} />
+        </Flex>
+      ) : null}
 
-      <Flex gap='xl' direction='column'>
-        <Text variant='heading' textAlign='left'>
-          {messages.tracks}
-        </Text>
-        <TrackResults count={12} viewLayout='grid' category={SearchKind.ALL} />
-      </Flex>
+      {isLoading || trackIds?.length ? (
+        <Flex gap='xl' direction='column'>
+          <Text variant='heading' textAlign='left'>
+            {messages.tracks}
+          </Text>
+          <TrackResults
+            count={12}
+            viewLayout='grid'
+            category={SearchKind.ALL}
+          />
+        </Flex>
+      ) : null}
 
-      <Flex gap='xl' direction='column'>
-        <Text variant='heading' textAlign='left'>
-          {messages.albums}
-        </Text>
-        <AlbumResults skeletonCount={5} ids={albumIds} limit={5} />
-      </Flex>
+      {isLoading || albumIds?.length ? (
+        <Flex gap='xl' direction='column'>
+          <Text variant='heading' textAlign='left'>
+            {messages.albums}
+          </Text>
+          <AlbumResults skeletonCount={5} ids={albumIds} limit={5} />
+        </Flex>
+      ) : null}
 
-      <Flex gap='xl' direction='column'>
-        <Text variant='heading' textAlign='left'>
-          {messages.playlists}
-        </Text>
-        <PlaylistResults skeletonCount={5} ids={playlistIds} limit={5} />
-      </Flex>
+      {isLoading || playlistIds?.length ? (
+        <Flex gap='xl' direction='column'>
+          <Text variant='heading' textAlign='left'>
+            {messages.playlists}
+          </Text>
+          <PlaylistResults skeletonCount={5} ids={playlistIds} limit={5} />
+        </Flex>
+      ) : null}
     </Flex>
   )
 }
