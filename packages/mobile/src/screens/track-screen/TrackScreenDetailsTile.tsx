@@ -9,7 +9,8 @@ import {
   PlaybackSource,
   FavoriteType,
   SquareSizes,
-  isContentUSDCPurchaseGated
+  isContentUSDCPurchaseGated,
+  isContentCollectibleGated
 } from '@audius/common/models'
 import type {
   UID,
@@ -231,11 +232,20 @@ export const TrackScreenDetailsTile = ({
     isStreamGated ||
     (!isOwner && (playCount ?? 0) <= 0)
 
-  const headerText = isRemix
-    ? messages.remix
-    : isStreamGated
-    ? messages.premiumTrack
-    : messages.track
+  let headerText
+  if (isRemix) {
+    headerText = messages.remix
+  } else if (isStreamGated) {
+    if (isContentCollectibleGated(streamConditions)) {
+      headerText = messages.collectibleGated
+    } else if (isContentUSDCPurchaseGated(streamConditions)) {
+      headerText = messages.premiumTrack
+    } else {
+      headerText = messages.specialAccess
+    }
+  } else {
+    headerText = messages.track
+  }
 
   const PlayIcon =
     playbackPositionInfo?.status === 'COMPLETED' && !isCurrentTrack
