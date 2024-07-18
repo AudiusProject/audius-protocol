@@ -24,7 +24,7 @@
 }
 
 .moreByArtistLineupWrapper {
-  width: 834px;
+  width: 100%;
   margin-top: 48px;
   margin-bottom: 35px;
   margin-left: auto;
@@ -33,7 +33,7 @@
 }
 
 .moreByArtistContainer {
-  width: 720px;
+  width: 100%;
   margin: auto;
 }
 

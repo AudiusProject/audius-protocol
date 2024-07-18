@@ -22,6 +22,7 @@ from src.api.v1.tracks import ns as tracks_ns
 from src.api.v1.transactions import full_ns as full_transactions_ns
 from src.api.v1.users import full_ns as full_users_ns
 from src.api.v1.users import ns as users_ns
+from src.api.v1.comments import ns as comments_ns
 
 
 class ApiWithHTTPS(Api):
@@ -47,6 +48,7 @@ api_v1.add_namespace(developer_apps_ns)
 api_v1.add_namespace(dashboard_wallet_users_ns)
 api_v1.add_namespace(metrics_ns)
 api_v1.add_namespace(resolve_ns)
+api_v1.add_namespace(comments_ns)
 
 
 bp_full = Blueprint("api_v1_full", __name__, url_prefix="/v1/full")

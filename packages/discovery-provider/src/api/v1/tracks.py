@@ -462,6 +462,50 @@ class TrackInspect(Resource):
         abort_not_found(track_id, ns)
 
 
+# Comment
+@ns.route("/<string:track_id>/comments")
+class TrackComments(Resource):
+    @record_metrics
+    @ns.doc(
+        id="""Track Comments""",
+        description="""Get a list of comments for a track""",
+        params={"track_id": "A Track ID"},
+        responses={
+            200: "Success",
+            400: "Bad request",
+            500: "Server error",
+        },
+    )
+    @cache(ttl_sec=5)
+    def get(self, track_id):
+        # TODO: query for comments
+        comment_sample_data = [
+            {
+                "id": 456,
+                "message": "This is a special comment",
+                "is_pinned": True,
+                "timestamp_s": 123,
+                "react_count": 1234,
+                "replies": [
+                    {
+                        "id": 7890,
+                        "message": "This is a comment reply",
+                        "timestamp_s": 123,
+                        "react_count": 1234,  # if using simple reactions
+                        "is_pinned": False,
+                        "replies": None,  # prefer null over empty array but either is fine
+                        "created_at": "2021-01-01T00:00:00Z",
+                        "updated_at": None,
+                    }
+                ],
+                "created_at": "2021-01-01T00:00:00Z",
+                "updated_at": None,
+            }
+        ]
+
+        return success_response(comment_sample_data)
+
+
 # Stream
 stream_parser = current_user_parser.copy()
 stream_parser.add_argument(

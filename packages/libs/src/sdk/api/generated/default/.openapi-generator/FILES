@@ -1,4 +1,5 @@
 .openapi-generator-ignore
+apis/CommentsApi.ts
 apis/DashboardWalletUsersApi.ts
 apis/DeveloperAppsApi.ts
 apis/PlaylistsApi.ts
@@ -14,6 +15,8 @@ models/Activity.ts
 models/AuthorizedApp.ts
 models/AuthorizedApps.ts
 models/BlobInfo.ts
+models/Comment.ts
+models/CommentResponse.ts
 models/ConnectedWallets.ts
 models/ConnectedWalletsResponse.ts
 models/CoverPhoto.ts

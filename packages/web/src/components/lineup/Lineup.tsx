@@ -13,15 +13,18 @@ export type LineupWithoutTile = Omit<
   LineupProviderProps,
   'trackTile' | 'skeletonTile' | 'playlistTile'
 >
-type LineupProps = LineupWithoutTile
+type LineupProps = LineupWithoutTile & { useSmallTiles?: boolean }
 
 /** A lineup renders a LineupProvider, injecting different tiles
  * depending on the client state.
  */
 const Lineup = (props: LineupProps) => {
+  const { useSmallTiles } = props
   const isMobile = useIsMobile()
-  const trackTile = isMobile ? MobileTrackTile : DesktopTrackTile
-  const playlistTile = isMobile ? MobilePlaylistTile : DesktopPlaylistTile
+  const trackTile =
+    isMobile || useSmallTiles ? MobileTrackTile : DesktopTrackTile
+  const playlistTile =
+    isMobile || useSmallTiles ? MobilePlaylistTile : DesktopPlaylistTile
 
   return (
     <LineupProvider

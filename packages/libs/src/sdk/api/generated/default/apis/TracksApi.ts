@@ -111,6 +111,10 @@ export interface StreamTrackRequest {
     noRedirect?: boolean;
 }
 
+export interface TrackCommentsRequest {
+    trackId: string;
+}
+
 /**
  * 
  */
@@ -560,6 +564,36 @@ export class TracksApi extends runtime.BaseAPI {
      */
     async streamTrack(params: StreamTrackRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
         await this.streamTrackRaw(params, initOverrides);
+    }
+
+    /**
+     * @hidden
+     * Get a list of comments for a track
+     */
+    async trackCommentsRaw(params: TrackCommentsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        if (params.trackId === null || params.trackId === undefined) {
+            throw new runtime.RequiredError('trackId','Required parameter params.trackId was null or undefined when calling trackComments.');
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/tracks/{track_id}/comments`.replace(`{${"track_id"}}`, encodeURIComponent(String(params.trackId))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * Get a list of comments for a track
+     */
+    async trackComments(params: TrackCommentsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.trackCommentsRaw(params, initOverrides);
     }
 
 }

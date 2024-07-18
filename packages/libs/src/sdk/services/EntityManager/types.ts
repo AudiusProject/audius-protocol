@@ -74,7 +74,8 @@ export enum EntityType {
   DEVELOPER_APP = 'DeveloperApp',
   GRANT = 'Grant',
   DASHBOARD_WALLET_USER = 'DashboardWalletUser',
-  TIP = 'Tip'
+  TIP = 'Tip',
+  COMMENT = 'Comment'
 }
 
 export type AdvancedOptions = {
