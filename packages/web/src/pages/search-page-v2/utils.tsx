@@ -29,7 +29,7 @@ type SearchResultsType<C extends SearchCategory> = {
 export const useGetSearchResults = <C extends SearchCategory>(
   category: C
 ): SearchResultsType<C> => {
-  const { query, category: ignoredCategory, ...filters } = useSearchParams()
+  const { query, ...filters } = useSearchParams()
 
   const accountStatus = useSelector(getAccountStatus)
   const currentUserId = useSelector(getUserId)
@@ -45,6 +45,7 @@ export const useGetSearchResults = <C extends SearchCategory>(
 
   const { data, status } = useGetSearchResultsApi(params, {
     debounce: 500,
+    // TODO: do we need this on mobile too
     // Only search when the account has finished loading,
     // or if the user is not logged in
     disabled: accountStatus === Status.LOADING || accountStatus === Status.IDLE
@@ -60,12 +61,16 @@ export const useGetSearchResults = <C extends SearchCategory>(
   }
 }
 
-export const useSearchParams = () => {
-  const [urlSearchParams] = useParams()
-
+export const useSearchCategory = () => {
   const routeMatch = useRouteMatch<{ category: string }>(SEARCH_PAGE)
   const category =
     (routeMatch?.params.category as CategoryView) || CategoryView.ALL
+  return category
+}
+
+export const useSearchParams = () => {
+  const [urlSearchParams] = useParams()
+
   const query = urlSearchParams.get('query')
   const sortMethod = urlSearchParams.get('sortMethod') as SearchSortMethod
   const genre = urlSearchParams.get('genre')
@@ -79,7 +84,6 @@ export const useSearchParams = () => {
   const searchParams = useMemo(
     () => ({
       query,
-      category,
       genre: (genre || undefined) as Genre,
       mood: (mood || undefined) as Mood,
       bpm: bpm || undefined,
@@ -91,7 +95,6 @@ export const useSearchParams = () => {
     }),
     [
       query,
-      category,
       genre,
       mood,
       bpm,

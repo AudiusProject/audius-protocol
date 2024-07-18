@@ -12,8 +12,9 @@ import {
 } from '@audius/common/store'
 import { Flex, OptionsFilterButton, Text } from '@audius/harmony'
 import { css } from '@emotion/css'
+import Search from 'antd/lib/transfer/search'
 import { useDispatch, useSelector } from 'react-redux'
-import { useDebounce } from 'react-use'
+import { useDebounce, usePrevious } from 'react-use'
 
 import { make } from 'common/store/analytics/actions'
 import Lineup from 'components/lineup/Lineup'
@@ -65,6 +66,7 @@ export const TrackResults = (props: TrackResultsProps) => {
   const lineup = useSelector(getSearchTracksLineupMetadatas)
 
   const searchParams = useSearchParams()
+  const prevSearchParams = usePrevious(searchParams)
 
   const getResults = useCallback(
     (offset: number, limit: number, overwrite: boolean) => {
@@ -89,18 +91,25 @@ export const TrackResults = (props: TrackResultsProps) => {
 
   useDebounce(
     () => {
+      // Reuse the existing lineup if the search params haven't changed
+      if (searchParams === prevSearchParams && lineup.entries.length > 0) {
+        return
+      }
       dispatch(searchResultsPageTracksLineupActions.reset())
       getResults(0, 12, true)
     },
     500,
-    [dispatch, searchParams, category]
+    [dispatch, getResults]
   )
 
   const loadMore = useCallback(
     (offset: number, limit: number) => {
+      // Only load more if the initial fetch has already happened,
+      // see useDebounce above
+      if (lineup.entries.length === 0) return
       getResults(offset, limit, false)
     },
-    [getResults]
+    [getResults, lineup]
   )
 
   const handleClickTrackTile = useCallback(
