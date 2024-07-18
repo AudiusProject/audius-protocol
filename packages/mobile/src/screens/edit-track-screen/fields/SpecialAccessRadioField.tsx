@@ -76,8 +76,9 @@ export const SpecialAccessRadioField = (
     dispatch(setVisibility({ drawer: 'SupportersInfo', visible: true }))
   }, [dispatch])
 
-  const [specialAccess, setSpecialAccess] =
-    useState<SpecialAccessValue>('followers')
+  const [specialAccess, setSpecialAccess] = useState<SpecialAccessValue>(
+    isContentTipGated(selectedSpecialAccessGate) ? 'supporters' : 'followers'
+  )
 
   const handleAccessChange = useCallback(
     (value: SpecialAccessValue) => {
