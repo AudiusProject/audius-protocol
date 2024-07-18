@@ -14,7 +14,7 @@ export const trackRouter = router({
   get: publicProcedure.input(z.string()).query(async ({ ctx, input }) => {
     const row = await ctx.loaders.trackLoader.load(parseInt(input))
     if (!row) {
-      return null;
+      return null
     }
     return row
   }),
@@ -65,7 +65,7 @@ export const trackRouter = router({
 
   getAlbumBacklink: publicProcedure
     .input(z.object({ trackId: z.number() }))
-    .query(async ({ input }) => {
+    .query(async ({ input, ctx: { currentUserId } }) => {
       const found = await esc.search<AlbumBacklinkMetadata>({
         index: 'playlists',
         query: {
@@ -73,11 +73,18 @@ export const trackRouter = router({
             must: [
               { term: { 'playlist_contents.track_ids.track': input.trackId } },
               { term: { is_delete: false } },
-              { term: { is_private: false } },
               { term: { is_album: true } },
             ],
             must_not: [],
-            should: [],
+            should: [
+              { term: { is_private: false } },
+              {
+                term: {
+                  playlist_owner_id: currentUserId,
+                },
+              },
+            ],
+            minimum_should_match: 1,
           },
         },
         size: 1,
@@ -87,7 +94,7 @@ export const trackRouter = router({
 
       const hits = found.hits.hits.map((h) => h._source)
       if (hits.length === 0) {
-        return null;
+        return null
       }
       return hits[0]
     }),
