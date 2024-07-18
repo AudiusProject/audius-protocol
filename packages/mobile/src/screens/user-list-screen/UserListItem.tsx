@@ -88,7 +88,7 @@ export const UserListItem = (props: UserListItemProps) => {
         onPressOut={handlePressOut}
       >
         <View style={styles.infoRoot}>
-          <ProfilePicture userId={user.user_id} />
+          <ProfilePicture userId={user.user_id} size='large' />
           <View style={styles.userInfo}>
             <Text variant='h3' style={styles.displayName}>
               {name}
