@@ -6,7 +6,7 @@ import type { SearchItem as SearchItemType } from '@audius/common/store'
 import { searchActions } from '@audius/common/store'
 import { useDispatch } from 'react-redux'
 
-import { Button, Flex, IconCloseAlt, Text } from '@audius/harmony-native'
+import { Flex, IconCloseAlt, PlainButton, Text } from '@audius/harmony-native'
 import { FlatList } from 'app/components/core'
 
 import { SearchItem } from './SearchItem'
@@ -56,14 +56,12 @@ export const RecentSearches = (props: RecentSearchesProps) => {
       )}
       ListFooterComponent={
         <Flex pv='l' ph='l'>
-          <Button
-            variant='secondary'
-            size='small'
+          <PlainButton
             style={{ alignSelf: 'center' }}
             onPress={handleClearSearchHistory}
           >
             {messages.clear}
-          </Button>
+          </PlainButton>
         </Flex>
       }
     />
