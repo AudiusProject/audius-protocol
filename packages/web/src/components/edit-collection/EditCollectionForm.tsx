@@ -182,7 +182,7 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
               onCancel={() => setIsDeleteConfirmationOpen(false)}
               onDelete={() => setIsDeleteConfirmationOpen(false)}
             />
-            {isAlbum ? null : (
+            {isAlbum ? (
               <ReleaseCollectionConfirmationModal
                 isOpen={isReleaseConfirmationOpen}
                 onClose={() => setIsReleaseConfirmationOpen(false)}
@@ -190,7 +190,7 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
                 releaseType={!is_scheduled_release ? 'scheduled' : 'hidden'}
                 formId={formId}
               />
-            )}
+            ) : null}
           </>
         ) : null}
       </Form>
