@@ -267,12 +267,19 @@ export const TracksTable = ({
   const renderPlaysCell = useCallback(
     (cellInfo: TrackCell) => {
       const track = cellInfo.row.original
-      const isOwner = track.owner_id === userId
+      const {
+        is_unlisted: isUnlisted,
+        is_delete: isDelete,
+        owner_id: ownerId,
+        is_stream_gated: isStreamGated
+      } = track
+      const isOwner = ownerId === userId
       if (
         !isOwner &&
-        ((track.is_stream_gated &&
+        ((isStreamGated &&
           isContentUSDCPurchaseGated(track.stream_conditions)) ||
-          track.is_unlisted)
+          isUnlisted ||
+          isDelete)
       )
         return null
       return formatCount(track.plays)
@@ -283,9 +290,13 @@ export const TracksTable = ({
   const renderRepostsCell = useCallback(
     (cellInfo: TrackCell) => {
       const track = cellInfo.row.original
-      const { is_unlisted: isUnlisted, owner_id: ownerId } = track
+      const {
+        is_unlisted: isUnlisted,
+        is_delete: isDelete,
+        owner_id: ownerId
+      } = track
       const isOwner = ownerId === userId
-      if (isUnlisted && !isOwner) return null
+      if ((isDelete || isUnlisted) && !isOwner) return null
       return formatCount(track.repost_count)
     },
     [userId]
@@ -314,9 +325,13 @@ export const TracksTable = ({
   const renderSavesCell = useCallback(
     (cellInfo: TrackCell) => {
       const track = cellInfo.row.original
-      const { is_unlisted: isUnlisted, owner_id: ownerId } = track
+      const {
+        is_unlisted: isUnlisted,
+        is_delete: isDelete,
+        owner_id: ownerId
+      } = track
       const isOwner = ownerId === userId
-      if (isUnlisted && !isOwner) return null
+      if ((isDelete || isUnlisted) && !isOwner) return null
       return formatCount(track.save_count)
     },
     [userId]
@@ -561,6 +576,7 @@ export const TracksTable = ({
   const renderTrackActions = useCallback(
     (cellInfo: TrackCell) => {
       const track = cellInfo.row.original
+      const { is_delete: isDelete } = track
       const { isFetchingNFTAccess, hasStreamAccess } = trackAccessMap[
         track.track_id
       ] ?? { isFetchingNFTAccess: false, hasStreamAccess: true }
@@ -568,6 +584,8 @@ export const TracksTable = ({
       const isLockedPremium =
         isLocked && isContentUSDCPurchaseGated(track.stream_conditions)
       const gatedTrackStatus = gatedTrackStatusMap[track.track_id]
+
+      if (isDelete) return null
 
       return (
         <Flex
