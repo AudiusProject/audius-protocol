@@ -1,4 +1,4 @@
-import { searchApiFetch } from '@audius/common/api'
+import { searchApiFetchSaga } from '@audius/common/api'
 import { Track } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import {
@@ -72,8 +72,9 @@ function* getSearchPageResultsTracks({
       } else {
         // searchApiFetch.getSearchResults already handles tag search,
         // so we don't need to specify isTagSearch necessarily
+
         const { tracks } = yield* call(
-          searchApiFetch.getSearchResults,
+          searchApiFetchSaga.getSearchResults,
           {
             currentUserId,
             query,
