@@ -54,6 +54,7 @@ export const initialState: BasicModalsState = {
   InboxUnavailableModal: { isOpen: false },
   UploadConfirmation: { isOpen: false },
   EditAccessConfirmation: { isOpen: false },
+  EditPriceAndAudienceConfirmation: { isOpen: false },
   PublishTrackConfirmation: { isOpen: false },
   WithdrawUSDCModal: { isOpen: false },
   USDCPurchaseDetailsModal: { isOpen: false },
