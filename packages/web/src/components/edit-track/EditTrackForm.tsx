@@ -85,26 +85,37 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
 
   const handleSubmit = useCallback(
     (values: TrackEditFormValues) => {
-      const usersMayLoseAccess =
-        !initiallyHidden && values.trackMetadatas[0].is_unlisted
-      const isToBePublished =
-        !isUpload && initiallyHidden && !values.trackMetadatas[0].is_unlisted
-      const showConfirmDrawer = usersMayLoseAccess || isToBePublished
-      if (showConfirmDrawer) {
-        if (usersMayLoseAccess) {
-          setConfirmDrawerType('hidden')
-        } else if (isInitiallyScheduled) {
-          setConfirmDrawerType('early_release')
-        } else {
-          setConfirmDrawerType('release')
-        }
-        setIsReleaseConfirmationOpen(true)
-      } else {
+      if (isReleaseConfirmationOpen) {
         setIsReleaseConfirmationOpen(false)
         onSubmit(values)
+      } else {
+        const usersMayLoseAccess =
+          !initiallyHidden && values.trackMetadatas[0].is_unlisted
+        const isToBePublished =
+          !isUpload && initiallyHidden && !values.trackMetadatas[0].is_unlisted
+        const showConfirmDrawer = usersMayLoseAccess || isToBePublished
+        if (showConfirmDrawer) {
+          if (usersMayLoseAccess) {
+            setConfirmDrawerType('hidden')
+          } else if (isInitiallyScheduled) {
+            setConfirmDrawerType('early_release')
+          } else {
+            setConfirmDrawerType('release')
+          }
+          setIsReleaseConfirmationOpen(true)
+        } else {
+          setIsReleaseConfirmationOpen(false)
+          onSubmit(values)
+        }
       }
     },
-    [initiallyHidden, isUpload, onSubmit, isInitiallyScheduled]
+    [
+      isReleaseConfirmationOpen,
+      onSubmit,
+      initiallyHidden,
+      isUpload,
+      isInitiallyScheduled
+    ]
   )
 
   return (
@@ -161,7 +172,7 @@ const TrackEditForm = (
   )
 
   return (
-    <Form>
+    <Form id={formId}>
       <NavigationPrompt
         when={dirty && !isSubmitting}
         messages={
