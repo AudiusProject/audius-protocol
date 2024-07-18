@@ -17,7 +17,6 @@ export const ExpandableRadio = (props: ExpandableRadioProps) => {
 
   return (
     <Radio size='large' {...radioProps}>
-      {description ? <Text>{description}</Text> : null}
       {checked ? (
         <>
           {description ? <Text>{description}</Text> : null}
