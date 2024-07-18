@@ -551,7 +551,6 @@ export const TrackScreenDetailsTile = ({
       <Flex
         p='l'
         gap='l'
-        alignItems='center'
         borderTop='default'
         backgroundColor='surface1'
         borderBottomLeftRadius='m'
