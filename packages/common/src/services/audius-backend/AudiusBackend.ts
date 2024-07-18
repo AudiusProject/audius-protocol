@@ -804,7 +804,9 @@ export const audiusBackend = ({
         tracks = [],
         saved_tracks: savedTracks = [],
         followed_users: followedUsers = [],
-        users = []
+        users = [],
+        playlists = [],
+        albums = []
       } = searchTags
 
       const combinedTracks = await Promise.all(
@@ -824,8 +826,8 @@ export const audiusBackend = ({
       return {
         tracks: combinedTracks,
         users: combinedUsers,
-        playlists: [],
-        albums: []
+        playlists,
+        albums
       }
     } catch (e) {
       console.error(e)

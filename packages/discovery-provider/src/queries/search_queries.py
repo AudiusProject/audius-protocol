@@ -27,7 +27,13 @@ class SearchKind(Enum):
 
 @bp.route("/search/tags", methods=("GET",))
 def search_tags():
-    validSearchKinds = [SearchKind.all, SearchKind.tracks, SearchKind.users]
+    validSearchKinds = [
+        SearchKind.all,
+        SearchKind.tracks,
+        SearchKind.users,
+        SearchKind.playlists,
+        SearchKind.albums,
+    ]
     search_str = request.args.get("query", type=str)
     current_user_id = get_current_user_id(required=False)
     kind = request.args.get("kind", type=str, default="all")
