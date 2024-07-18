@@ -1,8 +1,9 @@
-import { useCallback } from 'react'
+import { useCallback, useState } from 'react'
 
 import { FeatureFlags } from '@audius/common/services'
 import type { TrackForUpload } from '@audius/common/store'
 import { modalsActions } from '@audius/common/store'
+import type { Nullable } from '@audius/common/utils'
 import { Keyboard } from 'react-native'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import { useDispatch } from 'react-redux'
@@ -89,6 +90,8 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
   const isInitiallyScheduled = initialValues.is_scheduled_release
   const usersMayLoseAccess = !initiallyHidden && values.is_unlisted
   const isToBePublished = !isUpload && initiallyHidden && !values.is_unlisted
+  const [confirmDrawerType, setConfirmDrawerType] =
+    useState<Nullable<'release' | 'early_release' | 'hidden'>>(null)
 
   useOneTimeDrawer({
     key: GATED_CONTENT_UPLOAD_PROMPT_DRAWER_SEEN_KEY,
@@ -110,32 +113,21 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
   }, [dirty, navigation, dispatch])
 
   const handleSubmit = useCallback(() => {
-    if (usersMayLoseAccess) {
+    const showConfirmDrawer = usersMayLoseAccess || isToBePublished
+    if (showConfirmDrawer) {
+      if (usersMayLoseAccess) {
+        setConfirmDrawerType('hidden')
+      } else if (isInitiallyScheduled) {
+        setConfirmDrawerType('early_release')
+      } else {
+        setConfirmDrawerType('release')
+      }
       dispatch(
         modalsActions.setVisibility({
           modal: 'EditAccessConfirmation',
           visible: true
-          // hidden
         })
       )
-    } else if (isToBePublished) {
-      if (isInitiallyScheduled) {
-        dispatch(
-          modalsActions.setVisibility({
-            modal: 'EditAccessConfirmation',
-            visible: true
-            // early_release
-          })
-        )
-      } else {
-        dispatch(
-          modalsActions.setVisibility({
-            modal: 'EditAccessConfirmation',
-            visible: true
-            // release
-          })
-        )
-      }
     } else {
       handleSubmitProp()
     }
@@ -211,7 +203,12 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
         </>
       </FormScreen>
       <CancelEditTrackDrawer />
-      <ConfirmPublishTrackDrawer onConfirm={handleSubmitProp} />
+      {confirmDrawerType ? (
+        <ConfirmPublishTrackDrawer
+          type={confirmDrawerType}
+          onConfirm={handleSubmitProp}
+        />
+      ) : null}
     </>
   )
 }

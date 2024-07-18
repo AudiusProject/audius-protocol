@@ -1,41 +1,45 @@
-import { useFormikContext } from 'formik'
-
 import { ConfirmationDrawer } from 'app/components/drawers'
-
-import type { FormValues } from '../types'
 
 const messages = {
   release: {
     header: 'Confirm Release',
     description:
-      'Are you sure you want to make this track public? Your followers will be notified.'
+      'Are you sure you want to make this track public? Your followers will be notified.',
+    cancel: 'Cancel',
+    confirm: 'Release Now'
   },
   earlyRelease: {
     header: 'Confirm Early Release',
     description:
-      'Do you want to release your track now? Your followers will be notified.'
-  },
-  common: {
-    cancel: 'Go Back',
+      'Do you want to release your track now? Your followers will be notified.',
+    cancel: 'Cancel',
     confirm: 'Release Now'
+  },
+  hidden: {
+    header: 'Confirm Update',
+    description:
+      "You're about to change your content from public to hidden. It will be hidden from the public and your followers will lose access.",
+    cancel: 'Cancel',
+    confirm: 'Make Hidden'
   }
 }
 
 type ConfirmPublishTrackDrawerProps = {
+  type: 'release' | 'early_release' | 'hidden'
   onConfirm: () => void
 }
 
 export const ConfirmPublishTrackDrawer = (
   props: ConfirmPublishTrackDrawerProps
 ) => {
-  const { onConfirm } = props
-  const { initialValues } = useFormikContext<FormValues>()
-  const wasScheduledRelease = initialValues.is_scheduled_release
+  const { type, onConfirm } = props
 
-  const confirmationMessages = {
-    ...messages.common,
-    ...(wasScheduledRelease ? messages.release : messages.earlyRelease)
-  }
+  const confirmationMessages =
+    type === 'release'
+      ? messages.release
+      : type === 'early_release'
+      ? messages.earlyRelease
+      : messages.hidden
 
   return (
     <ConfirmationDrawer
