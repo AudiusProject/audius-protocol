@@ -105,9 +105,13 @@ export const TrackResults = (props: TrackResultsProps) => {
 
   const loadMore = useCallback(
     (offset: number, limit: number) => {
+      // Only load more if some results have already been loaded
+      if (!lineup.entries.length) {
+        return
+      }
       getResults(offset, limit, false)
     },
-    [getResults]
+    [getResults, lineup]
   )
 
   const handleClickTrackTile = useCallback(
@@ -220,10 +224,7 @@ export const TrackResultsPage = ({
           </Flex>
         </Flex>
       ) : null}
-      <TrackResults
-        viewLayout={tracksLayout}
-        prevSearchParams={prevSearchParams}
-      />
+      <TrackResults viewLayout={tracksLayout} />
     </Flex>
   )
 }
