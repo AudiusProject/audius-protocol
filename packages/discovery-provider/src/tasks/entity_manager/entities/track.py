@@ -412,6 +412,10 @@ def populate_track_record_metadata(track_record: Track, track_metadata, handle, 
                     "producer_copyright_line"
                 ]
 
+        elif key == "bpm":
+            if "bpm" in track_metadata and track_metadata["bpm"]:
+                track_record.bpm = track_metadata["bpm"]
+
         else:
             # For most fields, update the track_record when the corresponding field exists
             # in track_metadata
