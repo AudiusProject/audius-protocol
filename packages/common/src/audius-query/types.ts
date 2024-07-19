@@ -59,7 +59,6 @@ export type Api<EndpointDefinitions extends DefaultEndpointDefinitions> = {
   fetchSaga: {
     [Property in keyof EndpointDefinitions]: (
       fetchArgs: any,
-      context: AudiusQueryContextType,
       force?: boolean
     ) => Generator<any, any, any>
   }

@@ -56,9 +56,6 @@ function* getSearchPageResultsTracks({
       results = tracks
       return results
     } else {
-      const audiusBackend = yield* getContext('audiusBackendInstance')
-      const apiClient = yield* getContext('apiClient')
-      const reportToSentry = yield* getContext('reportToSentry')
       const currentUserId = yield* select(getUserId)
 
       if (!isSearchV2Enabled) {
@@ -74,7 +71,7 @@ function* getSearchPageResultsTracks({
         // searchApiFetch.getSearchResults already handles tag search,
         // so we don't need to specify isTagSearch necessarily
 
-        const { tracks } = yield* call(
+        const { tracks }: { tracks: Track[] } = yield* call(
           searchApiFetchSaga.getSearchResults,
           {
             currentUserId,
@@ -83,18 +80,10 @@ function* getSearchPageResultsTracks({
             limit,
             offset,
             ...filters
-          },
-          {
-            audiusBackend,
-            apiClient,
-            reportToSentry,
-            dispatch,
-            getFeatureEnabled
-          } as any
+          }
         )
-        results = tracks as unknown as Track[]
 
-        if (results) return results
+        if (tracks) return tracks
       }
     }
     return [] as Track[]

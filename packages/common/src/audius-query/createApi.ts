@@ -41,7 +41,8 @@ import * as cacheSelectors from '../store/cache/selectors'
 
 import {
   AudiusQueryContext,
-  AudiusQueryContextType
+  AudiusQueryContextType,
+  getAudiusQueryContext
 } from './AudiusQueryContext'
 import { createRequestBatcher } from './createRequestBatcher'
 import { RemoteDataNotFoundError } from './errors'
@@ -231,38 +232,42 @@ const useQueryState = <Args, Data>(
         endpoint.options
 
       let cachedData: Nullable<Entity | number[]> = null
-      if (idArgKey && fetchArgs[idArgKey]) {
-        const idAsNumber =
-          typeof fetchArgs[idArgKey] === 'number'
-            ? fetchArgs[idArgKey]
-            : parseInt(fetchArgs[idArgKey])
-        cachedData = cacheSelectors.getEntry(state, {
-          kind,
-          id: idAsNumber
-        })
-      } else if (permalinkArgKey && fetchArgs[permalinkArgKey]) {
-        if (kind === Kind.TRACKS) {
-          cachedData = getTrack(state, {
-            permalink: fetchArgs[permalinkArgKey]
+      if (idArgKey || permalinkArgKey || idListArgKey) {
+        const fetchArgsRecord = fetchArgs as Record<string, any>
+        if (idArgKey && fetchArgsRecord[idArgKey]) {
+          const idAsNumber =
+            typeof fetchArgsRecord[idArgKey] === 'number'
+              ? fetchArgsRecord[idArgKey]
+              : parseInt(fetchArgsRecord[idArgKey])
+          cachedData = cacheSelectors.getEntry(state, {
+            kind,
+            id: idAsNumber
           })
-        } else if (kind === Kind.COLLECTIONS) {
-          cachedData = getCollection(state, {
-            permalink: fetchArgs[permalinkArgKey]
-          })
-        }
-      } else if (idListArgKey && fetchArgs[idListArgKey]) {
-        const idsAsNumbers: number[] = fetchArgs[idListArgKey].map(
-          (id: string | number) => (typeof id === 'number' ? id : parseInt(id))
-        )
-        const allEntities = mapValues(
-          cacheSelectors.getCache(state, { kind }).entries,
-          'metadata'
-        )
-        const entityHits = idsAsNumbers
-          .map((id) => allEntities[id])
-          .filter(removeNullable)
-        if (entityHits.length === idsAsNumbers.length) {
-          cachedData = entityHits
+        } else if (permalinkArgKey && fetchArgsRecord[permalinkArgKey]) {
+          if (kind === Kind.TRACKS) {
+            cachedData = getTrack(state, {
+              permalink: fetchArgsRecord[permalinkArgKey]
+            })
+          } else if (kind === Kind.COLLECTIONS) {
+            cachedData = getCollection(state, {
+              permalink: fetchArgsRecord[permalinkArgKey]
+            })
+          }
+        } else if (idListArgKey && fetchArgsRecord[idListArgKey]) {
+          const idsAsNumbers: number[] = fetchArgsRecord[idListArgKey].map(
+            (id: string | number) =>
+              typeof id === 'number' ? id : parseInt(id)
+          )
+          const allEntities = mapValues(
+            cacheSelectors.getCache(state, { kind }).entries,
+            'metadata'
+          )
+          const entityHits = idsAsNumbers
+            .map((id) => allEntities[id])
+            .filter(removeNullable)
+          if (entityHits.length === idsAsNumbers.length) {
+            cachedData = entityHits
+          }
         }
       }
 
@@ -574,11 +579,9 @@ const buildEndpointHooks = <
    * It supports the same caching logic as the useQuery hook and will skip
    * making a request if cache data already exists or a request is in flight
    */
-  function* fetchSaga(
-    fetchArgs: Args,
-    context: AudiusQueryContextType,
-    force?: boolean
-  ) {
+  function* fetchSaga(fetchArgs: Args, force?: boolean) {
+    const context = yield* call(getAudiusQueryContext)
+
     if (!force) {
       const key = getKeyFromFetchArgs(fetchArgs)
 
@@ -627,8 +630,10 @@ const buildEndpointHooks = <
   ) => fetchData(fetchArgs, endpointName, endpoint, actions, context)
 
   if (endpoint.options.type === 'mutation') {
+    // @ts-ignore can't match the endpoint name with 'use' prefix
     api.hooks[`use${capitalize(endpointName)}`] = useMutation
   } else {
+    // @ts-ignore can't match the endpoint name with 'use' prefix
     api.hooks[`use${capitalize(endpointName)}`] = useQuery
   }
 }

@@ -2,6 +2,7 @@ import { createContext, useContext } from 'react'
 
 import type { AudiusSdk } from '@audius/sdk'
 import type { Dispatch } from 'redux'
+import { getContext } from 'typed-redux-saga'
 
 import type { AudiusAPIClient } from '~/services/audius-api-client'
 import {
@@ -42,4 +43,35 @@ export const useAudiusQueryContext = () => {
   }
 
   return audiusQueryContext
+}
+
+export function* getAudiusQueryContext(): Generator<
+  any,
+  AudiusQueryContextType,
+  any
+> {
+  // We can't use common typed `getContext` here because of circular dependency
+  return {
+    apiClient: yield* getContext<AudiusQueryContextType['apiClient']>(
+      'apiClient'
+    ),
+    audiusBackend: yield* getContext<AudiusQueryContextType['audiusBackend']>(
+      'audiusBackendInstance'
+    ),
+    audiusSdk: yield* getContext<AudiusQueryContextType['audiusSdk']>(
+      'audiusSdk'
+    ),
+    dispatch: yield* getContext<AudiusQueryContextType['dispatch']>('dispatch'),
+    env: yield* getContext<AudiusQueryContextType['env']>('env'),
+    fetch,
+    getFeatureEnabled: yield* getContext<
+      AudiusQueryContextType['getFeatureEnabled']
+    >('getFeatureEnabled'),
+    remoteConfigInstance: yield* getContext<
+      AudiusQueryContextType['remoteConfigInstance']
+    >('remoteConfigInstance'),
+    reportToSentry: yield* getContext<AudiusQueryContextType['reportToSentry']>(
+      'reportToSentry'
+    )
+  }
 }

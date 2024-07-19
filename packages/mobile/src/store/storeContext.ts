@@ -62,5 +62,7 @@ export const storeContext: CommonStoreContext = {
   imageUtils: {
     generatePlaylistArtwork
   },
-  isMobile: true
+  isMobile: true,
+  // @ts-ignore dispatch will be populated in store.ts
+  dispatch: undefined
 }
