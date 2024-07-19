@@ -88,7 +88,7 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
   const dispatch = useDispatch()
   const initiallyHidden = initialValues.is_unlisted
   const isInitiallyScheduled = initialValues.is_scheduled_release
-  const usersMayLoseAccess = !initiallyHidden && values.is_unlisted
+  const usersMayLoseAccess = !isUpload && !initiallyHidden && values.is_unlisted
   const isToBePublished = !isUpload && initiallyHidden && !values.is_unlisted
   const [confirmDrawerType, setConfirmDrawerType] =
     useState<Nullable<'release' | 'early_release' | 'hidden'>>(null)

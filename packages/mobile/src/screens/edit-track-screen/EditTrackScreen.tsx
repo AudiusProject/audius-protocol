@@ -337,7 +337,11 @@ export const EditTrackScreen = (props: EditTrackScreenProps) => {
       validationSchema={editTrackSchema}
     >
       {(formikProps) => (
-        <EditTrackNavigator {...formikProps} {...screenProps} />
+        <EditTrackNavigator
+          {...formikProps}
+          {...screenProps}
+          isUpload={initialValuesProp.isUpload}
+        />
       )}
     </Formik>
   )
