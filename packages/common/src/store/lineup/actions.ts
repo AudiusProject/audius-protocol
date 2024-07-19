@@ -273,10 +273,9 @@ export class LineupActions {
     }
   }
 
-  setLoading(isMetadataLoading?: boolean) {
+  setLoading() {
     return {
-      type: addPrefix(this.prefix, SET_LOADING),
-      isMetadataLoading
+      type: addPrefix(this.prefix, SET_LOADING)
     }
   }
 

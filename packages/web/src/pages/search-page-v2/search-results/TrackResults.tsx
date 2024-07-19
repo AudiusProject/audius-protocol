@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import { Kind, Name, Status } from '@audius/common/models'
 import {
@@ -12,7 +12,6 @@ import {
 } from '@audius/common/store'
 import { Flex, OptionsFilterButton, Text } from '@audius/harmony'
 import { css } from '@emotion/css'
-import { debounce } from 'lodash'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { make } from 'common/store/analytics/actions'
@@ -90,18 +89,10 @@ export const TrackResults = (props: TrackResultsProps) => {
     },
     [dispatch, searchParams, category]
   )
-
-  const debouncedGetResults = useMemo(
-    () => debounce(getResults, 500),
-    [getResults]
-  )
-
   useEffect(() => {
     dispatch(searchResultsPageTracksLineupActions.reset())
-    dispatch(searchResultsPageTracksLineupActions.setLoading(true))
-
-    debouncedGetResults(0, ALL_RESULTS_LIMIT, true)
-  }, [dispatch, searchParams, debouncedGetResults])
+    getResults(0, ALL_RESULTS_LIMIT, true)
+  }, [dispatch, searchParams, getResults])
 
   const loadMore = useCallback(
     (offset: number, limit: number) => {
@@ -181,11 +172,7 @@ export const TrackResults = (props: TrackResultsProps) => {
   )
 }
 
-export const TrackResultsPage = ({
-  prevSearchParams
-}: {
-  prevSearchParams: any
-}) => {
+export const TrackResultsPage = () => {
   const isMobile = useIsMobile()
   const [tracksLayout, setTracksLayout] = useState<ViewLayout>('list')
   const updateSortParam = useUpdateSearchParams('sortMethod')
