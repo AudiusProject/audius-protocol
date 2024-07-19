@@ -22,7 +22,7 @@ func (ss *MediorumServer) startLegacyAudioAnalyzer() {
 
 	work := make(chan *QmAudioAnalysis)
 
-	numWorkers := 2
+	numWorkers := 4
 
 	// start workers
 	for i := 0; i < numWorkers; i++ {
