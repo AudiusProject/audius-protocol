@@ -55,9 +55,6 @@ function* getSearchPageResultsTracks({
       )
       results = tracks
     } else {
-      const audiusBackend = yield* getContext('audiusBackendInstance')
-      const apiClient = yield* getContext('apiClient')
-      const reportToSentry = yield* getContext('reportToSentry')
       const currentUserId = yield* select(getUserId)
 
       if (!isSearchV2Enabled) {

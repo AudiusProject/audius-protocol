@@ -30,7 +30,6 @@ import { getCollection } from '~/store/cache/collections/selectors'
 import { reformatCollection } from '~/store/cache/collections/utils/reformatCollection'
 import { getTrack } from '~/store/cache/tracks/selectors'
 import { reformatUser } from '~/store/cache/users/utils'
-import { getContext } from '~/store/commonStore'
 import { CommonState } from '~/store/reducers'
 import { getErrorMessage } from '~/utils/error'
 import { waitForValue } from '~/utils/sagaHelpers'
@@ -42,7 +41,8 @@ import * as cacheSelectors from '../store/cache/selectors'
 
 import {
   AudiusQueryContext,
-  AudiusQueryContextType
+  AudiusQueryContextType,
+  getAudiusQueryContext
 } from './AudiusQueryContext'
 import { createRequestBatcher } from './createRequestBatcher'
 import { RemoteDataNotFoundError } from './errors'
@@ -580,17 +580,7 @@ const buildEndpointHooks = <
    * making a request if cache data already exists or a request is in flight
    */
   function* fetchSaga(fetchArgs: Args, force?: boolean) {
-    const context: AudiusQueryContextType = {
-      apiClient: yield* getContext('apiClient'),
-      audiusBackend: yield* getContext('audiusBackendInstance'),
-      audiusSdk: yield* getContext('audiusSdk'),
-      dispatch: yield* getContext('dispatch'),
-      env: yield* getContext('env'),
-      fetch,
-      getFeatureEnabled: yield* getContext('getFeatureEnabled'),
-      remoteConfigInstance: yield* getContext('remoteConfigInstance'),
-      reportToSentry: yield* getContext('reportToSentry')
-    }
+    const context = yield* call(getAudiusQueryContext)
 
     if (!force) {
       const key = getKeyFromFetchArgs(fetchArgs)
