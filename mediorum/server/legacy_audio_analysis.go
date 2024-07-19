@@ -176,7 +176,7 @@ func (ss *MediorumServer) analyzeLegacyAudio(analysis *QmAudioAnalysis) error {
 
 	analysis.Results = &AudioAnalysisResult{
 		BPM: bpm,
-		Key: key,
+		Key: musicalKey,
 	}
 
 	// all analyses complete
