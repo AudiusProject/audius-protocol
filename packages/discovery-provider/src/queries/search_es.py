@@ -559,7 +559,6 @@ def track_dsl(
         "must": [
             {"term": {"is_unlisted": {"value": False}}},
             {"term": {"is_delete": False}},
-            {"term": {"user.is_deactivated": False}},
             {
                 "bool": {
                     "should": [
@@ -617,6 +616,7 @@ def track_dsl(
         ],
         "must_not": [
             {"exists": {"field": "stem_of"}},
+            {"term": {"user.is_deactivated": {"value": True}}},
         ],
         "should": [
             *base_match(search_str, operator="and", boost=len(search_str)),
@@ -1011,8 +1011,10 @@ def base_playlist_dsl(
             },
             {"term": {"is_private": {"value": False}}},
             {"term": {"is_delete": False}},
-            {"term": {"user.is_deactivated": False}},
             {"term": {"is_album": {"value": is_album}}},
+        ],
+        "must_not": [
+            {"term": {"user.is_deactivated": {"value": True}}},
         ],
         "should": [
             *base_match(search_str, operator="and", boost=len(search_str) * 10),
