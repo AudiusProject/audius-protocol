@@ -25,7 +25,7 @@ def valid_musical_key(musical_key):
 
 
 def valid_bpm(bpm):
-    return bpm < 999
+    return bpm < 999 and bpm > 0
 
 
 def query_tracks(session: Session) -> List[Track]:
