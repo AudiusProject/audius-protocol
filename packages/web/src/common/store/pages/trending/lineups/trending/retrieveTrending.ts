@@ -69,6 +69,9 @@ export function* retrieveTrending({
     currentUserId,
     timeRange
   })
+  // DN may return hidden tracks in trending because of its cache
+  // i.e. when a track is in trending and the owner makes it hidden,
+  // it will still be returned in the trending api for a little while.
   apiTracks = apiTracks.filter((t) => !t.is_unlisted)
 
   if (TF.size > 0) {
