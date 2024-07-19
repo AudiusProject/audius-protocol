@@ -62,7 +62,6 @@ export const useGetSearchResults = <C extends SearchCategory>(
     // or if the user is not logged in
     disabled: accountStatus === Status.LOADING || accountStatus === Status.IDLE
   })
-  // console.log('rerender new data')
 
   if (category === 'all') {
     return { data: data as any, status } as SearchResultsType<C>
