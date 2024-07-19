@@ -13,11 +13,16 @@ import {
 } from '@audius/harmony'
 
 import { CommentInputForm } from './CommentInputForm'
+import { useCurrentCommentSection } from './CommentSectionContext'
 import type { Comment } from './types'
 
 export type CommentBlockProps = { comment: Comment; parentCommentId?: ID }
-export const CommentBlock = ({ comment }: { comment: Comment }) => {
+export const CommentBlock = ({
+  comment,
+  parentCommentId
+}: CommentBlockProps) => {
   const { is_pinned: isPinned, message, react_count: reactCount } = comment
+  const { handleDeleteComment, handleReactComment } = useCurrentCommentSection()
   const hasBadges = false // TODO: need to figure out how to model "badges" correctly
   const [showReplyInput, setShowReplyInput] = useState(false)
   const isOwner = true // TODO: need to check against current user (annoying to do with modck data)
@@ -60,6 +65,9 @@ export const CommentBlock = ({ comment }: { comment: Comment }) => {
               icon={IconHeart}
               color='subdued'
               aria-label='Heart comment'
+              onClick={() => {
+                handleReactComment(comment.id)
+              }}
             />
             <Text color='default'> {reactCount}</Text>
           </Flex>
@@ -73,7 +81,7 @@ export const CommentBlock = ({ comment }: { comment: Comment }) => {
             Reply
           </TextLink>
           {/* TODO: rework this - this is a temporary design: just to have buttons for triggering stuff */}
-          {/* TODO: wire this up to a callback */}
+          {/* TODO: this needs to convert to a text input to work */}
           {isOwner ? (
             <IconButton
               aria-label='edit comment'
@@ -83,13 +91,15 @@ export const CommentBlock = ({ comment }: { comment: Comment }) => {
             />
           ) : null}
           {/* TODO: rework this - this is a temporary design: just to have buttons for triggering stuff */}
-          {/* TODO: wire this up to callback */}
           {isOwner ? (
             <IconButton
               aria-label='delete comment'
               icon={IconTrash}
               size='s'
               color='subdued'
+              onClick={() => {
+                handleDeleteComment(comment.id)
+              }}
             />
           ) : null}
         </Flex>
