@@ -56,7 +56,9 @@ export function* retrieveTrending({
     const tracksMap: ReturnType<typeof getTracks> = yield select(
       (state: AppState) => getTracks(state, { ids: trackIds })
     )
-    const tracks = trackIds.map((id) => tracksMap[id])
+    const tracks = trackIds
+      .map((id) => tracksMap[id])
+      .filter((t) => t && !t.is_unlisted)
     return tracks
   }
 
@@ -67,6 +69,7 @@ export function* retrieveTrending({
     currentUserId,
     timeRange
   })
+  apiTracks = apiTracks.filter((t) => !t.is_unlisted)
 
   if (TF.size > 0) {
     apiTracks = apiTracks.filter((t) => {
