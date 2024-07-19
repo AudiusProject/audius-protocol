@@ -414,7 +414,10 @@ def populate_track_record_metadata(track_record: Track, track_metadata, handle, 
 
         elif key == "bpm":
             if "bpm" in track_metadata and track_metadata["bpm"]:
-                track_record.bpm = track_metadata["bpm"]
+                try:
+                    track_record.bpm = float(track_metadata["bpm"])  # type: ignore
+                except ValueError:
+                    continue
 
         else:
             # For most fields, update the track_record when the corresponding field exists
