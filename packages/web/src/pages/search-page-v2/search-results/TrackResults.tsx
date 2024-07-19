@@ -12,7 +12,6 @@ import {
 } from '@audius/common/store'
 import { Flex, OptionsFilterButton, Text } from '@audius/harmony'
 import { css } from '@emotion/css'
-import Search from 'antd/lib/transfer/search'
 import { useDispatch, useSelector } from 'react-redux'
 import { useDebounce, usePrevious } from 'react-use'
 

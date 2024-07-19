@@ -39,6 +39,13 @@ export const AllResults = () => {
 
   if (showNoResultsTile) return <NoResultsTile />
 
+  const {
+    users: userIds,
+    tracks: trackIds,
+    playlists: playlistIds,
+    albums: albumIds
+  } = data ?? {}
+
   return (
     <Flex
       direction='column'
@@ -46,16 +53,16 @@ export const AllResults = () => {
       p={isMobile ? 'm' : undefined}
       ref={containerRef}
     >
-      {isLoading || data.users?.length ? (
+      {isLoading || userIds?.length ? (
         <Flex gap='xl' direction='column'>
           <Text variant='heading' textAlign='left'>
             {messages.profiles}
           </Text>
-          <ProfileResults skeletonCount={5} ids={data.users} limit={5} />
+          <ProfileResults skeletonCount={5} ids={userIds} limit={5} />
         </Flex>
       ) : null}
 
-      {isLoading || data.tracks?.length ? (
+      {isLoading || trackIds?.length ? (
         <Flex gap='xl' direction='column'>
           <Text variant='heading' textAlign='left'>
             {messages.tracks}
@@ -68,21 +75,21 @@ export const AllResults = () => {
         </Flex>
       ) : null}
 
-      {isLoading || data.albums?.length ? (
+      {isLoading || albumIds?.length ? (
         <Flex gap='xl' direction='column'>
           <Text variant='heading' textAlign='left'>
             {messages.albums}
           </Text>
-          <AlbumResults skeletonCount={5} ids={data.albums} limit={5} />
+          <AlbumResults skeletonCount={5} ids={albumIds} limit={5} />
         </Flex>
       ) : null}
 
-      {isLoading || data.playlists?.length ? (
+      {isLoading || playlistIds?.length ? (
         <Flex gap='xl' direction='column'>
           <Text variant='heading' textAlign='left'>
             {messages.playlists}
           </Text>
-          <PlaylistResults skeletonCount={5} ids={data.playlists} limit={5} />
+          <PlaylistResults skeletonCount={5} ids={playlistIds} limit={5} />
         </Flex>
       ) : null}
     </Flex>
