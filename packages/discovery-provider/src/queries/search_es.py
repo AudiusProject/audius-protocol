@@ -559,6 +559,7 @@ def track_dsl(
         "must": [
             {"term": {"is_unlisted": {"value": False}}},
             {"term": {"is_delete": False}},
+            {"term": {"user.is_deactivated": False}},
             {
                 "bool": {
                     "should": [
@@ -1010,6 +1011,7 @@ def base_playlist_dsl(
             },
             {"term": {"is_private": {"value": False}}},
             {"term": {"is_delete": False}},
+            {"term": {"user.is_deactivated": False}},
             {"term": {"is_album": {"value": is_album}}},
         ],
         "should": [
