@@ -159,7 +159,7 @@ def generate_unpopulated_trending_from_mat_views(
     elif strategy.version != TrendingVersion.EJ57D and time_range == "allTime":
         time_range = "year"
 
-    trending_track_ids_query = session.query(
+    trending_scores_query = session.query(
         TrackTrendingScore.track_id, TrackTrendingScore.score
     ).filter(
         TrackTrendingScore.type == strategy.trending_type.name,
@@ -168,103 +168,58 @@ def generate_unpopulated_trending_from_mat_views(
     )
 
     if genre:
-        trending_track_ids_query = trending_track_ids_query.filter(
+        trending_scores_query = trending_scores_query.filter(
             TrackTrendingScore.genre == genre
         )
+
+    trending_track_ids_subquery = trending_scores_query.subquery()
+    trending_track_ids_query = (
+        session.query(
+            trending_track_ids_subquery.c.track_id,
+            trending_track_ids_subquery.c.score,
+            Track.track_id,
+        )
+        .join(
+            trending_track_ids_subquery,
+            Track.track_id == trending_track_ids_subquery.c.track_id,
+        )
+        .filter(
+            Track.is_current == True,
+            Track.is_delete == False,
+            Track.is_unlisted == False,
+            Track.stem_of == None,
+        )
+    )
 
     # If usdc_purchase_only is true, then filter out track ids belonging to
     # non-USDC purchase tracks before applying the limit.
     if usdc_purchase_only:
-        trending_track_ids_subquery = trending_track_ids_query.subquery()
-        trending_track_ids = (
-            session.query(
-                trending_track_ids_subquery.c.track_id,
-                trending_track_ids_subquery.c.score,
-                Track.track_id,
-            )
-            .join(
-                trending_track_ids_subquery,
-                Track.track_id == trending_track_ids_subquery.c.track_id,
-            )
-            .filter(
-                Track.is_current == True,
-                Track.is_delete == False,
-                Track.stem_of == None,
-                Track.is_stream_gated == True,
-                text("CAST(stream_conditions AS TEXT) LIKE '%usdc_purchase%'"),
-            )
-            .order_by(
-                desc(trending_track_ids_subquery.c.score),
-                desc(trending_track_ids_subquery.c.track_id),
-            )
-            .limit(limit)
-            .all()
+        trending_track_ids_query = trending_track_ids_query.filter(
+            Track.is_stream_gated == True,
+            text("CAST(stream_conditions AS TEXT) LIKE '%usdc_purchase%'"),
         )
     # If exclude_gated is true, then filter out track ids belonging to
     # gated tracks before applying the limit.
     elif exclude_gated:
-        trending_track_ids_subquery = trending_track_ids_query.subquery()
-        trending_track_ids = (
-            session.query(
-                trending_track_ids_subquery.c.track_id,
-                trending_track_ids_subquery.c.score,
-                Track.track_id,
-            )
-            .join(
-                trending_track_ids_subquery,
-                Track.track_id == trending_track_ids_subquery.c.track_id,
-            )
-            .filter(
-                Track.is_current == True,
-                Track.is_delete == False,
-                Track.stem_of == None,
-                Track.is_stream_gated == False,
-            )
-            .order_by(
-                desc(trending_track_ids_subquery.c.score),
-                desc(trending_track_ids_subquery.c.track_id),
-            )
-            .limit(limit)
-            .all()
+        trending_track_ids_query = trending_track_ids_query.filter(
+            Track.is_stream_gated == False,
         )
     elif exclude_collectible_gated:
-        trending_track_ids_subquery = trending_track_ids_query.subquery()
-        trending_track_ids = (
-            session.query(
-                trending_track_ids_subquery.c.track_id,
-                trending_track_ids_subquery.c.score,
-                Track.track_id,
-            )
-            .join(
-                trending_track_ids_subquery,
-                Track.track_id == trending_track_ids_subquery.c.track_id,
-            )
-            .filter(
-                Track.is_current == True,
-                Track.is_delete == False,
-                Track.stem_of == None,
-                or_(
-                    Track.is_stream_gated == False,
-                    not_(
-                        text("CAST(stream_conditions AS TEXT) LIKE '%nft_collection%'")
-                    ),
-                ),
-            )
-            .order_by(
-                desc(trending_track_ids_subquery.c.score),
-                desc(trending_track_ids_subquery.c.track_id),
-            )
-            .limit(limit)
-            .all()
+        trending_track_ids_query = trending_track_ids_query.filter(
+            or_(
+                Track.is_stream_gated == False,
+                not_(text("CAST(stream_conditions AS TEXT) LIKE '%nft_collection%'")),
+            ),
         )
-    else:
-        trending_track_ids = (
-            trending_track_ids_query.order_by(
-                desc(TrackTrendingScore.score), desc(TrackTrendingScore.track_id)
-            )
-            .limit(limit)
-            .all()
+
+    trending_track_ids = (
+        trending_track_ids_query.order_by(
+            desc(trending_track_ids_subquery.c.score),
+            desc(trending_track_ids_subquery.c.track_id),
         )
+        .limit(limit)
+        .all()
+    )
 
     # Get unpopulated metadata
     track_ids = [track_id[0] for track_id in trending_track_ids]
