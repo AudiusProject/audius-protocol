@@ -113,6 +113,7 @@ func (ss *MediorumServer) updateUpload(c echo.Context) error {
 
 func (ss *MediorumServer) postUpload(c echo.Context) error {
 	if !ss.diskHasSpace() {
+		ss.logger.Warn("disk is too full to accept new uploads")
 		return c.String(http.StatusServiceUnavailable, "disk is too full to accept new uploads")
 	}
 
@@ -229,6 +230,7 @@ func (ss *MediorumServer) postUpload(c echo.Context) error {
 
 	status := 200
 	if err := wg.Wait(); err != nil {
+		ss.logger.Error("failed to process new upload", "err", err)
 		status = 422
 	}
 
