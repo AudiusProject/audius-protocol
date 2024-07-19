@@ -75,5 +75,7 @@ export const buildStoreContext = ({
   imageUtils: {
     generatePlaylistArtwork
   },
-  isMobile
+  isMobile,
+  // @ts-ignore dispatch will be populated in configureStore
+  dispatch: undefined
 })

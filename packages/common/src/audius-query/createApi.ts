@@ -30,6 +30,7 @@ import { getCollection } from '~/store/cache/collections/selectors'
 import { reformatCollection } from '~/store/cache/collections/utils/reformatCollection'
 import { getTrack } from '~/store/cache/tracks/selectors'
 import { reformatUser } from '~/store/cache/users/utils'
+import { getContext } from '~/store/commonStore'
 import { CommonState } from '~/store/reducers'
 import { getErrorMessage } from '~/utils/error'
 import { waitForValue } from '~/utils/sagaHelpers'
@@ -574,11 +575,19 @@ const buildEndpointHooks = <
    * It supports the same caching logic as the useQuery hook and will skip
    * making a request if cache data already exists or a request is in flight
    */
-  function* fetchSaga(
-    fetchArgs: Args,
-    context: AudiusQueryContextType,
-    force?: boolean
-  ) {
+  function* fetchSaga(fetchArgs: Args, force?: boolean) {
+    const context: AudiusQueryContextType = {
+      apiClient: yield* getContext('apiClient'),
+      audiusBackend: yield* getContext('audiusBackendInstance'),
+      audiusSdk: yield* getContext('audiusSdk'),
+      dispatch: yield* getContext('dispatch'),
+      env: yield* getContext('env'),
+      fetch,
+      getFeatureEnabled: yield* getContext('getFeatureEnabled'),
+      remoteConfigInstance: yield* getContext('remoteConfigInstance'),
+      reportToSentry: yield* getContext('reportToSentry')
+    }
+
     if (!force) {
       const key = getKeyFromFetchArgs(fetchArgs)
 

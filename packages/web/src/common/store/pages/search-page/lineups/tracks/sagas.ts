@@ -73,24 +73,14 @@ function* getSearchPageResultsTracks({
         // searchApiFetch.getSearchResults already handles tag search,
         // so we don't need to specify isTagSearch necessarily
 
-        const { tracks } = yield* call(
-          searchApiFetchSaga.getSearchResults,
-          {
-            currentUserId,
-            query,
-            category,
-            limit,
-            offset,
-            ...filters
-          },
-          {
-            audiusBackend,
-            apiClient,
-            reportToSentry,
-            dispatch,
-            getFeatureEnabled
-          } as any
-        )
+        const { tracks } = yield* call(searchApiFetchSaga.getSearchResults, {
+          currentUserId,
+          query,
+          category,
+          limit,
+          offset,
+          ...filters
+        })
         results = tracks as unknown as Track[]
 
         if (results) return results
