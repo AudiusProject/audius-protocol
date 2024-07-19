@@ -1,3 +1,4 @@
+import { is } from 'immer/dist/internal'
 import { Reducer } from 'redux'
 
 import { Status } from '~/models/Status'
@@ -97,6 +98,7 @@ type RemoveAction = {
 
 type SetLoadingAction = {
   type: typeof SET_LOADING
+  isMetadataLoading?: boolean
 }
 
 type SetPageAction = {
@@ -243,10 +245,11 @@ export const actionsMap = {
 
     return newState
   },
-  [SET_LOADING]<T>(state: LineupState<T>, _action: SetLoadingAction) {
+  [SET_LOADING]<T>(state: LineupState<T>, action: SetLoadingAction) {
     return {
       ...state,
-      status: Status.LOADING
+      status: Status.LOADING,
+      isMetadataLoading: action.isMetadataLoading ?? state.isMetadataLoading
     }
   },
   [SET_PAGE]<T>(state: LineupState<T>, action: SetPageAction) {
