@@ -380,65 +380,6 @@ export const pollForBalanceChange = async (
   throw new Error('SOL balance polling exceeded maximum retries')
 }
 
-export type PurchaseContentArgs = {
-  id: ID
-  blocknumber: number
-  extraAmount?: number | BN
-  type: PurchaseableContentType
-  splits: Record<string, number | BN>
-  purchaserUserId: ID
-  purchaseAccess: PurchaseAccess
-}
-export const purchaseContent = async (
-  audiusBackendInstance: AudiusBackend,
-  config: PurchaseContentArgs
-) => {
-  return (
-    await audiusBackendInstance.getAudiusLibs()
-  ).solanaWeb3Manager!.purchaseContent(config)
-}
-
-export type PurchaseContentWithPaymentRouterArgs = {
-  id: number
-  type: PurchaseableContentType
-  splits: Record<string, number>
-  extraAmount?: number
-  blocknumber: number
-  recentBlockhash?: string
-  purchaserUserId: ID
-  wallet: Keypair
-  purchaseAccess: PurchaseAccess
-}
-
-export const purchaseContentWithPaymentRouter = async (
-  audiusBackendInstance: AudiusBackend,
-  {
-    id,
-    type,
-    blocknumber,
-    extraAmount = 0,
-    purchaserUserId,
-    splits,
-    wallet,
-    purchaseAccess
-  }: PurchaseContentWithPaymentRouterArgs
-) => {
-  const solanaWeb3Manager = (await audiusBackendInstance.getAudiusLibsTyped())
-    .solanaWeb3Manager!
-  const tx = await solanaWeb3Manager.purchaseContentWithPaymentRouter({
-    id,
-    type,
-    blocknumber,
-    extraAmount: new BN(extraAmount).mul(BN_USDC_CENT_WEI),
-    splits,
-    purchaserUserId,
-    senderKeypair: wallet,
-    skipSendAndReturnTransaction: true,
-    purchaseAccess
-  })
-  return tx as Transaction
-}
-
 export const findAssociatedTokenAddress = async (
   audiusBackendInstance: AudiusBackend,
   { solanaAddress, mint }: { solanaAddress: string; mint: MintName }

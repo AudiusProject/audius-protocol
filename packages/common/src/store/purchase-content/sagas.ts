@@ -19,11 +19,8 @@ import { isContentUSDCPurchaseGated } from '~/models/Track'
 import { User } from '~/models/User'
 import { BNUSDC } from '~/models/Wallet'
 import {
-  getRecentBlockhash,
   getRootSolanaAccount,
-  getTokenAccountInfo,
-  purchaseContent,
-  purchaseContentWithPaymentRouter
+  getTokenAccountInfo
 } from '~/services/audius-backend/solana'
 import { FeatureFlags } from '~/services/remote-config/feature-flags'
 import { accountSelectors } from '~/store/account'
@@ -49,7 +46,6 @@ import { getContext } from '~/store/effects'
 import { getPreviewing, getTrackId } from '~/store/player/selectors'
 import { stop } from '~/store/player/slice'
 import { saveTrack } from '~/store/social/tracks/actions'
-import { getFeePayer } from '~/store/solana/selectors'
 import { OnRampProvider } from '~/store/ui/buy-audio/types'
 import {
   transactionCanceled,
@@ -251,35 +247,6 @@ function* getCoinflowPurchaseMetadata({
   return data
 }
 
-function* getPurchaseConfig({ contentId, contentType }: GetPurchaseConfigArgs) {
-  const { metadata, artistInfo, purchaseConditions } = yield* call(
-    getContentInfo,
-    {
-      contentId,
-      contentType
-    }
-  )
-  if (!metadata || !isContentUSDCPurchaseGated(purchaseConditions)) {
-    throw new Error('Content is missing purchase conditions')
-  }
-
-  if (!artistInfo) {
-    throw new Error('Failed to retrieve content owner')
-  }
-  const recipientERCWallet = artistInfo.erc_wallet ?? artistInfo.wallet
-  if (!recipientERCWallet) {
-    throw new Error('Unable to resolve destination wallet')
-  }
-
-  const { blocknumber } = metadata
-  const splits = purchaseConditions.usdc_purchase.splits
-
-  return {
-    blocknumber,
-    splits
-  }
-}
-
 function* pollForPurchaseConfirmation({
   contentId,
   contentType
@@ -337,87 +304,6 @@ function* pollForPurchaseConfirmation({
 type GetPurchaseMetadataArgs = {
   contentId: ID
   contentType: PurchaseableContentType
-}
-
-type PurchaseWithCoinflowOldArgs = {
-  blocknumber: number
-  extraAmount?: number
-  splits: Record<number, number>
-  contentId: ID
-  contentType: PurchaseableContentType
-  purchaserUserId: ID
-  /** USDC in dollars */
-  price: number
-  purchaseAccess: PurchaseAccess
-}
-
-/**
- * @deprecated Use purchaseTrackWithCoinflow if applicable
- */
-function* purchaseWithCoinflowOld(args: PurchaseWithCoinflowOldArgs) {
-  const {
-    blocknumber,
-    extraAmount,
-    splits,
-    contentId,
-    contentType,
-    purchaserUserId,
-    price,
-    purchaseAccess
-  } = args
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-  const feePayerAddress = yield* select(getFeePayer)
-  if (!feePayerAddress) {
-    throw new Error('Missing feePayer unexpectedly')
-  }
-  const purchaseMetadata = yield* call(getCoinflowPurchaseMetadata, args)
-  const recentBlockhash = yield* call(getRecentBlockhash, audiusBackendInstance)
-  const rootAccount = yield* call(getRootSolanaAccount, audiusBackendInstance)
-
-  const coinflowTransaction = yield* call(
-    purchaseContentWithPaymentRouter,
-    audiusBackendInstance,
-    {
-      id: contentId,
-      type: contentType,
-      splits,
-      extraAmount,
-      blocknumber,
-      recentBlockhash,
-      purchaserUserId,
-      wallet: rootAccount,
-      purchaseAccess
-    }
-  )
-
-  const serializedTransaction = coinflowTransaction
-    .serialize({ requireAllSignatures: false, verifySignatures: false })
-    .toString('base64')
-  yield* put(
-    coinflowOnrampModalActions.open({
-      amount: price,
-      serializedTransaction,
-      purchaseMetadata,
-      contentId
-    })
-  )
-
-  const result = yield* race({
-    succeeded: take(transactionSucceeded),
-    failed: take(transactionFailed),
-    canceled: take(transactionCanceled)
-  })
-
-  // Return early for failure or cancellation
-  if (result.canceled) {
-    throw new PurchaseContentError(
-      PurchaseErrorCode.Canceled,
-      'Coinflow transaction canceled'
-    )
-  }
-  if (result.failed) {
-    throw result.failed.payload.error
-  }
 }
 
 /**
@@ -622,25 +508,13 @@ function* doStartPurchaseContentFlow({
   const usdcConfig = yield* call(getBuyUSDCRemoteConfig)
   const reportToSentry = yield* getContext('reportToSentry')
   const { track, make } = yield* getContext('analytics')
-  const getFeatureEnabled = yield* getContext('getFeatureEnabled')
   const audiusSdk = yield* getContext('audiusSdk')
   const sdk = yield* call(audiusSdk)
-  const isUseSDKPurchaseTrackEnabled = yield* call(
-    getFeatureEnabled,
-    FeatureFlags.USE_SDK_PURCHASE_TRACK
-  )
-  const isUseSDKPurchaseAlbumEnabled = yield* call(
-    getFeatureEnabled,
-    FeatureFlags.USE_SDK_PURCHASE_ALBUM
-  )
 
-  const { price, title, artistInfo, purchaseAccess } = yield* call(
-    getContentInfo,
-    {
-      contentId,
-      contentType
-    }
-  )
+  const { price, title, artistInfo } = yield* call(getContentInfo, {
+    contentId,
+    contentType
+  })
 
   const analyticsInfo = {
     price: price / 100,
@@ -691,10 +565,6 @@ function* doStartPurchaseContentFlow({
     const extraAmountBN = new BN(extraAmount ?? 0).mul(BN_USDC_CENT_WEI)
     const totalAmountDueCentsBN = priceBN.add(extraAmountBN) as BNUSDC
 
-    const { blocknumber, splits } = yield* getPurchaseConfig({
-      contentId,
-      contentType
-    })
     const balanceNeeded = getBalanceNeeded(
       totalAmountDueCentsBN,
       new BN(initialBalance.toString()) as BNUSDC,
@@ -712,30 +582,19 @@ function* doStartPurchaseContentFlow({
           )
         }
         // No balance needed, perform the purchase right away
-
-        if (isUseSDKPurchaseTrackEnabled && contentType === 'track') {
+        if (contentType === PurchaseableContentType.TRACK) {
           yield* call([sdk.tracks, sdk.tracks.purchaseTrack], {
             userId: encodeHashId(purchaserUserId),
             trackId: encodeHashId(contentId),
             price: price / 100.0,
             extraAmount: extraAmount ? extraAmount / 100.0 : undefined
           })
-        } else if (isUseSDKPurchaseAlbumEnabled && contentType === 'album') {
+        } else {
           yield* call([sdk.albums, sdk.albums.purchaseAlbum], {
             userId: encodeHashId(purchaserUserId),
             albumId: encodeHashId(contentId),
             price: price / 100.0,
             extraAmount: extraAmount ? extraAmount / 100.0 : undefined
-          })
-        } else {
-          yield* call(purchaseContent, audiusBackendInstance, {
-            id: contentId,
-            blocknumber,
-            extraAmount: extraAmountBN,
-            splits,
-            type: contentType,
-            purchaserUserId,
-            purchaseAccess
           })
         }
         break
@@ -745,7 +604,7 @@ function* doStartPurchaseContentFlow({
         switch (purchaseVendor) {
           case PurchaseVendor.COINFLOW:
             // Purchase with coinflow, funding and completing the purchase in one step.
-            if (isUseSDKPurchaseTrackEnabled && contentType === 'track') {
+            if (contentType === PurchaseableContentType.TRACK) {
               yield* call(purchaseTrackWithCoinflow, {
                 sdk,
                 trackId: contentId,
@@ -753,10 +612,7 @@ function* doStartPurchaseContentFlow({
                 price: price / 100.0,
                 extraAmount: extraAmount ? extraAmount / 100.0 : undefined
               })
-            } else if (
-              isUseSDKPurchaseAlbumEnabled &&
-              contentType === 'album'
-            ) {
+            } else {
               yield* call(purchaseAlbumWithCoinflow, {
                 sdk,
                 albumId: contentId,
@@ -764,48 +620,24 @@ function* doStartPurchaseContentFlow({
                 price: price / 100.0,
                 extraAmount: extraAmount ? extraAmount / 100.0 : undefined
               })
-            } else {
-              yield* call(purchaseWithCoinflowOld, {
-                blocknumber,
-                extraAmount,
-                splits,
-                contentId,
-                contentType,
-                purchaserUserId,
-                price: purchaseAmount,
-                purchaseAccess
-              })
             }
             break
           case PurchaseVendor.STRIPE:
             // Buy USDC with Stripe. Once funded, continue with purchase.
             yield* call(purchaseUSDCWithStripe, { amount: purchaseAmount })
-            if (isUseSDKPurchaseTrackEnabled && contentType === 'track') {
+            if (contentType === PurchaseableContentType.TRACK) {
               yield* call([sdk.tracks, sdk.tracks.purchaseTrack], {
                 userId: encodeHashId(purchaserUserId),
                 trackId: encodeHashId(contentId),
                 price: price / 100.0,
                 extraAmount: extraAmount ? extraAmount / 100.0 : undefined
               })
-            } else if (
-              isUseSDKPurchaseAlbumEnabled &&
-              contentType === 'album'
-            ) {
+            } else {
               yield* call([sdk.albums, sdk.albums.purchaseAlbum], {
                 userId: encodeHashId(purchaserUserId),
                 albumId: encodeHashId(contentId),
                 price: price / 100.0,
                 extraAmount: extraAmount ? extraAmount / 100.0 : undefined
-              })
-            } else {
-              yield* call(purchaseContent, audiusBackendInstance, {
-                id: contentId,
-                blocknumber,
-                extraAmount: extraAmountBN,
-                splits,
-                type: contentType,
-                purchaserUserId,
-                purchaseAccess
               })
             }
             break
