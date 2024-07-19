@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import { Kind, Name, Status } from '@audius/common/models'
 import {
@@ -13,7 +13,6 @@ import {
 import { Flex, OptionsFilterButton, Text } from '@audius/harmony'
 import { css } from '@emotion/css'
 import { useDispatch, useSelector } from 'react-redux'
-import { useDebounce, usePrevious } from 'react-use'
 
 import { make } from 'common/store/analytics/actions'
 import Lineup from 'components/lineup/Lineup'
@@ -69,7 +68,6 @@ export const TrackResults = (props: TrackResultsProps) => {
   const lineup = useSelector(getSearchTracksLineupMetadatas)
 
   const searchParams = useSearchParams()
-  const prevSearchParams = usePrevious(searchParams)
 
   const getResults = useCallback(
     (offset: number, limit: number, overwrite: boolean) => {
@@ -91,25 +89,20 @@ export const TrackResults = (props: TrackResultsProps) => {
     },
     [dispatch, searchParams, category]
   )
-
-  useDebounce(
-    () => {
-      // Reuse the existing lineup if the search params haven't changed
-      if (searchParams === prevSearchParams) {
-        return
-      }
-      dispatch(searchResultsPageTracksLineupActions.reset())
-      getResults(0, ALL_RESULTS_LIMIT, true)
-    },
-    500,
-    [dispatch, getResults]
-  )
+  useEffect(() => {
+    dispatch(searchResultsPageTracksLineupActions.reset())
+    getResults(0, ALL_RESULTS_LIMIT, true)
+  }, [dispatch, searchParams, getResults])
 
   const loadMore = useCallback(
     (offset: number, limit: number) => {
+      // Only load more if some results have already been loaded
+      if (!lineup.entries.length) {
+        return
+      }
       getResults(offset, limit, false)
     },
-    [getResults]
+    [getResults, lineup]
   )
 
   const handleClickTrackTile = useCallback(
