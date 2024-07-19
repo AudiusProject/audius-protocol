@@ -63,6 +63,8 @@ import {
 } from './types'
 import { capitalize, getKeyFromFetchArgs, selectCommonEntityMap } from './utils'
 
+type ForceType = 'force' | 'forcing' | false
+
 type Entity = Collection | Track | User
 
 const { addEntries } = cacheActions
@@ -311,7 +313,7 @@ const fetchData = async <Args, Data>(
   endpoint: EndpointConfig<Args, Data>,
   actions: CaseReducerActions<any>,
   context: AudiusQueryContextType,
-  force?: MutableRefObject<boolean>
+  force?: MutableRefObject<ForceType>
 ) => {
   const { audiusBackend, dispatch } = context
   try {
@@ -378,12 +380,13 @@ const fetchData = async <Args, Data>(
           })
       )
       dispatch(addEntries(entities, !!force?.current))
-      if (force?.current) {
-        force.current = false
-      }
       data = result
     } else {
       data = apiData
+    }
+
+    if (force?.current) {
+      force.current = false
     }
 
     dispatch(
@@ -435,7 +438,7 @@ const buildEndpointHooks = <
     hookOptions?: QueryHookOptions
   ): QueryHookResults<Data> => {
     const dispatch = useDispatch()
-    const force = useRef(!!hookOptions?.force)
+    const force = useRef<ForceType>(hookOptions?.force ? 'force' : false)
     const queryState = useQueryState(
       fetchArgs,
       reducerPath,
@@ -460,7 +463,11 @@ const buildEndpointHooks = <
       if ([Status.LOADING, Status.ERROR, Status.SUCCESS].includes(status))
         return
       if (hookOptions?.disabled) return
+      if (force.current === 'forcing') return
 
+      if (force.current === 'force') {
+        force.current = 'forcing'
+      }
       fetchData(fetchArgs, endpointName, endpoint, actions, context, force)
     }, [context, fetchArgs, hookOptions?.disabled, status])
 
