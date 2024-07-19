@@ -44,7 +44,7 @@ const messages = {
     ` by sending them a tip! This ${contentType} is now available.`,
   ownerTipGated: 'Users can unlock access by sending you a tip!',
   unlockedUSDCPurchasePrefix: (contentType: PurchaseableContentType) =>
-    `You’ve purchased this ${contentType}. Thank you for supporting `,
+    `You've purchased this ${contentType}. Thank you for supporting `,
   unlockedUSDCPurchaseSuffix: '.',
   ownerUSDCPurchase: ({
     price,
@@ -90,13 +90,11 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
 type HasAccessProps = {
   streamConditions: AccessConditions
   handlePressCollection: () => void
-  style?: ViewStyle
   contentType: PurchaseableContentType
 }
 
 const DetailsTileOwnerSection = ({
   streamConditions,
-  style,
   handlePressCollection,
   contentType
 }: HasAccessProps) => {
@@ -111,7 +109,6 @@ const DetailsTileOwnerSection = ({
         backgroundColor='white'
         border='strong'
         borderRadius='m'
-        style={style}
       >
         <View style={[styles.titleContainer, styles.ownerTitleContainer]}>
           <IconCollectible fill={neutral} width={16} height={16} />
@@ -144,7 +141,6 @@ const DetailsTileOwnerSection = ({
         backgroundColor='white'
         border='strong'
         borderRadius='m'
-        style={style}
       >
         <View style={[styles.titleContainer, styles.ownerTitleContainer]}>
           <IconSpecialAccess fill={neutral} width={16} height={16} />
@@ -170,7 +166,6 @@ const DetailsTileOwnerSection = ({
         backgroundColor='white'
         border='strong'
         borderRadius='m'
-        style={style}
       >
         <View style={[styles.titleContainer, styles.ownerTitleContainer]}>
           <IconCart fill={neutral} width={16} height={16} />
