@@ -131,7 +131,7 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
             hideContainer={hideContainer}
             onDeleteTrack={onDeleteTrack}
           />
-          {confirmDrawerType ? (
+          {!isUpload && confirmDrawerType ? (
             <ReleaseTrackConfirmationModal
               isOpen={isReleaseConfirmationOpen}
               onClose={() => setIsReleaseConfirmationOpen(false)}

@@ -203,7 +203,7 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
         </>
       </FormScreen>
       <CancelEditTrackDrawer />
-      {confirmDrawerType ? (
+      {!isUpload && confirmDrawerType ? (
         <ConfirmPublishTrackDrawer
           type={confirmDrawerType}
           onConfirm={handleSubmitProp}
