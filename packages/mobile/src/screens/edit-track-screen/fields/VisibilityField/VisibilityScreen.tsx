@@ -1,20 +1,14 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import { visibilityMessages } from '@audius/common/messages'
+import { visibilityMessages as messages } from '@audius/common/messages'
 import { FeatureFlags } from '@audius/common/services'
-import { getLocalTimezone } from '@audius/common/utils'
 import dayjs from 'dayjs'
 import { useFormikContext } from 'formik'
-import { formatCalendarTime } from 'utils/dateUtils'
 
 import {
-  Flex,
-  Hint,
-  IconCalendarMonth,
   IconVisibilityHidden,
   IconVisibilityPublic
 } from '@audius/harmony-native'
-import { DateTimeInput } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { FormScreen } from 'app/screens/form-screen'
@@ -23,12 +17,9 @@ import { ExpandableRadio } from '../../components/ExpandableRadio'
 import { ExpandableRadioGroup } from '../../components/ExpandableRadioGroup'
 import type { FormValues } from '../../types'
 
-type VisibilityType = 'scheduled' | 'public' | 'hidden'
+import { ScheduledReleaseDateField } from './ScheduledReleaseDateField'
 
-const messages = {
-  ...visibilityMessages,
-  scheduled: (date: string) => `Scheduled for ${formatCalendarTime(date)}`
-}
+type VisibilityType = 'scheduled' | 'public' | 'hidden'
 
 export const VisibilityScreen = () => {
   const { isEnabled: isEditableAccessEnabled } = useFeatureFlag(
@@ -127,39 +118,12 @@ export const VisibilityScreen = () => {
           description={messages.scheduledReleaseDescription}
           disabled={!isEditableAccessEnabled && isAlreadyPublic}
           checkedContent={
-            <Flex direction='column' gap='l'>
-              <Flex gap='l'>
-                <Flex gap='l'>
-                  <DateTimeInput
-                    mode='date'
-                    date={releaseDate ?? undefined}
-                    onChange={setReleaseDate}
-                    inputProps={{
-                      label: messages.dateLabel,
-                      startIcon: IconCalendarMonth,
-                      error: !!(dateError || dateTimeError),
-                      helperText: dateError
-                    }}
-                    dateTimeProps={{
-                      minimumDate: dayjs().toDate()
-                    }}
-                  />
-                  <DateTimeInput
-                    mode='time'
-                    date={releaseDate ?? undefined}
-                    onChange={setReleaseDate}
-                    inputProps={{
-                      label: messages.timeLabel,
-                      error: !!dateTimeError,
-                      helperText: dateTimeError
-                    }}
-                  />
-                </Flex>
-              </Flex>
-              {releaseDate ? (
-                <Hint>{messages.futureReleaseHint(getLocalTimezone())}</Hint>
-              ) : null}
-            </Flex>
+            <ScheduledReleaseDateField
+              releaseDate={releaseDate}
+              onChange={setReleaseDate}
+              dateError={dateError}
+              dateTimeError={dateTimeError}
+            />
           }
         />
       </ExpandableRadioGroup>

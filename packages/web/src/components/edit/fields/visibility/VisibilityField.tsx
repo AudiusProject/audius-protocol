@@ -43,7 +43,9 @@ type VisibilityFieldProps = {
 const visibilitySchema = z
   .object({
     visibilityType: z.enum(['hidden', 'public', 'scheduled']),
-    releaseDate: z.string().optional()
+    releaseDate: z.string().optional(),
+    releaseDateTime: z.string().optional(),
+    releaseDateMeridian: z.string().optional()
   })
   .refine(
     (data) => {
@@ -51,6 +53,26 @@ const visibilitySchema = z
       return visibilityType === 'scheduled' ? !!releaseDate : true
     },
     { message: 'Release date required', path: ['releaseDate'] }
+  )
+  .refine(
+    (data) => {
+      const {
+        visibilityType,
+        releaseDate,
+        releaseDateTime,
+        releaseDateMeridian
+      } = data
+      if (visibilityType === 'scheduled') {
+        const time = mergeReleaseDateValues(
+          releaseDate!,
+          releaseDateTime!,
+          releaseDateMeridian!
+        ).toString()
+        return dayjs(time).isAfter(dayjs())
+      }
+      return true
+    },
+    { message: 'Select a time in the future', path: ['releaseDate'] }
   )
 
 export const VisibilityField = (props: VisibilityFieldProps) => {

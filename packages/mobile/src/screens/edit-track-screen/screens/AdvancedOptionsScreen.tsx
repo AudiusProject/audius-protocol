@@ -1,10 +1,14 @@
 import { useField } from 'formik'
-import { View } from 'react-native'
 
 import { IconIndent } from '@audius/harmony-native'
 import { FormScreen } from 'app/screens/form-screen'
 
-import { IsrcField, LicenseTypeField, SubmenuList } from '../fields'
+import {
+  IsrcField,
+  LicenseTypeField,
+  ReleaseDateField,
+  SubmenuList
+} from '../fields'
 import { KeyBpmField } from '../fields/KeyBpmField'
 
 const messages = {
@@ -12,7 +16,8 @@ const messages = {
 }
 
 export const AdvancedOptionsScreen = () => {
-  const [{ value: trackId }] = useField('track_id')
+  const [{ value: isUpload }] = useField('isUpload')
+  const [{ value: isUnlisted }] = useField('is_unlisted')
 
   return (
     <FormScreen
@@ -21,14 +26,12 @@ export const AdvancedOptionsScreen = () => {
       bottomSection={null}
       variant='white'
     >
-      <View>
-        <SubmenuList>
-          <IsrcField />
-          <LicenseTypeField />
-          {/* Only show key and bpm field if we are in edit flow */}
-          {trackId ? <KeyBpmField /> : <></>}
-        </SubmenuList>
-      </View>
+      <SubmenuList>
+        <IsrcField />
+        <LicenseTypeField />
+        {isUnlisted ? null : <ReleaseDateField />}
+        {isUpload ? <></> : <KeyBpmField />}
+      </SubmenuList>
     </FormScreen>
   )
 }
