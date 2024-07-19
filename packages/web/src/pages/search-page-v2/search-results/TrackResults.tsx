@@ -12,9 +12,8 @@ import {
 } from '@audius/common/store'
 import { Flex, OptionsFilterButton, Text } from '@audius/harmony'
 import { css } from '@emotion/css'
-import { debounce, isEqual } from 'lodash'
+import { debounce } from 'lodash'
 import { useDispatch, useSelector } from 'react-redux'
-import { usePrevious } from 'react-use'
 
 import { make } from 'common/store/analytics/actions'
 import Lineup from 'components/lineup/Lineup'
@@ -70,7 +69,6 @@ export const TrackResults = (props: TrackResultsProps) => {
   const lineup = useSelector(getSearchTracksLineupMetadatas)
 
   const searchParams = useSearchParams()
-  const prevSearchParams = usePrevious(searchParams)
 
   const getResults = useCallback(
     (offset: number, limit: number, overwrite: boolean) => {
@@ -99,15 +97,11 @@ export const TrackResults = (props: TrackResultsProps) => {
   )
 
   useEffect(() => {
-    if (isEqual(searchParams, prevSearchParams)) {
-      return
-    }
-
     dispatch(searchResultsPageTracksLineupActions.reset())
     dispatch(searchResultsPageTracksLineupActions.setLoading(true))
 
     debouncedGetResults(0, ALL_RESULTS_LIMIT, true)
-  }, [dispatch, searchParams, prevSearchParams, debouncedGetResults])
+  }, [dispatch, searchParams, debouncedGetResults])
 
   const loadMore = useCallback(
     (offset: number, limit: number) => {
