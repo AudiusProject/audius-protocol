@@ -21,11 +21,11 @@ BATCH_SIZE = 5000
 
 
 def valid_musical_key(musical_key):
-    return len(musical_key) <= 12
+    return isinstance(musical_key, str) and len(musical_key) <= 12
 
 
 def valid_bpm(bpm):
-    return bpm < 999 and bpm > 0
+    return isinstance(bpm, float) and 0 < bpm < 999
 
 
 def query_tracks(session: Session) -> List[Track]:
