@@ -24,7 +24,11 @@ import { useMainContentRef } from 'pages/MainContentContext'
 
 import { NoResultsTile } from '../NoResultsTile'
 import { ViewLayout, viewLayoutOptions } from '../types'
-import { useSearchParams, useUpdateSearchParams } from '../utils'
+import {
+  ALL_RESULTS_LIMIT,
+  useSearchParams,
+  useUpdateSearchParams
+} from '../utils'
 
 const { makeGetLineupMetadatas } = lineupSelectors
 const { getBuffering, getPlaying } = playerSelectors
@@ -96,7 +100,7 @@ export const TrackResults = (props: TrackResultsProps) => {
         return
       }
       dispatch(searchResultsPageTracksLineupActions.reset())
-      getResults(0, 12, true)
+      getResults(0, ALL_RESULTS_LIMIT, true)
     },
     500,
     [dispatch, getResults]

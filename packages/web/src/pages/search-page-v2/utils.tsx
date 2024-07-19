@@ -19,6 +19,8 @@ const { getAccountStatus, getUserId } = accountSelectors
 
 type SearchResultsApiType = ReturnType<typeof useGetSearchResultsApi>
 
+export const ALL_RESULTS_LIMIT = 12
+
 type SearchResultsType<C extends SearchCategory> = {
   status: SearchResultsApiType['status']
   data: C extends 'all'
@@ -44,7 +46,7 @@ export const useGetSearchResults = <C extends SearchCategory>(
     ...filters,
     category,
     currentUserId,
-    limit: category === 'all' ? 12 : undefined,
+    limit: category === 'all' ? ALL_RESULTS_LIMIT : undefined,
     offset: 0
   }
 
