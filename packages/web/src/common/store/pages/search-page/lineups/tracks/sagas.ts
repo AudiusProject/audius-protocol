@@ -54,6 +54,7 @@ function* getSearchPageResultsTracks({
         offset
       )
       results = tracks
+      return results
     } else {
       const audiusBackend = yield* getContext('audiusBackendInstance')
       const apiClient = yield* getContext('apiClient')
