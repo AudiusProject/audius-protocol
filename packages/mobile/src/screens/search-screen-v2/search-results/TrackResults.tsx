@@ -18,7 +18,6 @@ import { Lineup } from 'app/components/lineup'
 import { NoResultsTile } from '../NoResultsTile'
 import { SearchCatalogTile } from '../SearchCatalogTile'
 import {
-  ALL_RESULTS_LIMIT,
   useIsEmptySearch,
   useSearchFilters,
   useSearchQuery
