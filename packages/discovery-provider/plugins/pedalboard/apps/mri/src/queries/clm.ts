@@ -8,7 +8,7 @@ import { formatDate } from "../date";
 const config = readConfig()
 const isDev = config.env === "dev"
 
-export type ClientLabelMetadata = {
+type ClientLabelMetadata = {
     UniqueTrackIdentifier: number;
     TrackTitle: string;
     Artist: string;
@@ -22,7 +22,7 @@ export type ClientLabelMetadata = {
     ResourceType: string;
 }
 
-export const ClientLabelMetadataHeader: (keyof ClientLabelMetadata)[] = [
+const ClientLabelMetadataHeader: (keyof ClientLabelMetadata)[] = [
     "UniqueTrackIdentifier",
     "TrackTitle",
     "Artist",
