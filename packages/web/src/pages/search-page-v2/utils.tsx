@@ -4,7 +4,7 @@ import {
   SearchCategory,
   useGetSearchResults as useGetSearchResultsApi
 } from '@audius/common/api'
-import { Status } from '@audius/common/models'
+import { ID, Status } from '@audius/common/models'
 import { SearchSortMethod, accountSelectors } from '@audius/common/store'
 import { Genre, Mood } from '@audius/sdk'
 import { useSelector } from 'react-redux'
@@ -22,8 +22,13 @@ type SearchResultsApiType = ReturnType<typeof useGetSearchResultsApi>
 type SearchResultsType<C extends SearchCategory> = {
   status: SearchResultsApiType['status']
   data: C extends 'all'
-    ? SearchResultsApiType['data']
-    : SearchResultsApiType['data'][Exclude<C, 'all'>]
+    ? {
+        users: ID[]
+        tracks: ID[]
+        playlists: ID[]
+        albums: ID[]
+      }
+    : ID[]
 }
 
 export const useGetSearchResults = <C extends SearchCategory>(
@@ -43,19 +48,25 @@ export const useGetSearchResults = <C extends SearchCategory>(
     offset: 0
   }
 
+  // TODO: Properly type data when `shallow` is true
   const { data, status } = useGetSearchResultsApi(params, {
+    // We pass shallow here because the top level search results don't care
+    // about the actual entities, just the ids. The nested componets pull
+    // the entities from the cache. This prevents unnecessary re-renders at the top
+    shallow: true,
     debounce: 500,
     // TODO: do we need this on mobile too
     // Only search when the account has finished loading,
     // or if the user is not logged in
     disabled: accountStatus === Status.LOADING || accountStatus === Status.IDLE
   })
+  // console.log('rerender new data')
 
   if (category === 'all') {
-    return { data, status } as SearchResultsType<C>
+    return { data: data as any, status } as SearchResultsType<C>
   } else {
     return {
-      data: data?.[category as Exclude<C, 'all'>],
+      data: data?.[category as Exclude<C, 'all'>] as any,
       status
     } as SearchResultsType<C>
   }

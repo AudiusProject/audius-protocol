@@ -90,16 +90,14 @@ export const ProfileResults = (props: ProfileResultsProps) => {
 
 export const ProfileResultsPage = () => {
   const isMobile = useIsMobile()
-  const { data, status } = useGetSearchResults('users')
+  const { data: ids, status } = useGetSearchResults('users')
   const isLoading = status === Status.LOADING
 
   const updateSortParam = useUpdateSearchParams('sortMethod')
   const searchParams = useSearchParams()
   const { sortMethod } = searchParams
-  const isResultsEmpty = data?.length === 0
+  const isResultsEmpty = ids?.length === 0
   const showNoResultsTile = !isLoading && isResultsEmpty
-
-  const ids = data?.map(({ user_id: id }) => id)
 
   return (
     <Flex direction='column' gap='xl'>

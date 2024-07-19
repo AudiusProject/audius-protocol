@@ -94,17 +94,15 @@ export const PlaylistResultsPage = () => {
 
   const isMobile = useIsMobile()
 
-  const { data, status } = useGetSearchResults('playlists')
+  const { data: ids, status } = useGetSearchResults('playlists')
   const isLoading = status === Status.LOADING
 
   const searchParams = useSearchParams()
   const { sortMethod } = searchParams
   const updateSortParam = useUpdateSearchParams('sortMethod')
 
-  const isResultsEmpty = data?.length === 0
+  const isResultsEmpty = ids?.length === 0
   const showNoResultsTile = !isLoading && isResultsEmpty
-
-  const ids = data?.map(({ playlist_id: id }) => id)
 
   // const playlistsLineupProps = useLineupProps({
   //   actions: searchResultsPagePlaylistsLineupActions,

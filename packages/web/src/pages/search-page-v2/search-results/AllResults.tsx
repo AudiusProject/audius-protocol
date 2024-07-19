@@ -39,11 +39,6 @@ export const AllResults = () => {
 
   if (showNoResultsTile) return <NoResultsTile />
 
-  const userIds = data?.users.map(({ user_id: id }) => id)
-  const albumIds = data?.albums.map(({ playlist_id: id }) => id)
-  const playlistIds = data?.playlists.map(({ playlist_id: id }) => id)
-  const trackIds = data?.tracks.map(({ track_id: id }) => id)
-
   return (
     <Flex
       direction='column'
@@ -51,16 +46,16 @@ export const AllResults = () => {
       p={isMobile ? 'm' : undefined}
       ref={containerRef}
     >
-      {isLoading || userIds?.length ? (
+      {isLoading || data.users?.length ? (
         <Flex gap='xl' direction='column'>
           <Text variant='heading' textAlign='left'>
             {messages.profiles}
           </Text>
-          <ProfileResults skeletonCount={5} ids={userIds} limit={5} />
+          <ProfileResults skeletonCount={5} ids={data.users} limit={5} />
         </Flex>
       ) : null}
 
-      {isLoading || trackIds?.length ? (
+      {isLoading || data.tracks?.length ? (
         <Flex gap='xl' direction='column'>
           <Text variant='heading' textAlign='left'>
             {messages.tracks}
@@ -73,21 +68,21 @@ export const AllResults = () => {
         </Flex>
       ) : null}
 
-      {isLoading || albumIds?.length ? (
+      {isLoading || data.albums?.length ? (
         <Flex gap='xl' direction='column'>
           <Text variant='heading' textAlign='left'>
             {messages.albums}
           </Text>
-          <AlbumResults skeletonCount={5} ids={albumIds} limit={5} />
+          <AlbumResults skeletonCount={5} ids={data.albums} limit={5} />
         </Flex>
       ) : null}
 
-      {isLoading || playlistIds?.length ? (
+      {isLoading || data.playlists?.length ? (
         <Flex gap='xl' direction='column'>
           <Text variant='heading' textAlign='left'>
             {messages.playlists}
           </Text>
-          <PlaylistResults skeletonCount={5} ids={playlistIds} limit={5} />
+          <PlaylistResults skeletonCount={5} ids={data.playlists} limit={5} />
         </Flex>
       ) : null}
     </Flex>
