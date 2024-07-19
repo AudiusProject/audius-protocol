@@ -35,6 +35,10 @@ create table if not exists qm_sync (
 );
 `
 
+var deleteQmAudioAnalysisWithBadKey = `
+delete from qm_audio_analyses where length(results::json->>'key') > 12;
+`
+
 func Migrate(db *sql.DB, myHost string) {
 	mustExec(db, mediorumMigrationTable)
 
@@ -50,6 +54,8 @@ func Migrate(db *sql.DB, myHost string) {
 	runMigration(db, `drop table if exists "Files", "ClockRecords", "Tracks", "AudiusUsers", "CNodeUsers", "SessionTokens", "ContentBlacklists", "Playlists", "SequelizeMeta", blobs, cid_lookup, cid_log cascade`)
 
 	runMigration(db, qmSyncTable)
+
+	runMigration(db, deleteQmAudioAnalysisWithBadKey)
 }
 
 func runMigration(db *sql.DB, ddl string) {
