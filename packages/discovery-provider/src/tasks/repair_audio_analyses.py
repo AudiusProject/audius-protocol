@@ -88,7 +88,7 @@ def repair(session: Session, redis: Redis):
 
             # Fill in missing analysis results and err count if present
             track_updated = False
-            if key and not track.musical_key:
+            if key and len(key) <= 12 and not track.musical_key:
                 track_updated = True
                 track.musical_key = key
             if bpm and not track.bpm:
