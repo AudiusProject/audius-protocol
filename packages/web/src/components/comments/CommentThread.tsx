@@ -8,7 +8,7 @@ import { useCurrentCommentSection } from './CommentSectionContext'
 
 export const CommentThread = () => {
   const { comments } = useCurrentCommentSection()
-  // TODO: this feels sub-optimal
+  // TODO: this feels sub-optimal? Maybe fine
   const [hiddenReplies, setHiddenReplies] = useState<{
     [parentCommendId: number]: boolean
   }>({})
@@ -35,9 +35,12 @@ export const CommentThread = () => {
                 {hiddenReplies[rootComment.id] ? 'Show' : 'Hide'} Replies
               </TextLink>
               <Flex w='100%'>
-                {/* TODO: fix type here */}
                 {hiddenReplies[rootComment.id] ? null : (
-                  <CommentBlock comment={reply} />
+                  <CommentBlock
+                    // TODO: fix type
+                    comment={reply}
+                    parentCommentId={rootComment.id}
+                  />
                 )}
               </Flex>
             </Flex>

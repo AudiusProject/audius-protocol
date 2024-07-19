@@ -16,16 +16,36 @@ import { CommentInputForm } from './CommentInputForm'
 import { useCurrentCommentSection } from './CommentSectionContext'
 import type { Comment } from './types'
 
+// TODO: do we need hours?
+const formatTimestampS = (timestamp_s: number) => {
+  const hours = Math.floor(timestamp_s / (60 * 60))
+  const minutes = Math.floor(timestamp_s / 60)
+  const seconds = `${timestamp_s % 60}`.padStart(2, '0')
+  if (hours > 0) {
+    return `${hours}:${minutes}:${seconds}`
+  } else {
+    // TODO: check designs- I think we want a m:ss format regardless
+    return `${minutes}:${seconds}`
+  }
+}
+
 export type CommentBlockProps = { comment: Comment; parentCommentId?: ID }
 export const CommentBlock = ({
   comment,
-  parentCommentId
+  parentCommentId // Parent comment ID can be passed in order to reply to a reply
 }: CommentBlockProps) => {
-  const { is_pinned: isPinned, message, react_count: reactCount } = comment
+  const {
+    is_pinned: isPinned,
+    message,
+    react_count: reactCount,
+    timestamp_s,
+    id: commentId
+  } = comment
   const { handleDeleteComment, handleReactComment } = useCurrentCommentSection()
-  const hasBadges = false // TODO: need to figure out how to model "badges" correctly
+  const hasBadges = false // TODO: need to figure out how to data model these "badges" correctly
   const [showReplyInput, setShowReplyInput] = useState(false)
-  const isOwner = true // TODO: need to check against current user (annoying to do with modck data)
+  const isOwner = true // TODO: need to check against current user (not really feasible with modck data)
+
   return (
     <Flex w='100%' gap='l'>
       <Avatar css={{ width: 40, height: 40, flexShrink: 0 }} />
@@ -44,18 +64,22 @@ export const CommentBlock = ({
           </Flex>
         ) : null}
         {/* TODO: this will be a user link but wont work with mock data */}
-        <Flex gap='s' alignItems='flex-end'>
+        <Flex gap='s' alignItems='center'>
           <Text color='default'>Display Name</Text>
           {/* TODO: figure out date from created_at */}
           <Flex gap='xs' alignItems='center'>
             <Text size='s'> 2d </Text>
-            {/* TODO: determine timestamp from data */}
-            <Text color='subdued' size='xs'>
-              •
-            </Text>
-            <TextLink size='s' variant='active'>
-              1:32
-            </TextLink>
+            {timestamp_s !== undefined ? (
+              <>
+                <Text color='subdued' size='xs'>
+                  •
+                </Text>
+
+                <TextLink size='s' variant='active'>
+                  {formatTimestampS(timestamp_s)}
+                </TextLink>
+              </>
+            ) : null}
           </Flex>
         </Flex>
         <Text color='default'>{message}</Text>
@@ -66,7 +90,7 @@ export const CommentBlock = ({
               color='subdued'
               aria-label='Heart comment'
               onClick={() => {
-                handleReactComment(comment.id)
+                handleReactComment(commentId)
               }}
             />
             <Text color='default'> {reactCount}</Text>
@@ -77,7 +101,6 @@ export const CommentBlock = ({
               setShowReplyInput(!showReplyInput)
             }}
           >
-            {' '}
             Reply
           </TextLink>
           {/* TODO: rework this - this is a temporary design: just to have buttons for triggering stuff */}
@@ -98,14 +121,14 @@ export const CommentBlock = ({
               size='s'
               color='subdued'
               onClick={() => {
-                handleDeleteComment(comment.id)
+                handleDeleteComment(commentId)
               }}
             />
           ) : null}
         </Flex>
 
         {showReplyInput ? (
-          <CommentInputForm parentCommentId={parentCommentId} />
+          <CommentInputForm parentCommentId={parentCommentId ?? commentId} />
         ) : null}
       </Flex>
     </Flex>

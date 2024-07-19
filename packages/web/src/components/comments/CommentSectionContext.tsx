@@ -88,11 +88,21 @@ export const CommentSectionProvider = ({
     },
     [entityId, userId]
   )
-  const handleReactComment = (commentId: ID) => {}
-  const handlePinComment = (commentId: ID) => {}
-  const handleEditComment = (commentId: ID, newMessage: string) => {}
-  const handleDeleteComment = (commentId: ID) => {}
-  const handleReportComment = (commentId: ID) => {}
+  const handleReactComment = (commentId: ID) => {
+    console.log('Clicked react for ', commentId)
+  }
+  const handlePinComment = (commentId: ID) => {
+    console.log('Clicked pin for ', commentId)
+  }
+  const handleEditComment = (commentId: ID, newMessage: string) => {
+    console.log(`Edited comment ${commentId} to ${newMessage}`)
+  }
+  const handleDeleteComment = (commentId: ID) => {
+    console.log('Clicked delete for ', commentId)
+  }
+  const handleReportComment = (commentId: ID) => {
+    console.log('Clicked report for ', commentId)
+  }
 
   // TODO: assuming we move this to audius-query
   useAsync(async () => {
