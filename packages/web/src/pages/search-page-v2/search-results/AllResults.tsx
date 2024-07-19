@@ -39,10 +39,12 @@ export const AllResults = () => {
 
   if (showNoResultsTile) return <NoResultsTile />
 
-  const userIds = data?.users.map(({ user_id: id }) => id)
-  const albumIds = data?.albums.map(({ playlist_id: id }) => id)
-  const playlistIds = data?.playlists.map(({ playlist_id: id }) => id)
-  const trackIds = data?.tracks.map(({ track_id: id }) => id)
+  const {
+    users: userIds,
+    tracks: trackIds,
+    playlists: playlistIds,
+    albums: albumIds
+  } = data ?? {}
 
   return (
     <Flex

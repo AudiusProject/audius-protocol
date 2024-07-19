@@ -30,7 +30,10 @@ import type { AppScreenParamList } from './AppTabsScreen'
 
 const useStyles = makeStyles(({ palette, spacing, typography }) => ({
   headerLeft: { marginLeft: spacing(-2) + 1, width: 40 },
-  headerRight: {},
+  headerRight: {
+    paddingVertical: spacing(2),
+    paddingLeft: spacing(2)
+  },
   title: {
     fontSize: 18,
     fontFamily: typography.fontByWeight.heavy,
@@ -152,7 +155,7 @@ export const useAppScreenOptions = (
                 <IconButton
                   icon={IconSearch}
                   onPress={handlePressSearch}
-                  hitSlop={10}
+                  hitSlop={20}
                   color='subdued'
                   size='m'
                 />

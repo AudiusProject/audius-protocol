@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { ReactNativeStyle } from '@emotion/native'
 import { useTheme } from '@emotion/react'
 import { isNil } from 'lodash'
-import type { GestureResponderEvent } from 'react-native'
+import { Pressable, type GestureResponderEvent } from 'react-native'
 
 import type { IconProps } from '@audius/harmony-native'
 import { IconCloseAlt, Text } from '@audius/harmony-native'
@@ -114,14 +114,15 @@ export const FilterButton = (props: FilterButtonProps) => {
   const Icon = useMemo(() => {
     return variant === 'fillContainer' && !isNil(value)
       ? (props: IconProps) => (
-          <IconCloseAlt
-            aria-label='cancel'
+          <Pressable
+            hitSlop={20}
             onPress={(e: GestureResponderEvent) => {
               e.stopPropagation()
               onReset?.()
             }}
-            {...props}
-          />
+          >
+            <IconCloseAlt aria-label='cancel' {...props} />
+          </Pressable>
         )
       : iconRight ?? undefined
   }, [variant, value, onReset, iconRight])

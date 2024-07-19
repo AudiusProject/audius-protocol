@@ -15,6 +15,7 @@ import { denormalize, normalize } from 'normalizr'
 import { useDispatch, useSelector } from 'react-redux'
 import { useDebounce } from 'react-use'
 import { Dispatch } from 'redux'
+import { call, select } from 'typed-redux-saga'
 
 import {
   Collection,
@@ -31,6 +32,7 @@ import { getTrack } from '~/store/cache/tracks/selectors'
 import { reformatUser } from '~/store/cache/users/utils'
 import { CommonState } from '~/store/reducers'
 import { getErrorMessage } from '~/utils/error'
+import { waitForValue } from '~/utils/sagaHelpers'
 import { Nullable, removeNullable } from '~/utils/typeUtils'
 
 import { Track } from '../models/Track'
@@ -94,7 +96,8 @@ export const createApi = <
   const api = {
     reducerPath,
     hooks: {},
-    fetch: {}
+    fetch: {},
+    fetchSaga: {}
   } as unknown as Api<EndpointDefinitions>
 
   const sliceConfig: SliceConfig = {
@@ -269,6 +272,7 @@ const useQueryState = <Args, Data>(
           schemaKey ? { [schemaKey]: cachedData } : cachedData,
           apiResponseSchema
         )
+
         return {
           normalizedData: result,
           status: Status.SUCCESS,
@@ -282,13 +286,13 @@ const useQueryState = <Args, Data>(
   }, isEqual)
 }
 
-// Rehydrate local normalizedData using entities from global normalized cache
-const useCacheData = <Args, Data>(
-  endpoint: EndpointConfig<Args, Data>,
-  normalizedData: any,
-  hookOptions?: QueryHookOptions
-) => {
-  return useSelector((state: CommonState) => {
+const createCacheDataSelector =
+  <Args, Data>(
+    endpoint: EndpointConfig<Args, Data>,
+    normalizedData: any,
+    hookOptions?: QueryHookOptions
+  ) =>
+  (state: CommonState) => {
     if (hookOptions?.shallow && !endpoint.options.kind) return normalizedData
     const entityMap = selectCommonEntityMap(
       state,
@@ -302,7 +306,18 @@ const useCacheData = <Args, Data>(
       return denormalize(normalizedData, apiResponseSchema, entityMap) as Data
     }
     return normalizedData
-  }, isEqual)
+  }
+
+// Rehydrate local normalizedData using entities from global normalized cache
+const useCacheData = <Args, Data>(
+  endpoint: EndpointConfig<Args, Data>,
+  normalizedData: any,
+  hookOptions?: QueryHookOptions
+) => {
+  return useSelector(
+    createCacheDataSelector(endpoint, normalizedData, hookOptions),
+    isEqual
+  )
 }
 
 const requestBatcher = createRequestBatcher()
@@ -553,6 +568,58 @@ const buildEndpointHooks = <
       }
     ]
   }
+
+  /**
+   * This is not actually a saga, but a function that can be called from a saga
+   * It supports the same caching logic as the useQuery hook and will skip
+   * making a request if cache data already exists or a request is in flight
+   */
+  function* fetchSaga(
+    fetchArgs: Args,
+    context: AudiusQueryContextType,
+    force?: boolean
+  ) {
+    if (!force) {
+      const key = getKeyFromFetchArgs(fetchArgs)
+
+      const getEndpointKeyState = (state: CommonState) =>
+        state.api[reducerPath][endpointName][key] ?? {}
+      const getEndpointKeyStatus = (state: CommonState) =>
+        getEndpointKeyState(state).status
+
+      const status = yield* select(getEndpointKeyStatus)
+
+      if ([Status.LOADING, Status.ERROR, Status.SUCCESS].includes(status)) {
+        // If a request is already in flight, wait for it to finish
+        yield* call(
+          waitForValue,
+          getEndpointKeyStatus,
+          {},
+          (s: Status) => s !== Status.LOADING
+        )
+
+        const endpointState = yield* select(getEndpointKeyState)
+        const { normalizedData } = endpointState
+
+        const cacheData = yield* select(
+          createCacheDataSelector(endpoint, normalizedData)
+        )
+
+        return cacheData
+      }
+    }
+
+    return yield* call(
+      fetchData as any,
+      fetchArgs,
+      endpointName,
+      endpoint,
+      actions,
+      context
+    )
+  }
+
+  api.fetchSaga[endpointName] = fetchSaga
 
   api.fetch[endpointName] = (
     fetchArgs: Args,

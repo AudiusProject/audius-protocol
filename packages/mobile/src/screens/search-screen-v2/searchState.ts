@@ -13,6 +13,8 @@ import { useSelector } from 'react-redux'
 
 const { getUserId } = accountSelectors
 
+export const ALL_RESULTS_LIMIT = 5
+
 type SearchContextType = {
   query: string
   setQuery: Dispatch<SetStateAction<string>>
@@ -100,7 +102,8 @@ export const useGetSearchResults = <C extends SearchCategory>(
       ...filters,
       category,
       currentUserId,
-      limit: category === 'all' ? 5 : undefined
+      limit: category === 'all' ? ALL_RESULTS_LIMIT : undefined,
+      offset: 0
     },
     { debounce: 500 }
   )

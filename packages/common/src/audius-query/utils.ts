@@ -1,4 +1,5 @@
 import { mapValues } from 'lodash'
+import objectHash from 'object-hash'
 
 import { Kind } from '~/models/Kind'
 import { CommonState } from '~/store/reducers'
@@ -12,7 +13,7 @@ export function capitalize(str: string) {
 
 export const getKeyFromFetchArgs = (fetchArgs: any) => {
   if (fetchArgs === undefined) return 'default'
-  return JSON.stringify(fetchArgs)
+  return objectHash(fetchArgs)
 }
 
 export const selectCommonEntityMap = (

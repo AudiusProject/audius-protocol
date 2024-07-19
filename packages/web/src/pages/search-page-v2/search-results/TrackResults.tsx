@@ -13,7 +13,7 @@ import {
 import { Flex, OptionsFilterButton, Text } from '@audius/harmony'
 import { css } from '@emotion/css'
 import { useDispatch, useSelector } from 'react-redux'
-import { useDebounce } from 'react-use'
+import { useDebounce, usePrevious } from 'react-use'
 
 import { make } from 'common/store/analytics/actions'
 import Lineup from 'components/lineup/Lineup'
@@ -23,7 +23,11 @@ import { useMainContentRef } from 'pages/MainContentContext'
 
 import { NoResultsTile } from '../NoResultsTile'
 import { ViewLayout, viewLayoutOptions } from '../types'
-import { useSearchParams, useUpdateSearchParams } from '../utils'
+import {
+  ALL_RESULTS_LIMIT,
+  useSearchParams,
+  useUpdateSearchParams
+} from '../utils'
 
 const { makeGetLineupMetadatas } = lineupSelectors
 const { getBuffering, getPlaying } = playerSelectors
@@ -65,6 +69,7 @@ export const TrackResults = (props: TrackResultsProps) => {
   const lineup = useSelector(getSearchTracksLineupMetadatas)
 
   const searchParams = useSearchParams()
+  const prevSearchParams = usePrevious(searchParams)
 
   const getResults = useCallback(
     (offset: number, limit: number, overwrite: boolean) => {
@@ -89,11 +94,15 @@ export const TrackResults = (props: TrackResultsProps) => {
 
   useDebounce(
     () => {
+      // Reuse the existing lineup if the search params haven't changed
+      if (searchParams === prevSearchParams) {
+        return
+      }
       dispatch(searchResultsPageTracksLineupActions.reset())
-      getResults(0, 10, true)
+      getResults(0, ALL_RESULTS_LIMIT, true)
     },
     500,
-    [dispatch, searchParams, category]
+    [dispatch, getResults]
   )
 
   const loadMore = useCallback(
@@ -209,7 +218,7 @@ export const TrackResultsPage = () => {
           </Flex>
         </Flex>
       ) : null}
-      <TrackResults />
+      <TrackResults viewLayout={tracksLayout} />
     </Flex>
   )
 }

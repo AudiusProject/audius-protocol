@@ -91,17 +91,15 @@ export const AlbumResults = (props: AlbumResultsProps) => {
 export const AlbumResultsPage = () => {
   const isMobile = useIsMobile()
 
-  const { data, status } = useGetSearchResults('albums')
+  const { data: ids, status } = useGetSearchResults('albums')
   const isLoading = status === Status.LOADING
 
   const searchParams = useSearchParams()
   const { sortMethod } = searchParams
   const updateSortParam = useUpdateSearchParams('sortMethod')
 
-  const isResultsEmpty = data?.length === 0
+  const isResultsEmpty = ids?.length === 0
   const showNoResultsTile = !isLoading && isResultsEmpty
-
-  const ids = data?.map(({ playlist_id: id }) => id)
 
   return (
     <Flex direction='column' gap='xl'>
