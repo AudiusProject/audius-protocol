@@ -12,11 +12,12 @@ dayjs.extend(quarterOfYear)
 const config = readConfig()
 const isDev = config.env === 'dev'
 
-export type UsageDetailReporting = {
+type UsageDetailReporting = {
   ServiceName: 'AUDIUS'
   ReportPeriodType: 'Q'
   ReportingPeriod: string // MMDDYYYY
   ServiceType: 'I'
+  UniqueTrackIdentifier: number
   SongTitle: string
   Artist: string
   AlbumId: number
@@ -24,11 +25,12 @@ export type UsageDetailReporting = {
   NumberOfPerformances: number
 }
 
-export const UsageDetailReportingHeader: (keyof UsageDetailReporting)[] = [
+const UsageDetailReportingHeader: (keyof UsageDetailReporting)[] = [
   'ServiceName',
   'ReportPeriodType',
   'ReportingPeriod',
   'ServiceType',
+  'UniqueTrackIdentifier',
   'SongTitle',
   'Artist',
   'AlbumId',
@@ -76,6 +78,7 @@ export const udr = async (
         'Q' as "ReportPeriodType",
         :reportingPeriod as "ReportingPeriod",
         'I' as "ServiceType",
+        t.track_id as "UniqueTrackIdentifier",
         t.title as "SongTitle",
         u.name as "Artist",
         (

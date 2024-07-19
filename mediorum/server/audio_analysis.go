@@ -19,7 +19,7 @@ import (
 func (ss *MediorumServer) startAudioAnalyzer() {
 	work := make(chan *Upload)
 
-	numWorkers := 2
+	numWorkers := 4
 
 	// start workers
 	for i := 0; i < numWorkers; i++ {

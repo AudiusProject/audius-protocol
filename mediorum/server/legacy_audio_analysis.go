@@ -22,7 +22,7 @@ func (ss *MediorumServer) startLegacyAudioAnalyzer() {
 
 	work := make(chan *QmAudioAnalysis)
 
-	numWorkers := 2
+	numWorkers := 4
 
 	// start workers
 	for i := 0; i < numWorkers; i++ {
@@ -176,7 +176,7 @@ func (ss *MediorumServer) analyzeLegacyAudio(analysis *QmAudioAnalysis) error {
 
 	analysis.Results = &AudioAnalysisResult{
 		BPM: bpm,
-		Key: key,
+		Key: musicalKey,
 	}
 
 	// all analyses complete
