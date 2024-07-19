@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { Kind, Name, Status } from '@audius/common/models'
 import {
@@ -12,8 +12,9 @@ import {
 } from '@audius/common/store'
 import { Flex, OptionsFilterButton, Text } from '@audius/harmony'
 import { css } from '@emotion/css'
+import { debounce, isEqual } from 'lodash'
 import { useDispatch, useSelector } from 'react-redux'
-import { useDebounce, usePrevious } from 'react-use'
+import { usePrevious } from 'react-use'
 
 import { make } from 'common/store/analytics/actions'
 import Lineup from 'components/lineup/Lineup'
@@ -92,18 +93,21 @@ export const TrackResults = (props: TrackResultsProps) => {
     [dispatch, searchParams, category]
   )
 
-  useDebounce(
-    () => {
-      // Reuse the existing lineup if the search params haven't changed
-      if (searchParams === prevSearchParams) {
-        return
-      }
-      dispatch(searchResultsPageTracksLineupActions.reset())
-      getResults(0, ALL_RESULTS_LIMIT, true)
-    },
-    500,
-    [dispatch, getResults]
+  const debouncedGetResults = useMemo(
+    () => debounce(getResults, 500),
+    [getResults]
   )
+
+  useEffect(() => {
+    if (isEqual(searchParams, prevSearchParams)) {
+      return
+    }
+
+    dispatch(searchResultsPageTracksLineupActions.reset())
+    dispatch(searchResultsPageTracksLineupActions.setLoading(true))
+
+    debouncedGetResults(0, ALL_RESULTS_LIMIT, true)
+  }, [dispatch, searchParams, prevSearchParams, debouncedGetResults])
 
   const loadMore = useCallback(
     (offset: number, limit: number) => {
@@ -179,7 +183,11 @@ export const TrackResults = (props: TrackResultsProps) => {
   )
 }
 
-export const TrackResultsPage = () => {
+export const TrackResultsPage = ({
+  prevSearchParams
+}: {
+  prevSearchParams: any
+}) => {
   const isMobile = useIsMobile()
   const [tracksLayout, setTracksLayout] = useState<ViewLayout>('list')
   const updateSortParam = useUpdateSearchParams('sortMethod')
@@ -218,7 +226,10 @@ export const TrackResultsPage = () => {
           </Flex>
         </Flex>
       ) : null}
-      <TrackResults viewLayout={tracksLayout} />
+      <TrackResults
+        viewLayout={tracksLayout}
+        prevSearchParams={prevSearchParams}
+      />
     </Flex>
   )
 }
