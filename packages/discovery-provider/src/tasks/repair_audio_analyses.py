@@ -20,6 +20,14 @@ DEFAULT_LOCK_TIMEOUT_SECONDS = 30 * 60  # 30 minutes
 BATCH_SIZE = 5000
 
 
+def valid_musical_key(musical_key):
+    return len(musical_key) <= 12
+
+
+def valid_bpm(bpm):
+    return bpm < 999
+
+
 def query_tracks(session: Session) -> List[Track]:
     tracks = (
         session.query(Track)
@@ -88,12 +96,14 @@ def repair(session: Session, redis: Redis):
 
             # Fill in missing analysis results and err count if present
             track_updated = False
-            if key and len(key) <= 12 and not track.musical_key:
-                track_updated = True
-                track.musical_key = key
+            if key and not track.musical_key:
+                if valid_musical_key(key):
+                    track_updated = True
+                    track.musical_key = key
             if bpm and not track.bpm:
-                track_updated = True
-                track.bpm = bpm
+                if valid_bpm(bpm):
+                    track_updated = True
+                    track.bpm = bpm
             if error_count != track.audio_analysis_error_count:
                 track_updated = True
                 track.audio_analysis_error_count = error_count
