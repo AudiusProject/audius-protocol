@@ -7,14 +7,18 @@ import { ProfileResultsPage } from './search-results/ProfileResults'
 import { TrackResultsPage } from './search-results/TrackResults'
 import { CategoryView } from './types'
 
-export const SearchResults = () => {
+type SearchResultsProps = {
+  prevSearchParams: any
+}
+
+export const SearchResults = ({ prevSearchParams }: SearchResultsProps) => {
   const { category } = useParams<{ category: CategoryView }>()
 
   switch (category) {
     case 'profiles':
       return <ProfileResultsPage />
     case 'tracks':
-      return <TrackResultsPage />
+      return <TrackResultsPage prevSearchParams={prevSearchParams} />
     case 'albums':
       return <AlbumResultsPage />
     case 'playlists':

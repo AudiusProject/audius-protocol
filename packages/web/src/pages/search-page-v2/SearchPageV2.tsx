@@ -5,6 +5,7 @@ import { Flex } from '@audius/harmony'
 import { intersection, isEmpty } from 'lodash'
 import { generatePath, useParams } from 'react-router-dom'
 import { useSearchParams } from 'react-router-dom-v5-compat'
+import { usePrevious } from 'react-use'
 
 import { useHistoryContext } from 'app/HistoryProvider'
 import { RouterContext } from 'components/animated-switch/RouterContextProvider'
@@ -26,6 +27,7 @@ import { RecentSearches } from './RecentSearches'
 import { SearchCatalogTile } from './SearchCatalogTile'
 import { CategoryKey, SearchHeader, categories } from './SearchHeader'
 import { SearchResults } from './SearchResults'
+import { useSearchParams as useCustomSearchParams } from './utils'
 
 const useShowSearchResults = () => {
   const [urlSearchParams] = useSearchParams()
@@ -62,6 +64,8 @@ export const SearchPageV2 = () => {
   const hasDownloads = urlSearchParams.get('hasDownloads')
   const showSearchResults = useShowSearchResults()
   const { setStackReset } = useContext(RouterContext)
+  const customSearchParams = useCustomSearchParams()
+  const prevSearchParams = usePrevious(customSearchParams)
 
   // Set nav header
   const { setLeft, setCenter, setRight } = useContext(NavContext)!
@@ -147,7 +151,7 @@ export const SearchPageV2 = () => {
             <RecentSearches />
           </Flex>
         ) : (
-          <SearchResults />
+          <SearchResults prevSearchParams={prevSearchParams} />
         )}
       </Flex>
     </PageComponent>

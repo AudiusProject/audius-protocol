@@ -12,8 +12,9 @@ import {
 } from '@audius/common/store'
 import { Flex, OptionsFilterButton, Text } from '@audius/harmony'
 import { css } from '@emotion/css'
+import { isEqual } from 'lodash'
 import { useDispatch, useSelector } from 'react-redux'
-import { useDebounce, usePrevious } from 'react-use'
+import { useDebounce } from 'react-use'
 
 import { make } from 'common/store/analytics/actions'
 import Lineup from 'components/lineup/Lineup'
@@ -53,10 +54,16 @@ type TrackResultsProps = {
   viewLayout?: ViewLayout
   category?: SearchKind
   count?: number
+  prevSearchParams: any
 }
 
 export const TrackResults = (props: TrackResultsProps) => {
-  const { category = 'tracks', viewLayout = 'list', count } = props
+  const {
+    category = 'tracks',
+    viewLayout = 'list',
+    count,
+    prevSearchParams
+  } = props
   const mainContentRef = useMainContentRef()
 
   const dispatch = useDispatch()
@@ -69,7 +76,6 @@ export const TrackResults = (props: TrackResultsProps) => {
   const lineup = useSelector(getSearchTracksLineupMetadatas)
 
   const searchParams = useSearchParams()
-  const prevSearchParams = usePrevious(searchParams)
 
   const getResults = useCallback(
     (offset: number, limit: number, overwrite: boolean) => {
@@ -94,6 +100,12 @@ export const TrackResults = (props: TrackResultsProps) => {
 
   useDebounce(
     () => {
+      console.log({
+        searchParams,
+        prevSearchParams,
+        equal: isEqual(searchParams, prevSearchParams)
+      })
+
       // Reuse the existing lineup if the search params haven't changed
       if (searchParams === prevSearchParams) {
         return
@@ -102,7 +114,7 @@ export const TrackResults = (props: TrackResultsProps) => {
       getResults(0, ALL_RESULTS_LIMIT, true)
     },
     500,
-    [dispatch, getResults]
+    [dispatch, getResults, prevSearchParams]
   )
 
   const loadMore = useCallback(
@@ -179,7 +191,11 @@ export const TrackResults = (props: TrackResultsProps) => {
   )
 }
 
-export const TrackResultsPage = () => {
+export const TrackResultsPage = ({
+  prevSearchParams
+}: {
+  prevSearchParams: any
+}) => {
   const isMobile = useIsMobile()
   const [tracksLayout, setTracksLayout] = useState<ViewLayout>('list')
   const updateSortParam = useUpdateSearchParams('sortMethod')
@@ -218,7 +234,10 @@ export const TrackResultsPage = () => {
           </Flex>
         </Flex>
       ) : null}
-      <TrackResults viewLayout={tracksLayout} />
+      <TrackResults
+        viewLayout={tracksLayout}
+        prevSearchParams={prevSearchParams}
+      />
     </Flex>
   )
 }
