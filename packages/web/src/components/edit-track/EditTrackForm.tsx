@@ -90,7 +90,7 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
         onSubmit(values)
       } else {
         const usersMayLoseAccess =
-          !initiallyHidden && values.trackMetadatas[0].is_unlisted
+          !isUpload && !initiallyHidden && values.trackMetadatas[0].is_unlisted
         const isToBePublished =
           !isUpload && initiallyHidden && !values.trackMetadatas[0].is_unlisted
         const showConfirmDrawer = usersMayLoseAccess || isToBePublished
@@ -131,7 +131,7 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
             hideContainer={hideContainer}
             onDeleteTrack={onDeleteTrack}
           />
-          {confirmDrawerType ? (
+          {!isUpload && confirmDrawerType ? (
             <ReleaseTrackConfirmationModal
               isOpen={isReleaseConfirmationOpen}
               onClose={() => setIsReleaseConfirmationOpen(false)}

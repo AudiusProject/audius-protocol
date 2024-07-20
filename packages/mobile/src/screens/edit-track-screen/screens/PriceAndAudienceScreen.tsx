@@ -162,7 +162,7 @@ export const PriceAndAudienceScreen = () => {
   }, [availability, initialStreamConditions, specialAccessType])
 
   const handleSubmit = useCallback(() => {
-    if (isEditableAccessEnabled && usersMayLoseAccess) {
+    if (!isUpload && isEditableAccessEnabled && usersMayLoseAccess) {
       dispatch(
         modalsActions.setVisibility({
           modal: 'EditPriceAndAudienceConfirmation',
@@ -170,7 +170,7 @@ export const PriceAndAudienceScreen = () => {
         })
       )
     }
-  }, [dispatch, isEditableAccessEnabled, usersMayLoseAccess])
+  }, [dispatch, isEditableAccessEnabled, isUpload, usersMayLoseAccess])
 
   const handleCancel = useCallback(() => {
     dispatch(
@@ -217,10 +217,12 @@ export const PriceAndAudienceScreen = () => {
           previousStreamConditions={previousStreamConditions}
         />
       </ExpandableRadioGroup>
-      <EditPriceAndAudienceConfirmationDrawer
-        onConfirm={navigation.goBack}
-        onCancel={handleCancel}
-      />
+      {!isUpload ? (
+        <EditPriceAndAudienceConfirmationDrawer
+          onConfirm={navigation.goBack}
+          onCancel={handleCancel}
+        />
+      ) : null}
     </FormScreen>
   )
 }

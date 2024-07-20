@@ -112,20 +112,21 @@ export const VisibilityScreen = () => {
           description={messages.hiddenDescription}
           disabled={!isEditableAccessEnabled && isAlreadyPublic}
         />
-        <ExpandableRadio
-          value='scheduled'
-          label={messages.scheduledRelease}
-          description={messages.scheduledReleaseDescription}
-          disabled={!isEditableAccessEnabled && isAlreadyPublic}
-          checkedContent={
-            <ScheduledReleaseDateField
-              releaseDate={releaseDate}
-              onChange={setReleaseDate}
-              dateError={dateError}
-              dateTimeError={dateTimeError}
-            />
-          }
-        />
+        {!isAlreadyPublic ? (
+          <ExpandableRadio
+            value='scheduled'
+            label={messages.scheduledRelease}
+            description={messages.scheduledReleaseDescription}
+            checkedContent={
+              <ScheduledReleaseDateField
+                releaseDate={releaseDate}
+                onChange={setReleaseDate}
+                dateError={dateError}
+                dateTimeError={dateTimeError}
+              />
+            }
+          />
+        ) : null}
       </ExpandableRadioGroup>
     </FormScreen>
   )

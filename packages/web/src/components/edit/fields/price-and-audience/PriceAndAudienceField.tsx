@@ -597,7 +597,7 @@ export const PriceAndAudienceField = (props: PriceAndAudienceFieldProps) => {
             specialAccessType === SpecialAccessType.FOLLOW ? 'follow' : 'tip'
         })
 
-        if (isEditableAccessEnabled && usersMayLoseAccess) {
+        if (!isUpload && isEditableAccessEnabled && usersMayLoseAccess) {
           openEditAccessConfirmation({
             confirmCallback: () => handleSubmit(values),
             cancelCallback: () => {
