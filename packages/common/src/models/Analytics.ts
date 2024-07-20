@@ -1708,6 +1708,7 @@ type RewardsClaimFailure = {
   amount: number
   url?: string
   error: string
+  instruction?: string
 }
 
 type RewardsClaimBlocked = {
