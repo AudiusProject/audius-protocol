@@ -65,6 +65,9 @@ import {
   MutationHookResults
 } from './types'
 import { capitalize, getKeyFromFetchArgs, selectCommonEntityMap } from './utils'
+import { accountSelectors } from '../store/account'
+
+const { getUserId } = accountSelectors
 
 type ForceType = 'force' | 'forcing' | false
 
@@ -333,7 +336,8 @@ const fetchData = async <Args, Data>(
   endpoint: EndpointConfig<Args, Data>,
   actions: CaseReducerActions<any>,
   context: AudiusQueryContextType,
-  force?: MutableRefObject<ForceType>
+  force?: MutableRefObject<ForceType>,
+  currentUserId?: Nullable<number>
 ) => {
   const { audiusBackend, dispatch } = context
   try {
@@ -390,6 +394,14 @@ const fetchData = async <Args, Data>(
         entities[Kind.USERS] ?? [],
         (user: UserMetadata) => reformatUser(user, audiusBackend)
       )
+
+      // Hack alert: We can't overwrite the current user, since it contains
+      // special account data. Once this is removed from user cache we can
+      // remove this line.
+      if (force?.current && currentUserId) {
+        delete entities[Kind.USERS][currentUserId]
+      }
+
       entities[Kind.COLLECTIONS] = mapValues(
         entities[Kind.COLLECTIONS] ?? [],
         (collection: CollectionMetadata | UserCollectionMetadata) =>
@@ -459,6 +471,7 @@ const buildEndpointHooks = <
   ): QueryHookResults<Data> => {
     const dispatch = useDispatch()
     const force = useRef<ForceType>(hookOptions?.force ? 'force' : false)
+    const currentUserId = useSelector(getUserId)
     const queryState = useQueryState(
       fetchArgs,
       reducerPath,
@@ -488,7 +501,15 @@ const buildEndpointHooks = <
       if (force.current === 'force') {
         force.current = 'forcing'
       }
-      fetchData(fetchArgs, endpointName, endpoint, actions, context, force)
+      fetchData(
+        fetchArgs,
+        endpointName,
+        endpoint,
+        actions,
+        context,
+        force,
+        currentUserId
+      )
     }, [context, fetchArgs, hookOptions?.disabled, status])
 
     useDebounce(
