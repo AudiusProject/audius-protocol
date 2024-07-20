@@ -1,0 +1,64 @@
+syntax = "proto3";
+
+package protocol;
+
+option go_package = "./gen;gen";
+
+service Protocol {
+  rpc SubmitEvent (EventRequest) returns (EventResponse) {}
+}
+
+// generic signature structure
+// TODO: add protection for replay attacks
+message Signature {
+  // sha256 of signature data
+  bytes data = 1;
+  // ecdsa signature of related data
+  string signed_data = 2;
+} 
+
+// what gets persisted to chain, canon and indexable
+message SignedEvent {
+  // sent in initial request
+  Signature sender_signature = 1;
+  // created before checktx step by node that responded to request
+  Signature responder_signature = 2;
+  // created at proposal step by node responsible for the new block
+  Signature proposer_signature = 3;
+  Event event = 4;
+}
+
+// what the user sends, outside world
+message Event {
+  // eth address
+  string sender = 1;
+  // prod, stage, dev, custom
+  string network = 2;
+  uint32 timestamp = 3;
+  // for replay attacks, random client generated
+  string event_id = 4;
+
+  // jump up body slot in case more event metadata is added
+  oneof body {
+    PlaysEvent plays = 1000;
+  }
+}
+
+message Play {
+  string listenerAddress = 1;
+  int32 count = 2;
+}
+
+message PlaysEvent {
+  map<string, Play> plays = 1;
+}
+
+message EventRequest{
+  Signature signature = 1;
+  Event event = 2;
+}
+
+message EventResponse{
+  string txhash = 1;
+  SignedEvent event = 2;
+}
