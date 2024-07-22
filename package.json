@@ -111,7 +111,7 @@
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "pg": "8.8.0",
-    "pino": "^9.1.0",
+    "pino": "9.1.0",
     "react-native-google-cast": "4.6.2"
   },
   "overrides": {
