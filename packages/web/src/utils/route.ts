@@ -1,6 +1,6 @@
 import { SearchCategory } from '@audius/common/api'
 import type { ID } from '@audius/common/models'
-import { convertGenreLabelToValue } from '@audius/common/utils'
+// import { convertGenreLabelToValue } from '@audius/common/src/utils/genres'
 import { Genre, Mood } from '@audius/sdk'
 import { push as pushRoute } from 'connected-react-router'
 import { Location } from 'history'
@@ -564,6 +564,8 @@ export const pushUniqueRoute = (location: Location, route: string) => {
   return { type: '' }
 }
 
+const ELECTRONIC_PREFIX = 'Electronic - '
+
 export const getSearchPageLocation = ({
   category,
   ...searchParams
@@ -580,7 +582,9 @@ export const getSearchPageLocation = ({
 }) => {
   const params = Object.entries(searchParams).reduce((acc, [key, val]) => {
     acc[key] =
-      key === 'genre' ? convertGenreLabelToValue(val as Genre) : String(val)
+      key === 'genre'
+        ? (val as Genre).replace(ELECTRONIC_PREFIX, '')
+        : String(val)
     return acc
   }, {})
 

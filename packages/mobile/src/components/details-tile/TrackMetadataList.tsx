@@ -3,6 +3,7 @@ import { useCallback } from 'react'
 import type { SearchFilters } from '@audius/common/api'
 import { TrackMetadataType, useTrackMetadata } from '@audius/common/hooks'
 import type { ID } from '@audius/common/models'
+import { convertGenreLabelToValue } from '@audius/common/utils'
 import type { Mood } from '@audius/sdk'
 import { trpc } from '@audius/web/src/utils/trpcClientWeb'
 import { Image } from 'react-native'
@@ -53,12 +54,17 @@ const renderMetadataValue = (
       return renderMood(value, () => {
         handleFilterLinkPress({ mood: value as Mood })
       })
-    // TODO: BPM and Key might need to be transformed to fit the search page's expected format
     case TrackMetadataType.GENRE:
     case TrackMetadataType.BPM:
     case TrackMetadataType.KEY:
       return renderFilterLink(value, () => {
-        handleFilterLinkPress({ [id]: value })
+        handleFilterLinkPress({
+          [id]:
+            id === TrackMetadataType.GENRE
+              ? // @ts-ignore - need the converted electronic subgenre value for genre
+                convertGenreLabelToValue(value)
+              : value
+        })
       })
     default:
       return value
