@@ -80,6 +80,7 @@ export class TrackIndexer extends BaseIndexer<TrackDoc> {
             is_verified: { type: 'boolean' },
             created_at: { type: 'date' },
             updated_at: { type: 'date' },
+            is_deactivated: { type: 'boolean' },
           },
         },
 

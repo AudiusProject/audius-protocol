@@ -74,6 +74,7 @@ export class PlaylistIndexer extends BaseIndexer<PlaylistDoc> {
             is_verified: { type: 'boolean' },
             created_at: { type: 'date' },
             updated_at: { type: 'date' },
+            is_deactivated: { type: 'boolean' },
           },
         },
 
