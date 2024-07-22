@@ -1,5 +1,6 @@
 import { SearchCategory } from '@audius/common/api'
 import type { ID } from '@audius/common/models'
+import { convertGenreLabelToValue } from '@audius/common/utils'
 import { Genre, Mood } from '@audius/sdk'
 import { push as pushRoute } from 'connected-react-router'
 import { Location } from 'history'
@@ -578,7 +579,8 @@ export const getSearchPageLocation = ({
   hasDownloads?: boolean
 }) => {
   const params = Object.entries(searchParams).reduce((acc, [key, val]) => {
-    acc[key] = String(val)
+    acc[key] =
+      key === 'genre' ? convertGenreLabelToValue(val as Genre) : String(val)
     return acc
   }, {})
 
