@@ -35,7 +35,8 @@ import {
   RepostType,
   playerSelectors,
   playbackPositionSelectors,
-  PurchaseableContentType
+  PurchaseableContentType,
+  usePublishContentModal
 } from '@audius/common/store'
 import {
   Genre,
@@ -169,6 +170,7 @@ export const TrackScreenDetailsTile = ({
   const isCurrentTrack = useSelector((state: CommonState) => {
     return track && track.track_id === getTrackId(state)
   })
+  const { onOpen: openPublishModal } = usePublishContentModal()
 
   const {
     _co_sign: coSign,
@@ -422,6 +424,10 @@ export const TrackScreenDetailsTile = ({
     )
   }
 
+  const handlePressPublish = useCallback(() => {
+    openPublishModal({ contentId: trackId, contentType: 'track' })
+  }, [openPublishModal, trackId])
+
   const renderBottomContent = () => {
     return hasDownloadableAssets ? <DownloadSection trackId={trackId} /> : null
   }
@@ -546,6 +552,7 @@ export const TrackScreenDetailsTile = ({
           onPressRepost={handlePressRepost}
           onPressSave={handlePressSave}
           onPressShare={handlePressShare}
+          onPressPublish={handlePressPublish}
         />
       </Flex>
       <Flex
