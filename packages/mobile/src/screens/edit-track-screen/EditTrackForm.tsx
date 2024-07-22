@@ -39,7 +39,7 @@ import {
   AdvancedOptionsField,
   PriceAndAudienceField
 } from './fields'
-import { VisibilityField } from './fields/VisibilityField'
+import { VisibilityField } from 'app/components/edit/VisibilityField'
 import type { EditTrackFormProps } from './types'
 
 const messages = {

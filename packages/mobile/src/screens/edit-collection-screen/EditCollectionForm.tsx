@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 
 import { useGetPlaylistById, useGetCurrentUserId } from '@audius/common/api'
-import type { EditPlaylistValues } from '@audius/common/store'
+import type { EditCollectionValues } from '@audius/common/store'
 import { deletePlaylistConfirmationModalUIActions } from '@audius/common/store'
 import type { FormikProps } from 'formik'
 import { capitalize } from 'lodash'
@@ -21,10 +21,15 @@ import { makeStyles } from 'app/styles'
 import { TopBarIconButton } from '../app-screen'
 import { FormScreen } from '../page-form-screen'
 
-import { PlaylistDescriptionField } from './PlaylistDescriptionField'
-import { PlaylistImageInput } from './PlaylistImageInput'
-import { PlaylistNameField } from './PlaylistNameField'
+import { CollectionDescriptionField } from './CollectionDescriptionField'
+import { CollectionImageInput } from './CollectionImageInput'
+import { CollectionNameField } from './CollectionNameField'
 import { TrackListFieldArray } from './TrackListFieldArray'
+import { VisibilityField } from 'app/components/edit/VisibilityField'
+import {
+  AdvancedOptionsField,
+  PriceAndAudienceField
+} from '../edit-track-screen/fields'
 
 const { requestOpen: openDeletePlaylist } =
   deletePlaylistConfirmationModalUIActions
@@ -71,8 +76,8 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
   }
 }))
 
-export const EditPlaylistForm = (
-  props: FormikProps<EditPlaylistValues> & { playlistId: number }
+export const EditCollectionForm = (
+  props: FormikProps<EditCollectionValues> & { playlistId: number }
 ) => {
   const { playlistId, handleSubmit, handleReset } = props
   const styles = useStyles()
@@ -103,9 +108,12 @@ export const EditPlaylistForm = (
       <VirtualizedKeyboardAwareScrollView>
         <Tile style={styles.tile}>
           <View style={styles.header}>
-            <PlaylistImageInput />
-            <PlaylistNameField />
-            <PlaylistDescriptionField />
+            <CollectionImageInput />
+            <CollectionNameField />
+            <CollectionDescriptionField />
+            <VisibilityField />
+            <PriceAndAudienceField />
+            <AdvancedOptionsField />
           </View>
           <Divider />
           <TrackListFieldArray />

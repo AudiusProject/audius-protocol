@@ -8,7 +8,7 @@ import { messages as completeMessages } from '../upload-screen/screens/CompleteT
 
 import { EditTrackForm } from './EditTrackForm'
 import { priceAndAudienceScreenName } from './fields'
-import { VisibilityScreen } from './fields/VisibilityField'
+import { VisibilityScreen } from 'app/components/edit/VisibilityField'
 import {
   PriceAndAudienceScreen,
   AdvancedOptionsScreen,

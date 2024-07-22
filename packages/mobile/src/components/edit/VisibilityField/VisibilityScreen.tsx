@@ -13,9 +13,9 @@ import { useNavigation } from 'app/hooks/useNavigation'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { FormScreen } from 'app/screens/form-screen'
 
-import { ExpandableRadio } from '../../components/ExpandableRadio'
-import { ExpandableRadioGroup } from '../../components/ExpandableRadioGroup'
-import type { FormValues } from '../../types'
+import { ExpandableRadio } from '../../../screens/edit-track-screen/components/ExpandableRadio'
+import { ExpandableRadioGroup } from '../../../screens/edit-track-screen/components/ExpandableRadioGroup'
+import type { FormValues } from '../../../screens/edit-track-screen/types'
 
 import { ScheduledReleaseDateField } from './ScheduledReleaseDateField'
 
@@ -25,14 +25,26 @@ export const VisibilityScreen = () => {
   const { isEnabled: isEditableAccessEnabled } = useFeatureFlag(
     FeatureFlags.EDITABLE_ACCESS_ENABLED
   )
+  const { isEnabled: isPaidScheduledEnabled } = useFeatureFlag(
+    FeatureFlags.PAID_SCHEDULED
+  )
   const { values, initialValues, setValues } = useFormikContext<FormValues>()
-  const { is_unlisted, is_scheduled_release, release_date, isUpload } = values
-  const isAlreadyPublic = !isUpload && !initialValues.is_unlisted
+  const { entityType } = values
+  const hiddenKey = entityType === 'track' ? 'is_unlisted' : 'is_private'
+  const {
+    [hiddenKey]: isHidden,
+    is_scheduled_release,
+    release_date,
+    isUpload
+  } = values
+
+  const initiallyPublic = !isUpload && !initialValues[hiddenKey]
+  const hidePaidScheduled = !isPaidScheduledEnabled && entityType === 'album'
 
   const initialVisibilityType =
     is_scheduled_release && release_date
       ? 'scheduled'
-      : is_unlisted
+      : isHidden
       ? 'hidden'
       : 'public'
 
@@ -56,7 +68,7 @@ export const VisibilityScreen = () => {
       case 'public':
         setValues({
           ...values,
-          is_unlisted: false,
+          [hiddenKey]: false,
           is_scheduled_release: false,
           release_date: null
         })
@@ -64,7 +76,7 @@ export const VisibilityScreen = () => {
       case 'hidden':
         setValues({
           ...values,
-          is_unlisted: true,
+          [hiddenKey]: true,
           is_scheduled_release: false
         })
         break
@@ -78,7 +90,7 @@ export const VisibilityScreen = () => {
         } else {
           setValues({
             ...values,
-            is_unlisted: true,
+            [hiddenKey]: true,
             is_scheduled_release: true,
             release_date: releaseDate
           })
@@ -110,9 +122,9 @@ export const VisibilityScreen = () => {
           label={messages.hidden}
           icon={IconVisibilityHidden}
           description={messages.hiddenDescription}
-          disabled={!isEditableAccessEnabled && isAlreadyPublic}
+          disabled={!isEditableAccessEnabled && initiallyPublic}
         />
-        {!isAlreadyPublic ? (
+        {!initiallyPublic && !hidePaidScheduled ? (
           <ExpandableRadio
             value='scheduled'
             label={messages.scheduledRelease}

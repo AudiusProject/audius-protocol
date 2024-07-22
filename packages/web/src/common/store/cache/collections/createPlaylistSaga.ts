@@ -22,7 +22,7 @@ import {
   getContext,
   confirmerActions,
   confirmTransaction,
-  EditPlaylistValues,
+  EditCollectionValues,
   RequestConfirmationError
 } from '@audius/common/store'
 import { makeKindId, Nullable } from '@audius/common/utils'
@@ -182,7 +182,7 @@ function* optimisticallySavePlaylist(
 function* createAndConfirmPlaylist(
   playlistId: ID,
   userId: ID,
-  formFields: EditPlaylistValues,
+  formFields: EditCollectionValues,
   initTrack: Nullable<Track>,
   source: string,
   isAlbum: boolean

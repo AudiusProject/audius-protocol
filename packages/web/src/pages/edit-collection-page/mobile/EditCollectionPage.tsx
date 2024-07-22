@@ -10,7 +10,7 @@ import { SquareSizes, Collection, ID, Name } from '@audius/common/models'
 import { newCollectionMetadata } from '@audius/common/schemas'
 import { RandomImage } from '@audius/common/services'
 import {
-  EditPlaylistValues,
+  EditCollectionValues,
   accountSelectors,
   cacheCollectionsActions,
   collectionPageLineupActions as tracksActions
@@ -239,7 +239,7 @@ const EditCollectionPage = g(
         }
         refreshLineup()
 
-        editPlaylist(collection.playlist_id, formFields as EditPlaylistValues)
+        editPlaylist(collection.playlist_id, formFields as EditCollectionValues)
 
         track({
           eventName: Name.COLLECTION_EDIT,
@@ -461,7 +461,7 @@ function mapStateToProps(state: AppState) {
 
 function mapDispatchToProps(dispatch: Dispatch) {
   return {
-    editPlaylist: (id: ID, metadata: EditPlaylistValues) =>
+    editPlaylist: (id: ID, metadata: EditCollectionValues) =>
       dispatch(editPlaylist(id, metadata)),
     orderPlaylist: (playlistId: ID, idsAndTimes: any) =>
       dispatch(orderPlaylist(playlistId, idsAndTimes)),

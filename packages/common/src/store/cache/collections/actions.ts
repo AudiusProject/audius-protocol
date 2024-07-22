@@ -1,6 +1,6 @@
 import { ID, UID, SquareSizes, Collection } from '../../../models'
 
-import { EditPlaylistValues } from './types'
+import { EditCollectionValues } from './types'
 
 export const CREATE_PLAYLIST = 'CREATE_PLAYLIST'
 export const CREATE_PLAYLIST_REQUESTED = 'CREATE_PLAYLIST_REQUESTED'
@@ -92,7 +92,7 @@ export function createPlaylistFailed(
 
 export function editPlaylist(
   playlistId: number,
-  formFields: EditPlaylistValues
+  formFields: EditCollectionValues
 ) {
   return { type: EDIT_PLAYLIST, playlistId, formFields }
 }

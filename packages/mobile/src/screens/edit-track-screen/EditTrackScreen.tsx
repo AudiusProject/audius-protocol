@@ -228,6 +228,7 @@ export const EditTrackScreen = (props: EditTrackScreenProps) => {
     : initialValuesProp.stream_conditions
   const initialValues: FormValues = {
     ...initialValuesProp,
+    entityType: 'track',
     stream_conditions: streamConditionsOverride,
     licenseType: computeLicenseVariables(
       initialValuesProp.license || ALL_RIGHTS_RESERVED_TYPE

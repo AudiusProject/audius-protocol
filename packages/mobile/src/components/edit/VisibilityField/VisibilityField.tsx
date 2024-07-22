@@ -12,7 +12,10 @@ const messages = {
 }
 
 export const VisibilityField = () => {
-  const [{ value: isHidden }] = useField('is_unlisted')
+  const [{ value: entitiType }] = useField('entityType')
+  const [{ value: isHidden }] = useField(
+    entitiType === 'track' ? 'is_unlisted' : 'is_private'
+  )
   const [{ value: isScheduledRelease }] = useField('is_scheduled_release')
   const [{ value: releaseDate }] = useField('release_date')
 
