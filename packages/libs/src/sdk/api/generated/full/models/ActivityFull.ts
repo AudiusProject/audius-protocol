@@ -39,6 +39,12 @@ export interface ActivityFull {
     itemType: ActivityFullItemTypeEnum;
     /**
      * 
+     * @type {object}
+     * @memberof ActivityFull
+     */
+    item: object;
+    /**
+     * 
      * @type {string}
      * @memberof ActivityFull
      */
@@ -63,6 +69,7 @@ export function instanceOfActivityFull(value: object): value is ActivityFull {
     let isInstance = true;
     isInstance = isInstance && "timestamp" in value && value["timestamp"] !== undefined;
     isInstance = isInstance && "itemType" in value && value["itemType"] !== undefined;
+    isInstance = isInstance && "item" in value && value["item"] !== undefined;
     isInstance = isInstance && "_class" in value && value["_class"] !== undefined;
 
     return isInstance;
@@ -88,6 +95,7 @@ export function ActivityFullFromJSONTyped(json: any, ignoreDiscriminator: boolea
         
         'timestamp': json['timestamp'],
         'itemType': json['item_type'],
+        'item': json['item'],
         '_class': json['class'],
     };
 }
@@ -103,6 +111,7 @@ export function ActivityFullToJSON(value?: ActivityFull | null): any {
         
         'timestamp': value.timestamp,
         'item_type': value.itemType,
+        'item': value.item,
         'class': value._class,
     };
 }
