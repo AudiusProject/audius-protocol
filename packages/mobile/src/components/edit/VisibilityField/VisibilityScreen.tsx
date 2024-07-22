@@ -13,9 +13,9 @@ import { useNavigation } from 'app/hooks/useNavigation'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { FormScreen } from 'app/screens/form-screen'
 
+import type { FormValues } from '../../../screens/edit-track-screen/types'
 import { ExpandableRadio } from '../ExpandableRadio'
 import { ExpandableRadioGroup } from '../ExpandableRadioGroup'
-import type { FormValues } from '../../../screens/edit-track-screen/types'
 
 import { ScheduledReleaseDateField } from './ScheduledReleaseDateField'
 
@@ -98,7 +98,7 @@ export const VisibilityScreen = () => {
         break
     }
     navigation.goBack()
-  }, [visibilityType, releaseDate, navigation, values, setValues])
+  }, [visibilityType, releaseDate, navigation, values, setValues, hiddenKey])
 
   return (
     <FormScreen

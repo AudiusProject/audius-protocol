@@ -1,7 +1,7 @@
 import { Text } from 'app/components/core'
+import { PriceField } from 'app/components/fields/PriceField'
 
 import { BoxedTextField } from './BoxedTextField'
-import { PriceField } from 'app/components/fields/PriceField'
 
 export const TRACK_PRICE = 'stream_conditions.usdc_purchase.price'
 

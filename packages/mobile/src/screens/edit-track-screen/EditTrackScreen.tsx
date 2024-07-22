@@ -15,11 +15,12 @@ import { Formik } from 'formik'
 import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
+import { TRACK_PREVIEW } from 'app/components/edit/PriceAndAudienceField/PremiumRadioField/TrackPreviewField'
+import { TRACK_PRICE } from 'app/components/edit/PriceAndAudienceField/PremiumRadioField/TrackPriceField'
+
 import { EditTrackNavigator } from './EditTrackNavigator'
 import { BPM } from './screens/KeyBpmScreen'
 import type { FormValues, EditTrackScreenProps } from './types'
-import { TRACK_PRICE } from 'app/components/edit/PriceAndAudienceField/PremiumRadioField/TrackPriceField'
-import { TRACK_PREVIEW } from 'app/components/edit/PriceAndAudienceField/PremiumRadioField/TrackPreviewField'
 const { computeLicenseVariables, ALL_RIGHTS_RESERVED_TYPE } = creativeCommons
 
 const MIN_BPM = 1
@@ -262,7 +263,7 @@ export const EditTrackScreen = (props: EditTrackScreenProps) => {
         }
       }
 
-      let streamConditions = metadata.stream_conditions
+      const streamConditions = metadata.stream_conditions
       let previewStartSeconds = metadata.preview_start_seconds
       let isDownloadable = metadata.is_downloadable
       let isOriginalAvailable = metadata.is_original_available

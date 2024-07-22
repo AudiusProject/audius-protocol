@@ -21,17 +21,18 @@ import { useNavigation } from 'app/hooks/useNavigation'
 import { FormScreen } from 'app/screens/form-screen'
 
 import { EditPriceAndAudienceConfirmationDrawer } from '../../../screens/edit-track-screen/components/EditPriceAndAudienceConfirmationDrawer'
+import type {
+  FormValues,
+  RemixOfField
+} from '../../../screens/edit-track-screen/types'
 import { ExpandableRadio } from '../ExpandableRadio'
 import { ExpandableRadioGroup } from '../ExpandableRadioGroup'
+
 import { CollectibleGatedRadioField } from './GollectibleGatedRadioField'
 import { PremiumRadioField } from './PremiumRadioField/PremiumRadioField'
 import { TRACK_PREVIEW } from './PremiumRadioField/TrackPreviewField'
 import { TRACK_PRICE } from './PremiumRadioField/TrackPriceField'
 import { SpecialAccessRadioField } from './SpecialAccessRadioField'
-import type {
-  FormValues,
-  RemixOfField
-} from '../../../screens/edit-track-screen/types'
 
 const publicAvailability = StreamTrackAvailabilityType.PUBLIC
 

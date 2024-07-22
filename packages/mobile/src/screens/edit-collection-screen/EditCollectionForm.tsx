@@ -1,6 +1,5 @@
 import { useCallback } from 'react'
 
-import { useGetPlaylistById, useGetCurrentUserId } from '@audius/common/api'
 import type { EditCollectionValues } from '@audius/common/store'
 import { deletePlaylistConfirmationModalUIActions } from '@audius/common/store'
 import { useField, type FormikProps } from 'formik'
@@ -15,19 +14,19 @@ import {
   Tile,
   VirtualizedKeyboardAwareScrollView
 } from 'app/components/core'
+import { PriceAndAudienceField } from 'app/components/edit/PriceAndAudienceField'
+import { VisibilityField } from 'app/components/edit/VisibilityField'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles } from 'app/styles'
 
 import { TopBarIconButton } from '../app-screen'
+import { AdvancedOptionsField } from '../edit-track-screen/fields'
 import { FormScreen } from '../page-form-screen'
 
 import { CollectionDescriptionField } from './CollectionDescriptionField'
 import { CollectionImageInput } from './CollectionImageInput'
 import { CollectionNameField } from './CollectionNameField'
 import { TrackListFieldArray } from './TrackListFieldArray'
-import { VisibilityField } from 'app/components/edit/VisibilityField'
-import { AdvancedOptionsField } from '../edit-track-screen/fields'
-import { PriceAndAudienceField } from 'app/components/edit/PriceAndAudienceField'
 
 const { requestOpen: openDeletePlaylist } =
   deletePlaylistConfirmationModalUIActions

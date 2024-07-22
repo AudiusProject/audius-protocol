@@ -1,4 +1,7 @@
-import { View, ViewStyle } from 'react-native'
+import type { ComponentType } from 'react'
+
+import type { ViewStyle } from 'react-native'
+import { View } from 'react-native'
 
 import { Text } from 'app/components/core'
 import {
@@ -6,7 +9,6 @@ import {
   type TextFieldProps
 } from 'app/components/fields'
 import { makeStyles } from 'app/styles'
-import { ComponentType, ReactNode } from 'react'
 
 const useStyles = makeStyles(({ spacing, palette }) => ({
   root: {

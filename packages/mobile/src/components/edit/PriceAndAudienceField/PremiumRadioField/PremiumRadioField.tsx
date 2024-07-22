@@ -11,11 +11,12 @@ import { useField } from 'formik'
 
 import { Flex, IconCart, RadioGroupContext } from '@audius/harmony-native'
 import { useSetEntityAvailabilityFields } from 'app/hooks/useSetTrackAvailabilityFields'
+
 import { ExpandableRadio } from '../../ExpandableRadio'
 
+import { AlbumPriceField } from './AlbumPriceField'
 import { TRACK_PREVIEW, TrackPreviewField } from './TrackPreviewField'
 import { TrackPriceField } from './TrackPriceField'
-import { AlbumPriceField } from './AlbumPriceField'
 
 type PremiumRadioFieldProps = {
   disabled?: boolean

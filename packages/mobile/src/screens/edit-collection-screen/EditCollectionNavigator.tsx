@@ -3,14 +3,14 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import type { FormikProps } from 'formik'
 
 import { DeletePlaylistConfirmationDrawer } from 'app/components/delete-playlist-confirmation-drawer'
-import { useAppScreenOptions } from 'app/screens/app-screen/useAppScreenOptions'
-
-import { EditCollectionForm } from './EditCollectionForm'
-import { VisibilityScreen } from 'app/components/edit/VisibilityField'
 import {
   priceAndAudienceScreenName,
   PriceAndAudienceScreen
 } from 'app/components/edit/PriceAndAudienceField'
+import { VisibilityScreen } from 'app/components/edit/VisibilityField'
+import { useAppScreenOptions } from 'app/screens/app-screen/useAppScreenOptions'
+
+import { EditCollectionForm } from './EditCollectionForm'
 
 const Stack = createNativeStackNavigator()
 

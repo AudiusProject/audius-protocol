@@ -1,9 +1,10 @@
+import type { ReactNode } from 'react'
+
 import { View } from 'react-native'
 
 import { Text } from 'app/components/core'
 import { TextField, type TextFieldProps } from 'app/components/fields'
 import { makeStyles } from 'app/styles'
-import { ReactNode } from 'react'
 
 const useStyles = makeStyles(({ spacing, palette }) => ({
   root: {

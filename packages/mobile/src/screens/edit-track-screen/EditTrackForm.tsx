@@ -16,6 +16,8 @@ import {
 } from '@audius/harmony-native'
 import { Tile } from 'app/components/core'
 import { InputErrorMessage } from 'app/components/core/InputErrorMessage'
+import { PriceAndAudienceField } from 'app/components/edit/PriceAndAudienceField'
+import { VisibilityField } from 'app/components/edit/VisibilityField'
 import { PickArtworkField, TextField } from 'app/components/fields'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useOneTimeDrawer } from 'app/hooks/useOneTimeDrawer'
@@ -38,9 +40,7 @@ import {
   ReleaseDateField,
   AdvancedOptionsField
 } from './fields'
-import { VisibilityField } from 'app/components/edit/VisibilityField'
 import type { EditTrackFormProps } from './types'
-import { PriceAndAudienceField } from 'app/components/edit/PriceAndAudienceField'
 
 const messages = {
   trackName: 'Track Name',
