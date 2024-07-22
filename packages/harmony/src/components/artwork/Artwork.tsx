@@ -32,12 +32,12 @@ export const Artwork = (props: ArtworkProps) => {
     'data-testid': testId,
     ...other
   } = props
-  const [isLoadingState, setIsLoadingState] = useState(!!src)
+  const [isLoadingState, setIsLoadingState] = useState(true)
   const isLoading = isLoadingProp ?? isLoadingState
   const { color, motion } = useTheme()
 
   useEffect(() => {
-    setIsLoadingState(!!src)
+    setIsLoadingState(true)
   }, [src])
 
   return (
