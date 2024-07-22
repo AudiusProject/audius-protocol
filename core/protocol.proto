@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package protocol;
 
-option go_package = "./gen;gen";
+option go_package = "./proto;proto";
 
 service Protocol {
   rpc SubmitEvent (EventRequest) returns (EventResponse) {}

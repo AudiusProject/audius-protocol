@@ -19,7 +19,13 @@ graph TD
 
 ```
 
-## usage
+## configuration
+
+Whether running as an independent image or embedded, core requires some environment variables to run.
+
+### local cluster
+
+### running in production
 
 
 ## testing

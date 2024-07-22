@@ -1,4 +1,4 @@
-package core
+package chain
 
 import (
 	"context"
@@ -7,13 +7,10 @@ import (
 )
 
 type ABCICore struct {
-	overrides CoreOverrides
 }
 
-func NewABCICore(overrides CoreOverrides) *ABCICore {
-	return &ABCICore{
-		overrides: overrides,
-	}
+func NewABCICore() *ABCICore {
+	return &ABCICore{}
 }
 
 // ApplySnapshotChunk implements types.Application.
@@ -23,7 +20,7 @@ func (a *ABCICore) ApplySnapshotChunk(context.Context, *abcitypes.ApplySnapshotC
 
 // CheckTx implements types.Application.
 func (a *ABCICore) CheckTx(ctx context.Context, req *abcitypes.CheckTxRequest) (*abcitypes.CheckTxResponse, error) {
-	return a.overrides.ValidateTx(ctx, req)
+	return &abcitypes.CheckTxResponse{Code: abcitypes.CodeTypeOK}, nil
 }
 
 // Commit implements types.Application.

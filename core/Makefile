@@ -6,7 +6,7 @@ deps::
 	@go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
 
 gen::
-	protoc --go_out=./ --go-grpc_out=./ ./protocol.proto
+	protoc --go_out=./pkg/gen --go-grpc_out=./pkg/gen ./protocol.proto
 	go mod tidy
 
 test::

@@ -3,12 +3,10 @@ package core
 import (
 	"context"
 
+	"github.com/AudiusProject/audius-protocol/core/pkg/chain"
+	"github.com/AudiusProject/audius-protocol/core/pkg/utils"
 	abcitypes "github.com/cometbft/cometbft/abci/types"
 )
-
-func Hello(name string) string {
-	return "Hello, " + name
-}
 
 // these are meant for node types to implement per their own requirements
 // example: on track upload content validates media exists, discovery validates metadata is good
@@ -21,13 +19,13 @@ type CoreOverrides interface {
 }
 
 type Core struct {
-	abci   *ABCICore
-	config *Config
+	abci   *chain.ABCICore
+	config *utils.Config
 }
 
-func NewCore(config *Config, overrides CoreOverrides) *Core {
+func NewCore(config *utils.Config, overrides CoreOverrides) *Core {
 	return &Core{
-		abci:   NewABCICore(overrides),
+		abci:   chain.NewABCICore(),
 		config: config,
 	}
 }

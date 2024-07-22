@@ -1,4 +1,4 @@
-package core
+package utils
 
 // config for a particular node instance
 type NodeConfig struct {

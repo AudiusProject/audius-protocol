@@ -4,7 +4,7 @@
 // - protoc             v5.27.1
 // source: protocol.proto
 
-package gen
+package proto
 
 import (
 	context "context"
