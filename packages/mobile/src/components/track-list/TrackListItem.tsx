@@ -414,7 +414,7 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
 
               {!isDeleted && (
                 <View style={styles.downloadIndicator}>
-                  <TrackDownloadStatusIndicator trackId={track_id} size={16} />
+                  <TrackDownloadStatusIndicator trackId={track_id} size='s' />
                 </View>
               )}
             </View>

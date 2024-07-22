@@ -10,14 +10,15 @@ import {
 } from 'app/store/offline-downloads/selectors'
 import { OfflineDownloadStatus } from 'app/store/offline-downloads/slice'
 
+import type { DownloadStatusIndicatorProps } from './DownloadStatusIndicator'
 import { DownloadStatusIndicator } from './DownloadStatusIndicator'
 
 const { getCollection } = cacheCollectionsSelectors
 
-type CollectionDownloadIndicatorProps = {
-  collectionId?: number
-  size?: number
-}
+type CollectionDownloadIndicatorProps =
+  Partial<DownloadStatusIndicatorProps> & {
+    collectionId?: number
+  }
 
 export const getCollectionDownloadStatus = (
   state: AppState,
