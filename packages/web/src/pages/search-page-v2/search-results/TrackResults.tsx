@@ -181,7 +181,12 @@ export const TrackResultsPage = () => {
   const { sortMethod } = searchParams
 
   return (
-    <Flex direction='column' gap='xl' wrap='wrap'>
+    <Flex
+      direction='column'
+      gap='xl'
+      wrap='wrap'
+      p={isMobile ? 'm' : undefined}
+    >
       {!isMobile ? (
         <Flex justifyContent='space-between' alignItems='center'>
           <Text variant='heading' textAlign='left'>

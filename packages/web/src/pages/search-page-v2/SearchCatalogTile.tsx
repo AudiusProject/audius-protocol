@@ -1,10 +1,10 @@
 import { searchCatalogTileMessages as messages } from '@audius/common/messages'
 import { IconSearch, Paper, Text } from '@audius/harmony'
 
-import { useMedia } from 'hooks/useMedia'
+import { useIsMobile } from 'hooks/useIsMobile'
 
 export const SearchCatalogTile = () => {
-  const { isMobile } = useMedia()
+  const isMobile = useIsMobile()
   return (
     <Paper
       pv={isMobile ? '2xl' : '3xl'}

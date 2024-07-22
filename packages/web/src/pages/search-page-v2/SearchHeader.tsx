@@ -15,7 +15,7 @@ import { CSSObject, useTheme } from '@emotion/react'
 import { capitalize } from 'lodash'
 
 import Header from 'components/header/desktop/Header'
-import { useMedia } from 'hooks/useMedia'
+import { useIsMobile } from 'hooks/useIsMobile'
 
 import { filters } from './SearchFilters'
 import { Category } from './types'
@@ -46,7 +46,7 @@ type SearchHeaderProps = {
 export const SearchHeader = (props: SearchHeaderProps) => {
   const { category: categoryKey = 'all', setCategory, query, title } = props
 
-  const { isMobile } = useMedia()
+  const isMobile = useIsMobile()
   const { color } = useTheme()
 
   const mobileHeaderCss: CSSObject = {

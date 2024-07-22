@@ -15,7 +15,7 @@ import NavContext, {
   RightPreset
 } from 'components/nav/mobile/NavContext'
 import Page from 'components/page/Page'
-import { useMedia } from 'hooks/useMedia'
+import { useIsMobile } from 'hooks/useIsMobile'
 import {
   SEARCH_BASE_ROUTE,
   SEARCH_PAGE,
@@ -51,7 +51,7 @@ const useShowSearchResults = () => {
 }
 
 export const SearchPageV2 = () => {
-  const { isMobile } = useMedia()
+  const isMobile = useIsMobile()
   const { category } = useParams<{ category: CategoryKey }>()
   const { history } = useHistoryContext()
   const [urlSearchParams] = useSearchParams()
