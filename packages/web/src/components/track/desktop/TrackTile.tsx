@@ -80,7 +80,7 @@ const RankAndIndexIndicator = ({
 
 const renderLockedContentOrPlayCount = ({
   hasStreamAccess,
-  fieldVisibility,
+  // fieldVisibility,
   isOwner,
   isStreamGated,
   listenCount,
@@ -98,16 +98,17 @@ const renderLockedContentOrPlayCount = ({
     return <LockedStatusPill locked={!hasStreamAccess} variant={variant} />
   }
 
-  const hidePlays = fieldVisibility
-    ? !isOwner && fieldVisibility.play_count === false
-    : false
+  // NOTE: Remove playCount field visibilty functionality bc it is not used anymore.
+  // const hidePlays = fieldVisibility
+  //   ? !isOwner && fieldVisibility.play_count === false
+  //   : false
 
   return (
     listenCount !== undefined &&
     listenCount > 0 && (
       <div
         className={cn(styles.plays, {
-          [styles.isHidden]: hidePlays
+          // [styles.isHidden]: hidePlays
         })}
       >
         {formatCount(listenCount)}
