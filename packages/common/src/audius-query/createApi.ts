@@ -36,6 +36,7 @@ import { waitForValue } from '~/utils/sagaHelpers'
 import { Nullable, removeNullable } from '~/utils/typeUtils'
 
 import { Track } from '../models/Track'
+import { accountSelectors } from '../store/account'
 import * as cacheActions from '../store/cache/actions'
 import * as cacheSelectors from '../store/cache/selectors'
 
@@ -65,7 +66,6 @@ import {
   MutationHookResults
 } from './types'
 import { capitalize, getKeyFromFetchArgs, selectCommonEntityMap } from './utils'
-import { accountSelectors } from '../store/account'
 
 const { getUserId } = accountSelectors
 
@@ -510,7 +510,7 @@ const buildEndpointHooks = <
         force,
         currentUserId
       )
-    }, [context, fetchArgs, hookOptions?.disabled, status])
+    }, [context, fetchArgs, hookOptions?.disabled, status, currentUserId])
 
     useDebounce(
       () => {
