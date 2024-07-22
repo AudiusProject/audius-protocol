@@ -94,8 +94,8 @@ export const SearchItemTrack = (props: SearchItemProps) => {
 
   if (!user) return null
 
-  const handlePress = (e?: GestureResponderEvent) => {
-    if (onPress) onPress()
+  const handlePress = () => {
+    onPress?.()
     navigation.push('Track', { id })
   }
 
@@ -159,8 +159,8 @@ export const SearchItemCollection = (props: SearchItemProps) => {
 
   if (!user) return null
 
-  const handlePress = (e?: GestureResponderEvent) => {
-    if (onPress) onPress()
+  const handlePress = () => {
+    onPress?.()
     navigation.push('Collection', { id })
   }
 
@@ -208,8 +208,8 @@ const SearchItemUser = (props: SearchItemProps) => {
   if (!user) return null
   const { handle } = user
 
-  const handlePress = (e?: GestureResponderEvent) => {
-    if (onPress) onPress()
+  const handlePress = () => {
+    onPress?.()
     navigation.push('Profile', { handle })
   }
 
