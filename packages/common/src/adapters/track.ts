@@ -34,19 +34,18 @@ export const trackSegmentFromSDK = ({
 export const userTrackMetadataFromSDK = (
   input: full.TrackFull
 ): UserTrackMetadata | undefined => {
-  const track = snakecaseKeys(input)
-  const decodedTrackId = decodeHashId(track.id)
-  const decodedOwnerId = decodeHashId(track.user_id)
-  const user = userMetadataFromSDK(track.user)
+  const decodedTrackId = decodeHashId(input.id)
+  const decodedOwnerId = decodeHashId(input.userId)
+  const user = userMetadataFromSDK(input.user)
   if (!decodedTrackId || !decodedOwnerId || !user) {
     return undefined
   }
 
-  const remixes = remixListFromSDK(track.remix_of?.tracks)
+  const remixes = remixListFromSDK(input.remixOf?.tracks)
 
   const newTrack: UserTrackMetadata = {
     // Fields from API that are omitted in this model
-    ...omit(track, [
+    ...omit(snakecaseKeys(input), [
       'id',
       'user_id',
       'followee_favorites',
@@ -58,87 +57,94 @@ export const userTrackMetadataFromSDK = (
     // Conversions
     track_id: decodedTrackId,
     owner_id: decodedOwnerId,
-    release_date: track.release_date
+    release_date: input.releaseDate
       ? dayjs
-          .utc(track.release_date)
+          .utc(input.releaseDate)
           .local()
           // utc -> local
           .format('ddd MMM DD YYYY HH:mm:ss [GMT]ZZ')
       : null,
 
     // Nested Transformed Fields
-    cover_art_cids: track.cover_art_cids
-      ? coverArtSizesCIDsFromSDK(track.cover_art_cids)
+    cover_art_cids: input.coverArtCids
+      ? coverArtSizesCIDsFromSDK(input.coverArtCids)
       : null,
-    download_conditions: track.download_conditions
-      ? accessConditionsFromSDK(track.download_conditions)
+    download_conditions: input.downloadConditions
+      ? accessConditionsFromSDK(input.downloadConditions)
       : null,
-    field_visibility: snakecaseKeys(track.field_visibility),
-    followee_saves: favoriteListFromSDK(track.followee_favorites),
-    followee_reposts: repostListFromSDK(track.followee_reposts),
+    field_visibility: snakecaseKeys(input.fieldVisibility),
+    // TODO: Broken, favorite_type is coming back as `SaveType.track` etc
+    followee_saves: favoriteListFromSDK(input.followeeFavorites),
+    // TODO: Check
+    followee_reposts: repostListFromSDK(input.followeeReposts),
+    // TODO: Check
     remix_of:
       remixes.length > 0
         ? {
             tracks: remixes
           }
         : null,
+    // TODO: Returning an object with empty fields
     stem_of: input.stemOf
       ? {
           category: input.stemOf.category as StemCategory,
           parent_track_id: input.stemOf.parentTrackId
         }
       : undefined,
-    stream_conditions: track.stream_conditions
-      ? accessConditionsFromSDK(track.stream_conditions)
+    stream_conditions: input.streamConditions
+      ? accessConditionsFromSDK(input.streamConditions)
       : null,
-    track_segments: track.track_segments.map(trackSegmentFromSDK),
+    track_segments: input.trackSegments.map(trackSegmentFromSDK),
     user,
 
     // Retypes
-    license: (track.license as License) ?? null,
+    license: (input.license as License) ?? null,
 
     // Nullable fields
-    ai_attribution_user_id: track.ai_attribution_user_id ?? null,
-    artists: track.artists
-      ? transformAndCleanList(track.artists, resourceContributorFromSDK)
+    ai_attribution_user_id: input.aiAttributionUserId ?? null,
+    allowed_api_keys: input.allowedApiKeys ?? null,
+    artists: input.artists
+      ? transformAndCleanList(input.artists, resourceContributorFromSDK)
       : null,
-    copyright_line: track.copyright_line
-      ? (snakecaseKeys(track.copyright_line) as Copyright)
+    // TODO
+    // audio_upload_id: input.audioUploadId ?? null,
+    copyright_line: input.copyrightLine
+      ? (snakecaseKeys(input.copyrightLine) as Copyright)
       : null,
-    cover_art: track.cover_art ?? null,
-    cover_art_sizes: track.cover_art_sizes ?? null,
-    credits_splits: track.credits_splits ?? null,
-    description: track.description ?? null,
-    has_current_user_reposted: track.has_current_user_reposted ?? false,
-    has_current_user_saved: track.has_current_user_saved ?? false,
-    indirect_resource_contributors: track.indirect_resource_contributors
+    cover_art: input.coverArt ?? null,
+    credits_splits: input.creditsSplits ?? null,
+    ddex_app: input.ddexApp ?? null,
+    ddex_release_ids: input.ddexReleaseIds ?? null,
+    description: input.description ?? null,
+    indirect_resource_contributors: input.indirectResourceContributors
       ? transformAndCleanList(
-          track.indirect_resource_contributors,
+          input.indirectResourceContributors,
           resourceContributorFromSDK
         )
       : null,
-    is_delete: track.is_delete ?? false,
-    isrc: track.isrc ?? null,
-    iswc: track.iswc ?? null,
-    mood: track.mood ?? null,
-    orig_file_cid: track.orig_file_cid ?? null,
-    tags: track.tags ?? null,
-    track_cid: track.track_cid ?? null,
-    orig_filename: track.orig_filename ?? null,
-    producer_copyright_line: track.producer_copyright_line
-      ? (snakecaseKeys(track.producer_copyright_line) as Copyright)
+    isrc: input.isrc ?? null,
+    iswc: input.iswc ?? null,
+    mood: input.mood ?? null,
+    orig_file_cid: input.origFileCid ?? null,
+    tags: input.tags ?? null,
+    track_cid: input.trackCid ?? null,
+    orig_filename: input.origFilename ?? null,
+    parental_warning_type: input.parentalWarningType ?? null,
+    preview_cid: input.previewCid ?? null,
+    preview_start_seconds: input.previewStartSeconds ?? null,
+    producer_copyright_line: input.producerCopyrightLine
+      ? (snakecaseKeys(input.producerCopyrightLine) as Copyright)
       : null,
-    repost_count: track.repost_count ?? 0,
-    resource_contributors: track.resource_contributors
+    resource_contributors: input.resourceContributors
       ? transformAndCleanList(
-          track.resource_contributors,
+          input.resourceContributors,
           resourceContributorFromSDK
         )
       : null,
-    rights_controller: track.rights_controller
-      ? (snakecaseKeys(track.rights_controller) as RightsController)
+    rights_controller: input.rightsController
+      ? (snakecaseKeys(input.rightsController) as RightsController)
       : null,
-    save_count: track.favorite_count ?? 0
+    save_count: input.favoriteCount
   }
 
   return newTrack

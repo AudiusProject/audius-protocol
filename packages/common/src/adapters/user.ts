@@ -22,53 +22,56 @@ import { playlistLibraryFromSDK } from './playlistLibrary'
 export const userMetadataFromSDK = (
   input: full.UserFull
 ): UserMetadata | undefined => {
-  const user = snakecaseKeys(input)
-  const decodedUserId = decodeHashId(user.id)
+  const decodedUserId = decodeHashId(input.id)
   if (!decodedUserId) {
     return undefined
   }
 
   const newUser: UserMetadata = {
     // Fields from API that are omitted in this model
-    ...omit(user, ['id', 'cover_photo_legacy', 'profile_picture_legacy']),
+    ...omit(snakecaseKeys(input), [
+      'id',
+      'cover_photo_legacy',
+      'profile_picture_legacy'
+    ]),
 
     // Conversions
-    artist_pick_track_id: user.artist_pick_track_id
-      ? decodeHashId(user.artist_pick_track_id)
+    artist_pick_track_id: input.artistPickTrackId
+      ? decodeHashId(input.artistPickTrackId)
       : null,
 
     // Nested Types
-    playlist_library: playlistLibraryFromSDK(user.playlist_library) ?? null,
-    cover_photo_cids: user.cover_photo_cids
-      ? coverPhotoSizesCIDsFromSDK(user.cover_photo_cids)
+    playlist_library: playlistLibraryFromSDK(input.playlistLibrary) ?? null,
+    cover_photo_cids: input.coverPhotoCids
+      ? coverPhotoSizesCIDsFromSDK(input.coverPhotoCids)
       : null,
-    profile_picture_cids: user.profile_picture_cids
-      ? profilePictureSizesCIDsFromSDK(user.profile_picture_cids)
+    profile_picture_cids: input.profilePictureCids
+      ? profilePictureSizesCIDsFromSDK(input.profilePictureCids)
       : null,
 
     // Re-types
-    balance: user.balance as StringWei,
-    associated_wallets_balance: user.associated_wallets_balance as StringWei,
-    total_balance: user.total_balance as StringWei,
+    balance: input.balance as StringWei,
+    associated_wallets_balance: input.associatedSolWalletsBalance as StringWei,
+    total_balance: input.totalBalance as StringWei,
     user_id: decodedUserId,
-    spl_wallet: user.spl_wallet as SolanaWalletAddress,
+    spl_wallet: input.splWallet as SolanaWalletAddress,
 
     // Legacy Overrides
-    cover_photo: user.cover_photo_legacy ?? null,
-    profile_picture: user.profile_picture_legacy ?? null,
+    cover_photo: input.coverPhotoLegacy ?? null,
+    profile_picture: input.profilePictureLegacy ?? null,
 
     // Required Nullable fields
-    bio: user.bio ?? null,
-    twitter_handle: user.twitter_handle ?? null,
-    instagram_handle: user.instagram_handle ?? null,
-    tiktok_handle: user.tiktok_handle ?? null,
-    website: user.website ?? null,
-    donation: user.donation ?? null,
-    cover_photo_sizes: user.cover_photo_sizes ?? null,
-    creator_node_endpoint: user.creator_node_endpoint ?? null,
-    location: user.location ?? null,
-    metadata_multihash: user.metadata_multihash ?? null,
-    profile_picture_sizes: user.profile_picture_sizes ?? null
+    bio: input.bio ?? null,
+    twitter_handle: input.twitterHandle ?? null,
+    instagram_handle: input.instagramHandle ?? null,
+    tiktok_handle: input.tiktokHandle ?? null,
+    website: input.website ?? null,
+    donation: input.donation ?? null,
+    cover_photo_sizes: input.coverPhotoSizes ?? null,
+    creator_node_endpoint: input.creatorNodeEndpoint ?? null,
+    location: input.location ?? null,
+    metadata_multihash: input.metadataMultihash ?? null,
+    profile_picture_sizes: input.profilePictureSizes ?? null
   }
 
   return newUser

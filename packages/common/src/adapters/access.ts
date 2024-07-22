@@ -4,27 +4,32 @@ import {
   instanceOfNftGate,
   instanceOfTipGate
 } from '@audius/sdk'
-import snakecaseKeys from 'snakecase-keys'
 
 import {
   AccessConditions,
-  CollectibleGatedConditions,
-  FollowGatedConditions,
-  TipGatedConditions,
-  USDCPurchaseConditions
+  AccessConditionsEthNFTCollection,
+  AccessConditionsSolNFTCollection
 } from '~/models'
 
 export const accessConditionsFromSDK = (
   input: full.AccessGate
 ): AccessConditions => {
   if (instanceOfFollowGate(input)) {
-    return snakecaseKeys(input) as FollowGatedConditions
+    return { follow_user_id: input.followUserId }
   } else if (instanceOfNftGate(input)) {
-    return snakecaseKeys(input) as CollectibleGatedConditions
+    return input.nftCollection.chain === full.NftCollectionChainEnum.Eth
+      ? {
+          nft_collection:
+            input.nftCollection as AccessConditionsEthNFTCollection
+        }
+      : {
+          nft_collection:
+            input.nftCollection as AccessConditionsSolNFTCollection
+        }
   } else if (full.instanceOfPurchaseGate(input)) {
-    return snakecaseKeys(input) as USDCPurchaseConditions
+    return { usdc_purchase: input.usdcPurchase }
   } else if (instanceOfTipGate(input)) {
-    return snakecaseKeys(input) as TipGatedConditions
+    return { tip_user_id: input.tipUserId }
   } else {
     throw new Error(`Unsupported access gate type: ${input}`)
   }

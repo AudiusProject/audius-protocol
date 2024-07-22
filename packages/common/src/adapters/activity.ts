@@ -3,11 +3,25 @@ import { full } from '@audius/sdk'
 import { userCollectionMetadataFromSDK } from './collection'
 import { userTrackMetadataFromSDK } from './track'
 
-export const repostActivityFromSDK = (activity: full.ActivityFull) => {
-  if (full.instanceOfTrackActivityFull(activity)) {
-    return userTrackMetadataFromSDK(activity.item)
-  } else if (full.instanceOfCollectionActivityFull(activity)) {
-    return userCollectionMetadataFromSDK(activity.item)
+export const repostActivityFromSDK = (input: full.ActivityFull) => {
+  const { timestamp, itemType: item_type, item } = input
+  // if (full.instanceOfTrackActivityFull(activity)) {
+  //   return userTrackMetadataFromSDK(activity.item)
+  // } else if (full.instanceOfCollectionActivityFull(activity)) {
+  //   return userCollectionMetadataFromSDK(activity.item)
+  // }
+  if (item_type === full.ActivityFullItemTypeEnum.Track) {
+    return {
+      timestamp,
+      item_type,
+      item: userTrackMetadataFromSDK(full.TrackFullFromJSON(item))
+    }
+  } else if (item_type === full.ActivityFullItemTypeEnum.Playlist) {
+    return {
+      timestamp,
+      item_type,
+      item: userCollectionMetadataFromSDK(full.PlaylistFullFromJSON(item))
+    }
   }
   return undefined
 }

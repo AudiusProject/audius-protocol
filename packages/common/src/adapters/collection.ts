@@ -38,17 +38,16 @@ const addedTimestampToPlaylistTrackId = ({
 export const userCollectionMetadataFromSDK = (
   input: full.PlaylistFullWithoutTracks
 ): UserCollectionMetadata | undefined => {
-  const collection = snakecaseKeys(input)
-  const decodedPlaylistId = decodeHashId(collection.id)
-  const decodedOwnerId = decodeHashId(collection.user_id)
-  const user = userMetadataFromSDK(collection.user)
+  const decodedPlaylistId = decodeHashId(input.id)
+  const decodedOwnerId = decodeHashId(input.userId)
+  const user = userMetadataFromSDK(input.user)
   if (!decodedPlaylistId || !decodedOwnerId || !user) {
     return undefined
   }
 
   const newCollection: UserCollectionMetadata = {
     // Fields from API that are omitted in this model
-    ...omit(collection, [
+    ...omit(snakecaseKeys(input), [
       'id',
       'user_id',
       'followee_favorites',
@@ -60,42 +59,43 @@ export const userCollectionMetadataFromSDK = (
     variant: Variant.USER_GENERATED,
 
     // Nested Transformed Fields
-    artists: collection.artists
-      ? transformAndCleanList(collection.artists, resourceContributorFromSDK)
+    artists: input.artists
+      ? transformAndCleanList(input.artists, resourceContributorFromSDK)
       : null,
-    copyright_line: collection.copyright_line
-      ? (snakecaseKeys(collection.copyright_line) as Copyright)
+    copyright_line: input.copyrightLine
+      ? (snakecaseKeys(input.copyrightLine) as Copyright)
       : null,
-    cover_art_cids: collection.cover_art_cids
-      ? coverArtSizesCIDsFromSDK(collection.cover_art_cids)
+    cover_art_cids: input.coverArtCids
+      ? coverArtSizesCIDsFromSDK(input.coverArtCids)
       : null,
-    followee_reposts: repostListFromSDK(collection.followee_reposts),
-    followee_saves: favoriteListFromSDK(collection.followee_favorites),
+    followee_reposts: repostListFromSDK(input.followeeReposts),
+    followee_saves: favoriteListFromSDK(input.followeeFavorites),
+    // TODO: Use playlistContents
     playlist_contents: {
       track_ids: transformAndCleanList(
-        collection.added_timestamps,
+        input.addedTimestamps,
         addedTimestampToPlaylistTrackId
       )
     },
     playlist_id: decodedPlaylistId,
     playlist_owner_id: decodedOwnerId,
-    producer_copyright_line: collection.producer_copyright_line
-      ? (snakecaseKeys(collection.producer_copyright_line) as Copyright)
+    producer_copyright_line: input.producerCopyrightLine
+      ? (snakecaseKeys(input.producerCopyrightLine) as Copyright)
       : null,
-    stream_conditions: collection.stream_conditions
-      ? accessConditionsFromSDK(collection.stream_conditions)
+    stream_conditions: input.streamConditions
+      ? accessConditionsFromSDK(input.streamConditions)
       : null,
-    tracks: transformAndCleanList(collection.tracks, userTrackMetadataFromSDK),
+    tracks: transformAndCleanList(input.tracks, userTrackMetadataFromSDK),
     user,
 
     // Retypes / Renames
-    save_count: collection.favorite_count,
+    save_count: input.favoriteCount,
 
     // Nullable fields
-    cover_art: collection.cover_art ?? null,
-    cover_art_sizes: collection.cover_art_sizes ?? null,
-    description: collection.description ?? null,
-    release_date: collection.release_date ?? null
+    cover_art: input.coverArt ?? null,
+    cover_art_sizes: input.coverArtSizes ?? null,
+    description: input.description ?? null,
+    release_date: input.releaseDate ?? null
   }
 
   return newCollection
