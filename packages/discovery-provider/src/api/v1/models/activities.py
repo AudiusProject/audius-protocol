@@ -13,6 +13,7 @@ base_activity_model = ns.model(
     {
         "timestamp": fields.String(required=True),
         "item_type": fields.String(enum=["track", "playlist"], required=True),
+        "item": fields.Raw(required=True),
         "class": fields.String(required=True, discriminator=True),
     },
 )
