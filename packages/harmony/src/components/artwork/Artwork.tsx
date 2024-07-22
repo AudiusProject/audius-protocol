@@ -1,4 +1,4 @@
-import { ComponentProps, useEffect, useState } from 'react'
+import { ComponentProps, useState } from 'react'
 
 import { useTheme } from '@emotion/react'
 
@@ -32,13 +32,9 @@ export const Artwork = (props: ArtworkProps) => {
     'data-testid': testId,
     ...other
   } = props
-  const [isLoadingState, setIsLoadingState] = useState(!!src)
+  const [isLoadingState, setIsLoadingState] = useState(true)
   const isLoading = isLoadingProp ?? isLoadingState
   const { color, motion } = useTheme()
-
-  useEffect(() => {
-    setIsLoadingState(!!src)
-  }, [src])
 
   return (
     <Box {...other}>
