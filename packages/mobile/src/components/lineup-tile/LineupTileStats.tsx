@@ -165,9 +165,9 @@ export const LineupTileStats = ({
   }, [dispatch, id, navigation, repostType])
 
   const downloadStatusIndicator = isCollection ? (
-    <CollectionDownloadStatusIndicator size={spacing(4)} collectionId={id} />
+    <CollectionDownloadStatusIndicator size='s' collectionId={id} />
   ) : (
-    <TrackDownloadStatusIndicator size={spacing(4)} trackId={id} />
+    <TrackDownloadStatusIndicator size='s' trackId={id} />
   )
 
   const isReadonly = variant === 'readonly'

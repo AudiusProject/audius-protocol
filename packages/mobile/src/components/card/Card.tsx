@@ -126,7 +126,7 @@ export const Card = (props: CardProps) => {
           </Text>
           {props.type === 'collection' ? (
             <CollectionDownloadStatusIndicator
-              size={18}
+              size='s'
               collectionId={props.id}
             />
           ) : null}
