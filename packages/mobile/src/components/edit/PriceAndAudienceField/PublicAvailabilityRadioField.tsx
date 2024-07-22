@@ -4,7 +4,7 @@ import { Dimensions, View } from 'react-native'
 
 import { IconVisibilityPublic } from '@audius/harmony-native'
 import { Text } from 'app/components/core'
-import { useSetTrackAvailabilityFields } from 'app/hooks/useSetTrackAvailabilityFields'
+import { useSetEntityAvailabilityFields } from 'app/hooks/useSetTrackAvailabilityFields'
 import { makeStyles } from 'app/styles'
 import { useColor } from 'app/utils/theme'
 
@@ -72,7 +72,7 @@ export const PublicAvailabilityRadioField = (
     : neutral
 
   const { reset: resetTrackAvailabilityFields } =
-    useSetTrackAvailabilityFields()
+    useSetEntityAvailabilityFields()
   useEffect(() => {
     if (selected) {
       resetTrackAvailabilityFields()

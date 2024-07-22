@@ -13,8 +13,8 @@ import { useNavigation } from 'app/hooks/useNavigation'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { FormScreen } from 'app/screens/form-screen'
 
-import { ExpandableRadio } from '../../../screens/edit-track-screen/components/ExpandableRadio'
-import { ExpandableRadioGroup } from '../../../screens/edit-track-screen/components/ExpandableRadioGroup'
+import { ExpandableRadio } from '../ExpandableRadio'
+import { ExpandableRadioGroup } from '../ExpandableRadioGroup'
 import type { FormValues } from '../../../screens/edit-track-screen/types'
 
 import { ScheduledReleaseDateField } from './ScheduledReleaseDateField'

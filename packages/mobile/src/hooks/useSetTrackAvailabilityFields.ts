@@ -6,13 +6,14 @@ import { useField } from 'formik'
 
 // This hook allows us to set track availability fields during upload.
 // It has to be used with a Formik context because it uses formik's useField hook.
-export const useSetTrackAvailabilityFields = () => {
+export const useSetEntityAvailabilityFields = () => {
+  const [{ value: entityType }] = useField('entityType')
   const [, , { setValue: setIsStreamGated }] =
     useField<boolean>('is_stream_gated')
   const [, , { setValue: setStreamConditions }] =
     useField<Nullable<AccessConditions>>('stream_conditions')
   const [{ value: isUnlisted }, , { setValue: setIsUnlisted }] =
-    useField<boolean>('is_unlisted')
+    useField<boolean>(entityType === 'track' ? 'is_unlisted' : 'is_private')
   const [{ value: isScheduledRelease }, ,] = useField<boolean>(
     'is_scheduled_release'
   )

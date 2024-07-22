@@ -3,7 +3,7 @@ import { useCallback } from 'react'
 import { useGetPlaylistById, useGetCurrentUserId } from '@audius/common/api'
 import type { EditCollectionValues } from '@audius/common/store'
 import { deletePlaylistConfirmationModalUIActions } from '@audius/common/store'
-import type { FormikProps } from 'formik'
+import { useField, type FormikProps } from 'formik'
 import { capitalize } from 'lodash'
 import { View } from 'react-native'
 import { useDispatch } from 'react-redux'
@@ -26,10 +26,8 @@ import { CollectionImageInput } from './CollectionImageInput'
 import { CollectionNameField } from './CollectionNameField'
 import { TrackListFieldArray } from './TrackListFieldArray'
 import { VisibilityField } from 'app/components/edit/VisibilityField'
-import {
-  AdvancedOptionsField,
-  PriceAndAudienceField
-} from '../edit-track-screen/fields'
+import { AdvancedOptionsField } from '../edit-track-screen/fields'
+import { PriceAndAudienceField } from 'app/components/edit/PriceAndAudienceField'
 
 const { requestOpen: openDeletePlaylist } =
   deletePlaylistConfirmationModalUIActions
@@ -84,10 +82,8 @@ export const EditCollectionForm = (
   const navigation = useNavigation()
   const dispatch = useDispatch()
 
-  const { data: currentUserId } = useGetCurrentUserId({})
-  const { data: collection } = useGetPlaylistById({ playlistId, currentUserId })
-  const collectionType = collection?.is_album ? 'album' : 'playlist'
-  const messages = getMessages(collectionType)
+  const [{ value: entityType }] = useField('entityType')
+  const messages = getMessages(entityType)
 
   const openDeleteDrawer = useCallback(() => {
     dispatch(openDeletePlaylist({ playlistId }))
@@ -112,8 +108,8 @@ export const EditCollectionForm = (
             <CollectionNameField />
             <CollectionDescriptionField />
             <VisibilityField />
-            <PriceAndAudienceField />
-            <AdvancedOptionsField />
+            {entityType === 'album' ? <PriceAndAudienceField /> : null}
+            {entityType === 'album' ? <AdvancedOptionsField /> : null}
           </View>
           <Divider />
           <TrackListFieldArray />

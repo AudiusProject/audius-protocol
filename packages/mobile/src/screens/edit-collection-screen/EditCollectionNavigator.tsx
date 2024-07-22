@@ -7,6 +7,10 @@ import { useAppScreenOptions } from 'app/screens/app-screen/useAppScreenOptions'
 
 import { EditCollectionForm } from './EditCollectionForm'
 import { VisibilityScreen } from 'app/components/edit/VisibilityField'
+import {
+  priceAndAudienceScreenName,
+  PriceAndAudienceScreen
+} from 'app/components/edit/PriceAndAudienceField'
 
 const Stack = createNativeStackNavigator()
 
@@ -24,6 +28,10 @@ export const EditCollectionNavigator = (
           {() => <EditCollectionForm {...props} />}
         </Stack.Screen>
         <Stack.Screen name='Visibility' component={VisibilityScreen} />
+        <Stack.Screen
+          name={priceAndAudienceScreenName}
+          component={PriceAndAudienceScreen}
+        />
       </Stack.Navigator>
       <DeletePlaylistConfirmationDrawer />
     </>

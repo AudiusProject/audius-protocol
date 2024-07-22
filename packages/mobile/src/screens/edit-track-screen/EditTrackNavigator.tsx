@@ -7,7 +7,6 @@ import { useAppScreenOptions } from 'app/screens/app-screen/useAppScreenOptions'
 import { messages as completeMessages } from '../upload-screen/screens/CompleteTrackScreen'
 
 import { EditTrackForm } from './EditTrackForm'
-import { priceAndAudienceScreenName } from './fields'
 import { VisibilityScreen } from 'app/components/edit/VisibilityField'
 import {
   PriceAndAudienceScreen,
@@ -23,6 +22,7 @@ import {
 import { NFTCollectionsScreen } from './screens/NFTCollectionsScreen'
 import { SelectKeyScreen } from './screens/SelectKeyScreen'
 import type { EditTrackFormProps } from './types'
+import { priceAndAudienceScreenName } from 'app/components/edit/PriceAndAudienceField'
 
 const Stack = createNativeStackNavigator()
 

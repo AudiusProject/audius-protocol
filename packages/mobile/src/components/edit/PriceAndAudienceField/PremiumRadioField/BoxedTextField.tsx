@@ -1,9 +1,12 @@
-import { View } from 'react-native'
+import { View, ViewStyle } from 'react-native'
 
 import { Text } from 'app/components/core'
-import { TextField, type TextFieldProps } from 'app/components/fields'
+import {
+  TextField as DefaultTextField,
+  type TextFieldProps
+} from 'app/components/fields'
 import { makeStyles } from 'app/styles'
-import { ReactNode } from 'react'
+import { ComponentType, ReactNode } from 'react'
 
 const useStyles = makeStyles(({ spacing, palette }) => ({
   root: {
@@ -26,24 +29,29 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
 type BoxedTextFieldProps = TextFieldProps & {
   title: string
   description: string
-  textField?: ReactNode
+  style?: ViewStyle
+  TextField?: ComponentType<TextFieldProps>
 }
 
 export const BoxedTextField = (props: BoxedTextFieldProps) => {
-  const { title, description, textField, style, ...other } = props
+  const {
+    title,
+    description,
+    style,
+    TextField = DefaultTextField,
+    ...other
+  } = props
   const styles = useStyles()
 
   return (
     <View style={[styles.root, style]}>
       <Text weight='bold'>{title}</Text>
       <Text>{description}</Text>
-      {textField ?? (
-        <TextField
-          style={styles.textField}
-          styles={{ root: styles.textInput }}
-          {...other}
-        />
-      )}
+      <TextField
+        style={styles.textField}
+        styles={{ root: styles.textInput }}
+        {...other}
+      />
     </View>
   )
 }

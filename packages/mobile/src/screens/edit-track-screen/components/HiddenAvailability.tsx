@@ -5,7 +5,7 @@ import { Dimensions, View } from 'react-native'
 
 import { Hint, IconVisibilityHidden } from '@audius/harmony-native'
 import { Text } from 'app/components/core'
-import { useSetTrackAvailabilityFields } from 'app/hooks/useSetTrackAvailabilityFields'
+import { useSetEntityAvailabilityFields } from 'app/hooks/useSetTrackAvailabilityFields'
 import { makeStyles } from 'app/styles'
 import { useColor } from 'app/utils/theme'
 
@@ -97,7 +97,7 @@ export const HiddenAvailability = ({
     ? neutralLight4
     : neutral
 
-  const { set: setTrackAvailabilityFields } = useSetTrackAvailabilityFields()
+  const { set: setTrackAvailabilityFields } = useSetEntityAvailabilityFields()
   const [{ value: isUnlisted }] = useField<boolean>('is_unlisted')
 
   // If hidden was not previously selected,

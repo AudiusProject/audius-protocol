@@ -39,8 +39,10 @@ export const priceAndAudienceMessages = {
   },
   premiumRadio: {
     title: 'Premium',
-    description:
-      'Unlockable by purchase, these tracks are visible to everyone but only playable by users who have paid for access.',
+    description: {
+      track: 'Only fans who make a purchase can play your track',
+      album: 'Only fans who make a purchase can play your album.'
+    },
     waitlist:
       'Start selling your music on Audius today! Limited access beta now available.',
     join: 'Join the Waitlist',

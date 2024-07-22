@@ -23,9 +23,9 @@ import {
 } from '@audius/harmony-native'
 import { useLink } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { useSetTrackAvailabilityFields } from 'app/hooks/useSetTrackAvailabilityFields'
+import { useSetEntityAvailabilityFields } from 'app/hooks/useSetTrackAvailabilityFields'
 
-import { ExpandableRadio } from '../components/ExpandableRadio'
+import { ExpandableRadio } from '../ExpandableRadio'
 
 const { collectibleGatedRadio: messages } = priceAndAudienceMessages
 
@@ -49,7 +49,7 @@ export const CollectibleGatedRadioField = (
 
   const hasNoCollectibles = useHasNoCollectibles()
 
-  const { set: setTrackAvailabilityFields } = useSetTrackAvailabilityFields()
+  const { set: setTrackAvailabilityFields } = useSetEntityAvailabilityFields()
   const [{ value: streamConditions }] =
     useField<Nullable<AccessConditions>>('stream_conditions')
   const [selectedNFTCollection, setSelectedNFTCollection] = useState(

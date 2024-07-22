@@ -36,11 +36,11 @@ import {
   SubmenuList,
   RemixSettingsField,
   ReleaseDateField,
-  AdvancedOptionsField,
-  PriceAndAudienceField
+  AdvancedOptionsField
 } from './fields'
 import { VisibilityField } from 'app/components/edit/VisibilityField'
 import type { EditTrackFormProps } from './types'
+import { PriceAndAudienceField } from 'app/components/edit/PriceAndAudienceField'
 
 const messages = {
   trackName: 'Track Name',
