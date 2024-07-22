@@ -10,5 +10,5 @@ gen::
 	go mod tidy
 
 test::
-	@go test $(go list ./... | grep -v '/integration_tests')
-	@cd integration_tests && ginkgo -r
+	@go test -v ./pkg/...
+	@cd test/integration && ginkgo -r
