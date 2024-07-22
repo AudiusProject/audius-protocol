@@ -37,10 +37,7 @@ export const Artwork = (props: ArtworkProps) => {
   const { color, motion } = useTheme()
 
   useEffect(() => {
-    if (!isLoading && src) {
-      setIsLoadingState(true)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    setIsLoadingState(true)
   }, [src])
 
   return (
