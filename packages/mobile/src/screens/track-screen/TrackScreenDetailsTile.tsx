@@ -19,6 +19,7 @@ import type {
   Track,
   User
 } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import type { CommonState } from '@audius/common/store'
 import {
   accountSelectors,
@@ -79,6 +80,7 @@ import { TrackImage } from 'app/components/image/TrackImage'
 import { OfflineStatusRow } from 'app/components/offline-downloads'
 import UserBadges from 'app/components/user-badges'
 import { useNavigation } from 'app/hooks/useNavigation'
+import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { make, track as record } from 'app/services/analytics'
 import { makeStyles } from 'app/styles'
 
@@ -171,6 +173,9 @@ export const TrackScreenDetailsTile = ({
     return track && track.track_id === getTrackId(state)
   })
   const { onOpen: openPublishModal } = usePublishContentModal()
+  const { isEnabled: isSearchV2Enabled } = useFeatureFlag(
+    FeatureFlags.SEARCH_V2
+  )
 
   const {
     _co_sign: coSign,
@@ -379,9 +384,13 @@ export const TrackScreenDetailsTile = ({
 
   const handlePressTag = useCallback(
     (tag: string) => {
-      navigation.push('TagSearch', { query: tag })
+      if (isSearchV2Enabled) {
+        navigation.push('Search', { query: `#${tag}` })
+      } else {
+        navigation.push('TagSearch', { query: tag })
+      }
     },
-    [navigation]
+    [isSearchV2Enabled, navigation]
   )
 
   const handlePressEdit = useCallback(() => {
