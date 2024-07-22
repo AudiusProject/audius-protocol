@@ -160,7 +160,6 @@ track_full = ns.clone(
         "has_current_user_saved": fields.Boolean(required=True),
         "followee_favorites": fields.List(fields.Nested(favorite), required=True),
         "route_id": fields.String(required=True),
-        # TODO: Is this required?
         "stem_of": fields.Nested(stem_parent),
         "track_segments": fields.List(fields.Nested(track_segment), required=True),
         "updated_at": fields.String(required=True),
