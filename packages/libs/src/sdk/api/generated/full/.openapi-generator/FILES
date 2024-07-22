@@ -15,6 +15,7 @@ models/ActivityFull.ts
 models/Attestation.ts
 models/AttestationReponse.ts
 models/CollectionActivityFull.ts
+models/CollectionActivityFullWithoutTracks.ts
 models/CollectionLibraryResponseFull.ts
 models/CoverArt.ts
 models/CoverPhoto.ts
