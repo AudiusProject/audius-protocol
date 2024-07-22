@@ -63,6 +63,7 @@ export const ProfileResults = (props: ProfileResultsProps) => {
         justifyContent: 'space-between',
         gap: 16
       }}
+      p={isMobile ? 'm' : undefined}
     >
       {!truncatedIds.length
         ? range(skeletonCount).map((_, i) => (

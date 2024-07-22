@@ -64,6 +64,7 @@ export const PlaylistResults = (props: PlaylistResultsProps) => {
         justifyContent: 'space-between',
         gap: 16
       }}
+      p={isMobile ? 'm' : undefined}
     >
       {!truncatedIds.length
         ? range(skeletonCount).map((_, i) => (
