@@ -1,4 +1,4 @@
-import { ComponentProps, useState } from 'react'
+import { ComponentProps, useEffect, useState } from 'react'
 
 import { useTheme } from '@emotion/react'
 
@@ -35,6 +35,13 @@ export const Artwork = (props: ArtworkProps) => {
   const [isLoadingState, setIsLoadingState] = useState(true)
   const isLoading = isLoadingProp ?? isLoadingState
   const { color, motion } = useTheme()
+
+  useEffect(() => {
+    if (!isLoading && src) {
+      setIsLoadingState(true)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [src])
 
   return (
     <Box {...other}>
