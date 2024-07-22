@@ -1,10 +1,15 @@
+import { repostActivityFromSDK } from '@audius/common/adapters'
 import {
   UserCollection,
   ID,
   Track,
-  UserTrackMetadata
+  UserTrackMetadata,
+  OptionalId
 } from '@audius/common/models'
-import { getContext } from '@audius/common/store'
+import { transformAndCleanList } from '@audius/common/src/adapters/utils'
+import { getContext, getSDK } from '@audius/common/store'
+import { compareSDKResponse } from '@audius/common/utils'
+import { full } from '@audius/sdk'
 import { all } from 'redux-saga/effects'
 
 import { processAndCacheCollections } from 'common/store/cache/collections/utils'
@@ -43,12 +48,29 @@ export function* retrieveUserReposts({
 }: RetrieveUserRepostsArgs): Generator<any, Track[], any> {
   yield* waitForRead()
   const apiClient = yield* getContext('apiClient')
+  const sdk = yield* getSDK()
   const reposts = yield apiClient.getUserRepostsByHandle({
     handle,
     currentUserId,
     limit,
     offset
   })
+
+  const { data: repostsSDKData } = yield sdk.full.users.getRepostsByHandle({
+    handle,
+    userId: OptionalId.parse(currentUserId),
+    limit,
+    offset
+  })
+  const repostsSDK = transformAndCleanList(
+    repostsSDKData,
+    // `getTracksAndCollections` below expects a list of just the items
+    (activity: full.ActivityFull) => repostActivityFromSDK(activity)?.item
+  )
+  compareSDKResponse(
+    { legacy: reposts, migrated: repostsSDK },
+    'getRepostsByHandle'
+  )
   const [tracks, collections] = getTracksAndCollections(reposts)
   const trackIds = tracks.map((t) => t.track_id)
   const [processedTracks, processedCollections] = yield all([

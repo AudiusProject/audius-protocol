@@ -46,6 +46,10 @@ export const compareSDKResponse = <T extends object>(
 ) => {
   // Migrated is an error, skip the diff
   if (migrated instanceof Error) {
+    console.debug(`SDK Migration failed (error) for ${endpointName}`, {
+      legacy,
+      migrated
+    })
     throw new SDKMigrationFailedError({
       endpointName,
       innerMessage: 'Migrated response was error',
@@ -61,6 +65,11 @@ export const compareSDKResponse = <T extends object>(
       !isEmpty(diff.deleted) ||
       !isEmpty(diff.updated)
     ) {
+      console.debug(`SDK Migration failed (diff) for ${endpointName}`, {
+        diff,
+        legacy,
+        migrated
+      })
       throw new SDKMigrationFailedError({
         diff,
         endpointName,
@@ -72,6 +81,10 @@ export const compareSDKResponse = <T extends object>(
   }
   // Not object like, perform strict equals
   else if (legacy !== migrated) {
+    console.debug(`SDK Migration failed (!==) for ${endpointName}`, {
+      legacy,
+      migrated
+    })
     throw new SDKMigrationFailedError({
       endpointName,
       innerMessage: 'Legacy and migrated values not strictly equal',
@@ -80,55 +93,4 @@ export const compareSDKResponse = <T extends object>(
     })
   }
   console.debug(`SDK Migration succeeded for ${endpointName}`)
-}
-
-const safeAwait = async <T>(promiseOrFn: Promise<T> | (() => Promise<T>)) => {
-  try {
-    return await (typeof promiseOrFn === 'function'
-      ? promiseOrFn()
-      : promiseOrFn)
-  } catch (e) {
-    return e instanceof Error ? e : new Error(`${e}`)
-  }
-}
-
-export type SDKMigrationChecker = <T extends object>(config: {
-  legacy: Promise<T> | (() => Promise<T>)
-  migrated: Promise<T> | (() => Promise<T>)
-  endpointName: string
-}) => Promise<T>
-
-export const checkSDKMigration = async <T extends object>({
-  legacy: legacyCall,
-  migrated: migratedCall,
-  endpointName
-}: {
-  legacy: Promise<T> | (() => Promise<T>)
-  migrated: Promise<T> | (() => Promise<T>)
-  endpointName: string
-}) => {
-  const legacyPromise =
-    typeof legacyCall === 'function' ? legacyCall() : legacyCall
-
-  const [legacy, migrated] = await Promise.all([
-    legacyPromise,
-    safeAwait(migratedCall)
-  ])
-
-  try {
-    compareSDKResponse({ legacy, migrated }, endpointName)
-  } catch (e) {
-    const error =
-      e instanceof SDKMigrationFailedError
-        ? e
-        : new SDKMigrationFailedError({
-            endpointName,
-            innerMessage: `Unknown error: ${e}`,
-            legacyValue: legacy,
-            migratedValue: migrated
-          })
-    console.warn('SDK Migration failed', error)
-  }
-
-  return legacy
 }

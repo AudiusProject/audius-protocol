@@ -167,13 +167,13 @@ export type SolCollectionMap = {
 
 export type ResourceContributor = {
   name: string
-  roles: [string]
+  roles: string[]
   sequence_number: number
 }
 
 export type RightsController = {
   name: string
-  roles: [string]
+  roles: string[]
   rights_share_unknown?: string
 }
 
@@ -230,9 +230,9 @@ export type TrackMetadata = {
   is_original_available: boolean
   ddex_app?: Nullable<string>
   ddex_release_ids?: any | null
-  artists?: [ResourceContributor] | null
-  resource_contributors?: [ResourceContributor] | null
-  indirect_resource_contributors?: [ResourceContributor] | null
+  artists?: ResourceContributor[] | null
+  resource_contributors?: ResourceContributor[] | null
+  indirect_resource_contributors?: ResourceContributor[] | null
   rights_controller?: RightsController | null
   copyright_line?: Copyright | null
   producer_copyright_line?: Copyright | null
