@@ -178,7 +178,7 @@ export const DetailsTileActionButtons = ({
 
   return (
     <Flex direction='row' justifyContent='center' gap='xl'>
-      {!isOwner && !ddexApp && !hideRepost ? repostButton : null}
+      {isOwner || ddexApp || hideRepost ? null : repostButton}
       {isOwner || hideFavorite ? null : favoriteButton}
       {hideShare ? null : shareButton}
       {isOwner && !ddexApp ? editButton : null}
