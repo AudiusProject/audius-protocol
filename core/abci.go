@@ -6,7 +6,15 @@ import (
 	abcitypes "github.com/cometbft/cometbft/abci/types"
 )
 
-type ABCICore struct{}
+type ABCICore struct {
+	overrides CoreOverrides
+}
+
+func NewABCICore(overrides CoreOverrides) *ABCICore {
+	return &ABCICore{
+		overrides: overrides,
+	}
+}
 
 // ApplySnapshotChunk implements types.Application.
 func (a *ABCICore) ApplySnapshotChunk(context.Context, *abcitypes.ApplySnapshotChunkRequest) (*abcitypes.ApplySnapshotChunkResponse, error) {
@@ -14,8 +22,8 @@ func (a *ABCICore) ApplySnapshotChunk(context.Context, *abcitypes.ApplySnapshotC
 }
 
 // CheckTx implements types.Application.
-func (a *ABCICore) CheckTx(context.Context, *abcitypes.CheckTxRequest) (*abcitypes.CheckTxResponse, error) {
-	panic("unimplemented")
+func (a *ABCICore) CheckTx(ctx context.Context, req *abcitypes.CheckTxRequest) (*abcitypes.CheckTxResponse, error) {
+	return a.overrides.ValidateTx(ctx, req)
 }
 
 // Commit implements types.Application.

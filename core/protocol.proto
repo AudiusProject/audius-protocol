@@ -15,7 +15,7 @@ message Signature {
   bytes data = 1;
   // ecdsa signature of related data
   string signed_data = 2;
-} 
+}
 
 // what gets persisted to chain, canon and indexable
 message SignedEvent {
@@ -37,6 +37,8 @@ message Event {
   uint32 timestamp = 3;
   // for replay attacks, random client generated
   string event_id = 4;
+  // for knowing if the protocol can process tx
+  string protocol_version = 5;
 
   // jump up body slot in case more event metadata is added
   oneof body {
