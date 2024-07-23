@@ -22,6 +22,9 @@ var dropBlobs string
 //go:embed drop_audio_analysis_ops.sql
 var dropAnalysisOpsDDL string
 
+//go:embed drop_uploads_audio_analysis_ops.sql
+var dropUploadsAnalysisOpsDDL string
+
 var mediorumMigrationTable = `
 	create table if not exists mediorum_migrations (
 		"hash" text primary key,
@@ -39,8 +42,14 @@ var deleteQmAudioAnalysisWithBadKey = `
 delete from qm_audio_analyses where length(results::json->>'key') > 12;
 `
 
+var advanceStuckCrudrCursors = `
+update cursors set last_ulid = '01J3C13JH1X7SHJYZ7PV250WPK' where last_ulid < '01J3C13JH1X7SHJYZ7PV250WPK';
+`
+
 func Migrate(db *sql.DB, myHost string) {
 	mustExec(db, mediorumMigrationTable)
+
+	runMigration(db, advanceStuckCrudrCursors)
 
 	runMigration(db, delistStatusesDDL)
 	runMigration(db, addDelistReasonsDDL)
@@ -56,6 +65,8 @@ func Migrate(db *sql.DB, myHost string) {
 	runMigration(db, qmSyncTable)
 
 	runMigration(db, deleteQmAudioAnalysisWithBadKey)
+
+	runMigration(db, dropUploadsAnalysisOpsDDL)
 }
 
 func runMigration(db *sql.DB, ddl string) {

@@ -2,7 +2,7 @@ import { useCallback } from 'react'
 
 import { ID, Kind, Status } from '@audius/common/models'
 import { searchActions } from '@audius/common/store'
-import { Box, Flex, Text } from '@audius/harmony'
+import { Box, Flex, Text, useTheme } from '@audius/harmony'
 import { range } from 'lodash'
 import { useDispatch } from 'react-redux'
 
@@ -88,6 +88,8 @@ export const ProfileResults = (props: ProfileResultsProps) => {
 
 export const ProfileResultsPage = () => {
   const isMobile = useIsMobile()
+  const { color } = useTheme()
+
   const { data: ids, status } = useGetSearchResults('users')
   const isLoading = status === Status.LOADING
 
@@ -95,7 +97,11 @@ export const ProfileResultsPage = () => {
   const showNoResultsTile = !isLoading && isResultsEmpty
 
   return (
-    <Flex direction='column' gap='xl'>
+    <Flex
+      direction='column'
+      gap='xl'
+      css={isMobile ? { backgroundColor: color.background.default } : {}}
+    >
       {!isMobile ? (
         <Flex justifyContent='space-between' alignItems='center'>
           <Text variant='heading' textAlign='left'>

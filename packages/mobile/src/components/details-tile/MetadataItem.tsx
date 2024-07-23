@@ -12,9 +12,7 @@ export const MetadataItem = ({ label, children }: MetadataItemProps) => {
       <Text variant='label' color='subdued'>
         {label}
       </Text>
-      <Text variant='body' size='s' strength='strong'>
-        {children}
-      </Text>
+      {children}
     </Flex>
   )
 }

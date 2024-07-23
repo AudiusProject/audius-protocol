@@ -17,6 +17,7 @@ import type { EventArg, NavigationState } from '@react-navigation/native'
 import type { createNativeStackNavigator } from '@react-navigation/native-stack'
 
 import { useDrawer } from 'app/hooks/useDrawer'
+import { setLastNavAction } from 'app/hooks/useNavigation'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { AiGeneratedTracksScreen } from 'app/screens/ai-generated-tracks-screen'
 import { AppDrawerContext } from 'app/screens/app-drawer-screen'
@@ -145,11 +146,6 @@ type AppTabScreenProps = {
   Stack: ReturnType<typeof createNativeStackNavigator>
 }
 
-export let lastNavAction: any
-export const setLastNavAction = (action: any) => {
-  lastNavAction = action
-}
-
 /**
  * This is the base tab screen that includes common screens
  * like track and profile
@@ -185,7 +181,7 @@ export const AppTabScreen = ({ baseScreen, Stack }: AppTabScreenProps) => {
    * catch events from other screens
    */
   const handleTransitionEnd = useCallback(() => {
-    lastNavAction = undefined
+    setLastNavAction(undefined)
   }, [])
 
   useEffect(() => {

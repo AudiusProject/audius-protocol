@@ -45,6 +45,7 @@ func (ss *MediorumServer) startAudioAnalyzer() {
 			continue
 		}
 		_, isMine := ss.rendezvousAllHosts(cid)
+		isMine = isMine || (ss.Config.Env == "prod" && ss.Config.Self.Host == "https://creatornode2.audius.co")
 		if isMine && upload.AudioAnalysisErrorCount < MAX_TRIES {
 			work <- upload
 		}
