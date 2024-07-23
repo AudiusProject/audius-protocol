@@ -17,6 +17,11 @@ const MAX_TRIES = 5
 
 // scroll qm cids
 func (ss *MediorumServer) startLegacyAudioAnalyzer() {
+	if ss.Config.Env == "prod" && ss.Config.Self.Host != "https://creatornode2.audius.co" {
+		// prod CN2 (storeall node) analyzes all remaining legacy cids
+		return
+	}
+
 	ctx := context.Background()
 	logger := ss.logger
 
@@ -41,7 +46,7 @@ func (ss *MediorumServer) startLegacyAudioAnalyzer() {
 		}
 
 		preferredHosts, isMine := ss.rendezvousAllHosts(cid)
-		if !isMine {
+		if ss.Config.Env != "prod" && !isMine {
 			return nil
 		}
 
