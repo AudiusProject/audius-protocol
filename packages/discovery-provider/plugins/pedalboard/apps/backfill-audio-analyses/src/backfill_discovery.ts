@@ -16,7 +16,7 @@ const semaphore = new Semaphore(MAX_CONCURRENT_REQUESTS)
 
 const REQUEST_TIMEOUT = 5000 // 5s
 
-const DB_OFFSET_KEY = 'discovery:backfill_audio_analyses:offset'
+const DB_OFFSET_KEY = 'discovery:backfill_audio_analyses:offset2'
 
 interface Track {
   track_id: number
@@ -49,14 +49,10 @@ async function getAudioAnalysis(contentNodes: string[], track: Track) {
   let result = null
 
   const trackCid = track.track_cid
+  if (!trackCid) return result
   // skip tracks that already have their audio analyses
-  if (
-    !trackCid ||
-    track.musical_key ||
-    track.bpm ||
-    track.audio_analysis_error_count! > 0
-  )
-    return result
+  if (track.musical_key && track.bpm) return result
+  if (track.audio_analysis_error_count! >= 3) return result
 
   const audioUploadId = track.audio_upload_id || ''
   const isLegacyTrack = !audioUploadId
