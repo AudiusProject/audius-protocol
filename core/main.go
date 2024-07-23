@@ -12,11 +12,22 @@ import (
 func main() {
 	logger := common.NewLogger(nil)
 
+	// TODO: read from .env
 	config := &common.Config{
 		NodeConfig: common.NodeConfig{
 			HomeDir: "./tmp/cometbft-home",
 		},
 	}
+
+	// generate node_key.json and priv_validator_key.json
+
+	// write genesis file from embed
+
+	// create config from go instead of toml
+
+	// change indexing db to postgres
+
+	// run one comet instance locally per content and discovery replica (4 i think)
 
 	node, err := chain.NewNode(logger, config)
 	if err != nil {
