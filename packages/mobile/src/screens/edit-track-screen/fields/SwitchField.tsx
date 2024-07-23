@@ -26,7 +26,7 @@ type SwitchFieldProps = {
 export const SwitchField = (props: SwitchFieldProps) => {
   const { name, label, style } = props
   const styles = useStyles()
-  const [{ value }, , { setValue: setValue }] = useField(name)
+  const [{ value }, , { setValue }] = useField(name)
 
   return (
     <View style={[styles.root, style]}>

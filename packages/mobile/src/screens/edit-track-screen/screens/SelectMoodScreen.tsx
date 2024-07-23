@@ -33,7 +33,7 @@ const useStyles = makeStyles(({ spacing }) => ({
 
 export const SelectMoodScreen = () => {
   const styles = useStyles()
-  const [{ value }, , { setValue: setValue }] = useField('mood')
+  const [{ value }, , { setValue }] = useField('mood')
 
   return (
     <ListSelectionScreen

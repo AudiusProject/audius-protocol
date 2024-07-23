@@ -97,7 +97,7 @@ export const useHarmonyField = <Value = any>(
   const [field, meta, helpers] = useFormikField(props)
   const { onChange } = field
   const { touched, error } = meta
-  const { setValue: setValue, setTouched } = helpers
+  const { setValue, setTouched } = helpers
   const {
     validateField,
     validateOnBlur,

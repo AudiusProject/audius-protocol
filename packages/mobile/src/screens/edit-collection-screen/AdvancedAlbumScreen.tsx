@@ -8,9 +8,9 @@ import {
   IconIndent,
   Text
 } from '@audius/harmony-native'
+import { DateTimeInput } from 'app/components/core'
 import { HarmonyTextField } from 'app/components/fields'
 import { FormScreen } from 'app/screens/form-screen'
-import { DateTimeInput } from 'app/components/core'
 
 export const AdvancedAlbumScreen = () => {
   const [{ value: upc }, { touched }] = useField('upc')
