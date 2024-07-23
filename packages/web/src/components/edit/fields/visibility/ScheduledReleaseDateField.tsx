@@ -1,5 +1,8 @@
+import { useEffect } from 'react'
+
 import { visibilityMessages } from '@audius/common/messages'
 import { Box, Flex, Hint } from '@audius/harmony'
+import dayjs from 'dayjs'
 import { useField, useFormikContext } from 'formik'
 
 import { HarmonyTextField } from 'components/form-fields/HarmonyTextField'
@@ -7,8 +10,6 @@ import { SelectField } from 'components/form-fields/SelectField'
 import { getLocalTimezone } from 'utils/dateUtils'
 
 import { DatePickerField } from '../DatePickerField'
-import { useEffect } from 'react'
-import dayjs from 'dayjs'
 
 const messages = {
   ...visibilityMessages,
@@ -25,6 +26,7 @@ export const ScheduledReleaseDateField = () => {
       setFieldValue('releaseDateTime', '11:59')
       setFieldValue('releaseDateMeridian', 'PM')
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [releaseDate, touched])
 
   return (
