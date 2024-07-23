@@ -13,16 +13,21 @@ import (
 	"gocloud.dev/gcerrors"
 )
 
-const MAX_TRIES = 5
+const MAX_TRIES = 3
 
 // scroll qm cids
 func (ss *MediorumServer) startLegacyAudioAnalyzer() {
+	if ss.Config.Env == "prod" && ss.Config.Self.Host != "https://creatornode2.audius.co" {
+		// prod CN2 (storeall node) analyzes all remaining legacy cids
+		return
+	}
+
 	ctx := context.Background()
 	logger := ss.logger
 
 	work := make(chan *QmAudioAnalysis)
 
-	numWorkers := 4
+	numWorkers := 5
 
 	// start workers
 	for i := 0; i < numWorkers; i++ {
@@ -41,7 +46,7 @@ func (ss *MediorumServer) startLegacyAudioAnalyzer() {
 		}
 
 		preferredHosts, isMine := ss.rendezvousAllHosts(cid)
-		if !isMine {
+		if ss.Config.Env != "prod" && !isMine {
 			return nil
 		}
 
