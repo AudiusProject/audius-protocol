@@ -4,11 +4,11 @@ import {
   ID,
   Track,
   UserTrackMetadata,
-  OptionalId
+  OptionalId,
+  UserCollectionMetadata
 } from '@audius/common/models'
 import { transformAndCleanList } from '@audius/common/src/adapters/utils'
-import { getContext, getSDK } from '@audius/common/store'
-import { compareSDKResponse } from '@audius/common/utils'
+import { getSDK } from '@audius/common/store'
 import { full } from '@audius/sdk'
 import { all } from 'redux-saga/effects'
 
@@ -17,12 +17,12 @@ import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
 import { waitForRead } from 'utils/sagaHelpers'
 
 const getTracksAndCollections = (
-  feed: (UserTrackMetadata | UserCollection)[]
+  feed: (UserTrackMetadata | UserCollectionMetadata)[]
 ) =>
   feed.reduce(
     (
-      acc: [UserTrackMetadata[], UserCollection[]],
-      cur: UserTrackMetadata | UserCollection
+      acc: [UserTrackMetadata[], UserCollectionMetadata[]],
+      cur: UserTrackMetadata | UserCollectionMetadata
     ) =>
       ('track_id' in cur
         ? [[...acc[0], cur], acc[1]]
@@ -47,14 +47,7 @@ export function* retrieveUserReposts({
   limit
 }: RetrieveUserRepostsArgs): Generator<any, Track[], any> {
   yield* waitForRead()
-  const apiClient = yield* getContext('apiClient')
   const sdk = yield* getSDK()
-  const reposts = yield apiClient.getUserRepostsByHandle({
-    handle,
-    currentUserId,
-    limit,
-    offset
-  })
 
   const { data: repostsSDKData } = yield sdk.full.users.getRepostsByHandle({
     handle,
@@ -62,15 +55,12 @@ export function* retrieveUserReposts({
     limit,
     offset
   })
-  const repostsSDK = transformAndCleanList(
+  const reposts = transformAndCleanList(
     repostsSDKData,
     // `getTracksAndCollections` below expects a list of just the items
     (activity: full.ActivityFull) => repostActivityFromSDK(activity)?.item
   )
-  compareSDKResponse(
-    { legacy: reposts, migrated: repostsSDK },
-    'getRepostsByHandle'
-  )
+
   const [tracks, collections] = getTracksAndCollections(reposts)
   const trackIds = tracks.map((t) => t.track_id)
   const [processedTracks, processedCollections] = yield all([
