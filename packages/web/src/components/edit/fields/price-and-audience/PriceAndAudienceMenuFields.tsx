@@ -207,10 +207,10 @@ export const PriceAndAudienceMenuFields = (
             disabled={disableHidden}
             // isInitiallyUnlisted is undefined on create
             // show hint on scheduled releases that are in create or already unlisted
-            hintContent={
-              isScheduledRelease && isInitiallyUnlisted !== false
-                ? messages.hiddenHint
-                : ''
+            hint={
+              isScheduledRelease && isInitiallyUnlisted !== false ? (
+                <Hint>{messages.hiddenHint}</Hint>
+              ) : null
             }
             checkedContent={isAlbum ? null : <HiddenAvailabilityFields />}
           />
