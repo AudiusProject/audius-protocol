@@ -15,6 +15,8 @@ export const SearchCatalogTile = () => {
       gap={isMobile ? 's' : 'l'}
       alignItems='center'
       w={isMobile ? 'auto' : '100%'}
+      border='default'
+      backgroundColor={isMobile ? 'surface1' : 'white'}
     >
       <IconSearch color='default' size={isMobile ? 'l' : '2xl'} />
       <Text
