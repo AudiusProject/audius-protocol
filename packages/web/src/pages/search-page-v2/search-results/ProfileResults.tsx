@@ -2,7 +2,7 @@ import { useCallback } from 'react'
 
 import { ID, Kind, Status } from '@audius/common/models'
 import { searchActions } from '@audius/common/store'
-import { Box, Flex, OptionsFilterButton, Text } from '@audius/harmony'
+import { Box, Flex, Text } from '@audius/harmony'
 import { range } from 'lodash'
 import { useDispatch } from 'react-redux'
 
@@ -10,11 +10,8 @@ import { UserCard } from 'components/user-card'
 import { useIsMobile } from 'hooks/useIsMobile'
 
 import { NoResultsTile } from '../NoResultsTile'
-import {
-  useGetSearchResults,
-  useSearchParams,
-  useUpdateSearchParams
-} from '../utils'
+import { SortMethodFilterButton } from '../SortMethodFilterButton'
+import { useGetSearchResults } from '../utils'
 
 const { addItem: addRecentSearch } = searchActions
 
@@ -94,9 +91,6 @@ export const ProfileResultsPage = () => {
   const { data: ids, status } = useGetSearchResults('users')
   const isLoading = status === Status.LOADING
 
-  const updateSortParam = useUpdateSearchParams('sortMethod')
-  const searchParams = useSearchParams()
-  const { sortMethod } = searchParams
   const isResultsEmpty = ids?.length === 0
   const showNoResultsTile = !isLoading && isResultsEmpty
 
@@ -107,18 +101,7 @@ export const ProfileResultsPage = () => {
           <Text variant='heading' textAlign='left'>
             {messages.profiles}
           </Text>
-          <Flex gap='s'>
-            <OptionsFilterButton
-              selection={sortMethod ?? 'relevant'}
-              variant='replaceLabel'
-              optionsLabel={messages.sortOptionsLabel}
-              onChange={updateSortParam}
-              options={[
-                { label: 'Most Relevant', value: 'relevant' },
-                { label: 'Most Recent', value: 'recent' }
-              ]}
-            />
-          </Flex>
+          <SortMethodFilterButton />
         </Flex>
       ) : null}
       {showNoResultsTile ? <NoResultsTile /> : <ProfileResults ids={ids} />}
