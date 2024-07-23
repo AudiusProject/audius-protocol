@@ -38,7 +38,7 @@ import {
   SubmenuList,
   RemixSettingsField,
   ReleaseDateField,
-  AdvancedOptionsField
+  AdvancedField
 } from './fields'
 import type { EditTrackFormProps } from './types'
 
@@ -196,7 +196,7 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
                 )}
                 <PriceAndAudienceField />
                 <RemixSettingsField />
-                <AdvancedOptionsField />
+                <AdvancedField />
               </SubmenuList>
             </Tile>
           </KeyboardAwareScrollView>

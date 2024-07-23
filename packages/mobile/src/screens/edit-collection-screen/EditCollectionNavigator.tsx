@@ -10,6 +10,7 @@ import {
 import { VisibilityScreen } from 'app/components/edit/VisibilityField'
 import { useAppScreenOptions } from 'app/screens/app-screen/useAppScreenOptions'
 
+import { AdvancedAlbumScreen } from './AdvancedAlbumScreen'
 import { EditCollectionForm } from './EditCollectionForm'
 
 const Stack = createNativeStackNavigator()
@@ -32,6 +33,7 @@ export const EditCollectionNavigator = (
           name={priceAndAudienceScreenName}
           component={PriceAndAudienceScreen}
         />
+        <Stack.Screen name='Advanced' component={AdvancedAlbumScreen} />
       </Stack.Navigator>
       <DeletePlaylistConfirmationDrawer />
     </>

@@ -1,4 +1,5 @@
 import { Nullable } from '@audius/common/utils'
+import { advancedAlbumMessages as messages } from '@audius/common/messages'
 import { Flex, IconIndent, IconInfo, Text } from '@audius/harmony'
 import { useField } from 'formik'
 import { z } from 'zod'
@@ -11,18 +12,6 @@ import {
 import { HarmonyTextField } from 'components/form-fields/HarmonyTextField'
 import { Tooltip } from 'components/tooltip'
 
-const messages = {
-  title: 'Advanced',
-  description:
-    'Provide detailed metadata to help identify and manage your music.',
-  value: 'UPC',
-  menuLabel: 'UPC (Universal Product Code)',
-  menuLabelDescription:
-    'A Universal Product Code (UPC) is a unique barcode that identifies music releases.',
-  inputLabel: 'UPC',
-  inputError: 'Invalid UPC'
-}
-
 type AdvancedAlbumFieldValues = {
   upc: Nullable<string>
 }
@@ -30,7 +19,7 @@ type AdvancedAlbumFieldValues = {
 const advancedSchema = z.object({
   upc: z
     .string()
-    .regex(/^\d{12}$/, messages.inputError)
+    .regex(/^\d{12}$/, messages.upcInputError)
     .nullable()
 })
 
@@ -49,21 +38,21 @@ export const AdvancedAlbumField = () => {
         setValue(upc)
       }}
       renderValue={() =>
-        upc ? <SelectedValue label={`${messages.value} ${upc}`} /> : null
+        upc ? <SelectedValue label={`${messages.upcValue} ${upc}`} /> : null
       }
       menuFields={
         <Flex direction='column' gap='l'>
           <Flex gap='s' alignItems='center'>
             <Text variant='title' size='l'>
-              {messages.menuLabel}
+              {messages.upcTitle}
             </Text>
-            <Tooltip text={messages.menuLabelDescription} placement='bottom'>
+            <Tooltip text={messages.upcDescription} placement='bottom'>
               <IconInfo size='s' color='subdued' />
             </Tooltip>
           </Flex>
           <HarmonyTextField
             name='upc'
-            label={messages.inputLabel}
+            label={messages.upcInputLabel}
             transformValueOnChange={(value) => value.replace(/\D/g, '')}
             maxLength={12}
           />

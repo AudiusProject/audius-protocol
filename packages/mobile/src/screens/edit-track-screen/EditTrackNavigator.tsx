@@ -11,7 +11,7 @@ import { messages as completeMessages } from '../upload-screen/screens/CompleteT
 import { EditTrackForm } from './EditTrackForm'
 import {
   PriceAndAudienceScreen,
-  AdvancedOptionsScreen,
+  AdvancedScreen,
   IsrcIswcScreen,
   LicenseTypeScreen,
   RemixSettingsScreen,
@@ -55,10 +55,7 @@ export const EditTrackNavigator = (props: EditTrackNavigatorProps) => {
           }}
         />
         <Stack.Screen name='Visibility' component={VisibilityScreen} />
-        <Stack.Screen
-          name='AdvancedOptions'
-          component={AdvancedOptionsScreen}
-        />
+        <Stack.Screen name='Advanced' component={AdvancedScreen} />
         <Stack.Screen
           name={priceAndAudienceScreenName}
           component={PriceAndAudienceScreen}

@@ -20,9 +20,9 @@ import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles } from 'app/styles'
 
 import { TopBarIconButton } from '../app-screen'
-import { AdvancedOptionsField } from '../edit-track-screen/fields'
 import { FormScreen } from '../page-form-screen'
 
+import { AdvancedAlbumField } from './AdvancedAlbumField'
 import { CollectionDescriptionField } from './CollectionDescriptionField'
 import { CollectionImageInput } from './CollectionImageInput'
 import { CollectionNameField } from './CollectionNameField'
@@ -108,7 +108,7 @@ export const EditCollectionForm = (
             <CollectionDescriptionField />
             <VisibilityField />
             {entityType === 'album' ? <PriceAndAudienceField /> : null}
-            {entityType === 'album' ? <AdvancedOptionsField /> : null}
+            {entityType === 'album' ? <AdvancedAlbumField /> : null}
           </View>
           <Divider />
           <TrackListFieldArray />

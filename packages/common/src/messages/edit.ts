@@ -65,3 +65,15 @@ export const priceAndAudienceMessages = {
       'No Collectibles found. To enable this option, link a wallet containing a collectible.'
   }
 }
+
+export const advancedAlbumMessages = {
+  title: 'Advanced',
+  description:
+    'Provide detailed metadata to help identify and manage your music.',
+  upcValue: 'UPC',
+  upcTitle: 'UPC (Universal Product Code)',
+  upcDescription:
+    'A Universal Product Code (UPC) is a unique barcode that identifies music releases.',
+  upcInputLabel: 'UPC',
+  upcInputError: 'Invalid UPC'
+}
