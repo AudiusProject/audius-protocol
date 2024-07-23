@@ -24,7 +24,7 @@ const musicalKeys = MUSICAL_KEYS.map((key) => {
 })
 
 export const SelectKeyScreen = () => {
-  const [{ value: musicalKey }, , { setValue }] =
+  const [{ value: musicalKey }, , { setValue: setValue }] =
     useField<string>('musical_key')
 
   const [initialKey, initialScale = 'Major'] = musicalKey?.split(' ') ?? []

@@ -16,7 +16,7 @@ const genres = GENRES.map((genre) => ({
 }))
 
 export const SelectGenreScreen = () => {
-  const [{ value }, , { setValue }] = useField('genre')
+  const [{ value }, , { setValue: setValue }] = useField('genre')
 
   return (
     <ListSelectionScreen

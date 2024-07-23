@@ -78,7 +78,7 @@ export const ImageField = (props: ImageFieldProps) => {
   } = props
   const styles = useStyles()
   const [isLoading, setIsLoading] = useState(false)
-  const [{ value }, , { setValue }] = useField<ImageValue>(name)
+  const [{ value }, , { setValue: setValue }] = useField<ImageValue>(name)
 
   const url = value?.url
 

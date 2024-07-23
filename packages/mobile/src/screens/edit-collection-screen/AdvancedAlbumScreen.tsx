@@ -1,12 +1,22 @@
 import { advancedAlbumMessages as messages } from '@audius/common/messages'
 import { useField } from 'formik'
 
-import { Flex, IconIndent, Text } from '@audius/harmony-native'
+import {
+  Divider,
+  Flex,
+  IconCalendarMonth,
+  IconIndent,
+  Text
+} from '@audius/harmony-native'
 import { HarmonyTextField } from 'app/components/fields'
 import { FormScreen } from 'app/screens/form-screen'
+import { DateTimeInput } from 'app/components/core'
 
 export const AdvancedAlbumScreen = () => {
   const [{ value: upc }, { touched }] = useField('upc')
+  const [{ value: isHidden }] = useField('is_unlisted')
+  const [{ value: releaseDate, onChange }] = useField('release_date')
+  console.log('release_date', releaseDate)
 
   const error = !upc || /^\d{12}$/.test(upc) ? null : messages.upcInputError
 
@@ -18,18 +28,40 @@ export const AdvancedAlbumScreen = () => {
       variant='white'
       disableSubmit={!!error}
     >
-      <Flex gap='l' p='l' pt='xl'>
-        <Text variant='title' size='l'>
-          {messages.upcTitle}
-        </Text>
-        <HarmonyTextField
-          name='upc'
-          label={messages.upcInputLabel}
-          transformValueOnChange={(value) => value.replace(/\D/g, '')}
-          maxLength={12}
-          error={touched && !!error}
-          helperText={touched && error}
-        />
+      <Flex gap='xl' p='l' pt='xl'>
+        <Flex gap='l'>
+          <Text variant='title' size='l'>
+            {messages.upcTitle}
+          </Text>
+          <HarmonyTextField
+            name='upc'
+            label={messages.upcInputLabel}
+            transformValueOnChange={(value) => value.replace(/\D/g, '')}
+            maxLength={12}
+            error={touched && !!error}
+            helperText={touched && error}
+          />
+        </Flex>
+        {isHidden ? null : (
+          <>
+            <Divider />
+            <Flex gap='l'>
+              <Text variant='title' size='l'>
+                {messages.releaseDate.title}
+              </Text>
+              <DateTimeInput
+                date={releaseDate}
+                mode='date'
+                inputProps={{
+                  startIcon: IconCalendarMonth,
+                  label: messages.releaseDate.label
+                }}
+                onChange={onChange('release_date')}
+                dateTimeProps={{ maximumDate: new Date() }}
+              />
+            </Flex>
+          </>
+        )}
       </Flex>
     </FormScreen>
   )

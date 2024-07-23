@@ -1,6 +1,6 @@
-import { Nullable } from '@audius/common/utils'
 import { advancedAlbumMessages as messages } from '@audius/common/messages'
-import { Flex, IconIndent, IconInfo, Text } from '@audius/harmony'
+import { Nullable } from '@audius/common/utils'
+import { Divider, Flex, IconIndent, IconInfo, Text } from '@audius/harmony'
 import { useField } from 'formik'
 import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
@@ -12,50 +12,74 @@ import {
 import { HarmonyTextField } from 'components/form-fields/HarmonyTextField'
 import { Tooltip } from 'components/tooltip'
 
+import { DatePickerField } from './DatePickerField'
+
 type AdvancedAlbumFieldValues = {
   upc: Nullable<string>
+  release_date: Nullable<string>
 }
 
 const advancedSchema = z.object({
   upc: z
     .string()
     .regex(/^\d{12}$/, messages.upcInputError)
-    .nullable()
+    .nullable(),
+  release_date: z.optional(z.string()).nullable()
 })
 
 export const AdvancedAlbumField = () => {
-  const [{ value: upc }, , { setValue }] = useField('upc')
+  const [{ value: upc }, , { setValue: setUpc }] = useField('upc')
+  const [{ value: isHidden }] = useField('is_unlisted')
+  const [{ value: release_date }, , { setValue: setReleaseDate }] =
+    useField('release_date')
 
   return (
     <ContextualMenu
       icon={<IconIndent />}
       label={messages.title}
       description={messages.description}
-      initialValues={{ upc }}
+      initialValues={{ upc, release_date }}
       validationSchema={toFormikValidationSchema(advancedSchema)}
       onSubmit={(values: AdvancedAlbumFieldValues) => {
-        const { upc } = values
-        setValue(upc)
+        const { upc, release_date } = values
+        setUpc(upc)
+        setReleaseDate(release_date)
       }}
       renderValue={() =>
         upc ? <SelectedValue label={`${messages.upcValue} ${upc}`} /> : null
       }
       menuFields={
-        <Flex direction='column' gap='l'>
-          <Flex gap='s' alignItems='center'>
-            <Text variant='title' size='l'>
-              {messages.upcTitle}
-            </Text>
-            <Tooltip text={messages.upcDescription} placement='bottom'>
-              <IconInfo size='s' color='subdued' />
-            </Tooltip>
+        <Flex direction='column' gap='xl'>
+          <Flex direction='column' gap='l'>
+            <Flex gap='s' alignItems='center'>
+              <Text variant='title' size='l'>
+                {messages.upcTitle}
+              </Text>
+              <Tooltip text={messages.upcDescription} placement='bottom'>
+                <IconInfo size='s' color='subdued' />
+              </Tooltip>
+            </Flex>
+            <HarmonyTextField
+              name='upc'
+              label={messages.upcInputLabel}
+              transformValueOnChange={(value) => value.replace(/\D/g, '')}
+              maxLength={12}
+            />
           </Flex>
-          <HarmonyTextField
-            name='upc'
-            label={messages.upcInputLabel}
-            transformValueOnChange={(value) => value.replace(/\D/g, '')}
-            maxLength={12}
-          />
+          {isHidden ? null : (
+            <>
+              <Divider />
+              <Flex direction='column' gap='l'>
+                <Text variant='title' size='l'>
+                  {messages.releaseDate.title}
+                </Text>
+                <DatePickerField
+                  name='release_date'
+                  label={messages.releaseDate.label}
+                />
+              </Flex>
+            </>
+          )}
         </Flex>
       }
     />

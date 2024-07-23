@@ -75,5 +75,9 @@ export const advancedAlbumMessages = {
   upcDescription:
     'A Universal Product Code (UPC) is a unique barcode that identifies music releases.',
   upcInputLabel: 'UPC',
-  upcInputError: 'Invalid UPC'
+  upcInputError: 'Invalid UPC',
+  releaseDate: {
+    title: 'Release Date',
+    label: 'Release date'
+  }
 }

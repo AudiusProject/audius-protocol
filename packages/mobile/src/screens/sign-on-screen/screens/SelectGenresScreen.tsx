@@ -36,7 +36,7 @@ const SelectGenresFieldArray = () => {
   const [formValues, setFormValues] = useState<SelectGenresValue['genres']>(
     initialValues.genres
   )
-  const [, , { setValue }] = useField('genres')
+  const [, , { setValue: setValue }] = useField('genres')
 
   useTrackScreen('SelectGenre')
 

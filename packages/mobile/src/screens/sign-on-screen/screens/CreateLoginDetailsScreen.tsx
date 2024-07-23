@@ -34,7 +34,7 @@ export type CreateLoginDetailsValues = {
 
 // Same email field but with extra logic to check initial value coming from redux store
 const EmailField = ({ onChangeScreen }: { onChangeScreen: () => void }) => {
-  const [, , { setValue }] = useField('email')
+  const [, , { setValue: setValue }] = useField('email')
   const existingEmailValue = useSelector(getEmailField)
   const audiusQueryContext = useAudiusQueryContext()
 

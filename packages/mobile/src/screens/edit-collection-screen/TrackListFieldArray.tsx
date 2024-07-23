@@ -28,7 +28,7 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
 
 export const TrackListFieldArray = () => {
   const styles = useStyles()
-  const [{ value }, , { setValue }] = useField<PlaylistTrackId[]>(
+  const [{ value }, , { setValue: setValue }] = useField<PlaylistTrackId[]>(
     'playlist_contents.track_ids'
   )
 

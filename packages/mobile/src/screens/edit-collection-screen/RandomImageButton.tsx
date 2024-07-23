@@ -38,7 +38,7 @@ type RandomImageInputProps = {
 export const RandomImageInput = (props: RandomImageInputProps) => {
   const styles = useStyles()
   const { name, onProcessing } = props
-  const [, , { setValue }] = useField(name)
+  const [, , { setValue: setValue }] = useField(name)
 
   const handlePress = useCallback(async () => {
     onProcessing?.(true)
