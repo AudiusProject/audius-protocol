@@ -13,7 +13,7 @@ import (
 	"gocloud.dev/gcerrors"
 )
 
-const MAX_TRIES = 5
+const MAX_TRIES = 3
 
 // scroll qm cids
 func (ss *MediorumServer) startLegacyAudioAnalyzer() {
@@ -27,7 +27,7 @@ func (ss *MediorumServer) startLegacyAudioAnalyzer() {
 
 	work := make(chan *QmAudioAnalysis)
 
-	numWorkers := 4
+	numWorkers := 5
 
 	// start workers
 	for i := 0; i < numWorkers; i++ {
