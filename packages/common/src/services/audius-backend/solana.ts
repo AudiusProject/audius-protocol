@@ -19,12 +19,8 @@ import {
 } from '@solana/web3.js'
 import BN from 'bn.js'
 
-import { PurchaseableContentType } from '~/store'
-import { BN_USDC_CENT_WEI } from '~/utils/wallet'
-
 import {
   AnalyticsEvent,
-  ID,
   Name,
   SolanaWalletAddress,
   PurchaseAccess
