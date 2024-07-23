@@ -61,9 +61,13 @@ async function getAudioAnalysis(contentNodes: string[], track: Track) {
 
   // allow up to 5 attempts to get audio analysis for this track
   for (let i = 0; i < 5; i++) {
-    // choose a random content node
-    const contentNode =
-      contentNodes[Math.floor(Math.random() * contentNodes.length)]
+    // last attempt will always be to the storeall node
+    let contentNode = "https://creatornode2.audius.co"
+    if (i < 4) {
+      // choose a random content node
+      contentNode =
+        contentNodes[Math.floor(Math.random() * contentNodes.length)]
+    }
     try {
       let analysisUrl = `${contentNode}/uploads/${audioUploadId}`
       if (isLegacyTrack) {
