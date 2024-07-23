@@ -96,7 +96,7 @@ const NavBar = ({
 
   const handleOpenSearch = useCallback(() => {
     if (isSearchV2Enabled) {
-      history.push(`/search/tracks`)
+      history.push(`/search`)
     } else {
       setIsSearching(true)
     }

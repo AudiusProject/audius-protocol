@@ -10,7 +10,7 @@ import {
   searchActions,
   SearchKind
 } from '@audius/common/store'
-import { Flex, OptionsFilterButton, Text } from '@audius/harmony'
+import { Flex, OptionsFilterButton, Text, useTheme } from '@audius/harmony'
 import { css } from '@emotion/css'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -174,6 +174,8 @@ export const TrackResults = (props: TrackResultsProps) => {
 
 export const TrackResultsPage = () => {
   const isMobile = useIsMobile()
+  const { color } = useTheme()
+
   const [tracksLayout, setTracksLayout] = useState<ViewLayout>('list')
   const updateSortParam = useUpdateSearchParams('sortMethod')
 
@@ -185,7 +187,8 @@ export const TrackResultsPage = () => {
       direction='column'
       gap='xl'
       wrap='wrap'
-      p={isMobile ? 'm' : undefined}
+      pt={isMobile ? 'l' : undefined}
+      css={isMobile ? { backgroundColor: color.background.default } : {}}
     >
       {!isMobile ? (
         <Flex justifyContent='space-between' alignItems='center'>
