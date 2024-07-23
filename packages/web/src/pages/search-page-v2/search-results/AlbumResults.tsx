@@ -2,7 +2,7 @@ import { useCallback } from 'react'
 
 import { ID, Kind, Status } from '@audius/common/models'
 import { searchActions } from '@audius/common/store'
-import { Box, Flex, OptionsFilterButton, Text, useTheme } from '@audius/harmony'
+import { Box, Flex, Text, useTheme } from '@audius/harmony'
 import { range } from 'lodash'
 import { useDispatch } from 'react-redux'
 
@@ -10,17 +10,13 @@ import { CollectionCard } from 'components/collection'
 import { useIsMobile } from 'hooks/useIsMobile'
 
 import { NoResultsTile } from '../NoResultsTile'
-import {
-  useGetSearchResults,
-  useSearchParams,
-  useUpdateSearchParams
-} from '../utils'
+import { SortMethodFilterButton } from '../SortMethodFilterButton'
+import { useGetSearchResults } from '../utils'
 
 const { addItem: addRecentSearch } = searchActions
 
 const messages = {
-  albums: 'Albums',
-  sortOptionsLabel: 'Sort By'
+  albums: 'Albums'
 }
 
 type AlbumResultsProps = {
@@ -96,10 +92,6 @@ export const AlbumResultsPage = () => {
   const { data: ids, status } = useGetSearchResults('albums')
   const isLoading = status === Status.LOADING
 
-  const searchParams = useSearchParams()
-  const { sortMethod } = searchParams
-  const updateSortParam = useUpdateSearchParams('sortMethod')
-
   const isResultsEmpty = ids?.length === 0
   const showNoResultsTile = !isLoading && isResultsEmpty
 
@@ -114,18 +106,7 @@ export const AlbumResultsPage = () => {
           <Text variant='heading' textAlign='left'>
             {messages.albums}
           </Text>
-          <Flex gap='s'>
-            <OptionsFilterButton
-              selection={sortMethod ?? 'relevant'}
-              variant='replaceLabel'
-              optionsLabel={messages.sortOptionsLabel}
-              onChange={updateSortParam}
-              options={[
-                { label: 'Most Relevant', value: 'relevant' },
-                { label: 'Most Recent', value: 'recent' }
-              ]}
-            />
-          </Flex>
+          <SortMethodFilterButton />
         </Flex>
       ) : null}
       {showNoResultsTile ? <NoResultsTile /> : <AlbumResults ids={ids} />}

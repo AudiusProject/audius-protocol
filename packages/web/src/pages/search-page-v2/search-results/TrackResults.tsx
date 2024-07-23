@@ -21,12 +21,9 @@ import { useIsMobile } from 'hooks/useIsMobile'
 import { useMainContentRef } from 'pages/MainContentContext'
 
 import { NoResultsTile } from '../NoResultsTile'
+import { SortMethodFilterButton } from '../SortMethodFilterButton'
 import { ViewLayout, viewLayoutOptions } from '../types'
-import {
-  ALL_RESULTS_LIMIT,
-  useSearchParams,
-  useUpdateSearchParams
-} from '../utils'
+import { ALL_RESULTS_LIMIT, useSearchParams } from '../utils'
 
 const { makeGetLineupMetadatas } = lineupSelectors
 const { getBuffering, getPlaying } = playerSelectors
@@ -177,10 +174,6 @@ export const TrackResultsPage = () => {
   const { color } = useTheme()
 
   const [tracksLayout, setTracksLayout] = useState<ViewLayout>('list')
-  const updateSortParam = useUpdateSearchParams('sortMethod')
-
-  const searchParams = useSearchParams()
-  const { sortMethod } = searchParams
 
   return (
     <Flex
@@ -196,17 +189,7 @@ export const TrackResultsPage = () => {
             {messages.tracks}
           </Text>
           <Flex gap='s'>
-            <OptionsFilterButton
-              selection={sortMethod ?? 'relevant'}
-              variant='replaceLabel'
-              optionsLabel={messages.sortOptionsLabel}
-              onChange={updateSortParam}
-              options={[
-                { label: 'Most Relevant', value: 'relevant' },
-                { label: 'Most Popular', value: 'popular' },
-                { label: 'Most Recent', value: 'recent' }
-              ]}
-            />
+            <SortMethodFilterButton />
             <OptionsFilterButton
               selection={tracksLayout}
               variant='replaceLabel'
