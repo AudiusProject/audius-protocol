@@ -4,6 +4,7 @@ import {
   IconButton,
   IconCloseAlt,
   IconSearch,
+  spacing,
   TextInput,
   TextInputSize
 } from '@audius/harmony-native'
@@ -41,6 +42,7 @@ export const SearchBarV2 = () => {
       label={messages.label}
       placeholder={messages.label}
       style={{ width: searchBarWidth }}
+      innerContainerStyle={query ? { paddingRight: spacing.s } : {}}
       value={query}
       onChangeText={setQuery}
     />
