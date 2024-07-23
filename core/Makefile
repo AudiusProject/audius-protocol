@@ -1,3 +1,6 @@
+dev::
+	@go run main.go
+
 deps::
 	@go install github.com/onsi/ginkgo/v2/ginkgo@v2.19.0
 	@brew install protobuf
