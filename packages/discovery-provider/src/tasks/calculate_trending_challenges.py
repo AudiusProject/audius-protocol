@@ -83,7 +83,7 @@ def enqueue_trending_challenges(
     challenge_bus: ChallengeEventBus,
     date: date,
 ):
-    logger.info(
+    logger.debug(
         "calculate_trending_challenges.py | Start calculating trending challenges"
     )
     update_start = time.time()
@@ -187,7 +187,7 @@ def enqueue_trending_challenges(
 
     update_end = time.time()
     update_total = update_end - update_start
-    logger.info(
+    logger.debug(
         f"calculate_trending_challenges.py | Finished calculating trending in {update_total} seconds"
     )
 
@@ -212,7 +212,7 @@ def calculate_trending_challenges_task(self, date: Optional[date] = None):
 
             enqueue_trending_challenges(db, web3, redis, challenge_bus, date)
         else:
-            logger.info(
+            logger.debug(
                 "calculate_trending_challenges.py | Failed to acquire index trending lock"
             )
     except Exception as e:

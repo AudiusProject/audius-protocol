@@ -190,7 +190,7 @@ def index_rank_ups(
                 rank=row["rank"],
             )
             session.add(rank_up)
-            logger.info(f"index_aggregate_tips.py | Rank Up: {rank_up}")
+            logger.debug(f"index_aggregate_tips.py | Rank Up: {rank_up}")
 
 
 def _update_aggregate_tips(session: Session, redis: Redis):

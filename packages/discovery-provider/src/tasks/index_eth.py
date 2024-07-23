@@ -48,12 +48,12 @@ def index_eth_transfer_events(db, redis_inst):
     start_block = max(since_block, 0)
     end_block = scanner.get_suggested_scan_end_block()
     if start_block > end_block:
-        logger.info(
+        logger.debug(
             f"index_eth.py | Start block ({start_block}) cannot be greater then end block ({end_block})"
         )
         return
 
-    logger.info(
+    logger.debug(
         f"index_eth.py | Scanning events from blocks {start_block} - {end_block}"
     )
     start = time.time()
@@ -66,7 +66,7 @@ def index_eth_transfer_events(db, redis_inst):
     )
     scanner.save(end_block)
     duration = time.time() - start
-    logger.info(
+    logger.debug(
         f"index_eth.py | Scanned total {len(result)} Transfer events, in {duration} seconds, \
             total {total_chunks_scanned} chunk scans performed"
     )
@@ -88,13 +88,13 @@ def index_eth(self):
         # Attempt to acquire lock
         have_lock = update_lock.acquire(blocking=False)
         if have_lock:
-            logger.info(f"index_eth.py | {self.request.id} | Acquired index_eth_lock")
+            logger.debug(f"index_eth.py | {self.request.id} | Acquired index_eth_lock")
 
             index_eth_transfer_events(db, redis_inst)
 
             end_time = time.time()
             redis_inst.set(index_eth_last_completion_redis_key, int(end_time))
-            logger.info(
+            logger.debug(
                 f"index_eth.py | {self.request.id} | Processing complete within session"
             )
         else:

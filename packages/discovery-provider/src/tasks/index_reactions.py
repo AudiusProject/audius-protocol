@@ -95,7 +95,7 @@ def index_identity_reactions(session: Session, redis: Redis):
         save_indexed_checkpoint(
             session, IDENTITY_INDEXING_CHECKPOINT_NAME, new_checkpoint
         )
-        logger.info(
+        logger.debug(
             f"Indexed {len(reaction_models)} reactions, new checkpoint: {new_checkpoint}"
         )
         redis.set(LAST_SEEN_NEW_REACTION_TIME_KEY, int(datetime.now().timestamp()))
