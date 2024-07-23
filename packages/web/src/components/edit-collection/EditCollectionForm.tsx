@@ -74,10 +74,6 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
   const { isEnabled: isPremiumAlbumsEnabled } = useFeatureFlag(
     FeatureFlags.PREMIUM_ALBUMS_ENABLED
   )
-  const { isEnabled: isUSDCUploadEnabled } = useFeatureFlag(
-    FeatureFlags.USDC_PURCHASES_UPLOAD
-  )
-  const showPremiumAlbums = isPremiumAlbumsEnabled && isUSDCUploadEnabled
 
   const { isEnabled: isHiddenPaidScheduledEnabled } = useFeatureFlag(
     FeatureFlags.HIDDEN_PAID_SCHEDULED
@@ -162,7 +158,7 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
           ) : (
             <ReleaseDateFieldLegacy />
           )}
-          {isAlbum && showPremiumAlbums ? (
+          {isAlbum && isPremiumAlbumsEnabled ? (
             <PriceAndAudienceField isAlbum={isAlbum} isUpload={isUpload} />
           ) : null}
           {isAlbum ? <AdvancedAlbumField /> : null}
