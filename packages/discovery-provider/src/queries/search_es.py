@@ -686,7 +686,14 @@ def track_dsl(
                 "bool": {
                     "should": [
                         {"term": {"purchaseable": {"value": True}}},
-                        {"term": {"purchaseable_download": {"value": True}}},
+                        { 
+                            "bool": {
+                                "must": [
+                                    {"term": {"purchaseable_download": {"value": True}}},
+                                    {"term": {"has_stems": {"value": True}}}
+                                ]
+                            }
+                        }
                     ]
                 }
             }
