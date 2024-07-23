@@ -14,73 +14,60 @@
  */
 
 import { exists, mapValues } from '../runtime';
-import type { ReplyComment } from './ReplyComment';
-import {
-    ReplyCommentFromJSON,
-    ReplyCommentFromJSONTyped,
-    ReplyCommentToJSON,
-} from './ReplyComment';
-
 /**
  * 
  * @export
- * @interface Comment
+ * @interface ReplyComment
  */
-export interface Comment {
+export interface ReplyComment {
     /**
      * 
      * @type {string}
-     * @memberof Comment
+     * @memberof ReplyComment
      */
     id: string;
     /**
      * 
      * @type {string}
-     * @memberof Comment
+     * @memberof ReplyComment
      */
     message: string;
     /**
      * 
      * @type {number}
-     * @memberof Comment
+     * @memberof ReplyComment
      */
     timestampS?: number;
     /**
      * 
      * @type {number}
-     * @memberof Comment
+     * @memberof ReplyComment
      */
     reactCount: number;
     /**
      * 
-     * @type {Array<ReplyComment>}
-     * @memberof Comment
-     */
-    replies?: Array<ReplyComment>;
-    /**
-     * 
      * @type {boolean}
-     * @memberof Comment
+     * @memberof ReplyComment
      */
     isPinned: boolean;
     /**
      * 
      * @type {string}
-     * @memberof Comment
+     * @memberof ReplyComment
      */
     createdAt: string;
     /**
      * 
      * @type {string}
-     * @memberof Comment
+     * @memberof ReplyComment
      */
     updatedAt?: string;
 }
 
 /**
- * Check if a given object implements the Comment interface.
+ * Check if a given object implements the ReplyComment interface.
  */
-export function instanceOfComment(value: object): value is Comment {
+export function instanceOfReplyComment(value: object): value is ReplyComment {
     let isInstance = true;
     isInstance = isInstance && "id" in value && value["id"] !== undefined;
     isInstance = isInstance && "message" in value && value["message"] !== undefined;
@@ -91,11 +78,11 @@ export function instanceOfComment(value: object): value is Comment {
     return isInstance;
 }
 
-export function CommentFromJSON(json: any): Comment {
-    return CommentFromJSONTyped(json, false);
+export function ReplyCommentFromJSON(json: any): ReplyComment {
+    return ReplyCommentFromJSONTyped(json, false);
 }
 
-export function CommentFromJSONTyped(json: any, ignoreDiscriminator: boolean): Comment {
+export function ReplyCommentFromJSONTyped(json: any, ignoreDiscriminator: boolean): ReplyComment {
     if ((json === undefined) || (json === null)) {
         return json;
     }
@@ -105,14 +92,13 @@ export function CommentFromJSONTyped(json: any, ignoreDiscriminator: boolean): C
         'message': json['message'],
         'timestampS': !exists(json, 'timestamp_s') ? undefined : json['timestamp_s'],
         'reactCount': json['react_count'],
-        'replies': !exists(json, 'replies') ? undefined : ((json['replies'] as Array<any>).map(ReplyCommentFromJSON)),
         'isPinned': json['is_pinned'],
         'createdAt': json['created_at'],
         'updatedAt': !exists(json, 'updated_at') ? undefined : json['updated_at'],
     };
 }
 
-export function CommentToJSON(value?: Comment | null): any {
+export function ReplyCommentToJSON(value?: ReplyComment | null): any {
     if (value === undefined) {
         return undefined;
     }
@@ -125,7 +111,6 @@ export function CommentToJSON(value?: Comment | null): any {
         'message': value.message,
         'timestamp_s': value.timestampS,
         'react_count': value.reactCount,
-        'replies': value.replies === undefined ? undefined : ((value.replies as Array<any>).map(ReplyCommentToJSON)),
         'is_pinned': value.isPinned,
         'created_at': value.createdAt,
         'updated_at': value.updatedAt,

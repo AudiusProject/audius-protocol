@@ -1,11 +1,14 @@
 from src.models.comments.comment import Comment
-from src.tasks.entity_manager.utils import ManageEntityParameters
+from src.models.comments.comment_thread import CommentThread
+from src.tasks.entity_manager.utils import ManageEntityParameters, validate_signer
 from src.utils.structured_logger import StructuredLogger
 
 logger = StructuredLogger(__name__)
 
 
 def create_comment(params: ManageEntityParameters):
+    validate_signer(params)
+
     comment_id = params.entity_id
     comment_record = Comment(
         comment_id=comment_id,
@@ -22,3 +25,10 @@ def create_comment(params: ManageEntityParameters):
     )
 
     params.add_record(comment_id, comment_record)
+
+    if params.metadata["parent_comment_id"]:
+        remix = CommentThread(
+            parent_comment_id=params.metadata["parent_comment_id"],
+            comment_id=comment_id,
+        )
+        params.session.add(remix)

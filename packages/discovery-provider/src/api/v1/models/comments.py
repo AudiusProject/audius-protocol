@@ -3,6 +3,18 @@ from flask_restx import fields
 from .common import ns
 
 # TODO: Model Replies
+reply_comment_model = ns.model(
+    "reply_comment",
+    {
+        "id": fields.String(required=True),
+        "message": fields.String(required=True),
+        "timestamp_s": fields.Integer(required=False),
+        "react_count": fields.Integer(required=True),
+        "is_pinned": fields.Boolean(required=True),
+        "created_at": fields.String(required=True),
+        "updated_at": fields.String(required=False),
+    },
+)
 base_comment_model = ns.model(
     "comment",
     {
@@ -10,6 +22,7 @@ base_comment_model = ns.model(
         "message": fields.String(required=True),
         "timestamp_s": fields.Integer(required=False),
         "react_count": fields.Integer(required=True),
+        "replies": fields.List(fields.Nested(reply_comment_model), require=True),
         "is_pinned": fields.Boolean(required=True),
         "created_at": fields.String(required=True),
         "updated_at": fields.String(required=False),

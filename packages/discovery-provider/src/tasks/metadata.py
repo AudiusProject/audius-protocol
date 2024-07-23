@@ -192,6 +192,7 @@ comment_metadata_format = {
     "user_id": None,
     "entity_id": None,
     "entity_type": None,
+    "parent_comment_id": None,
 }
 
 

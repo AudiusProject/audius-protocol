@@ -31,7 +31,7 @@ type CommentSectionContextProps = {
 type CommentSectionContextType = CommentSectionContextProps & {
   isLoading: boolean
   comments: Comment[]
-  handlePostComment: (message: string, parentCommentId?: ID) => void
+  handlePostComment: (message: string, parentCommentId: ID | null) => void
   handleReactComment: (commentId: ID) => void
   handlePinComment: (commentId: ID) => void
   handleEditComment: (commentId: ID, newMessage: string) => void

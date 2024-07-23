@@ -50,6 +50,7 @@ models/PlaylistTracksResponse.ts
 models/ProfilePicture.ts
 models/RelatedArtistResponse.ts
 models/RemixParent.ts
+models/ReplyComment.ts
 models/Reposts.ts
 models/SubscribersResponse.ts
 models/Supporter.ts

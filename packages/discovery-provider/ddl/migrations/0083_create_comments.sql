@@ -1,7 +1,7 @@
 begin;
 
 CREATE TABLE IF NOT EXISTS comments (
-    comment_id PRIMARY KEY,
+    comment_id INTEGER PRIMARY KEY,
     text TEXT NOT NULL,
     user_id INTEGER NOT NULL,
     entity_id INTEGER NOT NULL,
@@ -13,10 +13,17 @@ CREATE TABLE IF NOT EXISTS comments (
     is_visible BOOLEAN DEFAULT TRUE,
     is_pinned BOOLEAN DEFAULT FALSE,
     is_edited BOOLEAN DEFAULT FALSE,
-    txhash varchar NOT NULL,
-    blockhash varchar NOT NULL,
-    blocknumber INTEGER NOT NULL
+    txhash TEXT NOT NULL,
+    blockhash TEXT NOT NULL,
+    blocknumber integer REFERENCES blocks(number) ON DELETE CASCADE
 );
+
+CREATE TABLE IF NOT EXISTS comment_threads (
+    comment_id INTEGER, 
+    parent_comment_id INTEGER,
+    CONSTRAINT comment_threads_pkey PRIMARY KEY (parent_comment_id, comment_id)
+);
+
 
 
 commit;

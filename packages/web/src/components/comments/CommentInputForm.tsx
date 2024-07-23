@@ -3,6 +3,7 @@ import { Avatar, Flex, IconButton, IconSend } from '@audius/harmony'
 import { Form, Formik } from 'formik'
 
 import { TextField } from 'components/form-fields'
+import { decodeHashId } from 'utils/hashIds'
 
 import { useCurrentCommentSection } from './CommentSectionContext'
 
@@ -18,9 +19,12 @@ export const CommentInputForm = ({
   parentCommentId
 }: CommentInputFormProps) => {
   const { handlePostComment } = useCurrentCommentSection()
-  console.log({ parentCommentId })
   const handleSubmit = ({ commentMessage }: CommentFormValues) => {
-    handlePostComment(commentMessage, parentCommentId)
+    let decodedParentCommentId = null
+    if (parentCommentId) {
+      decodedParentCommentId = decodeHashId(parentCommentId?.toString())
+    }
+    handlePostComment(commentMessage, decodedParentCommentId)
   }
   return (
     <Formik initialValues={formInitialValues} onSubmit={handleSubmit}>
