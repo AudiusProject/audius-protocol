@@ -1,9 +1,8 @@
 import { useCallback } from 'react'
 
-import { useGetPlaylistById, useGetCurrentUserId } from '@audius/common/api'
-import type { EditPlaylistValues } from '@audius/common/store'
+import type { EditCollectionValues } from '@audius/common/store'
 import { deletePlaylistConfirmationModalUIActions } from '@audius/common/store'
-import type { FormikProps } from 'formik'
+import { useField, type FormikProps } from 'formik'
 import { capitalize } from 'lodash'
 import { View } from 'react-native'
 import { useDispatch } from 'react-redux'
@@ -15,15 +14,18 @@ import {
   Tile,
   VirtualizedKeyboardAwareScrollView
 } from 'app/components/core'
+import { PriceAndAudienceField } from 'app/components/edit/PriceAndAudienceField'
+import { VisibilityField } from 'app/components/edit/VisibilityField'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles } from 'app/styles'
 
 import { TopBarIconButton } from '../app-screen'
 import { FormScreen } from '../page-form-screen'
 
-import { PlaylistDescriptionField } from './PlaylistDescriptionField'
-import { PlaylistImageInput } from './PlaylistImageInput'
-import { PlaylistNameField } from './PlaylistNameField'
+import { AdvancedAlbumField } from './AdvancedAlbumField'
+import { CollectionDescriptionField } from './CollectionDescriptionField'
+import { CollectionImageInput } from './CollectionImageInput'
+import { CollectionNameField } from './CollectionNameField'
 import { TrackListFieldArray } from './TrackListFieldArray'
 
 const { requestOpen: openDeletePlaylist } =
@@ -71,18 +73,16 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
   }
 }))
 
-export const EditPlaylistForm = (
-  props: FormikProps<EditPlaylistValues> & { playlistId: number }
+export const EditCollectionForm = (
+  props: FormikProps<EditCollectionValues> & { playlistId: number }
 ) => {
   const { playlistId, handleSubmit, handleReset } = props
   const styles = useStyles()
   const navigation = useNavigation()
   const dispatch = useDispatch()
 
-  const { data: currentUserId } = useGetCurrentUserId({})
-  const { data: collection } = useGetPlaylistById({ playlistId, currentUserId })
-  const collectionType = collection?.is_album ? 'album' : 'playlist'
-  const messages = getMessages(collectionType)
+  const [{ value: entityType }] = useField('entityType')
+  const messages = getMessages(entityType)
 
   const openDeleteDrawer = useCallback(() => {
     dispatch(openDeletePlaylist({ playlistId }))
@@ -103,9 +103,12 @@ export const EditPlaylistForm = (
       <VirtualizedKeyboardAwareScrollView>
         <Tile style={styles.tile}>
           <View style={styles.header}>
-            <PlaylistImageInput />
-            <PlaylistNameField />
-            <PlaylistDescriptionField />
+            <CollectionImageInput />
+            <CollectionNameField />
+            <CollectionDescriptionField />
+            <VisibilityField />
+            {entityType === 'album' ? <PriceAndAudienceField /> : null}
+            {entityType === 'album' ? <AdvancedAlbumField /> : null}
           </View>
           <Divider />
           <TrackListFieldArray />

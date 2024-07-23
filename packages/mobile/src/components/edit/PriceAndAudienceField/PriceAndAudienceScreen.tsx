@@ -20,15 +20,19 @@ import { Hint, IconCart } from '@audius/harmony-native'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { FormScreen } from 'app/screens/form-screen'
 
-import { EditPriceAndAudienceConfirmationDrawer } from '../components/EditPriceAndAudienceConfirmationDrawer'
-import { ExpandableRadio } from '../components/ExpandableRadio'
-import { ExpandableRadioGroup } from '../components/ExpandableRadioGroup'
-import { CollectibleGatedRadioField } from '../fields/GollectibleGatedRadioField'
-import { PremiumRadioField } from '../fields/PriceAndAudienceField/PremiumRadioField/PremiumRadioField'
-import { TRACK_PREVIEW } from '../fields/PriceAndAudienceField/PremiumRadioField/TrackPreviewField'
-import { TRACK_PRICE } from '../fields/PriceAndAudienceField/PremiumRadioField/TrackPriceField'
-import { SpecialAccessRadioField } from '../fields/SpecialAccessRadioField'
-import type { FormValues, RemixOfField } from '../types'
+import { EditPriceAndAudienceConfirmationDrawer } from '../../../screens/edit-track-screen/components/EditPriceAndAudienceConfirmationDrawer'
+import type {
+  FormValues,
+  RemixOfField
+} from '../../../screens/edit-track-screen/types'
+import { ExpandableRadio } from '../ExpandableRadio'
+import { ExpandableRadioGroup } from '../ExpandableRadioGroup'
+
+import { CollectibleGatedRadioField } from './GollectibleGatedRadioField'
+import { PremiumRadioField } from './PremiumRadioField/PremiumRadioField'
+import { TRACK_PREVIEW } from './PremiumRadioField/TrackPreviewField'
+import { TRACK_PRICE } from './PremiumRadioField/TrackPriceField'
+import { SpecialAccessRadioField } from './SpecialAccessRadioField'
 
 const publicAvailability = StreamTrackAvailabilityType.PUBLIC
 
@@ -43,6 +47,8 @@ export const PriceAndAudienceScreen = () => {
     'is_scheduled_release'
   )
   const [{ value: remixOf }] = useField<RemixOfField>('remix_of')
+  const [{ value: isUpload }] = useField<boolean>('is_upload')
+  const [{ value: entityType }] = useField<string>('entityType')
   const isRemix = !!remixOf
 
   const { isEnabled: isEditableAccessEnabled } = useFeatureFlag(
@@ -55,7 +61,6 @@ export const PriceAndAudienceScreen = () => {
     FeatureFlags.USDC_PURCHASES_UPLOAD
   )
 
-  const isUpload = !initialValues?.track_id
   const initialStreamConditions = initialValues?.stream_conditions ?? null
   const initialAvailability = useMemo(() => {
     if (isUsdcEnabled && isContentUSDCPurchaseGated(streamConditions)) {
@@ -208,14 +213,20 @@ export const PriceAndAudienceScreen = () => {
           disabled={disableUsdcGate}
           previousStreamConditions={previousStreamConditions}
         />
-        <SpecialAccessRadioField
-          disabled={disableSpecialAccessGate || disableSpecialAccessGateFields}
-          previousStreamConditions={previousStreamConditions}
-        />
-        <CollectibleGatedRadioField
-          disabled={disableCollectibleGate || disableCollectibleGateFields}
-          previousStreamConditions={previousStreamConditions}
-        />
+        {entityType === 'track' ? (
+          <SpecialAccessRadioField
+            disabled={
+              disableSpecialAccessGate || disableSpecialAccessGateFields
+            }
+            previousStreamConditions={previousStreamConditions}
+          />
+        ) : null}
+        {entityType === 'track' ? (
+          <CollectibleGatedRadioField
+            disabled={disableCollectibleGate || disableCollectibleGateFields}
+            previousStreamConditions={previousStreamConditions}
+          />
+        ) : null}
       </ExpandableRadioGroup>
       {!isUpload ? (
         <EditPriceAndAudienceConfirmationDrawer

@@ -1,7 +1,13 @@
+import type { ComponentType } from 'react'
+
+import type { ViewStyle } from 'react-native'
 import { View } from 'react-native'
 
 import { Text } from 'app/components/core'
-import { TextField, type TextFieldProps } from 'app/components/fields'
+import {
+  TextField as DefaultTextField,
+  type TextFieldProps
+} from 'app/components/fields'
 import { makeStyles } from 'app/styles'
 
 const useStyles = makeStyles(({ spacing, palette }) => ({
@@ -25,10 +31,18 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
 type BoxedTextFieldProps = TextFieldProps & {
   title: string
   description: string
+  style?: ViewStyle
+  TextField?: ComponentType<TextFieldProps>
 }
 
 export const BoxedTextField = (props: BoxedTextFieldProps) => {
-  const { title, description, style, ...other } = props
+  const {
+    title,
+    description,
+    style,
+    TextField = DefaultTextField,
+    ...other
+  } = props
   const styles = useStyles()
 
   return (

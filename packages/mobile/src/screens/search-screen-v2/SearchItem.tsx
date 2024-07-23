@@ -6,10 +6,6 @@ import {
 import { recentSearchMessages as messages } from '@audius/common/messages'
 import { Kind, SquareSizes, Status } from '@audius/common/models'
 import type { SearchItem as SearchItemType } from '@audius/common/store'
-import { profilePage } from '@audius/web/src/utils/route'
-import { useLinkProps } from '@react-navigation/native'
-import type { To } from '@react-navigation/native/lib/typescript/src/useLinkTo'
-import type { GestureResponderEvent } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'
 
 import type { IconComponent } from '@audius/harmony-native'
@@ -26,8 +22,7 @@ import { CollectionImageV2 } from 'app/components/image/CollectionImageV2'
 import { TrackImageV2 } from 'app/components/image/TrackImageV2'
 import Skeleton from 'app/components/skeleton'
 import { UserLink } from 'app/components/user-link'
-
-import type { AppTabScreenParamList } from '../app-screen'
+import { useNavigation } from 'app/hooks/useNavigation'
 
 type SearchItemProps = {
   icon?: IconComponent
@@ -38,26 +33,13 @@ type SearchItemProps = {
 
 type SearchItemContainerProps = {
   children: React.ReactNode
-  to: To<AppTabScreenParamList>
 } & SearchItemProps
 
 const SearchItemContainer = (props: SearchItemContainerProps) => {
-  const {
-    children,
-    to,
-    icon: Icon = IconCaretRight,
-    onPressIcon,
-    onPress
-  } = props
-  const linkProps = useLinkProps({ to })
-
-  const onLinkPress = (e?: GestureResponderEvent) => {
-    if (onPress) onPress()
-    linkProps.onPress(e)
-  }
+  const { children, icon: Icon = IconCaretRight, onPressIcon, onPress } = props
 
   return (
-    <TouchableOpacity {...linkProps} onPress={onLinkPress}>
+    <TouchableOpacity onPress={onPress}>
       <Flex
         direction='row'
         w='100%'
@@ -88,7 +70,7 @@ export const SearchItemSkeleton = () => (
     <Flex direction='row' w='100%' gap='m'>
       <Skeleton width={40} height={40} />
 
-      <Flex direction='column' gap='s'>
+      <Flex direction='column' gap='s' justifyContent='center'>
         <Skeleton width={120} height={12} />
         <Skeleton width={100} height={12} />
       </Flex>
@@ -97,21 +79,27 @@ export const SearchItemSkeleton = () => (
 )
 
 export const SearchItemTrack = (props: SearchItemProps) => {
-  const { searchItem } = props
+  const { searchItem, onPress } = props
   const { id } = searchItem
   const { data: track, status } = useGetTrackById({ id })
   const { data: user } = useGetUserById({ id: track?.owner_id ?? 0 })
   const { spacing } = useTheme()
+  const navigation = useNavigation()
 
   if (status === Status.LOADING) return <SearchItemSkeleton />
 
   if (!track) return null
-  const { permalink, title } = track
+  const { title } = track
 
   if (!user) return null
 
+  const handlePress = () => {
+    onPress?.()
+    navigation.push('Track', { id })
+  }
+
   return (
-    <SearchItemContainer to={permalink} {...props}>
+    <SearchItemContainer {...props} onPress={handlePress}>
       <TrackImageV2
         trackId={id}
         size={SquareSizes.SIZE_150_BY_150}
@@ -120,8 +108,18 @@ export const SearchItemTrack = (props: SearchItemProps) => {
           width: spacing.unit10
         }}
       />
-      <Flex direction='column' alignItems='flex-start' flex={1}>
-        <Text variant='body' size='s' numberOfLines={1}>
+      <Flex
+        direction='column'
+        alignItems='flex-start'
+        flex={1}
+        pointerEvents='none'
+      >
+        <Text
+          variant='body'
+          size='s'
+          numberOfLines={1}
+          style={{ lineHeight: spacing.unit4 }}
+        >
           {title}
         </Text>
         <Flex direction='row' alignItems='baseline'>
@@ -142,11 +140,12 @@ export const SearchItemTrack = (props: SearchItemProps) => {
 }
 
 export const SearchItemCollection = (props: SearchItemProps) => {
-  const { searchItem } = props
+  const { searchItem, onPress } = props
   const { id } = searchItem
   const { data: playlist, status } = useGetPlaylistById({
     playlistId: id
   })
+  const navigation = useNavigation()
 
   const { data: user } = useGetUserById({
     id: playlist?.playlist_owner_id ?? 0
@@ -155,19 +154,29 @@ export const SearchItemCollection = (props: SearchItemProps) => {
   if (status === Status.LOADING) return <SearchItemSkeleton />
 
   if (!playlist) return null
-  const { is_album, playlist_name, permalink } = playlist
+  const { is_album, playlist_name } = playlist
 
   if (!user) return null
 
+  const handlePress = () => {
+    onPress?.()
+    navigation.push('Collection', { id })
+  }
+
   return (
-    <SearchItemContainer to={permalink} {...props}>
+    <SearchItemContainer {...props} onPress={handlePress}>
       <CollectionImageV2
         collectionId={id}
         size={SquareSizes.SIZE_150_BY_150}
         style={{ height: spacing.unit10, width: spacing.unit10 }}
       />
       <Flex direction='column' alignItems='flex-start' flex={1}>
-        <Text variant='body' size='s' numberOfLines={1}>
+        <Text
+          variant='body'
+          size='s'
+          numberOfLines={1}
+          style={{ lineHeight: spacing.unit4 }}
+        >
           {playlist_name}
         </Text>
         <Flex direction='row' alignItems='baseline'>
@@ -188,17 +197,23 @@ export const SearchItemCollection = (props: SearchItemProps) => {
 }
 
 const SearchItemUser = (props: SearchItemProps) => {
-  const { searchItem } = props
+  const { searchItem, onPress } = props
   const { id } = searchItem
   const { data: user, status } = useGetUserById({ id })
+  const navigation = useNavigation()
 
   if (status === Status.LOADING) return <SearchItemSkeleton />
 
   if (!user) return null
   const { handle } = user
 
+  const handlePress = () => {
+    onPress?.()
+    navigation.push('Profile', { handle })
+  }
+
   return (
-    <SearchItemContainer to={profilePage(handle)} {...props}>
+    <SearchItemContainer {...props} onPress={handlePress}>
       <ProfilePicture userId={id} w={40} />
       <Flex
         direction='column'

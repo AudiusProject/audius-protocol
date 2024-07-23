@@ -7,11 +7,14 @@ import {
   reachabilitySelectors,
   relatedArtistsUIActions,
   shareModalUIActions,
-  modalsActions
+  modalsActions,
+  profilePageTracksLineupActions,
+  ProfilePageTabs,
+  profilePageFeedLineupActions
 } from '@audius/common/store'
 import { encodeUrlName } from '@audius/common/utils'
 import { PortalHost } from '@gorhom/portal'
-import { useFocusEffect } from '@react-navigation/native'
+import { useFocusEffect, useNavigationState } from '@react-navigation/native'
 import { Animated, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -33,7 +36,8 @@ const { fetchRelatedArtists } = relatedArtistsUIActions
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const {
   fetchProfile: fetchProfileAction,
-  setCurrentUser: setCurrentUserAction
+  setCurrentUser: setCurrentUserAction,
+  fetchCollections
 } = profilePageActions
 const { getProfileStatus } = profilePageSelectors
 const { getIsReachable } = reachabilitySelectors
@@ -52,6 +56,7 @@ export const ProfileScreen = () => {
   const profile = useSelectProfileRoot([
     'user_id',
     'handle',
+    'track_count',
     'does_current_user_follow'
   ])
   const handle =
@@ -66,6 +71,32 @@ export const ProfileScreen = () => {
   const setCurrentUser = useCallback(() => {
     dispatch(setCurrentUserAction(handleLower))
   }, [dispatch, handleLower])
+
+  const currentTab = useNavigationState((state) => {
+    const tabIndex = state.routes[1].state?.index
+    if (profile?.track_count && profile?.track_count > 0) {
+      switch (tabIndex) {
+        case 0:
+          return ProfilePageTabs.TRACKS
+        case 1:
+          return ProfilePageTabs.ALBUMS
+        case 2:
+          return ProfilePageTabs.PLAYLISTS
+        case 3:
+          return ProfilePageTabs.REPOSTS
+        default:
+          return ProfilePageTabs.TRACKS
+      }
+    }
+    switch (tabIndex) {
+      case 0:
+        return ProfilePageTabs.REPOSTS
+      case 1:
+        return ProfilePageTabs.PLAYLISTS
+      default:
+        return ProfilePageTabs.REPOSTS
+    }
+  }) as ProfilePageTabs
 
   const fetchProfile = useCallback(() => {
     dispatch(fetchProfileAction(handleLower, id ?? null, true, true, false))
@@ -83,11 +114,38 @@ export const ProfileScreen = () => {
   }, [fetchProfile])
 
   const handleRefresh = useCallback(() => {
+    // TODO: Investigate why this function over-fires when you pull to refresh
     if (profile) {
       setIsRefreshing(true)
       fetchProfile()
+      switch (currentTab) {
+        case ProfilePageTabs.TRACKS:
+          dispatch(
+            profilePageTracksLineupActions.refreshInView(
+              true,
+              { userId: profile.user_id },
+              null,
+              { handle: handleLower }
+            )
+          )
+          break
+        case ProfilePageTabs.PLAYLISTS:
+        case ProfilePageTabs.ALBUMS:
+          dispatch(fetchCollections(handleLower))
+          break
+        case ProfilePageTabs.REPOSTS:
+          dispatch(
+            profilePageFeedLineupActions.refreshInView(
+              true,
+              { userId: profile.user_id },
+              null,
+              { handle: handleLower }
+            )
+          )
+          break
+      }
     }
-  }, [profile, fetchProfile])
+  }, [profile, fetchProfile, currentTab, dispatch, handleLower])
 
   useEffect(() => {
     if (status === Status.SUCCESS) {

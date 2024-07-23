@@ -78,7 +78,7 @@ export type AppTabScreenParamList = {
     collectionType?: 'playlist' | 'album'
     handle?: string
   }
-  EditPlaylist: { id: ID }
+  EditCollection: { id: ID }
   Favorited: { id: ID; favoriteType: FavoriteType }
   Reposts: { id: ID; repostType: RepostType }
   Followers: { userId: ID }

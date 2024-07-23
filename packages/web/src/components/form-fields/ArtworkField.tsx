@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { EditPlaylistValues } from '@audius/common/store'
+import { EditCollectionValues } from '@audius/common/store'
 import { getErrorMessage } from '@audius/common/utils'
 import { useField, useFormikContext } from 'formik'
 
@@ -20,7 +20,7 @@ type ArtworkFieldProps = Partial<UploadArtworkProps> & {
 export const ArtworkField = (props: ArtworkFieldProps) => {
   const { name, autoFocus, ...other } = props
   const { submitCount, initialValues } = useFormikContext<
-    TrackEditFormValues | EditPlaylistValues
+    TrackEditFormValues | EditCollectionValues
   >()
   const [field, { touched, error }, { setValue }] = useField(name)
   const { value, ...otherField } = field
