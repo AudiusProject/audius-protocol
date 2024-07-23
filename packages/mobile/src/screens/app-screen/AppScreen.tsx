@@ -4,7 +4,7 @@ import { Platform } from 'react-native'
 
 import { ChangeEmailModalScreen } from '../change-email-screen/ChangeEmailScreen'
 import { ChangePasswordModalScreen } from '../change-password-screen'
-import { EditPlaylistModalScreen } from '../edit-playlist-screen'
+import { EditCollectionScreen } from '../edit-collection-screen'
 import { EditTrackModalScreen } from '../edit-track-screen'
 import { FeatureFlagOverrideModalScreen } from '../feature-flag-override-screen'
 import { TipArtistModalScreen } from '../tip-artist-screen'
@@ -30,7 +30,7 @@ export const AppScreen = () => {
         />
         <Stack.Screen name='Upload' component={UploadModalScreen} />
         <Stack.Screen name='EditTrack' component={EditTrackModalScreen} />
-        <Stack.Screen name='EditPlaylist' component={EditPlaylistModalScreen} />
+        <Stack.Screen name='EditCollection' component={EditCollectionScreen} />
         <Stack.Screen
           name='WalletConnect'
           component={WalletConnectModalScreen}

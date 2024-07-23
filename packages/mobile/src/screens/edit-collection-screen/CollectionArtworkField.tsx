@@ -15,7 +15,7 @@ type PickArtworkFieldProps = {
   name: string
 }
 
-export const PlaylistArtworkField = (props: PickArtworkFieldProps) => {
+export const CollectionArtworkField = (props: PickArtworkFieldProps) => {
   const { name } = props
   const [{ value: artwork }, , { setValue: setArtwork }] = useField(name)
   const { url: artworkUrl } = artwork

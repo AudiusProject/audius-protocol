@@ -15,7 +15,7 @@ const messages = {
   screenTitle: 'Advanced'
 }
 
-export const AdvancedOptionsScreen = () => {
+export const AdvancedScreen = () => {
   const [{ value: isUpload }] = useField('isUpload')
   const [{ value: isUnlisted }] = useField('is_unlisted')
 
@@ -27,8 +27,8 @@ export const AdvancedOptionsScreen = () => {
       variant='white'
     >
       <SubmenuList>
-        <IsrcField />
         <LicenseTypeField />
+        <IsrcField />
         {isUnlisted ? null : <ReleaseDateField />}
         {isUpload ? <></> : <KeyBpmField />}
       </SubmenuList>

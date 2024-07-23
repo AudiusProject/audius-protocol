@@ -22,7 +22,8 @@ export type Image = {
   file?: string | File | { uri: string; name: string; type: string }
 }
 
-export type EditPlaylistValues = Collection & {
+export type EditCollectionValues = Collection & {
+  entityType: 'playlist' | 'album'
   artwork: Image
   tracks?: { metadata: Track }[]
 }

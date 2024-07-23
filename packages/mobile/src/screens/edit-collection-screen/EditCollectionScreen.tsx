@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 
 import { SquareSizes } from '@audius/common/models'
-import type { EditPlaylistValues } from '@audius/common/store'
+import type { EditCollectionValues } from '@audius/common/store'
 import {
   cacheCollectionsActions,
   cacheCollectionsSelectors
@@ -14,13 +14,13 @@ import { useCollectionImage } from 'app/components/image/CollectionImage'
 import { isImageUriSource } from 'app/hooks/useContentNodeImage'
 import { useRoute } from 'app/hooks/useRoute'
 
-import { EditPlaylistNavigator } from './EditPlaylistNavigator'
+import { EditCollectionNavigator } from './EditCollectionNavigator'
 
 const { editPlaylist } = cacheCollectionsActions
 const { getCollection } = cacheCollectionsSelectors
 
-export const EditPlaylistModalScreen = () => {
-  const { params } = useRoute<'EditPlaylist'>()
+export const EditCollectionScreen = () => {
+  const { params } = useRoute<'EditCollection'>()
   const playlist = useSelector((state) =>
     getCollection(state, { id: params.id })
   )
@@ -32,7 +32,7 @@ export const EditPlaylistModalScreen = () => {
   })
 
   const handleSubmit = useCallback(
-    (values: EditPlaylistValues) => {
+    (values: EditCollectionValues) => {
       if (playlist) {
         dispatch(editPlaylist(playlist.playlist_id, values))
       }
@@ -44,7 +44,8 @@ export const EditPlaylistModalScreen = () => {
 
   const { tracks: tracksIgnored, ...restPlaylist } = playlist
 
-  const initialValues: EditPlaylistValues = {
+  const initialValues: EditCollectionValues = {
+    entityType: restPlaylist.is_album ? 'album' : 'playlist',
     ...restPlaylist,
     artwork: {
       url:
@@ -62,7 +63,7 @@ export const EditPlaylistModalScreen = () => {
         onSubmit={handleSubmit}
       >
         {(formikProps) => (
-          <EditPlaylistNavigator
+          <EditCollectionNavigator
             {...formikProps}
             playlistId={playlist.playlist_id}
           />

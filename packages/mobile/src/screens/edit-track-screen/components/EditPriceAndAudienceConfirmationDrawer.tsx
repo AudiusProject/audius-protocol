@@ -4,7 +4,7 @@ const messages = {
   header: 'Confirm Update',
   description:
     "You're about to change the audience for your content.  This update may cause others to lose the ability to listen and share.",
-  cancel: 'Go Cancel',
+  cancel: 'Cancel',
   confirm: 'Update Audience'
 }
 

@@ -15,9 +15,10 @@ import { Formik } from 'formik'
 import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
+import { TRACK_PREVIEW } from 'app/components/edit/PriceAndAudienceField/PremiumRadioField/TrackPreviewField'
+import { TRACK_PRICE } from 'app/components/edit/PriceAndAudienceField/PremiumRadioField/TrackPriceField'
+
 import { EditTrackNavigator } from './EditTrackNavigator'
-import { TRACK_PREVIEW } from './fields/PriceAndAudienceField/PremiumRadioField/TrackPreviewField'
-import { TRACK_PRICE } from './fields/PriceAndAudienceField/PremiumRadioField/TrackPriceField'
 import { BPM } from './screens/KeyBpmScreen'
 import type { FormValues, EditTrackScreenProps } from './types'
 const { computeLicenseVariables, ALL_RIGHTS_RESERVED_TYPE } = creativeCommons
@@ -203,8 +204,6 @@ const useEditTrackSchema = () => {
   )
 }
 
-const PRECISION = 2
-
 export type EditTrackParams = TrackForUpload
 
 export const EditTrackScreen = (props: EditTrackScreenProps) => {
@@ -212,23 +211,9 @@ export const EditTrackScreen = (props: EditTrackScreenProps) => {
 
   const { initialValues: initialValuesProp, onSubmit, ...screenProps } = props
 
-  // Handle price conversion of usdc gated tracks from cents => dollars on edit.
-  // Convert back to cents on submit function below.
-  const streamConditionsOverride = isContentUSDCPurchaseGated(
-    initialValuesProp.stream_conditions
-  )
-    ? {
-        usdc_purchase: {
-          ...initialValuesProp.stream_conditions.usdc_purchase,
-          price:
-            initialValuesProp.stream_conditions.usdc_purchase.price /
-            10 ** PRECISION
-        }
-      }
-    : initialValuesProp.stream_conditions
   const initialValues: FormValues = {
     ...initialValuesProp,
-    stream_conditions: streamConditionsOverride,
+    entityType: 'track',
     licenseType: computeLicenseVariables(
       initialValuesProp.license || ALL_RIGHTS_RESERVED_TYPE
     ),
@@ -278,22 +263,13 @@ export const EditTrackScreen = (props: EditTrackScreenProps) => {
         }
       }
 
-      let streamConditions = metadata.stream_conditions
+      const streamConditions = metadata.stream_conditions
       let previewStartSeconds = metadata.preview_start_seconds
       let isDownloadable = metadata.is_downloadable
       let isOriginalAvailable = metadata.is_original_available
 
       // If track is usdc gated, then price and preview need to be parsed into numbers before submitting
       if (isContentUSDCPurchaseGated(streamConditions)) {
-        streamConditions = {
-          usdc_purchase: {
-            ...streamConditions.usdc_purchase,
-            // Convert dollar price to cents
-            // @ts-ignore the price input field stored it as a string that needs to be parsed into a number
-            price:
-              Number(streamConditions.usdc_purchase.price) * 10 ** PRECISION
-          }
-        }
         // If user did not set usdc gated track preview, default it to 0
         previewStartSeconds = Number(previewStartSeconds ?? 0)
 

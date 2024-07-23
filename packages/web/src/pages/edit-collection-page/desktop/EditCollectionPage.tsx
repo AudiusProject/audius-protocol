@@ -5,7 +5,7 @@ import {
 import { Name, SquareSizes, Status } from '@audius/common/models'
 import { CollectionValues } from '@audius/common/schemas'
 import {
-  EditPlaylistValues,
+  EditCollectionValues,
   cacheCollectionsActions
 } from '@audius/common/store'
 import { replace } from 'connected-react-router'
@@ -99,7 +99,7 @@ export const EditCollectionPage = () => {
       ...restValues
     }
 
-    dispatch(editPlaylist(playlist_id, collection as EditPlaylistValues))
+    dispatch(editPlaylist(playlist_id, collection as EditCollectionValues))
 
     dispatch(replace(permalink))
   }

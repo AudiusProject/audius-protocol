@@ -2,7 +2,7 @@ import { View } from 'react-native'
 
 import { makeStyles } from 'app/styles'
 
-import { PlaylistArtworkField } from './PlaylistArtworkField'
+import { CollectionArtworkField } from './CollectionArtworkField'
 import { RandomImageInput } from './RandomImageButton'
 
 const name = 'artwork'
@@ -13,12 +13,12 @@ const useStyles = makeStyles(({ spacing }) => ({
   }
 }))
 
-export const PlaylistImageInput = () => {
+export const CollectionImageInput = () => {
   const styles = useStyles()
 
   return (
     <View style={styles.root}>
-      <PlaylistArtworkField name={name} />
+      <CollectionArtworkField name={name} />
       <RandomImageInput name={name} />
     </View>
   )

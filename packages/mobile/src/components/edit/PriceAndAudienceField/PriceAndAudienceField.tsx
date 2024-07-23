@@ -8,7 +8,10 @@ import {
   isContentTipGated,
   isContentUSDCPurchaseGated
 } from '@audius/common/models'
-import type { Nullable } from '@audius/common/utils'
+import {
+  decimalIntegerToHumanReadable,
+  type Nullable
+} from '@audius/common/utils'
 import { useField } from 'formik'
 
 import type { ContextualMenuProps } from 'app/components/core'
@@ -24,7 +27,9 @@ export const PriceAndAudienceField = (props: PriceAndAudienceFieldProps) => {
 
   const trackAvailabilityLabels = useMemo(() => {
     if (isContentUSDCPurchaseGated(streamConditions)) {
-      const amountLabel = `$${streamConditions.usdc_purchase.price}`
+      const amountLabel = `$${decimalIntegerToHumanReadable(
+        streamConditions.usdc_purchase.price
+      )}`
       return [messages.premium, amountLabel]
     }
     if (isContentCollectibleGated(streamConditions)) {

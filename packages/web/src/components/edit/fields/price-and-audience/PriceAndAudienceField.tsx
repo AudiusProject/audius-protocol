@@ -18,7 +18,7 @@ import { CollectionValues } from '@audius/common/schemas'
 import { FeatureFlags } from '@audius/common/services'
 import {
   accountSelectors,
-  EditPlaylistValues,
+  EditCollectionValues,
   editAccessConfirmationModalUIActions
 } from '@audius/common/store'
 import { getUsersMayLoseAccess } from '@audius/common/utils'
@@ -161,7 +161,7 @@ export const PriceAndAudienceField = (props: PriceAndAudienceFieldProps) => {
   // For edit flows we need to track initial stream conditions from the parent form (not from inside contextual menu)
   // So we take this from the parent form and pass it down to the menu fields
   const { initialValues: parentFormInitialValues } = useFormikContext<
-    EditPlaylistValues | CollectionValues | TrackEditFormValues
+    EditCollectionValues | CollectionValues | TrackEditFormValues
   >()
   const parentFormInitialStreamConditions =
     'stream_conditions' in parentFormInitialValues

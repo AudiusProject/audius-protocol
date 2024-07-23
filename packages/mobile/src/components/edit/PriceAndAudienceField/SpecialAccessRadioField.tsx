@@ -21,10 +21,10 @@ import {
   RadioGroup,
   RadioGroupContext
 } from '@audius/harmony-native'
-import { useSetTrackAvailabilityFields } from 'app/hooks/useSetTrackAvailabilityFields'
+import { useSetEntityAvailabilityFields } from 'app/hooks/useSetTrackAvailabilityFields'
 import { setVisibility } from 'app/store/drawers/slice'
 
-import { ExpandableRadio } from '../components/ExpandableRadio'
+import { ExpandableRadio } from '../ExpandableRadio'
 
 const { specialAccessRadio: messages } = priceAndAudienceMessages
 
@@ -46,7 +46,7 @@ export const SpecialAccessRadioField = (
   const { value } = useContext(RadioGroupContext)
   const selected = value === StreamTrackAvailabilityType.SPECIAL_ACCESS
 
-  const { set: setTrackAvailabilityFields } = useSetTrackAvailabilityFields()
+  const { set: setTrackAvailabilityFields } = useSetEntityAvailabilityFields()
   const currentUserId = useSelector(getUserId)
   const defaultSpecialAccess = currentUserId
     ? { follow_user_id: currentUserId }
