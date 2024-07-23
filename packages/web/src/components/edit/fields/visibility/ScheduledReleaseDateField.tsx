@@ -1,12 +1,14 @@
 import { visibilityMessages } from '@audius/common/messages'
 import { Box, Flex, Hint } from '@audius/harmony'
-import { useField } from 'formik'
+import { useField, useFormikContext } from 'formik'
 
 import { HarmonyTextField } from 'components/form-fields/HarmonyTextField'
 import { SelectField } from 'components/form-fields/SelectField'
 import { getLocalTimezone } from 'utils/dateUtils'
 
 import { DatePickerField } from '../DatePickerField'
+import { useEffect } from 'react'
+import dayjs from 'dayjs'
 
 const messages = {
   ...visibilityMessages,
@@ -16,6 +18,14 @@ const messages = {
 
 export const ScheduledReleaseDateField = () => {
   const [{ value: releaseDate }, { touched }] = useField('releaseDate')
+  const { setFieldValue } = useFormikContext()
+
+  useEffect(() => {
+    if (releaseDate && touched && dayjs().isSame(dayjs(releaseDate), 'day')) {
+      setFieldValue('releaseDateTime', '11:59')
+      setFieldValue('releaseDateMeridian', 'PM')
+    }
+  }, [releaseDate, touched])
 
   return (
     <Flex direction='column' gap='l'>
