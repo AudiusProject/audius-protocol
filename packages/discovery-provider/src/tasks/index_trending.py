@@ -82,7 +82,7 @@ def update_view(session: Session, mat_view_name: str):
 
 
 def index_trending(self, db: SessionManager, redis: Redis, timestamp):
-    logger.info("index_trending.py | starting indexing")
+    logger.debug("index_trending.py | starting indexing")
     update_start = time.time()
     metric = PrometheusMetric(PrometheusMetricNames.INDEX_TRENDING_DURATION_SECONDS)
     with db.scoped_session() as session:
@@ -129,7 +129,7 @@ def index_trending(self, db: SessionManager, redis: Redis, timestamp):
                     set_json_cached_key(redis, key, res)
                     cache_end_time = time.time()
                     total_time = cache_end_time - cache_start_time
-                    logger.info(
+                    logger.debug(
                         f"index_trending.py | Cached trending ({version.name} version) \
                         for {genre}-{time_range} in {total_time} seconds"
                     )
@@ -148,7 +148,7 @@ def index_trending(self, db: SessionManager, redis: Redis, timestamp):
             set_json_cached_key(redis, key, res)
             cache_end_time = time.time()
             total_time = cache_end_time - cache_start_time
-            logger.info(
+            logger.debug(
                 f"index_trending.py | Cached underground trending ({version.name} version) \
                 in {total_time} seconds"
             )
@@ -156,7 +156,7 @@ def index_trending(self, db: SessionManager, redis: Redis, timestamp):
     update_end = time.time()
     update_total = update_end - update_start
     metric.save_time()
-    logger.info(
+    logger.debug(
         f"index_trending.py | Finished indexing trending in {update_total} seconds",
         extra={"job": "index_trending", "total_time": update_total},
     )
@@ -281,7 +281,7 @@ def index_trending_notifications(
                 for n in notifications
             ]
         )
-        logger.info(
+        logger.debug(
             "index_trending.py | Created trending notifications",
             extra={"job": "index_trending", "subtask": "trending notification"},
         )
@@ -394,7 +394,7 @@ def index_trending_underground_notifications(db: SessionManager, timestamp: int)
                 for n in notifications
             ]
         )
-        logger.info(
+        logger.debug(
             "index_trending.py | Created underground-trending notifications",
             extra={"job": "index_trending", "subtask": "trending notification"},
         )
@@ -506,9 +506,9 @@ def index_trending_task(self):
             if min_block is not None and min_timestamp is not None:
                 index_trending(self, db, redis, min_timestamp)
             else:
-                logger.info("index_trending.py | skip indexing: not min block")
+                logger.debug("index_trending.py | skip indexing: not min block")
         else:
-            logger.info(
+            logger.debug(
                 f"index_trending.py | \
                 skip indexing: without lock {have_lock}"
             )

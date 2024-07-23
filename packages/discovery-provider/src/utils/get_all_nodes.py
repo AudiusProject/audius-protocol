@@ -83,7 +83,7 @@ def get_all_nodes(service_type: bytes) -> Tuple[List[str], List[str], List[str]]
             owner = node_info[0]
             wallet = node_info[3]
             endpoint = node_info[1]
-            logger.info(f"get_all_nodes.py | node_info: {node_info}")
+            logger.debug(f"get_all_nodes.py | node_info: {node_info}")
             if is_fqdn(endpoint):
                 all_nodes.append(endpoint)
                 all_wallets.append(wallet)

@@ -203,7 +203,7 @@ def refresh_user_balances(session: Session, redis: Redis, accts=List[str]):
     # Only refresh if this is a known account within audius
     if results:
         user_ids = [user_id[0] for user_id in results]
-        logger.info(f"index_user_bank.py | Refresh user_ids = {user_ids}")
+        logger.debug(f"index_user_bank.py | Refresh user_ids = {user_ids}")
         enqueue_immediate_balance_refresh(redis, user_ids)
     return results
 
@@ -240,7 +240,7 @@ def process_create_userbank_instruction(
         bank_acct_index = account_keys.index(bank_acct)
         if bank_acct_index:
             if mint_address == WAUDIO_MINT:
-                logger.info(
+                logger.debug(
                     f"index_user_bank.py | {tx_sig} Found known $AUDIO account: {eth_addr}, {bank_acct}"
                 )
                 session.add(
@@ -252,7 +252,7 @@ def process_create_userbank_instruction(
                     )
                 )
             elif mint_address == USDC_MINT:
-                logger.info(
+                logger.debug(
                     f"index_user_bank.py | {tx_sig} Found known $USDC account: {eth_addr}, {bank_acct}"
                 )
                 session.add(
@@ -397,7 +397,7 @@ def get_purchase_metadata_from_memo(
                     "purchaser_user_id": purchaser_user_id,
                     "access": access,
                 }
-                logger.info(
+                logger.debug(
                     f"index_user_bank.py | Got purchase metadata {content_metadata}"
                 )
                 return purchase_metadata
@@ -646,14 +646,14 @@ def process_transfer_instruction(
         receiver_account == PAYMENT_ROUTER_USDC_ATA_ADDRESS
         or receiver_account == PAYMENT_ROUTER_WAUDIO_ATA_ADDRESS
     ):
-        logger.info(f"index_user_bank.py | Skipping payment router tx {tx_sig}")
+        logger.debug(f"index_user_bank.py | Skipping payment router tx {tx_sig}")
         return
 
     user_id_accounts = []
 
     if is_audio:
         # Accounts to refresh balance
-        logger.info(
+        logger.debug(
             f"index_user_bank.py | Balance refresh accounts: {sender_account}, {receiver_account}"
         )
         user_id_accounts = refresh_user_balances(
@@ -897,10 +897,10 @@ def get_sol_tx_info(
     try:
         existing_tx = redis.get(get_solana_transaction_key(tx_sig))
         if existing_tx is not None and existing_tx != "":
-            logger.info(f"index_user_bank.py | Cache hit: {tx_sig}")
+            logger.debug(f"index_user_bank.py | Cache hit: {tx_sig}")
             tx_info = GetTransactionResp.from_json(existing_tx.decode("utf-8"))
             return (tx_info, tx_sig)
-        logger.info(f"index_user_bank.py | Cache miss: {tx_sig}")
+        logger.debug(f"index_user_bank.py | Cache miss: {tx_sig}")
         tx_info = solana_client_manager.get_sol_tx_info(tx_sig)
         return (tx_info, tx_sig)
     except SolanaTransactionFetchError:
@@ -912,7 +912,7 @@ def process_user_bank_txs() -> None:
     challenge_bus: ChallengeEventBus = index_user_bank.challenge_event_bus
     db = index_user_bank.db
     redis = index_user_bank.redis
-    logger.info("index_user_bank.py | Acquired lock")
+    logger.debug("index_user_bank.py | Acquired lock")
 
     # Exit if required configs are not found
     if not WAUDIO_MINT_PUBKEY or not USER_BANK_KEY:
@@ -940,14 +940,14 @@ def process_user_bank_txs() -> None:
     # Query for solana transactions until an intersection is found
     with db.scoped_session() as session:
         latest_processed_slot = get_highest_user_bank_tx_slot(session)
-        logger.info(f"index_user_bank.py | high tx = {latest_processed_slot}")
+        logger.debug(f"index_user_bank.py | high tx = {latest_processed_slot}")
         while not intersection_found:
             fetch_size = (
                 INITIAL_FETCH_SIZE
                 if is_initial_fetch
                 else FETCH_TX_SIGNATURES_BATCH_SIZE
             )
-            logger.info(f"index_user_bank.py | Requesting {fetch_size} transactions")
+            logger.debug(f"index_user_bank.py | Requesting {fetch_size} transactions")
             transactions_history = solana_client_manager.get_signatures_for_address(
                 USER_BANK_ADDRESS, before=last_tx_signature, limit=fetch_size
             )
@@ -955,7 +955,7 @@ def process_user_bank_txs() -> None:
             transactions_array = transactions_history.value
             if not transactions_array:
                 intersection_found = True
-                logger.info(
+                logger.debug(
                     f"index_user_bank.py | No transactions found before {last_tx_signature}"
                 )
             else:
@@ -980,7 +980,7 @@ def process_user_bank_txs() -> None:
                     ):
                         # Check the tx signature for any txs in the latest batch,
                         # and if not present in DB, add to processing
-                        logger.info(
+                        logger.debug(
                             f"index_user_bank.py | Latest slot re-traversal\
                             slot={tx_slot}, sig={tx_sig},\
                             latest_processed_slot(db)={latest_processed_slot}"
@@ -1007,7 +1007,7 @@ def process_user_bank_txs() -> None:
                     transaction_signatures = transaction_signatures[
                         -TX_SIGNATURES_RESIZE_LENGTH:
                     ]
-                    logger.info(
+                    logger.debug(
                         f"index_user_bank.py | sliced tx_sigs from {prev_len} to {len(transaction_signatures)} entries"
                     )
 
@@ -1021,7 +1021,7 @@ def process_user_bank_txs() -> None:
 
         num_txs_processed = 0
         for tx_sig_batch in transaction_signatures:
-            logger.info(f"index_user_bank.py | processing {tx_sig_batch}")
+            logger.debug(f"index_user_bank.py | processing {tx_sig_batch}")
             batch_start_time = time.time()
 
             tx_infos: List[Tuple[GetTransactionResp, str]] = []
@@ -1085,7 +1085,7 @@ def process_user_bank_txs() -> None:
 
             batch_end_time = time.time()
             batch_duration = batch_end_time - batch_start_time
-            logger.info(
+            logger.debug(
                 f"index_user_bank.py | processed batch {len(tx_sig_batch)} txs in {batch_duration}s"
             )
 
@@ -1132,7 +1132,7 @@ def index_user_bank(self):
             with challenge_bus.use_scoped_dispatch_queue():
                 process_user_bank_txs()
         else:
-            logger.info("index_user_bank.py | Failed to acquire lock")
+            logger.debug("index_user_bank.py | Failed to acquire lock")
 
     except Exception as e:
         logger.error("index_user_bank.py | Fatal error in main loop", exc_info=True)

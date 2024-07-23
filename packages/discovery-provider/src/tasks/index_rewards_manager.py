@@ -222,10 +222,10 @@ def get_sol_tx_info(
 ):
     existing_tx = redis.get(get_solana_transaction_key(tx_sig))
     if existing_tx is not None and existing_tx != "":
-        logger.info(f"index_rewards_manager.py | Cache hit: {tx_sig}")
+        logger.debug(f"index_rewards_manager.py | Cache hit: {tx_sig}")
         tx_info = GetTransactionResp.from_json(existing_tx.decode("utf-8"))
         return tx_info
-    logger.info(f"index_rewards_manager.py | Cache miss: {tx_sig}")
+    logger.debug(f"index_rewards_manager.py | Cache miss: {tx_sig}")
     tx_info = solana_client_manager.get_sol_tx_info(tx_sig)
     return tx_info
 
@@ -256,7 +256,7 @@ def fetch_and_parse_sol_rewards_transfer_instruction(
         if not meta:
             return tx_metadata
         if meta.err:
-            logger.info(
+            logger.warn(
                 f"index_rewards_manager.py | Skipping error transaction from chain {tx_info}"
             )
             return tx_metadata
@@ -308,7 +308,7 @@ def process_batch_sol_reward_manager_txs(
 ):
     """Validates that the transfer instruction is consistent with DB and inserts ChallengeDisbursement DB entries"""
     try:
-        logger.info(f"index_rewards_manager | processing {reward_manager_txs}")
+        logger.debug(f"index_rewards_manager | processing {reward_manager_txs}")
         eth_recipients = [
             tx["transfer_instruction"]["eth_recipient"]
             for tx in reward_manager_txs
@@ -383,7 +383,7 @@ def process_batch_sol_reward_manager_txs(
 
             user_id = users_map[eth_recipient]["user_id"]
             challenge_id = transfer_instr["challenge_id"]
-            logger.info(
+            logger.debug(
                 f"index_rewards_manager.py | found successful disbursement for user_id: [{user_id}]"
             )
 
@@ -490,7 +490,7 @@ def get_transaction_signatures(
                 if is_initial_fetch
                 else FETCH_TX_SIGNATURES_BATCH_SIZE
             )
-            logger.info(
+            logger.debug(
                 f"index_rewards_manager.py | Requesting {fetch_size} transactions"
             )
             transactions_history = solana_client_manager.get_signatures_for_address(
@@ -501,7 +501,7 @@ def get_transaction_signatures(
             transactions_array = transactions_history.value
             if not transactions_array:
                 intersection_found = True
-                logger.info(
+                logger.debug(
                     f"index_rewards_manager.py | No transactions found before {last_tx_signature}"
                 )
             else:
@@ -527,7 +527,7 @@ def get_transaction_signatures(
                     ):
                         # Check the tx signature for any txs in the latest batch,
                         # and if not present in DB, add to processing
-                        logger.info(
+                        logger.debug(
                             f"index_rewards_manager.py | Latest slot re-traversal\
                             slot={tx_slot}, sig={tx_sig},\
                             latest_processed_slot(db)={latest_processed_slot}"
@@ -573,7 +573,7 @@ def process_transaction_signatures(
         last_tx_sig = transaction_signatures[-1][0]
 
     for tx_sig_batch in transaction_signatures:
-        logger.info(f"index_rewards_manager.py | processing {tx_sig_batch}")
+        logger.debug(f"index_rewards_manager.py | processing {tx_sig_batch}")
         batch_start_time = time.time()
 
         transfer_instructions: List[RewardManagerTransactionInfo] = []
@@ -607,7 +607,7 @@ def process_transaction_signatures(
             process_batch_sol_reward_manager_txs(session, transfer_instructions, redis)
         batch_end_time = time.time()
         batch_duration = batch_end_time - batch_start_time
-        logger.info(
+        logger.debug(
             f"index_rewards_manager.py | processed batch {len(tx_sig_batch)} txs in {batch_duration}s"
         )
 
@@ -652,7 +652,7 @@ def process_solana_rewards_manager(
         MIN_SLOT,
     )
     if transaction_signatures:
-        logger.info(f"index_rewards_manager.py | {transaction_signatures}")
+        logger.debug(f"index_rewards_manager.py | {transaction_signatures}")
 
     last_tx = process_transaction_signatures(
         solana_client_manager, db, redis, transaction_signatures
@@ -688,10 +688,10 @@ def index_rewards_manager(self):
         # Attempt to acquire lock - do not block if unable to acquire
         have_lock = update_lock.acquire(blocking=False)
         if have_lock:
-            logger.info("index_rewards_manager.py | Acquired lock")
+            logger.debug("index_rewards_manager.py | Acquired lock")
             process_solana_rewards_manager(solana_client_manager, db, redis)
         else:
-            logger.info("index_rewards_manager.py | Failed to acquire lock")
+            logger.debug("index_rewards_manager.py | Failed to acquire lock")
     except Exception as e:
         logger.error(
             "index_rewards_manager.py | Fatal error in main loop", exc_info=True

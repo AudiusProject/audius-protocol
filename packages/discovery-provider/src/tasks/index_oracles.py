@@ -56,7 +56,7 @@ def index_oracles_task(self):
         if have_lock:
             get_oracle_addresses_from_chain(redis)
         else:
-            logger.info("index_oracles.py | Failed to acquire index oracles lock")
+            logger.debug("index_oracles.py | Failed to acquire index oracles lock")
     except Exception as e:
         logger.error("index_oracles.py | Fatal error in main loop", exc_info=True)
         raise e

@@ -34,7 +34,7 @@ def _index_hourly_play_counts(session):
     new_id_checkpoint = (session.query(func.max(Play.id))).scalar()
 
     if not new_id_checkpoint or new_id_checkpoint == prev_id_checkpoint:
-        logger.info(
+        logger.debug(
             "index_hourly_play_counts.py | Skip update because there are no new plays"
         )
         return
@@ -85,7 +85,7 @@ def index_hourly_play_counts(self):
         # Attempt to acquire lock - do not block if unable to acquire
         have_lock = update_lock.acquire(blocking=False)
         if have_lock:
-            logger.info(
+            logger.debug(
                 f"index_hourly_play_counts.py | Updating {HOURLY_PLAY_COUNTS_TABLE_NAME}"
             )
 
@@ -94,12 +94,12 @@ def index_hourly_play_counts(self):
             with db.scoped_session() as session:
                 _index_hourly_play_counts(session)
 
-            logger.info(
+            logger.debug(
                 f"index_hourly_play_counts.py | Finished updating \
                 {HOURLY_PLAY_COUNTS_TABLE_NAME} in: {time.time()-start_time} sec"
             )
         else:
-            logger.info(
+            logger.debug(
                 "index_hourly_play_counts.py | Failed to acquire update_hourly_play_counts"
             )
     except Exception as e:

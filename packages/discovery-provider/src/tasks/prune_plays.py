@@ -75,16 +75,16 @@ def prune_plays(self):
         have_lock = update_lock.acquire(blocking=False)
         if have_lock:
             start_time = time.time()
-            logger.info("prune_plays.py | Started pruning plays")
+            logger.debug("prune_plays.py | Started pruning plays")
 
             with db.scoped_session() as session:
                 _prune_plays(session)
 
-            logger.info(
+            logger.debug(
                 f"prune_plays.py | Finished pruning in: {time.time()-start_time} sec"
             )
         else:
-            logger.info("prune_plays.py | Failed to acquire prune_plays_lock")
+            logger.debug("prune_plays.py | Failed to acquire prune_plays_lock")
     except Exception as e:
         logger.error("prune_plays.py | Fatal error in main loop", exc_info=True)
         raise e
