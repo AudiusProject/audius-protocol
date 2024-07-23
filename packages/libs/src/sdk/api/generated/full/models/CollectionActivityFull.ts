@@ -14,44 +14,41 @@
  */
 
 import { exists, mapValues } from '../runtime';
-import type { PlaylistFullWithoutTracks } from './PlaylistFullWithoutTracks';
+import type { ActivityFull } from './ActivityFull';
 import {
-    PlaylistFullWithoutTracksFromJSON,
-    PlaylistFullWithoutTracksFromJSONTyped,
-    PlaylistFullWithoutTracksToJSON,
-} from './PlaylistFullWithoutTracks';
+    ActivityFullFromJSON,
+    ActivityFullFromJSONTyped,
+    ActivityFullToJSON,
+} from './ActivityFull';
+import type { PlaylistFull } from './PlaylistFull';
+import {
+    PlaylistFullFromJSON,
+    PlaylistFullFromJSONTyped,
+    PlaylistFullToJSON,
+} from './PlaylistFull';
 
 /**
  * 
  * @export
  * @interface CollectionActivityFull
  */
-export interface CollectionActivityFull {
+export interface CollectionActivityFull extends ActivityFull {
     /**
      * 
-     * @type {string}
+     * @type {PlaylistFull}
      * @memberof CollectionActivityFull
      */
-    timestamp?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof CollectionActivityFull
-     */
-    itemType?: string;
-    /**
-     * 
-     * @type {PlaylistFullWithoutTracks}
-     * @memberof CollectionActivityFull
-     */
-    item?: PlaylistFullWithoutTracks;
+    item: PlaylistFull;
 }
+
+
 
 /**
  * Check if a given object implements the CollectionActivityFull interface.
  */
 export function instanceOfCollectionActivityFull(value: object): value is CollectionActivityFull {
     let isInstance = true;
+    isInstance = isInstance && "item" in value && value["item"] !== undefined;
 
     return isInstance;
 }
@@ -65,10 +62,8 @@ export function CollectionActivityFullFromJSONTyped(json: any, ignoreDiscriminat
         return json;
     }
     return {
-        
-        'timestamp': !exists(json, 'timestamp') ? undefined : json['timestamp'],
-        'itemType': !exists(json, 'item_type') ? undefined : json['item_type'],
-        'item': !exists(json, 'item') ? undefined : PlaylistFullWithoutTracksFromJSON(json['item']),
+        ...ActivityFullFromJSONTyped(json, ignoreDiscriminator),
+        'item': PlaylistFullFromJSON(json['item']),
     };
 }
 
@@ -80,10 +75,8 @@ export function CollectionActivityFullToJSON(value?: CollectionActivityFull | nu
         return null;
     }
     return {
-        
-        'timestamp': value.timestamp,
-        'item_type': value.itemType,
-        'item': PlaylistFullWithoutTracksToJSON(value.item),
+        ...ActivityFullToJSON(value),
+        'item': PlaylistFullToJSON(value.item),
     };
 }
 
