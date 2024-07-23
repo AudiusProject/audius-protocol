@@ -15,10 +15,10 @@ import { decodeHashId } from '~/utils/hashIds'
 
 import { accessConditionsFromSDK } from './access'
 import { resourceContributorFromSDK } from './attribution'
-import { favoriteListFromSDK } from './favorite'
+import { favoriteFromSDK } from './favorite'
 import { coverArtSizesCIDsFromSDK } from './imageSize'
-import { remixListFromSDK } from './remix'
-import { repostListFromSDK } from './repost'
+import { remixFromSDK } from './remix'
+import { repostFromSDK } from './repost'
 import { userMetadataFromSDK } from './user'
 import { transformAndCleanList } from './utils'
 
@@ -41,7 +41,7 @@ export const userTrackMetadataFromSDK = (
     return undefined
   }
 
-  const remixes = remixListFromSDK(input.remixOf?.tracks)
+  const remixes = transformAndCleanList(input.remixOf?.tracks, remixFromSDK)
 
   const newTrack: UserTrackMetadata = {
     // Fields from API that are omitted in this model
@@ -73,19 +73,21 @@ export const userTrackMetadataFromSDK = (
       ? accessConditionsFromSDK(input.downloadConditions)
       : null,
     field_visibility: snakecaseKeys(input.fieldVisibility),
-    // TODO: Broken, favorite_type is coming back as `SaveType.track` etc
-    followee_saves: favoriteListFromSDK(input.followeeFavorites),
-    // TODO: Check
-    followee_reposts: repostListFromSDK(input.followeeReposts),
-    // TODO: Check
+    followee_saves: transformAndCleanList(
+      input.followeeFavorites,
+      favoriteFromSDK
+    ),
+    followee_reposts: transformAndCleanList(
+      input.followeeReposts,
+      repostFromSDK
+    ),
     remix_of:
       remixes.length > 0
         ? {
             tracks: remixes
           }
         : null,
-    // TODO: Returning an object with empty fields
-    stem_of: input.stemOf
+    stem_of: input.stemOf?.parentTrackId
       ? {
           category: input.stemOf.category as StemCategory,
           parent_track_id: input.stemOf.parentTrackId
@@ -106,8 +108,7 @@ export const userTrackMetadataFromSDK = (
     artists: input.artists
       ? transformAndCleanList(input.artists, resourceContributorFromSDK)
       : null,
-    // TODO
-    // audio_upload_id: input.audioUploadId ?? null,
+    audio_upload_id: input.audioUploadId ?? null,
     copyright_line: input.copyrightLine
       ? (snakecaseKeys(input.copyrightLine) as Copyright)
       : null,

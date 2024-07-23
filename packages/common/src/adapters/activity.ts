@@ -5,11 +5,6 @@ import { userTrackMetadataFromSDK } from './track'
 
 export const repostActivityFromSDK = (input: full.ActivityFull) => {
   const { timestamp, itemType: item_type, item } = input
-  // if (full.instanceOfTrackActivityFull(activity)) {
-  //   return userTrackMetadataFromSDK(activity.item)
-  // } else if (full.instanceOfCollectionActivityFull(activity)) {
-  //   return userCollectionMetadataFromSDK(activity.item)
-  // }
   if (item_type === full.ActivityFullItemTypeEnum.Track) {
     return {
       timestamp,

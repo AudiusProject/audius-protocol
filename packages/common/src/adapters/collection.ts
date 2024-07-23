@@ -12,9 +12,9 @@ import { decodeHashId } from '~/utils/hashIds'
 
 import { accessConditionsFromSDK } from './access'
 import { resourceContributorFromSDK } from './attribution'
-import { favoriteListFromSDK } from './favorite'
+import { favoriteFromSDK } from './favorite'
 import { coverArtSizesCIDsFromSDK } from './imageSize'
-import { repostListFromSDK } from './repost'
+import { repostFromSDK } from './repost'
 import { userTrackMetadataFromSDK } from './track'
 import { userMetadataFromSDK } from './user'
 import { transformAndCleanList } from './utils'
@@ -68,8 +68,14 @@ export const userCollectionMetadataFromSDK = (
     cover_art_cids: input.coverArtCids
       ? coverArtSizesCIDsFromSDK(input.coverArtCids)
       : null,
-    followee_reposts: repostListFromSDK(input.followeeReposts),
-    followee_saves: favoriteListFromSDK(input.followeeFavorites),
+    followee_reposts: transformAndCleanList(
+      input.followeeReposts,
+      repostFromSDK
+    ),
+    followee_saves: transformAndCleanList(
+      input.followeeFavorites,
+      favoriteFromSDK
+    ),
     // TODO: Use playlistContents
     playlist_contents: {
       track_ids: transformAndCleanList(

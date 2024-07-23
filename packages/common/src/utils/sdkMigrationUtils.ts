@@ -46,15 +46,9 @@ export const compareSDKResponse = <T extends object>(
 ) => {
   // Migrated is an error, skip the diff
   if (migrated instanceof Error) {
-    console.debug(`SDK Migration failed (error) for ${endpointName}`, {
+    console.error(`SDK Migration failed (error) for ${endpointName}`, {
       legacy,
       migrated
-    })
-    throw new SDKMigrationFailedError({
-      endpointName,
-      innerMessage: 'Migrated response was error',
-      legacyValue: legacy,
-      migratedValue: migrated
     })
   }
   // Both object-like, perform deep diff
@@ -65,31 +59,18 @@ export const compareSDKResponse = <T extends object>(
       !isEmpty(diff.deleted) ||
       !isEmpty(diff.updated)
     ) {
-      console.debug(`SDK Migration failed (diff) for ${endpointName}`, {
+      console.error(`SDK Migration failed (diff) for ${endpointName}`, {
         diff,
         legacy,
         migrated
-      })
-      throw new SDKMigrationFailedError({
-        diff,
-        endpointName,
-        innerMessage: 'Legacy and migrated values differ',
-        legacyValue: legacy,
-        migratedValue: migrated
       })
     }
   }
   // Not object like, perform strict equals
   else if (legacy !== migrated) {
-    console.debug(`SDK Migration failed (!==) for ${endpointName}`, {
+    console.error(`SDK Migration failed (!==) for ${endpointName}`, {
       legacy,
       migrated
-    })
-    throw new SDKMigrationFailedError({
-      endpointName,
-      innerMessage: 'Legacy and migrated values not strictly equal',
-      legacyValue: legacy,
-      migratedValue: migrated
     })
   }
   console.debug(`SDK Migration succeeded for ${endpointName}`)
