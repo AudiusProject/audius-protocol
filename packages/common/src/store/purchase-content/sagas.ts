@@ -820,19 +820,20 @@ function* doStartPurchaseContentFlow({
     // Poll to confirm purchase (waiting for a signature)
     yield* pollForPurchaseConfirmation({ contentId, contentType })
 
+    const { metadata } = yield* call(getContentInfo, {
+      contentId,
+      contentType
+    })
     // Auto-favorite the purchased item
     if (contentType === PurchaseableContentType.TRACK) {
       yield* put(saveTrack(contentId, FavoriteSource.IMPLICIT))
     }
     if (contentType === PurchaseableContentType.ALBUM) {
-      const { metadata } = yield* call(getContentInfo, {
-        contentId,
-        contentType
-      })
       yield* put(saveCollection(contentId, FavoriteSource.IMPLICIT))
       if (
         'playlist_contents' in metadata &&
-        metadata.playlist_contents.track_ids
+        metadata.playlist_contents.track_ids &&
+        !metadata.is_private
       ) {
         for (const track of metadata.playlist_contents.track_ids) {
           yield* put(saveTrack(track.track, FavoriteSource.IMPLICIT))
@@ -843,11 +844,17 @@ function* doStartPurchaseContentFlow({
     // Check if playing the purchased track's preview and if so, stop it
     const isPreviewing = yield* select(getPreviewing)
     const nowPlayingTrackId = yield* select(getTrackId)
-    if (
+    const isPlayingTrackInAlbum =
+      contentType === PurchaseableContentType.ALBUM &&
+      'playlist_contents' in metadata &&
+      metadata.playlist_contents.track_ids.some(
+        ({ track: trackId }) => trackId === nowPlayingTrackId
+      )
+    const isPlayingPurchasedTrack =
       contentType === PurchaseableContentType.TRACK &&
-      contentId === nowPlayingTrackId &&
-      isPreviewing
-    ) {
+      contentId === nowPlayingTrackId
+
+    if (isPreviewing && (isPlayingTrackInAlbum || isPlayingPurchasedTrack)) {
       yield* put(stop({}))
     }
 
