@@ -1,5 +1,3 @@
 export * from './CancelEditTrackDrawer'
 export * from './RemixTrackPill'
-export * from '../../../components/edit/PriceAndAudienceField/SpecialAccessRadioField'
-export * from '../../../components/edit/PriceAndAudienceField/GollectibleGatedRadioField'
 export * from './HiddenAvailability'

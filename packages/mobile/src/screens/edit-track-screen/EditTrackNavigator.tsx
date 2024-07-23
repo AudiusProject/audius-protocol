@@ -1,6 +1,9 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 
-import { priceAndAudienceScreenName } from 'app/components/edit/PriceAndAudienceField'
+import {
+  PriceAndAudienceScreen,
+  priceAndAudienceScreenName
+} from 'app/components/edit/PriceAndAudienceField'
 import { VisibilityScreen } from 'app/components/edit/VisibilityField'
 import { GatedContentUploadPromptDrawer } from 'app/components/gated-content-upload-prompt-drawer'
 import { SupportersInfoDrawer } from 'app/components/supporters-info-drawer'
@@ -10,7 +13,6 @@ import { messages as completeMessages } from '../upload-screen/screens/CompleteT
 
 import { EditTrackForm } from './EditTrackForm'
 import {
-  PriceAndAudienceScreen,
   AdvancedScreen,
   IsrcIswcScreen,
   LicenseTypeScreen,
