@@ -15,7 +15,9 @@ program.command("edit-track")
   .option("-l, --license <license>", "License of track")
   .option("-f, --from <from>", "The account to edit the track from")
   .option("-r, --stream-conditions <stream conditions>", "The stream conditions object; sets track as stream gated", "")
-  .action(async (trackId, { title, tags, description, mood, genre, previewStartSeconds, license, from, streamConditions }) => {
+  .option("-v, --visibility <visibility>", "Change track visibility")
+  .option("-x, --remixOf <remixOf>", "Set the original track of this remix")
+  .action(async (trackId, { title, tags, description, mood, genre, previewStartSeconds, license, from, streamConditions, visibility, remixOf }) => {
     const audiusLibs = await initializeAudiusLibs(from);
     try {
       const track = (await audiusLibs.Track.getTracks(100, 0, [trackId]))[0]
@@ -32,7 +34,9 @@ program.command("edit-track")
         license: license || track.license,
         is_stream_gated: streamConditions ? true : track.is_stream_gated,
         stream_conditions: streamConditions ? JSON.parse(streamConditions) : track.stream_conditions,
-        preview_start_seconds: previewStartSeconds ? parseInt(previewStartSeconds) : track.preview_start_seconds
+        preview_start_seconds: previewStartSeconds ? parseInt(previewStartSeconds) : track.preview_start_seconds,
+        is_unlisted: visibility ? visibility === 'hidden' : track.is_unlisted,
+        remix_of: remixOf !== undefined ? { tracks: [{ parent_track_id: parseInt(remixOf) }] } : track.remix_of
       }
 
       const transcodePreview = previewStartSeconds != null && track.preview_start_seconds != parseInt(previewStartSeconds)

@@ -284,21 +284,21 @@ returning au.user_id;
 def _update_aggregates(session):
     start_time = datetime.now()
 
-    logger.info("update_aggregates.py | updating aggregates...")
+    logger.debug("update_aggregates.py | updating aggregates...")
     updated_user_ids = session.execute(update_aggregate_user_query).fetchall()
-    logger.info(
+    logger.debug(
         f"update_aggregates.py | updated aggregate_user {updated_user_ids} in {datetime.now() - start_time}"
     )
     start_time = datetime.now()
 
     updated_track_ids = session.execute(update_aggregate_track_query).fetchall()
-    logger.info(
+    logger.debug(
         f"update_aggregates.py | updated aggregate_track {updated_track_ids} in {datetime.now() - start_time}"
     )
 
     start_time = datetime.now()
     updated_playlist_ids = session.execute(update_aggregate_playlist_query).fetchall()
-    logger.info(
+    logger.debug(
         f"update_aggregates.py | updated aggregate_playlist {updated_playlist_ids} in {datetime.now() - start_time}"
     )
     return
@@ -325,7 +325,7 @@ def update_aggregates(self):
                 _update_aggregates(session)
 
         else:
-            logger.info("update_aggregates.py | Failed to acquire lock")
+            logger.debug("update_aggregates.py | Failed to acquire lock")
     except Exception as e:
         logger.error(f"update_aggregates.py | ERROR caching node info {e}")
         raise e

@@ -210,7 +210,7 @@ const ConnectedTrackTile = ({
       repostAction,
       favoriteAction,
       addToAlbumAction,
-      OverflowAction.ADD_TO_PLAYLIST,
+      !is_unlisted || isOwner ? OverflowAction.ADD_TO_PLAYLIST : null,
       isNewPodcastControlsEnabled && isLongFormContent
         ? OverflowAction.VIEW_EPISODE_PAGE
         : OverflowAction.VIEW_TRACK_PAGE,

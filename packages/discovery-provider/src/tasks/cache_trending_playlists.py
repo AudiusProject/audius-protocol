@@ -151,7 +151,7 @@ def index_trending_playlist_notifications(
             ]
         )
 
-        logger.info(
+        logger.debug(
             "index_trending.py | Created trending playlist notifications",
             extra={
                 "job": "cache_trending_playlists",
@@ -181,7 +181,7 @@ def cache_trending_playlists(self):
                 ).keys()
             )
             for version in trending_playlist_versions:
-                logger.info(
+                logger.debug(
                     f"cache_trending_playlists.py ({version.name} version) | Starting"
                 )
                 strategy = trending_strategy_factory.get_strategy(
@@ -190,13 +190,13 @@ def cache_trending_playlists(self):
                 start_time = time.time()
                 cache_trending(db, redis, strategy)
                 end_time = time.time()
-                logger.info(
+                logger.debug(
                     f"cache_trending_playlists.py ({version.name} version) | \
                     Finished in {end_time - start_time} seconds"
                 )
                 redis.set(trending_playlists_last_completion_redis_key, int(end_time))
         else:
-            logger.info("cache_trending_playlists.py | Failed to acquire lock")
+            logger.debug("cache_trending_playlists.py | Failed to acquire lock")
     except Exception as e:
         logger.error(
             "cache_trending_playlists.py | Fatal error in main loop", exc_info=True

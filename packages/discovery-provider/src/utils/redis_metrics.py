@@ -129,7 +129,7 @@ def persist_summed_unique_counts(
             day_unique_record.summed_count = max(
                 day_unique_record.summed_count or 0, summed_unique_daily_count
             )
-            logger.info(
+            logger.debug(
                 f"summed unique count record for day {day} after update: {day_unique_record.summed_count}"
             )
             session.add(day_unique_record)
@@ -147,7 +147,7 @@ def persist_summed_unique_counts(
             month_unique_record.summed_count = max(
                 month_unique_record.summed_count or 0, summed_unique_monthly_count
             )
-            logger.info(
+            logger.debug(
                 f"summed unique count record for month {month} after update: \
                 {month_unique_record.summed_count}"
             )
@@ -169,7 +169,7 @@ def persist_route_metrics(
                 {unique_daily_count}: {day_unique_record.count} + "
             )
             day_unique_record.count += unique_daily_count
-            logger.info(
+            logger.debug(
                 f"unique count record for day {day} after adding new unique count \
                 {unique_daily_count}: {day_unique_record.count}"
             )
@@ -177,7 +177,7 @@ def persist_route_metrics(
             day_unique_record = AggregateDailyUniqueUsersMetrics(
                 timestamp=day, count=unique_daily_count
             )
-            logger.info(
+            logger.debug(
                 f"new record for daily unique count with day {day} and unique count {unique_daily_count}"
             )
         session.add(day_unique_record)
@@ -193,7 +193,7 @@ def persist_route_metrics(
                 {count}: {day_total_record.count}"
             )
             day_total_record.count += count
-            logger.info(
+            logger.debug(
                 f"total count record for day {day} after adding new total count \
                 {count}: {day_total_record.count}"
             )
@@ -201,7 +201,7 @@ def persist_route_metrics(
             day_total_record = AggregateDailyTotalUsersMetrics(
                 timestamp=day, count=count
             )
-            logger.info(
+            logger.debug(
                 f"new record for daily total count with day {day} and total count {count}"
             )
         session.add(day_total_record)
@@ -217,7 +217,7 @@ def persist_route_metrics(
                 {unique_monthly_count}: {month_unique_record.count}"
             )
             month_unique_record.count += unique_monthly_count
-            logger.info(
+            logger.debug(
                 f"unique count record for month {month} after adding new unique count \
                 {unique_monthly_count}: {month_unique_record.count}"
             )
@@ -225,7 +225,7 @@ def persist_route_metrics(
             month_unique_record = AggregateMonthlyUniqueUsersMetric(
                 timestamp=month, count=unique_monthly_count
             )
-            logger.info(
+            logger.debug(
                 f"new record for monthly unique count with month {month} and unique count \
                 {unique_monthly_count}"
             )
@@ -242,7 +242,7 @@ def persist_route_metrics(
                 {count}: {month_total_record.count}"
             )
             month_total_record.count += count
-            logger.info(
+            logger.debug(
                 f"total count record for month {month} after adding new total count \
                 {count}: {month_total_record.count}"
             )
@@ -250,7 +250,7 @@ def persist_route_metrics(
             month_total_record = AggregateMonthlyTotalUsersMetric(
                 timestamp=month, count=count
             )
-            logger.info(
+            logger.debug(
                 f"new record for monthly total count with month {month} and total count {count}"
             )
         session.add(month_total_record)
@@ -276,7 +276,7 @@ def _persist_personal_route_metrics(
                 day_unique_record.personal_count = unique_daily_count
             else:
                 day_unique_record.personal_count += unique_daily_count
-            logger.info(
+            logger.debug(
                 f"personal unique count record for day {day} after adding new unique count \
                 {unique_daily_count}: {day_unique_record.personal_count}"
             )
@@ -297,7 +297,7 @@ def _persist_personal_route_metrics(
                 day_total_record.personal_count = count
             else:
                 day_total_record.personal_count += count
-            logger.info(
+            logger.debug(
                 f"personal total count record for day {day} after adding new total count \
                 {count}: {day_total_record.personal_count}"
             )
@@ -318,7 +318,7 @@ def _persist_personal_route_metrics(
                 month_unique_record.personal_count = unique_monthly_count
             else:
                 month_unique_record.personal_count += unique_monthly_count
-            logger.info(
+            logger.debug(
                 f"personal unique count record for month {month} after adding new unique count \
                 {unique_monthly_count}: {month_unique_record.personal_count}"
             )
@@ -339,7 +339,7 @@ def _persist_personal_route_metrics(
                 month_total_record.personal_count = count
             else:
                 month_total_record.personal_count += count
-            logger.info(
+            logger.debug(
                 f"personal total count record for month {month} after adding new total count \
                 {count}: {month_total_record.personal_count}"
             )
@@ -363,7 +363,7 @@ def persist_app_metrics(db, day, month, app_count):
                     before adding new count {count}: {day_record.count}"
                 )
                 day_record.count += count
-                logger.info(
+                logger.debug(
                     f"daily app record for day {day} and application {application_name} \
                     after adding new count {count}: {day_record.count}"
                 )
@@ -371,7 +371,7 @@ def persist_app_metrics(db, day, month, app_count):
                 day_record = AggregateDailyAppNameMetric(
                     timestamp=day, application_name=application_name, count=count
                 )
-                logger.info(
+                logger.debug(
                     f"new record for daily app record with day {day}, \
                     application {application_name}, and count {count}"
                 )
@@ -391,7 +391,7 @@ def persist_app_metrics(db, day, month, app_count):
                     before adding new count {count}: {month_record.count}"
                 )
                 month_record.count += count
-                logger.info(
+                logger.debug(
                     f"monthly app record for month {month} and application {application_name} \
                     after adding new count {count}: {month_record.count}"
                 )
@@ -399,7 +399,7 @@ def persist_app_metrics(db, day, month, app_count):
                 month_record = AggregateMonthlyAppNameMetric(
                     timestamp=month, application_name=application_name, count=count
                 )
-                logger.info(
+                logger.debug(
                     f"new record for monthly app record with month {month}, \
                     application {application_name}, and count {count}"
                 )
@@ -462,7 +462,7 @@ def cache_metrics(metrics, day, month, metric_type, daily_key, monthly_key):
     }
     if daily_metrics:
         REDIS.set(daily_key, json.dumps(daily_metrics))
-    logger.info(f"updated cached {daily_key}")
+    logger.debug(f"updated cached {daily_key}")
 
     # clean up metrics METRICS_INTERVAL after the end of the month from monthly_metrics
     thirty_one_days_ago = (datetime.utcnow() - timedelta(days=31)).strftime(
@@ -475,7 +475,7 @@ def cache_metrics(metrics, day, month, metric_type, daily_key, monthly_key):
     }
     if monthly_metrics:
         REDIS.set(monthly_key, json.dumps(monthly_metrics))
-    logger.info(f"updated cached {monthly_key}")
+    logger.debug(f"updated cached {monthly_key}")
 
     return unique_daily_count, unique_monthly_count, app_count
 

@@ -134,7 +134,7 @@ class ChallengeEventBus:
     def flush(self):
         """Flushes the in-memory queue of events and enqueues them to Redis"""
         if len(self._in_memory_queue) != 0:
-            logger.info(
+            logger.debug(
                 f"ChallengeEventBus: Flushing {len(self._in_memory_queue)} events from in-memory queue"
             )
         for event in self._in_memory_queue:
@@ -146,7 +146,7 @@ class ChallengeEventBus:
                     event["user_id"],
                     event.get("extra", {}),
                 )
-                logger.info(f"ChallengeEventBus: dispatch {event_json}")
+                logger.debug(f"ChallengeEventBus: dispatch {event_json}")
                 self._redis.rpush(REDIS_QUEUE_PREFIX, event_json)
             except Exception as e:
                 logger.warning(f"ChallengeEventBus: error enqueuing to Redis: {e}")
@@ -161,7 +161,7 @@ class ChallengeEventBus:
         try:
             # get the first max_events elements.
             events_json = self._redis.lrange(REDIS_QUEUE_PREFIX, 0, max_events)
-            logger.info(f"ChallengeEventBus: dequeued {len(events_json)} events")
+            logger.debug(f"ChallengeEventBus: dequeued {len(events_json)} events")
             # trim the first from the front of the list
             self._redis.ltrim(REDIS_QUEUE_PREFIX, len(events_json), -1)
             events_dicts = list(map(self._json_to_event, events_json))

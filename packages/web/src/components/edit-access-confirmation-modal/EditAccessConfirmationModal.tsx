@@ -37,7 +37,7 @@ const getMessages = (type: EditAccessType | null) => ({
       ? 'Do you want to release your track now? Your followers will be notified.'
       : 'Are you sure you want to make this track public? Your followers will be notified.',
   cancel: 'Cancel',
-  upload:
+  confirm:
     type === 'audience'
       ? 'Update Audience'
       : type === 'release' || type === 'early_release'
@@ -92,7 +92,7 @@ export const EditAccessConfirmationModal = () => {
           {messages.cancel}
         </Button>
         <Button variant='primary' fullWidth onClick={handleConfirm}>
-          {messages.upload}
+          {messages.confirm}
         </Button>
       </ModalFooter>
     </Modal>

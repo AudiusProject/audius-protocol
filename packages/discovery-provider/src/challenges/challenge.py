@@ -131,7 +131,7 @@ class ChallengeManager:
         """Processes a number of events for a particular event type, updating
         UserChallengeEvents as needed.
         """
-        logger.info(
+        logger.debug(
             f"ChallengeManager: processing event type [{event_type}] for challenge [{self.challenge_id}]"
         )
         if not self._did_init:  # lazy init

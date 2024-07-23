@@ -299,7 +299,7 @@ func (ss *MediorumServer) repairCid(cid string, placementHosts []string, tracker
 				logger.Error("pull failed (blob I should have)", "err", err, "host", host)
 			} else {
 				tracker.Counters["pull_mine_success"]++
-				logger.Info("pull OK (blob I should have)", "host", host)
+				logger.Debug("pull OK (blob I should have)", "host", host)
 				success = true
 
 				pulledAttrs, errAttrs := ss.bucket.Attributes(ctx, key)
@@ -331,7 +331,7 @@ func (ss *MediorumServer) repairCid(cid string, placementHosts []string, tracker
 			return err
 		} else {
 			tracker.Counters["delete_over_replicated_success"]++
-			logger.Info("delete OK")
+			logger.Debug("delete OK")
 			tracker.ContentSize -= attrs.Size
 			return nil
 		}

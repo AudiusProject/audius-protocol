@@ -302,7 +302,7 @@ const TrackMenu = (props: TrackMenuProps) => {
     if (includeAddToAlbum && !isDeleted && isOwner) {
       menu.items.push(addToAlbumMenuItem)
     }
-    if (includeAddToPlaylist && !isDeleted) {
+    if (includeAddToPlaylist && !isDeleted && (!isUnlisted || isOwner)) {
       menu.items.push(addToPlaylistMenuItem)
     }
     if (trackId && trackTitle && !isDeleted) {

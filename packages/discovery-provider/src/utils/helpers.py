@@ -256,7 +256,7 @@ def configure_flask_app_logging(app, loglevel_str):
         request_app_name = request.args.get("app_name")
         if request_app_name:
             log_params["appName"] = request_app_name
-            logger.info("handle read via developer app", extra=log_params)
+            logger.debug("handle read via developer app", extra=log_params)
 
         parts = []
         for name, value in log_params.items():
@@ -430,7 +430,7 @@ def time_method(func):
         tock = time.perf_counter()
         elapsed = tock - tick
         logger = logging.getLogger(__name__)
-        logger.info(f"TIME_METHOD Function={func.__name__} Elapsed={elapsed:0.6f}s")
+        logger.debug(f"TIME_METHOD Function={func.__name__} Elapsed={elapsed:0.6f}s")
         return result
 
     return wrapper
@@ -553,7 +553,7 @@ def get_valid_instruction(
             if instruction.program_id_index == program_index:
                 return instruction
     except ValueError as e:
-        logger.info(
+        logger.error(
             f"No {program_address} found in instruction account keys {account_keys}, {e}"
         )
 

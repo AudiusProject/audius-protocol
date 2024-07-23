@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 
-import { TransactionHandler } from '@audius/sdk/dist/core'
 import {
   Connection,
   PublicKey,
@@ -12,7 +11,6 @@ import { useSelector, useDispatch } from 'react-redux'
 import { useAudiusQueryContext } from '~/audius-query'
 import { useAppContext } from '~/context'
 import { Name } from '~/models/Analytics'
-import { FeatureFlags } from '~/services'
 import {
   decorateCoinflowWithdrawalTransaction,
   relayTransaction,
@@ -26,8 +24,6 @@ import {
 } from '~/store'
 import { BuyCryptoError } from '~/store/buy-crypto/types'
 import { getFeePayer } from '~/store/solana/selectors'
-
-import { useFeatureFlag } from './useFeatureFlag'
 
 type CoinflowAdapter = {
   wallet: {
@@ -137,9 +133,6 @@ export const useCoinflowAdapter = ({
 }) => {
   const { audiusBackend } = useAppContext()
   const [adapter, setAdapter] = useState<CoinflowAdapter | null>(null)
-  const { isEnabled: isUseSDKPurchaseTrackEnabled } = useFeatureFlag(
-    FeatureFlags.USE_SDK_PURCHASE_TRACK
-  )
   const { audiusSdk } = useAudiusQueryContext()
   const dispatch = useDispatch()
 
@@ -155,66 +148,32 @@ export const useCoinflowAdapter = ({
           publicKey: wallet.publicKey,
           sendTransaction: async (tx: Transaction | VersionedTransaction) => {
             try {
-              if (isUseSDKPurchaseTrackEnabled) {
-                const transaction = tx as VersionedTransaction
-                const sdk = await audiusSdk()
+              const transaction = tx as VersionedTransaction
+              const sdk = await audiusSdk()
 
-                // Get a more recent blockhash to prevent BlockhashNotFound errors
-                transaction.message.recentBlockhash = (
-                  await connection.getLatestBlockhash()
-                ).blockhash
+              // Get a more recent blockhash to prevent BlockhashNotFound errors
+              transaction.message.recentBlockhash = (
+                await connection.getLatestBlockhash()
+              ).blockhash
 
-                // Use our own fee payer as signer
-                transaction.message.staticAccountKeys[0] =
-                  await sdk.services.solanaRelay.getFeePayer()
-                transaction.signatures[0] = Buffer.alloc(64, 0)
+              // Use our own fee payer as signer
+              transaction.message.staticAccountKeys[0] =
+                await sdk.services.solanaRelay.getFeePayer()
+              transaction.signatures[0] = Buffer.alloc(64, 0)
 
-                // Sign with user's Eth wallet derived "root" Solana wallet,
-                // which is the source of the funds for the purchase
-                transaction.sign([wallet])
+              // Sign with user's Eth wallet derived "root" Solana wallet,
+              // which is the source of the funds for the purchase
+              transaction.sign([wallet])
 
-                // Send to relay to make use of retry and caching logic
-                const { signature } = await sdk.services.solanaRelay.relay({
-                  transaction,
-                  sendOptions: {
-                    skipPreflight: true
-                  }
-                })
-                onSuccess()
-                return signature
-              } else {
-                const transaction = tx as Transaction
-                transaction.partialSign(wallet)
-                const transactionHandler = new TransactionHandler({
-                  connection,
-                  useRelay: false
-                })
-                const { res, error, errorCode } =
-                  await transactionHandler.handleTransaction({
-                    instructions: transaction.instructions,
-                    recentBlockhash: transaction.recentBlockhash,
-                    skipPreflight: true,
-                    feePayerOverride: transaction.feePayer,
-                    signatures: transaction.signatures.map((s) => ({
-                      signature: s.signature!, // already completely signed
-                      publicKey: s.publicKey.toBase58()
-                    }))
-                  })
-                if (!res) {
-                  console.error('Sending Coinflow transaction failed.', {
-                    error,
-                    errorCode,
-                    transaction
-                  })
-                  throw new Error(
-                    `Sending Coinflow transaction failed: ${
-                      error ?? 'Unknown error'
-                    }`
-                  )
+              // Send to relay to make use of retry and caching logic
+              const { signature } = await sdk.services.solanaRelay.relay({
+                transaction,
+                sendOptions: {
+                  skipPreflight: true
                 }
-                onSuccess()
-                return res
-              }
+              })
+              onSuccess()
+              return signature
             } catch (e) {
               console.error('Caught error in sendTransaction', e)
               const error =
@@ -234,14 +193,7 @@ export const useCoinflowAdapter = ({
       })
     }
     initWallet()
-  }, [
-    audiusBackend,
-    isUseSDKPurchaseTrackEnabled,
-    audiusSdk,
-    dispatch,
-    onSuccess,
-    onFailure
-  ])
+  }, [audiusBackend, audiusSdk, dispatch, onSuccess, onFailure])
 
   return adapter
 }

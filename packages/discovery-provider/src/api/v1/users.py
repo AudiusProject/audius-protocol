@@ -2159,7 +2159,7 @@ class Managers(Resource):
         check_authorized(user_id, authed_user_id)
 
         args = managed_users_route_parser.parse_args()
-        logger.info(f"DEBUG::args: {args}")
+        logger.debug(f"DEBUG::args: {args}")
         is_approved = args.get("is_approved", None)
         is_revoked = args.get("is_revoked", False)
         managers = get_user_managers_with_grants(

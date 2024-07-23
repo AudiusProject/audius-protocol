@@ -9,7 +9,8 @@ program.command("edit-playlist")
   .option("-n, --name <name>", "Name of playlist")
   .option("-d, --description <description>", "Description of playlist")
   .option("-f, --from <from>", "The account to edit the track from")
-  .action(async (playlistId, { name, description, from }) => {
+  .option("-v, --visibility <visibility>", "Change visibility of the collection")
+  .action(async (playlistId, { name, description, from, visibility }) => {
     const audiusLibs = await initializeAudiusLibs(from);
     try {
       const playlist = (await audiusLibs.Playlist.getPlaylists(100, 0, [playlistId]))[0]
@@ -21,6 +22,7 @@ program.command("edit-playlist")
           ...playlist,
           playlist_name: name || playlist.playlist_name,
           description: description || playlist.description,
+          is_private: visibility !== undefined ? visibility === 'hidden' : playlist.is_private
         }
       );
 
