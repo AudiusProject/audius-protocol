@@ -23,9 +23,7 @@ import { IntKeys, StringKeys, RemoteConfigInstance } from '../remote-config'
 
 import * as adapter from './ResponseAdapter'
 import { processSearchResults } from './helper'
-import { makeActivity } from './makeActivity'
 import {
-  APIActivity,
   APIBlockConfirmation,
   APIFavorite,
   APIPlaylist,
@@ -223,13 +221,6 @@ type GetTopArtistGenresArgs = {
   genres?: string[]
   limit?: number
   offset?: number
-}
-
-type GetUserRepostsByHandleArgs = {
-  handle: string
-  currentUserId: Nullable<ID>
-  offset?: number
-  limit?: number
 }
 
 type GetCollectionMetadataArgs = {
@@ -938,31 +929,6 @@ export class AudiusAPIClient {
     if (!response) return null
     const { data } = response
     return data.map(adapter.makeFavorite).filter(removeNullable)
-  }
-
-  async getUserRepostsByHandle({
-    handle,
-    currentUserId,
-    limit,
-    offset
-  }: GetUserRepostsByHandleArgs) {
-    this._assertInitialized()
-    const encodedCurrentUserId = encodeHashId(currentUserId)
-    const params = {
-      user_id: encodedCurrentUserId || undefined,
-      limit,
-      offset
-    }
-
-    const response = await this._getResponse<APIResponse<APIActivity[]>>(
-      FULL_ENDPOINT_MAP.userRepostsByHandle(handle),
-      params
-    )
-
-    if (!response) return []
-
-    const adapted = response.data.map(makeActivity).filter(removeNullable)
-    return adapted
   }
 
   async getRelatedArtists({ userId, offset, limit }: GetRelatedArtistsArgs) {
