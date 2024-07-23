@@ -236,7 +236,7 @@ const TrackHeader = ({
         ? OverflowAction.UNFAVORITE
         : OverflowAction.FAVORITE,
       isOwner && !track?.ddex_app ? OverflowAction.ADD_TO_ALBUM : null,
-      OverflowAction.ADD_TO_PLAYLIST,
+      isOwner || !isUnlisted ? OverflowAction.ADD_TO_PLAYLIST : null,
       albumInfo ? OverflowAction.VIEW_ALBUM_PAGE : null,
       isFollowing
         ? OverflowAction.UNFOLLOW_ARTIST
