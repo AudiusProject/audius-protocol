@@ -52,7 +52,8 @@ const useShowSearchResults = () => {
 
 export const SearchPageV2 = () => {
   const isMobile = useIsMobile()
-  const { category } = useParams<{ category: CategoryKey }>()
+  const { category: categoryParam } = useParams<{ category: CategoryKey }>()
+  const category = isMobile ? categoryParam ?? 'profiles' : categoryParam
   const { history } = useHistoryContext()
   const [urlSearchParams] = useSearchParams()
   const query = urlSearchParams.get('query')
