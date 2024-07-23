@@ -61,6 +61,7 @@ models/TopListener.ts
 models/Track.ts
 models/TrackAccessInfo.ts
 models/TrackArtwork.ts
+models/TrackCommentsResponse.ts
 models/TrackElement.ts
 models/TrackInspect.ts
 models/TrackResponse.ts

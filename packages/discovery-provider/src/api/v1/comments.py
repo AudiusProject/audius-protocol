@@ -1,13 +1,9 @@
-from flask_restx import Namespace, Resource, inputs, fields, reqparse
+from flask_restx import Namespace, Resource, fields
 
+from src.api.v1.helpers import make_response, success_response
+from src.api.v1.models.comments import base_comment_model
 from src.utils.redis_cache import cache
 from src.utils.redis_metrics import record_metrics
-
-from src.api.v1.helpers import (
-    make_response,
-    success_response,
-)
-from src.api.v1.models.comments import base_comment_model
 
 ns = Namespace("comments", description="Comment related operations")
 

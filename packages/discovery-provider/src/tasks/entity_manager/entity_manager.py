@@ -35,6 +35,7 @@ from src.queries.get_skipped_transactions import (
     save_and_get_skip_tx_hash,
     set_indexing_error,
 )
+from src.tasks.entity_manager.entities.comment import create_comment
 from src.tasks.entity_manager.entities.dashboard_wallet_user import (
     create_dashboard_wallet_user,
     delete_dashboard_wallet_user,
@@ -207,6 +208,7 @@ def entity_manager_update(
                         txhash,
                         logger,
                     )
+                    logger.info(f"asdf params {params}")
 
                     # update logger context with this tx event
                     reset_entity_manager_event_tx_context(logger, event["args"])
@@ -335,7 +337,11 @@ def entity_manager_update(
                         and params.entity_type == EntityType.TIP
                     ):
                         tip_reaction(params)
-
+                    elif (
+                        params.action == Action.CREATE
+                        and params.entity_type == EntityType.COMMENT
+                    ):
+                        create_comment(params)
                     logger.info("process transaction")  # log event context
                 except IndexingValidationError as e:
                     # swallow exception to keep indexing

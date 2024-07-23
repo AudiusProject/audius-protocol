@@ -38,7 +38,10 @@ export class CommentsApi extends GeneratedCommentsApi {
       entityType: EntityType.COMMENT,
       entityId: newCommentId,
       action: Action.CREATE,
-      metadata: JSON.stringify(snakecaseKeys(metadata)),
+      metadata: JSON.stringify({
+        cid: '',
+        data: snakecaseKeys(metadata)
+      }),
       auth: this.auth
     })
 

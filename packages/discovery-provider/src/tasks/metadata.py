@@ -187,6 +187,13 @@ user_metadata_format = {
     "allow_ai_attribution": False,
 }
 
+comment_metadata_format = {
+    "body": None,
+    "user_id": None,
+    "entity_id": None,
+    "entity_type": None,
+}
+
 
 class PlaylistMetadata(TypedDict):
     playlist_contents: Optional[Any]

@@ -7,7 +7,7 @@ import {
 } from 'react'
 
 import { ID } from '@audius/common/models'
-import { Nullable } from '@audius/common/utils'
+import { Nullable, encodeHashId } from '@audius/common/utils'
 import { EntityType } from '@audius/sdk/src/sdk/services/EntityManager/types'
 import { useAsync } from 'react-use'
 
@@ -111,11 +111,11 @@ export const CommentSectionProvider = ({
         setIsLoading(true)
         const sdk = await audiusSdk()
         const commentsRes = await sdk.tracks.trackComments({
-          trackId: String(entityId)
+          trackId: encodeHashId(entityId)
         })
-        const commentsJson = await commentsRes
-        console.log({ commentsJson }) // TODO: this response is no good atm, probably need to type backend for SDK to not assume VoidResponse
-        setComments(MOCK_COMMENT_DATA)
+        if (commentsRes?.data) {
+          setComments(commentsRes.data as Comment[])
+        }
         setIsLoading(false)
       } catch (e) {
         setComments(MOCK_COMMENT_DATA) // TODO: remove, was testing with staging

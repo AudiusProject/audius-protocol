@@ -32,13 +32,13 @@ export const CommentSectionDesktop = () => {
     )
   }
 
-  if (comments.length === 0) {
-    return (
-      <Paper p='xl' w='100%' direction='column' gap='xl'>
-        No comments found
-      </Paper>
-    )
-  }
+  // if (comments.length === 0) {
+  //   return (
+  //     <Paper p='xl' w='100%' direction='column' gap='xl'>
+  //       No comments found
+  //     </Paper>
+  //   )
+  // }
 
   return (
     <Flex gap='l' direction='column' w='100%' alignItems='flex-start'>

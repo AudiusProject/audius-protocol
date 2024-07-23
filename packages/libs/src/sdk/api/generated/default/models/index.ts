@@ -52,6 +52,7 @@ export * from './TopListener';
 export * from './Track';
 export * from './TrackAccessInfo';
 export * from './TrackArtwork';
+export * from './TrackCommentsResponse';
 export * from './TrackElement';
 export * from './TrackInspect';
 export * from './TrackResponse';

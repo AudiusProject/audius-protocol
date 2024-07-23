@@ -5,6 +5,7 @@ from flask_restx import Api
 from src.api.v1.challenges import full_ns as full_challenges_ns
 from src.api.v1.challenges import ns as challenges_ns
 from src.api.v1.cid_data import full_ns as cid_data_full_ns
+from src.api.v1.comments import ns as comments_ns
 from src.api.v1.dashboard_wallet_users import ns as dashboard_wallet_users_ns
 from src.api.v1.developer_apps import ns as developer_apps_ns
 from src.api.v1.metrics import ns as metrics_ns
@@ -22,7 +23,6 @@ from src.api.v1.tracks import ns as tracks_ns
 from src.api.v1.transactions import full_ns as full_transactions_ns
 from src.api.v1.users import full_ns as full_users_ns
 from src.api.v1.users import ns as users_ns
-from src.api.v1.comments import ns as comments_ns
 
 
 class ApiWithHTTPS(Api):

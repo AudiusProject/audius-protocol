@@ -38,11 +38,13 @@ from src.api.v1.helpers import (
     trending_parser,
     trending_parser_paginated,
 )
+from src.api.v1.models.comments import base_comment_model
 from src.api.v1.models.users import user_model, user_model_full
 from src.queries.generate_unpopulated_trending_tracks import (
     TRENDING_TRACKS_LIMIT,
     TRENDING_TRACKS_TTL_SEC,
 )
+from src.queries.get_comments import get_track_comments
 from src.queries.get_extended_purchase_gate import get_extended_purchase_gate
 from src.queries.get_feed import get_feed
 from src.queries.get_latest_entities import get_latest_entities
@@ -462,6 +464,11 @@ class TrackInspect(Resource):
         abort_not_found(track_id, ns)
 
 
+track_comments_response = make_response(
+    "track_comments_response", ns, fields.List(fields.Nested(base_comment_model))
+)
+
+
 # Comment
 @ns.route("/<string:track_id>/comments")
 class TrackComments(Resource):
@@ -476,34 +483,13 @@ class TrackComments(Resource):
             500: "Server error",
         },
     )
+    @ns.marshal_with(track_comments_response)
     @cache(ttl_sec=5)
     def get(self, track_id):
+        decoded_id = decode_with_abort(track_id, ns)
         # TODO: query for comments
-        comment_sample_data = [
-            {
-                "id": 456,
-                "message": "This is a special comment",
-                "is_pinned": True,
-                "timestamp_s": 123,
-                "react_count": 1234,
-                "replies": [
-                    {
-                        "id": 7890,
-                        "message": "This is a comment reply",
-                        "timestamp_s": 123,
-                        "react_count": 1234,  # if using simple reactions
-                        "is_pinned": False,
-                        "replies": None,  # prefer null over empty array but either is fine
-                        "created_at": "2021-01-01T00:00:00Z",
-                        "updated_at": None,
-                    }
-                ],
-                "created_at": "2021-01-01T00:00:00Z",
-                "updated_at": None,
-            }
-        ]
-
-        return success_response(comment_sample_data)
+        track_comments = get_track_comments(decoded_id)
+        return success_response(track_comments)
 
 
 # Stream
