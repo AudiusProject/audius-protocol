@@ -4,8 +4,10 @@ import (
 	"bytes"
 	"crypto/sha256"
 	"io"
+	"net/url"
 	"sort"
 	"strings"
+	"sync"
 
 	"github.com/tysonmote/rendezvous"
 	"golang.org/x/exp/slices"
@@ -46,17 +48,31 @@ func NewRendezvousHasher(hosts []string) *RendezvousHasher {
 	deadHosts := "https://content.grassfed.network/"
 	liveHosts := make([]string, 0, len(hosts))
 	for _, h := range hosts {
-		if !strings.Contains(deadHosts, h) {
-			liveHosts = append(liveHosts, h)
+		// dead host
+		if strings.Contains(deadHosts, h) {
+			continue
 		}
+
+		// invalid url
+		if _, err := url.Parse(h); err != nil {
+			continue
+		}
+
+		// duplicate entry
+		if slices.Contains(liveHosts, h) {
+			continue
+		}
+
+		liveHosts = append(liveHosts, h)
 	}
 	return &RendezvousHasher{
-		liveHosts,
-		rendezvous.New(liveHosts...),
+		hosts:        liveHosts,
+		legacyHasher: rendezvous.New(liveHosts...),
 	}
 }
 
 type RendezvousHasher struct {
+	mu           sync.Mutex
 	hosts        []string
 	legacyHasher *rendezvous.Hash
 }
@@ -67,7 +83,9 @@ func (rh *RendezvousHasher) Rank(key string) []string {
 
 	// after migration complete, just call `rank`
 
+	rh.mu.Lock()
 	legacy := rh.legacyHasher.GetN(2, key)
+	rh.mu.Unlock()
 	result := make([]string, 0, len(rh.hosts))
 	result = append(result, legacy...)
 	for _, h := range rh.rank(key) {
