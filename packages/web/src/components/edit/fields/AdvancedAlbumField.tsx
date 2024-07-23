@@ -29,7 +29,7 @@ const advancedSchema = z.object({
 
 export const AdvancedAlbumField = () => {
   const [{ value: upc }, , { setValue: setUpc }] = useField('upc')
-  const [{ value: isHidden }] = useField('is_unlisted')
+  const [{ value: isHidden }] = useField('is_private')
   const [{ value: release_date }, , { setValue: setReleaseDate }] =
     useField('release_date')
 

@@ -14,9 +14,8 @@ import { DateTimeInput } from 'app/components/core'
 
 export const AdvancedAlbumScreen = () => {
   const [{ value: upc }, { touched }] = useField('upc')
-  const [{ value: isHidden }] = useField('is_unlisted')
+  const [{ value: isHidden }] = useField('is_private')
   const [{ value: releaseDate, onChange }] = useField('release_date')
-  console.log('release_date', releaseDate)
 
   const error = !upc || /^\d{12}$/.test(upc) ? null : messages.upcInputError
 

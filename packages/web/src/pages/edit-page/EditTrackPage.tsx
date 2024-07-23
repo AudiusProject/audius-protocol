@@ -94,7 +94,6 @@ export const EditTrackPage = (props: EditPageProps) => {
     .filter(removeNullable)
 
   const trackAsMetadataForUpload: TrackMetadataForUpload = {
-    entityType: 'track',
     ...(track as TrackMetadata),
     artwork: {
       url: coverArtUrl || ''
