@@ -14,7 +14,7 @@ type ModalRadioItemProps = {
   label: string
   title?: ReactNode
   description?: ReactNode
-  hint?: string | ReactNode
+  hint?: ReactNode
   tag?: string
   value: any
   disabled?: boolean
