@@ -86,14 +86,15 @@ def get_playlist_tracks(session, args):
             playlist_id = playlist["playlist_id"]
             playlist_is_public = not playlist["is_private"]
             playlists_map[playlist_id] = []
+            is_owner = args.get("current_user_id") == playlist["playlist_owner_id"]
             for track_id_dict in playlist["playlist_contents"]["track_ids"]:
                 track_id = track_id_dict["track"]
                 track = track_ids_map[track_id]
                 track_is_public = not track["is_unlisted"]
-                # add all tracks if private playlist
-                if not playlist_is_public:
+                # add all tracks if owner or private playlist
+                if is_owner or not playlist_is_public:
                     playlists_map[playlist_id].append(track)
-                # add only listed tracks to public playlist
+                # add only listed tracks to non-owned public playlist
                 elif playlist_is_public and track_is_public:
                     playlists_map[playlist_id].append(track)
 
