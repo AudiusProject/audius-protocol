@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import type {
   SearchCategory,
@@ -6,8 +6,11 @@ import type {
 } from '@audius/common/api'
 import { Kind } from '@audius/common/models'
 import { searchSelectors } from '@audius/common/store'
+import { useFocusEffect } from '@react-navigation/native'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
+import type { TextInput } from 'react-native/types'
 import { useSelector } from 'react-redux'
+import { useEffectOnce } from 'react-use'
 
 import { Flex } from '@audius/harmony-native'
 import { Screen } from 'app/components/core'
@@ -28,6 +31,7 @@ import {
 import { SearchResults } from './search-results/SearchResults'
 import {
   SearchContext,
+  useSearchAutoFocus,
   useSearchCategory,
   useSearchFilters,
   useSearchQuery
@@ -48,6 +52,7 @@ export const SearchScreenV2 = () => {
   const [query] = useSearchQuery()
   const [category] = useSearchCategory()
   const [filters] = useSearchFilters()
+  const [autoFocus, setAutoFocus] = useSearchAutoFocus()
   const history = useSelector(getV2SearchHistory)
   const categoryKind: Kind | null = category
     ? itemKindByCategory[category]
@@ -64,8 +69,28 @@ export const SearchScreenV2 = () => {
   const showSearchResults =
     query || Object.values(filters).some((filter) => filter)
 
+  const searchBarRef = useRef<TextInput>(null)
+  const [refsSet, setRefsSet] = useState(false)
+
+  useEffectOnce(() => {
+    setRefsSet(true)
+  })
+
+  useFocusEffect(
+    useCallback(() => {
+      if (refsSet && autoFocus) {
+        setAutoFocus(false)
+        searchBarRef.current?.focus()
+      }
+    }, [autoFocus, refsSet, setAutoFocus])
+  )
+
   return (
-    <Screen topbarRight={<SearchBarV2 />} headerTitle={null} variant='white'>
+    <Screen
+      topbarRight={<SearchBarV2 ref={searchBarRef} autoFocus />}
+      headerTitle={null}
+      variant='white'
+    >
       <SearchCategoriesAndFilters />
       <Flex flex={1}>
         {!showSearchResults ? (
@@ -93,6 +118,7 @@ export const SearchScreenStack = () => {
     return routeParams ?? {}
   }, [routeParams])
 
+  const [autoFocus, setAutoFocus] = useState(params.autoFocus ?? false)
   const [query, setQuery] = useState(params.query ?? '')
   const [category, setCategory] = useState<SearchCategory>(
     params.category ?? 'all'
@@ -106,6 +132,7 @@ export const SearchScreenStack = () => {
     setQuery(params.query ?? '')
     setCategory(params.category ?? 'all')
     setFilters(params.filters ?? {})
+    setAutoFocus(params.autoFocus ?? false)
   }, [params])
 
   const screenOptions = useAppScreenOptions()
@@ -113,6 +140,8 @@ export const SearchScreenStack = () => {
   return (
     <SearchContext.Provider
       value={{
+        autoFocus,
+        setAutoFocus,
         query,
         setQuery,
         category,

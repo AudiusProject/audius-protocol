@@ -8,7 +8,6 @@ import requests
 from flask_restx import reqparse
 
 from src import api_helpers
-from src.api.v1.models.activities import CollectionActivity, TrackActivity
 from src.api.v1.models.common import full_response
 from src.models.rewards.challenge import ChallengeType
 from src.queries.get_challenges import ChallengeResponse
@@ -492,16 +491,21 @@ def filter_hidden_tracks(playlist, current_user_id):
 
 def extend_activity(item):
     if item.get("track_id"):
-        return TrackActivity(
-            timestamp=item["activity_timestamp"], item=extend_track(item)
-        )
+        return {
+            "item_type": "track",
+            "timestamp": item["activity_timestamp"],
+            "item": extend_track(item),
+        }
     if item.get("playlist_id"):
+        extended_playlist = extend_playlist(item)
         # Wee hack to make sure this marshals correctly. The marshaller for
         # playlist_model expects these two values to be the same type.
-        extended_playlist = extend_playlist(item)
-        return CollectionActivity(
-            timestamp=item["activity_timestamp"], item=extended_playlist
-        )
+        extended_playlist["playlist_contents"] = extended_playlist["added_timestamps"]
+        return {
+            "item_type": "playlist",
+            "timestamp": item["activity_timestamp"],
+            "item": extended_playlist,
+        }
     return None
 
 

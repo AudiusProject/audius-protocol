@@ -387,8 +387,6 @@ github.com/tklauser/numcpus v0.2.2 h1:oyhllyrScuYI6g+h/zUvNXNp1wy7x8qQy3t/piefld
 github.com/tklauser/numcpus v0.2.2/go.mod h1:x3qojaO3uyYt0i56EW/VUYs7uBvdl2fkfZFu0T9wgjM=
 github.com/tyler-smith/go-bip39 v1.1.0 h1:5eUemwrMargf3BSLRRCalXT93Ns6pQJIjYQN2nyfOP8=
 github.com/tyler-smith/go-bip39 v1.1.0/go.mod h1:gUYDtqQw1JS3ZJ8UWVcGTGqqr6YIN3CWg+kkNaLt55U=
-github.com/tysonmote/rendezvous v0.0.0-20220626212128-be0258dbbd3d h1:yjJ6daNdq0f0FgxgriM8copaRDtC1hE7XUx5xDZKxUM=
-github.com/tysonmote/rendezvous v0.0.0-20220626212128-be0258dbbd3d/go.mod h1:aaQPZ8JRQJ8uu7P5QK46yb5h+4bgN2Xt5qmhxlvprw8=
 github.com/urfave/cli/v2 v2.17.2-0.20221006022127-8f469abc00aa h1:5SqCsI/2Qya2bCzK15ozrqo2sZxkh0FHynJZOTVoV6Q=
 github.com/urfave/cli/v2 v2.17.2-0.20221006022127-8f469abc00aa/go.mod h1:1CNUng3PtjQMtRzJO4FMXBQvkGtuYRxxiR9xMa7jMwI=
 github.com/valyala/bytebufferpool v1.0.0 h1:GqA5TC/0021Y/b9FG4Oi9Mr3q7XYx6KllzawFIhcdPw=

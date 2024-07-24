@@ -4,4 +4,5 @@ export type SearchParams = {
   query?: string
   category?: SearchCategory
   filters?: SearchFilters
+  autoFocus?: boolean
 }

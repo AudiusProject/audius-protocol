@@ -14,11 +14,6 @@
  */
 
 import { exists, mapValues } from '../runtime';
-import {
-     CollectionActivityFullFromJSONTyped,
-     TrackActivityFullFromJSONTyped
-} from './';
-
 /**
  * 
  * @export
@@ -30,47 +25,26 @@ export interface ActivityFull {
      * @type {string}
      * @memberof ActivityFull
      */
-    timestamp: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof ActivityFull
-     */
-    itemType: ActivityFullItemTypeEnum;
+    timestamp?: string;
     /**
      * 
      * @type {object}
      * @memberof ActivityFull
      */
-    item: object;
+    itemType?: object;
     /**
      * 
-     * @type {string}
+     * @type {object}
      * @memberof ActivityFull
      */
-    _class: string;
+    item?: object;
 }
-
-
-/**
- * @export
- */
-export const ActivityFullItemTypeEnum = {
-    Track: 'track',
-    Playlist: 'playlist'
-} as const;
-export type ActivityFullItemTypeEnum = typeof ActivityFullItemTypeEnum[keyof typeof ActivityFullItemTypeEnum];
-
 
 /**
  * Check if a given object implements the ActivityFull interface.
  */
 export function instanceOfActivityFull(value: object): value is ActivityFull {
     let isInstance = true;
-    isInstance = isInstance && "timestamp" in value && value["timestamp"] !== undefined;
-    isInstance = isInstance && "itemType" in value && value["itemType"] !== undefined;
-    isInstance = isInstance && "item" in value && value["item"] !== undefined;
-    isInstance = isInstance && "_class" in value && value["_class"] !== undefined;
 
     return isInstance;
 }
@@ -83,20 +57,11 @@ export function ActivityFullFromJSONTyped(json: any, ignoreDiscriminator: boolea
     if ((json === undefined) || (json === null)) {
         return json;
     }
-    if (!ignoreDiscriminator) {
-        if (json['_class'] === 'collection_activity_full') {
-            return CollectionActivityFullFromJSONTyped(json, true);
-        }
-        if (json['_class'] === 'track_activity_full') {
-            return TrackActivityFullFromJSONTyped(json, true);
-        }
-    }
     return {
         
-        'timestamp': json['timestamp'],
-        'itemType': json['item_type'],
-        'item': json['item'],
-        '_class': json['class'],
+        'timestamp': !exists(json, 'timestamp') ? undefined : json['timestamp'],
+        'itemType': !exists(json, 'item_type') ? undefined : json['item_type'],
+        'item': !exists(json, 'item') ? undefined : json['item'],
     };
 }
 
@@ -112,7 +77,6 @@ export function ActivityFullToJSON(value?: ActivityFull | null): any {
         'timestamp': value.timestamp,
         'item_type': value.itemType,
         'item': value.item,
-        'class': value._class,
     };
 }
 

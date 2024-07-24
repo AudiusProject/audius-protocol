@@ -18,6 +18,7 @@ import { useDispatch } from 'react-redux'
 
 import { Hint, IconCart } from '@audius/harmony-native'
 import { useNavigation } from 'app/hooks/useNavigation'
+import { useSetEntityAvailabilityFields } from 'app/hooks/useSetTrackAvailabilityFields'
 import { FormScreen } from 'app/screens/form-screen'
 
 import { EditPriceAndAudienceConfirmationDrawer } from '../../../screens/edit-track-screen/components/EditPriceAndAudienceConfirmationDrawer'
@@ -47,8 +48,8 @@ export const PriceAndAudienceScreen = () => {
     'is_scheduled_release'
   )
   const [{ value: remixOf }] = useField<RemixOfField>('remix_of')
-  const [{ value: isUpload }] = useField<boolean>('is_upload')
   const [{ value: entityType }] = useField<string>('entityType')
+  const [{ value: isUpload }] = useField<boolean>('isUpload')
   const isRemix = !!remixOf
 
   const { isEnabled: isEditableAccessEnabled } = useFeatureFlag(
@@ -112,6 +113,7 @@ export const PriceAndAudienceScreen = () => {
 
   const [{ value: price }, { error: priceError }] = useField(TRACK_PRICE)
   const [{ value: preview }, { error: previewError }] = useField(TRACK_PREVIEW)
+  const setFields = useSetEntityAvailabilityFields()
 
   const usdcGateIsInvalid = useMemo(() => {
     // first time user selects usdc purchase option
@@ -186,13 +188,40 @@ export const PriceAndAudienceScreen = () => {
     )
   }, [dispatch])
 
+  // Listen for `navigation.goBack` events and in the case of going back
+  // reset the availability fields.
+  // Note that this is a stop gap against a better model which would be to have
+  // each radio subgroup manage its own state. That requires a larger refactor.
+  useEffect(() => {
+    const listener = navigation.addListener('beforeRemove', ({ data }) => {
+      if (isFormInvalid && data.action.type === 'GO_BACK') {
+        setFields({
+          is_stream_gated: initialValues.is_stream_gated,
+          stream_conditions: initialValues.stream_conditions,
+          is_unlisted: initialValues.is_unlisted,
+          preview_start_seconds: initialValues.preview_start_seconds,
+          'field_visibility.genre': initialValues.field_visibility?.genre,
+          'field_visibility.mood': initialValues.field_visibility?.mood,
+          'field_visibility.tags': initialValues.field_visibility?.tags,
+          'field_visibility.share': initialValues.field_visibility?.share,
+          'field_visibility.play_count':
+            initialValues.field_visibility?.play_count,
+          'field_visibility.remixes': initialValues.field_visibility?.remixes
+        })
+      }
+    })
+    return () => {
+      navigation.removeListener('beforeRemove', listener)
+    }
+  }, [initialValues, navigation, setFields, isFormInvalid])
+
   return (
     <FormScreen
       title={messages.title}
       icon={IconCart}
       variant='white'
       disableSubmit={isFormInvalid}
-      stopNavigation={usersMayLoseAccess}
+      stopNavigation={!isUpload && usersMayLoseAccess}
       onSubmit={handleSubmit}
     >
       {isRemix ? <Hint m='l'>{messages.markedAsRemix}</Hint> : null}

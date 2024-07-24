@@ -88,7 +88,7 @@ def parse_instruction_data(
                 decoded[user_id_start:user_id_end]
             ),
         )
-        logger.warning(
+        logger.debug(
             log,
             exc_info=False,
         )

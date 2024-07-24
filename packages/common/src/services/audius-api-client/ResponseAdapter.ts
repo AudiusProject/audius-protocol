@@ -264,6 +264,7 @@ export const makeTrack = (
         : null,
 
     stem_of: track.stem_of.parent_track_id === null ? null : track.stem_of,
+    // TODO: Remove this when api is fixed to return UTC dates
     release_date: dayjs
       .utc(track.release_date)
       .local()
@@ -376,6 +377,10 @@ export const makePlaylist = (
     is_stream_gated,
     stream_conditions,
     access,
+    // TODO: Remove this when api is fixed to return UTC dates
+    release_date: playlist.release_date
+      ? dayjs.utc(playlist.release_date).local()
+      : undefined, // utc -> local
 
     // Fields to prune
     id: undefined,
