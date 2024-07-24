@@ -61,7 +61,7 @@ class SolanaClientManager:
                 except SolanaTransactionFetchError as e:
                     raise e
                 except Exception as e:
-                    logger.error(
+                    logger.debug(
                         f"solana_client_manager.py | get_sol_tx_info | \
                             Error fetching tx {tx_sig} from endpoint {endpoint}, {e}",
                         exc_info=True,
