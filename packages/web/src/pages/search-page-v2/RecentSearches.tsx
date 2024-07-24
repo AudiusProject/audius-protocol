@@ -331,6 +331,8 @@ export const RecentSearches = () => {
       pv='xl'
       w='100%'
       css={{ maxWidth: '688px' }}
+      backgroundColor='white'
+      border='default'
       direction='column'
       gap='l'
     >

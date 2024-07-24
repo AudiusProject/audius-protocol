@@ -72,6 +72,7 @@ export const TextInput = forwardRef(
       _isFocused,
       _disablePointerEvents,
       style,
+      innerContainerStyle,
       ...other
     } = props
 
@@ -260,7 +261,7 @@ export const TextInput = forwardRef(
                 backgroundColor='surface1'
                 ph={isSmall ? 'm' : 'l'}
                 gap={isSmall ? 's' : 'm'}
-                style={animatedRootStyles}
+                style={[animatedRootStyles, innerContainerStyle]}
               >
                 {StartIcon ? (
                   <StartIcon

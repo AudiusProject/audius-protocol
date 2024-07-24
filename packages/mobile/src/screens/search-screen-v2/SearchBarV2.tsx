@@ -1,8 +1,10 @@
-import { Dimensions, Pressable } from 'react-native'
+import { Dimensions } from 'react-native'
 
 import {
+  IconButton,
   IconCloseAlt,
   IconSearch,
+  spacing,
   TextInput,
   TextInputSize
 } from '@audius/harmony-native'
@@ -27,15 +29,20 @@ export const SearchBarV2 = () => {
       startIcon={IconSearch}
       endIcon={() =>
         query ? (
-          <Pressable onPress={clearQuery} hitSlop={10}>
-            <IconCloseAlt size='s' color='subdued' />
-          </Pressable>
+          <IconButton
+            icon={IconCloseAlt}
+            size='s'
+            color='subdued'
+            onPress={clearQuery}
+            hitSlop={10}
+          />
         ) : null
       }
       size={TextInputSize.SMALL}
       label={messages.label}
       placeholder={messages.label}
       style={{ width: searchBarWidth }}
+      innerContainerStyle={query ? { paddingRight: spacing.s } : {}}
       value={query}
       onChangeText={setQuery}
     />

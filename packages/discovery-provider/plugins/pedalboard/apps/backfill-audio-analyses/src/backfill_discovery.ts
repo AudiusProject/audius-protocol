@@ -98,9 +98,13 @@ async function getAudioAnalysis(contentNodes: string[], track: Track) {
         let musicalKey = null
         let bpm = null
         if (results?.key) {
-          musicalKey = results?.key
+          if (results?.key.length <= 12) {
+            musicalKey = results?.key
+          }
         } else if (results?.Key) {
-          musicalKey = results?.Key
+          if (results?.Key.length <= 12) {
+            musicalKey = results?.Key
+          }
         }
         if (results?.bpm) {
           bpm = results?.bpm

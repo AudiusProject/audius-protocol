@@ -2,7 +2,7 @@ import { useCallback } from 'react'
 
 import { ID, Kind, Status } from '@audius/common/models'
 import { searchActions } from '@audius/common/store'
-import { Box, Flex, OptionsFilterButton, Text } from '@audius/harmony'
+import { Box, Flex, Text, useTheme } from '@audius/harmony'
 import { range } from 'lodash'
 import { useDispatch } from 'react-redux'
 
@@ -10,11 +10,8 @@ import { CollectionCard } from 'components/collection'
 import { useIsMobile } from 'hooks/useIsMobile'
 
 import { NoResultsTile } from '../NoResultsTile'
-import {
-  useGetSearchResults,
-  useSearchParams,
-  useUpdateSearchParams
-} from '../utils'
+import { SortMethodFilterButton } from '../SortMethodFilterButton'
+import { useGetSearchResults } from '../utils'
 
 const { addItem: addRecentSearch } = searchActions
 
@@ -94,13 +91,10 @@ export const PlaylistResultsPage = () => {
   // const [playlistsLayout, setPlaylistsLayout] = useState<ViewLayout>('grid')
 
   const isMobile = useIsMobile()
+  const { color } = useTheme()
 
   const { data: ids, status } = useGetSearchResults('playlists')
   const isLoading = status === Status.LOADING
-
-  const searchParams = useSearchParams()
-  const { sortMethod } = searchParams
-  const updateSortParam = useUpdateSearchParams('sortMethod')
 
   const isResultsEmpty = ids?.length === 0
   const showNoResultsTile = !isLoading && isResultsEmpty
@@ -115,33 +109,26 @@ export const PlaylistResultsPage = () => {
   // })
 
   return (
-    <Flex direction='column' gap='xl'>
+    <Flex
+      direction='column'
+      gap='xl'
+      css={isMobile ? { backgroundColor: color.background.default } : {}}
+    >
       {!isMobile ? (
         <Flex justifyContent='space-between' alignItems='center'>
           <Text variant='heading' textAlign='left'>
             {messages.playlists}
           </Text>
-          <Flex gap='s'>
-            <OptionsFilterButton
-              selection={sortMethod ?? 'relevant'}
-              variant='replaceLabel'
-              optionsLabel={messages.sortOptionsLabel}
-              onChange={updateSortParam}
-              options={[
-                { label: 'Most Relevant', value: 'relevant' },
-                { label: 'Most Recent', value: 'recent' }
-              ]}
-            />
-            {/* <OptionsFilterButton */}
-            {/*   selection={playlistsLayout} */}
-            {/*   variant='replaceLabel' */}
-            {/*   optionsLabel={messages.layoutOptionsLabel} */}
-            {/*   onChange={(value) => { */}
-            {/*     setPlaylistsLayout(value as ViewLayout) */}
-            {/*   }} */}
-            {/*   options={viewLayoutOptions} */}
-            {/* /> */}
-          </Flex>
+          <SortMethodFilterButton />
+          {/* <OptionsFilterButton */}
+          {/*   selection={playlistsLayout} */}
+          {/*   variant='replaceLabel' */}
+          {/*   optionsLabel={messages.layoutOptionsLabel} */}
+          {/*   onChange={(value) => { */}
+          {/*     setPlaylistsLayout(value as ViewLayout) */}
+          {/*   }} */}
+          {/*   options={viewLayoutOptions} */}
+          {/* /> */}
         </Flex>
       ) : null}
       {showNoResultsTile ? <NoResultsTile /> : <PlaylistResults ids={ids} />}
