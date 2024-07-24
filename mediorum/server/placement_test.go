@@ -18,7 +18,7 @@ func TestRendezvous256(t *testing.T) {
 
 	// sha256 ordering
 	{
-		ordered := rh.rank(testCid)
+		ordered := rh.Rank(testCid)
 		expected := []string{
 			"https://blockdaemon-audius-content-09.bdnodes.net",
 			"https://cn4.mainnet.audiusindex.org",
@@ -26,23 +26,6 @@ func TestRendezvous256(t *testing.T) {
 			"https://cn0.mainnet.audiusindex.org",
 			"https://creatornode.audius3.prod-eks-ap-northeast-1.staked.cloud",
 			"https://blockdaemon-audius-content-07.bdnodes.net",
-		}
-		for idx, exp := range expected {
-			assert.Equal(t, exp, ordered[idx], fmt.Sprintf("expected rank %d to be %s got %s", idx, exp, ordered[idx]))
-		}
-	}
-
-	// HashMigration ordering
-	{
-		ordered := rh.Rank(testCid)
-		expected := []string{
-			"https://audius-content-15.cultur3stake.com",
-			"https://audius-content-4.figment.io",
-
-			"https://blockdaemon-audius-content-09.bdnodes.net",
-			"https://cn4.mainnet.audiusindex.org",
-			"https://cn0.mainnet.audiusindex.org",
-			"https://creatornode.audius3.prod-eks-ap-northeast-1.staked.cloud",
 		}
 		for idx, exp := range expected {
 			assert.Equal(t, exp, ordered[idx], fmt.Sprintf("expected rank %d to be %s got %s", idx, exp, ordered[idx]))

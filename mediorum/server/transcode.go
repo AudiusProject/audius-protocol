@@ -15,6 +15,7 @@ import (
 	"os"
 	"os/exec"
 	"runtime"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -40,6 +41,15 @@ func (ss *MediorumServer) startTranscoder() {
 	numWorkers := runtime.NumCPU() - 2
 	if numWorkers < 2 {
 		numWorkers = 2
+	}
+	numWorkersOverride := os.Getenv("TRANSCODE_WORKERS")
+	if numWorkersOverride != "" {
+		num, err := strconv.ParseInt(numWorkersOverride, 10, 64)
+		if err != nil {
+			ss.logger.Warn("failed to parse TRANSCODE_WORKERS", "err", err, "TRANSCODE_WORKERS", numWorkersOverride)
+		} else {
+			numWorkers = int(num)
+		}
 	}
 
 	// on boot... reset any of my wip jobs

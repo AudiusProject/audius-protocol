@@ -130,8 +130,10 @@ export const PublishContentDrawer = () => {
     const { key: dismissToastKey } = displayPublishToast()
     setDismissToastKey(dismissToastKey)
 
-    if (contentId && contentType === 'playlist') {
-      dispatch(publishPlaylist(contentId, dismissToastKey))
+    if (contentId && (contentType === 'playlist' || contentType === 'album')) {
+      dispatch(
+        publishPlaylist(contentId, dismissToastKey, contentType === 'album')
+      )
     }
     // Publish track
     if (contentId && contentType === 'track') {
