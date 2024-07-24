@@ -27,7 +27,7 @@ const { premiumRadio: messages } = priceAndAudienceMessages
 
 export const PremiumRadioField = (props: PremiumRadioFieldProps) => {
   const { disabled, previousStreamConditions } = props
-  const { set: setFields } = useSetEntityAvailabilityFields()
+  const setFields = useSetEntityAvailabilityFields()
 
   const { value } = useContext(RadioGroupContext)
   const selected = value === StreamTrackAvailabilityType.USDC_PURCHASE

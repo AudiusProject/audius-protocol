@@ -82,39 +82,16 @@ export const useSetEntityAvailabilityFields = () => {
   }, [])
 
   const set = useCallback(
-    (
-      fieldValues: Partial<TrackAvailabilityField>,
-      resetOtherFields = false
-    ) => {
+    (fieldValues: Partial<TrackAvailabilityField>) => {
       const givenKeys = Object.keys(fieldValues)
       givenKeys.forEach((key) => {
         const value = fieldValues[key]
         const setter = fieldSetters[key]
         setter(value)
       })
-
-      if (resetOtherFields) {
-        const givenKeySet = new Set(givenKeys)
-        const otherKeys = Object.keys(defaultTrackAvailabilityFields).filter(
-          (key) => !givenKeySet.has(key)
-        )
-        otherKeys.forEach((key) => {
-          const value = defaultTrackAvailabilityFields[key]
-          const setter = fieldSetters[key]
-          setter(value)
-        })
-      }
     },
-    [defaultTrackAvailabilityFields, fieldSetters]
+    [fieldSetters]
   )
 
-  const reset = useCallback(() => {
-    Object.keys(defaultTrackAvailabilityFields).forEach((key) => {
-      const value = defaultTrackAvailabilityFields[key]
-      const setter = fieldSetters[key]
-      setter(value)
-    })
-  }, [defaultTrackAvailabilityFields, fieldSetters])
-
-  return { set, reset }
+  return set
 }
