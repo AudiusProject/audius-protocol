@@ -72,7 +72,7 @@
   },
   "dependencies": {
     "@audius/common": "*",
-    "@audius/fetch-nft": "0.2.6",
+    "@audius/fetch-nft": "0.2.7",
     "@audius/fixed-decimal": "*",
     "@audius/harmony": "*",
     "@audius/sdk": "*",
