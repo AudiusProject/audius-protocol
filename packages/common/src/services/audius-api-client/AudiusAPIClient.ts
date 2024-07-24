@@ -32,7 +32,6 @@ import {
   APISearchAutocomplete,
   APIStem,
   APITrack,
-  APIUser,
   GetNFTGatedTrackSignaturesResponse,
   GetTipsResponse,
   OpaqueID
@@ -76,7 +75,6 @@ const FULL_ENDPOINT_MAP = {
   userTracksByHandle: (handle: OpaqueID) => `/users/handle/${handle}/tracks`,
   userAiTracksByHandle: (handle: OpaqueID) =>
     `/users/handle/${handle}/tracks/ai_attributed`,
-  getRelatedArtists: (userId: OpaqueID) => `/users/${userId}/related`,
   getPlaylist: (playlistId: OpaqueID) => `/playlists/${playlistId}`,
   getPlaylists: '/playlists',
   getPlaylistByPermalink: (handle: string, slug: string) =>
@@ -147,11 +145,6 @@ type GetTrackByHandleAndSlugArgs = {
   currentUserId: Nullable<ID>
 }
 
-type PaginationArgs = {
-  limit?: number
-  offset?: number
-}
-
 type GetTrendingArgs = {
   timeRange?: TimeRange
   offset?: number
@@ -204,10 +197,6 @@ type GetPremiumTracksArgs = {
   currentUserId: Nullable<ID>
   offset?: number
   limit?: number
-}
-
-type GetRelatedArtistsArgs = PaginationArgs & {
-  userId: ID
 }
 
 type GetFavoritesArgs = {
@@ -921,18 +910,6 @@ export class AudiusAPIClient {
     if (!response) return null
     const { data } = response
     return data.map(adapter.makeFavorite).filter(removeNullable)
-  }
-
-  async getRelatedArtists({ userId, offset, limit }: GetRelatedArtistsArgs) {
-    this._assertInitialized()
-    const encodedUserId = this._encodeOrThrow(userId)
-    const response = await this._getResponse<APIResponse<APIUser[]>>(
-      FULL_ENDPOINT_MAP.getRelatedArtists(encodedUserId),
-      { offset, limit }
-    )
-    if (!response) return []
-    const adapted = response.data.map(adapter.makeUser).filter(removeNullable)
-    return adapted
   }
 
   async getCollectionMetadata({
