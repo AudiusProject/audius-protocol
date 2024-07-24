@@ -6,7 +6,6 @@ export * from './ActivityFull';
 export * from './Attestation';
 export * from './AttestationReponse';
 export * from './CollectionActivityFull';
-export * from './CollectionActivityFullWithoutTracks';
 export * from './CollectionLibraryResponseFull';
 export * from './CoverArt';
 export * from './CoverPhoto';

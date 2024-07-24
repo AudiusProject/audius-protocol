@@ -14,12 +14,6 @@
  */
 
 import { exists, mapValues } from '../runtime';
-import type { ActivityFull } from './ActivityFull';
-import {
-    ActivityFullFromJSON,
-    ActivityFullFromJSONTyped,
-    ActivityFullToJSON,
-} from './ActivityFull';
 import type { TrackFull } from './TrackFull';
 import {
     TrackFullFromJSON,
@@ -32,23 +26,32 @@ import {
  * @export
  * @interface TrackActivityFull
  */
-export interface TrackActivityFull extends ActivityFull {
+export interface TrackActivityFull {
+    /**
+     * 
+     * @type {string}
+     * @memberof TrackActivityFull
+     */
+    timestamp?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof TrackActivityFull
+     */
+    itemType?: string;
     /**
      * 
      * @type {TrackFull}
      * @memberof TrackActivityFull
      */
-    item: TrackFull;
+    item?: TrackFull;
 }
-
-
 
 /**
  * Check if a given object implements the TrackActivityFull interface.
  */
 export function instanceOfTrackActivityFull(value: object): value is TrackActivityFull {
     let isInstance = true;
-    isInstance = isInstance && "item" in value && value["item"] !== undefined;
 
     return isInstance;
 }
@@ -62,8 +65,10 @@ export function TrackActivityFullFromJSONTyped(json: any, ignoreDiscriminator: b
         return json;
     }
     return {
-        ...ActivityFullFromJSONTyped(json, ignoreDiscriminator),
-        'item': TrackFullFromJSON(json['item']),
+        
+        'timestamp': !exists(json, 'timestamp') ? undefined : json['timestamp'],
+        'itemType': !exists(json, 'item_type') ? undefined : json['item_type'],
+        'item': !exists(json, 'item') ? undefined : TrackFullFromJSON(json['item']),
     };
 }
 
@@ -75,7 +80,9 @@ export function TrackActivityFullToJSON(value?: TrackActivityFull | null): any {
         return null;
     }
     return {
-        ...ActivityFullToJSON(value),
+        
+        'timestamp': value.timestamp,
+        'item_type': value.itemType,
         'item': TrackFullToJSON(value.item),
     };
 }

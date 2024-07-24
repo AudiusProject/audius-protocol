@@ -14,12 +14,12 @@
  */
 
 import { exists, mapValues } from '../runtime';
-import type { CollectionActivityFullWithoutTracks } from './CollectionActivityFullWithoutTracks';
+import type { CollectionActivityFull } from './CollectionActivityFull';
 import {
-    CollectionActivityFullWithoutTracksFromJSON,
-    CollectionActivityFullWithoutTracksFromJSONTyped,
-    CollectionActivityFullWithoutTracksToJSON,
-} from './CollectionActivityFullWithoutTracks';
+    CollectionActivityFullFromJSON,
+    CollectionActivityFullFromJSONTyped,
+    CollectionActivityFullToJSON,
+} from './CollectionActivityFull';
 import type { VersionMetadata } from './VersionMetadata';
 import {
     VersionMetadataFromJSON,
@@ -77,10 +77,10 @@ export interface CollectionLibraryResponseFull {
     version: VersionMetadata;
     /**
      * 
-     * @type {Array<CollectionActivityFullWithoutTracks>}
+     * @type {Array<CollectionActivityFull>}
      * @memberof CollectionLibraryResponseFull
      */
-    data?: Array<CollectionActivityFullWithoutTracks>;
+    data?: Array<CollectionActivityFull>;
 }
 
 /**
@@ -116,7 +116,7 @@ export function CollectionLibraryResponseFullFromJSONTyped(json: any, ignoreDisc
         'signature': json['signature'],
         'timestamp': json['timestamp'],
         'version': VersionMetadataFromJSON(json['version']),
-        'data': !exists(json, 'data') ? undefined : ((json['data'] as Array<any>).map(CollectionActivityFullWithoutTracksFromJSON)),
+        'data': !exists(json, 'data') ? undefined : ((json['data'] as Array<any>).map(CollectionActivityFullFromJSON)),
     };
 }
 
@@ -136,7 +136,7 @@ export function CollectionLibraryResponseFullToJSON(value?: CollectionLibraryRes
         'signature': value.signature,
         'timestamp': value.timestamp,
         'version': VersionMetadataToJSON(value.version),
-        'data': value.data === undefined ? undefined : ((value.data as Array<any>).map(CollectionActivityFullWithoutTracksToJSON)),
+        'data': value.data === undefined ? undefined : ((value.data as Array<any>).map(CollectionActivityFullToJSON)),
     };
 }
 
