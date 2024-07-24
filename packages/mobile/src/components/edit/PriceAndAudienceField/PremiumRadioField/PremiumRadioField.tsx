@@ -40,7 +40,7 @@ export const PremiumRadioField = (props: PremiumRadioFieldProps) => {
   }, [previousStreamConditions])
 
   const [{ value: preview }] = useField(TRACK_PREVIEW)
-  const previewStartSeconds = useRef(preview ?? 0).current
+  const previewStartSeconds = useRef(preview ?? null).current
   const [{ value: entityType }] = useField('entityType')
 
   useEffect(() => {
@@ -49,7 +49,7 @@ export const PremiumRadioField = (props: PremiumRadioFieldProps) => {
         is_stream_gated: true,
         // @ts-ignore fully formed in saga (validated + added splits)
         stream_conditions: { usdc_purchase: selectedUsdcPurchaseValue },
-        preview_start_seconds: previewStartSeconds,
+        preview_start_seconds: previewStartSeconds ?? 0,
         'field_visibility.remixes': false
       })
     }
