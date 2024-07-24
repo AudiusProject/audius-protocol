@@ -1,6 +1,8 @@
 import logging  # pylint: disable=C0302
 from typing import List, Optional, TypedDict
 
+from sqlalchemy.orm import aliased
+
 from src.models.comments.comment import Comment
 from src.models.comments.comment_thread import CommentThread
 from src.queries.query_helpers import SortDirection, SortMethod
@@ -73,10 +75,21 @@ def get_track_comments(track_id):
             for reply in replies
         ]
 
+    CommentThreadAlias = aliased(CommentThread)
+
     with db.scoped_session() as session:
         track_comments = (
             session.query(Comment)
-            .filter(Comment.entity_id == track_id, Comment.entity_type == "Track")
+            .outerjoin(
+                CommentThreadAlias,
+                Comment.comment_id == CommentThreadAlias.comment_id,
+            )
+            .filter(
+                Comment.entity_id == track_id,
+                Comment.entity_type == "Track",
+                CommentThreadAlias.parent_comment_id
+                == None,  # Check if parent_comment_id is null
+            )
             .all()
         )
 
