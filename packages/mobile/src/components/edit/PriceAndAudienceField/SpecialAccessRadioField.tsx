@@ -64,6 +64,7 @@ export const SpecialAccessRadioField = (
       setFields({
         is_stream_gated: true,
         stream_conditions: selectedSpecialAccessGate,
+        preview_start_seconds: null,
         'field_visibility.remixes': false
       })
     }

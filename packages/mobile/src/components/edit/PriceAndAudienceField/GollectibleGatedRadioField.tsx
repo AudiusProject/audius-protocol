@@ -64,6 +64,7 @@ export const CollectibleGatedRadioField = (
       setFields({
         is_stream_gated: true,
         stream_conditions: { nft_collection: selectedNFTCollection },
+        preview_start_seconds: null,
         'field_visibility.remixes': false
       })
     }
