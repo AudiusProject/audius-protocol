@@ -63,7 +63,9 @@ export const DatePickerField = (props: DatePickerFieldProps) => {
           role='button'
           tabIndex={0}
           className={styles.datePickerField}
-          onClick={() => setIsFocused(true)}
+          onClick={() => {
+            setIsFocused(true)
+          }}
         >
           <IconCalendarMonth color='subdued' className={styles.iconCalendar} />
           <div>
@@ -94,6 +96,7 @@ export const DatePickerField = (props: DatePickerFieldProps) => {
               date={moment(value)}
               onDateChange={(value) => {
                 helpers.setValue(value?.toString())
+                helpers.setTouched(true)
               }}
               isOutsideRange={(day) => {
                 if (futureDatesOnly) {
