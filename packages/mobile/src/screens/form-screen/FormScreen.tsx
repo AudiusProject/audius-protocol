@@ -38,7 +38,7 @@ export const FormScreen = (props: FormScreenProps) => {
 
   const handleSubmit = useCallback(() => {
     if (!stopNavigation) {
-      navigation.goBack()
+      navigation.pop()
     }
     onSubmit?.()
   }, [stopNavigation, navigation, onSubmit])

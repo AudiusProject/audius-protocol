@@ -4,6 +4,19 @@ import type { AccessConditions } from '@audius/common/models'
 import type { Nullable } from '@audius/common/utils'
 import { useField } from 'formik'
 
+type TrackAvailabilityField = {
+  is_stream_gated: boolean
+  stream_conditions: Nullable<AccessConditions>
+  is_unlisted: boolean
+  preview_start_seconds: Nullable<Number>
+  'field_visibility.genre': boolean
+  'field_visibility.mood': boolean
+  'field_visibility.tags': boolean
+  'field_visibility.share': boolean
+  'field_visibility.play_count': boolean
+  'field_visibility.remixes': boolean
+}
+
 // This hook allows us to set track availability fields during upload.
 // It has to be used with a Formik context because it uses formik's useField hook.
 export const useSetEntityAvailabilityFields = () => {
@@ -50,7 +63,6 @@ export const useSetEntityAvailabilityFields = () => {
     }),
     [isScheduledRelease, isUnlisted]
   )
-  type TrackAvailabilityField = typeof defaultTrackAvailabilityFields
 
   const fieldSetters = useMemo(() => {
     return {
