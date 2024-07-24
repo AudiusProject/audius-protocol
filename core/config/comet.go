@@ -84,7 +84,7 @@ func InitComet(logger *common.Logger, environment, delegatePrivateKey, homeDir s
 		}
 		pubKey, err := pv.GetPubKey()
 		if err != nil {
-			return fmt.Errorf("can't get pubkey", err)
+			return fmt.Errorf("can't get pubkey %v", err)
 		}
 		genDoc.Validators = []types.GenesisValidator{{
 			Address: pubKey.Address(),
@@ -93,7 +93,7 @@ func InitComet(logger *common.Logger, environment, delegatePrivateKey, homeDir s
 		}}
 
 		if err := genDoc.SaveAs(genFile); err != nil {
-			fmt.Errorf("saving gen file", err)
+			return fmt.Errorf("saving gen file %v", err)
 		}
 		logger.Info("Generated genesis file", "path", genFile)
 	}
