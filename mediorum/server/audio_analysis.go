@@ -82,7 +82,7 @@ func (ss *MediorumServer) findMissedAudioAnalysisJobs(ctx context.Context, work 
 		isMine = isMine || (ss.Config.Env == "prod" && ss.Config.Self.Host == "https://creatornode2.audius.co")
 		if isMine && upload.AudioAnalysisErrorCount < MAX_TRIES {
 			select {
-			case work <- analysis:
+			case work <- upload:
 				// successfully sent the job to the channel
 			case <-ctx.Done():
 				// if the context is done, stop processing
