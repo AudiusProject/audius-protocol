@@ -347,7 +347,6 @@ const NavigationContainer = (props: NavigationContainerProps) => {
         }
       }
 
-      console.log('seb', path)
       return getStateFromPath(path, options)
     }
   }
