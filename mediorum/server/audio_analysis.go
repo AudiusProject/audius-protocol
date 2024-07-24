@@ -57,7 +57,7 @@ func (ss *MediorumServer) startAudioAnalyzer() {
 
 func (ss *MediorumServer) findMissedAudioAnalysisJobs(ctx context.Context, work chan<- *Upload) {
 	uploads := []*Upload{}
-	err := ss.crud.DB.Where("template = ? and audio_analysis_status != ?", JobTemplateAudio, JobStatusDone).
+	err := ss.crud.DB.Where("template = ? and (audio_analysis_status is null or audio_analysis_status != ?)", JobTemplateAudio, JobStatusDone).
 		Order("random()").
 		Find(&uploads).
 		Error
