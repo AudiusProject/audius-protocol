@@ -113,7 +113,7 @@ export const PriceAndAudienceScreen = () => {
 
   const [{ value: price }, { error: priceError }] = useField(TRACK_PRICE)
   const [{ value: preview }, { error: previewError }] = useField(TRACK_PREVIEW)
-  const { set: setTrackAvailabilityFields } = useSetEntityAvailabilityFields()
+  const setFields = useSetEntityAvailabilityFields()
 
   const usdcGateIsInvalid = useMemo(() => {
     // first time user selects usdc purchase option
@@ -195,7 +195,7 @@ export const PriceAndAudienceScreen = () => {
   useEffect(() => {
     const listener = navigation.addListener('beforeRemove', ({ data }) => {
       if (isFormInvalid && data.action.type === 'GO_BACK') {
-        setTrackAvailabilityFields({
+        setFields({
           is_stream_gated: initialValues.is_stream_gated,
           stream_conditions: initialValues.stream_conditions,
           is_unlisted: initialValues.is_unlisted,
@@ -213,7 +213,7 @@ export const PriceAndAudienceScreen = () => {
     return () => {
       navigation.removeListener('beforeRemove', listener)
     }
-  }, [initialValues, navigation, setTrackAvailabilityFields, isFormInvalid])
+  }, [initialValues, navigation, setFields, isFormInvalid])
 
   return (
     <FormScreen
