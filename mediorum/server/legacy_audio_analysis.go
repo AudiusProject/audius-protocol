@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -28,6 +29,15 @@ func (ss *MediorumServer) startLegacyAudioAnalyzer() {
 	work := make(chan *QmAudioAnalysis)
 
 	numWorkers := 5
+	numWorkersOverride := os.Getenv("LEGACY_AUDIO_ANALYSIS_WORKERS")
+	if numWorkersOverride != "" {
+		num, err := strconv.ParseInt(numWorkersOverride, 10, 64)
+		if err != nil {
+			ss.logger.Warn("failed to parse LEGACY_AUDIO_ANALYSIS_WORKERS", "err", err, "LEGACY_AUDIO_ANALYSIS_WORKERS", numWorkersOverride)
+		} else {
+			numWorkers = int(num)
+		}
+	}
 
 	// start workers
 	for i := 0; i < numWorkers; i++ {
