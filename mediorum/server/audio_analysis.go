@@ -38,6 +38,24 @@ func (ss *MediorumServer) startAudioAnalyzer() {
 	time.Sleep(time.Minute)
 
 	// find old work from backlog
+	ticker := time.NewTicker(15 * time.Minute)
+	defer ticker.Stop()
+
+	for {
+		ctx, cancel := context.WithTimeout(context.Background(), 15*time.Minute)
+		go func() {
+			defer cancel()
+			ss.findMissedAudioAnalysisJobs(ctx, work)
+		}()
+
+		select {
+		case <-ticker.C:
+			cancel()
+		}
+	}
+}
+
+func (ss *MediorumServer) findMissedAudioAnalysisJobs(ctx context.Context, work chan<- *Upload) {
 	uploads := []*Upload{}
 	err := ss.crud.DB.Where("template = ? and audio_analysis_status != ?", JobTemplateAudio, JobStatusDone).
 		Order("random()").
@@ -49,6 +67,13 @@ func (ss *MediorumServer) startAudioAnalyzer() {
 	}
 
 	for _, upload := range uploads {
+		select {
+		case <-ctx.Done():
+			// if the context is done, stop processing
+			return
+		default:
+		}
+
 		cid, ok := upload.TranscodeResults["320"]
 		if !ok {
 			continue
@@ -56,7 +81,13 @@ func (ss *MediorumServer) startAudioAnalyzer() {
 		_, isMine := ss.rendezvousAllHosts(cid)
 		isMine = isMine || (ss.Config.Env == "prod" && ss.Config.Self.Host == "https://creatornode2.audius.co")
 		if isMine && upload.AudioAnalysisErrorCount < MAX_TRIES {
-			work <- upload
+			select {
+			case work <- analysis:
+				// successfully sent the job to the channel
+			case <-ctx.Done():
+				// if the context is done, stop processing
+				return
+			}
 		}
 	}
 }
