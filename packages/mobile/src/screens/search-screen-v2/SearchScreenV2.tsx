@@ -113,26 +113,23 @@ export const SearchScreenV2 = () => {
 }
 
 export const SearchScreenStack = () => {
-  const { params: routeParams } = useRoute<'Search'>()
-  const params = useMemo(() => {
-    return routeParams ?? {}
-  }, [routeParams])
+  const { params } = useRoute<'Search'>()
 
-  const [autoFocus, setAutoFocus] = useState(params.autoFocus ?? false)
-  const [query, setQuery] = useState(params.query ?? '')
+  const [autoFocus, setAutoFocus] = useState(params?.autoFocus ?? false)
+  const [query, setQuery] = useState(params?.query ?? '')
   const [category, setCategory] = useState<SearchCategory>(
-    params.category ?? 'all'
+    params?.category ?? 'all'
   )
   const [filters, setFilters] = useState<SearchFiltersType>(
-    params.filters ?? {}
+    params?.filters ?? {}
   )
   const [bpmType, setBpmType] = useState<'range' | 'target'>('range')
 
   useEffect(() => {
-    setQuery(params.query ?? '')
-    setCategory(params.category ?? 'all')
-    setFilters(params.filters ?? {})
-    setAutoFocus(params.autoFocus ?? false)
+    setQuery(params?.query ?? '')
+    setCategory(params?.category ?? 'all')
+    setFilters(params?.filters ?? {})
+    setAutoFocus(params?.autoFocus ?? false)
   }, [params])
 
   const screenOptions = useAppScreenOptions()
