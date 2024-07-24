@@ -46,13 +46,13 @@ function formatErrorLog(
 }
 
 async function getAudioAnalysis(contentNodes: string[], track: Track) {
-  let result = null
+  let formattedResult = null
 
   const trackCid = track.track_cid
-  if (!trackCid) return result
+  if (!trackCid) return formattedResult
   // skip tracks that already have their audio analyses
-  if (track.musical_key && track.bpm) return result
-  if (track.audio_analysis_error_count! >= 3) return result
+  if (track.musical_key && track.bpm) return formattedResult
+  if (track.audio_analysis_error_count! >= 3) return formattedResult
 
   const audioUploadId = track.audio_upload_id || ''
   const isLegacyTrack = !audioUploadId
@@ -126,7 +126,7 @@ async function getAudioAnalysis(contentNodes: string[], track: Track) {
           break
         }
 
-        result = {
+        formattedResult = {
           track_id: track.track_id,
           musical_key: musicalKey,
           bpm,
@@ -151,7 +151,7 @@ async function getAudioAnalysis(contentNodes: string[], track: Track) {
   }
 
   release() // release the semaphore permit
-  return result
+  return formattedResult
 }
 
 async function fetchTracks(
