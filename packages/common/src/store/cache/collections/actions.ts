@@ -158,7 +158,12 @@ export function publishPlaylist(
   dismissToastKey?: string,
   isAlbum?: boolean
 ) {
-  return { type: PUBLISH_PLAYLIST, playlistId, dismissToastKey, isAlbum }
+  return {
+    type: PUBLISH_PLAYLIST,
+    playlistId,
+    dismissToastKey,
+    isAlbum
+  }
 }
 
 export function publishPlaylistFailed(
