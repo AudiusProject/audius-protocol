@@ -49,7 +49,7 @@ export const CollectibleGatedRadioField = (
 
   const hasNoCollectibles = useHasNoCollectibles()
 
-  const { set: setTrackAvailabilityFields } = useSetEntityAvailabilityFields()
+  const setFields = useSetEntityAvailabilityFields()
   const [{ value: streamConditions }] =
     useField<Nullable<AccessConditions>>('stream_conditions')
   const [selectedNFTCollection, setSelectedNFTCollection] = useState(
@@ -61,16 +61,13 @@ export const CollectibleGatedRadioField = (
   // Update nft collection gate when availability selection changes
   useEffect(() => {
     if (selected) {
-      setTrackAvailabilityFields(
-        {
-          is_stream_gated: true,
-          stream_conditions: { nft_collection: selectedNFTCollection },
-          'field_visibility.remixes': false
-        },
-        true
-      )
+      setFields({
+        is_stream_gated: true,
+        stream_conditions: { nft_collection: selectedNFTCollection },
+        'field_visibility.remixes': false
+      })
     }
-  }, [selected, selectedNFTCollection, setTrackAvailabilityFields])
+  }, [selected, selectedNFTCollection, setFields])
 
   // Update nft collection gate when nft collection selection changes
   useEffect(() => {

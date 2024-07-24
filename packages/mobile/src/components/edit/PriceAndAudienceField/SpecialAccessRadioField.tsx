@@ -46,7 +46,7 @@ export const SpecialAccessRadioField = (
   const { value } = useContext(RadioGroupContext)
   const selected = value === StreamTrackAvailabilityType.SPECIAL_ACCESS
 
-  const { set: setTrackAvailabilityFields } = useSetEntityAvailabilityFields()
+  const setFields = useSetEntityAvailabilityFields()
   const currentUserId = useSelector(getUserId)
   const defaultSpecialAccess = currentUserId
     ? { follow_user_id: currentUserId }
@@ -61,16 +61,13 @@ export const SpecialAccessRadioField = (
   // Update special access gate when selection changes
   useEffect(() => {
     if (selected && selectedSpecialAccessGate) {
-      setTrackAvailabilityFields(
-        {
-          is_stream_gated: true,
-          stream_conditions: selectedSpecialAccessGate,
-          'field_visibility.remixes': false
-        },
-        true
-      )
+      setFields({
+        is_stream_gated: true,
+        stream_conditions: selectedSpecialAccessGate,
+        'field_visibility.remixes': false
+      })
     }
-  }, [selected, selectedSpecialAccessGate, setTrackAvailabilityFields])
+  }, [selected, selectedSpecialAccessGate, setFields])
 
   const handleInfoPress = useCallback(() => {
     dispatch(setVisibility({ drawer: 'SupportersInfo', visible: true }))
