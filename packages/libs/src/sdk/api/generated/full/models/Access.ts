@@ -25,13 +25,13 @@ export interface Access {
      * @type {boolean}
      * @memberof Access
      */
-    stream: boolean;
+    stream?: boolean;
     /**
      * 
      * @type {boolean}
      * @memberof Access
      */
-    download: boolean;
+    download?: boolean;
 }
 
 /**
@@ -39,8 +39,6 @@ export interface Access {
  */
 export function instanceOfAccess(value: object): value is Access {
     let isInstance = true;
-    isInstance = isInstance && "stream" in value && value["stream"] !== undefined;
-    isInstance = isInstance && "download" in value && value["download"] !== undefined;
 
     return isInstance;
 }
@@ -55,8 +53,8 @@ export function AccessFromJSONTyped(json: any, ignoreDiscriminator: boolean): Ac
     }
     return {
         
-        'stream': json['stream'],
-        'download': json['download'],
+        'stream': !exists(json, 'stream') ? undefined : json['stream'],
+        'download': !exists(json, 'download') ? undefined : json['download'],
     };
 }
 
