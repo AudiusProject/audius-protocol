@@ -1,7 +1,7 @@
 {
   "extends": "@tsconfig/strictest/tsconfig.json",
   "compilerOptions": {
-    "module": "ES2022",
+    "module": "CommonJS",
     "lib": ["ES2022", "dom"],
     "target": "ES2022",
     "checkJs": false,
