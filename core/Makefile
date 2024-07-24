@@ -1,8 +1,5 @@
-dev::
-	@go run main.go
-
-dev-discovery::
-	@go run main.go -env-file=./infra/dev_config/discovery.env
+dev-discovery-1::
+	@go run main.go -env-file=./infra/dev_config/discovery-one.env
 
 dev-content-1::
 	@go run main.go -env-file=./infra/dev_config/content-one.env
@@ -26,5 +23,5 @@ gen::
 	go mod tidy
 
 test::
-	@go test -v ./pkg/...
+	@go test -v ./...
 	@cd test/integration && ginkgo -r
