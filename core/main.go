@@ -10,16 +10,23 @@ import (
 	"github.com/AudiusProject/audius-protocol/core/chain"
 	"github.com/AudiusProject/audius-protocol/core/common"
 	"github.com/AudiusProject/audius-protocol/core/config"
+	"github.com/AudiusProject/audius-protocol/core/db"
 	"github.com/dgraph-io/badger/v4"
 )
 
 func main() {
 	logger := common.NewLogger(nil)
 
-	// TODO: read from .env
+	// core config
 	config, err := config.ReadConfig(logger)
 	if err != nil {
 		logger.Errorf("reading in config: %v", err)
+		return
+	}
+
+	// db migrations
+	if err := db.RunMigrations(logger, config.PSQLConn); err != nil {
+		logger.Errorf("running migrations: %v", err)
 		return
 	}
 
@@ -35,14 +42,6 @@ func main() {
 			logger.Info(fmt.Sprintf("closing database: %v", err))
 		}
 	}()
-
-	// generate node_key.json and priv_validator_key.json
-
-	// write genesis file from embed
-
-	// create config from go instead of toml
-
-	// run one comet instance locally per content and discovery replica (4 i think)
 
 	node, err := chain.NewNode(logger, config, db)
 	if err != nil {

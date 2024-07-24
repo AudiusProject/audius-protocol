@@ -13,7 +13,7 @@ deps::
 
 gen::
 	cd db && sqlc generate
-	protoc --go_out=./pkg/gen --go-grpc_out=./pkg/gen ./protocol.proto
+	protoc --go_out=./gen --go-grpc_out=./gen ./protocol.proto
 	go mod tidy
 
 test::

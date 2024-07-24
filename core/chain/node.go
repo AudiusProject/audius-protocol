@@ -22,6 +22,10 @@ func NewNode(logger log.Logger, c *config.Config, db *badger.DB) (*nm.Node, erro
 
 	config.TxIndex.Indexer = "psql"
 	config.TxIndex.PsqlConn = c.PSQLConn
+	config.TxIndex.TableBlocks = "core_blocks"
+	config.TxIndex.TableTxResults = "core_tx_results"
+	config.TxIndex.TableEvents = "core_events"
+	config.TxIndex.TableAttributes = "core_attributes"
 
 	app := NewKVStoreApplication(db)
 
