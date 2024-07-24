@@ -81,12 +81,8 @@ const convertQueryParamsToObject = (url: string) => {
   // This baseUrl is unimportant, we just need to create a URL object
   const baseUrl = 'https://audius.co'
 
-  // Create a URL object using the base URL
   const urlObj = new URL(url, baseUrl)
-
-  // Get the search parameters
   const params = new URLSearchParams(urlObj.search)
-
   return Object.fromEntries(params)
 }
 
