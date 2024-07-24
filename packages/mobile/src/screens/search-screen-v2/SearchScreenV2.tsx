@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import type {
   SearchCategory,
@@ -6,7 +6,7 @@ import type {
 } from '@audius/common/api'
 import { Kind } from '@audius/common/models'
 import { searchSelectors } from '@audius/common/store'
-import { useIsFocused } from '@react-navigation/core'
+import { useFocusEffect } from '@react-navigation/native'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import type { TextInput } from 'react-native/types'
 import { useSelector } from 'react-redux'
@@ -70,19 +70,20 @@ export const SearchScreenV2 = () => {
     query || Object.values(filters).some((filter) => filter)
 
   const searchBarRef = useRef<TextInput>(null)
-  const isFocused = useIsFocused()
   const [refsSet, setRefsSet] = useState(false)
 
   useEffectOnce(() => {
     setRefsSet(true)
   })
 
-  useEffect(() => {
-    if (isFocused && refsSet && autoFocus) {
-      setAutoFocus(false)
-      searchBarRef.current?.focus()
-    }
-  }, [autoFocus, isFocused, refsSet, setAutoFocus])
+  useFocusEffect(
+    useCallback(() => {
+      if (refsSet && autoFocus) {
+        setAutoFocus(false)
+        searchBarRef.current?.focus()
+      }
+    }, [autoFocus, refsSet, setAutoFocus])
+  )
 
   return (
     <Screen
