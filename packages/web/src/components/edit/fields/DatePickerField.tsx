@@ -63,9 +63,7 @@ export const DatePickerField = (props: DatePickerFieldProps) => {
           role='button'
           tabIndex={0}
           className={styles.datePickerField}
-          onClick={() => {
-            setIsFocused(true)
-          }}
+          onClick={() => setIsFocused(true)}
         >
           <IconCalendarMonth color='subdued' className={styles.iconCalendar} />
           <div>
