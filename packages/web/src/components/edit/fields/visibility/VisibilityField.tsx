@@ -218,7 +218,8 @@ const VisibilityMenuFields = (props: VisibilityMenuFieldsProps) => {
             : undefined
         }
       />
-      {!initiallyPublic && isPaidScheduledEnabled ? (
+      {!initiallyPublic &&
+      (entityType === 'track' || isPaidScheduledEnabled) ? (
         <ModalRadioItem
           value='scheduled'
           label={messages.scheduledRelease}

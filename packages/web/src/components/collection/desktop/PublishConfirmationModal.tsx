@@ -66,9 +66,9 @@ export const PublishConfirmationModal = (
   }, [is_scheduled_release, tracks])
 
   const handlePublish = useCallback(() => {
-    dispatch(publishPlaylist(collectionId))
+    dispatch(publishPlaylist(collectionId, undefined, is_album))
     onClose()
-  }, [dispatch, collectionId, onClose])
+  }, [dispatch, collectionId, is_album, onClose])
 
   const messages = getMessages(is_album, isEarlyRelease)
 

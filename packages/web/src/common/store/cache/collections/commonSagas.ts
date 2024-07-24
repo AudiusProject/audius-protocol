@@ -504,7 +504,8 @@ function* publishPlaylistAsync(
     userId,
     action.playlistId,
     playlist,
-    action.dismissToastKey
+    action.dismissToastKey,
+    action.isAlbum
   )
 }
 
@@ -512,7 +513,8 @@ function* confirmPublishPlaylist(
   userId: ID,
   playlistId: ID,
   playlist: Collection,
-  dismissToastKey?: string
+  dismissToastKey?: string,
+  isAlbum?: boolean
 ) {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   yield* put(
@@ -575,7 +577,11 @@ function* confirmPublishPlaylist(
           yield* put(manualClearToast({ key: dismissToastKey }))
         }
 
-        yield* put(toast({ content: 'Your playlist is now public!' }))
+        yield* put(
+          toast({
+            content: `Your ${isAlbum ? 'album' : 'playlist'} is now public!`
+          })
+        )
       },
       function* ({ error, timeout, message }) {
         // Fail Call
