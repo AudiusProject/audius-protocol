@@ -77,7 +77,7 @@
   type = "filter"
   inputs = ["parse"]
   condition = '''
-    contains(["INFO", "WARN", "ERROR"], .level)
+    match_any(string!(.level), [r'INFO', r'WARN', r'ERROR'])
   '''
 
 [transforms.throttle]
