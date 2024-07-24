@@ -6,7 +6,6 @@ import (
 	"os"
 
 	"github.com/AudiusProject/audius-protocol/core/common"
-	"github.com/davecgh/go-spew/spew"
 	"github.com/joho/godotenv"
 )
 
@@ -29,6 +28,9 @@ type Config struct {
 	/* Audius Config */
 	Environment        string
 	DelegatePrivateKey string
+
+	/* System Config */
+	RunDownMigration bool
 }
 
 func ReadConfig(logger *common.Logger) (*Config, error) {
@@ -48,6 +50,8 @@ func ReadConfig(logger *common.Logger) (*Config, error) {
 	var cfg Config
 	// comet config
 	cfg.HomeDir = os.Getenv("homeDir")
+	cfg.RPCladdr = os.Getenv("rpcLaddr")
+	cfg.P2PLaddr = os.Getenv("p2pLaddr")
 
 	// check if discovery specific key is set
 	isDiscovery := os.Getenv("audius_delegate_private_key") != ""
@@ -62,9 +66,8 @@ func ReadConfig(logger *common.Logger) (*Config, error) {
 		cfg.PSQLConn = os.Getenv("dbUrl")
 	}
 
-	fmt.Println(os.Getenv("audius_delegate_private_key"))
-
-	spew.Dump(cfg)
+	// only allow down migration in dev env
+	cfg.RunDownMigration = os.Getenv("runDownMigration") == "true" && cfg.Environment == "dev"
 
 	if err := InitComet(logger, cfg.Environment, cfg.DelegatePrivateKey, cfg.HomeDir); err != nil {
 		return nil, fmt.Errorf("initializing comet %v", err)

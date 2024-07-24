@@ -25,7 +25,7 @@ func main() {
 	}
 
 	// db migrations
-	if err := db.RunMigrations(logger, config.PSQLConn); err != nil {
+	if err := db.RunMigrations(logger, config.PSQLConn, config.RunDownMigration); err != nil {
 		logger.Errorf("running migrations: %v", err)
 		return
 	}

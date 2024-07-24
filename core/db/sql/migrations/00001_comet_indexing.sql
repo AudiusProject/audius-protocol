@@ -89,11 +89,11 @@ CREATE VIEW tx_events AS
   WHERE event_attributes.tx_id IS NOT NULL;
 
 -- +migrate Down
-drop table if exists core_blocks;
-drop table if exists core_tx_results;
-drop table if exists core_events;
-drop table if exists core_attributes;
 drop index if exists idx_core_blocks_height_chain;
-drop view if exists event_attributes;
 drop view if exists block_events;
 drop view if exists tx_events;
+drop view if exists event_attributes;
+drop table if exists core_attributes;
+drop table if exists core_events;
+drop table if exists core_tx_results;
+drop table if exists core_blocks;

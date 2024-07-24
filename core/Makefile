@@ -4,6 +4,15 @@ dev::
 dev-discovery::
 	@go run main.go -env-file=./infra/dev_config/discovery.env
 
+dev-content-1::
+	@go run main.go -env-file=./infra/dev_config/content-one.env
+
+dev-content-2::
+	@go run main.go -env-file=./infra/dev_config/content-two.env
+
+dev-content-3::
+	@go run main.go -env-file=./infra/dev_config/content-three.env
+
 deps::
 	@go install github.com/onsi/ginkgo/v2/ginkgo@v2.19.0
 	@brew install protobuf
