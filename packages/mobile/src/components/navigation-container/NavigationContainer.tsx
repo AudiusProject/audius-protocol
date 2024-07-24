@@ -22,6 +22,7 @@ import { getPrimaryRoute } from 'app/utils/navigation'
 import { useThemeVariant } from 'app/utils/theme'
 
 import { navigationThemes } from './navigationThemes'
+
 const { getAccountUser } = accountSelectors
 
 type NavigationContainerProps = {
@@ -74,6 +75,22 @@ const createFeedStackState = (route): PartialState<NavigationState> =>
   })
 
 /**
+ * Convert query parameters to an object
+ */
+const convertQueryParamsToObject = (url: string) => {
+  // This baseUrl is unimportant, we just need to create a URL object
+  const baseUrl = 'https://audius.co'
+
+  // Create a URL object using the base URL
+  const urlObj = new URL(url, baseUrl)
+
+  // Get the search parameters
+  const params = new URLSearchParams(urlObj.search)
+
+  return Object.fromEntries(params)
+}
+
+/**
  * NavigationContainer contains the react-navigation context
  * and configures linking
  */
@@ -113,7 +130,6 @@ const NavigationContainer = (props: NavigationContainerProps) => {
                         Collection: ':handle/collection/:slug',
                         TrackRemixes: ':handle/:slug/remixes',
                         Track: 'track/:handle/:slug',
-                        Search: 'search/:category',
                         Profile: {
                           path: ':handle',
                           screens: {
@@ -272,6 +288,20 @@ const NavigationContainer = (props: NavigationContainerProps) => {
         })
       }
 
+      // /search
+      if (path.match(`^/search(/|$)`)) {
+        const { query, ...filters } = convertQueryParamsToObject(path)
+
+        return createFeedStackState({
+          name: 'Search',
+          params: {
+            query,
+            category: pathPart(path)(2) ?? 'all',
+            filters
+          }
+        })
+      }
+
       const { query } = queryString.parseUrl(path)
       const { login, warning } = query
 
@@ -290,11 +320,6 @@ const NavigationContainer = (props: NavigationContainerProps) => {
       } else if (path.match(`^/${account?.handle}(/|$)`)) {
         // If the path is the current user and set path as `/profile`
         path = path.replace(`/${account?.handle}`, '/profile')
-      } else if (path.match(`^/search(/|$)`)) {
-        // Append '/all' to the path if no category is specified
-        if (!pathPart(path)(2)) {
-          path = path + '/all'
-        }
       } else {
         // If the path has two parts
         if (path.match(/^\/[^/]+\/[^/]+$/)) {
