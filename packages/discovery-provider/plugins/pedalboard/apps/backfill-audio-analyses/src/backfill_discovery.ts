@@ -249,6 +249,10 @@ export const backfillDiscovery = async (app: App<SharedData>) => {
     console.error('Missing required delegate private key. Terminating...')
     return
   }
+  if (config.environment != 'prod') {
+    console.log('Discovery audio analysis backfill is only meant to run on prod. Terminating...')
+    return
+  }
   const db = app.getDnDb()
   const BACKFILL_BATCH_SIZE = config.testRun ? 100 : 3000
   await processBatches(db, BACKFILL_BATCH_SIZE)
