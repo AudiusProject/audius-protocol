@@ -76,13 +76,11 @@ const FULL_ENDPOINT_MAP = {
   userTracksByHandle: (handle: OpaqueID) => `/users/handle/${handle}/tracks`,
   userAiTracksByHandle: (handle: OpaqueID) =>
     `/users/handle/${handle}/tracks/ai_attributed`,
-  userRepostsByHandle: (handle: OpaqueID) => `/users/handle/${handle}/reposts`,
   getRelatedArtists: (userId: OpaqueID) => `/users/${userId}/related`,
   getPlaylist: (playlistId: OpaqueID) => `/playlists/${playlistId}`,
   getPlaylists: '/playlists',
   getPlaylistByPermalink: (handle: string, slug: string) =>
     `/playlists/by_permalink/${handle}/${slug}`,
-  topGenreUsers: '/users/genre/top',
   getTrack: (trackId: OpaqueID) => `/tracks/${trackId}`,
   getTrackStreamUrl: (trackId: OpaqueID) => `/tracks/${trackId}/stream`,
   getTracks: () => `/tracks`,
@@ -215,12 +213,6 @@ type GetRelatedArtistsArgs = PaginationArgs & {
 type GetFavoritesArgs = {
   currentUserId: ID
   limit?: number
-}
-
-type GetTopArtistGenresArgs = {
-  genres?: string[]
-  limit?: number
-  offset?: number
 }
 
 type GetCollectionMetadataArgs = {
@@ -940,27 +932,6 @@ export class AudiusAPIClient {
     )
     if (!response) return []
     const adapted = response.data.map(adapter.makeUser).filter(removeNullable)
-    return adapted
-  }
-
-  async getTopArtistGenres({ genres, limit, offset }: GetTopArtistGenresArgs) {
-    this._assertInitialized()
-
-    const params = {
-      genre: genres,
-      limit,
-      offset
-    }
-
-    const favoritedTrackResponse = await this._getResponse<
-      APIResponse<APIUser[]>
-    >(FULL_ENDPOINT_MAP.topGenreUsers, params)
-
-    if (!favoritedTrackResponse) return []
-
-    const adapted = favoritedTrackResponse.data
-      .map(adapter.makeUser)
-      .filter(removeNullable)
     return adapted
   }
 

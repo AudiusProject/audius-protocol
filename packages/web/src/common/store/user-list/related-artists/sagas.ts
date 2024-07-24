@@ -1,10 +1,13 @@
-import { ID } from '@audius/common/models'
+import { ID, Id, OptionalId } from '@audius/common/models'
+import { userMetadataFromSDK } from '@audius/common/src/adapters/user'
+import { transformAndCleanList } from '@audius/common/src/adapters/utils'
+import { getUserId } from '@audius/common/src/store/account/selectors'
 import {
   UserListSagaFactory,
   relatedArtistsUserListActions,
   relatedArtistsUserListSelectors,
   RELATED_ARTISTS_USER_LIST_TAG,
-  getContext
+  getSDK
 } from '@audius/common/store'
 import { call, put, select } from 'typed-redux-saga'
 
@@ -27,14 +30,20 @@ function* fetchRelatedArtists({
   pageSize
 }: FetchRelatedArtistsArgs) {
   const offset = currentPage * pageSize
-  const apiClient = yield* getContext('apiClient')
-  const response = yield* call([apiClient, apiClient.getRelatedArtists], {
-    userId: artistId,
-    limit: MAX_RELATED_ARTISTS,
-    offset
-  })
+  const sdk = yield* getSDK()
+  const currentUserId = yield* select(getUserId)
 
-  const users = response || []
+  const { data } = yield* call(
+    [sdk.full.users, sdk.full.users.getRelatedUsers],
+    {
+      id: Id.parse(artistId),
+      limit: MAX_RELATED_ARTISTS,
+      offset,
+      userId: OptionalId.parse(currentUserId)
+    }
+  )
+  const users = transformAndCleanList(data, userMetadataFromSDK)
+
   const userIds = users.map((user) => user.user_id)
   return {
     userIds,
