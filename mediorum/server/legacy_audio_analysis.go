@@ -53,6 +53,8 @@ func (ss *MediorumServer) startLegacyAudioAnalyzer() {
 		case <-ticker.C:
 			cancel()
 		}
+
+		time.Sleep(time.Minute)
 	}
 }
 
