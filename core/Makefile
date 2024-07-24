@@ -1,6 +1,9 @@
 dev::
 	@go run main.go
 
+dev-discovery::
+	@go run main.go -env-file=./infra/dev_config/discovery.env
+
 deps::
 	@go install github.com/onsi/ginkgo/v2/ginkgo@v2.19.0
 	@brew install protobuf

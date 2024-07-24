@@ -1,9 +1,7 @@
-package main
+package config
 
 import (
-	"flag"
 	"fmt"
-	"os"
 
 	"github.com/AudiusProject/audius-protocol/core/accounts"
 	"github.com/AudiusProject/audius-protocol/core/common"
@@ -13,70 +11,48 @@ import (
 	cmttime "github.com/cometbft/cometbft/types/time"
 )
 
-func main() {
-	logger := common.NewLogger(nil)
-
+// reads in or creates cometbft keys from the delegate private key
+// also creates validator keys and genesis file
+func InitComet(logger *common.Logger, environment, delegatePrivateKey, homeDir string) error {
 	logger.Info("initializing comet config")
 
-	environment := flag.String("env", "", "environment that the genesis doc will belong to")
-	delegatePrivateKey := flag.String("pkey", "", "private key of this node")
-	homeDir := flag.String("homeDir", "", "directory where the comet config resides")
-
-	flag.Parse()
-
-	if *environment == "" {
-		logger.Error("env is a required argument")
-		return
-	}
-
-	if *delegatePrivateKey == "" {
-		logger.Error("pkey is a required argument")
-		return
-	}
-
-	if *homeDir == "" {
-		logger.Error("homeDir is a required argument")
-		return
-	}
-
 	chainId := ""
-	switch *environment {
+	switch environment {
 	case "prod", "production", "mainnet":
 		chainId = "audius-mainnet-1"
 	case "stage", "staging", "testnet":
 		chainId = "audius-testnet-1"
 	default:
-		chainId = fmt.Sprintf("audius-devnet-%s", *environment)
+		chainId = fmt.Sprintf("audius-devnet-%s", environment)
 	}
 
-	logger.Infof("configuring node setup on env %s in %s", chainId, *homeDir)
+	logger.Infof("configuring node setup on env %s in %s", chainId, homeDir)
 
-	key, err := accounts.NewKey(*delegatePrivateKey)
+	key, err := accounts.NewKey(delegatePrivateKey)
 	if err != nil {
-		logger.Error("creating key", "error", err)
-		return
+		return fmt.Errorf("creating key %v", err)
 	}
 
-	if err := CreateDirIfNotExist(*homeDir); err != nil {
+	if err := common.CreateDirIfNotExist(homeDir); err != nil {
 		logger.Error("error creating homeDir", "error", err)
 	}
 
-	if err := CreateDirIfNotExist(fmt.Sprintf("%s/config", *homeDir)); err != nil {
+	if err := common.CreateDirIfNotExist(fmt.Sprintf("%s/config", homeDir)); err != nil {
 		logger.Error("error creating config dir", "error", err)
 	}
 
-	if err := CreateDirIfNotExist(fmt.Sprintf("%s/data", *homeDir)); err != nil {
+	if err := common.CreateDirIfNotExist(fmt.Sprintf("%s/data", homeDir)); err != nil {
 		logger.Error("error creating data dir", "error", err)
 	}
 
 	config := config.DefaultConfig()
-	config.SetRoot(*homeDir)
+	config.SetRoot(homeDir)
 
 	privValKeyFile := config.PrivValidatorKeyFile()
 	privValStateFile := config.PrivValidatorStateFile()
 
 	var pv *privval.FilePV
-	if FileExists(privValKeyFile) {
+	if common.FileExists(privValKeyFile) {
 		pv = privval.LoadFilePV(privValKeyFile, privValStateFile)
 		logger.Info("Found private validator", "keyFile", privValKeyFile,
 			"stateFile", privValStateFile)
@@ -88,18 +64,17 @@ func main() {
 	}
 
 	nodeKeyFile := config.NodeKeyFile()
-	if FileExists(nodeKeyFile) {
+	if common.FileExists(nodeKeyFile) {
 		logger.Info("Found node key", "path", nodeKeyFile)
 	} else {
 		if err := key.SaveAs(nodeKeyFile); err != nil {
-			logger.Error("creating node key", "error", err)
-			return
+			return fmt.Errorf("creating node key %v", err)
 		}
 		logger.Info("Generated node key", "path", nodeKeyFile)
 	}
 
 	genFile := config.GenesisFile()
-	if FileExists(genFile) {
+	if common.FileExists(genFile) {
 		logger.Info("Found genesis file", "path", genFile)
 	} else {
 		genDoc := types.GenesisDoc{
@@ -109,8 +84,7 @@ func main() {
 		}
 		pubKey, err := pv.GetPubKey()
 		if err != nil {
-			logger.Error("can't get pubkey", "error", err)
-			return
+			return fmt.Errorf("can't get pubkey", err)
 		}
 		genDoc.Validators = []types.GenesisValidator{{
 			Address: pubKey.Address(),
@@ -119,23 +93,9 @@ func main() {
 		}}
 
 		if err := genDoc.SaveAs(genFile); err != nil {
-			logger.Error("saving gen file", "error", err)
-			return
+			fmt.Errorf("saving gen file", err)
 		}
 		logger.Info("Generated genesis file", "path", genFile)
-	}
-
-}
-
-func FileExists(filePath string) bool {
-	_, err := os.Stat(filePath)
-	return !os.IsNotExist(err)
-}
-
-func CreateDirIfNotExist(dir string) error {
-	err := os.MkdirAll(dir, os.ModePerm)
-	if err != nil {
-		return fmt.Errorf("failed to create directory %s: %w", dir, err)
 	}
 	return nil
 }

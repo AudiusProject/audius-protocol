@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/AudiusProject/audius-protocol/core/common"
+	"github.com/AudiusProject/audius-protocol/core/config"
 	cfg "github.com/cometbft/cometbft/config"
 	"github.com/cometbft/cometbft/libs/log"
 	nm "github.com/cometbft/cometbft/node"
@@ -14,13 +14,14 @@ import (
 	"github.com/dgraph-io/badger/v4"
 )
 
-func NewNode(logger log.Logger, c *common.Config, db *badger.DB) (*nm.Node, error) {
+func NewNode(logger log.Logger, c *config.Config, db *badger.DB) (*nm.Node, error) {
 	homeDir := c.HomeDir
 
 	config := cfg.DefaultConfig()
 	config.SetRoot(homeDir)
 
-	// set config from .env here instead of config.toml
+	config.TxIndex.Indexer = "psql"
+	config.TxIndex.PsqlConn = c.PSQLConn
 
 	app := NewKVStoreApplication(db)
 

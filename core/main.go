@@ -9,6 +9,7 @@ import (
 
 	"github.com/AudiusProject/audius-protocol/core/chain"
 	"github.com/AudiusProject/audius-protocol/core/common"
+	"github.com/AudiusProject/audius-protocol/core/config"
 	"github.com/dgraph-io/badger/v4"
 )
 
@@ -16,10 +17,10 @@ func main() {
 	logger := common.NewLogger(nil)
 
 	// TODO: read from .env
-	config := &common.Config{
-		NodeConfig: common.NodeConfig{
-			HomeDir: "./tmp/cometbft-home",
-		},
+	config, err := config.ReadConfig(logger)
+	if err != nil {
+		logger.Errorf("reading in config: %v", err)
+		return
 	}
 
 	dbPath := filepath.Join(config.HomeDir, "badger")
@@ -40,8 +41,6 @@ func main() {
 	// write genesis file from embed
 
 	// create config from go instead of toml
-
-	// change indexing db to postgres
 
 	// run one comet instance locally per content and discovery replica (4 i think)
 
