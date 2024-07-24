@@ -52,7 +52,6 @@ async function getAudioAnalysis(contentNodes: string[], track: Track) {
   if (!trackCid) return formattedResult
   // skip tracks that already have their audio analyses
   if (track.musical_key && track.bpm) return formattedResult
-  if (track.audio_analysis_error_count! >= 3) return formattedResult
 
   const audioUploadId = track.audio_upload_id || ''
   const isLegacyTrack = !audioUploadId
@@ -67,6 +66,10 @@ async function getAudioAnalysis(contentNodes: string[], track: Track) {
       // choose a random content node
       contentNode =
         contentNodes[Math.floor(Math.random() * contentNodes.length)]
+    }
+    // check storeall node first for any retried errors
+    if (track.audio_analysis_error_count! >= 3 && i == 0) {
+      contentNode = "https://creatornode2.audius.co"
     }
     try {
       let analysisUrl = `${contentNode}/uploads/${audioUploadId}`
@@ -169,6 +172,9 @@ async function fetchTracks(
       'audio_analysis_error_count'
     )
     .andWhere('track_cid', 'is not', null)
+    .andWhere('genre', '!=', 'Podcasts')
+    .andWhere('genre', '!=', 'Podcast')
+    .andWhere('genre', '!=', 'Audiobooks')
     .orderBy('track_id', 'asc')
     .offset(offset)
     .limit(limit)
