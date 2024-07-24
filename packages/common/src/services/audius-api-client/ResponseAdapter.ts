@@ -376,6 +376,9 @@ export const makePlaylist = (
     is_stream_gated,
     stream_conditions,
     access,
+    release_date: playlist.release_date
+      ? dayjs.utc(playlist.release_date).local()
+      : undefined, // utc -> local
 
     // Fields to prune
     id: undefined,
