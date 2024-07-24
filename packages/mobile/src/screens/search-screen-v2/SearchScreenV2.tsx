@@ -88,7 +88,11 @@ export const SearchScreenV2 = () => {
 }
 
 export const SearchScreenStack = () => {
-  const { params = {} } = useRoute<'Search'>()
+  const { params: routeParams } = useRoute<'Search'>()
+  const params = useMemo(() => {
+    return routeParams ?? {}
+  }, [routeParams])
+
   const [query, setQuery] = useState(params.query ?? '')
   const [category, setCategory] = useState<SearchCategory>(
     params.category ?? 'all'

@@ -113,6 +113,7 @@ const NavigationContainer = (props: NavigationContainerProps) => {
                         Collection: ':handle/collection/:slug',
                         TrackRemixes: ':handle/:slug/remixes',
                         Track: 'track/:handle/:slug',
+                        Search: 'search/:category',
                         Profile: {
                           path: ':handle',
                           screens: {
@@ -289,6 +290,11 @@ const NavigationContainer = (props: NavigationContainerProps) => {
       } else if (path.match(`^/${account?.handle}(/|$)`)) {
         // If the path is the current user and set path as `/profile`
         path = path.replace(`/${account?.handle}`, '/profile')
+      } else if (path.match(`^/search(/|$)`)) {
+        // Append '/all' to the path if no category is specified
+        if (!pathPart(path)(2)) {
+          path = path + '/all'
+        }
       } else {
         // If the path has two parts
         if (path.match(/^\/[^/]+\/[^/]+$/)) {
@@ -320,6 +326,7 @@ const NavigationContainer = (props: NavigationContainerProps) => {
         }
       }
 
+      console.log('seb', path)
       return getStateFromPath(path, options)
     }
   }
