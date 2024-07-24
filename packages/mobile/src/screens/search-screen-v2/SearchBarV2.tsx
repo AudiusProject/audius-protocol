@@ -1,3 +1,7 @@
+import type { Ref } from 'react'
+import { forwardRef } from 'react'
+
+import type { TextInput as RNTextInput } from 'react-native'
 import { Dimensions } from 'react-native'
 
 import {
@@ -17,34 +21,42 @@ const messages = {
   label: 'Search'
 }
 
-export const SearchBarV2 = () => {
-  const [query, setQuery] = useSearchQuery()
-
-  const clearQuery = () => {
-    setQuery('')
-  }
-
-  return (
-    <TextInput
-      startIcon={IconSearch}
-      endIcon={() =>
-        query ? (
-          <IconButton
-            icon={IconCloseAlt}
-            size='s'
-            color='subdued'
-            onPress={clearQuery}
-            hitSlop={10}
-          />
-        ) : null
-      }
-      size={TextInputSize.SMALL}
-      label={messages.label}
-      placeholder={messages.label}
-      style={{ width: searchBarWidth }}
-      innerContainerStyle={query ? { paddingRight: spacing.s } : {}}
-      value={query}
-      onChangeText={setQuery}
-    />
-  )
+type SearchBarV2Props = {
+  autoFocus?: boolean
 }
+
+export const SearchBarV2 = forwardRef(
+  ({ autoFocus = false }: SearchBarV2Props, ref: Ref<RNTextInput>) => {
+    const [query, setQuery] = useSearchQuery()
+
+    const clearQuery = () => {
+      setQuery('')
+    }
+
+    return (
+      <TextInput
+        ref={ref}
+        autoFocus={autoFocus}
+        startIcon={IconSearch}
+        endIcon={() =>
+          query ? (
+            <IconButton
+              icon={IconCloseAlt}
+              size='s'
+              color='subdued'
+              onPress={clearQuery}
+              hitSlop={10}
+            />
+          ) : null
+        }
+        size={TextInputSize.SMALL}
+        label={messages.label}
+        placeholder={messages.label}
+        style={{ width: searchBarWidth }}
+        innerContainerStyle={query ? { paddingRight: spacing.s } : {}}
+        value={query}
+        onChangeText={setQuery}
+      />
+    )
+  }
+)
