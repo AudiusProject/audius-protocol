@@ -18,7 +18,6 @@ require (
 	github.com/spf13/cast v1.5.0
 	github.com/storyicon/sigverify v1.1.0
 	github.com/stretchr/testify v1.8.4
-	github.com/tysonmote/rendezvous v0.0.0-20220626212128-be0258dbbd3d
 	gocloud.dev v0.34.0
 	golang.org/x/exp v0.0.0-20230905200255-921286631fa9
 	golang.org/x/sync v0.3.0

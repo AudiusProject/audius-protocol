@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -17,17 +18,21 @@ const MAX_TRIES = 3
 
 // scroll qm cids
 func (ss *MediorumServer) startLegacyAudioAnalyzer() {
-	if ss.Config.Env == "prod" && ss.Config.Self.Host != "https://creatornode2.audius.co" {
-		// prod CN2 (storeall node) analyzes all remaining legacy cids
-		return
-	}
-
 	ctx := context.Background()
 	logger := ss.logger
 
 	work := make(chan *QmAudioAnalysis)
 
 	numWorkers := 5
+	numWorkersOverride := os.Getenv("LEGACY_AUDIO_ANALYSIS_WORKERS")
+	if numWorkersOverride != "" {
+		num, err := strconv.ParseInt(numWorkersOverride, 10, 64)
+		if err != nil {
+			ss.logger.Warn("failed to parse LEGACY_AUDIO_ANALYSIS_WORKERS", "err", err, "LEGACY_AUDIO_ANALYSIS_WORKERS", numWorkersOverride)
+		} else {
+			numWorkers = int(num)
+		}
+	}
 
 	// start workers
 	for i := 0; i < numWorkers; i++ {
@@ -46,7 +51,8 @@ func (ss *MediorumServer) startLegacyAudioAnalyzer() {
 		}
 
 		preferredHosts, isMine := ss.rendezvousAllHosts(cid)
-		if ss.Config.Env != "prod" && !isMine {
+		isMine = isMine || (ss.Config.Env == "prod" && ss.Config.Self.Host == "https://creatornode2.audius.co")
+		if !isMine {
 			return nil
 		}
 

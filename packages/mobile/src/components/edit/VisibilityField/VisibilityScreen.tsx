@@ -123,7 +123,8 @@ export const VisibilityScreen = () => {
           description={messages.hiddenDescription}
           disabled={!isEditableAccessEnabled && initiallyPublic}
         />
-        {!initiallyPublic && isPaidScheduledEnabled ? (
+        {!initiallyPublic &&
+        (entityType === 'track' || isPaidScheduledEnabled) ? (
           <ExpandableRadio
             value='scheduled'
             label={messages.scheduledRelease}

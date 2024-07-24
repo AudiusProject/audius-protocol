@@ -20,6 +20,15 @@ func (ss *MediorumServer) startAudioAnalyzer() {
 	work := make(chan *Upload)
 
 	numWorkers := 4
+	numWorkersOverride := os.Getenv("AUDIO_ANALYSIS_WORKERS")
+	if numWorkersOverride != "" {
+		num, err := strconv.ParseInt(numWorkersOverride, 10, 64)
+		if err != nil {
+			ss.logger.Warn("failed to parse AUDIO_ANALYSIS_WORKERS", "err", err, "AUDIO_ANALYSIS_WORKERS", numWorkersOverride)
+		} else {
+			numWorkers = int(num)
+		}
+	}
 
 	// start workers
 	for i := 0; i < numWorkers; i++ {
@@ -242,7 +251,7 @@ func (ss *MediorumServer) analyzeBPM(filename string) (float64, error) {
 
 // converts an MP3 file to WAV format using ffmpeg
 func convertToWav(inputFile, outputFile string) error {
-	cmd := exec.Command("ffmpeg", "-i", inputFile, "-f", "wav", "-t", "90", outputFile)
+	cmd := exec.Command("ffmpeg", "-i", inputFile, "-f", "wav", "-t", "30", outputFile)
 	if output, err := cmd.CombinedOutput(); err != nil {
 		return fmt.Errorf("failed to convert to WAV: %v, output: %s", err, string(output))
 	}

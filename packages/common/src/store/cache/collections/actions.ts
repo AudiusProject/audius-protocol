@@ -153,8 +153,17 @@ export function orderPlaylistFailed(
   return { type: ORDER_PLAYLIST_FAILED, error, params, metadata }
 }
 
-export function publishPlaylist(playlistId: ID, dismissToastKey?: string) {
-  return { type: PUBLISH_PLAYLIST, playlistId, dismissToastKey }
+export function publishPlaylist(
+  playlistId: ID,
+  dismissToastKey?: string,
+  isAlbum?: boolean
+) {
+  return {
+    type: PUBLISH_PLAYLIST,
+    playlistId,
+    dismissToastKey,
+    isAlbum
+  }
 }
 
 export function publishPlaylistFailed(

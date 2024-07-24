@@ -101,8 +101,11 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
           } else {
             setConfirmDrawerType('release')
           }
+          setIsReleaseConfirmationOpen(true)
+        } else {
+          setIsReleaseConfirmationOpen(false)
+          onSubmit(values)
         }
-        setIsReleaseConfirmationOpen(true)
       }
     },
     [
