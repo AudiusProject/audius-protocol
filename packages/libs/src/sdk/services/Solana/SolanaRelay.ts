@@ -139,7 +139,7 @@ export class SolanaRelay extends BaseAPI {
       throw e
     }
 
-    return await new runtime.JSONApiResponse(response!, (json) => {
+    return await new runtime.JSONApiResponse(response, (json) => {
       if (!runtime.exists(json, 'signature')) {
         throw new Error('Signature missing')
       }
