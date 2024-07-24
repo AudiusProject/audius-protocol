@@ -1,12 +1,15 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"syscall"
 
 	"github.com/AudiusProject/audius-protocol/core/chain"
 	"github.com/AudiusProject/audius-protocol/core/common"
+	"github.com/dgraph-io/badger/v4"
 )
 
 func main() {
@@ -19,6 +22,19 @@ func main() {
 		},
 	}
 
+	dbPath := filepath.Join(config.HomeDir, "badger")
+	db, err := badger.Open(badger.DefaultOptions(dbPath))
+
+	if err != nil {
+		logger.Errorf("opening database: %v", err)
+		return
+	}
+	defer func() {
+		if err := db.Close(); err != nil {
+			logger.Info(fmt.Sprintf("closing database: %v", err))
+		}
+	}()
+
 	// generate node_key.json and priv_validator_key.json
 
 	// write genesis file from embed
@@ -29,7 +45,7 @@ func main() {
 
 	// run one comet instance locally per content and discovery replica (4 i think)
 
-	node, err := chain.NewNode(logger, config)
+	node, err := chain.NewNode(logger, config, db)
 	if err != nil {
 		logger.Errorf("node init error: %v", err)
 		return

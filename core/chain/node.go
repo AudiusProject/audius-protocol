@@ -3,7 +3,6 @@ package chain
 import (
 	"context"
 	"fmt"
-	"path/filepath"
 
 	"github.com/AudiusProject/audius-protocol/core/common"
 	cfg "github.com/cometbft/cometbft/config"
@@ -16,7 +15,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-func NewNode(logger log.Logger, c *common.Config) (*nm.Node, error) {
+func NewNode(logger log.Logger, c *common.Config, db *badger.DB) (*nm.Node, error) {
 	homeDir := c.HomeDir
 
 	config := cfg.DefaultConfig()
@@ -32,17 +31,6 @@ func NewNode(logger log.Logger, c *common.Config) (*nm.Node, error) {
 	if err := config.ValidateBasic(); err != nil {
 		return nil, fmt.Errorf("invalid configuration data: %v", err)
 	}
-	dbPath := filepath.Join(homeDir, "badger")
-	db, err := badger.Open(badger.DefaultOptions(dbPath))
-
-	if err != nil {
-		return nil, fmt.Errorf("opening database: %v", err)
-	}
-	defer func() {
-		if err := db.Close(); err != nil {
-			logger.Info(fmt.Sprintf("closing database: %v", err))
-		}
-	}()
 
 	app := NewKVStoreApplication(db)
 
