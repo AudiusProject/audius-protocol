@@ -78,13 +78,6 @@ async function getAudioAnalysis(contentNodes: string[], track: Track) {
         timeout: REQUEST_TIMEOUT
       })
       if (response.status == 200) {
-        console.log(
-          `Successfully retrieved audio analysis for track ID ${
-            track.track_id
-          }, track CID ${trackCid}${
-            audioUploadId ? `, upload ID: ${audioUploadId}` : ''
-          } via ${contentNode}`
-        )
         const resultsKey = isLegacyTrack ? 'results' : 'audio_analysis_results'
         const errorCountKey = isLegacyTrack
           ? 'error_count'
@@ -92,19 +85,31 @@ async function getAudioAnalysis(contentNodes: string[], track: Track) {
         const results = response.data[resultsKey]
         const errorCount = response.data[errorCountKey]
         if (!results) {
-          break
+          continue
         }
+
+        console.log(
+          `Successfully retrieved audio analysis results for track ID ${
+            track.track_id
+          }, track CID ${trackCid}${
+            audioUploadId ? `, upload ID: ${audioUploadId}` : ''
+          } via ${contentNode}`
+        )
 
         let musicalKey = null
         let bpm = null
         if (results?.key) {
-          if (results?.key.length <= 12) {
-            musicalKey = results?.key
+          if (results?.key.length > 12) {
+            console.log(`Skipping bad musical key from ${analysisUrl}`)
+            continue
           }
+          musicalKey = results?.key
         } else if (results?.Key) {
-          if (results?.Key.length <= 12) {
-            musicalKey = results?.Key
+          if (results?.Key.length > 12) {
+            console.log(`Skipping bad musical key from ${analysisUrl}`)
+            continue
           }
+          musicalKey = results?.Key
         }
         if (results?.bpm) {
           bpm = results?.bpm
