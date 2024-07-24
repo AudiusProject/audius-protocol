@@ -12,7 +12,6 @@ import (
 	"github.com/cometbft/cometbft/privval"
 	"github.com/cometbft/cometbft/proxy"
 	"github.com/dgraph-io/badger/v4"
-	"github.com/spf13/viper"
 )
 
 func NewNode(logger log.Logger, c *common.Config, db *badger.DB) (*nm.Node, error) {
@@ -20,17 +19,8 @@ func NewNode(logger log.Logger, c *common.Config, db *badger.DB) (*nm.Node, erro
 
 	config := cfg.DefaultConfig()
 	config.SetRoot(homeDir)
-	viper.SetConfigFile(fmt.Sprintf("%s/%s", homeDir, "config/config.toml"))
 
-	if err := viper.ReadInConfig(); err != nil {
-		return nil, fmt.Errorf("reading config: %v", err)
-	}
-	if err := viper.Unmarshal(config); err != nil {
-		return nil, fmt.Errorf("decoding config: %v", err)
-	}
-	if err := config.ValidateBasic(); err != nil {
-		return nil, fmt.Errorf("invalid configuration data: %v", err)
-	}
+	// set config from .env here instead of config.toml
 
 	app := NewKVStoreApplication(db)
 
@@ -42,10 +32,6 @@ func NewNode(logger log.Logger, c *common.Config, db *badger.DB) (*nm.Node, erro
 	nodeKey, err := p2p.LoadNodeKey(config.NodeKeyFile())
 	if err != nil {
 		return nil, fmt.Errorf("failed to load node's key: %v", err)
-	}
-
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse log level: %v", err)
 	}
 
 	node, err := nm.NewNode(
