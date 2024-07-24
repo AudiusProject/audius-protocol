@@ -20,6 +20,15 @@ func (ss *MediorumServer) startAudioAnalyzer() {
 	work := make(chan *Upload)
 
 	numWorkers := 4
+	numWorkersOverride := os.Getenv("AUDIO_ANALYSIS_WORKERS")
+	if numWorkersOverride != "" {
+		num, err := strconv.ParseInt(numWorkersOverride, 10, 64)
+		if err != nil {
+			ss.logger.Warn("failed to parse AUDIO_ANALYSIS_WORKERS", "err", err, "AUDIO_ANALYSIS_WORKERS", numWorkersOverride)
+		} else {
+			numWorkers = int(num)
+		}
+	}
 
 	// start workers
 	for i := 0; i < numWorkers; i++ {
