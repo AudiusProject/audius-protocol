@@ -679,14 +679,40 @@ def track_dsl(
             }
         )
 
-    # Only include the track if it is purchaseable or has purchaseable stems
+    # Only include the track if it is purchaseable or has purchaseable stems/download
     if only_purchaseable:
         dsl["must"].append(
             {
                 "bool": {
                     "should": [
                         {"term": {"purchaseable": {"value": True}}},
-                        {"term": {"purchaseable_download": {"value": True}}},
+                        {
+                            "bool": {
+                                "must": [
+                                    {
+                                        "term": {
+                                            "purchaseable_download": {"value": True}
+                                        }
+                                    },
+                                    {
+                                        "bool": {
+                                            "should": [
+                                                {
+                                                    "term": {
+                                                        "has_stems": {"value": True}
+                                                    }
+                                                },
+                                                {
+                                                    "term": {
+                                                        "downloadable": {"value": True}
+                                                    }
+                                                },
+                                            ]
+                                        }
+                                    },
+                                ]
+                            }
+                        },
                     ]
                 }
             }
