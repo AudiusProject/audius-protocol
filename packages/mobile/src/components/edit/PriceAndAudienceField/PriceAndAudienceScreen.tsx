@@ -49,7 +49,7 @@ export const PriceAndAudienceScreen = () => {
   )
   const [{ value: remixOf }] = useField<RemixOfField>('remix_of')
   const [{ value: entityType }] = useField<string>('entityType')
-  const isUpload = !initialValues?.track_id
+  const [{ value: isUpload }] = useField<boolean>('isUpload')
   const isRemix = !!remixOf
 
   const { isEnabled: isEditableAccessEnabled } = useFeatureFlag(
