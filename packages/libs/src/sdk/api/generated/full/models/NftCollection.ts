@@ -31,12 +31,6 @@ export interface NftCollection {
      * @type {string}
      * @memberof NftCollection
      */
-    standard?: NftCollectionStandardEnum;
-    /**
-     * 
-     * @type {string}
-     * @memberof NftCollection
-     */
     address: string;
     /**
      * 
@@ -68,15 +62,6 @@ export const NftCollectionChainEnum = {
 } as const;
 export type NftCollectionChainEnum = typeof NftCollectionChainEnum[keyof typeof NftCollectionChainEnum];
 
-/**
- * @export
- */
-export const NftCollectionStandardEnum = {
-    Erc721: 'ERC721',
-    Erc1155: 'ERC1155'
-} as const;
-export type NftCollectionStandardEnum = typeof NftCollectionStandardEnum[keyof typeof NftCollectionStandardEnum];
-
 
 /**
  * Check if a given object implements the NftCollection interface.
@@ -101,7 +86,6 @@ export function NftCollectionFromJSONTyped(json: any, ignoreDiscriminator: boole
     return {
         
         'chain': json['chain'],
-        'standard': !exists(json, 'standard') ? undefined : json['standard'],
         'address': json['address'],
         'name': json['name'],
         'imageUrl': !exists(json, 'imageUrl') ? undefined : json['imageUrl'],
@@ -119,7 +103,6 @@ export function NftCollectionToJSON(value?: NftCollection | null): any {
     return {
         
         'chain': value.chain,
-        'standard': value.standard,
         'address': value.address,
         'name': value.name,
         'imageUrl': value.imageUrl,

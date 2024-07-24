@@ -44,7 +44,7 @@ export interface Track {
      * @type {TrackArtwork}
      * @memberof Track
      */
-    artwork: TrackArtwork;
+    artwork?: TrackArtwork;
     /**
      * 
      * @type {string}
@@ -56,7 +56,7 @@ export interface Track {
      * @type {string}
      * @memberof Track
      */
-    genre: string;
+    genre?: string;
     /**
      * 
      * @type {string}
@@ -92,7 +92,7 @@ export interface Track {
      * @type {boolean}
      * @memberof Track
      */
-    isOriginalAvailable: boolean;
+    isOriginalAvailable?: boolean;
     /**
      * 
      * @type {string}
@@ -152,7 +152,7 @@ export interface Track {
      * @type {boolean}
      * @memberof Track
      */
-    isDownloadable: boolean;
+    isDownloadable?: boolean;
     /**
      * 
      * @type {number}
@@ -164,7 +164,7 @@ export interface Track {
      * @type {string}
      * @memberof Track
      */
-    permalink: string;
+    permalink?: string;
     /**
      * 
      * @type {boolean}
@@ -190,18 +190,13 @@ export interface Track {
  */
 export function instanceOfTrack(value: object): value is Track {
     let isInstance = true;
-    isInstance = isInstance && "artwork" in value && value["artwork"] !== undefined;
-    isInstance = isInstance && "genre" in value && value["genre"] !== undefined;
     isInstance = isInstance && "id" in value && value["id"] !== undefined;
-    isInstance = isInstance && "isOriginalAvailable" in value && value["isOriginalAvailable"] !== undefined;
     isInstance = isInstance && "repostCount" in value && value["repostCount"] !== undefined;
     isInstance = isInstance && "favoriteCount" in value && value["favoriteCount"] !== undefined;
     isInstance = isInstance && "title" in value && value["title"] !== undefined;
     isInstance = isInstance && "user" in value && value["user"] !== undefined;
     isInstance = isInstance && "duration" in value && value["duration"] !== undefined;
-    isInstance = isInstance && "isDownloadable" in value && value["isDownloadable"] !== undefined;
     isInstance = isInstance && "playCount" in value && value["playCount"] !== undefined;
-    isInstance = isInstance && "permalink" in value && value["permalink"] !== undefined;
 
     return isInstance;
 }
@@ -216,15 +211,15 @@ export function TrackFromJSONTyped(json: any, ignoreDiscriminator: boolean): Tra
     }
     return {
         
-        'artwork': TrackArtworkFromJSON(json['artwork']),
+        'artwork': !exists(json, 'artwork') ? undefined : TrackArtworkFromJSON(json['artwork']),
         'description': !exists(json, 'description') ? undefined : json['description'],
-        'genre': json['genre'],
+        'genre': !exists(json, 'genre') ? undefined : json['genre'],
         'id': json['id'],
         'trackCid': !exists(json, 'track_cid') ? undefined : json['track_cid'],
         'previewCid': !exists(json, 'preview_cid') ? undefined : json['preview_cid'],
         'origFileCid': !exists(json, 'orig_file_cid') ? undefined : json['orig_file_cid'],
         'origFilename': !exists(json, 'orig_filename') ? undefined : json['orig_filename'],
-        'isOriginalAvailable': json['is_original_available'],
+        'isOriginalAvailable': !exists(json, 'is_original_available') ? undefined : json['is_original_available'],
         'mood': !exists(json, 'mood') ? undefined : json['mood'],
         'releaseDate': !exists(json, 'release_date') ? undefined : json['release_date'],
         'remixOf': !exists(json, 'remix_of') ? undefined : RemixParentFromJSON(json['remix_of']),
@@ -234,9 +229,9 @@ export function TrackFromJSONTyped(json: any, ignoreDiscriminator: boolean): Tra
         'title': json['title'],
         'user': UserFromJSON(json['user']),
         'duration': json['duration'],
-        'isDownloadable': json['is_downloadable'],
+        'isDownloadable': !exists(json, 'is_downloadable') ? undefined : json['is_downloadable'],
         'playCount': json['play_count'],
-        'permalink': json['permalink'],
+        'permalink': !exists(json, 'permalink') ? undefined : json['permalink'],
         'isStreamable': !exists(json, 'is_streamable') ? undefined : json['is_streamable'],
         'ddexApp': !exists(json, 'ddex_app') ? undefined : json['ddex_app'],
         'playlistsContainingTrack': !exists(json, 'playlists_containing_track') ? undefined : json['playlists_containing_track'],
