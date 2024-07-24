@@ -7,9 +7,7 @@ import (
 	"net/url"
 	"sort"
 	"strings"
-	"sync"
 
-	"github.com/tysonmote/rendezvous"
 	"golang.org/x/exp/slices"
 )
 
@@ -24,8 +22,6 @@ func (ss *MediorumServer) rendezvousAllHosts(key string) ([]string, bool) {
 	}
 	return orderedHosts, isMine
 }
-
-// ~~~~~~~~~~~~~~~~~~~~~ new type of hash ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 type HostTuple struct {
 	host  string
@@ -66,37 +62,15 @@ func NewRendezvousHasher(hosts []string) *RendezvousHasher {
 		liveHosts = append(liveHosts, h)
 	}
 	return &RendezvousHasher{
-		hosts:        liveHosts,
-		legacyHasher: rendezvous.New(liveHosts...),
+		hosts: liveHosts,
 	}
 }
 
 type RendezvousHasher struct {
-	mu           sync.Mutex
-	hosts        []string
-	legacyHasher *rendezvous.Hash
+	hosts []string
 }
 
 func (rh *RendezvousHasher) Rank(key string) []string {
-	// HashMigration: use R=2 (crc32) + R=2 (sha256)
-	// take first 2 legacy crc32 nodes first
-
-	// after migration complete, just call `rank`
-
-	rh.mu.Lock()
-	legacy := rh.legacyHasher.GetN(2, key)
-	rh.mu.Unlock()
-	result := make([]string, 0, len(rh.hosts))
-	result = append(result, legacy...)
-	for _, h := range rh.rank(key) {
-		if !slices.Contains(legacy, h) {
-			result = append(result, h)
-		}
-	}
-	return result
-}
-
-func (rh *RendezvousHasher) rank(key string) []string {
 	tuples := make(HostTuples, len(rh.hosts))
 	keyBytes := []byte(key)
 	hasher := sha256.New()

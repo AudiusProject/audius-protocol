@@ -54,12 +54,20 @@ func (ss *MediorumServer) startRepairer() {
 				// run the next job
 				tracker.CursorI = lastRun.CursorI + 1
 
-				// 50% percent of time... clean up over-replicated and pull under-replicated
-				if tracker.CursorI > 2 {
-					tracker.CursorI = 1
-				}
-				tracker.CleanupMode = tracker.CursorI == 1
+				// hash-migration: disable cleanup mode for phase 2
+				//
+				// 10% of time run cleanup mode
+				// if tracker.CursorI > 10 {
+				// 	tracker.CursorI = 1
+				// }
+				// tracker.CleanupMode = tracker.CursorI == 1
 			}
+
+			// hash-migration: disable cleanup mode for phase 2
+			// while moving to sha256 rendezvous
+			// disable cleanup mode for now
+			// todo: re-enable when done
+			tracker.CleanupMode = false
 		} else {
 			if !errors.Is(err, gorm.ErrRecordNotFound) {
 				logger.Error("failed to get last repair.go run", "err", err)
