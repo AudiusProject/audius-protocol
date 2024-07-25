@@ -11,6 +11,8 @@ dev-content-3::
 	@go run main.go -env-file=./infra/dev_config/content-three.env
 
 up:
+	make down
+	make gen
 	cd infra && docker compose up --build -d
 
 down:
@@ -25,7 +27,6 @@ deps::
 
 gen::
 	cd db && sqlc generate
-	protoc --go_out=./gen --go-grpc_out=./gen ./protocol.proto
 	go mod tidy
 
 test::
