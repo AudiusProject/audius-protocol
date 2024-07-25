@@ -1,0 +1,71 @@
+{
+  "genesis_time": "2024-07-25T00:50:59.2083Z",
+  "chain_id": "audius-devnet",
+  "initial_height": "0",
+  "consensus_params": {
+    "block": {
+      "max_bytes": "104857600",
+      "max_gas": "10000000"
+    },
+    "evidence": {
+      "max_age_num_blocks": "100000",
+      "max_age_duration": "172800000000000",
+      "max_bytes": "104857600"
+    },
+    "validator": {
+      "pub_key_types": [
+        "secp256k1"
+      ]
+    },
+    "version": {
+      "app": "0"
+    },
+    "synchrony": {
+      "precision": "500000000",
+      "message_delay": "2000000000"
+    },
+    "feature": {
+      "vote_extensions_enable_height": "0",
+      "pbts_enable_height": "0"
+    }
+  },
+  "validators": [
+    {
+      "address": "3E2096896BF28333AA8BCB1DD5F80C813E081C25",
+      "pub_key": {
+        "type": "tendermint/PubKeySecp256k1",
+        "value": "A6xboWjQ+tHrKI39Ocz4XnA+VbispgbzjSIjSy8f9IGH"
+      },
+      "power": "25",
+      "name": "discovery-1"
+    },
+    {
+      "address": "FD7F1CB23F258D69A7E0F4616318EF1FEDA23AD3",
+      "pub_key": {
+        "type": "tendermint/PubKeySecp256k1",
+        "value": "Ao62T+6jdfYtaHunGBt7wC3Yv+1nCPlqGFDLofFPZWQo"
+      },
+      "power": "25",
+      "name": "content-1"
+    },
+    {
+      "address": "CC7400F7A8F28A222D9CCC274DB9CD41965A7032",
+      "pub_key": {
+        "type": "tendermint/PubKeySecp256k1",
+        "value": "AwMGR36zs83PqaaBrvfjcq/h04nJKoVkFGMD9GPTRZZv"
+      },
+      "power": "25",
+      "name": "content-2"
+    },
+    {
+      "address": "9A2FF5DFE9077F63A313B7A27AD4D36B49BA45AB",
+      "pub_key": {
+        "type": "tendermint/PubKeySecp256k1",
+        "value": "AiX7QtO8WBcarMY/9iVgMTFR3qtfBEypRdxOYry12xg1"
+      },
+      "power": "25",
+      "name": "content-3"
+    }
+  ],
+  "app_hash": ""
+}
