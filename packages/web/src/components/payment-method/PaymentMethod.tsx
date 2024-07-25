@@ -24,6 +24,8 @@ import { SummaryTable, SummaryTableItem } from 'components/summary-table'
 import { useIsMobile } from 'hooks/useIsMobile'
 import zIndex from 'utils/zIndex'
 
+import { TokenPicker } from './TokenPicker'
+
 const messages = {
   paymentMethod: 'Payment Method',
   withExistingBalance: 'Existing balance',
@@ -38,6 +40,8 @@ type PaymentMethodProps = {
   setSelectedMethod: (method: PurchaseMethod) => void
   selectedVendor: Nullable<PurchaseVendor>
   setSelectedVendor: (vendor: PurchaseVendor) => void
+  selectedPurchaseMethodMintAddress: string
+  setSelectedPurchaseMethodMintAddress: (address: string) => void
   balance?: Nullable<BNUSDC>
   isExistingBalanceDisabled?: boolean
   isCoinflowEnabled?: boolean
@@ -50,6 +54,8 @@ export const PaymentMethod = ({
   setSelectedMethod,
   selectedVendor,
   setSelectedVendor,
+  selectedPurchaseMethodMintAddress,
+  setSelectedPurchaseMethodMintAddress,
   balance,
   isExistingBalanceDisabled,
   showExistingBalance,
@@ -144,7 +150,13 @@ export const PaymentMethod = ({
           </Text>
         </Text>
       ),
-      icon: IconMerch
+      icon: IconMerch,
+      value: (
+        <TokenPicker
+          selectedTokenAddress={selectedPurchaseMethodMintAddress}
+          onChange={setSelectedPurchaseMethodMintAddress}
+        />
+      )
     }
   ]
 

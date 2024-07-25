@@ -24,6 +24,7 @@ import {
   CENTS_TO_USDC_MULTIPLIER,
   CUSTOM_AMOUNT,
   PURCHASE_METHOD,
+  PURCHASE_METHOD_MINT_ADDRESS,
   PURCHASE_VENDOR
 } from './constants'
 import { PayExtraAmountPresetValues, PayExtraPreset } from './types'
@@ -36,6 +37,8 @@ const {
   getPurchaseContentError,
   getPurchaseContentPage
 } = purchaseContentSelectors
+
+const USDC_TOKEN_ADDRESS = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'
 
 export const usePurchaseContentFormConfiguration = ({
   metadata,
@@ -65,7 +68,8 @@ export const usePurchaseContentFormConfiguration = ({
       balance >= BigInt(price * CENTS_TO_USDC_MULTIPLIER)
         ? PurchaseMethod.BALANCE
         : PurchaseMethod.CARD,
-    [PURCHASE_VENDOR]: purchaseVendor ?? PurchaseVendor.STRIPE
+    [PURCHASE_VENDOR]: purchaseVendor ?? PurchaseVendor.STRIPE,
+    [PURCHASE_METHOD_MINT_ADDRESS]: USDC_TOKEN_ADDRESS
   }
 
   const onSubmit = useCallback(
@@ -73,8 +77,10 @@ export const usePurchaseContentFormConfiguration = ({
       customAmount,
       amountPreset,
       purchaseMethod,
-      purchaseVendor
+      purchaseVendor,
+      purchaseMethodMintAddress
     }: PurchaseContentValues) => {
+      console.log({ purchaseMethodMintAddress })
       const contentId = isAlbum
         ? metadata.playlist_id
         : isTrack
