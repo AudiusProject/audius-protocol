@@ -1,9 +1,9 @@
 import snakecaseKeys from 'snakecase-keys'
 
-import type {
-  AuthService,
-  PaymentRouterClient,
-  StorageService
+import {
+  type AuthService,
+  type PaymentRouterClient,
+  type StorageService
 } from '../../services'
 import {
   Action,
@@ -41,7 +41,8 @@ import {
   SendTipReactionRequestSchema,
   SplitDonationsRequestSchema,
   SplitDonationsRequest,
-  GetSplitDonationsTransactionSchema
+  GetSplitDonationsTransactionSchema,
+  GetSplitDonationsTransactionRequest
 } from './types'
 
 export class UsersApi extends GeneratedUsersApi {
@@ -398,32 +399,60 @@ export class UsersApi extends GeneratedUsersApi {
     return { ethWallet, userBank }
   }
 
-  private async getSplitDonationsTransaction(params: SplitDonationsRequest) {
-    const { total, splits, wallet } = await parseParams(
+  private async getSplitDonationsTransaction(
+    params: GetSplitDonationsTransactionRequest
+  ) {
+    const { total, splits } = await parseParams(
       'getSplitDonationsTransaction',
       GetSplitDonationsTransactionSchema
     )(params)
 
-    if (wallet) {
-      const transferInstruction =
-        await this.paymentRouterClient.createTransferInstruction({
-          sourceWallet: wallet,
-          total,
-          mint: 'wAUDIO'
-        })
-      const routeInstruction =
-        await this.paymentRouterClient.createRouteInstruction({
-          splits,
-          total,
-          mint: 'wAUDIO'
-        })
-      const transaction = await this.paymentRouterClient.buildTransaction({
-        feePayer: wallet,
-        instructions: [transferInstruction, routeInstruction]
+    const routeInstruction =
+      await this.paymentRouterClient.createRouteInstruction({
+        splits,
+        total,
+        mint: 'wAUDIO'
       })
-      return transaction
-    }
-    return null
+
+    // Use the authed wallet's userbank and relay
+    const ethWallet = await this.auth.getAddress()
+
+    this.logger.debug(
+      `Using userBank ${await this.claimableTokens.deriveUserBank({
+        ethWallet,
+        mint: 'USDC'
+      })} to donate...`
+    )
+    const paymentRouterTokenAccount =
+      await this.paymentRouterClient.getOrCreateProgramTokenAccount({
+        mint: 'wAUDIO'
+      })
+
+    const transferSecpInstruction =
+      await this.claimableTokens.createTransferSecpInstruction({
+        ethWallet,
+        destination: paymentRouterTokenAccount.address,
+        mint: 'wAUDIO',
+        amount: total,
+        auth: this.auth
+      })
+
+    const transferInstruction =
+      await this.claimableTokens.createTransferInstruction({
+        ethWallet,
+        destination: paymentRouterTokenAccount.address,
+        mint: 'wAUDIO'
+      })
+
+    const transaction = await this.paymentRouterClient.buildTransaction({
+      instructions: [
+        transferSecpInstruction,
+        transferInstruction,
+        routeInstruction
+      ]
+    })
+
+    return transaction
   }
 
   /**
@@ -432,11 +461,26 @@ export class UsersApi extends GeneratedUsersApi {
    * @hidden
    */
   public async sendSplitDonations(params: SplitDonationsRequest) {
-    await parseParams(
+    const { splits, ...rest } = await parseParams(
       'splitDonationsRequest',
       SplitDonationsRequestSchema
     )(params)
-    const transaction = await this.getSplitDonationsTransaction(params)
+
+    const splitsWithWallets = await Promise.all(
+      splits.map(async (split) => {
+        const { id, ...rest } = split
+        return {
+          ...rest,
+          wallet: (await this.getWalletAndUserBank(id)).userBank!
+        }
+      })
+    )
+
+    const transaction = await this.getSplitDonationsTransaction({
+      ...rest,
+      splits: splitsWithWallets
+    })
+
     if (!transaction) return
 
     if (params.walletAdapter) {

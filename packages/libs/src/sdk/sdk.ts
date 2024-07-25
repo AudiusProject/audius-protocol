@@ -264,7 +264,7 @@ const initializeApis = ({
     services.auth,
     services.logger,
     services.claimableTokensClient,
-    {} as any
+    services.paymentRouterClient
   )
   const albums = new AlbumsApi(
     generatedApiClientConfig,

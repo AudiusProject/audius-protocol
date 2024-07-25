@@ -1,9 +1,18 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 
 import { useGetUsersByIds } from '@audius/common/api'
 import { Status } from '@audius/common/models'
-import { Button, Flex, LoadingSpinner, Paper, Text } from '@audius/harmony'
+import { musicConfettiActions, TOKEN_LISTING_MAP } from '@audius/common/store'
+import {
+  Button,
+  Flex,
+  IconUserList,
+  LoadingSpinner,
+  Paper,
+  Text
+} from '@audius/harmony'
 import { Form, Formik, useFormikContext } from 'formik'
+import { useDispatch } from 'react-redux'
 import { PieChart, Pie, Tooltip, Cell } from 'recharts'
 
 import { TextField } from 'components/form-fields'
@@ -11,6 +20,10 @@ import { SelectField } from 'components/form-fields/SelectField'
 import Header from 'components/header/desktop/Header'
 import Page from 'components/page/Page'
 import UserList from 'components/user-list/components/UserList'
+import { audiusSdk } from 'services/audius-sdk'
+import { encodeHashId } from 'utils/hashIds'
+
+const { show: showConfetti } = musicConfettiActions
 
 const messages = {
   title: 'Split Donation',
@@ -25,7 +38,9 @@ const messages = {
 
 const header = <Header primary={messages.title} />
 
-const FEATURED_ARTIST_IDS = [50672, 207676588, 985480]
+// prod
+// const FEATURED_ARTIST_IDS = [50672, 207676588, 985480]
+const FEATURED_ARTIST_IDS = [333792732, 453008334]
 
 const presetOptions = [
   { value: 'featured', label: 'Featured Creators' },
@@ -34,7 +49,8 @@ const presetOptions = [
 ]
 
 const initialValues = {
-  preset: 'featured'
+  preset: 'featured',
+  userIds: []
 }
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042']
@@ -68,7 +84,7 @@ const CustomPieChart = (props: CustomPieChartProps) => {
 export default CustomPieChart
 
 const SplitDonationForm = () => {
-  const { values } = useFormikContext<typeof initialValues>()
+  const { values, setFieldValue } = useFormikContext<typeof initialValues>()
 
   const userIds = useMemo(() => {
     if (values.preset === 'featured') {
@@ -80,6 +96,10 @@ const SplitDonationForm = () => {
   const { data: users, status: usersStatus } = useGetUsersByIds({
     ids: userIds
   })
+
+  useEffect(() => {
+    setFieldValue('userIds', userIds)
+  }, [userIds, setFieldValue])
 
   const piechartData = useMemo(() => {
     return (
@@ -130,27 +150,60 @@ const SplitDonationForm = () => {
       </Flex>
       <Paper direction='column' gap='m' p='xl' alignItems='flex-start'>
         <Text variant='title'>{messages.usersListLabel}</Text>
-        <UserList
-          hasMore={false}
-          loading={usersStatus === Status.LOADING}
-          userId={null}
-          users={users ?? []}
-          isMobile={false}
-          tag={'split-donation'}
-          loadMore={() => {}}
-          onClickArtistName={() => {}}
-          onFollow={() => {}}
-          onUnfollow={() => {}}
-        />
+        {usersStatus !== Status.LOADING && users?.length === 0 ? (
+          <Flex direction='column' gap='m' alignItems='center'>
+            <IconUserList color='subdued' size='3xl' />
+            <Text variant='body'>No users selected</Text>
+          </Flex>
+        ) : (
+          <UserList
+            hasMore={false}
+            loading={usersStatus === Status.LOADING}
+            userId={null}
+            users={users ?? []}
+            isMobile={false}
+            tag={'split-donation'}
+            loadMore={() => {}}
+            onClickArtistName={() => {}}
+            onFollow={() => {}}
+            onUnfollow={() => {}}
+          />
+        )}
       </Paper>
     </Flex>
   )
 }
 
 export const SplitDonationPage = () => {
-  const handleSubmit = useCallback((formValues: any) => {
-    console.log('submit', formValues)
-  }, [])
+  const dispatch = useDispatch()
+  const handleSubmit = useCallback(
+    async (formValues: any) => {
+      const { amount, userIds } = formValues
+      const sdk = await audiusSdk()
+
+      const amountPerUser = amount / userIds.length
+
+      try {
+        const result = await sdk.users.sendSplitDonations({
+          splits: userIds.map((id: number) => ({
+            id: encodeHashId(id),
+            amount: BigInt(
+              amountPerUser * 10 ** TOKEN_LISTING_MAP.AUDIO.decimals
+            )
+          })),
+          total: BigInt(amount * 10 ** TOKEN_LISTING_MAP.AUDIO.decimals)
+        })
+
+        console.log('Successfully sent split donation', result)
+
+        dispatch(showConfetti())
+      } catch (e) {
+        console.error(e)
+      }
+    },
+    [dispatch]
+  )
+
   return (
     <Page
       title={messages.title}
