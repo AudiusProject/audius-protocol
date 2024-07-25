@@ -41,7 +41,7 @@ def query_tracks(session: Session) -> List[Track]:
             Track.genre != "Podcast",
             Track.genre != "Audiobooks",
         )
-        .order_by(Track.track_id.asc())
+        .order_by(Track.track_id.desc())
         .limit(BATCH_SIZE)
         .all()
     )
