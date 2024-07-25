@@ -95,6 +95,7 @@ export const EditTrackPage = (props: EditPageProps) => {
 
   const trackAsMetadataForUpload: TrackMetadataForUpload = {
     ...(track as TrackMetadata),
+    mood: track?.mood || null,
     artwork: {
       url: coverArtUrl || ''
     },
