@@ -28,7 +28,9 @@ func NewNode(logger *common.Logger, c *config.Config, pool *pgxpool.Pool) (*nm.N
 	config.TxIndex.TableEvents = "core_events"
 	config.TxIndex.TableAttributes = "core_attributes"
 
-	config.P2P.PersistentPeers = "ffad25668e060a357bbe534c8b7e5b4e1274368b@core.discoveryprovider1.docker.co:26656"
+	if c.PersistentPeers != "" {
+		config.P2P.PersistentPeers = c.PersistentPeers
+	}
 
 	if c.RPCladdr != "" {
 		config.RPC.ListenAddress = c.RPCladdr

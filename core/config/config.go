@@ -19,11 +19,12 @@ const (
 
 type Config struct {
 	/* Comet Config */
-	HomeDir      string
-	RPCladdr     string
-	P2PLaddr     string
-	PSQLConn     string
-	RetainBlocks uint
+	HomeDir         string
+	RPCladdr        string
+	P2PLaddr        string
+	PSQLConn        string
+	RetainBlocks    uint
+	PersistentPeers string
 
 	/* Audius Config */
 	Environment        string
@@ -52,6 +53,7 @@ func ReadConfig(logger *common.Logger) (*Config, error) {
 	cfg.HomeDir = os.Getenv("homeDir")
 	cfg.RPCladdr = os.Getenv("rpcLaddr")
 	cfg.P2PLaddr = os.Getenv("p2pLaddr")
+	cfg.PersistentPeers = os.Getenv("persistentPeers")
 
 	// check if discovery specific key is set
 	isDiscovery := os.Getenv("audius_delegate_private_key") != ""
