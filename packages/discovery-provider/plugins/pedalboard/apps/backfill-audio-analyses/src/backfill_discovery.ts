@@ -85,9 +85,13 @@ async function getAudioAnalysis(contentNodes: string[], track: Track) {
         const errorCountKey = isLegacyTrack
           ? 'error_count'
           : 'audio_analysis_error_count'
+        const statusKey = isLegacyTrack
+          ? 'status'
+          : 'audio_analysis_status'
         const results = response.data[resultsKey]
         const errorCount = response.data[errorCountKey]
-        if (!results) {
+        const analysisStatus = response.data[statusKey]
+        if (!results && analysisStatus != 'error') {
           continue
         }
 
