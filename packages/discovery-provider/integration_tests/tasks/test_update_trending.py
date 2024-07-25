@@ -5,8 +5,8 @@ from integration_tests.utils import populate_mock_db
 from src.models.social.aggregate_interval_plays import t_aggregate_interval_plays
 from src.models.tracks.track_trending_score import TrackTrendingScore
 from src.models.tracks.trending_param import t_trending_params
-from src.trending_strategies.EJ57D_trending_tracks_strategy import (
-    TrendingTracksStrategyEJ57D,
+from src.trending_strategies.pnagD_trending_tracks_strategy import (
+    TrendingTracksStrategypnagD,
 )
 from src.utils.db_session import get_db
 
@@ -341,7 +341,7 @@ def test_update_track_score_query(app):
 
     # setup
     setup_trending(db)
-    udpated_strategy = TrendingTracksStrategyEJ57D()
+    udpated_strategy = TrendingTracksStrategypnagD()
 
     with db.scoped_session() as session:
         session.execute("REFRESH MATERIALIZED VIEW aggregate_interval_plays")

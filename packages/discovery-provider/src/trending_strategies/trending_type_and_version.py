@@ -10,3 +10,4 @@ class TrendingType(Enum):
 class TrendingVersion(Enum):
     EJ57D = "EJ57D"
     BDNxn = "BDNxn"
+    pnagD = "pnagD"

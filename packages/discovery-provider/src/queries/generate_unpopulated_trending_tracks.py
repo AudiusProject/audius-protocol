@@ -14,10 +14,7 @@ from src.models.tracks.track_trending_score import TrackTrendingScore
 from src.queries.get_unpopulated_tracks import get_unpopulated_tracks
 from src.trending_strategies.base_trending_strategy import BaseTrendingStrategy
 from src.trending_strategies.trending_strategy_factory import DEFAULT_TRENDING_VERSIONS
-from src.trending_strategies.trending_type_and_version import (
-    TrendingType,
-    TrendingVersion,
-)
+from src.trending_strategies.trending_type_and_version import TrendingType
 
 logger = logging.getLogger(__name__)
 
@@ -47,11 +44,9 @@ def generate_unpopulated_trending_from_mat_views(
     usdc_purchase_only=False,
     limit=TRENDING_TRACKS_LIMIT,
 ):
-    # use all time instead of year for version EJ57D
-    if strategy.version == TrendingVersion.EJ57D and time_range == "year":
+    # year time_range equates to allTime for current implementations
+    if time_range == "year":
         time_range = "allTime"
-    elif strategy.version != TrendingVersion.EJ57D and time_range == "allTime":
-        time_range = "year"
 
     trending_scores_query = session.query(
         TrackTrendingScore.track_id, TrackTrendingScore.score
