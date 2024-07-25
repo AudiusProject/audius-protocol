@@ -291,8 +291,7 @@ def test_trending_challenge_job(app):
             strategy = trending_strategy_factory.get_strategy(
                 TrendingType.TRACKS, version
             )
-            if strategy.use_mat_view:
-                strategy.update_track_score_query(session)
+            strategy.update_track_score_query(session)
 
         session.commit()
     web3 = MockWeb3()
