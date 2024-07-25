@@ -28,6 +28,8 @@ func NewNode(logger *common.Logger, c *config.Config, pool *pgxpool.Pool) (*nm.N
 	config.TxIndex.TableEvents = "core_events"
 	config.TxIndex.TableAttributes = "core_attributes"
 
+	config.P2P.PexReactor = true
+
 	if c.PersistentPeers != "" {
 		config.P2P.PersistentPeers = c.PersistentPeers
 	}
