@@ -101,7 +101,7 @@ func (app *KVStoreApplication) FinalizeBlock(ctx context.Context, req *abcitypes
 				TxHash: txHash,
 			}
 
-			_, err := qtx.InsertKVStore(ctx, params)
+			record, err := qtx.InsertKVStore(ctx, params)
 			if err != nil {
 				logger.Errorf("failed to persisted kv entry %v", err)
 			}
@@ -112,8 +112,8 @@ func (app *KVStoreApplication) FinalizeBlock(ctx context.Context, req *abcitypes
 					{
 						Type: "app",
 						Attributes: []abcitypes.EventAttribute{
-							{Key: "key", Value: string(key), Index: true},
-							{Key: "value", Value: string(value), Index: true},
+							{Key: "key", Value: record.Key, Index: true},
+							{Key: "value", Value: record.Value, Index: true},
 						},
 					},
 				},
@@ -127,6 +127,7 @@ func (app *KVStoreApplication) FinalizeBlock(ctx context.Context, req *abcitypes
 }
 
 func (app KVStoreApplication) Commit(ctx context.Context, commit *abcitypes.CommitRequest) (*abcitypes.CommitResponse, error) {
+	app.logger.Info("in commit phase", "onGoingBlock", app.onGoingBlock)
 	if err := app.commitInProgressTx(ctx); err != nil {
 		app.logger.Error("failure to commit tx", "error", err)
 		return &abcitypes.CommitResponse{}, err
