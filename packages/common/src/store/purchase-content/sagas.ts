@@ -500,6 +500,7 @@ function* doStartPurchaseContentFlow({
     extraAmountPreset,
     purchaseMethod,
     purchaseVendor,
+    purchaseMethodMintAddress,
     contentId,
     contentType = PurchaseableContentType.TRACK
   }

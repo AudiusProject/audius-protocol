@@ -80,7 +80,6 @@ export const usePurchaseContentFormConfiguration = ({
       purchaseVendor,
       purchaseMethodMintAddress
     }: PurchaseContentValues) => {
-      console.log({ purchaseMethodMintAddress })
       const contentId = isAlbum
         ? metadata.playlist_id
         : isTrack
