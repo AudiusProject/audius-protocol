@@ -99,6 +99,7 @@ export const PURCHASES_PAGE = '/payments/purchases'
 export const SALES_PAGE = '/payments/sales'
 export const WITHDRAWALS_PAGE = '/payments/withdrawals'
 export const PRIVATE_KEY_EXPORTER_SETTINGS_PAGE = '/settings/export-private-key'
+export const SPLIT_DONATION_PAGE = '/split-donation'
 
 // Multi-stage sign up flow routes
 export enum SignUpPath {
@@ -350,7 +351,8 @@ export const staticRoutes = new Set([
   TRENDING_GENRES,
   PURCHASES_PAGE,
   SALES_PAGE,
-  WITHDRAWALS_PAGE
+  WITHDRAWALS_PAGE,
+  SPLIT_DONATION_PAGE
 ])
 
 /**

@@ -184,10 +184,13 @@ import {
   SEARCH_CATEGORY_PAGE_LEGACY,
   SEARCH_BASE_ROUTE,
   EDIT_PLAYLIST_PAGE,
-  EDIT_ALBUM_PAGE
+  EDIT_ALBUM_PAGE,
+  SPLIT_DONATION_PAGE
 } from 'utils/route'
 
 import styles from './WebPlayer.module.css'
+
+import { SplitDonationPage } from 'pages/split-donation-page/SplitDonationPage'
 
 const { getHasAccount, getAccountStatus, getUserId, getUserHandle } =
   accountSelectors
@@ -994,6 +997,11 @@ class WebPlayer extends Component {
                   path={EMPTY_PAGE}
                   isMobile={isMobile}
                   component={EmptyPage}
+                />
+                <Route
+                  exact
+                  path={SPLIT_DONATION_PAGE}
+                  component={SplitDonationPage}
                 />
                 <Route
                   exact

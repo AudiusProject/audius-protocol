@@ -182,7 +182,7 @@ export const Select = forwardRef<HTMLInputElement, SelectProps>(function Select(
   return (
     <SelectInput
       {...selectInputProps}
-      value={selection}
+      value={selectedOption?.label}
       onOpen={handleOpen}
       onReset={() => setFilterInputValue('')}
     >
