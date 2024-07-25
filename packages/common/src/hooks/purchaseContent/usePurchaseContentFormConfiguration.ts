@@ -3,8 +3,10 @@ import { useCallback } from 'react'
 import { USDC } from '@audius/fixed-decimal'
 import BN from 'bn.js'
 import { useDispatch, useSelector } from 'react-redux'
+import { useLocalStorage } from 'react-use'
 import { put, call } from 'typed-redux-saga'
 
+import { useGetCurrentUser, useGetCurrentUserId } from '~/api'
 import { Kind, UserCollectionMetadata } from '~/models'
 import { PurchaseMethod, PurchaseVendor } from '~/models/PurchaseContent'
 import { UserTrackMetadata } from '~/models/Track'
@@ -26,6 +28,8 @@ import {
   AMOUNT_PRESET,
   CENTS_TO_USDC_MULTIPLIER,
   CUSTOM_AMOUNT,
+  GUEST_CHECKOUT,
+  GUEST_EMAIL,
   PURCHASE_METHOD,
   PURCHASE_VENDOR
 } from './constants'
@@ -103,6 +107,9 @@ export const usePurchaseContentFormConfiguration = ({
   const isUnlocking = !error && isContentPurchaseInProgress(stage)
   const { data: balanceBN } = useUSDCBalance()
   const balance = USDC(balanceBN ?? new BN(0)).value
+  const [guestEmail, setGuestEmail] = useLocalStorage('guest-email', '')
+  const { data: currentUser } = useGetCurrentUser({})
+  const isGuestCheckout = !currentUser || (currentUser && !currentUser.handle)
 
   const initialValues: PurchaseContentValues = {
     [CUSTOM_AMOUNT]: undefined,
@@ -111,7 +118,9 @@ export const usePurchaseContentFormConfiguration = ({
       balance >= BigInt(price * CENTS_TO_USDC_MULTIPLIER)
         ? PurchaseMethod.BALANCE
         : PurchaseMethod.CARD,
-    [PURCHASE_VENDOR]: purchaseVendor ?? PurchaseVendor.STRIPE
+    [PURCHASE_VENDOR]: purchaseVendor ?? PurchaseVendor.STRIPE,
+    [GUEST_CHECKOUT]: isGuestCheckout,
+    [GUEST_EMAIL]: guestEmail
   }
 
   const onSubmit = useCallback(
@@ -119,7 +128,8 @@ export const usePurchaseContentFormConfiguration = ({
       customAmount,
       amountPreset,
       purchaseMethod,
-      purchaseVendor
+      purchaseVendor,
+      guestEmail
     }: PurchaseContentValues) => {
       const contentId = isAlbum
         ? metadata.playlist_id
@@ -127,6 +137,8 @@ export const usePurchaseContentFormConfiguration = ({
         ? metadata.track_id
         : undefined
       if (isUnlocking || !contentId) return
+
+      setGuestEmail(guestEmail)
 
       if (
         purchaseMethod === PurchaseMethod.CRYPTO &&
@@ -148,12 +160,23 @@ export const usePurchaseContentFormConfiguration = ({
             contentId,
             contentType: isAlbum
               ? PurchaseableContentType.ALBUM
-              : PurchaseableContentType.TRACK
+              : PurchaseableContentType.TRACK,
+            guestEmail
           })
         )
       }
     },
-    [isAlbum, isUnlocking, metadata, page, presetValues, dispatch, isTrack]
+    [
+      isAlbum,
+      metadata.playlist_id,
+      metadata.track_id,
+      isTrack,
+      isUnlocking,
+      setGuestEmail,
+      page,
+      dispatch,
+      presetValues
+    ]
   )
 
   return {

@@ -9,7 +9,8 @@ import {
   PURCHASE_VENDOR,
   usePurchaseMethod,
   PurchaseableContentMetadata,
-  isPurchaseableAlbum
+  isPurchaseableAlbum,
+  GUEST_CHECKOUT
 } from '@audius/common/hooks'
 import { PurchaseMethod, PurchaseVendor } from '@audius/common/models'
 import { IntKeys, FeatureFlags } from '@audius/common/services'
@@ -17,6 +18,7 @@ import { PurchaseContentStage } from '@audius/common/store'
 import { Flex, Text, IconValidationCheck } from '@audius/harmony'
 import { useField } from 'formik'
 
+import { HarmonyTextField } from 'components/form-fields/HarmonyTextField'
 import { PaymentMethod } from 'components/payment-method/PaymentMethod'
 
 import { PurchaseContentFormState } from '../hooks/usePurchaseContentFormState'
@@ -55,6 +57,8 @@ export const PurchaseContentFormFields = ({
   const [{ value: purchaseVendor }, , { setValue: setPurchaseVendor }] =
     useField(PURCHASE_VENDOR)
   const isPurchased = stage === PurchaseContentStage.FINISH
+
+  const [{ value: isGuestCheckout }] = useField(GUEST_CHECKOUT)
 
   const { data: balanceBN } = useUSDCBalance({ isPolling: true })
   const { extraAmount } = usePurchaseSummaryValues({
@@ -144,6 +148,9 @@ export const PurchaseContentFormFields = ({
           showVendorChoice={false}
         />
       )}
+      {isGuestCheckout ? (
+        <HarmonyTextField name='guestEmail' label='Email' />
+      ) : null}
       {isUnlocking ? null : <PayToUnlockInfo />}
     </>
   )

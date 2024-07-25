@@ -23,7 +23,7 @@ const IS_PRODUCTION = env.ENVIRONMENT === 'production'
 
 export const CoinflowOnrampModal = () => {
   const {
-    data: { amount, serializedTransaction, purchaseMetadata },
+    data: { amount, serializedTransaction, purchaseMetadata, guestEmail },
     isOpen,
     onClose,
     onClosed
@@ -75,7 +75,7 @@ export const CoinflowOnrampModal = () => {
     >
       {showContent ? (
         <CoinflowPurchase
-          email={'fdsafdsa@audius.co'}
+          email={guestEmail}
           transaction={transaction}
           wallet={adapter.wallet}
           chargebackProtectionData={purchaseMetadata ? [purchaseMetadata] : []}

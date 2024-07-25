@@ -39,6 +39,16 @@ const accountApi = createApi({
         type: 'query'
       }
     },
+    getCurrentUser: {
+      async fetch(_, context) {
+        const { audiusBackend } = context
+        const account = await audiusBackend.getAccount()
+        return account
+      },
+      options: {
+        type: 'query'
+      }
+    },
     getCurrentWeb3User: {
       async fetch(_, { audiusBackend }) {
         const libs = await audiusBackend.getAudiusLibsTyped()
@@ -249,6 +259,7 @@ const accountApi = createApi({
 })
 
 export const {
+  useGetCurrentUser,
   useGetCurrentUserId,
   useGetCurrentWeb3User,
   useResetPassword,

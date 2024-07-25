@@ -67,6 +67,7 @@ import { cacheActions } from '../cache'
 import { pollGatedContent } from '../gated-content/sagas'
 import { updateGatedContentStatus } from '../gated-content/slice'
 import { saveCollection } from '../social/collections/actions'
+import { getFeePayer } from '../solana/selectors'
 
 import {
   buyUSDC,
@@ -322,9 +323,10 @@ function* purchaseTrackWithCoinflow(args: {
   userId: ID
   price: number
   extraAmount?: number
+  guestEmail?: string
 }) {
   console.log('asdf purchaseTrackWithCoinflow: ', { args })
-  const { sdk, userId, trackId, price, extraAmount = 0 } = args
+  const { sdk, userId, trackId, price, extraAmount = 0, guestEmail } = args
 
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const wallet = yield* call(getRootSolanaAccount, audiusBackendInstance)
@@ -356,7 +358,8 @@ function* purchaseTrackWithCoinflow(args: {
       amount: Number(USDC(total).toString()),
       serializedTransaction,
       purchaseMetadata,
-      contentId: trackId
+      contentId: trackId,
+      guestEmail
     })
   )
 
@@ -421,7 +424,8 @@ function* purchaseAlbumWithCoinflow(args: {
       amount: Number(USDC(total).toString()),
       serializedTransaction,
       purchaseMetadata,
-      contentId: albumId
+      contentId: albumId,
+      guestEmail
     })
   )
 
@@ -508,7 +512,8 @@ function* doStartPurchaseContentFlow({
     purchaseMethod,
     purchaseVendor,
     contentId,
-    contentType = PurchaseableContentType.TRACK
+    contentType = PurchaseableContentType.TRACK,
+    guestEmail
   }
 }: ReturnType<typeof startPurchaseContentFlow>) {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
@@ -554,10 +559,16 @@ function* doStartPurchaseContentFlow({
     if (!currentUser) {
       yield* call(
         audiusBackendInstance.guestSignUp,
-        'isaac+july25@audius.co',
+        guestEmail,
         feePayerOverride
       )
       yield* fetchAccountAsync({ isSignUp: true })
+
+      const newUser = yield* select(getAccountUser)
+      yield* call(
+        [libs.userStateManager, libs.userStateManager.setCurrentUser],
+        newUser
+      )
     } else {
       yield* call(
         [libs.userStateManager, libs.userStateManager.setCurrentUser],
@@ -635,7 +646,8 @@ function* doStartPurchaseContentFlow({
                 trackId: contentId,
                 userId: purchaserUserId,
                 price: price / 100.0,
-                extraAmount: extraAmount ? extraAmount / 100.0 : undefined
+                extraAmount: extraAmount ? extraAmount / 100.0 : undefined,
+                guestEmail
               })
             } else {
               yield* call(purchaseAlbumWithCoinflow, {
@@ -643,7 +655,8 @@ function* doStartPurchaseContentFlow({
                 albumId: contentId,
                 userId: purchaserUserId,
                 price: price / 100.0,
-                extraAmount: extraAmount ? extraAmount / 100.0 : undefined
+                extraAmount: extraAmount ? extraAmount / 100.0 : undefined,
+                guestEmail
               })
             }
             break

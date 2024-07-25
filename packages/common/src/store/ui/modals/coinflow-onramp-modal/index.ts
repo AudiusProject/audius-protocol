@@ -19,6 +19,7 @@ export type CoinflowOnrampModalState = {
   onrampSucceeded?: Action
   onrampCanceled?: Action
   onrampFailed?: Action
+  guestEmail?: string
 }
 
 const coinflowOnrampModal = createModal<CoinflowOnrampModalState>({
