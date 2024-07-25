@@ -1,5 +1,7 @@
+import { WalletAdapter } from '@solana/wallet-adapter-base'
 import { z } from 'zod'
 
+import { PublicKeySchema } from '../../services'
 import { ImageFile } from '../../types/File'
 import { HashId } from '../../types/HashId'
 import { getReaction, reactionsMap } from '../../utils/reactionsMap'
@@ -113,4 +115,40 @@ export const SendTipReactionRequestSchema = z.object({
 
 export type SendTipReactionRequest = z.input<
   typeof SendTipReactionRequestSchema
+>
+
+const SplitDonationsRequestBase = z.object({
+  /** The ID of the user purchasing the album. */
+  // userId: HashId,
+  /**
+   * The price of the album at the time of purchase (in dollars if number, USDC if bigint).
+   * Used to check against current album price in case it changed,
+   * effectively setting a "max price" for the purchase.
+   */
+  splits: z.array(z.object({ wallet: PublicKeySchema, amount: z.bigint() })),
+  total: z.union([z.bigint(), z.number()])
+})
+
+export const SplitDonationsRequestSchema = z
+  .object({
+    /** A wallet to use to purchase (defaults to the authed user's user bank if not specified) */
+    walletAdapter: z
+      .custom<Pick<WalletAdapter, 'publicKey' | 'sendTransaction'>>()
+      .optional()
+  })
+  .merge(SplitDonationsRequestBase)
+  .strict()
+
+export type SplitDonationsRequest = z.input<typeof SplitDonationsRequestSchema>
+
+export const GetSplitDonationsTransactionSchema = z
+  .object({
+    /** A wallet to use to purchase (defaults to the authed user's user bank if not specified) */
+    wallet: PublicKeySchema.optional()
+  })
+  .merge(SplitDonationsRequestBase)
+  .strict()
+
+export type GetSplitDonationsTransactionRequest = z.input<
+  typeof GetSplitDonationsTransactionSchema
 >

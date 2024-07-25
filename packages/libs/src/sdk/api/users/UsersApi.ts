@@ -1,6 +1,10 @@
 import snakecaseKeys from 'snakecase-keys'
 
-import type { AuthService, StorageService } from '../../services'
+import type {
+  AuthService,
+  PaymentRouterClient,
+  StorageService
+} from '../../services'
 import {
   Action,
   EntityManagerService,
@@ -34,7 +38,10 @@ import {
   SendTipRequest,
   SendTipSchema,
   SendTipReactionRequest,
-  SendTipReactionRequestSchema
+  SendTipReactionRequestSchema,
+  SplitDonationsRequestSchema,
+  SplitDonationsRequest,
+  GetSplitDonationsTransactionSchema
 } from './types'
 
 export class UsersApi extends GeneratedUsersApi {
@@ -44,7 +51,8 @@ export class UsersApi extends GeneratedUsersApi {
     private readonly entityManager: EntityManagerService,
     private readonly auth: AuthService,
     private readonly logger: LoggerService,
-    private readonly claimableTokens: ClaimableTokensClient
+    private readonly claimableTokens: ClaimableTokensClient,
+    private paymentRouterClient: PaymentRouterClient
   ) {
     super(configuration)
     this.logger = logger.createPrefixedLogger('[users-api]')
@@ -388,5 +396,60 @@ export class UsersApi extends GeneratedUsersApi {
       mint: 'wAUDIO'
     })
     return { ethWallet, userBank }
+  }
+
+  private async getSplitDonationsTransaction(params: SplitDonationsRequest) {
+    const { total, splits, wallet } = await parseParams(
+      'getSplitDonationsTransaction',
+      GetSplitDonationsTransactionSchema
+    )(params)
+
+    if (wallet) {
+      const transferInstruction =
+        await this.paymentRouterClient.createTransferInstruction({
+          sourceWallet: wallet,
+          total,
+          mint: 'wAUDIO'
+        })
+      const routeInstruction =
+        await this.paymentRouterClient.createRouteInstruction({
+          splits,
+          total,
+          mint: 'wAUDIO'
+        })
+      const transaction = await this.paymentRouterClient.buildTransaction({
+        feePayer: wallet,
+        instructions: [transferInstruction, routeInstruction]
+      })
+      return transaction
+    }
+    return null
+  }
+
+  /**
+   * Split donations
+   *
+   * @hidden
+   */
+  public async sendSplitDonations(params: SplitDonationsRequest) {
+    await parseParams(
+      'splitDonationsRequest',
+      SplitDonationsRequestSchema
+    )(params)
+    const transaction = await this.getSplitDonationsTransaction(params)
+    if (!transaction) return
+
+    if (params.walletAdapter) {
+      if (!params.walletAdapter.publicKey) {
+        throw new Error(
+          'Param walletAdapter was specified, but no wallet selected'
+        )
+      }
+      return await params.walletAdapter.sendTransaction(
+        transaction,
+        this.paymentRouterClient.connection
+      )
+    }
+    return this.paymentRouterClient.sendTransaction(transaction)
   }
 }

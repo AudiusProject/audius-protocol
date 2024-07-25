@@ -263,7 +263,8 @@ const initializeApis = ({
     services.entityManager,
     services.auth,
     services.logger,
-    services.claimableTokensClient
+    services.claimableTokensClient,
+    {} as any
   )
   const albums = new AlbumsApi(
     generatedApiClientConfig,

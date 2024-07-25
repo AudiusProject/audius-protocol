@@ -33,6 +33,8 @@ import {
   CreatePurchaseContentInstructionsSchema,
   CreateRouteInstructionRequest,
   CreateRouteInstructionSchema,
+  CreateSplitDonationInstructionsSchema,
+  CreateSplitDonationsInstructionsRequest,
   CreateTransferInstructionRequest,
   CreateTransferInstructionSchema,
   GetOrCreateProgramTokenAccountRequest,
@@ -180,6 +182,24 @@ export class PaymentRouterClient extends BaseSolanaProgramClient {
         buyerUserId,
         accessType
       })
+    ]
+  }
+
+  public async createSplitDonationsInstructions(
+    params: CreateSplitDonationsInstructionsRequest
+  ) {
+    const { mint, splits, total, sourceWallet } = await parseParams(
+      'createSplitDonationsInstructions',
+      CreateSplitDonationInstructionsSchema
+    )(params)
+
+    return [
+      await this.createTransferInstruction({
+        total,
+        mint,
+        sourceWallet
+      }),
+      await this.createRouteInstruction({ splits, total, mint })
     ]
   }
 

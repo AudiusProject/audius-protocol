@@ -54,6 +54,13 @@ export type CreateMemoInstructionRequest = z.input<
   typeof CreateMemoInstructionSchema
 >
 
+export const CreateSplitDonationInstructionsSchema =
+  CreateTransferInstructionSchema.extend(CreateRouteInstructionSchema.shape)
+
+export type CreateSplitDonationsInstructionsRequest = z.input<
+  typeof CreateSplitDonationInstructionsSchema
+>
+
 export const CreatePurchaseContentInstructionsSchema =
   CreateTransferInstructionSchema.extend(
     CreateRouteInstructionSchema.shape

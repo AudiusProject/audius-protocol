@@ -89,7 +89,8 @@ describe('UsersApi', () => {
       new EntityManager({ discoveryNodeSelector: new DiscoveryNodeSelector() }),
       auth,
       new Logger(),
-      claimableTokens
+      claimableTokens,
+      {} as any
     )
     jest.spyOn(console, 'warn').mockImplementation(() => {})
     jest.spyOn(console, 'info').mockImplementation(() => {})
