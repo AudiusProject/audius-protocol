@@ -30,7 +30,7 @@ export const VisibilityScreen = () => {
   const isAlreadyPublic = !isUpload && !initialValues.is_unlisted
 
   const initialVisibilityType =
-    is_scheduled_release && release_date
+    is_scheduled_release && is_unlisted
       ? 'scheduled'
       : is_unlisted
       ? 'hidden'
