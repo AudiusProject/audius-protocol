@@ -32,7 +32,8 @@ import {
   CHATS_PAGE,
   DASHBOARD_PAGE,
   PAYMENTS_PAGE,
-  SETTINGS_PAGE
+  SETTINGS_PAGE,
+  SPLIT_DONATION_PAGE
 } from 'utils/route'
 import zIndex from 'utils/zIndex'
 
@@ -45,7 +46,8 @@ const messages = {
   payAndEarn: 'Pay & Earn',
   rewards: 'Rewards',
   messages: 'Messages',
-  buttonLabel: 'Toggle Navigation Menu'
+  buttonLabel: 'Toggle Navigation Menu',
+  donate: 'Split Donation'
 }
 
 export const NavMenuButton = () => {
@@ -97,6 +99,18 @@ export const NavMenuButton = () => {
       }
     : null
 
+  const splitDonationItem = {
+    className: styles.item,
+    text: (
+      <div className={styles.popupItemText}>
+        <span>{messages.donate}</span>
+      </div>
+    ),
+    onClick: () => navigate(SPLIT_DONATION_PAGE),
+    icon: <IconDonate size='s' />,
+    iconClassName: styles.payAndEarnIcon
+  }
+
   const dashboardItem = {
     className: styles.item,
     text: messages.dashboard,
@@ -142,7 +156,8 @@ export const NavMenuButton = () => {
     payAndEarnItem,
     dashboardItem,
     rewardsItem,
-    settingsItem
+    settingsItem,
+    splitDonationItem
   ].filter(removeNullable)
 
   return (

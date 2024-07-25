@@ -1,8 +1,13 @@
-import { useCallback, useEffect, useMemo } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { useGetUsersByIds } from '@audius/common/api'
-import { Status } from '@audius/common/models'
-import { musicConfettiActions, TOKEN_LISTING_MAP } from '@audius/common/store'
+import { ID, Status } from '@audius/common/models'
+import {
+  musicConfettiActions,
+  tippingSelectors,
+  toastActions,
+  TOKEN_LISTING_MAP
+} from '@audius/common/store'
 import {
   Button,
   Flex,
@@ -11,8 +16,8 @@ import {
   Paper,
   Text
 } from '@audius/harmony'
-import { Form, Formik, useFormikContext } from 'formik'
-import { useDispatch } from 'react-redux'
+import { Form, Formik, FormikHelpers, useFormikContext } from 'formik'
+import { useDispatch, useSelector } from 'react-redux'
 import { PieChart, Pie, Tooltip, Cell } from 'recharts'
 
 import { TextField } from 'components/form-fields'
@@ -24,16 +29,22 @@ import { audiusSdk } from 'services/audius-sdk'
 import { encodeHashId } from 'utils/hashIds'
 
 const { show: showConfetti } = musicConfettiActions
+const { getDonatingTo } = tippingSelectors
+const { toast } = toastActions
 
 const messages = {
   title: 'Split Donation',
   description: 'Split your donation between multiple creators',
   amountInputLabel: 'Donation Amount',
   donateButtonLabel: 'Donate',
+  donatingButtonLabel: 'Donating...',
   selectPresetLabel: 'Split Preset',
   configureLabel: 'Configure your donation',
   usersListLabel: 'Selected Users',
-  piechartLabel: 'Donation Breakdown'
+  piechartLabel: 'Donation Breakdown',
+  successfullyDonated: 'Successfully donated!',
+  noUsersSelected: 'No users selected',
+  noUsersDescription: 'Select by clicking donate on a profile page!'
 }
 
 const header = <Header primary={messages.title} />
@@ -41,14 +52,22 @@ const header = <Header primary={messages.title} />
 // prod
 // const FEATURED_ARTIST_IDS = [50672, 207676588, 985480]
 const FEATURED_ARTIST_IDS = [333792732, 453008334]
+const MOST_LISTENED_ARTIST_IDS = [453008334, 333792732]
 
 const presetOptions = [
   { value: 'featured', label: 'Featured Creators' },
   { value: 'custom', label: 'Custom Selection' },
-  { value: 'favorite', label: 'Your Favorite Creators' }
+  { value: 'favorite', label: 'Your Most Listened' }
 ]
 
-const initialValues = {
+type FormValues = {
+  amount: number | undefined
+  preset: 'featured' | 'custom' | 'favorite'
+  userIds: ID[]
+}
+
+const initialValues: FormValues = {
+  amount: undefined,
   preset: 'featured',
   userIds: []
 }
@@ -83,15 +102,24 @@ const CustomPieChart = (props: CustomPieChartProps) => {
 
 export default CustomPieChart
 
-const SplitDonationForm = () => {
-  const { values, setFieldValue } = useFormikContext<typeof initialValues>()
+type SplitDonationFormProps = {
+  isLoading: boolean
+}
+
+const SplitDonationForm = (props: SplitDonationFormProps) => {
+  const { isLoading } = props
+  const { values, setFieldValue } = useFormikContext<FormValues>()
+  const customSelectionUserIds = useSelector(getDonatingTo)
 
   const userIds = useMemo(() => {
-    if (values.preset === 'featured') {
-      return FEATURED_ARTIST_IDS
-    }
-    return []
-  }, [values])
+    return (
+      {
+        featured: FEATURED_ARTIST_IDS,
+        custom: customSelectionUserIds,
+        favorite: MOST_LISTENED_ARTIST_IDS
+      }[values.preset] ?? []
+    )
+  }, [values, customSelectionUserIds])
 
   const { data: users, status: usersStatus } = useGetUsersByIds({
     ids: userIds
@@ -105,10 +133,10 @@ const SplitDonationForm = () => {
     return (
       users?.map((user) => ({
         name: user.name,
-        value: 1
+        value: (values.amount ?? 0) / userIds.length
       })) ?? []
     )
-  }, [users])
+  }, [users, values, userIds])
 
   return (
     <Flex gap='l' alignItems='flex-start'>
@@ -129,31 +157,47 @@ const SplitDonationForm = () => {
             name='preset'
             label={messages.selectPresetLabel}
           />
-          <Button variant='primary' type='submit' fullWidth>
-            {messages.donateButtonLabel}
+          <Button
+            variant='primary'
+            type='submit'
+            fullWidth
+            isLoading={isLoading}
+          >
+            {isLoading
+              ? messages.donatingButtonLabel
+              : messages.donateButtonLabel}
           </Button>
         </Paper>
-        <Paper
-          direction='column'
-          justifyContent='center'
-          gap='m'
-          p='xl'
-          alignItems='flex-start'
-        >
-          <Text variant='title'>{messages.piechartLabel}</Text>
-          {usersStatus === Status.LOADING ? (
-            <LoadingSpinner />
-          ) : (
-            <CustomPieChart data={piechartData} />
-          )}
-        </Paper>
+        {userIds?.length && values.amount ? (
+          <Paper
+            direction='column'
+            justifyContent='center'
+            gap='m'
+            p='xl'
+            alignItems='flex-start'
+          >
+            <Text variant='title'>{messages.piechartLabel}</Text>
+            {usersStatus === Status.LOADING ? (
+              <LoadingSpinner />
+            ) : (
+              <CustomPieChart data={piechartData} />
+            )}
+          </Paper>
+        ) : null}
       </Flex>
       <Paper direction='column' gap='m' p='xl' alignItems='flex-start'>
         <Text variant='title'>{messages.usersListLabel}</Text>
         {usersStatus !== Status.LOADING && users?.length === 0 ? (
-          <Flex direction='column' gap='m' alignItems='center'>
+          <Flex
+            direction='column'
+            gap='m'
+            alignItems='center'
+            w='368px'
+            mv='3xl'
+          >
             <IconUserList color='subdued' size='3xl' />
-            <Text variant='body'>No users selected</Text>
+            <Text variant='body'>{messages.noUsersSelected}</Text>
+            <Text variant='body'>{messages.noUsersDescription}</Text>
           </Flex>
         ) : (
           <UserList
@@ -176,12 +220,18 @@ const SplitDonationForm = () => {
 
 export const SplitDonationPage = () => {
   const dispatch = useDispatch()
+  const [isLoading, setIsLoading] = useState(false)
+
   const handleSubmit = useCallback(
-    async (formValues: any) => {
-      const { amount, userIds } = formValues
+    async (
+      values: FormValues,
+      { setFieldValue }: FormikHelpers<FormValues>
+    ) => {
+      setIsLoading(true)
+      const { amount, userIds } = values
       const sdk = await audiusSdk()
 
-      const amountPerUser = amount / userIds.length
+      const amountPerUser = (amount ?? 0) / userIds.length
 
       try {
         const result = await sdk.users.sendSplitDonations({
@@ -191,15 +241,18 @@ export const SplitDonationPage = () => {
               amountPerUser * 10 ** TOKEN_LISTING_MAP.AUDIO.decimals
             )
           })),
-          total: BigInt(amount * 10 ** TOKEN_LISTING_MAP.AUDIO.decimals)
+          total: BigInt((amount ?? 0) * 10 ** TOKEN_LISTING_MAP.AUDIO.decimals)
         })
 
         console.log('Successfully sent split donation', result)
 
+        setFieldValue('amount', undefined)
         dispatch(showConfetti())
+        dispatch(toast({ content: `Successfully donated ${amount} $AUDIO` }))
       } catch (e) {
         console.error(e)
       }
+      setIsLoading(false)
     },
     [dispatch]
   )
@@ -212,7 +265,7 @@ export const SplitDonationPage = () => {
     >
       <Formik initialValues={initialValues} onSubmit={handleSubmit}>
         <Form>
-          <SplitDonationForm />
+          <SplitDonationForm isLoading={isLoading} />
         </Form>
       </Formik>
     </Page>

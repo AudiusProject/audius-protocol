@@ -1,7 +1,14 @@
+import { useIsManagedAccount } from '@audius/common/hooks'
 import { ID } from '@audius/common/models'
-import { accountSelectors } from '@audius/common/store'
+import {
+  accountSelectors,
+  tippingActions,
+  tippingSelectors
+} from '@audius/common/store'
+import { Button, IconCheck, IconTokenGold } from '@audius/harmony'
 import cn from 'classnames'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
+import { useDispatch } from 'react-redux'
 import { animated } from 'react-spring'
 
 import { useSelector } from 'common/hooks/useSelector'
@@ -15,6 +22,7 @@ import { TipAudioButton } from 'components/tipping/tip-audio/TipAudioButton'
 import { OpacityTransition } from 'components/transition-container/OpacityTransition'
 import UploadChip from 'components/upload/UploadChip'
 import ProfilePageBadge from 'components/user-badges/ProfilePageBadge'
+import { useAuthenticatedCallback } from 'hooks/useAuthenticatedCallback'
 import { Type } from 'pages/profile-page/components/SocialLink'
 import SocialLinkInput from 'pages/profile-page/components/SocialLinkInput'
 import { ProfileTopTags } from 'pages/profile-page/components/desktop/ProfileTopTags'
@@ -22,7 +30,10 @@ import { ProfileTopTags } from 'pages/profile-page/components/desktop/ProfileTop
 import { ProfileBio } from './ProfileBio'
 import { ProfileMutuals } from './ProfileMutuals'
 import styles from './ProfilePage.module.css'
+
 const getAccountUser = accountSelectors.getAccountUser
+const { donateTo } = tippingActions
+const { getDonatingTo } = tippingSelectors
 
 const messages = {
   aboutYou: 'About You',
@@ -30,7 +41,9 @@ const messages = {
   location: 'Location',
   socialHandles: 'Social Handles',
   website: 'Website',
-  donate: 'Donate'
+  donate: 'Donate',
+  supportViaDonation: 'Donate',
+  isDonatingTo: 'Donating!'
 }
 
 type ProfileLeftNavProps = {
@@ -60,6 +73,45 @@ type ProfileLeftNavProps = {
   instagramVerified: boolean
   tikTokVerified: boolean
   isOwner: boolean
+}
+
+type DonateAudioButtonProps = {
+  userId: ID
+}
+
+const DonateAudioButton = (props: DonateAudioButtonProps) => {
+  const { userId } = props
+  const isManagedAccount = useIsManagedAccount()
+  const dispatch = useDispatch()
+  const isDonatingTo = useSelector((state) =>
+    getDonatingTo(state).includes(userId)
+  )
+
+  const handleClick = useAuthenticatedCallback(() => {
+    dispatch(donateTo({ userId }))
+  }, [dispatch, userId])
+
+  if (isManagedAccount) {
+    return null
+  }
+
+  return (
+    <Button
+      variant='primary'
+      css={{ width: '100%' }}
+      iconLeft={() =>
+        isDonatingTo ? (
+          <IconCheck fill='white'></IconCheck>
+        ) : (
+          <IconTokenGold size='m' />
+        )
+      }
+      isStaticIcon
+      onClick={handleClick}
+    >
+      {isDonatingTo ? messages.isDonatingTo : messages.supportViaDonation}
+    </Button>
+  )
 }
 
 export const ProfileLeftNav = (props: ProfileLeftNavProps) => {
@@ -97,6 +149,12 @@ export const ProfileLeftNav = (props: ProfileLeftNavProps) => {
   const renderTipAudioButton = (_: any, style: object) => (
     <animated.div className={styles.tipAudioButtonContainer} style={style}>
       <TipAudioButton />
+    </animated.div>
+  )
+
+  const renderSupportViaDonationButton = (_: any, style: object) => (
+    <animated.div className={styles.tipAudioButtonContainer} style={style}>
+      <DonateAudioButton userId={userId} />
     </animated.div>
   )
 
@@ -197,7 +255,10 @@ export const ProfileLeftNav = (props: ProfileLeftNavProps) => {
           tikTokHandle={tikTokHandle}
         />
         {!accountUser || accountUser.user_id !== userId ? (
-          <OpacityTransition render={renderTipAudioButton} />
+          <>
+            <OpacityTransition render={renderTipAudioButton} />
+            <OpacityTransition render={renderSupportViaDonationButton} />
+          </>
         ) : null}
         {allowAiAttribution ? (
           <div className={styles.aiGeneratedCalloutContainer}>

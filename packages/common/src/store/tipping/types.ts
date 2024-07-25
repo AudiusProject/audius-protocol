@@ -62,6 +62,7 @@ export type TippingState = {
   }
   tipToDisplay: Nullable<UserTip>
   showTip: boolean
+  donatingTo: ID[]
 }
 
 export type RefreshSupportPayloadAction = {

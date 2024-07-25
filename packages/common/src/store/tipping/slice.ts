@@ -27,7 +27,8 @@ const initialState: TippingState = {
     trackId: null
   },
   tipToDisplay: null,
-  showTip: false
+  showTip: false,
+  donatingTo: []
 }
 
 const slice = createSlice({
@@ -175,6 +176,9 @@ const slice = createSlice({
       _action: PayloadAction<{ userId: ID; trackId?: Nullable<ID> }>
     ) => {
       // triggers saga
+    },
+    donateTo: (state, action: PayloadAction<{ userId: ID }>) => {
+      state.donatingTo.push(action.payload.userId)
     }
   }
 })
@@ -198,7 +202,8 @@ export const {
   fetchUserSupporter,
   setTipToDisplay,
   setShowTip,
-  refreshTipGatedTracks
+  refreshTipGatedTracks,
+  donateTo
 } = slice.actions
 
 export const actions = slice.actions
