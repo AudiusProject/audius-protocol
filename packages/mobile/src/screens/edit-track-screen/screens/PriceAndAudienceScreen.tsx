@@ -185,6 +185,7 @@ export const PriceAndAudienceScreen = () => {
       disableSubmit={isFormInvalid}
       stopNavigation={usersMayLoseAccess}
       onSubmit={handleSubmit}
+      revertOnCancel
     >
       {isRemix ? <Hint m='l'>{messages.markedAsRemix}</Hint> : null}
       <ExpandableRadioGroup

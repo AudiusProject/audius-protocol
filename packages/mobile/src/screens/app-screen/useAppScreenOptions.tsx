@@ -114,7 +114,7 @@ export const useAppScreenOptions = (
                     color='subdued'
                     size='l'
                     {...other}
-                    onPress={navigation.goBack}
+                    onPress={() => navigation.pop()}
                   />
                 </View>
               )
