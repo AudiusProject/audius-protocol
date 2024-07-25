@@ -51,7 +51,7 @@ const header = <Header primary={messages.title} />
 
 // prod
 // const FEATURED_ARTIST_IDS = [50672, 207676588, 985480]
-const FEATURED_ARTIST_IDS = [333792732, 453008334]
+const FEATURED_ARTIST_IDS = [333792732, 453008334, 24056]
 const MOST_LISTENED_ARTIST_IDS = [453008334, 333792732]
 
 const presetOptions = [
@@ -80,10 +80,10 @@ type CustomPieChartProps = {
 const CustomPieChart = (props: CustomPieChartProps) => {
   const { data } = props
   return (
-    <PieChart width={600} height={400} css={{ overflow: 'visible' }}>
+    <PieChart width={500} height={400} css={{ overflow: 'visible' }}>
       <Pie
         data={data}
-        cx={300}
+        cx={250}
         cy={200}
         outerRadius={150}
         fill='#8884d8'
@@ -139,10 +139,17 @@ const SplitDonationForm = (props: SplitDonationFormProps) => {
   }, [users, values, userIds])
 
   return (
-    <Flex gap='l' alignItems='flex-start'>
+    <Flex
+      gap='l'
+      alignItems='flex-start'
+      css={{
+        display: 'grid',
+        'grid-template-columns': '2fr 1fr'
+      }}
+    >
       <Flex direction='column' gap='l' flex='1 1 auto'>
         <Paper direction='column' gap='l' p='xl'>
-          <Text variant='title' textAlign='left'>
+          <Text variant='title' css={{ alignSelf: 'left' }}>
             {messages.configureLabel}
           </Text>
           <TextField
@@ -168,15 +175,12 @@ const SplitDonationForm = (props: SplitDonationFormProps) => {
               : messages.donateButtonLabel}
           </Button>
         </Paper>
+
         {userIds?.length && values.amount ? (
-          <Paper
-            direction='column'
-            justifyContent='center'
-            gap='m'
-            p='xl'
-            alignItems='flex-start'
-          >
-            <Text variant='title'>{messages.piechartLabel}</Text>
+          <Paper direction='column' alignItems='center' gap='m' p='xl'>
+            <Text variant='title' css={{ alignSelf: 'flex-start' }}>
+              {messages.piechartLabel}
+            </Text>
             {usersStatus === Status.LOADING ? (
               <LoadingSpinner />
             ) : (
@@ -185,35 +189,33 @@ const SplitDonationForm = (props: SplitDonationFormProps) => {
           </Paper>
         ) : null}
       </Flex>
-      <Paper direction='column' gap='m' p='xl' alignItems='flex-start'>
-        <Text variant='title'>{messages.usersListLabel}</Text>
-        {usersStatus !== Status.LOADING && users?.length === 0 ? (
-          <Flex
-            direction='column'
-            gap='m'
-            alignItems='center'
-            w='368px'
-            mv='3xl'
-          >
-            <IconUserList color='subdued' size='3xl' />
-            <Text variant='body'>{messages.noUsersSelected}</Text>
-            <Text variant='body'>{messages.noUsersDescription}</Text>
-          </Flex>
-        ) : (
-          <UserList
-            hasMore={false}
-            loading={usersStatus === Status.LOADING}
-            userId={null}
-            users={users ?? []}
-            isMobile={false}
-            tag={'split-donation'}
-            loadMore={() => {}}
-            onClickArtistName={() => {}}
-            onFollow={() => {}}
-            onUnfollow={() => {}}
-          />
-        )}
-      </Paper>
+      <Flex direction='column' gap='l' flex='1 1 auto'>
+        <Paper direction='column' gap='m' p='xl' alignItems='center'>
+          <Text variant='title' css={{ alignSelf: 'flex-start' }}>
+            {messages.usersListLabel}
+          </Text>
+          {usersStatus !== Status.LOADING && users?.length === 0 ? (
+            <Flex direction='column' gap='m' alignItems='center' mv='3xl'>
+              <IconUserList color='subdued' size='3xl' />
+              <Text variant='body'>{messages.noUsersSelected}</Text>
+              <Text variant='body'>{messages.noUsersDescription}</Text>
+            </Flex>
+          ) : (
+            <UserList
+              hasMore={false}
+              loading={usersStatus === Status.LOADING}
+              userId={null}
+              users={users ?? []}
+              isMobile={false}
+              tag={'split-donation'}
+              loadMore={() => {}}
+              onClickArtistName={() => {}}
+              onFollow={() => {}}
+              onUnfollow={() => {}}
+            />
+          )}
+        </Paper>
+      </Flex>
     </Flex>
   )
 }
@@ -262,6 +264,7 @@ export const SplitDonationPage = () => {
       title={messages.title}
       description={messages.description}
       header={header}
+      css={{ textAlign: 'left' }}
     >
       <Formik initialValues={initialValues} onSubmit={handleSubmit}>
         <Form>
