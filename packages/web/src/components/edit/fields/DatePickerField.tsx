@@ -94,6 +94,7 @@ export const DatePickerField = (props: DatePickerFieldProps) => {
               date={moment(value)}
               onDateChange={(value) => {
                 helpers.setValue(value?.toString())
+                helpers.setTouched(true)
               }}
               isOutsideRange={(day) => {
                 if (futureDatesOnly) {

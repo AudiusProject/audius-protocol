@@ -23,9 +23,9 @@ import {
 } from '@audius/harmony-native'
 import { useLink } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { useSetTrackAvailabilityFields } from 'app/hooks/useSetTrackAvailabilityFields'
+import { useSetEntityAvailabilityFields } from 'app/hooks/useSetTrackAvailabilityFields'
 
-import { ExpandableRadio } from '../components/ExpandableRadio'
+import { ExpandableRadio } from '../ExpandableRadio'
 
 const { collectibleGatedRadio: messages } = priceAndAudienceMessages
 
@@ -49,7 +49,7 @@ export const CollectibleGatedRadioField = (
 
   const hasNoCollectibles = useHasNoCollectibles()
 
-  const { set: setTrackAvailabilityFields } = useSetTrackAvailabilityFields()
+  const setFields = useSetEntityAvailabilityFields()
   const [{ value: streamConditions }] =
     useField<Nullable<AccessConditions>>('stream_conditions')
   const [selectedNFTCollection, setSelectedNFTCollection] = useState(
@@ -61,16 +61,14 @@ export const CollectibleGatedRadioField = (
   // Update nft collection gate when availability selection changes
   useEffect(() => {
     if (selected) {
-      setTrackAvailabilityFields(
-        {
-          is_stream_gated: true,
-          stream_conditions: { nft_collection: selectedNFTCollection },
-          'field_visibility.remixes': false
-        },
-        true
-      )
+      setFields({
+        is_stream_gated: true,
+        stream_conditions: { nft_collection: selectedNFTCollection },
+        preview_start_seconds: null,
+        'field_visibility.remixes': false
+      })
     }
-  }, [selected, selectedNFTCollection, setTrackAvailabilityFields])
+  }, [selected, selectedNFTCollection, setFields])
 
   // Update nft collection gate when nft collection selection changes
   useEffect(() => {

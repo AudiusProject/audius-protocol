@@ -216,6 +216,7 @@ export type APIPlaylist = {
   cover_art_cids: Nullable<CoverArtSizes>
   is_stream_gated: boolean
   stream_conditions: Nullable<AccessConditions>
+  release_date?: string
 }
 
 export type APISearchPlaylist = Omit<

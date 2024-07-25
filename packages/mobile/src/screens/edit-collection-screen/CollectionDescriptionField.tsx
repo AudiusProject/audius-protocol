@@ -4,7 +4,7 @@ const messages = {
   label: 'Description'
 }
 
-export const PlaylistDescriptionField = () => {
+export const CollectionDescriptionField = () => {
   const name = 'description'
   const maxLength = 1000
 

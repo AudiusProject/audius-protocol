@@ -199,7 +199,6 @@ const VisibilityMenuFields = (props: VisibilityMenuFieldsProps) => {
   )
   const { initiallyPublic, entityType } = props
   const [field] = useField<VisibilityType>('visibilityType')
-  const hidePaidScheduled = !isPaidScheduledEnabled && entityType === 'album'
 
   return (
     <RadioGroup {...field}>
@@ -219,7 +218,9 @@ const VisibilityMenuFields = (props: VisibilityMenuFieldsProps) => {
             : undefined
         }
       />
-      {!initiallyPublic && !hidePaidScheduled ? (
+      {!initiallyPublic &&
+      (entityType === 'track' ||
+        (isPaidScheduledEnabled && entityType === 'album')) ? (
         <ModalRadioItem
           value='scheduled'
           label={messages.scheduledRelease}

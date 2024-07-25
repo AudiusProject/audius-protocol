@@ -18,17 +18,22 @@ import { useDispatch } from 'react-redux'
 
 import { Hint, IconCart } from '@audius/harmony-native'
 import { useNavigation } from 'app/hooks/useNavigation'
+import { useSetEntityAvailabilityFields } from 'app/hooks/useSetTrackAvailabilityFields'
 import { FormScreen } from 'app/screens/form-screen'
 
-import { EditPriceAndAudienceConfirmationDrawer } from '../components/EditPriceAndAudienceConfirmationDrawer'
-import { ExpandableRadio } from '../components/ExpandableRadio'
-import { ExpandableRadioGroup } from '../components/ExpandableRadioGroup'
-import { CollectibleGatedRadioField } from '../fields/GollectibleGatedRadioField'
-import { PremiumRadioField } from '../fields/PriceAndAudienceField/PremiumRadioField/PremiumRadioField'
-import { TRACK_PREVIEW } from '../fields/PriceAndAudienceField/PremiumRadioField/TrackPreviewField'
-import { TRACK_PRICE } from '../fields/PriceAndAudienceField/PremiumRadioField/TrackPriceField'
-import { SpecialAccessRadioField } from '../fields/SpecialAccessRadioField'
-import type { FormValues, RemixOfField } from '../types'
+import { EditPriceAndAudienceConfirmationDrawer } from '../../../screens/edit-track-screen/components/EditPriceAndAudienceConfirmationDrawer'
+import type {
+  FormValues,
+  RemixOfField
+} from '../../../screens/edit-track-screen/types'
+import { ExpandableRadio } from '../ExpandableRadio'
+import { ExpandableRadioGroup } from '../ExpandableRadioGroup'
+
+import { CollectibleGatedRadioField } from './GollectibleGatedRadioField'
+import { PremiumRadioField } from './PremiumRadioField/PremiumRadioField'
+import { TRACK_PREVIEW } from './PremiumRadioField/TrackPreviewField'
+import { TRACK_PRICE } from './PremiumRadioField/TrackPriceField'
+import { SpecialAccessRadioField } from './SpecialAccessRadioField'
 
 const publicAvailability = StreamTrackAvailabilityType.PUBLIC
 
@@ -43,6 +48,8 @@ export const PriceAndAudienceScreen = () => {
     'is_scheduled_release'
   )
   const [{ value: remixOf }] = useField<RemixOfField>('remix_of')
+  const [{ value: entityType }] = useField<string>('entityType')
+  const [{ value: isUpload }] = useField<boolean>('isUpload')
   const isRemix = !!remixOf
 
   const { isEnabled: isEditableAccessEnabled } = useFeatureFlag(
@@ -55,7 +62,6 @@ export const PriceAndAudienceScreen = () => {
     FeatureFlags.USDC_PURCHASES_UPLOAD
   )
 
-  const isUpload = !initialValues?.track_id
   const initialStreamConditions = initialValues?.stream_conditions ?? null
   const initialAvailability = useMemo(() => {
     if (isUsdcEnabled && isContentUSDCPurchaseGated(streamConditions)) {
@@ -107,6 +113,7 @@ export const PriceAndAudienceScreen = () => {
 
   const [{ value: price }, { error: priceError }] = useField(TRACK_PRICE)
   const [{ value: preview }, { error: previewError }] = useField(TRACK_PREVIEW)
+  const setFields = useSetEntityAvailabilityFields()
 
   const usdcGateIsInvalid = useMemo(() => {
     // first time user selects usdc purchase option
@@ -181,13 +188,40 @@ export const PriceAndAudienceScreen = () => {
     )
   }, [dispatch])
 
+  // Listen for `navigation.goBack` events and in the case of going back
+  // reset the availability fields.
+  // Note that this is a stop gap against a better model which would be to have
+  // each radio subgroup manage its own state. That requires a larger refactor.
+  useEffect(() => {
+    const listener = navigation.addListener('beforeRemove', ({ data }) => {
+      if (isFormInvalid && data.action.type === 'GO_BACK') {
+        setFields({
+          is_stream_gated: initialValues.is_stream_gated,
+          stream_conditions: initialValues.stream_conditions,
+          is_unlisted: initialValues.is_unlisted,
+          preview_start_seconds: initialValues.preview_start_seconds,
+          'field_visibility.genre': initialValues.field_visibility?.genre,
+          'field_visibility.mood': initialValues.field_visibility?.mood,
+          'field_visibility.tags': initialValues.field_visibility?.tags,
+          'field_visibility.share': initialValues.field_visibility?.share,
+          'field_visibility.play_count':
+            initialValues.field_visibility?.play_count,
+          'field_visibility.remixes': initialValues.field_visibility?.remixes
+        })
+      }
+    })
+    return () => {
+      navigation.removeListener('beforeRemove', listener)
+    }
+  }, [initialValues, navigation, setFields, isFormInvalid])
+
   return (
     <FormScreen
       title={messages.title}
       icon={IconCart}
       variant='white'
       disableSubmit={isFormInvalid}
-      stopNavigation={usersMayLoseAccess}
+      stopNavigation={!isUpload && usersMayLoseAccess}
       onSubmit={handleSubmit}
     >
       {isRemix ? <Hint m='l'>{messages.markedAsRemix}</Hint> : null}
@@ -208,14 +242,20 @@ export const PriceAndAudienceScreen = () => {
           disabled={disableUsdcGate}
           previousStreamConditions={previousStreamConditions}
         />
-        <SpecialAccessRadioField
-          disabled={disableSpecialAccessGate || disableSpecialAccessGateFields}
-          previousStreamConditions={previousStreamConditions}
-        />
-        <CollectibleGatedRadioField
-          disabled={disableCollectibleGate || disableCollectibleGateFields}
-          previousStreamConditions={previousStreamConditions}
-        />
+        {entityType === 'track' ? (
+          <SpecialAccessRadioField
+            disabled={
+              disableSpecialAccessGate || disableSpecialAccessGateFields
+            }
+            previousStreamConditions={previousStreamConditions}
+          />
+        ) : null}
+        {entityType === 'track' ? (
+          <CollectibleGatedRadioField
+            disabled={disableCollectibleGate || disableCollectibleGateFields}
+            previousStreamConditions={previousStreamConditions}
+          />
+        ) : null}
       </ExpandableRadioGroup>
       {!isUpload ? (
         <EditPriceAndAudienceConfirmationDrawer

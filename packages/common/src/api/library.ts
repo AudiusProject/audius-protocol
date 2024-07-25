@@ -58,7 +58,7 @@ const fetchLibraryCollections = async ({
       ? await sdk.full.users.getUserLibraryAlbums(requestParams)
       : await sdk.full.users.getUserLibraryPlaylists(requestParams)
   const collections = rawCollections
-    .map((r: APIActivityV2) => makeActivity(r))
+    .map((r) => makeActivity(r as APIActivityV2))
     .filter(removeNullable) as UserCollectionMetadata[]
   return collections
 }

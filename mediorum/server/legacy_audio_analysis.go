@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -13,16 +14,22 @@ import (
 	"gocloud.dev/gcerrors"
 )
 
-const MAX_TRIES = 5
+const MAX_TRIES = 3
 
 // scroll qm cids
 func (ss *MediorumServer) startLegacyAudioAnalyzer() {
-	ctx := context.Background()
-	logger := ss.logger
-
 	work := make(chan *QmAudioAnalysis)
 
-	numWorkers := 4
+	numWorkers := 5
+	numWorkersOverride := os.Getenv("LEGACY_AUDIO_ANALYSIS_WORKERS")
+	if numWorkersOverride != "" {
+		num, err := strconv.ParseInt(numWorkersOverride, 10, 64)
+		if err != nil {
+			ss.logger.Warn("failed to parse LEGACY_AUDIO_ANALYSIS_WORKERS", "err", err, "LEGACY_AUDIO_ANALYSIS_WORKERS", numWorkersOverride)
+		} else {
+			numWorkers = int(num)
+		}
+	}
 
 	// start workers
 	for i := 0; i < numWorkers; i++ {
@@ -31,16 +38,43 @@ func (ss *MediorumServer) startLegacyAudioAnalyzer() {
 
 	time.Sleep(time.Minute)
 
-	// find work
+	// find work, requerying every 15 minutes
+	ticker := time.NewTicker(15 * time.Minute)
+	defer ticker.Stop()
+
+	for {
+		ctx, cancel := context.WithTimeout(context.Background(), 15*time.Minute)
+		go func() {
+			defer cancel()
+			ss.findLegacyAudioAnalysisJobs(ctx, work)
+		}()
+
+		select {
+		case <-ticker.C:
+			cancel()
+		}
+
+		time.Sleep(time.Minute)
+	}
+}
+
+func (ss *MediorumServer) findLegacyAudioAnalysisJobs(ctx context.Context, work chan<- *QmAudioAnalysis) {
 	var cid string
 	rows, _ := ss.pgPool.Query(ctx, "select key from qm_cids where key not like '%.jpg' order by random()")
 	_, err := pgx.ForEachRow(rows, []any{&cid}, func() error {
+		select {
+		case <-ctx.Done():
+			// if the context is done, stop processing
+			return ctx.Err()
+		default:
+		}
 
 		if strings.HasSuffix(cid, ".jpg") {
 			return nil
 		}
 
 		preferredHosts, isMine := ss.rendezvousAllHosts(cid)
+		isMine = isMine || (ss.Config.Env == "prod" && ss.Config.Self.Host == "https://creatornode2.audius.co")
 		if !isMine {
 			return nil
 		}
@@ -57,15 +91,25 @@ func (ss *MediorumServer) startLegacyAudioAnalyzer() {
 		}
 
 		if analysis.Status != JobStatusDone && analysis.ErrorCount < MAX_TRIES {
-			work <- analysis
+			select {
+			case work <- analysis:
+				// successfully sent the job to the channel
+			case <-ctx.Done():
+				// if the context is done, stop processing
+				return ctx.Err()
+			}
 		}
 
 		return nil
 	})
-	if err != nil {
-		logger.Error("failed to find qm rows", "err", err)
-	}
 
+	if err != nil {
+		if err == context.Canceled {
+			ss.logger.Info("findLegacyAudioAnalysisJobs terminated")
+		} else {
+			ss.logger.Error("failed to find qm rows", "err", err)
+		}
+	}
 }
 
 func (ss *MediorumServer) startLegacyAudioAnalysisWorker(n int, work chan *QmAudioAnalysis) {

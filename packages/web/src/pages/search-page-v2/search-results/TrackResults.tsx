@@ -10,7 +10,7 @@ import {
   searchActions,
   SearchKind
 } from '@audius/common/store'
-import { Flex, OptionsFilterButton, Text } from '@audius/harmony'
+import { Flex, OptionsFilterButton, Text, useTheme } from '@audius/harmony'
 import { css } from '@emotion/css'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -21,12 +21,9 @@ import { useIsMobile } from 'hooks/useIsMobile'
 import { useMainContentRef } from 'pages/MainContentContext'
 
 import { NoResultsTile } from '../NoResultsTile'
+import { SortMethodFilterButton } from '../SortMethodFilterButton'
 import { ViewLayout, viewLayoutOptions } from '../types'
-import {
-  ALL_RESULTS_LIMIT,
-  useSearchParams,
-  useUpdateSearchParams
-} from '../utils'
+import { ALL_RESULTS_LIMIT, useSearchParams } from '../utils'
 
 const { makeGetLineupMetadatas } = lineupSelectors
 const { getBuffering, getPlaying } = playerSelectors
@@ -174,18 +171,17 @@ export const TrackResults = (props: TrackResultsProps) => {
 
 export const TrackResultsPage = () => {
   const isMobile = useIsMobile()
-  const [tracksLayout, setTracksLayout] = useState<ViewLayout>('list')
-  const updateSortParam = useUpdateSearchParams('sortMethod')
+  const { color } = useTheme()
 
-  const searchParams = useSearchParams()
-  const { sortMethod } = searchParams
+  const [tracksLayout, setTracksLayout] = useState<ViewLayout>('list')
 
   return (
     <Flex
       direction='column'
       gap='xl'
       wrap='wrap'
-      p={isMobile ? 'm' : undefined}
+      pt={isMobile ? 'l' : undefined}
+      css={isMobile ? { backgroundColor: color.background.default } : {}}
     >
       {!isMobile ? (
         <Flex justifyContent='space-between' alignItems='center'>
@@ -193,17 +189,7 @@ export const TrackResultsPage = () => {
             {messages.tracks}
           </Text>
           <Flex gap='s'>
-            <OptionsFilterButton
-              selection={sortMethod ?? 'relevant'}
-              variant='replaceLabel'
-              optionsLabel={messages.sortOptionsLabel}
-              onChange={updateSortParam}
-              options={[
-                { label: 'Most Relevant', value: 'relevant' },
-                { label: 'Most Popular', value: 'popular' },
-                { label: 'Most Recent', value: 'recent' }
-              ]}
-            />
+            <SortMethodFilterButton />
             <OptionsFilterButton
               selection={tracksLayout}
               variant='replaceLabel'

@@ -1,7 +1,7 @@
 import { useCallback, useContext, useEffect } from 'react'
 
 import { SearchCategory } from '@audius/common/src/api/search'
-import { Flex } from '@audius/harmony'
+import { Flex, useTheme } from '@audius/harmony'
 import { intersection, isEmpty } from 'lodash'
 import { generatePath, useParams } from 'react-router-dom'
 import { useSearchParams } from 'react-router-dom-v5-compat'
@@ -52,7 +52,8 @@ const useShowSearchResults = () => {
 
 export const SearchPageV2 = () => {
   const isMobile = useIsMobile()
-  const { category } = useParams<{ category: CategoryKey }>()
+  const { category: categoryParam } = useParams<{ category: CategoryKey }>()
+  const category = isMobile ? categoryParam ?? 'profiles' : categoryParam
   const { history } = useHistoryContext()
   const [urlSearchParams] = useSearchParams()
   const query = urlSearchParams.get('query')
@@ -62,6 +63,7 @@ export const SearchPageV2 = () => {
   const hasDownloads = urlSearchParams.get('hasDownloads')
   const showSearchResults = useShowSearchResults()
   const { setStackReset } = useContext(RouterContext)
+  const { color } = useTheme()
 
   // Set nav header
   const { setLeft, setCenter, setRight } = useContext(NavContext)!
@@ -134,8 +136,14 @@ export const SearchPageV2 = () => {
         query ?? ''
       )}
       header={header}
+      fullHeight
     >
-      <Flex direction='column' w='100%'>
+      <Flex
+        direction='column'
+        w='100%'
+        h='100%'
+        style={isMobile ? { backgroundColor: color.background.white } : {}}
+      >
         {isMobile ? header : null}
         {!showSearchResults ? (
           <Flex
