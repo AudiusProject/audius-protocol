@@ -396,6 +396,7 @@ export class TracksApi extends GeneratedTracksApi {
   public async getPurchaseTrackTransaction(
     params: GetPurchaseTrackTransactionRequest
   ) {
+    console.log('asdf getPurchaseTrackTransaction params: ', params)
     const {
       userId,
       trackId,
@@ -416,7 +417,7 @@ export class TracksApi extends GeneratedTracksApi {
       trackId: params.trackId, // use hashed trackId
       userId: params.userId // use hashed userId
     })
-
+    console.log('asdf track access: ', { track })
     // Validate purchase attempt
     if (!track) {
       throw new Error('Track not found.')
@@ -518,6 +519,7 @@ export class TracksApi extends GeneratedTracksApi {
     } else {
       // Use the authed wallet's userbank and relay
       const ethWallet = await this.auth.getAddress()
+      console.log('asdf ethWallet: ', ethWallet)
       this.logger.debug(
         `Using userBank ${await this.claimableTokensClient.deriveUserBank({
           ethWallet,

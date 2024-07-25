@@ -257,7 +257,6 @@ export const PremiumContentPurchaseModal = () => {
         ? PurchaseVendor.COINFLOW
         : PurchaseVendor.STRIPE
     })
-
   // Attempt recovery once on re-mount of the form
   useEffect(() => {
     dispatch(startRecoveryIfNecessary)

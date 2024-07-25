@@ -3,10 +3,13 @@ import { useCallback } from 'react'
 import { USDC } from '@audius/fixed-decimal'
 import BN from 'bn.js'
 import { useDispatch, useSelector } from 'react-redux'
+import { put, call } from 'typed-redux-saga'
 
-import { UserCollectionMetadata } from '~/models'
+import { Kind, UserCollectionMetadata } from '~/models'
 import { PurchaseMethod, PurchaseVendor } from '~/models/PurchaseContent'
 import { UserTrackMetadata } from '~/models/Track'
+import { cacheActions, getContext, accountActions } from '~/store'
+import { fetchAccountSucceeded, signedIn } from '~/store/account/slice'
 import {
   PurchaseableContentType,
   PurchaseContentPage,
@@ -36,6 +39,49 @@ const {
   getPurchaseContentError,
   getPurchaseContentPage
 } = purchaseContentSelectors
+
+export function* fetchAccountAsync({ isSignUp = false }) {
+  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const remoteConfigInstance = yield* getContext('remoteConfigInstance')
+
+  yield* put(accountActions.fetchAccountRequested())
+
+  const account = yield* call(audiusBackendInstance.getAccount)
+  console.log('asdf account: ', account)
+  if (account) {
+    account.handle = 'guest'
+  }
+
+  // Set the userId in the remoteConfigInstance
+  remoteConfigInstance.setUserId(account.user_id)
+
+  // yield call(recordIPIfNotRecent, account.handle)
+
+  // Cache the account and put the signedIn action. We're done.
+  yield call(cacheAccount, account)
+  yield put(signedIn({ account, isSignUp }))
+}
+
+function* cacheAccount(account) {
+  const localStorage = yield* getContext('localStorage')
+  const collections = account.playlists || []
+
+  yield put(
+    cacheActions.add(Kind.USERS, [
+      { id: account.user_id, uid: 'USER_ACCOUNT', metadata: account }
+    ])
+  )
+
+  const formattedAccount = {
+    userId: account.user_id,
+    collections
+  }
+
+  yield call([localStorage, 'setAudiusAccount'], formattedAccount)
+  yield call([localStorage, 'setAudiusAccountUser'], account)
+
+  yield put(fetchAccountSucceeded(formattedAccount))
+}
 
 export const usePurchaseContentFormConfiguration = ({
   metadata,

@@ -28,6 +28,7 @@ export const CoinflowOnrampModal = () => {
     onClose,
     onClosed
   } = useCoinflowOnrampModal()
+  console.log('asdf coinflow onramp data: ', purchaseMetadata)
   const dispatch = useDispatch()
   const [transaction, setTransaction] = useState<
     VersionedTransaction | undefined
@@ -74,6 +75,7 @@ export const CoinflowOnrampModal = () => {
     >
       {showContent ? (
         <CoinflowPurchase
+          email={'fdsafdsa@audius.co'}
           transaction={transaction}
           wallet={adapter.wallet}
           chargebackProtectionData={purchaseMetadata ? [purchaseMetadata] : []}

@@ -1,6 +1,7 @@
 import { pick } from 'lodash'
 
 import { EntityManagerClient } from '../services/dataContracts/EntityManagerClient'
+import { CurrentUser } from '../userStateManager'
 import { Nullable, UserMetadata, Utils } from '../utils'
 
 import type { ServiceProvider } from './ServiceProvider'
@@ -386,6 +387,82 @@ export class Users extends Base {
             data: newMetadata
           })
         )
+      await this._waitForDiscoveryToIndexUser(
+        userId,
+        manageEntityResponse.txReceipt.blockNumber
+      )
+      // Update libs instance with new user metadata object
+      this.userStateManager.setCurrentUser({ ...newMetadata })
+
+      return {
+        newMetadata,
+        blockHash: manageEntityResponse.txReceipt.blockHash,
+        blockNumber: manageEntityResponse.txReceipt.blockNumber
+      }
+    } catch (e) {
+      const errorMsg = `createEntityManagerUserV2() error: ${e}`
+      if (e instanceof Error) {
+        e.message = errorMsg
+        throw e
+      }
+      throw new Error(errorMsg)
+    }
+  }
+
+  async createEntityManagerGuestUser(newMetadata: CurrentUser) {
+    console.log('asdf createEntityManagerGuestUser')
+    this.REQUIRES(Services.DISCOVERY_PROVIDER)
+
+    try {
+      // Create the user with EntityMananer
+      const userId = await this._generateUserId()
+      // Ensure metadata has expected properties
+      console.log(
+        'asdf createEntityManagerGuestUser userId',
+        userId,
+
+        newMetadata
+      )
+
+      // this._validateUserMetadata(newMetadata)
+      console.log('asdf createEntityManagerGuestUser validated', newMetadata)
+
+      newMetadata.is_storage_v2 = true
+      newMetadata.wallet = this.web3Manager.getWalletAddress()
+      console.log(
+        'asdf createEntityManagerGuestUser newMetadata.wallet',
+        newMetadata.wallet
+      )
+      newMetadata.handle = null
+      newMetadata.user_id = userId
+      this.userStateManager.setCurrentUser({
+        ...newMetadata,
+        // Initialize counts to be 0. We don't want to write this data to backends ever really
+        // (hence the cleanUserMetadata above), but we do want to make sure clients
+        // can properly "do math" on these numbers.
+        followee_count: 0,
+        follower_count: 0,
+        repost_count: 0
+      })
+      console.log('asdf createEntityManagerGuestUser newMetadata', newMetadata)
+
+      const cid = await Utils.fileHasher.generateMetadataCidV1(newMetadata)
+      const manageEntityResponse =
+        await this.contracts.EntityManagerClient!.manageEntity(
+          userId,
+          EntityManagerClient.EntityType.USER,
+          userId,
+          EntityManagerClient.Action.CREATE,
+          JSON.stringify({
+            cid: null,
+            data: null
+          })
+        )
+      console.log(
+        'asdf createEntityManagerGuestUser manageEntityResponse',
+        manageEntityResponse
+      )
+
       await this._waitForDiscoveryToIndexUser(
         userId,
         manageEntityResponse.txReceipt.blockNumber

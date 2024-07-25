@@ -135,10 +135,13 @@ const LockedGatedContentSection = ({
   const isUSDCPurchaseGated = isContentUSDCPurchaseGated(streamConditions)
   const { spacing } = useTheme()
 
-  const handlePurchase = useAuthenticatedCallback(() => {
+  const handlePurchase = useCallback(() => {
+    console.log('asdf handle purchase')
+
     if (lockedContentModalVisibility) {
       setLockedContentModalVisibility(false)
     }
+    console.log('asdf open premium content purchase modal')
     openPremiumContentPurchaseModal(
       { contentId, contentType },
       { source: premiumModalSource ?? ModalSource.TrackDetails }

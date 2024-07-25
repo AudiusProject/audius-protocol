@@ -210,6 +210,54 @@ export class Account extends Base {
     }
   }
 
+  async guestSignUp(
+    email: string,
+    metadata: UserMetadata,
+    host = (typeof window !== 'undefined' && window.location.origin) || null,
+    generateRecoveryLink = true
+  ) {
+    console.log('asdf account guest sign up')
+    const phases = {
+      CREATE_USER_RECORD: 'CREATE_USER_RECORD',
+      HEDGEHOG_SIGNUP: 'HEDGEHOG_SIGNUP',
+      SELECT_STORAGE_NODE: 'SELECT_STORAGE_NODE',
+      ADD_USER: 'ADD_USER',
+      UPLOAD_PROFILE_IMAGES: 'UPLOAD_PROFILE_IMAGES'
+    }
+    let phase = ''
+    try {
+      this.REQUIRES(Services.CREATOR_NODE, Services.IDENTITY_SERVICE)
+
+      this.REQUIRES(Services.HEDGEHOG)
+      // If an owner wallet already exists, don't try to recreate it
+      phase = phases.HEDGEHOG_SIGNUP
+      const ownerWallet = await this.hedgehog.signUp({
+        username: email,
+        password: 'TemporaryPassword'
+      })
+      console.log('asdf account hedgehog sign up: ', ownerWallet)
+
+      this.web3Manager.setOwnerWallet(ownerWallet)
+      if (generateRecoveryLink) {
+        await this.generateRecoveryLink({ handle: '', host })
+      }
+      console.log('asdf account hedgehog sign up: ', ownerWallet)
+
+      // Add user to chain
+      phase = phases.ADD_USER
+      const { newMetadata, blockHash, blockNumber } =
+        await this.User.createEntityManagerGuestUser(metadata)
+
+      return { blockHash, blockNumber, userId: newMetadata.user_id }
+    } catch (e: any) {
+      return {
+        error: e.message,
+        phase,
+        errorStatus: e.response ? e.response.status : null
+      }
+    }
+  }
+
   /**
    * Generates and sends a recovery email for a user
    */
@@ -243,7 +291,6 @@ export class Account extends Base {
   }
 
   async resetPassword(args: Parameters<Hedgehog['resetPassword']>[0]) {
-    this.REQUIRES(Services.HEDGEHOG)
     return await this.hedgehog.resetPassword(args)
   }
 

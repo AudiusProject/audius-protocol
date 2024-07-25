@@ -55,7 +55,7 @@ export const getUsers = (
   } else if (props && props.handles) {
     const users: { [handle: string]: User } = {}
     props.handles.forEach((handle) => {
-      const id = getUserByHandle(state, { handle: handle.toLowerCase() })
+      const id = getUserByHandle(state, { handle: handle?.toLowerCase() })
       if (id) {
         const user = getUser(state, { id })
         if (user) users[handle] = user

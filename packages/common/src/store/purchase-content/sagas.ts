@@ -5,7 +5,11 @@ import { sumBy } from 'lodash'
 import { takeLatest } from 'redux-saga/effects'
 import { call, put, race, select, take } from 'typed-redux-saga'
 
-import { PurchaseableContentMetadata, isPurchaseableAlbum } from '~/hooks'
+import {
+  PurchaseableContentMetadata,
+  fetchAccountAsync,
+  isPurchaseableAlbum
+} from '~/hooks'
 import { Kind } from '~/models'
 import { FavoriteSource, Name } from '~/models/Analytics'
 import { ErrorLevel } from '~/models/ErrorReporting'
@@ -319,10 +323,12 @@ function* purchaseTrackWithCoinflow(args: {
   price: number
   extraAmount?: number
 }) {
+  console.log('asdf purchaseTrackWithCoinflow: ', { args })
   const { sdk, userId, trackId, price, extraAmount = 0 } = args
 
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const wallet = yield* call(getRootSolanaAccount, audiusBackendInstance)
+  console.log('asdf getRootSolanaAccount: ', { wallet: wallet.publicKey })
 
   const params = {
     price: args.price,
@@ -344,6 +350,7 @@ function* purchaseTrackWithCoinflow(args: {
     contentType: PurchaseableContentType.TRACK
   })
   const total = price + extraAmount
+  console.log('asdf purchaseMetadata: ', purchaseMetadata)
   yield* put(
     coinflowOnrampModalActions.open({
       amount: Number(USDC(total).toString()),
@@ -541,12 +548,30 @@ function* doStartPurchaseContentFlow({
 
   try {
     // get user & user bank
-    const purchaserUserId = yield* select(getUserId)
-    if (!purchaserUserId) {
-      throw new Error('Failed to fetch purchasing user id')
+    const feePayerOverride = yield* select(getFeePayer)
+    const currentUser = yield* select(getAccountUser)
+    const libs = yield* call(audiusBackendInstance.getAudiusLibs)
+    if (!currentUser) {
+      yield* call(
+        audiusBackendInstance.guestSignUp,
+        'isaac+july25@audius.co',
+        feePayerOverride
+      )
+      yield* fetchAccountAsync({ isSignUp: true })
+    } else {
+      yield* call(
+        [libs.userStateManager, libs.userStateManager.setCurrentUser],
+        currentUser
+      )
     }
 
+    const purchaserUserId = yield* select(getUserId)
+
     const userBank = yield* call(getUSDCUserBank)
+
+    console.log('asdf doStartPurchaseContentFlow userBank: ', {
+      userBank
+    })
     const tokenAccountInfo = yield* call(
       getTokenAccountInfo,
       audiusBackendInstance,
