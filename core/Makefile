@@ -10,6 +10,12 @@ dev-content-2::
 dev-content-3::
 	@go run main.go -env-file=./infra/dev_config/content-three.env
 
+up:
+	cd infra && docker compose up --build -d
+
+down:
+	cd infra && docker compose down
+
 deps::
 	@go install github.com/onsi/ginkgo/v2/ginkgo@v2.19.0
 	@brew install protobuf

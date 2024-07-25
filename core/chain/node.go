@@ -28,8 +28,12 @@ func NewNode(logger *common.Logger, c *config.Config, pool *pgxpool.Pool) (*nm.N
 	config.TxIndex.TableEvents = "core_events"
 	config.TxIndex.TableAttributes = "core_attributes"
 
-	config.RPC.ListenAddress = c.RPCladdr
-	config.P2P.ListenAddress = c.P2PLaddr
+	if c.RPCladdr != "" {
+		config.RPC.ListenAddress = c.RPCladdr
+	}
+	if c.P2PLaddr != "" {
+		config.P2P.ListenAddress = c.P2PLaddr
+	}
 
 	app := NewKVStoreApplication(logger, pool)
 
