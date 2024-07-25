@@ -7,6 +7,8 @@ import type { ScreenProps } from 'app/components/core'
 import { Screen } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
 
+import { useRevertOnCancel } from './useRevertOnCancel'
+
 const messages = {
   done: 'Done',
   clear: 'Clear'
@@ -19,6 +21,7 @@ export type FormScreenProps = ScreenProps & {
   clearable?: boolean
   stopNavigation?: boolean
   disableSubmit?: boolean
+  revertOnCancel?: boolean
 }
 
 export const FormScreen = (props: FormScreenProps) => {
@@ -31,6 +34,7 @@ export const FormScreen = (props: FormScreenProps) => {
     onSubmit,
     stopNavigation,
     disableSubmit,
+    revertOnCancel,
     ...other
   } = props
   const navigation = useNavigation()
@@ -38,10 +42,12 @@ export const FormScreen = (props: FormScreenProps) => {
 
   const handleSubmit = useCallback(() => {
     if (!stopNavigation) {
-      navigation.pop()
+      navigation.goBack()
     }
     onSubmit?.()
   }, [stopNavigation, navigation, onSubmit])
+
+  useRevertOnCancel(revertOnCancel)
 
   return (
     <Screen
