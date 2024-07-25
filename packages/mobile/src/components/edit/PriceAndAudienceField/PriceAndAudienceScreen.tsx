@@ -43,7 +43,6 @@ export const PriceAndAudienceScreen = () => {
     useField<boolean>('is_stream_gated')
   const [{ value: streamConditions }, , { setValue: setStreamConditions }] =
     useField<Nullable<AccessConditions>>('stream_conditions')
-  const [{ value: isUnlisted }] = useField<boolean>('is_unlisted')
   const [{ value: isScheduledRelease }] = useField<boolean>(
     'is_scheduled_release'
   )
@@ -75,9 +74,6 @@ export const PriceAndAudienceScreen = () => {
       isContentTipGated(streamConditions)
     ) {
       return StreamTrackAvailabilityType.SPECIAL_ACCESS
-    }
-    if (isUnlisted && !isScheduledRelease) {
-      return StreamTrackAvailabilityType.HIDDEN
     }
     return StreamTrackAvailabilityType.PUBLIC
     // we only care about what the initial value was here
