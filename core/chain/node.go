@@ -4,17 +4,17 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/AudiusProject/audius-protocol/core/common"
 	"github.com/AudiusProject/audius-protocol/core/config"
 	cfg "github.com/cometbft/cometbft/config"
-	"github.com/cometbft/cometbft/libs/log"
 	nm "github.com/cometbft/cometbft/node"
 	"github.com/cometbft/cometbft/p2p"
 	"github.com/cometbft/cometbft/privval"
 	"github.com/cometbft/cometbft/proxy"
-	"github.com/dgraph-io/badger/v4"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-func NewNode(logger log.Logger, c *config.Config, db *badger.DB) (*nm.Node, error) {
+func NewNode(logger *common.Logger, c *config.Config, pool *pgxpool.Pool) (*nm.Node, error) {
 	homeDir := c.HomeDir
 
 	config := cfg.DefaultConfig()
@@ -31,7 +31,7 @@ func NewNode(logger log.Logger, c *config.Config, db *badger.DB) (*nm.Node, erro
 	config.RPC.ListenAddress = c.RPCladdr
 	config.P2P.ListenAddress = c.P2PLaddr
 
-	app := NewKVStoreApplication(db)
+	app := NewKVStoreApplication(logger, pool)
 
 	pv := privval.LoadFilePV(
 		config.PrivValidatorKeyFile(),

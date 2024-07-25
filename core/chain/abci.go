@@ -3,50 +3,51 @@ package chain
 import (
 	"bytes"
 	"context"
-	"errors"
-	"log"
+	"crypto/sha256"
+	"encoding/hex"
 
+	"github.com/AudiusProject/audius-protocol/core/common"
+	"github.com/AudiusProject/audius-protocol/core/db"
 	abcitypes "github.com/cometbft/cometbft/abci/types"
-	"github.com/dgraph-io/badger/v4"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type KVStoreApplication struct {
-	db           *badger.DB
-	onGoingBlock *badger.Txn
+	logger       *common.Logger
+	queries      *db.Queries
+	pool         *pgxpool.Pool
+	onGoingBlock pgx.Tx
 }
 
 var _ abcitypes.Application = (*KVStoreApplication)(nil)
 
-func NewKVStoreApplication(db *badger.DB) *KVStoreApplication {
-	return &KVStoreApplication{db: db}
+func NewKVStoreApplication(logger *common.Logger, pool *pgxpool.Pool) *KVStoreApplication {
+	return &KVStoreApplication{
+		logger:       logger,
+		queries:      db.New(pool),
+		pool:         pool,
+		onGoingBlock: nil,
+	}
 }
 
 func (app *KVStoreApplication) Info(_ context.Context, info *abcitypes.InfoRequest) (*abcitypes.InfoResponse, error) {
 	return &abcitypes.InfoResponse{}, nil
 }
 
-func (app *KVStoreApplication) Query(_ context.Context, req *abcitypes.QueryRequest) (*abcitypes.QueryResponse, error) {
+func (app *KVStoreApplication) Query(ctx context.Context, req *abcitypes.QueryRequest) (*abcitypes.QueryResponse, error) {
 	resp := abcitypes.QueryResponse{Key: req.Data}
 
-	dbErr := app.db.View(func(txn *badger.Txn) error {
-		item, err := txn.Get(req.Data)
-		if err != nil {
-			if !errors.Is(err, badger.ErrKeyNotFound) {
-				return err
-			}
-			resp.Log = "key does not exist"
-			return nil
-		}
-
-		return item.Value(func(val []byte) error {
-			resp.Log = "exists"
-			resp.Value = val
-			return nil
-		})
-	})
-	if dbErr != nil {
-		log.Panicf("Error reading database, unable to execute query: %v", dbErr)
+	kv, err := app.queries.GetKey(ctx, string(req.Data))
+	if err != nil {
+		resp.Log = err.Error()
+		return &resp, err
 	}
+
+	value := []byte(kv.Value)
+	resp.Log = "exists"
+	resp.Value = value
+
 	return &resp, nil
 }
 
@@ -67,27 +68,44 @@ func (app *KVStoreApplication) ProcessProposal(_ context.Context, proposal *abci
 	return &abcitypes.ProcessProposalResponse{Status: abcitypes.PROCESS_PROPOSAL_STATUS_ACCEPT}, nil
 }
 
-func (app *KVStoreApplication) FinalizeBlock(_ context.Context, req *abcitypes.FinalizeBlockRequest) (*abcitypes.FinalizeBlockResponse, error) {
+func (app *KVStoreApplication) FinalizeBlock(ctx context.Context, req *abcitypes.FinalizeBlockRequest) (*abcitypes.FinalizeBlockResponse, error) {
+	logger := app.logger
 	var txs = make([]*abcitypes.ExecTxResult, len(req.Txs))
 
-	app.onGoingBlock = app.db.NewTransaction(true)
+	// early out if empty block
+	if len(txs) == 0 {
+		return &abcitypes.FinalizeBlockResponse{
+			TxResults: txs,
+		}, nil
+	}
+
+	// open in progres pg transaction
+	app.startInProgressTx(ctx)
 	for i, tx := range req.Txs {
 		if code := app.isValid(tx); code != 0 {
-			log.Printf("Error: invalid transaction index %v", i)
+			logger.Errorf("Error: invalid transaction index %v", i)
 			txs[i] = &abcitypes.ExecTxResult{Code: code}
 		} else {
 			parts := bytes.SplitN(tx, []byte("="), 2)
 			key, value := parts[0], parts[1]
-			log.Printf("Adding key %s with value %s", key, value)
+			logger.Infof("Adding key %s with value %s", key, value)
 
-			if err := app.onGoingBlock.Set(key, value); err != nil {
-				log.Panicf("Error writing to database, unable to execute tx: %v", err)
+			qtx := app.getDb()
+
+			hash := sha256.Sum256(tx)
+			txHash := hex.EncodeToString(hash[:])
+
+			params := db.InsertKVStoreParams{
+				Key:    string(key),
+				Value:  string(value),
+				TxHash: txHash,
 			}
 
-			log.Printf("Successfully added key %s with value %s", key, value)
+			_, err := qtx.InsertKVStore(ctx, params)
+			if err != nil {
+				logger.Errorf("failed to persisted kv entry %v", err)
+			}
 
-			// Add an event for the transaction execution.
-			// Multiple events can be emitted for a transaction, but we are adding only one event
 			txs[i] = &abcitypes.ExecTxResult{
 				Code: 0,
 				Events: []abcitypes.Event{
@@ -108,8 +126,12 @@ func (app *KVStoreApplication) FinalizeBlock(_ context.Context, req *abcitypes.F
 	}, nil
 }
 
-func (app KVStoreApplication) Commit(_ context.Context, commit *abcitypes.CommitRequest) (*abcitypes.CommitResponse, error) {
-	return &abcitypes.CommitResponse{}, app.onGoingBlock.Commit()
+func (app KVStoreApplication) Commit(ctx context.Context, commit *abcitypes.CommitRequest) (*abcitypes.CommitResponse, error) {
+	if err := app.commitInProgressTx(ctx); err != nil {
+		app.logger.Error("failure to commit tx", "error", err)
+		return &abcitypes.CommitResponse{}, err
+	}
+	return &abcitypes.CommitResponse{}, nil
 }
 
 func (app *KVStoreApplication) ListSnapshots(_ context.Context, snapshots *abcitypes.ListSnapshotsRequest) (*abcitypes.ListSnapshotsResponse, error) {

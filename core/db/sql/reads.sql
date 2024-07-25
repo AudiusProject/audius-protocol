@@ -1,2 +1,2 @@
 -- name: GetKey :one
-select * from kvstore where key = $1;
+select * from core_kvstore where key = $1;

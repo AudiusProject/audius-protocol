@@ -10,12 +10,12 @@ import (
 )
 
 const getKey = `-- name: GetKey :one
-select id, key, value, tx_hash, created_at, updated_at from kvstore where key = $1
+select id, key, value, tx_hash, created_at, updated_at from core_kvstore where key = $1
 `
 
-func (q *Queries) GetKey(ctx context.Context, key string) (Kvstore, error) {
+func (q *Queries) GetKey(ctx context.Context, key string) (CoreKvstore, error) {
 	row := q.db.QueryRow(ctx, getKey, key)
-	var i Kvstore
+	var i CoreKvstore
 	err := row.Scan(
 		&i.ID,
 		&i.Key,

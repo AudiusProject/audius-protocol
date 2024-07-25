@@ -10,7 +10,7 @@ import (
 )
 
 const insertKVStore = `-- name: InsertKVStore :one
-insert into kvstore (key, value, tx_hash)
+insert into core_kvstore (key, value, tx_hash)
 values ($1, $2, $3)
 returning id, key, value, tx_hash, created_at, updated_at
 `
@@ -21,9 +21,9 @@ type InsertKVStoreParams struct {
 	TxHash string
 }
 
-func (q *Queries) InsertKVStore(ctx context.Context, arg InsertKVStoreParams) (Kvstore, error) {
+func (q *Queries) InsertKVStore(ctx context.Context, arg InsertKVStoreParams) (CoreKvstore, error) {
 	row := q.db.QueryRow(ctx, insertKVStore, arg.Key, arg.Value, arg.TxHash)
-	var i Kvstore
+	var i CoreKvstore
 	err := row.Scan(
 		&i.ID,
 		&i.Key,

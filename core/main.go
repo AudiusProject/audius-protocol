@@ -1,17 +1,16 @@
 package main
 
 import (
-	"fmt"
+	"context"
 	"os"
 	"os/signal"
-	"path/filepath"
 	"syscall"
 
 	"github.com/AudiusProject/audius-protocol/core/chain"
 	"github.com/AudiusProject/audius-protocol/core/common"
 	"github.com/AudiusProject/audius-protocol/core/config"
 	"github.com/AudiusProject/audius-protocol/core/db"
-	"github.com/dgraph-io/badger/v4"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 func main() {
@@ -30,20 +29,14 @@ func main() {
 		return
 	}
 
-	dbPath := filepath.Join(config.HomeDir, "badger")
-	db, err := badger.Open(badger.DefaultOptions(dbPath))
-
+	pool, err := pgxpool.New(context.Background(), config.PSQLConn)
 	if err != nil {
-		logger.Errorf("opening database: %v", err)
+		logger.Errorf("couldn't create pgx pool: %v", err)
 		return
 	}
-	defer func() {
-		if err := db.Close(); err != nil {
-			logger.Info(fmt.Sprintf("closing database: %v", err))
-		}
-	}()
+	defer pool.Close()
 
-	node, err := chain.NewNode(logger, config, db)
+	node, err := chain.NewNode(logger, config, pool)
 	if err != nil {
 		logger.Errorf("node init error: %v", err)
 		return
