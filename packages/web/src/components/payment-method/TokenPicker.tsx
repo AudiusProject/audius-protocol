@@ -36,7 +36,7 @@ export const TokenPicker = ({
     return null
   }
 
-  const options = (assets.value ?? []).slice(0, 10).map((asset) => ({
+  const options = (assets.value ?? []).map((asset) => ({
     label: asset.symbol,
     value: asset.address,
     helperText:
@@ -55,8 +55,10 @@ export const TokenPicker = ({
 
   return (
     <OptionsFilterButton
+      virtualized
       label='asset'
       popupAnchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+      popupMaxWidth={260}
       popupMaxHeight={400}
       popupTransformOrigin={{ vertical: 'top', horizontal: 'left' }}
       options={options}

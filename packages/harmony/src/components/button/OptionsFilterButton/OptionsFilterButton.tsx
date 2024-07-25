@@ -4,10 +4,12 @@ import {
   useState,
   useCallback,
   useRef,
-  useMemo
+  useMemo,
+  useEffect
 } from 'react'
 
 import { CSSObject, useTheme } from '@emotion/react'
+import { List } from 'react-virtualized'
 
 import { BaseButton } from 'components/button/BaseButton/BaseButton'
 import { TextInput, TextInputSize } from 'components/input'
@@ -121,6 +123,127 @@ export const FilterButtonOptions = (props: FilterButtonOptionsProps) => {
   )
 }
 
+type VirtualizedFilterButtonOptionsProps = {
+  activeValue?: string | null
+  options: OptionsFilterButtonOption[]
+  optionRefs?: RefObject<HTMLButtonElement[]>
+  onChange: (option: OptionsFilterButtonOption) => void
+  height: number
+  width: number
+}
+
+export const FilterButtonOptionsVirtualized = (
+  props: VirtualizedFilterButtonOptionsProps
+) => {
+  const { activeValue, options, onChange, optionRefs, height, width } = props
+  const theme = useTheme()
+  const rowRef = useRef<HTMLDivElement>(null)
+
+  const [rowHeight, setRowHeight] = useState(50)
+  useEffect(() => {
+    if (rowRef.current) {
+      setRowHeight(rowRef.current.offsetHeight)
+    }
+  }, [])
+
+  const renderItem = useCallback(
+    ({ index, key, style }: { index: number; key: string; style: object }) => {
+      const { color, cornerRadius, spacing, typography } = theme
+
+      // Popup Styles
+      const optionIconCss: CSSObject = {
+        width: spacing.unit4,
+        height: spacing.unit4
+      }
+
+      const activeOptionCss: CSSObject = {
+        transform: 'none',
+        backgroundColor: color.secondary.s300,
+        color: color.static.white
+      }
+
+      const optionCss: CSSObject = {
+        background: 'transparent',
+        border: 'none',
+        color: color.text.default,
+        fontWeight: typography.weight.medium,
+        gap: spacing.s,
+        paddingLeft: spacing.m,
+        paddingRight: spacing.m,
+        paddingTop: spacing.s,
+        paddingBottom: spacing.s,
+        width: '100%',
+        borderRadius: cornerRadius.s,
+        justifyContent: 'flex-start',
+
+        '&:hover': activeOptionCss,
+
+        '&:active': {
+          transform: 'none'
+        }
+      }
+      const option = options[index]
+      return (
+        <div style={style} key={key} ref={index === 0 ? rowRef : null}>
+          <BaseButton
+            iconLeft={option.icon}
+            styles={{
+              button: {
+                ...optionCss,
+                ...(option.value === activeValue ? activeOptionCss : {})
+              },
+              icon: optionIconCss
+            }}
+            onClick={() => onChange(option)}
+            aria-label={option.label ?? option.value}
+            role='option'
+            ref={(el) => {
+              if (optionRefs && optionRefs.current && el) {
+                optionRefs.current[index] = el
+              }
+            }}
+          >
+            {option.leadingElement ?? null}
+            <Text variant='body' strength='strong'>
+              {option.label ?? option.value}
+            </Text>
+            {option.helperText ? (
+              <Text
+                variant='body'
+                strength='strong'
+                color={option.value === activeValue ? 'staticWhite' : 'subdued'}
+              >
+                {option.helperText}
+              </Text>
+            ) : null}
+          </BaseButton>
+        </div>
+      )
+    },
+    [activeValue, onChange, optionRefs, options, theme]
+  )
+
+  if (!options.length) {
+    return (
+      <Flex justifyContent='center'>
+        <Text variant='body' color='subdued' size='s'>
+          {messages.noMatches}
+        </Text>
+      </Flex>
+    )
+  }
+
+  return (
+    <List
+      width={width}
+      height={height}
+      rowCount={options.length}
+      rowHeight={rowHeight}
+      rowRenderer={renderItem}
+    />
+  )
+}
+
 export const OptionsFilterButton = forwardRef<
   HTMLButtonElement,
   OptionsFilterButtonProps
@@ -136,6 +259,8 @@ export const OptionsFilterButton = forwardRef<
     popupTransformOrigin,
     popupPortalLocation,
     popupZIndex,
+    virtualized,
+    popupMaxWidth,
     ...filterButtonProps
   } = props
 
@@ -230,7 +355,10 @@ export const OptionsFilterButton = forwardRef<
                     props['aria-label']
                   }
                   aria-activedescendant={selectedLabel}
-                  css={{ maxHeight: popupMaxHeight, overflowY: 'auto' }}
+                  css={{
+                    maxHeight: popupMaxHeight,
+                    overflowY: 'auto'
+                  }}
                   ref={scrollRef}
                 >
                   <Flex direction='column' w='100%' gap='s'>
@@ -257,12 +385,23 @@ export const OptionsFilterButton = forwardRef<
                         </Text>
                       </Box>
                     ) : null}
-                    <FilterButtonOptions
-                      activeValue={activeValue}
-                      options={filteredOptions}
-                      optionRefs={optionRefs}
-                      onChange={handleOptionSelect(handleChange, setIsOpen)}
-                    />
+                    {virtualized ? (
+                      <FilterButtonOptionsVirtualized
+                        activeValue={activeValue}
+                        options={filteredOptions}
+                        optionRefs={optionRefs}
+                        onChange={handleOptionSelect(handleChange, setIsOpen)}
+                        height={popupMaxHeight || 100}
+                        width={popupMaxWidth || 100}
+                      />
+                    ) : (
+                      <FilterButtonOptions
+                        activeValue={activeValue}
+                        options={filteredOptions}
+                        optionRefs={optionRefs}
+                        onChange={handleOptionSelect(handleChange, setIsOpen)}
+                      />
+                    )}
                   </Flex>
                 </Flex>
               </Paper>
