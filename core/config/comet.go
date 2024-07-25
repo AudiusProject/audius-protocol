@@ -7,6 +7,7 @@ import (
 	"github.com/AudiusProject/audius-protocol/core/common"
 	"github.com/AudiusProject/audius-protocol/core/config/genesis"
 	"github.com/cometbft/cometbft/config"
+	"github.com/cometbft/cometbft/p2p"
 	"github.com/cometbft/cometbft/privval"
 )
 
@@ -15,7 +16,7 @@ import (
 func InitComet(logger *common.Logger, environment, delegatePrivateKey, homeDir string) error {
 	logger.Info("initializing comet config")
 
-	key, err := accounts.NewKey(delegatePrivateKey)
+	key, err := accounts.EthToCometKey(delegatePrivateKey)
 	if err != nil {
 		return fmt.Errorf("creating key %v", err)
 	}
@@ -43,7 +44,7 @@ func InitComet(logger *common.Logger, environment, delegatePrivateKey, homeDir s
 		logger.Info("Found private validator", "keyFile", privValKeyFile,
 			"stateFile", privValStateFile)
 	} else {
-		pv = privval.NewFilePV(key.PrivKey, privValKeyFile, privValStateFile)
+		pv = privval.NewFilePV(key, privValKeyFile, privValStateFile)
 		pv.Save()
 		logger.Info("Generated private validator", "keyFile", privValKeyFile,
 			"stateFile", privValStateFile)
@@ -53,7 +54,10 @@ func InitComet(logger *common.Logger, environment, delegatePrivateKey, homeDir s
 	if common.FileExists(nodeKeyFile) {
 		logger.Info("Found node key", "path", nodeKeyFile)
 	} else {
-		if err := key.SaveAs(nodeKeyFile); err != nil {
+		p2pKey := p2p.NodeKey{
+			PrivKey: key,
+		}
+		if err := p2pKey.SaveAs(nodeKeyFile); err != nil {
 			return fmt.Errorf("creating node key %v", err)
 		}
 		logger.Info("Generated node key", "path", nodeKeyFile)
