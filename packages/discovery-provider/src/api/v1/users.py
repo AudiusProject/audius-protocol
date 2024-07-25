@@ -17,6 +17,7 @@ from src.api.v1.helpers import (
     extend_challenge_response,
     extend_favorite,
     extend_purchase,
+    extend_repost_activity,
     extend_supporter,
     extend_supporting,
     extend_track,
@@ -50,9 +51,9 @@ from src.api.v1.helpers import (
     verify_token_parser,
 )
 from src.api.v1.models.activities import (
-    activity_full_model,
-    activity_model,
     collection_activity_full_without_tracks_model,
+    repost_activity_full_model,
+    repost_activity_model,
     track_activity_full_model,
     track_activity_model,
 )
@@ -652,10 +653,10 @@ class HandleAITrackList(HandleFullAITrackList):
 
 USER_REPOSTS_ROUTE = "/<string:id>/reposts"
 
-reposts_response = make_response("reposts", ns, fields.List(activity_model))
+reposts_response = make_response("reposts", ns, fields.List(repost_activity_model))
 
 full_reposts_response = make_full_response(
-    "full_reposts", full_ns, fields.List(activity_full_model)
+    "full_reposts", full_ns, fields.List(repost_activity_full_model)
 )
 
 
@@ -691,7 +692,7 @@ class RepostList(Resource):
             "offset": offset,
         }
         reposts = get_repost_feed_for_user(decoded_id, args)
-        activities = list(map(extend_activity, reposts))
+        activities = list(map(extend_repost_activity, reposts))
 
         return success_response(activities)
 
@@ -732,7 +733,7 @@ class FullRepostList(Resource):
                 repost["tracks"] = get_tracks_for_playlist(
                     repost["playlist_id"], current_user_id
                 )
-        activities = list(map(extend_activity, reposts))
+        activities = list(map(extend_repost_activity, reposts))
 
         return success_response(activities)
 
@@ -765,7 +766,7 @@ class HandleFullRepostList(Resource):
                 repost["tracks"] = get_tracks_for_playlist(
                     repost["playlist_id"], current_user_id
                 )
-        activities = list(map(extend_activity, reposts))
+        activities = list(map(extend_repost_activity, reposts))
 
         return success_response(activities)
 

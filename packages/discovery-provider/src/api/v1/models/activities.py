@@ -8,55 +8,22 @@ from .playlists import (
 )
 from .tracks import track, track_full
 
-base_activity_model = ns.model(
-    "activity",
-    {
-        "timestamp": fields.String(required=True),
-        "item_type": fields.String(enum=["track", "playlist"], required=True),
-        "item": fields.Raw(required=True),
-        "class": fields.String(required=True, discriminator=True),
-    },
-)
-
-track_activity_model = ns.inherit(
+# Generic activity models used with favorites / library
+track_activity_model = ns.model(
     "track_activity",
-    base_activity_model,
     {
+        "timestamp": fields.String(allow_null=True),
+        "item_type": fields.String(enum=["track"], required=True),
         "item": fields.Nested(track, required=True),
     },
 )
 
-collection_activity_model = ns.inherit(
-    "collection_activity",
-    base_activity_model,
-    {
-        "item": fields.Nested(playlist_model, required=True),
-    },
-)
-
-base_activity_full_model = ns.model(
-    "activity_full",
-    {
-        "timestamp": fields.String(required=True),
-        "item_type": fields.String(enum=["track", "playlist"], required=True),
-        "item": fields.Raw(required=True),
-        "class": fields.String(required=True, discriminator=True),
-    },
-)
-
-track_activity_full_model = ns.inherit(
+track_activity_full_model = ns.model(
     "track_activity_full",
-    base_activity_full_model,
     {
+        "timestamp": fields.String(allow_null=True),
+        "item_type": fields.String(enum=["track"], required=True),
         "item": fields.Nested(track_full, required=True),
-    },
-)
-
-collection_activity_full_model = ns.inherit(
-    "collection_activity_full",
-    base_activity_full_model,
-    {
-        "item": fields.Nested(full_playlist_model, required=True),
     },
 )
 
@@ -70,30 +37,78 @@ collection_activity_full_without_tracks_model = ns.model(
 )
 
 
-class TrackActivity(object):
-    def __init__(self, timestamp, item):
-        self.timestamp = timestamp
-        self.item = item
-        self.item_type = "track"
-
-
-class CollectionActivity(object):
-    def __init__(self, timestamp, item):
-        self.timestamp = timestamp
-        self.item = item
-        self.item_type = "collection"
-
-
-activity_model = fields.Polymorph(
+# Repost-specific models, used when the item can be either type
+base_repost_activity_model = ns.model(
+    "repost_activity",
     {
-        TrackActivity: track_activity_model,
-        CollectionActivity: collection_activity_model,
+        "timestamp": fields.String(required=True),
+        "item_type": fields.String(enum=["track", "playlist"], required=True),
+        "class": fields.String(required=True, discriminator=True),
     },
 )
 
-activity_full_model = fields.Polymorph(
+track_repost_activity_model = ns.inherit(
+    "track_repost_activity",
+    base_repost_activity_model,
     {
-        TrackActivity: track_activity_full_model,
-        CollectionActivity: collection_activity_full_model,
+        "item": fields.Nested(track, required=True),
+    },
+)
+
+collection_repost_activity_model = ns.inherit(
+    "collection_repost_activity",
+    base_repost_activity_model,
+    {
+        "item": fields.Nested(playlist_model, required=True),
+    },
+)
+
+base_repost_activity_full_model = ns.model(
+    "repost_activity_full",
+    {
+        "timestamp": fields.String(required=True),
+        "item_type": fields.String(enum=["track", "playlist"], required=True),
+        "class": fields.String(required=True, discriminator=True),
+    },
+)
+
+track_repost_activity_full_model = ns.inherit(
+    "track_repost_activity_full",
+    base_repost_activity_full_model,
+    {
+        "item": fields.Nested(track_full, required=True),
+    },
+)
+
+collection_repost_activity_full_model = ns.inherit(
+    "collection_repost_activity_full",
+    base_repost_activity_full_model,
+    {
+        "item": fields.Nested(full_playlist_model, required=True),
+    },
+)
+
+
+class TrackRepostActivity(dict):
+    def __init__(self, timestamp, item):
+        dict.__init__(self, timestamp=timestamp, item=item, item_type="track")
+
+
+class CollectionRepostActivity(dict):
+    def __init__(self, timestamp, item):
+        dict.__init__(self, timestamp=timestamp, item=item, item_type="playlist")
+
+
+repost_activity_model = fields.Polymorph(
+    {
+        TrackRepostActivity: track_repost_activity_model,
+        CollectionRepostActivity: collection_repost_activity_model,
+    },
+)
+
+repost_activity_full_model = fields.Polymorph(
+    {
+        TrackRepostActivity: track_repost_activity_full_model,
+        CollectionRepostActivity: collection_repost_activity_full_model,
     },
 )
