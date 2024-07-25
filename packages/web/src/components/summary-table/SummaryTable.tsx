@@ -6,7 +6,8 @@ import {
   IconComponent,
   TextColors,
   Text,
-  useTheme
+  useTheme,
+  TextLink
 } from '@audius/harmony'
 
 import { Expandable } from 'components/expandable/Expandable'
@@ -24,6 +25,8 @@ export type SummaryTableProps = {
   /** Enables an expand/collapse interaction. Only the title shows when collapsed. */
   collapsible?: boolean
   items: SummaryTableItem[]
+  extraItems?: SummaryTableItem[]
+  onHideExtraItems?: () => void
   summaryItem?: SummaryTableItem
   title: ReactNode
   secondaryTitle?: ReactNode
@@ -32,9 +35,16 @@ export type SummaryTableProps = {
   renderBody?: (items: SummaryTableItem[]) => ReactNode
 }
 
+const messages = {
+  more: 'Show advanced options',
+  hide: 'Hide advanced options'
+}
+
 export const SummaryTable = ({
   collapsible = false,
   items,
+  extraItems,
+  onHideExtraItems,
   summaryItem,
   title,
   secondaryTitle,
@@ -43,9 +53,26 @@ export const SummaryTable = ({
   renderBody: renderBodyProp
 }: SummaryTableProps) => {
   const { color } = useTheme()
+
   // Collapsible is collapsed by default
   const [expanded, setExpanded] = useState(!collapsible)
-  const onToggleExpand = useCallback(() => setExpanded((val) => !val), [])
+  const onToggleExpand = useCallback(
+    () => setExpanded((val) => !val),
+    [setExpanded]
+  )
+
+  // Extra items are collapsed by default
+  const [showExtraItems, setShowExtraItems] = useState(false)
+  const onToggleExtraItems = useCallback(
+    () =>
+      setShowExtraItems((val) => {
+        if (val) {
+          onHideExtraItems?.()
+        }
+        return !val
+      }),
+    [setShowExtraItems, onHideExtraItems]
+  )
 
   const renderHeader = () => {
     return (
@@ -101,63 +128,86 @@ export const SummaryTable = ({
     )
   }
 
+  const renderMoreOptionsToggle = () => {
+    return (
+      <Flex p='xs'>
+        <TextLink
+          onClick={onToggleExtraItems}
+          variant='secondary'
+          textVariant='body'
+          size='s'
+          strength='strong'
+        >
+          {showExtraItems ? messages.hide : messages.more}
+        </TextLink>
+      </Flex>
+    )
+  }
+
   const renderContent = () => {
+    const shownItems =
+      showExtraItems && extraItems ? [...items, ...extraItems] : items
     return (
       <>
         {renderBodyProp
-          ? renderBodyProp(items)
-          : items.map(({ id, label, icon: Icon, value, disabled, color }) => (
-              <Flex
-                key={id}
-                alignItems='center'
-                alignSelf='stretch'
-                justifyContent='space-between'
-                pv='m'
-                ph='xl'
-                css={{ opacity: disabled ? 0.5 : 1 }}
-                borderTop='default'
-              >
+          ? renderBodyProp(shownItems)
+          : shownItems.map(
+              ({ id, label, icon: Icon, value, disabled, color }) => (
                 <Flex
-                  css={{ cursor: 'pointer' }}
+                  key={id}
                   alignItems='center'
+                  alignSelf='stretch'
                   justifyContent='space-between'
-                  gap='s'
+                  pv='m'
+                  ph='xl'
+                  css={{ opacity: disabled ? 0.5 : 1 }}
+                  borderTop='default'
                 >
-                  {Icon ? (
-                    <Flex alignItems='center' ml='s'>
-                      <Icon color='default' />
-                    </Flex>
-                  ) : null}
-                  <Text variant='body' size='m'>
-                    {label}
+                  <Flex
+                    css={{ cursor: 'pointer' }}
+                    alignItems='center'
+                    justifyContent='space-between'
+                    gap='s'
+                  >
+                    {Icon ? (
+                      <Flex alignItems='center' ml='s'>
+                        <Icon color='default' />
+                      </Flex>
+                    ) : null}
+                    <Text variant='body' size='m'>
+                      {label}
+                    </Text>
+                  </Flex>
+                  <Text variant='body' size='m' color={color}>
+                    {value}
                   </Text>
                 </Flex>
-                <Text variant='body' size='m' color={color}>
-                  {value}
-                </Text>
-              </Flex>
-            ))}
+              )
+            )}
         {renderSummaryItem()}
       </>
     )
   }
 
   return (
-    <Flex
-      alignItems='center'
-      alignSelf='stretch'
-      justifyContent='center'
-      direction='column'
-      border='default'
-      borderRadius='xs'
-      css={{ overflow: 'hidden' }}
-    >
-      {renderHeader()}
-      {collapsible ? (
-        <Expandable expanded={expanded}>{renderContent()}</Expandable>
-      ) : (
-        renderContent()
-      )}
+    <Flex direction='column'>
+      <Flex
+        alignItems='center'
+        alignSelf='stretch'
+        justifyContent='center'
+        direction='column'
+        border='default'
+        borderRadius='xs'
+        css={{ overflow: 'hidden' }}
+      >
+        {renderHeader()}
+        {collapsible ? (
+          <Expandable expanded={expanded}>{renderContent()}</Expandable>
+        ) : (
+          renderContent()
+        )}
+      </Flex>
+      {extraItems ? renderMoreOptionsToggle() : null}
     </Flex>
   )
 }

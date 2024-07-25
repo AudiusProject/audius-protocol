@@ -10,6 +10,7 @@ import {
   Flex,
   IconCreditCard,
   IconDonate,
+  IconMerch,
   IconTransaction,
   OptionsFilterButton,
   Radio,
@@ -27,7 +28,9 @@ const messages = {
   paymentMethod: 'Payment Method',
   withExistingBalance: 'Existing balance',
   withCard: 'Pay with card',
-  withCrypto: 'Add via crypto transfer'
+  withCrypto: 'Add via crypto transfer',
+  payWith: 'Pay with',
+  anything: 'anything'
 }
 
 type PaymentMethodProps = {
@@ -113,13 +116,37 @@ export const PaymentMethod = ({
             />
           )
         ) : null
-    },
+    }
+  ].filter(Boolean) as SummaryTableItem[]
+
+  const extraOptions: SummaryTableItem[] = [
     {
       id: PurchaseMethod.CRYPTO,
       label: messages.withCrypto,
       icon: IconTransaction
+    },
+    {
+      id: PurchaseMethod.WALLET,
+      label: (
+        <Text>
+          <Text>{`${messages.payWith} `}</Text>
+          <Text
+            strength='strong'
+            style={{
+              backgroundImage:
+                'linear-gradient(to right, red, orange, yellow, green, blue, indigo, violet)',
+              color: 'transparent',
+              backgroundClip: 'text',
+              WebkitTextFillColor: 'transparent'
+            }}
+          >
+            {messages.anything}
+          </Text>
+        </Text>
+      ),
+      icon: IconMerch
     }
-  ].filter(Boolean) as SummaryTableItem[]
+  ]
 
   const handleRadioChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
@@ -128,7 +155,16 @@ export const PaymentMethod = ({
     [setSelectedMethod]
   )
 
-  const renderBody = () => {
+  const handleHideExtraItems = useCallback(() => {
+    if (
+      selectedMethod === PurchaseMethod.CRYPTO ||
+      selectedMethod === PurchaseMethod.WALLET
+    ) {
+      setSelectedMethod(PurchaseMethod.CARD)
+    }
+  }, [selectedMethod, setSelectedMethod])
+
+  const renderBody = (items: SummaryTableItem[]) => {
     const getFlexProps = (id: PurchaseMethod) => {
       if (isMobile && id === PurchaseMethod.CARD) {
         return {
@@ -152,7 +188,7 @@ export const PaymentMethod = ({
         onChange={handleRadioChange}
         style={{ width: '100%' }}
       >
-        {options.map(({ id, label, icon: Icon, value, disabled }) => (
+        {items.map(({ id, label, icon: Icon, value, disabled }) => (
           <Flex
             key={id}
             {...getFlexProps(id as PurchaseMethod)}
@@ -196,6 +232,8 @@ export const PaymentMethod = ({
     <SummaryTable
       title={messages.paymentMethod}
       items={options}
+      extraItems={extraOptions}
+      onHideExtraItems={handleHideExtraItems}
       renderBody={renderBody}
     />
   )
