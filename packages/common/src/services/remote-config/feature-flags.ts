@@ -59,7 +59,8 @@ export enum FeatureFlags {
   PREFETCH_STREAM_URLS = 'prefetch_stream_urls',
   HIDDEN_PAID_SCHEDULED = 'hidden_paid_scheduled',
   EDITABLE_ACCESS_ENABLED = 'editable_access_enabled',
-  PAID_SCHEDULED = 'paid_scheduled'
+  PAID_SCHEDULED = 'paid_scheduled',
+  PAY_WITH_ANYTHING_ENABLED = 'pay_with_anything_enabled'
 }
 
 type FlagDefaults = Record<FeatureFlags, boolean>
@@ -134,5 +135,6 @@ export const flagDefaults: FlagDefaults = {
   [FeatureFlags.PREFETCH_STREAM_URLS]: false,
   [FeatureFlags.HIDDEN_PAID_SCHEDULED]: false,
   [FeatureFlags.EDITABLE_ACCESS_ENABLED]: false,
-  [FeatureFlags.PAID_SCHEDULED]: false
+  [FeatureFlags.PAID_SCHEDULED]: false,
+  [FeatureFlags.PAY_WITH_ANYTHING_ENABLED]: false
 }
