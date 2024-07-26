@@ -23,7 +23,7 @@ const IS_PRODUCTION = env.ENVIRONMENT === 'production'
 
 export const CoinflowOnrampModal = () => {
   const {
-    data: { amount, serializedTransaction, purchaseMetadata, onSuccess },
+    data: { amount, serializedTransaction, onSuccess, planCode },
     isOpen,
     onClose,
     onClosed
@@ -92,7 +92,7 @@ export const CoinflowOnrampModal = () => {
           disableApplePay={isElectron()}
           blockchain='solana'
           amount={amount}
-          planCode={'recurring_donations_1'}
+          planCode={planCode ?? ''}
         />
       ) : null}
     </ModalDrawer>

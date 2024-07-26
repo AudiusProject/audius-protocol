@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
-import { useGetUsersByIds } from '@audius/common/api'
+import { useGetCurrentUserId, useGetUsersByIds } from '@audius/common/api'
 import { ID, Status } from '@audius/common/models'
 import {
   musicConfettiActions,
@@ -18,7 +18,9 @@ import {
   Text
 } from '@audius/harmony'
 import { Form, Formik, FormikHelpers, useFormikContext } from 'formik'
+import { create } from 'lodash'
 import { useDispatch, useSelector } from 'react-redux'
+import { useAsync } from 'react-use'
 import { PieChart, Pie, Tooltip, Cell } from 'recharts'
 
 import { TextField } from 'components/form-fields'
@@ -28,6 +30,8 @@ import Page from 'components/page/Page'
 import UserList from 'components/user-list/components/UserList'
 import { audiusSdk } from 'services/audius-sdk'
 import { encodeHashId } from 'utils/hashIds'
+
+import key from './coinflow-api-key.json'
 
 const { show: showConfetti } = musicConfettiActions
 const { getDonatingTo } = tippingSelectors
@@ -224,43 +228,99 @@ const SplitDonationForm = (props: SplitDonationFormProps) => {
 export const SplitDonationPage = () => {
   const dispatch = useDispatch()
   const [isLoading, setIsLoading] = useState(false)
+  const [plans, setPlans] = useState([])
   const { onOpen: openCoinflowModal } = useCoinflowOnrampModal()
+  const { data: userId } = useGetCurrentUserId({})
+  const planCode = `recurring_donations_${userId}`
 
-  // const handleSubmit = useCallback(
-  //   async (
-  //     values: FormValues,
-  //     { setFieldValue }: FormikHelpers<FormValues>
-  //   ) => {
-  //     setIsLoading(true)
-  //     const { amount, userIds } = values
-  //     const sdk = await audiusSdk()
+  const getPlans = useCallback(async () => {
+    const options = {
+      method: 'GET',
+      headers: {
+        accept: 'application/json',
+        Authorization: key.apiKey
+      }
+    }
 
-  //     const amountPerUser = (amount ?? 0) / userIds.length
+    fetch('https://api.coinflow.cash/api/merchant/subscription/plans', options)
+      .then((response) => response.json())
+      .then((response) => setPlans(response))
+      .catch((err) => console.error(err))
+  }, [])
 
-  //     try {
-  //       const result = await sdk.users.sendSplitDonations({
-  //         splits: userIds.map((id: number) => ({
-  //           id: encodeHashId(id),
-  //           amount: BigInt(
-  //             amountPerUser * 10 ** TOKEN_LISTING_MAP.USDC.decimals
-  //           )
-  //         })),
-  //         total: BigInt(
-  //           Math.round((amount ?? 0) * 10 ** TOKEN_LISTING_MAP.USDC.decimals)
-  //         )
+  useEffect(() => {
+    getPlans()
+  }, [getPlans])
+
+  // const updatePlan = useCallback(
+  //   async ({ amount }) => {
+  //     console.log('REED calling updatePlan: ', { amount })
+  //     const options = {
+  //       method: 'PUT',
+  //       headers: {
+  //         accept: 'application/json',
+  //         'content-type': 'application/json',
+  //         Authorization: key.apiKey
+  //       },
+  //       body: JSON.stringify({
+  //         interval: 'Monthly',
+  //         amount: { currency: 'USD', cents: amount * 100 },
+  //         name: planCode,
+  //         code: planCode
+  //         // transaction: 'tx'
   //       })
-
-  //       console.log('Successfully sent split donation', result)
-
-  //           setFieldValue('amount', undefined)
-  //           dispatch(showConfetti())
-  //           dispatch(toast({ content: `Successfully donated ${amount} USDC` }))
-  //     } catch (e) {
-  //       console.error(e)
   //     }
-  //     setIsLoading(false)
+
+  //     fetch(
+  //       `https://api.coinflow.cash/api/merchant/subscription/plans/${planCode}`,
+  //       options
+  //     )
+  //       .then((response) => response.json())
+  //       .then((response) => console.log(response))
+  //       .catch((err) => console.error(err))
   //   },
-  //   [dispatch]
+  //   [planCode]
+  // )
+
+  const createPlan = useCallback(
+    async ({ amount }) => {
+      console.log('REED calling createPlan')
+      const options = {
+        method: 'POST',
+        headers: {
+          accept: 'application/json',
+          'content-type': 'application/json',
+          Authorization: key.apiKey
+        },
+        body: JSON.stringify({
+          interval: 'Monthly',
+          amount: { currency: 'USD', cents: amount * 100 },
+          code: planCode,
+          name: planCode
+          // transaction: 'tx'
+        })
+      }
+
+      fetch(
+        'https://api.coinflow.cash/api/merchant/subscription/plans',
+        options
+      )
+        .then((response) => response.json())
+        .then((response) => console.log(response))
+        .catch((err) => console.error(err))
+    },
+    [planCode]
+  )
+
+  // const handlePlanSubmit = useCallback(
+  //   async ({ amount }) => {
+  //     if (plans.some((plan) => plan.code === planCode)) {
+  //       updatePlan({ amount })
+  //     } else {
+  //       createPlan({ amount })
+  //     }
+  //   },
+  //   [createPlan, planCode, plans, updatePlan]
   // )
 
   const handleCoinflowSubmit = useCallback(
@@ -276,6 +336,7 @@ export const SplitDonationPage = () => {
         return
       }
 
+      await createPlan({ amount })
       const amountPerUser = (amount ?? 0) / userIds.length
 
       try {
@@ -302,6 +363,7 @@ export const SplitDonationPage = () => {
         openCoinflowModal({
           amount,
           serializedTransaction,
+          planCode,
           onSuccess: () => {
             console.log('Successfully sent split donation', transaction)
             setFieldValue('amount', undefined)
@@ -314,7 +376,7 @@ export const SplitDonationPage = () => {
       }
       setIsLoading(false)
     },
-    [dispatch, openCoinflowModal]
+    [dispatch, handlePlanSubmit, openCoinflowModal, planCode]
   )
 
   return (

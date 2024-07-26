@@ -15,6 +15,7 @@ export type CoinflowOnrampModalState = {
   amount: number
   contentId?: ID
   purchaseMetadata?: CoinflowPurchaseMetadata
+  planCode?: string
   serializedTransaction: string
   onrampSucceeded?: Action
   onrampCanceled?: Action
