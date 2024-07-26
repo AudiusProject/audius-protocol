@@ -25,7 +25,6 @@ import { usePurchaseSummaryValues } from '../hooks/usePurchaseSummaryValues'
 
 import { PayExtraFormSection } from './PayExtraFormSection'
 import { PayToUnlockInfo } from './PayToUnlockInfo'
-import { PayWithAnything } from './PayWithAnything'
 import { PurchaseSummaryTable } from './PurchaseSummaryTable'
 
 const messages = {
@@ -160,7 +159,6 @@ export const PurchaseContentFormFields = ({
           showVendorChoice={false}
         />
       )}
-      <PayWithAnything />
       {isUnlocking ? null : <PayToUnlockInfo />}
     </>
   )
