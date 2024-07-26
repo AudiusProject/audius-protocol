@@ -236,7 +236,7 @@ export const SplitDonationPage = () => {
   const { onOpen: openCoinflowModal } = useCoinflowOnrampModal()
   const { data: userId } = useGetCurrentUserId({})
   const { color, spacing } = useTheme()
-  const planCode = `recurring_split_donations_${userId}`
+  const planCode = `rec_donations_${userId}`
 
   const plan = useMemo(
     () => plans.find((plan: any) => plan.code === planCode),
@@ -333,8 +333,10 @@ export const SplitDonationPage = () => {
     async ({ amount }) => {
       if (plan) {
         updatePlan({ amount })
+        return true
       } else {
         createPlan({ amount })
+        return false
       }
     },
     [createPlan, plan, updatePlan]
@@ -353,7 +355,20 @@ export const SplitDonationPage = () => {
         return
       }
 
-      await handlePlanSubmit({ amount })
+      const isSubscribed = await handlePlanSubmit({ amount })
+      if (isSubscribed) {
+        setIsLoading(false)
+        setFieldValue('amount', undefined)
+        dispatch(showConfetti())
+        dispatch(
+          toast({
+            content: `Successfully scheduled monthly donation of ${amount} USDC`
+          })
+        )
+        return
+      }
+
+      // if already subscribed return early
       const amountPerUser = (amount ?? 0) / userIds.length
       const rootAccount: string = (
         await getRootSolanaAccount()
