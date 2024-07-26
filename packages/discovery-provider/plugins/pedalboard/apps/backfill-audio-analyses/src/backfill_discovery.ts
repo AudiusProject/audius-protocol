@@ -60,10 +60,11 @@ async function getAudioAnalysis(contentNodes: string[], track: Track) {
 
   // allow up to 5 attempts to get audio analysis for this track
   for (let i = 0; i < 5; i++) {
-    // last attempt will always be to the storeall node
+    // last 2 attempts will always be to the storeall node
     let contentNode = "https://creatornode2.audius.co"
-    let checkStoreAllNodeNext = false
-    if (i < 4) {
+    let checkStoreAllNodeNext = i == 3
+    // except for tracks with >= 3 errors, which attempt to check the storall node first
+    if (i < 3 || track.audio_analysis_error_count! >= 3) {
       // choose a random content node
       contentNode =
         contentNodes[Math.floor(Math.random() * contentNodes.length)]
