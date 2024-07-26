@@ -18,9 +18,7 @@ import {
   Text
 } from '@audius/harmony'
 import { Form, Formik, FormikHelpers, useFormikContext } from 'formik'
-import { create } from 'lodash'
 import { useDispatch, useSelector } from 'react-redux'
-import { useAsync } from 'react-use'
 import { PieChart, Pie, Tooltip, Cell } from 'recharts'
 
 import { TextField } from 'components/form-fields'
@@ -29,6 +27,7 @@ import Header from 'components/header/desktop/Header'
 import Page from 'components/page/Page'
 import UserList from 'components/user-list/components/UserList'
 import { audiusSdk } from 'services/audius-sdk'
+import { getRootSolanaAccount } from 'services/solana/solana'
 import { encodeHashId } from 'utils/hashIds'
 
 import key from './coinflow-api-key.json'
@@ -231,7 +230,8 @@ export const SplitDonationPage = () => {
   const [plans, setPlans] = useState([])
   const { onOpen: openCoinflowModal } = useCoinflowOnrampModal()
   const { data: userId } = useGetCurrentUserId({})
-  const planCode = `recurring_donations_${userId}`
+  const timestamp = Date.now()
+  const planCode = `recurring_donations_${userId}_${timestamp}`
 
   const getPlans = useCallback(async () => {
     const options = {
@@ -297,7 +297,7 @@ export const SplitDonationPage = () => {
           amount: { currency: 'USD', cents: amount * 100 },
           code: planCode,
           name: planCode
-          // transaction: 'tx'
+          // transaction
         })
       }
 
@@ -338,6 +338,9 @@ export const SplitDonationPage = () => {
 
       await createPlan({ amount })
       const amountPerUser = (amount ?? 0) / userIds.length
+      const rootAccount: string = (
+        await getRootSolanaAccount()
+      ).publicKey.toString()
 
       try {
         const transaction = await sdk.users.getSplitDonationsTransaction({
@@ -349,7 +352,8 @@ export const SplitDonationPage = () => {
           })),
           total: BigInt(
             Math.round((amount ?? 0) * 10 ** TOKEN_LISTING_MAP.USDC.decimals)
-          )
+          ),
+          wallet: rootAccount
         })
 
         if (!transaction) {
@@ -376,7 +380,7 @@ export const SplitDonationPage = () => {
       }
       setIsLoading(false)
     },
-    [dispatch, handlePlanSubmit, openCoinflowModal, planCode]
+    [createPlan, dispatch, openCoinflowModal, planCode]
   )
 
   return (

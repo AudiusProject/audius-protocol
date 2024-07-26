@@ -62,12 +62,6 @@ export const CoinflowOnrampModal = () => {
     onFailure: handleClose
   })
   const showContent = isOpen && adapter
-  console.log('REED', {
-    MERCHANT_ID,
-    amount,
-    wallet: adapter?.wallet,
-    transaction
-  })
 
   return (
     <ModalDrawer

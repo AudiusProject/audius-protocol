@@ -404,7 +404,7 @@ export class UsersApi extends GeneratedUsersApi {
   ) {
     const mint = 'USDC'
 
-    const { total, splits } = await parseParams(
+    const { total, splits, wallet } = await parseParams(
       'getSplitDonationsTransaction',
       GetSplitDonationsTransactionSchema
     )(params)
@@ -436,33 +436,15 @@ export class UsersApi extends GeneratedUsersApi {
       })} to donate...`
     )
 
-    const paymentRouterTokenAccount =
-      await this.paymentRouterClient.getOrCreateProgramTokenAccount({
-        mint
-      })
-
-    const transferSecpInstruction =
-      await this.claimableTokens.createTransferSecpInstruction({
-        ethWallet,
-        destination: paymentRouterTokenAccount.address,
-        mint,
-        amount: total,
-        auth: this.auth
-      })
-
     const transferInstruction =
-      await this.claimableTokens.createTransferInstruction({
-        ethWallet,
-        destination: paymentRouterTokenAccount.address,
+      await this.paymentRouterClient.createTransferInstruction({
+        sourceWallet: wallet!,
+        total,
         mint
       })
 
     const transaction = await this.paymentRouterClient.buildTransaction({
-      instructions: [
-        transferSecpInstruction,
-        transferInstruction,
-        routeInstruction
-      ]
+      instructions: [transferInstruction, routeInstruction]
     })
 
     console.log('REED tx in sdk', { transaction })
