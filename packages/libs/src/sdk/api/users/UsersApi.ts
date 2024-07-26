@@ -447,8 +447,6 @@ export class UsersApi extends GeneratedUsersApi {
       instructions: [transferInstruction, routeInstruction]
     })
 
-    console.log('REED tx in sdk', { transaction })
-
     return transaction
   }
 

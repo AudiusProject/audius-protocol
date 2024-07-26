@@ -254,7 +254,6 @@ export const SplitDonationPage = () => {
 
   // const updatePlan = useCallback(
   //   async ({ amount }) => {
-  //     console.log('REED calling updatePlan: ', { amount })
   //     const options = {
   //       method: 'PUT',
   //       headers: {
@@ -284,7 +283,6 @@ export const SplitDonationPage = () => {
 
   const createPlan = useCallback(
     async ({ amount }) => {
-      console.log('REED calling createPlan')
       const options = {
         method: 'POST',
         headers: {
