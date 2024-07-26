@@ -1,7 +1,9 @@
 use anchor_lang::prelude::*;
 use anchor_lang::{AnchorDeserialize, AnchorSerialize};
+use anchor_spl::token::spl_token;
 use anchor_spl::token::{Token, TokenAccount};
 use int_enum::IntEnum;
+use anchor_lang::solana_program::program::invoke;
 
 declare_id!("4UkTdMM9dNqjUAEjAJVj8Rec83bG747V9dZP7HLK2LJk");
 
@@ -13,11 +15,13 @@ pub enum CustomError {
 
 #[program]
 pub mod crowdfund {
+    use std::cmp::min;
+
     use super::*;
 
     pub fn start_campaign(
         ctx: Context<StartCampaignCtx>,
-        campaign: Campaign,
+        campaign: StartCampaignInstructionData,
     ) -> Result<()> {
         msg!("Starting campaign: {:?}", ctx.program_id);
 
@@ -39,11 +43,28 @@ pub mod crowdfund {
         Ok(())
     }
 
-    // pub fn contribute(ctx: Context<ContributeCtx>, amount: u64) -> Result<()> {
-    //     msg!("Contributing to campaign: {:?}", ctx.program_id);
+    pub fn contribute(ctx: Context<ContributeCtx>, data: ContributeInstructionData) -> Result<()> {
+        let campaign_account: Account<CampaignAccount> = ctx.accounts.campaign_account.clone();
+        let threshold = campaign_account.funding_threshold;
+        let balance = ctx.accounts.destination_account.amount;
+        let amount = min(threshold - balance, data.amount);
+        let receiver = ctx.accounts.destination_account.to_account_info();
+        let sender_token_account = ctx.accounts.sender_token_account.to_account_info();
+        let sender = ctx.accounts.sender_owner.to_account_info();
+        let account_infos = &[sender_token_account.clone(), receiver.clone(), sender.clone()];
 
-    //     Ok(())
-    // }
+        let transfer = &spl_token::instruction::transfer(
+            &spl_token::id(),
+            sender_token_account.key,
+            receiver.key,
+            sender.key,
+            &[sender.key],
+            amount
+        )?;
+        invoke(transfer, account_infos)?;
+
+        Ok(())
+    }
 }
 
 #[repr(u8)]
@@ -54,11 +75,18 @@ pub enum ContentType {
 }
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug)]
-pub struct Campaign {
+pub struct StartCampaignInstructionData {
     destination_wallet: Pubkey,
     funding_threshold: u64,
     content_id: u32,
     content_type: u8,
+}
+
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug)]
+pub struct ContributeInstructionData {
+    content_id: u32,
+    content_type: u8,
+    amount: u64
 }
 
 #[account]
@@ -73,7 +101,7 @@ pub struct CampaignAccount {
 }
 
 #[derive(Accounts)]
-#[instruction(campaign: Campaign)]
+#[instruction(campaign: StartCampaignInstructionData)]
 pub struct StartCampaignCtx<'info> {
     #[account(mut)]
     pub fee_payer_wallet: Signer<'info>,
@@ -85,7 +113,7 @@ pub struct StartCampaignCtx<'info> {
             b"campaign",
             campaign.content_id.try_to_vec().unwrap().as_slice(),
             campaign.content_type.try_to_vec().unwrap().as_slice()
-            ],
+        ],
         bump
     )]
     pub campaign_account: Account<'info, CampaignAccount>,
@@ -93,10 +121,49 @@ pub struct StartCampaignCtx<'info> {
         init,
         payer = fee_payer_wallet,
         token::mint = mint,
-        token::authority = campaign_account
+        token::authority = campaign_account,
+        seeds = [
+            b"escrow", 
+            campaign.content_id.try_to_vec().unwrap().as_slice(),
+            campaign.content_type.try_to_vec().unwrap().as_slice()
+        ],
+        bump
     )]
     pub escrow_token_account: Account<'info, TokenAccount>,
     pub system_program: Program<'info, System>,
+    pub token_program: Program<'info, Token>,
+    /// CHECK: We're only using this for deriving the token account
+    pub mint: UncheckedAccount<'info>,
+}
+
+#[derive(Accounts)]
+#[instruction(data: ContributeInstructionData)]
+pub struct ContributeCtx<'info> {
+    pub sender_owner: Signer<'info>,
+    #[account(mut, token::authority = sender_owner)]
+    pub sender_token_account: Account<'info, TokenAccount>,
+    #[account(
+        seeds = [
+            b"campaign",
+            data.content_id.try_to_vec().unwrap().as_slice(),
+            data.content_type.try_to_vec().unwrap().as_slice()
+        ],
+        bump
+    )]
+    pub campaign_account: Account<'info, CampaignAccount>,
+    #[account(
+        token::mint = mint,
+        token::authority = campaign_account,
+        seeds = [
+            b"escrow", 
+            data.content_id.try_to_vec().unwrap().as_slice(),
+            data.content_type.try_to_vec().unwrap().as_slice()
+        ],
+        bump
+    )]
+    pub escrow_token_account: Account<'info, TokenAccount>,
+    #[account(mut, token::mint = mint, address = campaign_account.destination_wallet)]
+    pub destination_account: Account<'info, TokenAccount>,
     pub token_program: Program<'info, Token>,
     /// CHECK: We're only using this for deriving the token account
     pub mint: UncheckedAccount<'info>,

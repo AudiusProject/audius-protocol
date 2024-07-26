@@ -37,8 +37,6 @@ describe('crowdfund', () => {
   })
 
   it('Creates a campaign', async () => {
-    let destinationWallet = PublicKey.unique()
-
     // Create token mint
     const mint = await createMint(
       provider.connection,
@@ -48,12 +46,24 @@ describe('crowdfund', () => {
       9
     )
 
+    let destinationWallet = anchor.web3.Keypair.generate()
+    const destinationAta = getAssociatedTokenAddressSync(
+      mint,
+      destinationWallet.publicKey
+    )
+    await createAssociatedTokenAccount(
+      provider.connection,
+      feePayer,
+      mint,
+      destinationWallet.publicKey
+    )
+
     // Create campaign
     const { pubkeys, signature } = await program.methods
       .startCampaign({
         contentId: 123,
         contentType: 1,
-        destinationWallet,
+        destinationWallet: destinationAta,
         fundingThreshold: new anchor.BN(1000000)
       })
       .accounts({
@@ -74,6 +84,7 @@ describe('crowdfund', () => {
     assert.equal(Object.keys(campaign.contentType)[0], 'track')
 
     // Mint tokens
+    console.log('Create ATA...')
     const ata = getAssociatedTokenAddressSync(mint, feePayer.publicKey)
     await createAssociatedTokenAccount(
       provider.connection,
@@ -81,10 +92,35 @@ describe('crowdfund', () => {
       mint,
       feePayer.publicKey
     )
-    await mintTo(provider.connection, feePayer, mint, ata, feePayer, 1)
+    console.log('Created ATA. Minting...')
+    await mintTo(
+      provider.connection,
+      feePayer,
+      mint,
+      ata,
+      feePayer,
+      100000000000000
+    )
+
+    console.log('Minted. Contributing...')
 
     // Contribute to campaign
-    // TODO
+    const sig = await program.methods
+      .contribute({
+        contentId: campaign.contentId,
+        contentType: 1,
+        amount: new anchor.BN(100000)
+      })
+      .accounts({
+        senderOwner: feePayer.publicKey,
+        senderTokenAccount: ata,
+        destinationAccount: destinationAta,
+        mint
+      })
+      .signers([feePayer])
+      .rpc()
+
+    console.log('Sent contribution:', sig)
 
     // End campaign
     // TODO
