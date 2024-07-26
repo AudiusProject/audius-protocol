@@ -998,9 +998,9 @@ function* purchaseWithAnything({
 
     // ===== PURCHASE THE CONTENT FROM USDC USER BANK BALANCE =====
     console.info(
-      `Purchasing track ${
+      `Purchasing ${
         contentType === PurchaseableContentType.TRACK ? 'track' : 'album'
-      }...`
+      } with id ${contentId}...`
     )
     if (contentType === PurchaseableContentType.TRACK) {
       yield* call([sdk.tracks, sdk.tracks.purchaseTrack], {
