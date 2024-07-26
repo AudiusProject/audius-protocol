@@ -17,7 +17,6 @@ import {
   Paper,
   Text,
   useTheme,
-  IconLogoCircleUSDC as LogoUSDC,
   IconWithdraw
 } from '@audius/harmony'
 import { Form, Formik, FormikHelpers, useFormikContext } from 'formik'
@@ -234,6 +233,7 @@ export const SplitDonationPage = () => {
   const dispatch = useDispatch()
   const [isLoading, setIsLoading] = useState(false)
   const [plans, setPlans] = useState([])
+  console.log(plans)
   const { onOpen: openCoinflowModal } = useCoinflowOnrampModal()
   const { data: userId } = useGetCurrentUserId({})
   const { color, spacing } = useTheme()
@@ -255,7 +255,10 @@ export const SplitDonationPage = () => {
 
     fetch('https://api.coinflow.cash/api/merchant/subscription/plans', options)
       .then((response) => response.json())
-      .then((response) => setPlans(response))
+      .then((response) => {
+        console.log(response)
+        setPlans(response || [])
+      })
       .catch((err) => console.error(err))
   }, [])
 
@@ -277,7 +280,8 @@ export const SplitDonationPage = () => {
           interval: 'Monthly',
           amount: { currency: 'USD', cents: amount * 100 },
           name: planCode,
-          code: planCode
+          code: planCode,
+          id: planCode
         })
       }
 
@@ -286,10 +290,13 @@ export const SplitDonationPage = () => {
         options
       )
         .then((response) => response.json())
-        .then((response) => console.log(response))
+        .then((response) => {
+          console.log(response)
+          getPlans()
+        })
         .catch((err) => console.error(err))
     },
-    [planCode]
+    [planCode, getPlans]
   )
 
   const createPlan = useCallback(
@@ -315,10 +322,13 @@ export const SplitDonationPage = () => {
         options
       )
         .then((response) => response.json())
-        .then((response) => console.log(response))
+        .then((response) => {
+          console.log(response)
+          getPlans()
+        })
         .catch((err) => console.error(err))
     },
-    [planCode]
+    [planCode, getPlans]
   )
 
   const handlePlanSubmit = useCallback(
@@ -393,7 +403,7 @@ export const SplitDonationPage = () => {
       }
       setIsLoading(false)
     },
-    [createPlan, dispatch, openCoinflowModal, planCode]
+    [createPlan, dispatch, handlePlanSubmit, openCoinflowModal, planCode]
   )
 
   return (

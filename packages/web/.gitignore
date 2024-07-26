@@ -66,3 +66,5 @@ yalc.lock
 /playwright/
 /e2e/data/
 /report.xml
+
+src/pages/split-donation-page/coinflow-api-key.json
