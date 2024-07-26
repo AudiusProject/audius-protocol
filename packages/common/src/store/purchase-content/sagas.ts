@@ -790,6 +790,7 @@ function* swapToUsdc({
     inputMint,
     outputMint: TOKEN_LISTING_MAP.USDC.address,
     amount,
+    onlyDirectRoutes: true,
     swapMode: 'ExactOut'
   })
   console.log('in swapToUsdc after quote', { quote })
@@ -873,8 +874,8 @@ function* handlePayWithAnything({
       contentId,
       contentType
     })
-    const totalAmount = price + (extraAmount ?? 0) / 100
-    const amount = Math.floor(totalAmount * 10 ** decimals)
+    const totalAmount = (price + (extraAmount ?? 0)) / 100
+    const amount = Math.ceil(totalAmount * 10 ** decimals)
 
     console.log('GETTING OR CREATING USDC ATA')
     const destinationTokenAccountPublicKey = getAssociatedTokenAddressSync(
@@ -928,12 +929,13 @@ function* handlePayWithAnything({
         amount
       )
     )
-    const { blockhash: latestBlockHash } = yield* call(
+    const { blockhash: latestBlockHash } = yield* call([
+      connection,
       connection.getLatestBlockhash
-    )
+    ])
     transferTx.recentBlockhash = latestBlockHash
     const { signature: transferTxId } = yield* call(
-      provider.signAndSendTransaction,
+      [provider, provider.signAndSendTransaction],
       transferTx
     )
     console.log({ transferTxId })
