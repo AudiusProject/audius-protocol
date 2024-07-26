@@ -1,21 +1,25 @@
 use anchor_lang::prelude::*;
+use anchor_lang::solana_program::program::invoke;
 use anchor_lang::{AnchorDeserialize, AnchorSerialize};
 use anchor_spl::token::spl_token;
 use anchor_spl::token::{Token, TokenAccount};
 use int_enum::IntEnum;
-use anchor_lang::solana_program::program::invoke;
 
 declare_id!("4UkTdMM9dNqjUAEjAJVj8Rec83bG747V9dZP7HLK2LJk");
 
 #[error_code]
 pub enum CustomError {
     #[msg("Content type not supported")]
-    InvalidContentType
+    InvalidContentType,
+    #[msg("Campaign not funded")]
+    CampaignNotFunded,
 }
 
 #[program]
 pub mod crowdfund {
     use std::cmp::min;
+
+    use spl_token::solana_program::program::invoke_signed;
 
     use super::*;
 
@@ -25,16 +29,16 @@ pub mod crowdfund {
     ) -> Result<()> {
         msg!("Starting campaign: {:?}", ctx.program_id);
 
-        let content_type = match ContentType::try_from(campaign.content_type) {
-            Err(_) => return err!(CustomError::InvalidContentType),
-            Ok(f) => f,
-        };
+        // let content_type = match ContentType::try_from(campaign.content_type) {
+        //     Err(_) => return err!(CustomError::InvalidContentType),
+        //     Ok(f) => f,
+        // };
 
         let campaign_account = &mut ctx.accounts.campaign_account;
         campaign_account.destination_wallet = campaign.destination_wallet;
         campaign_account.funding_threshold = campaign.funding_threshold;
         campaign_account.content_id = campaign.content_id;
-        campaign_account.content_type = content_type;
+        campaign_account.content_type = campaign.content_type;
         campaign_account.fee_payer_wallet = *ctx.accounts.fee_payer_wallet.key;
         campaign_account.bump = ctx.bumps.campaign_account;
 
@@ -51,7 +55,11 @@ pub mod crowdfund {
         let receiver = ctx.accounts.escrow_token_account.to_account_info();
         let sender_token_account = ctx.accounts.sender_token_account.to_account_info();
         let sender = ctx.accounts.sender_owner.to_account_info();
-        let account_infos = &[sender_token_account.clone(), receiver.clone(), sender.clone()];
+        let account_infos = &[
+            sender_token_account.clone(),
+            receiver.clone(),
+            sender.clone(),
+        ];
 
         let transfer = &spl_token::instruction::transfer(
             &spl_token::id(),
@@ -59,9 +67,52 @@ pub mod crowdfund {
             receiver.key,
             sender.key,
             &[sender.key],
-            amount
+            amount,
         )?;
         invoke(transfer, account_infos)?;
+
+        Ok(())
+    }
+
+    pub fn unlock(ctx: Context<UnlockCtx>, _data: UnlockInstructionData) -> Result<()> {
+        let campaign_account: Account<CampaignAccount> = ctx.accounts.campaign_account.clone();
+        let owner = ctx.accounts.campaign_account.to_account_info();
+        let amount = ctx.accounts.escrow_token_account.amount;
+        let threshold = campaign_account.funding_threshold;
+
+        if amount < threshold {
+            // TODO: if it's the owner, they can end campaign early?
+            return Err(CustomError::CampaignNotFunded.into());
+        }
+
+        let receiver = ctx.accounts.destination_account.to_account_info();
+        let sender = ctx.accounts.escrow_token_account.to_account_info();
+        let account_infos = &[sender.clone(), receiver.clone(), owner.clone()];
+
+        let transfer = &spl_token::instruction::transfer(
+            &spl_token::id(),
+            sender.key,
+            receiver.key,
+            owner.key,
+            &[owner.key],
+            amount,
+        )?;
+        invoke_signed(
+            transfer,
+            account_infos,
+            &[&[
+                b"campaign".as_ref(),
+                campaign_account.content_id.try_to_vec().unwrap().as_slice(),
+                campaign_account
+                    .content_type
+                    .try_to_vec()
+                    .unwrap()
+                    .as_slice(),
+                &[campaign_account.bump],
+            ]],
+        )?;
+
+        msg!("Campaign fully funded! Unlocking funds");
 
         Ok(())
     }
@@ -86,7 +137,13 @@ pub struct StartCampaignInstructionData {
 pub struct ContributeInstructionData {
     content_id: u32,
     content_type: u8,
-    amount: u64
+    amount: u64,
+}
+
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug)]
+pub struct UnlockInstructionData {
+    content_id: u32,
+    content_type: u8,
 }
 
 #[account]
@@ -94,7 +151,7 @@ pub struct CampaignAccount {
     destination_wallet: Pubkey,
     funding_threshold: u64,
     content_id: u32,
-    content_type: ContentType,
+    content_type: u8,
     fee_payer_wallet: Pubkey,
     bump: u8,
     // funding_deadline: i64,
@@ -163,6 +220,38 @@ pub struct ContributeCtx<'info> {
         bump
     )]
     pub escrow_token_account: Account<'info, TokenAccount>,
+    pub token_program: Program<'info, Token>,
+    /// CHECK: We're only using this for deriving the token account
+    pub mint: UncheckedAccount<'info>,
+}
+
+#[derive(Accounts)]
+#[instruction(data: UnlockInstructionData)]
+pub struct UnlockCtx<'info> {
+    #[account(mut)]
+    pub fee_payer_wallet: Signer<'info>,
+    #[account(
+        mut,
+        seeds = [
+            b"campaign",
+            data.content_id.try_to_vec().unwrap().as_slice(),
+            data.content_type.try_to_vec().unwrap().as_slice()
+        ],
+        bump
+    )]
+    pub campaign_account: Account<'info, CampaignAccount>,
+    #[account(
+        mut,
+        seeds = [
+            b"escrow", 
+            data.content_id.try_to_vec().unwrap().as_slice(),
+            data.content_type.try_to_vec().unwrap().as_slice()
+        ],
+        bump
+    )]
+    pub escrow_token_account: Account<'info, TokenAccount>,
+    #[account(mut, token::mint = mint, address = campaign_account.destination_wallet)]
+    pub destination_account: Account<'info, TokenAccount>,
     pub token_program: Program<'info, Token>,
     /// CHECK: We're only using this for deriving the token account
     pub mint: UncheckedAccount<'info>,

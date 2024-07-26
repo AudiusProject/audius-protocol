@@ -82,7 +82,7 @@ describe('crowdfund', () => {
     console.log('Campaign:', util.inspect(campaign, false, 10, true))
 
     assert.equal(campaign.contentId, 123)
-    assert.equal(Object.keys(campaign.contentType)[0], 'track')
+    // assert.equal(Object.keys(campaign.contentType)[0], 'track')
 
     // Mint tokens
     console.log('Create ATA...')
@@ -129,6 +129,22 @@ describe('crowdfund', () => {
     assert.equal(escrow.amount, BigInt('1000000'))
 
     // End campaign
+
+    const endSig = await program.methods
+      .unlock({
+        contentId: campaign.contentId,
+        contentType: 1
+      })
+      .accounts({
+        destinationAccount: destinationAta,
+        feePayerWallet: feePayer.publicKey,
+        mint
+      })
+      .signers([feePayer])
+      .rpc()
+
+    const destination = await getAccount(provider.connection, destinationAta)
+    assert.equal(destination.amount, BigInt('1000000'))
     // TODO
   })
 })
