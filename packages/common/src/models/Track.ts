@@ -87,11 +87,18 @@ export type USDCPurchaseConditions = {
   }
 }
 
+export type CrowdfundGateConditions = {
+  crowdfund_account: string
+  // Used during upload/edit only
+  funding_threshold?: number
+}
+
 export type AccessConditions =
   | CollectibleGatedConditions
   | FollowGatedConditions
   | TipGatedConditions
   | USDCPurchaseConditions
+  | CrowdfundGateConditions
 
 export type AccessPermissions = {
   stream: boolean
@@ -136,6 +143,11 @@ export const isContentUSDCPurchaseGated = (
   > // data coming from upload/edit forms will not have splits on the type
 ): gatedConditions is USDCPurchaseConditions =>
   !!gatedConditions && 'usdc_purchase' in (gatedConditions ?? {})
+
+export const isContentCrowdfundGated = (
+  gatedConditions?: Nullable<AccessConditions>
+): gatedConditions is CrowdfundGateConditions =>
+  !!gatedConditions && 'crowdfund_account' in (gatedConditions ?? {})
 
 export type AccessSignature = {
   data: string

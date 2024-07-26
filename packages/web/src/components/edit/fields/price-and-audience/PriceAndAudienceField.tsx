@@ -12,7 +12,9 @@ import {
   FollowGatedConditions,
   TipGatedConditions,
   USDCPurchaseConditions,
-  AccessConditions
+  AccessConditions,
+  isContentCrowdfundGated,
+  CrowdfundGateConditions
 } from '@audius/common/models'
 import { CollectionValues } from '@audius/common/schemas'
 import { FeatureFlags } from '@audius/common/services'
@@ -100,6 +102,7 @@ const messages = {
   followersOnly: 'Followers Only',
   supportersOnly: 'Supporters Only',
   ownersOf: 'Owners Of',
+  crowdfund: 'Crowdfund',
   price: (price: number) =>
     price.toLocaleString('en-US', { style: 'currency', currency: 'USD' }),
   preview: (seconds: number) => {
@@ -237,6 +240,7 @@ export const PriceAndAudienceField = (props: PriceAndAudienceFieldProps) => {
   const isTipGated = isContentTipGated(savedStreamConditions)
   const isFollowGated = isContentFollowGated(savedStreamConditions)
   const isCollectibleGated = isContentCollectibleGated(savedStreamConditions)
+  const isCrowdfundGated = isContentCrowdfundGated(savedStreamConditions)
 
   const initialValues = useMemo(() => {
     const initialValues = {}
@@ -268,6 +272,9 @@ export const PriceAndAudienceField = (props: PriceAndAudienceFieldProps) => {
     if (isCollectibleGated) {
       availabilityType = StreamTrackAvailabilityType.COLLECTIBLE_GATED
     }
+    if (isCrowdfundGated) {
+      availabilityType = StreamTrackAvailabilityType.CROWDFUND
+    }
     if (isUnlisted && !isScheduledRelease && !isHiddenPaidScheduledEnabled) {
       availabilityType = StreamTrackAvailabilityType.HIDDEN
     }
@@ -294,6 +301,7 @@ export const PriceAndAudienceField = (props: PriceAndAudienceFieldProps) => {
     isFollowGated,
     isTipGated,
     isCollectibleGated,
+    isCrowdfundGated,
     isScheduledRelease,
     fieldVisibility,
     preview
@@ -403,6 +411,20 @@ export const PriceAndAudienceField = (props: PriceAndAudienceFieldProps) => {
           setStreamConditionsValue({ nft_collection })
           setIsDownloadGated(true)
           setDownloadConditionsValue({ nft_collection })
+          setLastGateKeeper({
+            ...lastGateKeeper,
+            access: 'accessAndSale'
+          })
+          break
+        }
+        case StreamTrackAvailabilityType.CROWDFUND: {
+          setIsStreamGated(true)
+          setIsDownloadGated(true)
+          setStreamConditionsValue({
+            crowdfund_account: '',
+            funding_threshold: (streamConditions as CrowdfundGateConditions)
+              ?.funding_threshold
+          })
           setLastGateKeeper({
             ...lastGateKeeper,
             access: 'accessAndSale'
@@ -521,6 +543,12 @@ export const PriceAndAudienceField = (props: PriceAndAudienceFieldProps) => {
       selectedValues = [specialAccessValue, messages.followersOnly]
     } else if (isContentTipGated(savedStreamConditions)) {
       selectedValues = [specialAccessValue, messages.supportersOnly]
+    } else if (isContentCrowdfundGated(savedStreamConditions)) {
+      // TODO: display crowdfund price
+      selectedValues = [
+        messages.crowdfund,
+        `${savedStreamConditions.funding_threshold} AUDIO`
+      ]
     } else if (
       isUnlisted &&
       !isScheduledRelease &&

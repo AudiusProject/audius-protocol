@@ -31,6 +31,7 @@ export const STREAM_CONDITIONS = 'stream_conditions'
 export const PRICE = 'stream_conditions.usdc_purchase.price'
 export const ALBUM_TRACK_PRICE =
   'stream_conditions.usdc_purchase.albumTrackPrice'
+export const CROWDFUND_THRESHOLD = 'stream_conditions.funding_threshold'
 export const PRICE_HUMANIZED = 'price_humanized'
 export const PREVIEW = 'preview_start_seconds'
 export const DOWNLOAD_AVAILABILITY_TYPE = 'download_availability_type'

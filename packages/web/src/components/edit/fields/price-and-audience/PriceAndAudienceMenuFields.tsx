@@ -11,7 +11,9 @@ import {
   IconVisibilityPublic,
   Text,
   IconQuestionCircle,
-  Hint
+  Hint,
+  IconUserGroup,
+  TokenAmountInput
 } from '@audius/harmony'
 import cn from 'classnames'
 import { useField } from 'formik'
@@ -26,7 +28,11 @@ import { HiddenAvailabilityFields } from '../stream-availability/HiddenAvailabil
 import { SpecialAccessFields } from '../stream-availability/SpecialAccessFields'
 import { CollectibleGatedRadioField } from '../stream-availability/collectible-gated/CollectibleGatedRadioField'
 import { UsdcPurchaseGatedRadioField } from '../stream-availability/usdc-purchase-gated/UsdcPurchaseGatedRadioField'
-import { STREAM_AVAILABILITY_TYPE, STREAM_CONDITIONS } from '../types'
+import {
+  CROWDFUND_THRESHOLD,
+  STREAM_AVAILABILITY_TYPE,
+  STREAM_CONDITIONS
+} from '../types'
 
 const messagesV1 = {
   title: 'Access & Sale',
@@ -55,7 +61,11 @@ const messagesV1 = {
   fromFreeHint: (
     contentType: 'album' | 'track',
     gatedType: 'gated' | 'premium'
-  ) => `You can't make a free ${contentType} ${gatedType}.`
+  ) => `You can't make a free ${contentType} ${gatedType}.`,
+  crowdfund: 'Crowdfund',
+  crowdfundSubtitle: (contentType: 'album' | 'track') =>
+    `Crowdfund your ${contentType} by setting a goal and letting fans contribute. The ${contentType} will be available to all once the goal is met.`,
+  tokenLabel: 'AUDIO'
 }
 
 const messagesV2 = {
@@ -109,6 +119,9 @@ export const PriceAndAudienceMenuFields = (
     : isUsdcFlagUploadEnabled
 
   const [availabilityField] = useField({ name: STREAM_AVAILABILITY_TYPE })
+
+  const [crowdfundThresholdField, , { setValue: setCrowdfundThreshold }] =
+    useField(CROWDFUND_THRESHOLD)
 
   const messages = useMessages(
     messagesV1,
@@ -186,6 +199,23 @@ export const PriceAndAudienceMenuFields = (
             )}
           />
         ) : null}
+
+        <ModalRadioItem
+          icon={<IconUserGroup />}
+          label={messages.crowdfund}
+          description={messages.crowdfundSubtitle(isAlbum ? 'album' : 'track')}
+          value={StreamTrackAvailabilityType.CROWDFUND}
+          // disabled={isCrowdfundDisabled}
+          checkedContent={
+            <TokenAmountInput
+              {...crowdfundThresholdField}
+              label={'Funding Threshold'}
+              tokenLabel={messages.tokenLabel}
+              onChange={(value) => setCrowdfundThreshold(value)}
+            />
+          }
+        />
+
         {!isAlbum ? (
           <CollectibleGatedRadioField
             isRemix={isRemix}

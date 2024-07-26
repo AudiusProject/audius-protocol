@@ -5,7 +5,8 @@ export enum StreamTrackAvailabilityType {
   USDC_PURCHASE = 'USDC_PURCHASE',
   SPECIAL_ACCESS = 'SPECIAL_ACCESS',
   COLLECTIBLE_GATED = 'COLLECTIBLE_GATED',
-  HIDDEN = 'HIDDEN'
+  HIDDEN = 'HIDDEN',
+  CROWDFUND = 'CROWDFUND'
 }
 
 export enum DownloadTrackAvailabilityType {
