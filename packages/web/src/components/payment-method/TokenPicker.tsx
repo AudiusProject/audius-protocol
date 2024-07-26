@@ -14,10 +14,12 @@ type Asset = {
 
 export const TokenPicker = ({
   selectedTokenAddress,
-  onChange
+  onChange,
+  onOpen
 }: {
   selectedTokenAddress: string
   onChange: (address: string) => void
+  onOpen: () => void
 }) => {
   const assets = useAsync(async () => {
     const res = await fetch(TOKEN_LIST_URL)
@@ -64,6 +66,7 @@ export const TokenPicker = ({
       options={options}
       selection={selectedTokenAddress}
       onChange={handleChange}
+      onOpen={onOpen}
       showFilterInput
       variant='replaceLabel'
     />

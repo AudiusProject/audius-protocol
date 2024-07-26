@@ -261,6 +261,7 @@ export const OptionsFilterButton = forwardRef<
     popupZIndex,
     virtualized,
     popupMaxWidth,
+    onOpen,
     ...filterButtonProps
   } = props
 
@@ -296,7 +297,8 @@ export const OptionsFilterButton = forwardRef<
     setTimeout(() => {
       inputRef.current?.focus({ preventScroll: true })
     }, 0)
-  }, [inputRef])
+    onOpen?.()
+  }, [inputRef, onOpen])
 
   const filteredOptions = useMemo(
     () =>

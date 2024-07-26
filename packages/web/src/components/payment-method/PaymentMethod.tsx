@@ -127,6 +127,10 @@ export const PaymentMethod = ({
     }
   ].filter(Boolean) as SummaryTableItem[]
 
+  const handleOpenTokenPicker = useCallback(() => {
+    setSelectedMethod(PurchaseMethod.WALLET)
+  }, [setSelectedMethod])
+
   const extraOptions: SummaryTableItem[] = [
     {
       id: PurchaseMethod.CRYPTO,
@@ -163,6 +167,7 @@ export const PaymentMethod = ({
         <TokenPicker
           selectedTokenAddress={selectedPurchaseMethodMintAddress}
           onChange={setSelectedPurchaseMethodMintAddress}
+          onOpen={handleOpenTokenPicker}
         />
       )
     })
