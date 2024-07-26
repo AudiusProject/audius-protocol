@@ -1,11 +1,14 @@
 import {
+  AccessConditions,
   Collection,
   CollectionMetadata,
+  CrowdfundGateConditions,
   FieldVisibility,
   ID,
   Kind,
   Name,
   StemUploadWithFile,
+  isContentCrowdfundGated,
   isContentFollowGated,
   isContentUSDCPurchaseGated
 } from '@audius/common/models'
@@ -32,9 +35,10 @@ import {
   makeUid,
   waitForAccount
 } from '@audius/common/utils'
-import { EntityManagerAction } from '@audius/sdk'
+import { EntityManagerAction, sdk } from '@audius/sdk'
 import type { ProgressCB } from '@audius/sdk/dist/services/creatorNode'
 import type { TrackMetadata, UploadTrackMetadata } from '@audius/sdk/dist/utils'
+import { BN, Program } from '@coral-xyz/anchor'
 import { mapValues } from 'lodash'
 import { Channel, Task, buffers, channel } from 'redux-saga'
 import {
@@ -50,8 +54,13 @@ import {
 
 import { make } from 'common/store/analytics/actions'
 import { prepareStemsForUpload } from 'pages/upload-page/store/utils/stems'
+import { audiusSdk } from 'services/audius-sdk'
+import { Crowdfund } from 'services/crowdfund/crowdfund'
+import * as IDL from 'services/crowdfund/crowdfund.json'
+import { getRootSolanaAccount } from 'services/solana/solana'
 import * as errorActions from 'store/errors/actions'
 import { reportToSentry } from 'store/errors/reportToSentry'
+import { getWalletAddress } from 'store/token-dashboard/getWalletAddress'
 import { waitForWrite } from 'utils/sagaHelpers'
 
 import { getUnclaimedPlaylistId } from '../cache/collections/utils/getUnclaimedPlaylistId'
@@ -265,6 +274,54 @@ function* publishWorker(
     try {
       const audiusBackendInstance = yield* getContext('audiusBackendInstance')
       const libs = yield* call(audiusBackendInstance.getAudiusLibsTyped)
+
+      if (
+        isContentCrowdfundGated(metadata.stream_conditions as AccessConditions)
+      ) {
+        const crowdfund = new Program(IDL as Crowdfund)
+
+        const audiusSdk = yield* getContext('audiusSdk')
+        const sdk = yield* call(audiusSdk)
+
+        const ethWallet = yield* select(accountSelectors.getAccountERCWallet)
+
+        if (!ethWallet) {
+          throw new Error('No eth wallet found')
+        }
+
+        const { claimableTokensClient } = sdk.services
+        const userBank = yield* call(
+          [claimableTokensClient, claimableTokensClient.getOrCreateUserBank],
+          { mint: 'wAUDIO', ethWallet }
+        )
+
+        const startCampaign = yield* call(
+          [crowdfund.methods, crowdfund.methods.startCampaign],
+          {
+            contentId: metadata.track_id,
+            contentType: 1,
+            destinationWallet: userBank.userBank,
+            fundingThreshold: new BN(
+              (metadata.stream_conditions as CrowdfundGateConditions)
+                .funding_threshold ?? 0
+            )
+          }
+        )
+        const startCampaignInstruction = yield* call(startCampaign.instruction)
+
+        const txReceipt = yield* call(
+          [claimableTokensClient, claimableTokensClient.buildTransaction],
+          {
+            instructions: [startCampaignInstruction]
+          }
+        )
+
+        yield* call(
+          [claimableTokensClient, claimableTokensClient.sendTransaction],
+          txReceipt
+        )
+      }
+
       const {
         trackId: updatedTrackId,
         txReceipt: { blockHash, blockNumber }

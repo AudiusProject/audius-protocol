@@ -144,6 +144,7 @@ export type GatedConditions = {
   follow_user_id?: number
   tip_user_id?: number
   crowdfund_account?: string
+  funding_threshold?: number
 } & USDCPurchaseConditions
 
 export type TrackMetadata = {

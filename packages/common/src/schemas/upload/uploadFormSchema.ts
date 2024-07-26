@@ -57,6 +57,14 @@ const USDCPurchaseConditionsSchema = z
   })
   .strict()
 
+/** Same as SDK but snake-cased */
+const CrowdfundGatedConditionsSchema = z
+  .object({
+    crowdfund_account: z.string(),
+    funding_threshold: z.number()
+  })
+  .strict()
+
 /** Same as SDK. */
 const GenreSchema = z
   .enum(Object.values(Genre) as [Genre, ...Genre[]])
@@ -101,7 +109,8 @@ const premiumMetadataSchema = z.object({
         CollectibleGatedConditions,
         FollowGatedConditionsSchema,
         TipGatedConditionsSchema,
-        USDCPurchaseConditionsSchema
+        USDCPurchaseConditionsSchema,
+        CrowdfundGatedConditionsSchema
       ])
     )
     .nullable(),
@@ -112,7 +121,8 @@ const premiumMetadataSchema = z.object({
         CollectibleGatedConditions,
         FollowGatedConditionsSchema,
         TipGatedConditionsSchema,
-        USDCPurchaseConditionsSchema
+        USDCPurchaseConditionsSchema,
+        CrowdfundGatedConditionsSchema
       ])
     )
     .nullable()
