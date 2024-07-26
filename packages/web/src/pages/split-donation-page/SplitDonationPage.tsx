@@ -280,13 +280,12 @@ export const SplitDonationPage = () => {
           interval: 'Monthly',
           amount: { currency: 'USD', cents: amount * 100 },
           name: planCode,
-          code: planCode,
-          id: planCode
+          code: planCode
         })
       }
 
       fetch(
-        `https://api.coinflow.cash/api/merchant/subscription/plans/${planCode}`,
+        `https://api.coinflow.cash/api/merchant/subscription/plans/${plan.id}`,
         options
       )
         .then((response) => response.json())
@@ -296,7 +295,7 @@ export const SplitDonationPage = () => {
         })
         .catch((err) => console.error(err))
     },
-    [planCode, getPlans]
+    [plan, planCode, getPlans]
   )
 
   const createPlan = useCallback(
@@ -431,7 +430,7 @@ export const SplitDonationPage = () => {
                 {messages.activePlan}
               </Text>
               <Text variant='body' color='staticWhite'>
-                You are donating {plan.amount.cents / 1000} USDC monthly to the
+                You are donating {plan.amount.cents / 100} USDC monthly to the
                 selected users. Click donate to update your donation!
               </Text>
             </Flex>
