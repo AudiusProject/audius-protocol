@@ -212,3 +212,5 @@ packages/identity-service/emailCache
 
 # Playwright
 test-results
+
+coinflow-api-key.json

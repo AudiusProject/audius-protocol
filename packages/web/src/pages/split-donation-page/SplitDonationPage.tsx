@@ -15,7 +15,10 @@ import {
   IconUserList,
   LoadingSpinner,
   Paper,
-  Text
+  Text,
+  useTheme,
+  IconLogoCircleUSDC as LogoUSDC,
+  IconWithdraw
 } from '@audius/harmony'
 import { Form, Formik, FormikHelpers, useFormikContext } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
@@ -37,27 +40,29 @@ const { getDonatingTo } = tippingSelectors
 const { toast } = toastActions
 
 const messages = {
-  title: 'Split Donation',
-  description: 'Split your donation between multiple creators',
+  title: 'Recurring Monthly Donation',
+  description: 'Split a monthly donation between multiple creators',
   amountInputLabel: 'Donation Amount',
   donateButtonLabel: 'Donate',
   donatingButtonLabel: 'Donating...',
   selectPresetLabel: 'Split Preset',
-  configureLabel: 'Configure your donation',
+  configureLabel: 'Configure your monthly donation',
   usersListLabel: 'Selected Users',
   piechartLabel: 'Donation Breakdown',
-  successfullyDonated: 'Successfully donated!',
   noUsersSelected: 'No users selected',
-  noUsersDescription: 'Select by clicking donate on a profile page!'
+  noUsersDescription: 'Select by clicking donate on a profile page!',
+  activePlan: 'You have an active recurring donation!'
 }
 
 const header = <Header primary={messages.title} />
 
 // prod
 const FEATURED_ARTIST_IDS = [54432, 141420730]
+const MOST_LISTENED_ARTIST_IDS = [141420730, 54432]
+
 // stage
 // const FEATURED_ARTIST_IDS = [333792732, 453008334, 24056]
-const MOST_LISTENED_ARTIST_IDS = [453008334, 333792732]
+// const MOST_LISTENED_ARTIST_IDS = [453008334, 333792732]
 
 const presetOptions = [
   { value: 'featured', label: 'Featured Creators' },
@@ -231,7 +236,11 @@ export const SplitDonationPage = () => {
   const [plans, setPlans] = useState([])
   const { onOpen: openCoinflowModal } = useCoinflowOnrampModal()
   const { data: userId } = useGetCurrentUserId({})
+  const { color, spacing } = useTheme()
   const planCode = `recurring_donations_${userId}`
+
+  //   const hasPlan = plans.some((plan: any) => plan.code === planCode)
+  const hasPlan = true
 
   const getPlans = useCallback(async () => {
     const options = {
@@ -370,7 +379,11 @@ export const SplitDonationPage = () => {
             console.log('Successfully sent split donation', transaction)
             setFieldValue('amount', undefined)
             dispatch(showConfetti())
-            dispatch(toast({ content: `Successfully donated ${amount} USDC` }))
+            dispatch(
+              toast({
+                content: `Successfully scheduled monthly donation of ${amount} USDC`
+              })
+            )
           }
         })
       } catch (e) {
@@ -388,11 +401,30 @@ export const SplitDonationPage = () => {
       header={header}
       css={{ textAlign: 'left' }}
     >
-      <Formik initialValues={initialValues} onSubmit={handleCoinflowSubmit}>
-        <Form>
-          <SplitDonationForm isLoading={isLoading} />
-        </Form>
-      </Formik>
+      <Flex direction='column' gap='l'>
+        {hasPlan ? (
+          <Paper
+            p='xl'
+            css={{ background: color.special.gradient }}
+            alignItems='center'
+            gap='l'
+          >
+            <IconWithdraw
+              height={spacing['2xl']}
+              width={spacing['2xl']}
+              fill={color.static.white}
+            />
+            <Text variant='title' color='staticWhite'>
+              {messages.activePlan}
+            </Text>
+          </Paper>
+        ) : null}
+        <Formik initialValues={initialValues} onSubmit={handleCoinflowSubmit}>
+          <Form>
+            <SplitDonationForm isLoading={isLoading} />
+          </Form>
+        </Formik>
+      </Flex>
     </Page>
   )
 }
