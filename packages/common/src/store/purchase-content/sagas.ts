@@ -8,12 +8,17 @@ import {
   getAssociatedTokenAddressSync,
   getMint
 } from '@solana/spl-token'
-import { PublicKey, Transaction, VersionedTransaction } from '@solana/web3.js'
+import {
+  PublicKey,
+  Transaction,
+  VersionedTransaction,
+  AddressLookupTableAccount,
+  TransactionMessage
+} from '@solana/web3.js'
 import BN from 'bn.js'
 import { sumBy } from 'lodash'
 import { takeLatest } from 'redux-saga/effects'
 import { call, put, race, select, take } from 'typed-redux-saga'
-import type { IProviderOptions } from 'web3modal'
 
 import { PurchaseableContentMetadata, isPurchaseableAlbum } from '~/hooks'
 import { Kind } from '~/models'
@@ -771,10 +776,13 @@ const getInstance = () => {
  * Executes the Jupiter exchange from input mint to $USDC
  */
 function* swapToUsdc({
+  connection,
   inputMint,
   amount,
   userPublicKey,
   destinationTokenAccount,
+  sourceWallet,
+  usdcUserBankTokenAccount,
   signAndSendTransaction
 }: any) {
   console.log('in swapToUsdc before quote', {
@@ -809,6 +817,37 @@ function* swapToUsdc({
   console.log('in swapToUsdc', { swapTransaction })
   const decoded = Buffer.from(swapTransaction, 'base64')
   const transaction = VersionedTransaction.deserialize(decoded)
+  // get address lookup table accounts
+  const getLUTs = async () => {
+    return await Promise.all(
+      transaction.message.addressTableLookups.map(async (lookup) => {
+        return new AddressLookupTableAccount({
+          key: lookup.accountKey,
+          state: AddressLookupTableAccount.deserialize(
+            await connection
+              .getAccountInfo(lookup.accountKey)
+              .then((res: any) => res.data)
+          )
+        })
+      })
+    )
+  }
+  const addressLookupTableAccounts = yield* call(getLUTs)
+  // decompile transaction message and add transfer instruction
+  const message = TransactionMessage.decompile(transaction.message, {
+    addressLookupTableAccounts
+  })
+  message.instructions.push(
+    createTransferInstruction(
+      new PublicKey(destinationTokenAccount),
+      new PublicKey(usdcUserBankTokenAccount.address),
+      sourceWallet.publicKey,
+      amount
+    )
+  )
+  // compile the message and update the transaction
+  transaction.message = message.compileToV0Message(addressLookupTableAccounts)
+  // console.log(addressLookupTableAccounts)
   console.log('deserialized', { transaction })
 
   // Execute the swap by signing and sending the transaction
@@ -910,37 +949,18 @@ function* handlePayWithAnything({
 
     console.log('BEFORE SWAPPING TO USDC')
     const { signature: swapTxId } = yield* call(swapToUsdc, {
+      connection,
       inputMint,
       amount,
       userPublicKey: sourceWallet.publicKey.toString(),
       destinationTokenAccount: destinationTokenAccountPublicKey.toString(),
+      sourceWallet,
+      usdcUserBankTokenAccount,
       signAndSendTransaction: provider.signAndSendTransaction
     })
     console.log({ swapTxId })
     // yield* call(confirmTransaction, swapTxId)
     console.log('SWAPPED SUCCESSFULLY!!!!!!')
-
-    console.log('BEFORE TRANSFERRING TO USDC USER BANK')
-    const transferTx = new Transaction().add(
-      createTransferInstruction(
-        sourceWallet.publicKey,
-        usdcUserBankTokenAccount.address,
-        sourceWallet.publicKey,
-        amount
-      )
-    )
-    const { blockhash: latestBlockHash } = yield* call([
-      connection,
-      connection.getLatestBlockhash
-    ])
-    transferTx.recentBlockhash = latestBlockHash
-    const { signature: transferTxId } = yield* call(
-      [provider, provider.signAndSendTransaction],
-      transferTx
-    )
-    console.log({ transferTxId })
-    // yield* call(confirmTransaction, transferTxId)
-    console.log('TRANSFERRED SUCCESSFULLY!!!!!!')
 
     console.log('BEFORE PURCHASING TRACK')
     if (contentType === PurchaseableContentType.TRACK) {
@@ -964,7 +984,7 @@ function* handlePayWithAnything({
   } finally {
     // disconnect wallet
     // yield* call([provider, provider.disconnect])
-    yield* call([provider, 'disconnect'])
+    yield* call([provider, provider.disconnect])
   }
 }
 
