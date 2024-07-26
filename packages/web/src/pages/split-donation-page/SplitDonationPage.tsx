@@ -55,6 +55,7 @@ const header = <Header primary={messages.title} />
 
 // prod
 const FEATURED_ARTIST_IDS = [54432, 141420730]
+// stage
 // const FEATURED_ARTIST_IDS = [333792732, 453008334, 24056]
 const MOST_LISTENED_ARTIST_IDS = [453008334, 333792732]
 
@@ -230,8 +231,7 @@ export const SplitDonationPage = () => {
   const [plans, setPlans] = useState([])
   const { onOpen: openCoinflowModal } = useCoinflowOnrampModal()
   const { data: userId } = useGetCurrentUserId({})
-  const timestamp = Date.now()
-  const planCode = `recurring_donations_${userId}_${timestamp}`
+  const planCode = `recurring_donations_${userId}`
 
   const getPlans = useCallback(async () => {
     const options = {
@@ -252,37 +252,38 @@ export const SplitDonationPage = () => {
     getPlans()
   }, [getPlans])
 
-  // const updatePlan = useCallback(
-  //   async ({ amount }) => {
-  //     const options = {
-  //       method: 'PUT',
-  //       headers: {
-  //         accept: 'application/json',
-  //         'content-type': 'application/json',
-  //         Authorization: key.apiKey
-  //       },
-  //       body: JSON.stringify({
-  //         interval: 'Monthly',
-  //         amount: { currency: 'USD', cents: amount * 100 },
-  //         name: planCode,
-  //         code: planCode
-  //         // transaction: 'tx'
-  //       })
-  //     }
+  const updatePlan = useCallback(
+    async ({ amount }) => {
+      console.log('REED updatePlan')
+      const options = {
+        method: 'PUT',
+        headers: {
+          accept: 'application/json',
+          'content-type': 'application/json',
+          Authorization: key.apiKey
+        },
+        body: JSON.stringify({
+          interval: 'Monthly',
+          amount: { currency: 'USD', cents: amount * 100 },
+          name: planCode,
+          code: planCode
+        })
+      }
 
-  //     fetch(
-  //       `https://api.coinflow.cash/api/merchant/subscription/plans/${planCode}`,
-  //       options
-  //     )
-  //       .then((response) => response.json())
-  //       .then((response) => console.log(response))
-  //       .catch((err) => console.error(err))
-  //   },
-  //   [planCode]
-  // )
+      fetch(
+        `https://api.coinflow.cash/api/merchant/subscription/plans/${planCode}`,
+        options
+      )
+        .then((response) => response.json())
+        .then((response) => console.log(response))
+        .catch((err) => console.error(err))
+    },
+    [planCode]
+  )
 
   const createPlan = useCallback(
     async ({ amount }) => {
+      console.log('REED createPlan')
       const options = {
         method: 'POST',
         headers: {
@@ -295,7 +296,6 @@ export const SplitDonationPage = () => {
           amount: { currency: 'USD', cents: amount * 100 },
           code: planCode,
           name: planCode
-          // transaction
         })
       }
 
@@ -310,16 +310,16 @@ export const SplitDonationPage = () => {
     [planCode]
   )
 
-  // const handlePlanSubmit = useCallback(
-  //   async ({ amount }) => {
-  //     if (plans.some((plan) => plan.code === planCode)) {
-  //       updatePlan({ amount })
-  //     } else {
-  //       createPlan({ amount })
-  //     }
-  //   },
-  //   [createPlan, planCode, plans, updatePlan]
-  // )
+  const handlePlanSubmit = useCallback(
+    async ({ amount }) => {
+      if (plans.some((plan) => plan.code === planCode)) {
+        updatePlan({ amount })
+      } else {
+        createPlan({ amount })
+      }
+    },
+    [createPlan, planCode, plans, updatePlan]
+  )
 
   const handleCoinflowSubmit = useCallback(
     async (
@@ -334,7 +334,7 @@ export const SplitDonationPage = () => {
         return
       }
 
-      await createPlan({ amount })
+      await handlePlanSubmit({ amount })
       const amountPerUser = (amount ?? 0) / userIds.length
       const rootAccount: string = (
         await getRootSolanaAccount()
