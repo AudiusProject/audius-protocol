@@ -40,8 +40,8 @@ type PaymentMethodProps = {
   setSelectedMethod: (method: PurchaseMethod) => void
   selectedVendor: Nullable<PurchaseVendor>
   setSelectedVendor: (vendor: PurchaseVendor) => void
-  selectedPurchaseMethodMintAddress: string
-  setSelectedPurchaseMethodMintAddress: (address: string) => void
+  selectedPurchaseMethodMintAddress?: string
+  setSelectedPurchaseMethodMintAddress?: (address: string) => void
   balance?: Nullable<BNUSDC>
   isExistingBalanceDisabled?: boolean
   isCoinflowEnabled?: boolean
@@ -134,7 +134,11 @@ export const PaymentMethod = ({
       icon: IconTransaction
     }
   ]
-  if (isPayWithAnythingEnabled) {
+  if (
+    isPayWithAnythingEnabled &&
+    selectedPurchaseMethodMintAddress &&
+    setSelectedPurchaseMethodMintAddress
+  ) {
     extraOptions.push({
       id: PurchaseMethod.WALLET,
       label: (
