@@ -12,7 +12,8 @@ import {
   Transaction,
   VersionedTransaction,
   AddressLookupTableAccount,
-  TransactionMessage
+  TransactionMessage,
+  Connection
 } from '@solana/web3.js'
 import BN from 'bn.js'
 import { sumBy } from 'lodash'
@@ -777,12 +778,21 @@ function* swapToUsdcAndSendToUserbank({
   connection,
   inputMint,
   amount,
-  userPublicKey,
-  destinationTokenAccount,
-  sourceWallet,
-  usdcUserBankTokenAccount,
+  destinationTokenAccountPublicKey,
+  sourceWalletPublicKey,
+  usdcUserBankTokenAccountPublicKey,
   signAndSendTransaction
-}: any) {
+}: {
+  connection: Connection
+  inputMint: string
+  amount: number
+  destinationTokenAccountPublicKey: PublicKey
+  sourceWalletPublicKey: PublicKey
+  usdcUserBankTokenAccountPublicKey: PublicKey
+  signAndSendTransaction: (
+    transaction: Transaction | VersionedTransaction
+  ) => Promise<Transaction>
+}) {
   const jup = getInstance()
 
   // Get quote for the swap
@@ -801,8 +811,8 @@ function* swapToUsdcAndSendToUserbank({
   const { swapTransaction } = yield* call([jup, jup.swapPost], {
     swapRequest: {
       quoteResponse: quote,
-      userPublicKey,
-      destinationTokenAccount
+      userPublicKey: sourceWalletPublicKey.toString(),
+      destinationTokenAccount: destinationTokenAccountPublicKey.toString()
     }
   })
   const decoded = Buffer.from(swapTransaction, 'base64')
@@ -829,9 +839,9 @@ function* swapToUsdcAndSendToUserbank({
   })
   message.instructions.push(
     createTransferInstruction(
-      new PublicKey(destinationTokenAccount),
-      new PublicKey(usdcUserBankTokenAccount.address),
-      sourceWallet.publicKey,
+      destinationTokenAccountPublicKey,
+      usdcUserBankTokenAccountPublicKey,
+      sourceWalletPublicKey,
       amount
     )
   )
@@ -919,10 +929,9 @@ function* handlePayWithAnything({
       connection,
       inputMint,
       amount,
-      userPublicKey: sourceWallet.publicKey.toString(),
-      destinationTokenAccount: destinationTokenAccountPublicKey.toString(),
-      sourceWallet,
-      usdcUserBankTokenAccount,
+      destinationTokenAccountPublicKey,
+      sourceWalletPublicKey: sourceWallet.publicKey,
+      usdcUserBankTokenAccountPublicKey: usdcUserBankTokenAccount.address,
       signAndSendTransaction: provider.signAndSendTransaction
     })
 
