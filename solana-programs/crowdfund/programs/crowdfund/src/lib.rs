@@ -59,8 +59,6 @@ pub struct Campaign {
     funding_threshold: u64,
     content_id: u32,
     content_type: u8,
-    fee_payer_wallet: Pubkey,
-    // funding_deadline: i64,
 }
 
 #[account]
