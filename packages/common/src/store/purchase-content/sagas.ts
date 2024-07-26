@@ -852,6 +852,43 @@ function* swapToUsdcAndSendToUserbank({
   return yield* call(signAndSendTransaction, transaction)
 }
 
+// We use our own version of getOrCreateAssociatedTokenAccount instead of the one
+// from @solana/spl-token so we can sign the transaction with the solana wallet provider
+// since we do not have access to the private key in the wallet provider.
+function* getOrCreateUsdcAssociatedTokenAccount({
+  connection,
+  provider,
+  sourceWalletPublicKey
+}: {
+  connection: Connection
+  provider: any
+  sourceWalletPublicKey: PublicKey
+}) {
+  const destinationTokenAccountPublicKey = getAssociatedTokenAddressSync(
+    new PublicKey(TOKEN_LISTING_MAP.USDC.address),
+    sourceWalletPublicKey
+  )
+  try {
+    yield* call(getAccount, connection, destinationTokenAccountPublicKey)
+  } catch {
+    console.info('Creating USDC associated token account...')
+    const transaction = new Transaction().add(
+      createAssociatedTokenAccountInstruction(
+        sourceWalletPublicKey,
+        destinationTokenAccountPublicKey,
+        sourceWalletPublicKey,
+        new PublicKey(TOKEN_LISTING_MAP.USDC.address)
+      )
+    )
+    const { blockhash: latestBlockHash } = yield* call(
+      connection.getLatestBlockhash
+    )
+    transaction.recentBlockhash = latestBlockHash
+    yield* call(provider.signAndSendTransaction, transaction)
+  }
+  return destinationTokenAccountPublicKey
+}
+
 function* handlePayWithAnything({
   payload: {
     inputMint,
@@ -893,28 +930,14 @@ function* handlePayWithAnything({
     const sourceWallet = yield* call(provider.connect)
 
     // ===== SWAP INPUT MINT TO USDC =====
-    const destinationTokenAccountPublicKey = getAssociatedTokenAddressSync(
-      new PublicKey(TOKEN_LISTING_MAP.USDC.address),
-      sourceWallet.publicKey
+    const destinationTokenAccountPublicKey = yield* call(
+      getOrCreateUsdcAssociatedTokenAccount,
+      {
+        connection,
+        provider,
+        sourceWalletPublicKey: sourceWallet.publicKey
+      }
     )
-    try {
-      yield* call(getAccount, connection, destinationTokenAccountPublicKey)
-    } catch {
-      console.info('Creating USDC associated token account...')
-      const transaction = new Transaction().add(
-        createAssociatedTokenAccountInstruction(
-          sourceWallet.publicKey,
-          destinationTokenAccountPublicKey,
-          sourceWallet.publicKey,
-          new PublicKey(TOKEN_LISTING_MAP.USDC.address)
-        )
-      )
-      const { blockhash: latestBlockHash } = yield* call(
-        connection.getLatestBlockhash
-      )
-      transaction.recentBlockhash = latestBlockHash
-      yield* call(provider.signAndSendTransaction, transaction)
-    }
 
     const decimals = TOKEN_LISTING_MAP.USDC.decimals
     const { price } = yield* call(getContentInfo, {
@@ -922,13 +945,13 @@ function* handlePayWithAnything({
       contentType
     })
     const totalAmount = (price + (extraAmount ?? 0)) / 100
-    const amount = Math.ceil(totalAmount * 10 ** decimals)
+    const totalAmountWithDecimals = Math.ceil(totalAmount * 10 ** decimals)
 
     console.info('Swapping to USDC then sending to USDC userbank...')
     yield* call(swapToUsdcAndSendToUserbank, {
       connection,
       inputMint,
-      amount,
+      amount: totalAmountWithDecimals,
       destinationTokenAccountPublicKey,
       sourceWalletPublicKey: sourceWallet.publicKey,
       usdcUserBankTokenAccountPublicKey: usdcUserBankTokenAccount.address,
