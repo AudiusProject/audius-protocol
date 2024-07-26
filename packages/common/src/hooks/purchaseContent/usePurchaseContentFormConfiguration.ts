@@ -102,6 +102,7 @@ export const usePurchaseContentFormConfiguration = ({
           startPurchaseContentFlow({
             purchaseMethod,
             purchaseVendor,
+            purchaseMethodMintAddress,
             extraAmount,
             extraAmountPreset: amountPreset,
             contentId,
