@@ -1,8 +1,9 @@
 import * as anchor from '@coral-xyz/anchor'
 import { Program } from '@coral-xyz/anchor'
 import { Crowdfund } from '../target/types/crowdfund'
+import { createMint } from '@solana/spl-token'
 
-const { Connection, Keypair, PublicKey, SystemProgram } = anchor.web3
+const { Connection, Keypair, PublicKey } = anchor.web3
 
 describe('crowdfund', () => {
   // Configure the client to use the local cluster.
@@ -27,6 +28,14 @@ describe('crowdfund', () => {
       // Uint8Array.from(JSON.parse(FEE_PAYER_SECRET))
     )
 
+    const mint = await createMint(
+      new Connection('http://localhost:8899'),
+      feePayerKeypair,
+      feePayerKeypair.publicKey,
+      null,
+      9
+    )
+
     const tx = await program.methods
       .startCampaign(new anchor.BN(1000), 1, {
         destinationWallet: destination_wallet,
@@ -34,7 +43,8 @@ describe('crowdfund', () => {
         feePayerWallet: feePayerKeypair.publicKey
       })
       .accounts({
-        feePayerWallet: feePayerKeypair.publicKey
+        feePayerWallet: feePayerKeypair.publicKey,
+        mint: mint
       })
       .signers([feePayerKeypair])
       .rpc()

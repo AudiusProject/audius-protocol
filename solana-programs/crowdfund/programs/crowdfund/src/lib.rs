@@ -1,6 +1,5 @@
 use anchor_lang::prelude::*;
 use anchor_lang::{AnchorDeserialize, AnchorSerialize};
-use anchor_spl::associated_token::AssociatedToken;
 use anchor_spl::token::{Token, TokenAccount};
 
 declare_id!("BsBDtuZLBxpdhKLeLw299uxWuqJTXzv3x8nAzgqDsu2F");
@@ -84,12 +83,12 @@ pub struct StartCampaignCtx<'info> {
     #[account(
         init,
         payer = fee_payer_wallet,
-        associated_token::mint = mint,
-        associated_token::authority = fee_payer_wallet
+        token::mint = mint,
+        token::authority = campaign_account
     )]
     pub escrow_token_account: Account<'info, TokenAccount>,
     pub system_program: Program<'info, System>,
-    pub associated_token_program: Program<'info, AssociatedToken>,
     pub token_program: Program<'info, Token>,
+    /// CHECK: We're only using this for deriving the token account
     pub mint: UncheckedAccount<'info>,
 }
