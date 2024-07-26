@@ -233,11 +233,10 @@ export const SplitDonationPage = () => {
   const dispatch = useDispatch()
   const [isLoading, setIsLoading] = useState(false)
   const [plans, setPlans] = useState([])
-  console.log(plans)
   const { onOpen: openCoinflowModal } = useCoinflowOnrampModal()
   const { data: userId } = useGetCurrentUserId({})
   const { color, spacing } = useTheme()
-  const planCode = `recurring_donations_${userId}`
+  const planCode = `recurring_split_donations_${userId}`
 
   const plan = useMemo(
     () => plans.find((plan: any) => plan.code === planCode),
@@ -402,7 +401,7 @@ export const SplitDonationPage = () => {
       }
       setIsLoading(false)
     },
-    [createPlan, dispatch, handlePlanSubmit, openCoinflowModal, planCode]
+    [dispatch, handlePlanSubmit, openCoinflowModal, planCode]
   )
 
   return (
