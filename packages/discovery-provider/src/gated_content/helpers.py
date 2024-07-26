@@ -5,6 +5,7 @@ from typing import Dict, Union
 from sqlalchemy.orm.session import Session
 
 from src.gated_content.types import GatedContentType
+from src.models.crowdfund.crowdfund_unlock import CrowdfundUnlock
 from src.models.social.follow import Follow
 from src.models.tracks.track import Track
 from src.models.users.aggregate_user_tips import AggregateUserTip
@@ -148,3 +149,19 @@ def does_user_have_usdc_access(
             .first()
         )
         return bool(result)
+
+
+def does_user_have_crowdfund_access(
+    session: Session,
+    user_id: int,
+    content_id: int,
+    content_type: GatedContentType,
+    condition_options: Union[Dict, int],
+):
+    result = (
+        session.query(CrowdfundUnlock)
+        .filter(CrowdfundUnlock.content_id == content_id)
+        .filter(CrowdfundUnlock.content_type == content_type)
+        .first()
+    )
+    return True if result else False

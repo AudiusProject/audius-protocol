@@ -72,6 +72,13 @@ purchase_gate = ns.model(
         )
     },
 )
+crowdfund_gate = ns.model(
+    "crowdfund_gate",
+    {
+        "crowdfund_account": fields.String(required=True),
+    },
+)
+
 
 access_gate = ns.add_model(
     "access_gate",
@@ -82,6 +89,7 @@ access_gate = ns.add_model(
             fields.Nested(follow_gate),
             fields.Nested(purchase_gate),
             fields.Nested(nft_gate),
+            fields.Nested(crowdfund_gate),
         ],
     ),
 )
