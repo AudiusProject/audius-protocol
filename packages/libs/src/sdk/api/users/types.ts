@@ -125,19 +125,18 @@ const SplitDonationsRequestBase = z.object({
    * Used to check against current album price in case it changed,
    * effectively setting a "max price" for the purchase.
    */
-  splits: z.array(z.object({ wallet: PublicKeySchema, amount: z.bigint() })),
+  splits: z.array(z.object({ id: z.string(), amount: z.bigint() })),
   total: z.union([z.bigint(), z.number()])
 })
 
 export const SplitDonationsRequestSchema = z
   .object({
-    splits: z.array(z.object({ id: z.string(), amount: z.bigint() })),
-    total: z.union([z.bigint(), z.number()]),
     /** A wallet to use to purchase (defaults to the authed user's user bank if not specified) */
     walletAdapter: z
       .custom<Pick<WalletAdapter, 'publicKey' | 'sendTransaction'>>()
       .optional()
   })
+  .merge(SplitDonationsRequestBase)
   .strict()
 
 export type SplitDonationsRequest = z.input<typeof SplitDonationsRequestSchema>

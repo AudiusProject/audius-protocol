@@ -23,7 +23,7 @@ const IS_PRODUCTION = env.ENVIRONMENT === 'production'
 
 export const CoinflowOnrampModal = () => {
   const {
-    data: { amount, serializedTransaction, purchaseMetadata },
+    data: { amount, serializedTransaction, purchaseMetadata, onSuccess },
     isOpen,
     onClose,
     onClosed
@@ -54,13 +54,20 @@ export const CoinflowOnrampModal = () => {
   const handleSuccess = useCallback(() => {
     dispatch(transactionSucceeded({}))
     onClose()
-  }, [dispatch, onClose])
+    onSuccess?.()
+  }, [dispatch, onClose, onSuccess])
 
   const adapter = useCoinflowAdapter({
     onSuccess: handleSuccess,
     onFailure: handleClose
   })
   const showContent = isOpen && adapter
+  console.log('REED', {
+    MERCHANT_ID,
+    amount,
+    wallet: adapter?.wallet,
+    transaction
+  })
 
   return (
     <ModalDrawer
@@ -76,7 +83,7 @@ export const CoinflowOnrampModal = () => {
         <CoinflowPurchase
           transaction={transaction}
           wallet={adapter.wallet}
-          chargebackProtectionData={purchaseMetadata ? [purchaseMetadata] : []}
+          chargebackProtectionData={[]}
           connection={adapter.connection}
           onSuccess={handleSuccess}
           merchantId={MERCHANT_ID || ''}
@@ -85,6 +92,7 @@ export const CoinflowOnrampModal = () => {
           disableApplePay={isElectron()}
           blockchain='solana'
           amount={amount}
+          planCode={'recurring_donations_1'}
         />
       ) : null}
     </ModalDrawer>

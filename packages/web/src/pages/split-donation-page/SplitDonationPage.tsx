@@ -6,7 +6,8 @@ import {
   musicConfettiActions,
   tippingSelectors,
   toastActions,
-  TOKEN_LISTING_MAP
+  TOKEN_LISTING_MAP,
+  useCoinflowOnrampModal
 } from '@audius/common/store'
 import {
   Button,
@@ -50,8 +51,8 @@ const messages = {
 const header = <Header primary={messages.title} />
 
 // prod
-// const FEATURED_ARTIST_IDS = [50672, 207676588, 985480]
-const FEATURED_ARTIST_IDS = [333792732, 453008334, 24056]
+const FEATURED_ARTIST_IDS = [54432, 141420730]
+// const FEATURED_ARTIST_IDS = [333792732, 453008334, 24056]
 const MOST_LISTENED_ARTIST_IDS = [453008334, 333792732]
 
 const presetOptions = [
@@ -223,8 +224,46 @@ const SplitDonationForm = (props: SplitDonationFormProps) => {
 export const SplitDonationPage = () => {
   const dispatch = useDispatch()
   const [isLoading, setIsLoading] = useState(false)
+  const { onOpen: openCoinflowModal } = useCoinflowOnrampModal()
 
-  const handleSubmit = useCallback(
+  // const handleSubmit = useCallback(
+  //   async (
+  //     values: FormValues,
+  //     { setFieldValue }: FormikHelpers<FormValues>
+  //   ) => {
+  //     setIsLoading(true)
+  //     const { amount, userIds } = values
+  //     const sdk = await audiusSdk()
+
+  //     const amountPerUser = (amount ?? 0) / userIds.length
+
+  //     try {
+  //       const result = await sdk.users.sendSplitDonations({
+  //         splits: userIds.map((id: number) => ({
+  //           id: encodeHashId(id),
+  //           amount: BigInt(
+  //             amountPerUser * 10 ** TOKEN_LISTING_MAP.USDC.decimals
+  //           )
+  //         })),
+  //         total: BigInt(
+  //           Math.round((amount ?? 0) * 10 ** TOKEN_LISTING_MAP.USDC.decimals)
+  //         )
+  //       })
+
+  //       console.log('Successfully sent split donation', result)
+
+  //           setFieldValue('amount', undefined)
+  //           dispatch(showConfetti())
+  //           dispatch(toast({ content: `Successfully donated ${amount} USDC` }))
+  //     } catch (e) {
+  //       console.error(e)
+  //     }
+  //     setIsLoading(false)
+  //   },
+  //   [dispatch]
+  // )
+
+  const handleCoinflowSubmit = useCallback(
     async (
       values: FormValues,
       { setFieldValue }: FormikHelpers<FormValues>
@@ -232,15 +271,19 @@ export const SplitDonationPage = () => {
       setIsLoading(true)
       const { amount, userIds } = values
       const sdk = await audiusSdk()
+      if (!amount || !userIds.length) {
+        setIsLoading(false)
+        return
+      }
 
       const amountPerUser = (amount ?? 0) / userIds.length
 
       try {
-        const result = await sdk.users.sendSplitDonations({
+        const transaction = await sdk.users.getSplitDonationsTransaction({
           splits: userIds.map((id: number) => ({
             id: encodeHashId(id),
             amount: BigInt(
-              amountPerUser * 10 ** TOKEN_LISTING_MAP.USDC.decimals
+              Math.round(amountPerUser * 10 ** TOKEN_LISTING_MAP.USDC.decimals)
             )
           })),
           total: BigInt(
@@ -248,17 +291,30 @@ export const SplitDonationPage = () => {
           )
         })
 
-        console.log('Successfully sent split donation', result)
+        if (!transaction) {
+          setIsLoading(false)
+          return
+        }
+        const serializedTransaction = Buffer.from(
+          transaction.serialize()
+        ).toString('base64')
 
-        setFieldValue('amount', undefined)
-        dispatch(showConfetti())
-        dispatch(toast({ content: `Successfully donated ${amount} USDC` }))
+        openCoinflowModal({
+          amount,
+          serializedTransaction,
+          onSuccess: () => {
+            console.log('Successfully sent split donation', transaction)
+            setFieldValue('amount', undefined)
+            dispatch(showConfetti())
+            dispatch(toast({ content: `Successfully donated ${amount} USDC` }))
+          }
+        })
       } catch (e) {
         console.error(e)
       }
       setIsLoading(false)
     },
-    [dispatch]
+    [dispatch, openCoinflowModal]
   )
 
   return (
@@ -268,7 +324,7 @@ export const SplitDonationPage = () => {
       header={header}
       css={{ textAlign: 'left' }}
     >
-      <Formik initialValues={initialValues} onSubmit={handleSubmit}>
+      <Formik initialValues={initialValues} onSubmit={handleCoinflowSubmit}>
         <Form>
           <SplitDonationForm isLoading={isLoading} />
         </Form>

@@ -399,7 +399,7 @@ export class UsersApi extends GeneratedUsersApi {
     return { ethWallet, userBank }
   }
 
-  private async getSplitDonationsTransaction(
+  public async getSplitDonationsTransaction(
     params: GetSplitDonationsTransactionRequest
   ) {
     const mint = 'USDC'
@@ -409,9 +409,19 @@ export class UsersApi extends GeneratedUsersApi {
       GetSplitDonationsTransactionSchema
     )(params)
 
+    const splitsWithWallets = await Promise.all(
+      splits.map(async (split) => {
+        const { id, ...rest } = split
+        return {
+          ...rest,
+          wallet: (await this.getWalletAndUserBank(id)).userBank!
+        }
+      })
+    )
+
     const routeInstruction =
       await this.paymentRouterClient.createRouteInstruction({
-        splits,
+        splits: splitsWithWallets,
         total,
         mint
       })
@@ -455,6 +465,8 @@ export class UsersApi extends GeneratedUsersApi {
       ]
     })
 
+    console.log('REED tx in sdk', { transaction })
+
     return transaction
   }
 
@@ -464,26 +476,13 @@ export class UsersApi extends GeneratedUsersApi {
    * @hidden
    */
   public async sendSplitDonations(params: SplitDonationsRequest) {
-    const { splits, ...rest } = await parseParams(
+    const parsedParams = await parseParams(
       'splitDonationsRequest',
       SplitDonationsRequestSchema
     )(params)
 
     // TODO: Use prepareSplits instead
-    const splitsWithWallets = await Promise.all(
-      splits.map(async (split) => {
-        const { id, ...rest } = split
-        return {
-          ...rest,
-          wallet: (await this.getWalletAndUserBank(id)).userBank!
-        }
-      })
-    )
-
-    const transaction = await this.getSplitDonationsTransaction({
-      ...rest,
-      splits: splitsWithWallets
-    })
+    const transaction = await this.getSplitDonationsTransaction(parsedParams)
 
     if (!transaction) return
 
