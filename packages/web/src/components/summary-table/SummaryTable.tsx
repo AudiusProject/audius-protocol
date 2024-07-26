@@ -36,8 +36,8 @@ export type SummaryTableProps = {
 }
 
 const messages = {
-  more: 'Show advanced options',
-  hide: 'Hide advanced options'
+  showAdvanced: 'Show advanced options',
+  hideAdvanced: 'Hide advanced options'
 }
 
 export const SummaryTable = ({
@@ -138,7 +138,7 @@ export const SummaryTable = ({
           size='s'
           strength='strong'
         >
-          {showExtraItems ? messages.hide : messages.more}
+          {showExtraItems ? messages.hideAdvanced : messages.showAdvanced}
         </TextLink>
       </Flex>
     )
