@@ -122,12 +122,10 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
     <Formik<TrackEditFormValues>
       initialValues={initialValues}
       onSubmit={handleSubmit}
-      // validationSchema={toFormikValidationSchema(EditFormValidationSchema)}
+      validationSchema={toFormikValidationSchema(EditFormValidationSchema)}
     >
       {(props) => (
         <>
-          {/* {JSON.stringify(props.errors)}
-          {JSON.stringify(props.values.trackMetadatas[0].stream_conditions)} */}
           <TrackEditForm
             {...props}
             hideContainer={hideContainer}

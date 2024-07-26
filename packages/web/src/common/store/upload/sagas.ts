@@ -35,7 +35,7 @@ import {
   makeUid,
   waitForAccount
 } from '@audius/common/utils'
-import { EntityManagerAction, sdk } from '@audius/sdk'
+import { EntityManagerAction } from '@audius/sdk'
 import type { ProgressCB } from '@audius/sdk/dist/services/creatorNode'
 import type { TrackMetadata, UploadTrackMetadata } from '@audius/sdk/dist/utils'
 import { BN, Program } from '@coral-xyz/anchor'
@@ -54,13 +54,10 @@ import {
 
 import { make } from 'common/store/analytics/actions'
 import { prepareStemsForUpload } from 'pages/upload-page/store/utils/stems'
-import { audiusSdk } from 'services/audius-sdk'
 import { Crowdfund } from 'services/crowdfund/crowdfund'
 import * as IDL from 'services/crowdfund/crowdfund.json'
-import { getRootSolanaAccount } from 'services/solana/solana'
 import * as errorActions from 'store/errors/actions'
 import { reportToSentry } from 'store/errors/reportToSentry'
-import { getWalletAddress } from 'store/token-dashboard/getWalletAddress'
 import { waitForWrite } from 'utils/sagaHelpers'
 
 import { getUnclaimedPlaylistId } from '../cache/collections/utils/getUnclaimedPlaylistId'
