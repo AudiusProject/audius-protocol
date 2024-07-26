@@ -13,7 +13,8 @@ import {
   VersionedTransaction,
   AddressLookupTableAccount,
   TransactionMessage,
-  Connection
+  Connection,
+  TransactionInstruction
 } from '@solana/web3.js'
 import BN from 'bn.js'
 import { sumBy } from 'lodash'
@@ -782,7 +783,7 @@ const initJupiter = () => {
 
 let _jup: ReturnType<typeof createJupiterApiClient>
 
-const getInstance = () => {
+const getJupiterInstance = () => {
   if (!_jup) {
     _jup = initJupiter()
   }
@@ -796,7 +797,6 @@ function* swapToUsdcAndSendToUserbank({
   connection,
   inputMint,
   amount,
-  destinationTokenAccountPublicKey,
   sourceWalletPublicKey,
   usdcUserBankTokenAccountPublicKey,
   signAndSendTransaction
@@ -804,14 +804,21 @@ function* swapToUsdcAndSendToUserbank({
   connection: Connection
   inputMint: string
   amount: number
-  destinationTokenAccountPublicKey: PublicKey
   sourceWalletPublicKey: PublicKey
   usdcUserBankTokenAccountPublicKey: PublicKey
   signAndSendTransaction: (
     transaction: Transaction | VersionedTransaction
   ) => Promise<Transaction>
 }) {
-  const jup = getInstance()
+  const jup = getJupiterInstance()
+
+  const {
+    destinationTokenAccountPublicKey,
+    instruction: createUsdcAssociatedTokenAccountInstruction
+  } = yield* call(getUsdcAssociatedTokenAccountWithCreateInstruction, {
+    connection,
+    sourceWalletPublicKey
+  })
 
   // Get quote for the swap
   const quote = yield* call([jup, jup.quoteGet], {
@@ -879,6 +886,16 @@ function* swapToUsdcAndSendToUserbank({
   const message = TransactionMessage.decompile(transaction.message, {
     addressLookupTableAccounts
   })
+
+  // Prepend transaction instructions with USDC associated token account creation instruction if needed
+  if (createUsdcAssociatedTokenAccountInstruction) {
+    console.info(
+      'Prepending USDC associated token account creation instruction to transaction...'
+    )
+    message.instructions.unshift(createUsdcAssociatedTokenAccountInstruction)
+  }
+
+  // Append transfer instruction to send USDC to user bank
   message.instructions.push(
     createTransferInstruction(
       destinationTokenAccountPublicKey,
@@ -887,6 +904,7 @@ function* swapToUsdcAndSendToUserbank({
       amount
     )
   )
+
   // Compile the message and update the transaction
   transaction.message = message.compileToV0Message(addressLookupTableAccounts)
 
@@ -897,38 +915,32 @@ function* swapToUsdcAndSendToUserbank({
 // We use our own version of getOrCreateAssociatedTokenAccount instead of the one
 // from @solana/spl-token so we can sign the transaction with the solana wallet provider
 // since we do not have access to the private key in the wallet provider.
-function* getOrCreateUsdcAssociatedTokenAccount({
+function* getUsdcAssociatedTokenAccountWithCreateInstruction({
   connection,
-  provider,
   sourceWalletPublicKey
 }: {
   connection: Connection
-  provider: any
   sourceWalletPublicKey: PublicKey
 }) {
+  let instruction: TransactionInstruction | null = null
+
   const destinationTokenAccountPublicKey = getAssociatedTokenAddressSync(
     new PublicKey(TOKEN_LISTING_MAP.USDC.address),
     sourceWalletPublicKey
   )
+
   try {
     yield* call(getAccount, connection, destinationTokenAccountPublicKey)
   } catch {
-    console.info('Creating USDC associated token account...')
-    const transaction = new Transaction().add(
-      createAssociatedTokenAccountInstruction(
-        sourceWalletPublicKey,
-        destinationTokenAccountPublicKey,
-        sourceWalletPublicKey,
-        new PublicKey(TOKEN_LISTING_MAP.USDC.address)
-      )
+    instruction = createAssociatedTokenAccountInstruction(
+      sourceWalletPublicKey,
+      destinationTokenAccountPublicKey,
+      sourceWalletPublicKey,
+      new PublicKey(TOKEN_LISTING_MAP.USDC.address)
     )
-    const { blockhash: latestBlockHash } = yield* call(
-      connection.getLatestBlockhash
-    )
-    transaction.recentBlockhash = latestBlockHash
-    yield* call(provider.signAndSendTransaction, transaction)
   }
-  return destinationTokenAccountPublicKey
+
+  return { destinationTokenAccountPublicKey, instruction }
 }
 
 function* purchaseWithAnything({
@@ -974,21 +986,11 @@ function* purchaseWithAnything({
     const sourceWallet = yield* call(provider.connect)
 
     // ===== SWAP INPUT MINT TO USDC =====
-    const destinationTokenAccountPublicKey = yield* call(
-      getOrCreateUsdcAssociatedTokenAccount,
-      {
-        connection,
-        provider,
-        sourceWalletPublicKey: sourceWallet.publicKey
-      }
-    )
-
     console.info('Swapping to USDC then sending to USDC userbank...')
     yield* call(swapToUsdcAndSendToUserbank, {
       connection,
       inputMint,
       amount: totalAmountWithDecimals,
-      destinationTokenAccountPublicKey,
       sourceWalletPublicKey: sourceWallet.publicKey,
       usdcUserBankTokenAccountPublicKey: usdcUserBankTokenAccount.address,
       signAndSendTransaction: provider.signAndSendTransaction
