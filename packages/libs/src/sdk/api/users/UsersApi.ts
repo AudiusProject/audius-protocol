@@ -394,7 +394,7 @@ export class UsersApi extends GeneratedUsersApi {
     }
     const { userBank } = await this.claimableTokens.getOrCreateUserBank({
       ethWallet,
-      mint: 'wAUDIO'
+      mint: 'USDC'
     })
     return { ethWallet, userBank }
   }
@@ -402,6 +402,8 @@ export class UsersApi extends GeneratedUsersApi {
   private async getSplitDonationsTransaction(
     params: GetSplitDonationsTransactionRequest
   ) {
+    const mint = 'USDC'
+
     const { total, splits } = await parseParams(
       'getSplitDonationsTransaction',
       GetSplitDonationsTransactionSchema
@@ -411,7 +413,7 @@ export class UsersApi extends GeneratedUsersApi {
       await this.paymentRouterClient.createRouteInstruction({
         splits,
         total,
-        mint: 'wAUDIO'
+        mint
       })
 
     // Use the authed wallet's userbank and relay
@@ -420,19 +422,20 @@ export class UsersApi extends GeneratedUsersApi {
     this.logger.debug(
       `Using userBank ${await this.claimableTokens.deriveUserBank({
         ethWallet,
-        mint: 'USDC'
+        mint
       })} to donate...`
     )
+
     const paymentRouterTokenAccount =
       await this.paymentRouterClient.getOrCreateProgramTokenAccount({
-        mint: 'wAUDIO'
+        mint
       })
 
     const transferSecpInstruction =
       await this.claimableTokens.createTransferSecpInstruction({
         ethWallet,
         destination: paymentRouterTokenAccount.address,
-        mint: 'wAUDIO',
+        mint,
         amount: total,
         auth: this.auth
       })
@@ -441,7 +444,7 @@ export class UsersApi extends GeneratedUsersApi {
       await this.claimableTokens.createTransferInstruction({
         ethWallet,
         destination: paymentRouterTokenAccount.address,
-        mint: 'wAUDIO'
+        mint
       })
 
     const transaction = await this.paymentRouterClient.buildTransaction({
@@ -466,6 +469,7 @@ export class UsersApi extends GeneratedUsersApi {
       SplitDonationsRequestSchema
     )(params)
 
+    // TODO: Use prepareSplits instead
     const splitsWithWallets = await Promise.all(
       splits.map(async (split) => {
         const { id, ...rest } = split

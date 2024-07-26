@@ -75,11 +75,11 @@ type ProfileLeftNavProps = {
   isOwner: boolean
 }
 
-type DonateAudioButtonProps = {
+type DonateButtonProps = {
   userId: ID
 }
 
-const DonateAudioButton = (props: DonateAudioButtonProps) => {
+const DonateButton = (props: DonateButtonProps) => {
   const { userId } = props
   const isManagedAccount = useIsManagedAccount()
   const dispatch = useDispatch()
@@ -154,7 +154,7 @@ export const ProfileLeftNav = (props: ProfileLeftNavProps) => {
 
   const renderSupportViaDonationButton = (_: any, style: object) => (
     <animated.div className={styles.tipAudioButtonContainer} style={style}>
-      <DonateAudioButton userId={userId} />
+      <DonateButton userId={userId} />
     </animated.div>
   )
 

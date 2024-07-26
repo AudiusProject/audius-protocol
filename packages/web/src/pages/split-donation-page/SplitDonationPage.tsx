@@ -133,7 +133,7 @@ const SplitDonationForm = (props: SplitDonationFormProps) => {
     return (
       users?.map((user) => ({
         name: user.name,
-        value: (values.amount ?? 0) / userIds.length
+        value: Number(((values.amount ?? 0) / userIds.length).toFixed(2))
       })) ?? []
     )
   }, [users, values, userIds])
@@ -155,7 +155,7 @@ const SplitDonationForm = (props: SplitDonationFormProps) => {
           <TextField
             label={messages.amountInputLabel}
             placeholder='0'
-            endAdornment='$AUDIO'
+            endAdornment='USDC'
             name='amount'
             type='number'
           />
@@ -240,17 +240,19 @@ export const SplitDonationPage = () => {
           splits: userIds.map((id: number) => ({
             id: encodeHashId(id),
             amount: BigInt(
-              amountPerUser * 10 ** TOKEN_LISTING_MAP.AUDIO.decimals
+              amountPerUser * 10 ** TOKEN_LISTING_MAP.USDC.decimals
             )
           })),
-          total: BigInt((amount ?? 0) * 10 ** TOKEN_LISTING_MAP.AUDIO.decimals)
+          total: BigInt(
+            Math.round((amount ?? 0) * 10 ** TOKEN_LISTING_MAP.USDC.decimals)
+          )
         })
 
         console.log('Successfully sent split donation', result)
 
         setFieldValue('amount', undefined)
         dispatch(showConfetti())
-        dispatch(toast({ content: `Successfully donated ${amount} $AUDIO` }))
+        dispatch(toast({ content: `Successfully donated ${amount} USDC` }))
       } catch (e) {
         console.error(e)
       }
