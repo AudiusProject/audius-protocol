@@ -239,8 +239,10 @@ export const SplitDonationPage = () => {
   const { color, spacing } = useTheme()
   const planCode = `recurring_donations_${userId}`
 
-  //   const hasPlan = plans.some((plan: any) => plan.code === planCode)
-  const hasPlan = true
+  const plan = useMemo(
+    () => plans.find((plan: any) => plan.code === planCode),
+    [plans, planCode]
+  )
 
   const getPlans = useCallback(async () => {
     const options = {
@@ -321,13 +323,13 @@ export const SplitDonationPage = () => {
 
   const handlePlanSubmit = useCallback(
     async ({ amount }) => {
-      if (plans.some((plan) => plan.code === planCode)) {
+      if (plan) {
         updatePlan({ amount })
       } else {
         createPlan({ amount })
       }
     },
-    [createPlan, planCode, plans, updatePlan]
+    [createPlan, plan, updatePlan]
   )
 
   const handleCoinflowSubmit = useCallback(
@@ -402,7 +404,7 @@ export const SplitDonationPage = () => {
       css={{ textAlign: 'left' }}
     >
       <Flex direction='column' gap='l'>
-        {hasPlan ? (
+        {plan ? (
           <Paper
             p='xl'
             css={{ background: color.special.gradient }}
@@ -414,9 +416,15 @@ export const SplitDonationPage = () => {
               width={spacing['2xl']}
               fill={color.static.white}
             />
-            <Text variant='title' color='staticWhite'>
-              {messages.activePlan}
-            </Text>
+            <Flex direction='column' alignItems='flex-start'>
+              <Text variant='title' color='staticWhite'>
+                {messages.activePlan}
+              </Text>
+              <Text variant='body' color='staticWhite'>
+                You are donating {plan.amount.cents / 1000} USDC monthly to the
+                selected users. Click donate to update your donation!
+              </Text>
+            </Flex>
           </Paper>
         ) : null}
         <Formik initialValues={initialValues} onSubmit={handleCoinflowSubmit}>
