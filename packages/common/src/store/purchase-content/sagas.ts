@@ -625,7 +625,7 @@ function* doStartPurchaseContentFlow({
         if (!purchaseMethodMintAddress) {
           throw new Error('Missing purchase method mint address')
         }
-        yield* call(handlePayWithAnything, {
+        yield* call(purchaseWithAnything, {
           purchaserUserId,
           contentId,
           contentType,
@@ -825,6 +825,30 @@ function* swapToUsdcAndSendToUserbank({
     throw new Error(`Failed to get Jupiter quote for ${inputMint} => USDC`)
   }
 
+  // Make sure user has enough funds to purchase content
+  try {
+    const externalTokenAccountPublicKey = getAssociatedTokenAddressSync(
+      new PublicKey(inputMint),
+      sourceWalletPublicKey
+    )
+    const { amount } = yield* call(
+      getAccount,
+      connection,
+      externalTokenAccountPublicKey
+    )
+    if (amount < BigInt(quote.inAmount)) {
+      throw new PurchaseContentError(
+        PurchaseErrorCode.InsufficientExternalTokenBalance,
+        `You do not have enough funds for ${inputMint} to complete this purchase.`
+      )
+    }
+  } catch {
+    throw new PurchaseContentError(
+      PurchaseErrorCode.InsufficientExternalTokenBalance,
+      `You do not have enough funds for ${inputMint} to complete this purchase.`
+    )
+  }
+
   // Get swap instructions
   const { swapTransaction } = yield* call([jup, jup.swapPost], {
     swapRequest: {
@@ -907,7 +931,7 @@ function* getOrCreateUsdcAssociatedTokenAccount({
   return destinationTokenAccountPublicKey
 }
 
-function* handlePayWithAnything({
+function* purchaseWithAnything({
   purchaserUserId,
   contentId,
   contentType = PurchaseableContentType.TRACK,
