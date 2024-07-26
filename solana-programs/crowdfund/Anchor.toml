@@ -4,8 +4,14 @@
 resolution = true
 skip-lint = false
 
+[programs.devnet]
+crowdfund = "4UkTdMM9dNqjUAEjAJVj8Rec83bG747V9dZP7HLK2LJk"
+
 [programs.localnet]
-crowdfund = "BsBDtuZLBxpdhKLeLw299uxWuqJTXzv3x8nAzgqDsu2F"
+crowdfund = "4UkTdMM9dNqjUAEjAJVj8Rec83bG747V9dZP7HLK2LJk"
+
+[programs.mainnet]
+crowdfund = "4UkTdMM9dNqjUAEjAJVj8Rec83bG747V9dZP7HLK2LJk"
 
 [registry]
 url = "https://api.apr.dev"

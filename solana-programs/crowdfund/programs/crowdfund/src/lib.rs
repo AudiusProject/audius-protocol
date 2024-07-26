@@ -1,8 +1,15 @@
 use anchor_lang::prelude::*;
 use anchor_lang::{AnchorDeserialize, AnchorSerialize};
 use anchor_spl::token::{Token, TokenAccount};
+use int_enum::IntEnum;
 
-declare_id!("BsBDtuZLBxpdhKLeLw299uxWuqJTXzv3x8nAzgqDsu2F");
+declare_id!("4UkTdMM9dNqjUAEjAJVj8Rec83bG747V9dZP7HLK2LJk");
+
+#[error_code]
+pub enum CustomError {
+    #[msg("Content type not supported")]
+    InvalidContentType
+}
 
 #[program]
 pub mod crowdfund {
@@ -10,16 +17,19 @@ pub mod crowdfund {
 
     pub fn start_campaign(
         ctx: Context<StartCampaignCtx>,
-        content_id: u64,
-        content_type: u8,
-        data: Campaign,
+        campaign: Campaign,
     ) -> Result<()> {
         msg!("Starting campaign: {:?}", ctx.program_id);
 
+        let content_type = match ContentType::try_from(campaign.content_type) {
+            Err(_) => return err!(CustomError::InvalidContentType),
+            Ok(f) => f,
+        };
+
         let campaign_account = &mut ctx.accounts.campaign_account;
-        campaign_account.destination_wallet = data.destination_wallet;
-        campaign_account.funding_threshold = data.funding_threshold;
-        campaign_account.content_id = content_id;
+        campaign_account.destination_wallet = campaign.destination_wallet;
+        campaign_account.funding_threshold = campaign.funding_threshold;
+        campaign_account.content_id = campaign.content_id;
         campaign_account.content_type = content_type;
         campaign_account.fee_payer_wallet = *ctx.accounts.fee_payer_wallet.key;
         campaign_account.bump = ctx.bumps.campaign_account;
@@ -36,18 +46,19 @@ pub mod crowdfund {
     // }
 }
 
-// #[derive(AnchorSerialize, AnchorDeserialize, Eq, PartialEq, Clone, Copy, Debug)]
-// pub enum ContentType {
-//     Track,
-//     Album,
-// }
+#[repr(u8)]
+#[derive(IntEnum, AnchorSerialize, AnchorDeserialize, Eq, PartialEq, Clone, Copy, Debug)]
+pub enum ContentType {
+    Track = 1,
+    Album = 2,
+}
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug)]
 pub struct Campaign {
     destination_wallet: Pubkey,
     funding_threshold: u64,
-    // content_id: u64,
-    // content_type: u8,
+    content_id: u32,
+    content_type: u8,
     fee_payer_wallet: Pubkey,
     // funding_deadline: i64,
 }
@@ -56,26 +67,26 @@ pub struct Campaign {
 pub struct CampaignAccount {
     destination_wallet: Pubkey,
     funding_threshold: u64,
-    content_id: u64,
-    content_type: u8,
+    content_id: u32,
+    content_type: ContentType,
     fee_payer_wallet: Pubkey,
     bump: u8,
     // funding_deadline: i64,
 }
 
 #[derive(Accounts)]
-#[instruction(content_id: u64, content_type: u8)]
+#[instruction(campaign: Campaign)]
 pub struct StartCampaignCtx<'info> {
     #[account(mut)]
     pub fee_payer_wallet: Signer<'info>,
     #[account(
         init,
         payer = fee_payer_wallet,
-        space = 8 + 32 + 8 + 8 + 1 + 32 + 1,
+        space = 8 + 32 + 8 + 4 + 1 + 32 + 1,
         seeds = [
             b"campaign",
-            content_id.try_to_vec().unwrap().as_slice(),
-            content_type.try_to_vec().unwrap().as_slice()
+            campaign.content_id.try_to_vec().unwrap().as_slice(),
+            campaign.content_type.try_to_vec().unwrap().as_slice()
             ],
         bump
     )]
