@@ -1,9 +1,19 @@
 import { USDC } from '@audius/fixed-decimal'
 import { type AudiusSdk } from '@audius/sdk'
+import { createJupiterApiClient } from '@jup-ag/api'
+import {
+  createAssociatedTokenAccountInstruction,
+  createTransferInstruction,
+  getAccount,
+  getAssociatedTokenAddressSync,
+  getMint
+} from '@solana/spl-token'
+import { PublicKey, Transaction, VersionedTransaction } from '@solana/web3.js'
 import BN from 'bn.js'
 import { sumBy } from 'lodash'
 import { takeLatest } from 'redux-saga/effects'
 import { call, put, race, select, take } from 'typed-redux-saga'
+import type { IProviderOptions } from 'web3modal'
 
 import { PurchaseableContentMetadata, isPurchaseableAlbum } from '~/hooks'
 import { Kind } from '~/models'
@@ -20,6 +30,7 @@ import { User } from '~/models/User'
 import { BNUSDC } from '~/models/Wallet'
 import {
   getRootSolanaAccount,
+  getSolanaConnection,
   getTokenAccountInfo
 } from '~/services/audius-backend/solana'
 import { FeatureFlags } from '~/services/remote-config/feature-flags'
@@ -56,6 +67,7 @@ import {
   CoinflowPurchaseMetadata,
   coinflowOnrampModalActions
 } from '~/store/ui/modals/coinflow-onramp-modal'
+import { getErrorMessage } from '~/utils'
 import { encodeHashId } from '~/utils/hashIds'
 import { BN_USDC_CENT_WEI } from '~/utils/wallet'
 
@@ -63,6 +75,7 @@ import { cacheActions } from '../cache'
 import { pollGatedContent } from '../gated-content/sagas'
 import { updateGatedContentStatus } from '../gated-content/slice'
 import { saveCollection } from '../social/collections/actions'
+import { TOKEN_LISTING_MAP } from '../ui'
 
 import {
   buyUSDC,
@@ -71,7 +84,8 @@ import {
   purchaseSucceeded,
   usdcBalanceSufficient,
   purchaseContentFlowFailed,
-  startPurchaseContentFlow
+  startPurchaseContentFlow,
+  payWithAnything
 } from './slice'
 import {
   PurchaseableContentType,
@@ -735,10 +749,231 @@ function* doStartPurchaseContentFlow({
   }
 }
 
+const initJupiter = () => {
+  try {
+    return createJupiterApiClient()
+  } catch (e) {
+    console.error('Jupiter failed to initialize', e)
+    throw e
+  }
+}
+
+let _jup: ReturnType<typeof createJupiterApiClient>
+
+const getInstance = () => {
+  if (!_jup) {
+    _jup = initJupiter()
+  }
+  return _jup
+}
+
+/**
+ * Executes the Jupiter exchange from input mint to $USDC
+ */
+function* swapToUsdc({
+  inputMint,
+  amount,
+  userPublicKey,
+  destinationTokenAccount,
+  signAndSendTransaction
+}: any) {
+  console.log('in swapToUsdc before quote', {
+    inputMint,
+    amount,
+    userPublicKey,
+    destinationTokenAccount
+  })
+  const jup = getInstance()
+
+  // Get quote for the swap
+  const quote = yield* call([jup, jup.quoteGet], {
+    inputMint,
+    outputMint: TOKEN_LISTING_MAP.USDC.address,
+    amount,
+    swapMode: 'ExactOut'
+  })
+  console.log('in swapToUsdc after quote', { quote })
+  if (!quote) {
+    throw new Error('Failed to get Jupiter quote')
+  }
+
+  // Get swap instructions
+  const { swapTransaction } = yield* call([jup, jup.swapPost], {
+    swapRequest: {
+      quoteResponse: quote,
+      userPublicKey,
+      destinationTokenAccount
+    }
+  })
+  console.log('in swapToUsdc', { swapTransaction })
+  const decoded = Buffer.from(swapTransaction, 'base64')
+  const transaction = VersionedTransaction.deserialize(decoded)
+  console.log('deserialized', { transaction })
+
+  // Execute the swap by signing and sending the transaction
+  return yield* call(signAndSendTransaction, transaction)
+}
+
+function* handlePayWithAnything({
+  payload: {
+    inputMint,
+    extraAmount,
+    contentId,
+    contentType = PurchaseableContentType.TRACK
+  }
+}: ReturnType<typeof payWithAnything>) {
+  let provider: any
+  try {
+    // get user & user bank
+    const purchaserUserId = yield* select(getUserId)
+    if (!purchaserUserId) {
+      throw new Error('Failed to fetch purchasing user id')
+    }
+
+    const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+    const usdcUserBank = yield* call(getUSDCUserBank)
+    const usdcUserBankTokenAccount = yield* call(
+      getTokenAccountInfo,
+      audiusBackendInstance,
+      {
+        mint: 'usdc',
+        tokenAccount: usdcUserBank
+      }
+    )
+    if (!usdcUserBankTokenAccount) {
+      throw new Error('Failed to fetch USDC user bank token account info')
+    }
+
+    // get solana wallet provider
+    const provider = window.solana
+    if (!provider) return
+    const sourceWallet = yield* call(provider.connect)
+
+    // const totalAmount = price + (extraAmount ?? 0) / 100
+    // const priceBN = new BN(price).mul(BN_USDC_CENT_WEI)
+    // const extraAmountBN = new BN(extraAmount ?? 0).mul(BN_USDC_CENT_WEI)
+    // const totalAmountDueCentsBN = priceBN.add(extraAmountBN) as BNUSDC
+    const audiusSdk = yield* getContext('audiusSdk')
+    const sdk = yield* call(audiusSdk)
+    const connection = yield* call(getSolanaConnection, audiusBackendInstance)
+    // Swap input mint to USDC
+    const inputMintInfo = yield* call(
+      getMint,
+      connection,
+      new PublicKey(inputMint)
+    )
+    if (!inputMintInfo) {
+      throw new Error('Failed to fetch input mint info')
+    }
+
+    // Purchase the content from usdc user bank balance
+    const decimals = TOKEN_LISTING_MAP.USDC.decimals
+    // const decimals = inputMintInfo.decimals
+    const { price } = yield* call(getContentInfo, {
+      contentId,
+      contentType
+    })
+    const totalAmount = price + (extraAmount ?? 0) / 100
+    const amount = Math.floor(totalAmount * 10 ** decimals)
+
+    console.log('GETTING OR CREATING USDC ATA')
+    const destinationTokenAccountPublicKey = getAssociatedTokenAddressSync(
+      new PublicKey(TOKEN_LISTING_MAP.USDC.address),
+      sourceWallet.publicKey
+    )
+    try {
+      yield* call(getAccount, connection, destinationTokenAccountPublicKey)
+    } catch {
+      const transaction = new Transaction().add(
+        createAssociatedTokenAccountInstruction(
+          sourceWallet.publicKey,
+          destinationTokenAccountPublicKey,
+          sourceWallet.publicKey,
+          new PublicKey(TOKEN_LISTING_MAP.USDC.address)
+        )
+      )
+      const { blockhash: latestBlockHash } = yield* call(
+        connection.getLatestBlockhash
+      )
+      transaction.recentBlockhash = latestBlockHash
+      const { signature } = yield* call(
+        provider.signAndSendTransaction,
+        transaction
+      )
+      // yield* call(confirmTransaction, signature)
+    }
+    console.log('GOT CREATED USDC ATA SUCCESSFULLY!!!!!', {
+      destinationTokenAccountPublicKey:
+        destinationTokenAccountPublicKey.toString()
+    })
+
+    console.log('BEFORE SWAPPING TO USDC')
+    const { signature: swapTxId } = yield* call(swapToUsdc, {
+      inputMint,
+      amount,
+      userPublicKey: sourceWallet.publicKey.toString(),
+      destinationTokenAccount: destinationTokenAccountPublicKey.toString(),
+      signAndSendTransaction: provider.signAndSendTransaction
+    })
+    console.log({ swapTxId })
+    // yield* call(confirmTransaction, swapTxId)
+    console.log('SWAPPED SUCCESSFULLY!!!!!!')
+
+    console.log('BEFORE TRANSFERRING TO USDC USER BANK')
+    const transferTx = new Transaction().add(
+      createTransferInstruction(
+        sourceWallet.publicKey,
+        usdcUserBankTokenAccount.address,
+        sourceWallet.publicKey,
+        amount
+      )
+    )
+    const { blockhash: latestBlockHash } = yield* call(
+      connection.getLatestBlockhash
+    )
+    transferTx.recentBlockhash = latestBlockHash
+    const { signature: transferTxId } = yield* call(
+      provider.signAndSendTransaction,
+      transferTx
+    )
+    console.log({ transferTxId })
+    // yield* call(confirmTransaction, transferTxId)
+    console.log('TRANSFERRED SUCCESSFULLY!!!!!!')
+
+    console.log('BEFORE PURCHASING TRACK')
+    if (contentType === PurchaseableContentType.TRACK) {
+      yield* call([sdk.tracks, sdk.tracks.purchaseTrack], {
+        userId: encodeHashId(purchaserUserId),
+        trackId: encodeHashId(contentId),
+        price: price / 100.0,
+        extraAmount: extraAmount ? extraAmount / 100.0 : undefined
+      })
+      // } else {
+      //   yield* call([sdk.albums, sdk.albums.purchaseAlbum], {
+      //     userId: encodeHashId(purchaserUserId),
+      //     albumId: encodeHashId(contentId),
+      //     price: price / 100.0,
+      //     extraAmount: extraAmount ? extraAmount / 100.0 : undefined
+      //   })
+    }
+    console.log('PURCHASED SUCCESSFULLY!!!!!!')
+  } catch (e) {
+    console.error(`handlePayWithAnything | Error: ${e}`)
+  } finally {
+    // disconnect wallet
+    // yield* call([provider, provider.disconnect])
+    yield* call([provider, 'disconnect'])
+  }
+}
+
 function* watchStartPurchaseContentFlow() {
   yield takeLatest(startPurchaseContentFlow, doStartPurchaseContentFlow)
 }
 
+function* watchPayWithAnything() {
+  yield takeLatest(payWithAnything.type, handlePayWithAnything)
+}
+
 export default function sagas() {
-  return [watchStartPurchaseContentFlow]
+  return [watchStartPurchaseContentFlow, watchPayWithAnything]
 }
