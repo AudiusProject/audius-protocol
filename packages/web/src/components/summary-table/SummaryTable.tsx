@@ -1,4 +1,4 @@
-import { ReactNode, useCallback, useState } from 'react'
+import { ReactNode, useCallback, useEffect, useState } from 'react'
 
 import {
   Flex,
@@ -64,15 +64,15 @@ export const SummaryTable = ({
   // Extra items are collapsed by default
   const [showExtraItems, setShowExtraItems] = useState(false)
   const onToggleExtraItems = useCallback(
-    () =>
-      setShowExtraItems((val) => {
-        if (val) {
-          onHideExtraItems?.()
-        }
-        return !val
-      }),
-    [setShowExtraItems, onHideExtraItems]
+    () => setShowExtraItems((val) => !val),
+    [setShowExtraItems]
   )
+
+  useEffect(() => {
+    if (!showExtraItems) {
+      onHideExtraItems?.()
+    }
+  }, [onHideExtraItems, showExtraItems])
 
   const renderHeader = () => {
     return (
