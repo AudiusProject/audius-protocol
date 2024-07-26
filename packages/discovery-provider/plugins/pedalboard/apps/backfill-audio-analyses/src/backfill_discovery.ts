@@ -160,6 +160,10 @@ async function getAudioAnalysis(contentNodes: string[], track: Track) {
       }
     } catch (error: any) {
       console.log(formatErrorLog(error.message, track, contentNode, i + 1))
+      if (checkStoreAllNodeNext) {
+        console.log('Sleeping before retrying prod cn2')
+        await new Promise((resolve) => setTimeout(resolve, 10000))
+      }
       continue
     }
   }
