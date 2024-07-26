@@ -1,5 +1,7 @@
 use anchor_lang::prelude::*;
 use anchor_lang::{AnchorDeserialize, AnchorSerialize};
+use anchor_spl::associated_token::AssociatedToken;
+use anchor_spl::token::{Token, TokenAccount};
 
 declare_id!("BsBDtuZLBxpdhKLeLw299uxWuqJTXzv3x8nAzgqDsu2F");
 
@@ -63,7 +65,7 @@ pub struct CampaignAccount {
 }
 
 #[derive(Accounts)]
-#[instruction(content_id: u64, content_type: u8, data: Campaign)]
+#[instruction(content_id: u64, content_type: u8)]
 pub struct StartCampaignCtx<'info> {
     #[account(mut)]
     pub fee_payer_wallet: Signer<'info>,
@@ -79,5 +81,15 @@ pub struct StartCampaignCtx<'info> {
         bump
     )]
     pub campaign_account: Account<'info, CampaignAccount>,
+    #[account(
+        init,
+        payer = fee_payer_wallet,
+        associated_token::mint = mint,
+        associated_token::authority = fee_payer_wallet
+    )]
+    pub escrow_token_account: Account<'info, TokenAccount>,
     pub system_program: Program<'info, System>,
+    pub associated_token_program: Program<'info, AssociatedToken>,
+    pub token_program: Program<'info, Token>,
+    pub mint: UncheckedAccount<'info>,
 }
