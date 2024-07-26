@@ -16,7 +16,7 @@ const semaphore = new Semaphore(MAX_CONCURRENT_REQUESTS)
 
 const REQUEST_TIMEOUT = 5000 // 5s
 
-const DB_OFFSET_KEY = 'discovery:backfill_audio_analyses:offset2'
+const DB_OFFSET_KEY = 'discovery:backfill_audio_analyses:offset3'
 
 interface Track {
   track_id: number
@@ -60,16 +60,19 @@ async function getAudioAnalysis(contentNodes: string[], track: Track) {
 
   // allow up to 5 attempts to get audio analysis for this track
   for (let i = 0; i < 5; i++) {
-    // last attempt will always be to the storeall node
+    // last 2 attempts will always be to the storeall node
     let contentNode = "https://creatornode2.audius.co"
-    if (i < 4) {
+    let checkStoreAllNodeNext = i == 3
+    // except for tracks with >= 3 errors, which attempt to check the storall node first
+    if (i < 3 || track.audio_analysis_error_count! >= 3) {
       // choose a random content node
       contentNode =
         contentNodes[Math.floor(Math.random() * contentNodes.length)]
     }
-    // check storeall node first for any retried errors
-    if (track.audio_analysis_error_count! >= 3 && i == 0) {
+    // check storeall node first for any retried errors. allow 3 attempts
+    if (track.audio_analysis_error_count! >= 3 && i < 3) {
       contentNode = "https://creatornode2.audius.co"
+      checkStoreAllNodeNext = i < 2
     }
     try {
       let analysisUrl = `${contentNode}/uploads/${audioUploadId}`
@@ -149,6 +152,10 @@ async function getAudioAnalysis(contentNodes: string[], track: Track) {
             i + 1
           )
         )
+        if (response.status != 404 && checkStoreAllNodeNext) {
+          console.log('Sleeping before retrying prod cn2')
+          await new Promise((resolve) => setTimeout(resolve, 10000))
+        }
         continue
       }
     } catch (error: any) {
