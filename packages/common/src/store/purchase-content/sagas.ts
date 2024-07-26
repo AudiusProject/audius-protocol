@@ -535,6 +535,10 @@ function* doStartPurchaseContentFlow({
     contentType
   })
 
+  const totalAmount = (price + (extraAmount ?? 0)) / 100
+  const decimals = TOKEN_LISTING_MAP.USDC.decimals
+  const totalAmountWithDecimals = Math.ceil(totalAmount * 10 ** decimals)
+
   const analyticsInfo = {
     price: price / 100,
     contentId,
@@ -544,7 +548,7 @@ function* doStartPurchaseContentFlow({
     contentName: title,
     artistHandle: artistInfo.handle,
     isVerifiedArtist: artistInfo.is_verified,
-    totalAmount: (price + (extraAmount ?? 0)) / 100,
+    totalAmount,
     payExtraAmount: extraAmount ? extraAmount / 100 : 0,
     payExtraPreset: extraAmountPreset
   }
@@ -618,6 +622,20 @@ function* doStartPurchaseContentFlow({
         }
         break
       }
+      case PurchaseMethod.WALLET:
+        if (!purchaseMethodMintAddress) {
+          throw new Error('Missing purchase method mint address')
+        }
+        yield* call(handlePayWithAnything, {
+          purchaserUserId,
+          contentId,
+          contentType,
+          price,
+          extraAmount,
+          totalAmountWithDecimals,
+          inputMint: purchaseMethodMintAddress
+        })
+        break
       case PurchaseMethod.CARD: {
         const purchaseAmount = (price + (extraAmount ?? 0)) / 100.0
         switch (purchaseVendor) {
@@ -891,27 +909,29 @@ function* getOrCreateUsdcAssociatedTokenAccount({
 }
 
 function* handlePayWithAnything({
-  payload: {
-    inputMint,
-    extraAmount,
-    contentId,
-    contentType = PurchaseableContentType.TRACK
-  }
-}: ReturnType<typeof payWithAnything>) {
-  let provider: any
-
+  purchaserUserId,
+  contentId,
+  contentType = PurchaseableContentType.TRACK,
+  price,
+  extraAmount,
+  totalAmountWithDecimals,
+  inputMint
+}: {
+  purchaserUserId: ID
+  contentId: ID
+  contentType: PurchaseableContentType
+  price: number
+  extraAmount?: number
+  totalAmountWithDecimals: number
+  inputMint: string
+}) {
   try {
     const audiusSdk = yield* getContext('audiusSdk')
     const sdk = yield* call(audiusSdk)
     const audiusBackendInstance = yield* getContext('audiusBackendInstance')
     const connection = yield* call(getSolanaConnection, audiusBackendInstance)
 
-    // ===== GET USER and USDC USERBANK =====
-    const purchaserUserId = yield* select(getUserId)
-    if (!purchaserUserId) {
-      throw new Error('Failed to fetch purchasing user id')
-    }
-
+    // ===== GET USDC USERBANK =====
     const usdcUserBank = yield* call(getUSDCUserBank)
     const usdcUserBankTokenAccount = yield* call(
       getTokenAccountInfo,
@@ -940,14 +960,6 @@ function* handlePayWithAnything({
       }
     )
 
-    const decimals = TOKEN_LISTING_MAP.USDC.decimals
-    const { price } = yield* call(getContentInfo, {
-      contentId,
-      contentType
-    })
-    const totalAmount = (price + (extraAmount ?? 0)) / 100
-    const totalAmountWithDecimals = Math.ceil(totalAmount * 10 ** decimals)
-
     console.info('Swapping to USDC then sending to USDC userbank...')
     yield* call(swapToUsdcAndSendToUserbank, {
       connection,
@@ -960,7 +972,11 @@ function* handlePayWithAnything({
     })
 
     // ===== PURCHASE THE CONTENT FROM USDC USER BANK BALANCE =====
-    console.info('Purchasing track...')
+    console.info(
+      `Purchasing track ${
+        contentType === PurchaseableContentType.TRACK ? 'track' : 'album'
+      }...`
+    )
     if (contentType === PurchaseableContentType.TRACK) {
       yield* call([sdk.tracks, sdk.tracks.purchaseTrack], {
         userId: encodeHashId(purchaserUserId),
@@ -968,19 +984,17 @@ function* handlePayWithAnything({
         price: price / 100.0,
         extraAmount: extraAmount ? extraAmount / 100.0 : undefined
       })
-      // } else {
-      //   yield* call([sdk.albums, sdk.albums.purchaseAlbum], {
-      //     userId: encodeHashId(purchaserUserId),
-      //     albumId: encodeHashId(contentId),
-      //     price: price / 100.0,
-      //     extraAmount: extraAmount ? extraAmount / 100.0 : undefined
-      //   })
+    } else {
+      yield* call([sdk.albums, sdk.albums.purchaseAlbum], {
+        userId: encodeHashId(purchaserUserId),
+        albumId: encodeHashId(contentId),
+        price: price / 100.0,
+        extraAmount: extraAmount ? extraAmount / 100.0 : undefined
+      })
     }
   } catch (e) {
     console.error(`handlePayWithAnything | Error: ${e}`)
-  } finally {
-    // DISCONNECT WALLET
-    yield* call([provider, provider.disconnect])
+    throw e
   }
 }
 
@@ -988,10 +1002,6 @@ function* watchStartPurchaseContentFlow() {
   yield takeLatest(startPurchaseContentFlow, doStartPurchaseContentFlow)
 }
 
-function* watchPayWithAnything() {
-  yield takeLatest(payWithAnything.type, handlePayWithAnything)
-}
-
 export default function sagas() {
-  return [watchStartPurchaseContentFlow, watchPayWithAnything]
+  return [watchStartPurchaseContentFlow]
 }
