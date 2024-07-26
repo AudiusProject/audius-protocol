@@ -140,11 +140,16 @@ describe('crowdfund', () => {
         feePayerWallet: feePayer.publicKey,
         mint
       })
-      .signers([feePayer])
       .rpc()
 
     const destination = await getAccount(provider.connection, destinationAta)
     assert.equal(destination.amount, BigInt('1000000'))
+
+    // assert error is thrown
+    await assert.rejects(
+      program.account.campaignAccount.fetch(pubkeys.campaignAccount)
+    )
+
     // TODO
   })
 })

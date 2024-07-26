@@ -228,10 +228,12 @@ pub struct ContributeCtx<'info> {
 #[derive(Accounts)]
 #[instruction(data: UnlockInstructionData)]
 pub struct UnlockCtx<'info> {
-    #[account(mut)]
-    pub fee_payer_wallet: Signer<'info>,
+    #[account(mut, address = campaign_account.fee_payer_wallet)]
+    /// CHECK:
+    pub fee_payer_wallet: UncheckedAccount<'info>,
     #[account(
         mut,
+        close = fee_payer_wallet,
         seeds = [
             b"campaign",
             data.content_id.try_to_vec().unwrap().as_slice(),
