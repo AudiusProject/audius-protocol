@@ -4,6 +4,7 @@ import { Crowdfund } from '../target/types/crowdfund'
 import {
   createAssociatedTokenAccount,
   createMint,
+  getAccount,
   getAssociatedTokenAddressSync,
   mintTo
 } from '@solana/spl-token'
@@ -64,7 +65,7 @@ describe('crowdfund', () => {
         contentId: 123,
         contentType: 1,
         destinationWallet: destinationAta,
-        fundingThreshold: new anchor.BN(1000000)
+        fundingThreshold: new anchor.BN('1000000')
       })
       .accounts({
         feePayerWallet: feePayer.publicKey,
@@ -99,7 +100,7 @@ describe('crowdfund', () => {
       mint,
       ata,
       feePayer,
-      100000000000000
+      1_000_000_000
     )
 
     console.log('Minted. Contributing...')
@@ -109,18 +110,23 @@ describe('crowdfund', () => {
       .contribute({
         contentId: campaign.contentId,
         contentType: 1,
-        amount: new anchor.BN(100000)
+        amount: new anchor.BN('1000000000')
       })
       .accounts({
         senderOwner: feePayer.publicKey,
         senderTokenAccount: ata,
-        destinationAccount: destinationAta,
         mint
       })
       .signers([feePayer])
       .rpc()
 
     console.log('Sent contribution:', sig)
+
+    const escrow = await getAccount(
+      provider.connection,
+      pubkeys.escrowTokenAccount
+    )
+    assert.equal(escrow.amount, BigInt('1000000'))
 
     // End campaign
     // TODO

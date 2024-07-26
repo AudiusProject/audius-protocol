@@ -46,9 +46,9 @@ pub mod crowdfund {
     pub fn contribute(ctx: Context<ContributeCtx>, data: ContributeInstructionData) -> Result<()> {
         let campaign_account: Account<CampaignAccount> = ctx.accounts.campaign_account.clone();
         let threshold = campaign_account.funding_threshold;
-        let balance = ctx.accounts.destination_account.amount;
+        let balance = ctx.accounts.escrow_token_account.amount;
         let amount = min(threshold - balance, data.amount);
-        let receiver = ctx.accounts.destination_account.to_account_info();
+        let receiver = ctx.accounts.escrow_token_account.to_account_info();
         let sender_token_account = ctx.accounts.sender_token_account.to_account_info();
         let sender = ctx.accounts.sender_owner.to_account_info();
         let account_infos = &[sender_token_account.clone(), receiver.clone(), sender.clone()];
@@ -152,6 +152,7 @@ pub struct ContributeCtx<'info> {
     )]
     pub campaign_account: Account<'info, CampaignAccount>,
     #[account(
+        mut,
         token::mint = mint,
         token::authority = campaign_account,
         seeds = [
@@ -162,8 +163,6 @@ pub struct ContributeCtx<'info> {
         bump
     )]
     pub escrow_token_account: Account<'info, TokenAccount>,
-    #[account(mut, token::mint = mint, address = campaign_account.destination_wallet)]
-    pub destination_account: Account<'info, TokenAccount>,
     pub token_program: Program<'info, Token>,
     /// CHECK: We're only using this for deriving the token account
     pub mint: UncheckedAccount<'info>,
