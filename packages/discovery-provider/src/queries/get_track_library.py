@@ -1,8 +1,10 @@
 from typing import Optional, TypedDict
+import logging
 
 from sqlalchemy import Boolean, Integer, asc, desc, literal, or_
 from sqlalchemy.orm import contains_eager
 from sqlalchemy.sql.functions import coalesce, max
+from sqlalchemy.orm import aliased
 
 from src.models.social.aggregate_plays import AggregatePlay
 from src.models.social.repost import Repost, RepostType
@@ -22,6 +24,8 @@ from src.queries.query_helpers import (
 )
 from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
+
+logger = logging.getLogger(__name__)
 
 
 class GetTrackLibraryArgs(TypedDict):
@@ -60,6 +64,20 @@ def _get_track_library(args: GetTrackLibraryArgs, session):
     sort_direction = args.get("sort_direction")
     filter_type = args.get("filter_type")
 
+    users_alias = aliased(User)
+
+    user_ids_for_wallet = (
+        session.query(users_alias.user_id)
+        .filter(
+            users_alias.wallet.in_(
+                session.query(User.wallet).filter(
+                    User.user_id == user_id,
+                )
+            )
+        )
+        .all()
+    )
+    logger.info(f"asdf user_ids_for_wallet {user_ids_for_wallet}")
     if not filter_type:
         raise ValueError("Invalid filter type")
 
@@ -115,7 +133,7 @@ def _get_track_library(args: GetTrackLibraryArgs, session):
         literal(True).label("is_purchase"),
     ).filter(
         USDCPurchase.content_type == PurchaseType.track,
-        USDCPurchase.buyer_user_id == user_id,
+        USDCPurchase.buyer_user_id.in_(user_ids_for_wallet),
     )
 
     # Construct all query

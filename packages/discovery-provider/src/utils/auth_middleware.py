@@ -94,7 +94,7 @@ def auth_middleware(
                         )
                         # In the case that multiple wallets match (not enforced on the data layer),
                         # pick the user that was created first.
-                        .order_by(User.created_at.asc())
+                        .order_by(User.created_at.desc())
                         .first()
                     )
                     if user:

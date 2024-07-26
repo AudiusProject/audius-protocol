@@ -10,6 +10,8 @@ from src.models.tracks.track import Track
 from src.models.users.aggregate_user_tips import AggregateUserTip
 from src.models.users.usdc_purchase import USDCPurchase
 from src.utils import helpers
+from src.models.users.user import User
+from sqlalchemy.orm import aliased
 
 logger = logging.getLogger(__name__)
 
@@ -72,10 +74,24 @@ def does_user_have_usdc_access(
     condition_options: Union[Dict, int],
 ):
     if content_type == "track":
+        # Aliases for the users table to avoid confusion in subqueries
+        users_alias = aliased(User)
+
+        # Subquery to get the user_id based on wallet
+        user_ids_for_wallet = (
+            session.query(users_alias.user_id)
+            .filter(
+                users_alias.wallet.in_(
+                    session.query(User.wallet).filter(User.user_id == user_id)
+                )
+            )
+            .subquery()
+        )
+
         result = (
             session.query(USDCPurchase)
             .filter(
-                USDCPurchase.buyer_user_id == user_id,
+                USDCPurchase.buyer_user_id.in_(user_ids_for_wallet),
                 USDCPurchase.content_id == content_id,
                 USDCPurchase.content_type == "track",
             )
