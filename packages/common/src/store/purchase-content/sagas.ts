@@ -88,8 +88,7 @@ import {
   purchaseSucceeded,
   usdcBalanceSufficient,
   purchaseContentFlowFailed,
-  startPurchaseContentFlow,
-  payWithAnything
+  startPurchaseContentFlow
 } from './slice'
 import {
   PurchaseableContentType,

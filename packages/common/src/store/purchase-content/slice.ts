@@ -48,21 +48,6 @@ const slice = createSlice({
   name: 'purchase-content',
   initialState,
   reducers: {
-    payWithAnything: (
-      _state,
-      _action: PayloadAction<{
-        inputMint: string
-        extraAmount?: number
-        extraAmountPreset?: string
-        purchaseMethod: PurchaseMethod
-        purchaseVendor?: PurchaseVendor
-        contentId: ID
-        contentType?: PurchaseableContentType
-        onSuccess?: OnSuccess
-      }>
-    ) => {
-      // triggers saga
-    },
     startPurchaseContentFlow: (
       state,
       action: PayloadAction<{
@@ -130,7 +115,6 @@ const slice = createSlice({
 })
 
 export const {
-  payWithAnything,
   startPurchaseContentFlow,
   buyUSDC,
   usdcBalanceSufficient,
