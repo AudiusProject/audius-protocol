@@ -5,8 +5,7 @@ import {
   createAssociatedTokenAccountInstruction,
   createTransferInstruction,
   getAccount,
-  getAssociatedTokenAddressSync,
-  getMint
+  getAssociatedTokenAddressSync
 } from '@solana/spl-token'
 import {
   PublicKey,
@@ -72,7 +71,6 @@ import {
   CoinflowPurchaseMetadata,
   coinflowOnrampModalActions
 } from '~/store/ui/modals/coinflow-onramp-modal'
-import { getErrorMessage } from '~/utils'
 import { encodeHashId } from '~/utils/hashIds'
 import { BN_USDC_CENT_WEI } from '~/utils/wallet'
 
@@ -773,9 +771,9 @@ const getInstance = () => {
 }
 
 /**
- * Executes the Jupiter exchange from input mint to $USDC
+ * Executes the Jupiter swap from input mint to $USDC and sends the $USDC to the userbank
  */
-function* swapToUsdc({
+function* swapToUsdcAndSendToUserbank({
   connection,
   inputMint,
   amount,
@@ -785,12 +783,6 @@ function* swapToUsdc({
   usdcUserBankTokenAccount,
   signAndSendTransaction
 }: any) {
-  console.log('in swapToUsdc before quote', {
-    inputMint,
-    amount,
-    userPublicKey,
-    destinationTokenAccount
-  })
   const jup = getInstance()
 
   // Get quote for the swap
@@ -801,9 +793,8 @@ function* swapToUsdc({
     onlyDirectRoutes: true,
     swapMode: 'ExactOut'
   })
-  console.log('in swapToUsdc after quote', { quote })
   if (!quote) {
-    throw new Error('Failed to get Jupiter quote')
+    throw new Error(`Failed to get Jupiter quote for ${inputMint} => USDC`)
   }
 
   // Get swap instructions
@@ -814,10 +805,9 @@ function* swapToUsdc({
       destinationTokenAccount
     }
   })
-  console.log('in swapToUsdc', { swapTransaction })
   const decoded = Buffer.from(swapTransaction, 'base64')
   const transaction = VersionedTransaction.deserialize(decoded)
-  // get address lookup table accounts
+  // Get address lookup table accounts
   const getLUTs = async () => {
     return await Promise.all(
       transaction.message.addressTableLookups.map(async (lookup) => {
@@ -833,7 +823,7 @@ function* swapToUsdc({
     )
   }
   const addressLookupTableAccounts = yield* call(getLUTs)
-  // decompile transaction message and add transfer instruction
+  // Decompile transaction message and add transfer instruction
   const message = TransactionMessage.decompile(transaction.message, {
     addressLookupTableAccounts
   })
@@ -845,10 +835,8 @@ function* swapToUsdc({
       amount
     )
   )
-  // compile the message and update the transaction
+  // Compile the message and update the transaction
   transaction.message = message.compileToV0Message(addressLookupTableAccounts)
-  // console.log(addressLookupTableAccounts)
-  console.log('deserialized', { transaction })
 
   // Execute the swap by signing and sending the transaction
   return yield* call(signAndSendTransaction, transaction)
@@ -863,14 +851,19 @@ function* handlePayWithAnything({
   }
 }: ReturnType<typeof payWithAnything>) {
   let provider: any
+
   try {
-    // get user & user bank
+    const audiusSdk = yield* getContext('audiusSdk')
+    const sdk = yield* call(audiusSdk)
+    const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+    const connection = yield* call(getSolanaConnection, audiusBackendInstance)
+
+    // ===== GET USER and USDC USERBANK =====
     const purchaserUserId = yield* select(getUserId)
     if (!purchaserUserId) {
       throw new Error('Failed to fetch purchasing user id')
     }
 
-    const audiusBackendInstance = yield* getContext('audiusBackendInstance')
     const usdcUserBank = yield* call(getUSDCUserBank)
     const usdcUserBankTokenAccount = yield* call(
       getTokenAccountInfo,
@@ -884,39 +877,12 @@ function* handlePayWithAnything({
       throw new Error('Failed to fetch USDC user bank token account info')
     }
 
-    // get solana wallet provider
+    // ===== GET SOLANA WALLET PROVIDER =====
     const provider = window.solana
     if (!provider) return
     const sourceWallet = yield* call(provider.connect)
 
-    // const totalAmount = price + (extraAmount ?? 0) / 100
-    // const priceBN = new BN(price).mul(BN_USDC_CENT_WEI)
-    // const extraAmountBN = new BN(extraAmount ?? 0).mul(BN_USDC_CENT_WEI)
-    // const totalAmountDueCentsBN = priceBN.add(extraAmountBN) as BNUSDC
-    const audiusSdk = yield* getContext('audiusSdk')
-    const sdk = yield* call(audiusSdk)
-    const connection = yield* call(getSolanaConnection, audiusBackendInstance)
-    // Swap input mint to USDC
-    const inputMintInfo = yield* call(
-      getMint,
-      connection,
-      new PublicKey(inputMint)
-    )
-    if (!inputMintInfo) {
-      throw new Error('Failed to fetch input mint info')
-    }
-
-    // Purchase the content from usdc user bank balance
-    const decimals = TOKEN_LISTING_MAP.USDC.decimals
-    // const decimals = inputMintInfo.decimals
-    const { price } = yield* call(getContentInfo, {
-      contentId,
-      contentType
-    })
-    const totalAmount = (price + (extraAmount ?? 0)) / 100
-    const amount = Math.ceil(totalAmount * 10 ** decimals)
-
-    console.log('GETTING OR CREATING USDC ATA')
+    // ===== SWAP INPUT MINT TO USDC =====
     const destinationTokenAccountPublicKey = getAssociatedTokenAddressSync(
       new PublicKey(TOKEN_LISTING_MAP.USDC.address),
       sourceWallet.publicKey
@@ -924,6 +890,7 @@ function* handlePayWithAnything({
     try {
       yield* call(getAccount, connection, destinationTokenAccountPublicKey)
     } catch {
+      console.info('Creating USDC associated token account...')
       const transaction = new Transaction().add(
         createAssociatedTokenAccountInstruction(
           sourceWallet.publicKey,
@@ -936,19 +903,19 @@ function* handlePayWithAnything({
         connection.getLatestBlockhash
       )
       transaction.recentBlockhash = latestBlockHash
-      const { signature } = yield* call(
-        provider.signAndSendTransaction,
-        transaction
-      )
-      // yield* call(confirmTransaction, signature)
+      yield* call(provider.signAndSendTransaction, transaction)
     }
-    console.log('GOT CREATED USDC ATA SUCCESSFULLY!!!!!', {
-      destinationTokenAccountPublicKey:
-        destinationTokenAccountPublicKey.toString()
-    })
 
-    console.log('BEFORE SWAPPING TO USDC')
-    const { signature: swapTxId } = yield* call(swapToUsdc, {
+    const decimals = TOKEN_LISTING_MAP.USDC.decimals
+    const { price } = yield* call(getContentInfo, {
+      contentId,
+      contentType
+    })
+    const totalAmount = (price + (extraAmount ?? 0)) / 100
+    const amount = Math.ceil(totalAmount * 10 ** decimals)
+
+    console.info('Swapping to USDC then sending to USDC userbank...')
+    yield* call(swapToUsdcAndSendToUserbank, {
       connection,
       inputMint,
       amount,
@@ -958,11 +925,9 @@ function* handlePayWithAnything({
       usdcUserBankTokenAccount,
       signAndSendTransaction: provider.signAndSendTransaction
     })
-    console.log({ swapTxId })
-    // yield* call(confirmTransaction, swapTxId)
-    console.log('SWAPPED SUCCESSFULLY!!!!!!')
 
-    console.log('BEFORE PURCHASING TRACK')
+    // ===== PURCHASE THE CONTENT FROM USDC USER BANK BALANCE =====
+    console.info('Purchasing track...')
     if (contentType === PurchaseableContentType.TRACK) {
       yield* call([sdk.tracks, sdk.tracks.purchaseTrack], {
         userId: encodeHashId(purchaserUserId),
@@ -978,12 +943,10 @@ function* handlePayWithAnything({
       //     extraAmount: extraAmount ? extraAmount / 100.0 : undefined
       //   })
     }
-    console.log('PURCHASED SUCCESSFULLY!!!!!!')
   } catch (e) {
     console.error(`handlePayWithAnything | Error: ${e}`)
   } finally {
-    // disconnect wallet
-    // yield* call([provider, provider.disconnect])
+    // DISCONNECT WALLET
     yield* call([provider, provider.disconnect])
   }
 }
