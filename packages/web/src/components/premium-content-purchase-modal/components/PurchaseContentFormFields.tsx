@@ -52,6 +52,12 @@ export const PurchaseContentFormFields = ({
   const { isEnabled: isCoinflowEnabled } = useFeatureFlag(
     FeatureFlags.BUY_WITH_COINFLOW
   )
+  const { isEnabled: isPayWithAnythingEnabledFlag } = useFeatureFlag(
+    FeatureFlags.PAY_WITH_ANYTHING_ENABLED
+  )
+  const isPayWithAnythingEnabled =
+    isPayWithAnythingEnabledFlag && !!window.solana
+
   const [{ value: purchaseMethod }, , { setValue: setPurchaseMethod }] =
     useField(PURCHASE_METHOD)
   const [{ value: purchaseVendor }, , { setValue: setPurchaseVendor }] =
@@ -150,6 +156,7 @@ export const PurchaseContentFormFields = ({
           isExistingBalanceDisabled={isExistingBalanceDisabled}
           showExistingBalance={!!(balanceBN && !balanceBN.isZero())}
           isCoinflowEnabled={showCoinflow}
+          isPayWithAnythingEnabled={isPayWithAnythingEnabled}
           showVendorChoice={false}
         />
       )}

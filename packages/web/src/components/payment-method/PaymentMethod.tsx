@@ -45,6 +45,7 @@ type PaymentMethodProps = {
   balance?: Nullable<BNUSDC>
   isExistingBalanceDisabled?: boolean
   isCoinflowEnabled?: boolean
+  isPayWithAnythingEnabled?: boolean
   showExistingBalance?: boolean
   showVendorChoice?: boolean
 }
@@ -60,6 +61,7 @@ export const PaymentMethod = ({
   isExistingBalanceDisabled,
   showExistingBalance,
   isCoinflowEnabled,
+  isPayWithAnythingEnabled,
   showVendorChoice
 }: PaymentMethodProps) => {
   const isMobile = useIsMobile()
@@ -130,8 +132,10 @@ export const PaymentMethod = ({
       id: PurchaseMethod.CRYPTO,
       label: messages.withCrypto,
       icon: IconTransaction
-    },
-    {
+    }
+  ]
+  if (isPayWithAnythingEnabled) {
+    extraOptions.push({
       id: PurchaseMethod.WALLET,
       label: (
         <Text>
@@ -157,8 +161,8 @@ export const PaymentMethod = ({
           onChange={setSelectedPurchaseMethodMintAddress}
         />
       )
-    }
-  ]
+    })
+  }
 
   const handleRadioChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
