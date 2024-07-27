@@ -1,0 +1,81 @@
+{
+  "address": "apaySbqV1XAmuiGszeN4NyWrXkkMrnuJVoNhzmS1AMa",
+  "metadata": {
+    "name": "payment_router",
+    "version": "0.1.0",
+    "spec": "0.1.0"
+  },
+  "instructions": [
+    {
+      "name": "create_payment_router_balance_pda",
+      "discriminator": [83, 222, 75, 129, 239, 20, 113, 234],
+      "accounts": [
+        {
+          "name": "payment_router_pda",
+          "docs": [
+            "before transferring them over to given recipients, all within the same transaction."
+          ],
+          "writable": true
+        },
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "route",
+      "discriminator": [229, 23, 203, 151, 122, 227, 173, 42],
+      "accounts": [
+        {
+          "name": "sender",
+          "writable": true
+        },
+        {
+          "name": "sender_owner"
+        },
+        {
+          "name": "spl_token"
+        }
+      ],
+      "args": [
+        {
+          "name": "payment_router_pda_bump",
+          "type": "u8"
+        },
+        {
+          "name": "amounts",
+          "type": {
+            "vec": "u64"
+          }
+        },
+        {
+          "name": "total_amount",
+          "type": "u64"
+        }
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "SenderTokenAccountNotOwnedByPDA",
+      "msg": "Sender token account not owned by PDA."
+    },
+    {
+      "code": 6001,
+      "name": "RecipientAmountMismatch",
+      "msg": "Number of recipients does not match number of amounts."
+    },
+    {
+      "code": 6002,
+      "name": "TotalAmountMismatch",
+      "msg": "Total of individual amounts does not match total amount."
+    }
+  ]
+}

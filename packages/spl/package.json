@@ -22,7 +22,7 @@
   },
   "homepage": "https://github.com/AudiusProject/audius-protocol/tree/main/packages/spl",
   "dependencies": {
-    "@coral-xyz/anchor": "0.29.0",
+    "@coral-xyz/anchor": "0.30.1",
     "@noble/hashes": "1.4.0",
     "@solana/buffer-layout": "4.0.1",
     "@solana/buffer-layout-utils": "0.2.0",

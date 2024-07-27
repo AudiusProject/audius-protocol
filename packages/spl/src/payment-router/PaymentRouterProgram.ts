@@ -1,8 +1,8 @@
-import { BN, Program, Provider } from '@coral-xyz/anchor'
+import { BN, Idl, Program, Provider } from '@coral-xyz/anchor'
 import { TOKEN_PROGRAM_ID } from '@solana/spl-token'
 import { PublicKey, SystemProgram } from '@solana/web3.js'
 
-import { IDL } from './paymentRouter'
+import IDL from './payment_router.idl.json'
 import { CreateRouteInstructionParams } from './types'
 
 export class PaymentRouterProgram {
@@ -15,7 +15,8 @@ export class PaymentRouterProgram {
     payer: PublicKey,
     programId: PublicKey = PaymentRouterProgram.programId
   ) {
-    const program = new Program(IDL, programId)
+    IDL.address = programId.toBase58()
+    const program = new Program(IDL as Idl, {} as Provider)
     return await program.methods
       .createPaymentRouterBalancePda()
       .accounts({
@@ -36,7 +37,8 @@ export class PaymentRouterProgram {
     tokenProgramId = TOKEN_PROGRAM_ID,
     programId = PaymentRouterProgram.programId
   }: CreateRouteInstructionParams) {
-    const program = new Program(IDL, programId, {} as Provider)
+    IDL.address = programId.toBase58()
+    const program = new Program(IDL as Idl, {} as Provider)
     return await program.methods
       .route(
         paymentRouterPdaBump,
