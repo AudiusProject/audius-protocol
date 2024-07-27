@@ -39,7 +39,8 @@ const messages = {
   withCard: 'Pay with card',
   withCrypto: 'Add via crypto transfer',
   payWith: 'Pay with',
-  anything: 'anything'
+  anything: 'anything',
+  requiresPhantom: 'Phantom wallet required'
 }
 
 const useStyles = makeStyles(({ spacing }) => ({
@@ -184,28 +185,33 @@ export const PaymentMethod = ({
       id: PurchaseMethod.WALLET,
       value: PurchaseMethod.WALLET,
       label: (
-        <Flex direction='row' justifyContent='space-between' flex={1}>
-          <Flex direction='row' gap='xs' alignItems='center'>
-            <Text>{`${messages.payWith}`}</Text>
-            <GradientText
-              colors={[
-                'red',
-                'orange',
-                'yellow',
-                'green',
-                'blue',
-                'indigo',
-                'violet'
-              ]}
-            >
-              {messages.anything}
-            </GradientText>
+        <Flex flex={1}>
+          <Flex direction='row' justifyContent='space-between'>
+            <Flex direction='row' gap='xs' alignItems='center'>
+              <Text>{`${messages.payWith}`}</Text>
+              <GradientText
+                colors={[
+                  'red',
+                  'orange',
+                  'yellow',
+                  'green',
+                  'blue',
+                  'indigo',
+                  'violet'
+                ]}
+              >
+                {messages.anything}
+              </GradientText>
+            </Flex>
+            <TokenPicker
+              selectedTokenAddress={selectedPurchaseMethodMintAddress}
+              onChange={setSelectedPurchaseMethodMintAddress}
+              onOpen={handleOpenTokenPicker}
+            />
           </Flex>
-          <TokenPicker
-            selectedTokenAddress={selectedPurchaseMethodMintAddress}
-            onChange={setSelectedPurchaseMethodMintAddress}
-            onOpen={handleOpenTokenPicker}
-          />
+          <Text size='xs' color='subdued'>
+            {messages.requiresPhantom}
+          </Text>
         </Flex>
       ),
       icon: IconMerch

@@ -966,7 +966,7 @@ function* purchaseWithAnything({
     const audiusBackendInstance = yield* getContext('audiusBackendInstance')
     const connection = yield* call(getSolanaConnection, audiusBackendInstance)
 
-    // ===== GET USDC USERBANK =====
+    // Get the USDC user bank
     const usdcUserBank = yield* call(getUSDCUserBank)
     const usdcUserBankTokenAccount = yield* call(
       getTokenAccountInfo,
@@ -980,12 +980,12 @@ function* purchaseWithAnything({
       throw new Error('Failed to fetch USDC user bank token account info')
     }
 
-    // ===== GET SOLANA WALLET PROVIDER =====
+    // Get the solana wallet provider
     const provider = window.solana
     if (!provider) return
     const sourceWallet = yield* call(provider.connect)
 
-    // ===== SWAP INPUT MINT TO USDC =====
+    // Swap input mint to usdc
     console.info('Swapping to USDC then sending to USDC userbank...')
     yield* call(swapToUsdcAndSendToUserbank, {
       connection,
@@ -996,7 +996,7 @@ function* purchaseWithAnything({
       signAndSendTransaction: provider.signAndSendTransaction
     })
 
-    // ===== PURCHASE THE CONTENT FROM USDC USER BANK BALANCE =====
+    // Purchase from USDC user bank balance
     console.info(
       `Purchasing ${
         contentType === PurchaseableContentType.TRACK ? 'track' : 'album'
