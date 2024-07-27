@@ -13,7 +13,7 @@ GatedContentConditions = Literal[
     "follow_user_id",
     "tip_user_id",
     "usdc_purchase",
-    "crowdfund_account",
+    "crowdfund",
 ]
 
 # This is for when we support the combination of different conditions

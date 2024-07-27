@@ -61,7 +61,7 @@ GATED_CONDITION_TO_HANDLER_MAP: Dict[
     "follow_user_id": does_user_follow_artist,
     "tip_user_id": does_user_support_artist,
     "usdc_purchase": does_user_have_usdc_access,
-    "crowdfund_account": does_user_have_crowdfund_access,
+    "crowdfund": does_user_have_crowdfund_access,
 }
 
 

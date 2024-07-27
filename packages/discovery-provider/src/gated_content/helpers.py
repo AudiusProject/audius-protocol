@@ -158,10 +158,11 @@ def does_user_have_crowdfund_access(
     content_type: GatedContentType,
     condition_options: Union[Dict, int],
 ):
+    content_type_n = 1 if content_type == "track" else 2
     result = (
         session.query(CrowdfundUnlock)
         .filter(CrowdfundUnlock.content_id == content_id)
-        .filter(CrowdfundUnlock.content_type == content_type)
+        .filter(CrowdfundUnlock.content_type == content_type_n)
         .first()
     )
     return True if result else False
