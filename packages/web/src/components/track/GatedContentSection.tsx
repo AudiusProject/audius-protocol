@@ -20,7 +20,9 @@ import {
   tippingActions,
   usePremiumContentPurchaseModal,
   gatedContentSelectors,
-  PurchaseableContentType
+  PurchaseableContentType,
+  accountSelectors,
+  gatedContentActions
 } from '@audius/common/store'
 import { formatPrice, removeNullable, Nullable } from '@audius/common/utils'
 import { wAUDIO } from '@audius/fixed-decimal'
@@ -40,7 +42,7 @@ import {
   ProgressBar,
   LoadingSpinner
 } from '@audius/harmony'
-import { AnchorProvider, Program, Wallet } from '@coral-xyz/anchor'
+import { AnchorProvider, Program, Provider, Wallet } from '@coral-xyz/anchor'
 import { getAccount } from '@solana/spl-token'
 import { PublicKey } from '@solana/web3.js'
 import BN from 'bn.js'
@@ -59,6 +61,7 @@ import { emptyStringGuard } from 'pages/track-page/utils'
 import { audiusSdk } from 'services/audius-sdk'
 import { Crowdfund } from 'services/crowdfund/crowdfund'
 import IDL from 'services/crowdfund/crowdfund.json'
+import { env } from 'services/env'
 import { AppState } from 'store/types'
 import { profilePage } from 'utils/route'
 
@@ -107,7 +110,8 @@ const getMessages = (contentType: PurchaseableContentType) => ({
     `Users can unlock access to this ${contentType} for a one time purchase of $${price}`,
   unlockWithFunding: `Unlock this ${contentType} by contributing funds and reaching the $AUDIO fundraising goal.`,
   usersCanFund: (threshold: string) =>
-    `Users can unlock access to this ${contentType} by collectively reaching the funding goal of ${threshold} $AUDIO. Once the funding threshold is reached, the $AUDIO will be sent to your wallet and the track will be unlocked for everyone.`
+    `Users can unlock access to this ${contentType} by collectively reaching the funding goal of ${threshold} $AUDIO. Once the funding threshold is reached, the $AUDIO will be sent to your wallet and the track will be unlocked for everyone.`,
+  unlock: 'Unlock'
 })
 
 const getCrowdfundMeta = async (
@@ -123,15 +127,18 @@ const getCrowdfundMeta = async (
   )
   const program = new Program(IDL as Crowdfund, provider)
   const campaign = await program.account.campaignAccount.fetch(
-    streamConditions.crowdfund.campaign
+    streamConditions.crowdfund.campaign,
+    'confirmed'
   )
   const escrow = await getAccount(
     sdk.services.claimableTokensClient.connection,
-    new PublicKey(streamConditions.crowdfund.escrow)
+    new PublicKey(streamConditions.crowdfund.escrow),
+    'confirmed'
   )
   return {
     threshold: campaign.fundingThreshold,
-    balance: escrow.amount
+    balance: escrow.amount,
+    destination: campaign.destinationWallet
   }
 }
 
@@ -209,8 +216,9 @@ const LockedGatedContentSection = ({
     : FollowSource.HOW_TO_UNLOCK_TRACK_PAGE
   const isUSDCPurchaseGated = isContentUSDCPurchaseGated(streamConditions)
   const { spacing } = useTheme()
+  const user = useSelector(accountSelectors.getAccountUser)
 
-  const campaign = useCrowdfundCampaign(streamConditions, 5000)
+  const campaign = useCrowdfundCampaign(streamConditions, 1000)
 
   const handlePurchase = useAuthenticatedCallback(() => {
     if (lockedContentModalVisibility) {
@@ -269,7 +277,70 @@ const LockedGatedContentSection = ({
     setLockedContentModalVisibility
   ])
 
-  const handleCrowdfund = useAuthenticatedCallback(() => {}, [])
+  const handleContribute = useAuthenticatedCallback(async () => {
+    const sdk = await audiusSdk()
+    const { claimableTokensClient, auth } = sdk.services
+    const ethWallet = user?.wallet
+    if (!isContentCrowdfundGated(streamConditions) || !ethWallet) {
+      return
+    }
+    const destination = new PublicKey(streamConditions.crowdfund.escrow)
+    const secp = await claimableTokensClient.createTransferSecpInstruction({
+      amount: wAUDIO(1).value,
+      ethWallet,
+      mint: 'wAUDIO',
+      destination,
+      auth
+    })
+    const transfer = await claimableTokensClient.createTransferInstruction({
+      ethWallet,
+      mint: 'wAUDIO',
+      destination
+    })
+    const tx = await claimableTokensClient.buildTransaction({
+      instructions: [secp, transfer]
+    })
+    const sig = await claimableTokensClient.sendTransaction(tx)
+    console.log('Successfully sent tx', sig)
+  }, [streamConditions, user?.wallet])
+
+  const handleUnlock = useAuthenticatedCallback(async () => {
+    const sdk = await audiusSdk()
+    const { claimableTokensClient, solanaRelay } = sdk.services
+    if (!isContentCrowdfundGated(streamConditions) || !campaign.value) {
+      return
+    }
+    const program = new Program(IDL as Crowdfund, {} as Provider)
+    const instruction = await program.methods
+      .unlock({
+        contentId,
+        contentType: contentType === PurchaseableContentType.TRACK ? 1 : 2
+      })
+      .accounts({
+        mint: new PublicKey(env.WAUDIO_MINT_ADDRESS),
+        feePayerWallet: await solanaRelay.getFeePayer(),
+        destinationAccount: campaign.value.destination
+      })
+      .instruction()
+    const tx = await claimableTokensClient.buildTransaction({
+      instructions: [instruction]
+    })
+    const sig = await claimableTokensClient.sendTransaction(tx)
+    console.log('Successfully sent tx', sig)
+    dispatch(
+      gatedContentActions.updateGatedContentStatus({
+        contentId,
+        status: 'UNLOCKING'
+      })
+    )
+    dispatch(
+      gatedContentActions.startPollingGatedContent({
+        contentId,
+        contentType,
+        isSourceTrack: true
+      })
+    )
+  }, [campaign.value, contentId, contentType, dispatch, streamConditions])
 
   const renderLockedDescription = () => {
     if (isContentCollectibleGated(streamConditions)) {
@@ -400,11 +471,21 @@ const LockedGatedContentSection = ({
     }
 
     if (isContentCrowdfundGated(streamConditions)) {
+      if (
+        campaign.value &&
+        new BN(campaign.value.balance.toString()).gte(campaign.value.threshold)
+      ) {
+        return (
+          <Button variant='primary' onClick={handleUnlock} fullWidth>
+            {messages.unlock}
+          </Button>
+        )
+      }
       return (
         <Button
           variant='primary'
           color='blue'
-          onClick={handleCrowdfund}
+          onClick={handleContribute}
           fullWidth
         >
           {messages.contribute}
@@ -538,7 +619,7 @@ const UnlockedGatedContentSection = ({
 }: GatedContentAccessSectionProps) => {
   const messages = getMessages(contentType)
 
-  const campaign = useCrowdfundCampaign(streamConditions, 5000)
+  const campaign = useCrowdfundCampaign(streamConditions, 1000)
 
   const renderUnlockedDescription = () => {
     if (isContentCollectibleGated(streamConditions)) {
