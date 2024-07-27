@@ -421,7 +421,7 @@ export const PriceAndAudienceField = (props: PriceAndAudienceFieldProps) => {
           setIsStreamGated(true)
           setIsDownloadGated(true)
           setStreamConditionsValue({
-            crowdfund_account: '',
+            crowdfund_account: 'temp',
             funding_threshold: (streamConditions as CrowdfundGateConditions)
               ?.funding_threshold
           })

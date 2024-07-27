@@ -211,7 +211,7 @@ export const PriceAndAudienceMenuFields = (
               {...crowdfundThresholdField}
               label={'Funding Threshold'}
               tokenLabel={messages.tokenLabel}
-              onChange={(value) => setCrowdfundThreshold(value)}
+              onChange={(value) => setCrowdfundThreshold(parseInt(value))}
             />
           }
         />
