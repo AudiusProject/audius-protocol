@@ -10,9 +10,9 @@ const runIndexer = async (name: string, indexer: Function) => {
     try {
       await indexer()
     } catch (e) {
-      logger.error(e, `Uncaught indexing error in ${name}`)
+      logger.error(e, `Uncaught indexing error in indexer ${name}`)
     } finally {
-      await delay(3000)
+      await delay(500)
     }
   }
 }

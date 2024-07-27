@@ -102,9 +102,13 @@ const getSignatureBatches = async ({
   const batches: ConfirmedSignatureInfo[][] = []
   let intersectionFound = false
   while (!intersectionFound) {
-    const batch = await connection.getSignaturesForAddress(programId, {
-      before: lastBatchSignature
-    })
+    const batch = await connection.getSignaturesForAddress(
+      programId,
+      {
+        before: lastBatchSignature
+      },
+      'confirmed'
+    )
     if (!batch || batch.length === 0) {
       break
     }
@@ -116,7 +120,7 @@ const getSignatureBatches = async ({
     if (intersectionIndex > -1) {
       intersectionFound = true
       if (intersectionIndex > 0) {
-        batches.unshift(batch.slice(0, intersectionIndex - 1).reverse())
+        batches.unshift(batch.slice(0, intersectionIndex).reverse())
       }
     } else {
       batches.unshift(batch.reverse())
@@ -137,17 +141,24 @@ export const run = async () => {
     connection,
     lastRunSignature
   })
-  logger.debug(`Processing ${batches.length} batches...`)
+  if (batches.length > 0) {
+    logger.info(`Processing ${batches.length} batches...`)
+  }
   for (const batch of batches) {
     await discoveryDb.transaction(async (dbTransaction) => {
       try {
-        logger.debug(`Processing ${batch.length} signatures...`)
+        logger.info(`Processing ${batch.length} signatures...`)
         for (const sigRes of batch) {
           if (sigRes.err) continue
           const res = await connection.getTransaction(sigRes.signature, {
-            maxSupportedTransactionVersion: 0
+            maxSupportedTransactionVersion: 0,
+            commitment: 'confirmed'
           })
           if (res && res.transaction) {
+            logger.info(
+              { signature: sigRes.signature },
+              `Processing signature...`
+            )
             await processTx(res.transaction.message)
           }
         }

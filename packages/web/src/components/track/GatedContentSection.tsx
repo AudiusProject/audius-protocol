@@ -22,7 +22,8 @@ import {
   gatedContentSelectors,
   PurchaseableContentType,
   accountSelectors,
-  gatedContentActions
+  gatedContentActions,
+  toastActions
 } from '@audius/common/store'
 import { formatPrice, removeNullable, Nullable } from '@audius/common/utils'
 import { wAUDIO } from '@audius/fixed-decimal'
@@ -334,29 +335,45 @@ const LockedGatedContentSection = ({
         status: 'UNLOCKING'
       })
     )
-    const program = new Program(IDL as Crowdfund, {} as Provider)
-    const instruction = await program.methods
-      .unlock({
-        contentId,
-        contentType: contentType === PurchaseableContentType.TRACK ? 1 : 2
+    try {
+      const program = new Program(IDL as Crowdfund, {} as Provider)
+      const instruction = await program.methods
+        .unlock({
+          contentId,
+          contentType: contentType === PurchaseableContentType.TRACK ? 1 : 2
+        })
+        .accounts({
+          mint: new PublicKey(env.WAUDIO_MINT_ADDRESS),
+          feePayerWallet: await solanaRelay.getFeePayer(),
+          destinationAccount: campaign.value.destination
+        })
+        .instruction()
+      const tx = await claimableTokensClient.buildTransaction({
+        instructions: [instruction]
       })
-      .accounts({
-        mint: new PublicKey(env.WAUDIO_MINT_ADDRESS),
-        feePayerWallet: await solanaRelay.getFeePayer(),
-        destinationAccount: campaign.value.destination
+      await claimableTokensClient.sendTransaction(tx, {
+        preflightCommitment: 'confirmed'
       })
-      .instruction()
-    const tx = await claimableTokensClient.buildTransaction({
-      instructions: [instruction]
-    })
-    await claimableTokensClient.sendTransaction(tx)
-    dispatch(
-      gatedContentActions.startPollingGatedContent({
-        contentId,
-        contentType,
-        isSourceTrack: true
-      })
-    )
+      dispatch(
+        gatedContentActions.startPollingGatedContent({
+          contentId,
+          contentType,
+          isSourceTrack: true
+        })
+      )
+    } catch {
+      dispatch(
+        toastActions.toast({
+          content: 'Something went wrong. Please try again.'
+        })
+      )
+      dispatch(
+        gatedContentActions.updateGatedContentStatus({
+          contentId,
+          status: 'LOCKED'
+        })
+      )
+    }
   }, [campaign.value, contentId, contentType, dispatch, streamConditions])
 
   const renderLockedDescription = () => {
