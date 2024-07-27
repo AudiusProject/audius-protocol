@@ -39,7 +39,7 @@ export const getFeePayerKeyPair = (feePayerPublicKey?: PublicKey) => {
  * @param lookupTableKeys the addresses of the lookup tables
  * @returns the lookup table account data for each address
  */
-const getLookupTableAccounts = async (lookupTableKeys: PublicKey[]) => {
+export const getLookupTableAccounts = async (lookupTableKeys: PublicKey[]) => {
   return await Promise.all(
     lookupTableKeys.map(async (accountKey) => {
       const res = await getConnection().getAddressLookupTable(accountKey)

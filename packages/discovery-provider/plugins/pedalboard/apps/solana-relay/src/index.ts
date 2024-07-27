@@ -3,6 +3,7 @@ import cors from 'cors'
 import express from 'express'
 
 import { config } from './config'
+import { runIndexers } from './indexers'
 import { logger } from './logger'
 import { errorHandlerMiddleware } from './middleware/errorHandler'
 import {
@@ -36,6 +37,8 @@ const main = async () => {
   app.get('/solana/instruction/location', location)
   app.use(outgoingRequestLogger)
   app.use(errorHandlerMiddleware)
+
+  runIndexers()
 
   app.listen(serverPort, serverHost, () => {
     logger.info({ serverHost, serverPort }, 'server initialized')

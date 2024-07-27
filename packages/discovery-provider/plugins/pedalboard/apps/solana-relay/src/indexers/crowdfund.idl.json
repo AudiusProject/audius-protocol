@@ -1,0 +1,336 @@
+{
+  "address": "4UkTdMM9dNqjUAEjAJVj8Rec83bG747V9dZP7HLK2LJk",
+  "metadata": {
+    "name": "crowdfund",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "Created with Anchor"
+  },
+  "instructions": [
+    {
+      "name": "contribute",
+      "discriminator": [82, 33, 68, 131, 32, 0, 205, 95],
+      "accounts": [
+        {
+          "name": "sender_owner",
+          "signer": true
+        },
+        {
+          "name": "sender_token_account",
+          "writable": true
+        },
+        {
+          "name": "campaign_account",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [99, 97, 109, 112, 97, 105, 103, 110]
+              },
+              {
+                "kind": "arg",
+                "path": "data.content_id"
+              },
+              {
+                "kind": "arg",
+                "path": "data.content_type"
+              }
+            ]
+          }
+        },
+        {
+          "name": "escrow_token_account",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [101, 115, 99, 114, 111, 119]
+              },
+              {
+                "kind": "arg",
+                "path": "data.content_id"
+              },
+              {
+                "kind": "arg",
+                "path": "data.content_type"
+              }
+            ]
+          }
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        {
+          "name": "mint"
+        }
+      ],
+      "args": [
+        {
+          "name": "data",
+          "type": {
+            "defined": {
+              "name": "ContributeInstructionData"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "start_campaign",
+      "discriminator": [229, 59, 6, 209, 253, 163, 39, 124],
+      "accounts": [
+        {
+          "name": "fee_payer_wallet",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "campaign_account",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [99, 97, 109, 112, 97, 105, 103, 110]
+              },
+              {
+                "kind": "arg",
+                "path": "campaign.content_id"
+              },
+              {
+                "kind": "arg",
+                "path": "campaign.content_type"
+              }
+            ]
+          }
+        },
+        {
+          "name": "escrow_token_account",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [101, 115, 99, 114, 111, 119]
+              },
+              {
+                "kind": "arg",
+                "path": "campaign.content_id"
+              },
+              {
+                "kind": "arg",
+                "path": "campaign.content_type"
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        {
+          "name": "mint"
+        }
+      ],
+      "args": [
+        {
+          "name": "campaign",
+          "type": {
+            "defined": {
+              "name": "StartCampaignInstructionData"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "unlock",
+      "discriminator": [101, 155, 40, 21, 158, 189, 56, 203],
+      "accounts": [
+        {
+          "name": "fee_payer_wallet",
+          "writable": true
+        },
+        {
+          "name": "campaign_account",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [99, 97, 109, 112, 97, 105, 103, 110]
+              },
+              {
+                "kind": "arg",
+                "path": "data.content_id"
+              },
+              {
+                "kind": "arg",
+                "path": "data.content_type"
+              }
+            ]
+          }
+        },
+        {
+          "name": "escrow_token_account",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [101, 115, 99, 114, 111, 119]
+              },
+              {
+                "kind": "arg",
+                "path": "data.content_id"
+              },
+              {
+                "kind": "arg",
+                "path": "data.content_type"
+              }
+            ]
+          }
+        },
+        {
+          "name": "destination_account",
+          "writable": true
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        {
+          "name": "mint"
+        }
+      ],
+      "args": [
+        {
+          "name": "_data",
+          "type": {
+            "defined": {
+              "name": "UnlockInstructionData"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "CampaignAccount",
+      "discriminator": [167, 6, 205, 183, 220, 156, 200, 113]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "InvalidContentType",
+      "msg": "Content type not supported"
+    },
+    {
+      "code": 6001,
+      "name": "CampaignNotFunded",
+      "msg": "Campaign not funded"
+    }
+  ],
+  "types": [
+    {
+      "name": "CampaignAccount",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "destination_wallet",
+            "type": "pubkey"
+          },
+          {
+            "name": "funding_threshold",
+            "type": "u64"
+          },
+          {
+            "name": "content_id",
+            "type": "u32"
+          },
+          {
+            "name": "content_type",
+            "type": "u8"
+          },
+          {
+            "name": "fee_payer_wallet",
+            "type": "pubkey"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ContributeInstructionData",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "content_id",
+            "type": "u32"
+          },
+          {
+            "name": "content_type",
+            "type": "u8"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "StartCampaignInstructionData",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "destination_wallet",
+            "type": "pubkey"
+          },
+          {
+            "name": "funding_threshold",
+            "type": "u64"
+          },
+          {
+            "name": "content_id",
+            "type": "u32"
+          },
+          {
+            "name": "content_type",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "UnlockInstructionData",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "content_id",
+            "type": "u32"
+          },
+          {
+            "name": "content_type",
+            "type": "u8"
+          }
+        ]
+      }
+    }
+  ]
+}

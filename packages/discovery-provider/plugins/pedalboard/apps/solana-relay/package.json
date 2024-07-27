@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@audius/spl": "*",
+    "@coral-xyz/anchor": "0.30.1",
     "@pedalboard/basekit": "*",
     "@pedalboard/logger": "*",
     "@pedalboard/storage": "*",

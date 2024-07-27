@@ -3,7 +3,8 @@
     "lib": ["es2022"],
     "module": "es2022",
     "outDir": "./dist",
-    "rootDir": "./src"
+    "rootDir": "./src",
+    "resolveJsonModule": true
   },
   "exclude": ["node_modules"],
   "extends": "../../packages/tsconfig/base.json",
