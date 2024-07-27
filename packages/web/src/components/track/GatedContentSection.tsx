@@ -22,6 +22,7 @@ import {
   PurchaseableContentType
 } from '@audius/common/store'
 import { formatPrice, removeNullable, Nullable } from '@audius/common/utils'
+import { wAUDIO } from '@audius/fixed-decimal'
 import {
   Flex,
   Text,
@@ -145,8 +146,8 @@ const CampaignProgress = ({
       max={new BN(campaign.value?.threshold ?? 1)}
     />
     <Text variant='body' strength='strong' textAlign='right'>
-      {campaign.value?.balance.toLocaleString()} /{' '}
-      {campaign.value?.threshold.toLocaleString()} $AUDIO
+      {wAUDIO(campaign.value?.balance ?? 0).toLocaleString()} /{' '}
+      {wAUDIO(campaign.value?.threshold ?? 1).toLocaleString()} $AUDIO
     </Text>
   </Flex>
 )
@@ -602,7 +603,9 @@ const UnlockedGatedContentSection = ({
     if (isContentCrowdfundGated(streamConditions)) {
       return isOwner ? (
         <Flex direction='column' gap='s'>
-          {messages.usersCanFund(campaign.value?.threshold.toString() ?? '?')}
+          {messages.usersCanFund(
+            wAUDIO(campaign.value?.threshold ?? 1).toLocaleString()
+          )}
           <CampaignProgress campaign={campaign} />
         </Flex>
       ) : (

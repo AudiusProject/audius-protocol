@@ -1,14 +1,11 @@
 import {
-  AccessConditions,
   Collection,
   CollectionMetadata,
-  CrowdfundGateConditions,
   FieldVisibility,
   ID,
   Kind,
   Name,
   StemUploadWithFile,
-  isContentCrowdfundGated,
   isContentFollowGated,
   isContentUSDCPurchaseGated
 } from '@audius/common/models'
@@ -35,6 +32,7 @@ import {
   makeUid,
   waitForAccount
 } from '@audius/common/utils'
+import { wAUDIO } from '@audius/fixed-decimal'
 import { EntityManagerAction } from '@audius/sdk'
 import type { ProgressCB } from '@audius/sdk/dist/services/creatorNode'
 import type { TrackMetadata, UploadTrackMetadata } from '@audius/sdk/dist/utils'
@@ -274,9 +272,7 @@ function* publishWorker(
       const audiusBackendInstance = yield* getContext('audiusBackendInstance')
       const libs = yield* call(audiusBackendInstance.getAudiusLibsTyped)
 
-      if (
-        isContentCrowdfundGated(metadata.stream_conditions as AccessConditions)
-      ) {
+      if (metadata.stream_conditions?.crowdfund) {
         const audiusSdk = yield* getContext('audiusSdk')
         const sdk = yield* call(audiusSdk)
         const { claimableTokensClient, solanaWalletAdapter } = sdk.services
@@ -296,15 +292,18 @@ function* publishWorker(
           { mint: 'wAUDIO', ethWallet: user.wallet }
         )
 
+        const thresholdNumber =
+          metadata.stream_conditions?.crowdfund?.threshold ?? 1
+        const fundingThreshold = new BN(
+          wAUDIO(thresholdNumber).value.toString()
+        )
+
         const startCampaign = crowdfund.methods
           .startCampaign({
             contentId: metadata.track_id,
             contentType: 1,
             destinationWallet: userBank.userBank,
-            fundingThreshold: new BN(
-              (metadata.stream_conditions as CrowdfundGateConditions).crowdfund
-                .threshold ?? 0
-            )
+            fundingThreshold
           })
           .accounts({
             mint: new PublicKey(env.WAUDIO_MINT_ADDRESS),
