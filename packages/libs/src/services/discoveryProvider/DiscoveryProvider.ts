@@ -239,7 +239,7 @@ export class DiscoveryProvider {
         }
       )
 
-      const endpoint = await this.discoveryNodeSelector.getSelectedEndpoint()
+      const endpoint = 'https://isaac.sandbox.audius.co'
       if (endpoint) {
         this.setEndpoint(endpoint)
       }

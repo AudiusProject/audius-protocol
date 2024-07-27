@@ -18,8 +18,7 @@ export const getEagerDiscprov = async (
   // Note: This discovery provider is only used on intial paint
   let eagerDiscprov: string
   if (cachedDiscProvData) {
-    const cachedDiscprov = JSON.parse(cachedDiscProvData)
-    eagerDiscprov = cachedDiscprov.endpoint
+    eagerDiscprov = 'https://isaac.sandbox.audius.co/'
   } else {
     const EAGER_DISCOVERY_NODES = env.EAGER_DISCOVERY_NODES?.split(',') ?? []
     eagerDiscprov =

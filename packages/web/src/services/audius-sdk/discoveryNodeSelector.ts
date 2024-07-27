@@ -30,7 +30,7 @@ const getCachedDiscoveryNode = () => {
           new Date().getTime() - CACHE_TTL
       ) {
         const cachedDiscoveryNode =
-          cachedDiscoveryNodeTimestamp.endpoint ?? undefined
+          'https://isaac.sandbox.audius.co/health_check'
         console.debug(
           '[discovery-node-selector-service] Using cached discovery node',
           cachedDiscoveryNode

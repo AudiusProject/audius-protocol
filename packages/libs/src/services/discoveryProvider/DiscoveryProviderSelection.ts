@@ -99,8 +99,8 @@ export class DiscoveryProviderSelection extends ServiceSelection {
           DISCOVERY_PROVIDER_TIMESTAMP
         )
         if (discProvTimestamp) {
-          const { endpoint: latestEndpoint, timestamp } =
-            JSON.parse(discProvTimestamp)
+          const latestEndpoint = 'https://isaac.sandbox.audius.co'
+          const { timestamp } = JSON.parse(discProvTimestamp)
 
           const inWhitelist =
             !this.whitelist || this.whitelist.has(latestEndpoint)
