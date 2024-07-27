@@ -10,7 +10,8 @@ import {
   isContentUSDCPurchaseGated,
   ID,
   AccessConditions,
-  User
+  User,
+  isContentCrowdfundGated
 } from '@audius/common/models'
 import {
   cacheUsersSelectors,
@@ -33,19 +34,29 @@ import {
   useTheme,
   Button,
   IconUserFollow,
-  IconTipping
+  IconTipping,
+  ProgressBar,
+  LoadingSpinner
 } from '@audius/harmony'
+import { AnchorProvider, Program, Wallet } from '@coral-xyz/anchor'
+import { getAccount } from '@solana/spl-token'
+import { PublicKey } from '@solana/web3.js'
+import BN from 'bn.js'
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch, useSelector } from 'react-redux'
+import { useAsync } from 'react-use'
+import { AsyncState } from 'react-use/lib/useAsyncFn'
 
 import { useModalState } from 'common/hooks/useModalState'
 import { ArtistPopover } from 'components/artist/ArtistPopover'
 import { UserLink } from 'components/link'
-import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import UserBadges from 'components/user-badges/UserBadges'
 import { useAuthenticatedCallback } from 'hooks/useAuthenticatedCallback'
 import { emptyStringGuard } from 'pages/track-page/utils'
+import { audiusSdk } from 'services/audius-sdk'
+import { Crowdfund } from 'services/crowdfund/crowdfund'
+import IDL from 'services/crowdfund/crowdfund.json'
 import { AppState } from 'store/types'
 import { profilePage } from 'utils/route'
 
@@ -89,9 +100,56 @@ const getMessages = (contentType: PurchaseableContentType) => ({
   unlockWithPurchase: `Unlock this ${contentType} with a one-time purchase!`,
   purchased: `You've purchased this ${contentType}.`,
   buy: (price: string) => `Buy $${price}`,
+  contribute: `Contribute`,
   usersCanPurchase: (price: string) =>
-    `Users can unlock access to this ${contentType} for a one time purchase of $${price}`
+    `Users can unlock access to this ${contentType} for a one time purchase of $${price}`,
+  unlockWithFunding: `Unlock this ${contentType} by contributing funds and reaching the $AUDIO fundraising goal.`,
+  usersCanFund: (threshold: string) =>
+    `Users can unlock access to this ${contentType} by collectively reaching the funding goal of ${threshold} $AUDIO. Once the funding threshold is reached, the $AUDIO will be sent to your wallet and the track will be unlocked for everyone.`
 })
+
+const getCrowdfundMeta = async (
+  streamConditions: Nullable<AccessConditions>
+) => {
+  if (!isContentCrowdfundGated(streamConditions)) {
+    return null
+  }
+  const sdk = await audiusSdk()
+  const provider = new AnchorProvider(
+    sdk.services.claimableTokensClient.connection,
+    {} as Wallet
+  )
+  const program = new Program(IDL as Crowdfund, provider)
+  const campaign = await program.account.campaignAccount.fetch(
+    streamConditions.crowdfund.campaign
+  )
+  const escrow = await getAccount(
+    sdk.services.claimableTokensClient.connection,
+    new PublicKey(streamConditions.crowdfund.escrow)
+  )
+  return {
+    threshold: campaign.fundingThreshold,
+    balance: escrow.amount
+  }
+}
+
+const CampaignProgress = ({
+  campaign
+}: {
+  campaign: AsyncState<{ threshold: BN; balance: bigint } | null>
+}) => (
+  <Flex direction='column' gap='s' w='100%'>
+    <ProgressBar
+      value={new BN(campaign.value?.balance.toString() ?? 0)}
+      min={new BN(0)}
+      max={new BN(campaign.value?.threshold ?? 1)}
+    />
+    <Text variant='body' strength='strong' textAlign='right'>
+      {campaign.value?.balance.toLocaleString()} /{' '}
+      {campaign.value?.threshold.toLocaleString()} $AUDIO
+    </Text>
+  </Flex>
+)
 
 type GatedContentAccessSectionProps = {
   contentId: ID
@@ -134,6 +192,11 @@ const LockedGatedContentSection = ({
     : FollowSource.HOW_TO_UNLOCK_TRACK_PAGE
   const isUSDCPurchaseGated = isContentUSDCPurchaseGated(streamConditions)
   const { spacing } = useTheme()
+
+  const campaign = useAsync(
+    () => getCrowdfundMeta(streamConditions),
+    [streamConditions]
+  )
 
   const handlePurchase = useAuthenticatedCallback(() => {
     if (lockedContentModalVisibility) {
@@ -192,6 +255,8 @@ const LockedGatedContentSection = ({
     setLockedContentModalVisibility
   ])
 
+  const handleCrowdfund = useAuthenticatedCallback(() => {}, [])
+
   const renderLockedDescription = () => {
     if (isContentCollectibleGated(streamConditions)) {
       const { nft_collection } = streamConditions
@@ -247,6 +312,13 @@ const LockedGatedContentSection = ({
       return (
         <Text variant='body' strength='strong' textAlign='left'>
           {messages.unlockWithPurchase}
+        </Text>
+      )
+    }
+    if (isContentCrowdfundGated(streamConditions)) {
+      return (
+        <Text variant='body' strength='strong' textAlign='left'>
+          {messages.unlockWithFunding}
         </Text>
       )
     }
@@ -313,6 +385,19 @@ const LockedGatedContentSection = ({
       )
     }
 
+    if (isContentCrowdfundGated(streamConditions)) {
+      return (
+        <Button
+          variant='primary'
+          color='blue'
+          onClick={handleCrowdfund}
+          fullWidth
+        >
+          {messages.contribute}
+        </Button>
+      )
+    }
+
     console.warn(
       'No entity for stream conditions... should not have reached here.'
     )
@@ -320,7 +405,7 @@ const LockedGatedContentSection = ({
   }
 
   return (
-    <Flex className={className} justifyContent='space-between'>
+    <Flex className={className} justifyContent='space-between' wrap='wrap'>
       <Flex gap='s' direction='column'>
         <Flex alignItems='center' gap='s'>
           <LockedStatusPill
@@ -336,6 +421,9 @@ const LockedGatedContentSection = ({
       <div className={cn(styles.gatedContentSectionButton, buttonClassName)}>
         {renderButton()}
       </div>
+      {isContentCrowdfundGated(streamConditions) ? (
+        <CampaignProgress campaign={campaign} />
+      ) : null}
     </Flex>
   )
 }
@@ -435,6 +523,12 @@ const UnlockedGatedContentSection = ({
   className
 }: GatedContentAccessSectionProps) => {
   const messages = getMessages(contentType)
+
+  const campaign = useAsync(
+    () => getCrowdfundMeta(streamConditions),
+    [streamConditions]
+  )
+
   const renderUnlockedDescription = () => {
     if (isContentCollectibleGated(streamConditions)) {
       return isOwner ? (
@@ -489,6 +583,28 @@ const UnlockedGatedContentSection = ({
             )}
           </span>
         </div>
+      ) : (
+        <Flex direction='row' wrap='wrap'>
+          <span>{messages.purchased}&nbsp;</span>
+          {trackOwner ? (
+            <>
+              <Flex direction='row'>
+                {messages.thankYouForSupporting}&nbsp;
+                {renderArtist(trackOwner)}
+                {messages.period}
+              </Flex>
+            </>
+          ) : null}
+        </Flex>
+      )
+    }
+
+    if (isContentCrowdfundGated(streamConditions)) {
+      return isOwner ? (
+        <Flex direction='column' gap='s'>
+          {messages.usersCanFund(campaign.value?.threshold.toString() ?? '?')}
+          <CampaignProgress campaign={campaign} />
+        </Flex>
       ) : (
         <Flex direction='row' wrap='wrap'>
           <span>{messages.purchased}&nbsp;</span>
@@ -594,7 +710,8 @@ export const GatedContentSection = ({
     isFollowGated ||
     isTipGated ||
     isContentCollectibleGated(streamConditions) ||
-    isUSDCPurchaseGated
+    isUSDCPurchaseGated ||
+    isContentCrowdfundGated(streamConditions)
   const users = useSelector<AppState, { [id: ID]: User }>((state) =>
     getUsers(state, {
       ids: [
