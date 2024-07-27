@@ -1,5 +1,6 @@
-import { useCallback } from 'react'
+import { useCallback, useState } from 'react'
 
+import { useInterval } from '@audius/common/hooks'
 import {
   FollowSource,
   ModalSource,
@@ -134,6 +135,21 @@ const getCrowdfundMeta = async (
   }
 }
 
+const useCrowdfundCampaign = (
+  streamConditions: Nullable<AccessConditions>,
+  intervalMs: number
+) => {
+  const [refreshToggle, setRefreshToggle] = useState(false)
+  useInterval(() => {
+    setRefreshToggle((t) => !t)
+  }, intervalMs)
+  const campaign = useAsync(
+    async () => getCrowdfundMeta(streamConditions),
+    [streamConditions, refreshToggle]
+  )
+  return campaign
+}
+
 const CampaignProgress = ({
   campaign
 }: {
@@ -194,10 +210,7 @@ const LockedGatedContentSection = ({
   const isUSDCPurchaseGated = isContentUSDCPurchaseGated(streamConditions)
   const { spacing } = useTheme()
 
-  const campaign = useAsync(
-    () => getCrowdfundMeta(streamConditions),
-    [streamConditions]
-  )
+  const campaign = useCrowdfundCampaign(streamConditions, 5000)
 
   const handlePurchase = useAuthenticatedCallback(() => {
     if (lockedContentModalVisibility) {
@@ -525,10 +538,7 @@ const UnlockedGatedContentSection = ({
 }: GatedContentAccessSectionProps) => {
   const messages = getMessages(contentType)
 
-  const campaign = useAsync(
-    () => getCrowdfundMeta(streamConditions),
-    [streamConditions]
-  )
+  const campaign = useCrowdfundCampaign(streamConditions, 5000)
 
   const renderUnlockedDescription = () => {
     if (isContentCollectibleGated(streamConditions)) {
@@ -607,6 +617,7 @@ const UnlockedGatedContentSection = ({
             wAUDIO(campaign.value?.threshold ?? 1).toLocaleString()
           )}
           <CampaignProgress campaign={campaign} />
+          {streamConditions.crowdfund.escrow}
         </Flex>
       ) : (
         <Flex direction='row' wrap='wrap'>
