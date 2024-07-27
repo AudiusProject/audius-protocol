@@ -60,8 +60,11 @@ const USDCPurchaseConditionsSchema = z
 /** Same as SDK but snake-cased */
 const CrowdfundGatedConditionsSchema = z
   .object({
-    crowdfund_account: z.string(),
-    funding_threshold: z.number()
+    crowdfund: z.object({
+      campaign: z.string(),
+      escrow: z.string(),
+      threshold: z.number()
+    })
   })
   .strict()
 

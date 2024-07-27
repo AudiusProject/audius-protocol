@@ -421,9 +421,12 @@ export const PriceAndAudienceField = (props: PriceAndAudienceFieldProps) => {
           setIsStreamGated(true)
           setIsDownloadGated(true)
           setStreamConditionsValue({
-            crowdfund_account: 'temp',
-            funding_threshold: (streamConditions as CrowdfundGateConditions)
-              ?.funding_threshold
+            crowdfund: {
+              campaign: 'temp',
+              escrow: 'temp',
+              threshold: (streamConditions as CrowdfundGateConditions)
+                ?.crowdfund.threshold
+            }
           })
           setLastGateKeeper({
             ...lastGateKeeper,
@@ -547,7 +550,7 @@ export const PriceAndAudienceField = (props: PriceAndAudienceFieldProps) => {
       // TODO: display crowdfund price
       selectedValues = [
         messages.crowdfund,
-        `${savedStreamConditions.funding_threshold} AUDIO`
+        `${savedStreamConditions.crowdfund.threshold} AUDIO`
       ]
     } else if (
       isUnlisted &&

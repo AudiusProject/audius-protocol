@@ -302,8 +302,8 @@ function* publishWorker(
             contentType: 1,
             destinationWallet: userBank.userBank,
             fundingThreshold: new BN(
-              (metadata.stream_conditions as CrowdfundGateConditions)
-                .funding_threshold ?? 0
+              (metadata.stream_conditions as CrowdfundGateConditions).crowdfund
+                .threshold ?? 0
             )
           })
           .accounts({
@@ -329,9 +329,13 @@ function* publishWorker(
           txReceipt
         )
 
-        const crowdfund_account = keys.campaignAccount?.toBase58()
-        metadata.stream_conditions = { crowdfund_account }
-        metadata.download_conditions = { crowdfund_account }
+        const campaign = keys.campaignAccount?.toBase58()
+        const escrow = keys.escrowTokenAccount?.toBase58()
+        if (!campaign || !escrow) {
+          throw new Error('Failed to create campaign')
+        }
+        metadata.stream_conditions = { crowdfund: { campaign, escrow } }
+        metadata.download_conditions = metadata.stream_conditions
       }
 
       const {
@@ -359,6 +363,7 @@ function* publishWorker(
         }
       })
     } catch (e) {
+      console.error(e)
       yield* put(responseChannel, {
         type: 'ERROR',
         payload: {

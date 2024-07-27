@@ -143,8 +143,11 @@ export type GatedConditions = {
   nft_collection?: EthCollectibleGatedConditions | SolCollectibleGatedConditions
   follow_user_id?: number
   tip_user_id?: number
-  crowdfund_account?: string
-  funding_threshold?: number
+  crowdfund?: {
+    escrow: string
+    campaign: string
+    threshold?: number
+  }
 } & USDCPurchaseConditions
 
 export type TrackMetadata = {

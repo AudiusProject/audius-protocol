@@ -88,9 +88,11 @@ export type USDCPurchaseConditions = {
 }
 
 export type CrowdfundGateConditions = {
-  crowdfund_account: string
-  // Used during upload/edit only
-  funding_threshold?: number
+  crowdfund: {
+    campaign: string
+    escrow: string
+    threshold?: number
+  }
 }
 
 export type AccessConditions =
@@ -147,7 +149,7 @@ export const isContentUSDCPurchaseGated = (
 export const isContentCrowdfundGated = (
   gatedConditions?: Nullable<AccessConditions>
 ): gatedConditions is CrowdfundGateConditions =>
-  !!gatedConditions && 'crowdfund_account' in (gatedConditions ?? {})
+  !!gatedConditions && 'crowdfund' in (gatedConditions ?? {})
 
 export type AccessSignature = {
   data: string

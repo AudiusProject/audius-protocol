@@ -72,11 +72,15 @@ purchase_gate = ns.model(
         )
     },
 )
+
+
+crowdfund = ns.model(
+    "crowdfund",
+    {"campaign": fields.String(required=True), "escrow": fields.String(required=True)},
+)
 crowdfund_gate = ns.model(
     "crowdfund_gate",
-    {
-        "crowdfund_account": fields.String(required=True),
-    },
+    {"crowdfund": fields.Nested(crowdfund, required=True)},
 )
 
 
