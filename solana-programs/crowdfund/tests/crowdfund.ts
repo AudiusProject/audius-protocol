@@ -11,7 +11,7 @@ import {
 import util from 'util'
 import assert from 'assert'
 
-const { PublicKey, LAMPORTS_PER_SOL } = anchor.web3
+const { LAMPORTS_PER_SOL } = anchor.web3
 
 describe('crowdfund', () => {
   // Configure the client to use the local cluster.
@@ -38,6 +38,9 @@ describe('crowdfund', () => {
   })
 
   it('Creates a campaign', async () => {
+    const contentId = 123
+    const contentType = 1
+
     // Create token mint
     const mint = await createMint(
       provider.connection,
@@ -62,8 +65,8 @@ describe('crowdfund', () => {
     // Create campaign
     const { pubkeys, signature } = await program.methods
       .startCampaign({
-        contentId: 123,
-        contentType: 1,
+        contentId,
+        contentType,
         destinationWallet: destinationAta,
         fundingThreshold: new anchor.BN('1000000')
       })
@@ -81,8 +84,8 @@ describe('crowdfund', () => {
     )
     console.log('Campaign:', util.inspect(campaign, false, 10, true))
 
-    assert.equal(campaign.contentId, 123)
-    // assert.equal(Object.keys(campaign.contentType)[0], 'track')
+    assert.equal(campaign.contentId, contentId)
+    assert.equal(campaign.contentType, 1)
 
     // Mint tokens
     console.log('Create ATA...')
@@ -108,8 +111,8 @@ describe('crowdfund', () => {
     // Contribute to campaign
     const sig = await program.methods
       .contribute({
-        contentId: campaign.contentId,
-        contentType: 1,
+        contentId,
+        contentType,
         amount: new anchor.BN('1000000000')
       })
       .accounts({
@@ -132,8 +135,8 @@ describe('crowdfund', () => {
 
     const endSig = await program.methods
       .unlock({
-        contentId: campaign.contentId,
-        contentType: 1
+        contentId,
+        contentType
       })
       .accounts({
         destinationAccount: destinationAta,
