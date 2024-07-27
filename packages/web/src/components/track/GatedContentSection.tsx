@@ -40,7 +40,8 @@ import {
   IconUserFollow,
   IconTipping,
   ProgressBar,
-  LoadingSpinner
+  LoadingSpinner,
+  IconUserGroup
 } from '@audius/harmony'
 import { AnchorProvider, Program, Provider, Wallet } from '@coral-xyz/anchor'
 import { getAccount } from '@solana/spl-token'
@@ -81,6 +82,7 @@ const getMessages = (contentType: PurchaseableContentType) => ({
   unlocked: 'UNLOCKED',
   collectibleGated: 'COLLECTIBLE GATED',
   specialAccess: 'SPECIAL ACCESS',
+  crowdfund: 'CROWDFUND',
   goToCollection: 'Open Collection',
   sendTip: 'Send Tip',
   followArtist: 'Follow Artist',
@@ -111,7 +113,8 @@ const getMessages = (contentType: PurchaseableContentType) => ({
   unlockWithFunding: `Unlock this ${contentType} by contributing funds and reaching the $AUDIO fundraising goal.`,
   usersCanFund: (threshold: string) =>
     `Users can unlock access to this ${contentType} by collectively reaching the funding goal of ${threshold} $AUDIO. Once the funding threshold is reached, the $AUDIO will be sent to your wallet and the track will be unlocked for everyone.`,
-  unlock: 'Unlock'
+  unlock: 'Unlock',
+  funded: `This ${contentType} has been completely crowdfunded as is now available.`
 })
 
 const getCrowdfundMeta = async (
@@ -120,25 +123,29 @@ const getCrowdfundMeta = async (
   if (!isContentCrowdfundGated(streamConditions)) {
     return null
   }
-  const sdk = await audiusSdk()
-  const provider = new AnchorProvider(
-    sdk.services.claimableTokensClient.connection,
-    {} as Wallet
-  )
-  const program = new Program(IDL as Crowdfund, provider)
-  const campaign = await program.account.campaignAccount.fetch(
-    streamConditions.crowdfund.campaign,
-    'confirmed'
-  )
-  const escrow = await getAccount(
-    sdk.services.claimableTokensClient.connection,
-    new PublicKey(streamConditions.crowdfund.escrow),
-    'confirmed'
-  )
-  return {
-    threshold: campaign.fundingThreshold,
-    balance: escrow.amount,
-    destination: campaign.destinationWallet
+  try {
+    const sdk = await audiusSdk()
+    const provider = new AnchorProvider(
+      sdk.services.claimableTokensClient.connection,
+      {} as Wallet
+    )
+    const program = new Program(IDL as Crowdfund, provider)
+    const campaign = await program.account.campaignAccount.fetch(
+      streamConditions.crowdfund.campaign,
+      'confirmed'
+    )
+    const escrow = await getAccount(
+      sdk.services.claimableTokensClient.connection,
+      new PublicKey(streamConditions.crowdfund.escrow),
+      'confirmed'
+    )
+    return {
+      threshold: campaign.fundingThreshold,
+      balance: escrow.amount,
+      destination: campaign.destinationWallet
+    }
+  } catch {
+    return null
   }
 }
 
@@ -300,8 +307,7 @@ const LockedGatedContentSection = ({
     const tx = await claimableTokensClient.buildTransaction({
       instructions: [secp, transfer]
     })
-    const sig = await claimableTokensClient.sendTransaction(tx)
-    console.log('Successfully sent tx', sig)
+    await claimableTokensClient.sendTransaction(tx)
   }, [streamConditions, user?.wallet])
 
   const handleUnlock = useAuthenticatedCallback(async () => {
@@ -325,8 +331,7 @@ const LockedGatedContentSection = ({
     const tx = await claimableTokensClient.buildTransaction({
       instructions: [instruction]
     })
-    const sig = await claimableTokensClient.sendTransaction(tx)
-    console.log('Successfully sent tx', sig)
+    await claimableTokensClient.sendTransaction(tx)
     dispatch(
       gatedContentActions.updateGatedContentStatus({
         contentId,
@@ -692,17 +697,16 @@ const UnlockedGatedContentSection = ({
     }
 
     if (isContentCrowdfundGated(streamConditions)) {
-      return isOwner ? (
+      return isOwner && campaign.value !== null ? (
         <Flex direction='column' gap='s'>
           {messages.usersCanFund(
             wAUDIO(campaign.value?.threshold ?? 1).toLocaleString()
           )}
           <CampaignProgress campaign={campaign} />
-          {streamConditions.crowdfund.escrow}
         </Flex>
       ) : (
         <Flex direction='row' wrap='wrap'>
-          <span>{messages.purchased}&nbsp;</span>
+          <span>{messages.funded}</span>
           {trackOwner ? (
             <>
               <Flex direction='row'>
@@ -731,6 +735,9 @@ const UnlockedGatedContentSection = ({
   } else if (isContentUSDCPurchaseGated(streamConditions)) {
     IconComponent = IconCart
     gatedConditionTitle = messages.payToUnlock
+  } else if (isContentCrowdfundGated(streamConditions)) {
+    IconComponent = IconUserGroup
+    gatedConditionTitle = messages.crowdfund
   }
 
   return (
@@ -801,12 +808,13 @@ export const GatedContentSection = ({
   const isFollowGated = isContentFollowGated(streamConditions)
   const isTipGated = isContentTipGated(streamConditions)
   const isUSDCPurchaseGated = isContentUSDCPurchaseGated(streamConditions)
+  const isCrowdfundGated = isContentCrowdfundGated(streamConditions)
   const shouldDisplay =
     isFollowGated ||
     isTipGated ||
     isContentCollectibleGated(streamConditions) ||
     isUSDCPurchaseGated ||
-    isContentCrowdfundGated(streamConditions)
+    isCrowdfundGated
   const users = useSelector<AppState, { [id: ID]: User }>((state) =>
     getUsers(state, {
       ids: [
