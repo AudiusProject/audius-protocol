@@ -108,7 +108,9 @@ export const sendTransactionWithRetries = async ({
   let success = false
   try {
     if (!sendOptions?.skipPreflight) {
-      const simulatedRes = await connection.simulateTransaction(transaction)
+      const simulatedRes = await connection.simulateTransaction(transaction, {
+        commitment: sendOptions?.preflightCommitment
+      })
       if (simulatedRes.value.err) {
         // @ts-ignore Typescript is confused about deps
         throw new SendTransactionError({
