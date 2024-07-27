@@ -158,7 +158,10 @@ export class ClaimableTokensClient extends BaseSolanaProgramClient {
       authority: this.authorities[mint],
       programId: this.programId
     })
-    const nonceAccount = await this.connection.getAccountInfo(nonceKey)
+    const nonceAccount = await this.connection.getAccountInfo(
+      nonceKey,
+      'confirmed'
+    )
     const encodedNonceData = nonceAccount?.data
     if (encodedNonceData) {
       const nonceData =
