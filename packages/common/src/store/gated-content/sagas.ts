@@ -50,7 +50,8 @@ const {
   addFolloweeId,
   removeFolloweeId,
   addTippedUserId,
-  removeTippedUserId
+  removeTippedUserId,
+  startPollingGatedContent
 } = gatedContentActions
 
 const { refreshTipGatedTracks } = tippingActions
@@ -726,12 +727,24 @@ function* watchRevokeAccess() {
   yield* takeEvery(revokeAccess.type, handleRevokeAccess)
 }
 
+function* watchStartPollingGatedContent() {
+  yield* takeEvery(
+    startPollingGatedContent.type,
+    function* (action: ReturnType<typeof startPollingGatedContent>) {
+      const currentUserId = yield* select(getUserId)
+      if (!currentUserId) return
+      yield* call(pollGatedContent, { ...action.payload, currentUserId })
+    }
+  )
+}
+
 export const sagas = () => {
   return [
     watchGatedTracks,
     watchFollowGatedTracks,
     watchUnfollowGatedTracks,
     watchTipGatedTracks,
-    watchRevokeAccess
+    watchRevokeAccess,
+    watchStartPollingGatedContent
   ]
 }

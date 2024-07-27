@@ -3,6 +3,8 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { ID, GatedContentStatus, NFTAccessSignature } from '~/models'
 import { Nullable } from '~/utils'
 
+import { PurchaseableContentType } from '../purchase-content'
+
 type GatedContentState = {
   nftAccessSignatureMap: { [id: ID]: Nullable<NFTAccessSignature> }
   statusMap: { [id: ID]: GatedContentStatus }
@@ -92,6 +94,16 @@ const slice = createSlice({
       state.tippedUserIds = state.tippedUserIds.filter(
         (id) => id !== action.payload.id
       )
+    },
+    startPollingGatedContent: (
+      _state,
+      _action: PayloadAction<{
+        contentId: number
+        contentType: PurchaseableContentType
+        isSourceTrack: boolean
+      }>
+    ) => {
+      // saga
     }
   }
 })
