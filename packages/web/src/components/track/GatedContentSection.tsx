@@ -307,7 +307,9 @@ const LockedGatedContentSection = ({
     const tx = await claimableTokensClient.buildTransaction({
       instructions: [secp, transfer]
     })
-    await claimableTokensClient.sendTransaction(tx)
+    await claimableTokensClient.sendTransaction(tx, {
+      preflightCommitment: 'confirmed'
+    })
   }, [streamConditions, user?.wallet])
 
   const handleUnlock = useAuthenticatedCallback(async () => {
