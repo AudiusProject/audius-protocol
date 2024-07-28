@@ -42,7 +42,8 @@ import {
   IconTipping,
   ProgressBar,
   LoadingSpinner,
-  IconUserGroup
+  IconUserGroup,
+  IconLockUnlocked
 } from '@audius/harmony'
 import { AnchorProvider, Program, Provider, Wallet } from '@coral-xyz/anchor'
 import { getAccount } from '@solana/spl-token'
@@ -115,7 +116,7 @@ const getMessages = (contentType: PurchaseableContentType) => ({
   usersCanFund: (threshold: string) =>
     `Users can unlock access to this ${contentType} by collectively reaching the funding goal of ${threshold} $AUDIO. Once the funding threshold is reached, the $AUDIO will be sent to your wallet and the track will be unlocked for everyone.`,
   unlock: 'Unlock',
-  funded: `This ${contentType} has been completely crowdfunded as is now available.`
+  funded: `This ${contentType} has been completely crowdfunded as is now available!`
 })
 
 const getCrowdfundMeta = async (
@@ -510,7 +511,12 @@ const LockedGatedContentSection = ({
         new BN(campaign.value.balance.toString()).gte(campaign.value.threshold)
       ) {
         return (
-          <Button variant='primary' onClick={handleUnlock} fullWidth>
+          <Button
+            variant='primary'
+            iconRight={IconLockUnlocked}
+            onClick={handleUnlock}
+            fullWidth
+          >
             {messages.unlock}
           </Button>
         )
