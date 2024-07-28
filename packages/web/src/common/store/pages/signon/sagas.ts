@@ -422,9 +422,11 @@ function* signUp() {
     [localStorage, localStorage.getItem],
     'useMetaMask'
   )
+  const useWeb3Auth = yield* call([localStorage, localStorage.getItem], 'useWeb3Auth')
 
-  if (email && password && useMetamask) {
+  if (email && password && useMetamask && useWeb3Auth) {
     yield* call([localStorage, localStorage.removeItem], 'useMetaMask')
+    yield* call([localStorage, localStorage.removeItem], 'useWeb3Auth')
     yield* put(backendActions.setupBackend())
   }
 
@@ -452,6 +454,15 @@ function* signUp() {
   yield* call(audiusBackendInstance.setUserHandleForRelay, handle)
 
   const feePayerOverride = yield* select(getFeePayer)
+
+  if (useWeb3Auth) {
+    // init libs to set web3auth
+    const audiusLibs = yield* call([
+      audiusBackendInstance,
+      audiusBackendInstance.getAudiusLibs
+    ])
+    console.log({ externalWeb3: audiusLibs.web3Manager?.web3IsExternal() })
+  }
 
   yield* put(
     confirmerActions.requestConfirmation(
@@ -665,7 +676,7 @@ function* signUp() {
           console.debug(message)
         }
       },
-      () => {},
+      () => { },
       SIGN_UP_TIMEOUT_MILLIS
     )
   )
@@ -730,7 +741,7 @@ function* repairSignUp() {
             yield* put(signOnActions.signUpTimeout())
           }
         },
-        () => {},
+        () => { },
         SIGN_UP_TIMEOUT_MILLIS
       )
     )
@@ -763,8 +774,8 @@ function* signIn(action: ReturnType<typeof signOnActions.signIn>) {
   const clientOrigin = isNativeMobile
     ? 'mobile'
     : isElectron
-    ? 'desktop'
-    : 'web'
+      ? 'desktop'
+      : 'web'
 
   yield* call(waitForRead)
   try {
@@ -1029,6 +1040,19 @@ function* configureMetaMask() {
   }
 }
 
+function* configureWeb3Auth() {
+  try {
+    window.localStorage.setItem('useWeb3Auth', JSON.stringify(true))
+    yield* put(backendActions.setupBackend())
+  } catch (err: any) {
+    const reportToSentry = yield* getContext('reportToSentry')
+    reportToSentry({
+      error: err,
+      name: 'Sign Up: Configure web3auth failed'
+    })
+  }
+}
+
 export function* watchCompleteFollowArtists() {
   yield* takeEvery(signOnActions.COMPLETE_FOLLOW_ARTISTS, completeFollowArtists)
 }
@@ -1076,6 +1100,10 @@ function* watchConfigureMetaMask() {
   yield* takeLatest(signOnActions.CONFIGURE_META_MASK, configureMetaMask)
 }
 
+function* watchConfigureWeb3Auth() {
+  yield* takeLatest(signOnActions.CONFIGURE_WEB3AUTH, configureWeb3Auth)
+}
+
 function* watchFollowArtists() {
   yield* takeLatest(signOnActions.FOLLOW_ARTISTS, followArtists)
 }
@@ -1115,6 +1143,7 @@ export default function sagas() {
     watchFollowArtists,
     watchGetArtistsToFollow,
     watchConfigureMetaMask,
+    watchConfigureWeb3Auth,
     watchOpenSignOn,
     watchSignOnError,
     watchSendWelcomeEmail,

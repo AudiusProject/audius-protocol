@@ -31,6 +31,7 @@ import {
   SIGN_IN_FAILED,
   SIGN_IN_SUCCEEDED,
   CONFIGURE_META_MASK,
+  CONFIGURE_WEB3AUTH,
   UPDATE_ROUTE_ON_COMPLETION,
   UPDATE_ROUTE_ON_EXIT,
   ADD_FOLLOW_ARTISTS,
@@ -302,6 +303,12 @@ const actionsMap = {
     return {
       ...state,
       useMetaMask: true
+    }
+  },
+  [CONFIGURE_WEB3AUTH](state, action) {
+    return {
+      ...state,
+      useWeb3Auth: true
     }
   },
   [VALIDATE_EMAIL_SUCCEEDED](state, action) {

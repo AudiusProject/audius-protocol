@@ -150,7 +150,8 @@ export class Utils {
   ) {
     // Initializing web3 with a HttpProvider wrapper for multiple providers
     // ref: https://github.com/ChainSafe/web3.js/blob/1.x/packages/web3/types/index.d.ts#L31.
-    const web3Instance = new Web3(new MultiProvider(web3Provider))
+    // @ts-ignore
+    const web3Instance: Web3 = web3Provider
 
     try {
       const networkId = await web3Instance.eth.net.getId()

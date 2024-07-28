@@ -130,7 +130,7 @@ export class AudiusLibs {
   static async configExternalWeb3(
     registryAddress: string,
     // equal to web.currentProvider
-    web3Provider: string,
+    web3Provider: any,
     // network chain id
     networkId: string,
     // wallet address to force use instead of the first wallet on the provided web3
@@ -140,7 +140,11 @@ export class AudiusLibs {
   ) {
     const web3Instance = await Utils.configureWeb3(web3Provider, networkId)
     if (!web3Instance) {
-      throw new Error('External web3 incorrectly configured')
+      throw new Error(`External web3 incorrectly configured ${JSON.stringify({
+        // @ts-ignore
+        chainNetworkId: await web3Provider.eth.net.getId(),
+        networkId,
+      })}`)
     }
     const wallets = await web3Instance.eth.getAccounts()
     return {

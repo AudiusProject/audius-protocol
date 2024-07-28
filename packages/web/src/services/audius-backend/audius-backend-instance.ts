@@ -52,6 +52,14 @@ export const audiusBackendInstance = audiusBackend({
       ? JSON.parse(useMetaMaskSerialized)
       : false
 
+    const useWeb3AuthSerialized = localStorage.getItem('useWeb3Auth')
+    const useWeb3Auth = useWeb3AuthSerialized
+      ? JSON.parse(useWeb3AuthSerialized)
+      : false
+
+    // @ts-ignore
+    console.warn({ useWeb3AuthSerialized, useWeb3Auth, web3Auth: window.web3authProvider })
+
     if (useMetaMask && window.ethereum) {
       try {
         return {
@@ -65,6 +73,36 @@ export const audiusBackendInstance = audiusBackend({
           )
         }
       } catch (e) {
+        return {
+          error: true,
+          web3Config: libs.configInternalWeb3(
+            registryAddress,
+            web3ProviderUrls,
+            null,
+            entityManagerAddress
+          )
+        }
+      }
+    }
+
+    // @ts-ignore
+    if (useWeb3Auth && window.web3authProvider) {
+      // @ts-ignore
+      console.log({ accounts: await window.web3authProvider.eth.getAccounts() })
+      try {
+        return {
+          error: false,
+          web3Config: await libs.configExternalWeb3(
+            registryAddress,
+            // @ts-ignore
+            window.web3authProvider,
+            web3NetworkId,
+            null,
+            entityManagerAddress
+          )
+        }
+      } catch (e) {
+        console.error({ e }, "window web3auth")
         return {
           error: true,
           web3Config: libs.configInternalWeb3(

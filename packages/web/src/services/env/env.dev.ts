@@ -80,7 +80,7 @@ export const env: Env = {
   USER_NODE: 'http://audius-protocol-creator-node-1',
   USE_HASH_ROUTING: false,
   WAUDIO_MINT_ADDRESS: '37RCjhgV1qGV2Q54EHFScdxZ22ydRMdKMtVgod47fDP3',
-  WEB3_NETWORK_ID: '1337',
+  WEB3_NETWORK_ID: '1000000000001',
   WEB3_PROVIDER_URL: 'http://audius-protocol-poa-ganache-1',
   WORMHOLE_ADDRESS: null,
   WORMHOLE_RPC_HOSTS: null

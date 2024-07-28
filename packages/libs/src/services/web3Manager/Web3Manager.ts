@@ -186,6 +186,7 @@ export class Web3Manager {
    * @param data
    */
   async sign(data: string | Buffer) {
+    console.info({ sign_data: data })
     if (this.useExternalWeb3) {
       const account = this.getWalletAddress()
       if (this.isServer) {
@@ -426,7 +427,7 @@ const ethSignTypedData = async (
       // fix per https://github.com/ethereum/web3.js/issues/1119
     }
 
-    ;(web3.currentProvider as HttpProvider).send(
+    ; (web3.currentProvider as HttpProvider).send(
       {
         method,
         params: [wallet, processedSignatureData],

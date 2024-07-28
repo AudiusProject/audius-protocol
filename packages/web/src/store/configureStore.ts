@@ -63,6 +63,7 @@ const statePruner = (state: AppState) => {
       twitterId: state.signOn.twitterId,
       twitteRScreenName: state.signOn.twitterScreenName,
       useMetaMask: state.signOn.useMetaMask,
+      useWeb3Auth: state.signOn.useWeb3Auth,
       verified: state.signOn.verified
     },
     upload: {

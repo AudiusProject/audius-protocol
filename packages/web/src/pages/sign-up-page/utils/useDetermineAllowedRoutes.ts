@@ -83,7 +83,7 @@ export const useDetermineAllowedRoute = () => {
         // Already have email
         allowedRoutes.push(SignUpPath.createPassword)
 
-        if (signUpState.password.value || signUpState.useMetaMask) {
+        if (signUpState.password.value || signUpState.useMetaMask || signUpState.useWeb3Auth) {
           // Already have password
           if (!signUpState.linkedSocialOnFirstPage) {
             allowedRoutes.push(SignUpPath.pickHandle)
@@ -104,11 +104,11 @@ export const useDetermineAllowedRoute = () => {
       attemptedPath === '/signup' && hasAlreadySignedUp
         ? allowedRoutes[allowedRoutes.length - 1]
         : isAllowedRoute
-        ? attemptedPath
-        : // IF we attempted to go to /signup directly, that means it was a link from somewhere else in the app, so we should start back at the beginning
-        attemptedPath === '/signup'
-        ? allowedRoutes[0]
-        : allowedRoutes[allowedRoutes.length - 1]
+          ? attemptedPath
+          : // IF we attempted to go to /signup directly, that means it was a link from somewhere else in the app, so we should start back at the beginning
+          attemptedPath === '/signup'
+            ? allowedRoutes[0]
+            : allowedRoutes[allowedRoutes.length - 1]
 
     if (correctedPath === SignUpPath.completedRedirect) {
       setIsWelcomeModalOpen(true)

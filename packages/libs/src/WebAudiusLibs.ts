@@ -144,7 +144,11 @@ export class AudiusLibs {
   ) {
     const web3Instance = await Utils.configureWeb3(web3Provider, networkId)
     if (!web3Instance) {
-      throw new Error('External web3 incorrectly configured')
+      throw new Error(`External web3 incorrectly configured ${JSON.stringify({
+        // @ts-ignore
+        chainNetworkId: await web3Provider.eth.net.getId(),
+        networkId,
+      })}`)
     }
     const wallets = await web3Instance.eth.getAccounts()
     return {
