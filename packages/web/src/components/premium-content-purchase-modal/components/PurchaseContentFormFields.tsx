@@ -56,6 +56,7 @@ export const PurchaseContentFormFields = ({
     useField(PURCHASE_METHOD)
   const [{ value: purchaseVendor }, , { setValue: setPurchaseVendor }] =
     useField(PURCHASE_VENDOR)
+  const confirmingGuestCheckout = stage === PurchaseContentStage.CONFIRM_GUEST
   const isPurchased = stage === PurchaseContentStage.FINISH
 
   const [{ value: isGuestCheckout }] = useField(GUEST_CHECKOUT)
@@ -135,6 +136,12 @@ export const PurchaseContentFormFields = ({
         totalPriceInCents={totalPriceInCents}
         isAlbumPurchase={isAlbumPurchase}
       />
+      {isGuestCheckout ? (
+        <Flex direction='column' gap='l'>
+          <Text variant='title'>Contact Details</Text>
+          <HarmonyTextField name='guestEmail' label='Email' />
+        </Flex>
+      ) : null}
       {isUnlocking || isPurchased ? null : (
         <PaymentMethod
           selectedMethod={purchaseMethod}
@@ -148,9 +155,6 @@ export const PurchaseContentFormFields = ({
           showVendorChoice={false}
         />
       )}
-      {isGuestCheckout ? (
-        <HarmonyTextField name='guestEmail' label='Email' />
-      ) : null}
       {isUnlocking ? null : <PayToUnlockInfo />}
     </>
   )

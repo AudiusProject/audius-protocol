@@ -1,5 +1,7 @@
+import { Button, Flex } from '@audius/harmony'
 import { full } from '@audius/sdk'
 
+import { GatedConditionsButton } from '../GatedConditionsButton'
 import Artwork from '../artwork/Artwork'
 import AudiusLogoButton from '../button/AudiusLogoButton'
 import ShareButton from '../button/ShareButton'
@@ -83,9 +85,17 @@ const TrackPlayerCompact = ({
               titleUrl={trackURL}
             />
           </div>
-          <div className={styles.shareButtonHolder}>
-            <ShareButton url={trackURL} creator={artistName} title={title} />
-          </div>
+          <Flex alignItems='center' gap='l'>
+            {isPurchaseable ? (
+              <GatedConditionsButton
+                streamConditions={streamConditions}
+                trackURL={trackURL}
+              />
+            ) : null}
+            <div className={styles.shareButtonHolder}>
+              <ShareButton url={trackURL} creator={artistName} title={title} />
+            </div>
+          </Flex>
         </div>
       </div>
     </div>

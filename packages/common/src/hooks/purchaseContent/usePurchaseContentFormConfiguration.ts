@@ -109,7 +109,9 @@ export const usePurchaseContentFormConfiguration = ({
   const balance = USDC(balanceBN ?? new BN(0)).value
   const [guestEmail, setGuestEmail] = useLocalStorage('guest-email', '')
   const { data: currentUser } = useGetCurrentUser({})
-  const isGuestCheckout = !currentUser || (currentUser && !currentUser.handle)
+  const isGuestCheckout =
+    !currentUser ||
+    (currentUser && (!currentUser.handle || currentUser.handle === 'guest'))
 
   const initialValues: PurchaseContentValues = {
     [CUSTOM_AMOUNT]: undefined,

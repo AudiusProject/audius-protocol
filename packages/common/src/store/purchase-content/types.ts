@@ -11,6 +11,7 @@ export enum PurchaseContentStage {
   IDLE = 'IDLE',
   START = 'START',
   BUY_USDC = 'BUY_USDC',
+  CONFIRM_GUEST = 'CONFRM_GUEST',
   PURCHASING = 'PURCHASING',
   CONFIRMING_PURCHASE = 'CONFIRMING_PURCHASE',
   CANCELED = 'CANCELED',
@@ -19,6 +20,7 @@ export enum PurchaseContentStage {
 
 export enum PurchaseContentPage {
   PURCHASE = 'purchase',
+  CONFIRM_GUEST = 'confirm_guest',
   TRANSFER = 'crypto-transfer'
 }
 

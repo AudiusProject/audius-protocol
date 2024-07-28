@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useEffect } from 'react'
 
 import {
   FollowSource,
@@ -38,6 +38,7 @@ import {
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch, useSelector } from 'react-redux'
+import { useSearchParams } from 'react-router-dom-v5-compat'
 
 import { useModalState } from 'common/hooks/useModalState'
 import { ArtistPopover } from 'components/artist/ArtistPopover'
@@ -134,14 +135,13 @@ const LockedGatedContentSection = ({
     : FollowSource.HOW_TO_UNLOCK_TRACK_PAGE
   const isUSDCPurchaseGated = isContentUSDCPurchaseGated(streamConditions)
   const { spacing } = useTheme()
+  const [searchParams] = useSearchParams()
+  const openCheckout = searchParams.get('checkout') === 'true'
 
   const handlePurchase = useCallback(() => {
-    console.log('asdf handle purchase')
-
     if (lockedContentModalVisibility) {
       setLockedContentModalVisibility(false)
     }
-    console.log('asdf open premium content purchase modal')
     openPremiumContentPurchaseModal(
       { contentId, contentType },
       { source: premiumModalSource ?? ModalSource.TrackDetails }
@@ -154,6 +154,12 @@ const LockedGatedContentSection = ({
     setLockedContentModalVisibility,
     premiumModalSource
   ])
+
+  useEffect(() => {
+    if (openCheckout && isUSDCPurchaseGated) {
+      handlePurchase()
+    }
+  }, [openCheckout, handlePurchase, isUSDCPurchaseGated])
 
   const handleSendTip = useAuthenticatedCallback(() => {
     dispatch(

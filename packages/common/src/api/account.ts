@@ -46,7 +46,8 @@ const accountApi = createApi({
         return account
       },
       options: {
-        type: 'query'
+        type: 'query',
+        schemaKey: 'currentUser'
       }
     },
     getCurrentWeb3User: {

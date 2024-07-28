@@ -1,18 +1,15 @@
+import { useGetCurrentUser } from '@audius/common/api'
 import { useIsManagedAccount } from '@audius/common/hooks'
 import { FeatureFlags } from '@audius/common/services'
-import { accountSelectors } from '@audius/common/store'
 import { Box, Flex, Text, useTheme } from '@audius/harmony'
 
 import { AvatarLegacy } from 'components/avatar/AvatarLegacy'
 import { TextLink, UserLink } from 'components/link'
 import { useFlag } from 'hooks/useRemoteConfig'
-import { useSelector } from 'utils/reducer'
-import { SIGN_IN_PAGE, profilePage } from 'utils/route'
+import { SIGN_IN_PAGE, SIGN_UP_PAGE, profilePage } from 'utils/route'
 import { backgroundOverlay } from 'utils/styleUtils'
 
 import { AccountSwitcher } from './AccountSwitcher/AccountSwitcher'
-
-const { getAccountUser } = accountSelectors
 
 const messages = {
   haveAccount: 'Have an Account?',
@@ -21,7 +18,7 @@ const messages = {
 }
 
 export const AccountDetails = () => {
-  const account = useSelector((state) => getAccountUser(state))
+  const { data: account } = useGetCurrentUser({})
   const { color } = useTheme()
   const { isEnabled: isManagerModeEnabled = false } = useFlag(
     FeatureFlags.MANAGER_MODE
@@ -29,6 +26,7 @@ export const AccountDetails = () => {
   const isManagedAccount = useIsManagedAccount() && isManagerModeEnabled
 
   const profileLink = profilePage(account?.handle ?? '')
+  const isGuestAccount = account?.handle === 'guest'
 
   return (
     <Flex direction='column' pb='unit5' w='100%'>
@@ -68,7 +66,7 @@ export const AccountDetails = () => {
               overflow: 'hidden'
             }}
           >
-            {account ? (
+            {account && !isGuestAccount ? (
               <>
                 <Flex
                   alignItems='center'
@@ -105,15 +103,15 @@ export const AccountDetails = () => {
             ) : (
               <>
                 <Text variant='body' size='s' strength='strong'>
-                  {messages.haveAccount}
+                  {isGuestAccount ? 'Guest' : messages.haveAccount}
                 </Text>
                 <TextLink
-                  to={SIGN_IN_PAGE}
+                  to={isGuestAccount ? SIGN_UP_PAGE : SIGN_IN_PAGE}
                   variant='visible'
                   size='xs'
                   strength='weak'
                 >
-                  {messages.signIn}
+                  {isGuestAccount ? 'Complete You Account' : messages.signIn}
                 </TextLink>
               </>
             )}
