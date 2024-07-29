@@ -377,11 +377,8 @@ export const Table = ({
           )}
           {...props}
           key={key}
-          onClick={
-            isLocked
-              ? undefined
-              : (e: MouseEvent<HTMLTableRowElement>) =>
-                  onClickRow?.(e, row, row.index)
+          onClick={(e: MouseEvent<HTMLTableRowElement>) =>
+            onClickRow?.(e, row, row.index)
           }
         >
           {cells.map((cell) => renderCell(cell))}
