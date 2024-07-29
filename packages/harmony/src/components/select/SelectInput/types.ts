@@ -53,4 +53,6 @@ export type SelectInputProps = Omit<TextInputProps, 'children' | 'value'> & {
    * This will override the default behavior of toggling isOpen
    */
   onClick?: () => void
+
+  disableReset?: boolean
 }
