@@ -76,8 +76,13 @@ export const TextField = (props: TextFieldProps) => {
 
   const handleChangeText = useCallback(
     (text: string) => {
-      onChangeText?.(text)
-      onChange(name)(text)
+      // onChangeText overrides onChange
+      // If you use it, you must call setValue manually
+      if (onChangeText) {
+        onChangeText(text)
+      } else {
+        onChange(name)(text)
+      }
       if (touched) {
         setTouched(false)
       }
