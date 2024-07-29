@@ -23,18 +23,18 @@
   justify-content: center;
 }
 
-.moreByArtistLineupWrapper {
-  width: 100%;
-  margin-top: 48px;
-  margin-bottom: 35px;
-  margin-left: auto;
-  margin-right: auto;
-  user-select: none;
+.moreByArtistContainer {
+  width: 720px;
+  margin: auto;
 }
 
-.moreByArtistContainer {
+.moreByArtistContainerComments {
   width: 100%;
-  margin: auto;
+  min-width: 336px;
+}
+
+.width100 {
+  width: 100%;
 }
 
 .moreByArtistLineupWrapper .lineupHeader {
@@ -54,14 +54,4 @@
 
 .originalTrackDelineator > *:first-child {
   margin-bottom: 72px;
-}
-
-.originalTrack {
-  display: flex;
-  justify-content: center;
-  margin: auto -60px 0px !important;
-}
-
-.originalTrack > * {
-  width: 834px;
 }

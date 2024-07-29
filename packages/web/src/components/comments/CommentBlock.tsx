@@ -29,10 +29,16 @@ const formatTimestampS = (timestamp_s: number) => {
   }
 }
 
-export type CommentBlockProps = { comment: Comment; parentCommentId?: ID }
+export type CommentBlockProps = {
+  comment: Comment
+  parentCommentId?: ID
+  parentCommentIndex?: number
+}
+
 export const CommentBlock = ({
   comment,
-  parentCommentId // Parent comment ID can be passed in order to reply to a reply
+  parentCommentId, // Parent comment ID can be passed in order to reply to a reply, otherwise it's assumed you're replying to this comment
+  parentCommentIndex
 }: CommentBlockProps) => {
   const {
     is_pinned: isPinned,
@@ -128,7 +134,13 @@ export const CommentBlock = ({
         </Flex>
 
         {showReplyInput ? (
-          <CommentInputForm parentCommentId={parentCommentId ?? commentId} />
+          <CommentInputForm
+            parentCommentId={parentCommentId ?? commentId}
+            parentCommentIndex={parentCommentIndex}
+            onPostComment={() => {
+              setShowReplyInput(false)
+            }}
+          />
         ) : null}
       </Flex>
     </Flex>

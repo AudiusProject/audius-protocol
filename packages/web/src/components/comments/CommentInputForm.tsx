@@ -13,18 +13,30 @@ type CommentFormValues = {
 
 const formInitialValues: CommentFormValues = { commentMessage: '' }
 
-type CommentInputFormProps = { parentCommentId?: ID }
+type CommentInputFormProps = {
+  parentCommentId?: ID
+  parentCommentIndex?: number
+  onPostComment?: () => void
+}
 
 export const CommentInputForm = ({
-  parentCommentId
+  parentCommentId,
+  parentCommentIndex,
+  onPostComment
 }: CommentInputFormProps) => {
+  console.log({ parentCommentIndex })
   const { handlePostComment } = useCurrentCommentSection()
   const handleSubmit = ({ commentMessage }: CommentFormValues) => {
     let decodedParentCommentId = null
     if (parentCommentId) {
       decodedParentCommentId = decodeHashId(parentCommentId?.toString())
     }
-    handlePostComment(commentMessage, decodedParentCommentId)
+    handlePostComment(
+      commentMessage,
+      decodedParentCommentId,
+      parentCommentIndex
+    )
+    onPostComment?.()
   }
   return (
     <Formik initialValues={formInitialValues} onSubmit={handleSubmit}>

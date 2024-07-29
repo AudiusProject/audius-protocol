@@ -31,7 +31,11 @@ type CommentSectionContextProps = {
 type CommentSectionContextType = CommentSectionContextProps & {
   isLoading: boolean
   comments: Comment[]
-  handlePostComment: (message: string, parentCommentId: ID | null) => void
+  handlePostComment: (
+    message: string,
+    parentCommentId: ID | null,
+    parentCommentIndex?: number
+  ) => void
   handleReactComment: (commentId: ID) => void
   handlePinComment: (commentId: ID) => void
   handleEditComment: (commentId: ID, newMessage: string) => void
@@ -64,30 +68,67 @@ export const CommentSectionProvider = ({
   children
 }: PropsWithChildren<CommentSectionContextProps>) => {
   const [comments, setComments] = useState(initialContextValues.comments)
+
+  // TODO: temporarily including state management here to optimistic update and avoid constantly needing to refresh
+  const addComment = (comment: Comment) => {
+    const newComments = [comment, ...comments]
+    setComments(newComments)
+  }
+
+  const addReply = (comment: Comment, parentCommentIndex: number) => {
+    console.log({ parentCommentIndex })
+    const newComments = [...comments]
+    console.log({
+      existingComment: newComments[parentCommentIndex],
+      newComments,
+      comments
+    })
+    const parentComment = newComments[parentCommentIndex]
+    parentComment.replies = [...(parentComment.replies || []), comment]
+    setComments(newComments)
+  }
+
   const [isLoading, setIsLoading] = useState(initialContextValues.isLoading)
 
-  // TODO: implement things with these
-  const handlePostComment = useCallback(
-    async (message: string, parentCommentId?: ID) => {
-      console.log('sending comment')
-      if (userId && entityId) {
-        try {
-          const sdk = await audiusSdk()
-          const commentData = {
-            body: message,
-            userId,
-            entityId,
-            entityType: EntityType.TRACK, // Comments are only on tracks for now; likely expand to collections in the future
-            parentCommentId // aka reply
-          }
-          await sdk.comments.postComment(commentData)
-        } catch (e) {
-          console.log('COMMENTS DEBUG: Error posting comment', e)
+  // TODO: implement things with these callbacks
+  const handlePostComment = async (
+    message: string,
+    parentCommentId?: ID,
+    parentCommentIndex?: number
+  ) => {
+    console.log('sending comment')
+    if (userId && entityId) {
+      try {
+        const sdk = await audiusSdk()
+        const commentData = {
+          body: message,
+          userId,
+          entityId,
+          entityType: EntityType.TRACK, // Comments are only on tracks for now; likely expand to collections in the future
+          parentCommentId // aka reply
         }
+
+        // TEMPORARY optimistic update
+        const optimisticCommentData = {
+          id: null,
+          userId,
+          message,
+          react_count: 0,
+          is_pinned: false,
+          created_at: new Date()
+        }
+        if (parentCommentIndex !== undefined) {
+          addReply(optimisticCommentData, parentCommentIndex)
+        } else {
+          addComment(optimisticCommentData)
+        }
+        await sdk.comments.postComment(commentData)
+      } catch (e) {
+        console.log('COMMENTS DEBUG: Error posting comment', e)
       }
-    },
-    [entityId, userId]
-  )
+    }
+  }
+
   const handleReactComment = (commentId: ID) => {
     console.log('Clicked react for ', commentId)
   }
@@ -105,6 +146,7 @@ export const CommentSectionProvider = ({
   }
 
   // TODO: assuming we move this to audius-query
+  // load comments logic
   useAsync(async () => {
     if (entityId) {
       try {

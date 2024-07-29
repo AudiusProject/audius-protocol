@@ -8,10 +8,13 @@ export const CommentSectionDesktop = () => {
   const { userId, isLoading, comments } = useCurrentCommentSection()
   const commentPostAllowed = userId !== null
 
-  if (isLoading) {
+  if (isLoading)
     return (
-      // TODO: make this container reuseable
+      // TODO: this container is the same as below, should ideally reuse something somehow
       <Paper p='xl' w='100%' direction='column' gap='xl'>
+        <Text variant='title' size='l'>
+          Comments
+        </Text>
         <Flex
           gap='s'
           w='100%'
@@ -23,14 +26,12 @@ export const CommentSectionDesktop = () => {
           <Skeleton w='100%' h='60px' />
         </Flex>
         <Divider color='default' orientation='horizontal' />
-        {/* TODO: less copy pasta lol */}
         <Skeleton w='100%' h='120px' />
         <Skeleton w='100%' h='120px' />
         <Skeleton w='100%' h='120px' />
         <Skeleton w='100%' h='120px' />
       </Paper>
     )
-  }
 
   // if (comments.length === 0) {
   //   return (

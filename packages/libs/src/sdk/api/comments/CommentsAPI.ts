@@ -44,7 +44,7 @@ export class CommentsApi extends GeneratedCommentsApi {
       auth: this.auth
     })
 
-    this.logger.info('Successfully uploaded track')
+    this.logger.info('Successfully uploaded comment')
     return response
   }
 }

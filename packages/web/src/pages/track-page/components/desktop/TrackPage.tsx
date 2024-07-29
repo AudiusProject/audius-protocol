@@ -189,9 +189,9 @@ const TrackPage = ({
   )
 
   const renderOriginalTrackTitle = () => (
-    <div className={cn(styles.lineupHeader, styles.large)}>
+    <Text color='default' variant='title' size='l'>
       {messages.originalTrack}
-    </div>
+    </Text>
   )
 
   const renderMoreByTitle = () =>
@@ -200,6 +200,7 @@ const TrackPage = ({
       <Text
         color='default'
         variant='title'
+        size='l'
       >{`${messages.moreBy} ${user?.name}`}</Text>
     ) : null
 
@@ -237,9 +238,10 @@ const TrackPage = ({
           gap='2xl'
           w='100%'
           direction='row'
-          mv='xl'
+          mt='3xl'
           mh='auto'
           css={{ maxWidth: 1080 }}
+          justifyContent='center'
         >
           {isCommentingEnabled ? (
             <Flex flex='3'>
@@ -251,7 +253,14 @@ const TrackPage = ({
               </CommentSectionProvider>
             </Flex>
           ) : null}
-          <Flex direction='column' alignItems='flex-start' flex='1' gap='l'>
+          <Flex
+            direction='column'
+            alignItems={isCommentingEnabled ? 'flex-start' : 'center'}
+            gap='l'
+            flex={1}
+            w={isCommentingEnabled ? '100%' : 834}
+            css={{ minWidth: 330 }}
+          >
             {hasValidRemixParent
               ? renderOriginalTrackTitle()
               : renderMoreByTitle()}
@@ -260,17 +269,28 @@ const TrackPage = ({
               // Styles for leading element (original track if remix).
               leadingElementId={defaults.remixParentTrackId}
               leadingElementDelineator={
-                <div className={styles.originalTrackDelineator}>
+                <Flex gap='3xl' direction='column'>
                   <SectionButton
                     text={messages.viewOtherRemixes}
                     onClick={goToParentRemixesPage}
                   />
-                  {renderMoreByTitle()}
-                </div>
+                  <Flex
+                    mb='l'
+                    justifyContent={
+                      isCommentingEnabled ? 'flex-start' : 'center'
+                    }
+                  >
+                    {renderMoreByTitle()}
+                  </Flex>
+                </Flex>
               }
               leadingElementTileProps={{ size: TrackTileSize.LARGE }}
-              laggingContainerClassName={styles.moreByArtistContainer}
-              leadingElementClassName={styles.originalTrack}
+              laggingContainerClassName={
+                !isCommentingEnabled
+                  ? styles.moreByArtistContainer
+                  : styles.mortByArtistContainerComments
+              }
+              lineupContainerStyles={styles.width100}
               showLeadingElementArtistPick={false}
               applyLeadingElementStylesToSkeleton
               // Don't render the first tile in the lineup since it's actually the "giant"
@@ -291,7 +311,7 @@ const TrackPage = ({
               playTrack={play}
               pauseTrack={pause}
               actions={tracksActions}
-              useSmallTiles
+              useSmallTiles={isCommentingEnabled}
             />
           </Flex>
         </Flex>
