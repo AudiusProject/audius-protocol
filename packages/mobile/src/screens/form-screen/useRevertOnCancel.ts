@@ -12,7 +12,7 @@ export const useRevertOnCancel = (active?: boolean) => {
   const initialValues = useMemo(() => values, [])
 
   useEffect(() => {
-    if (!active || !values) return
+    if (!active || !initialValues) return
     const listener = navigation.addListener('beforeRemove', ({ data }) => {
       if (data.action.type === 'POP') {
         setValues(initialValues)
@@ -22,6 +22,5 @@ export const useRevertOnCancel = (active?: boolean) => {
     return () => {
       navigation.removeListener('beforeRemove', listener)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [navigation, initialValues, setValues, active])
 }
