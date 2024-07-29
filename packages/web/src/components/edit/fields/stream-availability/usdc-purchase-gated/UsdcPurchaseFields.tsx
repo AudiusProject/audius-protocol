@@ -129,6 +129,7 @@ export const UsdcPurchaseFields = (props: TrackAvailabilityFieldsProps) => {
             disabled={disabled}
             messaging={messages.price.albumPrice}
             fieldName={PRICE}
+            prefillValue={500}
           />
           {isUpload && (
             <PriceField
@@ -149,6 +150,7 @@ export const UsdcPurchaseFields = (props: TrackAvailabilityFieldsProps) => {
             disabled={disabled}
             messaging={messages.price.standaloneTrackPrice}
             fieldName={PRICE}
+            prefillValue={100}
           />
           <PreviewField disabled={disabled} />
           {downloadConditions ? (
