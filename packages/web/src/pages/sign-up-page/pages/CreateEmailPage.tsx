@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { useAudiusQueryContext } from '@audius/common/audius-query'
 import { createEmailPageMessages } from '@audius/common/messages'
@@ -48,6 +48,7 @@ import { NewEmailField } from '../components/EmailField'
 import { SocialMediaLoading } from '../components/SocialMediaLoading'
 import { Heading, Page } from '../components/layout'
 import { useSocialMediaLoader } from '../hooks/useSocialMediaLoader'
+import { getWeb3Provider, web3authInstance } from '../../../services/web3-auth'
 
 const smallDesktopWindowHeight = 900
 
@@ -101,6 +102,22 @@ export const CreateEmailPage = () => {
     [dispatch, navigate]
   )
 
+  useEffect(() => {
+    const init = async () => {
+      try {
+        await web3authInstance.initModal();
+        if (web3authInstance.connected) {
+          // @ts-ignore
+          window.web3auth = getWeb3Provider()
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    init();
+  }, [])
+
   const handleSubmit = useCallback(
     async (values: SignUpEmailValues) => {
       const { email, withMetaMask, withWeb3Auth } = values
@@ -108,6 +125,11 @@ export const CreateEmailPage = () => {
       if (withMetaMask) {
         setIsMetaMaskModalOpen(true)
       } else if (withWeb3Auth) {
+        await web3authInstance.connect()
+        if (web3authInstance.connected) {
+          // @ts-ignore
+          window.web3auth = getWeb3Provider()
+        }
       } else {
         navigate(SIGN_UP_PASSWORD_PAGE)
       }
