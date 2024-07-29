@@ -285,7 +285,7 @@ export const formatReleaseDate = ({
 
   if (daysDifference >= 0 && daysDifference < 7) {
     return (
-      `${releaseDate.format('dddd')}` +
+      `${daysDifference === 0 ? 'Today' : releaseDate.format('dddd')}` +
       (withHour ? ` @ ${releaseDate.format('h A')}` : '')
     )
   } else {
