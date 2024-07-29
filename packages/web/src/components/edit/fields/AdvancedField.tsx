@@ -486,10 +486,15 @@ const AdvancedModalFields = ({ isUpload }: { isUpload?: boolean }) => {
                 <TextField
                   name={BPM}
                   type='number'
-                  maxLength={3}
                   onInput={(e) => {
                     const input = e.nativeEvent.target as HTMLInputElement
-                    input.value = input.value.slice(0, input.maxLength)
+                    const maxLength = input.value.includes('.')
+                      ? input.value.indexOf('.') + 2
+                      : 3
+
+                    if (input.value.length > maxLength) {
+                      input.value = input.value.slice(0, maxLength)
+                    }
                   }}
                   label={messages.bpm.label}
                   autoComplete='off'
