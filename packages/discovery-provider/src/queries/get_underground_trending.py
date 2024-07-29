@@ -54,6 +54,7 @@ def get_scorable_track_data(session, redis_instance, strategy):
     Returns a map: {
         "track_id": string
         "created_at": string
+        "release_date": string
         "owner_id": number
         "windowed_save_count": number
         "save_count": number
@@ -89,6 +90,7 @@ def get_scorable_track_data(session, redis_instance, strategy):
             AggregateUser.follower_count,
             AggregatePlay.count,
             Track.created_at,
+            Track.release_date,
             User.is_verified,
             Track.is_stream_gated,
             Track.stream_conditions,
@@ -114,6 +116,7 @@ def get_scorable_track_data(session, redis_instance, strategy):
         record[0]: {
             "track_id": record[0],
             "created_at": record[4].isoformat(timespec="seconds"),
+            "release_date": record[5].isoformat(timespec="seconds"),
             "owner_id": record[1],
             "windowed_save_count": 0,
             "save_count": 0,
@@ -122,9 +125,9 @@ def get_scorable_track_data(session, redis_instance, strategy):
             "owner_follower_count": record[2],
             "karma": 1,
             "listens": record[3],
-            "owner_verified": record[5],
-            "is_stream_gated": record[6],
-            "stream_conditions": record[7],
+            "owner_verified": record[6],
+            "is_stream_gated": record[7],
+            "stream_conditions": record[8],
         }
         for record in base_query
     }

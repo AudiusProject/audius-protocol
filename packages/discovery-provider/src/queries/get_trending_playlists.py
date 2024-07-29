@@ -68,6 +68,7 @@ def get_scorable_playlist_data(session, time_range, strategy):
     Array<{
         "playlist_id": number
         "created_at": string
+        "release_date": string
         "owner_id": string
         "windowed_save_count": number
         "save_count": number
@@ -92,6 +93,7 @@ def get_scorable_playlist_data(session, time_range, strategy):
         session.query(
             Save.save_item_id,
             Playlist.created_at,
+            Playlist.release_date,
             Playlist.playlist_owner_id,
             func.count(Save.save_item_id),
         )
@@ -109,7 +111,12 @@ def get_scorable_playlist_data(session, time_range, strategy):
             jsonb_array_length(Playlist.playlist_contents["track_ids"]) >= mt,
             AggregateUser.following_count < zq,
         )
-        .group_by(Save.save_item_id, Playlist.created_at, Playlist.playlist_owner_id)
+        .group_by(
+            Save.save_item_id,
+            Playlist.created_at,
+            Playlist.release_date,
+            Playlist.playlist_owner_id,
+        )
         .order_by(desc(func.count(Save.save_item_id)))
         .limit(TRENDING_LIMIT)
     ).all()
@@ -121,8 +128,9 @@ def get_scorable_playlist_data(session, time_range, strategy):
         record[0]: {
             response_name_constants.playlist_id: record[0],
             response_name_constants.created_at: record[1].isoformat(timespec="seconds"),
-            response_name_constants.owner_id: record[2],
-            response_name_constants.windowed_save_count: record[3],
+            "release_date": record[2].isoformat(timespec="seconds"),
+            response_name_constants.owner_id: record[3],
+            response_name_constants.windowed_save_count: record[4],
             response_name_constants.save_count: 0,
             response_name_constants.repost_count: 0,
             response_name_constants.windowed_repost_count: 0,
@@ -137,7 +145,7 @@ def get_scorable_playlist_data(session, time_range, strategy):
     # map owner_id -> [playlist_id], accounting for multiple playlists with the same ID
     # used in follows
     playlist_owner_id_map = {}
-    for playlist_id, _, owner_id, _ in playlists:
+    for playlist_id, _, _, owner_id, _ in playlists:
         if owner_id not in playlist_owner_id_map:
             playlist_owner_id_map[owner_id] = [playlist_id]
         else:

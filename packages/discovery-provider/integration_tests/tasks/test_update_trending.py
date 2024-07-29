@@ -341,12 +341,12 @@ def test_update_track_score_query(app):
 
     # setup
     setup_trending(db)
-    udpated_strategy = TrendingTracksStrategypnagD()
+    updated_strategy = TrendingTracksStrategypnagD()
 
     with db.scoped_session() as session:
         session.execute("REFRESH MATERIALIZED VIEW aggregate_interval_plays")
         session.execute("REFRESH MATERIALIZED VIEW trending_params")
-        udpated_strategy.update_track_score_query(session)
+        updated_strategy.update_track_score_query(session)
         scores = session.query(TrackTrendingScore).all()
         # Test that scores are not generated for hidden/deleted tracks
         # There should be 7 valid tracks * 3 valid time ranges (week/month/year)
@@ -369,10 +369,10 @@ def test_update_track_score_query(app):
 
         # Check that the type and version fields are correct
         for score in scores:
-            assert score.type == udpated_strategy.trending_type.name
-            assert score.version == udpated_strategy.version.name
+            assert score.type == updated_strategy.trending_type.name
+            assert score.version == updated_strategy.version.name
 
         # Check that the type and version fields are correct
         for score in scores:
-            assert score.type == udpated_strategy.trending_type.name
-            assert score.version == udpated_strategy.version.name
+            assert score.type == updated_strategy.trending_type.name
+            assert score.version == updated_strategy.version.name
