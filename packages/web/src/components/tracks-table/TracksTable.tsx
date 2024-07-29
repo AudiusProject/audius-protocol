@@ -15,11 +15,10 @@ import {
   gatedContentSelectors,
   usePremiumContentPurchaseModal
 } from '@audius/common/store'
-import { formatCount, formatPrice, formatSeconds } from '@audius/common/utils'
+import { formatCount, formatSeconds } from '@audius/common/utils'
 import {
   IconVisibilityHidden,
   IconLock,
-  Button,
   Flex,
   IconSpecialAccess,
   IconCollectible,
@@ -98,7 +97,6 @@ type TracksTableProps = {
   isReorderable?: boolean
   isAlbumPage?: boolean
   isAlbumPremium?: boolean
-  isPremiumEnabled?: boolean
   shouldShowGatedType?: boolean
   loading?: boolean
   onClickFavorite?: (track: any) => void
@@ -148,13 +146,11 @@ export const TracksTable = ({
   isPaginated = false,
   isReorderable = false,
   isAlbumPage = false,
-  isAlbumPremium = false,
   fetchBatchSize,
   fetchMoreTracks,
   fetchPage,
   fetchThreshold,
   isVirtualized = false,
-  isPremiumEnabled = false,
   shouldShowGatedType = false,
   loading = false,
   onClickFavorite,
@@ -202,12 +198,12 @@ export const TracksTable = ({
           paused={!playing}
           playing={active}
           hideDefault={false}
-          isTrackPremium={isTrackPremium && isPremiumEnabled}
+          isTrackPremium={isTrackPremium}
           isLocked={isLocked}
         />
       )
     },
-    [isPremiumEnabled, playing, playingIndex, trackAccessMap]
+    [playing, playingIndex, trackAccessMap]
   )
 
   const renderTrackNameCell = useCallback(
@@ -550,7 +546,7 @@ export const TracksTable = ({
       const deleted =
         track.is_delete || track._marked_deleted || !!track.user?.is_deactivated
 
-      if (!isLocked || deleted || isOwner || !isPremiumEnabled) {
+      if (!isLocked || deleted || isOwner) {
         return null
       }
       return (
@@ -569,7 +565,6 @@ export const TracksTable = ({
     },
     [
       gatedTrackStatusMap,
-      isPremiumEnabled,
       onClickGatedPill,
       onClickPremiumPill,
       trackAccessMap,

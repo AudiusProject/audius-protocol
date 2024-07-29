@@ -1,8 +1,6 @@
 import { useContext } from 'react'
 
-import { useFeatureFlag } from '@audius/common/hooks'
 import { Kind, Status, ID, UID, Lineup, User } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import {
   savedPageSelectors,
   LibraryCategory,
@@ -124,10 +122,6 @@ const SavedPage = ({
 }: SavedPageProps) => {
   const { mainContentRef } = useContext(MainContentContext)
   const initFetch = useSelector(getInitialFetchStatus)
-
-  const { isEnabled: isPremiumEnabled } = useFeatureFlag(
-    FeatureFlags.PREMIUM_ALBUMS_ENABLED
-  )
 
   const emptyTracksHeader = useSelector((state: CommonState) => {
     const selectedCategory = getCategory(state, {
@@ -256,7 +250,6 @@ const SavedPage = ({
           useLocalSort={allTracksFetched}
           fetchBatchSize={50}
           userId={account ? account.user_id : 0}
-          isPremiumEnabled={isPremiumEnabled}
         />
       ),
       <AlbumsTabPage key='albums' />,
