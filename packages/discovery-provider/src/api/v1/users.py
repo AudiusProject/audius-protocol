@@ -893,7 +893,7 @@ class UserTracksLibraryFull(Resource):
         filter_type = format_library_filter(args)
 
         get_tracks_args = GetTrackLibraryArgs(
-            filter_deleted=False,
+            filter_deleted=True,
             user_id=decoded_id,
             current_user_id=decoded_id,
             limit=limit,
