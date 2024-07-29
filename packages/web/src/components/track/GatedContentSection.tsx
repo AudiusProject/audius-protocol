@@ -208,7 +208,7 @@ const Contributors = ({
 }) => {
   const contributors = useAsync(async () => {
     if (!campaign.value) {
-      return []
+      return null
     }
     const sdk = await audiusSdk()
     const res = await sdk.tracks.getContributors({
@@ -216,7 +216,7 @@ const Contributors = ({
     })
     return res.data
   }, [campaign.value])
-  if (!contributors.value) {
+  if (!contributors.value || contributors.value.length === 0) {
     return null
   }
   return (
