@@ -30,6 +30,7 @@ export const createEmailPageMessages = {
   unknownError: 'Unknown error occurred.',
   metaMaskNotRecommended: 'Signing up with MetaMask is not recommended.',
   signUpMetamask: 'Sign Up With MetaMask',
+  signUpWeb3Auth: 'Sign Up With Web3Auth',
   learnMore: 'Learn More'
 }
 
