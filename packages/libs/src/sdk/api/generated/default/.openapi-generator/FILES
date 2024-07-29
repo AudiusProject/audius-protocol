@@ -16,6 +16,8 @@ models/AuthorizedApps.ts
 models/BlobInfo.ts
 models/ConnectedWallets.ts
 models/ConnectedWalletsResponse.ts
+models/Contributor.ts
+models/ContributorsResponse.ts
 models/CoverPhoto.ts
 models/DashboardWalletUser.ts
 models/DashboardWalletUsersResponse.ts

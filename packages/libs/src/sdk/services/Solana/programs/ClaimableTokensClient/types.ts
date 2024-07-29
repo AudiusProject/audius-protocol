@@ -39,7 +39,7 @@ export const GetOrCreateUserBankSchema = z
   })
   .strict()
 
-export type GetOrCreateUserBankRequest = z.infer<
+export type GetOrCreateUserBankRequest = z.input<
   typeof GetOrCreateUserBankSchema
 >
 
@@ -52,7 +52,7 @@ export const DeriveUserBankSchema = z
   })
   .strict()
 
-export type DeriveUserBankRequest = z.infer<typeof DeriveUserBankSchema>
+export type DeriveUserBankRequest = z.input<typeof DeriveUserBankSchema>
 
 export const CreateTransferSchema = z.object({
   /** The public key of the account that will be paying the transaction fees. */
@@ -65,7 +65,7 @@ export const CreateTransferSchema = z.object({
   destination: PublicKeySchema
 })
 
-export type CreateTransferRequest = z.infer<typeof CreateTransferSchema>
+export type CreateTransferRequest = z.input<typeof CreateTransferSchema>
 
 export const CreateSecpSchema = z
   .object({
@@ -84,4 +84,20 @@ export const CreateSecpSchema = z
   })
   .strict()
 
-export type CreateSecpRequest = z.infer<typeof CreateSecpSchema>
+export type CreateSecpRequest = z.input<typeof CreateSecpSchema>
+
+export const GetNonceSchema = z.object({
+  /** The sending user's Ethereum wallet. */
+  ethWallet: z.string(),
+  /** The name of the token mint. */
+  mint: MintSchema
+})
+
+export type GetNonceRequest = z.input<typeof GetNonceSchema>
+
+export const GetAuthoritySchema = z.object({
+  /** The name of the token mint. */
+  mint: MintSchema
+})
+
+export type GetAuthorityRequest = z.input<typeof GetAuthoritySchema>

@@ -78,6 +78,98 @@
       ]
     },
     {
+      "name": "contribute_user_bank",
+      "discriminator": [234, 78, 120, 207, 100, 135, 121, 253],
+      "accounts": [
+        {
+          "name": "fee_payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "sender_user_bank_account",
+          "writable": true
+        },
+        {
+          "name": "campaign_account",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [99, 97, 109, 112, 97, 105, 103, 110]
+              },
+              {
+                "kind": "arg",
+                "path": "data.content_id"
+              },
+              {
+                "kind": "arg",
+                "path": "data.content_type"
+              }
+            ]
+          }
+        },
+        {
+          "name": "escrow_token_account",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [101, 115, 99, 114, 111, 119]
+              },
+              {
+                "kind": "arg",
+                "path": "data.content_id"
+              },
+              {
+                "kind": "arg",
+                "path": "data.content_type"
+              }
+            ]
+          }
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        {
+          "name": "mint"
+        },
+        {
+          "name": "claimable_tokens_program"
+        },
+        {
+          "name": "user_bank_nonce",
+          "writable": true
+        },
+        {
+          "name": "user_bank_authority"
+        },
+        {
+          "name": "rent",
+          "address": "SysvarRent111111111111111111111111111111111"
+        },
+        {
+          "name": "instructions"
+        },
+        {
+          "name": "system",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "data",
+          "type": {
+            "defined": {
+              "name": "ContributeUserBankInstructionData"
+            }
+          }
+        }
+      ]
+    },
+    {
       "name": "start_campaign",
       "discriminator": [229, 59, 6, 209, 253, 163, 39, 124],
       "accounts": [
@@ -266,7 +358,11 @@
             "type": "pubkey"
           },
           {
-            "name": "bump",
+            "name": "campaign_account_bump",
+            "type": "u8"
+          },
+          {
+            "name": "escrow_account_bump",
             "type": "u8"
           }
         ]
@@ -288,6 +384,32 @@
           {
             "name": "amount",
             "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ContributeUserBankInstructionData",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "content_id",
+            "type": "u32"
+          },
+          {
+            "name": "content_type",
+            "type": "u8"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          },
+          {
+            "name": "eth_address",
+            "type": {
+              "array": ["u8", 20]
+            }
           }
         ]
       }

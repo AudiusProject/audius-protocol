@@ -14,6 +14,13 @@
  */
 
 import {
+    CrowdfundGate,
+    instanceOfCrowdfundGate,
+    CrowdfundGateFromJSON,
+    CrowdfundGateFromJSONTyped,
+    CrowdfundGateToJSON,
+} from './CrowdfundGate';
+import {
     FollowGate,
     instanceOfFollowGate,
     FollowGateFromJSON,
@@ -47,7 +54,7 @@ import {
  * 
  * @export
  */
-export type AccessGate = FollowGate | NftGate | PurchaseGate | TipGate;
+export type AccessGate = CrowdfundGate | FollowGate | NftGate | PurchaseGate | TipGate;
 
 export function AccessGateFromJSON(json: any): AccessGate {
     return AccessGateFromJSONTyped(json, false);
@@ -57,7 +64,7 @@ export function AccessGateFromJSONTyped(json: any, ignoreDiscriminator: boolean)
     if ((json === undefined) || (json === null)) {
         return json;
     }
-    return { ...FollowGateFromJSONTyped(json, true), ...NftGateFromJSONTyped(json, true), ...PurchaseGateFromJSONTyped(json, true), ...TipGateFromJSONTyped(json, true) };
+    return { ...CrowdfundGateFromJSONTyped(json, true), ...FollowGateFromJSONTyped(json, true), ...NftGateFromJSONTyped(json, true), ...PurchaseGateFromJSONTyped(json, true), ...TipGateFromJSONTyped(json, true) };
 }
 
 export function AccessGateToJSON(value?: AccessGate | null): any {
@@ -68,6 +75,9 @@ export function AccessGateToJSON(value?: AccessGate | null): any {
         return null;
     }
 
+    if (instanceOfCrowdfundGate(value)) {
+        return CrowdfundGateToJSON(value as CrowdfundGate);
+    }
     if (instanceOfFollowGate(value)) {
         return FollowGateToJSON(value as FollowGate);
     }

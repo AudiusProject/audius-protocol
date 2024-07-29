@@ -17,6 +17,7 @@
 import * as runtime from '../runtime';
 import type {
   AccessInfoResponse,
+  ContributorsResponse,
   TopListener,
   TrackInspect,
   TrackResponse,
@@ -26,6 +27,8 @@ import type {
 import {
     AccessInfoResponseFromJSON,
     AccessInfoResponseToJSON,
+    ContributorsResponseFromJSON,
+    ContributorsResponseToJSON,
     TopListenerFromJSON,
     TopListenerToJSON,
     TrackInspectFromJSON,
@@ -51,6 +54,11 @@ export interface DownloadTrackRequest {
 export interface GetBulkTracksRequest {
     permalink?: Array<string>;
     id?: Array<string>;
+}
+
+export interface GetContributorsRequest {
+    trackId: string;
+    userId?: string;
 }
 
 export interface GetTrackRequest {
@@ -204,6 +212,41 @@ export class TracksApi extends runtime.BaseAPI {
      */
     async getBulkTracks(params: GetBulkTracksRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TracksResponse> {
         const response = await this.getBulkTracksRaw(params, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * @hidden
+     * Gets the users who contributed to a crowdfund.
+     */
+    async getContributorsRaw(params: GetContributorsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ContributorsResponse>> {
+        if (params.trackId === null || params.trackId === undefined) {
+            throw new runtime.RequiredError('trackId','Required parameter params.trackId was null or undefined when calling getContributors.');
+        }
+
+        const queryParameters: any = {};
+
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/tracks/{track_id}/contributors`.replace(`{${"track_id"}}`, encodeURIComponent(String(params.trackId))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => ContributorsResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Gets the users who contributed to a crowdfund.
+     */
+    async getContributors(params: GetContributorsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ContributorsResponse> {
+        const response = await this.getContributorsRaw(params, initOverrides);
         return await response.value();
     }
 

@@ -25,7 +25,13 @@ import {
   gatedContentActions,
   toastActions
 } from '@audius/common/store'
-import { formatPrice, removeNullable, Nullable } from '@audius/common/utils'
+import {
+  formatPrice,
+  removeNullable,
+  Nullable,
+  encodeHashId,
+  decodeHashId
+} from '@audius/common/utils'
 import { wAUDIO } from '@audius/fixed-decimal'
 import {
   Flex,
@@ -45,9 +51,10 @@ import {
   IconUserGroup,
   IconLockUnlocked
 } from '@audius/harmony'
+import { ethAddress } from '@audius/spl'
 import { AnchorProvider, Program, Provider, Wallet } from '@coral-xyz/anchor'
 import { getAccount } from '@solana/spl-token'
-import { PublicKey } from '@solana/web3.js'
+import { PublicKey, SYSVAR_INSTRUCTIONS_PUBKEY } from '@solana/web3.js'
 import BN from 'bn.js'
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
@@ -70,6 +77,7 @@ import { profilePage } from 'utils/route'
 
 import { LockedStatusPill } from '../locked-status-pill'
 
+import { Contributor } from './Contributor'
 import styles from './GiantTrackTile.module.css'
 
 const { getUsers } = cacheUsersSelectors
@@ -119,6 +127,15 @@ const getMessages = (contentType: PurchaseableContentType) => ({
   funded: `This ${contentType} has been completely crowdfunded as is now available!`
 })
 
+type Campaign = {
+  destinationWallet: PublicKey
+  fundingThreshold: BN
+  contentId: number
+  contentType: number
+  feePayerWallet: PublicKey
+  balance: bigint
+}
+
 const getCrowdfundMeta = async (
   streamConditions: Nullable<AccessConditions>
 ) => {
@@ -142,9 +159,8 @@ const getCrowdfundMeta = async (
       'confirmed'
     )
     return {
-      threshold: campaign.fundingThreshold,
-      balance: escrow.amount,
-      destination: campaign.destinationWallet
+      ...campaign,
+      balance: escrow.amount
     }
   } catch {
     return null
@@ -170,20 +186,59 @@ const useCrowdfundCampaign = (
 const CampaignProgress = ({
   campaign
 }: {
-  campaign: AsyncState<{ threshold: BN; balance: bigint } | null>
+  campaign: AsyncState<Campaign | null>
 }) => (
   <Flex direction='column' gap='s' w='100%'>
     <ProgressBar
       value={new BN(campaign.value?.balance.toString() ?? 0)}
       min={new BN(0)}
-      max={new BN(campaign.value?.threshold ?? 1)}
+      max={new BN(campaign.value?.fundingThreshold ?? 1)}
     />
     <Text variant='body' strength='strong' textAlign='right'>
       {wAUDIO(campaign.value?.balance ?? 0).toLocaleString()} /{' '}
-      {wAUDIO(campaign.value?.threshold ?? 1).toLocaleString()} $AUDIO
+      {wAUDIO(campaign.value?.fundingThreshold ?? 1).toLocaleString()} $AUDIO
     </Text>
   </Flex>
 )
+
+const Contributors = ({
+  campaign
+}: {
+  campaign: AsyncState<Campaign | null>
+}) => {
+  const contributors = useAsync(async () => {
+    if (!campaign.value) {
+      return []
+    }
+    const sdk = await audiusSdk()
+    const res = await sdk.tracks.getContributors({
+      trackId: encodeHashId(campaign.value?.contentId)!
+    })
+    return res.data
+  }, [campaign.value])
+  if (!contributors.value) {
+    return null
+  }
+  return (
+    <Flex direction='column' gap='m' w='100%'>
+      <Flex alignItems='center' gap='s'>
+        <IconUserGroup color={'default'} />
+        <Text variant='label' size='l' strength='strong'>
+          TOP CONTRIBUTORS
+        </Text>
+      </Flex>
+      <Flex wrap='wrap' gap='3xl'>
+        {contributors.value.map((c) => (
+          <Contributor
+            key={c.userId}
+            userId={decodeHashId(c.userId)!}
+            amount={c.amount}
+          />
+        ))}
+      </Flex>
+    </Flex>
+  )
+}
 
 type GatedContentAccessSectionProps = {
   contentId: ID
@@ -305,13 +360,47 @@ const LockedGatedContentSection = ({
         destination,
         auth
       })
-      const transfer = await claimableTokensClient.createTransferInstruction({
+      // const transfer = await claimableTokensClient.createTransferInstruction({
+      //   ethWallet,
+      //   mint: 'wAUDIO',
+      //   destination
+      // })
+      const { nonceAddress } = await claimableTokensClient.getNonce({
         ethWallet,
-        mint: 'wAUDIO',
-        destination
+        mint: 'wAUDIO'
       })
+
+      const userBankAuthority = await claimableTokensClient.getAuthority({
+        mint: 'wAUDIO'
+      })
+      const wallet = Buffer.alloc(20)
+      ethAddress().encode(ethWallet, wallet)
+
+      const { userBank } = await claimableTokensClient.getOrCreateUserBank({
+        ethWallet,
+        mint: 'wAUDIO'
+      })
+
+      const program = new Program(IDL as Crowdfund, {} as Provider)
+      const contribute = await program.methods
+        .contributeUserBank({
+          contentId,
+          contentType: contentType === PurchaseableContentType.TRACK ? 1 : 2,
+          amount: new BN(1),
+          ethAddress: [...wallet.values()]
+        })
+        .accounts({
+          feePayer: (await sdk.services.solanaRelay.getFeePayer()).toBase58(),
+          mint: env.WAUDIO_MINT_ADDRESS,
+          instructions: SYSVAR_INSTRUCTIONS_PUBKEY,
+          senderUserBankAccount: userBank.toBase58(),
+          claimableTokensProgram: env.CLAIMABLE_TOKEN_PROGRAM_ADDRESS,
+          userBankNonce: nonceAddress.toBase58(),
+          userBankAuthority: userBankAuthority.toBase58()
+        })
+        .instruction()
       const tx = await claimableTokensClient.buildTransaction({
-        instructions: [secp, transfer]
+        instructions: [secp, contribute]
       })
       const sig = await claimableTokensClient.sendTransaction(tx, {
         preflightCommitment: 'confirmed'
@@ -322,7 +411,7 @@ const LockedGatedContentSection = ({
     } finally {
       setIsContributing(false)
     }
-  }, [streamConditions, trigger, user?.wallet])
+  }, [contentId, contentType, streamConditions, trigger, user?.wallet])
 
   const handleUnlock = useAuthenticatedCallback(async () => {
     const sdk = await audiusSdk()
@@ -346,7 +435,7 @@ const LockedGatedContentSection = ({
         .accounts({
           mint: new PublicKey(env.WAUDIO_MINT_ADDRESS),
           feePayerWallet: await solanaRelay.getFeePayer(),
-          destinationAccount: campaign.value.destination
+          destinationAccount: campaign.value.destinationWallet
         })
         .instruction()
       const tx = await claimableTokensClient.buildTransaction({
@@ -508,7 +597,9 @@ const LockedGatedContentSection = ({
     if (isContentCrowdfundGated(streamConditions)) {
       if (
         campaign.value &&
-        new BN(campaign.value.balance.toString()).gte(campaign.value.threshold)
+        new BN(campaign.value.balance.toString()).gte(
+          campaign.value.fundingThreshold
+        )
       ) {
         return (
           <Button
@@ -560,7 +651,10 @@ const LockedGatedContentSection = ({
         {renderButton()}
       </div>
       {isContentCrowdfundGated(streamConditions) ? (
-        <CampaignProgress campaign={campaign} />
+        <>
+          <CampaignProgress campaign={campaign} />
+          <Contributors campaign={campaign} />
+        </>
       ) : null}
     </Flex>
   )
@@ -738,9 +832,10 @@ const UnlockedGatedContentSection = ({
       return isOwner && campaign.value !== null ? (
         <Flex direction='column' gap='s'>
           {messages.usersCanFund(
-            wAUDIO(campaign.value?.threshold ?? 1).toLocaleString()
+            wAUDIO(campaign.value?.fundingThreshold ?? 1).toLocaleString()
           )}
           <CampaignProgress campaign={campaign} />
+          <Contributors campaign={campaign} />
         </Flex>
       ) : (
         <Flex direction='row' wrap='wrap'>
@@ -807,6 +902,9 @@ const UnlockedGatedContentSection = ({
       >
         {renderUnlockedDescription()}
       </Text>
+      {isContentCrowdfundGated(streamConditions) ? (
+        <Contributors campaign={campaign} />
+      ) : null}
     </div>
   )
 }

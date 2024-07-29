@@ -8,6 +8,8 @@ export * from './AuthorizedApps';
 export * from './BlobInfo';
 export * from './ConnectedWallets';
 export * from './ConnectedWalletsResponse';
+export * from './Contributor';
+export * from './ContributorsResponse';
 export * from './CoverPhoto';
 export * from './DashboardWalletUser';
 export * from './DashboardWalletUsersResponse';

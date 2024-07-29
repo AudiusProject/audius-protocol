@@ -587,6 +587,11 @@ def extend_purchase(purchase):
     return new_purchase
 
 
+def extend_contributor(contributor):
+    contributor["user_id"] = encode_int_id(contributor["user_id"])
+    return contributor
+
+
 def abort_bad_path_param(param, namespace):
     namespace.abort(400, f"Oh no! Bad path parameter {param}.")
 

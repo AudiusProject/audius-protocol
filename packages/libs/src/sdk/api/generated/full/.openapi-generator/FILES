@@ -18,6 +18,8 @@ models/CollectionActivityFull.ts
 models/CollectionLibraryResponseFull.ts
 models/CoverArt.ts
 models/CoverPhoto.ts
+models/Crowdfund.ts
+models/CrowdfundGate.ts
 models/Favorite.ts
 models/FieldVisibility.ts
 models/FollowGate.ts

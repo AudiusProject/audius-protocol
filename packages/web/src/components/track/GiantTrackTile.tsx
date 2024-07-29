@@ -213,6 +213,7 @@ export const GiantTrackTile = ({
   const showPlay = isUSDCPurchaseGated ? hasStreamAccess : true
   const shouldShowScheduledRelease =
     isScheduledRelease && dayjs(releaseDate).isAfter(dayjs())
+
   const renderCardTitle = (className: string) => {
     return (
       <CardTitle

@@ -19,6 +19,7 @@ from src.api.v1.helpers import (
     decode_ids_array,
     decode_with_abort,
     extend_blob_info,
+    extend_contributor,
     extend_track,
     extend_user,
     format_limit,
@@ -38,11 +39,13 @@ from src.api.v1.helpers import (
     trending_parser,
     trending_parser_paginated,
 )
+from src.api.v1.models.contributor import contributor
 from src.api.v1.models.users import user_model, user_model_full
 from src.queries.generate_unpopulated_trending_tracks import (
     TRENDING_TRACKS_LIMIT,
     TRENDING_TRACKS_TTL_SEC,
 )
+from src.queries.get_contributors import get_contributors
 from src.queries.get_extended_purchase_gate import get_extended_purchase_gate
 from src.queries.get_feed import get_feed
 from src.queries.get_latest_entities import get_latest_entities
@@ -1828,3 +1831,24 @@ class GetTrackAccessInfo(Resource):
         track["stream_conditions"] = stream_conditions
         track["download_conditions"] = download_conditions
         return success_response(track)
+
+
+contributors_response = make_response(
+    "contributors_response", ns, fields.List(fields.Nested(contributor))
+)
+
+
+@ns.route("/<string:track_id>/contributors")
+class GetContributors(Resource):
+    @record_metrics
+    @ns.doc(
+        id="Get Contributors",
+        description="Gets the users who contributed to a crowdfund.",
+        params={"track_id": "A Track ID"},
+    )
+    @ns.expect(current_user_parser)
+    @ns.marshal_with(contributors_response)
+    def get(self, track_id: str):
+        decoded_id = decode_with_abort(track_id, full_ns)
+        contributors = get_contributors(decoded_id, 1)
+        return success_response([extend_contributor(c) for c in contributors])

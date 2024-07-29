@@ -93,6 +93,7 @@ export enum Table {
   ChatMessageReactions = "chat_message_reactions",
   ChatPermissions = "chat_permissions",
   CidData = "cid_data",
+  CrowdfundContributions = "crowdfund_contributions",
   CrowdfundUnlocks = "crowdfund_unlocks",
   DashboardWalletUsers = "dashboard_wallet_users",
   DelistStatusCursor = "delist_status_cursor",
@@ -187,6 +188,7 @@ export type Tables = {
   "chat_message_reactions": ChatMessageReactions,
   "chat_permissions": ChatPermissions,
   "cid_data": CidData,
+  "crowdfund_contributions": CrowdfundContributions,
   "crowdfund_unlocks": CrowdfundUnlocks,
   "dashboard_wallet_users": DashboardWalletUsers,
   "delist_status_cursor": DelistStatusCursor,
@@ -502,6 +504,13 @@ export type CidData = {
   cid: string;
   type: string | null;
   data: unknown | null;
+};
+
+export type CrowdfundContributions = {
+  ethereum_address: string;
+  content_id: number;
+  content_type: number;
+  amount: string;
 };
 
 export type CrowdfundUnlocks = {

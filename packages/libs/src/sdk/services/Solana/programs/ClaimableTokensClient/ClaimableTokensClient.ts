@@ -22,7 +22,10 @@ import {
   CreateTransferSchema,
   type CreateSecpRequest,
   CreateSecpSchema,
-  ClaimableTokensConfig
+  ClaimableTokensConfig,
+  GetNonceSchema,
+  GetNonceRequest,
+  GetAuthoritySchema
 } from './types'
 
 /**
@@ -151,23 +154,7 @@ export class ClaimableTokensClient extends BaseSolanaProgramClient {
         'createTransferSecpInstruction',
         CreateSecpSchema
       )(params)
-
-    let nonce = BigInt(0)
-    const nonceKey = ClaimableTokensProgram.deriveNonce({
-      ethAddress: ethWallet,
-      authority: this.authorities[mint],
-      programId: this.programId
-    })
-    const nonceAccount = await this.connection.getAccountInfo(
-      nonceKey,
-      'confirmed'
-    )
-    const encodedNonceData = nonceAccount?.data
-    if (encodedNonceData) {
-      const nonceData =
-        ClaimableTokensProgram.layouts.nonceAccountData.decode(encodedNonceData)
-      nonce = nonceData.nonce
-    }
+    const { nonce } = await this.getNonce({ ethWallet, mint })
     const data = ClaimableTokensProgram.createSignedTransferInstructionData({
       destination,
       amount: mintFixedDecimalMap[mint](amount).value,
@@ -181,6 +168,38 @@ export class ClaimableTokensClient extends BaseSolanaProgramClient {
       recoveryId,
       instructionIndex
     })
+  }
+
+  public async getNonce(params: GetNonceRequest) {
+    const { ethWallet, mint } = await parseParams(
+      'getNonce',
+      GetNonceSchema
+    )(params)
+    let nonce = BigInt(0)
+    const nonceAddress = ClaimableTokensProgram.deriveNonce({
+      ethAddress: ethWallet,
+      authority: this.authorities[mint],
+      programId: this.programId
+    })
+    const nonceAccount = await this.connection.getAccountInfo(
+      nonceAddress,
+      'confirmed'
+    )
+    const encodedNonceData = nonceAccount?.data
+    if (encodedNonceData) {
+      const nonceData =
+        ClaimableTokensProgram.layouts.nonceAccountData.decode(encodedNonceData)
+      nonce = nonceData.nonce
+    }
+    return { nonce, nonceAddress }
+  }
+
+  public async getAuthority(params: any) {
+    const { mint } = await parseParams(
+      'getAuthority',
+      GetAuthoritySchema
+    )(params)
+    return this.authorities[mint]
   }
 
   /**

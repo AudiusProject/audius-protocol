@@ -1,6 +1,10 @@
 import { BN, BorshInstructionCoder } from '@coral-xyz/anchor'
 import { initializeDiscoveryDb } from '@pedalboard/basekit'
-import { IndexingCheckpoints, CrowdfundUnlocks } from '@pedalboard/storage'
+import {
+  IndexingCheckpoints,
+  CrowdfundUnlocks,
+  CrowdfundContributions
+} from '@pedalboard/storage'
 import {
   Connection,
   PublicKey,
@@ -41,6 +45,17 @@ type ContributeInstruction = {
     }
   }
 }
+type ContributeUserBankInstruction = {
+  name: 'contribute_user_bank'
+  data: {
+    data: {
+      amount: string
+      content_type: number
+      content_id: number
+      eth_address: number[]
+    }
+  }
+}
 type UnlockInstruction = {
   name: 'unlock'
   data: {
@@ -55,6 +70,7 @@ type CrowdfundInstruction =
   | StartCampaignInstruction
   | ContributeInstruction
   | UnlockInstruction
+  | ContributeUserBankInstruction
 
 const processTx = async (message: VersionedMessage) => {
   const coder = new BorshInstructionCoder(IDL as CrowdfundIDL)
@@ -66,25 +82,35 @@ const processTx = async (message: VersionedMessage) => {
     addressLookupTableAccounts: lookupTableAccounts
   })
   for (const ix of decompiled.instructions) {
+    logger.info(ix)
     if (ix.programId.toBase58() !== IDL.address) {
-      logger.warn('Skipping instruction from', ix.programId.toBase58())
+      logger.warn('Skipping instruction from', ix.programId)
     }
     const instruction = coder.decode(ix.data) as CrowdfundInstruction
 
-    // const instructionFormatted = coder.format(instruction, ix.keys)
-
     if (instruction?.name === 'unlock') {
-      await discoveryDb<CrowdfundUnlocks>('crowdfund_unlocks').insert({
-        ...instruction.data._data
-      })
-      logger.info(
-        {
-          contentType:
-            instruction.data._data.content_type === 1 ? 'track' : 'album',
-          contentId: instruction.data._data.content_id
-        },
-        'Unlocking...'
+      await discoveryDb<CrowdfundUnlocks>('crowdfund_unlocks').insert(
+        instruction.data._data
       )
+      logger.info(instruction.data._data, 'Unlocking...')
+    } else if (instruction?.name === 'contribute_user_bank') {
+      const { content_id, content_type, amount } = instruction.data.data
+      const ethereum_address =
+        '0x' + Buffer.from(instruction.data.data.eth_address).toString('hex')
+      const row = {
+        content_id,
+        content_type,
+        ethereum_address,
+        amount: BigInt(amount)
+      }
+      const insert = discoveryDb<
+        Omit<CrowdfundContributions, 'amount'> & { amount: bigint }
+      >('crowdfund_contributions').insert(row)
+      await discoveryDb.raw(
+        `? ON CONFLICT (content_id, content_type, ethereum_address) DO UPDATE SET amount = "crowdfund_contributions"."amount" + ?`,
+        [insert, BigInt(amount)]
+      )
+      logger.info(row, 'Contributing...')
     }
   }
 }
