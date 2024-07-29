@@ -3,7 +3,8 @@ import {
   isContentUSDCPurchaseGated,
   AccessConditions,
   isContentFollowGated,
-  isContentTipGated
+  isContentTipGated,
+  isContentCrowdfundGated
 } from '@audius/common/models'
 import { Nullable } from '@audius/common/utils'
 import {
@@ -12,13 +13,15 @@ import {
   IconCart,
   IconCollectible,
   IconSpecialAccess,
-  useTheme
+  useTheme,
+  IconUserGroup
 } from '@audius/harmony'
 
 const messages = {
   collectibleGated: 'Collectible Gated',
   specialAccess: 'Special Access',
-  premium: 'Premium'
+  premium: 'Premium',
+  crowdfund: 'Crowdfund Drop'
 }
 
 /** Renders a label indicating a gated content type. If the user does
@@ -51,6 +54,10 @@ export const GatedContentLabel = ({
     message = messages.premium
     IconComponent = IconCart
     specialColor = color.special.lightGreen
+  } else if (isContentCrowdfundGated(streamConditions)) {
+    message = messages.crowdfund
+    IconComponent = IconUserGroup
+    specialColor = '#49b69c'
   }
 
   const finalColor =

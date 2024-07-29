@@ -2,14 +2,16 @@ import type { MouseEvent } from 'react'
 
 import {
   isContentUSDCPurchaseGated,
-  AccessConditions
+  AccessConditions,
+  isContentCrowdfundGated
 } from '@audius/common/models'
 import { formatPrice } from '@audius/common/utils'
-import { Button, ButtonSize, IconLock } from '@audius/harmony'
+import { Button, ButtonSize, IconLock, IconTipping } from '@audius/harmony'
 
 const messages = {
   unlocking: 'Unlocking',
-  locked: 'Locked'
+  locked: 'Locked',
+  crowdfund: 'Contribute'
 }
 
 export const GatedConditionsPill = ({
@@ -28,6 +30,7 @@ export const GatedConditionsPill = ({
   buttonSize?: ButtonSize
 }) => {
   const isPurchase = isContentUSDCPurchaseGated(streamConditions)
+  const isCrowdfund = isContentCrowdfundGated(streamConditions)
 
   let message = null
   if (unlocking) {
@@ -36,6 +39,8 @@ export const GatedConditionsPill = ({
   } else {
     message = isPurchase
       ? `$${formatPrice(streamConditions.usdc_purchase.price)}`
+      : isCrowdfund
+      ? messages.crowdfund
       : messages.locked
   }
 
@@ -45,8 +50,9 @@ export const GatedConditionsPill = ({
       size={buttonSize}
       onClick={onClick}
       color={isPurchase ? 'lightGreen' : 'blue'}
+      hexColor={isCrowdfund ? '#49b69c' : undefined}
       isLoading={unlocking}
-      iconLeft={showIcon ? IconLock : undefined}
+      iconLeft={showIcon ? (isCrowdfund ? IconTipping : IconLock) : undefined}
       // TODO: Add 'xs' button size in harmony
       css={{ height: '24px' }}
     >

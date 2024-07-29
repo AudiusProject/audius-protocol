@@ -526,8 +526,10 @@ const LockedGatedContentSection = ({
           variant='primary'
           onClick={handleContribute}
           fullWidth
+          iconLeft={IconTipping}
           isLoading={isContributing}
           disabled={isContributing}
+          hexColor='#49b69c'
         >
           {messages.contribute}
         </Button>

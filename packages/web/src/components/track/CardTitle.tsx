@@ -1,7 +1,8 @@
 import {
   isContentCollectibleGated,
   isContentUSDCPurchaseGated,
-  AccessConditions
+  AccessConditions,
+  isContentCrowdfundGated
 } from '@audius/common/models'
 import { Nullable } from '@audius/common/utils'
 import {
@@ -9,7 +10,8 @@ import {
   IconCart,
   IconCollectible,
   IconSpecialAccess,
-  Flex
+  Flex,
+  IconUserGroup
 } from '@audius/harmony'
 import cn from 'classnames'
 
@@ -22,7 +24,8 @@ const messages = {
   hiddenTrackTooltip: 'Anyone with a link to this page will be able to see it',
   collectibleGated: 'COLLECTIBLE GATED',
   specialAccess: 'SPECIAL ACCESS',
-  premiumTrack: 'PREMIUM TRACK'
+  premiumTrack: 'PREMIUM TRACK',
+  crowdfund: 'CROWDFUND DROP'
 }
 
 type CardTitleProps = {
@@ -55,6 +58,9 @@ export const CardTitle = ({
     } else if (isContentUSDCPurchaseGated(streamConditions)) {
       icon = <IconCart size='s' color='subdued' />
       message = messages.premiumTrack
+    } else if (isContentCrowdfundGated(streamConditions)) {
+      icon = <IconUserGroup size='s' color='subdued' />
+      message = messages.crowdfund
     } else {
       icon = <IconSpecialAccess size='s' color='subdued' />
       message = messages.specialAccess
