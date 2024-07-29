@@ -236,7 +236,7 @@ export const SplitDonationPage = () => {
   const { onOpen: openCoinflowModal } = useCoinflowOnrampModal()
   const { data: userId } = useGetCurrentUserId({})
   const { color, spacing } = useTheme()
-  const planCode = `rec_donations_${userId}`
+  const planCode = `hackathon_rec_donations_${userId}`
 
   const plan = useMemo(
     () => plans.find((plan: any) => plan.code === planCode),
