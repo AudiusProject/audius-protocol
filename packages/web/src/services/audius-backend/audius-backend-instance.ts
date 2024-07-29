@@ -83,6 +83,9 @@ export const audiusBackendInstance = audiusBackend({
       : false
 
     // @ts-ignore
+    console.log("in getWeb3Config", { useWeb3Auth, web3auth: window.web3auth })
+
+    // @ts-ignore
     if (useWeb3Auth && window.web3auth) {
       try {
         return {
@@ -97,6 +100,7 @@ export const audiusBackendInstance = audiusBackend({
           )
         }
       } catch (e) {
+        console.error({ e }, "error setting web3auth")
         return {
           error: true,
           web3Config: libs.configInternalWeb3(

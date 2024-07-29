@@ -144,26 +144,35 @@ export class Utils {
   }
 
   static async configureWeb3(
-    web3Provider: string,
+    web3Provider: string | any,
     chainNetworkId: string,
     requiresAccount = true
   ) {
     // Initializing web3 with a HttpProvider wrapper for multiple providers
     // ref: https://github.com/ChainSafe/web3.js/blob/1.x/packages/web3/types/index.d.ts#L31.
-    const web3Instance = new Web3(new MultiProvider(web3Provider))
+    let web3Instance = web3Provider
+    if (typeof web3Provider === 'string') {
+      web3Instance = new Web3(new MultiProvider(web3Provider))
+    }
 
     try {
       const networkId = await web3Instance.eth.net.getId()
-      if (chainNetworkId && networkId.toString() !== chainNetworkId) {
+      const networkIsGanache = networkId === 1000000000001
+      const chainIsGanache = chainNetworkId === "1337"
+      const ganacheShenanigans = networkIsGanache && chainIsGanache
+      if (chainNetworkId && networkId.toString() !== chainNetworkId && !ganacheShenanigans) {
+        console.error({ chainNetworkId, networkId: networkId.toString() })
         return false
       }
       if (requiresAccount) {
         const accounts = await web3Instance.eth.getAccounts()
         if (!accounts || accounts.length < 1) {
+          console.error("no accounts")
           return false
         }
       }
     } catch (e) {
+      console.error({ e }, "issue configuring web3")
       return false
     }
 
