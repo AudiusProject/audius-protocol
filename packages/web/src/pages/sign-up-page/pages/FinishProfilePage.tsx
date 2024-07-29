@@ -1,4 +1,4 @@
-import { useCallback, useRef } from 'react'
+import { useCallback, useRef, useEffect, useState } from 'react'
 
 import { finishProfilePageMessages } from '@audius/common/messages'
 import { Name } from '@audius/common/models'
@@ -35,6 +35,7 @@ import { AccountHeader } from '../components/AccountHeader'
 import { ImageFieldValue } from '../components/ImageField'
 import { OutOfText } from '../components/OutOfText'
 import { Heading, Page, PageFooter } from '../components/layout'
+import { Web3Auth } from '@web3auth/modal'
 
 export type FinishProfileValues = {
   profileImage?: ImageFieldValue
@@ -90,9 +91,12 @@ export const FinishProfilePage = () => {
 
   // If the user comes back from a later page we start with whats in the store
   const initialValues = {
-    profileImage: savedProfileImage || undefined,
+    // @ts-ignore
+    profileImage: window.userData.profileImage ? { url: window.userData.profileImage } : (savedProfileImage || undefined),
+    // @ts-ignore
     coverPhoto: savedCoverPhoto || undefined,
-    displayName: savedDisplayName || ''
+    // @ts-ignore
+    displayName: window.userData.name || (savedDisplayName || '')
   }
 
   const setCoverPhoto = useCallback(

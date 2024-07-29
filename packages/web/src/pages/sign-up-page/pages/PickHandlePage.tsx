@@ -1,4 +1,4 @@
-import { useCallback, useContext, useMemo, useRef } from 'react'
+import { useCallback, useContext, useMemo, useRef, useEffect } from 'react'
 
 import { AudiusQueryContext } from '@audius/common/audius-query'
 import {
@@ -37,6 +37,8 @@ import { SocialMediaLoading } from '../components/SocialMediaLoading'
 import { SocialMediaLoginOptions } from '../components/SocialMediaLoginOptions'
 import { Heading, Page, PageFooter } from '../components/layout'
 import { useSocialMediaLoader } from '../hooks/useSocialMediaLoader'
+import { Web3Auth } from '@web3auth/modal'
+import fetch from 'node-fetch'
 
 type PickHandleValues = {
   handle: string
@@ -151,7 +153,8 @@ export const PickHandlePage = () => {
   )
 
   const initialValues = {
-    handle: alreadyLinkedSocial ? '' : handle
+    // @ts-ignore
+    handle: window.farcasterHandle || (alreadyLinkedSocial ? '' : handle)
   }
 
   return (

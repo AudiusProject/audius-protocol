@@ -123,8 +123,7 @@ export const CreateEmailPage = () => {
 
   const handleSubmit = useCallback(
     async (values: SignUpEmailValues) => {
-      const { email, withMetaMask, withWeb3Auth } = values
-      dispatch(setValueField('email', email))
+      let { email, withMetaMask, withWeb3Auth } = values
       if (withMetaMask) {
         setIsMetaMaskModalOpen(true)
       } else if (withWeb3Auth) {
@@ -135,11 +134,20 @@ export const CreateEmailPage = () => {
           // @ts-ignore
           window.web3authInstance = web3authInstance
           dispatch(configureWeb3Auth())
+
+          // @ts-ignore
+          window.userData = await web3authInstance.getUserInfo()
+          // @ts-ignore
+          const res = await fetch(`https://client.warpcast.com/v2/user?fid=${window.userData.verifierId}`)
+          const json = await res.json()
+          // @ts-ignore
+          window.farcasterHandle = json.result.user.username
           navigate(SIGN_UP_HANDLE_PAGE)
         }
       } else {
         navigate(SIGN_UP_PASSWORD_PAGE)
       }
+      dispatch(setValueField('email', email))
     },
     [dispatch, navigate]
   )
