@@ -122,6 +122,7 @@ const SavedPage = ({
 }: SavedPageProps) => {
   const { mainContentRef } = useContext(MainContentContext)
   const initFetch = useSelector(getInitialFetchStatus)
+
   const emptyTracksHeader = useSelector((state: CommonState) => {
     const selectedCategory = getCategory(state, {
       currentTab: SavedPageTabs.TRACKS
