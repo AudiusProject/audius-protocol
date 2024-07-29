@@ -228,7 +228,7 @@ const LockedGatedContentSection = ({
   const { spacing } = useTheme()
   const user = useSelector(accountSelectors.getAccountUser)
 
-  const { campaign, trigger } = useCrowdfundCampaign(streamConditions, 10000)
+  const { campaign, trigger } = useCrowdfundCampaign(streamConditions, 1000)
 
   const handlePurchase = useAuthenticatedCallback(() => {
     if (lockedContentModalVisibility) {
@@ -662,7 +662,7 @@ const UnlockedGatedContentSection = ({
 }: GatedContentAccessSectionProps) => {
   const messages = getMessages(contentType)
 
-  const { campaign } = useCrowdfundCampaign(streamConditions, 10000)
+  const { campaign } = useCrowdfundCampaign(streamConditions, 1000)
 
   const renderUnlockedDescription = () => {
     if (isContentCollectibleGated(streamConditions)) {
