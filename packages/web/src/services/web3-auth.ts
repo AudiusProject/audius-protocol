@@ -26,7 +26,7 @@ export const web3authInstance = new Web3Auth({
   web3AuthNetwork: WEB3AUTH_NETWORK.SAPPHIRE_DEVNET,
   privateKeyProvider: privateKeyProvider,
   uiConfig: {
-    loginMethodsOrder: ["google", "github", "warpcast"]
+    loginMethodsOrder: ["farcaster", "google", "twitter", "github"]
   }
 })
 

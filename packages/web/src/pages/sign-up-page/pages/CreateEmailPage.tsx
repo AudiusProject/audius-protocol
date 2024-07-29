@@ -22,6 +22,7 @@ import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import audiusLogoColored from 'assets/img/audiusLogoColored.png'
 import {
+  configureWeb3Auth,
   resetSignOn,
   setLinkedSocialOnFirstPage,
   setValueField,
@@ -129,6 +130,8 @@ export const CreateEmailPage = () => {
         if (web3authInstance.connected) {
           // @ts-ignore
           window.web3auth = getWeb3Provider()
+          dispatch(configureWeb3Auth())
+          navigate(SIGN_UP_HANDLE_PAGE)
         }
       } else {
         navigate(SIGN_UP_PASSWORD_PAGE)

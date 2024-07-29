@@ -59,6 +59,7 @@ export const UNSET_SOCIAL_PROFILE = 'SIGN_ON/UNSET_SOCIAL_PROFILE'
 
 export const SET_STATUS = 'SIGN_ON/SET_STATUS'
 export const CONFIGURE_META_MASK = 'SIGN_ON/CONFIGURE_META_MASK'
+export const CONFIGURE_WEB3_AUTH = 'SIGN_ON/CONFIGURE_WEB3_AUTH'
 
 export const OPEN_SIGN_ON = 'SIGN_ON/OPEN_SIGN_ON'
 
@@ -402,6 +403,10 @@ export function setStatus(status: 'loading' | 'editing') {
 
 export function configureMetaMask() {
   return { type: CONFIGURE_META_MASK }
+}
+
+export function configureWeb3Auth() {
+  return { type: CONFIGURE_WEB3_AUTH }
 }
 
 /**

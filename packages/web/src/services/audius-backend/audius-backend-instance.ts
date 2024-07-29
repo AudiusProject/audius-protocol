@@ -76,6 +76,39 @@ export const audiusBackendInstance = audiusBackend({
         }
       }
     }
+
+    const useWeb3AuthSerialized = localStorage.getItem('useWeb3Auth')
+    const useWeb3Auth = useWeb3AuthSerialized
+      ? JSON.parse(useWeb3AuthSerialized)
+      : false
+
+    // @ts-ignore
+    if (useWeb3Auth && window.web3auth) {
+      try {
+        return {
+          error: false,
+          web3Config: await libs.configExternalWeb3(
+            registryAddress,
+            // @ts-ignore
+            window.web3auth,
+            web3NetworkId,
+            null,
+            entityManagerAddress
+          )
+        }
+      } catch (e) {
+        return {
+          error: true,
+          web3Config: libs.configInternalWeb3(
+            registryAddress,
+            web3ProviderUrls,
+            null,
+            entityManagerAddress
+          )
+        }
+      }
+    }
+
     return {
       error: false,
       web3Config: libs.configInternalWeb3(

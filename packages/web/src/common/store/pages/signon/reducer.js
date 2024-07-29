@@ -39,7 +39,8 @@ import {
   SET_LINKED_SOCIAL_ON_FIRST_PAGE,
   SET_FINISHED_PHASE_1,
   HIDE_PREVIEW_HINT,
-  SET_WELCOME_MODAL_SHOWN
+  SET_WELCOME_MODAL_SHOWN,
+  CONFIGURE_WEB3_AUTH
 } from './actions'
 import { Pages, FollowArtistsCategory } from './types'
 
@@ -63,6 +64,7 @@ const initialState = {
   accountAlreadyExisted: false,
   verified: false,
   useMetaMask: false,
+  useWeb3Auth: false,
   accountReady: false,
   twitterId: '',
   twitterScreenName: '',
@@ -302,6 +304,12 @@ const actionsMap = {
     return {
       ...state,
       useMetaMask: true
+    }
+  },
+  [CONFIGURE_WEB3_AUTH](state, action) {
+    return {
+      ...state,
+      useWeb3Auth: true
     }
   },
   [VALIDATE_EMAIL_SUCCEEDED](state, action) {

@@ -665,7 +665,7 @@ function* signUp() {
           console.debug(message)
         }
       },
-      () => {},
+      () => { },
       SIGN_UP_TIMEOUT_MILLIS
     )
   )
@@ -730,7 +730,7 @@ function* repairSignUp() {
             yield* put(signOnActions.signUpTimeout())
           }
         },
-        () => {},
+        () => { },
         SIGN_UP_TIMEOUT_MILLIS
       )
     )
@@ -763,8 +763,8 @@ function* signIn(action: ReturnType<typeof signOnActions.signIn>) {
   const clientOrigin = isNativeMobile
     ? 'mobile'
     : isElectron
-    ? 'desktop'
-    : 'web'
+      ? 'desktop'
+      : 'web'
 
   yield* call(waitForRead)
   try {
@@ -1029,6 +1029,19 @@ function* configureMetaMask() {
   }
 }
 
+function* configureWeb3Auth() {
+  try {
+    window.localStorage.setItem('useWeb3Auth', JSON.stringify(true))
+    yield* put(backendActions.setupBackend())
+  } catch (err: any) {
+    const reportToSentry = yield* getContext('reportToSentry')
+    reportToSentry({
+      error: err,
+      name: 'Sign Up: Configure web3auth failed'
+    })
+  }
+}
+
 export function* watchCompleteFollowArtists() {
   yield* takeEvery(signOnActions.COMPLETE_FOLLOW_ARTISTS, completeFollowArtists)
 }
@@ -1076,6 +1089,10 @@ function* watchConfigureMetaMask() {
   yield* takeLatest(signOnActions.CONFIGURE_META_MASK, configureMetaMask)
 }
 
+function* watchConfigureWeb3Auth() {
+  yield* takeLatest(signOnActions.CONFIGURE_WEB3_AUTH, configureWeb3Auth)
+}
+
 function* watchFollowArtists() {
   yield* takeLatest(signOnActions.FOLLOW_ARTISTS, followArtists)
 }
@@ -1115,6 +1132,7 @@ export default function sagas() {
     watchFollowArtists,
     watchGetArtistsToFollow,
     watchConfigureMetaMask,
+    watchConfigureWeb3Auth,
     watchOpenSignOn,
     watchSignOnError,
     watchSendWelcomeEmail,
