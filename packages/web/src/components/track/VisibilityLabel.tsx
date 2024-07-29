@@ -25,12 +25,18 @@ export type VisibilityLabelProps = {
   isScheduledRelease?: boolean
 }
 
-export const VisibilityLabel = ({
-  releaseDate,
-  isUnlisted,
-  isScheduledRelease
-}: VisibilityLabelProps) => {
+export const VisibilityLabel = (props: VisibilityLabelProps) => {
+  const { releaseDate, isUnlisted, isScheduledRelease } = props
   const { color } = useTheme()
+
+  if (
+    !releaseDate ||
+    !isUnlisted ||
+    !isScheduledRelease ||
+    dayjs(releaseDate).isBefore(dayjs())
+  ) {
+    return null
+  }
 
   if (isUnlisted && !isScheduledRelease) {
     return (
@@ -41,15 +47,6 @@ export const VisibilityLabel = ({
         </Text>
       </Flex>
     )
-  }
-
-  if (
-    !releaseDate ||
-    !isUnlisted ||
-    !isScheduledRelease ||
-    dayjs(releaseDate).isBefore(dayjs())
-  ) {
-    return null
   }
 
   return (
