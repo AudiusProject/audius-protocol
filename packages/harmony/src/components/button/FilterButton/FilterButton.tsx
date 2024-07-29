@@ -69,21 +69,18 @@ export const FilterButton = forwardRef<HTMLButtonElement, FilterButtonProps>(
       background: color.secondary.s400,
       border: `1px solid ${color.secondary.s400}`,
       '&:hover': {
-        border: `1px solid ${color.secondary.s400}`,
-        transform: 'none'
+        border: `1px solid ${color.secondary.s400}`
       }
     }
 
-    const activeStyle =
-      variant !== 'fillContainer' || value === null
-        ? {
-            border: `1px solid ${color.border.strong}`,
-            background: color.background.surface2
-          }
-        : {}
-
     const hoverStyle = {
-      border: `1px solid ${color.neutral.n800}`,
+      background: color.background.surface1
+    }
+
+    const activeStyle = {
+      background: color.background.surface2
+    }
+    const disabledTransform = {
       transform: 'none'
     }
 
@@ -102,12 +99,17 @@ export const FilterButton = forwardRef<HTMLButtonElement, FilterButtonProps>(
       lineHeight: typography.lineHeight.s,
       opacity: disabled ? 0.6 : 1,
 
-      '&:hover': hoverStyle,
-      '&:focus': hoverStyle,
-
+      '&:hover': {
+        ...disabledTransform,
+        ...(value === null ? hoverStyle : {})
+      },
+      '&:focus': {
+        ...disabledTransform,
+        ...(value === null ? activeStyle : {})
+      },
       '&:active': {
-        ...activeStyle,
-        transform: 'none'
+        ...disabledTransform,
+        ...(value === null ? activeStyle : {})
       },
 
       ...(size === 'small' ? smallStyles : defaultStyles),
