@@ -12,7 +12,7 @@ export const GatedConditionsButton = (props) => {
       <a
         target='_blank'
         rel='noreferrer'
-        href={`http://localhost:3002/${trackURL}?checkout=true`}
+        href={`https://isaac.audius.co/${trackURL}?checkout=true`}
         style={{ textDecoration: 'none' }}
       >
         ${formatPrice(price)}

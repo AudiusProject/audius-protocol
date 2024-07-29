@@ -1,4 +1,4 @@
-import { Button, Flex } from '@audius/harmony'
+import { Flex } from '@audius/harmony'
 import { full } from '@audius/sdk'
 
 import { GatedConditionsButton } from '../GatedConditionsButton'
