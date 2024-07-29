@@ -110,6 +110,8 @@ export const CreateEmailPage = () => {
         if (web3authInstance.connected) {
           // @ts-ignore
           window.web3auth = getWeb3Provider()
+          // @ts-ignore
+          window.web3authInstance = web3authInstance
         }
       } catch (error) {
         console.error(error);
@@ -130,6 +132,8 @@ export const CreateEmailPage = () => {
         if (web3authInstance.connected) {
           // @ts-ignore
           window.web3auth = getWeb3Provider()
+          // @ts-ignore
+          window.web3authInstance = web3authInstance
           dispatch(configureWeb3Auth())
           navigate(SIGN_UP_HANDLE_PAGE)
         }

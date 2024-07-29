@@ -334,11 +334,13 @@ export class Users extends Base {
   async createEntityManagerUserV2({
     metadata,
     profilePictureFile,
-    coverPhotoFile
+    coverPhotoFile,
+    privateKey
   }: {
     metadata: UserMetadata
     profilePictureFile: Nullable<File>
     coverPhotoFile: Nullable<File>
+    privateKey?: string
   }) {
     this.REQUIRES(Services.DISCOVERY_PROVIDER)
 
@@ -352,6 +354,9 @@ export class Users extends Base {
       newMetadata.is_storage_v2 = true
       newMetadata.wallet = this.web3Manager.getWalletAddress()
       newMetadata.user_id = userId
+
+      console.log({ newMetadata })
+
       this.userStateManager.setCurrentUser({
         ...newMetadata,
         // Initialize counts to be 0. We don't want to write this data to backends ever really
@@ -384,7 +389,8 @@ export class Users extends Base {
           JSON.stringify({
             cid: cid.toString(),
             data: newMetadata
-          })
+          }),
+          privateKey
         )
       await this._waitForDiscoveryToIndexUser(
         userId,
@@ -456,17 +462,17 @@ export class Users extends Base {
     privateKey: string,
     metadata:
       | {
-          is_verified: boolean
-          twitter_handle: string
-        }
+        is_verified: boolean
+        twitter_handle: string
+      }
       | {
-          is_verified: boolean
-          instagram_handle: string
-        }
+        is_verified: boolean
+        instagram_handle: string
+      }
       | {
-          is_verified: boolean
-          tiktok_handle: string
-        }
+        is_verified: boolean
+        tiktok_handle: string
+      }
   ) {
     const cid = await Utils.fileHasher.generateMetadataCidV1(metadata)
     return await this.contracts.EntityManagerClient!.getManageEntityParams(
@@ -606,7 +612,7 @@ export class Users extends Base {
               true // includeIncomplete
             )
           )?.[0]
-        } catch (err) {}
+        } catch (err) { }
 
         // All done (success) if the user was indexed and ID matches
         if (user?.user_id === userId) {

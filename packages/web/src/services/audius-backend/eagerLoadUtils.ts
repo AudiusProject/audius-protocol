@@ -1,4 +1,6 @@
-import { getEagerDiscprov, makeEagerRequest } from '@audius/common/services'
+import { getEagerDiscprov, makeEagerRequest, WalletClient } from '@audius/common/services'
+import { EthWallet } from '@audius/hedgehog'
+import { Web3Auth } from '@web3auth/modal'
 /**
  * Utilities to assist in eager pre-fetching content from the
  * protocol before libs has initialized.
@@ -16,7 +18,18 @@ export const LIBS_INITTED_EVENT = 'LIBS_INITTED_EVENT'
 export const waitForLibsInit = async () => {
   // If libs is already defined, it has already loaded & initted
   // so do nothing
-  if (window.audiusLibs) return
+  if (window.audiusLibs) {
+    // @ts-ignore
+    if (window.web3authInstance) {
+      // @ts-ignore
+      const web3auth: Web3Auth = window.web3authInstance
+      const privKey = await web3auth.provider?.request({
+        method: "eth_private_key"
+      }) as string
+      window.audiusLibs.web3Manager?.setOwnerWallet(privKey)
+    }
+    return
+  }
   // Add an event listener and resolve when that returns
   return new Promise((resolve) => {
     // @ts-ignore

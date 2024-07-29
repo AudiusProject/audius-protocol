@@ -152,16 +152,27 @@ export class Web3Manager {
 
   getWalletAddress() {
     if (this.useExternalWeb3) {
+      if (this.ownerWallet instanceof EthereumWallet) {
+        return this.ownerWallet?.getAddressString()
+      }
       // Lowercase the owner wallet. Consider using the checksum address.
       // See https://github.com/ethereum/EIPs/blob/master/EIPS/eip-55.md.
       // @ts-expect-error Wallet type doesn't have `toLowerCase` method?
-      return this.ownerWallet.toLowerCase()
+      return this.ownerWallet?.toLowerCase()
     } else {
       return this.ownerWallet?.getAddressString()
     }
   }
 
-  setOwnerWallet(ownerWallet: EthereumWallet) {
+  setOwnerWallet(ownerWallet: EthereumWallet | string) {
+    if (typeof ownerWallet === 'string') {
+      // assume privkey
+      const privKey = ownerWallet.startsWith('0x') ? ownerWallet : `0x${ownerWallet}`
+      // @ts-ignore
+      const bytes = window.web3auth.utils.hexToBytes(privKey)
+      this.ownerWallet = new EthereumWallet(Buffer.from(bytes))
+      return
+    }
     this.ownerWallet = ownerWallet
   }
 
@@ -426,7 +437,7 @@ const ethSignTypedData = async (
       // fix per https://github.com/ethereum/web3.js/issues/1119
     }
 
-    ;(web3.currentProvider as HttpProvider).send(
+    ; (web3.currentProvider as HttpProvider).send(
       {
         method,
         params: [wallet, processedSignatureData],

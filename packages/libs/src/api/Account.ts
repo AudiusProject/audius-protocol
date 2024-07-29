@@ -158,10 +158,25 @@ export class Account extends Base {
       UPLOAD_PROFILE_IMAGES: 'UPLOAD_PROFILE_IMAGES'
     }
     let phase = ''
+    let privateKey: string | undefined = undefined
     try {
       this.REQUIRES(Services.CREATOR_NODE, Services.IDENTITY_SERVICE)
 
       if (this.web3Manager.web3IsExternal()) {
+        // @ts-ignore
+        if (typeof window !== 'undefined' && window.web3authInstance) {
+          console.log("using web3auth in account")
+          // set owner wallet like hedgehog
+          // @ts-ignore
+          const web3auth: Web3Auth = window.web3authInstance
+          const privKey = await web3auth.provider?.request({
+            method: "eth_private_key"
+          }) as string
+          privateKey = privKey
+          this.web3Manager.setOwnerWallet(privKey)
+          this.web3Manager.useExternalWeb3 = false
+        }
+
         phase = phases.CREATE_USER_RECORD
         await this.identityService.createUserRecord(
           email,
@@ -197,7 +212,8 @@ export class Account extends Base {
         await this.User.createEntityManagerUserV2({
           metadata,
           profilePictureFile,
-          coverPhotoFile
+          coverPhotoFile,
+          privateKey
         })
 
       return { blockHash, blockNumber, userId: newMetadata.user_id }
@@ -764,10 +780,10 @@ export class Account extends Base {
       wallet = null,
       userId = null
     }: { account: any; wallet: Nullable<string>; userId: Nullable<number> } = {
-      account: null,
-      wallet: null,
-      userId: null
-    }
+        account: null,
+        wallet: null,
+        userId: null
+      }
   ) {
     if (!account && !wallet && !userId) {
       throw new Error(
