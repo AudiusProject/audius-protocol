@@ -54,6 +54,7 @@ const smallDesktopWindowHeight = 900
 export type SignUpEmailValues = {
   email: string
   withMetaMask?: boolean
+  withWeb3Auth?: boolean
 }
 
 export const CreateEmailPage = () => {
@@ -102,10 +103,11 @@ export const CreateEmailPage = () => {
 
   const handleSubmit = useCallback(
     async (values: SignUpEmailValues) => {
-      const { email, withMetaMask } = values
+      const { email, withMetaMask, withWeb3Auth } = values
       dispatch(setValueField('email', email))
       if (withMetaMask) {
         setIsMetaMaskModalOpen(true)
+      } else if (withWeb3Auth) {
       } else {
         navigate(SIGN_UP_PASSWORD_PAGE)
       }
@@ -186,6 +188,22 @@ export const CreateEmailPage = () => {
               {createEmailPageMessages.haveAccount} {signInLink}
             </Text>
           </Flex>
+          {!isMobile ? (
+            <Flex direction='column' gap='s'>
+              <Button
+                variant='secondary'
+                isStaticIcon
+                fullWidth
+                type='submit'
+                onClick={() => {
+                  setFieldValue('withWeb3Auth', true)
+                  submitForm()
+                }}
+              >
+                {createEmailPageMessages.signUpWeb3Auth}
+              </Button>
+            </Flex>
+          ) : null}
           {!isMobile && window.ethereum ? (
             <Flex direction='column' gap='s'>
               <Button
