@@ -87,7 +87,7 @@ const messagesV2 = {
   },
   preview: {
     title: 'Track Preview',
-    description: 'Specify when you want your 15 second track preview to start.'
+    description: 'Specify when you want your 30 second track preview to start.'
   },
   seconds: 'Seconds'
 }
