@@ -20,7 +20,6 @@ import { PriceAndAudienceField } from 'app/components/edit/PriceAndAudienceField
 import { VisibilityField } from 'app/components/edit/VisibilityField'
 import { PickArtworkField, TextField } from 'app/components/fields'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { useOneTimeDrawer } from 'app/hooks/useOneTimeDrawer'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { FormScreen } from 'app/screens/form-screen'
 import { setVisibility } from 'app/store/drawers/slice'
