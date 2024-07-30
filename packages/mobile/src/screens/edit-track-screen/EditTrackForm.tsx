@@ -113,6 +113,7 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
   }, [dirty, navigation, dispatch])
 
   const handleSubmit = useCallback(() => {
+    Keyboard.dismiss()
     const showConfirmDrawer = usersMayLoseAccess || isToBePublished
     if (showConfirmDrawer) {
       if (usersMayLoseAccess) {
