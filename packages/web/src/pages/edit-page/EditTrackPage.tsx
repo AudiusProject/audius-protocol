@@ -44,7 +44,6 @@ type EditPageProps = {
 
 export const EditFormScrollContext = createContext(() => {})
 
-// This component is in development, only used behind the EDIT_TRACK_REDESIGN feature flag
 export const EditTrackPage = (props: EditPageProps) => {
   const { scrollToTop } = props
   const { handle, slug } = useParams<{ handle: string; slug: string }>()
