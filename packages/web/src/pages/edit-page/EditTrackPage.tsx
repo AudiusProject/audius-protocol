@@ -111,12 +111,7 @@ export const EditTrackPage = (props: EditPageProps) => {
         metadata: trackAsMetadataForUpload
       }
     ],
-    trackMetadatas: [
-      {
-        ...trackAsMetadataForUpload,
-        remix_of: null
-      }
-    ],
+    trackMetadatas: [trackAsMetadataForUpload],
     trackMetadatasIndex: 0
   }
 
