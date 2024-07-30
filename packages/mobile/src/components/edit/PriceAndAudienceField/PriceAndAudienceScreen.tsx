@@ -42,13 +42,15 @@ export const PriceAndAudienceScreen = () => {
     useField<boolean>('is_stream_gated')
   const [{ value: streamConditions }, , { setValue: setStreamConditions }] =
     useField<Nullable<AccessConditions>>('stream_conditions')
-  const [{ value: isUnlisted }] = useField<boolean>('is_unlisted')
+  const [, , { setValue: setPreviewValue }] = useField<Nullable<number>>(
+    'preview_start_seconds'
+  )
   const [{ value: isScheduledRelease }] = useField<boolean>(
     'is_scheduled_release'
   )
   const [{ value: remixOf }] = useField<RemixOfField>('remix_of')
-  const [{ value: isUpload }] = useField<boolean>('is_upload')
   const [{ value: entityType }] = useField<string>('entityType')
+  const [{ value: isUpload }] = useField<boolean>('isUpload')
   const isRemix = !!remixOf
 
   const { isEnabled: isEditableAccessEnabled } = useFeatureFlag(
@@ -74,9 +76,6 @@ export const PriceAndAudienceScreen = () => {
       isContentTipGated(streamConditions)
     ) {
       return StreamTrackAvailabilityType.SPECIAL_ACCESS
-    }
-    if (isUnlisted && !isScheduledRelease) {
-      return StreamTrackAvailabilityType.HIDDEN
     }
     return StreamTrackAvailabilityType.PUBLIC
     // we only care about what the initial value was here
@@ -192,8 +191,9 @@ export const PriceAndAudienceScreen = () => {
       icon={IconCart}
       variant='white'
       disableSubmit={isFormInvalid}
-      stopNavigation={usersMayLoseAccess}
+      stopNavigation={!isUpload && usersMayLoseAccess}
       onSubmit={handleSubmit}
+      revertOnCancel
     >
       {isRemix ? <Hint m='l'>{messages.markedAsRemix}</Hint> : null}
       <ExpandableRadioGroup
@@ -207,6 +207,7 @@ export const PriceAndAudienceScreen = () => {
           onValueChange={() => {
             setIsStreamGated(false)
             setStreamConditions(null)
+            setPreviewValue(null)
           }}
         />
         <PremiumRadioField

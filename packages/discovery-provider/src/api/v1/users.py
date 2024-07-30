@@ -53,6 +53,7 @@ from src.api.v1.models.activities import (
     activity_full_model,
     activity_model,
     collection_activity_full_without_tracks_model,
+    make_polymorph_activity,
     track_activity_full_model,
     track_activity_model,
 )
@@ -734,7 +735,7 @@ class FullRepostList(Resource):
                 )
         activities = list(map(extend_activity, reposts))
 
-        return success_response(activities)
+        return success_response(list(map(make_polymorph_activity, activities)))
 
 
 REPOST_LIST_ROUTE = "/handle/<string:handle>/reposts"
@@ -767,7 +768,7 @@ class HandleFullRepostList(Resource):
                 )
         activities = list(map(extend_activity, reposts))
 
-        return success_response(activities)
+        return success_response(list(map(make_polymorph_activity, activities)))
 
     @full_ns.doc(
         id="""Get Reposts by Handle""",
@@ -892,7 +893,7 @@ class UserTracksLibraryFull(Resource):
         filter_type = format_library_filter(args)
 
         get_tracks_args = GetTrackLibraryArgs(
-            filter_deleted=False,
+            filter_deleted=True,
             user_id=decoded_id,
             current_user_id=decoded_id,
             limit=limit,

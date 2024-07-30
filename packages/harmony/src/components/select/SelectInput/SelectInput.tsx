@@ -17,6 +17,7 @@ import { SelectInputProps } from './types'
 export const SelectInput = forwardRef<HTMLInputElement, SelectInputProps>(
   function Select(props, ref) {
     const {
+      disableReset,
       value: valueProp,
       children,
       onChange,
@@ -47,7 +48,7 @@ export const SelectInput = forwardRef<HTMLInputElement, SelectInputProps>(
       (e) => {
         e.stopPropagation()
         e.preventDefault()
-        if (value !== null) {
+        if (value !== null && !disableReset) {
           setValue(null)
           // @ts-ignore
           onChange?.(null)
@@ -56,7 +57,7 @@ export const SelectInput = forwardRef<HTMLInputElement, SelectInputProps>(
           setIsOpen((isOpen: boolean) => !isOpen)
         }
       },
-      [value, setIsOpen, setValue, onChange, onReset]
+      [value, setIsOpen, setValue, onChange, onReset, disableReset]
     )
 
     useEffect(() => {
@@ -81,7 +82,11 @@ export const SelectInput = forwardRef<HTMLInputElement, SelectInputProps>(
         <TextInput
           {...inputProps}
           onClick={handleClick}
-          endIcon={value !== null ? IconCloseAlt : IconCaretDown || undefined}
+          endIcon={
+            value !== null && !disableReset
+              ? IconCloseAlt
+              : IconCaretDown || undefined
+          }
           IconProps={{ onClick: handleClickIcon }}
           aria-haspopup='listbox'
           aria-expanded={isOpen}

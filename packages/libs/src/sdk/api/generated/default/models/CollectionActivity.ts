@@ -35,6 +35,18 @@ import {
 export interface CollectionActivity extends Activity {
     /**
      * 
+     * @type {string}
+     * @memberof CollectionActivity
+     */
+    timestamp?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof CollectionActivity
+     */
+    itemType: CollectionActivityItemTypeEnum;
+    /**
+     * 
      * @type {Playlist}
      * @memberof CollectionActivity
      */
@@ -42,12 +54,21 @@ export interface CollectionActivity extends Activity {
 }
 
 
+/**
+ * @export
+ */
+export const CollectionActivityItemTypeEnum = {
+    Playlist: 'playlist'
+} as const;
+export type CollectionActivityItemTypeEnum = typeof CollectionActivityItemTypeEnum[keyof typeof CollectionActivityItemTypeEnum];
+
 
 /**
  * Check if a given object implements the CollectionActivity interface.
  */
 export function instanceOfCollectionActivity(value: object): value is CollectionActivity {
     let isInstance = true;
+    isInstance = isInstance && "itemType" in value && value["itemType"] !== undefined;
     isInstance = isInstance && "item" in value && value["item"] !== undefined;
 
     return isInstance;
@@ -63,6 +84,8 @@ export function CollectionActivityFromJSONTyped(json: any, ignoreDiscriminator: 
     }
     return {
         ...ActivityFromJSONTyped(json, ignoreDiscriminator),
+        'timestamp': !exists(json, 'timestamp') ? undefined : json['timestamp'],
+        'itemType': json['item_type'],
         'item': PlaylistFromJSON(json['item']),
     };
 }
@@ -76,6 +99,8 @@ export function CollectionActivityToJSON(value?: CollectionActivity | null): any
     }
     return {
         ...ActivityToJSON(value),
+        'timestamp': value.timestamp,
+        'item_type': value.itemType,
         'item': PlaylistToJSON(value.item),
     };
 }

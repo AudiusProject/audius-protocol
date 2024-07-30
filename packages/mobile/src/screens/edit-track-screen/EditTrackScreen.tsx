@@ -9,6 +9,7 @@ import type {
 import {
   creativeCommons,
   formatPrice,
+  isBpmValid,
   parseMusicalKey
 } from '@audius/common/utils'
 import { Formik } from 'formik'
@@ -206,6 +207,14 @@ const useEditTrackSchema = () => {
 
 export type EditTrackParams = TrackForUpload
 
+const getInitialBpm = (bpm: number | null | undefined) => {
+  if (bpm) {
+    const bpmString = bpm.toString()
+    return isBpmValid(bpmString) ? bpmString : undefined
+  }
+  return undefined
+}
+
 export const EditTrackScreen = (props: EditTrackScreenProps) => {
   const editTrackSchema = toFormikValidationSchema(useEditTrackSchema())
 
@@ -220,7 +229,7 @@ export const EditTrackScreen = (props: EditTrackScreenProps) => {
     musical_key: initialValuesProp.musical_key
       ? parseMusicalKey(initialValuesProp.musical_key)
       : undefined,
-    bpm: initialValuesProp.bpm ? initialValuesProp.bpm.toString() : undefined
+    bpm: getInitialBpm(initialValuesProp.bpm)
   }
 
   const handleSubmit = useCallback(

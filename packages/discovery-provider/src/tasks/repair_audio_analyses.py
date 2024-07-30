@@ -9,6 +9,7 @@ from sqlalchemy.orm.session import Session
 
 from src.models.tracks.track import Track
 from src.tasks.celery_app import celery
+from src.tasks.metadata import is_valid_musical_key
 from src.utils import get_all_nodes
 from src.utils.prometheus_metric import save_duration_metric
 from src.utils.structured_logger import StructuredLogger, log_duration
@@ -21,7 +22,7 @@ BATCH_SIZE = 5000
 
 
 def valid_musical_key(musical_key):
-    return isinstance(musical_key, str) and len(musical_key) <= 12
+    return isinstance(musical_key, str) and is_valid_musical_key(musical_key)
 
 
 def valid_bpm(bpm):
@@ -40,7 +41,7 @@ def query_tracks(session: Session) -> List[Track]:
             Track.genre != "Podcast",
             Track.genre != "Audiobooks",
         )
-        .order_by(Track.track_id.asc())
+        .order_by(Track.track_id.desc())
         .limit(BATCH_SIZE)
         .all()
     )

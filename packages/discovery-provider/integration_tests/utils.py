@@ -230,7 +230,7 @@ def populate_mock_db(db, entities, block_offset=None):
                 release_date=(
                     str(track_meta.get("release_date"))
                     if track_meta.get("release_date")
-                    else None
+                    else track_meta.get("created_at", track_created_at)
                 ),
                 is_unlisted=track_meta.get("is_unlisted", False),
                 is_scheduled_release=track_meta.get("is_scheduled_release", False),
@@ -306,7 +306,9 @@ def populate_mock_db(db, entities, block_offset=None):
                 is_stream_gated=playlist_meta.get("is_stream_gated", False),
                 stream_conditions=playlist_meta.get("stream_conditions", None),
                 is_scheduled_release=playlist_meta.get("is_scheduled_release", False),
-                release_date=playlist_meta.get("release_date", None),
+                release_date=playlist_meta.get(
+                    "release_date", playlist_meta.get("created_at", playlist_created_at)
+                ),
             )
             session.add(playlist)
         for i, playlist_track_meta in enumerate(playlist_tracks):

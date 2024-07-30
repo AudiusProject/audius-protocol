@@ -14,7 +14,7 @@ export const KeyBpmField = (props: KeyBpmFieldProps) => {
   const [{ value: key }] = useField<string>('musical_key')
   const [{ value: bpm }] = useField<string>('bpm')
 
-  const formattedBpm = bpm ? `${bpm} BPM` : ''
+  const formattedBpm = bpm ? `${Number(bpm)} BPM` : ''
   const values = [key, formattedBpm].filter(removeNullable)
 
   return (

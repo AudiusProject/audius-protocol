@@ -244,11 +244,13 @@ class SavedPage extends PureComponent<SavedPageProps, SavedPageState> {
     const playingIndex = tracks.entries.findIndex(
       ({ uid }: any) => uid === playingUid
     )
-    const filteredMetadata = this.formatMetadata(trackMetadatas).filter(
-      (item) =>
-        item.title?.toLowerCase().indexOf(filterText.toLowerCase()) > -1 ||
-        item.user?.name.toLowerCase().indexOf(filterText.toLowerCase()) > -1
-    )
+    const filteredMetadata = this.formatMetadata(trackMetadatas)
+      .filter((item) => !item._marked_deleted && !item.is_delete)
+      .filter(
+        (item) =>
+          item.title?.toLowerCase().indexOf(filterText.toLowerCase()) > -1 ||
+          item.user?.name.toLowerCase().indexOf(filterText.toLowerCase()) > -1
+      )
     const filteredIndex =
       playingIndex > -1
         ? filteredMetadata.findIndex((metadata) => metadata.uid === playingUid)

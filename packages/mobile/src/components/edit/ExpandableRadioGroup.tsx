@@ -16,7 +16,7 @@ export const ExpandableRadioGroup = (props: ExpandableRadioGroupProps) => {
         {Children.map(children, (child, index) => (
           <>
             {child}
-            {index !== childCount - 1 ? <Divider /> : null}
+            {child && index !== childCount - 1 ? <Divider /> : null}
           </>
         ))}
       </RadioGroup>

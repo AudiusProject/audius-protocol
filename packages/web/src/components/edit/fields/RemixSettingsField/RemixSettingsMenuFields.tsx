@@ -37,8 +37,7 @@ const messages = {
     linkLabel: 'Link to original track'
   },
   changeAvailabilityPrefix: 'Availablity is set to ',
-  changeAvailabilitySuffix:
-    '. To enable these options, change availability to Public.',
+  changeAvailabilitySuffix: '. To enable these options, make your track free.',
   premium: 'Premium (Pay-to-Unlock)',
   collectibleGated: 'Collectible Gated',
   specialAccess: 'Special Access'

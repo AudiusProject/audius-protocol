@@ -14,6 +14,12 @@
  */
 
 import { exists, mapValues } from '../runtime';
+import type { ActivityFull } from './ActivityFull';
+import {
+    ActivityFullFromJSON,
+    ActivityFullFromJSONTyped,
+    ActivityFullToJSON,
+} from './ActivityFull';
 import type { PlaylistFullWithoutTracks } from './PlaylistFullWithoutTracks';
 import {
     PlaylistFullWithoutTracksFromJSON,
@@ -26,13 +32,7 @@ import {
  * @export
  * @interface CollectionActivityFullWithoutTracks
  */
-export interface CollectionActivityFullWithoutTracks {
-    /**
-     * 
-     * @type {string}
-     * @memberof CollectionActivityFullWithoutTracks
-     */
-    timestamp: string;
+export interface CollectionActivityFullWithoutTracks extends ActivityFull {
     /**
      * 
      * @type {string}
@@ -62,7 +62,6 @@ export type CollectionActivityFullWithoutTracksItemTypeEnum = typeof CollectionA
  */
 export function instanceOfCollectionActivityFullWithoutTracks(value: object): value is CollectionActivityFullWithoutTracks {
     let isInstance = true;
-    isInstance = isInstance && "timestamp" in value && value["timestamp"] !== undefined;
     isInstance = isInstance && "itemType" in value && value["itemType"] !== undefined;
     isInstance = isInstance && "item" in value && value["item"] !== undefined;
 
@@ -78,8 +77,7 @@ export function CollectionActivityFullWithoutTracksFromJSONTyped(json: any, igno
         return json;
     }
     return {
-        
-        'timestamp': json['timestamp'],
+        ...ActivityFullFromJSONTyped(json, ignoreDiscriminator),
         'itemType': json['item_type'],
         'item': PlaylistFullWithoutTracksFromJSON(json['item']),
     };
@@ -93,8 +91,7 @@ export function CollectionActivityFullWithoutTracksToJSON(value?: CollectionActi
         return null;
     }
     return {
-        
-        'timestamp': value.timestamp,
+        ...ActivityFullToJSON(value),
         'item_type': value.itemType,
         'item': PlaylistFullWithoutTracksToJSON(value.item),
     };

@@ -1,9 +1,10 @@
-import { useCallback } from 'react'
+import { useCallback, useRef } from 'react'
 
 import type {
   SearchFilter,
   SearchCategory as SearchCategoryType
 } from '@audius/common/api'
+import { useFocusEffect } from '@react-navigation/native'
 import { Image, ScrollView } from 'react-native'
 
 import {
@@ -84,6 +85,14 @@ export const SearchCategoriesAndFilters = () => {
   const [category] = useSearchCategory()
   const [filters, setFilters] = useSearchFilters()
 
+  const scrollViewRef = useRef<ScrollView>(null)
+
+  useFocusEffect(
+    useCallback(() => {
+      scrollViewRef.current?.scrollTo({ x: 0, y: 0, animated: false })
+    }, [])
+  )
+
   const handlePressFilter = useCallback(
     (filter: string) => {
       if (filterInfoMap[filter].screen) {
@@ -142,7 +151,11 @@ export const SearchCategoriesAndFilters = () => {
 
   return (
     <Flex backgroundColor='white'>
-      <ScrollView horizontal keyboardShouldPersistTaps='handled'>
+      <ScrollView
+        horizontal
+        keyboardShouldPersistTaps='handled'
+        ref={scrollViewRef}
+      >
         <Flex direction='row' alignItems='center' gap='s' p='l' pt='s'>
           <SearchCategory category='users' />
           <SearchCategory category='tracks' />

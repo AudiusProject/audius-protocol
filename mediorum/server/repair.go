@@ -54,7 +54,7 @@ func (ss *MediorumServer) startRepairer() {
 				// run the next job
 				tracker.CursorI = lastRun.CursorI + 1
 
-				// 50% percent of time... clean up over-replicated and pull under-replicated
+				// 50% of time run cleanup mode
 				if tracker.CursorI > 2 {
 					tracker.CursorI = 1
 				}

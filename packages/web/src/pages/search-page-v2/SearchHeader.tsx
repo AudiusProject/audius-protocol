@@ -111,7 +111,7 @@ export const SearchHeader = (props: SearchHeaderProps) => {
         query ? (
           <Flex ml='l' css={{ maxWidth: 200 }}>
             <Text variant='heading' strength='weak' ellipses>
-              &#8220;{query}&#8221;
+              {query}
             </Text>
           </Flex>
         ) : null

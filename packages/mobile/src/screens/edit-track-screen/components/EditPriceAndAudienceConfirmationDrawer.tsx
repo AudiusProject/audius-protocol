@@ -1,3 +1,5 @@
+import { Portal } from '@gorhom/portal'
+
 import { ConfirmationDrawer } from 'app/components/drawers'
 
 const messages = {
@@ -17,12 +19,14 @@ export const EditPriceAndAudienceConfirmationDrawer = (
   props: EditPriceAndAudienceConfirmationDrawerProps
 ) => {
   return (
-    <ConfirmationDrawer
-      variant='affirmative'
-      modalName='EditPriceAndAudienceConfirmation'
-      onConfirm={props.onConfirm}
-      onCancel={props.onCancel}
-      messages={messages}
-    />
+    <Portal hostName='EditPriceAndAudienceConfirmation'>
+      <ConfirmationDrawer
+        variant='affirmative'
+        modalName='EditPriceAndAudienceConfirmation'
+        onConfirm={props.onConfirm}
+        onCancel={props.onCancel}
+        messages={messages}
+      />
+    </Portal>
   )
 }

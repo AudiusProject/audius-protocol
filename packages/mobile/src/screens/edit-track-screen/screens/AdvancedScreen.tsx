@@ -29,7 +29,7 @@ export const AdvancedScreen = () => {
       <SubmenuList>
         <LicenseTypeField />
         <IsrcField />
-        {isUnlisted ? null : <ReleaseDateField />}
+        {isUnlisted ? <></> : <ReleaseDateField />}
         {isUpload ? <></> : <KeyBpmField />}
       </SubmenuList>
     </FormScreen>

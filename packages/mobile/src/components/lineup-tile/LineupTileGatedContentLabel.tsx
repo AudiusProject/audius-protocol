@@ -6,18 +6,15 @@ import {
   isContentCollectibleGated,
   isContentUSDCPurchaseGated
 } from '@audius/common/models'
-import { View } from 'react-native'
 
 import {
   IconCart,
   IconCollectible,
   IconSpecialAccess
 } from '@audius/harmony-native'
-import { Text } from 'app/components/core'
 import { useIsUSDCEnabled } from 'app/hooks/useIsUSDCEnabled'
-import { makeStyles, flexRowCentered } from 'app/styles'
-import { spacing } from 'app/styles/spacing'
-import { useThemeColors } from 'app/utils/theme'
+
+import { LineupTileLabel } from './LineupTileLabel'
 
 const messages = {
   collectibleGated: 'Collectible Gated',
@@ -25,14 +22,7 @@ const messages = {
   premium: 'Premium'
 }
 
-const useStyles = makeStyles(({ spacing, palette, typography }) => ({
-  root: {
-    ...flexRowCentered(),
-    gap: spacing(1)
-  }
-}))
-
-type LineupTileGatedContentTypeTagProps = {
+type LineupTileGatedContentLabelProps = {
   streamConditions: AccessConditions
   hasStreamAccess?: boolean
   isOwner: boolean
@@ -44,13 +34,10 @@ type LineupTileGatedContentTypeTagProps = {
  * @param hasStreamAccess whether the user has access to stream the track
  * @isOwner whether the user is the owner of the track
  */
-export const LineupTileGatedContentTypeTag = ({
-  streamConditions,
-  hasStreamAccess,
-  isOwner
-}: LineupTileGatedContentTypeTagProps) => {
-  const styles = useStyles()
-  const { accentBlue, neutralLight4, specialLightGreen } = useThemeColors()
+export const LineupTileGatedContentLabel = (
+  props: LineupTileGatedContentLabelProps
+) => {
+  const { streamConditions, hasStreamAccess, isOwner } = props
   const isUSDCEnabled = useIsUSDCEnabled()
 
   const type =
@@ -64,30 +51,27 @@ export const LineupTileGatedContentTypeTag = ({
     return {
       [GatedContentType.COLLECTIBLE_GATED]: {
         icon: IconCollectible,
-        color: hasStreamAccess && !isOwner ? neutralLight4 : accentBlue,
+        color: hasStreamAccess && !isOwner ? 'subdued' : 'special',
         text: messages.collectibleGated
-      },
+      } as const,
       [GatedContentType.SPECIAL_ACCESS]: {
         icon: IconSpecialAccess,
-        color: hasStreamAccess && !isOwner ? neutralLight4 : accentBlue,
+        color: hasStreamAccess && !isOwner ? 'subdued' : 'special',
         text: messages.specialAccess
-      },
+      } as const,
       [GatedContentType.USDC_PURCHASE]: {
         icon: IconCart,
-        color: hasStreamAccess && !isOwner ? neutralLight4 : specialLightGreen,
+        color: hasStreamAccess && !isOwner ? 'subdued' : 'premium',
         text: messages.premium
-      }
+      } as const
     }
-  }, [accentBlue, hasStreamAccess, isOwner, neutralLight4, specialLightGreen])
+  }, [hasStreamAccess, isOwner])
 
   const { icon: Icon, color, text } = gatedContentTypeMap[type]
 
   return (
-    <View style={styles.root}>
-      <Icon fill={color} height={spacing(4)} width={spacing(4)} />
-      <Text fontSize='xs' colorValue={color}>
-        {text}
-      </Text>
-    </View>
+    <LineupTileLabel icon={Icon} color={color}>
+      {text}
+    </LineupTileLabel>
   )
 }
