@@ -62,7 +62,6 @@ export const RemixTrackPill = (props: RemixTrackPillProps) => {
       alignItems='center'
       p='s'
       gap='xs'
-      alignSelf='flex-start'
     >
       <TrackImageV2
         trackId={trackId}
