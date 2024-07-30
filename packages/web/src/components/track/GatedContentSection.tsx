@@ -36,16 +36,15 @@ import {
   IconTipping
 } from '@audius/harmony'
 import cn from 'classnames'
-import { push as pushRoute } from 'connected-react-router'
-import { useDispatch, useSelector } from 'react-redux'
-
 import { useModalState } from 'common/hooks/useModalState'
 import { ArtistPopover } from 'components/artist/ArtistPopover'
 import { UserLink } from 'components/link'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import UserBadges from 'components/user-badges/UserBadges'
+import { push as pushRoute } from 'connected-react-router'
 import { useAuthenticatedCallback } from 'hooks/useAuthenticatedCallback'
 import { emptyStringGuard } from 'pages/track-page/utils'
+import { useDispatch, useSelector } from 'react-redux'
 import { AppState } from 'store/types'
 import { profilePage } from 'utils/route'
 
@@ -639,20 +638,22 @@ export const GatedContentSection = ({
         mouseEnterDelay={0.1}
         component='span'
       >
-        <h2
-          className={styles.gatedContentOwner}
-          onClick={() =>
-            dispatch(pushRoute(profilePage(emptyStringGuard(entity.handle))))
-          }
-        >
-          {entity.name}
+        <Flex gap='xs' alignItems='center'>
+          <h2
+            className={styles.gatedContentOwner}
+            onClick={() =>
+              dispatch(pushRoute(profilePage(emptyStringGuard(entity.handle))))
+            }
+          >
+            {entity.name}
+          </h2>
           <UserBadges
             userId={entity.user_id}
             className={styles.badgeIcon}
             badgeSize={14}
             useSVGTiers
           />
-        </h2>
+        </Flex>
       </ArtistPopover>
     ),
     [dispatch]
@@ -661,7 +662,7 @@ export const GatedContentSection = ({
   if (!streamConditions) return null
   if (!shouldDisplay) return null
 
-  if (hasStreamAccess) {
+  if (!hasStreamAccess) {
     return (
       <div className={cn(styles.gatedContentSection, fadeIn, wrapperClassName)}>
         <UnlockedGatedContentSection
