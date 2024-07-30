@@ -181,6 +181,9 @@ function* editTrackAsync(action: ReturnType<typeof trackActions.editTrack>) {
     trackForEdit.musical_key || undefined
   )
 
+  // Format bpm
+  trackForEdit.bpm = trackForEdit.bpm ? Number(trackForEdit.bpm) : undefined
+
   yield* call(
     confirmEditTrack,
     action.trackId,
