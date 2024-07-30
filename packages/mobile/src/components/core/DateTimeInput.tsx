@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useState } from 'react'
 
 import dayjs from 'dayjs'
 import { Pressable } from 'react-native'
@@ -29,14 +29,22 @@ export const DateTimeInput = (props: DateTimeModalProps) => {
       dayjs(date).format(mode === 'date' ? 'M/D/YY' : 'h:mm A')
   } = props
   const { color, type } = useTheme()
-  const [isDateTimeOpen, toggleDateTimeOpen] = useToggle(false)
+  const [isDateTimeOpen, setIsDateTimeOpen] = useState(false)
+
+  const openDateTime = useCallback(() => {
+    setIsDateTimeOpen(true)
+  }, [setIsDateTimeOpen])
+
+  const closeDateTime = useCallback(() => {
+    setIsDateTimeOpen(false)
+  }, [setIsDateTimeOpen])
 
   const handleChange = useCallback(
     (date: Date) => {
       onChange(date.toString())
-      toggleDateTimeOpen()
+      setIsDateTimeOpen((d) => !d)
     },
-    [onChange, toggleDateTimeOpen]
+    [onChange, setIsDateTimeOpen]
   )
 
   const dateProps: Partial<ReactNativeModalDateTimePickerProps> = {
@@ -48,7 +56,7 @@ export const DateTimeInput = (props: DateTimeModalProps) => {
 
   return (
     <>
-      <Pressable onPress={toggleDateTimeOpen}>
+      <Pressable onPress={openDateTime}>
         <TextInput
           readOnly
           _disablePointerEvents
@@ -62,7 +70,7 @@ export const DateTimeInput = (props: DateTimeModalProps) => {
         mode={mode}
         isVisible={isDateTimeOpen}
         onConfirm={handleChange}
-        onCancel={toggleDateTimeOpen}
+        onCancel={closeDateTime}
         {...(mode === 'date' ? dateProps : {})}
       />
     </>
