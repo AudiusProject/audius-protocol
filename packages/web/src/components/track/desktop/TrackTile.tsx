@@ -16,13 +16,13 @@ import {
 } from '@audius/common/utils'
 import {
   IconVolumeLevel2 as IconVolume,
-  IconStar,
   IconCheck,
   IconCrown,
   Text,
   Flex,
   ProgressBar,
-  Paper
+  Paper,
+  IconStar
 } from '@audius/harmony'
 import cn from 'classnames'
 import { useSelector } from 'react-redux'
@@ -30,16 +30,17 @@ import { useSelector } from 'react-redux'
 import { DogEar } from 'components/dog-ear'
 import { TextLink } from 'components/link'
 import Skeleton from 'components/skeleton/Skeleton'
-import { VisibilityLabel } from 'components/visibility-label/VisibilityLabel'
 import { useAuthenticatedClickCallback } from 'hooks/useAuthenticatedCallback'
 
 import {
   LockedStatusPill,
   LockedStatusPillProps
 } from '../../locked-status-pill'
-import { GatedContentLabel } from '../GatedContentLabel'
+import { GatedTrackLabel } from '../GatedTrackLabel'
+import { LineupTileLabel } from '../LineupTileLabel'
 import { OwnerActionButtons } from '../OwnerActionButtons'
 import { ViewerActionButtons } from '../ViewerActionButtons'
+import { VisibilityLabel } from '../VisibilityLabel'
 import { messages } from '../trackTileMessages'
 import {
   TrackTileSize,
@@ -221,26 +222,6 @@ const TrackTile = ({
         streamConditions
       })
 
-  let specialContentLabel = null
-  if (!isLoading && !isUnlisted) {
-    if (isStreamGated) {
-      specialContentLabel = (
-        <GatedContentLabel
-          streamConditions={streamConditions}
-          hasStreamAccess={!!hasStreamAccess}
-          isOwner={isOwner}
-        />
-      )
-    } else if (isArtistPick) {
-      specialContentLabel = (
-        <div className={styles.artistPickLabelContainer}>
-          <IconStar className={styles.artistPickIcon} />
-          {messages.artistPick}
-        </div>
-      )
-    }
-  }
-
   const Root = standalone ? Paper : 'div'
 
   return (
@@ -318,7 +299,14 @@ const TrackTile = ({
               <Skeleton width='30%' className={styles.skeleton} />
             ) : (
               <>
-                {specialContentLabel}
+                {isArtistPick ? (
+                  <LineupTileLabel color='accent' icon={IconStar}>
+                    {messages.artistPick}
+                  </LineupTileLabel>
+                ) : null}
+                {!isUnlisted && trackId ? (
+                  <GatedTrackLabel trackId={trackId} />
+                ) : null}
                 <VisibilityLabel
                   releaseDate={releaseDate}
                   isUnlisted={isUnlisted}

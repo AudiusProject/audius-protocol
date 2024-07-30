@@ -155,23 +155,6 @@
   justify-content: flex-start;
 }
 
-.artistPickLabelContainer {
-  display: flex;
-  align-items: center;
-  flex: 0 0 auto;
-  gap: var(--harmony-unit-1);
-  color: var(--harmony-n-400);
-}
-
-.artistPickIcon {
-  height: var(--harmony-unit-4);
-  width: var(--harmony-unit-4);
-}
-
-.artistPickIcon path {
-  fill: var(--harmony-n-400);
-}
-
 /* Right side of the track tile */
 .topRight {
   position: absolute;
