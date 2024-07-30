@@ -4,7 +4,6 @@ import dayjs from 'dayjs'
 import { Pressable } from 'react-native'
 import type { ReactNativeModalDateTimePickerProps } from 'react-native-modal-datetime-picker'
 import DateTimePickerModal from 'react-native-modal-datetime-picker'
-import { useToggle } from 'react-use'
 
 import { TextInput, useTheme } from '@audius/harmony-native'
 import type { TextInputProps } from '@audius/harmony-native'
