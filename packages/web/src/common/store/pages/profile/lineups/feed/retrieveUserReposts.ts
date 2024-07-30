@@ -1,6 +1,5 @@
 import { repostActivityFromSDK } from '@audius/common/adapters'
 import {
-  UserCollection,
   ID,
   Track,
   UserTrackMetadata,
@@ -28,7 +27,7 @@ const getTracksAndCollections = (
         ? [[...acc[0], cur], acc[1]]
         : [acc[0], [...acc[1], cur]]) as [
         UserTrackMetadata[],
-        UserCollection[]
+        UserCollectionMetadata[]
       ],
     [[], []]
   )
