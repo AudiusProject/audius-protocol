@@ -101,7 +101,7 @@ export const FilterButton = forwardRef<HTMLButtonElement, FilterButtonProps>(
 
       '&:hover': {
         ...disabledTransform,
-        ...(value === null ? hoverStyle : {})
+        ...(value === null && !isOpen ? hoverStyle : {})
       },
       '&:focus': {
         ...disabledTransform,
@@ -111,9 +111,9 @@ export const FilterButton = forwardRef<HTMLButtonElement, FilterButtonProps>(
         ...disabledTransform,
         ...(value === null ? activeStyle : {})
       },
+      ...(isOpen ? activeStyle : {}),
 
       ...(size === 'small' ? smallStyles : defaultStyles),
-      ...(isOpen ? activeStyle : {}),
       ...(variant === 'fillContainer' && value !== null
         ? fillContainerStyles
         : {})
