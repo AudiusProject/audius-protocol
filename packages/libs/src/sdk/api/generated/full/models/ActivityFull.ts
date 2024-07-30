@@ -16,6 +16,7 @@
 import { exists, mapValues } from '../runtime';
 import {
      CollectionActivityFullFromJSONTyped,
+     CollectionActivityFullWithoutTracksFromJSONTyped,
      TrackActivityFullFromJSONTyped
 } from './';
 
@@ -86,6 +87,9 @@ export function ActivityFullFromJSONTyped(json: any, ignoreDiscriminator: boolea
     if (!ignoreDiscriminator) {
         if (json['_class'] === 'collection_activity_full') {
             return CollectionActivityFullFromJSONTyped(json, true);
+        }
+        if (json['_class'] === 'collection_activity_full_without_tracks') {
+            return CollectionActivityFullWithoutTracksFromJSONTyped(json, true);
         }
         if (json['_class'] === 'track_activity_full') {
             return TrackActivityFullFromJSONTyped(json, true);

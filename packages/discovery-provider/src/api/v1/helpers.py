@@ -8,7 +8,6 @@ import requests
 from flask_restx import reqparse
 
 from src import api_helpers
-from src.api.v1.models.activities import CollectionRepostActivity, TrackRepostActivity
 from src.api.v1.models.common import full_response
 from src.models.rewards.challenge import ChallengeType
 from src.queries.get_challenges import ChallengeResponse
@@ -507,22 +506,6 @@ def extend_activity(item):
             "timestamp": item["activity_timestamp"],
             "item": extended_playlist,
         }
-    return None
-
-
-# Only to be used with `Polymorph` to map the returned classes to marshalling models
-def extend_repost_activity(item):
-    if item.get("track_id"):
-        return TrackRepostActivity(
-            timestamp=item["activity_timestamp"], item=extend_track(item)
-        )
-    if item.get("playlist_id"):
-        # Wee hack to make sure this marshals correctly. The marshaller for
-        # playlist_model expects these two values to be the same type.
-        extended_playlist = extend_playlist(item)
-        return CollectionRepostActivity(
-            timestamp=item["activity_timestamp"], item=extended_playlist
-        )
     return None
 
 

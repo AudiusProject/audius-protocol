@@ -35,6 +35,12 @@ import {
 export interface TrackActivityFull extends ActivityFull {
     /**
      * 
+     * @type {string}
+     * @memberof TrackActivityFull
+     */
+    itemType: TrackActivityFullItemTypeEnum;
+    /**
+     * 
      * @type {TrackFull}
      * @memberof TrackActivityFull
      */
@@ -42,12 +48,21 @@ export interface TrackActivityFull extends ActivityFull {
 }
 
 
+/**
+ * @export
+ */
+export const TrackActivityFullItemTypeEnum = {
+    Track: 'track'
+} as const;
+export type TrackActivityFullItemTypeEnum = typeof TrackActivityFullItemTypeEnum[keyof typeof TrackActivityFullItemTypeEnum];
+
 
 /**
  * Check if a given object implements the TrackActivityFull interface.
  */
 export function instanceOfTrackActivityFull(value: object): value is TrackActivityFull {
     let isInstance = true;
+    isInstance = isInstance && "itemType" in value && value["itemType"] !== undefined;
     isInstance = isInstance && "item" in value && value["item"] !== undefined;
 
     return isInstance;
@@ -63,6 +78,7 @@ export function TrackActivityFullFromJSONTyped(json: any, ignoreDiscriminator: b
     }
     return {
         ...ActivityFullFromJSONTyped(json, ignoreDiscriminator),
+        'itemType': json['item_type'],
         'item': TrackFullFromJSON(json['item']),
     };
 }
@@ -76,6 +92,7 @@ export function TrackActivityFullToJSON(value?: TrackActivityFull | null): any {
     }
     return {
         ...ActivityFullToJSON(value),
+        'item_type': value.itemType,
         'item': TrackFullToJSON(value.item),
     };
 }

@@ -35,6 +35,12 @@ import {
 export interface CollectionActivityFull extends ActivityFull {
     /**
      * 
+     * @type {string}
+     * @memberof CollectionActivityFull
+     */
+    itemType: CollectionActivityFullItemTypeEnum;
+    /**
+     * 
      * @type {PlaylistFull}
      * @memberof CollectionActivityFull
      */
@@ -42,12 +48,21 @@ export interface CollectionActivityFull extends ActivityFull {
 }
 
 
+/**
+ * @export
+ */
+export const CollectionActivityFullItemTypeEnum = {
+    Playlist: 'playlist'
+} as const;
+export type CollectionActivityFullItemTypeEnum = typeof CollectionActivityFullItemTypeEnum[keyof typeof CollectionActivityFullItemTypeEnum];
+
 
 /**
  * Check if a given object implements the CollectionActivityFull interface.
  */
 export function instanceOfCollectionActivityFull(value: object): value is CollectionActivityFull {
     let isInstance = true;
+    isInstance = isInstance && "itemType" in value && value["itemType"] !== undefined;
     isInstance = isInstance && "item" in value && value["item"] !== undefined;
 
     return isInstance;
@@ -63,6 +78,7 @@ export function CollectionActivityFullFromJSONTyped(json: any, ignoreDiscriminat
     }
     return {
         ...ActivityFullFromJSONTyped(json, ignoreDiscriminator),
+        'itemType': json['item_type'],
         'item': PlaylistFullFromJSON(json['item']),
     };
 }
@@ -76,6 +92,7 @@ export function CollectionActivityFullToJSON(value?: CollectionActivityFull | nu
     }
     return {
         ...ActivityFullToJSON(value),
+        'item_type': value.itemType,
         'item': PlaylistFullToJSON(value.item),
     };
 }
