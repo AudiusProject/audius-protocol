@@ -24,14 +24,12 @@ const messages = {
   }
 }
 
-type ConfirmPublishTrackDrawerProps = {
+type ConfirmPublishDrawerProps = {
   type: 'release' | 'early_release' | 'hidden'
   onConfirm: () => void
 }
 
-export const ConfirmPublishTrackDrawer = (
-  props: ConfirmPublishTrackDrawerProps
-) => {
+export const ConfirmPublishDrawer = (props: ConfirmPublishDrawerProps) => {
   const { type, onConfirm } = props
 
   const confirmationMessages =
@@ -47,6 +45,7 @@ export const ConfirmPublishTrackDrawer = (
       modalName='EditAccessConfirmation'
       onConfirm={onConfirm}
       messages={confirmationMessages}
+      addBottomInset
     />
   )
 }

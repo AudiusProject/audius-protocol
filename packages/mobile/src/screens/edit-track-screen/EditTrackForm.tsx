@@ -29,7 +29,7 @@ import { makeStyles } from 'app/styles'
 import { TopBarIconButton } from '../app-screen'
 
 import { CancelEditTrackDrawer } from './components'
-import { ConfirmPublishTrackDrawer } from './components/ConfirmPublishDrawer'
+import { ConfirmPublishDrawer } from './components/ConfirmPublishDrawer'
 import {
   SelectGenreField,
   DescriptionField,
@@ -204,7 +204,7 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
       </FormScreen>
       <CancelEditTrackDrawer />
       {!isUpload && confirmDrawerType ? (
-        <ConfirmPublishTrackDrawer
+        <ConfirmPublishDrawer
           type={confirmDrawerType}
           onConfirm={handleSubmitProp}
         />

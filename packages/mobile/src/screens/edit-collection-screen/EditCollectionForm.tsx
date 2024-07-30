@@ -24,7 +24,7 @@ import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles } from 'app/styles'
 
 import { TopBarIconButton } from '../app-screen'
-import { ConfirmPublishTrackDrawer } from '../edit-track-screen/components/ConfirmPublishDrawer'
+import { ConfirmPublishDrawer } from '../edit-track-screen/components/ConfirmPublishDrawer'
 import { FormScreen } from '../page-form-screen'
 
 import { AdvancedAlbumField } from './AdvancedAlbumField'
@@ -176,7 +176,7 @@ export const EditCollectionForm = (
         </VirtualizedKeyboardAwareScrollView>
       </FormScreen>
       {confirmDrawerType ? (
-        <ConfirmPublishTrackDrawer
+        <ConfirmPublishDrawer
           type={confirmDrawerType}
           onConfirm={submitAndGoBack}
         />
