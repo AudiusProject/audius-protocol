@@ -47,7 +47,7 @@ export const CommentThread = () => {
         <Flex key={rootComment.id} direction='column'>
           <CommentBlock comment={rootComment} parentCommentIndex={i} />
           <Flex ml='56px' direction='column' mt='l'>
-            {rootComment?.replies?.length > 0 ? (
+            {(rootComment?.replies?.length ?? 0) > 0 ? (
               <TextLink onClick={() => toggleReplies(rootComment.id)}>
                 {hiddenReplies[rootComment.id] ? (
                   <IconCaretUp color='subdued' size='m' />
@@ -63,7 +63,6 @@ export const CommentThread = () => {
               {rootComment?.replies?.map((reply) => (
                 <Flex w='100%' key={reply.id}>
                   <CommentBlock
-                    // TODO: fix type
                     comment={reply}
                     parentCommentId={rootComment.id}
                     parentCommentIndex={i}

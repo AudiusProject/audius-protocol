@@ -2,7 +2,7 @@ import { useFeatureFlag, useGatedContentAccess } from '@audius/common/hooks'
 import { ID, LineupState, Track, User } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import { trackPageLineupActions, QueueItem } from '@audius/common/store'
-import { Flex, Text } from '@audius/harmony'
+import { Box, Flex, Text } from '@audius/harmony'
 import { css } from '@emotion/react'
 import cn from 'classnames'
 
@@ -216,23 +216,30 @@ const TrackPage = ({
       fromOpacity={1}
       noIndex={defaults.isUnlisted}
     >
-      <div className={styles.headerWrapper}>
+      <Box w='100%' css={{ position: 'absolute', height: '376px' }}>
         <CoverPhoto loading={loading} userId={user ? user.user_id : null} />
         <StatBanner isEmpty />
         <NavBanner empty />
-      </div>
-      <div className={styles.contentWrapper}>
+      </Box>
+      <Flex
+        direction='column'
+        css={{
+          display: 'flex',
+          position: 'relative',
+          padding: '200px 16px 60px'
+        }}
+      >
         {renderGiantTrackTile()}
         {defaults.fieldVisibility.remixes &&
           defaults.remixTrackIds &&
           defaults.remixTrackIds.length > 0 && (
-            <div className={styles.remixes}>
+            <Flex justifyContent='center' mt='3xl' ph='l'>
               <Remixes
                 trackIds={defaults.remixTrackIds}
                 goToAllRemixes={goToAllRemixesPage}
                 count={defaults.remixesCount}
               />
-            </div>
+            </Flex>
           )}
         <Flex
           gap='2xl'
@@ -258,8 +265,10 @@ const TrackPage = ({
             alignItems={isCommentingEnabled ? 'flex-start' : 'center'}
             gap='l'
             flex={1}
-            w={isCommentingEnabled ? '100%' : 834}
-            css={{ minWidth: 330 }}
+            css={{
+              minWidth: 330,
+              maxWidth: isCommentingEnabled ? '100%' : '774px'
+            }}
           >
             {hasValidRemixParent
               ? renderOriginalTrackTitle()
@@ -269,7 +278,7 @@ const TrackPage = ({
               // Styles for leading element (original track if remix).
               leadingElementId={defaults.remixParentTrackId}
               leadingElementDelineator={
-                <Flex gap='3xl' direction='column'>
+                <Flex gap='3xl' direction='column' alignItems='center'>
                   <SectionButton
                     text={messages.viewOtherRemixes}
                     onClick={goToParentRemixesPage}
@@ -286,9 +295,7 @@ const TrackPage = ({
               }
               leadingElementTileProps={{ size: TrackTileSize.LARGE }}
               laggingContainerClassName={
-                !isCommentingEnabled
-                  ? styles.moreByArtistContainer
-                  : styles.mortByArtistContainerComments
+                !isCommentingEnabled ? styles.moreByArtistContainer : undefined
               }
               lineupContainerStyles={styles.width100}
               showLeadingElementArtistPick={false}
@@ -315,7 +322,7 @@ const TrackPage = ({
             />
           </Flex>
         </Flex>
-      </div>
+      </Flex>
     </Page>
   )
 }

@@ -13,18 +13,17 @@ type CommentFormValues = {
 
 const formInitialValues: CommentFormValues = { commentMessage: '' }
 
-type CommentInputFormProps = {
+type CommentFormProps = {
   parentCommentId?: ID
   parentCommentIndex?: number
   onPostComment?: () => void
 }
 
-export const CommentInputForm = ({
+export const CommentForm = ({
   parentCommentId,
   parentCommentIndex,
   onPostComment
-}: CommentInputFormProps) => {
-  console.log({ parentCommentIndex })
+}: CommentFormProps) => {
   const { handlePostComment } = useCurrentCommentSection()
   const handleSubmit = ({ commentMessage }: CommentFormValues) => {
     let decodedParentCommentId = null

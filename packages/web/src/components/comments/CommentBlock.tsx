@@ -12,7 +12,7 @@ import {
   TextLink
 } from '@audius/harmony'
 
-import { CommentInputForm } from './CommentInputForm'
+import { CommentForm } from './CommentForm'
 import { useCurrentCommentSection } from './CommentSectionContext'
 import type { Comment } from './types'
 
@@ -134,7 +134,7 @@ export const CommentBlock = ({
         </Flex>
 
         {showReplyInput ? (
-          <CommentInputForm
+          <CommentForm
             parentCommentId={parentCommentId ?? commentId}
             parentCommentIndex={parentCommentIndex}
             onPostComment={() => {

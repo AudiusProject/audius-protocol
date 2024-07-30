@@ -14,10 +14,11 @@ type BaseComment = {
   updated_at?: Nullable<Date>
 }
 
-type CommentWithReplies<T extends BaseComment> = T & { replies: Nullable<T[]> }
+export type CommentReply = BaseComment & { replies: null }
 
 export type Comment = BaseComment & {
-  replies: Nullable<CommentWithReplies<BaseComment>[]>
+  // replies null on the inside type since replies dont have additional replies
+  replies: Nullable<CommentReply[]>
 }
 
 export type CommentSectionProps = {

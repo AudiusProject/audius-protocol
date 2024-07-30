@@ -65,7 +65,7 @@ def get_track_comments(track_id):
                 "message": reply.text,
                 "timestamp_s": reply.track_timestamp_ms,
                 "react_count": (
-                    reply.react_count if hasattr(reply, "react_count") else 1
+                    reply.react_count if hasattr(reply, "react_count") else 0
                 ),  # Adjust as needed
                 "is_pinned": reply.is_pinned,
                 "replies": None,
@@ -96,10 +96,11 @@ def get_track_comments(track_id):
         return [
             {
                 "id": encode_int_id(track_comment.comment_id),
+                "user_id": track_comment.user_id,
                 "message": track_comment.text,
                 "is_pinned": track_comment.is_pinned,
                 "timestamp_s": track_comment.track_timestamp_ms,
-                "react_count": 1,
+                "react_count": 0,
                 "replies": get_replies(track_comment.comment_id),
                 "created_at": str(track_comment.created_at),
                 "updated_at": str(track_comment.updated_at),

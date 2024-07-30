@@ -1,20 +1,14 @@
-import {
-  PropsWithChildren,
-  createContext,
-  useCallback,
-  useContext,
-  useState
-} from 'react'
+import { PropsWithChildren, createContext, useContext, useState } from 'react'
 
 import { ID } from '@audius/common/models'
 import { Nullable, encodeHashId } from '@audius/common/utils'
-import { EntityType } from '@audius/sdk/src/sdk/services/EntityManager/types'
+import { EntityType } from '@audius/sdk/src/sdk/services'
 import { useAsync } from 'react-use'
 
 import { audiusSdk } from 'services/audius-sdk'
 
 import { MOCK_COMMENT_DATA } from './mock-data'
-import { Comment } from './types'
+import { Comment, CommentReply } from './types'
 
 /**
  * Context object to avoid prop drilling, make data access easy, and avoid Redux 😉
@@ -75,7 +69,7 @@ export const CommentSectionProvider = ({
     setComments(newComments)
   }
 
-  const addReply = (comment: Comment, parentCommentIndex: number) => {
+  const addReply = (comment: CommentReply, parentCommentIndex: number) => {
     console.log({ parentCommentIndex })
     const newComments = [...comments]
     console.log({
@@ -90,10 +84,9 @@ export const CommentSectionProvider = ({
 
   const [isLoading, setIsLoading] = useState(initialContextValues.isLoading)
 
-  // TODO: implement things with these callbacks
   const handlePostComment = async (
     message: string,
-    parentCommentId?: ID,
+    parentCommentId: ID | null,
     parentCommentIndex?: number
   ) => {
     console.log('sending comment')
@@ -110,13 +103,14 @@ export const CommentSectionProvider = ({
 
         // TEMPORARY optimistic update
         const optimisticCommentData = {
-          id: null,
+          id: null, // idk
           userId,
           message,
           react_count: 0,
           is_pinned: false,
-          created_at: new Date()
-        }
+          created_at: new Date(),
+          replies: null
+        } as unknown as CommentReply
         if (parentCommentIndex !== undefined) {
           addReply(optimisticCommentData, parentCommentIndex)
         } else {
@@ -129,6 +123,7 @@ export const CommentSectionProvider = ({
     }
   }
 
+  // TODO: these are all empty for now
   const handleReactComment = (commentId: ID) => {
     console.log('Clicked react for ', commentId)
   }
@@ -145,7 +140,7 @@ export const CommentSectionProvider = ({
     console.log('Clicked report for ', commentId)
   }
 
-  // TODO: assuming we move this to audius-query
+  // TODO: move this to audius-query
   // load comments logic
   useAsync(async () => {
     if (entityId) {
@@ -156,7 +151,8 @@ export const CommentSectionProvider = ({
           trackId: encodeHashId(entityId)
         })
         if (commentsRes?.data) {
-          setComments(commentsRes.data as Comment[])
+          // TODO: Shouldn't need to cast; something is wrong with the types coming from the SDK
+          setComments(commentsRes.data as unknown as Comment[])
         }
         setIsLoading(false)
       } catch (e) {
