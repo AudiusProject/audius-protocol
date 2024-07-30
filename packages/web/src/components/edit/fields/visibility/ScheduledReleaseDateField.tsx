@@ -65,6 +65,7 @@ export const ScheduledReleaseDateField = () => {
                 { value: 'AM', label: 'AM' },
                 { value: 'PM', label: 'PM' }
               ]}
+              disableReset={true}
             />
           </Box>
         </Flex>

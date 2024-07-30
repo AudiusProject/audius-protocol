@@ -135,7 +135,7 @@ export const Select = forwardRef<HTMLInputElement, SelectProps>(function Select(
     controlledProp: selectionProp,
     defaultValue: null,
     stateName: 'selection',
-    componentName: 'FilterButton'
+    componentName: 'Select'
   })
 
   // TODO: implement filtering
