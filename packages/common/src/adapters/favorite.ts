@@ -16,7 +16,7 @@ export const favoriteFromSDK = (input: full.Favorite): Favorite | undefined => {
     // 'save' is renamed to 'favorite' in the model
     ...omit(snakecaseKeys(input), ['favorite_item_id', 'favorite_type']),
     save_item_id: decodedSaveItemId,
-    user_id: decodedUserId,
-    save_type: input.favoriteType as FavoriteType
+    save_type: input.favoriteType as FavoriteType,
+    user_id: decodedUserId
   }
 }
