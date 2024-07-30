@@ -42,7 +42,6 @@ export const useTrackMetadata = ({
     duration,
     genre,
     release_date: releaseDate,
-    is_scheduled_release: isScheduledRelease,
     mood,
     is_unlisted: isUnlisted,
     musical_key,
@@ -64,7 +63,7 @@ export const useTrackMetadata = ({
       id: TrackMetadataType.RELEASE_DATE,
       value: formatDate(releaseDate ?? ''),
       label: 'Released',
-      isHidden: isUnlisted || !releaseDate || isScheduledRelease
+      isHidden: isUnlisted || !releaseDate
     },
     {
       id: TrackMetadataType.MOOD,
