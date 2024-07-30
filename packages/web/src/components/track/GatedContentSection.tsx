@@ -36,15 +36,16 @@ import {
   IconTipping
 } from '@audius/harmony'
 import cn from 'classnames'
+import { push as pushRoute } from 'connected-react-router'
+import { useDispatch, useSelector } from 'react-redux'
+
 import { useModalState } from 'common/hooks/useModalState'
 import { ArtistPopover } from 'components/artist/ArtistPopover'
 import { UserLink } from 'components/link'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import UserBadges from 'components/user-badges/UserBadges'
-import { push as pushRoute } from 'connected-react-router'
 import { useAuthenticatedCallback } from 'hooks/useAuthenticatedCallback'
 import { emptyStringGuard } from 'pages/track-page/utils'
-import { useDispatch, useSelector } from 'react-redux'
 import { AppState } from 'store/types'
 import { profilePage } from 'utils/route'
 
