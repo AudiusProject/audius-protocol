@@ -1,4 +1,4 @@
-import { memo, useEffect } from 'react'
+import { memo } from 'react'
 
 import { useGatedContentAccess } from '@audius/common/hooks'
 import {

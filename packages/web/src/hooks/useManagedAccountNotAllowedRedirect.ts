@@ -64,7 +64,7 @@ export const useManagedAccountNotAllowedCallback = ({
  * @param handle handle of the user we are doing something on behalf of
  * @param route route to redirect the user to
  */
-export const useManagedAccountForHandleNotAllowedRedirect = (
+export const useIsUnauthorizedForHandleRedirect = (
   handle: string,
   route: string = FEED_PAGE
 ) => {
