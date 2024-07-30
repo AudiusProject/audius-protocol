@@ -281,11 +281,13 @@ export const formatReleaseDate = ({
   const releaseDate = dayjs(date)
   const now = dayjs()
 
+  // Can't use daysDifference === 0 because anything under 24 hours counts
+  const isToday = releaseDate.isSame(now, 'day')
   const daysDifference = releaseDate.diff(now, 'days')
 
   if (daysDifference >= 0 && daysDifference < 7) {
     return (
-      `${releaseDate.format('dddd')}` +
+      `${isToday ? 'Today' : releaseDate.format('dddd')}` +
       (withHour ? ` @ ${releaseDate.format('h A')}` : '')
     )
   } else {
