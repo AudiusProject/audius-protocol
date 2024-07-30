@@ -69,7 +69,7 @@ import { capitalize, getKeyFromFetchArgs, selectCommonEntityMap } from './utils'
 
 const { getUserId } = accountSelectors
 
-type ForceType = 'force' | 'forcing' | 'forced' | false
+type ForceType = 'force' | 'forcing' | false
 
 type Entity = Collection | Track | User
 
