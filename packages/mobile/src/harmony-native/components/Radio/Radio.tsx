@@ -82,6 +82,7 @@ export const Radio = (props: RadioProps) => {
       onPress={onValueChange}
       style={[style, disabled && { opacity: 0.5 }]}
       disabled={disabled}
+      activeOpacity={Number(checked)}
     >
       <Flex gap='l' {...flexProps}>
         <Flex direction='row' gap='m'>
