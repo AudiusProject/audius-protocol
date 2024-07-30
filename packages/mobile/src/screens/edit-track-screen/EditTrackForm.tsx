@@ -20,7 +20,6 @@ import { PriceAndAudienceField } from 'app/components/edit/PriceAndAudienceField
 import { VisibilityField } from 'app/components/edit/VisibilityField'
 import { PickArtworkField, TextField } from 'app/components/fields'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { useOneTimeDrawer } from 'app/hooks/useOneTimeDrawer'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { FormScreen } from 'app/screens/form-screen'
 import { setVisibility } from 'app/store/drawers/slice'
@@ -48,9 +47,6 @@ const messages = {
   fixErrors: 'Fix Errors To Continue',
   cancel: 'Cancel'
 }
-
-const GATED_CONTENT_UPLOAD_PROMPT_DRAWER_SEEN_KEY =
-  'gated_content_upload_prompt_drawer_seen'
 
 const useStyles = makeStyles(({ spacing }) => ({
   backButton: {
@@ -93,11 +89,6 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
   const isToBePublished = !isUpload && initiallyHidden && !values.is_unlisted
   const [confirmDrawerType, setConfirmDrawerType] =
     useState<Nullable<'release' | 'early_release' | 'hidden'>>(null)
-
-  useOneTimeDrawer({
-    key: GATED_CONTENT_UPLOAD_PROMPT_DRAWER_SEEN_KEY,
-    name: 'GatedContentUploadPrompt'
-  })
 
   const handlePressBack = useCallback(() => {
     if (!dirty) {
