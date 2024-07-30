@@ -19,7 +19,7 @@ const messages = {
   maxBpm: 'Max',
   tooLowError: `BPM less than ${MIN_BPM}`,
   tooHighError: `BPM greater than ${MAX_BPM}`,
-  invalidMinMaxError: 'Min greater than max'
+  invalidMinMaxError: 'Invalid range'
 }
 
 type ViewProps = {
