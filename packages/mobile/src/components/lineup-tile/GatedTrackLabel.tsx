@@ -1,3 +1,5 @@
+import { useContext } from 'react'
+
 import { useGetCurrentUserId, useGetTrackById } from '@audius/common/api'
 import type { ID } from '@audius/common/models'
 import {
@@ -12,8 +14,10 @@ import type { IconColors, IconComponent } from '@audius/harmony-native'
 import {
   IconCart,
   IconCollectible,
+  IconReceive,
   IconSpecialAccess
 } from '@audius/harmony-native'
+import { SearchContext } from 'app/screens/search-screen-v2/searchState'
 
 import { LineupTileLabel } from './LineupTileLabel'
 
@@ -21,7 +25,7 @@ const messages = {
   collectibleGated: 'Collectible Gated',
   specialAccess: 'Special Access',
   premium: 'Premium',
-  premiumExtras: 'Premium Extras'
+  premiumExtras: 'Extras'
 }
 
 type GatedTrackLabelProps = {
@@ -32,6 +36,7 @@ export const GatedTrackLabel = (props: GatedTrackLabelProps) => {
   const { trackId } = props
   const { data: track } = useGetTrackById({ id: trackId })
   const { data: currentUserId } = useGetCurrentUserId({})
+  const { active: onSearchScreen } = useContext(SearchContext)
 
   if (!track) return null
 
@@ -66,10 +71,10 @@ export const GatedTrackLabel = (props: GatedTrackLabelProps) => {
       Icon = IconCart
       color = 'premium'
     }
-  } else if (is_download_gated) {
+  } else if (is_download_gated && onSearchScreen) {
     if (isContentUSDCPurchaseGated(download_conditions)) {
       message = messages.premiumExtras
-      Icon = IconCart
+      Icon = IconReceive
       color = 'premium'
     }
   }

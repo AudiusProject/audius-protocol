@@ -12,8 +12,12 @@ import {
   IconCollectible,
   IconColors,
   IconComponent,
+  IconReceive,
   IconSpecialAccess
 } from '@audius/harmony'
+import { useRouteMatch } from 'react-router-dom'
+
+import { SEARCH_PAGE } from 'utils/route'
 
 import { LineupTileLabel } from './LineupTileLabel'
 
@@ -21,7 +25,7 @@ const messages = {
   collectibleGated: 'Collectible Gated',
   specialAccess: 'Special Access',
   premium: 'Premium',
-  premiumExtras: 'Premium Extras'
+  premiumExtras: 'Extras'
 }
 
 type GatedTrackLabelProps = {
@@ -32,6 +36,7 @@ export const GatedTrackLabel = (props: GatedTrackLabelProps) => {
   const { trackId } = props
   const { data: track } = useGetTrackById({ id: trackId })
   const { data: currentUserId } = useGetCurrentUserId({})
+  const onSearchPage = !!useRouteMatch(SEARCH_PAGE)
 
   if (!track) return null
 
@@ -66,10 +71,10 @@ export const GatedTrackLabel = (props: GatedTrackLabelProps) => {
       Icon = IconCart
       color = 'premium'
     }
-  } else if (is_download_gated) {
+  } else if (is_download_gated && onSearchPage) {
     if (isContentUSDCPurchaseGated(download_conditions)) {
       message = messages.premiumExtras
-      Icon = IconCart
+      Icon = IconReceive
       color = 'premium'
     }
   }
