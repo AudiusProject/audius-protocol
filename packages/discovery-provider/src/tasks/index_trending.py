@@ -12,7 +12,6 @@ from src.models.indexing.block import Block
 from src.models.notifications.notification import Notification
 from src.models.tracks.track import Track
 from src.queries.generate_unpopulated_trending_tracks import (
-    generate_unpopulated_trending,
     generate_unpopulated_trending_from_mat_views,
     make_trending_tracks_cache_key,
 )
@@ -101,8 +100,7 @@ def index_trending(self, db: SessionManager, redis: Redis, timestamp):
             strategy = trending_strategy_factory.get_strategy(
                 TrendingType.TRACKS, version
             )
-            if strategy.use_mat_view:
-                strategy.update_track_score_query(session)
+            strategy.update_track_score_query(session)
 
         for version in trending_track_versions:
             strategy = trending_strategy_factory.get_strategy(
@@ -111,20 +109,12 @@ def index_trending(self, db: SessionManager, redis: Redis, timestamp):
             for genre in genres:
                 for time_range in time_ranges:
                     cache_start_time = time.time()
-                    if strategy.use_mat_view:
-                        res = generate_unpopulated_trending_from_mat_views(
-                            session=session,
-                            genre=genre,
-                            time_range=time_range,
-                            strategy=strategy,
-                        )
-                    else:
-                        res = generate_unpopulated_trending(
-                            session=session,
-                            genre=genre,
-                            time_range=time_range,
-                            strategy=strategy,
-                        )
+                    res = generate_unpopulated_trending_from_mat_views(
+                        session=session,
+                        genre=genre,
+                        time_range=time_range,
+                        strategy=strategy,
+                    )
                     key = make_trending_tracks_cache_key(time_range, genre, version)
                     set_json_cached_key(redis, key, res)
                     cache_end_time = time.time()

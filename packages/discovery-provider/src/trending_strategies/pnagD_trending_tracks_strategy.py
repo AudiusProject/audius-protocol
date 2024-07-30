@@ -1,8 +1,6 @@
 import logging
 import time
-from datetime import datetime
 
-from dateutil.parser import parse
 from sqlalchemy.sql import text
 
 from src.trending_strategies.base_trending_strategy import BaseTrendingStrategy
@@ -27,36 +25,13 @@ T = {"day": 1, "week": 7, "month": 30, "year": 365, "allTime": 100000}
 y = 3
 
 
-def z(time, track):
-    # pylint: disable=W,C,R
-    E = track["listens"]
-    e = track["windowed_repost_count"]
-    t = track["repost_count"]
-    x = track["windowed_save_count"]
-    A = track["save_count"]
-    o = track["created_at"]
-    l = track["owner_follower_count"]
-    j = track["karma"]
-    if l < y:
-        return {"score": 0, **track}
-    H = (N * E + F * e + O * x + R * t + i * A) * j
-    L = T[time]
-    K = datetime.now()
-    w = parse(o)
-    k = (K - w).days
-    Q = 1
-    if k > L:
-        Q = a((1.0 / q), (M(q, (1 - k / L))))
-    return {"score": H * Q, **track}
-
-
-class TrendingTracksStrategyEJ57D(BaseTrendingStrategy):
+class TrendingTracksStrategypnagD(BaseTrendingStrategy):
     def __init__(self):
-        super().__init__(TrendingType.TRACKS, TrendingVersion.EJ57D)
+        super().__init__(TrendingType.TRACKS, TrendingVersion.pnagD)
 
     def get_track_score(self, time_range, track):
         logger.error(
-            f"get_track_score not implemented for Trending Tracks Strategy with version {TrendingVersion.EJ57D}"
+            f"get_track_score not implemented for Trending Tracks Strategy with version {TrendingVersion.pnagD}"
         )
 
     def update_track_score_query(self, session):
@@ -76,9 +51,40 @@ class TrendingTracksStrategyEJ57D(BaseTrendingStrategy):
                         CASE
                         WHEN tp.owner_follower_count < :y
                             THEN 0
-                        WHEN EXTRACT(DAYS from now() - aip.created_at) > :week
-                            THEN greatest(1.0/:q, pow(:q, greatest(-10, 1.0 - 1.0*EXTRACT(DAYS from now() - aip.created_at)/:week))) * (:N * aip.week_listen_counts + :F * tp.repost_week_count + :O * tp.save_week_count + :R * tp.repost_count + :i * tp.save_count) * tp.karma
-                        ELSE (:N * aip.week_listen_counts + :F * tp.repost_week_count + :O * tp.save_week_count + :R * tp.repost_count + :i * tp.save_count) * tp.karma
+                        WHEN EXTRACT(DAYS FROM now() - (
+                            CASE
+                                WHEN tp.release_date > now() THEN aip.created_at
+                                ELSE GREATEST(tp.release_date, aip.created_at)
+                            END
+                        )) > :week
+                            THEN GREATEST(
+                                1.0 / :q,
+                                POW(
+                                    :q,
+                                    GREATEST(
+                                        -10,
+                                        1.0 - 1.0 * EXTRACT(DAYS FROM now() - (
+                                            CASE
+                                                WHEN tp.release_date > now() THEN aip.created_at
+                                                ELSE GREATEST(tp.release_date, aip.created_at)
+                                            END
+                                        )) / :week
+                                    )
+                                )
+                            ) * (
+                                :N * aip.week_listen_counts + 
+                                :F * tp.repost_week_count + 
+                                :O * tp.save_week_count + 
+                                :R * tp.repost_count + 
+                                :i * tp.save_count
+                            ) * tp.karma
+                        ELSE (
+                            :N * aip.week_listen_counts + 
+                            :F * tp.repost_week_count + 
+                            :O * tp.save_week_count + 
+                            :R * tp.repost_count + 
+                            :i * tp.save_count
+                        ) * tp.karma
                         END as week_score,
                         now()
                     from trending_params tp
@@ -95,9 +101,40 @@ class TrendingTracksStrategyEJ57D(BaseTrendingStrategy):
                         CASE
                         WHEN tp.owner_follower_count < :y
                             THEN 0
-                        WHEN EXTRACT(DAYS from now() - aip.created_at) > :month
-                            THEN greatest(1.0/:q, pow(:q, greatest(-10, 1.0 - 1.0*EXTRACT(DAYS from now() - aip.created_at)/:month))) * (:N * aip.month_listen_counts + :F * tp.repost_month_count + :O * tp.save_month_count + :R * tp.repost_count + :i * tp.save_count) * tp.karma
-                        ELSE (:N * aip.month_listen_counts + :F * tp.repost_month_count + :O * tp.save_month_count + :R * tp.repost_count + :i * tp.save_count) * tp.karma
+                        WHEN EXTRACT(DAYS FROM now() - (
+                            CASE
+                                WHEN tp.release_date > now() THEN aip.created_at
+                                ELSE GREATEST(tp.release_date, aip.created_at)
+                            END
+                        )) > :month
+                            THEN GREATEST(
+                                1.0 / :q,
+                                POW(
+                                    :q, 
+                                    GREATEST(
+                                        -10,
+                                        1.0 - 1.0 * EXTRACT(DAYS FROM now() - (
+                                            CASE
+                                                WHEN tp.release_date > now() THEN aip.created_at
+                                                ELSE GREATEST(tp.release_date, aip.created_at)
+                                            END
+                                        )) / :month
+                                    )
+                                )
+                            ) * (
+                                :N * aip.month_listen_counts + 
+                                :F * tp.repost_month_count + 
+                                :O * tp.save_month_count + 
+                                :R * tp.repost_count + 
+                                :i * tp.save_count
+                            ) * tp.karma
+                        ELSE (
+                            :N * aip.month_listen_counts + 
+                            :F * tp.repost_month_count + 
+                            :O * tp.save_month_count + 
+                            :R * tp.repost_count + 
+                            :i * tp.save_count
+                        ) * tp.karma
                         END as month_score,
                         now()
                     from trending_params tp
