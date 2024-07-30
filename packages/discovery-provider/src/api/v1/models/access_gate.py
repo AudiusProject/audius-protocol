@@ -25,6 +25,7 @@ nft_collection = ns.model(
     "nft_collection",
     {
         "chain": fields.String(enum=["eth", "sol"], required=True),
+        "standard": fields.String(enum=["ERC721", "ERC1155"]),
         "address": fields.String(required=True),
         "name": fields.String(required=True),
         "imageUrl": fields.String(),
