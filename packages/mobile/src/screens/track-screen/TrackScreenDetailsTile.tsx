@@ -40,6 +40,7 @@ import {
   usePublishContentModal
 } from '@audius/common/store'
 import {
+  formatReleaseDate,
   Genre,
   getDogEarType,
   getLocalTimezone,
@@ -115,9 +116,7 @@ const messages = {
   preview: 'Preview',
   hidden: 'Hidden',
   releases: (releaseDate: string) =>
-    `Releases ${dayjs(releaseDate).format(
-      'M/D/YY [@] h:mm A'
-    )} ${getLocalTimezone()}`
+    `Releases ${formatReleaseDate({ date: releaseDate, withHour: true })}`
 }
 
 const useStyles = makeStyles(({ palette, spacing }) => ({

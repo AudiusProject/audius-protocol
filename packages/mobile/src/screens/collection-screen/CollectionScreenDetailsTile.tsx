@@ -24,7 +24,11 @@ import {
   PurchaseableContentType,
   queueActions
 } from '@audius/common/store'
-import { getDogEarType, getLocalTimezone } from '@audius/common/utils'
+import {
+  formatReleaseDate,
+  getDogEarType,
+  getLocalTimezone
+} from '@audius/common/utils'
 import type { Maybe, Nullable } from '@audius/common/utils'
 import dayjs from 'dayjs'
 import { TouchableOpacity } from 'react-native'
@@ -127,9 +131,7 @@ const getMessages = (
   preview: 'Preview',
   hidden: 'Hidden',
   releases: (releaseDate: string) =>
-    `Releases ${dayjs(releaseDate).format(
-      'M/D/YY [@] h:mm A'
-    )} ${getLocalTimezone()}`
+    `Releases ${formatReleaseDate({ date: releaseDate, withHour: true })}`
 })
 
 const useStyles = makeStyles(({ palette, spacing }) => ({

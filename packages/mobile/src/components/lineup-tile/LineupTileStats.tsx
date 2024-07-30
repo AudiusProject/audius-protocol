@@ -56,7 +56,7 @@ const messages = {
     `Releases ${formatReleaseDate({
       date,
       withHour: true
-    })} ${getLocalTimezone()}`
+    })}`
 }
 
 const useStyles = makeStyles(({ spacing }) => ({
