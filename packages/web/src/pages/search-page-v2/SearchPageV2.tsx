@@ -3,7 +3,7 @@ import { useCallback, useContext, useEffect } from 'react'
 import { SearchCategory } from '@audius/common/src/api/search'
 import { Flex, useTheme } from '@audius/harmony'
 import { intersection, isEmpty } from 'lodash'
-import { generatePath, useParams } from 'react-router-dom'
+import { generatePath } from 'react-router-dom'
 import { useSearchParams } from 'react-router-dom-v5-compat'
 
 import { useHistoryContext } from 'app/HistoryProvider'
@@ -26,6 +26,7 @@ import { RecentSearches } from './RecentSearches'
 import { SearchCatalogTile } from './SearchCatalogTile'
 import { CategoryKey, SearchHeader, categories } from './SearchHeader'
 import { SearchResults } from './SearchResults'
+import { useSearchCategory } from './utils'
 
 const useShowSearchResults = () => {
   const [urlSearchParams] = useSearchParams()
@@ -52,8 +53,7 @@ const useShowSearchResults = () => {
 
 export const SearchPageV2 = () => {
   const isMobile = useIsMobile()
-  const { category: categoryParam } = useParams<{ category: CategoryKey }>()
-  const category = isMobile ? categoryParam ?? 'profiles' : categoryParam
+  const category = useSearchCategory()
   const { history } = useHistoryContext()
   const [urlSearchParams] = useSearchParams()
   const query = urlSearchParams.get('query')

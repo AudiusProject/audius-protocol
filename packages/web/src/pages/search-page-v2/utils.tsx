@@ -11,6 +11,7 @@ import { useSelector } from 'react-redux'
 import { useRouteMatch } from 'react-router-dom'
 import { useSearchParams as useParams } from 'react-router-dom-v5-compat'
 
+import { useIsMobile } from 'hooks/useIsMobile'
 import { SEARCH_PAGE } from 'utils/route'
 
 import { CategoryView } from './types'
@@ -74,10 +75,12 @@ export const useGetSearchResults = <C extends SearchCategory>(
 }
 
 export const useSearchCategory = () => {
+  const isMobile = useIsMobile()
   const routeMatch = useRouteMatch<{ category: string }>(SEARCH_PAGE)
-  const category =
-    (routeMatch?.params.category as CategoryView) || CategoryView.ALL
-  return category
+  const categoryParam = routeMatch?.params.category as CategoryView
+
+  const category = isMobile ? categoryParam ?? 'profiles' : categoryParam
+  return category || CategoryView.ALL
 }
 
 export const useSearchParams = () => {
