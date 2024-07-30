@@ -48,9 +48,6 @@ const messages = {
   fixErrors: 'Fix Errors To Continue'
 }
 
-const GATED_CONTENT_UPLOAD_PROMPT_DRAWER_SEEN_KEY =
-  'gated_content_upload_prompt_drawer_seen'
-
 const useStyles = makeStyles(({ spacing }) => ({
   backButton: {
     marginLeft: -6
@@ -92,11 +89,6 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
   const isToBePublished = !isUpload && initiallyHidden && !values.is_unlisted
   const [confirmDrawerType, setConfirmDrawerType] =
     useState<Nullable<'release' | 'early_release' | 'hidden'>>(null)
-
-  useOneTimeDrawer({
-    key: GATED_CONTENT_UPLOAD_PROMPT_DRAWER_SEEN_KEY,
-    name: 'GatedContentUploadPrompt'
-  })
 
   const handlePressBack = useCallback(() => {
     if (!dirty) {
