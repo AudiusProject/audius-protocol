@@ -14,6 +14,7 @@ export type TextFieldProps = FieldProps &
   TextInputProps & {
     noGutter?: boolean
     debouncedValidationMs?: number
+    errorBeforeSubmit?: boolean
   }
 
 const useStyles = makeStyles(({ spacing, typography }) => ({
@@ -46,6 +47,7 @@ export const TextField = (props: TextFieldProps) => {
     id,
     onChangeText,
     error: errorProp,
+    errorBeforeSubmit,
     debouncedValidationMs = 0,
     ...other
   } = props
@@ -72,7 +74,10 @@ export const TextField = (props: TextFieldProps) => {
   }, [debouncedValidationMs, debouncedValidateField, name, value])
   const label = required ? `${labelProp} *` : labelProp
 
-  const hasError = (errorProp ?? errorMessage) && touched && submitCount > 0
+  const hasError =
+    (errorProp ?? errorMessage) &&
+    touched &&
+    (errorBeforeSubmit || submitCount > 0)
 
   const handleChangeText = useCallback(
     (text: string) => {

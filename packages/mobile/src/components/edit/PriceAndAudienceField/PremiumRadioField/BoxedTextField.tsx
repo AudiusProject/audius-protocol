@@ -52,6 +52,7 @@ export const BoxedTextField = (props: BoxedTextFieldProps) => {
       <TextField
         style={styles.textField}
         styles={{ root: styles.textInput }}
+        errorBeforeSubmit
         {...other}
       />
     </View>
