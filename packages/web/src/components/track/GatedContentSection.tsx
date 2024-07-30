@@ -663,7 +663,7 @@ export const GatedContentSection = ({
   if (!streamConditions) return null
   if (!shouldDisplay) return null
 
-  if (!hasStreamAccess) {
+  if (hasStreamAccess) {
     return (
       <div className={cn(styles.gatedContentSection, fadeIn, wrapperClassName)}>
         <UnlockedGatedContentSection
