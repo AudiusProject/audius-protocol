@@ -50,8 +50,7 @@ const messages = {
   remixAccessError: 'Must have access to the original track',
   enterLink: 'Enter an Audius Link',
   changeAvailbilityPrefix: 'Availablity is set to',
-  changeAvailbilitySuffix:
-    'To enable these options, change availability to Public.',
+  changeAvailbilitySuffix: 'To enable these options, make your track free.',
   premium: 'Premium (Pay-To-Unlock). ',
   collectibleGated: 'Collectible Gated. ',
   specialAccess: 'Special Access. '
