@@ -11,7 +11,13 @@ import { capitalize } from 'lodash'
 import { View } from 'react-native'
 import { useDispatch } from 'react-redux'
 
-import { IconClose, IconTrash } from '@audius/harmony-native'
+import {
+  Flex,
+  IconArrowRight,
+  IconClose,
+  IconTrash,
+  Button
+} from '@audius/harmony-native'
 import {
   Divider,
   TextButton,
@@ -25,7 +31,7 @@ import { makeStyles } from 'app/styles'
 
 import { TopBarIconButton } from '../app-screen'
 import { ConfirmPublishTrackDrawer } from '../edit-track-screen/components/ConfirmPublishDrawer'
-import { FormScreen } from '../page-form-screen'
+import { FormScreen } from '../form-screen'
 
 import { AdvancedAlbumField } from './AdvancedAlbumField'
 import { CollectionDescriptionField } from './CollectionDescriptionField'
@@ -141,12 +147,32 @@ export const EditCollectionForm = (
     <>
       <FormScreen
         onSubmit={handleSubmit}
-        onReset={handleReset}
-        cancelText={messages.cancel}
-        submitText={messages.save}
         title={messages.screenTitle}
         topbarLeft={
           <TopBarIconButton icon={IconClose} onPress={navigation.goBack} />
+        }
+        bottomSection={
+          <Flex direction='row' gap='s'>
+            <Button
+              fullWidth
+              variant='secondary'
+              onPress={() => {
+                handleReset()
+                navigation.goBack()
+              }}
+            >
+              {messages.cancel}
+            </Button>
+            <Button
+              variant='primary'
+              fullWidth
+              onPress={() => {
+                handleSubmit()
+              }}
+            >
+              {messages.save}
+            </Button>
+          </Flex>
         }
       >
         <VirtualizedKeyboardAwareScrollView>

@@ -12,7 +12,8 @@ import {
   IconArrowRight,
   IconCaretLeft,
   IconCloudUpload,
-  Button
+  Button,
+  Flex
 } from '@audius/harmony-native'
 import { Tile } from 'app/components/core'
 import { InputErrorMessage } from 'app/components/core/InputErrorMessage'
@@ -45,7 +46,8 @@ import type { EditTrackFormProps } from './types'
 const messages = {
   trackName: 'Track Name',
   trackNameError: 'Track Name Required',
-  fixErrors: 'Fix Errors To Continue'
+  fixErrors: 'Fix Errors To Continue',
+  cancel: 'Cancel'
 }
 
 const GATED_CONTENT_UPLOAD_PROMPT_DRAWER_SEEN_KEY =
@@ -164,17 +166,27 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
                 style={styles.errorText}
               />
             ) : null}
-            <Button
-              variant='primary'
-              iconRight={IconArrowRight}
-              fullWidth
-              onPress={() => {
-                handleSubmit()
-              }}
-              disabled={isSubmitting || hasErrors}
-            >
-              {doneText}
-            </Button>
+            <Flex direction='row' gap='s'>
+              <Button
+                fullWidth
+                variant='secondary'
+                onPress={() => {
+                  handlePressBack()
+                }}
+              >
+                {messages.cancel}
+              </Button>
+              <Button
+                variant='primary'
+                fullWidth
+                onPress={() => {
+                  handleSubmit()
+                }}
+                disabled={isSubmitting || hasErrors}
+              >
+                {doneText}
+              </Button>
+            </Flex>
           </>
         }
       >
