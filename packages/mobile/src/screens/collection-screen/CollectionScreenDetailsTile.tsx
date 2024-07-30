@@ -24,11 +24,7 @@ import {
   PurchaseableContentType,
   queueActions
 } from '@audius/common/store'
-import {
-  formatReleaseDate,
-  getDogEarType,
-  getLocalTimezone
-} from '@audius/common/utils'
+import { formatReleaseDate, getDogEarType } from '@audius/common/utils'
 import type { Maybe, Nullable } from '@audius/common/utils'
 import dayjs from 'dayjs'
 import { TouchableOpacity } from 'react-native'

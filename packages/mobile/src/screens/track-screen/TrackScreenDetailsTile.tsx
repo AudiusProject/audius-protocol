@@ -43,7 +43,6 @@ import {
   formatReleaseDate,
   Genre,
   getDogEarType,
-  getLocalTimezone,
   removeNullable
 } from '@audius/common/utils'
 import dayjs from 'dayjs'
