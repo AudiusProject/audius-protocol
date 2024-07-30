@@ -11,13 +11,7 @@ import { capitalize } from 'lodash'
 import { View } from 'react-native'
 import { useDispatch } from 'react-redux'
 
-import {
-  Flex,
-  IconArrowRight,
-  IconClose,
-  IconTrash,
-  Button
-} from '@audius/harmony-native'
+import { Flex, IconClose, IconTrash, Button } from '@audius/harmony-native'
 import {
   Divider,
   TextButton,
@@ -143,6 +137,11 @@ export const EditCollectionForm = (
     submitAndGoBack
   ])
 
+  const handleCancel = useCallback(() => {
+    handleReset()
+    navigation.goBack()
+  }, [handleReset, navigation])
+
   return (
     <>
       <FormScreen
@@ -153,23 +152,10 @@ export const EditCollectionForm = (
         }
         bottomSection={
           <Flex direction='row' gap='s'>
-            <Button
-              fullWidth
-              variant='secondary'
-              onPress={() => {
-                handleReset()
-                navigation.goBack()
-              }}
-            >
+            <Button fullWidth variant='secondary' onPress={handleCancel}>
               {messages.cancel}
             </Button>
-            <Button
-              variant='primary'
-              fullWidth
-              onPress={() => {
-                handleSubmit()
-              }}
-            >
+            <Button variant='primary' fullWidth onPress={handleSubmit}>
               {messages.save}
             </Button>
           </Flex>

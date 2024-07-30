@@ -9,7 +9,6 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 import { useDispatch } from 'react-redux'
 
 import {
-  IconArrowRight,
   IconCaretLeft,
   IconCloudUpload,
   Button,
@@ -167,21 +166,13 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
               />
             ) : null}
             <Flex direction='row' gap='s'>
-              <Button
-                fullWidth
-                variant='secondary'
-                onPress={() => {
-                  handlePressBack()
-                }}
-              >
+              <Button fullWidth variant='secondary' onPress={handlePressBack}>
                 {messages.cancel}
               </Button>
               <Button
                 variant='primary'
                 fullWidth
-                onPress={() => {
-                  handleSubmit()
-                }}
+                onPress={handleSubmit}
                 disabled={isSubmitting || hasErrors}
               >
                 {doneText}
