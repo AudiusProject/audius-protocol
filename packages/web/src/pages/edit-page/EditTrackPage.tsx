@@ -26,6 +26,8 @@ import { TrackEditFormValues } from 'components/edit-track/types'
 import Header from 'components/header/desktop/Header'
 import LoadingSpinnerFullPage from 'components/loading-spinner-full-page/LoadingSpinnerFullPage'
 import Page from 'components/page/Page'
+import { useManagedAccountForHandleNotAllowedRedirect } from 'hooks/useManagedAccountNotAllowedRedirect'
+import { useRequiresAccount } from 'hooks/useRequiresAccount'
 import { useTrackCoverArt2 } from 'hooks/useTrackCoverArt'
 
 const { deleteTrack, editTrack } = cacheTracksActions
@@ -47,6 +49,8 @@ export const EditTrackPage = (props: EditPageProps) => {
   const { scrollToTop } = props
   const { handle, slug } = useParams<{ handle: string; slug: string }>()
   const dispatch = useDispatch()
+  useRequiresAccount()
+  useManagedAccountForHandleNotAllowedRedirect(handle)
 
   const { data: currentUserId } = useGetCurrentUserId({})
   const permalink = `/${handle}/${slug}`

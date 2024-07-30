@@ -82,20 +82,11 @@ const PlayingTrackInfo = ({
       'usdc_purchase' in track.stream_conditions &&
       !hasStreamAccess)
 
-  const [artistSpringProps, setArtistSpringProps] = useSpring(() => springProps)
-  const [trackSpringProps, setTrackSpringProps] = useSpring(() => springProps)
+  const spring = useSpring(springProps)
   const profileImage = useProfilePicture(
     artistUserId ?? null,
     SquareSizes.SIZE_150_BY_150
   )
-
-  useEffect(() => {
-    setArtistSpringProps(springProps)
-  }, [artistUserId, setArtistSpringProps])
-
-  useEffect(() => {
-    setTrackSpringProps(springProps)
-  }, [trackTitle, setTrackSpringProps])
 
   const boxShadowStyle =
     hasShadow && dominantColor
@@ -106,10 +97,7 @@ const PlayingTrackInfo = ({
 
   const renderTrackTitle = () => {
     return (
-      <animated.div
-        style={trackSpringProps}
-        className={styles.trackTitleContainer}
-      >
+      <animated.div style={spring} className={styles.trackTitleContainer}>
         <div
           className={cn(styles.trackTitle, {
             [styles.textShadow]: hasShadow
@@ -159,10 +147,7 @@ const PlayingTrackInfo = ({
             {renderTrackTitle()}
           </Draggable>
         )}
-        <animated.div
-          className={styles.artistNameWrapper}
-          style={artistSpringProps}
-        >
+        <animated.div style={spring} className={styles.artistNameWrapper}>
           <div
             className={cn(styles.artistName, {
               [styles.textShadow]: hasShadow

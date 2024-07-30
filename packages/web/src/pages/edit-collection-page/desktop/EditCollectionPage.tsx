@@ -20,6 +20,8 @@ import Header from 'components/header/desktop/Header'
 import LoadingSpinnerFullPage from 'components/loading-spinner-full-page/LoadingSpinnerFullPage'
 import Page from 'components/page/Page'
 import { useCollectionCoverArt2 } from 'hooks/useCollectionCoverArt'
+import { useManagedAccountForHandleNotAllowedRedirect } from 'hooks/useManagedAccountNotAllowedRedirect'
+import { useRequiresAccount } from 'hooks/useRequiresAccount'
 import { track } from 'services/analytics'
 
 import { updatePlaylistContents } from '../utils'
@@ -42,6 +44,8 @@ export const EditCollectionPage = () => {
   const focus = searchParams.get('focus')
   const permalink = `/${handle}/${isAlbum ? 'album' : 'playlist'}/${slug}`
   const dispatch = useDispatch()
+  useRequiresAccount()
+  useManagedAccountForHandleNotAllowedRedirect(handle)
 
   const { data: currentUserId } = useGetCurrentUserId({})
   const { data: collection, status } = useGetPlaylistByPermalink(
