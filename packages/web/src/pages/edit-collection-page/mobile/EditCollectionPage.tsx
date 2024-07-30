@@ -31,6 +31,8 @@ import { useTemporaryNavContext } from 'components/nav/mobile/NavContext'
 import TextElement, { Type } from 'components/nav/mobile/TextElement'
 import TrackList from 'components/track/mobile/TrackList'
 import { useCollectionCoverArt2 } from 'hooks/useCollectionCoverArt'
+import { useIsUnauthorizedForHandleRedirect } from 'hooks/useManagedAccountNotAllowedRedirect'
+import { useRequiresAccount } from 'hooks/useRequiresAccount'
 import UploadStub from 'pages/profile-page/components/mobile/UploadStub'
 import { track } from 'services/analytics'
 import { AppState } from 'store/types'
@@ -76,6 +78,8 @@ const EditCollectionPage = g(
     const permalink = `/${handle}/${isAlbum ? 'album' : 'playlist'}/${slug}`
     const dispatch = useDispatch()
     const history = useHistory()
+    useRequiresAccount()
+    useIsUnauthorizedForHandleRedirect(handle)
 
     const { data: currentUserId } = useGetCurrentUserId({})
     const { data: collection } = useGetPlaylistByPermalink(
