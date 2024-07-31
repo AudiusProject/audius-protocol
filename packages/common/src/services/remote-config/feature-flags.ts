@@ -140,5 +140,7 @@ export const flagDefaults: FlagDefaults = {
   [FeatureFlags.SKIP_STREAM_CHECK]: false,
   [FeatureFlags.PREFETCH_STREAM_URLS]: false,
   [FeatureFlags.HIDDEN_PAID_SCHEDULED]: false,
-  [FeatureFlags.EDITABLE_ACCESS_ENABLED]: false
+  [FeatureFlags.EDITABLE_ACCESS_ENABLED]: false,
+  [FeatureFlags.COMMENTS_ENABLED]: false,
+  [FeatureFlags.COMMENT_POSTING_ENABLED]: false
 }
