@@ -2,11 +2,9 @@ import { MouseEventHandler, ReactNode, useCallback } from 'react'
 
 import { useGetPlaylistById, useGetTrackById } from '@audius/common/api'
 import { ID } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import {
   publishTrackConfirmationModalUIActions,
-  trackPageActions,
-  useEditTrackModal
+  trackPageActions
 } from '@audius/common/store'
 import {
   Flex,
@@ -19,7 +17,6 @@ import { push as pushRoute } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
 import Tooltip from 'components/tooltip/Tooltip'
-import { useFlag } from 'hooks/useRemoteConfig'
 
 const { requestOpen: openPublishTrackConfirmationModal } =
   publishTrackConfirmationModalUIActions
@@ -101,24 +98,12 @@ const BaseOwnerActionButtons = ({
   onClickShare
 }: OwnerActionButtonProps & EntityDetails) => {
   const dispatch = useDispatch()
-  const { onOpen: onEditTrackOpen } = useEditTrackModal()
-  const { isEnabled: isEditTrackRedesignEnabled } = useFlag(
-    FeatureFlags.EDIT_TRACK_REDESIGN
-  )
 
   const onStopPropagation = useCallback((e: any) => e.stopPropagation(), [])
 
   const handleEdit = useCallback(() => {
-    isEditTrackRedesignEnabled
-      ? dispatch(pushRoute(`${permalink}/edit`))
-      : onEditTrackOpen({ trackId: contentId })
-  }, [
-    onEditTrackOpen,
-    contentId,
-    permalink,
-    isEditTrackRedesignEnabled,
-    dispatch
-  ])
+    dispatch(pushRoute(`${permalink}/edit`))
+  }, [permalink, dispatch])
 
   const handlePublishClick = useCallback(() => {
     dispatch(
