@@ -1,13 +1,18 @@
+import { useCallback } from 'react'
+
 import { useGetCurrentUserId, useGetPlaylistById } from '@audius/common/api'
 import { Collection } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/src/services'
 import {
+  cacheCollectionsActions,
   cacheCollectionsSelectors,
   collectionPageSelectors,
-  CommonState
+  CommonState,
+  useEarlyReleaseConfirmationModal,
+  usePublishConfirmationModal
 } from '@audius/common/store'
 import { IconRocket, IconButton, IconButtonProps } from '@audius/harmony'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { useToggle } from 'react-use'
 
 import { Tooltip } from 'components/tooltip'
@@ -33,15 +38,15 @@ type PublishButtonProps = Partial<IconButtonProps> & {
 
 export const PublishButton = (props: PublishButtonProps) => {
   const { collectionId, ...other } = props
-  const { _is_publishing } = useSelector((state: CommonState) =>
-    getCollection(state, { id: collectionId })
+  const { _is_publishing, is_scheduled_release, is_album } = useSelector(
+    (state: CommonState) => getCollection(state, { id: collectionId })
   ) as Collection
   const { data: currentUserId } = useGetCurrentUserId({})
   const { data: collection } = useGetPlaylistById({
     playlistId: collectionId,
     currentUserId
   })
-  const { track_count, is_album, cover_art_sizes } = collection ?? {}
+  const { track_count, cover_art_sizes } = collection ?? {}
 
   const hasHiddenTracks = useSelector((state: CommonState) =>
     getCollectionHasHiddenTracks(state, { id: collectionId })
@@ -51,19 +56,48 @@ export const PublishButton = (props: PublishButtonProps) => {
     FeatureFlags.HIDDEN_PAID_SCHEDULED
   )
 
-  const [isConfirming, toggleIsConfirming] = useToggle(false)
+  const { onOpen: openPublishConfirmation } = usePublishConfirmationModal()
+  const { onOpen: openEarlyReleaseConfirmation } =
+    useEarlyReleaseConfirmationModal()
 
+  const dispatch = useDispatch()
   const isDisabled =
     !track_count ||
     track_count === 0 ||
     (!isHiddenPaidScheduledEnabled && hasHiddenTracks) ||
     !cover_art_sizes
 
+  const publishRelease = useCallback(() => {
+    dispatch(
+      cacheCollectionsActions.publishPlaylist(collectionId, undefined, is_album)
+    )
+  }, [dispatch, collectionId, is_album])
+
+  const handleClickPublish = useCallback(() => {
+    if (is_scheduled_release) {
+      openEarlyReleaseConfirmation({
+        contentType: 'album',
+        confirmCallback: publishRelease
+      })
+    } else {
+      openPublishConfirmation({
+        contentType: is_album ? 'album' : 'playlist',
+        confirmCallback: publishRelease
+      })
+    }
+  }, [
+    openEarlyReleaseConfirmation,
+    openPublishConfirmation,
+    is_album,
+    is_scheduled_release,
+    publishRelease
+  ])
+
   const publishButtonElement = (
     <Tooltip text={messages.publish}>
       <IconButton
         icon={IconRocket}
-        onClick={toggleIsConfirming}
+        onClick={handleClickPublish}
         aria-label='Publish Collection'
         color='subdued'
         disabled={isDisabled}
@@ -94,11 +128,11 @@ export const PublishButton = (props: PublishButtonProps) => {
       ) : (
         publishButtonElement
       )}
-      <PublishConfirmationModal
+      {/* <PublishConfirmationModal
         collectionId={collectionId}
         isOpen={isConfirming}
         onClose={toggleIsConfirming}
-      />
+      /> */}
     </>
   )
 }

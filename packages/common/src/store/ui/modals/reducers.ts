@@ -6,13 +6,17 @@ import { artistPickModalReducer } from './artist-pick-modal'
 import { coinflowOnrampModalReducer } from './coinflow-onramp-modal'
 import { coinflowWithdrawModalReducer } from './coinflow-withdraw-modal'
 import { createChatModalReducer } from './create-chat-modal'
+import { earlyReleaseConfirmationModalReducer } from './early-release-confirmation-modal'
+import { editAccessConfirmationModalReducer } from './edit-access-confirmation-modal'
 import { editTrackModalReducer } from './edit-track-modal'
+import { hideConfirmationModalReducer } from './hide-confirmation-modal'
 import { inboxUnavailableModalReducer } from './inbox-unavailable-modal'
 import { leavingAudiusModalReducer } from './leaving-audius-modal'
 import parentReducer, { initialState } from './parentSlice'
 import { premiumContentPurchaseModalReducer } from './premium-content-purchase-modal'
-import { publishContentModalReducer } from './publish-content-modal'
+import { publishConfirmationModalReducer } from './publish-confirmation-modal'
 import { BaseModalState, Modals, ModalsState } from './types'
+import { uploadConfirmationModalReducer } from './upload-confirmation-modal'
 import { usdcManualTransferModalReducer } from './usdc-manual-transfer-modal'
 import { usdcPurchaseDetailsModalReducer } from './usdc-purchase-details-modal'
 import { usdcTransactionDetailsModalReducer } from './usdc-transaction-details-modal'
@@ -49,7 +53,11 @@ const combinedReducers = combineReducers({
   WaitForDownloadModal: waitForDownloadModalReducer,
   ArtistPick: artistPickModalReducer,
   AlbumTrackRemoveConfirmation: albumTrackRemoveConfirmationModalReducer,
-  PublishContentModal: publishContentModalReducer
+  UploadConfirmation: uploadConfirmationModalReducer,
+  EditAccessConfirmation: editAccessConfirmationModalReducer,
+  EarlyReleaseConfirmation: earlyReleaseConfirmationModalReducer,
+  PublishConfirmation: publishConfirmationModalReducer,
+  HideConfirmation: hideConfirmationModalReducer
 })
 
 /**

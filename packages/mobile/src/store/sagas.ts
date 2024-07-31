@@ -14,7 +14,7 @@ import {
   stripeModalUISagas,
   vipDiscordModalSagas,
   toastSagas,
-  publishTrackConfirmationModalUISagas as publishTrackConfirmationModalSagas,
+  PublishConfirmationModalUISagas as PublishConfirmationModalSagas,
   searchUsersModalSagas,
   modalsSagas,
   playerSagas as commonPlayerSagas,
@@ -193,7 +193,7 @@ export default function* rootSaga() {
     ...remixSettingsSagas(),
     ...offlineDownloadSagas(),
     ...reachabilitySagas(),
-    ...publishTrackConfirmationModalSagas(),
+    ...PublishConfirmationModalSagas(),
     ...toastSagas(),
 
     initKeyboardEvents,

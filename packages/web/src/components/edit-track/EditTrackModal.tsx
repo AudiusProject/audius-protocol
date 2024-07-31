@@ -10,7 +10,6 @@ import {
   cacheTracksActions as cacheTrackActions,
   stemsUploadActions,
   stemsUploadSelectors,
-  publishTrackConfirmationModalUIActions,
   editTrackModalSelectors,
   useEditTrackModal
 } from '@audius/common/store'
@@ -30,8 +29,6 @@ import { stemDropdownRows } from 'utils/stems'
 const { startStemUploads } = stemsUploadActions
 const { getCurrentUploads } = stemsUploadSelectors
 const { getMetadata, getStems } = editTrackModalSelectors
-const { requestOpen: openPublishTrackConfirmationModal } =
-  publishTrackConfirmationModalUIActions
 
 const messages = {
   deleteTrack: 'DELETE TRACK'
@@ -99,7 +96,7 @@ const EditTrackModal = ({
     if (metadata.is_unlisted === true && formFields.is_unlisted === false) {
       // confirm for unlisted -> listed
       dispatch(
-        openPublishTrackConfirmationModal({
+        openPublishConfirmationModal({
           confirmCallback: () => {
             confirmEdit(metadata, formFields)
           }

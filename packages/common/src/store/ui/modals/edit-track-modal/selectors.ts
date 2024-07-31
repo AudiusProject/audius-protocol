@@ -4,7 +4,7 @@ import { CommonState } from '~/store/commonStore'
 
 const { getTrack, getTracks } = cacheTracksSelectors
 
-export const getBaseState = (state: CommonState) => state.ui.modals.EditTrack
+const getBaseState = (state: CommonState) => state.ui.modals.EditTrack
 
 export const getIsOpen = (state: CommonState) => getBaseState(state).isOpen
 export const getTrackId = (state: CommonState) => getBaseState(state).trackId

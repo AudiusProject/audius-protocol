@@ -11,16 +11,14 @@ import {
 } from '@audius/common/models'
 import type { AccessConditions } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
-import { modalsActions } from '@audius/common/store'
+import { useEditAccessConfirmationModal } from '@audius/common/store'
 import { getUsersMayLoseAccess, type Nullable } from '@audius/common/utils'
 import { useField, useFormikContext } from 'formik'
-import { useDispatch } from 'react-redux'
 
 import { Hint, IconCart } from '@audius/harmony-native'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { FormScreen } from 'app/screens/form-screen'
 
-import { EditPriceAndAudienceConfirmationDrawer } from '../../../screens/edit-track-screen/components/EditPriceAndAudienceConfirmationDrawer'
 import type {
   FormValues,
   RemixOfField
@@ -82,6 +80,9 @@ export const PriceAndAudienceScreen = () => {
     // eslint-disable-next-line
   }, [])
 
+  const { onOpen: onOpenEditAccessConfirmationModal } =
+    useEditAccessConfirmationModal()
+
   const {
     disableUsdcGate: disableUsdcGateOption,
     disableSpecialAccessGate,
@@ -137,7 +138,6 @@ export const PriceAndAudienceScreen = () => {
   const isFormInvalid =
     usdcGateIsInvalid || collectibleGateHasNoSelectedCollection
 
-  const dispatch = useDispatch()
   const navigation = useNavigation()
   const [usersMayLoseAccess, setUsersMayLoseAccess] = useState(false)
   const [specialAccessType, setSpecialAccessType] = useState<
@@ -167,23 +167,19 @@ export const PriceAndAudienceScreen = () => {
 
   const handleSubmit = useCallback(() => {
     if (!isUpload && isEditableAccessEnabled && usersMayLoseAccess) {
-      dispatch(
-        modalsActions.setVisibility({
-          modal: 'EditPriceAndAudienceConfirmation',
-          visible: true
-        })
-      )
-    }
-  }, [dispatch, isEditableAccessEnabled, isUpload, usersMayLoseAccess])
-
-  const handleCancel = useCallback(() => {
-    dispatch(
-      modalsActions.setVisibility({
-        modal: 'EditPriceAndAudienceConfirmation',
-        visible: false
+      onOpenEditAccessConfirmationModal({
+        type: 'audience',
+        confirmCallback: navigation.goBack,
+        cancelCallback: navigation.goBack
       })
-    )
-  }, [dispatch])
+    }
+  }, [
+    isEditableAccessEnabled,
+    isUpload,
+    usersMayLoseAccess,
+    onOpenEditAccessConfirmationModal,
+    navigation.goBack
+  ])
 
   return (
     <FormScreen
@@ -229,12 +225,6 @@ export const PriceAndAudienceScreen = () => {
           />
         ) : null}
       </ExpandableRadioGroup>
-      {!isUpload ? (
-        <EditPriceAndAudienceConfirmationDrawer
-          onConfirm={navigation.goBack}
-          onCancel={handleCancel}
-        />
-      ) : null}
     </FormScreen>
   )
 }

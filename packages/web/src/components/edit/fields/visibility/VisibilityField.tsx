@@ -3,7 +3,6 @@ import { useCallback } from 'react'
 import { useFeatureFlag } from '@audius/common/hooks'
 import { visibilityMessages } from '@audius/common/messages'
 import { FeatureFlags } from '@audius/common/services'
-// import { editAccessConfirmationModalUIActions } from '@audius/common/store'
 import {
   IconCalendarMonth,
   IconVisibilityHidden,

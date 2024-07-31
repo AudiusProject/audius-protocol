@@ -3,11 +3,7 @@ import { MouseEventHandler, ReactNode, useCallback } from 'react'
 import { useGetPlaylistById, useGetTrackById } from '@audius/common/api'
 import { ID } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
-import {
-  publishTrackConfirmationModalUIActions,
-  trackPageActions,
-  useEditTrackModal
-} from '@audius/common/store'
+import { trackPageActions, useEditTrackModal } from '@audius/common/store'
 import {
   Flex,
   IconButton,
@@ -21,8 +17,6 @@ import { useDispatch } from 'react-redux'
 import Tooltip from 'components/tooltip/Tooltip'
 import { useFlag } from 'hooks/useRemoteConfig'
 
-const { requestOpen: openPublishTrackConfirmationModal } =
-  publishTrackConfirmationModalUIActions
 const { makeTrackPublic } = trackPageActions
 
 const messages = {
@@ -122,7 +116,7 @@ const BaseOwnerActionButtons = ({
 
   const handlePublishClick = useCallback(() => {
     dispatch(
-      openPublishTrackConfirmationModal({
+      openPublishConfirmationModal({
         confirmCallback: () => {
           dispatch(makeTrackPublic(contentId))
         }

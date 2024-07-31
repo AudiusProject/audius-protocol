@@ -93,8 +93,6 @@ const App = () => {
                             <NotificationReminder />
                             <RateCtaReminder />
                             <PortalHost name='ChatReactionsPortal' />
-                            <PortalHost name='ConfirmPublishTrackPortal' />
-                            <PortalHost name='EditPriceAndAudienceConfirmation' />
                           </NavigationContainer>
                         </ErrorBoundary>
                       </PortalProvider>

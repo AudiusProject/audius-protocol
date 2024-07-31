@@ -19,7 +19,7 @@ import { FeatureFlags } from '@audius/common/services'
 import {
   accountSelectors,
   EditCollectionValues,
-  editAccessConfirmationModalUIActions
+  useEditAccessConfirmationModal
 } from '@audius/common/store'
 import { getUsersMayLoseAccess } from '@audius/common/utils'
 import {
@@ -74,9 +74,6 @@ import {
 import styles from './PriceAndAudienceField.module.css'
 import { PriceAndAudienceMenuFields } from './PriceAndAudienceMenuFields'
 import { priceAndAudienceSchema } from './priceAndAudienceSchema'
-
-const { requestOpen: openEditAccessConfirmationModal } =
-  editAccessConfirmationModalUIActions
 
 const { getUserId } = accountSelectors
 
@@ -233,6 +230,9 @@ export const PriceAndAudienceField = (props: PriceAndAudienceFieldProps) => {
     [accountUserId, savedStreamConditions]
   )
 
+  const { onOpen: onOpenEditAccessConfirmationModal } =
+    useEditAccessConfirmationModal()
+
   const isUsdcGated = isContentUSDCPurchaseGated(savedStreamConditions)
   const isTipGated = isContentTipGated(savedStreamConditions)
   const isFollowGated = isContentFollowGated(savedStreamConditions)
@@ -298,25 +298,6 @@ export const PriceAndAudienceField = (props: PriceAndAudienceFieldProps) => {
     fieldVisibility,
     preview
   ])
-
-  const openEditAccessConfirmation = useCallback(
-    ({
-      confirmCallback,
-      cancelCallback
-    }: {
-      confirmCallback: () => void
-      cancelCallback: () => void
-    }) => {
-      dispatch(
-        openEditAccessConfirmationModal({
-          type: 'audience',
-          confirmCallback,
-          cancelCallback
-        })
-      )
-    },
-    [dispatch]
-  )
 
   const handleSubmit = useCallback(
     (values: AccessAndSaleFormValues) => {
@@ -598,7 +579,8 @@ export const PriceAndAudienceField = (props: PriceAndAudienceFieldProps) => {
         })
 
         if (!isUpload && isEditableAccessEnabled && usersMayLoseAccess) {
-          openEditAccessConfirmation({
+          onOpenEditAccessConfirmationModal({
+            type: 'audience',
             confirmCallback: () => handleSubmit(values),
             cancelCallback: () => {
               setIsConfirmationCancelled(true)

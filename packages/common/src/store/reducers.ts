@@ -102,14 +102,10 @@ import deletePlaylistConfirmationReducer from './ui/delete-playlist-confirmation
 import { DeletePlaylistConfirmationModalState } from './ui/delete-playlist-confirmation-modal/types'
 import duplicateAddConfirmationReducer from './ui/duplicate-add-confirmation-modal/slice'
 import { DuplicateAddConfirmationModalState } from './ui/duplicate-add-confirmation-modal/types'
-import editAccessConfirmationReducer from './ui/edit-access-confirmation-modal/slice'
-import { EditAccessConfirmationModalState } from './ui/edit-access-confirmation-modal/types'
 import mobileOverflowModalReducer from './ui/mobile-overflow-menu/slice'
 import { MobileOverflowModalState } from './ui/mobile-overflow-menu/types'
 import { modalsReducer, ModalsState } from './ui/modals'
 import nowPlayingReducer, { NowPlayingState } from './ui/now-playing/slice'
-import publishTrackConfirmationReducer from './ui/publish-track-confirmation-modal/slice'
-import { PublishTrackConfirmationModalState } from './ui/publish-track-confirmation-modal/types'
 import reactionsReducer, { ReactionsState } from './ui/reactions/slice'
 import relatedArtistsReducer from './ui/related-artists/slice'
 import { RelatedArtistsState } from './ui/related-artists/types'
@@ -206,9 +202,6 @@ export const reducers = (storage: Storage, history?: History) => ({
     searchUsersModal: searchUsersModalReducer,
     toast: toastReducer,
     transactionDetails: transactionDetailsReducer,
-    uploadConfirmationModal: uploadConfirmationReducer,
-    editAccessConfirmationModal: editAccessConfirmationReducer,
-    publishTrackConfirmationModal: publishTrackConfirmationReducer,
     userList: combineReducers({
       followers: followersUserListReducer,
       following: followingUserListReducer,
@@ -336,8 +329,7 @@ export type CommonState = {
     toast: ToastState
     transactionDetails: TransactionDetailsState
     uploadConfirmationModal: UploadConfirmationModalState
-    editAccessConfirmationModal: EditAccessConfirmationModalState
-    publishTrackConfirmationModal: PublishTrackConfirmationModalState
+    PublishConfirmationModal: PublishConfirmationModalState
     userList: {
       mutuals: ReturnType<typeof mutualsUserListReducer>
       notifications: ReturnType<typeof notificationsUserListReducer>

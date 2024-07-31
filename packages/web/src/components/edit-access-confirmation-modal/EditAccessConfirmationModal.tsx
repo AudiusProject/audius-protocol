@@ -2,7 +2,7 @@ import { useCallback } from 'react'
 
 import {
   EditAccessType,
-  editAccessConfirmationModalUISelectors
+  useEditAccessConfirmationModal
 } from '@audius/common/store'
 import {
   Modal,
@@ -14,12 +14,6 @@ import {
   Flex,
   IconRocket
 } from '@audius/harmony'
-
-import { useModalState } from 'common/hooks/useModalState'
-import { useSelector } from 'common/hooks/useSelector'
-
-const { getType, getConfirmCallback, getCancelCallback } =
-  editAccessConfirmationModalUISelectors
 
 const getMessages = (type: EditAccessType | null) => ({
   title:
@@ -46,15 +40,9 @@ const getMessages = (type: EditAccessType | null) => ({
 })
 
 export const EditAccessConfirmationModal = () => {
-  const type = useSelector(getType)
-  const confirmCallback = useSelector(getConfirmCallback)
-  const cancelCallback = useSelector(getCancelCallback)
-  const [isOpen, setIsOpen] = useModalState('EditAccessConfirmation')
+  const { data, isOpen, onClose } = useEditAccessConfirmationModal()
+  const { type, confirmCallback, cancelCallback } = data
   const messages = getMessages(type)
-
-  const onClose = useCallback(() => {
-    setIsOpen(false)
-  }, [setIsOpen])
 
   const handleConfirm = useCallback(() => {
     confirmCallback()

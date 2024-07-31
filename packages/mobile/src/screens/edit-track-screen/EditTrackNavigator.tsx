@@ -12,6 +12,8 @@ import { useAppScreenOptions } from 'app/screens/app-screen/useAppScreenOptions'
 import { messages as completeMessages } from '../upload-screen/screens/CompleteTrackScreen'
 
 import { EditTrackForm } from './EditTrackForm'
+import { ConfirmPublishTrackDrawer } from './components/ConfirmPublishDrawer'
+import { EditAccessConfirmationDrawer } from './components/EditAccessConfirmationDrawer'
 import {
   AdvancedScreen,
   IsrcIswcScreen,
@@ -68,6 +70,8 @@ export const EditTrackNavigator = (props: EditTrackNavigatorProps) => {
         <Stack.Screen name='KeyBpm' component={KeyBpmScreen} />
       </Stack.Navigator>
       <GatedContentUploadPromptDrawer isUpload={!initialValues.track_id} />
+      <EditAccessConfirmationDrawer />
+      <ConfirmPublishTrackDrawer />
       <SupportersInfoDrawer />
     </>
   )

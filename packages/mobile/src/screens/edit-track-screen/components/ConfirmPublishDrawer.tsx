@@ -1,5 +1,3 @@
-import { Portal } from '@gorhom/portal'
-
 import { ConfirmationDrawer } from 'app/components/drawers'
 
 const messages = {
@@ -44,13 +42,11 @@ export const ConfirmPublishTrackDrawer = (
       : messages.hidden
 
   return (
-    <Portal hostName='ConfirmPublishTrackPortal'>
-      <ConfirmationDrawer
-        variant='affirmative'
-        modalName='EditAccessConfirmation'
-        onConfirm={onConfirm}
-        messages={confirmationMessages}
-      />
-    </Portal>
+    <ConfirmationDrawer
+      variant='affirmative'
+      modalName='EditAccessConfirmation'
+      onConfirm={onConfirm}
+      messages={confirmationMessages}
+    />
   )
 }
