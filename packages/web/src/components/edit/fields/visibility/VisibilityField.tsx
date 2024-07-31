@@ -201,7 +201,7 @@ const VisibilityMenuFields = (props: VisibilityMenuFieldsProps) => {
   const { isEnabled: isPaidScheduledEnabled } = useFeatureFlag(
     FeatureFlags.PAID_SCHEDULED
   )
-  const { initiallyPublic, isAllowedToPublish, entityType = true } = props
+  const { initiallyPublic, isAllowedToPublish = true, entityType } = props
   const [field] = useField<VisibilityType>('visibilityType')
 
   return (
