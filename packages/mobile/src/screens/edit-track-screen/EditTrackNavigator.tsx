@@ -1,3 +1,4 @@
+import { PortalHost } from '@gorhom/portal'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 
 import {
@@ -67,6 +68,8 @@ export const EditTrackNavigator = (props: EditTrackNavigatorProps) => {
         <Stack.Screen name='KeyBpm' component={KeyBpmScreen} />
       </Stack.Navigator>
       <SupportersInfoDrawer />
+      <PortalHost name='ConfirmPublishTrackPortal' />
+      <PortalHost name='EditPriceAndAudienceConfirmation' />
     </>
   )
 }
