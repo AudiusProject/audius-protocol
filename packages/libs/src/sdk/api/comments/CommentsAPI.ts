@@ -15,7 +15,7 @@ export type CommentMetadata = {
   body: string
   userId: number
   entityId: number
-  entityType: Extract<EntityType, 'TRACK'> // For now we only support comments on tracks but we discussed collections as well
+  entityType: EntityType.TRACK // For now we only support comments on tracks but we discussed collections as well
   parentCommentId?: number
   timestamp_s?: number
 }

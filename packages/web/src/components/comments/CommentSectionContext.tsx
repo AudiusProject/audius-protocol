@@ -70,13 +70,7 @@ export const CommentSectionProvider = ({
   }
 
   const addReply = (comment: CommentReply, parentCommentIndex: number) => {
-    console.log({ parentCommentIndex })
     const newComments = [...comments]
-    console.log({
-      existingComment: newComments[parentCommentIndex],
-      newComments,
-      comments
-    })
     const parentComment = newComments[parentCommentIndex]
     parentComment.replies = [...(parentComment.replies || []), comment]
     setComments(newComments)
@@ -89,7 +83,6 @@ export const CommentSectionProvider = ({
     parentCommentId: ID | null,
     parentCommentIndex?: number
   ) => {
-    console.log('sending comment')
     if (userId && entityId) {
       try {
         const sdk = await audiusSdk()
