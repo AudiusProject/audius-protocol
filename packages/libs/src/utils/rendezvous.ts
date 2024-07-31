@@ -1,6 +1,7 @@
 import { Buffer } from 'buffer'
 
-import CRC32C from 'crc-32/crc32c'
+import { sha256 } from '@noble/hashes/sha256'
+import { bytesToHex as toHex } from '@noble/hashes/utils'
 
 class NodeScore {
   node: Buffer
@@ -28,59 +29,33 @@ export class RendezvousHash {
     }
   }
 
-  get(key: string): string {
-    let maxScore = 0
-    let maxNode: Buffer | null = null
-
-    const keyBytes = Buffer.from(key)
-
-    for (const node of this.nodes) {
-      const score = this.hash(node.node, keyBytes)
-      if (
-        score > maxScore ||
-        (score === maxScore && node.node.compare(maxNode!) < 0)
-      ) {
-        maxScore = score
-        maxNode = node.node
-      }
-    }
-
-    return maxNode?.toString() ?? ''
-  }
-
-  getN(n: number, key: string): string[] {
-    const keyBytes = Buffer.from(key)
-    for (const node of this.nodes) {
-      node.score = this.hash(node.node, keyBytes)
-    }
-
-    this.nodes.sort((a, b) => {
-      if (a.score === b.score) {
-        return a.node.compare(b.node)
-      }
-      return b.score - a.score
-    })
-
-    if (n > this.nodes.length) {
-      n = this.nodes.length
-    }
-
-    const nodes: string[] = []
-    for (let i = 0; i < n; i++) {
-      nodes.push(this.nodes[i]!.node.toString())
-    }
-    return nodes
-  }
-
   getNodes(): string[] {
     return this.nodes.map((nodeScore) => nodeScore.node.toString())
   }
 
-  private hash(node: Buffer, key: Buffer): number {
-    const combined = Buffer.concat([key, node])
-    // Convert to unsigned 32-bit integer to match go implementation, which is uint32 here:
-    // https://github.com/tysonmote/rendezvous/blob/be0258dbbd3d/rendezvous.go#L92
-    return CRC32C.buf(combined, 0) >>> 0
+  get(key: string): string {
+    const first = this.getN(1, key)[0]
+    return first ?? ''
+  }
+
+  getN(n: number, key: string): string[] {
+    return this.rendezvous256(key).slice(0, n)
+  }
+
+  rendezvous256(key: string) {
+    const tuples = this.nodes.map((n) => {
+      const hostName = n.node.toString()
+      return [hostName, toHex(sha256(`${hostName}${key}`))]
+    })
+    tuples.sort((t1, t2) => {
+      const [aHost, aScore] = t1
+      const [bHost, bScore] = t2
+      if (aScore === bScore) {
+        return aHost! < bHost! ? -1 : 1
+      }
+      return aScore! < bScore! ? -1 : 1
+    })
+    return tuples.map((t) => t[0]!)
   }
 }
 
