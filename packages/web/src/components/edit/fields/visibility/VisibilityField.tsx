@@ -30,7 +30,8 @@ import { mergeReleaseDateValues } from './mergeReleaseDateValues'
 
 const messages = {
   ...visibilityMessages,
-  scheduled: (date: string) => `Scheduled for ${formatCalendarTime(date)}`
+  scheduled: (date: string) => `Scheduled for ${formatCalendarTime(date)}`,
+  emptyPlaylistTooltipText: 'You must add at least 1 song.'
 }
 
 type VisibilityType = 'scheduled' | 'public' | 'hidden'
@@ -205,13 +206,15 @@ const VisibilityMenuFields = (props: VisibilityMenuFieldsProps) => {
 
   return (
     <RadioGroup {...field}>
-      {isAllowedToPublish ? (
-        <ModalRadioItem
-          value='public'
-          label={messages.public}
-          description={messages.publicDescription}
-        />
-      ) : null}
+      <ModalRadioItem
+        value='public'
+        label={messages.public}
+        description={messages.publicDescription}
+        disabled={!isAllowedToPublish}
+        tooltipText={
+          isAllowedToPublish ? undefined : messages.emptyPlaylistTooltipText
+        }
+      />
       <ModalRadioItem
         value='hidden'
         label={messages.hidden}
