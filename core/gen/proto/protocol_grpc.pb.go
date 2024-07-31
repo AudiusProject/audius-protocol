@@ -20,13 +20,15 @@ const _ = grpc.SupportPackageIsVersion8
 
 const (
 	Protocol_SubmitEvent_FullMethodName = "/protocol.Protocol/SubmitEvent"
+	Protocol_GetEvent_FullMethodName    = "/protocol.Protocol/GetEvent"
 )
 
 // ProtocolClient is the client API for Protocol service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ProtocolClient interface {
-	SubmitEvent(ctx context.Context, in *EventRequest, opts ...grpc.CallOption) (*EventResponse, error)
+	SubmitEvent(ctx context.Context, in *SubmitEventRequest, opts ...grpc.CallOption) (*SubmitEventResponse, error)
+	GetEvent(ctx context.Context, in *GetEventRequest, opts ...grpc.CallOption) (*GetEventResponse, error)
 }
 
 type protocolClient struct {
@@ -37,10 +39,20 @@ func NewProtocolClient(cc grpc.ClientConnInterface) ProtocolClient {
 	return &protocolClient{cc}
 }
 
-func (c *protocolClient) SubmitEvent(ctx context.Context, in *EventRequest, opts ...grpc.CallOption) (*EventResponse, error) {
+func (c *protocolClient) SubmitEvent(ctx context.Context, in *SubmitEventRequest, opts ...grpc.CallOption) (*SubmitEventResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(EventResponse)
+	out := new(SubmitEventResponse)
 	err := c.cc.Invoke(ctx, Protocol_SubmitEvent_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *protocolClient) GetEvent(ctx context.Context, in *GetEventRequest, opts ...grpc.CallOption) (*GetEventResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetEventResponse)
+	err := c.cc.Invoke(ctx, Protocol_GetEvent_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -51,7 +63,8 @@ func (c *protocolClient) SubmitEvent(ctx context.Context, in *EventRequest, opts
 // All implementations must embed UnimplementedProtocolServer
 // for forward compatibility
 type ProtocolServer interface {
-	SubmitEvent(context.Context, *EventRequest) (*EventResponse, error)
+	SubmitEvent(context.Context, *SubmitEventRequest) (*SubmitEventResponse, error)
+	GetEvent(context.Context, *GetEventRequest) (*GetEventResponse, error)
 	mustEmbedUnimplementedProtocolServer()
 }
 
@@ -59,8 +72,11 @@ type ProtocolServer interface {
 type UnimplementedProtocolServer struct {
 }
 
-func (UnimplementedProtocolServer) SubmitEvent(context.Context, *EventRequest) (*EventResponse, error) {
+func (UnimplementedProtocolServer) SubmitEvent(context.Context, *SubmitEventRequest) (*SubmitEventResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SubmitEvent not implemented")
+}
+func (UnimplementedProtocolServer) GetEvent(context.Context, *GetEventRequest) (*GetEventResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetEvent not implemented")
 }
 func (UnimplementedProtocolServer) mustEmbedUnimplementedProtocolServer() {}
 
@@ -76,7 +92,7 @@ func RegisterProtocolServer(s grpc.ServiceRegistrar, srv ProtocolServer) {
 }
 
 func _Protocol_SubmitEvent_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(EventRequest)
+	in := new(SubmitEventRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -88,7 +104,25 @@ func _Protocol_SubmitEvent_Handler(srv interface{}, ctx context.Context, dec fun
 		FullMethod: Protocol_SubmitEvent_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ProtocolServer).SubmitEvent(ctx, req.(*EventRequest))
+		return srv.(ProtocolServer).SubmitEvent(ctx, req.(*SubmitEventRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Protocol_GetEvent_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetEventRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ProtocolServer).GetEvent(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Protocol_GetEvent_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ProtocolServer).GetEvent(ctx, req.(*GetEventRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -103,6 +137,10 @@ var Protocol_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "SubmitEvent",
 			Handler:    _Protocol_SubmitEvent_Handler,
+		},
+		{
+			MethodName: "GetEvent",
+			Handler:    _Protocol_GetEvent_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

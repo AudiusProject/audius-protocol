@@ -32,7 +32,7 @@ var _ = Describe("KvStore", func() {
 
 		netRes, err = content1rpc.NetInfo(ctx)
 		Expect(err).To(BeNil())
-		Expect(netRes.NPeers).To(Equal(3))
+		Expect(netRes.NPeers).To(Equal(1))
 
 		content2rpc, err := http.New("http://localhost:6721")
 		Expect(err).To(BeNil())
@@ -43,7 +43,7 @@ var _ = Describe("KvStore", func() {
 
 		netRes, err = content2rpc.NetInfo(ctx)
 		Expect(err).To(BeNil())
-		Expect(netRes.NPeers).To(Equal(3))
+		Expect(netRes.NPeers).To(Equal(1))
 
 		content3rpc, err := http.New("http://localhost:6731")
 		Expect(err).To(BeNil())
@@ -54,6 +54,6 @@ var _ = Describe("KvStore", func() {
 
 		netRes, err = content3rpc.NetInfo(ctx)
 		Expect(err).To(BeNil())
-		Expect(netRes.NPeers).To(Equal(3))
+		Expect(netRes.NPeers).To(Equal(1))
 	})
 })

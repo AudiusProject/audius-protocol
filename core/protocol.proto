@@ -1,0 +1,43 @@
+syntax = "proto3";
+
+package protocol;
+
+option go_package = "./proto;proto";
+
+service Protocol {
+  rpc SubmitEvent (SubmitEventRequest) returns (SubmitEventResponse) {}
+  rpc GetEvent (GetEventRequest) returns (GetEventResponse) {}
+}
+
+message Event {
+  oneof body {
+    PlaysEvent plays = 1000;
+  }
+}
+
+message SubmitEventRequest {
+  string signature = 1;
+  Event event = 2;
+}
+
+message SubmitEventResponse {
+  string txhash = 1;
+}
+
+message GetEventRequest {
+  string txhash = 1;
+}
+
+message GetEventResponse {
+  Event event = 1;
+}
+
+message PlaysEvent {
+  // track id to play count
+  map<string, PlayRecord> plays = 1;
+}
+
+message PlayRecord {
+  string listenerAddress = 1;
+  int32 count = 2;
+}

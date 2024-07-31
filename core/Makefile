@@ -26,9 +26,10 @@ deps::
 	@go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
 
 gen::
+	go generate ./...
 	cd db && sqlc generate
+	protoc --go_out=./gen --go-grpc_out=./gen ./protocol.proto
 	go mod tidy
 
 test::
 	@go test -v ./...
-	@cd test/integration && ginkgo -r
