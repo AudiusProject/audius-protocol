@@ -125,7 +125,7 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
       validationSchema={toFormikValidationSchema(validationSchema)}
     >
       <Form className={styles.root} id={formId}>
-        <CollectionNavigationPrompt />
+        <CollectionNavigationPrompt disabled={isDeleteConfirmationOpen} />
         <Tile className={styles.collectionFields} elevation='mid'>
           <div className={styles.row}>
             <ArtworkField
@@ -207,7 +207,6 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
               collectionId={playlist_id}
               entity={collectionTypeName}
               onCancel={() => setIsDeleteConfirmationOpen(false)}
-              onDelete={() => setIsDeleteConfirmationOpen(false)}
             />
             {!isUpload && confirmDrawerType ? (
               <ReleaseCollectionConfirmationModal
