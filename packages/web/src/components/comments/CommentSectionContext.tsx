@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { PropsWithChildren, createContext, useContext, useState } from 'react'
 
 import { ID } from '@audius/common/models'
@@ -18,7 +19,7 @@ import { Comment, CommentReply } from './types'
 type CommentSectionContextProps = {
   userId: Nullable<ID>
   entityId: ID
-  entityType?: EntityType
+  entityType?: EntityType.TRACK
 }
 
 // Props sent down to context (some are handled inside the context component)
@@ -27,7 +28,7 @@ type CommentSectionContextType = CommentSectionContextProps & {
   comments: Comment[]
   handlePostComment: (
     message: string,
-    parentCommentId: ID | null,
+    parentCommentId?: ID,
     parentCommentIndex?: number
   ) => void
   handleReactComment: (commentId: ID) => void
@@ -80,7 +81,7 @@ export const CommentSectionProvider = ({
 
   const handlePostComment = async (
     message: string,
-    parentCommentId: ID | null,
+    parentCommentId?: ID,
     parentCommentIndex?: number
   ) => {
     if (userId && entityId) {
@@ -94,7 +95,7 @@ export const CommentSectionProvider = ({
           parentCommentId // aka reply
         }
 
-        // TEMPORARY optimistic update
+        // TEMPORARY optimistic update for now
         const optimisticCommentData = {
           id: null, // idk
           userId,
@@ -144,12 +145,12 @@ export const CommentSectionProvider = ({
           trackId: encodeHashId(entityId)
         })
         if (commentsRes?.data) {
-          // TODO: Shouldn't need to cast; something is wrong with the types coming from the SDK
+          // TODO: Shouldn't need to cast; need to figure out how to work with SDK types
           setComments(commentsRes.data as unknown as Comment[])
         }
         setIsLoading(false)
       } catch (e) {
-        setComments(MOCK_COMMENT_DATA) // TODO: remove, was testing with staging
+        setComments(MOCK_COMMENT_DATA) // TODO: eventually remove, this is backup mock data for UI testing
         setIsLoading(false)
         console.log('COMMENTS DEBUG: Error fetching comments', e)
       }

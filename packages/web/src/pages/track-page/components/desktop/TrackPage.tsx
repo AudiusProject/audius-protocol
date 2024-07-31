@@ -3,8 +3,6 @@ import { ID, LineupState, Track, User } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import { trackPageLineupActions, QueueItem } from '@audius/common/store'
 import { Box, Flex, Text } from '@audius/harmony'
-import { css } from '@emotion/react'
-import cn from 'classnames'
 
 import { CommentSectionProvider } from 'components/comments/CommentSectionContext'
 import { CommentSectionDesktop } from 'components/comments/CommentSectionDesktop'

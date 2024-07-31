@@ -26,13 +26,13 @@ export const CommentForm = ({
 }: CommentFormProps) => {
   const { handlePostComment } = useCurrentCommentSection()
   const handleSubmit = ({ commentMessage }: CommentFormValues) => {
-    let decodedParentCommentId = null
+    let decodedParentCommentId
     if (parentCommentId) {
       decodedParentCommentId = decodeHashId(parentCommentId?.toString())
     }
     handlePostComment(
       commentMessage,
-      decodedParentCommentId,
+      decodedParentCommentId ?? undefined, // omitting null from the value type
       parentCommentIndex
     )
     onPostComment?.()
