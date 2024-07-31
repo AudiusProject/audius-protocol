@@ -159,9 +159,10 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
               entityType={isAlbum ? 'album' : 'playlist'}
               isUpload={isUpload}
               isAllowedToPublish={
-                !isAlbum &&
-                (initialContents?.track_ids?.length ?? 1) > 0 &&
-                !isUpload
+                isAlbum ||
+                (!isAlbum &&
+                  (initialContents?.track_ids?.length ?? 1) > 0 &&
+                  !isUpload)
               }
             />
           ) : (
