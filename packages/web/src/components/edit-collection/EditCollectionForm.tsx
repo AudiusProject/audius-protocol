@@ -158,7 +158,7 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
             <VisibilityField
               entityType={isAlbum ? 'album' : 'playlist'}
               isUpload={isUpload}
-              isAllowedToPublish={
+              isPublishable={
                 isAlbum ||
                 (!isAlbum &&
                   (initialContents?.track_ids?.length ?? 1) > 0 &&

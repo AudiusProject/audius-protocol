@@ -39,7 +39,7 @@ type VisibilityType = 'scheduled' | 'public' | 'hidden'
 type VisibilityFieldProps = {
   entityType: 'track' | 'album' | 'playlist'
   isUpload: boolean
-  isAllowedToPublish?: boolean
+  isPublishable?: boolean
 }
 
 const visibilitySchema = z
@@ -78,7 +78,7 @@ const visibilitySchema = z
   )
 
 export const VisibilityField = (props: VisibilityFieldProps) => {
-  const { entityType, isUpload, isAllowedToPublish = true } = props
+  const { entityType, isUpload, isPublishable = true } = props
   const useEntityField = entityType === 'track' ? useTrackField : useField
   const [
     { value: isHidden },
@@ -181,7 +181,7 @@ export const VisibilityField = (props: VisibilityFieldProps) => {
         <VisibilityMenuFields
           entityType={entityType}
           initiallyPublic={!initiallyHidden && !isUpload}
-          isAllowedToPublish={isAllowedToPublish}
+          isPublishable={isPublishable}
         />
       }
     />
@@ -191,7 +191,7 @@ export const VisibilityField = (props: VisibilityFieldProps) => {
 type VisibilityMenuFieldsProps = {
   entityType: 'track' | 'album' | 'playlist'
   initiallyPublic?: boolean
-  isAllowedToPublish?: boolean
+  isPublishable?: boolean
 }
 
 const VisibilityMenuFields = (props: VisibilityMenuFieldsProps) => {
@@ -201,7 +201,7 @@ const VisibilityMenuFields = (props: VisibilityMenuFieldsProps) => {
   const { isEnabled: isPaidScheduledEnabled } = useFeatureFlag(
     FeatureFlags.PAID_SCHEDULED
   )
-  const { initiallyPublic, isAllowedToPublish = true, entityType } = props
+  const { initiallyPublic, isPublishable = true, entityType } = props
   const [field] = useField<VisibilityType>('visibilityType')
 
   return (
@@ -210,9 +210,9 @@ const VisibilityMenuFields = (props: VisibilityMenuFieldsProps) => {
         value='public'
         label={messages.public}
         description={messages.publicDescription}
-        disabled={!isAllowedToPublish}
+        disabled={!isPublishable}
         tooltipText={
-          isAllowedToPublish ? undefined : messages.emptyPlaylistTooltipText
+          isPublishable ? undefined : messages.emptyPlaylistTooltipText
         }
       />
       <ModalRadioItem
