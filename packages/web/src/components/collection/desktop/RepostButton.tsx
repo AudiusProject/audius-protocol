@@ -48,6 +48,7 @@ export const RepostButton = (props: RepostButtonProps) => {
       <IconButton
         color={color ?? (has_current_user_reposted ? 'active' : 'subdued')}
         icon={IconRepost}
+        size='2xl'
         aria-label={
           has_current_user_reposted ? messages.unrepost : messages.repost
         }
