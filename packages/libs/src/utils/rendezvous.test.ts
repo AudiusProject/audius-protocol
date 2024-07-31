@@ -24,64 +24,6 @@ describe('RendezvousHash', () => {
     const highestNode = hash.get(key)
     assert(nodes.includes(highestNode))
   })
-
-  it('should return top N highest scoring nodes for a given key', () => {
-    const nodes = ['node1', 'node2', 'node3']
-    const hash = new RendezvousHash(...nodes)
-    const key = 'test-key'
-    const top2Nodes = hash.getNcrc32(2, key)
-    assert.equal(top2Nodes.length, 2)
-    assert(nodes.includes(top2Nodes[0]!))
-    assert(nodes.includes(top2Nodes[1]!))
-  })
-})
-
-// Ensures the hash results match the results of the equivalent Go code.
-// See https://github.com/tysonmote/rendezvous/blob/be0258dbbd3d0df637b328d951067124541e7b6a/rendezvous_test.go
-
-describe('RendezvousHash - Golang test cases', () => {
-  it('TestHashGet', () => {
-    const hash = new RendezvousHash()
-
-    const gotNode = hash.get('foo')
-    assert.equal(gotNode, '')
-
-    hash.add('a', 'b', 'c', 'd', 'e')
-
-    const testcases = [
-      { key: '', expectedNode: 'd' },
-      { key: 'foo', expectedNode: 'e' },
-      { key: 'bar', expectedNode: 'c' }
-    ]
-
-    for (const testcase of testcases) {
-      const gotNode = hash.get(testcase.key)
-      assert.equal(gotNode, testcase.expectedNode)
-    }
-  })
-
-  it('Test_Hash_GetN', () => {
-    const hash = new RendezvousHash()
-
-    const gotNodes = hash.getNcrc32(2, 'foo')
-    assert.deepEqual(gotNodes, [])
-
-    hash.add('a', 'b', 'c', 'd', 'e')
-
-    const testcases = [
-      { count: 1, key: 'foo', expectedNodes: ['e'] },
-      { count: 2, key: 'bar', expectedNodes: ['c', 'e'] },
-      { count: 3, key: 'baz', expectedNodes: ['d', 'a', 'b'] },
-      { count: 2, key: 'biz', expectedNodes: ['b', 'a'] },
-      { count: 0, key: 'boz', expectedNodes: [] },
-      { count: 100, key: 'floo', expectedNodes: ['d', 'a', 'b', 'c', 'e'] }
-    ]
-
-    for (const testcase of testcases) {
-      const gotNodes = hash.getNcrc32(testcase.count, testcase.key)
-      assert.deepEqual(gotNodes, testcase.expectedNodes)
-    }
-  })
 })
 
 const nodeList =
@@ -89,12 +31,12 @@ const nodeList =
     ','
   )
 
-describe('HashMigration', () => {
+describe('sha256 ordering', () => {
   const hasher = new RendezvousHash(...nodeList)
   const cid = 'baeaaaiqsedziwknj44jsl5fak6vcbszzjlnl7pqtw2ipnyg7rsh5a2xnql2p2'
 
   it('has sha256 ordering', () => {
-    const ordered = hasher.rendezvous256(cid).slice(0, 6)
+    const ordered = hasher.getN(6, cid)
     const expected = [
       'https://blockdaemon-audius-content-09.bdnodes.net',
       'https://cn4.mainnet.audiusindex.org',
@@ -104,19 +46,5 @@ describe('HashMigration', () => {
       'https://blockdaemon-audius-content-07.bdnodes.net'
     ]
     assert.deepEqual(ordered, expected)
-  })
-
-  it('has r2+r2', () => {
-    const ordered = hasher.getN(6, cid)
-    assert.deepEqual(ordered, [
-      // # crc32 (top2)
-      'https://audius-content-15.cultur3stake.com',
-      'https://audius-content-4.figment.io',
-      // # sha256
-      'https://blockdaemon-audius-content-09.bdnodes.net',
-      'https://cn4.mainnet.audiusindex.org',
-      'https://cn0.mainnet.audiusindex.org',
-      'https://creatornode.audius3.prod-eks-ap-northeast-1.staked.cloud'
-    ])
   })
 })
