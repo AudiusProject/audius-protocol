@@ -2,7 +2,7 @@ import { PropsWithChildren, createContext, useContext, useState } from 'react'
 
 import { ID } from '@audius/common/models'
 import { Nullable, encodeHashId } from '@audius/common/utils'
-import { EntityType } from '@audius/sdk/src/sdk/services'
+import { EntityType } from '@audius/sdk'
 import { useAsync } from 'react-use'
 
 import { audiusSdk } from 'services/audius-sdk'

@@ -1,6 +1,7 @@
-import { Divider, Flex, Paper, Skeleton, Text } from '@audius/harmony'
+import { Divider, Flex, Paper, Skeleton } from '@audius/harmony'
 
 import { CommentForm } from './CommentForm'
+import { CommentHeader } from './CommentHeader'
 import { useCurrentCommentSection } from './CommentSectionContext'
 import { CommentThread } from './CommentThread'
 
@@ -8,12 +9,11 @@ export const CommentSectionDesktop = () => {
   const { userId, isLoading, comments } = useCurrentCommentSection()
   const commentPostAllowed = userId !== null
 
+  // Loading state
   if (isLoading)
     return (
       <Flex gap='l' direction='column' w='100%' alignItems='flex-start'>
-        <Text variant='title' size='l'>
-          Comments
-        </Text>
+        <CommentHeader isLoading />
         <Paper p='xl' w='100%' direction='column' gap='xl'>
           <Flex
             gap='s'
@@ -36,9 +36,7 @@ export const CommentSectionDesktop = () => {
 
   return (
     <Flex gap='l' direction='column' w='100%' alignItems='flex-start'>
-      <Text variant='title' size='l'>
-        Comments ({comments.length})
-      </Text>
+      <CommentHeader commentCount={comments.length} />
       <Paper w='100%' direction='column'>
         {commentPostAllowed !== null ? (
           <>
