@@ -135,10 +135,9 @@ export const CollectionCard = forwardRef(
             >
               <Text ellipses>{playlist_name}</Text>
             </TextLink>
-            <UserLink
-              userId={playlist_owner_id}
-              css={{ justifyContent: 'center' }}
-            />
+            <Flex justifyContent='center'>
+              <UserLink userId={playlist_owner_id} popover />
+            </Flex>
           </CardContent>
         </Flex>
         <CardFooter>

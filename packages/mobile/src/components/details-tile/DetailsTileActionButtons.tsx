@@ -178,9 +178,10 @@ export const DetailsTileActionButtons = ({
 
   return (
     <Flex direction='row' justifyContent='center' gap='xl'>
-      {hideShare ? null : shareButton}
-      {isOwner && !ddexApp ? editButton : hideRepost ? null : repostButton}
+      {isOwner || ddexApp || hideRepost ? null : repostButton}
       {isOwner || hideFavorite ? null : favoriteButton}
+      {hideShare ? null : shareButton}
+      {isOwner && !ddexApp ? editButton : null}
       {isOwner && !isPublished ? publishButton : null}
       {hideOverflow ? null : overflowMenu}
     </Flex>

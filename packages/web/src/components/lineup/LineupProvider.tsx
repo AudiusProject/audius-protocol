@@ -510,12 +510,14 @@ class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
     let tileSize: TrackTileSize
     let lineupStyle = {}
     let containerClassName: string
+    let statSize = 'large'
     if (variant === LineupVariant.MAIN || variant === LineupVariant.PLAYLIST) {
       tileSize = TrackTileSize.LARGE
       lineupStyle = styles.main
     } else if (variant === LineupVariant.SECTION) {
       tileSize = TrackTileSize.SMALL
       lineupStyle = styles.section
+      statSize = 'small'
       containerClassName = styles.searchTrackTileContainer
     } else if (variant === LineupVariant.CONDENSED) {
       tileSize = TrackTileSize.SMALL
@@ -539,6 +541,7 @@ class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
             ordered,
             togglePlay: this.togglePlay,
             size: tileSize,
+            statSize,
             containerClassName,
             uid: entry.uid,
             showArtistPick: showLeadingElementArtistPick && !!leadingElementId,

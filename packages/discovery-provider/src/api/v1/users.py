@@ -50,11 +50,12 @@ from src.api.v1.helpers import (
     verify_token_parser,
 )
 from src.api.v1.models.activities import (
+    activity_full_model,
     activity_model,
-    activity_model_full,
-    collection_activity_model_full,
+    collection_activity_full_without_tracks_model,
+    make_polymorph_activity,
+    track_activity_full_model,
     track_activity_model,
-    track_activity_model_full,
 )
 from src.api.v1.models.common import favorite
 from src.api.v1.models.developer_apps import authorized_app, developer_app
@@ -652,11 +653,10 @@ class HandleAITrackList(HandleFullAITrackList):
 
 USER_REPOSTS_ROUTE = "/<string:id>/reposts"
 
-reposts_response = make_response(
-    "reposts", ns, fields.List(fields.Nested(activity_model))
-)
+reposts_response = make_response("reposts", ns, fields.List(activity_model))
+
 full_reposts_response = make_full_response(
-    "full_reposts", full_ns, fields.List(fields.Nested(activity_model_full))
+    "full_reposts", full_ns, fields.List(activity_full_model)
 )
 
 
@@ -735,7 +735,7 @@ class FullRepostList(Resource):
                 )
         activities = list(map(extend_activity, reposts))
 
-        return success_response(activities)
+        return success_response(list(map(make_polymorph_activity, activities)))
 
 
 REPOST_LIST_ROUTE = "/handle/<string:handle>/reposts"
@@ -768,7 +768,7 @@ class HandleFullRepostList(Resource):
                 )
         activities = list(map(extend_activity, reposts))
 
-        return success_response(activities)
+        return success_response(list(map(make_polymorph_activity, activities)))
 
     @full_ns.doc(
         id="""Get Reposts by Handle""",
@@ -832,13 +832,13 @@ favorites_response = make_response(
 track_library_full_response = make_full_response(
     "track_library_response_full",
     full_ns,
-    fields.List(fields.Nested(track_activity_model_full)),
+    fields.List(fields.Nested(track_activity_full_model)),
 )
 
 collection_library_full_response = make_full_response(
     "collection_library_response_full",
     full_ns,
-    fields.List(fields.Nested(collection_activity_model_full)),
+    fields.List(fields.Nested(collection_activity_full_without_tracks_model)),
 )
 
 
@@ -893,7 +893,7 @@ class UserTracksLibraryFull(Resource):
         filter_type = format_library_filter(args)
 
         get_tracks_args = GetTrackLibraryArgs(
-            filter_deleted=False,
+            filter_deleted=True,
             user_id=decoded_id,
             current_user_id=decoded_id,
             limit=limit,
@@ -1060,7 +1060,7 @@ history_response = make_response(
 history_response_full = make_full_response(
     "history_response_full",
     full_ns,
-    fields.List(fields.Nested(track_activity_model_full)),
+    fields.List(fields.Nested(track_activity_full_model)),
 )
 
 USER_HISTORY_TRACKS_ROUTE = "/<string:id>/history/tracks"
@@ -2160,7 +2160,7 @@ class Managers(Resource):
         check_authorized(user_id, authed_user_id)
 
         args = managed_users_route_parser.parse_args()
-        logger.info(f"DEBUG::args: {args}")
+        logger.debug(f"DEBUG::args: {args}")
         is_approved = args.get("is_approved", None)
         is_revoked = args.get("is_revoked", False)
         managers = get_user_managers_with_grants(

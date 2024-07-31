@@ -1,9 +1,10 @@
-import { useCallback } from 'react'
+import { useCallback, useRef } from 'react'
 
 import type {
   SearchFilter,
   SearchCategory as SearchCategoryType
 } from '@audius/common/api'
+import { useFocusEffect } from '@react-navigation/native'
 import { Image, ScrollView } from 'react-native'
 
 import {
@@ -50,6 +51,9 @@ const SearchCategory = (props: SearchCategoryProps) => {
         setCategory(isSelected ? (value as SearchCategoryType) : 'all')
       }}
       icon={isSelected ? IconCloseAlt : undefined}
+      // Disable unselect animation when the category is selected
+      // to avoid a flash of purple as the pills rearrange
+      disableUnselectAnimation
     />
   )
 }
@@ -80,6 +84,14 @@ export const SearchCategoriesAndFilters = () => {
   const navigation = useNavigation()
   const [category] = useSearchCategory()
   const [filters, setFilters] = useSearchFilters()
+
+  const scrollViewRef = useRef<ScrollView>(null)
+
+  useFocusEffect(
+    useCallback(() => {
+      scrollViewRef.current?.scrollTo({ x: 0, y: 0, animated: false })
+    }, [])
+  )
 
   const handlePressFilter = useCallback(
     (filter: string) => {
@@ -130,15 +142,26 @@ export const SearchCategoriesAndFilters = () => {
     return undefined
   }
 
+  const categoryFilters = filtersByCategory[category]
+  const activeFilterKeys = categoryFilters.filter((key) =>
+    Boolean(filters[key])
+  )
+  const inactiveFilterKeys = categoryFilters.filter((key) => !filters[key])
+  const sortedFilterKeys = [...activeFilterKeys, ...inactiveFilterKeys]
+
   return (
     <Flex backgroundColor='white'>
-      <ScrollView horizontal keyboardShouldPersistTaps='handled'>
+      <ScrollView
+        horizontal
+        keyboardShouldPersistTaps='handled'
+        ref={scrollViewRef}
+      >
         <Flex direction='row' alignItems='center' gap='s' p='l' pt='s'>
           <SearchCategory category='users' />
           <SearchCategory category='tracks' />
           <SearchCategory category='albums' />
           <SearchCategory category='playlists' />
-          {filtersByCategory[category].map((filter) => (
+          {sortedFilterKeys.map((filter) => (
             <FilterButton
               key={filter}
               size='small'

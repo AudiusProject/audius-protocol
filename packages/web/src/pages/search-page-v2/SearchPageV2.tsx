@@ -1,9 +1,9 @@
 import { useCallback, useContext, useEffect } from 'react'
 
 import { SearchCategory } from '@audius/common/src/api/search'
-import { Flex } from '@audius/harmony'
+import { Flex, useTheme } from '@audius/harmony'
 import { intersection, isEmpty } from 'lodash'
-import { generatePath, useParams } from 'react-router-dom'
+import { generatePath } from 'react-router-dom'
 import { useSearchParams } from 'react-router-dom-v5-compat'
 
 import { useHistoryContext } from 'app/HistoryProvider'
@@ -15,7 +15,7 @@ import NavContext, {
   RightPreset
 } from 'components/nav/mobile/NavContext'
 import Page from 'components/page/Page'
-import { useMedia } from 'hooks/useMedia'
+import { useIsMobile } from 'hooks/useIsMobile'
 import {
   SEARCH_BASE_ROUTE,
   SEARCH_PAGE,
@@ -26,6 +26,7 @@ import { RecentSearches } from './RecentSearches'
 import { SearchCatalogTile } from './SearchCatalogTile'
 import { CategoryKey, SearchHeader, categories } from './SearchHeader'
 import { SearchResults } from './SearchResults'
+import { useSearchCategory } from './utils'
 
 const useShowSearchResults = () => {
   const [urlSearchParams] = useSearchParams()
@@ -51,8 +52,8 @@ const useShowSearchResults = () => {
 }
 
 export const SearchPageV2 = () => {
-  const { isMobile } = useMedia()
-  const { category } = useParams<{ category: CategoryKey }>()
+  const isMobile = useIsMobile()
+  const category = useSearchCategory()
   const { history } = useHistoryContext()
   const [urlSearchParams] = useSearchParams()
   const query = urlSearchParams.get('query')
@@ -62,6 +63,7 @@ export const SearchPageV2 = () => {
   const hasDownloads = urlSearchParams.get('hasDownloads')
   const showSearchResults = useShowSearchResults()
   const { setStackReset } = useContext(RouterContext)
+  const { color } = useTheme()
 
   // Set nav header
   const { setLeft, setCenter, setRight } = useContext(NavContext)!
@@ -134,8 +136,14 @@ export const SearchPageV2 = () => {
         query ?? ''
       )}
       header={header}
+      fullHeight
     >
-      <Flex direction='column' w='100%'>
+      <Flex
+        direction='column'
+        w='100%'
+        h='100%'
+        style={isMobile ? { backgroundColor: color.background.white } : {}}
+      >
         {isMobile ? header : null}
         {!showSearchResults ? (
           <Flex

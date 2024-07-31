@@ -107,6 +107,13 @@ export async function startListener() {
       for (const r of playlists.rows) {
         pending.playlistIds.add(r.playlist_id)
       }
+      // re-index any tracks this is a stem of
+      const tracks = await client.query(
+        `select parent_track_id from stems where child_track_id = ${track.track_id}`
+      )
+      for (const r of tracks.rows) {
+        pending.trackIds.add(r.parent_track_id)
+      }
     },
     playlists: (playlist: PlaylistRow) => {
       pending.playlistIds.add(playlist.playlist_id)

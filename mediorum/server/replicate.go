@@ -78,14 +78,14 @@ func (ss *MediorumServer) replicateFile(fileName string, file io.ReadSeeker) ([]
 	for _, peer := range preferred {
 		logger := logger.With("to", peer)
 
-		logger.Info("replicating")
+		logger.Debug("replicating")
 
 		file.Seek(0, 0)
 		err := ss.replicateFileToHost(peer, fileName, file)
 		if err != nil {
 			logger.Error("replication failed", "err", err)
 		} else {
-			logger.Info("replicated")
+			logger.Debug("replicated")
 			success = append(success, peer)
 			if len(success) == ss.Config.ReplicationFactor {
 				break
@@ -99,7 +99,7 @@ func (ss *MediorumServer) replicateFile(fileName string, file io.ReadSeeker) ([]
 func (ss *MediorumServer) replicateToMyBucket(fileName string, file io.Reader) error {
 	ctx := context.Background()
 	logger := ss.logger.With("task", "replicateToMyBucket", "cid", fileName)
-	logger.Info("replicateToMyBucket")
+	logger.Debug("replicateToMyBucket")
 	key := cidutil.ShardCID(fileName)
 
 	w, err := ss.bucket.NewWriter(ctx, key, nil)
@@ -117,7 +117,7 @@ func (ss *MediorumServer) replicateToMyBucket(fileName string, file io.Reader) e
 
 func (ss *MediorumServer) dropFromMyBucket(fileName string) error {
 	logger := ss.logger.With("task", "dropFromMyBucket", "cid", fileName)
-	logger.Info("deleting blob")
+	logger.Debug("deleting blob")
 
 	key := cidutil.ShardCID(fileName)
 	ctx := context.Background()
@@ -207,7 +207,7 @@ func (ss *MediorumServer) pullFileFromHost(host, cid string) error {
 		return errors.New("should not pull blob from self")
 	}
 	client := http.Client{
-		Timeout: time.Minute,
+		Timeout: time.Minute * 3,
 	}
 	u := apiPath(host, "internal/blobs", url.PathEscape(cid))
 

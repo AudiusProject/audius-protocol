@@ -19,27 +19,15 @@ const topArtistsApi = createApi({
     getTopArtistsInGenre: {
       async fetch(args: GetTopArtistsForGenreArgs, context) {
         const { genre, limit, offset } = args
-        const { apiClient, audiusSdk, checkSDKMigration } = context
+        const { audiusSdk } = context
         const sdk = await audiusSdk()
 
-        return await checkSDKMigration({
-          legacy: apiClient.getTopArtistGenres({
-            genres: [genre],
-            limit,
-            offset
-          }),
-          migrated: async () =>
-            userMetadataListFromSDK(
-              (
-                await sdk.full.users.getTopUsersInGenre({
-                  genre: [genre],
-                  limit,
-                  offset
-                })
-              ).data
-            ),
-          endpointName: 'getTopArtistsInGenre'
+        const { data } = await sdk.full.users.getTopUsersInGenre({
+          genre: [genre],
+          limit,
+          offset
         })
+        return userMetadataListFromSDK(data)
       },
       options: { kind: Kind.USERS, schemaKey: 'users' }
     },

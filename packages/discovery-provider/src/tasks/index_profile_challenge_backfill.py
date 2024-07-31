@@ -51,14 +51,14 @@ def enqueue_social_rewards_check(db: SessionManager, challenge_bus: ChallengeEve
         backfill_blocknumber = get_config_backfill()
         # check config for value
         if backfill_blocknumber == None:
-            logger.info(
+            logger.debug(
                 "index_profile_challenge_backfill.py | backfill block number not set"
             )
             return None
         backfill_blocknumber = int(backfill_blocknumber)
         block_backfill = get_latest_backfill(session, backfill_blocknumber)
         if block_backfill is None:
-            logger.info("index_profile_challenge_backfill.py | Backfill complete")
+            logger.debug("index_profile_challenge_backfill.py | Backfill complete")
             return
         # Do it
         min_blocknumber = block_backfill - BLOCK_INTERVAL
@@ -71,7 +71,7 @@ def enqueue_social_rewards_check(db: SessionManager, challenge_bus: ChallengeEve
             )
             .all()
         )
-        logger.info(
+        logger.debug(
             f"index_profile_challenge_backfill.py | calculated {len(reposts)} reposts"
         )
         for repost in reposts:
@@ -89,7 +89,7 @@ def enqueue_social_rewards_check(db: SessionManager, challenge_bus: ChallengeEve
             )
             .all()
         )
-        logger.info(
+        logger.debug(
             f"index_profile_challenge_backfill.py | calculated {len(saves)} saves"
         )
         for save in saves:
@@ -107,7 +107,7 @@ def enqueue_social_rewards_check(db: SessionManager, challenge_bus: ChallengeEve
             )
             .all()
         )
-        logger.info(
+        logger.debug(
             f"index_profile_challenge_backfill.py | calculated {len(follows)} follows"
         )
         for follow in follows:
@@ -140,7 +140,7 @@ def get_latest_backfill(session: Session, backfill_blocknumber: int) -> Optional
             return block_number
 
         if checkpoint <= backfill_blocknumber:
-            logger.info("index_profile_challenge_backfill.py | backfill complete")
+            logger.debug("index_profile_challenge_backfill.py | backfill complete")
             return None
 
         return checkpoint
@@ -172,11 +172,11 @@ def index_profile_challenge_backfill(self):
         # Attempt to acquire lock - do not block if unable to acquire
         have_lock = update_lock.acquire(blocking=False)
         if have_lock:
-            logger.info("index_profile_challenge_backfill.py | Acquired lock")
+            logger.debug("index_profile_challenge_backfill.py | Acquired lock")
             with challenge_bus.use_scoped_dispatch_queue():
                 enqueue_social_rewards_check(db, challenge_bus)
         else:
-            logger.info("index_profile_challenge_backfill.py | Failed to acquire lock")
+            logger.debug("index_profile_challenge_backfill.py | Failed to acquire lock")
     except Exception as e:
         logger.error(
             "index_profile_challenge_backfill.py | Fatal error in main loop",

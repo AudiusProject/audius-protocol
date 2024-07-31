@@ -18,9 +18,10 @@ import { CollectionValues } from '@audius/common/schemas'
 import { FeatureFlags } from '@audius/common/services'
 import {
   accountSelectors,
-  EditPlaylistValues,
+  EditCollectionValues,
   editAccessConfirmationModalUIActions
 } from '@audius/common/store'
+import { getUsersMayLoseAccess } from '@audius/common/utils'
 import {
   IconCart,
   IconCollectible,
@@ -160,7 +161,7 @@ export const PriceAndAudienceField = (props: PriceAndAudienceFieldProps) => {
   // For edit flows we need to track initial stream conditions from the parent form (not from inside contextual menu)
   // So we take this from the parent form and pass it down to the menu fields
   const { initialValues: parentFormInitialValues } = useFormikContext<
-    EditPlaylistValues | CollectionValues | TrackEditFormValues
+    EditCollectionValues | CollectionValues | TrackEditFormValues
   >()
   const parentFormInitialStreamConditions =
     'stream_conditions' in parentFormInitialValues
@@ -587,46 +588,16 @@ export const PriceAndAudienceField = (props: PriceAndAudienceFieldProps) => {
       icon={<IconHidden />}
       initialValues={initialValues}
       onSubmit={(values) => {
-        const isInitiallyUsdcGated = isContentUSDCPurchaseGated(
-          parentFormInitialStreamConditions
-        )
-        const isInitiallyTipGated = isContentTipGated(
-          parentFormInitialStreamConditions
-        )
-        const isInitiallyFollowGated = isContentFollowGated(
-          parentFormInitialStreamConditions
-        )
-        const isInitiallyCollectibleGated = isContentCollectibleGated(
-          parentFormInitialStreamConditions
-        )
-
         const availabilityType = get(values, STREAM_AVAILABILITY_TYPE)
         const specialAccessType = get(values, SPECIAL_ACCESS_TYPE)
+        const usersMayLoseAccess = getUsersMayLoseAccess({
+          availability: availabilityType,
+          initialStreamConditions: parentFormInitialStreamConditions,
+          specialAccessType:
+            specialAccessType === SpecialAccessType.FOLLOW ? 'follow' : 'tip'
+        })
 
-        const stillUsdcGated =
-          isInitiallyUsdcGated &&
-          availabilityType === StreamTrackAvailabilityType.USDC_PURCHASE
-        const stillFollowGated =
-          isInitiallyFollowGated &&
-          availabilityType === StreamTrackAvailabilityType.SPECIAL_ACCESS &&
-          specialAccessType === SpecialAccessType.FOLLOW
-        const stillTipGated =
-          isInitiallyTipGated &&
-          availabilityType === StreamTrackAvailabilityType.SPECIAL_ACCESS &&
-          specialAccessType === SpecialAccessType.TIP
-        const stillCollectibleGated =
-          isInitiallyCollectibleGated &&
-          availabilityType === StreamTrackAvailabilityType.COLLECTIBLE_GATED
-        const stillSameGate =
-          stillUsdcGated ||
-          stillFollowGated ||
-          stillTipGated ||
-          stillCollectibleGated
-        const usersMayLoseAccess =
-          !stillSameGate &&
-          availabilityType !== StreamTrackAvailabilityType.FREE
-
-        if (isEditableAccessEnabled && usersMayLoseAccess) {
+        if (!isUpload && isEditableAccessEnabled && usersMayLoseAccess) {
           openEditAccessConfirmation({
             confirmCallback: () => handleSubmit(values),
             cancelCallback: () => {

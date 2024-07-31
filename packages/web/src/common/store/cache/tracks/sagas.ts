@@ -181,6 +181,9 @@ function* editTrackAsync(action: ReturnType<typeof trackActions.editTrack>) {
     trackForEdit.musical_key || undefined
   )
 
+  // Format bpm
+  trackForEdit.bpm = trackForEdit.bpm ? Number(trackForEdit.bpm) : undefined
+
   yield* call(
     confirmEditTrack,
     action.trackId,
@@ -199,12 +202,7 @@ function* editTrackAsync(action: ReturnType<typeof trackActions.editTrack>) {
     }
   }
 
-  const getFeatureEnabled = yield* getContext('getFeatureEnabled')
-  const isEditTrackRedesignEnabled = yield* call(
-    getFeatureEnabled,
-    FeatureFlags.EDIT_TRACK_REDESIGN
-  )
-  if (isEditTrackRedesignEnabled && track.stems) {
+  if (track.stems) {
     const inProgressStemUploads = yield* select(
       getCurrentUploads,
       track.track_id

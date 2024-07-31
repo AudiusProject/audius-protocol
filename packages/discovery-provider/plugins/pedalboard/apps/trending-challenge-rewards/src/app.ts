@@ -5,7 +5,8 @@ import { AudiusLibs } from '@audius/sdk'
 import { SharedData } from './config'
 import {
   getChallengesDisbursementsUserbanksFriendlyEnsureSlots,
-  getTrendingChallenges
+  getTrendingChallenges,
+  getTrendingChallengesByDate
 } from './queries'
 import fetch from 'node-fetch'
 import axios from 'axios'
@@ -25,7 +26,8 @@ export const disburseTrendingRewards = async (
 // dryRun separated out so it can be run manually via another trigger
 export const onDisburse = async (
   app: App<SharedData>,
-  dryRun: boolean
+  dryRun: boolean,
+  targetSpecifier?: string,
 ): Promise<Result<undefined, string>> => {
   const db = discoveryDb
   const libs = app.viewAppData().libs
@@ -35,9 +37,19 @@ export const onDisburse = async (
 
   console.log(`doing ${dryRun ? 'a dry run' : 'the real deal'}`)
 
-  const completedBlockRes = await findStartingBlock(db)
-  if (completedBlockRes.err) return completedBlockRes
-  const [completedBlock, specifier] = completedBlockRes.unwrap()
+  let completedBlock, specifier;
+  if (!targetSpecifier) {
+    const completedBlockRes = await findStartingBlock(db)
+    if (completedBlockRes.err) return completedBlockRes
+    const [startingBlock, startBlockSpecifier] = completedBlockRes.unwrap()
+    completedBlock = startingBlock
+    specifier = startBlockSpecifier
+  } else {
+    const response = await getTrendingChallengesByDate(db, targetSpecifier)
+    const challenge = response[0]
+    completedBlock = challenge.completed_blocknumber! - 1
+    specifier = challenge.specifier
+  }
 
   const trimmedSpecifier = specifier.split(':')[0]
 

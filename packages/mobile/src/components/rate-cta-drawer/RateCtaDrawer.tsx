@@ -3,7 +3,7 @@ import { useCallback, useState } from 'react'
 import { Name } from '@audius/common/models'
 import type { Nullable } from '@audius/common/utils'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import { View } from 'react-native'
+import { Linking, View } from 'react-native'
 import InAppReview from 'react-native-in-app-review'
 
 import {
@@ -18,6 +18,8 @@ import { NativeDrawer } from 'app/components/drawer'
 import { RATE_CTA_STORAGE_KEY } from 'app/constants/storage-keys'
 import { make, track } from 'app/services/analytics'
 import { makeStyles } from 'app/styles'
+import { isSolanaPhone } from 'app/utils/os'
+import { SOLANA_DAPP_STORE_LINK } from 'app/utils/playStore'
 import { useThemeColors } from 'app/utils/theme'
 
 const DRAWER_NAME = 'RateCallToAction'
@@ -65,19 +67,23 @@ export const RateCtaDrawer = () => {
     useState<Nullable<'YES' | 'NO'>>(null)
 
   const handleReviewConfirm = useCallback(() => {
-    const isAvailable = InAppReview.isAvailable()
+    const isAvailable = isSolanaPhone ? true : InAppReview.isAvailable()
     track(make({ eventName: Name.RATE_CTA_RESPONSE_YES }))
     setUserRateResponse('YES')
     AsyncStorage.setItem(RATE_CTA_STORAGE_KEY, 'YES')
 
     if (isAvailable) {
-      InAppReview.RequestInAppReview()
-        .then((hasFlowFinishedSuccessfully) => {
-          // Do things after the popup shows up
-        })
-        .catch((error) => {
-          console.error(error)
-        })
+      if (isSolanaPhone) {
+        Linking.openURL(SOLANA_DAPP_STORE_LINK)
+      } else {
+        InAppReview.RequestInAppReview()
+          .then((hasFlowFinishedSuccessfully) => {
+            // Do things after the popup shows up
+          })
+          .catch((error) => {
+            console.error(error)
+          })
+      }
     }
   }, [])
 

@@ -15,7 +15,7 @@ import { CSSObject, useTheme } from '@emotion/react'
 import { capitalize } from 'lodash'
 
 import Header from 'components/header/desktop/Header'
-import { useMedia } from 'hooks/useMedia'
+import { useIsMobile } from 'hooks/useIsMobile'
 
 import { filters } from './SearchFilters'
 import { Category } from './types'
@@ -46,7 +46,7 @@ type SearchHeaderProps = {
 export const SearchHeader = (props: SearchHeaderProps) => {
   const { category: categoryKey = 'all', setCategory, query, title } = props
 
-  const { isMobile } = useMedia()
+  const isMobile = useIsMobile()
   const { color } = useTheme()
 
   const mobileHeaderCss: CSSObject = {
@@ -71,7 +71,7 @@ export const SearchHeader = (props: SearchHeaderProps) => {
     [setCategory]
   )
 
-  const filterKeys = categories[categoryKey].filters
+  const filterKeys: string[] = categories[categoryKey].filters
 
   const categoryRadioGroup = (
     <RadioGroup
@@ -109,15 +109,15 @@ export const SearchHeader = (props: SearchHeaderProps) => {
       primary={title}
       secondary={
         query ? (
-          <Flex ml='l'>
-            <Text variant='heading' strength='weak'>
-              &#8220;{query}&#8221;
+          <Flex ml='l' css={{ maxWidth: 200 }}>
+            <Text variant='heading' strength='weak' ellipses>
+              {query}
             </Text>
           </Flex>
         ) : null
       }
       bottomBar={
-        <Flex direction='row' gap='s' mv='m'>
+        <Flex direction='row' gap='s' mv={filterKeys.length ? 'm' : undefined}>
           {filterKeys.map((filterKey) => {
             const FilterComponent = filters[filterKey]
             return <FilterComponent key={filterKey} />

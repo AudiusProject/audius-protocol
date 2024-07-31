@@ -155,11 +155,35 @@ function* editPlaylistAsync(
   )
 
   // Optimistic update #2 to update the artwork
+  const playlistBeforeEdit = yield* select(getCollection, { id: playlistId })
   yield* call(optimisticUpdateCollection, playlist)
 
   yield* call(confirmEditPlaylist, playlistId, userId, playlist)
   yield* put(collectionActions.editPlaylistSucceeded())
   yield* put(toast({ content: messages.editToast }))
+
+  if (playlistBeforeEdit?.is_private && !playlist.is_private) {
+    const playlistTracks = yield* select(getCollectionTracks, {
+      id: playlistId
+    })
+
+    // Publish all hidden tracks
+    // If the playlist is a scheduled release
+    //    AND all tracks are scheduled releases, publish them all
+    const isEachTrackScheduled = playlistTracks?.every(
+      (track) => track.is_unlisted && track.is_scheduled_release
+    )
+    const isEarlyRelease =
+      playlistBeforeEdit.is_scheduled_release && isEachTrackScheduled
+    for (const track of playlistTracks ?? []) {
+      if (
+        track.is_unlisted &&
+        (!track.is_scheduled_release || isEarlyRelease)
+      ) {
+        yield* put(trackPageActions.makeTrackPublic(track.track_id))
+      }
+    }
+  }
 }
 
 function* confirmEditPlaylist(
@@ -168,7 +192,6 @@ function* confirmEditPlaylist(
   formFields: Collection
 ) {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-  const playlistBeforeEdit = yield* select(getCollection, { id: playlistId })
   yield* put(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.COLLECTIONS, playlistId),
@@ -211,14 +234,6 @@ function* confirmEditPlaylist(
             }
           ])
         )
-
-        if (playlistBeforeEdit?.is_private && !confirmedPlaylist.is_private) {
-          for (const track of confirmedPlaylist.tracks ?? []) {
-            if (track.is_unlisted) {
-              yield* put(trackPageActions.makeTrackPublic(track.track_id))
-            }
-          }
-        }
       },
       function* ({ error, timeout, message }) {
         yield* put(
@@ -489,7 +504,8 @@ function* publishPlaylistAsync(
     userId,
     action.playlistId,
     playlist,
-    action.dismissToastKey
+    action.dismissToastKey,
+    action.isAlbum
   )
 }
 
@@ -497,7 +513,8 @@ function* confirmPublishPlaylist(
   userId: ID,
   playlistId: ID,
   playlist: Collection,
-  dismissToastKey?: string
+  dismissToastKey?: string,
+  isAlbum?: boolean
 ) {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   yield* put(
@@ -536,8 +553,22 @@ function* confirmPublishPlaylist(
           ])
         )
 
-        for (const track of confirmedPlaylist.tracks ?? []) {
-          if (track.is_unlisted) {
+        const playlistTracks = yield* select(getCollectionTracks, {
+          id: playlistId
+        })
+        // Publish all hidden tracks
+        // If the playlist is a scheduled release
+        //    AND all tracks are scheduled releases, publish them all
+        const isEachTrackScheduled = playlistTracks?.every(
+          (track) => track.is_unlisted && track.is_scheduled_release
+        )
+        const isEarlyRelease =
+          playlist.is_scheduled_release && isEachTrackScheduled
+        for (const track of playlistTracks ?? []) {
+          if (
+            track.is_unlisted &&
+            (!track.is_scheduled_release || isEarlyRelease)
+          ) {
             yield* put(trackPageActions.makeTrackPublic(track.track_id))
           }
         }
@@ -546,7 +577,11 @@ function* confirmPublishPlaylist(
           yield* put(manualClearToast({ key: dismissToastKey }))
         }
 
-        yield* put(toast({ content: 'Your playlist is now public!' }))
+        yield* put(
+          toast({
+            content: `Your ${isAlbum ? 'album' : 'playlist'} is now public!`
+          })
+        )
       },
       function* ({ error, timeout, message }) {
         // Fail Call

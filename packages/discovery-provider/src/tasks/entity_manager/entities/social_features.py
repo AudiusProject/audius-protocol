@@ -274,7 +274,7 @@ def validate_duplicate_social_feature(
         )
 
         if duplicate_create or duplicate_delete:
-            params.logger.info(
+            params.logger.debug(
                 f"entity_manager.py | User {params.user_id} has already sent a {params.action} for record type {record_type} for {params.entity_type} {params.entity_id}. Skipping"
             )
             return False

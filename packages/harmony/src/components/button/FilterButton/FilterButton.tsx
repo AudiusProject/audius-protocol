@@ -69,21 +69,18 @@ export const FilterButton = forwardRef<HTMLButtonElement, FilterButtonProps>(
       background: color.secondary.s400,
       border: `1px solid ${color.secondary.s400}`,
       '&:hover': {
-        border: `1px solid ${color.secondary.s400}`,
-        transform: 'none'
+        border: `1px solid ${color.secondary.s400}`
       }
     }
 
-    const activeStyle =
-      variant !== 'fillContainer' || value === null
-        ? {
-            border: `1px solid ${color.border.strong}`,
-            background: color.background.surface2
-          }
-        : {}
-
     const hoverStyle = {
-      border: `1px solid ${color.neutral.n800}`,
+      background: color.background.surface1
+    }
+
+    const activeStyle = {
+      background: color.background.surface2
+    }
+    const disabledTransform = {
       transform: 'none'
     }
 
@@ -102,16 +99,21 @@ export const FilterButton = forwardRef<HTMLButtonElement, FilterButtonProps>(
       lineHeight: typography.lineHeight.s,
       opacity: disabled ? 0.6 : 1,
 
-      '&:hover': hoverStyle,
-      '&:focus': hoverStyle,
-
-      '&:active': {
-        ...activeStyle,
-        transform: 'none'
+      '&:hover': {
+        ...disabledTransform,
+        ...(value === null && !isOpen ? hoverStyle : {})
       },
+      '&:focus': {
+        ...disabledTransform,
+        ...(value === null ? activeStyle : {})
+      },
+      '&:active': {
+        ...disabledTransform,
+        ...(value === null ? activeStyle : {})
+      },
+      ...(isOpen ? activeStyle : {}),
 
       ...(size === 'small' ? smallStyles : defaultStyles),
-      ...(isOpen ? activeStyle : {}),
       ...(variant === 'fillContainer' && value !== null
         ? fillContainerStyles
         : {})
@@ -123,11 +125,9 @@ export const FilterButton = forwardRef<HTMLButtonElement, FilterButtonProps>(
       if (onClick) {
         onClick()
       } else {
-        if (variant === 'fillContainer') {
-          setIsOpen((isOpen: boolean) => !isOpen)
-        }
+        setIsOpen((isOpen: boolean) => !isOpen)
       }
-    }, [variant, setIsOpen, onClick])
+    }, [setIsOpen, onClick])
 
     const Icon = useMemo(() => {
       return variant === 'fillContainer' && value !== null
@@ -136,15 +136,19 @@ export const FilterButton = forwardRef<HTMLButtonElement, FilterButtonProps>(
               aria-label='cancel'
               onClick={(e) => {
                 e.stopPropagation()
-                // @ts-ignore
-                onChange?.(null)
-                onReset?.()
+                if (onClick) {
+                  onClick()
+                } else {
+                  // @ts-ignore
+                  onChange?.(null)
+                  onReset?.()
+                }
               }}
               {...props}
             />
           )) as IconComponent)
         : iconRight ?? undefined
-    }, [variant, value, onChange, onReset, iconRight])
+    }, [variant, value, iconRight, onClick, onChange, onReset])
 
     useEffect(() => {
       if (isOpen) {

@@ -22,6 +22,7 @@ import { getPrimaryRoute } from 'app/utils/navigation'
 import { useThemeVariant } from 'app/utils/theme'
 
 import { navigationThemes } from './navigationThemes'
+
 const { getAccountUser } = accountSelectors
 
 type NavigationContainerProps = {
@@ -72,6 +73,18 @@ const createFeedStackState = (route): PartialState<NavigationState> =>
       }
     ]
   })
+
+/**
+ * Convert query parameters to an object
+ */
+const convertQueryParamsToObject = (url: string) => {
+  // This baseUrl is unimportant, we just need to create a URL object
+  const baseUrl = 'https://audius.co'
+
+  const urlObj = new URL(url, baseUrl)
+  const params = new URLSearchParams(urlObj.search)
+  return Object.fromEntries(params)
+}
 
 /**
  * NavigationContainer contains the react-navigation context
@@ -267,6 +280,20 @@ const NavigationContainer = (props: NavigationContainerProps) => {
           name: 'Profile',
           params: {
             id
+          }
+        })
+      }
+
+      // /search
+      if (path.match(`^/search(/|$)`)) {
+        const { query, ...filters } = convertQueryParamsToObject(path)
+
+        return createFeedStackState({
+          name: 'Search',
+          params: {
+            query,
+            category: pathPart(path)(2) ?? 'all',
+            filters
           }
         })
       }

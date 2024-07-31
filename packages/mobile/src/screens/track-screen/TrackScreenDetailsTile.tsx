@@ -9,7 +9,8 @@ import {
   PlaybackSource,
   FavoriteType,
   SquareSizes,
-  isContentUSDCPurchaseGated
+  isContentUSDCPurchaseGated,
+  isContentCollectibleGated
 } from '@audius/common/models'
 import type {
   UID,
@@ -18,6 +19,7 @@ import type {
   Track,
   User
 } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import type { CommonState } from '@audius/common/store'
 import {
   accountSelectors,
@@ -34,12 +36,13 @@ import {
   RepostType,
   playerSelectors,
   playbackPositionSelectors,
-  PurchaseableContentType
+  PurchaseableContentType,
+  usePublishContentModal
 } from '@audius/common/store'
 import {
+  formatReleaseDate,
   Genre,
   getDogEarType,
-  getLocalTimezone,
   removeNullable
 } from '@audius/common/utils'
 import dayjs from 'dayjs'
@@ -77,6 +80,7 @@ import { TrackImage } from 'app/components/image/TrackImage'
 import { OfflineStatusRow } from 'app/components/offline-downloads'
 import UserBadges from 'app/components/user-badges'
 import { useNavigation } from 'app/hooks/useNavigation'
+import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { make, track as record } from 'app/services/analytics'
 import { makeStyles } from 'app/styles'
 
@@ -111,9 +115,7 @@ const messages = {
   preview: 'Preview',
   hidden: 'Hidden',
   releases: (releaseDate: string) =>
-    `Releases ${dayjs(releaseDate).format(
-      'M/D/YY [@] h:mm A'
-    )} ${getLocalTimezone()}`
+    `Releases ${formatReleaseDate({ date: releaseDate, withHour: true })}`
 }
 
 const useStyles = makeStyles(({ palette, spacing }) => ({
@@ -168,6 +170,10 @@ export const TrackScreenDetailsTile = ({
   const isCurrentTrack = useSelector((state: CommonState) => {
     return track && track.track_id === getTrackId(state)
   })
+  const { onOpen: openPublishModal } = usePublishContentModal()
+  const { isEnabled: isSearchV2Enabled } = useFeatureFlag(
+    FeatureFlags.SEARCH_V2
+  )
 
   const {
     _co_sign: coSign,
@@ -231,11 +237,20 @@ export const TrackScreenDetailsTile = ({
     isStreamGated ||
     (!isOwner && (playCount ?? 0) <= 0)
 
-  const headerText = isRemix
-    ? messages.remix
-    : isStreamGated
-    ? messages.premiumTrack
-    : messages.track
+  let headerText
+  if (isRemix) {
+    headerText = messages.remix
+  } else if (isStreamGated) {
+    if (isContentCollectibleGated(streamConditions)) {
+      headerText = messages.collectibleGated
+    } else if (isContentUSDCPurchaseGated(streamConditions)) {
+      headerText = messages.premiumTrack
+    } else {
+      headerText = messages.specialAccess
+    }
+  } else {
+    headerText = messages.track
+  }
 
   const PlayIcon =
     playbackPositionInfo?.status === 'COMPLETED' && !isCurrentTrack
@@ -367,9 +382,13 @@ export const TrackScreenDetailsTile = ({
 
   const handlePressTag = useCallback(
     (tag: string) => {
-      navigation.push('TagSearch', { query: tag })
+      if (isSearchV2Enabled) {
+        navigation.push('Search', { query: `#${tag}` })
+      } else {
+        navigation.push('TagSearch', { query: tag })
+      }
     },
-    [navigation]
+    [isSearchV2Enabled, navigation]
   )
 
   const handlePressEdit = useCallback(() => {
@@ -411,6 +430,10 @@ export const TrackScreenDetailsTile = ({
       })
     )
   }
+
+  const handlePressPublish = useCallback(() => {
+    openPublishModal({ contentId: trackId, contentType: 'track' })
+  }, [openPublishModal, trackId])
 
   const renderBottomContent = () => {
     return hasDownloadableAssets ? <DownloadSection trackId={trackId} /> : null
@@ -536,12 +559,12 @@ export const TrackScreenDetailsTile = ({
           onPressRepost={handlePressRepost}
           onPressSave={handlePressSave}
           onPressShare={handlePressShare}
+          onPressPublish={handlePressPublish}
         />
       </Flex>
       <Flex
         p='l'
         gap='l'
-        alignItems='center'
         borderTop='default'
         backgroundColor='surface1'
         borderBottomLeftRadius='m'

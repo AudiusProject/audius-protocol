@@ -1,16 +1,12 @@
-import { useCallback } from 'react'
+import { useCallback, useState } from 'react'
 
 import dayjs from 'dayjs'
-import calendar from 'dayjs/plugin/calendar'
 import { Pressable } from 'react-native'
 import type { ReactNativeModalDateTimePickerProps } from 'react-native-modal-datetime-picker'
 import DateTimePickerModal from 'react-native-modal-datetime-picker'
-import { useToggle } from 'react-use'
 
 import { TextInput, useTheme } from '@audius/harmony-native'
 import type { TextInputProps } from '@audius/harmony-native'
-
-dayjs.extend(calendar)
 
 type DateTimeModalProps = {
   date?: string
@@ -18,33 +14,37 @@ type DateTimeModalProps = {
   mode: ReactNativeModalDateTimePickerProps['mode']
   inputProps: TextInputProps
   dateTimeProps?: Partial<ReactNativeModalDateTimePickerProps>
+  formatDate?: (date: string) => string
 }
 
 export const DateTimeInput = (props: DateTimeModalProps) => {
-  const { date, onChange, mode, inputProps, dateTimeProps } = props
+  const {
+    date,
+    onChange,
+    mode,
+    inputProps,
+    dateTimeProps,
+    formatDate = (date) =>
+      dayjs(date).format(mode === 'date' ? 'M/D/YY' : 'h:mm A')
+  } = props
   const { color, type } = useTheme()
-  const [isDateTimeOpen, toggleDateTimeOpen] = useToggle(false)
+  const [isDateTimeOpen, setIsDateTimeOpen] = useState(false)
+
+  const openDateTime = useCallback(() => {
+    setIsDateTimeOpen(true)
+  }, [setIsDateTimeOpen])
+
+  const closeDateTime = useCallback(() => {
+    setIsDateTimeOpen(false)
+  }, [setIsDateTimeOpen])
 
   const handleChange = useCallback(
     (date: Date) => {
       onChange(date.toString())
-      toggleDateTimeOpen()
+      setIsDateTimeOpen((d) => !d)
     },
-    [onChange, toggleDateTimeOpen]
+    [onChange, setIsDateTimeOpen]
   )
-
-  const inputValue = date
-    ? mode === 'date'
-      ? dayjs(date).calendar(null, {
-          sameDay: '[Today]',
-          nextDay: '[Tomorrow]',
-          nextWeek: 'dddd',
-          lastDay: '[Yesterday]',
-          lastWeek: '[Last] dddd',
-          sameElse: 'M/D/YY' // This is where you format dates that don't fit in the above categories
-        })
-      : dayjs(date).format('h:mm A')
-    : ''
 
   const dateProps: Partial<ReactNativeModalDateTimePickerProps> = {
     display: 'inline',
@@ -55,11 +55,11 @@ export const DateTimeInput = (props: DateTimeModalProps) => {
 
   return (
     <>
-      <Pressable onPress={toggleDateTimeOpen}>
+      <Pressable onPress={openDateTime}>
         <TextInput
           readOnly
           _disablePointerEvents
-          value={inputValue}
+          value={date ? formatDate(date) : ''}
           {...inputProps}
         />
       </Pressable>
@@ -69,7 +69,7 @@ export const DateTimeInput = (props: DateTimeModalProps) => {
         mode={mode}
         isVisible={isDateTimeOpen}
         onConfirm={handleChange}
-        onCancel={toggleDateTimeOpen}
+        onCancel={closeDateTime}
         {...(mode === 'date' ? dateProps : {})}
       />
     </>

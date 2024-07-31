@@ -639,20 +639,22 @@ export const GatedContentSection = ({
         mouseEnterDelay={0.1}
         component='span'
       >
-        <h2
-          className={styles.gatedContentOwner}
-          onClick={() =>
-            dispatch(pushRoute(profilePage(emptyStringGuard(entity.handle))))
-          }
-        >
-          {entity.name}
+        <Flex gap='xs' alignItems='center'>
+          <h2
+            className={styles.gatedContentOwner}
+            onClick={() =>
+              dispatch(pushRoute(profilePage(emptyStringGuard(entity.handle))))
+            }
+          >
+            {entity.name}
+          </h2>
           <UserBadges
             userId={entity.user_id}
             className={styles.badgeIcon}
             badgeSize={14}
             useSVGTiers
           />
-        </h2>
+        </Flex>
       </ArtistPopover>
     ),
     [dispatch]

@@ -29,7 +29,9 @@ def index_challenges_task(self):
         if have_lock:
             index_challenges(event_bus, db, redis)
         else:
-            logger.info("index_challenges.py | Failed to acquire index challenges lock")
+            logger.debug(
+                "index_challenges.py | Failed to acquire index challenges lock"
+            )
     except Exception as e:
         logger.error("index_challenges.py | Fatal error in main loop", exc_info=True)
         raise e

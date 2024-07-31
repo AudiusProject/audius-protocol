@@ -5,7 +5,10 @@ import {
   IconArrowRight as IconArrow,
   IconSearch,
   setupHotkeys,
-  removeHotkeys
+  removeHotkeys,
+  IconCloseAlt,
+  IconButton,
+  spacing
 } from '@audius/harmony'
 import AutoComplete from 'antd/lib/auto-complete'
 import Input from 'antd/lib/input'
@@ -427,11 +430,22 @@ class SearchBar extends Component {
             name='search'
             autoComplete='off'
             type='search'
+            style={{ paddingRight: spacing.s }}
             prefix={
               <IconSearch
                 color='subdued'
                 onClick={() => this.props.onSubmit('')}
               />
+            }
+            suffix={
+              this.state.value ? (
+                <IconButton
+                  icon={IconCloseAlt}
+                  size='2xs'
+                  color='subdued'
+                  onClick={this.props.onClear}
+                />
+              ) : null
             }
             onKeyDown={this.onKeyDown}
             spellCheck={false}

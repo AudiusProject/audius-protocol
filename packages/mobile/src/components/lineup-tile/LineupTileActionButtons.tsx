@@ -63,12 +63,7 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
   },
   button: {
     height: spacing(6),
-    width: spacing(6),
-    alignItems: 'center',
-    justifyContent: 'center'
-  },
-  buttonMargin: {
-    marginRight: spacing(6)
+    width: spacing(6)
   }
 }))
 
@@ -99,23 +94,21 @@ export const LineupTileActionButtons = ({
   const showPublishButton = isOwner && isUnlisted
 
   const repostButton = (
-    <View style={[styles.button, styles.buttonMargin]}>
-      <RepostButton
-        onPress={onPressRepost}
-        isActive={hasReposted}
-        isDisabled={disabled}
-      />
-    </View>
+    <RepostButton
+      wrapperStyle={styles.button}
+      onPress={onPressRepost}
+      isActive={hasReposted}
+      isDisabled={disabled}
+    />
   )
 
   const favoriteButton = (
-    <View style={[styles.button, styles.buttonMargin]}>
-      <FavoriteButton
-        onPress={onPressSave}
-        isActive={hasSaved}
-        isDisabled={disabled}
-      />
-    </View>
+    <FavoriteButton
+      wrapperStyle={styles.button}
+      onPress={onPressSave}
+      isActive={hasSaved}
+      isDisabled={disabled}
+    />
   )
 
   const shareButton = (
@@ -183,7 +176,7 @@ export const LineupTileActionButtons = ({
   } else {
     content = (
       <Flex direction='row' justifyContent='space-between' w='100%' mt='s'>
-        <Flex gap='2xl' direction='row'>
+        <Flex gap='2xl' direction='row' alignItems='center'>
           {showGatedAccessStatus && contentType && streamConditions != null ? (
             <LineupTileAccessStatus
               contentId={contentId}

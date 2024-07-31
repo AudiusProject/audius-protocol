@@ -10,7 +10,7 @@ import { SquareSizes, Collection, ID, Name } from '@audius/common/models'
 import { newCollectionMetadata } from '@audius/common/schemas'
 import { RandomImage } from '@audius/common/services'
 import {
-  EditPlaylistValues,
+  EditCollectionValues,
   accountSelectors,
   cacheCollectionsActions,
   collectionPageLineupActions as tracksActions
@@ -31,6 +31,8 @@ import { useTemporaryNavContext } from 'components/nav/mobile/NavContext'
 import TextElement, { Type } from 'components/nav/mobile/TextElement'
 import TrackList from 'components/track/mobile/TrackList'
 import { useCollectionCoverArt2 } from 'hooks/useCollectionCoverArt'
+import { useIsUnauthorizedForHandleRedirect } from 'hooks/useManagedAccountNotAllowedRedirect'
+import { useRequiresAccount } from 'hooks/useRequiresAccount'
 import UploadStub from 'pages/profile-page/components/mobile/UploadStub'
 import { track } from 'services/analytics'
 import { AppState } from 'store/types'
@@ -76,6 +78,8 @@ const EditCollectionPage = g(
     const permalink = `/${handle}/${isAlbum ? 'album' : 'playlist'}/${slug}`
     const dispatch = useDispatch()
     const history = useHistory()
+    useRequiresAccount()
+    useIsUnauthorizedForHandleRedirect(handle)
 
     const { data: currentUserId } = useGetCurrentUserId({})
     const { data: collection } = useGetPlaylistByPermalink(
@@ -239,7 +243,7 @@ const EditCollectionPage = g(
         }
         refreshLineup()
 
-        editPlaylist(collection.playlist_id, formFields as EditPlaylistValues)
+        editPlaylist(collection.playlist_id, formFields as EditCollectionValues)
 
         track({
           eventName: Name.COLLECTION_EDIT,
@@ -461,7 +465,7 @@ function mapStateToProps(state: AppState) {
 
 function mapDispatchToProps(dispatch: Dispatch) {
   return {
-    editPlaylist: (id: ID, metadata: EditPlaylistValues) =>
+    editPlaylist: (id: ID, metadata: EditCollectionValues) =>
       dispatch(editPlaylist(id, metadata)),
     orderPlaylist: (playlistId: ID, idsAndTimes: any) =>
       dispatch(orderPlaylist(playlistId, idsAndTimes)),

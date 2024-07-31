@@ -64,6 +64,9 @@ export const FilterButtonOptions = (props: FilterButtonOptionsProps) => {
     justifyContent: 'flex-start',
 
     '&:hover': activeOptionCss,
+    '&:hover .helperText': {
+      color: color.static.white
+    },
 
     '&:active': {
       transform: 'none'
@@ -107,7 +110,12 @@ export const FilterButtonOptions = (props: FilterButtonOptionsProps) => {
             {option.label ?? option.value}
           </Text>
           {option.helperText ? (
-            <Text variant='body' strength='strong' color='subdued'>
+            <Text
+              variant='body'
+              strength='strong'
+              color={option.value === activeValue ? 'staticWhite' : 'subdued'}
+              className='helperText'
+            >
               {option.helperText}
             </Text>
           ) : null}

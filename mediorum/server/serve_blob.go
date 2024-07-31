@@ -79,13 +79,17 @@ func (ss *MediorumServer) serveBlobLocation(c echo.Context) error {
 			return 1
 		})
 
-		if fix, _ := strconv.ParseBool(c.QueryParam("fix")); fix {
-			if len(attrs) > 0 {
-				best := attrs[0]
-				if err := ss.pullFileFromHost(best.Host, cid); err != nil {
-					return err
+		if fix, _ := strconv.ParseBool(c.QueryParam("fix")); fix && len(attrs) > 0 {
+			best := attrs[0]
+			for _, a := range attrs {
+				if a.Attr.Size < best.Attr.Size {
+					break
+				}
+				if err := ss.pullFileFromHost(a.Host, cid); err == nil {
+					break
 				}
 			}
+
 		}
 	}
 
@@ -124,7 +128,7 @@ func (ss *MediorumServer) ensureNotDelisted(next echo.HandlerFunc) echo.HandlerF
 		key := c.Param("cid")
 
 		if ss.isCidBlacklisted(ctx, key) {
-			ss.logger.Info("cid is blacklisted", "cid", key)
+			ss.logger.Debug("cid is blacklisted", "cid", key)
 			return c.String(403, "cid is blacklisted by this node")
 		}
 
@@ -353,7 +357,7 @@ func (ss *MediorumServer) logTrackListen(c echo.Context) {
 
 	endpoint := fmt.Sprintf("%s/tracks/%d/listen", solanaRelayService, sig.Data.TrackId)
 
-	ss.logger.Info("logging listen", "endpoint", endpoint)
+	ss.logger.Debug("logging listen", "endpoint", endpoint)
 
 	signatureData, err := signature.GenerateListenTimestampAndSignature(ss.Config.privateKey)
 	if err != nil {
@@ -415,7 +419,7 @@ func (s *MediorumServer) requireRegisteredSignature(next echo.HandlerFunc) echo.
 				return strings.EqualFold(peer.Wallet, sig.SignerWallet)
 			})
 			if !isRegistered {
-				s.logger.Info("sig no match", "signed by", sig.SignerWallet)
+				s.logger.Debug("sig no match", "signed by", sig.SignerWallet)
 				return c.JSON(401, map[string]string{
 					"error":  "signer not in list of registered nodes",
 					"detail": "signed by: " + sig.SignerWallet,
@@ -493,7 +497,7 @@ func (ss *MediorumServer) serveInternalBlobPOST(c echo.Context) error {
 
 		err = cidutil.ValidateCID(cid, inp)
 		if err != nil {
-			logger.Info("postBlob got invalid CID", "err", err)
+			logger.Error("postBlob got invalid CID", "err", err)
 			return c.JSON(400, map[string]string{
 				"error": err.Error(),
 			})
@@ -501,7 +505,7 @@ func (ss *MediorumServer) serveInternalBlobPOST(c echo.Context) error {
 
 		err = ss.replicateToMyBucket(cid, inp)
 		if err != nil {
-			ss.logger.Info("accept ERR", "err", err)
+			ss.logger.Error("accept ERR", "err", err)
 			return err
 		}
 	}

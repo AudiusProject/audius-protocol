@@ -56,7 +56,9 @@ export function* retrieveTrending({
     const tracksMap: ReturnType<typeof getTracks> = yield select(
       (state: AppState) => getTracks(state, { ids: trackIds })
     )
-    const tracks = trackIds.map((id) => tracksMap[id])
+    const tracks = trackIds
+      .map((id) => tracksMap[id])
+      .filter((t) => t && !t.is_unlisted)
     return tracks
   }
 
@@ -67,6 +69,19 @@ export function* retrieveTrending({
     currentUserId,
     timeRange
   })
+
+  // DN may return hidden tracks in trending because of its cache
+  // i.e. when a track is in trending and the owner makes it hidden,
+  // it will still be returned in the trending api for a little while.
+  // We check the store to see if any of the returned tracks are locally hidden,
+  // if so, we filter them out.
+  const tracksMap: ReturnType<typeof getTracks> = yield select(
+    (state: AppState) =>
+      getTracks(state, { ids: apiTracks.map((t) => t.track_id) })
+  )
+  apiTracks = apiTracks.filter(
+    (t) => !tracksMap[t.track_id] || !tracksMap[t.track_id].is_unlisted
+  )
 
   if (TF.size > 0) {
     apiTracks = apiTracks.filter((t) => {

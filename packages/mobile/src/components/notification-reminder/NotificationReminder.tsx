@@ -53,7 +53,6 @@ const NotificationReminderInternal = () => {
           dispatch(
             setVisibility({ drawer: 'EnablePushNotifications', visible: true })
           )
-          return
       }
     } catch (error) {
       // Not sure what happened, but swallow the error. Not worth blocking on.

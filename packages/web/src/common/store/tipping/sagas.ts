@@ -6,28 +6,20 @@ import {
   User,
   StringWei,
   BNWei,
-  SolanaWalletAddress,
   Id,
   OptionalId,
   supportedUserMetadataListFromSDK,
   supporterMetadataListFromSDK,
   supporterMetadataFromSDK
 } from '@audius/common/models'
-import {
-  createUserBankIfNeeded,
-  LocalStorage,
-  GetTipsArgs,
-  FeatureFlags
-} from '@audius/common/services'
+import { LocalStorage, GetTipsArgs } from '@audius/common/services'
 import {
   accountSelectors,
   cacheActions,
   processAndCacheUsers,
   chatActions,
-  solanaSelectors,
   tippingSelectors,
   tippingActions,
-  walletSelectors,
   walletActions,
   getContext,
   RefreshSupportPayloadAction,
@@ -36,10 +28,8 @@ import {
 } from '@audius/common/store'
 import {
   isNullOrUndefined,
-  weiToAudioString,
   stringWeiToBN,
   weiToString,
-  parseAudioInputToWei,
   waitForValue,
   MAX_PROFILE_TOP_SUPPORTERS,
   SUPPORTING_PAGINATION_SIZE,
@@ -63,11 +53,9 @@ import {
 import { make } from 'common/store/analytics/actions'
 import { fetchUsers } from 'common/store/cache/users/sagas'
 import { reportToSentry } from 'store/errors/reportToSentry'
-import { waitForWrite, waitForRead } from 'utils/sagaHelpers'
+import { waitForRead } from 'utils/sagaHelpers'
 
-const { decreaseBalance, getBalance } = walletActions
-const { getFeePayer } = solanaSelectors
-const { getAccountBalance } = walletSelectors
+const { getBalance } = walletActions
 const {
   confirmSendTip,
   convert,
@@ -234,13 +222,11 @@ function* overrideSupportersForUser({
  * Polls the /supporter endpoint to check if the sender is listed as a supporter of the recipient
  */
 function* confirmTipIndexed({
-  sender,
-  recipient,
+  signature,
   maxAttempts = 60,
   delayMs = 1000
 }: {
-  sender: User
-  recipient: User
+  signature: string
   maxAttempts?: number
   delayMs?: number
 }) {
@@ -252,28 +238,23 @@ function* confirmTipIndexed({
     )
     try {
       const sdk = yield* getSDK()
+      const { data } = yield* call([sdk.full.tips, sdk.full.tips.getTips], {
+        txSignatures: [signature]
+      })
 
-      const senderUserId = Id.parse(sender.user_id)
-
-      const { data } = yield* call(
-        [sdk.full.users, sdk.full.users.getSupporter],
-        {
-          id: Id.parse(recipient.user_id),
-          supporterUserId: senderUserId,
-          userId: senderUserId
-        }
-      )
-
-      if (data) {
-        console.debug('Tip indexed')
+      if (data && data.length > 0) {
+        console.info('Tip indexed')
         return true
+      } else if (data?.length === 0) {
+        console.debug('Tip not indexed yet...')
       }
+      yield* delay(delayMs)
     } catch (e) {
       console.error('Error confirming tip indexed: ', e)
+      return false
     }
-    yield* delay(delayMs)
   }
-  console.error('Tip could not be confirmed as indexed')
+  console.error('Tip could not be confirmed as indexed before timing out.')
   return false
 }
 
@@ -345,7 +326,7 @@ function* sendTipAsync() {
 
     yield* call(wormholeAudioIfNecessary, { amount })
 
-    yield* call([sdk.users, sdk.users.sendTip], {
+    const signature = yield* call([sdk.users, sdk.users.sendTip], {
       amount,
       senderUserId,
       receiverUserId
@@ -365,7 +346,7 @@ function* sendTipAsync() {
 
     yield* fork(function* () {
       // Wait for tip to index
-      yield* call(confirmTipIndexed, { sender, recipient: receiver })
+      yield* call(confirmTipIndexed, { signature })
 
       // Fetch balance
       yield* put(getBalance)
@@ -438,207 +419,6 @@ function* sendTipAsync() {
         amount
       }
     })
-  }
-}
-
-function* sendTipAsyncOld() {
-  const walletClient = yield* getContext('walletClient')
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-  const { waitForRemoteConfig } = yield* getContext('remoteConfigInstance')
-  const isNativeMobile = yield* getContext('isNativeMobile')
-  const { track } = yield* getContext('analytics')
-  yield call(waitForRemoteConfig)
-  yield* waitForWrite()
-
-  const device = isNativeMobile ? 'native' : 'web'
-
-  const sender = yield* select(getAccountUser)
-  if (!sender) {
-    return
-  }
-
-  const sendTipData = yield* select(getSendTipData)
-  const {
-    user: recipient,
-    amount,
-    source,
-    trackId,
-    onSuccessConfirmedActions
-  } = sendTipData
-  if (!recipient) {
-    return
-  }
-
-  const weiBNAmount = parseAudioInputToWei(amount) ?? (new BN('0') as BNWei)
-  const recipientERCWallet = recipient.erc_wallet ?? recipient.wallet
-
-  // Create Userbanks if needed
-  const feePayerOverride = yield* select(getFeePayer)
-  if (!feePayerOverride) {
-    console.error("tippingSagas: unexpectedly couldn't get feePayerOverride")
-    return
-  }
-
-  if (!recipientERCWallet) {
-    console.error('tippingSagas: Unexpectedly missing recipient ERC wallet')
-    return
-  }
-
-  // Gross cast here bc of broken saga types with `yield* all`
-  const [selfUserBank, recipientUserBank] = yield* all([
-    createUserBankIfNeeded(audiusBackendInstance, {
-      recordAnalytics: track,
-      feePayerOverride
-    }),
-    createUserBankIfNeeded(audiusBackendInstance, {
-      recordAnalytics: track,
-      feePayerOverride,
-      ethAddress: recipientERCWallet
-    })
-  ]) as unknown as (SolanaWalletAddress | null)[]
-
-  if (!selfUserBank || !recipientUserBank) {
-    console.error(
-      `Missing self or recipient userbank: ${JSON.stringify({
-        selfUserBank,
-        recipientUserBank
-      })}`
-    )
-
-    yield put(sendTipFailed({ error: 'Could not create userbank' }))
-    return
-  }
-
-  const weiBNBalance = yield* select(getAccountBalance)
-  if (isNullOrUndefined(weiBNBalance)) {
-    throw new Error('$AUDIO balance not yet loaded or failed to load')
-  }
-
-  if (weiBNAmount.gt(weiBNBalance)) {
-    const errorMessage = 'Not enough $AUDIO'
-    throw new Error(errorMessage)
-  }
-
-  try {
-    yield put(
-      make(Name.TIP_AUDIO_REQUEST, {
-        senderWallet: selfUserBank,
-        recipientWallet: recipientUserBank,
-        senderHandle: sender.handle,
-        recipientHandle: recipient.handle,
-        amount: weiToAudioString(weiBNAmount),
-        device,
-        source
-      })
-    )
-
-    const waudioWeiAmount = yield* call([
-      walletClient,
-      'getCurrentWAudioBalance'
-    ])
-
-    if (isNullOrUndefined(waudioWeiAmount)) {
-      throw new Error('Failed to retrieve current wAudio balance')
-    }
-
-    // If transferring spl wrapped audio and there are insufficent funds with only the
-    // user bank balance, transfer all eth AUDIO to spl wrapped audio
-    if (weiBNAmount.gt(waudioWeiAmount)) {
-      // Wait for a second before showing the notice that this might take a while
-      const showConvertingMessage = yield* fork(function* () {
-        yield delay(1000)
-        yield put(convert())
-      })
-      yield call([walletClient, 'transferTokensFromEthToSol'])
-      // Cancel showing the notice if the conversion was magically super quick
-      yield cancel(showConvertingMessage)
-    }
-
-    yield call(
-      [walletClient, 'sendWAudioTokens'],
-      recipientUserBank,
-      weiBNAmount
-    )
-
-    // Only decrease store balance if we haven't already changed
-    const newBalance: ReturnType<typeof getAccountBalance> = yield* select(
-      getAccountBalance
-    )
-    if (newBalance?.eq(weiBNBalance)) {
-      yield put(decreaseBalance({ amount: weiToString(weiBNAmount) }))
-    }
-
-    yield put(sendTipSucceeded())
-    yield put(
-      make(Name.TIP_AUDIO_SUCCESS, {
-        senderWallet: selfUserBank,
-        recipientWallet: recipientUserBank,
-        senderHandle: sender.handle,
-        recipientHandle: recipient.handle,
-        amount: weiToAudioString(weiBNAmount),
-        device,
-        source
-      })
-    )
-
-    yield* put(refreshTipGatedTracks({ userId: recipient.user_id, trackId }))
-    yield* fork(function* () {
-      yield* call(confirmTipIndexed, { sender, recipient })
-      yield* put(
-        fetchPermissions({ userIds: [sender.user_id, recipient.user_id] })
-      )
-      if (onSuccessConfirmedActions) {
-        // Spread here to unfreeze the action
-        // Redux sagas can't "put" frozen actions
-        for (const action of onSuccessConfirmedActions) {
-          yield* put({ ...action })
-        }
-      }
-      if (source === 'inboxUnavailableModal') {
-        yield* put(
-          make(Name.TIP_UNLOCKED_CHAT, {
-            recipientUserId: recipient.user_id
-          })
-        )
-      }
-    })
-
-    /**
-     * Store optimistically updated supporting value for sender
-     * and supporter value for receiver.
-     */
-    try {
-      yield call(overrideSupportingForUser, {
-        amountBN: weiBNAmount,
-        sender,
-        receiver: recipient
-      })
-      yield call(overrideSupportersForUser, {
-        amountBN: weiBNAmount,
-        sender,
-        receiver: recipient
-      })
-    } catch (e) {
-      console.error(
-        `Could not optimistically update support: ${(e as Error).message}`
-      )
-    }
-  } catch (e) {
-    const error = (e as Error).message
-    console.error(`Send tip failed: ${error}`)
-    yield put(sendTipFailed({ error }))
-    yield put(
-      make(Name.TIP_AUDIO_FAILURE, {
-        senderWallet: selfUserBank,
-        recipientWallet: recipientUserBank,
-        senderHandle: sender.handle,
-        recipientHandle: recipient.handle,
-        amount: weiToAudioString(weiBNAmount),
-        error,
-        device,
-        source
-      })
-    )
   }
 }
 
@@ -959,16 +739,7 @@ function* watchRefreshSupport() {
 }
 
 function* watchConfirmSendTip() {
-  const getFeatureEnabled = yield* getContext('getFeatureEnabled')
-  const sdkTipsEnabled = yield* call(
-    getFeatureEnabled,
-    FeatureFlags.USE_SDK_TIPS
-  )
-  if (sdkTipsEnabled) {
-    yield* takeEvery(confirmSendTip.type, sendTipAsync)
-  } else {
-    yield* takeEvery(confirmSendTip.type, sendTipAsyncOld)
-  }
+  yield* takeEvery(confirmSendTip.type, sendTipAsync)
 }
 
 function* watchFetchRecentTips() {

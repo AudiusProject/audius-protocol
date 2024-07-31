@@ -11,7 +11,6 @@ import {
   ModalSource,
   Track
 } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import {
   CollectionTrack,
   CollectionsPageType,
@@ -32,7 +31,6 @@ import { SuggestedTracks } from 'components/suggested-tracks'
 import { Tile } from 'components/tile'
 import { TracksTable, TracksTableColumn } from 'components/tracks-table'
 import { useAuthenticatedCallback } from 'hooks/useAuthenticatedCallback'
-import { useFlag } from 'hooks/useRemoteConfig'
 import { smartCollectionIcons } from 'pages/collection-page/smartCollectionIcons'
 import { computeCollectionMetadataProps } from 'pages/collection-page/store/utils'
 
@@ -132,7 +130,6 @@ const CollectionPage = ({
   onClickRow,
   onClickSave,
   onClickRepostTrack,
-  onClickPurchaseTrack,
   onSortTracks,
   onReorderTracks,
   onClickRemove,
@@ -140,9 +137,6 @@ const CollectionPage = ({
   onClickFavorites
 }: CollectionPageProps) => {
   const { status, metadata, user } = collection
-  const { isEnabled: isPremiumAlbumsEnabled } = useFlag(
-    FeatureFlags.PREMIUM_ALBUMS_ENABLED
-  )
 
   // TODO: Consider dynamic lineups, esp. for caching improvement.
   const [dataSource, playingIndex] =
@@ -326,7 +320,7 @@ const CollectionPage = ({
         className={styles.bodyWrapper}
         size='large'
         elevation='mid'
-        dogEar={isPremiumAlbumsEnabled ? dogEarType : undefined}
+        dogEar={dogEarType}
       >
         <div className={styles.topSectionWrapper}>{topSection}</div>
         {!collectionLoading && isEmpty ? (
@@ -352,7 +346,6 @@ const CollectionPage = ({
               onClickRemove={isOwner ? onClickRemove : undefined}
               onClickRepost={onClickRepostTrack}
               onClickPurchase={openPurchaseModal}
-              isPremiumEnabled={isPremiumAlbumsEnabled}
               onReorderTracks={onReorderTracks}
               onSortTracks={onSortTracks}
               isReorderable={

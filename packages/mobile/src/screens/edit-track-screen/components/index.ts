@@ -1,5 +1,2 @@
 export * from './CancelEditTrackDrawer'
 export * from './RemixTrackPill'
-export * from './SpecialAccessAvailability'
-export * from './CollectibleGatedAvailability'
-export * from './HiddenAvailability'

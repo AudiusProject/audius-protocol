@@ -25,7 +25,7 @@ audius_prometheus_container = getenv("audius_prometheus_container", "worker")
 # remove all *container*.db files since we're restarting the process
 files = glob(f"/{getenv('PROMETHEUS_MULTIPROC_DIR')}/*{audius_prometheus_container}*")
 for f in files:
-    logger.info(f"Removing prometheus file: {f}")
+    logger.debug(f"Removing prometheus file: {f}")
     remove(f)
 
 

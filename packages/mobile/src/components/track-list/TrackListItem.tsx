@@ -39,7 +39,8 @@ import {
   IconPlaybackPause,
   IconPlaybackPlay,
   useTheme,
-  IconRemove
+  IconRemove,
+  IconVisibilityHidden
 } from '@audius/harmony-native'
 import UserBadges from 'app/components/user-badges'
 import { flexRowCentered, font, makeStyles } from 'app/styles'
@@ -360,7 +361,7 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
       >
         <ListItemView
           style={styles.trackInnerContainer}
-          onPress={isReorderable ? undefined : onPressTrack}
+          onPress={isReorderable || isLocked ? undefined : onPressTrack}
           disabled={!isPlayable}
         >
           {!hideArt ? (
@@ -413,7 +414,7 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
 
               {!isDeleted && (
                 <View style={styles.downloadIndicator}>
-                  <TrackDownloadStatusIndicator trackId={track_id} size={16} />
+                  <TrackDownloadStatusIndicator trackId={track_id} size='s' />
                 </View>
               )}
             </View>
@@ -422,6 +423,13 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
               <UserBadges user={user} badgeSize={12} hideName />
             </Text>
           </View>
+          {isUnlisted ? (
+            <IconVisibilityHidden
+              color='subdued'
+              width={spacing.l}
+              height={spacing.l}
+            />
+          ) : null}
           {!isDeleted && isLocked ? (
             <IconLock color='subdued' width={spacing.l} height={spacing.l} />
           ) : null}

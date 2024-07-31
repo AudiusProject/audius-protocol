@@ -1,9 +1,9 @@
-import { useCallback, useState } from 'react'
+import { useCallback } from 'react'
 
 import { useFeatureFlag } from '@audius/common/hooks'
 import { visibilityMessages } from '@audius/common/messages'
 import { FeatureFlags } from '@audius/common/services'
-import { editAccessConfirmationModalUIActions } from '@audius/common/store'
+// import { editAccessConfirmationModalUIActions } from '@audius/common/store'
 import {
   IconCalendarMonth,
   IconVisibilityHidden,
@@ -12,7 +12,6 @@ import {
 } from '@audius/harmony'
 import dayjs from 'dayjs'
 import { useField } from 'formik'
-import { useDispatch } from 'react-redux'
 import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
@@ -29,9 +28,6 @@ import { IS_PRIVATE, IS_SCHEDULED_RELEASE, IS_UNLISTED } from '../types'
 import { ScheduledReleaseDateField } from './ScheduledReleaseDateField'
 import { mergeReleaseDateValues } from './mergeReleaseDateValues'
 
-const { requestOpen: openEditAccessConfirmationModal } =
-  editAccessConfirmationModalUIActions
-
 const messages = {
   ...visibilityMessages,
   scheduled: (date: string) => `Scheduled for ${formatCalendarTime(date)}`
@@ -47,7 +43,9 @@ type VisibilityFieldProps = {
 const visibilitySchema = z
   .object({
     visibilityType: z.enum(['hidden', 'public', 'scheduled']),
-    releaseDate: z.string().optional()
+    releaseDate: z.string().optional(),
+    releaseDateTime: z.string().optional(),
+    releaseDateMeridian: z.string().optional()
   })
   .refine(
     (data) => {
@@ -56,11 +54,29 @@ const visibilitySchema = z
     },
     { message: 'Release date required', path: ['releaseDate'] }
   )
+  .refine(
+    (data) => {
+      const {
+        visibilityType,
+        releaseDate,
+        releaseDateTime,
+        releaseDateMeridian
+      } = data
+      if (visibilityType === 'scheduled') {
+        const time = mergeReleaseDateValues(
+          releaseDate!,
+          releaseDateTime!,
+          releaseDateMeridian!
+        ).toString()
+        return dayjs(time).isAfter(dayjs())
+      }
+      return true
+    },
+    { message: 'Select a time in the future', path: ['releaseDate'] }
+  )
 
 export const VisibilityField = (props: VisibilityFieldProps) => {
   const { entityType, isUpload } = props
-  const dispatch = useDispatch()
-  const [isConfirmationCancelled, setIsConfirmationCancelled] = useState(false)
   const useEntityField = entityType === 'track' ? useTrackField : useField
   const [
     { value: isHidden },
@@ -68,14 +84,8 @@ export const VisibilityField = (props: VisibilityFieldProps) => {
     { setValue: setIsUnlisted }
   ] = useEntityField<boolean>(entityType === 'track' ? IS_UNLISTED : IS_PRIVATE)
 
-  const { isEnabled: isEditableAccessEnabled } = useFeatureFlag(
-    FeatureFlags.EDITABLE_ACCESS_ENABLED
-  )
-  const [
-    { value: isScheduledRelease },
-    { initialValue: isInitiallyScheduled },
-    { setValue: setIsScheduledRelease }
-  ] = useEntityField<boolean>(IS_SCHEDULED_RELEASE)
+  const [{ value: isScheduledRelease }, , { setValue: setIsScheduledRelease }] =
+    useEntityField<boolean>(IS_SCHEDULED_RELEASE)
 
   const [{ value: releaseDate }, , { setValue: setReleaseDate }] =
     useEntityField<string>('release_date')
@@ -132,61 +142,37 @@ export const VisibilityField = (props: VisibilityFieldProps) => {
       initialValues={initialValues}
       validationSchema={toFormikValidationSchema(visibilitySchema)}
       onSubmit={(values) => {
-        const submit = () => {
-          const {
-            visibilityType,
-            releaseDate,
-            releaseDateTime,
-            releaseDateMeridian
-          } = values
-          switch (visibilityType) {
-            case 'scheduled': {
-              setIsScheduledRelease(true)
-              setReleaseDate(
-                mergeReleaseDateValues(
-                  releaseDate!,
-                  releaseDateTime!,
-                  releaseDateMeridian!
-                ).toString()
-              )
-              setIsUnlisted(true)
-              break
-            }
-            case 'hidden': {
-              setIsUnlisted(true)
-              setIsScheduledRelease(false)
-              setReleaseDate('')
-              break
-            }
-            case 'public': {
-              setIsUnlisted(false)
-              setIsScheduledRelease(false)
-              setReleaseDate('')
-              break
-            }
+        const {
+          visibilityType,
+          releaseDate,
+          releaseDateTime,
+          releaseDateMeridian
+        } = values
+        switch (visibilityType) {
+          case 'scheduled': {
+            setIsScheduledRelease(true)
+            setReleaseDate(
+              mergeReleaseDateValues(
+                releaseDate!,
+                releaseDateTime!,
+                releaseDateMeridian!
+              ).toString()
+            )
+            setIsUnlisted(true)
+            break
           }
-        }
-
-        const usersMayLoseAccess =
-          !initiallyHidden && values.visibilityType !== 'public'
-        const isToBePublished =
-          initiallyHidden && values.visibilityType === 'public'
-        if (!isUpload && (usersMayLoseAccess || isToBePublished)) {
-          dispatch(
-            openEditAccessConfirmationModal({
-              type: usersMayLoseAccess
-                ? 'hidden'
-                : isInitiallyScheduled
-                ? 'early_release'
-                : 'release',
-              confirmCallback: submit,
-              cancelCallback: () => {
-                setIsConfirmationCancelled(true)
-              }
-            })
-          )
-        } else {
-          submit()
+          case 'hidden': {
+            setIsUnlisted(true)
+            setIsScheduledRelease(false)
+            setReleaseDate('')
+            break
+          }
+          case 'public': {
+            setIsUnlisted(false)
+            setIsScheduledRelease(false)
+            setReleaseDate('')
+            break
+          }
         }
       }}
       menuFields={
@@ -194,10 +180,6 @@ export const VisibilityField = (props: VisibilityFieldProps) => {
           entityType={entityType}
           initiallyPublic={!initiallyHidden && !isUpload}
         />
-      }
-      forceOpen={isEditableAccessEnabled ? isConfirmationCancelled : undefined}
-      setForceOpen={
-        isEditableAccessEnabled ? setIsConfirmationCancelled : undefined
       }
     />
   )
@@ -211,6 +193,9 @@ type VisibilityMenuFieldsProps = {
 const VisibilityMenuFields = (props: VisibilityMenuFieldsProps) => {
   const { isEnabled: isEditableAccessEnabled } = useFeatureFlag(
     FeatureFlags.EDITABLE_ACCESS_ENABLED
+  )
+  const { isEnabled: isPaidScheduledEnabled } = useFeatureFlag(
+    FeatureFlags.PAID_SCHEDULED
   )
   const { initiallyPublic, entityType } = props
   const [field] = useField<VisibilityType>('visibilityType')
@@ -233,7 +218,9 @@ const VisibilityMenuFields = (props: VisibilityMenuFieldsProps) => {
             : undefined
         }
       />
-      {!initiallyPublic ? (
+      {!initiallyPublic &&
+      (entityType === 'track' ||
+        (isPaidScheduledEnabled && entityType === 'album')) ? (
         <ModalRadioItem
           value='scheduled'
           label={messages.scheduledRelease}

@@ -416,13 +416,8 @@ class WebPlayer extends Component {
   }
 
   render() {
-    const {
-      incrementScroll,
-      decrementScroll,
-      userHandle,
-      isSearchV2Enabled,
-      isEditTrackRedesignEnabled
-    } = this.props
+    const { incrementScroll, decrementScroll, userHandle, isSearchV2Enabled } =
+      this.props
 
     const {
       showWebUpdateBanner,
@@ -503,7 +498,6 @@ class WebPlayer extends Component {
                     to={{ pathname: getPathname({ pathname: '' }) }}
                   />
                 ))}
-
                 <Route
                   exact
                   path={'/fb/share'}
@@ -710,7 +704,6 @@ class WebPlayer extends Component {
                     )
                   }}
                 />
-
                 <DesktopRoute
                   path={UPLOAD_ALBUM_PAGE}
                   isMobile={isMobile}
@@ -728,7 +721,6 @@ class WebPlayer extends Component {
                     <UploadPage {...props} scrollToTop={this.scrollToTop} />
                   )}
                 />
-
                 <Route
                   exact
                   path={[SAVED_PAGE, LIBRARY_PAGE]}
@@ -853,10 +845,8 @@ class WebPlayer extends Component {
                   isMobile={isMobile}
                   render={() => <SettingsPage subPage={SubPage.ABOUT} />}
                 />
-
                 <Route path={APP_REDIRECT} component={AppRedirectListener} />
                 <Route exact path={NOT_FOUND_PAGE} component={NotFoundPage} />
-
                 <Route
                   exact
                   path={PLAYLIST_PAGE}
@@ -866,13 +856,11 @@ class WebPlayer extends Component {
                     )
                   }}
                 />
-
                 <Route
                   exact
                   path={[EDIT_PLAYLIST_PAGE, EDIT_ALBUM_PAGE]}
                   component={EditCollectionPage}
                 />
-
                 <Route
                   exact
                   path={ALBUM_PAGE}
@@ -880,7 +868,6 @@ class WebPlayer extends Component {
                     <CollectionPage key={location.pathname} type='album' />
                   )}
                 />
-
                 {/* Hash id routes */}
                 <Route
                   exact
@@ -898,7 +885,6 @@ class WebPlayer extends Component {
                   path={PLAYLIST_ID_PAGE}
                   component={CollectionPage}
                 />
-
                 {/*
                 Define profile page sub-routes before profile page itself.
                 The rules for sub-routes would lose in a precedence fight with
@@ -926,21 +912,14 @@ class WebPlayer extends Component {
                   path={PROFILE_PAGE_AI_ATTRIBUTED_TRACKS}
                   component={AiAttributedTracksPage}
                 />
-
                 <Route exact path={TRACK_PAGE} component={TrackPage} />
-
-                {isEditTrackRedesignEnabled ? (
-                  <DesktopRoute
-                    path={TRACK_EDIT_PAGE}
-                    isMobile={isMobile}
-                    render={(props) => (
-                      <EditTrackPage
-                        {...props}
-                        scrollToTop={this.scrollToTop}
-                      />
-                    )}
-                  />
-                ) : null}
+                <DesktopRoute
+                  path={TRACK_EDIT_PAGE}
+                  isMobile={isMobile}
+                  render={(props) => (
+                    <EditTrackPage {...props} scrollToTop={this.scrollToTop} />
+                  )}
+                />
 
                 <Route
                   exact
@@ -952,7 +931,6 @@ class WebPlayer extends Component {
                     />
                   )}
                 />
-
                 <MobileRoute
                   exact
                   path={REPOSTING_USERS_ROUTE}
@@ -1005,7 +983,6 @@ class WebPlayer extends Component {
                     />
                   )}
                 />
-
                 <Redirect
                   from={HOME_PAGE}
                   to={{
@@ -1057,10 +1034,7 @@ const mapStateToProps = (state) => ({
   accountStatus: getAccountStatus(state),
   signOnStatus: getSignOnStatus(state),
   showCookieBanner: getShowCookieBanner(state),
-  isSearchV2Enabled: getFeatureEnabled(FeatureFlags.SEARCH_V2),
-  isEditTrackRedesignEnabled: getFeatureEnabled(
-    FeatureFlags.EDIT_TRACK_REDESIGN
-  )
+  isSearchV2Enabled: getFeatureEnabled(FeatureFlags.SEARCH_V2)
 })
 
 const mapDispatchToProps = (dispatch) => ({

@@ -164,7 +164,7 @@ def _get_repost_feed_for_user(
 
     if args.get("with_users", False):
         user_id_list = get_users_ids(feed_results)
-        users = get_users_by_id(session, user_id_list)
+        users = get_users_by_id(session, user_id_list, current_user_id=current_user_id)
         for result in feed_results:
             if "playlist_owner_id" in result:
                 user = users[result["playlist_owner_id"]]

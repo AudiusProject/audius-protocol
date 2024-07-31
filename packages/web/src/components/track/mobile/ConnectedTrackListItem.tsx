@@ -76,6 +76,7 @@ const ConnectedTrackListItem = (props: ConnectedTrackListItemProps) => {
     setLockedContentVisibility(true)
   }, [dispatch, trackId, setLockedContentVisibility])
 
+  const isOwner = user?.user_id === currentUserId
   const onClickOverflow = () => {
     const overflowActions = [
       isPurchase && !hasStreamAccess && !isDeleted
@@ -94,7 +95,7 @@ const ConnectedTrackListItem = (props: ConnectedTrackListItemProps) => {
       user?.user_id === currentUserId && !ddexApp
         ? OverflowAction.ADD_TO_ALBUM
         : null,
-      OverflowAction.ADD_TO_PLAYLIST,
+      !isUnlisted || isOwner ? OverflowAction.ADD_TO_PLAYLIST : null,
       OverflowAction.VIEW_TRACK_PAGE,
       albumInfo ? OverflowAction.VIEW_ALBUM_PAGE : null,
       OverflowAction.VIEW_ARTIST_PAGE

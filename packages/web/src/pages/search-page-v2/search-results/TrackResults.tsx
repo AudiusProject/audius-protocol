@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import { Kind, Name, Status } from '@audius/common/models'
 import {
@@ -10,7 +10,7 @@ import {
   searchActions,
   SearchKind
 } from '@audius/common/store'
-import { Flex, OptionsFilterButton, Text } from '@audius/harmony'
+import { Flex, OptionsFilterButton, Text, useTheme } from '@audius/harmony'
 import { css } from '@emotion/css'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -21,8 +21,9 @@ import { useIsMobile } from 'hooks/useIsMobile'
 import { useMainContentRef } from 'pages/MainContentContext'
 
 import { NoResultsTile } from '../NoResultsTile'
+import { SortMethodFilterButton } from '../SortMethodFilterButton'
 import { ViewLayout, viewLayoutOptions } from '../types'
-import { useSearchParams, useUpdateSearchParams } from '../utils'
+import { ALL_RESULTS_LIMIT, useSearchParams } from '../utils'
 
 const { makeGetLineupMetadatas } = lineupSelectors
 const { getBuffering, getPlaying } = playerSelectors
@@ -53,6 +54,7 @@ type TrackResultsProps = {
 export const TrackResults = (props: TrackResultsProps) => {
   const { category = 'tracks', viewLayout = 'list', count } = props
   const mainContentRef = useMainContentRef()
+  const isMobile = useIsMobile()
 
   const dispatch = useDispatch()
   const currentQueueItem = useSelector(getCurrentQueueItem)
@@ -83,15 +85,24 @@ export const TrackResults = (props: TrackResultsProps) => {
         )
       )
     },
-    [dispatch, searchParams]
+    [dispatch, searchParams, category]
   )
+  useEffect(() => {
+    dispatch(searchResultsPageTracksLineupActions.reset())
+    getResults(0, ALL_RESULTS_LIMIT, true)
+  }, [dispatch, searchParams, getResults])
 
   const loadMore = useCallback(
     (offset: number, limit: number) => {
+      // Only load more if some results have already been loaded
+      if (!lineup.entries.length) {
+        return
+      }
       getResults(offset, limit, false)
     },
-    [getResults]
+    [getResults, lineup]
   )
+
   const handleClickTrackTile = useCallback(
     (id?: number) => {
       if (id) {
@@ -125,20 +136,12 @@ export const TrackResults = (props: TrackResultsProps) => {
 
   return (
     <Lineup
-      variant={LineupVariant.SECTION}
+      variant={
+        viewLayout === 'grid' ? LineupVariant.SECTION : LineupVariant.MAIN
+      }
       count={count}
       loadMore={loadMore}
       scrollParent={mainContentRef.current}
-      lineupContainerStyles={css({ width: '100%' })}
-      tileContainerStyles={css({
-        display: 'grid',
-        gridTemplateColumns: isTrackGridLayout ? '1fr 1fr' : '1fr',
-        gap: '4px 16px',
-        justifyContent: 'space-between'
-      })}
-      tileStyles={css({
-        maxWidth: isTrackGridLayout ? HALF_TILE_WIDTH : PAGE_WIDTH
-      })}
       key='searchTracks'
       lineup={lineup}
       playingSource={currentQueueItem.source}
@@ -153,49 +156,53 @@ export const TrackResults = (props: TrackResultsProps) => {
       pauseTrack={() => dispatch(searchResultsPageTracksLineupActions.pause())}
       actions={searchResultsPageTracksLineupActions}
       onClickTile={handleClickTrackTile}
+      {...(!isMobile
+        ? {
+            lineupContainerStyles: css({ width: '100%' }),
+            tileContainerStyles: css({
+              display: 'grid',
+              gridTemplateColumns: isTrackGridLayout ? '1fr 1fr' : '1fr',
+              gap: '4px 16px',
+              justifyContent: 'space-between'
+            }),
+            tileStyles: css({
+              maxWidth: isTrackGridLayout ? HALF_TILE_WIDTH : PAGE_WIDTH
+            })
+          }
+        : {})}
     />
   )
 }
 
 export const TrackResultsPage = () => {
   const isMobile = useIsMobile()
+  const { color } = useTheme()
+
   const [tracksLayout, setTracksLayout] = useState<ViewLayout>('list')
-  const updateSortParam = useUpdateSearchParams('sortMethod')
 
-  const searchParams = useSearchParams()
-  const { sortMethod } = searchParams
-
-  return (
+  return !isMobile ? (
     <Flex direction='column' gap='xl' wrap='wrap'>
-      {!isMobile ? (
-        <Flex justifyContent='space-between' alignItems='center'>
-          <Text variant='heading' textAlign='left'>
-            {messages.tracks}
-          </Text>
-          <Flex gap='s'>
-            <OptionsFilterButton
-              selection={sortMethod ?? 'relevant'}
-              variant='replaceLabel'
-              optionsLabel={messages.sortOptionsLabel}
-              onChange={updateSortParam}
-              options={[
-                { label: 'Most Relevant', value: 'relevant' },
-                { label: 'Most Popular', value: 'popular' },
-                { label: 'Most Recent', value: 'recent' }
-              ]}
-            />
-            <OptionsFilterButton
-              selection={tracksLayout}
-              variant='replaceLabel'
-              optionsLabel={messages.layoutOptionsLabel}
-              onChange={(value) => {
-                setTracksLayout(value as ViewLayout)
-              }}
-              options={viewLayoutOptions}
-            />
-          </Flex>
+      <Flex justifyContent='space-between' alignItems='center'>
+        <Text variant='heading' textAlign='left'>
+          {messages.tracks}
+        </Text>
+        <Flex gap='s'>
+          <SortMethodFilterButton />
+          <OptionsFilterButton
+            selection={tracksLayout}
+            variant='replaceLabel'
+            optionsLabel={messages.layoutOptionsLabel}
+            onChange={(value) => {
+              setTracksLayout(value as ViewLayout)
+            }}
+            options={viewLayoutOptions}
+          />
         </Flex>
-      ) : null}
+      </Flex>
+      <TrackResults viewLayout={tracksLayout} />
+    </Flex>
+  ) : (
+    <Flex p='m' css={{ backgroundColor: color.background.default }}>
       <TrackResults />
     </Flex>
   )

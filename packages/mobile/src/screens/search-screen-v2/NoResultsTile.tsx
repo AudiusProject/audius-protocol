@@ -13,7 +13,7 @@ export const NoResultsTile = () => {
       pv='2xl'
       ph='l'
       mv='s'
-      mh='xl'
+      mh='m'
       direction='column'
       gap='s'
       alignItems='center'

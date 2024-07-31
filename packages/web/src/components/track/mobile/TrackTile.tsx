@@ -22,11 +22,11 @@ import {
 } from '@audius/common/utils'
 import {
   IconVolumeLevel2 as IconVolume,
-  IconStar,
   IconCrown,
   IconTrending,
   Text,
-  Flex
+  Flex,
+  IconStar
 } from '@audius/harmony'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
@@ -38,13 +38,14 @@ import { DogEar } from 'components/dog-ear'
 import { TextLink, UserLink } from 'components/link'
 import { LockedStatusPill } from 'components/locked-status-pill'
 import Skeleton from 'components/skeleton/Skeleton'
-import { GatedContentLabel } from 'components/track/GatedContentLabel'
 import { TrackTileProps } from 'components/track/types'
 import UserBadges from 'components/user-badges/UserBadges'
-import { VisibilityLabel } from 'components/visibility-label/VisibilityLabel'
 import { useAuthenticatedClickCallback } from 'hooks/useAuthenticatedCallback'
 
 import { GatedConditionsPill } from '../GatedConditionsPill'
+import { GatedTrackLabel } from '../GatedTrackLabel'
+import { LineupTileLabel } from '../LineupTileLabel'
+import { VisibilityLabel } from '../VisibilityLabel'
 import { messages } from '../trackTileMessages'
 
 import BottomButtons from './BottomButtons'
@@ -75,7 +76,6 @@ type CombinedProps = TrackTileProps & ExtraProps
 type LockedOrPlaysContentProps = Pick<
   CombinedProps,
   | 'hasStreamAccess'
-  | 'fieldVisibility'
   | 'isOwner'
   | 'isStreamGated'
   | 'streamConditions'
@@ -89,7 +89,6 @@ type LockedOrPlaysContentProps = Pick<
 
 const renderLockedContentOrPlayCount = ({
   hasStreamAccess,
-  fieldVisibility,
   isOwner,
   isStreamGated,
   streamConditions,
@@ -148,7 +147,6 @@ const formatCoSign = ({
 export const RankIcon = ({
   showCrown,
   index,
-  className,
   isVisible = true
 }: {
   showCrown: boolean
@@ -157,14 +155,9 @@ export const RankIcon = ({
   className?: string
 }) => {
   return isVisible ? (
-    <Text
-      variant='body'
-      size='xs'
-      className={cn(styles.rankContainer, className)}
-    >
-      {showCrown ? <IconCrown /> : <IconTrending />}
-      {index + 1}
-    </Text>
+    <LineupTileLabel icon={showCrown ? IconCrown : IconTrending} color='accent'>
+      {`${index + 1}`}
+    </LineupTileLabel>
   ) : null
 }
 
@@ -182,7 +175,6 @@ const TrackTile = (props: CombinedProps) => {
     togglePlay,
     coSign,
     darkMode,
-    fieldVisibility,
     isActive,
     isMatrix,
     userId,
@@ -299,27 +291,6 @@ const TrackTile = (props: CombinedProps) => {
 
   const isReadonly = variant === 'readonly'
 
-  let specialContentLabel = null
-
-  if (!isLoading && !isUnlisted) {
-    if (isStreamGated) {
-      specialContentLabel = (
-        <GatedContentLabel
-          streamConditions={streamConditions}
-          hasStreamAccess={!!hasStreamAccess}
-          isOwner={isOwner}
-        />
-      )
-    } else if (isArtistPick) {
-      specialContentLabel = (
-        <div className={styles.artistPickLabelContainer}>
-          <IconStar className={styles.artistPickIcon} />
-          {messages.artistPick}
-        </div>
-      )
-    }
-  }
-
   return (
     <div
       className={cn(
@@ -416,9 +387,14 @@ const TrackTile = (props: CombinedProps) => {
               showCrown={showRankIcon}
               index={index}
               isVisible={isTrending && !showSkeleton}
-              className={styles.rankIconContainer}
             />
-            {specialContentLabel}
+            {isArtistPick ? (
+              <LineupTileLabel color='accent' icon={IconStar}>
+                {messages.artistPick}
+              </LineupTileLabel>
+            ) : !isUnlisted && id ? (
+              <GatedTrackLabel trackId={id} />
+            ) : null}
             <VisibilityLabel
               releaseDate={releaseDate}
               isUnlisted={isUnlisted}
@@ -477,7 +453,6 @@ const TrackTile = (props: CombinedProps) => {
             {!isLoading
               ? renderLockedContentOrPlayCount({
                   hasStreamAccess,
-                  fieldVisibility,
                   isOwner,
                   isStreamGated,
                   streamConditions,
