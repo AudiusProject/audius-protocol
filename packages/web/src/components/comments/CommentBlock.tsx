@@ -6,11 +6,14 @@ import {
   Flex,
   IconButton,
   IconHeart,
+  IconMerch,
   IconPencil,
   IconTrash,
   Text,
   TextLink
 } from '@audius/harmony'
+
+import { decodeHashId } from 'utils/hashIds'
 
 import { CommentForm } from './CommentForm'
 import { useCurrentCommentSection } from './CommentSectionContext'
@@ -47,10 +50,37 @@ export const CommentBlock = ({
     timestamp_s,
     id: commentId
   } = comment
-  const { handleDeleteComment, handleReactComment } = useCurrentCommentSection()
+  const {
+    handleEditComment,
+    handlePostComment,
+    handleDeleteComment,
+    handleReactComment,
+    handlePinComment
+  } = useCurrentCommentSection()
+
+  const [showEditInput, setShowEditInput] = useState(false)
   const hasBadges = false // TODO: need to figure out how to data model these "badges" correctly
   const [showReplyInput, setShowReplyInput] = useState(false)
   const isOwner = true // TODO: need to check against current user (not really feasible with modck data)
+
+  const handleCommentEdit = (commentMessage: string) => {
+    setShowEditInput(false)
+    handleEditComment(commentId, commentMessage)
+  }
+
+  const handleCommentReply = (commentMessage: string) => {
+    setShowReplyInput(false)
+    let decodedParentCommentId
+    if (parentCommentId) {
+      decodedParentCommentId = decodeHashId(parentCommentId?.toString())
+    }
+
+    handlePostComment(
+      commentMessage,
+      decodedParentCommentId ?? undefined, // omitting null from the value type
+      parentCommentIndex
+    )
+  }
 
   return (
     <Flex w='100%' gap='l'>
@@ -88,7 +118,15 @@ export const CommentBlock = ({
             ) : null}
           </Flex>
         </Flex>
-        <Text color='default'>{message}</Text>
+        {showEditInput ? (
+          <CommentForm
+            onSubmit={handleCommentEdit}
+            initialValue={message}
+            hideAvatar
+          />
+        ) : (
+          <Text color='default'>{message}</Text>
+        )}
         <Flex gap='xl' alignItems='center'>
           <Flex alignItems='center'>
             <IconButton
@@ -117,6 +155,9 @@ export const CommentBlock = ({
               icon={IconPencil}
               size='s'
               color='subdued'
+              onClick={() => {
+                setShowEditInput((prevVal) => !prevVal)
+              }}
             />
           ) : null}
           {/* TODO: rework this - this is a temporary design: just to have buttons for triggering stuff */}
@@ -131,17 +172,20 @@ export const CommentBlock = ({
               }}
             />
           ) : null}
+          {isOwner ? (
+            <IconButton
+              aria-label='pin comment'
+              icon={IconMerch}
+              size='s'
+              color='subdued'
+              onClick={() => {
+                handlePinComment(commentId)
+              }}
+            />
+          ) : null}
         </Flex>
 
-        {showReplyInput ? (
-          <CommentForm
-            parentCommentId={parentCommentId ?? commentId}
-            parentCommentIndex={parentCommentIndex}
-            onPostComment={() => {
-              setShowReplyInput(false)
-            }}
-          />
-        ) : null}
+        {showReplyInput ? <CommentForm onSubmit={handleCommentReply} /> : null}
       </Flex>
     </Flex>
   )

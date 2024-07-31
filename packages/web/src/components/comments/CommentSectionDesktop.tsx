@@ -6,7 +6,8 @@ import { useCurrentCommentSection } from './CommentSectionContext'
 import { CommentThread } from './CommentThread'
 
 export const CommentSectionDesktop = () => {
-  const { userId, isLoading, comments } = useCurrentCommentSection()
+  const { userId, isLoading, comments, handlePostComment } =
+    useCurrentCommentSection()
   const commentPostAllowed = userId !== null
 
   // Loading state
@@ -41,7 +42,7 @@ export const CommentSectionDesktop = () => {
         {commentPostAllowed !== null ? (
           <>
             <Flex gap='s' p='xl' w='100%' direction='column'>
-              <CommentForm />
+              <CommentForm onSubmit={handlePostComment} />
             </Flex>
 
             <Divider color='default' orientation='horizontal' />
