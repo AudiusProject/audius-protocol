@@ -62,7 +62,8 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
   const {
     playlist_id,
     is_private: initiallyHidden,
-    is_scheduled_release: isInitiallyScheduled
+    is_scheduled_release: isInitiallyScheduled,
+    playlist_contents: initialContents
   } = initialValues
 
   const [isDeleteConfirmationOpen, setIsDeleteConfirmationOpen] =
@@ -157,6 +158,12 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
             <VisibilityField
               entityType={isAlbum ? 'album' : 'playlist'}
               isUpload={isUpload}
+              isPublishable={
+                isAlbum ||
+                (!isAlbum &&
+                  (initialContents?.track_ids?.length ?? 1) > 0 &&
+                  !isUpload)
+              }
             />
           ) : (
             <ReleaseDateFieldLegacy />
