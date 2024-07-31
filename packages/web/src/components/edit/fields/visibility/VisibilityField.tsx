@@ -38,6 +38,7 @@ type VisibilityType = 'scheduled' | 'public' | 'hidden'
 type VisibilityFieldProps = {
   entityType: 'track' | 'album' | 'playlist'
   isUpload: boolean
+  isAllowedToPublish?: boolean
 }
 
 const visibilitySchema = z
@@ -76,7 +77,7 @@ const visibilitySchema = z
   )
 
 export const VisibilityField = (props: VisibilityFieldProps) => {
-  const { entityType, isUpload } = props
+  const { entityType, isUpload, isAllowedToPublish = true } = props
   const useEntityField = entityType === 'track' ? useTrackField : useField
   const [
     { value: isHidden },
@@ -179,6 +180,7 @@ export const VisibilityField = (props: VisibilityFieldProps) => {
         <VisibilityMenuFields
           entityType={entityType}
           initiallyPublic={!initiallyHidden && !isUpload}
+          isAllowedToPublish={isAllowedToPublish}
         />
       }
     />
@@ -188,6 +190,7 @@ export const VisibilityField = (props: VisibilityFieldProps) => {
 type VisibilityMenuFieldsProps = {
   entityType: 'track' | 'album' | 'playlist'
   initiallyPublic?: boolean
+  isAllowedToPublish?: boolean
 }
 
 const VisibilityMenuFields = (props: VisibilityMenuFieldsProps) => {
@@ -197,16 +200,18 @@ const VisibilityMenuFields = (props: VisibilityMenuFieldsProps) => {
   const { isEnabled: isPaidScheduledEnabled } = useFeatureFlag(
     FeatureFlags.PAID_SCHEDULED
   )
-  const { initiallyPublic, entityType } = props
+  const { initiallyPublic, isAllowedToPublish, entityType = true } = props
   const [field] = useField<VisibilityType>('visibilityType')
 
   return (
     <RadioGroup {...field}>
-      <ModalRadioItem
-        value='public'
-        label={messages.public}
-        description={messages.publicDescription}
-      />
+      {isAllowedToPublish ? (
+        <ModalRadioItem
+          value='public'
+          label={messages.public}
+          description={messages.publicDescription}
+        />
+      ) : null}
       <ModalRadioItem
         value='hidden'
         label={messages.hidden}
