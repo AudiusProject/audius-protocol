@@ -66,6 +66,7 @@ type EditTrackFormProps = {
   onSubmit: (values: TrackEditFormValues) => void
   onDeleteTrack?: () => void
   hideContainer?: boolean
+  disableNavigationPrompt?: boolean
 }
 
 const EditFormValidationSchema = z.object({
@@ -73,7 +74,13 @@ const EditFormValidationSchema = z.object({
 })
 
 export const EditTrackForm = (props: EditTrackFormProps) => {
-  const { initialValues, onSubmit, onDeleteTrack, hideContainer } = props
+  const {
+    initialValues,
+    onSubmit,
+    onDeleteTrack,
+    hideContainer,
+    disableNavigationPrompt
+  } = props
   const [isReleaseConfirmationOpen, setIsReleaseConfirmationOpen] =
     useState(false)
   const [confirmDrawerType, setConfirmDrawerType] =
@@ -130,6 +137,7 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
             {...props}
             hideContainer={hideContainer}
             onDeleteTrack={onDeleteTrack}
+            disableNavigationPrompt={disableNavigationPrompt}
           />
           {!isUpload && confirmDrawerType ? (
             <ReleaseTrackConfirmationModal
@@ -149,6 +157,7 @@ const TrackEditForm = (
   props: FormikProps<TrackEditFormValues> & {
     hideContainer?: boolean
     onDeleteTrack?: () => void
+    disableNavigationPrompt?: boolean
   }
 ) => {
   const {
@@ -156,6 +165,7 @@ const TrackEditForm = (
     dirty,
     isSubmitting,
     onDeleteTrack,
+    disableNavigationPrompt = false,
     hideContainer = false
   } = props
   const isMultiTrack = values.trackMetadatas.length > 1
@@ -174,7 +184,7 @@ const TrackEditForm = (
   return (
     <Form id={formId}>
       <NavigationPrompt
-        when={dirty && !isSubmitting}
+        when={dirty && !isSubmitting && !disableNavigationPrompt}
         messages={
           isUpload
             ? messages.uploadNavigationPrompt
