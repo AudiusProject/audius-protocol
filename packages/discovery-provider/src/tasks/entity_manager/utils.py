@@ -26,6 +26,7 @@ from src.models.playlists.playlist_route import PlaylistRoute
 from src.models.social.follow import Follow
 from src.models.social.repost import Repost
 from src.models.social.save import Save
+from src.models.comments.comment import Comment
 from src.models.social.subscription import Subscription
 from src.models.tracks.track import Track
 from src.models.tracks.track_route import TrackRoute
@@ -150,6 +151,7 @@ class ExistingRecordDict(TypedDict):
     Grant: Dict[Tuple, Grant]
     TrackRoute: Dict[int, TrackRoute]
     PlaylistRoute: Dict[int, PlaylistRoute]
+    Comment: Dict[int, Comment]
 
 
 class EntitiesToFetchDict(TypedDict):
@@ -169,6 +171,7 @@ class EntitiesToFetchDict(TypedDict):
     UserEvent: Set[int]
     AssociatedWallet: Set[int]
     UserWallet: Set[str]
+    Comment: Set[int]
 
 
 MANAGE_ENTITY_EVENT_TYPE = "ManageEntity"

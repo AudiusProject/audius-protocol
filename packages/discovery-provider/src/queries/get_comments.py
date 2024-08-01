@@ -89,6 +89,7 @@ def get_track_comments(track_id):
                 Comment.entity_type == "Track",
                 CommentThreadAlias.parent_comment_id
                 == None,  # Check if parent_comment_id is null
+                Comment.is_delete == False,
             )
             .all()
         )

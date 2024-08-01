@@ -3,7 +3,7 @@ import time
 from collections import defaultdict
 from datetime import datetime
 from typing import Dict, List, Set, Tuple, cast
-
+import traceback
 from sqlalchemy import and_, func, literal_column, or_
 from sqlalchemy.orm.session import Session
 from web3.types import TxReceipt
@@ -27,6 +27,7 @@ from src.models.tracks.track_route import TrackRoute
 from src.models.users.associated_wallet import AssociatedWallet
 from src.models.users.user import User
 from src.models.users.user_events import UserEvent
+from src.models.comments.comment import Comment
 from src.queries.confirm_indexing_transaction_error import (
     confirm_indexing_transaction_error,
 )
@@ -35,7 +36,11 @@ from src.queries.get_skipped_transactions import (
     save_and_get_skip_tx_hash,
     set_indexing_error,
 )
-from src.tasks.entity_manager.entities.comment import create_comment
+from src.tasks.entity_manager.entities.comment import (
+    create_comment,
+    update_comment,
+    delete_comment,
+)
 from src.tasks.entity_manager.entities.dashboard_wallet_user import (
     create_dashboard_wallet_user,
     delete_dashboard_wallet_user,
@@ -116,6 +121,7 @@ entity_type_table_mapping = {
     "DashboardWalletUser": DashboardWalletUser.__tablename__,
     "DeveloperApp": DeveloperApp.__tablename__,
     "Grant": Grant.__tablename__,
+    "Comment": Comment.__tablename__,
 }
 
 
@@ -208,7 +214,7 @@ def entity_manager_update(
                         txhash,
                         logger,
                     )
-                    logger.info(f"asdf params {params}")
+                    logger.info(f"asdf params {params.action} {params.entity_type}")
 
                     # update logger context with this tx event
                     reset_entity_manager_event_tx_context(logger, event["args"])
@@ -342,22 +348,34 @@ def entity_manager_update(
                         and params.entity_type == EntityType.COMMENT
                     ):
                         create_comment(params)
+                    elif (
+                        params.action == Action.UPDATE
+                        and params.entity_type == EntityType.COMMENT
+                    ):
+                        update_comment(params)
+                    elif (
+                        params.action == Action.DELETE
+                        and params.entity_type == EntityType.COMMENT
+                    ):
+                        logger.info(f"asdf deleting comment")
+                        delete_comment(params)
                     logger.info("process transaction")  # log event context
                 except IndexingValidationError as e:
                     # swallow exception to keep indexing
                     logger.error(f"failed to process transaction error {e}")
                 except Exception as e:
-                    indexing_error = IndexingError(
-                        "tx-failure",
-                        block_number,
-                        block_hash,
-                        txhash,
-                        str(e),
-                    )
-                    create_and_raise_indexing_error(
-                        indexing_error, update_task.redis, session
-                    )
-                    logger.error(f"skipping transaction hash {indexing_error}")
+                    logger.error(f"skipping transaction hash {e}")
+
+                    # indexing_error = IndexingError(
+                    #     "tx-failure",
+                    #     block_number,
+                    #     block_hash,
+                    #     txhash,
+                    #     str(e),
+                    # )
+                    # create_and_raise_indexing_error(
+                    #     indexing_error, update_task.redis, session
+                    # )
 
         # compile records_to_save
         save_new_records(
@@ -437,6 +455,12 @@ def save_new_records(
                 else:
                     record_to_delete = original_records[record_type][entity_id]
                 # add the json record for revert blocks
+                logger.info(
+                    f"asdf entity_type_table_mapping {entity_type_table_mapping}"
+                )
+                logger.info(f"asdf record_type {record_type}")
+                logger.info(f"asdf prev_records {prev_records}")
+
                 prev_records[entity_type_table_mapping[record_type]].append(
                     existing_records_in_json[record_type][entity_id]
                 )
@@ -499,6 +523,8 @@ def collect_entities_to_fetch(update_task, entity_manager_txs):
                 entities_to_fetch[EntityType.TRACK_ROUTE].add(entity_id)
             if entity_type == EntityType.PLAYLIST:
                 entities_to_fetch[EntityType.PLAYLIST_ROUTE].add(entity_id)
+            if entity_type == EntityType.COMMENT:
+                entities_to_fetch[EntityType.COMMENT].add(entity_id)
             if (
                 entity_type == EntityType.NOTIFICATION
                 and action == Action.VIEW_PLAYLIST
@@ -1042,6 +1068,25 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
             for _, dashboard_wallet_json in dashboard_wallets
         }
 
+    logger.info(f"asdf entities_to_fetch {entities_to_fetch}")
+    if entities_to_fetch["Comment"]:
+        comments: List[Tuple[Comment, dict]] = (
+            session.query(
+                Comment,
+                literal_column(f"row_to_json({Comment.__tablename__})"),
+            )
+            .filter(Comment.comment_id.in_(entities_to_fetch["Comment"]))
+            .all()
+        )
+        logger.info(f"asdf existing comments: {comments}")
+        existing_entities["Comment"] = {
+            comment.comment_id: comment for comment, _ in comments
+        }
+        logger.info(f"asdf existing_entities {existing_entities}")
+        existing_entities_in_json[EntityType.COMMENT] = {
+            comment_json["comment_id"]: comment_json for _, comment_json in comments
+        }
+
     return existing_entities, existing_entities_in_json
 
 
@@ -1054,7 +1099,7 @@ def get_entity_manager_events_tx(update_task, tx_receipt: TxReceipt):
 def create_and_raise_indexing_error(err, redis, session):
     logger.error(
         f"Error in the indexing task at"
-        f" block={err.blocknumber} and hash={err.txhash}"
+        f" block={err.blocknumber} and hash={err.txhash} {err.message}"
     )
     # set indexing error
     set_indexing_error(redis, err.blocknumber, err.blockhash, err.txhash, err.message)

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 
 import { ID } from '@audius/common/models'
+import { decodeHashId } from '@audius/common/utils'
 import {
   Avatar,
   Flex,
@@ -41,7 +42,8 @@ export const CommentBlock = ({
     timestamp_s,
     id: commentId
   } = comment
-  const { handleDeleteComment, handleReactComment } = useCurrentCommentSection()
+  const { handleDeleteComment, handleReactComment, handleEditComment } =
+    useCurrentCommentSection()
   const hasBadges = false // TODO: need to figure out how to data model these "badges" correctly
   const [showReplyInput, setShowReplyInput] = useState(false)
   const isOwner = true // TODO: need to check against current user (not really feasible with modck data)
@@ -111,6 +113,9 @@ export const CommentBlock = ({
               icon={IconPencil}
               size='s'
               color='subdued'
+              onClick={() => {
+                handleEditComment(decodeHashId(commentId), 'edited')
+              }}
             />
           ) : null}
           {/* TODO: rework this - this is a temporary design: just to have buttons for triggering stuff */}
@@ -121,7 +126,7 @@ export const CommentBlock = ({
               size='s'
               color='subdued'
               onClick={() => {
-                handleDeleteComment(commentId)
+                handleDeleteComment(decodeHashId(commentId))
               }}
             />
           ) : null}

@@ -94,12 +94,44 @@ export const CommentSectionProvider = ({
   const handlePinComment = (commentId: ID) => {
     console.log('Clicked pin for ', commentId)
   }
-  const handleEditComment = (commentId: ID, newMessage: string) => {
-    console.log(`Edited comment ${commentId} to ${newMessage}`)
-  }
-  const handleDeleteComment = (commentId: ID) => {
-    console.log('Clicked delete for ', commentId)
-  }
+  const handleEditComment = useCallback(
+    async (commentId?: ID, newMessage: string) => {
+      console.log('edited comment: ', commentId, newMessage)
+      if (userId && entityId) {
+        try {
+          const sdk = await audiusSdk()
+          const commentData = {
+            body: newMessage,
+            userId,
+            entityId: commentId,
+            entityType: EntityType.TRACK // Comments are only on tracks for now; likely expand to collections in the future
+          }
+          await sdk.comments.editComment(commentData)
+        } catch (e) {
+          console.log('COMMENTS DEBUG: Error posting comment', e)
+        }
+      }
+    },
+    [entityId, userId]
+  )
+  const handleDeleteComment = useCallback(
+    async (commentId?: ID) => {
+      console.log('deleting comment: ', commentId)
+      if (userId && entityId) {
+        try {
+          const sdk = await audiusSdk()
+          const commentData = {
+            userId,
+            entityId: commentId
+          }
+          await sdk.comments.deleteComment(commentData)
+        } catch (e) {
+          console.log('COMMENTS DEBUG: Error posting comment', e)
+        }
+      }
+    },
+    [entityId, userId]
+  )
   const handleReportComment = (commentId: ID) => {
     console.log('Clicked report for ', commentId)
   }

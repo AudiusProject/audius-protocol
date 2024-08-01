@@ -12,59 +12,65 @@ ETH_CONTRACTS_ABI_DIR = pathlib.Path(__file__).parent / "../build/eth-contracts"
 
 
 def health_check(discprov_url):
-    url = urllib.parse.urljoin(discprov_url, "/health_check")
+    pass
 
-    try:
-        response = json.load(urllib.request.urlopen(url))
-        return (
-            response["data"]["block_difference"]
-            < response["data"]["maximum_healthy_block_difference"]
-        )
-    except (ConnectionError, urllib.error.URLError, json.JSONDecodeError):
-        return False
+
+#     url = urllib.parse.urljoin(discprov_url, "/health_check")
+
+#     try:
+#         response = json.load(urllib.request.urlopen(url))
+#         return (
+#             response["data"]["block_difference"]
+#             < response["data"]["maximum_healthy_block_difference"]
+#         )
+#     except (ConnectionError, urllib.error.URLError, json.JSONDecodeError):
+#         return False
 
 
 def main():
-    w3 = web3.Web3(web3.Web3.HTTPProvider(os.getenv("audius_web3_eth_provider_url")))
-    w3.strict_bytes_type_checking = False
+    pass
 
-    w3.eth.default_account = os.getenv("audius_delegate_owner_wallet")
 
-    registry = w3.eth.contract(
-        address=os.getenv("audius_eth_contracts_registry"),
-        abi=json.loads((ETH_CONTRACTS_ABI_DIR / "Registry.json").read_text())["abi"],
-    )
+#     w3 = web3.Web3(web3.Web3.HTTPProvider(os.getenv("audius_web3_eth_provider_url")))
+#     w3.strict_bytes_type_checking = False
 
-    serviceProviderFactory = w3.eth.contract(
-        address=registry.functions.getContract(b"ServiceProviderFactory").call(),
-        abi=json.loads(
-            (ETH_CONTRACTS_ABI_DIR / "ServiceProviderFactory.json").read_text()
-        )["abi"],
-    )
+#     w3.eth.default_account = os.getenv("audius_delegate_owner_wallet")
 
-    staking = w3.eth.contract(
-        address=registry.functions.getContract(b"StakingProxy").call(),
-        abi=json.loads((ETH_CONTRACTS_ABI_DIR / "Staking.json").read_text())["abi"],
-    )
+#     registry = w3.eth.contract(
+#         address=os.getenv("audius_eth_contracts_registry"),
+#         abi=json.loads((ETH_CONTRACTS_ABI_DIR / "Registry.json").read_text())["abi"],
+#     )
 
-    token = w3.eth.contract(
-        address=os.getenv("audius_eth_contracts_token"),
-        abi=json.loads((ETH_CONTRACTS_ABI_DIR / "ERC20Detailed.json").read_text())[
-            "abi"
-        ],
-    )
+#     serviceProviderFactory = w3.eth.contract(
+#         address=registry.functions.getContract(b"ServiceProviderFactory").call(),
+#         abi=json.loads(
+#             (ETH_CONTRACTS_ABI_DIR / "ServiceProviderFactory.json").read_text()
+#         )["abi"],
+#     )
 
-    token.functions.approve(
-        staking.address,
-        200000 * (10 ** token.functions.decimals().call()),
-    ).transact()
+#     staking = w3.eth.contract(
+#         address=registry.functions.getContract(b"StakingProxy").call(),
+#         abi=json.loads((ETH_CONTRACTS_ABI_DIR / "Staking.json").read_text())["abi"],
+#     )
 
-    serviceProviderFactory.functions.register(
-        b"discovery-node",
-        os.getenv("audius_discprov_url"),
-        200000 * (10 ** token.functions.decimals().call()),
-        os.getenv("audius_delegate_owner_wallet"),
-    ).transact()
+#     token = w3.eth.contract(
+#         address=os.getenv("audius_eth_contracts_token"),
+#         abi=json.loads((ETH_CONTRACTS_ABI_DIR / "ERC20Detailed.json").read_text())[
+#             "abi"
+#         ],
+#     )
+
+#     token.functions.approve(
+#         staking.address,
+#         200000 * (10 ** token.functions.decimals().call()),
+#     ).transact()
+
+#     serviceProviderFactory.functions.register(
+#         b"discovery-node",
+#         os.getenv("audius_discprov_url"),
+#         200000 * (10 ** token.functions.decimals().call()),
+#         os.getenv("audius_delegate_owner_wallet"),
+#     ).transact()
 
 
 if __name__ == "__main__":

@@ -47,4 +47,37 @@ export class CommentsApi extends GeneratedCommentsApi {
     this.logger.info('Successfully uploaded track')
     return response
   }
+
+  async editComment(metadata: CommentMetadata) {
+    const { userId, entityId } = metadata
+    const response = await this.entityManager.manageEntity({
+      userId,
+      entityType: EntityType.COMMENT,
+      entityId,
+      action: Action.UPDATE,
+      metadata: JSON.stringify({
+        cid: '',
+        data: snakecaseKeys(metadata)
+      }),
+      auth: this.auth
+    })
+
+    this.logger.info('Successfully edit comment', response)
+    return response
+  }
+
+  async deleteComment(metadata: CommentMetadata) {
+    const { userId, entityId } = metadata
+    const response = await this.entityManager.manageEntity({
+      userId,
+      entityType: EntityType.COMMENT,
+      entityId,
+      action: Action.DELETE,
+      metadata: '',
+      auth: this.auth
+    })
+
+    this.logger.info('Successfully uploaded track')
+    return response
+  }
 }
