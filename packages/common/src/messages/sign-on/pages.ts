@@ -112,7 +112,9 @@ export const selectArtistsPageMessages = {
   genresLabel: 'Genre',
   pickArtists: (genre: string) => `Pick ${genre} Artists`,
   selected: 'Selected',
-  backToGenres: 'Back To Genres'
+  backToGenres: 'Back To Genres',
+  noResults:
+    "Looks like we don't have any results for this genre at the moment."
 }
 
 export const welcomeModalMessages = {
