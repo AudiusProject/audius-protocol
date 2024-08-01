@@ -257,7 +257,7 @@ export const AdvancedField = ({ isUpload }: AdvancedFieldProps) => {
         ).licenseType
       )
       const bpmValue = get(values, BPM)
-      setBpm(bpmValue ? Number(bpmValue) : bpm)
+      setBpm(typeof bpmValue !== 'undefined' ? Number(bpmValue) : bpm)
       setMusicalKey(get(values, MUSICAL_KEY) ?? musicalKey)
       setReleaseDate(get(values, RELEASE_DATE) ?? releaseDate)
     },

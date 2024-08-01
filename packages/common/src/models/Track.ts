@@ -239,6 +239,7 @@ export type TrackMetadata = {
   producer_copyright_line?: Copyright | null
   parental_warning_type?: string | null
   bpm?: number | null
+  is_custom_bpm?: boolean
   musical_key?: string | null
   audio_analysis_error_count?: number
 
