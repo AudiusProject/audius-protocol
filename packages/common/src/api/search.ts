@@ -34,7 +34,12 @@ const getMinMaxFromBpm = (bpm?: string) => {
   const bpmParts = bpm ? bpm.split('-') : [undefined, undefined]
   const bpmMin = bpmParts[0] ? parseFloat(bpmParts[0]) : undefined
   const bpmMax = bpmParts[1] ? parseFloat(bpmParts[1]) : bpmMin
-  return [bpmMin, bpmMax]
+
+  // Because we round the bpm display to the nearest whole number, we need to add a small buffer
+  const bufferedBpmMin = bpmMin ? Math.round(bpmMin) - 0.5 : undefined
+  const bufferedBpmMax = bpmMax ? Math.round(bpmMax) + 0.5 : undefined
+
+  return [bufferedBpmMin, bufferedBpmMax]
 }
 
 const searchApi = createApi({
