@@ -1,5 +1,7 @@
 import React from 'react'
 
+import { useGetCurrentUserId } from '@audius/common/api'
+import { useSelectTierInfo } from '@audius/common/hooks'
 import {
   Box,
   Flex,
@@ -25,8 +27,9 @@ export const TargetedMessageCTA = () => {
     // TODO: open modal
   }
 
-  // TODO: Implement userMeetsRequirements
-  const userMeetsRequirements = false
+  const { data: userId } = useGetCurrentUserId({})
+  const { tierNumber, isVerified } = useSelectTierInfo(userId ?? 0) ?? {}
+  const userMeetsRequirements = isVerified || (tierNumber && tierNumber > 0)
   if (!userMeetsRequirements) {
     return <TargetedMessageDisabled />
   }
