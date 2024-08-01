@@ -69,5 +69,10 @@ var _ = Describe("Plays", func() {
 		Expect(err).To(BeNil())
 
 		Expect(protob.Equal(playEvent, playEventRes.GetEvent())).To(BeTrue())
+
+		// test rpc get hash works too
+		txResult, err := sdk.Tx(ctx, []byte(txhash), true)
+		Expect(err).To(BeNil())
+		Expect(txResult.Hash.Bytes()).To(Equal([]byte(txhash)))
 	})
 })
