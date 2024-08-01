@@ -208,7 +208,6 @@ def entity_manager_update(
                         txhash,
                         logger,
                     )
-                    logger.info(f"asdf params {params}")
 
                     # update logger context with this tx event
                     reset_entity_manager_event_tx_context(logger, event["args"])
