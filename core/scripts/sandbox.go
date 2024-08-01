@@ -11,9 +11,17 @@ import (
 
 func main() {
 	sdk, _ := sdk.NewSdk(sdk.WithGrpcendpoint("0.0.0.0:6612"))
-	res, err := sdk.GetEvent(context.Background(), &proto.GetEventRequest{Txhash: "23AC594AADFD9D6B807A4B45389056CF40E525AE6AAB4EA85CBCF0A9095510A2"})
+	res, err := sdk.GetEvent(context.Background(), &proto.GetEventRequest{Txhash: ""})
 	if err != nil {
 		log.Fatal(err)
 	}
-	spew.Dump(res.Event.Body)
+
+	spewConfig := spew.ConfigState{
+		Indent:                  "  ",
+		DisableMethods:          true,
+		DisablePointerAddresses: true,
+		DisableCapacities:       true,
+	}
+
+	spewConfig.Dump(res.Event.Body)
 }
