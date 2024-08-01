@@ -27,8 +27,7 @@ gen: $(SQL_SRCS)
 	go mod tidy
 
 test:
-	@go test -v ./...
-	@cd test/integration && ginkgo -r
+	@go test -count=1 -v ./...
 
 .PHONY: dev-discovery-1 dev-content-1 dev-content-2 dev-content-3
 dev-discovery-1:

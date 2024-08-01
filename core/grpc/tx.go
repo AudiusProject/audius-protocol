@@ -24,6 +24,10 @@ func SendTx[T proto.Message](logger *common.Logger, rpc *local.Local, msg T) (Tx
 		return "", err
 	}
 
+	return SendRawTx(ctx, logger, rpc, tx)
+}
+
+func SendRawTx(ctx context.Context, logger *common.Logger, rpc *local.Local, tx []byte) (TxHash, error) {
 	result, err := rpc.BroadcastTxSync(ctx, tx)
 	if err != nil {
 		return "", err

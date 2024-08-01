@@ -22,6 +22,8 @@ const (
 	Protocol_SubmitEvent_FullMethodName = "/protocol.Protocol/SubmitEvent"
 	Protocol_GetEvent_FullMethodName    = "/protocol.Protocol/GetEvent"
 	Protocol_Ping_FullMethodName        = "/protocol.Protocol/Ping"
+	Protocol_SetKeyValue_FullMethodName = "/protocol.Protocol/SetKeyValue"
+	Protocol_GetKeyValue_FullMethodName = "/protocol.Protocol/GetKeyValue"
 )
 
 // ProtocolClient is the client API for Protocol service.
@@ -31,6 +33,8 @@ type ProtocolClient interface {
 	SubmitEvent(ctx context.Context, in *SubmitEventRequest, opts ...grpc.CallOption) (*SubmitEventResponse, error)
 	GetEvent(ctx context.Context, in *GetEventRequest, opts ...grpc.CallOption) (*GetEventResponse, error)
 	Ping(ctx context.Context, in *PingRequest, opts ...grpc.CallOption) (*PingResponse, error)
+	SetKeyValue(ctx context.Context, in *SetKeyValueRequest, opts ...grpc.CallOption) (*KeyValueResponse, error)
+	GetKeyValue(ctx context.Context, in *GetKeyValueRequest, opts ...grpc.CallOption) (*KeyValueResponse, error)
 }
 
 type protocolClient struct {
@@ -71,6 +75,26 @@ func (c *protocolClient) Ping(ctx context.Context, in *PingRequest, opts ...grpc
 	return out, nil
 }
 
+func (c *protocolClient) SetKeyValue(ctx context.Context, in *SetKeyValueRequest, opts ...grpc.CallOption) (*KeyValueResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(KeyValueResponse)
+	err := c.cc.Invoke(ctx, Protocol_SetKeyValue_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *protocolClient) GetKeyValue(ctx context.Context, in *GetKeyValueRequest, opts ...grpc.CallOption) (*KeyValueResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(KeyValueResponse)
+	err := c.cc.Invoke(ctx, Protocol_GetKeyValue_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ProtocolServer is the server API for Protocol service.
 // All implementations must embed UnimplementedProtocolServer
 // for forward compatibility.
@@ -78,6 +102,8 @@ type ProtocolServer interface {
 	SubmitEvent(context.Context, *SubmitEventRequest) (*SubmitEventResponse, error)
 	GetEvent(context.Context, *GetEventRequest) (*GetEventResponse, error)
 	Ping(context.Context, *PingRequest) (*PingResponse, error)
+	SetKeyValue(context.Context, *SetKeyValueRequest) (*KeyValueResponse, error)
+	GetKeyValue(context.Context, *GetKeyValueRequest) (*KeyValueResponse, error)
 	mustEmbedUnimplementedProtocolServer()
 }
 
@@ -96,6 +122,12 @@ func (UnimplementedProtocolServer) GetEvent(context.Context, *GetEventRequest) (
 }
 func (UnimplementedProtocolServer) Ping(context.Context, *PingRequest) (*PingResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Ping not implemented")
+}
+func (UnimplementedProtocolServer) SetKeyValue(context.Context, *SetKeyValueRequest) (*KeyValueResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SetKeyValue not implemented")
+}
+func (UnimplementedProtocolServer) GetKeyValue(context.Context, *GetKeyValueRequest) (*KeyValueResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetKeyValue not implemented")
 }
 func (UnimplementedProtocolServer) mustEmbedUnimplementedProtocolServer() {}
 func (UnimplementedProtocolServer) testEmbeddedByValue()                  {}
@@ -172,6 +204,42 @@ func _Protocol_Ping_Handler(srv interface{}, ctx context.Context, dec func(inter
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Protocol_SetKeyValue_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SetKeyValueRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ProtocolServer).SetKeyValue(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Protocol_SetKeyValue_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ProtocolServer).SetKeyValue(ctx, req.(*SetKeyValueRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Protocol_GetKeyValue_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetKeyValueRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ProtocolServer).GetKeyValue(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Protocol_GetKeyValue_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ProtocolServer).GetKeyValue(ctx, req.(*GetKeyValueRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Protocol_ServiceDesc is the grpc.ServiceDesc for Protocol service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -190,6 +258,14 @@ var Protocol_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Ping",
 			Handler:    _Protocol_Ping_Handler,
+		},
+		{
+			MethodName: "SetKeyValue",
+			Handler:    _Protocol_SetKeyValue_Handler,
+		},
+		{
+			MethodName: "GetKeyValue",
+			Handler:    _Protocol_GetKeyValue_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

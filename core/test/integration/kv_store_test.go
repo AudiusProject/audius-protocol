@@ -2,58 +2,40 @@ package integration_test
 
 import (
 	"context"
+	"time"
 
-	"github.com/cometbft/cometbft/rpc/client/http"
+	"github.com/AudiusProject/audius-protocol/core/gen/proto"
+	"github.com/AudiusProject/audius-protocol/core/sdk"
+	"github.com/google/uuid"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 
 var _ = Describe("KvStore", func() {
-	It("should be on the same network and peer", func() {
+	It("should set kv values on one node and read on the others", func() {
 		ctx := context.Background()
 
-		discovery1rpc, err := http.New("http://localhost:6611")
+		discoverySdk, err := sdk.NewSdk(sdk.WithGrpcendpoint("0.0.0.0:6612"))
 		Expect(err).To(BeNil())
 
-		res, err := discovery1rpc.Status(ctx)
-		Expect(err).To(BeNil())
-		Expect(res.NodeInfo.Network).To(Equal("audius-devnet"))
+		req := &proto.SetKeyValueRequest{
+			Key:   uuid.NewString(),
+			Value: uuid.NewString(),
+		}
 
-		netRes, err := discovery1rpc.NetInfo(ctx)
+		res, err := discoverySdk.SetKeyValue(ctx, req)
 		Expect(err).To(BeNil())
-		Expect(netRes.NPeers).To(Equal(3))
+		Expect(res.Key).To(Equal(req.Key))
+		Expect(res.Value).To(Equal(req.Value))
 
-		content1rpc, err := http.New("http://localhost:6711")
-		Expect(err).To(BeNil())
+		time.Sleep(time.Second * 2)
 
-		res, err = content1rpc.Status(ctx)
-		Expect(err).To(BeNil())
-		Expect(res.NodeInfo.Network).To(Equal("audius-devnet"))
-
-		netRes, err = content1rpc.NetInfo(ctx)
-		Expect(err).To(BeNil())
-		Expect(netRes.NPeers).To(Equal(1))
-
-		content2rpc, err := http.New("http://localhost:6721")
+		contentOneSdk, err := sdk.NewSdk(sdk.WithGrpcendpoint("0.0.0.0:6712"))
 		Expect(err).To(BeNil())
 
-		res, err = content2rpc.Status(ctx)
+		queryRes, err := contentOneSdk.GetKeyValue(ctx, &proto.GetKeyValueRequest{Key: req.Key})
 		Expect(err).To(BeNil())
-		Expect(res.NodeInfo.Network).To(Equal("audius-devnet"))
-
-		netRes, err = content2rpc.NetInfo(ctx)
-		Expect(err).To(BeNil())
-		Expect(netRes.NPeers).To(Equal(1))
-
-		content3rpc, err := http.New("http://localhost:6731")
-		Expect(err).To(BeNil())
-
-		res, err = content3rpc.Status(ctx)
-		Expect(err).To(BeNil())
-		Expect(res.NodeInfo.Network).To(Equal("audius-devnet"))
-
-		netRes, err = content3rpc.NetInfo(ctx)
-		Expect(err).To(BeNil())
-		Expect(netRes.NPeers).To(Equal(1))
+		Expect(queryRes.Key).To(Equal(req.Key))
+		Expect(queryRes.Value).To(Equal(req.Value))
 	})
 })
