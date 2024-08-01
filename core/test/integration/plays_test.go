@@ -23,22 +23,22 @@ var _ = Describe("Plays", func() {
 
 		listens := []*proto.Listen{
 			{
-				ListenerAddress: uuid.NewString(),
-				TrackId:         uuid.NewString(),
-				Timestamp:       timestamppb.New(time.Now()),
-				Signature:       "todo: impl",
+				UserId:    uuid.NewString(),
+				TrackId:   uuid.NewString(),
+				Timestamp: timestamppb.New(time.Now()),
+				Signature: "todo: impl",
 			},
 			{
-				ListenerAddress: uuid.NewString(),
-				TrackId:         uuid.NewString(),
-				Timestamp:       timestamppb.New(time.Now()),
-				Signature:       "todo: impl",
+				UserId:    uuid.NewString(),
+				TrackId:   uuid.NewString(),
+				Timestamp: timestamppb.New(time.Now()),
+				Signature: "todo: impl",
 			},
 			{
-				ListenerAddress: uuid.NewString(),
-				TrackId:         uuid.NewString(),
-				Timestamp:       timestamppb.New(time.Now()),
-				Signature:       "todo: impl",
+				UserId:    uuid.NewString(),
+				TrackId:   uuid.NewString(),
+				Timestamp: timestamppb.New(time.Now()),
+				Signature: "todo: impl",
 			},
 		}
 

@@ -21,8 +21,6 @@ import (
 
 	"github.com/AudiusProject/audius-protocol/mediorum/cidutil"
 
-	"github.com/AudiusProject/audius-protocol/core/sdk"
-
 	"github.com/erni27/imcache"
 	"github.com/labstack/echo/v4"
 	"gocloud.dev/blob"
@@ -379,21 +377,6 @@ func (ss *MediorumServer) logTrackListen(c echo.Context) {
 		ss.logger.Error("unable to build request", "err", err)
 		return
 	}
-
-	go func() {
-		sdk, err := sdk.NewSdk()
-		if err != nil {
-			ss.logger.Error("error created core sdk", "error", err)
-			return
-		}
-
-		res, err := sdk.SubmitEvent( /* make play event here */ )
-		if err != nil {
-			ss.logger.Error("error submitting play event", "error", err)
-			return
-		}
-		ss.logger.Info("recorded play to core", "txhash", res.Txhash)
-	}()
 
 	req, err := signature.SignedPost(endpoint, "application/json", bytes.NewReader(buf), ss.Config.privateKey, ss.Config.Self.Host)
 	if err != nil {

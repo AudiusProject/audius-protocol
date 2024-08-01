@@ -40,7 +40,7 @@ message PlaysEvent {
 }
 
 message Listen {
-  string listenerAddress = 1;
+  string user_id = 1;
   string track_id = 2;
   google.protobuf.Timestamp timestamp = 3;
   string signature = 4;
