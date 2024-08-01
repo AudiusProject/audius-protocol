@@ -21,7 +21,6 @@ import {
   IconClose,
   IconSearch,
   Modal,
-  ModalFooter,
   ModalHeader,
   ModalProps,
   ModalTitle,

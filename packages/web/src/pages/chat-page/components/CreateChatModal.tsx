@@ -36,7 +36,7 @@ const { getUserList: getChatsUserList } = chatSelectors
 const { fetchBlockers, fetchMoreChats } = chatActions
 
 export const CreateChatModal = () => {
-  const { isEnabled: isOneToManyDmsEnabled } = useFeatureFlag(
+  const { isEnabled: isTargetedMessagesEnabled } = useFeatureFlag(
     FeatureFlags.ONE_TO_MANY_DMS
   )
 
@@ -115,7 +115,11 @@ export const CreateChatModal = () => {
         onClose={onClose}
         onClosed={onClosed}
         onCancel={handleCancel}
-        footer={isOneToManyDmsEnabled ? <TargetedMessageCTA /> : undefined}
+        footer={
+          isTargetedMessagesEnabled ? (
+            <TargetedMessageCTA onClick={onClose} />
+          ) : undefined
+        }
       />
     </>
   )

@@ -1,7 +1,8 @@
-import React from 'react'
+import React, { useCallback } from 'react'
 
 import { useGetCurrentUserId } from '@audius/common/api'
 import { useSelectTierInfo } from '@audius/common/hooks'
+import { useTargetedMessageModal } from '@audius/common/src/store/ui/modals/create-targeted-message-modal'
 import {
   Box,
   Flex,
@@ -20,17 +21,27 @@ const messages = {
   or: 'or'
 }
 
-export const TargetedMessageCTA = () => {
+type TargetedMessageCTAProps = {
+  onClick: () => void
+}
+
+export const TargetedMessageCTA = (props: TargetedMessageCTAProps) => {
+  const { onClick } = props
   const { color } = useTheme()
 
-  const handleClick = () => {
-    // TODO: open modal
-  }
+  const { onOpen: openTargetedMessageModal } = useTargetedMessageModal()
 
   const { data: userId } = useGetCurrentUserId({})
   const { tierNumber, isVerified } = useSelectTierInfo(userId ?? 0) ?? {}
   const userMeetsRequirements = isVerified || (tierNumber && tierNumber > 0)
-  if (!userMeetsRequirements) {
+
+  const handleClick = useCallback(() => {
+    onClick()
+    openTargetedMessageModal()
+  }, [onClick, openTargetedMessageModal])
+
+  // DEBUG
+  if (!userMeetsRequirements && !true) {
     return <TargetedMessageDisabled />
   }
 
