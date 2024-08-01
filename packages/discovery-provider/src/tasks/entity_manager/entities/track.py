@@ -431,10 +431,8 @@ def populate_track_record_metadata(track_record: Track, track_metadata, handle, 
                 if key_value is None:
                     track_record.musical_key = None
                 else:
-                    if isinstance(
-                        track_metadata["musical_key"], str
-                    ) and is_valid_musical_key(track_metadata["musical_key"]):
-                        track_record.musical_key = track_metadata["musical_key"]
+                    if isinstance(key_value, str) and is_valid_musical_key(key_value):
+                        track_record.musical_key = key_value
 
         else:
             # For most fields, update the track_record when the corresponding field exists
