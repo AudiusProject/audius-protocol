@@ -8,7 +8,8 @@ import {
   PURCHASE_VENDOR,
   PURCHASE_METHOD,
   maximumPayExtraAmountCents,
-  minimumPayExtraAmountCents
+  minimumPayExtraAmountCents,
+  PURCHASE_METHOD_MINT_ADDRESS
 } from './constants'
 import { PayExtraPreset } from './types'
 
@@ -27,7 +28,8 @@ const createPurchaseContentSchema = () => {
         .optional(),
       [AMOUNT_PRESET]: z.nativeEnum(PayExtraPreset),
       [PURCHASE_METHOD]: z.nativeEnum(PurchaseMethod),
-      [PURCHASE_VENDOR]: z.nativeEnum(PurchaseVendor).optional()
+      [PURCHASE_VENDOR]: z.nativeEnum(PurchaseVendor).optional(),
+      [PURCHASE_METHOD_MINT_ADDRESS]: z.string().optional()
     })
     .refine(
       ({ amountPreset, customAmount }) => {

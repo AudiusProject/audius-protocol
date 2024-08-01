@@ -25,6 +25,7 @@ export enum PurchaseContentPage {
 export enum PurchaseErrorCode {
   Canceled = 'Canceled',
   InsufficientBalance = 'InsufficientBalance',
+  InsufficientExternalTokenBalance = 'InsufficientExternalTokenBalance',
   Unknown = 'Unknown'
 }
 

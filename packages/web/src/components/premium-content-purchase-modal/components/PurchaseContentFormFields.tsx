@@ -9,7 +9,8 @@ import {
   PURCHASE_VENDOR,
   usePurchaseMethod,
   PurchaseableContentMetadata,
-  isPurchaseableAlbum
+  isPurchaseableAlbum,
+  PURCHASE_METHOD_MINT_ADDRESS
 } from '@audius/common/hooks'
 import { PurchaseMethod, PurchaseVendor } from '@audius/common/models'
 import { IntKeys, FeatureFlags } from '@audius/common/services'
@@ -50,10 +51,21 @@ export const PurchaseContentFormFields = ({
   const { isEnabled: isCoinflowEnabled } = useFeatureFlag(
     FeatureFlags.BUY_WITH_COINFLOW
   )
+  const { isEnabled: isPayWithAnythingEnabledFlag } = useFeatureFlag(
+    FeatureFlags.PAY_WITH_ANYTHING_ENABLED
+  )
+  const isPayWithAnythingEnabled =
+    isPayWithAnythingEnabledFlag && !!window.solana
+
   const [{ value: purchaseMethod }, , { setValue: setPurchaseMethod }] =
     useField(PURCHASE_METHOD)
   const [{ value: purchaseVendor }, , { setValue: setPurchaseVendor }] =
     useField(PURCHASE_VENDOR)
+  const [
+    { value: purchaseMethodMintAddress },
+    ,
+    { setValue: setPurchaseMethodMintAddress }
+  ] = useField(PURCHASE_METHOD_MINT_ADDRESS)
   const isPurchased = stage === PurchaseContentStage.FINISH
 
   const { data: balanceBN } = useUSDCBalance({ isPolling: true })
@@ -137,10 +149,13 @@ export const PurchaseContentFormFields = ({
           setSelectedMethod={handleChangeMethod}
           selectedVendor={purchaseVendor}
           setSelectedVendor={handleChangeVendor}
+          selectedPurchaseMethodMintAddress={purchaseMethodMintAddress}
+          setSelectedPurchaseMethodMintAddress={setPurchaseMethodMintAddress}
           balance={balanceBN}
           isExistingBalanceDisabled={isExistingBalanceDisabled}
           showExistingBalance={!!(balanceBN && !balanceBN.isZero())}
           isCoinflowEnabled={showCoinflow}
+          isPayWithAnythingEnabled={isPayWithAnythingEnabled}
           showVendorChoice={false}
         />
       )}

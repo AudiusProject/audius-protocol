@@ -1,6 +1,7 @@
 export const CUSTOM_AMOUNT = 'customAmount'
 export const AMOUNT_PRESET = 'amountPreset'
 export const PURCHASE_METHOD = 'purchaseMethod'
+export const PURCHASE_METHOD_MINT_ADDRESS = 'purchaseMethodMintAddress'
 export const PURCHASE_VENDOR = 'purchaseVendor'
 export const PAGE = 'page'
 

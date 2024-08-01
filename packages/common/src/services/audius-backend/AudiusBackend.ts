@@ -14,7 +14,8 @@ import {
   SystemProgram,
   SYSVAR_RENT_PUBKEY,
   Transaction,
-  TransactionInstruction
+  TransactionInstruction,
+  VersionedTransaction
 } from '@solana/web3.js'
 import BN from 'bn.js'
 import queryString from 'query-string'
@@ -105,7 +106,9 @@ export interface PhantomProvider {
   isConnected: boolean | null
   isPhantom: boolean
   signTransaction: (transaction: Transaction) => Promise<Transaction>
-  signAndSendTransaction: (transaction: Transaction) => Promise<Transaction>
+  signAndSendTransaction: (
+    transaction: Transaction | VersionedTransaction
+  ) => Promise<Transaction>
   signAllTransactions: (transactions: Transaction[]) => Promise<Transaction[]>
   signMessage: (
     message: Uint8Array | string,

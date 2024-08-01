@@ -76,5 +76,15 @@ export type OptionsFilterButtonProps = {
    * Placeholder text for the filter input
    */
   filterInputPlaceholder?: string
+
+  /**
+   * Whether or not to virtualize the options
+   */
+  virtualized?: boolean
+
+  /**
+   * Max width of the popup. Required when virtualized
+   */
+  popupMaxWidth?: number
 } & FilterButtonPopupProps &
   Omit<FilterButtonProps, 'children' | 'value'>

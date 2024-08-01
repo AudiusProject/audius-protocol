@@ -28,6 +28,7 @@ type PurchaseContentState = {
   onSuccess?: OnSuccess
   purchaseMethod: PurchaseMethod
   purchaseVendor?: PurchaseVendor
+  purchaseMethodMintAddress?: string
 }
 
 const initialState: PurchaseContentState = {
@@ -39,7 +40,8 @@ const initialState: PurchaseContentState = {
   error: undefined,
   stage: PurchaseContentStage.IDLE,
   purchaseMethod: PurchaseMethod.BALANCE,
-  purchaseVendor: undefined
+  purchaseVendor: undefined,
+  purchaseMethodMintAddress: undefined
 }
 
 const slice = createSlice({
@@ -53,6 +55,7 @@ const slice = createSlice({
         extraAmountPreset?: string
         purchaseMethod: PurchaseMethod
         purchaseVendor?: PurchaseVendor
+        purchaseMethodMintAddress?: string
         contentId: ID
         contentType?: PurchaseableContentType
         onSuccess?: OnSuccess
@@ -69,6 +72,7 @@ const slice = createSlice({
       state.onSuccess = action.payload.onSuccess
       state.purchaseMethod = action.payload.purchaseMethod
       state.purchaseVendor = action.payload.purchaseVendor
+      state.purchaseMethodMintAddress = action.payload.purchaseMethodMintAddress
     },
     buyUSDC: (state) => {
       state.stage = PurchaseContentStage.BUY_USDC
