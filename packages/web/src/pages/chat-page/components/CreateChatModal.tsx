@@ -16,11 +16,10 @@ import {
   followersUserListSelectors,
   FOLLOWERS_USER_LIST_TAG
 } from '@audius/common/store'
-import { Flex, IconCompose, Paper } from '@audius/harmony'
+import { IconCompose } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 
 import { useSelector } from 'common/hooks/useSelector'
-import FeatureFlag from 'components/feature-flag/FeatureFlag'
 import { SearchUsersModal } from 'components/search-users-modal/SearchUsersModal'
 import { CreateChatUserResult } from 'pages/chat-page/components/CreateChatUserResult'
 
