@@ -177,9 +177,8 @@ function* editTrackAsync(action: ReturnType<typeof trackActions.editTrack>) {
   const trackForEdit = yield* addPremiumMetadata(action.formFields)
 
   // Format musical key
-  trackForEdit.musical_key = formatMusicalKey(
-    trackForEdit.musical_key || undefined
-  )
+  trackForEdit.musical_key =
+    formatMusicalKey(trackForEdit.musical_key || undefined) ?? null
 
   // Format bpm
   trackForEdit.bpm = trackForEdit.bpm ? Number(trackForEdit.bpm) : null
