@@ -33,3 +33,6 @@ gen::
 
 test::
 	@go test -v ./...
+
+sandbox::
+	@go run ./scripts/sandbox.go

@@ -30,21 +30,24 @@ func initSdk(sdk *Sdk) error {
 	// TODO: add node selection logic here, based on environement, if endpoint not configured
 
 	// initialize grpc client
-	grpcConn, err := grpc.NewClient(sdk.GRPCEndpoint, grpc.WithTransportCredentials(insecure.NewCredentials()))
-	if err != nil {
-		return err
+	if sdk.GRPCEndpoint != "" {
+		grpcConn, err := grpc.NewClient(sdk.GRPCEndpoint, grpc.WithTransportCredentials(insecure.NewCredentials()))
+		if err != nil {
+			return err
+		}
+		// TODO: add signing middleware here if privkey
+		grpcClient := proto.NewProtocolClient(grpcConn)
+		sdk.ProtocolClient = grpcClient
 	}
 
-	// TODO: add signing middleware here if privkey
-
-	grpcClient := proto.NewProtocolClient(grpcConn)
-	sdk.ProtocolClient = grpcClient
-
-	jrpcConn, err := http.New(sdk.JRPCEndpoint)
-	if err != nil {
-		return err
+	// initialize jsonrpc client
+	if sdk.JRPCEndpoint != "" {
+		jrpcConn, err := http.New(sdk.JRPCEndpoint)
+		if err != nil {
+			return err
+		}
+		sdk.HTTP = *jrpcConn
 	}
-	sdk.HTTP = *jrpcConn
 
 	if sdk.privKey == "" {
 		sdk.logger.Info("private key not supplied to sdk, only reads allowed")

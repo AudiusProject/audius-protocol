@@ -8,34 +8,37 @@ import (
 
 	"github.com/AudiusProject/audius-protocol/core/common"
 	abcitypes "github.com/cometbft/cometbft/abci/types"
+	"github.com/cometbft/cometbft/libs/bytes"
 	"github.com/cometbft/cometbft/rpc/client/local"
 	"github.com/cometbft/cometbft/types"
 	"google.golang.org/protobuf/proto"
 )
 
-func SendTx[T proto.Message](logger *common.Logger, rpc *local.Local, msg T) error {
+type TxHash = string
+
+func SendTx[T proto.Message](logger *common.Logger, rpc *local.Local, msg T) (TxHash, error) {
 	ctx := context.Background()
 
 	tx, err := proto.Marshal(msg)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	result, err := rpc.BroadcastTxSync(ctx, tx)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	if result.Code != abcitypes.CodeTypeOK {
-		return errors.New(result.Log)
+		return "", errors.New(result.Log)
 	}
 
 	txChan, err := rpc.Subscribe(ctx, "tx-subscriber", fmt.Sprintf("tm.event = 'Tx' AND tx.hash = '%X'", result.Hash))
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	logger.Info("txhash", result.Hash.String())
+	logger.Info("txhash", "txhashStr", result.Hash.String(), "txhashBytes", result.Hash)
 
 	defer func() {
 		if err := rpc.Unsubscribe(ctx, "tx-subscriber", fmt.Sprintf("tm.event = 'Tx' AND tx.hash = '%X'", result.Hash)); err != nil {
@@ -48,10 +51,24 @@ func SendTx[T proto.Message](logger *common.Logger, rpc *local.Local, msg T) err
 	case txRes := <-txChan:
 		etx := txRes.Data.(types.EventDataTx)
 		if etx.TxResult.Result.Code != abcitypes.CodeTypeOK {
-			return fmt.Errorf("tx %s failed to index", result.Hash)
+			return "", fmt.Errorf("tx %s failed to index", result.Hash)
 		}
-		return nil
+		return result.Hash.String(), nil
 	case <-time.After(30 * time.Second):
-		return errors.New("tx waiting timeout")
+		return "", errors.New("tx waiting timeout")
 	}
+}
+
+func ToTxHash(msg proto.Message) (TxHash, error) {
+	b, err := proto.Marshal(msg)
+	if err != nil {
+		return "", err
+	}
+
+	tx := types.Tx(b)
+	hash := tx.Hash()
+	hexBytes := bytes.HexBytes(hash)
+	hashStr := hexBytes.String()
+
+	return hashStr, nil
 }

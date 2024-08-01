@@ -48,7 +48,7 @@ func main() {
 
 	rpc := local.New(node)
 
-	server, err := grpc.NewGRPCServer(logger, config, rpc)
+	server, err := grpc.NewGRPCServer(logger, config, rpc, pool)
 	if err != nil {
 		logger.Errorf("grpc init error: %v", err)
 		return
