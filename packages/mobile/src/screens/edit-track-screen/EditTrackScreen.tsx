@@ -9,15 +9,17 @@ import type {
 import {
   creativeCommons,
   formatPrice,
+  isBpmValid,
   parseMusicalKey
 } from '@audius/common/utils'
 import { Formik } from 'formik'
 import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
+import { TRACK_PREVIEW } from 'app/components/edit/PriceAndAudienceField/PremiumRadioField/TrackPreviewField'
+import { TRACK_PRICE } from 'app/components/edit/PriceAndAudienceField/PremiumRadioField/TrackPriceField'
+
 import { EditTrackNavigator } from './EditTrackNavigator'
-import { TRACK_PREVIEW } from './fields/AccessAndSaleField/PremiumRadioField/TrackPreviewField'
-import { TRACK_PRICE } from './fields/AccessAndSaleField/PremiumRadioField/TrackPriceField'
 import { BPM } from './screens/KeyBpmScreen'
 import type { FormValues, EditTrackScreenProps } from './types'
 const { computeLicenseVariables, ALL_RIGHTS_RESERVED_TYPE } = creativeCommons
@@ -64,7 +66,7 @@ const useEditTrackSchema = () => {
           stream_conditions: z.any(),
           duration: z.number().nullable(),
           preview_start_seconds: z.any(),
-          bpm: z.string().nullable()
+          bpm: z.optional(z.string().nullable())
         })
         .refine(
           (values) => {
@@ -182,7 +184,7 @@ const useEditTrackSchema = () => {
         .refine(
           (values) => {
             const { bpm } = values
-            return bpm === null || Number(bpm) >= MIN_BPM
+            return bpm === undefined || Number(bpm) >= MIN_BPM
           },
           {
             message: errorMessages.bpmTooLow,
@@ -192,7 +194,7 @@ const useEditTrackSchema = () => {
         .refine(
           (values) => {
             const { bpm } = values
-            return bpm == null || Number(bpm) <= MAX_BPM
+            return bpm === undefined || Number(bpm) <= MAX_BPM
           },
           {
             message: errorMessages.bpmTooHigh,
@@ -203,39 +205,31 @@ const useEditTrackSchema = () => {
   )
 }
 
-const PRECISION = 2
-
 export type EditTrackParams = TrackForUpload
+
+const getInitialBpm = (bpm: number | null | undefined) => {
+  if (bpm) {
+    const bpmString = bpm.toString()
+    return isBpmValid(bpmString) ? bpmString : undefined
+  }
+  return undefined
+}
 
 export const EditTrackScreen = (props: EditTrackScreenProps) => {
   const editTrackSchema = toFormikValidationSchema(useEditTrackSchema())
 
   const { initialValues: initialValuesProp, onSubmit, ...screenProps } = props
 
-  // Handle price conversion of usdc gated tracks from cents => dollars on edit.
-  // Convert back to cents on submit function below.
-  const streamConditionsOverride = isContentUSDCPurchaseGated(
-    initialValuesProp.stream_conditions
-  )
-    ? {
-        usdc_purchase: {
-          ...initialValuesProp.stream_conditions.usdc_purchase,
-          price:
-            initialValuesProp.stream_conditions.usdc_purchase.price /
-            10 ** PRECISION
-        }
-      }
-    : initialValuesProp.stream_conditions
   const initialValues: FormValues = {
     ...initialValuesProp,
-    stream_conditions: streamConditionsOverride,
+    entityType: 'track',
     licenseType: computeLicenseVariables(
       initialValuesProp.license || ALL_RIGHTS_RESERVED_TYPE
     ),
     musical_key: initialValuesProp.musical_key
       ? parseMusicalKey(initialValuesProp.musical_key)
       : undefined,
-    bpm: initialValuesProp.bpm ? initialValuesProp.bpm.toString() : undefined
+    bpm: getInitialBpm(initialValuesProp.bpm)
   }
 
   const handleSubmit = useCallback(
@@ -278,22 +272,13 @@ export const EditTrackScreen = (props: EditTrackScreenProps) => {
         }
       }
 
-      let streamConditions = metadata.stream_conditions
+      const streamConditions = metadata.stream_conditions
       let previewStartSeconds = metadata.preview_start_seconds
       let isDownloadable = metadata.is_downloadable
       let isOriginalAvailable = metadata.is_original_available
 
       // If track is usdc gated, then price and preview need to be parsed into numbers before submitting
       if (isContentUSDCPurchaseGated(streamConditions)) {
-        streamConditions = {
-          usdc_purchase: {
-            ...streamConditions.usdc_purchase,
-            // Convert dollar price to cents
-            // @ts-ignore the price input field stored it as a string that needs to be parsed into a number
-            price:
-              Number(streamConditions.usdc_purchase.price) * 10 ** PRECISION
-          }
-        }
         // If user did not set usdc gated track preview, default it to 0
         previewStartSeconds = Number(previewStartSeconds ?? 0)
 
@@ -337,7 +322,11 @@ export const EditTrackScreen = (props: EditTrackScreenProps) => {
       validationSchema={editTrackSchema}
     >
       {(formikProps) => (
-        <EditTrackNavigator {...formikProps} {...screenProps} />
+        <EditTrackNavigator
+          {...formikProps}
+          {...screenProps}
+          isUpload={initialValuesProp.isUpload}
+        />
       )}
     </Formik>
   )

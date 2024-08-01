@@ -52,7 +52,7 @@ def z(time, track):
 
 class TrendingTracksStrategyEJ57D(BaseTrendingStrategy):
     def __init__(self):
-        super().__init__(TrendingType.TRACKS, TrendingVersion.EJ57D, True)
+        super().__init__(TrendingType.TRACKS, TrendingVersion.EJ57D)
 
     def get_track_score(self, time_range, track):
         logger.error(

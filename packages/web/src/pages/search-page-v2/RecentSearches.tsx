@@ -31,7 +31,7 @@ import { Avatar } from 'components/avatar'
 import { UserLink } from 'components/link'
 import { MountPlacement } from 'components/types'
 import { useCollectionCoverArt2 } from 'hooks/useCollectionCoverArt'
-import { useMedia } from 'hooks/useMedia'
+import { useIsMobile } from 'hooks/useIsMobile'
 import { useTrackCoverArt2 } from 'hooks/useTrackCoverArt'
 import { SEARCH_PAGE, profilePage } from 'utils/route'
 
@@ -40,7 +40,7 @@ import { CategoryView } from './types'
 const MAX_RECENT_SEARCHES = 12
 
 const { removeItem, clearHistory } = searchActions
-const { getSearchHistory } = searchSelectors
+const { getV2SearchHistory: getSearchHistory } = searchSelectors
 
 const RecentSearchSkeleton = () => (
   <Flex w='100%' pv='s' ph='xl' justifyContent='space-between'>
@@ -264,12 +264,12 @@ const itemKindByCategory = {
 export const RecentSearches = () => {
   const searchItems = useSelector(getSearchHistory)
   const dispatch = useDispatch()
-  const { isMobile } = useMedia()
+  const isMobile = useIsMobile()
   const routeMatch = useRouteMatch<{ category: string }>(SEARCH_PAGE)
   const category = routeMatch?.params.category
 
   const categoryKind: Kind | null = category
-    ? itemKindByCategory[category]
+    ? itemKindByCategory[category as CategoryView]
     : null
 
   const filteredSearchItems = useMemo(() => {
@@ -302,7 +302,8 @@ export const RecentSearches = () => {
         {(truncatedSearchItems || []).map((searchItem) => {
           if (isSearchItem(searchItem)) {
             const { kind, id } = searchItem
-            const ItemComponent = itemComponentByKind[kind]
+            const ItemComponent =
+              itemComponentByKind[kind as keyof typeof itemComponentByKind]
             return <ItemComponent searchItem={searchItem} key={id} />
           }
           return null
@@ -330,6 +331,8 @@ export const RecentSearches = () => {
       pv='xl'
       w='100%'
       css={{ maxWidth: '688px' }}
+      backgroundColor='white'
+      border='default'
       direction='column'
       gap='l'
     >

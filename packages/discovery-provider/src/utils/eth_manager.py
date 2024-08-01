@@ -67,7 +67,7 @@ class EthManager:
         sp_info_cached = get_json_cached_key(redis, sp_id_key)
 
         if sp_info_cached:
-            logger.info(
+            logger.debug(
                 f"eth_manager.py | Found cached value for spID={sp_id} - {sp_info_cached}"
             )
             return {
@@ -82,7 +82,7 @@ class EthManager:
         ).call()
 
         set_json_cached_key(redis, sp_id_key, endpoint_info, self.cnode_info_redis_ttl)
-        logger.info(
+        logger.debug(
             f"eth_manager.py | Configured redis {sp_id_key} - {endpoint_info} - TTL {self.cnode_info_redis_ttl}"
         )
         sp_info: SPInfo = {

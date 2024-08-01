@@ -87,7 +87,7 @@ const messagesV2 = {
   },
   preview: {
     title: 'Track Preview',
-    description: 'Specify when you want your 15 second track preview to start.'
+    description: 'Specify when you want your 30 second track preview to start.'
   },
   seconds: 'Seconds'
 }
@@ -129,6 +129,7 @@ export const UsdcPurchaseFields = (props: TrackAvailabilityFieldsProps) => {
             disabled={disabled}
             messaging={messages.price.albumPrice}
             fieldName={PRICE}
+            prefillValue={500}
           />
           {isUpload && (
             <PriceField
@@ -149,6 +150,7 @@ export const UsdcPurchaseFields = (props: TrackAvailabilityFieldsProps) => {
             disabled={disabled}
             messaging={messages.price.standaloneTrackPrice}
             fieldName={PRICE}
+            prefillValue={100}
           />
           <PreviewField disabled={disabled} />
           {downloadConditions ? (

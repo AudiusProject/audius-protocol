@@ -95,8 +95,10 @@ func (ss *MediorumServer) serveImage(c echo.Context) error {
 		c.Response().Header().Set("x-variant-storage-path", variantStoragePath)
 
 		// we already have the resized version
-		if blob, err := ss.bucket.NewReader(ctx, variantStoragePath, nil); err == nil {
-			return serveSuccessWithReader(blob)
+		if !skipCache {
+			if blob, err := ss.bucket.NewReader(ctx, variantStoragePath, nil); err == nil {
+				return serveSuccessWithReader(blob)
+			}
 		}
 
 		// open the orig for resizing

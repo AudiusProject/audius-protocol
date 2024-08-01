@@ -1,55 +1,48 @@
-import { Divider, Flex, Paper, Skeleton, Text } from '@audius/harmony'
+import { Divider, Flex, Paper, Skeleton } from '@audius/harmony'
 
-import { CommentInputForm } from './CommentInputForm'
+import { CommentForm } from './CommentForm'
+import { CommentHeader } from './CommentHeader'
 import { useCurrentCommentSection } from './CommentSectionContext'
 import { CommentThread } from './CommentThread'
 
 export const CommentSectionDesktop = () => {
-  const { userId, isLoading, comments } = useCurrentCommentSection()
+  const { userId, isLoading, comments, handlePostComment } =
+    useCurrentCommentSection()
   const commentPostAllowed = userId !== null
 
-  if (isLoading) {
+  // Loading state
+  if (isLoading)
     return (
-      // TODO: make this container reuseable
-      <Paper p='xl' w='100%' direction='column' gap='xl'>
-        <Flex
-          gap='s'
-          w='100%'
-          h='60px'
-          alignItems='center'
-          justifyContent='center'
-        >
-          <Skeleton w='40px' h='40px' css={{ borderRadius: '100%' }} />
-          <Skeleton w='100%' h='60px' />
-        </Flex>
-        <Divider color='default' orientation='horizontal' />
-        {/* TODO: less copy pasta lol */}
-        <Skeleton w='100%' h='120px' />
-        <Skeleton w='100%' h='120px' />
-        <Skeleton w='100%' h='120px' />
-        <Skeleton w='100%' h='120px' />
-      </Paper>
+      <Flex gap='l' direction='column' w='100%' alignItems='flex-start'>
+        <CommentHeader isLoading />
+        <Paper p='xl' w='100%' direction='column' gap='xl'>
+          <Flex
+            gap='s'
+            w='100%'
+            h='60px'
+            alignItems='center'
+            justifyContent='center'
+          >
+            <Skeleton w='40px' h='40px' css={{ borderRadius: '100%' }} />
+            <Skeleton w='100%' h='60px' />
+          </Flex>
+          <Divider color='default' orientation='horizontal' />
+          <Skeleton w='100%' h='120px' />
+          <Skeleton w='100%' h='120px' />
+          <Skeleton w='100%' h='120px' />
+          <Skeleton w='100%' h='120px' />
+        </Paper>
+      </Flex>
     )
-  }
-
-  // if (comments.length === 0) {
-  //   return (
-  //     <Paper p='xl' w='100%' direction='column' gap='xl'>
-  //       No comments found
-  //     </Paper>
-  //   )
-  // }
 
   return (
     <Flex gap='l' direction='column' w='100%' alignItems='flex-start'>
-      <Text variant='title' size='l'>
-        Comments ({comments.length})
-      </Text>
+      <CommentHeader commentCount={comments.length} />
       <Paper w='100%' direction='column'>
         {commentPostAllowed !== null ? (
           <>
             <Flex gap='s' p='xl' w='100%' direction='column'>
-              <CommentInputForm />
+              <CommentForm onSubmit={handlePostComment} />
             </Flex>
 
             <Divider color='default' orientation='horizontal' />

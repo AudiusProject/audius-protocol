@@ -1,6 +1,9 @@
 import type { ReactNode } from 'react'
 
-import type { TextInputProps as RNTextInputProps } from 'react-native'
+import type {
+  TextInputProps as RNTextInputProps,
+  ViewStyle
+} from 'react-native'
 
 import type { IconComponent, IconProps } from '../../../icons'
 
@@ -103,4 +106,9 @@ export type TextInputProps = RNTextInputProps & {
   maxLengthWarningThreshold?: number
 
   disabled?: boolean
+
+  /**
+   * Styles to apply to the inner flex container that wraps the input, label, and adornments
+   */
+  innerContainerStyle?: ViewStyle
 } & InternalProps

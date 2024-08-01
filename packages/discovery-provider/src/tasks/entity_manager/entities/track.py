@@ -32,7 +32,7 @@ from src.tasks.entity_manager.utils import (
     parse_release_date,
     validate_signer,
 )
-from src.tasks.metadata import immutable_track_fields
+from src.tasks.metadata import immutable_track_fields, is_valid_musical_key
 from src.tasks.task_helpers import generate_slug_and_collision_id
 from src.utils import helpers
 from src.utils.hardcoded_data import genre_allowlist
@@ -411,6 +411,20 @@ def populate_track_record_metadata(track_record: Track, track_metadata, handle, 
                 track_record.producer_copyright_line = track_metadata[
                     "producer_copyright_line"
                 ]
+
+        elif key == "bpm":
+            if "bpm" in track_metadata and track_metadata["bpm"]:
+                try:
+                    track_record.bpm = float(track_metadata["bpm"])  # type: ignore
+                except ValueError:
+                    continue
+
+        elif key == "musical_key":
+            if "musical_key" in track_metadata and track_metadata["musical_key"]:
+                if isinstance(
+                    track_metadata["musical_key"], str
+                ) and is_valid_musical_key(track_metadata["musical_key"]):
+                    track_record.musical_key = track_metadata["musical_key"]
 
         else:
             # For most fields, update the track_record when the corresponding field exists

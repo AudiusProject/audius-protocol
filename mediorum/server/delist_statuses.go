@@ -158,7 +158,7 @@ func (ss *MediorumServer) startPollingDelistStatuses() {
 			err := ss.pollDelistStatuses(entity, ss.trustedNotifier.Endpoint, ss.trustedNotifier.Wallet)
 			pollingMsg := fmt.Sprintf("finished polling delist statuses for %s", entity)
 			if err == nil {
-				slog.Info(pollingMsg, "took", time.Since(startedAt))
+				slog.Debug(pollingMsg, "took", time.Since(startedAt))
 			} else {
 				slog.Warn(pollingMsg, "err", err, "took", time.Since(startedAt))
 			}

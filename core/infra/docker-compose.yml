@@ -1,0 +1,64 @@
+services:
+  discovery-1:
+    container_name: core.discoveryprovider1.docker.co
+    build:
+      context: ../
+      dockerfile: ./infra/Dockerfile
+      target: final
+    env_file:
+      - ./dev_config/discovery-one.docker.env
+    restart: unless-stopped
+    ports:
+      - "6610:26656" # CometBFT P2P Server
+      - "6611:26657" # CometBFT RPC Server
+    networks:
+      - audius-protocol_default
+
+  content-1:
+    container_name: core.contentnode1.docker.co
+    build:
+      context: ../
+      dockerfile: ./infra/Dockerfile
+      target: final
+    env_file:
+      - ./dev_config/content-one.docker.env
+    restart: unless-stopped
+    ports:
+      - "6710:26656" # CometBFT P2P Server
+      - "6711:26657" # CometBFT RPC Server
+    networks:
+      - audius-protocol_default
+
+  content-2:
+    container_name: core.contentnode2.docker.co
+    build:
+      context: ../
+      dockerfile: ./infra/Dockerfile
+      target: final
+    env_file:
+      - ./dev_config/content-two.docker.env
+    restart: unless-stopped
+    ports:
+      - "6720:26656" # CometBFT P2P Server
+      - "6721:26657" # CometBFT RPC Server
+    networks:
+      - audius-protocol_default
+
+  content-3:
+    container_name: core.contentnode3.docker.co
+    build:
+      context: ../
+      dockerfile: ./infra/Dockerfile
+      target: final
+    env_file:
+      - ./dev_config/content-three.docker.env
+    restart: unless-stopped
+    ports:
+      - "6730:26656" # CometBFT P2P Server
+      - "6731:26657" # CometBFT RPC Server
+    networks:
+      - audius-protocol_default
+
+networks:
+  audius-protocol_default:
+    external: true

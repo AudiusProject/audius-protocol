@@ -9,7 +9,7 @@ import { DoubleKeys } from '~/services/remote-config'
 import { accountSelectors } from '~/store/account'
 import { processAndCacheUsers } from '~/store/cache'
 import { getContext } from '~/store/effects'
-import { checkSDKMigration, getSDK } from '~/store/sdkUtils'
+import { getSDK } from '~/store/sdkUtils'
 import { waitForRead } from '~/utils/sagaHelpers'
 import { removeNullable } from '~/utils/typeUtils'
 
@@ -68,28 +68,16 @@ export function* fetchRelatedArtists(action: PayloadAction<{ artistId: ID }>) {
 
 function* fetchTopArtists() {
   yield* waitForRead()
-  const apiClient = yield* getContext('apiClient')
+  const sdk = yield* getSDK()
 
   const currentUserId = yield* select(getUserId)
 
-  const topArtists = yield* checkSDKMigration({
-    endpointName: 'getTopArtists',
-    legacy: call([apiClient, apiClient.getTopArtists], {
-      currentUserId,
-      limit: 50
-    }),
-    migrated: call(function* () {
-      const sdk = yield* getSDK()
-      const { data } = yield* call(
-        [sdk.full.users, sdk.full.users.getTopUsers],
-        {
-          limit: 50,
-          userId: Id.parse(currentUserId)
-        }
-      )
-      return userMetadataListFromSDK(data)
-    })
-  })
+  const topArtists = userMetadataListFromSDK(
+    (yield* call([sdk.full.users, sdk.full.users.getTopUsers], {
+      limit: 50,
+      userId: Id.parse(currentUserId)
+    })).data
+  )
 
   const filteredArtists = topArtists.filter(
     (user) => !user.does_current_user_follow && !user.is_deactivated

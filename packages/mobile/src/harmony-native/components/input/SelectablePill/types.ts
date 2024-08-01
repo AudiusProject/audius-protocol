@@ -12,5 +12,6 @@ export type SelectablePillProps = {
   icon?: IconComponent
   onChange?: (value: string, isSelected?: boolean) => void
   fullWidth?: boolean
+  disableUnselectAnimation?: boolean
 } & Pick<PressableProps, 'disabled' | 'onPress'> &
   ViewProps

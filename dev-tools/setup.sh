@@ -39,7 +39,7 @@ debian | ubuntu)
         docker-ce-cli \
         containerd.io \
         docker-buildx-plugin \
-        docker-compose-plugin
+        docker-compose-plugin='2.28.1-1~ubuntu.22.04~jammy'
 
     curl -fsSL https://raw.githubusercontent.com/tj/n/master/bin/n | sudo bash -s lts
 

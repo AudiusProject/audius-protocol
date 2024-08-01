@@ -15,7 +15,6 @@ import {
   collectionPageSelectors,
   tracksSocialActions,
   addToCollectionUIActions,
-  useEditTrackModal,
   playbackPositionActions,
   playbackPositionSelectors,
   CommonState,
@@ -104,9 +103,6 @@ const TrackMenu = (props: TrackMenuProps) => {
   const { toast } = useContext(ToastContext)
   const dispatch = useDispatch()
   const currentUserId = useSelector(getUserId)
-  const { isEnabled: isEditTrackRedesignEnabled } = useFlag(
-    FeatureFlags.EDIT_TRACK_REDESIGN
-  )
   const { isEnabled: isNewPodcastControlsEnabled } = useFlag(
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
@@ -114,13 +110,10 @@ const TrackMenu = (props: TrackMenuProps) => {
 
   const { data: track } = useGetTrackById({ id: props.trackId })
 
-  const { onOpen } = useEditTrackModal()
   const onEditTrack = (trackId: Nullable<number>) => {
     if (!trackId) return
     const permalink = trackPermalink || track?.permalink
-    isEditTrackRedesignEnabled
-      ? permalink && goToRoute(`${permalink}/edit`)
-      : onOpen({ trackId })
+    permalink && goToRoute(`${permalink}/edit`)
   }
 
   const trackPlaybackPositions = useSelector((state: CommonState) =>
@@ -302,7 +295,7 @@ const TrackMenu = (props: TrackMenuProps) => {
     if (includeAddToAlbum && !isDeleted && isOwner) {
       menu.items.push(addToAlbumMenuItem)
     }
-    if (includeAddToPlaylist && !isDeleted) {
+    if (includeAddToPlaylist && !isDeleted && (!isUnlisted || isOwner)) {
       menu.items.push(addToPlaylistMenuItem)
     }
     if (trackId && trackTitle && !isDeleted) {

@@ -14,6 +14,11 @@
  */
 
 import { exists, mapValues } from '../runtime';
+import {
+     CollectionActivityFromJSONTyped,
+     TrackActivityFromJSONTyped
+} from './';
+
 /**
  * 
  * @export
@@ -25,26 +30,47 @@ export interface Activity {
      * @type {string}
      * @memberof Activity
      */
-    timestamp?: string;
+    timestamp: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof Activity
+     */
+    itemType: ActivityItemTypeEnum;
     /**
      * 
      * @type {object}
      * @memberof Activity
      */
-    itemType?: object;
+    item: object;
     /**
      * 
-     * @type {object}
+     * @type {string}
      * @memberof Activity
      */
-    item?: object;
+    _class: string;
 }
+
+
+/**
+ * @export
+ */
+export const ActivityItemTypeEnum = {
+    Track: 'track',
+    Playlist: 'playlist'
+} as const;
+export type ActivityItemTypeEnum = typeof ActivityItemTypeEnum[keyof typeof ActivityItemTypeEnum];
+
 
 /**
  * Check if a given object implements the Activity interface.
  */
 export function instanceOfActivity(value: object): value is Activity {
     let isInstance = true;
+    isInstance = isInstance && "timestamp" in value && value["timestamp"] !== undefined;
+    isInstance = isInstance && "itemType" in value && value["itemType"] !== undefined;
+    isInstance = isInstance && "item" in value && value["item"] !== undefined;
+    isInstance = isInstance && "_class" in value && value["_class"] !== undefined;
 
     return isInstance;
 }
@@ -57,11 +83,20 @@ export function ActivityFromJSONTyped(json: any, ignoreDiscriminator: boolean): 
     if ((json === undefined) || (json === null)) {
         return json;
     }
+    if (!ignoreDiscriminator) {
+        if (json['_class'] === 'collection_activity') {
+            return CollectionActivityFromJSONTyped(json, true);
+        }
+        if (json['_class'] === 'track_activity') {
+            return TrackActivityFromJSONTyped(json, true);
+        }
+    }
     return {
         
-        'timestamp': !exists(json, 'timestamp') ? undefined : json['timestamp'],
-        'itemType': !exists(json, 'item_type') ? undefined : json['item_type'],
-        'item': !exists(json, 'item') ? undefined : json['item'],
+        'timestamp': json['timestamp'],
+        'itemType': json['item_type'],
+        'item': json['item'],
+        '_class': json['class'],
     };
 }
 
@@ -77,6 +112,7 @@ export function ActivityToJSON(value?: Activity | null): any {
         'timestamp': value.timestamp,
         'item_type': value.itemType,
         'item': value.item,
+        'class': value._class,
     };
 }
 

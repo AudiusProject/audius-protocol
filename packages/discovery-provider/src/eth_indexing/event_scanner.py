@@ -94,7 +94,7 @@ class EventScanner:
                 result = session.query(EthBlock.last_scanned_block).first()
                 restored = result[0] if result else restored
         self.last_scanned_block = int(restored) if restored else MIN_SCAN_START_BLOCK
-        logger.info(
+        logger.debug(
             f"event_scanner.py | Restored last scanned block ({self.last_scanned_block})"
         )
 
@@ -103,7 +103,7 @@ class EventScanner:
         Next time the scanner is started we will resume from this block
         """
         self.last_scanned_block = block_number
-        logger.info(
+        logger.debug(
             f"event_scanner.py | Saving last scanned block ({self.last_scanned_block}) to redis"
         )
         self.redis.set(
@@ -195,7 +195,7 @@ class EventScanner:
 
             user_ids = list(user_set.union(associated_wallet_set))
             if user_ids:
-                logger.info(
+                logger.debug(
                     f"event_scanner.py | Enqueueing user ids {user_ids} to immediate balance refresh queue"
                 )
                 enqueue_immediate_balance_refresh(self.redis, user_ids)

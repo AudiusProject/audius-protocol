@@ -14,44 +14,56 @@
  */
 
 import { exists, mapValues } from '../runtime';
-import type { PlaylistFullWithoutTracks } from './PlaylistFullWithoutTracks';
+import type { ActivityFull } from './ActivityFull';
 import {
-    PlaylistFullWithoutTracksFromJSON,
-    PlaylistFullWithoutTracksFromJSONTyped,
-    PlaylistFullWithoutTracksToJSON,
-} from './PlaylistFullWithoutTracks';
+    ActivityFullFromJSON,
+    ActivityFullFromJSONTyped,
+    ActivityFullToJSON,
+} from './ActivityFull';
+import type { PlaylistFull } from './PlaylistFull';
+import {
+    PlaylistFullFromJSON,
+    PlaylistFullFromJSONTyped,
+    PlaylistFullToJSON,
+} from './PlaylistFull';
 
 /**
  * 
  * @export
  * @interface CollectionActivityFull
  */
-export interface CollectionActivityFull {
+export interface CollectionActivityFull extends ActivityFull {
     /**
      * 
      * @type {string}
      * @memberof CollectionActivityFull
      */
-    timestamp?: string;
+    itemType: CollectionActivityFullItemTypeEnum;
     /**
      * 
-     * @type {string}
+     * @type {PlaylistFull}
      * @memberof CollectionActivityFull
      */
-    itemType?: string;
-    /**
-     * 
-     * @type {PlaylistFullWithoutTracks}
-     * @memberof CollectionActivityFull
-     */
-    item?: PlaylistFullWithoutTracks;
+    item: PlaylistFull;
 }
+
+
+/**
+ * @export
+ */
+export const CollectionActivityFullItemTypeEnum = {
+    Playlist: 'playlist'
+} as const;
+export type CollectionActivityFullItemTypeEnum = typeof CollectionActivityFullItemTypeEnum[keyof typeof CollectionActivityFullItemTypeEnum];
+
 
 /**
  * Check if a given object implements the CollectionActivityFull interface.
  */
 export function instanceOfCollectionActivityFull(value: object): value is CollectionActivityFull {
     let isInstance = true;
+    isInstance = isInstance && "itemType" in value && value["itemType"] !== undefined;
+    isInstance = isInstance && "item" in value && value["item"] !== undefined;
 
     return isInstance;
 }
@@ -65,10 +77,9 @@ export function CollectionActivityFullFromJSONTyped(json: any, ignoreDiscriminat
         return json;
     }
     return {
-        
-        'timestamp': !exists(json, 'timestamp') ? undefined : json['timestamp'],
-        'itemType': !exists(json, 'item_type') ? undefined : json['item_type'],
-        'item': !exists(json, 'item') ? undefined : PlaylistFullWithoutTracksFromJSON(json['item']),
+        ...ActivityFullFromJSONTyped(json, ignoreDiscriminator),
+        'itemType': json['item_type'],
+        'item': PlaylistFullFromJSON(json['item']),
     };
 }
 
@@ -80,10 +91,9 @@ export function CollectionActivityFullToJSON(value?: CollectionActivityFull | nu
         return null;
     }
     return {
-        
-        'timestamp': value.timestamp,
+        ...ActivityFullToJSON(value),
         'item_type': value.itemType,
-        'item': PlaylistFullWithoutTracksToJSON(value.item),
+        'item': PlaylistFullToJSON(value.item),
     };
 }
 

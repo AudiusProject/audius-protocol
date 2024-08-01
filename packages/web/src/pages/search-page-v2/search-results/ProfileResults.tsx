@@ -2,7 +2,7 @@ import { useCallback } from 'react'
 
 import { ID, Kind, Status } from '@audius/common/models'
 import { searchActions } from '@audius/common/store'
-import { Box, Flex, OptionsFilterButton, Text } from '@audius/harmony'
+import { Box, Flex, Text, useTheme } from '@audius/harmony'
 import { range } from 'lodash'
 import { useDispatch } from 'react-redux'
 
@@ -10,11 +10,8 @@ import { UserCard } from 'components/user-card'
 import { useIsMobile } from 'hooks/useIsMobile'
 
 import { NoResultsTile } from '../NoResultsTile'
-import {
-  useGetSearchResults,
-  useSearchParams,
-  useUpdateSearchParams
-} from '../utils'
+import { SortMethodFilterButton } from '../SortMethodFilterButton'
+import { useGetSearchResults } from '../utils'
 
 const { addItem: addRecentSearch } = searchActions
 
@@ -63,6 +60,7 @@ export const ProfileResults = (props: ProfileResultsProps) => {
         justifyContent: 'space-between',
         gap: 16
       }}
+      p={isMobile ? 'm' : undefined}
     >
       {!truncatedIds.length
         ? range(skeletonCount).map((_, i) => (
@@ -90,36 +88,26 @@ export const ProfileResults = (props: ProfileResultsProps) => {
 
 export const ProfileResultsPage = () => {
   const isMobile = useIsMobile()
-  const { data, status } = useGetSearchResults('users')
+  const { color } = useTheme()
+
+  const { data: ids, status } = useGetSearchResults('users')
   const isLoading = status === Status.LOADING
 
-  const updateSortParam = useUpdateSearchParams('sortMethod')
-  const searchParams = useSearchParams()
-  const { sortMethod } = searchParams
-  const isResultsEmpty = data?.length === 0
+  const isResultsEmpty = ids?.length === 0
   const showNoResultsTile = !isLoading && isResultsEmpty
 
-  const ids = data?.map(({ user_id: id }) => id)
-
   return (
-    <Flex direction='column' gap='xl'>
+    <Flex
+      direction='column'
+      gap='xl'
+      css={isMobile ? { backgroundColor: color.background.default } : {}}
+    >
       {!isMobile ? (
         <Flex justifyContent='space-between' alignItems='center'>
           <Text variant='heading' textAlign='left'>
             {messages.profiles}
           </Text>
-          <Flex gap='s'>
-            <OptionsFilterButton
-              selection={sortMethod ?? 'relevant'}
-              variant='replaceLabel'
-              optionsLabel={messages.sortOptionsLabel}
-              onChange={updateSortParam}
-              options={[
-                { label: 'Most Relevant', value: 'relevant' },
-                { label: 'Most Recent', value: 'recent' }
-              ]}
-            />
-          </Flex>
+          <SortMethodFilterButton />
         </Flex>
       ) : null}
       {showNoResultsTile ? <NoResultsTile /> : <ProfileResults ids={ids} />}

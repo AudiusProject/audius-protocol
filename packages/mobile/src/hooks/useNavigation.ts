@@ -8,7 +8,6 @@ import { useNavigation as useNativeNavigation } from '@react-navigation/native'
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import { isEqual } from 'lodash'
 
-import { lastNavAction, setLastNavAction } from 'app/screens/app-screen'
 import { getNearestStackNavigator } from 'app/utils/navigation'
 
 export type ContextualParams = {
@@ -27,6 +26,11 @@ type PerformNavigationConfig<
 
 type UseNavigationOptions<NavigationProp extends RNNavigationProp<any>> = {
   customNavigation?: NavigationProp
+}
+
+let lastNavAction: any
+export const setLastNavAction = (action: any) => {
+  lastNavAction = action
 }
 
 /**

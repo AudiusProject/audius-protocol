@@ -3,6 +3,7 @@ import { useCallback, useContext, useState } from 'react'
 import { useFeatureFlag } from '@audius/common/hooks'
 import { TrackMetadataFormSchema } from '@audius/common/schemas'
 import { FeatureFlags } from '@audius/common/services'
+import { Nullable } from '@audius/common/utils'
 import {
   IconCaretLeft,
   IconCaretRight,
@@ -33,8 +34,11 @@ import { NavigationPrompt } from 'components/navigation-prompt/NavigationPrompt'
 import { EditFormScrollContext } from 'pages/edit-page/EditTrackPage'
 
 import styles from './EditTrackForm.module.css'
+import { ReleaseTrackConfirmationModal } from './ReleaseTrackConfirmationModal'
 import { PreviewButton } from './components/PreviewButton'
 import { TrackEditFormValues } from './types'
+
+const formId = 'edit-track-form'
 
 const messages = {
   multiTrackCount: (index: number, total: number) =>
@@ -70,19 +74,72 @@ const EditFormValidationSchema = z.object({
 
 export const EditTrackForm = (props: EditTrackFormProps) => {
   const { initialValues, onSubmit, onDeleteTrack, hideContainer } = props
+  const [isReleaseConfirmationOpen, setIsReleaseConfirmationOpen] =
+    useState(false)
+  const [confirmDrawerType, setConfirmDrawerType] =
+    useState<Nullable<'release' | 'early_release' | 'hidden'>>(null)
+  const initialTrackValues = initialValues.trackMetadatas[0] ?? {}
+  const isUpload = initialTrackValues.track_id === undefined
+  const initiallyHidden = initialTrackValues.is_unlisted
+  const isInitiallyScheduled = initialTrackValues.is_scheduled_release
+
+  const handleSubmit = useCallback(
+    (values: TrackEditFormValues) => {
+      if (isReleaseConfirmationOpen) {
+        setIsReleaseConfirmationOpen(false)
+        onSubmit(values)
+      } else {
+        const usersMayLoseAccess =
+          !isUpload && !initiallyHidden && values.trackMetadatas[0].is_unlisted
+        const isToBePublished =
+          !isUpload && initiallyHidden && !values.trackMetadatas[0].is_unlisted
+        const showConfirmDrawer = usersMayLoseAccess || isToBePublished
+        if (showConfirmDrawer) {
+          if (usersMayLoseAccess) {
+            setConfirmDrawerType('hidden')
+          } else if (isInitiallyScheduled) {
+            setConfirmDrawerType('early_release')
+          } else {
+            setConfirmDrawerType('release')
+          }
+          setIsReleaseConfirmationOpen(true)
+        } else {
+          setIsReleaseConfirmationOpen(false)
+          onSubmit(values)
+        }
+      }
+    },
+    [
+      isReleaseConfirmationOpen,
+      onSubmit,
+      initiallyHidden,
+      isUpload,
+      isInitiallyScheduled
+    ]
+  )
 
   return (
     <Formik<TrackEditFormValues>
       initialValues={initialValues}
-      onSubmit={onSubmit}
+      onSubmit={handleSubmit}
       validationSchema={toFormikValidationSchema(EditFormValidationSchema)}
     >
       {(props) => (
-        <TrackEditForm
-          {...props}
-          hideContainer={hideContainer}
-          onDeleteTrack={onDeleteTrack}
-        />
+        <>
+          <TrackEditForm
+            {...props}
+            hideContainer={hideContainer}
+            onDeleteTrack={onDeleteTrack}
+          />
+          {!isUpload && confirmDrawerType ? (
+            <ReleaseTrackConfirmationModal
+              isOpen={isReleaseConfirmationOpen}
+              onClose={() => setIsReleaseConfirmationOpen(false)}
+              releaseType={confirmDrawerType}
+              formId={formId}
+            />
+          ) : null}
+        </>
       )}
     </Formik>
   )
@@ -115,7 +172,7 @@ const TrackEditForm = (
   )
 
   return (
-    <Form>
+    <Form id={formId}>
       <NavigationPrompt
         when={dirty && !isSubmitting}
         messages={

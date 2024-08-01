@@ -3,6 +3,7 @@ import { useCallback } from 'react'
 import type { SearchFilters } from '@audius/common/api'
 import { TrackMetadataType, useTrackMetadata } from '@audius/common/hooks'
 import type { ID } from '@audius/common/models'
+import { convertGenreLabelToValue } from '@audius/common/utils'
 import type { Mood } from '@audius/sdk'
 import { trpc } from '@audius/web/src/utils/trpcClientWeb'
 import { Image } from 'react-native'
@@ -19,27 +20,36 @@ const messages = {
 
 const renderMood = (mood: string, onPress: () => void) => {
   return (
-    <TextLink variant='visible' onPress={onPress}>
-      <Flex direction='row' gap='xs' alignItems='center'>
-        <Text variant='body' size='s' strength='strong'>
+    <Flex direction='row' gap='xs' alignItems='center'>
+      <Image
+        source={moodMap[mood as Mood]}
+        style={{ height: spacing.l, width: spacing.l }}
+      />
+
+      <Text variant='body' size='s' strength='strong'>
+        <TextLink variant='visible' onPress={onPress}>
           {mood}
-        </Text>
-        <Image
-          source={moodMap[mood as Mood]}
-          style={{ height: spacing.l, width: spacing.l }}
-        />
-      </Flex>
-    </TextLink>
+        </TextLink>
+      </Text>
+    </Flex>
   )
 }
 
 const renderFilterLink = (value: string, onPress: () => void) => {
   return (
-    <TextLink onPress={onPress}>
-      <Text variant='body' size='s' strength='strong'>
+    <Text variant='body' size='s' strength='strong'>
+      <TextLink variant='visible' onPress={onPress}>
         {value}
-      </Text>
-    </TextLink>
+      </TextLink>
+    </Text>
+  )
+}
+
+const renderText = (value: string) => {
+  return (
+    <Text variant='body' size='s' strength='strong'>
+      {value}
+    </Text>
   )
 }
 
@@ -53,15 +63,20 @@ const renderMetadataValue = (
       return renderMood(value, () => {
         handleFilterLinkPress({ mood: value as Mood })
       })
-    // TODO: BPM and Key might need to be transformed to fit the search page's expected format
     case TrackMetadataType.GENRE:
     case TrackMetadataType.BPM:
     case TrackMetadataType.KEY:
       return renderFilterLink(value, () => {
-        handleFilterLinkPress({ [id]: value })
+        handleFilterLinkPress({
+          [id]:
+            id === TrackMetadataType.GENRE
+              ? // @ts-ignore - need the converted electronic subgenre value for genre
+                convertGenreLabelToValue(value)
+              : value
+        })
       })
     default:
-      return value
+      return renderText(value)
   }
 }
 
@@ -99,9 +114,11 @@ export const TrackMetadataList = ({ trackId }: TrackMetadataListProps) => {
       ))}
       {albumInfo ? (
         <MetadataItem label={messages.album}>
-          <TextLink to={albumInfo.permalink}>
-            {albumInfo.playlist_name}
-          </TextLink>
+          <Text variant='body' size='s' strength='strong'>
+            <TextLink variant='visible' to={albumInfo.permalink}>
+              {albumInfo.playlist_name}
+            </TextLink>
+          </Text>
         </MetadataItem>
       ) : null}
     </Flex>

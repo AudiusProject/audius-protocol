@@ -1,19 +1,21 @@
 import { useState } from 'react'
 
 import { ID } from '@audius/common/models'
-import { decodeHashId } from '@audius/common/utils'
 import {
   Avatar,
   Flex,
   IconButton,
   IconHeart,
+  IconMerch,
   IconPencil,
   IconTrash,
   Text,
   TextLink
 } from '@audius/harmony'
 
-import { CommentInputForm } from './CommentInputForm'
+import { decodeHashId } from 'utils/hashIds'
+
+import { CommentForm } from './CommentForm'
 import { useCurrentCommentSection } from './CommentSectionContext'
 import type { Comment } from './types'
 
@@ -30,10 +32,16 @@ const formatTimestampS = (timestamp_s: number) => {
   }
 }
 
-export type CommentBlockProps = { comment: Comment; parentCommentId?: ID }
+export type CommentBlockProps = {
+  comment: Comment
+  parentCommentId?: ID
+  parentCommentIndex?: number
+}
+
 export const CommentBlock = ({
   comment,
-  parentCommentId // Parent comment ID can be passed in order to reply to a reply
+  parentCommentId, // Parent comment ID can be passed in order to reply to a reply, otherwise it's assumed you're replying to this comment
+  parentCommentIndex
 }: CommentBlockProps) => {
   const {
     is_pinned: isPinned,
@@ -42,12 +50,54 @@ export const CommentBlock = ({
     timestamp_s,
     id: commentId
   } = comment
-  const { handleDeleteComment, handleReactComment, handleEditComment } =
-    useCurrentCommentSection()
+  const {
+    handleEditComment,
+    handlePostComment,
+    handleDeleteComment,
+    handleReactComment,
+    handlePinComment
+  } = useCurrentCommentSection()
+
+  const [showEditInput, setShowEditInput] = useState(false)
+  const [reactionState, setReactionState] = useState(true)
   const hasBadges = false // TODO: need to figure out how to data model these "badges" correctly
   const [showReplyInput, setShowReplyInput] = useState(false)
   const isOwner = true // TODO: need to check against current user (not really feasible with modck data)
 
+  const handleCommentEdit = (commentMessage: string) => {
+    setShowEditInput(false)
+    let decodedCommentId
+    if (commentId) {
+      decodedCommentId = decodeHashId(commentId.toString())
+    }
+    if (decodedCommentId) {
+      handleEditComment(decodedCommentId, commentMessage)
+    }
+  }
+
+  const handleCommentReply = (commentMessage: string) => {
+    setShowReplyInput(false)
+    let decodedParentCommentId
+    if (parentCommentId) {
+      decodedParentCommentId = decodeHashId(parentCommentId?.toString())
+    }
+
+    handlePostComment(
+      commentMessage,
+      decodedParentCommentId ?? undefined, // omitting null from the value type
+      parentCommentIndex
+    )
+  }
+  const handleCommentReact = () => {
+    let decodedCommentId
+    if (commentId) {
+      decodedCommentId = decodeHashId(commentId.toString())
+    }
+    if (decodedCommentId) {
+      setReactionState(!reactionState)
+      handleReactComment(decodedCommentId, !reactionState)
+    }
+  }
   return (
     <Flex w='100%' gap='l'>
       <Avatar css={{ width: 40, height: 40, flexShrink: 0 }} />
@@ -84,15 +134,23 @@ export const CommentBlock = ({
             ) : null}
           </Flex>
         </Flex>
-        <Text color='default'>{message}</Text>
+        {showEditInput ? (
+          <CommentForm
+            onSubmit={handleCommentEdit}
+            initialValue={message}
+            hideAvatar
+          />
+        ) : (
+          <Text color='default'>{message}</Text>
+        )}
         <Flex gap='xl' alignItems='center'>
           <Flex alignItems='center'>
             <IconButton
               icon={IconHeart}
-              color='subdued'
+              color={reactionState ? 'active' : 'subdued'}
               aria-label='Heart comment'
               onClick={() => {
-                handleReactComment(commentId)
+                handleCommentReact()
               }}
             />
             <Text color='default'> {reactCount}</Text>
@@ -114,7 +172,7 @@ export const CommentBlock = ({
               size='s'
               color='subdued'
               onClick={() => {
-                handleEditComment(decodeHashId(commentId), 'edited')
+                setShowEditInput((prevVal) => !prevVal)
               }}
             />
           ) : null}
@@ -126,15 +184,24 @@ export const CommentBlock = ({
               size='s'
               color='subdued'
               onClick={() => {
-                handleDeleteComment(decodeHashId(commentId))
+                handleDeleteComment(commentId)
+              }}
+            />
+          ) : null}
+          {isOwner ? (
+            <IconButton
+              aria-label='pin comment'
+              icon={IconMerch}
+              size='s'
+              color='subdued'
+              onClick={() => {
+                handlePinComment(commentId)
               }}
             />
           ) : null}
         </Flex>
 
-        {showReplyInput ? (
-          <CommentInputForm parentCommentId={parentCommentId ?? commentId} />
-        ) : null}
+        {showReplyInput ? <CommentForm onSubmit={handleCommentReply} /> : null}
       </Flex>
     </Flex>
   )

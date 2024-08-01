@@ -112,7 +112,7 @@ func (ss *MediorumServer) startQmSyncer() {
 		if err = ss.pullQmFromPeer(peer); err != nil {
 			ss.logger.Error("qmSync: failed to pull qm.csv from peer", "peer", peer, "err", err)
 		} else {
-			ss.logger.Info("qmSync: pulled qm.csv from peer", "peer", peer)
+			ss.logger.Debug("qmSync: pulled qm.csv from peer", "peer", peer)
 		}
 	}
 }

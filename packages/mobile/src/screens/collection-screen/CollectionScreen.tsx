@@ -206,17 +206,15 @@ const CollectionScreenComponent = (props: CollectionScreenComponentProps) => {
   }, [is_album, isOwner, ddex_app, is_private, dispatch, playlist_id])
 
   const handlePressEdit = useCallback(() => {
-    navigation?.push('EditPlaylist', { id: playlist_id })
+    navigation?.push('EditCollection', { id: playlist_id })
   }, [navigation, playlist_id])
 
   const handlePressPublish = useCallback(() => {
-    dispatch(
-      openPublishConfirmation({
-        contentId: playlist_id,
-        contentType: is_album ? 'album' : 'playlist'
-      })
-    )
-  }, [dispatch, is_album, openPublishConfirmation, playlist_id])
+    openPublishConfirmation({
+      contentId: playlist_id,
+      contentType: is_album ? 'album' : 'playlist'
+    })
+  }, [is_album, openPublishConfirmation, playlist_id])
 
   const handlePressSave = useCallback(() => {
     if (has_current_user_saved) {

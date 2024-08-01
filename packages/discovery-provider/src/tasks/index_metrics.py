@@ -146,7 +146,7 @@ def consolidate_metrics_from_other_nodes(self, db, redis):
 
         # add other nodes' summed unique daily and monthly counts to this node's
         if new_route_metrics:
-            logger.info(
+            logger.debug(
                 f"summed unique metrics from {node}: {new_route_metrics['summed']}"
             )
             summed_unique_daily_count += new_route_metrics["summed"]["daily"]
@@ -295,7 +295,7 @@ def aggregate_metrics(self):
         # Attempt to acquire lock - do not block if unable to acquire
         have_lock = update_lock.acquire(blocking=False)
         if have_lock:
-            logger.info(
+            logger.debug(
                 f"index_metrics.py | aggregate_metrics | {self.request.id} | Acquired aggregate_metrics_lock"
             )
             metric = PrometheusMetric(
@@ -303,7 +303,7 @@ def aggregate_metrics(self):
             )
             consolidate_metrics_from_other_nodes(self, db, redis)
             metric.save_time({"task_name": "aggregate_metrics"})
-            logger.info(
+            logger.debug(
                 f"index_metrics.py | aggregate_metrics | {self.request.id} | Processing complete within session"
             )
         else:
@@ -342,7 +342,7 @@ def synchronize_metrics(self):
         # Attempt to acquire lock - do not block if unable to acquire
         have_lock = update_lock.acquire(blocking=False)
         if have_lock:
-            logger.info(
+            logger.debug(
                 f"index_metrics.py | synchronize_metrics | {self.request.id} | Acquired synchronize_metrics_lock"
             )
             metric = PrometheusMetric(
@@ -350,7 +350,7 @@ def synchronize_metrics(self):
             )
             synchronize_all_node_metrics(self, db, redis)
             metric.save_time({"task_name": "synchronize_metrics"})
-            logger.info(
+            logger.debug(
                 f"index_metrics.py | synchronize_metrics | {self.request.id} | Processing complete within session"
             )
         else:

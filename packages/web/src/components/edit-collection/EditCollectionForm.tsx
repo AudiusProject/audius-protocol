@@ -59,18 +59,21 @@ type EditCollectionFormProps = {
 
 export const EditCollectionForm = (props: EditCollectionFormProps) => {
   const { initialValues, onSubmit, isAlbum, isUpload, focus } = props
-  const { playlist_id, is_private, is_scheduled_release } = initialValues
+  const {
+    playlist_id,
+    is_private: initiallyHidden,
+    is_scheduled_release: isInitiallyScheduled
+  } = initialValues
+
   const [isDeleteConfirmationOpen, setIsDeleteConfirmationOpen] =
     useState(false)
   const [isReleaseConfirmationOpen, setIsReleaseConfirmationOpen] =
     useState(false)
+  const [confirmDrawerType, setConfirmDrawerType] =
+    useState<Nullable<'release' | 'early_release' | 'hidden'>>(null)
   const { isEnabled: isPremiumAlbumsEnabled } = useFeatureFlag(
     FeatureFlags.PREMIUM_ALBUMS_ENABLED
   )
-  const { isEnabled: isUSDCUploadEnabled } = useFeatureFlag(
-    FeatureFlags.USDC_PURCHASES_UPLOAD
-  )
-  const showPremiumAlbums = isPremiumAlbumsEnabled && isUSDCUploadEnabled
 
   const { isEnabled: isHiddenPaidScheduledEnabled } = useFeatureFlag(
     FeatureFlags.HIDDEN_PAID_SCHEDULED
@@ -81,14 +84,38 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
 
   const handleSubmit = useCallback(
     (values: CollectionValues) => {
-      if (is_private && !values.is_private && !isReleaseConfirmationOpen) {
-        setIsReleaseConfirmationOpen(true)
-      } else {
+      if (isReleaseConfirmationOpen) {
         setIsReleaseConfirmationOpen(false)
         onSubmit(values)
+      } else {
+        const usersMayLoseAccess =
+          isAlbum && !isUpload && !initiallyHidden && values.is_private
+        const isToBePublished =
+          !isUpload && initiallyHidden && !values.is_private
+        const showConfirmDrawer = usersMayLoseAccess || isToBePublished
+        if (showConfirmDrawer) {
+          if (usersMayLoseAccess) {
+            setConfirmDrawerType('hidden')
+          } else if (isInitiallyScheduled) {
+            setConfirmDrawerType('early_release')
+          } else {
+            setConfirmDrawerType('release')
+          }
+          setIsReleaseConfirmationOpen(true)
+        } else {
+          setIsReleaseConfirmationOpen(false)
+          onSubmit(values)
+        }
       }
     },
-    [is_private, isReleaseConfirmationOpen, onSubmit]
+    [
+      initiallyHidden,
+      isAlbum,
+      isInitiallyScheduled,
+      isReleaseConfirmationOpen,
+      isUpload,
+      onSubmit
+    ]
   )
 
   return (
@@ -134,7 +161,7 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
           ) : (
             <ReleaseDateFieldLegacy />
           )}
-          {isAlbum && showPremiumAlbums ? (
+          {isAlbum && isPremiumAlbumsEnabled ? (
             <PriceAndAudienceField isAlbum={isAlbum} isUpload={isUpload} />
           ) : null}
           {isAlbum ? <AdvancedAlbumField /> : null}
@@ -182,15 +209,15 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
               onCancel={() => setIsDeleteConfirmationOpen(false)}
               onDelete={() => setIsDeleteConfirmationOpen(false)}
             />
-            {isAlbum ? null : (
+            {!isUpload && confirmDrawerType ? (
               <ReleaseCollectionConfirmationModal
                 isOpen={isReleaseConfirmationOpen}
                 onClose={() => setIsReleaseConfirmationOpen(false)}
                 collectionType={isAlbum ? 'album' : 'playlist'}
-                releaseType={!is_scheduled_release ? 'scheduled' : 'hidden'}
+                releaseType={confirmDrawerType}
                 formId={formId}
               />
-            )}
+            ) : null}
           </>
         ) : null}
       </Form>

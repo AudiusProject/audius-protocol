@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -54,7 +53,7 @@ func (p *PeerClient) Send(data []byte) bool {
 	case p.outbox <- data:
 		return true
 	default:
-		p.logger.Info("outbox full, dropping message", "msg", string(data), "len", len(p.outbox), "cap", cap(p.outbox))
+		p.logger.Warn("outbox full, dropping message", "msg", string(data), "len", len(p.outbox), "cap", cap(p.outbox))
 		return false
 	}
 }
@@ -73,18 +72,18 @@ func (p *PeerClient) startSender() {
 			p.selfHost,
 		)
 		if err != nil {
-			log.Println("could not create req client", "host", p.Host, "err", err)
+			p.logger.Debug("could not create req client", "host", p.Host, "err", err)
 			continue
 		}
 
 		resp, err := httpClient.Do(req)
 		if err != nil {
-			log.Println("push failed", "host", p.Host, "err", err)
+			p.logger.Debug("push failed", "host", p.Host, "err", err)
 			continue
 		}
 
 		if resp.StatusCode != 200 {
-			log.Println("push bad status", "host", p.Host, "status", resp.StatusCode)
+			p.logger.Debug("push bad status", "host", p.Host, "status", resp.StatusCode)
 		}
 
 		resp.Body.Close()
@@ -113,7 +112,7 @@ func (p *PeerClient) doSweep() error {
 		err := p.crudr.DB.Where("host = ?", host).First(&cursor).Error
 		if err != nil {
 			if !errors.Is(err, gorm.ErrRecordNotFound) {
-				p.logger.Info("failed to get cursor", "err", err)
+				p.logger.Warn("failed to get cursor", "err", err)
 			}
 		} else {
 			lastUlid = cursor.LastULID
@@ -191,10 +190,10 @@ func (p *PeerClient) doSweep() error {
 			t := ulid.Time(parsedULID.Time())
 			since := time.Since(t)
 			if since < time.Hour {
-				p.logger.Info("seeding complete (timestamp <1hr)", "last_ulid", lastUlid, "since_minutes", since.Minutes())
+				p.logger.Debug("seeding complete (timestamp <1hr)", "last_ulid", lastUlid, "since_minutes", since.Minutes())
 				p.Seeded = true
 			} else {
-				p.logger.Info("seeding not complete (last ulid is too old)", "last_ulid", lastUlid, "since_minutes", since.Minutes())
+				p.logger.Debug("seeding not complete (last ulid is too old)", "last_ulid", lastUlid, "since_minutes", since.Minutes())
 			}
 		} else {
 			p.logger.Warn(fmt.Sprintf("failed to parse last ulid: '%s'", lastUlid), "err", err)

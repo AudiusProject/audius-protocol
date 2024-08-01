@@ -152,6 +152,7 @@ export const store = createStore(
   rootReducer,
   enhancer
 ) as unknown as Store<AppState> // need to explicitly type the store for offline-mode store reference
+storeContext.dispatch = store.dispatch
 
 export const persistor = persistStore(store)
 

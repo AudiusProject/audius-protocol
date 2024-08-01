@@ -5,6 +5,7 @@ export const externalLinkAllowList = new Set([
   'twitter.com',
   'x.com',
   'blog.audius.co',
+  'link.audius.co',
   'audius.co',
   'discord.gg',
   'solscan.io'

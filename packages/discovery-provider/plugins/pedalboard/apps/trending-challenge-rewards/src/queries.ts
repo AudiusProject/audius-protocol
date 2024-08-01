@@ -1,5 +1,6 @@
 import { Knex } from 'knex'
 import { Table, UserChallenges } from '@pedalboard/storage'
+import { discoveryDb } from './utils'
 
 export type ChallengeDisbursementUserbank = {
   challenge_id: string
@@ -110,4 +111,17 @@ export const getTrendingChallenges = async (
     // only use tt because we just need a trending challenge
     .where('challenge_id', '=', 'tt')
     .orderBy('completed_blocknumber', 'desc')
+    .limit(100)
+
+// queries for trending challenges by a particular date in order to get the starting block number
+export const getTrendingChallengesByDate = async (
+  discoveryDb: Knex,
+  specifierPrefix: string
+): Promise<UserChallenges[]> =>
+  discoveryDb
+    .select()
+    .from<UserChallenges>(Table.UserChallenges)
+    // only use tt because we just need a trending challenge
+    .where('challenge_id', '=', 'tt')
+    .where('specifier', 'like', `${specifierPrefix}%`)
     .limit(100)

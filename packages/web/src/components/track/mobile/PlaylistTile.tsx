@@ -45,6 +45,7 @@ import { useAuthenticatedClickCallback } from 'hooks/useAuthenticatedCallback'
 
 import { GatedConditionsPill } from '../GatedConditionsPill'
 import { GatedContentLabel } from '../GatedContentLabel'
+import { LineupTileLabel } from '../LineupTileLabel'
 
 import BottomButtons from './BottomButtons'
 import styles from './PlaylistTile.module.css'
@@ -333,12 +334,9 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
   }
   if (isPrivate) {
     specialContentLabel = (
-      <Flex alignItems='center' gap='xs' css={{ whiteSpace: 'nowrap' }}>
-        <IconVisibilityHidden size='s' color='subdued' />
-        <Text variant='body' size='xs' color='subdued'>
-          {messages.hidden}
-        </Text>
-      </Flex>
+      <LineupTileLabel icon={IconVisibilityHidden}>
+        {messages.hidden}
+      </LineupTileLabel>
     )
   }
 
@@ -424,11 +422,7 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
                 isVisible={isTrending && shouldShow}
                 showCrown={showRankIcon}
               />
-              {isReadonly ? (
-                <Text variant='body' size='xs' strength='default'>
-                  {specialContentLabel}
-                </Text>
-              ) : null}
+              {isReadonly ? specialContentLabel : null}
               {shouldShowStats ? (
                 <>
                   <Flex

@@ -176,6 +176,7 @@ def search_es_full(args: dict):
                 {"index": ES_PLAYLISTS},
                 playlist_dsl(
                     search_str=search_str,
+                    tag_search="",
                     current_user_id=current_user_id,
                     genres=genres,
                     moods=moods,
@@ -191,6 +192,7 @@ def search_es_full(args: dict):
                 {"index": ES_PLAYLISTS},
                 album_dsl(
                     search_str=search_str,
+                    tag_search="",
                     current_user_id=current_user_id,
                     genres=genres,
                     moods=moods,
@@ -269,6 +271,9 @@ def search_tags_es(args: dict):
 
     do_tracks = search_type == "all" or search_type == "tracks"
     do_users = search_type == "all" or search_type == "users"
+    do_playlists = search_type == "all" or search_type == "playlists"
+    do_albums = search_type == "all" or search_type == "albums"
+
     mdsl: Any = []
 
     if do_tracks:
@@ -309,6 +314,40 @@ def search_tags_es(args: dict):
             ]
         )
 
+    # playlists
+    if do_playlists:
+        mdsl.extend(
+            [
+                {"index": ES_PLAYLISTS},
+                playlist_dsl(
+                    search_str="",
+                    tag_search=tag_search,
+                    current_user_id=current_user_id,
+                    genres=genres,
+                    moods=moods,
+                    sort_method=sort_method,
+                ),
+            ]
+        )
+
+    # albums
+    if do_albums:
+        mdsl.extend(
+            [
+                {"index": ES_PLAYLISTS},
+                album_dsl(
+                    search_str="",
+                    tag_search=tag_search,
+                    current_user_id=current_user_id,
+                    genres=genres,
+                    moods=moods,
+                    only_with_downloads=only_with_downloads,
+                    only_purchaseable=only_purchaseable,
+                    sort_method=sort_method,
+                ),
+            ]
+        )
+
     mdsl_limit_offset(mdsl, limit, offset)
     mfound = esclient.msearch(searches=mdsl)
 
@@ -317,6 +356,10 @@ def search_tags_es(args: dict):
         "saved_tracks": [],
         "users": [],
         "followed_users": [],
+        "playlists": [],
+        "saved_playlists": [],
+        "albums": [],
+        "saved_albums": [],
     }
 
     if do_tracks:
@@ -324,6 +367,12 @@ def search_tags_es(args: dict):
 
     if do_users:
         response["users"] = pluck_hits(mfound["responses"].pop(0))
+
+    if do_playlists:
+        response["playlists"] = pluck_hits(mfound["responses"].pop(0))
+
+    if do_albums:
+        response["albums"] = pluck_hits(mfound["responses"].pop(0))
 
     finalize_response(response, limit, current_user_id)
     return response
@@ -567,6 +616,7 @@ def track_dsl(
         ],
         "must_not": [
             {"exists": {"field": "stem_of"}},
+            {"term": {"user.is_deactivated": {"value": True}}},
         ],
         "should": [
             *base_match(search_str, operator="and", boost=len(search_str)),
@@ -629,14 +679,40 @@ def track_dsl(
             }
         )
 
-    # Only include the track if it is purchaseable or has purchaseable stems
+    # Only include the track if it is purchaseable or has purchaseable stems/download
     if only_purchaseable:
         dsl["must"].append(
             {
                 "bool": {
                     "should": [
                         {"term": {"purchaseable": {"value": True}}},
-                        {"term": {"purchaseable_download": {"value": True}}},
+                        {
+                            "bool": {
+                                "must": [
+                                    {
+                                        "term": {
+                                            "purchaseable_download": {"value": True}
+                                        }
+                                    },
+                                    {
+                                        "bool": {
+                                            "should": [
+                                                {
+                                                    "term": {
+                                                        "has_stems": {"value": True}
+                                                    }
+                                                },
+                                                {
+                                                    "term": {
+                                                        "downloadable": {"value": True}
+                                                    }
+                                                },
+                                            ]
+                                        }
+                                    },
+                                ]
+                            }
+                        },
                     ]
                 }
             }
@@ -666,7 +742,7 @@ def track_dsl(
                             double socialScore = followerCount;
                             // Get the current time and updated_at time in milliseconds
                             long currentTime = new Date().getTime();
-                            long updatedAt = doc['updated_at'].value.toInstant().toEpochMilli();
+                            long createdAt = doc['created_at'].value.toInstant().toEpochMilli();
 
                             // Define time thresholds in milliseconds
                             long oneWeek = 7L * 24L * 60L * 60L * 1000L;
@@ -674,7 +750,7 @@ def track_dsl(
 
                             // Calculate recency factor based on time thresholds
                             double recencyFactor;
-                            long timeDiff = currentTime - updatedAt;
+                            long timeDiff = currentTime - createdAt;
 
                             if (timeDiff <= oneWeek) {
                                 recencyFactor = 3.0;  // Most recent (week)
@@ -889,12 +965,33 @@ def user_dsl(
 
     if sort_method == "recent":
         query["sort"] = [{"created_at": {"order": "desc"}}]
+    elif sort_method == "popular":
+        query["sort"] = [
+            {
+                "_script": {
+                    "type": "number",
+                    "script": {
+                        "lang": "painless",
+                        "source": """
+                            boolean isVerified = doc['is_verified'].value;
+                            double followerCount = doc['follower_count'].value;
+                            double verifiedMultiplier = isVerified ? 2 : 1;
+
+                            // Calculate the popularity score
+                            return verifiedMultiplier * (followerCount * 0.1);
+                        """,
+                    },
+                    "order": "desc",
+                }
+            }
+        ]
 
     return query
 
 
 def base_playlist_dsl(
     search_str,
+    tag_search,
     is_album,
     genres,
     moods,
@@ -962,6 +1059,9 @@ def base_playlist_dsl(
             {"term": {"is_delete": False}},
             {"term": {"is_album": {"value": is_album}}},
         ],
+        "must_not": [
+            {"term": {"user.is_deactivated": {"value": True}}},
+        ],
         "should": [
             *base_match(search_str, operator="and", boost=len(search_str) * 10),
             {"term": {"user.is_verified": {"value": True, "boost": 3}}},
@@ -984,6 +1084,24 @@ def base_playlist_dsl(
             }
         }
     }
+
+    if tag_search:
+        print("sebastian tag search appending", tag_search)
+        dsl["must"].append(
+            {
+                "bool": {
+                    "should": [
+                        {
+                            "match": {
+                                "tracks.tags": {
+                                    "query": tag_search.replace(" ", ""),
+                                }
+                            }
+                        },
+                    ],
+                }
+            }
+        )
 
     if genres:
         # At least one track genre must match
@@ -1066,12 +1184,53 @@ def base_playlist_dsl(
 
     if sort_method == "recent":
         query["sort"] = [{"updated_at": {"order": "desc"}}]
+    elif sort_method == "popular":
+        query["sort"] = [
+            {
+                "_script": {
+                    "type": "number",
+                    "script": {
+                        "lang": "painless",
+                        "source": """
+                            double repostCount = doc['repost_count'].value;
+                            double saveCount = doc['save_count'].value;
+                            double followerCount = doc['user.follower_count'].value;
+                            double socialScore = followerCount;
+                            // Get the current time and updated_at time in milliseconds
+                            long currentTime = new Date().getTime();
+                            long updatedAt = doc['updated_at'].value.toInstant().toEpochMilli();
+
+                            // Define time thresholds in milliseconds
+                            long oneWeek = 7L * 24L * 60L * 60L * 1000L;
+                            long oneMonth = 30L * 24L * 60L * 60L * 1000L;
+
+                            // Calculate recency factor based on time thresholds
+                            double recencyFactor;
+                            long timeDiff = currentTime - updatedAt;
+
+                            if (timeDiff <= oneWeek) {
+                                recencyFactor = 3.0;  // Most recent (week)
+                            } else if (timeDiff <= oneMonth) {
+                                recencyFactor = 2.0;  // Recent (month)
+                            } else {
+                                recencyFactor = 1.0;  // Older
+                            }
+
+                            // Calculate the trending score
+                            return ((repostCount * 0.3) + (saveCount * 0.2) + (socialScore * 0.1)) * recencyFactor;
+                        """,
+                    },
+                    "order": "desc",
+                }
+            }
+        ]
 
     return query
 
 
 def playlist_dsl(
     search_str,
+    tag_search,
     current_user_id,
     must_saved=False,
     genres=[],
@@ -1080,6 +1239,7 @@ def playlist_dsl(
 ):
     return base_playlist_dsl(
         search_str,
+        tag_search,
         False,
         genres,
         moods,
@@ -1093,6 +1253,7 @@ def playlist_dsl(
 
 def album_dsl(
     search_str,
+    tag_search,
     current_user_id,
     only_with_downloads,
     only_purchaseable,
@@ -1103,6 +1264,7 @@ def album_dsl(
 ):
     return base_playlist_dsl(
         search_str,
+        tag_search,
         True,
         genres,
         moods,

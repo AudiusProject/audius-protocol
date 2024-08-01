@@ -17,29 +17,12 @@ def test_add_additional_nodes():
     assert hash_obj.get_nodes() == nodes + new_nodes
 
 
-def test_return_highest_scoring_node():
-    nodes = ["node1", "node2", "node3"]
-    hash_obj = RendezvousHash(*nodes)
-    key = "test-key"
-    highest_node = hash_obj.get(key)
-    assert highest_node in nodes
-
-
-def test_return_top_n_nodes():
-    nodes = ["node1", "node2", "node3"]
-    hash_obj = RendezvousHash(*nodes)
-    key = "test-key"
-    top2_nodes = hash_obj.rank_crc32(2, key)
-    assert len(top2_nodes) == 2
-    assert all(node in nodes for node in top2_nodes)
-
-
 @pytest.mark.parametrize(
     "key,expected",
     [
         ("", "d"),
         ("foo", "e"),
-        ("bar", "c"),
+        ("bar", "b"),
     ],
 )
 def test_hash_get(key, expected):
@@ -47,26 +30,6 @@ def test_hash_get(key, expected):
     hash_obj.add("a", "b", "c", "d", "e")
     got_node = hash_obj.get(key)
     assert got_node == expected
-
-
-# Ensures the hash results match the results of the equivalent Go code.
-# See https://github.com/tysonmote/rendezvous/blob/be0258dbbd3d0df637b328d951067124541e7b6a/rendezvous_test.go
-@pytest.mark.parametrize(
-    "n,key,expected",
-    [
-        (1, "foo", ["e"]),
-        (2, "bar", ["c", "e"]),
-        (3, "baz", ["d", "a", "b"]),
-        (2, "biz", ["b", "a"]),
-        (0, "boz", []),
-        (100, "floo", ["d", "a", "b", "c", "e"]),
-    ],
-)
-def test_hash_get_n(n, key, expected):
-    hash_obj = RendezvousHash()
-    hash_obj.add("a", "b", "c", "d", "e")
-    got_nodes = hash_obj.rank_crc32(n, key)
-    assert got_nodes == expected
 
 
 def test_hybrid():
@@ -85,27 +48,5 @@ def test_hybrid():
         "https://cn0.mainnet.audiusindex.org",
         "https://creatornode.audius3.prod-eks-ap-northeast-1.staked.cloud",
         "https://blockdaemon-audius-content-07.bdnodes.net",
-    ]
-    assert got == expected
-
-    # crc32 top 2
-    got = hasher.rank_crc32(2, test_cid)
-    expected = [
-        "https://audius-content-15.cultur3stake.com",
-        "https://audius-content-4.figment.io",
-    ]
-    assert got == expected
-
-    # hybrid
-    got = hasher.get_n(6, test_cid)
-    expected = [
-        # crc32 (top2)
-        "https://audius-content-15.cultur3stake.com",
-        "https://audius-content-4.figment.io",
-        # sha256
-        "https://blockdaemon-audius-content-09.bdnodes.net",
-        "https://cn4.mainnet.audiusindex.org",
-        "https://cn0.mainnet.audiusindex.org",
-        "https://creatornode.audius3.prod-eks-ap-northeast-1.staked.cloud",
     ]
     assert got == expected

@@ -87,7 +87,7 @@ export const ListSelectionScreen = (props: ListSelectionProps) => {
       {...other}
     >
       <View style={[styles.content, footer ? styles.noFlex : undefined]}>
-        <Flex p='l'>{header}</Flex>
+        {header ? <Flex p='l'>{header}</Flex> : null}
         {disableSearch ? null : (
           <Flex p='l'>
             <TextInput

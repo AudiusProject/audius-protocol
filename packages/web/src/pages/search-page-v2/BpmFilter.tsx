@@ -81,23 +81,35 @@ const messages = {
   maxBpm: 'Max',
   tooLowError: `BPM less than ${MIN_BPM}`,
   tooHighError: `BPM greater than ${MAX_BPM}`,
-  invalidMinMaxError: 'Min greater than max'
+  invalidMinMaxError: 'Invalid range'
 }
 
 type ViewProps = {
+  value: string | null
   handleChange: (value: string, label: string) => void
 }
 
-const BpmRangeView = ({ handleChange }: ViewProps) => {
-  const [minBpm, setMinBpm] = useStateDebounced('')
-  const [maxBpm, setMaxBpm] = useStateDebounced('')
+const BpmRangeView = ({ value, handleChange }: ViewProps) => {
+  const minMaxValue = value?.includes('-') ? value.split('-') : null
+  const isValueRangeOption = Boolean(
+    bpmOptions.find((opt) => opt.value === value)
+  )
+
+  const initialMinValue = isValueRangeOption ? '' : minMaxValue?.[0] ?? ''
+  const initialMaxValue = isValueRangeOption ? '' : minMaxValue?.[1] ?? ''
+
+  const [minBpm, setMinBpm] = useStateDebounced(initialMinValue)
+  const [maxBpm, setMaxBpm] = useStateDebounced(initialMaxValue)
   const [minError, setMinError] = useState<string | null>(null)
   const [maxError, setMaxError] = useState<string | null>(null)
+  const [hasChanged, setHasChanged] = useState(false)
   // NOTE: Memo to avoid the constantly changing function instance from triggering the effect
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const onChange = useMemo(() => handleChange, [])
 
   useEffect(() => {
+    if (!hasChanged) return
+
     // Validation
     const minVal = Number(minBpm)
     const maxVal = Number(maxBpm)
@@ -144,12 +156,15 @@ const BpmRangeView = ({ handleChange }: ViewProps) => {
     }
 
     onChange(value, `${value} ${messages.bpm}`)
-  }, [maxBpm, minBpm, minError, maxError, onChange])
+  }, [maxBpm, minBpm, minError, maxError, onChange, hasChanged])
 
   return (
     <>
       <Flex direction='column' w='100%' ph='s'>
         <FilterButtonOptions
+          activeValue={
+            isValueRangeOption && !(minBpm || maxBpm) ? value : undefined
+          }
           options={bpmOptions}
           onChange={(option) => {
             handleChange(option.value, option.helperText ?? option.value)
@@ -165,6 +180,7 @@ const BpmRangeView = ({ handleChange }: ViewProps) => {
         onClick={(e) => e.stopPropagation()}
       >
         <TextInput
+          defaultValue={initialMinValue}
           label={messages.minBpm}
           type='number'
           maxLength={3}
@@ -177,11 +193,15 @@ const BpmRangeView = ({ handleChange }: ViewProps) => {
             const input = e.nativeEvent.target as HTMLInputElement
             input.value = input.value.slice(0, input.maxLength)
           }}
-          onChange={(e) => setMinBpm(stripLeadingZeros(e.target.value))}
+          onChange={(e) => {
+            setHasChanged(true)
+            setMinBpm(stripLeadingZeros(e.target.value))
+          }}
           inputRootClassName={css({ height: '48px !important' })}
         />
         <Box pv='l'>-</Box>
         <TextInput
+          defaultValue={initialMaxValue}
           label={messages.maxBpm}
           type='number'
           maxLength={3}
@@ -194,7 +214,10 @@ const BpmRangeView = ({ handleChange }: ViewProps) => {
             const input = e.nativeEvent.target as HTMLInputElement
             input.value = input.value.slice(0, input.maxLength)
           }}
-          onChange={(e) => setMaxBpm(stripLeadingZeros(e.target.value))}
+          onChange={(e) => {
+            setHasChanged(true)
+            setMaxBpm(stripLeadingZeros(e.target.value))
+          }}
           inputRootClassName={css({ height: '48px !important' })}
         />
       </Flex>
@@ -202,16 +225,34 @@ const BpmRangeView = ({ handleChange }: ViewProps) => {
   )
 }
 
-const BpmTargetView = ({ handleChange }: ViewProps) => {
+const BpmTargetView = ({ value, handleChange }: ViewProps) => {
+  const minMaxValue = value?.includes('-') ? value.split('-') : null
+  const minMaxDiff = minMaxValue
+    ? Number(minMaxValue[1]) - Number(minMaxValue[0])
+    : null
+  const isValidDiff = minMaxDiff === 20 || minMaxDiff === 10
+
+  const initialTargetValue =
+    minMaxValue && isValidDiff
+      ? String(Number(minMaxValue[0]) + minMaxDiff / 2)
+      : minMaxValue // If range is not valid for target view
+      ? ''
+      : value
+
   const { color } = useTheme()
-  const [bpmTarget, setBpmTarget] = useStateDebounced('')
-  const [bpmTargetType, setBpmTargetType] = useState<BpmTargetType>('exact')
+  const [bpmTarget, setBpmTarget] = useStateDebounced(initialTargetValue)
+  const [bpmTargetType, setBpmTargetType] = useState<BpmTargetType>(
+    minMaxDiff === 20 ? 'range10' : minMaxDiff === 10 ? 'range5' : 'exact'
+  )
+  const [hasChanged, setHasChanged] = useState(false)
   const [error, setError] = useState<string | null>(null)
   // NOTE: Memo to avoid the constantly changing function instance from triggering the effect
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const onChange = useMemo(() => handleChange, [])
 
   useEffect(() => {
+    if (!hasChanged) return
+
     // Validation
     const val = Number(bpmTarget)
     let hasError = false
@@ -248,7 +289,7 @@ const BpmTargetView = ({ handleChange }: ViewProps) => {
     }
 
     onChange(value, `${value} ${messages.bpm}`)
-  }, [bpmTarget, bpmTargetType, error, onChange])
+  }, [bpmTarget, bpmTargetType, error, hasChanged, onChange])
 
   return (
     <Flex
@@ -260,6 +301,7 @@ const BpmTargetView = ({ handleChange }: ViewProps) => {
       onClick={(e) => e.stopPropagation()}
     >
       <TextInput
+        defaultValue={initialTargetValue ?? ''}
         label={messages.bpm}
         type='number'
         maxLength={3}
@@ -272,7 +314,10 @@ const BpmTargetView = ({ handleChange }: ViewProps) => {
           const input = e.nativeEvent.target as HTMLInputElement
           input.value = input.value.slice(0, input.maxLength)
         }}
-        onChange={(e) => setBpmTarget(stripLeadingZeros(e.target.value))}
+        onChange={(e) => {
+          setHasChanged(true)
+          setBpmTarget(stripLeadingZeros(e.target.value))
+        }}
         inputRootClassName={css({ height: '48px !important' })}
       />
       <Flex justifyContent='center' alignItems='center' gap='xs'>
@@ -288,7 +333,10 @@ const BpmTargetView = ({ handleChange }: ViewProps) => {
                 : undefined
             }
             fullWidth
-            onClick={() => setBpmTargetType(option.value)}
+            onClick={() => {
+              if (bpmTarget) setHasChanged(true)
+              setBpmTargetType(option.value)
+            }}
           >
             {option.label}
           </Button>
@@ -350,7 +398,7 @@ export const BpmFilter = () => {
                 />
               </Flex>
               <Divider css={{ width: '100%' }} />
-              <InputView handleChange={handleChange} />
+              <InputView value={bpm} handleChange={handleChange} />
             </Flex>
           </Paper>
         </Popup>

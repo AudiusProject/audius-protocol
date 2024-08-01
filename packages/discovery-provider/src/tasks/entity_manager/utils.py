@@ -12,6 +12,8 @@ from web3.datastructures import AttributeDict
 
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.exceptions import IndexingValidationError
+from src.models.comments.comment import Comment
+from src.models.comments.comment_reaction import CommentReaction
 from src.models.dashboard_wallet_user.dashboard_wallet_user import DashboardWalletUser
 from src.models.grants.developer_app import DeveloperApp
 from src.models.grants.grant import Grant
@@ -26,7 +28,6 @@ from src.models.playlists.playlist_route import PlaylistRoute
 from src.models.social.follow import Follow
 from src.models.social.repost import Repost
 from src.models.social.save import Save
-from src.models.comments.comment import Comment
 from src.models.social.subscription import Subscription
 from src.models.tracks.track import Track
 from src.models.tracks.track_route import TrackRoute
@@ -71,6 +72,8 @@ class Action(str, Enum):
     VIEW_PLAYLIST = "ViewPlaylist"
     APPROVE = "Approve"
     REJECT = "Reject"
+    REACT = "React"
+    UNREACT = "Unreact"
 
     def __str__(self) -> str:
         return str.__str__(self)
@@ -99,6 +102,7 @@ class EntityType(str, Enum):
     PLAYLIST_ROUTE = "PlaylistRoute"
     TIP = "Tip"
     COMMENT = "Comment"
+    COMMENT_REACTION = "CommentReaction"
 
     def __str__(self) -> str:
         return str.__str__(self)
@@ -134,6 +138,8 @@ class RecordDict(TypedDict):
     DeveloperApp: Dict[str, List[DeveloperApp]]
     DashboardWalletUser: Dict[str, List[DashboardWalletUser]]
     Grant: Dict[Tuple, List[Grant]]
+    Comment: Dict[int, List[Comment]]
+    CommentReaction: Dict[Tuple, List[CommentReaction]]
 
 
 class ExistingRecordDict(TypedDict):
@@ -152,6 +158,7 @@ class ExistingRecordDict(TypedDict):
     TrackRoute: Dict[int, TrackRoute]
     PlaylistRoute: Dict[int, PlaylistRoute]
     Comment: Dict[int, Comment]
+    CommentReaction: Dict[Tuple, CommentReaction]
 
 
 class EntitiesToFetchDict(TypedDict):
@@ -172,6 +179,7 @@ class EntitiesToFetchDict(TypedDict):
     AssociatedWallet: Set[int]
     UserWallet: Set[str]
     Comment: Set[int]
+    CommentReaction: Set[Tuple]
 
 
 MANAGE_ENTITY_EVENT_TYPE = "ManageEntity"

@@ -180,7 +180,7 @@ def get_user_delist_discrepancies(session: Session, redis: Redis):
             [dict(row) for row in result], default=str
         )
         if user_delist_discrepancies != "[]":
-            logger.info(
+            logger.warn(
                 f"get_trusted_notifier_discrepancies.py | found user delist discrepancies: {user_delist_discrepancies}"
             )
         redis.set(
@@ -246,7 +246,7 @@ def get_track_delist_discrepancies(session: Session, redis: Redis):
             [dict(row) for row in result], default=str
         )
         if track_delist_discrepancies != "[]":
-            logger.info(
+            logger.warn(
                 f"get_trusted_notifier_discrepancies.py | found track delist discrepancies: {track_delist_discrepancies}"
             )
         redis.set(

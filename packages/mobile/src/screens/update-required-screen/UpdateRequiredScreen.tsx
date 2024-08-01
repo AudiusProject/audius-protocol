@@ -1,10 +1,11 @@
-import { Platform } from 'react-native'
+import { isAndroid, isSolanaPhone } from 'app/utils/os'
+import {
+  ANDROID_PLAY_STORE_LINK,
+  IOS_APP_STORE_LINK,
+  SOLANA_DAPP_STORE_LINK
+} from 'app/utils/playStore'
 
 import { NewVersionPrompt } from './NewVersionPrompt'
-
-const ANDROID_PLAY_STORE_LINK =
-  'https://play.google.com/store/apps/details?id=co.audius.app'
-const IOS_APP_STORE_LINK = 'itms-apps://us/app/audius-music/id1491270519'
 
 const messages = {
   header: 'Please Update ✨',
@@ -15,11 +16,8 @@ const messages = {
 }
 
 export const UpdateRequiredScreen = () => {
-  const isAndroid = Platform.OS === 'android'
-  const isSolanaPhone =
-    Platform.OS === 'android' && Platform.constants.Model === 'Saga'
   const url = isSolanaPhone
-    ? undefined
+    ? SOLANA_DAPP_STORE_LINK
     : isAndroid
     ? ANDROID_PLAY_STORE_LINK
     : IOS_APP_STORE_LINK

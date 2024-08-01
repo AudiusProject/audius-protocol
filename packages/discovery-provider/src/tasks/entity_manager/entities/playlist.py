@@ -40,7 +40,7 @@ def update_playlist_routes_table(
     pending_playlist_routes = params.pending_playlist_routes
     session = params.session
 
-    params.logger.info(
+    params.logger.debug(
         f"index.py | playlists.py | Updating playlist routes for {playlist_record.playlist_id}"
     )
     # Get the title slug, and set the new slug to that
@@ -61,7 +61,7 @@ def update_playlist_routes_table(
     if prev_playlist_route_record:
         if prev_playlist_route_record.title_slug == new_playlist_slug_title:
             # If the title slug hasn't changed, we have no work to do
-            params.logger.info(f"not changing for {playlist_record.playlist_id}")
+            params.logger.debug(f"not changing for {playlist_record.playlist_id}")
             return
 
     new_playlist_slug, new_collision_id = generate_slug_and_collision_id(
@@ -119,7 +119,7 @@ def update_playlist_routes_table(
     # Add to pending playlist routes so we don't add the same route twice
     pending_playlist_routes.append(new_playlist_route)
 
-    params.logger.info(
+    params.logger.debug(
         f"index.py | playlists.py | Updated playlist routes for {playlist_record.playlist_id} with slug {new_playlist_slug} and owner_id {new_playlist_route.owner_id}"
     )
 
@@ -139,7 +139,7 @@ def update_playlist_tracks(params: ManageEntityParameters, playlist_record: Play
     updated_track_ids = [
         track["track"] for track in playlist["playlist_contents"]["track_ids"]
     ]
-    params.logger.info(
+    params.logger.debug(
         f"playlists.py | Updating playlist tracks for {playlist['playlist_id']}"
     )
 
@@ -215,7 +215,7 @@ def update_playlist_tracks(params: ManageEntityParameters, playlist_record: Play
             existing_tracks[track_id].is_removed = False
             existing_tracks[track_id].updated_at = params.block_datetime
 
-    params.logger.info(
+    params.logger.debug(
         f"playlists.py | Updated playlist tracks for {playlist['playlist_id']}"
     )
 
@@ -713,6 +713,6 @@ def populate_playlist_record_metadata(
     if is_ddex_signer(params.signer):
         playlist_record.ddex_app = params.signer
 
-    params.logger.info(
+    params.logger.debug(
         f"playlist.py | EntityManager | Updated playlist record {playlist_record}"
     )

@@ -189,6 +189,7 @@ export const TrackTileComponent = ({
     genre,
     isOwner,
     ddexApp,
+    isUnlisted,
     albumInfo,
     playbackPositionInfo?.status,
     isOnArtistsTracksTab,

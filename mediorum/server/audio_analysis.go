@@ -19,7 +19,16 @@ import (
 func (ss *MediorumServer) startAudioAnalyzer() {
 	work := make(chan *Upload)
 
-	numWorkers := 2
+	numWorkers := 4
+	numWorkersOverride := os.Getenv("AUDIO_ANALYSIS_WORKERS")
+	if numWorkersOverride != "" {
+		num, err := strconv.ParseInt(numWorkersOverride, 10, 64)
+		if err != nil {
+			ss.logger.Warn("failed to parse AUDIO_ANALYSIS_WORKERS", "err", err, "AUDIO_ANALYSIS_WORKERS", numWorkersOverride)
+		} else {
+			numWorkers = int(num)
+		}
+	}
 
 	// start workers
 	for i := 0; i < numWorkers; i++ {
@@ -29,8 +38,28 @@ func (ss *MediorumServer) startAudioAnalyzer() {
 	time.Sleep(time.Minute)
 
 	// find old work from backlog
+	ticker := time.NewTicker(15 * time.Minute)
+	defer ticker.Stop()
+
+	for {
+		ctx, cancel := context.WithTimeout(context.Background(), 15*time.Minute)
+		go func() {
+			defer cancel()
+			ss.findMissedAudioAnalysisJobs(ctx, work)
+		}()
+
+		select {
+		case <-ticker.C:
+			cancel()
+		}
+
+		time.Sleep(time.Minute)
+	}
+}
+
+func (ss *MediorumServer) findMissedAudioAnalysisJobs(ctx context.Context, work chan<- *Upload) {
 	uploads := []*Upload{}
-	err := ss.crud.DB.Where("template = ? and audio_analysis_status != ?", JobTemplateAudio, JobStatusDone).
+	err := ss.crud.DB.Where("template = ? and (audio_analysis_status is null or audio_analysis_status != ?)", JobTemplateAudio, JobStatusDone).
 		Order("random()").
 		Find(&uploads).
 		Error
@@ -40,13 +69,27 @@ func (ss *MediorumServer) startAudioAnalyzer() {
 	}
 
 	for _, upload := range uploads {
+		select {
+		case <-ctx.Done():
+			// if the context is done, stop processing
+			return
+		default:
+		}
+
 		cid, ok := upload.TranscodeResults["320"]
 		if !ok {
 			continue
 		}
 		_, isMine := ss.rendezvousAllHosts(cid)
+		isMine = isMine || (ss.Config.Env == "prod" && ss.Config.Self.Host == "https://creatornode2.audius.co")
 		if isMine && upload.AudioAnalysisErrorCount < MAX_TRIES {
-			work <- upload
+			select {
+			case work <- upload:
+				// successfully sent the job to the channel
+			case <-ctx.Done():
+				// if the context is done, stop processing
+				return
+			}
 		}
 	}
 }
@@ -241,7 +284,7 @@ func (ss *MediorumServer) analyzeBPM(filename string) (float64, error) {
 
 // converts an MP3 file to WAV format using ffmpeg
 func convertToWav(inputFile, outputFile string) error {
-	cmd := exec.Command("ffmpeg", "-i", inputFile, "-f", "wav", "-t", "300", outputFile)
+	cmd := exec.Command("ffmpeg", "-i", inputFile, "-f", "wav", "-t", "30", outputFile)
 	if output, err := cmd.CombinedOutput(); err != nil {
 		return fmt.Errorf("failed to convert to WAV: %v, output: %s", err, string(output))
 	}

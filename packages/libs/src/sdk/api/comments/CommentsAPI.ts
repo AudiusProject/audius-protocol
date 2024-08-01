@@ -15,7 +15,7 @@ export type CommentMetadata = {
   body: string
   userId: number
   entityId: number
-  entityType: Extract<EntityType, 'TRACK'> // For now we only support comments on tracks but we discussed collections as well
+  entityType: EntityType // For now just tracks are supported, but we left the door open for more
   parentCommentId?: number
   timestamp_s?: number
 }
@@ -44,7 +44,6 @@ export class CommentsApi extends GeneratedCommentsApi {
       auth: this.auth
     })
 
-    this.logger.info('Successfully uploaded track')
     return response
   }
 
@@ -61,8 +60,6 @@ export class CommentsApi extends GeneratedCommentsApi {
       }),
       auth: this.auth
     })
-
-    this.logger.info('Successfully edit comment', response)
     return response
   }
 
@@ -76,8 +73,18 @@ export class CommentsApi extends GeneratedCommentsApi {
       metadata: '',
       auth: this.auth
     })
+    return response
+  }
 
-    this.logger.info('Successfully uploaded track')
+  async reactComment(userId: number, entityId: number, isLiked: boolean) {
+    const response = await this.entityManager.manageEntity({
+      userId,
+      entityType: EntityType.COMMENT,
+      entityId,
+      action: isLiked ? Action.REACT : Action.UNREACT,
+      metadata: '',
+      auth: this.auth
+    })
     return response
   }
 }
