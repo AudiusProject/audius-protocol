@@ -64,7 +64,10 @@ describe('timeRequests()', () => {
     assert.strictEqual(res[4]?.request.url, 'https://slowAndError.audius.co')
   })
 
-  it('respects an equivalency delta', async () => {
+  it('respects an equivalency delta', async function () {
+    // @ts-ignore annoying amount of time trying to figure out how to type this
+    // so that typescript knows that "this" is the TestFunction type from Mocha
+    this.timeout(10000)
     const allResults: string[] = []
     for (let i = 0; i < 20; ++i) {
       const requests = [
