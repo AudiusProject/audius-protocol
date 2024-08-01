@@ -62,13 +62,13 @@ export const useCollectionMetadata = ({
       id: CollectionMetadataType.RELEASE_DATE,
       value: formatDate(releaseDate ?? ''),
       label: 'Released',
-      isHidden: isPrivate || !releaseDate
+      isHidden: isPrivate
     },
     {
       id: CollectionMetadataType.UPDATED_AT,
       value: formatDate(updatedAt ?? ''),
       label: 'Updated',
-      isHidden: isPrivate || !updatedAt
+      isHidden: isPrivate
     }
   ].filter(({ isHidden, value }) => !isHidden && !!value)
 
