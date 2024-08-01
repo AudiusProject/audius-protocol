@@ -217,6 +217,7 @@ export type TrackMetadata = {
   ai_attribution_user_id?: Nullable<ID>
   allowed_api_keys?: Nullable<string[]>
   bpm?: Nullable<number>
+  is_custom_bpm?: boolean
   musical_key?: Nullable<string>
   audio_analysis_error_count?: number
   field_visibility?: FieldVisibility
