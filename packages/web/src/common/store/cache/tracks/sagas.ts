@@ -202,12 +202,7 @@ function* editTrackAsync(action: ReturnType<typeof trackActions.editTrack>) {
     }
   }
 
-  const getFeatureEnabled = yield* getContext('getFeatureEnabled')
-  const isEditTrackRedesignEnabled = yield* call(
-    getFeatureEnabled,
-    FeatureFlags.EDIT_TRACK_REDESIGN
-  )
-  if (isEditTrackRedesignEnabled && track.stems) {
+  if (track.stems) {
     const inProgressStemUploads = yield* select(
       getCurrentUploads,
       track.track_id
@@ -280,8 +275,10 @@ function* confirmEditTrack(
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const apiClient = yield* getContext('apiClient')
   const transcodePreview =
-    !!formFields.preview_start_seconds &&
+    formFields.preview_start_seconds !== null &&
+    formFields.preview_start_seconds !== undefined &&
     currentTrack.preview_start_seconds !== formFields.preview_start_seconds
+
   yield* put(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.TRACKS, trackId),

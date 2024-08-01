@@ -273,7 +273,7 @@ export const PriceAndAudienceField = (props: PriceAndAudienceFieldProps) => {
     }
     set(initialValues, STREAM_AVAILABILITY_TYPE, availabilityType)
     set(initialValues, FIELD_VISIBILITY, fieldVisibility)
-    set(initialValues, PREVIEW, preview)
+    set(initialValues, PREVIEW, preview ?? 0)
     set(
       initialValues,
       SPECIAL_ACCESS_TYPE,

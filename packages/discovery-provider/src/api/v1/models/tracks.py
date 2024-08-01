@@ -55,26 +55,29 @@ stem_parent = ns.model(
 field_visibility = ns.model(
     "field_visibility",
     {
-        "mood": fields.Boolean,
-        "tags": fields.Boolean,
-        "genre": fields.Boolean,
-        "share": fields.Boolean,
-        "play_count": fields.Boolean,
-        "remixes": fields.Boolean,
+        "mood": fields.Boolean(required=True),
+        "tags": fields.Boolean(required=True),
+        "genre": fields.Boolean(required=True),
+        "share": fields.Boolean(required=True),
+        "play_count": fields.Boolean(required=True),
+        "remixes": fields.Boolean(required=True),
     },
 )
 
 access = ns.model(
     "access",
-    {"stream": fields.Boolean, "download": fields.Boolean},
+    {
+        "stream": fields.Boolean(required=True),
+        "download": fields.Boolean(required=True),
+    },
 )
 
 track = ns.model(
     "Track",
     {
-        "artwork": fields.Nested(track_artwork, allow_null=True),
+        "artwork": fields.Nested(track_artwork, allow_null=True, required=True),
         "description": fields.String,
-        "genre": fields.String,
+        "genre": fields.String(required=True),
         "id": fields.String(required=True),
         "track_cid": fields.String(
             allow_null=True
@@ -86,7 +89,7 @@ track = ns.model(
         "orig_filename": fields.String(
             allow_null=True
         ),  # remove nullability after backfill
-        "is_original_available": fields.Boolean(),
+        "is_original_available": fields.Boolean(required=True),
         "mood": fields.String,
         "release_date": fields.String,
         "remix_of": fields.Nested(remix_parent),
@@ -97,9 +100,9 @@ track = ns.model(
         "user": fields.Nested(user_model, required=True),
         # Total track duration, rounded to the nearest second
         "duration": fields.Integer(required=True),
-        "is_downloadable": fields.Boolean,
+        "is_downloadable": fields.Boolean(required=True),
         "play_count": fields.Integer(required=True),
-        "permalink": fields.String,
+        "permalink": fields.String(required=True),
         "is_streamable": fields.Boolean,
         "ddex_app": fields.String(allow_null=True),
         "playlists_containing_track": fields.List(fields.Integer),
@@ -134,53 +137,58 @@ track_full = ns.clone(
     track,
     {
         "access": fields.Nested(
-            access, description="Describes what access the given user has"
+            access,
+            required=True,
+            description="Describes what access the given user has",
         ),
         "blocknumber": fields.Integer(
             required=True, description="The blocknumber this track was last updated"
         ),
         "create_date": fields.String,
-        "cover_art_sizes": fields.String,
+        "cover_art_sizes": fields.String(required=True),
         "cover_art_cids": fields.Nested(cover_art, allow_null=True),
-        "created_at": fields.String,
+        "created_at": fields.String(required=True),
         "credits_splits": fields.String,
         "isrc": fields.String,
         "license": fields.String,
         "iswc": fields.String,
-        "field_visibility": fields.Nested(field_visibility),
+        "field_visibility": fields.Nested(field_visibility, required=True),
         "followee_reposts": fields.List(fields.Nested(repost), required=True),
         "has_current_user_reposted": fields.Boolean(required=True),
-        "is_scheduled_release": fields.Boolean,
+        "is_scheduled_release": fields.Boolean(required=True),
         "is_unlisted": fields.Boolean(required=True),
         "has_current_user_saved": fields.Boolean(required=True),
         "followee_favorites": fields.List(fields.Nested(favorite), required=True),
         "route_id": fields.String(required=True),
         "stem_of": fields.Nested(stem_parent),
-        "track_segments": fields.List(fields.Nested(track_segment)),
-        "updated_at": fields.String,
+        "track_segments": fields.List(fields.Nested(track_segment), required=True),
+        "updated_at": fields.String(required=True),
         "user_id": fields.String(required=True),
         "user": fields.Nested(user_model_full, required=True),
-        "is_delete": fields.Boolean,
+        "is_delete": fields.Boolean(required=True),
         "cover_art": fields.String,
-        "remix_of": fields.Nested(full_remix_parent),
-        "is_available": fields.Boolean,
+        "remix_of": fields.Nested(full_remix_parent, required=True),
+        "is_available": fields.Boolean(required=True),
         "ai_attribution_user_id": fields.Integer(allow_null=True),
         "allowed_api_keys": fields.List(fields.String, allow_null=True),
         "audio_upload_id": fields.String,
         "preview_start_seconds": fields.Float,
         "bpm": fields.Float,
+        "is_custom_bpm": fields.Boolean,
         "musical_key": fields.String,
         "audio_analysis_error_count": fields.Integer,
         # DDEX fields
         "ddex_release_ids": fields.Raw(allow_null=True),
-        "artists": fields.Raw(allow_null=True),
-        "resource_contributors": fields.Raw(allow_null=True),
-        "indirect_resource_contributors": fields.Raw(allow_null=True),
+        "artists": fields.List(fields.Raw, allow_null=True),
+        "resource_contributors": fields.List(fields.Raw, allow_null=True),
+        "indirect_resource_contributors": fields.List(fields.Raw, allow_null=True),
+        "rights_controller": fields.Raw(allow_null=True),
         "copyright_line": fields.Raw(allow_null=True),
         "producer_copyright_line": fields.Raw(allow_null=True),
         "parental_warning_type": fields.String,
         "is_stream_gated": fields.Boolean(
-            description="Whether or not the owner has restricted streaming behind an access gate"
+            required=True,
+            description="Whether or not the owner has restricted streaming behind an access gate",
         ),
         "stream_conditions": NestedOneOf(
             access_gate,
@@ -188,7 +196,8 @@ track_full = ns.clone(
             description="How to unlock stream access to the track",
         ),
         "is_download_gated": fields.Boolean(
-            description="Whether or not the owner has restricted downloading behind an access gate"
+            required=True,
+            description="Whether or not the owner has restricted downloading behind an access gate",
         ),
         "download_conditions": NestedOneOf(
             access_gate, allow_null=True, description="How to unlock the track download"

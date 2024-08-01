@@ -1,5 +1,6 @@
 import { useCallback, type ReactNode } from 'react'
 
+import { Keyboard } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { Button, Flex, PlainButton } from '@audius/harmony-native'
@@ -41,6 +42,7 @@ export const FormScreen = (props: FormScreenProps) => {
   const insets = useSafeAreaInsets()
 
   const handleSubmit = useCallback(() => {
+    Keyboard.dismiss()
     if (!stopNavigation) {
       navigation.goBack()
     }

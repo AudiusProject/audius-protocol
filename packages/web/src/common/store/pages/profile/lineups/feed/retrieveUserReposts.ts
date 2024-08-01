@@ -1,10 +1,14 @@
+import { repostActivityFromSDK } from '@audius/common/adapters'
 import {
-  UserCollection,
   ID,
   Track,
-  UserTrackMetadata
+  UserTrackMetadata,
+  OptionalId,
+  UserCollectionMetadata
 } from '@audius/common/models'
-import { getContext } from '@audius/common/store'
+import { transformAndCleanList } from '@audius/common/src/adapters/utils'
+import { getSDK } from '@audius/common/store'
+import { full } from '@audius/sdk'
 import { all } from 'redux-saga/effects'
 
 import { processAndCacheCollections } from 'common/store/cache/collections/utils'
@@ -12,18 +16,18 @@ import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
 import { waitForRead } from 'utils/sagaHelpers'
 
 const getTracksAndCollections = (
-  feed: (UserTrackMetadata | UserCollection)[]
+  feed: (UserTrackMetadata | UserCollectionMetadata)[]
 ) =>
   feed.reduce(
     (
-      acc: [UserTrackMetadata[], UserCollection[]],
-      cur: UserTrackMetadata | UserCollection
+      acc: [UserTrackMetadata[], UserCollectionMetadata[]],
+      cur: UserTrackMetadata | UserCollectionMetadata
     ) =>
       ('track_id' in cur
         ? [[...acc[0], cur], acc[1]]
         : [acc[0], [...acc[1], cur]]) as [
         UserTrackMetadata[],
-        UserCollection[]
+        UserCollectionMetadata[]
       ],
     [[], []]
   )
@@ -42,13 +46,20 @@ export function* retrieveUserReposts({
   limit
 }: RetrieveUserRepostsArgs): Generator<any, Track[], any> {
   yield* waitForRead()
-  const apiClient = yield* getContext('apiClient')
-  const reposts = yield apiClient.getUserRepostsByHandle({
+  const sdk = yield* getSDK()
+
+  const { data: repostsSDKData } = yield sdk.full.users.getRepostsByHandle({
     handle,
-    currentUserId,
+    userId: OptionalId.parse(currentUserId),
     limit,
     offset
   })
+  const reposts = transformAndCleanList(
+    repostsSDKData,
+    // `getTracksAndCollections` below expects a list of just the items
+    (activity: full.ActivityFull) => repostActivityFromSDK(activity)?.item
+  )
+
   const [tracks, collections] = getTracksAndCollections(reposts)
   const trackIds = tracks.map((t) => t.track_id)
   const [processedTracks, processedCollections] = yield all([
