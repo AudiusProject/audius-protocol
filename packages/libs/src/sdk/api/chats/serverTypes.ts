@@ -7,6 +7,20 @@ export type ValidateCanChatRPC = {
   }
 }
 
+export type ChatBlastRPC = {
+  method: 'chat.blast'
+  params: {
+    blast_id: string
+    audience:
+      | 'follower_audience'
+      | 'tipper_audience'
+      | 'remixer_audience'
+      | 'customer_audience'
+    audience_track_id?: string // if targeting customers / remixers of a specific track
+    message: string
+  }
+}
+
 export type ChatCreateRPC = {
   method: 'chat.create'
   params: {
@@ -84,6 +98,7 @@ export type ChatPermitRPC = {
 }
 
 export type RPCPayloadRequest =
+  | ChatBlastRPC
   | ChatCreateRPC
   | ChatDeleteRPC
   | ChatInviteRPC
