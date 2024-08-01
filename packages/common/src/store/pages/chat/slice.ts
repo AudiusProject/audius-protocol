@@ -5,7 +5,8 @@ import type {
   ChatMessageReaction,
   ChatMessageNullableReaction,
   UnfurlResponse,
-  ValidatedChatPermissions
+  ValidatedChatPermissions,
+  ChatBlastAudience
 } from '@audius/sdk'
 import {
   Action,
@@ -429,6 +430,17 @@ const slice = createSlice({
           changes: { status: Status.LOADING }
         })
       }
+    },
+    sendTargetedMessage: (
+      _state,
+      _action: PayloadAction<{
+        blastId: string
+        message: string
+        audience: ChatBlastAudience
+        audienceTrackId?: ID
+      }>
+    ) => {
+      // triggers saga
     },
     addMessage: (
       state,

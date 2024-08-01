@@ -11,12 +11,8 @@ export type ChatBlastRPC = {
   method: 'chat.blast'
   params: {
     blast_id: string
-    audience:
-      | 'follower_audience'
-      | 'tipper_audience'
-      | 'remixer_audience'
-      | 'customer_audience'
-    audience_track_id?: string // if targeting customers / remixers of a specific track
+    audience: ChatBlastAudience
+    audience_track_id?: number // if targeting customers / remixers of a specific track
     message: string
   }
 }
@@ -185,6 +181,13 @@ export enum ChatPermission {
    * Messages are not allowed
    */
   NONE = 'none'
+}
+
+export enum ChatBlastAudience {
+  FOLLOWERS = 'follower_audience',
+  TIPPERS = 'tipper_audience',
+  REMIXERS = 'remixer_audience',
+  CUSTOMERS = 'customer_audience'
 }
 
 export type CommsResponse = {

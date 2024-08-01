@@ -10,6 +10,7 @@ import {
 
 import { chatActions } from '@audius/common/store'
 import { IconSend, IconButton } from '@audius/harmony'
+import { ChatBlastAudience } from '@audius/sdk'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
@@ -17,7 +18,7 @@ import { TextAreaV2 } from 'components/data-entry/TextAreaV2'
 
 import styles from './ChatComposer.module.css'
 
-const { sendMessage } = chatActions
+const { sendMessage, sendTargetedMessage } = chatActions
 
 const messages = {
   sendMessage: 'Send Message',
@@ -70,7 +71,14 @@ export const ChatComposer = (props: ChatComposerProps) => {
       e?.preventDefault()
       if (chatId && value) {
         const message = value
-        dispatch(sendMessage({ chatId, message }))
+        // dispatch(sendMessage({ chatId, message }))
+        dispatch(
+          sendTargetedMessage({
+            blastId: chatId,
+            audience: ChatBlastAudience.FOLLOWERS,
+            message
+          })
+        )
         setValue('')
         onMessageSent()
       }
