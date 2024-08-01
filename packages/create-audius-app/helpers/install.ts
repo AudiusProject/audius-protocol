@@ -26,7 +26,7 @@ export async function install(
      * Spawn the installation process.
      */
     const child = spawn('npm', args, {
-      stdio: 'inherit',
+      stdio: ['inherit', 'inherit', 'ignore'], // Suppress warn
       env: {
         ...process.env,
         ADBLOCK: '1',
