@@ -103,7 +103,7 @@ describe('timeRequests()', () => {
 
     // Make sure there is some variance
     assert(!allResults.every((val) => val === allResults[0]))
-  }).timeout(10000)
+  })
 
   it('filterNonResponsive = true', async () => {
     const requests = [
