@@ -22,19 +22,19 @@ var _ = Describe("Plays", func() {
 		Expect(err).To(BeNil())
 
 		listens := []*proto.Listen{
-			&proto.Listen{
+			{
 				ListenerAddress: uuid.NewString(),
 				TrackId:         uuid.NewString(),
 				Timestamp:       timestamppb.New(time.Now()),
 				Signature:       "todo: impl",
 			},
-			&proto.Listen{
+			{
 				ListenerAddress: uuid.NewString(),
 				TrackId:         uuid.NewString(),
 				Timestamp:       timestamppb.New(time.Now()),
 				Signature:       "todo: impl",
 			},
-			&proto.Listen{
+			{
 				ListenerAddress: uuid.NewString(),
 				TrackId:         uuid.NewString(),
 				Timestamp:       timestamppb.New(time.Now()),
