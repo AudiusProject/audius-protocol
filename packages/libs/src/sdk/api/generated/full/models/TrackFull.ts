@@ -413,6 +413,12 @@ export interface TrackFull {
     bpm?: number;
     /**
      * 
+     * @type {boolean}
+     * @memberof TrackFull
+     */
+    isCustomBpm?: boolean;
+    /**
+     * 
      * @type {string}
      * @memberof TrackFull
      */
@@ -602,6 +608,7 @@ export function TrackFullFromJSONTyped(json: any, ignoreDiscriminator: boolean):
         'audioUploadId': !exists(json, 'audio_upload_id') ? undefined : json['audio_upload_id'],
         'previewStartSeconds': !exists(json, 'preview_start_seconds') ? undefined : json['preview_start_seconds'],
         'bpm': !exists(json, 'bpm') ? undefined : json['bpm'],
+        'isCustomBpm': !exists(json, 'is_custom_bpm') ? undefined : json['is_custom_bpm'],
         'musicalKey': !exists(json, 'musical_key') ? undefined : json['musical_key'],
         'audioAnalysisErrorCount': !exists(json, 'audio_analysis_error_count') ? undefined : json['audio_analysis_error_count'],
         'ddexReleaseIds': !exists(json, 'ddex_release_ids') ? undefined : json['ddex_release_ids'],
@@ -682,6 +689,7 @@ export function TrackFullToJSON(value?: TrackFull | null): any {
         'audio_upload_id': value.audioUploadId,
         'preview_start_seconds': value.previewStartSeconds,
         'bpm': value.bpm,
+        'is_custom_bpm': value.isCustomBpm,
         'musical_key': value.musicalKey,
         'audio_analysis_error_count': value.audioAnalysisErrorCount,
         'ddex_release_ids': value.ddexReleaseIds,
