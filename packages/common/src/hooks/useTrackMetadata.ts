@@ -63,7 +63,7 @@ export const useTrackMetadata = ({
       id: TrackMetadataType.RELEASE_DATE,
       value: formatDate(releaseDate ?? ''),
       label: 'Released',
-      isHidden: isUnlisted || !releaseDate
+      isHidden: isUnlisted
     },
     {
       id: TrackMetadataType.MOOD,
