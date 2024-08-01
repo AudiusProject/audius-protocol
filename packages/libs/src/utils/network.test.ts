@@ -1,6 +1,5 @@
 import assert from 'assert'
 
-import { describe, it } from 'mocha'
 import nock from 'nock'
 
 import { timeRequests } from './network'
