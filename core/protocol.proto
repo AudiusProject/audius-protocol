@@ -1,5 +1,7 @@
 syntax = "proto3";
 
+import "google/protobuf/timestamp.proto";
+
 package protocol;
 
 option go_package = "./proto;proto";
@@ -7,18 +9,18 @@ option go_package = "./proto;proto";
 service Protocol {
   rpc SubmitEvent (SubmitEventRequest) returns (SubmitEventResponse);
   rpc GetEvent (GetEventRequest) returns (GetEventResponse);
-  rpc SayHello (HelloRequest) returns (HelloResponse);
+  rpc Ping (PingRequest) returns (PingResponse);
 }
 
 message Event {
+  string signature = 1;
   oneof body {
     PlaysEvent plays = 1000;
   }
 }
 
 message SubmitEventRequest {
-  string signature = 1;
-  Event event = 2;
+  Event event = 1;
 }
 
 message SubmitEventResponse {
@@ -34,19 +36,19 @@ message GetEventResponse {
 }
 
 message PlaysEvent {
-  // track id to play count
-  map<string, PlayRecord> plays = 1;
+  repeated Listen listens = 1;
 }
 
-message PlayRecord {
+message Listen {
   string listenerAddress = 1;
-  int32 count = 2;
+  string track_id = 2;
+  google.protobuf.Timestamp timestamp = 3;
+  string signature = 4;
 }
 
-message HelloRequest {
-  string name = 1;
+message PingRequest {
 }
 
-message HelloResponse {
+message PingResponse {
   string message = 1;
 }

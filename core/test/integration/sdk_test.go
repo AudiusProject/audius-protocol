@@ -22,8 +22,8 @@ var _ = Describe("Sdk", func() {
 		Expect(err).To(BeNil())
 
 		// test grpc hello route
-		res, err := sdk.SayHello(ctx, &proto.HelloRequest{Name: "tahu"})
+		res, err := sdk.Ping(ctx, &proto.PingRequest{})
 		Expect(err).To(BeNil())
-		Expect(res.GetMessage()).To(Equal("Hello tahu"))
+		Expect(res.GetMessage()).To(Equal("pong"))
 	})
 })

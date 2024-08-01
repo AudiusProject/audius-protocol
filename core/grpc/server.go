@@ -46,7 +46,7 @@ func (s *GRPCServer) SubmitEvent(_ context.Context, req *proto.SubmitEventReques
 	// example of message type switching
 	switch body := req.Event.GetBody().(type) {
 	case *proto.Event_Plays:
-		s.logger.Infof("plays event %v", body.Plays.GetPlays())
+		s.logger.Infof("plays event %v", body.Plays.GetListens())
 	default:
 		s.logger.Warn("unknown event type")
 	}
@@ -92,6 +92,6 @@ func (s *GRPCServer) GetEvent(ctx context.Context, req *proto.GetEventRequest) (
 	return res, nil
 }
 
-func (s *GRPCServer) SayHello(ctx context.Context, req *proto.HelloRequest) (*proto.HelloResponse, error) {
-	return &proto.HelloResponse{Message: "Hello " + req.Name}, nil
+func (s *GRPCServer) Ping(ctx context.Context, req *proto.PingRequest) (*proto.PingResponse, error) {
+	return &proto.PingResponse{Message: "pong"}, nil
 }

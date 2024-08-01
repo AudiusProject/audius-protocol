@@ -11,6 +11,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	protob "google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 var _ = Describe("Plays", func() {
@@ -20,20 +21,31 @@ var _ = Describe("Plays", func() {
 		sdk, err := sdk.NewSdk(sdk.WithGrpcendpoint("0.0.0.0:6612"))
 		Expect(err).To(BeNil())
 
-		plays := make(map[string]*proto.PlayRecord)
-		plays["trackid1"] = &proto.PlayRecord{
-			ListenerAddress: uuid.NewString(),
-			Count:           5,
-		}
-		plays["trackid2"] = &proto.PlayRecord{
-			ListenerAddress: uuid.NewString(),
-			Count:           10,
+		listens := []*proto.Listen{
+			&proto.Listen{
+				ListenerAddress: uuid.NewString(),
+				TrackId:         uuid.NewString(),
+				Timestamp:       timestamppb.New(time.Now()),
+				Signature:       "todo: impl",
+			},
+			&proto.Listen{
+				ListenerAddress: uuid.NewString(),
+				TrackId:         uuid.NewString(),
+				Timestamp:       timestamppb.New(time.Now()),
+				Signature:       "todo: impl",
+			},
+			&proto.Listen{
+				ListenerAddress: uuid.NewString(),
+				TrackId:         uuid.NewString(),
+				Timestamp:       timestamppb.New(time.Now()),
+				Signature:       "todo: impl",
+			},
 		}
 
 		playEvent := &proto.Event{
 			Body: &proto.Event_Plays{
 				Plays: &proto.PlaysEvent{
-					Plays: plays,
+					Listens: listens,
 				},
 			},
 		}
@@ -42,9 +54,7 @@ var _ = Describe("Plays", func() {
 		Expect(err).To(BeNil())
 
 		req := &proto.SubmitEventRequest{
-			// TODO: impl
-			Signature: "",
-			Event:     playEvent,
+			Event: playEvent,
 		}
 
 		submitRes, err := sdk.SubmitEvent(ctx, req)

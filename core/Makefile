@@ -1,3 +1,7 @@
+default::
+	make down
+	make up
+
 dev-discovery-1::
 	@go run main.go -env-file=./infra/dev_config/discovery-one.env
 
