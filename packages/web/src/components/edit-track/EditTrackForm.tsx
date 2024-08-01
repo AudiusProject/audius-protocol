@@ -1,8 +1,9 @@
-import { useCallback, useContext, useState } from 'react'
+import { useCallback, useContext, useEffect, useState } from 'react'
 
 import { useFeatureFlag } from '@audius/common/hooks'
 import { TrackMetadataFormSchema } from '@audius/common/schemas'
 import { FeatureFlags } from '@audius/common/services'
+import { TrackMetadataForUpload } from '@audius/common/store'
 import { Nullable } from '@audius/common/utils'
 import {
   IconCaretLeft,
@@ -36,6 +37,7 @@ import { EditFormScrollContext } from 'pages/edit-page/EditTrackPage'
 import styles from './EditTrackForm.module.css'
 import { ReleaseTrackConfirmationModal } from './ReleaseTrackConfirmationModal'
 import { PreviewButton } from './components/PreviewButton'
+import { getTrackFieldName } from './hooks'
 import { TrackEditFormValues } from './types'
 
 const formId = 'edit-track-form'
@@ -138,6 +140,7 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
             hideContainer={hideContainer}
             onDeleteTrack={onDeleteTrack}
             disableNavigationPrompt={disableNavigationPrompt}
+            updatedArtwork={initialTrackValues.artwork}
           />
           {!isUpload && confirmDrawerType ? (
             <ReleaseTrackConfirmationModal
@@ -158,6 +161,7 @@ const TrackEditForm = (
     hideContainer?: boolean
     onDeleteTrack?: () => void
     disableNavigationPrompt?: boolean
+    updatedArtwork?: TrackMetadataForUpload['artwork']
   }
 ) => {
   const {
@@ -166,7 +170,8 @@ const TrackEditForm = (
     isSubmitting,
     onDeleteTrack,
     disableNavigationPrompt = false,
-    hideContainer = false
+    hideContainer = false,
+    updatedArtwork
   } = props
   const isMultiTrack = values.trackMetadatas.length > 1
   const isUpload = values.trackMetadatas[0].track_id === undefined
@@ -180,6 +185,16 @@ const TrackEditForm = (
   const { isEnabled: isHiddenPaidScheduledEnabled } = useFeatureFlag(
     FeatureFlags.HIDDEN_PAID_SCHEDULED
   )
+  const [, , { setValue: setArtworkValue }] = useField(
+    getTrackFieldName(0, 'artwork')
+  )
+  useEffect(() => {
+    setArtworkValue(updatedArtwork)
+    // Url is the only thing that we care about changing inside artwork or else
+    // we will listen to all changes from the user, rather than just a new image from
+    // the backend.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [updatedArtwork?.url, setArtworkValue])
 
   return (
     <Form id={formId}>
