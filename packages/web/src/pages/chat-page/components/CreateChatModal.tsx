@@ -1,6 +1,8 @@
 import { useCallback, useEffect } from 'react'
 
+import { useFeatureFlag } from '@audius/common/hooks'
 import { User } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import {
   accountSelectors,
   chatActions,
@@ -14,14 +16,16 @@ import {
   followersUserListSelectors,
   FOLLOWERS_USER_LIST_TAG
 } from '@audius/common/store'
-import { IconCompose } from '@audius/harmony'
+import { Flex, IconCompose, Paper } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 
 import { useSelector } from 'common/hooks/useSelector'
+import FeatureFlag from 'components/feature-flag/FeatureFlag'
 import { SearchUsersModal } from 'components/search-users-modal/SearchUsersModal'
 import { CreateChatUserResult } from 'pages/chat-page/components/CreateChatUserResult'
 
 import { CreateChatEmptyResults } from './CreateChatEmptyResults'
+import { TargetedMessageCTA } from './TargetedMessageCTA'
 
 const messages = {
   title: 'New Message'
@@ -33,6 +37,10 @@ const { getUserList: getChatsUserList } = chatSelectors
 const { fetchBlockers, fetchMoreChats } = chatActions
 
 export const CreateChatModal = () => {
+  const { isEnabled: isOneToManyDmsEnabled } = useFeatureFlag(
+    FeatureFlags.ONE_TO_MANY_DMS
+  )
+
   const dispatch = useDispatch()
   const currentUser = useSelector(getAccountUser)
   const { isOpen, onClose, onClosed, data } = useCreateChatModal()
@@ -108,6 +116,7 @@ export const CreateChatModal = () => {
         onClose={onClose}
         onClosed={onClosed}
         onCancel={handleCancel}
+        footer={isOneToManyDmsEnabled ? <TargetedMessageCTA /> : undefined}
       />
     </>
   )
