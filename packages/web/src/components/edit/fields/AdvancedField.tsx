@@ -34,6 +34,7 @@ import { TextField } from 'components/form-fields'
 import { SegmentedControlField } from 'components/form-fields/SegmentedControlField'
 import layoutStyles from 'components/layout/layout.module.css'
 import { Tooltip } from 'components/tooltip'
+import { useBpmMaskedInput } from 'hooks/useBpmMaskedInput'
 import { env } from 'services/env'
 
 import styles from './AdvancedField.module.css'
@@ -256,7 +257,7 @@ export const AdvancedField = ({ isUpload }: AdvancedFieldProps) => {
         ).licenseType
       )
       const bpmValue = get(values, BPM)
-      setBpm(bpmValue ? Number(bpmValue) : bpm)
+      setBpm(typeof bpmValue !== 'undefined' ? Number(bpmValue) : bpm)
       setMusicalKey(get(values, MUSICAL_KEY) ?? musicalKey)
       setReleaseDate(get(values, RELEASE_DATE) ?? releaseDate)
     },
@@ -354,6 +355,12 @@ const AdvancedModalFields = ({ isUpload }: { isUpload?: boolean }) => {
   const [{ value: derivativeWorks }] = useField<boolean>(DERIVATIVE_WORKS)
   const [{ value: isHidden }] = useField<boolean>(IS_UNLISTED)
   const [, , { setValue: setBpmValue }] = useField<string>(BPM)
+
+  const bpmMaskedInputProps = useBpmMaskedInput({
+    onChange: (e) => {
+      setBpmValue(e.target.value)
+    }
+  })
 
   const { licenseType, licenseDescription } = computeLicense(
     allowAttribution,
@@ -501,15 +508,9 @@ const AdvancedModalFields = ({ isUpload }: { isUpload?: boolean }) => {
                 <TextField
                   name={BPM}
                   type='number'
-                  onChange={(e) => {
-                    const { value } = e.nativeEvent.target as HTMLInputElement
-
-                    if (value === '' || isBpmValid(value)) {
-                      setBpmValue(value)
-                    }
-                  }}
                   label={messages.bpm.label}
                   autoComplete='off'
+                  {...bpmMaskedInputProps}
                 />
               </Flex>
               <Flex direction='column' w='100%'>
