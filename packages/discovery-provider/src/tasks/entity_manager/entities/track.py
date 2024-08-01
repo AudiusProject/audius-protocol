@@ -413,18 +413,28 @@ def populate_track_record_metadata(track_record: Track, track_metadata, handle, 
                 ]
 
         elif key == "bpm":
-            if "bpm" in track_metadata and track_metadata["bpm"]:
-                try:
-                    track_record.bpm = float(track_metadata["bpm"])  # type: ignore
-                except ValueError:
-                    continue
+            if "bpm" in track_metadata:
+                bpm_value = track_metadata["bpm"]
+                if bpm_value is None:
+                    track_record.bpm = None
+                else:
+                    try:
+                        bpm_float = float(bpm_value)
+                        if bpm_float != 0:
+                            track_record.bpm = bpm_float  # type: ignore
+                    except (ValueError, TypeError):
+                        continue
 
         elif key == "musical_key":
-            if "musical_key" in track_metadata and track_metadata["musical_key"]:
-                if isinstance(
-                    track_metadata["musical_key"], str
-                ) and is_valid_musical_key(track_metadata["musical_key"]):
-                    track_record.musical_key = track_metadata["musical_key"]
+            if "musical_key" in track_metadata:
+                key_value = track_metadata["musical_key"]
+                if key_value is None:
+                    track_record.musical_key = None
+                else:
+                    if isinstance(
+                        track_metadata["musical_key"], str
+                    ) and is_valid_musical_key(track_metadata["musical_key"]):
+                        track_record.musical_key = track_metadata["musical_key"]
 
         else:
             # For most fields, update the track_record when the corresponding field exists
