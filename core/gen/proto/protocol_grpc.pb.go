@@ -21,6 +21,7 @@ const _ = grpc.SupportPackageIsVersion8
 const (
 	Protocol_SubmitEvent_FullMethodName = "/protocol.Protocol/SubmitEvent"
 	Protocol_GetEvent_FullMethodName    = "/protocol.Protocol/GetEvent"
+	Protocol_SayHello_FullMethodName    = "/protocol.Protocol/SayHello"
 )
 
 // ProtocolClient is the client API for Protocol service.
@@ -29,6 +30,7 @@ const (
 type ProtocolClient interface {
 	SubmitEvent(ctx context.Context, in *SubmitEventRequest, opts ...grpc.CallOption) (*SubmitEventResponse, error)
 	GetEvent(ctx context.Context, in *GetEventRequest, opts ...grpc.CallOption) (*GetEventResponse, error)
+	SayHello(ctx context.Context, in *HelloRequest, opts ...grpc.CallOption) (*HelloResponse, error)
 }
 
 type protocolClient struct {
@@ -59,12 +61,23 @@ func (c *protocolClient) GetEvent(ctx context.Context, in *GetEventRequest, opts
 	return out, nil
 }
 
+func (c *protocolClient) SayHello(ctx context.Context, in *HelloRequest, opts ...grpc.CallOption) (*HelloResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(HelloResponse)
+	err := c.cc.Invoke(ctx, Protocol_SayHello_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ProtocolServer is the server API for Protocol service.
 // All implementations must embed UnimplementedProtocolServer
 // for forward compatibility
 type ProtocolServer interface {
 	SubmitEvent(context.Context, *SubmitEventRequest) (*SubmitEventResponse, error)
 	GetEvent(context.Context, *GetEventRequest) (*GetEventResponse, error)
+	SayHello(context.Context, *HelloRequest) (*HelloResponse, error)
 	mustEmbedUnimplementedProtocolServer()
 }
 
@@ -77,6 +90,9 @@ func (UnimplementedProtocolServer) SubmitEvent(context.Context, *SubmitEventRequ
 }
 func (UnimplementedProtocolServer) GetEvent(context.Context, *GetEventRequest) (*GetEventResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetEvent not implemented")
+}
+func (UnimplementedProtocolServer) SayHello(context.Context, *HelloRequest) (*HelloResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SayHello not implemented")
 }
 func (UnimplementedProtocolServer) mustEmbedUnimplementedProtocolServer() {}
 
@@ -127,6 +143,24 @@ func _Protocol_GetEvent_Handler(srv interface{}, ctx context.Context, dec func(i
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Protocol_SayHello_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(HelloRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ProtocolServer).SayHello(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Protocol_SayHello_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ProtocolServer).SayHello(ctx, req.(*HelloRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Protocol_ServiceDesc is the grpc.ServiceDesc for Protocol service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -141,6 +175,10 @@ var Protocol_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetEvent",
 			Handler:    _Protocol_GetEvent_Handler,
+		},
+		{
+			MethodName: "SayHello",
+			Handler:    _Protocol_SayHello_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

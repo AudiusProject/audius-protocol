@@ -5,8 +5,9 @@ package protocol;
 option go_package = "./proto;proto";
 
 service Protocol {
-  rpc SubmitEvent (SubmitEventRequest) returns (SubmitEventResponse) {}
-  rpc GetEvent (GetEventRequest) returns (GetEventResponse) {}
+  rpc SubmitEvent (SubmitEventRequest) returns (SubmitEventResponse);
+  rpc GetEvent (GetEventRequest) returns (GetEventResponse);
+  rpc SayHello (HelloRequest) returns (HelloResponse);
 }
 
 message Event {
@@ -40,4 +41,12 @@ message PlaysEvent {
 message PlayRecord {
   string listenerAddress = 1;
   int32 count = 2;
+}
+
+message HelloRequest {
+  string name = 1;
+}
+
+message HelloResponse {
+  string message = 1;
 }

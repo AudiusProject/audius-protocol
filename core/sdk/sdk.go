@@ -5,6 +5,8 @@ package sdk
 import (
 	"github.com/AudiusProject/audius-protocol/core/gen/proto"
 	"github.com/cometbft/cometbft/rpc/client/http"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 type Sdk struct {
@@ -28,15 +30,15 @@ func initSdk(sdk *Sdk) error {
 	// TODO: add node selection logic here, based on environement, if endpoint not configured
 
 	// initialize grpc client
-	// grpcConn, err := grpc.NewClient(sdk.GRPCEndpoint)
-	// if err != nil {
-	// 	return err
-	// }
+	grpcConn, err := grpc.NewClient(sdk.GRPCEndpoint, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		return err
+	}
 
-	// // TODO: add signing middleware here if privkey
+	// TODO: add signing middleware here if privkey
 
-	// grpcClient := proto.NewProtocolClient(grpcConn)
-	// sdk.ProtocolClient = grpcClient
+	grpcClient := proto.NewProtocolClient(grpcConn)
+	sdk.ProtocolClient = grpcClient
 
 	jrpcConn, err := http.New(sdk.JRPCEndpoint)
 	if err != nil {
