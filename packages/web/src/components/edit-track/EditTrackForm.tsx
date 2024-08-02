@@ -1,8 +1,9 @@
-import { useCallback, useContext, useState } from 'react'
+import { useCallback, useContext, useEffect, useState } from 'react'
 
 import { useFeatureFlag } from '@audius/common/hooks'
 import { TrackMetadataFormSchema } from '@audius/common/schemas'
 import { FeatureFlags } from '@audius/common/services'
+import { TrackMetadataForUpload } from '@audius/common/store'
 import { Nullable } from '@audius/common/utils'
 import {
   IconCaretLeft,
@@ -36,6 +37,7 @@ import { EditFormScrollContext } from 'pages/edit-page/EditTrackPage'
 import styles from './EditTrackForm.module.css'
 import { ReleaseTrackConfirmationModal } from './ReleaseTrackConfirmationModal'
 import { PreviewButton } from './components/PreviewButton'
+import { getTrackFieldName } from './hooks'
 import { TrackEditFormValues } from './types'
 
 const formId = 'edit-track-form'
@@ -66,6 +68,7 @@ type EditTrackFormProps = {
   onSubmit: (values: TrackEditFormValues) => void
   onDeleteTrack?: () => void
   hideContainer?: boolean
+  disableNavigationPrompt?: boolean
 }
 
 const EditFormValidationSchema = z.object({
@@ -73,7 +76,13 @@ const EditFormValidationSchema = z.object({
 })
 
 export const EditTrackForm = (props: EditTrackFormProps) => {
-  const { initialValues, onSubmit, onDeleteTrack, hideContainer } = props
+  const {
+    initialValues,
+    onSubmit,
+    onDeleteTrack,
+    hideContainer,
+    disableNavigationPrompt
+  } = props
   const [isReleaseConfirmationOpen, setIsReleaseConfirmationOpen] =
     useState(false)
   const [confirmDrawerType, setConfirmDrawerType] =
@@ -90,7 +99,7 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
         onSubmit(values)
       } else {
         const usersMayLoseAccess =
-          !initiallyHidden && values.trackMetadatas[0].is_unlisted
+          !isUpload && !initiallyHidden && values.trackMetadatas[0].is_unlisted
         const isToBePublished =
           !isUpload && initiallyHidden && !values.trackMetadatas[0].is_unlisted
         const showConfirmDrawer = usersMayLoseAccess || isToBePublished
@@ -130,8 +139,10 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
             {...props}
             hideContainer={hideContainer}
             onDeleteTrack={onDeleteTrack}
+            disableNavigationPrompt={disableNavigationPrompt}
+            updatedArtwork={initialTrackValues.artwork}
           />
-          {confirmDrawerType ? (
+          {!isUpload && confirmDrawerType ? (
             <ReleaseTrackConfirmationModal
               isOpen={isReleaseConfirmationOpen}
               onClose={() => setIsReleaseConfirmationOpen(false)}
@@ -149,6 +160,8 @@ const TrackEditForm = (
   props: FormikProps<TrackEditFormValues> & {
     hideContainer?: boolean
     onDeleteTrack?: () => void
+    disableNavigationPrompt?: boolean
+    updatedArtwork?: TrackMetadataForUpload['artwork']
   }
 ) => {
   const {
@@ -156,7 +169,9 @@ const TrackEditForm = (
     dirty,
     isSubmitting,
     onDeleteTrack,
-    hideContainer = false
+    disableNavigationPrompt = false,
+    hideContainer = false,
+    updatedArtwork
   } = props
   const isMultiTrack = values.trackMetadatas.length > 1
   const isUpload = values.trackMetadatas[0].track_id === undefined
@@ -170,11 +185,21 @@ const TrackEditForm = (
   const { isEnabled: isHiddenPaidScheduledEnabled } = useFeatureFlag(
     FeatureFlags.HIDDEN_PAID_SCHEDULED
   )
+  const [, , { setValue: setArtworkValue }] = useField(
+    getTrackFieldName(0, 'artwork')
+  )
+  useEffect(() => {
+    setArtworkValue(updatedArtwork)
+    // Url is the only thing that we care about changing inside artwork or else
+    // we will listen to all changes from the user, rather than just a new image from
+    // the backend.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [updatedArtwork?.url, setArtworkValue])
 
   return (
     <Form id={formId}>
       <NavigationPrompt
-        when={dirty && !isSubmitting}
+        when={dirty && !isSubmitting && !disableNavigationPrompt}
         messages={
           isUpload
             ? messages.uploadNavigationPrompt

@@ -29,6 +29,7 @@ export const EditButton = (props: EditButtonProps) => {
       <IconButton
         color='subdued'
         icon={IconPencil}
+        size='2xl'
         aria-label={messages.edit(is_album)}
         asChild
         {...other}

@@ -28,7 +28,7 @@ def refresh(redis, db, monitor):
     # Invoke the monitor function with kwargs for db and redis.
     # This allows any monitor to access the db and/or redis connection.
     value = monitor[monitor_names.func](db=db, redis=redis)
-    logger.info(
+    logger.debug(
         f"monitoring_queue.py | Computed value for {monitor[monitor_names.name]}"
     )
 
@@ -69,16 +69,16 @@ def monitoring_queue_task(self):
                 try:
                     refresh(redis, db, monitor)
                 except Exception as e:
-                    logger.warning(
+                    logger.error(
                         f"monitoring_queue.py | Error computing {monitor['name']} {e}"
                     )
 
             end_time = time.time()
-            logger.info(
+            logger.debug(
                 f"monitoring_queue.py | Finished monitoring_queue in {end_time - start_time} seconds"
             )
         else:
-            logger.info("monitoring_queue.py | Failed to acquire lock")
+            logger.debug("monitoring_queue.py | Failed to acquire lock")
     except Exception as e:
         logger.error("monitoring_queue.py | Fatal error in main loop", exc_info=True)
         raise e

@@ -70,7 +70,7 @@ export type CollectionMetadata = {
   stream_conditions: Nullable<AccessConditions>
   access: AccessPermissions
   ddex_release_ids?: any | null
-  artists?: [ResourceContributor] | null
+  artists?: ResourceContributor[] | null
   copyright_line?: Copyright | null
   producer_copyright_line?: Copyright | null
   parental_warning_type?: string | null

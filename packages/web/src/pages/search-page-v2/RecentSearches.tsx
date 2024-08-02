@@ -31,7 +31,7 @@ import { Avatar } from 'components/avatar'
 import { UserLink } from 'components/link'
 import { MountPlacement } from 'components/types'
 import { useCollectionCoverArt2 } from 'hooks/useCollectionCoverArt'
-import { useMedia } from 'hooks/useMedia'
+import { useIsMobile } from 'hooks/useIsMobile'
 import { useTrackCoverArt2 } from 'hooks/useTrackCoverArt'
 import { SEARCH_PAGE, profilePage } from 'utils/route'
 
@@ -264,7 +264,7 @@ const itemKindByCategory = {
 export const RecentSearches = () => {
   const searchItems = useSelector(getSearchHistory)
   const dispatch = useDispatch()
-  const { isMobile } = useMedia()
+  const isMobile = useIsMobile()
   const routeMatch = useRouteMatch<{ category: string }>(SEARCH_PAGE)
   const category = routeMatch?.params.category
 
@@ -331,6 +331,8 @@ export const RecentSearches = () => {
       pv='xl'
       w='100%'
       css={{ maxWidth: '688px' }}
+      backgroundColor='white'
+      border='default'
       direction='column'
       gap='l'
     >

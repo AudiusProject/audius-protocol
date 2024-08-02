@@ -336,7 +336,7 @@ def entity_manager_update(
                     ):
                         tip_reaction(params)
 
-                    logger.info("process transaction")  # log event context
+                    logger.debug("process transaction")  # log event context
                 except IndexingValidationError as e:
                     # swallow exception to keep indexing
                     logger.error(f"failed to process transaction error {e}")
@@ -376,7 +376,7 @@ def entity_manager_update(
             len(new_records["Track"]), {"entity_type": EntityType.TRACK.value}
         )
 
-        logger.info(
+        logger.debug(
             f"entity_manager.py | Completed with {num_total_changes} total changes"
         )
 

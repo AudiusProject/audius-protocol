@@ -52,13 +52,11 @@ integration-test:
           cd ~/audius-protocol/packages/libs
           . ~/.profile
           audius-compose connect --nopass
-          ./scripts/check-generated-types.sh || true
-          echo 'WARNING: errors have been ignored due to test flakiness.'
-          echo 'Please manually inspect output.'
-    - run: 
+          ./scripts/check-generated-types.sh
+    - run:
         name: install playwright
         command: sudo NEEDRESTART_MODE=l PLAYWRIGHT_BROWSERS_PATH=/home/circleci/.cache/ms-playwright npx playwright install --with-deps
-    - run: 
+    - run:
         name: run playwright tests
         command: |
           cd packages/web 

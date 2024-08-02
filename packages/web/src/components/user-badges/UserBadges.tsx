@@ -101,19 +101,16 @@ const UserBadges = ({
 
   if (!hasContent) return null
 
-  if (inline) {
-    return (
-      <span className={cn(styles.inlineContainer, className)}>
-        {(isVerifiedOverride ?? isVerified) && (
-          <IconVerified height={badgeSize} width={badgeSize} />
-        )}
-        {audioBadge &&
-          cloneElement(audioBadge, { height: badgeSize, width: badgeSize })}
-      </span>
-    )
-  }
   return (
-    <span className={cn(styles.container, className)}>
+    <span
+      className={cn(
+        {
+          [styles.inlineContainer]: inline,
+          [styles.container]: !inline
+        },
+        className
+      )}
+    >
       {(isVerifiedOverride ?? isVerified) && (
         <IconVerified height={badgeSize} width={badgeSize} />
       )}

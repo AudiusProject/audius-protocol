@@ -157,22 +157,6 @@
   margin: var(--harmony-unit-2) 0;
 }
 
-.artistPickLabelContainer {
-  display: flex;
-  align-items: center;
-  flex: 0 0 auto;
-  gap: var(--harmony-unit-1);
-  color: var(--harmony-n-400);
-}
-
-.artistPickIcon {
-  height: var(--harmony-unit-4);
-  width: var(--harmony-unit-4);
-}
-.artistPickIcon path {
-  fill: var(--harmony-n-400);
-}
-
 .stats {
   align-items: center;
   display: flex;
@@ -225,20 +209,6 @@
 .show {
   opacity: 1;
   transition: opacity ease-in-out 0.5s;
-}
-
-.rankContainer {
-  color: var(--harmony-secondary);
-  display: flex;
-  align-items: center;
-  gap: var(--harmony-unit-1);
-  /* Rank icon should be slightly closer to edge, so this
-  moves it into the left padding */
-  margin-left: calc(-1 * var(--harmony-unit-half));
-}
-
-.rankContainer path {
-  fill: var(--harmony-secondary);
 }
 
 .isHidden {

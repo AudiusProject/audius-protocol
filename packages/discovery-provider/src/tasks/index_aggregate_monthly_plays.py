@@ -67,7 +67,7 @@ def _index_aggregate_monthly_plays(session):
     )
 
     if not new_id_checkpoint or new_id_checkpoint == prev_id_checkpoint:
-        logger.info(
+        logger.debug(
             "index_aggregate_monthly_plays.py | Skip update because there are no new plays"
         )
         return
@@ -75,7 +75,7 @@ def _index_aggregate_monthly_plays(session):
     # update aggregate monthly plays with new plays that came after the prev_id_checkpoint
     # group into monthly buckets
     # insert / update those buckets into table
-    logger.info(
+    logger.debug(
         f"index_aggregate_monthly_plays.py | Updating {AGGREGATE_MONTHLY_PLAYS_TABLE_NAME}"
     )
 

@@ -1,10 +1,12 @@
+import { Portal } from '@gorhom/portal'
+
 import { ConfirmationDrawer } from 'app/components/drawers'
 
 const messages = {
   header: 'Confirm Update',
   description:
     "You're about to change the audience for your content.  This update may cause others to lose the ability to listen and share.",
-  cancel: 'Go Cancel',
+  cancel: 'Cancel',
   confirm: 'Update Audience'
 }
 
@@ -17,12 +19,14 @@ export const EditPriceAndAudienceConfirmationDrawer = (
   props: EditPriceAndAudienceConfirmationDrawerProps
 ) => {
   return (
-    <ConfirmationDrawer
-      variant='affirmative'
-      modalName='EditPriceAndAudienceConfirmation'
-      onConfirm={props.onConfirm}
-      onCancel={props.onCancel}
-      messages={messages}
-    />
+    <Portal hostName='EditPriceAndAudienceConfirmation'>
+      <ConfirmationDrawer
+        variant='affirmative'
+        modalName='EditPriceAndAudienceConfirmation'
+        onConfirm={props.onConfirm}
+        onCancel={props.onCancel}
+        messages={messages}
+      />
+    </Portal>
   )
 }

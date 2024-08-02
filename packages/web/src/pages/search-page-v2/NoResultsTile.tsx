@@ -1,6 +1,7 @@
 import { IconSearch, Paper, Text } from '@audius/harmony'
 
-import { useMedia } from 'hooks/useMedia'
+import { useIsMobile } from 'hooks/useIsMobile'
+
 const messages = {
   noResults: 'No Results',
   description:
@@ -8,7 +9,7 @@ const messages = {
 }
 
 export const NoResultsTile = () => {
-  const { isMobile } = useMedia()
+  const isMobile = useIsMobile()
   return (
     <Paper
       pv={isMobile ? '2xl' : '3xl'}

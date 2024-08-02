@@ -26,7 +26,9 @@ import {
   DOWNLOAD_CONDITIONS,
   PREVIEW,
   PRICE,
-  ALBUM_TRACK_PRICE
+  ALBUM_TRACK_PRICE,
+  GateKeeper,
+  LAST_GATE_KEEPER
 } from '../../types'
 
 const messagesV1 = {
@@ -87,7 +89,7 @@ const messagesV2 = {
   },
   preview: {
     title: 'Track Preview',
-    description: 'Specify when you want your 15 second track preview to start.'
+    description: 'Specify when you want your 30 second track preview to start.'
   },
   seconds: 'Seconds'
 }
@@ -114,6 +116,9 @@ export const UsdcPurchaseFields = (props: TrackAvailabilityFieldsProps) => {
   const { disabled, isAlbum, isUpload } = props
   const [{ value: downloadConditions }] =
     useField<Nullable<AccessConditions>>(DOWNLOAD_CONDITIONS)
+  const [{ value: lastGateKeeper }] = useField<GateKeeper>(LAST_GATE_KEEPER)
+  const showPremiumDownloadsMessage =
+    downloadConditions && lastGateKeeper.access === 'stemsAndDownloads'
 
   const messages = useMessages(
     messagesV1,
@@ -129,6 +134,7 @@ export const UsdcPurchaseFields = (props: TrackAvailabilityFieldsProps) => {
             disabled={disabled}
             messaging={messages.price.albumPrice}
             fieldName={PRICE}
+            prefillValue={500}
           />
           {isUpload && (
             <PriceField
@@ -139,9 +145,6 @@ export const UsdcPurchaseFields = (props: TrackAvailabilityFieldsProps) => {
             />
           )}
           <input type='hidden' name={PREVIEW} value='0' />
-          {downloadConditions && !isAlbum ? (
-            <Hint icon={IconInfo}>{messages.premiumDownloads}</Hint>
-          ) : null}
         </>
       ) : (
         <>
@@ -149,9 +152,10 @@ export const UsdcPurchaseFields = (props: TrackAvailabilityFieldsProps) => {
             disabled={disabled}
             messaging={messages.price.standaloneTrackPrice}
             fieldName={PRICE}
+            prefillValue={100}
           />
           <PreviewField disabled={disabled} />
-          {downloadConditions ? (
+          {showPremiumDownloadsMessage ? (
             <Hint icon={IconInfo}>{messages.premiumDownloads}</Hint>
           ) : null}
         </>

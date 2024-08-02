@@ -99,10 +99,10 @@ const CollectionOverflowMenuDrawer = ({ render }: Props) => {
       navigation?.push('Profile', { handle })
     },
     [OverflowAction.EDIT_ALBUM]: () => {
-      navigation?.push('EditPlaylist', { id })
+      navigation?.push('EditCollection', { id })
     },
     [OverflowAction.EDIT_PLAYLIST]: () => {
-      navigation?.push('EditPlaylist', { id })
+      navigation?.push('EditCollection', { id })
     },
     [OverflowAction.DELETE_ALBUM]: () =>
       dispatch(openDeletePlaylist({ playlistId: id })),

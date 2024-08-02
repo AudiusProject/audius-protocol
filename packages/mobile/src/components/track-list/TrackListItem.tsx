@@ -237,9 +237,9 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
   const isPlaying = useSelector((state) => {
     return isActive && getPlaying(state)
   })
+  const isPurchaseGated = isContentUSDCPurchaseGated(streamConditions)
   // Unlike other gated tracks, USDC purchase gated tracks are playable because they have previews
-  const isPlayable =
-    !isDeleted && (!isLocked || isContentUSDCPurchaseGated(streamConditions))
+  const isPlayable = !isDeleted && (!isLocked || isPurchaseGated)
 
   const messages = getMessages({ isDeleted })
   const styles = useStyles()
@@ -292,7 +292,7 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
           ? OverflowAction.UNREPOST
           : OverflowAction.REPOST
         : null,
-      !isTrackOwner && isLocked && !isDeleted
+      !isTrackOwner && isLocked && isPurchaseGated && !isDeleted
         ? OverflowAction.PURCHASE_TRACK
         : null,
       isTrackOwner && !ddexApp ? OverflowAction.ADD_TO_ALBUM : null,
@@ -334,7 +334,8 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
     isContextPlaylistOwner,
     dispatch,
     track_id,
-    contextPlaylistId
+    contextPlaylistId,
+    isPurchaseGated
   ])
 
   const handlePressOverflow = (e: NativeSyntheticEvent<NativeTouchEvent>) => {
@@ -414,7 +415,7 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
 
               {!isDeleted && (
                 <View style={styles.downloadIndicator}>
-                  <TrackDownloadStatusIndicator trackId={track_id} size={16} />
+                  <TrackDownloadStatusIndicator trackId={track_id} size='s' />
                 </View>
               )}
             </View>

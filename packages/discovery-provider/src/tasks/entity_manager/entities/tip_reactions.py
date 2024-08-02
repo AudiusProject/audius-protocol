@@ -45,7 +45,7 @@ def validate_tip_reaction(params: ManageEntityParameters):
 
 
 def tip_reaction(params: ManageEntityParameters):
-    logger.info("tip_reactions.py | indexing tip reaction")
+    logger.debug("tip_reactions.py | indexing tip reaction")
     try:
         validate_tip_reaction(params)
 

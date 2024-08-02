@@ -64,7 +64,7 @@ export const DownloadStatusRowDisplay = (
       alignItems='center'
     >
       <Flex direction='row' gap='s' alignItems='center'>
-        <DownloadStatusIndicator status={downloadStatus} size={16} />
+        <DownloadStatusIndicator status={downloadStatus} size='s' />
         <Text variant='title' size='s' color={getTextColor()}>
           {getMessage()}
         </Text>

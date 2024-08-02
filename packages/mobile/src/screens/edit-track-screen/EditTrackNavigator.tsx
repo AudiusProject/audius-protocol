@@ -1,17 +1,19 @@
+import { PortalHost } from '@gorhom/portal'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 
-import { GatedContentUploadPromptDrawer } from 'app/components/gated-content-upload-prompt-drawer'
+import {
+  PriceAndAudienceScreen,
+  priceAndAudienceScreenName
+} from 'app/components/edit/PriceAndAudienceField'
+import { VisibilityScreen } from 'app/components/edit/VisibilityField'
 import { SupportersInfoDrawer } from 'app/components/supporters-info-drawer'
 import { useAppScreenOptions } from 'app/screens/app-screen/useAppScreenOptions'
 
 import { messages as completeMessages } from '../upload-screen/screens/CompleteTrackScreen'
 
 import { EditTrackForm } from './EditTrackForm'
-import { priceAndAudienceScreenName } from './fields'
-import { VisibilityScreen } from './fields/VisibilityField'
 import {
-  PriceAndAudienceScreen,
-  AdvancedOptionsScreen,
+  AdvancedScreen,
   IsrcIswcScreen,
   LicenseTypeScreen,
   RemixSettingsScreen,
@@ -55,10 +57,7 @@ export const EditTrackNavigator = (props: EditTrackNavigatorProps) => {
           }}
         />
         <Stack.Screen name='Visibility' component={VisibilityScreen} />
-        <Stack.Screen
-          name='AdvancedOptions'
-          component={AdvancedOptionsScreen}
-        />
+        <Stack.Screen name='Advanced' component={AdvancedScreen} />
         <Stack.Screen
           name={priceAndAudienceScreenName}
           component={PriceAndAudienceScreen}
@@ -68,8 +67,9 @@ export const EditTrackNavigator = (props: EditTrackNavigatorProps) => {
         <Stack.Screen name='LicenseType' component={LicenseTypeScreen} />
         <Stack.Screen name='KeyBpm' component={KeyBpmScreen} />
       </Stack.Navigator>
-      <GatedContentUploadPromptDrawer isUpload={!initialValues.track_id} />
       <SupportersInfoDrawer />
+      <PortalHost name='ConfirmPublishTrackPortal' />
+      <PortalHost name='EditPriceAndAudienceConfirmation' />
     </>
   )
 }

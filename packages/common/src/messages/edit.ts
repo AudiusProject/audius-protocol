@@ -39,8 +39,10 @@ export const priceAndAudienceMessages = {
   },
   premiumRadio: {
     title: 'Premium',
-    description:
-      'Unlockable by purchase, these tracks are visible to everyone but only playable by users who have paid for access.',
+    description: {
+      track: 'Only fans who make a purchase can play your track',
+      album: 'Only fans who make a purchase can play your album.'
+    },
     waitlist:
       'Start selling your music on Audius today! Limited access beta now available.',
     join: 'Join the Waitlist',
@@ -61,5 +63,21 @@ export const priceAndAudienceMessages = {
     ownersOf: 'Owners Of',
     noCollectibles:
       'No Collectibles found. To enable this option, link a wallet containing a collectible.'
+  }
+}
+
+export const advancedAlbumMessages = {
+  title: 'Advanced',
+  description:
+    'Provide detailed metadata to help identify and manage your music.',
+  upcValue: 'UPC',
+  upcTitle: 'UPC (Universal Product Code)',
+  upcDescription:
+    'A Universal Product Code (UPC) is a unique barcode that identifies music releases.',
+  upcInputLabel: 'UPC',
+  upcInputError: 'Invalid UPC',
+  releaseDate: {
+    title: 'Release Date',
+    label: 'Release date'
   }
 }

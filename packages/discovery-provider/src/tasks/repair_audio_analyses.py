@@ -9,6 +9,7 @@ from sqlalchemy.orm.session import Session
 
 from src.models.tracks.track import Track
 from src.tasks.celery_app import celery
+from src.tasks.metadata import is_valid_musical_key
 from src.utils import get_all_nodes
 from src.utils.prometheus_metric import save_duration_metric
 from src.utils.structured_logger import StructuredLogger, log_duration
@@ -18,6 +19,14 @@ logger = StructuredLogger(__name__)
 REPAIR_AUDIO_ANALYSES_LOCK = "repair_audio_analyses_lock"
 DEFAULT_LOCK_TIMEOUT_SECONDS = 30 * 60  # 30 minutes
 BATCH_SIZE = 5000
+
+
+def valid_musical_key(musical_key):
+    return isinstance(musical_key, str) and is_valid_musical_key(musical_key)
+
+
+def valid_bpm(bpm):
+    return isinstance(bpm, float) and 0 < bpm < 999
 
 
 def query_tracks(session: Session) -> List[Track]:
@@ -89,11 +98,13 @@ def repair(session: Session, redis: Redis):
             # Fill in missing analysis results and err count if present
             track_updated = False
             if key and not track.musical_key:
-                track_updated = True
-                track.musical_key = key
+                if valid_musical_key(key):
+                    track_updated = True
+                    track.musical_key = key
             if bpm and not track.bpm:
-                track_updated = True
-                track.bpm = bpm
+                if valid_bpm(bpm):
+                    track_updated = True
+                    track.bpm = bpm
             if error_count != track.audio_analysis_error_count:
                 track_updated = True
                 track.audio_analysis_error_count = error_count

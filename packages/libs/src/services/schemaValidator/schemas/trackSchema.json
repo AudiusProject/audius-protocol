@@ -358,6 +358,10 @@
           ],
           "default": null
         },
+        "is_custom_bpm": {
+          "type": ["boolean"],
+          "default": false
+        },
         "musical_key": {
           "type": [
             "string",

@@ -27,6 +27,7 @@ import { useNavigation } from 'app/hooks/useNavigation'
 
 import { DogEar, LockedStatusBadge } from '../core'
 import { CollectionImageV2 } from '../image/CollectionImageV2'
+import { CollectionDownloadStatusIndicator } from '../offline-downloads'
 
 const { getCollection } = cacheCollectionsSelectors
 const { getUserId } = accountSelectors
@@ -77,7 +78,8 @@ export const CollectionCard = (props: CollectionCardProps) => {
     access,
     stream_conditions,
     release_date: releaseDate,
-    is_scheduled_release: isScheduledRelease
+    is_scheduled_release: isScheduledRelease,
+    offline
   } = collection
 
   const isOwner = accountId === playlist_owner_id
@@ -141,6 +143,12 @@ export const CollectionCard = (props: CollectionCardProps) => {
         )}
         {isPurchase && !isOwner ? (
           <LockedStatusBadge variant='purchase' locked={!access.stream} />
+        ) : null}
+        {offline ? (
+          <CollectionDownloadStatusIndicator
+            collectionId={playlist_id}
+            size='s'
+          />
         ) : null}
       </Flex>
     </Paper>

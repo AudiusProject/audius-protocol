@@ -150,6 +150,12 @@ def get_bulk_playlists(
     playlists = get_playlists(args)
     if playlists:
         extendedPlaylists = list(map(extend_playlist, playlists))
+
+        def add_playlist_contents(playlist):
+            playlist["playlist_contents"] = playlist["added_timestamps"]
+            return playlist
+
+        extendedPlaylists = list(map(add_playlist_contents, playlists))
         return extendedPlaylists
     return None
 

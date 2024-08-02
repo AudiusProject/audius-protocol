@@ -1,12 +1,10 @@
 import type { full } from '@audius/sdk'
 
+import { userCollectionMetadataFromSDK } from '~/adapters/collection'
+import { transformAndCleanList } from '~/adapters/utils'
 import { AudiusQueryContextType, createApi } from '~/audius-query'
-import { UserCollectionMetadata } from '~/models/Collection'
 import { Kind } from '~/models/Kind'
-import { makeActivity } from '~/services/audius-api-client'
-import { APIActivityV2 } from '~/services/audius-api-client/types'
 import { encodeHashId } from '~/utils/hashIds'
-import { removeNullable } from '~/utils/typeUtils'
 
 type GetLibraryItemsArgs = {
   userId: number
@@ -53,14 +51,13 @@ const fetchLibraryCollections = async ({
     sortDirection,
     type: category
   }
-  const { data: rawCollections = [] } =
+  const { data: activities = [] } =
     collectionType === 'album'
       ? await sdk.full.users.getUserLibraryAlbums(requestParams)
       : await sdk.full.users.getUserLibraryPlaylists(requestParams)
-  const collections = rawCollections
-    .map((r: APIActivityV2) => makeActivity(r))
-    .filter(removeNullable) as UserCollectionMetadata[]
-  return collections
+  return transformAndCleanList(activities, ({ item }) =>
+    userCollectionMetadataFromSDK(item)
+  )
 }
 
 export const libraryApi = createApi({

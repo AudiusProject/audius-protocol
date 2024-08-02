@@ -30,7 +30,10 @@ import type { AppScreenParamList } from './AppTabsScreen'
 
 const useStyles = makeStyles(({ palette, spacing, typography }) => ({
   headerLeft: { marginLeft: spacing(-2) + 1, width: 40 },
-  headerRight: {},
+  headerRight: {
+    paddingVertical: spacing(2),
+    paddingLeft: spacing(2)
+  },
   title: {
     fontSize: 18,
     fontFamily: typography.fontByWeight.heavy,
@@ -79,7 +82,7 @@ export const useAppScreenOptions = (
 
   const handlePressSearch = useCallback(() => {
     dispatch(clearSearch())
-    navigation.navigate('Search', {})
+    navigation.navigate('Search', { autoFocus: true })
   }, [dispatch, navigation])
 
   const { isEnabled: isEarlyAccess } = useFeatureFlag(FeatureFlags.EARLY_ACCESS)
@@ -111,7 +114,7 @@ export const useAppScreenOptions = (
                     color='subdued'
                     size='l'
                     {...other}
-                    onPress={navigation.goBack}
+                    onPress={() => navigation.pop()}
                   />
                 </View>
               )
@@ -152,7 +155,7 @@ export const useAppScreenOptions = (
                 <IconButton
                   icon={IconSearch}
                   onPress={handlePressSearch}
-                  hitSlop={10}
+                  hitSlop={20}
                   color='subdued'
                   size='m'
                 />

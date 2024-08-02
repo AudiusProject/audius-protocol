@@ -122,7 +122,7 @@ export const SelectedValue = (props: SelectedValueProps) => {
   const { label, icon: Icon, children, ...rest } = props
   return (
     <label className={styles.selectedValue} {...rest}>
-      <HiddenInput value={label} />
+      <HiddenInput value={label} readOnly />
       {Icon ? <Icon size='s' color='default' /> : null}
       {label ? (
         <Text variant='body' size='s'>

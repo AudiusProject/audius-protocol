@@ -1,3 +1,4 @@
+import { isBpmValid } from '@audius/common/utils'
 import { useField } from 'formik'
 import { View } from 'react-native'
 
@@ -18,7 +19,13 @@ const messages = {
 }
 
 export const KeyBpmScreen = () => {
-  const [bpmField] = useField<number>(BPM)
+  const [bpmField, , { setValue }] = useField<string>(BPM)
+
+  const handleChange = (value: string) => {
+    if (value === '' || isBpmValid(value)) {
+      setValue(value)
+    }
+  }
 
   return (
     <FormScreen title={messages.title} icon={IconInfo} variant='white'>
@@ -38,13 +45,14 @@ export const KeyBpmScreen = () => {
           </Flex>
           <TextField
             name={BPM}
+            label={messages.bpm}
             value={
               typeof bpmField.value !== 'undefined'
                 ? String(bpmField.value)
                 : undefined
             }
+            onChangeText={handleChange}
             keyboardType='numeric'
-            label={messages.bpm}
           />
         </Flex>
       </View>

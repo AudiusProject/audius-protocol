@@ -16,7 +16,7 @@ const semaphore = new Semaphore(MAX_CONCURRENT_REQUESTS)
 
 const REQUEST_TIMEOUT = 5000 // 5s
 
-const DB_OFFSET_KEY = 'discovery:backfill_audio_analyses:offset'
+const DB_OFFSET_KEY = 'discovery:backfill_audio_analyses:offset3'
 
 interface Track {
   track_id: number
@@ -46,17 +46,12 @@ function formatErrorLog(
 }
 
 async function getAudioAnalysis(contentNodes: string[], track: Track) {
-  let result = null
+  let formattedResult = null
 
   const trackCid = track.track_cid
+  if (!trackCid) return formattedResult
   // skip tracks that already have their audio analyses
-  if (
-    !trackCid ||
-    track.musical_key ||
-    track.bpm ||
-    track.audio_analysis_error_count! > 0
-  )
-    return result
+  if (track.musical_key && track.bpm) return formattedResult
 
   const audioUploadId = track.audio_upload_id || ''
   const isLegacyTrack = !audioUploadId
@@ -65,9 +60,20 @@ async function getAudioAnalysis(contentNodes: string[], track: Track) {
 
   // allow up to 5 attempts to get audio analysis for this track
   for (let i = 0; i < 5; i++) {
-    // choose a random content node
-    const contentNode =
-      contentNodes[Math.floor(Math.random() * contentNodes.length)]
+    // last 2 attempts will always be to the storeall node
+    let contentNode = "https://creatornode2.audius.co"
+    let checkStoreAllNodeNext = i == 3
+    // except for tracks with >= 3 errors, which attempt to check the storall node first
+    if (i < 3 || track.audio_analysis_error_count! >= 3) {
+      // choose a random content node
+      contentNode =
+        contentNodes[Math.floor(Math.random() * contentNodes.length)]
+    }
+    // check storeall node first for any retried errors. allow 3 attempts
+    if (track.audio_analysis_error_count! >= 3 && i < 3) {
+      contentNode = "https://creatornode2.audius.co"
+      checkStoreAllNodeNext = i < 2
+    }
     try {
       let analysisUrl = `${contentNode}/uploads/${audioUploadId}`
       if (isLegacyTrack) {
@@ -78,28 +84,41 @@ async function getAudioAnalysis(contentNodes: string[], track: Track) {
         timeout: REQUEST_TIMEOUT
       })
       if (response.status == 200) {
+        const resultsKey = isLegacyTrack ? 'results' : 'audio_analysis_results'
+        const errorCountKey = isLegacyTrack
+          ? 'error_count'
+          : 'audio_analysis_error_count'
+        const statusKey = isLegacyTrack
+          ? 'status'
+          : 'audio_analysis_status'
+        const results = response.data[resultsKey]
+        const errorCount = response.data[errorCountKey]
+        const analysisStatus = response.data[statusKey]
+        if (!results && analysisStatus != 'error') {
+          continue
+        }
+
         console.log(
-          `Successfully retrieved audio analysis for track ID ${
+          `Successfully retrieved audio analysis results for track ID ${
             track.track_id
           }, track CID ${trackCid}${
             audioUploadId ? `, upload ID: ${audioUploadId}` : ''
           } via ${contentNode}`
         )
-        const resultsKey = isLegacyTrack ? 'results' : 'audio_analysis_results'
-        const errorCountKey = isLegacyTrack
-          ? 'error_count'
-          : 'audio_analysis_error_count'
-        const results = response.data[resultsKey]
-        const errorCount = response.data[errorCountKey]
-        if (!results) {
-          break
-        }
 
         let musicalKey = null
         let bpm = null
         if (results?.key) {
+          if (results?.key.length > 12) {
+            console.log(`Skipping bad musical key from ${analysisUrl}`)
+            continue
+          }
           musicalKey = results?.key
         } else if (results?.Key) {
+          if (results?.Key.length > 12) {
+            console.log(`Skipping bad musical key from ${analysisUrl}`)
+            continue
+          }
           musicalKey = results?.Key
         }
         if (results?.bpm) {
@@ -117,7 +136,7 @@ async function getAudioAnalysis(contentNodes: string[], track: Track) {
           break
         }
 
-        result = {
+        formattedResult = {
           track_id: track.track_id,
           musical_key: musicalKey,
           bpm,
@@ -133,16 +152,24 @@ async function getAudioAnalysis(contentNodes: string[], track: Track) {
             i + 1
           )
         )
+        if (response.status != 404 && checkStoreAllNodeNext) {
+          console.log('Sleeping before retrying prod cn2')
+          await new Promise((resolve) => setTimeout(resolve, 10000))
+        }
         continue
       }
     } catch (error: any) {
       console.log(formatErrorLog(error.message, track, contentNode, i + 1))
+      if (checkStoreAllNodeNext) {
+        console.log('Sleeping before retrying prod cn2')
+        await new Promise((resolve) => setTimeout(resolve, 10000))
+      }
       continue
     }
   }
 
   release() // release the semaphore permit
-  return result
+  return formattedResult
 }
 
 async function fetchTracks(
@@ -160,6 +187,9 @@ async function fetchTracks(
       'audio_analysis_error_count'
     )
     .andWhere('track_cid', 'is not', null)
+    .andWhere('genre', '!=', 'Podcasts')
+    .andWhere('genre', '!=', 'Podcast')
+    .andWhere('genre', '!=', 'Audiobooks')
     .orderBy('track_id', 'asc')
     .offset(offset)
     .limit(limit)
@@ -232,6 +262,10 @@ async function processBatches(db: any, batchSize: number): Promise<void> {
 export const backfillDiscovery = async (app: App<SharedData>) => {
   if (!config.delegatePrivateKey) {
     console.error('Missing required delegate private key. Terminating...')
+    return
+  }
+  if (config.environment != 'prod') {
+    console.log('Discovery audio analysis backfill is only meant to run on prod. Terminating...')
     return
   }
   const db = app.getDnDb()

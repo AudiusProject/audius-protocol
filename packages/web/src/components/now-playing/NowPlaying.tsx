@@ -320,7 +320,7 @@ const NowPlaying = g(
             : OverflowAction.FAVORITE
           : null,
         isOwner ? OverflowAction.ADD_TO_ALBUM : null,
-        !collectible && !track?.is_stream_gated
+        !collectible && (!track?.is_unlisted || isOwner)
           ? OverflowAction.ADD_TO_PLAYLIST
           : null,
         track && OverflowAction.VIEW_TRACK_PAGE,

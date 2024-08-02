@@ -12,5 +12,7 @@ export const TextAreaField = (props: TextAreaFieldProps) => {
 
   const hasError = Boolean(meta.touched && meta.error)
 
-  return <TextAreaV2 value={value} {...field} error={hasError} {...other} />
+  return (
+    <TextAreaV2 value={value ?? ''} {...field} error={hasError} {...other} />
+  )
 }

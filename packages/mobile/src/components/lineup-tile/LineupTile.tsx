@@ -71,6 +71,7 @@ export const LineupTile = ({
   const isCollection = 'playlist_id' in item
   const isAlbum = 'is_album' in item && item.is_album
   const isTrack = 'track_id' in item
+  const contentType = isTrack ? 'track' : isAlbum ? 'album' : 'playlist'
   const contentId = isTrack ? item.track_id : item.playlist_id
   const streamConditions = item.stream_conditions ?? null
   const isArtistPick = artist_pick_track_id === id
@@ -120,7 +121,7 @@ export const LineupTile = ({
           title={title}
           user={user}
           isPlayingUid={isPlayingUid}
-          type={isTrack ? 'track' : isAlbum ? 'album' : 'playlist'}
+          type={contentType}
         />
         {coSign ? <LineupTileCoSign coSign={coSign} /> : null}
         <LineupTileStats
@@ -144,6 +145,7 @@ export const LineupTile = ({
           showArtistPick={showArtistPick}
           releaseDate={item?.release_date ? item.release_date : undefined}
           source={source}
+          type={contentType}
         />
       </View>
       {children}

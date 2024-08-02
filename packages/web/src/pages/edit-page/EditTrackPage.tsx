@@ -26,6 +26,8 @@ import { TrackEditFormValues } from 'components/edit-track/types'
 import Header from 'components/header/desktop/Header'
 import LoadingSpinnerFullPage from 'components/loading-spinner-full-page/LoadingSpinnerFullPage'
 import Page from 'components/page/Page'
+import { useIsUnauthorizedForHandleRedirect } from 'hooks/useManagedAccountNotAllowedRedirect'
+import { useRequiresAccount } from 'hooks/useRequiresAccount'
 import { useTrackCoverArt2 } from 'hooks/useTrackCoverArt'
 
 const { deleteTrack, editTrack } = cacheTracksActions
@@ -42,11 +44,12 @@ type EditPageProps = {
 
 export const EditFormScrollContext = createContext(() => {})
 
-// This component is in development, only used behind the EDIT_TRACK_REDESIGN feature flag
 export const EditTrackPage = (props: EditPageProps) => {
   const { scrollToTop } = props
   const { handle, slug } = useParams<{ handle: string; slug: string }>()
   const dispatch = useDispatch()
+  useRequiresAccount()
+  useIsUnauthorizedForHandleRedirect(handle)
 
   const { data: currentUserId } = useGetCurrentUserId({})
   const permalink = `/${handle}/${slug}`
@@ -68,7 +71,6 @@ export const EditTrackPage = (props: EditPageProps) => {
   const onDeleteTrack = () => {
     if (!track) return
     dispatch(deleteTrack(track.track_id))
-    setShowDeleteConfirmation(false)
     dispatch(pushRoute(`/${track.user.handle}`))
   }
 
@@ -95,6 +97,7 @@ export const EditTrackPage = (props: EditPageProps) => {
 
   const trackAsMetadataForUpload: TrackMetadataForUpload = {
     ...(track as TrackMetadata),
+    mood: track?.mood || null,
     artwork: {
       url: coverArtUrl || ''
     },
@@ -107,12 +110,7 @@ export const EditTrackPage = (props: EditPageProps) => {
         metadata: trackAsMetadataForUpload
       }
     ],
-    trackMetadatas: [
-      {
-        ...trackAsMetadataForUpload,
-        remix_of: null
-      }
-    ],
+    trackMetadatas: [trackAsMetadataForUpload],
     trackMetadatasIndex: 0
   }
 
@@ -129,6 +127,7 @@ export const EditTrackPage = (props: EditPageProps) => {
             initialValues={initialValues}
             onSubmit={onSubmit}
             onDeleteTrack={() => setShowDeleteConfirmation(true)}
+            disableNavigationPrompt={showDeleteConfirmation}
           />
         </EditFormScrollContext.Provider>
       )}

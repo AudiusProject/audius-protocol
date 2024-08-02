@@ -1,6 +1,7 @@
 import { FetchNFTClient } from '@audius/fetch-nft'
 import type { AudiusSdk } from '@audius/sdk'
 import { Location } from 'history'
+import { Dispatch } from 'redux'
 
 import {
   AllTrackingEvents,
@@ -79,4 +80,5 @@ export type CommonStoreContext = {
     ) => Promise<{ file: File; url: string }>
   }
   isMobile: boolean
+  dispatch: Dispatch<any>
 }

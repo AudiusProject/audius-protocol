@@ -13,6 +13,8 @@ export type FormValues = Omit<TrackMetadataForUpload, 'bpm'> & {
   trackArtwork?: string
   bpm?: string
   isUpload?: boolean
+  is_private?: boolean
+  entityType: 'track' | 'album' | 'playlist'
 }
 
 export type EditTrackScreenProps = {

@@ -9,16 +9,17 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 import { useDispatch } from 'react-redux'
 
 import {
-  IconArrowRight,
   IconCaretLeft,
   IconCloudUpload,
-  Button
+  Button,
+  Flex
 } from '@audius/harmony-native'
 import { Tile } from 'app/components/core'
 import { InputErrorMessage } from 'app/components/core/InputErrorMessage'
+import { PriceAndAudienceField } from 'app/components/edit/PriceAndAudienceField'
+import { VisibilityField } from 'app/components/edit/VisibilityField'
 import { PickArtworkField, TextField } from 'app/components/fields'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { useOneTimeDrawer } from 'app/hooks/useOneTimeDrawer'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { FormScreen } from 'app/screens/form-screen'
 import { setVisibility } from 'app/store/drawers/slice'
@@ -36,20 +37,16 @@ import {
   SubmenuList,
   RemixSettingsField,
   ReleaseDateField,
-  AdvancedOptionsField,
-  PriceAndAudienceField
+  AdvancedField
 } from './fields'
-import { VisibilityField } from './fields/VisibilityField'
 import type { EditTrackFormProps } from './types'
 
 const messages = {
   trackName: 'Track Name',
   trackNameError: 'Track Name Required',
-  fixErrors: 'Fix Errors To Continue'
+  fixErrors: 'Fix Errors To Continue',
+  cancel: 'Cancel'
 }
-
-const GATED_CONTENT_UPLOAD_PROMPT_DRAWER_SEEN_KEY =
-  'gated_content_upload_prompt_drawer_seen'
 
 const useStyles = makeStyles(({ spacing }) => ({
   backButton: {
@@ -88,15 +85,10 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
   const dispatch = useDispatch()
   const initiallyHidden = initialValues.is_unlisted
   const isInitiallyScheduled = initialValues.is_scheduled_release
-  const usersMayLoseAccess = !initiallyHidden && values.is_unlisted
+  const usersMayLoseAccess = !isUpload && !initiallyHidden && values.is_unlisted
   const isToBePublished = !isUpload && initiallyHidden && !values.is_unlisted
   const [confirmDrawerType, setConfirmDrawerType] =
     useState<Nullable<'release' | 'early_release' | 'hidden'>>(null)
-
-  useOneTimeDrawer({
-    key: GATED_CONTENT_UPLOAD_PROMPT_DRAWER_SEEN_KEY,
-    name: 'GatedContentUploadPrompt'
-  })
 
   const handlePressBack = useCallback(() => {
     if (!dirty) {
@@ -113,6 +105,7 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
   }, [dirty, navigation, dispatch])
 
   const handleSubmit = useCallback(() => {
+    Keyboard.dismiss()
     const showConfirmDrawer = usersMayLoseAccess || isToBePublished
     if (showConfirmDrawer) {
       if (usersMayLoseAccess) {
@@ -163,17 +156,19 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
                 style={styles.errorText}
               />
             ) : null}
-            <Button
-              variant='primary'
-              iconRight={IconArrowRight}
-              fullWidth
-              onPress={() => {
-                handleSubmit()
-              }}
-              disabled={isSubmitting || hasErrors}
-            >
-              {doneText}
-            </Button>
+            <Flex direction='row' gap='s'>
+              <Button fullWidth variant='secondary' onPress={handlePressBack}>
+                {messages.cancel}
+              </Button>
+              <Button
+                variant='primary'
+                fullWidth
+                onPress={handleSubmit}
+                disabled={isSubmitting || hasErrors}
+              >
+                {doneText}
+              </Button>
+            </Flex>
           </>
         }
       >
@@ -196,14 +191,14 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
                 )}
                 <PriceAndAudienceField />
                 <RemixSettingsField />
-                <AdvancedOptionsField />
+                <AdvancedField />
               </SubmenuList>
             </Tile>
           </KeyboardAwareScrollView>
         </>
       </FormScreen>
       <CancelEditTrackDrawer />
-      {confirmDrawerType ? (
+      {!isUpload && confirmDrawerType ? (
         <ConfirmPublishTrackDrawer
           type={confirmDrawerType}
           onConfirm={handleSubmitProp}

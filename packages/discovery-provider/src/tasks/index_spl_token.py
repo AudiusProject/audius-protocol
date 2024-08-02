@@ -271,7 +271,7 @@ def process_spl_token_transactions(
             if tx_info["user_bank"] not in user_bank_set:
                 continue
 
-            logger.info(
+            logger.debug(
                 f"index_spl_token.py | processing transaction: {tx_info['signature']} | slot={tx_info['slot']}"
             )
             vendor = tx_info["vendor"]
@@ -420,7 +420,7 @@ def parse_sol_tx_batch(
 
         user_ids = list(update_user_ids)
         if user_ids:
-            logger.info(
+            logger.debug(
                 f"index_spl_token.py | Enqueueing user ids {user_ids} to immediate balance refresh queue"
             )
             enqueue_immediate_balance_refresh(redis, user_ids)
@@ -628,7 +628,7 @@ def process_spl_token_tx(
     solana_logger.add_context("total_root_accts_updated", totals["root_accts"])
     solana_logger.add_context("total_token_accts_updated", totals["token_accts"])
 
-    logger.info("index_spl_token.py", extra=solana_logger.get_context())
+    logger.debug("index_spl_token.py", extra=solana_logger.get_context())
 
 
 index_spl_token_lock = "spl_token_lock"
@@ -660,7 +660,7 @@ def index_spl_token(self):
         # Attempt to acquire lock - do not block if unable to acquire
         have_lock = update_lock.acquire(blocking=False)
         if have_lock:
-            logger.info("index_spl_token.py | Acquired lock")
+            logger.debug("index_spl_token.py | Acquired lock")
             process_spl_token_tx(solana_client_manager, db, redis)
     except Exception as e:
         logger.error("index_spl_token.py | Fatal error in main loop", exc_info=True)

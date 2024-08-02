@@ -7,7 +7,6 @@ import { DownloadStatusIndicator } from './DownloadStatusIndicator'
 
 type TrackDownloadIndicatorProps = Partial<DownloadStatusIndicatorProps> & {
   trackId?: number
-  size?: number
 }
 
 export const TrackDownloadStatusIndicator = (

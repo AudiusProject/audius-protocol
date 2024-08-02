@@ -94,10 +94,11 @@ export const DatePickerField = (props: DatePickerFieldProps) => {
               date={moment(value)}
               onDateChange={(value) => {
                 helpers.setValue(value?.toString())
+                helpers.setTouched(true, false)
               }}
               isOutsideRange={(day) => {
                 if (futureDatesOnly) {
-                  return !isInclusivelyAfterDay(day, moment().add(1, 'day'))
+                  return !isInclusivelyAfterDay(day, moment())
                 } else if (isInitiallyUnlisted) {
                   return !isInclusivelyBeforeDay(day, moment().add(1, 'year'))
                 } else {

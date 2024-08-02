@@ -108,12 +108,12 @@ def update_user_is_available_statuses(
             )
         )
         if len(missing_user_ids_to_wait_for) > 0:
-            logger.info(
+            logger.debug(
                 f"update_delist_statuses.py | waiting for missing user ids to be indexed: {missing_user_ids_to_wait_for}, current_block_timestamp: {current_block_timestamp}"
             )
             return False, []
 
-        logger.info(
+        logger.debug(
             f"update_delist_statuses.py | ignoring delists for missing user ids: {missing_user_ids}, current_block_timestamp: {current_block_timestamp}"
         )
 
@@ -190,12 +190,12 @@ def update_track_is_available_statuses(
             )
         )
         if len(missing_track_ids_to_wait_for) > 0:
-            logger.info(
+            logger.debug(
                 f"update_delist_statuses.py | waiting for missing track ids to be indexed: {missing_track_ids_to_wait_for}, current block timestamp: {current_block_timestamp}"
             )
             return False, []
 
-        logger.info(
+        logger.debug(
             f"update_delist_statuses.py | ignoring delists for missing track ids: {missing_track_ids}, current_block_timestamp: {current_block_timestamp}"
         )
 
@@ -318,7 +318,7 @@ def process_user_delist_statuses(
                 update_delist_status_cursor(
                     session, cursor_after, endpoint, DelistEntity.USERS
                 )
-                logger.info(
+                logger.debug(
                     f"update_delist_statuses.py | processed {len(users_updated)} user delist statuses: {users_updated}"
                 )
         except Exception as e:
@@ -343,7 +343,7 @@ def process_track_delist_statuses(
                 update_delist_status_cursor(
                     session, cursor_after, endpoint, DelistEntity.TRACKS
                 )
-                logger.info(
+                logger.debug(
                     f"update_delist_statuses.py | processed {len(tracks_updated)} track delist statuses: {tracks_updated}"
                 )
         except Exception as e:
@@ -410,7 +410,7 @@ def correct_delist_discrepancies(session: Session, redis: Redis):
             for track_to_update in tracks_to_update:
                 if delisted:
                     # Delist available tracks that have been delisted
-                    logger.info(
+                    logger.debug(
                         f"update_delist_statuses.py | correct_delist_discrepancies | Delisting track {track_id}"
                     )
                     if track_to_update.is_available:
@@ -418,7 +418,7 @@ def correct_delist_discrepancies(session: Session, redis: Redis):
                         track_to_update.is_delete = True
                 else:
                     # Relist unavailable tracks that have been relisted
-                    logger.info(
+                    logger.debug(
                         f"update_delist_statuses.py | correct_delist_discrepancies | Re-listing track {track_id}"
                     )
                     if not track_to_update.is_available:
@@ -440,7 +440,7 @@ def correct_delist_discrepancies(session: Session, redis: Redis):
             users_to_update = query_users_by_user_ids(session, set([user_id]))
             for user_to_update in users_to_update:
                 if delisted:
-                    logger.info(
+                    logger.debug(
                         f"update_delist_statuses.py | correct_delist_discrepancies | Deactivating user {user_id}"
                     )
                     # Deactivate active users that have been delisted
@@ -449,7 +449,7 @@ def correct_delist_discrepancies(session: Session, redis: Redis):
                         user_to_update.is_deactivated = True
                 else:
                     # Re-activate deactivated users that have been relisted
-                    logger.info(
+                    logger.debug(
                         f"update_delist_statuses.py | correct_delist_discrepancies | Re-activating user {user_id}"
                     )
                     if not user_to_update.is_available:
@@ -515,7 +515,7 @@ def revert_delist_status_cursors(self, reverted_cursor_timestamp: float):
                             "host": endpoint,
                         },
                     )
-                    logger.info(
+                    logger.debug(
                         f"update_delist_statuses.py | revert_delist_status_cursors | Reverted {DelistEntity.USERS} delist cursors to {reverted_cursor}"
                     )
                 tracks_cursor = (
@@ -535,7 +535,7 @@ def revert_delist_status_cursors(self, reverted_cursor_timestamp: float):
                             "host": endpoint,
                         },
                     )
-                    logger.info(
+                    logger.debug(
                         f"update_delist_statuses.py | revert_delist_status_cursors | Reverted {DelistEntity.TRACKS} delist cursors to {reverted_cursor}"
                     )
 
@@ -570,7 +570,7 @@ def update_delist_statuses(self, current_block_timestamp: int) -> None:
         )
         return
     if trusted_notifier_manager["endpoint"] == "default.trustednotifier":
-        logger.info("update_delist_statuses.py | not polling delist statuses")
+        logger.debug("update_delist_statuses.py | not polling delist statuses")
         return
 
     have_lock = False

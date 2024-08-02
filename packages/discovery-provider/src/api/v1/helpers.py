@@ -115,9 +115,9 @@ def add_playlist_artwork(playlist):
     return playlist
 
 
-def add_playlist_added_timestamps(playlist):
+def get_playlist_added_timestamps(playlist):
     if "playlist_contents" not in playlist:
-        return playlist
+        return []
     added_timestamps = []
     for track in playlist["playlist_contents"]["track_ids"]:
         added_timestamps.append(
@@ -445,7 +445,7 @@ def extend_playlist(playlist):
     if "save_count" in playlist:
         playlist["favorite_count"] = playlist["save_count"]
 
-    playlist["added_timestamps"] = add_playlist_added_timestamps(playlist)
+    playlist["added_timestamps"] = get_playlist_added_timestamps(playlist)
     playlist["cover_art"] = playlist["playlist_image_multihash"]
     playlist["cover_art_sizes"] = playlist["playlist_image_sizes_multihash"]
     # If a trending playlist, we have 'track_count'
@@ -497,10 +497,14 @@ def extend_activity(item):
             "item": extend_track(item),
         }
     if item.get("playlist_id"):
+        extended_playlist = extend_playlist(item)
+        # Wee hack to make sure this marshals correctly. The marshaller for
+        # playlist_model expects these two values to be the same type.
+        extended_playlist["playlist_contents"] = extended_playlist["added_timestamps"]
         return {
             "item_type": "playlist",
             "timestamp": item["activity_timestamp"],
-            "item": extend_playlist(item),
+            "item": extended_playlist,
         }
     return None
 

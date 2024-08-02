@@ -15,6 +15,7 @@ import { denormalize, normalize } from 'normalizr'
 import { useDispatch, useSelector } from 'react-redux'
 import { useDebounce } from 'react-use'
 import { Dispatch } from 'redux'
+import { call, select } from 'typed-redux-saga'
 
 import {
   Collection,
@@ -31,15 +32,18 @@ import { getTrack } from '~/store/cache/tracks/selectors'
 import { reformatUser } from '~/store/cache/users/utils'
 import { CommonState } from '~/store/reducers'
 import { getErrorMessage } from '~/utils/error'
+import { waitForValue } from '~/utils/sagaHelpers'
 import { Nullable, removeNullable } from '~/utils/typeUtils'
 
 import { Track } from '../models/Track'
+import { accountSelectors } from '../store/account'
 import * as cacheActions from '../store/cache/actions'
 import * as cacheSelectors from '../store/cache/selectors'
 
 import {
   AudiusQueryContext,
-  AudiusQueryContextType
+  AudiusQueryContextType,
+  getAudiusQueryContext
 } from './AudiusQueryContext'
 import { createRequestBatcher } from './createRequestBatcher'
 import { RemoteDataNotFoundError } from './errors'
@@ -62,6 +66,8 @@ import {
   MutationHookResults
 } from './types'
 import { capitalize, getKeyFromFetchArgs, selectCommonEntityMap } from './utils'
+
+const { getUserId } = accountSelectors
 
 type ForceType = 'force' | 'forcing' | false
 
@@ -94,7 +100,8 @@ export const createApi = <
   const api = {
     reducerPath,
     hooks: {},
-    fetch: {}
+    fetch: {},
+    fetchSaga: {}
   } as unknown as Api<EndpointDefinitions>
 
   const sliceConfig: SliceConfig = {
@@ -228,38 +235,42 @@ const useQueryState = <Args, Data>(
         endpoint.options
 
       let cachedData: Nullable<Entity | number[]> = null
-      if (idArgKey && fetchArgs[idArgKey]) {
-        const idAsNumber =
-          typeof fetchArgs[idArgKey] === 'number'
-            ? fetchArgs[idArgKey]
-            : parseInt(fetchArgs[idArgKey])
-        cachedData = cacheSelectors.getEntry(state, {
-          kind,
-          id: idAsNumber
-        })
-      } else if (permalinkArgKey && fetchArgs[permalinkArgKey]) {
-        if (kind === Kind.TRACKS) {
-          cachedData = getTrack(state, {
-            permalink: fetchArgs[permalinkArgKey]
+      if (idArgKey || permalinkArgKey || idListArgKey) {
+        const fetchArgsRecord = fetchArgs as Record<string, any>
+        if (idArgKey && fetchArgsRecord[idArgKey]) {
+          const idAsNumber =
+            typeof fetchArgsRecord[idArgKey] === 'number'
+              ? fetchArgsRecord[idArgKey]
+              : parseInt(fetchArgsRecord[idArgKey])
+          cachedData = cacheSelectors.getEntry(state, {
+            kind,
+            id: idAsNumber
           })
-        } else if (kind === Kind.COLLECTIONS) {
-          cachedData = getCollection(state, {
-            permalink: fetchArgs[permalinkArgKey]
-          })
-        }
-      } else if (idListArgKey && fetchArgs[idListArgKey]) {
-        const idsAsNumbers: number[] = fetchArgs[idListArgKey].map(
-          (id: string | number) => (typeof id === 'number' ? id : parseInt(id))
-        )
-        const allEntities = mapValues(
-          cacheSelectors.getCache(state, { kind }).entries,
-          'metadata'
-        )
-        const entityHits = idsAsNumbers
-          .map((id) => allEntities[id])
-          .filter(removeNullable)
-        if (entityHits.length === idsAsNumbers.length) {
-          cachedData = entityHits
+        } else if (permalinkArgKey && fetchArgsRecord[permalinkArgKey]) {
+          if (kind === Kind.TRACKS) {
+            cachedData = getTrack(state, {
+              permalink: fetchArgsRecord[permalinkArgKey]
+            })
+          } else if (kind === Kind.COLLECTIONS) {
+            cachedData = getCollection(state, {
+              permalink: fetchArgsRecord[permalinkArgKey]
+            })
+          }
+        } else if (idListArgKey && fetchArgsRecord[idListArgKey]) {
+          const idsAsNumbers: number[] = fetchArgsRecord[idListArgKey].map(
+            (id: string | number) =>
+              typeof id === 'number' ? id : parseInt(id)
+          )
+          const allEntities = mapValues(
+            cacheSelectors.getCache(state, { kind }).entries,
+            'metadata'
+          )
+          const entityHits = idsAsNumbers
+            .map((id) => allEntities[id])
+            .filter(removeNullable)
+          if (entityHits.length === idsAsNumbers.length) {
+            cachedData = entityHits
+          }
         }
       }
 
@@ -269,6 +280,7 @@ const useQueryState = <Args, Data>(
           schemaKey ? { [schemaKey]: cachedData } : cachedData,
           apiResponseSchema
         )
+
         return {
           normalizedData: result,
           status: Status.SUCCESS,
@@ -282,13 +294,13 @@ const useQueryState = <Args, Data>(
   }, isEqual)
 }
 
-// Rehydrate local normalizedData using entities from global normalized cache
-const useCacheData = <Args, Data>(
-  endpoint: EndpointConfig<Args, Data>,
-  normalizedData: any,
-  hookOptions?: QueryHookOptions
-) => {
-  return useSelector((state: CommonState) => {
+const createCacheDataSelector =
+  <Args, Data>(
+    endpoint: EndpointConfig<Args, Data>,
+    normalizedData: any,
+    hookOptions?: QueryHookOptions
+  ) =>
+  (state: CommonState) => {
     if (hookOptions?.shallow && !endpoint.options.kind) return normalizedData
     const entityMap = selectCommonEntityMap(
       state,
@@ -302,7 +314,18 @@ const useCacheData = <Args, Data>(
       return denormalize(normalizedData, apiResponseSchema, entityMap) as Data
     }
     return normalizedData
-  }, isEqual)
+  }
+
+// Rehydrate local normalizedData using entities from global normalized cache
+const useCacheData = <Args, Data>(
+  endpoint: EndpointConfig<Args, Data>,
+  normalizedData: any,
+  hookOptions?: QueryHookOptions
+) => {
+  return useSelector(
+    createCacheDataSelector(endpoint, normalizedData, hookOptions),
+    isEqual
+  )
 }
 
 const requestBatcher = createRequestBatcher()
@@ -313,7 +336,8 @@ const fetchData = async <Args, Data>(
   endpoint: EndpointConfig<Args, Data>,
   actions: CaseReducerActions<any>,
   context: AudiusQueryContextType,
-  force?: MutableRefObject<ForceType>
+  force?: MutableRefObject<ForceType>,
+  currentUserId?: Nullable<number>
 ) => {
   const { audiusBackend, dispatch } = context
   try {
@@ -348,7 +372,11 @@ const fetchData = async <Args, Data>(
           { ...defaultRetryConfig, ...endpoint.options.retryConfig }
         )
       : await fetch(fetchArgs, context)
-    if (apiData == null) {
+
+    if (apiData === null || apiData === undefined) {
+      if (force?.current) {
+        force.current = false
+      }
       throw new RemoteDataNotFoundError('Remote data not found')
     }
 
@@ -370,6 +398,14 @@ const fetchData = async <Args, Data>(
         entities[Kind.USERS] ?? [],
         (user: UserMetadata) => reformatUser(user, audiusBackend)
       )
+
+      // Hack alert: We can't overwrite the current user, since it contains
+      // special account data. Once this is removed from user cache we can
+      // remove this line.
+      if (force?.current && currentUserId) {
+        delete entities[Kind.USERS][currentUserId]
+      }
+
       entities[Kind.COLLECTIONS] = mapValues(
         entities[Kind.COLLECTIONS] ?? [],
         (collection: CollectionMetadata | UserCollectionMetadata) =>
@@ -439,6 +475,7 @@ const buildEndpointHooks = <
   ): QueryHookResults<Data> => {
     const dispatch = useDispatch()
     const force = useRef<ForceType>(hookOptions?.force ? 'force' : false)
+    const currentUserId = useSelector(getUserId)
     const queryState = useQueryState(
       fetchArgs,
       reducerPath,
@@ -447,7 +484,12 @@ const buildEndpointHooks = <
     )
 
     // If `force`, ignore queryState and force a fetch
-    const state = force.current ? null : queryState
+    const state = force.current
+      ? {
+          normalizedData: null,
+          status: force.current === 'forcing' ? Status.LOADING : Status.IDLE
+        }
+      : queryState
 
     const { normalizedData, status, errorMessage, isInitialValue } = state ?? {
       normalizedData: null,
@@ -468,8 +510,16 @@ const buildEndpointHooks = <
       if (force.current === 'force') {
         force.current = 'forcing'
       }
-      fetchData(fetchArgs, endpointName, endpoint, actions, context, force)
-    }, [context, fetchArgs, hookOptions?.disabled, status])
+      fetchData(
+        fetchArgs,
+        endpointName,
+        endpoint,
+        actions,
+        context,
+        force,
+        currentUserId
+      )
+    }, [context, fetchArgs, hookOptions?.disabled, status, currentUserId])
 
     useDebounce(
       () => {
@@ -554,14 +604,66 @@ const buildEndpointHooks = <
     ]
   }
 
+  /**
+   * This is not actually a saga, but a function that can be called from a saga
+   * It supports the same caching logic as the useQuery hook and will skip
+   * making a request if cache data already exists or a request is in flight
+   */
+  function* fetchSaga(fetchArgs: Args, force?: boolean) {
+    const context = yield* call(getAudiusQueryContext)
+
+    if (!force) {
+      const key = getKeyFromFetchArgs(fetchArgs)
+
+      const getEndpointKeyState = (state: CommonState) =>
+        state.api[reducerPath][endpointName][key] ?? {}
+      const getEndpointKeyStatus = (state: CommonState) =>
+        getEndpointKeyState(state).status
+
+      const status = yield* select(getEndpointKeyStatus)
+
+      if ([Status.LOADING, Status.ERROR, Status.SUCCESS].includes(status)) {
+        // If a request is already in flight, wait for it to finish
+        yield* call(
+          waitForValue,
+          getEndpointKeyStatus,
+          {},
+          (s: Status) => s !== Status.LOADING
+        )
+
+        const endpointState = yield* select(getEndpointKeyState)
+        const { normalizedData } = endpointState
+
+        const cacheData = yield* select(
+          createCacheDataSelector(endpoint, normalizedData)
+        )
+
+        return cacheData
+      }
+    }
+
+    return yield* call(
+      fetchData as any,
+      fetchArgs,
+      endpointName,
+      endpoint,
+      actions,
+      context
+    )
+  }
+
+  api.fetchSaga[endpointName] = fetchSaga
+
   api.fetch[endpointName] = (
     fetchArgs: Args,
     context: AudiusQueryContextType
   ) => fetchData(fetchArgs, endpointName, endpoint, actions, context)
 
   if (endpoint.options.type === 'mutation') {
+    // @ts-ignore can't match the endpoint name with 'use' prefix
     api.hooks[`use${capitalize(endpointName)}`] = useMutation
   } else {
+    // @ts-ignore can't match the endpoint name with 'use' prefix
     api.hooks[`use${capitalize(endpointName)}`] = useQuery
   }
 }

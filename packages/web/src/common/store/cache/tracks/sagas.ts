@@ -177,9 +177,13 @@ function* editTrackAsync(action: ReturnType<typeof trackActions.editTrack>) {
   const trackForEdit = yield* addPremiumMetadata(action.formFields)
 
   // Format musical key
-  trackForEdit.musical_key = formatMusicalKey(
-    trackForEdit.musical_key || undefined
-  )
+  trackForEdit.musical_key =
+    formatMusicalKey(trackForEdit.musical_key || undefined) ?? null
+
+  // Format bpm
+  trackForEdit.bpm = trackForEdit.bpm ? Number(trackForEdit.bpm) : null
+  trackForEdit.is_custom_bpm =
+    currentTrack.is_custom_bpm || trackForEdit.bpm !== currentTrack.bpm
 
   yield* call(
     confirmEditTrack,
@@ -199,12 +203,7 @@ function* editTrackAsync(action: ReturnType<typeof trackActions.editTrack>) {
     }
   }
 
-  const getFeatureEnabled = yield* getContext('getFeatureEnabled')
-  const isEditTrackRedesignEnabled = yield* call(
-    getFeatureEnabled,
-    FeatureFlags.EDIT_TRACK_REDESIGN
-  )
-  if (isEditTrackRedesignEnabled && track.stems) {
+  if (track.stems) {
     const inProgressStemUploads = yield* select(
       getCurrentUploads,
       track.track_id
@@ -277,8 +276,10 @@ function* confirmEditTrack(
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const apiClient = yield* getContext('apiClient')
   const transcodePreview =
-    !!formFields.preview_start_seconds &&
+    formFields.preview_start_seconds !== null &&
+    formFields.preview_start_seconds !== undefined &&
     currentTrack.preview_start_seconds !== formFields.preview_start_seconds
+
   yield* put(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.TRACKS, trackId),

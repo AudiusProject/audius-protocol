@@ -99,7 +99,7 @@ def auth_middleware(
                     )
                     if user:
                         authed_user_id = user.user_id
-                        logger.info(
+                        logger.debug(
                             f"auth_middleware.py | authed_user_id: {authed_user_id}"
                         )
 

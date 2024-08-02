@@ -1,13 +1,10 @@
 import { useCallback } from 'react'
 
 import { signOutActions } from '@audius/common/store'
-import { View } from 'react-native'
 import { useDispatch } from 'react-redux'
 
-import { Button } from '@audius/harmony-native'
-import { Text } from 'app/components/core'
+import { Text, Flex, Button } from '@audius/harmony-native'
 import { AppDrawer, useDrawerState } from 'app/components/drawer/AppDrawer'
-import { makeStyles } from 'app/styles'
 
 const { signOut } = signOutActions
 
@@ -22,19 +19,7 @@ const messages = {
     'Double check that you have an account recovery email just in case (resend from your settings).'
 }
 
-const useStyles = makeStyles(({ spacing }) => ({
-  contentContainer: {
-    paddingHorizontal: spacing(6),
-    paddingBottom: spacing(4)
-  },
-  text: {
-    textAlign: 'center',
-    marginBottom: spacing(2)
-  }
-}))
-
 export const SignOutConfirmationDrawer = () => {
-  const styles = useStyles()
   const dispatch = useDispatch()
 
   const { onClose } = useDrawerState(MODAL_NAME)
@@ -46,11 +31,11 @@ export const SignOutConfirmationDrawer = () => {
 
   return (
     <AppDrawer modalName={MODAL_NAME} title={messages.drawerTitle}>
-      <View style={styles.contentContainer}>
-        <Text variant='body' style={styles.text}>
+      <Flex gap='m' ph='xl' pv='l'>
+        <Text variant='body' size='s' textAlign='center'>
           {messages.areYouSureText}
         </Text>
-        <Text variant='body' style={styles.text}>
+        <Text variant='body' size='s' textAlign='center'>
           {messages.doubleCheckText}
         </Text>
         <Button fullWidth onPress={onClose}>
@@ -59,7 +44,7 @@ export const SignOutConfirmationDrawer = () => {
         <Button fullWidth variant='secondary' onPress={handleSignOut}>
           {messages.confirmText}
         </Button>
-      </View>
+      </Flex>
     </AppDrawer>
   )
 }
