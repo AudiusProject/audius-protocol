@@ -30,10 +30,10 @@ Whether running as an independent image or embedded, core requires some environm
 
 ## testing
 
-To run tests simply run the make command. This will run both unit and integration tests.
+To run tests, ensure [audius dev tooling](https://github.com/AudiusProject/audius-protocol/blob/main/dev-tools/README.md) has been properly setup, then simply run 
 
 ```bash
-make test
+audius-compose test run core
 ```
 
 ### unit tests
