@@ -311,10 +311,7 @@ async function handleEvent(request, env, ctx) {
         // are given unique hashes when they do.
         const response = new Response(asset.body, asset)
         response.headers.set('Access-Control-Allow-Origin', '*')
-        response.headers.set(
-          'Access-Control-Allow-Methods',
-          'GET, POST, OPTIONS'
-        )
+        response.headers.set('Access-Control-Allow-Methods', 'GET, OPTIONS')
         response.headers.set('Access-Control-Allow-Headers', 'Content-Type')
         response.headers.set('cache-control', BROWSER_CACHE_TTL_SECONDS)
 
