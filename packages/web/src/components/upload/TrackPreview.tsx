@@ -20,7 +20,6 @@ import {
   IconFileWAV as iconFileWav,
   IconFileWEBM,
   IconTrash,
-  OptionsFilterButton,
   Text
 } from '@audius/harmony'
 import cn from 'classnames'

@@ -12,7 +12,7 @@ type FilterButtonKeyHandlerProps<Value extends string> = {
 }
 
 /**
- * Handles key events for the popup inside the OptionsFilterButton component
+ * Handles key events for the popup inside the FilterButton component
  *
  * Calls the `children` function with the currently active value
  */

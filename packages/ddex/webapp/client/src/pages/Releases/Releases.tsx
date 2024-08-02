@@ -4,12 +4,11 @@ import {
   SelectablePill,
   IconFilter,
   TextLink,
-  OptionsFilterButton
+  FilterButtonV2,
 } from '@audius/harmony'
-
 import {
   CollectionData,
-  PaginatedTable
+  PaginatedTable,
 } from 'components/PaginatedTable/PaginatedTable'
 import TableLayout from 'components/PaginatedTable/TableLayout'
 import { trpc } from 'utils/trpc'
@@ -35,7 +34,7 @@ const Table = ({ data }: { data: CollectionData }) => {
       <SelectablePill
         key={label}
         label={label}
-        size='small'
+        size="small"
         disabled
         isSelected
       />
@@ -48,7 +47,7 @@ const Table = ({ data }: { data: CollectionData }) => {
       return (
         <TextLink
           href={`https://audius.co/track/${item.entity_id}`}
-          textVariant='body'
+          textVariant="body"
           showUnderline
         >
           {item.entity_id}
@@ -58,7 +57,7 @@ const Table = ({ data }: { data: CollectionData }) => {
       return (
         <TextLink
           href={`https://audius.co/album/${item.entity_id}`}
-          textVariant='body'
+          textVariant="body"
           showUnderline
         >
           {item.entity_id}
@@ -74,14 +73,14 @@ const Table = ({ data }: { data: CollectionData }) => {
       <>
         <TextLink
           href={`/admin/releases/${item._id}/xml`}
-          textVariant='body'
+          textVariant="body"
           showUnderline
         >
           XML
         </TextLink>{' '}
         <TextLink
           href={`/admin/releases/${item._id}/doc`}
-          textVariant='body'
+          textVariant="body"
           showUnderline
         >
           Doc
@@ -111,8 +110,8 @@ const Table = ({ data }: { data: CollectionData }) => {
               {item?.sdk_upload_metadata?.title
                 ? 'track'
                 : item?.sdk_upload_metadata?.playlist_name
-                  ? 'album'
-                  : 'unknown'}
+                ? 'album'
+                : 'unknown'}
             </td>
             <td>
               {item?.sdk_upload_metadata?.artist_id ||
@@ -135,47 +134,37 @@ const Releases = () => {
     trpc.releases.reprocessErroredReleases.useMutation()
 
   return (
-    <TableLayout title='Releases'>
-      <Flex direction='row' gap='s' alignItems='center'>
+    <TableLayout title="Releases">
+      <Flex direction="row" gap="s" alignItems="center">
         <Button
-          variant='secondary'
-          size='small'
+          variant="secondary"
+          size="small"
           onClick={() => reprocessAllReleases.mutate()}
         >
           Re-Process All
         </Button>
         <Button
-          variant='secondary'
-          size='small'
+          variant="secondary"
+          size="small"
           onClick={() => reprocessErroredReleases.mutate()}
         >
           Re-Process Errors
         </Button>
-        <OptionsFilterButton
+        <FilterButtonV2
           iconRight={IconFilter}
           options={[
-            {
-              value: 'UserMatch'
-            },
-            {
-              value: 'GenreMatch'
-            },
-            {
-              value: 'UnknownError'
-            },
-            {
-              value: 'Published'
-            },
-            {
-              value: 'Unpublished'
-            }
+            { value: 'UserMatch' },
+            { value: 'GenreMatch' },
+            { value: 'UnknownError' },
+            { value: 'Published' },
+            { value: 'Unpublished' },
           ]}
-        />
-      </Flex>
+        />{' '}
+      </Flex>{' '}
       <PaginatedTable
         queryFunction={trpc.releases.getReleases.useQuery}
         TableDisplay={Table}
-      />
+      />{' '}
     </TableLayout>
   )
 }

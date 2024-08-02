@@ -12,7 +12,6 @@ import {
   IconCreditCard,
   IconDonate,
   IconTransaction,
-  OptionsFilterButton,
   Radio,
   RadioGroup,
   Text

@@ -8,7 +8,6 @@ import {
   Flex,
   TextInput,
   TextInputSize,
-  OptionsFilterButton,
   FilterButtonV2
 } from '@audius/harmony'
 
