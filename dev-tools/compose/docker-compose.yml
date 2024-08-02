@@ -67,37 +67,13 @@ services:
 
   # Core
   
-  core-discovery-1:
+  core:
     extends:
       file: docker-compose.core.yml
       service: core
     container_name: core-discovery-1
     env_file:
       - ${PROJECT_ROOT}/core/infra/dev_config/discovery-one.env
-
-  core-content-1:
-    extends:
-      file: docker-compose.core.yml
-      service: core
-    container_name: core-content-1
-    env_file:
-      - ${PROJECT_ROOT}/core/infra/dev_config/content-one.env
-
-  core-content-2:
-    extends:
-      file: docker-compose.core.yml
-      service: core
-    container_name: core-content-2
-    env_file:
-      - ${PROJECT_ROOT}/core/infra/dev_config/content-two.env
-
-  core-content-3:
-    extends:
-      file: docker-compose.core.yml
-      service: core
-    container_name: core-content-3
-    env_file:
-      - ${PROJECT_ROOT}/core/infra/dev_config/content-three.env
 
   # Identity
 
