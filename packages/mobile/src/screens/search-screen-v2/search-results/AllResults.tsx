@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react'
 
-import { Kind, Status } from '@audius/common/models'
+import { Kind, Name, Status } from '@audius/common/models'
 import {
   searchActions,
   type SearchItem as SearchItemType
@@ -11,10 +11,11 @@ import { useDispatch } from 'react-redux'
 
 import { Box, Divider, Flex, Text } from '@audius/harmony-native'
 import { SectionList } from 'app/components/core'
+import { make, track as record } from 'app/services/analytics'
 
 import { NoResultsTile } from '../NoResultsTile'
 import { SearchItem, SearchItemSkeleton } from '../SearchItem'
-import { useGetSearchResults } from '../searchState'
+import { useGetSearchResults, useSearchQuery } from '../searchState'
 
 const { addItem: addRecentSearch } = searchActions
 
@@ -38,13 +39,28 @@ export const SearchSectionHeader = (props: SearchSectionHeaderProps) => {
 const AllResultsItem = ({
   item
 }: {
-  item: SearchItemType & { status?: Status }
+  item: SearchItemType & { status?: Status; isAlbum?: boolean }
 }) => {
   const dispatch = useDispatch()
+  const [query] = useSearchQuery()
 
   const handlePress = useCallback(() => {
     dispatch(addRecentSearch({ searchItem: item }))
-  }, [item, dispatch])
+
+    record(
+      make({
+        eventName: Name.SEARCH_RESULT_SELECT,
+        term: query,
+        source: 'search results page',
+        id: item.id,
+        kind: {
+          [Kind.COLLECTIONS]: item.isAlbum ? 'album' : 'playlist',
+          [Kind.TRACKS]: 'track',
+          [Kind.USERS]: 'profile'
+        }[item.kind]
+      })
+    )
+  }, [item, dispatch, query])
 
   return item.status === Status.LOADING ? (
     <Box ph='m'>
@@ -115,14 +131,16 @@ export const AllResults = () => {
               title: 'playlists',
               data: data.playlists.map(({ playlist_id }) => ({
                 id: playlist_id,
-                kind: Kind.COLLECTIONS
+                kind: Kind.COLLECTIONS,
+                isAlbum: false
               }))
             },
             {
               title: 'albums',
               data: data.albums.map(({ playlist_id }) => ({
                 id: playlist_id,
-                kind: Kind.COLLECTIONS
+                kind: Kind.COLLECTIONS,
+                isAlbum: true
               }))
             }
           ].filter((section) => section.data.length > 0)
