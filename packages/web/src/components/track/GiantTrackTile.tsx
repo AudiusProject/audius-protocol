@@ -435,7 +435,7 @@ export const GiantTrackTile = ({
       isArtistPick,
       isUnlisted,
       includeEmbed: !(isUnlisted || isStreamGated),
-      includeArtistPick: !isUnlisted,
+      includeArtistPick: true,
       includeAddToAlbum: isOwner && !ddexApp,
       extraMenuItems: overflowMenuExtraItems
     }

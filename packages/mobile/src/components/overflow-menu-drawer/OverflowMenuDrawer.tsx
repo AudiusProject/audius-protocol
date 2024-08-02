@@ -52,7 +52,9 @@ const overflowRowConfig: Record<OverflowAction, ActionDrawerRow> = {
   [OverflowAction.VIEW_EPISODE_PAGE]: { text: 'View Episode Page' },
   [OverflowAction.MARK_AS_PLAYED]: { text: 'Mark as Played' },
   [OverflowAction.MARK_AS_UNPLAYED]: { text: 'Mark as Unplayed' },
-  [OverflowAction.PURCHASE_TRACK]: { text: 'Purchase Track' }
+  [OverflowAction.PURCHASE_TRACK]: { text: 'Purchase Track' },
+  [OverflowAction.SET_ARTIST_PICK]: { text: 'Set as Artist Pick' },
+  [OverflowAction.UNSET_ARTIST_PICK]: { text: 'Unset as Artist Pick' }
 }
 
 export const OverflowMenuDrawer = () => {
