@@ -6,13 +6,10 @@ import {
   Box,
   Button,
   Divider,
-  FilterButton,
-  FilterButtonOptions,
+  FilterButtonOption,
   FilterButtonV2,
   Flex,
   IconCaretDown,
-  Paper,
-  Popup,
   SegmentedControl,
   TextInput,
   useTheme
@@ -175,15 +172,18 @@ const BpmRangeView = ({ value, handleChange }: ViewProps) => {
   return (
     <>
       <Flex direction='column' w='100%' ph='s'>
-        <FilterButtonOptions
-          activeValue={
-            isValueRangeOption && !(minBpm || maxBpm) ? value : undefined
-          }
-          options={bpmOptions}
-          onChange={(option) => {
-            handleChange(option.value, option.helperText ?? option.value)
-          }}
-        />
+        {bpmOptions.map((option) => (
+          <FilterButtonOption
+            key={option.value}
+            option={option}
+            activeValue={
+              isValueRangeOption && !(minBpm || maxBpm) ? value : undefined
+            }
+            onChange={() =>
+              handleChange(option.value, option.helperText ?? option.value)
+            }
+          />
+        ))}
       </Flex>
       <Flex
         ph='s'

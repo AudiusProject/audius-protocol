@@ -40,7 +40,8 @@ const GenreFilter = () => {
       label={messages.genre}
       popupProps={{
         anchorOrigin: { vertical: 'bottom', horizontal: 'left' },
-        transformOrigin: { vertical: 'top', horizontal: 'left' }
+        transformOrigin: { vertical: 'top', horizontal: 'left' },
+        css: { maxHeight: 400 }
       }}
       value={genre}
       onChange={updateSearchParams}
@@ -85,7 +86,8 @@ const MoodFilter = () => {
       label={messages.mood}
       popupProps={{
         anchorOrigin: { vertical: 'bottom', horizontal: 'left' },
-        transformOrigin: { vertical: 'top', horizontal: 'left' }
+        transformOrigin: { vertical: 'top', horizontal: 'left' },
+        css: { maxHeight: 400 }
       }}
       value={mood}
       onChange={updateSearchParams}
@@ -127,7 +129,8 @@ const KeyFilter = () => {
       onChange={updateSearchParams}
       popupProps={{
         anchorOrigin: { vertical: 'bottom', horizontal: 'left' },
-        transformOrigin: { vertical: 'top', horizontal: 'left' }
+        transformOrigin: { vertical: 'top', horizontal: 'left' },
+        css: { minWidth: 200 }
       }}
       options={keyOptions}
     >

@@ -250,55 +250,54 @@ export const FilterButtonV2 = forwardRef(function FilterButton<
         ref={scrollRef}
         isVisible={isOpen}
         onClose={() => setIsOpen(false)}
-        css={{ maxHeight: 400, overflowY: 'auto' }}
         {...popupProps}
+        css={[{ overflowY: 'auto' }, popupProps?.css]}
       >
         <Paper mt='s' border='strong' shadow='far'>
           {children ? (
             children({ onChange: handleChange, options: optionElements })
           ) : (
             <Flex
-              p='s'
               direction='column'
+              p='s'
+              gap='s'
               alignItems='flex-start'
               role='listbox'
               aria-label={selectedLabel ?? label ?? props['aria-label']}
               aria-activedescendant={selectedLabel}
             >
-              <Flex direction='column' w='100%' gap='s'>
-                {showFilterInput && filterInputProps ? (
-                  <TextInput
-                    ref={inputRef}
-                    size={TextInputSize.SMALL}
-                    startIcon={IconSearch}
-                    onClick={(e) => {
-                      e.stopPropagation()
-                    }}
-                    onChange={(e) => {
-                      setFilterInputValue(e.target.value)
-                    }}
-                    autoComplete='off'
-                    {...filterInputProps}
-                  />
-                ) : null}
-                {optionsLabel ? (
-                  <Box pt='s' ph='m'>
-                    <Text variant='label' size='xs'>
-                      {optionsLabel}
-                    </Text>
-                  </Box>
-                ) : null}
+              {showFilterInput && filterInputProps ? (
+                <TextInput
+                  ref={inputRef}
+                  size={TextInputSize.SMALL}
+                  startIcon={IconSearch}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                  }}
+                  onChange={(e) => {
+                    setFilterInputValue(e.target.value)
+                  }}
+                  autoComplete='off'
+                  {...filterInputProps}
+                />
+              ) : null}
+              {optionsLabel ? (
+                <Box pt='s' ph='m'>
+                  <Text variant='label' size='xs'>
+                    {optionsLabel}
+                  </Text>
+                </Box>
+              ) : null}
 
-                {filteredOptions && filteredOptions.length === 0 ? (
-                  <Flex justifyContent='center'>
-                    <Text variant='body' color='subdued' size='s'>
-                      {messages.noMatches}
-                    </Text>
-                  </Flex>
-                ) : (
-                  <Flex direction='column'>{optionElements}</Flex>
-                )}
-              </Flex>
+              {filteredOptions && filteredOptions.length === 0 ? (
+                <Flex justifyContent='center'>
+                  <Text variant='body' color='subdued' size='s'>
+                    {messages.noMatches}
+                  </Text>
+                </Flex>
+              ) : (
+                <Flex direction='column'>{optionElements}</Flex>
+              )}
             </Flex>
           )}
         </Paper>

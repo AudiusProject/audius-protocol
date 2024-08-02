@@ -1,5 +1,7 @@
 import { ReactNode } from 'react'
 
+import { CSSObject } from '@emotion/react'
+
 import { IconComponent } from 'components/icon'
 import { TextInputProps } from 'components/input'
 import { PopupProps } from 'components/popup'
@@ -130,6 +132,6 @@ export type FilterButtonProps<Value extends string> = {
    */
   optionsLabel?: string
 
-  popupProps?: Partial<PopupProps>
+  popupProps?: Partial<PopupProps> & { css?: CSSObject }
   renderLabel?: (label: string) => ReactNode
 }
