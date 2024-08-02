@@ -1,3 +1,5 @@
+import { Portal } from '@gorhom/portal'
+
 import { ConfirmationDrawer } from 'app/components/drawers'
 
 const messages = {
@@ -24,12 +26,14 @@ const messages = {
   }
 }
 
-type ConfirmPublishDrawerProps = {
+type ConfirmPublishTrackDrawerProps = {
   type: 'release' | 'early_release' | 'hidden'
   onConfirm: () => void
 }
 
-export const ConfirmPublishDrawer = (props: ConfirmPublishDrawerProps) => {
+export const ConfirmPublishTrackDrawer = (
+  props: ConfirmPublishTrackDrawerProps
+) => {
   const { type, onConfirm } = props
 
   const confirmationMessages =
@@ -40,12 +44,13 @@ export const ConfirmPublishDrawer = (props: ConfirmPublishDrawerProps) => {
       : messages.hidden
 
   return (
-    <ConfirmationDrawer
-      variant='affirmative'
-      modalName='EditAccessConfirmation'
-      onConfirm={onConfirm}
-      messages={confirmationMessages}
-      addBottomInset
-    />
+    <Portal hostName='ConfirmPublishTrackPortal'>
+      <ConfirmationDrawer
+        variant='affirmative'
+        modalName='EditAccessConfirmation'
+        onConfirm={onConfirm}
+        messages={confirmationMessages}
+      />
+    </Portal>
   )
 }
