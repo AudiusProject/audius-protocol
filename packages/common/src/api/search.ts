@@ -1,5 +1,4 @@
 import { Mood } from '@audius/sdk'
-import { make } from 'common/store/analytics/actions'
 import { isEmpty } from 'lodash'
 
 import { createApi } from '~/audius-query'
@@ -50,7 +49,7 @@ const searchApi = createApi({
     getSearchResults: {
       fetch: async (
         args: getSearchArgs,
-        { apiClient, audiusBackend, getFeatureEnabled, dispatch }
+        { apiClient, audiusBackend, getFeatureEnabled, analytics }
       ) => {
         const {
           category,
@@ -93,8 +92,9 @@ const searchApi = createApi({
 
           // Fire analytics only for the first page of results
           if (offset === 0) {
-            dispatch(
-              make(Name.SEARCH_TAG_SEARCH, {
+            analytics.track(
+              analytics.make({
+                eventName: Name.SEARCH_SEARCH,
                 term: query,
                 source,
                 ...searchParams
@@ -120,8 +120,9 @@ const searchApi = createApi({
           }
           // Fire analytics only for the first page of results
           if (offset === 0) {
-            dispatch(
-              make(Name.SEARCH_SEARCH, {
+            analytics.track(
+              analytics.make({
+                eventName: Name.SEARCH_SEARCH,
                 term: query,
                 source,
                 ...searchParams
