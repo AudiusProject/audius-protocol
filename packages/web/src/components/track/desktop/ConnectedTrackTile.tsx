@@ -149,6 +149,9 @@ const ConnectedTrackTile = ({
   const isTrackPlaying = isActive && isPlaying
   const isOwner = handle === userHandle
   const isArtistPick = showArtistPick && artist_pick_track_id === trackId
+  if (artist_pick_track_id === trackId) {
+    console.log('why??', showArtistPick)
+  }
   const hasPreview = !!track?.preview_cid
 
   const { isFetchingNFTAccess, hasStreamAccess } =
@@ -198,7 +201,7 @@ const ConnectedTrackTile = ({
       handle,
       includeAddToPlaylist: !isUnlisted || isOwner,
       includeAddToAlbum: isOwner && !ddexApp,
-      includeArtistPick: handle === userHandle && !isUnlisted,
+      includeArtistPick: handle === userHandle,
       includeEdit: handle === userHandle,
       ddexApp: track?.ddex_app,
       includeEmbed: !(isUnlisted || isStreamGated),

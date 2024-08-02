@@ -1,14 +1,9 @@
 import { formatReleaseDate } from '@audius/common/utils'
-import {
-  Text,
-  IconCalendarMonth,
-  Flex,
-  useTheme,
-  IconVisibilityHidden
-} from '@audius/harmony'
-import dayjs from 'dayjs'
+import { IconCalendarMonth, IconVisibilityHidden } from '@audius/harmony'
 
 import { getLocalTimezone } from 'utils/dateUtils'
+
+import { LineupTileLabel } from './LineupTileLabel'
 
 const messages = {
   hidden: 'Hidden',
@@ -27,34 +22,22 @@ export type VisibilityLabelProps = {
 
 export const VisibilityLabel = (props: VisibilityLabelProps) => {
   const { releaseDate, isUnlisted, isScheduledRelease } = props
-  const { color } = useTheme()
 
-  if (
-    !releaseDate ||
-    !isUnlisted ||
-    !isScheduledRelease ||
-    dayjs(releaseDate).isBefore(dayjs())
-  ) {
-    return null
-  }
-
-  if (isUnlisted && !isScheduledRelease) {
+  if (releaseDate && isUnlisted && isScheduledRelease) {
     return (
-      <Flex alignItems='center' gap='xs'>
-        <IconVisibilityHidden size='s' color='subdued' />
-        <Text variant='body' size='xs' color='subdued'>
-          {messages.hidden}
-        </Text>
-      </Flex>
+      <LineupTileLabel icon={IconCalendarMonth} color='accent'>
+        {messages.releases(releaseDate)}
+      </LineupTileLabel>
     )
   }
 
-  return (
-    <Flex alignItems='center' gap='xs'>
-      <IconCalendarMonth size='s' fill={color.icon.accent} />
-      <Text variant='body' size='xs' color='accent'>
-        {messages.releases(releaseDate)}
-      </Text>
-    </Flex>
-  )
+  if (isUnlisted) {
+    return (
+      <LineupTileLabel icon={IconVisibilityHidden} color='subdued'>
+        {messages.hidden}
+      </LineupTileLabel>
+    )
+  }
+
+  return null
 }

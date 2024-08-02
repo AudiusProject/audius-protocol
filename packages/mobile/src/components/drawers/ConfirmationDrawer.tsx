@@ -88,7 +88,9 @@ const ConfirmationDrawerContent = (props: DrawerContentProps) => {
           {messages.header}
         </Text>
       </Flex>
-      <Text size='l'>{messages.description}</Text>
+      <Text size='l' textAlign='center'>
+        {messages.description}
+      </Text>
       <Flex gap='l'>
         <Button
           variant={variant === 'destructive' ? 'destructive' : 'primary'}
