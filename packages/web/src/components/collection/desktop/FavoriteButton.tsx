@@ -88,6 +88,7 @@ export const FavoriteButton = (props: FavoriteButtonProps) => {
       <IconButton
         color={color ?? (isSaved ? 'active' : 'subdued')}
         icon={IconHeart}
+        size='2xl'
         onClick={handleFavorite}
         {...other}
         aria-label={isSaved ? messages.favorited : messages.favorite}

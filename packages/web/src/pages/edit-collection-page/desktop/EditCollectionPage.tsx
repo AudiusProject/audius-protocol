@@ -6,7 +6,8 @@ import { Name, SquareSizes, Status } from '@audius/common/models'
 import { CollectionValues } from '@audius/common/schemas'
 import {
   EditCollectionValues,
-  cacheCollectionsActions
+  cacheCollectionsActions,
+  cacheCollectionsSelectors
 } from '@audius/common/store'
 import { replace } from 'connected-react-router'
 import { isEqual } from 'lodash'
@@ -23,10 +24,12 @@ import { useCollectionCoverArt2 } from 'hooks/useCollectionCoverArt'
 import { useIsUnauthorizedForHandleRedirect } from 'hooks/useManagedAccountNotAllowedRedirect'
 import { useRequiresAccount } from 'hooks/useRequiresAccount'
 import { track } from 'services/analytics'
+import { useSelector } from 'utils/reducer'
 
 import { updatePlaylistContents } from '../utils'
 
 const { editPlaylist } = cacheCollectionsActions
+const { getCollection } = cacheCollectionsSelectors
 
 type EditCollectionPageParams = {
   handle: string
@@ -48,13 +51,19 @@ export const EditCollectionPage = () => {
   useIsUnauthorizedForHandleRedirect(handle)
 
   const { data: currentUserId } = useGetCurrentUserId({})
-  const { data: collection, status } = useGetPlaylistByPermalink(
+  const { data: apiCollection, status } = useGetPlaylistByPermalink(
     {
       permalink,
       currentUserId
     },
     { disabled: !currentUserId, force: true }
   )
+
+  const localCollection = useSelector((state) =>
+    getCollection(state, { permalink })
+  )
+
+  const collection = status === Status.ERROR ? localCollection : apiCollection
 
   const { playlist_id, tracks, description } = collection ?? {}
 
@@ -103,14 +112,14 @@ export const EditCollectionPage = () => {
       ...restValues
     }
 
-    dispatch(editPlaylist(playlist_id, collection as EditCollectionValues))
+    dispatch(editPlaylist(playlist_id!, collection as EditCollectionValues))
 
     dispatch(replace(permalink))
   }
 
   return (
     <Page header={<Header primary={messages.title(isAlbum)} showBackButton />}>
-      {status !== Status.SUCCESS || !artworkUrl ? (
+      {status === Status.IDLE || status === Status.LOADING || !artworkUrl ? (
         <LoadingSpinnerFullPage />
       ) : (
         <EditCollectionForm

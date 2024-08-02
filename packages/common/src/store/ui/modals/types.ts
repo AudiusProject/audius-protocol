@@ -7,7 +7,6 @@ import { AlbumTrackRemoveConfirmationModalState } from './album-track-remove-con
 import { ArtistPickModalState } from './artist-pick-modal'
 import { CoinflowOnrampModalState } from './coinflow-onramp-modal'
 import { CoinflowWithdrawModalState } from './coinflow-withdraw-modal'
-import { EditTrackModalState } from './edit-track-modal'
 import { InboxUnavailableModalState } from './inbox-unavailable-modal'
 import { LeavingAudiusModalState } from './leaving-audius-modal'
 import { PremiumContentPurchaseModalState } from './premium-content-purchase-modal'
@@ -96,7 +95,6 @@ export type BasicModalsState = {
 export type StatefulModalsState = {
   CoinflowOnramp: CoinflowOnrampModalState
   CreateChatModal: CreateChatModalState
-  EditTrack: EditTrackModalState
   InboxUnavailableModal: InboxUnavailableModalState
   LeavingAudiusModal: LeavingAudiusModalState
   WithdrawUSDCModal: WithdrawUSDCModalState

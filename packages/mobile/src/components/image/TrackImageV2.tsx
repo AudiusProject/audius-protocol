@@ -6,7 +6,10 @@ import {
 import type { Maybe } from '@audius/common/utils'
 import { useSelector } from 'react-redux'
 
-import type { FastImageProps } from '@audius/harmony-native'
+import type {
+  CornerRadiusOptions,
+  FastImageProps
+} from '@audius/harmony-native'
 import { FastImage, useTheme } from '@audius/harmony-native'
 import imageEmpty from 'app/assets/images/imageBlank2x.png'
 import { useContentNodeImage } from 'app/hooks/useContentNodeImage'
@@ -69,10 +72,11 @@ type TrackImageProps = {
   trackId: ID
   size: SquareSizes
   style?: FastImageProps['style']
+  borderRadius?: CornerRadiusOptions
 }
 
 export const TrackImageV2 = (props: TrackImageProps) => {
-  const { trackId, size, style, ...other } = props
+  const { trackId, size, style, borderRadius = 's' as const, ...other } = props
 
   const trackImageSource = useTrackImage(trackId, size)
   const { color, cornerRadius } = useTheme()
@@ -85,7 +89,7 @@ export const TrackImageV2 = (props: TrackImageProps) => {
     <FastImage
       {...other}
       style={[
-        { aspectRatio: 1, borderRadius: cornerRadius.s },
+        { aspectRatio: 1, borderRadius: cornerRadius[borderRadius] },
         isFallbackImage && { backgroundColor: color.background.surface2 },
         style
       ]}

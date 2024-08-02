@@ -104,8 +104,8 @@ describe('getNStorageNodes', () => {
 
     const result = await getNStorageNodes(sampleNodes, 3, 'test-rendezvous-key')
     assert.deepEqual(result, [
-      'http://node3.com',
       'http://node2.com',
+      'http://node3.com',
       'http://node1.com'
     ])
   })

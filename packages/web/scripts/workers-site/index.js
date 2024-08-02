@@ -345,6 +345,7 @@ function isAssetUrl(url) {
     pathname.startsWith('/.well-known') ||
     pathname.startsWith('/documents') ||
     pathname.startsWith('/gitsha.json') ||
+    pathname.startsWith('/actions.json') ||
     pathname.startsWith('/robots.txt')
   )
 }

@@ -23,9 +23,7 @@ import { IntKeys, StringKeys, RemoteConfigInstance } from '../remote-config'
 
 import * as adapter from './ResponseAdapter'
 import { processSearchResults } from './helper'
-import { makeActivity } from './makeActivity'
 import {
-  APIActivity,
   APIBlockConfirmation,
   APIFavorite,
   APIPlaylist,
@@ -85,7 +83,6 @@ const FULL_ENDPOINT_MAP = {
   getPlaylistByPermalink: (handle: string, slug: string) =>
     `/playlists/by_permalink/${handle}/${slug}`,
   topGenreUsers: '/users/genre/top',
-  topArtists: '/users/top',
   getTrack: (trackId: OpaqueID) => `/tracks/${trackId}`,
   getTrackStreamUrl: (trackId: OpaqueID) => `/tracks/${trackId}/stream`,
   getTracks: () => `/tracks`,
@@ -157,10 +154,6 @@ type PaginationArgs = {
   offset?: number
 }
 
-type CurrentUserIdArg = { currentUserId: Nullable<ID> }
-
-type GetTopArtistsArgs = PaginationArgs & CurrentUserIdArg
-
 type GetTrendingArgs = {
   timeRange?: TimeRange
   offset?: number
@@ -228,13 +221,6 @@ type GetTopArtistGenresArgs = {
   genres?: string[]
   limit?: number
   offset?: number
-}
-
-type GetUserRepostsByHandleArgs = {
-  handle: string
-  currentUserId: Nullable<ID>
-  offset?: number
-  limit?: number
 }
 
 type GetCollectionMetadataArgs = {
@@ -945,31 +931,6 @@ export class AudiusAPIClient {
     return data.map(adapter.makeFavorite).filter(removeNullable)
   }
 
-  async getUserRepostsByHandle({
-    handle,
-    currentUserId,
-    limit,
-    offset
-  }: GetUserRepostsByHandleArgs) {
-    this._assertInitialized()
-    const encodedCurrentUserId = encodeHashId(currentUserId)
-    const params = {
-      user_id: encodedCurrentUserId || undefined,
-      limit,
-      offset
-    }
-
-    const response = await this._getResponse<APIResponse<APIActivity[]>>(
-      FULL_ENDPOINT_MAP.userRepostsByHandle(handle),
-      params
-    )
-
-    if (!response) return []
-
-    const adapted = response.data.map(makeActivity).filter(removeNullable)
-    return adapted
-  }
-
   async getRelatedArtists({ userId, offset, limit }: GetRelatedArtistsArgs) {
     this._assertInitialized()
     const encodedUserId = this._encodeOrThrow(userId)
@@ -998,29 +959,6 @@ export class AudiusAPIClient {
     if (!favoritedTrackResponse) return []
 
     const adapted = favoritedTrackResponse.data
-      .map(adapter.makeUser)
-      .filter(removeNullable)
-    return adapted
-  }
-
-  async getTopArtists({ limit, offset, currentUserId }: GetTopArtistsArgs) {
-    this._assertInitialized()
-    const encodedUserId = encodeHashId(currentUserId)
-
-    const params = {
-      limit,
-      offset,
-      user_id: encodedUserId
-    }
-
-    const topArtistsResponse = await this._getResponse<APIResponse<APIUser[]>>(
-      FULL_ENDPOINT_MAP.topArtists,
-      params
-    )
-
-    if (!topArtistsResponse) return []
-
-    const adapted = topArtistsResponse.data
       .map(adapter.makeUser)
       .filter(removeNullable)
     return adapted

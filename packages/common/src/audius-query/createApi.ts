@@ -372,7 +372,11 @@ const fetchData = async <Args, Data>(
           { ...defaultRetryConfig, ...endpoint.options.retryConfig }
         )
       : await fetch(fetchArgs, context)
-    if (apiData == null) {
+
+    if (apiData === null || apiData === undefined) {
+      if (force?.current) {
+        force.current = false
+      }
       throw new RemoteDataNotFoundError('Remote data not found')
     }
 
@@ -480,7 +484,12 @@ const buildEndpointHooks = <
     )
 
     // If `force`, ignore queryState and force a fetch
-    const state = force.current ? null : queryState
+    const state = force.current
+      ? {
+          normalizedData: null,
+          status: force.current === 'forcing' ? Status.LOADING : Status.IDLE
+        }
+      : queryState
 
     const { normalizedData, status, errorMessage, isInitialValue } = state ?? {
       normalizedData: null,

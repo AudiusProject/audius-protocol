@@ -167,13 +167,13 @@ export type SolCollectionMap = {
 
 export type ResourceContributor = {
   name: string
-  roles: [string]
+  roles: string[]
   sequence_number: number
 }
 
 export type RightsController = {
   name: string
-  roles: [string]
+  roles: string[]
   rights_share_unknown?: string
 }
 
@@ -185,6 +185,7 @@ export type Copyright = {
 export type TrackMetadata = {
   ai_attribution_user_id?: Nullable<number>
   allowed_api_keys?: Nullable<string[]>
+  audio_upload_id?: Nullable<string>
   blocknumber: number
   activity_timestamp?: string
   is_delete: boolean
@@ -230,14 +231,15 @@ export type TrackMetadata = {
   is_original_available: boolean
   ddex_app?: Nullable<string>
   ddex_release_ids?: any | null
-  artists?: [ResourceContributor] | null
-  resource_contributors?: [ResourceContributor] | null
-  indirect_resource_contributors?: [ResourceContributor] | null
+  artists?: ResourceContributor[] | null
+  resource_contributors?: ResourceContributor[] | null
+  indirect_resource_contributors?: ResourceContributor[] | null
   rights_controller?: RightsController | null
   copyright_line?: Copyright | null
   producer_copyright_line?: Copyright | null
   parental_warning_type?: string | null
   bpm?: number | null
+  is_custom_bpm?: boolean
   musical_key?: string | null
   audio_analysis_error_count?: number
 

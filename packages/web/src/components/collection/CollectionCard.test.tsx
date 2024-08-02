@@ -45,6 +45,9 @@ function renderCollectionCard(options?: RenderOptions) {
           users: {
             entries: {
               2: { metadata: { handle: 'test-user', name: 'Test User' } }
+            },
+            handles: {
+              'test-user': 2
             }
           }
         }

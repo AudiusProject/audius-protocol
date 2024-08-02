@@ -29,6 +29,7 @@ type AiAttributionModalProps = Omit<ModalProps, 'children'> & {
   onChange: (aiAttributedUserId: ID) => void
 }
 
+// TODO: this is not being used anymore. Should we add it to edit page or remove it?
 export const AiAttributionModal = (props: AiAttributionModalProps) => {
   const { isOpen, onClose, onChange } = props
   const [isAttributable, toggleIsAttributable] = useToggle(false)

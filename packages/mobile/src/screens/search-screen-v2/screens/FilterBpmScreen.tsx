@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
+import { isBpmValid } from '@audius/common/utils'
+
 import { Button, Flex, Text, TextInput, useTheme } from '@audius/harmony-native'
 import { KeyboardAvoidingView, SegmentedControl } from 'app/components/core'
 import { FormScreen } from 'app/screens/form-screen'
@@ -19,7 +21,7 @@ const messages = {
   maxBpm: 'Max',
   tooLowError: `BPM less than ${MIN_BPM}`,
   tooHighError: `BPM greater than ${MAX_BPM}`,
-  invalidMinMaxError: 'Min greater than max'
+  invalidMinMaxError: 'Invalid range'
 }
 
 type ViewProps = {
@@ -166,9 +168,10 @@ const BpmRangeView = ({ value, setValue }: ViewProps) => {
         helperText={minError}
         aria-errormessage={minError ?? undefined}
         placeholder={messages.minBpm}
-        onChangeText={(text) => {
-          const validated = text.match(/^(\d{0,3}$)/)
-          if (validated) setMinBpm(text)
+        onChangeText={(value) => {
+          if (value === '' || isBpmValid(value)) {
+            setMinBpm(value)
+          }
         }}
       />
       <Text style={{ alignSelf: 'flex-start', paddingVertical: 20 }}>-</Text>
@@ -181,9 +184,10 @@ const BpmRangeView = ({ value, setValue }: ViewProps) => {
         helperText={maxError}
         aria-errormessage={maxError ?? undefined}
         placeholder={messages.maxBpm}
-        onChangeText={(text) => {
-          const validated = text.match(/^(\d{0,3}$)/)
-          if (validated) setMaxBpm(text)
+        onChangeText={(value) => {
+          if (value === '' || isBpmValid(value)) {
+            setMaxBpm(value)
+          }
         }}
       />
     </Flex>
@@ -283,8 +287,9 @@ const BpmTargetView = ({ value, setValue }: ViewProps) => {
         placeholder={messages.bpm}
         value={bpmTarget}
         onChangeText={(text) => {
-          const validated = text.match(/^(\d{0,3}$)/)
-          if (validated) setBpmTarget(text)
+          if (text === '' || isBpmValid(text)) {
+            setBpmTarget(text)
+          }
         }}
       />
       <Flex direction='row' gap='s'>
@@ -309,7 +314,7 @@ const BpmTargetView = ({ value, setValue }: ViewProps) => {
 export const FilterBpmScreen = () => {
   const [bpm, setBpm, clearBpm] = useSearchFilter('bpm')
   const [bpmType, setBpmType] = useSearchBpmType()
-  const [bpmValue, setBpmValue] = useState(bpm)
+  const [bpmValue, setBpmValue] = useState(isBpmValid(bpm ?? '') ? bpm : '')
 
   const handleSubmit = useCallback(() => {
     if (bpmValue) {
