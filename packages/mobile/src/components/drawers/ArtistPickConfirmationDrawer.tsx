@@ -14,7 +14,7 @@ const messages = {
     confirm: 'Set Track'
   },
   update: {
-    header: 'Change your artist pick?',
+    header: 'Change your Artist Pick?',
     description:
       'This track will appear at the top of your profile and replace your previously picked track.',
     confirm: 'Change Track'

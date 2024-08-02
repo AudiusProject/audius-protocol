@@ -149,9 +149,6 @@ const ConnectedTrackTile = ({
   const isTrackPlaying = isActive && isPlaying
   const isOwner = handle === userHandle
   const isArtistPick = showArtistPick && artist_pick_track_id === trackId
-  if (artist_pick_track_id === trackId) {
-    console.log('why??', showArtistPick)
-  }
   const hasPreview = !!track?.preview_cid
 
   const { isFetchingNFTAccess, hasStreamAccess } =
