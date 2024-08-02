@@ -25,13 +25,21 @@ export const categories = {
   profiles: { icon: IconUser, filters: ['genre', 'isVerified'] },
   tracks: {
     icon: IconNote,
-    filters: ['genre', 'mood', 'key', 'bpm', 'isPremium', 'hasDownloads']
+    filters: [
+      'genre',
+      'mood',
+      'key',
+      'bpm',
+      'isPremium',
+      'hasDownloads',
+      'isVerified'
+    ]
   },
   albums: {
     icon: IconAlbum,
-    filters: ['genre', 'mood', 'isPremium', 'hasDownloads']
+    filters: ['genre', 'mood', 'isPremium', 'hasDownloads', 'isVerified']
   },
-  playlists: { icon: IconPlaylists, filters: ['genre', 'mood'] }
+  playlists: { icon: IconPlaylists, filters: ['genre', 'mood', 'isVerified'] }
 } satisfies Record<string, Category>
 
 export type CategoryKey = keyof typeof categories

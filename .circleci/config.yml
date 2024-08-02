@@ -465,6 +465,7 @@ workflows:
           base-revision: main
           config-path: ../workspace/.circleci/continue_config.yml
           mapping: |
+            core/.* run-core-workflow true
             comms/.* run-discovery-workflow true
             mediorum/.* run-creator-workflow true
             packages/identity-service/.* run-identity-workflow true
@@ -519,6 +520,7 @@ workflows:
           base-revision: main~1
           config-path: ../workspace/.circleci/continue_config.yml
           mapping: |
+            core/.* run-core-workflow true
             comms/.* run-discovery-workflow true
             mediorum/.* run-creator-workflow true
             packages/identity-service/.* run-identity-workflow true

@@ -187,6 +187,7 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
       />
       <Flex
         direction='column'
+        gap='xl'
         justifyContent='space-between'
         css={{ minWidth: 400 }}
       >

@@ -65,6 +65,16 @@ services:
       service: audius-cmd
     <<: *common
 
+  # Core
+  
+  core:
+    extends:
+      file: docker-compose.core.yml
+      service: core
+    container_name: core-discovery-1
+    env_file:
+      - ${PROJECT_ROOT}/core/infra/dev_config/discovery-one.env
+
   # Identity
 
   identity-service-redis:
