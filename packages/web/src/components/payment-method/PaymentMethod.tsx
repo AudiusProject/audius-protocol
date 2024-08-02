@@ -7,6 +7,7 @@ import {
   Nullable
 } from '@audius/common/utils'
 import {
+  FilterButtonV2,
   Flex,
   IconCreditCard,
   IconDonate,
@@ -104,12 +105,12 @@ export const PaymentMethod = ({
               zIndex={zIndex.ADD_FUNDS_VENDOR_SELECTION_DRAWER}
             />
           ) : (
-            <OptionsFilterButton
+            <FilterButtonV2
               onChange={handleSelectVendor}
-              selection={selectedVendor?.toString()}
+              value={selectedVendor?.toString()}
               variant='replaceLabel'
               options={vendorOptions}
-              popupZIndex={zIndex.USDC_ADD_FUNDS_FILTER_BUTTON_POPUP}
+              popupProps={{ zIndex: zIndex.USDC_ADD_FUNDS_FILTER_BUTTON_POPUP }}
             />
           )
         ) : null

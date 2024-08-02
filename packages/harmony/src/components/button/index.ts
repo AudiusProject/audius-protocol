@@ -14,3 +14,4 @@ export {
 export * from './OptionsFilterButton/types'
 export { IconButton, IconButtonProps } from './IconButton/IconButton'
 export { UnstyledButton } from './UnstyledButton'
+export { FilterButtonV2 } from './FilterButtonV2/FilterButtonV2'
