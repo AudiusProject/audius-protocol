@@ -28,7 +28,7 @@ const messages = {
   noMatches: 'No matches'
 }
 
-export const FilterButtonV2 = forwardRef(function FilterButton<
+export const FilterButton = forwardRef(function FilterButton<
   Value extends string
 >(props: FilterButtonProps<Value>, ref: Ref<HTMLButtonElement>) {
   const {

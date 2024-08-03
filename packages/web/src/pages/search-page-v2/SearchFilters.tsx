@@ -10,7 +10,7 @@ import {
   SegmentedControl,
   Divider,
   Box,
-  FilterButtonV2
+  FilterButton
 } from '@audius/harmony'
 import { Mood } from '@audius/sdk'
 import { useSearchParams } from 'react-router-dom-v5-compat'
@@ -36,7 +36,7 @@ const GenreFilter = () => {
   const updateSearchParams = useUpdateSearchParams('genre')
 
   return (
-    <FilterButtonV2
+    <FilterButton
       label={messages.genre}
       popupProps={{
         anchorOrigin: { vertical: 'bottom', horizontal: 'left' },
@@ -82,7 +82,7 @@ const MoodFilter = () => {
   }))
 
   return (
-    <FilterButtonV2
+    <FilterButton
       label={messages.mood}
       popupProps={{
         anchorOrigin: { vertical: 'bottom', horizontal: 'left' },
@@ -122,7 +122,7 @@ const KeyFilter = () => {
   )
 
   return (
-    <FilterButtonV2
+    <FilterButton
       value={key}
       renderLabel={renderLabel}
       label={messages.key}
@@ -160,7 +160,7 @@ const KeyFilter = () => {
           </Flex>
         </Flex>
       )}
-    </FilterButtonV2>
+    </FilterButton>
   )
 }
 
@@ -170,7 +170,7 @@ const IsPremiumFilter = () => {
   const updateSearchParams = useUpdateSearchParams('isPremium')
 
   return (
-    <FilterButtonV2
+    <FilterButton
       label={messages.isPremium}
       value={isPremium}
       onClick={() => updateSearchParams(isPremium ? '' : 'true')}
@@ -184,7 +184,7 @@ const HasDownloadsFilter = () => {
   const updateSearchParams = useUpdateSearchParams('hasDownloads')
 
   return (
-    <FilterButtonV2
+    <FilterButton
       label={messages.hasDownloads}
       value={hasDownloads}
       onClick={() => {
@@ -200,7 +200,7 @@ const IsVerifiedFilter = () => {
   const updateSearchParams = useUpdateSearchParams('isVerified')
 
   return (
-    <FilterButtonV2
+    <FilterButton
       label={messages.isVerified}
       value={isVerified}
       onClick={() => {

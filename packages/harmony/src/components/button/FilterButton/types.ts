@@ -38,7 +38,7 @@ type ChildrenProps<Value> = {
   options: ReactNode
 }
 
-export type FilterButtonProps<Value extends string> = {
+export type FilterButtonProps<Value extends string = string> = {
   /**
    * Selection options
    * e.g. { label: 'Option A', icon: IconRadar }

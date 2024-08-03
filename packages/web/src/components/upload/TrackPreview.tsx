@@ -4,7 +4,7 @@ import { StemCategory, stemCategoryFriendlyNames } from '@audius/common/models'
 import { Nullable } from '@audius/common/utils'
 import {
   Box,
-  FilterButtonV2,
+  FilterButton,
   Flex,
   IconButton,
   IconCompose,
@@ -150,7 +150,7 @@ export const TrackPreview = (props: TrackPreviewProps) => {
       <Flex alignItems='center'>
         {isStem && onEditStemCategory ? (
           <Box mr='xl'>
-            <FilterButtonV2
+            <FilterButton
               label={messages.selectType}
               options={stemCategories}
               value={stemCategory}

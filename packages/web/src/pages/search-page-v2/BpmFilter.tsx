@@ -7,7 +7,7 @@ import {
   Button,
   Divider,
   FilterButtonOption,
-  FilterButtonV2,
+  FilterButton,
   Flex,
   IconCaretDown,
   SegmentedControl,
@@ -358,7 +358,7 @@ export const BpmFilter = () => {
   const InputView = bpmFilterType === 'range' ? BpmRangeView : BpmTargetView
 
   return (
-    <FilterButtonV2
+    <FilterButton
       value={bpm}
       label={label}
       onChange={updateSearchParams}
@@ -396,6 +396,6 @@ export const BpmFilter = () => {
           <InputView value={validatedBpm} handleChange={onChange} />
         </Flex>
       )}
-    </FilterButtonV2>
+    </FilterButton>
   )
 }

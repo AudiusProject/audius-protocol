@@ -4,7 +4,7 @@ import {
   SelectablePill,
   IconFilter,
   TextLink,
-  FilterButtonV2,
+  FilterButton,
 } from '@audius/harmony'
 import {
   CollectionData,
@@ -150,7 +150,7 @@ const Releases = () => {
         >
           Re-Process Errors
         </Button>
-        <FilterButtonV2
+        <FilterButton
           iconRight={IconFilter}
           options={[
             { value: 'UserMatch' },

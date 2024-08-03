@@ -18,8 +18,10 @@ const meta: Meta<typeof FilterButton> = {
       { value: 'Blue Man Group' }
     ],
     label: 'Choice',
-    popupAnchorOrigin: { horizontal: 'center', vertical: 'bottom' },
-    popupTransformOrigin: { horizontal: 'center', vertical: 'top' }
+    popupProps: {
+      anchorOrigin: { horizontal: 'center', vertical: 'bottom' },
+      transformOrigin: { horizontal: 'center', vertical: 'top' }
+    }
   },
   argTypes: {
     options: {
@@ -28,7 +30,7 @@ const meta: Meta<typeof FilterButton> = {
     label: {
       control: { type: 'text' }
     },
-    selection: {
+    value: {
       control: { type: 'text' }
     }
   }

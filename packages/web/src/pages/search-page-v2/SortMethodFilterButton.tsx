@@ -1,4 +1,4 @@
-import { FilterButtonV2 } from '@audius/harmony'
+import { FilterButton } from '@audius/harmony'
 
 import { useSearchParams, useUpdateSearchParams } from './utils'
 
@@ -12,7 +12,7 @@ export const SortMethodFilterButton = () => {
   const updateSortParam = useUpdateSearchParams('sortMethod')
 
   return (
-    <FilterButtonV2
+    <FilterButton
       value={sortMethod ?? 'relevant'}
       variant='replaceLabel'
       optionsLabel={messages.sortOptionsLabel}

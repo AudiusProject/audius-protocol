@@ -10,7 +10,7 @@ import {
   searchActions,
   SearchKind
 } from '@audius/common/store'
-import { FilterButtonV2, Flex, Text, useTheme } from '@audius/harmony'
+import { FilterButton, Flex, Text, useTheme } from '@audius/harmony'
 import { css } from '@emotion/css'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -188,7 +188,7 @@ export const TrackResultsPage = () => {
         </Text>
         <Flex gap='s'>
           <SortMethodFilterButton />
-          <FilterButtonV2
+          <FilterButton
             value={tracksLayout}
             variant='replaceLabel'
             optionsLabel={messages.layoutOptionsLabel}
