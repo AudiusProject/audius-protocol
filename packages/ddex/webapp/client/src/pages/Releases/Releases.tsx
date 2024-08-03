@@ -159,12 +159,12 @@ const Releases = () => {
             { value: 'Published' },
             { value: 'Unpublished' },
           ]}
-        />{' '}
-      </Flex>{' '}
+        />
+      </Flex>
       <PaginatedTable
         queryFunction={trpc.releases.getReleases.useQuery}
         TableDisplay={Table}
-      />{' '}
+      />
     </TableLayout>
   )
 }
