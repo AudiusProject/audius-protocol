@@ -13,12 +13,9 @@ import {
 } from '@audius/common/store'
 import { IconRocket, IconButton, IconButtonProps } from '@audius/harmony'
 import { useDispatch, useSelector } from 'react-redux'
-import { useToggle } from 'react-use'
 
 import { Tooltip } from 'components/tooltip'
 import { useFlag } from 'hooks/useRemoteConfig'
-
-import { PublishConfirmationModal } from './PublishConfirmationModal'
 
 const { getCollection } = collectionPageSelectors
 const { getCollectionHasHiddenTracks } = cacheCollectionsSelectors
@@ -128,11 +125,6 @@ export const PublishButton = (props: PublishButtonProps) => {
       ) : (
         publishButtonElement
       )}
-      {/* <PublishConfirmationModal
-        collectionId={collectionId}
-        isOpen={isConfirming}
-        onClose={toggleIsConfirming}
-      /> */}
     </>
   )
 }

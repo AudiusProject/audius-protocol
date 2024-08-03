@@ -12,8 +12,10 @@ import { useAppScreenOptions } from 'app/screens/app-screen/useAppScreenOptions'
 import { messages as completeMessages } from '../upload-screen/screens/CompleteTrackScreen'
 
 import { EditTrackForm } from './EditTrackForm'
-import { ConfirmPublishTrackDrawer } from './components/ConfirmPublishDrawer'
+import { EarlyReleaseConfirmationDrawer } from './components/EarlyReleaseConfirmationDrawer'
 import { EditAccessConfirmationDrawer } from './components/EditAccessConfirmationDrawer'
+import { HideConfirmationDrawer } from './components/HideConfirmationDrawer'
+import { PublishConfirmationDrawer } from './components/PublishConfirmationDrawer'
 import {
   AdvancedScreen,
   IsrcIswcScreen,
@@ -71,7 +73,9 @@ export const EditTrackNavigator = (props: EditTrackNavigatorProps) => {
       </Stack.Navigator>
       <GatedContentUploadPromptDrawer isUpload={!initialValues.track_id} />
       <EditAccessConfirmationDrawer />
-      <ConfirmPublishTrackDrawer />
+      <HideConfirmationDrawer />
+      <PublishConfirmationDrawer />
+      <EarlyReleaseConfirmationDrawer />
       <SupportersInfoDrawer />
     </>
   )

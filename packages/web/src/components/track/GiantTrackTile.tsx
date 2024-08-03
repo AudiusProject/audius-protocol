@@ -261,6 +261,7 @@ export const GiantTrackTile = ({
           onClick={() => {
             if (isScheduledRelease) {
               openEarlyReleaseConfirmation({
+                contentType: 'track',
                 confirmCallback: () => {
                   onMakePublic(trackId)
                 }

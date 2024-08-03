@@ -11,11 +11,12 @@ import {
   stemsUploadActions,
   stemsUploadSelectors,
   editTrackModalSelectors,
-  useEditTrackModal
+  useEditTrackModal,
+  usePublishConfirmationModal
 } from '@audius/common/store'
 import { Nullable, removeNullable, uuid } from '@audius/common/utils'
 import { push as pushRoute } from 'connected-react-router'
-import { connect, useDispatch } from 'react-redux'
+import { connect } from 'react-redux'
 import { matchPath } from 'react-router'
 import { withRouter, RouteComponentProps } from 'react-router-dom'
 import { Dispatch } from 'redux'
@@ -51,7 +52,6 @@ const EditTrackModal = ({
   uploadStems,
   currentUploads
 }: EditTrackModalProps) => {
-  const dispatch = useDispatch()
   const { isOpen, onClose } = useEditTrackModal()
   const [isModalOpen, setIsModalOpen] = useState(false)
   useEffect(() => {
@@ -68,44 +68,57 @@ const EditTrackModal = ({
 
   const [pendingUploads, setPendingUploads] = useState<StemUploadWithFile[]>([])
   const [pendingDeletes, setPendingDeletes] = useState<ID[]>([])
-  const onSaveEdit = (formFields: Track) => {
-    if (!metadata) return
+  const { onOpen: openPublishConfirmation } = usePublishConfirmationModal()
+  const onSaveEdit = useCallback(
+    (formFields: Track) => {
+      if (!metadata) return
 
-    const confirmEdit = (metadata: Track, formFields: Track) => {
-      // Update the download json field based on the is_downloadable flag and the download conditions.
-      // Note that this only needs to be done temporarily until the backend is updated to remove the download fields redundancy.
-      // TODO: Remove this once the backend is updated to remove the download fields redundancy.
-      onEdit(metadata.track_id, formFields)
-      if (pendingUploads.length) {
-        uploadStems(
-          metadata.track_id,
-          pendingUploads.map((stem) => ({
-            ...stem,
-            category: stem.category ?? StemCategory.OTHER
-          }))
-        )
-        setPendingUploads([])
+      const confirmEdit = (metadata: Track, formFields: Track) => {
+        // Update the download json field based on the is_downloadable flag and the download conditions.
+        // Note that this only needs to be done temporarily until the backend is updated to remove the download fields redundancy.
+        // TODO: Remove this once the backend is updated to remove the download fields redundancy.
+        onEdit(metadata.track_id, formFields)
+        if (pendingUploads.length) {
+          uploadStems(
+            metadata.track_id,
+            pendingUploads.map((stem) => ({
+              ...stem,
+              category: stem.category ?? StemCategory.OTHER
+            }))
+          )
+          setPendingUploads([])
+        }
+        if (pendingDeletes.length) {
+          pendingDeletes.forEach((id) => onDelete(id))
+          setPendingDeletes([])
+        }
+        onClose()
       }
-      if (pendingDeletes.length) {
-        pendingDeletes.forEach((id) => onDelete(id))
-        setPendingDeletes([])
-      }
-      onClose()
-    }
 
-    if (metadata.is_unlisted === true && formFields.is_unlisted === false) {
-      // confirm for unlisted -> listed
-      dispatch(
-        openPublishConfirmationModal({
+      if (metadata.is_unlisted === true && formFields.is_unlisted === false) {
+        // confirm for unlisted -> listed
+        openPublishConfirmation({
+          contentType: 'track',
           confirmCallback: () => {
             confirmEdit(metadata, formFields)
           }
         })
-      )
-    } else {
-      confirmEdit(metadata, formFields)
-    }
-  }
+      } else {
+        confirmEdit(metadata, formFields)
+      }
+    },
+    [
+      metadata,
+      onClose,
+      onDelete,
+      openPublishConfirmation,
+      onEdit,
+      pendingDeletes,
+      pendingUploads,
+      uploadStems
+    ]
+  )
+
   const onSelectDelete = () => {
     setShowDeleteConfirmation(true)
   }

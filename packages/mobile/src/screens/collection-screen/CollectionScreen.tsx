@@ -26,7 +26,9 @@ import {
   repostsUserListActions,
   favoritesUserListActions,
   RepostType,
-  usePublishContentModal
+  usePublishConfirmationModal,
+  cacheCollectionsActions,
+  useEarlyReleaseConfirmationModal
 } from '@audius/common/store'
 import { encodeUrlName, removeNullable } from '@audius/common/utils'
 import type { Nullable } from '@audius/common/utils'
@@ -145,10 +147,13 @@ const CollectionScreenComponent = (props: CollectionScreenComponentProps) => {
     stream_conditions,
     ddex_app,
     created_at,
-    is_delete
+    is_delete,
+    is_scheduled_release
   } = collection
 
-  const { onOpen: openPublishConfirmation } = usePublishContentModal()
+  const { onOpen: openPublishConfirmation } = usePublishConfirmationModal()
+  const { onOpen: openEarlyReleaseConfirmation } =
+    useEarlyReleaseConfirmationModal()
 
   const { neutralLight5 } = useThemePalette()
 
@@ -209,12 +214,29 @@ const CollectionScreenComponent = (props: CollectionScreenComponentProps) => {
     navigation?.push('EditCollection', { id: playlist_id })
   }, [navigation, playlist_id])
 
+  const publish = useCallback(() => {
+    dispatch(cacheCollectionsActions.publishPlaylist(playlist_id))
+  }, [playlist_id, dispatch])
+
   const handlePressPublish = useCallback(() => {
-    openPublishConfirmation({
-      contentId: playlist_id,
-      contentType: is_album ? 'album' : 'playlist'
-    })
-  }, [is_album, openPublishConfirmation, playlist_id])
+    if (is_scheduled_release) {
+      openEarlyReleaseConfirmation({
+        contentType: 'album',
+        confirmCallback: publish
+      })
+    } else {
+      openPublishConfirmation({
+        contentType: is_album ? 'album' : 'playlist',
+        confirmCallback: publish
+      })
+    }
+  }, [
+    is_album,
+    openPublishConfirmation,
+    publish,
+    openEarlyReleaseConfirmation,
+    is_scheduled_release
+  ])
 
   const handlePressSave = useCallback(() => {
     if (has_current_user_saved) {

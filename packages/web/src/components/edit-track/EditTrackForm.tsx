@@ -100,9 +100,9 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
       if (usersMayLoseAccess) {
         openHideConfirmation({ confirmCallback })
       } else if (isToBePublished && isInitiallyScheduled) {
-        openEarlyReleaseConfirmation({ confirmCallback })
+        openEarlyReleaseConfirmation({ contentType: 'track', confirmCallback })
       } else if (isToBePublished) {
-        openPublishConfirmation({ confirmCallback })
+        openPublishConfirmation({ contentType: 'track', confirmCallback })
       } else {
         onSubmit(values)
       }

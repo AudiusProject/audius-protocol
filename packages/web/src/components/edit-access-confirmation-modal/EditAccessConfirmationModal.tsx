@@ -1,9 +1,6 @@
 import { useCallback } from 'react'
 
-import {
-  EditAccessType,
-  useEditAccessConfirmationModal
-} from '@audius/common/store'
+import { useEditAccessConfirmationModal } from '@audius/common/store'
 import {
   Modal,
   ModalContent,
@@ -11,38 +8,20 @@ import {
   ModalFooter,
   Button,
   Text,
-  Flex,
-  IconRocket
+  Flex
 } from '@audius/harmony'
 
-const getMessages = (type: EditAccessType | null) => ({
-  title:
-    type === 'audience' || type === 'hidden'
-      ? 'Confirm Update'
-      : type === 'early_release'
-      ? 'Confirm Early Release'
-      : 'Confirm Release',
+const messages = {
+  title: 'Confirm Update',
   description:
-    type === 'audience'
-      ? "You're about to change the audience for your content.  This update may cause others to lose the ability to listen and share."
-      : type === 'hidden'
-      ? "You're about to make your content hidden.  This update may cause others to lose the ability to listen and share."
-      : type === 'early_release'
-      ? 'Do you want to release your track now? Your followers will be notified.'
-      : 'Are you sure you want to make this track public? Your followers will be notified.',
+    "You're about to change the audience for your content. This update may cause others to lose the ability to listen and share.",
   cancel: 'Cancel',
-  confirm:
-    type === 'audience'
-      ? 'Update Audience'
-      : type === 'release' || type === 'early_release'
-      ? 'Release Now'
-      : 'Hide Track'
-})
+  confirm: 'Update Audience'
+}
 
 export const EditAccessConfirmationModal = () => {
   const { data, isOpen, onClose } = useEditAccessConfirmationModal()
-  const { type, confirmCallback, cancelCallback } = data
-  const messages = getMessages(type)
+  const { confirmCallback, cancelCallback } = data
 
   const handleConfirm = useCallback(() => {
     confirmCallback()
@@ -50,19 +29,14 @@ export const EditAccessConfirmationModal = () => {
   }, [confirmCallback, onClose])
 
   const handleCancel = useCallback(() => {
-    cancelCallback()
+    cancelCallback?.()
     onClose()
   }, [cancelCallback, onClose])
-
-  if (!type) return null
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} size='small'>
       <ModalHeader>
         <Flex alignSelf='center' gap='s'>
-          {type === 'release' || type === 'early_release' ? (
-            <IconRocket color='default' size='l' />
-          ) : null}
           <Text variant='label' size='xl' strength='strong'>
             {messages.title}
           </Text>

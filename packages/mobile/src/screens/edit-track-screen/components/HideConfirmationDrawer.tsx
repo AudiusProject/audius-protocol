@@ -1,19 +1,19 @@
 import { useCallback } from 'react'
 
-import { useEditAccessConfirmationModal } from '@audius/common/store'
+import { useHideConfirmationModal } from '@audius/common/store'
 
 import { ConfirmationDrawer } from 'app/components/drawers'
 
 const messages = {
   header: 'Confirm Update',
   description:
-    "You're about to change the audience for your content.  This update may cause others to lose the ability to listen and share.",
+    "You're about to change your content from public to hidden. It will be hidden from the public and your followers will lose access.",
   cancel: 'Cancel',
-  confirm: 'Update Audience'
+  confirm: 'Make Hidden'
 }
 
-export const EditAccessConfirmationDrawer = () => {
-  const { data, onClose } = useEditAccessConfirmationModal()
+export const HideConfirmationDrawer = () => {
+  const { data, onClose } = useHideConfirmationModal()
   const { confirmCallback, cancelCallback } = data
 
   const handleConfirm = useCallback(() => {
@@ -29,7 +29,7 @@ export const EditAccessConfirmationDrawer = () => {
   return (
     <ConfirmationDrawer
       variant='affirmative'
-      modalName='EditAccessConfirmation'
+      modalName='HideConfirmation'
       onConfirm={handleConfirm}
       onCancel={handleCancel}
       messages={messages}

@@ -33,7 +33,7 @@ import {
 } from '@audius/harmony'
 import { useField, useFormikContext } from 'formik'
 import { get, isEmpty, set } from 'lodash'
-import { useDispatch, useSelector } from 'react-redux'
+import { useSelector } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import {
@@ -132,7 +132,6 @@ export const PriceAndAudienceField = (props: PriceAndAudienceFieldProps) => {
     isPublishDisabled = false
   } = props
 
-  const dispatch = useDispatch()
   const [isConfirmationCancelled, setIsConfirmationCancelled] = useState(false)
 
   const isHiddenFieldName = isAlbum ? IS_PRIVATE : IS_UNLISTED
@@ -580,7 +579,6 @@ export const PriceAndAudienceField = (props: PriceAndAudienceFieldProps) => {
 
         if (!isUpload && isEditableAccessEnabled && usersMayLoseAccess) {
           onOpenEditAccessConfirmationModal({
-            type: 'audience',
             confirmCallback: () => handleSubmit(values),
             cancelCallback: () => {
               setIsConfirmationCancelled(true)

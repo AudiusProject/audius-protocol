@@ -22,7 +22,8 @@ import {
   RepostType,
   playerSelectors,
   playbackPositionSelectors,
-  usePublishContentModal
+  trackPageActions,
+  usePublishConfirmationModal
 } from '@audius/common/store'
 import type { CommonState } from '@audius/common/store'
 import { Genre, removeNullable } from '@audius/common/utils'
@@ -96,7 +97,7 @@ export const TrackTileComponent = ({
   )
 
   const currentUserId = useSelector(getUserId)
-  const { onOpen: openPublishModal } = usePublishContentModal()
+  const { onOpen: openPublishModal } = usePublishConfirmationModal()
 
   const isOwner = currentUserId === track.owner_id
 
@@ -233,9 +234,13 @@ export const TrackTileComponent = ({
     }
   }, [track_id, dispatch, has_current_user_reposted])
 
+  const publish = useCallback(() => {
+    dispatch(trackPageActions.makeTrackPublic(track_id))
+  }, [dispatch, track_id])
+
   const handlePressPublish = useCallback(() => {
-    openPublishModal({ contentId: track_id, contentType: 'track' })
-  }, [openPublishModal, track_id])
+    openPublishModal({ contentType: 'track', confirmCallback: publish })
+  }, [openPublishModal, publish])
 
   const onPressEdit = useCallback(() => {
     navigation?.push('EditTrack', { id: track_id })

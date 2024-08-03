@@ -1,11 +1,12 @@
-import { useCallback, useState } from 'react'
+import { useCallback } from 'react'
 
 import type { EditCollectionValues } from '@audius/common/store'
 import {
   deletePlaylistConfirmationModalUIActions,
-  modalsActions
+  useEarlyReleaseConfirmationModal,
+  useHideConfirmationModal,
+  usePublishConfirmationModal
 } from '@audius/common/store'
-import type { Nullable } from '@audius/common/utils'
 import { useField, type FormikProps } from 'formik'
 import { capitalize } from 'lodash'
 import { View } from 'react-native'
@@ -24,7 +25,6 @@ import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles } from 'app/styles'
 
 import { TopBarIconButton } from '../app-screen'
-import { ConfirmPublishTrackDrawer } from '../edit-track-screen/components/ConfirmPublishDrawer'
 import { FormScreen } from '../page-form-screen'
 
 import { AdvancedAlbumField } from './AdvancedAlbumField'
@@ -95,8 +95,6 @@ export const EditCollectionForm = (
   const isInitiallyScheduled = initialValues.is_scheduled_release
   const usersMayLoseAccess = !initiallyHidden && values.is_private
   const isToBePublished = initiallyHidden && !values.is_private
-  const [confirmDrawerType, setConfirmDrawerType] =
-    useState<Nullable<'release' | 'early_release' | 'hidden'>>(null)
 
   const [{ value: entityType }] = useField('entityType')
   const messages = getMessages(entityType)
@@ -110,22 +108,28 @@ export const EditCollectionForm = (
     navigation.goBack()
   }, [handleSubmitProp, navigation])
 
+  const { onOpen: openHideConfirmation } = useHideConfirmationModal()
+  const { onOpen: openEarlyReleaseConfirmation } =
+    useEarlyReleaseConfirmationModal()
+  const { onOpen: openPublishConfirmation } = usePublishConfirmationModal()
+
   const handleSubmit = useCallback(() => {
-    const showConfirmDrawer = usersMayLoseAccess || isToBePublished
-    if (showConfirmDrawer) {
-      if (usersMayLoseAccess) {
-        setConfirmDrawerType('hidden')
-      } else if (isInitiallyScheduled) {
-        setConfirmDrawerType('early_release')
-      } else {
-        setConfirmDrawerType('release')
-      }
-      dispatch(
-        modalsActions.setVisibility({
-          modal: 'EditAccessConfirmation',
-          visible: true
-        })
-      )
+    if (usersMayLoseAccess) {
+      openHideConfirmation({ confirmCallback: submitAndGoBack })
+    } else if (
+      isToBePublished &&
+      isInitiallyScheduled &&
+      entityType === 'album'
+    ) {
+      openEarlyReleaseConfirmation({
+        contentType: 'album',
+        confirmCallback: submitAndGoBack
+      })
+    } else if (isToBePublished) {
+      openPublishConfirmation({
+        contentType: entityType === 'album' ? 'album' : 'playlist',
+        confirmCallback: submitAndGoBack
+      })
     } else {
       submitAndGoBack()
     }
@@ -133,8 +137,11 @@ export const EditCollectionForm = (
     usersMayLoseAccess,
     isToBePublished,
     isInitiallyScheduled,
-    dispatch,
-    submitAndGoBack
+    submitAndGoBack,
+    openHideConfirmation,
+    openEarlyReleaseConfirmation,
+    openPublishConfirmation,
+    entityType
   ])
 
   return (
@@ -175,12 +182,6 @@ export const EditCollectionForm = (
           </Tile>
         </VirtualizedKeyboardAwareScrollView>
       </FormScreen>
-      {confirmDrawerType ? (
-        <ConfirmPublishTrackDrawer
-          type={confirmDrawerType}
-          onConfirm={submitAndGoBack}
-        />
-      ) : null}
     </>
   )
 }

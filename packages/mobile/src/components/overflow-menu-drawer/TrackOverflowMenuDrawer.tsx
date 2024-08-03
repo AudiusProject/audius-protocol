@@ -23,7 +23,9 @@ import {
   OverflowAction,
   playbackPositionActions,
   PurchaseableContentType,
-  usePremiumContentPurchaseModal
+  usePremiumContentPurchaseModal,
+  usePublishConfirmationModal,
+  trackPageActions
 } from '@audius/common/store'
 import type { CommonState, OverflowActionCallbacks } from '@audius/common/store'
 import { useDispatch, useSelector } from 'react-redux'
@@ -98,6 +100,8 @@ const TrackOverflowMenuDrawer = ({ render }: Props) => {
     }
   }, [track, openPremiumContentPurchaseModal])
 
+  const { onOpen: openPublishConfirmation } = usePublishConfirmationModal()
+
   if (!track || !user) {
     return null
   }
@@ -165,13 +169,10 @@ const TrackOverflowMenuDrawer = ({ render }: Props) => {
       navigation?.push('EditTrack', { id })
     },
     [OverflowAction.RELEASE_NOW]: () => {
-      dispatch(
-        setVisibility({
-          drawer: 'PublishContentDrawer',
-          visible: true,
-          data: { contentId: id, contentType: 'track' }
-        })
-      )
+      openPublishConfirmation({
+        contentType: 'playlist',
+        confirmCallback: dispatch(trackPageActions.makeTrackPublic(id))
+      })
     },
 
     [OverflowAction.DELETE_TRACK]: () => {

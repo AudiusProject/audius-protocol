@@ -3,7 +3,11 @@ import { MouseEventHandler, ReactNode, useCallback } from 'react'
 import { useGetPlaylistById, useGetTrackById } from '@audius/common/api'
 import { ID } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
-import { trackPageActions, useEditTrackModal } from '@audius/common/store'
+import {
+  trackPageActions,
+  useEditTrackModal,
+  usePublishConfirmationModal
+} from '@audius/common/store'
 import {
   Flex,
   IconButton,
@@ -101,6 +105,7 @@ const BaseOwnerActionButtons = ({
   )
 
   const onStopPropagation = useCallback((e: any) => e.stopPropagation(), [])
+  const { onOpen: openPublishConfirmation } = usePublishConfirmationModal()
 
   const handleEdit = useCallback(() => {
     isEditTrackRedesignEnabled
@@ -115,14 +120,13 @@ const BaseOwnerActionButtons = ({
   ])
 
   const handlePublishClick = useCallback(() => {
-    dispatch(
-      openPublishConfirmationModal({
-        confirmCallback: () => {
-          dispatch(makeTrackPublic(contentId))
-        }
-      })
-    )
-  }, [dispatch, contentId])
+    openPublishConfirmation({
+      contentType: 'track',
+      confirmCallback: () => {
+        dispatch(makeTrackPublic(contentId))
+      }
+    })
+  }, [contentId, dispatch, openPublishConfirmation])
 
   return (
     <Flex justifyContent='space-between' w='100%' alignItems='center'>

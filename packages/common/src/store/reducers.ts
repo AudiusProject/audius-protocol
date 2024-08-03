@@ -116,7 +116,6 @@ import { StripeModalState } from './ui/stripe-modal/types'
 import theme, { ThemeState } from './ui/theme/slice'
 import toastReducer from './ui/toast/slice'
 import transactionDetailsReducer from './ui/transaction-details/slice'
-import uploadConfirmationReducer from './ui/upload-confirmation-modal/slice'
 import { UploadConfirmationModalState } from './ui/upload-confirmation-modal/types'
 import vipDiscordModalReducer from './ui/vip-discord-modal/slice'
 import { VipDiscordModalState } from './ui/vip-discord-modal/types'
@@ -329,7 +328,6 @@ export type CommonState = {
     toast: ToastState
     transactionDetails: TransactionDetailsState
     uploadConfirmationModal: UploadConfirmationModalState
-    PublishConfirmationModal: PublishConfirmationModalState
     userList: {
       mutuals: ReturnType<typeof mutualsUserListReducer>
       notifications: ReturnType<typeof notificationsUserListReducer>

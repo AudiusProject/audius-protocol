@@ -168,7 +168,6 @@ export const PriceAndAudienceScreen = () => {
   const handleSubmit = useCallback(() => {
     if (!isUpload && isEditableAccessEnabled && usersMayLoseAccess) {
       onOpenEditAccessConfirmationModal({
-        type: 'audience',
         confirmCallback: navigation.goBack,
         cancelCallback: navigation.goBack
       })

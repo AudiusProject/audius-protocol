@@ -1,5 +1,4 @@
 import type { ID } from '@audius/common/models'
-import type { PublishContentModalState } from '@audius/common/store'
 import type { Nullable } from '@audius/common/utils'
 import type { PayloadAction } from '@reduxjs/toolkit'
 import { createSlice } from '@reduxjs/toolkit'
@@ -12,7 +11,6 @@ export type Drawer =
   | 'ForgotPassword'
   | 'NowPlaying'
   | 'CancelEditTrack'
-  | 'PublishContentDrawer'
   | 'DeleteTrackConfirmation'
   | 'ConnectWallets'
   | 'ConfirmRemoveWallet'
@@ -73,7 +71,6 @@ export type DrawerData = {
   InboxUnavailable: { userId: number; shouldOpenChat: boolean }
   Welcome: undefined
   ManagerMode: undefined
-  PublishContentDrawer: PublishContentModalState
 }
 
 export type DrawersState = { [drawer in Drawer]: boolean | 'closing' } & {
@@ -106,7 +103,6 @@ const initialState: DrawersState = {
   SupportersInfo: false,
   Welcome: false,
   ManagerMode: false,
-  PublishContentDrawer: false,
   data: {}
 }
 
