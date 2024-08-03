@@ -8,7 +8,6 @@ import { coinflowWithdrawModalReducer } from './coinflow-withdraw-modal'
 import { createChatModalReducer } from './create-chat-modal'
 import { earlyReleaseConfirmationModalReducer } from './early-release-confirmation-modal'
 import { editAccessConfirmationModalReducer } from './edit-access-confirmation-modal'
-import { editTrackModalReducer } from './edit-track-modal'
 import { hideConfirmationModalReducer } from './hide-confirmation-modal'
 import { inboxUnavailableModalReducer } from './inbox-unavailable-modal'
 import { leavingAudiusModalReducer } from './leaving-audius-modal'
@@ -38,7 +37,6 @@ const noOpReducers = Object.keys(initialState).reduce((prev, curr) => {
  */
 const combinedReducers = combineReducers({
   ...noOpReducers,
-  EditTrack: editTrackModalReducer,
   CreateChatModal: createChatModalReducer,
   InboxUnavailableModal: inboxUnavailableModalReducer,
   LeavingAudiusModal: leavingAudiusModalReducer,

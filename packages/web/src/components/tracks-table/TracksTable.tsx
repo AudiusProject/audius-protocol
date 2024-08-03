@@ -269,14 +269,7 @@ export const TracksTable = ({
         is_stream_gated: isStreamGated
       } = track
       const isOwner = ownerId === userId
-      if (
-        !isOwner &&
-        ((isStreamGated &&
-          isContentUSDCPurchaseGated(track.stream_conditions)) ||
-          isUnlisted ||
-          isDelete)
-      )
-        return null
+      if (!isOwner && (isStreamGated || isUnlisted || isDelete)) return null
       return formatCount(track.plays)
     },
     [userId]

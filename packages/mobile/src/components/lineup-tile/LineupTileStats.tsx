@@ -8,11 +8,7 @@ import {
   PurchaseableContentType
 } from '@audius/common/store'
 import type { RepostType } from '@audius/common/store'
-import {
-  formatCount,
-  formatReleaseDate,
-  getLocalTimezone
-} from '@audius/common/utils'
+import { formatCount, formatReleaseDate } from '@audius/common/utils'
 import type { Nullable } from '@audius/common/utils'
 import moment from 'moment'
 import { View, TouchableOpacity } from 'react-native'
@@ -56,7 +52,7 @@ const messages = {
     `Releases ${formatReleaseDate({
       date,
       withHour: true
-    })} ${getLocalTimezone()}`
+    })}`
 }
 
 const useStyles = makeStyles(({ spacing }) => ({
@@ -219,14 +215,14 @@ export const LineupTileStats = ({
             />
           ) : null
         ) : null}
-        {isUnlisted && !isScheduledRelease ? (
-          <LineupTileLabel icon={IconVisibilityHidden}>
-            {messages.hidden}
-          </LineupTileLabel>
-        ) : null}
         {isUnlisted && isScheduledRelease && releaseDate ? (
           <LineupTileLabel icon={IconCalendarMonth} color='accent'>
             {messages.releases(releaseDate)}
+          </LineupTileLabel>
+        ) : null}
+        {isUnlisted && !isScheduledRelease ? (
+          <LineupTileLabel icon={IconVisibilityHidden}>
+            {messages.hidden}
           </LineupTileLabel>
         ) : null}
         <View style={styles.leftStats}>

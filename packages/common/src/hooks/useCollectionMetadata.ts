@@ -45,8 +45,8 @@ export const useCollectionMetadata = ({
   const {
     is_private: isPrivate,
     updated_at: updatedAt,
-    is_scheduled_release: isScheduledRelease,
-    release_date: releaseDate
+    release_date: releaseDate,
+    created_at: createdAt
   } = collection
   const numTracks = collection.playlist_contents?.track_ids?.length ?? 0
 
@@ -61,15 +61,15 @@ export const useCollectionMetadata = ({
     },
     {
       id: CollectionMetadataType.RELEASE_DATE,
-      value: formatDate(releaseDate ?? ''),
+      value: formatDate(releaseDate ?? createdAt),
       label: 'Released',
-      isHidden: isPrivate || !releaseDate || isScheduledRelease
+      isHidden: isPrivate
     },
     {
       id: CollectionMetadataType.UPDATED_AT,
-      value: formatDate(updatedAt ?? ''),
+      value: formatDate(updatedAt ?? createdAt),
       label: 'Updated',
-      isHidden: isPrivate || !updatedAt
+      isHidden: isPrivate
     }
   ].filter(({ isHidden, value }) => !isHidden && !!value)
 

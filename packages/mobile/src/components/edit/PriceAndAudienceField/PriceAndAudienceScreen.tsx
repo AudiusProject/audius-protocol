@@ -35,7 +35,7 @@ import { SpecialAccessRadioField } from './SpecialAccessRadioField'
 const publicAvailability = StreamTrackAvailabilityType.PUBLIC
 
 export const PriceAndAudienceScreen = () => {
-  const { initialValues } = useFormikContext<FormValues>()
+  const { initialValues, validateForm } = useFormikContext<FormValues>()
   const [, , { setValue: setIsStreamGated }] =
     useField<boolean>('is_stream_gated')
   const [{ value: streamConditions }, , { setValue: setStreamConditions }] =
@@ -166,6 +166,7 @@ export const PriceAndAudienceScreen = () => {
   }, [availability, initialStreamConditions, specialAccessType])
 
   const handleSubmit = useCallback(() => {
+    validateForm() // Fixes any erroneous errors that haven't been revalidated
     if (!isUpload && isEditableAccessEnabled && usersMayLoseAccess) {
       onOpenEditAccessConfirmationModal({
         confirmCallback: navigation.goBack,
@@ -176,8 +177,9 @@ export const PriceAndAudienceScreen = () => {
     isEditableAccessEnabled,
     isUpload,
     usersMayLoseAccess,
-    onOpenEditAccessConfirmationModal,
-    navigation.goBack
+    validateForm,
+    navigation.goBack,
+    onOpenEditAccessConfirmationModal
   ])
 
   return (

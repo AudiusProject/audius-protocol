@@ -3,6 +3,7 @@ import { ReactNode } from 'react'
 import { AudiusQueryContext } from '@audius/common/audius-query'
 import { useDispatch } from 'react-redux'
 
+import * as analytics from 'services/analytics'
 import { apiClient } from 'services/audius-api-client'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { audiusSdk } from 'services/audius-sdk'
@@ -29,7 +30,8 @@ export const AudiusQueryProvider = (props: AudiusQueryProviderProps) => {
         env,
         fetch,
         remoteConfigInstance,
-        getFeatureEnabled
+        getFeatureEnabled,
+        analytics
       }}
     >
       {children}

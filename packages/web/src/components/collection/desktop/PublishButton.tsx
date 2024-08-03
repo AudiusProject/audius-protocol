@@ -96,6 +96,7 @@ export const PublishButton = (props: PublishButtonProps) => {
         icon={IconRocket}
         onClick={handleClickPublish}
         aria-label='Publish Collection'
+        size='2xl'
         color='subdued'
         disabled={isDisabled}
         isLoading={_is_publishing}

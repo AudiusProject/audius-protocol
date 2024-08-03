@@ -54,12 +54,12 @@ export enum FeatureFlags {
   MANAGER_MODE = 'manager_mode',
   SEARCH_V2 = 'search_v2',
   PAYOUT_WALLET_ENABLED = 'payout_wallet_enabled',
-  EDIT_TRACK_REDESIGN = 'edit_track_redesign',
   SKIP_STREAM_CHECK = 'skip_stream_check',
   PREFETCH_STREAM_URLS = 'prefetch_stream_urls',
   HIDDEN_PAID_SCHEDULED = 'hidden_paid_scheduled',
   EDITABLE_ACCESS_ENABLED = 'editable_access_enabled',
-  PAID_SCHEDULED = 'paid_scheduled'
+  PAID_SCHEDULED = 'paid_scheduled',
+  ONE_TO_MANY_DMS = 'one_to_many_dms'
 }
 
 type FlagDefaults = Record<FeatureFlags, boolean>
@@ -129,10 +129,10 @@ export const flagDefaults: FlagDefaults = {
   [FeatureFlags.MANAGER_MODE]: false,
   [FeatureFlags.SEARCH_V2]: false,
   [FeatureFlags.PAYOUT_WALLET_ENABLED]: false,
-  [FeatureFlags.EDIT_TRACK_REDESIGN]: false,
   [FeatureFlags.SKIP_STREAM_CHECK]: false,
   [FeatureFlags.PREFETCH_STREAM_URLS]: false,
   [FeatureFlags.HIDDEN_PAID_SCHEDULED]: false,
   [FeatureFlags.EDITABLE_ACCESS_ENABLED]: false,
-  [FeatureFlags.PAID_SCHEDULED]: false
+  [FeatureFlags.PAID_SCHEDULED]: false,
+  [FeatureFlags.ONE_TO_MANY_DMS]: false
 }

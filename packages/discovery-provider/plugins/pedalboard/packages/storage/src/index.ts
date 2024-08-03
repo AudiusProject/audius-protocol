@@ -1004,6 +1004,7 @@ export type Tracks = {
   producer_copyright_line: unknown | null;
   parental_warning_type: string | null;
   bpm: number | null;
+  is_custom_bpm: boolean | null;
   musical_key: string | null;
   audio_analysis_error_count: number;
 };

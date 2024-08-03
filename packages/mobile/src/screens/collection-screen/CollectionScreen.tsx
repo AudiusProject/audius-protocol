@@ -147,8 +147,7 @@ const CollectionScreenComponent = (props: CollectionScreenComponentProps) => {
     stream_conditions,
     ddex_app,
     created_at,
-    is_delete,
-    is_scheduled_release
+    is_delete
   } = collection
 
   const { onOpen: openPublishConfirmation } = usePublishConfirmationModal()
@@ -219,7 +218,10 @@ const CollectionScreenComponent = (props: CollectionScreenComponentProps) => {
   }, [playlist_id, dispatch])
 
   const handlePressPublish = useCallback(() => {
-    if (is_scheduled_release) {
+    if (
+      'is_scheduled_release' in collection &&
+      collection.is_scheduled_release
+    ) {
       openEarlyReleaseConfirmation({
         contentType: 'album',
         confirmCallback: publish
@@ -235,7 +237,7 @@ const CollectionScreenComponent = (props: CollectionScreenComponentProps) => {
     openPublishConfirmation,
     publish,
     openEarlyReleaseConfirmation,
-    is_scheduled_release
+    collection
   ])
 
   const handlePressSave = useCallback(() => {

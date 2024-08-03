@@ -1,6 +1,6 @@
 {
   "name": "@audius/mobile",
-  "version": "1.5.92",
+  "version": "1.5.93",
   "private": true,
   "scripts": {
     "android:dev": "ENVFILE=.env.dev turbo run android -- --mode=prodDebug",
@@ -55,7 +55,7 @@
   "dependencies": {
     "@amplitude/react-native": "2.17.2",
     "@audius/common": "*",
-    "@audius/fetch-nft": "0.2.6",
+    "@audius/fetch-nft": "0.2.7",
     "@audius/fixed-decimal": "*",
     "@audius/harmony": "*",
     "@audius/sdk": "*",

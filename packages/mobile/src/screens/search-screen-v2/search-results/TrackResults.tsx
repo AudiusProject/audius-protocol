@@ -1,6 +1,7 @@
 import { useCallback, useEffect } from 'react'
 
-import { Kind, Status } from '@audius/common/models'
+import type { ID } from '@audius/common/models'
+import { Kind, Name, Status } from '@audius/common/models'
 import {
   lineupSelectors,
   searchResultsPageTracksLineupActions,
@@ -14,6 +15,7 @@ import { useDebounce } from 'react-use'
 
 import { Flex } from '@audius/harmony-native'
 import { Lineup } from 'app/components/lineup'
+import { make, track as record } from 'app/services/analytics'
 
 import { NoResultsTile } from '../NoResultsTile'
 import { SearchCatalogTile } from '../SearchCatalogTile'
@@ -76,6 +78,31 @@ export const TrackResults = () => {
     [getResults]
   )
 
+  const handlePress = useCallback(
+    (id: ID) => {
+      Keyboard.dismiss()
+      dispatch(
+        addRecentSearch({
+          searchItem: {
+            kind: Kind.TRACKS,
+            id
+          }
+        })
+      )
+
+      record(
+        make({
+          eventName: Name.SEARCH_RESULT_SELECT,
+          term: query,
+          source: 'search results page',
+          id,
+          kind: 'track'
+        })
+      )
+    },
+    [dispatch, query]
+  )
+
   if (isEmptySearch) return <SearchCatalogTile />
   if (
     (!lineup || lineup.entries.length === 0) &&
@@ -91,17 +118,7 @@ export const TrackResults = () => {
         lineup={lineup}
         loadMore={loadMore}
         keyboardShouldPersistTaps='handled'
-        onPressItem={(id) => {
-          Keyboard.dismiss()
-          dispatch(
-            addRecentSearch({
-              searchItem: {
-                kind: Kind.TRACKS,
-                id
-              }
-            })
-          )
-        }}
+        onPressItem={handlePress}
       />
     </Flex>
   )

@@ -18,7 +18,7 @@ const { editTrack } = cacheTracksActions
 
 const messages = {
   title: 'Edit Track',
-  save: 'Save Changes'
+  save: 'Save'
 }
 
 export const EditTrackModalScreen = () => {

@@ -198,7 +198,7 @@ const ConnectedTrackTile = ({
       handle,
       includeAddToPlaylist: !isUnlisted || isOwner,
       includeAddToAlbum: isOwner && !ddexApp,
-      includeArtistPick: handle === userHandle && !isUnlisted,
+      includeArtistPick: handle === userHandle,
       includeEdit: handle === userHandle,
       ddexApp: track?.ddex_app,
       includeEmbed: !(isUnlisted || isStreamGated),

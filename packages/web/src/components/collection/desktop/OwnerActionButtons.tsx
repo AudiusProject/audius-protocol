@@ -22,9 +22,11 @@ export const OwnerActionButtons = (props: OwnerActionButtonProps) => {
 
   const isDisabled = !track_count || track_count === 0
 
-  return collection ? (
+  if (!collection) return null
+
+  return (
     <>
-      {!ddex_app && <EditButton collectionId={collectionId} />}
+      {ddex_app ? null : <EditButton collectionId={collectionId} />}
       <ShareButton
         collectionId={collectionId}
         disabled={isDisabled}
@@ -36,9 +38,7 @@ export const OwnerActionButtons = (props: OwnerActionButtonProps) => {
       />
       {is_private ? <PublishButton collectionId={collectionId} /> : null}
 
-      {!is_private ? (
-        <OverflowMenuButton collectionId={collectionId} isOwner />
-      ) : null}
+      <OverflowMenuButton collectionId={collectionId} isOwner />
     </>
-  ) : null
+  )
 }

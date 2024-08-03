@@ -86,6 +86,7 @@ export const OverflowMenuButton = (props: OverflowMenuButtonProps) => {
         <IconButton
           ref={ref}
           aria-label={messages.moreOptions}
+          size='2xl'
           icon={IconKebabHorizontal}
           onClick={() => triggerPopup()}
           color='subdued'

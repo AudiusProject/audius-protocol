@@ -131,6 +131,19 @@ export const SelectArtistsPage = () => {
   })
   const formikSchema = toFormikValidationSchema(selectArtistsSchema)
 
+  const artistContent = artists.length ? (
+    artists.map((user) => (
+      <FollowArtistCard key={user.user_id} user={user as UserMetadata} />
+    ))
+  ) : (
+    <Flex pv='xl' gap='xs' alignItems='center'>
+      <Text variant='body' size='l'>
+        {selectArtistsPageMessages.noResults}
+      </Text>
+      <i className='emoji thinking-face' />
+    </Flex>
+  )
+
   return (
     <Formik
       initialValues={initialValues}
@@ -236,12 +249,7 @@ export const SelectArtistsPage = () => {
                       ? range(9).map((index) => (
                           <FollowArtistTileSkeleton key={index} />
                         ))
-                      : artists?.map((user) => (
-                          <FollowArtistCard
-                            key={user.user_id}
-                            user={user as UserMetadata}
-                          />
-                        ))}
+                      : artistContent}
                   </Flex>
                 </ArtistsList>
               </SelectArtistsPreviewContextProvider>

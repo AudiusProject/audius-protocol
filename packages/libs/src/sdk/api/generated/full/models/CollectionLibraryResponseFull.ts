@@ -14,12 +14,12 @@
  */
 
 import { exists, mapValues } from '../runtime';
-import type { CollectionActivityFull } from './CollectionActivityFull';
+import type { CollectionActivityFullWithoutTracks } from './CollectionActivityFullWithoutTracks';
 import {
-    CollectionActivityFullFromJSON,
-    CollectionActivityFullFromJSONTyped,
-    CollectionActivityFullToJSON,
-} from './CollectionActivityFull';
+    CollectionActivityFullWithoutTracksFromJSON,
+    CollectionActivityFullWithoutTracksFromJSONTyped,
+    CollectionActivityFullWithoutTracksToJSON,
+} from './CollectionActivityFullWithoutTracks';
 import type { VersionMetadata } from './VersionMetadata';
 import {
     VersionMetadataFromJSON,
@@ -77,10 +77,10 @@ export interface CollectionLibraryResponseFull {
     version: VersionMetadata;
     /**
      * 
-     * @type {Array<CollectionActivityFull>}
+     * @type {Array<CollectionActivityFullWithoutTracks>}
      * @memberof CollectionLibraryResponseFull
      */
-    data?: Array<CollectionActivityFull>;
+    data?: Array<CollectionActivityFullWithoutTracks>;
 }
 
 /**
@@ -116,7 +116,7 @@ export function CollectionLibraryResponseFullFromJSONTyped(json: any, ignoreDisc
         'signature': json['signature'],
         'timestamp': json['timestamp'],
         'version': VersionMetadataFromJSON(json['version']),
-        'data': !exists(json, 'data') ? undefined : ((json['data'] as Array<any>).map(CollectionActivityFullFromJSON)),
+        'data': !exists(json, 'data') ? undefined : ((json['data'] as Array<any>).map(CollectionActivityFullWithoutTracksFromJSON)),
     };
 }
 
@@ -136,7 +136,7 @@ export function CollectionLibraryResponseFullToJSON(value?: CollectionLibraryRes
         'signature': value.signature,
         'timestamp': value.timestamp,
         'version': VersionMetadataToJSON(value.version),
-        'data': value.data === undefined ? undefined : ((value.data as Array<any>).map(CollectionActivityFullToJSON)),
+        'data': value.data === undefined ? undefined : ((value.data as Array<any>).map(CollectionActivityFullWithoutTracksToJSON)),
     };
 }
 

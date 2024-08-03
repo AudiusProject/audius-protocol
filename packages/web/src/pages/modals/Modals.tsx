@@ -70,9 +70,6 @@ const TrendingRewardsModal = lazy(
   () => import('pages/audio-rewards-page/components/modals/TrendingRewards')
 )
 
-const EditTrackModal = lazy(
-  () => import('components/edit-track/EditTrackModal')
-)
 const InboxSettingsModal = lazy(
   () => import('components/inbox-settings-modal/InboxSettingsModal')
 )
@@ -81,7 +78,6 @@ const commonModalsMap: { [Modal in ModalTypes]?: ComponentType } = {
   Share: ShareModal,
   VipDiscord: VipDiscordModal,
   EditFolder: EditFolderModal,
-  EditTrack: EditTrackModal,
   AddToCollection: AddToCollectionModal,
   TiersExplainer: TierExplainerModal,
   DeletePlaylistConfirmation: DeletePlaylistConfirmationModal,
