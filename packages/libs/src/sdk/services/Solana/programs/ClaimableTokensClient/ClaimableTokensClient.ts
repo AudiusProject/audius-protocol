@@ -124,10 +124,7 @@ export class ClaimableTokensClient extends BaseSolanaProgramClient {
         instructions: [createUserBankInstruction]
       }).compileToLegacyMessage()
       const transaction = new VersionedTransaction(message)
-      const signature = await this.wallet.sendTransaction(
-        transaction,
-        this.connection
-      )
+      const signature = await this.sendTransaction(transaction)
       const confirmationStrategy = { ...confirmationStrategyArgs, signature }
       await this.connection.confirmTransaction(
         confirmationStrategy,
