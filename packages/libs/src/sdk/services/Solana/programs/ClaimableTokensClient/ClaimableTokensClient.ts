@@ -1,9 +1,17 @@
-import { ClaimableTokensProgram } from '@audius/spl'
+import {
+  ClaimableTokensErrorCode,
+  ClaimableTokensErrorMessages,
+  ClaimableTokensInstruction,
+  ClaimableTokensProgram
+} from '@audius/spl'
+import { SendTransactionOptions } from '@solana/wallet-adapter-base'
 import {
   TransactionMessage,
   VersionedTransaction,
   Secp256k1Program,
-  PublicKey
+  PublicKey,
+  Transaction,
+  SendTransactionError
 } from '@solana/web3.js'
 
 import { productionConfig } from '../../../../config/production'
@@ -12,6 +20,7 @@ import { mintFixedDecimalMap } from '../../../../utils/mintFixedDecimalMap'
 import { parseParams } from '../../../../utils/parseParams'
 import type { Mint } from '../../types'
 import { BaseSolanaProgramClient } from '../BaseSolanaProgramClient'
+import { CustomInstructionError } from '../CustomInstructionError'
 
 import { getDefaultClaimableTokensConfig } from './getDefaultConfig'
 import {
@@ -24,6 +33,31 @@ import {
   CreateSecpSchema,
   ClaimableTokensConfig
 } from './types'
+
+export class ClaimableTokensError extends Error {
+  override name = 'RewardManagerError'
+  public code: number
+  public instructionName: string
+  public customErrorName?: string
+  constructor({
+    code,
+    instructionName,
+    cause
+  }: {
+    code: number
+    instructionName: string
+    cause?: Error
+  }) {
+    super(
+      ClaimableTokensErrorMessages[code as ClaimableTokensErrorCode] ??
+        `Unknown error: ${code}`,
+      { cause }
+    )
+    this.code = code
+    this.instructionName = instructionName
+    this.customErrorName = ClaimableTokensErrorCode[code]
+  }
+}
 
 /**
  * Connected client to the ClaimableTokens Solana program.
@@ -194,5 +228,44 @@ export class ClaimableTokensClient extends BaseSolanaProgramClient {
       ethAddress: ethWallet,
       claimableTokensPDA: this.authorities[mint]
     })
+  }
+
+  /**
+   * Override the sendTransaction method to provide some more friendly errors
+   * back to the consumer for ClaimableTokens instructions
+   */
+  public override async sendTransaction(
+    transaction: Transaction | VersionedTransaction,
+    sendOptions?: SendTransactionOptions | undefined
+  ): Promise<string> {
+    try {
+      return await super.sendTransaction(transaction, sendOptions)
+    } catch (e) {
+      if (e instanceof SendTransactionError) {
+        try {
+          const error = CustomInstructionError.parseSendTransactionError(e)
+          if (error) {
+            const instructions = await this.getInstructions(transaction)
+            const instruction = instructions[error.instructionIndex]
+            if (instruction && instruction.programId.equals(this.programId)) {
+              const decodedInstruction =
+                ClaimableTokensProgram.decodeInstruction(instruction)
+              throw new ClaimableTokensError({
+                code: error.code,
+                instructionName:
+                  ClaimableTokensInstruction[
+                    decodedInstruction.data.instruction
+                  ] ?? 'Unknown',
+                cause: e
+              })
+            }
+          }
+        } catch (e) {
+          // If failed to provide user friendly error, surface original error
+          this.logger.warn('Failed to parse ClaimableTokensError error', e)
+        }
+      }
+      throw e
+    }
   }
 }
