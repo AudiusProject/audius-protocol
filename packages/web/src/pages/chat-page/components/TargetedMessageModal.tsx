@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 
 import { useGetCurrentUser, useGetUserTracksByHandle } from '@audius/common/api'
+import { useAllPaginatedQuery } from '@audius/common/audius-query'
 import { isContentUSDCPurchaseGated } from '@audius/common/models'
 import { useTargetedMessageModal } from '@audius/common/src/store/ui/modals/create-targeted-message-modal'
 import {
@@ -202,7 +203,11 @@ const PastPurchasersMessageField = () => {
   const premiumTrackOptions = useMemo(
     () =>
       (tracks ?? [])
-        .filter((track) => isContentUSDCPurchaseGated(track.stream_conditions))
+        .filter(
+          (track) =>
+            isContentUSDCPurchaseGated(track.stream_conditions) ||
+            isContentUSDCPurchaseGated(track.download_conditions)
+        )
         .map((track) => ({
           value: track.track_id.toString(),
           label: track.title
