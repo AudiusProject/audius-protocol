@@ -41,7 +41,7 @@ export const TargetedMessageCTA = (props: TargetedMessageCTAProps) => {
   }, [onClick, openTargetedMessageModal])
 
   // DEBUG
-  if (!userMeetsRequirements) {
+  if (!userMeetsRequirements && !true) {
     return <TargetedMessageDisabled />
   }
 
