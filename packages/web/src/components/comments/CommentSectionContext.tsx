@@ -127,7 +127,7 @@ export const CommentSectionProvider = ({
   const handlePinComment = (commentId: ID) => {
     console.log('Clicked pin for ', commentId)
   }
-  const handleEditComment = async (commentId?: ID, newMessage: string) => {
+  const handleEditComment = async (commentId: ID, newMessage: string) => {
     if (userId && entityId) {
       try {
         const commentData = {
@@ -144,7 +144,7 @@ export const CommentSectionProvider = ({
     }
   }
   const handleDeleteComment = async (commentId?: ID) => {
-    if (userId && entityId) {
+    if (userId && commentId) {
       try {
         const commentData = {
           userId,
