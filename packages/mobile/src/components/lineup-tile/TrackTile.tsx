@@ -116,6 +116,9 @@ export const TrackTileComponent = ({
     is_unlisted: isUnlisted
   } = track
 
+  const { artist_pick_track_id } = user
+  const isArtistPick = isOwner && artist_pick_track_id === track_id
+
   const hasPreview =
     isUSDCEnabled &&
     isContentUSDCPurchaseGated(streamConditions) &&
@@ -169,6 +172,8 @@ export const TrackTileComponent = ({
           ? OverflowAction.MARK_AS_UNPLAYED
           : OverflowAction.MARK_AS_PLAYED
         : null,
+      isOwner && !isArtistPick ? OverflowAction.SET_ARTIST_PICK : null,
+      isArtistPick ? OverflowAction.UNSET_ARTIST_PICK : null,
       isOnArtistsTracksTab ? null : OverflowAction.VIEW_ARTIST_PAGE,
       isOwner && !ddexApp ? OverflowAction.EDIT_TRACK : null,
       isOwner && track?.is_scheduled_release && track?.is_unlisted
@@ -192,6 +197,7 @@ export const TrackTileComponent = ({
     isUnlisted,
     albumInfo,
     playbackPositionInfo?.status,
+    isArtistPick,
     isOnArtistsTracksTab,
     track?.is_scheduled_release,
     track?.is_unlisted,

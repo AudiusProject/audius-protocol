@@ -1,6 +1,5 @@
 import assert from 'assert'
 
-import { describe, it } from 'mocha'
 import nock from 'nock'
 
 import { timeRequests } from './network'
@@ -65,7 +64,10 @@ describe('timeRequests()', () => {
     assert.strictEqual(res[4]?.request.url, 'https://slowAndError.audius.co')
   })
 
-  it('respects an equivalency delta', async () => {
+  it('respects an equivalency delta', async function () {
+    // @ts-ignore annoying amount of time trying to figure out how to type this
+    // so that typescript knows that "this" is the TestFunction type from Mocha
+    this.timeout(10000)
     const allResults: string[] = []
     for (let i = 0; i < 20; ++i) {
       const requests = [
@@ -104,7 +106,7 @@ describe('timeRequests()', () => {
 
     // Make sure there is some variance
     assert(!allResults.every((val) => val === allResults[0]))
-  }).timeout(10000)
+  })
 
   it('filterNonResponsive = true', async () => {
     const requests = [

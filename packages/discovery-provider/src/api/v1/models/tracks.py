@@ -174,6 +174,7 @@ track_full = ns.clone(
         "audio_upload_id": fields.String,
         "preview_start_seconds": fields.Float,
         "bpm": fields.Float,
+        "is_custom_bpm": fields.Boolean,
         "musical_key": fields.String,
         "audio_analysis_error_count": fields.Integer,
         # DDEX fields

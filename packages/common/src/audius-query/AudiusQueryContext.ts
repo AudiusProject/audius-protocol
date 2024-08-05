@@ -12,7 +12,11 @@ import {
   RemoteConfigInstance
 } from '~/services/index'
 
-import { ReportToSentryArgs } from '../models'
+import {
+  AllTrackingEvents,
+  AnalyticsEvent,
+  ReportToSentryArgs
+} from '../models'
 
 export type AudiusQueryContextType = {
   apiClient: AudiusAPIClient
@@ -27,6 +31,22 @@ export type AudiusQueryContextType = {
     flag: FeatureFlags,
     fallbackFlag?: FeatureFlags
   ) => Promise<boolean> | boolean
+  analytics: {
+    init: (isMobile: boolean) => Promise<void>
+    track: (event: AnalyticsEvent, callback?: () => void) => Promise<void>
+    identify: (
+      handle: string,
+      traits?: Record<string, unknown>,
+      options?: Record<string, unknown>,
+      callback?: () => void
+    ) => Promise<void>
+    make: <T extends AllTrackingEvents>(
+      event: T
+    ) => {
+      eventName: string
+      properties: any
+    }
+  }
 }
 
 export const AudiusQueryContext = createContext<AudiusQueryContextType>(
@@ -72,6 +92,9 @@ export function* getAudiusQueryContext(): Generator<
     >('remoteConfigInstance'),
     reportToSentry: yield* getContext<AudiusQueryContextType['reportToSentry']>(
       'reportToSentry'
+    ),
+    analytics: yield* getContext<AudiusQueryContextType['analytics']>(
+      'analytics'
     )
   }
 }

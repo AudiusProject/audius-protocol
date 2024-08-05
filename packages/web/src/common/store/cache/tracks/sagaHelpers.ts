@@ -59,4 +59,24 @@ export function* recordEditTrackAnalytics(prevTrack: Track, newTrack: Track) {
       })
     )
   }
+
+  if (prevTrack.bpm !== newTrack.bpm) {
+    yield* put(
+      make(Name.TRACK_EDIT_BPM_CHANGED, {
+        id: newTrack.track_id,
+        from: prevTrack.bpm,
+        to: newTrack.bpm
+      })
+    )
+  }
+
+  if (prevTrack.musical_key !== newTrack.musical_key) {
+    yield* put(
+      make(Name.TRACK_EDIT_MUSICAL_KEY_CHANGED, {
+        id: newTrack.track_id,
+        from: prevTrack.musical_key,
+        to: newTrack.musical_key
+      })
+    )
+  }
 }

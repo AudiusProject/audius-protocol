@@ -148,6 +148,7 @@ def search_es_full(args: dict):
                     keys=keys,
                     only_with_downloads=only_with_downloads,
                     sort_method=sort_method,
+                    only_verified=only_verified,
                 ),
             ]
         )
@@ -181,6 +182,7 @@ def search_es_full(args: dict):
                     genres=genres,
                     moods=moods,
                     sort_method=sort_method,
+                    only_verified=only_verified,
                 ),
             ]
         )
@@ -199,6 +201,7 @@ def search_es_full(args: dict):
                     only_with_downloads=only_with_downloads,
                     only_purchaseable=only_purchaseable,
                     sort_method=sort_method,
+                    only_verified=only_verified,
                 ),
             ]
         )
@@ -554,6 +557,7 @@ def track_dsl(
     only_with_downloads=False,
     only_purchaseable=False,
     include_purchaseable=False,
+    only_verified=False,
 ):
     dsl = {
         "must": [
@@ -678,6 +682,9 @@ def track_dsl(
                 }
             }
         )
+
+    if only_verified:
+        dsl["must"].append({"term": {"user.is_verified": {"value": True}}})
 
     # Only include the track if it is purchaseable or has purchaseable stems/download
     if only_purchaseable:
@@ -1000,6 +1007,7 @@ def base_playlist_dsl(
     current_user_id,
     must_saved=False,
     sort_method="relevant",
+    only_verified=False,
 ):
     dsl = {
         "must": [
@@ -1144,6 +1152,9 @@ def base_playlist_dsl(
     if only_purchaseable:
         dsl["must"].append({"term": {"purchaseable": {"value": True}}})
 
+    if only_verified:
+        dsl["must"].append({"term": {"user.is_verified": {"value": True}}})
+
     if moods:
         capitalized_moods = list(
             filter(
@@ -1236,6 +1247,7 @@ def playlist_dsl(
     genres=[],
     moods=[],
     sort_method="relevant",
+    only_verified=False,
 ):
     return base_playlist_dsl(
         search_str,
@@ -1248,6 +1260,7 @@ def playlist_dsl(
         current_user_id,
         must_saved,
         sort_method,
+        only_verified,
     )
 
 
@@ -1261,6 +1274,7 @@ def album_dsl(
     genres=[],
     moods=[],
     sort_method="relevant",
+    only_verified=False,
 ):
     return base_playlist_dsl(
         search_str,
@@ -1273,6 +1287,7 @@ def album_dsl(
         current_user_id,
         must_saved,
         sort_method,
+        only_verified,
     )
 
 

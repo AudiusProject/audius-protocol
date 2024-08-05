@@ -81,7 +81,11 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
     const shouldShowLabel = !hideLabel && size !== TextInputSize.SMALL
     const labelText = required ? `${labelProp} *` : labelProp
     const placeholderText =
-      required && hideLabel ? `${placeholder} *` : placeholder
+      required && hideLabel
+        ? `${placeholder} *`
+        : TextInputSize.SMALL
+        ? labelText
+        : placeholder
     const helperTextSize: TextSize = size === TextInputSize.SMALL ? 'xs' : 's'
 
     // Whenever a label isn't visible the placeholder should be visible in it's place (if provided)

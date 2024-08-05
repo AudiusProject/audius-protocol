@@ -19,6 +19,10 @@ export type MusicBadgeProps = {
    */
   variant?: MusicBadgeVariant
   /**
+   * The size of the MusicBadge
+   */
+  size?: 's' | 'm'
+  /**
    * The icon to display in the left of the MusicBadge
    */
   icon?: IconComponent
@@ -29,8 +33,17 @@ export type MusicBadgeProps = {
 } & ComponentPropsWithoutRef<'div'>
 
 export const MusicBadge = (props: MusicBadgeProps) => {
-  const { variant = 'default', icon: Icon, color: colorProp, children } = props
+  const {
+    variant = 'default',
+    size = 's',
+    icon: Icon,
+    color: colorProp,
+    children
+  } = props
   const { color } = useTheme()
+
+  const gap = size === 'm' ? 's' : 'xs'
+  const height = size === 'm' ? '2xl' : 'xl'
 
   const backgroundColor = colorProp
     ? color.special[colorProp]
@@ -60,9 +73,9 @@ export const MusicBadge = (props: MusicBadgeProps) => {
       justifyContent='center'
       borderRadius='s'
       border='strong'
-      gap='xs'
-      ph='s'
-      pv='xs'
+      gap={gap}
+      h={height}
+      ph={size}
       style={css({
         backgroundColor: Color(backgroundColor).fade(0.92).toString(),
         borderColor
@@ -71,7 +84,7 @@ export const MusicBadge = (props: MusicBadgeProps) => {
       {Icon ? <Icon size='s' fill={iconColor} /> : null}
       <Text
         variant='label'
-        size='s'
+        size={size}
         // Hack - should not have to explicitly  set lineHeight, but there's a bug
         // that adds extra margins to demibold + bold text variants.
         style={css({ color: textColor, lineHeight: 16 })}
