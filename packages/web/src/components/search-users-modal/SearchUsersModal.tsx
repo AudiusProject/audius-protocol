@@ -238,7 +238,7 @@ export const SearchUsersModal = ({
         onClose={handleClose}
         {...rest}
       />
-      {footer || null}
+      {footer ?? null}
     </Modal>
   )
 }

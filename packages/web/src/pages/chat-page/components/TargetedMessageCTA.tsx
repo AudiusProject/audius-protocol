@@ -73,6 +73,8 @@ export const TargetedMessageCTA = (props: TargetedMessageCTAProps) => {
 }
 
 const TargetedMessageDisabled = () => {
+  const { spacing } = useTheme()
+
   return (
     <Flex
       backgroundColor='surface1'
@@ -87,7 +89,7 @@ const TargetedMessageDisabled = () => {
         <Text variant='title'>{messages.title}</Text>
       </Flex>
       <Flex border='strong' borderRadius='m' wrap='nowrap'>
-        <Box ph='s' pv={2}>
+        <Box ph='s' pv={spacing.unitHalf}>
           <Text size='s' strength='strong'>
             {messages.badgeRequired}
           </Text>
