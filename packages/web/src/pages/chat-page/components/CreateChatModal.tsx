@@ -1,6 +1,8 @@
 import { useCallback, useEffect } from 'react'
 
+import { useFeatureFlag } from '@audius/common/hooks'
 import { User } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import {
   accountSelectors,
   chatActions,
@@ -22,6 +24,7 @@ import { SearchUsersModal } from 'components/search-users-modal/SearchUsersModal
 import { CreateChatUserResult } from 'pages/chat-page/components/CreateChatUserResult'
 
 import { CreateChatEmptyResults } from './CreateChatEmptyResults'
+import { TargetedMessageCTA } from './TargetedMessageCTA'
 
 const messages = {
   title: 'New Message'
@@ -33,6 +36,10 @@ const { getUserList: getChatsUserList } = chatSelectors
 const { fetchBlockers, fetchMoreChats } = chatActions
 
 export const CreateChatModal = () => {
+  const { isEnabled: isTargetedMessagesEnabled } = useFeatureFlag(
+    FeatureFlags.ONE_TO_MANY_DMS
+  )
+
   const dispatch = useDispatch()
   const currentUser = useSelector(getAccountUser)
   const { isOpen, onClose, onClosed, data } = useCreateChatModal()
@@ -108,6 +115,11 @@ export const CreateChatModal = () => {
         onClose={onClose}
         onClosed={onClosed}
         onCancel={handleCancel}
+        footer={
+          isTargetedMessagesEnabled ? (
+            <TargetedMessageCTA onClick={onClose} />
+          ) : undefined
+        }
       />
     </>
   )

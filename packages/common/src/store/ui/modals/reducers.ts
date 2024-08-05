@@ -6,6 +6,7 @@ import { artistPickModalReducer } from './artist-pick-modal'
 import { coinflowOnrampModalReducer } from './coinflow-onramp-modal'
 import { coinflowWithdrawModalReducer } from './coinflow-withdraw-modal'
 import { createChatModalReducer } from './create-chat-modal'
+import { targetedMessageModalReducer } from './create-targeted-message-modal'
 import { inboxUnavailableModalReducer } from './inbox-unavailable-modal'
 import { leavingAudiusModalReducer } from './leaving-audius-modal'
 import parentReducer, { initialState } from './parentSlice'
@@ -34,6 +35,7 @@ const noOpReducers = Object.keys(initialState).reduce((prev, curr) => {
 const combinedReducers = combineReducers({
   ...noOpReducers,
   CreateChatModal: createChatModalReducer,
+  TargetedMessageModal: targetedMessageModalReducer,
   InboxUnavailableModal: inboxUnavailableModalReducer,
   LeavingAudiusModal: leavingAudiusModalReducer,
   WithdrawUSDCModal: withdrawUSDCModalReducer,
