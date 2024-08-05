@@ -403,7 +403,16 @@ def get_record_key(user_id: int, entity_type: str, entity_id: int):
 
 
 def copy_record(
-    old_record: Union[User, Track, Playlist, DeveloperApp, Grant, DashboardWalletUser],
+    old_record: Union[
+        User,
+        Track,
+        Playlist,
+        DeveloperApp,
+        Grant,
+        DashboardWalletUser,
+        Comment,
+        CommentReaction,
+    ],
     block_number: int,
     event_blockhash: str,
     txhash: str,

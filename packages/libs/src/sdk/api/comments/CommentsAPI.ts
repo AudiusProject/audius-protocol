@@ -43,7 +43,7 @@ export class CommentsApi extends GeneratedCommentsApi {
       }),
       auth: this.auth
     })
-
+    this.logger.info('Successfully posted a comment')
     return response
   }
 
