@@ -5,7 +5,7 @@ import { MutableRefObject, useEffect, useRef } from 'react'
  * outside of the element referenced by the returned ref.
  *
  * @param onClick the callback fired when a click is performed "outside"
- * @param ignoreClick optional check to be run on the element that receives
+ * @param ignoreClick check to be run on the element that receives
  * the "click." If ignoreClick returns true, the click is not considered outside
  * even if it was outside the element referenced.
  * @param defaultRef optional ref to use, if not provided a new ref will be created & returned
@@ -24,9 +24,9 @@ export const useClickOutside = (
     const handleClick = (e: MouseEvent) => {
       if (e.target) {
         if (
-          !ref.current ||
-          (ref.current && ref.current.contains(e.target)) ||
-          ignoreClick(e.target)
+          ignoreClick
+            ? ignoreClick(e.target)
+            : !ref.current || (ref.current && ref.current.contains(e.target))
         ) {
           return
         }
