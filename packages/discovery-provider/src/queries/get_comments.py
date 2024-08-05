@@ -1,11 +1,9 @@
 import logging  # pylint: disable=C0302
-from typing import List, Optional, TypedDict
 
 from sqlalchemy.orm import aliased
 
 from src.models.comments.comment import Comment
 from src.models.comments.comment_thread import CommentThread
-from src.queries.query_helpers import SortDirection, SortMethod
 from src.utils import redis_connection
 from src.utils.db_session import get_db_read_replica
 from src.utils.helpers import encode_int_id
@@ -13,38 +11,6 @@ from src.utils.helpers import encode_int_id
 logger = logging.getLogger(__name__)
 
 redis = redis_connection.get_redis()
-
-
-class RouteArgs(TypedDict):
-    handle: str
-    slug: str
-
-
-class GetTrackArgs(TypedDict, total=False):
-    user_id: int
-    limit: int
-    offset: int
-    handle: str
-    id: List[int]
-    current_user_id: int
-    authed_user_id: Optional[int]
-    min_block_number: int
-
-    # Deprecated, prefer sort_method and sort_direction
-    sort: str
-
-    query: Optional[str]
-    filter_deleted: bool
-    exclude_gated: bool
-    routes: List[RouteArgs]
-    filter_tracks: str
-
-    # If true, skips the filtering of unlisted tracks
-    skip_unlisted_filter: Optional[bool]
-
-    # Optional sort method for the returned results
-    sort_method: Optional[SortMethod]
-    sort_direction: Optional[SortDirection]
 
 
 def get_track_comments(track_id):
