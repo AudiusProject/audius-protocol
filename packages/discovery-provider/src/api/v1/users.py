@@ -1,6 +1,6 @@
 import base64
 import json
-from typing import List, Optional
+from typing import Optional
 
 from eth_account.messages import encode_defunct
 from flask import Response, request
