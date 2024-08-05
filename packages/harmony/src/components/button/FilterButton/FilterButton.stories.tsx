@@ -5,12 +5,12 @@ import { within } from '@storybook/testing-library'
 import { Box, Flex } from 'components/layout'
 import { IconAlbum, IconCampfire, IconFilter, IconRadar } from 'icons'
 
-import { OptionsFilterButton } from './OptionsFilterButton'
-import { OptionsFilterButtonProps } from './types'
+import { FilterButton } from './FilterButton'
+import { FilterButtonProps } from './types'
 
-const meta: Meta<typeof OptionsFilterButton> = {
+const meta: Meta<typeof FilterButton> = {
   title: 'Buttons/FilterButton',
-  component: OptionsFilterButton,
+  component: FilterButton,
   args: {
     options: [
       { value: 'Red Rover' },
@@ -18,8 +18,10 @@ const meta: Meta<typeof OptionsFilterButton> = {
       { value: 'Blue Man Group' }
     ],
     label: 'Choice',
-    popupAnchorOrigin: { horizontal: 'center', vertical: 'bottom' },
-    popupTransformOrigin: { horizontal: 'center', vertical: 'top' }
+    popupProps: {
+      anchorOrigin: { horizontal: 'center', vertical: 'bottom' },
+      transformOrigin: { horizontal: 'center', vertical: 'top' }
+    }
   },
   argTypes: {
     options: {
@@ -28,7 +30,7 @@ const meta: Meta<typeof OptionsFilterButton> = {
     label: {
       control: { type: 'text' }
     },
-    selection: {
+    value: {
       control: { type: 'text' }
     }
   }
@@ -36,14 +38,14 @@ const meta: Meta<typeof OptionsFilterButton> = {
 
 export default meta
 
-type Story = StoryObj<typeof OptionsFilterButton>
+type Story = StoryObj<typeof FilterButton>
 
 // Overview Story
 export const Primary: Story = {
   render: () => (
     <Box h='200px'>
       <Flex pv='2xl' justifyContent='space-around'>
-        <OptionsFilterButton
+        <FilterButton
           label='Choice'
           options={[
             { value: 'Red Rover' },
@@ -60,7 +62,7 @@ export const FillContainer: Story = {
   render: () => (
     <Box h='200px'>
       <Flex pv='2xl' justifyContent='space-around'>
-        <OptionsFilterButton
+        <FilterButton
           label='Choice'
           options={[
             { value: 'Red Rover' },
@@ -77,7 +79,7 @@ export const ReplaceLabel: Story = {
   render: () => (
     <Box h='200px'>
       <Flex pv='2xl' justifyContent='space-around'>
-        <OptionsFilterButton
+        <FilterButton
           variant='replaceLabel'
           label='Choice'
           options={[
@@ -95,7 +97,7 @@ export const CustomIcon: Story = {
   render: () => (
     <Box h='200px'>
       <Flex pv='2xl' justifyContent='space-around'>
-        <OptionsFilterButton
+        <FilterButton
           iconRight={IconFilter}
           options={[
             { value: 'Radar Option', icon: IconRadar },
@@ -109,10 +111,10 @@ export const CustomIcon: Story = {
 }
 
 export const Accessibility: Story = {
-  render: (props: OptionsFilterButtonProps) => (
+  render: (props: FilterButtonProps) => (
     <Box h='200px'>
       <Flex pv='2xl' justifyContent='space-around'>
-        <OptionsFilterButton {...props} />
+        <FilterButton {...props} />
       </Flex>
     </Box>
   ),
