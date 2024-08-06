@@ -19,11 +19,8 @@ var addDelistReasonsDDL string
 //go:embed drop_blobs.sql
 var dropBlobs string
 
-//go:embed drop_audio_analysis_ops.sql
-var dropAnalysisOpsDDL string
-
-//go:embed drop_uploads_audio_analysis_ops.sql
-var dropUploadsAnalysisOpsDDL string
+//go:embed clean_uploads_audio_analyses.sql
+var cleanUploadsAudioAnalysesDDL string
 
 var mediorumMigrationTable = `
 	create table if not exists mediorum_migrations (
@@ -38,25 +35,13 @@ create table if not exists qm_sync (
 );
 `
 
-var deleteQmAudioAnalysisWithBadKey = `
-delete from qm_audio_analyses where length(results::json->>'key') > 12;
-`
-
-var advanceStuckCrudrCursors = `
-update cursors set last_ulid = '01J3C13JH1X7SHJYZ7PV250WPK' where last_ulid < '01J3C13JH1X7SHJYZ7PV250WPK';
-`
-
 func Migrate(db *sql.DB, myHost string) {
 	mustExec(db, mediorumMigrationTable)
-
-	runMigration(db, advanceStuckCrudrCursors)
 
 	runMigration(db, delistStatusesDDL)
 	runMigration(db, addDelistReasonsDDL)
 
 	runMigration(db, dropBlobs)
-
-	runMigration(db, dropAnalysisOpsDDL)
 
 	runMigration(db, `create index if not exists uploads_ts_idx on uploads(created_at, transcoded_at)`)
 
@@ -64,9 +49,7 @@ func Migrate(db *sql.DB, myHost string) {
 
 	runMigration(db, qmSyncTable)
 
-	runMigration(db, deleteQmAudioAnalysisWithBadKey)
-
-	runMigration(db, dropUploadsAnalysisOpsDDL)
+	runMigration(db, cleanUploadsAudioAnalysesDDL)
 }
 
 func runMigration(db *sql.DB, ddl string) {
