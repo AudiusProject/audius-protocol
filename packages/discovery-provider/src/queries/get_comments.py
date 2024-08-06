@@ -27,7 +27,7 @@ def get_track_comments(track_id):
         return [
             {
                 "id": encode_int_id(reply.comment_id),
-                "userId": reply.user_id,  # Assuming user_id is an attribute of Comment
+                "user_id": reply.user_id,  # Assuming user_id is an attribute of Comment
                 "message": reply.text,
                 "timestamp_s": reply.track_timestamp_ms,
                 "react_count": (

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { ID } from '@audius/common/models'
+import { ID, SquareSizes } from '@audius/common/models'
 import {
   Avatar,
   Flex,
@@ -12,15 +12,43 @@ import {
   Text,
   TextLink
 } from '@audius/harmony'
+import dayjs from 'dayjs'
 
+import { UserLink } from 'components/link'
+import { useProfilePicture } from 'hooks/useUserProfilePicture'
 import { decodeHashId } from 'utils/hashIds'
 
 import { CommentForm } from './CommentForm'
 import { useCurrentCommentSection } from './CommentSectionContext'
 import type { Comment } from './types'
 
+// TODO: move this somewhere else
+// Format the date using the largest possible unit (y>mo>d>h>min)
+const formatCommentDate = (dateStr: string) => {
+  const now = dayjs()
+  const commentDate = dayjs(dateStr)
+  const diffInMinutes = Math.min(now.diff(commentDate, 'minute'), 1)
+  const diffInHours = now.diff(commentDate, 'hour')
+  const diffInDays = now.diff(commentDate, 'day')
+  const diffInMonths = now.diff(commentDate, 'month')
+  const diffInYears = now.diff(commentDate, 'year')
+
+  if (diffInYears > 0) {
+    return `${diffInYears}y`
+  } else if (diffInMonths > 0) {
+    return `${diffInMonths}mo`
+  } else if (diffInDays > 0) {
+    return `${diffInDays}d`
+  } else if (diffInHours > 0) {
+    return `${diffInHours}h`
+  } else {
+    return `${diffInMinutes}min`
+  }
+}
+
+// TODO: move this somewhere else
 // TODO: do we need hours?
-const formatTimestampS = (timestamp_s: number) => {
+const formatTrackTimestamp = (timestamp_s: number) => {
   const hours = Math.floor(timestamp_s / (60 * 60))
   const minutes = Math.floor(timestamp_s / 60)
   const seconds = `${timestamp_s % 60}`.padStart(2, '0')
@@ -44,12 +72,18 @@ export const CommentBlock = (props: CommentBlockProps) => {
     parentCommentIndex // Parent comment index helps quickly look up the parent comment
   } = props
   const {
-    is_pinned: isPinned,
+    isPinned,
     message,
-    react_count: reactCount,
-    timestamp_s,
-    id: commentId
+    reactCount = 0,
+    timestampS,
+    id: commentId,
+    createdAt,
+    userId: id
   } = comment
+  const userId = Number(id)
+
+  const profileImage = useProfilePicture(userId, SquareSizes.SIZE_150_BY_150)
+
   const {
     handleEditComment,
     handlePostComment,
@@ -71,10 +105,10 @@ export const CommentBlock = (props: CommentBlockProps) => {
 
   const handleCommentReply = (commentMessage: string) => {
     setShowReplyInput(false)
-    let decodedParentCommentId
-    if (parentCommentId) {
-      decodedParentCommentId = decodeHashId(parentCommentId?.toString())
-    }
+    // Parent commentId means that it's a reply to a reply
+    const parentId = parentCommentId ?? commentId
+
+    const decodedParentCommentId = decodeHashId(parentId?.toString())
 
     handlePostComment(
       commentMessage,
@@ -85,7 +119,10 @@ export const CommentBlock = (props: CommentBlockProps) => {
 
   return (
     <Flex w='100%' gap='l'>
-      <Avatar css={{ width: 40, height: 40, flexShrink: 0 }} />
+      <Avatar
+        css={{ width: 40, height: 40, flexShrink: 0 }}
+        src={profileImage}
+      />
       <Flex direction='column' gap='s' w='100%' alignItems='flex-start'>
         {isPinned || hasBadges ? (
           <Flex justifyContent='space-between' w='100%'>
@@ -102,18 +139,19 @@ export const CommentBlock = (props: CommentBlockProps) => {
         ) : null}
         {/* TODO: this will be a user link but wont work with mock data */}
         <Flex gap='s' alignItems='center'>
-          <Text color='default'>Display Name</Text>
+          <UserLink userId={userId} />
           {/* TODO: figure out date from created_at */}
           <Flex gap='xs' alignItems='center'>
-            <Text size='s'> 2d </Text>
-            {timestamp_s !== undefined ? (
+            {/* TODO: do we want this comment date changing on rerender? Or is that weird */}
+            <Text size='s'> {formatCommentDate(createdAt)} </Text>
+            {timestampS !== undefined ? (
               <>
                 <Text color='subdued' size='xs'>
                   •
                 </Text>
 
                 <TextLink size='s' variant='active'>
-                  {formatTimestampS(timestamp_s)}
+                  {formatTrackTimestamp(timestampS)}
                 </TextLink>
               </>
             ) : null}
