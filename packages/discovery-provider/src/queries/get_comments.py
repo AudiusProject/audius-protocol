@@ -1,7 +1,9 @@
 import logging  # pylint: disable=C0302
 from typing import List, Optional, TypedDict
 
+from sqlalchemy import asc
 from sqlalchemy.orm import aliased
+from src.api.v1.helpers import extend_track, format_limit, format_offset, to_dict
 
 from src.models.comments.comment import Comment
 from src.models.comments.comment_thread import CommentThread
@@ -14,40 +16,14 @@ logger = logging.getLogger(__name__)
 
 redis = redis_connection.get_redis()
 
-
-class RouteArgs(TypedDict):
-    handle: str
-    slug: str
+COMMENT_THREADS_LIMIT = 5
+COMMENT_REPLIES_LIMIT = 3
 
 
-class GetTrackArgs(TypedDict, total=False):
-    user_id: int
-    limit: int
-    offset: int
-    handle: str
-    id: List[int]
-    current_user_id: int
-    authed_user_id: Optional[int]
-    min_block_number: int
+def get_track_comments(args, track_id):
+    offset, limit = format_offset(args), format_limit(args, COMMENT_THREADS_LIMIT)
+    args = {"limit": limit, "offset": offset}
 
-    # Deprecated, prefer sort_method and sort_direction
-    sort: str
-
-    query: Optional[str]
-    filter_deleted: bool
-    exclude_gated: bool
-    routes: List[RouteArgs]
-    filter_tracks: str
-
-    # If true, skips the filtering of unlisted tracks
-    skip_unlisted_filter: Optional[bool]
-
-    # Optional sort method for the returned results
-    sort_method: Optional[SortMethod]
-    sort_direction: Optional[SortDirection]
-
-
-def get_track_comments(track_id):
     track_comments = []
     db = get_db_read_replica()
 
@@ -56,6 +32,7 @@ def get_track_comments(track_id):
             session.query(Comment)
             .join(CommentThread, Comment.comment_id == CommentThread.comment_id)
             .filter(CommentThread.parent_comment_id == parent_comment_id)
+            .limit(COMMENT_REPLIES_LIMIT)
             .all()
         )
         return [
@@ -91,6 +68,9 @@ def get_track_comments(track_id):
                 == None,  # Check if parent_comment_id is null
                 Comment.is_delete == False,
             )
+            .order_by(asc(Comment.created_at))  # Sort by created_at in ascending order
+            .offset(offset)
+            .limit(limit)
             .all()
         )
 

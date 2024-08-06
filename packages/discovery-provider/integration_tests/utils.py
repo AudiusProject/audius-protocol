@@ -49,6 +49,8 @@ from src.models.users.user_bank import USDCUserBankAccount, UserBankAccount, Use
 from src.models.users.user_listening_history import UserListeningHistory
 from src.models.users.user_payout_wallet_history import UserPayoutWalletHistory
 from src.models.users.user_tip import UserTip
+from src.models.comments.comment import Comment
+from src.models.comments.comment_thread import CommentThread
 from src.tasks.aggregates import get_latest_blocknumber
 from src.utils import helpers
 from src.utils.db_session import get_db
@@ -120,6 +122,8 @@ def populate_mock_db(db, entities, block_offset=None):
                 block_offset = 0
 
         tracks = entities.get("tracks", [])
+        comments = entities.get("comments", [])
+        comment_threads = entities.get("comment_threads", [])
         playlists = entities.get("playlists", [])
         playlist_tracks = entities.get("playlist_tracks", [])
         users = entities.get("users", [])
@@ -167,6 +171,8 @@ def populate_mock_db(db, entities, block_offset=None):
         num_blocks = max(
             len(tracks),
             len(playlists),
+            len(comments),
+            len(comment_threads),
             len(users),
             len(developer_apps),
             len(grants),
@@ -774,5 +780,24 @@ def populate_mock_db(db, entities, block_offset=None):
                 ),
             )
             session.add(user_payout_wallet_history_record)
+        for i, comment_meta in enumerate(comments):
+            comment_record = Comment(
+                user_id=comment_meta.get("user_id", i),
+                comment_id=comment_meta.get("comment_id", i),
+                entity_id=comment_meta.get("entity_id", i),
+                entity_type=comment_meta.get("entity_type", i),
+                text=comment_meta.get("text", ""),
+                created_at=comment_meta.get("created_at", datetime.now()),
+                updated_at=comment_meta.get("updated_at", datetime.now()),
+                txhash=track_meta.get("txhash", str(i + block_offset)),
+                blockhash=track_meta.get("blockhash", str(i + block_offset)),
+            )
+            session.add(comment_record)
+        for i, comment_threads_meta in enumerate(comment_threads):
+            comment_thread_record = CommentThread(
+                parent_comment_id=comment_threads_meta.get("parent_comment_id", i),
+                comment_id=comment_threads_meta.get("comment_id", i),
+            )
+            session.add(comment_thread_record)
 
         session.commit()
