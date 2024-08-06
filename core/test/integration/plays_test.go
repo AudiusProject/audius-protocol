@@ -6,7 +6,7 @@ import (
 
 	"github.com/AudiusProject/audius-protocol/core/gen/proto"
 	"github.com/AudiusProject/audius-protocol/core/grpc"
-	"github.com/AudiusProject/audius-protocol/core/sdk"
+	"github.com/AudiusProject/audius-protocol/core/test/integration/utils"
 	"github.com/google/uuid"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -18,8 +18,7 @@ var _ = Describe("Plays", func() {
 	It("submits and reads back a play through grpc", func() {
 		ctx := context.Background()
 
-		sdk, err := sdk.NewSdk(sdk.WithGrpcendpoint("core-discovery-1:50051"))
-		Expect(err).To(BeNil())
+		sdk := utils.DiscoveryOne
 
 		listens := []*proto.Listen{
 			{

@@ -3,7 +3,7 @@ package integration_test
 import (
 	"context"
 
-	"github.com/cometbft/cometbft/rpc/client/http"
+	"github.com/AudiusProject/audius-protocol/core/test/integration/utils"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
@@ -12,47 +12,35 @@ var _ = Describe("Network", func() {
 	It("should be on the same network and peer", func() {
 		ctx := context.Background()
 
-		discovery1rpc, err := http.New("http://core-discovery-1:26657")
-		Expect(err).To(BeNil())
-
-		res, err := discovery1rpc.Status(ctx)
+		res, err := utils.DiscoveryOne.Status(ctx)
 		Expect(err).To(BeNil())
 		Expect(res.NodeInfo.Network).To(Equal("audius-devnet"))
 
-		netRes, err := discovery1rpc.NetInfo(ctx)
+		netRes, err := utils.DiscoveryOne.NetInfo(ctx)
 		Expect(err).To(BeNil())
 		Expect(netRes.NPeers).To(Equal(3))
 
-		content1rpc, err := http.New("http://core-content-1:26657")
-		Expect(err).To(BeNil())
-
-		res, err = content1rpc.Status(ctx)
+		res, err = utils.ContentOne.Status(ctx)
 		Expect(err).To(BeNil())
 		Expect(res.NodeInfo.Network).To(Equal("audius-devnet"))
 
-		netRes, err = content1rpc.NetInfo(ctx)
+		netRes, err = utils.ContentOne.NetInfo(ctx)
 		Expect(err).To(BeNil())
 		Expect(netRes.NPeers).To(Equal(1))
 
-		content2rpc, err := http.New("http://core-content-2:26657")
-		Expect(err).To(BeNil())
-
-		res, err = content2rpc.Status(ctx)
+		res, err = utils.ContentTwo.Status(ctx)
 		Expect(err).To(BeNil())
 		Expect(res.NodeInfo.Network).To(Equal("audius-devnet"))
 
-		netRes, err = content2rpc.NetInfo(ctx)
+		netRes, err = utils.ContentTwo.NetInfo(ctx)
 		Expect(err).To(BeNil())
 		Expect(netRes.NPeers).To(Equal(1))
 
-		content3rpc, err := http.New("http://core-content-3:26657")
-		Expect(err).To(BeNil())
-
-		res, err = content3rpc.Status(ctx)
+		res, err = utils.ContentThree.Status(ctx)
 		Expect(err).To(BeNil())
 		Expect(res.NodeInfo.Network).To(Equal("audius-devnet"))
 
-		netRes, err = content3rpc.NetInfo(ctx)
+		netRes, err = utils.ContentThree.NetInfo(ctx)
 		Expect(err).To(BeNil())
 		Expect(netRes.NPeers).To(Equal(1))
 	})
