@@ -27,7 +27,6 @@ const formatTimestampS = (timestamp_s: number) => {
   if (hours > 0) {
     return `${hours}:${minutes}:${seconds}`
   } else {
-    // TODO: check designs- I think we want a m:ss format regardless
     return `${minutes}:${seconds}`
   }
 }
@@ -38,11 +37,12 @@ export type CommentBlockProps = {
   parentCommentIndex?: number
 }
 
-export const CommentBlock = ({
-  comment,
-  parentCommentId, // Parent comment ID can be passed in order to reply to a reply, otherwise it's assumed you're replying to this comment
-  parentCommentIndex
-}: CommentBlockProps) => {
+export const CommentBlock = (props: CommentBlockProps) => {
+  const {
+    comment,
+    parentCommentId, // Parent comment ID & index will only exist on replies
+    parentCommentIndex // Parent comment index helps quickly look up the parent comment
+  } = props
   const {
     is_pinned: isPinned,
     message,
@@ -59,11 +59,12 @@ export const CommentBlock = ({
   } = useCurrentCommentSection()
 
   const [showEditInput, setShowEditInput] = useState(false)
-  const hasBadges = false // TODO: need to figure out how to data model these "badges" correctly
   const [showReplyInput, setShowReplyInput] = useState(false)
+
+  const hasBadges = false // TODO: need to figure out how to data model these "badges" correctly
   const isOwner = true // TODO: need to check against current user (not really feasible with modck data)
 
-  const handleCommentEdit = (commentMessage: string) => {
+  const handleEditFormSubmit = (commentMessage: string) => {
     setShowEditInput(false)
     handleEditComment(commentId, commentMessage)
   }
@@ -120,7 +121,7 @@ export const CommentBlock = ({
         </Flex>
         {showEditInput ? (
           <CommentForm
-            onSubmit={handleCommentEdit}
+            onSubmit={handleEditFormSubmit}
             initialValue={message}
             hideAvatar
           />
