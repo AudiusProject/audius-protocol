@@ -11,6 +11,7 @@ services:
     ports:
       - "6610:26656" # CometBFT P2P Server
       - "6611:26657" # CometBFT RPC Server
+      - "6612:50051" # Core GRPC Server
     networks:
       - audius-protocol_default
 
@@ -26,6 +27,7 @@ services:
     ports:
       - "6710:26656" # CometBFT P2P Server
       - "6711:26657" # CometBFT RPC Server
+      - "6712:50051" # Core GRPC Server
     networks:
       - audius-protocol_default
 
@@ -41,6 +43,7 @@ services:
     ports:
       - "6720:26656" # CometBFT P2P Server
       - "6721:26657" # CometBFT RPC Server
+      - "6722:50051" # Core GRPC Server
     networks:
       - audius-protocol_default
 
@@ -56,6 +59,7 @@ services:
     ports:
       - "6730:26656" # CometBFT P2P Server
       - "6731:26657" # CometBFT RPC Server
+      - "6732:50051" # Core GRPC Server
     networks:
       - audius-protocol_default
 

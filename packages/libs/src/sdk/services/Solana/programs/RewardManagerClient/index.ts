@@ -1,2 +1,2 @@
-export { RewardManagerClient } from './RewardManagerClient'
+export { RewardManagerClient, RewardManagerError } from './RewardManagerClient'
 export { getDefaultRewardManagerClentConfig } from './getDefaultConfig'

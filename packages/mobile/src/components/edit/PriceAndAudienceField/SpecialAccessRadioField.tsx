@@ -97,6 +97,7 @@ export const SpecialAccessRadioField = (
       label={messages.title}
       icon={IconSpecialAccess}
       description={messages.description}
+      disabled={disabled}
       checkedContent={
         <Paper backgroundColor='surface1' shadow='flat' border='default' p='l'>
           <RadioGroup

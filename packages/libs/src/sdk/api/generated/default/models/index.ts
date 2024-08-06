@@ -9,6 +9,8 @@ export * from './BlobInfo';
 export * from './Comment';
 export * from './CommentResponse';
 export * from './CollectionActivity';
+export * from './Comment';
+export * from './CommentResponse';
 export * from './ConnectedWallets';
 export * from './ConnectedWalletsResponse';
 export * from './CoverPhoto';

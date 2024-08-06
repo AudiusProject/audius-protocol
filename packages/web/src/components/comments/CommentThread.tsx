@@ -2,6 +2,7 @@ import { useState } from 'react'
 
 import { ID } from '@audius/common/models'
 import {
+  Button,
   Flex,
   IconCaretDown,
   IconCaretUp,
@@ -18,7 +19,7 @@ const messages = {
 }
 
 export const CommentThread = () => {
-  const { comments } = useCurrentCommentSection()
+  const { comments, fetchComments } = useCurrentCommentSection()
   // TODO: this feels sub-optimal? Maybe fine
   const [hiddenReplies, setHiddenReplies] = useState<{
     [parentCommentId: number]: boolean
@@ -32,6 +33,9 @@ export const CommentThread = () => {
 
   return (
     <Flex direction='column' gap='m'>
+      <Button onClick={fetchComments} size='xs' css={{ width: '100px' }}>
+        Refresh
+      </Button>
       {comments.length === 0 ? (
         <Flex
           alignItems='center'

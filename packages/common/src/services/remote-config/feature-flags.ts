@@ -60,7 +60,8 @@ export enum FeatureFlags {
   EDITABLE_ACCESS_ENABLED = 'editable_access_enabled',
   COMMENTS_ENABLED = 'comments_enabled',
   COMMENT_POSTING_ENABLED = 'comment_posting_enabled',
-  PAID_SCHEDULED = 'paid_scheduled'
+  PAID_SCHEDULED = 'paid_scheduled',
+  ONE_TO_MANY_DMS = 'one_to_many_dms'
 }
 
 type FlagDefaults = Record<FeatureFlags, boolean>
@@ -136,5 +137,6 @@ export const flagDefaults: FlagDefaults = {
   [FeatureFlags.EDITABLE_ACCESS_ENABLED]: false,
   [FeatureFlags.COMMENTS_ENABLED]: false,
   [FeatureFlags.COMMENT_POSTING_ENABLED]: false,
-  [FeatureFlags.PAID_SCHEDULED]: false
+  [FeatureFlags.PAID_SCHEDULED]: false,
+  [FeatureFlags.ONE_TO_MANY_DMS]: false
 }

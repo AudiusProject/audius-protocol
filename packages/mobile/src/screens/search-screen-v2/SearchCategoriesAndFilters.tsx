@@ -58,10 +58,6 @@ const SearchCategory = (props: SearchCategoryProps) => {
   )
 }
 
-// TODO:
-// - Need to sort the filters to put filters with an active value first
-// - IconClose looks thicker than the designs
-
 const filterInfoMap: Record<SearchFilter, { label: string; screen: string }> = {
   genre: { label: 'Genre', screen: 'FilterGenre' },
   mood: { label: 'Mood', screen: 'FilterMood' },
@@ -75,9 +71,17 @@ const filterInfoMap: Record<SearchFilter, { label: string; screen: string }> = {
 const filtersByCategory: Record<SearchCategoryType, SearchFilter[]> = {
   all: [],
   users: ['genre', 'isVerified'],
-  tracks: ['genre', 'mood', 'key', 'bpm', 'isPremium', 'hasDownloads'],
-  albums: ['genre', 'mood', 'isPremium', 'hasDownloads'],
-  playlists: ['genre', 'mood']
+  tracks: [
+    'genre',
+    'mood',
+    'key',
+    'bpm',
+    'isPremium',
+    'hasDownloads',
+    'isVerified'
+  ],
+  albums: ['genre', 'mood', 'isPremium', 'hasDownloads', 'isVerified'],
+  playlists: ['genre', 'mood', 'isVerified']
 }
 
 export const SearchCategoriesAndFilters = () => {

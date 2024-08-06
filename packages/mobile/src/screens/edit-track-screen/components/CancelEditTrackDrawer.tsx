@@ -16,6 +16,7 @@ export const CancelEditTrackDrawer = () => {
       drawerName='CancelEditTrack'
       messages={messages}
       onConfirm={navigation.goBack}
+      addBottomInset
     />
   )
 }
