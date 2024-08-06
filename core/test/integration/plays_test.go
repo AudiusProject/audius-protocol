@@ -18,7 +18,7 @@ var _ = Describe("Plays", func() {
 	It("submits and reads back a play through grpc", func() {
 		ctx := context.Background()
 
-		sdk, err := sdk.NewSdk(sdk.WithGrpcendpoint("core-discovery-1:6612"))
+		sdk, err := sdk.NewSdk(sdk.WithGrpcendpoint("core-discovery-1:50051"))
 		Expect(err).To(BeNil())
 
 		listens := []*proto.Listen{

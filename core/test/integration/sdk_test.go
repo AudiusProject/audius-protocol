@@ -11,10 +11,10 @@ import (
 )
 
 var _ = Describe("Sdk", func() {
-	It("connects to json rpc endpoint", func() {
+	It("connects to both rpc endpoints", func() {
 		ctx := context.Background()
 
-		sdk, err := sdk.NewSdk(sdk.WithGrpcendpoint("core-content-1:6612"), sdk.WithJrpcendpoint("http://core-content-1:6611"))
+		sdk, err := sdk.NewSdk(sdk.WithGrpcendpoint("core-content-1:50051"), sdk.WithJrpcendpoint("http://core-content-1:26657"))
 		Expect(err).To(BeNil())
 
 		// test jsonrpc health route
