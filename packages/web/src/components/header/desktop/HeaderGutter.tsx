@@ -1,9 +1,7 @@
-import { useContext } from 'react'
-
 import cn from 'classnames'
 
 import { usePortal } from 'hooks/usePortal'
-import { MainContentContext } from 'pages/MainContentContext'
+import { useMainContentRef } from 'pages/MainContentContext'
 
 import styles from './HeaderGutter.module.css'
 
@@ -27,7 +25,7 @@ export const HeaderGutter = ({
   scrollBarWidth,
   className
 }: HeaderGutterProps) => {
-  const { mainContentRef } = useContext(MainContentContext)
+  const mainContentRef = useMainContentRef()
   // Portal to the main content parent, which is the app (not body, to account for banners)
   const Portal = usePortal({
     container: mainContentRef.current?.parentElement ?? undefined
