@@ -1,7 +1,6 @@
 import { useMemo } from 'react'
 
 import { useGetCurrentUser, useGetUserTracksByHandle } from '@audius/common/api'
-import { useAllPaginatedQuery } from '@audius/common/audius-query'
 import { isContentUSDCPurchaseGated } from '@audius/common/models'
 import { useTargetedMessageModal } from '@audius/common/src/store/ui/modals/create-targeted-message-modal'
 import {
@@ -36,19 +35,30 @@ const messages = {
   purchasers: {
     label: 'Past Purchasers',
     description:
-      'Send a bulk message to everyone who has purchased content from you on Audius.'
+      'Send a bulk message to everyone who has purchased content from you on Audius.',
+    placeholder: 'Premium Content'
   },
   remixCreators: {
     label: 'Remix Creators',
-    description: 'Send a bulk message to creators who have remixed your tracks.'
+    description:
+      'Send a bulk message to creators who have remixed your tracks.',
+    placeholder: 'Tracks with Remixes'
   }
+}
+
+const TARGET_AUDIENCE_FIELD = 'target_audience'
+
+type TargetedMessageFormValues = {
+  target_audience: 'followers' | 'supporters' | 'purchasers' | 'remix_creators'
+  purchased_track_id?: string
+  remixed_track_id?: string
 }
 
 export const TargetedMessageModal = () => {
   const { isOpen, onClose } = useTargetedMessageModal()
 
-  const initialValues = {
-    target_audience: undefined,
+  const initialValues: TargetedMessageFormValues = {
+    target_audience: 'followers',
     purchased_track_id: undefined,
     remixed_track_id: undefined
   }
@@ -75,7 +85,10 @@ export const TargetedMessageModal = () => {
 
   return (
     <Modal size='small' isOpen={isOpen} onClose={onClose}>
-      <Formik initialValues={initialValues} onSubmit={handleSubmit}>
+      <Formik<TargetedMessageFormValues>
+        initialValues={initialValues}
+        onSubmit={handleSubmit}
+      >
         {({ submitForm }) => (
           <>
             <ModalHeader>
@@ -115,7 +128,7 @@ export const TargetedMessageModal = () => {
 }
 
 const TargetedMessagesFields = () => {
-  const [field] = useField('target_audience')
+  const [field] = useField(TARGET_AUDIENCE_FIELD)
 
   return (
     <RadioGroup {...field}>
@@ -132,7 +145,7 @@ const TargetedMessagesFields = () => {
 const FollowersMessageField = () => {
   const { data: user } = useGetCurrentUser()
   const { follower_count: followerCount } = user ?? {}
-  const [{ value }] = useField('target_audience')
+  const [{ value }] = useField(TARGET_AUDIENCE_FIELD)
   const selected = value === 'followers'
   return (
     <Flex as='label' gap='l'>
@@ -159,7 +172,7 @@ const FollowersMessageField = () => {
 const TipSupportersMessageField = () => {
   const { data: user } = useGetCurrentUser()
   const { supporter_count: supporterCount } = user ?? {}
-  const [{ value }] = useField('target_audience')
+  const [{ value }] = useField(TARGET_AUDIENCE_FIELD)
   const selected = value === 'supporters'
   return (
     <Flex as='label' gap='l'>
@@ -191,8 +204,8 @@ const PastPurchasersMessageField = () => {
     handle,
     user_id: currentUserId
   } = user ?? {}
-  const [{ value }] = useField('target_audience')
-  const [purchasedTrackField] = useField({
+  const [{ value }] = useField(TARGET_AUDIENCE_FIELD)
+  const [purchasedTrackField, , { setValue: setPurchasedTrackId }] = useField({
     name: 'purchased_track_id',
     type: 'select'
   })
@@ -235,8 +248,8 @@ const PastPurchasersMessageField = () => {
             <Select
               {...purchasedTrackField}
               options={premiumTrackOptions}
-              label={'Premium Content'}
-              onChange={window.alert}
+              label={messages.purchasers.placeholder}
+              onChange={setPurchasedTrackId}
             />
           </Flex>
         ) : null}
@@ -247,14 +260,9 @@ const PastPurchasersMessageField = () => {
 
 const RemixCreatorsMessageField = () => {
   const { data: user } = useGetCurrentUser()
-  const {
-    // TODO: Need to add a new endpoint to get the list of tracks with remixes and their creators
-    supporter_count: supporterCount,
-    handle,
-    user_id: currentUserId
-  } = user ?? {}
-  const [{ value }] = useField('target_audience')
-  const [remixedTrackField] = useField({
+  const { handle, user_id: currentUserId } = user ?? {}
+  const [{ value }] = useField(TARGET_AUDIENCE_FIELD)
+  const [remixedTrackField, , { setValue: setRemixedTrackId }] = useField({
     name: 'remixed_track_id',
     type: 'select'
   })
@@ -286,7 +294,8 @@ const RemixCreatorsMessageField = () => {
           </Text>
           {isSelected ? (
             <Text variant='title' size='l' color='subdued'>
-              ({supporterCount ?? 0})
+              {/* TODO: Need to add a new endpoint to get the list of tracks with remixes and their creators */}
+              ({0})
             </Text>
           ) : null}
         </Flex>
@@ -296,7 +305,8 @@ const RemixCreatorsMessageField = () => {
             <Select
               {...remixedTrackField}
               options={premiumTrackOptions}
-              label={'Tracks with Remixes'}
+              label={messages.remixCreators.placeholder}
+              onChange={setRemixedTrackId}
             />
           </Flex>
         ) : null}
