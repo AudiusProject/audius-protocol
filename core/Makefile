@@ -1,12 +1,6 @@
 SQL_SRCS := $(shell find db/sql/ -type f -name '*.sql') db/sqlc.yaml
 
-.PHONY: up down deps test
-up: down gen
-	cd infra && docker compose up --build -d
-
-down:
-	cd infra && docker compose down
-
+.PHONY: deps
 deps:
 	@go install github.com/onsi/ginkgo/v2/ginkgo@v2.19.0
 	@brew install protobuf
@@ -18,16 +12,11 @@ deps:
 gen: $(SQL_SRCS)
 	@which sqlc || ( \
 		echo "ERROR: sqlc command not found." \
-		"Please run 'make deps' to initialize the environment." \
+		"Run 'make deps' to install necessary tooling." \
 		&& false \
 	)
 	go generate ./...
 	cd db && sqlc generate
-	protoc --go_out=./gen --go-grpc_out=./gen ./protocol.proto
-	go mod tidy
-
-test:
-	@go test -count=1 -v ./...
 
 .PHONY: dev-discovery-1 dev-content-1 dev-content-2 dev-content-3
 dev-discovery-1:

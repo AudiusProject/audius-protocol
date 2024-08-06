@@ -373,7 +373,7 @@ const fetchData = async <Args, Data>(
         )
       : await fetch(fetchArgs, context)
 
-    if (!apiData) {
+    if (apiData === null || apiData === undefined) {
       if (force?.current) {
         force.current = false
       }

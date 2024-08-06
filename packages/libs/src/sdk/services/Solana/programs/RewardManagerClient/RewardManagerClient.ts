@@ -1,6 +1,17 @@
-import { RewardManagerProgram } from '@audius/spl'
+import {
+  RewardManagerInstruction,
+  RewardManagerErrorCode,
+  RewardManagerProgram
+} from '@audius/spl'
 import type { RewardManagerStateData } from '@audius/spl/dist/types/reward-manager/types'
-import { Secp256k1Program, type PublicKey } from '@solana/web3.js'
+import { SendTransactionOptions } from '@solana/wallet-adapter-base'
+import {
+  Secp256k1Program,
+  SendTransactionError,
+  Transaction,
+  VersionedTransaction,
+  type PublicKey
+} from '@solana/web3.js'
 
 import { productionConfig } from '../../../../config/production'
 import { mergeConfigWithDefaults } from '../../../../utils/mergeConfigs'
@@ -21,6 +32,61 @@ import {
   GetSubmittedAttestationsRequest,
   GetSubmittedAttestationsSchema
 } from './types'
+
+type CustomInstructionErrorMessage = {
+  InstructionError: [number, { Custom: number }]
+}
+
+/**
+ * Mapping of custom instruction error codes to error messages
+ * @see {@link https://github.com/AudiusProject/audius-protocol/blob/2a37bcff1bb1a82efdf187d1723b3457dc0dcb9b/solana-programs/reward-manager/program/src/error.rs solana-programs/reward-manager/program/src/errors.rs}
+ */
+const codeMessageMap: Record<RewardManagerErrorCode, string> = {
+  [RewardManagerErrorCode.IncorrectOwner]:
+    'Input account owner is not the program address',
+  [RewardManagerErrorCode.SignCollision]:
+    'Signature with an already met principal',
+  [RewardManagerErrorCode.WrongSigner]: 'Unexpected signer met',
+  [RewardManagerErrorCode.NotEnoughSigners]: "Isn't enough signers keys",
+  [RewardManagerErrorCode.Secp256InstructionMissing]:
+    'Secp256 instruction missing',
+  [RewardManagerErrorCode.InstructionLoadError]: 'Instruction load error',
+  [RewardManagerErrorCode.RepeatedSenders]: 'Repeated sender',
+  [RewardManagerErrorCode.SignatureVerificationFailed]:
+    'Signature verification failed',
+  [RewardManagerErrorCode.OperatorCollision]:
+    'Some signers have same operators',
+  [RewardManagerErrorCode.AlreadySent]: 'Funds already sent',
+  [RewardManagerErrorCode.IncorrectMessages]: 'Incorrect messages',
+  [RewardManagerErrorCode.MessagesOverflow]: 'Messages overflow',
+  [RewardManagerErrorCode.MathOverflow]: 'Math overflow',
+  [RewardManagerErrorCode.InvalidRecipient]: 'Invalid Recipient'
+}
+
+export class RewardManagerError extends Error {
+  override name = 'RewardManagerError'
+  public code: number
+  public instructionName: string
+  public customErrorName?: string
+  constructor({
+    code,
+    instructionName,
+    cause
+  }: {
+    code: number
+    instructionName: string
+    cause?: Error
+  }) {
+    super(
+      codeMessageMap[code as RewardManagerErrorCode] ??
+        `Unknown error: ${code}`,
+      { cause }
+    )
+    this.code = code
+    this.instructionName = instructionName
+    this.customErrorName = RewardManagerErrorCode[code]
+  }
+}
 
 /**
  * Connected client to the Solana RewardManager program.
@@ -244,5 +310,75 @@ export class RewardManagerClient extends BaseSolanaProgramClient {
       }
     }
     return this.rewardManagerState
+  }
+
+  /**
+   * Override the sendTransaction method to provide some more friendly errors
+   * back to the consumer for RewardManager instructions
+   */
+  public override async sendTransaction(
+    transaction: Transaction | VersionedTransaction,
+    sendOptions?: SendTransactionOptions | undefined
+  ): Promise<string> {
+    try {
+      return await super.sendTransaction(transaction, sendOptions)
+    } catch (e) {
+      if (e instanceof SendTransactionError) {
+        try {
+          const error = JSON.parse(
+            e.transactionError.message
+          ) as CustomInstructionErrorMessage
+          if (error && error.InstructionError) {
+            const instructionIndex = error.InstructionError[0]
+            const code = error.InstructionError[1]?.Custom
+
+            // Parse the different transaction types differently
+            if ('instructions' in transaction) {
+              // Legacy Transaction
+              const instruction = transaction.instructions[instructionIndex]
+              // Check error instruction is from RewardManagerProgram
+              if (instruction && instruction.programId.equals(this.programId)) {
+                const decodedInstruction =
+                  RewardManagerProgram.decodeInstruction(instruction)
+                throw new RewardManagerError({
+                  code,
+                  instructionName:
+                    RewardManagerInstruction[
+                      decodedInstruction.data.instruction
+                    ] ?? 'Unknown',
+                  cause: e
+                })
+              }
+            } else {
+              // VersionedTransaction
+              const instruction =
+                transaction.message.compiledInstructions[instructionIndex]
+              // Check error instruction is from RewardManagerProgram
+              if (
+                instruction &&
+                transaction.message.staticAccountKeys[
+                  instruction.programIdIndex
+                ]?.equals(this.programId)
+              ) {
+                throw new RewardManagerError({
+                  code,
+                  instructionName:
+                    RewardManagerInstruction[instruction!.data[0] as number] ??
+                    'Unknown',
+                  cause: e
+                })
+              }
+            }
+          }
+        } catch (e) {
+          if (e instanceof RewardManagerError) {
+            throw e
+          }
+          // If failed to provide user friendly error, surface original error
+          console.warn('Failed to parse RewardManagerError error', e)
+        }
+      }
+      throw e
+    }
   }
 }

@@ -1,26 +1,25 @@
 import { RefObject, useState, ReactNode, useEffect } from 'react'
 
-import { OptionsFilterButtonOption } from './types'
+import { FilterButtonOptionType } from './types'
 
-type OptionsFilterButtonPopupKeyHandlerProps = {
-  children: (activeValue: string | null) => ReactNode
+type FilterButtonKeyHandlerProps<Value extends string> = {
+  children: (activeValue: Value | null) => ReactNode
   disabled?: boolean
-  onOptionSelect: (option: OptionsFilterButtonOption) => void
+  onChange: (value: Value) => void
   optionRefs: RefObject<HTMLButtonElement[]>
-  options: OptionsFilterButtonOption[]
+  options: FilterButtonOptionType<Value>[]
   scrollRef: RefObject<HTMLDivElement>
 }
 
 /**
- * Handles key events for the popup inside the OptionsFilterButton component
+ * Handles key events for the popup inside the FilterButton component
  *
  * Calls the `children` function with the currently active value
  */
-export const OptionsFilterButtonPopupKeyHandler = (
-  props: OptionsFilterButtonPopupKeyHandlerProps
+export const FilterButtonKeyHandler = <Value extends string>(
+  props: FilterButtonKeyHandlerProps<Value>
 ) => {
-  const { disabled, options, onOptionSelect, optionRefs, scrollRef, children } =
-    props
+  const { disabled, options, onChange, optionRefs, scrollRef, children } = props
   const [activeIndex, setActiveIndex] = useState<number | null>(null)
   const activeValue = activeIndex !== null ? options[activeIndex]?.value : null
 
@@ -84,7 +83,7 @@ export const OptionsFilterButtonPopupKeyHandler = (
           event.stopPropagation()
           event.preventDefault()
           if (activeIndex !== null && options[activeIndex]) {
-            onOptionSelect(options[activeIndex])
+            onChange(options[activeIndex].value)
           }
           break
         default:
@@ -97,7 +96,7 @@ export const OptionsFilterButtonPopupKeyHandler = (
     return () => {
       window.removeEventListener('keydown', handleKeyDown)
     }
-  }, [disabled, options, activeIndex, scrollRef, optionRefs, onOptionSelect])
+  }, [disabled, options, activeIndex, scrollRef, optionRefs, onChange])
 
   return <>{children(activeValue)}</>
 }

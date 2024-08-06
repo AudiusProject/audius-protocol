@@ -131,7 +131,7 @@ export const SelectArtistsPage = () => {
   })
   const formikSchema = toFormikValidationSchema(selectArtistsSchema)
 
-  const artistContent = artists.length ? (
+  const artistContent = artists?.length ? (
     artists.map((user) => (
       <FollowArtistCard key={user.user_id} user={user as UserMetadata} />
     ))
