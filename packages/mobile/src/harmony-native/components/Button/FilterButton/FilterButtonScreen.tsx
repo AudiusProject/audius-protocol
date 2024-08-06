@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react'
 import type { ComponentType } from 'react'
 
-import type { Maybe, Nullable } from '@audius/common/utils'
+import type { Maybe } from '@audius/common/utils'
 
 import { ModalScreen } from 'app/components/core'
 import { useRoute } from 'app/hooks/useRoute'
@@ -12,7 +12,7 @@ import type { FilterButtonOptionType, ScreenProps } from './types'
 export type FilterButtonScreenParams = {
   options?: FilterButtonOptionType<string>[]
   title: string
-  onChange: (value: Nullable<string>) => void
+  onChange: (value: Maybe<string>) => void
   value: string
   screen?: ComponentType<ScreenProps<string>>
 }

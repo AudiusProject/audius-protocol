@@ -1,5 +1,6 @@
 import type { ComponentType, ReactNode } from 'react'
 
+import type { Maybe } from '@audius/common/utils'
 import type { GestureResponderEvent } from 'react-native'
 
 import type { IconComponent } from '@audius/harmony-native'
@@ -36,9 +37,9 @@ export type ScreenProps<Value> = {
   /**
    * A function to handle when the value is changed
    */
-  onChange: (value: Value) => void
+  onChange: (value: Maybe<Value>) => void
   onSubmit: () => void
-  value: Value
+  value: Maybe<Value>
 }
 
 export type FilterButtonProps<Value extends string = string> = {
