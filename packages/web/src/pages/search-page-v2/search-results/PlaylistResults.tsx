@@ -12,7 +12,7 @@ import { useIsMobile } from 'hooks/useIsMobile'
 
 import { NoResultsTile } from '../NoResultsTile'
 import { SortMethodFilterButton } from '../SortMethodFilterButton'
-import { useGetSearchResults, useSearchParams } from '../utils'
+import { useGetSearchResults, useSearchParams } from '../hooks'
 
 const { addItem: addRecentSearch } = searchActions
 

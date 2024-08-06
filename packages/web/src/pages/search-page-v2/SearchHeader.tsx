@@ -1,16 +1,6 @@
 import { ChangeEvent, useCallback } from 'react'
 
-import { Maybe } from '@audius/common/utils'
-import {
-  Flex,
-  IconAlbum,
-  IconNote,
-  IconPlaylists,
-  IconUser,
-  RadioGroup,
-  SelectablePill,
-  Text
-} from '@audius/harmony'
+import { Flex, RadioGroup, SelectablePill, Text } from '@audius/harmony'
 import { CSSObject, useTheme } from '@emotion/react'
 import { capitalize } from 'lodash'
 
@@ -18,42 +8,13 @@ import Header from 'components/header/desktop/Header'
 import { useIsMobile } from 'hooks/useIsMobile'
 
 import { filters } from './SearchFilters'
-import { Category } from './types'
+import { categories } from './categories'
+import { useSearchCategory, useSearchParams } from './hooks'
+import { Category, CategoryKey } from './types'
 
-export const categories = {
-  all: { filters: [] },
-  profiles: { icon: IconUser, filters: ['genre', 'isVerified'] },
-  tracks: {
-    icon: IconNote,
-    filters: [
-      'genre',
-      'mood',
-      'key',
-      'bpm',
-      'isPremium',
-      'hasDownloads',
-      'isVerified'
-    ]
-  },
-  albums: {
-    icon: IconAlbum,
-    filters: ['genre', 'mood', 'isPremium', 'hasDownloads', 'isVerified']
-  },
-  playlists: { icon: IconPlaylists, filters: ['genre', 'mood', 'isVerified'] }
-} satisfies Record<string, Category>
-
-export type CategoryKey = keyof typeof categories
-
-type SearchHeaderProps = {
-  category?: CategoryKey
-  setCategory: (category: CategoryKey) => void
-  title: string
-  query: Maybe<string>
-}
-
-export const SearchHeader = (props: SearchHeaderProps) => {
-  const { category: categoryKey = 'all', setCategory, query, title } = props
-
+export const SearchHeader = () => {
+  const { query } = useSearchParams()
+  const [categoryKey, setCategory] = useSearchCategory()
   const isMobile = useIsMobile()
   const { color } = useTheme()
 
@@ -113,8 +74,7 @@ export const SearchHeader = (props: SearchHeaderProps) => {
     </Flex>
   ) : (
     <Header
-      {...props}
-      primary={title}
+      primary='Search'
       secondary={
         query ? (
           <Flex ml='l' css={{ maxWidth: 200 }}>
