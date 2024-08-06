@@ -1,9 +1,9 @@
+import { useSearchCategory } from './hooks'
 import { AlbumResultsPage } from './search-results/AlbumResults'
 import { AllResults } from './search-results/AllResults'
 import { PlaylistResultsPage } from './search-results/PlaylistResults'
 import { ProfileResultsPage } from './search-results/ProfileResults'
 import { TrackResultsPage } from './search-results/TrackResults'
-import { useSearchCategory } from './hooks'
 
 export const SearchResults = () => {
   const [category] = useSearchCategory()

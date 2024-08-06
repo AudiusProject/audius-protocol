@@ -22,9 +22,9 @@ import { useMainContentRef } from 'pages/MainContentContext'
 
 import { NoResultsTile } from '../NoResultsTile'
 import { SortMethodFilterButton } from '../SortMethodFilterButton'
+import { useSearchParams } from '../hooks'
 import { ViewLayout, viewLayoutOptions } from '../types'
 import { ALL_RESULTS_LIMIT } from '../utils'
-import { useSearchParams } from '../hooks'
 
 const { makeGetLineupMetadatas } = lineupSelectors
 const { getBuffering, getPlaying } = playerSelectors
