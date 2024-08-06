@@ -284,9 +284,9 @@ const ConnectedPlaylistTile = ({
       isPublic: !isUnlisted,
       isOwner,
       includeEmbed: !isUnlisted && !isStreamGated,
-      includeShare: false,
-      includeRepost: false,
-      includeFavorite: false,
+      includeShare: true,
+      includeRepost: hasStreamAccess,
+      includeFavorite: hasStreamAccess,
       includeVisitPage: true,
       extraMenuItems: [],
       permalink: permalink || ''
